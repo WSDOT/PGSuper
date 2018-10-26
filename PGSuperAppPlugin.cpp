@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -435,8 +435,11 @@ void CPGSuperAppPlugin::Process1250Testing(const CPGSuperCommandLineInfo& rCmdIn
             ::AfxMessageBox(msg);
          }
 
-         if ( pPgsDoc->IsModified() )
-            pPgsDoc->DoFileSave();
+// Not sure why, but someone put this code in to save regression files.
+// Sort of defeats the purpose of testing old files...
+//
+//         if ( pPgsDoc->IsModified() )
+//            pPgsDoc->DoFileSave();
       }
       catch(const sysXBase& e)
       {

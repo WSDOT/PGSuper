@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -77,8 +77,9 @@ public:
             return false;
 
          std::vector<pgsTypes::Stage> stages = m_SamePlace.GetPoi().GetStages();
-         std::vector<pgsTypes::Stage>::iterator iter;
-         for ( iter = stages.begin(); iter != stages.end(); iter++ )
+         std::vector<pgsTypes::Stage>::iterator iter(stages.begin());
+         std::vector<pgsTypes::Stage>::iterator iterend(stages.end());
+         for (; iter!=iterend; iter++ )
          {
             PoiAttributeType attribute = m_SamePlace.GetPoi().GetAttributes(*iter);
             if ( !other.HasAttribute(*iter,attribute) )
@@ -112,18 +113,18 @@ private:
    PoiIDType m_ID;
 };
 
-class FindBySpanGirder
+class NotFindBySpanGirder
 {
 public:
-   FindBySpanGirder(SpanIndexType span,GirderIndexType gdr) : m_Span(span), m_Girder(gdr) {}
+   NotFindBySpanGirder(SpanIndexType span,GirderIndexType gdr) : m_Span(span), m_Girder(gdr) {}
    bool operator()(const pgsPointOfInterest& other) const
    {
       if ( m_Span == other.GetSpan() && m_Girder == other.GetGirder() )
       {
-         return true;
+         return false;
       }
 
-      return false;
+      return true;
    }
 
 private:
@@ -168,40 +169,41 @@ PoiIDType pgsPoiMgr::AddPointOfInterest(const pgsPointOfInterest& poi)
 {
    ATLASSERT( poi.GetStageCount() != 0 ); // poi must belong to at least one stage
 
-   pgsPointOfInterest newpoi = poi;
-   if ( m_Poi.size() != 0 )
+   // first see if we have an existing poi at this location. Just merge attributes into existing if we do
+   std::vector<pgsPointOfInterest>::iterator i(m_Poi.begin());
+   std::vector<pgsPointOfInterest>::iterator iend(m_Poi.end());
+   for (; i!=iend; i++ )
    {
-      std::vector<pgsPointOfInterest>::iterator i;
-      for ( i = m_Poi.begin(); i != m_Poi.end(); i++ )
+      pgsPointOfInterest& curpoi = *i;
+      if ( AtSamePlace( curpoi, poi ) )
       {
-         const pgsPointOfInterest& curpoi = *i;
-         if ( AtSamePlace( curpoi, poi ) )
-         {
-            newpoi = Merge(curpoi,poi);
-            m_Poi.erase(i); // remove current poi from vector.
-            break;
-         }
+         curpoi.MergeStageAttributes(poi);
+         return curpoi.m_ID; // no need to resort vector
       }
    }
 
-   if ( newpoi.m_ID < 0 )
+   PoiIDType id = poi.m_ID;
+   if ( id < 0 )
    {
       // assert if we are about to roll over the id
       ATLASSERT(ms_NextID != Int16_Max-1);
-      newpoi.m_ID = ms_NextID++;
+      id = ms_NextID++;
    }
 
-   m_Poi.push_back(newpoi);
+   // Don't copy poi and put it in because this is a very highly utilized function and copies don't come cheap
+   m_Poi.push_back(poi);
+   m_Poi.back().m_ID = id;
+
    std::sort(m_Poi.begin(),m_Poi.end());
 
-   return newpoi.m_ID;
+   return id;
 }
 
 void pgsPoiMgr::RemovePointOfInterest(const pgsPointOfInterest& poi)
 {
-   std::vector<pgsPointOfInterest>::iterator found;
-   found = std::find_if(m_Poi.begin(), m_Poi.end(), ExactlySame(poi,m_Tolerance) );
-   if ( found != m_Poi.end() )
+   std::vector<pgsPointOfInterest>::iterator iend(m_Poi.end());
+   std::vector<pgsPointOfInterest>::iterator found( std::find_if(m_Poi.begin(), iend, ExactlySame(poi,m_Tolerance)) );
+   if ( found != iend )
    {
       m_Poi.erase(found);
       std::sort(m_Poi.begin(),m_Poi.end());
@@ -213,9 +215,9 @@ void pgsPoiMgr::RemovePointOfInterest(SpanIndexType span,GirderIndexType gdr,Flo
    ATLASSERT( span != ALL_SPANS );
    ATLASSERT( gdr  != ALL_GIRDERS );
 
-   std::vector<pgsPointOfInterest>::iterator found;
-   found = std::find_if(m_Poi.begin(), m_Poi.end(), SamePlace(pgsPointOfInterest(span,gdr,distFromStart),m_Tolerance) );
-   if ( found != m_Poi.end() )
+   std::vector<pgsPointOfInterest>::iterator iend(m_Poi.end());
+   std::vector<pgsPointOfInterest>::iterator found( std::find_if(m_Poi.begin(), iend, SamePlace(pgsPointOfInterest(span,gdr,distFromStart),m_Tolerance)) );
+   if ( found!=iend )
    {
       m_Poi.erase(found);
       std::sort(m_Poi.begin(),m_Poi.end());
@@ -233,9 +235,9 @@ pgsPointOfInterest pgsPoiMgr::GetPointOfInterest(SpanIndexType span,GirderIndexT
    ATLASSERT( gdr  != ALL_GIRDERS );
 
    pgsPointOfInterest poi(span,gdr,distFromStart);
-   std::vector<pgsPointOfInterest>::const_iterator found;
-   found = std::find_if(m_Poi.begin(), m_Poi.end(), SamePlace(poi,m_Tolerance) );
-   if ( found != m_Poi.end() )
+   std::vector<pgsPointOfInterest>::iterator iend(m_Poi.end());
+   std::vector<pgsPointOfInterest>::const_iterator found( std::find_if(m_Poi.begin(), iend, SamePlace(poi,m_Tolerance)) );
+   if ( found != iend )
       return (*found);
 
    return pgsPointOfInterest();
@@ -248,9 +250,9 @@ pgsPointOfInterest pgsPoiMgr::GetPointOfInterest(pgsTypes::Stage stage,SpanIndex
 
    pgsPointOfInterest poi(stage,span,gdr,distFromStart);
 
-   std::vector<pgsPointOfInterest>::const_iterator found;
-   found = std::find_if(m_Poi.begin(), m_Poi.end(), SamePlace(poi,m_Tolerance) );
-   if ( found != m_Poi.end() && found->HasStage(stage) )
+   std::vector<pgsPointOfInterest>::iterator iend(m_Poi.end());
+   std::vector<pgsPointOfInterest>::const_iterator found( std::find_if(m_Poi.begin(), iend, SamePlace(poi,m_Tolerance)) );
+   if ( found != iend && found->HasStage(stage) )
       return (*found);
 
    return poi;
@@ -263,8 +265,9 @@ pgsPointOfInterest pgsPoiMgr::GetNearestPointOfInterest(SpanIndexType span,Girde
 
    // get the poi just for this span/girder
    std::vector<pgsPointOfInterest> vPOI;
-   std::vector<pgsPointOfInterest>::const_iterator iter;
-   for ( iter = m_Poi.begin(); iter != m_Poi.end(); iter++ )
+   std::vector<pgsPointOfInterest>::const_iterator iter(m_Poi.begin());
+   std::vector<pgsPointOfInterest>::iterator iend(m_Poi.end());
+   for (; iter != iend; iter++ )
    {
       const pgsPointOfInterest& poi = *iter;
       if ( poi.GetSpan() == span && poi.GetGirder() == gdr )
@@ -274,11 +277,12 @@ pgsPointOfInterest pgsPoiMgr::GetNearestPointOfInterest(SpanIndexType span,Girde
    if ( vPOI.size() == 0 )
       return pgsPointOfInterest();
 
-   std::vector<pgsPointOfInterest>::const_iterator iter1, iter2;
-   iter1 = vPOI.begin();
-   iter2 = iter1;
+   std::vector<pgsPointOfInterest>::const_iterator iter1(vPOI.begin());
+   std::vector<pgsPointOfInterest>::const_iterator iter2(iter1);
    iter2++;
-   for ( ; iter2 != m_Poi.end(); iter1++, iter2++ )
+
+   std::vector<pgsPointOfInterest>::const_iterator iterend(m_Poi.end());
+   for ( ; iter2 != iterend; iter1++, iter2++ )
    {
       const pgsPointOfInterest& prevPOI = *iter1;
       const pgsPointOfInterest& nextPOI = *iter2;
@@ -310,22 +314,23 @@ pgsPointOfInterest pgsPoiMgr::GetNearestPointOfInterest(pgsTypes::Stage stage,Sp
 
    // get the poi just for this span/girder and stage
    std::vector<pgsPointOfInterest> vPOI;
-   std::vector<pgsPointOfInterest>::const_iterator iter;
-   for ( iter = m_Poi.begin(); iter != m_Poi.end(); iter++ )
+   std::vector<pgsPointOfInterest>::const_iterator iter(m_Poi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator iterend(m_Poi.end());
+   for (; iter != iterend; iter++ )
    {
       const pgsPointOfInterest& poi = *iter;
       if ( poi.HasStage(stage) && poi.GetSpan() == span && poi.GetGirder() == gdr )
          vPOI.push_back(poi);
    }
 
-   if ( vPOI.size() == 0 )
+   if ( vPOI.empty() )
       return pgsPointOfInterest();
 
-   std::vector<pgsPointOfInterest>::const_iterator iter1, iter2;
-   iter1 = vPOI.begin();
-   iter2 = iter1;
+   std::vector<pgsPointOfInterest>::const_iterator iter1(vPOI.begin());;
+   std::vector<pgsPointOfInterest>::const_iterator iter2(iter1);
    iter2++;
-   for ( ; iter2 != vPOI.end(); iter1++, iter2++ )
+   std::vector<pgsPointOfInterest>::const_iterator viterend(vPOI.end());
+   for ( ; iter2 != viterend; iter1++, iter2++ )
    {
       const pgsPointOfInterest& prevPOI = *iter1;
       const pgsPointOfInterest& nextPOI = *iter2;
@@ -352,9 +357,9 @@ pgsPointOfInterest pgsPoiMgr::GetNearestPointOfInterest(pgsTypes::Stage stage,Sp
 
 pgsPointOfInterest pgsPoiMgr::GetPointOfInterest(PoiIDType id) const
 {
-   std::vector<pgsPointOfInterest>::const_iterator found;
-   found = std::find_if(m_Poi.begin(), m_Poi.end(), FindByID(id) );
-   if ( found != m_Poi.end() )
+   std::vector<pgsPointOfInterest>::const_iterator itend(m_Poi.end());
+   std::vector<pgsPointOfInterest>::const_iterator found( std::find_if(m_Poi.begin(), itend, FindByID(id)) );
+   if ( found != itend )
       return (*found);
 
    return pgsPointOfInterest();
@@ -368,7 +373,7 @@ void pgsPoiMgr::GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,pgsTy
       OrFind(span,gdr,stage,attrib,pPois);
 }
 
-void pgsPoiMgr::GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,std::vector<pgsTypes::Stage> stages,PoiAttributeType attrib,Uint32 mode,std::vector<pgsPointOfInterest>* pPois) const
+void pgsPoiMgr::GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,const std::vector<pgsTypes::Stage>& stages,PoiAttributeType attrib,Uint32 mode,std::vector<pgsPointOfInterest>* pPois) const
 {
    if ( mode == POIMGR_AND )
       AndFind(span,gdr,stages,attrib,pPois);
@@ -378,23 +383,21 @@ void pgsPoiMgr::GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,std::
 
 std::vector<pgsPointOfInterest> pgsPoiMgr::GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr) const
 {
-   std::vector<pgsPointOfInterest>::iterator end;
+   std::vector<pgsPointOfInterest> copy_poi;
 
-   std::vector<pgsPointOfInterest> copy_poi(m_Poi);
+   // This has to be the most poorly named function in the stl. 
+   // (which really should be called copy_if_not)
+   std::remove_copy_if(m_Poi.begin(), m_Poi.end(), std::back_inserter(copy_poi), NotFindBySpanGirder(span,gdr));
 
-   end = std::partition(copy_poi.begin(),copy_poi.end(),FindBySpanGirder(span,gdr) );
-   std::vector<pgsPointOfInterest> poi;
-   std::vector<pgsPointOfInterest>::iterator iter;
-   poi.insert(poi.end(),copy_poi.begin(),end);
-
-   return poi;
+   return copy_poi;
 }
 
 bool pgsPoiMgr::ReplacePointOfInterest(PoiIDType ID,const pgsPointOfInterest& poi)
 {
-   std::vector<pgsPointOfInterest>::iterator found;
-   found = std::find_if(m_Poi.begin(), m_Poi.end(), FindByID(ID) );
-   if ( found == m_Poi.end() )
+   std::vector<pgsPointOfInterest>::iterator itend(m_Poi.end());
+
+   std::vector<pgsPointOfInterest>::iterator found( std::find_if(m_Poi.begin(), itend, FindByID(ID) ));
+   if ( found == itend )
       return false;
 
 
@@ -464,15 +467,15 @@ pgsPointOfInterest pgsPoiMgr::Merge(const pgsPointOfInterest& a,const pgsPointOf
    ATLASSERT( AtSamePlace(a,b) );
    pgsPointOfInterest poi(a);
 
-   std::vector<pgsTypes::Stage> a_stages = a.GetStages();
-   std::vector<pgsTypes::Stage> b_stages = b.GetStages();
+   std::vector<pgsTypes::Stage> a_stages( a.GetStages() );
+   std::vector<pgsTypes::Stage> b_stages( b.GetStages() );
    a_stages.insert(a_stages.end(),b_stages.begin(),b_stages.end());
    std::sort(a_stages.begin(),a_stages.end());
 
-   std::vector<pgsTypes::Stage>::iterator end = std::unique(a_stages.begin(),a_stages.end());
+   std::vector<pgsTypes::Stage>::iterator end( std::unique(a_stages.begin(),a_stages.end()) );
 
-   std::vector<pgsTypes::Stage>::iterator iter;
-   for ( iter = a_stages.begin(); iter != end; iter++ )
+   std::vector<pgsTypes::Stage>::iterator iter(a_stages.begin());
+   for (; iter != end; iter++ )
    {
       pgsTypes::Stage stage = *iter;
       poi.SetAttributes( stage, a.GetAttributes(stage) | b.GetAttributes(stage) );
@@ -485,8 +488,9 @@ void pgsPoiMgr::GetTenthPointPOIs(pgsTypes::Stage stage,SpanIndexType span,Girde
 {
    ATLASSERT( gdr  != ALL_GIRDERS );
    pPois->clear();
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = m_Poi.begin(); i != m_Poi.end(); i++ )
+   std::vector<pgsPointOfInterest>::const_iterator i(m_Poi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator iend(m_Poi.end());
+   for (; i != iend; i++ )
    {
       const pgsPointOfInterest& poi = *i;
 
@@ -508,20 +512,24 @@ void pgsPoiMgr::AndFind(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage s
    AndFind(span,gdr,stages,attrib,pPois);
 }
 
-void pgsPoiMgr::AndFind(SpanIndexType span,GirderIndexType gdr,std::vector<pgsTypes::Stage> stages,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const
+void pgsPoiMgr::AndFind(SpanIndexType span,GirderIndexType gdr,const std::vector<pgsTypes::Stage>& stages,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const
 {
    ATLASSERT( gdr  != ALL_GIRDERS );
 
-   pPois->clear();
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = m_Poi.begin(); i != m_Poi.end(); i++ )
+   if (!pPois->empty())
+      pPois->clear();
+
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(m_Poi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(m_Poi.end());
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
-      const pgsPointOfInterest& poi = *i;
+      const pgsPointOfInterest& poi = *poiIter;
       bool bKeep = true;
-      std::vector<pgsTypes::Stage>::iterator iter;
-      for ( iter = stages.begin(); iter != stages.end(); iter++)
+      std::vector<pgsTypes::Stage>::const_iterator stageIter(stages.begin());
+      std::vector<pgsTypes::Stage>::const_iterator stageIterEnd(stages.end());
+      for ( ; stageIter != stageIterEnd; stageIter++)
       {
-         pgsTypes::Stage stage = *iter;
+         pgsTypes::Stage stage = *stageIter;
          if ( !poi.HasStage(stage) )
          {
             bKeep = false; // poi doesn't exist in this stage... don't keep it
@@ -549,6 +557,17 @@ bool pgsPoiMgr::AndFind(const pgsPointOfInterest& poi,SpanIndexType span,GirderI
    // it check if each flag in attrib is set, if it is, the corrosponding flag in poi must
    // be set, otherwise, the test is irrelavent (and always passes as indicated by the true)
    if ( (poi.GetSpan() == span || span == ALL_SPANS) && poi.GetGirder() == gdr &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_0L)              ? poi.IsATenthPoint(stage) == 1   : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_1L)              ? poi.IsATenthPoint(stage) == 2   : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_2L)              ? poi.IsATenthPoint(stage) == 3   : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_3L)              ? poi.IsATenthPoint(stage) == 4   : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_4L)              ? poi.IsATenthPoint(stage) == 5   : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_5L)              ? poi.IsATenthPoint(stage) == 6   : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_6L)              ? poi.IsATenthPoint(stage) == 7   : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_7L)              ? poi.IsATenthPoint(stage) == 8   : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_8L)              ? poi.IsATenthPoint(stage) == 9   : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_9L)              ? poi.IsATenthPoint(stage) == 10  : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_10L)             ? poi.IsATenthPoint(stage) == 11  : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_FLEXURECAPACITY) ? poi.IsFlexureCapacity(stage)         : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_FLEXURESTRESS)   ? poi.IsFlexureStress(stage)           : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SHEAR)           ? poi.IsShear(stage)                   : true) &&
@@ -585,20 +604,24 @@ void pgsPoiMgr::OrFind(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage st
    OrFind(span,gdr,stages,attrib,pPois);
 }
 
-void pgsPoiMgr::OrFind(SpanIndexType span,GirderIndexType gdr,std::vector<pgsTypes::Stage> stages,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const
+void pgsPoiMgr::OrFind(SpanIndexType span,GirderIndexType gdr,const std::vector<pgsTypes::Stage>& stages,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const
 {
    ATLASSERT( gdr  != ALL_GIRDERS );
 
-   pPois->clear();
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = m_Poi.begin(); i != m_Poi.end(); i++ )
+   if (!pPois->empty())
+      pPois->clear();
+
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(m_Poi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(m_Poi.end());
+   for (; poiIter != poiIterEnd; poiIter++ )
    {
-      const pgsPointOfInterest& poi = *i;
+      const pgsPointOfInterest& poi = *poiIter;
       bool bKeep = true;
-      std::vector<pgsTypes::Stage>::iterator iter;
-      for ( iter = stages.begin(); iter != stages.end(); iter++)
+      std::vector<pgsTypes::Stage>::const_iterator stageIter(stages.begin());
+      std::vector<pgsTypes::Stage>::const_iterator stageIterEnd(stages.end());
+      for ( ; stageIter != stageIterEnd; stageIter++)
       {
-         pgsTypes::Stage stage = *iter;
+         pgsTypes::Stage stage = *stageIter;
          if ( !poi.HasStage(stage) )
          {
             // poi isn't defined in this stage, don't keep it
@@ -630,6 +653,17 @@ bool pgsPoiMgr::OrFind(const pgsPointOfInterest& poi,SpanIndexType span,GirderIn
    if ( (poi.GetSpan() == span || span == ALL_SPANS) && poi.GetGirder() == gdr )
    {
       if (
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_0L)              ? poi.IsATenthPoint(stage) == 1   : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_1L)              ? poi.IsATenthPoint(stage) == 2   : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_2L)              ? poi.IsATenthPoint(stage) == 3   : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_3L)              ? poi.IsATenthPoint(stage) == 4   : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_4L)              ? poi.IsATenthPoint(stage) == 5   : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_5L)              ? poi.IsATenthPoint(stage) == 6   : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_6L)              ? poi.IsATenthPoint(stage) == 7   : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_7L)              ? poi.IsATenthPoint(stage) == 8   : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_8L)              ? poi.IsATenthPoint(stage) == 9   : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_9L)              ? poi.IsATenthPoint(stage) == 10  : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_10L)             ? poi.IsATenthPoint(stage) == 11  : false) ||
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_FLEXURECAPACITY) ? poi.IsFlexureCapacity(stage)         : false) ||
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_FLEXURESTRESS)   ? poi.IsFlexureStress(stage)           : false) ||
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SHEAR)           ? poi.IsShear(stage)                   : false) ||

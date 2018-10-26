@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -480,7 +480,7 @@ bool pgsHaulingCheckArtifact::AssertValid() const
 
 void pgsHaulingCheckArtifact::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for pgsHaulingCheckArtifact" << endl;
+   os << _T("Dump for pgsHaulingCheckArtifact") << endl;
 }
 #endif // _DEBUG
 

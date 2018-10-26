@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,6 +30,7 @@
 #include <IFace\VersionInfo.h>
 #include <IFace\Project.h>
 #include <IFace\StatusCenter.h>
+#include <PgsExt\SpanGirderRelatedStatusItem.h>
 #include <EAF\EAFUIIntegration.h>
 
 #ifdef _DEBUG
@@ -37,6 +38,33 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+// inline functions to determine whether to print status center items
+static bool DoPrintStatusItem(CEAFStatusItem* pItem, SpanIndexType spanIdx, GirderIndexType gdrIdx)
+{
+   pgsSpanGirderRelatedStatusItem* psgi = dynamic_cast<pgsSpanGirderRelatedStatusItem*>(pItem);
+   if (psgi != NULL)
+   {
+      return psgi->IsRelatedTo(spanIdx, gdrIdx);
+   }
+   else
+   {
+      return true;
+   }
+}
+
+static bool DoPrintStatusCenter(IEAFStatusCenter* pStatusCenter, CollectionIndexType nItems, SpanIndexType spanIdx, GirderIndexType gdrIdx)
+{
+   for ( CollectionIndexType i = 0; i < nItems; i++ )
+   {
+      CEAFStatusItem* pItem = pStatusCenter->GetByIndex(i);
+
+      if (DoPrintStatusItem(pItem, spanIdx, gdrIdx))
+         return true;
+   }
+
+   return false;
+}
 
 CPGSuperTitlePageBuilder::CPGSuperTitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion) :
 m_pBroker(pBroker),
@@ -75,16 +103,19 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    boost::shared_ptr<CSpanReportSpecification>       pSpanRptSpec       = boost::dynamic_pointer_cast<CSpanReportSpecification,CReportSpecification>(pRptSpec);
    boost::shared_ptr<CGirderReportSpecification>     pGirderRptSpec     = boost::dynamic_pointer_cast<CGirderReportSpecification,CReportSpecification>(pRptSpec);
 
+   SpanIndexType spanIdx = ALL_SPANS;
+   GirderIndexType gdrIdx = ALL_GIRDERS;
+
    if ( pSpanGirderRptSpec != NULL )
    {
-      SpanIndexType spanIdx = pSpanGirderRptSpec->GetSpan();
-      GirderIndexType gdrIdx = pSpanGirderRptSpec->GetGirder();
-      if ( spanIdx != INVALID_INDEX && gdrIdx != INVALID_INDEX )
+      spanIdx = pSpanGirderRptSpec->GetSpan();
+      gdrIdx = pSpanGirderRptSpec->GetGirder();
+      if ( spanIdx != ALL_SPANS && gdrIdx != ALL_GIRDERS )
       {
          *pPara << _T("For") << rptNewLine << rptNewLine;
          *pPara << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
       }
-      else if( spanIdx != INVALID_INDEX )
+      else if( spanIdx != ALL_SPANS )
       {
          *pPara << _T("For") << rptNewLine << rptNewLine;
          *pPara << _T("Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
@@ -97,8 +128,8 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    }
    else if ( pSpanRptSpec != NULL )
    {
-      SpanIndexType spanIdx = pSpanRptSpec->GetSpan();
-      if ( spanIdx != INVALID_INDEX )
+      spanIdx = pSpanRptSpec->GetSpan();
+      if ( spanIdx != ALL_SPANS )
       {
          *pPara << _T("For") << rptNewLine << rptNewLine;
          *pPara << _T("Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
@@ -106,8 +137,8 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    }
    else if ( pGirderRptSpec != NULL )
    {
-      GirderIndexType gdrIdx = pGirderRptSpec->GetGirder();
-      if ( gdrIdx != INVALID_INDEX )
+      gdrIdx = pGirderRptSpec->GetGirder();
+      if ( gdrIdx != ALL_GIRDERS )
       {
          *pPara << _T("For") << rptNewLine << rptNewLine;
          *pPara << _T("Girder Line ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
@@ -204,19 +235,6 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    // girder seed data comparison
    if ( pSpanGirderRptSpec != NULL || pSpanRptSpec != NULL )
    {
-      SpanIndexType spanIdx  = ALL_SPANS;
-      GirderIndexType gdrIdx = ALL_GIRDERS;
-
-      if (pSpanGirderRptSpec != NULL )
-      {
-         spanIdx = pSpanGirderRptSpec->GetSpan();
-         gdrIdx = pSpanGirderRptSpec->GetGirder();
-      }
-      else
-      {
-         spanIdx = pSpanRptSpec->GetSpan();
-      }
-
       if ( spanIdx != INVALID_INDEX )
       {
          p = CGirderSeedDataComparisonParagraph().Build(m_pBroker, spanIdx, gdrIdx);
@@ -233,7 +251,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    int row = 0;
 
    if (m_bFullVersion)
-   {      
+   {
       rptParagraph* pPara = new rptParagraph;
       pPara->SetStyleName(pgsReportStyleHolder::GetHeadingStyle());
       *pTitlePage << pPara;
@@ -304,7 +322,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
    CollectionIndexType nItems = pStatusCenter->Count();
 
-   if ( nItems != 0 )
+   if ( DoPrintStatusCenter(pStatusCenter, nItems, spanIdx, gdrIdx) )
    {
       pPara = new rptParagraph;
       pPara->SetStyleName(pgsReportStyleHolder::GetHeadingStyle());
@@ -328,11 +346,14 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
       for ( CollectionIndexType i = 0; i < nItems; i++ )
       {
          CEAFStatusItem* pItem = pStatusCenter->GetByIndex(i);
+         
+         if ( DoPrintStatusItem(pItem, spanIdx, gdrIdx) )
+         {
+            eafTypes::StatusSeverityType severity = pStatusCenter->GetSeverity(pItem);
 
-         eafTypes::StatusSeverityType severity = pStatusCenter->GetSeverity(pItem);
-
-         (*pTable)(row,0) << strSeverityType[severity];
-         (*pTable)(row++,1) << pItem->GetDescription();
+            (*pTable)(row,0) << strSeverityType[severity];
+            (*pTable)(row++,1) << pItem->GetDescription();
+         }
       }
    }
 

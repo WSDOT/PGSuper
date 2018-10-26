@@ -229,7 +229,7 @@ void CTxDOTOptionalDesignBridgeInputPage::LoadGirderNames()
    // find all .togt files in our template folder
    CString suffix;
    suffix.LoadString(IDS_TEMPLATE_SUFFIX);
-   CString strFileSpec = GetTOGAFolder() + CString("\\*.") + suffix;
+   CString strFileSpec = GetTOGAFolder() + CString(_T("\\*.")) + suffix;
 
    CFileFind template_finder;
    BOOL bMoreTemplates = template_finder.FindFile(strFileSpec);

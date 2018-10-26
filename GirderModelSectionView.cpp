@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -70,7 +70,9 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNCREATE(CGirderModelSectionView, CDisplayView)
 
-CGirderModelSectionView::CGirderModelSectionView()
+CGirderModelSectionView::CGirderModelSectionView():
+m_CurrentSpanIdx(-1),
+m_CurrentGirderIdx(-1)
 {
    m_bUpdateError = false;
 }
@@ -135,6 +137,9 @@ void CGirderModelSectionView::OnInitialUpdate()
    CreateDisplayLists();
 
 	CDisplayView::OnInitialUpdate();
+
+   // set girder
+   DidGirderSelectionChange();
 
    // build display objects
    // set up a valid dc first
@@ -216,42 +221,25 @@ void CGirderModelSectionView::UpdateDisplayObjects()
 
    CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
 
-   SpanIndexType span;
-   GirderIndexType girder;
-   if ( m_pFrame->SyncWithBridgeModelView() )
-   {
-      CSelection selection = pDoc->GetSelection();
-      span      = selection.SpanIdx;
-      girder    = selection.GirderIdx;
-   }
-   else
-   {
-      m_pFrame->GetSpanAndGirderSelection(&span,&girder);
-   }
-
-   if ( span == ALL_SPANS || girder == ALL_GIRDERS)
-      return;
-
    // Grab hold of the broker so we can pass it as a parameter
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-
    UINT settings = pDoc->GetGirderEditorSettings();
 
-   BuildSectionDisplayObjects(pDoc, pBroker, span, girder, dispMgr);
+   BuildSectionDisplayObjects(pDoc, pBroker, m_CurrentSpanIdx, m_CurrentGirderIdx, dispMgr);
 
    if ( settings & IDG_SV_SHOW_STRANDS )
-      BuildStrandDisplayObjects(pDoc, pBroker,span, girder, dispMgr);
+      BuildStrandDisplayObjects(pDoc, pBroker,m_CurrentSpanIdx, m_CurrentGirderIdx, dispMgr);
 
    if ( settings & IDG_SV_SHOW_LONG_REINF )
-      BuildLongReinfDisplayObjects(pDoc, pBroker,span, girder, dispMgr);
+      BuildLongReinfDisplayObjects(pDoc, pBroker,m_CurrentSpanIdx, m_CurrentGirderIdx, dispMgr);
 
    if (settings & IDG_SV_SHOW_PS_CG)
-      BuildCGDisplayObjects(pDoc, pBroker,span, girder, dispMgr);
+      BuildCGDisplayObjects(pDoc, pBroker,m_CurrentSpanIdx, m_CurrentGirderIdx, dispMgr);
 
    if ( settings & IDG_SV_SHOW_DIMENSIONS )
-      BuildDimensionDisplayObjects(pDoc, pBroker,span, girder, dispMgr);
+      BuildDimensionDisplayObjects(pDoc, pBroker,m_CurrentSpanIdx, m_CurrentGirderIdx, dispMgr);
 
    SetMappingMode(DManip::Isotropic);
 }
@@ -708,15 +696,13 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDoc* pDoc,IBr
 
 void CGirderModelSectionView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
 {
+
    m_bUpdateError = false;
 
    CDisplayView::OnUpdate(pSender,lHint,pHint);
 
-   if ( lHint == HINT_GIRDERLABELFORMATCHANGED )
-   {
-      m_pFrame->RefreshGirderLabeling();
-   }
-
+   // Let our frame deal with updates as well
+   m_pFrame->OnUpdate(this,lHint,pHint);
 
    if ( lHint == 0 ||
         lHint == HINT_GIRDERVIEWSETTINGSCHANGED ||
@@ -724,8 +710,16 @@ void CGirderModelSectionView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pH
         lHint == HINT_UNITSCHANGED || 
         lHint == HINT_BRIDGECHANGED ||
         lHint == HINT_GIRDERFAMILYCHANGED ||
-        lHint == HINT_GIRDERCHANGED )
+        lHint == HINT_GIRDERCHANGED || 
+        lHint == HINT_SELECTIONCHANGED )
    {
+
+      if (!DidGirderSelectionChange() && lHint == HINT_SELECTIONCHANGED)
+      {
+         // don't bother updating if selection hint and our girder selection didn't change
+         return;
+      }
+
       // set up a valid dc first
       CDManipClientDC dc(this);
 
@@ -738,30 +732,6 @@ void CGirderModelSectionView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pH
       m_ErrorMsg = *pmsg;
       m_bUpdateError = true;
       Invalidate();
-   }
-   else if ( lHint == HINT_SELECTIONCHANGED )
-   {
-      CSelection* pSelection = (CSelection*)pHint;
-      switch(pSelection->Type)
-      {
-      case CSelection::Girder:
-         if ( m_pFrame->SyncWithBridgeModelView() )
-            m_pFrame->SelectSpanAndGirder( pSelection->SpanIdx, pSelection->GirderIdx );
-         break;
-
-      case CSelection::None:
-      case CSelection::Span:
-      case CSelection::Pier:
-      case CSelection::Deck:
-      case CSelection::Alignment:
-         m_pFrame->SelectSpanAndGirder(-1,-1);
-         break;
-
-      default:
-         m_pFrame->SelectSpanAndGirder(-1,-1);
-         ATLASSERT(false); // is there another selection type???
-         break;
-      }
    }
 }
 
@@ -779,29 +749,22 @@ int CGirderModelSectionView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void CGirderModelSectionView::OnEditGirder() 
 {
-   SpanIndexType spanIdx, gdrIdx;
-   m_pFrame->GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
-   ((CPGSuperDoc*)GetDocument())->EditGirderDescription(spanIdx,gdrIdx,EBD_GENERAL);
+   ((CPGSuperDoc*)GetDocument())->EditGirderDescription(m_CurrentSpanIdx,m_CurrentGirderIdx,EBD_GENERAL);
 }
 
 void CGirderModelSectionView::OnEditPrestressing() 
 {
-   SpanIndexType spanIdx, gdrIdx;
-   m_pFrame->GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
-   ((CPGSuperDoc*)GetDocument())->EditGirderDescription(spanIdx,gdrIdx,EGD_PRESTRESSING);
+   ((CPGSuperDoc*)GetDocument())->EditGirderDescription(m_CurrentSpanIdx,m_CurrentGirderIdx,EGD_PRESTRESSING);
 }
 
 void CGirderModelSectionView::OnViewSettings() 
 {
-	// TODO: Add your command handler code here
 	((CPGSuperDoc*)GetDocument())->EditGirderViewSettings(VS_GIRDER_SECTION);
 }
 
 void CGirderModelSectionView::OnEditStirrups() 
 {
-   SpanIndexType spanIdx, gdrIdx;
-   m_pFrame->GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
-   ((CPGSuperDoc*)GetDocument())->EditGirderDescription(spanIdx,gdrIdx,EGD_STIRRUPS);
+   ((CPGSuperDoc*)GetDocument())->EditGirderDescription(m_CurrentSpanIdx,m_CurrentGirderIdx,EGD_STIRRUPS);
 }
 
 void CGirderModelSectionView::OnLeftEnd() 
@@ -866,20 +829,8 @@ void CGirderModelSectionView::OnDraw(CDC* pDC)
       return;
    }
 
-   SpanIndexType spanIdx, gdrIdx;
-   if ( m_pFrame->SyncWithBridgeModelView() )
-   {
-      CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
-      CSelection selection = pDoc->GetSelection();
-      spanIdx = selection.SpanIdx;
-      gdrIdx  = selection.GirderIdx;
-   }
-   else
-   {
-      m_pFrame->GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
-   }
 
-   if (  spanIdx != ALL_SPANS && gdrIdx != ALL_GIRDERS  )
+   if (  m_CurrentSpanIdx != ALL_SPANS && m_CurrentGirderIdx != ALL_GIRDERS  )
    {
       CDisplayView::OnDraw(pDC);
    }
@@ -896,4 +847,21 @@ void CGirderModelSectionView::OnDraw(CDC* pDC)
       if ( pOldFont )
          pDC->SelectObject(pOldFont);
    }
+}
+
+bool CGirderModelSectionView::DidGirderSelectionChange()
+{
+   SpanIndexType span;
+   GirderIndexType gdr;
+
+   m_pFrame->GetSpanAndGirderSelection(&span,&gdr);
+
+   if (m_CurrentSpanIdx!=span || m_CurrentGirderIdx!=gdr)
+   {
+      m_CurrentSpanIdx=span;
+      m_CurrentGirderIdx=gdr;
+      return true;
+   }
+
+   return false;
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -58,6 +58,11 @@
 #include <afxcmn.h>                     // MFC support for Windows Common Controls
 #endif // _AFX_NO_AFXCMN_SUPPORT
 
+#if defined NOGRID
+#include "nogrid.h"
+#else
+#include <grid\gxall.h>
+#endif // NOGRID
 
 #include <PGSuperDebug.h>
 #include <PGSuperTypes.h>

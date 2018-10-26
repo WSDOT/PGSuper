@@ -61,6 +61,7 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
+				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 			/>
@@ -159,6 +160,112 @@
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
+				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"
+				AdditionalIncludeDirectories="&quot;$(IntDir)&quot;;\ARP\PGSuper\Include;\ARP\WBFL\Include"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				RegisterOutput="true"
+				IgnoreImportLibrary="true"
+				AdditionalDependencies="htmlhelp.lib"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(ConfigurationName)&quot;;&quot;\ARP\PGSuper\RegFreeCOM\$(ConfigurationName)&quot;"
+				ModuleDefinitionFile=".\TxDOTAgent.def"
+				GenerateDebugInformation="true"
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				LinkTimeCodeGeneration="1"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Profile|Win32"
+			OutputDirectory="\ARP\PGSuper\RegFreeCOM\$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="2"
+			UseOfMFC="2"
+			UseOfATL="2"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				AdditionalIncludeDirectories="\ARP\PGSuper\Include\Plugins;\ARP\WBFL\Include"
+				MkTypLibCompatible="false"
+				TargetEnvironment="1"
+				GenerateStublessProxies="true"
+				TypeLibraryName="$(IntDir)/TxDOTAgent.tlb"
+				HeaderFileName="TxDOTAgent_i.h"
+				DLLDataFileName=""
+				InterfaceIdentifierFileName="TxDOTAgent_i.c"
+				ProxyFileName="TxDOTAgent_p.c"
+				ValidateParameters="true"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="3"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories="..\Include;..\Include\Plugins;\ARP\WBFL\Include"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF"
+				RuntimeLibrary="2"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
+				AssemblerListingLocation=".\Profile/"
+				ObjectFile=".\Profile/"
+				ProgramDataBaseFileName=".\Profile/"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -242,6 +349,15 @@
 						CompileAsManaged="0"
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Profile|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						CompileAsManaged="0"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\EccentricityDlg.cpp"
@@ -256,6 +372,34 @@
 				>
 			</File>
 			<File
+				RelativePath="..\SharedCtrls\MultiGirderSelectGrid.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Profile|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -268,6 +412,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Profile|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -494,6 +646,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\SharedCtrls\MultiGirderSelectGrid.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Resource.h"
 				>
 			</File>
@@ -503,6 +659,10 @@
 			</File>
 			<File
 				RelativePath=".\StrandRowGrid.h"
+				>
+			</File>
+			<File
+				RelativePath=".\targetver.h"
 				>
 			</File>
 			<File
@@ -762,6 +922,15 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						CompileAsManaged="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Profile|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"

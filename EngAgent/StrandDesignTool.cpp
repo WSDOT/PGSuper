@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -2760,7 +2760,7 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
    GET_IFACE(IPointOfInterest,pIPOI);
 
    // Get all points of interest, regardless of stage and attributes
-   std::vector<pgsPointOfInterest> pois = pIPOI->GetPointsOfInterest(m_Span,m_Girder);
+   std::vector<pgsPointOfInterest> pois( pIPOI->GetPointsOfInterest(m_Span,m_Girder) );
 
    std::vector<pgsTypes::Stage> stages;
    stages.push_back(pgsTypes::CastingYard);
@@ -2778,10 +2778,11 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       // For Harped designs, add all pois 
       // The none option is also considered here because if we are designing for shear only (no flexure design)
       // we need the same POI.
-      std::vector<pgsPointOfInterest>::iterator iter;
-      for (iter = pois.begin(); iter != pois.end(); iter++)
+      std::vector<pgsPointOfInterest>::iterator poiIter(pois.begin());
+      std::vector<pgsPointOfInterest>::iterator poiIterEnd(pois.end());
+      for ( ; poiIter != poiIterEnd; poiIter++)
       {
-         pgsPointOfInterest& poi = *iter;
+         pgsPointOfInterest& poi = *poiIter;
 
          // Clear any lifting or hauling attributes
          PoiAttributeType attributes = poi.GetAttributes(pgsTypes::Lifting);

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -98,7 +98,7 @@ END_CONNECTION_POINT_MAP()
    StatusCallbackIDType m_scidUnknown;
    StatusCallbackIDType m_scidRefinedAnalysis;
    StatusCallbackIDType m_scidBridgeDescriptionError;
-
+   StatusCallbackIDType m_scidLldfWarning;
 
 // IAgent
 public:
@@ -201,6 +201,7 @@ public:
                        Float64* gnM, Float64* gnM1, Float64* gnM2,  // neg moment, ahead face
                        Float64* gV,  Float64* gV1,  Float64* gV2,   // shear
                        Float64* gR,  Float64* gR1,  Float64* gR2 ); // reaction
+   virtual Float64 GetDeflectionDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx);
 
 // IMomentCapacity
 public:
@@ -403,6 +404,7 @@ private:
    pgsMomentCapacityEngineer m_MomentCapEngineer;
    pgsShearCapacityEngineer  m_ShearCapEngineer;
    CComPtr<IDistFactorEngineer> m_pDistFactorEngineer;
+   bool                         m_bAreDistFactorEngineersValidated;
 
    pgsPointOfInterest GetEquivalentPointOfInterest(pgsTypes::Stage stage,const pgsPointOfInterest& poi);
 

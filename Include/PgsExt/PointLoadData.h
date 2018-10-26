@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -42,9 +42,6 @@ namespace UserLoads
    enum Stage{BridgeSite1, BridgeSite2, BridgeSite3};
    enum LoadCase{DC, DW, LL_IM};
    enum DistributedLoadType {Uniform, Trapezoidal};
-
-   const SpanIndexType AllSpans   = 10000;
-   const GirderIndexType AllGirders = 10000;
 
    static Int32 GetNumStages() // only for DC and DW
    {

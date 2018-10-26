@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -55,6 +55,17 @@ class REPORTINGCLASS CGirderReportSpecificationBuilder :
 public:
    CGirderReportSpecificationBuilder(IBroker* pBroker);
    ~CGirderReportSpecificationBuilder(void);
+
+   virtual boost::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec);
+   virtual boost::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
+};
+
+class REPORTINGCLASS CMultiGirderReportSpecificationBuilder :
+   public CBrokerReportSpecificationBuilder
+{
+public:
+   CMultiGirderReportSpecificationBuilder(IBroker* pBroker);
+   ~CMultiGirderReportSpecificationBuilder(void);
 
    virtual boost::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec);
    virtual boost::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);

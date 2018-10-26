@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -96,6 +96,8 @@ bool CPGSuperPluginMgr::LoadPlugins()
                record.commandID = cmdImporter++;
                record.Plugin    = importer;
 
+               importer->Init(record.commandID);
+
                HBITMAP hBmp;
                importer->GetBitmapHandle(&hBmp);
                record.Bitmap.Attach(hBmp);
@@ -141,6 +143,8 @@ bool CPGSuperPluginMgr::LoadPlugins()
                ExporterRecord record;
                record.commandID = cmdExporter++;
                record.Plugin    = exporter;
+
+               exporter->Init(record.commandID);
 
                HBITMAP hBmp;
                exporter->GetBitmapHandle(&hBmp);

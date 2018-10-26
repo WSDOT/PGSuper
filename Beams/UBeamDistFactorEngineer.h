@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -52,6 +52,7 @@ public:
 	CUBeamDistFactorEngineer()
 	{
       m_bTypeB = false;
+      m_bIsSpreadSlab = false;
 	}
 
    HRESULT FinalConstruct();
@@ -61,7 +62,7 @@ BEGIN_COM_MAP(CUBeamDistFactorEngineer)
 END_COM_MAP()
 
 public:
-   void Init(bool bTypeB);
+   void Init(bool bTypeB, bool bisSpreadSlab);
 
    // IDistFactorEngineer
 //   virtual void SetBroker(IBroker* pBroker,long statusGroupID);
@@ -79,6 +80,7 @@ private:
    void ReportShear(Uint32 spanOrPier,rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,double gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits);
 
    bool m_bTypeB; // true if type b, otherwise type c section
+   bool m_bIsSpreadSlab; // We need to model spread slabs, and aashto has no guidance
 };
 
 #endif //__UBEAMDISTFACTORENGINEER_H_

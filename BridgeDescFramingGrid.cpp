@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -334,7 +334,7 @@ void CBridgeDescFramingGrid::CustomInit()
 			.SetEnabled(FALSE)          // disables usage as current cell
 		);
 
-   CString cv = _T("Station");
+   CString cv = "Station";
 	SetStyleRange(CGXRange(0,1), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -343,7 +343,7 @@ void CBridgeDescFramingGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv = _T("Orientation");
+   cv = "Orientation";
 	SetStyleRange(CGXRange(0,2), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -357,7 +357,7 @@ void CBridgeDescFramingGrid::CustomInit()
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
-			.SetValue(_T("Connection, Boundary Condition, and Girder Spacing Details"))
+			.SetValue("Connection, Boundary Condition, and Girder Spacing Details")
 		);
 
    // make it so that text fits correctly in header row
@@ -403,9 +403,9 @@ void CBridgeDescFramingGrid::SetPierRowStyle(ROWCOL nRow,const CPierData& pierDa
    PierIndexType pierIdx = GetPierIndex(nRow);
    CString strButton;
    if ( pierData.GetPrevSpan() == NULL || pierData.GetNextSpan() == NULL )
-      strButton.Format(_T("Edit Abutment %d Details..."),LABEL_PIER(pierIdx));
+      strButton.Format(_T("Edit Abutment %d Details..."),pierIdx+1);
    else
-      strButton.Format(_T("Edit Pier %d Details..."),LABEL_PIER(pierIdx));
+      strButton.Format(_T("Edit Pier %d Details..."),pierIdx+1);
 
    ASSERT( nRow % 2 != 0 );
    SetStyleRange(CGXRange(nRow,3), CGXStyle()

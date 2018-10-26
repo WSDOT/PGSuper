@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -297,7 +297,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
                   (*p_table)(row,0) << _T("Haunch Weight");
                   (*p_table)(row++,1) << fpl.SetValue(-slab_load.PadLoad);
                   (*p_table)(row,0) << _T("Total Slab Weight");
-                  (*p_table)(row++,1) << fpl.SetValue(-slab_load.MainSlabLoad-slab_load.PadLoad);
+                  (*p_table)(row++,1) << fpl.SetValue(-slab_load.PanelLoad-slab_load.MainSlabLoad-slab_load.PadLoad);
                }
                else
                {
@@ -323,7 +323,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
                      (*p_table)(row,1) << fpl.SetValue(-panel_load);
                      (*p_table)(row,2) << fpl.SetValue(-main_load);
                      (*p_table)(row,3) << fpl.SetValue(-pad_load);
-                     (*p_table)(row,4) << fpl.SetValue(-(main_load+pad_load));
+                     (*p_table)(row,4) << fpl.SetValue(-(panel_load+main_load+pad_load));
 
                      row++;
                   }

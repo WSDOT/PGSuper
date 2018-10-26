@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -128,11 +128,19 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
          rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrPermit_Routine);
          if ( pTable )
             (*pPara) << pTable << rptNewLine;
+
+		 pTable = CRatingSummaryTable().BuildByVehicleStressTable(pBroker,gdrLineIdx,pgsTypes::lrPermit_Routine);
+         if ( pTable )
+            (*pPara) << pTable << rptNewLine;
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
       {
          rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrPermit_Special);
+         if ( pTable )
+            (*pPara) << pTable << rptNewLine;
+
+		 pTable = CRatingSummaryTable().BuildByVehicleStressTable(pBroker,gdrLineIdx,pgsTypes::lrPermit_Special);
          if ( pTable )
             (*pPara) << pTable << rptNewLine;
       }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,6 +31,7 @@
 
 interface IBroker;
 #include "PGSuperAppPlugin\resource.h"
+#include "MultiGirderSelectDlg.h"
 
 #include <IFace\Artifact.h>
 /////////////////////////////////////////////////////////////////////////////
@@ -62,6 +63,7 @@ public:
 // return design options
 public:
    bool m_DesignA;
+   std::vector<SpanGirderHashType> m_GirderList;
 
 // Implementation
 private:
@@ -70,6 +72,7 @@ private:
    bool m_EnableA; // if true, we can ask if user wants A design
 
    void UpdateGirderComboBox(SpanIndexType spanIdx);
+   void UpdateADimCtrl();
 
 protected:
 	// Generated message map functions
@@ -83,6 +86,10 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
    CString m_strToolTip;
+public:
+   afx_msg void OnBnClickedSelectGirders();
+   afx_msg void OnBnClickedRadio();
+   int m_DesignRadioNum;
 };
 
 //{{AFX_INSERT_LOCATION}}

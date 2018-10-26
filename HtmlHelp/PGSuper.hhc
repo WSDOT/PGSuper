@@ -728,11 +728,24 @@
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Live Load Distribution Factors">
-        <param name="Local" value="Dialogs\Live_Load_Distibution_Factors.htm">
       </object>
+      <ul>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Live Load Distribution Factors">
+          <param name="Local" value="Dialogs\Live_Load_Distibution_Factors.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Fill Live Load Distribution Factors With Computed Values">
+          <param name="Local" value="Dialogs\Fill_Live_Load_Distribution_Factors_With_Computed_Values.htm">
+        </object>
+        </ul>
       <li><object type="text/sitemap">
         <param name="Name" value="Load Modifiers">
         <param name="Local" value="Dialogs\Load_Modifiers.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Multi-Girder Select Grid">
+        <param name="Local" value="User's Guide\Appendix A - PGSuper Dialogs\Multi-Girder_Select_Grid.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Plug-ins and Extensions">

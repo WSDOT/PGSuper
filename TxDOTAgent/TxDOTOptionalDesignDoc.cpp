@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1112,19 +1112,19 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    // Note that there is a game played in PGSuper on these factors:
    //   They are either classified as Fatigue, or not. So Strength1 is only non-Fatigue state
    //   that needs to be set
-   pSpan->SetLLDFPosMoment(pgsTypes::StrengthI,pgsTypes::Exterior, lldf_mom); // Set exterior even though we won't use it
-   pSpan->SetLLDFPosMoment(pgsTypes::StrengthI,pgsTypes::Interior, lldf_mom);
-   pSpan->SetLLDFNegMoment(pgsTypes::StrengthI,pgsTypes::Exterior,lldf_mom);  // Same comment for neg moment
-   pSpan->SetLLDFNegMoment(pgsTypes::StrengthI,pgsTypes::Interior,lldf_mom);
-   pSpan->SetLLDFShear(pgsTypes::StrengthI,pgsTypes::Exterior, lldf_shr);
-   pSpan->SetLLDFShear(pgsTypes::StrengthI,pgsTypes::Interior,lldf_shr);
 
-   pSpan->SetLLDFPosMoment(pgsTypes::FatigueI,pgsTypes::Exterior, lldf_mom); // Set exterior even though we won't use it
-   pSpan->SetLLDFPosMoment(pgsTypes::FatigueI,pgsTypes::Interior, lldf_mom);
-   pSpan->SetLLDFNegMoment(pgsTypes::FatigueI,pgsTypes::Exterior,lldf_mom);  // Same comment for neg moment
-   pSpan->SetLLDFNegMoment(pgsTypes::FatigueI,pgsTypes::Interior,lldf_mom);
-   pSpan->SetLLDFShear(pgsTypes::FatigueI,pgsTypes::Exterior, lldf_shr);
-   pSpan->SetLLDFShear(pgsTypes::FatigueI,pgsTypes::Interior,lldf_shr);
+   GirderIndexType ngdrs = pSpan->GetGirderCount();
+   for (GirderIndexType ig=0; ig<ngdrs; ig++)
+   {
+      // set all girders even if toga doesn't use 'em all
+      pSpan->SetLLDFPosMoment(ig, pgsTypes::StrengthI, lldf_mom);
+      pSpan->SetLLDFNegMoment(ig, pgsTypes::StrengthI,lldf_mom);
+      pSpan->SetLLDFShear(ig, pgsTypes::StrengthI, lldf_shr);
+
+      pSpan->SetLLDFPosMoment(ig, pgsTypes::FatigueI, lldf_mom);
+      pSpan->SetLLDFNegMoment(ig, pgsTypes::FatigueI,lldf_mom);
+      pSpan->SetLLDFShear(ig, pgsTypes::FatigueI, lldf_shr);
+   }
 
    // See if we need to modify/set spec entry for 0.65 f'ci option
    std::_tstring curr_entry = pSpec->GetSpecification();

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,7 @@
 #include <PsgLib\GirderLibraryEntry.h>
 #include "HtmlHelp\HelpTopics.hh"
 
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -49,6 +50,7 @@ CDesignGirderDlg::CDesignGirderDlg(SpanIndexType span,GirderIndexType girder, bo
 	: CDialog(CDesignGirderDlg::IDD, pParent),
    m_EnableA(enableA),
    m_DesignA(designA)
+   , m_DesignRadioNum(0)
 {
    m_pBroker = pBroker;
 
@@ -65,13 +67,14 @@ CDesignGirderDlg::CDesignGirderDlg(SpanIndexType span,GirderIndexType girder, bo
 
 void CDesignGirderDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CDesignGirderDlg)
-	DDX_CBIndex(pDX, IDC_GIRDER, m_Girder);
-	DDX_CBIndex(pDX, IDC_SPAN, m_Span);
-	DDX_Check(pDX, IDC_DESIGN_FLEXURE, m_DesignForFlexure);
-	DDX_Check(pDX, IDC_DESIGN_SHEAR, m_DesignForShear);
-	//}}AFX_DATA_MAP
+   CDialog::DoDataExchange(pDX);
+   //{{AFX_DATA_MAP(CDesignGirderDlg)
+   DDX_CBIndex(pDX, IDC_GIRDER, m_Girder);
+   DDX_CBIndex(pDX, IDC_SPAN, m_Span);
+   DDX_Check(pDX, IDC_DESIGN_FLEXURE, m_DesignForFlexure);
+   DDX_Check(pDX, IDC_DESIGN_SHEAR, m_DesignForShear);
+   DDX_Radio(pDX, IDC_RADIO_SINGLE, m_DesignRadioNum);
+   //}}AFX_DATA_MAP
 
    if (m_EnableA)
    {
@@ -79,11 +82,49 @@ void CDesignGirderDlg::DoDataExchange(CDataExchange* pDX)
 
       if (pDX->m_bSaveAndValidate)
       {
-         m_DesignA = pA->GetCheck()==0; // control asks opposite
+         if (m_DesignForFlexure)
+         {
+            m_DesignA = pA->GetCheck()==0; // control asks opposite
+         }
+         else
+         {
+            m_DesignA = false; // No A design if no flexural design
+         }
       }
       else
       {
          pA->SetCheck(m_DesignA?0:1);
+      }
+   }
+
+   if (pDX->m_bSaveAndValidate)
+   {
+      if (m_DesignForFlexure==FALSE && m_DesignForShear==FALSE)
+      {
+         ::AfxMessageBox(_T("No design requested. Please select Flexural and/or Shear design."),MB_OK | MB_ICONWARNING);
+         pDX->Fail();
+      }
+
+      // build girder list based on input type
+      if (m_DesignRadioNum==0)
+      {
+         // Single girder
+         std::vector<SpanGirderHashType> list_of_one;
+         SpanGirderHashType hash = HashSpanGirder(m_Span, m_Girder);
+         list_of_one.push_back(hash);
+         m_GirderList = list_of_one;
+      }
+      else
+      {
+         // Girder list was stored/passed from grid
+         if (m_GirderList.empty())
+         {
+            ::AfxMessageBox(_T("No girders selected. Please select at least one girder"),MB_OK | MB_ICONWARNING);
+            pDX->Fail();
+         }
+
+         if (m_GirderList.size() > 1)
+            m_DesignA = false; // never design A if more than one girder
       }
    }
 }
@@ -96,6 +137,9 @@ BEGIN_MESSAGE_MAP(CDesignGirderDlg, CDialog)
 	ON_BN_CLICKED(IDC_DESIGN_FLEXURE, OnDesignFlexure)
    ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
 	//}}AFX_MSG_MAP
+   ON_BN_CLICKED(IDC_SELECT_GIRDERS, &CDesignGirderDlg::OnBnClickedSelectGirders)
+   ON_BN_CLICKED(IDC_RADIO_SINGLE, &CDesignGirderDlg::OnBnClickedRadio)
+   ON_BN_CLICKED(IDC_RADIO_MULTIPLE, &CDesignGirderDlg::OnBnClickedRadio)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -120,13 +164,18 @@ BOOL CDesignGirderDlg::OnInitDialog()
    pSpanBox->SetCurSel(m_Span);
    UpdateGirderComboBox(m_Span);
 
-   // don't ask A design option unless it's enabled
+   // don't ask/show A design option unless it's enabled
    CWnd* pACheck = GetDlgItem( IDC_DESIGN_A );
    pACheck->ShowWindow(m_EnableA ? SW_SHOW : SW_HIDE);
 
+   CWnd* pADim = GetDlgItem( IDC_ADIM_STATIC );
+   pADim->ShowWindow(m_EnableA ? SW_SHOW : SW_HIDE);
+
 	CDialog::OnInitDialog();
-	
+
    EnableToolTips(TRUE);
+
+   OnBnClickedRadio();
 
    return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -168,14 +217,7 @@ void CDesignGirderDlg::UpdateGirderComboBox(SpanIndexType spanIdx)
 void CDesignGirderDlg::OnDesignFlexure() 
 {
    // enable A design only if flexure is on
-   if (m_EnableA)
-   {
-      CButton* pAFlex = (CButton*)GetDlgItem( IDC_DESIGN_FLEXURE );
-      BOOL checked = (pAFlex->GetCheck()==1) ? TRUE:FALSE;
-
-      CWnd* pADesA = GetDlgItem( IDC_DESIGN_A );
-      pADesA->EnableWindow(checked);
-   }
+   UpdateADimCtrl();
 }
 
 BOOL CDesignGirderDlg::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
@@ -203,4 +245,62 @@ BOOL CDesignGirderDlg::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
       return TRUE;
    }
    return FALSE;
+}
+
+void CDesignGirderDlg::OnBnClickedSelectGirders()
+{
+   CMultiGirderSelectDlg dlg;
+   dlg.m_SelGdrs = m_GirderList;
+
+   if (dlg.DoModal()==IDOK)
+   {
+      m_GirderList = dlg.m_SelGdrs;
+
+      // update button text
+      CString msg;
+      msg.Format(_T("Select Girders\n(%d Selected)"), m_GirderList.size());
+      GetDlgItem(IDC_SELECT_GIRDERS)->SetWindowText(msg);
+
+      UpdateADimCtrl();
+   }
+}
+
+void CDesignGirderDlg::OnBnClickedRadio()
+{
+   BOOL enab_sgl = IsDlgButtonChecked(IDC_RADIO_SINGLE) == BST_CHECKED ? TRUE : FALSE;
+   BOOL enab_mpl = enab_sgl ? FALSE : TRUE;
+
+   GetDlgItem(IDC_SPAN)->EnableWindow(enab_sgl);
+   GetDlgItem(IDC_GIRDER)->EnableWindow(enab_sgl);
+
+   GetDlgItem(IDC_SELECT_GIRDERS)->EnableWindow(enab_mpl);
+
+   UpdateADimCtrl();
+}
+
+void CDesignGirderDlg::UpdateADimCtrl()
+{
+   if (m_EnableA)
+   {
+      // only enable A if flexure is selected
+      CButton* pAFlex = (CButton*)GetDlgItem( IDC_DESIGN_FLEXURE );
+      BOOL flexure_checked = (pAFlex->GetCheck()==1) ? TRUE:FALSE;
+
+      BOOL benable = FALSE;
+      if(flexure_checked)
+      {
+         // disable A if multiple girders are selected
+         if( IsDlgButtonChecked(IDC_RADIO_SINGLE) == BST_CHECKED )
+         {
+            benable = TRUE;
+         }
+         else
+         {
+            benable = m_GirderList.size()>1 ? FALSE : TRUE;
+         }
+      }
+
+      CButton* pA= (CButton*)GetDlgItem( IDC_DESIGN_A );
+      pA->EnableWindow(benable);
+   }
 }

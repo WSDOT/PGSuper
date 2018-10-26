@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -43,7 +43,7 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CDesignOutcomeDlg dialog
-CDesignOutcomeDlg::CDesignOutcomeDlg(boost::shared_ptr<CSpanGirderReportSpecification>& pRptSpec,CWnd* pParent /*=NULL*/)
+CDesignOutcomeDlg::CDesignOutcomeDlg(boost::shared_ptr<CMultiGirderReportSpecification>& pRptSpec,CWnd* pParent /*=NULL*/)
 	: CDialog(CDesignOutcomeDlg::IDD, pParent), m_pRptSpec(pRptSpec)
 {
 	//{{AFX_DATA_INIT(CDesignOutcomeDlg)
@@ -176,6 +176,7 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
    CComPtr<IBroker> pBroker;
    m_pRptSpec->GetBroker(&pBroker);
 
+/*
    SpanIndexType span = m_pRptSpec->GetSpan();
    GirderIndexType gdr = m_pRptSpec->GetGirder();
 
@@ -188,10 +189,10 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
       SetDefID(IDOK);
    else
       SetDefID(IDCANCEL);
-
+*/
 
    GET_IFACE2(pBroker,IReportManager,pRptMgr);
-   boost::shared_ptr<CReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CReportSpecification,CSpanGirderReportSpecification>(m_pRptSpec);
+   boost::shared_ptr<CReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CReportSpecification,CMultiGirderReportSpecification>(m_pRptSpec);
    m_pBrowser = pRptMgr->CreateReportBrowser(GetSafeHwnd(),pRptSpec);
 
    // restore the size of the window

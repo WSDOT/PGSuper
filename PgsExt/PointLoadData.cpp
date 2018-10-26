@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -103,11 +103,17 @@ HRESULT CPointLoadData::Save(IStructuredSave* pSave)
    if ( FAILED(hr) )
       return hr;
 
-   hr = pSave->put_Property(_T("Span"),CComVariant(m_Span));
+   // In pre Jan, 2011 versions, all spans and all girders were hardcoded to 10000, then we changed to the ALL_SPANS/ALL_GIRDERS value
+   // Keep backward compatibility by saving the 10k value
+   SpanIndexType ts = (m_Span==ALL_SPANS) ? 10000 : m_Span;
+
+   hr = pSave->put_Property(_T("Span"),CComVariant(ts));
    if ( FAILED(hr) )
       return hr;
 
-   hr = pSave->put_Property(_T("Girder"),CComVariant(m_Girder));
+   GirderIndexType tg = (m_Girder==ALL_GIRDERS) ? 10000 : m_Girder;
+
+   hr = pSave->put_Property(_T("Girder"),CComVariant(tg));
    if ( FAILED(hr) )
       return hr;
    
@@ -185,14 +191,14 @@ HRESULT CPointLoadData::Load(IStructuredLoad* pLoad)
    if ( FAILED(hr) )
       return hr;
 
-   m_Span = var.iVal;
+   m_Span = (var.iVal == 10000)? ALL_SPANS : var.iVal; // In pre Jan, 2011 versions all spans was hardcoded to 10000
 
    var.vt = VT_I4;
    hr = pLoad->get_Property(_T("Girder"),&var);
    if ( FAILED(hr) )
       return hr;
 
-   m_Girder = var.iVal;
+   m_Girder = (var.iVal == 10000)? ALL_GIRDERS : var.iVal; // In pre Jan, 2011 versions all girders was hardcoded to 10000
    
    var.vt = VT_R8;
    hr = pLoad->get_Property(_T("Location"),&var);

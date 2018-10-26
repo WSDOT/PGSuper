@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@
 #include "VoidedSlabFactory.h"
 #include "IBeamDistFactorEngineer.h"
 #include "VoidedSlabDistFactorEngineer.h"
+#include "UBeamDistFactorEngineer.h"
 #include "PsBeamLossEngineer.h"
 #include "StrandMoverImpl.h"
 #include <BridgeModeling\PrismaticGirderProfile.h>
@@ -213,12 +214,31 @@ void CVoidedSlabFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,Sp
 
 void CVoidedSlabFactory::CreateDistFactorEngineer(IBroker* pBroker,long statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
 {
+   GET_IFACE2(pBroker,IBridge,pBridge);
+
+   // use passed value if not null
+   pgsTypes::SupportedDeckType deckType = (pDeckType!=NULL) ? *pDeckType : pBridge->GetDeckType();
    
-   CComObject<CVoidedSlabDistFactorEngineer>* pEngineer;
-   CComObject<CVoidedSlabDistFactorEngineer>::CreateInstance(&pEngineer);
-   pEngineer->SetBroker(pBroker,statusGroupID);
-   (*ppEng) = pEngineer;
-   (*ppEng)->AddRef();
+   if ( deckType == pgsTypes::sdtCompositeOverlay || deckType == pgsTypes::sdtNone )
+   {
+      CComObject<CVoidedSlabDistFactorEngineer>* pEngineer;
+      CComObject<CVoidedSlabDistFactorEngineer>::CreateInstance(&pEngineer);
+      pEngineer->SetBroker(pBroker,statusGroupID);
+      (*ppEng) = pEngineer;
+      (*ppEng)->AddRef();
+   }
+   else
+   {
+      // this is a type b section... type b's are the same as type c's which are U-beams
+      ATLASSERT( deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP );
+
+      CComObject<CUBeamDistFactorEngineer>* pEngineer;
+      CComObject<CUBeamDistFactorEngineer>::CreateInstance(&pEngineer);
+      pEngineer->Init(true,true); // this is a type b cross section, and a spread slab
+      pEngineer->SetBroker(pBroker,statusGroupID);
+      (*ppEng) = pEngineer;
+      (*ppEng)->AddRef();
+   }
 }
 
 void CVoidedSlabFactory::CreatePsLossEngineer(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
@@ -600,6 +620,14 @@ std::_tstring CVoidedSlabFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeck
    std::_tstring strImage;
    switch(deckType)
    {
+   case pgsTypes::sdtCompositeCIP:
+      strImage = _T("VoidedSlab_Composite_CIP.gif");
+      break;
+
+   case pgsTypes::sdtCompositeSIP:
+      strImage = _T("VoidedSlab_Composite_SIP.gif");
+      break;
+
    case pgsTypes::sdtCompositeOverlay:
       strImage = _T("VoidedSlab_Composite.gif");
       break;
@@ -621,6 +649,11 @@ std::_tstring CVoidedSlabFactory::GetPositiveMomentCapacitySchematicImage(pgsTyp
    std::_tstring strImage;
    switch(deckType)
    {
+   case pgsTypes::sdtCompositeCIP:
+   case pgsTypes::sdtCompositeSIP:
+      strImage =  _T("+Mn_SpreadVoidedSlab_Composite.gif");
+      break;
+
    case pgsTypes::sdtCompositeOverlay:
       strImage =  _T("+Mn_VoidedSlab_Composite.gif");
       break;
@@ -642,6 +675,11 @@ std::_tstring CVoidedSlabFactory::GetNegativeMomentCapacitySchematicImage(pgsTyp
    std::_tstring strImage;
    switch(deckType)
    {
+   case pgsTypes::sdtCompositeCIP:
+   case pgsTypes::sdtCompositeSIP:
+      strImage =  _T("-Mn_SpreadVoidedSlab_Composite.gif");
+      break;
+
    case pgsTypes::sdtCompositeOverlay:
       strImage =  _T("-Mn_VoidedSlab_Composite.gif");
       break;
@@ -663,6 +701,11 @@ std::_tstring CVoidedSlabFactory::GetShearDimensionsSchematicImage(pgsTypes::Sup
    std::_tstring strImage;
    switch(deckType)
    {
+   case pgsTypes::sdtCompositeCIP:
+   case pgsTypes::sdtCompositeSIP:
+      strImage =  _T("Vn_SpreadVoidedSlab_Composite.gif");
+      break;
+
    case pgsTypes::sdtCompositeOverlay:
       strImage =  _T("Vn_VoidedSlab_Composite.gif");
       break;
@@ -684,14 +727,40 @@ std::_tstring CVoidedSlabFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBr
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+
+   std::_tstring strImage;
+   switch(deckType)
    {
-      return _T("VoidedSlab_Effective_Flange_Width_Interior_Girder_2008.gif");
-   }
-   else
-   {
-      return _T("VoidedSlab_Effective_Flange_Width_Interior_Girder.gif");
-   }
+   case pgsTypes::sdtCompositeCIP:
+   case pgsTypes::sdtCompositeSIP:
+      if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+      {
+         strImage =  _T("SpreadVoidedSlab_Effective_Flange_Width_Interior_Girder_2008.gif");
+      }
+      else
+      {
+         strImage =  _T("SpreadVoidedSlab_Effective_Flange_Width_Interior_Girder.gif");
+      }
+      break;
+
+   case pgsTypes::sdtCompositeOverlay:
+      if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+      {
+         return _T("VoidedSlab_Effective_Flange_Width_Interior_Girder_2008.gif");
+      }
+      else
+      {
+         return _T("VoidedSlab_Effective_Flange_Width_Interior_Girder.gif");
+      }
+      break;
+
+   case pgsTypes::sdtNone:
+   default:
+      ATLASSERT(false); // shouldn't get here
+      break;
+   };
+
+   return strImage;
 }
 
 std::_tstring CVoidedSlabFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
@@ -699,14 +768,40 @@ std::_tstring CVoidedSlabFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBr
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+
+   std::_tstring strImage;
+   switch(deckType)
    {
-      return _T("VoidedSlab_Effective_Flange_Width_Exterior_Girder_2008.gif");
-   }
-   else
-   {
-      return _T("VoidedSlab_Effective_Flange_Width_Exterior_Girder.gif");
-   }
+   case pgsTypes::sdtCompositeCIP:
+   case pgsTypes::sdtCompositeSIP:
+      if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+      {
+         strImage =  _T("SpreadVoidedSlab_Effective_Flange_Width_Exterior_Girder_2008.gif");
+      }
+      else
+      {
+         strImage =  _T("SpreadVoidedSlab_Effective_Flange_Width_EXterior_Girder.gif");
+      }
+      break;
+
+   case pgsTypes::sdtCompositeOverlay:
+      if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+      {
+         return _T("VoidedSlab_Effective_Flange_Width_Exterior_Girder_2008.gif");
+      }
+      else
+      {
+         return _T("VoidedSlab_Effective_Flange_Width_Exterior_Girder.gif");
+      }
+      break;
+
+   case pgsTypes::sdtNone:
+   default:
+      ATLASSERT(false); // shouldn't get here
+      break;
+   };
+
+   return strImage;
 }
 
 CLSID CVoidedSlabFactory::GetCLSID()
@@ -785,6 +880,12 @@ pgsTypes::SupportedDeckTypes CVoidedSlabFactory::GetSupportedDeckTypes(pgsTypes:
    pgsTypes::SupportedDeckTypes sdt;
    switch(sbs)
    {
+   case pgsTypes::sbsUniform:
+   case pgsTypes::sbsGeneral:
+      sdt.push_back(pgsTypes::sdtCompositeCIP);
+      sdt.push_back(pgsTypes::sdtCompositeSIP);
+      break;
+
    case pgsTypes::sbsUniformAdjacent:
    case pgsTypes::sbsGeneralAdjacent:
       sdt.push_back(pgsTypes::sdtCompositeOverlay);
@@ -802,6 +903,8 @@ pgsTypes::SupportedBeamSpacings CVoidedSlabFactory::GetSupportedBeamSpacings()
    pgsTypes::SupportedBeamSpacings sbs;
    sbs.push_back(pgsTypes::sbsUniformAdjacent);
    sbs.push_back(pgsTypes::sbsGeneralAdjacent);
+   sbs.push_back(pgsTypes::sbsUniform);
+   sbs.push_back(pgsTypes::sbsGeneral);
 
    return sbs;
 }
@@ -815,12 +918,12 @@ void CVoidedSlabFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions
    double gw = GetDimension(dimensions,_T("W"));
    double J  = GetDimension(dimensions,_T("Jmax"));
 
-   if ( sdt == pgsTypes::sdtCompositeOverlay || sdt == pgsTypes::sdtNone )
+   if ( sdt == pgsTypes::sdtCompositeCIP || sdt == pgsTypes::sdtCompositeSIP )
    {
-      if(sbs == pgsTypes::sbsUniformAdjacent || sbs == pgsTypes::sbsGeneralAdjacent)
+      if(sbs == pgsTypes::sbsUniform || sbs == pgsTypes::sbsGeneral)
       {
          *minSpacing = gw;
-         *maxSpacing = gw+J;
+         *maxSpacing = MAX_GIRDER_SPACING;
       }
       else
       {
@@ -829,7 +932,22 @@ void CVoidedSlabFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions
    }
    else
    {
-      ATLASSERT(false); // shouldn't get here
+      if (sbs == pgsTypes::sbsUniformAdjacent || sbs == pgsTypes::sbsGeneralAdjacent)
+      {
+         if ( sdt == pgsTypes::sdtCompositeOverlay || sdt == pgsTypes::sdtNone )
+         {
+            *minSpacing = gw;
+            *maxSpacing = gw+J;
+         }
+         else
+         {
+            ATLASSERT(false); // shouldn't get here
+         }
+      }
+      else
+      {
+         ATLASSERT(false); // shouldn't get here
+      }
    }
 }
 

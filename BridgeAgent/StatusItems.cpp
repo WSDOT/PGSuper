@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -82,7 +82,7 @@ void pgsAlignmentDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 ////////////////
 
 pgsConcreteStrengthStatusItem::pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::ConcreteType concType,pgsConcreteStrengthStatusItem::ElementType elemType,SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription), m_ConcreteType(concType),m_ElementType(elemType),m_Span(span),m_Girder(gdr)
+pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,span,gdr), m_ConcreteType(concType),m_ElementType(elemType),m_Span(span),m_Girder(gdr)
 {
 }
 
@@ -130,8 +130,10 @@ void pgsConcreteStrengthStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 //////////////////////
 
-pgsPointLoadStatusItem::pgsPointLoadStatusItem(Uint32 value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription), m_LoadIndex(value)
+pgsPointLoadStatusItem::pgsPointLoadStatusItem(Uint32 value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
+                                               SpanIndexType span,GirderIndexType gdr) :
+pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,span,gdr), 
+m_LoadIndex(value), m_Span(span), m_Gdr(gdr)
 {
 }
 
@@ -141,7 +143,7 @@ bool pgsPointLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
    if ( !other )
       return false;
 
-   return (other->m_LoadIndex == m_LoadIndex);
+   return (other->m_LoadIndex==m_LoadIndex && other->m_Span==m_Span && other->m_Gdr==m_Gdr);
 }
 
 ///////////////////////////////
@@ -195,8 +197,10 @@ void pgsPointLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 //////////////////////////////////////////////////////////
 
-pgsDistributedLoadStatusItem::pgsDistributedLoadStatusItem(Uint32 value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription), m_LoadIndex(value)
+pgsDistributedLoadStatusItem::pgsDistributedLoadStatusItem(Uint32 value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
+                                                           SpanIndexType span,GirderIndexType gdr) :
+pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,span,gdr), 
+m_LoadIndex(value), m_Span(span), m_Gdr(gdr)
 {
 }
 
@@ -206,7 +210,7 @@ bool pgsDistributedLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
    if ( !other )
       return false;
 
-   return (other->m_LoadIndex == m_LoadIndex);
+   return (other->m_LoadIndex==m_LoadIndex && other->m_Span==m_Span && other->m_Gdr==m_Gdr);
 }
 
 //////////////////////////////////////////////////////////
@@ -260,8 +264,10 @@ void pgsDistributedLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 //////////////////////////////////////////////
 
-pgsMomentLoadStatusItem::pgsMomentLoadStatusItem(Uint32 value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription), m_LoadIndex(value)
+pgsMomentLoadStatusItem::pgsMomentLoadStatusItem(Uint32 value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
+                                                 SpanIndexType span,GirderIndexType gdr):
+pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,span,gdr), 
+m_LoadIndex(value), m_Span(span), m_Gdr(gdr)
 {
 }
 
@@ -271,7 +277,7 @@ bool pgsMomentLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
    if ( !other )
       return false;
 
-   return (other->m_LoadIndex == m_LoadIndex);
+   return (other->m_LoadIndex==m_LoadIndex && other->m_Span==m_Span && other->m_Gdr==m_Gdr);
 }
 ///////////////////////////
 

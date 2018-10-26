@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -70,6 +70,7 @@
 #include <IFace\Allowables.h>
 #include <IFace\StatusCenter.h>
 #include <IFace\RatingSpecification.h>
+#include <IFace\DistributionFactors.h>
 #include <EAF\EAFUIIntegration.h>
 #include "PGSuperDocProxyAgent.h"
 
@@ -1011,8 +1012,43 @@ void CPGSuperDoc::OnCreateFinalize()
 {
    CEAFBrokerDocument::OnCreateFinalize();
 
-
    PopulateReportMenu();
+
+   // if user is on Windows Vista or Windows 7, the Send Email feature doesn't work
+   // so we will remove it from the menu
+
+   OSVERSIONINFO osInfo;
+   osInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+   GetVersionEx(&osInfo);
+   bool bRemoveEmailOption = false;
+   if ( 6 < osInfo.dwMajorVersion || (osInfo.dwMajorVersion == 6 && 1 <= osInfo.dwMinorVersion) )
+   {
+      // this is Windows 7 or a future OS... assume feature isn't supported
+      bRemoveEmailOption = true;
+   }
+
+   if ( bRemoveEmailOption ) 
+   {
+      // get main menu
+      CEAFMenu* pMainMenu = GetMainMenu();
+
+      // find position of file menu
+      UINT filePos = pMainMenu->FindMenuItem(_T("&File"));
+
+      // get the file menu
+      CEAFMenu* pFileMenu = pMainMenu->GetSubMenu(filePos);
+
+      // get the text string from the email command
+      CString strEmail;
+      pFileMenu->GetMenuString(ID_FILE_SEND_MAIL,strEmail,MF_BYCOMMAND);
+
+      // find the position of the email command
+      UINT emailPos = pFileMenu->FindMenuItem(strEmail);
+
+      // remove the email command and the adjacent separator
+      pFileMenu->RemoveMenu(emailPos,MF_BYPOSITION,NULL);
+      pFileMenu->RemoveMenu(emailPos,MF_BYPOSITION,NULL);
+   }
 
    // Set the autocalc state on the status bar
    CPGSuperStatusBar* pStatusBar = ((CPGSuperStatusBar*)EAFGetMainFrame()->GetStatusBar());
@@ -1824,64 +1860,58 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,bool bDesignSlabOffset,SpanIndexType
    gdrIdx  = (gdrIdx  == INVALID_INDEX ? 0 : gdrIdx);
 
    // set up default design options
-   GET_IFACE(ISpecification,pSpecification);
-   arDesignOptions des_options = pSpecification->GetDesignOptions(spanIdx,gdrIdx);
-   des_options.doDesignSlabOffset = bDesignSlabOffset;
+   GET_IFACE(ISpecification,pSpec);
+   GET_IFACE(IBridge,pBridge);
+   bool can_design_Adim    = pSpec->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
 
-   if ( !IsDesignFlexureEnabled() )
-   {
-      des_options.doDesignForFlexure = dtNoDesign;
-   }
+   bDesignSlabOffset = bDesignSlabOffset && can_design_Adim; // only design A if it's possible
 
-   des_options.doDesignForShear = IsDesignShearEnabled();
-
+   std::vector<SpanGirderHashType> gdr_list;
    if ( bPrompt )
    {
       GET_IFACE(ISpecification,pSpecification);
-      GET_IFACE(IBridge,pBridge);
 
-      // only allow A design if it's allowed in the library, then save setting for future visits.
+      // only show A design option if it's allowed in the library
       // Do not save this in registry because library selection should be default for new documents
-      bool enable_so_selection = pSpecification->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
 
       CDesignGirderDlg dlg(spanIdx, 
                            gdrIdx,
-                           enable_so_selection, bDesignSlabOffset, m_pBroker);
+                           can_design_Adim, bDesignSlabOffset, m_pBroker);
 
       // Set initial dialog values based on last stored in registry. These may be changed
       // internally by dialog based on girder type, and other library values
-      dlg.m_DesignForFlexure = (IsDesignFlexureEnabled()  ? TRUE : FALSE);
-      dlg.m_DesignForShear   = (IsDesignShearEnabled()    ? TRUE : FALSE);
+      dlg.m_DesignForFlexure = (IsDesignFlexureEnabled() ? TRUE : FALSE);
+      dlg.m_DesignForShear   = (IsDesignShearEnabled()   ? TRUE : FALSE);
+
       if ( dlg.DoModal() == IDOK )
       {
-         // update design options based on results from dialog
-         des_options = pSpecification->GetDesignOptions(dlg.m_Span,dlg.m_Girder);
-
-         if (dlg.m_DesignForFlexure==FALSE)
-         {
-            des_options.doDesignForFlexure = dtNoDesign;
-         }
-
-         des_options.doDesignForShear   = dlg.m_DesignForShear==TRUE ? true : false;
-
-         // we can override library setting here
-         des_options.doDesignSlabOffset = dlg.m_DesignA && enable_so_selection;
-         m_bDesignSlabOffset = dlg.m_DesignA; // retain value for current document
+         bDesignSlabOffset    = dlg.m_DesignA != FALSE;    // we can override library setting here
 
          EnableDesignFlexure(dlg.m_DesignForFlexure == TRUE ? true : false);
          EnableDesignShear(  dlg.m_DesignForShear   == TRUE ? true : false);
+         m_bDesignSlabOffset = bDesignSlabOffset; // retain value for current document
 
-         spanIdx = dlg.m_Span;
-         gdrIdx  = dlg.m_Girder;
+         gdr_list = dlg.m_GirderList;
+
+         if (gdr_list.empty())
+         {
+            ATLASSERT(0); // dialog should handle this
+            return; 
+         }
       }
       else
       {
          return;
       }
    }
+   else
+   {
+      // only one girder - spec'd from command line
+      SpanGirderHashType hash = HashSpanGirder(spanIdx, gdrIdx);
+      gdr_list.push_back(hash);
+   }
 
-
-   DoDesignGirder(spanIdx,gdrIdx,des_options);
+   DoDesignGirder(gdr_list, bDesignSlabOffset);
 }
 
 void CPGSuperDoc::OnProjectDesignGirder() 
@@ -1907,43 +1937,89 @@ void CPGSuperDoc::OnProjectDesignGirderDirect()
    GET_IFACE(ISpecification,pSpecification);
    GET_IFACE(IBridge,pBridge);
    bool bDesignSlabOffset = pSpecification->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
+   m_bDesignSlabOffset = bDesignSlabOffset; // retain setting in document
+
    DesignGirder(false,bDesignSlabOffset,m_Selection.SpanIdx,m_Selection.GirderIdx);
 }
 
 void CPGSuperDoc::OnProjectDesignGirderDirectHoldSlabOffset()
 {
+   m_bDesignSlabOffset = false; // retain setting in document
    DesignGirder(false,false,m_Selection.SpanIdx,m_Selection.GirderIdx);
 }
 
-void CPGSuperDoc::DoDesignGirder(SpanIndexType span,GirderIndexType gdr,const arDesignOptions& designOptions)
+void CPGSuperDoc::DoDesignGirder(const std::vector<SpanGirderHashType>& girderList, bool doDesignADim)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
+   GET_IFACE(ISpecification,pSpecification);
    GET_IFACE(IArtifact,pIArtifact);
-   const pgsDesignArtifact* pArtifact = pIArtifact->CreateDesignArtifact( span, gdr, designOptions);
 
-   if ( pArtifact == NULL )
+   std::vector<const pgsDesignArtifact*> pArtifacts;
+
+   // Need to scope the following block, otherwise the progress window will carry the cancel
+   // and progress buttons past the design outcome and into any reports that need to be generated.
    {
-      AfxMessageBox(_T("Design Cancelled"),MB_OK);
-      return;
+      bool multi = girderList.size()>1;
+
+      GET_IFACE(IProgress,pProgress);
+      DWORD mask = multi ? PW_ALL : PW_ALL|PW_NOGAUGE; // Progress window has a cancel button,
+
+      CEAFAutoProgress ap(pProgress,0,mask); 
+
+      if (multi)
+         pProgress->Init(0,girderList.size(),1);  // and for multi-girders, a gauge.
+
+      // Design all girders in list
+      for (std::vector<SpanGirderHashType>::const_iterator it=girderList.begin(); it!=girderList.end(); it++)
+      {
+         SpanIndexType span;
+         GirderIndexType gdr;
+         UnhashSpanGirder(*it, &span, &gdr);
+
+         arDesignOptions des_options = pSpecification->GetDesignOptions(span,gdr);
+         des_options.doDesignSlabOffset = doDesignADim;
+
+         if(!this->IsDesignFlexureEnabled())
+         {
+            des_options.doDesignForFlexure = dtNoDesign;
+         }
+
+         des_options.doDesignForShear = this->IsDesignShearEnabled();
+
+         const pgsDesignArtifact* pArtifact = pIArtifact->CreateDesignArtifact( span, gdr, des_options);
+
+         pProgress->Increment();
+
+         if ( pArtifact == NULL )
+         {
+            AfxMessageBox(_T("Design Cancelled"),MB_OK);
+            return;
+         }
+         
+         pArtifacts.push_back(pArtifact);
+      }
    }
 
    GET_IFACE(IReportManager,pReportMgr);
    CReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Design Outcome Report"));
    boost::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
    boost::shared_ptr<CReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
-   boost::shared_ptr<CSpanGirderReportSpecification> pSGRptSpec = boost::dynamic_pointer_cast<CSpanGirderReportSpecification,CReportSpecification>(pRptSpec);
-   pSGRptSpec->SetSpan(span);
-   pSGRptSpec->SetGirder(gdr);
 
-   CDesignOutcomeDlg dlg(pSGRptSpec);
+   boost::shared_ptr<CMultiGirderReportSpecification> pMGRptSpec = boost::dynamic_pointer_cast<CMultiGirderReportSpecification,CReportSpecification>(pRptSpec);
+
+   pMGRptSpec->SetGirderList(girderList);
+
+   CDesignOutcomeDlg dlg(pMGRptSpec);
    if ( dlg.DoModal() == IDOK )
    {
-      GET_IFACE(IBridgeDescription,pIBridgeDesc);
-      pgsTypes::SlabOffsetType slabOffsetType = pIBridgeDesc->GetSlabOffsetType();
-      txnDesignGirder* pTxn = new txnDesignGirder(span,gdr,designOptions,*pArtifact,slabOffsetType);
-
+      // Create our transaction and execute
       GET_IFACE(IEAFTransactions,pTransactions);
+      GET_IFACE(IBridgeDescription,pIBridgeDesc);
+
+      pgsTypes::SlabOffsetType slabOffsetType = pIBridgeDesc->GetSlabOffsetType();
+
+      txnDesignGirder* pTxn = new txnDesignGirder(pArtifacts,slabOffsetType);
+
       pTransactions->Execute(pTxn);
    }
 }
@@ -2253,6 +2329,7 @@ void CPGSuperDoc::OnLoadsLldf(pgsTypes::DistributionFactorMethod method,LldfRang
    dlg.m_BridgeDesc = *pOldBridgeDesc;
    dlg.m_BridgeDesc.SetDistributionFactorMethod(method);
    dlg.m_LldfRangeOfApplicabilityAction = roaAction;
+   dlg.m_pBroker = m_pBroker;
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -2387,14 +2464,82 @@ void CPGSuperDoc::OnLiveLoads()
 
 BOOL CPGSuperDoc::GetStatusBarMessageString(UINT nID,CString& rMessage) const
 {
+   USES_CONVERSION;
+
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   return __super::GetStatusBarMessageString(nID,rMessage);
+
+   if ( __super::GetStatusBarMessageString(nID,rMessage) )
+      return TRUE;
+
+   CPGSuperDoc* pThis = const_cast<CPGSuperDoc*>(this);
+   
+   CComPtr<IPGSuperDataExporter> exporter;
+   pThis->m_PluginMgr.GetPGSuperExporter(nID,false,&exporter);
+   if ( exporter )
+   {
+      CComBSTR bstr;
+      exporter->GetCommandHintText(&bstr);
+      rMessage = OLE2T(bstr);
+      rMessage.Replace('\n','\0');
+
+      return TRUE;
+   }
+   
+   CComPtr<IPGSuperDataImporter> importer;
+   pThis->m_PluginMgr.GetPGSuperImporter(nID,false,&importer);
+   if ( importer )
+   {
+      CComBSTR bstr;
+      importer->GetCommandHintText(&bstr);
+      rMessage = OLE2T(bstr);
+      rMessage.Replace('\n','\0');
+
+      return TRUE;
+   }
+
+   return FALSE;
 }
 
 BOOL CPGSuperDoc::GetToolTipMessageString(UINT nID, CString& rMessage) const
 {
+   USES_CONVERSION;
+
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   return __super::GetToolTipMessageString(nID,rMessage);
+
+   if ( __super::GetToolTipMessageString(nID,rMessage) )
+      return TRUE;
+
+   CPGSuperDoc* pThis = const_cast<CPGSuperDoc*>(this);
+   
+   CComPtr<IPGSuperDataExporter> exporter;
+   pThis->m_PluginMgr.GetPGSuperExporter(nID,false,&exporter);
+   if ( exporter )
+   {
+      CComBSTR bstr;
+      exporter->GetCommandHintText(&bstr);
+      CString string( OLE2T(bstr) );
+      int pos = string.Find('\n');
+      if ( 0 < pos )
+         rMessage = string.Mid(pos+1);
+
+      return TRUE;
+   }
+   
+   CComPtr<IPGSuperDataImporter> importer;
+   pThis->m_PluginMgr.GetPGSuperImporter(nID,false,&importer);
+   if ( importer )
+   {
+      CComBSTR bstr;
+      importer->GetCommandHintText(&bstr);
+      CString string( OLE2T(bstr) );
+      int pos = string.Find('\n');
+      if ( 0 < pos )
+         rMessage = string.Mid(pos+1);
+
+      return TRUE;
+   }
+
+   return FALSE;
 }
 
 void CPGSuperDoc::CreateReportView(CollectionIndexType rptIdx,bool bPrompt)

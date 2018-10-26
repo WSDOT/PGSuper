@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -78,17 +78,20 @@ typedef Uint64 PoiAttributeType;
                              // note PICKPOINT and BUNKPOINT skipped on purpose
 
 // The lower 16 bits are reserved for 10th point attributes
-// 0x0000 0000 0000 0001 0.0L
-// 0x0000 0000 0000 0002 0.1L
-// 0x0000 0000 0000 0004 0.2L
-// 0x0000 0000 0000 0008 0.3L
-// 0x0000 0000 0000 0010 0.4L
-// 0x0000 0000 0000 0020 0.5L
-// 0x0000 0000 0000 0040 0.6L
-// 0x0000 0000 0000 0080 0.7L
-// 0x0000 0000 0000 0100 0.8L
-// 0x0000 0000 0000 0200 0.9L
-// 0x0000 0000 0000 0400 1.0L
+#define POI_0L  0x0000000000000001 //0.0L
+#define POI_1L  0x0000000000000002 //0.1L
+#define POI_2L  0x0000000000000004 //0.2L
+#define POI_3L  0x0000000000000008 //0.3L
+#define POI_4L  0x0000000000000010 //0.4L
+#define POI_5L  0x0000000000000020 //0.5L
+#define POI_6L  0x0000000000000040 //0.6L
+#define POI_7L  0x0000000000000080 //0.7L
+#define POI_8L  0x0000000000000100 //0.8L
+#define POI_9L  0x0000000000000200 //0.9L
+#define POI_10L 0x0000000000000400 //1.0L
+
+#define POI_TENTH_POINTS POI_0L | POI_1L | POI_2L | POI_3L | POI_4L | POI_5L | POI_6L | POI_7L | POI_8L | POI_9L | POI_10L
+
 // 0x0000 0000 0000 0800 - Unused
 // 0x0000 0000 0000 1000 - Unused
 
@@ -124,7 +127,7 @@ public:
    pgsPointOfInterest();
    pgsPointOfInterest(SpanIndexType span,GirderIndexType gdr,Float64 distFromStart);
    pgsPointOfInterest(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart,PoiAttributeType attrib = POI_ALLACTIONS | POI_ALLOUTPUT);
-   pgsPointOfInterest(std::vector<pgsTypes::Stage> stages,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart,PoiAttributeType attrib = POI_ALLACTIONS | POI_ALLOUTPUT);
+   pgsPointOfInterest(const std::vector<pgsTypes::Stage>& stages,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart,PoiAttributeType attrib = POI_ALLACTIONS | POI_ALLOUTPUT);
 
    //------------------------------------------------------------------------
    // Copy constructor
@@ -155,32 +158,53 @@ public:
 
    //------------------------------------------------------------------------
    // Returns the identifier assigned in the constructor.
-   PoiIDType GetID() const;
+   PoiIDType GetID() const
+   {
+      return m_ID;
+   }
 
    //------------------------------------------------------------------------
    // Sets the span number of this poi.
-   void SetSpan(SpanIndexType span);
+   void SetSpan(SpanIndexType span)
+   {
+      m_Span = span;
+   }
 
    //------------------------------------------------------------------------
    // Returns the span number for this poi.
-   SpanIndexType GetSpan() const;
+   SpanIndexType GetSpan() const
+   {
+      return m_Span;
+   }
 
    //------------------------------------------------------------------------
    // Sets the girder index for this poi.
-   void SetGirder(GirderIndexType gdr);
+   void SetGirder(GirderIndexType gdr)
+   {
+      m_Girder = gdr;
+   }
 
    //------------------------------------------------------------------------
    // Returns the girder index for this poi.
-   GirderIndexType GetGirder() const;
+   GirderIndexType GetGirder() const
+   {
+      return m_Girder;
+   }
 
    //------------------------------------------------------------------------
    // Sets the location of this poi, measured from the start of the girder.
-   void SetDistFromStart(Float64 distFromStart);
+   void SetDistFromStart(Float64 distFromStart)
+   {
+      ATLASSERT( !(distFromStart < 0) );
+      m_DistFromStart = distFromStart;
+   }
 
    //------------------------------------------------------------------------
    // Returns the location of this poi, measured from the start of the girder.
-   Float64 GetDistFromStart() const;
-
+   Float64 GetDistFromStart() const
+   {
+      return m_DistFromStart;
+   }
    //------------------------------------------------------------------------
    // Sets the POI stage attributes
    void SetAttributes(pgsTypes::Stage stage,PoiAttributeType attrib);
@@ -193,6 +217,10 @@ public:
    //------------------------------------------------------------------------
    // Returns the attributes of this POI.
    PoiAttributeType GetAttributes(pgsTypes::Stage stage) const;
+
+   //------------------------------------------------------------------------
+   // Merge stage attributes for this POI with another's
+   void MergeStageAttributes(const pgsPointOfInterest& rOther);
 
    void MakeTenthPoint(pgsTypes::Stage stage,Uint16 tenthPoint);
    void MakeTenthPoint(const std::vector<pgsTypes::Stage>& stages,Uint16 tenthPoint);
@@ -257,7 +285,7 @@ public:
    static Uint16 GetAttributeTenthPoint(PoiAttributeType attribute);
 
    void AddStage(pgsTypes::Stage stage,PoiAttributeType attribute);
-   void AddStages(std::vector<pgsTypes::Stage> stages,PoiAttributeType attribute);
+   void AddStages(const std::vector<pgsTypes::Stage>& stages,PoiAttributeType attribute);
    void RemoveStage(pgsTypes::Stage stage);
    bool HasStage(pgsTypes::Stage stage) const;
    std::vector<pgsTypes::Stage> GetStages() const;
@@ -278,8 +306,27 @@ private:
 
    static Float64 ms_Tol;
 
-   typedef std::map<pgsTypes::Stage,PoiAttributeType> StageContainer;
-   StageContainer m_Stages;
+   // Small class to store stage information for POI. Previously, we used a map here, but 
+   // performance penalties were huge. 
+   // Note: We may not need to use the bool here if an atribute of zero means the stage is not in use
+   //       for this POI
+   struct StageData
+   {
+      bool isSet;
+      PoiAttributeType Attribute;
+
+      StageData():
+      isSet(false), Attribute(0)
+      {;}
+
+      void SetVal(bool set, PoiAttributeType attrib)
+      {
+         isSet = set;
+         Attribute = attrib;
+      }
+   };
+
+   StageData m_Stages[pgsTypes::MaxStages];
 
    friend pgsPoiMgr; // This guy sets the POI id.
 

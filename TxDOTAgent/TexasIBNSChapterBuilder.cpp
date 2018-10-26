@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -91,7 +91,7 @@ rptChapter* CTexasIBNSChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara << _T("The Specification Check was Successful") << rptNewLine;
+      *pPara << color(Green) << _T("The Specification Check was Successful") << color(Black) << rptNewLine;
    }
    else
    {

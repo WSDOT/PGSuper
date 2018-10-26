@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -602,15 +602,12 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,GirderIndexType
       const pgsMomentRatingArtifact* pNegativeMoment;
       const pgsShearRatingArtifact* pShear;
       const pgsStressRatingArtifact* pStress;
-      const pgsYieldStressRatioArtifact* pYieldStressPositiveMoment;
-      const pgsYieldStressRatioArtifact* pYieldStressNegativeMoment;
 
-      Float64 RF = pRatingArtifact->GetRatingFactorEx(&pPositiveMoment,&pNegativeMoment,&pShear,&pStress,&pYieldStressPositiveMoment,&pYieldStressNegativeMoment);
+      Float64 RF = pRatingArtifact->GetRatingFactorEx(&pPositiveMoment,&pNegativeMoment,&pShear,&pStress);
 
       Float64 gLL;
       std::_tstring strControlling;
       pgsPointOfInterest poi;
-      bool bIsStressRatio = false;
       if ( pPositiveMoment )
       {
          ATLASSERT(vehIdx == pPositiveMoment->GetVehicleIndex());
@@ -639,22 +636,6 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,GirderIndexType
          strControlling = _T("Stress");
          poi = pStress->GetPointOfInterest();
       }
-      else if ( pYieldStressPositiveMoment )
-      {
-         ATLASSERT(vehIdx == pYieldStressPositiveMoment->GetVehicleIndex());
-         gLL = pYieldStressPositiveMoment->GetLiveLoadFactor();
-         strControlling = _T("Yield Stress Positive Moment");
-         poi = pYieldStressPositiveMoment->GetPointOfInterest();
-         bIsStressRatio = true;
-      }
-      else if ( pYieldStressNegativeMoment )
-      {
-         ATLASSERT(vehIdx == pYieldStressNegativeMoment->GetVehicleIndex());
-         gLL = pYieldStressNegativeMoment->GetLiveLoadFactor();
-         strControlling = _T("Yield Stress Negative Moment");
-         poi = pYieldStressNegativeMoment->GetPointOfInterest();
-         bIsStressRatio = true;
-      }
       else
       {
          gLL = -1;
@@ -671,8 +652,104 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,GirderIndexType
          else
             (*pTable)(row,1) << RF_PASS(rating_factor,RF);
 
-         if ( bIsStressRatio )
-            (*pTable)(row,1) << rptNewLine << _T("(Stress Ratio)");
+         (*pTable)(row,2) << scalar.SetValue(gLL);
+         (*pTable)(row,3) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
+         (*pTable)(row,4) << strControlling;
+
+         row++;
+      }
+   }
+
+   return pTable;
+}
+
+rptRcTable* CRatingSummaryTable::BuildByVehicleStressTable(IBroker* pBroker,GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType) const
+{
+   USES_CONVERSION;
+
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IArtifact,pArtifact);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+
+   pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
+
+   std::_tstring strName = pProductLoads->GetLiveLoadName(llType,0);
+   if ( strName == _T("No Live Load Defined") )
+      return NULL;
+
+   rptCapacityToDemand rating_factor;
+
+   rptRcScalar scalar;
+   scalar.SetFormat( sysNumericFormatTool::Fixed );
+   scalar.SetWidth(6);
+   scalar.SetPrecision(3);
+   scalar.SetTolerance(1.0e-6);
+
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), true );
+   location.IncludeSpanAndGirder(true);
+
+   CComBSTR bstrTitle = ::GetLiveLoadTypeName(ratingType);
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,OLE2T(bstrTitle));
+
+   pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+   pTable->SetColumnStyle(3,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(3,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+   pTable->SetColumnStyle(4,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(4,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+   (*pTable)(0,0) << _T("Truck");
+   (*pTable)(0,1) << _T("Stress Ratio");
+   (*pTable)(0,2) << Sub2(symbol(gamma),_T("LL"));
+   (*pTable)(0,3)  << _T("Controlling Point") << rptNewLine << RPT_LFT_SUPPORT_LOCATION;
+   (*pTable)(0,4) << _T("Cause");
+
+   RowIndexType row = pTable->GetNumberOfHeaderRows();
+   VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
+   for ( VehicleIndexType vehIdx = 0; vehIdx < nVehicles; vehIdx++ )
+   {
+      std::_tstring strName = pProductLoads->GetLiveLoadName(llType,vehIdx);
+
+      const pgsRatingArtifact* pRatingArtifact = pArtifact->GetRatingArtifact(gdrLineIdx,ratingType,vehIdx);
+
+      const pgsYieldStressRatioArtifact* pYieldStressPositiveMoment;
+      const pgsYieldStressRatioArtifact* pYieldStressNegativeMoment;
+
+	  Float64 SR_PM = pRatingArtifact->GetYieldStressRatioEx(true,&pYieldStressPositiveMoment);
+	  Float64 SR_NM = pRatingArtifact->GetYieldStressRatioEx(false,&pYieldStressNegativeMoment);
+
+	  Float64 SR = min(SR_PM,SR_NM);
+
+      Float64 gLL;
+      std::_tstring strControlling;
+      pgsPointOfInterest poi;
+      if ( SR_PM < SR_NM )
+      {
+         ATLASSERT(vehIdx == pYieldStressPositiveMoment->GetVehicleIndex());
+         gLL = pYieldStressPositiveMoment->GetLiveLoadFactor();
+         strControlling = _T("Yield Stress Positive Moment");
+         poi = pYieldStressPositiveMoment->GetPointOfInterest();
+      }
+      else if ( pYieldStressNegativeMoment )
+      {
+         ATLASSERT(vehIdx == pYieldStressNegativeMoment->GetVehicleIndex());
+         gLL = pYieldStressNegativeMoment->GetLiveLoadFactor();
+         strControlling = _T("Yield Stress Negative Moment");
+         poi = pYieldStressNegativeMoment->GetPointOfInterest();
+      }
+
+      Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+      if ( 0 < gLL )
+      {
+         (*pTable)(row,0) << strName;
+
+         if ( SR < 1 )
+            (*pTable)(row,1) << RF_FAIL(rating_factor,SR);
+         else
+            (*pTable)(row,1) << RF_PASS(rating_factor,SR);
 
          (*pTable)(row,2) << scalar.SetValue(gLL);
          (*pTable)(row,3) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );

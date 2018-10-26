@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,6 +30,8 @@
 //
 #include "resource.h"
 
+#include "SharedCTrls\MultiGirderSelectGrid.h" 
+
 /////////////////////////////////////////////////////////////////////////////
 // exportCADData dialog
 
@@ -43,10 +45,10 @@ public:
 // Dialog Data
 	//{{AFX_DATA(exportCADData)
 	enum { IDD = IDD_EXPORT_TXDOTCADDATA };
-	int		m_Girder;
-	int		m_Span;
 	BOOL	m_IsExtended;
 	//}}AFX_DATA
+
+   std::vector<SpanGirderHashType> m_SelGdrs;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -70,7 +72,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-
+   CMultiGirderSelectGrid* m_pGrid;
 };
 
 

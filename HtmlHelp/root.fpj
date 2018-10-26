@@ -2,16 +2,16 @@
 <rhpml majorversion="1" minorversion="0">
 	<folders>
 		<folder>
-			<name>Bridge View</name>
-		</folder>
-		<folder>
 			<name>Bridge Description</name>
 		</folder>
 		<folder>
-			<name>Girder View</name>
+			<name>Bridge View</name>
 		</folder>
 		<folder>
 			<name>Dialogs</name>
+		</folder>
+		<folder>
+			<name>Girder View</name>
 		</folder>
 		<folder>
 			<name>PierDetails</name>
@@ -20,10 +20,10 @@
 			<name>Tutorial</name>
 		</folder>
 		<folder>
-			<name>Theoretical Manual</name>
+			<name>Girder Editing Wizard</name>
 		</folder>
 		<folder>
-			<name>Girder Editing Wizard</name>
+			<name>Theoretical Manual</name>
 		</folder>
 		<folder>
 			<name>User's Guide</name>
@@ -40,7 +40,7 @@
 	</folders>
 	<topics>
 		<topic>
-			<name>Support.htm</name>
+			<name>Welcome.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -50,7 +50,7 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Welcome.htm</name>
+			<name>Support.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>

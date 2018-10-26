@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,6 +32,37 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+// function to find closest compatible version of catalog entry for current software version
+// find the key closest to the one for the current version (but not after)
+static bool FindCompatibleVersion(std::set<std::_tstring>& rEntries, std::_tstring& rVersion)
+{
+   bool did_find = true;
+   std::set<std::_tstring>::const_iterator found( rEntries.find(rVersion) );
+   if ( found == rEntries.end() )
+   {
+      // Not in the set... add it and then try to use most recent version to this one.
+      std::pair<std::set<std::_tstring>::iterator,bool> result( rEntries.insert(rVersion) );
+      ASSERT( result.second == true );
+      std::set<std::_tstring>::iterator insert_loc( result.first );
+
+      if (insert_loc != rEntries.begin())
+      {
+         // Found a version prior to the current program version. We can use this.
+         insert_loc--;
+         rVersion = *insert_loc;
+      }
+      else
+      {
+         // If the inserted entry is at the beginning it means all entries in the set are for a newer
+         // version of PGSuper than this one. We can't use it.
+         did_find = false;
+      }
+   }
+
+   return did_find;
+}
+
 
 CPGSuperCatalog::CPGSuperCatalog():
 m_DidParse(false)
@@ -215,33 +246,24 @@ bool CPGSuperCatalog::DoParse()
          std::_tstring master_library_key(_T("Version_"));
          master_library_key += m_PGSuperVersion;
 
-         std::set<std::_tstring>::const_iterator found = MasterLibraryEntries.find(master_library_key);
-         if ( found == MasterLibraryEntries.end() )
+         bool did_find = FindCompatibleVersion(MasterLibraryEntries, master_library_key);
+         if (!did_find)
          {
-            // not in the set... add it and then go back one
-            std::pair<std::set<std::_tstring>::iterator,bool> result = MasterLibraryEntries.insert(master_library_key);
-            ASSERT( result.second == true );
-            std::set<std::_tstring>::iterator insert_loc = result.first;
-            insert_loc--;
-            master_library_key = *insert_loc;
+            break;
          }
+
          master_library_key += std::_tstring(_T("_MasterLibrary"));
 
          std::_tstring workgroup_template_key(_T("Version_"));
          workgroup_template_key += m_PGSuperVersion;
 
-         found = WorkgroupTemplateEntries.find(workgroup_template_key);
-         if ( found == WorkgroupTemplateEntries.end() )
+         did_find = FindCompatibleVersion(WorkgroupTemplateEntries, workgroup_template_key);
+         if (!did_find)
          {
-            // not in the set... add it and then go back one
-            std::pair<std::set<std::_tstring>::iterator,bool> result = WorkgroupTemplateEntries.insert(workgroup_template_key);
-            ASSERT( result.second == true );
-            std::set<std::_tstring>::iterator insert_loc = result.first;
-            insert_loc--;
-            workgroup_template_key = *insert_loc;
+            break;
          }
-         workgroup_template_key += CString(_T("_WorkgroupTemplates"));
 
+         workgroup_template_key += CString(_T("_WorkgroupTemplates"));
 
          TCHAR buffer1[256];
          memset(buffer1,0,sizeof(buffer1));
@@ -303,16 +325,12 @@ bool CPGSuperCatalog::DoParse()
          std::_tstring pgz_key(_T("Version_"));
          pgz_key += m_PGSuperVersion;
 
-         std::set<std::_tstring>::const_iterator found( PgzEntries.find(pgz_key) );
-         if ( found == PgzEntries.end() )
+         bool did_find = FindCompatibleVersion(PgzEntries, pgz_key);
+         if (!did_find)
          {
-            // not in the set... add it and then go back one
-            std::pair<std::set<std::_tstring>::iterator,bool> result( PgzEntries.insert(pgz_key) );
-            ASSERT( result.second == true );
-            std::set<std::_tstring>::iterator insert_loc( result.first );
-            insert_loc--;
-            pgz_key = *insert_loc;
+            break;
          }
+
          pgz_key += std::_tstring(_T("_PgzFiles"));
 
 
@@ -323,7 +341,7 @@ bool CPGSuperCatalog::DoParse()
          if ( dwResult1 == 0 )
          {
             CString msg;
-            msg.Format(_T("The Master Library and Workgroup Templates could not be updated because PGSuper could not find the Pgz File Key:\n%s\nin the server's ini file.\n\n\nPlease contact the server owner."),pgz_key);
+            msg.Format(_T("The Master Library and Workgroup Templates could not be updated because PGSuper could not find the Pgz File Key:\n%s\nin the server's ini file.\n\n\nPlease contact the server owner."),pgz_key.c_str());
             AfxMessageBox(msg,MB_ICONEXCLAMATION | MB_OK);
 
             return false;

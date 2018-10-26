@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -44,11 +44,15 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+// pre-convert constant values for performance
+static const Float64 D_18 = ::ConvertToSysUnits(18., unitMeasure::Inch);
+
 /////////////////////////////////////////////////////////////////////////////
 // CIBeamFactory
-void CUBeamDistFactorEngineer::Init(bool bTypeB)
+void CUBeamDistFactorEngineer::Init(bool bTypeB, bool bisSpreadSlab)
 {
    m_bTypeB = bTypeB;
+   m_bIsSpreadSlab = bisSpreadSlab;
 }
 
 HRESULT CUBeamDistFactorEngineer::FinalConstruct()
@@ -84,6 +88,11 @@ void CUBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType gd
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(ILiveLoads,pLiveLoads);
 
+   GET_IFACE(ILibrary, pLib);
+   GET_IFACE(ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   Int16 lldfMethod = pSpecEntry->GetLiveLoadDistributionMethod();
+
    // determine continuity
    bool bContinuous, bContinuousAtStart, bContinuousAtEnd;
    pBridge->IsContinuousAtPier(pier1,&bContinuous,&bContinuousAtStart);
@@ -97,6 +106,7 @@ void CUBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType gd
    rptParagraph* pPara;
 
    bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
+
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    location, pDisplayUnits->GetSpanLengthUnit(),      true );
@@ -141,7 +151,17 @@ void CUBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType gd
    Float64 supp_dist = span_lldf.ControllingLocation - pBridge->GetGirderStartConnectionLength(span,gdr);
    (*pPara) << _T("Measurement of Girder Spacing taken at ") << location.SetValue(supp_dist)<< _T(" from left support, measured along girder, or station = ")<< rptRcStation(station, &pDisplayUnits->GetStationFormat() ) << rptNewLine;
 //   (*pPara) << _T("Span Length: L = ") << xdim.SetValue(span_lldf.L) << rptNewLine;
-   (*pPara) << _T("Girder Depth: d = ") << xdim2.SetValue(span_lldf.d) << rptNewLine;
+
+   if ( m_bIsSpreadSlab && lldfMethod==LLDF_TXDOT && (span_lldf.d < D_18) )
+   {
+      (*pPara) << _T("Girder Depth = ") << xdim2.SetValue(span_lldf.d) << _T(", which is less than 18 in. In accordance to TxDOT design specifications for spread slab beams, the value of d will be pinned to 18 inches.") << rptNewLine;
+      (*pPara) << _T("d = ") << xdim2.SetValue(D_18) << rptNewLine;
+   }
+   else
+   {
+      (*pPara) << _T("Girder Depth: d = ") << xdim2.SetValue(span_lldf.d) << rptNewLine;
+   }
+
    Float64 de = span_lldf.Side==dfLeft ? span_lldf.leftDe:span_lldf.rightDe;
    (*pPara) << _T("Distance from exterior web of exterior beam to curb line: d") << Sub(_T("e")) << _T(" = ") << xdim.SetValue(de) << rptNewLine;
 //   (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((span_lldf.skew1 + span_lldf.skew2)/2)) << rptNewLine;
@@ -419,7 +439,6 @@ lrfdLiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFParameters(
 
    // compute de (inside edge of barrier to CL of exterior web)
    Float64 wd = pGdr->GetCL2ExteriorWebDistance(poi); // cl beam to cl web
-   ATLASSERT(wd>0.0);
 
    // Note this is not exactly correct because opposite exterior beam might be different, but we won't be using this data set for that beam
    plldf->leftDe  = plldf->leftCurbOverhang - wd;  
@@ -465,6 +484,14 @@ lrfdLiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFParameters(
    }
    else if ( plldf->Method == LLDF_TXDOT )
    {
+      Float64 d = plldf->d;
+      if (m_bIsSpreadSlab)
+      {
+         // TxDOT pins spread slab depth at 18"
+         if (d<D_18)
+            d = D_18;
+      }
+
       pLLDF = new lrfdTxDotLldfTypeBC(plldf->gdrNum, // to fix this warning, clean up the WBFL data types
                                       plldf->Savg,
                                       plldf->gdrSpacings,
@@ -472,7 +499,7 @@ lrfdLiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFParameters(
                                       plldf->rightCurbOverhang,
                                       plldf->Nl, 
                                       plldf->wLane,
-                                      plldf->d,
+                                      d,
                                       plldf->L,
                                       plldf->leftDe,
                                       plldf->rightDe,

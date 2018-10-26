@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -60,6 +60,7 @@
 
 #include <WBFLCogo.h>
 #include <WBFLCogo_i.c>
+#include <WBFLCore_i.c>
 
 #include <Reporting\ReportStyleHolder.h>
 
@@ -113,6 +114,8 @@ CReportingApp theApp;
 BOOL CReportingApp::InitInstance()
 {
 	CWinApp::InitInstance();
+
+   GXInit( );
 
    // Initialize the report styles when the DLL loads
    pgsReportStyleHolder::InitStyles();

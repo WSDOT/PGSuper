@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -152,6 +152,8 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
    SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
    SpanIndexType lastSpanIdx  = (span == ALL_SPANS ? nSpans : firstSpanIdx+1);
 
+   Float64 start_of_bridge_station = pBridge->GetPierStation(0);
+
    for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx < lastSpanIdx; spanIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
@@ -177,9 +179,11 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
 
 
             Float64 span_length = pBridge->GetSpanLength(spanIdx,gdrIdx);
+            Float64 start_of_span_station = pBridge->GetPierStation(spanIdx);
+            Float64 dist_from_start_of_bridge_to_mid_span = start_of_span_station - start_of_bridge_station + span_length/2; 
             (*pPara) << _T("Bending Stiffness of Entire Bridge Section at mid-span") << rptNewLine;
-            (*pPara) << Sub2(_T("EI"),_T("xx")) << _T(" = ") << uei.SetValue( pSectProp2->GetBridgeEIxx(span_length/2) ) << _T(" (used to compute Live Load Deflections per LRFD 3.6.1.3.2)") << rptNewLine;
-            (*pPara) << Sub2(_T("EI"),_T("yy")) << _T(" = ") << uei.SetValue( pSectProp2->GetBridgeEIyy(span_length/2) ) << rptNewLine;
+            (*pPara) << Sub2(_T("EI"),_T("xx")) << _T(" = ") << uei.SetValue( pSectProp2->GetBridgeEIxx(dist_from_start_of_bridge_to_mid_span) ) << _T(" (used to compute Live Load Deflections per LRFD 3.6.1.3.2)") << rptNewLine;
+            (*pPara) << Sub2(_T("EI"),_T("yy")) << _T(" = ") << uei.SetValue( pSectProp2->GetBridgeEIyy(dist_from_start_of_bridge_to_mid_span) ) << rptNewLine;
             *pPara << rptNewLine;
          }
 

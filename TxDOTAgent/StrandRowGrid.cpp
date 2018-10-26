@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -221,7 +221,7 @@ void CStrandRowGrid::FillGrid(const CTxDOTOptionalDesignGirderData::AvailableStr
       }
       else
       {
-         // No strands at the elev - Get the first entry from the strand list as the default selection (should be _T("0"))
+         // No strands at the elev - Get the first entry from the strand list as the default selection (should be "0")
          int idx = strStrands.Find(_T("\n"),0);
          strCurrent = strStrands.Left(idx);
       }

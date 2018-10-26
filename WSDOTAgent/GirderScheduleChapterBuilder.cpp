@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -364,9 +364,9 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    (*p_table)(row  ,1) << gdim.SetValue(pCamber->GetScreedCamber( pmid[0] ) );
 
    // get # of days for creep
-   (*p_table)(++row,0) << _T("Estimated camber at ")<< min_days<<_T(" days, D");
-   (*p_table)(row  ,1) << gdim.SetValue(pCamber->GetDCamberForGirderSchedule( pmid[0], CREEP_MINTIME) );
-   (*p_table)(++row,0) << _T("Estimated camber at ")<< max_days<<_T(" days, D");
+   (*p_table)(++row,0) << _T("Lower bound camber at ")<< min_days<<_T(" days, 50% of D") <<Sub(min_days);
+   (*p_table)(row  ,1) << gdim.SetValue(0.5*pCamber->GetDCamberForGirderSchedule( pmid[0], CREEP_MINTIME) );
+   (*p_table)(++row,0) << _T("Upper bound camber at ")<< max_days<<_T(" days, D") << Sub(max_days);
    (*p_table)(row  ,1) << gdim.SetValue(pCamber->GetDCamberForGirderSchedule( pmid[0], CREEP_MAXTIME) );
 
    // Figure

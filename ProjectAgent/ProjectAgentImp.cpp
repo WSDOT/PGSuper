@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -2384,32 +2384,32 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
          CSpanData* pSpan;
          do
          {
-            pPier->SetLLDFNegMoment(pgsTypes::StrengthI,pgsTypes::Interior,M);
-            pPier->SetLLDFNegMoment(pgsTypes::StrengthI,pgsTypes::Exterior,M);
-            pPier->SetLLDFNegMoment(pgsTypes::FatigueI,pgsTypes::Interior,M);
-            pPier->SetLLDFNegMoment(pgsTypes::FatigueI,pgsTypes::Exterior,M);
+            pPier->SetLLDFNegMoment(pgsTypes::Interior,pgsTypes::StrengthI,M);
+            pPier->SetLLDFNegMoment(pgsTypes::Exterior,pgsTypes::StrengthI,M);
+            pPier->SetLLDFNegMoment(pgsTypes::Interior,pgsTypes::FatigueI,M);
+            pPier->SetLLDFNegMoment(pgsTypes::Exterior,pgsTypes::FatigueI,M);
 
-            pPier->SetLLDFReaction(pgsTypes::StrengthI,pgsTypes::Interior,R);
-            pPier->SetLLDFReaction(pgsTypes::StrengthI,pgsTypes::Exterior,R);
-            pPier->SetLLDFReaction(pgsTypes::FatigueI,pgsTypes::Interior,R);
-            pPier->SetLLDFReaction(pgsTypes::FatigueI,pgsTypes::Exterior,R);
+            pPier->SetLLDFReaction(pgsTypes::Interior,pgsTypes::StrengthI,R);
+            pPier->SetLLDFReaction(pgsTypes::Exterior,pgsTypes::StrengthI,R);
+            pPier->SetLLDFReaction(pgsTypes::Interior,pgsTypes::FatigueI,R);
+            pPier->SetLLDFReaction(pgsTypes::Exterior,pgsTypes::FatigueI,R);
 
             pSpan = pPier->GetNextSpan();
             if ( pSpan )
             {
-               pSpan->SetLLDFNegMoment(pgsTypes::StrengthI,pgsTypes::Interior,M);
-               pSpan->SetLLDFPosMoment(pgsTypes::StrengthI,pgsTypes::Interior,M);
-               pSpan->SetLLDFShear(pgsTypes::StrengthI,pgsTypes::Interior,V);
-               pSpan->SetLLDFNegMoment(pgsTypes::FatigueI,pgsTypes::Interior,M);
-               pSpan->SetLLDFPosMoment(pgsTypes::FatigueI,pgsTypes::Interior,M);
-               pSpan->SetLLDFShear(pgsTypes::FatigueI,pgsTypes::Interior,V);
+               pSpan->SetLLDFNegMoment(pgsTypes::Interior,pgsTypes::StrengthI,M);
+               pSpan->SetLLDFPosMoment(pgsTypes::Interior,pgsTypes::StrengthI,M);
+               pSpan->SetLLDFShear(pgsTypes::Interior,pgsTypes::StrengthI,V);
+               pSpan->SetLLDFNegMoment(pgsTypes::Interior,pgsTypes::FatigueI,M);
+               pSpan->SetLLDFPosMoment(pgsTypes::Interior,pgsTypes::FatigueI,M);
+               pSpan->SetLLDFShear(pgsTypes::Interior,pgsTypes::FatigueI,V);
 
-               pSpan->SetLLDFNegMoment(pgsTypes::StrengthI,pgsTypes::Exterior,M);
-               pSpan->SetLLDFPosMoment(pgsTypes::StrengthI,pgsTypes::Exterior,M);
-               pSpan->SetLLDFShear(pgsTypes::StrengthI,pgsTypes::Exterior,V);
-               pSpan->SetLLDFNegMoment(pgsTypes::FatigueI,pgsTypes::Exterior,M);
-               pSpan->SetLLDFPosMoment(pgsTypes::FatigueI,pgsTypes::Exterior,M);
-               pSpan->SetLLDFShear(pgsTypes::FatigueI,pgsTypes::Exterior,V);
+               pSpan->SetLLDFNegMoment(pgsTypes::Exterior,pgsTypes::StrengthI,M);
+               pSpan->SetLLDFPosMoment(pgsTypes::Exterior,pgsTypes::StrengthI,M);
+               pSpan->SetLLDFShear(pgsTypes::Exterior,pgsTypes::StrengthI,V);
+               pSpan->SetLLDFNegMoment(pgsTypes::Exterior,pgsTypes::FatigueI,M);
+               pSpan->SetLLDFPosMoment(pgsTypes::Exterior,pgsTypes::FatigueI,M);
+               pSpan->SetLLDFShear(pgsTypes::Exterior,pgsTypes::FatigueI,V);
 
                pPier = pSpan->GetNextPier();
             }
@@ -2466,27 +2466,31 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
          do
          {
             pSpan = pPier->GetNextSpan();
-
-            for ( int ls = 0; ls < 2; ls++ )
-            {
-               pgsTypes::LimitState limitState = (ls == 0 ? pgsTypes::StrengthI : pgsTypes::FatigueI);
-               for ( int type = (int)pgsTypes::Interior; type <= (int)pgsTypes::Exterior; type++ )
-               {
-                  pPier->SetLLDFNegMoment(limitState,pgsTypes::GirderLocation(type),M[type]);
-
-                  pPier->SetLLDFReaction(limitState,pgsTypes::GirderLocation(type),R[type]);
-
-                  if ( pSpan )
-                  {
-                     pSpan->SetLLDFNegMoment(limitState,pgsTypes::GirderLocation(type),M[type]);
-                     pSpan->SetLLDFPosMoment(limitState,pgsTypes::GirderLocation(type),M[type]);
-                     pSpan->SetLLDFShear(limitState,pgsTypes::GirderLocation(type),V[type]);
-                  }
-               }
-            }
-
             if ( pSpan )
             {
+               GirderIndexType ngdrs = pSpan->GetGirderCount();
+
+               for ( int ls = 0; ls < 2; ls++ )
+               {
+                  pgsTypes::LimitState limitState = (ls == 0 ? pgsTypes::StrengthI : pgsTypes::FatigueI);
+
+                  for (GirderIndexType ig=0; ig<ngdrs; ig++)
+                  {
+                     pgsTypes::GirderLocation type = (ig==0 || ig==ngdrs-1)? pgsTypes::Exterior : pgsTypes::Interior;
+                     
+                     pPier->SetLLDFNegMoment(type, limitState,M[type]);
+
+                     pPier->SetLLDFReaction(type, limitState,R[type]);
+
+                     if ( pSpan )
+                     {
+                        pSpan->SetLLDFNegMoment(ig,limitState,M[type]);
+                        pSpan->SetLLDFPosMoment(ig,limitState,M[type]);
+                        pSpan->SetLLDFShear(ig,limitState,V[type]);
+                     }
+                  }
+               }
+
                pPier = pSpan->GetNextPier();
             }
 
@@ -2506,11 +2510,12 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
 
             do
             {
+               double pM, nM, V, R;
+
                var.vt = VT_R8;
                hr = pLoad->BeginUnit(_T("Pier"));
                if ( FAILED(hr) )
                   return hr;
-
 
                hr = pLoad->get_Property(_T("pM"),&var);
                if ( FAILED(hr) )
@@ -2520,8 +2525,9 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
                if ( FAILED(hr) )
                   return hr;
 
-               pPier->SetLLDFNegMoment(pgsTypes::StrengthI,(pgsTypes::GirderLocation)type,var.dblVal);
-               pPier->SetLLDFNegMoment(pgsTypes::FatigueI, (pgsTypes::GirderLocation)type,var.dblVal);
+
+               pPier->SetLLDFNegMoment(type,pgsTypes::StrengthI,var.dblVal);
+               pPier->SetLLDFNegMoment(type,pgsTypes::FatigueI, var.dblVal);
 
                hr = pLoad->get_Property(_T("V"), &var);
                if ( FAILED(hr) )
@@ -2531,8 +2537,8 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
                if ( FAILED(hr) )
                   return hr;
 
-               pPier->SetLLDFReaction(pgsTypes::StrengthI,(pgsTypes::GirderLocation)type,var.dblVal);
-               pPier->SetLLDFReaction(pgsTypes::FatigueI, (pgsTypes::GirderLocation)type,var.dblVal);
+               pPier->SetLLDFReaction(type,pgsTypes::StrengthI,var.dblVal);
+               pPier->SetLLDFReaction(type,pgsTypes::FatigueI, var.dblVal);
 
                pLoad->EndUnit();
 
@@ -2549,26 +2555,42 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
                   if ( FAILED(hr) )
                      return hr;
 
-                  pSpan->SetLLDFPosMoment(pgsTypes::StrengthI,(pgsTypes::GirderLocation)type,var.dblVal);
-                  pSpan->SetLLDFPosMoment(pgsTypes::FatigueI, (pgsTypes::GirderLocation)type,var.dblVal);
+                  pM = var.dblVal;
 
                   hr = pLoad->get_Property(_T("nM"),&var);
                   if ( FAILED(hr) )
                      return hr;
 
-                  pSpan->SetLLDFNegMoment(pgsTypes::StrengthI,(pgsTypes::GirderLocation)type,var.dblVal);
-                  pSpan->SetLLDFNegMoment(pgsTypes::FatigueI, (pgsTypes::GirderLocation)type,var.dblVal);
+                  nM = var.dblVal;
+
 
                   hr = pLoad->get_Property(_T("V"), &var);
                   if ( FAILED(hr) )
                      return hr;
 
-                  pSpan->SetLLDFShear(pgsTypes::StrengthI,(pgsTypes::GirderLocation)type,var.dblVal);
-                  pSpan->SetLLDFShear(pgsTypes::FatigueI, (pgsTypes::GirderLocation)type,var.dblVal);
+                  V = var.dblVal;
 
                   hr = pLoad->get_Property(_T("R"), &var);
                   if ( FAILED(hr) )
                      return hr;
+
+                  R = var.dblVal;
+
+                  // Set for all girders
+                  GirderIndexType ngdrs = pSpan->GetGirderCount();
+                  for (GirderIndexType ig=0; ig<ngdrs; ig++)
+                  {
+                     if ((pgsTypes::GirderLocation)type==pgsTypes::Interior && pSpan->IsInteriorGirder(ig) ||
+                         (pgsTypes::GirderLocation)type==pgsTypes::Exterior && pSpan->IsExteriorGirder(ig))
+                     {
+                        pSpan->SetLLDFPosMoment(ig,pgsTypes::StrengthI,pM);
+                        pSpan->SetLLDFPosMoment(ig,pgsTypes::FatigueI, pM);
+                        pSpan->SetLLDFNegMoment(ig,pgsTypes::StrengthI,nM);
+                        pSpan->SetLLDFNegMoment(ig,pgsTypes::FatigueI, nM);
+                        pSpan->SetLLDFShear(ig,pgsTypes::StrengthI,V);
+                        pSpan->SetLLDFShear(ig,pgsTypes::FatigueI, V);
+                     }
+                  }
 
                   pPier = pSpan->GetNextPier();
 
@@ -5890,7 +5912,7 @@ CollectionIndexType CProjectAgentImp::AddPointLoad(const CPointLoadData& pld)
 {
    m_PointLoads.push_back(pld);
 
-   Fire_GirderChanged(pld.m_Span,pld.m_Girder,GCH_LOADING_ADDED);
+   FireContinuityRelatedGirderChange(pld.m_Span,pld.m_Girder,GCH_LOADING_ADDED);
 
    return GetPointLoadCount()-1;
 }
@@ -5906,9 +5928,18 @@ void CProjectAgentImp::UpdatePointLoad(CollectionIndexType idx, const CPointLoad
 {
    ATLASSERT(0 <= idx && idx < GetPointLoadCount() );
 
+   // must fire a delete event if load is moved to another girder
+   SpanIndexType prevspn = m_PointLoads[idx].m_Span;
+   GirderIndexType prevgdr = m_PointLoads[idx].m_Girder;
+
+   if (prevspn != pld.m_Span || prevgdr != pld.m_Girder)
+   {
+      FireContinuityRelatedGirderChange(prevspn,prevgdr,GCH_LOADING_REMOVED);
+   }
+
    m_PointLoads[idx] = pld;
 
-   Fire_GirderChanged(pld.m_Span,pld.m_Girder,GCH_LOADING_CHANGED);
+   FireContinuityRelatedGirderChange(pld.m_Span,pld.m_Girder,GCH_LOADING_CHANGED);
 }
 
 void CProjectAgentImp::DeletePointLoad(CollectionIndexType idx)
@@ -5923,7 +5954,7 @@ void CProjectAgentImp::DeletePointLoad(CollectionIndexType idx)
 
    m_PointLoads.erase(it);
 
-   Fire_GirderChanged(span,gdr,GCH_LOADING_REMOVED);
+   FireContinuityRelatedGirderChange(span,gdr,GCH_LOADING_REMOVED);
 }
 
 CollectionIndexType CProjectAgentImp::GetDistributedLoadCount() const
@@ -5936,7 +5967,7 @@ CollectionIndexType CProjectAgentImp::AddDistributedLoad(const CDistributedLoadD
 {
    m_DistributedLoads.push_back(pld);
 
-   Fire_GirderChanged(pld.m_Span,pld.m_Girder,GCH_LOADING_ADDED);
+   FireContinuityRelatedGirderChange(pld.m_Span,pld.m_Girder,GCH_LOADING_ADDED);
 
    return GetDistributedLoadCount()-1;
 }
@@ -5952,9 +5983,18 @@ void CProjectAgentImp::UpdateDistributedLoad(CollectionIndexType idx, const CDis
 {
    ATLASSERT(0 <= idx && idx < GetDistributedLoadCount() );
 
+   // must fire a delete event if load is moved to another girder
+   SpanIndexType prevspn = m_DistributedLoads[idx].m_Span;
+   GirderIndexType prevgdr = m_DistributedLoads[idx].m_Girder;
+
+   if (prevspn != pld.m_Span || prevgdr != pld.m_Girder)
+   {
+      FireContinuityRelatedGirderChange(prevspn,prevgdr,GCH_LOADING_REMOVED);
+   }
+
    m_DistributedLoads[idx] = pld;
 
-   Fire_GirderChanged(pld.m_Span,pld.m_Girder,GCH_LOADING_CHANGED);
+   FireContinuityRelatedGirderChange(pld.m_Span,pld.m_Girder,GCH_LOADING_CHANGED);
 }
 
 void CProjectAgentImp::DeleteDistributedLoad(CollectionIndexType idx)
@@ -5969,7 +6009,7 @@ void CProjectAgentImp::DeleteDistributedLoad(CollectionIndexType idx)
 
    m_DistributedLoads.erase(it);
 
-   Fire_GirderChanged(span,gdr,GCH_LOADING_REMOVED);
+   FireContinuityRelatedGirderChange(span,gdr,GCH_LOADING_REMOVED);
 }
 
 CollectionIndexType CProjectAgentImp::GetMomentLoadCount() const
@@ -5981,7 +6021,7 @@ CollectionIndexType CProjectAgentImp::AddMomentLoad(const CMomentLoadData& pld)
 {
    m_MomentLoads.push_back(pld);
 
-   Fire_GirderChanged(pld.m_Span,pld.m_Girder,GCH_LOADING_ADDED);
+   FireContinuityRelatedGirderChange(pld.m_Span,pld.m_Girder,GCH_LOADING_ADDED);
 
    return GetMomentLoadCount()-1;
 }
@@ -5997,9 +6037,18 @@ void CProjectAgentImp::UpdateMomentLoad(CollectionIndexType idx, const CMomentLo
 {
    ATLASSERT(0 <= idx && idx < GetMomentLoadCount() );
 
+   // must fire a delete event if load is moved to another girder
+   SpanIndexType prevspn = m_MomentLoads[idx].m_Span;
+   GirderIndexType prevgdr = m_MomentLoads[idx].m_Girder;
+
+   if (prevspn != pld.m_Span || prevgdr != pld.m_Girder)
+   {
+      FireContinuityRelatedGirderChange(prevspn,prevgdr,GCH_LOADING_REMOVED);
+   }
+
    m_MomentLoads[idx] = pld;
 
-   Fire_GirderChanged(pld.m_Span,pld.m_Girder,GCH_LOADING_CHANGED);
+   FireContinuityRelatedGirderChange(pld.m_Span,pld.m_Girder,GCH_LOADING_CHANGED);
 }
 
 void CProjectAgentImp::DeleteMomentLoad(CollectionIndexType idx)
@@ -6014,7 +6063,7 @@ void CProjectAgentImp::DeleteMomentLoad(CollectionIndexType idx)
 
    m_MomentLoads.erase(it);
 
-   Fire_GirderChanged(span,gdr,GCH_LOADING_REMOVED);
+   FireContinuityRelatedGirderChange(span,gdr,GCH_LOADING_REMOVED);
 }
 
 void CProjectAgentImp::SetConstructionLoad(Float64 load)
@@ -7130,4 +7179,18 @@ void CProjectAgentImp::InitRatingSpecification(const std::_tstring& spec)
          ATLASSERT(false); // should never get here
       }
    }
+}
+
+HRESULT CProjectAgentImp::FireContinuityRelatedGirderChange(SpanIndexType span,GirderIndexType gdr,Uint32 lHint)
+{
+   // Some individual girder changes can affect an entire girderline
+   GirderIndexType contgdr = (gdr==ALL_GIRDERS) ? 0 :gdr; // test in girder 1 if all girders
+
+   GET_IFACE(IContinuity,pContinuity);
+   if (pContinuity->IsContinuityFullyEffective(contgdr))
+   {
+      span = ALL_SPANS;
+   }
+
+   return Fire_GirderChanged(span, gdr, lHint);
 }

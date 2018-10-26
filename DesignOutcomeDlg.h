@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@
 // DesignOutcomeDlg.h : header file
 //
 
-#include "PGSuperAppPlugin\resource.h"
+#include "resource.h"
 #include <PgsExt\DesignArtifact.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <boost\shared_ptr.hpp>
@@ -41,7 +41,7 @@ class CDesignOutcomeDlg : public CDialog
 {
 // Construction
 public:
-   CDesignOutcomeDlg(boost::shared_ptr<CSpanGirderReportSpecification>& pRptSpec,CWnd* pParent=NULL);
+   CDesignOutcomeDlg(boost::shared_ptr<CMultiGirderReportSpecification>& pRptSpec,CWnd* pParent=NULL);
 
 // Dialog Data
 	//{{AFX_DATA(CDesignOutcomeDlg)
@@ -65,7 +65,7 @@ public:
 protected:
    void CleanUp();
 
-   boost::shared_ptr<CSpanGirderReportSpecification> m_pRptSpec;
+   boost::shared_ptr<CMultiGirderReportSpecification> m_pRptSpec;
    boost::shared_ptr<CReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
 
 	// Generated message map functions

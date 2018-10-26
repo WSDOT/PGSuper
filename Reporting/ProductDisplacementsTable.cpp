@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -575,7 +575,7 @@ rptRcTable* CProductDisplacementsTable::BuildLiveLoadTable(IBroker* pBroker,Span
 
    location.IncludeSpanAndGirder(span == ALL_SPANS);
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(4,_T("Displacements For The LRFD Optional Deflection Live Load (LRFD 3.6.1.3.2)"));
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(4,_T("Displacements for the LRFD Optional Deflection Live Load (LRFD 3.6.1.3.2)"));
 
    if ( span == ALL_SPANS )
    {

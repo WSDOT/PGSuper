@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -170,7 +170,9 @@ IMPLEMENT_DYNCREATE(CGirderModelElevationView, CDisplayView)
 CGirderModelElevationView::CGirderModelElevationView():
 m_First(true),
 m_CurrID(0),
-m_DoBlockUpdate(false)
+m_DoBlockUpdate(false),
+m_CurrentSpanIdx(-1),
+m_CurrentGirderIdx(-1)
 {
    m_bUpdateError = false;
 }
@@ -305,6 +307,9 @@ void CGirderModelElevationView::OnInitialUpdate()
    // set up a valid dc first
    CDManipClientDC dc2(this);
 
+   // set girder
+   DidGirderSelectionChange();
+
    UpdateDisplayObjects();
 
    ScaleToFit();
@@ -322,6 +327,9 @@ void CGirderModelElevationView::OnUpdate(CView* pSender, LPARAM lHint, CObject* 
 
    CDisplayView::OnUpdate(pSender,lHint,pHint);
 
+   // Let our frame deal with updates as well
+   m_pFrame->OnUpdate(this,lHint,pHint);
+
    // do update
    m_CurrID = 0;
 
@@ -336,8 +344,15 @@ void CGirderModelElevationView::OnUpdate(CView* pSender, LPARAM lHint, CObject* 
         lHint == HINT_UNITSCHANGED || 
         lHint == HINT_BRIDGECHANGED ||
         lHint == HINT_GIRDERFAMILYCHANGED ||
-        lHint == HINT_GIRDERCHANGED )
+        lHint == HINT_GIRDERCHANGED ||
+        lHint == HINT_SELECTIONCHANGED )
    {
+      if (!DidGirderSelectionChange() && lHint == HINT_SELECTIONCHANGED)
+      {
+         // don't bother updating if selection hint and our girder selection didn't change
+         return;
+      }
+
       // set up a valid dc first
       CDManipClientDC dc(this);
 
@@ -373,14 +388,6 @@ void CGirderModelElevationView::OnUpdate(CView* pSender, LPARAM lHint, CObject* 
       m_bUpdateError = true;
       Invalidate();
    }
-   else if ( lHint == HINT_SELECTIONCHANGED )
-   {
-      CSelection* pSelection = (CSelection*)pHint;
-      if ( pSelection->Type != CSelection::Girder )
-      {
-         m_pFrame->SelectSpanAndGirder(INVALID_INDEX,INVALID_INDEX);
-      }
-   }
 
 	Invalidate(TRUE);
 }
@@ -396,59 +403,43 @@ void CGirderModelElevationView::UpdateDisplayObjects()
 
    CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
 
-   SpanIndexType span;
-   GirderIndexType girder;
-   if ( m_pFrame->SyncWithBridgeModelView() )
-   {
-      CSelection selection = pDoc->GetSelection();
-      span      = selection.SpanIdx;
-      girder    = selection.GirderIdx;
-   }
-   else
-   {
-      m_pFrame->GetSpanAndGirderSelection(&span,&girder);
-   }
-
-   if ( span == ALL_SPANS || girder == ALL_GIRDERS )
-      return;
-
    // Grab hold of the broker so we can pass it as a parameter
    CComPtr<IBroker> pBroker;
    pDoc->GetBroker(&pBroker);
 
    UINT settings = pDoc->GetGirderEditorSettings();
 
-   BuildGirderDisplayObjects(pDoc, pBroker, span, girder, dispMgr);
-   BuildSupportDisplayObjects(pDoc, pBroker, span, girder, dispMgr);
+   BuildGirderDisplayObjects(pDoc, pBroker, m_CurrentSpanIdx, m_CurrentGirderIdx, dispMgr);
+   BuildSupportDisplayObjects(pDoc, pBroker, m_CurrentSpanIdx, m_CurrentGirderIdx, dispMgr);
 
    if (settings & IDG_EV_SHOW_STRANDS)
-      BuildStrandDisplayObjects(pDoc, pBroker, span, girder, dispMgr);
+      BuildStrandDisplayObjects(pDoc, pBroker, m_CurrentSpanIdx, m_CurrentGirderIdx, dispMgr);
 
    if (settings & IDG_EV_SHOW_PS_CG)
-      BuildStrandCGDisplayObjects(pDoc, pBroker, span, girder, dispMgr);
+      BuildStrandCGDisplayObjects(pDoc, pBroker, m_CurrentSpanIdx, m_CurrentGirderIdx, dispMgr);
 
    if (settings & IDG_EV_SHOW_LONG_REINF)
-      BuildRebarDisplayObjects(pDoc, pBroker, span, girder, dispMgr);
+      BuildRebarDisplayObjects(pDoc, pBroker, m_CurrentSpanIdx, m_CurrentGirderIdx, dispMgr);
 
    if (settings & IDG_EV_SHOW_STIRRUPS)
-      BuildStirrupDisplayObjects(pDoc, pBroker, span, girder, dispMgr);
+      BuildStirrupDisplayObjects(pDoc, pBroker, m_CurrentSpanIdx, m_CurrentGirderIdx, dispMgr);
 
    bool cases_exist[3] = {false,false,false};
    if (settings & IDG_EV_SHOW_LOADS)
    {
-      BuildPointLoadDisplayObjects(pDoc, pBroker, span, girder, dispMgr, cases_exist);
-      BuildDistributedLoadDisplayObjects(pDoc, pBroker, span, girder, dispMgr, cases_exist);
-      BuildMomentLoadDisplayObjects(pDoc, pBroker, span, girder, dispMgr, cases_exist);
+      BuildPointLoadDisplayObjects(pDoc, pBroker, m_CurrentSpanIdx, m_CurrentGirderIdx, dispMgr, cases_exist);
+      BuildDistributedLoadDisplayObjects(pDoc, pBroker, m_CurrentSpanIdx, m_CurrentGirderIdx, dispMgr, cases_exist);
+      BuildMomentLoadDisplayObjects(pDoc, pBroker, m_CurrentSpanIdx, m_CurrentGirderIdx, dispMgr, cases_exist);
    }
 
    if (settings & IDG_EV_SHOW_DIMENSIONS)
-      BuildDimensionDisplayObjects(pDoc, pBroker, span, girder, dispMgr);
+      BuildDimensionDisplayObjects(pDoc, pBroker, m_CurrentSpanIdx, m_CurrentGirderIdx, dispMgr);
 
-   BuildSectionCutDisplayObjects(pDoc, pBroker, span, girder, dispMgr);
+   BuildSectionCutDisplayObjects(pDoc, pBroker, m_CurrentSpanIdx, m_CurrentGirderIdx, dispMgr);
 
    // Legend must be displayed last so we can place it relative to bounding box
    if (settings & IDG_EV_SHOW_LEGEND && settings & IDG_EV_SHOW_LOADS)
-      BuildLegendDisplayObjects(pDoc, pBroker, span, girder, dispMgr, cases_exist);
+      BuildLegendDisplayObjects(pDoc, pBroker, m_CurrentSpanIdx, m_CurrentGirderIdx, dispMgr, cases_exist);
 
    DManip::MapMode mode = (settings & IDG_EV_DRAW_ISOTROPIC) ? DManip::Isotropic : DManip::Anisotropic;
    CDisplayView::SetMappingMode(mode);
@@ -599,16 +590,12 @@ void CGirderModelElevationView::OnSize(UINT nType, int cx, int cy)
 
 void CGirderModelElevationView::OnEditPrestressing() 
 {
-   SpanIndexType spanIdx, gdrIdx;
-   m_pFrame->GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
-   ((CPGSuperDoc*)GetDocument())->EditGirderDescription(spanIdx,gdrIdx,EGD_PRESTRESSING);
+   ((CPGSuperDoc*)GetDocument())->EditGirderDescription(m_CurrentSpanIdx, m_CurrentGirderIdx,EGD_PRESTRESSING);
 }
 
 void CGirderModelElevationView::OnEditGirder() 
 {
-   SpanIndexType spanIdx, gdrIdx;
-   m_pFrame->GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
-   ((CPGSuperDoc*)GetDocument())->EditGirderDescription(spanIdx,gdrIdx,EGD_GENERAL);
+   ((CPGSuperDoc*)GetDocument())->EditGirderDescription(m_CurrentSpanIdx, m_CurrentGirderIdx,EGD_GENERAL);
 }
 
 void CGirderModelElevationView::OnViewSettings() 
@@ -618,9 +605,7 @@ void CGirderModelElevationView::OnViewSettings()
 
 void CGirderModelElevationView::OnEditStirrups() 
 {
-   SpanIndexType spanIdx, gdrIdx;
-   m_pFrame->GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
-   ((CPGSuperDoc*)GetDocument())->EditGirderDescription(spanIdx,gdrIdx,EGD_STIRRUPS);
+   ((CPGSuperDoc*)GetDocument())->EditGirderDescription(m_CurrentSpanIdx, m_CurrentGirderIdx,EGD_STIRRUPS);
 }
 
 
@@ -1212,8 +1197,8 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSuperDoc* pDoc, 
    {
       const CPointLoadData& load = pUserDefinedLoadData->GetPointLoad(ild);
 
-      if (load.m_Stage==stage && (load.m_Span==span || load.m_Span==UserLoads::AllSpans)
-                              && (load.m_Girder==girder || load.m_Girder==UserLoads::AllGirders))
+      if (load.m_Stage==stage && (load.m_Span==span || load.m_Span==ALL_SPANS)
+                              && (load.m_Girder==girder || load.m_Girder==ALL_GIRDERS))
       {
          max = max(fabs(load.m_Magnitude), max);
       }
@@ -1227,8 +1212,8 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSuperDoc* pDoc, 
    {
       const CPointLoadData& load = pUserDefinedLoadData->GetPointLoad(ild);
 
-      if (load.m_Stage==stage && (load.m_Span==span || load.m_Span==UserLoads::AllSpans)
-                              && (load.m_Girder==girder || load.m_Girder==UserLoads::AllGirders))
+      if (load.m_Stage==stage && (load.m_Span==span || load.m_Span==ALL_SPANS)
+                              && (load.m_Girder==girder || load.m_Girder==ALL_GIRDERS))
       {
          casesExist[load.m_LoadCase] = true;
 
@@ -1317,8 +1302,8 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSuperDoc* 
    {
       const CDistributedLoadData& load = pUserDefinedLoadData->GetDistributedLoad(ild);
 
-      if (load.m_Stage==stage && (load.m_Span==span || load.m_Span==UserLoads::AllSpans)
-                              && (load.m_Girder==girder || load.m_Girder==UserLoads::AllGirders))
+      if (load.m_Stage==stage && (load.m_Span==span || load.m_Span==ALL_SPANS)
+                              && (load.m_Girder==girder || load.m_Girder==ALL_GIRDERS))
       {
          max = max(fabs(load.m_WStart), max);
          max = max(fabs(load.m_WEnd), max);
@@ -1333,8 +1318,8 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSuperDoc* 
    {
       const CDistributedLoadData& load = pUserDefinedLoadData->GetDistributedLoad(ild);
 
-      if (load.m_Stage==stage && (load.m_Span==span || load.m_Span==UserLoads::AllSpans)
-                              && (load.m_Girder==girder || load.m_Girder==UserLoads::AllGirders))
+      if (load.m_Stage==stage && (load.m_Span==span || load.m_Span==ALL_SPANS)
+                              && (load.m_Girder==girder || load.m_Girder==ALL_GIRDERS))
       {
          casesExist[load.m_LoadCase] = true;
 
@@ -1452,8 +1437,8 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSuperDoc* pDoc,
    {
       const CMomentLoadData& load = pUserDefinedLoadData->GetMomentLoad(ild);
 
-      if (load.m_Stage==stage && (load.m_Span==span || load.m_Span==UserLoads::AllSpans)
-                              && (load.m_Girder==girder || load.m_Girder==UserLoads::AllGirders))
+      if (load.m_Stage==stage && (load.m_Span==span || load.m_Span==ALL_SPANS)
+                              && (load.m_Girder==girder || load.m_Girder==ALL_GIRDERS))
       {
          max = max(fabs(load.m_Magnitude), max);
       }
@@ -1467,8 +1452,8 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSuperDoc* pDoc,
    {
       const CMomentLoadData& load = pUserDefinedLoadData->GetMomentLoad(ild);
 
-      if (load.m_Stage==stage && (load.m_Span==span || load.m_Span==UserLoads::AllSpans)
-                              && (load.m_Girder==girder || load.m_Girder==UserLoads::AllGirders))
+      if (load.m_Stage==stage && (load.m_Span==span || load.m_Span==ALL_SPANS)
+                              && (load.m_Girder==girder || load.m_Girder==ALL_GIRDERS))
       {
          casesExist[load.m_LoadCase] = true;
 
@@ -2059,26 +2044,13 @@ void CGirderModelElevationView::OnDraw(CDC* pDC)
       return;
    }
 
-
-   SpanIndexType spanIdx, gdrIdx;
-   if ( m_pFrame->SyncWithBridgeModelView() )
-   {
-      CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
-      CSelection selection = pDoc->GetSelection();
-      spanIdx = selection.SpanIdx;
-      gdrIdx  = selection.GirderIdx;
-   }
-   else
-   {
-      m_pFrame->GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
-   }
-
-   if (  spanIdx != ALL_SPANS && gdrIdx != ALL_GIRDERS )
+   if (  m_CurrentSpanIdx != ALL_SPANS && m_CurrentGirderIdx != ALL_GIRDERS )
    {
       CDisplayView::OnDraw(pDC);
    }
    else
    {
+      ATLASSERT(0); // frame and onupdate should never let this happen
       CString msg(_T("Select a girder to display"));
       CFont font;
       CFont* pOldFont = NULL;
@@ -2109,4 +2081,22 @@ BOOL CGirderModelElevationView::OnMouseWheel(UINT nFlags,short zDelta,CPoint pt)
       m_pFrame->CutAtNext();
 
    return TRUE;
+}
+
+
+bool CGirderModelElevationView::DidGirderSelectionChange()
+{
+   SpanIndexType span;
+   GirderIndexType gdr;
+
+   m_pFrame->GetSpanAndGirderSelection(&span,&gdr);
+
+   if (m_CurrentSpanIdx!=span || m_CurrentGirderIdx!=gdr)
+   {
+      m_CurrentSpanIdx=span;
+      m_CurrentGirderIdx=gdr;
+      return true;
+   }
+
+   return false;
 }

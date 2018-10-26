@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=858>
-<meta name=layout-width content=946>
+<meta name=layout-height content=731>
+<meta name=layout-width content=1361>
 
 
 <!--(Links)=========================================================-->
@@ -50,10 +50,22 @@
  With this dialog, you can have PGSuper attempt to design a girder for 
  flexure and/or shear.</p>
 
-<h2><span style="font-style: normal; font-weight: bold;">Select a girder</span></h2>
+<h2><span style="font-style: normal; font-weight: bold;">Select Girder(s)</span></h2>
 
-<p><span style="font-style: normal; font-weight: normal;">Using the drop 
- down lists for the span and girder, select the girder that will be designed</span></p>
+<p>Two options are available for selecting girders: </p>
+
+<ol style="list-style: decimal;"
+	type=1>
+	
+	<li class=kadov-p><p><span style="font-weight: bold;">Design a single 
+ girder:</span> Use the drop down lists for the span and girder to select 
+ the girder that will be designed.</p></li>
+	
+	<li class=kadov-p><p><span style="font-weight: bold;">Design multiple 
+ girders:</span> Click the button to bring up the multiple girder select 
+ dialog and select the desired girders on the <a href="../User%27s Guide/Appendix A - PGSuper Dialogs/Multi-Girder_Select_Grid.htm">multi-girder 
+ select grid</a>.</p></li>
+</ol>
 
 <h2><span style="font-style: normal; font-weight: bold;">Perform Design 
  For Flexure</span></h2>
@@ -72,9 +84,10 @@
  on if you do not want the design algorithm to design the slab offset for 
  the current girder. </p>
 
-<p style="margin-left: 40px;">Note that this option is not available if 
- there is no slab, or if slab offset design is disabled in the Project 
- Criteria library.</p>
+<p class=Tip>Note: A-Dimension design is not available if there is no slab, 
+ if slab offset design is disabled in the Project Criteria library, or 
+ if multiple girders are selected for design. Hence, this control will 
+ be disabled for these cases.</p>
 
 <h2>Perform Design For Shear</h2>
 

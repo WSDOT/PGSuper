@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -147,7 +147,7 @@ public:
    // Returns a vector of pointers to Points of Interest that belong to the specified stage
    // and have the specified attributes for the specified girder.
    // must match attribute in all stages
-   void GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,std::vector<pgsTypes::Stage> stages,PoiAttributeType attrib,Uint32 mode,std::vector<pgsPointOfInterest>* pPois) const;
+   void GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,const std::vector<pgsTypes::Stage>& stages,PoiAttributeType attrib,Uint32 mode,std::vector<pgsPointOfInterest>* pPois) const;
 
    std::vector<pgsPointOfInterest> GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr) const;
 
@@ -205,10 +205,10 @@ private:
    bool AtSamePlace(const pgsPointOfInterest& a,const pgsPointOfInterest& b);
    pgsPointOfInterest Merge(const pgsPointOfInterest& a,const pgsPointOfInterest& b);
    void AndFind(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const;
-   void AndFind(SpanIndexType span,GirderIndexType gdr,std::vector<pgsTypes::Stage> stages,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const;
+   void AndFind(SpanIndexType span,GirderIndexType gdr,const std::vector<pgsTypes::Stage>& stages,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const;
    bool AndFind(const pgsPointOfInterest& poi,SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,PoiAttributeType attrib) const;
    void OrFind(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const;
-   void OrFind(SpanIndexType span,GirderIndexType gdr,std::vector<pgsTypes::Stage> stages,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const;
+   void OrFind(SpanIndexType span,GirderIndexType gdr,const std::vector<pgsTypes::Stage>& stages,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const;
    bool OrFind(const pgsPointOfInterest& poi,SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,PoiAttributeType attrib) const;
 
    // GROUP: ACCESS

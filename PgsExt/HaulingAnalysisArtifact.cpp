@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1136,48 +1136,48 @@ bool pgsHaulingAnalysisArtifact::AssertValid() const
 
 void pgsHaulingAnalysisArtifact::Dump(dbgDumpContext& os) const
 {
-   os << "Dump for pgsHaulingAnalysisArtifact" << endl;
-   os <<" Stress Artifacts - Plumb Girder: "<<endl;
-   os << "=================================" <<endl;
+   os << _T("Dump for pgsHaulingAnalysisArtifact") << endl;
+   os <<_T(" Stress Artifacts - Plumb Girder: ")<<endl;
+   os << _T("=================================") <<endl;
    std::vector<pgsPointOfInterest>::const_iterator iter;
    for (iter=m_HaulingPois.begin(); iter!=m_HaulingPois.end(); iter++)
    {
       const pgsPointOfInterest& rpoi = *iter;
       double loc = rpoi.GetDistFromStart();
-      os <<"At " << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << " ft: ";
+      os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
       std::map<Float64,pgsHaulingStressAnalysisArtifact,Float64_less>::const_iterator found;
       found = m_HaulingStressAnalysisArtifacts.find( loc );
 
       os<<endl;
       double fps, fup, fno, fdown;
       found->second.GetTopFiberStress(&fps, &fup, &fno, &fdown);
-      os<<"TopStress fps="<<::ConvertFromSysUnits(fps,unitMeasure::KSI)<<"ksi, fup="<<::ConvertFromSysUnits(fup,unitMeasure::KSI)<<"ksi, fno="<<::ConvertFromSysUnits(fno,unitMeasure::KSI)<<"ksi, fdown="<<::ConvertFromSysUnits(fdown,unitMeasure::KSI)<<"ksi"<<endl;
+      os<<_T("TopStress fps=")<<::ConvertFromSysUnits(fps,unitMeasure::KSI)<<_T("ksi, fup=")<<::ConvertFromSysUnits(fup,unitMeasure::KSI)<<_T("ksi, fno=")<<::ConvertFromSysUnits(fno,unitMeasure::KSI)<<_T("ksi, fdown=")<<::ConvertFromSysUnits(fdown,unitMeasure::KSI)<<_T("ksi")<<endl;
 
       found->second.GetBottomFiberStress(&fps, &fup, &fno, &fdown);
-      os<<"BotStress fps="<<::ConvertFromSysUnits(fps,unitMeasure::KSI)<<"ksi, fup="<<::ConvertFromSysUnits(fup,unitMeasure::KSI)<<"ksi, fno="<<::ConvertFromSysUnits(fno,unitMeasure::KSI)<<"ksi, fdown="<<::ConvertFromSysUnits(fdown,unitMeasure::KSI)<<"ksi"<<endl;
+      os<<_T("BotStress fps=")<<::ConvertFromSysUnits(fps,unitMeasure::KSI)<<_T("ksi, fup=")<<::ConvertFromSysUnits(fup,unitMeasure::KSI)<<_T("ksi, fno=")<<::ConvertFromSysUnits(fno,unitMeasure::KSI)<<_T("ksi, fdown=")<<::ConvertFromSysUnits(fdown,unitMeasure::KSI)<<_T("ksi")<<endl;
 
       Float64 min_stress = found->second.GetMaximumConcreteCompressiveStress();
       Float64 max_stress = found->second.GetMaximumConcreteTensileStress();
-      os<<"Total Stress: Min ="<<::ConvertFromSysUnits(min_stress,unitMeasure::KSI)<<"ksi, Max="<<::ConvertFromSysUnits(max_stress,unitMeasure::KSI)<<"ksi"<<endl;
+      os<<_T("Total Stress: Min =")<<::ConvertFromSysUnits(min_stress,unitMeasure::KSI)<<_T("ksi, Max=")<<::ConvertFromSysUnits(max_stress,unitMeasure::KSI)<<_T("ksi")<<endl;
    }
 
-   os <<" Stress Artifacts - Inclined Girder: "<<endl;
-   os << "=================================" <<endl;
+   os <<_T(" Stress Artifacts - Inclined Girder: ")<<endl;
+   os << _T("=================================") <<endl;
    for (iter=m_HaulingPois.begin(); iter!=m_HaulingPois.end(); iter++)
    {
       const pgsPointOfInterest& rpoi = *iter;
       double loc = rpoi.GetDistFromStart();
-      os <<"At " << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << " ft: ";
+      os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
       std::map<Float64,pgsHaulingStressAnalysisArtifact,Float64_less>::const_iterator found;
       found = m_HaulingStressAnalysisArtifacts.find( loc );
 
       os<<endl;
       Float64 min_stress = found->second.GetMaximumInclinedConcreteCompressiveStress();
       Float64 max_stress = found->second.GetMaximumInclinedConcreteTensileStress();
-      os<<"Stress: Tensile ="<<::ConvertFromSysUnits(min_stress,unitMeasure::KSI)<<"ksi, Compressive ="<<::ConvertFromSysUnits(max_stress,unitMeasure::KSI)<<"ksi"<<endl;
+      os<<_T("Stress: Tensile =")<<::ConvertFromSysUnits(min_stress,unitMeasure::KSI)<<_T("ksi, Compressive =")<<::ConvertFromSysUnits(max_stress,unitMeasure::KSI)<<_T("ksi")<<endl;
    }
-   os <<" Dump Complete"<<endl;
-   os << "=============" <<endl;
+   os <<_T(" Dump Complete")<<endl;
+   os << _T("=============") <<endl;
 }
 #endif // _DEBUG
 

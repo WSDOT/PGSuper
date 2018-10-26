@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -545,21 +545,21 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlab2DistFactorEngineer::GetLLDFParam
    {
       // voided slab
 
-      // thickness of exterior "web" (edge of beam to first void)
+      // thickness of exterior _T("web") (edge of beam to first void)
       Float64 t_ext;
       if ( nIntVoids == 0 )
          t_ext = (Width - (nExtVoids-1)*ExtVoidSpacing - ExtVoidDiameter)/2;
       else
          t_ext = (Width - (nIntVoids-1)*IntVoidSpacing - 2*ExtVoidSpacing - ExtVoidDiameter)/2;
 
-      // thickness of interior "web" (between interior voids)
+      // thickness of interior _T("web") (between interior voids)
       Float64 t_int;
       if ( nIntVoids == 0 )
          t_int = 0;
       else
          t_int = IntVoidSpacing - IntVoidDiameter;
 
-      // thickness of "web" between interior and exterior voids)
+      // thickness of _T("web") between interior and exterior voids)
       Float64 t_ext_int;
       if ( nIntVoids == 0 )
          t_ext_int = ExtVoidSpacing - ExtVoidDiameter;
@@ -597,7 +597,7 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlab2DistFactorEngineer::GetLLDFParam
       }
       else
       {
-         // "web" between left exterior and first interior void
+         // _T("web") between left exterior and first interior void
          Jvoid.Elements.push_back(VOIDEDSLAB_J_VOID::Element(s_int,t_ext_int));
          Sum_s_over_t += (s_int/t_ext_int);
 
@@ -608,7 +608,7 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlab2DistFactorEngineer::GetLLDFParam
             Sum_s_over_t += (s_int/t_int);
          }
 
-         // "web" between last interior void and right exterior void
+         // _T("web") between last interior void and right exterior void
          Jvoid.Elements.push_back(VOIDEDSLAB_J_VOID::Element(s_int,t_ext_int));
          Sum_s_over_t += (s_int/t_ext_int);
       }

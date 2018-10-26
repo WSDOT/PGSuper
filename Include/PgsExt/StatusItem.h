@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,7 @@
 // SYSTEM INCLUDES
 //
 #include <PgsExt\PgsExtExp.h>
-#include <EAF\EAFStatusItem.h>
+#include <PgsExt\SpanGirderRelatedStatusItem.h>
 
 
 // status for refined analysis
@@ -108,7 +108,7 @@ private:
 };
 
 // status for girder input
-class PGSEXTCLASS pgsGirderDescriptionStatusItem : public CEAFStatusItem
+class PGSEXTCLASS pgsGirderDescriptionStatusItem : public pgsSpanGirderRelatedStatusItem
 {
 public:
    pgsGirderDescriptionStatusItem(SpanIndexType span,GirderIndexType gdr,Uint16 page,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
@@ -170,6 +170,26 @@ public:
 private:
    IBroker* m_pBroker;
    eafTypes::StatusSeverityType m_Severity;
+};
+
+// status for distribution factor warnings
+class PGSEXTCLASS pgsLldfWarningStatusItem : public CEAFStatusItem
+{
+public:
+   pgsLldfWarningStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
+   bool IsEqual(CEAFStatusItem* pOther);
+};
+
+///////////////////////////
+class PGSEXTCLASS pgsLldfWarningStatusCallback : public iStatusCallback
+{
+public:
+   pgsLldfWarningStatusCallback(IBroker* pBroker);
+   virtual eafTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(CEAFStatusItem* pStatusItem);
+
+private:
+   IBroker* m_pBroker;
 };
 
 #endif // INCLUDED_STATUSITEM_H_

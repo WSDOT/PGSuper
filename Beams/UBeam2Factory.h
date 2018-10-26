@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -104,7 +104,7 @@ public:
    void GetDimensions(const IBeamFactory::Dimensions& dimensions,
                       double& d1,double& d2,double& d3,double& d4,double& d5,double& d6,
                       double& w1,double& w2,double& w3,double& w4,double& w5,double& w6,double& w7,
-                      double& c1);
+                      double& c1,double& EndBlockLength);
 
    double GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name);
 

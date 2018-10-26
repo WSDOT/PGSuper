@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -833,8 +833,8 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    days = ::ConvertFromSysUnits(days,unitMeasure::Day);
    std::_tostringstream os;
    os << days;
-   (*table3)(0,col++) << COLHDR(Sub2(_T("D"),os.str().c_str()) << _T(" = ") << Sub2(symbol(DELTA),_T("2")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("3")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("2")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(_T("D"),os.str().c_str()) << _T(" = ") << Sub2(symbol(DELTA),_T("3")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("excess")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("4")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    (*table3)(0,col++) << COLHDR(_T("C = ") << Sub2(symbol(DELTA),_T("2")) << _T(" - ") << Sub2(symbol(DELTA),_T("4")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -48,24 +48,24 @@
 // the above hints should not cause results to be updated
 #define MAX_DISPLAY_HINT                 HINT_GIRDERLABELFORMATCHANGED
 
-// Hints that are results of Agent events
+// Bridge-wide hints that are results of Agent events
 #define MIN_RESULTS_HINT              100
 
 #define HINT_UNITSCHANGED             MIN_RESULTS_HINT + 1
 #define HINT_ENVCHANGED               MIN_RESULTS_HINT + 2
 #define HINT_BRIDGECHANGED            MIN_RESULTS_HINT + 3
-#define HINT_GIRDERCHANGED            MIN_RESULTS_HINT + 4
-#define HINT_SPECCHANGED              MIN_RESULTS_HINT + 5
-#define HINT_LOADMODIFIERSCHANGED     MIN_RESULTS_HINT + 6
-#define HINT_PROJECTPROPERTIESCHANGED MIN_RESULTS_HINT + 7
-#define HINT_GIRDERFAMILYCHANGED      MIN_RESULTS_HINT + 8
-#define HINT_LIVELOADCHANGED          MIN_RESULTS_HINT + 9
-#define HINT_ANALYSISTYPECHANGED      MIN_RESULTS_HINT + 10
-#define HINT_RATINGSPECCHANGED        MIN_RESULTS_HINT + 11
+#define HINT_SPECCHANGED              MIN_RESULTS_HINT + 4
+#define HINT_LOADMODIFIERSCHANGED     MIN_RESULTS_HINT + 5
+#define HINT_PROJECTPROPERTIESCHANGED MIN_RESULTS_HINT + 6
+#define HINT_GIRDERFAMILYCHANGED      MIN_RESULTS_HINT + 7
+#define HINT_LIVELOADCHANGED          MIN_RESULTS_HINT + 8
+#define HINT_ANALYSISTYPECHANGED      MIN_RESULTS_HINT + 9
+#define HINT_RATINGSPECCHANGED        MIN_RESULTS_HINT + 10
 
 #define MAX_RESULTS_HINT              HINT_RATINGSPECCHANGED
 
 #define HINT_LIBRARYCHANGED           201 // Changes made to non-referenced entries only
+#define HINT_GIRDERCHANGED            202 // Girder changes are treated individualy
 
 
 class CGirderHint : public CObject
@@ -74,6 +74,11 @@ public:
    Uint32 lHint; // one of the GCH_xxx hints in IFace\Project.h
    SpanIndexType spanIdx;
    GirderIndexType gdrIdx;
+
+   ~CGirderHint()
+   {
+      ; // A place to break to check for memory leaks
+   }
 };
 
 

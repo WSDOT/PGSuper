@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -89,13 +89,13 @@ void CEditPointLoadDlg::DoDataExchange(CDataExchange* pDX)
 
       int ival = m_SpanCB.GetCurSel();
       if (ival== m_SpanCB.GetCount()-1)
-         m_Load.m_Span = UserLoads::AllSpans;
+         m_Load.m_Span = ALL_SPANS;
       else
          m_Load.m_Span = ival;
 
       ival = m_GirderCB.GetCurSel();
       if (ival == m_GirderCB.GetCount()-1)
-         m_Load.m_Girder = UserLoads::AllGirders;
+         m_Load.m_Girder = ALL_GIRDERS;
       else
          m_Load.m_Girder = ival;
 
@@ -196,7 +196,7 @@ BOOL CEditPointLoadDlg::OnInitDialog()
 
    m_SpanCB.AddString(_T("All Spans"));
 
-   if (m_Load.m_Span==UserLoads::AllSpans)
+   if (m_Load.m_Span==ALL_SPANS)
    {
       m_SpanCB.SetCurSel(nSpans);
    }
@@ -216,7 +216,7 @@ BOOL CEditPointLoadDlg::OnInitDialog()
 
    UpdateGirderList();
 
-   if (m_Load.m_Girder==UserLoads::AllGirders)
+   if (m_Load.m_Girder==ALL_GIRDERS)
    {
       m_GirderCB.SetCurSel( m_GirderCB.GetCount()-1 );
    }

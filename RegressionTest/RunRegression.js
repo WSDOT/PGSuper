@@ -48,8 +48,6 @@ var NewCatalogServer = new String("Regression");
 var OldCatalogPublisher = new String;
 var NewCatalogPublisher = new String("Regression");
 
-var OldTxDOTAgentState = new String;
-
 var Application = PGSuperDrive+"\\ARP\\PGSuper\\RegFreeCOM\\"+PGSuperVersion+"\\PGSuper.exe ";
 var StartFolderSpec = new String( PGSuperDrive+"\\ARP\\PGSuper\\RegressionTest" );
 var CurrFolderSpec  = new String( PGSuperDrive+"\\ARP\\PGSuper\\RegressionTest\\Current" );
@@ -63,6 +61,20 @@ if (!FSO.FileExists(Application))
    DisplayMessage("Error - Program File: "+Application+" does not exist - Script Terminated");
    CleanUpTest();
    WScript.Quit(1);
+}
+
+// Ensure TxDOT Extension Agent is enabled. It is required for the /Tx commands
+var OldTxDOTAgentState = wsShell.RegRead("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Extensions\\{360F7694-BE5B-4E97-864F-EF3575689C6E}");
+if (OldTxDOTAgentState == "Disabled") {
+    DisplayMessage("********");
+    DisplayMessage("********");
+    DisplayMessage("Error - TxDOTAgent extensions are not Enabled - Regression tests depend");
+    DisplayMessage("        on this to output test data.");
+    DisplayMessage("        To fix: Start PGSuper and enable the TxDOT extensions from");
+    DisplayMessage("        the Manage Extensions dialog.");
+    DisplayMessage("********");
+    DisplayMessage("********");
+    WScript.Quit(1);
 }
 
 // First clean up results from any old runs and set up environment
@@ -92,7 +104,7 @@ var endTime = endDate.getTime();
 var elapsed = (endTime-startTime)/60000.0;
 DisplayMessage("Elapsed Time was: "+elapsed+" Minutes");
 
-var myFile = FSO.OpenTextFile("RegTest.log",8,true); // 8 = ForAppending (for some reason the ForAppending constant isn't defined)
+var myFile = FSO.OpenTextFile("\\ARP\\PGSuper\\RegressionTest\\RegTest.log",8,true); // 8 = ForAppending (for some reason the ForAppending constant isn't defined)
 myFile.WriteLine(endDate.toString() + " : Elapsed Time was: "+elapsed+" Minutes");
 myFile.close();
   
@@ -200,7 +212,7 @@ function RunTest (currFolder, currCommand)
    }
 }
 
-function InitTest (currFolder) 
+function InitTest(currFolder) 
 {
     if (ExecuteCommands)
     {
@@ -214,13 +226,7 @@ function InitTest (currFolder)
    
    // Run PGSuper to set new server and publisher
    SetPGSuperLibrary(NewCatalogServer, NewCatalogPublisher);
-
-   // Ensure TxDOT Extension Agent is enabled. It is required for the /Tx commands
-   OldTxDOTAgentState = wsShell.RegRead("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Extensions\\{360F7694-BE5B-4E97-864F-EF3575689C6E}");
-   if ( OldTxDOTAgentState != "Enabled" )
-        wsShell.RegWrite("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Extensions\\{360F7694-BE5B-4E97-864F-EF3575689C6E}","Enabled","REG_SZ");
-
-}
+}   
 
 function SetPGSuperLibrary(server, publisher)
 {
@@ -277,9 +283,6 @@ function CleanUpTest()
    // Restore registry to where it was before we started
    // Run PGSuper to set new server and publisher
    SetPGSuperLibrary(OldCatalogServer, OldCatalogPublisher);
-
-   // TxDOT Extension Agent
-   wsShell.RegWrite("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Extensions\\{360F7694-BE5B-4E97-864F-EF3575689C6E}", OldTxDOTAgentState, "REG_SZ");
 }
 
 function CheckResults(currFolder) 
@@ -496,7 +499,7 @@ function ParseCommandLine()
          DisplayMessage("Command Line options:");
          DisplayMessage("    /?             - Help (you are here)");
          DisplayMessage("    /D<drive-name> - Drive where PGSuper is installed (e.g., /DC:)");
-         DisplayMessage("    /V<version>    - Version of PGSuper to test (either \"Debug\" or \"Release\"");
+         DisplayMessage("    /V<version>    - Version of PGSuper to test (either \"Debug\", \"Profile\", or \"Release\"");
          DisplayMessage("    /N             - No execute. Display but do not execute pgsuper commands.");
          DisplayMessage("");
          return 1;
@@ -518,14 +521,14 @@ function ParseCommandLine()
        {
           var ver = s.substring(2,s.length);
           ver = ver.toUpperCase();
-          if (ver=="DEBUG" || ver=="RELEASE")
+          if (ver=="DEBUG" || ver=="RELEASE"|| ver=="PROFILE")
           {
              PGSuperVersion = ver;
              didVersion=1;
           }
           else
           {
-             DisplayMessage("Invalid PGSuper version on command line - must be either Release or Debug");
+             DisplayMessage("Invalid PGSuper version on command line - must be either Release, Profile, or Debug");
              DisplayMessage("String was: \""+ver+"\"");
              return 1;
           }

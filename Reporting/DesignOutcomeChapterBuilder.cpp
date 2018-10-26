@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -52,6 +52,11 @@ CLASS
 void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact);
 void failed_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact);
 void successful_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact);
+void multiple_girder_table(int startIdx, int endIdx,IBroker* pBroker,std::vector<SpanGirderHashType>& girderList,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,IArtifact* pIArtifact);
+void process_artifacts(int startIdx, int endIdx, std::vector<SpanGirderHashType>& girderList, IArtifact* pIArtifact,
+                       const pgsDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, bool& isHarped, bool& isTemporary);
+
+static const int MAX_TBL_COLS=6; // Maximum columns in multi-girder table
 
 CDesignOutcomeChapterBuilder::CDesignOutcomeChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -65,36 +70,67 @@ LPCTSTR CDesignOutcomeChapterBuilder::GetName() const
 
 rptChapter* CDesignOutcomeChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pReportSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CMultiGirderReportSpecification* pReportSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
    ATLASSERT( pReportSpec != NULL );
+
+   std::vector<SpanGirderHashType> list = pReportSpec->GetGirderList();
 
    CComPtr<IBroker> pBroker;
    pReportSpec->GetBroker(&pBroker);
-
-   SpanIndexType span = pReportSpec->GetSpan();
-   GirderIndexType gdr = pReportSpec->GetGirder();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    GET_IFACE2( pBroker, IEAFDisplayUnits, pDisplayUnits );
    GET_IFACE2( pBroker, IArtifact, pIArtifact );
-   const pgsDesignArtifact* pArtifact = pIArtifact->GetDesignArtifact(span,gdr);
 
-   if ( pArtifact == NULL )
+   // Write multiple girder table if we have more than one girder
+   // Break into multiple tables if necessary
+   int max_idx = list.size()-1;
+   if ( max_idx>0 )
    {
-      rptParagraph* pPara = new rptParagraph;
+      int start_idx =0;
+      int end_idx = min( MAX_TBL_COLS-1, max_idx);
+      while(true)
+      {
+         multiple_girder_table(start_idx, end_idx, pBroker, list, pChapter, pDisplayUnits, pIArtifact);
+
+         if (end_idx >= max_idx)
+            break;
+
+         start_idx = end_idx + 1;
+         end_idx = min(end_idx+MAX_TBL_COLS, max_idx);
+      }
+
+      rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       (*pChapter) << pPara;
-      (*pPara) << _T("This girder has not been designed") << rptNewLine;
-      return pChapter;
+      (*pPara) << rptNewLine <<_T("Design Outcomes for Individual Girders");
    }
 
-   if ( pArtifact->GetOutcome() == pgsDesignArtifact::Success )
+   // Loop over all designed girders
+   for (std::vector<SpanGirderHashType>::iterator it=list.begin(); it!=list.end(); it++)
    {
-      successful_design(pBroker,span,gdr,pChapter,pDisplayUnits,pArtifact);
-   }
-   else
-   {
-      failed_design(pBroker,span,gdr,pChapter,pDisplayUnits,pArtifact);
+      SpanIndexType span;
+      GirderIndexType gdr;
+      UnhashSpanGirder(*it,&span,&gdr);
+
+      const pgsDesignArtifact* pArtifact = pIArtifact->GetDesignArtifact(span,gdr);
+
+      if ( pArtifact == NULL )
+      {
+         rptParagraph* pPara = new rptParagraph;
+         (*pChapter) << pPara;
+         (*pPara) << _T("This girder has not been designed") << rptNewLine;
+         return pChapter;
+      }
+
+      if ( pArtifact->GetOutcome() == pgsDesignArtifact::Success )
+      {
+         successful_design(pBroker,span,gdr,pChapter,pDisplayUnits,pArtifact);
+      }
+      else
+      {
+         failed_design(pBroker,span,gdr,pChapter,pDisplayUnits,pArtifact);
+      }
    }
 
    return pChapter;
@@ -137,7 +173,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
             {
                pParagraph = new rptParagraph();
                *pChapter << pParagraph;
-               *pParagraph << color(Blue)<<_T("Note that strand fill order has been changed from ")<<Bold(_T("Number of Permanent"))<<_T(" to ")<< Bold(_T("Number of Straight and Number of Harped")) << color(Black) << _T(" strands.");
+               *pParagraph << color(Blue)<<_T("Note that strand fill order has been changed from ")<<Bold(_T("Number of Permanent"))<<_T(" to ")<< Bold(_T("Number of Straight and Number of Harped")) << _T(" strands.") << color(Black);
             }
          }
       }
@@ -591,8 +627,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
 
 void successful_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact)
 {
-   rptParagraph* pParagraph;
-   pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   rptParagraph* pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pParagraph;
 
    *pParagraph << color(Green)
@@ -709,3 +744,239 @@ void failed_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptCh
    write_artifact_data(pBroker,span,gdr,pChapter,pDisplayUnits,pArtifact);
 }
 
+void multiple_girder_table(int startIdx, int endIdx,
+                     IBroker* pBroker,std::vector<SpanGirderHashType>& girderList,rptChapter* pChapter,
+                     IEAFDisplayUnits* pDisplayUnits,IArtifact* pIArtifact)
+{
+   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetGeneralForceUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, distance, pDisplayUnits->GetXSectionDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),       true );
+
+   GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
+
+   // Since girder types, design info, etc can be different for each girder, process information for all
+   // artifacts to get control data
+   const pgsDesignArtifact* pArtifacts[MAX_TBL_COLS]; // Might as well cache artifacts while processing
+   bool did_flexure;
+   bool did_shear;
+   bool did_lifting;
+   bool did_hauling;
+   bool is_harped;
+   bool is_temporary;
+
+   process_artifacts(startIdx, endIdx, girderList, pIArtifact,
+                     pArtifacts, did_flexure, did_shear, did_lifting, did_hauling, is_harped, is_temporary);
+
+   if (!did_flexure && !did_shear)
+   {
+      ATLASSERT(0); // probably shouldn't be here if no design was done
+      return;
+   }
+
+   rptParagraph* pParagraph = new rptParagraph();
+   *pChapter << pParagraph;
+
+   // Our table has a column for each girder
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(endIdx-startIdx+2,_T("Multiple Girder Design Summary"));
+   pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
+   *pParagraph << pTable << rptNewLine;
+
+   // Start by writing first column
+   pTable->SetColumnWidth(0,2.25);
+   RowIndexType row = 0;
+   (*pTable)(row++,0) << _T("Parameter");
+
+   if (did_flexure)
+   {
+      (*pTable)(row++,0) << _T("Flexural Design Outcome");
+      (*pTable)(row++,0) << _T("Number of Straight Strands");
+
+      if (is_harped)
+         (*pTable)(row++,0) << _T("Number of Harped Strands");
+
+      if (is_temporary)
+         (*pTable)(row++,0) << _T("Number of Temporary Strands");
+
+      (*pTable)(row++,0) << _T("Straight Strand Jacking Force");
+
+      if (is_harped)
+         (*pTable)(row++,0) << _T("Harped Strand Jacking Force");
+
+      if (is_temporary)
+         (*pTable)(row++,0) << _T("Temporary Strand Jacking Force");
+
+      if (is_harped)
+      {
+         // We will have to convert any other measurements to this:
+         (*pTable)(row++,0) << _T("Distance from Bottom of girder to") << rptNewLine << _T("top of harped strand group at ends of girder");
+         (*pTable)(row++,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("bottom of harped strand group at harping point");
+      }
+
+      (*pTable)(row++,0) << RPT_FCI;
+      (*pTable)(row++,0) << RPT_FC;
+   }
+
+   if (did_lifting)
+   {
+      (*pTable)(row++,0) << _T("Lifting Point Location (Left)");
+      (*pTable)(row++,0) << _T("Lifting Point Location (Right)");
+   }
+
+   if (did_hauling)
+   {
+      (*pTable)(row++,0) << _T("Truck Support Location (Leading)");
+      (*pTable)(row++,0) << _T("Truck Support Location (Trailing)");
+   }
+
+
+   // Titles are now printed. Print results information
+   int idx = 0;
+   ColumnIndexType col = 1;
+   for (int gdr_idx=startIdx; gdr_idx<=endIdx; gdr_idx++)
+   {
+      pTable->SetColumnWidth(col,0.75);
+
+      SpanGirderHashType hash = girderList[gdr_idx];
+      SpanIndexType span;
+      GirderIndexType gdr;
+      UnhashSpanGirder(hash,&span,&gdr);
+
+      row = 0;
+
+      (*pTable)(row++,col) << _T("Span ") << span+1 <<rptNewLine<<_T("Girder ")<<LABEL_GIRDER(gdr);
+
+      const pgsDesignArtifact* pArtifact = pArtifacts[idx++];
+
+      pgsDesignArtifact::Outcome outcome = pArtifact->GetOutcome();
+      if (outcome==pgsDesignArtifact::Success)
+      {
+         (*pTable)(row++,col) <<color(Green)<<_T("Success")<<color(Black);
+      }
+      else
+      {
+         (*pTable)(row++,col) <<color(Red)<<_T("Failed")<<color(Black);
+      }
+
+      (*pTable)(row++,col) << pArtifact->GetNumStraightStrands();
+
+      if (is_harped)
+         (*pTable)(row++,col) << pArtifact->GetNumHarpedStrands();
+
+      if (is_temporary)
+         (*pTable)(row++,col) << pArtifact->GetNumTempStrands();
+
+      GDRCONFIG config = pArtifact->GetGirderConfiguration();
+
+      // jacking forces
+      (*pTable)(row++,col) << force.SetValue(config.Pjack[pgsTypes::Straight]);
+
+      if (is_harped)
+         (*pTable)(row++,col) << force.SetValue(config.Pjack[pgsTypes::Harped]);
+
+      if (is_temporary)
+         (*pTable)(row++,col) << force.SetValue(config.Pjack[pgsTypes::Temporary]);
+
+      if (is_harped)
+      {
+         if (pArtifact->GetNumHarpedStrands()>0)
+         {
+            double offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(span, gdr,
+                                                                                pArtifact->GetNumHarpedStrands(), 
+                                                                                hsoTOP2BOTTOM, 
+                                                                                pArtifact->GetHarpStrandOffsetEnd());
+            (*pTable)(row++,col) << length.SetValue(offset);
+
+            offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(span, gdr,
+                                                                        pArtifact->GetNumHarpedStrands(), 
+                                                                        hsoBOTTOM2BOTTOM, 
+                                                                        pArtifact->GetHarpStrandOffsetHp());
+            (*pTable)(row++,col) << length.SetValue(offset);
+         }
+         else
+         {
+            (*pTable)(row++,col) << _T("-");
+            (*pTable)(row++,col) << _T("-");
+         }
+      }
+
+      (*pTable)(row++,col) << stress.SetValue(pArtifact->GetReleaseStrength());
+      (*pTable)(row++,col) << stress.SetValue(pArtifact->GetConcreteStrength());
+
+      if (did_lifting)
+      {
+         (*pTable)(row++,col) << distance.SetValue( pArtifact->GetLeftLiftingLocation() );
+         (*pTable)(row++,col) << distance.SetValue( pArtifact->GetRightLiftingLocation() );
+      }
+
+      if (did_hauling)
+      {
+         (*pTable)(row++,col) << distance.SetValue( pArtifact->GetLeadingOverhang() );
+         (*pTable)(row++,col) << distance.SetValue( pArtifact->GetTrailingOverhang() );
+      }
+
+      col++;
+   }
+}
+
+void process_artifacts(int startIdx, int endIdx, std::vector<SpanGirderHashType>& girderList, IArtifact* pIArtifact,
+                       const pgsDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, bool& isHarped, bool& isTemporary)
+{
+   // Set all outcomes to false
+   didFlexure = false;
+   didShear = false;
+   didLifting = false;
+   didHauling = false;
+   isHarped = false;
+   isTemporary = false;
+
+   int na = endIdx - startIdx + 1;
+   int idx = startIdx;
+   for (int ia=0; ia<na; ia++)
+   {
+      SpanGirderHashType hash = girderList[idx];
+      SpanIndexType span;
+      GirderIndexType gdr;
+      UnhashSpanGirder(hash,&span,&gdr);
+
+      pArtifacts[ia] = pIArtifact->GetDesignArtifact(span,gdr);
+
+      arDesignOptions options = pArtifacts[ia]->GetDesignOptions();
+
+      if (options.doDesignForFlexure != dtNoDesign)
+      {
+         didFlexure = true;
+      }
+
+      if (options.doDesignForShear)
+      {
+         didShear = true;
+      }
+
+      if (options.doDesignLifting)
+      {
+         didLifting = true;
+      }
+
+      if (options.doDesignHauling)
+      {
+         didHauling = true;
+      }
+
+      // report harped information if we have any harped designs or, if we have harped strands
+      if (options.doDesignForFlexure == dtDesignForHarping || pArtifacts[ia]->GetNumHarpedStrands() > 0)
+      {
+         isHarped = true;
+      }
+
+      if (options.doDesignForFlexure != dtNoDesign && pArtifacts[ia]->GetNumTempStrands() > 0)
+      {
+         isTemporary = true;
+      }
+
+      idx++;
+   }
+
+}

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -421,14 +421,14 @@ void CVoidedSlab2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dime
       else
          t_ext = (width - (nIntVoids-1)*S2 - 2*S1 - D1)/2;
 
-      // thickness of interior "web" (between interior voids)
+      // thickness of interior _T("web") (between interior voids)
       Float64 t_int;
       if ( nIntVoids == 0 )
          t_int = 0;
       else
          t_int = S2 - D2;
 
-      // thickness of "web" between interior and exterior voids)
+      // thickness of _T("web") between interior and exterior voids)
       Float64 t_ext_int;
       if ( nIntVoids == 0 )
          t_ext_int = S1 - D1;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,8 +30,26 @@
 //
 #include "PGSuperAppPlugin\resource.h"
 #include "LLDFGrid.h"
+#include "LLDFPierGrid.h"
 #include <PgsExt\BridgeDescription.h>
 #include <LRFD\LRFD.h>
+
+inline GirderIndexType GetPierGirderCount(const CPierData* pPier)
+{
+   // Number of girders at pier is max in attached spans
+   GirderIndexType prvNgdrs(0), nxtNgdrs(0);
+
+   const CSpanData* pPspan = pPier->GetPrevSpan();
+   if (pPspan!=NULL)
+      prvNgdrs = pPspan->GetGirderCount();
+
+   const CSpanData* pNspan = pPier->GetNextSpan();
+   if (pNspan!=NULL)
+      nxtNgdrs = pNspan->GetGirderCount();
+
+   GirderIndexType ngdrs = max(prvNgdrs, nxtNgdrs);
+   return ngdrs;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CLiveLoadDistFactorsDlg dialog
@@ -41,6 +59,7 @@ class CLiveLoadDistFactorsDlg : public CDialog
 // Construction
 public:
 	CLiveLoadDistFactorsDlg(CWnd* pParent = NULL);   // standard constructor
+	~CLiveLoadDistFactorsDlg();
 
 // Dialog Data
 	//{{AFX_DATA(CLiveLoadDistFactorsDlg)
@@ -49,6 +68,7 @@ public:
 
    CBridgeDescription m_BridgeDesc;
    LldfRangeOfApplicabilityAction m_LldfRangeOfApplicabilityAction;
+   IBroker* m_pBroker;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -59,16 +79,34 @@ public:
 
 // Implementation
 protected:
-   CLLDFGrid m_StrengthGrid;
-   CLLDFGrid m_FatigueGrid;
+
+   // User-input girder grid
+   CGXTabWnd m_GirderTabWnd;
+
+   typedef std::vector< boost::shared_ptr<CLLDFGrid> > GirderGridList;
+   typedef GirderGridList::iterator GirderGridIterator;
+   GirderGridList m_GirderGrids;
+
+   // User-input pier grid
+   CGXTabWnd m_PierTabWnd;
+
+   typedef std::vector< boost::shared_ptr<CLLDFPierGrid> > PierGridList;
+   typedef PierGridList::iterator PierGridIterator;
+   PierGridList m_PierGrids;
 
 	// Generated message map functions
 	//{{AFX_MSG(CLiveLoadDistFactorsDlg)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnMethod();
 	afx_msg void OnHelp();
+	afx_msg BOOL OnNcActivate(BOOL bActive);
+   afx_msg void OnBnClickedPierGirderRadio();
+   afx_msg void OnBnClickedLldfFillButton();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+
+public:
+   void DealWithGridStates();
 };
 
 //{{AFX_INSERT_LOCATION}}

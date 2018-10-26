@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -265,11 +265,11 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       p->SetName(_T("Live Load Displacements"));
       *pChapter << p;
       *p << CProductDisplacementsTable().BuildLiveLoadTable(pBroker,span,girder,pDisplayUnits) << rptNewLine;
-      *p << _T("D1 = LRFD Design truck without lane load")<< rptNewLine;
-      *p << _T("D2 = 0.25*(Design truck) + lane load")<< rptNewLine;
+      *p << _T("D1 = LRFD Design truck without lane load and including impact")<< rptNewLine;
+      *p << _T("D2 = 0.25*(Design truck) + lane load, including impact")<< rptNewLine;
       *p << _T("D(Controlling) = Max(D1, D2)")<< rptNewLine;
-      *p << _T("EI = Bridge EI / Number of Lanes") << rptNewLine;
-      *p << _T("Live Load Distribution Factor = gM for Positive Moment") << rptNewLine;
+      *p << _T("EI = Bridge EI / Number of Girders") << rptNewLine;
+      *p << _T("Live Load Distribution Factor = (Multiple Presence Factor)(Number of Lanes)/(Number of Girders)") << rptNewLine;
       *p << rptNewLine;
    }
 

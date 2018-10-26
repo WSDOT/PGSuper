@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -133,12 +133,13 @@ public:
    const ConnectionLibraryEntry* GetConnectionLibraryEntry(pgsTypes::PierFaceType pierFace) const;
    void SetConnectionLibraryEntry(pgsTypes::PierFaceType pierFace,const ConnectionLibraryEntry* pLibEntry);
 
+   double GetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const;
+   void SetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls, double gM);
+   void SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls, double gM);
 
-   double GetLLDFNegMoment(pgsTypes::LimitState ls,pgsTypes::GirderLocation loc) const;
-   void SetLLDFNegMoment(pgsTypes::LimitState ls,pgsTypes::GirderLocation loc,double gM);
-
-   double GetLLDFReaction(pgsTypes::LimitState ls,pgsTypes::GirderLocation loc) const;
-   void SetLLDFReaction(pgsTypes::LimitState ls,pgsTypes::GirderLocation loc,double gR);
+   double GetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const;
+   void SetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls,double gR);
+   void SetLLDFReaction(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,double gR);
 
    bool IsContinuous() const;
    void IsIntegral(bool* pbLeft,bool* pbRight) const;
@@ -182,9 +183,33 @@ private:
    CSpanData* m_pNextSpan;
    const CBridgeDescription* m_pBridgeDesc;
 
-   // LLDF (first index is pgsTypes::GirderLocation, second index is 0 for strength/service, 1 for fatigue limit states)
-   double m_gM[2][2]; // negative moment over pier
-   double m_gR[2][2]; // reaction at pier
+   // LLDF
+   // 0 for strength/service limit state, 1 for fatigue limit state
+   struct LLDF
+   {
+      double gM[2];
+      double gR[2];
+
+      LLDF()
+      {
+         gM[0]=1.0; gM[1]=1.0; gR[0]=1.0; gR[1]=1.0;
+      }
+
+      bool operator==(const LLDF& rOther) const
+      {
+         return IsEqual(gM[0], rOther.gM[0]) && IsEqual(gM[1], rOther.gM[1]) &&
+                IsEqual( gR[0], rOther.gR[0])  && IsEqual( gR[1], rOther.gR[1]);
+      }
+   };
+
+   mutable std::vector<LLDF> m_LLDFs; // this is mutable because we may have to change the container size on Get functions
+
+   mutable bool m_DistributionFactorsFromOlderVersion; // If this is true, we need to do some processing into the new format
+
+   // safe internal function for getting lldfs in lieue of girder count changes
+   LLDF& GetLLDF(GirderIndexType igs) const;
+
+   GirderIndexType GetLldfGirderCount() const;
    
    DECLARE_STRSTORAGEMAP(CPierData)
 };

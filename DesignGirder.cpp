@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -36,14 +36,16 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-txnDesignGirder::txnDesignGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx,arDesignOptions designOptions,const pgsDesignArtifact& artifact,pgsTypes::SlabOffsetType slabOffsetType)
+txnDesignGirder::txnDesignGirder( std::vector<const pgsDesignArtifact*>& artifacts, pgsTypes::SlabOffsetType slabOffsetType)
 {
-   m_SpanIdx = spanIdx;
-   m_GirderIdx = gdrIdx;
-   m_DesignOptions = designOptions;
-   m_DesignArtifact = artifact;
+   for (std::vector<const pgsDesignArtifact*>::iterator it= artifacts.begin(); it != artifacts.end(); it++)
+   {
+      DesignData data;
+      data.m_DesignArtifact = *(*it);
+      data.m_SlabOffsetType[1] = slabOffsetType;
 
-   m_SlabOffsetType[1] = slabOffsetType;
+      m_DesignDataColl.push_back(data);
+   }
 
    m_bInit = false;
 }
@@ -68,13 +70,31 @@ void txnDesignGirder::Undo()
 
 txnTransaction* txnDesignGirder::CreateClone() const
 {
-   return new txnDesignGirder(m_SpanIdx, m_GirderIdx,m_DesignOptions,m_DesignArtifact,m_SlabOffsetType[1]);
+   pgsTypes::SlabOffsetType slabtype;
+   std::vector<const pgsDesignArtifact*> artifacts;
+   bool first = true;
+   for (DesignDataConstIter iter = m_DesignDataColl.begin(); iter!=m_DesignDataColl.end(); iter++)
+   {
+      artifacts.push_back(&(iter->m_DesignArtifact));
+
+      if (first)
+         slabtype = iter->m_SlabOffsetType[1];
+
+      first = false;
+   }
+
+   return new txnDesignGirder(artifacts, slabtype);
 }
 
 std::_tstring txnDesignGirder::Name() const
 {
    std::_tostringstream os;
-   os << "Design Span " << LABEL_SPAN(m_SpanIdx) << " Girder " << LABEL_GIRDER(m_GirderIdx);
+   os << "Design for (Span, Girder) =";
+   for (DesignDataConstIter iter = m_DesignDataColl.begin(); iter!=m_DesignDataColl.end(); iter++)
+   {
+      os <<" (" << LABEL_SPAN(iter->m_DesignArtifact.GetSpan()) << ", " << LABEL_GIRDER(iter->m_DesignArtifact.GetGirder())<<")";
+   }
+
    return os.str();
 }
 
@@ -90,14 +110,19 @@ bool txnDesignGirder::IsRepeatable()
 
 void txnDesignGirder::Init()
 {
-   if (m_DesignOptions.doDesignForFlexure != dtNoDesign)
+   for (DesignDataIter iter = m_DesignDataColl.begin(); iter!=m_DesignDataColl.end(); iter++)
    {
-      CacheFlexureDesignResults();
-   }
+      DesignData& rdata = *iter;
 
-   if (m_DesignOptions.doDesignForShear)
-   {
-      CacheShearDesignResults();
+      if (rdata.m_DesignArtifact.GetDesignOptions().doDesignForFlexure != dtNoDesign)
+      {
+         CacheFlexureDesignResults(rdata);
+      }
+
+      if (rdata.m_DesignArtifact.GetDesignOptions().doDesignForShear)
+      {
+         CacheShearDesignResults(rdata);
+      }
    }
 
    m_bInit = true; // initialization is complete, don't do it again
@@ -107,36 +132,46 @@ void txnDesignGirder::DoExecute(int i)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IGirderData,pGirderData);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    pEvents->HoldEvents(); // don't fire any changed events until all changes are done
 
-   if (m_DesignOptions.doDesignForFlexure != dtNoDesign)
+   // Loop over all girder designs
+   for (DesignDataIter iter = m_DesignDataColl.begin(); iter!=m_DesignDataColl.end(); iter++)
    {
-      GET_IFACE2(pBroker,IGirderData,pGirderData);
-      pGirderData->SetGirderData(m_GirderData[i],m_SpanIdx,m_GirderIdx);
+      DesignData& rdata = *iter;
 
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-      if ( m_SlabOffsetType[i] == pgsTypes::sotBridge )
+      SpanIndexType span  = rdata.m_DesignArtifact.GetSpan();
+      GirderIndexType gdr = rdata.m_DesignArtifact.GetGirder();
+      arDesignOptions design_options = rdata.m_DesignArtifact.GetDesignOptions();
+
+      if (design_options.doDesignForFlexure != dtNoDesign)
       {
-         pIBridgeDesc->SetSlabOffset(m_SlabOffset[pgsTypes::metStart][i]);
+         pGirderData->SetGirderData(rdata.m_GirderData[i], span, gdr);
+
+         if ( rdata.m_SlabOffsetType[i] == pgsTypes::sotBridge )
+         {
+            pIBridgeDesc->SetSlabOffset(rdata.m_SlabOffset[pgsTypes::metStart][i]);
+         }
+         else
+         {
+            pIBridgeDesc->SetSlabOffset( span, gdr,rdata. m_SlabOffset[pgsTypes::metStart][i], rdata.m_SlabOffset[pgsTypes::metEnd][i]);
+         }
       }
-      else
+
+      if (design_options.doDesignForShear)
       {
-         pIBridgeDesc->SetSlabOffset(m_SpanIdx,m_GirderIdx,m_SlabOffset[pgsTypes::metStart][i],m_SlabOffset[pgsTypes::metEnd][i]);
+         GET_IFACE2(pBroker,IShear,pShear);
+         pShear->SetShearData(rdata.m_ShearData[i], span, gdr);
       }
    }
 
-   if (m_DesignOptions.doDesignForShear)
-   {
-      GET_IFACE2(pBroker,IShear,pShear);
-      pShear->SetShearData(m_ShearData[i], m_SpanIdx, m_GirderIdx);
-   }
-
-   pEvents->FirePendingEvents();
+  pEvents->FirePendingEvents();
 }
 
-void txnDesignGirder::CacheFlexureDesignResults()
+void txnDesignGirder::CacheFlexureDesignResults(DesignData& rdata)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -144,37 +179,40 @@ void txnDesignGirder::CacheFlexureDesignResults()
    GET_IFACE2(pBroker,IGirderData,pGirderData);
    GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
 
+   SpanIndexType   span  = rdata.m_DesignArtifact.GetSpan();
+   GirderIndexType gdr   = rdata.m_DesignArtifact.GetGirder();
+
+   arDesignOptions design_options = rdata.m_DesignArtifact.GetDesignOptions();
+
    // old (existing) girder data
-   m_GirderData[0] = pGirderData->GetGirderData(m_SpanIdx,m_GirderIdx);
+   rdata.m_GirderData[0] = pGirderData->GetGirderData(span, gdr);
 
    // new girder data (start with the old and tweak it)
-   m_GirderData[1] = m_GirderData[0];
+   rdata.m_GirderData[1] = rdata.m_GirderData[0];
 
    // Convert Harp offset data
    // offsets are absolute measure in the design artifact
    // convert them to the measurement basis that the CGirderData object is using
-   m_GirderData[1].HpOffsetAtEnd = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(m_SpanIdx,m_GirderIdx, 
-                                                                                       m_DesignArtifact.GetNumHarpedStrands(), 
-                                                                                       m_GirderData[1].HsoEndMeasurement, 
-                                                                                       m_DesignArtifact.GetHarpStrandOffsetEnd());
+   rdata.m_GirderData[1].HpOffsetAtEnd = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(span, gdr, 
+                                                                                       rdata.m_DesignArtifact.GetNumHarpedStrands(), 
+                                                                                       rdata.m_GirderData[1].HsoEndMeasurement, 
+                                                                                       rdata.m_DesignArtifact.GetHarpStrandOffsetEnd());
 
-   m_GirderData[1].HpOffsetAtHp = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(m_SpanIdx, m_GirderIdx,
-                                                                                     m_DesignArtifact.GetNumHarpedStrands(), 
-                                                                                     m_GirderData[1].HsoHpMeasurement, 
-                                                                                     m_DesignArtifact.GetHarpStrandOffsetHp());
-
-
+   rdata.m_GirderData[1].HpOffsetAtHp = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(span, gdr,
+                                                                                     rdata.m_DesignArtifact.GetNumHarpedStrands(), 
+                                                                                     rdata.m_GirderData[1].HsoHpMeasurement, 
+                                                                                     rdata.m_DesignArtifact.GetHarpStrandOffsetHp());
 
    // see if strand design data fits in grid
    bool fills_grid=false;
-   StrandIndexType num_permanent = m_DesignArtifact.GetNumHarpedStrands() + m_DesignArtifact.GetNumStraightStrands();
-   if (m_DesignOptions.doStrandFillType == ftGridOrder)
+   StrandIndexType num_permanent = rdata.m_DesignArtifact.GetNumHarpedStrands() + rdata.m_DesignArtifact.GetNumStraightStrands();
+   if (design_options.doStrandFillType == ftGridOrder)
    {
       // we asked design to fill using grid, but this may be a non-standard design - let's check
       StrandIndexType ns, nh;
-      if (pStrandGeometry->ComputeNumPermanentStrands(num_permanent, m_SpanIdx, m_GirderIdx, &ns, &nh))
+      if (pStrandGeometry->ComputeNumPermanentStrands(num_permanent, span, gdr, &ns, &nh))
       {
-         if (ns == m_DesignArtifact.GetNumStraightStrands() && nh ==  m_DesignArtifact.GetNumHarpedStrands() )
+         if (ns == rdata.m_DesignArtifact.GetNumStraightStrands() && nh ==  rdata.m_DesignArtifact.GetNumHarpedStrands() )
          {
             fills_grid = true;
          }
@@ -183,37 +221,37 @@ void txnDesignGirder::CacheFlexureDesignResults()
 
    if ( fills_grid )
    {
-      m_GirderData[1].NumPermStrandsType = NPS_TOTAL_NUMBER;
+      rdata.m_GirderData[1].NumPermStrandsType = NPS_TOTAL_NUMBER;
 
-      m_GirderData[1].Nstrands[pgsTypes::Permanent]            = num_permanent;
-      m_GirderData[1].Pjack[pgsTypes::Permanent]               = m_DesignArtifact.GetPjackStraightStrands() + m_DesignArtifact.GetPjackHarpedStrands();
-      m_GirderData[1].bPjackCalculated[pgsTypes::Permanent]    = m_DesignArtifact.GetUsedMaxPjackStraightStrands();
+      rdata.m_GirderData[1].Nstrands[pgsTypes::Permanent]            = num_permanent;
+      rdata.m_GirderData[1].Pjack[pgsTypes::Permanent]               = rdata.m_DesignArtifact.GetPjackStraightStrands() + rdata.m_DesignArtifact.GetPjackHarpedStrands();
+      rdata.m_GirderData[1].bPjackCalculated[pgsTypes::Permanent]    = rdata.m_DesignArtifact.GetUsedMaxPjackStraightStrands();
    }
    else
    {
-      m_GirderData[1].NumPermStrandsType = NPS_STRAIGHT_HARPED;
+      rdata.m_GirderData[1].NumPermStrandsType = NPS_STRAIGHT_HARPED;
    }
 
-   m_GirderData[1].Nstrands[pgsTypes::Harped]            = m_DesignArtifact.GetNumHarpedStrands();
-   m_GirderData[1].Nstrands[pgsTypes::Straight]          = m_DesignArtifact.GetNumStraightStrands();
-   m_GirderData[1].Nstrands[pgsTypes::Temporary]         = m_DesignArtifact.GetNumTempStrands();
-   m_GirderData[1].Pjack[pgsTypes::Harped]               = m_DesignArtifact.GetPjackHarpedStrands();
-   m_GirderData[1].Pjack[pgsTypes::Straight]             = m_DesignArtifact.GetPjackStraightStrands();
-   m_GirderData[1].Pjack[pgsTypes::Temporary]            = m_DesignArtifact.GetPjackTempStrands();
-   m_GirderData[1].bPjackCalculated[pgsTypes::Harped]    = m_DesignArtifact.GetUsedMaxPjackHarpedStrands();
-   m_GirderData[1].bPjackCalculated[pgsTypes::Straight]  = m_DesignArtifact.GetUsedMaxPjackStraightStrands();
-   m_GirderData[1].bPjackCalculated[pgsTypes::Temporary] = m_DesignArtifact.GetUsedMaxPjackTempStrands();
-   m_GirderData[1].LastUserPjack[pgsTypes::Harped]       = m_DesignArtifact.GetPjackHarpedStrands();
-   m_GirderData[1].LastUserPjack[pgsTypes::Straight]     = m_DesignArtifact.GetPjackStraightStrands();
-   m_GirderData[1].LastUserPjack[pgsTypes::Temporary]    = m_DesignArtifact.GetPjackTempStrands();
+   rdata.m_GirderData[1].Nstrands[pgsTypes::Harped]            = rdata.m_DesignArtifact.GetNumHarpedStrands();
+   rdata.m_GirderData[1].Nstrands[pgsTypes::Straight]          = rdata.m_DesignArtifact.GetNumStraightStrands();
+   rdata.m_GirderData[1].Nstrands[pgsTypes::Temporary]         = rdata.m_DesignArtifact.GetNumTempStrands();
+   rdata.m_GirderData[1].Pjack[pgsTypes::Harped]               = rdata.m_DesignArtifact.GetPjackHarpedStrands();
+   rdata.m_GirderData[1].Pjack[pgsTypes::Straight]             = rdata.m_DesignArtifact.GetPjackStraightStrands();
+   rdata.m_GirderData[1].Pjack[pgsTypes::Temporary]            = rdata.m_DesignArtifact.GetPjackTempStrands();
+   rdata.m_GirderData[1].bPjackCalculated[pgsTypes::Harped]    = rdata.m_DesignArtifact.GetUsedMaxPjackHarpedStrands();
+   rdata.m_GirderData[1].bPjackCalculated[pgsTypes::Straight]  = rdata.m_DesignArtifact.GetUsedMaxPjackStraightStrands();
+   rdata.m_GirderData[1].bPjackCalculated[pgsTypes::Temporary] = rdata.m_DesignArtifact.GetUsedMaxPjackTempStrands();
+   rdata.m_GirderData[1].LastUserPjack[pgsTypes::Harped]       = rdata.m_DesignArtifact.GetPjackHarpedStrands();
+   rdata.m_GirderData[1].LastUserPjack[pgsTypes::Straight]     = rdata.m_DesignArtifact.GetPjackStraightStrands();
+   rdata.m_GirderData[1].LastUserPjack[pgsTypes::Temporary]    = rdata.m_DesignArtifact.GetPjackTempStrands();
 
-   m_GirderData[1].TempStrandUsage = m_DesignArtifact.GetTemporaryStrandUsage();
+   rdata.m_GirderData[1].TempStrandUsage = rdata.m_DesignArtifact.GetTemporaryStrandUsage();
 
    // Get debond information from design artifact
-   m_GirderData[1].ClearDebondData();
-   m_GirderData[1].bSymmetricDebond = true;  // design is always symmetric
+   rdata.m_GirderData[1].ClearDebondData();
+   rdata.m_GirderData[1].bSymmetricDebond = true;  // design is always symmetric
 
-   DebondInfoCollection dbcoll = m_DesignArtifact.GetStraightStrandDebondInfo();
+   DebondInfoCollection dbcoll = rdata.m_DesignArtifact.GetStraightStrandDebondInfo();
    // TRICKY: Mapping from DEBONDINFO to CDebondInfo is tricky because
    //         former designates individual strands and latter stores symmetric strands
    //         in pairs.
@@ -229,7 +267,7 @@ void txnDesignGirder::CacheFlexureDesignResults()
 
       // if the difference between the current and next number of strands is 2, this is a pair
       StrandIndexType currnum = rdbrinfo.strandIdx;
-      StrandIndexType nextnum = pStrandGeometry->GetNextNumStrands(m_SpanIdx, m_GirderIdx, pgsTypes::Straight, currnum);
+      StrandIndexType nextnum = pStrandGeometry->GetNextNumStrands(span, gdr, pgsTypes::Straight, currnum);
       if (nextnum-currnum == 2)
       {
          dbit++; // increment counter to account for a pair
@@ -248,87 +286,90 @@ void txnDesignGirder::CacheFlexureDesignResults()
       cdbi.Length1    = rdbrinfo.LeftDebondLength;
       cdbi.Length2    = rdbrinfo.RightDebondLength;
 
-      m_GirderData[1].Debond[pgsTypes::Straight].push_back(cdbi);
+      rdata.m_GirderData[1].Debond[pgsTypes::Straight].push_back(cdbi);
    }
    
    // concrete
-   m_GirderData[1].Material.Fci = m_DesignArtifact.GetReleaseStrength();
-   if (!m_GirderData[1].Material.bUserEci)
+   rdata.m_GirderData[1].Material.Fci = rdata.m_DesignArtifact.GetReleaseStrength();
+   if (!rdata.m_GirderData[1].Material.bUserEci)
    {
-      m_GirderData[1].Material.Eci = lrfdConcreteUtil::ModE( m_GirderData[1].Material.Fci, 
-                                                             m_GirderData[1].Material.StrengthDensity, 
-                                                             false /* ignore LRFD range checks */ );
-      m_GirderData[1].Material.Eci *= (m_GirderData[1].Material.EcK1*m_GirderData[1].Material.EcK2);
+      rdata.m_GirderData[1].Material.Eci = lrfdConcreteUtil::ModE( rdata.m_GirderData[1].Material.Fci, 
+                                                             rdata.m_GirderData[1].Material.StrengthDensity, 
+                                                             false  ); // ignore LRFD range checks 
+      rdata.m_GirderData[1].Material.Eci *= (rdata.m_GirderData[1].Material.EcK1*rdata.m_GirderData[1].Material.EcK2);
    }
 
-   m_GirderData[1].Material.Fc  = m_DesignArtifact.GetConcreteStrength();
-   if (!m_GirderData[1].Material.bUserEc)
+   rdata.m_GirderData[1].Material.Fc  = rdata.m_DesignArtifact.GetConcreteStrength();
+   if (!rdata.m_GirderData[1].Material.bUserEc)
    {
-      m_GirderData[1].Material.Ec = lrfdConcreteUtil::ModE( m_GirderData[1].Material.Fc, 
-                                                            m_GirderData[1].Material.StrengthDensity, 
-                                                            false /* ignore LRFD range checks */ );
-      m_GirderData[1].Material.Ec *= (m_GirderData[1].Material.EcK1*m_GirderData[1].Material.EcK2);
+      rdata.m_GirderData[1].Material.Ec = lrfdConcreteUtil::ModE( rdata.m_GirderData[1].Material.Fc, 
+                                                            rdata.m_GirderData[1].Material.StrengthDensity, 
+                                                            false );// ignore LRFD range checks 
+      rdata.m_GirderData[1].Material.Ec *= (rdata.m_GirderData[1].Material.EcK1*rdata.m_GirderData[1].Material.EcK2);
    }
 
    // deck offset
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderTypes* pGirderTypes = pBridgeDesc->GetSpan(m_SpanIdx)->GetGirderTypes();
-   m_SlabOffset[pgsTypes::metStart][0] = pGirderTypes->GetSlabOffset(m_GirderIdx,pgsTypes::metStart);
-   m_SlabOffset[pgsTypes::metEnd][0]   = pGirderTypes->GetSlabOffset(m_GirderIdx,pgsTypes::metEnd);
-   m_SlabOffset[pgsTypes::metStart][1] = m_DesignArtifact.GetSlabOffset(pgsTypes::metStart);
-   m_SlabOffset[pgsTypes::metEnd][1]   = m_DesignArtifact.GetSlabOffset(pgsTypes::metEnd);
+   const CGirderTypes* pGirderTypes = pBridgeDesc->GetSpan(span)->GetGirderTypes();
+   rdata.m_SlabOffset[pgsTypes::metStart][0] = pGirderTypes->GetSlabOffset(gdr,pgsTypes::metStart);
+   rdata.m_SlabOffset[pgsTypes::metEnd][0]   = pGirderTypes->GetSlabOffset(gdr,pgsTypes::metEnd);
+   rdata.m_SlabOffset[pgsTypes::metStart][1] = rdata.m_DesignArtifact.GetSlabOffset(pgsTypes::metStart);
+   rdata.m_SlabOffset[pgsTypes::metEnd][1]   = rdata.m_DesignArtifact.GetSlabOffset(pgsTypes::metEnd);
 
    // get old deck offset type... new type was set in constructor
-   m_SlabOffsetType[0] = pBridgeDesc->GetSlabOffsetType();
+   rdata.m_SlabOffsetType[0] = pBridgeDesc->GetSlabOffsetType();
 
    // lifting
-   if ( m_DesignOptions.doDesignLifting )
+   if ( design_options.doDesignLifting )
    {
-      m_GirderData[1].HandlingData.LeftLiftPoint  = m_DesignArtifact.GetLeftLiftingLocation();
-      m_GirderData[1].HandlingData.RightLiftPoint = m_DesignArtifact.GetRightLiftingLocation();
+      rdata.m_GirderData[1].HandlingData.LeftLiftPoint  = rdata.m_DesignArtifact.GetLeftLiftingLocation();
+      rdata.m_GirderData[1].HandlingData.RightLiftPoint = rdata.m_DesignArtifact.GetRightLiftingLocation();
    }
 
    // shipping
-   if ( m_DesignOptions.doDesignHauling )
+   if ( design_options.doDesignHauling )
    {
-      m_GirderData[1].HandlingData.LeadingSupportPoint  = m_DesignArtifact.GetLeadingOverhang();
-      m_GirderData[1].HandlingData.TrailingSupportPoint = m_DesignArtifact.GetTrailingOverhang();
+      rdata.m_GirderData[1].HandlingData.LeadingSupportPoint  = rdata.m_DesignArtifact.GetLeadingOverhang();
+      rdata.m_GirderData[1].HandlingData.TrailingSupportPoint = rdata.m_DesignArtifact.GetTrailingOverhang();
    }
 }
 
-void txnDesignGirder::CacheShearDesignResults()
+void txnDesignGirder::CacheShearDesignResults(DesignData& rdata)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IShear,pShear);
    // get the current data
-   m_ShearData[0] = pShear->GetShearData(m_SpanIdx,m_GirderIdx);
+   SpanIndexType   span  = rdata.m_DesignArtifact.GetSpan();
+   GirderIndexType gdr   = rdata.m_DesignArtifact.GetGirder();
+
+   rdata.m_ShearData[0] = pShear->GetShearData(span, gdr);
 
    // get the design data
-   m_ShearData[1] = m_ShearData[0]; // start with the old and tweak
-   m_ShearData[1].ShearZones.clear();
+   rdata.m_ShearData[1] = rdata.m_ShearData[0]; // start with the old and tweak
+   rdata.m_ShearData[1].ShearZones.clear();
 
-   ZoneIndexType nShearZones = m_DesignArtifact.GetNumberOfStirrupZonesDesigned();
+   ZoneIndexType nShearZones = rdata.m_DesignArtifact.GetNumberOfStirrupZonesDesigned();
    if (0 < nShearZones)
    {
       for (ZoneIndexType i =0; i < nShearZones; i++)
       {
-         m_ShearData[1].ShearZones.push_back( m_DesignArtifact.GetShearZoneData(i) );
+         rdata.m_ShearData[1].ShearZones.push_back( rdata.m_DesignArtifact.GetShearZoneData(i) );
       }
 
-      m_ShearData[1].ConfinementBarSize = m_DesignArtifact.GetConfinementBarSize();
+      rdata.m_ShearData[1].ConfinementBarSize  = rdata.m_DesignArtifact.GetConfinementBarSize();
 
-      m_ShearData[1].NumConfinementZones = m_DesignArtifact.GetLastConfinementZone()+1;
+      rdata.m_ShearData[1].NumConfinementZones = rdata.m_DesignArtifact.GetLastConfinementZone()+1;
    }
    else
    {
       // if no shear zones were designed, we had a design failure.
       // create a single zone with no stirrups in it.
       CShearZoneData dat;
-      m_ShearData[1].ShearZones.push_back(dat);
-      m_ShearData[1].ConfinementBarSize = 0;
-      m_ShearData[1].NumConfinementZones = 0;
+      rdata.m_ShearData[1].ShearZones.push_back(dat);
+      rdata.m_ShearData[1].ConfinementBarSize = 0;
+      rdata.m_ShearData[1].NumConfinementZones = 0;
    }
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -783,7 +783,7 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
          ATLASSERT(shear_capacity_method == scmWSDOT2001);
 
          GET_IFACE(IPointOfInterest,pPOI);
-         std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(poi.GetSpan(),poi.GetGirder(),pgsTypes::BridgeSite3,POI_15H);
+         std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(poi.GetSpan(),poi.GetGirder(),pgsTypes::BridgeSite3,POI_15H) );
          ATLASSERT(vPOI.size() == 2);
          double l1 = vPOI[0].GetDistFromStart();
          double l2 = vPOI[1].GetDistFromStart();

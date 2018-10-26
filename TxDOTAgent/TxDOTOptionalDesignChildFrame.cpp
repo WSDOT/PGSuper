@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -106,7 +106,7 @@ void CTxDOTOptionalDesignChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
 	if (bAddToTitle)
    {
-      CString msg("Toga Plugin");
+      CString msg(_T("Toga Plugin"));
 
       // set our title
 		AfxSetWindowText(m_hWnd, msg);

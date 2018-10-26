@@ -31,6 +31,9 @@ END_MESSAGE_MAP()
 BOOL CPGSuperAppPluginApp::InitInstance()
 {
    ::GXInit();
+	GXSetNewGridLineMode(TRUE);	// use smarter grid lines (and dotted) 
+
+   CGXTabWnd::RegisterClass(m_hInstance);
 
    // Register the component categories PGSuper needs
    // This should be done in the installer, but do it again here just in case

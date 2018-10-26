@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -94,7 +94,7 @@ void CTxDOTCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast
          else
          {
             // see if we append or overwrite file
-            // if flag ends in _T("o") we are overwriting, not appending
+            // if flag ends in "o" we are overwriting, not appending
             m_DoAppendToFile = (strParam.Right(1).CompareNoCase(_T("o")) != 0);
       
             // Set main command option

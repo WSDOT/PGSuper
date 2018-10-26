@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -70,19 +70,7 @@ CPierData::CPierData()
 
    m_strOrientation = _T("Normal");
 
-   // strength/service limit states
-   m_gM[pgsTypes::Interior][0] = 1.0;
-   m_gR[pgsTypes::Interior][0] = 1.0;
-
-   m_gM[pgsTypes::Exterior][0] = 1.0;
-   m_gR[pgsTypes::Exterior][0] = 1.0;
-
-   // fatigue limit states
-   m_gM[pgsTypes::Interior][1] = 1.0;
-   m_gR[pgsTypes::Interior][1] = 1.0;
-
-   m_gM[pgsTypes::Exterior][1] = 1.0;
-   m_gR[pgsTypes::Exterior][1] = 1.0;
+   m_DistributionFactorsFromOlderVersion = false;
 }
 
 CPierData::CPierData(const CPierData& rOther)
@@ -142,20 +130,8 @@ bool CPierData::operator==(const CPierData& rOther) const
 
    if ( m_pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
-      for ( int i = 0; i < 2; i++ )
-      {
-         if ( !IsEqual(m_gM[pgsTypes::Interior][i],rOther.m_gM[pgsTypes::Interior][i]) )
-            return false;
-
-         if ( !IsEqual(m_gM[pgsTypes::Exterior][i],rOther.m_gM[pgsTypes::Exterior][i]) )
-            return false;
-
-         if ( !IsEqual(m_gR[pgsTypes::Interior][i],rOther.m_gR[pgsTypes::Interior][i]) )
-            return false;
-
-         if ( !IsEqual(m_gR[pgsTypes::Exterior][i],rOther.m_gR[pgsTypes::Exterior][i]) )
-            return false;
-      }
+      if (m_LLDFs != rOther.m_LLDFs)
+         return false;
    }
 
    return true;
@@ -454,85 +430,143 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
             double lldf_version;
             pStrLoad->get_Version(&lldf_version);
 
-            if ( lldf_version < 2 )
+            if ( lldf_version < 3 )
             {
-               var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property(_T("gM_Interior"),&var)) )
-                  return STRLOAD_E_INVALIDFORMAT;
+               // Prior to version 3, factors were for interior and exterior only
+               double gM[2][2];
+               double gR[2][2];
 
-               m_gM[pgsTypes::Interior][0] = var.dblVal;
-               m_gM[pgsTypes::Interior][1] = var.dblVal;
+               if ( lldf_version < 2 )
+               {
+                  var.vt = VT_R8;
+                  if ( FAILED(pStrLoad->get_Property(_T("gM_Interior"),&var)) )
+                     return STRLOAD_E_INVALIDFORMAT;
 
-               var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property(_T("gM_Exterior"),&var)) )
-                  return STRLOAD_E_INVALIDFORMAT;
+                  gM[pgsTypes::Interior][0] = var.dblVal;
+                  gM[pgsTypes::Interior][1] = var.dblVal;
 
-               m_gM[pgsTypes::Exterior][0] = var.dblVal;
-               m_gM[pgsTypes::Exterior][1] = var.dblVal;
+                  var.vt = VT_R8;
+                  if ( FAILED(pStrLoad->get_Property(_T("gM_Exterior"),&var)) )
+                     return STRLOAD_E_INVALIDFORMAT;
 
-               var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property(_T("gR_Interior"),&var)) )
-                  return STRLOAD_E_INVALIDFORMAT;
+                  gM[pgsTypes::Exterior][0] = var.dblVal;
+                  gM[pgsTypes::Exterior][1] = var.dblVal;
 
-               m_gR[pgsTypes::Interior][0] = var.dblVal;
-               m_gR[pgsTypes::Interior][1] = var.dblVal;
+                  var.vt = VT_R8;
+                  if ( FAILED(pStrLoad->get_Property(_T("gR_Interior"),&var)) )
+                     return STRLOAD_E_INVALIDFORMAT;
 
-               var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property(_T("gR_Exterior"),&var)) )
-                  return STRLOAD_E_INVALIDFORMAT;
+                  gR[pgsTypes::Interior][0] = var.dblVal;
+                  gR[pgsTypes::Interior][1] = var.dblVal;
 
-               m_gR[pgsTypes::Exterior][0] = var.dblVal;
-               m_gR[pgsTypes::Exterior][1] = var.dblVal;
+                  var.vt = VT_R8;
+                  if ( FAILED(pStrLoad->get_Property(_T("gR_Exterior"),&var)) )
+                     return STRLOAD_E_INVALIDFORMAT;
+
+                  gR[pgsTypes::Exterior][0] = var.dblVal;
+                  gR[pgsTypes::Exterior][1] = var.dblVal;
+               }
+               else
+               {
+                  var.vt = VT_R8;
+                  if ( FAILED(pStrLoad->get_Property(_T("gM_Interior_Strength"),&var)) )
+                     return STRLOAD_E_INVALIDFORMAT;
+
+                  gM[pgsTypes::Interior][0] = var.dblVal;
+
+                  var.vt = VT_R8;
+                  if ( FAILED(pStrLoad->get_Property(_T("gM_Exterior_Strength"),&var)) )
+                     return STRLOAD_E_INVALIDFORMAT;
+
+                  gM[pgsTypes::Exterior][0] = var.dblVal;
+
+                  var.vt = VT_R8;
+                  if ( FAILED(pStrLoad->get_Property(_T("gR_Interior_Strength"),&var)) )
+                     return STRLOAD_E_INVALIDFORMAT;
+
+                  gR[pgsTypes::Interior][0] = var.dblVal;
+
+                  var.vt = VT_R8;
+                  if ( FAILED(pStrLoad->get_Property(_T("gR_Exterior_Strength"),&var)) )
+                     return STRLOAD_E_INVALIDFORMAT;
+
+                  gR[pgsTypes::Exterior][0] = var.dblVal;
+
+                  var.vt = VT_R8;
+                  if ( FAILED(pStrLoad->get_Property(_T("gM_Interior_Fatigue"),&var)) )
+                     return STRLOAD_E_INVALIDFORMAT;
+
+                  gM[pgsTypes::Interior][1] = var.dblVal;
+
+                  var.vt = VT_R8;
+                  if ( FAILED(pStrLoad->get_Property(_T("gM_Exterior_Fatigue"),&var)) )
+                     return STRLOAD_E_INVALIDFORMAT;
+
+                  gM[pgsTypes::Exterior][1] = var.dblVal;
+
+                  var.vt = VT_R8;
+                  if ( FAILED(pStrLoad->get_Property(_T("gR_Interior_Fatigue"),&var)) )
+                     return STRLOAD_E_INVALIDFORMAT;
+
+                  gR[pgsTypes::Interior][1] = var.dblVal;
+
+                  var.vt = VT_R8;
+                  if ( FAILED(pStrLoad->get_Property(_T("gR_Exterior_Fatigue"),&var)) )
+                     return STRLOAD_E_INVALIDFORMAT;
+
+                  gR[pgsTypes::Exterior][1] = var.dblVal;
+               }
+
+               // Move interior and exterior factors into first two slots in df vector. We will 
+               // need to move them into all girder slots once this object is fully connected to the bridge
+               m_DistributionFactorsFromOlderVersion = true;
+
+               LLDF df;
+               df.gM[0] = gM[pgsTypes::Exterior][0];
+               df.gM[1] = gM[pgsTypes::Exterior][1];
+               df.gR[0] = gR[pgsTypes::Exterior][0];
+               df.gR[1] = gR[pgsTypes::Exterior][1];
+
+               m_LLDFs.push_back(df); // First in list is exterior
+
+               df.gM[0] = gM[pgsTypes::Interior][0];
+               df.gM[1] = gM[pgsTypes::Interior][1];
+               df.gR[0] = gR[pgsTypes::Interior][0];
+               df.gR[1] = gR[pgsTypes::Interior][1];
+
+               m_LLDFs.push_back(df); // Second is interior
             }
             else
             {
-               var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property(_T("gM_Interior_Strength"),&var)) )
-                  return STRLOAD_E_INVALIDFORMAT;
-
-               m_gM[pgsTypes::Interior][0] = var.dblVal;
-
-               var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property(_T("gM_Exterior_Strength"),&var)) )
-                  return STRLOAD_E_INVALIDFORMAT;
-
-               m_gM[pgsTypes::Exterior][0] = var.dblVal;
+               // distribution factors by girder
+               var.vt = VT_I4;
+               hr = pStrLoad->get_Property(_T("nLLDFGirders"),&var);
+               int ng = var.lVal;
 
                var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property(_T("gR_Interior_Strength"),&var)) )
-                  return STRLOAD_E_INVALIDFORMAT;
 
-               m_gR[pgsTypes::Interior][0] = var.dblVal;
+               for (int ig=0; ig<ng; ig++)
+               {
+                  LLDF lldf;
 
-               var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property(_T("gR_Exterior_Strength"),&var)) )
-                  return STRLOAD_E_INVALIDFORMAT;
+                  hr = pStrLoad->BeginUnit(_T("LLDF_Girder"));
 
-               m_gR[pgsTypes::Exterior][0] = var.dblVal;
+                  hr = pStrLoad->get_Property(_T("gM_Strength"),&var);
+                  lldf.gM[0] = var.dblVal;
 
-               var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property(_T("gM_Interior_Fatigue"),&var)) )
-                  return STRLOAD_E_INVALIDFORMAT;
+                  hr = pStrLoad->get_Property(_T("gR_Strength"),&var);
+                  lldf.gR[0] = var.dblVal;
 
-               m_gM[pgsTypes::Interior][1] = var.dblVal;
+                  hr = pStrLoad->get_Property(_T("gM_Fatigue"),&var);
+                  lldf.gM[1] = var.dblVal;
 
-               var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property(_T("gM_Exterior_Fatigue"),&var)) )
-                  return STRLOAD_E_INVALIDFORMAT;
+                  hr = pStrLoad->get_Property(_T("gR_Fatigue"),&var);
+                  lldf.gR[1] = var.dblVal;
 
-               m_gM[pgsTypes::Exterior][1] = var.dblVal;
+                  pStrLoad->EndUnit(); // LLDF
 
-               var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property(_T("gR_Interior_Fatigue"),&var)) )
-                  return STRLOAD_E_INVALIDFORMAT;
-
-               m_gR[pgsTypes::Interior][1] = var.dblVal;
-
-               var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property(_T("gR_Exterior_Fatigue"),&var)) )
-                  return STRLOAD_E_INVALIDFORMAT;
-
-               m_gR[pgsTypes::Exterior][1] = var.dblVal;
+                  m_LLDFs.push_back(lldf);
+               }
             }
 
             pStrLoad->EndUnit();
@@ -573,17 +607,24 @@ HRESULT CPierData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    // added in version 5
    if ( m_pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
-      pStrSave->BeginUnit(_T("LLDF"),2.0);
-      pStrSave->put_Property(_T("gM_Interior_Strength"),CComVariant(m_gM[pgsTypes::Interior][0]));
-      pStrSave->put_Property(_T("gM_Exterior_Strength"),CComVariant(m_gM[pgsTypes::Exterior][0]));
-      pStrSave->put_Property(_T("gR_Interior_Strength"),CComVariant(m_gR[pgsTypes::Interior][0]));
-      pStrSave->put_Property(_T("gR_Exterior_Strength"),CComVariant(m_gR[pgsTypes::Exterior][0]));
+      pStrSave->BeginUnit(_T("LLDF"),3.0); // Version 3 went from interior/exterior to girder by girder
 
-      pStrSave->put_Property(_T("gM_Interior_Fatigue"),CComVariant(m_gM[pgsTypes::Interior][1]));
-      pStrSave->put_Property(_T("gM_Exterior_Fatigue"),CComVariant(m_gM[pgsTypes::Exterior][1]));
-      pStrSave->put_Property(_T("gR_Interior_Fatigue"),CComVariant(m_gR[pgsTypes::Interior][1]));
-      pStrSave->put_Property(_T("gR_Exterior_Fatigue"),CComVariant(m_gR[pgsTypes::Exterior][1]));
-      pStrSave->EndUnit();
+      GirderIndexType ngs = GetLldfGirderCount();
+      pStrSave->put_Property(_T("nLLDFGirders"),CComVariant(ngs));
+
+      for (GirderIndexType igs=0; igs<ngs; igs++)
+      {
+         pStrSave->BeginUnit(_T("LLDF_Girder"),1.0);
+         LLDF& lldf = GetLLDF(igs);
+
+         pStrSave->put_Property(_T("gM_Strength"), CComVariant(lldf.gM[0]));
+         pStrSave->put_Property(_T("gR_Strength"), CComVariant(lldf.gR[0]));
+         pStrSave->put_Property(_T("gM_Fatigue"),  CComVariant(lldf.gM[1]));
+         pStrSave->put_Property(_T("gR_Fatigue"),  CComVariant(lldf.gR[1]));
+         pStrSave->EndUnit(); // LLDF_Girder
+      }
+
+      pStrSave->EndUnit(); // LLDF
    }
 
    // added in version 5 - RAB: 10/17/2008 - not linking any more
@@ -612,14 +653,9 @@ void CPierData::MakeCopy(const CPierData& rOther)
 
    m_strOrientation        = rOther.m_strOrientation;
 
-   for ( int i = 0; i < 2; i++ )
-   {
-      m_gM[pgsTypes::Interior][i] = rOther.m_gM[pgsTypes::Interior][i];
-      m_gR[pgsTypes::Interior][i] = rOther.m_gR[pgsTypes::Interior][i];
+   m_LLDFs = rOther.m_LLDFs;
 
-      m_gM[pgsTypes::Exterior][i] = rOther.m_gM[pgsTypes::Exterior][i];
-      m_gR[pgsTypes::Exterior][i] = rOther.m_gR[pgsTypes::Exterior][i];
-   }
+   m_DistributionFactorsFromOlderVersion = rOther.m_DistributionFactorsFromOlderVersion;
 }
 
 void CPierData::MakeAssignment(const CPierData& rOther)
@@ -733,25 +769,68 @@ void CPierData::SetConnectionLibraryEntry(pgsTypes::PierFaceType pierFace,const 
    m_pConnectionEntry[pierFace] = pLibEntry;
 }
 
-double CPierData::GetLLDFNegMoment(pgsTypes::LimitState ls,pgsTypes::GirderLocation loc) const
+double CPierData::GetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
 {
-   return m_gM[loc][ls == pgsTypes::FatigueI ? 1 : 0];
+   LLDF& rlldf = GetLLDF(gdrIdx);
+
+   return rlldf.gM[ls == pgsTypes::FatigueI ? 1 : 0];
 }
 
-void CPierData::SetLLDFNegMoment(pgsTypes::LimitState ls,pgsTypes::GirderLocation loc,double gM)
+void CPierData::SetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls, double gM)
 {
-   m_gM[loc][ls == pgsTypes::FatigueI ? 1 : 0] = gM;
+   LLDF& rlldf = GetLLDF(gdrIdx);
+
+   rlldf.gM[ls == pgsTypes::FatigueI ? 1 : 0] = gM;
 }
 
-double CPierData::GetLLDFReaction(pgsTypes::LimitState ls,pgsTypes::GirderLocation loc) const
+void CPierData::SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls, double gM)
 {
-   return m_gR[loc][ls == pgsTypes::FatigueI ? 1 : 0];
+   GirderIndexType ngdrs = GetLldfGirderCount();
+   if (ngdrs>2 && gdrloc==pgsTypes::Interior)
+   {
+      for (GirderIndexType ig=1; ig<ngdrs-1; ig++)
+      {
+         SetLLDFNegMoment(ig,ls,gM);
+      }
+   }
+   else if (gdrloc==pgsTypes::Exterior)
+   {
+      SetLLDFNegMoment(0,ls,gM);
+      SetLLDFNegMoment(ngdrs-1,ls,gM);
+   }
 }
 
-void CPierData::SetLLDFReaction(pgsTypes::LimitState ls,pgsTypes::GirderLocation loc,double gR)
+double CPierData::GetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
 {
-   m_gR[loc][ls == pgsTypes::FatigueI ? 1 : 0] = gR;
+   LLDF& rlldf = GetLLDF(gdrIdx);
+
+   return rlldf.gR[ls == pgsTypes::FatigueI ? 1 : 0];
 }
+
+void CPierData::SetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls, double gR)
+{
+   LLDF& rlldf = GetLLDF(gdrIdx);
+
+   rlldf.gR[ls == pgsTypes::FatigueI ? 1 : 0] = gR;
+}
+
+void CPierData::SetLLDFReaction(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls, double gM)
+{
+   GirderIndexType ngdrs = GetLldfGirderCount();
+   if (ngdrs>2 && gdrloc==pgsTypes::Interior)
+   {
+      for (GirderIndexType ig=1; ig<ngdrs-1; ig++)
+      {
+         SetLLDFReaction(ig,ls,gM);
+      }
+   }
+   else if (gdrloc==pgsTypes::Exterior)
+   {
+      SetLLDFReaction(0,ls,gM);
+      SetLLDFReaction(ngdrs-1,ls,gM);
+   }
+}
+
 
 bool CPierData::IsContinuous() const
 {
@@ -773,3 +852,114 @@ void CPierData::IsIntegral(bool* pbLeft,bool* pbRight) const
    }
 }
 
+
+CPierData::LLDF& CPierData::GetLLDF(GirderIndexType igs) const
+{
+   // First: Compare size of our collection with current number of girders and resize if they don't match
+   GirderIndexType ngdrs = GetLldfGirderCount();
+   ATLASSERT(ngdrs>0);
+
+   Int32 ndfs = m_LLDFs.size();
+
+   if (m_DistributionFactorsFromOlderVersion)
+   {
+      // data loaded from older versions should be loaded into first two entries
+      if(ndfs==2)
+      {
+         LLDF exterior = m_LLDFs[0];
+         LLDF interior = m_LLDFs[1];
+         for (GirderIndexType ig=2; ig<ngdrs; ig++)
+         {
+            if (ig!=ngdrs-1)
+            {
+               m_LLDFs.push_back(interior);
+            }
+            else
+            {
+               m_LLDFs.push_back(exterior);
+            }
+         }
+
+         m_DistributionFactorsFromOlderVersion = false;
+         ndfs = ngdrs;
+      }
+      else
+      {
+         ATLASSERT(0); // something went wrong on load
+      }
+   }
+
+   if (ndfs==0)
+   {
+      for (int i=0; i<ngdrs; i++)
+      {
+         m_LLDFs.push_back(LLDF());
+      }
+   }
+   else if (ndfs<ngdrs)
+   {
+      // More girders than factors - move exterior to last girder and use last interior for new interiors
+      LLDF exterior = m_LLDFs.back();
+      int inter_idx = ngdrs-2>0 ? ngdrs-2 : 0; // one-girder bridges could otherwise give us trouble
+      LLDF interior = m_LLDFs[inter_idx];
+
+      m_LLDFs[ndfs-1] = interior;
+      for (int i=ndfs; i<ngdrs; i++)
+      {
+         if (i != ngdrs-1)
+         {
+            m_LLDFs.push_back(interior);
+         }
+         else
+         {
+            m_LLDFs.push_back(exterior);
+         }
+      }
+    }
+   else if (ndfs>ngdrs)
+   {
+      // more factors than girders - truncate, then move last exterior to end
+      LLDF exterior = m_LLDFs.back();
+      m_LLDFs.resize(ngdrs);
+      m_LLDFs.back() = exterior;
+   }
+
+   // Next: let's deal with retrieval
+   if (igs<0)
+   {
+      ATLASSERT(0); // problemo in calling routine - let's not crash
+      return m_LLDFs[0];
+   }
+   else if (igs>=ngdrs)
+   {
+      ATLASSERT(0); // problemo in calling routine - let's not crash
+      return m_LLDFs.back();
+   }
+   else
+   {
+      return m_LLDFs[igs];
+   }
+}
+
+GirderIndexType CPierData::GetLldfGirderCount() const
+{
+   GirderIndexType ahead(0), back(0);
+
+   const CSpanData* pAhead = GetSpan(pgsTypes::Ahead);
+   if (pAhead!=NULL)
+      ahead = pAhead->GetGirderCount();
+
+   const CSpanData* pBack = GetSpan(pgsTypes::Back);
+   if (pBack!=NULL)
+      back = pBack->GetGirderCount();
+
+   if (pBack==NULL && pAhead==NULL)
+   {
+      ATLASSERT(0); // function called before bridge tied together - no good
+      return 0;
+   }
+   else
+   {
+      return max(ahead, back);
+   }
+}
