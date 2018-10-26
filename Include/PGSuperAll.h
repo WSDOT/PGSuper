@@ -24,24 +24,43 @@
 #define INCLUDED_PGSUPERALL_H_
 #pragma once
 
-#define COM_STDMETHOD_CAN_THROW
-
-#include <PGSuperVersion.h>
-#include <WBFLAll.h>
-
-#define VC_EXTRALEAN
-
 #ifndef STRICT
 #define STRICT
 #endif
 
+#define VC_EXTRALEAN
+#define COM_STDMETHOD_CAN_THROW
+
+#include <PGSuperVersion.h>
+
+#if defined _M_IX86
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#elif defined _M_IA64
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='ia64' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#elif defined _M_X64
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='amd64' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#else
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#endif
 
 #include <afxwin.h>         // MFC core and standard components
 #include <afxext.h>         // MFC extensions
-#include <afxdisp.h>
 #include <afxpriv.h>        // Private MFC extensions
+#include <afxole.h>         // MFC OLE classes
+#include <afxodlgs.h>       // MFC OLE dialog classes
+#include <afxdisp.h>        // MFC OLE automation classes
+#include <afxcontrolbars.h>	// MFC support for ribbon and control bars
 
+#define _ATL_APARTMENT_THREADED
+#define _ATL_NO_AUTOMATIC_NAMESPACE
+#define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS	// some CString constructors will be explicit
+#include <atlbase.h>
+#include <atlcom.h>
+//#include <atlctl.h>
+
+using namespace ATL;
+
+#include <WBFLAll.h>
 #include <PGSuperTypes.h>
 #include <PGSuperDebug.h>
 

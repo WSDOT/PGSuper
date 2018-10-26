@@ -86,6 +86,7 @@ public:
 // Implementation
 protected:
 	virtual ~CBridgeModelViewChildFrame();
+   virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 
 	// Generated message map functions
 	//{{AFX_MSG(CBridgeModelViewChildFrame)

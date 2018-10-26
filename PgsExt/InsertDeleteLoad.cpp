@@ -20,9 +20,9 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "InsertDeleteLoad.h"
-#include "PGSuperDoc.h"
+#include <PgsExt\PgsExtLib.h>
+#include <PgsExt\InsertDeleteLoad.h>
+#include <EAF\EAFUtilities.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

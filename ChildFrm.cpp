@@ -37,9 +37,9 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CChildFrame
 
-IMPLEMENT_DYNCREATE(CChildFrame, CMDIChildWnd)
+IMPLEMENT_DYNCREATE(CChildFrame, CEAFChildFrame)
 
-BEGIN_MESSAGE_MAP(CChildFrame, CMDIChildWnd)
+BEGIN_MESSAGE_MAP(CChildFrame, CEAFChildFrame)
 	//{{AFX_MSG_MAP(CChildFrame)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 		//    DO NOT EDIT what you see in these blocks of generated code !
@@ -65,7 +65,7 @@ BOOL CChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 	// STRINGTABLE resource instead of the document name.
 
 	cs.style &= ~(LONG)FWS_ADDTOTITLE;
-	return CMDIChildWnd::PreCreateWindow(cs);
+	return CEAFChildFrame::PreCreateWindow(cs);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -75,12 +75,12 @@ BOOL CChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 void CChildFrame::AssertValid() const
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-	CMDIChildWnd::AssertValid();
+	CEAFChildFrame::AssertValid();
 }
 
 void CChildFrame::Dump(CDumpContext& dc) const
 {
-	CMDIChildWnd::Dump(dc);
+	CEAFChildFrame::Dump(dc);
 }
 
 #endif //_DEBUG
@@ -118,6 +118,6 @@ void CChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
    }
    else
    {
-      CMDIChildWnd::OnUpdateFrameTitle(bAddToTitle);
+      CEAFChildFrame::OnUpdateFrameTitle(bAddToTitle);
    }
 }

@@ -124,16 +124,25 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
    bool is_test_output = (format== tcxTest) ? true : false;
    CadWriterWorkerBee workerB(is_test_output);//
 
-   // determine type of output
-   bool isHarpedDesign = 0 < pStrandGeometry->GetMaxStrands(span, gdr, pgsTypes::Harped);
-
 	/* Create pois at the start of girder and mid-span */
 	pgsPointOfInterest pois(span, gdr, 0.0);
 	std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(span, gdr, pgsTypes::BridgeSite1, POI_MIDSPAN);
 	CHECK(pmid.size() == 1);
 
+   // Determine type of output and number of strands
+   bool isHarpedDesign = 0 < pStrandGeometry->GetMaxStrands(span, gdr, pgsTypes::Harped);
+
+   StrandIndexType harpedCount   = pStrandGeometry->GetNumStrands(span, gdr,pgsTypes::Harped);
+   StrandIndexType straightCount = pStrandGeometry->GetNumStrands(span, gdr,pgsTypes::Straight);
 
    bool isExtendedVersion = (format==tcxExtended || format==tcxTest);
+
+   CGirderData girderData = pGirderData->GetGirderData(span, gdr);
+
+   // Determine if non-standard design
+   bool do_write_ns_data = isHarpedDesign && 
+                           (girderData.NumPermStrandsType != NPS_TOTAL_NUMBER) && 
+                           (harpedCount+straightCount > 0);
 
    // extended version writes data at front and back of line
    if (isExtendedVersion)
@@ -199,8 +208,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 
 	/* 4. STRAND PATTERN */
 	TCHAR  strandPat[5+1]; 
-   CGirderData girderData = pGirderData->GetGirderData(span, gdr);
-   if (girderData.NumPermStrandsType != NPS_TOTAL_NUMBER)
+   if (do_write_ns_data)
    {
 	   _tcscpy_s(strandPat, sizeof(strandPat)/sizeof(TCHAR), _T("*"));
    }
@@ -210,11 +218,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
    }
 
 	/* 5. STRAND COUNT */
-   StrandIndexType harpedCount   = pStrandGeometry->GetNumStrands(span, gdr,pgsTypes::Harped);
-   StrandIndexType straightCount = pStrandGeometry->GetNumStrands(span, gdr,pgsTypes::Straight);
-
 	StrandIndexType strandNum = harpedCount + straightCount;
-
 
 	/* 6. STRAND SIZE */
 	TCHAR    strandSize[4+1];
@@ -283,8 +287,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 
    /* 17a - Non-Standard Design Data */
    std::_tstring ns_strand_str;
-   bool do_write_ns_data = isHarpedDesign && girderData.NumPermStrandsType != NPS_TOTAL_NUMBER && !isExtendedVersion;
-   if (do_write_ns_data)
+   if (do_write_ns_data && !isExtendedVersion)
    {
       ns_strand_str = MakeNonStandardStrandString(pBroker,pmid[0]);
    }
@@ -323,12 +326,33 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
    if (isHarpedDesign)
    {
 	   /* 10. COUNT OF DEPRESSED (HARPED) STRANDS */
-	   StrandIndexType dstrandNum = harpedCount;
-
+      StrandIndexType dstrandNum;
 	   /* 11. DEPRESSED (HARPED) STRAND */
-      pStrandGeometry->GetHighestHarpedStrandLocation(span, gdr, &value);
+      Float64 dstrandTo;
 
-      Float64 dstrandTo = ::ConvertFromSysUnits( value, unitMeasure::Inch );
+      // Determine if harped strands are straight by comparing harped eccentricity at end/mid
+      bool are_harped_straight(true);
+      if (harpedCount>0)
+      {
+         Float64 nEff;
+         Float64 hs_ecc_end = pStrandGeometry->GetHsEccentricity(pois, &nEff);
+         Float64 hs_ecc_mid = pStrandGeometry->GetHsEccentricity(pmid[0], &nEff);
+         are_harped_straight = IsEqual(hs_ecc_end, hs_ecc_mid);
+      }
+
+      if(are_harped_straight)
+      {
+         // Report harped strands as straight
+         dstrandNum = 0;
+         dstrandTo = 0.0;
+      }
+      else
+      {
+         dstrandNum = harpedCount;
+
+         pStrandGeometry->GetHighestHarpedStrandLocation(span, gdr, &value);
+         dstrandTo = ::ConvertFromSysUnits( value, unitMeasure::Inch );
+      }
 
       // output
 	   //----- COL 10 ---- 
@@ -366,12 +390,11 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 	//----- COL 17aa ---- 
    workerB.WriteFloat64(shearDistFactor,_T("LLDFs"),5,_T("%5.3f"),true);
 
-   if (do_write_ns_data)
+   if (do_write_ns_data && !isExtendedVersion)
    {
       std::_tstring::size_type cnt = max(ns_strand_str.size(), 7);
       workerB.WriteString(ns_strand_str.c_str(),_T("NS Data"),(Int16)cnt,_T("%s"),true);
    }
-
 
    // EXTENDED INFORMATION, IF REQUESTED // 
    if (isExtendedVersion)
@@ -391,6 +414,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 
    	/* 19. DEFLECTION (SLAB AND DIAPHRAGMS)  */
       value = pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftSlab,      pmid[0], SimpleSpan )
+            + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftSlabPad, pmid[0], SimpleSpan )
             + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftDiaphragm, pmid[0], SimpleSpan )
             + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftShearKey,  pmid[0], SimpleSpan );
 
@@ -906,21 +930,21 @@ int TxDOT_WriteDistributionFactorsToFile (FILE *fp, IBroker* pBroker, SpanIndexT
 
 std::_tstring MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInterest& midPoi)
 {
-   StrandRowUtil::StrandRowSet strandrows = StrandRowUtil::GetStrandRowSet(pBroker, midPoi);
+   OptionalDesignHarpedFillUtil::StrandRowSet strandrows = OptionalDesignHarpedFillUtil::GetStrandRowSet(pBroker, midPoi);
 
    // At this point, we have counted the number of strands per row. Now create string
    bool first = true;
    std::_tostringstream os;
-   for (StrandRowUtil::StrandRowIter srit=strandrows.begin(); srit!=strandrows.end(); srit++)
+   for (OptionalDesignHarpedFillUtil::StrandRowIter srit=strandrows.begin(); srit!=strandrows.end(); srit++)
    {
       if (!first)
-         os<<_T(",");
+         os<<_T(", ");
       else
          first=false;
 
-      const StrandRowUtil::StrandRow& srow = *srit;
+      const OptionalDesignHarpedFillUtil::StrandRow& srow = *srit;
       Float64 elev_in = RoundOff(::ConvertFromSysUnits( srow.Elevation, unitMeasure::Inch ),0.001);
-      os<<elev_in<<_T("(")<<srow.Count<<_T(")");
+      os<<elev_in<<_T("(")<<srow.fillListString<<_T(")");
    }
 
    return os.str();

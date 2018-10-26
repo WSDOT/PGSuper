@@ -29,6 +29,7 @@
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <Reporting\ReportStyleHolder.h>
+#include <IFace\AnalysisResults.h>
 
 class lrfdLosses;
 
@@ -38,10 +39,13 @@ class CElasticGainDueToDeckPlacementTable : public rptRcTable
 {
 public:
 	static CElasticGainDueToDeckPlacementTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-   void AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+   void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
 
 private:
    CElasticGainDueToDeckPlacementTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);
+
+   BridgeAnalysisType m_BAT;
+   bool m_bHasUserLoads;
 
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  spanloc );
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  gdrloc );
@@ -53,6 +57,8 @@ private:
    DECLARE_UV_PROTOTYPE( rptLengthUnitValue,  ecc );
    DECLARE_UV_PROTOTYPE( rptMomentUnitValue,  moment );
    DECLARE_UV_PROTOTYPE( rptStressUnitValue,  stress );
+
+   rptRcScalar scalar;
 };
 
 #endif //__ELASTICGAINDUETODECKPLACEMENTTABLE_H_

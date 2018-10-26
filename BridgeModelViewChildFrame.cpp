@@ -61,6 +61,20 @@ CBridgeModelViewChildFrame::~CBridgeModelViewChildFrame()
 {
 }
 
+BOOL CBridgeModelViewChildFrame::PreCreateWindow(CREATESTRUCT& cs)
+{
+   // force this window to be maximized (not sure why WS_VISIBLE is required)
+   cs.style |= WS_MAXIMIZE | WS_VISIBLE;
+
+#if defined _EAF_USING_MFC_FEATURE_PACK
+   // If MFC Feature pack is used, we are using tabbed MDI windows so we don't want
+   // the system menu or the minimize and maximize boxes
+   cs.style &= ~(WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
+#endif
+
+   return __super::PreCreateWindow(cs);
+}
+
 BOOL CBridgeModelViewChildFrame::Create(LPCTSTR lpszClassName,
 				LPCTSTR lpszWindowName,
 				DWORD dwStyle,

@@ -152,6 +152,7 @@ const Int32 g_TopSlab            = (Int32)pgsTypes::TopSlab;
 
 const Float64 TOL=1.0e-04;
 
+// This list is ordered like pgsTypes::LiveLoadType
 const LiveLoadModelType g_LiveLoadModelType[] = 
 { lltDesign,             // strength and service design
   lltPermit,             // permit for Strength II design
@@ -162,6 +163,20 @@ const LiveLoadModelType g_LiveLoadModelType[] =
   lltPermitRoutineRating,        // permit rating
   lltPermitSpecialRating
 }; 
+
+// Reverse lookup in above array
+pgsTypes::LiveLoadType GetLiveLoadTypeFromModelType(LiveLoadModelType llmtype)
+{
+   int numlls = sizeof(g_LiveLoadModelType)/sizeof(g_LiveLoadModelType[0]);
+   for(int is=0; is<numlls; is++)
+   {
+      if (llmtype == g_LiveLoadModelType[is])
+         return (pgsTypes::LiveLoadType)is;
+   }
+
+   ATLASSERT(0); // should never happen since a match should always be in array
+   return pgsTypes::lltDesign;
+}
 
 // useful struct's
 struct SuperstructureMemberData
@@ -472,6 +487,33 @@ CComBSTR CAnalysisAgentImp::GetLoadCaseName(LoadingCombination combo)
    return bstrLoadCase;
 }
 
+bool GetLoadCaseTypeFromName(const CComBSTR& name, LoadingCombination* pCombo)
+{
+   if (CComBSTR("DC") == name )
+   {
+      *pCombo = lcDC;
+      return true;
+   }
+   else if (CComBSTR("DW") == name )
+   {
+      *pCombo = lcDW;
+      return true;
+   }
+   else if (CComBSTR("DW_Rating") == name )
+   {
+      *pCombo = lcDWRating;
+      return true;
+   }
+   else
+   {
+      // Skip the user live load case because this is added in via the
+      // GetLiveLoad... functions
+      ATLASSERT(CComBSTR("LL_IM") == name); // New load case added?
+      return false;
+   }
+}
+
+
 CComBSTR CAnalysisAgentImp::GetLoadCombinationName(pgsTypes::LimitState ls)
 {
    // if new load combinations names are added also updated GetLimitStateFromLoadCombination
@@ -715,6 +757,10 @@ CComBSTR GetLoadGroupName(ProductForceType type)
          bstrLoadGroup = "Slab";
       break;
 
+      case pftSlabPad:
+         bstrLoadGroup = "Haunch";
+      break;
+
       case pftSlabPanel:
          bstrLoadGroup = "Slab Panel";
       break;
@@ -758,6 +804,42 @@ CComBSTR GetLoadGroupName(ProductForceType type)
    return bstrLoadGroup;
 }
 
+
+ProductForceType GetLoadGroupTypeFromName(const CComBSTR& bstrLoadGroup)
+{
+   if(CComBSTR("Girder") == bstrLoadGroup)
+      return pftGirder;
+   else if(CComBSTR("Diaphragm") == bstrLoadGroup)
+      return pftDiaphragm;
+   else if(CComBSTR("Construction") == bstrLoadGroup)
+      return pftConstruction;
+   else if(CComBSTR("Slab") == bstrLoadGroup)
+      return pftSlab;
+   else if(CComBSTR("Haunch") == bstrLoadGroup)
+      return pftSlabPad;
+   else if(CComBSTR("Slab Panel") == bstrLoadGroup)
+      return pftSlabPanel;
+   else if(CComBSTR("Overlay") == bstrLoadGroup)
+      return pftOverlay;
+   else if(CComBSTR("Overlay Rating") == bstrLoadGroup)
+      return pftOverlayRating;
+   else if(CComBSTR("Traffic Barrier") == bstrLoadGroup)
+      return pftTrafficBarrier;
+   else if(CComBSTR("Sidewalk") == bstrLoadGroup)
+      return pftSidewalk;
+   else if(CComBSTR("UserDC") == bstrLoadGroup)
+      return pftUserDC;
+   else if(CComBSTR("UserDW") == bstrLoadGroup)
+      return pftUserDW;
+   else if(CComBSTR("UserLLIM") == bstrLoadGroup)
+      return pftUserLLIM;
+   else if(CComBSTR("Shear Key") == bstrLoadGroup)
+      return pftShearKey;
+   else
+      ATLASSERT(false); // SHOULD NEVER GET HERE
+      return pftGirder; // BIG PROBLEMS
+}
+
 CComBSTR GetLoadGroupNameForUserLoad(IUserDefinedLoads::UserDefinedLoadCase lc)
 {
    CComBSTR bstrLoadGroup;
@@ -799,6 +881,8 @@ void CAnalysisAgentImp::Invalidate(bool clearStatus)
    }
 
    m_NextPoi = 0;
+
+   m_OverhangLoadSet.clear();
 
    if (clearStatus)
    {
@@ -1855,6 +1939,7 @@ STDMETHODIMP CAnalysisAgentImp::RegInterfaces()
    pBrokerInit->RegInterface( IID_ICamber,              this );
    pBrokerInit->RegInterface( IID_IContraflexurePoints, this );
    pBrokerInit->RegInterface( IID_IContinuity,          this );
+   pBrokerInit->RegInterface( IID_IBearingDesign,       this );
    return S_OK;
 };
 
@@ -2080,26 +2165,8 @@ void CAnalysisAgentImp::ApplySelfWeightLoad(ILBAMModel* pModel,GirderIndexType g
          }
       }
 
-      // apply point loads at supports at either end so reactions come out right
-      CComPtr<IPointLoad> loadPstart;
-      loadPstart.CoCreateInstance(CLSID_PointLoad);
-      loadPstart->put_MemberType(mtSupport);
-      loadPstart->put_MemberID(spanIdx);
-      loadPstart->put_Location(0.0);
-      loadPstart->put_Fy(Pstart);
-
-      CComPtr<IPointLoadItem> ptLoadItem;
-      pointLoads->Add(bstrStage,bstrLoadGroup,loadPstart,&ptLoadItem);
-
-      CComPtr<IPointLoad> loadPend;
-      loadPend.CoCreateInstance(CLSID_PointLoad);
-      loadPend->put_MemberType(mtSupport);
-      loadPend->put_MemberID(spanIdx+1);
-      loadPend->put_Location(0.0);
-      loadPend->put_Fy(Pend);
-
-      ptLoadItem.Release();
-      pointLoads->Add(bstrStage,bstrLoadGroup,loadPend,&ptLoadItem);
+      // Apply point loads at supports at either end so reactions come out right
+      AddOverhangPointLoads(spanIdx, gdrIdx, bstrStage, bstrLoadGroup, Pstart, Pend, pointLoads);
 
       // apply end moments to span members if cantilever is large enough
       if (!IsZero(Mstart))
@@ -2111,7 +2178,7 @@ void CAnalysisAgentImp::ApplySelfWeightLoad(ILBAMModel* pModel,GirderIndexType g
          loadMstart->put_Location(0.0);
          loadMstart->put_Mz(Mstart);
 
-         ptLoadItem.Release();
+         CComPtr<IPointLoadItem> ptLoadItem;
          pointLoads->Add(bstrStage,bstrLoadGroup,loadMstart,&ptLoadItem);
       }
 
@@ -2124,7 +2191,7 @@ void CAnalysisAgentImp::ApplySelfWeightLoad(ILBAMModel* pModel,GirderIndexType g
          loadMend->put_Location(-1.0);
          loadMend->put_Mz(Mend);
 
-         ptLoadItem.Release();
+         CComPtr<IPointLoadItem> ptLoadItem;
          pointLoads->Add(bstrStage,bstrLoadGroup,loadMend,&ptLoadItem);
       }
    }
@@ -2163,8 +2230,9 @@ void CAnalysisAgentImp::ApplySlabLoad(ILBAMModel* pModel,GirderIndexType gdr)
 
    GET_IFACE(IStageMap,pStageMap);
    CComBSTR bstrStage = pStageMap->GetStageName(pgsTypes::BridgeSite1);
-   CComBSTR bstrLoadGroup = GetLoadGroupName(pftSlab);
-   CComBSTR bstrPanelLoadGroup = GetLoadGroupName(pftSlabPanel);
+   CComBSTR bstrSlabLoadGroup    = GetLoadGroupName(pftSlab);
+   CComBSTR bstrSlabPadLoadGroup = GetLoadGroupName(pftSlabPad);
+   CComBSTR bstrPanelLoadGroup   = GetLoadGroupName(pftSlabPanel);
 
    CComPtr<IDistributedLoads> distLoads;
    pModel->get_DistributedLoads(&distLoads);
@@ -2188,14 +2256,7 @@ void CAnalysisAgentImp::ApplySlabLoad(ILBAMModel* pModel,GirderIndexType gdr)
       CComPtr<IPointLoadItem> ptLoadItem;
 
       // apply vertical loads directly to supports so they only show up as reactions
-      CComPtr<IPointLoad> loadP1;
-      loadP1.CoCreateInstance(CLSID_PointLoad);
-      loadP1->put_MemberType(mtSupport);
-      loadP1->put_MemberID(spanIdx);
-      loadP1->put_Location(0.0);
-      loadP1->put_Fy(P1);
-
-      pointLoads->Add(bstrStage,bstrLoadGroup,loadP1,&ptLoadItem);
+      AddOverhangPointLoads(spanIdx, gdrIdx, bstrStage, bstrSlabLoadGroup, P1, P2, pointLoads);
 
       // apply moments to span members
       if (!IsZero(M1))
@@ -2208,18 +2269,8 @@ void CAnalysisAgentImp::ApplySlabLoad(ILBAMModel* pModel,GirderIndexType gdr)
          loadM1->put_Mz(M1);
 
          ptLoadItem.Release();
-         pointLoads->Add(bstrStage,bstrLoadGroup,loadM1,&ptLoadItem);
+         pointLoads->Add(bstrStage,bstrSlabLoadGroup,loadM1,&ptLoadItem);
       }
-
-      CComPtr<IPointLoad> loadP2;
-      loadP2.CoCreateInstance(CLSID_PointLoad);
-      loadP2->put_MemberType(mtSupport);
-      loadP2->put_MemberID(spanIdx+1);
-      loadP2->put_Location(0.0);
-      loadP2->put_Fy(P2);
-
-      ptLoadItem.Release();
-      pointLoads->Add(bstrStage,bstrLoadGroup,loadP2,&ptLoadItem);
 
       if (!IsZero(M2))
       {
@@ -2231,7 +2282,7 @@ void CAnalysisAgentImp::ApplySlabLoad(ILBAMModel* pModel,GirderIndexType gdr)
          loadM2->put_Mz(M2);
 
          ptLoadItem.Release();
-         pointLoads->Add(bstrStage,bstrLoadGroup,loadM2,&ptLoadItem);
+         pointLoads->Add(bstrStage,bstrSlabLoadGroup,loadM2,&ptLoadItem);
       }
 
       // main slab load
@@ -2245,21 +2296,31 @@ void CAnalysisAgentImp::ApplySlabLoad(ILBAMModel* pModel,GirderIndexType gdr)
          Float64 x1 = prevLoad.Loc - end_size;
          Float64 x2 = nextLoad.Loc - end_size;
 
-         Float64 w1 = prevLoad.MainSlabLoad + prevLoad.PadLoad;
-         Float64 w2 = nextLoad.MainSlabLoad + nextLoad.PadLoad;
-
-         CComPtr<IDistributedLoad> load;
-         load.CoCreateInstance(CLSID_DistributedLoad);
-         load->put_MemberType(mtSpan);
-         load->put_MemberID(spanIdx);
-         load->put_Direction(ldFy);
-         load->put_WStart(w1);
-         load->put_WEnd(w2);
-         load->put_StartLocation(x1);
-         load->put_EndLocation(x2);
+         CComPtr<IDistributedLoad> slab_load;
+         slab_load.CoCreateInstance(CLSID_DistributedLoad);
+         slab_load->put_MemberType(mtSpan);
+         slab_load->put_MemberID(spanIdx);
+         slab_load->put_Direction(ldFy);
+         slab_load->put_WStart(prevLoad.MainSlabLoad);
+         slab_load->put_WEnd(nextLoad.MainSlabLoad);
+         slab_load->put_StartLocation(x1);
+         slab_load->put_EndLocation(x2);
 
          CComPtr<IDistributedLoadItem> distLoadItem;
-         distLoads->Add(bstrStage,bstrLoadGroup,load,&distLoadItem);
+         distLoads->Add(bstrStage,bstrSlabLoadGroup,slab_load,&distLoadItem);
+
+         CComPtr<IDistributedLoad> pad_load;
+         pad_load.CoCreateInstance(CLSID_DistributedLoad);
+         pad_load->put_MemberType(mtSpan);
+         pad_load->put_MemberID(spanIdx);
+         pad_load->put_Direction(ldFy);
+         pad_load->put_WStart(prevLoad.PadLoad);
+         pad_load->put_WEnd(nextLoad.PadLoad);
+         pad_load->put_StartLocation(x1);
+         pad_load->put_EndLocation(x2);
+
+         distLoadItem.Release();
+         distLoads->Add(bstrStage,bstrSlabPadLoadGroup,pad_load,&distLoadItem);
 
          if ( pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP )
          {
@@ -2366,24 +2427,23 @@ void CAnalysisAgentImp::ApplyOverlayLoad(ILBAMModel* pModel,GirderIndexType gdr)
       Float64 wleft =  olleft.StartLoad;  // start of first load
       Float64 pleft = wleft * end_size;
 
-      // Apply vertical loads directly to supports so they only show up as reactions
-      CComPtr<IPointLoad> loadPleft;
-      loadPleft.CoCreateInstance(CLSID_PointLoad);
-      loadPleft->put_MemberType(mtSupport);
-      loadPleft->put_MemberID(spanIdx);
-      loadPleft->put_Location(0.0);
-      loadPleft->put_Fy(pleft);
+      // Right end of girder
+      Float64 rend_size = pBridge->GetGirderEndConnectionLength( spanIdx, gdrIdx );
 
-      CComPtr<IPointLoadItem> ptLoadItem;
-      pointLoads->Add(bstrStage,bstrLoadGroup,loadPleft,&ptLoadItem);
+      OverlayLoad& olright = sload.back();
+      Float64 wright =  olright.EndLoad;  // end of last load
+      Float64 pright = wright * rend_size;
+
+      // Apply vertical loads directly to supports so they only show up as reactions
+      AddOverhangPointLoads(spanIdx, gdrIdx, bstrStage, bstrLoadGroup, pleft, pright, pointLoads);
 
       if ( !bFutureOverlay )
       {
-         ptLoadItem.Release();
-         pointLoads->Add(bstrStage,bstrLoadGroupRating,loadPleft,&ptLoadItem);
+         AddOverhangPointLoads(spanIdx, gdrIdx, bstrStage, bstrLoadGroupRating, pleft, pright, pointLoads);
       }
 
       // Apply cantilever moment overlay loads only if overhang exceeds girder height
+      CComPtr<IPointLoadItem> ptLoadItem;
       if (end_size>gdr_height)
       {
          Float64 mleft = -pleft * end_size/2;
@@ -2402,30 +2462,6 @@ void CAnalysisAgentImp::ApplyOverlayLoad(ILBAMModel* pModel,GirderIndexType gdr)
             ptLoadItem.Release();
             pointLoads->Add(bstrStage,bstrLoadGroupRating,loadMleft,&ptLoadItem);
          }
-      }
-
-      // Right end of girder
-      Float64 rend_size = pBridge->GetGirderEndConnectionLength( spanIdx, gdrIdx );
-
-      OverlayLoad& olright = sload.back();
-      Float64 wright =  olright.EndLoad;  // end of last load
-      Float64 pright = wright * rend_size;
-
-      // Apply vertical loads directly to supports so they only show up as reactions
-     CComPtr<IPointLoad> loadPright;
-      loadPright.CoCreateInstance(CLSID_PointLoad);
-      loadPright->put_MemberType(mtSupport);
-      loadPright->put_MemberID(spanIdx+1);
-      loadPright->put_Location(0.0);
-      loadPright->put_Fy(pright);
-
-      ptLoadItem.Release();
-      pointLoads->Add(bstrStage,bstrLoadGroup,loadPright,&ptLoadItem);
-
-      if ( !bFutureOverlay )
-      {
-         ptLoadItem.Release();
-         pointLoads->Add(bstrStage,bstrLoadGroupRating,loadPright,&ptLoadItem);
       }
 
       if (rend_size>gdr_height)
@@ -2465,8 +2501,6 @@ void CAnalysisAgentImp::ApplyConstructionLoad(ILBAMModel* pModel,GirderIndexType
    CComPtr<IDistributedLoads> distLoads;
    pModel->get_DistributedLoads(&distLoads);
 
-   CComPtr<IPointLoads> pointLoads;
-   pModel->get_PointLoads(&pointLoads);
    for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
@@ -2859,15 +2893,7 @@ void CAnalysisAgentImp::ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel, G
       if ( OHleft <= gdrHeightStart )
          Mleft = 0;
 
-      CComPtr<IPointLoad> load1;
-      load1.CoCreateInstance(CLSID_PointLoad);
-      load1->put_MemberType(mtSupport);
-      load1->put_MemberID(spanIdx);
-      load1->put_Location(0.0);
-      load1->put_Fy(Pleft);
-
       CComPtr<IPointLoadItem> ptLoadItem;
-      pointLoads->Add(bstrStage,bstrBarrierLoadGroup,load1,&ptLoadItem);
 
       // moment load applies to span
       if (!IsZero(Mleft))
@@ -2891,15 +2917,8 @@ void CAnalysisAgentImp::ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel, G
       if ( OHright <= gdrHeightEnd )
          Mright = 0;
 
-      CComPtr<IPointLoad> load2;
-      load2.CoCreateInstance(CLSID_PointLoad);
-      load2->put_MemberType(mtSupport);
-      load2->put_MemberID(spanIdx+1);
-      load2->put_Location(0.0);
-      load2->put_Fy(Pright);
-
-      ptLoadItem.Release();
-      pointLoads->Add(bstrStage,bstrBarrierLoadGroup,load2,&ptLoadItem);
+      // Apply vertical loads directly to supports so they only show up as reactions
+      AddOverhangPointLoads(spanIdx, gdrIdx, bstrStage, bstrBarrierLoadGroup, Pleft, Pright, pointLoads);
 
       if (!IsZero(Mright))
       {
@@ -2921,16 +2940,6 @@ void CAnalysisAgentImp::ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel, G
       if ( OHleft <= gdrHeightStart )
          Mleft = 0;
 
-      load1.Release();
-      load1.CoCreateInstance(CLSID_PointLoad);
-      load1->put_MemberType(mtSupport);
-      load1->put_MemberID(spanIdx);
-      load1->put_Location(0.0);
-      load1->put_Fy(Pleft);
-
-      ptLoadItem.Release();
-      pointLoads->Add(bstrStage,bstrSidewalkLoadGroup,load1,&ptLoadItem);
-
       if (!IsZero(Mleft))
       {
          CComPtr<IPointLoad> load1m;
@@ -2950,15 +2959,8 @@ void CAnalysisAgentImp::ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel, G
       if ( OHright <= gdrHeightEnd )
          Mright = 0;
 
-      load2.Release();
-      load2.CoCreateInstance(CLSID_PointLoad);
-      load2->put_MemberType(mtSupport);
-      load2->put_MemberID(spanIdx+1);
-      load2->put_Location(0.0);
-      load2->put_Fy(Pright);
-
-      ptLoadItem.Release();
-      pointLoads->Add(bstrStage,bstrSidewalkLoadGroup,load2,&ptLoadItem);
+      // Add the point loads
+      AddOverhangPointLoads(spanIdx, gdrIdx, bstrStage, bstrSidewalkLoadGroup, Pleft, Pright, pointLoads);
 
       if (!IsZero(Mright))
       {
@@ -4008,6 +4010,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    load_case_dc->AddLoadGroup(GetLoadGroupName(pftGirder));
    load_case_dc->AddLoadGroup(GetLoadGroupName(pftConstruction));
    load_case_dc->AddLoadGroup(GetLoadGroupName(pftSlab));
+   load_case_dc->AddLoadGroup(GetLoadGroupName(pftSlabPad));
    load_case_dc->AddLoadGroup(GetLoadGroupName(pftSlabPanel));
    load_case_dc->AddLoadGroup(GetLoadGroupName(pftDiaphragm));
    load_case_dc->AddLoadGroup(GetLoadGroupName(pftSidewalk));
@@ -4040,6 +4043,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    AddLoadGroup(loadGroups, GetLoadGroupName(pftGirder),         CComBSTR("Girder self weight"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pftConstruction),   CComBSTR("Construction"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pftSlab),           CComBSTR("Slab self weight"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pftSlabPad),        CComBSTR("Slab Pad self weight"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pftSlabPanel),      CComBSTR("Slab Panel self weight"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pftDiaphragm),      CComBSTR("Diaphragm self weight"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pftSidewalk),       CComBSTR("Sidewalk self weight"));
@@ -4066,19 +4070,12 @@ void CAnalysisAgentImp::ApplyEndDiaphragmLoads( ILBAMModel* pModel, CComBSTR& bs
    CComPtr<IPointLoads> pointLoads;
    pModel->get_PointLoads(&pointLoads);
 
+   AddOverhangPointLoads(span, gdr, bstrStage, bstrLoadGroup, P1, P2, pointLoads);
+
    CComPtr<IPointLoadItem> ptLoadItem;
 
    if ( P1 != 0.0 )
    {
-      CComPtr<IPointLoad> P;
-      P.CoCreateInstance(CLSID_PointLoad);
-      P->put_MemberType(mtSupport);
-      P->put_MemberID(span);
-      P->put_Location(0.0);
-      P->put_Fy(P1);
-
-      pointLoads->Add(bstrStage,bstrLoadGroup,P,&ptLoadItem);
-
       CComPtr<IPointLoad> M;
       M.CoCreateInstance(CLSID_PointLoad);
       M->put_MemberType(mtSpan);
@@ -4092,16 +4089,6 @@ void CAnalysisAgentImp::ApplyEndDiaphragmLoads( ILBAMModel* pModel, CComBSTR& bs
 
    if ( P2 != 0.0 )
    {
-      CComPtr<IPointLoad> P;
-      P.CoCreateInstance(CLSID_PointLoad);
-      P->put_MemberType(mtSupport);
-      P->put_MemberID(span+1);
-      P->put_Location(0.0);
-      P->put_Fy(P2);
-
-      ptLoadItem.Release();
-      pointLoads->Add(bstrStage,bstrLoadGroup,P,&ptLoadItem);
-
       CComPtr<IPointLoad> M;
       M.CoCreateInstance(CLSID_PointLoad);
       M->put_MemberType(mtSpan);
@@ -4534,9 +4521,10 @@ void CAnalysisAgentImp::GetGirderSelfWeightLoad(SpanIndexType spanIdx,GirderInde
 
    // compute distributed load intensity at each section change
    GET_IFACE(ISectProp2,pSectProp2);
-   std::vector<pgsPointOfInterest>::iterator iter = xsPOI.begin();
+   std::vector<pgsPointOfInterest>::iterator iter( xsPOI.begin() );
+   std::vector<pgsPointOfInterest>::iterator end( xsPOI.end() );
    pgsPointOfInterest prevPoi = *iter++;
-   for ( ; iter != xsPOI.end(); iter++ )
+   for ( ; iter != end; iter++ )
    {
       pgsPointOfInterest currPoi = *iter;
 
@@ -6447,6 +6435,34 @@ void CAnalysisAgentImp::DumpAnalysisModels(GirderIndexType girderLineIdx)
    }
 }
 
+void CAnalysisAgentImp::GetDeckShrinkageStresses(const pgsPointOfInterest& poi,Float64* pftop,Float64* pfbot)
+{
+   // this is sort of a dummy function until deck shrinkage stress issues are resolved
+   // if you count on deck shrinkage for elastic gain, then you have to account for the fact
+   // that the deck shrinkage changes the stresses in the girder as well. deck shrinkage is
+   // an external load to the girder
+
+   // Top and bottom girder stresses are computed using the composite section method described in
+   // Branson, D. E., "Time-Dependent Effects in Composite Concrete Beams", 
+   // American Concrete Institute J., Vol 61 (1964) pp. 213-230
+
+   pgsTypes::Stage compositeStage = pgsTypes::BridgeSite3;
+
+   GET_IFACE(ILosses,pLosses);
+   LOSSDETAILS details = pLosses->GetLossDetails(poi);
+
+   Float64 P, M;
+   details.pLosses->GetDeckShrinkageEffects(&P,&M);
+
+   GET_IFACE(ISectProp2,pProps);
+   Float64 A  = pProps->GetAg(compositeStage,poi);
+   Float64 St = pProps->GetStGirder(compositeStage,poi);
+   Float64 Sb = pProps->GetSb(compositeStage,poi);
+
+   *pftop = P/A + M/St;
+   *pfbot = P/A + M/Sb;
+}
+
 std::_tstring CAnalysisAgentImp::GetLiveLoadName(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex)
 {
    USES_CONVERSION;
@@ -6523,6 +6539,12 @@ Float64 CAnalysisAgentImp::GetVehicleWeight(pgsTypes::LiveLoadType llType,Vehicl
 //
 std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(pgsTypes::Stage stage,ProductForceType type,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat)
 {
+   return GetShear(stage, type, vPoi, bat, ctIncremental);
+}
+
+std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(pgsTypes::Stage stage,ProductForceType type,const std::vector<pgsPointOfInterest>& vPoi,
+                                                         BridgeAnalysisType bat, CombinationType cmb_type)
+{
    USES_CONVERSION;
    GET_IFACE(IStageMap,pStageMap);
 
@@ -6545,6 +6567,8 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(pgsTypes::Stage stage,P
       }
       else
       {
+         ResultsSummationType rsType = (cmb_type == ctIncremental ? rsIncremental : rsCumulative);
+
          ModelData* pModelData = UpdateLBAMPois(vPoi);
 
          CComBSTR bstrLoadGroup = GetLoadGroupName(type);
@@ -6553,11 +6577,11 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(pgsTypes::Stage stage,P
 
          CComPtr<ISectionResult3Ds> section_results;
          if ( bat == MinSimpleContinuousEnvelope )
-            pModelData->pMinLoadGroupResponseEnvelope[fetFy][optMaximize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,rsIncremental,&section_results);
+            pModelData->pMinLoadGroupResponseEnvelope[fetFy][optMaximize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,rsType,&section_results);
          else if ( bat == MaxSimpleContinuousEnvelope )
-            pModelData->pMaxLoadGroupResponseEnvelope[fetFy][optMinimize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,rsIncremental,&section_results);
+            pModelData->pMaxLoadGroupResponseEnvelope[fetFy][optMinimize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,rsType,&section_results);
          else
-            pModelData->pLoadGroupResponse[bat]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,rsIncremental,&section_results);
+            pModelData->pLoadGroupResponse[bat]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,rsType,&section_results);
       
          std::vector<pgsPointOfInterest>::const_iterator iter;
          for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
@@ -8968,11 +8992,12 @@ std::vector<Float64> CAnalysisAgentImp::GetSlabDesignMoment(pgsTypes::LimitState
             {
                Float64 Mconstruction = GetMoment(pgsTypes::BridgeSite1, pftConstruction,      poi, bat);
                Float64 Mslab         = GetMoment(pgsTypes::BridgeSite1, pftSlab,              poi, bat);
+               Float64 Mslab_pad     = GetMoment(pgsTypes::BridgeSite1, pftSlabPad,           poi, bat);
                Float64 Mslab_panel   = GetMoment(pgsTypes::BridgeSite1, pftSlabPanel,         poi, bat);
                Float64 Mdiaphragm    = GetMoment(pgsTypes::BridgeSite1, pftDiaphragm,         poi, bat);
                Float64 Mshear_key    = GetMoment(pgsTypes::BridgeSite1, pftShearKey,          poi, bat);
 
-               MzMin -= gDC*(Mconstruction + Mslab + Mslab_panel + Mdiaphragm + Mshear_key);
+               MzMin -= gDC*(Mconstruction + Mslab + Mslab_pad + Mslab_panel + Mdiaphragm + Mshear_key);
             }
 
             // remove user dc moments
@@ -9147,6 +9172,24 @@ void CAnalysisAgentImp::GetStress(pgsTypes::LimitState ls,pgsTypes::Stage stage,
             fMax += k*ps;
          }
 
+         // if this is bridge site stage 3, add effect of deck shrinkage
+         if ( stage == pgsTypes::BridgeSite3 )
+         {
+            Float64 ft_ss, fb_ss;
+            GetDeckShrinkageStresses(poi,&ft_ss,&fb_ss);
+
+            if ( loc == pgsTypes::TopGirder )
+            {
+               fMin += ft_ss;
+               fMax += ft_ss;
+            }
+            else if ( loc == pgsTypes::BottomGirder )
+            {
+               fMin += fb_ss;
+               fMax += fb_ss;
+            }
+         }
+
          pMax->push_back(fMax);
          pMin->push_back(fMin);
       }
@@ -9286,6 +9329,9 @@ void CAnalysisAgentImp::GetDesignStress(pgsTypes::LimitState ls,pgsTypes::Stage 
    GetStress(pgsTypes::BridgeSite1,pftSlab,poi,bat,&ft,&fb);
    ftop1 += dc*ft;   fbot1 += dc*fb;
 
+   GetStress(pgsTypes::BridgeSite1,pftSlabPad,poi,bat,&ft,&fb);
+   ftop1 += dc*ft;   fbot1 += dc*fb;
+
    GetStress(pgsTypes::BridgeSite1,pftSlabPanel,poi,bat,&ft,&fb);
    ftop1 += dc*ft;   fbot1 += dc*fb;
 
@@ -9407,15 +9453,19 @@ void CAnalysisAgentImp::GetDesignStress(pgsTypes::LimitState ls,pgsTypes::Stage 
    ftop3Min += ll*k_top*ft;   fbot3Min += ll*k_bot*fb;
    ftop3Max += ll*k_top*ft;   fbot3Max += ll*k_bot*fb;
 
+   // slab shrinkage stresses
+   Float64 ft_ss, fb_ss;
+   GetDeckShrinkageStresses(poi,&ft_ss,&fb_ss);
+
    if ( loc == pgsTypes::TopGirder )
    {
-      *pMin = ftop1 + ftop2 + ftop3Min;
-      *pMax = ftop1 + ftop2 + ftop3Max;
+      *pMin = ftop1 + ftop2 + ftop3Min + ft_ss;
+      *pMax = ftop1 + ftop2 + ftop3Max + ft_ss;
    }
    else
    {
-      *pMin = fbot1 + fbot2 + fbot3Min;
-      *pMax = fbot1 + fbot2 + fbot3Max;
+      *pMin = fbot1 + fbot2 + fbot3Min + fb_ss;
+      *pMax = fbot1 + fbot2 + fbot3Max + fb_ss;
    }
 
    if (*pMax < *pMin )
@@ -10258,8 +10308,15 @@ void CAnalysisAgentImp::GetDeckDeflection(const pgsPointOfInterest& poi,Float64*
    BridgeAnalysisType bat = GetBridgeAnalysisType();
 
    GET_IFACE(IProductForces,pProductForces);
-   *pDy = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftSlab,poi,bat);
-   *pRz = pProductForces->GetRotation(pgsTypes::BridgeSite1,pftSlab,poi,bat);
+
+   Float64 dy_slab = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftSlab,poi,bat);
+   Float64 rz_slab = pProductForces->GetRotation(pgsTypes::BridgeSite1,pftSlab,poi,bat);
+
+   Float64 dy_slab_pad = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftSlabPad,poi,bat);
+   Float64 rz_slab_pad = pProductForces->GetRotation(pgsTypes::BridgeSite1,pftSlabPad,poi,bat);
+
+   *pDy = dy_slab + dy_slab_pad;
+   *pRz = rz_slab + rz_slab_pad;
 }
 
 void CAnalysisAgentImp::GetDeckDeflection(const pgsPointOfInterest& poi,const GDRCONFIG& config,Float64* pDy,Float64* pRz)
@@ -11934,7 +11991,7 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pier,GirderInd
 
       BridgeAnalysisType bat = ContinuousSpan;
 
-      Float64 fbConstruction, fbSlab, fbTrafficBarrier, fbSidewalk, fbOverlay, fbUserDC, fbUserDW, fbUserLLIM, fbLLIM;
+      Float64 fbConstruction, fbSlab, fbSlabPad, fbTrafficBarrier, fbSidewalk, fbOverlay, fbUserDC, fbUserDW, fbUserLLIM, fbLLIM;
 
       Float64 fTop,fBottom;
 
@@ -11943,12 +12000,16 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pier,GirderInd
          GetStress(pgsTypes::BridgeSite1,pftSlab,poi,bat,&fTop,&fBottom);
          fbSlab = fBottom;
 
+         GetStress(pgsTypes::BridgeSite1,pftSlabPad,poi,bat,&fTop,&fBottom);
+         fbSlabPad = fBottom;
+
          GetStress(pgsTypes::BridgeSite1,pftConstruction,poi,bat,&fTop,&fBottom);
          fbConstruction = fBottom;
       }
       else
       {
          fbSlab = 0;
+         fbSlabPad = 0;
          fbConstruction = 0;
       }
 
@@ -11979,13 +12040,656 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pier,GirderInd
       GetCombinedLiveLoadStress(pgsTypes::lltDesign,pgsTypes::BridgeSite3,poi,bat,&fTopMin,&fTopMax,&fBotMin,&fBotMax);
       fbLLIM = fBotMin; // greatest compression
 
-      fBottom = fbConstruction + fbSlab + fbTrafficBarrier + fbSidewalk + fbOverlay + fbUserDC + fbUserDW + 0.5*(fbUserLLIM + fbLLIM);
+      fBottom = fbConstruction + fbSlab + fbSlabPad + fbTrafficBarrier + fbSidewalk + fbOverlay + fbUserDC + fbUserDW + 0.5*(fbUserLLIM + fbLLIM);
 
       f[i] = fBottom;
    }
 
    return (nPOI == 1 ? f[0] : _cpp_max(f[0],f[1]));
 }
+
+/////////////////////////////////////////////////
+// IBearingDesign
+
+bool CAnalysisAgentImp::AreBearingReactionsAvailable(SpanIndexType span,GirderIndexType gdr, bool* pBleft, bool* pBright)
+{
+   GET_IFACE(IBridge,pBridge);
+   SpanIndexType nspans = pBridge->GetSpanCount();
+   if (nspans>1)
+   {
+      if (span==ALL_SPANS)
+      {
+         *pBleft  = false;
+         *pBright = false;
+
+         return false;
+      }
+      else
+      {
+         // Get boundary conditions at both ends of span
+         bool bdummy;
+         bool bContinuousOnLeft, bContinuousOnRight;
+         pBridge->IsContinuousAtPier(span  ,&bdummy,            &bContinuousOnLeft);
+         pBridge->IsContinuousAtPier(span+1,&bContinuousOnRight,&bdummy);
+
+         bool bIntegralOnLeft, bIntegralOnRight;
+         pBridge->IsIntegralAtPier(span,  &bdummy,          &bIntegralOnLeft);
+         pBridge->IsIntegralAtPier(span+1,&bIntegralOnRight,&bdummy);
+
+         // Bearing reactions are available at simple supports
+         bool bSimpleOnLeft, bSimpleOnRight;
+         bSimpleOnLeft  = !bContinuousOnLeft  && !bIntegralOnLeft;
+         bSimpleOnRight = !bContinuousOnRight && !bIntegralOnRight;
+
+         *pBleft  = bSimpleOnLeft;
+         *pBright = bSimpleOnRight;
+
+          // Return true if we have simple supports at an interior girder
+         if (!bSimpleOnLeft && !bSimpleOnLeft)
+         {
+            return false;
+         }
+         else if (span==0 && !bSimpleOnRight)
+         {
+            return false;
+         }
+         else if (span==nspans-1 && !bSimpleOnLeft)
+         {
+            return false;
+         }
+         else
+         {
+            return true;
+         }
+      }
+   }
+   else
+   {
+      // No need for bearing reactions for single span. Pier reactions will do the job.
+      *pBleft  = false;
+      *pBright = false;
+      return false;
+   }
+}
+
+void CAnalysisAgentImp::GetBearingProductReaction(pgsTypes::Stage stage,ProductForceType type,SpanIndexType span,GirderIndexType gdr,
+                                                  CombinationType cmbtype, BridgeAnalysisType bat,Float64* pLftEnd,Float64* pRgtEnd)
+{
+   // Get Pois at supports
+   GET_IFACE(IPointOfInterest,pIPOI);
+   std::vector<pgsPointOfInterest> vPois( pIPOI->GetPointsOfInterest(span,gdr,stage, POI_0L | POI_10L,POIFIND_OR) );
+   ATLASSERT(vPois.size()==2);
+
+   std::vector<sysSectionValue> sec_vals = GetShear(stage, type, vPois, bat, cmbtype);
+
+   *pLftEnd =  sec_vals.front().Left();
+   *pRgtEnd = -sec_vals.back().Right();
+
+   Float64 lft_pnt_load, rgt_pnt_load;
+   bool found_load = GetOverhangPointLoads(span, gdr, stage, type, cmbtype, &lft_pnt_load, &rgt_pnt_load);
+   if(found_load)
+   {
+      *pLftEnd -= lft_pnt_load;
+      *pRgtEnd -= rgt_pnt_load;
+   }
+}
+
+void CAnalysisAgentImp::GetBearingLiveLoadReaction(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,
+                                BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF, 
+                                Float64* pLeftRmin,Float64* pLeftRmax,Float64* pLeftTmin,Float64* pLeftTmax,
+                                Float64* pRightRmin,Float64* pRightRmax,Float64* pRightTmin,Float64* pRightTmax,
+                                VehicleIndexType* pLeftMinVehIdx,VehicleIndexType* pLeftMaxVehIdx,
+                                VehicleIndexType* pRightMinVehIdx,VehicleIndexType* pRightMaxVehIdx)
+{
+   // This is just end shears and rotations due to live load at ends of girder
+   // Get Pois at supports
+   GET_IFACE(IPointOfInterest,pIPOI);
+   std::vector<pgsPointOfInterest> SuppPois( pIPOI->GetPointsOfInterest(span,gdr,stage, POI_0L | POI_10L,POIFIND_OR) );
+   ATLASSERT(SuppPois.size()==2);
+
+   pgsPointOfInterest lftPoi(SuppPois.front());
+   pgsPointOfInterest rgtPoi(SuppPois.back());
+
+   LiveLoadModelType llmt = g_LiveLoadModelType[llType];
+
+   VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
+   VARIANT_BOOL vbIncludeLLDF   = (bIncludeLLDF   ? VARIANT_TRUE : VARIANT_FALSE);
+
+   GET_IFACE(IStageMap,pStageMap);
+   CComBSTR bstrStage = pStageMap->GetStageName(stage);
+
+   // Loop twice to pick up left and right ends
+   for (IndexType idx=0; idx<2; idx++)
+   {
+      std::vector<pgsPointOfInterest> vPoi;
+      if (idx==0)
+      {
+         vPoi.push_back(lftPoi);
+      }
+      else
+      {
+         vPoi.push_back(rgtPoi);
+      }
+
+      // Get max'd end shears from lbam
+      ModelData* pModelData = UpdateLBAMPois(vPoi);
+      CComPtr<ILBAMAnalysisEngine> pEngine;
+      GetEngine(pModelData,bat == SimpleSpan ? false : true, &pEngine);
+      CComPtr<IBasicVehicularResponse> response;
+      pEngine->get_BasicVehicularResponse(&response);
+
+      CComPtr<ILiveLoadModelSectionResults> minResults;
+      CComPtr<ILiveLoadModelSectionResults> maxResults;
+      pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
+             roMember, fetFy, optMaximize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&maxResults);
+      pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
+             roMember, fetFy, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
+
+      // Extract reactions and corresponding rotations
+      Float64 FyMaxLeft, FyMaxRight;
+      CComPtr<ILiveLoadConfiguration> FyMaxLeftConfig, FyMaxRightConfig;
+      maxResults->GetResult(0,&FyMaxLeft, &FyMaxLeftConfig,
+                              &FyMaxRight,&FyMaxRightConfig);
+
+      Float64 FyMinLeft, FyMinRight;
+      CComPtr<ILiveLoadConfiguration> FyMinLeftConfig, FyMinRightConfig;
+      minResults->GetResult(0,&FyMinLeft,  &FyMinLeftConfig,
+                              &FyMinRight, &FyMinRightConfig);
+
+      if (idx==0)
+      {
+         // Left End
+         // Reaction
+         *pLeftRmin = -FyMaxLeft;
+         *pLeftRmax = -FyMinLeft;
+
+         // Vehicle indexes
+         if ( pLeftMinVehIdx )
+            FyMaxLeftConfig->get_VehicleIndex(pLeftMinVehIdx);
+
+         if ( pLeftMaxVehIdx )
+            FyMinLeftConfig->get_VehicleIndex(pLeftMaxVehIdx);
+
+         // Corresponding rotations
+         // get rotatation that corresonds to R min
+         CComPtr<ISectionResult3Ds> results;
+         FyMinLeftConfig->put_ForceEffect(fetRz);
+         FyMinLeftConfig->put_Optimization(optMaximize);
+         response->ComputeDeflections( m_LBAMPoi, bstrStage, FyMaxLeftConfig, &results );
+
+         CComPtr<ISectionResult3D> result;
+         results->get_Item(0,&result);
+
+         Float64 T;
+         result->get_ZLeft(&T);
+         *pLeftTmin = T;
+
+         results.Release();
+         result.Release();
+
+         // get rotation that corresonds to R max
+         FyMaxLeftConfig->put_ForceEffect(fetRz);
+         FyMaxLeftConfig->put_Optimization(optMaximize);
+         response->ComputeDeflections( m_LBAMPoi, bstrStage, FyMinLeftConfig, &results );
+
+         results->get_Item(0,&result);
+         result->get_ZLeft(&T);
+         *pLeftTmax = T;
+      }
+      else
+      {
+         // Right End 
+         // Reaction
+         *pRightRmin = -FyMinRight;
+         *pRightRmax = -FyMaxRight;
+
+         // Vehicle indexes
+         if ( pRightMinVehIdx )
+            FyMinRightConfig->get_VehicleIndex(pRightMinVehIdx);
+
+         if ( pRightMaxVehIdx )
+            FyMaxRightConfig->get_VehicleIndex(pRightMaxVehIdx);
+
+         // Corresponding rotations
+         // get rotation that corresonds to R min
+         CComPtr<ISectionResult3Ds> results;
+         FyMaxRightConfig->put_ForceEffect(fetRz);
+         FyMaxRightConfig->put_Optimization(optMaximize);
+         response->ComputeDeflections( m_LBAMPoi, bstrStage, FyMinRightConfig, &results );
+
+         CComPtr<ISectionResult3D> result;
+         results->get_Item(0,&result);
+
+         Float64 T;
+         result->get_ZRight(&T);
+         *pRightTmin = T;
+
+         results.Release();
+         result.Release();
+
+         // get rotatation that corresonds to R max
+         FyMinRightConfig->put_ForceEffect(fetRz);
+         FyMinRightConfig->put_Optimization(optMaximize);
+         response->ComputeDeflections( m_LBAMPoi, bstrStage, FyMaxRightConfig, &results );
+
+         results->get_Item(0,&result);
+         result->get_ZRight(&T);
+         *pRightTmax = T;
+      }
+   }
+}
+
+void CAnalysisAgentImp::GetBearingLiveLoadRotation(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,
+                                                   BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF, 
+                                                   Float64* pLeftTmin,Float64* pLeftTmax,Float64* pLeftRmin,Float64* pLeftRmax,
+                                                   Float64* pRightTmin,Float64* pRightTmax,Float64* pRightRmin,Float64* pRightRmax,
+                                                   VehicleIndexType* pLeftMinVehIdx,VehicleIndexType* pLeftMaxVehIdx,
+                                                   VehicleIndexType* pRightMinVehIdx,VehicleIndexType* pRightMaxVehIdx)
+{
+   // This is just end shears and rotations due to live load at ends of girder
+   // Get Pois at supports
+   GET_IFACE(IPointOfInterest,pIPOI);
+   std::vector<pgsPointOfInterest> SuppPois( pIPOI->GetPointsOfInterest(span,gdr,stage, POI_0L | POI_10L,POIFIND_OR) );
+   ATLASSERT(SuppPois.size()==2);
+
+   pgsPointOfInterest lftPoi(SuppPois.front());
+   pgsPointOfInterest rgtPoi(SuppPois.back());
+
+   LiveLoadModelType llmt = g_LiveLoadModelType[llType];
+
+   VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
+   VARIANT_BOOL vbIncludeLLDF   = (bIncludeLLDF   ? VARIANT_TRUE : VARIANT_FALSE);
+
+   GET_IFACE(IStageMap,pStageMap);
+   CComBSTR bstrStage = pStageMap->GetStageName(stage);
+
+   // Loop twice to pick up left and right ends
+   for (IndexType idx=0; idx<2; idx++)
+   {
+      std::vector<pgsPointOfInterest> vPoi;
+      if (idx==0)
+      {
+         vPoi.push_back(lftPoi);
+      }
+      else
+      {
+         vPoi.push_back(rgtPoi);
+      }
+
+      // Get max'd rotations from lbam
+      ModelData* pModelData = UpdateLBAMPois(vPoi);
+      CComPtr<ILBAMAnalysisEngine> pEngine;
+      GetEngine(pModelData,bat == SimpleSpan ? false : true, &pEngine);
+      CComPtr<IBasicVehicularResponse> response;
+      pEngine->get_BasicVehicularResponse(&response);
+
+      CComPtr<ILiveLoadModelSectionResults> minResults;
+      CComPtr<ILiveLoadModelSectionResults> maxResults;
+      CComBSTR bstrStage = pStageMap->GetStageName(stage);
+
+      pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+                          fetRz, optMaximize, vlcDefault, vbIncludeImpact, vbIncludeLLDF, VARIANT_TRUE,&maxResults);
+      pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+                          fetRz, optMinimize, vlcDefault, vbIncludeImpact, vbIncludeLLDF, VARIANT_TRUE,&minResults);
+
+      // Extract rotations and corresponding reactions
+      Float64 TzMaxLeft, TzMaxRight;
+      CComPtr<ILiveLoadConfiguration> TzMaxLeftConfig, TzMaxRightConfig;
+      maxResults->GetResult(0,&TzMaxLeft, &TzMaxLeftConfig,
+                              &TzMaxRight,&TzMaxRightConfig);
+
+      Float64 TzMinLeft, TzMinRight;
+      CComPtr<ILiveLoadConfiguration> TzMinLeftConfig, TzMinRightConfig;
+      minResults->GetResult(0,&TzMinLeft,  &TzMinLeftConfig,
+                              &TzMinRight, &TzMinRightConfig);
+
+      if (idx==0)
+      {
+         // Left End
+         // Rotation
+         *pLeftTmin = TzMinLeft;
+         *pLeftTmax = TzMaxLeft;
+
+         // Vehicle indexes
+         if ( pLeftMinVehIdx )
+            TzMinLeftConfig->get_VehicleIndex(pLeftMinVehIdx);
+
+         if ( pLeftMaxVehIdx )
+            TzMaxLeftConfig->get_VehicleIndex(pLeftMaxVehIdx);
+
+         // Corresponding reactions (end shears)
+         // get rotatation that corresonds to R min
+         CComPtr<ISectionResult3Ds> results;
+         TzMinLeftConfig->put_ForceEffect(fetFy);
+         TzMinLeftConfig->put_Optimization(optMaximize);
+         response->ComputeForces( m_LBAMPoi, bstrStage, roMember, TzMinLeftConfig, &results );
+
+         CComPtr<ISectionResult3D> result;
+         results->get_Item(0,&result);
+
+         Float64 T;
+         result->get_YLeft(&T);
+         *pLeftRmin = -T;
+
+         results.Release();
+         result.Release();
+
+         // get rotation that corresonds to R max
+         TzMaxLeftConfig->put_ForceEffect(fetRz);
+         TzMaxLeftConfig->put_Optimization(optMaximize);
+         response->ComputeForces( m_LBAMPoi, bstrStage, roMember, TzMaxLeftConfig, &results );
+
+         results->get_Item(0,&result);
+         result->get_YLeft(&T);
+         *pLeftRmax = -T;
+      }
+      else
+      {
+         // Right End - have to play games with shear sign convention
+         // Rotation
+         *pRightTmin = TzMinRight;
+         *pRightTmax = TzMaxRight;
+
+         // Vehicle indexes
+         if ( pRightMinVehIdx )
+            TzMinRightConfig->get_VehicleIndex(pRightMinVehIdx);
+
+         if ( pRightMaxVehIdx )
+            TzMaxRightConfig->get_VehicleIndex(pRightMaxVehIdx);
+
+         // Corresponding reactions (end shears)
+         // get reaction that corresonds to T min
+         CComPtr<ISectionResult3Ds> results;
+         TzMinRightConfig->put_ForceEffect(fetFy);
+         TzMinRightConfig->put_Optimization(optMaximize);
+         response->ComputeForces( m_LBAMPoi, bstrStage, roMember, TzMinRightConfig, &results );
+
+         CComPtr<ISectionResult3D> result;
+         results->get_Item(0,&result);
+
+         Float64 T;
+         result->get_YRight(&T);
+         *pRightRmin = -T;
+
+         results.Release();
+         result.Release();
+
+         // get rotation that corresonds to R max
+         TzMaxRightConfig->put_ForceEffect(fetRz);
+         TzMaxRightConfig->put_Optimization(optMaximize);
+         response->ComputeForces( m_LBAMPoi, bstrStage, roMember, TzMaxRightConfig, &results );
+
+         results->get_Item(0,&result);
+         result->get_YRight(&T);
+         *pRightRmax = -T;
+      }
+   }
+}
+
+void CAnalysisAgentImp::GetBearingCombinedReaction(LoadingCombination combo,pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,
+                                                   CombinationType cmb_type,BridgeAnalysisType bat, Float64* pLftEnd,Float64* pRgtEnd)
+{
+   // Use lbam to get load caes for this combination
+   ModelData* pModelData = GetModelData(gdr);
+
+   CComPtr<ILBAMModel> lbam;
+   GetModel(pModelData, bat, &lbam);
+
+   CComPtr<ILoadCases> load_cases;
+   lbam->get_LoadCases(&load_cases);
+
+   CComBSTR combo_name = GetLoadCaseName(combo);
+
+   CComPtr<ILoadCase> load_case;
+   load_cases->Find(combo_name, &load_case);
+
+   CollectionIndexType lc_cnt;
+   load_case->get_LoadGroupCount(&lc_cnt);
+
+   // Cycle through load cases and sum reactions
+   Float64 Rlft(0.0), Rrgt(0.0);
+   for (CollectionIndexType idx=0; idx<lc_cnt; idx++)
+   {
+      CComBSTR lc_name;
+      load_case->GetLoadGroup(idx, &lc_name);
+
+      ProductForceType case_type = GetLoadGroupTypeFromName(lc_name); 
+
+      Float64 lft, rgt;
+      GetBearingProductReaction(stage, case_type, span, gdr, cmb_type, bat, &lft, &rgt);
+
+      Rlft += lft;
+      Rrgt += rgt;
+   }
+
+   *pLftEnd = Rlft;
+   *pRgtEnd = Rrgt;
+}
+
+void CAnalysisAgentImp::GetBearingCombinedLiveLoadReaction(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,
+                                                           BridgeAnalysisType bat,bool bIncludeImpact,
+                                                           Float64* pLeftRmin, Float64* pLeftRmax, Float64* pRightRmin,Float64* pRightRmax)
+{
+   ATLASSERT(stage == pgsTypes::BridgeSite3);
+
+   // Get bearing reactions by getting beam end shears.
+   // Get Pois at supports
+   GET_IFACE(IPointOfInterest,pIPOI);
+   std::vector<pgsPointOfInterest> SuppPois( pIPOI->GetPointsOfInterest(span,gdr,stage, POI_0L | POI_10L,POIFIND_OR) );
+   ATLASSERT(SuppPois.size()==2);
+
+   pgsPointOfInterest lftPoi(SuppPois.front());
+   pgsPointOfInterest rgtPoi(SuppPois.back());
+
+   sysSectionValue lft_min_sec_val, lft_max_sec_val, rgt_min_sec_val, rgt_max_sec_val;
+
+   GetCombinedLiveLoadShear(llType, stage, lftPoi, bat, &lft_min_sec_val, &lft_max_sec_val);
+   GetCombinedLiveLoadShear(llType, stage, rgtPoi, bat, &rgt_min_sec_val, &rgt_max_sec_val);
+
+   *pLeftRmin =  lft_min_sec_val.Left();
+   *pLeftRmax =  lft_max_sec_val.Left();
+
+   *pRightRmin = -rgt_max_sec_val.Right();
+   *pRightRmax = -rgt_min_sec_val.Right();
+}
+
+void CAnalysisAgentImp::GetBearingLimitStateReaction(pgsTypes::LimitState ls,pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,
+                                                     BridgeAnalysisType bat,bool bIncludeImpact,
+                                                     Float64* pLeftRmin, Float64* pLeftRmax, Float64* pRightRmin,Float64* pRightRmax)
+{
+   // We have to emulate what the LBAM does for load combinations here
+   *pLeftRmin  = 0.0;
+   *pLeftRmax  = 0.0;
+   *pRightRmin = 0.0;
+   *pRightRmax = 0.0;
+
+   // Use lbam to get load factors for this limit state
+   ModelData* pModelData = GetModelData(gdr);
+
+   CComPtr<ILBAMModel> lbam;
+   GetModel(pModelData, bat, &lbam);
+
+   CComPtr<ILoadCombinations> load_combos;
+   lbam->get_LoadCombinations(&load_combos);
+
+   CComBSTR combo_name = GetLoadCombinationName(ls);
+
+   CComPtr<ILoadCombination> load_combo;
+   load_combos->Find(combo_name, &load_combo);
+
+   // First factor load cases
+   CollectionIndexType lc_cnt;
+   load_combo->get_LoadCaseFactorCount(&lc_cnt);
+   for (CollectionIndexType lc_idx=0; lc_idx<lc_cnt; lc_idx++)
+   {
+      CComBSTR lc_name;
+      Float64 min_factor, max_factor;
+      load_combo->GetLoadCaseFactor(lc_idx, &lc_name, &min_factor, &max_factor);
+
+      LoadingCombination combo;
+      if(GetLoadCaseTypeFromName(lc_name, &combo))
+      {
+         Float64 lc_lft_res, lc_rgt_res;
+         GetBearingCombinedReaction(combo, stage, span, gdr, ctCummulative, bat, &lc_lft_res, &lc_rgt_res);
+
+         *pLeftRmin  += min_factor * lc_lft_res;
+         *pLeftRmax  += max_factor * lc_lft_res;
+         *pRightRmin += min_factor * lc_rgt_res;
+         *pRightRmax += max_factor * lc_rgt_res;
+      }
+   }
+
+   // Next, factor and combine live load
+   if(stage == pgsTypes::BridgeSite3)
+   {
+      Float64 LlLeftRmin(Float64_Max), LlLeftRmax(-Float64_Max), LlRightRmin(Float64_Max), LlRightRmax(-Float64_Max);
+
+      CollectionIndexType nlls;
+      load_combo->GetLiveLoadModelCount(&nlls);
+
+      for (CollectionIndexType ills=0; ills<nlls; ills++)
+      {
+         LiveLoadModelType llm_type;
+         load_combo->GetLiveLoadModel(0, &llm_type);
+
+         pgsTypes::LiveLoadType lltype = GetLiveLoadTypeFromModelType(llm_type);
+
+         // Only envelope pedestrian load if it exists
+         if (lltype==pgsTypes::lltPedestrian && !HasPedestrianLoad(span, gdr))
+            break;
+
+         Float64 leftRmin, leftRmax, rightRmin, rightRmax;
+         GetBearingCombinedLiveLoadReaction(lltype, stage, span, gdr, bat, bIncludeImpact,
+                                            &leftRmin, &leftRmax, &rightRmin, &rightRmax);
+
+         LlLeftRmin  = min(LlLeftRmin, leftRmin);
+         LlLeftRmax  = max(LlLeftRmax, leftRmax);
+         LlRightRmin = min(LlRightRmin, rightRmin);
+         LlRightRmax = max(LlRightRmax, rightRmax);
+      }
+
+      Float64 ll_factor;
+      load_combo->get_LiveLoadFactor(&ll_factor);
+
+      *pLeftRmin  += ll_factor * LlLeftRmin;
+      *pLeftRmax  += ll_factor * LlLeftRmax ;
+      *pRightRmin += ll_factor * LlRightRmin;
+      *pRightRmax += ll_factor * LlRightRmax;
+   }
+
+   // Last, factor in load modifier
+   CComPtr<ISpans> lbspans;
+   lbam->get_Spans(&lbspans);
+   CComPtr<ISpan> lbspan;
+   lbspans->get_Item(span, &lbspan);
+
+   Float64 lm_min, lm_max;
+   lbspan->GetLoadModifier(lctStrength, &lm_min, &lm_max);
+
+   *pLeftRmin  *= lm_min;
+   *pLeftRmax  *= lm_max;
+   *pRightRmin *= lm_min;
+   *pRightRmax *= lm_max;
+}
+
+
+// Implementation functions and data for IBearingDesign
+void CAnalysisAgentImp::AddOverhangPointLoads(SpanIndexType spanIdx, GirderIndexType gdrIdx, const CComBSTR& bstrStage, const CComBSTR& bstrLoadGroup,
+                                              Float64 PStart, Float64 PEnd, IPointLoads* pointLoads)
+{
+   // Create and apply loads to the LBAM
+   if (PStart != 0.0)
+   {
+      CComPtr<IPointLoad> loadPstart;
+      loadPstart.CoCreateInstance(CLSID_PointLoad);
+      loadPstart->put_MemberType(mtSupport);
+      loadPstart->put_MemberID(spanIdx);
+      loadPstart->put_Location(0.0);
+      loadPstart->put_Fy(PStart);
+
+      CComPtr<IPointLoadItem> ptLoadItem;
+      pointLoads->Add(bstrStage,bstrLoadGroup,loadPstart,&ptLoadItem);
+   }
+
+   if (PEnd != 0.0)
+   {
+      CComPtr<IPointLoad> loadPend;
+      loadPend.CoCreateInstance(CLSID_PointLoad);
+      loadPend->put_MemberType(mtSupport);
+      loadPend->put_MemberID(spanIdx+1);
+      loadPend->put_Location(0.0);
+      loadPend->put_Fy(PEnd);
+
+      CComPtr<IPointLoadItem> ptLoadItem;
+      pointLoads->Add(bstrStage,bstrLoadGroup,loadPend,&ptLoadItem);
+   }
+
+   // Store load so we can use it when computing bearing reactions
+   if (PStart!=0.0 || PEnd!=0.0)
+   {
+      // Note that load will only be inserted once. You might be tempted to sum loads here on multiple
+      // insertions. BE VERY CAREFUL - This function gets called multiple times (once for each
+      // analysis model type). 
+      OverhangLoadDataType new_val(spanIdx, gdrIdx, bstrStage, bstrLoadGroup, PStart, PEnd);
+      std::pair<OverhangLoadIterator,bool> lit = m_OverhangLoadSet.insert( new_val );
+   }
+}
+
+bool CAnalysisAgentImp::GetOverhangPointLoads(SpanIndexType spanIdx, GirderIndexType gdrIdx, pgsTypes::Stage stage,ProductForceType type,
+                                              CombinationType cmbtype, Float64* pPStart, Float64* pPEnd)
+{
+   *pPStart = 0.0;
+   *pPEnd   = 0.0;
+
+   // Need to sum results over stages, so use bridgesite ordering 
+   const int nstages=4;
+   pgsTypes::Stage stage_order[nstages]={pgsTypes::GirderPlacement, pgsTypes::BridgeSite1, pgsTypes::BridgeSite2, pgsTypes::BridgeSite3};
+
+   // Start of stage loop
+   pgsTypes::Stage* pstart=std::find(stage_order, stage_order+nstages, stage);
+
+   if (pstart == stage_order+nstages)
+   {
+      ATLASSERT(0); // shouldn't be passing in non-bridge site stages?
+      return false;
+   }
+   else
+   {
+      GET_IFACE(IStageMap,pStageMap);
+
+      CComBSTR bstrLoadGroup( GetLoadGroupName(type) );
+
+      // Determine end of loop range
+      pgsTypes::Stage* pend;
+      if (cmbtype==ctCummulative)
+      {
+         pend =  stage_order+nstages;
+      }
+      else
+      {
+         pend = pstart+1;
+      }
+
+      bool found = false;
+      while(pstart!=pend)
+      {
+         CComBSTR bstrStage( pStageMap->GetStageName(*pstart) );
+
+         OverhangLoadIterator lit = m_OverhangLoadSet.find( OverhangLoadDataType(spanIdx, gdrIdx, bstrStage, bstrLoadGroup, 0.0, 0.0) );
+         if (lit != m_OverhangLoadSet.end())
+         {
+            *pPStart += lit->PStart;
+            *pPEnd   += lit->PEnd;
+            found = true;
+         }
+
+         pstart++;
+      }
+
+      return found;
+   }
+}
+
 
 /////////////////////////////////////////////////
 CAnalysisAgentImp::SpanType CAnalysisAgentImp::GetSpanType(SpanIndexType span,bool bContinuous)

@@ -30,8 +30,9 @@
 #if _MSC_VER >= 1000
 #pragma once
 #endif // _MSC_VER >= 1000
+#include <EAF\EAFChildFrame.h>
 
-class CTxDOTOptionalDesignChildFrame : public CMDIChildWnd
+class CTxDOTOptionalDesignChildFrame : public CEAFChildFrame
 {
 	DECLARE_DYNCREATE(CTxDOTOptionalDesignChildFrame)
 public:

@@ -74,8 +74,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,6,0,0
- PRODUCTVERSION 2,6,0,0
+ FILEVERSION 2,6,0,1
+ PRODUCTVERSION 2,6,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +93,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "2.6.0.0"
+            VALUE "FileVersion", "2.6.0.1"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2011, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.6.0.0"
+            VALUE "ProductVersion", "2.6.0.1"
         END
     END
     BLOCK "VarFileInfo"
@@ -693,28 +693,28 @@ BEGIN
     LTEXT           "days of normal curing",IDC_STATIC,190,154,68,8
 END
 
-IDD_SPEC_LOSSES DIALOGEX 0, 0, 287, 326
+IDD_SPEC_LOSSES DIALOGEX 0, 0, 494, 326
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Loss Method",IDC_STATIC,7,7,273,194
+    GROUPBOX        "Loss Method",IDC_STATIC,7,7,266,194
     LTEXT           "Select method for computing losses",IDC_STATIC,18,22,112,8
     COMBOBOX        IDC_LOSS_METHOD,18,33,231,75,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Before Prestress Transfer",IDC_BEFORE_XFER_LABEL,29,55,98,8
-    LTEXT           "Shipping is assumed to occur 10 days after prestress transfer",IDC_APPROXIMATE_SHIPPING_TIME_NOTE,29,54,213,8
-    COMBOBOX        IDC_SHIPPING_LOSS_METHOD,31,51,218,42,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_SHIPPING_TIME,114,52,33,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_SHIPPING_TIME_TAG,148,54,19,8
+    LTEXT           "Shipping is assumed to occur 10 days after prestress transfer",IDC_APPROXIMATE_SHIPPING_TIME_NOTE,29,54,213,8
     LTEXT           "After Prestress Transfer",IDC_AFTER_XFER_LABEL,29,67,89,8
     EDITTEXT        IDC_SHIPPING,96,66,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_SHIPPING_TAG,141,69,98,8
+    LTEXT           "Static",IDC_AFTER_XFER_TAG,183,65,18,8
+    LTEXT           "At Lifting Losses",IDC_LIFTING_LABEL,29,82,55,8
+    LTEXT           "Before Prestress Transfer",IDC_BEFORE_XFER_LABEL,29,55,98,8
+    COMBOBOX        IDC_SHIPPING_LOSS_METHOD,31,51,218,42,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_SHIPPING_TIME,114,52,33,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Assume shipping to occur at",IDC_SHIPPING_TIME_LABEL,20,51,90,8
     EDITTEXT        IDC_BEFORE_XFER,141,50,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_BEFORE_XFER_TAG,183,50,18,8
     LTEXT           "Shipping Losses",IDC_SHIPPING_LABEL,31,65,64,11
     EDITTEXT        IDC_AFTER_XFER,141,65,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_AFTER_XFER_TAG,183,65,18,8
-    LTEXT           "At Lifting Losses",IDC_LIFTING_LABEL,29,82,55,8
     EDITTEXT        IDC_LIFTING,141,82,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_LIFTING_TAG,183,82,18,8
     LTEXT           "At Shipping Losses",IDC_SHIPPING2_LABEL,29,98,88,8
@@ -734,7 +734,7 @@ BEGIN
     LTEXT           "Final",IDC_FINAL_LABEL,29,182,31,8
     EDITTEXT        IDC_FINAL,141,182,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_FINAL_TAG,183,182,18,8
-    GROUPBOX        "Post-Tensioning Parameters",IDC_STATIC,7,202,273,67
+    GROUPBOX        "Post-Tensioning Parameters",IDC_STATIC,7,202,266,67
     LTEXT           "Anchor Set",IDC_STATIC,18,220,36,8
     EDITTEXT        IDC_ANCHORSET,141,215,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_ANCHORSET_TAG,183,218,19,8
@@ -743,10 +743,44 @@ BEGIN
     LTEXT           "Static",IDC_WOBBLE_TAG,183,233,19,8
     LTEXT           "Coefficient of Friction (u)",IDC_STATIC,18,249,77,8
     EDITTEXT        IDC_FRICTION,141,247,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    GROUPBOX        "Transfer length of pretensioned prestressing strands",IDC_STATIC,7,273,273,45
+    GROUPBOX        "Transfer length of pretensioned prestressing strands",IDC_STATIC,7,273,266,45
     LTEXT           "Compute the transfer length of prestressing strands using the following method:",IDC_STATIC,20,285,247,10
-    COMBOBOX        IDC_COMBO_TRANSFER,44,300,230,39,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_TRANSFER,18,296,230,39,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Static",IDC_AFTER_SIDL_TAG,183,165,18,8
+    GROUPBOX        "Elastic Gains",IDC_STATIC,279,7,208,194
+    LTEXT           "Define the percentage of load used to compute elastic gains",IDC_EG_LABEL,288,22,189,8
+    EDITTEXT        IDC_EG_SLAB,374,37,24,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_EG_SLAB_UNIT,401,40,8,8
+    LTEXT           "Slab",IDC_EG_SLAB_LABEL,290,40,15,8
+    EDITTEXT        IDC_EG_SLABPAD,374,53,24,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_EG_SLABPAD_UNIT,401,56,8,8
+    LTEXT           "Haunch",IDC_EG_SLABPAD_LABEL,290,56,26,8
+    EDITTEXT        IDC_EG_DIAPHRAGM,374,69,24,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_EG_DIAPHRAGM_UNIT,401,72,8,8
+    LTEXT           "Diaphragms",IDC_EG_DIAPHRAGM_LABEL,290,72,38,8
+    EDITTEXT        IDC_EG_DC_BS2,374,86,24,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_EG_DC_BS2_UNIT,401,89,8,8
+    LTEXT           "User DC (Bridge Site 1)",IDC_EG_DC_BS2_LABEL,290,89,74,8
+    EDITTEXT        IDC_EG_DW_BS2,374,103,24,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_EG_DW_BS2_UNIT,401,106,8,8
+    LTEXT           "User DW (Bridge Site 1)",IDC_EG_DW_BS2_LABEL,290,106,76,8
+    EDITTEXT        IDC_EG_RAILING,374,118,24,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_EG_RAILING_UNIT,401,121,8,8
+    LTEXT           "Railing System",IDC_EG_RAILING_LABEL,290,121,47,8
+    EDITTEXT        IDC_EG_DC_BS3,374,150,24,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_EG_DC_BS3_UNIT,401,153,8,8
+    LTEXT           "User DC (Bridge Site 2)",IDC_EG_DC_BS3_LABEL,290,153,74,8
+    EDITTEXT        IDC_EG_DW_BS3,374,166,24,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_EG_DW_BS3_UNIT,401,169,8,8
+    LTEXT           "User DW (Bridge Site 2)",IDC_EG_DW_BS3_LABEL,290,169,76,8
+    EDITTEXT        IDC_EG_SHRINKAGE,374,182,24,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_EG_SHRINKAGE_UNIT,401,185,8,8
+    LTEXT           "Slab Shrinkage",IDC_EG_SHRINKAGE_LABEL,290,185,49,8
+    EDITTEXT        IDC_EG_OVERLAY,374,134,24,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_EG_OVERLAY_UNIT,401,137,8,8
+    LTEXT           "Overlay",IDC_EG_OVERLAY_LABEL,290,137,25,8
+    COMBOBOX        IDC_RELAXATION_LOSS_METHOD,18,77,185,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Relaxation Loss Method",IDC_RELAXATION_LOSS_METHOD_LABEL,18,67,77,8
 END
 
 IDD_SPEC_LIFTING DIALOGEX 0, 0, 378, 337
@@ -1626,7 +1660,7 @@ BEGIN
     IDD_SPEC_LOSSES, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 280
+        RIGHTMARGIN, 487
         VERTGUIDE, 18
         VERTGUIDE, 29
         TOPMARGIN, 7

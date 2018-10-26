@@ -644,6 +644,10 @@ bool pgsShearCapacityEngineer::GetInformation(pgsTypes::LimitState ls, pgsTypes:
 
    pscd->Aps = apsu;
 
+   GET_IFACE(IBridgeMaterial,pMat);
+   pscd->ag = pMat->GetMaxAggrSizeGdr(span, gdr);
+   pscd->sx = pscd->dv; // We don't have input for this, so use dv. Assume area provided is > 0.003bvsx
+
    // cracking moment parameters for LRFD simplified method
    CRACKINGMOMENTDETAILS mcr_details;
    if (pConfig!=NULL)
@@ -738,6 +742,8 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
    data.ConcreteType = (matConcrete::Type)pscd->ConcreteType;
    data.bHasfct = pscd->bHasFct;
    data.fct = pscd->fct;
+   data.sx = pscd->sx; // cracking
+   data.ag = pscd->ag;
 
 
    GET_IFACE(ISpecification, pSpec);
@@ -819,6 +825,10 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
          pscd->ex           = data.ex;
          pscd->Fe           = data.Fe;
          pscd->Beta         = data.Beta;
+         pscd->BetaEqn      = data.BetaEqn;
+         pscd->BetaThetaTable = data.BetaTheta_tbl;
+         pscd->sxe          = data.sxe;
+         pscd->sxe_tbl      = data.sxe_tbl;
          pscd->Theta        = data.Theta;
          pscd->Equation     = data.Eqn;
          pscd->ex_tbl       = data.ex_tbl;

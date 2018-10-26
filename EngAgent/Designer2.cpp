@@ -232,7 +232,7 @@ m_ShearDesignTool(LOGGER)
    m_bShippingDesignWithEqualCantilevers = false;
    m_bShippingDesignIgnoreConfigurationLimits = false;
 
-#if defined WIN64
+#if defined _WIN64
    CREATE_LOGFILE("Designer_x64");
 #else
    CREATE_LOGFILE("Designer");
@@ -319,73 +319,73 @@ void pgsDesigner2::GetHaunchDetails(SpanIndexType span,GirderIndexType gdr,bool 
    //
 
    // slope of the girder in the plane of the girder
-   double girder_slope = pBridge->GetGirderSlope(span,gdr);
+   Float64 girder_slope = pBridge->GetGirderSlope(span,gdr);
    pgsPointOfInterest& firstPoi = vPoi[0];
 
    // get station and offset of first poi
-   double station,offset;
+   Float64 station,offset;
    pBridge->GetStationAndOffset(firstPoi,&station,&offset);
    offset = IsZero(offset) ? 0 : offset;
 
    // the girder reference line passes through the deck at this station and offset
-   double Y_girder_ref_line_left_bearing = pAlignment->GetElevation(station,offset);
+   Float64 Y_girder_ref_line_left_bearing = pAlignment->GetElevation(station,offset);
 
-   double end_size = pBridge->GetGirderStartConnectionLength(span,gdr);
+   Float64 end_size = pBridge->GetGirderStartConnectionLength(span,gdr);
 
    MatingSurfaceIndexType nMatingSurfaces = pGdr->GetNumberOfMatingSurfaces(span,gdr);
 
-   double girder_orientation = pGdr->GetOrientation(span,gdr);
+   Float64 girder_orientation = pGdr->GetOrientation(span,gdr);
 
-   double max_tslab_and_fillet = 0;
+   Float64 max_tslab_and_fillet = 0;
 
-   double max_actual_haunch_depth_diff = 0; // maximum difference between "A" and the actual haunch depth at any section
+   Float64 max_actual_haunch_depth_diff = 0; // maximum difference between "A" and the actual haunch depth at any section
 
    // determine the minumum and maximum difference in elevation between the
    // roadway surface and the top of the girder.... measured directly above 
    // the top of the girder
-   double diff_min =  100000;
-   double diff_max = -100000;
-   double max_reqd_haunch_depth = -100000;
-   double min_reqd_haunch_depth =  100000;
+   Float64 diff_min =  100000;
+   Float64 diff_max = -100000;
+   Float64 max_reqd_haunch_depth = -100000;
+   Float64 min_reqd_haunch_depth =  100000;
    std::vector<pgsPointOfInterest>::iterator iter( vPoi.begin() );
    std::vector<pgsPointOfInterest>::iterator iterEnd( vPoi.end() );
    for ( ; iter != iterEnd; iter++ )
    {
       pgsPointOfInterest& poi = *iter;
 
-      double slab_offset = (bUseConfig ? pBridge->GetSlabOffset(poi,config) : pBridge->GetSlabOffset(poi));
+      Float64 slab_offset = (bUseConfig ? pBridge->GetSlabOffset(poi,config) : pBridge->GetSlabOffset(poi));
 
-      double tSlab = pBridge->GetGrossSlabDepth( poi );
+      Float64 tSlab = pBridge->GetGrossSlabDepth( poi );
 
-      double camber_effect = -999;
+      Float64 camber_effect = -999;
       if ( bUseConfig )
          camber_effect = pCamber->GetExcessCamber(poi, config, CREEP_MAXTIME );
       else
          camber_effect = pCamber->GetExcessCamber(poi, CREEP_MAXTIME );
 
-      double top_width = pGdr->GetTopWidth(poi);
+      Float64 top_width = pGdr->GetTopWidth(poi);
 
       // top of girder elevation, including camber effects
-      double elev_top_girder = (bUseConfig ? pGdr->GetTopGirderElevation(poi,config,INVALID_INDEX) : pGdr->GetTopGirderElevation(poi,INVALID_INDEX) );
+      Float64 elev_top_girder = (bUseConfig ? pGdr->GetTopGirderElevation(poi,config,INVALID_INDEX) : pGdr->GetTopGirderElevation(poi,INVALID_INDEX) );
 
       // get station and normal offset for this poi
-      double x,z;
+      Float64 x,z;
       pBridge->GetStationAndOffset(poi,&x,&z);
       z = IsZero(z) ? 0 : z;
 
       // top of girder elevation (ignoring camber effects)
-      double yc = pGdr->GetTopGirderReferenceChordElevation(poi);
+      Float64 yc = pGdr->GetTopGirderReferenceChordElevation(poi);
 
       // top of alignment elevation above girder
-      double ya = pAlignment->GetElevation(x,z);
+      Float64 ya = pAlignment->GetElevation(x,z);
 
       // profile effect
-      double section_profile_effect = ya - yc;
+      Float64 section_profile_effect = ya - yc;
       diff_min = _cpp_min(diff_min,section_profile_effect);
       diff_max = _cpp_max(diff_max,section_profile_effect);
 
       // girder orientation effect
-      double crown_slope = 0;
+      Float64 crown_slope = 0;
       if ( nMatingSurfaces == 1 )
       {
          // single top flange situation
@@ -402,16 +402,16 @@ void pgsDesigner2::GetHaunchDetails(SpanIndexType span,GirderIndexType gdr,bool 
          // slope of the line connecting the two exterior mating surfaces
          ATLASSERT( 2 <= nMatingSurfaces );
 
-         double left_mating_surface_offset  = pGdr->GetMatingSurfaceLocation(poi,0);
-         double right_mating_surface_offset = pGdr->GetMatingSurfaceLocation(poi,nMatingSurfaces-1);
+         Float64 left_mating_surface_offset  = pGdr->GetMatingSurfaceLocation(poi,0);
+         Float64 right_mating_surface_offset = pGdr->GetMatingSurfaceLocation(poi,nMatingSurfaces-1);
 
-         double ya_left  = pAlignment->GetElevation(x,z+left_mating_surface_offset);
-         double ya_right = pAlignment->GetElevation(x,z+right_mating_surface_offset);
+         Float64 ya_left  = pAlignment->GetElevation(x,z+left_mating_surface_offset);
+         Float64 ya_right = pAlignment->GetElevation(x,z+right_mating_surface_offset);
 
          crown_slope = (ya_left - ya_right)/(right_mating_surface_offset - left_mating_surface_offset);
       }
 
-      double section_girder_orientation_effect = (top_width/2)*(fabs(crown_slope - girder_orientation)/(sqrt(1+girder_orientation*girder_orientation)));
+      Float64 section_girder_orientation_effect = (top_width/2)*(fabs(crown_slope - girder_orientation)/(sqrt(1+girder_orientation*girder_orientation)));
 
       SECTIONHAUNCH haunch;
       haunch.PointOfInterest = poi;
@@ -443,7 +443,7 @@ void pgsDesigner2::GetHaunchDetails(SpanIndexType span,GirderIndexType gdr,bool 
    }
 
    // profile effect
-   double profile_effect = 0;
+   Float64 profile_effect = 0;
    if ( diff_min < 0 ) // there is a sag in the profile
    {
       profile_effect = -diff_min; // raise haunch to accomodate
@@ -602,16 +602,16 @@ pgsDesignArtifact pgsDesigner2::Design(SpanIndexType span,GirderIndexType gdr,ar
    if ( !options.doDesignLifting )
    {
       GET_IFACE(IGirderLifting,pGirderLifting);
-      double Loh = pGirderLifting->GetLeftLiftingLoopLocation(span,gdr);
-      double Roh = pGirderLifting->GetRightLiftingLoopLocation(span,gdr);
+      Float64 Loh = pGirderLifting->GetLeftLiftingLoopLocation(span,gdr);
+      Float64 Roh = pGirderLifting->GetRightLiftingLoopLocation(span,gdr);
       artifact.SetLiftingLocations(Loh,Roh);
    }
 
    if ( !options.doDesignHauling )
    {
       GET_IFACE(IGirderHauling,pGirderHauling);
-      double Loh = pGirderHauling->GetTrailingOverhang(span,gdr);
-      double Roh = pGirderHauling->GetLeadingOverhang(span,gdr);
+      Float64 Loh = pGirderHauling->GetTrailingOverhang(span,gdr);
+      Float64 Roh = pGirderHauling->GetLeadingOverhang(span,gdr);
       artifact.SetTruckSupportLocations(Loh,Roh);
    }
 
@@ -995,11 +995,8 @@ void pgsDesigner2::CheckStrandStresses(SpanIndexType span,GirderIndexType gdr,pg
       if ( pAllow->CheckStressAfterXfer() )
          pArtifact->SetCheckAfterXfer( strandType, pPsForce->GetStrandStress(poi,strandType,pgsTypes::AfterXfer), pAllow->GetAllowableAfterXfer(span,gdr,strandType) );
 
-      //vPOI = pIPOI->GetPointsOfInterest(pgsTypes::BridgeSite1,span,gdr,POI_MIDSPAN);
-      //poi = *vPOI.begin();
-
       if ( pAllow->CheckStressAfterLosses() && strandType != pgsTypes::Temporary )
-         pArtifact->SetCheckAfterLosses( strandType, pPsForce->GetStrandStress(poi,strandType,pgsTypes::AfterLosses), pAllow->GetAllowableAfterLosses(span,gdr,strandType) );
+         pArtifact->SetCheckAfterLosses( strandType, pPsForce->GetStrandStress(poi,strandType,pgsTypes::AfterLossesWithLiveLoad), pAllow->GetAllowableAfterLosses(span,gdr,strandType) );
    }
 }
 
@@ -1022,7 +1019,7 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
-   double Es, fy, fu;
+   Float64 Es, fy, fu;
    pMaterial->GetLongitudinalRebarProperties(span,gdr,&Es,&fy,&fu);
    Float64 fs = 0.5*fy;
    Float64 fsMax = (bUnitsSI ? ::ConvertToSysUnits(206.0,unitMeasure::MPa) : ::ConvertToSysUnits(30.0,unitMeasure::KSI) );
@@ -1092,8 +1089,8 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
       // if there isn't a strength that works, use a value of -1
       if ( task.type == pgsTypes::Compression )
       {
-         double c = pAllowable->GetAllowableCompressiveStressCoefficient(task.stage,task.ls);
-         double fc_reqd = (IsZero(c) ? 0 : _cpp_min(fTop,fBot)/-c);
+         Float64 c = pAllowable->GetAllowableCompressiveStressCoefficient(task.stage,task.ls);
+         Float64 fc_reqd = (IsZero(c) ? 0 : _cpp_min(fTop,fBot)/-c);
          
          if ( fc_reqd < 0 ) // the minimum stress is tensile so compression isn't an issue
             fc_reqd = 0;
@@ -1102,17 +1099,17 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
       }
       else
       {
-         double t;
+         Float64 t;
          bool bCheckMax;
-         double fmax;
+         Float64 fmax;
 
          pAllowable->GetAllowableTensionStressCoefficient(task.stage,task.ls,&t,&bCheckMax,&fmax);
 
          // if this is bridge site 3, only look at the bottom stress (stress in the precompressed tensile zone)
          // otherwise, take the controlling tension
-         double f = (task.stage == pgsTypes::BridgeSite3 ? fBot : _cpp_max(fTop,fBot));
+         Float64 f = (task.stage == pgsTypes::BridgeSite3 ? fBot : _cpp_max(fTop,fBot));
 
-         double fc_reqd;
+         Float64 fc_reqd;
          if (f>0.0)
          {
             fc_reqd = (IsZero(t) ? 0 : BinarySign(f)*pow(f/t,2));
@@ -1132,7 +1129,7 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
             {
                // unless we are in the casting yard, then we can add some additional rebar
                // and go to a higher limit
-               double talt = pAllowable->GetCastingYardAllowableTensionStressCoefficientWithRebar();
+               Float64 talt = pAllowable->GetCastingYardAllowableTensionStressCoefficientWithRebar();
                fc_reqd = pow(f/talt,2);
             }
             else
@@ -1181,7 +1178,7 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
             CComQIPtr<IXYPosition> position(shape);
             CComPtr<IPoint2d> bc;
             position->get_LocatorPoint(lpBottomCenter,&bc);
-            double Y;
+            Float64 Y;
             bc->get_Y(&Y);
 
             CComPtr<ILine2d> line;
@@ -1297,7 +1294,7 @@ pgsFlexuralCapacityArtifact pgsDesigner2::CreateFlexuralCapacityArtifact(const p
       Float64 MuMin, MuMax;
       if ( analysisType == pgsTypes::Envelope )
       {
-         double min,max;
+         Float64 min,max;
          pLimitStateForces->GetMoment(ls,stage,poi,MaxSimpleContinuousEnvelope,&min,&max);
          MuMax = max;
 
@@ -1356,7 +1353,7 @@ pgsStirrupCheckAtPoisArtifact pgsDesigner2::CreateStirrupCheckAtPoisArtifact(con
    {
       Int32 reason = XREASON_AGENTVALIDATIONFAILURE;
       std::_tostringstream os;
-      os << _T("Cannot perform shear check - Span-to-Depth ratio is less than ")<< MIN_SPAN_DEPTH_RATIO <<_T(" for Span ")<< LABEL_SPAN(poi.GetSpan()) << _T(" Girder ")<< LABEL_GIRDER(poi.GetGirder());
+      os << _T("Cannot perform shear check - Span-to-Depth ratio is less than ")<< MIN_SPAN_DEPTH_RATIO <<_T(" for Span ")<< LABEL_SPAN(poi.GetSpan()) << _T(" Girder ") << LABEL_GIRDER(poi.GetGirder()) << _T(" (See LRFD 5.8.1.1)");
 
       pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,0,os.str().c_str());
       pStatusCenter->Add(pStatusItem);
@@ -1409,6 +1406,15 @@ pgsStirrupCheckAtPoisArtifact pgsDesigner2::CreateStirrupCheckAtPoisArtifact(con
 
 bool pgsDesigner2::IsDeepSection( const pgsPointOfInterest& poi)
 {
+   // LRFD 5.8.1.1
+   // Assume that the point of zero shear is at mid-span (L/2).
+   // This assumption is true for uniform load which generally occur for this type of structure.
+   // From 5.8.1.1, the beam is considered a deep beem if the distance from the point of zero shear
+   // to the face of support is less than 2d.
+   //
+   // L/2 < 2d 
+   // Re-arrange
+   // L/d < 4
    GET_IFACE(IBridge,pBridge);
    Float64 span_length = pBridge->GetSpanLength(poi.GetSpan(), poi.GetGirder());
    GET_IFACE(IGirder,pGdr);
@@ -2200,7 +2206,7 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
          pMomentCapacity->GetMomentCapacityDetails(pgsTypes::BridgeSite3,poi,scd.bTensionBottom,&mcd);
       }
 
-      double Mr = mcd.Phi*mcd.Mn;
+      Float64 Mr = mcd.Phi*mcd.Mn;
       pArtifact->SetMr(Mr);
    }
 
@@ -2320,10 +2326,10 @@ void pgsDesigner2::InitShearCheck(SpanIndexType span,GirderIndexType gdr,pgsType
    PierIndexType next_pier = prev_pier+1;
 
    GET_IFACE(ILimitStateForces,pForces);
-   double Rmin, Rmax;
+   Float64 Rmin, Rmax;
    if ( analysisType == pgsTypes::Envelope )
    {
-      double min,max;
+      Float64 min,max;
 
       pForces->GetReaction(ls,pgsTypes::BridgeSite3,prev_pier,gdr,MaxSimpleContinuousEnvelope,true,&min,&max);
       Rmax = max;
@@ -2341,7 +2347,7 @@ void pgsDesigner2::InitShearCheck(SpanIndexType span,GirderIndexType gdr,pgsType
 
    if ( analysisType == pgsTypes::Envelope )
    {
-      double min,max;
+      Float64 min,max;
 
       pForces->GetReaction(ls,pgsTypes::BridgeSite3,next_pier,gdr,MaxSimpleContinuousEnvelope,true,&min,&max);
       Rmax = max;
@@ -2424,7 +2430,7 @@ void pgsDesigner2::CheckShear(SpanIndexType span,GirderIndexType gdr,const std::
 
    pStirrupArtifact->SetFc(fc_girder);
    
-   double Es, fy, fu;
+   Float64 Es, fy, fu;
    pMaterial->GetTransverseRebarProperties(span,gdr,&Es,&fy,&fu);
    pStirrupArtifact->SetFy(fy);
 
@@ -3415,7 +3421,7 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
             // the purpose of calling DesignMidZoneAtRelease is to adjust the initial release strength
             // if it is too low. The new value is also and Initial Strength... re-initialize the
             // Fci controller with the new _T("Initial") strength
-            double newFci = m_StrandDesignTool.GetReleaseStrength(&str_result);
+            Float64 newFci = m_StrandDesignTool.GetReleaseStrength(&str_result);
             if ( !IsEqual(fci,newFci) )
                m_StrandDesignTool.InitReleaseStrength( newFci );
 
@@ -3631,7 +3637,7 @@ void pgsDesigner2::DesignMidZoneFinalConcrete(IProgress* pProgress)
          CHECK_PROGRESS;
 
          const pgsPointOfInterest& poi = *poiIter;
-         double min,max;
+         Float64 min,max;
          if ( analysisType == pgsTypes::Envelope )
          {
             pForces->GetDesignStress(limit_state[i],stage_type[i],poi,stress_location[i],fc_current,startSlabOffset,endSlabOffset,MaxSimpleContinuousEnvelope,&min,&max);
@@ -3677,7 +3683,7 @@ void pgsDesigner2::DesignMidZoneFinalConcrete(IProgress* pProgress)
 
    for ( i = 0; i < NCases; i++ )
    {
-      double k = pLoadFactors->DCmax[limit_state[i]];
+      Float64 k = pLoadFactors->DCmax[limit_state[i]];
 
       LOG(_T("Stress Demand (") << strLimitState[i] << StrTopBot(stress_location[i]) << _T(" fmax = ") << ::ConvertFromSysUnits(fmax[i],unitMeasure::KSI) << _T(" ksi, fbpre = ") << ::ConvertFromSysUnits(fbpre[i],unitMeasure::KSI) << _T(" ksi, ftotal = ") << ::ConvertFromSysUnits(fmax[i] + k*fbpre[i],unitMeasure::KSI) << _T(" ksi, at ")<< ::ConvertFromSysUnits(maxPoi[i].GetDistFromStart(), unitMeasure::Feet) << _T(" ft") );
 
@@ -3729,7 +3735,7 @@ void pgsDesigner2::DesignMidZoneAtRelease(IProgress* pProgress)
       CHECK_PROGRESS;
 
       const pgsPointOfInterest& poi = *poiIter;
-      double min, max;
+      Float64 min, max;
       pForces->GetStress(pgsTypes::ServiceI,pgsTypes::CastingYard,poi,pgsTypes::BottomGirder,false,SimpleSpan,&min,&max);
 
       Float64  fBotPrestress;
@@ -3808,7 +3814,7 @@ void pgsDesigner2::DesignMidZoneAtRelease(IProgress* pProgress)
       CHECK_PROGRESS;
 
       const pgsPointOfInterest& poi = *poiIter;
-      double mine, maxe;
+      Float64 mine, maxe;
       pForces->GetStress(pgsTypes::ServiceI,pgsTypes::CastingYard,poi,pgsTypes::TopGirder,false,SimpleSpan,&mine,&maxe);
 
       Float64 fTopPrestress = pPrestress->GetDesignStress(pgsTypes::CastingYard,poi,pgsTypes::TopGirder,config);
@@ -4006,7 +4012,7 @@ void pgsDesigner2::DesignSlabOffset(IProgress* pProgress)
    // to prevent the design from bouncing back and forth over two "A" dimensions that are 1/4" apart, we are going to use the
    // raw computed "A" requirement and round it after design is complete.
    // use a somewhat tight tolerance to converge of the theoretical "A" dimension
-   double tolerance = ::ConvertToSysUnits(0.125,unitMeasure::Inch);
+   Float64 tolerance = ::ConvertToSysUnits(0.125,unitMeasure::Inch);
    do
    {
       CHECK_PROGRESS;
@@ -4039,7 +4045,7 @@ void pgsDesigner2::DesignSlabOffset(IProgress* pProgress)
 
       if ( IsZero( AoldStart - Anew, tolerance ) && IsZero( AoldEnd - Anew, tolerance ))
       {
-         double a;
+         Float64 a;
          a = CeilOff(Max3(AoldStart,AoldEnd,Anew),tolerance );
          m_StrandDesignTool.SetSlabOffset( pgsTypes::metStart, a );
          m_StrandDesignTool.SetSlabOffset( pgsTypes::metEnd,   a );
@@ -4099,7 +4105,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
    // Get controlling Point of Interest at mid zone
    pgsPointOfInterest poi = GetControllingFinalMidZonePoi(span,gdr);
 
-   double fcgdr = m_StrandDesignTool.GetConcreteStrength();
+   Float64 fcgdr = m_StrandDesignTool.GetConcreteStrength();
 
    // Get the section properties of the girder
    GET_IFACE(ISectProp2,pSectProp2);
@@ -4138,7 +4144,8 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
    LOG(_T("M shear key   = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(pgsTypes::BridgeSite1,pftShearKey,poi,bat),unitMeasure::KipFeet) << _T(" k-ft"));
    LOG(_T("M construction= ") << ::ConvertFromSysUnits(pProductForces->GetMoment(pgsTypes::BridgeSite1,pftConstruction,poi,bat),unitMeasure::KipFeet) << _T(" k-ft"));
    LOG(_T("M slab        = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlab,poi,bat),unitMeasure::KipFeet) << _T(" k-ft"));
-   LOG(_T("dM slab       = ") << ::ConvertFromSysUnits(pProductForces->GetDesignSlabPadMomentAdjustment(fcgdr,startSlabOffset,endSlabOffset,poi),unitMeasure::KipFeet) << _T(" k-ft"));
+   LOG(_T("M slab pad    = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlabPad,poi,bat),unitMeasure::KipFeet) << _T(" k-ft"));
+   LOG(_T("dM slab pad   = ") << ::ConvertFromSysUnits(pProductForces->GetDesignSlabPadMomentAdjustment(fcgdr,startSlabOffset,endSlabOffset,poi),unitMeasure::KipFeet) << _T(" k-ft"));
    LOG(_T("M panel       = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlabPanel,poi,bat),unitMeasure::KipFeet) << _T(" k-ft"));
    LOG(_T("M user dc (1) = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(pgsTypes::BridgeSite1,pftUserDC,poi,bat),unitMeasure::KipFeet) << _T(" k-ft"));
    LOG(_T("M user dw (1) = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(pgsTypes::BridgeSite1,pftUserDW,poi,bat),unitMeasure::KipFeet) << _T(" k-ft"));
@@ -4148,17 +4155,17 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
    LOG(_T("M user dw (2) = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(pgsTypes::BridgeSite2,pftUserDW,poi,bat),unitMeasure::KipFeet) << _T(" k-ft"));
    LOG(_T("M overlay     = ") << ::ConvertFromSysUnits(pProductForces->GetMoment(pgsTypes::BridgeSite3,pftOverlay,poi,bat),unitMeasure::KipFeet) << _T(" k-ft"));
 
-   double Mllmax, Mllmin;
+   Float64 Mllmax, Mllmin;
    pProductForces->GetLiveLoadMoment(pgsTypes::lltDesign, pgsTypes::BridgeSite3,poi,bat,true,false,&Mllmin,&Mllmax);
    LOG(_T("M ll+im min   = ") << ::ConvertFromSysUnits(Mllmin,unitMeasure::KipFeet) << _T(" k-ft"));
    LOG(_T("M ll+im max   = ") << ::ConvertFromSysUnits(Mllmax,unitMeasure::KipFeet) << _T(" k-ft"));
 
-   double fc_lldf = fcgdr;
+   Float64 fc_lldf = fcgdr;
    if ( pGirderMaterial->bUserEc )
       fc_lldf = lrfdConcreteUtil::FcFromEc( pGirderMaterial->Ec, pGirderMaterial->StrengthDensity );
 
    GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
-   double gV, gpM, gnM;
+   Float64 gV, gpM, gnM;
    pLLDF->GetDistributionFactors(poi,pgsTypes::StrengthI,fc_lldf,&gpM,&gnM,&gV);
    LOG(_T("LLDF = ") << gpM);
    LOG(_T(""));
@@ -4186,7 +4193,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
       LOG(_T(""));
       if ( analysisType == pgsTypes::Envelope )
       {
-         double min,max;
+         Float64 min,max;
          pForces->GetDesignStress(limit_state[i],pgsTypes::BridgeSite3,poi,stress_location[i],fc,startSlabOffset,endSlabOffset,MaxSimpleContinuousEnvelope,&min,&max);
          fmax[i] = max;
          fmin[i] = min;
@@ -4196,7 +4203,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
          pForces->GetDesignStress(limit_state[i],pgsTypes::BridgeSite3,poi,stress_location[i],fc,startSlabOffset,endSlabOffset,analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan,&fmin[i],&fmax[i]);
       }
 
-      double f_demand = ( stress_type[i] == pgsTypes::Compression ) ? fmin[i] : fmax[i];
+      Float64 f_demand = ( stress_type[i] == pgsTypes::Compression ) ? fmin[i] : fmax[i];
       LOG(_T("Stress Demand (") << strLimitState[i] << _T(", ") << strStressLocation[i] << _T(", mid-span) = ") << ::ConvertFromSysUnits(f_demand,unitMeasure::KSI) << _T(" KSI") );
 
 
@@ -4205,7 +4212,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
       LOG(_T("Allowable stress (") << strLimitState[i] << _T(") = ") << ::ConvertFromSysUnits(fAllow[i],unitMeasure::KSI)  << _T(" KSI"));
 
       // Compute required stress due to prestressing
-      double k = pLoadFactors->DCmax[limit_state[i]];
+      Float64 k = pLoadFactors->DCmax[limit_state[i]];
       fpre[i] = (fAllow[i] - f_demand)/k;
 
       LOG(_T("Reqd stress due to prestressing (") << strLimitState[i] << _T(") = ") << ::ConvertFromSysUnits(fpre[i],unitMeasure::KSI) << _T(" KSI") );
@@ -4289,15 +4296,15 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
          LOG(_T("COMPRESSION CONTROLS"));
 
          // stress required at top of girder to make tension control
-         double fpre = P_reqd[2]/Ag + P_reqd[2]*ecc/Stg; 
+         Float64 fpre = P_reqd[2]/Ag + P_reqd[2]*ecc/Stg; 
          LOG(_T("Stress due to prestressing required at top of girder to make tension control = P/Ag + Pe/Stg, where P (") << strLimitState[idx] << _T(") = P (Service III)"));
          LOG(_T("Stress due to prestressing required at top of girder to make tension control = ") << ::ConvertFromSysUnits(P_reqd[2],unitMeasure::Kip) << _T("/") << ::ConvertFromSysUnits(Ag,unitMeasure::Inch2) << _T(" + (") << ::ConvertFromSysUnits(P_reqd[2],unitMeasure::Kip) << _T(")(") << ::ConvertFromSysUnits(ecc,unitMeasure::Inch) << _T(")/") << ::ConvertFromSysUnits(Stg,unitMeasure::Inch3) << _T(" = ") << ::ConvertFromSysUnits(fpre,unitMeasure::KSI) << _T(" KSI"));
 
-         double c = pAllowStress->GetAllowableCompressiveStressCoefficient(pgsTypes::BridgeSite3,limit_state[idx]);
+         Float64 c = pAllowStress->GetAllowableCompressiveStressCoefficient(pgsTypes::BridgeSite3,limit_state[idx]);
          LOG(_T("Compression stress coefficient ") << c);
 
-         double k = pLoadFactors->DCmax[limit_state[idx]];
-         double fc = (fmin[idx]+k*fpre)/-c;
+         Float64 k = pLoadFactors->DCmax[limit_state[idx]];
+         Float64 fc = (fmin[idx]+k*fpre)/-c;
 
          LOG(_T("Solve for required concrete strength: f ") << strLimitState[idx] << _T(" + (") << k << _T(")(f prestress) = f allowable = (c)(f'c)"));
 
@@ -4327,15 +4334,15 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
             const GDRCONFIG& config = m_StrandDesignTool.GetGirderConfiguration();
             GET_IFACE(IPrestressStresses,pPsStress);
             Float64 fBotPre = pPsStress->GetDesignStress(pgsTypes::BridgeSite3,poi,pgsTypes::BottomGirder,config);
-            double fc_rq;
-            double k = pLoadFactors->DCmax[pgsTypes::ServiceIII];
+            Float64 fc_rq;
+            Float64 k = pLoadFactors->DCmax[pgsTypes::ServiceIII];
 
-            double f_allow_required = fmax[2]+k*fBotPre;
+            Float64 f_allow_required = fmax[2]+k*fBotPre;
             LOG(_T("Required allowable = fb Service III + fb Prestress = ") << ::ConvertFromSysUnits(fmax[2],unitMeasure::KSI) << _T(" + ") << ::ConvertFromSysUnits(fBotPre,unitMeasure::KSI) << _T(" = ") << ::ConvertFromSysUnits(f_allow_required,unitMeasure::KSI) << _T(" KSI"));
             if ( ConcFailed != m_StrandDesignTool.ComputeRequiredConcreteStrength(f_allow_required,pgsTypes::BridgeSite3,pgsTypes::ServiceIII,pgsTypes::Tension,&fc_rq) )
             {
                // Practical upper limit here - if we are going above 15ksi, we are wasting time
-               double max_girder_fc = m_StrandDesignTool.GetMaximumConcreteStrength();
+               Float64 max_girder_fc = m_StrandDesignTool.GetMaximumConcreteStrength();
                LOG(_T("Max upper limit for final girder concrete = ") << ::ConvertFromSysUnits(max_girder_fc,unitMeasure::KSI) << _T(" KSI. Computed required strength = ")<< ::ConvertFromSysUnits(fc_rq,unitMeasure::KSI) << _T(" KSI"));
 
                if (fc_rq < max_girder_fc)
@@ -4375,15 +4382,15 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
             const GDRCONFIG& config = m_StrandDesignTool.GetGirderConfiguration();
             GET_IFACE(IPrestressStresses,pPsStress);
             Float64 fBotPre = pPsStress->GetDesignStress(pgsTypes::BridgeSite3,poi,pgsTypes::BottomGirder,config);
-            double k = pLoadFactors->DCmax[pgsTypes::ServiceIII];
-            double f_allow_required = fmax[2]+k*fBotPre;
+            Float64 k = pLoadFactors->DCmax[pgsTypes::ServiceIII];
+            Float64 f_allow_required = fmax[2]+k*fBotPre;
             LOG(_T("Required allowable = fb Service III + fb Prestress = ") << ::ConvertFromSysUnits(fmax[2],unitMeasure::KSI) << _T(" + ") << ::ConvertFromSysUnits(fBotPre,unitMeasure::KSI) << _T(" = ") << ::ConvertFromSysUnits(f_allow_required,unitMeasure::KSI) << _T(" KSI"));
-            double fc_rqd;
+            Float64 fc_rqd;
             if ( ConcFailed != m_StrandDesignTool.ComputeRequiredConcreteStrength(f_allow_required,pgsTypes::BridgeSite3,pgsTypes::ServiceIII,pgsTypes::Tension,&fc_rqd) )
             {
                // Use user-defined practical upper limit here - if we are going for 15ksi, we are wasting time
                GET_IFACE(ILimits2,pLimits);
-               double max_girder_fc = pLimits->GetMaxGirderFc(config.ConcType);
+               Float64 max_girder_fc = pLimits->GetMaxGirderFc(config.ConcType);
                LOG(_T("User-defined upper limit for final girder concrete = ") << ::ConvertFromSysUnits(max_girder_fc,unitMeasure::KSI) << _T(" KSI. Computed required strength = ")<< ::ConvertFromSysUnits(fc_rqd,unitMeasure::KSI) << _T(" KSI"));
 
                if (fc_rqd <= max_girder_fc)
@@ -4522,7 +4529,7 @@ pgsPointOfInterest pgsDesigner2::GetControllingFinalMidZonePoi(SpanIndexType spa
       if (dfs>=left_limit && dfs<=rgt_limit)
       {
          // poi is in mid-zone
-         double min,max;
+         Float64 min,max;
          if ( analysisType == pgsTypes::Envelope )
          {
             pForces->GetDesignStress(pgsTypes::ServiceIII,pgsTypes::BridgeSite3,poi,pgsTypes::BottomGirder,fc,startSlabOffset,endSlabOffset,MaxSimpleContinuousEnvelope,&min,&max);
@@ -4582,7 +4589,7 @@ void pgsDesigner2::DesignEndZoneReleaseStrength(IProgress* pProgress)
       CHECK_PROGRESS;
 
       const pgsPointOfInterest& poi = *poiIter;
-      double mine,maxe,bogus;
+      Float64 mine,maxe,bogus;
       pForces->GetStress(pgsTypes::ServiceI,pgsTypes::CastingYard,poi,pgsTypes::TopGirder,   false,SimpleSpan,&bogus,&maxe);
       pForces->GetStress(pgsTypes::ServiceI,pgsTypes::CastingYard,poi,pgsTypes::BottomGirder,false,SimpleSpan,&mine,&bogus);
 
@@ -4652,7 +4659,7 @@ void pgsDesigner2::DesignEndZoneReleaseHarping(IProgress* pProgress)
       CHECK_PROGRESS;
 
       const pgsPointOfInterest& poi = *poiIter;
-      double mine,maxe,bogus;
+      Float64 mine,maxe,bogus;
       pForces->GetStress(pgsTypes::ServiceI,pgsTypes::CastingYard,poi,pgsTypes::TopGirder,   false,SimpleSpan,&bogus,&maxe);
       pForces->GetStress(pgsTypes::ServiceI,pgsTypes::CastingYard,poi,pgsTypes::BottomGirder,false,SimpleSpan,&mine,&bogus);
 
@@ -4873,7 +4880,7 @@ std::vector<DebondLevelType> pgsDesigner2::DesignEndZoneReleaseDebonding(IProgre
    for ( ; poiIter != poiIterEnd; poiIter++ )
    {
       const pgsPointOfInterest& poi = *poiIter;
-      double fTopAppl,fBotAppl,bogus;
+      Float64 fTopAppl,fBotAppl,bogus;
       pForces->GetStress(pgsTypes::ServiceI,pgsTypes::CastingYard,poi,pgsTypes::TopGirder,   false,SimpleSpan,&bogus,&fTopAppl);
       pForces->GetStress(pgsTypes::ServiceI,pgsTypes::CastingYard,poi,pgsTypes::BottomGirder,false,SimpleSpan,&fBotAppl,&bogus);
 
@@ -5188,20 +5195,20 @@ void pgsDesigner2::DesignForLiftingHarping(bool bProportioningStrands,IProgress*
       GET_IFACE(IStrandGeometry,pStrandGeom);
       Float64 lhp,rhp;
       pStrandGeom->GetHarpingPointLocations(span,gdr,&lhp,&rhp);
-      std::vector<double> hpLocs;
+      std::vector<Float64> hpLocs;
       hpLocs.push_back(lhp);
       hpLocs.push_back(rhp);
 
-      std::vector<double> fHpTopMin, fHpTopMax, fHpBotMin, fHpBotMax;
+      std::vector<Float64> fHpTopMin, fHpTopMax, fHpBotMin, fHpBotMax;
       artifact.GetGirderStress(hpLocs,true, true,fHpTopMin,fHpBotMin);
       artifact.GetGirderStress(hpLocs,false,true,fHpTopMax,fHpBotMax);
 
-      double fTopHpMin = *std::min_element(fHpTopMin.begin(),fHpTopMin.end());
-      double fBotHpMin = *std::min_element(fHpBotMin.begin(),fHpBotMin.end());
-      double fTopHpMax = *std::max_element(fHpTopMax.begin(),fHpTopMax.end());
-      double fBotHpMax = *std::max_element(fHpBotMax.begin(),fHpBotMax.end());
-      double fHpMin = _cpp_min(fTopHpMin,fBotHpMin);
-      double fHpMax = _cpp_max(fTopHpMax,fBotHpMax);
+      Float64 fTopHpMin = *std::min_element(fHpTopMin.begin(),fHpTopMin.end());
+      Float64 fBotHpMin = *std::min_element(fHpBotMin.begin(),fHpBotMin.end());
+      Float64 fTopHpMax = *std::max_element(fHpTopMax.begin(),fHpTopMax.end());
+      Float64 fBotHpMax = *std::max_element(fHpBotMax.begin(),fHpBotMax.end());
+      Float64 fHpMin = _cpp_min(fTopHpMin,fBotHpMin);
+      Float64 fHpMax = _cpp_max(fTopHpMax,fBotHpMax);
 
       LOG(_T("Computing eccentricity required to make stress at lift/xfer point approx equal to stress at hp"));
 
@@ -6518,6 +6525,8 @@ void pgsDesigner2::DesignShear(pgsDesignArtifact* pArtifact, bool bDoStartFromSc
    SpanIndexType span = pArtifact->GetSpan();
    GirderIndexType gdr  = pArtifact->GetGirder();
 
+   const Float64 one_inch = ::ConvertToSysUnits(1.0, unitMeasure::Inch); // Very US bias here
+
    // Initialize shear design tool using flexure design pois
    m_ShearDesignTool.ResetDesign( m_StrandDesignTool.GetDesignPoi(pgsTypes::BridgeSite3, POI_ALLACTIONS) );
 
@@ -6527,9 +6536,13 @@ void pgsDesigner2::DesignShear(pgsDesignArtifact* pArtifact, bool bDoStartFromSc
    CShearData shear_data = pShear->GetShearData(span, gdr);
    if (bDoStartFromScratch)
    {
-      // From-scratch stirrup layout - check with no stirrups
-      CShearData default_data; // Use defaults from constructor to create no-stirrup condition
+      // From-scratch stirrup layout - do initial check with minimal stirrups
+      // Minimal stirrups are needed so we don't use equations for Beta for less than min stirrup configuration
+      CShearData default_data; // Use defaults from constructor to create no-stirrup condition. Then add minimal stirrups
       shear_data.ShearZones = default_data.ShearZones;
+      shear_data.ShearZones.front().VertBarSize = matRebar::bs5;
+      shear_data.ShearZones.front().BarSpacing  = 24.0 * one_inch;
+      shear_data.ShearZones.front().nVertBars   = 2;
       shear_data.HorizontalInterfaceZones = default_data.HorizontalInterfaceZones;
    }
 
@@ -6581,8 +6594,6 @@ void pgsDesigner2::DesignShear(pgsDesignArtifact* pArtifact, bool bDoStartFromSc
 
          Float64 nbars = av_add/av_onebar;
          nbars = CeilOff(nbars, 2.0); // round up to next two-bar increment
-
-         Float64 one_inch = ::ConvertToSysUnits(1.0, unitMeasure::Inch); // Very US bias here
 
          // Make sure spacing fits in girder
          GET_IFACE(IGirder,pGirder);

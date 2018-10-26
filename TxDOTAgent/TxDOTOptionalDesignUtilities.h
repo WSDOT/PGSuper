@@ -34,6 +34,9 @@
 #include <System\Tokenizer.h>
 #include <System\FileStream.h>
 
+#include <PGSuperTypes.h>
+#include <IFace\Bridge.h>
+
 // LOCAL INCLUDES
 //
 
@@ -164,6 +167,143 @@ inline BOOL ParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry,
 
    return TRUE;
 }
+
+
+class OptionalDesignHarpedFillUtil
+{
+public:
+
+   // utility struct to temporarily store and sort rows
+   struct StrandRow
+   {
+      double Elevation;
+      std::_tstring fillListString; // "ABC..."
+
+      StrandRow():
+         Elevation(0.0)
+      {;}
+
+      StrandRow(Float64 elev):
+         Elevation(elev)
+         {;}
+
+      bool operator==(const StrandRow& rOther) const 
+      { 
+         return ::IsEqual(Elevation,rOther.Elevation); 
+      }
+
+      bool operator<(const StrandRow& rOther) const 
+      { 
+         return Elevation < rOther.Elevation; 
+      }
+   };
+   typedef std::set<StrandRow> StrandRowSet;
+   typedef StrandRowSet::iterator StrandRowIter;
+
+   // Function to retrieve fill letter for X location
+   static TCHAR GetFillString(Float64 X)
+   {
+      ATLASSERT(X>0.0); // should be weeding out negative values
+
+      // This is VERY TxDOT I beam specific. Expect X locations at 2" spacing: 1.0, 3.0, 5.0,...
+      Float64 xin = ::ConvertFromSysUnits( X, unitMeasure::Inch );
+      int index = (int)Round((xin-1.0)/2.0);
+      TCHAR label = (index % 26) + _T('A');
+
+      return label;
+   }
+
+   static StrandRowSet GetStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi);
+};
+
+inline OptionalDesignHarpedFillUtil::StrandRowSet OptionalDesignHarpedFillUtil::GetStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi)
+{
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+
+   // Want to list filled strands in each row location. Loop over and build fill string
+   StrandRowSet strandrows;
+
+   // Harped
+   CComPtr<IPoint2dCollection> hs_points;
+   pStrandGeometry->GetStrandPositions(midPoi, pgsTypes::Harped, &hs_points);
+
+   RowIndexType nrows = pStrandGeometry->GetNumRowsWithStrand(midPoi.GetSpan(),midPoi.GetGirder(),pgsTypes::Harped);
+   for (RowIndexType rowIdx=0; rowIdx!=nrows; rowIdx++)
+   {
+      std::vector<StrandIndexType> hstrands = pStrandGeometry->GetStrandsInRow(midPoi.GetSpan(), midPoi.GetGirder(), rowIdx, pgsTypes::Harped);
+      for (std::vector<StrandIndexType>::iterator sit=hstrands.begin(); sit!=hstrands.end(); sit++)
+      {
+         StrandIndexType idx = *sit;
+         CComPtr<IPoint2d> point;
+         hs_points->get_Item(idx,&point);
+         Float64 Y;
+         point->get_Y(&Y);
+
+         Float64 X;
+         point->get_X(&X);
+
+         if (X>0.0)
+         {
+            TCHAR fill_char = GetFillString(X);
+
+            StrandRow srow(Y);
+            StrandRowIter srit = strandrows.find(srow);
+            if (srit != strandrows.end())
+            {
+               srit->fillListString += fill_char;
+            }
+            else
+            {
+               srow.fillListString += fill_char;
+               strandrows.insert(srow);
+            }
+         }
+      }
+   }
+
+
+   // Straight
+   CComPtr<IPoint2dCollection> ss_points;
+   pStrandGeometry->GetStrandPositions(midPoi, pgsTypes::Straight, &ss_points);
+
+   nrows = pStrandGeometry->GetNumRowsWithStrand(midPoi.GetSpan(),midPoi.GetGirder(),pgsTypes::Straight);
+   for (RowIndexType rowIdx=0; rowIdx!=nrows; rowIdx++)
+   {
+      std::vector<StrandIndexType> sstrands = pStrandGeometry->GetStrandsInRow(midPoi.GetSpan(), midPoi.GetGirder(), rowIdx, pgsTypes::Straight);
+      for (std::vector<StrandIndexType>::iterator sit=sstrands.begin(); sit!=sstrands.end(); sit++)
+      {
+         StrandIndexType idx = *sit;
+         CComPtr<IPoint2d> point;
+         ss_points->get_Item(idx,&point);
+         Float64 Y;
+         point->get_Y(&Y);
+
+         Float64 X;
+         point->get_X(&X);
+
+         if (X>0.0)
+         {
+            TCHAR fill_char = GetFillString(X);
+
+            StrandRow srow(Y);
+            StrandRowIter srit = strandrows.find(srow);
+            if (srit != strandrows.end())
+            {
+               srit->fillListString += fill_char;
+            }
+            else
+            {
+               srow.fillListString += fill_char;
+               strandrows.insert(srow);
+            }
+         }
+      }
+   }
+
+   return strandrows;
+}
+
+
 
 #endif // INCLUDED_PGSEXT_TXDOTOPTIONALDESIGNUTILILITIES_H_
 

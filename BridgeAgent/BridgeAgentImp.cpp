@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 // BridgeAgentImp.cpp : Implementation of CBridgeAgentImp
+
 #include "stdafx.h"
 #include "BridgeAgent.h"
 #include "BridgeAgent_i.h"
@@ -77,8 +78,6 @@
 
 #include <algorithm>
 #include <cctype>
-
-#include <afxext.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -3603,6 +3602,14 @@ void CBridgeAgentImp::LayoutPoiForShear(SpanIndexType span,GirderIndexType gdr)
 
    Float64 left_end_size  = GetGirderStartConnectionLength(span,gdr);
    Float64 right_end_size = GetGirderEndConnectionLength(span,gdr);
+
+   // If "H" from the end of the girder is at the point of bearing
+   // make sure there isn't any "noise" in the data
+   if ( IsEqual(hgLeft,left_end_size) )
+      hgLeft = left_end_size;
+
+   if ( IsEqual(hgRight,right_end_size) )
+      hgRight = right_end_size;
 
    Float64 left_support_width   = GetGirderStartSupportWidth(span,gdr);
    Float64 right_support_width  = GetGirderEndSupportWidth(span,gdr);

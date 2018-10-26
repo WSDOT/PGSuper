@@ -164,7 +164,7 @@ public:
 
    Float64 GetPrestressForceMz(pgsTypes::Stage stage,const pgsPointOfInterest& poi);
 
-   // if Uint32_Max, cannot handle force
+   // if INVALID_INDEX, cannot handle force
    StrandIndexType ComputePermanentStrandsRequiredForPrestressForce(const pgsPointOfInterest& poi,Float64 force);
 
    Float64 ComputeEccentricity(const pgsPointOfInterest& poi, pgsTypes::Stage eccStage);

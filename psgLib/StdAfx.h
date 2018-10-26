@@ -40,6 +40,9 @@
 #include <afxdisp.h>        // MFC OLE automation classes
 #endif // _AFX_NO_OLE_SUPPORT
 
+#include <afxMDIFrameWndEx.h>
+#include <afxMDIChildWndEx.h>
+
 
 #ifndef _AFX_NO_DB_SUPPORT
 #include <afxdb.h>			// MFC ODBC database classes

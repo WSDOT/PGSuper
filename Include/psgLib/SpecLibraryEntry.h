@@ -62,6 +62,11 @@ PSGLIBTPL sysSubjectT<SpecLibraryEntryObserver, SpecLibraryEntry>;
 #define STRESS_REL 0
 #define LOW_RELAX  1
 
+// constants for relaxation loss method for LRFD 2005, refined method
+#define RLM_SIMPLLIFIED 0
+#define RLM_REFINED     1
+#define RLM_LUMPSUM     2
+
 // MISCELLANEOUS
 //
 
@@ -859,6 +864,34 @@ public:
    Float64 GetFrictionCoefficient() const;
    void SetFrictionCoefficient(Float64 u);
 
+   //------------------------------------------------------------------------
+   // Set/Get load effectiveness for elastic gains
+   Float64 GetSlabElasticGain() const;
+   void SetSlabElasticGain(Float64 f);
+
+   Float64 GetSlabPadElasticGain() const;
+   void SetSlabPadElasticGain(Float64 f);
+
+   Float64 GetDiaphragmElasticGain() const;
+   void SetDiaphragmElasticGain(Float64 f);
+
+   Float64 GetUserDCElasticGain(pgsTypes::Stage stage) const;
+   void SetUserDCElasticGain(pgsTypes::Stage stage,Float64 f);
+
+   Float64 GetUserDWElasticGain(pgsTypes::Stage stage) const;
+   void SetUserDWElasticGain(pgsTypes::Stage stage,Float64 f);
+
+   Float64 GetRailingSystemElasticGain() const;
+   void SetRailingSystemElasticGain(Float64 f);
+
+   Float64 GetOverlayElasticGain() const;
+   void SetOverlayElasticGain(Float64 f);
+
+   Float64 GetDeckShrinkageElasticGain() const;
+   void SetDeckShrinkageElasticGain(Float64 f);
+
+   void SetRelaxationLossMethod(Int16 method);
+   Int16 GetRelaxationLossMethod() const;
 
    //------------------------------------------------------------------------
    // Returns a LLDF_XXXX constant for the live load distribution factor
@@ -1174,6 +1207,17 @@ private:
    Float64 m_WobbleFriction; // wobble friction, K
    Float64 m_FrictionCoefficient; // mu
 
+   Float64 m_SlabElasticGain;
+   Float64 m_SlabPadElasticGain;
+   Float64 m_DiaphragmElasticGain;
+   Float64 m_UserDCElasticGainBS1;
+   Float64 m_UserDWElasticGainBS1;
+   Float64 m_UserDCElasticGainBS2;
+   Float64 m_UserDWElasticGainBS2;
+   Float64 m_RailingSystemElasticGain;
+   Float64 m_OverlayElasticGain;
+   Float64 m_SlabShrinkageElasticGain;
+
    // Live Load Distribution Factors
    int m_LldfMethod;
 
@@ -1233,6 +1277,8 @@ private:
    Float64 m_PhiFlexureTensionRC[3]; // tension controlled, reinforced
    Float64 m_PhiFlexureCompression[3];
    Float64 m_PhiShear[3];
+
+   Int16 m_RelaxationLossMethod; // method for computing relaxation losses for LRFD 2005 and later, refined method
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

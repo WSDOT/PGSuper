@@ -173,6 +173,10 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
          pPara = new rptParagraph;
          *pChapter << pPara;
          *pPara << CPrestressLossTable().Build(pBroker,spanIdx,gdrIdx,pDisplayUnits) << rptNewLine;
+
+         pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+         *pChapter << pPara;
+         *pPara << _T("Eff. Loss: Effective prestress loss taken as the sum of the actual prestress loss and elastic gains/losses due to applied loads") << rptNewLine;
       } // gdrIdx
    } // spanIdx
 

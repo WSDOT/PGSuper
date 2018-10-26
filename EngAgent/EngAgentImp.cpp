@@ -1346,6 +1346,20 @@ Float64 CEngAgentImp::GetFinal(const pgsPointOfInterest& poi,pgsTypes::StrandTyp
    return val;
 }
 
+Float64 CEngAgentImp::GetFinalWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType)
+{
+   LOSSDETAILS* pLossDetails = FindLosses(poi);
+   ATLASSERT(pLossDetails != 0);
+
+   Float64 val;
+   if ( strandType == pgsTypes::Temporary )
+      val = pLossDetails->pLosses->TemporaryStrand_Final();
+   else
+      val = pLossDetails->pLosses->PermanentStrand_FinalWithLiveLoad();
+
+   return val;
+}
+
 LOSSDETAILS CEngAgentImp::GetLossDetails(const pgsPointOfInterest& poi)
 {
    LOSSDETAILS* pLosses = FindLosses(poi);
@@ -1503,6 +1517,19 @@ Float64 CEngAgentImp::GetFinal(const pgsPointOfInterest& poi,pgsTypes::StrandTyp
       loss = details.pLosses->TemporaryStrand_Final();
    else
       loss = details.pLosses->PermanentStrand_Final();
+   
+   return loss;
+}
+
+Float64 CEngAgentImp::GetFinalWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config)
+{
+   LOSSDETAILS details = GetLossDetails(poi,config);
+
+   Float64 loss;
+   if ( strandType == pgsTypes::Temporary )
+      loss = details.pLosses->TemporaryStrand_Final();
+   else
+      loss = details.pLosses->PermanentStrand_FinalWithLiveLoad();
    
    return loss;
 }

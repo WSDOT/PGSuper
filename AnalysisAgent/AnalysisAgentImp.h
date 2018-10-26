@@ -52,6 +52,7 @@ class ATL_NO_VTABLE CAnalysisAgentImp :
    public ICamber,
    public IContraflexurePoints,
    public IContinuity,
+   public IBearingDesign,
    public IBridgeDescriptionEventSink,
    public ISpecificationEventSink,
    public IRatingSpecificationEventSink,
@@ -84,6 +85,7 @@ BEGIN_COM_MAP(CAnalysisAgentImp)
    COM_INTERFACE_ENTRY(ICamber)
    COM_INTERFACE_ENTRY(IContraflexurePoints)
    COM_INTERFACE_ENTRY(IContinuity)
+   COM_INTERFACE_ENTRY(IBearingDesign)
    COM_INTERFACE_ENTRY(IBridgeDescriptionEventSink)
    COM_INTERFACE_ENTRY(ISpecificationEventSink)
    COM_INTERFACE_ENTRY(IRatingSpecificationEventSink)
@@ -182,6 +184,8 @@ public:
    virtual void GetDesignSlabPadStressAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi,Float64* pfTop,Float64* pfBot);
 
    virtual void DumpAnalysisModels(GirderIndexType girderLineIdx);
+
+   virtual void GetDeckShrinkageStresses(const pgsPointOfInterest& poi,Float64* pftop,Float64* pfbot);
 
    // IProductForces2
 public:
@@ -304,6 +308,39 @@ public:
 // IContraflexurePoints
 public:
    virtual void GetContraflexurePoints(SpanIndexType span,GirderIndexType gdr,Float64* cfPoints,Uint32* nPoints);
+
+// IBearingDesign
+   virtual bool AreBearingReactionsAvailable(SpanIndexType span,GirderIndexType gdr, bool* pBleft, bool* pBright);
+
+   virtual void GetBearingProductReaction(pgsTypes::Stage stage,ProductForceType type,SpanIndexType span,GirderIndexType gdr,
+                                          CombinationType cmbtype, BridgeAnalysisType bat, Float64* pLftEnd,Float64* pRgtEnd);
+
+   virtual void GetBearingLiveLoadReaction(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,
+                                   BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF, 
+                                   Float64* pLeftRmin,Float64* pLeftRmax,Float64* pLeftTmin,Float64* pLeftTmax,
+                                   Float64* pRightRmin,Float64* pRightRmax,Float64* pRightTmin,Float64* pRightTmax,
+                                   VehicleIndexType* pLeftMinVehIdx = NULL,VehicleIndexType* pLeftMaxVehIdx = NULL,
+                                   VehicleIndexType* pRightMinVehIdx = NULL,VehicleIndexType* pRightMaxVehIdx = NULL);
+
+   virtual void GetBearingLiveLoadRotation(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,
+                                           BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF, 
+                                           Float64* pLeftTmin,Float64* pLeftTmax,Float64* pLeftRmin,Float64* pLeftRmax,
+                                           Float64* pRightTmin,Float64* pRightTmax,Float64* pRightRmin,Float64* pRightRmax,
+                                           VehicleIndexType* pLeftMinVehIdx = NULL,VehicleIndexType* pLeftMaxVehIdx = NULL,
+                                           VehicleIndexType* pRightMinVehIdx = NULL,VehicleIndexType* pRightMaxVehIdx = NULL);
+
+   virtual void GetBearingCombinedReaction(LoadingCombination combo,pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,
+                                      CombinationType type,BridgeAnalysisType bat, Float64* pLftEnd,Float64* pRgtEnd);
+
+   virtual void GetBearingCombinedLiveLoadReaction(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,
+                                           BridgeAnalysisType bat,bool bIncludeImpact,
+                                           Float64* pLeftRmin, Float64* pLeftRmax, 
+                                           Float64* pRightRmin,Float64* pRightRmax);
+
+   virtual void GetBearingLimitStateReaction(pgsTypes::LimitState ls,pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,
+                                             BridgeAnalysisType bat,bool bIncludeImpact,
+                                             Float64* pLeftRmin, Float64* pLeftRmax, 
+                                             Float64* pRightRmin,Float64* pRightRmax);
 
 // IContinuity
 public:
@@ -507,6 +544,8 @@ private:
    void GetDeflLiveLoadSectionResults(DeflectionLiveLoadType type, const pgsPointOfInterest& poi,bamSectionResults* pMinResults,bamSectionResults* pMaxResults);
    cyModelData* GetModelData(cyGirderModels& models,SpanIndexType span,GirderIndexType gdr);
 
+   std::vector<sysSectionValue> GetShear(pgsTypes::Stage stage,ProductForceType type,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat, CombinationType cmbtype);
+
    void GetCreepDeflection(const pgsPointOfInterest& poi,bool bUseConfig,const GDRCONFIG& config,CamberModelData& initModelData,CamberModelData& initTempModelData,CamberModelData& releaseTempModelData, CreepPeriod creepPeriod, Int16 constructionRate,Float64* pDy,Float64* pRz );
    void GetCreepDeflection_CIP_TempStrands(const pgsPointOfInterest& poi,bool bUseConfig,const GDRCONFIG& config,CamberModelData& initModelData,CamberModelData& initTempModelData,CamberModelData& releaseTempModelData, CreepPeriod creepPeriod, Int16 constructionRate,Float64* pDy,Float64* pRz );
    void GetCreepDeflection_CIP(const pgsPointOfInterest& poi,bool bUseConfig,const GDRCONFIG& config,CamberModelData& initModelData,CamberModelData& initTempModelData,CamberModelData& releaseTempModelData, CreepPeriod creepPeriod, Int16 constructionRate,Float64* pDy,Float64* pRz );
@@ -584,6 +623,60 @@ private:
    void GetLiveLoadModel(pgsTypes::LiveLoadType llType,GirderIndexType gdrIdx,ILiveLoadModel** ppLiveLoadModel);
 
    DistributionFactorType GetLiveLoadDistributionFactorType(pgsTypes::LiveLoadType llType);
+
+   // Implementation functions and data for IBearingDesign
+   void AddOverhangPointLoads(SpanIndexType spanIdx, GirderIndexType gdrIdx, const CComBSTR& bstrStage, const CComBSTR& bstrLoadGroup,
+                              Float64 PStart, Float64 PEnd, IPointLoads* pointLoads);
+
+   bool GetOverhangPointLoads(SpanIndexType spanIdx, GirderIndexType gdrIdx, pgsTypes::Stage stage, ProductForceType type,
+                              CombinationType cmbtype, Float64* pPStart, Float64* pPEnd);
+
+   struct OverhangLoadDataType
+   {
+      SpanIndexType spanIdx;
+      GirderIndexType gdrIdx;
+      CComBSTR bstrStage;
+      CComBSTR bstrLoadGroup;
+
+      Float64 PStart;
+      Float64 PEnd;
+
+      OverhangLoadDataType(SpanIndexType spanIdx, GirderIndexType gdrIdx, const CComBSTR& bstrStage, const CComBSTR& bstrLoadGroup, Float64 PStart, Float64 PEnd):
+         spanIdx(spanIdx), gdrIdx(gdrIdx), bstrStage(bstrStage), bstrLoadGroup(bstrLoadGroup), PStart(PStart), PEnd(PEnd)
+      {;}
+
+      bool operator == (const OverhangLoadDataType& rOther) const
+      {
+         if ( (spanIdx!=rOther.spanIdx) || (gdrIdx!=rOther.gdrIdx) || (bstrStage!=rOther.bstrStage) || (bstrLoadGroup!=rOther.bstrLoadGroup) )
+            return false;
+
+         return true;
+      }
+
+      bool operator < (const OverhangLoadDataType& rOther) const
+      {
+         // we must satisfy strict weak ordering for the set to work properly
+         if ( spanIdx!=rOther.spanIdx)
+            return spanIdx < rOther.spanIdx;
+
+         if (gdrIdx!=rOther.gdrIdx)
+            return gdrIdx < rOther.gdrIdx;
+
+         if (bstrStage!=rOther.bstrStage)
+            return bstrStage < rOther.bstrStage;
+            
+         if (bstrLoadGroup!=rOther.bstrLoadGroup)
+            return bstrLoadGroup < rOther.bstrLoadGroup;
+
+         return false;
+      }
+   };
+
+   typedef std::set<OverhangLoadDataType> OverhangLoadSet;
+   typedef OverhangLoadSet::iterator      OverhangLoadIterator;
+
+   OverhangLoadSet m_OverhangLoadSet;
+
 };
 
 #endif //__ANALYSISAGENT_H_

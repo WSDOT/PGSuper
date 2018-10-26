@@ -769,9 +769,9 @@ BEGIN
     PUSHBUTTON      "Help",ID_HELP,124,131,50,14
 END
 
-IDD_ANALYSIS_RESULTS_BAR DIALOG  0, 0, 150, 308
+IDD_ANALYSIS_RESULTS_BAR DIALOGEX 0, 0, 150, 308
 STYLE DS_SETFONT | WS_CHILD
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     COMBOBOX        IDC_SPAN,7,7,64,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_GIRDER,78,7,65,95,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -894,9 +894,9 @@ BEGIN
     LTEXT           "Update the Current Girder Parameters with the Proposed Design?",IDC_STATIC_TEXT,7,209,194,8
 END
 
-IDD_STABILITY_BAR DIALOG  0, 0, 240, 26
+IDD_STABILITY_BAR DIALOGEX 0, 0, 240, 26
 STYLE DS_SETFONT | WS_CHILD
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     COMBOBOX        IDC_SPAN,7,7,52,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_GIRDER,66,7,52,95,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -1024,9 +1024,9 @@ BEGIN
     PUSHBUTTON      "Help",ID_HELP,233,236,50,14
 END
 
-IDD_EDIT_LOADS DIALOG  0, 0, 538, 132
-STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD
-FONT 8, "MS Sans Serif"
+IDD_EDIT_LOADS DIALOGEX 0, 0, 538, 132
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "List1",IDC_LOADS_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,15,18,516,75
     PUSHBUTTON      "Edit Load",IDC_EDIT_LOAD,13,110,67,14
@@ -1034,7 +1034,7 @@ BEGIN
     PUSHBUTTON      "Add New Point Load...",IDC_ADD_POINTLOAD,157,110,100,14
     PUSHBUTTON      "Add New Distributed Load...",IDC_ADD_NEW_DISTRIBUTED,261,110,100,14
     PUSHBUTTON      "Help",ID_HELP,490,110,41,14
-    GROUPBOX        "Select Load to Be Edited or Add New Loads",IDC_LOAD_STATIC,7,7,524,117
+    GROUPBOX        "Select Load to Be Edited or Add New Loads",IDC_LOAD_STATIC,7,7,524,117,BS_FLAT,WS_EX_TRANSPARENT
     PUSHBUTTON      "Add New Moment Load...",IDC_ADD_MOMENTLOAD,365,110,100,14
 END
 
@@ -1261,8 +1261,8 @@ BEGIN
     LTEXT           "Engineer",IDC_STATIC,258,60,65,8
     LTEXT           "Company",IDC_STATIC,258,90,69,8
     LTEXT           "Check for library and template updates:",IDC_UPDATES_STATIC,33,233,174,8
-    LTEXT           "More about this library and templates package...",IDC_PUBLISHER_HYPERLINK,49,220,155,10
-    ICON            IDI_EARTH,IDC_STATIC_EARTH,27,214,21,20
+    PUSHBUTTON      "More about this library and templates package...",IDC_PUBLISHER_HYPERLINK,48,216,155,14
+    ICON            IDI_EARTH,IDC_STATIC_EARTH,27,214,20,20
 END
 
 IDD_BRIDGEDESC_DECKDETAILS DIALOGEX 0, 0, 415, 247
@@ -2093,8 +2093,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,6,0,0
- PRODUCTVERSION 2,6,0,0
+ FILEVERSION 2,6,0,1
+ PRODUCTVERSION 2,6,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2111,12 +2111,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.6.0.0"
+            VALUE "FileVersion", "2.6.0.1"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2011, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.6.0.0"
+            VALUE "ProductVersion", "2.6.0.1"
         END
     END
     BLOCK "VarFileInfo"
@@ -2673,17 +2673,6 @@ HAULINGOVERHANGS        METAFILE                "..\\res\\HaulingOverhangs.emf"
 //
 // Dialog Info
 //
-
-IDD_GIRDER_ELEVATION_BAR DLGINIT
-BEGIN
-    IDC_SELSTAGE, 0x403, 14, 0
-0x7242, 0x6469, 0x6567, 0x5320, 0x7469, 0x2065, 0x0031, 
-    IDC_SELSTAGE, 0x403, 14, 0
-0x7242, 0x6469, 0x6567, 0x5320, 0x7469, 0x2065, 0x0032, 
-    IDC_SELSTAGE, 0x403, 14, 0
-0x7242, 0x6469, 0x6567, 0x5320, 0x7469, 0x2065, 0x0033, 
-    0
-END
 
 IDD_GIRDERDESC_PRESTRESS DLGINIT
 BEGIN

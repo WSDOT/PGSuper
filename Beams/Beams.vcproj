@@ -755,11 +755,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\EffectivePrestressTable.h"
+				>
+			</File>
+			<File
 				RelativePath="EffectOfPostTensionedTemporaryStrandsTable.h"
 				>
 			</File>
 			<File
 				RelativePath="ElasticGainDueToDeckPlacementTable.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ElasticGainDueToLiveLoadTable.h"
 				>
 			</File>
 			<File
@@ -1897,6 +1905,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\EffectivePrestressTable.cpp"
+				>
+			</File>
+			<File
 				RelativePath="EffectOfPostTensionedTemporaryStrandsTable.cpp"
 				>
 				<FileConfiguration
@@ -2011,6 +2023,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\ElasticGainDueToLiveLoadTable.cpp"
+				>
 			</File>
 			<File
 				RelativePath=".\ElasticGainDueToSIDLTable.cpp"

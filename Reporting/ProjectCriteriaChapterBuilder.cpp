@@ -940,31 +940,48 @@ void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisp
    *pChapter << pPara;
 
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetLongTimeUnit(), true );
 
    int method = pSpecEntry->GetLossMethod();
 
    if ( method == LOSSES_GENERAL_LUMPSUM )
    {
       *pPara<<_T("Losses calculated per General Lump Sum")<<rptNewLine;
-      *pPara<<_T("- Befor Transfer Losses = ")<<stress.SetValue(pSpecEntry->GetBeforeXferLosses())<<rptNewLine;
-      *pPara<<_T("- After Transfer Losses = ")<<stress.SetValue(pSpecEntry->GetAfterXferLosses())<<rptNewLine;
-      *pPara<<_T("- Shipping Losses = ")<<stress.SetValue(pSpecEntry->GetShippingLosses()) << _T(", but not to exceed final losses") << rptNewLine;
+      *pPara<<_T("- Before Prestress Transfer = ")<<stress.SetValue(pSpecEntry->GetBeforeXferLosses())<<rptNewLine;
+      *pPara<<_T("- After Prestress Transfer = ")<<stress.SetValue(pSpecEntry->GetAfterXferLosses())<<rptNewLine;
+      *pPara<<_T("- At Lifting Losses = ")<<stress.SetValue(pSpecEntry->GetLiftingLosses())<<rptNewLine;
+      *pPara<<_T("- At Shipping Losses = ")<<stress.SetValue(pSpecEntry->GetShippingLosses()) << _T(", but not to exceed final losses") << rptNewLine;
+      *pPara<<_T("- Before Temp. Strand Removal = ")<<stress.SetValue(pSpecEntry->GetBeforeTempStrandRemovalLosses())<<rptNewLine;
+      *pPara<<_T("- After Temp. Strand Removal = ")<<stress.SetValue(pSpecEntry->GetAfterTempStrandRemovalLosses())<<rptNewLine;
+      *pPara<<_T("- After Deck Placement = ")<<stress.SetValue(pSpecEntry->GetAfterDeckPlacementLosses())<<rptNewLine;
+      *pPara<<_T("- After After Superimposed Dead Loads = ")<<stress.SetValue(pSpecEntry->GetAfterSIDLLosses())<<rptNewLine;
       *pPara<<_T("- Final Losses = ")<<stress.SetValue(pSpecEntry->GetFinalLosses())<<rptNewLine;
    }
    else
    {
+      bool bReportElasticGainParameters = false;
+      std::_tstring relaxation_method[3] = {
+         _T("LRFD Equation 5.9.5.4.2c-1"),
+         _T("LRFD Equation C5.9.5.4.2c-1"),
+         _T("1.2 ksi per LRFD 5.9.5.4.2c")
+      };
       switch( method )
       {
       case LOSSES_AASHTO_REFINED:
          *pPara<<_T("Losses calculated per Refined Estimate Method in accordance with AASHTO LRFD 5.9.5.4")<<rptNewLine;
+         *pPara<<_T("Relaxation Loss Method = ") << relaxation_method[pSpecEntry->GetRelaxationLossMethod()] << rptNewLine;
+         bReportElasticGainParameters = (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() ? true : false);
          break;
       case LOSSES_WSDOT_REFINED:
          *pPara<<_T("Losses calculated per Refined Estimate Method in accordance with AASHTO LRFD 5.9.5.4 and WSDOT Bridge Design")<<rptNewLine;
+         *pPara<<_T("Relaxation Loss Method = ") << relaxation_method[pSpecEntry->GetRelaxationLossMethod()] << rptNewLine;
+         bReportElasticGainParameters = (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() ? true : false);
          break;
       case LOSSES_TXDOT_REFINED_2004:
          *pPara<<_T("Losses calculated per Refined Estimate Method in accordance with AASHTO LRFD 5.9.5.4 and TxDOT Bridge Design")<<rptNewLine;
          break;
       case LOSSES_AASHTO_LUMPSUM:
+         bReportElasticGainParameters = (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() ? true : false);
       case LOSSES_AASHTO_LUMPSUM_2005:
          *pPara<<_T("Losses calculated per Approximate Lump Sum Method in accordnace with AASHTO LRFD 5.9.5.3")<<rptNewLine;
          break;
@@ -975,14 +992,36 @@ void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisp
          CHECK(false); // Should never get here
       }
 
-      Float64 shipping = pSpecEntry->GetShippingLosses();
-      if ( shipping < 0 )
+      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
       {
-         *pPara << _T("- Shipping Losses = ") << (-100.0*shipping) << _T("% of final losses, but not less than losses immediately after prestress transfer") << rptNewLine;
+         *pPara << _T("Assumed time at shipping = ") << time.SetValue(pSpecEntry->GetShippingTime()) << rptNewLine;
       }
       else
       {
-         *pPara<<_T("- Shipping Losses = ")<< stress.SetValue(shipping) << _T(", but not to exceed final losses") << rptNewLine;
+         Float64 shipping = pSpecEntry->GetShippingLosses();
+         if ( shipping < 0 )
+         {
+            *pPara << _T("- Shipping Losses = ") << (-100.0*shipping) << _T("% of final losses, but not less than losses immediately after prestress transfer") << rptNewLine;
+         }
+         else
+         {
+            *pPara<<_T("- Shipping Losses = ")<< stress.SetValue(shipping) << _T(", but not to exceed final losses") << rptNewLine;
+         }
+      }
+
+      if ( bReportElasticGainParameters )
+      {
+         *pPara << _T("Contribution to Elastic Gains") << rptNewLine;
+         *pPara << _T("Slab = ") << pSpecEntry->GetSlabElasticGain()*100.0 << _T("%") << rptNewLine;
+         *pPara << _T("Haunch = ") << pSpecEntry->GetSlabPadElasticGain()*100.0 << _T("%") << rptNewLine;
+         *pPara << _T("Diaphragms = ") << pSpecEntry->GetDiaphragmElasticGain()*100.0 << _T("%") << rptNewLine;
+         *pPara << _T("User DC (Bridge Site 1) = ") << pSpecEntry->GetUserDCElasticGain(pgsTypes::BridgeSite1)*100.0 << _T("%") << rptNewLine;
+         *pPara << _T("User DW (Bridge Site 1) = ") << pSpecEntry->GetUserDWElasticGain(pgsTypes::BridgeSite1)*100.0 << _T("%") << rptNewLine;
+         *pPara << _T("Railing System = ") << pSpecEntry->GetRailingSystemElasticGain()*100.0 << _T("%") << rptNewLine;
+         *pPara << _T("Overlay = ") << pSpecEntry->GetOverlayElasticGain()*100.0 << _T("%") << rptNewLine;
+         *pPara << _T("User DC (Bridge Site 2) = ") << pSpecEntry->GetUserDCElasticGain(pgsTypes::BridgeSite2)*100.0 << _T("%") << rptNewLine;
+         *pPara << _T("User DW (Bridge Site 2) = ") << pSpecEntry->GetUserDWElasticGain(pgsTypes::BridgeSite2)*100.0 << _T("%") << rptNewLine;
+         *pPara << _T("Deck Shrinkage = ") << pSpecEntry->GetDeckShrinkageElasticGain()*100.0 << _T("%") << rptNewLine;
       }
    }
 }

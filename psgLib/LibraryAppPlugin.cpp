@@ -73,9 +73,13 @@ void CLibraryAppPlugin::IntegrateWithUI(BOOL bIntegrate)
 
    UINT filePos = pMainMenu->FindMenuItem(_T("&File"));
    CEAFMenu* pFileMenu = pMainMenu->GetSubMenu(filePos);
+   if ( pFileMenu == NULL )
+      return;
 
    UINT managePos = pFileMenu->FindMenuItem(_T("Manage"));
    CEAFMenu* pManageMenu = pFileMenu->GetSubMenu(managePos);
+   if ( pManageMenu == NULL )
+      return;
 
    if ( bIntegrate )
    {

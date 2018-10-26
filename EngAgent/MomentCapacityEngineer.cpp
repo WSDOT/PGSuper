@@ -790,6 +790,9 @@ Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(pgsTypes::Stage
       // Slab moment
       Mdnc += pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlab,poi, SimpleSpan);
 
+      // Slab pad moment
+      Mdnc += pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlabPad,poi, SimpleSpan);
+
       // Diaphragm moment
       Mdnc += pProductForces->GetMoment(pgsTypes::BridgeSite1,pftDiaphragm,poi, SimpleSpan);
 

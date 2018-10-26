@@ -66,7 +66,12 @@ CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(r
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
 
    // Create and configure the table
-   ColumnIndexType numColumns = 6;
+   ColumnIndexType numColumns = 2;
+   if ( details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
+      numColumns++;
+   else if (details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
+      numColumns += 4;
+
    CRelaxationAtDeckPlacementTable* table = new CRelaxationAtDeckPlacementTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
 
@@ -78,35 +83,71 @@ CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(r
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
-   *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR1.png")) << rptNewLine;
-
    table->stress.ShowUnitTag(true);
    table->time.ShowUnitTag(true);
 
-   *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(details.RefinedLosses2005.GetFpy())              << rptNewLine;
-   *pParagraph << Sub2(_T("K'"),_T("L")) << _T(" = ") << details.RefinedLosses2005.GetKL()                                       << rptNewLine;
-   *pParagraph << Sub2(_T("t"),_T("i"))  << _T(" = ") << table->time.SetValue(details.RefinedLosses2005.GetInitialAge())         << rptNewLine;
-   *pParagraph << Sub2(_T("t"),_T("d"))  << _T(" = ") << table->time.SetValue(details.RefinedLosses2005.GetAgeAtDeckPlacement()) << rptNewLine;
+   switch(details.RefinedLosses2005.GetRelaxationLossMethod() )
+   {
+   case lrfdRefinedLosses2005::Simplified:
+      *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR1_Simplified.png")) << rptNewLine;
+      *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(details.RefinedLosses2005.GetFpy())              << rptNewLine;
+      *pParagraph << Sub2(_T("K"),_T("L")) << _T(" = ") << details.RefinedLosses2005.GetKL()                        << rptNewLine;
+      break;
+
+   case lrfdRefinedLosses2005::Refined:
+      *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR1.png")) << rptNewLine;
+      *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(details.RefinedLosses2005.GetFpy())                              << rptNewLine;
+      *pParagraph << Sub2(_T("K'"),_T("L")) << _T(" = ") << details.RefinedLosses2005.GetKL()                                       << rptNewLine;
+      *pParagraph << Sub2(_T("t"),_T("i"))  << _T(" = ") << table->time.SetValue(details.RefinedLosses2005.GetInitialAge())         << rptNewLine;
+      *pParagraph << Sub2(_T("t"),_T("d"))  << _T(" = ") << table->time.SetValue(details.RefinedLosses2005.GetAgeAtDeckPlacement()) << rptNewLine;
+      break;
+
+   case lrfdRefinedLosses2005::LumpSum:
+      break;
+
+   default:
+      ATLASSERT(false); // should never get here
+      break;
+   }
+
 
    table->stress.ShowUnitTag(false);
    table->time.ShowUnitTag(false);
 
+   ColumnIndexType col = 0;
    *pParagraph << table << rptNewLine;
-   (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,1) << COLHDR(RPT_STRESS(_T("pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,2) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pCR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,4) << Sub2(_T("K"),_T("id"));
-   (*table)(0,5) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR1")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+
+   if (details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
+   {
+      (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   }
+   else if (details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
+   {
+      (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pCR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << Sub2(_T("K"),_T("id"));
+   }
+
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR1")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    return table;
 }
 
-void CRelaxationAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CRelaxationAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   (*this)(row,1) << stress.SetValue(details.RefinedLosses2005.GetPermanentStrandFpt());
-   (*this)(row,2) << stress.SetValue(details.RefinedLosses2005.ShrinkageLossBeforeDeckPlacement());
-   (*this)(row,3) << stress.SetValue(details.RefinedLosses2005.CreepLossBeforeDeckPlacement());
-   (*this)(row,4) << scalar.SetValue(details.RefinedLosses2005.GetKid());
-   (*this)(row,5) << stress.SetValue(details.RefinedLosses2005.RelaxationLossBeforeDeckPlacement());
+   ColumnIndexType col = 1;
+   if (details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
+   {
+      (*this)(row,col++) << stress.SetValue(details.RefinedLosses2005.GetPermanentStrandFpt());
+   }
+   else if (details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
+   {
+      (*this)(row,col++) << stress.SetValue(details.RefinedLosses2005.GetPermanentStrandFpt());
+      (*this)(row,col++) << stress.SetValue(details.RefinedLosses2005.ShrinkageLossBeforeDeckPlacement());
+      (*this)(row,col++) << stress.SetValue(details.RefinedLosses2005.CreepLossBeforeDeckPlacement());
+      (*this)(row,col++) << scalar.SetValue(details.RefinedLosses2005.GetKid());
+   }
+   (*this)(row,col++) << stress.SetValue(details.RefinedLosses2005.RelaxationLossBeforeDeckPlacement());
 }

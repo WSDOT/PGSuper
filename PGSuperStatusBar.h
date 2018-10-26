@@ -58,7 +58,9 @@ public:
 	// Generated message map functions
 protected:
 	//{{AFX_MSG(CPGSuperStatusBar)
+#if !defined _EAF_USING_MFC_FEATURE_PACK
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
+#endif
 	//}}AFX_MSG
 
 

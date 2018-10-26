@@ -971,6 +971,11 @@ Float64 pgsPsForceEng::GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::S
       // Final losses are relative to stress immedately before transfer (LRFD 5.9.5.1)
       break;
 
+   case pgsTypes::AfterLossesWithLiveLoad:
+      loss = pLosses->GetFinalWithLiveLoad(poi,strandType,config);
+      // Final losses are relative to stress immedately before transfer (LRFD 5.9.5.1)
+      break;
+
    default:
       ATLASSERT(false);
    }

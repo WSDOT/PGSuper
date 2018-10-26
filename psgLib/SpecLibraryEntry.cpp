@@ -38,7 +38,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define CURRENT_VERSION 39.0
+#define CURRENT_VERSION 40.0
 
 
 /****************************************************************************
@@ -161,6 +161,16 @@ m_AfterSIDLLosses(0),
 m_Dset(::ConvertToSysUnits(0.375,unitMeasure::Inch)),
 m_WobbleFriction(::ConvertToSysUnits(0.0002,unitMeasure::PerFeet)),
 m_FrictionCoefficient(0.25),
+m_SlabElasticGain(1.0),
+m_SlabPadElasticGain(1.0),
+m_DiaphragmElasticGain(1.0),
+m_UserDCElasticGainBS1(1.0),
+m_UserDWElasticGainBS1(1.0),
+m_UserDCElasticGainBS2(1.0),
+m_UserDWElasticGainBS2(1.0),
+m_RailingSystemElasticGain(1.0),
+m_OverlayElasticGain(1.0),
+m_SlabShrinkageElasticGain(1.0),
 m_LongReinfShearMethod(LRFD_METHOD),
 m_bDoEvaluateDeflection(true),
 m_DeflectionLimit(800.0),
@@ -184,7 +194,8 @@ m_MaxAngularDeviationBetweenGirders(::ConvertToSysUnits(5.0,unitMeasure::Degree)
 m_MinGirderStiffnessRatio(0.90),
 m_LLDFGirderSpacingLocation(0.75),
 m_LimitDistributionFactorsToLanesBeams(false),
-m_PrestressTransferComputationType(pgsTypes::ptUsingSpecification)
+m_PrestressTransferComputationType(pgsTypes::ptUsingSpecification),
+m_RelaxationLossMethod(RLM_REFINED)
 {
    m_bCheckStrandStress[AT_JACKING]       = false;
    m_bCheckStrandStress[BEFORE_TRANSFER]  = true;
@@ -588,6 +599,19 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("AnchorSet"),m_Dset);
    pSave->Property(_T("WobbleFriction"),m_WobbleFriction);
    pSave->Property(_T("CoefficientOfFriction"),m_FrictionCoefficient);
+
+   // added in version 40
+   pSave->Property(_T("RelaxationLossMethod"),m_RelaxationLossMethod);
+   pSave->Property(_T("SlabElasticGain"),m_SlabElasticGain);
+   pSave->Property(_T("HaunchElasticGain"),m_SlabPadElasticGain);
+   pSave->Property(_T("DiaphragmElasticGain"),m_DiaphragmElasticGain);
+   pSave->Property(_T("UserDCElasticGainBS1"),m_UserDCElasticGainBS1);
+   pSave->Property(_T("UserDWElasticGainBS1"),m_UserDWElasticGainBS1);
+   pSave->Property(_T("UserDCElasticGainBS2"),m_UserDCElasticGainBS2);
+   pSave->Property(_T("UserDWElasticGainBS2"),m_UserDWElasticGainBS2);
+   pSave->Property(_T("RailingSystemElasticGain"),m_RailingSystemElasticGain);
+   pSave->Property(_T("OverlayElasticGain"),m_OverlayElasticGain);
+   pSave->Property(_T("SlabShrinkageElasticGain"),m_SlabShrinkageElasticGain);
 
    // Added in 1.7
    pSave->Property(_T("CheckLiveLoadDeflection"),m_bDoEvaluateDeflection);
@@ -1761,6 +1785,43 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
+      if ( 39 < version )
+      {
+         // added in version 40
+         if ( !pLoad->Property(_T("RelaxationLossMethod"),&m_RelaxationLossMethod) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("SlabElasticGain"),&m_SlabElasticGain) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("HaunchElasticGain"),&m_SlabPadElasticGain) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("DiaphragmElasticGain"),&m_DiaphragmElasticGain) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("UserDCElasticGainBS1"),&m_UserDCElasticGainBS1) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("UserDWElasticGainBS1"),&m_UserDWElasticGainBS1) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("UserDCElasticGainBS2"),&m_UserDCElasticGainBS2) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("UserDWElasticGainBS2"),&m_UserDWElasticGainBS2) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("RailingSystemElasticGain"),&m_RailingSystemElasticGain) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("OverlayElasticGain"),&m_OverlayElasticGain) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("SlabShrinkageElasticGain"),&m_SlabShrinkageElasticGain) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+      }
+
       // added in version 1.7
       if ( 1.6 < version )
       {
@@ -2248,6 +2309,17 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TESTD(m_WobbleFriction,rOther.m_WobbleFriction);
    TESTD(m_FrictionCoefficient,rOther.m_FrictionCoefficient);
 
+   TESTD(m_SlabElasticGain          , rOther.m_SlabElasticGain);
+   TESTD(m_SlabPadElasticGain       , rOther.m_SlabPadElasticGain);
+   TESTD(m_DiaphragmElasticGain     , rOther.m_DiaphragmElasticGain);
+   TESTD(m_UserDCElasticGainBS1     , rOther.m_UserDCElasticGainBS1);
+   TESTD(m_UserDWElasticGainBS1     , rOther.m_UserDWElasticGainBS1);
+   TESTD(m_UserDCElasticGainBS2     , rOther.m_UserDCElasticGainBS2);
+   TESTD(m_UserDWElasticGainBS2     , rOther.m_UserDWElasticGainBS2);
+   TESTD(m_RailingSystemElasticGain , rOther.m_RailingSystemElasticGain);
+   TESTD(m_OverlayElasticGain       , rOther.m_OverlayElasticGain);
+   TESTD(m_SlabShrinkageElasticGain , rOther.m_SlabShrinkageElasticGain);
+
    TEST (m_LldfMethod                 , rOther.m_LldfMethod                 );
    TEST (m_LongReinfShearMethod       , rOther.m_LongReinfShearMethod       );
 
@@ -2315,6 +2387,8 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
 
    TEST (m_LimitDistributionFactorsToLanesBeams             , rOther.m_LimitDistributionFactorsToLanesBeams );
    TEST (m_PrestressTransferComputationType, rOther.m_PrestressTransferComputationType);
+
+   TEST(m_RelaxationLossMethod,rOther.m_RelaxationLossMethod);
 
    for ( int i = 0; i < 3; i++ )
    {
@@ -3390,6 +3464,112 @@ void SpecLibraryEntry::SetFrictionCoefficient(Float64 u)
    m_FrictionCoefficient = u;
 }
 
+Float64 SpecLibraryEntry::GetSlabElasticGain() const
+{
+   return m_SlabElasticGain;
+}
+
+void SpecLibraryEntry::SetSlabElasticGain(Float64 f)
+{
+   m_SlabElasticGain = f;
+}
+
+Float64 SpecLibraryEntry::GetSlabPadElasticGain() const
+{
+   return m_SlabPadElasticGain;
+}
+
+void SpecLibraryEntry::SetSlabPadElasticGain(Float64 f)
+{
+   m_SlabPadElasticGain = f;
+}
+
+Float64 SpecLibraryEntry::GetDiaphragmElasticGain() const
+{
+   return m_DiaphragmElasticGain;
+}
+
+void SpecLibraryEntry::SetDiaphragmElasticGain(Float64 f)
+{
+   m_DiaphragmElasticGain = f;
+}
+
+Float64 SpecLibraryEntry::GetUserDCElasticGain(pgsTypes::Stage stage) const
+{
+   ATLASSERT(stage == pgsTypes::BridgeSite1 || stage == pgsTypes::BridgeSite2);
+   if ( stage == pgsTypes::BridgeSite1 )
+      return m_UserDCElasticGainBS1;
+   else
+      return m_UserDCElasticGainBS2;
+}
+
+void SpecLibraryEntry::SetUserDCElasticGain(pgsTypes::Stage stage,Float64 f)
+{
+   ATLASSERT(stage == pgsTypes::BridgeSite1 || stage == pgsTypes::BridgeSite2);
+   if ( stage == pgsTypes::BridgeSite1 )
+      m_UserDCElasticGainBS1 = f;
+   else
+      m_UserDCElasticGainBS2 = f;
+}
+
+Float64 SpecLibraryEntry::GetUserDWElasticGain(pgsTypes::Stage stage) const
+{
+   ATLASSERT(stage == pgsTypes::BridgeSite1 || stage == pgsTypes::BridgeSite2);
+   if ( stage == pgsTypes::BridgeSite1 )
+      return m_UserDWElasticGainBS1;
+   else
+      return m_UserDWElasticGainBS2;
+}
+
+void SpecLibraryEntry::SetUserDWElasticGain(pgsTypes::Stage stage,Float64 f)
+{
+   ATLASSERT(stage == pgsTypes::BridgeSite1 || stage == pgsTypes::BridgeSite2);
+   if ( stage == pgsTypes::BridgeSite1 )
+      m_UserDWElasticGainBS1 = f;
+   else
+      m_UserDWElasticGainBS2 = f;
+}
+
+Float64 SpecLibraryEntry::GetRailingSystemElasticGain() const
+{
+   return m_RailingSystemElasticGain;
+}
+
+void SpecLibraryEntry::SetRailingSystemElasticGain(Float64 f)
+{
+   m_RailingSystemElasticGain = f;
+}
+
+Float64 SpecLibraryEntry::GetOverlayElasticGain() const
+{
+   return m_OverlayElasticGain;
+}
+
+void SpecLibraryEntry::SetOverlayElasticGain(Float64 f)
+{
+   m_OverlayElasticGain = f;
+}
+
+Float64 SpecLibraryEntry::GetDeckShrinkageElasticGain() const
+{
+   return m_SlabShrinkageElasticGain;
+}
+
+void SpecLibraryEntry::SetDeckShrinkageElasticGain(Float64 f)
+{
+   m_SlabShrinkageElasticGain = f;
+}
+
+void SpecLibraryEntry::SetRelaxationLossMethod(Int16 method)
+{
+   m_RelaxationLossMethod = method;
+}
+
+Int16 SpecLibraryEntry::GetRelaxationLossMethod() const
+{
+   return m_RelaxationLossMethod;
+}
+
 Int16 SpecLibraryEntry::GetLiveLoadDistributionMethod() const
 {
    return m_LldfMethod;
@@ -3928,6 +4108,17 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_WobbleFriction = rOther.m_WobbleFriction;
    m_FrictionCoefficient = rOther.m_FrictionCoefficient;
 
+   m_SlabElasticGain          = rOther.m_SlabElasticGain;
+   m_SlabPadElasticGain       = rOther.m_SlabPadElasticGain;
+   m_DiaphragmElasticGain     = rOther.m_DiaphragmElasticGain;
+   m_UserDCElasticGainBS1     = rOther.m_UserDCElasticGainBS1;
+   m_UserDWElasticGainBS1     = rOther.m_UserDWElasticGainBS1;
+   m_UserDCElasticGainBS2     = rOther.m_UserDCElasticGainBS2;
+   m_UserDWElasticGainBS2     = rOther.m_UserDWElasticGainBS2;
+   m_RailingSystemElasticGain = rOther.m_RailingSystemElasticGain;
+   m_OverlayElasticGain       = rOther.m_OverlayElasticGain;
+   m_SlabShrinkageElasticGain = rOther.m_SlabShrinkageElasticGain;
+
    m_LldfMethod                 = rOther.m_LldfMethod;
    m_LongReinfShearMethod       = rOther.m_LongReinfShearMethod;
 
@@ -3999,6 +4190,8 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_LimitDistributionFactorsToLanesBeams = rOther.m_LimitDistributionFactorsToLanesBeams;
 
    m_PrestressTransferComputationType = rOther.m_PrestressTransferComputationType;
+
+   m_RelaxationLossMethod = rOther.m_RelaxationLossMethod;
 
    for ( int i = 0; i < 3; i++ )
    {

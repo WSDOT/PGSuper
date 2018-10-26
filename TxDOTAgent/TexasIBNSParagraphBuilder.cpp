@@ -43,6 +43,8 @@
 #include <IFace\Project.h>
 #include <IFace\DistributionFactors.h>
 
+#include "TxDOTOptionalDesignUtilities.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -265,8 +267,16 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, SpanIndexType	
 
    bool bTempStrands = (0 < pStrandGeometry->GetMaxStrands(span,girder,pgsTypes::Temporary) ? true : false);
 
+   StrandIndexType ns = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Straight);
+   StrandIndexType nh = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Harped);
+
+   bool isHarpedDesign = 0 < pStrandGeometry->GetMaxStrands(span, girder, pgsTypes::Harped);
+
    CGirderData girderData = pGirderData->GetGirderData(span, girder);
-   bool is_nonstandard = girderData.NumPermStrandsType != NPS_TOTAL_NUMBER;
+
+   bool is_nonstandard = isHarpedDesign && 
+                         (girderData.NumPermStrandsType != NPS_TOTAL_NUMBER) && 
+                         nh+ns>0;
 
    if (is_nonstandard)
    {
@@ -305,8 +315,15 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, SpanIndexType	
    (*p_table)(++row,0) << Bold(_T("Prestressing Strands"));
    (*p_table)(row,1) << Bold(_T("Total"));
 
-   StrandIndexType ns = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Straight);
-   StrandIndexType nh = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Harped);
+   // Determine if harped strands are straight by comparing harped eccentricity at end/mid
+   bool are_harped_straight(false);
+   if (nh>0)
+   {
+      Float64 nEff;
+      Float64 hs_ecc_end = pStrandGeometry->GetHsEccentricity(pois, &nEff);
+      Float64 hs_ecc_mid = pStrandGeometry->GetHsEccentricity(pmid[0], &nEff);
+      are_harped_straight = IsEqual(hs_ecc_end, hs_ecc_mid);
+   }
 
    (*p_table)(++row,0) << _T("NO. (N") << Sub(_T("h")) << _T(" + N") << Sub(_T("s")) << _T(")");
    (*p_table)(row  ,1) << Int16(nh + ns);
@@ -354,13 +371,23 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, SpanIndexType	
    (*p_table)(++row,0) << Bold(_T("Prestressing Strands"));
    if (nh>0)
    {
+      // If harped are straight, report none
+      StrandIndexType nh_loc = are_harped_straight ? 0 : nh;
+
       (*p_table)(row,1) << Bold(_T("Depressed"));
 
       (*p_table)(++row,0) << _T("NO. (# of Harped Strands)");
-      (*p_table)(row  ,1) << nh;
+      (*p_table)(row  ,1) << nh_loc;
 
       double TO;
-      pStrandGeometry->GetHighestHarpedStrandLocation(span,girder,&TO);
+      if (are_harped_straight)
+      {
+         TO = 0.0;
+      }
+      else
+      {
+         pStrandGeometry->GetHighestHarpedStrandLocation(span,girder,&TO);
+      }
 
       (*p_table)(++row,0) << _T("Y")<<Sub(_T("b"))<<_T(" of Topmost Depressed Strand(s) @ End");
       (*p_table)(row  ,1) << ecc.SetValue(TO);
@@ -448,7 +475,7 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, SpanIndexType	
    if (is_nonstandard)
    {
       // Nonstandard strands table
-      StrandRowUtil::StrandRowSet strandrows = StrandRowUtil::GetStrandRowSet(pBroker, pmid[0]);
+      OptionalDesignHarpedFillUtil::StrandRowSet strandrows = OptionalDesignHarpedFillUtil::GetStrandRowSet(pBroker, pmid[0]);
 
       p_table = pgsReportStyleHolder::CreateDefaultTable(2,_T("Non-Standard Strand Pattern"));
       p_table->SetColumnWidth(0,1.3);
@@ -457,18 +484,17 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, SpanIndexType	
 
       RowIndexType row = 0;
       (*p_table)(row,0) << _T("Row")<<rptNewLine<<_T("(in)"); // TxDOT dosn't do metric and we need special formatting below
-      (*p_table)(row++,1) << _T("# of")<<rptNewLine<<_T("Strands");
+      (*p_table)(row++,1) << _T("Strands");
 
-      for (StrandRowUtil::StrandRowIter srit=strandrows.begin(); srit!=strandrows.end(); srit++)
+      for (OptionalDesignHarpedFillUtil::StrandRowIter srit=strandrows.begin(); srit!=strandrows.end(); srit++)
       {
-         const StrandRowUtil::StrandRow& srow = *srit;
+         const OptionalDesignHarpedFillUtil::StrandRow& srow = *srit;
          Float64 elev_in = RoundOff(::ConvertFromSysUnits( srow.Elevation, unitMeasure::Inch ),0.001);
 
          (*p_table)(row,0) << elev_in; 
-         (*p_table)(row++,1) << srow.Count;
+         (*p_table)(row++,1) << srow.fillListString << _T( " (") << srow.fillListString.size()*2 << _T(")");
       }
    }
-
 
    return p;
 }

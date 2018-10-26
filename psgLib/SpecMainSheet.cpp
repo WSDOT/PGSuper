@@ -630,7 +630,20 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_ANCHORSET,  IDC_ANCHORSET_TAG,  m_Entry.m_Dset, pDisplayUnits->ComponentDim);
    DDX_UnitValueAndTag(pDX, IDC_WOBBLE, IDC_WOBBLE_TAG,m_Entry.m_WobbleFriction, pDisplayUnits->PerLength);
    DDX_Text(pDX,IDC_FRICTION,m_Entry.m_FrictionCoefficient);
-   
+
+   DDX_Percentage(pDX,IDC_EG_SLAB,m_Entry.m_SlabElasticGain);
+   DDX_Percentage(pDX,IDC_EG_SLABPAD,m_Entry.m_SlabPadElasticGain);
+   DDX_Percentage(pDX,IDC_EG_DIAPHRAGM,m_Entry.m_DiaphragmElasticGain);
+   DDX_Percentage(pDX,IDC_EG_DC_BS2,m_Entry.m_UserDCElasticGainBS1);
+   DDX_Percentage(pDX,IDC_EG_DW_BS2,m_Entry.m_UserDWElasticGainBS1);
+   DDX_Percentage(pDX,IDC_EG_DC_BS3,m_Entry.m_UserDCElasticGainBS2);
+   DDX_Percentage(pDX,IDC_EG_DW_BS3,m_Entry.m_UserDWElasticGainBS2);
+   DDX_Percentage(pDX,IDC_EG_RAILING,m_Entry.m_RailingSystemElasticGain);
+   DDX_Percentage(pDX,IDC_EG_OVERLAY,m_Entry.m_OverlayElasticGain);
+   DDX_Percentage(pDX,IDC_EG_SHRINKAGE,m_Entry.m_SlabShrinkageElasticGain);
+
+   DDX_CBEnum(pDX,IDC_RELAXATION_LOSS_METHOD,m_Entry.m_RelaxationLossMethod);
+
    // have to map loss method to comb box ordering in dialog
    int map[6]={LOSSES_AASHTO_REFINED,
                LOSSES_WSDOT_REFINED,
@@ -711,6 +724,8 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
             Float64 value = m_Entry.m_ShippingLosses * -100.0;
             DDX_Text(pDX,IDC_SHIPPING,value);
 
+            DDX_UnitValueAndTag(pDX, IDC_SHIPPING2, IDC_SHIPPING2_TAG, m_Entry.m_LiftingLosses, pDisplayUnits->Stress);
+
             CString strTag(_T("%"));
             DDX_Text(pDX,IDC_SHIPPING_TAG,strTag);
 
@@ -720,12 +735,12 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
          else
          {
       	   DDX_UnitValueAndTag(pDX, IDC_SHIPPING,  IDC_SHIPPING_TAG,  m_Entry.m_ShippingLosses, pDisplayUnits->Stress);
+            DDX_UnitValueAndTag(pDX, IDC_SHIPPING2, IDC_SHIPPING2_TAG, m_Entry.m_ShippingLosses, pDisplayUnits->Stress);
 
             idx = 0;
             DDX_CBIndex(pDX,IDC_SHIPPING_LOSS_METHOD,idx);
          }
 
-   	   DDX_UnitValueAndTag(pDX, IDC_SHIPPING2, IDC_SHIPPING2_TAG, dummy, pDisplayUnits->Stress);
       }
       else if ( m_Entry.m_LossMethod == LOSSES_GENERAL_LUMPSUM )
       {

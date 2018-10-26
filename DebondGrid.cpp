@@ -472,10 +472,10 @@ StrandIndexType CGirderDescDebondGrid::GetNumDebondedStrands()
    for ( iter = debond_info.begin(); iter != debond_info.end(); iter++ )
    {
       CDebondInfo& di = *iter;
-      if ( di.idxStrand1 != Uint32_Max )
+      if ( di.idxStrand1 != INVALID_INDEX )
          count++;
 
-      if ( di.idxStrand2 != Uint32_Max )
+      if ( di.idxStrand2 != INVALID_INDEX )
          count++;
    }
 

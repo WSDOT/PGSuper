@@ -31,8 +31,9 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include <EAF\EAFChildFrame.h>
 
-class CEditLoadsChildFrame : public CMDIChildWnd
+class CEditLoadsChildFrame : public CEAFChildFrame
 {
 	DECLARE_DYNCREATE(CEditLoadsChildFrame)
 public:

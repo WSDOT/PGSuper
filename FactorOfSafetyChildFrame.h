@@ -31,6 +31,12 @@
 #include "PGSuperTypes.h"
 #include "IFace\AnalysisResults.h"
 
+#if defined _EAF_USING_MFC_FEATURE_PACK
+#include <EAF\EAFPaneDialog.h>
+#else
+#define CEAFPaneDialog CDialogBar
+#endif
+
 class CFactorOfSafetyView;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -100,7 +106,7 @@ private:
    void OnStageChanged();
    void OnGridClicked();
 
-   CDialogBar m_SettingsBar;
+   CEAFPaneDialog m_SettingsBar;
 
    // view variables
    GirderIndexType m_GirderIdx;

@@ -174,14 +174,14 @@ BEGIN
     LTEXT           "Copyright ©",IDC_COPYRIGHT,36,19,353,8
     DEFPUSHBUTTON   "OK",IDOK,386,297,50,14,WS_GROUP
     LTEXT           "Richard Brice, PE - WSDOT\n\tSoftware Architect and Lead Programmer",IDC_STATIC,214,46,171,17
-    LTEXT           "Washington State Department of Transportation",IDC_WSDOT,35,46,162,8
     LTEXT           "Richard Pickings, PE - BridgeSight Software\n\tConsulting and Professional Programming Services",IDC_STATIC,214,66,214,18
-    LTEXT           "BridgeSight Software",IDC_BRIDGESIGHT,35,107,75,8
     ICON            IDI_WSDOT,IDC_STATIC,11,46,20,20
     ICON            IDI_BSS,IDC_STATIC,11,103,20,20
     ICON            IDI_TXDOT,IDC_STATIC,11,70,20,20
-    LTEXT           "Texas Department of Transportation",IDC_TXDOT,35,70,114,8
+    PUSHBUTTON      "Washington State Department of Transportation",IDC_WSDOT,34,49,164,14,BS_LEFT
+    PUSHBUTTON      "Texas Department of Transportation",IDC_TXDOT,34,70,164,14,BS_LEFT
     LTEXT           "Consulting services provided by",IDC_STATIC,11,95,100,8
+    PUSHBUTTON      "BridgeSight Software",IDC_BRIDGESIGHT,34,107,164,14,BS_LEFT
     LTEXT           "Installed Components",IDC_STATIC,7,129,68,8
     LISTBOX         IDC_APPLIST,7,140,359,65,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Component Description",IDC_STATIC,7,210,74,8
@@ -215,8 +215,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,6,0,0
- PRODUCTVERSION 2,6,0,0
+ FILEVERSION 2,6,0,1
+ PRODUCTVERSION 2,6,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -233,11 +233,11 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.6.0.0"
+            VALUE "FileVersion", "2.6.0.1"
             VALUE "InternalName", "PGSuper"
             VALUE "OriginalFilename", "PGSuper.EXE"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.6.0.0"
+            VALUE "ProductVersion", "2.6.0.1"
         END
     END
     BLOCK "VarFileInfo"

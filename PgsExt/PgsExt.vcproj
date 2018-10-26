@@ -3415,6 +3415,18 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="Transactions"
+			>
+			<File
+				RelativePath=".\InsertDeleteLoad.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\InsertDeleteLoad.h"
+				>
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 		<Global

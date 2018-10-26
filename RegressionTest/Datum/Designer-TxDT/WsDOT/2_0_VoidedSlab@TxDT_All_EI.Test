@@ -1,26 +1,28 @@
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 25.17   7  0.00  1     1    Slab  *    22  0.60  270 10.64 10.64   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.600 12.400    2.402   -2.515    2230 0.323  0.556  0.15 -0.02 -0.00 -0.01 -0.03  57.77 157.20   1.75   5.00   5.00
+ 25.17   7  0.00  1     1    Slab       24  0.60  270 10.50 10.50   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  5.000 14.300    3.018   -2.791    2341 0.322  0.556  0.17 -0.02 -0.00 -0.01 -0.03  67.27 173.54   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
 Splitting zone checks failed.
 Confinement zone checks failed.
+Slab Offset ("A" Dimension) check failed
 
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 25.17   7  0.00  1     2    Slab  *    22  0.60  270 10.64 10.64   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.600 12.400    2.400   -2.513    2230 0.322  0.473  0.15 -0.02 -0.00 -0.01 -0.03  57.77 157.20   1.75   5.00   5.00
+ 25.17   7  0.00  1     2    Slab       24  0.60  270 10.50 10.50   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  5.000 14.300    3.016   -2.789    2338 0.321  0.473  0.17 -0.02 -0.00 -0.01 -0.03  67.27 173.54   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
 Splitting zone checks failed.
 Confinement zone checks failed.
+Slab Offset ("A" Dimension) check failed
 
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 25.17   7  0.00  1     4    Slab  *    20  0.60  270 10.80 10.80   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.200 10.600    2.257   -2.343    2048 0.322  0.473  0.14 -0.02 -0.00  0.00 -0.03  48.64 145.41   1.75   5.00   5.00
+ 25.17   7  0.00  1     4    Slab       22  0.60  270 10.64 10.64   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.600 12.400    2.857   -2.612    2204 0.322  0.473  0.15 -0.02 -0.00  0.00 -0.02  57.77 161.64   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful

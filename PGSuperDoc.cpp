@@ -158,7 +158,7 @@
 #include "EditLiveLoad.h"
 #include "EditAnalysisType.h"
 #include "EditConstructionLoad.h"
-#include "InsertDeleteLoad.h"
+#include <PgsExt\InsertDeleteLoad.h>
 #include "EditEffectiveFlangeWidth.h"
 
 // Logging
@@ -265,6 +265,11 @@ BEGIN_MESSAGE_MAP(CPGSuperDoc, CEAFBrokerDocument)
 
    // this doesn't work for documents... see OnCmdMsg for handling of WM_NOTIFY
    //ON_NOTIFY(TBN_DROPDOWN,ID_STDTOOLBAR,OnViewReports)
+
+#if defined _EAF_USING_MFC_FEATURE_PACK
+   ON_COMMAND(ID_INDICATOR_ANALYSIS, OnProjectAnalysis) // from status bar
+   ON_COMMAND(ID_INDICATOR_AUTOCALC_ON, OnProjectAutoCalc) // from status bar
+#endif
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -537,8 +542,8 @@ bool CPGSuperDoc::EditGirderDescription(SpanIndexType span,GirderIndexType girde
    else
       spanIdx = nspans-1;
 
-   GirderIndexType ngrds = pBridge->GetGirderCount(m_Selection.SpanIdx == ALL_SPANS ? 0 : m_Selection.SpanIdx);
-   if ( m_Selection.GirderIdx < ngrds)
+   GirderIndexType ngrds = pBridge->GetGirderCount(m_Selection.SpanIdx == INVALID_INDEX ? 0 : m_Selection.SpanIdx);
+   if ( m_Selection.GirderIdx < ngrds || m_Selection.GirderIdx == INVALID_INDEX)
       gdrIdx = girder;
    else
       gdrIdx = ngrds-1;
@@ -1040,6 +1045,9 @@ void CPGSuperDoc::OnCreateFinalize()
 
       // get the file menu
       CEAFMenu* pFileMenu = pMainMenu->GetSubMenu(filePos);
+      ASSERT(pFileMenu != NULL);
+      if ( pFileMenu == NULL )
+         return;
 
       // get the text string from the email command
       CString strEmail;
@@ -2971,6 +2979,7 @@ BOOL CPGSuperDoc::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO
 
 void CPGSuperDoc::PopulateReportMenu()
 {
+   // Populate the report menu tht is on the regular menu bar (View | Reports)
    CEAFMenu* pMainMenu = GetMainMenu();
 
    UINT viewPos = pMainMenu->FindMenuItem(_T("&View"));
@@ -2978,6 +2987,8 @@ void CPGSuperDoc::PopulateReportMenu()
 
    CEAFMenu* pViewMenu = pMainMenu->GetSubMenu(viewPos);
    ASSERT( pViewMenu != NULL );
+   if ( pViewMenu == NULL )
+      return;
 
    UINT reportsPos = pViewMenu->FindMenuItem(_T("&Reports"));
    ASSERT( 0 <= reportsPos );
@@ -2987,6 +2998,23 @@ void CPGSuperDoc::PopulateReportMenu()
    ASSERT(pReportsMenu != NULL);
 
    CEAFBrokerDocument::PopulateReportMenu(pReportsMenu);
+
+#if defined _EAF_USING_MFC_FEATURE_PACK
+   // Create the drop down menu button on the standard PGSuper toolbar
+   UINT nID = m_pPGSuperDocProxyAgent->GetStdToolBarID();
+   CEAFToolBar* pToolBar = GetToolBarByID(nID);
+
+   // Add a drop-down arrow to the Report buttons
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CMenu menu;
+   VERIFY( menu.LoadMenu(IDR_REPORTS) );
+   CMenu* pMenu = menu.GetSubMenu(0);
+   pMenu->RemoveMenu(0,MF_BYPOSITION); // remove the placeholder
+
+   CEAFMenu contextMenu(pMenu->Detach(),GetPluginCommandManager());
+   BuildReportMenu(&contextMenu,false);
+   pToolBar->CreateDropDownButton(ID_VIEW_REPORTS,-1,NULL,contextMenu);
+#endif
 }
 
 void CPGSuperDoc::LoadDocumentSettings()
@@ -3145,7 +3173,11 @@ BOOL CPGSuperDoc::OnViewReports(NMHDR* pnmhdr,LRESULT* plr)
    BuildReportMenu(&contextMenu,false);
 
    GET_IFACE(IEAFToolbars,pToolBars);
+#if defined _EAF_USING_MFC_FEATURE_PACK
+   CEAFToolBar* pToolBar = pToolBars->GetToolBarByID( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
+#else
    CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
+#endif
    int idx = pToolBar->CommandToIndex(ID_VIEW_REPORTS,NULL);
    CRect rect;
    pToolBar->GetItemRect(idx,&rect);

@@ -236,7 +236,7 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
 	      pArtifact->GetCheckAfterLosses( strandType, &demand, &capacity, &bPassed );
          if ( strandType == strandTypes.front() )
          {
-   	      (*p_table)(row,col++) << _T("After All Losses");
+   	      (*p_table)(row,col++) << _T("After All Losses and Elastic Gains") << rptNewLine << _T("including Live Load");
 	         (*p_table)(row,col++) << stress.SetValue( capacity );
          }
 	      (*p_table)(row,col++) << stress.SetValue( demand );

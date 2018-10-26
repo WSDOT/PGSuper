@@ -481,7 +481,7 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
    {
       CDebondInfo& debond_info = *iter;
 
-      if ( debond_info.idxStrand1 == Uint32_Max )
+      if ( debond_info.idxStrand1 == INVALID_INDEX )
          continue;
 
       CComPtr<IPoint2d> point;
@@ -494,7 +494,7 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
 
       pDC->Ellipse(&rect);
 
-      if ( debond_info.idxStrand2 != Uint32_Max )
+      if ( debond_info.idxStrand2 != INVALID_INDEX )
       {
          point.Release();
          points->get_Item(debond_info.idxStrand2,&point);

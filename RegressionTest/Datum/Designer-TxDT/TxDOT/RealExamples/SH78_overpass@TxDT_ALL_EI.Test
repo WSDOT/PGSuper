@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 33.17   5  8.75  1     1     Tx40       12   1/2  270 15.60 15.60   2  2.5  4.100  5.100    1.337   -1.427   1714  0.400  0.400  0.06 -0.02 -0.00 -0.00 -0.02  13.95  46.15   1.00   1.00   1.00
+ 33.17   5  8.75  1     1     Tx40       12   1/2  270 15.60 15.60   0  0.0  4.100  5.100    1.337   -1.427   1714  0.400  0.400  0.06 -0.02 -0.00 -0.00 -0.02  13.95  46.15   1.00   1.00   1.00
 
 
 The Specification Check was Successful
@@ -73,7 +73,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 33.17   5  8.75  4     1     Tx40       12   1/2  270 15.60 15.60   2  2.5  4.100  5.100    1.363   -1.454   1744  0.400  0.400  0.06 -0.02 -0.00 -0.00 -0.02  13.92  45.98   1.00   1.00   1.00
+ 33.17   5  8.75  4     1     Tx40       12   1/2  270 15.60 15.60   0  0.0  4.100  5.100    1.363   -1.454   1744  0.400  0.400  0.06 -0.02 -0.00 -0.00 -0.02  13.92  45.98   1.00   1.00   1.00
 
 
 The Specification Check was Successful

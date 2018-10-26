@@ -108,8 +108,7 @@ void CPGSuperDocProxyAgent::CreateStatusBar()
 
 void CPGSuperDocProxyAgent::ResetStatusBar()
 {
-   CEAFMainFrame* pFrame = EAFGetMainFrame();
-   pFrame->SetStatusBar(NULL);
+   //EAFGetMainFrame()->ResetStatusBar();
 }
 
 void CPGSuperDocProxyAgent::CreateAcceleratorKeys()
@@ -134,6 +133,25 @@ void CPGSuperDocProxyAgent::CreateToolBars()
 
    GET_IFACE(IEAFToolbars,pToolBars);
 
+#if defined _EAF_USING_MFC_FEATURE_PACK
+   m_StdToolBarID = pToolBars->CreateToolBar(_T("Standard"));
+   CEAFToolBar* pToolBar = pToolBars->GetToolBarByID(m_StdToolBarID);
+   pToolBar->LoadToolBar(IDR_STDTOOLBAR,NULL); // don't use a command callback because these commands are handled by 
+                                               // the standard MFC message routing
+
+   // Don't create the Report button drop down toolbar button here. Plug-ins can add reports so
+   // at this point, the list of reports is not complete...
+   //
+   // The drop down menu is created in CPGSuperDoc::PopulateReportMenu()
+
+   m_LibToolBarID = pToolBars->CreateToolBar(_T("Library"));
+   pToolBar = pToolBars->GetToolBarByID(m_LibToolBarID);
+   pToolBar->LoadToolBar(IDR_LIBTOOLBAR,NULL);
+
+   m_HelpToolBarID = pToolBars->CreateToolBar(_T("Help"));
+   pToolBar = pToolBars->GetToolBarByID(m_HelpToolBarID);
+   pToolBar->LoadToolBar(IDR_HELPTOOLBAR,NULL);
+#else
    m_StdToolBarID = pToolBars->CreateToolBar(_T("Standard"));
    CEAFToolBar* pToolBar = pToolBars->GetToolBar(m_StdToolBarID);
    pToolBar->LoadToolBar(IDR_STDTOOLBAR,NULL); // don't use a command callback because these commands are handled by 
@@ -150,6 +168,7 @@ void CPGSuperDocProxyAgent::CreateToolBars()
    m_HelpToolBarID = pToolBars->CreateToolBar(_T("Help"));
    pToolBar = pToolBars->GetToolBar(m_HelpToolBarID);
    pToolBar->LoadToolBar(IDR_HELPTOOLBAR,NULL);
+#endif
 
    OnStatusChanged(); // set the status items
 }
@@ -401,7 +420,11 @@ void CPGSuperDocProxyAgent::OnStatusChanged()
    {
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
       GET_IFACE(IEAFToolbars,pToolBars);
+#if defined _EAF_USING_MFC_FEATURE_PACK
+      CEAFToolBar* pToolBar = pToolBars->GetToolBarByID(GetStdToolBarID());
+#else
       CEAFToolBar* pToolBar = pToolBars->GetToolBar(GetStdToolBarID());
+#endif
 
       if ( pToolBar == NULL )
          return;
@@ -501,6 +524,64 @@ STDMETHODIMP CPGSuperDocProxyAgent::IntegrateWithUI(BOOL bIntegrate)
       CreateToolBars();
       CreateAcceleratorKeys();
       CreateStatusBar();
+
+#if defined _EAF_USING_MFC_FEATURE_PACK
+      // We want to use tabbed views
+      CEAFMainFrame* pFrame = EAFGetMainFrame();
+
+      pFrame->EnableDocking(CBRS_ALIGN_ANY);
+      pFrame->EnableAutoHidePanes(CBRS_ALIGN_ANY);
+   	
+      // enable Visual Studio 2005 style docking window behavior
+	   CDockingManager::SetDockingMode(DT_SMART); // DT_IMMEDIATE, DT_STANDARD, DT_SMART
+
+      pFrame->EnableMDITabs(TRUE,FALSE,CMFCTabCtrl::LOCATION_TOP,TRUE,CMFCTabCtrl::STYLE_3D_ROUNDED_SCROLL,FALSE,TRUE);
+      CMFCTabCtrl& tabs = pFrame->GetMDITabs();
+      tabs.SetActiveTabBoldFont();
+
+      {
+         // create a task pane with some common tasks on it
+         // use the app module state because the task window will be 
+         // owned by the main frame
+         UINT nID = 1; // need a better ID
+         CRect rDummy(0,0,200,200);
+         AFX_MANAGE_STATE(AfxGetAppModuleState());
+         m_wndTasks.Create(_T("Tasks"),pFrame,rDummy,TRUE,nID,
+            WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_LEFT | AFX_CBRS_CLOSE | AFX_CBRS_FLOAT);
+
+         m_wndTasks.EnableDocking(CBRS_ALIGN_ANY);
+         pFrame->DockPane(&m_wndTasks);
+
+         // There can be multiple groups of tasks on a task pane
+
+         // Open a document group
+         int docGroup = m_wndTasks.AddGroup(_T("Open a document"),FALSE,TRUE);
+         m_wndTasks.AddMRUFilesList(docGroup);
+         m_wndTasks.AddTask(docGroup,_T("More Documents..."),0,ID_FILE_OPEN);
+
+         // Common group
+         int grpIdx = m_wndTasks.AddGroup(_T("Common"));
+         m_wndTasks.AddTask(grpIdx,_T("Edit Alignment"),-1,ID_PROJECT_ALIGNMENT);
+         m_wndTasks.AddTask(grpIdx,_T("Edit Bridge"),-1,ID_PROJECT_BRIDGEDESC);
+
+         m_wndTasks.AddSeparator(grpIdx);
+         m_wndTasks.AddLabel(grpIdx,_T("Label"));
+
+         // a single group can be put at the bottom of the pane
+         int bottomGrpIdx = m_wndTasks.AddGroup(_T("Stuff"),TRUE);
+         m_wndTasks.AddLabel(bottomGrpIdx,_T("Item 1"));
+         m_wndTasks.AddLabel(bottomGrpIdx,_T("Item 2"));
+         m_wndTasks.AddLabel(bottomGrpIdx,_T("Item 3"));
+
+         // There can also be multiple pages in a task pane
+         int pageIdx = m_wndTasks.AddPage(_T("More Tasks"));
+         int idx = m_wndTasks.AddGroup(pageIdx,_T("Group 1"));
+         m_wndTasks.AddTask(idx,_T("Task 1"));
+         m_wndTasks.AddTask(idx,_T("Task 2"));
+         m_wndTasks.AddTask(idx,_T("Task 3"));
+      }
+
+#endif
    }
    else
    {
@@ -508,6 +589,14 @@ STDMETHODIMP CPGSuperDocProxyAgent::IntegrateWithUI(BOOL bIntegrate)
       RemoveAcceleratorKeys();
       RemoveToolBars();
       UnregisterViews();
+
+#if defined _EAF_USING_MFC_FEATURE_PACK
+      CEAFMainFrame* pFrame = EAFGetMainFrame();
+      pFrame->EnableMDITabs(FALSE);
+
+      // done with the task pane
+      m_wndTasks.DestroyWindow();
+#endif
    }
 
    return S_OK;

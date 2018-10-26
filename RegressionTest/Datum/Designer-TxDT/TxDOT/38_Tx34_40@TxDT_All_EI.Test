@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.00   5  8.50  1     1     Tx34       10   1/2  270 13.01 13.01   2  2.5  4.000  5.000    0.802   -1.111   1303  0.808  0.849  0.04 -0.01  0.00 -0.00 -0.01  12.81  43.83   1.00   1.00   1.00
+ 38.00   5  8.50  1     1     Tx34       10   1/2  270 13.01 13.01   0  0.0  4.000  5.000    0.802   -1.111   1303  0.808  0.849  0.04 -0.01  0.00 -0.00 -0.01  12.81  43.83   1.00   1.00   1.00
 
 
 The Specification Check was Successful
@@ -8,7 +8,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.00   5  8.50  1     2     Tx34       10   1/2  270 13.01 13.01   2  2.5  4.000  5.000    0.827   -1.149   1331  0.808  0.849  0.04 -0.01  0.00 -0.00 -0.01  12.81  43.43   0.00   0.00   0.00
+ 38.00   5  8.50  1     2     Tx34       10   1/2  270 13.01 13.01   0  0.0  4.000  5.000    0.827   -1.149   1331  0.808  0.849  0.04 -0.01  0.00 -0.00 -0.01  12.81  43.43   0.00   0.00   0.00
 
 
 The Specification Check was Successful
@@ -16,7 +16,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.00   5  8.50  1     3     Tx34       10   1/2  270 13.01 13.01   2  2.5  4.000  5.000    0.827   -1.149   1331  0.808  0.849  0.04 -0.01  0.00 -0.00 -0.01  12.81  43.43   1.00   1.00   1.00
+ 38.00   5  8.50  1     3     Tx34       10   1/2  270 13.01 13.01   0  0.0  4.000  5.000    0.827   -1.149   1331  0.808  0.849  0.04 -0.01  0.00 -0.00 -0.01  12.81  43.43   1.00   1.00   1.00
 
 
 The Specification Check was Successful

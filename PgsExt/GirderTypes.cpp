@@ -334,7 +334,7 @@ HRESULT CGirderTypes::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    GirderIndexType nGirders = m_pSpan->GetGirderCount();
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
-      pStrSave->BeginUnit(_T("GirderData"),3.0);
+      pStrSave->BeginUnit(_T("GirderData"),4.0);
 
       CGirderData& girderData = m_GirderData[gdrIdx];
       girderData.Save(pStrSave,pProgress);

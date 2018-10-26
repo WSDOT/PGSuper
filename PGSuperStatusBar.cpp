@@ -64,7 +64,9 @@ CPGSuperStatusBar::~CPGSuperStatusBar()
 
 BEGIN_MESSAGE_MAP(CPGSuperStatusBar, CEAFStatusBar)
 	//{{AFX_MSG_MAP(CPGSuperStatusBar)
+#if !defined _EAF_USING_MFC_FEATURE_PACK
 	ON_WM_LBUTTONDBLCLK()
+#endif
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -77,6 +79,7 @@ void CPGSuperStatusBar::GetStatusIndicators(const UINT** lppIDArray,int* pnIDCou
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperStatusBar message handlers
 
+#if !defined _EAF_USING_MFC_FEATURE_PACK
 void CPGSuperStatusBar::OnLButtonDblClk(UINT nFlags, CPoint point) 
 {
    CRect rect;
@@ -97,6 +100,7 @@ void CPGSuperStatusBar::OnLButtonDblClk(UINT nFlags, CPoint point)
 
    CEAFStatusBar::OnLButtonDblClk(nFlags, point);
 }
+#endif
 
 int CPGSuperStatusBar::GetAnalysisModePaneIndex()
 {
@@ -156,31 +160,48 @@ void CPGSuperStatusBar::Reset()
 void CPGSuperStatusBar::AutoCalcEnabled( bool bEnable )
 {
    CString status_text;
+   CString tip_text;
    if ( bEnable )
+   {
       status_text.LoadString(ID_INDICATOR_AUTOCALC_ON);
+      tip_text = _T("Automatic Calculation Mode is enabled. All output views will be automatically refreshed whenever the input parameters change. Double click to toggle Auto-Calculation Mode");
+   }
    else
+   {
       status_text.LoadString(ID_INDICATOR_AUTOCALC_OFF);
+      tip_text = _T("Automatic Calculation Mode is disabled. Output views will be marked as out-of-date whenever the input parameters change. Double click to toggle Auto-Calculation Mode");
+   }
 
    int idx = GetAutoCalcPaneIndex();
    SetPaneText(idx, status_text, TRUE);
+#if defined _EAF_USING_MFC_FEATURE_PACK
+   SetTipText(idx,tip_text);
+#endif
 }
 
 void CPGSuperStatusBar::SetAnalysisTypeStatusIndicator(pgsTypes::AnalysisType analysisType)
 {
    CString strAnalysisType;
+   CString tip_text;
    switch( analysisType )
    {
    case pgsTypes::Simple:
       strAnalysisType = _T("Simple Span");
+      tip_text = _T("The bridge will be analyzed as a simple span structure regardless of boundary conditions. Double click to modify the Analysis Mode");
       break;
    case pgsTypes::Continuous:
       strAnalysisType = _T("Continuous");
+      tip_text = _T("The bridge will be analyzed as simple spans made continuous. Double click to modify the Analysis Mode");
       break;
    case pgsTypes::Envelope:
       strAnalysisType = _T("Envelope");
+      tip_text = _T("The bridge will be analyzed as simple spans and simple spans made continuous. The governing results will be used. Double click to modify the Analysis Mode");
       break;
    }
 
    int idx = GetAnalysisModePaneIndex();
    SetPaneText(idx,strAnalysisType,TRUE);
+#if defined _EAF_USING_MFC_FEATURE_PACK
+   SetTipText(idx,tip_text);
+#endif
 }

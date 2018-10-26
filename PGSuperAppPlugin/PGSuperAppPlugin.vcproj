@@ -2418,10 +2418,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\InsertDeleteLoad.h"
-					>
-				</File>
-				<File
 					RelativePath="..\InsertDeleteSpan.h"
 					>
 				</File>
@@ -2503,10 +2499,6 @@
 				</File>
 				<File
 					RelativePath="..\EditSpanLength.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\InsertDeleteLoad.cpp"
 					>
 				</File>
 				<File

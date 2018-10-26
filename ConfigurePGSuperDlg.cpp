@@ -474,6 +474,7 @@ void CConfigurePGSuperDlg::ConfigureWebLink()
             {
                pWeb->EnableWindow(TRUE);
                m_PublisherHyperLink.SetURL(url);
+               m_PublisherHyperLink.SetTooltip(url);
             }
             else
             {

@@ -63,6 +63,7 @@ enum ProductForceType
    pftGirder,
    pftConstruction,
    pftSlab, 
+   pftSlabPad, 
    pftSlabPanel, 
    pftDiaphragm, 
    pftOverlay,
@@ -271,6 +272,8 @@ interface IProductForces : IUnknown
    virtual void GetDesignSlabPadStressAdjustment(Float64 fcgdr,Float64 startSlabOffset,Float64 endSlabOffset,const pgsPointOfInterest& poi,Float64* pfTop,Float64* pfBot) = 0;
 
    virtual void DumpAnalysisModels(GirderIndexType girderLineIdx) = 0;
+
+   virtual void GetDeckShrinkageStresses(const pgsPointOfInterest& poi,Float64* pftop,Float64* pfbot) = 0;
 };
 
 
@@ -605,6 +608,58 @@ interface IContinuity : IUnknown
    virtual bool IsContinuityFullyEffective(GirderIndexType girderline) = 0;
    virtual Float64 GetContinuityStressLevel(PierIndexType pier,GirderIndexType gdr) = 0;
 };
+
+/*****************************************************************************
+INTERFACE
+   IBearingDesign
+
+   Interface to get information about bearing design results
+
+DESCRIPTION
+   Interface to get information about bearing design results
+*****************************************************************************/
+// {DACEC889-2B86-46e9-8B47-0875BC9B19A5}
+DEFINE_GUID(IID_IBearingDesign, 
+0xdacec889, 0x2b86, 0x46e9, 0x8b, 0x47, 0x8, 0x75, 0xbc, 0x9b, 0x19, 0xa5);
+interface IBearingDesign : IUnknown
+{
+   // Determine if bearing reactions are available for the span in question. Function will return true if span has a
+   // simply supported interior connection. Passed-in bools will be true for simple-supported ends.
+   virtual bool AreBearingReactionsAvailable(SpanIndexType span,GirderIndexType gdr, bool* pBleft, bool* pBright)=0;
+
+   // From IProductForces
+   virtual void GetBearingProductReaction(pgsTypes::Stage stage,ProductForceType type,SpanIndexType span,GirderIndexType gdr,
+                                          CombinationType cmbtype, BridgeAnalysisType bat, Float64* pLftEnd,Float64* pRgtEnd)=0;
+
+   virtual void GetBearingLiveLoadReaction(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,
+                                           BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF, 
+                                           Float64* pLeftRmin,Float64* pLeftRmax,Float64* pLeftTmin,Float64* pLeftTmax,
+                                           Float64* pRightRmin,Float64* pRightRmax,Float64* pRightTmin,Float64* pRightTmax,
+                                           VehicleIndexType* pLeftMinVehIdx = NULL,VehicleIndexType* pLeftMaxVehIdx = NULL,
+                                           VehicleIndexType* pRightMinVehIdx = NULL,VehicleIndexType* pRightMaxVehIdx = NULL)=0;
+
+   virtual void GetBearingLiveLoadRotation(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,
+                                           BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF, 
+                                           Float64* pLeftTmin,Float64* pLeftTmax,Float64* pLeftRmin,Float64* pLeftRmax,
+                                           Float64* pRightTmin,Float64* pRightTmax,Float64* pRightRmin,Float64* pRightRmax,
+                                           VehicleIndexType* pLeftMinVehIdx = NULL,VehicleIndexType* pLeftMaxVehIdx = NULL,
+                                           VehicleIndexType* pRightMinVehIdx = NULL,VehicleIndexType* pRightMaxVehIdx = NULL)=0;
+   // From ICombinedForces
+   virtual void GetBearingCombinedReaction(LoadingCombination combo,pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,
+                                              CombinationType type,BridgeAnalysisType bat, Float64* pLftEnd,Float64* pRgtEnd)=0;
+
+   virtual void GetBearingCombinedLiveLoadReaction(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,
+                                                   BridgeAnalysisType bat,bool bIncludeImpact,
+                                                   Float64* pLeftRmin, Float64* pLeftRmax, 
+                                                   Float64* pRightRmin,Float64* pRightRmax)=0;
+
+   // From ILimitStateForces
+   virtual void GetBearingLimitStateReaction(pgsTypes::LimitState ls,pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,
+                                             BridgeAnalysisType bat,bool bIncludeImpact,
+                                             Float64* pLeftRmin, Float64* pLeftRmax, 
+                                             Float64* pRightRmin,Float64* pRightRmax)=0;
+};
+
 
 #endif // INCLUDED_IFACE_ANALYSISRESULTS_H_
 

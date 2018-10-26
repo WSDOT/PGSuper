@@ -130,7 +130,7 @@ struct pgsTypes
    enum StressLocation { BottomGirder, TopGirder, TopSlab };
    // Note that Permanent was added below when input for total permanent strands was added in 12/06
    enum StrandType { Straight, Harped, Temporary, Permanent };
-   enum LossStage { Jacking, BeforeXfer, AfterXfer, AtLifting, AtShipping, BeforeTemporaryStrandRemoval, AfterTemporaryStrandRemoval, AfterDeckPlacement, AfterSIDL, AfterLosses, AfterTemporaryStrandInstallation };
+   enum LossStage { Jacking, BeforeXfer, AfterXfer, AtLifting, AtShipping, BeforeTemporaryStrandRemoval, AfterTemporaryStrandRemoval, AfterDeckPlacement, AfterSIDL, AfterLosses, AfterLossesWithLiveLoad, AfterTemporaryStrandInstallation };
    enum AnalysisType { Simple, Continuous, Envelope };
 
    // temporary top strand usage

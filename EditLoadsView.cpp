@@ -35,7 +35,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <..\htmlhelp\HelpTopics.hh>
 
-#include "InsertDeleteLoad.h"
+#include <PgsExt\InsertDeleteLoad.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -157,8 +157,7 @@ void CEditLoadsView::OnInitialUpdate()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CPGSuperDoc* pDoc = (CPGSuperDoc*) GetDocument();
-   pDoc->GetBroker(&m_pBroker);
+   EAFGetBroker(&m_pBroker);
 
    UpdateUnits();
 

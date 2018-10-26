@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=646>
-<meta name=layout-width content=963>
+<meta name=layout-height content=929>
+<meta name=layout-width content=993>
 
 
 <!--(Links)=========================================================-->
@@ -63,9 +63,31 @@
  down list to select the method for shipping losses and enter an appropriate 
  value. </p>
 
+<p>For refined estimates (LRFD 5.9.5.4), for LRFD 2005 and later, select 
+ the method for computing relaxation losses.</p>
+
 <p>For General Lump Sum Losses, enter appropriate values for losses immediately 
  before and after prestress transfer, at shipping, and for the final service 
  condition.<span style="margin-bottom: 0;">&nbsp; </span></p>
+
+<h2>Elastic Gains</h2>
+
+<p>PGSuper uses gross section properties for its stress analysis. To compensate 
+ for not using transformed properties, elastic gains may be computed and 
+ added to the effective prestress force. For refined estimates (LRFD 5.9.5.4), 
+ for LRFD 2005 and later, define the percentage of the various external 
+ loads that will contribute to the elastic gains.</p>
+
+<p>Gains due to slab shrinkage must also include increased stresses at 
+ the top and bottom of the girder. Slab shrinkage is computed as defined 
+ in LRFD 5.9.5.4.3d. The shrinkage strain is scaled by the percentage defined 
+ on this tab. The stresses in the girders is computed using equation 5.9.5.4.3d-2 
+ with St and Sb being substituted for epc/Ic.</p>
+
+<h2>Post-Tensioning Parameters</h2>
+
+<p>Enter the anchor set, wobble friction coefficient, and coefficient of 
+ friction for compute losses in post-tensioned temporary strands.</p>
 
 <h2>Transfer Length of Pretensioned Prestressing Strands</h2>
 
