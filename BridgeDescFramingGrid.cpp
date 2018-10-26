@@ -849,6 +849,10 @@ void CBridgeDescFramingGrid::EditSpan(SpanIndexType spanIdx)
 
       pDlg->m_BridgeDesc.SetSpanLength(spanIdx,dlg.GetSpanLength());
 
+      pDlg->m_BridgeDesc.SetSlabOffsetType( dlg.GetSlabOffsetType() );
+      pSpanData->SetSlabOffset(pgsTypes::metStart,dlg.GetSlabOffset(pgsTypes::metStart));
+      pSpanData->SetSlabOffset(pgsTypes::metEnd,  dlg.GetSlabOffset(pgsTypes::metEnd));
+
       FillGrid(pDlg->m_BridgeDesc);
    }
 }

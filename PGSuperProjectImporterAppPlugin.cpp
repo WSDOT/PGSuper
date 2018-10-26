@@ -4,11 +4,23 @@
 #include "resource.h"
 #include "BridgeModelViewChildFrame.h"
 #include "BridgePlanView.h"
-
 #include "PGSuperProjectImporterMgr.h"
+
+#include <EAF\EAFDocManager.h>
+
+
+BEGIN_MESSAGE_MAP(CProjectImportersCmdTarget,CCmdTarget)
+   ON_COMMAND(ID_MANAGE_PLUGINS,OnConfigureProjectImporters)
+END_MESSAGE_MAP()
+
+void CProjectImportersCmdTarget::OnConfigureProjectImporters()
+{
+   m_pMyAppPlugin->ConfigureProjectImporters();
+}
 
 HRESULT CPGSuperProjectImporterAppPlugin::FinalConstruct()
 {
+   m_MyCmdTarget.m_pMyAppPlugin = this;
    return OnFinalConstruct(); // CPGSuperBaseAppPlugin
 }
 
@@ -17,36 +29,130 @@ void CPGSuperProjectImporterAppPlugin::FinalRelease()
    OnFinalRelease(); // CPGSuperBaseAppPlugin
 }
 
+void CPGSuperProjectImporterAppPlugin::ConfigureProjectImporters()
+{
+   std::vector<CEAFPluginState> pluginStates = EAFManagePlugins(_T("Manager PGSuper Project Importers"),CATID_PGSuperProjectImporter,EAFGetMainFrame());
+   if ( pluginStates.size() == 0 )
+      return;
+
+   // Find our document template
+   CEAFApp* pApp = EAFGetApp();
+
+   POSITION template_position;
+   CPGSuperImportPluginDocTemplate* pMyTemplate = NULL;
+   POSITION pos = pApp->m_pDocManager->GetFirstDocTemplatePosition();
+   while ( pos != NULL )
+   {
+      template_position = pos;
+      CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(pApp->m_pDocManager->GetNextDocTemplate(pos));
+      if ( pTemplate->IsKindOf(RUNTIME_CLASS(CPGSuperImportPluginDocTemplate)) )
+      {
+         pMyTemplate = (CPGSuperImportPluginDocTemplate*)pTemplate;
+      }
+   }
+
+   // our doc template was not found...
+   if ( pMyTemplate == NULL )
+   {
+      // when the doc template is created, it loads all the enabled plug-in objects
+      // write the plugin states into the registry and then create the doc template
+      std::vector<CEAFPluginState>::iterator iter;
+      for ( iter = pluginStates.begin(); iter != pluginStates.end(); iter++ )
+      {
+         CEAFPluginState& state = *iter;
+         pApp->WriteProfileString(_T("Plugins"),state.GetCLSIDString(),state.IsEnabled() ? _T("Enabled") : _T("Disabled") );
+      }
+      pMyTemplate = (CPGSuperImportPluginDocTemplate*)CreateDocTemplate();
+      pApp->m_pDocManager->AddDocTemplate(pMyTemplate);
+      return;
+   }
+
+   // Set the state of the importer plugins, create and destroy them as needed
+   CPGSuperProjectImporterMgr& importerMgr = pMyTemplate->GetProjectImporterManager();
+   std::vector<CEAFPluginState>::iterator iter;
+   for ( iter = pluginStates.begin(); iter != pluginStates.end(); iter++ )
+   {
+      CEAFPluginState& state = *iter;
+      if ( state.StateChanged() )
+      {
+         if ( state.InitiallyEnabled() )
+         {
+            // importer was initially enabled, but now it is not
+            importerMgr.RemoveImporter( state.GetCLSID() );
+            pApp->WriteProfileString(_T("Plugins"),state.GetCLSIDString(),_T("Disabled"));
+         }
+         else
+         {
+            // importer was not initially enabled, but now it is
+            CComPtr<IPGSuperProjectImporter> importer;
+            importer.CoCreateInstance(state.GetCLSID());
+            importerMgr.AddImporter(state.GetCLSID(),importer);
+            pApp->WriteProfileString(_T("Plugins"),state.GetCLSIDString(),_T("Enabled"));
+         }
+      }
+   }
+
+   if ( importerMgr.GetImporterCount() == 0 )
+   {
+      // there aren't any importers enabled, so we can remove the template from
+      // the document manager
+      ((CEAFDocManager*)pApp->m_pDocManager)->RemoveDocTemplate(template_position);
+   }
+}
+
 BOOL CPGSuperProjectImporterAppPlugin::Init(CEAFApp* pParent)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   DefaultInit();
+
    // See MSKB Article ID: Q118435, "Sharing Menus Between MDI Child Windows"
-   CWinApp* pApp = AfxGetApp();
-   m_hMenuShared = ::LoadMenu( pApp->m_hInstance, MAKEINTRESOURCE(IDR_PGSUPERTYPE) );
+   m_hMenuShared = ::LoadMenu( AfxGetApp()->m_hInstance, MAKEINTRESOURCE(IDR_PGSUPERTYPE) );
 
    return (m_hMenuShared != NULL);
 }
 
 void CPGSuperProjectImporterAppPlugin::Terminate()
 {
+   DefaultTerminate();
+
    // release the shared menu
    ::DestroyMenu( m_hMenuShared );
 }
 
 void CPGSuperProjectImporterAppPlugin::IntegrateWithUI(BOOL bIntegrate)
 {
-   // no UI integration
+   CEAFMainFrame* pFrame = EAFGetMainFrame();
+   CEAFMenu* pMainMenu = pFrame->GetMainMenu();
+
+   UINT filePos = pMainMenu->FindMenuItem("&File");
+   CEAFMenu* pFileMenu = pMainMenu->GetSubMenu(filePos);
+
+   UINT managePos = pFileMenu->FindMenuItem("Manage");
+   CEAFMenu* pManageMenu = pFileMenu->GetSubMenu(managePos);
+
+   if ( bIntegrate )
+   {
+      // Append to the end of the Manage menu
+      pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,"Manage PGSuper Project Importers...",this);
+   }
+   else
+   {
+      pManageMenu->RemoveMenu(ID_MANAGE_PLUGINS,  MF_BYCOMMAND, this);
+   }
 }
 
 CEAFDocTemplate* CPGSuperProjectImporterAppPlugin::CreateDocTemplate()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CPGSuperImportPluginDocTemplate* pDocTemplate = new CPGSuperImportPluginDocTemplate(
 		IDR_BRIDGEMODELEDITOR,
+      NULL,
 		RUNTIME_CLASS(CPGSuperDoc),
 		RUNTIME_CLASS(CBridgeModelViewChildFrame),
 		RUNTIME_CLASS(CBridgePlanView),
       m_hMenuShared,1);
-
-   pDocTemplate->SetPlugin(this);
 
    // If there aren't any importers, we don't want the "PGSuper Project Importer" option to
    // show up in the File | New dialog
@@ -74,4 +180,47 @@ UINT CPGSuperProjectImporterAppPlugin::GetDocumentResourceID()
 CString CPGSuperProjectImporterAppPlugin::GetName()
 {
    return CString("PGSuper Project Importer");
+}
+
+//////////////////////////
+// IEAFCommandCallback
+BOOL CPGSuperProjectImporterAppPlugin::OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo)
+{
+   return m_MyCmdTarget.OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);
+}
+
+void CPGSuperProjectImporterAppPlugin::GetStatusBarMessageString(UINT nID, CString& rMessage) const
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   // load appropriate string
+	if ( rMessage.LoadString(nID) )
+	{
+		// first newline terminates actual string
+      rMessage.Replace('\n','\0');
+	}
+	else
+	{
+		// not found
+		TRACE1("Warning: no message line prompt for ID %d.\n", nID);
+	}
+}
+
+void CPGSuperProjectImporterAppPlugin::GetToolTipMessageString(UINT nID, CString& rMessage) const
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CString string;
+   // load appropriate string
+	if ( string.LoadString(nID) )
+	{
+		// tip is after first newline 
+      int pos = string.Find('\n');
+      if ( 0 < pos )
+         rMessage = string.Mid(pos+1);
+	}
+	else
+	{
+		// not found
+		TRACE1("Warning: no tool tip for ID %d.\n", nID);
+	}
 }

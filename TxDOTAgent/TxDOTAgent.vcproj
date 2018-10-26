@@ -318,6 +318,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TxDOTCommandLineInfo.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\TxDOTComponentInfo.cpp"
 				>
 			</File>
@@ -393,6 +397,10 @@
 			</File>
 			<File
 				RelativePath=".\TxDOTCadWriter.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTCommandLineInfo.h"
 				>
 			</File>
 			<File

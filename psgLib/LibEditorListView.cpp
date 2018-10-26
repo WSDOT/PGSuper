@@ -32,6 +32,9 @@
 
 #include <psgLib\ISupportIcon.h>
 
+#include <EAF\EAFApp.h>
+#include <EAF\EAFUtilities.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -482,7 +485,7 @@ void CLibEditorListView::RenameSelectedEntry()
 BOOL CLibEditorListView::PreCreateWindow(CREATESTRUCT& cs) 
 {
    // get list view mode settings from registry and set view
-   CWinApp* pApp = ::AfxGetApp();
+   CEAFApp* pApp = EAFGetApp();
    CString list_settings = pApp->GetProfileString(_T("Settings"),_T("LibView"),_T("Large Icons"));
    if (list_settings=="Large Icons")
       cs.style |= LVS_ICON;
@@ -536,7 +539,7 @@ void CLibEditorListView::OnDestroy()
    else if ((dwStyle & LVS_TYPEMASK) == LVS_LIST)
       mode = "List View";
 
-   CWinApp* pApp = ::AfxGetApp();
+   CEAFApp* pApp = EAFGetApp();
    ASSERT(pApp);
    VERIFY(pApp->WriteProfileString( _T("Settings"),_T("LibView"), mode ));
 	

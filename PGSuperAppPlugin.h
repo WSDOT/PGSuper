@@ -22,9 +22,13 @@
 
 
 #pragma once
+#include "PGSuperAppPlugin\PGSuperAppPlugin_i.h"
+
 #include <EAF\EAFAppPlugin.h>
 #include <EAF\EAFUIIntegration.h>
 #include "PGSuperBaseAppPlugin.h"
+
+#include "PGSuperCommandLineInfo.h"
 
 class CPGSuperAppPlugin;
 
@@ -42,15 +46,16 @@ public:
    DECLARE_MESSAGE_MAP()
 };
 
-// {C1731920-FBCA-40fa-959D-9B749F03DEC0}
-DEFINE_GUID(CLSID_PGSuperAppPlugin, 
-0xc1731920, 0xfbca, 0x40fa, 0x95, 0x9d, 0x9b, 0x74, 0x9f, 0x3, 0xde, 0xc0);
+//// {C1731920-FBCA-40fa-959D-9B749F03DEC0}
+//DEFINE_GUID(CLSID_PGSuperAppPlugin, 
+//0xc1731920, 0xfbca, 0x40fa, 0x95, 0x9d, 0x9b, 0x74, 0x9f, 0x3, 0xde, 0xc0);
 
 class ATL_NO_VTABLE CPGSuperAppPlugin : 
    public CPGSuperBaseAppPlugin,
    public CComObjectRootEx<CComSingleThreadModel>,
    public CComCoClass<CPGSuperAppPlugin, &CLSID_PGSuperAppPlugin>,
    public IEAFAppPlugin,
+   public IEAFAppCommandLine,
    public IEAFCommandCallback
 {
 public:
@@ -63,11 +68,14 @@ public:
 
 BEGIN_COM_MAP(CPGSuperAppPlugin)
    COM_INTERFACE_ENTRY(IEAFAppPlugin)
+   COM_INTERFACE_ENTRY(IEAFAppCommandLine)
    COM_INTERFACE_ENTRY(IEAFCommandCallback)
 END_COM_MAP()
 
 BEGIN_CONNECTION_POINT_MAP(CPGSuperAppPlugin)
 END_CONNECTION_POINT_MAP()
+
+DECLARE_REGISTRY_RESOURCEID(IDR_PGSUPERAPPPLUGINIMPL)
 
    HRESULT FinalConstruct();
    void FinalRelease();
@@ -83,6 +91,9 @@ public:
    bool UpdatingTemplates();
    void OnProgramSettings();
 
+protected:
+   void Process1250Testing(const CPGSuperCommandLineInfo& rCmdInfo);
+
 // IEAFAppPlugin
 public:
    virtual BOOL Init(CEAFApp* pParent);
@@ -93,6 +104,11 @@ public:
    virtual UINT GetDocumentResourceID();
    virtual CString GetName();
 
+// IEAFAppCommandLine
+public:
+   virtual CString GetUsageMessage();
+   virtual BOOL ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo);
+
 // IEAFCommandCallback
 public:
    virtual BOOL OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo);
@@ -100,3 +116,5 @@ public:
    virtual void GetToolTipMessageString(UINT nID, CString& rMessage) const;
 
 };
+
+OBJECT_ENTRY_AUTO(__uuidof(PGSuperAppPlugin), CPGSuperAppPlugin)

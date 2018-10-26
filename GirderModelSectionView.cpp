@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
 #include "PGSuperColors.h"
@@ -115,6 +115,7 @@ void CGirderModelSectionView::DoPrint(CDC* pDC, CPrintInfo* pInfo)
 #ifdef _DEBUG
 void CGirderModelSectionView::AssertValid() const
 {
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
 	CDisplayView::AssertValid();
 }
 

@@ -25,15 +25,16 @@
 #include "PGSuperDoc.h"
 #include "PGSuperAppPlugin.h"
 
-#include "resource.h"
+#include "PGSuperAppPlugin\Resource.h"
 
 #include <IFace\Project.h>
 #include <IFace\StatusCenter.h>
+#include <IFace\Bridge.h>
 #include <EAF\EAFUIIntegration.h>
 #include <EAF\EAFStatusItem.h>
 
 #include <PgsExt\BridgeDescription.h>
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperDoc.h"
 #include "Hints.h"
 
@@ -42,7 +43,6 @@
 #include <psgLib\psgLib.h>
 
 #include "ChildFrm.h"
-#include <EAF\EAFOutputChildFrame.h>
 #include <PsgLib\LibChildFrm.h>
 
 #include "BridgeModelViewChildFrame.h"
@@ -60,7 +60,10 @@
 #include "GirderModelChildFrame.h"
 #include "GirderModelElevationView.h"
 
+#include "ReportViewChildFrame.h"
 #include "ReportView.h"
+
+#include <MfcTools\VersionInfo.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -91,11 +94,30 @@ void CPGSuperDocProxyAgent::SetDocument(CPGSuperDoc* pDoc)
    m_pPGSuperDoc = pDoc;
 }
 
+void CPGSuperDocProxyAgent::CreateStatusBar()
+{
+   CEAFMainFrame* pFrame = EAFGetMainFrame();
+   CPGSuperStatusBar* pStatusBar = new CPGSuperStatusBar();
+   pStatusBar->Create(pFrame);
+   pFrame->SetStatusBar(pStatusBar);
+
+   m_pPGSuperDoc->UpdateAnalysisTypeStatusIndicator();
+   m_pPGSuperDoc->SetModifiedFlag(m_pPGSuperDoc->IsModified());
+   m_pPGSuperDoc->EnableAutoCalc(m_pPGSuperDoc->IsAutoCalcEnabled());
+}
+
+void CPGSuperDocProxyAgent::ResetStatusBar()
+{
+   CEAFMainFrame* pFrame = EAFGetMainFrame();
+   pFrame->SetStatusBar(NULL);
+}
+
 void CPGSuperDocProxyAgent::CreateAcceleratorKeys()
 {
    GET_IFACE(IEAFAcceleratorTable,pAccelTable);
    pAccelTable->AddAccelKey(FVIRTKEY,           VK_F5, ID_PROJECT_UPDATENOW,NULL);
    pAccelTable->AddAccelKey(FCONTROL | FVIRTKEY,VK_U,  ID_PROJECT_UPDATENOW,NULL);
+   //pAccelTable->AddAccelKey(FCONTROL | FALT | FVIRTKEY, VK_L, ID_DUMP_LBAM,NULL);
 }
 
 void CPGSuperDocProxyAgent::RemoveAcceleratorKeys()
@@ -103,10 +125,13 @@ void CPGSuperDocProxyAgent::RemoveAcceleratorKeys()
    GET_IFACE(IEAFAcceleratorTable,pAccelTable);
    pAccelTable->RemoveAccelKey(FVIRTKEY,           VK_F5);
    pAccelTable->RemoveAccelKey(FCONTROL | FVIRTKEY,VK_U );
+   //pAccelTable->RemoveAccelKey(FCONTROL | FALT | FVIRTKEY, VK_L);
 }
 
 void CPGSuperDocProxyAgent::CreateToolBars()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    GET_IFACE(IEAFToolbars,pToolBars);
 
    m_StdToolBarID = pToolBars->CreateToolBar("Standard");
@@ -143,6 +168,8 @@ void CPGSuperDocProxyAgent::RemoveToolBars()
 
 void CPGSuperDocProxyAgent::RegisterViews()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(m_pPGSuperDoc->GetDocTemplate());
    CComPtr<IEAFAppPlugin> pAppPlugin;
    pTemplate->GetPlugin(&pAppPlugin);
@@ -154,13 +181,13 @@ void CPGSuperDocProxyAgent::RegisterViews()
    // for the views below will register them. For example, tne analysis results view is the
    // responsiblity of the analysis results agent, so that view's implementation will move
    GET_IFACE(IEAFViewRegistrar,pViewReg);
-   m_BridgeModelEditorViewKey = pViewReg->RegisterView(RUNTIME_CLASS(CBridgeModelViewChildFrame), RUNTIME_CLASS(CBridgePlanView),           hMenu, 1);
-   m_GirderModelEditorViewKey = pViewReg->RegisterView(RUNTIME_CLASS(CGirderModelChildFrame),     RUNTIME_CLASS(CGirderModelElevationView), hMenu, 1);
-   m_LibraryEditorViewKey     = pViewReg->RegisterView(RUNTIME_CLASS(CLibChildFrame),             RUNTIME_CLASS(CLibraryEditorView),        hMenu, 1);
-   m_AnalysisResultsViewKey   = pViewReg->RegisterView(RUNTIME_CLASS(CAnalysisResultsChildFrame), RUNTIME_CLASS(CAnalysisResultsView),      hMenu, 1);
-   m_ReportViewKey            = pViewReg->RegisterView(RUNTIME_CLASS(CEAFOutputChildFrame),       RUNTIME_CLASS(CPGSuperReportView),        hMenu, -1); // unlimited number of reports
-   m_FactorOfSafetyViewKey    = pViewReg->RegisterView(RUNTIME_CLASS(CFactorOfSafetyChildFrame),  RUNTIME_CLASS(CFactorOfSafetyView),       hMenu, 1);
-   m_LoadsViewKey             = pViewReg->RegisterView(RUNTIME_CLASS(CEditLoadsChildFrame),       RUNTIME_CLASS(CEditLoadsView),            hMenu, 1);
+   m_BridgeModelEditorViewKey = pViewReg->RegisterView(IDR_BRIDGEMODELEDITOR,NULL,RUNTIME_CLASS(CBridgeModelViewChildFrame), RUNTIME_CLASS(CBridgePlanView),           hMenu, 1);
+   m_GirderModelEditorViewKey = pViewReg->RegisterView(IDR_GIRDERMODELEDITOR,NULL,RUNTIME_CLASS(CGirderModelChildFrame),     RUNTIME_CLASS(CGirderModelElevationView), hMenu, 1);
+   m_LibraryEditorViewKey     = pViewReg->RegisterView(IDR_LIBRARYEDITOR,    NULL,RUNTIME_CLASS(CLibChildFrame),             RUNTIME_CLASS(CLibraryEditorView),        hMenu, 1);
+   m_AnalysisResultsViewKey   = pViewReg->RegisterView(IDR_ANALYSISRESULTS,  NULL,RUNTIME_CLASS(CAnalysisResultsChildFrame), RUNTIME_CLASS(CAnalysisResultsView),      hMenu, 1);
+   m_ReportViewKey            = pViewReg->RegisterView(IDR_REPORT,           NULL,RUNTIME_CLASS(CReportViewChildFrame),      RUNTIME_CLASS(CPGSuperReportView),        hMenu, -1); // unlimited number of reports
+   m_FactorOfSafetyViewKey    = pViewReg->RegisterView(IDR_FACTOROFSAFETY,   NULL,RUNTIME_CLASS(CFactorOfSafetyChildFrame),  RUNTIME_CLASS(CFactorOfSafetyView),       hMenu, 1);
+   m_LoadsViewKey             = pViewReg->RegisterView(IDR_EDITLOADS,        NULL,RUNTIME_CLASS(CEditLoadsChildFrame),       RUNTIME_CLASS(CEditLoadsView),            hMenu, 1);
 }
 
 void CPGSuperDocProxyAgent::UnregisterViews()
@@ -380,21 +407,21 @@ void CPGSuperDocProxyAgent::OnStatusChanged()
       switch(pStatusCenter->GetSeverity())
       {
       case eafTypes::statusOK:
-         pToolBar->HideButton(ID_VIEW_STATUSCENTER, FALSE);
-         pToolBar->HideButton(ID_VIEW_STATUSCENTER2,TRUE);
-         pToolBar->HideButton(ID_VIEW_STATUSCENTER3,TRUE);
+         pToolBar->HideButton(ID_VIEW_STATUSCENTER, NULL, FALSE);
+         pToolBar->HideButton(ID_VIEW_STATUSCENTER2,NULL, TRUE);
+         pToolBar->HideButton(ID_VIEW_STATUSCENTER3,NULL, TRUE);
          break;
 
       case eafTypes::statusWarning:
-         pToolBar->HideButton(ID_VIEW_STATUSCENTER, TRUE);
-         pToolBar->HideButton(ID_VIEW_STATUSCENTER2,FALSE);
-         pToolBar->HideButton(ID_VIEW_STATUSCENTER3,TRUE);
+         pToolBar->HideButton(ID_VIEW_STATUSCENTER, NULL, TRUE);
+         pToolBar->HideButton(ID_VIEW_STATUSCENTER2,NULL, FALSE);
+         pToolBar->HideButton(ID_VIEW_STATUSCENTER3,NULL, TRUE);
          break;
 
       case eafTypes::statusError:
-         pToolBar->HideButton(ID_VIEW_STATUSCENTER, TRUE);
-         pToolBar->HideButton(ID_VIEW_STATUSCENTER2,TRUE);
-         pToolBar->HideButton(ID_VIEW_STATUSCENTER3,FALSE);
+         pToolBar->HideButton(ID_VIEW_STATUSCENTER, NULL, TRUE);
+         pToolBar->HideButton(ID_VIEW_STATUSCENTER2,NULL, TRUE);
+         pToolBar->HideButton(ID_VIEW_STATUSCENTER3,NULL, FALSE);
          break;
       }
    }
@@ -415,6 +442,7 @@ STDMETHODIMP CPGSuperDocProxyAgent::RegInterfaces()
    pBrokerInit->RegInterface( IID_ISelection,       this );
    pBrokerInit->RegInterface( IID_IUIEvents,        this );
    pBrokerInit->RegInterface( IID_IUpdateTemplates, this );
+   pBrokerInit->RegInterface( IID_IVersionInfo,     this );
    return S_OK;
 }
 
@@ -457,6 +485,7 @@ STDMETHODIMP CPGSuperDocProxyAgent::GetClassID(CLSID* pCLSID)
 
 ////////////////////////////////////////////////////////////////////
 // IAgentUIIntegration
+
 STDMETHODIMP CPGSuperDocProxyAgent::IntegrateWithUI(BOOL bIntegrate)
 {
    if ( bIntegrate )
@@ -464,11 +493,13 @@ STDMETHODIMP CPGSuperDocProxyAgent::IntegrateWithUI(BOOL bIntegrate)
       RegisterViews();
       CreateToolBars();
       CreateAcceleratorKeys();
+      CreateStatusBar();
    }
    else
    {
-      RemoveToolBars();
+      ResetStatusBar();
       RemoveAcceleratorKeys();
+      RemoveToolBars();
       UnregisterViews();
    }
 
@@ -775,61 +806,51 @@ void CPGSuperDocProxyAgent::FireEvent(CView* pSender,LPARAM lHint,CObject* pHint
 // IEditByUI
 void CPGSuperDocProxyAgent::EditBridgeDescription(int nPage)
 {
-   AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pPGSuperDoc->EditBridgeDescription(nPage);
 }
 
 void CPGSuperDocProxyAgent::EditAlignmentDescription(int nPage)
 {
-   AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pPGSuperDoc->EditAlignmentDescription(nPage);
 }
 
 bool CPGSuperDocProxyAgent::EditGirderDescription(SpanIndexType span,GirderIndexType girder, int nPage)
 {
-   AFX_MANAGE_STATE(AfxGetAppModuleState());
    return m_pPGSuperDoc->EditGirderDescription(span,girder,nPage);
 }
 
 bool CPGSuperDocProxyAgent::EditSpanDescription(SpanIndexType spanIdx, int nPage)
 {
-   AFX_MANAGE_STATE(AfxGetAppModuleState());
    return m_pPGSuperDoc->EditSpanDescription(spanIdx,nPage);
 }
 
 bool CPGSuperDocProxyAgent::EditPierDescription(PierIndexType pierIdx, int nPage)
 {
-   AFX_MANAGE_STATE(AfxGetAppModuleState());
    return m_pPGSuperDoc->EditPierDescription(pierIdx,nPage);
 }
 
 void CPGSuperDocProxyAgent::EditLiveLoads()
 {
-   AFX_MANAGE_STATE(AfxGetAppModuleState());
    return m_pPGSuperDoc->OnLiveLoads();
 }
 
 void CPGSuperDocProxyAgent::EditLiveLoadDistributionFactors(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction)
 {
-   AFX_MANAGE_STATE(AfxGetAppModuleState());
    return m_pPGSuperDoc->OnLoadsLldf(method,roaAction);
 }
 
 bool CPGSuperDocProxyAgent::EditPointLoad(CollectionIndexType loadIdx)
 {
-   AFX_MANAGE_STATE(AfxGetAppModuleState());
    return m_pPGSuperDoc->EditPointLoad(loadIdx);
 }
 
 bool CPGSuperDocProxyAgent::EditDistributedLoad(CollectionIndexType loadIdx)
 {
-   AFX_MANAGE_STATE(AfxGetAppModuleState());
    return m_pPGSuperDoc->EditDistributedLoad(loadIdx);
 }
 
 bool CPGSuperDocProxyAgent::EditMomentLoad(CollectionIndexType loadIdx)
 {
-   AFX_MANAGE_STATE(AfxGetAppModuleState());
    return m_pPGSuperDoc->EditMomentLoad(loadIdx);
 }
 
@@ -846,4 +867,46 @@ UINT CPGSuperDocProxyAgent::GetLibToolBarID()
 UINT CPGSuperDocProxyAgent::GetHelpToolBarID()
 {
    return m_HelpToolBarID;
+}
+
+// IVersionInfo
+CString CPGSuperDocProxyAgent::GetVersionString(bool bIncludeBuildNumber)
+{
+   CString str("Version ");
+   str += GetVersion(bIncludeBuildNumber);
+#if defined _BETA_VERSION
+   str += CString(" BETA");
+#endif
+
+   str += CString(" - Built on ");
+   str += CString(__DATE__);
+   return str;
+}
+
+CString CPGSuperDocProxyAgent::GetVersion(bool bIncludeBuildNumber)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   CWinApp* pApp = AfxGetApp();
+   CString strExe( pApp->m_pszExeName );
+   strExe += ".dll";
+
+   CVersionInfo verInfo;
+   verInfo.Load(strExe);
+   
+   CString strVersion = verInfo.GetProductVersionAsString();
+
+#if defined _DEBUG || defined _BETA_VERSION
+   // always include the build number in debug and beta versions
+   bIncludeBuildNumber = true;
+#endif
+
+   if (!bIncludeBuildNumber)
+   {
+      // remove the build number
+      int pos = strVersion.ReverseFind('.'); // find the last '.'
+      strVersion = strVersion.Left(pos);
+   }
+
+   return strVersion;
 }

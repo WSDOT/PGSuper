@@ -336,7 +336,7 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
       const LocPair& lp = (*sli).first;
 
       // insert intersection values into
-      (*ptable)(row,0) << locationp.SetValue( poi, end_size );
+      (*ptable)(row,0) << locationp.SetValue( pgsTypes::BridgeSite3, poi, end_size );
 
       (*ptable)(row,1) << dim.SetValue(new_loc);
       (*ptable)(row,2) << dim.SetValue(pdetp->Dv);

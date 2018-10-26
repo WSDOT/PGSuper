@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "MovePierDlg.h"
 #include <MFCTools\CustomDDX.h>
 #include "PGSuperUnits.h"

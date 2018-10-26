@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
 #include "PGSuperColors.h"
@@ -460,6 +460,7 @@ void CGirderModelElevationView::DoPrint(CDC* pDC, CPrintInfo* pInfo)
 #ifdef _DEBUG
 void CGirderModelElevationView::AssertValid() const
 {
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
 	CDisplayView::AssertValid();
 }
 
@@ -924,7 +925,7 @@ void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSuperDoc* pDoc, IBr
    from_point->put_X(0.0);
    to_point->put_X(gdr_length);
 
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::CastingYard,span,girder,POI_HARPINGPOINT);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(span,girder,pgsTypes::CastingYard,POI_HARPINGPOINT);
    ATLASSERT( 0 <= vPOI.size() && vPOI.size() < 3 );
    pgsPointOfInterest hp1_poi;
    pgsPointOfInterest hp2_poi;
@@ -1097,7 +1098,7 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSuperDoc* pDoc, I
       bool red = false;
 
       GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-      std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(stage,span,girder,POI_ALLACTIONS | POI_ALLOUTPUT,POIFIND_OR);
+      std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(span,girder,stage,POI_ALLACTIONS | POI_ALLOUTPUT,POIFIND_OR);
 
       double from_y;
       double to_y;

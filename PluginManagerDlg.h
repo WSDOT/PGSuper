@@ -38,7 +38,6 @@ protected:
    void Init();
 
 protected:
-   CPluginPage m_ProjectImporterPage;
    CPluginPage m_DataImporterPage;
    CPluginPage m_DataExporterPage;
    CPluginPage m_ExtensionAgentPage;

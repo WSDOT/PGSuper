@@ -146,7 +146,7 @@ rptChapter* CCrackedSectionDetailsChapterBuilder::Build(CReportSpecification* pR
             (*pPara) << pPara->GetName() << rptNewLine;
          }
 
-         vPoi = pIPOI->GetPointsOfInterest(pgsTypes::BridgeSite3, spanIdx,gdrIdx, POI_FLEXURECAPACITY | POI_SHEAR, POIFIND_OR );
+         vPoi = pIPOI->GetPointsOfInterest( spanIdx,gdrIdx, pgsTypes::BridgeSite3, POI_FLEXURECAPACITY | POI_SHEAR, POIFIND_OR );
          write_cracked_section_table(pBroker,pDisplayUnits, spanIdx,gdrIdx, vPoi, pChapter, pBridge->ProcessNegativeMoments(spanIdx));
       }
    }
@@ -242,7 +242,7 @@ void write_cracked_section_table(IBroker* pBroker,
 
       col = 0;
 
-      (*table)(row,col++) << location.SetValue( poi, end_size );
+      (*table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
       (*table)(row,col++) << dim.SetValue( Yt );
       (*table)(row,col++) << dim.SetValue( Yb );
       (*table)(row,col++) << mom_i.SetValue( csd.Icr );

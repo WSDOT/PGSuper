@@ -43,34 +43,6 @@
 #include <atlbase.h>
 #include <atlcom.h>
 
-#include <IFace\Tools.h>
-
-#if defined NOGRID
-#include "nogrid.h"
-#else
-#include <grid\gxall.h>
-#endif // NOGRID
-
-#include <HtmlHelp.h>
-#include <WBFLCore.h>
-#include <WBFLTools.h>
-#include <WBFLGeometry.h>
-#include <WBFLSections.h>
-#include <WBFLCogo.h>
-#include <WBFLGenericBridge.h>
-
-#include <PgsExt\GirderLabel.h>
-#include <afxwin.h>
-
-#include <EAF\EAFUtilities.h> // so all files have EAFGetBroker
-#include <EAF\EAFResources.h> // so all files have EAF resource identifiers
-#include <EAF\EAFHints.h>     // so all files have EAF Doc/View hints
-
-#include <afxdlgs.h>
-
-#include "MakePgz\zip.h"
-#include "MakePgz\unzip.h"
-
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.
 

@@ -295,11 +295,7 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
 
 void CSpanGirderReportDlg::OnHelp() 
 {
-   AFX_MANAGE_STATE(AfxGetAppModuleState());
-   // Using AfxGetAppModuleState because we want the CPGSuperApp object
-
-   CWinApp* pApp = AfxGetApp();
-   ::HtmlHelp( *this, pApp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_DIALOG_REPORT );
+   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_DIALOG_REPORT );
 }
 
 void CSpanGirderReportDlg::OnSpanChanged() 

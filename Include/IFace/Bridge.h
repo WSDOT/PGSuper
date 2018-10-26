@@ -465,6 +465,7 @@ interface IStrandGeometry : IUnknown
    virtual Float64 GetPjack(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type) = 0;
    virtual Float64 GetPjack(SpanIndexType span,GirderIndexType gdr,bool bIncTemp) = 0;
 
+   virtual void GetStrandPosition(const pgsPointOfInterest& poi, StrandIndexType strandIdx,pgsTypes::StrandType type, IPoint2d** ppPoint) = 0;
    virtual void GetStrandPositions(const pgsPointOfInterest& poi, pgsTypes::StrandType type, IPoint2dCollection** ppPoints) = 0;
    virtual void GetStrandPositionsEx(const pgsPointOfInterest& poi,StrandIndexType Ns, pgsTypes::StrandType type, IPoint2dCollection** ppPoints) = 0; 
 
@@ -541,19 +542,31 @@ DEFINE_GUID(IID_IPointOfInterest,
 0x1cf877cc, 0x6856, 0x11d2, 0x88, 0x3b, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
 interface IPointOfInterest : IUnknown
 {
-   virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,PoiAttributeType attrib,Uint32 mode = POIFIND_AND) = 0;
-   virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(std::set<pgsTypes::Stage> stages,SpanIndexType span,GirderIndexType gdr,PoiAttributeType attrib,Uint32 mode = POIFIND_AND) = 0;
-   virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,PoiAttributeType attrib,Uint32 mode = POIFIND_AND) = 0;
+   // Returns all points of interest for a span/girder
+   virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr) = 0;
+
+   // Returns all points of interest for a span/girder that include the attrib attributes in the specified stage
+   virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,PoiAttributeType attrib,Uint32 mode = POIFIND_AND) = 0;
+
+   // Returns all points of interest for a span/girder that include the attrib attributes in all of the the specified stages
+   virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,std::vector<pgsTypes::Stage> stages,PoiAttributeType attrib,Uint32 mode = POIFIND_AND) = 0;
+
+   // Returns all of the 10th point points of interest for a span/girder
    virtual std::vector<pgsPointOfInterest> GetTenthPointPOIs(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr) = 0;
+
+   // Returns critical section for shear points of interest for the span/girder
    virtual void GetCriticalSection(pgsTypes::LimitState limitState,SpanIndexType span,GirderIndexType gdr,pgsPointOfInterest* pLeft,pgsPointOfInterest* pRight) = 0;
+
+   // Returns critical section for shear points of interest for the span/girder based on the supplied girder configuration
    virtual void GetCriticalSection(pgsTypes::LimitState limitState,SpanIndexType span,GirderIndexType gdr,const GDRCONFIG& config,pgsPointOfInterest* pLeft,pgsPointOfInterest* pRight) = 0;
 
-   virtual double GetDistanceFromFirstPier(const pgsPointOfInterest& poi,pgsTypes::Stage stage) = 0;
+   // Returns the dist from the first pier for the given point of interest
+   virtual Float64 GetDistanceFromFirstPier(const pgsPointOfInterest& poi,pgsTypes::Stage stage) = 0;
 
-   virtual pgsPointOfInterest GetPointOfInterest(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,double distFromStart) = 0;
-   virtual pgsPointOfInterest GetPointOfInterest(SpanIndexType span,GirderIndexType gdr,double distFromStart) = 0;
-   virtual pgsPointOfInterest GetNearestPointOfInterest(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,double distFromStart) = 0;
-   virtual pgsPointOfInterest GetNearestPointOfInterest(SpanIndexType span,GirderIndexType gdr,double distFromStart) = 0;
+   virtual pgsPointOfInterest GetPointOfInterest(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart) = 0;
+   virtual pgsPointOfInterest GetPointOfInterest(SpanIndexType span,GirderIndexType gdr,Float64 distFromStart) = 0;
+   virtual pgsPointOfInterest GetNearestPointOfInterest(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart) = 0;
+   virtual pgsPointOfInterest GetNearestPointOfInterest(SpanIndexType span,GirderIndexType gdr,Float64 distFromStart) = 0;
 };
 
 /*****************************************************************************

@@ -204,7 +204,7 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
       GirderIndexType gdrIdx = poi.GetGirder();
       Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
 
-      (*table)(row,col++) << location.SetValue( poi, end_size );
+      (*table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
       (*table)(row,col++) << scalar.SetValue(artifact.GetConditionFactor());
       (*table)(row,col++) << scalar.SetValue(artifact.GetSystemFactor());
       (*table)(row,col++) << scalar.SetValue(artifact.GetCapacityReductionFactor());
@@ -287,7 +287,7 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
       GirderIndexType gdrIdx = poi.GetGirder();
       Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
 
-      (*table)(row,col++) << location.SetValue( poi, end_size );
+      (*table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
       (*table)(row,col++) << scalar.SetValue(artifact.GetConditionFactor());
       (*table)(row,col++) << scalar.SetValue(artifact.GetSystemFactor());
       (*table)(row,col++) << scalar.SetValue(artifact.GetCapacityReductionFactor());
@@ -367,7 +367,7 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
       GirderIndexType gdrIdx = poi.GetGirder();
       Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
 
-      (*table)(row,col++) << location.SetValue( poi, end_size );
+      (*table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3,  poi, end_size );
       (*table)(row,col++) << stress.SetValue(artifact.GetAllowableStress());
       (*table)(row,col++) << scalar.SetValue(artifact.GetDeadLoadFactor());
       (*table)(row,col++) << stress.SetValue(artifact.GetDeadLoadStress());
@@ -466,7 +466,7 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
       GirderIndexType gdrIdx = poi.GetGirder();
       Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
 
-      (*table)(row,col++) << location.SetValue( poi, end_size );
+      (*table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3,  poi, end_size );
       (*table)(row,col++) << moment.SetValue(artifact.GetDeadLoadMoment());
       (*table)(row,col++) << moment.SetValue(artifact.GetWearingSurfaceMoment());
       (*table)(row,col++) << moment.SetValue(artifact.GetLiveLoadMoment());

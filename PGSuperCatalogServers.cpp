@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperCatalogServers.h"
 
 #ifdef _DEBUG
@@ -90,7 +90,7 @@ bool CPGSuperCatalogServers::IsServerDefined(const CString& strName) const
    return ( found == m_Servers.end() ? false : true );
 }
 
-void CPGSuperCatalogServers::LoadFromRegistry(CPGSuperApp* theApp)
+void CPGSuperCatalogServers::LoadFromRegistry(CWinApp* theApp)
 {
    m_Servers.clear();
    int count = theApp->GetProfileInt(_T("Servers"),_T("Count"),-1);
@@ -118,7 +118,7 @@ void CPGSuperCatalogServers::LoadFromRegistry(CPGSuperApp* theApp)
       m_Servers.insert( ServerPtr( new CFtpPGSuperCatalogServer(CString("TxDOT"),CString("ftp://ftp.dot.state.tx.us/pub/txdot-info/brg/pgsuper/")) ) );
 }
 
-void CPGSuperCatalogServers::SaveToRegistry(CPGSuperApp* theApp) const
+void CPGSuperCatalogServers::SaveToRegistry(CWinApp* theApp) const
 {
    theApp->WriteProfileInt(_T("Servers"),_T("Count"),m_Servers.size());
    Servers::const_iterator iter;

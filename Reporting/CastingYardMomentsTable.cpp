@@ -102,11 +102,9 @@ rptRcTable* CCastingYardMomentsTable::Build(IBroker* pBroker,SpanIndexType span,
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( pgsTypes::CastingYard, span, girder, POI_FLEXURESTRESS | POI_TABULAR );
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, pgsTypes::CastingYard, POI_FLEXURESTRESS | POI_TABULAR );
 
    GET_IFACE2(pBroker,IProductForces,pForces);
-
-   location.MakeGirderPoi();
 
    // Fill up the table
    RowIndexType row = p_table->GetNumberOfHeaderRows();
@@ -115,7 +113,7 @@ rptRcTable* CCastingYardMomentsTable::Build(IBroker* pBroker,SpanIndexType span,
    {
       const pgsPointOfInterest& poi = *i;
 
-      (*p_table)(row,0) << location.SetValue( poi );
+      (*p_table)(row,0) << location.SetValue( pgsTypes::CastingYard, poi );
       (*p_table)(row,1) << moment.SetValue( pForces->GetMoment( pgsTypes::CastingYard, pftGirder, poi, SimpleSpan ) );
       (*p_table)(row,2) << shear.SetValue( pForces->GetShear( pgsTypes::CastingYard, pftGirder, poi, SimpleSpan ) );
 

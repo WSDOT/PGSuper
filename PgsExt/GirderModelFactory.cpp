@@ -59,7 +59,7 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,SpanIndexType spa
 
    // get all the cross section changes
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> xsPOI = pPOI->GetPointsOfInterest(pgsTypes::CastingYard,spanIdx,gdrIdx,POI_SECTCHANGE);
+   std::vector<pgsPointOfInterest> xsPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_SECTCHANGE);
 
    std::set<SectionData> section_data;
    
@@ -138,7 +138,7 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,SpanIndexType spa
       }
 
       // use properties at mid-point between section changes
-      pgsPointOfInterest between_sections_poi(spanIdx,gdrIdx,(prevSD.Location + sd.Location)/2);
+      pgsPointOfInterest between_sections_poi(pgsTypes::CastingYard,spanIdx,gdrIdx,(prevSD.Location + sd.Location)/2);
       Float64 EI = E*pSectProp2->GetIx(pgsTypes::CastingYard, between_sections_poi);
       Float64 EA = E*pSectProp2->GetAg(pgsTypes::CastingYard, between_sections_poi);
 

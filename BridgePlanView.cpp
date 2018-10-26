@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
 #include <IFace\DrawBridgeSettings.h>
@@ -440,6 +440,7 @@ void CBridgePlanView::OnDraw(CDC* pDC)
 #ifdef _DEBUG
 void CBridgePlanView::AssertValid() const
 {
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
 	CDisplayView::AssertValid();
 }
 
@@ -659,6 +660,8 @@ void CBridgePlanView::HandleLButtonDblClk(UINT nFlags, CPoint logPoint)
 
 void CBridgePlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CMenu menu;
    VERIFY( menu.LoadMenu(IDR_BRIDGE_PLAN_CTX) );
 
@@ -2169,10 +2172,7 @@ void CBridgePlanView::UpdateDrawingScale()
 
 CBridgeModelViewChildFrame* CBridgePlanView::GetFrame()
 {
-   CWnd* pWnd = GetParent()->GetParent();
-   ATLASSERT( pWnd->IsKindOf( RUNTIME_CLASS(CBridgeModelViewChildFrame) ) );
-   CBridgeModelViewChildFrame* pFrame = (CBridgeModelViewChildFrame*)pWnd;
-   return pFrame;
+   return m_pFrame;
 }
 
 void CBridgePlanView::ClearSelection()

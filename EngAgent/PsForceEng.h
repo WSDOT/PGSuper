@@ -94,6 +94,7 @@ public:
    void ComputeLosses(const pgsPointOfInterest& poi,LOSSDETAILS* pLosses);
    void ComputeLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses);
    void ReportLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   void ReportFinalLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
 
    Float64 GetPjackMax(SpanIndexType span,GirderIndexType gdr,StrandIndexType nStrands);
    Float64 GetPjackMax(SpanIndexType span,GirderIndexType gdr,const matPsStrand& strand,StrandIndexType nStrands);

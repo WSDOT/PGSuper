@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "DesignGirderDlg.h"
 
 #include <IFace\Bridge.h>
@@ -91,7 +91,7 @@ void CDesignGirderDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CDesignGirderDlg, CDialog)
 	//{{AFX_MSG_MAP(CDesignGirderDlg)
-	ON_COMMAND(ID_HELP, OnHelp)
+	ON_BN_CLICKED(IDC_HELPME, OnHelp)
 	ON_CBN_SELCHANGE(IDC_SPAN, OnSpanChanged)
 	ON_BN_CLICKED(IDC_DESIGN_FLEXURE, OnDesignFlexure)
    ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)

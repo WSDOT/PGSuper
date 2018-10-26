@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "InplaceEditDisplayObjectEvents.h"
 #include "mfcdual.h"
 #include "pgsuperdoc.h"

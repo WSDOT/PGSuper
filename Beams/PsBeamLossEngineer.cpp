@@ -61,3 +61,8 @@ void CPsBeamLossEngineer::BuildReport(SpanIndexType span,GirderIndexType gdr,rpt
 {
    m_Engineer.BuildReport(m_BeamType,span,gdr,pChapter,pDisplayUnits);
 }
+
+void CPsBeamLossEngineer::ReportFinalLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
+{
+   m_Engineer.ReportFinalLosses(m_BeamType,span,gdr,pChapter,pDisplayUnits);
+}

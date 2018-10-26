@@ -55,7 +55,6 @@ protected:
 	afx_msg void OnAdd();
 	afx_msg void OnDelete();
 	afx_msg void OnSelchangeConfigType();
-   afx_msg void OnVariableAxleTruck();
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
@@ -63,11 +62,9 @@ protected:
 private:
    CLiveLoadAxleGrid  m_Grid;
 
-   bool m_bHasVariableAxle;
    bool m_AllowEditing;
 
    void UpdateConfig();
-   void UpdateVariableAxleChoice();
 };
 
 //{{AFX_INSERT_LOCATION}}

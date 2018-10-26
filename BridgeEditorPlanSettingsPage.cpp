@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "BridgeEditorPlanSettingsPage.h"
 #include "HtmlHelp\HelpTopics.hh"
 

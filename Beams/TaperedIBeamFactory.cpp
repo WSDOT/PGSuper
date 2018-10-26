@@ -273,35 +273,33 @@ void CTaperedIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
    Float64 start_length = pBridge->GetGirderStartConnectionLength(span,gdr);
    Float64 end_length   = pBridge->GetGirderEndConnectionLength(span,gdr);
 
-   std::set<pgsTypes::Stage> stages;
-   stages.insert(pgsTypes::CastingYard);
-   stages.insert(pgsTypes::GirderPlacement);
-   stages.insert(pgsTypes::TemporaryStrandRemoval);
-   stages.insert(pgsTypes::BridgeSite1);
-   stages.insert(pgsTypes::BridgeSite2);
-   stages.insert(pgsTypes::BridgeSite3);
+   std::vector<pgsTypes::Stage> stages;
+   stages.push_back(pgsTypes::CastingYard);
+   stages.push_back(pgsTypes::Lifting);
+   stages.push_back(pgsTypes::Hauling);
+   stages.push_back(pgsTypes::GirderPlacement);
+   stages.push_back(pgsTypes::TemporaryStrandRemoval);
+   stages.push_back(pgsTypes::BridgeSite1);
+   stages.push_back(pgsTypes::BridgeSite2);
+   stages.push_back(pgsTypes::BridgeSite3);
    
    for ( int i = 0; i < 11; i++ )
    {
       Float64 x = i*gdrLength/10;
-      pgsPointOfInterest poi(stages,span,gdr,x,attrib);
 
-      if ( x < start_length )
+      if ( x < start_length || gdrLength-end_length < x)
       {
-         pPoiMgr->AddPointOfInterest( pgsPointOfInterest(pgsTypes::CastingYard,span,gdr,x,attrib) );
-
-         poi.SetDistFromStart(start_length);
-         poi.RemoveStage(pgsTypes::CastingYard);
+         pgsPointOfInterest poi(span,gdr,x);
+         poi.AddStage(pgsTypes::CastingYard,attrib);
+         poi.AddStage(pgsTypes::Lifting,    attrib);
+         poi.AddStage(pgsTypes::Hauling,    attrib);
+         pPoiMgr->AddPointOfInterest( poi );
       }
-      else if ( gdrLength-end_length < x )
+      else
       {
-         pPoiMgr->AddPointOfInterest( pgsPointOfInterest(pgsTypes::CastingYard,span,gdr,x,attrib) );
-
-         poi.SetDistFromStart(gdrLength-end_length);
-         poi.RemoveStage(pgsTypes::CastingYard);
+         pgsPointOfInterest poi(stages,span,gdr,x,attrib);
+         pPoiMgr->AddPointOfInterest(poi);
       }
-
-      pPoiMgr->AddPointOfInterest(poi);
    }
 }
 
@@ -628,7 +626,7 @@ Float64 CTaperedIBeamFactory::GetVolume(IBroker* pBroker,SpanIndexType spanIdx,G
    GET_IFACE2(pBroker,ISectProp2,pSectProp2);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
 
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::CastingYard,spanIdx,gdrIdx,POI_SECTCHANGE);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_SECTCHANGE);
    ATLASSERT( 2 <= vPOI.size() );
    Float64 V = 0;
    std::vector<pgsPointOfInterest>::iterator iter = vPOI.begin();
@@ -656,7 +654,7 @@ Float64 CTaperedIBeamFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType span
    GET_IFACE2(pBroker,ISectProp2,pSectProp2);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
 
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::CastingYard,spanIdx,gdrIdx,POI_SECTCHANGE);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_SECTCHANGE);
    ATLASSERT( 2 <= vPOI.size() );
    Float64 S = 0;
    std::vector<pgsPointOfInterest>::iterator iter = vPOI.begin();

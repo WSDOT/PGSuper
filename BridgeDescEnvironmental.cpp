@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "BridgeDescEnvironmental.h"
 #include "BridgeDescDlg.h"
 #include "HtmlHelp\HelpTopics.hh"

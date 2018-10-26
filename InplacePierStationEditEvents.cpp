@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "InplacePierStationEditEvents.h"
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -43,6 +43,8 @@ CInplaceEditDisplayObjectEvents(pBroker), m_PierIdx(pierIdx)
 
 void CInplacePierStationEditEvents::Handle_OnChanged(iDisplayObject* pDO)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CComQIPtr<iEditableUnitValueTextBlock> pTextBlock(pDO);
    ATLASSERT(pTextBlock);
 

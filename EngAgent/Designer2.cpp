@@ -289,10 +289,10 @@ void pgsDesigner2::GetHaunchDetails(SpanIndexType span,GirderIndexType gdr,bool 
 
    Float64 fillet = pDeck->Fillet;
 
-   std::set<pgsTypes::Stage> stages;
-   stages.insert(pgsTypes::CastingYard);
-   stages.insert(pgsTypes::BridgeSite3);
-   std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(stages,span,gdr,POI_ALL,POIFIND_OR);
+   std::vector<pgsTypes::Stage> stages;
+   stages.push_back(pgsTypes::CastingYard);
+   stages.push_back(pgsTypes::BridgeSite3);
+   std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(span,gdr,stages,POI_ALL,POIFIND_OR);
 
    //
    // Profile Effects and Girder Orientation Effects
@@ -924,7 +924,7 @@ void pgsDesigner2::CheckStrandStresses(SpanIndexType span,GirderIndexType gdr,pg
    std::vector<pgsPointOfInterest> vPOI;
    pgsPointOfInterest poi;
 
-   vPOI = pIPOI->GetPointsOfInterest(pgsTypes::CastingYard,span,gdr,POI_MIDSPAN);
+   vPOI = pIPOI->GetPointsOfInterest(span,gdr,pgsTypes::CastingYard,POI_MIDSPAN);
    poi = *vPOI.begin();
 
    pArtifact->SetPointOfInterest(poi);
@@ -986,7 +986,7 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
    GET_IFACE(ISpecification,pSpec);
    GET_IFACE(IContinuity,pContinuity);
 
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(task.stage,span,gdr,POI_FLEXURESTRESS | POI_TABULAR);
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(span,gdr,task.stage,POI_FLEXURESTRESS | POI_TABULAR);
    std::vector<pgsPointOfInterest>::iterator iter;
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
@@ -1805,7 +1805,7 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
 
    // check to see if we are outside of the faces of support.... If so, then this check doesn't apply
    GET_IFACE(IPointOfInterest, pIPoi);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(stage,span,gdr,POI_FACEOFSUPPORT);
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(span,gdr,stage,POI_FACEOFSUPPORT);
    ATLASSERT(vPoi.size() == 2);
    pgsPointOfInterest leftFaceOfSupport  = vPoi[0];
    pgsPointOfInterest rightFaceOfSupport = vPoi[1];
@@ -2088,12 +2088,12 @@ void pgsDesigner2::CheckMomentCapacity(SpanIndexType span,GirderIndexType gdr,pg
 
    if ( stage == pgsTypes::BridgeSite1 )
    {
-      vPoi = pIPoi->GetPointsOfInterest(stage,span,gdr,POI_FLEXURECAPACITY);
+      vPoi = pIPoi->GetPointsOfInterest(span,gdr,stage,POI_FLEXURECAPACITY);
    }
    else
    {
       PoiAttributeType attrib = POI_FLEXURECAPACITY | POI_SHEAR | POI_CRITSECTSHEAR1 | POI_CRITSECTSHEAR2;
-      vPoi = pIPoi->GetPointsOfInterest(stage, span, gdr, attrib, POIFIND_OR );
+      vPoi = pIPoi->GetPointsOfInterest(span, gdr, stage, attrib, POIFIND_OR );
    }
 
    PierIndexType prev_pier = span;
@@ -2213,7 +2213,7 @@ void pgsDesigner2::CheckShear(SpanIndexType span,GirderIndexType gdr,pgsTypes::S
    // poi-based shear check
    // Get the basic poi's
    GET_IFACE(IPointOfInterest, pIPoi);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(stage,span,gdr,POI_SHEAR | POI_TABULAR);
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(span,gdr,stage,POI_SHEAR | POI_TABULAR);
 
    GET_IFACE(ILimitStateForces, pLimitStateForces);
 
@@ -2293,7 +2293,7 @@ void pgsDesigner2::CheckSplittingZone(SpanIndexType span,GirderIndexType gdr,pgs
    // get POI at point of prestress transfer
    // this is where the prestress force is fully transfered
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::CastingYard,span,gdr,POI_PSXFER);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(span,gdr,pgsTypes::CastingYard,POI_PSXFER);
    ATLASSERT(vPOI.size() != 0);
    pgsPointOfInterest poi = vPOI[0];
 
@@ -2391,7 +2391,7 @@ void pgsDesigner2::CheckGirderDetailing(SpanIndexType span,GirderIndexType gdr,p
 
    // get dimensions from bridge model
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::CastingYard,span,gdr,POI_ALL,POIFIND_OR);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(span,gdr,pgsTypes::CastingYard,POI_ALL,POIFIND_OR);
 
    Float64 minTopFlange = DBL_MAX;
    Float64 minBotFlange = DBL_MAX;
@@ -2543,7 +2543,7 @@ void pgsDesigner2::CheckLiveLoadDeflection(SpanIndexType span,GirderIndexType gd
 
       // find maximum live load deflection along girder
       GET_IFACE(IPointOfInterest,pIPoi);
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( pgsTypes::BridgeSite1, span, gdr, POI_FLEXURESTRESS | POI_TABULAR );
+      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, gdr, pgsTypes::BridgeSite1, POI_FLEXURESTRESS | POI_TABULAR );
 
       GET_IFACE(IProductForces,pForces);
    
@@ -4832,15 +4832,30 @@ void pgsDesigner2::DesignForLiftingHarping(bool bProportioningStrands,IProgress*
          // This is practically impossible (but could happen if there are strange
          // values used in the shipping stablity analysis). More temporary strands
          // are required for lifting than for shipping.
-         //
-         // At this point, we are going to abort the design. In the future
-         // it we should provide some logic to add temporary strands and keep
-         // the design going. This would mean a second pass through the shipping design
-         // to refine the bunk point locations and final strength
-
-         ATLASSERT(false); // need to add temporary strands
-         m_StrandDesignTool.SetOutcome(pgsDesignArtifact::GirderLiftingStability);
-         m_DesignerOutcome.AbortDesign();
+         
+         // Try adding temporary strands
+         LOG("Cannot find a pick point to safisfy FScr");
+         LOG("Additional temporary strands required");
+         if ( m_StrandDesignTool.AddTempStrands() )
+         {
+            LOG("Temporary strands added");
+            m_DesignerOutcome.SetOutcome(pgsDesignCodes::LiftingConfigChanged);
+         }
+         else
+         {
+            // couldn't add temporary strands (girder probably doesn't support them or there isn't any room)
+            LOG("Tweaking straight/harped strand proportion"); // we are going to loose the design optimization, but it is better to get a design
+            if ( m_StrandDesignTool.SwapStraightForHarped() )
+            {
+               m_DesignerOutcome.SetOutcome(pgsDesignCodes::LiftingConfigChanged);
+            }
+            else
+            {
+               ATLASSERT(false); // need to add temporary strands
+               m_StrandDesignTool.SetOutcome(pgsDesignArtifact::GirderLiftingStability);
+               m_DesignerOutcome.AbortDesign();
+            }
+         }
       }
       return;
    }

@@ -69,8 +69,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,3,0,3
- PRODUCTVERSION 2,3,0,3
+ FILEVERSION 2,3,0,4
+ PRODUCTVERSION 2,3,0,4
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -88,12 +88,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper Reporting"
-            VALUE "FileVersion", "2.3.0.3"
+            VALUE "FileVersion", "2.3.0.4"
             VALUE "InternalName", "Reporting"
             VALUE "LegalCopyright", "Copyright © 1999-2010, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperReporting.dll"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.3.0.3"
+            VALUE "ProductVersion", "2.3.0.4"
         END
     END
     BLOCK "VarFileInfo"
@@ -114,8 +114,8 @@ CAPTION "Report Options"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Select a Girder",IDC_GROUP,7,22,225,31
-    COMBOBOX        IDC_SPAN,23,33,88,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_GIRDER,129,33,88,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_SPAN,23,33,88,141,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_GIRDER,129,33,88,141,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Select Chapters to be Included in this Report",IDC_LABEL,7,58,173,8
     LISTBOX         IDC_LIST,7,69,225,115,LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
     DEFPUSHBUTTON   "OK",IDOK,40,191,50,14

@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "InplaceSpanLengthEditEvents.h"
 #include "EditSpanLength.h"
 #include <PgsExt\BridgeDescription.h>

@@ -47,10 +47,14 @@ DEFINE_GUID(IID_IVersionInfo,
 0x70dd414a, 0xb493, 0x11d2, 0x88, 0xbb, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
 interface IVersionInfo : IUnknown
 {
-   virtual void SetVersionString(const std::string& strVer) = 0;
-   virtual std::string GetVersionString() = 0;
+   // Returns the version string that should be displayed in reports, etc
+   // This string has the format
+   // Version a.b.c.d - Built on MM/YYYY
+   // The build number (.d) is omitted if bIncludeBuildNumber is false
+   virtual CString GetVersionString(bool bIncludeBuildNumber = false) = 0;
 
-   virtual void SetVersion(const std::string& strVer) = 0;
-   virtual std::string GetVersion() = 0;
+   // Returns the version number as a string in the format a.b.c.d
+   // The build number (.d) is omitted if bIncludeBuildNumber is false
+   virtual CString GetVersion(bool bIncludeBuildNumber = false) = 0;
 };
 #endif // INCLUDED_IFACE_VERSIONINFO_H_

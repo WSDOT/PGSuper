@@ -26,7 +26,7 @@ void CMyCmdTarget::OnManagePlugins()
 ///////////////////////////////////////////////////////////////////
 void CLibraryAppPlugin::ManagePlugins()
 {
-   EAFManagePlugins(CATID_PGSuperLibraryManagerPlugin,AfxGetMainWnd());
+   EAFManagePlugins(_T("Manage Library Editor Plugins"),CATID_PGSuperLibraryManagerPlugin,EAFGetMainFrame());
 }
 
 BOOL CLibraryAppPlugin::Init(CEAFApp* pParent)
@@ -40,21 +40,22 @@ void CLibraryAppPlugin::Terminate()
 
 void CLibraryAppPlugin::IntegrateWithUI(BOOL bIntegrate)
 {
-   CEAFMainFrame* pFrame = (CEAFMainFrame*)AfxGetMainWnd();
+   CEAFMainFrame* pFrame = EAFGetMainFrame();
    CEAFMenu* pMainMenu = pFrame->GetMainMenu();
 
    UINT filePos = pMainMenu->FindMenuItem("&File");
    CEAFMenu* pFileMenu = pMainMenu->GetSubMenu(filePos);
 
+   UINT managePos = pFileMenu->FindMenuItem("Manage");
+   CEAFMenu* pManageMenu = pFileMenu->GetSubMenu(managePos);
+
    if ( bIntegrate )
    {
-      pFileMenu->InsertSeparator(4,MF_BYPOSITION);
-      pFileMenu->InsertMenu(5,ID_MANAGE_PLUGINS,"Manage Library Editor Plugins...",this);
+      pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,"Manage Library Editor Plugins...",this);
    }
    else
    {
-      pFileMenu->RemoveMenu(4,                   MF_BYPOSITION,this); // separator
-      pFileMenu->RemoveMenu(ID_MANAGE_PLUGINS,  MF_BYCOMMAND, this);
+      pManageMenu->RemoveMenu(ID_MANAGE_PLUGINS,  MF_BYCOMMAND, this);
    }
 }
 
@@ -63,7 +64,7 @@ CEAFDocTemplate* CLibraryAppPlugin::CreateDocTemplate()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    // doc template for Library editor
 	CLibraryDocTemplate* pLibMgrDocTemplate = new CLibraryDocTemplate(
-		IDR_LIBRARTYPE,
+		IDR_LIBRARYTYPE,this,
 		RUNTIME_CLASS(CLibraryEditorDoc),
 		RUNTIME_CLASS(CLibChildFrame),
 		RUNTIME_CLASS(CLibraryEditorView));
@@ -83,7 +84,7 @@ HMENU CLibraryAppPlugin::GetSharedMenuHandle()
 
 UINT CLibraryAppPlugin::GetDocumentResourceID()
 {
-   return IDR_LIBRARTYPE;
+   return IDR_LIBRARYTYPE;
 }
 
 CString CLibraryAppPlugin::GetName()

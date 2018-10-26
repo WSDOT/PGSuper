@@ -68,7 +68,7 @@ typedef FailureList::iterator    FailureListIterator;
 inline bool flexure_stress_failures(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType stressType,const pgsGirderArtifact* pArtifact)
 {
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stage, span, girder, POI_FLEXURESTRESS | POI_TABULAR );
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_FLEXURESTRESS | POI_TABULAR );
    std::vector<pgsPointOfInterest>::const_iterator i;
    for ( i = vPoi.begin(); i != vPoi.end(); i++ )
    {
@@ -199,7 +199,7 @@ inline bool momcap_failures(IBroker* pBroker,SpanIndexType span,GirderIndexType 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
    std::vector<pgsPointOfInterest> vPoi;
-   vPoi = pIPoi->GetPointsOfInterest( stage, span, girder, POI_FLEXURECAPACITY | POI_TABULAR);
+   vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_FLEXURECAPACITY | POI_TABULAR);
 
    std::vector<pgsPointOfInterest>::const_iterator i;
    for ( i = vPoi.begin(); i != vPoi.end(); i++ )
@@ -238,7 +238,7 @@ inline void list_vertical_shear_failures(IBroker* pBroker,FailureList& rFailures
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
    std::vector<pgsPointOfInterest> vPoi;
-   vPoi = pIPoi->GetPointsOfInterest( pgsTypes::BridgeSite3, span, girder, POI_SHEAR|POI_TABULAR);
+   vPoi = pIPoi->GetPointsOfInterest( span, girder, pgsTypes::BridgeSite3, POI_SHEAR|POI_TABULAR);
 
    bool bContinue1 = true;
    bool bContinue2 = true;
@@ -274,7 +274,7 @@ inline void list_horizontal_shear_failures(IBroker* pBroker,FailureList& rFailur
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
    std::vector<pgsPointOfInterest> vPoi;
-   vPoi = pIPoi->GetPointsOfInterest( pgsTypes::BridgeSite3, span, girder, POI_SHEAR|POI_TABULAR);
+   vPoi = pIPoi->GetPointsOfInterest( span, girder, pgsTypes::BridgeSite3, POI_SHEAR|POI_TABULAR);
 
    std::vector<pgsPointOfInterest>::const_iterator i;
    for ( i = vPoi.begin(); i != vPoi.end(); i++ )
@@ -297,7 +297,7 @@ inline void list_stirrup_detailing_failures(IBroker* pBroker,FailureList& rFailu
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
    std::vector<pgsPointOfInterest> vPoi;
-   vPoi = pIPoi->GetPointsOfInterest( pgsTypes::BridgeSite3, span, girder, POI_SHEAR|POI_TABULAR);
+   vPoi = pIPoi->GetPointsOfInterest( span, girder, pgsTypes::BridgeSite3, POI_SHEAR|POI_TABULAR);
 
    std::vector<pgsPointOfInterest>::const_iterator i;
    for ( i = vPoi.begin(); i != vPoi.end(); i++ )

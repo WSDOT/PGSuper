@@ -100,7 +100,7 @@ pgsRatingArtifact pgsLoadRater::Rate(GirderIndexType gdrLineIdx,pgsTypes::LoadRa
 void pgsLoadRater::MomentRating(GirderIndexType gdrLineIdx,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact)
 {
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,ALL_SPANS,gdrLineIdx,POI_ALL, POIFIND_OR);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(ALL_SPANS,gdrLineIdx,pgsTypes::BridgeSite3,POI_ALL, POIFIND_OR);
 
    std::vector<Float64> vDCmin, vDCmax;
    std::vector<Float64> vDWmin, vDWmax;
@@ -264,7 +264,7 @@ void pgsLoadRater::ShearRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingTy
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,ALL_SPANS,gdrLineIdx,POI_ALL, POIFIND_OR);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(ALL_SPANS,gdrLineIdx,pgsTypes::BridgeSite3,POI_ALL, POIFIND_OR);
 
    std::vector<sysSectionValue> vDCmin, vDCmax;
    std::vector<sysSectionValue> vDWmin, vDWmax;
@@ -491,7 +491,7 @@ void pgsLoadRater::StressRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingT
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,ALL_SPANS,gdrLineIdx,POI_ALL, POIFIND_OR);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(ALL_SPANS,gdrLineIdx,pgsTypes::BridgeSite3,POI_ALL, POIFIND_OR);
 
    std::vector<Float64> vDCTopMin, vDCBotMin, vDCTopMax, vDCBotMax;
    std::vector<Float64> vDWTopMin, vDWBotMin, vDWTopMax, vDWBotMax;
@@ -669,7 +669,7 @@ void pgsLoadRater::CheckReinforcementYielding(GirderIndexType gdrLineIdx,pgsType
 {
    ATLASSERT(ratingType == pgsTypes::lrPermit_Routine || ratingType == pgsTypes::lrPermit_Special);
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,ALL_SPANS,gdrLineIdx,POI_ALL, POIFIND_OR);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(ALL_SPANS,gdrLineIdx,pgsTypes::BridgeSite3,POI_ALL, POIFIND_OR);
 
    std::vector<Float64> vDCmin, vDCmax;
    std::vector<Float64> vDWmin, vDWmax;

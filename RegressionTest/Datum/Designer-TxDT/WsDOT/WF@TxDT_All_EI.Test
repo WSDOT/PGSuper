@@ -1,6 +1,6 @@
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 40.00   6  6.58     1     1 WF74G  *    31   5/8  270 32.81 23.04   5 66.0  4.500  5.400    2.459   -2.832   8783  0.893  0.23 -0.07 -0.01 -0.01 -0.08 114.67 294.59   1.75   5.00   5.00
+ 40.00   6  6.58     1     1 WF74G  *    31   5/8  270 32.88 19.43   7 66.0  4.200  5.000    2.432   -2.819   8765  0.893  0.23 -0.07 -0.01 -0.01 -0.08 118.10 307.53   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -30,7 +30,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State for
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 40.00   6  6.58     2     1 WF74G  *    66   5/8  270 31.32 14.29  20 70.0  8.200  9.900    5.628   -6.098  18003  0.941  0.51 -0.25 -0.02 -0.02 -0.29 335.48 530.71   2.00  13.13  13.13
+ 40.00   6  6.58     2     1 WF74G  *    65   5/8  270 31.30 15.03  19 70.0  8.200  9.800    5.578   -6.054  17911  0.941  0.50 -0.25 -0.02 -0.02 -0.29 324.77 517.16   2.00  13.13  13.13
 
 
 The Specification Check was Not Successful

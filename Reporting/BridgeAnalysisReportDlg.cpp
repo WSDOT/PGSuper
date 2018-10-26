@@ -68,11 +68,7 @@ END_MESSAGE_MAP()
 
 void CBridgeAnalysisReportDlg::OnHelp() 
 {
-   AFX_MANAGE_STATE(AfxGetAppModuleState());
-   // Using AfxGetAppModuleState because we want the CPGSuperApp object
-
-   CWinApp* pApp = AfxGetApp();
-   ::HtmlHelp( *this, pApp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_DIALOG_BRIDGEANALYSISREPORT );
+   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_DIALOG_BRIDGEANALYSISREPORT );
 }
 
 BOOL CBridgeAnalysisReportDlg::OnInitDialog()

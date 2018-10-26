@@ -140,6 +140,7 @@ public:
    bool SetNumPermanentStrands(StrandIndexType num);
    bool SetNumStraightHarped(StrandIndexType ns, StrandIndexType nh);
    bool SetNumTempStrands(StrandIndexType num);
+   bool SwapStraightForHarped();
    bool AddStrands();
    bool AddTempStrands();
 
@@ -622,7 +623,7 @@ private:
    void ComputeMidZoneBoundaries();
    // compute and cache pois
    void ValidatePointsOfInterest();
-   void AddPOI(pgsPointOfInterest& rpoi, Float64 lft_conn, Float64 rgt_conn);
+   void AddPOI(pgsPointOfInterest& rpoi, Float64 lft_conn, Float64 rgt_conn,PoiAttributeType attribute);
 
    // Private Debond Design Stuff
    //////////////////////////////

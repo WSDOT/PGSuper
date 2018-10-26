@@ -148,6 +148,10 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
          *pPara << "AASHTO Manual for Bridge Evaluation, 1st Edition, 2008" << rptNewLine;
          break;
 
+      case lrfrVersionMgr::FirstEditionWith2010Interims:
+         *pPara << "AASHTO Manual for Bridge Evaluation, 1st Edition, 2008 with 2010 interim provisions" << rptNewLine;
+         break;
+
       default:
          ATLASSERT(false);
          *pPara <<"Unknown" << rptNewLine;
@@ -231,23 +235,28 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
    write_load_modifiers(pChapter, pBroker, pDisplayUnits);
    write_environmental_conditions(pChapter, pBroker, pDisplayUnits);
    write_structural_analysis(pChapter, pBroker, pDisplayUnits);
-   write_casting_yard(pChapter, pBroker, pDisplayUnits, pSpecEntry,span,gdr);
-   
-   GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
-   if (pGirderLiftingSpecCriteria->IsLiftingCheckEnabled())
+
+   if ( !bRating )
    {
-      write_lifting(pChapter, pBroker, pDisplayUnits, pSpecEntry,span,gdr);
+      write_casting_yard(pChapter, pBroker, pDisplayUnits, pSpecEntry,span,gdr);
+      
+      GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
+      if (pGirderLiftingSpecCriteria->IsLiftingCheckEnabled())
+      {
+         write_lifting(pChapter, pBroker, pDisplayUnits, pSpecEntry,span,gdr);
+      }
+
+      GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
+      if (pGirderHaulingSpecCriteria->IsHaulingCheckEnabled())
+      {
+         write_hauling(pChapter, pBroker, pDisplayUnits, pSpecEntry,span,gdr);
+      }
+
+      write_temp_strand_removal(pChapter, pBroker, pDisplayUnits, pSpecEntry,span,gdr);
+      write_bridge_site1(pChapter, pBroker, pDisplayUnits, pSpecEntry,span,gdr);
+      write_bridge_site2(pChapter, pBroker, pDisplayUnits, pSpecEntry,span,gdr);
    }
 
-   GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
-   if (pGirderHaulingSpecCriteria->IsHaulingCheckEnabled())
-   {
-      write_hauling(pChapter, pBroker, pDisplayUnits, pSpecEntry,span,gdr);
-   }
-
-   write_temp_strand_removal(pChapter, pBroker, pDisplayUnits, pSpecEntry,span,gdr);
-   write_bridge_site1(pChapter, pBroker, pDisplayUnits, pSpecEntry,span,gdr);
-   write_bridge_site2(pChapter, pBroker, pDisplayUnits, pSpecEntry,span,gdr);
    write_bridge_site3(pChapter, pBroker, pDisplayUnits, pSpecEntry,span,gdr);
    write_moment_capacity(pChapter, pBroker, pDisplayUnits, pSpecEntry,span,gdr);
    write_shear_capacity(pChapter, pBroker, pDisplayUnits, pSpecEntry,span,gdr);

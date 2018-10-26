@@ -58,7 +58,7 @@ bool CPGSuperPluginMgr::LoadPlugins()
    ID[0] = CATID_PGSuperDataImporter;
    pICatInfo->EnumClassesOfCategories(nID,ID,0,NULL,&pIEnumCLSID);
 
-   CEAFApp* pApp = (CEAFApp*)AfxGetApp();
+   CEAFApp* pApp = EAFGetApp();
 
    const int nPlugins = 5;
    CLSID clsid[nPlugins]; 

@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "pgsuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PierDisplayObjectEvents.h"
 #include "mfcdual.h"
 #include "pgsuperdoc.h"
@@ -190,7 +190,9 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject*
 
 STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
 {
-   METHOD_PROLOGUE(CPierDisplayObjectEvents,Events);
+   METHOD_PROLOGUE_(CPierDisplayObjectEvents,Events);
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 
    if ( pDO->IsSelected() )
    {

@@ -101,7 +101,6 @@ void CHaulingCheck::Build(rptChapter* pChapter,
    INIT_UV_PROTOTYPE( rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), true);
 
    location.IncludeSpanAndGirder(span == ALL_SPANS);
-   location.MakeSpanPoi();
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -202,7 +201,7 @@ void CHaulingCheck::Build(rptChapter* pChapter,
       pgsHaulingStressCheckArtifact stressArtifact = pHaulArtifact->GetHaulingStressCheckArtifact(poi.GetDistFromStart());
       pgsHaulingCrackingCheckArtifact crackArtifact =  pHaulArtifact->GetHaulingCrackingCheckArtifact(poi.GetDistFromStart());
  
-      (*p_table)(row,0) << location.SetValue( poi,overhang );
+      (*p_table)(row,0) << location.SetValue( pgsTypes::Hauling, poi,overhang );
       (*p_table)(row,1) << stress.SetValue(stressArtifact.GetMaximumInclinedConcreteCompressiveStress());
       (*p_table)(row,2) << stress.SetValue(stressArtifact.GetMaximumInclinedConcreteTensileStress());
       (*p_table)(row,3) << stress.SetValue(stressArtifact.GetMaximumConcreteCompressiveStress());

@@ -185,7 +185,7 @@ void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,CRe
    CHECK(pstirrup_artifact);
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stage, span, girder, POI_TABULAR|POI_SHEAR );
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_TABULAR|POI_SHEAR );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
@@ -411,7 +411,7 @@ rptParagraph* create_table1_design(IBroker* pBroker,
 
       if ( pArtifact->IsApplicable() )
       {
-         (*table)(row,0) << location.SetValue( poi, endSize );
+         (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, endSize );
          (*table)(row,1) << area.SetValue( pArtifact->GetAs());
          (*table)(row,2) << stress.SetValue( pArtifact->GetFy());
          (*table)(row,3) << area.SetValue( pArtifact->GetAps());
@@ -492,7 +492,7 @@ rptParagraph* create_table2_design(IBroker* pBroker,
 
       if ( pArtifact->IsApplicable() )
       {
-         (*table)(row,0) << location.SetValue( poi, endSize );
+         (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, endSize );
          (*table)(row,1) << shear.SetValue( pArtifact->GetNu());
          (*table)(row,2) << scalar.SetValue( pArtifact->GetAxialPhi());
          (*table)(row,3) << shear.SetValue( pArtifact->GetVu());
@@ -565,7 +565,7 @@ rptParagraph* create_table3_design(IBroker* pBroker,
 
       if ( pArtifact->IsApplicable() )
       {
-         (*table)(row,0) << location.SetValue( poi, endSize );
+         (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, endSize );
          (*table)(row,1) << shear.SetValue( pArtifact->GetDemandForce());
          (*table)(row,2) << shear.SetValue( pArtifact->GetCapacityForce());
          (*table)(row,3) << (pArtifact->GetEquation() == 1 ? "5.8.3.5-1" : "5.8.3.5-2");
@@ -631,7 +631,7 @@ rptParagraph* create_table1_rating(IBroker* pBroker,
 
       if ( artifact.IsApplicable() )
       {
-         (*table)(row,0) << location.SetValue( poi, endSize );
+         (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, endSize );
          (*table)(row,1) << area.SetValue( artifact.GetAs());
          (*table)(row,2) << stress.SetValue( artifact.GetFy());
          (*table)(row,3) << area.SetValue( artifact.GetAps());
@@ -716,7 +716,7 @@ rptParagraph* create_table2_rating(IBroker* pBroker,
 
       if ( artifact.IsApplicable() )
       {
-         (*table)(row,0) << location.SetValue( poi, endSize );
+         (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, endSize );
          (*table)(row,1) << shear.SetValue( artifact.GetNu());
          (*table)(row,2) << scalar.SetValue( artifact.GetAxialPhi());
          (*table)(row,3) << shear.SetValue( artifact.GetVu());
@@ -793,7 +793,7 @@ rptParagraph* create_table3_rating(IBroker* pBroker,
 
       if ( artifact.IsApplicable() )
       {
-         (*table)(row,0) << location.SetValue( poi, endSize );
+         (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, endSize );
          (*table)(row,1) << shear.SetValue( artifact.GetDemandForce());
          (*table)(row,2) << shear.SetValue( artifact.GetCapacityForce());
          (*table)(row,3) << (artifact.GetEquation() == 1 ? "5.8.3.5-1" : "5.8.3.5-2");

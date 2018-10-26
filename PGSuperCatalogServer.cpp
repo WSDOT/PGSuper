@@ -22,10 +22,10 @@
 
 #include "stdafx.h"
 #include "PGSuperCatalogServer.h"
-#include "pgsuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperTemplateManager.h"
 #include "MakePgz\UnzipPgz.h" 
-
+#include <EAF\EAFApp.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -175,8 +175,9 @@ static CString GetCatalogFileName()
 // return true if check passes
 static bool CheckFileAgainstMd5(const CString& testFile, const CString& md5File)
 {
-   CPGSuperApp* pApp = (CPGSuperApp*)AfxGetApp();
+   CEAFApp* pApp = EAFGetApp();
    CString strAppPath = pApp->GetAppLocation();
+
    CString strMD5Deep = strAppPath + CString("md5deep.exe");
 
    CFileFind finder;
@@ -248,7 +249,7 @@ BOOL PeekAndPump()
 	static MSG msg;
 
 	while (::PeekMessage(&msg,NULL,0,0,PM_NOREMOVE)) {
-		if (!AfxGetApp()->PumpMessage()) {
+		if (!EAFGetApp()->PumpMessage()) {
 			::PostQuitMessage(0);
 			return FALSE;
 		}	
@@ -280,8 +281,9 @@ bool CPGSuperCatalogServer::CheckForUpdatesUsingMD5(const CString& strLocalMaste
 {
    bool bUpdatePending = false;
 
-   CPGSuperApp* pApp = (CPGSuperApp*)AfxGetApp();
+   CEAFApp* pApp = EAFGetApp();
    CString strAppPath = pApp->GetAppLocation();
+
    CString strMD5Deep = strAppPath + CString("md5deep.exe");
 
    CFileFind finder;
@@ -419,8 +421,7 @@ void CFtpPGSuperCatalogServer::FetchCatalog(IProgressMonitor* pProgress, bool to
       }
 
       // We have the catalog, initialize the catalog parser
-      CPGSuperApp* pApp = (CPGSuperApp*)AfxGetApp();
-      CString strVersion = pApp->GetVersion(true);
+      CString strVersion = theApp.GetVersion(true);
 
       if (! m_Catalog.Init(m_strLocalCatalog,strVersion) )
       {
@@ -783,8 +784,11 @@ bool CFtpPGSuperCatalogServer::PopulateLibraryFile(IProgressMonitor* pProgress,c
    }
    catch ( CInternetException* pException)
    {
-      pFTP->Close();
-      delete pFTP;
+      if ( pFTP )
+      {
+         pFTP->Close();
+         delete pFTP;
+      }
 
       TCHAR lmsg[256];
       pException->GetErrorMessage(lmsg,256);
@@ -831,8 +835,11 @@ bool CFtpPGSuperCatalogServer::PopulateTemplateFolder(IProgressMonitor* pProgres
    catch ( CInternetException* pException)
    {
       // can't open the connection for what ever reason
-      pFTP->Close();
-      delete pFTP;
+      if ( pFTP )
+      {
+         pFTP->Close();
+         delete pFTP;
+      }
 
       TCHAR lmsg[256];
       pException->GetErrorMessage(lmsg,256);
@@ -894,8 +901,12 @@ bool CFtpPGSuperCatalogServer::PopulatePgz(const CString& publisher, IProgressMo
    {
       // can't open the connection for what ever reason
       pException->Delete();
-      pFTP->Close();
-      delete pFTP;
+
+      if ( pFTP )
+      {
+         pFTP->Close();
+         delete pFTP;
+      }
 
       CString strMessage;
       strMessage.Format("Error opening the Compressed Library/Template file from %s.",strPgzFile);
@@ -913,7 +924,7 @@ bool CFtpPGSuperCatalogServer::PopulatePgz(const CString& publisher, IProgressMo
       CString strMessage;
       strMessage.Format("It appears that there was an error downloading the file \"%s\"  The md5 file hash does not match that on the server. Try updating again, and contact the server owner if this error persists",pgzCachedFile);
 
-      ::MessageBox(AfxGetMainWnd()->GetSafeHwnd(),strMessage,"Error", MB_OK );
+      ::MessageBox(EAFGetMainFrame()->GetSafeHwnd(),strMessage,"Error", MB_OK );
       return false;
    }
 
@@ -1057,8 +1068,7 @@ void CHttpPGSuperCatalogServer::FetchCatalog(IProgressMonitor* pProgress) const
       if ( gwres==gwOk )
       {
          // we have the catalog, initialize the catalog parser
-         CPGSuperApp* pApp = (CPGSuperApp*)AfxGetApp();
-         CString strVersion = pApp->GetVersion(true);
+         CString strVersion = theApp.GetVersion(true);
 
          if (! m_Catalog.Init(m_strLocalCatalog,strVersion) )
          {
@@ -1210,7 +1220,7 @@ bool CHttpPGSuperCatalogServer::PopulateCatalog(const CString& publisher, IProgr
       CString strMessage;
       strMessage.Format("It appears that there was an error downloading the file \"%s\"  The md5 file hash does not match that on the server. Try updating again, and contact the server owner if this error persists",strPgzFile);
 
-      ::MessageBox(AfxGetMainWnd()->GetSafeHwnd(),strMessage,"Error", MB_OK );
+      ::MessageBox(EAFGetMainFrame()->GetSafeHwnd(),strMessage,"Error", MB_OK );
       return false;
    }
 

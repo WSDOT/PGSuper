@@ -61,6 +61,8 @@ public:
    virtual HRESULT CloseDocumentRootNode(IStructuredLoad* pStrLoad);
    virtual HRESULT OpenDocumentRootNode(IStructuredSave* pStrSave);
 
+   virtual CString GetRootNodeName();
+
    void OnImport(); // import library entries (command handler)
 
 // Implementation

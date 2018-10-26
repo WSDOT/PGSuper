@@ -38,8 +38,9 @@
 #define EGD_PRESTRESSING   1
 #define EGD_DEBONDING      2
 #define EGD_CONCRETE       EGD_GENERAL
-#define EGD_STIRRUPS       4
-#define EGD_TRANSPORTATION 5
+#define EGD_STIRRUPS       3
+#define EGD_TRANSPORTATION 4
+#define EGD_CONDITION      5
 
 /*****************************************************************************
 INTERFACE
@@ -73,4 +74,8 @@ interface IEditByUI : IUnknown
    virtual bool EditPointLoad(CollectionIndexType loadIdx) = 0;
    virtual bool EditDistributedLoad(CollectionIndexType loadIdx) = 0;
    virtual bool EditMomentLoad(CollectionIndexType loadIdx) = 0;
+
+   virtual UINT GetStdToolBarID() = 0;
+   virtual UINT GetLibToolBarID() = 0;
+   virtual UINT GetHelpToolBarID() = 0;
 };

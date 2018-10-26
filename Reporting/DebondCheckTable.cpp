@@ -231,7 +231,7 @@ rptRcTable* CDebondCheckTable::Build2(const pgsDebondArtifact* pDebondArtifact,S
 
       pgsPointOfInterest poi(span,girder,loc);
 
-      (*table)(sectionIdx+1,0) << location.SetValue(poi);
+      (*table)(sectionIdx+1,0) << location.SetValue(pgsTypes::BridgeSite3,poi);
       (*table)(sectionIdx+1,1) << nStrands;
 
       (*table)(sectionIdx+1,2) << nMaxStrands;

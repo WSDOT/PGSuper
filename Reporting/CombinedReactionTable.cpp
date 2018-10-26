@@ -424,7 +424,7 @@ void CCombinedReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
       }
 
       GET_IFACE2(pBroker,IStageMap,pStageMap);
-      p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"");
+      p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Reaction");
       row = ConfigureLimitStateTableHeading<rptForceUnitTag,unitmgtForceData>(p_table,true,bDesign,bPermit,bRating,false,analysisType,pStageMap,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
       *p << p_table;
 

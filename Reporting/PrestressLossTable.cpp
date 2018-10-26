@@ -80,7 +80,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    GET_IFACE2(pBroker,ILosses,pLosses);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
-   std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,span,gdr,POI_MIDSPAN);
+   std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(span,gdr,pgsTypes::BridgeSite3,POI_MIDSPAN);
    pgsPointOfInterest poi = *vPoi.begin();
 
    GET_IFACE2(pBroker,IGirderData,pGirderData);

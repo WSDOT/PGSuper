@@ -71,6 +71,8 @@ CUserRotationTable& CUserRotationTable::operator= (const CUserRotationTable& rOt
 rptRcTable* CUserRotationTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::AnalysisType analysisType,
                                       IEAFDisplayUnits* pDisplayUnits) const
 {
+   ATLASSERT(girder != ALL_GIRDERS);
+
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptAngleUnitValue, rotation, pDisplayUnits->GetRadAngleUnit(), false );
@@ -91,9 +93,12 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,SpanIndexType span,Girder
    SpanIndexType nSpans = pBridge->GetSpanCount();
    SpanIndexType startSpan = (span == ALL_SPANS ? 0 : span);
    SpanIndexType endSpan   = (span == ALL_SPANS ? nSpans : startSpan+1);
-   for ( SpanIndexType spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
+   for ( SpanIndexType spanIdx = startSpan; spanIdx < endSpan; spanIdx++ )
    {
-      std::vector<pgsPointOfInterest> vTenthPoints = pPOI->GetTenthPointPOIs(pgsTypes::BridgeSite3,spanIdx,girder);
+      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
+      GirderIndexType gdrIdx = (girder < nGirders ? girder : nGirders-1);
+
+      std::vector<pgsPointOfInterest> vTenthPoints = pPOI->GetTenthPointPOIs(pgsTypes::BridgeSite3,spanIdx,gdrIdx);
       vPoi.push_back(*vTenthPoints.begin());
       vPoi.push_back(*(vTenthPoints.end()-1));
    }

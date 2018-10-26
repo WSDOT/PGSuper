@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "ProjectPropertiesDlg.h"
 #include <MfcTools\CustomDDX.h>
 #include "HtmlHelp\HelpTopics.hh"

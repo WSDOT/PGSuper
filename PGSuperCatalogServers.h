@@ -40,8 +40,8 @@ public:
    void RemoveServer(const CString& strName);
    bool IsServerDefined(const CString& strName) const;
 
-   void LoadFromRegistry(CPGSuperApp* theApp);
-   void SaveToRegistry(CPGSuperApp* theApp) const;
+   void LoadFromRegistry(CWinApp* theApp);
+   void SaveToRegistry(CWinApp* theApp) const;
 
 private:
    // predicate class for comparing servers only by name

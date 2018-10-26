@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "GMDisplayMgrEventsImpl.h"
 #include "mfcdual.h"
 #include "GirderModelChildFrame.h"
@@ -128,14 +128,15 @@ STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnKeyDown(iDisplayMgr* pDO
 
 STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr* pDO,CWnd* pWnd,CPoint point)
 {
-   METHOD_PROLOGUE(CGMDisplayMgrEventsImpl,Events);
+   METHOD_PROLOGUE_(CGMDisplayMgrEventsImpl,Events);
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CMenu menu;
-   VERIFY( menu.LoadMenu(IDR_GIRDER_CTX) );
+   menu.LoadMenu(IDR_GIRDER_CTX);
+   CEAFMenu contextMenu(menu.Detach(),pThis->m_pDoc->GetPluginCommandManager());
 
-   CMenu* pMenu = menu.GetSubMenu(0);
-
-   pThis->m_pDoc->BuildReportMenu(pMenu,true);
+   CEAFMenu* pmnuReport = contextMenu.GetSubMenu(0);
+   pThis->m_pDoc->BuildReportMenu(pmnuReport,true);
 
    if ( point.x < 0 || point.y < 0 )
    {
@@ -149,6 +150,6 @@ STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr*
    }
 
 
-   pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x,point.y, pThis->m_pFrame );
+   pmnuReport->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x,point.y, pThis->m_pFrame );
    return true;
 }

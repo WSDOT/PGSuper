@@ -47,6 +47,9 @@ public:
 
    virtual void Reset();
 
+   void AutoCalcEnabled( bool bEnable );
+   void SetAnalysisTypeStatusIndicator(pgsTypes::AnalysisType analysisType);
+
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CPGSuperStatusBar)

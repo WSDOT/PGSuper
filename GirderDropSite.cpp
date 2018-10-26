@@ -97,7 +97,8 @@ STDMETHODIMP_(DROPEFFECT) CGirderDropSite::XDropSite::CanDrop(COleDataObject* pD
 
 STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataObject,DROPEFFECT dropEffect,IPoint2d* point)
 {
-   METHOD_PROLOGUE(CGirderDropSite,DropSite);
+   METHOD_PROLOGUE_(CGirderDropSite,DropSite);
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    // Something was dropped on a display object that represents a Girder
 

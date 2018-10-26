@@ -813,7 +813,7 @@ void CEngAgentImp::CalculateShearCritSection(pgsTypes::LimitState limitState,
       bat = ContinuousSpan;
 
    GET_IFACE(IPointOfInterest, pIPoi);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite3,span,gdr,POI_FACEOFSUPPORT);
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(span,gdr,pgsTypes::BridgeSite3,POI_FACEOFSUPPORT);
    ATLASSERT(vPoi.size() == 2);
    pgsPointOfInterest leftFaceOfSupport  = vPoi[0];
    pgsPointOfInterest rightFaceOfSupport = vPoi[1];
@@ -858,7 +858,7 @@ void CEngAgentImp::CalculateShearCritSection(pgsTypes::LimitState limitState,
 
    // Get points of interest
    GET_IFACE(IPointOfInterest,pIPOI);
-   std::vector<pgsPointOfInterest> pois = pIPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,span,gdr,POI_ALLACTIONS,POIFIND_OR);
+   std::vector<pgsPointOfInterest> pois = pIPOI->GetPointsOfInterest(span,gdr,pgsTypes::BridgeSite3,POI_ALLACTIONS,POIFIND_OR);
    std::vector<pgsPointOfInterest>::iterator iter;
 
    // only use POI's within 2.5H from the face of the supports
@@ -1384,6 +1384,11 @@ LOSSDETAILS CEngAgentImp::GetLossDetails(const pgsPointOfInterest& poi)
 void CEngAgentImp::ReportLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    m_PsForceEngineer.ReportLosses(span,gdr,pChapter,pDisplayUnits);
+}
+
+void CEngAgentImp::ReportFinalLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
+{
+   m_PsForceEngineer.ReportFinalLosses(span,gdr,pChapter,pDisplayUnits);
 }
 
 Float64 CEngAgentImp::GetElasticShortening(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config)
@@ -3102,7 +3107,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(SpanIndexType span,GirderIn
    GET_IFACE(IPrestressStresses,pPS);
    GET_IFACE(IPointOfInterest,pPOI);
 
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::CastingYard,span,gdr,POI_FLEXURESTRESS | POI_TABULAR);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(span,gdr,pgsTypes::CastingYard,POI_FLEXURESTRESS | POI_TABULAR);
    GDRCONFIG config_WithoutTTS;
    config_WithoutTTS = config;
    config_WithoutTTS.Pjack[pgsTypes::Temporary] = 0;
@@ -3188,7 +3193,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(SpanIndexType span,GirderIn
    ATLASSERT( IsEqual(hauling_artifact.GetLeadingOverhang(),hauling_artifact.GetTrailingOverhang()) );
 
    GET_IFACE(IGirderHaulingSpecCriteria,pCriteria);
-   Float64 min_location = pCriteria->GetMinimumHaulingSupportLocation();
+   Float64 min_location = max(pCriteria->GetMinimumHaulingSupportLocation(span,gdr,pgsTypes::metStart),pCriteria->GetMinimumHaulingSupportLocation(span,gdr,pgsTypes::metEnd));
    Float64 location_accuracy = pCriteria->GetHaulingSupportLocationAccuracy();
 
    bool bDone = false;
@@ -3396,7 +3401,7 @@ void CEngAgentImp::CreateLiftingAnalysisArtifact(SpanIndexType span,GirderIndexT
    {
       HANDLINGCONFIG config;
       GET_IFACE(IPointOfInterest,pPOI);
-      std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,span,gdr,POI_MIDSPAN);
+      std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(span,gdr,pgsTypes::BridgeSite3,POI_MIDSPAN);
       pgsPointOfInterest poi = vPOI[0];
 
       GET_IFACE(IBridge,pBridge);
@@ -3448,7 +3453,7 @@ void CEngAgentImp::CreateHaulingAnalysisArtifact(SpanIndexType span,GirderIndexT
    {
       HANDLINGCONFIG config;
       GET_IFACE(IPointOfInterest,pPOI);
-      std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,span,gdr,POI_MIDSPAN);
+      std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(span,gdr,pgsTypes::BridgeSite3,POI_MIDSPAN);
       pgsPointOfInterest poi = vPOI[0];
 
       GET_IFACE(IBridge,pBridge);

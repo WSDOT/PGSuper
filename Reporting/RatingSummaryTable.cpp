@@ -231,7 +231,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
             pgsPointOfInterest poi = pMomentArtifact->GetPointOfInterest();
             Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
             
-            (*table)(row,col+2) << location.SetValue(poi,end_size);
+            (*table)(row,col+2) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size);
             row++;
 
             if ( bNegMoments )
@@ -247,7 +247,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
                pgsPointOfInterest poi = pMomentArtifact->GetPointOfInterest();
                Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
                
-               (*table)(row,col+2) << location.SetValue(poi,end_size);
+               (*table)(row,col+2) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size);
                row++;
             }
 
@@ -265,7 +265,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
                pgsPointOfInterest poi = pShearArtifact->GetPointOfInterest();
                Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
 
-               (*table)(row,col+2) << location.SetValue(poi,end_size);
+               (*table)(row,col+2) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size);
                row++;
             }
             else
@@ -291,7 +291,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
             pgsPointOfInterest poi = pMomentArtifact->GetPointOfInterest();
             Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
             
-            (*table)(row,col+2) << location.SetValue(poi,end_size);
+            (*table)(row,col+2) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size);
             row++;
 
             if ( bNegMoments )
@@ -307,7 +307,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
                pgsPointOfInterest poi = pMomentArtifact->GetPointOfInterest();
                Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
                
-               (*table)(row,col+2) << location.SetValue(poi,end_size);
+               (*table)(row,col+2) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size);
                row++;
             }
 
@@ -324,7 +324,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
                pgsPointOfInterest poi = pShearArtifact->GetPointOfInterest();
                Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
 
-               (*table)(row,col+2) << location.SetValue(poi,end_size);
+               (*table)(row,col+2) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size);
                row++;
             }
             else
@@ -354,7 +354,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
                   pgsPointOfInterest poi = pYieldStressArtifact->GetPointOfInterest();
                   Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
                   
-                  (*table)(row,col+2) << location.SetValue(poi,end_size);
+                  (*table)(row,col+2) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size);
                   row++;
 
                   RF = pRatingArtifact->GetYieldStressRatioEx(false, &pYieldStressArtifact);
@@ -367,7 +367,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
                   poi = pYieldStressArtifact->GetPointOfInterest();
                   end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
                   
-                  (*table)(row,col+2) << location.SetValue(poi,end_size);
+                  (*table)(row,col+2) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size);
                   row++;
                }
                else
@@ -383,7 +383,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
                   pgsPointOfInterest poi = pYieldStressArtifact->GetPointOfInterest();
                   Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
                   
-                  (*table)(row,col+2) << location.SetValue(poi,end_size);
+                  (*table)(row,col+2) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size);
                   row++;
                }
             }
@@ -434,7 +434,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,GirderIndexT
                pgsPointOfInterest poi = pStressArtifact->GetPointOfInterest();
                Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
                
-               (*table)(row,col+2) << location.SetValue(poi,end_size);
+               (*table)(row,col+2) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size);
                row++;
             }
          }
@@ -674,7 +674,7 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,GirderIndexType
             (*pTable)(row,1) << rptNewLine << "(Stress Ratio)";
 
          (*pTable)(row,2) << scalar.SetValue(gLL);
-         (*pTable)(row,3) << location.SetValue( poi,end_size );
+         (*pTable)(row,3) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
          (*pTable)(row,4) << strControlling;
 
          row++;

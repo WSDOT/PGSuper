@@ -24,13 +24,14 @@
 //
 #include "stdafx.h"
 
+#include "PGSuperAppPlugin\PGSuperApp.h"
+
 #include <WBFLDManip.h>
 #include <WBFLDManipTools.h>
 
 #include <objbase.h>
 #include <initguid.h>
 
-#include "PGSuper.h"
 #include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
 #include "PGSuperBaseAppPlugin.h"
@@ -44,7 +45,6 @@
 #include <WBFLDManip_i.c>
 #include <WBFLDManipTools_i.c>
 
-#include <PsgLib\PGSuperLibrary_i.h>
 #include <PGSuperAppPlugin.h>
 #include <PGSuperProjectImporterAppPlugin.h>
 
@@ -87,6 +87,7 @@
 
 #include <ComCat.h>
 
+#include "BridgeLinkCatCom.h"
 #include "PGSuperCatCom.h"
 
 #include "Hints.h"
@@ -323,8 +324,9 @@ void CPGSuperDoc::EnableAutoCalc(bool bEnable)
    {
       bool bWasDisabled = !IsAutoCalcEnabled();
       m_bAutoCalcEnabled = bEnable;
-      CMainFrame* pMainFrame = (CMainFrame*)AfxGetMainWnd();
-      pMainFrame->AutoCalcEnabled( m_bAutoCalcEnabled );
+
+      CPGSuperStatusBar* pStatusBar = ((CPGSuperStatusBar*)EAFGetMainFrame()->GetStatusBar());
+      pStatusBar->AutoCalcEnabled( m_bAutoCalcEnabled );
 
       // If AutoCalc was off and now it is on,
       // Update the views.
@@ -379,6 +381,8 @@ void CPGSuperDoc::GetDocUnitSystem(IDocUnitSystem** ppDocUnitSystem)
 
 void CPGSuperDoc::EditAlignmentDescription(int nPage)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    GET_IFACE(IRoadwayData,pAlignment);
    CAlignmentDescriptionDlg dlg("Alignment Description",m_pBroker);
 
@@ -401,6 +405,8 @@ void CPGSuperDoc::EditAlignmentDescription(int nPage)
 
 void CPGSuperDoc::EditBridgeDescription(int nPage)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    GET_IFACE(IRoadwayData,pAlignment);
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    GET_IFACE(ILiveLoads, pLiveLoads);
@@ -455,6 +461,8 @@ void CPGSuperDoc::EditBridgeDescription(int nPage)
 
 bool CPGSuperDoc::EditPierDescription(PierIndexType pierIdx, int nPage)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    GET_IFACE(IBridgeDescription,pBridgeDesc);
    const CBridgeDescription* pBridge = pBridgeDesc->GetBridgeDescription();
  
@@ -478,6 +486,8 @@ bool CPGSuperDoc::EditPierDescription(PierIndexType pierIdx, int nPage)
 
 bool CPGSuperDoc::EditSpanDescription(SpanIndexType spanIdx, int nPage)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    GET_IFACE(IBridgeDescription,pBridgeDesc);
    const CBridgeDescription* pBridge = pBridgeDesc->GetBridgeDescription();
    const CSpanData* pSpanData = pBridgeDesc->GetSpan(spanIdx);
@@ -500,6 +510,8 @@ bool CPGSuperDoc::EditSpanDescription(SpanIndexType spanIdx, int nPage)
 
 bool CPGSuperDoc::EditGirderDescription(SpanIndexType span,GirderIndexType girder, int nPage)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    GET_IFACE(IGirderData,pGirderData);
 
    GET_IFACE(IShear,pShear);
@@ -581,7 +593,7 @@ bool CPGSuperDoc::EditGirderDescription(SpanIndexType span,GirderIndexType girde
    //   // take the user back to the editing interface
    //   // TODO: Make this go back to the Tendons page
    //   SelectGirder(dlg.m_CurrentSpanIdx,dlg.m_CurrentGirderIdx);
-   //   AfxGetMainWnd()->PostMessage(WM_COMMAND,ID_EDIT_GIRDER);
+   //   EAFGetMainFrame()->PostMessage(WM_COMMAND,ID_EDIT_GIRDER);
 
    //   return false;
    //}
@@ -656,6 +668,8 @@ bool CPGSuperDoc::EditMomentLoad(CollectionIndexType loadIdx)
 
 void CPGSuperDoc::EditGirderViewSettings(int nPage)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    UINT settings = GetGirderEditorSettings();
 
 	CGirderEditorSettingsSheet dlg(IDS_GM_VIEW_SETTINGS);
@@ -675,6 +689,8 @@ void CPGSuperDoc::EditGirderViewSettings(int nPage)
 
 void CPGSuperDoc::EditBridgeViewSettings(int nPage)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    UINT settings = GetBridgeEditorSettings();
 
 	CBridgeEditorSettingsSheet dlg(IDS_BM_VIEW_SETTINGS);
@@ -696,10 +712,13 @@ void CPGSuperDoc::EditBridgeViewSettings(int nPage)
 
 BOOL CPGSuperDoc::UpdateTemplates()
 {
-   CPGSuperApp* pApp =(CPGSuperApp*) AfxGetApp();
+   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+   CComPtr<IEAFAppPlugin> pAppPlugin;
+   pTemplate->GetPlugin(&pAppPlugin);
+   CPGSuperBaseAppPlugin* pPGSuper = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
 
    CString workgroup_folder;
-   pApp->GetTemplateFolders(workgroup_folder);
+   pPGSuper->GetTemplateFolders(workgroup_folder);
 
    if  ( !Init() ) // load the agents and other necessary stuff
       return FALSE;
@@ -769,12 +788,20 @@ BOOL CPGSuperDoc::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
    return TRUE;
 }
 
+void CPGSuperDoc::OnCloseDocument()
+{
+   CEAFBrokerDocument::OnCloseDocument();
+}
+
 void CPGSuperDoc::InitProjectProperties()
 {
-   CPGSuperApp* pApp =(CPGSuperApp*) AfxGetApp();
-   
-   CString engineer_name = pApp->GetEngineerName();
-   CString company = pApp->GetEngineerCompany();
+   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+   CComPtr<IEAFAppPlugin> pAppPlugin;
+   pTemplate->GetPlugin(&pAppPlugin);
+   CPGSuperBaseAppPlugin* pPGSuper = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
+
+   CString engineer_name = pPGSuper->GetEngineerName();
+   CString company       = pPGSuper->GetEngineerCompany();
 
    GET_IFACE( IProjectProperties, pProjProp );
 
@@ -803,8 +830,8 @@ void CPGSuperDoc::OnCreateFinalize()
    PopulateReportMenu();
 
    // Set the autocalc state on the status bar
-   CMainFrame* pMainFrame = (CMainFrame*)AfxGetMainWnd();
-   pMainFrame->AutoCalcEnabled( IsAutoCalcEnabled() );
+   CPGSuperStatusBar* pStatusBar = ((CPGSuperStatusBar*)EAFGetMainFrame()->GetStatusBar());
+   pStatusBar->AutoCalcEnabled( IsAutoCalcEnabled() );
 
    // views have been initilized so fire any pending events
    GET_IFACE(IEvents,pEvents);
@@ -844,13 +871,9 @@ BOOL CPGSuperDoc::OpenTheDocument(LPCTSTR lpszPathName)
    if ( !CEAFBrokerDocument::OpenTheDocument(lpszPathName) )
       return FALSE;
 
-   // sets the status bar indicator for structural analysis type
-   UpdateAnalysisTypeStatusIndicator();
-
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    m_DocUnitSystem->put_UnitMode( IS_US_UNITS(pDisplayUnits) ? umUS : umSI );
   
-
    return TRUE;
 }
 
@@ -1068,12 +1091,6 @@ BOOL CPGSuperDoc::Init()
    // Setup the library manager (same as if it changed)
    OnLibMgrChanged( &m_LibMgr );
 
-   // Put the version number into the Project Agent
-   GET_IFACE(IVersionInfo,pVerInfo);
-   std::string ver( theApp.GetVersionString(false).GetBuffer(100) );
-   pVerInfo->SetVersionString( ver );
-   pVerInfo->SetVersion( theApp.GetVersion(false).GetBuffer(100) );
-
    // Set up the document unit system
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
    CComPtr<IEAFAppPlugin> pAppPlugin;
@@ -1112,6 +1129,8 @@ BOOL CPGSuperDoc::LoadSpecialAgents(IBrokerInitEx2* pBrokerInit)
 
 void CPGSuperDoc::OnFileProjectProperties() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    GET_IFACE( IProjectProperties, pProjProp );
 
    CProjectPropertiesDlg dlg;
@@ -1298,6 +1317,8 @@ void CPGSuperDoc::HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathName )
 
 void CPGSuperDoc::OnProjectEnvironment() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    GET_IFACE( IEnvironment, pEnvironment );
 
    enumExposureCondition ec = pEnvironment->GetExposureCondition();
@@ -1329,6 +1350,8 @@ void CPGSuperDoc::OnProjectBridgeDesc()
 /*--------------------------------------------------------------------*/
 void CPGSuperDoc::OnProjectSpec() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    GET_IFACE( ILibraryNames, pLibNames );
 
    std::vector<std::string> specs;
@@ -1352,6 +1375,8 @@ void CPGSuperDoc::OnProjectSpec()
 
 void CPGSuperDoc::OnRatingSpec()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    GET_IFACE( ILibraryNames, pLibNames );
 
    CRatingOptionsDlg dlg;
@@ -1491,9 +1516,6 @@ void CPGSuperDoc::OnExportToTemplateFile()
    CString initial_filespec;
    CString initial_dir;
    
-   CPGSuperApp* pApp =(CPGSuperApp*) AfxGetApp();
-
-
    // prompt user to save current project to a template file
    CFileDialog  fildlg(FALSE,"pgt",default_name,OFN_HIDEREADONLY,
                    "PGSuper Template Files (*.pgt)|*.pgt||");
@@ -1501,8 +1523,13 @@ void CPGSuperDoc::OnExportToTemplateFile()
 #if defined _DEBUG
    // If this is a debug build, then the developers are probably running
    // the software and they want the workgroup folder most often.
+   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+   CComPtr<IEAFAppPlugin> pAppPlugin;
+   pTemplate->GetPlugin(&pAppPlugin);
+   CPGSuperBaseAppPlugin* pPGSuper = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
+
    CString workgroup_folder;
-   pApp->GetTemplateFolders(workgroup_folder);
+   pPGSuper->GetTemplateFolders(workgroup_folder);
    fildlg.m_ofn.lpstrInitialDir = workgroup_folder;
 #else
    fildlg.m_ofn.lpstrInitialDir = initial_dir;
@@ -1527,223 +1554,6 @@ void CPGSuperDoc::OnExportToTemplateFile()
       // write the file.
       SaveTheDocument( file_path );
    }
-}
-
-bool CPGSuperDoc::DoTxDotCadReport(const CString& outputFileName, const CString& errorFileName, const CPGSuperCommandLineInfo& txInfo)
-{
-   // Called from the command line processing in the Application object
-
-   // open the error file
-   std::ofstream err_file(errorFileName);
-   if ( !err_file )
-   {
-	   AfxMessageBox ("Could not Create error file");
-	   return false;
-   }
-
-   // Open/create the specified output file 
-   FILE	*fp;
-   errno_t result;
-   if (txInfo.m_DoAppendToFile)
-   {
-      result = fopen_s(&fp, LPCTSTR (outputFileName), "a+");
-   }
-   else
-   {
-      result = fopen_s(&fp, LPCTSTR (outputFileName), "w+");
-   }
-
-   if (result != 0 || fp == NULL)
-   {
-      err_file<<"Error: Output file could not be Created."<<std::endl;
-	   return false;
-   }
-
-   // Get starting and ending spans
-   GET_IFACE(IBridge,pBridge);
-   SpanIndexType nSpans = pBridge->GetSpanCount();
-
-   SpanIndexType start_span, end_span;
-   if (txInfo.m_TxSpan==ALL_SPANS)
-   {
-      // looping over all spans
-      start_span = 0;
-      end_span = nSpans-1;
-   }
-   else
-   {
-      if (txInfo.m_TxSpan>=nSpans)
-      {
-         err_file<<"Span value is out of range for this bridge"<<std::endl;
-	      return false;
-      }
-      else
-      {
-         start_span = txInfo.m_TxSpan;
-         end_span   = txInfo.m_TxSpan;
-      }
-   }
-
-   // Build list of span/girders to operate on (error out before we do anything of there are problems)
-   std::vector<SpanGirderHashType> spn_grd_list;
-
-   for (SpanIndexType is=start_span; is<=end_span; is++)
-   {
-      // we can have a different number of girders per span
-      GirderIndexType nGirders = pBridge->GetGirderCount(is);
-
-      if (txInfo.m_TxGirder==TXALLGIRDERS)
-      {
-         for (GirderIndexType ig=0; ig<nGirders; ig++)
-         {
-            SpanGirderHashType key = HashSpanGirder(is,ig);
-            spn_grd_list.push_back(key);
-         }
-      }
-      else if (txInfo.m_TxGirder==TXEIGIRDERS)
-      {
-         // Exterior/Interior option
-         SpanGirderHashType key = HashSpanGirder(is,0); // left exterior
-         spn_grd_list.push_back(key);
-
-         if (nGirders>2)
-         {
-            SpanGirderHashType key = HashSpanGirder(is,1); // exterior-most interior
-            spn_grd_list.push_back(key);
-
-            if (nGirders>4)
-            {
-               SpanGirderHashType key = HashSpanGirder(is,nGirders/2); // middle-most interior
-               spn_grd_list.push_back(key);
-            }
-         }
-      }
-
-      else if (txInfo.m_TxGirder<nGirders)
-      {
-         SpanGirderHashType key = HashSpanGirder(is,txInfo.m_TxGirder);
-         spn_grd_list.push_back(key);
-      }
-      else
-      {
-         err_file<<"Girder value is out of range for this bridge"<<std::endl;
-	      return false;
-      }
-   }
-
-   GET_IFACE(IProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
-
-   // Loop over all span/girder combos and create results
-   for(std::vector<SpanGirderHashType>::iterator it=spn_grd_list.begin(); it!=spn_grd_list.end(); it++)
-   {
-      SpanGirderHashType key = *it;
-      SpanIndexType span;
-      GirderIndexType girder;
-      UnhashSpanGirder(key, &span, &girder);
-
-      CString strMessage;
-      strMessage.Format("Creating TxDOT CAD report for Span %d, Girder %s",LABEL_SPAN(span), LABEL_GIRDER(girder));
-      pProgress->UpdateMessage(strMessage);
-
-      // See if we need to run a design
-      bool designSucceeded=true;
-      if (txInfo.m_TxRunType==CPGSuperCommandLineInfo::txrDesign)
-      {
-         // get design options from library entry. Do flexure only
-         GET_IFACE(ISpecification,pSpecification);
-         arDesignOptions des_options = pSpecification->GetDesignOptions(span,girder);
-
-         des_options.doDesignForShear = false; // shear design is off
-
-         GET_IFACE(IArtifact,pIArtifact);
-         const pgsDesignArtifact* pArtifact;
-         try
-         {
-            // Design the girder
-            pArtifact = pIArtifact->CreateDesignArtifact( span,girder, des_options);
-         
-            if (pArtifact->GetOutcome() != pgsDesignArtifact::Success)
-            {
-               err_file <<"Design was unsuccessful"<<std::endl;
-               designSucceeded=false;
-            }
-
-            // and copy the design to the bridge
-            SaveFlexureDesign(span,girder, des_options, pArtifact);
-         }
-         catch(...)
-         {
-           err_file <<"Design Failed for span"<<span<<" girder "<<girder<<std::endl;
-            return false;
-         }
-      }
-
-      GET_IFACE(ITxDOTCadExport,pTxDOTCadExport);
-      if ( !pTxDOTCadExport )
-      {
-         AfxMessageBox("The TxDOT Cad Exporter is not currently installed");
-         return false;
-      }
-
-      if (txInfo.m_TxRunType==CPGSuperCommandLineInfo::TxrDistributionFactors)
-      {
-         // Write distribution factor data to file
-         if (CAD_SUCCESS != pTxDOTCadExport->WriteDistributionFactorsToFile (fp, this->m_pBroker, span, girder))
-         {
-            err_file <<"Warning: An error occured while writing to File"<<std::endl;
-	         return false;
-         }
-      }
-      else
-      {
-         /* Write CAD data to text file */
-         if (CAD_SUCCESS != pTxDOTCadExport->WriteCADDataToFile(fp, this->m_pBroker, span, girder, (TxDOTCadExportFormatType)txInfo.m_TxFType, designSucceeded) )
-         {
-            err_file <<"Warning: An error occured while writing to File"<<std::endl;
-	         return false;
-         }
-	  }
-   }
-
-   /* Close the open text file */
-   fclose (fp);
-
-   // ---------------------------------------------
-   // Run a 12-50 output if this is a test file
-   if (txInfo.m_TxFType==CPGSuperCommandLineInfo::txfTest)
-   {
-      // file names
-      CString resultsfile, poifile, errfile;
-      if (create_test_file_names(txInfo.m_strFileName,&resultsfile,&poifile,&errfile))
-      {
-         GET_IFACE(ITest1250, ptst );
-
-         try
-         {
-            if (!ptst->RunTestEx(RUN_CADTEST, spn_grd_list, std::string(resultsfile), std::string(poifile)))
-            {
-               CString msg = CString("Error - Running test on file")+txInfo.m_strFileName;
-               ::AfxMessageBox(msg);
-            }
-         }
-         catch(...)
-         {
-            CString msg = CString("Error - running test for input file:")+txInfo.m_strFileName;
-            ::AfxMessageBox(msg);
-            return false;
-         }
-      }
-      else
-      {
-         CString msg = CString("Error - Determining 1250 test file names for")+txInfo.m_strFileName;
-         ::AfxMessageBox(msg);
-         return false;
-      }
-   }
-
-
-   return true;
 }
 
 bool DoesFolderExist(const CString& dirname)
@@ -1817,14 +1627,16 @@ void CPGSuperDoc::OnLoadsLoadModifiers()
 
 void CPGSuperDoc::UpdateAnalysisTypeStatusIndicator()
 {
-   GET_IFACE(ISpecification,pSpec);
-   CMainFrame* pMainFrame = (CMainFrame*)AfxGetMainWnd();
+   CPGSuperStatusBar* pStatusBar = (CPGSuperStatusBar*)(EAFGetMainFrame()->GetStatusBar());
 
-   pMainFrame->SetAnalysisTypeStatusIndicator(pSpec->GetAnalysisType());
+   GET_IFACE(ISpecification,pSpec);
+   pStatusBar->SetAnalysisTypeStatusIndicator(pSpec->GetAnalysisType());
 }
 
 void CPGSuperDoc::OnProjectDesignGirder() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
    if ( pStatusCenter->GetSeverity() == eafTypes::statusError )
    {
@@ -1927,6 +1739,8 @@ void CPGSuperDoc::DesignGirderDirect(bool bDesignSlabOffset)
 
 void CPGSuperDoc::DoDesignGirder(SpanIndexType span,GirderIndexType gdr,const arDesignOptions& designOptions)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    GET_IFACE(IArtifact,pIArtifact);
    const pgsDesignArtifact* pArtifact = pIArtifact->CreateDesignArtifact( span, gdr, designOptions);
 
@@ -1956,149 +1770,20 @@ void CPGSuperDoc::DoDesignGirder(SpanIndexType span,GirderIndexType gdr,const ar
    }
 }
 
-void CPGSuperDoc::SaveFlexureDesign(SpanIndexType span,GirderIndexType gdr,const arDesignOptions& designOptions,const pgsDesignArtifact* pArtifact)
-{
-   GET_IFACE(IGirderData,pGirderData);
-   GET_IFACE(IStrandGeometry, pStrandGeometry );
-
-   CGirderData girderData = pGirderData->GetGirderData(span, gdr);
-
-   // Convert Harp offset data
-   // offsets are absolute measure in the design artifact
-   // convert them to the measurement basis that the CGirderData object is using
-   girderData.HpOffsetAtEnd = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(span, gdr, 
-                                                                                  pArtifact->GetNumHarpedStrands(), 
-                                                                                  girderData.HsoEndMeasurement, 
-                                                                                  pArtifact->GetHarpStrandOffsetEnd());
-
-   girderData.HpOffsetAtHp = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(span, gdr, 
-                                                                                pArtifact->GetNumHarpedStrands(), 
-                                                                                girderData.HsoHpMeasurement, 
-                                                                                pArtifact->GetHarpStrandOffsetHp());
-
-
-
-#pragma Reminder("############ - Update with loop after updating Artifact #############")
-   // see if strand design data fits in grid
-   bool fills_grid=false;
-   StrandIndexType num_permanent = pArtifact->GetNumHarpedStrands() + pArtifact->GetNumStraightStrands();
-   if (designOptions.doStrandFillType==ftGridOrder)
-   {
-      // we asked design to fill using grid, but this may be a non-standard design - let's check
-      StrandIndexType ns, nh;
-      if (pStrandGeometry->ComputeNumPermanentStrands(num_permanent, span, gdr, &ns, &nh))
-      {
-         if (ns==pArtifact->GetNumStraightStrands() && nh==pArtifact->GetNumHarpedStrands() )
-         {
-            fills_grid = true;
-         }
-      }
-   }
-
-   if (fills_grid)
-   {
-      girderData.NumPermStrandsType = NPS_TOTAL_NUMBER;
-
-      girderData.Nstrands[pgsTypes::Permanent]            = num_permanent;
-      girderData.Pjack[pgsTypes::Permanent]               = pArtifact->GetPjackStraightStrands() + pArtifact->GetPjackHarpedStrands();
-      girderData.bPjackCalculated[pgsTypes::Permanent]    = pArtifact->GetUsedMaxPjackStraightStrands();
-   }
-   else
-   {
-      girderData.NumPermStrandsType = NPS_STRAIGHT_HARPED;
-   }
-
-   girderData.Nstrands[pgsTypes::Harped]            = pArtifact->GetNumHarpedStrands();
-   girderData.Nstrands[pgsTypes::Straight]          = pArtifact->GetNumStraightStrands();
-   girderData.Nstrands[pgsTypes::Temporary]         = pArtifact->GetNumTempStrands();
-   girderData.Pjack[pgsTypes::Harped]               = pArtifact->GetPjackHarpedStrands();
-   girderData.Pjack[pgsTypes::Straight]             = pArtifact->GetPjackStraightStrands();
-   girderData.Pjack[pgsTypes::Temporary]            = pArtifact->GetPjackTempStrands();
-   girderData.bPjackCalculated[pgsTypes::Harped]    = pArtifact->GetUsedMaxPjackHarpedStrands();
-   girderData.bPjackCalculated[pgsTypes::Straight]  = pArtifact->GetUsedMaxPjackStraightStrands();
-   girderData.bPjackCalculated[pgsTypes::Temporary] = pArtifact->GetUsedMaxPjackTempStrands();
-   girderData.LastUserPjack[pgsTypes::Harped]       = pArtifact->GetPjackHarpedStrands();
-   girderData.LastUserPjack[pgsTypes::Straight]     = pArtifact->GetPjackStraightStrands();
-   girderData.LastUserPjack[pgsTypes::Temporary]    = pArtifact->GetPjackTempStrands();
-
-   girderData.TempStrandUsage = pArtifact->GetTemporaryStrandUsage();
-
-   // Get debond information from design artifact
-   girderData.ClearDebondData();
-   girderData.bSymmetricDebond = true;  // design is always symmetric
-
-   DebondInfoCollection dbcoll = pArtifact->GetStraightStrandDebondInfo();
-   // TRICKY: Mapping from DEBONDINFO to CDebondInfo is tricky because
-   //         former designates individual strands and latter stores symmetric strands
-   //         in pairs.
-   // sort this collection by strand idices to ensure we get it right
-   std::sort( dbcoll.begin(), dbcoll.end() ); // default < operator is by index
-
-   for (DebondInfoIterator dbit = dbcoll.begin(); dbit!=dbcoll.end(); dbit++)
-   {
-      const DEBONDINFO& rdbrinfo = *dbit;
-
-      CDebondInfo cdbi;
-      cdbi.idxStrand1 = rdbrinfo.strandIdx;
-
-      // if the difference between the current and next number of strands is 2, this is a pair
-      StrandIndexType currnum = rdbrinfo.strandIdx;
-      StrandIndexType nextnum = pStrandGeometry->GetNextNumStrands(span, gdr, pgsTypes::Straight, currnum);
-      if (nextnum-currnum == 2)
-      {
-         dbit++; // increment counter to account for a pair
-         cdbi.idxStrand2 = dbit->strandIdx;
-
-         // some asserts to ensure we got things right
-         ATLASSERT(cdbi.idxStrand1+1 == cdbi.idxStrand2);
-         ATLASSERT(rdbrinfo.LeftDebondLength == dbit->LeftDebondLength);
-         ATLASSERT(rdbrinfo.RightDebondLength == dbit->RightDebondLength);
-      }
-      else
-      {
-         // not a pair
-         cdbi.idxStrand2 = INVALID_INDEX;
-      }
-      cdbi.Length1    = rdbrinfo.LeftDebondLength;
-      cdbi.Length2    = rdbrinfo.RightDebondLength;
-
-      girderData.Debond[pgsTypes::Straight].push_back(cdbi);
-   }
-   
-   // concrete
-   girderData.Material.Fci = pArtifact->GetReleaseStrength();
-   girderData.Material.Fc  = pArtifact->GetConcreteStrength();
-
-   pGirderData->SetGirderData( girderData, span, gdr );
-
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   CBridgeDescription bridgeDesc = *pIBridgeDesc->GetBridgeDescription();
-   CSpanData* pSpan = bridgeDesc.GetSpan(span);
-   CGirderTypes girderTypes = *(pSpan->GetGirderTypes());
-   girderTypes.SetSlabOffset(gdr,pgsTypes::metStart,pArtifact->GetSlabOffset(pgsTypes::metStart));
-   girderTypes.SetSlabOffset(gdr,pgsTypes::metEnd,  pArtifact->GetSlabOffset(pgsTypes::metEnd));
-   pSpan->SetGirderTypes(girderTypes);
-   pIBridgeDesc->SetBridgeDescription(bridgeDesc);
-
-   GET_IFACE(IGirderLifting,pLifting);
-   pLifting->SetLiftingLoopLocations(span, gdr,pArtifact->GetLeftLiftingLocation(),pArtifact->GetRightLiftingLocation());
-
-   GET_IFACE(IGirderHauling,pHauling);
-   pHauling->SetTruckSupportLocations(span, gdr,pArtifact->GetTrailingOverhang(),pArtifact->GetLeadingOverhang());
-
-}
-
 bool CPGSuperDoc::LoadMasterLibrary()
 {
    WATCH("Loading Master Library");
 
    // Load the master library
-   CPGSuperApp* pApp =(CPGSuperApp*) AfxGetApp();
+   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+   CComPtr<IEAFAppPlugin> pAppPlugin;
+   pTemplate->GetPlugin(&pAppPlugin);
+   CPGSuperBaseAppPlugin* pPGSuper = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
 
-   CString strMasterLibaryFile = pApp->GetCachedMasterLibraryFile();
+   CString strMasterLibaryFile = pPGSuper->GetCachedMasterLibraryFile();
 
-   std::string strPublisher = pApp->GetMasterLibraryPublisher();
-   std::string strMasterLibFile = pApp->GetMasterLibraryFile();
+   std::string strPublisher = pPGSuper->GetMasterLibraryPublisher();
+   std::string strMasterLibFile = pPGSuper->GetMasterLibraryFile();
 
    m_LibMgr.SetMasterLibraryInfo(strPublisher.c_str(),strMasterLibFile.c_str());
 
@@ -2125,9 +1810,14 @@ bool CPGSuperDoc::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
          // the user a chance to load another library file
 
          AfxMessageBox(err_msg,MB_OK|MB_ICONSTOP);
-         CPGSuperApp* pApp = (CPGSuperApp*)AfxGetApp();
-         pApp->OnProgramSettings(TRUE);
-         strFile = pApp->GetCachedMasterLibraryFile();
+
+         CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+         CComPtr<IEAFAppPlugin> pAppPlugin;
+         pTemplate->GetPlugin(&pAppPlugin);
+         CPGSuperBaseAppPlugin* pPGSuper = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
+
+         pPGSuper->UpdateProgramSettings(TRUE);
+         strFile = pPGSuper->GetCachedMasterLibraryFile();
       }
       else
       {
@@ -2143,6 +1833,8 @@ bool CPGSuperDoc::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
 
 void CPGSuperDoc::OnEditGirder() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CSelectGirderDlg dlg(m_pBroker);
    dlg.m_Span   = m_CurrentSpanIdx   == ALL_SPANS   ? 0 : m_CurrentSpanIdx;
    dlg.m_Girder = m_CurrentGirderIdx == ALL_GIRDERS ? 0 : m_CurrentGirderIdx;
@@ -2206,6 +1898,8 @@ void CPGSuperDoc::SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx)
 
 void CPGSuperDoc::OnCopyGirderProps() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CCopyGirderDlg dlg(m_pBroker,this);
    if ( dlg.DoModal() == IDOK )
    {
@@ -2326,6 +2020,8 @@ void CPGSuperDoc::OnLoadsLldf()
 
 void CPGSuperDoc::OnLoadsLldf(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction) 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pOldBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -2347,6 +2043,8 @@ void CPGSuperDoc::OnLoadsLldf(pgsTypes::DistributionFactorMethod method,LldfRang
 
 void CPGSuperDoc::OnAddPointload() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	CEditPointLoadDlg dlg(CPointLoadData(),m_pBroker);
    if (dlg.DoModal() == IDOK)
    {
@@ -2359,6 +2057,8 @@ void CPGSuperDoc::OnAddPointload()
 /*-------------------------------------------------------------------*/
 void CPGSuperDoc::OnAddDistributedLoad() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	CEditDistributedLoadDlg dlg(CDistributedLoadData(),m_pBroker);
    if (dlg.DoModal() == IDOK)
    {
@@ -2371,6 +2071,8 @@ void CPGSuperDoc::OnAddDistributedLoad()
 
 void CPGSuperDoc::OnAddMomentLoad() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	CEditMomentLoadDlg dlg(CMomentLoadData(),m_pBroker);
    if (dlg.DoModal() == IDOK)
    {
@@ -2382,6 +2084,8 @@ void CPGSuperDoc::OnAddMomentLoad()
 
 void CPGSuperDoc::OnConstructionLoads()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CConstructionLoadDlg dlg;
    GET_IFACE(IUserDefinedLoadData,pLoads);
    Float64 load = pLoads->GetConstructionLoad();
@@ -2402,6 +2106,8 @@ void CPGSuperDoc::OnProjectAlignment()
 
 void CPGSuperDoc::OnLiveLoads() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    GET_IFACE( ILibraryNames, pLibNames );
    GET_IFACE( ILiveLoads, pLiveLoad );
 
@@ -2506,6 +2212,8 @@ void CPGSuperDoc::OnViewLibraryEditor()
 
 void CPGSuperDoc::OnProjectAnalysis() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CStructuralAnalysisMethodDlg dlg;
    GET_IFACE(ISpecification,pSpec);
    pgsTypes::AnalysisType currAnalysisType = pSpec->GetAnalysisType();
@@ -2523,6 +2231,8 @@ void CPGSuperDoc::OnProjectAnalysis()
 
 void CPGSuperDoc::OnEditPier() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    PierIndexType nPiers = pBridgeDesc->GetPierCount();
@@ -2553,6 +2263,8 @@ void CPGSuperDoc::OnEditPier()
 
 void CPGSuperDoc::OnEditSpan() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
@@ -2730,6 +2442,8 @@ void CPGSuperDoc::DeleteSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType pier
 
 void CPGSuperDoc::OnInsert() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    PierIndexType nPiers = pBridgeDesc->GetPierCount();
@@ -2791,6 +2505,8 @@ void CPGSuperDoc::OnOptionsHints()
 
 void CPGSuperDoc::OnOptionsLabels() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CGirderLabelFormatDlg dlg;
    dlg.m_Format = (pgsGirderLabel::UseAlphaLabel() ? 0 : 1);
    if ( dlg.DoModal() )
@@ -2850,7 +2566,7 @@ void CPGSuperDoc::LoadDocumentSettings()
 {
    CEAFBrokerDocument::LoadDocumentSettings();
 
-   CPGSuperApp* pApp = (CPGSuperApp*)AfxGetApp();
+   CEAFApp* pApp = EAFGetApp();
    CString strAutoCalcDefault = pApp->GetLocalMachineString(_T("Settings"),_T("AutoCalc"), _T("On"));
    CString strAutoCalc = pApp->GetProfileString(_T("Settings"),_T("AutoCalc"),strAutoCalcDefault);
    if ( strAutoCalc.CompareNoCase(_T("Off")) == 0 )
@@ -2918,7 +2634,7 @@ void CPGSuperDoc::SaveDocumentSettings()
 {
    CEAFBrokerDocument::SaveDocumentSettings();
 
-   CPGSuperApp* pApp = (CPGSuperApp*)AfxGetApp();
+   CEAFApp* pApp = EAFGetApp();
 
    VERIFY(pApp->WriteProfileString( _T("Settings"),_T("AutoCalc"),m_bAutoCalcEnabled ? _T("On") : _T("Off") ));
 
@@ -2975,6 +2691,8 @@ void CPGSuperDoc::OnUpdateViewReports(CCmdUI* pCmdUI)
 
 void CPGSuperDoc::OnViewReports(NMHDR* pnmhdr,LRESULT* plr) 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    // This method gets called when the down arrow toolbar button is used
    // It creates the drop down menu with the report names on it
    NMTOOLBAR* pnmtb = (NMTOOLBAR*)(pnmhdr);
@@ -2983,11 +2701,13 @@ void CPGSuperDoc::OnViewReports(NMHDR* pnmhdr,LRESULT* plr)
 
    CMenu menu;
    VERIFY( menu.LoadMenu(IDR_REPORTS) );
-
    CMenu* pMenu = menu.GetSubMenu(0);
    pMenu->RemoveMenu(0,MF_BYPOSITION); // remove the placeholder
 
-   BuildReportMenu(pMenu,false);
+   CEAFMenu contextMenu(pMenu->Detach(),GetPluginCommandManager());
+
+
+   BuildReportMenu(&contextMenu,false);
 
    GET_IFACE(IEAFToolbars,pToolBars);
    CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
@@ -2997,7 +2717,7 @@ void CPGSuperDoc::OnViewReports(NMHDR* pnmhdr,LRESULT* plr)
 
    CPoint point(rect.left,rect.bottom);
    pToolBar->ClientToScreen(&point);
-   pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, AfxGetMainWnd() );
+   contextMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
 }
 
 
@@ -3010,6 +2730,11 @@ void CPGSuperDoc::OnImportMenu(CCmdUI* pCmdUI)
       return;
 
    CMenu* pMenu = (pCmdUI->m_pSubMenu ? pCmdUI->m_pSubMenu : pCmdUI->m_pMenu);
+   UINT nItems = pMenu->GetMenuItemCount();
+   for ( UINT i = 1; i < nItems; i++ )
+   {
+      pMenu->DeleteMenu(i,MF_BYPOSITION);
+   }
 
    Uint32 nImporters = m_PluginMgr.GetImporterCount();
    if ( nImporters == 0 )
@@ -3025,19 +2750,6 @@ void CPGSuperDoc::OnImportMenu(CCmdUI* pCmdUI)
       for ( idx = 0; idx < nImporters; idx++ )
       {
          pMenu->DeleteMenu(pCmdUI->m_nID+idx,MF_BYCOMMAND);
-      }
-
-      // figure out if there is a document or not
-      CMainFrame* pMainFrame = (CMainFrame*)AfxGetMainWnd();
-      ASSERT( pMainFrame->IsKindOf(RUNTIME_CLASS(CMainFrame)) );
-      CMDIChildWnd* pChild = pMainFrame->MDIGetActive();
-      CPGSuperDoc* pDoc = NULL;
-
-      if ( pChild )
-      {
-         CView* pView = pChild->GetActiveView();
-         pDoc = (CPGSuperDoc*)pView->GetDocument();
-         ASSERT( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) );
       }
 
       // populate the menu
@@ -3057,9 +2769,6 @@ void CPGSuperDoc::OnImportMenu(CCmdUI* pCmdUI)
 
    	   pCmdUI->m_nIndexMax = pMenu->GetMenuItemCount();
 
-         // disable command if it is a data importer and there isn't an open document
-         pCmdUI->Enable(pDoc ? TRUE : FALSE);
-
          pCmdUI->m_nIndex++;
       }
    }
@@ -3076,9 +2785,11 @@ void CPGSuperDoc::OnExportMenu(CCmdUI* pCmdUI)
       return;
 
    CMenu* pMenu = (pCmdUI->m_pSubMenu ? pCmdUI->m_pSubMenu : pCmdUI->m_pMenu);
-
-   CMainFrame* pMainFrm = (CMainFrame*)AfxGetMainWnd();
-   CMDIChildWnd* pChild = pMainFrm->MDIGetActive();
+   UINT nItems = pMenu->GetMenuItemCount();
+   for ( UINT i = 1; i < nItems; i++ )
+   {
+      pMenu->DeleteMenu(i,MF_BYPOSITION);
+   }
 
    Uint32 nExporters = m_PluginMgr.GetExporterCount();
    if ( nExporters == 0 )
@@ -3111,7 +2822,6 @@ void CPGSuperDoc::OnExportMenu(CCmdUI* pCmdUI)
          pMenu->SetMenuItemBitmaps(cmdID,MF_BYCOMMAND,pBmp,NULL);
 
          pCmdUI->m_nIndexMax = pMenu->GetMenuItemCount();
-         pCmdUI->Enable(pChild ? TRUE : FALSE);
          pCmdUI->m_nIndex++;
       }
    }

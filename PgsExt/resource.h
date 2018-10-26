@@ -9,7 +9,6 @@
 #define IDC_GIRDER                      1050
 #define IDC_GROUP                       1051
 #define IDS_E_NOCHAPTERS                1492
-#define IDI_WARNING2                    202
 #define IDC_MESSAGE                     1231
 #define IDD_REFINEDANALYSIS             216
 #define IDC_DESCRIPTION                 1336

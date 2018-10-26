@@ -44,46 +44,46 @@ CLASS
 pgsPointOfInterest::pgsPointOfInterest()
 {
    m_ID = -1;
-   m_Span = 0;
-   m_Girder = 0;
+   m_Span = INVALID_INDEX;
+   m_Girder = INVALID_INDEX;
    m_DistFromStart = 0;
-   m_Attributes = POI_ALLACTIONS | POI_ALLOUTPUT;
 }
 
-pgsPointOfInterest::pgsPointOfInterest(SpanIndexType span,GirderIndexType gdr,Float64 distFromStart,PoiAttributeType attrib) :
+pgsPointOfInterest::pgsPointOfInterest(SpanIndexType span,GirderIndexType gdr,Float64 distFromStart) :
 m_ID(-1),
 m_Span(span),
 m_Girder(gdr),
-m_DistFromStart(distFromStart),
-m_Attributes(attrib)
+m_DistFromStart(distFromStart)
 {
    ATLASSERT( !(distFromStart < 0) );  // must be zero or more.
 
    ASSERTVALID;
 }
-
 pgsPointOfInterest::pgsPointOfInterest(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart,PoiAttributeType attrib) :
 m_ID(-1),
 m_Span(span),
 m_Girder(gdr),
-m_DistFromStart(distFromStart),
-m_Attributes(attrib)
+m_DistFromStart(distFromStart)
 {
    ATLASSERT( !(distFromStart < 0) );  // must be zero or more.
 
-   m_Stages.insert(stage);
+   m_Stages.insert( std::make_pair(stage,attrib) );
    ASSERTVALID;
 }
 
-pgsPointOfInterest::pgsPointOfInterest(std::set<pgsTypes::Stage> stages,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart,PoiAttributeType attrib) :
+pgsPointOfInterest::pgsPointOfInterest(std::vector<pgsTypes::Stage> stages,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart,PoiAttributeType attrib) :
 m_ID(-1),
 m_Span(span),
 m_Girder(gdr),
-m_DistFromStart(distFromStart),
-m_Attributes(attrib),
-m_Stages(stages)
+m_DistFromStart(distFromStart)
 {
    ATLASSERT( !(distFromStart < 0) );  // must be zero or more.
+
+   std::vector<pgsTypes::Stage>::iterator iter;
+   for ( iter = stages.begin(); iter != stages.end(); iter++ )
+   {
+      m_Stages.insert( std::make_pair(*iter,attrib) );
+   }
 
    ASSERTVALID;
 }
@@ -190,35 +190,61 @@ Float64 pgsPointOfInterest::GetDistFromStart() const
    return m_DistFromStart;
 }
 
-void pgsPointOfInterest::SetAttributes(PoiAttributeType attrib)
+void pgsPointOfInterest::SetAttributes(pgsTypes::Stage stage,PoiAttributeType attrib)
 {
-   m_Attributes = attrib;
+   StageContainer::iterator found = m_Stages.find(stage);
+   if ( found != m_Stages.end() )
+   {
+      found->second = attrib;
+   }
+   else
+   {
+      m_Stages.insert( std::make_pair(stage,attrib) );
+   }
+
    ASSERTVALID;
 }
 
-PoiAttributeType pgsPointOfInterest::GetAttributes() const
+void pgsPointOfInterest::SetAttributes(const std::vector<pgsTypes::Stage>& stages,PoiAttributeType attrib)
 {
-   return m_Attributes;
+   std::vector<pgsTypes::Stage>::const_iterator iter;
+   for ( iter = stages.begin(); iter != stages.end(); iter++ )
+   {
+      SetAttributes(*iter,attrib);
+   }
 }
 
-bool pgsPointOfInterest::HasAttribute(PoiAttributeType attribute) const
+PoiAttributeType pgsPointOfInterest::GetAttributes(pgsTypes::Stage stage) const
 {
-   return sysFlags<PoiAttributeType>::IsSet(m_Attributes,attribute);
+   StageContainer::const_iterator found = m_Stages.find(stage);
+   if ( found != m_Stages.end() )
+      return found->second;
+
+   return 0;
 }
 
-void pgsPointOfInterest::AddStage(pgsTypes::Stage stage)
+bool pgsPointOfInterest::HasAttribute(pgsTypes::Stage stage,PoiAttributeType attribute) const
 {
-   m_Stages.insert(stage);
+   return sysFlags<PoiAttributeType>::IsSet(GetAttributes(stage),attribute);
 }
 
-void pgsPointOfInterest::AddStages(std::set<pgsTypes::Stage> stages)
+void pgsPointOfInterest::AddStage(pgsTypes::Stage stage,PoiAttributeType attribute)
 {
-   m_Stages.insert(stages.begin(),stages.end());
+   m_Stages.insert( std::make_pair(stage,attribute) );
+}
+
+void pgsPointOfInterest::AddStages(std::vector<pgsTypes::Stage> stages,PoiAttributeType attribute)
+{
+   std::vector<pgsTypes::Stage>::iterator iter;
+   for ( iter = stages.begin(); iter != stages.end(); iter++ )
+   {
+      m_Stages.insert( std::make_pair(*iter,attribute) );
+   }
 }
 
 void pgsPointOfInterest::RemoveStage(pgsTypes::Stage stage)
 {
-   std::set<pgsTypes::Stage>::iterator found = m_Stages.find(stage);
+   StageContainer::iterator found = m_Stages.find(stage);
    if ( found != m_Stages.end() )
    {
       m_Stages.erase(found);
@@ -227,13 +253,19 @@ void pgsPointOfInterest::RemoveStage(pgsTypes::Stage stage)
 
 bool pgsPointOfInterest::HasStage(pgsTypes::Stage stage) const
 {
-   std::set<pgsTypes::Stage>::const_iterator found = m_Stages.find(stage);
+   StageContainer::const_iterator found = m_Stages.find(stage);
    return ( found != m_Stages.end() ? true : false );
 }
 
-std::set<pgsTypes::Stage> pgsPointOfInterest::GetStages() const
+std::vector<pgsTypes::Stage> pgsPointOfInterest::GetStages() const
 {
-   return m_Stages;
+   std::vector<pgsTypes::Stage> stages;
+   StageContainer::const_iterator iter;
+   for ( iter = m_Stages.begin(); iter != m_Stages.end(); iter++ )
+   {
+      stages.push_back( iter->first );
+   }
+   return stages;
 }
 
 Uint32 pgsPointOfInterest::GetStageCount() const
@@ -253,76 +285,81 @@ Float64 pgsPointOfInterest::GetTolerance()
 
 //======================== INQUIRY    =======================================
 
-bool pgsPointOfInterest::IsFlexureStress() const
+bool pgsPointOfInterest::IsFlexureStress(pgsTypes::Stage stage) const
 {
-   return sysFlags<PoiAttributeType>::IsSet( m_Attributes, POI_FLEXURESTRESS );
+   return sysFlags<PoiAttributeType>::IsSet( GetAttributes(stage), POI_FLEXURESTRESS );
 }
 
-bool pgsPointOfInterest::IsFlexureCapacity() const
+bool pgsPointOfInterest::IsFlexureCapacity(pgsTypes::Stage stage) const
 {
-   return sysFlags<PoiAttributeType>::IsSet( m_Attributes, POI_FLEXURECAPACITY );
+   return sysFlags<PoiAttributeType>::IsSet( GetAttributes(stage), POI_FLEXURECAPACITY );
 }
 
-bool pgsPointOfInterest::IsShear() const
+bool pgsPointOfInterest::IsShear(pgsTypes::Stage stage) const
 {
-   return sysFlags<PoiAttributeType>::IsSet( m_Attributes, POI_SHEAR );
+   return sysFlags<PoiAttributeType>::IsSet( GetAttributes(stage), POI_SHEAR );
 }
 
-bool pgsPointOfInterest::IsDisplacement() const
+bool pgsPointOfInterest::IsDisplacement(pgsTypes::Stage stage) const
 {
-   return sysFlags<PoiAttributeType>::IsSet( m_Attributes, POI_DISPLACEMENT );
+   return sysFlags<PoiAttributeType>::IsSet( GetAttributes(stage), POI_DISPLACEMENT );
 }
 
-bool pgsPointOfInterest::IsHarpingPoint() const
+bool pgsPointOfInterest::IsHarpingPoint(pgsTypes::Stage stage) const
 {
-   return sysFlags<PoiAttributeType>::IsSet( m_Attributes, POI_HARPINGPOINT );
+   return sysFlags<PoiAttributeType>::IsSet( GetAttributes(stage), POI_HARPINGPOINT );
 }
 
-bool pgsPointOfInterest::IsConcentratedLoad() const
+bool pgsPointOfInterest::IsConcentratedLoad(pgsTypes::Stage stage) const
 {
-   return sysFlags<PoiAttributeType>::IsSet( m_Attributes, POI_CONCLOAD );
+   return sysFlags<PoiAttributeType>::IsSet( GetAttributes(stage), POI_CONCLOAD );
 }
 
-bool pgsPointOfInterest::IsMidSpan() const
+bool pgsPointOfInterest::IsMidSpan(pgsTypes::Stage stage) const
 {
-   return sysFlags<PoiAttributeType>::IsSet( m_Attributes, POI_MIDSPAN );
+   return sysFlags<PoiAttributeType>::IsSet( GetAttributes(stage), POI_MIDSPAN );
 }
 
-bool pgsPointOfInterest::IsTabular() const
+bool pgsPointOfInterest::IsTabular(pgsTypes::Stage stage) const
 {
-   return sysFlags<PoiAttributeType>::IsSet( m_Attributes, POI_TABULAR );
+   return sysFlags<PoiAttributeType>::IsSet( GetAttributes(stage), POI_TABULAR );
 }
 
-bool pgsPointOfInterest::IsGraphical() const
+bool pgsPointOfInterest::IsGraphical(pgsTypes::Stage stage) const
 {
-   return sysFlags<PoiAttributeType>::IsSet( m_Attributes, POI_GRAPHICAL );
+   return sysFlags<PoiAttributeType>::IsSet( GetAttributes(stage), POI_GRAPHICAL );
 }
 
-bool pgsPointOfInterest::IsAtH() const
+bool pgsPointOfInterest::IsAtH(pgsTypes::Stage stage) const
 {
-   return sysFlags<PoiAttributeType>::IsSet( m_Attributes, POI_H );
+   return sysFlags<PoiAttributeType>::IsSet( GetAttributes(stage), POI_H );
 }
 
-bool pgsPointOfInterest::IsAt15H() const
+bool pgsPointOfInterest::IsAt15H(pgsTypes::Stage stage) const
 {
-   return sysFlags<PoiAttributeType>::IsSet( m_Attributes, POI_15H );
+   return sysFlags<PoiAttributeType>::IsSet( GetAttributes(stage), POI_15H );
 }
 
-Uint16 pgsPointOfInterest::IsATenthPoint(PoiAttributeType basisType) const
+Uint16 pgsPointOfInterest::IsATenthPoint(pgsTypes::Stage stage) const
 {
-   Uint16 tenthPoint = GetAttributeTenthPoint(m_Attributes);
-   if ( HasAttribute(basisType) )
-      return tenthPoint;
-   else
-      return 0;
+   return GetAttributeTenthPoint(GetAttributes(stage));
 }
 
-void pgsPointOfInterest::MakeTenthPoint(PoiAttributeType basisType,Uint16 tenthPoint)
+void pgsPointOfInterest::MakeTenthPoint(pgsTypes::Stage stage,Uint16 tenthPoint)
 {
-   ATLASSERT(basisType == POI_SPAN_POINT || basisType == POI_GIRDER_POINT);
    ATLASSERT(tenthPoint <= 11);
-   m_Attributes |= basisType;
-   SetAttributeTenthPoint(tenthPoint,&m_Attributes);
+   PoiAttributeType attribute = GetAttributes(stage);
+   SetAttributeTenthPoint(tenthPoint,&attribute);
+   SetAttributes(stage,attribute);
+}
+
+void pgsPointOfInterest::MakeTenthPoint(const std::vector<pgsTypes::Stage>& stages,Uint16 tenthPoint)
+{
+   std::vector<pgsTypes::Stage>::const_iterator iter;
+   for ( iter = stages.begin(); iter != stages.end(); iter++ )
+   {
+      MakeTenthPoint(*iter,tenthPoint);
+   }
 }
 
 ////////////////////////// PROTECTED  ///////////////////////////////////////
@@ -337,7 +374,6 @@ void pgsPointOfInterest::MakeCopy(const pgsPointOfInterest& rOther)
    m_Span          = rOther.m_Span;
    m_Girder        = rOther.m_Girder;
    m_DistFromStart = rOther.m_DistFromStart;
-   m_Attributes    = rOther.m_Attributes;
    m_Stages        = rOther.m_Stages;
 
    ASSERTVALID;
@@ -381,89 +417,12 @@ bool pgsPointOfInterest::AssertValid() const
 
    return true;
 }
-
-void pgsPointOfInterest::Dump(dbgDumpContext& os) const
-{
-   os << "Dump for pgsPointOfInterest" << endl;
-   os << "m_ID            = " << m_ID << endl;
-   os << "m_Span          = " << m_Span << endl;
-   os << "m_Girder        = " << m_Girder << endl;
-   os << "m_DistFromStart = " << m_DistFromStart << endl;
-   //os << "m_Attributes    = " << m_Attributes << endl;
-
-
-   if ( IsFlexureCapacity() )
-      os << "   FlexureCapacity" << endl;
-
-   if ( IsFlexureStress() )
-      os << "   FlexureStress" << endl;
-
-   if ( IsShear() )
-      os << "   Shear" << endl;
-
-   if ( IsDisplacement() )
-      os << "   Displacement" << endl;
-
-   if ( IsHarpingPoint() )
-      os << "   HarpingPoint" << endl;
-
-   if ( IsConcentratedLoad() )
-      os << "   ConcentrateLoad" << endl;
-
-   if ( IsMidSpan() )
-      os << "   MidSpan" << endl;
-
-   if ( IsAtH() )
-      os << "   At H" << endl;
-
-   if ( IsAt15H() )
-      os << "   At 1.5H" << endl;
-
-   if ( IsGraphical() )
-      os << "   Graphical" << endl;
-
-   if ( IsTabular() )
-      os << "   Tabular" << endl;
-}
 #endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsPointOfInterest::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("pgsPointOfInterest");
-
-   pgsPointOfInterest poi(1,1,10.0);
-   TRY_TESTME( poi.GetSpan() == 1 );
-   TRY_TESTME( poi.GetGirder() == 1 );
-   TRY_TESTME( IsEqual(poi.GetDistFromStart(),10.) );
-   TRY_TESTME( poi.IsFlexureCapacity() );
-   TRY_TESTME( poi.IsFlexureStress() );
-   TRY_TESTME( poi.IsShear() );
-   TRY_TESTME( poi.IsDisplacement() );
-   TRY_TESTME( !poi.IsHarpingPoint() );
-   TRY_TESTME( !poi.IsConcentratedLoad() );
-   TRY_TESTME( poi.IsTabular() );
-   TRY_TESTME( poi.IsGraphical() );
-
-   TESTME_EPILOG("PointOfInterest");
-}
-#endif // _UNITTEST
-
-
-rptPointOfInterest::rptPointOfInterest(const pgsPointOfInterest& poi,
-                                       Float64 endOffset,
-                                       const unitLength* pUnitOfMeasure,
-                                       Float64 zeroTolerance,
-                                       bool bShowUnitTag,bool bSpanPOI) :
-rptLengthUnitValue( poi.GetDistFromStart()-endOffset , pUnitOfMeasure, zeroTolerance, bShowUnitTag ),
-m_Poi(poi),m_bSpanPOI(bSpanPOI),m_bPrefixAttributes(true)
-{
-}
 
 rptPointOfInterest::rptPointOfInterest(const unitLength* pUnitOfMeasure,
                                        Float64 zeroTolerance,
-                                       bool bShowUnitTag,bool bSpanPOI) :
-rptLengthUnitValue(pUnitOfMeasure,zeroTolerance,bShowUnitTag),m_bSpanPOI(bSpanPOI),m_bPrefixAttributes(true),m_bIncludeSpanAndGirder(false)
+                                       bool bShowUnitTag) :
+rptLengthUnitValue(pUnitOfMeasure,zeroTolerance,bShowUnitTag),m_bPrefixAttributes(true),m_bIncludeSpanAndGirder(false)
 {
 }
 
@@ -486,26 +445,6 @@ rptReportContent* rptPointOfInterest::CreateClone() const
    return new rptPointOfInterest( *this );
 }
 
-void rptPointOfInterest::MakeGirderPoi(bool bGirderPOI)
-{
-   m_bSpanPOI = !bGirderPOI;
-}
-
-void rptPointOfInterest::MakeSpanPoi(bool bSpanPOI)
-{
-   m_bSpanPOI = bSpanPOI;
-}
-
-bool rptPointOfInterest::IsSpanPoi() const
-{
-   return m_bSpanPOI;
-}
-
-bool rptPointOfInterest::IsGirderPoi() const
-{
-   return !m_bSpanPOI;
-}
-
 void rptPointOfInterest::IncludeSpanAndGirder(bool bIncludeSpanAndGirder)
 {
    m_bIncludeSpanAndGirder = bIncludeSpanAndGirder;
@@ -516,9 +455,10 @@ bool rptPointOfInterest::IncludeSpanAndGirder() const
    return m_bIncludeSpanAndGirder;
 }
 
-rptReportContent& rptPointOfInterest::SetValue(const pgsPointOfInterest& poi,Float64 endOffset)
+rptReportContent& rptPointOfInterest::SetValue(pgsTypes::Stage stage,const pgsPointOfInterest& poi,Float64 endOffset)
 {
-   m_Poi = poi;
+   m_POI = poi;
+   m_Stage = stage;
    return rptLengthUnitValue::SetValue( poi.GetDistFromStart() - endOffset );
 }
 
@@ -526,11 +466,11 @@ std::string rptPointOfInterest::AsString() const
 {
    std::string strAttrib;
    Uint16 nAttributes = 0;
-   PoiAttributeType attributes = m_Poi.GetAttributes();
+   PoiAttributeType attributes = m_POI.GetAttributes(m_Stage);
 
    strAttrib = "(";
 
-   if ( m_Poi.IsHarpingPoint() )
+   if ( m_POI.IsHarpingPoint(m_Stage) )
    {
       if ( 0 < nAttributes )
          strAttrib += ", ";
@@ -539,7 +479,7 @@ std::string rptPointOfInterest::AsString() const
       nAttributes++;
    }
 
-   if ( m_Poi.IsAtH() && ((m_bSpanPOI == m_Poi.HasAttribute(POI_SPAN_POINT)) || (!m_bSpanPOI == m_Poi.HasAttribute(POI_GIRDER_POINT))) )
+   if ( m_POI.IsAtH(m_Stage) )
    {
       if ( 0 < nAttributes )
          strAttrib += ", ";
@@ -548,7 +488,7 @@ std::string rptPointOfInterest::AsString() const
       nAttributes++;
    }
 
-   if ( m_Poi.IsAt15H() )
+   if ( m_POI.IsAt15H(m_Stage) )
    {
       if ( 0 < nAttributes )
          strAttrib += ", ";
@@ -559,7 +499,7 @@ std::string rptPointOfInterest::AsString() const
    
    if ( lrfdVersionMgr::ThirdEdition2004 <= lrfdVersionMgr::GetVersion() )
    {
-      if ( m_Poi.HasAttribute(POI_CRITSECTSHEAR1) || m_Poi.HasAttribute(POI_CRITSECTSHEAR2) )
+      if ( m_POI.HasAttribute(m_Stage,POI_CRITSECTSHEAR1) || m_POI.HasAttribute(m_Stage,POI_CRITSECTSHEAR2) )
       {
          if ( 0 < nAttributes )
             strAttrib += ", ";
@@ -570,7 +510,7 @@ std::string rptPointOfInterest::AsString() const
    }
    else
    {
-      if ( m_Poi.HasAttribute(POI_CRITSECTSHEAR1) )
+      if ( m_POI.HasAttribute(m_Stage,POI_CRITSECTSHEAR1) )
       {
          if ( 0 < nAttributes )
             strAttrib += ", ";
@@ -579,7 +519,7 @@ std::string rptPointOfInterest::AsString() const
          nAttributes++;
       }
       
-      if ( m_Poi.HasAttribute(POI_CRITSECTSHEAR2) )
+      if ( m_POI.HasAttribute(m_Stage,POI_CRITSECTSHEAR2) )
       {
          if ( 0 < nAttributes )
             strAttrib += ", ";
@@ -589,7 +529,7 @@ std::string rptPointOfInterest::AsString() const
       }
    }
 
-   if ( m_Poi.HasAttribute(POI_PSXFER) )
+   if ( m_POI.HasAttribute(m_Stage,POI_PSXFER) )
    {
       if ( 0 < nAttributes )
          strAttrib += ", ";
@@ -598,7 +538,7 @@ std::string rptPointOfInterest::AsString() const
       nAttributes++;
    }
 
-   if ( m_Poi.HasAttribute(POI_PSDEV) )
+   if ( m_POI.HasAttribute(m_Stage,POI_PSDEV) )
    {
       if ( 0 < nAttributes )
          strAttrib += ", ";
@@ -607,7 +547,7 @@ std::string rptPointOfInterest::AsString() const
       nAttributes++;
    }
 
-   if ( m_Poi.HasAttribute(POI_DEBOND) )
+   if ( m_POI.HasAttribute(m_Stage,POI_DEBOND) )
    {
       if ( 0 < nAttributes )
          strAttrib += ", ";
@@ -616,7 +556,7 @@ std::string rptPointOfInterest::AsString() const
       nAttributes++;
    }
 
-   if ( m_Poi.HasAttribute(POI_BARCUTOFF) )
+   if ( m_POI.HasAttribute(m_Stage,POI_BARCUTOFF) )
    {
       if ( 0 < nAttributes )
          strAttrib += ", ";
@@ -625,7 +565,7 @@ std::string rptPointOfInterest::AsString() const
       nAttributes++;
    }
 
-   if ( m_Poi.HasAttribute(POI_PICKPOINT) )
+   if ( m_POI.HasAttribute(m_Stage,POI_PICKPOINT) )
    {
       if ( 0 < nAttributes )
          strAttrib += ", ";
@@ -634,7 +574,7 @@ std::string rptPointOfInterest::AsString() const
       nAttributes++;
    }
 
-   if ( m_Poi.HasAttribute(POI_BUNKPOINT) )
+   if ( m_POI.HasAttribute(m_Stage,POI_BUNKPOINT) )
    {
       if ( 0 < nAttributes )
          strAttrib += ", ";
@@ -643,7 +583,7 @@ std::string rptPointOfInterest::AsString() const
       nAttributes++;
    }
 
-   if ( m_Poi.HasAttribute(POI_FACEOFSUPPORT) )
+   if ( m_POI.HasAttribute(m_Stage,POI_FACEOFSUPPORT) )
    {
       if ( 0 < nAttributes )
          strAttrib += ", ";
@@ -652,7 +592,7 @@ std::string rptPointOfInterest::AsString() const
       nAttributes++;
    }
 
-   //if ( m_Poi.HasAttribute(POI_SECTCHANGE) )
+   //if ( m_POI.HasAttribute(m_Stage,POI_SECTCHANGE) )
    //{
    //   if ( 0 < nAttributes )
    //      strAttrib += ", ";
@@ -661,7 +601,7 @@ std::string rptPointOfInterest::AsString() const
    //   nAttributes++;
    //}
 
-   Uint16 tenpt = m_Poi.IsATenthPoint(m_bSpanPOI ? POI_SPAN_POINT : POI_GIRDER_POINT);
+   Uint16 tenpt = m_POI.IsATenthPoint(m_Stage);
    if (0 < tenpt)
    {
       CHECK(tenpt<12);
@@ -676,10 +616,10 @@ std::string rptPointOfInterest::AsString() const
       if ( 0 < nAttributes )
          strAttrib += ", ";
 
-      if ( m_bSpanPOI )
-         strAttrib += std::string(span_label[tenpt]);
-      else
+      if ( m_Stage == pgsTypes::CastingYard )
          strAttrib += std::string(girder_label[tenpt]);
+      else
+         strAttrib += std::string(span_label[tenpt]);
 
       nAttributes++;
    }
@@ -692,7 +632,7 @@ std::string rptPointOfInterest::AsString() const
    if ( m_bIncludeSpanAndGirder )
    {
       CString str1;
-      str1.Format("Span %d Girder %s, ",LABEL_SPAN(m_Poi.GetSpan()),LABEL_GIRDER(m_Poi.GetGirder()));
+      str1.Format("Span %d Girder %s, ",LABEL_SPAN(m_POI.GetSpan()),LABEL_GIRDER(m_POI.GetGirder()));
       str = str1;
    }
 
@@ -713,9 +653,9 @@ std::string rptPointOfInterest::AsString() const
 
 void rptPointOfInterest::MakeCopy(const rptPointOfInterest& rOther)
 {
-   m_Poi = rOther.m_Poi;
-   m_bSpanPOI = rOther.m_bSpanPOI;
-   m_bPrefixAttributes = rOther.m_bPrefixAttributes;
+   m_POI                   = rOther.m_POI;
+   m_Stage                 = rOther.m_Stage;
+   m_bPrefixAttributes     = rOther.m_bPrefixAttributes;
    m_bIncludeSpanAndGirder = rOther.m_bIncludeSpanAndGirder;
 }
 

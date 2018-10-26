@@ -126,7 +126,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    const pgsStirrupCheckArtifact* pstirrup_artifact= gdrArtifact->GetStirrupCheckArtifact();
    CHECK(pstirrup_artifact);
 
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stage, span, girder, POI_TABULAR|POI_SHEAR );
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_TABULAR|POI_SHEAR );
 
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
    if ( stage == pgsTypes::CastingYard )
@@ -149,7 +149,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
       if ( pArtifact->IsApplicable() )
       {
-         (*table)(row,0) << location.SetValue( poi, end_size );
+         (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
 
          double C = pArtifact->GetCapacityForce();
          double D = pArtifact->GetDemandForce();
@@ -252,7 +252,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
       if ( artifact.IsApplicable() )
       {
-         (*table)(row,0) << location.SetValue( poi, end_size );
+         (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
 
          double C = artifact.GetCapacityForce();
          double D = artifact.GetDemandForce();

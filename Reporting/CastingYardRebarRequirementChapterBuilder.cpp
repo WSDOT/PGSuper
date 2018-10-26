@@ -91,7 +91,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* gdrArtifact = pIArtifact->GetArtifact(span,girder);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( pgsTypes::CastingYard, span, girder, POI_FLEXURESTRESS | POI_TABULAR );
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, pgsTypes::CastingYard, POI_FLEXURESTRESS | POI_TABULAR );
    CHECK(vPoi.size()>0);
 
    const pgsFlexuralStressArtifact* pArtifact;
@@ -115,7 +115,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
    for (std::vector<pgsPointOfInterest>::iterator i = vPoi.begin(); i!= vPoi.end(); i++)
    {
       const pgsPointOfInterest& poi = *i;
-      (*pTable)(row,0) << location.SetValue( poi );
+      (*pTable)(row,0) << location.SetValue( pgsTypes::CastingYard, poi );
 
       pArtifact = gdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(pgsTypes::CastingYard,pgsTypes::ServiceI,pgsTypes::Tension,poi.GetDistFromStart()) );
 

@@ -572,11 +572,7 @@ void CGirderGlobalStrandGrid::OnChangeUseHarpedGrid()
 
 void CGirderGlobalStrandGrid::CustomInit()
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    // Initialize the grid. For CWnd based grids this call is // 
@@ -917,11 +913,7 @@ ROWCOL CGirderGlobalStrandGrid::GetRowsForEntries()
 
 bool CGirderGlobalStrandGrid::EditEntry(ROWCOL row, GlobalStrandGridEntry& entry, bool isNewEntry)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    bool use_harped = m_pClient->DoUseHarpedGrid();
@@ -1024,11 +1016,7 @@ void CGirderGlobalStrandGrid::ReverseHarpedStrandOrder()
 
 void CGirderGlobalStrandGrid::GenerateStrandPositions()
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    CStrandGenerationDlg dlg; // this dialog works in system units
@@ -1063,11 +1051,7 @@ void CGirderGlobalStrandGrid::GenerateStrandPositions()
 
 void CGirderGlobalStrandGrid::GenerateStraightStrands(CStrandGenerationDlg& dlg)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 
@@ -1151,11 +1135,7 @@ void CGirderGlobalStrandGrid::GenerateStraightStrands(CStrandGenerationDlg& dlg)
 
 void CGirderGlobalStrandGrid::GenerateHarpedStrands(CStrandGenerationDlg& dlg)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    if ( dlg.m_bDelete )

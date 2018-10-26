@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
 #include "BridgeDescGeneralPage.h"
@@ -39,6 +39,8 @@
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\DistFactorEngineer.h>
+
+#include <EAF\EAFMainFrame.h>
 
 #include <algorithm>
 
@@ -1232,8 +1234,14 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
          const GirderLibraryEntry* pGdrEntry = pGirderTypes->GetGirderLibraryEntry(firstGdrIdx);
          const IBeamFactory::Dimensions& dimensions = pGdrEntry->GetDimensions();
 
+         // don't use m_Factory because if we have a cross section with mixed beam types
+         // (ie, I-beams and NU beams) the dimensions list and the factory wont match up
+         // and GetAllowableSpacingRange will be all messed up.
+         CComPtr<IBeamFactory> factory;
+         pGdrEntry->GetBeamFactory(&factory);
+
          double min, max;
-         m_Factory->GetAllowableSpacingRange(dimensions,m_Deck.DeckType,m_GirderSpacingType,&min,&max);
+         factory->GetAllowableSpacingRange(dimensions,m_Deck.DeckType,m_GirderSpacingType,&min,&max);
 
          double min1 = min*startSkewCorrection;
          double max1 = max*startSkewCorrection;
@@ -1476,8 +1484,14 @@ BOOL CBridgeDescGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pRe
 
 void CBridgeDescGeneralPage::UIHint(const CString& strText,UINT mask)
 {
-   CMainFrame* pFrame = (CMainFrame*)AfxGetMainWnd();
-   CPGSuperDoc* pDoc  = (CPGSuperDoc*)pFrame->GetDocument();
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   CPGSuperDoc* pDoc;
+   {
+      CEAFMainFrame* pFrame = EAFGetMainFrame();
+      pDoc  = (CPGSuperDoc*)pFrame->GetDocument();
+   }
+
    Uint32 hintSettings = pDoc->GetUIHintSettings();
    if ( sysFlags<Uint32>::IsClear(hintSettings,mask) )
    {

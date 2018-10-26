@@ -144,6 +144,7 @@ interface ILosses : IUnknown
    virtual void ClearDesignLosses() = 0;
 
    virtual void ReportLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
+   virtual void ReportFinalLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
 };
 
 #endif // INCLUDED_IFACE_PRESTRESS_H_

@@ -98,7 +98,7 @@ rptRcTable* CUserShearTable::Build(IBroker* pBroker,SpanIndexType span,GirderInd
    RowIndexType row = p_table->GetNumberOfHeaderRows();
    for ( SpanIndexType spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
    {
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( pgsTypes::BridgeSite1, spanIdx, girder, POI_ALL, POIFIND_OR );
+      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( spanIdx, girder, pgsTypes::BridgeSite1, POI_ALL, POIFIND_OR );
 
       Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,girder);
 
@@ -144,7 +144,7 @@ rptRcTable* CUserShearTable::Build(IBroker* pBroker,SpanIndexType span,GirderInd
          int col = 0;
          const pgsPointOfInterest& poi = *i;
 
-         (*p_table)(row,col++) << location.SetValue( poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
 
          if ( analysisType == pgsTypes::Envelope )
          {

@@ -31,11 +31,12 @@ class CPGSuperImportPluginDocTemplate : public CEAFDocTemplate
 {
 public:
    CPGSuperImportPluginDocTemplate(UINT nIDResource,
-                            CRuntimeClass* pDocClass,
-                            CRuntimeClass* pFrameClass,
-                            CRuntimeClass* pViewClass,
-                            HMENU hSharedMenu = NULL,
-                            int maxViewCount = -1);
+                                   IEAFCommandCallback* pCallback,
+                                   CRuntimeClass* pDocClass,
+                                   CRuntimeClass* pFrameClass,
+                                   CRuntimeClass* pViewClass,
+                                   HMENU hSharedMenu = NULL,
+                                   int maxViewCount = -1);
    
    ~CPGSuperImportPluginDocTemplate();
 
@@ -43,7 +44,7 @@ public:
 
 	virtual BOOL GetDocString(CString& rString,enum DocStringIndex index) const;
 
-   const CPGSuperProjectImporterMgr& GetProjectImporterManager() const;
+   CPGSuperProjectImporterMgr& GetProjectImporterManager();
 
    virtual CDocTemplate::Confidence MatchDocType(LPCTSTR lpszPathName,	CDocument*& rpDocMatch);
 

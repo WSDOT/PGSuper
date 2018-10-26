@@ -191,7 +191,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPoi = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,span,girder,POI_SECTCHANGE);
+   std::vector<pgsPointOfInterest> vPoi = pPOI->GetPointsOfInterest(span,girder,pgsTypes::BridgeSite3,POI_SECTCHANGE);
    ATLASSERT( 2 <= vPoi.size() );
 
    PierIndexType pier = 0;

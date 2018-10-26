@@ -109,7 +109,7 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
    GET_IFACE2(pBroker,IProductLoads,pLoads);
    for ( SpanIndexType spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
    {
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( pgsTypes::BridgeSite3, spanIdx, gdr, POI_ALL, POIFIND_OR );
+      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( spanIdx, gdr, pgsTypes::BridgeSite3, POI_ALL, POIFIND_OR );
 
       GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
       GirderIndexType gdrIdx = min(gdr,nGirders-1);
@@ -334,7 +334,7 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
          const pgsPointOfInterest& poi = *i;
 
          int col = 0;
-         (*p_table)(row,col++) << location.SetValue( poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
          (*p_table)(row,col++) << shear.SetValue( girder[index] );
          (*p_table)(row,col++) << shear.SetValue( diaphragm[index] );
 

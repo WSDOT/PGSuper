@@ -101,7 +101,7 @@ private:
    std::vector<const unitLength*> m_DimUnits[2];
 
    void GetDimensions(const IBeamFactory::Dimensions& dimensions,
-                      double& H,double& W,double& D1,double& D2,double& H1,double& H2,double& S1,double& S2,double& C1,double& C2,long& N,double& J,double& EndBlockLength);
+                      double& H,double& W,double& D1,double& D2,double& H1,double& H2,double& S1,double& S2,double& C1,double& C2,double& C3,long& N,double& J,double& EndBlockLength);
 
    double GetDimension(const IBeamFactory::Dimensions& dimensions,const std::string& name);
 };

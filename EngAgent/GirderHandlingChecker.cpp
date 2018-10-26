@@ -133,6 +133,7 @@ void pgsGirderHandlingChecker::AnalyzeLifting(SpanIndexType span,GirderIndexType
 
    Float64 Loh, Roh, Eci, Fci;
 
+   std::vector<pgsPointOfInterest> poi_vec;
    if ( bUseConfig )
    {
       Loh = liftConfig.LeftOverhang;
@@ -144,6 +145,8 @@ void pgsGirderHandlingChecker::AnalyzeLifting(SpanIndexType span,GirderIndexType
          Eci = pMaterial->GetEconc(liftConfig.GdrConfig.Fci, pMaterial->GetStrDensityGdr(span,gdr),pMaterial->GetK1Gdr(span,gdr));
 
       Fci = liftConfig.GdrConfig.Fci;
+
+      poi_vec = pPoiD->GetLiftingDesignPointsOfInterest(span,gdr,Loh,POI_FLEXURESTRESS);
    }
    else
    {
@@ -154,13 +157,12 @@ void pgsGirderHandlingChecker::AnalyzeLifting(SpanIndexType span,GirderIndexType
       GET_IFACE(IBridgeMaterial,pMaterial);
       Eci = pMaterial->GetEciGdr(span,gdr);
       Fci = pMaterial->GetFciGdr(span,gdr);
+
+      GET_IFACE(IGirderLiftingPointsOfInterest,pGirderLiftingPointsOfInterest);
+      poi_vec = pGirderLiftingPointsOfInterest->GetLiftingPointsOfInterest(span,gdr,POI_FLEXURESTRESS);
    }
    
    PrepareLiftingAnalysisArtifact(span,gdr,Loh,Roh,Fci,Eci,pArtifact);
-
-   // get points of interest for lifting
-   std::vector<pgsPointOfInterest> poi_vec;
-   poi_vec = pPoiD->GetLiftingDesignPointsOfInterest(span,gdr,Loh,POI_FLEXURESTRESS);
 
    pArtifact->SetLiftingPointsOfInterest(poi_vec);
 
@@ -202,6 +204,7 @@ void pgsGirderHandlingChecker::AnalyzeHauling(SpanIndexType span,GirderIndexType
 
    Float64 Loh, Roh, Ec, Fc;
 
+   std::vector<pgsPointOfInterest> poi_vec;
    if ( bUseConfig )
    {
       Loh = haulConfig.LeftOverhang;
@@ -213,6 +216,8 @@ void pgsGirderHandlingChecker::AnalyzeHauling(SpanIndexType span,GirderIndexType
          Ec = pMaterial->GetEconc(haulConfig.GdrConfig.Fc, pMaterial->GetStrDensityGdr(span,gdr),pMaterial->GetK1Gdr(span,gdr));
 
       Fc = haulConfig.GdrConfig.Fc;
+
+      poi_vec = pPOId->GetHaulingDesignPointsOfInterest(span,gdr,Loh,Roh,POI_FLEXURESTRESS);
    }
    else
    {
@@ -222,13 +227,13 @@ void pgsGirderHandlingChecker::AnalyzeHauling(SpanIndexType span,GirderIndexType
 
       Fc = pMaterial->GetFcGdr(span,gdr);
       Ec = pMaterial->GetEcGdr(span,gdr);
+
+      GET_IFACE(IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
+      poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(span,gdr,POI_FLEXURESTRESS);
    }
 
    PrepareHaulingAnalysisArtifact(span,gdr,Loh,Roh,Fc,Ec,pArtifact);
 
-   // get points of interest for hauling
-   std::vector<pgsPointOfInterest> poi_vec;
-   poi_vec = pPOId->GetHaulingDesignPointsOfInterest(span,gdr,Loh,Roh,POI_FLEXURESTRESS);
 
    pArtifact->SetHaulingPointsOfInterest(poi_vec);
 
@@ -255,14 +260,16 @@ bool pgsGirderHandlingChecker::DesignShipping(SpanIndexType span,GirderIndexType
 
    GET_IFACE(IGirderHaulingSpecCriteria,pCriteria);
    Float64 maxDistanceBetweenSupports = pCriteria->GetAllowableDistanceBetweenSupports();
+   Float64 min_overhang_start = pCriteria->GetMinimumHaulingSupportLocation(span,gdr,pgsTypes::metStart);
+   Float64 min_overhang_end   = pCriteria->GetMinimumHaulingSupportLocation(span,gdr,pgsTypes::metEnd);
    if ( bIgnoreConfigurationLimits )
    {
       // if we are ignoring the shipping configuration limits the max distance between supports
       // is the girder length less the min support location
-      maxDistanceBetweenSupports = Lg - 2*pCriteria->GetMinimumHaulingSupportLocation();
+      maxDistanceBetweenSupports = Lg - min_overhang_start - min_overhang_end;
    }
 
-   Float64 min_location = pCriteria->GetMinimumHaulingSupportLocation();
+   Float64 min_location      = max(min_overhang_start,min_overhang_end);
    Float64 location_accuracy = pCriteria->GetHaulingSupportLocationAccuracy();
 
    Float64 minOverhang = (Lg - maxDistanceBetweenSupports)/2.;
@@ -388,7 +395,7 @@ pgsDesignCodes::OutcomeType pgsGirderHandlingChecker::DesignLifting(SpanIndexTyp
    // Range of lifting loop locations and step increment
    //
    GET_IFACE(IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
-   Float64 min_location = pGirderLiftingSpecCriteria->GetMinimumLiftingPointLocation();
+   Float64 min_location = max(pGirderLiftingSpecCriteria->GetMinimumLiftingPointLocation(span,gdr,pgsTypes::metStart),pGirderLiftingSpecCriteria->GetMinimumLiftingPointLocation(span,gdr,pgsTypes::metEnd));
    Float64 location_accuracy = pGirderLiftingSpecCriteria->GetLiftingPointLocationAccuracy();
 
    Float64 bigInc = 8*location_accuracy;
@@ -571,14 +578,26 @@ void pgsGirderHandlingChecker::PrepareLiftingAnalysisArtifact(SpanIndexType span
    }
 
    GET_IFACE(IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
-   Float64 min_lift_point = pGirderLiftingSpecCriteria->GetMinimumLiftingPointLocation();
-   if ( Loh < min_lift_point || Roh < min_lift_point )
+   Float64 min_lift_point_start = pGirderLiftingSpecCriteria->GetMinimumLiftingPointLocation(span,gdr,pgsTypes::metStart);
+   Float64 min_lift_point_end   = pGirderLiftingSpecCriteria->GetMinimumLiftingPointLocation(span,gdr,pgsTypes::metEnd);
+   if ( Loh < min_lift_point_start )
    {
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
       CString strMsg;
-      strMsg.Format("Lift point is less than the minimum value of %s",::FormatDimension(min_lift_point,pDisplayUnits->GetSpanLengthUnit()));
+      strMsg.Format("Left lift point is less than the minimum value of %s",::FormatDimension(min_lift_point_start,pDisplayUnits->GetSpanLengthUnit()));
+      pgsLiftingSupportLocationStatusItem* pStatusItem = new pgsLiftingSupportLocationStatusItem(span,gdr,m_StatusGroupID,m_scidLiftingSupportLocationWarning,strMsg);
+      pStatusCenter->Add(pStatusItem);
+   }
+
+   if ( Roh < min_lift_point_end )
+   {
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+
+      CString strMsg;
+      strMsg.Format("Right lift point is less than the minimum value of %s",::FormatDimension(min_lift_point_end,pDisplayUnits->GetSpanLengthUnit()));
       pgsLiftingSupportLocationStatusItem* pStatusItem = new pgsLiftingSupportLocationStatusItem(span,gdr,m_StatusGroupID,m_scidLiftingSupportLocationWarning,strMsg);
       pStatusCenter->Add(pStatusItem);
    }
@@ -651,6 +670,7 @@ void pgsGirderHandlingChecker::ComputeLiftingMoments(SpanIndexType span,GirderIn
    Float64 E = rArtifact.GetElasticModulusOfGirderConcrete();
 
    ComputeMoments(span, gdr,
+                  pgsTypes::Lifting,
                   leftOH, glen, rightOH,
                   E,
                   rpoiVec,
@@ -820,7 +840,7 @@ bool pgsGirderHandlingChecker::ComputeLiftingFsAgainstCracking(SpanIndexType spa
    while(iter!=rpoiVec.end())
    {
       const pgsPointOfInterest& rpoi = *iter;
-      if (rpoi.IsMidSpan())
+      if (rpoi.IsMidSpan(pgsTypes::Lifting))
       {
          poi_ms = rpoi;
          found = true;
@@ -1028,14 +1048,26 @@ void pgsGirderHandlingChecker::PrepareHaulingAnalysisArtifact(SpanIndexType span
    }
 
    GET_IFACE(IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
-   Float64 min_bunk_point = pGirderHaulingSpecCriteria->GetMinimumHaulingSupportLocation();
-   if ( Loh < min_bunk_point || Roh < min_bunk_point )
+   Float64 min_bunk_point_start = pGirderHaulingSpecCriteria->GetMinimumHaulingSupportLocation(span,gdr,pgsTypes::metStart);
+   Float64 min_bunk_point_end   = pGirderHaulingSpecCriteria->GetMinimumHaulingSupportLocation(span,gdr,pgsTypes::metEnd);
+   if ( Loh < min_bunk_point_start )
    {
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
       CString strMsg;
-      strMsg.Format("Bunk Point is less than the minimum value of %s",::FormatDimension(min_bunk_point,pDisplayUnits->GetSpanLengthUnit()));
+      strMsg.Format("Left bunk point is less than the minimum value of %s",::FormatDimension(min_bunk_point_start,pDisplayUnits->GetSpanLengthUnit()));
+      pgsBunkPointLocationStatusItem* pStatusItem = new pgsBunkPointLocationStatusItem(span,gdr,m_StatusGroupID,m_scidBunkPointLocation,strMsg);
+      pStatusCenter->Add(pStatusItem);
+   }
+
+   if ( Roh < min_bunk_point_end )
+   {
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+
+      CString strMsg;
+      strMsg.Format("Right bunk point is less than the minimum value of %s",::FormatDimension(min_bunk_point_end,pDisplayUnits->GetSpanLengthUnit()));
       pgsBunkPointLocationStatusItem* pStatusItem = new pgsBunkPointLocationStatusItem(span,gdr,m_StatusGroupID,m_scidBunkPointLocation,strMsg);
       pStatusCenter->Add(pStatusItem);
    }
@@ -1423,6 +1455,7 @@ void pgsGirderHandlingChecker::ComputeHaulingMoments(SpanIndexType span,GirderIn
    Float64 E = rArtifact.GetElasticModulusOfGirderConcrete();
 
    ComputeMoments(span, gdr,
+                  pgsTypes::Hauling,
                   leftOH, glen, rightOH,
                   E,
                   rpoiVec,
@@ -1448,7 +1481,7 @@ void pgsGirderHandlingChecker::ComputeHaulingRollAngle(SpanIndexType span,Girder
 
    // Zo (based on mid-span section properties)
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::CastingYard,span,gdr,POI_MIDSPAN);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(span,gdr,pgsTypes::CastingYard,POI_MIDSPAN);
    pgsPointOfInterest poi = vPOI[0];
    GET_IFACE(ISectProp2,pSectProp2);
    Float64 Iy = pSectProp2->GetIy(pgsTypes::CastingYard,poi);
@@ -1623,6 +1656,7 @@ void pgsGirderHandlingChecker::GetRequirementsForAlternativeTensileStress(const 
 }
 
 void pgsGirderHandlingChecker::ComputeMoments(SpanIndexType span,GirderIndexType gdr,
+                                              pgsTypes::Stage stage,
                                               Float64 leftOH,Float64 glen,Float64 rightOH,
                                               Float64 E,
                                               const std::vector<pgsPointOfInterest>& rpoiVec,
@@ -1664,7 +1698,7 @@ void pgsGirderHandlingChecker::ComputeMoments(SpanIndexType span,GirderIndexType
       pmomVec->push_back(mz);
 
 
-      if (poi.IsMidSpan())
+      if (poi.IsMidSpan(stage))
       {
          hr = results->ComputePOIDisplacements(0,femPoiID,lotMember,&dx,&dy,&rz);
          ATLASSERT(SUCCEEDED(hr));

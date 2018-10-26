@@ -141,10 +141,10 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::set<pgsTypes::Stage> stages;
-   stages.insert(pgsTypes::CastingYard);
-   stages.insert(pgsTypes::BridgeSite3);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stages, span, girder, POI_DISPLACEMENT | POI_TABULAR );
+   std::vector<pgsTypes::Stage> stages;
+   stages.push_back(pgsTypes::CastingYard);
+   stages.push_back(pgsTypes::BridgeSite3);
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stages, POI_DISPLACEMENT | POI_TABULAR );
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IProductLoads,pProduct);
@@ -259,7 +259,7 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
       // Table 1
       col = 0;
-      (*table1)(row1,col++) << location.SetValue( poi,end_size );
+      (*table1)(row1,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
       (*table1)(row1,col++) << displacement.SetValue( Dps1 );
       (*table1)(row1,col++) << displacement.SetValue( Dps );
       (*table1)(row1,col++) << displacement.SetValue( Dtpsi );
@@ -271,7 +271,7 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
       // Table 2
       col = 0;
-      (*table2)(row2,col++) << location.SetValue( poi,end_size );
+      (*table2)(row2,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
       (*table2)(row2,col++) << displacement.SetValue( Ddiaphragm );
       if ( bShearKey )
          (*table2)(row2,col++) << displacement.SetValue( Dshearkey );
@@ -300,7 +300,7 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
       double D5 = D4 + Ddeck + Duser1;
       double D6 = D5 + Dsidewalk + Dbarrier + Doverlay + Duser2;
 
-      (*table3)(row3,col++) << location.SetValue( poi,end_size );
+      (*table3)(row3,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
       (*table3)(row3,col++) << displacement.SetValue( D1 );
       (*table3)(row3,col++) << displacement.SetValue( D2 );
       (*table3)(row3,col++) << displacement.SetValue( D3 );
@@ -351,10 +351,10 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::set<pgsTypes::Stage> stages;
-   stages.insert(pgsTypes::CastingYard);
-   stages.insert(pgsTypes::BridgeSite3);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stages, span, girder, POI_DISPLACEMENT | POI_TABULAR );
+   std::vector<pgsTypes::Stage> stages;
+   stages.push_back(pgsTypes::CastingYard);
+   stages.push_back(pgsTypes::BridgeSite3);
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stages, POI_DISPLACEMENT | POI_TABULAR );
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IProductForces,pProduct);
@@ -459,7 +459,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
       // Table 1
       col = 0;
-      (*table1)(row1,col++) << location.SetValue( poi,end_size );
+      (*table1)(row1,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
       (*table1)(row1,col++) << displacement.SetValue( Dps1 );
       (*table1)(row1,col++) << displacement.SetValue( Dps );
       (*table1)(row1,col++) << displacement.SetValue( Dgirder );
@@ -468,7 +468,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
       // Table 2
       col = 0;
-      (*table2)(row2,col++) << location.SetValue( poi,end_size );
+      (*table2)(row2,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
       (*table2)(row2,col++) << displacement.SetValue( Ddiaphragm );
 
       if ( bShearKey )
@@ -496,7 +496,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
       double D3 = D2 + Ddiaphragm + Ddeck + Dshearkey + Duser1;
       double D4 = D3 + Dsidewalk + Dbarrier + Duser2 + Doverlay;
 
-      (*table3)(row3,col++) << location.SetValue( poi,end_size );
+      (*table3)(row3,col++) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size );
       (*table3)(row3,col++) << displacement.SetValue( D1 );
 
       D2 = IsZero(D2) ? 0 : D2;
@@ -545,10 +545,10 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::set<pgsTypes::Stage> stages;
-   stages.insert(pgsTypes::CastingYard);
-   stages.insert(pgsTypes::BridgeSite3);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stages, span, girder, POI_DISPLACEMENT | POI_TABULAR );
+   std::vector<pgsTypes::Stage> stages;
+   stages.push_back(pgsTypes::CastingYard);
+   stages.push_back(pgsTypes::BridgeSite3);
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stages, POI_DISPLACEMENT | POI_TABULAR );
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
@@ -663,7 +663,7 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
       // Table 1
       col = 0;
-      (*table1)(row1,col++) << location.SetValue( poi,end_size );
+      (*table1)(row1,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
       (*table1)(row1,col++) << displacement.SetValue( Dps1 );
       (*table1)(row1,col++) << displacement.SetValue( Dps );
       (*table1)(row1,col++) << displacement.SetValue( Dtpsi );
@@ -674,7 +674,7 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
       // Table 2
       col = 0;
-      (*table2)(row2,col++) << location.SetValue( poi,end_size );
+      (*table2)(row2,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
       (*table2)(row2,col++) << displacement.SetValue( Ddiaphragm );
 
       if ( bShearKey )
@@ -706,7 +706,7 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
       double D5 = D4 + Ddeck + Duser1;
       double D6 = D5 + Dbarrier + Dsidewalk + Doverlay + Duser2;
 
-      (*table3)(row3,col++) << location.SetValue( poi,end_size );
+      (*table3)(row3,col++) << location.SetValue( pgsTypes::BridgeSite3,poi,end_size );
       (*table3)(row3,col++) << displacement.SetValue( D1 );
       (*table3)(row3,col++) << displacement.SetValue( D2 );
       (*table3)(row3,col++) << displacement.SetValue( D3 );
@@ -757,10 +757,10 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::set<pgsTypes::Stage> stages;
-   stages.insert(pgsTypes::CastingYard);
-   stages.insert(pgsTypes::BridgeSite3);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stages, span, girder, POI_DISPLACEMENT | POI_TABULAR );
+   std::vector<pgsTypes::Stage> stages;
+   stages.push_back(pgsTypes::CastingYard);
+   stages.push_back(pgsTypes::BridgeSite3);
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stages, POI_DISPLACEMENT | POI_TABULAR );
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IProductForces,pProduct);
@@ -866,7 +866,7 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
       // Table 1
       col = 0;
-      (*table1)(row1,col++) << location.SetValue( poi,end_size );
+      (*table1)(row1,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
       (*table1)(row1,col++) << displacement.SetValue( Dps1 );
       (*table1)(row1,col++) << displacement.SetValue( Dps );
       (*table1)(row1,col++) << displacement.SetValue( Dgirder );
@@ -875,7 +875,7 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
       // Table 2
       col = 0;
-      (*table2)(row2,col++) << location.SetValue( poi,end_size );
+      (*table2)(row2,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
       (*table2)(row2,col++) << displacement.SetValue( Ddiaphragm );
 
       if ( bShearKey )
@@ -904,7 +904,7 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
       double D3 = D2 + Ddiaphragm + Dshearkey + Dpanel;
       double D4 = D3 + Ddeck + Duser1 + Dsidewalk + Dbarrier + Doverlay + Duser2;
 
-      (*table3)(row3,col++) << location.SetValue( poi,end_size );
+      (*table3)(row3,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
       (*table3)(row3,col++) << displacement.SetValue( D1 );
 
       D2 = IsZero(D2) ? 0 : D2;
@@ -952,10 +952,10 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::set<pgsTypes::Stage> stages;
-   stages.insert(pgsTypes::CastingYard);
-   stages.insert(pgsTypes::BridgeSite3);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stages, span, girder, POI_DISPLACEMENT | POI_TABULAR );
+   std::vector<pgsTypes::Stage> stages;
+   stages.push_back(pgsTypes::CastingYard);
+   stages.push_back(pgsTypes::BridgeSite3);
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stages, POI_DISPLACEMENT | POI_TABULAR );
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
@@ -1068,7 +1068,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
 
       // Table 1
       col = 0;
-      (*table1)(row1,col++) << location.SetValue( poi,end_size );
+      (*table1)(row1,col++) << location.SetValue( pgsTypes::BridgeSite3,poi,end_size );
       (*table1)(row1,col++) << displacement.SetValue( Dps1 );
       (*table1)(row1,col++) << displacement.SetValue( Dps );
       (*table1)(row1,col++) << displacement.SetValue( Dtpsi );
@@ -1079,7 +1079,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
 
       // Table 2
       col = 0;
-      (*table2)(row2,col++) << location.SetValue( poi,end_size );
+      (*table2)(row2,col++) << location.SetValue( pgsTypes::BridgeSite3,poi,end_size );
       (*table2)(row2,col++) << displacement.SetValue( Ddiaphragm );
 
       if (bShearKey)
@@ -1111,7 +1111,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
       double D5 = D4 + Dsidewalk + Dbarrier + Doverlay + Duser2;
       double D6 = D5 + Dcreep3;
 
-      (*table3)(row3,col++) << location.SetValue( poi,end_size );
+      (*table3)(row3,col++) << location.SetValue( pgsTypes::BridgeSite3,poi,end_size );
       (*table3)(row3,col++) << displacement.SetValue( D1 );
       (*table3)(row3,col++) << displacement.SetValue( D2 );
       (*table3)(row3,col++) << displacement.SetValue( D3 );
@@ -1160,10 +1160,10 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::set<pgsTypes::Stage> stages;
-   stages.insert(pgsTypes::CastingYard);
-   stages.insert(pgsTypes::BridgeSite3);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stages, span, girder, POI_DISPLACEMENT | POI_TABULAR );
+   std::vector<pgsTypes::Stage> stages;
+   stages.push_back(pgsTypes::CastingYard);
+   stages.push_back(pgsTypes::BridgeSite3);
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stages, POI_DISPLACEMENT | POI_TABULAR );
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IProductForces,pProduct);
@@ -1270,7 +1270,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
 
       // Table 1
       col = 0;
-      (*table1)(row1,col++) << location.SetValue( poi,end_size );
+      (*table1)(row1,col++) << location.SetValue( pgsTypes::BridgeSite3,poi,end_size );
       (*table1)(row1,col++) << displacement.SetValue( Dps1 );
       (*table1)(row1,col++) << displacement.SetValue( Dps );
       (*table1)(row1,col++) << displacement.SetValue( Dgirder );
@@ -1280,7 +1280,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
 
       // Table 2
       col = 0;
-      (*table2)(row2,col++) << location.SetValue( poi,end_size );
+      (*table2)(row2,col++) << location.SetValue( pgsTypes::BridgeSite3,poi,end_size );
       (*table2)(row2,col++) << displacement.SetValue( Ddiaphragm );
 
       if ( bShearKey )
@@ -1311,7 +1311,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
       double D5 = D4 + Dsidewalk + Dbarrier + Doverlay + Duser2;
       double D6 = D5 + Dcreep3;
 
-      (*table3)(row3,col++) << location.SetValue( poi,end_size );
+      (*table3)(row3,col++) << location.SetValue( pgsTypes::BridgeSite3,poi,end_size );
       (*table3)(row3,col++) << displacement.SetValue( D1 );
       (*table3)(row3,col++) << displacement.SetValue( D2 );
       (*table3)(row3,col++) << displacement.SetValue( D3 );

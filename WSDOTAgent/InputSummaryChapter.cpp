@@ -436,7 +436,7 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Girde
    CGirderData girderData = pGirderData->GetGirderData(span,girder);
 
    GET_IFACE2(pBroker,IPointOfInterest, pIPOI);
-   std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,span,girder,POI_MIDSPAN);
+   std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(span,girder,pgsTypes::BridgeSite3,POI_MIDSPAN);
    pgsPointOfInterest poi = *vPoi.begin();
 
    StrandIndexType Nh = pStrandGeom->GetNumStrands( span, girder, pgsTypes::Harped);

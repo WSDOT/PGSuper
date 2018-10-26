@@ -269,11 +269,7 @@ BOOL CLiveLoadAxleGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 
 void CLiveLoadAxleGrid::ResetGrid()
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 	this->GetParam( )->EnableUndo(FALSE);
@@ -338,11 +334,7 @@ void CLiveLoadAxleGrid::ResetGrid()
 
 void CLiveLoadAxleGrid::UploadData(CDataExchange* pDX, CLiveLoadDlg* dlg)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    AxleIndexType nAxles = (AxleIndexType)dlg->m_Axles.size();
@@ -394,11 +386,7 @@ void CLiveLoadAxleGrid::UploadData(CDataExchange* pDX, CLiveLoadDlg* dlg)
 
 void CLiveLoadAxleGrid::DownloadData(CDataExchange* pDX, CLiveLoadDlg* dlg)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    ROWCOL naxles = GetRowCount();

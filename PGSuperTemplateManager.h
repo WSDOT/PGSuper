@@ -25,6 +25,7 @@
 
 #pragma once
 
+#include <afxinet.h>
 
 // Base class for downloading PGSuper Project Templates from a catalog server
 

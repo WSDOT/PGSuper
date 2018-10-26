@@ -175,6 +175,7 @@ private:
 
 
    void ComputeMoments(SpanIndexType span,GirderIndexType gdr,
+                       pgsTypes::Stage stage,
                        Float64 leftOH,Float64 glen,Float64 rightOH,
                        Float64 E, 
                        const std::vector<pgsPointOfInterest>& rpoiVec,

@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "ConstructionLoadDlg.h"
 #include <EAF\EAFDisplayUnits.h>
 #include <MFCTools\CustomDDX.h>

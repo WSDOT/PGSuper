@@ -23,7 +23,7 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "EditLoadsView.h"
 
 #include "EditPointLoadDlg.h"
@@ -104,6 +104,7 @@ END_MESSAGE_MAP()
 #ifdef _DEBUG
 void CEditLoadsView::AssertValid() const
 {
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
 	CFormView::AssertValid();
 }
 
@@ -654,4 +655,11 @@ std::string CEditLoadsView::D2S(Float64 val)
    str.erase(0,notwhite);
 
    return str;
+}
+
+BOOL CEditLoadsView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, CCreateContext* pContext)
+{
+   // TODO: Add your specialized code here and/or call the base class
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return CFormView::Create(lpszClassName, lpszWindowName, dwStyle, rect, pParentWnd, nID, pContext);
 }

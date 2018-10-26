@@ -25,6 +25,8 @@
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Allowables.h>
+#include <IFace\GirderHandlingPointOfInterest.h>
+
 #include <EAF\EAFDisplayUnits.h>
 
 #include <PgsExt\BridgeDescription.h>
@@ -947,7 +949,7 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
    Float64 end_offset = GetHarpStrandOffsetEnd();
 
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,m_Span,m_Girder,POI_HARPINGPOINT);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(m_Span,m_Girder,pgsTypes::BridgeSite3,POI_HARPINGPOINT);
 
    // no hold down force if there aren't any harped strands
    if ( vPOI.size() == 0 )
@@ -1077,6 +1079,17 @@ bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, 
 
    // see if we made our adjustment
    return (adj==0.0);
+}
+
+bool pgsStrandDesignTool::SwapStraightForHarped()
+{
+   LOG("Attempting to change strand proportions by moving straight strands into harped pattern");
+   StrandIndexType Ns = GetNs();
+   StrandIndexType Nh = GetNh();
+   if ( Ns < 2 )
+      return false;
+
+   return SetNumStraightHarped(Ns-2,Nh+2);
 }
 
 bool pgsStrandDesignTool::AddStrands()
@@ -2428,7 +2441,7 @@ void pgsStrandDesignTool::GetMidZoneBoundaries(Float64* leftEnd, Float64* rightE
 std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetDesignPoi(pgsTypes::Stage stage,PoiAttributeType attrib)
 {
    std::vector<pgsPointOfInterest> vPoi;
-   m_PoiMgr.GetPointsOfInterest(stage, m_Span, m_Girder, attrib, POIMGR_OR, &vPoi);
+   m_PoiMgr.GetPointsOfInterest(m_Span, m_Girder, stage, attrib, POIMGR_OR, &vPoi);
    return vPoi;
 }
 
@@ -2460,7 +2473,7 @@ std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetDesignPoiEndZone(pgsType
 pgsPointOfInterest pgsStrandDesignTool::GetDebondSamplingPOI(pgsTypes::Stage stage) const
 {
    std::vector<pgsPointOfInterest> vPoi;
-   m_PoiMgr.GetPointsOfInterest(stage, m_Span, m_Girder, POI_ALL, POIMGR_OR, &vPoi);
+   m_PoiMgr.GetPointsOfInterest(m_Span, m_Girder, stage, POI_ALL, POIMGR_OR, &vPoi);
 
    // grab first poi past transfer length
    Float64 bound = max( m_XFerLength, ::ConvertToSysUnits(2.0,unitMeasure::Inch)); // value is fairly arbitrary, we just don't want end poi
@@ -2491,7 +2504,8 @@ std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetLiftingDesignPointsOfInt
 
    // Remove any current pick point poi's if not at different location
    std::vector<pgsPointOfInterest> vPoi;
-   m_PoiMgr.GetPointsOfInterest(span,gdr,POI_PICKPOINT,POIMGR_AND,&vPoi);
+   m_PoiMgr.GetPointsOfInterest(span,gdr,pgsTypes::Lifting,POI_PICKPOINT,POIMGR_AND,&vPoi);
+   ATLASSERT(vPoi.size() == 0 || vPoi.size() == 2);
 
    std::vector<pgsPointOfInterest>::iterator iter;
    for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
@@ -2512,13 +2526,13 @@ std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetLiftingDesignPointsOfInt
          // We need to remove or unset pick point at existing location
          m_PoiMgr.RemovePointOfInterest(poi);
 
-         PoiAttributeType attributes = poi.GetAttributes();
+         PoiAttributeType attributes = poi.GetAttributes(pgsTypes::Lifting);
          if ( attributes != POI_PICKPOINT )
          {
             // if the only flag that is set is pick point, remove it
             // otherwise, clear the POI_PICKPOINT bit and add it back
             sysFlags<PoiAttributeType>::Clear(&attributes,POI_PICKPOINT);
-            poi.SetAttributes(attributes);
+            poi.SetAttributes(pgsTypes::Lifting,attributes);
             m_PoiMgr.AddPointOfInterest(poi);
          }
       }
@@ -2526,20 +2540,20 @@ std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetLiftingDesignPointsOfInt
 
    if (do_add_left)
    {
-      pgsPointOfInterest left_pick_point(span,gdr,left_pick_point_loc,POI_PICKPOINT|attrib);
-      left_pick_point.AddStage(pgsTypes::Lifting);
+      pgsPointOfInterest left_pick_point(span,gdr,left_pick_point_loc);
+      left_pick_point.AddStage(pgsTypes::Lifting,POI_PICKPOINT|attrib);
       m_PoiMgr.AddPointOfInterest(left_pick_point);
    }
 
    if (do_add_right)
    {
-      pgsPointOfInterest right_pick_point(span,gdr,right_pick_point_loc,POI_PICKPOINT|attrib);
-      right_pick_point.AddStage(pgsTypes::Lifting);
+      pgsPointOfInterest right_pick_point(span,gdr,right_pick_point_loc);
+      right_pick_point.AddStage(pgsTypes::Lifting,POI_PICKPOINT|attrib);
       m_PoiMgr.AddPointOfInterest(right_pick_point);
    }
 
    std::vector<pgsPointOfInterest> vPoi2;
-   m_PoiMgr.GetPointsOfInterest(span, gdr, attrib, mode, &vPoi2);
+   m_PoiMgr.GetPointsOfInterest(span, gdr, pgsTypes::Lifting, attrib, mode, &vPoi2);
 
    return vPoi2;
 }
@@ -2553,7 +2567,7 @@ std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetHaulingDesignPointsOfInt
 
    // Remove any current pick point poi's if not at different location
    std::vector<pgsPointOfInterest> vPoi;
-   m_PoiMgr.GetPointsOfInterest(span,gdr,POI_BUNKPOINT,POIMGR_AND,&vPoi);
+   m_PoiMgr.GetPointsOfInterest(span,gdr,pgsTypes::Hauling,POI_BUNKPOINT,POIMGR_AND,&vPoi);
 
    std::vector<pgsPointOfInterest>::iterator iter;
    for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
@@ -2574,13 +2588,13 @@ std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetHaulingDesignPointsOfInt
          // We need to remove or unset pick point at existing location
          m_PoiMgr.RemovePointOfInterest(poi);
 
-         PoiAttributeType attributes = poi.GetAttributes();
+         PoiAttributeType attributes = poi.GetAttributes(pgsTypes::Hauling);
          if ( attributes != POI_BUNKPOINT )
          {
             // if the only flag that is set is pick point, remove it
             // otherwise, clear the POI_PICKPOINT bit and add it back
             sysFlags<PoiAttributeType>::Clear(&attributes,POI_BUNKPOINT);
-            poi.SetAttributes(attributes);
+            poi.SetAttributes(pgsTypes::Hauling,attributes);
             m_PoiMgr.AddPointOfInterest(poi);
          }
       }
@@ -2599,7 +2613,7 @@ std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetHaulingDesignPointsOfInt
    }
 
    std::vector<pgsPointOfInterest> vPoi2;
-   m_PoiMgr.GetPointsOfInterest(span, gdr, attrib, mode, &vPoi2);
+   m_PoiMgr.GetPointsOfInterest(span, gdr, pgsTypes::Hauling, attrib, mode, &vPoi2);
 
    return vPoi2;
 }
@@ -2617,21 +2631,22 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
 
    // start by putting pois into a temporary vector
    GET_IFACE(IPointOfInterest,pIPOI);
-   std::vector<pgsPointOfInterest> cyPOI = pIPOI->GetPointsOfInterest(pgsTypes::CastingYard,m_Span,m_Girder, POI_FLEXURESTRESS | POI_TABULAR );
-   std::vector<pgsPointOfInterest> bsPOI = pIPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,m_Span,m_Girder, POI_FLEXURESTRESS | POI_TABULAR );
-   std::vector<pgsPointOfInterest> pois;
-   pois.insert(pois.end(),cyPOI.begin(),cyPOI.end());
-   pois.insert(pois.end(),bsPOI.begin(),bsPOI.end());
 
-   std::set<pgsTypes::Stage> stages;
-   stages.insert(pgsTypes::CastingYard);
-   stages.insert(pgsTypes::GirderPlacement);
-   stages.insert(pgsTypes::TemporaryStrandRemoval);
-   stages.insert(pgsTypes::BridgeSite1);
-   stages.insert(pgsTypes::BridgeSite2);
-   stages.insert(pgsTypes::BridgeSite3);
+   // Get all points of interest, regardless of stage and attributes
+   std::vector<pgsPointOfInterest> pois = pIPOI->GetPointsOfInterest(m_Span,m_Girder);
 
-   if (m_DesignOptions.doDesignForFlexure == dtDesignForHarping || m_DesignOptions.doDesignForFlexure == dtNoDesign)
+   std::vector<pgsTypes::Stage> stages;
+   stages.push_back(pgsTypes::CastingYard);
+   stages.push_back(pgsTypes::Lifting);
+   stages.push_back(pgsTypes::Hauling);
+   stages.push_back(pgsTypes::GirderPlacement);
+   stages.push_back(pgsTypes::TemporaryStrandRemoval);
+   stages.push_back(pgsTypes::BridgeSite1);
+   stages.push_back(pgsTypes::BridgeSite2);
+   stages.push_back(pgsTypes::BridgeSite3);
+
+   if (m_DesignOptions.doDesignForFlexure == dtDesignForHarping || 
+       m_DesignOptions.doDesignForFlexure == dtNoDesign)
    {
       // For Harped designs, add all pois 
       // The none option is also considered here because if we are designing for shear only (no flexure design)
@@ -2639,18 +2654,21 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       std::vector<pgsPointOfInterest>::iterator iter;
       for (iter = pois.begin(); iter != pois.end(); iter++)
       {
-         pgsPointOfInterest& rpoi = *iter;
+         pgsPointOfInterest& poi = *iter;
 
          // Clear any lifting or hauling attributes
-         PoiAttributeType attributes = rpoi.GetAttributes();
+         PoiAttributeType attributes = poi.GetAttributes(pgsTypes::Lifting);
          sysFlags<PoiAttributeType>::Clear(&attributes,POI_PICKPOINT);
-         sysFlags<PoiAttributeType>::Clear(&attributes,POI_BUNKPOINT);
-         rpoi.SetAttributes(attributes);
+         poi.SetAttributes(pgsTypes::Lifting,attributes);
 
-         Float64 loc = rpoi.GetDistFromStart();
+         attributes = poi.GetAttributes(pgsTypes::Hauling);
+         sysFlags<PoiAttributeType>::Clear(&attributes,POI_BUNKPOINT);
+         poi.SetAttributes(pgsTypes::Hauling,attributes);
+
+         Float64 loc = poi.GetDistFromStart();
          if (0.0 < loc && loc < m_GirderLength) // locations at ends of girder are of no interest to design
          {
-            m_PoiMgr.AddPointOfInterest(rpoi);
+            m_PoiMgr.AddPointOfInterest(poi);
          }
       }
 
@@ -2660,7 +2678,7 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       GET_IFACE(IPrestressForce,pPrestress);
       GET_IFACE(IBridge,pBridge);
 
-      const PoiAttributeType attrib_xfer   = POI_ALLACTIONS | POI_ALLOUTPUT | POI_PSXFER;
+      const PoiAttributeType attrib_xfer = POI_ALLACTIONS | POI_ALLOUTPUT | POI_PSXFER;
 
       Float64 xfer_length = pPrestress->GetXferLength(m_Span,m_Girder);
 
@@ -2680,27 +2698,34 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       }
 
    }
-   else if ( m_DesignOptions.doDesignForFlexure == dtDesignForDebonding || m_DesignOptions.doDesignForFlexure == dtDesignFullyBonded )
+   else if ( m_DesignOptions.doDesignForFlexure == dtDesignForDebonding || 
+             m_DesignOptions.doDesignForFlexure == dtDesignFullyBonded )
    {
       ATLASSERT(m_DesignOptions.doDesignForFlexure!=dtNoDesign);
       // Debonding or straight strands: add all pois except those at at debond and transfer locations
       std::vector<pgsPointOfInterest>::iterator iter;
       for (iter = pois.begin(); iter != pois.end(); iter++)
       {
-         pgsPointOfInterest& rpoi = *iter;
-         PoiAttributeType attributes = rpoi.GetAttributes();
+         pgsPointOfInterest& poi = *iter;
 
          // Clear any lifting or hauling attributes
+         PoiAttributeType attributes = poi.GetAttributes(pgsTypes::Lifting);
          sysFlags<PoiAttributeType>::Clear(&attributes,POI_PICKPOINT);
-         sysFlags<PoiAttributeType>::Clear(&attributes,POI_BUNKPOINT);
-         rpoi.SetAttributes(attributes);
+         poi.SetAttributes(pgsTypes::Lifting,attributes);
 
-         Float64 loc = rpoi.GetDistFromStart();
+         attributes = poi.GetAttributes(pgsTypes::Hauling);
+         sysFlags<PoiAttributeType>::Clear(&attributes,POI_BUNKPOINT);
+         poi.SetAttributes(pgsTypes::Hauling,attributes);
+
+         Float64 loc = poi.GetDistFromStart();
          if ( 0.0 < loc && loc < m_GirderLength )
          {
-            if ( ! ( rpoi.HasAttribute(POI_DEBOND) || rpoi.HasAttribute(POI_PSXFER) ) )
+            // if POI does not have the POI_DEBOND or POI_PSXFER attribute in the casting yard stage
+            // then add it
+            if ( ! ( poi.HasAttribute(pgsTypes::CastingYard,POI_DEBOND) || 
+                     poi.HasAttribute(pgsTypes::CastingYard,POI_PSXFER) ) )
             {
-               m_PoiMgr.AddPointOfInterest(rpoi);
+               m_PoiMgr.AddPointOfInterest(poi);
             }
          }
       }
@@ -2719,11 +2744,11 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       Float64 end_supp   = m_GirderLength - pBridge->GetGirderEndConnectionLength(m_Span,m_Girder);
 
       // left and right xfer from ends
-      pgsPointOfInterest lxfer(m_Span,m_Girder,xfer_length,attrib_xfer);
-      AddPOI(lxfer, start_supp, end_supp);
+      pgsPointOfInterest lxfer(m_Span,m_Girder,xfer_length);
+      AddPOI(lxfer, start_supp, end_supp,attrib_xfer);
 
-      pgsPointOfInterest rxfer(m_Span,m_Girder,m_GirderLength-xfer_length,attrib_xfer);
-      AddPOI(rxfer, start_supp, end_supp);
+      pgsPointOfInterest rxfer(m_Span,m_Girder,m_GirderLength-xfer_length);
+      AddPOI(rxfer, start_supp, end_supp,attrib_xfer);
 
       if (m_DesignOptions.doDesignForFlexure == dtDesignForDebonding)
       {
@@ -2748,40 +2773,42 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
 
             // left debond and xfer
             ldb_loc += db_incr;
-            pgsPointOfInterest ldbpo(m_Span,m_Girder,ldb_loc,attrib_debond);
-            AddPOI(ldbpo, start_supp, end_supp);
+            pgsPointOfInterest ldbpo(m_Span,m_Girder,ldb_loc);
+            AddPOI(ldbpo, start_supp, end_supp,attrib_debond);
 
             Float64 lxferloc = ldb_loc + xfer_length;
-            pgsPointOfInterest lxfpo(m_Span,m_Girder,lxferloc,attrib_xfer);
-            AddPOI(lxfpo, start_supp, end_supp);
+            pgsPointOfInterest lxfpo(m_Span,m_Girder,lxferloc);
+            AddPOI(lxfpo, start_supp, end_supp,attrib_xfer);
 
             // right debond and xfer
             rdb_loc -= db_incr;
-            pgsPointOfInterest rdbpo(m_Span,m_Girder,rdb_loc,attrib_debond);
-            AddPOI(rdbpo, start_supp, end_supp);
+            pgsPointOfInterest rdbpo(m_Span,m_Girder,rdb_loc);
+            AddPOI(rdbpo, start_supp, end_supp,attrib_debond);
 
             Float64 rxferloc = rdb_loc - xfer_length;
-            pgsPointOfInterest rxfpo(m_Span,m_Girder,rxferloc,attrib_xfer);
-            AddPOI(rxfpo, start_supp, end_supp);
+            pgsPointOfInterest rxfpo(m_Span,m_Girder,rxferloc);
+            AddPOI(rxfpo, start_supp, end_supp,attrib_xfer);
          }
       }
    }
 }
 
-void pgsStrandDesignTool::AddPOI(pgsPointOfInterest& rpoi, Float64 lft_conn, Float64 rgt_conn)
+void pgsStrandDesignTool::AddPOI(pgsPointOfInterest& rpoi, Float64 lft_conn, Float64 rgt_conn,PoiAttributeType attribute)
 {
-   rpoi.AddStage(pgsTypes::CastingYard);
+   rpoi.AddStage(pgsTypes::CastingYard,attribute);
 
    // bridgesite pois must be between supports
    Float64 loc = rpoi.GetDistFromStart();
 
    if ( lft_conn < loc && loc < rgt_conn )
    {
-      rpoi.AddStage(pgsTypes::GirderPlacement);
-      rpoi.AddStage(pgsTypes::TemporaryStrandRemoval);
-      rpoi.AddStage(pgsTypes::BridgeSite1);
-      rpoi.AddStage(pgsTypes::BridgeSite2);
-      rpoi.AddStage(pgsTypes::BridgeSite3);
+      rpoi.AddStage(pgsTypes::Lifting,attribute);
+      rpoi.AddStage(pgsTypes::Hauling,attribute);
+      rpoi.AddStage(pgsTypes::GirderPlacement,attribute);
+      rpoi.AddStage(pgsTypes::TemporaryStrandRemoval,attribute);
+      rpoi.AddStage(pgsTypes::BridgeSite1,attribute);
+      rpoi.AddStage(pgsTypes::BridgeSite2,attribute);
+      rpoi.AddStage(pgsTypes::BridgeSite3,attribute);
    }
 
    m_PoiMgr.AddPointOfInterest(rpoi);

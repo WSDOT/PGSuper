@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PermitRatingPage.h"
 #include "RatingOptionsDlg.h"
 #include <MFCTools\CustomDDX.h>

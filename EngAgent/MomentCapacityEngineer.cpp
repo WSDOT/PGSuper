@@ -1533,7 +1533,7 @@ void pgsMomentCapacityEngineer::pgsBondTool::Init()
    m_DistFromStart = m_Poi.GetDistFromStart();
 
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,m_Poi.GetSpan(),m_Poi.GetGirder(),POI_MIDSPAN);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(m_Poi.GetSpan(),m_Poi.GetGirder(),pgsTypes::BridgeSite3,POI_MIDSPAN);
    ASSERT( vPOI.size() == 1 );
    m_PoiMidSpan = vPOI[0];
 

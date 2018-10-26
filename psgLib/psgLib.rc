@@ -1,7 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
-#include <EAF\EAFResources.h>
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -9,6 +8,8 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include "afxres.h"
+#include "EAF\EAFResources.h"
+
 #if !defined NOGRID
 #include "grid\gxresrc.h"
 #endif
@@ -33,12 +34,13 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
-    "<EAF\EAFResources.h\0>"
+    "\0"
 END
 
 2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
+    "#include ""EAF\\EAFResources.h""\r\n"
     "#if !defined NOGRID\r\n"
     "#include ""grid\\gxresrc.h""\r\n"
     "#endif\0"
@@ -73,8 +75,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,3,0,3
- PRODUCTVERSION 2,3,0,3
+ FILEVERSION 2,3,0,4
+ PRODUCTVERSION 2,3,0,4
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -92,12 +94,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "2.3.0.3"
+            VALUE "FileVersion", "2.3.0.4"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2010, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.3.0.3"
+            VALUE "ProductVersion", "2.3.0.4"
         END
     END
     BLOCK "VarFileInfo"
@@ -113,7 +115,6 @@ END
 //
 
 IDR_LIBAPPPLUGIN        REGISTRY                "LibraryAppPlugin.rgs"
-IDR_PGSUPERCOMPONENTINFO REGISTRY                "res\\PGSuperComponentInfo.rgs"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -121,6 +122,9 @@ IDR_PGSUPERCOMPONENTINFO REGISTRY                "res\\PGSuperComponentInfo.rgs"
 //
 
 IDR_LIBEDITORTOOLBAR    BITMAP                  "res\\LibEditorToolbar.bmp"
+IDB_IN_USE              BITMAP                  "..\\res\\LibEntryInUse.bmp"
+IDB_IN_USE_AND_READ_ONLY BITMAP                  "..\\res\\LibEntryInUseAndReadOnly.bmp"
+IDB_READ_ONLY           BITMAP                  "..\\res\\LibEntryReadOnly.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -494,10 +498,10 @@ BEGIN
     LTEXT           "Anchorage Zone Checks Disabled in Design Tab",IDC_ANCHORAGE_NOTE,16,246,244,8
 END
 
-IDD_SPEC_HAULING_ERECTION DIALOG  0, 0, 500, 343
+IDD_SPEC_HAULING_ERECTION DIALOGEX 0, 0, 500, 343
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Hauling"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     GROUPBOX        "Hauling Parameters",IDC_STATIC_GH1,7,7,486,329
     GROUPBOX        "Min. Factors of Safety - Hauling to Bridge Site",IDC_STATIC_GH2,18,31,153,60
@@ -575,12 +579,13 @@ BEGIN
     LTEXT           "Use the Losses tab to set the time of shipping and control the computation of prestress loss at shipping",IDC_LOSSES_NOTE,17,322,322,8
     LTEXT           "Hauling Check is Enabled on Design Tab",IDC_ENABLE_NOTE,13,17,250,8
     GROUPBOX        "Design",IDC_GROUP_DESIGN,18,283,467,35
-    LTEXT           "Min Truck Support Location from ends of girder",IDC_MIN_TRUCK_SUPPORT_LABEL,27,300,149,8
-    EDITTEXT        IDC_MIN_TRUCK_SUPPORT,181,297,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_MIN_TRUCK_SUPPORT_UNIT,224,301,19,8
-    LTEXT           "Truck Support Location Accuracy",IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_LABEL,273,301,108,8
-    EDITTEXT        IDC_TRUCK_SUPPORT_LOCATION_ACCURACY,388,299,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_UNIT,430,301,19,8
+    LTEXT           "Min Truck Support Location from ends of girder",IDC_MIN_TRUCK_SUPPORT_LABEL,24,300,149,8
+    EDITTEXT        IDC_MIN_TRUCK_SUPPORT,178,297,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_MIN_TRUCK_SUPPORT_UNIT,221,301,19,8
+    LTEXT           "Truck Support Location Accuracy",IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_LABEL,309,301,108,8
+    EDITTEXT        IDC_TRUCK_SUPPORT_LOCATION_ACCURACY,421,299,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_UNIT,465,301,19,8
+    LTEXT           "(Enter value or H)",IDC_STATIC,243,301,56,8
 END
 
 IDD_SPEC_STRANDS DIALOG  0, 0, 242, 252
@@ -701,10 +706,10 @@ BEGIN
     COMBOBOX        IDC_COMBO_TRANSFER,44,284,230,39,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_SPEC_LIFTING DIALOG  0, 0, 393, 337
+IDD_SPEC_LIFTING DIALOGEX 0, 0, 393, 337
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Lifting"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     LTEXT           "Lifting is Disabled in Design Tab",IDC_LIFTING_NOTE,24,19,256,8
     GROUPBOX        "Lifting Parameters",IDC_STATIC_LP,7,7,379,323
@@ -758,6 +763,7 @@ BEGIN
     LTEXT           "Lifting Point Accuracy",IDC_LIFTING_POINT_LOCATION_ACCURACY_LABEL,39,306,70,8
     EDITTEXT        IDC_LIFTING_POINT_LOCATION_ACCURACY,192,304,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_LIFTING_POINT_LOCATION_ACCURACY_UNIT,235,306,19,8
+    LTEXT           "(Enter value or H)",IDC_STATIC,261,289,56,8
 END
 
 IDD_SPEC_BRIDGE_SITE2 DIALOGEX 0, 0, 315, 196
@@ -1214,16 +1220,11 @@ BEGIN
     CONTROL         "Custom1",IDC_AXLES_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,15,111,191,118
     PUSHBUTTON      "Add",IDC_ADD,44,239,50,14
     PUSHBUTTON      "Delete",IDC_DELETE,108,239,50,14
-    CONTROL         "This is a variable axle tuck",IDC_IS_VARIABLE_AXLE_TRUCK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,215,111,99,10
-    LTEXT           "Maximum spacing before axle",IDC_AXLE_LIST_LABEL,211,127,94,8
-    COMBOBOX        IDC_AXLE_LIST,314,124,28,75,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_VARIABLE_AXLE_SPACING,211,139,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_VARIABLE_AXLE_SPACING_UNITS,258,143,19,8
     DEFPUSHBUTTON   "OK",IDOK,193,270,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,246,270,50,14
     PUSHBUTTON      "Help",ID_HELP,298,270,50,14
     GROUPBOX        "Truck Configuration",IDC_STATIC,7,75,341,188
+    LTEXT           "Spacing is measured between axles.\n\nOne axle may have a variable spacing. Enter variable spacing as min-max (e.g. 14-30)",IDC_STATIC,212,116,136,89
 END
 
 IDD_TRAFFICBARRIERVIEW DIALOG  0, 0, 520, 310
@@ -1820,7 +1821,7 @@ END
 // Menu
 //
 
-IDR_LIBRARTYPE MENU 
+IDR_LIBRARYTYPE MENU 
 BEGIN
     POPUP "&File"
     BEGIN
@@ -1921,17 +1922,19 @@ GENERATESTRANDS_STARTEND_SKIPPED METAFILE                "res\\GenerateStrands_S
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_LIBRARTYPE          ICON                    "res\\LibraryEditorDoc.ico"
-IDI_CONCRETE_ENTRY      ICON                    "res\\icon1.ico"
-IDI_CONNECTION_ENTRY    ICON                    "res\\ico00001.ico"
-IDI_GIRDER_ENTRY        ICON                    "res\\ico00002.ico"
-IDI_SPECIFICATION_ENTRY ICON                    "res\\ico00003.ico"
-IDI_TRAFFIC_BARRIER_ENTRY ICON                    "res\\ico00004.ico"
-IDI_DIAPHRAGM_ENTRY     ICON                    "res\\ico00005.ico"
+IDR_LIBRARYTYPE         ICON                    "res\\LibraryManager.ico"
+IDI_CONCRETE_ENTRY      ICON                    "res\\concrete.ico"
+IDI_CONNECTION_ENTRY    ICON                    "res\\connection.ico"
+IDI_GIRDER_ENTRY        ICON                    "res\\girder.ico"
+IDI_SPECIFICATION_ENTRY ICON                    "res\\specification.ico"
+IDI_TRAFFIC_BARRIER_ENTRY ICON                    "res\\trafficbarrier.ico"
+IDI_DIAPHRAGM_ENTRY     ICON                    "res\\diaphragm.ico"
 IDI_LIVE_LOAD_ENTRY     ICON                    "res\\live_loa.ico"
 IDI_RATING_ENTRY        ICON                    "res\\Rating.ico"
 IDI_LIBRARY_MANAGER     ICON                    "res\\LibraryManager.ico"
 IDI_DEFAULT_ENTRY       ICON                    "res\\DefaultEntry.ico"
+IDI_FOLDER              ICON                    "..\\res\\folder_closed.ico"
+IDI_OPEN_FOLDER         ICON                    "..\\res\\folder_open.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1959,7 +1962,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDR_LIBRARTYPE          "Library Editor\nUntitled\nMaster Library\nLibrary File (*.lbr)\n.lbr\nPGSuperLibrary.Document\nPGSuper Library File"
+    IDR_LIBRARYTYPE         "Library Editor\nUntitled\nMaster Library\nLibrary File (*.lbr)\n.lbr\nPGSuperLibrary.Document\nPGSuper Library File"
 END
 
 STRINGTABLE 
@@ -1973,7 +1976,6 @@ BEGIN
     IDS_SLOPE_O7_SI         "Max Strand Slope for 17.78d mm Strands"
     IDS_SLOPE_O7_US         "Max Strand Slope for 0.7d inch Strands"
     IDS_NWC_MESSAGE         "The concrete density is less than the minimum value for Normal Weight Concrete (See LRFD 5.2).\nPGSuper will proceed as if the concrete were Normal Weight."
-    ID_MANAGE_PLUGINS       "Manage Library Editor Plug-insanage Plug-ins"
     IDS_SPEC_STRAND         "Strand Stresses"
     IDS_SPEC_LOSS           "Losses"
     IDS_SPEC_ANALYSIS       "Structural Analysis"
@@ -1982,6 +1984,19 @@ END
 
 STRINGTABLE 
 BEGIN
+    ID_MANAGE_PLUGINS       "Manage Library Editor Plug-insanage Plug-ins"
+END
+
+STRINGTABLE 
+BEGIN
+    IDM_ADD_ENTRY           "Add a new entry to the library\nAdd entry"
+    IDM_EDIT_ENTRY          "Edit the selected entry\nEdit entry"
+    IDM_DELETE_ENTRY        "Delete the selected entry\nDelete entry"
+    IDM_DUPLICATE_ENTRY     "Duplicate the selected entry\nDuplicate entry"
+    IDM_LARGE_ICONS         "View library entries using large icons\nLarge Icons"
+    IDM_SMALL_ICONS         "View library entries using small icons\nSmall Icons"
+    IDM_LIST_ICONS          "View library entries in a list\nList"
+    IDM_RENAME_ENTRY        "Rename the selected entry\nRename the selected entry"
     ID_EDIT_INSERTROW       "Insert a new row above the current location"
     ID_EDIT_DELETEROW       "Delete the current row"
     ID_EDIT_REMOVEROWS      "Delete the current row"
@@ -2002,26 +2017,6 @@ BEGIN
                             "You must resolve this before the rest of the project file can be loaded. Please choose if you would like to rename the project entry and retain its values, or overwrite the project entry with values from the Master Library."
     IDS_CONFLICT_BOTTOM_IMPORT 
                             "You must resolve this before the rest of the project file can be loaded. Please choose if you would like to Rename the imported entry and add it to the current library, or Skip the imported entry and not add it to the library."
-END
-
-STRINGTABLE 
-BEGIN
-    IDM_ADD_ENTRY           "Add a new entry to the library\nAdd entry"
-    IDM_EDIT_ENTRY          "Edit the selected entry\nEdit entry"
-    IDM_DELETE_ENTRY        "Delete the selected entry\nDelete entry"
-    IDM_DUPLICATE_ENTRY     "Duplicate the selected entry\nDuplicate entry"
-    IDM_LARGE_ICONS         "View library entries using large icons\nLarge Icons"
-END
-
-STRINGTABLE 
-BEGIN
-    IDM_RENAME_ENTRY        "Rename the selected entry\nRename the selected entry"
-END
-
-STRINGTABLE 
-BEGIN
-    IDM_SMALL_ICONS         "View library entries using small icons\nSmall Icons"
-    IDM_LIST_ICONS          "View library entries in a list\nList"
 END
 
 STRINGTABLE 

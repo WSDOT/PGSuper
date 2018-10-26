@@ -28,10 +28,13 @@
 #include <PsgLib\ISupportLibraryManager.h>
 #include <LibraryFw\LibraryManager.h>
 
+#include <EAF\EAFApp.h>
+#include <EAF\EAFUtilities.h>
+
 #if defined _BUILD_LIBEDITOR_
 #include "resource.h" // resource file for library editor
 #else
-#include "..\resource.h" // resource file for PGSuper
+#include "..\PGSuperAppPlugin\resource.h" // resource file for PGSuper
 #endif
 
 #ifdef _DEBUG
@@ -138,6 +141,8 @@ int CLibraryEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void CLibraryEditorView::OnInitialUpdate() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	CTreeView::OnInitialUpdate();
 
    // get library manager(s)
@@ -230,7 +235,7 @@ void CLibraryEditorView::OnInitialUpdate()
 void CLibraryEditorView::InsertLibraryManager(Uint32 ilib_man, Uint32 ilib_man_sel, 
                                               int man_num, libLibraryManager* pMan, CTreeCtrl& tree, HTREEITEM hParent, int* lastIcon)
 {
-   CWinApp* papp = AfxGetApp();
+   CEAFApp* papp = EAFGetApp();
    Uint32 nlibs = pMan->GetLibraryCount();
    if (nlibs==0) return;
 

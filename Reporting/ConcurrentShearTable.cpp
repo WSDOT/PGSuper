@@ -143,7 +143,7 @@ void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
       if ( stage == pgsTypes::CastingYard )
          end_size = 0; // don't adjust if CY stage
 
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stage, spanIdx, girder, POI_ALL, POIFIND_OR );
+      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( spanIdx, girder, stage, POI_ALL, POIFIND_OR );
       std::vector<pgsPointOfInterest>::const_iterator i;
       for ( i = vPoi.begin(); i != vPoi.end(); i++ )
       {
@@ -151,7 +151,7 @@ void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
 
          col = 0;
 
-         (*p_table)(row,col++) << location.SetValue( poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( stage, poi, end_size );
 
          double Vi, Mmax;
          pLsForces->GetViMmax(pgsTypes::StrengthI,stage,poi,bat,&Vi,&Mmax);

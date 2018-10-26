@@ -146,7 +146,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    // Get Midspan std::vector<pgsPointOfInterest>
-   std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,span,girder,POI_MIDSPAN);
+   std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(span,girder,pgsTypes::BridgeSite3,POI_MIDSPAN);
    CHECK(vPoi.size()==1);
    pgsPointOfInterest poi = *vPoi.begin();
 

@@ -80,7 +80,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    const pgsStirrupCheckArtifact* pstirrup_artifact= gdrArtifact->GetStirrupCheckArtifact();
    CHECK(pstirrup_artifact);
 
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stage, span, girder, POI_TABULAR|POI_SHEAR );
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_TABULAR|POI_SHEAR );
 
    // get poi-independent values
    std::vector<pgsPointOfInterest>::const_iterator ip = vPoi.begin();
@@ -290,7 +290,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
       // vui table
       col = 0;
       Float64 Vui = pArtifact->GetDemand();
-      (*vui_table)(vui_row,col++) << location.SetValue( poi, end_size );
+      (*vui_table)(vui_row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
 
       if ( pSpecEntry->GetShearFlowMethod() == sfmLRFD )
       {
@@ -311,7 +311,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
 
 
       // av/s table
-      (*av_table)(av_row,0)  <<  location.SetValue( poi, end_size );
+      (*av_table)(av_row,0)  <<  location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
       (*av_table)(av_row,1)  <<  area.SetValue(pArtifact->GetAvfGirder());
       (*av_table)(av_row,2)  <<  dim.SetValue(pArtifact->GetSGirder());
       (*av_table)(av_row,3)  <<  area.SetValue(pArtifact->GetAvfTopFlange());
@@ -321,7 +321,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
       av_row++;
 
       // capacity table
-      (*table)(row,0) << location.SetValue( poi, end_size );
+      (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
       (*table)(row,1) << AvS.SetValue(pArtifact->GetAcv());
       (*table)(row,2) << AvS.SetValue(pArtifact->GetAvOverS());
       (*table)(row,3) << shear_per_length.SetValue( pArtifact->GetNormalCompressionForce() );
@@ -404,7 +404,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
 
       const pgsHorizontalShearArtifact* pArtifact = psArtifact->GetHorizontalShearArtifact();
 
-      (*table)(row,0) << location.SetValue( poi, end_size );
+      (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
       (*table)(row,1) << AvS.SetValue(pArtifact->GetAcv());
       (*table)(row,2) << AvS.SetValue(pArtifact->GetAvOverS());
       (*table)(row,3) << AvS.SetValue(pArtifact->GetAvOverSMin());

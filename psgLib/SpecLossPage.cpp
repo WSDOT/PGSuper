@@ -200,11 +200,7 @@ BOOL CSpecLossPage::IsFractionalShippingLoss()
 
 void CSpecLossPage::OnShippingLossMethodChanged() 
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    CWnd* pTag = GetDlgItem(IDC_SHIPPING_TAG);

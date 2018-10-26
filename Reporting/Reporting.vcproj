@@ -328,6 +328,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FinalLossesChapterBuilder.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\FlexuralCapacityCheckTable.cpp"
 				>
 			</File>
@@ -422,6 +426,10 @@
 			</File>
 			<File
 				RelativePath=".\LoadRatingReportSpecificationBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\LongitudinalReinforcementForShearLoadRatingChapterBuilder.cpp"
 				>
 			</File>
 			<File
@@ -821,6 +829,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\Reporting\FinalLossesChapterBuilder.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\Reporting\FlexuralCapacityCheckTable.h"
 				>
 			</File>
@@ -914,6 +926,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\LoadRatingReportSpecificationBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\LongitudinalReinforcementForShearLoadRatingChapterBuilder.h"
 				>
 			</File>
 			<File

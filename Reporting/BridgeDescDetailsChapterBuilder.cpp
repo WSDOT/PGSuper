@@ -111,8 +111,9 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CBridgeDescDetailsChapterBuilder::CBridgeDescDetailsChapterBuilder()
+CBridgeDescDetailsChapterBuilder::CBridgeDescDetailsChapterBuilder(bool bOmitStrandLocations)
 {
+   m_bOmitStrandLocations = bOmitStrandLocations;
 }
 
 //======================== OPERATORS  =======================================
@@ -175,8 +176,11 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
 
          write_handling(pChapter,pBroker,pDisplayUnits,spanIdx, gdrIdx);
 
-         CStrandLocations strand_table;
-         strand_table.Build(pChapter,pBroker,spanIdx, gdrIdx,pDisplayUnits);
+         if ( !m_bOmitStrandLocations )
+         {
+            CStrandLocations strand_table;
+            strand_table.Build(pChapter,pBroker,spanIdx, gdrIdx,pDisplayUnits);
+         }
 
          write_debonding(pChapter, pBroker, pDisplayUnits, spanIdx, gdrIdx);
 
@@ -193,7 +197,9 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
          *pChapter<<pHead;
          *pHead<<"Materials"<<rptNewLine;
          write_concrete_details( pBroker, pDisplayUnits, pChapter, spanIdx, gdrIdx, level);
+
          write_strand_details( pBroker, pDisplayUnits, pChapter, level, spanIdx, gdrIdx);
+
       } // gdrIdx
    } // spanIdx
    write_rebar_details( pBroker, pDisplayUnits, pChapter, level);

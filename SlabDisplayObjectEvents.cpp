@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "pgsuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "SlabDisplayObjectEvents.h"
 #include "BridgeSectionCutDisplayImpl.h"
 #include "mfcdual.h"
@@ -158,7 +158,9 @@ STDMETHODIMP_(bool) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnKeyDown(i
 
 STDMETHODIMP_(bool) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSlabDisplayObjectEvents,Events);
+   METHOD_PROLOGUE_(CBridgePlanViewSlabDisplayObjectEvents,Events);
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 
    if ( pDO->IsSelected() )
    {
@@ -350,7 +352,9 @@ STDMETHODIMP_(bool) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnKeyDow
 
 STDMETHODIMP_(bool) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSlabDisplayObjectEvents,Events);
+   METHOD_PROLOGUE_(CBridgeSectionViewSlabDisplayObjectEvents,Events);
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 
    if ( pDO->IsSelected() )
    {

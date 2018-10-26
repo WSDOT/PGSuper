@@ -194,11 +194,7 @@ void CShearSteelGrid::OnUpdateEditRemoveRows(CCmdUI* pCmdUI)
 
 void CShearSteelGrid::CustomInit()
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 

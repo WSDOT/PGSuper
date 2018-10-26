@@ -90,7 +90,6 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    INIT_UV_PROTOTYPE( rptLength4UnitValue, mom_I,  pDisplayUnits->GetMomentOfInertiaUnit(),         true );
 
    location.IncludeSpanAndGirder(span == ALL_SPANS);
-   location.MakeSpanPoi();
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
@@ -175,7 +174,7 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
       pgsHaulingStressCheckArtifact stressArtifact =  pHaul->GetHaulingStressCheckArtifact(poi.GetDistFromStart());
  
-      (*p_table)(row,0) << location.SetValue( poi, overhang );
+      (*p_table)(row,0) << location.SetValue( pgsTypes::Hauling, poi, overhang );
       (*p_table)(row,1) << force.SetValue( stressArtifact.GetEffectiveHorizPsForce());
       (*p_table)(row,2) << dim.SetValue( stressArtifact.GetEccentricityPsForce());
 
@@ -248,7 +247,7 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
       pgsHaulingStressCheckArtifact stressArtifact =  pHaul->GetHaulingStressCheckArtifact(poi.GetDistFromStart());
  
-      (*p_table)(row1,0) << location.SetValue( poi,overhang );
+      (*p_table)(row1,0) << location.SetValue( pgsTypes::Hauling, poi,overhang );
       
       Float64 ps, up, down, no;
       stressArtifact.GetTopFiberStress(&ps, &up,&no,&down);
@@ -263,7 +262,7 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
       (*p_table)(row1,7) << stress.SetValue( no );
       (*p_table)(row1,8) << stress.SetValue( down );
 
-      (*p_table2)(row2,0) << location.SetValue(poi, overhang);
+      (*p_table2)(row2,0) << location.SetValue(pgsTypes::Hauling, poi, overhang);
 
       Float64 Mu,Mn,Md;
       stressArtifact.GetMomentImpact(&Mu,&Mn,&Md);
@@ -282,7 +281,7 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
 
 
-      (*p_table3)(row2,0) << location.SetValue( poi, overhang );
+      (*p_table3)(row2,0) << location.SetValue( pgsTypes::Hauling, poi, overhang );
 
       Float64 YnaUp,YnaDown, YnaInclined,At,T,As;
       ImpactDir controlling_impact;
@@ -345,7 +344,7 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
       pgsHaulingCrackingCheckArtifact crackArtifact =  pHaul->GetHaulingCrackingCheckArtifact(poi.GetDistFromStart());
  
-      (*p_table)(row,0) << location.SetValue( poi,overhang);
+      (*p_table)(row,0) << location.SetValue( pgsTypes::Hauling, poi, overhang);
       (*p_table)(row,1) << stress.SetValue( crackArtifact.GetLateralMomentStress() );
 
       if (crackArtifact.GetCrackedFlange()==BottomFlange)

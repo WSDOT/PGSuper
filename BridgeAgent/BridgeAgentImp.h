@@ -391,6 +391,7 @@ public:
 
    virtual Float64 GetPjack(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type);
    virtual Float64 GetPjack(SpanIndexType span,GirderIndexType gdr,bool bIncTemp);
+   virtual void GetStrandPosition(const pgsPointOfInterest& poi, StrandIndexType strandIdx,pgsTypes::StrandType type, IPoint2d** ppPoint);
    virtual void GetStrandPositions(const pgsPointOfInterest& poi, pgsTypes::StrandType type, IPoint2dCollection** ppPoints);
    virtual void GetStrandPositionsEx(const pgsPointOfInterest& poi,StrandIndexType Ns, pgsTypes::StrandType type, IPoint2dCollection** ppPoints);
 
@@ -458,17 +459,17 @@ public:
 
 // IPointOfInterest
 public:
-   virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,PoiAttributeType attrib,Uint32 mode = POIFIND_AND);
-   virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(std::set<pgsTypes::Stage> stages,SpanIndexType span,GirderIndexType gdr,PoiAttributeType attrib,Uint32 mode = POIFIND_AND);
-   virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,PoiAttributeType attrib,Uint32 mode = POIFIND_AND);
+   virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr);
+   virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,std::vector<pgsTypes::Stage> stages,PoiAttributeType attrib,Uint32 mode = POIFIND_AND);
+   virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,PoiAttributeType attrib,Uint32 mode = POIFIND_AND);
    virtual std::vector<pgsPointOfInterest> GetTenthPointPOIs(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr);
    virtual void GetCriticalSection(pgsTypes::LimitState limitState,SpanIndexType span,GirderIndexType gdr,pgsPointOfInterest* pLeft,pgsPointOfInterest* pRight);
    virtual void GetCriticalSection(pgsTypes::LimitState limitState,SpanIndexType span,GirderIndexType gdr,const GDRCONFIG& config,pgsPointOfInterest* pLeft,pgsPointOfInterest* pRight);
    virtual double GetDistanceFromFirstPier(const pgsPointOfInterest& poi,pgsTypes::Stage stage);
-   virtual pgsPointOfInterest GetPointOfInterest(SpanIndexType span,GirderIndexType gdr,double distFromStart);
-   virtual pgsPointOfInterest GetPointOfInterest(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,double distFromStart);
-   virtual pgsPointOfInterest GetNearestPointOfInterest(SpanIndexType span,GirderIndexType gdr,double distFromStart);
-   virtual pgsPointOfInterest GetNearestPointOfInterest(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,double distFromStart);
+   virtual pgsPointOfInterest GetPointOfInterest(SpanIndexType span,GirderIndexType gdr,Float64 distFromStart);
+   virtual pgsPointOfInterest GetPointOfInterest(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart);
+   virtual pgsPointOfInterest GetNearestPointOfInterest(SpanIndexType span,GirderIndexType gdr,Float64 distFromStart);
+   virtual pgsPointOfInterest GetNearestPointOfInterest(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart);
 
 // ISectProp2
 public:
@@ -664,11 +665,12 @@ private:
 
    pgsPoiMgr m_PoiMgr;
    std::set<SpanGirderHashType> m_PoiValidated; // If the span/gdr key is in the set, then the POI's have been validated
-   std::set<SpanGirderHashType> m_LiftingPoiValidated;
-   std::set<SpanGirderHashType> m_HaulingPoiValidated;
+   //std::set<SpanGirderHashType> m_LiftingPoiValidated;
+   //std::set<SpanGirderHashType> m_HaulingPoiValidated;
+   //pgsPoiMgr m_LiftingPoiMgr;     // Manages POI's for lifting
+   //pgsPoiMgr m_HaulingPoiMgr;     // Manages POI's for hauling
+
    std::set<SpanGirderHashType> m_CriticalSectionState[2];
-   pgsPoiMgr m_LiftingPoiMgr;     // Manages POI's for lifting
-   pgsPoiMgr m_HaulingPoiMgr;     // Manages POI's for hauling
 
    // adapter for working with continuous strand fills
    typedef std::map<SpanGirderHashType, CContinuousStandFiller>  StrandFillerCollection;
@@ -724,10 +726,10 @@ private:
 
    void ValidateGirderOrientation(SpanIndexType span,GirderIndexType gdr);
 
-   void ValidateLiftingPointsOfInterest(SpanIndexType span,GirderIndexType gdr);
+   //void ValidateLiftingPointsOfInterest(SpanIndexType span,GirderIndexType gdr);
    void LayoutLiftingPoi(SpanIndexType span,GirderIndexType gdr,Uint16 nPnts);
 
-   void ValidateHaulingPointsOfInterest(SpanIndexType span,GirderIndexType gdr);
+   //void ValidateHaulingPointsOfInterest(SpanIndexType span,GirderIndexType gdr);
    void LayoutHaulingPoi(SpanIndexType span,GirderIndexType gdr,Uint16 nPnts);
 
    void LayoutHandlingPoi(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr, Uint16 nPnts, PoiAttributeType attrib,pgsPoiMgr* pPoiMgr);

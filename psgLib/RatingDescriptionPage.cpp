@@ -84,6 +84,9 @@ BOOL CRatingDescriptionPage::OnInitDialog()
    idx = pSpec->AddString("1st Edition, 2008");
    pSpec->SetItemData(idx,(DWORD)lrfrVersionMgr::FirstEdition2008);
 
+   idx = pSpec->AddString("1st Edition, 2008 with 2010 interim provisions");
+   pSpec->SetItemData(idx,(DWORD)lrfrVersionMgr::FirstEditionWith2010Interims);
+
    CPropertyPage::OnInitDialog();
 	
 	return TRUE;  // return TRUE unless you set the focus to a control

@@ -84,10 +84,6 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),     false );
 
    location.IncludeSpanAndGirder(span == ALL_SPANS);
-   if ( stage == pgsTypes::CastingYard )
-      location.MakeGirderPoi();
-   else
-      location.MakeSpanPoi();
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -298,7 +294,7 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stage, span, girder, POI_ALL, POIFIND_OR );
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_ALL, POIFIND_OR );
 
    GET_IFACE2(pBroker,ICombinedForces,pForces);
    GET_IFACE2(pBroker,ICombinedForces2,pForces2);
@@ -411,7 +407,7 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
       if ( stage != pgsTypes::CastingYard )
          end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
 
-      (*p_table)(row,col++) << location.SetValue( poi, end_size );
+      (*p_table)(row,col++) << location.SetValue( stage, poi, end_size );
       if ( stage == pgsTypes::CastingYard || stage == pgsTypes::GirderPlacement || stage == pgsTypes::TemporaryStrandRemoval )
       {
          (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopDCinc[index]) << rptNewLine;
@@ -671,7 +667,7 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
          if ( stage != pgsTypes::CastingYard )
             end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
 
-         (*p_table)(row,col++) << location.SetValue( poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( stage, poi, end_size );
 
          if ( bDesign )
          {

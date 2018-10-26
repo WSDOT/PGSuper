@@ -85,10 +85,6 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
 
    location.IncludeSpanAndGirder(span == ALL_SPANS);
-   if ( stage == pgsTypes::CastingYard )
-      location.MakeGirderPoi();
-   else
-      location.MakeSpanPoi();
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -183,7 +179,7 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
       }
 
       GET_IFACE2(pBroker,IStageMap,pStageMap);
-      p_table2 = pgsReportStyleHolder::CreateDefaultTable(nCols,"");
+      p_table2 = pgsReportStyleHolder::CreateDefaultTable(nCols,"Shear");
       row2 = ConfigureLimitStateTableHeading<rptForceUnitTag,unitmgtForceData>(p_table2,false,bDesign,bPermit,bRating,false,analysisType,pStageMap,pRatingSpec,pDisplayUnits,pDisplayUnits->GetGeneralForceUnit());
       *p << p_table2;
    }
@@ -199,7 +195,7 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
    // Fill up the table
    for ( spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
    {
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stage, spanIdx, girder, POI_ALL, POIFIND_OR);
+      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( spanIdx, girder, stage, POI_ALL, POIFIND_OR);
 
       std::vector<sysSectionValue> dummy;
       std::vector<sysSectionValue> minServiceI, maxServiceI;
@@ -416,7 +412,7 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
          if ( stage != pgsTypes::CastingYard )
             end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
 
-         (*p_table)(row,col++) << location.SetValue( poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( stage, poi, end_size );
 
          if ( stage == pgsTypes::CastingYard  || stage == pgsTypes::GirderPlacement || stage == pgsTypes::TemporaryStrandRemoval )
          {
@@ -729,7 +725,7 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
             if ( stage != pgsTypes::CastingYard )
                end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
 
-            (*p_table2)(row2,col++) << location.SetValue( poi, end_size );
+            (*p_table2)(row2,col++) << location.SetValue( stage, poi, end_size );
 
             if ( analysisType == pgsTypes::Envelope )
             {

@@ -23,7 +23,7 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "EditPointLoadDlg.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

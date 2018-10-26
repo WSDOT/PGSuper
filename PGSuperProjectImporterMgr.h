@@ -22,6 +22,8 @@
 #pragma once
 
 #include "Plugins\PGSuperIEPlugin.h"
+#include <EAF\EAFUtilities.h>
+#include <set>
 
 class CPGSuperProjectImporterMgr
 {
@@ -30,26 +32,33 @@ public:
 
    bool LoadImporters();
    void UnloadImporters();
-   Uint32 GetImporterCount() const;
-   void GetImporter(Uint32 key,bool bByIndex,IPGSuperProjectImporter** ppImporter);
-   UINT GetImporterCommand(Uint32 idx) const;
+   CollectionIndexType GetImporterCount() const;
+   void GetImporter(CollectionIndexType idx,IPGSuperProjectImporter** ppImporter);
+   void GetImporter(const CLSID& clsid,IPGSuperProjectImporter** ppImporter);
+   void AddImporter(const CLSID& clsid,IPGSuperProjectImporter* pImporter);
+   void RemoveImporter(const CLSID& clsid);
 
 private:
    struct Record
-   { Uint32 commandID; CComPtr<IPGSuperProjectImporter> Importer;
-   Record() {}
-   Record(const Record& other) 
-   {
-      commandID = other.commandID;
-      Importer = other.Importer;
-   }
-   Record& operator=(const Record& other)
-   {
-      commandID = other.commandID;
-      Importer = other.Importer;
-      return *this;
-   }
+   { 
+      CLSID clsid; CComPtr<IPGSuperProjectImporter> Importer;
+      Record() {}
+      Record(const Record& other) 
+      {
+         clsid    = other.clsid;
+         Importer = other.Importer;
+      }
+      Record& operator=(const Record& other)
+      {
+         clsid    = other.clsid;
+         Importer = other.Importer;
+         return *this;
+      }
+      bool operator<(const Record& other) const
+      {
+         return clsid < other.clsid;
+      }
    };
 
-   std::vector<Record> m_ImporterRecords;
+   std::set<Record> m_ImporterRecords;
 };

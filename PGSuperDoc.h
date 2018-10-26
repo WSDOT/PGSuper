@@ -94,8 +94,6 @@ public:
 
    void OnLibMgrChanged(psgLibraryManager* pNewLibMgr);
 
-   bool DoTxDotCadReport(const CString& outputFileName, const CString& errorFileName, const CPGSuperCommandLineInfo& txInfo);
-
    void PopulateReportMenu();
 
 // Overrides
@@ -103,6 +101,7 @@ public:
 	//{{AFX_VIRTUAL(CPGSuperDoc)
 	public:
 	virtual BOOL OnNewDocumentFromTemplate(LPCTSTR lpszPathName);
+   virtual void OnCloseDocument();
 	virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
 	//}}AFX_VIRTUAL
 
@@ -140,7 +139,6 @@ public:
    void DesignGirderDirect(bool bDesignSlabOffset);
    void DoDesignGirder(SpanIndexType span,GirderIndexType gdr,const arDesignOptions& designOptions);
 
-   void SaveFlexureDesign(SpanIndexType span,GirderIndexType gdr,const arDesignOptions& designOptions, const pgsDesignArtifact* pArtifact);
 
    void GetDocUnitSystem(IDocUnitSystem** ppDocUnitSystem);
 

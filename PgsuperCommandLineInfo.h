@@ -20,28 +20,10 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PGSEXT_CPGSUPERCOMMANDLINEINFO_H_
-#define INCLUDED_PGSEXT_CPGSUPERCOMMANDLINEINFO_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
-#if !defined INCLUDED_PGSEXTEXP_H_
 #include <PgsExt\PgsExtExp.h>
-#endif
-
 #include <EAF\EAFCommandLineInfo.h>
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 CLASS 
@@ -76,68 +58,23 @@ public:
    enum TxFType {txfNormal, txfExtended, txfTest};
 
 
-   // GROUP: LIFECYCLE
-   //------------------------------------------------------------------------
-   // Default constructor
    CPGSuperCommandLineInfo();
-
-   //------------------------------------------------------------------------
-   // Destructor
    virtual ~CPGSuperCommandLineInfo();
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    // derive new version to parse new commands
    virtual void ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast);
 
    virtual CString GetUsageMessage();
+   virtual CString GetErrorMessage();
 
    bool   m_bDo1250Test;
    long   m_SubdomainId;
 
-
-   // txDOT CAD report from command line
-   bool  m_DoTxCadReport;
-   TxRunType m_TxRunType;
-   TxFType   m_TxFType;
-   CString m_TxOutputFile;
-   SpanIndexType m_TxSpan;
-   GirderIndexType m_TxGirder;
-   bool m_DoAppendToFile;
-
    Uint32 m_Count; // parameter number
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-
    // Prevent accidental copying and assignment
    CPGSuperCommandLineInfo(const CPGSuperCommandLineInfo&);
    CPGSuperCommandLineInfo& operator=(const CPGSuperCommandLineInfo&);
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
 
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_PGSEXT_CPGSUPERCOMMANDLINEINFO_H_

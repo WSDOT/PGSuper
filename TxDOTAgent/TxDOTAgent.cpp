@@ -30,10 +30,12 @@
 #include "TxDOTAgent_i.h"
 #include "dllmain.h"
 
+#include "BridgeLinkCatCom.h"
 #include "PGSuperCatCom.h"
 #include <System\ComCatMgr.h>
 
 #include <EAF\EAFComponentInfo.h>
+#include <EAF\EAFUIIntegration.h>
 
 // interfaces used in this DLL.... resolves symbols for the linker
 #include <WBFLCore_i.c>
@@ -50,6 +52,8 @@
 #include <IFace\DistributionFactors.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\PrestressForce.h>
+#include <IFace\Test1250.h>
+#include <IFace\GirderHandling.h>
 
 
 
@@ -83,7 +87,7 @@ STDAPI DllRegisterServer(void)
    if ( FAILED(hr) )
       return hr;
 
-   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTComponentInfo,CATID_PGSuperComponents,true);
+   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTComponentInfo,CATID_BridgeLinkComponents,true);
    if ( FAILED(hr) )
       return hr;
 
@@ -106,7 +110,7 @@ STDAPI DllUnregisterServer(void)
    if ( FAILED(hr) )
       return hr;
 
-   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTComponentInfo,CATID_PGSuperComponents,false);
+   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTComponentInfo,CATID_BridgeLinkComponents,false);
    if ( FAILED(hr) )
       return hr;
 

@@ -836,10 +836,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\PGSuperComponentInfo.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\PGSuperLibrary.idl"
 				>
 				<FileConfiguration
@@ -1752,10 +1748,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\PGSuperComponentInfo.h"
-				>
-			</File>
-			<File
 				RelativePath="..\Include\PsgLib\psgLib.h"
 				>
 			</File>
@@ -1853,11 +1845,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\concrete.ico"
+				>
+			</File>
+			<File
 				RelativePath="res\connecti.bmp"
 				>
 			</File>
 			<File
 				RelativePath="res\Connection.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\connection.ico"
 				>
 			</File>
 			<File
@@ -1901,6 +1901,18 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\diaphragm.ico"
+				>
+			</File>
+			<File
+				RelativePath="..\res\folder_closed.ico"
+				>
+			</File>
+			<File
+				RelativePath="..\res\folder_open.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\res\GenerateStrands_StartEnd_Sequential.emf"
 				>
 			</File>
@@ -1917,6 +1929,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\girder.ico"
+				>
+			</File>
+			<File
 				RelativePath="res\GirderDim.emf"
 				>
 			</File>
@@ -1925,15 +1941,11 @@
 				>
 			</File>
 			<File
-				RelativePath="ico00001.ico"
-				>
-			</File>
-			<File
 				RelativePath="res\ico00001.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\ico00002.ico"
+				RelativePath="ico00001.ico"
 				>
 			</File>
 			<File
@@ -1941,11 +1953,15 @@
 				>
 			</File>
 			<File
-				RelativePath="ico00003.ico"
+				RelativePath="res\ico00002.ico"
 				>
 			</File>
 			<File
 				RelativePath="res\ico00003.ico"
+				>
+			</File>
+			<File
+				RelativePath="ico00003.ico"
 				>
 			</File>
 			<File
@@ -1957,11 +1973,11 @@
 				>
 			</File>
 			<File
-				RelativePath="res\ico00005.ico"
+				RelativePath="ico00005.ico"
 				>
 			</File>
 			<File
-				RelativePath="ico00005.ico"
+				RelativePath="res\ico00005.ico"
 				>
 			</File>
 			<File
@@ -1974,6 +1990,18 @@
 			</File>
 			<File
 				RelativePath=".\res\LibEditorToolbar.bmp"
+				>
+			</File>
+			<File
+				RelativePath="..\res\LibEntryInUse.bmp"
+				>
+			</File>
+			<File
+				RelativePath="..\res\LibEntryInUseAndReadOnly.bmp"
+				>
+			</File>
+			<File
+				RelativePath="..\res\LibEntryReadOnly.bmp"
 				>
 			</File>
 			<File
@@ -1993,10 +2021,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\PGSuperComponentInfo.rgs"
-				>
-			</File>
-			<File
 				RelativePath="res\psgLib.rc2"
 				>
 			</File>
@@ -2005,7 +2029,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\specification.ico"
+				>
+			</File>
+			<File
 				RelativePath="res\TrafficBarrier.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\trafficbarrier.ico"
 				>
 			</File>
 			<File

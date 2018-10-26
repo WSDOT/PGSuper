@@ -42,13 +42,7 @@ static char THIS_FILE[] = __FILE__;
 CPGSuperCommandLineInfo::CPGSuperCommandLineInfo() :
 CEAFCommandLineInfo(),
 m_bDo1250Test(false),
-m_SubdomainId(0),
-m_DoTxCadReport(false),
-m_TxRunType(txrAnalysis),
-m_TxFType(txfNormal),
-m_TxSpan(-1),
-m_TxGirder(-1),
-m_DoAppendToFile(false)
+m_SubdomainId(0)
 {
    m_Count=0;
 }
@@ -63,182 +57,55 @@ void CPGSuperCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLa
 {
    m_Count++;
 
-  // check if this is a test run.
-  // we are using a flag parameter to
-  // pass the desired subdomain id.
-   bool bOurFlag = false;
+   bool bMyParameter = false;
 
-   if( bFlag )
+   CString strParam(lpszParam);
+   if ( bFlag )
    {
-       CString sParam(lpszParam);
-       CString sFlag(sParam.Left(4));
-       CString txFlag(sParam.Left(2));
+      // Parameter is a flag (-flag or /flag)
+      if ( strParam.CompareNoCase("TestR") == 0 )
+      {
+         // Run the full 12-50 regression tests suite
+         m_SubdomainId = RUN_REGRESSION;
+         m_bDo1250Test      = true;
+         m_bCommandLineMode = true;
+         bMyParameter       = true;
+      }
+      else if ( strParam.Left(4).CompareNoCase("Test") == 0 )
+      {
+         // Could be a sub-domain 12-50 test
 
-       if (sParam.CompareNoCase("testdf")==0)
-       {
-            // Use txdot command path to handle df report
-            m_TxRunType = TxrDistributionFactors;
-            m_TxFType   = txfNormal;
-            m_DoTxCadReport = true;
-            m_CommandLineMode = true;
-            m_bShowSplash = FALSE;
-            bOurFlag = true;
-       }
-       else if (sFlag.CompareNoCase("test")==0)
-       {
-         try
+         // remove the "test" and get the sub-domain ID
+         strParam = strParam.Right(strParam.GetLength() - 4);
+         CComVariant var(strParam);
+         if ( SUCCEEDED(var.ChangeType(VT_I4)) )
          {
-            sParam = sParam.Right(sParam.GetLength() - 4);
-            if (sParam[0]=='R'||sParam[0]=='r')
-            {
-               // regression test
-               m_SubdomainId = RUN_REGRESSION;
-            }
-            else
-            {
-               CComVariant vdid(sParam);
-               vdid.ChangeType(VT_I4);
-               m_SubdomainId = vdid.lVal;
-            }
+            m_SubdomainId = var.lVal;
 
-            m_bDo1250Test = true;
-            m_CommandLineMode = true;
-            m_bShowSplash = FALSE;
-            bOurFlag = true;
+            m_bDo1250Test      = true;
+            m_bCommandLineMode = true;
+            bMyParameter       = true;
          }
-         catch(...)
-         {
-            ::AfxMessageBox("Error - Parsing subdomain id on command line");
-            m_bAbort = true;
-         }
-         return;
-       }
-       else if (txFlag.CompareNoCase("tx")==0)
-       {   // probable TxDOT CAD report
-
-         // see if we append or overwrite file
-         CString appFlag(sParam.Right(1));
-         m_DoAppendToFile = appFlag.CompareNoCase("o")!=0;
-       
-         // Set main command option
-         if (sParam.CompareNoCase("txa")==0 || sParam.CompareNoCase("txao")==0)
-         {
-            m_TxRunType = txrAnalysis;
-            m_TxFType   = txfNormal;
-         }
-         else if (sParam.CompareNoCase("txax")==0 || sParam.CompareNoCase("txaxo")==0)
-         {
-            m_TxRunType = txrAnalysis;
-            m_TxFType   = txfExtended;
-         }
-         else if (sParam.CompareNoCase("txat")==0 || sParam.CompareNoCase("txato")==0)
-         {
-            m_TxRunType = txrAnalysis;
-            m_TxFType   = txfTest;
-            m_DoAppendToFile = false;  // always delete test file
-         }
-         else if (sParam.CompareNoCase("txd")==0 || sParam.CompareNoCase("txdo")==0)
-         {
-            m_TxRunType = txrDesign;
-            m_TxFType   = txfNormal;
-         }
-         else if (sParam.CompareNoCase("txdx")==0 || sParam.CompareNoCase("txdxo")==0)
-         {
-            m_TxRunType = txrDesign;
-            m_TxFType   = txfExtended;
-         }
-         else if (sParam.CompareNoCase("txdt")==0 || sParam.CompareNoCase("txdto")==0)
-         {
-            m_TxRunType = txrDesign;
-            m_TxFType   = txfTest;
-            m_DoAppendToFile = false;  // always delete test file
-         }
-         else
-         {
-            ::AfxMessageBox("Error - Parsing Texas CAD command on command line. Available options are /TxA, /TxAx, /TxAt /TxD, /TxDx /TxDt");
-            m_bAbort = true;
-            return;
-         }
-
-         m_DoTxCadReport = true;
-         m_CommandLineMode = true;
-         m_bShowSplash = FALSE;
-         bOurFlag = true;
-       }
-     }
-     else
-     {
-        // not a flag
-
-        if (m_DoTxCadReport && m_Count==3)
-        {
-           // output file name
-           m_TxOutputFile = lpszParam;
-        }
-        else if (m_DoTxCadReport && m_Count==4)
-        {
-           // span
-           long lsp;
-           if (sysTokenizer::ParseLong(lpszParam, &lsp))
-           {
-               m_TxSpan = SpanIndexType(lsp - 1);
-           }
-           else
-           {
-              CString cparam(lpszParam);
-              cparam.MakeUpper();
-              if (cparam=="ALL")
-              {
-                 m_TxSpan = ALL_SPANS;
-              }
-              else
-              {
-                  ::AfxMessageBox("Error - Parsing span number in Texas CAD command from command line");
-                  m_bAbort = true;
-                  return;
-              }
-           }
-        }
-        else if (m_DoTxCadReport && m_Count==5)
-        {
-           // girder
-           CString cparam(lpszParam);
-           cparam.MakeUpper();
-           if (cparam=="ALL")
-           {
-              m_TxGirder = TXALLGIRDERS;
-           }
-           else if (cparam=="EI")
-           {
-              m_TxGirder = TXEIGIRDERS;
-           }
-           else
-           {
-              int gd = (char)cparam[0] - 'A';
-              if (gd>=0 && gd<=28)
-              {
-                 m_TxGirder = gd;
-              }
-              else
-              {
-                  ::AfxMessageBox("Error - Parsing girder number in Texas CAD command from command line");
-                  m_bAbort = true;
-                  return;
-              }
-           }
-        }
+      }
    }
 
-   if ( bFlag && !bOurFlag || !bFlag )
+   if ( !bMyParameter )
      CEAFCommandLineInfo::ParseParam(lpszParam, bFlag, bLast);
 }
 
 CString CPGSuperCommandLineInfo::GetUsageMessage()
 {
    CString strMsg;
-   strMsg.Format("Command Line Options:\n%s\n%s\n%s",
+   strMsg.Format("PGSuper filename.pgs\nPGSuper /TestR filename.pgs\nPGSuper /Test[n] filename.pgs\n\nPGSuper extensions may offer additional command line options. Refer to the user documentation for details.");
+   return strMsg;
+}
+
+CString CPGSuperCommandLineInfo::GetErrorMessage()
+{
+   CString strMsg;
+   strMsg.Format("PGSuper was started with invalid command line options. Valid command line options are:\n%s\n%s\n\n%s",
       "PGSuper filename.pgs",
-      "PGSuper [/TxA, /TxAx, /TxAt /TxD, /TxDx /TxDt] filename.pgs outputfile span girder",
+      "PGSuper /TestR filename.pgs",
       "See Command Line Options in the PGSuper User Guide for more information");
    return strMsg;
 }

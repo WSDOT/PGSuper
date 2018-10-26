@@ -90,7 +90,6 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    INIT_UV_PROTOTYPE( rptLength4UnitValue, mom_I,  pDisplayUnits->GetMomentOfInertiaUnit(),         true );
 
    location.IncludeSpanAndGirder(span == ALL_SPANS);
-   location.MakeSpanPoi();
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
@@ -181,7 +180,7 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
       pgsLiftingStressCheckArtifact stressArtifact =  pLift->GetLiftingStressCheckArtifact(poi.GetDistFromStart());
  
-      (*p_table)(row,0) << location.SetValue( poi, overhang );
+      (*p_table)(row,0) << location.SetValue( pgsTypes::Lifting, poi, overhang );
       (*p_table)(row,1) << force.SetValue( stressArtifact.GetEffectiveHorizPsForce());
       (*p_table)(row,2) << dim.SetValue( stressArtifact.GetEccentricityPsForce());
       Float64 up, down, no;
@@ -240,7 +239,7 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
       pgsLiftingStressCheckArtifact stressArtifact =  pLift->GetLiftingStressCheckArtifact(poi.GetDistFromStart());
  
-      (*p_table)(row1,0) << location.SetValue( poi,overhang );
+      (*p_table)(row1,0) << location.SetValue( pgsTypes::Lifting,poi,overhang );
       Float64 ps, up, down, no;
       stressArtifact.GetTopFiberStress(&ps,&up,&no,&down);
       (*p_table)(row1,1) << stress.SetValue( ps );
@@ -254,7 +253,7 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
       (*p_table)(row1,8) << stress.SetValue( down );
       
  
-      (*p_table2)(row2,0) << location.SetValue( poi, overhang );
+      (*p_table2)(row2,0) << location.SetValue( pgsTypes::Lifting, poi, overhang );
 
       Float64 YnaUp,YnaNone,YnaDown,At,T,As;
       stressArtifact.GetAlternativeTensileStressParameters(&YnaUp,&YnaNone,&YnaDown,&At,&T,&As);
@@ -310,7 +309,7 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
       pgsLiftingCrackingCheckArtifact crackArtifact =  pLift->GetLiftingCrackingCheckArtifact(poi.GetDistFromStart());
  
-      (*p_table)(row,0) << location.SetValue( poi,overhang);
+      (*p_table)(row,0) << location.SetValue( pgsTypes::Lifting, poi, overhang);
       (*p_table)(row,1) << stress.SetValue( crackArtifact.GetLateralMomentStress() );
 
       if (crackArtifact.GetCrackedFlange()==BottomFlange)

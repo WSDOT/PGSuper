@@ -37,11 +37,15 @@
 #include "PGSuperLibrary_i.h"
 #include "LibraryAppPlugin.h"
 
+#include <BridgeLinkCatCom.h>
+
 #include <PGSuperCatCom.h>
-#include "PGSuperComponentInfo.h"
 #include "PGSuperLibraryMgrCATID.h"
 
 #include "dllmain.h"
+
+#include <EAF\EAFApp.h>
+#include <EAF\EAFUtilities.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -144,10 +148,12 @@ BOOL CPsgLibApp::InitInstance()
    // This call will initialize the grid library
 	GXInit( );
 
-   // set location of help file
-   std::string rpath = "PGSuper.chm";
-
-   SetHelpFilePath(rpath);
+   // Use the same help file as the main application
+   if ( EAFGetApp() )
+   {
+      free((void*)m_pszHelpFilePath);
+      m_pszHelpFilePath = _tcsdup(EAFGetApp()->m_pszHelpFilePath);
+   }
 
    sysComCatMgr::CreateCategory(L"PGSuper Library Editor Components",CATID_PGSuperLibraryManagerPlugin);
 
@@ -549,16 +555,27 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
     return _AtlModule.DllGetClassObject(rclsid, riid, ppv);
 }
 
+HRESULT RegisterComponents(bool bRegister)
+{
+   HRESULT hr = S_OK;
+
+   // Need to register the library application plugin with the PGSuperAppPlugin category
+   hr = sysComCatMgr::RegWithCategory(CLSID_LibraryAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
+   if ( FAILED(hr) )
+      return hr;
+
+   return S_OK;
+}
+
+
 // DllRegisterServer - Adds entries to the system registry
 STDAPI DllRegisterServer(void)
 {
     // registers object, typelib and all interfaces in typelib
     HRESULT hr = _AtlModule.DllRegisterServer();
 
-#pragma Reminder("PGSuperComponentInfo needs to be moved to the PGSuper.dll when we go to dynamic app-plugins")
-   // PGSuperComponentInfo.cpp/h need to be moved
-   // This registration needs to be removed
-   sysComCatMgr::RegWithCategory(CLSID_PGSuperComponentInfo,CATID_PGSuperComponents,true);
+    hr = RegisterComponents(true);
+
 
    return S_OK;
 }
@@ -568,10 +585,7 @@ STDAPI DllRegisterServer(void)
 STDAPI DllUnregisterServer(void)
 {
    HRESULT hr = _AtlModule.DllUnregisterServer();
-#pragma Reminder("PGSuperComponentInfo needs to be moved to the PGSuper.dll when we go to dynamic app-plugins")
-   // PGSuperComponentInfo.cpp/h need to be moved
-   // This registration needs to be removed
-   sysComCatMgr::RegWithCategory(CLSID_PGSuperComponentInfo,CATID_PGSuperComponents,false);
+   hr = RegisterComponents(false);
 
    return hr;
 }

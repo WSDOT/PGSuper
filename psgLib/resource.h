@@ -39,7 +39,7 @@
 #define IDD_SPEC_DESCR                  139
 #define IDD_GIRDER_MAIN                 140
 #define IDD_SPEC_BRIDGE_SITE            143
-#define IDR_LIBRARTYPE                  143
+#define IDR_LIBRARYTYPE                  143
 #define IDD_EDIT_SHEAR_STEEL            144
 #define IDD_SPEC_CASTING_YARD           145
 #define IDD_LONG_STEEL                  146
@@ -48,7 +48,6 @@
 #define IDD_SPEC_STRANDS                149
 #define IDD_GIRDER_MISC                 150
 #define IDR_LIBAPPPLUGIN                150
-#define IDR_PGSUPERCOMPONENTINFO        151
 #define IDD_TRAFFIC_BARRIER             151
 #define IDC_Y1_T                        151
 #define IDB_Barrier                     152
@@ -92,7 +91,7 @@
 #define IDD_RATING_DESCR                199
 #define IDI_RATING_ENTRY                202
 #define IDI_ICON1                       203
-#define IDI_LIBRARY_MANAGER             203
+#define IDI_LIBRARY_MANAGER             201
 #define IDD_STRAND_GENERATION           204
 #define IDD_LIVE_LOAD_FACTORS           306
 #define IDC_D1                          1001
@@ -859,6 +858,11 @@
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
 #define IDR_LIBEDITORTOOLBAR            12132
+#define IDI_FOLDER                      199
+#define IDI_OPEN_FOLDER                 200
+#define IDB_IN_USE                      164
+#define IDB_IN_USE_AND_READ_ONLY        165
+#define IDB_READ_ONLY                   166
 
 #define IDM_ADD_ENTRY                   33024
 #define IDM_EDIT_ENTRY                  33025

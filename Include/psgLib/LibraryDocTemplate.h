@@ -29,11 +29,12 @@ class PSGLIBCLASS CLibraryDocTemplate : public CEAFDocTemplate
 {
 public:
    CLibraryDocTemplate(UINT nIDResource,
-                   CRuntimeClass* pDocClass,
-                   CRuntimeClass* pFrameClass,
-                   CRuntimeClass* pViewClass,
-                   HMENU hSharedMenu = NULL,
-                   int maxViewCount = -1);
+                       IEAFCommandCallback* pCallback,
+                       CRuntimeClass* pDocClass,
+                       CRuntimeClass* pFrameClass,
+                       CRuntimeClass* pViewClass,
+                       HMENU hSharedMenu = NULL,
+                       int maxViewCount = -1);
 
    virtual CString GetTemplateGroupItemDescription(const CEAFTemplateItem* pItem) const;
 

@@ -32,7 +32,6 @@
 #endif // _MSC_VER >= 1000
 
 #include <EAF\EAFMainFrame.h>
-#include "PGSuperStatusBar.h"
 #include "PGSuperTypes.h"
 
 #include <boost\shared_ptr.hpp>
@@ -50,12 +49,11 @@ public:
 
 // Operations
 public:
-   void AutoCalcEnabled( bool bEnable );
-   void SetAnalysisTypeStatusIndicator(pgsTypes::AnalysisType analysisType);
 
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CMainFrame)
+   virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -75,8 +73,6 @@ protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
-
-   virtual CEAFStatusBar* CreateStatusBar();
 };
 
 /////////////////////////////////////////////////////////////////////////////

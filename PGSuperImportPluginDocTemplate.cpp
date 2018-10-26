@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperImportPluginDocTemplate.h"
 #include "SelectItemDlg.h"
 #include <IFace\Project.h>
@@ -51,12 +51,13 @@ IMPLEMENT_DYNAMIC(CMyTemplateItem,CEAFTemplateItem)
 IMPLEMENT_DYNAMIC(CPGSuperImportPluginDocTemplate,CEAFDocTemplate)
 
 CPGSuperImportPluginDocTemplate::CPGSuperImportPluginDocTemplate(UINT nIDResource,
- 																 CRuntimeClass* pDocClass,
- 																 CRuntimeClass* pFrameClass,
- 																 CRuntimeClass* pViewClass,
-                                                 HMENU hSharedMenu,
-                                                 int maxViewCount) :
-CEAFDocTemplate(nIDResource,pDocClass,pFrameClass,pViewClass,hSharedMenu,maxViewCount)
+                                                                 IEAFCommandCallback* pCallback,
+  																                 CRuntimeClass* pDocClass,
+  																                 CRuntimeClass* pFrameClass,
+ 																                 CRuntimeClass* pViewClass,
+                                                                 HMENU hSharedMenu,
+                                                                 int maxViewCount) :
+CEAFDocTemplate(nIDResource,pCallback,pDocClass,pFrameClass,pViewClass,hSharedMenu,maxViewCount)
 {
    USES_CONVERSION;
 
@@ -66,7 +67,7 @@ CEAFDocTemplate(nIDResource,pDocClass,pFrameClass,pViewClass,hSharedMenu,maxView
    for ( Uint32 idx = 0; idx < nImporters; idx++ )
    {
       CComPtr<IPGSuperProjectImporter> importer;
-      m_ProjectImporterMgr.GetImporter(idx,true,&importer);
+      m_ProjectImporterMgr.GetImporter(idx,&importer);
 
       CComBSTR bstrText;
       importer->GetItemText(&bstrText);
@@ -168,7 +169,7 @@ BOOL CPGSuperImportPluginDocTemplate::GetDocString(CString& rString,enum DocStri
    return CEAFDocTemplate::GetDocString(rString,index);
 }
 
-const CPGSuperProjectImporterMgr& CPGSuperImportPluginDocTemplate::GetProjectImporterManager() const
+CPGSuperProjectImporterMgr& CPGSuperImportPluginDocTemplate::GetProjectImporterManager()
 {
    return m_ProjectImporterMgr;
 }

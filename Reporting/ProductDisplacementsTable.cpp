@@ -109,7 +109,7 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
    GET_IFACE2(pBroker,IProductLoads,pLoads);
    for ( SpanIndexType spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
    {
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( pgsTypes::BridgeSite3, spanIdx, gdr, POI_ALL, POIFIND_OR );
+      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( spanIdx, gdr, pgsTypes::BridgeSite3, POI_ALL, POIFIND_OR );
 
       GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
       GirderIndexType gdrIdx = min(gdr,nGirders-1);
@@ -341,7 +341,7 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
 
          Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
 
-         (*p_table)(row,col++) << location.SetValue( poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
          (*p_table)(row,col++) << displacement.SetValue( girder[index] );
          (*p_table)(row,col++) << displacement.SetValue( diaphragm[index] );
 
@@ -591,7 +591,7 @@ rptRcTable* CProductDisplacementsTable::BuildLiveLoadTable(IBroker* pBroker,Span
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( pgsTypes::BridgeSite3, span, girder, POI_TABULAR );
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, pgsTypes::BridgeSite3, POI_TABULAR );
 
    GET_IFACE2(pBroker,IProductForces,pForces);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -606,7 +606,7 @@ rptRcTable* CProductDisplacementsTable::BuildLiveLoadTable(IBroker* pBroker,Span
    {
       const pgsPointOfInterest& poi = *i;
 
-      (*p_table)(row,0) << location.SetValue( poi, end_size );
+      (*p_table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
 
       Float64 min, max;
       pForces->GetDeflLiveLoadDisplacement( IProductForces::DesignTruckAlone, poi, &min, &max );

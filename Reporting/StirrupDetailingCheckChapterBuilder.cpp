@@ -148,7 +148,7 @@ rptParagraph* build_min_avs_paragraph(IBroker* pBroker,SpanIndexType span,Girder
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stage, span, girder, POI_TABULAR|POI_SHEAR );
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_TABULAR|POI_SHEAR );
 
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
    if ( stage == pgsTypes::CastingYard )
@@ -168,7 +168,7 @@ rptParagraph* build_min_avs_paragraph(IBroker* pBroker,SpanIndexType span,Girder
 
       const pgsStirrupDetailArtifact* pArtifact = psArtifact->GetStirrupDetailArtifact();
 
-      (*table)(row,0) << location.SetValue( poi, end_size );
+      (*table)(row,0) << location.SetValue( stage, poi, end_size );
 
       (*table)(row,1) << dim.SetValue(pArtifact->GetBv());
 
@@ -264,7 +264,7 @@ rptParagraph* build_max_spacing_paragraph(IBroker* pBroker,SpanIndexType span,Gi
    const pgsStirrupCheckArtifact* pstirrup_artifact= gdrArtifact->GetStirrupCheckArtifact();
    CHECK(pstirrup_artifact);
 
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stage, span, girder, POI_TABULAR|POI_SHEAR );
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_TABULAR|POI_SHEAR );
 
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
    if ( stage == pgsTypes::CastingYard )
@@ -282,7 +282,7 @@ rptParagraph* build_max_spacing_paragraph(IBroker* pBroker,SpanIndexType span,Gi
 
       const pgsStirrupDetailArtifact* pArtifact = psArtifact->GetStirrupDetailArtifact();
 
-      (*table)(row,0) << location.SetValue( poi, end_size );
+      (*table)(row,0) << location.SetValue( stage, poi, end_size );
       (*table)(row,1) << shear.SetValue(pArtifact->GetVu());
       (*table)(row,2) << shear.SetValue(pArtifact->GetVuLimit());
       (*table)(row,3) << dim.SetValue(pArtifact->GetBv());

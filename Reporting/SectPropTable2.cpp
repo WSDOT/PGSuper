@@ -137,7 +137,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,SpanIndexType span,
 
    // Get all the tabular poi's for flexure and shear
    // Merge the two vectors to form one vector to report on.
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(stage,span,girder, POI_TABULAR);
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(span,girder, stage,POI_TABULAR);
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
    if ( stage == pgsTypes::CastingYard )
       end_size = 0;
@@ -155,7 +155,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,SpanIndexType span,
       Yb = pSectProp->GetYb(stage,poi);
       depth = Yt + Yb;
 
-      (*xs_table)(row,col++) << location.SetValue( poi, end_size );
+      (*xs_table)(row,col++) << location.SetValue( stage, poi, end_size );
       (*xs_table)(row,col++) << l2.SetValue(pSectProp->GetAg(stage,poi));
       (*xs_table)(row,col++) << l1.SetValue(depth);
       (*xs_table)(row,col++) << l4.SetValue(pSectProp->GetIx(stage,poi));

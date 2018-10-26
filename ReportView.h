@@ -49,6 +49,7 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CPGSuperReportView)
 	public:
+   virtual void OnInitialUpdate();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	protected:
 	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
@@ -61,7 +62,7 @@ protected:
 	virtual ~CPGSuperReportView();
 
    virtual HRESULT UpdateReportBrowser();
-
+   virtual void RefreshReport();
 
 #ifdef _DEBUG
 	virtual void AssertValid() const;
@@ -72,8 +73,6 @@ protected:
 protected:
 	//{{AFX_MSG(CPGSuperReportView)
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-
-   virtual void CreateEditButton();
 
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()

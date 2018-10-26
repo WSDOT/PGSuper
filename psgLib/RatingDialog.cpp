@@ -192,11 +192,7 @@ void CRatingDialog::ExchangeLoadFactorData(CDataExchange* pDX,pgsTypes::SpecialP
 
 void CRatingDialog::ExchangeLoadFactorData(CDataExchange* pDX,CLiveLoadFactorModel* pModel)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_UnitValueAndTag(pDX,IDC_LOWER_VEHICLE_WEIGHT,IDC_LOWER_VEHICLE_WEIGHT_UNIT,pModel->m_Wlower,pDisplayUnits->GeneralForce);

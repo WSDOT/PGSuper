@@ -45,11 +45,7 @@ CStrandGenerationDlg::~CStrandGenerationDlg()
 void CStrandGenerationDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_UnitValueAndTag(pDX,IDC_START_X,IDC_START_X_UNIT,m_Xstart,pDisplayUnits->ComponentDim);
