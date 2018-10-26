@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1034>
-<meta name=layout-width content=873>
+<meta name=layout-height content=1877>
+<meta name=layout-width content=1361>
 
 
 <!--(Links)=========================================================-->
@@ -100,21 +100,24 @@
 
 <h2>Directly Input All Live Load Distribution Factors</h2>
 
-<p>When this option is selected, user-input distribution factors are used 
- directly.</p>
+<p>When this option is selected, use the input grid to define distribution 
+ factors directly for each girder and bearing location in the structure.</p>
 
 <!--(Table)=========================================================-->
 <table x-use-null-cells
 		style="x-cell-content-align: top;
-				border-spacing: 0;
-				width: 42.907%;"
-		width=42.907%
-		cellspacing=0>
+				width: 42.907%;
+				border-spacing: 0px;
+				border-spacing: 0px;"
+		cellspacing=0
+		width=42.907%>
 <col style="width: 16.531%;">
 <col style="width: 83.469%;">
 
-<tr valign=top>
-<td style="padding-right: 10px;
+<tr style="x-cell-content-align: top;"
+	valign=top>
+<td style="width: 16.531%;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-bottom-style: none;
 			border-right-style: none;
@@ -123,7 +126,8 @@
 	width=16.531%>
 <p style="text-align: right;"
 	align=right>+M</td>
-<td style="padding-right: 10px;
+<td style="width: 83.469%;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-bottom-style: none;
 			border-top-style: none;
@@ -131,8 +135,10 @@
 	width=83.469%>
 <p>Positive Moment</td></tr>
 
-<tr valign=top>
-<td style="padding-right: 10px;
+<tr style="x-cell-content-align: top;"
+	valign=top>
+<td style="width: 16.531%;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-bottom-style: none;
 			border-right-style: none;
@@ -140,15 +146,18 @@
 	width=16.531%>
 <p style="text-align: right;"
 	align=right>-M</td>
-<td style="padding-right: 10px;
+<td style="width: 83.469%;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-bottom-style: none;
 			border-right-style: none;"
 	width=83.469%>
 <p>Negative Moment</td></tr>
 
-<tr valign=top>
-<td style="padding-right: 10px;
+<tr style="x-cell-content-align: top;"
+	valign=top>
+<td style="width: 16.531%;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-bottom-style: none;
 			border-right-style: none;
@@ -156,17 +165,20 @@
 	width=16.531%>
 <p style="text-align: right;"
 	align=right>V</td>
-<td style="padding-right: 10px;
+<td style="width: 83.469%;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-bottom-style: none;
 			border-right-style: none;"
 	width=83.469%>
 <p>Shear</td></tr>
 
-<tr valign=top>
+<tr style="x-cell-content-align: top;"
+	valign=top>
 <td colspan=1
 	rowspan=1
-	style="padding-right: 10px;
+	style="width: 16.531%;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-right-style: none;
 			border-left-style: none;
@@ -176,7 +188,8 @@
 	align=right>R</td>
 <td colspan=1
 	rowspan=1
-	style="padding-right: 10px;
+	style="width: 83.469%;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-bottom-style: none;
 			border-right-style: none;"
@@ -188,6 +201,94 @@
  doesn't conform to the simplified method of analysis described in the 
  AASHTO LRFD Bridge Design Specifications, compute the live load distribution 
  factors using another method and then input them into this dialog.</p>
+
+<h3>Using the User-Input Grid</h3>
+
+<p>There are two User-Input Factors grids; one for inputting factors for 
+ individual girders; and another for inputting factors at pier bearings. 
+ Toggle between the two grids by selecting the &quot;Girder Factors&quot; 
+ and &quot;Abutment/Pier Factors&quot; radio buttons.</p>
+
+<p>The tab control at the bottom of the input grid is used to select which 
+ span(s) (or pier(s)) are to be edited. In the same manner as Excel, multiple 
+ tabs can be selected using Ctrl-Click and Shift-Click. When multiple tabs 
+ are selected, grid input operations are performed on all selected spans 
+ or piers.</p>
+
+<p>Data can be input into the grid by clicking the mouse on individual 
+ grid cells. The arrow keys can also be used to navigate between cells. 
+ The grids work much like Microsoft Excel. In fact, you can copy and paste 
+ data to/from Excel as long as the selected ranges are the same size.</p>
+
+<h4>Selecting Ranges In the Grids</h4>
+
+<p>Copy and paste operations are typically done on a grid by first selecting 
+ a range of cells. There are several ways to select multiple grid cells 
+ (ranges):</p>
+
+<ul style="list-style: disc;"
+	type=disc>
+	
+	<li class=kadov-p><p>Click and drag the mouse anywhere on the grid</p></li>
+	
+	<li class=kadov-p><p>Hold the Shift button while using the arrow keys</p></li>
+	
+	<li class=kadov-p><p>Click on header rows to select an entire row</p></li>
+	
+	<li class=kadov-p><p>Click on header columns to select an entire column</p></li>
+	
+	<li class=kadov-p><p>Click the top-left header box to select the entire 
+ grid</p></li>
+	
+	<li class=kadov-p><p>Hold the Ctrl key while selecting to select multiple 
+ ranges (note this only may be used when copying data from the grid)</p></li>
+</ul>
+
+<h4>Copying and Pasting </h4>
+
+<p>Copying and Pasting can be performed from the keyboard by using the 
+ following Windows standard key combinations:</p>
+
+<ul style="list-style: disc;"
+	type=disc>
+	
+	<li class=kadov-p><p>Ctrl-C to copy selected data from the grid to 
+ the Windows Clipboard</p></li>
+	
+	<li class=kadov-p><p>Ctrl-V to paste data from the Clipboard to the 
+ selected cells</p></li>
+	
+	<li class=kadov-p><p>Ctrl-X to cut data from the grid and copy it to 
+ the Windows Clipboard</p></li>
+</ul>
+
+<p>The mouse may also be used to copy and paste by clicking on the right 
+ mouse button over selected cells. This will bring up a context menu with 
+ the options &quot;Copy&quot; or &quot;Paste&quot;.</p>
+
+<h4>Selecting Multiple Tabs On the Grid</h4>
+
+<p>Select multiple grid tabs by holding the Ctrl or Shift button while 
+ clicking the left mouse button on the tabs. This allows data input onto 
+ multiple grids simultaneously in the same manner as the &quot;Drill Down&quot; 
+ feature in Excel.</p>
+
+<p>When multiple tabs are selected, any input operations (typing, and pasting) 
+ are performed on all selected grids.</p>
+
+<h3>Fill With Computed Values</h3>
+
+<p>There may be occasions when you wish to use some of the live load distribution 
+ factors computed by PGSuper and manually input others. The Fill with computed 
+ Values&quot; option is for this scenario.</p>
+
+<p>Clicking on this button will bring up the <a href="Fill_Live_Load_Distribution_Factors_With_Computed_Values.htm">Fill 
+ Live Load Distribution Factors With Computed Values</a> dialog box. The 
+ dialog provides several ways to fill the user-input grid with values computed 
+ by PGSuper.</p>
+
+<p class=Tip>Tip: Fill With Computed Values is a one-time operation. Values 
+ will NOT be automatically updated if bridge data is later modified.</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

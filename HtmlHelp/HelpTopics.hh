@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -42,6 +42,7 @@
 #define IDH_LIVELOAD_DIALOG			114
 #define IDH_DECK_CONDITION         115
 #define IDH_GIRDER_CONDITION       116
+#define IDH_MULTIGIRDER_REPORT         117
 
 
 #define IDH_DIALOG_BRIDGEANALYSISREPORT 119
@@ -151,5 +152,6 @@
 #define IDH_LIVE_LOAD_FACTORS                                     3911
 
 #define IDH_CONSTRUCTION_LOADS                                    3920
+#define IDH_FILL_DISTRIBUTION_FACTORS                             3921
 
 #endif // INCLUDED_HELPTOPICS_HH_

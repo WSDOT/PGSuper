@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -189,7 +189,7 @@ BOOL CPGSuperApp::InitInstance()
 //   CREATE_LOGFILE("PGSuperApp"); 
 
    // Tip of the Day
-   CString strTipFile = GetAppLocation() + CString(_T("PGSuper.tip"));
+   CString strTipFile = GetAppLocation() + CString("PGSuper.tip");
 #if defined _DEBUG
    strTipFile.Replace(_T("RegFreeCOM\\Debug\\"),_T(""));
 #else
@@ -221,7 +221,8 @@ BOOL CPGSuperApp::InitInstance()
    free((void*)m_pszHelpFilePath);
    m_pszHelpFilePath = _tcsdup(strHelpFile);
 
-   if ( !CEAFApp::InitInstance() )
+
+  if ( !CEAFApp::InitInstance() )
       return FALSE;
 
 	return TRUE;
@@ -309,17 +310,17 @@ CString CPGSuperApp::GetWsdotUrl()
 {
 //   CString url = GetProfileString(_T("Settings"), _T("WsdotUrl"), _T("http://www.wsdot.wa.gov"));
 
-   CString strDefault(_T("http://www.wsdot.wa.gov"));
+   CString strDefault("http://www.wsdot.wa.gov");
 
    HKEY key;
    LONG result = ::RegOpenKeyEx(HKEY_LOCAL_MACHINE,_T("SOFTWARE\\Washington State Department of Transportation\\PGSuper\\Settings"),0,KEY_QUERY_VALUE,&key);
    if ( result != ERROR_SUCCESS )
       return strDefault;
 
-   TCHAR url[MAX_PATH];
+   unsigned char url[MAX_PATH];
    DWORD size = MAX_PATH;
    DWORD type;
-   result = ::RegQueryValueEx(key,_T("WsdotUrl"),0,&type,(LPBYTE)&url[0],&size);
+   result = ::RegQueryValueEx(key,_T("WsdotUrl"),0,&type,&url[0],&size);
    if ( result != ERROR_SUCCESS )
       return strDefault;
 
@@ -332,17 +333,17 @@ CString CPGSuperApp::GetWsdotBridgeUrl()
 {
 //   CString url = GetProfileString(_T("Settings"), _T("WsdotBridgeUrl"), _T("http://www.wsdot.wa.gov/eesc/bridge"));
 
-   CString strDefault(_T("http://www.wsdot.wa.gov/eesc/bridge"));
+   CString strDefault("http://www.wsdot.wa.gov/eesc/bridge");
 
    HKEY key;
    LONG result = ::RegOpenKeyEx(HKEY_LOCAL_MACHINE,_T("SOFTWARE\\Washington State Department of Transportation\\PGSuper\\Settings"),0,KEY_QUERY_VALUE,&key);
    if ( result != ERROR_SUCCESS )
       return strDefault;
 
-   TCHAR url[MAX_PATH];
+   unsigned char url[MAX_PATH];
    DWORD size = MAX_PATH;
    DWORD type;
-   result = ::RegQueryValueEx(key,_T("WsdotBridgeUrl"),0,&type,(LPBYTE)&url[0],&size);
+   result = ::RegQueryValueEx(key,_T("WsdotBridgeUrl"),0,&type,&url[0],&size);
    if ( result != ERROR_SUCCESS )
       return strDefault;
 
@@ -355,17 +356,17 @@ CString CPGSuperApp::GetPGSuperUrl()
 {
    // NOTE: If URL isn't found in the registry, just go to the main software page.
 //   CString url = GetProfileString(_T("Settings"), _T("PGSuperUrl"), _T("http://www.wsdot.wa.gov/eesc/bridge"));
-   CString strDefault(_T("http://www.wsdot.wa.gov/eesc/bridge/software/index.cfm?fuseaction=software_detail&software_id=47"));
+   CString strDefault("http://www.wsdot.wa.gov/eesc/bridge/software/index.cfm?fuseaction=software_detail&software_id=47");
 
    HKEY key;
    LONG result = ::RegOpenKeyEx(HKEY_LOCAL_MACHINE,_T("SOFTWARE\\Washington State Department of Transportation\\PGSuper\\Settings"),0,KEY_QUERY_VALUE,&key);
    if ( result != ERROR_SUCCESS )
       return strDefault;
 
-   TCHAR url[MAX_PATH];
+   unsigned char url[MAX_PATH];
    DWORD size = MAX_PATH;
    DWORD type;
-   result = ::RegQueryValueEx(key,_T("PGSuperUrl"),0,&type,(LPBYTE)&url[0],&size);
+   result = ::RegQueryValueEx(key,_T("PGSuperUrl"),0,&type,&url[0],&size);
    if ( result != ERROR_SUCCESS )
       return strDefault;
 
@@ -391,7 +392,7 @@ void CPGSuperApp::OnHelpJoinArpList()
 {
    HINSTANCE hInstance = ::ShellExecute(m_pMainWnd->GetSafeHwnd(),
                                         _T("open"),
-										_T("http://www.pgsuper.com/drupal/content/arplist"),
+										_T("http://www.pgsuper.com/drupal/forum"),
                                          0,0,SW_SHOWDEFAULT);
 
    if ( (INT)hInstance < 32 )

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,11 +27,17 @@
 #include "LiveLoadDistFactorsDlg.h"
 #include "LLDFGrid.h"
 
+#include <system\tokenizer.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CLLDFGrid grid control
 
 /////////////////////////////////////////////////////////////////////////////
 // CLLDFGrid
@@ -49,6 +55,9 @@ BEGIN_MESSAGE_MAP(CLLDFGrid, CGXGridWnd)
 	//{{AFX_MSG_MAP(LLDFGrid)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 	//}}AFX_MSG_MAP
+   ON_COMMAND(ID_EDIT_COPY, &CLLDFGrid::OnEditCopy)
+   ON_COMMAND(ID_EDIT_PASTE, &CLLDFGrid::OnEditPaste)
+   ON_MESSAGE(WM_GX_NEEDCHANGETAB, ChangeTabName) 
 END_MESSAGE_MAP()
 
 
@@ -58,12 +67,16 @@ END_MESSAGE_MAP()
 int CLLDFGrid::GetColWidth(ROWCOL nCol)
 {
    int default_width = CGXGridWnd::GetColWidth(0);
-	CRect rect = GetGridRect( );
+
+   CGXTabWnd* pw = (CGXTabWnd*)this->GetParent();
+
+	CRect rect;
+   pw->GetInsideRect(rect);
 
    switch (nCol)
    {
    case 0:
-      return default_width;
+//      return default_width;
 
    case 1:
    case 2:
@@ -71,17 +84,18 @@ int CLLDFGrid::GetColWidth(ROWCOL nCol)
    case 4:
    case 5:
    case 6:
-   case 7:
-   case 8:
-      return (rect.Width()-default_width)/8;
+      return (rect.Width())/7;
 
    default:
       return CGXGridWnd::GetColWidth(nCol);
    }
 }
 
-void CLLDFGrid::CustomInit()
+void CLLDFGrid::CustomInit(SpanIndexType ispan, bool bContinuous)
 {
+   m_SpanIdx = ispan;
+   m_bContinuous = bContinuous;
+
 // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 
 // in OnInitialUpdate.
@@ -90,13 +104,10 @@ void CLLDFGrid::CustomInit()
 	GetParam( )->EnableUndo(FALSE);
 
    const int num_rows = 1;
-   const int num_cols = 8;
+   const int num_cols = 6;
 
 	SetRowCount(num_rows);
 	SetColCount(num_cols);
-
-	// Turn off selecting whole columns when clicking on a column header
-	GetParam()->EnableSelection((WORD) (GX_SELFULL & ~GX_SELCOL & ~GX_SELROW & ~GX_SELTABLE));
 
    // no row moving
 	GetParam()->EnableMoveRows(FALSE);
@@ -112,15 +123,13 @@ void CLLDFGrid::CustomInit()
 
    SetMergeCellsMode(gxnMergeEvalOnDisplay);
 
-   SetStyleRange(CGXRange(0,1),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Exterior Girders"));
-   SetStyleRange(CGXRange(0,2),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Exterior Girders"));
-   SetStyleRange(CGXRange(0,3),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Exterior Girders"));
-   SetStyleRange(CGXRange(0,4),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Exterior Girders"));
+   SetStyleRange(CGXRange(0,1),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Strength/Service"));
+   SetStyleRange(CGXRange(0,2),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Strength/Service"));
+   SetStyleRange(CGXRange(0,3),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Strength/Service"));
    
-   SetStyleRange(CGXRange(0,5),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Interior Girders"));
-   SetStyleRange(CGXRange(0,6),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Interior Girders"));
-   SetStyleRange(CGXRange(0,7),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Interior Girders"));
-   SetStyleRange(CGXRange(0,8),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Interior Girders"));
+   SetStyleRange(CGXRange(0,4),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Fatigue"));
+   SetStyleRange(CGXRange(0,5),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Fatigue"));
+   SetStyleRange(CGXRange(0,6),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Fatigue"));
 
    SetStyleRange(CGXRange(0,0),CGXStyle().SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(" "));
    SetStyleRange(CGXRange(1,0),CGXStyle().SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(" "));
@@ -163,7 +172,7 @@ void CLLDFGrid::CustomInit()
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
          .SetInterior(::GetSysColor(COLOR_BTNFACE))
-			.SetValue("R")
+			.SetValue("+M")
 		);
 
 	SetStyleRange(CGXRange(1,5), CGXStyle()
@@ -173,7 +182,7 @@ void CLLDFGrid::CustomInit()
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
          .SetInterior(::GetSysColor(COLOR_BTNFACE))
-			.SetValue("+M")
+			.SetValue("-M")
 		);
 
 	SetStyleRange(CGXRange(1,6), CGXStyle()
@@ -183,27 +192,7 @@ void CLLDFGrid::CustomInit()
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
          .SetInterior(::GetSysColor(COLOR_BTNFACE))
-			.SetValue("-M")
-		);
-
-	SetStyleRange(CGXRange(1,7), CGXStyle()
-         .SetControl(GX_IDS_CTRL_HEADER)
-         .SetWrapText(TRUE)
-			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_VCENTER)
-         .SetInterior(::GetSysColor(COLOR_BTNFACE))
 			.SetValue("V")
-		);
-
-	SetStyleRange(CGXRange(1,8), CGXStyle()
-         .SetControl(GX_IDS_CTRL_HEADER)
-         .SetWrapText(TRUE)
-			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_VCENTER)
-         .SetInterior(::GetSysColor(COLOR_BTNFACE))
-			.SetValue("R")
 		);
 
    // make it so that text fits correctly in header row
@@ -214,183 +203,88 @@ void CLLDFGrid::CustomInit()
    GetParam( )->EnableTrackRowHeight(0); 
 
 	EnableIntelliMouse();
+
+   // set copy and paste options
+   ImplementCutPaste();
+   this->m_nClipboardFlags ^= GX_DNDSTYLES; // don't paste styles
+   this->m_nClipboardFlags |= GX_DNDNOAPPENDCOLS | GX_DNDNOAPPENDROWS | GX_DNDDIFFRANGEDLG ^ GX_DNDMULTI;
+
 	SetFocus();
 
 	GetParam( )->EnableUndo(TRUE);
 }
 
-void CLLDFGrid::AddPierRow(pgsTypes::LimitState ls,const CPierData* pPier)
+void CLLDFGrid::AddGirderRow(GirderIndexType gdr, const CSpanData* pSpan)
 {
    GetParam()->EnableUndo(FALSE);
 
-   CLiveLoadDistFactorsDlg* pParent = (CLiveLoadDistFactorsDlg*)GetParent();
-
-   bool bContinuous = pPier->IsContinuous();
-
-   bool bIntegralLeft, bIntegralRight;
-   pPier->IsIntegral(&bIntegralLeft,&bIntegralRight);
-   
    ROWCOL nRows = GetRowCount();
    nRows++;
    InsertRows(nRows,1);
 
-   CString strLabel;
-   PierIndexType pierIdx = pPier->GetPierIndex();
-   long nPiers = pPier->GetBridgeDescription()->GetPierCount();
-   strLabel.Format(_T("%s %d"),(pierIdx == 0 || pierIdx == nPiers-1 ? _T("Abut") : _T("Pier")),
-                            pierIdx+1);
-
-   SetStyleRange(CGXRange(nRows,0), CGXStyle().SetHorizontalAlignment(DT_LEFT).SetValue(strLabel));
-
-   SetStyleRange(CGXRange(nRows,1), CGXStyle().SetEnabled(FALSE).SetInterior(::GetSysColor(COLOR_BTNFACE))); // +M
-
-   if ( bContinuous || bIntegralLeft || bIntegralRight )
-   {
-      SetStyleRange(CGXRange(nRows,2), CGXStyle()
-         .SetEnabled(TRUE)
-         .SetHorizontalAlignment(DT_RIGHT)
-         .SetValue(pPier->GetLLDFNegMoment(ls,pgsTypes::Exterior))); // -M
-   }
-   else
-   {
-      SetStyleRange(CGXRange(nRows,2), CGXStyle().SetEnabled(FALSE).SetInterior(::GetSysColor(COLOR_BTNFACE))); // -M
-   }
-
-   SetStyleRange(CGXRange(nRows,3), CGXStyle().SetEnabled(FALSE).SetInterior(::GetSysColor(COLOR_BTNFACE))); // V
-   SetStyleRange(CGXRange(nRows,4), CGXStyle()
-      .SetEnabled(TRUE)
-      .SetHorizontalAlignment(DT_RIGHT)
-      .SetValue(pPier->GetLLDFReaction(ls,pgsTypes::Exterior))); // R
-
-   SetStyleRange(CGXRange(nRows,5), CGXStyle().SetEnabled(FALSE).SetInterior(::GetSysColor(COLOR_BTNFACE))); // +M
-
-   if ( bContinuous || bIntegralLeft || bIntegralRight )
-   {
-      SetStyleRange(CGXRange(nRows,6), CGXStyle()
-         .SetEnabled(TRUE)
-         .SetHorizontalAlignment(DT_RIGHT)
-         .SetValue(pPier->GetLLDFNegMoment(ls,pgsTypes::Interior))); // -M
-   }
-   else
-   {
-      SetStyleRange(CGXRange(nRows,6), CGXStyle().SetEnabled(FALSE).SetInterior(::GetSysColor(COLOR_BTNFACE))); // -M
-   }
-
-   SetStyleRange(CGXRange(nRows,7), CGXStyle().SetEnabled(FALSE).SetInterior(::GetSysColor(COLOR_BTNFACE))); // V
-   SetStyleRange(CGXRange(nRows,8), CGXStyle()
-      .SetEnabled(TRUE)
-      .SetHorizontalAlignment(DT_RIGHT)
-      .SetValue(pPier->GetLLDFReaction(ls,pgsTypes::Interior))); // R
-
-   GetParam()->EnableUndo(TRUE);
-}
-
-void CLLDFGrid::AddSpanRow(pgsTypes::LimitState ls,const CSpanData* pSpan)
-{
-   GetParam()->EnableUndo(FALSE);
-
-   bool bContinuousLeft  = pSpan->GetPrevPier()->IsContinuous();
-   bool bContinuousRight = pSpan->GetNextPier()->IsContinuous();
-
-   bool bIntegral, bIntegralLeft, bIntegralRight;
-   pSpan->GetPrevPier()->IsIntegral(&bIntegral,&bIntegralRight);
-   pSpan->GetNextPier()->IsIntegral(&bIntegralLeft,&bIntegral);
-
-   BOOL bEnableNegMoment = (bContinuousLeft || bContinuousRight || bIntegralLeft || bIntegralRight) ? TRUE : FALSE;
-   
-   ROWCOL nRows = GetRowCount();
-   nRows++;
-   InsertRows(nRows,1);
+   // Style for dead cells
+   CGXStyle deadStyle;
+   deadStyle.SetControl(GX_IDS_CTRL_STATIC).SetReadOnly(TRUE).SetEnabled(FALSE).SetInterior(::GetSysColor(COLOR_BTNFACE));
 
    CString strLabel;
-   strLabel.Format(_T("Span %d"),LABEL_SPAN(pSpan->GetSpanIndex()));
+   strLabel.Format(_T("Girder %s"),LABEL_GIRDER(gdr));
    SetStyleRange(CGXRange(nRows,0), CGXStyle().SetHorizontalAlignment(DT_RIGHT).SetValue(strLabel));
 
+   // Strength/service
    SetStyleRange(CGXRange(nRows,1), CGXStyle()
       .SetEnabled(TRUE)
       .SetHorizontalAlignment(DT_RIGHT)
-      .SetValue(pSpan->GetLLDFPosMoment(ls,pgsTypes::Exterior))); // +M
+      .SetValue(pSpan->GetLLDFPosMoment(gdr,pgsTypes::ServiceI))); // +M
 
-   if ( bEnableNegMoment )
+   if ( m_bContinuous )
       SetStyleRange(CGXRange(nRows,2), CGXStyle()
          .SetEnabled(TRUE)
          .SetHorizontalAlignment(DT_RIGHT)
-         .SetValue(pSpan->GetLLDFNegMoment(ls,pgsTypes::Exterior))); // -M  
+         .SetValue(pSpan->GetLLDFNegMoment(gdr,pgsTypes::ServiceI))); // -M  
    else
-      SetStyleRange(CGXRange(nRows,2), CGXStyle().SetEnabled(FALSE).SetInterior(::GetSysColor(COLOR_BTNFACE))); // -M  
+      SetStyleRange(CGXRange(nRows,2), deadStyle);
+         
 
 
    SetStyleRange(CGXRange(nRows,3), CGXStyle()
       .SetEnabled(TRUE)
       .SetHorizontalAlignment(DT_RIGHT)
-      .SetValue(pSpan->GetLLDFShear(ls,pgsTypes::Exterior))); // V
+      .SetValue(pSpan->GetLLDFShear(gdr,pgsTypes::ServiceI))); // V
 
-   SetStyleRange(CGXRange(nRows,4), CGXStyle().SetEnabled(FALSE).SetInterior(::GetSysColor(COLOR_BTNFACE))); // R
 
-   SetStyleRange(CGXRange(nRows,5), CGXStyle()
+   // Fatigue
+   SetStyleRange(CGXRange(nRows,4), CGXStyle()
       .SetEnabled(TRUE)
       .SetHorizontalAlignment(DT_RIGHT)
-      .SetValue(pSpan->GetLLDFPosMoment(ls,pgsTypes::Interior))); // +M
+      .SetValue(pSpan->GetLLDFPosMoment(gdr,pgsTypes::FatigueI))); // +M
 
-   if ( bEnableNegMoment )
-      SetStyleRange(CGXRange(nRows,6), CGXStyle()
+   if ( m_bContinuous )
+      SetStyleRange(CGXRange(nRows,5), CGXStyle()
          .SetEnabled(TRUE)
          .SetHorizontalAlignment(DT_RIGHT)
-         .SetValue(pSpan->GetLLDFNegMoment(ls,pgsTypes::Interior))); // -M
+         .SetValue(pSpan->GetLLDFNegMoment(gdr,pgsTypes::FatigueI))); // -M
    else
-      SetStyleRange(CGXRange(nRows,6), CGXStyle().SetEnabled(FALSE).SetInterior(::GetSysColor(COLOR_BTNFACE))); // -M
+      SetStyleRange(CGXRange(nRows,5),  deadStyle); 
 
 
-   SetStyleRange(CGXRange(nRows,7), CGXStyle()
+   SetStyleRange(CGXRange(nRows,6), CGXStyle()
       .SetEnabled(TRUE)
       .SetHorizontalAlignment(DT_RIGHT)
-      .SetValue(pSpan->GetLLDFShear(ls,pgsTypes::Interior))); // V
-
-   SetStyleRange(CGXRange(nRows,8), CGXStyle().SetEnabled(FALSE).SetInterior(::GetSysColor(COLOR_BTNFACE))); // R
+      .SetValue(pSpan->GetLLDFShear(gdr,pgsTypes::FatigueI))); // V
 
    GetParam()->EnableUndo(TRUE);
 }
 
-void CLLDFGrid::GetPierRow(pgsTypes::LimitState ls,CPierData* pPier)
+void CLLDFGrid::GetGirderRow(GirderIndexType gdr, CSpanData* pSpan)
 {
-   ROWCOL row = pPier->GetPierIndex()*2 + 2;
+   ROWCOL row = gdr + 2;
 
-   bool bCont = pPier->IsContinuous();
+   pSpan->SetLLDFPosMoment(gdr, pgsTypes::StrengthI, _tstof(GetCellValue(row,1)));
+   pSpan->SetLLDFShear(gdr, pgsTypes::StrengthI, _tstof(GetCellValue(row,3)));
 
-   bool bIntLeft, bIntRight;
-   pPier->IsIntegral(&bIntLeft,&bIntRight);
+   pSpan->SetLLDFPosMoment(gdr, pgsTypes::FatigueI, _tstof(GetCellValue(row,4)));
+   pSpan->SetLLDFShear(gdr, pgsTypes::FatigueI, _tstof(GetCellValue(row,6)));
 
-   if ( bCont || bIntLeft || bIntRight )
-   {
-      pPier->SetLLDFNegMoment(ls,pgsTypes::Exterior,_tstof(GetCellValue(row,2)));
-      pPier->SetLLDFNegMoment(ls,pgsTypes::Interior,_tstof(GetCellValue(row,6)));
-   }
-   else
-   {
-      // if the pier is not integral or continuous, set the LLDF to 1.0
-      // _tstof in the above "if" block returns 0 in this case. If the user
-      // later changes the boundary conditions the LLDF will be 0. This is 
-      // not desirable. To elimiate this problem, set the unused LLDF to 1.0
-      pPier->SetLLDFNegMoment(ls,pgsTypes::Exterior,1.0);
-      pPier->SetLLDFNegMoment(ls,pgsTypes::Interior,1.0);
-   }
-
-   pPier->SetLLDFReaction(ls,pgsTypes::Exterior,_tstof(GetCellValue(row,4)));
-   pPier->SetLLDFReaction(ls,pgsTypes::Interior,_tstof(GetCellValue(row,8)));
-}
-
-void CLLDFGrid::GetSpanRow(pgsTypes::LimitState ls,CSpanData* pSpan)
-{
-   ROWCOL row = pSpan->GetSpanIndex()*2 + 3;
-
-   pSpan->SetLLDFPosMoment(ls,pgsTypes::Exterior,_tstof(GetCellValue(row,1)));
-   pSpan->SetLLDFShear(ls,pgsTypes::Exterior,_tstof(GetCellValue(row,3)));
-
-   pSpan->SetLLDFPosMoment(ls,pgsTypes::Interior,_tstof(GetCellValue(row,5)));
-   pSpan->SetLLDFShear(ls,pgsTypes::Interior,_tstof(GetCellValue(row,7)));
-
-
-   // see note in GetPierRow. We don't _tstof to return 0 for LLDF.
    bool bContRight = pSpan->GetPrevPier()->IsContinuous();
    bool bContLeft  = pSpan->GetNextPier()->IsContinuous();
 
@@ -400,13 +294,13 @@ void CLLDFGrid::GetSpanRow(pgsTypes::LimitState ls,CSpanData* pSpan)
 
    if ( bContLeft || bContRight || bIntLeft || bIntRight )
    {
-      pSpan->SetLLDFNegMoment(ls,pgsTypes::Exterior,_tstof(GetCellValue(row,2)));
-      pSpan->SetLLDFNegMoment(ls,pgsTypes::Interior,_tstof(GetCellValue(row,6)));
+      pSpan->SetLLDFNegMoment(gdr, pgsTypes::StrengthI, _tstof(GetCellValue(row,2)));
+      pSpan->SetLLDFNegMoment(gdr, pgsTypes::FatigueI, _tstof(GetCellValue(row,5)));
    }
    else
    {
-      pSpan->SetLLDFNegMoment(ls,pgsTypes::Exterior,1.0);
-      pSpan->SetLLDFNegMoment(ls,pgsTypes::Interior,1.0);
+      pSpan->SetLLDFNegMoment(gdr, pgsTypes::StrengthI, 1.0);
+      pSpan->SetLLDFNegMoment(gdr, pgsTypes::FatigueI,  1.0);
    }
 }
 
@@ -423,40 +317,30 @@ CString CLLDFGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
         return GetValueRowCol(nRow, nCol);
 }
 
-void CLLDFGrid::FillGrid(pgsTypes::LimitState ls,const CBridgeDescription* pBridgeDesc)
+void CLLDFGrid::FillGrid(const CBridgeDescription* pBridgeDesc)
 {
-   const CPierData* pPier = pBridgeDesc->GetPier(0);
-   const CSpanData* pSpan = NULL;
-   do
+   const CSpanData* pSpan = pBridgeDesc->GetSpan(m_SpanIdx);
+   GirderIndexType ngdrs = pSpan->GetGirderCount();
+
+   for (GirderIndexType igdr=0; igdr<ngdrs; igdr++)
    {
-      AddPierRow(ls,pPier);
+      AddGirderRow(igdr, pSpan);
+   }
 
-      pSpan = pPier->GetNextSpan();
-      if ( pSpan )
-      {
-         AddSpanRow(ls,pSpan);
-         pPier = pSpan->GetNextPier();
-      }
-   } while ( pSpan );
-
+   SetCurrentCell(2,1);
    Enable(m_bEnabled);
 }
 
-void CLLDFGrid::GetData(pgsTypes::LimitState ls,CBridgeDescription* pBridgeDesc)
+void CLLDFGrid::GetData(CBridgeDescription* pBridgeDesc)
 {
-   CPierData* pPier = pBridgeDesc->GetPier(0);
-   CSpanData* pSpan = NULL;
+   CSpanData* pSpan = pBridgeDesc->GetSpan(m_SpanIdx);
 
-   do
+   GirderIndexType ngdrs = pSpan->GetGirderCount();
+
+   for (GirderIndexType igdr=0; igdr<ngdrs; igdr++)
    {
-      GetPierRow(ls,pPier);
-      pSpan = pPier->GetNextSpan();
-      if ( pSpan )
-      {
-         GetSpanRow(ls,pSpan);
-         pPier = pSpan->GetNextPier();
-      }
-   } while ( pSpan );
+      GetGirderRow(igdr, pSpan);
+   }
 }
 
 void CLLDFGrid::Enable(BOOL bEnable)
@@ -513,4 +397,245 @@ void CLLDFGrid::Enable(BOOL bEnable)
 
    GetParam()->SetLockReadOnly(TRUE);
    GetParam()->EnableUndo(FALSE);
+}
+
+BOOL CLLDFGrid::OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt)
+{
+	 // unreferenced parameters
+	 nRow, nCol, nFlags;
+
+	CMenu menu;
+	VERIFY(menu.LoadMenu(IDR_COPY_PASTE));
+
+	CMenu* pPopup = menu.GetSubMenu( 0 );
+	ASSERT( pPopup != NULL );
+
+   if (!CanPaste())
+   {
+      menu.EnableMenuItem(ID_EDIT_PASTE,MF_GRAYED);
+   }
+
+   if (!CanCopy())
+   {
+      menu.EnableMenuItem(ID_EDIT_COPY,MF_GRAYED);
+   }
+
+	// display the menu
+	ClientToScreen(&pt);
+	BOOL st = pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, 
+	pt.x, pt.y, this);
+
+	// we processed the message
+	return TRUE;
+}
+
+void CLLDFGrid::OnEditCopy()
+{
+   this->Copy();
+}
+
+void CLLDFGrid::OnEditPaste()
+{
+   if (this->Paste())
+   {
+
+      // See if other tabs are selected and paste to them if so
+      CGXTabWnd* pw = (CGXTabWnd*)this->GetParent();
+      int n = pw->GetBeam().GetCount();
+      for (int i=0; i<n; i++)
+      {
+         if (i != this->m_SpanIdx)
+         {
+            CGXTabInfo& rti = pw->GetBeam().GetTab(i);
+            BOOL sel = rti.bSel;
+            if (sel!=FALSE)
+            {
+               // Tab is selected, paste to other grid
+               CLLDFGrid* pGrid = (CLLDFGrid*)rti.pExtra;
+
+               // Get range selected on current grid
+               CRowColArray awCols, awRows;
+               this->GetSelectedCols(awCols);
+               this->GetSelectedRows(awRows);
+               CGXRange range(awRows[0],awCols[0],awRows[awRows.GetCount()-1],awCols[awCols.GetCount()-1]);
+
+               // Unselect all on other grid
+               pGrid->SelectRange(CGXRange().SetTable( ), FALSE);
+
+               // select same range on other grid
+               pGrid->SelectRange(range, TRUE);
+
+               BOOL st = pGrid->Paste();
+               ATLASSERT(st);
+            }
+         }
+      }
+   }
+}
+
+// validate input
+BOOL CLLDFGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
+{
+   if (nCol!=0 && nRow!=0 && nRow!=1)
+   {
+	   CString s;
+	   CGXControl* pControl = GetControl(nRow, nCol);
+	   pControl->GetCurrentText(s);
+
+      double d;
+      if (!sysTokenizer::ParseDouble(s, &d))
+	   {
+		   SetWarningText (_T("Distribution factor value must be a non-negative number"));
+		   return FALSE;
+	   }
+
+      if (d<0.0)
+	   {
+		   SetWarningText (_T("Distribution factor values may not be negative"));
+		   return FALSE;
+	   }
+
+	   return TRUE;
+   }
+
+	return CGXGridWnd::OnValidateCell(nRow, nCol);
+}
+
+LRESULT CLLDFGrid::ChangeTabName( WPARAM wParam, LPARAM lParam ) 
+{
+   // don't allow userss to change tab names
+   return FALSE;
+}
+
+
+BOOL CLLDFGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
+{
+   CString s;
+   CGXControl* pControl = GetControl(nRow, nCol);
+   BOOL bModified = pControl->GetModify();
+   if (bModified)
+   {
+      pControl->GetCurrentText(s);
+
+      // See if other tabs are selected and set values for those if so
+      CGXTabWnd* pw = (CGXTabWnd*)this->GetParent();
+      int n = pw->GetBeam().GetCount();
+      for (int i=0; i<n; i++)
+      {
+         if (i != this->m_SpanIdx)
+         {
+            CGXTabInfo& rti = pw->GetBeam().GetTab(i);
+            BOOL sel = rti.bSel;
+            if (sel!=FALSE)
+            {
+               CLLDFGrid* pGrid = (CLLDFGrid*)rti.pExtra;
+
+               ROWCOL nrows = pGrid->GetRowCount();
+               if (nRow<=nrows)  // don't allow overflow
+               {
+                  CGXStyle cellStyle;
+                  pGrid->GetStyleRowCol(nRow,nCol,cellStyle);
+
+                  if ( !cellStyle.GetIncludeReadOnly() || !cellStyle.GetReadOnly())
+                  {
+                     pGrid->GetParam()->EnableUndo(TRUE);
+
+                     cellStyle.SetValue(s);
+                     pGrid->SetStyleRange(CGXRange(nRow,nCol), cellStyle);
+
+                     pGrid->GetParam()->EnableUndo(FALSE);
+                  }
+               }
+            }
+         }
+      }
+   }
+
+	return CGXGridWnd::OnEndEditing(nRow, nCol);
+}
+
+BOOL CLLDFGrid::PasteTextRowCol(ROWCOL nRow, ROWCOL nCol, const CString& str, UINT nFlags, const CGXStyle* pOldStyle)
+{
+   CGXStyle cellStyle;
+   GetStyleRowCol(nRow,nCol,cellStyle);
+
+   // don't paste to read-only cells
+   if ( !cellStyle.GetIncludeReadOnly() || !cellStyle.GetReadOnly())
+   {
+      return CGXGridWnd::PasteTextRowCol(nRow, nCol, str, nFlags, pOldStyle);
+   }
+   
+   return TRUE;
+}
+
+void CLLDFGrid::SetGirderLLDF(GirderIndexType gdr, Float64 value )
+{
+   ROWCOL row = gdr+2; // first two rows are header
+   ROWCOL nrows = this->GetRowCount();
+   if (row<=nrows)
+   {
+      for (ROWCOL col=1; col<=6; col++)
+      {
+         CGXStyle cellStyle;
+         GetStyleRowCol(row, col, cellStyle);
+
+         // don't paste to read-only cells
+         if ( !cellStyle.GetIncludeReadOnly() || !cellStyle.GetReadOnly())
+         {
+            cellStyle.SetValue(value);
+            SetStyleRange(CGXRange(row,col), cellStyle);
+         }
+      }
+   }
+}
+
+void CLLDFGrid::SetGirderLLDF(GirderIndexType gdr, const SpanLLDF& rlldf )
+{
+   ROWCOL row = gdr+2; // first two rows are header
+   ATLASSERT(this->GetColCount()==6);
+   const Float64* pdbl = &(rlldf.sgPMService); // pointer to first member in struct
+   for (ROWCOL col=1; col<=6; col++)
+   {
+      CGXStyle cellStyle;
+      GetStyleRowCol(row, col, cellStyle);
+
+      // don't paste to read-only cells
+      if ( !cellStyle.GetIncludeReadOnly() || !cellStyle.GetReadOnly())
+      {
+         // Doubles coming out have crazy sig figs - let's round them to something reasonable
+         Float64 rounded = RoundOff(*pdbl,0.0001);
+         cellStyle.SetValue(rounded);
+         SetStyleRange(CGXRange(row,col), cellStyle);
+      }
+
+      pdbl++; // columns in grid are in same order as struct;
+   }
+}
+
+BOOL CLLDFGrid::ProcessKeys(CWnd* pSender, UINT nMessage, UINT nChar, UINT nRepCnt, UINT flags)
+{
+   if (pSender == this)
+   {
+      if (nMessage == WM_KEYDOWN && nChar == VK_TAB)
+      {
+         CWnd* pDlg = GetParent();
+
+         while (pDlg && !pDlg->IsKindOf(RUNTIME_CLASS(CDialog)))
+                   pDlg = pDlg->GetParent();
+
+         if (pDlg)
+         {
+            CWnd* pWndNext = pDlg->GetNextDlgTabItem(m_pGridWnd);
+
+            if (pWndNext != NULL)
+            {
+               TRACE("SetFocus ");
+               pWndNext->SetFocus();
+               return TRUE;
+            }
+         }
+      }
+    }
+
+   return CGXGridWnd::ProcessKeys(pSender, nMessage, nChar, nRepCnt, flags);
 }

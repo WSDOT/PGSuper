@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -180,9 +180,9 @@ void CPGSuperDocProxyAgent::RegisterViews()
    m_BridgeModelEditorViewKey = pViewReg->RegisterView(IDR_BRIDGEMODELEDITOR,NULL,RUNTIME_CLASS(CBridgeModelViewChildFrame), RUNTIME_CLASS(CBridgePlanView),           hMenu, 1);
    m_GirderModelEditorViewKey = pViewReg->RegisterView(IDR_GIRDERMODELEDITOR,NULL,RUNTIME_CLASS(CGirderModelChildFrame),     RUNTIME_CLASS(CGirderModelElevationView), hMenu, -1);
    m_LibraryEditorViewKey     = pViewReg->RegisterView(IDR_LIBRARYEDITOR,    NULL,RUNTIME_CLASS(CLibChildFrame),             RUNTIME_CLASS(CLibraryEditorView),        hMenu, 1);
-   m_AnalysisResultsViewKey   = pViewReg->RegisterView(IDR_ANALYSISRESULTS,  NULL,RUNTIME_CLASS(CAnalysisResultsChildFrame), RUNTIME_CLASS(CAnalysisResultsView),      hMenu, 1);
+   m_AnalysisResultsViewKey   = pViewReg->RegisterView(IDR_ANALYSISRESULTS,  NULL,RUNTIME_CLASS(CAnalysisResultsChildFrame), RUNTIME_CLASS(CAnalysisResultsView),      hMenu, -1);
    m_ReportViewKey            = pViewReg->RegisterView(IDR_REPORT,           NULL,RUNTIME_CLASS(CReportViewChildFrame),      RUNTIME_CLASS(CPGSuperReportView),        hMenu, -1); // unlimited number of reports
-   m_FactorOfSafetyViewKey    = pViewReg->RegisterView(IDR_FACTOROFSAFETY,   NULL,RUNTIME_CLASS(CFactorOfSafetyChildFrame),  RUNTIME_CLASS(CFactorOfSafetyView),       hMenu, 1);
+   m_FactorOfSafetyViewKey    = pViewReg->RegisterView(IDR_FACTOROFSAFETY,   NULL,RUNTIME_CLASS(CFactorOfSafetyChildFrame),  RUNTIME_CLASS(CFactorOfSafetyView),       hMenu, -1);
    m_LoadsViewKey             = pViewReg->RegisterView(IDR_EDITLOADS,        NULL,RUNTIME_CLASS(CEditLoadsChildFrame),       RUNTIME_CLASS(CEditLoadsView),            hMenu, 1);
 }
 
@@ -560,7 +560,8 @@ HRESULT CPGSuperDocProxyAgent::OnBridgeChanged()
       m_pPGSuperDoc->ClearSelection();
 
    m_pPGSuperDoc->SetModifiedFlag();
-   FireEvent( 0, HINT_BRIDGECHANGED, 0 );
+   boost::shared_ptr<CObject> pnull;
+   FireEvent( 0, HINT_BRIDGECHANGED, pnull );
 
    return S_OK;
 }
@@ -570,7 +571,8 @@ HRESULT CPGSuperDocProxyAgent::OnGirderFamilyChanged()
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    GET_IFACE(IEAFDocument,pDoc);
    pDoc->SetModified();
-   FireEvent( 0, HINT_GIRDERFAMILYCHANGED, 0 );
+   boost::shared_ptr<CObject> pnull;
+   FireEvent( 0, HINT_GIRDERFAMILYCHANGED, pnull );
    return S_OK;
 }
    
@@ -579,12 +581,12 @@ HRESULT CPGSuperDocProxyAgent::OnGirderChanged(SpanIndexType span,GirderIndexTyp
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pPGSuperDoc->SetModifiedFlag();
 
-   static CGirderHint hint;
-   hint.lHint   = lHint;
-   hint.spanIdx = span;
-   hint.gdrIdx  = gdr;
+   boost::shared_ptr<CGirderHint> pHint(new CGirderHint());
+   pHint->lHint = lHint;
+   pHint->spanIdx = span;
+   pHint->gdrIdx = gdr;
 
-   FireEvent(NULL,HINT_GIRDERCHANGED,&hint);
+   FireEvent(NULL,HINT_GIRDERCHANGED,pHint);
 
    return S_OK;
 }
@@ -593,7 +595,8 @@ HRESULT CPGSuperDocProxyAgent::OnLiveLoadChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pPGSuperDoc->SetModifiedFlag();
-   FireEvent( 0, HINT_LIVELOADCHANGED, 0 );
+   boost::shared_ptr<CObject> pnull;
+   FireEvent( 0, HINT_LIVELOADCHANGED, pnull );
    return S_OK;
 }
 
@@ -601,7 +604,8 @@ HRESULT CPGSuperDocProxyAgent::OnLiveLoadNameChanged(LPCTSTR strOldName,LPCTSTR 
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pPGSuperDoc->SetModifiedFlag();
-   FireEvent( 0, HINT_LIVELOADCHANGED, 0 );
+   boost::shared_ptr<CObject> pnull;
+   FireEvent( 0, HINT_LIVELOADCHANGED, pnull );
    return S_OK;
 }
 
@@ -609,7 +613,8 @@ HRESULT CPGSuperDocProxyAgent::OnConstructionLoadChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pPGSuperDoc->SetModifiedFlag();
-   FireEvent( 0, HINT_BRIDGECHANGED, 0 );
+   boost::shared_ptr<CObject> pnull;
+   FireEvent( 0, HINT_BRIDGECHANGED, pnull );
    return S_OK;
 }
 
@@ -618,7 +623,8 @@ HRESULT CPGSuperDocProxyAgent::OnExposureConditionChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pPGSuperDoc->SetModifiedFlag();
-   FireEvent( 0, HINT_ENVCHANGED, 0 );
+   boost::shared_ptr<CObject> pnull;
+   FireEvent( 0, HINT_ENVCHANGED, pnull );
    return S_OK;
 }
 
@@ -626,7 +632,8 @@ HRESULT CPGSuperDocProxyAgent::OnRelHumidityChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pPGSuperDoc->SetModifiedFlag();
-   FireEvent( 0, HINT_ENVCHANGED, 0 );
+   boost::shared_ptr<CObject> pnull;
+   FireEvent( 0, HINT_ENVCHANGED, pnull );
    return S_OK;
 }
 
@@ -636,7 +643,8 @@ HRESULT CPGSuperDocProxyAgent::OnProjectPropertiesChanged()
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pPGSuperDoc->SetModifiedFlag();
 
-   FireEvent( 0, HINT_PROJECTPROPERTIESCHANGED, 0 );
+   boost::shared_ptr<CObject> pnull;
+   FireEvent( 0, HINT_PROJECTPROPERTIESCHANGED, pnull );
    return S_OK;
 }
 
@@ -652,7 +660,8 @@ HRESULT CPGSuperDocProxyAgent::OnUnitsChanged(eafTypes::UnitMode newUnitMode)
    m_pPGSuperDoc->GetDocUnitSystem(&pDocUnitSystem);
    pDocUnitSystem->put_UnitMode(UnitModeType(pDisplayUnits->GetUnitMode()));
 
-   FireEvent( 0, HINT_UNITSCHANGED, 0 );
+   boost::shared_ptr<CObject> pnull;
+   FireEvent( 0, HINT_UNITSCHANGED, pnull );
    return S_OK;
 }
 
@@ -661,7 +670,8 @@ HRESULT CPGSuperDocProxyAgent::OnSpecificationChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pPGSuperDoc->SetModifiedFlag();
-   FireEvent( 0, HINT_SPECCHANGED, 0 );
+   boost::shared_ptr<CObject> pnull;
+   FireEvent( 0, HINT_SPECCHANGED, pnull );
    return S_OK;
 }
 
@@ -670,7 +680,8 @@ HRESULT CPGSuperDocProxyAgent::OnAnalysisTypeChanged()
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pPGSuperDoc->SetModifiedFlag();
    m_pPGSuperDoc->UpdateAnalysisTypeStatusIndicator();
-   FireEvent( 0, HINT_ANALYSISTYPECHANGED, 0 );
+   boost::shared_ptr<CObject> pnull;
+   FireEvent( 0, HINT_ANALYSISTYPECHANGED, pnull );
    return S_OK;
 }
 
@@ -679,7 +690,8 @@ HRESULT CPGSuperDocProxyAgent::OnRatingSpecificationChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pPGSuperDoc->SetModifiedFlag();
-   FireEvent( 0, HINT_RATINGSPECCHANGED, 0 );
+   boost::shared_ptr<CObject> pnull;
+   FireEvent( 0, HINT_RATINGSPECCHANGED, pnull );
    return S_OK;
 }
 
@@ -688,7 +700,8 @@ HRESULT CPGSuperDocProxyAgent::OnLoadModifiersChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pPGSuperDoc->SetModifiedFlag();
-   FireEvent( 0, HINT_LOADMODIFIERSCHANGED, 0 );
+   boost::shared_ptr<CObject> pnull;
+   FireEvent( 0, HINT_LOADMODIFIERSCHANGED, pnull );
    return S_OK;
 }
 
@@ -817,13 +830,13 @@ void CPGSuperDocProxyAgent::FirePendingEvents()
       for ( iter = m_UIEvents.begin(); iter != m_UIEvents.end(); iter++ )
       {
          UIEvent event = *iter;
-         m_pPGSuperDoc->UpdateAllViews(event.pSender,event.lHint,event.pHint);
+         m_pPGSuperDoc->UpdateAllViews(event.pSender,event.lHint,event.pHint.get());
       }
       m_UIEvents.clear();
    }
 }
 
-void CPGSuperDocProxyAgent::FireEvent(CView* pSender,LPARAM lHint,CObject* pHint)
+void CPGSuperDocProxyAgent::FireEvent(CView* pSender,LPARAM lHint,boost::shared_ptr<CObject> pHint)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    if ( m_bHoldingEvents )
@@ -835,19 +848,26 @@ void CPGSuperDocProxyAgent::FireEvent(CView* pSender,LPARAM lHint,CObject* pHint
 
       // skip all but one result hint - firing multiple result hints 
       // causes the UI to unnecessarilly update multiple times
+      bool skip = false;
       std::vector<UIEvent>::iterator iter;
       for ( iter = m_UIEvents.begin(); iter != m_UIEvents.end(); iter++ )
       {
          UIEvent e = *iter;
          if ( MIN_RESULTS_HINT <= e.lHint && e.lHint <= MAX_RESULTS_HINT )
+         {
+            skip = true;
             break; // a result hint is already queued 
+         }
       }
 
-      m_UIEvents.push_back(event);
+      if (!skip)
+      {
+         m_UIEvents.push_back(event);
+      }
    }
    else
    {
-      m_pPGSuperDoc->UpdateAllViews(pSender,lHint,pHint);
+      m_pPGSuperDoc->UpdateAllViews(pSender,lHint,pHint.get());
    }
 }
 

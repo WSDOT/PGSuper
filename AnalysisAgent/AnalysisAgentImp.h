@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -562,7 +562,7 @@ private:
 
    enum SpanType { PinPin, PinFix, FixPin, FixFix };
    SpanType GetSpanType(SpanIndexType span,bool bContinuous);
-   void AddDistributionFactors(IDistributionFactors* factors,double length,double gpM,double gnM,double gV,double gR,double gF);
+   void AddDistributionFactors(IDistributionFactors* factors,Float64 length,Float64 gpM,Float64 gnM,Float64 gV,Float64 gR,Float64 gF,Float64 gD);
    Uint32 GetCfPointsInRange(IDblArray* cfLocs, double spanStart, double spanEnd, double* ptsInrg);
    void ApplyLLDF_PinPin(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors);
    void ApplyLLDF_PinFix(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors);

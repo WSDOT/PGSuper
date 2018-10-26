@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -85,7 +85,8 @@ IMPLEMENT_DYNCREATE(CGirderModelChildFrame, CSplitChildFrame)
 CGirderModelChildFrame::CGirderModelChildFrame():
 m_CurrentCutLocation(0),
 m_CutLocation(Center),
-m_LoadingStage(UserLoads::BridgeSite1)
+m_LoadingStage(UserLoads::BridgeSite1),
+m_bIsAfterFirstUpdate(false)
 {
    m_CurrentSpanIdx   = 0;
    m_CurrentGirderIdx = 0;
@@ -132,16 +133,26 @@ BEGIN_MESSAGE_MAP(CGirderModelChildFrame, CSplitChildFrame)
    ON_UPDATE_COMMAND_UI(ID_PROJECT_DESIGNGIRDERDIRECT, OnUpdateProjectDesignGirderDirect)
    ON_COMMAND(ID_PROJECT_DESIGNGIRDERDIRECTHOLDSLABOFFSET, OnProjectDesignGirderDirectHoldSlabOffset)
    ON_UPDATE_COMMAND_UI(ID_PROJECT_DESIGNGIRDERDIRECTHOLDSLABOFFSET, OnUpdateProjectDesignGirderDirectHoldSlabOffset)
+   ON_WM_SETFOCUS()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderModelChildFrame message handlers
-void CGirderModelChildFrame::SelectSpanAndGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx)
+void CGirderModelChildFrame::SelectSpanAndGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx, bool doUpdate)
 {
-   m_CurrentSpanIdx   = spanIdx;
-   m_CurrentGirderIdx = gdrIdx;
-   UpdateBar();
-   UpdateViews();
+   if (spanIdx>=0 && gdrIdx>=0)
+   {
+      m_CurrentSpanIdx   = spanIdx;
+      m_CurrentGirderIdx = gdrIdx;
+      UpdateBar();
+
+      if (doUpdate)
+         UpdateViews();
+   }
+   else
+   {
+      ATLASSERT(0);
+   }
 }
 
 void CGirderModelChildFrame::GetSpanAndGirderSelection(SpanIndexType* pSpanIdx,GirderIndexType* pGdrIdx)
@@ -150,7 +161,7 @@ void CGirderModelChildFrame::GetSpanAndGirderSelection(SpanIndexType* pSpanIdx,G
    *pGdrIdx  = m_CurrentGirderIdx;
 }
 
-bool CGirderModelChildFrame::SyncWithBridgeModelView()
+bool CGirderModelChildFrame::DoSyncWithBridgeModelView()
 {
    CButton* pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_SYNC);
    return (pBtn->GetCheck() == 0 ? false : true);
@@ -186,8 +197,11 @@ BOOL CGirderModelChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext*
    GirderIndexType gdrIdx;
    UnhashSpanGirder(*pHash,&spanIdx,&gdrIdx);
 
-   m_CurrentSpanIdx   = spanIdx;
-   m_CurrentGirderIdx = gdrIdx;
+   if (spanIdx!=ALL_SPANS && gdrIdx!=ALL_GIRDERS)
+   {
+      m_CurrentSpanIdx   = spanIdx;
+      m_CurrentGirderIdx = gdrIdx;
+   }
 
    return TRUE;
 }
@@ -249,17 +263,50 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    CButton* pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_SYNC);
    pBtn->SetCheck( settings & IDG_SV_SYNC_GIRDER ? TRUE : FALSE);
 
-   if ( SyncWithBridgeModelView() ) 
+   if ( DoSyncWithBridgeModelView() ) 
    {
+      // Sync only if we can
       CSelection selection = pDoc->GetSelection();
-      m_CurrentSpanIdx     = selection.SpanIdx;
-      m_CurrentGirderIdx   = selection.GirderIdx;
+      if (selection.Type==CSelection::Girder && selection.Span!=ALL_SPANS && selection.Girder!=ALL_GIRDERS)
+      {
+         m_CurrentSpanIdx     = selection.SpanIdx;
+         m_CurrentGirderIdx   = selection.GirderIdx;
+      }
    }
 
    UpdateBar();
 
 	return 0;
 }
+
+void CGirderModelChildFrame::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+{
+   if ( lHint == HINT_GIRDERLABELFORMATCHANGED )
+   {
+      this->RefreshGirderLabeling();
+   }
+   else if ( lHint == HINT_SELECTIONCHANGED )
+   {
+      CSelection* pSelection = (CSelection*)pHint;
+      if(pSelection->Type==CSelection::Girder && DoSyncWithBridgeModelView() )
+      {
+         if (pSelection->SpanIdx!=m_CurrentSpanIdx || pSelection->GirderIdx!=m_CurrentGirderIdx)
+         {
+            if (pSelection->SpanIdx>=0 || pSelection->GirderIdx>=0)
+            {
+               this->SelectSpanAndGirder(pSelection->SpanIdx, pSelection->GirderIdx,false);
+            }
+         }
+      }
+   }
+   else if ( lHint == HINT_BRIDGECHANGED )
+   {
+      UpdateBar();
+   }
+
+   m_bIsAfterFirstUpdate = true;
+}
+
 
 CGirderModelElevationView* CGirderModelChildFrame::GetGirderModelElevationView() const
 {
@@ -304,9 +351,6 @@ void CGirderModelChildFrame::UpdateBar()
    ASSERT(pgirder_ctrl);
    ASSERT(plocation_static);
 
-   SpanIndexType spanIdx, gdrIdx;
-   GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
-
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
@@ -320,11 +364,6 @@ void CGirderModelChildFrame::UpdateBar()
    if (nc_items != num_spans)
    {
       // number of spans has changed, need to refill control
-      int sel = pspan_ctrl->GetCurSel();
-      
-      if (sel == CB_ERR)
-         sel = spanIdx;
-
       pspan_ctrl->ResetContent();
       CString csv;
       for (SpanIndexType i=0; i<num_spans; i++)
@@ -333,87 +372,89 @@ void CGirderModelChildFrame::UpdateBar()
          pspan_ctrl->AddString(csv);
       }
    }
-   pspan_ctrl->SetCurSel(spanIdx);
 
-   if ( pspan_ctrl->GetCurSel() != CB_ERR )
+   int idx = pspan_ctrl->SetCurSel(m_CurrentSpanIdx);
+   if (idx==CB_ERR)
    {
-      // girders
-      GirderIndexType num_girders = pBridge->GetGirderCount(spanIdx);
-      pgirder_ctrl->ResetContent();
-      CString csv;
-      for (GirderIndexType i=0; i<num_girders; i++)
-      {
-         csv.Format(_T("Girder %s"), LABEL_GIRDER(i));
-         pgirder_ctrl->AddString(csv);
-      }
-      pgirder_ctrl->SetCurSel(gdrIdx);
+      // Default to span 0 if not safe
+      idx = pspan_ctrl->SetCurSel(0);
+      ATLASSERT(idx!=CB_ERR);
+      m_CurrentSpanIdx = 0;
+   }
+
+   // girders
+   GirderIndexType num_girders = pBridge->GetGirderCount(m_CurrentSpanIdx);
+   pgirder_ctrl->ResetContent();
+   CString csv;
+   for (GirderIndexType i=0; i<num_girders; i++)
+   {
+      csv.Format(_T("Girder %s"), LABEL_GIRDER(i));
+      pgirder_ctrl->AddString(csv);
+   }
+
+   idx = pgirder_ctrl->SetCurSel(m_CurrentGirderIdx);
+   if (idx==CB_ERR)
+   {
+      // Default to girder 0 if not safe
+      idx = pgirder_ctrl->SetCurSel(0);
+      ATLASSERT(idx!=CB_ERR);
+      m_CurrentGirderIdx = 0;
+   }
+
+   // cut location
+   Float64 gird_len = pBridge->GetGirderLength(m_CurrentSpanIdx,m_CurrentGirderIdx);
+   m_MaxCutLocation = gird_len;
+
+   if (m_CutLocation==UserInput)
+   {
+      if (m_CurrentCutLocation > gird_len)
+         m_CurrentCutLocation = gird_len;
+   }
+   else if (m_CutLocation == LeftEnd)
+   {
+      m_CurrentCutLocation = 0.0;
+   }
+   else if (m_CutLocation == RightEnd)
+   {
+      m_CurrentCutLocation = gird_len;
+   }
+   else if (m_CutLocation == Center)
+   {
+      m_CurrentCutLocation = gird_len/2.0;
    }
    else
    {
-      pgirder_ctrl->SetCurSel(-1);
-   }
+      // cut was taken at a harping point, must enlist poi interface
+      GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+      std::vector<pgsPointOfInterest> poi;
+      std::vector<pgsPointOfInterest>::iterator iter;
+      poi = pPoi->GetPointsOfInterest(m_CurrentSpanIdx,m_CurrentGirderIdx, pgsTypes::CastingYard, POI_HARPINGPOINT);
+      int nPoi = poi.size();
+      ASSERT(0 < nPoi && nPoi <3);
+      iter = poi.begin();
+      pgsPointOfInterest left_hp_poi = *iter++;
+      pgsPointOfInterest right_hp_poi = left_hp_poi;
+      if ( nPoi == 2 )
+         right_hp_poi = *iter++;
 
-   if ( spanIdx != ALL_SPANS && gdrIdx != ALL_GIRDERS )
-   {
-      // cut location
-      Float64 gird_len = pBridge->GetGirderLength(spanIdx,gdrIdx);
-      m_MaxCutLocation = gird_len;
-
-      if (m_CutLocation==UserInput)
+      if (m_CutLocation == LeftHarp)
       {
-         if (m_CurrentCutLocation > gird_len)
-            m_CurrentCutLocation = gird_len;
+         m_CurrentCutLocation = left_hp_poi.GetDistFromStart();
       }
-      else if (m_CutLocation == LeftEnd)
+      else if (m_CutLocation == RightHarp)
       {
-         m_CurrentCutLocation = 0.0;
-      }
-      else if (m_CutLocation == RightEnd)
-      {
-         m_CurrentCutLocation = gird_len;
-      }
-      else if (m_CutLocation == Center)
-      {
-         m_CurrentCutLocation = gird_len/2.0;
+         m_CurrentCutLocation = right_hp_poi.GetDistFromStart();
       }
       else
-      {
-         // cut was taken at a harping point, must enlist poi interface
-         GET_IFACE2(pBroker, IPointOfInterest, pPoi);
-         std::vector<pgsPointOfInterest> poi;
-         std::vector<pgsPointOfInterest>::iterator iter;
-         poi = pPoi->GetPointsOfInterest(spanIdx, gdrIdx, pgsTypes::CastingYard, POI_HARPINGPOINT);
-         int nPoi = poi.size();
-         ASSERT(0 < nPoi && nPoi <3);
-         iter = poi.begin();
-         pgsPointOfInterest left_hp_poi = *iter++;
-         pgsPointOfInterest right_hp_poi = left_hp_poi;
-         if ( nPoi == 2 )
-            right_hp_poi = *iter++;
-
-         if (m_CutLocation == LeftHarp)
-         {
-            m_CurrentCutLocation = left_hp_poi.GetDistFromStart();
-         }
-         else if (m_CutLocation == RightHarp)
-         {
-            m_CurrentCutLocation = right_hp_poi.GetDistFromStart();
-         }
-         else
-            ASSERT(0); // unknown cut location type
-      }
-
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-      CString msg;
-      msg.Format(_T("Section Cut Offset: %s"),FormatDimension(m_CurrentCutLocation,pDisplayUnits->GetXSectionDimUnit()));
-
-      plocation_static->SetWindowText(msg);
-      plocation_static->EnableWindow();
+         ASSERT(0); // unknown cut location type
    }
-   else
-   {
-      plocation_static->EnableWindow(FALSE);
-   }
+
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   CString msg;
+   msg.Format(_T("Section Cut Offset: %s"),FormatDimension(m_CurrentCutLocation,pDisplayUnits->GetXSectionDimUnit()));
+
+   plocation_static->SetWindowText(msg);
+   plocation_static->EnableWindow();
 
    // loading stage
    int sel = pstage_ctrl->GetCurSel();
@@ -434,15 +475,13 @@ void CGirderModelChildFrame::OnGirderChanged()
    CComboBox* pgirder_ctrl   = (CComboBox*)m_SettingsBar.GetDlgItem(IDC_GIRDER);
    m_CurrentGirderIdx = pgirder_ctrl->GetCurSel();
 
-   if ( SyncWithBridgeModelView() ) 
+   UpdateBar();
+   UpdateViews();
+
+   if ( DoSyncWithBridgeModelView() ) 
    {
       CPGSuperDoc* pdoc = (CPGSuperDoc*) GetActiveDocument();
       pdoc->SelectGirder(m_CurrentSpanIdx,m_CurrentGirderIdx);
-   }
-   else
-   {
-      UpdateBar();
-      UpdateViews();
    }
 }
 
@@ -457,15 +496,13 @@ void CGirderModelChildFrame::OnSpanChanged()
    GirderIndexType nGirders = pBridge->GetGirderCount(m_CurrentSpanIdx);
    m_CurrentGirderIdx = min(m_CurrentGirderIdx,nGirders-1);
 
-   if ( SyncWithBridgeModelView() ) 
+   UpdateBar();
+   UpdateViews();
+
+   if ( DoSyncWithBridgeModelView() ) 
    {
       CPGSuperDoc* pdoc = (CPGSuperDoc*) GetActiveDocument();
       pdoc->SelectGirder(m_CurrentSpanIdx,m_CurrentGirderIdx);
-   }
-   else
-   {
-      UpdateBar();
-      UpdateViews();
    }
 }
 
@@ -733,27 +770,19 @@ void CGirderModelChildFrame::OnSync()
    CPGSuperDoc* pDoc = (CPGSuperDoc*)GetActiveDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
 
-   if ( SyncWithBridgeModelView() )
+   if ( DoSyncWithBridgeModelView() )
    {
       settings |= IDG_SV_SYNC_GIRDER;
 
       CSelection selection = pDoc->GetSelection();
       if ( selection.Type == CSelection::Girder )
       {
-         SelectSpanAndGirder(selection.SpanIdx,selection.GirderIdx);
-      }
-      else
-      {
-         GetGirderModelElevationView()->Invalidate();
-         GetGirderModelSectionView()->Invalidate();
+         SelectSpanAndGirder(selection.SpanIdx,selection.GirderIdx,true);
       }
    }
    else
    {
       settings &= ~IDG_SV_SYNC_GIRDER;
-
-      GetGirderModelElevationView()->Invalidate();
-      GetGirderModelSectionView()->Invalidate();
    }
 
    pDoc->SetGirderEditorSettings(settings);
@@ -791,4 +820,15 @@ void CGirderModelChildFrame::OnProjectDesignGirderDirectHoldSlabOffset()
 {
    CPGSuperDoc* pDoc = (CPGSuperDoc*)EAFGetDocument();
    pDoc->DesignGirder(false,false,m_CurrentSpanIdx,m_CurrentGirderIdx);
+}
+
+void CGirderModelChildFrame::OnSetFocus(CWnd* pOldWnd)
+{
+   __super::OnSetFocus(pOldWnd);
+
+   if ( m_bIsAfterFirstUpdate && DoSyncWithBridgeModelView() ) 
+   {
+      CPGSuperDoc* pdoc = (CPGSuperDoc*) GetActiveDocument();
+      pdoc->SelectGirder(m_CurrentSpanIdx,m_CurrentGirderIdx);
+   }
 }

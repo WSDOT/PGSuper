@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,6 +31,23 @@
 
 #include <PgsExt\BridgeDescription.h>
 
+// local data structures for lldfs
+// TRICKY: Order must be same as grid columns
+struct SpanLLDF
+{
+   Float64 sgPMService;
+   Float64 sgNMService;
+   Float64 sgVService;
+   Float64 sgPMFatigue;
+   Float64 sgNMFatigue;
+   Float64 sgVFatigue;
+
+   SpanLLDF():
+      sgPMService(0),sgNMService(0),sgVService(0),sgPMFatigue(0),sgNMFatigue(0),sgVFatigue(0)
+   {;}
+};
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CLLDFGrid window
 
@@ -60,31 +77,45 @@ public:
 protected:
 	//{{AFX_MSG(CLLDFGrid)
 		// NOTE - the ClassWizard will add and remove member functions here.
+   afx_msg LRESULT ChangeTabName( WPARAM wParam, LPARAM lParam );
 	//}}AFX_MSG
+
 	DECLARE_MESSAGE_MAP()
 
    BOOL m_bEnabled;
+   SpanIndexType m_SpanIdx;
+   bool m_bContinuous;
 
    // virtual overrides for grid
    int GetColWidth(ROWCOL nCol);
+   BOOL OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
+   BOOL OnValidateCell(ROWCOL nRow, ROWCOL nCol);
+   BOOL OnEndEditing(ROWCOL nRow, ROWCOL nCol);
+   BOOL PasteTextRowCol(ROWCOL nRow, ROWCOL nCol, const CString& str, UINT nFlags, const CGXStyle* pOldStyle);
+   BOOL ProcessKeys(CWnd* pSender, UINT nMessage, UINT nChar, UINT nRepCnt, UINT flags);
 
 private:
-   void AddPierRow(pgsTypes::LimitState ls,const CPierData* pPier);
-   void AddSpanRow(pgsTypes::LimitState ls,const CSpanData* pSpan);
-
-   void GetPierRow(pgsTypes::LimitState ls,CPierData* pPier);
-   void GetSpanRow(pgsTypes::LimitState ls,CSpanData* pSpan);
+   void AddGirderRow(GirderIndexType gdr, const CSpanData* pSpan);
+   void GetGirderRow(GirderIndexType gdr, CSpanData* pSpan);
 
 public:
    // custom stuff for grid
-   void CustomInit();
+   void CustomInit(SpanIndexType ispan, bool bContinuous);
 
    // get a cell value whether is is selected or not
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
 
+   // Fill lldfs for a girder with a constant
+   void SetGirderLLDF(GirderIndexType gdr, Float64 value );
+
+   // Fill lldfs for a girder with computed values
+   void SetGirderLLDF(GirderIndexType gdr, const SpanLLDF& rlldf );
+
    // fill grid with data
-   void FillGrid(pgsTypes::LimitState ls,const CBridgeDescription* pBridgeDesc);
-   void GetData(pgsTypes::LimitState ls,CBridgeDescription* pBridgeDesc);
+   void FillGrid(const CBridgeDescription* pBridgeDesc);
+   void GetData(CBridgeDescription* pBridgeDesc);
+   afx_msg void OnEditCopy();
+   afx_msg void OnEditPaste();
 };
 
 /////////////////////////////////////////////////////////////////////////////

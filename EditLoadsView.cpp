@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -383,14 +383,14 @@ void CEditLoadsView::UpdatePointLoadItem(int irow, const CPointLoadData& rld)
    m_LoadsListCtrl.SetItemText(irow, 2, UserLoads::GetLoadCaseName(rld.m_LoadCase).c_str());
 
    CString str;
-   if (rld.m_Span != UserLoads::AllSpans)
+   if (rld.m_Span != ALL_SPANS)
       str.Format(_T("%d"), LABEL_SPAN(rld.m_Span));
    else
       str = _T("All Spans");
 
    m_LoadsListCtrl.SetItemText(irow, 3, str);
 
-   if (rld.m_Girder != UserLoads::AllGirders)
+   if (rld.m_Girder != ALL_GIRDERS)
       str.Format(_T("%s"), LABEL_GIRDER(rld.m_Girder));
    else
       str = _T("All Girders");
@@ -423,14 +423,14 @@ void CEditLoadsView::UpdateMomentLoadItem(int irow, const CMomentLoadData& rld)
    m_LoadsListCtrl.SetItemText(irow, 2, UserLoads::GetLoadCaseName(rld.m_LoadCase).c_str());
 
    CString str;
-   if (rld.m_Span != UserLoads::AllSpans)
+   if (rld.m_Span != ALL_SPANS)
       str.Format(_T("%d"), LABEL_SPAN(rld.m_Span));
    else
       str = _T("All Spans");
 
    m_LoadsListCtrl.SetItemText(irow, 3, str);
 
-   if (rld.m_Girder != UserLoads::AllGirders)
+   if (rld.m_Girder != ALL_GIRDERS)
       str.Format(_T("%s"), LABEL_GIRDER(rld.m_Girder));
    else
       str = _T("All Girders");
@@ -472,14 +472,14 @@ void CEditLoadsView::UpdateDistributedLoadItem(int irow, const CDistributedLoadD
    m_LoadsListCtrl.SetItemText(irow, 2, UserLoads::GetLoadCaseName(rld.m_LoadCase).c_str());
 
    CString str;
-   if (rld.m_Span != UserLoads::AllSpans)
+   if (rld.m_Span != ALL_SPANS)
       str.Format(_T("%d"), LABEL_SPAN(rld.m_Span));
    else
       str = _T("All Spans");
 
    m_LoadsListCtrl.SetItemText(irow, 3, str);
 
-   if (rld.m_Girder != UserLoads::AllGirders)
+   if (rld.m_Girder != ALL_GIRDERS)
       str.Format(_T("%s"), LABEL_GIRDER(rld.m_Girder));
    else
       str = _T("All Girders");

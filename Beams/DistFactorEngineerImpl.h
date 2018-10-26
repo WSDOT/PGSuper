@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -921,8 +921,8 @@ bool CDistFactorEngineerImpl<T>::Run1250Tests(SpanIndexType span,GirderIndexType
       if ( !pSpan->IsInteriorGirder(gdr) )
       {
          double M,V;
-         M = pSpan->GetLLDFPosMoment(ls,pgsTypes::Interior);
-         V = pSpan->GetLLDFShear(ls,pgsTypes::Interior);
+         M = pSpan->GetLLDFPosMoment(gdr,ls);
+         V = pSpan->GetLLDFShear(gdr,ls);
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12054, 0.0, ")<<M<<_T(", 2, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12055, 0.0, ")<<M<<_T(", 2, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12056, 0.0, ")<<V<<_T(", 2, ")<<gdr<<std::endl;
@@ -933,8 +933,8 @@ bool CDistFactorEngineerImpl<T>::Run1250Tests(SpanIndexType span,GirderIndexType
       else
       {
          double M,V;
-         M = pSpan->GetLLDFPosMoment(ls,pgsTypes::Exterior);
-         V = pSpan->GetLLDFShear(ls,pgsTypes::Exterior);
+         M = pSpan->GetLLDFPosMoment(gdr,ls);
+         V = pSpan->GetLLDFShear(gdr,ls);
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12024, 0.0, ")<<M<<_T(", 2, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12025, 0.0, ")<<M<<_T(", 2, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12026, 0.0, ")<<V<<_T(", 2, ")<<gdr<<std::endl;
@@ -999,12 +999,11 @@ bool CDistFactorEngineerImpl<T>::GetDFResultsEx(SpanIndexType span,GirderIndexTy
    {
 
       const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
-      pgsTypes::GirderLocation gloc = pSpan->IsInteriorGirder(gdr) ? pgsTypes::Interior : pgsTypes::Exterior;
 
       double pM, nM, V;
-      pM = pSpan->GetLLDFPosMoment(ls,gloc);
-      nM = pSpan->GetLLDFNegMoment(ls,gloc);
-      V  = pSpan->GetLLDFShear(ls,gloc);
+      pM = pSpan->GetLLDFPosMoment(gdr,ls);
+      nM = pSpan->GetLLDFNegMoment(gdr,ls);
+      V  = pSpan->GetLLDFShear(gdr,ls);
    
       *gpM  = pM;
       *gpM1 = pM;

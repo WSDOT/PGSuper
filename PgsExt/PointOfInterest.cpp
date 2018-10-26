@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -67,11 +67,12 @@ m_DistFromStart(distFromStart)
 {
    ATLASSERT( !(distFromStart < 0) );  // must be zero or more.
 
-   m_Stages.insert( std::make_pair(stage,attrib) );
+   m_Stages[stage].SetVal(true, attrib);
+
    ASSERTVALID;
 }
 
-pgsPointOfInterest::pgsPointOfInterest(std::vector<pgsTypes::Stage> stages,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart,PoiAttributeType attrib) :
+pgsPointOfInterest::pgsPointOfInterest(const std::vector<pgsTypes::Stage>& stages,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart,PoiAttributeType attrib) :
 m_ID(-1),
 m_Span(span),
 m_Girder(gdr),
@@ -79,10 +80,13 @@ m_DistFromStart(distFromStart)
 {
    ATLASSERT( !(distFromStart < 0) );  // must be zero or more.
 
-   std::vector<pgsTypes::Stage>::iterator iter;
-   for ( iter = stages.begin(); iter != stages.end(); iter++ )
+   memset(m_Stages,0,pgsTypes::MaxStages*sizeof(PoiAttributeType));
+
+   std::vector<pgsTypes::Stage>::const_iterator stageIter(stages.begin());
+   std::vector<pgsTypes::Stage>::const_iterator stageIterEnd(stages.end());
+   for ( ; stageIter != stageIterEnd; stageIter++ )
    {
-      m_Stages.insert( std::make_pair(*iter,attrib) );
+      m_Stages[*stageIter].SetVal(true, attrib);
    }
 
    ASSERTVALID;
@@ -124,10 +128,17 @@ bool pgsPointOfInterest::operator<(const pgsPointOfInterest& rOther) const
    if ( GetGirder() > rOther.GetGirder() )
       return false;
 
-   if ( GetDistFromStart() < rOther.GetDistFromStart() && !IsEqual(GetDistFromStart(), rOther.GetDistFromStart()) )
+   Float64 my_dist = GetDistFromStart();
+   Float64 ot_dist = rOther.GetDistFromStart();
+
+   bool is_eq = IsZero(my_dist - ot_dist);
+   if (is_eq)
+      return false;
+
+   if ( my_dist < ot_dist )
       return true;
 
-   if ( GetDistFromStart() > rOther.GetDistFromStart() && !IsEqual(GetDistFromStart(), rOther.GetDistFromStart()) )
+   if ( my_dist > ot_dist  )
       return false;
 
    //// if everything else is equal, compare ID's
@@ -154,53 +165,10 @@ void pgsPointOfInterest::SetLocation(SpanIndexType span,GirderIndexType gdr,Floa
 }
 
 //======================== ACCESS     =======================================
-PoiIDType pgsPointOfInterest::GetID() const
-{
-   return m_ID;
-}
-
-void pgsPointOfInterest::SetSpan(SpanIndexType span)
-{
-   m_Span = span;
-}
-
-SpanIndexType pgsPointOfInterest::GetSpan() const
-{
-   return m_Span;
-}
-
-void pgsPointOfInterest::SetGirder(GirderIndexType gdr)
-{
-   m_Girder = gdr;
-}
-
-GirderIndexType pgsPointOfInterest::GetGirder() const
-{
-   return m_Girder;
-}
-
-void pgsPointOfInterest::SetDistFromStart(Float64 distFromStart)
-{
-   ATLASSERT( !(distFromStart < 0) );
-   m_DistFromStart = distFromStart;
-}
-
-Float64 pgsPointOfInterest::GetDistFromStart() const
-{
-   return m_DistFromStart;
-}
 
 void pgsPointOfInterest::SetAttributes(pgsTypes::Stage stage,PoiAttributeType attrib)
 {
-   StageContainer::iterator found = m_Stages.find(stage);
-   if ( found != m_Stages.end() )
-   {
-      found->second = attrib;
-   }
-   else
-   {
-      m_Stages.insert( std::make_pair(stage,attrib) );
-   }
+   m_Stages[stage].SetVal(true, attrib);
 
    ASSERTVALID;
 }
@@ -216,12 +184,24 @@ void pgsPointOfInterest::SetAttributes(const std::vector<pgsTypes::Stage>& stage
 
 PoiAttributeType pgsPointOfInterest::GetAttributes(pgsTypes::Stage stage) const
 {
-   StageContainer::const_iterator found = m_Stages.find(stage);
-   if ( found != m_Stages.end() )
-      return found->second;
-
-   return 0;
+   if (m_Stages[stage].isSet)
+      return m_Stages[stage].Attribute;
+   else
+      return 0;
 }
+
+void pgsPointOfInterest::MergeStageAttributes(const pgsPointOfInterest& rOther)
+{
+   for (Uint32 i=0; i<pgsTypes::MaxStages; i++)
+   {
+      StageData& rmydata = m_Stages[i];
+      const StageData& rotdata = rOther.m_Stages[i];
+
+      rmydata.isSet = rmydata.isSet || rotdata.isSet;
+      rmydata.Attribute = rmydata.Attribute | rotdata.Attribute;
+   }
+}
+
 
 bool pgsPointOfInterest::HasAttribute(pgsTypes::Stage stage,PoiAttributeType attribute) const
 {
@@ -230,47 +210,52 @@ bool pgsPointOfInterest::HasAttribute(pgsTypes::Stage stage,PoiAttributeType att
 
 void pgsPointOfInterest::AddStage(pgsTypes::Stage stage,PoiAttributeType attribute)
 {
-   m_Stages.insert( std::make_pair(stage,attribute) );
+   m_Stages[stage].SetVal(true,attribute);
 }
 
-void pgsPointOfInterest::AddStages(std::vector<pgsTypes::Stage> stages,PoiAttributeType attribute)
+void pgsPointOfInterest::AddStages(const std::vector<pgsTypes::Stage>& stages,PoiAttributeType attribute)
 {
-   std::vector<pgsTypes::Stage>::iterator iter;
-   for ( iter = stages.begin(); iter != stages.end(); iter++ )
+   std::vector<pgsTypes::Stage>::const_iterator stageIter(stages.begin());
+   std::vector<pgsTypes::Stage>::const_iterator stageIterEnd(stages.end());
+   for ( ; stageIter != stageIterEnd; stageIter++ )
    {
-      m_Stages.insert( std::make_pair(*iter,attribute) );
+      AddStage(*stageIter, attribute);
    }
 }
 
 void pgsPointOfInterest::RemoveStage(pgsTypes::Stage stage)
 {
-   StageContainer::iterator found = m_Stages.find(stage);
-   if ( found != m_Stages.end() )
-   {
-      m_Stages.erase(found);
-   }
+   m_Stages[stage].SetVal(false,0);
 }
 
 bool pgsPointOfInterest::HasStage(pgsTypes::Stage stage) const
 {
-   StageContainer::const_iterator found = m_Stages.find(stage);
-   return ( found != m_Stages.end() ? true : false );
+   return m_Stages[stage].isSet;
 }
 
 std::vector<pgsTypes::Stage> pgsPointOfInterest::GetStages() const
 {
    std::vector<pgsTypes::Stage> stages;
-   StageContainer::const_iterator iter;
-   for ( iter = m_Stages.begin(); iter != m_Stages.end(); iter++ )
+   for (Uint32 i=0; i<pgsTypes::MaxStages; i++)
    {
-      stages.push_back( iter->first );
+      if(m_Stages[i].isSet)
+         stages.push_back( (pgsTypes::Stage)i );
    }
+
    return stages;
 }
 
 Uint32 pgsPointOfInterest::GetStageCount() const
 {
-   return m_Stages.size();
+   Uint32 cnt(0);
+
+   for (Uint32 i=0; i<pgsTypes::MaxStages; i++)
+   {
+      if(m_Stages[i].isSet)
+         cnt++;
+   }
+
+   return cnt;
 }
 
 void pgsPointOfInterest::SetTolerance(Float64 tol)
@@ -374,7 +359,7 @@ void pgsPointOfInterest::MakeCopy(const pgsPointOfInterest& rOther)
    m_Span          = rOther.m_Span;
    m_Girder        = rOther.m_Girder;
    m_DistFromStart = rOther.m_DistFromStart;
-   m_Stages        = rOther.m_Stages;
+   memcpy(m_Stages, rOther.m_Stages, sizeof(m_Stages));
 
    ASSERTVALID;
 }

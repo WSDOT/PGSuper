@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -80,6 +80,8 @@
 #include <Reporting\FinalLossesChapterBuilder.h>
 #include <Reporting\LongitudinalReinforcementForShearLoadRatingChapterBuilder.h>
 
+#include <Reporting\DistributionFactorSummaryChapterBuilder.h>
+
 // Interfaces
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -124,12 +126,12 @@ HRESULT CReporterImp::InitReportBuilders()
    boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder(     new CGirderReportSpecificationBuilder(m_pBroker) );
    boost::shared_ptr<CReportSpecificationBuilder> pBridgeAnalysisRptSpecBuilder ( new CBridgeAnalysisReportSpecificationBuilder(m_pBroker) );
    boost::shared_ptr<CReportSpecificationBuilder> pLoadRatingRptSpecBuilder( new CLoadRatingReportSpecificationBuilder(m_pBroker) );
-
+   boost::shared_ptr<CReportSpecificationBuilder> pMultiGirderRptSpecBuilder( new CMultiGirderReportSpecificationBuilder(m_pBroker) );
 
    // Design Outcome
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("Design Outcome Report"),true); // hidden report
    //pRptBuilder->AddTitlePageBuilder(NULL); // no title page for this report
-   pRptBuilder->SetReportSpecificationBuilder( pSpanGirderRptSpecBuilder );
+   pRptBuilder->SetReportSpecificationBuilder( pMultiGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDesignOutcomeChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 
@@ -190,6 +192,13 @@ HRESULT CReporterImp::InitReportBuilders()
    pRptBuilder->SetReportSpecificationBuilder( pSpanGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(false)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckChapterBuilder) );
+   pRptMgr->AddReportBuilder( pRptBuilder );
+
+   // Multi-Girder Spec Summary
+   pRptBuilder = new CReportBuilder(_T("Multi-Girder Spec Check Summary"));
+   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
+   pRptBuilder->SetReportSpecificationBuilder( pMultiGirderRptSpecBuilder );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(false)) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 
    // Load Rating Report
@@ -259,6 +268,13 @@ HRESULT CReporterImp::InitReportBuilders()
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pSpanGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new COptimizedFabricationChapterBuilder) );
+   pRptMgr->AddReportBuilder( pRptBuilder );
+
+   // Distribution Factors Summary Report
+   pRptBuilder = new CReportBuilder(_T("Live Load Distribution Factors Summary"));
+   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
+   pRptBuilder->SetReportSpecificationBuilder( pBrokerRptSpecBuilder );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDistributionFactorSummaryChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 
    // Distribution Factors

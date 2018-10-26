@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,15 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+// Make conversions static so they are only done once
+   static const Float64 S_4_KSI    = ::ConvertToSysUnits( 4.0, unitMeasure::KSI );
+   static const Float64 S_5_KSI    = ::ConvertToSysUnits(5.0,unitMeasure::KSI);
+   static const Float64 S_160_LPCF = ::ConvertToSysUnits(160.,unitMeasure::LbfPerFeet3);
+   static const Float64 S_p75_INCH = ::ConvertToSysUnits(0.75,unitMeasure::Inch);
+   static const Float64 S_4200_KSI = ::ConvertToSysUnits(4200., unitMeasure::KSI);
+   static const Float64 S_4700_KSI = ::ConvertToSysUnits(4700., unitMeasure::KSI);
+
+
 /****************************************************************************
 CLASS
    CGirderData
@@ -48,11 +57,11 @@ CGirderMaterial::CGirderMaterial()
 {
    // Default material properties
    Type = pgsTypes::Normal;
-   Fci = ::ConvertToSysUnits( 4.0, unitMeasure::KSI );
-   Fc  = ::ConvertToSysUnits(5.0,unitMeasure::KSI);
-   StrengthDensity = ::ConvertToSysUnits(160.,unitMeasure::LbfPerFeet3);
-   WeightDensity = ::ConvertToSysUnits(160.,unitMeasure::LbfPerFeet3);
-   MaxAggregateSize = ::ConvertToSysUnits(0.75,unitMeasure::Inch);
+   Fci = S_4_KSI;
+   Fc  = S_5_KSI;
+   StrengthDensity = S_160_LPCF;
+   WeightDensity   = S_160_LPCF;
+   MaxAggregateSize = S_p75_INCH;
    EcK1 = 1.0;
    EcK2 = 1.0;
    CreepK1 = 1.0;
@@ -60,9 +69,9 @@ CGirderMaterial::CGirderMaterial()
    ShrinkageK1 = 1.0;
    ShrinkageK2 = 1.0;
    bUserEci = false;
-   Eci = ::ConvertToSysUnits(4200., unitMeasure::KSI);
+   Eci = S_4200_KSI;
    bUserEc = false;
-   Ec = ::ConvertToSysUnits(4700., unitMeasure::KSI);
+   Ec = S_4700_KSI;
    bHasFct = false;
    Fct = 0;
 

@@ -123,6 +123,7 @@
 #define IDC_RIGHT_END                   1188
 #define IDC_USER_CUT                    1191
 #define IDC_SHOW_TRANSV_REINF           1457
+#define IDC_SELECT_GRID                 1606
 #define IDS_E_BADINSTALL                1636
 #define IDS_E_PROBPERSISTS              1638
 #define IDS_E_INVALIDFORMAT             1640
@@ -134,6 +135,8 @@
 #define IDS_GDR_ERROR                   1754
 #define IDS_GDR_ERROR2                  1755
 #define IDS_CONN_ERROR                  1755
+#define IDC_GROUP                       3003
+#define IDS_E_NOGIRDERS                 3005
 #define ID_LEFTEND                      33174
 #define ID_RIGHTEND                     33175
 #define ID_LEFT_HP                      33176

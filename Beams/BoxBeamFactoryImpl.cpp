@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -248,7 +248,7 @@ void CBoxBeamFactoryImpl::CreateDistFactorEngineer(IBroker* pBroker,long agentID
 
       CComObject<CUBeamDistFactorEngineer>* pEngineer;
       CComObject<CUBeamDistFactorEngineer>::CreateInstance(&pEngineer);
-      pEngineer->Init(true); // this is a type b cross section
+      pEngineer->Init(true, false); // this is a type b cross section
       pEngineer->SetBroker(pBroker,agentID);
       (*ppEng) = pEngineer;
       (*ppEng)->AddRef();

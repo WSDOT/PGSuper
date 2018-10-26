@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@
 class txnDesignGirder : public txnTransaction
 {
 public:
-   txnDesignGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx,arDesignOptions designOptions,const pgsDesignArtifact& artifact,pgsTypes::SlabOffsetType slabOffsetType);
+   txnDesignGirder(std::vector<const pgsDesignArtifact*>& artifacts, pgsTypes::SlabOffsetType slabOffsetType);
    ~txnDesignGirder();
 
    virtual bool Execute();
@@ -40,23 +40,35 @@ public:
    virtual bool IsRepeatable();
 
 private:
+   txnDesignGirder();
+
    void Init();
    bool m_bInit;
 
-   void CacheFlexureDesignResults();
-   void CacheShearDesignResults();
+   struct DesignData;
+
+   void CacheFlexureDesignResults(DesignData& rdata);
+   void CacheShearDesignResults(DesignData& rdata);
 
    void DoExecute(int i);
-   SpanIndexType m_SpanIdx;
-   GirderIndexType m_GirderIdx;
-   arDesignOptions m_DesignOptions;
-   pgsDesignArtifact m_DesignArtifact;
 
-   // index 0 = old data (before design), 1 = new data (design outcome)
-   CGirderData m_GirderData[2];
-   CShearData m_ShearData[2];
-   double m_SlabOffset[2][2]; // first index is pgsTypes::MemberEndType
-   pgsTypes::SlabOffsetType m_SlabOffsetType[2];
+   // Store all design data for a girder
+   struct DesignData
+   {
+      pgsDesignArtifact m_DesignArtifact;
+
+      // index 0 = old data (before design), 1 = new data (design outcome)
+      CGirderData m_GirderData[2];
+      CShearData m_ShearData[2];
+      double m_SlabOffset[2][2]; // first index is pgsTypes::MemberEndType
+      pgsTypes::SlabOffsetType m_SlabOffsetType[2];
+   };
+
+   typedef std::vector<DesignData> DesignDataColl;
+   typedef DesignDataColl::iterator DesignDataIter;
+   typedef DesignDataColl::const_iterator DesignDataConstIter;
+
+   DesignDataColl m_DesignDataColl;
 };
 
 #endif // INCLUDED_DESIGNGIRDER_H_

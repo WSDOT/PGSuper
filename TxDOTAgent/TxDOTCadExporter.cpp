@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,7 +31,7 @@
 #include <EAF\EAFAutoProgress.h>
 #include <IFace\Selection.h>
 #include <IFace\TxDOTCadExport.h>
-
+#include <MfcTools\XUnwind.h>
 
 bool DoesFileExist(const CString& filename)
 {
@@ -51,6 +51,12 @@ bool DoesFileExist(const CString& filename)
 
 /////////////////////////////////////////////////////////////////////////////
 // IPGSuperExporter
+STDMETHODIMP CTxDOTCadExporter::Init(UINT nCmdID)
+{
+   // we don't need to save our command ID
+   return S_OK;
+}
+
 STDMETHODIMP CTxDOTCadExporter::GetName(BSTR*  bstrText)
 {
    *bstrText = CComBSTR("TxDOT CAD Data Exporter");
@@ -69,6 +75,12 @@ STDMETHODIMP CTxDOTCadExporter::GetBitmapHandle(HBITMAP* phBmp)
    return S_OK;
 }
 
+STDMETHODIMP CTxDOTCadExporter::GetCommandHintText(BSTR*  bstrText)
+{
+   *bstrText = CComBSTR("Export TxDOT CAD Data\nExport TxDOT CAD Data");
+   return S_OK;
+}
+
 STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 {
 	//Create CAD data text file using name specified by user.			   
@@ -83,42 +95,42 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 	//a new file is created, and the data is written to the file		   
 	//according to a strict predefined format.             		
 
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-	CString default_name = _T("CADexport.txt"),initial_filespec, initial_dir;
+	CString default_name = "CADexport.txt",initial_filespec, initial_dir;
 	int		stf = IDOK;
 	TCHAR	strFilter[] = {_T("CAD Export Files (*.txt)|*.txt||")};
-	CFile	textFile;
-	FILE	*fp = NULL;
-	SpanIndexType span = 0;
-   GirderIndexType gdr = 0;
-
-	/* Create ExportCADData dialog box object */
-	exportCADData  caddlg (pBroker, NULL);
 
    GET_IFACE2(pBroker,ISelection,pSelection);
-   SpanIndexType currSpan = pSelection->GetSpanIdx();
-   GirderIndexType currGirder = pSelection->GetGirderIdx();
+   SpanIndexType spanIdx = pSelection->GetSpanIdx();
+   spanIdx = spanIdx<0 ? 0 : spanIdx; // default to 0
+   GirderIndexType gdrIdx = pSelection->GetGirderIdx();
+   gdrIdx = gdrIdx<0 ? 0 : gdrIdx;
 
-   caddlg.m_Span   = currSpan   < 0 ? 0 : currSpan;
-   caddlg.m_Girder = currGirder < 0 ? 0 : currGirder;
-   caddlg.m_IsExtended = FALSE;
+   SpanGirderHashType hash = HashSpanGirder(spanIdx,gdrIdx);
+   std::vector<SpanGirderHashType> gdrlist;
+   gdrlist.push_back(hash);
 
-	/* Open the ExportCADData dialog box */
-	stf = caddlg.DoModal();
-	if (stf == IDOK)
-	{
-		/* Get user's span & beam id values */
-		span = caddlg.m_Span;
-      gdr = caddlg.m_Girder;
+	/* Create ExportCADData dialog box object */
+   BOOL bIsExtended = FALSE;
+   {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	   exportCADData  caddlg (pBroker, NULL);
+      caddlg.m_SelGdrs = gdrlist;
+      caddlg.m_IsExtended = bIsExtended;
 
-      pSelection->SelectGirder(span,gdr);
-	}
-	else
-	{
-		/* Just do nothing if CANCEL */
-	    return S_OK;
-	}
+	   /* Open the ExportCADData dialog box */
+	   stf = caddlg.DoModal();
+	   if (stf == IDOK)
+	   {
+		   /* Get user's span & beam id values */
+		   gdrlist = caddlg.m_SelGdrs;
+         bIsExtended = caddlg.m_IsExtended;
+	   }
+	   else
+	   {
+		   /* Just do nothing if CANCEL */
+	       return S_OK;
+	   }
+   }
 
 	/* Create SAVEAS file dialog box object */
 	CFileDialog  fildlg(FALSE,_T("txt"),default_name,OFN_HIDEREADONLY, strFilter);
@@ -141,14 +153,24 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
             return S_OK;
 		}
 
+      bool did_throw=false;
+
       // Create progress window in own scope
+      try
       {
 	      /* Create progress bar (before needing one) to remain alive during this task */
 	      /* (otherwise, progress bars will be repeatedly created & destroyed on the fly) */
          GET_IFACE2(pBroker,IProgress,pProgress);
-         CEAFAutoProgress ap(pProgress);
+
+         bool multi = gdrlist.size()>1;
+         DWORD mask = multi ? PW_ALL : PW_ALL|PW_NOGAUGE; // Progress window has a cancel button,
+         CEAFAutoProgress ap(pProgress,0,mask); 
+
+         if (multi)
+            pProgress->Init(0,gdrlist.size(),1);  // and for multi-girders, a gauge.
 
 		   /* Open/create the specified text file */
+      	FILE	*fp = NULL;
          if (_tfopen_s(&fp,LPCTSTR(file_path), _T("w+")) != 0 || fp == NULL)
          {
 			   AfxMessageBox (_T("Warning: File Cannot be Created."));
@@ -156,24 +178,40 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 		   }
 
          // dialog can only ask for normal or extended format
-         TxDOTCadExportFormatType format = caddlg.m_IsExtended ? tcxExtended : tcxNormal;
+         TxDOTCadExportFormatType format = bIsExtended ? tcxTest : tcxNormal;
 
-		   /* Write CAD data to text file */
-		   if (CAD_SUCCESS != TxDOT_WriteCADDataToFile(fp, pBroker, span, gdr, format,true) )
+	      /* Write CAD data to text file */
+         for (std::vector<SpanGirderHashType>::iterator it = gdrlist.begin(); it!= gdrlist.end(); it++)
          {
-			   AfxMessageBox (_T("Warning: An error occured while writing to File"));
-			   return S_OK;
+            SpanIndexType span;
+            GirderIndexType gdr;
+            UnhashSpanGirder(*it, &span, &gdr);
+
+	         if (CAD_SUCCESS != TxDOT_WriteCADDataToFile(fp, pBroker, span, gdr, format,true) )
+            {
+		         AfxMessageBox (_T("Warning: An error occured while writing to File"));
+		         return S_OK;
+            }
+
+            pProgress->Increment();
          }
 
 		   /* Close the open text file */
 		   fclose (fp);
 
       } // autoprogress scope
+      catch(...)
+      {
+         // must catch so progress window goes out of scope and gets destroyed
+         // must rethrow to get the exception into MFC
+         throw; 
+      }
 
 		/* Notify completion */
-		CString msg(_T("File: "));
-		msg += file_path + _T(" creation complete.");
+	   CString msg(_T("File: "));
+	   msg += file_path + _T(" creation complete.");
       AfxMessageBox(msg,MB_ICONINFORMATION|MB_OK);
+
 	}
    return S_OK;
 }

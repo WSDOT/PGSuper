@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -165,8 +165,8 @@ inline Float64 compute_required_eccentricity(Float64 P,Float64 A,Float64 S,Float
 inline std::vector<Int16> EnvelopIntVec(const std::vector<Int16>& rvec1, const std::vector<Int16>& rvec2)
 {
    std::vector<Int16> result;
-   std::vector<Int16>::const_iterator r1it = rvec1.begin();
-   std::vector<Int16>::const_iterator r2it = rvec2.begin();
+   std::vector<Int16>::const_iterator r1it( rvec1.begin() );
+   std::vector<Int16>::const_iterator r2it( rvec2.begin() );
 
    while (r1it!=rvec1.end() || r2it!=rvec2.end())
    {
@@ -290,10 +290,8 @@ void pgsDesigner2::GetHaunchDetails(SpanIndexType span,GirderIndexType gdr,bool 
 
    Float64 fillet = pDeck->Fillet;
 
-   std::vector<pgsTypes::Stage> stages;
-   stages.push_back(pgsTypes::CastingYard);
-   stages.push_back(pgsTypes::BridgeSite3);
-   std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(span,gdr,stages,POI_ALL,POIFIND_OR);
+   std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(span,gdr,pgsTypes::BridgeSite3,POI_TENTH_POINTS,POIFIND_OR) );
+   ATLASSERT( vPoi.size() == 11 ); // 0.0L - 1.0L
 
    //
    // Profile Effects and Girder Orientation Effects
@@ -328,8 +326,9 @@ void pgsDesigner2::GetHaunchDetails(SpanIndexType span,GirderIndexType gdr,bool 
    double diff_max = -100000;
    double max_reqd_haunch_depth = -100000;
    double min_reqd_haunch_depth =  100000;
-   std::vector<pgsPointOfInterest>::iterator iter;
-   for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
+   std::vector<pgsPointOfInterest>::iterator iter( vPoi.begin() );
+   std::vector<pgsPointOfInterest>::iterator iterEnd( vPoi.end() );
+   for ( ; iter != iterEnd; iter++ )
    {
       pgsPointOfInterest& poi = *iter;
 
@@ -461,6 +460,7 @@ pgsGirderArtifact pgsDesigner2::Check(SpanIndexType span,GirderIndexType gdr)
 
    for (Int16 i = 0; i < g_cAllowStressTasks; i++ )
    {
+      // skip the temporary strand removal check if the girder can't or doesn't have temporary strands
       if ( (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims && g_AllowStressTask[i].ls == pgsTypes::FatigueI) || 
            (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion()&& g_AllowStressTask[i].ls == pgsTypes::ServiceIA)
            )
@@ -473,7 +473,6 @@ pgsGirderArtifact pgsDesigner2::Check(SpanIndexType span,GirderIndexType gdr)
          continue;
       }
 
-      // skip the temporary strand removal check if the girder can't or doesn't have temporary strands
       if ( g_AllowStressTask[i].stage == pgsTypes::TemporaryStrandRemoval && (NtMax == 0 || Nt == 0) )
          continue;
 
@@ -613,9 +612,11 @@ pgsDesignArtifact pgsDesigner2::Design(SpanIndexType span,GirderIndexType gdr,ar
 
       cIter++;
       LOG(_T(""));
-      LOG(_T("Iteration Number # ") << cIter );
+      LOG(_T("Design Iteration Number # ") << cIter );
+      std::_tostringstream os2;
+      os2 << _T("Design Iteration ")<<cIter+1<<_T(" for Span ") << LABEL_SPAN(span) << _T(" Girder ") << LABEL_GIRDER(gdr) << std::ends;
 
-      pProgress->UpdateMessage(os.str().c_str());
+      pProgress->UpdateMessage(os2.str().c_str());
 
       if (options.doDesignForFlexure!=dtNoDesign)
       {
@@ -670,6 +671,8 @@ pgsDesignArtifact pgsDesigner2::Design(SpanIndexType span,GirderIndexType gdr,ar
          LOG(_T("BEGINNING DESIGN REFINEMENT"));
          LOG(_T(""));
 
+         pProgress->UpdateMessage(_T("Stress Design Refinement"));
+
          CHECK_PROGRESS;
 
          m_StrandDesignTool.DumpDesignParameters();
@@ -691,6 +694,7 @@ pgsDesignArtifact pgsDesigner2::Design(SpanIndexType span,GirderIndexType gdr,ar
          // Refine Design for Ultimate Strength
          //
          LOG(_T("Refining the design for ultimate moment capacity"));
+         pProgress->UpdateMessage(_T("Designing for Ultimate Moment"));
 
 // NOTE
 // No longer designing/checking for ultimate moment in temporary construction state
@@ -721,6 +725,7 @@ pgsDesignArtifact pgsDesigner2::Design(SpanIndexType span,GirderIndexType gdr,ar
          
          if ( bPermit )
          {
+            pProgress->UpdateMessage(_T("Designing for Strength II Ultimate Moment"));
             LOG(_T("Strength II Limit State"));
             RefineDesignForUltimateMoment(pgsTypes::BridgeSite3, pgsTypes::StrengthII,pProgress);
 
@@ -740,6 +745,8 @@ pgsDesignArtifact pgsDesigner2::Design(SpanIndexType span,GirderIndexType gdr,ar
 
          if (options.doDesignSlabOffset)
          {
+            pProgress->UpdateMessage(_T("Designing Slab Offset Outer Loop"));
+
             LOG(_T("Starting Slab Offset design in outer loop"));
             Float64 old_offset_start = m_StrandDesignTool.GetSlabOffset(pgsTypes::metStart );
             Float64 old_offset_end   = m_StrandDesignTool.GetSlabOffset(pgsTypes::metEnd );
@@ -801,6 +808,7 @@ pgsDesignArtifact pgsDesigner2::Design(SpanIndexType span,GirderIndexType gdr,ar
          //
          // Refine stirrup design
          // 
+         pProgress->UpdateMessage(_T("Designing Shear Stirrups"));
 
          LOG(_T("Starting Stirrup Design"));
          LOG(_T("Strength I Limit State"));
@@ -852,6 +860,7 @@ pgsDesignArtifact pgsDesigner2::Design(SpanIndexType span,GirderIndexType gdr,ar
 
    m_StrandDesignTool.DumpDesignParameters();
 
+   pProgress->UpdateMessage(_T("Design Complete"));
    LOG(_T("Design Complete for span ") << LABEL_SPAN(span) << _T(" girder ") << LABEL_GIRDER(gdr));
    LOG(_T("************************************************************"));
 #if defined ENABLE_LOGGING
@@ -944,10 +953,11 @@ void pgsDesigner2::CheckStrandStresses(SpanIndexType span,GirderIndexType gdr,pg
       strandTypes.push_back(pgsTypes::Temporary);
    }
 
-   std::vector<pgsTypes::StrandType>::iterator iter;
-   for ( iter = strandTypes.begin(); iter != strandTypes.end(); iter++ )
+   std::vector<pgsTypes::StrandType>::iterator standTypeIter(strandTypes.begin());
+   std::vector<pgsTypes::StrandType>::iterator standTypeIterEnd(strandTypes.end());
+   for ( ; standTypeIter != standTypeIterEnd; standTypeIter++ )
    {
-      pgsTypes::StrandType strandType = *iter;
+      pgsTypes::StrandType strandType = *standTypeIter;
 
       if ( pAllow->CheckStressAtJacking() )
          pArtifact->SetCheckAtJacking( strandType, pPsForce->GetStrandStress(poi,strandType,pgsTypes::Jacking), pAllow->GetAllowableAtJacking(span,gdr,strandType) );
@@ -980,8 +990,7 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
    GET_IFACE(ISpecification,pSpec);
    GET_IFACE(IContinuity,pContinuity);
 
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(span,gdr,task.stage,POI_FLEXURESTRESS | POI_TABULAR);
-   std::vector<pgsPointOfInterest>::iterator iter;
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(span,gdr,task.stage,POI_FLEXURESTRESS | POI_TABULAR) );
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
@@ -1009,26 +1018,15 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
 
    GET_IFACE(IStageMap,pStageMap);
    GET_IFACE(IProgress, pProgress);
-   const unitmgtLengthData& length = pDisplayUnits->GetSpanLengthUnit();
    CEAFAutoProgress ap(pProgress);
+   pProgress->UpdateMessage(_T("Checking Girder Stresses"));
 
-   for ( iter = vPoi.begin(); iter != vPoi.end(); iter++)
+   std::vector<pgsPointOfInterest>::iterator poiIter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::iterator poiIterEnd(vPoi.end());
+   for ( ; poiIter != poiIterEnd; poiIter++)
    {
-      const pgsPointOfInterest& poi = *iter;
+      const pgsPointOfInterest& poi = *poiIter;
 
-      std::_tstring strStage = OLE2T(pStageMap->GetStageName(task.stage));
-      std::_tstring strType  = (task.type == pgsTypes::Tension ? _T("Tension") : _T("Compression"));
-      std::_tstring strLimitState = OLE2T(pStageMap->GetLimitStateName(task.ls));
-      std::_tostringstream os;
-      os << _T("Computing ") << strStage << _T(" ") << strLimitState << _T(" ") << strType << _T(" stresses for Span ")
-      << LABEL_SPAN(poi.GetSpan()) << _T(" Girder ")
-      << LABEL_GIRDER(poi.GetGirder()) << _T(" at ") 
-      << std::setw(length.Width)
-      << std::setprecision(length.Precision) 
-      << ::ConvertFromSysUnits(poi.GetDistFromStart(),length.UnitOfMeasure) << _T(" ") 
-      << length.UnitOfMeasure.UnitTag() << _T(" from start of girder") << std::ends;
-      pProgress->UpdateMessage( os.str().c_str() );
-      
       pgsFlexuralStressArtifactKey key(task.stage,task.ls,task.type,poi.GetDistFromStart());
       pgsFlexuralStressArtifact artifact;
 
@@ -1644,24 +1642,26 @@ Float64 pgsDesigner2::GetNormalFrictionForce(const pgsPointOfInterest& poi)
    if ( pDeck->DeckType == pgsTypes::sdtCompositeCIP )
    {
       // Cast in place slab
-      Float64 slab_depth      = pBridge->GetGrossSlabDepth(poi);
+      // conservative not to use sacrificial material so we will use just the structural slab depth
+      // also, ignore the weight of the slab haunch as it may or may not be there depending on 
+      // camber variation and other construction uncertainties
+      Float64 slab_depth      = pBridge->GetStructuralSlabDepth(poi);
       Float64 trib_slab_width = pSectProp2->GetTributaryFlangeWidth(poi);
-      Float64 tot_depth = pSectProp2->GetDistTopSlabToTopGirder(poi);
-      Float64 top_flange_width = pGdr->GetTopFlangeWidth(poi);
       
-      // conservative not to use sacrificial material
-      Float64 slab_volume   = trib_slab_width  * (slab_depth - pDeck->SacrificialDepth);
-      Float64 haunch_volume = top_flange_width * (tot_depth - slab_depth);
+      Float64 slab_volume = trib_slab_width*slab_depth;
       
-      wslab = (slab_volume + haunch_volume) * slab_unit_weight;
+      wslab = slab_volume * slab_unit_weight;
    }
    else
    {
       // SIP Deck Panels
-      Float64 slab_depth      = pBridge->GetGrossSlabDepth(poi);
+      // For slab panels, the weight of the cast deck is mostly carried by the slab panels and does
+      // not contribute to the compression force on the shear interface. The only slab dead load that
+      // causes compression on the shear interface is weight of the slab between the
+      // panels that bears on the top flange of the girder
+      Float64 slab_depth      = pBridge->GetStructuralSlabDepth(poi);
       Float64 top_flange_width = pGdr->GetTopFlangeWidth(poi);
       Float64 panel_support = pDeck->PanelSupport;
-      Float64 tot_depth = pSectProp2->GetDistTopSlabToTopGirder(poi);
 
       Uint32 nMatingSurfaces = pGdr->GetNumberOfMatingSurfaces(spanIdx,gdrIdx);
       Float64 wMating = 0; // sum of mating surface widths... less deck panel support width
@@ -1671,12 +1671,16 @@ Float64 pgsDesigner2::GetNormalFrictionForce(const pgsPointOfInterest& poi)
               ((gdrIdx == 0 && i == 0) || // Left exterior girder
                (gdrIdx == pSpan->GetGirderCount()-1 && i == nMatingSurfaces-1))  // right exterior girder
             )
+         {
             wMating += pGdr->GetMatingSurfaceWidth(poi,i)/2 - panel_support;
+         }
          else
+         {
             wMating += pGdr->GetMatingSurfaceWidth(poi,i) - 2*panel_support;
+         }
       }
 
-      wslab = wMating*(tot_depth - pDeck->SacrificialDepth)*slab_unit_weight;
+      wslab = wMating*slab_depth*slab_unit_weight;
 
       // If exterior, add weight of cast overhang
       if ( pBridge->IsExteriorGirder(spanIdx,gdrIdx) )
@@ -1690,7 +1694,7 @@ Float64 pgsDesigner2::GetNormalFrictionForce(const pgsPointOfInterest& poi)
 
          Float64 top_width = pGdr->GetTopWidth(poi); // total width of the top of the girder
 
-         Float64 woverhang = (slab_overhang - top_width/2)*(slab_depth - pDeck->SacrificialDepth)*slab_unit_weight;
+         Float64 woverhang = (slab_overhang - top_width/2)*slab_depth*slab_unit_weight;
 
          wslab += woverhang;
 
@@ -1861,7 +1865,7 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
 
    // check to see if we are outside of the faces of support.... If so, then this check doesn't apply
    GET_IFACE(IPointOfInterest, pIPoi);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(span,gdr,stage,POI_FACEOFSUPPORT);
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(span,gdr,stage,POI_FACEOFSUPPORT) );
    ATLASSERT(vPoi.size() == 2);
    pgsPointOfInterest leftFaceOfSupport(vPoi.front());
    pgsPointOfInterest rightFaceOfSupport(vPoi.back());
@@ -2140,7 +2144,6 @@ void pgsDesigner2::CheckMomentCapacity(SpanIndexType span,GirderIndexType gdr,pg
    GET_IFACE(IPointOfInterest, pIPoi);
 
    std::vector<pgsPointOfInterest> vPoi;
-   std::vector<pgsPointOfInterest>::iterator iter;
 
    if ( stage == pgsTypes::BridgeSite1 )
    {
@@ -2155,9 +2158,11 @@ void pgsDesigner2::CheckMomentCapacity(SpanIndexType span,GirderIndexType gdr,pg
    PierIndexType prev_pier = span;
    PierIndexType next_pier = prev_pier+1;
    GET_IFACE(IBridge,pBridge);
-   for ( iter = vPoi.begin(); iter != vPoi.end(); iter++)
+   std::vector<pgsPointOfInterest>::iterator poiIter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::iterator poiIterEnd(vPoi.end());
+   for ( ; poiIter != poiIterEnd; poiIter++)
    {
-      const pgsPointOfInterest& poi = *iter;
+      const pgsPointOfInterest& poi = *poiIter;
       pgsFlexuralCapacityArtifactKey key(stage,ls,poi.GetDistFromStart());
 
       // we always do positive moment
@@ -2269,15 +2274,16 @@ void pgsDesigner2::CheckShear(SpanIndexType span,GirderIndexType gdr,pgsTypes::S
    // poi-based shear check
    // Get the basic poi's
    GET_IFACE(IPointOfInterest, pIPoi);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(span,gdr,stage,POI_SHEAR | POI_TABULAR);
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(span,gdr,stage,POI_SHEAR | POI_TABULAR) );
 
    GET_IFACE(ILimitStateForces, pLimitStateForces);
 
    // loop over pois
-   std::vector<pgsPointOfInterest>::iterator iter;
-   for ( iter = vPoi.begin(); iter != vPoi.end(); iter++)
+   std::vector<pgsPointOfInterest>::iterator poiIter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::iterator poiIterEnd(vPoi.end());
+   for ( ; poiIter != poiIterEnd; poiIter++)
    {
-      const pgsPointOfInterest& poi = *iter;
+      const pgsPointOfInterest& poi = *poiIter;
       sysSectionValue Vmin, Vmax;
 
       if ( analysisType == pgsTypes::Envelope )
@@ -2349,7 +2355,7 @@ void pgsDesigner2::CheckSplittingZone(SpanIndexType span,GirderIndexType gdr,pgs
    // get POI at point of prestress transfer
    // this is where the prestress force is fully transfered
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(span,gdr,pgsTypes::CastingYard,POI_PSXFER);
+   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(span,gdr,pgsTypes::CastingYard,POI_PSXFER) );
    ATLASSERT(vPOI.size() != 0);
    pgsPointOfInterest poi = vPOI[0];
 
@@ -2444,7 +2450,7 @@ void pgsDesigner2::CheckGirderDetailing(SpanIndexType span,GirderIndexType gdr,p
 
    // get dimensions from bridge model
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(span,gdr,pgsTypes::CastingYard,POI_ALL,POIFIND_OR);
+   std::vector<pgsPointOfInterest> vPoi( pPOI->GetPointsOfInterest(span,gdr,pgsTypes::CastingYard,POI_ALL,POIFIND_OR) );
 
    Float64 minTopFlange = DBL_MAX;
    Float64 minBotFlange = DBL_MAX;
@@ -2457,10 +2463,11 @@ void pgsDesigner2::CheckGirderDetailing(SpanIndexType span,GirderIndexType gdr,p
 
    if ( nTopFlanges != 0 || nWebs != 0 || nBotFlanges != 0 )
    {
-      std::vector<pgsPointOfInterest>::iterator iter;
-      for ( iter = vPOI.begin(); iter != vPOI.end(); iter++ )
+      std::vector<pgsPointOfInterest>::iterator poiIter(vPoi.begin());
+      std::vector<pgsPointOfInterest>::iterator poiIterEnd(vPoi.end());
+      for ( ; poiIter != poiIterEnd; poiIter++)
       {
-         pgsPointOfInterest poi = *iter;
+         pgsPointOfInterest& poi = *poiIter;
          minBotFlange = min(minBotFlange,pGdr->GetMinBottomFlangeThickness(poi));
          minWeb       = min(minWeb,      pGdr->GetMinWebWidth(poi));
          minTopFlange = min(minTopFlange,pGdr->GetMinTopFlangeThickness(poi));
@@ -2596,17 +2603,18 @@ void pgsDesigner2::CheckLiveLoadDeflection(SpanIndexType span,GirderIndexType gd
 
       // find maximum live load deflection along girder
       GET_IFACE(IPointOfInterest,pIPoi);
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, gdr, pgsTypes::BridgeSite1, POI_FLEXURESTRESS | POI_TABULAR );
+      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( span, gdr, pgsTypes::BridgeSite1, POI_FLEXURESTRESS | POI_TABULAR ) );
 
       GET_IFACE(IProductForces,pForces);
    
       // determine 
       Float64 min_defl =  10000;
       Float64 max_defl = -10000;
-      std::vector<pgsPointOfInterest>::const_iterator i;
-      for ( i = vPoi.begin(); i != vPoi.end(); i++ )
+      std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
+      std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
+      for ( ; poiIter != poiIterEnd; poiIter++ )
       {
-         const pgsPointOfInterest& poi = *i;
+         const pgsPointOfInterest& poi = *poiIter;
 
          Float64 min, max;
          pForces->GetDeflLiveLoadDisplacement( IProductForces::DeflectionLiveLoadEnvelope, poi, &min, &max );
@@ -3166,6 +3174,13 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
       LOG(_T(""));
       LOG(_T("Initial Design Parameters Trial # ") << cIter);
 
+      if (cIter>1)
+      {
+         std::_tostringstream os2;
+         os2 << _T("Initial Strand Design Trial ")<<cIter << std::ends;
+         pProgress->UpdateMessage(os2.str().c_str());
+      }
+
       DesignMidZoneInitialStrands(bUseCurrentStrands ? true : (cIter == 0 ? false : true), pProgress);
 
       if ( m_DesignerOutcome.WasDesignAborted() )
@@ -3207,25 +3222,16 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
          LOG(_T("======================================================================================"));
          if ( m_StrandDesignTool.GetFlexuralDesignType() == dtDesignForDebonding )
          {
-            // for debond design, take a _T("guess") at the debond configuration based on release before
-            // coming up with a release strength. This is analogous to having some of the permanent
-            // strands harped in the harped design case
+            // For debond design, set debonding to maximum allowed for the current number of strands.
+            // This should result in a minimum possible release strength. 
+            std::vector<Int16> max_debonding = m_StrandDesignTool.GetMaxPhysicalDebonding();
 
-            // the false in this call is to tell the designer not to abort if it can't fit
-            // the debonding
-            std::vector<Int16> debond_demand = DesignEndZoneReleaseDebonding(pProgress,false);
-            if ( debond_demand.empty() )
-            {
-               // for the given number of strands we can't debond enough... 
-               // this is just a guess to get us closer so use the max debonding
-               LOG(_T("Can't come up with enough debonding... just use the max possible"));
-               debond_demand = m_StrandDesignTool.GetMaxPhysicalDebonding();
-            }
-
-            m_StrandDesignTool.LayoutDebonding( debond_demand );
+            m_StrandDesignTool.LayoutDebonding( max_debonding );
          }
 
          // find the release strength
+         pProgress->UpdateMessage(_T("Finding Release Strength"));
+
          DesignEndZoneReleaseStrength(pProgress);
 
          if (  m_DesignerOutcome.WasDesignAborted() )
@@ -3245,6 +3251,7 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
 
       // Skip tweaking the concrete strength if we are doing a hauling design
       // Hauling will produce the maximum required strength so we don't need to waste time here
+      pProgress->UpdateMessage(_T("Finding Final Strength"));
       if ( !options.doDesignHauling )
       {
          DesignMidZoneFinalConcrete( pProgress );
@@ -3278,6 +3285,7 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
 
       if (options.doDesignSlabOffset)
       {
+         pProgress->UpdateMessage(_T("Designing Slab Offset"));
          DesignSlabOffset( pProgress );
 
          CHECK_PROGRESS;
@@ -3390,16 +3398,18 @@ void pgsDesigner2::DesignMidZoneFinalConcrete(IProgress* pProgress)
    for ( i = 0; i < NCases; i++ )
    {
       // Get Points of Interest at the expected
-      std::vector<pgsPointOfInterest> vPOI = m_StrandDesignTool.GetDesignPoi(stage_type[i],find_type[i]);
+      std::vector<pgsPointOfInterest> vPOI( m_StrandDesignTool.GetDesignPoi(stage_type[i],find_type[i]) );
       ATLASSERT(!vPOI.empty());
 
       LOG(_T("Checking for ") << strLimitState[i] << StrTopBot(stress_location[i]) << (stress_type[i]==pgsTypes::Tension?_T(" Tension"):_T(" Compression")) );
 
-      for (std::vector<pgsPointOfInterest>::iterator it=vPOI.begin(); it!=vPOI.end(); it++)
+      std::vector<pgsPointOfInterest>::iterator poiIter(vPOI.begin());
+      std::vector<pgsPointOfInterest>::iterator poiIterEnd(vPOI.end());
+      for ( ; poiIter != poiIterEnd; poiIter++)
       {
          CHECK_PROGRESS;
 
-         const pgsPointOfInterest& poi = *it;
+         const pgsPointOfInterest& poi = *poiIter;
          double min,max;
          if ( analysisType == pgsTypes::Envelope )
          {
@@ -3483,7 +3493,7 @@ void pgsDesigner2::DesignMidZoneAtRelease(IProgress* pProgress)
    GDRCONFIG config = m_StrandDesignTool.GetGirderConfiguration();
 
    // Get Points of Interest in mid-zone
-   std::vector<pgsPointOfInterest> vPOI = m_StrandDesignTool.GetDesignPoi(pgsTypes::CastingYard,POI_MIDSPAN|POI_HARPINGPOINT);
+   std::vector<pgsPointOfInterest> vPOI( m_StrandDesignTool.GetDesignPoi(pgsTypes::CastingYard,POI_MIDSPAN|POI_HARPINGPOINT) );
    CHECK( !vPOI.empty() );
 
    // let's look at bottom compression first. 
@@ -3491,12 +3501,13 @@ void pgsDesigner2::DesignMidZoneAtRelease(IProgress* pProgress)
    Float64 fbot = Float64_Max;
    pgsPointOfInterest bot_poi;
 
-   std::vector<pgsPointOfInterest>::iterator it;
-   for (it=vPOI.begin(); it!=vPOI.end(); it++)
+   std::vector<pgsPointOfInterest>::iterator poiIter(vPOI.begin());
+   std::vector<pgsPointOfInterest>::iterator poiIterEnd(vPOI.end());
+   for ( ; poiIter != poiIterEnd; poiIter++)
    {
       CHECK_PROGRESS;
 
-      const pgsPointOfInterest& poi = *it;
+      const pgsPointOfInterest& poi = *poiIter;
       double min, max;
       pForces->GetStress(pgsTypes::ServiceI,pgsTypes::CastingYard,poi,pgsTypes::BottomGirder,false,SimpleSpan,&min,&max);
 
@@ -3571,11 +3582,11 @@ void pgsDesigner2::DesignMidZoneAtRelease(IProgress* pProgress)
    Float64 fetop, fptop;
    pgsPointOfInterest top_poi;
 
-   for (it=vPOI.begin(); it!=vPOI.end(); it++)
+   for ( ; poiIter != poiIterEnd; poiIter++)
    {
       CHECK_PROGRESS;
 
-      const pgsPointOfInterest& poi = *it;
+      const pgsPointOfInterest& poi = *poiIter;
       double mine, maxe;
       pForces->GetStress(pgsTypes::ServiceI,pgsTypes::CastingYard,poi,pgsTypes::TopGirder,false,SimpleSpan,&mine,&maxe);
 
@@ -3779,6 +3790,10 @@ void pgsDesigner2::DesignSlabOffset(IProgress* pProgress)
    {
       CHECK_PROGRESS;
 
+      std::_tostringstream os2;
+      os2 << _T("Slab Offset Design Iteration ")<<cIter+1 << std::ends;
+      pProgress->UpdateMessage(os2.str().c_str());
+
       Float64 AoldStart = m_StrandDesignTool.GetSlabOffset(pgsTypes::metStart);
       Float64 AoldEnd   = m_StrandDesignTool.GetSlabOffset(pgsTypes::metEnd);
 
@@ -3815,7 +3830,7 @@ void pgsDesigner2::DesignSlabOffset(IProgress* pProgress)
          m_StrandDesignTool.SetSlabOffset( pgsTypes::metStart, Anew );
          m_StrandDesignTool.SetSlabOffset( pgsTypes::metEnd,   Anew );
       }
-   } while ( !bDone && cIter < nIterMax);
+   } while ( !bDone && cIter++ < nIterMax);
 
    if ( nIterMax < cIter )
    {
@@ -4271,14 +4286,16 @@ pgsPointOfInterest pgsDesigner2::GetControllingFinalMidZonePoi(SpanIndexType spa
 
    GET_IFACE(ILimitStateForces,pForces);
    GET_IFACE(IPointOfInterest,pIPOI);
-   std::vector<pgsPointOfInterest> vPoi = m_StrandDesignTool.GetDesignPoi(pgsTypes::BridgeSite3,POI_ALLACTIONS);
+   std::vector<pgsPointOfInterest> vPoi( m_StrandDesignTool.GetDesignPoi(pgsTypes::BridgeSite3,POI_ALLACTIONS) );
 
    Float64 fmax = -Float64_Max;
    pgsPointOfInterest max_poi;
    bool found=false;
-   for (std::vector<pgsPointOfInterest>::iterator it=vPoi.begin(); it!=vPoi.end(); it++)
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
+   for ( ; poiIter != poiIterEnd; poiIter++)
    {
-      const pgsPointOfInterest& poi = *it;
+      const pgsPointOfInterest& poi = *poiIter;
       Float64 dfs = poi.GetDistFromStart();
 
       if (dfs>=left_limit && dfs<=rgt_limit)
@@ -4327,7 +4344,7 @@ void pgsDesigner2::DesignEndZoneReleaseStrength(IProgress* pProgress)
    GET_IFACE(ILimitStateForces,pForces);
    GET_IFACE(IPrestressStresses, pPrestress);
    GET_IFACE(IPointOfInterest,pIPOI);
-   std::vector<pgsPointOfInterest> vPOI = m_StrandDesignTool.GetDesignPoi(pgsTypes::CastingYard,POI_PSXFER);
+   std::vector<pgsPointOfInterest> vPOI( m_StrandDesignTool.GetDesignPoi(pgsTypes::CastingYard,POI_PSXFER) );
    ATLASSERT(!vPOI.empty());
 
    // max top tension and bottom compression stresses at critical locations
@@ -4337,11 +4354,13 @@ void pgsDesigner2::DesignEndZoneReleaseStrength(IProgress* pProgress)
    Float64 fptop, fpbot; 
    pgsPointOfInterest top_poi, bot_poi;
 
-   for (std::vector<pgsPointOfInterest>::iterator it=vPOI.begin(); it!=vPOI.end(); it++)
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPOI.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPOI.end());
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
       CHECK_PROGRESS;
 
-      const pgsPointOfInterest& poi = *it;
+      const pgsPointOfInterest& poi = *poiIter;
       double mine,maxe,bogus;
       pForces->GetStress(pgsTypes::ServiceI,pgsTypes::CastingYard,poi,pgsTypes::TopGirder,   false,SimpleSpan,&bogus,&maxe);
       pForces->GetStress(pgsTypes::ServiceI,pgsTypes::CastingYard,poi,pgsTypes::BottomGirder,false,SimpleSpan,&mine,&bogus);
@@ -4395,7 +4414,7 @@ void pgsDesigner2::DesignEndZoneReleaseHarping(IProgress* pProgress)
    GET_IFACE(ILimitStateForces,pForces);
    GET_IFACE(IPrestressStresses, pPrestress);
    GET_IFACE(IPointOfInterest,pIPOI);
-   std::vector<pgsPointOfInterest> vPOI = m_StrandDesignTool.GetDesignPoi(pgsTypes::CastingYard,POI_PSXFER);
+   std::vector<pgsPointOfInterest> vPOI( m_StrandDesignTool.GetDesignPoi(pgsTypes::CastingYard,POI_PSXFER) );
    ATLASSERT(!vPOI.empty());
 
    // max top tension and bottom compression stresses at critical locations
@@ -4405,11 +4424,13 @@ void pgsDesigner2::DesignEndZoneReleaseHarping(IProgress* pProgress)
    Float64 fptop, fpbot; 
    pgsPointOfInterest top_poi, bot_poi;
 
-   for (std::vector<pgsPointOfInterest>::iterator it=vPOI.begin(); it!=vPOI.end(); it++)
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPOI.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPOI.end());
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
       CHECK_PROGRESS;
 
-      const pgsPointOfInterest& poi = *it;
+      const pgsPointOfInterest& poi = *poiIter;
       double mine,maxe,bogus;
       pForces->GetStress(pgsTypes::ServiceI,pgsTypes::CastingYard,poi,pgsTypes::TopGirder,   false,SimpleSpan,&bogus,&maxe);
       pForces->GetStress(pgsTypes::ServiceI,pgsTypes::CastingYard,poi,pgsTypes::BottomGirder,false,SimpleSpan,&mine,&bogus);
@@ -4619,16 +4640,18 @@ std::vector<Int16> pgsDesigner2::DesignEndZoneReleaseDebonding(IProgress* pProgr
 
    GET_IFACE(ILimitStateForces,pForces);
    GET_IFACE(IPrestressStresses, pPrestress);
-   std::vector<pgsPointOfInterest> vPOI = m_StrandDesignTool.GetDesignPoiEndZone(pgsTypes::CastingYard,POI_FLEXURESTRESS);
+   std::vector<pgsPointOfInterest> vPOI( m_StrandDesignTool.GetDesignPoiEndZone(pgsTypes::CastingYard,POI_FLEXURESTRESS) );
    ATLASSERT(!vPOI.empty());
 
    // Build stress demand
    std::vector<pgsStrandDesignTool::StressDemand> stress_demands;
    stress_demands.reserve(vPOI.size());
 
-   for (std::vector<pgsPointOfInterest>::iterator it=vPOI.begin(); it!=vPOI.end(); it++)
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPOI.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPOI.end());
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
-      const pgsPointOfInterest& poi = *it;
+      const pgsPointOfInterest& poi = *poiIter;
       double fTopAppl,fBotAppl,bogus;
       pForces->GetStress(pgsTypes::ServiceI,pgsTypes::CastingYard,poi,pgsTypes::TopGirder,   false,SimpleSpan,&bogus,&fTopAppl);
       pForces->GetStress(pgsTypes::ServiceI,pgsTypes::CastingYard,poi,pgsTypes::BottomGirder,false,SimpleSpan,&fBotAppl,&bogus);
@@ -5415,7 +5438,9 @@ std::vector<Int16> pgsDesigner2::DesignDebondingForLifting(HANDLINGCONFIG& liftC
       std::vector<pgsStrandDesignTool::StressDemand> stress_demands;
       stress_demands.reserve(max_applied_stresses.size());
       LOG(_T("--- Compute lifting stresses for debonding --- nss = ")<<nss);
-      for (pgsLiftingAnalysisArtifact::MaxLiftingStressIterator it=max_applied_stresses.begin(); it!=max_applied_stresses.end(); it++)
+      pgsLiftingAnalysisArtifact::MaxLiftingStressIterator it(max_applied_stresses.begin());
+      pgsLiftingAnalysisArtifact::MaxLiftingStressIterator itEnd(max_applied_stresses.end());
+      for ( ; it != itEnd; it++)
       {
          const pgsLiftingAnalysisArtifact::MaxdLiftingStresses& max_stresses = *it;
 
@@ -5712,7 +5737,9 @@ std::vector<Int16> pgsDesigner2::DesignForShippingDebondingFinal(IProgress* pPro
 
       LOG(_T("--- Compute hauling stresses for debonding --- nss = ")<<nss);
       GET_IFACE(IPrestressStresses, pPrestress);
-      for (pgsHaulingAnalysisArtifact::MaxHaulingStressIterator it=max_applied_stresses.begin(); it!=max_applied_stresses.end(); it++)
+      pgsHaulingAnalysisArtifact::MaxHaulingStressIterator it( max_applied_stresses.begin() );
+      pgsHaulingAnalysisArtifact::MaxHaulingStressIterator itEnd( max_applied_stresses.end() );
+      for ( ; it != itEnd; it++)
       {
          CHECK_PROGRESS;
 
@@ -5779,6 +5806,7 @@ void pgsDesigner2::RefineDesignForAllowableStress(IProgress* pProgress)
    {
       pgsDesigner2::ALLOWSTRESSCHECKTASK task = g_AllowStressTask[i++];
 
+     // skip the temporary strand removal check if the girder can't or doesn't have temporary strands
       if ( (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims && task.ls == pgsTypes::FatigueI) || 
            (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion()&& task.ls == pgsTypes::ServiceIA)
            )
@@ -5791,7 +5819,6 @@ void pgsDesigner2::RefineDesignForAllowableStress(IProgress* pProgress)
          continue;
       }
 
-     // skip the temporary strand removal check if the girder can't or doesn't have temporary strands
       if ( task.stage == pgsTypes::TemporaryStrandRemoval && (0 == NtMax || 0 == m_StrandDesignTool.GetNt()) )
          continue; // skip temporary strand removal if this girder doesn't support temporary strands
 
@@ -5883,12 +5910,13 @@ void pgsDesigner2::RefineDesignForAllowableStress(ALLOWSTRESSCHECKTASK task,IPro
       vPoi = m_StrandDesignTool.GetDesignPoi(task.stage,POI_FLEXURESTRESS | POI_H);
    }
 
-   std::vector<pgsPointOfInterest>::iterator iter;
-   for ( iter = vPoi.begin(); iter < vPoi.end(); iter++ )
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
       CHECK_PROGRESS;
 
-      const pgsPointOfInterest& poi = *iter;
+      const pgsPointOfInterest& poi = *poiIter;
 
       LOG(_T("Designing at ") << ::ConvertFromSysUnits(poi.GetDistFromStart() - start_end_size,unitMeasure::Feet) << _T(" ft"));
 
@@ -6034,17 +6062,18 @@ void pgsDesigner2::RefineDesignForUltimateMoment(pgsTypes::Stage stage,pgsTypes:
    SpanIndexType span = m_StrandDesignTool.GetSpan();
    GirderIndexType gdr  = m_StrandDesignTool.GetGirder();
 
-   std::vector<pgsPointOfInterest> vPoi = m_StrandDesignTool.GetDesignPoi(stage,POI_FLEXURECAPACITY);
+   std::vector<pgsPointOfInterest> vPoi( m_StrandDesignTool.GetDesignPoi(stage,POI_FLEXURECAPACITY) );
    
    GET_IFACE(IBridge,pBridge);
    Float64 start_end_size = (stage==pgsTypes::CastingYard)? 0.0 : pBridge->GetGirderStartConnectionLength(span,gdr);
 
-   std::vector<pgsPointOfInterest>::iterator iter;
-   for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
       CHECK_PROGRESS;
 
-      const pgsPointOfInterest& poi = *iter;
+      const pgsPointOfInterest& poi = *poiIter;
 
       LOG(_T(""));
       LOG(_T("======================================================================================================="));
@@ -6208,7 +6237,7 @@ void pgsDesigner2::RefineDesignForUltimateMoment(pgsTypes::Stage stage,pgsTypes:
                }
 
 
-               iter = vPoi.begin();
+               poiIter = vPoi.begin();
                continue;
             }
          }
@@ -6254,7 +6283,7 @@ void pgsDesigner2::RefineDesignForUltimateMoment(pgsTypes::Stage stage,pgsTypes:
                LOG(_T("Attempt to add strands succeeded NP = ") << m_StrandDesignTool.GetNumPermanentStrands());
                m_DesignerOutcome.SetOutcome(pgsDesignCodes::ChangedForUltimate);
                m_DesignerOutcome.SetOutcome(pgsDesignCodes::PermanentStrandsChanged);
-               iter = vPoi.begin();
+               poiIter = vPoi.begin();
                continue;
            }
          }
@@ -6748,10 +6777,11 @@ void pgsDesigner2::CalcAvSAtPois(pgsTypes::Stage stage,
 
    LOG(_T("Av/S values at ")<<vPoi.size()<<_T(" pois"));
    LOG(_T("Location, avsVertical, avsHorizontal"));
-   std::vector<pgsPointOfInterest>::const_iterator iter;
-   for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
-      const pgsPointOfInterest& poi = *iter;
+      const pgsPointOfInterest& poi = *poiIter;
 
       // get demand based on critical section nominal forces - capacity is based on pure nominal
       bool inbetween_support_and_cs;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -259,7 +259,7 @@ void pgsGirderHandlingChecker::AnalyzeHauling(SpanIndexType span,GirderIndexType
 
 bool pgsGirderHandlingChecker::DesignShipping(SpanIndexType span,GirderIndexType gdr,const GDRCONFIG& config,bool bDesignForEqualOverhangs,bool bIgnoreConfigurationLimits,IGirderHaulingDesignPointsOfInterest* pPOId,pgsHaulingAnalysisArtifact* pArtifact,SHARED_LOGFILE LOGFILE)
 {
-   LOG("Entering pgsGirderHandlingChecker::DesignShipping");
+   LOG(_T("Entering pgsGirderHandlingChecker::DesignShipping"));
    // Get range of values for truck support locations
    GET_IFACE(IBridge,pBridge);
    Float64 Lg = pBridge->GetGirderLength(span,gdr);
@@ -307,8 +307,8 @@ bool pgsGirderHandlingChecker::DesignShipping(SpanIndexType span,GirderIndexType
    Float64 FScrMin = pCriteria->GetHaulingCrackingFs();
    Float64 FSrMin = pCriteria->GetHaulingRolloverFs();
 
-   LOG("Allowable FS cracking FScrMin = "<<FScrMin);
-   LOG("Allowable FS rollover FSrMin = "<<FSrMin);
+   LOG(_T("Allowable FS cracking FScrMin = ")<<FScrMin);
+   LOG(_T("Allowable FS rollover FSrMin = ")<<FSrMin);
 
    Float64 loc = minOverhang;
    pgsHaulingAnalysisArtifact artifact;
@@ -318,7 +318,7 @@ bool pgsGirderHandlingChecker::DesignShipping(SpanIndexType span,GirderIndexType
 
    while ( loc < maxOverhang )
    {
-      LOG("");
+      LOG(_T(""));
 
       //
       pgsGirderHandlingChecker checker(m_pBroker,m_StatusGroupID);
@@ -342,15 +342,15 @@ bool pgsGirderHandlingChecker::DesignShipping(SpanIndexType span,GirderIndexType
          ATLASSERT( IsLE((Lg - shipping_config.LeftOverhang - shipping_config.RightOverhang),maxDistanceBetweenSupports) );
 #endif
 
-      LOG("Trying Trailing Overhang = " << ::ConvertFromSysUnits(shipping_config.LeftOverhang,unitMeasure::Feet) << " ft" << "      Leading Overhang = " << ::ConvertFromSysUnits(shipping_config.RightOverhang,unitMeasure::Feet) << " ft");
+      LOG(_T("Trying Trailing Overhang = ") << ::ConvertFromSysUnits(shipping_config.LeftOverhang,unitMeasure::Feet) << _T(" ft") << _T("      Leading Overhang = ") << ::ConvertFromSysUnits(shipping_config.RightOverhang,unitMeasure::Feet) << _T(" ft"));
 
       checker.AnalyzeHauling(span,gdr,shipping_config,pPOId,&curr_artifact);
       FScr = curr_artifact.GetMinFsForCracking();
 
-      LOG("FScr = " << FScr);
+      LOG(_T("FScr = ") << FScr);
       if ( FScr < FScrMin && maxOverhang/4 < loc )
       {
-         LOG("Could not satisfy FScr... Need to add temporary strands");
+         LOG(_T("Could not satisfy FScr... Need to add temporary strands"));
          // Moving the supports closer isn't going to help
          *pArtifact = curr_artifact;
          return false; // design failed
@@ -358,7 +358,7 @@ bool pgsGirderHandlingChecker::DesignShipping(SpanIndexType span,GirderIndexType
 
       FSr  = curr_artifact.GetFsRollover();
 
-      LOG("FSr = " << FSr);
+      LOG(_T("FSr = ") << FSr);
 
       if ( 0.95*FScrMin < FScr && 0.95*FSrMin < FSr && bLargeStepSize)
       {
@@ -369,7 +369,7 @@ bool pgsGirderHandlingChecker::DesignShipping(SpanIndexType span,GirderIndexType
          if ( 1.05*FSrMin <= FSr )
          {
             // We went past the solution... back up
-            LOG("Went past the solution... backup");
+            LOG(_T("Went past the solution... backup"));
             loc -= oldInc;
 
             if ( loc < minOverhang )
@@ -391,7 +391,7 @@ bool pgsGirderHandlingChecker::DesignShipping(SpanIndexType span,GirderIndexType
 
    *pArtifact = artifact;
 
-   LOG("Exiting pgsGirderHandlingChecker::DesignShipping - success");
+   LOG(_T("Exiting pgsGirderHandlingChecker::DesignShipping - success"));
    return true;
 }
 
@@ -439,8 +439,8 @@ pgsDesignCodes::OutcomeType pgsGirderHandlingChecker::DesignLifting(SpanIndexTyp
    GET_IFACE(ILosses,pLosses);
    while ( loc <= maxLoc )
    {
-      LOG("");
-      LOG("Trying location " << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << " ft");
+      LOG(_T(""));
+      LOG(_T("Trying location ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft"));
 
       pgsLiftingAnalysisArtifact curr_artifact;
       lift_config.LeftOverhang = loc;
@@ -449,7 +449,7 @@ pgsDesignCodes::OutcomeType pgsGirderHandlingChecker::DesignLifting(SpanIndexTyp
       AnalyzeLifting(span,gdr,lift_config,pPoiD,&curr_artifact);
       FSf = curr_artifact.GetFsFailure();
 
-      LOG("FSf = " << FSf);
+      LOG(_T("FSf = ") << FSf);
 
       if ( 0.95*FSfMin < FSf && bLargeStepSize)
       {
@@ -460,7 +460,7 @@ pgsDesignCodes::OutcomeType pgsGirderHandlingChecker::DesignLifting(SpanIndexTyp
          if ( 1.05*FSfMin <= FSf )
          {
             // We went past the solution... back up
-            LOG("Went past the solution... backup");
+            LOG(_T("Went past the solution... backup"));
             loc -= oldInc;
 
             if ( loc < min_location )
@@ -482,9 +482,9 @@ pgsDesignCodes::OutcomeType pgsGirderHandlingChecker::DesignLifting(SpanIndexTyp
    if ( maxLoc < loc )
    {
       // Temporary strands are required... 
-      LOG("Cannot find a pick point to safisfy FSf");
-      LOG("Temporary strands required");
-      LOG("Move on to Shipping Design");
+      LOG(_T("Cannot find a pick point to safisfy FSf"));
+      LOG(_T("Temporary strands required"));
+      LOG(_T("Move on to Shipping Design"));
       return pgsDesignCodes::LiftingRedesignAfterShipping;
    }
 
@@ -1526,7 +1526,7 @@ void pgsGirderHandlingChecker::ComputeHaulingRollAngle(SpanIndexType span,Girder
 
    // Zo (based on mid-span section properties)
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(span,gdr,pgsTypes::CastingYard,POI_MIDSPAN);
+   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(span,gdr,pgsTypes::CastingYard,POI_MIDSPAN) );
    pgsPointOfInterest poi = vPOI[0];
    GET_IFACE(ISectProp2,pSectProp2);
    Float64 Ix = pSectProp2->GetIx(pgsTypes::CastingYard,poi);

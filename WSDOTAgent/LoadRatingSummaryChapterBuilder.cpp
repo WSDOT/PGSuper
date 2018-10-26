@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -108,63 +108,72 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
 
    if ( !bIsWSDOTRating )
    {
-      (*pPara) << _T("The loading conditions do not conform to the requirements specified in Chapter 13 of the WSDOT Bridge Design Manual.") << rptNewLine;
-      (*pPara) << _T("The Load Rating Criteria must be WSDOT") << rptNewLine;
-      (*pPara) << _T("Bridges must be rated for HL-93, AASHTO Legal Loads, Notational Rating Load (NRL), OL1 and OL2.") << rptNewLine;
-      (*pPara) << _T("Select Project | Load Rating Options to change the load rating settings") << rptNewLine;
-      (*pPara) << rptNewLine;
-      (*pPara) << _T("The current settings are:") << rptNewLine;
-      (*pPara) << _T("Load Rating Criteria: ") << pRatingSpec->GetRatingSpecification() << rptNewLine;
-      (*pPara) << _T("Design Live Loads: ");
-      std::vector<std::_tstring>::iterator iter;
-      for ( iter = design_permit_loads.begin(); iter != design_permit_loads.end(); iter++ )
+      (*pPara) << _T("The loading settings do not conform to the requirements specified in Chapter 13 of the WSDOT Bridge Design Manual.") << rptNewLine;
+      (*pPara) << _T("Select Project | Load Rating Options to change the load rating settings to the required settings shown below.") << rptNewLine;
+
+	   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3,_T("Load Rating Criteria"));
+
+      // left justify all columns
+      pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetColumnStyle(2,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetStripeRowColumnStyle(2,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      (*pPara) << pTable << rptNewLine;
+      (*pTable)(0,0) << _T("");
+      (*pTable)(0,1) << _T("Current Setting");
+      (*pTable)(0,2) << _T("Required Setting");
+
+      (*pTable)(1,0) << _T("Load Rating Criteria");
+      (*pTable)(1,1) << pRatingSpec->GetRatingSpecification();
+      (*pTable)(1,2) << _T("WSDOT");
+
+      (*pTable)(2,0) << _T("Design Load Rating: Live Loads for Design");
+      std::vector<std::_tstring>::iterator nameIter(design_permit_loads.begin());
+      std::vector<std::_tstring>::iterator nameIterEnd(design_permit_loads.end());
+      for ( ; nameIter != nameIterEnd; nameIter++ )
       {
-         if ( iter != design_permit_loads.begin() )
-            (*pPara) << _T(", ");
-
-         (*pPara) << (*iter);
+         (*pTable)(2,1) << (*nameIter) << rptNewLine;
       }
-      (*pPara) << rptNewLine;
+      (*pTable)(2,2) << _T("HL-93");
 
-      (*pPara) << _T("Routine Commercial Traffic (Legal Live Loads): ");
-      for ( iter = routine_legal_loads.begin(); iter != routine_legal_loads.end(); iter++ )
+      (*pTable)(3,0) << _T("Legal Load Rating: Live Loads for Routine Commercial Traffic");
+      nameIter    = routine_legal_loads.begin();
+      nameIterEnd = routine_legal_loads.end();
+      for ( ; nameIter != nameIterEnd; nameIter++ )
       {
-         if ( iter != routine_legal_loads.begin() )
-            (*pPara) << _T(", ");
-
-         (*pPara) << (*iter);
+         (*pTable)(3,1) << (*nameIter) << rptNewLine;
       }
-      (*pPara) << rptNewLine;
+      (*pTable)(3,2) << _T("AASHTO Legal Loads");
 
-      (*pPara) << _T("Specialized Hauling Vehicles (Legal Live Loads): ");
-      for ( iter = special_legal_loads.begin(); iter != special_legal_loads.end(); iter++ )
+      (*pTable)(4,0) << _T("Legal Load Rating: Live Loads for Specialized Hauling Vehicles");
+      nameIter    = special_legal_loads.begin();
+      nameIterEnd = special_legal_loads.end();
+      for ( ; nameIter != nameIterEnd; nameIter++ )
       {
-         if ( iter != special_legal_loads.begin() )
-            (*pPara) << _T(", ");
-
-         (*pPara) << (*iter);
+         (*pTable)(4,1) << (*nameIter) << rptNewLine;
       }
-      (*pPara) << rptNewLine;
+      (*pTable)(4,2) << _T("Notional Rating Load (NRL)");
 
-      (*pPara) << _T("Routine/Annual Permit Vehicles: ");
-      for ( iter = routine_permit_loads.begin(); iter != routine_permit_loads.end(); iter++ )
+      (*pTable)(5,0) << _T("Permit Load Rating: Live Loads for Routine/Annual Permit Vehicles");
+      nameIter    = routine_permit_loads.begin();
+      nameIterEnd = routine_permit_loads.end();
+      for ( ; nameIter != nameIterEnd; nameIter++ )
       {
-         if ( iter != routine_permit_loads.begin() )
-            (*pPara) << _T(", ");
-
-         (*pPara) << (*iter);
+         (*pTable)(5,1) << (*nameIter) << rptNewLine;
       }
-      (*pPara) << rptNewLine;
+      (*pTable)(5,2) << _T("");
 
-      (*pPara) << _T("Special/Limited Crossing Permit Vehicles: ");
-      for ( iter = special_permit_loads.begin(); iter != special_permit_loads.end(); iter++ )
+      (*pTable)(6,0) << _T("Permit Load Rating: Live Loads for Special/Limited Crossing Permit Vehicles");
+      nameIter    = special_permit_loads.begin();
+      nameIterEnd = special_permit_loads.end();
+      for ( ; nameIter != nameIterEnd; nameIter++ )
       {
-         if ( iter != special_permit_loads.begin() )
-            (*pPara) << _T(", ");
-
-         (*pPara) << (*iter);
+         (*pTable)(6,1) << (*nameIter) << rptNewLine;
       }
-      (*pPara) << rptNewLine;
+      (*pTable)(6,2) << _T("OL1") << rptNewLine << _T("OL2") << rptNewLine;
 
       return pChapter;
    }
@@ -278,12 +287,10 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
    const pgsMomentRatingArtifact* pNegativeMoment;
    const pgsShearRatingArtifact*  pShear;
    const pgsStressRatingArtifact* pStress;
-   const pgsYieldStressRatioArtifact* pYieldStressPositiveMoment;
-   const pgsYieldStressRatioArtifact* pYieldStressNegativeMoment;
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    
-   Float64 RF = pRatingArtifact->GetRatingFactorEx(&pPositiveMoment,&pNegativeMoment,&pShear,&pStress,&pYieldStressPositiveMoment,&pYieldStressNegativeMoment);
+   Float64 RF = pRatingArtifact->GetRatingFactorEx(&pPositiveMoment,&pNegativeMoment,&pShear,&pStress);
    if ( pPositiveMoment )
    {
       (*pTable)(row,0) << pPositiveMoment->GetVehicleName();
@@ -344,40 +351,6 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
       Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
       (*pTable)(row,3) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << _T(" (Stress)");
    }
-   else if ( pYieldStressPositiveMoment )
-   {
-      (*pTable)(row,0) << pYieldStressPositiveMoment->GetVehicleName();
-      
-      if ( RF < 1 )
-         (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
-      else
-         (*pTable)(row,1) << RF_PASS(rating_factor,RF);
-
-      (*pTable)(row,1) << rptNewLine << _T("(Stress Ratio)");
-
-      (*pTable)(row,2) << scalar.SetValue(pYieldStressPositiveMoment->GetLiveLoadFactor());
-
-      pgsPointOfInterest poi = pYieldStressPositiveMoment->GetPointOfInterest();
-      Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,3) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << _T(" (Yield Stress - Positive Moment)");
-   }
-   else if ( pYieldStressNegativeMoment )
-   {
-      (*pTable)(row,0) << pYieldStressNegativeMoment->GetVehicleName();
-      
-      if ( RF < 1 )
-         (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
-      else
-         (*pTable)(row,1) << RF_PASS(rating_factor,RF);
-
-      (*pTable)(row,1) << rptNewLine << _T("(Stress Ratio)");
-
-      (*pTable)(row,2) << scalar.SetValue(pYieldStressNegativeMoment->GetLiveLoadFactor());
-
-      pgsPointOfInterest poi = pYieldStressNegativeMoment->GetPointOfInterest();
-      Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,3) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << _T(" (Yield Stress - Negative Moment)");
-   }
 }
 
 void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptRcTable* pTable,RowIndexType row,LPCTSTR strTruck,const pgsRatingArtifact* pRatingArtifact,IEAFDisplayUnits* pDisplayUnits) const
@@ -396,12 +369,10 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
    const pgsMomentRatingArtifact* pNegativeMoment;
    const pgsShearRatingArtifact*  pShear;
    const pgsStressRatingArtifact* pStress;
-   const pgsYieldStressRatioArtifact* pYieldStressPositiveMoment;
-   const pgsYieldStressRatioArtifact* pYieldStressNegativeMoment;
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    
-   Float64 RF = pRatingArtifact->GetRatingFactorEx(&pPositiveMoment,&pNegativeMoment,&pShear,&pStress,&pYieldStressPositiveMoment,&pYieldStressNegativeMoment);
+   Float64 RF = pRatingArtifact->GetRatingFactorEx(&pPositiveMoment,&pNegativeMoment,&pShear,&pStress);
    if ( pPositiveMoment )
    {
       (*pTable)(row,0) << strTruck;
@@ -457,37 +428,5 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
       pgsPointOfInterest poi = pStress->GetPointOfInterest();
       Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
       (*pTable)(row,2) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << _T(" (Stress)");
-   }
-   else if ( pYieldStressPositiveMoment )
-   {
-      (*pTable)(row,0) << strTruck;
-      
-      if ( RF < 1 )
-         (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
-      else
-         (*pTable)(row,1) << RF_PASS(rating_factor,RF);
-
-      (*pTable)(row,1) << rptNewLine << _T("(Stress Ratio)");
-
-
-      pgsPointOfInterest poi = pYieldStressPositiveMoment->GetPointOfInterest();
-      Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,2) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << _T(" (Yield Stress - Positive Moment)");
-   }
-   else if ( pYieldStressNegativeMoment )
-   {
-      (*pTable)(row,0) << strTruck;
-      
-      if ( RF < 1 )
-         (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
-      else
-         (*pTable)(row,1) << RF_PASS(rating_factor,RF);
-
-      (*pTable)(row,1) << rptNewLine << _T("(Stress Ratio)");
-
-
-      pgsPointOfInterest poi = pYieldStressNegativeMoment->GetPointOfInterest();
-      Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,2) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << _T(" (Yield Stress - Negative Moment)");
    }
 }

@@ -6277,6 +6277,11 @@
     <param name="Local" value="Adminstrator's Guide\Chapter 4\LIBRARYEDITORuntitled00000032.htm">
   </object>
   <li><object type="text/sitemap">
+    <param name="Name" value="Multi-Girder Select Grid">
+    <param name="Name" value="Multi-Girder Select Grid">
+    <param name="Local" value="User's Guide\Appendix A - PGSuper Dialogs\Multi-Girder_Select_Grid.htm">
+  </object>
+  <li><object type="text/sitemap">
     <param name="Name" value="N">
     <param name="Name" value="Analytical Models">
     <param name="Local" value="Theoretical Manual\AnalyticalModels.htm">

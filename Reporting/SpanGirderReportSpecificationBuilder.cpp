@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\SpanGirderReportDlg.h>
+#include <Reporting\MultiGirderReportDlg.h>
 
 #include <IFace\Selection.h>
 
@@ -192,6 +193,73 @@ boost::shared_ptr<CReportSpecification> CSpanGirderReportSpecificationBuilder::C
    spanIdx = (spanIdx == INVALID_INDEX ? 0 : spanIdx );
    gdrIdx  = (gdrIdx  == INVALID_INDEX ? 0 : gdrIdx  );
    boost::shared_ptr<CReportSpecification> pRptSpec( new CSpanGirderReportSpecification(rptDesc.GetReportName(),m_pBroker,spanIdx,gdrIdx) );
+
+   AddChapters(rptDesc,pRptSpec);
+
+   return pRptSpec;
+}
+
+////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+
+CMultiGirderReportSpecificationBuilder::CMultiGirderReportSpecificationBuilder(IBroker* pBroker) :
+CBrokerReportSpecificationBuilder(pBroker)
+{
+}
+
+CMultiGirderReportSpecificationBuilder::~CMultiGirderReportSpecificationBuilder(void)
+{
+}
+
+boost::shared_ptr<CReportSpecification> CMultiGirderReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   // Prompt for span, girder, and chapter list
+   GET_IFACE(ISelection,pSelection);
+   SpanIndexType spanIdx = pSelection->GetSpanIdx();
+   GirderIndexType gdrIdx = pSelection->GetGirderIdx();
+
+   spanIdx = (spanIdx == INVALID_INDEX ? 0 : spanIdx );
+   gdrIdx  = (gdrIdx  == INVALID_INDEX ? 0 : gdrIdx  );
+
+   CMultiGirderReportDlg dlg(m_pBroker,rptDesc,pRptSpec);
+
+   SpanGirderHashType hash = HashSpanGirder(spanIdx,gdrIdx);
+   std::vector<SpanGirderHashType> gdrlist;
+   gdrlist.push_back(hash);
+
+   dlg.m_SelGdrs = gdrlist;
+
+   if ( dlg.DoModal() == IDOK )
+   {
+      boost::shared_ptr<CReportSpecification> pRptSpec( new CMultiGirderReportSpecification(rptDesc.GetReportName(),m_pBroker, dlg.m_SelGdrs) );
+
+      std::vector<std::_tstring> chList = dlg.m_ChapterList;
+      AddChapters(rptDesc,chList,pRptSpec);
+
+      return pRptSpec;
+   }
+
+   return boost::shared_ptr<CReportSpecification>();
+}
+
+boost::shared_ptr<CReportSpecification> CMultiGirderReportSpecificationBuilder::CreateDefaultReportSpec(const CReportDescription& rptDesc)
+{
+   // Get the selected span and girder
+   GET_IFACE(ISelection,pSelection);
+   SpanIndexType spanIdx = pSelection->GetSpanIdx();
+   GirderIndexType gdrIdx = pSelection->GetGirderIdx();
+
+   spanIdx = (spanIdx == INVALID_INDEX ? 0 : spanIdx );
+   gdrIdx  = (gdrIdx  == INVALID_INDEX ? 0 : gdrIdx  );
+
+   SpanGirderHashType hash = HashSpanGirder(spanIdx, gdrIdx);
+   std::vector<SpanGirderHashType> gdrlist;
+   gdrlist.push_back(hash);
+
+   boost::shared_ptr<CReportSpecification> pRptSpec( new CMultiGirderReportSpecification(rptDesc.GetReportName(),m_pBroker, gdrlist) );
 
    AddChapters(rptDesc,pRptSpec);
 

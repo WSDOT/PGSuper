@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -755,12 +755,7 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
    StrandIndexType Ns = pStrandGeom->GetNumStrands(span,gdr,strandType);
-   if (Ns==0)
-      return 0;
-
-   // adjust for development lenght and debonding
-   Float64 adjust = GetXferLengthAdjustment(poi,strandType);
-   if ( IsZero(adjust) )
+   if (Ns == 0)
       return 0;
 
 
@@ -770,7 +765,7 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,
    CHECK(pstrand!=0);
    
    // Get the strand stress
-   Float64 fps = GetStrandStress(poi,strandType,stage); // ( accounts for losses )
+   Float64 fps = GetStrandStress(poi,strandType,stage); // ( accounts for losses and adjusts for lack of development length)
 
    pgsTypes::TTSUsage tempStrandUsage = girderData.TempStrandUsage;
 
@@ -805,7 +800,7 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,
 
    // Compute the requested prestress force
    Float64 Fps;
-   Fps = adjust * Aps * fps;
+   Fps = Aps * fps;
 
    return Fps;
 }
@@ -820,13 +815,9 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,
    // NOTE: This method is almost identical to the other GetPrestressForce method.
    // Any changes done here will likely need to be done there as well
    //******************************************************************************
-   ////////////////////////////////////////////////////////////////////////////////
-   // adjust for development lenght and debonding
-   Float64 adjust = GetXferLengthAdjustment(poi,strandType,config);
-
    StrandIndexType Ns = (strandType == pgsTypes::Permanent ? config.Nstrands[pgsTypes::Straight] + config.Nstrands[pgsTypes::Harped] : config.Nstrands[strandType]);
 
-   if ( Ns==0 || IsZero(adjust) )
+   if ( Ns == 0 )
       return 0;
 
    SpanIndexType span  = poi.GetSpan();
@@ -837,7 +828,7 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,
    CHECK(pstrand!=0);
    
    // Get the strand stress
-   Float64 fps = GetStrandStress(poi,strandType,stage,config); // ( accounts for losses )
+   Float64 fps = GetStrandStress(poi,strandType,stage,config); // ( accounts for losses and transfer length adjustment)
 
    if ( strandType == pgsTypes::Temporary )
    {
@@ -870,7 +861,7 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,
 
    // Compute the requested prestress force
    Float64 Fps;
-   Fps = adjust * Aps * fps;
+   Fps = Aps * fps;
 
    return Fps;
 }
@@ -996,13 +987,7 @@ Float64 pgsPsForceEng::GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::S
    ATLASSERT( 0 <= fps ); // strand stress must be greater than or equal to zero.
 
    // Reduce for transfer effect
-   GET_IFACE(IBridge,pBridge);
-   Float64 Lgirder = pBridge->GetGirderLength(span,gdr);
-   Float64 lpx = (poi.GetDistFromStart() < Lgirder/2 ? poi.GetDistFromStart() : Lgirder - poi.GetDistFromStart());
-   Float64 lt = GetXferLength(span,gdr,strandType);
-   Float64 adjust = (lpx < lt ? lpx/lt : 1.0);
-   ATLASSERT( 0.0 <= adjust && adjust <= 1.0 );
-   adjust = ::ForceIntoRange(0.0,adjust,1.0);
+   Float64 adjust = GetXferLengthAdjustment(poi,strandType,config);
    fps *= adjust;
 
    return fps;

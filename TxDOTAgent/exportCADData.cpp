@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -47,28 +47,37 @@ exportCADData::exportCADData(IBroker* pBroker,CWnd* pParent /*=NULL*/)
 {
    m_pBroker  = pBroker;
 	//{{AFX_DATA_INIT(exportCADData)
-	m_Girder = -1;
-	m_Span = -1;
 	m_IsExtended = FALSE;
 	//}}AFX_DATA_INIT
+
+   m_pGrid = new CMultiGirderSelectGrid();
 }
 
 /*--------------------------------------------------------------------*/
 exportCADData::~exportCADData()
 {
-	/* Do nothing for now */
+   delete m_pGrid;
 }
-
 
 /*--------------------------------------------------------------------*/
 void exportCADData::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(exportCADData)
-	DDX_CBIndex(pDX, IDC_GIRDER, m_Girder);
-	DDX_CBIndex(pDX, IDC_SPAN, m_Span);
 	DDX_Check(pDX, IDC_EXTENDED, m_IsExtended);
 	//}}AFX_DATA_MAP
+
+   if ( pDX->m_bSaveAndValidate )
+   {
+      // Girders
+      m_SelGdrs = m_pGrid->GetData();
+      if ( m_SelGdrs.empty() )
+      {
+         pDX->PrepareCtrl(IDC_SELECT_GRID);
+         AfxMessageBox(IDS_E_NOGIRDERS);
+         pDX->Fail();
+      }
+   }
 }
 
 /*--------------------------------------------------------------------*/
@@ -86,33 +95,51 @@ END_MESSAGE_MAP()
 /*--------------------------------------------------------------------*/
 BOOL exportCADData::OnInitDialog() 
 {
+ 	m_pGrid->SubclassDlgItem(IDC_SELECT_GRID, this);
+
 	/* Perform the root dialog initialization */
 	CDialog::OnInitDialog();
 
 	/* Get interface pointer to Bridge Agent */
 	GET_IFACE( IBridge, pBridge ); 
 
-	/* Get combo box pointers */
-   CComboBox* pSpanBox = (CComboBox*)GetDlgItem( IDC_SPAN );
-   CComboBox* pGdrBox  = (CComboBox*)GetDlgItem( IDC_GIRDER );
-	  
-	  /* Get count of spans from bridge agent */
-	  /* Get count of spans from bridge agent */
-	Uint32 cSpan = pBridge->GetSpanCount();
+   SpanGirderOnCollection coll;
+   SpanIndexType ns = pBridge->GetSpanCount();
+   for (SpanIndexType is=0; is<ns; is++)
+   {
+      GirderIndexType ng = pBridge->GetGirderCount(is);
+      std::vector<bool> gdrson;
+      gdrson.assign(ng, false); // set all to false
 
-	/* Extract data from spans */
-	for ( Uint32 i = 0; i < cSpan; i++ )
-	{
-		/* Add current span string to span list */
-		CString strSpan;
-		strSpan.Format(_T("Span %d"),LABEL_SPAN(i));
-		pSpanBox->AddString(strSpan);
-	}
+      coll.push_back(gdrson);
+   }
 
-   OnSelchangeSpan();
+   // set selected girders
+   for(std::vector<SpanGirderHashType>::iterator it = m_SelGdrs.begin(); it != m_SelGdrs.end(); it++)
+   {
+      SpanIndexType span;
+      GirderIndexType gdr;
+      UnhashSpanGirder(*it, &span, &gdr);
 
-	pSpanBox->SetCurSel(m_Span);
-	pGdrBox->SetCurSel(m_Girder);
+      if (span<ns)
+      {
+         std::vector<bool>& rgdrson = coll[span];
+         if (gdr < (GirderIndexType)rgdrson.size())
+         {
+            rgdrson[gdr] = true;
+         }
+         else
+         {
+            ATLASSERT(0); // might be a problem?
+         }
+      }
+      else
+      {
+         ATLASSERT(0); // might be a problem?
+      }
+   }
+
+   m_pGrid->CustomInit(coll,pgsGirderLabel::GetGirderLabel);
 
    return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE

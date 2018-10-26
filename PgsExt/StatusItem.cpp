@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -153,7 +153,7 @@ void pgsInstallationErrorStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    ATLASSERT(pItem!=NULL);
 
    CString msg;
-   msg.Format(_T("PGSuper was not successfully installed or has become damanged.\n\n%s could not be created.\n\nPlease re-install the software."),pItem->m_Component.c_str());
+   msg.Format(_T("PGSuper was not successfully installed or has become damaged.\n\n%s could not be created.\n\nPlease re-install the software."),pItem->m_Component.c_str());
    AfxMessageBox(msg,MB_OK | MB_ICONEXCLAMATION);
 }
 
@@ -268,7 +268,7 @@ void pgsInformationalStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 ////////////////
 
 pgsGirderDescriptionStatusItem::pgsGirderDescriptionStatusItem(SpanIndexType span,GirderIndexType gdr,Uint16 page,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription), m_Span(span), m_Girder(gdr), m_Page(page)
+pgsSpanGirderRelatedStatusItem(statusGroupID,callbackID,strDescription,span,gdr), m_Span(span), m_Girder(gdr), m_Page(page)
 {
 }
 
@@ -400,4 +400,48 @@ void pgsBridgeDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
    GET_IFACE(IEditByUI,pEdit);
    pEdit->EditBridgeDescription(pItem->m_DlgPage);
+}
+
+//////////////////////////////////////////////////////////
+pgsLldfWarningStatusItem::pgsLldfWarningStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription)
+{
+}
+
+bool pgsLldfWarningStatusItem::IsEqual(CEAFStatusItem* pOther)
+{
+   pgsLldfWarningStatusItem* other = dynamic_cast<pgsLldfWarningStatusItem*>(pOther);
+   if ( !other )
+      return false;
+
+   return true;
+}
+
+//////////////////////////////////////////////////////////
+pgsLldfWarningStatusCallback::pgsLldfWarningStatusCallback(IBroker* pBroker):
+m_pBroker(pBroker)
+{
+}
+
+eafTypes::StatusSeverityType pgsLldfWarningStatusCallback::GetSeverity()
+{
+   return eafTypes::statusOK;
+}
+
+void pgsLldfWarningStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   pgsLldfWarningStatusItem* pItem = dynamic_cast<pgsLldfWarningStatusItem*>(pStatusItem);
+   ATLASSERT(pItem!=NULL);
+
+   // Just go straight to main lldf  editing dialog
+   GET_IFACE(ILiveLoads,pLiveLoads);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   pgsTypes::DistributionFactorMethod method = pBridgeDesc->GetDistributionFactorMethod();
+   LldfRangeOfApplicabilityAction roaAction = pLiveLoads->GetLldfRangeOfApplicabilityAction();
+
+   GET_IFACE(IEditByUI,pEdit);
+   pEdit->EditLiveLoadDistributionFactors(method,roaAction);
 }

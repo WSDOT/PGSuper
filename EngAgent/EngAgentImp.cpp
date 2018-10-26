@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -136,7 +136,8 @@ CollectionIndexType LimitStateToShearIndex(pgsTypes::LimitState ls)
 // CEngAgentImp
 CEngAgentImp::CEngAgentImp() :
 m_MomentCapEngineer(0,0),
-m_ShearCapEngineer(0,0)
+m_ShearCapEngineer(0,0),
+m_bAreDistFactorEngineersValidated(false)
 {
 }
 
@@ -192,19 +193,66 @@ void CEngAgentImp::InvalidateLosses()
 //-----------------------------------------------------------------------------
 void CEngAgentImp::ValidateLiveLoadDistributionFactors(SpanIndexType span,GirderIndexType gdr)
 {
-   if ( m_pDistFactorEngineer != NULL )
-      return;
+   if (!m_bAreDistFactorEngineersValidated)
+   {
+      GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
+      // Create dist factor engineer
+      if ( m_pDistFactorEngineer == NULL )
+      {
+         const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
+         const GirderLibraryEntry* pGdr = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdr);
 
-   const GirderLibraryEntry* pGdr = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdr);
+         CComPtr<IBeamFactory> pFactory;
+         pGdr->GetBeamFactory(&pFactory);
+         pFactory->CreateDistFactorEngineer(m_pBroker,m_StatusGroupID,NULL,NULL,&m_pDistFactorEngineer);
+      }
 
-   CComPtr<IBeamFactory> pFactory;
-   pGdr->GetBeamFactory(&pFactory);
-   pFactory->CreateDistFactorEngineer(m_pBroker,m_StatusGroupID,NULL,NULL,&m_pDistFactorEngineer);
+         // Issue warning status items if warranted
+      pgsTypes::DistributionFactorMethod method = pBridgeDesc->GetDistributionFactorMethod();
+      if ( method == pgsTypes::DirectlyInput )
+      {
+         GET_IFACE(IEAFStatusCenter,pStatusCenter);
+         std::_tstring str(_T("Live Load Distribution Factors were User-Input."));
+
+         pgsLldfWarningStatusItem* pStatusItem = new pgsLldfWarningStatusItem(m_StatusGroupID,m_scidLldfWarning,str.c_str());
+         pStatusCenter->Add(pStatusItem);
+      }
+      else
+      {
+
+         if ( method == pgsTypes::LeverRule )
+         {
+            GET_IFACE(IEAFStatusCenter,pStatusCenter);
+            std::_tstring str(_T("All Live Load Distribution Factors are computed using the Lever Rule."));
+            pgsLldfWarningStatusItem* pStatusItem = new pgsLldfWarningStatusItem(m_StatusGroupID,m_scidLldfWarning,str.c_str());
+            pStatusCenter->Add(pStatusItem);
+         }
+         else
+         {
+            GET_IFACE(ILiveLoads,pLiveLoads);
+            LldfRangeOfApplicabilityAction action = pLiveLoads->GetLldfRangeOfApplicabilityAction();
+            if (action==roaIgnore)
+            {
+               GET_IFACE(IEAFStatusCenter,pStatusCenter);
+               std::_tstring str(_T("Ranges of Applicability for Load Distribution Factor Equations are to be Ignored."));
+               pgsLldfWarningStatusItem* pStatusItem = new pgsLldfWarningStatusItem(m_StatusGroupID,m_scidLldfWarning,str.c_str());
+               pStatusCenter->Add(pStatusItem);
+            }
+            else if (action == roaIgnoreUseLeverRule)
+            {
+               GET_IFACE(IEAFStatusCenter,pStatusCenter);
+               std::_tstring str(_T("The Lever Rule is to be used for all cases where Ranges of Applicability for Load Distribution Factor Equations are Exceeded. Otherwise, factors are computed using the Equations."));
+               pgsLldfWarningStatusItem* pStatusItem = new pgsLldfWarningStatusItem(m_StatusGroupID,m_scidLldfWarning,str.c_str());
+               pStatusCenter->Add(pStatusItem);
+            }
+         }
+      }
+
+      m_bAreDistFactorEngineersValidated = true;
+   }
 }
 
 //-----------------------------------------------------------------------------
@@ -212,6 +260,7 @@ void CEngAgentImp::InvalidateLiveLoadDistributionFactors()
 {
    LOG("Invalidating live load distribution factors");
    m_pDistFactorEngineer = 0;
+   m_bAreDistFactorEngineersValidated = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -339,24 +388,6 @@ const MINMOMENTCAPDETAILS* CEngAgentImp::ValidateMinMomentCapacity(pgsTypes::Sta
          return &((*found).second); // capacities have already been computed
    }
 
-   GET_IFACE(IProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
-
-   std::_tstring strSectionType = ( stage == pgsTypes::BridgeSite1 ? _T("noncomposite") : _T("composite") );
-
-   SpanIndexType span  = poi.GetSpan();
-   GirderIndexType gdr = poi.GetGirder();
-
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-
-   std::_tostringstream os;
-   os << _T("Computing ") << strSectionType << _T(" minimum moment capacity for Span ")
-      << LABEL_SPAN(span) << _T(" Girder ")
-      << LABEL_GIRDER(gdr) << _T(" at ") << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
-      << _T(" from start of girder") << std::ends;
-
-   pProgress->UpdateMessage( os.str().c_str() );
-
    MINMOMENTCAPDETAILS mmcd;
    m_MomentCapEngineer.ComputeMinMomentCapacity(stage,poi,bPositiveMoment,&mmcd);
 
@@ -384,21 +415,6 @@ const CRACKINGMOMENTDETAILS* CEngAgentImp::ValidateCrackingMoments(pgsTypes::Sta
       if ( found != pMap->end() )
          return &( (*found).second ); // capacities have already been computed
    }
-
-   GET_IFACE(IProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
-
-   std::_tstring strSectionType = ( stage == pgsTypes::BridgeSite1 ? _T("noncomposite") : _T("composite") );
-
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-
-   std::_tostringstream os;
-   os << _T("Computing ") << strSectionType << _T(" cracking moment for Span ")
-      << LABEL_SPAN(poi.GetSpan()) << _T(" Girder ")
-      << LABEL_GIRDER(poi.GetGirder()) << _T(" at ") << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
-      << _T(" from start of girder") << std::ends;
-
-   pProgress->UpdateMessage( os.str().c_str() );
 
    CRACKINGMOMENTDETAILS cmd;
    m_MomentCapEngineer.ComputeCrackingMoment(stage,poi,bPositiveMoment,&cmd);
@@ -519,21 +535,6 @@ MOMENTCAPACITYDETAILS CEngAgentImp::ComputeMomentCapacity(pgsTypes::Stage stage,
    SpanIndexType span  = poi.GetSpan();
    GirderIndexType gdr = poi.GetGirder();
 
-   GET_IFACE(IProgress, pProgress);
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-
-   CEAFAutoProgress ap(pProgress);
-
-   std::_tstring strSectionType = ( bPositiveMoment ? _T("positive") : _T("negative") );
-
-   std::_tostringstream os;
-   os << _T("Computing ") << strSectionType << _T(" moment capacity for Span ")
-      << LABEL_SPAN(span) << _T(" Girder ")
-      << LABEL_GIRDER(gdr) << _T(" at ") << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
-      << _T(" from start of girder") << std::ends;
-
-   pProgress->UpdateMessage( os.str().c_str() );
-
    MOMENTCAPACITYDETAILS mcd;
    m_MomentCapEngineer.ComputeMomentCapacity(stage,poi,bPositiveMoment,&mcd);
 
@@ -545,22 +546,6 @@ MOMENTCAPACITYDETAILS CEngAgentImp::ComputeMomentCapacity(pgsTypes::Stage stage,
 {
    SpanIndexType span  = poi.GetSpan();
    GirderIndexType gdr = poi.GetGirder();
-
-   GET_IFACE(IProgress, pProgress);
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-
-   CEAFAutoProgress ap(pProgress);
-
-
-   std::_tstring strSectionType = ( bPositiveMoment ? _T("positive") : _T("negative") );
-
-   std::_tostringstream os;
-   os << _T("Computing ") << strSectionType << _T(" moment capacity for Span ")
-      << LABEL_SPAN(span) << _T(" Girder ")
-      << LABEL_GIRDER(gdr) << _T(" at ") << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
-      << _T(" from start of girder") << std::ends;
-
-   pProgress->UpdateMessage( os.str().c_str() );
 
    MOMENTCAPACITYDETAILS mcd;
    m_MomentCapEngineer.ComputeMomentCapacity(stage,poi,config,bPositiveMoment,&mcd);
@@ -652,20 +637,6 @@ const SHEARCAPACITYDETAILS* CEngAgentImp::ValidateShearCapacity(pgsTypes::LimitS
          return &( (*found).second ); // capacities have already been computed
    }
 
-   GET_IFACE(IProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
-
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-
-   std::_tostringstream os;
-   std::_tstring strLimitState = (ls == pgsTypes::StrengthI ? _T("Strength I") : _T("Strength II"));
-   os << _T("Computing ") << strLimitState << _T(" shear capacity for Span ")
-      << LABEL_SPAN(poi.GetSpan()) << _T(" Girder ")
-      << LABEL_GIRDER(poi.GetGirder()) << _T(" at ") << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
-      << _T(" from start of girder") << std::ends;
-
-   pProgress->UpdateMessage( os.str().c_str() );
-
    SHEARCAPACITYDETAILS scd;
    m_ShearCapEngineer.ComputeShearCapacity(ls,stage,poi,&scd);
 
@@ -687,19 +658,6 @@ const FPCDETAILS* CEngAgentImp::ValidateFpc(const pgsPointOfInterest& poi)
       if ( found != m_Fpc.end() )
          return &( (*found).second ); // already been computed
    }
-
-   GET_IFACE(IProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
-
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-
-   std::_tostringstream os;
-   os << _T("Computing fpc for Span ")
-      << LABEL_SPAN(poi.GetSpan()) << _T(" Girder ")
-      << LABEL_GIRDER(poi.GetGirder()) << _T(" at ") << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
-      << _T(" from start of girder") << std::ends;
-
-   pProgress->UpdateMessage( os.str().c_str() );
 
    GET_IFACE(IBridge,pBridge);
    GDRCONFIG config = pBridge->GetGirderConfiguration(poi.GetSpan(),poi.GetGirder());
@@ -1167,6 +1125,7 @@ STDMETHODIMP CEngAgentImp::Init()
    m_scidUnknown                = pStatusCenter->RegisterCallback( new pgsUnknownErrorStatusCallback() );
    m_scidRefinedAnalysis        = pStatusCenter->RegisterCallback( new pgsRefinedAnalysisStatusCallback(m_pBroker) );
    m_scidBridgeDescriptionError = pStatusCenter->RegisterCallback( new pgsBridgeDescriptionStatusCallback(m_pBroker,eafTypes::statusError));
+   m_scidLldfWarning            = pStatusCenter->RegisterCallback( new pgsLldfWarningStatusCallback(m_pBroker) );
    
    return S_OK;
 }
@@ -2029,16 +1988,16 @@ Float64 CEngAgentImp::GetMomentDistFactor(SpanIndexType span,GirderIndexType gdr
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
+
+   ValidateLiveLoadDistributionFactors(span,gdr);
 
    if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
-      pgsTypes::GirderLocation gl = pSpan->IsExteriorGirder(gdr) ? pgsTypes::Exterior : pgsTypes::Interior;
-      return pSpan->GetLLDFPosMoment(ls,gl);
+      const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
+      return pSpan->GetLLDFPosMoment(gdr,ls);
    }
    else
    {
-      ValidateLiveLoadDistributionFactors(span,gdr);
       return m_pDistFactorEngineer->GetMomentDF(span,gdr,ls);
    }
 }
@@ -2047,16 +2006,16 @@ Float64 CEngAgentImp::GetMomentDistFactor(SpanIndexType span,GirderIndexType gdr
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
+
+   ValidateLiveLoadDistributionFactors(span,gdr);
 
    if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
-      pgsTypes::GirderLocation gl = pSpan->IsExteriorGirder(gdr) ? pgsTypes::Exterior : pgsTypes::Interior;
-      return pSpan->GetLLDFPosMoment(ls,gl);
+      const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
+      return pSpan->GetLLDFPosMoment(gdr,ls);
    }
    else
    {
-      ValidateLiveLoadDistributionFactors(span,gdr);
       return m_pDistFactorEngineer->GetMomentDF(span,gdr,ls,fcgdr);
    }
 }
@@ -2065,16 +2024,16 @@ Float64 CEngAgentImp::GetNegMomentDistFactor(SpanIndexType span,GirderIndexType 
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
+
+   ValidateLiveLoadDistributionFactors(span,gdr);
 
    if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
-      pgsTypes::GirderLocation gl = pSpan->IsExteriorGirder(gdr) ? pgsTypes::Exterior : pgsTypes::Interior;
-      return pSpan->GetLLDFNegMoment(ls,gl);
+      const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
+      return pSpan->GetLLDFNegMoment(gdr,ls);
    }
    else
    {
-      ValidateLiveLoadDistributionFactors(span,gdr);
       return m_pDistFactorEngineer->GetMomentDF(span,gdr,ls);
    }
 }
@@ -2083,16 +2042,16 @@ Float64 CEngAgentImp::GetNegMomentDistFactor(SpanIndexType span,GirderIndexType 
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
+
+   ValidateLiveLoadDistributionFactors(span,gdr);
 
    if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
-      pgsTypes::GirderLocation gl = pSpan->IsExteriorGirder(gdr) ? pgsTypes::Exterior : pgsTypes::Interior;
-      return pSpan->GetLLDFNegMoment(ls,gl);
+      const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
+      return pSpan->GetLLDFNegMoment(gdr,ls);
    }
    else
    {
-      ValidateLiveLoadDistributionFactors(span,gdr);
       return m_pDistFactorEngineer->GetMomentDF(span,gdr,ls,fcgdr);
    }
 }
@@ -2104,14 +2063,14 @@ Float64 CEngAgentImp::GetNegMomentDistFactorAtPier(PierIndexType pier,GirderInde
    const CPierData* pPier = pBridgeDesc->GetPier(pier);
    const CSpanData* pSpan = (pierFace == pgsTypes::Back) ? pPier->GetPrevSpan() : pPier->GetNextSpan();
 
+   ValidateLiveLoadDistributionFactors(pSpan->GetSpanIndex(),gdr);
+
    if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
-      pgsTypes::GirderLocation gl = pSpan->IsExteriorGirder(gdr) ? pgsTypes::Exterior : pgsTypes::Interior;
-      return pPier->GetLLDFNegMoment(ls,gl);
+      return pPier->GetLLDFNegMoment(gdr, ls);
    }
    else
    {
-      ValidateLiveLoadDistributionFactors(pSpan->GetSpanIndex(),gdr);
       return m_pDistFactorEngineer->GetNegMomentDF(pier,gdr,ls,pierFace);
    }
 }
@@ -2123,14 +2082,14 @@ Float64 CEngAgentImp::GetNegMomentDistFactorAtPier(PierIndexType pier,GirderInde
    const CPierData* pPier = pBridgeDesc->GetPier(pier);
    const CSpanData* pSpan = (pierFace == pgsTypes::Back) ? pPier->GetPrevSpan() : pPier->GetNextSpan();
 
+   ValidateLiveLoadDistributionFactors(pSpan->GetSpanIndex(),gdr);
+
    if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
-      pgsTypes::GirderLocation gl = pSpan->IsExteriorGirder(gdr) ? pgsTypes::Exterior : pgsTypes::Interior;
-      return pPier->GetLLDFNegMoment(ls,gl);
+      return pPier->GetLLDFNegMoment(gdr, ls);
    }
    else
    {
-      ValidateLiveLoadDistributionFactors(pSpan->GetSpanIndex(),gdr);
       return m_pDistFactorEngineer->GetNegMomentDF(pier,gdr,ls,pierFace,fcgdr);
    }
 }
@@ -2141,14 +2100,15 @@ Float64 CEngAgentImp::GetShearDistFactor(SpanIndexType span,GirderIndexType gdr,
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
 
+   ValidateLiveLoadDistributionFactors(span,gdr);
+
    if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
       pgsTypes::GirderLocation gl = pSpan->IsExteriorGirder(gdr) ? pgsTypes::Exterior : pgsTypes::Interior;
-      return pSpan->GetLLDFShear(ls,gl);
+      return pSpan->GetLLDFShear(gdr,ls);
    }
    else
    {
-      ValidateLiveLoadDistributionFactors(span,gdr);
       return m_pDistFactorEngineer->GetShearDF(span,gdr,ls);
    }
 }
@@ -2159,14 +2119,15 @@ Float64 CEngAgentImp::GetShearDistFactor(SpanIndexType span,GirderIndexType gdr,
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
 
+   ValidateLiveLoadDistributionFactors(span,gdr);
+
    if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
       pgsTypes::GirderLocation gl = pSpan->IsExteriorGirder(gdr) ? pgsTypes::Exterior : pgsTypes::Interior;
-      return pSpan->GetLLDFShear(ls,gl);
+      return pSpan->GetLLDFShear(gdr,ls);
    }
    else
    {
-      ValidateLiveLoadDistributionFactors(span,gdr);
       return m_pDistFactorEngineer->GetShearDF(span,gdr,ls,fcgdr);
    }
 }
@@ -2178,14 +2139,14 @@ Float64 CEngAgentImp::GetReactionDistFactor(PierIndexType pier,GirderIndexType g
    const CPierData* pPier = pBridgeDesc->GetPier(pier);
    const CSpanData* pSpan = (pier == pBridgeDesc->GetPierCount()-1 ? pPier->GetPrevSpan() : pPier->GetNextSpan());
 
+   ValidateLiveLoadDistributionFactors(pier,gdr);
+
    if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
-      pgsTypes::GirderLocation gl = pSpan->IsExteriorGirder(gdr) ? pgsTypes::Exterior : pgsTypes::Interior;
-      return pPier->GetLLDFReaction(ls,gl);
+      return pPier->GetLLDFReaction(gdr, ls);
    }
    else
    {
-      ValidateLiveLoadDistributionFactors(pier,gdr);
       return m_pDistFactorEngineer->GetReactionDF(pier,gdr,ls);
    }
 }
@@ -2197,14 +2158,14 @@ Float64 CEngAgentImp::GetReactionDistFactor(PierIndexType pier,GirderIndexType g
    const CPierData* pPier = pBridgeDesc->GetPier(pier);
    const CSpanData* pSpan = (pier == pBridgeDesc->GetPierCount()-1 ? pPier->GetPrevSpan() : pPier->GetNextSpan());
 
+   ValidateLiveLoadDistributionFactors(pSpan->GetSpanIndex(),gdr);
+
    if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
-      pgsTypes::GirderLocation gl = pSpan->IsExteriorGirder(gdr) ? pgsTypes::Exterior : pgsTypes::Interior;
-      return pPier->GetLLDFReaction(ls,gl);
+      return pPier->GetLLDFReaction(gdr, ls);
    }
    else
    {
-      ValidateLiveLoadDistributionFactors(pSpan->GetSpanIndex(),gdr);
       return m_pDistFactorEngineer->GetReactionDF(pier,gdr,ls,fcgdr);
    }
 }
@@ -2375,9 +2336,11 @@ void CEngAgentImp::ReportDistributionFactors(SpanIndexType span,GirderIndexType 
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   ValidateLiveLoadDistributionFactors(span,gdr);
+
    if ( pBridgeDesc->GetDistributionFactorMethod() != pgsTypes::DirectlyInput )
    {
-      ValidateLiveLoadDistributionFactors(span,gdr);
       m_pDistFactorEngineer->BuildReport(span,gdr,pChapter,pDisplayUnits);
    }
    else
@@ -2462,24 +2425,24 @@ void CEngAgentImp::ReportDistributionFactors(SpanIndexType span,GirderIndexType 
          pPier->IsIntegral(&bIntegralOnLeft,&bIntegralOnRight);
 
          if ( bContinuous || bIntegralOnLeft || bIntegralOnRight)
-            (*table)(row,2) << scalar.SetValue( pPier->GetLLDFNegMoment(pgsTypes::StrengthI,gl) );
+            (*table)(row,2) << scalar.SetValue( pPier->GetLLDFNegMoment(gdr, pgsTypes::StrengthI) );
          else
             (*table)(row,2) << _T("");
 
          (*table)(row,3) << _T("");
-         (*table)(row,4) << scalar.SetValue( pPier->GetLLDFReaction(pgsTypes::StrengthI,gl) );
+         (*table)(row,4) << scalar.SetValue( pPier->GetLLDFReaction(gdr, pgsTypes::StrengthI) );
 
          if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
          {
             (*table)(row,5) << _T("");
 
             if ( bContinuous || bIntegralOnLeft || bIntegralOnRight)
-               (*table)(row,6) << scalar.SetValue( pPier->GetLLDFNegMoment(pgsTypes::FatigueI,gl) );
+               (*table)(row,6) << scalar.SetValue( pPier->GetLLDFNegMoment(gdr, pgsTypes::FatigueI) );
             else
                (*table)(row,6) << _T("");
 
             (*table)(row,7) << _T("");
-            (*table)(row,8) << scalar.SetValue( pPier->GetLLDFReaction(pgsTypes::FatigueI,gl) );
+            (*table)(row,8) << scalar.SetValue( pPier->GetLLDFReaction(gdr, pgsTypes::FatigueI) );
          }
 
          row++;
@@ -2499,26 +2462,26 @@ void CEngAgentImp::ReportDistributionFactors(SpanIndexType span,GirderIndexType 
             bool bIntegralEnd = bIntegralOnLeft;
 
             (*table)(row,0) << _T("Span ") << LABEL_SPAN(spanIdx);
-            (*table)(row,1) << scalar.SetValue( pSpan->GetLLDFPosMoment(pgsTypes::StrengthI,gl) );
+            (*table)(row,1) << scalar.SetValue( pSpan->GetLLDFPosMoment(gdr,pgsTypes::StrengthI) );
             
             if ( bContinuousStart || bContinuousEnd || bIntegralStart || bIntegralEnd )
-               (*table)(row,2) << scalar.SetValue( pSpan->GetLLDFNegMoment(pgsTypes::StrengthI,gl) );
+               (*table)(row,2) << scalar.SetValue( pSpan->GetLLDFNegMoment(gdr,pgsTypes::StrengthI) );
             else
                (*table)(row,2) << _T("");
 
-            (*table)(row,3) << scalar.SetValue( pSpan->GetLLDFShear(pgsTypes::StrengthI,gl) );
+            (*table)(row,3) << scalar.SetValue( pSpan->GetLLDFShear(gdr,pgsTypes::StrengthI) );
             (*table)(row,4) << _T("");
 
             if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
             {
-               (*table)(row,5) << scalar.SetValue( pSpan->GetLLDFPosMoment(pgsTypes::FatigueI,gl) );
+               (*table)(row,5) << scalar.SetValue( pSpan->GetLLDFPosMoment(gdr,pgsTypes::FatigueI) );
                
                if ( bContinuousStart || bContinuousEnd || bIntegralStart || bIntegralEnd )
-                  (*table)(row,6) << scalar.SetValue( pSpan->GetLLDFNegMoment(pgsTypes::FatigueI,gl) );
+                  (*table)(row,6) << scalar.SetValue( pSpan->GetLLDFNegMoment(gdr,pgsTypes::FatigueI) );
                else
                   (*table)(row,6) << _T("");
 
-               (*table)(row,7) << scalar.SetValue( pSpan->GetLLDFShear(pgsTypes::FatigueI,gl) );
+               (*table)(row,7) << scalar.SetValue( pSpan->GetLLDFShear(gdr,pgsTypes::FatigueI) );
                (*table)(row,8) << _T("");
             }
 
@@ -2546,6 +2509,17 @@ bool CEngAgentImp::GetDFResultsEx(SpanIndexType span, GirderIndexType gdr,pgsTyp
    return m_pDistFactorEngineer->GetDFResultsEx(span, gdr, ls,
                                gpM, gpM1, gpM2, gnM, gnM1, gnM2,
                                gV,  gV1, gV2, gR, gR1, gR2 ); 
+}
+
+Float64 CEngAgentImp::GetDeflectionDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx)
+{
+   GET_IFACE(IBridge,pBridge);
+   GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
+   Uint32 nLanes = GetNumberOfDesignLanes(spanIdx);
+   Float64 mpf = lrfdUtility::GetMultiplePresenceFactor(nLanes);
+   Float64 gD = mpf*nLanes/nGirders;
+
+   return gD;
 }
 
 Uint32 CEngAgentImp::GetNumberOfDesignLanes(SpanIndexType spanIdx)

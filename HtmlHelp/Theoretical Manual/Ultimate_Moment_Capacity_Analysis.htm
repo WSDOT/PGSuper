@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=3746>
-<meta name=layout-width content=938>
+<meta name=layout-height content=4168>
+<meta name=layout-width content=774>
 
 
 <!--(Links)=========================================================-->
@@ -88,7 +88,7 @@
 </ol>
 
 <p>Note that maximum allowable prestressing requirements are still checked 
- for this method per LRFD 5.7.7.3.3.1. Sections that do not pass this criteria 
+ for this method per LRFD 5.7.3.3.1. Sections that do not pass this criteria 
  will fail the moment capacity specification check.</p>
 
 <h3>Solution Method</h3>
@@ -109,17 +109,12 @@
  flow chart illustrates the high level procedure for this method:</p>
 
 <p style="text-align: center;"
-	align=center><img src="momentcapacityflowchart.jpg"
-						style="width: 237px;
-								height: 317px;
-								margin-top: 0px;
-								margin-bottom: 0px;
-								margin-left: 0px;
-								margin-right: 0px;
-								border-style: none;
-								border-style: none;"
-						width=237
-						height=317
+	align=center><img src="../image1.gif"
+						style="border: none;
+								width: 193px;
+								height: 395px;"
+						width=193
+						height=395
 						border=0></p>
 
 <p>The Figure below shows the equilibrium state from which the nominal 
@@ -129,13 +124,13 @@
 	align=center><img src="Equilibrium.gif"
 						x-maintain-ratio=TRUE
 						style="border: none;
-								border-style: none;
-								width: 622px;
-								height: 214px;
 								float: none;
-								border-style: none;"
-						width=622
-						height=214
+								border-style: none;
+								border-style: none;
+								width: 557px;
+								height: 220px;"
+						width=557
+						height=220
 						border=0></p>
 
 <p>&nbsp;</p>
@@ -151,9 +146,12 @@
  forces.</p>
 
 <p class=Tip>Note that d<span style="vertical-align: Sub;">e</span> is 
- the &quot;effective depth from extreme compression fiber to the centroid 
- of the tensile force in the tensile reinforcement&quot;. This is not the 
- same as the distance to the geometric centroid of the prestressing strands.</p>
+ the &quot;effective depth from the extreme compression fiber to the centroid 
+ of the tensile force in the tensile reinforcement&quot;. Strands that 
+ are further away from the extreme compression fibers are strained more 
+ that those strands that are closer. This results in the centroid of the 
+ resultant tensile force being lower in the cross section than the geometric 
+ centroid of the prestressing strands..</p>
 
 <h3>Cross Section Geometry and Materials Used for Calculating Capacities</h3>
 
@@ -172,8 +170,16 @@
 <h3>Stress in the Prestressing Steel</h3>
 
 <p>As mentioned above, the stress/strain material model for the prestressing 
- steel is computed using the &quot;power method&quot;. The equation, and 
- a graph, for grade 270 steel are given below.</p>
+ steel is computed using the &quot;power method&quot; where <!--kadov_tag{{<spaces>}}-->&nbsp;<font 
+ style="font-family: Symbol;"
+	face=Symbol><!--kadov_tag{{</spaces>}}-->e<span style="vertical-align: sub; font-family: 'SuperScript VNI2';">ps</span></font><span 
+ style="vertical-align: sub;"> = </span><!--kadov_tag{{<spaces>}}-->&nbsp;<font 
+ style="font-family: Symbol;"
+	face=Symbol><!--kadov_tag{{</spaces>}}-->e<span style="vertical-align: sub;">1</font> 
+ + </span><!--kadov_tag{{<spaces>}}-->&nbsp;<font style="font-family: Symbol;"
+													face=Symbol><!--kadov_tag{{</spaces>}}-->e</font><span 
+ style="vertical-align: sub;">2</span>. The equation, and a graph, for 
+ grade 270 steel are given below.</p>
 
 <p><img src="PrestressStress.gif"
 		style="width: 480px;
@@ -188,27 +194,19 @@
 		height=105
 		border=0></p>
 
-<p><img src="PowerCurve.gif"
-		x-maintain-ratio=TRUE
-		style="width: 388px;
-				height: 360px;
-				border-left-style: Solid;
-				border-top-style: Solid;
-				border-right-style: Solid;
-				border-bottom-style: Solid;
-				border-left-width: 2px;
-				border-right-width: 2px;
-				border-top-width: 2px;
-				border-bottom-width: 2px;
-				float: none;"
-		width=388
-		height=360
-		border=2></p>
+<p><img src="../image2.jpg"
+		style="border: none;
+				width: 577px;
+				height: 389px;
+				border-style: none;"
+		width=577
+		height=389
+		border=0></p>
 
 <h3>Stress in the Concrete</h3>
 
-<p>The non-linear concrete stress-strain relationship is taken from Collins 
- and Mitchell (Reference 2). The formulas are shown below:</p>
+<p>The stress in the concrete, f'c, is determined from the formulas shown 
+ below (see reference 2):</p>
 
 <p><img src="ConcreteStress.gif"
 		style="width: 344px;
@@ -227,20 +225,20 @@
  the following figure.</p>
 
 <p style="text-align: left;"
-	align=left><img src="ConcreteStressStrain.gif"
-					style="width: 425px;
-							height: 315px;
-							margin-top: 0px;
-							margin-bottom: 0px;
-							margin-left: 0px;
-							margin-right: 0px;
-							border-style: none;
+	align=left><img src="../image1.jpg"
+					style="border: none;
+							width: 727px;
+							height: 467px;
 							border-style: none;"
-					width=425
-					height=315
+					width=727
+					height=467
 					border=0></p>
 
 <h3>Maximum Reinforcement Limits</h3>
+
+<p class=Tip>NOTE: The information in this section is only applicable to 
+ PGSuper projects with the Design Criteria based on the AASHTO LRFD Bridge 
+ Design Specifications, 3rd Edition with 2005 interim provisions and earlier.</p>
 
 <p>The maximum amount of reinforcement is limited such that c/d<span style="vertical-align: sub;">e</span> 
  &lt;= 0.42. When this ratio is exceeded, the maximum design moment capacity 
@@ -254,8 +252,8 @@
 
 <p>If the design criteria in this program is set to use the WSDOT BDM method 
  of computing the capacity of over-reinforced sections, the nominal capacity 
- will be computed using the strain compatibiliy analysis as described above. 
- Then a reduced capacity reduction factor will be computed by</p>
+ will be computed using the strain compatibility analysis as described 
+ above. Then a reduced capacity reduction factor will be computed by</p>
 
 <p><img src="CapacityReductionEquation.gif"
 		style="width: 154px;
@@ -271,7 +269,7 @@
 		border=0>.</p>
 
 <p>The capacity reduction factor varies between 0.75 and 1.0. See Reference 
- 1 for a detailed discuss of this calcuation method.</p>
+ 1 for a detailed discuss of this calculation method.</p>
 
 <h2>References</h2>
 

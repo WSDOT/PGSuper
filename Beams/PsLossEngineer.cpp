@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -119,25 +119,11 @@ LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInt
 {
    LOSSDETAILS details;
 
-   GET_IFACE(IProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
-
    SpanIndexType span  = poi.GetSpan();
    GirderIndexType gdr = poi.GetGirder();
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const unitmgtLengthData& length = pDisplayUnits->GetSpanLengthUnit();
-
-   std::_tostringstream os;
-   os << _T("Computing prestress losses Span ")
-      << LABEL_SPAN(span) << _T(" Girder ")
-      << LABEL_GIRDER(gdr) << _T(" at ")
-      << std::setw(length.Width)
-      << std::setprecision(length.Precision) 
-      << ::ConvertFromSysUnits(poi.GetDistFromStart(),length.UnitOfMeasure) << _T(" ") 
-      << length.UnitOfMeasure.UnitTag() << _T(" from start of girder") << std::ends;
-
-   pProgress->UpdateMessage( os.str().c_str() );
 
    GET_IFACE(ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();

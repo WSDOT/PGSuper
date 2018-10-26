@@ -69,8 +69,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,4,2,0
- PRODUCTVERSION 2,4,2,0
+ FILEVERSION 2,5,0,0
+ PRODUCTVERSION 2,5,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -88,12 +88,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper Reporting"
-            VALUE "FileVersion", "2.4.2.0"
+            VALUE "FileVersion", "2.5.0.0"
             VALUE "InternalName", "Reporting"
-            VALUE "LegalCopyright", "Copyright © 1999-2010, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2011, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperReporting.dll"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.4.2.0"
+            VALUE "ProductVersion", "2.5.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -142,6 +142,21 @@ BEGIN
     LTEXT           "Static",IDC_REPORT_TITLE,7,9,225,8
 END
 
+IDD_MULTIGIRDERREPORT DIALOGEX 0, 0, 340, 294
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Report Options"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Select Girder(s)",IDC_GROUP,7,17,326,133
+    LISTBOX         IDC_LIST,17,167,301,92,LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,40,273,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,95,273,50,14
+    PUSHBUTTON      "Help",IDHELP,150,273,50,14
+    CONTROL         "Custom1",IDC_SELECT_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,14,28,311,111
+    LTEXT           "Static",IDC_REPORT_TITLE,7,7,225,8
+    GROUPBOX        "Select Chapters to be Included in this Report",IDC_STATIC,7,154,326,113
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -166,6 +181,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 226
     END
+
+    IDD_MULTIGIRDERREPORT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 333
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 287
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -178,6 +201,7 @@ END
 STRINGTABLE 
 BEGIN
     IDS_E_NOCHAPTERS        "Please select at least one chapter for the report."
+    IDS_E_NOGIRDERS         "Please select at least one girder for the report."
 END
 
 #endif    // English (U.S.) resources

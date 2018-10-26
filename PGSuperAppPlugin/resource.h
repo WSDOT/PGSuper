@@ -160,6 +160,9 @@
 #define IDI_LIVELOAD                    314
 #define IDI_RF                          315
 #define IDI_COPY_PROPERTIES             316
+#define IDD_MULTI_GIRDER_SELECT         317
+#define IDR_COPY_PASTE                  318
+#define IDD_LLDF_FILL                   319
 #define IDR_PGSUPER_TEMPLATE_ICON       500
 #define IDC_BRIDGE                      1000
 #define IDC_BULB                        1001
@@ -246,6 +249,7 @@
 #define IDC_OLAY_WEIGHT_LABEL           1085
 #define IDC_GIRDER                      1086
 #define IDC_SLAB_MA                     1087
+#define IDC_GIRDER2                     1087
 #define IDC_OLAY_DEPTH_LABEL            1088
 #define IDC_DETAIL_STIRRUPS             1089
 #define IDC_LOAD_CASE                   1090
@@ -324,6 +328,8 @@
 #define IDC_SECTION_CUT                 1161
 #define IDC_GRID                        1162
 #define IDC_BUTTON1                     1163
+#define IDC_SELECT_GIRDERS              1163
+#define IDC_LLDF_FILL2                  1163
 #define IDC_PRINT                       1164
 #define IDC_VIEWDETAILS                 1165
 #define IDC_COPY_MATERIAL               1166
@@ -572,9 +578,12 @@
 #define IDC_PERMIT_TYPE                 1407
 #define IDC_CONDITION_FACTOR_TYPE       1407
 #define IDC_CONCRETE_TYPE               1407
+#define IDC_GIRDER_SPAN                 1407
 #define IDC_GIRDER_ORIENTATION          1408
+#define IDC_GIRDER_GIRDER               1408
 #define IDC_PIER                        1409
 #define IDC_HP_COMBO_END                1410
+#define IDC_PIER_GIRDER                 1410
 #define IDC_TOP_MAT_BAR                 1411
 #define IDC_UPDATE_FREQUENCY            1412
 #define IDC_OVERHANG_TAPER              1413
@@ -841,14 +850,20 @@
 #define IDC_RIGHT_INTERIOR_BARRIER      1605
 #define IDC_TEMP_STRAND_SIZE_LABEL      1605
 #define IDC_LEFT_SIDEWALK_RIGHT_DEPTH_LABEL 1606
+#define IDC_SELECT_GRID                 1606
 #define IDC_RIGHT_SIDEWALK_WIDTH        1607
+#define IDC_ADIM_STATIC                 1607
 #define IDC_GIRDERNAME_NOTE             1608
 #define IDC_LEFT_CONCRETE_TYPE_LABEL    1608
 #define IDC_RIGHT_SIDEWALK_WIDTH_UNIT   1609
+#define IDC_PIER_RADIO                  1609
 #define IDC_COPY_GIRDER                 1610
 #define IDC_RIGHT_CONCRETE_TYPE_LABEL   1610
+#define IDC_FILL_STATIC                 1610
 #define IDC_RIGHT_SIDEWALK_WIDTH_LABEL  1611
+#define IDC_GIRDER_GIRDER_STATIC        1611
 #define IDC_LABEL                       1612
+#define IDC_PIER_GIRDER_STATIC          1612
 #define IDC_RIGHT_SIDEWALK_LEFT_DEPTH_LABEL 1613
 #define IDC_TEXT                        1614
 #define IDC_RIGHT_SIDEWALK_RIGHT_DEPTH_LABEL 1615
@@ -865,6 +880,7 @@
 #define IDC_PREV_PIER_GIRDER_SPACING_LABEL 1626
 #define IDC_NEXT_PIER_GIRDER_SPACING_LABEL 1627
 #define IDC_ROA_STATIC                  1628
+#define IDC_ROA_STATIC2                 1629
 #define IDC_PREV_SPAN_CONSTANT_SPACING_NOTE 1630
 #define IDC_NEXT_SPAN_CONSTANT_SPACING_NOTE 1631
 #define IDC_RADIO_INPUT                 1632
@@ -934,7 +950,11 @@
 #define IDC_NEXT_REF_GIRDER_LABEL       1708
 #define IDC_NEXT_REF_GIRDER_FROM        1709
 #define IDC_RADIO1                      1710
+#define IDC_RADIO_SINGLE                1710
+#define IDC_GIRDER_RADIO                1710
+#define IDC_LLDF_SINGLE_VALUE           1710
 #define IDC_ALPHA                       1711
+#define IDC_RADIO_MULTIPLE              1711
 #define IDS_TEMPLATE_FILE_SUFFIX        1712
 #define IDC_ADIM_START_LABEL            1714
 #define IDC_ADIM_START_UNIT             1716
@@ -954,6 +974,8 @@
 #define IDC_COMBO4                      1731
 #define IDC_TO_GIRDER                   1732
 #define IDC_STRENGTH_GRID               1734
+#define IDC_LLDF_GIRDERS_TABW           1734
+#define IDC_LLDF_PIERS_TABW             1735
 #define IDC_FATIGUE_GRID                1736
 #define IDC_STRENGTH_LABEL              1738
 #define IDS_E_RPTUPDATE                 1739
@@ -1132,9 +1154,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        317
+#define _APS_NEXT_RESOURCE_VALUE        321
 #define _APS_NEXT_COMMAND_VALUE         33235
-#define _APS_NEXT_CONTROL_VALUE         1606
+#define _APS_NEXT_CONTROL_VALUE         1614
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif

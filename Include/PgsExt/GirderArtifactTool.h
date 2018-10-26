@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -244,16 +244,16 @@ inline void list_vertical_shear_failures(IBroker* pBroker,FailureList& rFailures
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
-   std::vector<pgsPointOfInterest> vPoi;
-   vPoi = pIPoi->GetPointsOfInterest( span, girder, pgsTypes::BridgeSite3, POI_SHEAR|POI_TABULAR);
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( span, girder, pgsTypes::BridgeSite3, POI_SHEAR|POI_TABULAR) );
 
    bool bContinue1 = true;
    bool bContinue2 = true;
 
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = vPoi.begin(); i != vPoi.end(); i++ )
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
-      const pgsPointOfInterest& poi = *i;
+      const pgsPointOfInterest& poi = *poiIter;
       const pgsStirrupCheckAtPoisArtifact* pPoiArtifacts = pStirrups->GetStirrupCheckAtPoisArtifact( pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,ls,poi.GetDistFromStart()) );
       const pgsVerticalShearArtifact* pShear = pPoiArtifacts->GetVerticalShearArtifact();
       const pgsLongReinfShearArtifact* pLongReinf = pPoiArtifacts->GetLongReinfShearArtifact();
@@ -280,13 +280,13 @@ inline void list_horizontal_shear_failures(IBroker* pBroker,FailureList& rFailur
    const pgsStirrupCheckArtifact *pStirrups = pArtifact->GetStirrupCheckArtifact();
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
-   std::vector<pgsPointOfInterest> vPoi;
-   vPoi = pIPoi->GetPointsOfInterest( span, girder, pgsTypes::BridgeSite3, POI_SHEAR|POI_TABULAR);
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( span, girder, pgsTypes::BridgeSite3, POI_SHEAR|POI_TABULAR) );
 
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = vPoi.begin(); i != vPoi.end(); i++ )
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
-      const pgsPointOfInterest& poi = *i;
+      const pgsPointOfInterest& poi = *poiIter;
       const pgsStirrupCheckAtPoisArtifact* pPoiArtifacts = pStirrups->GetStirrupCheckAtPoisArtifact( pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,ls,poi.GetDistFromStart()) );
       const pgsHorizontalShearArtifact* pShear = pPoiArtifacts->GetHorizontalShearArtifact();
 
@@ -303,13 +303,13 @@ inline void list_stirrup_detailing_failures(IBroker* pBroker,FailureList& rFailu
    const pgsStirrupCheckArtifact *pStirrups = pArtifact->GetStirrupCheckArtifact();
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
-   std::vector<pgsPointOfInterest> vPoi;
-   vPoi = pIPoi->GetPointsOfInterest( span, girder, pgsTypes::BridgeSite3, POI_SHEAR|POI_TABULAR);
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( span, girder, pgsTypes::BridgeSite3, POI_SHEAR|POI_TABULAR) );
 
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = vPoi.begin(); i != vPoi.end(); i++ )
+   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
+   for ( ; poiIter != poiIterEnd; poiIter++ )
    {
-      const pgsPointOfInterest& poi = *i;
+      const pgsPointOfInterest& poi = *poiIter;
       const pgsStirrupCheckAtPoisArtifact* pPoiArtifacts = pStirrups->GetStirrupCheckAtPoisArtifact( pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,ls,poi.GetDistFromStart()) );
       const pgsStirrupDetailArtifact* pShear = pPoiArtifacts->GetStirrupDetailArtifact();
  

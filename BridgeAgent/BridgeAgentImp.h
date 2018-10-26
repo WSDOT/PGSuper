@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -117,6 +117,7 @@ END_CONNECTION_POINT_MAP()
    StatusCallbackIDType m_scidInformationalError;
    StatusCallbackIDType m_scidInformationalWarning;
    StatusCallbackIDType m_scidBridgeDescriptionError;
+   StatusCallbackIDType m_scidBridgeDescriptionWarning;
    StatusCallbackIDType m_scidAlignmentWarning;
    StatusCallbackIDType m_scidAlignmentError;
    StatusCallbackIDType m_scidGirderDescriptionWarning;
@@ -495,7 +496,7 @@ public:
 // IPointOfInterest
 public:
    virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr);
-   virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,std::vector<pgsTypes::Stage> stages,PoiAttributeType attrib,Uint32 mode = POIFIND_AND);
+   virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,const std::vector<pgsTypes::Stage>& stages,PoiAttributeType attrib,Uint32 mode = POIFIND_AND);
    virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,PoiAttributeType attrib,Uint32 mode = POIFIND_AND);
    virtual std::vector<pgsPointOfInterest> GetTenthPointPOIs(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr);
    virtual void GetCriticalSection(pgsTypes::LimitState limitState,SpanIndexType span,GirderIndexType gdr,pgsPointOfInterest* pLeft,pgsPointOfInterest* pRight);

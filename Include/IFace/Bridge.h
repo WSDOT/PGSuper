@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -69,6 +69,10 @@ interface IRebarSectionItem;
 
 struct IntermedateDiaphragm
 {
+   IntermedateDiaphragm() :
+   m_bCompute(false),P(0),H(0),T(0),W(0),Location(0)
+   {
+   }
    bool m_bCompute; // if true, compuated based on H, T, and W, other use P
    Float64 P; // weight
    Float64 H; // height
@@ -79,6 +83,9 @@ struct IntermedateDiaphragm
 
 struct SpaceBetweenGirder
 {
+   SpaceBetweenGirder() : firstGdrIdx(INVALID_INDEX),lastGdrIdx(INVALID_INDEX),spacing(0)
+   {
+   }
    GirderIndexType firstGdrIdx, lastGdrIdx;
    Float64 spacing;
 };
@@ -595,7 +602,7 @@ interface IPointOfInterest : IUnknown
    virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,PoiAttributeType attrib,Uint32 mode = POIFIND_AND) = 0;
 
    // Returns all points of interest for a span/girder that include the attrib attributes in all of the the specified stages
-   virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,std::vector<pgsTypes::Stage> stages,PoiAttributeType attrib,Uint32 mode = POIFIND_AND) = 0;
+   virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,const std::vector<pgsTypes::Stage>& stages,PoiAttributeType attrib,Uint32 mode = POIFIND_AND) = 0;
 
    // Returns all of the 10th point points of interest for a span/girder
    virtual std::vector<pgsPointOfInterest> GetTenthPointPOIs(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr) = 0;

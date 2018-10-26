@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -96,6 +96,9 @@ interface ILiveLoadDistributionFactors : IUnknown
                                Float64* gnM, Float64* gnM1, Float64* gnM2,     // neg moment
                                Float64* gV,  Float64* gV1,  Float64* gV2,      // shear 
                                Float64* gR,  Float64* gR1,  Float64* gR2 ) = 0;// reaction
+
+   // returns mpf(#lanes/#beams)
+   virtual Float64 GetDeflectionDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
 };
 
 #endif // INCLUDED_IFACE_DISTRIBUTIONFACTORS_H_

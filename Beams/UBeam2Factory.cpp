@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -62,6 +62,7 @@ HRESULT CUBeam2Factory::FinalConstruct()
    m_DimNames.push_back(_T("W5"));
    m_DimNames.push_back(_T("W6"));
    m_DimNames.push_back(_T("W7"));
+   m_DimNames.push_back(_T("EndBlockLength"));
 
    std::sort(m_DimNames.begin(),m_DimNames.end());
 
@@ -80,6 +81,7 @@ HRESULT CUBeam2Factory::FinalConstruct()
    m_DefaultDims.push_back(::ConvertToSysUnits( 8.25,unitMeasure::Inch)); // W5
    m_DefaultDims.push_back(::ConvertToSysUnits(15.75,unitMeasure::Inch)); // W6
    m_DefaultDims.push_back(::ConvertToSysUnits( 1.75,unitMeasure::Inch)); // W7
+   m_DefaultDims.push_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // End Block Length
 
    // SI Units
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // C1
@@ -96,6 +98,7 @@ HRESULT CUBeam2Factory::FinalConstruct()
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W5
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W6
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W7
+   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // End Block Length
 
    // US Units
    m_DimUnits[1].push_back(&unitMeasure::Inch); // C1
@@ -112,6 +115,7 @@ HRESULT CUBeam2Factory::FinalConstruct()
    m_DimUnits[1].push_back(&unitMeasure::Inch); // W5
    m_DimUnits[1].push_back(&unitMeasure::Inch); // W6
    m_DimUnits[1].push_back(&unitMeasure::Inch); // W7
+   m_DimUnits[1].push_back(&unitMeasure::Inch); // End Block Length
 
    return S_OK;
 }
@@ -135,8 +139,8 @@ void CUBeam2Factory::CreateGirderProfile(IBroker* pBroker,long statusGroupID,Spa
 
    double w1, w2, w3, w4, w5, w6, w7;
    double d1, d2, d3, d4, d5, d6;
-   double c1;
-   GetDimensions(dimensions,d1, d2, d3, d4, d5, d6, w1, w2, w3, w4, w5, w6, w7, c1);
+   double c1, EndBlockLength;
+   GetDimensions(dimensions,d1, d2, d3, d4, d5, d6, w1, w2, w3, w4, w5, w6, w7, c1, EndBlockLength);
 
    Float64 height = d1;
 
@@ -158,8 +162,8 @@ void CUBeam2Factory::ConfigureShape(const IBeamFactory::Dimensions& dimensions, 
 {
    double w1, w2, w3, w4, w5, w6, w7;
    double d1, d2, d3, d4, d5, d6;
-   double c1;
-   GetDimensions(dimensions,d1, d2, d3, d4, d5, d6, w1, w2, w3, w4, w5, w6, w7, c1);
+   double c1, EndBlockLength;
+   GetDimensions(dimensions,d1, d2, d3, d4, d5, d6, w1, w2, w3, w4, w5, w6, w7, c1, EndBlockLength);
    beam->put_W1(w1);
    beam->put_W2(w2);
    beam->put_W3(w3);
@@ -180,8 +184,8 @@ void CUBeam2Factory::ConfigureShape(const IBeamFactory::Dimensions& dimensions, 
 
 void CUBeam2Factory::LayoutGirderLine(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
 {
-   CComPtr<IPrismaticSegment> segment;
-   segment.CoCreateInstance(CLSID_PrismaticSegment);
+   CComPtr<IUGirderSection2EndBlockSegment> segment;
+   segment.CoCreateInstance(CLSID_UGirderSection2EndBlockSegment);
 
    // Length of the segments will be measured fractionally
    ssmbr->put_AreSegmentLengthsFractional(VARIANT_TRUE);
@@ -196,10 +200,15 @@ void CUBeam2Factory::LayoutGirderLine(IBroker* pBroker,long statusGroupID,SpanIn
    const GirderLibraryEntry* pGdrEntry = pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
    const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
 
+   Float64 endBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
+   segment->put_EndBlockLength(etStart,endBlockLength);
+   segment->put_EndBlockLength(etEnd,endBlockLength);
+
    CComPtr<IGirderSection> gdrsection;
    CreateGirderSection(pBroker,statusGroupID,spanIdx,gdrIdx,dimensions,&gdrsection);
-   CComQIPtr<IShape> shape(gdrsection);
-   segment->putref_Shape(shape);
+
+   CComQIPtr<IUGirderSection2> section(gdrsection);
+   segment->putref_BeamSection(section);
 
    // Beam materials
    GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
@@ -214,7 +223,6 @@ void CUBeam2Factory::LayoutGirderLine(IBroker* pBroker,long statusGroupID,SpanIn
 
 void CUBeam2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,pgsPoiMgr* pPoiMgr)
 {
-   // This is a prismatic beam so only add section change POI at the start and end of the beam
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 gdrLength = pBridge->GetGirderLength(span,gdr);
 
@@ -256,6 +264,52 @@ void CUBeam2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,SpanIn
 
    pPoiMgr->AddPointOfInterest(poiStart);
    pPoiMgr->AddPointOfInterest(poiEnd);
+
+   // put section breaks just on either side of the end blocks/void interface
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
+   const GirderLibraryEntry* pGirderLib = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdr);
+   Float64 endBlockLength = pGirderLib->GetDimension(_T("EndBlockLength"));
+
+   if ( !IsZero(endBlockLength) )
+   {
+      Float64 delta = 1.5*pPoiMgr->GetTolerance();
+
+      stages.push_back(pgsTypes::CastingYard);
+      stages.push_back(pgsTypes::Lifting);
+      stages.push_back(pgsTypes::Hauling);
+
+      std::vector<pgsTypes::Stage> ebStages;
+      if ( start_length < endBlockLength )
+      {
+         ebStages.push_back(pgsTypes::CastingYard); // end block is after brg... only add to cy stage
+         ebStages.push_back(pgsTypes::Lifting); // end block is after brg... only add to cy stage
+         ebStages.push_back(pgsTypes::Hauling); // end block is after brg... only add to cy stage
+      }
+      else
+      {
+         ebStages = stages; // all stages
+      }
+
+      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,endBlockLength,       POI_SECTCHANGE_LEFTFACE  | POI_TABULAR | POI_GRAPHICAL) );
+      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,endBlockLength+delta, POI_SECTCHANGE_RIGHTFACE | POI_TABULAR | POI_GRAPHICAL) );
+
+
+      if ( end_length < endBlockLength )
+      {
+         ebStages.push_back(pgsTypes::CastingYard); // end block is after brg... only add to cy stage
+         ebStages.push_back(pgsTypes::Lifting); // end block is after brg... only add to cy stage
+         ebStages.push_back(pgsTypes::Hauling); // end block is after brg... only add to cy stage
+      }
+      else
+      {
+         ebStages = stages; // all stages
+      }
+
+      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,gdrLength - (endBlockLength+delta), POI_SECTCHANGE_LEFTFACE  | POI_TABULAR | POI_GRAPHICAL) );
+      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,gdrLength - endBlockLength,         POI_SECTCHANGE_RIGHTFACE | POI_TABULAR | POI_GRAPHICAL) );
+   }
 }
 
 void CUBeam2Factory::CreateDistFactorEngineer(IBroker* pBroker,long statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
@@ -382,8 +436,8 @@ bool CUBeam2Factory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
 {
    double w1, w2, w3, w4, w5, w6, w7;
    double d1, d2, d3, d4, d5, d6;
-   double c1;
-   GetDimensions(dimensions,d1, d2, d3, d4, d5, d6, w1, w2, w3, w4, w5, w6, w7, c1);
+   double c1, EndBlockLength;
+   GetDimensions(dimensions,d1, d2, d3, d4, d5, d6, w1, w2, w3, w4, w5, w6, w7, c1, EndBlockLength);
 
 // D1  0
 // D2  1
@@ -519,7 +573,8 @@ bool CUBeam2Factory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
 void CUBeam2Factory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions)
 {
    std::vector<std::_tstring>::iterator iter;
-   pSave->BeginUnit(_T("UBeam2Dimensions"),1.0);
+   // Version 2.0 - Added EndBlockLength
+   pSave->BeginUnit(_T("UBeam2Dimensions"),2.0);
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
       std::_tstring name = *iter;
@@ -553,9 +608,20 @@ IBeamFactory::Dimensions CUBeam2Factory::LoadSectionDimensions(sysIStructuredLoa
       {
          // failed to read dimension value...
          
-         if ( dimVersion < 2 && parent_version < 3.0 && name == _T("C1") )
+         if ( dimVersion < 2)
          {
-            value = 0.0; // set the default value
+            if( parent_version < 3.0 && name == _T("C1") )
+            {
+               value = 0.0; // set the default value
+            }
+            else if (name == _T("EndBlockLength"))
+            {
+               value = 0.0;
+            }
+            else
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
          else
          {
@@ -573,33 +639,69 @@ IBeamFactory::Dimensions CUBeam2Factory::LoadSectionDimensions(sysIStructuredLoa
 
 bool CUBeam2Factory::IsPrismatic(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx)
 {
-   return true;
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const GirderLibraryEntry* pGdrEntry = pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
+   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
+   Float64 endBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
+
+   return IsZero(endBlockLength) ? true : false;
 }
 
 Float64 CUBeam2Factory::GetVolume(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx)
 {
    GET_IFACE2(pBroker,ISectProp2,pSectProp2);
-   Float64 area = pSectProp2->GetAg(pgsTypes::CastingYard,pgsPointOfInterest(spanIdx,gdrIdx,0.00));
-   
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 Lg = pBridge->GetGirderLength(spanIdx,gdrIdx);
+   GET_IFACE2(pBroker,IPointOfInterest,pPOI);
 
-   Float64 volume = area*Lg;
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_SECTCHANGE,POIFIND_OR);
+   ATLASSERT( 2 <= vPOI.size() );
+   Float64 V = 0;
+   std::vector<pgsPointOfInterest>::iterator iter = vPOI.begin();
+   pgsPointOfInterest prev_poi = *iter;
+   Float64 prev_area = pSectProp2->GetAg(pgsTypes::CastingYard,prev_poi);
+   iter++;
 
-   return volume;
+   for ( ; iter != vPOI.end(); iter++ )
+   {
+      pgsPointOfInterest poi = *iter;
+      Float64 area = pSectProp2->GetAg(pgsTypes::CastingYard,poi);
+
+      Float64 avg_area = (prev_area + area)/2;
+      V += avg_area*(poi.GetDistFromStart() - prev_poi.GetDistFromStart());
+
+      prev_poi = poi;
+      prev_area = area;
+   }
+
+   return V;
 }
 
 Float64 CUBeam2Factory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,bool bReduceForPoorlyVentilatedVoids)
 {
    GET_IFACE2(pBroker,ISectProp2,pSectProp2);
-   Float64 perimeter = pSectProp2->GetPerimeter(pgsPointOfInterest(spanIdx,gdrIdx,0.00));
-   
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 Lg = pBridge->GetGirderLength(spanIdx,gdrIdx);
+   GET_IFACE2(pBroker,IPointOfInterest,pPOI);
 
-   Float64 surface_area = perimeter*Lg;
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_SECTCHANGE,POIFIND_OR);
+   ATLASSERT( 2 <= vPOI.size() );
+   Float64 As = 0;
+   std::vector<pgsPointOfInterest>::iterator iter = vPOI.begin();
+   pgsPointOfInterest prev_poi = *iter;
+   Float64 prev_area = pSectProp2->GetPerimeter(prev_poi);
+   iter++;
 
-   return surface_area;
+   for ( ; iter != vPOI.end(); iter++ )
+   {
+      pgsPointOfInterest poi = *iter;
+      Float64 area = pSectProp2->GetPerimeter(poi);
+
+      Float64 avg_area = (prev_area + area)/2;
+      As += avg_area*(poi.GetDistFromStart() - prev_poi.GetDistFromStart());
+
+      prev_poi = poi;
+      prev_area = area;
+   }
+
+   return As;
 }
 
 std::_tstring CUBeam2Factory::GetImage()
@@ -759,7 +861,7 @@ HICON  CUBeam2Factory::GetIcon()
 void CUBeam2Factory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
                                   double& d1,double& d2,double& d3,double& d4,double& d5,double& d6,
                                   double& w1,double& w2,double& w3,double& w4,double& w5,double& w6,double& w7,
-                                  double& c1)
+                                  double& c1,double& EndBlockLength)
 {
    d1 = GetDimension(dimensions,_T("D1"));
    d2 = GetDimension(dimensions,_T("D2"));
@@ -775,6 +877,7 @@ void CUBeam2Factory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
    w6 = GetDimension(dimensions,_T("W6"));
    w7 = GetDimension(dimensions,_T("W7"));
    c1 = GetDimension(dimensions,_T("C1"));
+   EndBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
 }
 
 double CUBeam2Factory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)

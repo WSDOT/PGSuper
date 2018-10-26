@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -92,8 +92,12 @@ struct pgsTypes
                    BridgeSite2 = 2, // superimposed dead loads
                    BridgeSite3 = 3  // final with live load
                  };
-   // NOTE: Added Lifting and Hauling as stages because they make sense in some contexts. Constants have been
-   //       defined so as not to mess up code that currently uses this enum in loops or array indices
+
+      static const Uint32 MaxStages = GirderPlacement+1; 
+   // NOTES:
+   //       1) If you add new stages, be sure to update MaxStages
+   //       2) Added Lifting and Hauling as stages because they make sense in some contexts. Constants have been
+   //          defined so as not to mess up code that currently uses this enum in loops or array indices
 
    enum StressType { Tension, Compression };
    

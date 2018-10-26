@@ -56,6 +56,39 @@
 			UseOfATL="0"
 			ATLMinimizesCRunTimeLibraryUsage="true"
 			CharacterSet="1"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+				Description="Performing registration"
+				CommandLine="regsvr32 /s /c &quot;$(TargetPath)&quot;&#x0D;&#x0A;echo regsvr32 exec. time &gt; &quot;$(OutDir)\regsvr32.trg&quot;&#x0D;&#x0A;"
+				Outputs="$(OutDir)\regsvr32.trg"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				AdditionalIncludeDirectories="\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(ConfigurationName)&quot;;&quot;\ARP\WBFL\RegFreeCOM\$(ConfigurationName)&quot;;..\Include"
+				GenerateTypeLibrary="false"
+				TypeLibraryName=".\Release/PGSuperIDL.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Profile|Win32"
+			OutputDirectory="\ARP\PGSuper\RegFreeCOM\$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="10"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
+			UseOfMFC="0"
+			UseOfATL="0"
+			ATLMinimizesCRunTimeLibraryUsage="true"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -110,6 +143,17 @@
 						InterfaceIdentifierFileName="..\Include\Plugins\Beams_i.c"
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Profile|Win32"
+					>
+					<Tool
+						Name="VCMIDLTool"
+						AdditionalIncludeDirectories=""
+						TypeLibraryName=""
+						HeaderFileName="..\Include\Plugins\Beams.h"
+						InterfaceIdentifierFileName="..\Include\Plugins\Beams_i.c"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\Include\Plugins\PGSuperIEPlugin.idl"
@@ -127,6 +171,17 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCMIDLTool"
+						AdditionalIncludeDirectories=""
+						TypeLibraryName=""
+						HeaderFileName="..\Include\Plugins\PGSuperIEPlugin.h"
+						InterfaceIdentifierFileName="..\Include\Plugins\PGSuperIEPlugin_i.c"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Profile|Win32"
 					>
 					<Tool
 						Name="VCMIDLTool"

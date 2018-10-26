@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -50,6 +50,28 @@ DIAG_DEFINE_GROUP(MomCap,DIAG_GROUP_DISABLE,0);
 
 static const Float64 ANGLE_TOL=1.0e-6;
 static const Float64 D_TOL=1.0e-10;
+
+void AddShape2Section(IGeneralSection *pSection, IShape *pShape, IStressStrain *pfgMaterial, IStressStrain *pbgMaterial, Float64 ei)
+{
+#if defined USE_ORIGINAL_SHAPE
+   // Just add shape as is
+   pSection->AddShape(pShape, pfgMaterial, pbgMaterial, ei);
+#else
+   // Convert shape to a fast polygon
+   // get points from shape and create a faster poly
+   CComPtr<IPoint2dCollection> points;
+   pShape->get_PolyPoints(&points);
+
+   CComPtr<IFasterPolyShape> poly;
+   HRESULT hr = poly.CoCreateInstance(CLSID_FasterPolyShape);
+
+   poly->AddPoints(points);
+
+   CComQIPtr<IShape> shape(poly);
+
+   pSection->AddShape(shape, pfgMaterial, pbgMaterial, ei);
+#endif
+}
 
 /****************************************************************************
 CLASS
@@ -1146,12 +1168,12 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
 
          if ( bVoid == VARIANT_FALSE )
          {
-            section->AddShape(shape,ssGirder,NULL,0.00);
+            AddShape2Section(section,shape,ssGirder,NULL,0.00);
          }
          else
          {
             // void shape... use only a background material (backgrounds are subtracted)
-            section->AddShape(shape,NULL,ssGirder,0.00);
+            AddShape2Section(section,shape,NULL,ssGirder,0.00);
          }
       }
    }
@@ -1159,7 +1181,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
    {
       // beam shape isn't composite so just add it
       posBeam->Offset(-dx,-dy);
-      section->AddShape(shapeBeam,ssGirder,NULL,0.00);
+      AddShape2Section(section,shapeBeam,ssGirder,NULL,0.00);
    }
 
    // so far there is no deck in the model.... if this is positive moment the compression point is top center, otherwise bottom center
@@ -1272,8 +1294,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
             dt = _cpp_max(dt,fabs(Yc-cy));
 
             CComQIPtr<IShape> shape(bar_shape);
-            section->AddShape(shape,ssStrand,ssGirder,e_initial);
-
+            AddShape2Section(section,shape,ssStrand,ssGirder,e_initial);
 
 #if defined _DEBUG
             CComPtr<IShapeProperties> props;
@@ -1335,7 +1356,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
          dt = _cpp_max(dt,fabs(Yc-cy));
 
          CComQIPtr<IShape> shape(square);
-         section->AddShape(shape,ssGirderRebar,ssGirder,0);
+         AddShape2Section(section,shape,ssGirderRebar,ssGirder,0);
 
          item.Release();
       }
@@ -1405,7 +1426,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
                posHaunch->put_LocatorPoint(lpTopCenter,pntCommon);
 
                CComQIPtr<IShape> shapeHaunch(haunch);
-               section->AddShape(shapeHaunch,ssSlab,NULL,0.00);
+               AddShape2Section(section,shapeHaunch,ssSlab,NULL,0.00);
             }
          }
       }
@@ -1417,7 +1438,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
 
       CComQIPtr<IShape> shapeDeck(posDeck);
 
-      section->AddShape(shapeDeck,ssSlab,NULL,0.00);
+      AddShape2Section(section,shapeDeck,ssSlab,NULL,0.00);
 
 
       // deck rebar if this is for negative moment
@@ -1454,7 +1475,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
             dt = _cpp_max(dt,fabs(Yc-cy));
 
             CComQIPtr<IShape> shapeTop(posTop);
-            section->AddShape(shapeTop,ssSlabRebar,ssSlab,0.00);
+            AddShape2Section(section,shapeTop,ssSlabRebar,ssSlab,0.00);
          }
 
 
@@ -1488,7 +1509,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
             dt = _cpp_max(dt,fabs(Yc-cy));
 
             CComQIPtr<IShape> shapeBottom(posBottom);
-            section->AddShape(shapeBottom,ssSlabRebar,ssSlab,0.00);
+            AddShape2Section(section,shapeBottom,ssSlabRebar,ssSlab,0.00);
          }
       }
    }
@@ -1611,7 +1632,7 @@ void pgsMomentCapacityEngineer::pgsBondTool::Init()
    m_DistFromStart = m_Poi.GetDistFromStart();
 
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(m_Poi.GetSpan(),m_Poi.GetGirder(),pgsTypes::BridgeSite3,POI_MIDSPAN);
+   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(m_Poi.GetSpan(),m_Poi.GetGirder(),pgsTypes::BridgeSite3,POI_MIDSPAN) );
    ASSERT( vPOI.size() == 1 );
    m_PoiMidSpan = vPOI[0];
 

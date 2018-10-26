@@ -1,0 +1,27 @@
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 54.25   6  9.25     1     1    1)       58   1/2  270 12.99 17.62  24  2.17  27  20  6  8  2  2  2  0  0  0  0  0  4.400  5.800    3.836   -3.398   5919  0.635  0.861  0.64 -0.15 -0.01 -0.01 -0.16 165.77 427.45   1.00   1.00   1.00
+                                                                        4.14  27   4  4  0  0  0  0  0  0  0  0  0 
+
+
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 54.25   6  9.25     1     2    1)       54   1/2  270 13.20 17.88  22  2.17  27  20  6  8  2  2  2  0  0  0  0  0  4.100  5.600    3.767   -3.283   5713  0.630  0.861  0.62 -0.14 -0.01 -0.01 -0.15 148.02 380.68   1.00   1.00   1.00
+                                                                        4.14  27   2  2  0  0  0  0  0  0  0  0  0 
+
+
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 54.25   6  9.25     1     4    1)       53   1/2  270 13.21 17.89  22  2.17  27  20  6  8  2  2  2  0  0  0  0  0  4.000  5.600    3.739   -3.202   5557  0.630  0.861  0.61 -0.14 -0.01  0.00 -0.15 143.71 371.47   1.00   1.00   1.00
+                                                                        4.14  26   2  2  0  0  0  0  0  0  0  0  0 
+
+
+The Specification Check was Successful
+
+

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -38,6 +38,7 @@ CLASS
 #include <IFace\Artifact.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
+#include <EAF\EAFAutoProgress.h>
 
 #include <LRFD\VersionMgr.h>
 
@@ -66,33 +67,98 @@ LPCTSTR CSpecCheckSummaryChapterBuilder::GetName() const
 
 rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-
+   // Report for a single girder
    CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSGRptSpec->GetSpan();
-   GirderIndexType gdr = pSGRptSpec->GetGirder();
+   if (pSGRptSpec != NULL)
+   {
+      rptChapter* pChapter = CPGSuperChapterBuilder::Build(pSGRptSpec,level);
 
-   GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   const pgsGirderArtifact* pArtifact = pIArtifact->GetArtifact(span,gdr);
+      CComPtr<IBroker> pBroker;
+      pSGRptSpec->GetBroker(&pBroker);
+      SpanIndexType span = pSGRptSpec->GetSpan();
+      GirderIndexType gdr = pSGRptSpec->GetGirder();
 
-   return BuildEx(pSGRptSpec, level, span, gdr, pArtifact);
+      GET_IFACE2(pBroker,IArtifact,pIArtifact);
+      const pgsGirderArtifact* pArtifact = pIArtifact->GetArtifact(span,gdr);
+
+      CreateContent(pChapter, pBroker, span, gdr, pArtifact);
+
+      return pChapter;
+   }
+
+   // Report multiple girders
+   CMultiGirderReportSpecification* pMGRptSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
+   if (pMGRptSpec != NULL)
+   {
+      std::vector<SpanGirderHashType> list = pMGRptSpec->GetGirderList();
+
+      // Give progress window a progress meter
+      bool multi = list.size()>1;
+
+      CComPtr<IBroker> pBroker;
+      pMGRptSpec->GetBroker(&pBroker);
+      GET_IFACE2(pBroker,IProgress,pProgress);
+      DWORD mask = multi ? PW_ALL|PW_NOCANCEL : PW_ALL|PW_NOGAUGE|PW_NOCANCEL;
+
+      CEAFAutoProgress ap(pProgress,0,mask); 
+
+      if (multi)
+         pProgress->Init(0,list.size(),1);  // and for multi-girders, a gauge.
+
+      // Build chapter and fill it
+      rptChapter* pChapter = CPGSuperChapterBuilder::Build(pMGRptSpec,level);
+
+      GET_IFACE2(pBroker,IArtifact,pIArtifact);
+
+      for (std::vector<SpanGirderHashType>::iterator it=list.begin(); it!=list.end(); it++)
+      {
+         SpanIndexType span;
+         GirderIndexType gdr;
+         UnhashSpanGirder(*it,&span,&gdr);
+
+         const pgsGirderArtifact* pArtifact = pIArtifact->GetArtifact(span,gdr);
+
+         rptParagraph* pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+         *pChapter << pParagraph;
+
+         *pParagraph << _T("Results for Span ") << LABEL_SPAN(span) << _T(" Girder ") << LABEL_GIRDER(gdr);
+
+         CreateContent(pChapter, pBroker, span, gdr, pArtifact);
+
+         if (multi)
+            pProgress->Increment();
+      }
+
+      return pChapter;
+   }
+
+
+   ATLASSERT(0);
+   return NULL;
 }
 
 rptChapter* CSpecCheckSummaryChapterBuilder::BuildEx(CSpanGirderReportSpecification* pSGRptSpec,Uint16 level,
-                                                     SpanIndexType span, GirderIndexType gdr, const pgsGirderArtifact* pArtifact) const
+                    SpanIndexType span, GirderIndexType gdr, const pgsGirderArtifact* pArtifact) const
 {
+   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pSGRptSpec,level);
+
    CComPtr<IBroker> pBroker;
    pSGRptSpec->GetBroker(&pBroker);
 
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pSGRptSpec,level);
+   CreateContent(pChapter, pBroker, span, gdr, pArtifact);
 
+   return pChapter;
+}
+
+void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroker* pBroker,
+                   SpanIndexType span, GirderIndexType gdr, const pgsGirderArtifact* pArtifact) const
+{
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
    if( pArtifact->Passed() )
    {
-      *pPara << _T("The Specification Check was Successful") << rptNewLine;
+      *pPara << color(Green)<< _T("The Specification Check was Successful") << color(Black) << rptNewLine;
    }
    else
    {
@@ -154,8 +220,6 @@ rptChapter* CSpecCheckSummaryChapterBuilder::BuildEx(CSpanGirderReportSpecificat
       *pChapter << pPara;
       *pPara << _T("Warning:  Excess camber is negative, indicating a potential sag in the beam. Refer to the Details Report for more information.") << rptNewLine;
    }
-
-   return pChapter;
 }
 
 CChapterBuilder* CSpecCheckSummaryChapterBuilder::Clone() const

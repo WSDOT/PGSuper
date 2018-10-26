@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -87,15 +87,28 @@ GirderIndexType CGirderReportHint::GetGirder()
 
 int CGirderReportHint::IsMyGirder(CReportHint* pHint,CReportSpecification* pRptSpec)
 {
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   if ( pGdrRptSpec == NULL )
-      return -1;
-
    CGirderReportHint* pGirderRptHint = dynamic_cast<CGirderReportHint*>(pHint);
    if ( pGirderRptHint == NULL )
       return -1;
 
-   return (pGirderRptHint->m_GdrIdx == pGdrRptSpec->GetGirder() ? 1 : 0);
+   if (pGirderRptHint->m_GdrIdx == ALL_GIRDERS)
+      return 1;
+
+   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   if ( pGdrRptSpec != NULL )
+   {
+      return (pGirderRptHint->m_GdrIdx == pGdrRptSpec->GetGirder() ? 1 : 0);
+   }
+   else
+   {
+      CMultiGirderReportSpecification* pMGdrRptSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
+      if ( pMGdrRptSpec != NULL )
+      {
+         return pMGdrRptSpec->IsMyGirder(0 ,pGirderRptHint->m_GdrIdx); // only look at span 0
+      }
+   }
+
+   return -1;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -136,15 +149,44 @@ void CSpanGirderReportHint::GetGirder(SpanIndexType& spanIdx,GirderIndexType& gd
 
 int CSpanGirderReportHint::IsMyGirder(CReportHint* pHint,CReportSpecification* pRptSpec)
 {
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
-   if ( pSGRptSpec == NULL )
-      return -1;
-
    CSpanGirderReportHint* pSGRptHint = dynamic_cast<CSpanGirderReportHint*>(pHint);
    if ( pSGRptHint == NULL )
       return -1;
 
-   return (pSGRptHint->m_SpanIdx == pSGRptSpec->GetSpan() && pSGRptHint->m_GdrIdx == pSGRptSpec->GetGirder() ? 1 : false);
+   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   if ( pSGRptSpec != NULL )
+   { 
+      if( pSGRptHint->m_SpanIdx == pSGRptSpec->GetSpan() && pSGRptHint->m_GdrIdx == pSGRptSpec->GetGirder() )
+      {
+         return 1;
+      }
+      else if ( pSGRptHint->m_SpanIdx == ALL_SPANS && pSGRptHint->m_GdrIdx == ALL_GIRDERS )
+      {
+         return 1;
+      }
+      else if ( pSGRptHint->m_SpanIdx == ALL_SPANS && pSGRptHint->m_GdrIdx == pSGRptSpec->GetGirder() )
+      {
+         return 1;
+      }
+      else if( pSGRptHint->m_SpanIdx == pSGRptSpec->GetSpan() && pSGRptHint->m_GdrIdx == ALL_GIRDERS )
+      {
+         return 1;
+      }
+      else
+      {
+         return 0;
+      }
+   }
+   else
+   {
+      CMultiGirderReportSpecification* pMGdrRptSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
+      if ( pMGdrRptSpec != NULL )
+      {
+         return pMGdrRptSpec->IsMyGirder(pSGRptHint->m_SpanIdx ,pSGRptHint->m_GdrIdx);
+      }
+   }
+
+   return -1;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -291,4 +333,64 @@ HRESULT CSpanGirderReportSpecification::Validate() const
 
    return S_OK;
 
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+CMultiGirderReportSpecification::CMultiGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker, const std::vector<SpanGirderHashType>& girderlist) :
+CBrokerReportSpecification(strReportName,pBroker)
+{
+   SetGirderList(girderlist);
+}
+
+CMultiGirderReportSpecification::~CMultiGirderReportSpecification(void)
+{
+}
+
+std::_tstring CMultiGirderReportSpecification::GetReportTitle() const
+{
+   return GetReportName();
+}
+
+void CMultiGirderReportSpecification::SetGirderList(const std::vector<SpanGirderHashType>& girderlist)
+{
+   m_GirderList = girderlist;
+}
+
+std::vector<SpanGirderHashType> CMultiGirderReportSpecification::GetGirderList() const
+{
+   return m_GirderList;
+}
+
+int CMultiGirderReportSpecification::IsMyGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx) const
+{
+   SpanGirderHashType hash = HashSpanGirder(spanIdx, gdrIdx);
+
+   std::vector<SpanGirderHashType>::const_iterator it = std::find(m_GirderList.begin(), m_GirderList.end(), hash);
+
+   return (it != m_GirderList.end()) ? 1 : 0;
+}
+
+HRESULT CMultiGirderReportSpecification::Validate() const
+{
+   GET_IFACE2(m_Broker,IBridge,pBridge);
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+
+   for (std::vector<SpanGirderHashType>::const_iterator it=m_GirderList.begin(); it!=m_GirderList.end(); it++)
+   {
+      SpanIndexType spanIdx;
+      GirderIndexType gdrIdx;
+      UnhashSpanGirder(*it,&spanIdx,&gdrIdx);
+
+      if ( nSpans <= spanIdx )
+         return RPT_E_INVALIDSPAN;
+
+      GirderIndexType nGdrs = pBridge->GetGirderCount(spanIdx);
+
+      if ( nGdrs <= gdrIdx )
+         return RPT_E_INVALIDGIRDER;
+   }
+
+   return CBrokerReportSpecification::Validate();
 }

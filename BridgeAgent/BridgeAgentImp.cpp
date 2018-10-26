@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -863,7 +863,7 @@ void CBridgeAgentImp::ValidatePointLoads()
 
       // need to loop over all spans if that is what is selected - user a vector to store span numbers
       std::vector<SpanIndexType> spans;
-      if (rpl.m_Span==UserLoads::AllSpans)
+      if (rpl.m_Span==ALL_SPANS)
       {
          for (SpanIndexType i=0; i<num_spans; i++)
             spans.push_back(i);
@@ -874,7 +874,7 @@ void CBridgeAgentImp::ValidatePointLoads()
          {
             CString strMsg;
             strMsg.Format(_T("Span %d for point load is out of range. Max span number is %d. This load will be ignored."), LABEL_SPAN(rpl.m_Span),num_spans);
-            pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg);
+            pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,rpl.m_Span,rpl.m_Girder);
             pStatusCenter->Add(pStatusItem);
             continue; // break out of this cycle
          }
@@ -891,7 +891,7 @@ void CBridgeAgentImp::ValidatePointLoads()
          GirderIndexType num_gdrs = this->GetGirderCount(span);
 
          std::vector<GirderIndexType> girders;
-         if (rpl.m_Girder==UserLoads::AllGirders)
+         if (rpl.m_Girder==ALL_GIRDERS)
          {
             for (GirderIndexType i=0; i<num_gdrs; i++)
                girders.push_back(i);
@@ -902,7 +902,7 @@ void CBridgeAgentImp::ValidatePointLoads()
             {
                CString strMsg;
                strMsg.Format(_T("Girder %s for point load is out of range. Max girder number is %s. This load will be ignored."), LABEL_GIRDER(rpl.m_Girder), LABEL_GIRDER(num_gdrs-1));
-               pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg);
+               pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,span,rpl.m_Girder);
                pStatusCenter->Add(pStatusItem);
                continue;
             }
@@ -925,7 +925,7 @@ void CBridgeAgentImp::ValidatePointLoads()
             {
                CString strMsg;
                strMsg.Format(_T("Magnitude of point load is zero"));
-               pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg);
+               pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,span,girder);
                pStatusCenter->Add(pStatusItem);
             }
 
@@ -943,7 +943,7 @@ void CBridgeAgentImp::ValidatePointLoads()
                {
                   CString strMsg;
                   strMsg.Format(_T("Fractional location value for point load is out of range. Value must range from 0.0 to 1.0. This load will be ignored."));
-                  pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg);
+                  pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,span,girder);
                   pStatusCenter->Add(pStatusItem);
                   continue;
                }
@@ -958,7 +958,7 @@ void CBridgeAgentImp::ValidatePointLoads()
                {
                   CString strMsg;
                   strMsg.Format(_T("Location value for point load is out of range. Value must range from 0.0 to span length. This load will be ignored."));
-                  pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg);
+                  pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,span,girder);
                   pStatusCenter->Add(pStatusItem);
                   continue;
                }
@@ -1008,7 +1008,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
 
       // need to loop over all spans if that is what is selected - user a vector to store span numbers
       std::vector<SpanIndexType> spans;
-      if (rpl.m_Span==UserLoads::AllSpans)
+      if (rpl.m_Span==ALL_SPANS)
       {
          for (SpanIndexType i=0; i<num_spans; i++)
             spans.push_back(i);
@@ -1019,7 +1019,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
          {
             CString strMsg;
             strMsg.Format(_T("Span %d for Distributed load is out of range. Max span number is %d. This load will be ignored."), LABEL_SPAN(rpl.m_Span),num_spans);
-            pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg);
+            pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg,rpl.m_Span,rpl.m_Girder);
             pStatusCenter->Add(pStatusItem);
             continue; // break out of this cycle
          }
@@ -1036,7 +1036,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
          GirderIndexType num_gdrs = this->GetGirderCount(span);
 
          std::vector<GirderIndexType> girders;
-         if (rpl.m_Girder==UserLoads::AllGirders)
+         if (rpl.m_Girder==ALL_GIRDERS)
          {
             for (GirderIndexType i=0; i<num_gdrs; i++)
                girders.push_back(i);
@@ -1047,7 +1047,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
             {
                CString strMsg;
                strMsg.Format(_T("Girder %s for Distributed load is out of range. Max girder number is %s. This load will be ignored."), LABEL_GIRDER(rpl.m_Girder), LABEL_GIRDER(num_gdrs-1));
-               pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg);
+               pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg,span,rpl.m_Girder);
                pStatusCenter->Add(pStatusItem);
                continue;
             }
@@ -1073,7 +1073,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                {
                   CString strMsg;
                   strMsg.Format(_T("Magnitude of Distributed load is zero"));
-                  pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg);
+                  pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg,span,girder);
                   pStatusCenter->Add(pStatusItem);
                }
 
@@ -1091,7 +1091,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                {
                   CString strMsg;
                   strMsg.Format(_T("Magnitude of Distributed load is zero"));
-                  pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg);
+                  pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg,span,girder);
                   pStatusCenter->Add(pStatusItem);
                }
 
@@ -1103,7 +1103,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                {
                   CString strMsg;
                   strMsg.Format(_T("Start locaton of distributed load is greater than end location. This load will be ignored."));
-                  pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,103,strMsg);
+                  pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,103,strMsg,span,girder);
                   pStatusCenter->Add(pStatusItem);
                   continue;
                }
@@ -1120,7 +1120,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                   {
                      CString strMsg;
                      strMsg.Format(_T("Fractional location value for Distributed load is out of range. Value must range from 0.0 to 1.0. This load will be ignored."));
-                     pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg);
+                     pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg,span,girder);
                      pStatusCenter->Add(pStatusItem);
                      continue;
                   }
@@ -1143,7 +1143,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                   {
                      CString strMsg;
                      strMsg.Format(_T("Location value for Distributed load is out of range. Value must range from 0.0 to span length. This load will be ignored."));
-                     pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg);
+                     pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg,span,girder);
                      pStatusCenter->Add(pStatusItem);
                      continue;
                   }
@@ -1184,7 +1184,7 @@ void CBridgeAgentImp::ValidateMomentLoads()
 
       // need to loop over all spans if that is what is selected - user a vector to store span numbers
       std::vector<SpanIndexType> spans;
-      if (rpl.m_Span==UserLoads::AllSpans)
+      if (rpl.m_Span==ALL_SPANS)
       {
          for (SpanIndexType i=0; i<num_spans; i++)
             spans.push_back(i);
@@ -1195,7 +1195,7 @@ void CBridgeAgentImp::ValidateMomentLoads()
          {
             CString strMsg;
             strMsg.Format(_T("Span %d for moment load is out of range. Max span number is %d. This load will be ignored."), LABEL_SPAN(rpl.m_Span),num_spans);
-            pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg);
+            pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg,rpl.m_Span,rpl.m_Girder);
             pStatusCenter->Add(pStatusItem);
             continue; // break out of this cycle
          }
@@ -1212,7 +1212,7 @@ void CBridgeAgentImp::ValidateMomentLoads()
          GirderIndexType num_gdrs = this->GetGirderCount(span);
 
          std::vector<GirderIndexType> girders;
-         if (rpl.m_Girder==UserLoads::AllGirders)
+         if (rpl.m_Girder==ALL_GIRDERS)
          {
             for (GirderIndexType i=0; i<num_gdrs; i++)
                girders.push_back(i);
@@ -1223,7 +1223,7 @@ void CBridgeAgentImp::ValidateMomentLoads()
             {
                CString strMsg;
                strMsg.Format(_T("Girder %s for moment load is out of range. Max girder number is %s. This load will be ignored."), LABEL_GIRDER(rpl.m_Girder), LABEL_GIRDER(num_gdrs-1));
-               pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg);
+               pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg,span,rpl.m_Girder);
                pStatusCenter->Add(pStatusItem);
                continue;
             }
@@ -1246,7 +1246,7 @@ void CBridgeAgentImp::ValidateMomentLoads()
             {
                CString strMsg;
                strMsg.Format(_T("Magnitude of moment load is zero"));
-               pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg);
+               pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg,span,girder);
                pStatusCenter->Add(pStatusItem);
             }
 
@@ -1264,7 +1264,7 @@ void CBridgeAgentImp::ValidateMomentLoads()
                {
                   CString strMsg;
                   strMsg.Format(_T("Fractional location value for moment load is out of range. Value must range from 0.0 to 1.0. This load will be ignored."));
-                  pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg);
+                  pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg,span,girder);
                   pStatusCenter->Add(pStatusItem);
                   continue;
                }
@@ -1279,7 +1279,7 @@ void CBridgeAgentImp::ValidateMomentLoads()
                {
                   CString strMsg;
                   strMsg.Format(_T("Location value for moment load is out of range. Value must range from 0.0 to span length. This load will be ignored."));
-                  pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg);
+                  pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg,span,girder);
                   pStatusCenter->Add(pStatusItem);
                   continue;
                }
@@ -3953,6 +3953,7 @@ STDMETHODIMP CBridgeAgentImp::Init()
    m_scidInformationalError       = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusError)); 
    m_scidInformationalWarning     = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning)); 
    m_scidBridgeDescriptionError   = pStatusCenter->RegisterCallback(new pgsBridgeDescriptionStatusCallback(m_pBroker,eafTypes::statusError));
+   m_scidBridgeDescriptionWarning = pStatusCenter->RegisterCallback(new pgsBridgeDescriptionStatusCallback(m_pBroker,eafTypes::statusWarning));
    m_scidAlignmentWarning         = pStatusCenter->RegisterCallback(new pgsAlignmentDescriptionStatusCallback(m_pBroker,eafTypes::statusWarning));
    m_scidAlignmentError           = pStatusCenter->RegisterCallback(new pgsAlignmentDescriptionStatusCallback(m_pBroker,eafTypes::statusError));
    m_scidGirderDescriptionWarning = pStatusCenter->RegisterCallback(new pgsGirderDescriptionStatusCallback(m_pBroker,eafTypes::statusWarning));
@@ -5239,6 +5240,18 @@ std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetIntermediateDiaphragms(pgs
       if ( !IsEqual(location1,location2) && bDiaphragmAdded )
       {
          // location the second diaphragm
+         if ( rule.Method == GirderLibraryEntry::dwmInput )
+         {
+            diaphragm.m_bCompute = false;
+            diaphragm.P = rule.Weight;
+         }
+         else
+         {
+            diaphragm.m_bCompute = true;
+            diaphragm.H = rule.Height;
+            diaphragm.T = rule.Thickness;
+         }
+
          diaphragm.Location = location2;
          Float64 skew = (skew2-skew1)*location2/(start_brg_offset + span_length + end_brg_offset) + skew1;
          pgsPointOfInterest poi(spanIdx,gdrIdx,location2);
@@ -10230,7 +10243,7 @@ std::vector<pgsPointOfInterest> CBridgeAgentImp::GetPointsOfInterest(SpanIndexTy
    return poi;
 }
 
-std::vector<pgsPointOfInterest> CBridgeAgentImp::GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,std::vector<pgsTypes::Stage> stages,PoiAttributeType attrib,Uint32 mode)
+std::vector<pgsPointOfInterest> CBridgeAgentImp::GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,const std::vector<pgsTypes::Stage>& stages,PoiAttributeType attrib,Uint32 mode)
 {
    // make sure we have POI before doing anything else
    ValidatePointsOfInterest(span,gdr);
@@ -10260,12 +10273,15 @@ std::vector<pgsPointOfInterest> CBridgeAgentImp::GetPointsOfInterest(SpanIndexTy
          gdrIdx = nGirders-1;
 
       // if the request includes Critical Section, make sure the critical section POI's have been located
-      std::sort(stages.begin(),stages.end());
+      std::vector<pgsTypes::Stage> sortedStages(stages);
+      std::sort(sortedStages.begin(),sortedStages.end());
+      std::vector<pgsTypes::Stage>::iterator stageBegin(sortedStages.begin());
+      std::vector<pgsTypes::Stage>::iterator stageEnd(sortedStages.end());
       
       bool bCriticalSection = false;
-      if ( std::find(stages.begin(),stages.end(),pgsTypes::BridgeSite1) != stages.end() ||
-           std::find(stages.begin(),stages.end(),pgsTypes::BridgeSite1) != stages.end() ||
-           std::find(stages.begin(),stages.end(),pgsTypes::BridgeSite1) != stages.end() )
+      if ( std::find(stageBegin,stageEnd,pgsTypes::BridgeSite1) != stageEnd ||
+           std::find(stageBegin,stageEnd,pgsTypes::BridgeSite2) != stageEnd ||
+           std::find(stageBegin,stageEnd,pgsTypes::BridgeSite3) != stageEnd )
       {
          bCriticalSection = true;
       }
@@ -11772,18 +11788,16 @@ Float64 CBridgeAgentImp::GetShearInterfaceWidth(const pgsPointOfInterest& poi)
    HRESULT hr = GetGirderSection(poi,&girder_section);
    ATLASSERT(SUCCEEDED(hr));
 
+   Float64 wMating = 0; // sum of mating surface widths... less deck panel support width
    if ( pDeck->DeckType == pgsTypes::sdtCompositeCIP || pDeck->DeckType == pgsTypes::sdtCompositeOverlay )
    {
       SpanIndexType span  = poi.GetSpan();
       GirderIndexType gdr = poi.GetGirder();
       MatingSurfaceIndexType nMatingSurfaces = GetNumberOfMatingSurfaces(span,gdr);
-      Float64 wMating = 0; // sum of mating surface widths... less deck panel support width
       for ( MatingSurfaceIndexType i = 0; i < nMatingSurfaces; i++ )
       {
          wMating += GetMatingSurfaceWidth(poi,i);
       }
-
-      return wMating;
    }
    else if ( pDeck->DeckType == pgsTypes::sdtCompositeSIP )
    {
@@ -11793,7 +11807,6 @@ Float64 CBridgeAgentImp::GetShearInterfaceWidth(const pgsPointOfInterest& poi)
       SpanIndexType span  = poi.GetSpan();
       GirderIndexType gdr = poi.GetGirder();
       Uint32 nMatingSurfaces = GetNumberOfMatingSurfaces(span,gdr);
-      Float64 wMating = 0; // sum of mating surface widths... less deck panel support width
       Float64 panel_support = pDeck->PanelSupport;
       for ( Uint32 i = 0; i < nMatingSurfaces; i++ )
       {
@@ -11806,14 +11819,28 @@ Float64 CBridgeAgentImp::GetShearInterfaceWidth(const pgsPointOfInterest& poi)
             wMating += GetMatingSurfaceWidth(poi,i) - 2*panel_support;
       }
 
-      return wMating;
+      if ( wMating < 0 )
+      {
+         wMating = 0;
+
+         CString strMsg;
+         strMsg.Format(_T("Span %d Girder %s, Deck panel support width exceeds half the width of the supporting flange. An interface shear width of 0.0 will be used"),LABEL_SPAN(span),LABEL_GIRDER(gdr));
+         pgsBridgeDescriptionStatusItem* pStatusItem = 
+            new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionWarning,3,strMsg);
+
+         GET_IFACE(IEAFStatusCenter,pStatusCenter);
+         pStatusCenter->Add(pStatusItem);
+
+      }
    }
    else
    {
       // all other deck types are non-composite so there is no
       // interface width for horizontal shear
-      return 0;
+      wMating = 0;
    }
+
+   return wMating;
 }
 
 WebIndexType CBridgeAgentImp::GetNumberOfWebs(SpanIndexType span,GirderIndexType gdr)

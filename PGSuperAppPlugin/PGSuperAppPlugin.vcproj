@@ -61,6 +61,7 @@
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="PGSuperAppPlugin\StdAfx.h"
+				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 			/>
@@ -154,10 +155,11 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;x_BETA_VERSION"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;_BETA_VERSION"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="PGSuperAppPlugin\StdAfx.h"
+				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
 				WarningLevel="3"
 				DebugInformationFormat="0"
 			/>
@@ -182,6 +184,110 @@
 				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(ConfigurationName)&quot;;&quot;\ARP\PGSuper\RegFreeCOM\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\PGSuperAppPlugin.def"
 				GenerateDebugInformation="false"
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				LinkTimeCodeGeneration="1"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Profile|Win32"
+			OutputDirectory="\ARP\PGSuper\RegFreeCOM\$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="2"
+			UseOfMFC="2"
+			UseOfATL="2"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="false"
+				TargetEnvironment="1"
+				GenerateStublessProxies="true"
+				TypeLibraryName="$(IntDir)/PGSuperAppPlugin.tlb"
+				HeaderFileName="PGSuperAppPlugin_i.h"
+				DLLDataFileName=""
+				InterfaceIdentifierFileName="PGSuperAppPlugin_i.c"
+				ProxyFileName="PGSuperAppPlugin_p.c"
+				ValidateParameters="true"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="3"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;x_BETA_VERSION"
+				RuntimeLibrary="2"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="PGSuperAppPlugin\StdAfx.h"
+				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
+				AssemblerListingLocation=".\Profile/"
+				ObjectFile=".\Profile/"
+				ProgramDataBaseFileName=".\Profile/"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"
+				AdditionalIncludeDirectories="&quot;$(IntDir)&quot;;\ARP\PGSuper\Include;\ARP\WBFL\Include"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				RegisterOutput="true"
+				IgnoreImportLibrary="true"
+				AdditionalDependencies="htmlhelp.lib"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(ConfigurationName)&quot;;&quot;\ARP\PGSuper\RegFreeCOM\$(ConfigurationName)&quot;"
+				ModuleDefinitionFile=".\PGSuperAppPlugin.def"
+				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -440,6 +546,15 @@
 						CompileAsManaged="0"
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Profile|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						CompileAsManaged="0"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\EditDistributedLoadDlg.cpp"
@@ -570,7 +685,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\LLDFFillDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\LLDFGrid.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\LLDFPierGrid.cpp"
 				>
 			</File>
 			<File
@@ -584,6 +707,39 @@
 			<File
 				RelativePath="..\MovePierDlg.cpp"
 				>
+			</File>
+			<File
+				RelativePath="..\MultiGirderSelectDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\SharedCtrls\MultiGirderSelectGrid.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						PrecompiledHeaderThrough=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Profile|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\PermitRatingPage.cpp"
@@ -826,6 +982,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Profile|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1208,7 +1372,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\LLDFFillDlg.h"
+				>
+			</File>
+			<File
 				RelativePath="..\LLDFGrid.h"
+				>
+			</File>
+			<File
+				RelativePath="..\LLDFPierGrid.h"
 				>
 			</File>
 			<File
@@ -1221,6 +1393,10 @@
 			</File>
 			<File
 				RelativePath="..\MovePierDlg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\MultiGirderSelectDlg.h"
 				>
 			</File>
 			<File
@@ -1594,6 +1770,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\res\HaulingOverhangs.emf"
+				>
+			</File>
+			<File
 				RelativePath="..\res\HelpToolbar.bmp"
 				>
 			</File>
@@ -1728,6 +1908,15 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						CompileAsManaged="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Profile|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1982,6 +2171,14 @@
 							PrecompiledHeaderThrough="StdAfx.h"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Profile|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="StdAfx.h"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\MakePgz\UnzipPgz.cpp"
@@ -1996,6 +2193,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="StdAfx.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Profile|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2022,13 +2227,17 @@
 							PrecompiledHeaderThrough="StdAfx.h"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Profile|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="StdAfx.h"
+						/>
+					</FileConfiguration>
 				</File>
 			</Filter>
 		</Filter>
-		<File
-			RelativePath="..\res\HaulingOverhangs.emf"
-			>
-		</File>
 		<File
 			RelativePath=".\ReadMe.txt"
 			>

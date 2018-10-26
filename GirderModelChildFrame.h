@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2010  Washington State Department of Transportation
+// Copyright © 1999-2011  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -54,6 +54,9 @@ public:
    enum CutLocation {LeftEnd,LeftHarp,Center,RightHarp,RightEnd,UserInput};
 
 // Operations
+   // Let our views tell us about updates
+	void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+
    // status of the current views
    UserLoads::Stage  GetLoadingStage() const {return m_LoadingStage;}
    Float64 GetCurrentCutLocation() {return m_CurrentCutLocation;}
@@ -69,10 +72,11 @@ public:
    void CutAtNext();
    void CutAtPrev();
 
-   void SelectSpanAndGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx);
    void GetSpanAndGirderSelection(SpanIndexType* pSpanIdx,GirderIndexType* pGdrIdx);
 
-   bool SyncWithBridgeModelView();
+protected:
+   void SelectSpanAndGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx, bool doUpdateViews);
+   bool DoSyncWithBridgeModelView();
 
    void RefreshGirderLabeling();
 
@@ -124,6 +128,7 @@ protected:
    
    virtual BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext);
 
+
    CGirderModelElevationView* GetGirderModelElevationView() const;
    CGirderModelSectionView*   GetGirderModelSectionView() const;
 
@@ -141,8 +146,12 @@ private:
    Float64 m_MaxCutLocation;
    UserLoads::Stage m_LoadingStage;
 
+   bool m_bIsAfterFirstUpdate;
+
    SpanIndexType m_CurrentSpanIdx;
    GirderIndexType m_CurrentGirderIdx;
+public:
+   afx_msg void OnSetFocus(CWnd* pOldWnd);
 };
 
 /////////////////////////////////////////////////////////////////////////////
