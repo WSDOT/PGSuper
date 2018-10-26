@@ -1,10 +1,9 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     1     Tx34       42   1/2  270 10.92  6.73   8 30.5  5.100  5.900    3.056   -3.713   3778  0.638  0.814  0.37 -0.11 -0.01 -0.01 -0.12 131.83 360.69   1.00   1.00   1.00
+ 44.00   6  8.00  1     1     Tx34       42   1/2  270 10.92  6.73   8 30.5  5.100  5.900    3.054   -3.704   3767  0.638  0.814  0.37 -0.11 -0.01 -0.01 -0.12 131.83 360.69   1.00   1.00   1.00
 
 
-The Specification Check was Not Successful
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+The Specification Check was Successful
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul

@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   4  8.67  1     1   4XB20       16   1/2  270  7.03  7.03   2  2.50  16   2  2  0  0  0  0  0  0  0  0  0  4.000  5.000    1.366   -1.935    1273 0.700  0.830  0.10 -0.02 -0.00 -0.00 -0.02  25.43  77.84   1.00   1.00   1.00
+ 32.00   4  8.67  1     1   4XB20       16   1/2  270  7.03  7.03   2  2.50  16   2  2  0  0  0  0  0  0  0  0  0  4.000  5.000    1.365   -1.932    1271 0.700  0.830  0.10 -0.02 -0.00 -0.00 -0.02  25.43  77.84   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -18,7 +18,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State for the
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   4  8.67  2     1   4XB20       38   1/2  270  6.19  5.89  10  2.50  22  10  6  2  2  0  0  0  0  0  0  0  4.800  5.000    2.597   -3.458    2119 0.644  0.803  0.31 -0.08 -0.00 -0.01 -0.09 106.28 290.84   1.00   1.00   1.00
+ 32.00   4  8.67  2     1   4XB20       38   1/2  270  6.19  5.89  10  2.50  22  10  6  2  2  0  0  0  0  0  0  0  4.800  5.000    2.596   -3.451    2113 0.644  0.803  0.31 -0.08 -0.00 -0.01 -0.09 106.28 290.84   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful

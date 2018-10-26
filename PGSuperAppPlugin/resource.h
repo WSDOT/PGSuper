@@ -163,6 +163,7 @@
 #define IDD_MULTI_GIRDER_SELECT         317
 #define IDR_COPY_PASTE                  318
 #define IDD_LLDF_FILL                   319
+#define IDD_BRIDGEVIEW_SETTINGS         322
 #define IDR_PGSUPER_TEMPLATE_ICON       500
 #define IDC_BRIDGE                      1000
 #define IDC_BULB                        1001
@@ -426,6 +427,7 @@
 #define IDC_STRENGTH_I_DC               1259
 #define IDC_FY_COEFFICIENT              1259
 #define IDC_LOAD                        1259
+#define IDC_START_SPAN_EDIT             1259
 #define IDC_LOCATION                    1260
 #define IDC_SERVICE_III_DC              1260
 #define IDC_K1                          1261
@@ -574,11 +576,15 @@
 #define IDC_CONDITION_FACTOR_TYPE       1407
 #define IDC_CONCRETE_TYPE               1407
 #define IDC_GIRDER_SPAN                 1407
+#define IDC_DESIGN_PEDES_COMBO          1407
 #define IDC_GIRDER_ORIENTATION          1408
 #define IDC_GIRDER_GIRDER               1408
 #define IDC_PIER                        1409
+#define IDC_FATIGUE_PEDES_COMBO         1409
 #define IDC_HP_COMBO_END                1410
 #define IDC_PIER_GIRDER                 1410
+#define IDC_DESIGN_PEDES_COMBO4         1410
+#define IDC_PERMIT_PEDES_COMBO          1410
 #define IDC_TOP_MAT_BAR                 1411
 #define IDC_UPDATE_FREQUENCY            1412
 #define IDC_OVERHANG_TAPER              1413
@@ -862,12 +868,19 @@
 #define IDC_RIGHT_SIDEWALK_LEFT_DEPTH_LABEL 1613
 #define IDC_TEXT                        1614
 #define IDC_RIGHT_SIDEWALK_RIGHT_DEPTH_LABEL 1615
+#define IDC_START_SPAN_SPIN             1615
 #define IDC_RIGHT_SIDEWALK_LEFT_DEPTH_UNIT 1616
+#define IDC_END_SPAN_EDIT               1616
 #define IDC_ALIGNMENT_OFFSET            1617
+#define IDC_END_SPAN_SPIN               1617
 #define IDC_RIGHT_SIDEWALK_RIGHT_DEPTH  1618
+#define IDC_DESIGN_PEDES_STATIC         1618
 #define IDC_ALIGNMENT_OFFSET_UNIT       1619
+#define IDC_FATIGUE_PEDES_STATIC        1619
 #define IDC_RIGHT_SIDEWALK_RIGHT_DEPTH_UNIT 1620
+#define IDC_PERMIT_PEDES_STATIC         1620
 #define IDC_ALIGNMENT_OFFSET_FORMAT     1621
+#define IDC_VERT_GROUP                  1621
 #define IDC_ALIGNMENT_OFFSET_LABEL      1622
 #define IDC_DECK_EDGE_LABEL             1623
 #define IDC_GIRDER_SPACING_TYPE         1624
@@ -1150,9 +1163,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        322
+#define _APS_NEXT_RESOURCE_VALUE        323
 #define _APS_NEXT_COMMAND_VALUE         33236
-#define _APS_NEXT_CONTROL_VALUE         1614
+#define _APS_NEXT_CONTROL_VALUE         1622
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -270,7 +270,7 @@ void CShearBarsLegsGrid::SetRowStyle(ROWCOL nRow)
 
 	SetStyleRange(CGXRange(nRow,1), CGXStyle()
 			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
-			.SetChoiceList(_T("#3\n#4\n#5\n#6\n"))
+			.SetChoiceList(_T("#3\n#4\n#5\n#6\n#7\n#8\n#9\n"))
 			.SetValue(_T("#3"))
          .SetHorizontalAlignment(DT_RIGHT)
          );

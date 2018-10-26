@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -88,6 +88,8 @@ IMPLEMENT_DYNCREATE(CBridgePlanView, CDisplayView)
 
 CBridgePlanView::CBridgePlanView()
 {
+   m_StartSpanIdx = 0;
+   m_EndSpanIdx  = ALL_SPANS;
 }
 
 CBridgePlanView::~CBridgePlanView()
@@ -181,6 +183,21 @@ bool CBridgePlanView::IsAlignmentSelected()
       return true;
 
    return false;
+}
+
+void CBridgePlanView::GetSpanRange(SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx)
+{
+   *pStartSpanIdx = m_StartSpanIdx;
+   *pEndSpanIdx   = m_EndSpanIdx;
+}
+
+void CBridgePlanView::SetSpanRange(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx)
+{
+   m_StartSpanIdx = startSpanIdx;
+   m_EndSpanIdx  = endSpanIdx;
+
+   m_pDocument->UpdateAllViews(NULL,HINT_BRIDGEVIEWSETTINGSCHANGED,NULL);
+   m_pDocument->UpdateAllViews(NULL,HINT_BRIDGEVIEWSECTIONCUTCHANGED,NULL);
 }
 
 bool CBridgePlanView::GetSelectedSpan(SpanIndexType* pSpanIdx)
@@ -399,10 +416,19 @@ void CBridgePlanView::OnInitialUpdate()
    north_arrow_list->SetID(NORTH_ARROW_DISPLAY_LIST);
    dispMgr->AddDisplayList(north_arrow_list);
 
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+   m_EndSpanIdx = nSpans-1;
+
    CDisplayView::OnInitialUpdate();
-	
+
    UpdateDisplayObjects();
    UpdateDrawingScale();
+
+   // Causes the child frame window to initalize the span range selection controls
+   m_pFrame->InitSpanRange();
 }
 
 void CBridgePlanView::DoPrint(CDC* pDC, CPrintInfo* pInfo,CRect rcDraw)
@@ -455,18 +481,33 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
         (lHint == HINT_GIRDERLABELFORMATCHANGED)  
       )
    {
+      if ( lHint == HINT_BRIDGECHANGED )
+      {
+
+         CComPtr<IBroker> pBroker;
+         EAFGetBroker(&pBroker);
+         GET_IFACE2(pBroker,IBridge,pBridge);
+         SpanIndexType nSpans = pBridge->GetSpanCount();
+         m_EndSpanIdx = nSpans-1;
+
+         m_pFrame->InitSpanRange();
+      }
+
       UpdateDisplayObjects();
       UpdateDrawingScale();
    }
-   else if ( lHint == HINT_GIRDERCHANGED )
+
+   if ( lHint == HINT_GIRDERCHANGED )
    {
       UpdateGirderTooltips();
    }
-   else if ( lHint == HINT_BRIDGEVIEWSECTIONCUTCHANGED )
+
+   if ( lHint == HINT_BRIDGEVIEWSECTIONCUTCHANGED )
    {
       UpdateSectionCut();
    }
-   else if ( lHint == HINT_SELECTIONCHANGED )
+   
+   if ( lHint == HINT_SELECTIONCHANGED )
    {
       CSelection* pSelection = (CSelection*)pHint;
       switch( pSelection->Type )
@@ -545,7 +586,7 @@ void CBridgePlanView::UpdateGirderTooltips()
          CString strMsg1;
          strMsg1.Format(_T("Double click to edit Span %d Girder %s\r\nRight click for more options."),LABEL_SPAN(spanIdx),LABEL_GIRDER(girderIdx));
 
-         double gdr_length, span_length;
+         Float64 gdr_length, span_length;
          gdr_length  = pBridge->GetGirderLength(spanIdx,girderIdx);
          span_length = pBridge->GetSpanLength(spanIdx,girderIdx);
          CString strMsg2;
@@ -556,7 +597,7 @@ void CBridgePlanView::UpdateGirderTooltips()
                         FormatDirection(direction)
                         );
 
-         double fc, fci;
+         Float64 fc, fci;
          fc = pBridgeMaterial->GetFcGdr(spanIdx,girderIdx);
          fci = pBridgeMaterial->GetFciGdr(spanIdx,girderIdx);
 
@@ -576,31 +617,33 @@ void CBridgePlanView::UpdateGirderTooltips()
          Nt = pStrandGeom->GetNumStrands(spanIdx,girderIdx,pgsTypes::Temporary);
          Nsd= pStrandGeom->GetNumDebondedStrands(spanIdx,girderIdx,pgsTypes::Straight);
 
+         std::_tstring harp_type(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(spanIdx,girderIdx)));
+
          CString strMsg4;
          if ( pStrandGeom->GetMaxStrands(spanIdx,girderIdx,pgsTypes::Temporary) != 0 )
          {
             if ( Nsd == 0 )
             {
-               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
-                               pStrand->GetName().c_str(),Ns,Nh,pTempStrand->GetName().c_str(),Nt);
+               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# %s: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
+                               pStrand->GetName().c_str(),Ns,harp_type.c_str(),Nh,pTempStrand->GetName().c_str(),Nt);
             }
             else
             {
-               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
-                               pStrand->GetName().c_str(),Ns,Nsd,Nh,pTempStrand->GetName().c_str(),Nt);
+               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# %s: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
+                               pStrand->GetName().c_str(),Ns,Nsd,harp_type.c_str(),Nh,pTempStrand->GetName().c_str(),Nt);
             }
          }
          else
          {
             if ( Nsd == 0 )
             {
-               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d"),
-                               pStrand->GetName().c_str(),Ns,Nh);
+               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# %s: %2d"),
+                               pStrand->GetName().c_str(),Ns,harp_type.c_str(),Nh);
             }
             else
             {
-               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d"),
-                               pStrand->GetName().c_str(),Ns,Nsd,Nh);
+               strMsg4.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# %s: %2d"),
+                               pStrand->GetName().c_str(),Ns,Nsd,harp_type.c_str(),Nh);
             }
          }
 
@@ -631,7 +674,7 @@ void CBridgePlanView::UpdateSectionCut()
 
 void CBridgePlanView::UpdateSectionCut(iPointDisplayObject* pntDO,BOOL bRedraw)
 {
-   double station = m_pFrame->GetCurrentCutLocation();
+   Float64 station = m_pFrame->GetCurrentCutLocation();
 
    CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
    CComPtr<IBroker> pBroker;
@@ -755,16 +798,16 @@ void CBridgePlanView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
          // if control key is down... move the section cut
 
          CBridgeModelViewChildFrame* pFrame = GetFrame();
-         double station = pFrame->GetCurrentCutLocation();
+         Float64 station = pFrame->GetCurrentCutLocation();
 
          SpanIndexType spanIdx;
          if ( !pBridge->GetSpan(station,&spanIdx) )
             return;
 
-         double back_pier = pBridge->GetPierStation(spanIdx);
-         double ahead_pier = pBridge->GetPierStation(spanIdx+1);
-         double span_length = ahead_pier - back_pier;
-         double inc = span_length/10;
+         Float64 back_pier = pBridge->GetPierStation(spanIdx);
+         Float64 ahead_pier = pBridge->GetPierStation(spanIdx+1);
+         Float64 span_length = ahead_pier - back_pier;
+         Float64 inc = span_length/10;
 
          station = station + (nChar == VK_LEFT ? -1 : 1)*inc*nRepCnt;
 
@@ -919,7 +962,20 @@ void CBridgePlanView::BuildTitleDisplayObjects()
    CComPtr<iViewTitle> title;
    title.CoCreateInstance(CLSID_ViewTitle);
 
-   title->SetText(_T("Plan View"));
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+
+   CString strTitle;
+   if ( m_StartSpanIdx == 0 && (m_EndSpanIdx == nSpans-1 || m_EndSpanIdx == ALL_SPANS) )
+      strTitle = _T("Plan View");
+   else if ( m_StartSpanIdx == m_EndSpanIdx )
+      strTitle.Format(_T("Plan View: Span %d of %d"),LABEL_SPAN(m_StartSpanIdx),nSpans);
+   else
+      strTitle.Format(_T("Plan View: Span %d - %d of %d"),LABEL_SPAN(m_StartSpanIdx),LABEL_SPAN(m_EndSpanIdx),nSpans);
+
+   title->SetText(strTitle);
    title_list->AddDisplayObject(title);
 }
 
@@ -943,17 +999,20 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
    // show that part of the alignment from 1/n of the first span length before the start of the bridge
    // to 1/n of the last span length beyond the end of the bridge
    PierIndexType nPiers = pBridge->GetPierCount();
-   double start_station = pBridge->GetPierStation(0);
-   double end_station = pBridge->GetPierStation(nPiers-1);
-   double length1 = pBridge->GetPierStation(1) - start_station;
-   double length2 = end_station - pBridge->GetPierStation(nPiers-2);
+   PierIndexType startPierIdx = (m_StartSpanIdx == ALL_SPANS ? 0 : m_StartSpanIdx);
+   PierIndexType endPierIdx   = (m_EndSpanIdx  == ALL_SPANS ? nPiers-1 : m_EndSpanIdx+1);
+
+   Float64 start_station = pBridge->GetPierStation(startPierIdx);
+   Float64 end_station = pBridge->GetPierStation(endPierIdx);
+   Float64 length1 = pBridge->GetPierStation(startPierIdx+1) - start_station;
+   Float64 length2 = end_station - pBridge->GetPierStation(endPierIdx-1);
 
    // project the edges of the first and last pier onto the alignment
    // use the min/max station as the start and end of the bridge for purposes
    // of defining the alignment station range
    CComPtr<IPoint2d> start_left, start_alignment, start_bridge, start_right;
-   pBridge->GetPierPoints(0,&start_left,&start_alignment,&start_bridge,&start_right);
-   double start1,start2,start3,start4,offset;
+   pBridge->GetPierPoints(startPierIdx,&start_left,&start_alignment,&start_bridge,&start_right);
+   Float64 start1,start2,start3,start4,offset;
    pRoadway->GetStationAndOffset(start_left,&start1,&offset);
    pRoadway->GetStationAndOffset(start_alignment,&start2,&offset);
    pRoadway->GetStationAndOffset(start_bridge,&start3,&offset);
@@ -962,8 +1021,8 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
    start_station -= length1/10;
 
    CComPtr<IPoint2d> end_left, end_alignment, end_bridge, end_right;
-   pBridge->GetPierPoints(nPiers-1,&end_left,&end_alignment,&end_bridge,&end_right);
-   double end1,end2,end3,end4;
+   pBridge->GetPierPoints(endPierIdx,&end_left,&end_alignment,&end_bridge,&end_right);
+   Float64 end1,end2,end3,end4;
    pRoadway->GetStationAndOffset(end_left,&end1,&offset);
    pRoadway->GetStationAndOffset(end_alignment,&end2,&offset);
    pRoadway->GetStationAndOffset(end_bridge,&end3,&offset);
@@ -991,14 +1050,14 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
    CComPtr<iPolyLineDisplayObject> doCLBridge;
    doCLBridge.CoCreateInstance(CLSID_PolyLineDisplayObject);
 
-   double alignment_offset = pBridge->GetAlignmentOffset();
+   Float64 alignment_offset = pBridge->GetAlignmentOffset();
 
    // model the alignment as a series of individual points
    CComPtr<IDirection> bearing;
    bearing.CoCreateInstance(CLSID_Direction);
    long nPoints = 50;
-   double station_inc = (end_station - start_station)/nPoints;
-   double station = start_station;
+   Float64 station_inc = (end_station - start_station)/nPoints;
+   Float64 station = start_station;
    for ( long i = 0; i < nPoints; i++, station += station_inc)
    {
       CComPtr<IPoint2d> p;
@@ -1098,13 +1157,15 @@ void CBridgePlanView::BuildGirderDisplayObjects()
 
    GET_IFACE2(pBroker,IGirder,pGirder);
    SpanIndexType nSpans = pBridge->GetSpanCount();
-   for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
+   SpanIndexType firstSpanIdx = (m_StartSpanIdx == ALL_SPANS ? 0 : m_StartSpanIdx);
+   SpanIndexType lastSpanIdx  = (m_EndSpanIdx  == ALL_SPANS ? nSpans-1 : m_EndSpanIdx);
+   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx <= lastSpanIdx; spanIdx++ )
    {
       CComPtr<IDirection> objStartDirection,objEndDirection;
       pBridge->GetPierDirection(spanIdx,  &objStartDirection);
       pBridge->GetPierDirection(spanIdx+1,&objEndDirection);
 
-      double start_direction, end_direction;
+      Float64 start_direction, end_direction;
       objStartDirection->get_Value(&start_direction);
       objEndDirection->get_Value(&end_direction);
 
@@ -1186,7 +1247,7 @@ void CBridgePlanView::BuildGirderDisplayObjects()
          // assumes top flange of girder is a rectangle (parallelogram) in plan view
          // a future version may go back to the beam factory to get a shape
          // that represents the top flange (curved girders???)
-         double top_width = pGirder->GetTopWidth(pgsPointOfInterest(spanIdx,girderIdx,0.00));
+         Float64 top_width = pGirder->GetTopWidth(pgsPointOfInterest(spanIdx,girderIdx,0.00));
          strategy1->SetLeftOffset(top_width/2);
          strategy1->SetRightOffset(top_width/2);
 
@@ -1194,7 +1255,7 @@ void CBridgePlanView::BuildGirderDisplayObjects()
          strategy1->SetDoFill(TRUE);
          strategy1->SetFillColor(GIRDER_FILL_COLOR);
 
-         // this strategy doubles as a gravity well.. get its interface and give it to 
+         // this strategy Float64s as a gravity well.. get its interface and give it to 
          // the line display object. this will make the entire top flange the clickable part
          // of the display object
          strategy1->PerimeterGravityWell(TRUE);
@@ -1205,10 +1266,10 @@ void CBridgePlanView::BuildGirderDisplayObjects()
          CComPtr<IDirection> objBearing;
          pBridge->GetGirderBearing(spanIdx,girderIdx,&objBearing);
          objBearing->IncrementBy(CComVariant(PI_OVER_2));
-         double bearing;
+         Float64 bearing;
          objBearing->get_Value(&bearing);
-         double start_skew = start_direction - bearing;
-         double end_skew = end_direction - bearing;
+         Float64 start_skew = start_direction - bearing;
+         Float64 end_skew = end_direction - bearing;
          strategy1->SetStartSkew(start_skew);
          strategy1->SetEndSkew(end_skew);
          strategy->AddStrategy(strategy1);
@@ -1229,7 +1290,7 @@ void CBridgePlanView::BuildGirderDisplayObjects()
          // direction to output text
          CComPtr<IDirection> direction;
          pBridge->GetGirderBearing(spanIdx,girderIdx,&direction);
-         double dir;
+         Float64 dir;
          direction->get_Value(&dir);
          long angle = long(1800.*dir/M_PI);
          angle = (900 < angle && angle < 2700 ) ? angle-1800 : angle;
@@ -1237,13 +1298,13 @@ void CBridgePlanView::BuildGirderDisplayObjects()
          if ( settings & IDB_PV_LABEL_GIRDERS )
          {
             // girder labels
-            double x1,y1, x2,y2;
+            Float64 x1,y1, x2,y2;
             pntEnd1->get_X(&x1);
             pntEnd1->get_Y(&y1);
             pntEnd2->get_X(&x2);
             pntEnd2->get_Y(&y2);
-            double x = x1 + (x2-x1)/4;
-            double y = y1 + (y2-y1)/4;
+            Float64 x = x1 + (x2-x1)/4;
+            Float64 y = y1 + (y2-y1)/4;
             CComPtr<IPoint2d> pntText;
             pntText.CoCreateInstance(CLSID_Point2d);
             pntText->Move(x,y);
@@ -1270,14 +1331,14 @@ void CBridgePlanView::BuildGirderDisplayObjects()
             CComPtr<iTextBlock> doText2;
             doText2.CoCreateInstance(CLSID_TextBlock);
 
-            double x1,y1, x2,y2;
+            Float64 x1,y1, x2,y2;
             pntEnd1->get_X(&x1);
             pntEnd1->get_Y(&y1);
             pntEnd2->get_X(&x2);
             pntEnd2->get_Y(&y2);
 
-            double x = x1 + (x2-x1)/2;
-            double y = y1 + (y2-y1)/2;
+            Float64 x = x1 + (x2-x1)/2;
+            Float64 y = y1 + (y2-y1)/2;
             CComPtr<IPoint2d> pntText2;
             pntText2.CoCreateInstance(CLSID_Point2d);
             pntText2->Move(x,y);
@@ -1330,8 +1391,8 @@ void CBridgePlanView::BuildGirderDisplayObjects()
          }
 #endif // _SHOW_CL_GIRDER
 
-         // Register an event sink with the girder display object so that we can handle double clicks
-         // on the girder differently then a general double click
+         // Register an event sink with the girder display object so that we can handle Float64 clicks
+         // on the girder differently then a general Float64 click
          CBridgePlanViewGirderDisplayObjectEvents* pEvents = new CBridgePlanViewGirderDisplayObjectEvents(spanIdx,girderIdx,nSpans,nGirders,pFrame);
          IUnknown* unk = pEvents->GetInterface(&IID_iDisplayObjectEvents);
          CComQIPtr<iDisplayObjectEvents,&IID_iDisplayObjectEvents> events(unk);
@@ -1378,13 +1439,15 @@ void CBridgePlanView::BuildPierDisplayObjects()
    GET_IFACE2(pBroker,IBridge,pBridge);
    PierIndexType nPiers = pBridge->GetPierCount();
    SpanIndexType nSpans = pBridge->GetSpanCount();
-   double last_station;
-   for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
+   Float64 last_station;
+   PierIndexType firstPierIdx = (m_StartSpanIdx == ALL_SPANS ? 0 : m_StartSpanIdx);
+   PierIndexType lastPierIdx  = (m_EndSpanIdx  == ALL_SPANS ? nPiers-1 : m_EndSpanIdx+1);
+   for ( PierIndexType pierIdx = firstPierIdx; pierIdx <= lastPierIdx; pierIdx++ )
    {
       const CPierData* pPier = pIBridgeDesc->GetPier(pierIdx);
 
       // get station of the pier
-      double station = pBridge->GetPierStation(pierIdx);
+      Float64 station = pBridge->GetPierStation(pierIdx);
    
       CComPtr<IDirection> direction;
       pBridge->GetPierDirection(pierIdx,&direction);
@@ -1392,7 +1455,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
       // skew the pier so it parallels the alignment
       CComPtr<IAngle> objSkew;
       pBridge->GetPierSkew(pierIdx,&objSkew);
-      double skew;
+      Float64 skew;
       objSkew->get_Value(&skew);
 
       // get the pier control points
@@ -1491,8 +1554,8 @@ void CBridgePlanView::BuildPierDisplayObjects()
       SpanIndexType prev_span_idx = pierIdx - 1;
       SpanIndexType next_span_idx = pierIdx == nSpans ? INVALID_INDEX : pierIdx;
 
-      double left_offset  = 0;
-      double right_offset = 0;
+      Float64 left_offset  = 0;
+      Float64 right_offset = 0;
       if ( prev_span_idx != ALL_SPANS)
          left_offset  = 1.05*(pBridge->GetGirderEndBearingOffset(prev_span_idx,0) + pBridge->GetGirderEndSupportWidth(prev_span_idx,0));
 
@@ -1505,12 +1568,12 @@ void CBridgePlanView::BuildPierDisplayObjects()
       strategy_pier->SetRightOffset(right_offset);
 
       // make the pier overhang the exterior girders
-      double prev_girder_length = (prev_span_idx == ALL_SPANS ? 0 : pBridge->GetGirderLength(prev_span_idx,0));
-      double prev_top_width = (prev_span_idx == ALL_SPANS ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(prev_span_idx,0,prev_girder_length)));
-      double prev_bot_width = (prev_span_idx == ALL_SPANS ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(prev_span_idx,0,prev_girder_length)));
-      double next_top_width = (next_span_idx == ALL_SPANS ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(next_span_idx,0,0)));
-      double next_bot_width = (next_span_idx == ALL_SPANS ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(next_span_idx,0,0)));
-      double left_overhang = Max4(prev_top_width,prev_bot_width,next_top_width,next_bot_width)/2;
+      Float64 prev_girder_length = (prev_span_idx == ALL_SPANS ? 0 : pBridge->GetGirderLength(prev_span_idx,0));
+      Float64 prev_top_width = (prev_span_idx == ALL_SPANS ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(prev_span_idx,0,prev_girder_length)));
+      Float64 prev_bot_width = (prev_span_idx == ALL_SPANS ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(prev_span_idx,0,prev_girder_length)));
+      Float64 next_top_width = (next_span_idx == ALL_SPANS ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(next_span_idx,0,0)));
+      Float64 next_bot_width = (next_span_idx == ALL_SPANS ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(next_span_idx,0,0)));
+      Float64 left_overhang = Max4(prev_top_width,prev_bot_width,next_top_width,next_bot_width)/2;
       left_overhang /= cos(fabs(skew));
       left_overhang *= 1.10;
 
@@ -1521,7 +1584,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
       prev_bot_width = (prev_span_idx == ALL_SPANS ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(prev_span_idx,nGirdersPrevSpan-1,prev_girder_length)));
       next_top_width = (next_span_idx == ALL_SPANS ? 0 : pGirder->GetTopWidth(pgsPointOfInterest(next_span_idx,nGirdersNextSpan-1,0)));
       next_bot_width = (next_span_idx == ALL_SPANS ? 0 : pGirder->GetBottomWidth(pgsPointOfInterest(next_span_idx,nGirdersNextSpan-1,0)));
-      double right_overhang = 1.10*Max4(prev_top_width,prev_bot_width,next_top_width,next_bot_width)/2;
+      Float64 right_overhang = 1.10*Max4(prev_top_width,prev_bot_width,next_top_width,next_bot_width)/2;
       right_overhang /= cos(fabs(skew));
       right_overhang *= 1.10;
 
@@ -1577,7 +1640,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
          doPierName->SetTextColor(BLACK);
          doPierName->SetBkMode(OPAQUE);
 
-         double dir;
+         Float64 dir;
          direction->get_Value(&dir);
          long angle = long(1800.*dir/M_PI);
          angle = (900 < angle && angle < 2700 ) ? angle-1800 : angle;
@@ -1612,7 +1675,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
          label_display_list->AddDisplayObject(doStation);
 
          // connection
-         double right_slab_edge_offset = pBridge->GetRightSlabEdgeOffset(pierIdx);
+         Float64 right_slab_edge_offset = pBridge->GetRightSlabEdgeOffset(pierIdx);
          CComPtr<IPoint2d> connection_label_point;
          pAlignment->GetPoint(station,-right_slab_edge_offset/cos(skew),direction,&connection_label_point);
 
@@ -1647,8 +1710,8 @@ void CBridgePlanView::BuildPierDisplayObjects()
 
          doConnection->SetText(GetConnectionString(pPier).c_str());
 
-         // Register an event sink with the connection text display object so that we can handle double clicks
-         // differently then a general double click
+         // Register an event sink with the connection text display object so that we can handle Float64 clicks
+         // differently then a general Float64 click
          CConnectionDisplayObjectEvents* pEvents = new CConnectionDisplayObjectEvents(pierIdx);
 
          IUnknown* unk = pEvents->GetInterface(&IID_iDisplayObjectEvents);
@@ -1658,12 +1721,12 @@ void CBridgePlanView::BuildPierDisplayObjects()
 
          label_display_list->AddDisplayObject(doConnection);
 
-         if ( 0 < pierIdx )
+         if ( firstPierIdx < pierIdx )
          {
             ATLASSERT(pierIdx != ALL_PIERS);
             // label span length
 
-            double span_length = station - last_station;
+            Float64 span_length = station - last_station;
 
             CComPtr<IPoint2d> pntInSpan;
             pAlignment->GetPoint(last_station + span_length/2,0.00,direction,&pntInSpan);
@@ -1760,7 +1823,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
 
    // get point on alignment at first pier
    CComPtr<IDirection> dir;
-   double station = pBridge->GetPierStation(0);
+   Float64 station = pBridge->GetPierStation(0);
    pBridge->GetPierDirection(0,&dir);
    CComPtr<IPoint2d> rotation_center;
    pAlignment->GetPoint(station,0.00,dir,&rotation_center);
@@ -1775,16 +1838,16 @@ void CBridgePlanView::BuildPierDisplayObjects()
    // get the direction of the line from the start of the bridge to the end
    // this represents the amount we want to rotate the display
 
-   double x1,y1, x2, y2;
+   Float64 x1,y1, x2, y2;
    rotation_center->get_X(&x1);
    rotation_center->get_Y(&y1);
    end_point->get_X(&x2);
    end_point->get_Y(&y2);
 
-   double dx = x2 - x1;
-   double dy = y2 - y1;
+   Float64 dx = x2 - x1;
+   Float64 dy = y2 - y1;
 
-   double angle = atan2(dy,dx);
+   Float64 angle = atan2(dy,dx);
 
    if ( settings & IDB_PV_NORTH_UP )
    {
@@ -1816,7 +1879,9 @@ void CBridgePlanView::BuildSpanDisplayObjects()
    display_list->Clear();
 
    SpanIndexType nSpans = pBridge->GetSpanCount();
-   for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
+   SpanIndexType firstSpanIdx = (m_StartSpanIdx == ALL_SPANS ? 0 : m_StartSpanIdx);
+   SpanIndexType lastSpanIdx  = (m_EndSpanIdx  == ALL_SPANS ? nSpans-1 : m_EndSpanIdx);
+   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx <= lastSpanIdx; spanIdx++ )
    {
       CComPtr<IPoint2dCollection> points;
       pBridge->GetSpanPerimeter(spanIdx,10,&points);
@@ -1896,8 +1961,11 @@ void CBridgePlanView::BuildSlabDisplayObjects()
 
    display_list->Clear();
 
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+   SpanIndexType firstSpanIdx = (m_StartSpanIdx == ALL_SPANS ? 0 : m_StartSpanIdx);
+   SpanIndexType lastSpanIdx  = (m_EndSpanIdx  == ALL_SPANS ? nSpans-1 : m_EndSpanIdx);
    CComPtr<IPoint2dCollection> points;
-   pBridge->GetSlabPerimeter(30,&points);
+   pBridge->GetSlabPerimeter(firstSpanIdx,lastSpanIdx,30,&points);
 
    CComPtr<IPolyShape> poly_shape;
    poly_shape.CoCreateInstance(CLSID_PolyShape);
@@ -1953,7 +2021,7 @@ void CBridgePlanView::BuildSlabDisplayObjects()
    }
 
    CString strMsg3;
-   double overlay_weight = pBridge->GetOverlayWeight();
+   Float64 overlay_weight = pBridge->GetOverlayWeight();
    if ( pBridge->HasOverlay() )
    {
       strMsg3.Format(_T("\r\n\r\n%s: %s"),
@@ -2011,9 +2079,11 @@ void CBridgePlanView::BuildSectionCutDisplayObjects()
    UpdateSectionCut(point_disp,FALSE);
    display_list->AddDisplayObject(disp_obj);
 
-   double first_station = pBridge->GetPierStation(0);
-   double last_station  = pBridge->GetPierStation(pBridge->GetPierCount()-1);
-   double cut_station = m_pFrame->GetCurrentCutLocation();
+   PierIndexType startPierIdx = (PierIndexType)m_StartSpanIdx;
+   PierIndexType endPierIdx   = (PierIndexType)(m_EndSpanIdx+1);
+   Float64 first_station = pBridge->GetPierStation(startPierIdx);
+   Float64 last_station  = pBridge->GetPierStation(endPierIdx);
+   Float64 cut_station = m_pFrame->GetCurrentCutLocation();
 
    if ( !InRange(first_station,cut_station,last_station) )
    {
@@ -2043,9 +2113,9 @@ void CBridgePlanView::BuildNorthArrowDisplayObjects()
    dispMgr->GetCoordinateMap(&map);
 
    CComQIPtr<iMapping> mapping(map);
-   double cx,cy,angle;
+   Float64 cx,cy,angle;
    mapping->GetRotation(&cx,&cy,&angle);
-   double direction = PI_OVER_2 + angle;
+   Float64 direction = PI_OVER_2 + angle;
    doNorth->SetDirection(direction);
 
    display_list->AddDisplayObject(doNorth);
@@ -2069,7 +2139,9 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    SpanIndexType nSpans = pBridge->GetSpanCount();
-   for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
+   SpanIndexType firstSpanIdx = (m_StartSpanIdx == ALL_SPANS ? 0 : m_StartSpanIdx);
+   SpanIndexType lastSpanIdx  = (m_EndSpanIdx  == ALL_SPANS ? nSpans-1 : m_EndSpanIdx);
+   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx <= lastSpanIdx; spanIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders-1; gdrIdx++ )
@@ -2088,7 +2160,7 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
             // Only add the diaphragm if it has width
             if ( !IsZero(left_diaphragm.W) && !IsZero(right_diaphragm.W) )
             {
-               double station, offset;
+               Float64 station, offset;
                pBridge->GetStationAndOffset(pgsPointOfInterest(spanIdx,gdrIdx,left_diaphragm.Location),&station,&offset);
 
                CComPtr<IDirection> normal;
@@ -2138,7 +2210,7 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
                strategy->SetFillColor(DIAPHRAGM_FILL_COLOR);
                strategy->SetDoFill(TRUE);
 
-               double width = (left_diaphragm.T + right_diaphragm.T)/2;
+               Float64 width = (left_diaphragm.T + right_diaphragm.T)/2;
                strategy->SetLeftOffset(width/2);
                strategy->SetRightOffset(width/2);
 

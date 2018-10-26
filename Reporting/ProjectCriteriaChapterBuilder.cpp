@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -633,15 +633,15 @@ void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    switch ( pSpecEntry->GetTrafficBarrierDistributionType() )
    {
    case pgsTypes::tbdGirder:
-      *pPara << _T("Railing system weight is distributed to ") << pSpecEntry->GetMaxGirdersDistTrafficBarrier() << _T(" girders") << rptNewLine;
+      *pPara << _T("Railing system weight is distributed to ") << pSpecEntry->GetMaxGirdersDistTrafficBarrier() << _T(" nearest girders") << rptNewLine;
       break;
 
    case pgsTypes::tbdMatingSurface:
-      *pPara << _T("Railing system weight is distributed to ") << pSpecEntry->GetMaxGirdersDistTrafficBarrier() << _T(" mating surfaces") << rptNewLine;
+      *pPara << _T("Railing system weight is distributed to ") << pSpecEntry->GetMaxGirdersDistTrafficBarrier() << _T(" nearest mating surfaces") << rptNewLine;
       break;
 
    case pgsTypes::tbdWebs:
-      *pPara << _T("Railing system weight is distributed to ") << pSpecEntry->GetMaxGirdersDistTrafficBarrier() << _T(" webs") << rptNewLine;
+      *pPara << _T("Railing system weight is distributed to ") << pSpecEntry->GetMaxGirdersDistTrafficBarrier() << _T(" nearest webs") << rptNewLine;
       break;
 
    default:

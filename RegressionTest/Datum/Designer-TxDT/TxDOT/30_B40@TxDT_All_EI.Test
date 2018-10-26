@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 30.33   7  0.14  1     1    5B40       10   1/2  270 16.43 16.43   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.627   -0.502    1087 0.422  0.680  0.02  0.00 -0.00 -0.00 -0.00   8.67  36.60   1.00   1.00   1.00
+ 30.33   7  0.14  1     1    5B40       10   1/2  270 16.43 16.43   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.626   -0.501    1086 0.422  0.680  0.02  0.00 -0.00 -0.00 -0.00   8.67  36.60   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -9,7 +9,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 30.33   7  0.14  1     2    5B40       10   1/2  270 16.43 16.43   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.620   -0.497    1075 0.414  0.679  0.02  0.00 -0.00 -0.00 -0.00   8.67  36.60   1.00   1.00   1.00
+ 30.33   7  0.14  1     2    5B40       10   1/2  270 16.43 16.43   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.620   -0.497    1074 0.414  0.679  0.02  0.00 -0.00 -0.00 -0.00   8.67  36.60   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -18,7 +18,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 30.33   7  0.14  1     4    4B40        8   1/2  270 16.19 16.19   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.634   -0.494     896 0.352  0.495  0.02  0.00 -0.00  0.00 -0.00   6.40  28.21   1.00   1.00   1.00
+ 30.33   7  0.14  1     4    4B40        8   1/2  270 16.19 16.19   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.634   -0.494     895 0.352  0.495  0.02  0.00 -0.00  0.00 -0.00   6.40  28.21   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -27,7 +27,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 30.33   7  0.14  2     1   5B40c       48   1/2  270 14.81 14.37  12  2.50  28  12  6  2  2  2  0  0  0  0  0  0  4.000  6.400    3.864   -3.139    4741 0.340  0.610  0.12  0.00 -0.03 -0.04 -0.06  85.32 270.31   1.00   1.00   1.00
+ 30.33   7  0.14  2     1   5B40c       48   1/2  270 14.81 14.37  12  2.50  28  12  6  2  2  2  0  0  0  0  0  0  4.000  6.400    3.861   -3.137    4738 0.340  0.610  0.12  0.00 -0.03 -0.04 -0.06  85.32 270.31   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -38,7 +38,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 30.33   7  0.14  2     2   5B40c       48   1/2  270 14.81 14.37  12  2.50  28  12  6  2  2  2  0  0  0  0  0  0  4.000  6.200    3.840   -3.122    4705 0.334  0.609  0.12  0.00 -0.03 -0.04 -0.06  85.32 270.31   1.00   1.00   1.00
+ 30.33   7  0.14  2     2   5B40c       48   1/2  270 14.81 14.37  12  2.50  28  12  6  2  2  2  0  0  0  0  0  0  4.000  6.200    3.837   -3.120    4702 0.334  0.609  0.12  0.00 -0.03 -0.04 -0.06  85.32 270.31   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -49,7 +49,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 30.33   7  0.14  2     4   4B40c       40   1/2  270 14.57 13.87  14  2.50  22  14 10  2  2  0  0  0  0  0  0  0  4.000  6.400    3.900   -3.076    3906 0.286  0.444  0.03  0.00 -0.03  0.00 -0.03  63.24 213.59   1.00   1.00   1.00
+ 30.33   7  0.14  2     4   4B40c       40   1/2  270 14.57 13.87  14  2.50  22  14 10  2  2  0  0  0  0  0  0  0  4.000  6.400    3.897   -3.073    3902 0.286  0.444  0.03  0.00 -0.03  0.00 -0.03  63.24 213.59   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful

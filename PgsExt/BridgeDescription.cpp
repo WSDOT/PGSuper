@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -826,14 +826,25 @@ void CBridgeDescription::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceT
       pNextPier->SetConnectionLibraryEntry(pgsTypes::Back, pNextPier->GetConnectionLibraryEntry(pgsTypes::Ahead) );
    }
 
-   // offset all piers after the new pier by the length of the new span
-   if (newSpanLength>0.0)
+   // Adjust location of down-station piers
+   if ( refPierIdx == 0 && refSpanIdx == 0 && pierFace == pgsTypes::Back )
    {
-      std::vector<CPierData*>::iterator pierIter;
-      for ( pierIter = backPierIter + 1; pierIter != m_Piers.end(); pierIter++ )
+      // If the new span is inserted before the first span, its station is
+      CPierData* pFirstInteriorPier = m_Piers[1];
+      CPierData* pPier = m_Piers.front();
+      pPier->SetStation(pFirstInteriorPier->GetStation() - newSpanLength);
+   }
+   else
+   {
+      // otherwise, offset all piers after the new pier by the length of the new span
+      if ( 0.0 < newSpanLength )
       {
-         CPierData* pPier = *pierIter;
-         pPier->SetStation( pPier->GetStation() + newSpanLength);
+         std::vector<CPierData*>::iterator pierIter;
+         for ( pierIter = backPierIter + 1; pierIter != m_Piers.end(); pierIter++ )
+         {
+            CPierData* pPier = *pierIter;
+            pPier->SetStation( pPier->GetStation() + newSpanLength);
+         }
       }
    }
 
@@ -874,12 +885,19 @@ void CBridgeDescription::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
 
    RenumberSpans();
 
-   // offset all piers after the pir that was removed by the length of the span that was removed
-   std::vector<CPierData*>::iterator pierIter;
-   for ( pierIter = m_Piers.begin()+removePierIdx; pierIter != m_Piers.end(); pierIter++ )
+   if ( spanIdx == 0 && removePierIdx == 0 )
    {
-      CPierData* pPier = *pierIter;
-      pPier->SetStation( pPier->GetStation() - span_length );
+      // Don't alter bridge if first pier and span are removed
+   }
+   else
+   {
+      // offset all piers after the pier that was removed by the length of the span that was removed
+      std::vector<CPierData*>::iterator pierIter;
+      for ( pierIter = m_Piers.begin()+removePierIdx; pierIter != m_Piers.end(); pierIter++ )
+      {
+         CPierData* pPier = *pierIter;
+         pPier->SetStation( pPier->GetStation() - span_length );
+      }
    }
 
    AssertValid();

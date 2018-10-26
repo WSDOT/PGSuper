@@ -1631,10 +1631,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\targetver.h"
-				>
-			</File>
-			<File
 				RelativePath="..\Include\Reporting\UserDefinedLoadsChapterBuilder.h"
 				>
 			</File>

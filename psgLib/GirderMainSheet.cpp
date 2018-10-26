@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -304,6 +304,26 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
 
    DDX_Check_Bool(pDX,IDC_ODD_STRANDS, m_Entry.m_bOddNumberOfHarpedStrands );
    DDX_Check_Bool(pDX,IDC_USE_DIFF_GRID, m_Entry.m_bUseDifferentHarpedGridAtEnds);
+
+   int idx;
+   if (!pDX->m_bSaveAndValidate)
+   {
+      idx = m_Entry.IsForceHarpedStrandsStraight() ? 1 : 0;
+   }
+
+   DDX_CBIndex(pDX,IDC_WEB_STRAND_TYPE_COMBO, idx);
+
+   if (pDX->m_bSaveAndValidate)
+   {
+      bool do_force_straight = idx!=0;
+      m_Entry.ForceHarpedStrandsStraight(do_force_straight);
+
+      if(do_force_straight)
+      {
+         // set adjustment limits for end same as hp
+         m_Entry.m_EndAdjustment = m_Entry.m_HPAdjustment;
+      }
+   }
 
    // get strand locations from grid and put them in library entry
    if (pDX->m_bSaveAndValidate)

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -371,25 +371,31 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, SpanIndexType	
    (*p_table)(++row,0) << Bold(_T("Prestressing Strands"));
    if (nh>0)
    {
-      // If harped are straight, report none
-      StrandIndexType nh_loc = are_harped_straight ? 0 : nh;
 
-      (*p_table)(row,1) << Bold(_T("Depressed"));
-
-      (*p_table)(++row,0) << _T("NO. (# of Harped Strands)");
-      (*p_table)(row  ,1) << nh_loc;
-
-      double TO;
       if (are_harped_straight)
       {
-         TO = 0.0;
+         (*p_table)(row,1) << Bold(_T("Straight-Web"));
+         (*p_table)(++row,0) << _T("NO. (# of Straight-Web Strands)");
       }
       else
       {
-         pStrandGeometry->GetHighestHarpedStrandLocation(span,girder,&TO);
+         (*p_table)(row,1) << Bold(_T("Depressed"));
+         (*p_table)(++row,0) << _T("NO. (# of Harped Strands)");
       }
 
-      (*p_table)(++row,0) << _T("Y")<<Sub(_T("b"))<<_T(" of Topmost Depressed Strand(s) @ End");
+      (*p_table)(row  ,1) << nh;
+
+      if (are_harped_straight)
+      {
+         (*p_table)(++row,0) << _T("Y")<<Sub(_T("b"))<<_T(" of Topmost Straight-Web Strand(s) @ End");
+      }
+      else
+      {
+         (*p_table)(++row,0) << _T("Y")<<Sub(_T("b"))<<_T(" of Topmost Depressed Strand(s) @ End");
+      }
+
+      double TO;
+      pStrandGeometry->GetHighestHarpedStrandLocation(span,girder,&TO);
       (*p_table)(row  ,1) << ecc.SetValue(TO);
    }
    else

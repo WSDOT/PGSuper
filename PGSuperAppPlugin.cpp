@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -120,12 +120,18 @@ void CPGSuperAppPlugin::IntegrateWithUI(BOOL bIntegrate)
    UINT filePos = pMainMenu->FindMenuItem(_T("&File"));
    CEAFMenu* pFileMenu = pMainMenu->GetSubMenu(filePos);
    if ( pFileMenu == NULL )
+   {
+      ATLASSERT(false);
       return;
+   }
 
    UINT managePos = pFileMenu->FindMenuItem(_T("Manage"));
    CEAFMenu* pManageMenu = pFileMenu->GetSubMenu(managePos);
    if ( pManageMenu == NULL )
+   {
+      ATLASSERT(false);
       return;
+   }
 
    if ( bIntegrate )
    {

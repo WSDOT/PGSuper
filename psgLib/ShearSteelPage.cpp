@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -347,13 +347,6 @@ BOOL CShearSteelPage::OnInitDialog()
    FillBarComboBox((CComboBox*)GetDlgItem(IDC_SPLITTING_BAR_SIZE));
    FillBarComboBox((CComboBox*)GetDlgItem(IDC_CONFINE_BAR_SIZE));
 
-   pc = (CComboBox*)GetDlgItem(IDC_SPLITTING_NLEGS);
-   pc->AddString(_T("1"));
-   pc->AddString(_T("2"));
-   pc->AddString(_T("3"));
-   pc->AddString(_T("4"));
-   pc->AddString(_T("6"));
-
    // 
    CWnd* pw = (CWnd*)GetDlgItem(IDC_RESTORE_DEFAULTS);
    pw->ShowWindow(m_AllowRestoreDefaults ? SW_SHOW:SW_HIDE);
@@ -459,6 +452,15 @@ void CShearSteelPage::FillBarComboBox(CComboBox* pCB)
 
    idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bs6).c_str());
    pCB->SetItemData(idx,(DWORD_PTR)matRebar::bs6);
+
+   idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bs7).c_str());
+   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bs7);
+
+   idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bs8).c_str());
+   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bs8);
+
+   idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bs9).c_str());
+   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bs9);
 }
 
 

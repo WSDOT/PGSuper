@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -81,6 +81,19 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    const pgsGirderArtifact* pArtifact = pIArtifact->GetArtifact(span,girder);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
+
+   GET_IFACE2( pBroker, IStrandGeometry, pStrandGeometry );
+
+   // WsDOT reports don't support Straight-Web strand option
+   if (pStrandGeometry->GetAreHarpedStrandsForcedStraight(span, girder))
+   {
+      rptParagraph* p;
+      
+      p = new rptParagraph;
+      *pChapter << p;
+      *p << color(Red) << Bold(_T("A WSDOT Girder Schedule could not be generated because this girder utilizes straight web strands. WSDOT Standard Girders utilize harped strands.")) << color(Black) << rptNewLine;
+      return pChapter;
+   }
 
    if( pArtifact->Passed() )
    {
@@ -268,8 +281,6 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    (*p_table)(++row,0) << RPT_FCI << _T(" (at Release)");
    (*p_table)(row  ,1) << stress.SetValue(pMaterial->GetFciGdr(span,girder));
 
-   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
-   
    StrandIndexType nh = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Harped);
    (*p_table)(++row,0) << _T("Number of Harped Strands");
    (*p_table)(row  ,1) << nh;

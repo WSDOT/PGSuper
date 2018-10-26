@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -205,6 +205,11 @@ CProjectAgentImp::CProjectAgentImp()
    m_LaneImpact[pgsTypes::lltPermitRating_Routine]  = 0.00;
    m_LaneImpact[pgsTypes::lltPermitRating_Special]  = 0.00;
 
+   // Default for versions of PGSuper before this was an option was to sum pedestrian with vehicular
+   m_PedestrianLoadApplicationType[pgsTypes::lltDesign] = ILiveLoads::PedConcurrentWithVehiculuar;
+   m_PedestrianLoadApplicationType[pgsTypes::lltPermit] = ILiveLoads::PedConcurrentWithVehiculuar;
+   m_PedestrianLoadApplicationType[pgsTypes::lltFatigue] = ILiveLoads::PedDontApply;
+
    m_bExcludeLegalLoadLaneLoading = false;
    m_bIncludePedestrianLiveLoad = false;
    m_SpecialPermitType = pgsTypes::ptSingleTripWithEscort;
@@ -298,7 +303,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_bEnableRating[pgsTypes::lrPermit_Routine]   = false;
    m_bEnableRating[pgsTypes::lrPermit_Special]   = false;
 
-   m_ReservedLiveLoads.push_back(_T("Pedestrian on Sidewalk"));
+   m_ReservedLiveLoads.reserve(5);
    m_ReservedLiveLoads.push_back(_T("HL-93"));
    m_ReservedLiveLoads.push_back(_T("Fatigue"));
    m_ReservedLiveLoads.push_back(_T("AASHTO Legal Loads"));
@@ -2810,7 +2815,8 @@ HRESULT CProjectAgentImp::LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLo
 
 HRESULT CProjectAgentImp::SaveLiveLoad(IStructuredSave* pSave,IProgress* pProgress,CProjectAgentImp* pObj,LPTSTR lpszUnitName,pgsTypes::LiveLoadType llType)
 {
-   pSave->BeginUnit(lpszUnitName,1.0);
+   // version 2 added m_PedestrianLoadApplicationType
+   pSave->BeginUnit(lpszUnitName,2.0);
 
    pSave->put_Property(_T("TruckImpact"),CComVariant(pObj->m_TruckImpact[llType]));
    pSave->put_Property(_T("LaneImpact"), CComVariant(pObj->m_LaneImpact[llType]));
@@ -2830,6 +2836,12 @@ HRESULT CProjectAgentImp::SaveLiveLoad(IStructuredSave* pSave,IProgress* pProgre
       pSave->EndUnit(); // Vehicles
    }
 
+   // m_PedestrianLoadApplicationType
+   // Save valid values only for non-rating llTypes
+   LONG app_type = (llType<pgsTypes::lltDesign || llType>pgsTypes::lltFatigue) ? INVALID_INDEX : pObj->m_PedestrianLoadApplicationType[llType];
+   pSave->put_Property(_T("PedestrianLoadApplicationType"), CComVariant(app_type));
+
+
    pSave->EndUnit();
 
    return S_OK;
@@ -2842,6 +2854,9 @@ HRESULT CProjectAgentImp::LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgre
    HRESULT hr = pLoad->BeginUnit(lpszUnitName);
    if ( FAILED(hr) )
       return hr;
+
+   Float64 vers;
+   pLoad->get_Version(&vers);
 
    CComVariant var;
    var.vt = VT_R8;
@@ -2859,7 +2874,6 @@ HRESULT CProjectAgentImp::LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgre
 
    pObj->m_LaneImpact[llType] = var.dblVal;
 
-
    var.Clear();
    var.vt = VT_I4;
    hr = pLoad->get_Property(_T("VehicleCount"), &var);
@@ -2875,6 +2889,7 @@ HRESULT CProjectAgentImp::LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgre
 
       pObj->m_SelectedLiveLoads[llType].clear();
 
+      bool was_pedestrian=false; // pedestrian loads used to be saved as vehicles
       for (long itrk=0; itrk<cnt; itrk++)
       {
          var.Clear();
@@ -2885,24 +2900,59 @@ HRESULT CProjectAgentImp::LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgre
 
          _bstr_t vnam(var.bstrVal);
 
-         LiveLoadSelection sel;
-         sel.EntryName = vnam;
-
-         if ( !pObj->IsReservedLiveLoad(sel.EntryName) )
+         if (vnam == _bstr_t(_T("Pedestrian on Sidewalk")))
          {
-            use_library_entry( &pObj->m_LibObserver,
-                               sel.EntryName, 
-                               &sel.pEntry, 
-                               *pLiveLoadLibrary);
+            ATLASSERT(vers<2.0); // should not been saving this in new versions
+            was_pedestrian = true; 
          }
-         
-         pObj->m_SelectedLiveLoads[llType].push_back(sel);
+         else
+         {
+
+            LiveLoadSelection sel;
+            sel.EntryName = vnam;
+
+            if ( !pObj->IsReservedLiveLoad(sel.EntryName) )
+            {
+               use_library_entry( &pObj->m_LibObserver,
+                                  sel.EntryName, 
+                                  &sel.pEntry, 
+                                  *pLiveLoadLibrary);
+            }
+            
+            pObj->m_SelectedLiveLoads[llType].push_back(sel);
+         }
       }
 
       hr = pLoad->EndUnit(); // Vehicles
       if ( FAILED(hr) )
          return hr;
+
+      // m_PedestrianLoadApplicationType
+      if (vers>1.0)
+      {
+         var.Clear();
+         var.vt = VT_I4;
+         hr = pLoad->get_Property(_T("PedestrianLoadApplicationType"),&var);
+         if ( FAILED(hr) )
+            return hr;
+
+         // Save valid values only for non-rating llTypes
+         if(!(llType<pgsTypes::lltDesign || llType>pgsTypes::lltFatigue))
+         {
+            ATLASSERT(var.lVal!=INVALID_INDEX);
+            pObj->m_PedestrianLoadApplicationType[llType] = (PedestrianLoadApplicationType)var.lVal;
+         }
+      }
+      else
+      {
+         if(!(llType<pgsTypes::lltDesign || llType>pgsTypes::lltFatigue))
+         {
+            pObj->m_PedestrianLoadApplicationType[llType] = was_pedestrian ? ILiveLoads::PedConcurrentWithVehiculuar : ILiveLoads::PedDontApply;
+         }
+      }
    }
+
+
 
    hr = pLoad->EndUnit();
    if ( FAILED(hr) )
@@ -5501,7 +5551,17 @@ arDesignOptions CProjectAgentImp::GetDesignOptions(SpanIndexType spanIdx,GirderI
       options.doDesignSlope    = false;
    }
 
-   options.doStrandFillType = pSpecEntry->GetDesignStrandFillType();
+   options.doForceHarpedStrandsStraight = pGirderEntry->IsForceHarpedStrandsStraight();
+
+   if (!options.doForceHarpedStrandsStraight)
+   {
+      options.doStrandFillType = pSpecEntry->GetDesignStrandFillType();
+   }
+   else
+   {
+      // For straight-web designs we always fill using grid order (until design algorithm is changed to work for other option)
+      options.doStrandFillType = ftGridOrder;
+   }
 
    return options;
 }
@@ -5578,11 +5638,7 @@ void CProjectAgentImp::EnumLiveLoadNames( std::vector<std::_tstring>* pNames) co
    const LiveLoadLibrary& prj_lib = *(m_pLibMgr->GetLiveLoadLibrary());
    psglibCreateLibNameEnum( pNames, prj_lib);
 
-   std::vector<std::_tstring>::const_iterator iter = m_ReservedLiveLoads.begin();
-   ATLASSERT( *iter == _T("Pedestrian on Sidewalk") ); // Pedestrian on Sidewalk is first reserved name... 
-   if ( !CanHavePedestrianLoad() )
-      iter++; // ... skip if we can't have pedestrain loads
-
+   std::vector<std::_tstring>::const_iterator iter(m_ReservedLiveLoads.begin());
    for ( ; iter != m_ReservedLiveLoads.end(); iter++ )
    {
       pNames->insert(pNames->begin(),*iter);
@@ -6471,45 +6527,32 @@ bool CProjectAgentImp::IsLiveLoadDefined(pgsTypes::LiveLoadType llType)
    return true;
 }
 
-bool CProjectAgentImp::IsPedestianLoadEnabled(pgsTypes::LiveLoadType llType)
+ILiveLoads::PedestrianLoadApplicationType CProjectAgentImp::GetPedestrianLoadApplication(pgsTypes::LiveLoadType llType)
 {
-   ATLASSERT(llType != pgsTypes::lltPedestrian);
-
-   std::vector<LiveLoadSelection>::iterator iter;
-   for ( iter = m_SelectedLiveLoads[llType].begin(); iter != m_SelectedLiveLoads[llType].end(); iter++ )
+   if (llType<pgsTypes::lltDesign || llType>pgsTypes::lltFatigue)
    {
-      LiveLoadSelection& llselection = *iter;
-      if ( llselection.EntryName == _T("Pedestrian on Sidewalk") )
-         return true;
-   }
-
-   return false;
-}
-
-void CProjectAgentImp::EnablePedestianLoad(pgsTypes::LiveLoadType llType,bool bEnable)
-{
-   ATLASSERT(llType != pgsTypes::lltPedestrian);
-   if ( bEnable )
-   {
-      if ( !IsPedestianLoadEnabled(llType) )
-      {
-         LiveLoadSelection llselection;
-         llselection.EntryName = _T("Pedestrian on Sidewalk");
-         llselection.pEntry = NULL;
-         m_SelectedLiveLoads[llType].push_back(llselection);
-      }
+      // Rating Live Loads
+      return m_bIncludePedestrianLiveLoad ? ILiveLoads::PedConcurrentWithVehiculuar : ILiveLoads::PedDontApply;
    }
    else
    {
-      std::vector<LiveLoadSelection>::iterator iter;
-      for ( iter = m_SelectedLiveLoads[llType].begin(); iter != m_SelectedLiveLoads[llType].end(); iter++ )
+      return m_PedestrianLoadApplicationType[llType];
+   }
+}
+
+void CProjectAgentImp::SetPedestrianLoadApplication(pgsTypes::LiveLoadType llType, PedestrianLoadApplicationType PedLoad)
+{
+   if (llType<pgsTypes::lltDesign || llType>pgsTypes::lltFatigue)
+   {
+      // This function is not applicable for Rating Live Loads
+      ATLASSERT(0);
+   }
+   else
+   {
+      if (m_PedestrianLoadApplicationType[llType] != PedLoad)
       {
-         LiveLoadSelection& llselection = *iter;
-         if ( llselection.EntryName == _T("Pedestrian on Sidewalk") )
-         {
-            m_SelectedLiveLoads[llType].erase(iter);
-            return;
-         }
+         m_PedestrianLoadApplicationType[llType] = PedLoad;
+         Fire_LiveLoadChanged();
       }
    }
 }
@@ -6519,14 +6562,9 @@ std::vector<std::_tstring> CProjectAgentImp::GetLiveLoadNames(pgsTypes::LiveLoad
    std::vector<std::_tstring> strNames;
    strNames.reserve(m_SelectedLiveLoads[llType].size());
 
-   bool bCanHavePedLoad = CanHavePedestrianLoad();
-
    for (LiveLoadSelectionIterator it = m_SelectedLiveLoads[llType].begin(); it != m_SelectedLiveLoads[llType].end(); it++)
    {
       const LiveLoadSelection& lls = *it;
-
-      if ( lls.EntryName == _T("Pedestrian on Sidewalk") && !bCanHavePedLoad )
-         continue; // if pedestrian is in the list, and can't have ped load, then skip it.
 
       strNames.push_back(lls.EntryName);
    }
@@ -6628,31 +6666,16 @@ void CProjectAgentImp::SetLaneImpact(pgsTypes::LiveLoadType llType,double impact
 
 bool CProjectAgentImp::IsReservedLiveLoad(const std::_tstring& strName)
 {
-   std::vector<std::_tstring>::iterator iter;
-   for ( iter = m_ReservedLiveLoads.begin(); iter != m_ReservedLiveLoads.end(); iter++ )
+   std::vector<std::_tstring>::const_iterator iter(m_ReservedLiveLoads.begin());
+   std::vector<std::_tstring>::const_iterator iter_end(m_ReservedLiveLoads.end());
+   for ( ; iter != iter_end; iter++ )
    {
-      if ( (*iter) == strName )
+      const std::_tstring& rname = *iter;
+      if ( rname == strName )
          return true;
    }
 
    return false;
-}
-
-void CProjectAgentImp::OnLiveLoadEntryRenamed(LiveLoadLibraryEntry* pEntry)
-{
-   // deal with case when an entry is renamed
-   for ( int i = 0; i < 8; i++ )
-   {
-      pgsTypes::LiveLoadType llType = (pgsTypes::LiveLoadType)i;
-
-      for (LiveLoadSelectionIterator it = m_SelectedLiveLoads[llType].begin(); it != m_SelectedLiveLoads[llType].end(); it++)
-      {
-         if (it->pEntry == pEntry)
-         {
-            it->EntryName = pEntry->GetName();
-         }
-      }
-   }
 }
 
 void CProjectAgentImp::SetLldfRangeOfApplicabilityAction(LldfRangeOfApplicabilityAction action)
@@ -7093,22 +7116,6 @@ void CProjectAgentImp::DealWithConnectionLibraryChanges(bool fromLibrary)
    }
 
 }
-
-bool CProjectAgentImp::CanHavePedestrianLoad() const
-{
-   GET_IFACE(IBarriers,pBarriers);
-   double wLeft  = pBarriers->GetSidewalkWidth(pgsTypes::tboLeft);
-   double wRight = pBarriers->GetSidewalkWidth(pgsTypes::tboRight);
-
-   GET_IFACE(ISpecification,pSpec);
-   GET_IFACE(ILibrary,pLib);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   double wMin = pSpecEntry->GetMinSidewalkWidth();
-
-   // pedestrian load is only available if sidewalk is wide enough
-   return ( wMin < wLeft || wMin < wRight ) ? true : false;
-}
-
 
 void CProjectAgentImp::AddGirderStatusItem(SpanIndexType span,GirderIndexType girder, std::_tstring& message)
 {

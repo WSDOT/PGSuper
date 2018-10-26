@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -738,6 +738,7 @@ struct arDesignOptions
    bool doDesignHoldDown;
 
    arDesignStrandFillType doStrandFillType;
+   bool doForceHarpedStrandsStraight;
 
    bool doDesignForShear;
 
@@ -745,7 +746,8 @@ struct arDesignOptions
 
    arDesignOptions(): doDesignForFlexure(dtNoDesign), doDesignSlabOffset(false), doDesignLifting(false), doDesignHauling(false),
                       doDesignSlope(false), doDesignHoldDown(false), doDesignForShear(false), 
-                      doStrandFillType(ftMinimizeHarping), doDesignStirrupLayout(slLayoutStirrups)
+                      doStrandFillType(ftMinimizeHarping), doDesignStirrupLayout(slLayoutStirrups),
+                      doForceHarpedStrandsStraight(false)
    {;}
 };
 

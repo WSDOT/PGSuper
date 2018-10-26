@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,7 @@
 #include "..\PGSuperException.h"
 
 #include "PGSuperLoadCombinationResponse.h"
+#include "BarrierSidewalkLoadDistributionTool.h"
 
 #include "StatusItems.h"
 
@@ -869,8 +870,7 @@ void CAnalysisAgentImp::Invalidate(bool clearStatus)
    m_BridgeSiteModels.clear();
    m_CastingYardModels.clear();
 
-   m_TrafficBarrierLoad.clear();
-   m_SidewalkLoad.clear();
+   m_SidewalkTrafficBarrierLoads.clear();
 
    InvalidateCamberModels();
 
@@ -1264,7 +1264,7 @@ void CAnalysisAgentImp::BuildBridgeSiteModel(GirderIndexType gdr,bool bContinuou
       ApplySlabLoad(          pModel, gdr);
       ApplyOverlayLoad(       pModel, gdr);
       ApplyTrafficBarrierAndSidewalkLoad(pModel, gdr);
-      ApplyShearKeyLoad(pModel,gdr);
+      ApplyShearKeyLoad(      pModel,gdr);
       ApplyLiveLoadModel(     pModel, gdr);
       ApplyUserDefinedLoads(  pModel, gdr);
 
@@ -1990,6 +1990,8 @@ STDMETHODIMP CAnalysisAgentImp::Init()
    // Register status callbacks that we want to use
    m_scidInformationalError = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusError,IDH_GIRDER_CONNECTION_ERROR)); // informational with help for girder end offset error
    m_scidVSRatio            = pStatusCenter->RegisterCallback(new pgsVSRatioStatusCallback(m_pBroker));
+   m_scidBridgeDescriptionError = pStatusCenter->RegisterCallback( new pgsBridgeDescriptionStatusCallback(m_pBroker,eafTypes::statusError));
+
    return S_OK;
 }
 
@@ -2356,6 +2358,29 @@ void CAnalysisAgentImp::ApplyOverlayLoad(ILBAMModel* pModel,GirderIndexType gdr)
 
    GET_IFACE(IBridge,pBridge);
 
+   // Make sure we have a roadway to work with
+   PierIndexType npiers = pBridge->GetPierCount();
+   for (PierIndexType pier=0; pier<npiers; pier++)
+   {
+      Float64 station = pBridge->GetPierStation(pier);
+      Float64 dfs = pBridge->GetDistanceFromStartOfBridge(station);
+      Float64 loffs = pBridge->GetLeftInteriorCurbOffset(dfs);
+      Float64 roffs = pBridge->GetRightInteriorCurbOffset(dfs);
+
+      if (loffs >= roffs)
+      {
+         CString strMsg(_T("The distance between interior curb lines cannot be negative. Increase the deck width or decrease sidewalk widths."));
+         pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,2,strMsg);
+
+         GET_IFACE(IEAFStatusCenter,pStatusCenter);
+         pStatusCenter->Add(pStatusItem);
+
+         strMsg += _T(" See Status Center for Details");
+         THROW_UNWIND(strMsg,XREASON_NEGATIVE_GIRDER_LENGTH);
+      }
+   }
+
+
    // if there isn't an overlay, get the heck outta here
    if ( !pBridge->HasOverlay() )
       return;
@@ -2584,237 +2609,54 @@ void CAnalysisAgentImp::ApplyShearKeyLoad(ILBAMModel* pModel,GirderIndexType gdr
    }
 }
 
-void CAnalysisAgentImp::GetSidewalkLoadFraction(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* pFraLeft,Float64* pFraRight)
+void CAnalysisAgentImp::GetSidewalkLoadFraction(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* pSidewalkLoad,
+                                                Float64* pFraLeft,Float64* pFraRight)
 {
-   GET_IFACE( IBarriers, pBarriers);
 
-   bool bLeftSidewalk = pBarriers->HasSidewalk(pgsTypes::tboLeft);
-   bool bRightSidewalk = pBarriers->HasSidewalk(pgsTypes::tboRight);
-   if ( bLeftSidewalk && bRightSidewalk )
+   ComputeSidewalksBarriersLoadFractions();
+
+   SpanGirderHashType key = HashSpanGirder(spanIdx,gdrIdx);
+   SidewalkTrafficBarrierLoadIterator found = m_SidewalkTrafficBarrierLoads.find(key);
+   if ( found != m_SidewalkTrafficBarrierLoads.end() )
    {
-      // if sidewalk is on both left and right side, it distributes the same as the traffic barrier
-      GetTrafficBarrierLoadFraction(spanIdx,gdrIdx,pFraLeft,pFraRight);
+      const SidewalkTrafficBarrierLoad& rload = found->second;
+      *pSidewalkLoad = rload.m_SidewalkLoad;
+      *pFraLeft = rload.m_LeftSidewalkFraction;
+      *pFraRight = rload.m_RightSidewalkFraction;
    }
    else
    {
-      GirderIndexType nDist; // number of girders/webs/mating surfaces in the section
-      GirderIndexType nMaxDist; // max number of girders/webs/mating surfaces to distribute load to
-      pgsTypes::TrafficBarrierDistribution distType; // the distribution type
-
-      // NOTE: The term "element" refers to girder, web, or mating surface
-
-      GET_IFACE( IBridge, pBridge);
-      GET_IFACE( IGirder, pGirder);
-      GET_IFACE( ISpecification, pSpec );
-
-      pSpec->GetTrafficBarrierDistribution(&nMaxDist,&distType);
-
-      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-      gdrIdx = min(gdrIdx,nGirders-1); // adjust girder index as needed
-
-      nDist = nGirders;
-      MatingSurfaceIndexType nElements = 1; // number of elements to distribute the load to
-      MatingSurfaceIndexType nPrevElements = gdrIdx; // number of elements to the left of this element
-      if ( distType == pgsTypes::tbdMatingSurface )
-      {
-         // get a count of all the elements in this span
-         nDist = 0;
-         nPrevElements = 0;
-
-         for ( GirderIndexType i = 0; i < nGirders; i++ )
-         {
-            MatingSurfaceIndexType n = pGirder->GetNumberOfMatingSurfaces(spanIdx,i);
-            nDist += n;
-
-            if ( i < gdrIdx )
-               nPrevElements += n;
-         }
-
-         // get number of mating surfaces for this girder
-         nElements = pGirder->GetNumberOfMatingSurfaces(spanIdx,gdrIdx);   
-      }
-      else if ( distType == pgsTypes::tbdWebs )
-      {
-         // get a count of all the webs in this span
-         nDist = 0;
-         nPrevElements = 0;
-
-         for ( GirderIndexType i = 0; i < nGirders; i++ )
-         {
-            WebIndexType n = pGirder->GetNumberOfWebs(spanIdx,i);
-            nDist += n;
-
-            if ( i < gdrIdx )
-               nPrevElements += n;
-         }
-
-         // get number of mating surfaces for this girder
-         nElements = pGirder->GetNumberOfWebs(spanIdx,gdrIdx);   
-      }
-
-      if ( nPrevElements < nMaxDist || nDist-nPrevElements-nElements < nMaxDist )
-      {
-         // At least one element will see some load
-
-         // Distribute the weight over nMaxDist exterior distibution points
-         MatingSurfaceIndexType nRemainingElementsfromLeft;
-         if ( nMaxDist < nPrevElements )
-            nRemainingElementsfromLeft = INVALID_INDEX;
-         else
-            nRemainingElementsfromLeft = nMaxDist - nPrevElements;
-
-         if ( nRemainingElementsfromLeft == INVALID_INDEX || !bLeftSidewalk )
-            *pFraLeft = 0.0;
-         else if ( nRemainingElementsfromLeft < nElements )
-            *pFraLeft = (Float64)nRemainingElementsfromLeft/(Float64)nMaxDist;
-         else
-            *pFraLeft = (Float64)nElements/(Float64)nMaxDist;
-
-         MatingSurfaceIndexType nRemainingElementsfromRight;
-         if ( nMaxDist < (nDist - nPrevElements - nElements) )
-            nRemainingElementsfromRight = INVALID_INDEX;
-         else
-            nRemainingElementsfromRight = nMaxDist - (nDist - nPrevElements - nElements);
-
-         if ( nRemainingElementsfromRight == INVALID_INDEX )
-            *pFraRight = 0.0;
-         else if ( nRemainingElementsfromRight < nElements )
-            *pFraRight = (Float64)nRemainingElementsfromRight/(Float64)nMaxDist;
-         else
-            *pFraRight = (Float64)nElements/(Float64)nMaxDist;
-      }
-      else
-      {
-         // none of the mating surfaces in this girder will see load
-         *pFraLeft = 0.0;
-         *pFraRight = 0.0;
-      }
+      ATLASSERT(0); // This should never happen. Results should be available for all girders in the model
    }
 }
 
-void CAnalysisAgentImp::GetTrafficBarrierLoadFraction(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* pFraLeft,Float64* pFraRight)
+void CAnalysisAgentImp::GetTrafficBarrierLoadFraction(SpanIndexType spanIdx,GirderIndexType gdrIdx, Float64* pBarrierLoad,
+                                                      Float64* pFraExtLeft, Float64* pFraIntLeft,
+                                                      Float64* pFraExtRight,Float64* pFraIntRight)
 {
-   // computes the fraction of the left and right traffic barrier load on a girder
-   GirderIndexType nDist; // number of girders/webs/mating surfaces in the section
-   GirderIndexType nMaxDist; // max number of girders/webs/mating surfaces to distribute load to
-   pgsTypes::TrafficBarrierDistribution distType; // the distribution type
+   ComputeSidewalksBarriersLoadFractions();
 
-   // NOTE: The term "element" refers to girder, web, or mating surface
-
-   GET_IFACE( IBridge, pBridge);
-   GET_IFACE( IGirder, pGirder);
-   GET_IFACE( ISpecification, pSpec );
-   GET_IFACE( IBarriers, pBarriers);
-
-   pSpec->GetTrafficBarrierDistribution(&nMaxDist,&distType);
-
-   GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-   gdrIdx = min(gdrIdx,nGirders-1); // adjust girder index as needed
-
-   nDist = nGirders;
-   MatingSurfaceIndexType nElements = 1; // number of elements to distribute the load to
-   MatingSurfaceIndexType nPrevElements = gdrIdx; // number of elements to the left of this element
-   if ( distType == pgsTypes::tbdMatingSurface )
+   SpanGirderHashType key = HashSpanGirder(spanIdx,gdrIdx);
+   SidewalkTrafficBarrierLoadIterator found = m_SidewalkTrafficBarrierLoads.find(key);
+   if ( found != m_SidewalkTrafficBarrierLoads.end() )
    {
-      // get a count of all the elements in this span
-      nDist = 0;
-      nPrevElements = 0;
-
-      for ( GirderIndexType i = 0; i < nGirders; i++ )
-      {
-         MatingSurfaceIndexType n = pGirder->GetNumberOfMatingSurfaces(spanIdx,i);
-         nDist += n;
-
-         if ( i < gdrIdx )
-            nPrevElements += n;
-      }
-
-      // get number of mating surfaces for this girder
-      nElements = pGirder->GetNumberOfMatingSurfaces(spanIdx,gdrIdx);   
-   }
-   else if ( distType == pgsTypes::tbdWebs )
-   {
-      // get a count of all the webs in this span
-      nDist = 0;
-      nPrevElements = 0;
-
-      for ( GirderIndexType i = 0; i < nGirders; i++ )
-      {
-         WebIndexType n = pGirder->GetNumberOfWebs(spanIdx,i);
-         nDist += n;
-
-         if ( i < gdrIdx )
-            nPrevElements += n;
-      }
-
-      // get number of mating surfaces for this girder
-      nElements = pGirder->GetNumberOfWebs(spanIdx,gdrIdx);   
-   }
-
-   if ( nDist < 2*nMaxDist )
-   {
-      // Distribute the weight of both railing systems uniformly over all distibution points
-      *pFraLeft = (Float64)nElements/(Float64)nDist;
-      *pFraRight = *pFraLeft;
+      const SidewalkTrafficBarrierLoad& rload = found->second;
+      *pBarrierLoad = rload.m_BarrierLoad;
+      *pFraExtLeft = rload.m_LeftExtBarrierFraction;
+      *pFraIntLeft = rload.m_LeftIntBarrierFraction;
+      *pFraExtRight = rload.m_RightExtBarrierFraction;
+      *pFraIntRight = rload.m_RightIntBarrierFraction;
    }
    else
    {
-      if ( nPrevElements < nMaxDist || nDist-nPrevElements-nElements < nMaxDist )
-      {
-         // At least one mating surface will see some load
-
-         // Distribute the weight of one railing system over nMaxDist exterior distibution points
-         MatingSurfaceIndexType nRemainingElementsfromLeft;
-         if ( nMaxDist < nPrevElements )
-            nRemainingElementsfromLeft = INVALID_INDEX;
-         else
-            nRemainingElementsfromLeft = nMaxDist - nPrevElements;
-
-         if ( nRemainingElementsfromLeft == INVALID_INDEX )
-            *pFraLeft = 0.0;
-         else if ( nRemainingElementsfromLeft < nElements )
-            *pFraLeft = (Float64)nRemainingElementsfromLeft/(Float64)nMaxDist;
-         else
-            *pFraLeft = (Float64)nElements/(Float64)nMaxDist;
-
-         MatingSurfaceIndexType nRemainingElementsfromRight;
-         if ( nMaxDist < (nDist - nPrevElements - nElements) )
-            nRemainingElementsfromRight = INVALID_INDEX;
-         else
-            nRemainingElementsfromRight = nMaxDist - (nDist - nPrevElements - nElements);
-
-         if ( nRemainingElementsfromRight == INVALID_INDEX )
-            *pFraRight = 0.0;
-         else if ( nRemainingElementsfromRight < nElements )
-            *pFraRight = (Float64)nRemainingElementsfromRight/(Float64)nMaxDist;
-         else
-            *pFraRight = (Float64)nElements/(Float64)nMaxDist;
-      }
-      else
-      {
-         // none of the mating surfaces in this girder will see load
-         *pFraLeft = 0.0;
-         *pFraRight = 0.0;
-      }
+      ATLASSERT(0); // This should never happen. Results should be available for all girders in the model
    }
 }
 
 void CAnalysisAgentImp::ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel, GirderIndexType gdr)
 {
-   SpanIndexType nSpans;      // number of spans
-   Float64 Wtb_per_girder, WtbLeft, WtbRight;        // Traffic barrier load on this girder
-   Float64 Wsw_per_girder, WswLeft, WswRight;        // Sidewalk load on this girder
-   Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
-
-   GET_IFACE( IBridge,        pBridge );
-   GET_IFACE( IBridgeMaterial,      pMat );
-   GET_IFACE( IBarriers, pBarriers);
    GET_IFACE( IGirder, pGdr);
-
-   WtbLeft  = pBarriers->GetBarrierWeight(pgsTypes::tboLeft);
-   WtbRight = pBarriers->GetBarrierWeight(pgsTypes::tboRight);
-   WswLeft  = pBarriers->GetSidewalkWeight(pgsTypes::tboLeft);
-   WswRight = pBarriers->GetSidewalkWeight(pgsTypes::tboRight);
+   GET_IFACE(IBridge,pBridge);
 
    CComPtr<IDistributedLoads> distLoads;
    pModel->get_DistributedLoads(&distLoads);
@@ -2822,14 +2664,12 @@ void CAnalysisAgentImp::ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel, G
    CComPtr<IPointLoads> pointLoads;
    pModel->get_PointLoads(&pointLoads);
 
-   // Determine weight of barrier
-
    GET_IFACE(IStageMap,pStageMap);
    CComBSTR bstrStage = pStageMap->GetStageName(pgsTypes::BridgeSite2);
    CComBSTR bstrBarrierLoadGroup = GetLoadGroupName(pftTrafficBarrier); 
    CComBSTR bstrSidewalkLoadGroup = GetLoadGroupName(pftSidewalk); 
 
-   nSpans = pBridge->GetSpanCount();
+   SpanIndexType nSpans = pBridge->GetSpanCount();
    for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
@@ -2838,16 +2678,11 @@ void CAnalysisAgentImp::ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel, G
       PierIndexType prev_pier = spanIdx;
       PierIndexType next_pier = prev_pier + 1;
 
-      Float64 fraLeft, fraRight;
-      GetTrafficBarrierLoadFraction(spanIdx,gdrIdx,&fraLeft,&fraRight);
-      Wtb_per_girder = -(fraLeft*WtbLeft + fraRight*WtbRight);
+      Float64 Wtb_per_girder, fraExtLeft, fraExtRight, fraIntLeft, fraIntRight;
+      GetTrafficBarrierLoadFraction(spanIdx,gdrIdx,&Wtb_per_girder,&fraExtLeft,&fraIntLeft,&fraExtRight,&fraIntRight);
 
-      GetSidewalkLoadFraction(spanIdx,gdrIdx,&fraLeft,&fraRight);
-      Wsw_per_girder = -(fraLeft*WswLeft + fraRight*WswRight);
-
-      SpanGirderHashType hash = HashSpanGirder(spanIdx,gdrIdx);
-      m_TrafficBarrierLoad.insert(std::make_pair(hash,Wtb_per_girder));
-      m_SidewalkLoad.insert(std::make_pair(hash,Wsw_per_girder));
+      Float64 Wsw_per_girder, fraLeft, fraRight;
+      GetSidewalkLoadFraction(spanIdx,gdrIdx,&Wsw_per_girder,&fraLeft,&fraRight);
 
       CComPtr<IDistributedLoad> tbLoad;
       tbLoad.CoCreateInstance(CLSID_DistributedLoad);
@@ -2934,7 +2769,6 @@ void CAnalysisAgentImp::ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel, G
       }
 
       // sidewalks
-   
       Pleft =  Wsw_per_girder*(OHleft + Wdia);
       Mleft = -Pleft*(OHleft + Wdia)/2;
       if ( OHleft <= gdrHeightStart )
@@ -2977,12 +2811,84 @@ void CAnalysisAgentImp::ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel, G
    }
 }
 
+void CAnalysisAgentImp::ComputeSidewalksBarriersLoadFractions()
+{
+   // return if we've already done the work
+   if (!m_SidewalkTrafficBarrierLoads.empty())
+      return;
+
+   GET_IFACE( IBridge,        pBridge );
+   GET_IFACE( IBarriers, pBarriers);
+   GET_IFACE( IGirder, pGdr);
+   GET_IFACE( ISpecification, pSpec );
+
+   // Determine weight of barriers and sidwalks
+   Float64 WtbExtLeft(0.0),  WtbIntLeft(0.0),  WswLeft(0.0);
+   Float64 WtbExtRight(0.0), WtbIntRight(0.0), WswRight(0.0);
+
+   WtbExtLeft  = pBarriers->GetExteriorBarrierWeight(pgsTypes::tboLeft);
+   if (pBarriers->HasInteriorBarrier(pgsTypes::tboLeft))
+      WtbIntLeft  = pBarriers->GetInteriorBarrierWeight(pgsTypes::tboLeft);
+   if (pBarriers->HasSidewalk(pgsTypes::tboLeft))
+      WswLeft  = pBarriers->GetSidewalkWeight(pgsTypes::tboLeft);
+
+   WtbExtRight = pBarriers->GetExteriorBarrierWeight(pgsTypes::tboRight);
+   if (pBarriers->HasInteriorBarrier(pgsTypes::tboRight))
+      WtbIntRight  += pBarriers->GetInteriorBarrierWeight(pgsTypes::tboRight);
+   if (pBarriers->HasSidewalk(pgsTypes::tboRight))
+      WswRight  = pBarriers->GetSidewalkWeight(pgsTypes::tboRight);
+
+   GirderIndexType nMaxDist; // max number of girders/webs/mating surfaces to distribute load to
+   pgsTypes::TrafficBarrierDistribution distType; // the distribution type
+
+   pSpec->GetTrafficBarrierDistribution(&nMaxDist,&distType);
+
+
+   // pgsBarrierSidewalkLoadDistributionTool does the heavy lifting to determine how 
+   // sidewalks and barriers are distributed to each girder
+   pgsBarrierSidewalkLoadDistributionTool BSwTool(LOGGER, pBridge, pGdr, pBarriers);
+
+   // Loop over all girders in bridge and compute load fractions
+   SpanIndexType nspans = pBridge->GetSpanCount();
+   for(SpanIndexType ispan=0; ispan<nspans; ispan++)
+   {
+      BSwTool.Initialize(ispan, distType, nMaxDist);
+
+      GirderIndexType ngdrs = pBridge->GetGirderCount(ispan);
+      for(GirderIndexType igdr=0; igdr<ngdrs; igdr++)
+      {
+         SidewalkTrafficBarrierLoad stbLoad;
+
+         // compute barrier first
+         Float64 FraExtLeft, FraIntLeft, FraExtRight, FraIntRight;
+         BSwTool.GetTrafficBarrierLoadFraction(igdr, &FraExtLeft, &FraIntLeft, &FraExtRight, &FraIntRight);
+
+         stbLoad.m_BarrierLoad = -1.0 *( WtbExtLeft*FraExtLeft + WtbIntLeft*FraIntLeft + WtbExtRight*FraExtRight + WtbIntRight*FraIntRight);
+         stbLoad.m_LeftExtBarrierFraction  = FraExtLeft;
+         stbLoad.m_LeftIntBarrierFraction  = FraIntLeft;
+         stbLoad.m_RightExtBarrierFraction = FraExtRight;
+         stbLoad.m_RightIntBarrierFraction = FraIntRight;
+
+         // sidewalks
+         Float64 FraSwLeft, FraSwRight;
+         BSwTool.GetSidewalkLoadFraction(igdr, &FraSwLeft, &FraSwRight);
+         stbLoad.m_SidewalkLoad = -1.0 * (WswLeft*FraSwLeft + WswRight*FraSwRight);
+         stbLoad.m_LeftSidewalkFraction  = FraSwLeft;
+         stbLoad.m_RightSidewalkFraction = FraSwRight;
+
+         // store for later use
+         m_SidewalkTrafficBarrierLoads.insert( std::make_pair(HashSpanGirder(ispan,igdr), stbLoad) );
+      }
+   }
+}
+
 void CAnalysisAgentImp::ApplyLiveLoadModel(ILBAMModel* pModel,GirderIndexType gdr)
 {
    HRESULT hr = S_OK;
    GET_IFACE(ISpecification,pSpec);
    GET_IFACE(ILibrary,pLibrary);
    GET_IFACE(ILiveLoads,pLiveLoads);
+   GET_IFACE(IProductLoads,pProductLoads);
    GET_IFACE(IRatingSpecification,pRatingSpec);
 
    // get the live load object from the model
@@ -3024,10 +2930,6 @@ void CAnalysisAgentImp::ApplyLiveLoadModel(ILBAMModel* pModel,GirderIndexType gd
    CComPtr<IVehicularLoads> pedestrian_vehicles;
    pedestrian_liveload_model->get_VehicularLoads(&pedestrian_vehicles);
 
-   CComPtr<IVehicularLoads> rating_pedestrian_vehicles;
-   if ( pRatingSpec->IncludePedestrianLiveLoad() )
-      rating_pedestrian_vehicles = pedestrian_vehicles;
-
    CComPtr<IVehicularLoads> fatigue_vehicles;
    fatigue_liveload_model->get_VehicularLoads(&fatigue_vehicles);
 
@@ -3053,13 +2955,22 @@ void CAnalysisAgentImp::ApplyLiveLoadModel(ILBAMModel* pModel,GirderIndexType gd
    std::vector<std::_tstring> special_permit_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltPermitRating_Special);
 
    // add the design and permit live loads to the models
-   AddUserLiveLoads(pModel, gdr, pgsTypes::lltDesign,              design_loads,          pLibrary, pLiveLoads, design_vehicles,  pedestrian_vehicles);
-   AddUserLiveLoads(pModel, gdr, pgsTypes::lltPermit,              permit_loads,          pLibrary, pLiveLoads, permit_vehicles,  pedestrian_vehicles);
-   AddUserLiveLoads(pModel, gdr, pgsTypes::lltFatigue,             fatigue_loads,         pLibrary, pLiveLoads, fatigue_vehicles, NULL);
-   AddUserLiveLoads(pModel, gdr, pgsTypes::lltLegalRating_Routine, routine_legal_loads,   pLibrary, pLiveLoads, legal_routine_vehicles,   rating_pedestrian_vehicles);
-   AddUserLiveLoads(pModel, gdr, pgsTypes::lltLegalRating_Special, special_legal_loads,   pLibrary, pLiveLoads, legal_special_vehicles,   rating_pedestrian_vehicles);
-   AddUserLiveLoads(pModel, gdr, pgsTypes::lltPermitRating_Routine,routine_permit_loads,  pLibrary, pLiveLoads, permit_routine_vehicles,  rating_pedestrian_vehicles);
-   AddUserLiveLoads(pModel, gdr, pgsTypes::lltPermitRating_Special,special_permit_loads,  pLibrary, pLiveLoads, permit_special_vehicles,  rating_pedestrian_vehicles);
+   AddUserLiveLoads(pModel, gdr, pgsTypes::lltDesign,              design_loads,          pLibrary, pLiveLoads, design_vehicles);
+   AddUserLiveLoads(pModel, gdr, pgsTypes::lltPermit,              permit_loads,          pLibrary, pLiveLoads, permit_vehicles);
+   AddUserLiveLoads(pModel, gdr, pgsTypes::lltFatigue,             fatigue_loads,         pLibrary, pLiveLoads, fatigue_vehicles);
+   AddUserLiveLoads(pModel, gdr, pgsTypes::lltLegalRating_Routine, routine_legal_loads,   pLibrary, pLiveLoads, legal_routine_vehicles);
+   AddUserLiveLoads(pModel, gdr, pgsTypes::lltLegalRating_Special, special_legal_loads,   pLibrary, pLiveLoads, legal_special_vehicles);
+   AddUserLiveLoads(pModel, gdr, pgsTypes::lltPermitRating_Routine,routine_permit_loads,  pLibrary, pLiveLoads, permit_routine_vehicles);
+   AddUserLiveLoads(pModel, gdr, pgsTypes::lltPermitRating_Special,special_permit_loads,  pLibrary, pLiveLoads, permit_special_vehicles);
+
+   // Add pedestrian load if applicable
+   if ( pProductLoads->HasPedestrianLoad() )
+   {
+      // Pedestrian load can vary per span. Use unit load here and adjust magnitude of distribution factors
+      // to control load.
+      Float64 wPedLL = 1.0;
+      AddPedestrianLoad(_T("Pedestrian on Sidewalk"),wPedLL,pedestrian_vehicles);
+   }
 
    // The call to AddUserLiveLoads above changes the distribution factor type to default values
    // set by the LBAMUtility object that gets used to configure live load. Set the desired distribution
@@ -3067,7 +2978,6 @@ void CAnalysisAgentImp::ApplyLiveLoadModel(ILBAMModel* pModel,GirderIndexType gd
    design_liveload_model->put_DistributionFactorType(GetLiveLoadDistributionFactorType(pgsTypes::lltDesign));
    permit_liveload_model->put_DistributionFactorType(GetLiveLoadDistributionFactorType(pgsTypes::lltPermit));
    pedestrian_liveload_model->put_DistributionFactorType(GetLiveLoadDistributionFactorType(pgsTypes::lltPedestrian));
-   // NOTE: pedestrian live loads are per girder and need no further distribution
    fatigue_liveload_model->put_DistributionFactorType(GetLiveLoadDistributionFactorType(pgsTypes::lltFatigue));
    legal_routine_liveload_model->put_DistributionFactorType(GetLiveLoadDistributionFactorType(pgsTypes::lltLegalRating_Routine));
    legal_special_liveload_model->put_DistributionFactorType(GetLiveLoadDistributionFactorType(pgsTypes::lltLegalRating_Special));
@@ -3076,11 +2986,11 @@ void CAnalysisAgentImp::ApplyLiveLoadModel(ILBAMModel* pModel,GirderIndexType gd
 }
 
 void CAnalysisAgentImp::AddUserLiveLoads(ILBAMModel* pModel,GirderIndexType gdr,pgsTypes::LiveLoadType llType,std::vector<std::_tstring>& strLLNames,
-                                         ILibrary* pLibrary, ILiveLoads* pLiveLoads, IVehicularLoads* pVehicles,IVehicularLoads* pPedVehicles)
+                                         ILibrary* pLibrary, ILiveLoads* pLiveLoads, IVehicularLoads* pVehicles)
 {
    HRESULT hr = S_OK;
 
-   if ( strLLNames.size() == 0 )
+   if ( strLLNames.empty())
    {
       // if there aren't any live loads, then added a dummy place holder load
       // so the LBAM doesn't crash when requesting live load results
@@ -3099,12 +3009,6 @@ void CAnalysisAgentImp::AddUserLiveLoads(ILBAMModel* pModel,GirderIndexType gdr,
       if ( strLLName == std::_tstring(_T("HL-93")) || strLLName == std::_tstring(_T("Fatigue")) )
       {
          AddHL93LiveLoad(pModel,pLibrary,llType,truck_impact,lane_impact);
-      }
-      else if ( strLLName == std::_tstring(_T("Pedestrian on Sidewalk")) )
-      {
-         SpanIndexType span = 0; // LBAM doesn't support a stepped ped loading so we have to get the loading for one span and use it everywhere
-         Float64 wPedLL = GetPedestrianLiveLoad(span,gdr);
-         AddPedestrianLoad(strLLName,wPedLL,pPedVehicles);
       }
       else if ( strLLName == std::_tstring(_T("AASHTO Legal Loads")) )
       {
@@ -3502,36 +3406,11 @@ void CAnalysisAgentImp::ApplyUserDefinedLoads(ILBAMModel* pModel, GirderIndexTyp
 
 Float64 CAnalysisAgentImp::GetPedestrianLiveLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx)
 {
-   GET_IFACE(IBarriers,pBarriers);
+   Float64 Wleft = this->GetPedestrianLoadPerSidewalk(pgsTypes::tboLeft);
+   Float64 Wright = this->GetPedestrianLoadPerSidewalk(pgsTypes::tboRight);
 
-   Float64 leftWidth  = pBarriers->GetSidewalkWidth(pgsTypes::tboLeft);
-   Float64 rightWidth = pBarriers->GetSidewalkWidth(pgsTypes::tboRight);
-
-   if ( IsZero(leftWidth) && IsZero(rightWidth) )
-      return 0.0; // no sidewalk, no pedestrian load
-
-   GET_IFACE(ILibrary,pLibrary);
-   GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-   Float64 w = pSpecEntry->GetPedestrianLiveLoad();
-   Float64 Wleft  = w*leftWidth;
-   Float64 Wright = w*rightWidth;
-
-   Float64 Wmin = pSpecEntry->GetMinSidewalkWidth();
-
-   if ( leftWidth <= Wmin )
-      Wleft = 0;
-
-   if ( rightWidth <= Wmin )
-      Wright = 0;
-
-   //// let every girder see the full weight of the pedestrian live load
-   //// then let the LLDF scale it to a "girder"
-   //return (Wleft + Wright);
-
-   Float64 fraLeft, fraRight;
-   GetSidewalkLoadFraction(spanIdx,gdrIdx,&fraLeft,&fraRight);
+   Float64 swLoad, fraLeft, fraRight;
+   GetSidewalkLoadFraction(spanIdx,gdrIdx,&swLoad, &fraLeft,&fraRight);
 
    Float64 W_per_girder = fraLeft*Wleft + fraRight*Wright;
    return W_per_girder;
@@ -3587,9 +3466,9 @@ void CAnalysisAgentImp::ApplyLiveLoadDistributionFactors(GirderIndexType gdr,boo
 
       // layout distribution factors at piers
 
-      ApplyLLDF_Support(spanIdx,gdrIdx,supports);
+      ApplyLLDF_Support(spanIdx,gdrIdx,nSpans,supports);
       if ( spanIdx == nSpans-1 )
-         ApplyLLDF_Support(spanIdx+1,gdrIdx,supports); // last support
+         ApplyLLDF_Support(spanIdx+1,gdrIdx,nSpans,supports); // last support
 
    }
 }
@@ -3601,6 +3480,12 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    GET_IFACE(ILoadFactors,pLF);
    const CLoadFactors* pLoadFactors = pLF->GetLoadFactors();
+
+   // Have multiple options for applying pedestrian loads for different limit states
+   GET_IFACE(ILiveLoads,pLiveLoads);
+   ILiveLoads::PedestrianLoadApplicationType design_ped_type = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltDesign);
+   ILiveLoads::PedestrianLoadApplicationType permit_ped_type = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltPermit);
+   ILiveLoads::PedestrianLoadApplicationType fatigue_ped_type = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltFatigue);
 
    // Setup the LRFD load combinations
    CComPtr<ILoadCases> loadcases;
@@ -3625,7 +3510,12 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = strength1->put_LoadCombinationType(lctStrength) ;
    hr = strength1->put_LiveLoadFactor( pLoadFactors->LLIMmax[pgsTypes::StrengthI] ) ;
    hr = strength1->AddLiveLoadModel(lltDesign) ;
-   hr = strength1->AddLiveLoadModel(lltPedestrian) ;
+
+   if (design_ped_type != ILiveLoads::PedDontApply)
+   {
+      hr = strength1->AddLiveLoadModel(lltPedestrian) ;
+      hr = strength1->put_LiveLoadModelApplicationType(design_ped_type==ILiveLoads::PedConcurrentWithVehiculuar ? llmaSum : llmaEnvelope);
+   }
 
    hr = strength1->AddLoadCaseFactor(CComBSTR("DC"),    pLoadFactors->DCmin[pgsTypes::StrengthI],   pLoadFactors->DCmax[pgsTypes::StrengthI]);
    hr = strength1->AddLoadCaseFactor(CComBSTR("DW"),    pLoadFactors->DWmin[pgsTypes::StrengthI],   pLoadFactors->DWmax[pgsTypes::StrengthI]);
@@ -3640,7 +3530,12 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = strength2->put_LoadCombinationType(lctStrength) ;
    hr = strength2->put_LiveLoadFactor( pLoadFactors->LLIMmax[pgsTypes::StrengthII] ) ;
    hr = strength2->AddLiveLoadModel(lltPermit) ;
-   hr = strength2->AddLiveLoadModel(lltPedestrian) ;
+
+   if (permit_ped_type != ILiveLoads::PedDontApply)
+   {
+      hr = strength2->AddLiveLoadModel(lltPedestrian) ;
+      hr = strength2->put_LiveLoadModelApplicationType(permit_ped_type==ILiveLoads::PedConcurrentWithVehiculuar ? llmaSum : llmaEnvelope);
+   }
 
    hr = strength2->AddLoadCaseFactor(CComBSTR("DC"),    pLoadFactors->DCmin[pgsTypes::StrengthII],   pLoadFactors->DCmax[pgsTypes::StrengthII]);
    hr = strength2->AddLoadCaseFactor(CComBSTR("DW"),    pLoadFactors->DWmin[pgsTypes::StrengthII],   pLoadFactors->DWmax[pgsTypes::StrengthII]);
@@ -3657,6 +3552,12 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = service1->AddLiveLoadModel(lltDesign) ;
    hr = service1->AddLiveLoadModel(lltPedestrian) ;
 
+   if (design_ped_type != ILiveLoads::PedDontApply)
+   {
+      hr = service1->AddLiveLoadModel(lltPedestrian) ;
+      hr = service1->put_LiveLoadModelApplicationType(design_ped_type==ILiveLoads::PedConcurrentWithVehiculuar ? llmaSum : llmaEnvelope);
+   }
+
    hr = service1->AddLoadCaseFactor(CComBSTR("DC"),    pLoadFactors->DCmin[pgsTypes::ServiceI],   pLoadFactors->DCmax[pgsTypes::ServiceI]);
    hr = service1->AddLoadCaseFactor(CComBSTR("DW"),    pLoadFactors->DWmin[pgsTypes::ServiceI],   pLoadFactors->DWmax[pgsTypes::ServiceI]);
    hr = service1->AddLoadCaseFactor(CComBSTR("LL_IM"), pLoadFactors->LLIMmin[pgsTypes::ServiceI], pLoadFactors->LLIMmax[pgsTypes::ServiceI]);
@@ -3670,7 +3571,12 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = service3->put_LoadCombinationType(lctService) ;
    hr = service3->put_LiveLoadFactor(pLoadFactors->LLIMmax[pgsTypes::ServiceIII] ) ;
    hr = service3->AddLiveLoadModel(lltDesign) ;
-   hr = service3->AddLiveLoadModel(lltPedestrian) ;
+
+   if (design_ped_type != ILiveLoads::PedDontApply)
+   {
+      hr = service3->AddLiveLoadModel(lltPedestrian) ;
+      hr = service3->put_LiveLoadModelApplicationType(design_ped_type==ILiveLoads::PedConcurrentWithVehiculuar ? llmaSum : llmaEnvelope);
+   }
 
    hr = service3->AddLoadCaseFactor(CComBSTR("DC"),    pLoadFactors->DCmin[pgsTypes::ServiceIII],   pLoadFactors->DCmax[pgsTypes::ServiceIII]);
    hr = service3->AddLoadCaseFactor(CComBSTR("DW"),    pLoadFactors->DWmin[pgsTypes::ServiceIII],   pLoadFactors->DWmax[pgsTypes::ServiceIII]);
@@ -3685,7 +3591,12 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    service1a->put_LoadCombinationType(lctService);
    service1a->put_LiveLoadFactor(pLoadFactors->LLIMmax[pgsTypes::ServiceIA] );
    service1a->AddLiveLoadModel(lltDesign);
-   service1a->AddLiveLoadModel(lltPedestrian);
+
+   if (design_ped_type != ILiveLoads::PedDontApply)
+   {
+      hr = service1a->AddLiveLoadModel(lltPedestrian) ;
+      hr = service1a->put_LiveLoadModelApplicationType(design_ped_type==ILiveLoads::PedConcurrentWithVehiculuar ? llmaSum : llmaEnvelope);
+   }
 
    hr = service1a->AddLoadCaseFactor(CComBSTR("DC"),    pLoadFactors->DCmin[pgsTypes::ServiceIA],   pLoadFactors->DCmax[pgsTypes::ServiceIA]);
    hr = service1a->AddLoadCaseFactor(CComBSTR("DW"),    pLoadFactors->DWmin[pgsTypes::ServiceIA],   pLoadFactors->DWmax[pgsTypes::ServiceIA]);
@@ -3701,6 +3612,12 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    fatigue1->put_LiveLoadFactor(pLoadFactors->LLIMmax[pgsTypes::FatigueI] );
    fatigue1->AddLiveLoadModel(lltFatigue);
 
+   if (fatigue_ped_type != ILiveLoads::PedDontApply)
+   {
+      hr = fatigue1->AddLiveLoadModel(lltPedestrian) ;
+      hr = fatigue1->put_LiveLoadModelApplicationType(fatigue_ped_type==ILiveLoads::PedConcurrentWithVehiculuar ? llmaSum : llmaEnvelope);
+   }
+
    hr = fatigue1->AddLoadCaseFactor(CComBSTR("DC"),    pLoadFactors->DCmin[pgsTypes::FatigueI],   pLoadFactors->DCmax[pgsTypes::FatigueI]);
    hr = fatigue1->AddLoadCaseFactor(CComBSTR("DW"),    pLoadFactors->DWmin[pgsTypes::FatigueI],   pLoadFactors->DWmax[pgsTypes::FatigueI]);
    hr = fatigue1->AddLoadCaseFactor(CComBSTR("LL_IM"), pLoadFactors->LLIMmin[pgsTypes::FatigueI], pLoadFactors->LLIMmax[pgsTypes::FatigueI]);
@@ -3710,12 +3627,22 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    GET_IFACE(IRatingSpecification,pRatingSpec);
    Float64 DC, DW, LLIM;
 
+   // Deal with pedestrian load applications for rating.
+   // All rating limit states are treated the same
+   bool rating_include_pedes = pRatingSpec->IncludePedestrianLiveLoad();
+
    // STRENGTH-I - Design Rating - Inventory Level
    CComPtr<ILoadCombination> strengthI_inventory;
    strengthI_inventory.CoCreateInstance(CLSID_LoadCombination);
    strengthI_inventory->put_Name( GetLoadCombinationName(pgsTypes::StrengthI_Inventory) );
    strengthI_inventory->put_LoadCombinationType(lctStrength);
    strengthI_inventory->AddLiveLoadModel(lltDesign);
+
+   if (rating_include_pedes)
+   {
+      hr = strengthI_inventory->AddLiveLoadModel(lltPedestrian) ;
+      hr = strengthI_inventory->put_LiveLoadModelApplicationType(llmaSum);
+   }
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthI_Inventory);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthI_Inventory);
@@ -3734,6 +3661,12 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    strengthI_operating->put_LoadCombinationType(lctStrength);
    strengthI_operating->AddLiveLoadModel(lltDesign);
 
+   if (rating_include_pedes)
+   {
+      hr = strengthI_operating->AddLiveLoadModel(lltPedestrian) ;
+      hr = strengthI_operating->put_LiveLoadModelApplicationType(llmaSum);
+   }
+
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthI_Operating);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthI_Operating);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthI_Operating,true);
@@ -3750,6 +3683,12 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    serviceIII_inventory->put_Name( GetLoadCombinationName(pgsTypes::ServiceIII_Inventory) );
    serviceIII_inventory->put_LoadCombinationType(lctService);
    serviceIII_inventory->AddLiveLoadModel(lltDesign);
+
+   if (rating_include_pedes)
+   {
+      hr = serviceIII_inventory->AddLiveLoadModel(lltPedestrian) ;
+      hr = serviceIII_inventory->put_LiveLoadModelApplicationType(llmaSum);
+   }
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceIII_Inventory);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_Inventory);
@@ -3768,6 +3707,12 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    serviceIII_operating->put_LoadCombinationType(lctService);
    serviceIII_operating->AddLiveLoadModel(lltDesign);
 
+   if (rating_include_pedes)
+   {
+      hr = serviceIII_operating->AddLiveLoadModel(lltPedestrian) ;
+      hr = serviceIII_operating->put_LiveLoadModelApplicationType(llmaSum);
+   }
+
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceIII_Operating);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_Operating);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceIII_Operating,true);
@@ -3784,6 +3729,12 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    strengthI_routine->put_Name( GetLoadCombinationName(pgsTypes::StrengthI_LegalRoutine) );
    strengthI_routine->put_LoadCombinationType(lctStrength);
    strengthI_routine->AddLiveLoadModel(lltLegalRoutineRating);
+
+   if (rating_include_pedes)
+   {
+      hr = strengthI_routine->AddLiveLoadModel(lltPedestrian) ;
+      hr = strengthI_routine->put_LiveLoadModelApplicationType(llmaSum);
+   }
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthI_LegalRoutine);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthI_LegalRoutine);
@@ -3802,6 +3753,12 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    serviceIII_routine->put_LoadCombinationType(lctService);
    serviceIII_routine->AddLiveLoadModel(lltLegalRoutineRating);
 
+   if (rating_include_pedes)
+   {
+      hr = serviceIII_routine->AddLiveLoadModel(lltPedestrian) ;
+      hr = serviceIII_routine->put_LiveLoadModelApplicationType(llmaSum);
+   }
+
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceIII_LegalRoutine);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_LegalRoutine);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceIII_LegalRoutine,true);
@@ -3818,6 +3775,12 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    strengthI_special->put_Name( GetLoadCombinationName(pgsTypes::StrengthI_LegalSpecial) );
    strengthI_special->put_LoadCombinationType(lctStrength);
    strengthI_special->AddLiveLoadModel(lltLegalSpecialRating);
+
+   if (rating_include_pedes)
+   {
+      hr = strengthI_special->AddLiveLoadModel(lltPedestrian) ;
+      hr = strengthI_special->put_LiveLoadModelApplicationType(llmaSum);
+   }
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthI_LegalSpecial);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthI_LegalSpecial);
@@ -3836,6 +3799,12 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    serviceIII_special->put_LoadCombinationType(lctService);
    serviceIII_special->AddLiveLoadModel(lltLegalSpecialRating);
 
+   if (rating_include_pedes)
+   {
+      hr = serviceIII_special->AddLiveLoadModel(lltPedestrian) ;
+      hr = serviceIII_special->put_LiveLoadModelApplicationType(llmaSum);
+   }
+
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceIII_LegalSpecial);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_LegalSpecial);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceIII_LegalSpecial,true);
@@ -3853,6 +3822,12 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    strengthII_routine->put_LoadCombinationType(lctStrength);
    strengthII_routine->AddLiveLoadModel(lltPermitRoutineRating);
 
+   if (rating_include_pedes)
+   {
+      hr = strengthII_routine->AddLiveLoadModel(lltPedestrian) ;
+      hr = strengthII_routine->put_LiveLoadModelApplicationType(llmaSum);
+   }
+
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthII_PermitRoutine);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthII_PermitRoutine);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthII_PermitRoutine,true);
@@ -3868,6 +3843,12 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    strengthII_special->put_Name( GetLoadCombinationName(pgsTypes::StrengthII_PermitSpecial) );
    strengthII_special->put_LoadCombinationType(lctStrength);
    strengthII_special->AddLiveLoadModel(lltPermitSpecialRating);
+
+   if (rating_include_pedes)
+   {
+      hr = strengthII_special->AddLiveLoadModel(lltPedestrian) ;
+      hr = strengthII_special->put_LiveLoadModelApplicationType(llmaSum);
+   }
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthII_PermitSpecial);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthII_PermitSpecial);
@@ -3886,6 +3867,12 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    serviceI_routine->put_LoadCombinationType(lctService);
    serviceI_routine->AddLiveLoadModel(lltPermitRoutineRating);
 
+   if (rating_include_pedes)
+   {
+      hr = serviceI_routine->AddLiveLoadModel(lltPedestrian) ;
+      hr = serviceI_routine->put_LiveLoadModelApplicationType(llmaSum);
+   }
+
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceI_PermitRoutine);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceI_PermitRoutine);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceI_PermitRoutine,true);
@@ -3903,6 +3890,12 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    serviceI_special->put_LoadCombinationType(lctService);
    serviceI_special->AddLiveLoadModel(lltPermitSpecialRating);
 
+   if (rating_include_pedes)
+   {
+      hr = serviceI_special->AddLiveLoadModel(lltPedestrian) ;
+      hr = serviceI_special->put_LiveLoadModelApplicationType(llmaSum);
+   }
+
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceI_PermitSpecial);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceI_PermitSpecial);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceI_PermitSpecial,true);
@@ -3913,7 +3906,8 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    loadcombos->Add(serviceI_special);
 
-   // Design load combination... A PGSuper specific load combination for adding user-defined live load to hl-93
+   // Design load combination... 
+   // These liveload-only combinations are created so we can sum user-defined static live loads with other live loads
    CComPtr<ILoadCombination> lc_design;
    lc_design.CoCreateInstance(CLSID_LoadCombination);
    lc_design->put_Name( GetLoadCombinationName(pgsTypes::lltDesign) );
@@ -3937,7 +3931,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    loadcombos->Add(lc_fatigue);
 
-   // Permit load combination... A PGSuper specific load combination for adding user-defined live load to the permit live load
+   // Permit load combination... 
    CComPtr<ILoadCombination> lc_permit;
    lc_permit.CoCreateInstance(CLSID_LoadCombination);
    lc_permit->put_Name( GetLoadCombinationName(pgsTypes::lltPermit) );
@@ -4552,10 +4546,10 @@ Float64 CAnalysisAgentImp::GetTrafficBarrierLoad(SpanIndexType span,GirderIndexT
    ValidateAnalysisModels(span,girder);
 
    SpanGirderHashType hash = HashSpanGirder(span,girder);
-   std::map<SpanGirderHashType,Float64>::iterator found = m_TrafficBarrierLoad.find(hash);
-   CHECK( found != m_TrafficBarrierLoad.end() ); // it should be found
+   SidewalkTrafficBarrierLoadIterator found = m_SidewalkTrafficBarrierLoads.find(hash);
+   CHECK( found != m_SidewalkTrafficBarrierLoads.end() ); // it should be found
 
-   return (*found).second;
+   return (*found).second.m_BarrierLoad;
 }
 
 Float64 CAnalysisAgentImp::GetSidewalkLoad(SpanIndexType span,GirderIndexType girder)
@@ -4563,10 +4557,10 @@ Float64 CAnalysisAgentImp::GetSidewalkLoad(SpanIndexType span,GirderIndexType gi
    ValidateAnalysisModels(span,girder);
 
    SpanGirderHashType hash = HashSpanGirder(span,girder);
-   std::map<SpanGirderHashType,Float64>::iterator found = m_SidewalkLoad.find(hash);
-   CHECK( found != m_SidewalkLoad.end() ); // it should be found
+   SidewalkTrafficBarrierLoadIterator found = m_SidewalkTrafficBarrierLoads.find(hash);
+   CHECK( found != m_SidewalkTrafficBarrierLoads.end() ); // it should be found
 
-   return (*found).second;
+   return (*found).second.m_SidewalkLoad;
 }
 
 void CAnalysisAgentImp::GetOverlayLoad(SpanIndexType span,GirderIndexType girder,std::vector<OverlayLoad>* pOverlayLoads)
@@ -4634,11 +4628,12 @@ void CAnalysisAgentImp::GetShearKeyLoad(SpanIndexType span,GirderIndexType girde
 bool CAnalysisAgentImp::HasPedestrianLoad()
 {
    GET_IFACE(ILiveLoads,pLiveLoads);
-   bool bDesignPedLoad = pLiveLoads->IsPedestianLoadEnabled(pgsTypes::lltDesign);
-   bool bPermitPedLoad = pLiveLoads->IsPedestianLoadEnabled(pgsTypes::lltPermit);
+   ILiveLoads::PedestrianLoadApplicationType DesignPedLoad = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltDesign);
+   ILiveLoads::PedestrianLoadApplicationType PermitPedLoad = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltPermit);
+   ILiveLoads::PedestrianLoadApplicationType FatiguePedLoad = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltFatigue);
 
-   // if the "Pedestrian on Sidewalk" live load is not defined, then there can't be ped loading
-   if ( !bDesignPedLoad && !bPermitPedLoad )
+   // if the Pedestrian on Sidewalk live load is not defined, then there can't be ped loading
+   if ( DesignPedLoad==ILiveLoads::PedDontApply && PermitPedLoad==ILiveLoads::PedDontApply && FatiguePedLoad==ILiveLoads::PedDontApply )
       return false;
 
    // returns true if there is a sidewalk on the bridge that is wide enough support
@@ -4648,13 +4643,27 @@ bool CAnalysisAgentImp::HasPedestrianLoad()
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry( pSpec->GetSpecification().c_str() );
 
-   Float64 leftWidth  = pBarriers->GetSidewalkWidth(pgsTypes::tboLeft);
-   Float64 rightWidth = pBarriers->GetSidewalkWidth(pgsTypes::tboRight);
    Float64 minWidth = pSpecEntry->GetMinSidewalkWidth();
+
+   Float64 leftWidth(0), rightWidth(0);
+   if (pBarriers->HasSidewalk(pgsTypes::tboLeft))
+   {
+      Float64 intLoc, extLoc;
+      pBarriers->GetSidewalkPedLoadEdges(pgsTypes::tboLeft, &intLoc, &extLoc);
+      leftWidth  = intLoc - extLoc;
+      ATLASSERT(leftWidth>0.0);
+   }
+
+   if (pBarriers->HasSidewalk(pgsTypes::tboRight))
+   {
+      Float64 intLoc, extLoc;
+      pBarriers->GetSidewalkPedLoadEdges(pgsTypes::tboRight, &intLoc, &extLoc);
+      rightWidth = intLoc - extLoc;
+      ATLASSERT(rightWidth>0.0);
+   }
 
    if ( leftWidth <= minWidth && rightWidth <= minWidth )
       return false; // sidewalks too narrow for PL
-
 
    return true;
 }
@@ -4663,10 +4672,10 @@ bool CAnalysisAgentImp::HasSidewalkLoad(SpanIndexType spanIdx,GirderIndexType gd
 {
    bool bHasSidewalkLoad = false;
 
-   Float64 fraLeft, fraRight;
-   GetSidewalkLoadFraction(spanIdx,gdrIdx,&fraLeft,&fraRight);
+   Float64 swLoad, fraLeft, fraRight;
+   GetSidewalkLoadFraction(spanIdx,gdrIdx,&swLoad,&fraLeft,&fraRight);
 
-   if ( !IsZero(fraLeft) || !IsZero(fraRight) )
+   if ( !IsZero(swLoad))
       bHasSidewalkLoad = true;
 
    return bHasSidewalkLoad;
@@ -4685,8 +4694,8 @@ bool CAnalysisAgentImp::HasPedestrianLoad(SpanIndexType spanIdx,GirderIndexType 
    if ( !bHasPedLoad )
       return false; // there is no chance of having any Ped load on this bridge
 
-   Float64 fraLeft, fraRight;
-   GetSidewalkLoadFraction(spanIdx,gdrIdx,&fraLeft,&fraRight);
+   Float64 swLoad, fraLeft, fraRight;
+   GetSidewalkLoadFraction(spanIdx,gdrIdx,&swLoad, &fraLeft,&fraRight);
 
    if ( IsZero(fraLeft) && IsZero(fraRight) )
       bHasPedLoad = false;
@@ -4698,6 +4707,38 @@ Float64 CAnalysisAgentImp::GetPedestrianLoad(SpanIndexType span,GirderIndexType 
 {
    return GetPedestrianLiveLoad(span,girder);
 }
+
+Float64 CAnalysisAgentImp::GetPedestrianLoadPerSidewalk(pgsTypes::TrafficBarrierOrientation orientation)
+{
+   GET_IFACE(IBarriers,pBarriers);
+
+   if(!pBarriers->HasSidewalk(orientation))
+   {
+      return 0.0; 
+   }
+   else
+   {
+      Float64 intLoc, extLoc;
+      pBarriers->GetSidewalkPedLoadEdges(orientation, &intLoc, &extLoc);
+      Float64 swWidth  = intLoc - extLoc;
+      ATLASSERT(swWidth>0.0); // should have checked somewhere if a sidewalk exists before calling
+
+      GET_IFACE(ILibrary,pLibrary);
+      GET_IFACE(ISpecification,pSpec);
+      const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry( pSpec->GetSpecification().c_str() );
+
+      Float64 Wmin = pSpecEntry->GetMinSidewalkWidth();
+
+      if ( swWidth <= Wmin )
+         return 0.0; // not min sidewalk, no pedestrian load
+
+      Float64 w = pSpecEntry->GetPedestrianLiveLoad();
+      Float64 W  = w*swWidth;
+
+      return W;
+   }
+}
+
 
 void CAnalysisAgentImp::GetMainSpanSlabLoad(SpanIndexType span,GirderIndexType gdr, std::vector<SlabLoad>* pSlabLoads)
 {
@@ -4867,10 +4908,18 @@ void CAnalysisAgentImp::GetMainSpanSlabLoad(SpanIndexType span,GirderIndexType g
             // slab overhang from CL of girder (normal to alignment)
             Float64 slab_overhang = (gdrIdx == 0 ? pBridge->GetLeftSlabOverhang(dist_from_start_of_bridge) : pBridge->GetRightSlabOverhang(dist_from_start_of_bridge));
 
-            Float64 top_width = pGdr->GetTopWidth(poi);
+            if (slab_overhang < 0.0)
+            {
+               // negative overhang - girder probably has no slab over it
+               slab_overhang = 0.0;
+            }
+            else
+            {
+               Float64 top_width = pGdr->GetTopWidth(poi);
 
-            // slab overhang from edge of girder (normal to alignment)
-            slab_overhang -= top_width/2;
+               // slab overhang from edge of girder (normal to alignment)
+               slab_overhang -= top_width/2;
+            }
 
             // area of slab overhang
             Float64 slab_overhang_area = slab_overhang*(overhang_edge_depth + overhang_depth_at_flange_tip)/2;
@@ -4896,6 +4945,10 @@ void CAnalysisAgentImp::GetMainSpanSlabLoad(SpanIndexType span,GirderIndexType g
             // so deduct one panel support width
 
             panel_width -= panel_support_width;
+            if (panel_width<0.0)
+            {
+               panel_width = 0.0; // negative overhangs can cause this condition
+            }
 
             wslab_panel = panel_width * panel_depth * pMat->GetWgtDensitySlab() * unitSysUnitsMgr::GetGravitationalAcceleration();
          }
@@ -5039,28 +5092,18 @@ void CAnalysisAgentImp::GetMainSpanOverlayLoad(SpanIndexType span,GirderIndexTyp
    GET_IFACE(IBridgeMaterial,pMat);
    GET_IFACE(IRoadway,pAlignment);
    GET_IFACE(IPointOfInterest,pIPoi);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    GirderIndexType nGirders = pBridge->GetGirderCount(span);
    GirderIndexType gdrIdx = min(gdr,nGirders-1);
-
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CDeckDescription* pDeck = pBridgeDesc->GetDeckDescription();
 
    Float64 OverlayWeight = pBridge->GetOverlayWeight();
 
    GET_IFACE( ISpecification, pSpec );
    pgsTypes::OverlayLoadDistributionType olayd = pSpec->GetOverlayLoadDistributionType();
 
-   // Need to subtract out barrier width for exterior girders and tributary width method
-   Float64 barrWidth = 0.0;
-   if (olayd==pgsTypes::olDistributeTributaryWidth && pBridge->IsExteriorGirder(span,gdr) )
-   {
-      GET_IFACE(IBarriers,pBarriers);
-      barrWidth = pBarriers->GetInterfaceWidth((gdr==0)?pgsTypes::tboLeft : pgsTypes::tboRight);
-   }
-
-   // Get some important POIs that we will be using later
+   // POIs where overlay loads are laid out
    PoiAttributeType attrib = POI_ALLACTIONS;
    std::vector<pgsPointOfInterest> vPoi;
    vPoi = pIPoi->GetPointsOfInterest(span,gdrIdx,pgsTypes::BridgeSite3,attrib,POIFIND_OR);
@@ -5069,75 +5112,133 @@ void CAnalysisAgentImp::GetMainSpanOverlayLoad(SpanIndexType span,GirderIndexTyp
    GET_IFACE(ISectProp2,pSectProp2);
    GET_IFACE(IGirder,pGirder);
 
-   CollectionIndexType num_poi = vPoi.size();
-   for ( CollectionIndexType i = 0; i < num_poi-1; i++ )
-   {
-      const pgsPointOfInterest& prevPoi = vPoi[i];
-      const pgsPointOfInterest& currPoi = vPoi[i+1];
+   // Width of loaded area, and load intensity
+   Float64 startWidth(0), endWidth(0);
+   Float64 startW(0), endW(0);
+   Float64 startLoc(0), endLoc(0);
 
-      // Width of loaded area, and load intensity
-      Float64 startWidth, endWidth;
-      Float64 startW, endW;
+   CollectionIndexType num_poi = vPoi.size();
+   ATLASSERT(num_poi>2); // otherwise our loop won't create any loads
+   for ( CollectionIndexType i = 0; i < num_poi; i++ )
+   {
+      // poi at end of distributed load
+      const pgsPointOfInterest& endPoi = vPoi[i];
+
+      endLoc = endPoi.GetDistFromStart();
+
+      Float64 station,girder_offset;
+      pBridge->GetStationAndOffset(endPoi,&station,&girder_offset);
+      Float64 dist_from_start_of_bridge = pBridge->GetDistanceFromStartOfBridge(station);
+
+      // Offsets to toe where overlay starts
+      Float64 left_olay_offset  = pBridge->GetLeftOverlayToeOffset(dist_from_start_of_bridge);
+      Float64 right_olay_offset = pBridge->GetRightOverlayToeOffset(dist_from_start_of_bridge);
 
       if (olayd==pgsTypes::olDistributeEvenly)
       {
-         startWidth = pBridge->GetCurbToCurbWidth(prevPoi);
-         nGirders = pBridge->GetGirderCount(prevPoi.GetSpan());
-         startW = -startWidth*OverlayWeight/nGirders;
-
-         endWidth   = pBridge->GetCurbToCurbWidth(currPoi);
-         nGirders = pBridge->GetGirderCount(currPoi.GetSpan());
+         // This one is easy. girders see overlay even if they aren't under it
+         // Total overlay width at location
+         endWidth = right_olay_offset - left_olay_offset;
          endW = -endWidth*OverlayWeight/nGirders;
       }
       else if (olayd==pgsTypes::olDistributeTributaryWidth)
       {
+         Float64 left_slab_offset  = pBridge->GetLeftSlabEdgeOffset(dist_from_start_of_bridge);
+
+         // Have to determine how much of overlay is actually over the girder's tributary width
+         // Measure distances from left edge of deck to Left/Right edges of overlay
+         Float64 DLO = left_olay_offset - left_slab_offset;
+         Float64 DRO = right_olay_offset - left_slab_offset;
+
+         // Distance from left edge of deck to CL girder
+         Float64 DGDR = girder_offset - left_slab_offset;
+
+         // Next get distances from left edge of deck to girder's left and right tributary edges
+         Float64 DLT, DRT;
          if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
          {
             ATLASSERT( ::IsJointSpacing(pBridgeDesc->GetGirderSpacingType()) );
-            Float64 left,right;
-            pBridge->GetDistanceBetweenGirders(prevPoi,&left,&right);
 
-            Float64 width = max(pGirder->GetTopWidth(prevPoi),pGirder->GetBottomWidth(prevPoi));
+            // Joint widths
+            Float64 leftJ,rightJ;
+            pBridge->GetDistanceBetweenGirders(endPoi,&leftJ,&rightJ);
 
-            startWidth = width + (left+right)/2 - barrWidth;
-            startW = -startWidth*OverlayWeight;
+            Float64 width = max(pGirder->GetTopWidth(endPoi),pGirder->GetBottomWidth(endPoi));
+            Float64 width2 = width/2.0;
 
-            pBridge->GetDistanceBetweenGirders(currPoi,&left,&right);
-
-            width = max(pGirder->GetTopWidth(currPoi),pGirder->GetBottomWidth(currPoi));
-
-            endWidth = width + (left+right)/2 - barrWidth;
-            endW = -endWidth*OverlayWeight;
+            // Note that tributary width ignores joint spacing
+            DLT = DGDR - width2 - leftJ/2.0;;
+            DRT = DGDR + width2 + rightJ/2.0;
          }
          else
          {
-            startWidth = pSectProp2->GetTributaryFlangeWidth(prevPoi) - barrWidth;
-            // negative width means that slab is not over girder
-            if (startWidth < 0.0)
-               startWidth = 0.0;
+            Float64 lftTw, rgtTw;
+            Float64 tribWidth = pSectProp2->GetTributaryFlangeWidthEx(endPoi, &lftTw, &rgtTw);
 
-            startW = -startWidth*OverlayWeight;
-
-            endWidth = pSectProp2->GetTributaryFlangeWidth(currPoi) - barrWidth;
-            if (endWidth < 0.0)
-               endWidth = 0.0;
-
-            endW = -endWidth*OverlayWeight;
+            DLT = DGDR - lftTw;
+            DRT = DGDR + rgtTw;
          }
+
+         // Now we have distances for all needed elements. Next figure out how much
+         // of overlay lies within tributary width
+         ATLASSERT(DRO>DLO); // negative overlay widths should be handled elsewhere
+
+         if (DLO <= DLT)
+         {
+            if(DRO >= DRT)
+            {
+              endWidth = DRT-DLT;
+            }
+            else if (DRO > DLT)
+            {
+               endWidth = DRO-DLT;
+            }
+            else
+            {
+               endWidth = 0.0;
+            }
+         }
+         else if (DLO < DRT)
+         {
+            if (DRO < DRT)
+            {
+               endWidth = DRO-DLO;
+            }
+            else
+            {
+               endWidth = DRT-DLO;
+            }
+         }
+         else
+         {
+            endWidth = 0.0;
+         }
+
+         endW = -endWidth*OverlayWeight;
       }
       else
+      {
          ATLASSERT(0); //something new?
+      }
 
       // Create load and stuff it
-      OverlayLoad load;
-      load.StartLoc = prevPoi.GetDistFromStart();
-      load.EndLoc   = currPoi.GetDistFromStart();
-      load.StartWcc = startWidth;
-      load.EndWcc   = endWidth;
-      load.StartLoad = startW;
-      load.EndLoad   = endW;
+      if (i!=0)
+      {
+         OverlayLoad load;
+         load.StartLoc = startLoc;
+         load.EndLoc   = endLoc;
+         load.StartWcc = startWidth;
+         load.EndWcc   = endWidth;
+         load.StartLoad = startW;
+         load.EndLoad   = endW;
 
-      pOverlayLoads->push_back(load);
+         pOverlayLoads->push_back(load);
+      }
+
+      // Set variables for next go through loop
+      startLoc   = endLoc;
+      startWidth = endWidth;
+      startW     = endW;
    }
 }
 
@@ -12730,7 +12831,8 @@ CAnalysisAgentImp::SpanType CAnalysisAgentImp::GetSpanType(SpanIndexType span,bo
    return PinPin;
 }
 
-void CAnalysisAgentImp::AddDistributionFactors(IDistributionFactors* factors,Float64 length,Float64 gpM,Float64 gnM,Float64 gV,Float64 gR,Float64 gF,Float64 gD)
+void CAnalysisAgentImp::AddDistributionFactors(IDistributionFactors* factors,Float64 length,Float64 gpM,Float64 gnM,Float64 gV,Float64 gR,
+                                               Float64 gF,Float64 gD, Float64 gPedes)
 {
    CComPtr<IDistributionFactorSegment> dfSegment;
    dfSegment.CoCreateInstance(CLSID_DistributionFactorSegment);
@@ -12746,7 +12848,8 @@ void CAnalysisAgentImp::AddDistributionFactors(IDistributionFactors* factors,Flo
             gD,  gD,  // deflections
             gR,  gR,  // reaction
             gpM, gpM, // rotation
-            gF        // fatigue
+            gF,       // fatigue
+            gPedes    // pedestrian loading
             );
 
    factors->Add(dfSegment);
@@ -12823,8 +12926,9 @@ void CAnalysisAgentImp::ApplyLLDF_PinPin(SpanIndexType spanIdx,GirderIndexType g
    Float64 gR  =  99999999; // this parameter should not be used so use a value that is obviously wrong to easily detect bugs
    Float64 gF  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
    Float64 gD  = pLLDF->GetDeflectionDistFactor(spanIdx,gdrIdx);
+   Float64 gPedes = this->GetPedestrianLiveLoad(spanIdx,gdrIdx); // factor is magnitude of pedestrian live load
 
-   AddDistributionFactors(distFactors,span_length,gpM,gnM,gV,gR,gF,gD);
+   AddDistributionFactors(distFactors,span_length,gpM,gnM,gV,gR,gF,gD,gPedes);
 }
 
 void CAnalysisAgentImp::ApplyLLDF_PinFix(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors)
@@ -12868,12 +12972,14 @@ void CAnalysisAgentImp::ApplyLLDF_PinFix(SpanIndexType spanIdx,GirderIndexType g
    Float64 gF  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
    Float64 gD  = pLLDF->GetDeflectionDistFactor(spanIdx,gdrIdx);
 
-   AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gF,gD);
+   Float64 gPedes = this->GetPedestrianLiveLoad(spanIdx,gdrIdx); // factor is magnitude of pedestrian live load
+
+   AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gF,gD,gPedes);
 
    // for the second part of the span, use the negative moment distribution factor that goes over the next pier
    gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
 
-   AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gF,gD);
+   AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gF,gD,gPedes);
 }
 
 void CAnalysisAgentImp::ApplyLLDF_FixPin(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors)
@@ -12917,10 +13023,12 @@ void CAnalysisAgentImp::ApplyLLDF_FixPin(SpanIndexType spanIdx,GirderIndexType g
    Float64 gF  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
    Float64 gD  = pLLDF->GetDeflectionDistFactor(spanIdx,gdrIdx);
 
-   AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gF,gD);
+   Float64 gPedes = this->GetPedestrianLiveLoad(spanIdx,gdrIdx); // factor is magnitude of pedestrian live load
+
+   AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gF,gD,gPedes);
 
    gnM = pLLDF->GetNegMomentDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI); // DF in the span
-   AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gF,gD);
+   AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gF,gD,gPedes);
 }
 
 void CAnalysisAgentImp::ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors)
@@ -12948,6 +13056,7 @@ void CAnalysisAgentImp::ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType g
    Float64 gR;
    Float64 gF;
    Float64 gD  = pLLDF->GetDeflectionDistFactor(spanIdx,gdrIdx);
+   Float64 gPedes = this->GetPedestrianLiveLoad(spanIdx,gdrIdx); // factor is magnitude of pedestrian live load
 
    if ( num_cf_points_in_span == 0 )
    {
@@ -12959,10 +13068,10 @@ void CAnalysisAgentImp::ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType g
       gR  = 99999999; // this parameter should not be used so use a value that is obviously wrong to easily detect bugs
       gF  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
 
-      AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gV,gR,gF,gD);
+      AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gV,gR,gF,gD, gPedes);
       
       gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
-      AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gV,gR,gF,gD);
+      AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gV,gR,gF,gD,gPedes);
    }
    else if ( num_cf_points_in_span == 1 )
    {
@@ -12975,10 +13084,10 @@ void CAnalysisAgentImp::ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType g
       Float64 seg_length_1 = cf_points_in_span[0] - span_start;
       Float64 seg_length_2 = span_end - cf_points_in_span[0];
 
-      AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gF,gD);
+      AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gF,gD,gPedes);
       
       gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
-      AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gF,gD);
+      AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gF,gD,gPedes);
    }
    else
    {
@@ -12992,17 +13101,17 @@ void CAnalysisAgentImp::ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType g
       Float64 seg_length_2 = cf_points_in_span[1] - cf_points_in_span[0];
       Float64 seg_length_3 = span_end - cf_points_in_span[1];
 
-      AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gF,gD);
+      AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gF,gD,gPedes);
       
       gnM = pLLDF->GetNegMomentDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
-      AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gF,gD);
+      AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gF,gD,gPedes);
       
       gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
-      AddDistributionFactors(distFactors,seg_length_3,gpM,gnM,gV,gR,gF,gD);
+      AddDistributionFactors(distFactors,seg_length_3,gpM,gnM,gV,gR,gF,gD,gPedes);
    }
 }
 
-void CAnalysisAgentImp::ApplyLLDF_Support(PierIndexType pierIdx,GirderIndexType gdrIdx,ISupports* supports)
+void CAnalysisAgentImp::ApplyLLDF_Support(PierIndexType pierIdx,GirderIndexType gdrIdx,SpanIndexType nSpans,ISupports* supports)
 {
    CComPtr<ISupport> support;
    supports->get_Item(pierIdx,&support);
@@ -13015,6 +13124,23 @@ void CAnalysisAgentImp::ApplyLLDF_Support(PierIndexType pierIdx,GirderIndexType 
    Float64 gV  = 99999999;
    Float64 gR  = pLLDF->GetReactionDistFactor(pierIdx,gdrIdx,pgsTypes::StrengthI);
    Float64 gF  = pLLDF->GetReactionDistFactor(pierIdx,gdrIdx,pgsTypes::FatigueI);
+
+   // For pedestrian loads - take average of loads from adjacent spans
+   Float64 leftPedes(0.0), rightPedes(0.0);
+   Int32 nls(0);
+   if(pierIdx>0)
+   {
+      leftPedes = this->GetPedestrianLiveLoad(pierIdx-1,gdrIdx);
+      nls++;
+   }
+
+   if (pierIdx < nSpans)
+   {
+      rightPedes = this->GetPedestrianLiveLoad(pierIdx,gdrIdx);
+      nls++;
+   }
+
+   Float64 gPedes = (leftPedes+rightPedes)/nls;
 
    GET_IFACE(IBridge,pBridge);
    SpanIndexType spanIdx = pierIdx;
@@ -13029,7 +13155,8 @@ void CAnalysisAgentImp::ApplyLLDF_Support(PierIndexType pierIdx,GirderIndexType 
             gD,  gD,  // deflections
             gR,  gR,  // reaction
             gpM, gpM, // rotation
-            gF        // fatigue
+            gF,       // fatigue
+            gPedes    // pedestrian
             );
 }
 
@@ -13349,7 +13476,7 @@ DistributionFactorType CAnalysisAgentImp::GetLiveLoadDistributionFactorType(pgsT
       break;
 
    case pgsTypes::lltPedestrian:
-      dfType = dftNone;
+      dfType = dftPedestrian;
       break;
 
    case pgsTypes::lltPermit:

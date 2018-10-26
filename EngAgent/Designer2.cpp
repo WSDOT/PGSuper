@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -3287,7 +3287,7 @@ void pgsDesigner2::DesignEndZoneHarping(arDesignOptions options, pgsDesignArtifa
 
       // the goal of this lifting design is to adjust the harped and straight strands
       // into the optimal configuration for fabrication
-      DesignForLiftingHarping(true,pProgress);
+      DesignForLiftingHarping(options,true,pProgress);
       
       lifting_design_outcome = m_DesignerOutcome;
 
@@ -3304,7 +3304,7 @@ void pgsDesigner2::DesignEndZoneHarping(arDesignOptions options, pgsDesignArtifa
       // lifting will control over simple release, so it's either/or here
       LOG(_T(""));
       LOG(_T("*** Design for simple release condition at endzone"));
-      DesignEndZoneReleaseHarping(pProgress);
+      DesignEndZoneReleaseHarping(options, pProgress);
 
       CHECK_PROGRESS;
 
@@ -3342,7 +3342,7 @@ void pgsDesigner2::DesignEndZoneHarping(arDesignOptions options, pgsDesignArtifa
       // release strength for lifting with temporary strands
       LOG(_T("Design for Lifting after Shipping"));
       LOG(_T("================================="));
-      DesignForLiftingHarping(false,pProgress);
+      DesignForLiftingHarping(options,false,pProgress);
 
       CHECK_PROGRESS;
 
@@ -3416,7 +3416,7 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
          {
             // Could be that release strength controls instead of final. Give it a chance.
             LOG(_T("Initial Design Trial # ") << cIter <<_T(" Failed - try to increase release strength to reduce losses"));
-            DesignMidZoneAtRelease(pProgress);
+            DesignMidZoneAtRelease(options, pProgress);
 
             // the purpose of calling DesignMidZoneAtRelease is to adjust the initial release strength
             // if it is too low. The new value is also and Initial Strength... re-initialize the
@@ -3495,7 +3495,7 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
             continue; // back to the start of the loop
          }
 
-         DesignMidZoneAtRelease( pProgress );
+         DesignMidZoneAtRelease( options, pProgress );
 
          CHECK_PROGRESS;
          if (  m_DesignerOutcome.WasDesignAborted() )
@@ -3705,7 +3705,7 @@ void pgsDesigner2::DesignMidZoneFinalConcrete(IProgress* pProgress)
    LOG(_T("Exiting DesignMidZoneFinalConcrete"));
 }
 
-void pgsDesigner2::DesignMidZoneAtRelease(IProgress* pProgress)
+void pgsDesigner2::DesignMidZoneAtRelease(const arDesignOptions& options, IProgress* pProgress)
 {
 
    LOG(_T(""));
@@ -3860,7 +3860,7 @@ void pgsDesigner2::DesignMidZoneAtRelease(IProgress* pProgress)
 
          GET_IFACE(IStrandGeometry,pStrandGeom);
          Float64 offset_inc = pStrandGeom->GetHarpedHpOffsetIncrement(span,gdr);
-         if (Nh>0 && offset_inc>=0.0 )
+         if (Nh>0 && offset_inc>=0.0 && !options.doForceHarpedStrandsStraight)
          {
             LOG(_T("Attempt to adjust by raising harped bundles at harping points"));
 
@@ -4629,7 +4629,7 @@ void pgsDesigner2::DesignEndZoneReleaseStrength(IProgress* pProgress)
    DesignConcreteRelease(ftop, fbot);
 }
 
-void pgsDesigner2::DesignEndZoneReleaseHarping(IProgress* pProgress)
+void pgsDesigner2::DesignEndZoneReleaseHarping(const arDesignOptions& options, IProgress* pProgress)
 {
    LOG(_T("Refine harped design for release condition"));
    LOG(_T("Computing Release requirements at End-Zone - Assumes that harped strands have been raised to highest location before entering"));
@@ -4764,7 +4764,7 @@ void pgsDesigner2::DesignEndZoneReleaseHarping(IProgress* pProgress)
    {
       StrandIndexType Nh = m_StrandDesignTool.GetNh();
 
-      if (offset_inc>=0.0 && Nh>0)
+      if (offset_inc>=0.0 && Nh>0 && !options.doForceHarpedStrandsStraight)
       {
          LOG(_T("Harped strands can be adjusted at ends for release - See how low can we go...") );
          // compute harped offset required to achieve this ecc
@@ -5024,7 +5024,7 @@ void pgsDesigner2::DesignConcreteRelease(Float64 ftop, Float64 fbot)
    LOG(_T("Exiting DesignConcreteRelease"));
 }
 
-void pgsDesigner2::DesignForLiftingHarping(bool bProportioningStrands,IProgress* pProgress)
+void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool bProportioningStrands,IProgress* pProgress)
 {
    // There are two phases to lifting design. The first phase is to proportion the number of straight
    // and harped strands to obtain a _T("balanced") state of stresses when lifting the girder without
@@ -5289,7 +5289,7 @@ void pgsDesigner2::DesignForLiftingHarping(bool bProportioningStrands,IProgress*
          {
             // See if we can lower end pattern
             Float64 offset_inc = pStrandGeom->GetHarpedEndOffsetIncrement(span,gdr);
-            if ( 0.0 <= offset_inc )
+            if ( 0.0 <= offset_inc && !options.doForceHarpedStrandsStraight )
             {
                LOG(_T("Try to raise end eccentricity by lowering harped strands at ends"));
                Float64 off_reqd = m_StrandDesignTool.ComputeEndOffsetForEccentricity(poi_control, required_eccentricity);

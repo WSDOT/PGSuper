@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -180,7 +180,7 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(bTempStrands ? 11 : 8,_T(""));
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(bTempStrands ? 12 : 9,_T(""));
    *pPara << p_table << rptNewLine;
 
    p_table->SetNumberOfHeaderRows(3);
@@ -190,13 +190,14 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
    p_table->SetRowSpan(1,0,SKIP_CELL);
    p_table->SetRowSpan(2,0,SKIP_CELL);
 
-   p_table->SetColumnSpan(0,1,7);
+   p_table->SetColumnSpan(0,1,8);
    p_table->SetColumnSpan(0,2,SKIP_CELL);
    p_table->SetColumnSpan(0,3,SKIP_CELL);
    p_table->SetColumnSpan(0,4,SKIP_CELL);
    p_table->SetColumnSpan(0,5,SKIP_CELL);
    p_table->SetColumnSpan(0,6,SKIP_CELL);
    p_table->SetColumnSpan(0,7,SKIP_CELL);
+   p_table->SetColumnSpan(0,8,SKIP_CELL);
    (*p_table)(0,1) << _T("Permanent Strands");
 
    p_table->SetRowSpan(1,1,2);
@@ -209,34 +210,36 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
    (*p_table)(2,2) << _T("# Total")<<rptNewLine<<_T("(Debonded)");
    (*p_table)(2,3) << COLHDR(Sub2(_T("P"),_T("jack")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
 
-   p_table->SetColumnSpan(1,4,4);
+   p_table->SetColumnSpan(1,4,5);
    p_table->SetColumnSpan(1,5,SKIP_CELL);
    p_table->SetColumnSpan(1,6,SKIP_CELL);
    p_table->SetColumnSpan(1,7,SKIP_CELL);
-   (*p_table)(1,4) << _T("Harped");
-   (*p_table)(2,4) << _T("#");
-   (*p_table)(2,5) << COLHDR(Sub2(_T("P"),_T("jack")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
-   (*p_table)(2,6) << COLHDR(_T("Girder End")<<rptNewLine<<_T("Offset"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*p_table)(2,7)<< COLHDR(_T("Harping Pt")<<rptNewLine<<_T("Offset"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   p_table->SetColumnSpan(1,8,SKIP_CELL);
+   (*p_table)(1,4) << _T("Web Strands");
+   (*p_table)(2,4) << _T("Type");
+   (*p_table)(2,5) << _T("#");
+   (*p_table)(2,6) << COLHDR(Sub2(_T("P"),_T("jack")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
+   (*p_table)(2,7) << COLHDR(_T("Girder End")<<rptNewLine<<_T("Offset"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*p_table)(2,8)<< COLHDR(_T("Harping Pt")<<rptNewLine<<_T("Offset"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
    if ( bTempStrands )
    {
-      p_table->SetColumnSpan(0,8,3);
-      p_table->SetColumnSpan(0,9,SKIP_CELL);
+      p_table->SetColumnSpan(0,9,3);
       p_table->SetColumnSpan(0,10,SKIP_CELL);
-      (*p_table)(0,8) << _T("Temporary Strands");
-
-      p_table->SetRowSpan(1,8,2);
-      (*p_table)(1,8) << _T("Material");
-      p_table->SetRowSpan(2,8,SKIP_CELL);
+      p_table->SetColumnSpan(0,11,SKIP_CELL);
+      (*p_table)(0,9) << _T("Temporary Strands");
 
       p_table->SetRowSpan(1,9,2);
-      (*p_table)(1,9) << _T("#");
+      (*p_table)(1,9) << _T("Material");
       p_table->SetRowSpan(2,9,SKIP_CELL);
 
       p_table->SetRowSpan(1,10,2);
-      (*p_table)(1,10) << COLHDR(Sub2(_T("P"),_T("jack")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
+      (*p_table)(1,10) << _T("#");
       p_table->SetRowSpan(2,10,SKIP_CELL);
+
+      p_table->SetRowSpan(1,11,2);
+      (*p_table)(1,11) << COLHDR(Sub2(_T("P"),_T("jack")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
+      p_table->SetRowSpan(2,11,SKIP_CELL);
    }
 
    GirderIndexType ngirds = pBridge->GetGirderCount(span);
@@ -263,6 +266,7 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
       // Right now, straight and harped strands must have the same material
       ATLASSERT(girderData.Material.pStrandMaterial[pgsTypes::Straight] == girderData.Material.pStrandMaterial[pgsTypes::Harped]);
 
+      (*p_table)(row,col++) << LABEL_HARP_TYPE(pStrandGeometry->GetAreHarpedStrandsForcedStraight(span,ig));
       (*p_table)(row,col++) << girderData.Nstrands[pgsTypes::Harped];
       (*p_table)(row,col++) << force.SetValue(girderData.Pjack[pgsTypes::Harped]);
 
@@ -282,8 +286,8 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
       row++;
    }
 
-   *pPara<<_T("Girder End Offset - Distance the harped strands at the girder ends is adjusted vertically from their default location.")<<rptNewLine;
-   *pPara<<_T("Harping Point Offset - Distance the harped strands at the harping point is adjusted vertically from their default location.")<<rptNewLine;
+   *pPara<<_T("Girder End Offset - Distance the harped strands at the girder ends are adjusted vertically from their default (library) locations.")<<rptNewLine;
+   *pPara<<_T("Harping Point Offset - Distance the harped strands at the harping point are adjusted vertically from their default (library) locations.")<<rptNewLine;
    return was_debonding;
 }
 

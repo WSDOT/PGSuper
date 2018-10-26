@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -201,10 +201,10 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
          {
             if ( bPedLoading )
             {
-               pForces->GetLiveLoadRotation( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, poi, MaxSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max );
+               pForces->GetLiveLoadRotation( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, poi, MaxSimpleContinuousEnvelope, bIncludeImpact, true, &min, &max );
                (*p_table)(row,col++) << rotation.SetValue( max );
 
-               pForces->GetLiveLoadRotation( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, poi,  MinSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF,&min, &max );
+               pForces->GetLiveLoadRotation( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, poi,  MinSimpleContinuousEnvelope, bIncludeImpact, true,&min, &max );
                (*p_table)(row,col++) << rotation.SetValue( min );
             }
 
@@ -379,7 +379,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,SpanIndexType span,Gir
 
          if ( bPedLoading )
          {
-            pForces->GetLiveLoadRotation( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, poi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max );
+            pForces->GetLiveLoadRotation( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, poi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, bIncludeImpact, true, &min, &max );
             (*p_table)(row,col++) << rotation.SetValue( max );
             (*p_table)(row,col++) << rotation.SetValue( min );
          }

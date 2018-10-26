@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -272,7 +272,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
       *pChapter << pParagraph;
 
       // see if fill order type was changed
-      if (pArtifact->GetDesignOptions().doStrandFillType==ftGridOrder)
+      if (options.doStrandFillType==ftGridOrder)
       {
          StrandIndexType num_permanent = pArtifact->GetNumHarpedStrands() + pArtifact->GetNumStraightStrands();
          // we asked design to fill using grid, but this may be a non-standard design - let's check
@@ -335,7 +335,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
 
       row++;
 
-      (*pTable)(row,0) << _T("Number of Harped Strands");
+      (*pTable)(row,0) << _T("Number of ") << LABEL_HARP_TYPE(options.doForceHarpedStrandsStraight) << _T(" Strands");
       (*pTable)(row,1) << config.Nstrands[pgsTypes::Harped];
       (*pTable)(row,2) << girderData.Nstrands[pgsTypes::Harped];
       row++;
@@ -353,7 +353,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
       (*pTable)(row,2) << force.SetValue(girderData.Pjack[pgsTypes::Straight]);
       row++;
 
-      (*pTable)(row,0) << _T("Harped Strand Jacking Force");
+      (*pTable)(row,0) << LABEL_HARP_TYPE(options.doForceHarpedStrandsStraight) << _T(" Strand Jacking Force");
       (*pTable)(row,1) << force.SetValue(config.Pjack[pgsTypes::Harped]);
       (*pTable)(row,2) << force.SetValue(girderData.Pjack[pgsTypes::Harped]);
       row++;
@@ -369,39 +369,79 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
       if (config.Nstrands[pgsTypes::Harped] > 0)
       {
          HarpedStrandOffsetType HsoEnd = girderData.HsoEndMeasurement;
-         switch( HsoEnd )
+
+         if(options.doForceHarpedStrandsStraight)
          {
-         case hsoCGFROMTOP:
-            (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("CG of harped strand group at ends of girder");
-            break;
+            switch( HsoEnd )
+            {
+            case hsoCGFROMTOP:
+               (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("CG of Straight-Web strands");
+               break;
 
-         case hsoCGFROMBOTTOM:
-            (*pTable)(row,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("CG of harped strand group at ends of girder");
-            break;
+            case hsoCGFROMBOTTOM:
+               (*pTable)(row,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("CG of Straight-Web strands");
+               break;
 
-         case hsoLEGACY:
-            // convert legacy to display TOP 2 TOP
+            case hsoLEGACY:
+               // convert legacy to display TOP 2 TOP
+               HsoEnd = hsoTOP2TOP;
 
-            HsoEnd = hsoTOP2TOP;
+            case hsoTOP2TOP:
+               (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("top-most Straight-Web strand");
+               break;
 
-         case hsoTOP2TOP:
-            (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("top of harped strand group at ends of girder");
-            break;
+            case hsoTOP2BOTTOM:
+               (*pTable)(row,0) << _T("Distance from bottom of girder") << rptNewLine << _T("to top-most Straight-Web strand");
+               break;
 
-         case hsoTOP2BOTTOM:
-            (*pTable)(row,0) << _T("Distance from bottom of girder") << rptNewLine << _T("to top of harped strand group at ends of girder");
-            break;
+            case hsoBOTTOM2BOTTOM:
+               (*pTable)(row,0) << _T("Distance from bottom of girder") << rptNewLine << _T("to lowest Straight-Web strand");
+               break;
 
-         case hsoBOTTOM2BOTTOM:
-            (*pTable)(row,0) << _T("Distance from bottom of girder") << rptNewLine << _T("to bottom of harped strand group at ends of girder");
-            break;
+            case hsoECCENTRICITY:
+               (*pTable)(row,0) << _T("Eccentricity of Straight-Web strand group");
+               break;
 
-         case hsoECCENTRICITY:
-            (*pTable)(row,0) << _T("Eccentricity of harped strand") << rptNewLine << _T("group at ends of girder");
-            break;
+            default:
+               ATLASSERT(false); // should never get here
+            }
+         }
+         else
+         {
+            switch( HsoEnd )
+            {
+            case hsoCGFROMTOP:
+               (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("CG of harped strand group at ends of girder");
+               break;
 
-         default:
-            ATLASSERT(false); // should never get here
+            case hsoCGFROMBOTTOM:
+               (*pTable)(row,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("CG of harped strand group at ends of girder");
+               break;
+
+            case hsoLEGACY:
+               // convert legacy to display TOP 2 TOP
+
+               HsoEnd = hsoTOP2TOP;
+
+            case hsoTOP2TOP:
+               (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("top of harped strand group at ends of girder");
+               break;
+
+            case hsoTOP2BOTTOM:
+               (*pTable)(row,0) << _T("Distance from bottom of girder") << rptNewLine << _T("to top of harped strand group at ends of girder");
+               break;
+
+            case hsoBOTTOM2BOTTOM:
+               (*pTable)(row,0) << _T("Distance from bottom of girder") << rptNewLine << _T("to bottom of harped strand group at ends of girder");
+               break;
+
+            case hsoECCENTRICITY:
+               (*pTable)(row,0) << _T("Eccentricity of harped strand") << rptNewLine << _T("group at ends of girder");
+               break;
+
+            default:
+               ATLASSERT(false); // should never get here
+            }
          }
 
          double offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(span, gdr,
@@ -417,56 +457,59 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
 
          row++;
 
-         HarpedStrandOffsetType HsoHp = girderData.HsoHpMeasurement;
-         switch( HsoHp )
+         if(!options.doForceHarpedStrandsStraight)
          {
-         case hsoCGFROMTOP:
-            (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("CG of harped strand group at harping point");
-            break;
+            HarpedStrandOffsetType HsoHp = girderData.HsoHpMeasurement;
+            switch( HsoHp )
+            {
+            case hsoCGFROMTOP:
+               (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("CG of harped strand group at harping point");
+               break;
 
-         case hsoCGFROMBOTTOM:
-            (*pTable)(row,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("CG of harped strand group at harping point");
-            break;
+            case hsoCGFROMBOTTOM:
+               (*pTable)(row,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("CG of harped strand group at harping point");
+               break;
 
-         case hsoTOP2TOP:
-            (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("top of harped strand group at harping point");
-            break;
+            case hsoTOP2TOP:
+               (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("top of harped strand group at harping point");
+               break;
 
-         case hsoTOP2BOTTOM:
-            (*pTable)(row,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("top of harped strand group at harping point");
-            break;
+            case hsoTOP2BOTTOM:
+               (*pTable)(row,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("top of harped strand group at harping point");
+               break;
 
-         case hsoLEGACY:
-            // convert legacy to display BOTTOM 2 BOTTOM
-            HsoHp = hsoBOTTOM2BOTTOM;
+            case hsoLEGACY:
+               // convert legacy to display BOTTOM 2 BOTTOM
+               HsoHp = hsoBOTTOM2BOTTOM;
 
-         case hsoBOTTOM2BOTTOM:
-            (*pTable)(row,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("bottom of harped strand group at harping point");
-            break;
+            case hsoBOTTOM2BOTTOM:
+               (*pTable)(row,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("bottom of harped strand group at harping point");
+               break;
 
 
-         case hsoECCENTRICITY:
-            (*pTable)(row,0) << _T("Eccentricity of harped strand") << rptNewLine << _T("group at harping point");
-            break;
+            case hsoECCENTRICITY:
+               (*pTable)(row,0) << _T("Eccentricity of harped strand") << rptNewLine << _T("group at harping point");
+               break;
 
-         default:
-            ATLASSERT(false); // should never get here
+            default:
+               ATLASSERT(false); // should never get here
+            }
+
+
+            offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(span, gdr,
+                                                                        pArtifact->GetNumHarpedStrands(), 
+                                                                        HsoHp, 
+                                                                        pArtifact->GetHarpStrandOffsetHp());
+
+            (*pTable)(row,1) << length.SetValue(offset);
+
+            offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(span, gdr,
+                                                                        girderData.Nstrands[pgsTypes::Harped], 
+                                                                        HsoHp, abs_offset_hp);
+            (*pTable)(row,2) << length.SetValue(offset);
+
+            row++;
          }
-
-
-         offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(span, gdr,
-                                                                     pArtifact->GetNumHarpedStrands(), 
-                                                                     HsoHp, 
-                                                                     pArtifact->GetHarpStrandOffsetHp());
-
-         (*pTable)(row,1) << length.SetValue(offset);
-
-         offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(span, gdr,
-                                                                     girderData.Nstrands[pgsTypes::Harped], 
-                                                                     HsoHp, abs_offset_hp);
-         (*pTable)(row,2) << length.SetValue(offset);
-
-         row++;
       }
 
       (*pTable)(row,0) << RPT_FCI;

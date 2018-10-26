@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -194,14 +194,14 @@ private:
    void DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress* pProgress);
    void DesignSlabOffset(IProgress* pProgress);
    void DesignMidZoneFinalConcrete(IProgress* pProgress);
-   void DesignMidZoneAtRelease(IProgress* pProgress);
+   void DesignMidZoneAtRelease(const arDesignOptions& options, IProgress* pProgress);
    void DesignEndZone(bool firstTime, arDesignOptions options, pgsDesignArtifact& artifact,IProgress* pProgress);
    void DesignForShipping(IProgress* pProgress);
    std::vector<DebondLevelType> DesignForShippingDebondingFinal(IProgress* pProgress);
 
    void DesignEndZoneHarping(arDesignOptions options, pgsDesignArtifact& artifact,IProgress* pProgress);
-   void DesignForLiftingHarping(bool bAdjustingAfterShipping,IProgress* pProgress);
-   void DesignEndZoneReleaseHarping(IProgress* pProgress);
+   void DesignForLiftingHarping(const arDesignOptions& options, bool bAdjustingAfterShipping,IProgress* pProgress);
+   void DesignEndZoneReleaseHarping(const arDesignOptions& options, IProgress* pProgress);
 
    void DesignEndZoneDebonding(bool firstPass, arDesignOptions options, pgsDesignArtifact& artifact, IProgress* pProgress);
    std::vector<DebondLevelType> DesignForLiftingDebonding(bool designConcrete, IProgress* pProgress);

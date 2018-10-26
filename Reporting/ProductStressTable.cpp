@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -336,8 +336,8 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       {
          if ( bPedLoading )
          {
-            pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy1, &fTopMaxPedestrianLL, &dummy2, &fBotMaxPedestrianLL);
-            pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &fTopMinPedestrianLL, &dummy1, &fBotMinPedestrianLL, &dummy2);
+            pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, true, &dummy1, &fTopMaxPedestrianLL, &dummy2, &fBotMaxPedestrianLL);
+            pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, true, &fTopMinPedestrianLL, &dummy1, &fBotMinPedestrianLL, &dummy2);
          }
 
          pForces2->GetLiveLoadStress(pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy1, &fTopMaxDesignLL, &dummy2, &fBotMaxDesignLL);
@@ -404,7 +404,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       {
          if ( bPedLoading )
          {
-            pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &fTopMinPedestrianLL, &fTopMaxPedestrianLL, &fBotMinPedestrianLL, &fBotMaxPedestrianLL);
+            pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, true, &fTopMinPedestrianLL, &fTopMaxPedestrianLL, &fBotMinPedestrianLL, &fBotMaxPedestrianLL);
          }
 
          pForces2->GetLiveLoadStress(pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &fTopMinDesignLL, &fTopMaxDesignLL, &fBotMinDesignLL, &fBotMaxDesignLL);

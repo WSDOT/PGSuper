@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -99,7 +99,7 @@ END_CONNECTION_POINT_MAP()
    // callback IDs for the status callbacks we register
    StatusCallbackIDType m_scidInformationalError;
    StatusCallbackIDType m_scidVSRatio;
-
+   StatusCallbackIDType m_scidBridgeDescriptionError;
 
 // IAgentEx
 public:
@@ -122,6 +122,12 @@ public:
    virtual bool HasPedestrianLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx);
    virtual bool HasSidewalkLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx);
    virtual Float64 GetPedestrianLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual Float64 GetPedestrianLoadPerSidewalk(pgsTypes::TrafficBarrierOrientation orientation);
+   virtual void GetTrafficBarrierLoadFraction(SpanIndexType spanIdx,GirderIndexType gdrIdx, Float64* pBarrierLoad,
+                                              Float64* pFraExtLeft, Float64* pFraIntLeft,
+                                              Float64* pFraExtRight,Float64* pFraIntRight);
+   virtual void GetSidewalkLoadFraction(SpanIndexType spanIdx,GirderIndexType gdrIdx, Float64* pSidewalkLoad,
+                                        Float64* pFraLeft,Float64* pFraRight);
 
    virtual void GetOverlayLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx,std::vector<OverlayLoad>* pOverlayLoads);
    virtual void GetConstructionLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx,std::vector<ConstructionLoad>* pConstructionLoads);
@@ -458,8 +464,23 @@ private:
    typedef std::map<GirderIndexType,ModelData> Models; // Key is girder line index
    Models m_BridgeSiteModels;
 
-   std::map<SpanGirderHashType,Float64> m_TrafficBarrierLoad;
-   std::map<SpanGirderHashType,Float64> m_SidewalkLoad;
+   struct SidewalkTrafficBarrierLoad
+   {
+      Float64 m_SidewalkLoad; // total load from both sidewalks
+      Float64 m_BarrierLoad; //  total load from both barriers
+
+      // Fractions of total barrier/sw weight that go to girder in question
+      Float64 m_LeftExtBarrierFraction;
+      Float64 m_LeftIntBarrierFraction;
+      Float64 m_LeftSidewalkFraction;
+      Float64 m_RightExtBarrierFraction;
+      Float64 m_RightIntBarrierFraction;
+      Float64 m_RightSidewalkFraction;
+   };
+
+   typedef std::map<SpanGirderHashType,SidewalkTrafficBarrierLoad> SidewalkTrafficBarrierLoadMap;
+   typedef SidewalkTrafficBarrierLoadMap::iterator SidewalkTrafficBarrierLoadIterator;
+   SidewalkTrafficBarrierLoadMap  m_SidewalkTrafficBarrierLoads;
 
    // Camber models
    std::map<SpanGirderHashType,CREEPCOEFFICIENTDETAILS> m_CreepCoefficientDetails[2][6]; // key is span/girder hash, index to array is [Construction Rate][CreepPeriod]
@@ -515,11 +536,10 @@ private:
    void ApplyOverlayLoad(ILBAMModel* pModel, GirderIndexType gdr);
    void ApplyConstructionLoad(ILBAMModel* pModel,GirderIndexType gdr);
    void ApplyShearKeyLoad(ILBAMModel* pModel, GirderIndexType gdr);
-   void GetTrafficBarrierLoadFraction(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* pFraLeft,Float64* pFraRight);
-   void GetSidewalkLoadFraction(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* pFraLeft,Float64* pFraRight);
-   void ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel,GirderIndexType gdr);
+   void ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel, GirderIndexType gdr);
+   void ComputeSidewalksBarriersLoadFractions();
    void ApplyLiveLoadModel(ILBAMModel* pModel,GirderIndexType gdr);
-   void AddUserLiveLoads(ILBAMModel* pModel,GirderIndexType gdr,pgsTypes::LiveLoadType llType,std::vector<std::_tstring>& libraryLoads,ILibrary* pLibrary, ILiveLoads* pLiveLoads,IVehicularLoads* pVehicles,IVehicularLoads* pPedVehicles);
+   void AddUserLiveLoads(ILBAMModel* pModel,GirderIndexType gdr,pgsTypes::LiveLoadType llType,std::vector<std::_tstring>& libraryLoads,ILibrary* pLibrary, ILiveLoads* pLiveLoads,IVehicularLoads* pVehicles);
    void ApplyUserDefinedLoads(ILBAMModel* pModel,GirderIndexType gdr);
    void ApplyLiveLoadDistributionFactors(GirderIndexType gdr,bool bContinuous,IContraflexureResponse* pContraflexureResponse,ILBAMModel* pModel);
    void ConfigureLoadCombinations(ILBAMModel* pModel);
@@ -602,13 +622,13 @@ private:
 
    enum SpanType { PinPin, PinFix, FixPin, FixFix };
    SpanType GetSpanType(SpanIndexType span,bool bContinuous);
-   void AddDistributionFactors(IDistributionFactors* factors,Float64 length,Float64 gpM,Float64 gnM,Float64 gV,Float64 gR,Float64 gF,Float64 gD);
+   void AddDistributionFactors(IDistributionFactors* factors,Float64 length,Float64 gpM,Float64 gnM,Float64 gV,Float64 gR,Float64 gF,Float64 gD, Float64 gPedes);
    Uint32 GetCfPointsInRange(IDblArray* cfLocs, Float64 spanStart, Float64 spanEnd, Float64* ptsInrg);
    void ApplyLLDF_PinPin(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors);
    void ApplyLLDF_PinFix(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors);
    void ApplyLLDF_FixPin(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors);
    void ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors);
-   void ApplyLLDF_Support(PierIndexType pierIdx,GirderIndexType gdrIdx,ISupports* supports);
+   void ApplyLLDF_Support(PierIndexType pierIdx,GirderIndexType gdrIdx,SpanIndexType nSpans,ISupports* supports);
 
    void GetEngine(ModelData* pModelData,bool bContinuous,ILBAMAnalysisEngine** pEngine);
 

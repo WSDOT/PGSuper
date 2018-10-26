@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -96,6 +96,9 @@ public:
    bool IsDeckSelected();
    bool IsAlignmentSelected();
 
+   void GetSpanRange(SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx);
+   void SetSpanRange(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx);
+
    virtual DROPEFFECT CanDrop(COleDataObject* pDataObject,DWORD dwKeyState,IPoint2d* point);
    virtual void OnDropped(COleDataObject* pDataObject,DROPEFFECT dropEffect,IPoint2d* point);
 
@@ -163,6 +166,10 @@ protected:
    std::_tstring GetConnectionString(const CPierData* pPier);
 
    CBridgeModelViewChildFrame* GetFrame();
+
+   // Range of spans that will be displayed
+   SpanIndexType m_StartSpanIdx;
+   SpanIndexType m_EndSpanIdx;
 };
 
 /////////////////////////////////////////////////////////////////////////////

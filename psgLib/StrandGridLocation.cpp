@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -35,10 +35,13 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+static const int ENDBOX_CTRLS[] = {IDC_HS_BOX, IDC_HS_TXT, IDC_HS_XT, IDC_HS_YT, IDC_GEX, IDC_GEY, IDC_GEX_T, IDC_GEY_T, -1};
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CStrandGridLocation dialog
 
-void CStrandGridLocation::SetEntry(const CGirderGlobalStrandGrid::GlobalStrandGridEntry& Entry, bool UseHarpedGrid)
+void CStrandGridLocation::SetEntry(const CGirderGlobalStrandGrid::GlobalStrandGridEntry& Entry, bool UseHarpedGrid, bool UseHarpedWebStrands)
 {
    // we don't store an actual entry, just the data
    m_StrandType = (int)Entry.m_Type;
@@ -46,6 +49,7 @@ void CStrandGridLocation::SetEntry(const CGirderGlobalStrandGrid::GlobalStrandGr
    m_HpY = Entry.m_Y;
 
    m_UseHarpedGrid = UseHarpedGrid;
+   m_UseHarpedWebStrands = UseHarpedWebStrands;
 
    if (Entry.m_Type == GirderLibraryEntry::stHarped && m_UseHarpedGrid)
    {
@@ -157,6 +161,23 @@ END_MESSAGE_MAP()
 
 BOOL CStrandGridLocation::OnInitDialog() 
 {
+   CWnd* pbox = GetDlgItem(IDC_HP_BOX);
+   CComboBox* pcb = (CComboBox*)GetDlgItem(IDC_STRAND_TYPE);
+   ASSERT(pcb);
+   pcb->AddString(_T("Straight"));
+   if (m_UseHarpedWebStrands)
+   {
+      pcb->AddString(_T("Harped"));
+      pbox->SetWindowTextW(_T("Location at Harping Points"));
+   }
+   else
+   {
+      pcb->AddString(_T("Straight-Web"));
+      pbox->SetWindowTextW(_T("Location along Girder"));
+
+      HideEndBox();
+   }
+
 	CDialog::OnInitDialog();
 	
    CString strg;
@@ -220,6 +241,24 @@ void CStrandGridLocation::OnSelchangeStrandType()
          pdel->SetWindowText(strg);
       }
    }
+   else if (str==_T("Straight-Web"))
+   {
+      ShowDebondCtrl(FALSE);
+
+      if (m_UseHarpedGrid)
+      {
+         EnableEndBox(FALSE);
+
+         CWnd* pdel = GetDlgItem(IDC_GEX);
+         ASSERT(pdel);
+         CString strg; // blank string
+         pdel->SetWindowText(strg);
+
+         pdel = GetDlgItem(IDC_GEY);
+         ASSERT(pdel);
+         pdel->SetWindowText(strg);
+      }
+   }
    else
       ATLASSERT(0);
 	
@@ -227,18 +266,32 @@ void CStrandGridLocation::OnSelchangeStrandType()
 
 void CStrandGridLocation::EnableEndBox(BOOL enable)
 {
-   int ctrls[] = {IDC_HS_BOX, IDC_HS_TXT, IDC_HS_XT, IDC_HS_YT, IDC_GEX, IDC_GEY, IDC_GEX_T, IDC_GEY_T, -1};
 
    int idx=0;
-   while (ctrls[idx] != -1)
+   while (ENDBOX_CTRLS[idx] != -1)
    {
-      CWnd* pdel = GetDlgItem(ctrls[idx]);
+      CWnd* pdel = GetDlgItem(ENDBOX_CTRLS[idx]);
       ASSERT(pdel);
       pdel->EnableWindow(enable);
 
       idx++;
    }
 }
+
+void CStrandGridLocation::HideEndBox()
+{
+
+   int idx=0;
+   while (ENDBOX_CTRLS[idx] != -1)
+   {
+      CWnd* pdel = GetDlgItem(ENDBOX_CTRLS[idx]);
+      ASSERT(pdel);
+      pdel->ShowWindow(SW_HIDE);
+
+      idx++;
+   }
+}
+
 
 void CStrandGridLocation::ShowDebondCtrl(BOOL show)
 {

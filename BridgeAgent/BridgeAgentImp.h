@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -234,7 +234,14 @@ public:
    virtual Float64 GetCurbToCurbWidth(const pgsPointOfInterest& poi);
    virtual Float64 GetCurbToCurbWidth(SpanIndexType span,GirderIndexType gdr,double distFromStartOfSpan);
    virtual Float64 GetCurbToCurbWidth(double distFromStartOfBridge);
+   virtual Float64 GetLeftInteriorCurbOffset(double distFromStartOfBridge);
+   virtual Float64 GetRightInteriorCurbOffset(double distFromStartOfBridge);
+   virtual Float64 GetLeftOverlayToeOffset(double distFromStartOfBridge);
+   virtual Float64 GetRightOverlayToeOffset(double distFromStartOfBridge);
+   virtual Float64 GetLeftOverlayToeOffset(const pgsPointOfInterest& poi);
+   virtual Float64 GetRightOverlayToeOffset(const pgsPointOfInterest& poi);
    virtual void GetSlabPerimeter(CollectionIndexType nPoints,IPoint2dCollection** points);
+   virtual void GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx,CollectionIndexType nPoints,IPoint2dCollection** points);
    virtual void GetSpanPerimeter(SpanIndexType spanIdx,CollectionIndexType nPoints,IPoint2dCollection** points);
    virtual void GetLeftSlabEdgePoint(Float64 station, IDirection* direction,IPoint2d** point);
    virtual void GetLeftSlabEdgePoint(Float64 station, IDirection* direction,IPoint3d** point);
@@ -437,6 +444,9 @@ public:
    virtual void GetStrandPositions(const pgsPointOfInterest& poi, pgsTypes::StrandType type, IPoint2dCollection** ppPoints);
    virtual void GetStrandPositionsEx(const pgsPointOfInterest& poi,StrandIndexType Ns, pgsTypes::StrandType type, IPoint2dCollection** ppPoints);
 
+   // Harped strands can be forced to be straight along their length
+   virtual bool GetAreHarpedStrandsForcedStraight(SpanIndexType span,GirderIndexType gdr);
+
      // highest point on girder section based on strand coordinates (bottom at 0.0)
    virtual Float64 GetGirderTopElevation(SpanIndexType span,GirderIndexType gdr);
    // harped offsets are measured from original strand locations in strand grid
@@ -542,6 +552,7 @@ public:
    virtual Float64 GetAcTopHalf(const pgsPointOfInterest& poi);
    virtual Float64 GetEffectiveFlangeWidth(const pgsPointOfInterest& poi);
    virtual Float64 GetTributaryFlangeWidth(const pgsPointOfInterest& poi);
+   virtual Float64 GetTributaryFlangeWidthEx(const pgsPointOfInterest& poi, Float64* pLftFw, Float64* pRgtFw);
    virtual Float64 GetEffectiveDeckArea(const pgsPointOfInterest& poi);
    virtual Float64 GetTributaryDeckArea(const pgsPointOfInterest& poi);
    virtual Float64 GetGrossDeckArea(const pgsPointOfInterest& poi);
@@ -564,11 +575,16 @@ public:
    virtual Float64 GetAtb(pgsTypes::TrafficBarrierOrientation orientation);
    virtual Float64 GetItb(pgsTypes::TrafficBarrierOrientation orientation);
    virtual Float64 GetYbtb(pgsTypes::TrafficBarrierOrientation orientation);
-   virtual Float64 GetBarrierWeight(pgsTypes::TrafficBarrierOrientation orientation);
    virtual Float64 GetInterfaceWidth(pgsTypes::TrafficBarrierOrientation orientation);
+   virtual Float64 GetExteriorBarrierWeight(pgsTypes::TrafficBarrierOrientation orientation);
+   virtual Float64 GetExteriorBarrierCgToDeckEdge(pgsTypes::TrafficBarrierOrientation orientation);
+   virtual bool HasInteriorBarrier(pgsTypes::TrafficBarrierOrientation orientation);
+   virtual Float64 GetInteriorBarrierWeight(pgsTypes::TrafficBarrierOrientation orientation);
+   virtual Float64 GetInteriorBarrierCgToDeckEdge(pgsTypes::TrafficBarrierOrientation orientation);
    virtual pgsTypes::TrafficBarrierOrientation GetNearestBarrier(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetSidewalkWeight(pgsTypes::TrafficBarrierOrientation orientation);
-   virtual Float64 GetSidewalkWidth(pgsTypes::TrafficBarrierOrientation orientation);
+   virtual void GetSidewalkDeadLoadEdges(pgsTypes::TrafficBarrierOrientation orientation, Float64* pintEdge, Float64* pextEdge);
+   virtual void GetSidewalkPedLoadEdges(pgsTypes::TrafficBarrierOrientation orientation, Float64* pintEdge, Float64* pextEdge);
    virtual bool HasSidewalk(pgsTypes::TrafficBarrierOrientation orientation);
 
 // IGirder
@@ -748,6 +764,7 @@ private:
 
    bool LayoutTrafficBarriers(const CBridgeDescription* pBridgeDesc);
    bool LayoutTrafficBarrier(const CBridgeDescription* pBridgeDesc,const CRailingSystem* pRailingSystem,pgsTypes::TrafficBarrierOrientation orientation,ISidewalkBarrier** ppBarrier);
+   void CreateBarrierObject(IBarrier** pBarrier, const TrafficBarrierEntry*  pBarrierEntry, pgsTypes::TrafficBarrierOrientation orientation);
    void LayoutGirderRebar(SpanIndexType span,GirderIndexType gdr);
    void UpdatePrestressing(SpanIndexType spanIdx,GirderIndexType gdrIdx);
 

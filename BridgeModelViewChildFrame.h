@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,12 @@
 
 class CBridgePlanView;
 class CBridgeSectionView;
+
+#if defined _EAF_USING_MFC_FEATURE_PACK
+#include <EAF\EAFPaneDialog.h>
+#else
+#define CEAFPaneDialog CDialogBar
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeModelViewChildFrame frame
@@ -78,6 +84,8 @@ public:
    CBridgePlanView* GetBridgePlanView();
    CBridgeSectionView* GetBridgeSectionView();
 
+   void InitSpanRange(); // call this method to initialize the span range controls
+
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
@@ -117,6 +125,11 @@ protected:
 
    Float64 m_CurrentCutLocation;
    void UpdateCutLocation(Float64 cut);
+
+   CEAFPaneDialog m_SettingsBar;
+public:
+   afx_msg void OnStartSpanChanged(NMHDR *pNMHDR, LRESULT *pResult);
+   afx_msg void OnEndSpanChanged(NMHDR *pNMHDR, LRESULT *pResult);
 };
 
 /////////////////////////////////////////////////////////////////////////////

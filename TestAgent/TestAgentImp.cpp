@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1134,7 +1134,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50063, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSDArtifact->GetSMax(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50064, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSDArtifact->GetAvsMin(), unitMeasure::Millimeter2)) <<_T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50065, ")<<loc<<_T(", ")<< QUITE(scd.Vn/scd.Vu) <<_T(", 15 ")<<gdr<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100205, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSDArtifact->GetS(), unitMeasure::Millimeter2)) <<_T(",15, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100205, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSDArtifact->GetS(), unitMeasure::Millimeter)) <<_T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100206, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSDArtifact->GetVuLimit(), unitMeasure::Newton)) <<_T(",15, ")<<gdr<<std::endl;
 
          const pgsStirrupCheckAtPoisArtifact* pspArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact( pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3, pgsTypes::StrengthI,poi.GetDistFromStart()) );

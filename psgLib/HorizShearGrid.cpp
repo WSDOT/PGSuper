@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -336,7 +336,7 @@ void CHorizShearGrid::SetRowStyle(ROWCOL nRow)
 
 	SetStyleRange(CGXRange(nRow,2), CGXStyle()
 			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
-			.SetChoiceList(_T("None\n#3\n#4\n#5\n#6\n"))
+			.SetChoiceList(_T("None\n#3\n#4\n#5\n#6\n#7\n#8\n#9\n"))
 			.SetValue(_T("None"))
          .SetHorizontalAlignment(DT_RIGHT)
          );
@@ -349,9 +349,9 @@ void CHorizShearGrid::SetRowStyle(ROWCOL nRow)
 		);
 
 	SetStyleRange(CGXRange(nRow,4), CGXStyle()
-			.SetControl(GX_IDS_CTRL_CBS_DROPDOWN)
-			.SetChoiceList(_T("0\n1\n2\n4\n6\n"))
-			.SetValue(_T("0"))
+			.SetUserAttribute(GX_IDS_UA_VALID_MIN, _T("0.0e01"))
+			.SetUserAttribute(GX_IDS_UA_VALID_MAX, _T("1.0e3"))
+			.SetUserAttribute(GX_IDS_UA_VALID_MSG, _T("Please enter a positive value between 0.0-1000.0"))
          .SetHorizontalAlignment(DT_RIGHT)
          );
 

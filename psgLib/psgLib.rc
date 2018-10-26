@@ -74,8 +74,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,6,0,1
- PRODUCTVERSION 2,6,0,1
+ FILEVERSION 2,6,0,2
+ PRODUCTVERSION 2,6,0,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +93,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "2.6.0.1"
+            VALUE "FileVersion", "2.6.0.2"
             VALUE "InternalName", "psgLib"
-            VALUE "LegalCopyright", "Copyright © 1999-2011, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2012, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.6.0.1"
+            VALUE "ProductVersion", "2.6.0.2"
         END
     END
     BLOCK "VarFileInfo"
@@ -344,19 +344,18 @@ BEGIN
     LTEXT           "Bar Size",IDC_STATIC,239,280,30,8
     COMBOBOX        IDC_SPLITTING_BAR_SIZE,234,290,38,51,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Spacing",IDC_STATIC,288,279,27,8
-    EDITTEXT        IDC_SPLITTING_SPACING,280,290,46,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_SPLITTING_SPACING,280,290,46,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "unit",IDC_SPLITTING_SPACING_UNIT,330,295,13,8
     LTEXT           "# of Legs",IDC_STATIC,354,279,31,8
-    COMBOBOX        IDC_SPLITTING_NLEGS,352,290,38,87,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Restore to Library Defaults",IDC_RESTORE_DEFAULTS,134,336,122,14
     LTEXT           "Zone Length",IDC_STATIC,171,279,42,8
-    EDITTEXT        IDC_SPLITTING_ZL,165,290,46,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_SPLITTING_ZL,165,290,46,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "unit",IDC_SPLITTING_ZL_UNIT,214,296,12,8
     LTEXT           "Bottom Flange Confinement Reinforcement",IDC_STATIC,23,315,136,8
     COMBOBOX        IDC_CONFINE_BAR_SIZE,234,310,38,51,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_CONFINE_SPACING,280,310,46,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_CONFINE_SPACING,280,310,46,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "unit",IDC_CONFINE_SPACING_UNIT,330,315,13,8
-    EDITTEXT        IDC_CONFINE_ZL,166,310,46,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_CONFINE_ZL,166,310,46,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "unit",IDC_CONFINE_ZL_UNIT,215,315,12,8
     GROUPBOX        "Additional Bars for Horizontal Interface Shear Capacity",IDC_STATIC,7,162,300,98,0,WS_EX_TRANSPARENT
     CONTROL         "Custom1",IDC_HORIZ_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,15,174,218,79
@@ -364,6 +363,7 @@ BEGIN
     PUSHBUTTON      "Delete Row",IDC_REMOVEHORIZROWS,247,217,51,14
     CONTROL         "Use primary bars for splitting resistance",IDC_CHECK_SPLITTING,
                     "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,351,54,52,39
+    EDITTEXT        IDC_SPLITTING_NLEGS,354,290,38,14,ES_RIGHT | ES_AUTOHSCROLL
 END
 
 IDD_LONG_STEEL DIALOGEX 0, 0, 374, 214
@@ -412,12 +412,12 @@ BEGIN
     PUSHBUTTON      "Help",ID_HELP,354,214,50,14
 END
 
-IDD_GIRDER_ERROR DIALOG  0, 0, 295, 199
+IDD_GIRDER_ERROR DIALOGEX 0, 0, 416, 199
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "Close",IDOK,122,178,50,14
-    EDITTEXT        IDC_EDIT,7,37,281,130,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_OEMCONVERT | ES_READONLY | WS_VSCROLL
+    DEFPUSHBUTTON   "Close",IDOK,182,178,50,14
+    EDITTEXT        IDC_EDIT,7,37,402,130,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_OEMCONVERT | ES_READONLY | WS_VSCROLL | WS_HSCROLL
     LTEXT           "The following errors were found in the girder data entered",IDC_STATIC,7,7,180,8
     LTEXT           "You must correct all errors before the girder data is accepted.",IDC_STATIC,7,20,192,8
 END
@@ -439,7 +439,7 @@ BEGIN
     LTEXT           "Use this design criteria along with provisions from the\nAASHTO LRFD Bridge Design Specifications",IDC_STATIC,21,105,177,21
 END
 
-IDD_SPEC_BRIDGE_SITE DIALOGEX 0, 0, 351, 294
+IDD_SPEC_BRIDGE_SITE DIALOGEX 0, 0, 351, 376
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Bridge Site 3"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -478,6 +478,14 @@ BEGIN
     LTEXT           "Girder spacing normal to the alignment will be measured at this fractional distance from both ends of the span. The location with maximum deck width (measured normal to the alignment) will be used for computing distribution factors.",IDC_STATIC,16,251,320,30
     CONTROL         "Use (Number of Lanes)/(Number of Beams) as the Lower Limit for All Distribution Factors",IDC_LANESBEAMS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,182,318,10
+    LTEXT           "Magnitude of Pedestrian Live Load",IDC_STATIC,16,310,111,8
+    EDITTEXT        IDC_PED_LIVE_LOAD,133,309,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_PED_LIVE_LOAD_UNIT,175,310,32,8
+    LTEXT           "Minimum Width of Sidewalk to Apply Pedestrian Live Load",IDC_STATIC,15,331,184,8
+    EDITTEXT        IDC_MIN_SIDEWALK_WIDTH,205,329,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_MIN_SIDEWALK_WIDTH_UNIT,248,331,32,8
+    LTEXT           "NOTE: Load distribution of pedestrian live load and railing loads is specified on the Bridge Site 2 Tab",IDC_STATIC,15,348,315,8
+    GROUPBOX        "Pedestrian Live Load [LRFD 3.6.1.6]",IDC_STATIC,6,294,336,73
 END
 
 IDD_SPEC_CASTING_YARD DIALOGEX 0, 0, 377, 291
@@ -854,7 +862,7 @@ BEGIN
     LTEXT           "(Enter value or H)",IDC_STATIC,261,289,56,8
 END
 
-IDD_SPEC_BRIDGE_SITE2 DIALOGEX 0, 0, 315, 196
+IDD_SPEC_BRIDGE_SITE2 DIALOGEX 0, 0, 349, 229
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Bridge Site 2"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -863,17 +871,18 @@ BEGIN
     EDITTEXT        IDC_CY_ALLOW_SERVICE_COMP,86,25,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "* f'c",IDC_STATIC,129,28,14,8
     LTEXT           "MPa",IDC_NORMAL_MAX_SQRT_UNITS,210,41,25,8,NOT WS_VISIBLE
-    LTEXT           "Distribute railing system dead load to ",IDC_STATIC,15,84,117,8
-    EDITTEXT        IDC_DIST_TRAFFIC_BARRIER,133,82,25,14,ES_AUTOHSCROLL
-    CONTROL         "Spin1",IDC_DIST_TRAFFIC_BARRIER_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,158,82,11,14
-    COMBOBOX        IDC_DIST_TRAFFIC_BARRIER_BASIS,165,83,107,81,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Distribute overlay dead load",IDC_STATIC,15,104,94,10
-    COMBOBOX        IDC_OVERLAY_DISTR,115,103,158,72,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Compute effective flange width",IDC_STATIC,16,154,98,8
-    COMBOBOX        IDC_EFF_FLANGE_WIDTH,117,151,161,72,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Allowable Concrete Stresses - Service I (LRFD 5.9.4.2.1)",IDC_STATIC,7,7,288,48
-    GROUPBOX        "Distribution of Superimposed Dead Load",IDC_STATIC,7,63,288,64
-    GROUPBOX        "Composite Section",IDC_STATIC,7,138,288,36
+    LTEXT           "Distribute barrier, sidewalk, and pedestrian live loads to",IDC_STATIC,15,84,173,8
+    EDITTEXT        IDC_DIST_TRAFFIC_BARRIER,192,82,25,14,ES_AUTOHSCROLL
+    CONTROL         "Spin1",IDC_DIST_TRAFFIC_BARRIER_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,216,82,11,14
+    COMBOBOX        IDC_DIST_TRAFFIC_BARRIER_BASIS,220,82,114,81,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Distribute overlay dead load",IDC_STATIC,15,137,94,10
+    COMBOBOX        IDC_OVERLAY_DISTR,109,134,158,72,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Compute effective flange width",IDC_STATIC,16,184,98,8
+    COMBOBOX        IDC_EFF_FLANGE_WIDTH,117,181,161,72,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Allowable Concrete Stresses - Service I (LRFD 5.9.4.2.1)",IDC_STATIC,7,7,336,48
+    GROUPBOX        "Distribution of Railing System (Barriers, Sidewalk, and Pedestrian Live) Loads",IDC_STATIC,7,63,336,48
+    GROUPBOX        "Composite Section",IDC_STATIC,7,168,336,36
+    GROUPBOX        "Distribution of Overlay Dead Load",IDC_STATIC,8,119,336,40
 END
 
 IDD_SPEC_BRIDGE_SITE1 DIALOG  0, 0, 302, 206
@@ -905,62 +914,63 @@ BEGIN
     LTEXT           "MPa",IDC_NORMAL_MAX_MAX_UNITS2,150,176,25,8
 END
 
-IDD_HARP_STRAND DIALOGEX 0, 0, 453, 286
+IDD_HARP_STRAND DIALOGEX 0, 0, 453, 340
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Permanent Strands"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Strand Grid",IDC_STATIC,6,4,322,204,0,WS_EX_TRANSPARENT
-    CTEXT           "Strand Locations at Harping Points Measured from Bottom C.L. of Girder",IDC_STATIC,44,25,120,16
+    GROUPBOX        "Strand Grid",IDC_STATIC,6,33,322,199,0,WS_EX_TRANSPARENT
+    CTEXT           "Strand Locations at Harping Points Measured from Bottom C.L. of Girder",IDC_STATIC_HP,68,44,120,16
     CONTROL         "Use Different Harped Locations at Girder Ends",IDC_USE_DIFF_GRID,
-                    "Button",BS_AUTOCHECKBOX | BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,163,11,161,9
-    CTEXT           "Strand Locations at Girder Ends Measured from Top C.L. of Girder",IDC_STATIC_END,194,25,120,16
-    CONTROL         "Custom1",IDC_HARP_STRAND_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,13,46,306,124
-    PUSHBUTTON      "&Insert",IDC_ADD_HARPED_STRAND,10,174,46,14
-    PUSHBUTTON      "Append",IDC_APPEND_HARPED_STRAND,62,174,46,14
-    PUSHBUTTON      "Edit",IDC_EDIT_STRAND,114,174,46,14
-    PUSHBUTTON      "Delete",IDC_DEL_HARPED_STRAND,166,174,46,14
-    PUSHBUTTON      "Move Up",IDC_MOVEUP_HARPED_STRAND,225,174,46,14
-    PUSHBUTTON      "Move Down",IDC_MOVEDOWN_HARPED_STRAND,277,174,46,14
-    GROUPBOX        "Strand Options",IDC_STATIC,334,4,112,52
+                    "Button",BS_AUTOCHECKBOX | BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,165,12,120,20
+    CTEXT           "Strand Locations at Girder Ends Measured from Top C.L. of Girder",IDC_STATIC_END,194,44,120,16
+    CONTROL         "Custom1",IDC_HARP_STRAND_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,13,65,306,124
+    PUSHBUTTON      "&Insert",IDC_ADD_HARPED_STRAND,10,193,46,14
+    PUSHBUTTON      "Append",IDC_APPEND_HARPED_STRAND,62,193,46,14
+    PUSHBUTTON      "Edit",IDC_EDIT_STRAND,114,193,46,14
+    PUSHBUTTON      "Delete",IDC_DEL_HARPED_STRAND,166,193,46,14
+    PUSHBUTTON      "Move Up",IDC_MOVEUP_HARPED_STRAND,225,193,46,14
+    PUSHBUTTON      "Move Down",IDC_MOVEDOWN_HARPED_STRAND,277,193,46,14
     CONTROL         "Coerce Odd Number of Harped Strands",IDC_ODD_STRANDS,
-                    "Button",BS_AUTOCHECKBOX | BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,347,24,86,20
-    GROUPBOX        "Grid Status",IDC_STATIC,335,66,111,142
-    RTEXT           "# Debondable Strands =       ",IDC_DB_STATUS,345,81,94,8
-    RTEXT           "# of Straight Strands =  ",IDC_SS_STATUS,345,100,94,8
-    RTEXT           "# Harped Strands = ",IDC_HS_STATUS,345,119,94,8
-    RTEXT           "Total # of Strands =",IDC_TT_STATUS,345,138,94,9,0,WS_EX_STATICEDGE
-    PUSHBUTTON      "View at Ends",IDC_ENDVIEW,352,161,82,14
-    PUSHBUTTON      "View at Mid-Girder",IDC_MIDVIEW,352,182,82,14
-    GROUPBOX        "Vertical Adjustment of Harped Grid ",IDC_STATIC,7,217,439,62,0,WS_EX_TRANSPARENT
-    LTEXT           "Allow",IDC_STATIC,31,229,18,8
-    LTEXT           "Design Increment",IDC_HP_INCREMENT_S,97,229,55,8
-    CONTROL         "At Harping Points",IDC_ALLOW_HP_ADJUST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,243,71,10
-    EDITTEXT        IDC_HP_INCREMENT,99,243,34,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_HP_INCREMENT_T,136,243,18,8
-    CONTROL         "At Girder Ends",IDC_ALLOW_END_ADJUST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,264,65,10
-    EDITTEXT        IDC_END_INCREMENT,99,260,34,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_END_INCREMENT_T,136,266,18,8
-    LTEXT           "Lower Strand Limit",IDC_END_INCREMENT_S,206,229,66,8
-    EDITTEXT        IDC_HP_LSL,182,243,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "(uu)",IDC_HP_LSL_T,218,243,16,8
-    LTEXT           "From",IDC_HP_LSL_S,237,243,16,8
-    COMBOBOX        IDC_COMBO_HP_LSL,256,243,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_END_LSL,182,260,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "(uu)",IDC_END_LSL_T,218,266,16,8
-    LTEXT           "From",IDC_END_LSL_S,237,266,16,8
-    COMBOBOX        IDC_COMBO_END_LSL,256,262,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Upper Strand Limit",IDC_STATIC,344,229,66,8
-    EDITTEXT        IDC_HP_USL,320,243,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "(uu)",IDC_HP_USL_T,356,243,16,8
-    LTEXT           "From",IDC_HP_USL_S,374,243,16,8
-    COMBOBOX        IDC_COMBO_HP_USL,394,243,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_END_USL,320,260,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "(uu)",IDC_END_USL_T,356,266,16,8
-    LTEXT           "From",IDC_END_USL_S,374,266,16,8
-    COMBOBOX        IDC_COMBO_END_USL,394,262,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Reverse Harp Strand Sequence",IDC_REVERSE_HARPED_STRAND_ORDER,10,192,115,14
-    PUSHBUTTON      "Generate Strand Positions",IDC_GENERATE,129,192,90,14
+                    "Button",BS_AUTOCHECKBOX | BS_LEFT | BS_TOP | BS_MULTILINE | WS_TABSTOP,300,12,86,20
+    GROUPBOX        "Grid Status",IDC_STATIC,335,33,111,199
+    RTEXT           "# Debondable Strands = ",IDC_DB_STATUS,345,63,94,8
+    RTEXT           "# of Straight Strands =  ",IDC_SS_STATUS,345,82,94,8
+    RTEXT           "# Harped Strands = ",IDC_HS_STATUS,345,101,94,8
+    RTEXT           "Total # of Strands =",IDC_TT_STATUS,345,120,94,9,0,WS_EX_STATICEDGE
+    PUSHBUTTON      "View at Ends",IDC_ENDVIEW,352,155,82,14
+    PUSHBUTTON      "View at Mid-Girder",IDC_MIDVIEW,352,181,82,14
+    GROUPBOX        "Vertical Adjustment of Harped Grid ",IDC_VERT_ADJUST_GROUP,7,241,439,62,0,WS_EX_TRANSPARENT
+    LTEXT           "Allow",IDC_STATIC,31,253,18,8
+    LTEXT           "Design Increment",IDC_HP_INCREMENT_S,97,253,55,8
+    CONTROL         "At Harping Points",IDC_ALLOW_HP_ADJUST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,267,71,10
+    EDITTEXT        IDC_HP_INCREMENT,99,267,34,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_HP_INCREMENT_T,136,267,18,8
+    CONTROL         "At Girder Ends",IDC_ALLOW_END_ADJUST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,288,65,10
+    EDITTEXT        IDC_END_INCREMENT,99,284,34,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_END_INCREMENT_T,136,290,18,8
+    LTEXT           "Lower Strand Limit",IDC_END_INCREMENT_S,206,253,66,8
+    EDITTEXT        IDC_HP_LSL,182,267,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "(uu)",IDC_HP_LSL_T,218,267,16,8
+    LTEXT           "From",IDC_HP_LSL_S,237,267,16,8
+    COMBOBOX        IDC_COMBO_HP_LSL,256,267,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_END_LSL,182,284,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "(uu)",IDC_END_LSL_T,218,290,16,8
+    LTEXT           "From",IDC_END_LSL_S,237,290,16,8
+    COMBOBOX        IDC_COMBO_END_LSL,256,286,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Upper Strand Limit",IDC_STATIC,344,253,66,8
+    EDITTEXT        IDC_HP_USL,320,267,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "(uu)",IDC_HP_USL_T,356,267,16,8
+    LTEXT           "From",IDC_HP_USL_S,374,267,16,8
+    COMBOBOX        IDC_COMBO_HP_USL,394,267,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_END_USL,320,284,31,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "(uu)",IDC_END_USL_T,356,290,16,8
+    LTEXT           "From",IDC_END_USL_S,374,290,16,8
+    COMBOBOX        IDC_COMBO_END_USL,394,286,42,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Reverse Harp Strand Sequence",IDC_REVERSE_HARPED_STRAND_ORDER,10,211,115,14
+    PUSHBUTTON      "Generate Strand Positions",IDC_GENERATE,129,211,90,14
+    LTEXT           "Web Strands Are:",IDC_STATIC,9,15,57,8
+    COMBOBOX        IDC_WEB_STRAND_TYPE_COMBO,70,11,80,33,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_RENAME_LIBRARY_ENTRY DIALOG  0, 0, 187, 95
@@ -987,24 +997,24 @@ BEGIN
     LTEXT           "You must resolve this before the rest of the project file can be loaded. Please choose if you would like to rename the project entry and retain its values, or overwrite the project entry with values from the Master Library.",IDC_CONFLICT_BOTTOM,7,75,198,38
 END
 
-IDD_SECTIONVIEW DIALOG  0, 0, 440, 393
+IDD_SECTIONVIEW DIALOGEX 0, 0, 440, 393
 STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Section View"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "Close",IDOK,383,372,50,14
     LTEXT           "Straight Strands",IDC_SS,117,373,51,8
-    LTEXT           "Harped Strands",IDC_HS,197,373,50,8
+    LTEXT           "Harped Strands",IDC_HS,191,373,70,8
     LTEXT           "Temporary Strands",IDC_TS,272,373,60,8
     CONTROL         "Show Numbering",IDC_SHOWS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,363,354,70,10
-    LTEXT           "Section Properties",IDC_SECTION_PROPERTIES,7,7,426,37
+    LTEXT           "Section Properties",IDC_SECTION_PROPERTIES,0,2,433,31
     LTEXT           "Debondable Strands",IDC_DB,32,372,66,8
 END
 
-IDD_STRAND_DEFINITION DIALOG  0, 0, 310, 197
+IDD_STRAND_DEFINITION DIALOGEX 0, 0, 310, 197
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Edit Strand Grid Location"
-FONT 8, "MS Sans Serif"
+CAPTION "Edit Strand Location"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     COMBOBOX        IDC_STRAND_TYPE,63,33,80,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_HPX,58,94,40,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -1016,7 +1026,7 @@ BEGIN
     PUSHBUTTON      "Help",ID_HELP,196,176,50,14
     LTEXT           "Strand Fill Order is ??",IDC_FILL_ORDER,7,7,127,13,SS_CENTERIMAGE | SS_SUNKEN
     RTEXT           "Strand Type",IDC_STATIC,11,37,47,8
-    GROUPBOX        "Location at Harping Points",IDC_STATIC,20,63,127,78
+    GROUPBOX        "Location at Harping Points",IDC_HP_BOX,20,63,127,78
     LTEXT           "Measured from Bottom C.L. of Girder",IDC_STATIC,24,77,119,8
     LTEXT           "Xb",IDC_STATIC,41,100,10,8
     LTEXT           "Static",IDC_HPX_T,103,100,19,8
@@ -1578,7 +1588,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 413
         TOPMARGIN, 7
-        BOTTOMMARGIN, 351
+        BOTTOMMARGIN, 350
     END
 
     IDD_LONG_STEEL, DIALOG
@@ -1600,7 +1610,7 @@ BEGIN
     IDD_GIRDER_ERROR, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 288
+        RIGHTMARGIN, 409
         TOPMARGIN, 7
         BOTTOMMARGIN, 192
     END
@@ -1618,7 +1628,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 343
         TOPMARGIN, 7
-        BOTTOMMARGIN, 287
+        BOTTOMMARGIN, 369
     END
 
     IDD_SPEC_CASTING_YARD, DIALOG
@@ -1678,9 +1688,9 @@ BEGIN
     IDD_SPEC_BRIDGE_SITE2, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 308
+        RIGHTMARGIN, 342
         TOPMARGIN, 7
-        BOTTOMMARGIN, 189
+        BOTTOMMARGIN, 222
     END
 
     IDD_SPEC_BRIDGE_SITE1, DIALOG
@@ -1696,7 +1706,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 446
         TOPMARGIN, 7
-        BOTTOMMARGIN, 279
+        BOTTOMMARGIN, 333
     END
 
     IDD_SECTIONVIEW, DIALOG
@@ -1878,15 +1888,6 @@ BEGIN
     0
 END
 
-IDD_STRAND_DEFINITION DLGINIT
-BEGIN
-    IDC_STRAND_TYPE, 0x403, 9, 0
-0x7453, 0x6172, 0x6769, 0x7468, "\000" 
-    IDC_STRAND_TYPE, 0x403, 7, 0
-0x6148, 0x7072, 0x6465, "\000" 
-    0
-END
-
 IDD_GIRDER_HARPPOINT DLGINIT
 BEGIN
     IDC_HPREFERENCE, 0x403, 18, 0
@@ -1927,6 +1928,10 @@ BEGIN
 0x6f54, 0x0070, 
     IDC_COMBO_END_USL, 0x403, 7, 0
 0x6f42, 0x7474, 0x6d6f, "\000" 
+    IDC_WEB_STRAND_TYPE_COMBO, 0x403, 7, 0
+0x6148, 0x7072, 0x6465, "\000" 
+    IDC_WEB_STRAND_TYPE_COMBO, 0x403, 9, 0
+0x7453, 0x6172, 0x6769, 0x7468, "\000" 
     0
 END
 
@@ -1972,23 +1977,6 @@ BEGIN
 0x676e, 0x6874, 0x202e, 0x4128, 0x7070, 0x6f72, 0x6978, 0x616d, 0x6574, 
 0x2064, 0x7962, 0x7620, 0x7265, 0x2079, 0x6873, 0x726f, 0x2074, 0x656c, 
 0x676e, 0x6874, 0x0029, 
-    0
-END
-
-IDD_EDIT_SHEAR_STEEL DLGINIT
-BEGIN
-    IDC_SPLITTING_NLEGS, 0x403, 2, 0
-0x0030, 
-    IDC_SPLITTING_NLEGS, 0x403, 2, 0
-0x0031, 
-    IDC_SPLITTING_NLEGS, 0x403, 2, 0
-0x0032, 
-    IDC_SPLITTING_NLEGS, 0x403, 2, 0
-0x0033, 
-    IDC_SPLITTING_NLEGS, 0x403, 2, 0
-0x0034, 
-    IDC_SPLITTING_NLEGS, 0x403, 2, 0
-0x0036, 
     0
 END
 

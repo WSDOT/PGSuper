@@ -24,8 +24,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=634>
-<meta name=layout-width content=964>
+<meta name=layout-height content=999>
+<meta name=layout-width content=1234>
 
 
 <!--(Links)=========================================================-->
@@ -71,12 +71,38 @@
  enveloped for each category. Use the check marks in each list box to select 
  the Vehicular Live Loads whose response you wish to add to the live load 
  response envelope for that category. Vehicular Live Loads are defined 
- in the PGSuper Library. PGSuper defines the HL-93 live load.</p>
+ in the PGSuper Library. PGSuper pre-defines the LRFD HL-93 live load.</p>
+
+<h3>Impact Factors</h3>
 
 <p>Truck and Lane load dynamic load allowance factors (impact factors) 
  may be entered as well.</p>
 
-<p>Notes:</p>
+<h3>Application of Pedestrian Live Loads on Sidewalks when Sidewalk is 
+ Present</h3>
+
+<p>If a sidewalk of adequate width is present, pedestrian live loads are 
+ applied to those girders, mating surfaces, or webs (GMSW’s) loaded by 
+ the sidewalk dead load. The pedestrian live load is then combined with 
+ the vehicular live loads for the selected limit state. The possible options 
+ are:</p>
+
+<p>1) Apply only vehicular live loads (ignore pedestrian loads all together)</p>
+
+<p>2) Envelope pedestrian live loads with vehicular live loads</p>
+
+<p style="margin-left: 40px;">For this option, vehicular live loads are 
+ applied to all girders and enveloped with the application of pedestrian 
+ live loads for applicable GMSW’s. A multiple presence factor, m=1.0 is 
+ used for the pedestrian live load. </p>
+
+<p>3) Apply pedestrian live loads concurrently with vehicular live loads</p>
+
+<p style="margin-left: 40px;">For this option, vehicular live loads are 
+ applied to all girders and summed with the application of pedestrian live 
+ loads for applicable GMSW’s</p>
+
+<h3>Notes:</h3>
 
 <ul>
 	
@@ -88,10 +114,19 @@
  in order to activate the deflection vehicle.</p></li>
 	
 	<li class=kadov-p><p>Refer to <a HREF="../User%27s Guide/UserDefinedLoads/Chapter_5.htm">Chapter 
- 5</a> of the PGSuper User's Guide for more information about load</p></li>
+ 5</a> of the PGSuper User's Guide for more information about load generation.</p></li>
 	
 	<li class=kadov-p><p>Refer to other notes in the <a HREF="../Theoretical Manual/User-Defined_Live_Loads.htm">Vehicular 
  Live Loads</a> section of the Theoretical Manual</p></li>
+	
+	<li class=kadov-p><p>Pedestrian loads will not be applied if the sidewalk 
+ width is less than the minimum width specified on the Project Criteria 
+ <a href="../User%27s Guide/Appendix B - PGSuper Library Dialogs/PsglibBridge_Site_Tab.htm">Bridge 
+ Site 3</a> tab.</p></li>
+	
+	<li class=kadov-p><p>When pedestrian live loads are applied, dead loads 
+ from the sidewalk and interior barriers are applied as if traffic is allowed 
+ to mount the sidewalk.</p></li>
 </ul>
 
 

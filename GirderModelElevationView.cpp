@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -691,31 +691,33 @@ void CGirderModelElevationView::BuildGirderDisplayObjects(CPGSuperDoc* pDoc,IBro
    Nt = pStrandGeom->GetNumStrands(span,girder,pgsTypes::Temporary);
    Nsd= pStrandGeom->GetNumDebondedStrands(span,girder,pgsTypes::Straight);
 
+   std::_tstring harp_type(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(span,girder)));
+
    CString strMsg3;
    if ( pStrandGeom->GetMaxStrands(span,girder,pgsTypes::Temporary) != 0 )
    {
       if ( Nsd == 0 )
       {
-         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
-                         pStrand->GetName().c_str(),Ns,Nh,pTempStrand->GetName().c_str(),Nt);
+         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# %s: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
+                         pStrand->GetName().c_str(),Ns,harp_type.c_str(),Nh,pTempStrand->GetName().c_str(),Nt);
       }
       else
       {
-         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
-                         pStrand->GetName().c_str(),Ns,Nsd,Nh,pTempStrand->GetName().c_str(),Nt);
+         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# %s: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
+                         pStrand->GetName().c_str(),Ns,Nsd,harp_type.c_str(),Nh,pTempStrand->GetName().c_str(),Nt);
       }
    }
    else
    {
       if ( Nsd == 0 )
       {
-         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d"),
-                         pStrand->GetName().c_str(),Ns,Nh);
+         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# %s: %2d"),
+                         pStrand->GetName().c_str(),Ns,harp_type.c_str(),Nh);
       }
       else
       {
-         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d"),
-                         pStrand->GetName().c_str(),Ns,Nsd,Nh);
+         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# %s: %2d"),
+                         pStrand->GetName().c_str(),Ns,Nsd,harp_type.c_str(),Nh);
       }
    }
 

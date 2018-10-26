@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -170,7 +170,14 @@ interface IProductLoads : IUnknown
    virtual bool HasPedestrianLoad() = 0;
    virtual bool HasPedestrianLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
    virtual Float64 GetPedestrianLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
+   virtual Float64 GetPedestrianLoadPerSidewalk(pgsTypes::TrafficBarrierOrientation orientation) = 0;
    virtual bool HasSidewalkLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
+   virtual void GetTrafficBarrierLoadFraction(SpanIndexType spanIdx,GirderIndexType gdrIdx, Float64* pBarrierLoad,
+                                              Float64* pFraExtLeft, Float64* pFraIntLeft,
+                                              Float64* pFraExtRight,Float64* pFraIntRight)=0;
+   virtual void GetSidewalkLoadFraction(SpanIndexType spanIdx,GirderIndexType gdrIdx, Float64* pSidewalkLoad,
+                                        Float64* pFraLeft,Float64* pFraRight)=0;
+
 
    // overlay loads
    virtual void GetOverlayLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx,std::vector<OverlayLoad>* pOverlayLoads)=0;

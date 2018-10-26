@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -551,6 +551,9 @@ public:
    bool OddNumberOfHarpedStrands() const;
    void EnableOddNumberOfHarpedStrands(bool bEnable);
 
+   bool IsForceHarpedStrandsStraight() const;
+   void ForceHarpedStrandsStraight(bool bEnable);
+
    void ConfigureStraightStrandGrid(IStrandGrid* pStartGrid,IStrandGrid* pEndGrid) const;
    void ConfigureHarpedStrandGrids(IStrandGrid* pEndGridAtStart, IStrandGrid* pHPGridAtStart, IStrandGrid* pHPGridAtEnd, IStrandGrid* pEndGridAtEnd) const;
    void ConfigureTemporaryStrandGrid(IStrandGrid* pStartGrid,IStrandGrid* pEndGrid) const;
@@ -667,6 +670,7 @@ private:
    MeasurementLocation m_HarpPointReference;
    MeasurementType   m_HarpPointMeasure;
    bool m_bOddNumberOfHarpedStrands;
+   bool m_bForceHarpedStrandsStraight;
 
    // version 13
    // debond limits

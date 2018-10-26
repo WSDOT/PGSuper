@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -386,8 +386,13 @@ void CPGSuperDocProxyAgent::CreateStabilityView(SpanIndexType spanIdx,GirderInde
 
 void CPGSuperDocProxyAgent::CreateLoadsView()
 {
+
+#if defined _EAF_USING_MFC_FEATURE_PACK
+   m_wndLoadsViewAdapter.ShowPane(!m_wndLoadsViewAdapter.IsVisible(),FALSE,TRUE);
+#else
    GET_IFACE(IEAFViewRegistrar,pViewReg);
-   pViewReg->CreateView(m_LoadsViewKey);
+   CView* pView = pViewReg->CreateView(m_LoadsViewKey);
+#endif
 }
 
 void CPGSuperDocProxyAgent::CreateLibraryEditorView()
@@ -526,15 +531,19 @@ STDMETHODIMP CPGSuperDocProxyAgent::IntegrateWithUI(BOOL bIntegrate)
       CreateStatusBar();
 
 #if defined _EAF_USING_MFC_FEATURE_PACK
-      // We want to use tabbed views
       CEAFMainFrame* pFrame = EAFGetMainFrame();
+      pFrame->CanConvertControlBarToMDIChild(TRUE);
 
+      // Panes can be docked to the main window
       pFrame->EnableDocking(CBRS_ALIGN_ANY);
+
+      // Main frame supports auto hide panes
       pFrame->EnableAutoHidePanes(CBRS_ALIGN_ANY);
    	
       // enable Visual Studio 2005 style docking window behavior
 	   CDockingManager::SetDockingMode(DT_SMART); // DT_IMMEDIATE, DT_STANDARD, DT_SMART
 
+      // we want tabbed MDI windows.
       pFrame->EnableMDITabs(TRUE,FALSE,CMFCTabCtrl::LOCATION_TOP,TRUE,CMFCTabCtrl::STYLE_3D_ROUNDED_SCROLL,FALSE,TRUE);
       CMFCTabCtrl& tabs = pFrame->GetMDITabs();
       tabs.SetActiveTabBoldFont();
@@ -546,8 +555,18 @@ STDMETHODIMP CPGSuperDocProxyAgent::IntegrateWithUI(BOOL bIntegrate)
          UINT nID = 1; // need a better ID
          CRect rDummy(0,0,200,200);
          AFX_MANAGE_STATE(AfxGetAppModuleState());
+
+         m_wndLoadsViewAdapter.Create(_T("Loads"),pFrame,rDummy,TRUE,0,WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_BOTTOM | CBRS_FLOAT_MULTI);
+         GET_IFACE(IEAFViewRegistrar,pViewReg);
+         CView* pView = pViewReg->CreateView(m_LoadsViewKey);
+         m_wndLoadsViewAdapter.SetWrappedWnd(pView);
+         m_wndLoadsViewAdapter.EnableDocking(CBRS_ALIGN_ANY);
+         pFrame->DockPane(&m_wndLoadsViewAdapter);
+
          m_wndTasks.Create(_T("Tasks"),pFrame,rDummy,TRUE,nID,
             WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_LEFT | AFX_CBRS_CLOSE | AFX_CBRS_FLOAT);
+
+         m_wndTasks.EnableNavigationToolbar();
 
          m_wndTasks.EnableDocking(CBRS_ALIGN_ANY);
          pFrame->DockPane(&m_wndTasks);
@@ -555,12 +574,14 @@ STDMETHODIMP CPGSuperDocProxyAgent::IntegrateWithUI(BOOL bIntegrate)
          // There can be multiple groups of tasks on a task pane
 
          // Open a document group
-         int docGroup = m_wndTasks.AddGroup(_T("Open a document"),FALSE,TRUE);
+         int pageIdx = 0;
+         m_wndTasks.SetPageCaption(pageIdx,_T("Common Tasks"));
+         int docGroup = m_wndTasks.AddGroup(pageIdx,_T("Open a document"),FALSE,TRUE);
          m_wndTasks.AddMRUFilesList(docGroup);
          m_wndTasks.AddTask(docGroup,_T("More Documents..."),0,ID_FILE_OPEN);
 
-         // Common group
-         int grpIdx = m_wndTasks.AddGroup(_T("Common"));
+         // Editing tasks
+         int grpIdx = m_wndTasks.AddGroup(pageIdx,_T("Editing"));
          m_wndTasks.AddTask(grpIdx,_T("Edit Alignment"),-1,ID_PROJECT_ALIGNMENT);
          m_wndTasks.AddTask(grpIdx,_T("Edit Bridge"),-1,ID_PROJECT_BRIDGEDESC);
 
@@ -568,13 +589,13 @@ STDMETHODIMP CPGSuperDocProxyAgent::IntegrateWithUI(BOOL bIntegrate)
          m_wndTasks.AddLabel(grpIdx,_T("Label"));
 
          // a single group can be put at the bottom of the pane
-         int bottomGrpIdx = m_wndTasks.AddGroup(_T("Stuff"),TRUE);
+         int bottomGrpIdx = m_wndTasks.AddGroup(pageIdx,_T("Stuff"),TRUE);
          m_wndTasks.AddLabel(bottomGrpIdx,_T("Item 1"));
          m_wndTasks.AddLabel(bottomGrpIdx,_T("Item 2"));
          m_wndTasks.AddLabel(bottomGrpIdx,_T("Item 3"));
 
          // There can also be multiple pages in a task pane
-         int pageIdx = m_wndTasks.AddPage(_T("More Tasks"));
+         pageIdx = m_wndTasks.AddPage(_T("Advanced Tasks"));
          int idx = m_wndTasks.AddGroup(pageIdx,_T("Group 1"));
          m_wndTasks.AddTask(idx,_T("Task 1"));
          m_wndTasks.AddTask(idx,_T("Task 2"));
@@ -596,6 +617,7 @@ STDMETHODIMP CPGSuperDocProxyAgent::IntegrateWithUI(BOOL bIntegrate)
 
       // done with the task pane
       m_wndTasks.DestroyWindow();
+      m_wndLoadsViewAdapter.DestroyWindow();
 #endif
    }
 

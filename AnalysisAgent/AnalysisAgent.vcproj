@@ -956,6 +956,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\BarrierSidewalkLoadDistributionTool.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\PGSuperLoadCombinationResponse.cpp"
 				>
 			</File>
@@ -1034,6 +1038,10 @@
 			</File>
 			<File
 				RelativePath="AnalysisAgentImp.h"
+				>
+			</File>
+			<File
+				RelativePath=".\BarrierSidewalkLoadDistributionTool.h"
 				>
 			</File>
 			<File

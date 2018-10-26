@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -467,6 +467,11 @@ void CSpecMainSheet::ExchangeBsData(CDataExchange* pDX)
    DDV_MinMaxDouble(pDX,m_Entry.m_LLDFGirderSpacingLocation,0.0,1.0);
 
    DDX_Check_Bool(pDX, IDC_LANESBEAMS, m_Entry.m_LimitDistributionFactorsToLanesBeams);
+
+   DDX_UnitValueAndTag(pDX, IDC_PED_LIVE_LOAD, IDC_PED_LIVE_LOAD_UNIT, m_Entry.m_PedestrianLoad, pDisplayUnits->SmallStress );
+   DDV_UnitValueZeroOrMore(pDX, IDC_PED_LIVE_LOAD,m_Entry.m_PedestrianLoad, pDisplayUnits->SpanLength );
+   DDX_UnitValueAndTag(pDX, IDC_MIN_SIDEWALK_WIDTH, IDC_MIN_SIDEWALK_WIDTH_UNIT, m_Entry.m_MinSidewalkWidth, pDisplayUnits->SpanLength );
+   DDV_UnitValueZeroOrMore(pDX, IDC_MIN_SIDEWALK_WIDTH,m_Entry.m_MinSidewalkWidth, pDisplayUnits->SpanLength );
 }
 
 void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)

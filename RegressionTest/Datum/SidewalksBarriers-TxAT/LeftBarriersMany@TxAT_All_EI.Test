@@ -1,0 +1,27 @@
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 26.29   7  4.50  1     1     IV    *    28  0.60  270 21.32 11.89   6 50.0  4.300  5.300    3.497   -3.082   5503  0.682  0.682  0.25 -0.05 -0.00 -0.02 -0.07 119.22 225.89   3.00   3.17   3.17
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 26.29   7  4.50  1     2     IV    *    28  0.60  270 21.32 11.89   6 50.0  4.300  5.300    2.930   -2.584   5068  0.488  0.558  0.25 -0.03 -0.00 -0.02 -0.05 119.22 238.34   1.75   5.00   5.00
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 26.29   7  4.50  1     4     IV    *    28  0.60  270 21.32 11.89   6 50.0  4.300  5.300    2.677   -2.250   4387  0.488  0.558  0.25 -0.03 -0.00  0.00 -0.04 119.22 258.30   1.75   5.00   5.00
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
+
+

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1180,6 +1180,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          RowIndexType row = 0;
 
          CGirderData girderData = pGirderData->GetGirderData(spanIdx,gdrIdx);
+         bool harpedAreStraight = pStrand->GetAreHarpedStrandsForcedStraight(spanIdx,gdrIdx);
 
          (*pTable)(row,0) << _T("Girder Type");
          (*pTable)(row,1) << pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderName(gdrIdx);
@@ -1193,6 +1194,10 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          (*pTable)(row,1) << cmpdim.SetValue(pBridge->GetSlabOffset(spanIdx,gdrIdx,pgsTypes::metEnd));
          row++;
 
+         (*pTable)(row,0) << _T("Type of Web Strands");
+         (*pTable)(row,1) << LABEL_HARP_TYPE(harpedAreStraight);
+         row++;
+
          (*pTable)(row,0) << _T("Number of Straight Strands");
          (*pTable)(row,1) << pStrand->GetNumStrands(spanIdx,gdrIdx,pgsTypes::Straight);
          StrandIndexType nDebonded = pStrand->GetNumDebondedStrands(spanIdx,gdrIdx,pgsTypes::Straight);
@@ -1204,15 +1209,19 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          (*pTable)(row,1) << force.SetValue(girderData.Pjack[pgsTypes::Straight]);
          row++;
 
-         (*pTable)(row,0) << _T("Number of Harped Strands");
+         (*pTable)(row,0) << _T("Number of ")<< LABEL_HARP_TYPE(harpedAreStraight) <<_T(" Strands");
          (*pTable)(row,1) << pStrand->GetNumStrands(spanIdx,gdrIdx,pgsTypes::Harped);
          nDebonded = pStrand->GetNumDebondedStrands(spanIdx,gdrIdx,pgsTypes::Harped);
          if ( nDebonded != 0 )
             (*pTable)(row,1) << _T(" (") << nDebonded << _T(" debonded)");
          row++;
 
-         (*pTable)(row,0) << _T("Harped Strand P") << Sub(_T("jack"));
+         (*pTable)(row,0) << LABEL_HARP_TYPE(harpedAreStraight) << _T(" Strand P") << Sub(_T("jack"));
          (*pTable)(row,1) << force.SetValue(girderData.Pjack[pgsTypes::Harped]);
+         row++;
+
+         (*pTable)(row,0) << _T("Total Number of Permanent Strands");
+         (*pTable)(row,1) << pStrand->GetNumStrands(spanIdx,gdrIdx,pgsTypes::Straight) + pStrand->GetNumStrands(spanIdx,gdrIdx,pgsTypes::Harped);
          row++;
 
          if ( 0 < pStrand->GetMaxStrands(spanIdx,gdrIdx,pgsTypes::Temporary) )
@@ -1230,78 +1239,116 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          }
 
          std::_tstring endoff;
-         if( girderData.HsoEndMeasurement==hsoLEGACY)
-         {    // Method used pre-version 6.0
-            endoff = _T("Distance from top-most location in harped strand grid to top-most harped strand at girder ends");
-         }
-         else if( girderData.HsoEndMeasurement==hsoCGFROMTOP)
+         if(harpedAreStraight)
          {
-            endoff = _T("Distance from top of girder to CG of harped strands at girder ends");
-         }
-         else if( girderData.HsoEndMeasurement==hsoCGFROMBOTTOM)
-         {
-            endoff = _T("Distance from bottom of girder to CG of harped strands at girder ends");
-         }
-         else if( girderData.HsoEndMeasurement==hsoTOP2TOP)
-         {
-            endoff = _T("Distance from top of girder to top-most harped strand at girder ends");
-         }
-         else if( girderData.HsoEndMeasurement==hsoTOP2BOTTOM)
-         {
-            endoff = _T("Distance from bottom of girder to top-most harped strand at girder ends");
-         }
-         else if( girderData.HsoEndMeasurement==hsoBOTTOM2BOTTOM)
-         {
-            endoff = _T("Distance from bottom of girder to lowest harped strand at girder ends");
-         }
-         else if( girderData.HsoEndMeasurement==hsoECCENTRICITY)
-         {
-            endoff = _T("Eccentricity of harped strand group at girder ends");
+            if( girderData.HsoEndMeasurement==hsoLEGACY)
+            {    // Method used pre-version 6.0
+               endoff = _T("Distance from top-most location in Straight-Web strand grid to top-most Straight-Web strand");
+            }
+            else if( girderData.HsoEndMeasurement==hsoCGFROMTOP)
+            {
+               endoff = _T("Distance from top of girder to CG of Straight-Web strands");
+            }
+            else if( girderData.HsoEndMeasurement==hsoCGFROMBOTTOM)
+            {
+               endoff = _T("Distance from bottom of girder to CG of Straight-Web strands");
+            }
+            else if( girderData.HsoEndMeasurement==hsoTOP2TOP)
+            {
+               endoff = _T("Distance from top of girder to top-most Straight-Web strand");
+            }
+            else if( girderData.HsoEndMeasurement==hsoTOP2BOTTOM)
+            {
+               endoff = _T("Distance from bottom of girder to top-most Straight-Web strand");
+            }
+            else if( girderData.HsoEndMeasurement==hsoBOTTOM2BOTTOM)
+            {
+               endoff = _T("Distance from bottom of girder to lowest Straight-Web strand");
+            }
+            else if( girderData.HsoEndMeasurement==hsoECCENTRICITY)
+            {
+               endoff = _T("Eccentricity of Straight-Web strand group");
+            }
+            else
+               ATLASSERT(0);
          }
          else
-            ATLASSERT(0);
-
+         {
+            if( girderData.HsoEndMeasurement==hsoLEGACY)
+            {    // Method used pre-version 6.0
+               endoff = _T("Distance from top-most location in harped strand grid to top-most harped strand at girder ends");
+            }
+            else if( girderData.HsoEndMeasurement==hsoCGFROMTOP)
+            {
+               endoff = _T("Distance from top of girder to CG of harped strands at girder ends");
+            }
+            else if( girderData.HsoEndMeasurement==hsoCGFROMBOTTOM)
+            {
+               endoff = _T("Distance from bottom of girder to CG of harped strands at girder ends");
+            }
+            else if( girderData.HsoEndMeasurement==hsoTOP2TOP)
+            {
+               endoff = _T("Distance from top of girder to top-most harped strand at girder ends");
+            }
+            else if( girderData.HsoEndMeasurement==hsoTOP2BOTTOM)
+            {
+               endoff = _T("Distance from bottom of girder to top-most harped strand at girder ends");
+            }
+            else if( girderData.HsoEndMeasurement==hsoBOTTOM2BOTTOM)
+            {
+               endoff = _T("Distance from bottom of girder to lowest harped strand at girder ends");
+            }
+            else if( girderData.HsoEndMeasurement==hsoECCENTRICITY)
+            {
+               endoff = _T("Eccentricity of harped strand group at girder ends");
+            }
+            else
+               ATLASSERT(0);
+         }
 
          (*pTable)(row,0) << endoff;
          (*pTable)(row,1) << cmpdim.SetValue(girderData.HpOffsetAtEnd);
          row++;
 
-         std::_tstring hpoff;
-         if( girderData.HsoHpMeasurement==hsoLEGACY)
-         {    // Method used pre-version 6.0
-            hpoff = _T("Distance from lowest location in harped strand grid to lowest harped strand at harping points");
-         }
-         else if( girderData.HsoHpMeasurement==hsoCGFROMTOP)
+         if(!harpedAreStraight)
          {
-            hpoff = _T("Distance from top of girder to CG of harped strands at harping points");
-         }
-         else if( girderData.HsoHpMeasurement==hsoCGFROMBOTTOM)
-         {
-            hpoff = _T("Distance from bottom of girder to CG of harped strands at harping points");
-         }
-         else if( girderData.HsoHpMeasurement==hsoTOP2TOP)
-         {
-            hpoff = _T("Distance from top of girder to top-most harped strand at harping points");
-         }
-         else if( girderData.HsoHpMeasurement==hsoTOP2BOTTOM)
-         {
-            hpoff = _T("Distance from bottom of girder to top-most harped strand at harping points");
-         }
-         else if( girderData.HsoHpMeasurement==hsoBOTTOM2BOTTOM)
-         {
-            hpoff = _T("Distance from bottom of girder to lowest harped strand at harping points");
-         }
-         else if( girderData.HsoHpMeasurement==hsoECCENTRICITY)
-         {
-            hpoff = _T("Eccentricity of harped strand group at harping points");
-         }
-         else
-            ATLASSERT(0);
+            std::_tstring hpoff;
+            if( girderData.HsoHpMeasurement==hsoLEGACY)
+            {    // Method used pre-version 6.0
+               hpoff = _T("Distance from lowest location in harped strand grid to lowest harped strand at harping points");
+            }
+            else if( girderData.HsoHpMeasurement==hsoCGFROMTOP)
+            {
+               hpoff = _T("Distance from top of girder to CG of harped strands at harping points");
+            }
+            else if( girderData.HsoHpMeasurement==hsoCGFROMBOTTOM)
+            {
+               hpoff = _T("Distance from bottom of girder to CG of harped strands at harping points");
+            }
+            else if( girderData.HsoHpMeasurement==hsoTOP2TOP)
+            {
+               hpoff = _T("Distance from top of girder to top-most harped strand at harping points");
+            }
+            else if( girderData.HsoHpMeasurement==hsoTOP2BOTTOM)
+            {
+               hpoff = _T("Distance from bottom of girder to top-most harped strand at harping points");
+            }
+            else if( girderData.HsoHpMeasurement==hsoBOTTOM2BOTTOM)
+            {
+               hpoff = _T("Distance from bottom of girder to lowest harped strand at harping points");
+            }
+            else if( girderData.HsoHpMeasurement==hsoECCENTRICITY)
+            {
+               hpoff = _T("Eccentricity of harped strand group at harping points");
+            }
+            else
+               ATLASSERT(0);
 
 
-         (*pTable)(row,0) << hpoff;
-         (*pTable)(row,1) << cmpdim.SetValue(girderData.HpOffsetAtHp);
-         row++;
+            (*pTable)(row,0) << hpoff;
+            (*pTable)(row,1) << cmpdim.SetValue(girderData.HpOffsetAtHp);
+            row++;
+         }
 
          (*pTable)(row,0) << _T("Release Strength ") << RPT_FCI;
          (*pTable)(row,1) << stress.SetValue( girderData.Material.Fci );

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -73,13 +73,13 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
    bool bIsWSDOTRating = true;
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    std::vector<std::_tstring> routine_legal_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Routine);
-   if ( routine_legal_loads.size() == 0 || routine_legal_loads[0] != _T("AASHTO Legal Loads") )
+   if ( routine_legal_loads.size() != 1 || routine_legal_loads[0] != _T("AASHTO Legal Loads") )
    {
       bIsWSDOTRating = false;
    }
 
    std::vector<std::_tstring> special_legal_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Special);
-   if ( special_legal_loads.size() == 0 || special_legal_loads[0] != _T("Notional Rating Load (NRL)") )
+   if ( special_legal_loads.size() != 1 || special_legal_loads[0] != _T("Notional Rating Load (NRL)") )
    {
       bIsWSDOTRating = false;
    }
@@ -106,6 +106,21 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
    if ( pRatingSpec->GetRatingSpecification() != _T("WSDOT") )
       bIsWSDOTRating = false;
 
+   if ( !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
+      bIsWSDOTRating = false;
+
+   if ( !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
+      bIsWSDOTRating = false;
+
+   if ( !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+      bIsWSDOTRating = false;
+
+   if ( !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+      bIsWSDOTRating = false;
+
+   if ( !pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+      bIsWSDOTRating = false;
+
    if ( !bIsWSDOTRating )
    {
       (*pPara) << _T("The loading settings do not conform to the requirements specified in Chapter 13 of the WSDOT Bridge Design Manual.") << rptNewLine;
@@ -121,59 +136,87 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
       pTable->SetColumnStyle(2,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       pTable->SetStripeRowColumnStyle(2,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
+      RowIndexType row = 0;
       (*pPara) << pTable << rptNewLine;
-      (*pTable)(0,0) << _T("");
-      (*pTable)(0,1) << _T("Current Setting");
-      (*pTable)(0,2) << _T("Required Setting");
+      (*pTable)(row,0) << _T("");
+      (*pTable)(row,1) << _T("Current Setting");
+      (*pTable)(row,2) << _T("Required Setting");
+      row++;
 
-      (*pTable)(1,0) << _T("Load Rating Criteria");
-      (*pTable)(1,1) << pRatingSpec->GetRatingSpecification();
-      (*pTable)(1,2) << _T("WSDOT");
+      (*pTable)(row,0) << _T("Load Rating Criteria");
+      (*pTable)(row,1) << pRatingSpec->GetRatingSpecification();
+      (*pTable)(row,2) << _T("WSDOT");
+      row++;
 
-      (*pTable)(2,0) << _T("Design Load Rating: Live Loads for Design");
+      (*pTable)(row,0) << _T("Design Rating");
+      (*pTable)(row,1) << ((!pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) ) ? _T("False") : _T("True"));
+      (*pTable)(row,2) << _T("True");
+      row++;
+
+      (*pTable)(row,0) << _T("Legal Rating");
+      (*pTable)(row,1) << ((!pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) || !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) ) ? _T("False") : _T("True"));
+      (*pTable)(row,2) << _T("True");
+      row++;
+
+      (*pTable)(row,0) << _T("Permit Rating");
+      (*pTable)(row,1) << ((!pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) ) ? _T("False") : _T("True"));
+      (*pTable)(row,2) << _T("True");
+      row++;
+
+      (*pTable)(row,0) << _T("Design Load Rating: Live Loads for Design");
       std::vector<std::_tstring>::iterator nameIter(design_permit_loads.begin());
       std::vector<std::_tstring>::iterator nameIterEnd(design_permit_loads.end());
       for ( ; nameIter != nameIterEnd; nameIter++ )
       {
-         (*pTable)(2,1) << (*nameIter) << rptNewLine;
+         (*pTable)(row,1) << (*nameIter) << rptNewLine;
       }
-      (*pTable)(2,2) << _T("HL-93");
+      (*pTable)(row,1) << _T("");
+      (*pTable)(row,2) << _T("HL-93");
+      row++;
 
-      (*pTable)(3,0) << _T("Legal Load Rating: Live Loads for Routine Commercial Traffic");
+      (*pTable)(row,0) << _T("Legal Load Rating: Live Loads for Routine Commercial Traffic");
       nameIter    = routine_legal_loads.begin();
       nameIterEnd = routine_legal_loads.end();
       for ( ; nameIter != nameIterEnd; nameIter++ )
       {
-         (*pTable)(3,1) << (*nameIter) << rptNewLine;
+         (*pTable)(row,1) << (*nameIter) << rptNewLine;
       }
-      (*pTable)(3,2) << _T("AASHTO Legal Loads");
+      (*pTable)(row,1) << _T("");
+      (*pTable)(row,2) << _T("AASHTO Legal Loads");
+      row++;
 
-      (*pTable)(4,0) << _T("Legal Load Rating: Live Loads for Specialized Hauling Vehicles");
+      (*pTable)(row,0) << _T("Legal Load Rating: Live Loads for Specialized Hauling Vehicles");
       nameIter    = special_legal_loads.begin();
       nameIterEnd = special_legal_loads.end();
       for ( ; nameIter != nameIterEnd; nameIter++ )
       {
-         (*pTable)(4,1) << (*nameIter) << rptNewLine;
+         (*pTable)(row,1) << (*nameIter) << rptNewLine;
       }
-      (*pTable)(4,2) << _T("Notional Rating Load (NRL)");
+      (*pTable)(row,1) << _T("");
+      (*pTable)(row,2) << _T("Notional Rating Load (NRL)");
+      row++;
 
-      (*pTable)(5,0) << _T("Permit Load Rating: Live Loads for Routine/Annual Permit Vehicles");
+      (*pTable)(row,0) << _T("Permit Load Rating: Live Loads for Routine/Annual Permit Vehicles");
       nameIter    = routine_permit_loads.begin();
       nameIterEnd = routine_permit_loads.end();
       for ( ; nameIter != nameIterEnd; nameIter++ )
       {
-         (*pTable)(5,1) << (*nameIter) << rptNewLine;
+         (*pTable)(row,1) << (*nameIter) << rptNewLine;
       }
-      (*pTable)(5,2) << _T("");
+      (*pTable)(row,1) << _T("");
+      (*pTable)(row,2) << _T("");
+      row++;
 
-      (*pTable)(6,0) << _T("Permit Load Rating: Live Loads for Special/Limited Crossing Permit Vehicles");
+      (*pTable)(row,0) << _T("Permit Load Rating: Live Loads for Special/Limited Crossing Permit Vehicles");
       nameIter    = special_permit_loads.begin();
       nameIterEnd = special_permit_loads.end();
       for ( ; nameIter != nameIterEnd; nameIter++ )
       {
-         (*pTable)(6,1) << (*nameIter) << rptNewLine;
+         (*pTable)(row,1) << (*nameIter) << rptNewLine;
       }
-      (*pTable)(6,2) << _T("OL1") << rptNewLine << _T("OL2") << rptNewLine;
+      (*pTable)(row,1) << _T("");
+      (*pTable)(row,2) << _T("OL1") << rptNewLine << _T("OL2") << rptNewLine;
+      row;
 
       return pChapter;
    }
@@ -430,3 +473,4 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
       (*pTable)(row,2) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << _T(" (Stress)");
    }
 }
+

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -439,33 +439,10 @@ void CPGSuperDoc::EditBridgeDescription(int nPage)
 
    if ( dlg.DoModal() == IDOK )
    {
-      bool bOldBridgeHasSidewalks = (pOldBridgeDesc->GetLeftRailingSystem()->bUseSidewalk || pOldBridgeDesc->GetRightRailingSystem()->bUseSidewalk);
-      bool bOldEnablePedLL = pLiveLoads->IsPedestianLoadEnabled(pgsTypes::lltDesign);
-
-      const CBridgeDescription& newBridge = dlg.GetBridgeDescription();
-      bool bNewEnablePedLL = false;
-      bool bNewBridgeHasSidewalks = (newBridge.GetLeftRailingSystem()->bUseSidewalk || newBridge.GetRightRailingSystem()->bUseSidewalk);
-
-      if ( !bOldBridgeHasSidewalks && bNewBridgeHasSidewalks )
-      {
-         // sidewalks were added, enable pedestrian live load
-         bNewEnablePedLL = true;
-      }
-      else if ( bOldBridgeHasSidewalks && !bNewBridgeHasSidewalks )
-      {
-         // sidewalks were removed, disable pedestrian live load
-         bNewEnablePedLL = false;
-      }
-      else
-      {
-         // sidewalks stayed the same to don't change anything
-         bNewEnablePedLL = bOldEnablePedLL;
-      }
 
       txnEditBridge* pTxn = new txnEditBridge(*pOldBridgeDesc,      dlg.GetBridgeDescription(),
                                               oldExposureCondition, dlg.m_EnvironmentalPage.m_Exposure == 0 ? expNormal : expSevere,
-                                              oldRelHumidity,       dlg.m_EnvironmentalPage.m_RelHumidity,
-                                              bOldEnablePedLL,      bNewEnablePedLL);
+                                              oldRelHumidity,       dlg.m_EnvironmentalPage.m_RelHumidity);
 
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
@@ -2458,6 +2435,7 @@ void CPGSuperDoc::OnLiveLoads()
 
    GET_IFACE( ILibraryNames, pLibNames );
    GET_IFACE( ILiveLoads, pLiveLoad );
+   GET_IFACE(IProductLoads,pProductLoads);
 
    std::vector<std::_tstring> all_names;
    pLibNames->EnumLiveLoadNames( &all_names );
@@ -2468,42 +2446,54 @@ void CPGSuperDoc::OnLiveLoads()
 
    CLiveLoadSelectDlg dlg(all_names, design_names, fatigue_names, permit_names);
 
+   dlg.m_bHasPedestrianLoad = (pProductLoads->GetPedestrianLoadPerSidewalk(pgsTypes::tboLeft)>0.0 ||
+                               pProductLoads->GetPedestrianLoadPerSidewalk(pgsTypes::tboRight)>0.0);
+
    dlg.m_DesignTruckImpact = pLiveLoad->GetTruckImpact(pgsTypes::lltDesign);
    dlg.m_DesignLaneImpact = pLiveLoad->GetLaneImpact(pgsTypes::lltDesign);
+   dlg.m_DesignPedesType = pLiveLoad->GetPedestrianLoadApplication(pgsTypes::lltDesign);
 
    dlg.m_FatigueTruckImpact = pLiveLoad->GetTruckImpact(pgsTypes::lltFatigue);
    dlg.m_FatigueLaneImpact = pLiveLoad->GetLaneImpact(pgsTypes::lltFatigue);
+   dlg.m_FatiguePedesType = pLiveLoad->GetPedestrianLoadApplication(pgsTypes::lltFatigue);
 
    dlg.m_PermitLaneImpact = pLiveLoad->GetLaneImpact(pgsTypes::lltPermit);
    dlg.m_PermitTruckImpact = pLiveLoad->GetTruckImpact(pgsTypes::lltPermit);
+   dlg.m_PermitPedesType = pLiveLoad->GetPedestrianLoadApplication(pgsTypes::lltPermit);
 
    txnEditLiveLoadData oldDesign, oldFatigue, oldPermit;
    oldDesign.m_VehicleNames = dlg.m_DesignNames;
    oldDesign.m_TruckImpact  = dlg.m_DesignTruckImpact;
    oldDesign.m_LaneImpact   = dlg.m_DesignLaneImpact;
+   oldDesign.m_PedestrianLoadApplicationType = dlg.m_DesignPedesType;
 
    oldFatigue.m_VehicleNames = dlg.m_FatigueNames;
    oldFatigue.m_TruckImpact  = dlg.m_FatigueTruckImpact;
    oldFatigue.m_LaneImpact   = dlg.m_FatigueLaneImpact;
+   oldFatigue.m_PedestrianLoadApplicationType = dlg.m_FatiguePedesType;
 
    oldPermit.m_VehicleNames = dlg.m_PermitNames;
    oldPermit.m_TruckImpact  = dlg.m_PermitTruckImpact;
    oldPermit.m_LaneImpact   = dlg.m_PermitLaneImpact;
+   oldPermit.m_PedestrianLoadApplicationType = dlg.m_PermitPedesType;
 
    if ( dlg.DoModal() == IDOK)
    {
       txnEditLiveLoadData newDesign, newFatigue, newPermit;
-      newDesign.m_VehicleNames = dlg.m_DesignNames;
-      newDesign.m_TruckImpact  = dlg.m_DesignTruckImpact;
-      newDesign.m_LaneImpact   = dlg.m_DesignLaneImpact;
+      newDesign.m_VehicleNames                  = dlg.m_DesignNames;
+      newDesign.m_TruckImpact                   = dlg.m_DesignTruckImpact;
+      newDesign.m_LaneImpact                    = dlg.m_DesignLaneImpact;
+      newDesign.m_PedestrianLoadApplicationType = dlg.m_DesignPedesType;
 
-      newFatigue.m_VehicleNames = dlg.m_FatigueNames;
-      newFatigue.m_TruckImpact  = dlg.m_FatigueTruckImpact;
-      newFatigue.m_LaneImpact   = dlg.m_FatigueLaneImpact;
+      newFatigue.m_VehicleNames                  = dlg.m_FatigueNames;
+      newFatigue.m_TruckImpact                   = dlg.m_FatigueTruckImpact;
+      newFatigue.m_LaneImpact                    = dlg.m_FatigueLaneImpact;
+      newFatigue.m_PedestrianLoadApplicationType = dlg.m_FatiguePedesType;
 
-      newPermit.m_VehicleNames = dlg.m_PermitNames;
-      newPermit.m_TruckImpact  = dlg.m_PermitTruckImpact;
-      newPermit.m_LaneImpact   = dlg.m_PermitLaneImpact;
+      newPermit.m_VehicleNames                  = dlg.m_PermitNames;
+      newPermit.m_TruckImpact                   = dlg.m_PermitTruckImpact;
+      newPermit.m_LaneImpact                    = dlg.m_PermitLaneImpact;
+      newPermit.m_PedestrianLoadApplicationType = dlg.m_PermitPedesType;
 
       txnEditLiveLoad* pTxn = new txnEditLiveLoad(oldDesign,newDesign,oldFatigue,newFatigue,oldPermit,newPermit);
       GET_IFACE(IEAFTransactions,pTransactions);

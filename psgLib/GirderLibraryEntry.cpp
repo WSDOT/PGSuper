@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,7 @@
 #include <Units\sysUnits.h>
 
 #include <psgLib\BeamFamilyManager.h>
+#include <PgsExt\GirderLabel.h>
 
 #include <GeomModel\PrecastBeam.h>
 
@@ -75,7 +76,8 @@ static char THIS_FILE[] = __FILE__;
 // from 17.0 to 18.0 changed class for new rebar object
 // from 18.0 to 19.0 move all shear reinforcment into CShearData. Created LegacyShearData for conversion
 // from 19.0 to 20.0 added shear design parameters
-#define CURRENT_VERSION 20.0
+// from 20.0 to 21.0 Web strands can be harped or straight e.g.,  ForceHarpedStrandsStraight
+#define CURRENT_VERSION 21.0
 
 // predicate function for comparing doubles
 inline bool EqualDoublePred(Float64 i, Float64 j) {
@@ -108,6 +110,7 @@ m_HarpPointReference(mlBearing),
 m_LongitudinalBarType(matRebar::A615),
 m_LongitudinalBarGrade(matRebar::Grade60),
 m_bOddNumberOfHarpedStrands(true),
+m_bForceHarpedStrandsStraight(false),
 // debonding criteria - use aashto defaults
 m_MaxDebondStrands(0.25),
 m_MaxDebondStrandsPerRow(0.40),
@@ -303,6 +306,8 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->EndUnit();
 
    pSave->Property(_T("OddNumberOfHarpedStrands"),m_bOddNumberOfHarpedStrands);
+
+   pSave->Property(_T("ForceHarpedStrandsStraight"),m_bForceHarpedStrandsStraight);
 
    // Temporary strands
    // Added start and end strand grids in version 15 of parent unit
@@ -1242,6 +1247,11 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
 
          pLoad->Property(_T("OddNumberOfHarpedStrands"),&m_bOddNumberOfHarpedStrands);
+
+         if ( 21.0 <= version )
+         {
+            pLoad->Property(_T("ForceHarpedStrandsStraight"),&m_bForceHarpedStrandsStraight);
+         }
       }
 
       // Temporary strands
@@ -1879,6 +1889,7 @@ bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther, bool consider
 
    test &= (m_bUseDifferentHarpedGridAtEnds       == rOther.m_bUseDifferentHarpedGridAtEnds);
    test &= (m_bOddNumberOfHarpedStrands           == rOther.m_bOddNumberOfHarpedStrands);
+   test &= (m_bForceHarpedStrandsStraight         == rOther.m_bForceHarpedStrandsStraight);
 
    test &= (m_HPAdjustment             == rOther.m_HPAdjustment);
    test &= (m_EndAdjustment            == rOther.m_EndAdjustment);
@@ -2052,6 +2063,8 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
          // harped strands at HP
          const HarpedStrandLocation& strandLocation = m_HarpedStrands[gstrand.m_LocalSortOrder];
 
+         bool areHarpedStraight = this->m_bForceHarpedStrandsStraight;
+
          point->Move(strandLocation.m_Xhp, strandLocation.m_Yhp);
 
          VARIANT_BOOL bPointInShape;
@@ -2059,7 +2072,15 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
          if ( bPointInShape == VARIANT_FALSE )
          {
             std::_tostringstream os;
-            os << _T("Harped strand #")<<total_num<<_T(" at harping point is outside of the girder section");
+            if (areHarpedStraight)
+            {
+               os << LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" at is outside of the girder section");
+            }
+            else
+            {
+               os << LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" at harping point is outside of the girder section");
+            }
+
             pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
          }
 
@@ -2069,7 +2090,15 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
          if (is_within!=VARIANT_TRUE)
          {
             std::_tostringstream os;
-            os << _T("Harped strand #")<<total_num<<_T(" at harping point must be within offset bounds and lie within the thinnest portion of a web");
+            if (areHarpedStraight)
+            {
+               os << LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" must be within vertical adjustment bounds and lie within the thinnest portion of a web");
+            }
+            else
+            {
+               os << LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" at harping point must be within vertical adjustment bounds and lie within the thinnest portion of a web");
+            }
+
             pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
          }
 
@@ -2080,7 +2109,14 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
             if ( IsZero(strandLocation.m_Xhp) && IsZero(strandLocation.m_Xstart) && IsZero(strandLocation.m_Xend) )
             {
                std::_tostringstream os;
-               os << _T("Harped strand #")<<total_num<<_T(" has zero X value at HP and End. This cannot be the case if odd number of harped strands is allowed.");
+               if (areHarpedStraight)
+               {
+                  os << LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" has a zero X value. This is cannot be if odd number of harped strands is allowed.");
+               }
+               else
+               {
+                  os << LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" has zero X value at HP and End. This cannot be if odd number of harped strands is allowed.");
+               }
                pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
             }
 
@@ -2091,7 +2127,15 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
             if ( bPointInShape == VARIANT_FALSE )
             {
                std::_tostringstream os;
-               os << _T("Odd Harped strand #")<<total_num<<_T(" at harping point is outside of the girder section. Disable odd strands");
+               if (areHarpedStraight)
+               {
+                  os << _T("Odd ")<<LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" is outside of the girder section. Disable odd strands");
+               }
+               else
+               {
+                  os << _T("Odd ")<<LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" at harping point is outside of the girder section. Disable odd strands");
+               }
+
                pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
             }
 
@@ -2099,7 +2143,15 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
             if (is_within!=VARIANT_TRUE)
             {
                std::_tostringstream os;
-               os << _T("Odd Harped strand #")<<total_num<<_T(" at harping point must be within offset bounds and lie within the thinnest portion of a web. Disable odd strands");
+               if (areHarpedStraight)
+               {
+                  os << _T("Odd ")<<LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" must be within offset bounds and lie within the thinnest portion of a web. Disable odd strands");
+               }
+               else
+               {
+                  os << _T("Odd ")<<LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" at harping point must be within offset bounds and lie within the thinnest portion of a web. Disable odd strands");
+               }
+
                pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
             }
          }
@@ -2115,7 +2167,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
             if ( bPointInShape == VARIANT_FALSE )
             {
                std::_tostringstream os;
-               os << _T("Harped strand #")<<total_num<<_T(" at girder end is outside of the girder section");
+               os << LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" at girder end is outside of the girder section");
                pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
             }
 
@@ -2124,7 +2176,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
             if (is_within!=VARIANT_TRUE)
             {
                std::_tostringstream os;
-               os << _T("Harped strand #")<<total_num<<_T(" at girder end must be within offset bounds and lie within the thinnest portion of a web");
+               os << LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" at girder end must be within offset bounds and lie within the thinnest portion of a web");
                pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
             }
 
@@ -2137,7 +2189,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
                if ( bPointInShape == VARIANT_FALSE )
                {
                   std::_tostringstream os;
-                  os << _T("Odd Harped strand #")<<total_num<<_T(" at girder end is outside of the girder section. Disable odd strands");
+                  os << _T("Odd")<<LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" at girder end is outside of the girder section. Disable odd strands");
                   pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
                }
 
@@ -2145,7 +2197,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
                if (is_within!=VARIANT_TRUE)
                {
                   std::_tostringstream os;
-                  os << _T("Odd Harped strand #")<<total_num<<_T(" at girder end must be within offset bounds and lie within the thinnest portion of a web. Disable odd strands");
+                  os << _T("Odd ")<<LABEL_HARP_TYPE(areHarpedStraight)<<_T(" strand #")<<total_num<<_T(" at girder end must be within offset bounds and lie within the thinnest portion of a web. Disable odd strands");
                   pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
                }
             }
@@ -2319,6 +2371,17 @@ void GirderLibraryEntry::EnableOddNumberOfHarpedStrands(bool bEnable)
 {
    m_bOddNumberOfHarpedStrands = bEnable;
 }
+
+bool GirderLibraryEntry::IsForceHarpedStrandsStraight() const
+{
+   return m_bForceHarpedStrandsStraight;
+}
+
+void GirderLibraryEntry::ForceHarpedStrandsStraight(bool bEnable)
+{
+   m_bForceHarpedStrandsStraight = bEnable;
+}
+
 
 //======================== ACCESS     =======================================
 void GirderLibraryEntry::SetBeamFactory(IBeamFactory* pFactory)
@@ -3048,6 +3111,7 @@ void GirderLibraryEntry::MakeCopy(const GirderLibraryEntry& rOther)
    m_pBeamFactory = rOther.m_pBeamFactory;
 
    m_bOddNumberOfHarpedStrands = rOther.m_bOddNumberOfHarpedStrands;
+   m_bForceHarpedStrandsStraight = rOther.m_bForceHarpedStrandsStraight;
    m_bUseDifferentHarpedGridAtEnds = rOther.m_bUseDifferentHarpedGridAtEnds;
 
    m_DiaphragmLayoutRules = rOther.m_DiaphragmLayoutRules;

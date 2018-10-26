@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -85,11 +85,11 @@ BOOL CSpecBridgeSite2Page::OnInitDialog()
       pCB->AddString(_T("using the tributary width"));
 
    pCB = (CComboBox*)GetDlgItem(IDC_DIST_TRAFFIC_BARRIER_BASIS);
-   int index = pCB->AddString(_T("girders"));
+   int index = pCB->AddString(_T("nearest girders"));
    pCB->SetItemData(index,pgsTypes::tbdGirder);
-   index = pCB->AddString(_T("mating surfaces"));
+   index = pCB->AddString(_T("nearest mating surfaces"));
    pCB->SetItemData(index,pgsTypes::tbdMatingSurface);
-   index = pCB->AddString(_T("webs"));
+   index = pCB->AddString(_T("nearest webs"));
    pCB->SetItemData(index,pgsTypes::tbdWebs);
 
    pCB = (CComboBox*)GetDlgItem(IDC_OVERLAY_DISTR);

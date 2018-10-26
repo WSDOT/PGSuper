@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 25.98   4  0.02  1     1     7T28       10   1/2  270 15.70 15.70   0  0.0  4.000  5.000    0.853   -1.624    716  0.666  0.666  0.05 -0.00 -0.00 -0.00 -0.00  18.76  59.04   1.00   1.00   1.00
+ 25.98   4  0.02  1     1     7T28       10   1/2  270 15.70 15.70   0  0.0  4.000  5.000    0.853   -1.623    715  0.666  0.666  0.05 -0.00 -0.00 -0.00 -0.00  18.76  59.05   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -10,7 +10,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 25.98   4  0.02  1     2     7T28       10   1/2  270 15.67 15.67   0  0.0  4.000  5.000    0.858   -1.625    715  0.666  0.666  0.05 -0.00 -0.00 -0.00 -0.00  18.79  59.09   1.00   1.00   1.00
+ 25.98   4  0.02  1     2     7T28       10   1/2  270 15.67 15.67   0  0.0  4.000  5.000    0.858   -1.624    715  0.666  0.666  0.05 -0.00 -0.00 -0.00 -0.00  18.79  59.10   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful

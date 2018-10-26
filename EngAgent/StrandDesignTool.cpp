@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -874,7 +874,7 @@ bool pgsStrandDesignTool::ResetHarpedStrandConfiguration()
    GET_IFACE(IStrandGeometry,pStrandGeom);
 
    StrandIndexType nh = m_pArtifact->GetNumHarpedStrands();
-   if (nh == 0)
+   if (nh == 0 || m_DesignOptions.doForceHarpedStrandsStraight )
    {
       m_bConfigDirty = true; // cache is dirty
       m_pArtifact->SetHarpStrandOffsetEnd(0.0);
@@ -1148,7 +1148,7 @@ bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, 
 
    // try to adjust end first
    Float64 end_offset_inc = pStrandGeom->GetHarpedEndOffsetIncrement(m_Span,m_Girder);
-   if (0.0 < end_offset_inc)
+   if (0.0 < end_offset_inc && !m_DesignOptions.doForceHarpedStrandsStraight)
    {
       LOG(_T("Attempt to adjust hold down by lowering at ends"));
       Float64 curr_adj = m_pArtifact->GetHarpStrandOffsetEnd();
@@ -1779,6 +1779,8 @@ Float64 pgsStrandDesignTool::GetHarpStrandOffsetHp() const
 
 void pgsStrandDesignTool::SetHarpStrandOffsetEnd(Float64 off)
 {
+   ATLASSERT(m_DesignOptions.doForceHarpedStrandsStraight && off==0.0); // should never adjust strands
+
    // set offset, but make sure it stays within bounds
    LOG(_T("Attempt to offset harped strands at ends to   = ") << ::ConvertFromSysUnits(off, unitMeasure::Inch) << _T(" in"));
    m_pArtifact->SetHarpStrandOffsetEnd(off);
@@ -1792,6 +1794,8 @@ void pgsStrandDesignTool::SetHarpStrandOffsetEnd(Float64 off)
 
 void pgsStrandDesignTool::SetHarpStrandOffsetHp(Float64 off)
 {
+   ATLASSERT(m_DesignOptions.doForceHarpedStrandsStraight && off==0.0); // should never adjust strands
+
    LOG(_T("Attempt to offset harped strands at HPs to   = ") << ::ConvertFromSysUnits(off, unitMeasure::Inch) << _T(" in"));
    m_pArtifact->SetHarpStrandOffsetHp(off);
    m_bConfigDirty = true; // cache is dirty

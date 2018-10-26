@@ -399,7 +399,7 @@
         <param name="Local" value="User's Guide\Analysis_Results\Analysis_Results_View.htm">
       </object>
       <li><object type="text/sitemap">
-        <param name="Name" value="Report View">
+        <param name="Name" value="Report Views">
         <param name="Local" value="User's Guide\Analysis_Results\Report_View.htm">
       </object>
       <li><object type="text/sitemap">
@@ -852,6 +852,10 @@
         <li><object type="text/sitemap">
           <param name="Name" value="Permanent Strands Tab">
           <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Harped Strands Tab.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Generate Strands Dialog">
+          <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\GenerateStrands.htm">
         </object>
         <li><object type="text/sitemap">
           <param name="Name" value="Temporary Strands Tab">

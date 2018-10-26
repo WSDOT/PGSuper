@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 21.98   4  0.02  1     1    6HT28       40   1/2  270 11.42  6.42  20 20.0  5.100  5.700    2.740   -4.031   2231  0.527  0.527  0.28 -0.00 -0.01 -0.02 -0.03 106.44 318.44   1.00   1.00   1.00
+ 21.98   4  0.02  1     1    6HT28       40   1/2  270 11.42  6.42  20 20.0  5.100  5.700    2.737   -4.028   2229  0.527  0.527  0.28 -0.00 -0.01 -0.02 -0.03 106.44 318.54   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -12,7 +12,7 @@ Live Load Deflection check failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 21.98   4  0.02  1     2    6HT28       40   1/2  270 11.39  6.39  20 20.0  5.100  5.700    2.756   -4.035   2228  0.527  0.527  0.28 -0.00 -0.01 -0.02 -0.03 106.58 318.77   1.00   1.00   1.00
+ 21.98   4  0.02  1     2    6HT28       40   1/2  270 11.39  6.39  20 20.0  5.100  5.700    2.754   -4.031   2226  0.527  0.527  0.28 -0.00 -0.01 -0.02 -0.03 106.58 318.87   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful

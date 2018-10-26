@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -260,6 +260,15 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
       // determine if offset strands are within girder bounds
       if (pParent->m_GirderData.Nstrands[pgsTypes::Harped] > 0)
       {
+
+         // But first, for straight-web strands, make adjustment at hp the same as at ends
+         if( m_bAreHarpedStrandsForcedStraight && m_AllowEndAdjustment)
+         {
+            ATLASSERT(m_AllowHpAdjustment); // should always be true because we must be able to adjust both locations
+            pParent->m_GirderData.HpOffsetAtHp = pParent->m_GirderData.HpOffsetAtEnd;
+            pParent->m_GirderData.HsoHpMeasurement = pParent->m_GirderData.HsoEndMeasurement;
+         }
+
          // girder ends
          // first convert to abosolute offsets
          Float64 absol_offset;
@@ -391,6 +400,13 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+
+   // This value is used throughout
+   m_bAreHarpedStrandsForcedStraight = pStrandGeom->GetAreHarpedStrandsForcedStraight(pParent->m_CurrentSpanIdx, pParent->m_CurrentGirderIdx);
+
    // Fill the strand size combo box.
    UpdateStrandList(IDC_STRAND_SIZE);
    UpdateStrandList(IDC_TEMP_STRAND_SIZE);
@@ -446,11 +462,26 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
    idx = pCB->AddString(_T("Temporary strands post-tensioned immedately before shipping"));
    pCB->SetItemData(idx,(DWORD)pgsTypes::ttsPTBeforeShipping);
 
+   pCB = (CComboBox*)GetDlgItem(IDC_STRAND_INPUT_TYPE);
+   
+   pCB->AddString(_T("Total Number of Permanent Strands"));
+   if(m_bAreHarpedStrandsForcedStraight)
+   {
+      pCB->AddString(_T("Number of Straight and Number of Straight-Web"));
+      GetDlgItem(IDC_VERT_GROUP)->SetWindowTextW(_T("Vertical Location of Straight-Web Strands"));
+      GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowTextW(_T("Along Girder"));
+
+      DisappearHpOffsetControls();
+   }
+   else
+   {
+      pCB->AddString(_T("Number of Straight and Number of Harped"));
+      GetDlgItem(IDC_VERT_GROUP)->SetWindowTextW(_T("Vertical Location of Harped Strands"));
+      GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowTextW(_T("Girder Ends"));
+   }
+
    CPropertyPage::OnInitDialog();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    StrandIndexType Nt = pStrandGeom->GetMaxStrands(pParent->m_CurrentSpanIdx, pParent->m_CurrentGirderIdx,pgsTypes::Temporary);
    if ( Nt == 0 )
    {
@@ -481,24 +512,47 @@ void CGirderDescPrestressPage::InitHarpStrandOffsetMeasureComboBox(CComboBox* pC
 {
    pCB->Clear();
    int idx;
-   
-   idx = pCB->AddString(_T("Distance between CG of Harped Group and Girder Top"));
-   pCB->SetItemData(idx,hsoCGFROMTOP);
 
-   idx = pCB->AddString(_T("Distance between CG of Harped Group and Girder Bottom"));
-   pCB->SetItemData(idx,hsoCGFROMBOTTOM);
+   if(!m_bAreHarpedStrandsForcedStraight)
+   {
+      idx = pCB->AddString(_T("Distance between CG of Harped Group and Girder Top"));
+      pCB->SetItemData(idx,hsoCGFROMTOP);
 
-   idx = pCB->AddString(_T("Distance between Top-Most Harped Strand and Girder Top"));
-   pCB->SetItemData(idx,hsoTOP2TOP);
+      idx = pCB->AddString(_T("Distance between CG of Harped Group and Girder Bottom"));
+      pCB->SetItemData(idx,hsoCGFROMBOTTOM);
 
-   idx = pCB->AddString(_T("Distance between Top-Most Harped Strand and Girder Bottom"));
-   pCB->SetItemData(idx,hsoTOP2BOTTOM);
+      idx = pCB->AddString(_T("Distance between Top-Most Harped Strand and Girder Top"));
+      pCB->SetItemData(idx,hsoTOP2TOP);
 
-   idx = pCB->AddString(_T("Distance between Bottom-Most Harped Strand and Girder Bottom"));
-   pCB->SetItemData(idx,hsoBOTTOM2BOTTOM);
+      idx = pCB->AddString(_T("Distance between Top-Most Harped Strand and Girder Bottom"));
+      pCB->SetItemData(idx,hsoTOP2BOTTOM);
 
-   idx = pCB->AddString(_T("Eccentricity of Harped Strand Group (Non-Composite Section)"));
-   pCB->SetItemData(idx,hsoECCENTRICITY);
+      idx = pCB->AddString(_T("Distance between Bottom-Most Harped Strand and Girder Bottom"));
+      pCB->SetItemData(idx,hsoBOTTOM2BOTTOM);
+
+      idx = pCB->AddString(_T("Eccentricity of Harped Strand Group (Non-Composite Section)"));
+      pCB->SetItemData(idx,hsoECCENTRICITY);
+   }
+   else
+   {
+      idx = pCB->AddString(_T("Distance between CG of Straight-Web Group and Girder Top"));
+      pCB->SetItemData(idx,hsoCGFROMTOP);
+
+      idx = pCB->AddString(_T("Distance between CG of Straight-Web Group and Girder Bottom"));
+      pCB->SetItemData(idx,hsoCGFROMBOTTOM);
+
+      idx = pCB->AddString(_T("Distance between Top-Most Straight-Web Strand and Girder Top"));
+      pCB->SetItemData(idx,hsoTOP2TOP);
+
+      idx = pCB->AddString(_T("Distance between Top-Most Straight-Web Strand and Girder Bottom"));
+      pCB->SetItemData(idx,hsoTOP2BOTTOM);
+
+      idx = pCB->AddString(_T("Distance between Bottom-Most Straight-Web Strand and Girder Bottom"));
+      pCB->SetItemData(idx,hsoBOTTOM2BOTTOM);
+
+      idx = pCB->AddString(_T("Eccentricity of Straight-Web Strand Group (Non-Composite Section)"));
+      pCB->SetItemData(idx,hsoECCENTRICITY);
+   }
 }
 
 StrandIndexType CGirderDescPrestressPage::PermStrandSpinnerInc(IStrandGeometry* pStrands, StrandIndexType currNum, bool bAdd )
@@ -1268,6 +1322,33 @@ void CGirderDescPrestressPage::HideHpOffsetControls(BOOL hide)
    pWnd->EnableWindow( show );
 }
 
+void CGirderDescPrestressPage::DisappearHpOffsetControls()
+{
+   CWnd* pWnd;
+
+   // These are the strand pattern offset controls
+   pWnd = GetDlgItem( IDC_HPOFFSET_HP_TITLE );
+   ASSERT( pWnd );
+   pWnd->ShowWindow( SW_HIDE );
+
+   pWnd = GetDlgItem( IDC_HP_COMBO_HP );
+   ASSERT( pWnd );
+   pWnd->ShowWindow( SW_HIDE );
+
+   pWnd = GetDlgItem( IDC_HPOFFSET_HP );
+   ASSERT( pWnd );
+   pWnd->ShowWindow( SW_HIDE );
+
+   pWnd = GetDlgItem( IDC_HPOFFSET_HP_UNIT );
+   ASSERT( pWnd );
+   pWnd->ShowWindow( SW_HIDE );
+
+   pWnd = GetDlgItem( IDC_HPOFFSET_HP_NOTE );
+   ASSERT( pWnd );
+   pWnd->ShowWindow( SW_HIDE );
+}
+
+
 void CGirderDescPrestressPage::OnHelp() 
 {
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GIRDERWIZ_PRESTRESS );
@@ -1419,7 +1500,15 @@ void CGirderDescPrestressPage::UpdateHpRangeLength(HarpedStrandOffsetType measur
 void CGirderDescPrestressPage::UpdateStraightHarped(StrandIndexType Ns, StrandIndexType Nh)
 {
    CString val_as_text;
-   val_as_text.Format(_T("Number of Straight: %d, Harped: %d"),Ns, Nh);
+   if (m_bAreHarpedStrandsForcedStraight)
+   {
+      val_as_text.Format(_T("Number of Straight: %d, Straight-Web: %d"),Ns, Nh);
+   }
+   else
+   {
+      val_as_text.Format(_T("Number of Straight: %d, Harped: %d"),Ns, Nh);
+   }
+
    CWnd* pWnd = GetDlgItem( IDC_HARP_STRAIGHT );
    pWnd->SetWindowText( val_as_text );
 }
@@ -1511,7 +1600,23 @@ void CGirderDescPrestressPage::ShowHideNumStrandControls(int numPermStrandsType)
    pWnd->ShowWindow( nsshow );
    
    // label for strand spinner
-   CString msg = numPermStrandsType==NPS_TOTAL_NUMBER ? _T("Total Number of Permanent Strands") : _T("Number of Harped Strands");
+   CString msg;
+   if(numPermStrandsType==NPS_TOTAL_NUMBER)
+   {
+      msg = _T("Total Number of Permanent Strands");
+   }
+   else
+   {
+      if (m_bAreHarpedStrandsForcedStraight)
+      {
+         msg = _T("Number of Straight-Web Strands");
+      }
+      else
+      {
+         msg = _T("Number of Harped Strands");
+      }
+   } 
+
    pWnd = GetDlgItem( IDC_HS_TITLE );
    ASSERT( pWnd );
    pWnd->SetWindowText( msg );

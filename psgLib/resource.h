@@ -813,11 +813,15 @@
 #define IDC_GIRDER_SPACING_LOCATION     1433
 #define IDC_LANESBEAMS                  1434
 #define IDC_COMBO_TRANSFER              1435
+#define IDC_PED_LIVE_LOAD               1435
 #define IDC_ANCHORAGE_NOTE              1436
 #define IDC_ANCHORAGE_DISABLED          1436
+#define IDC_PED_LIVE_LOAD_UNIT          1436
 #define IDC_REVERSE_HARPED_STRAND_ORDER 1437
+#define IDC_MIN_SIDEWALK_WIDTH          1437
 #define IDC_FATIGUE_LABEL               1438
 #define IDC_WEIGHT_LABEL                1439
+#define IDC_MIN_SIDEWALK_WIDTH_UNIT     1439
 #define IDC_EC_LABEL                    1440
 #define IDC_COMBO1                      1441
 #define IDC_USAGE                       1441
@@ -826,6 +830,7 @@
 #define IDC_CONCRETE_TYPE               1441
 #define IDC_LONG_REINF_SHEAR_METHOD     1441
 #define IDC_RELAXATION_LOSS_METHOD      1441
+#define IDC_WEB_STRAND_TYPE_COMBO       1441
 #define IDC_DIST_TRAFFIC_BARRIER_BASIS  1442
 #define IDC_NWC_NOTE                    1443
 #define IDC_CHECK1                      1444
@@ -978,10 +983,13 @@
 #define IDC_EG_LIVELOAD_UNIT            1544
 #define IDC_RELAXATION_LOSS_METHOD_LABEL 1544
 #define IDC_EG_LIVELOAD_LABEL           1545
+#define IDC_STATIC_HP                   1545
 #define IDC_INTERPOLATE                 1546
 #define IDC_EG_OVERLAY                  1546
+#define IDC_VERT_ADJUST_GROUP           1546
 #define IDC_EG_RAILING_UNIT2            1547
 #define IDC_EG_OVERLAY_UNIT             1547
+#define IDC_HP_BOX                      1547
 #define IDC_EG_OVERLAY_LABEL            1548
 #define IDC_LOWER_VEHICLE_WEIGHT_UNIT   1565
 #define IDC_LOWER_VEHICLE_WEIGHT_LABEL  1566
@@ -1049,7 +1057,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        208
 #define _APS_NEXT_COMMAND_VALUE         33041
-#define _APS_NEXT_CONTROL_VALUE         1545
+#define _APS_NEXT_CONTROL_VALUE         1548
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

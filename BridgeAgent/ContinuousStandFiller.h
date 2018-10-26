@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -42,8 +42,6 @@ public:
 	virtual ~CContinuousStandFiller();
 
    void Init(const GirderLibraryEntry* pGdrEntry);
-
-   HRESULT IsFilledHarpStrContinuously(IPrecastGirder* girder, VARIANT_BOOL* bResult);
 
    // Set given number of strands directly in girder
    HRESULT SetStraightStrandCount(IPrecastGirder* girder,  StrandIndexType nStrands);

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -109,7 +109,7 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,SpanIndexType span,GirderInd
    p_table->SetRowSpan(1,col++,SKIP_CELL);
 
    (*p_table)(1,col++) << COLHDR(_T("Straight"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*p_table)(1,col++) << COLHDR(_T("Harped"),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*p_table)(1,col++) << COLHDR(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(span,girder)),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
    if ( bTempStrands )
    {

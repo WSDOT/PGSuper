@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,6 @@
 ///////////////////////////////////////////////////////////////////////
 
 // BridgeAgentImp.cpp : Implementation of CBridgeAgentImp
-
 #include "stdafx.h"
 #include "BridgeAgent.h"
 #include "BridgeAgent_i.h"
@@ -2807,125 +2806,147 @@ bool CBridgeAgentImp::LayoutTrafficBarriers(const CBridgeDescription* pBridgeDes
    return true;
 }
 
+void ComputeBarrierShapeToeLocations(IShape* pShape, Float64* leftToe, Float64* rightToe)
+{
+   // barrier toe is at X=0.0 of shape. Clip a very shallow rect at this elevation and use the width
+   // of the clipped shape as the toe bounds.
+   CComPtr<IRect2d> rect;
+   rect.CoCreateInstance(CLSID_Rect2d);
+   rect->SetBounds(-1.0e06, 1.0e06, 0.0, 1.0e-04);
+
+   CComPtr<IShape> clip_shape;
+   pShape->ClipIn(rect, &clip_shape);
+   if (clip_shape)
+   {
+      CComPtr<IRect2d> bbox;
+      clip_shape->get_BoundingBox(&bbox);
+      bbox->get_Left(leftToe);
+      bbox->get_Right(rightToe);
+   }
+   else
+   {
+      *leftToe = 0.0;
+      *rightToe = 0.0;
+   }
+}
+
+void CBridgeAgentImp::CreateBarrierObject(IBarrier** pBarrier, const TrafficBarrierEntry*  pBarrierEntry, pgsTypes::TrafficBarrierOrientation orientation)
+{
+   CComPtr<IPolyShape> polyshape;
+   pBarrierEntry->CreatePolyShape(orientation,&polyshape);
+
+   CComQIPtr<IShape> pShape(polyshape);
+
+   // box containing barrier
+   CComPtr<IRect2d> bbox;
+   pShape->get_BoundingBox(&bbox);
+
+   Float64 rightEdge, leftEdge;
+   bbox->get_Right(&rightEdge);
+   bbox->get_Left(&leftEdge);
+
+   // Distance from the barrier curb to the exterior face of barrier for purposes of determining
+   // roadway width
+   Float64 curbOffset = pBarrierEntry->GetCurbOffset();
+
+   // Toe locations of barrier
+   Float64 leftToe, rightToe;
+   ComputeBarrierShapeToeLocations(pShape, &leftToe, &rightToe);
+
+   // Dimensions of barrier depend on orientation
+   Float64 extToeWid, intToeWid;
+   if (orientation == pgsTypes::tboLeft )
+   {
+      intToeWid = rightEdge - rightToe;
+      extToeWid = -(leftEdge - leftToe);
+   }
+   else
+   {
+      extToeWid = rightEdge - rightToe;
+      intToeWid = -(leftEdge - leftToe);
+   }
+
+   // We have all data. Create barrier and initialize
+   CComPtr<IGenericBarrier> barrier;
+   barrier.CoCreateInstance(CLSID_GenericBarrier);
+
+   barrier->Init(pShape, curbOffset, intToeWid, extToeWid);
+
+   barrier.QueryInterface(pBarrier);
+
+   // set up material
+   Float64 E, density;
+   E = GetEcRailing(orientation);
+   density = GetDensityRailing(orientation);
+
+   CComPtr<IMaterial> material;
+   (*pBarrier)->get_Material(&material);
+   material->put_E(E);
+   material->put_Density(density);
+}
+
 bool CBridgeAgentImp::LayoutTrafficBarrier(const CBridgeDescription* pBridgeDesc,const CRailingSystem* pRailingSystem,pgsTypes::TrafficBarrierOrientation orientation,ISidewalkBarrier** ppBarrier)
 {
-   CComPtr<ISidewalkBarrier> sidewalk_barrier;
-   sidewalk_barrier.CoCreateInstance(CLSID_SidewalkBarrier);
+   // Railing system object
+   CComPtr<ISidewalkBarrier> railing_system;
+   railing_system.CoCreateInstance(CLSID_SidewalkBarrier);
 
    GET_IFACE(ILibrary,pLib);
    const TrafficBarrierEntry*  pExtRailingEntry = pLib->GetTrafficBarrierEntry( pRailingSystem->strExteriorRailing.c_str() );
 
-   // distance from the toe of barrier to the "nominal" face of barrier for purposes of determining
-   // roadway width
-   Float64 curbOffset = pExtRailingEntry->GetCurbOffset();
+   // Exterior Barrier
+   CComPtr<IBarrier> extBarrier;
+   CreateBarrierObject(&extBarrier, pExtRailingEntry, orientation);
 
-   CComPtr<IPolyShape> polyshape;
-   pExtRailingEntry->CreatePolyShape(orientation,&polyshape);
-
-   CComQIPtr<IShape> extShape(polyshape);
-
-   // determine connection width... For the exterior barrier this will be the distance
-   // from the origin to the right or left edge of the bounding box
-   Float64 connectionWidth;
-   CComPtr<IRect2d> bbox;
-   extShape->get_BoundingBox(&bbox);
-   if (orientation == pgsTypes::tboLeft )
-      bbox->get_Right(&connectionWidth);
-   else
-      bbox->get_Left(&connectionWidth);
-
-   connectionWidth = fabs(connectionWidth);
-
-   CComQIPtr<IBarrier> barrier(sidewalk_barrier);
-   sidewalk_barrier->put_IsExteriorStructurallyContinuous(pExtRailingEntry->IsBarrierStructurallyContinuous() ? VARIANT_TRUE : VARIANT_FALSE);
+   railing_system->put_IsExteriorStructurallyContinuous(pExtRailingEntry->IsBarrierStructurallyContinuous() ? VARIANT_TRUE : VARIANT_FALSE);
 
    SidewalkPositionType swPosition = pRailingSystem->bBarriersOnTopOfSidewalk ? swpBeneathBarriers : swpBetweenBarriers;
 
    int barrierType = 1;
    Float64 h1,h2,w;
-   CComPtr<IShape> intShape;
+   CComPtr<IBarrier> intBarrier;
    if ( pRailingSystem->bUseSidewalk )
    {
-      // get the sidewalk dimensinos
+      // get the sidewalk dimensions
       barrierType = 2;
       h1 = pRailingSystem->LeftDepth;
       h2 = pRailingSystem->RightDepth;
       w  = pRailingSystem->Width;
+
+      railing_system->put_IsSidewalkStructurallyContinuous(pRailingSystem->bSidewalkStructurallyContinuous ? VARIANT_TRUE : VARIANT_FALSE);
 
       if ( pRailingSystem->bUseInteriorRailing )
       {
          // there is an interior railing as well
          barrierType = 3;
          const TrafficBarrierEntry* pIntRailingEntry = pLib->GetTrafficBarrierEntry( pRailingSystem->strInteriorRailing.c_str() );
-         polyshape.Release();
-         pIntRailingEntry->CreatePolyShape(orientation,&polyshape);
 
-         polyshape.QueryInterface(&intShape);
+         CreateBarrierObject(&intBarrier, pIntRailingEntry, orientation);
 
-         sidewalk_barrier->put_IsSidewalkStructurallyContinuous(pRailingSystem->bSidewalkStructurallyContinuous ? VARIANT_TRUE : VARIANT_FALSE);
-         sidewalk_barrier->put_IsInteriorStructurallyContinuous(pIntRailingEntry->IsBarrierStructurallyContinuous() ? VARIANT_TRUE : VARIANT_FALSE);
-
-         // RAB: 10/28/2009
-         // Changed how de is determined... de is always from the centerline of the exterior
-         // web to the face of the exterior barrior less the curb offset
-
-         //// the connetion width is equal to the width of the bounding box
-         //bbox.Release();
-         //intShape->get_BoundingBox(&bbox);
-         //Float64 intConnectionWidth;
-         //bbox->get_Width(&intConnectionWidth);
-         //connectionWidth += fabs(intConnectionWidth);
-
-         //// increase the connection width to include the sidewalk 
-         //connectionWidth += w; // don't do this for barrierType = 2 even though there is a sidewalk
-         //                      // if there is not an interior barrier, it is assumed the traffic
-         //                      // can mount the sidewalk in which case connectionWidth is the same as if
-         //                      // we had a barrierType = 1
-
-         //// if the sidewalk is beneath the barriers and there are interior and exterior railings
-         //// the the conneciton width is simply the sidewalk width!
-         //if ( swPosition == swpBeneathBarriers )
-         //   connectionWidth = w;
-
-         //// if there is an interior barrier, ignore the curb offset from the exterior barrier
-         //// and use the interior barrier's value
-         //curbOffset = pIntRailingEntry->GetCurbOffset();
+         railing_system->put_IsInteriorStructurallyContinuous(pIntRailingEntry->IsBarrierStructurallyContinuous() ? VARIANT_TRUE : VARIANT_FALSE);
       }
    }
-
-   // reduce the connection width by the curb offset
-   connectionWidth -= curbOffset;
 
    switch(barrierType)
    {
    case 1:
-      sidewalk_barrier->put_Barrier1(extShape,connectionWidth);
+      railing_system->put_Barrier1(extBarrier,(TrafficBarrierOrientation)orientation);
       break;
 
    case 2:
-      sidewalk_barrier->put_Barrier2(extShape,h1,h2,w,(TrafficBarrierOrientation)orientation, swPosition, connectionWidth);
+      railing_system->put_Barrier2(extBarrier,h1,h2,w,(TrafficBarrierOrientation)orientation, swPosition);
       break;
 
    case 3:
-      sidewalk_barrier->put_Barrier3(extShape,h1,h2,w,intShape,(TrafficBarrierOrientation)orientation, swPosition, connectionWidth);
+      railing_system->put_Barrier3(extBarrier,h1,h2,w,(TrafficBarrierOrientation)orientation, swPosition, intBarrier);
       break;
 
    default:
       ATLASSERT(FALSE); // should never get here
    }
 
-   // set up the material... object is by reference so we just have to change the values
 
-   Float64 E, density;
-   E = GetEcRailing(orientation);
-   density = GetDensityRailing(orientation);
-
-   CComPtr<IMaterial> material;
-   barrier->get_Material(&material);
-   material->put_E(E);
-   material->put_Density(density);
-
-   (*ppBarrier) = sidewalk_barrier;
+   (*ppBarrier) = railing_system;
    (*ppBarrier)->AddRef();
 
    return true;
@@ -3021,17 +3042,26 @@ void CBridgeAgentImp::UpdatePrestressing(SpanIndexType spanIdx,GirderIndexType g
          ATLASSERT( SUCCEEDED(hr));
 
          // Apply the harped strand pattern offsets.
+         bool force_straight = pGirderEntry->IsForceHarpedStrandsStraight();
          Float64 adjustment(0.0);
          if ( pGirderEntry->IsVerticalAdjustmentAllowedEnd() )
          {
             adjustment = this->ComputeAbsoluteHarpedOffsetEnd(span, gdr, girderData.Nstrands[pgsTypes::Harped], girderData.HsoEndMeasurement, girderData.HpOffsetAtEnd);
             girder->put_HarpedStrandAdjustmentEnd(adjustment);
+
+            // use same adjustment at harping points if harped strands are forced to straight
+            if (force_straight)
+            {
+               girder->put_HarpedStrandAdjustmentHP(adjustment);
+            }
          }
 
-         if ( pGirderEntry->IsVerticalAdjustmentAllowedHP() )
+         if ( pGirderEntry->IsVerticalAdjustmentAllowedHP() && !force_straight )
          {
             adjustment = this->ComputeAbsoluteHarpedOffsetHp(span, gdr, girderData.Nstrands[pgsTypes::Harped], girderData.HsoHpMeasurement, girderData.HpOffsetAtHp);
             girder->put_HarpedStrandAdjustmentHP(adjustment);
+
+            ATLASSERT(!pGirderEntry->IsForceHarpedStrandsStraight()); // should not happen
          }
 
          // Apply debonding
@@ -5878,6 +5908,64 @@ Float64 CBridgeAgentImp::GetCurbToCurbWidth(Float64 distFromStartOfBridge)
    return right_offset - left_offset;
 }
 
+Float64 CBridgeAgentImp::GetLeftInteriorCurbOffset(double distFromStartOfBridge)
+{
+   VALIDATE( BRIDGE );
+   Float64 station = GetPierStation(0);
+   station += distFromStartOfBridge;
+   Float64 offset;
+   m_BridgeGeometryTool->InteriorCurbOffset(m_Bridge,station,NULL,qcbLeft,&offset);
+   return offset;
+}
+
+Float64 CBridgeAgentImp::GetRightInteriorCurbOffset(double distFromStartOfBridge)
+{
+   VALIDATE( BRIDGE );
+   Float64 station = GetPierStation(0);
+   station += distFromStartOfBridge;
+   Float64 offset;
+   m_BridgeGeometryTool->InteriorCurbOffset(m_Bridge,station,NULL,qcbRight,&offset);
+   return offset;
+}
+
+Float64 CBridgeAgentImp::GetLeftOverlayToeOffset(double distFromStartOfBridge)
+{
+   Float64 slab_edge = GetLeftSlabEdgeOffset(distFromStartOfBridge);
+
+   CComPtr<ISidewalkBarrier> pSwBarrier;
+   m_Bridge->get_LeftBarrier(&pSwBarrier);
+
+   Float64 toe_width;
+   pSwBarrier->get_OverlayToeWidth(&toe_width);
+
+   return slab_edge + toe_width;
+}
+
+Float64 CBridgeAgentImp::GetRightOverlayToeOffset(double distFromStartOfBridge)
+{
+   Float64 slab_edge = GetRightSlabEdgeOffset(distFromStartOfBridge);
+
+   CComPtr<ISidewalkBarrier> pSwBarrier;
+   m_Bridge->get_RightBarrier(&pSwBarrier);
+
+   Float64 toe_width;
+   pSwBarrier->get_OverlayToeWidth(&toe_width);
+
+   return slab_edge - toe_width;
+}
+
+Float64 CBridgeAgentImp::GetLeftOverlayToeOffset(const pgsPointOfInterest& poi)
+{
+   Float64 distFromStartOfBridge = GetDistanceFromStartOfBridge(poi);
+   return GetLeftOverlayToeOffset(distFromStartOfBridge);
+}
+
+Float64 CBridgeAgentImp::GetRightOverlayToeOffset(const pgsPointOfInterest& poi)
+{
+   Float64 distFromStartOfBridge = GetDistanceFromStartOfBridge(poi);
+   return GetRightOverlayToeOffset(distFromStartOfBridge);
+}
+
 void CBridgeAgentImp::GetSlabPerimeter(CollectionIndexType nPoints,IPoint2dCollection** points)
 {
    VALIDATE( BRIDGE );
@@ -5904,6 +5992,106 @@ void CBridgeAgentImp::GetSlabPerimeter(CollectionIndexType nPoints,IPoint2dColle
    } while ( !bDone );
 
    (*points) = right_edge;
+   (*points)->AddRef();
+}
+
+void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx,CollectionIndexType nPoints,IPoint2dCollection** points)
+{
+   VALIDATE( BRIDGE );
+
+   CComPtr<IAlignment> alignment;
+   GetAlignment(&alignment);
+
+   ASSERT( 3 <= nPoints );
+
+   CComPtr<IPoint2dCollection> thePoints;
+   thePoints.CoCreateInstance(CLSID_Point2dCollection);
+
+   PierIndexType startPierIdx = startSpanIdx;
+   PierIndexType endPierIdx   = endSpanIdx+1;
+
+   Float64 startStation = GetPierStation(startPierIdx);
+   Float64 endStation   = GetPierStation(endPierIdx);
+   Float64 stationInc   = (endStation - startStation)/(nPoints-1);
+
+   CComPtr<IDirection> startDirection, endDirection;
+   GetPierDirection(startPierIdx,&startDirection);
+   GetPierDirection(endPierIdx,  &endDirection);
+   Float64 dirStart, dirEnd;
+   startDirection->get_Value(&dirStart);
+   endDirection->get_Value(&dirEnd);
+
+   Float64 station   = startStation;
+
+   // Locate points along right side of deck
+   // Get station of deck points at first and last piers, projected normal to aligment
+   CComPtr<IPoint2d> objStartPointRight, objEndPointRight;
+   m_BridgeGeometryTool->DeckEdgePoint(m_Bridge,startStation,startDirection,qcbRight,&objStartPointRight);
+   m_BridgeGeometryTool->DeckEdgePoint(m_Bridge,endStation,  endDirection,  qcbRight,&objEndPointRight);
+
+   Float64 start_normal_station_right, end_normal_station_right;
+   Float64 offset;
+
+   GetStationAndOffset(objStartPointRight,&start_normal_station_right,&offset);
+   GetStationAndOffset(objEndPointRight,  &end_normal_station_right,  &offset);
+
+   // If there is a skew, the first deck edge can be before the pier station, or after it. 
+   // Same for the last deck edge. We must deal with this
+   thePoints->Add(objStartPointRight);
+
+   CollectionIndexType pntIdx;
+   for (pntIdx = 0; pntIdx < nPoints; pntIdx++ )
+   {
+      if (station > start_normal_station_right && station < end_normal_station_right)
+      {
+         CComPtr<IDirection> objDirection;
+         alignment->Normal(CComVariant(station), &objDirection);
+
+         CComPtr<IPoint2d> point;
+         HRESULT hr = m_BridgeGeometryTool->DeckEdgePoint(m_Bridge,station,objDirection,qcbRight,&point);
+         ATLASSERT( SUCCEEDED(hr) );
+
+         thePoints->Add(point);
+      }
+
+      station   += stationInc;
+   }
+
+   thePoints->Add(objEndPointRight);
+
+   // Locate points along left side of deck (working backwards)
+   CComPtr<IPoint2d> objStartPointLeft, objEndPointLeft;
+   m_BridgeGeometryTool->DeckEdgePoint(m_Bridge,startStation,startDirection,qcbLeft,&objStartPointLeft);
+   m_BridgeGeometryTool->DeckEdgePoint(m_Bridge,endStation,  endDirection,  qcbLeft,&objEndPointLeft);
+
+   Float64 start_normal_station_left, end_normal_station_left;
+
+   GetStationAndOffset(objStartPointLeft,&start_normal_station_left,&offset);
+   GetStationAndOffset(objEndPointLeft,  &end_normal_station_left,  &offset);
+
+   thePoints->Add(objEndPointLeft);
+
+   station   = endStation;
+   for ( pntIdx = 0; pntIdx < nPoints; pntIdx++ )
+   {
+      if (station > start_normal_station_left && station < end_normal_station_left)
+      {
+         CComPtr<IDirection> objDirection;
+         alignment->Normal(CComVariant(station), &objDirection);
+
+         CComPtr<IPoint2d> point;
+         HRESULT hr = m_BridgeGeometryTool->DeckEdgePoint(m_Bridge,station,objDirection,qcbLeft,&point);
+         ATLASSERT( SUCCEEDED(hr) );
+
+         thePoints->Add(point);
+      }
+
+      station   -= stationInc;
+   }
+
+   thePoints->Add(objStartPointLeft);
+
+   (*points) = thePoints;
    (*points)->AddRef();
 }
 
@@ -9187,6 +9375,20 @@ Float64 CBridgeAgentImp::GetPjack(SpanIndexType span,GirderIndexType gdr,bool bI
    return Pj;
 }
 
+bool CBridgeAgentImp::GetAreHarpedStrandsForcedStraight(SpanIndexType span,GirderIndexType gdr)
+{
+   GET_IFACE(ILibrary,pLib);
+
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
+   std::_tstring strGirderName = pSpan->GetGirderTypes()->GetGirderName(gdr);
+
+   const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry( strGirderName.c_str() );
+
+   return pGirderEntry->IsForceHarpedStrandsStraight();
+}
+
 Float64 CBridgeAgentImp::GetGirderTopElevation(SpanIndexType span,GirderIndexType gdr)
 {
    CComPtr<IPrecastGirder> girder;
@@ -11344,6 +11546,24 @@ Float64 CBridgeAgentImp::GetTributaryFlangeWidth(const pgsPointOfInterest& poi)
    return tfw;
 }
 
+Float64 CBridgeAgentImp::GetTributaryFlangeWidthEx(const pgsPointOfInterest& poi, Float64* pLftFw, Float64* pRgtFw)
+{
+   Float64 tfw = 0;
+   *pLftFw = 0;
+   *pRgtFw = 0;
+
+   if ( IsCompositeDeck() )
+   {
+      SpanIndexType spanIdx = poi.GetSpan();
+      GirderIndexType gdrIdx = poi.GetGirder();
+      Float64 dist_from_start_of_girder = poi.GetDistFromStart();
+      HRESULT hr = m_EffFlangeWidthTool->TributaryFlangeWidthEx(m_Bridge,spanIdx,gdrIdx,dist_from_start_of_girder,pLftFw,pRgtFw,&tfw);
+      ATLASSERT(SUCCEEDED(hr));
+   }
+
+   return tfw;
+}
+
 Float64 CBridgeAgentImp::GetEffectiveFlangeWidth(const pgsPointOfInterest& poi)
 {
    Float64 efw = 0;
@@ -11661,6 +11881,7 @@ Float64 CBridgeAgentImp::GetYbtb(pgsTypes::TrafficBarrierOrientation orientation
 
 Float64 CBridgeAgentImp::GetSidewalkWeight(pgsTypes::TrafficBarrierOrientation orientation)
 {
+   VALIDATE(BRIDGE);
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -11673,7 +11894,13 @@ Float64 CBridgeAgentImp::GetSidewalkWeight(pgsTypes::TrafficBarrierOrientation o
    Float64 Wsw = 0;
    if ( pRailingSystem->bUseSidewalk )
    {
-      Float64 w = pRailingSystem->Width;
+      GET_IFACE(IBarriers,pBarriers);
+
+      // real dl width of sidwalk
+      Float64 intEdge, extEdge;
+      pBarriers->GetSidewalkDeadLoadEdges(orientation, &intEdge, &extEdge);
+
+      Float64 w = fabs(intEdge-extEdge);
       Float64 tl = pRailingSystem->LeftDepth;
       Float64 tr = pRailingSystem->RightDepth;
       Float64 area = w*(tl + tr)/2;
@@ -11700,7 +11927,7 @@ bool CBridgeAgentImp::HasSidewalk(pgsTypes::TrafficBarrierOrientation orientatio
    return pRailingSystem->bUseSidewalk;
 }
 
-Float64 CBridgeAgentImp::GetBarrierWeight(pgsTypes::TrafficBarrierOrientation orientation)
+Float64 CBridgeAgentImp::GetExteriorBarrierWeight(pgsTypes::TrafficBarrierOrientation orientation)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -11733,7 +11960,21 @@ Float64 CBridgeAgentImp::GetBarrierWeight(pgsTypes::TrafficBarrierOrientation or
       Wext = pRailingSystem->GetExteriorRailing()->GetWeight();
    }
 
-   Float64 Wint = 0; // weight of interior barrier
+   return Wext;
+}
+
+Float64 CBridgeAgentImp::GetInteriorBarrierWeight(pgsTypes::TrafficBarrierOrientation orientation)
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   const CRailingSystem* pRailingSystem = NULL;
+   if ( orientation == pgsTypes::tboLeft )
+      pRailingSystem = pBridgeDesc->GetLeftRailingSystem();
+   else
+      pRailingSystem = pBridgeDesc->GetRightRailingSystem();
+
+   Float64 Wint = 0.0; // weight of interior barrier
    if ( pRailingSystem->bUseInteriorRailing )
    {
       if ( pRailingSystem->GetInteriorRailing()->GetWeightMethod() == TrafficBarrierEntry::Compute )
@@ -11758,45 +11999,210 @@ Float64 CBridgeAgentImp::GetBarrierWeight(pgsTypes::TrafficBarrierOrientation or
       }
    }
 
-   Float64 W = Wext + Wint;
-   return W;
+   return Wint;
 }
+
+bool CBridgeAgentImp::HasInteriorBarrier(pgsTypes::TrafficBarrierOrientation orientation)
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   const CRailingSystem* pRailingSystem = NULL;
+   if ( orientation == pgsTypes::tboLeft )
+      pRailingSystem = pBridgeDesc->GetLeftRailingSystem();
+   else
+      pRailingSystem = pBridgeDesc->GetRightRailingSystem();
+
+   return  pRailingSystem->bUseInteriorRailing;
+}
+
+Float64 CBridgeAgentImp::GetExteriorBarrierCgToDeckEdge(pgsTypes::TrafficBarrierOrientation orientation)
+{
+   // Use generic bridge - barriers have been placed properly
+   CComPtr<ISidewalkBarrier> pSwBarrier;
+   Float64 sign;
+   if ( orientation == pgsTypes::tboLeft )
+   {
+      m_Bridge->get_LeftBarrier(&pSwBarrier);
+      sign = 1.0;
+   }
+   else
+   {
+      m_Bridge->get_RightBarrier(&pSwBarrier);
+      sign = -1.0;
+   }
+
+   CComPtr<IBarrier> pBarrier;
+   pSwBarrier->get_ExteriorBarrier(&pBarrier);
+
+   CComQIPtr<IShape> shape;
+   pBarrier->get_Shape(&shape);
+
+   CComPtr<IShapeProperties> props;
+   shape->get_ShapeProperties(&props);
+
+   CComPtr<IPoint2d> cgpoint;
+   props->get_Centroid(&cgpoint);
+
+   Float64 xcg;
+   cgpoint->get_X(&xcg);
+
+   return xcg*sign;
+}
+
+Float64 CBridgeAgentImp::GetInteriorBarrierCgToDeckEdge(pgsTypes::TrafficBarrierOrientation orientation)
+{
+   // Use generic bridge - barriers have been placed properly
+   CComPtr<ISidewalkBarrier> pSwBarrier;
+   Float64 sign;
+   if ( orientation == pgsTypes::tboLeft )
+   {
+      m_Bridge->get_LeftBarrier(&pSwBarrier);
+      sign = 1.0;
+   }
+   else
+   {
+      m_Bridge->get_RightBarrier(&pSwBarrier);
+      sign = -1.0;
+   }
+
+   CComPtr<IBarrier> pBarrier;
+   pSwBarrier->get_InteriorBarrier(&pBarrier);
+
+   CComQIPtr<IShape> shape;
+   pBarrier->get_Shape(&shape);
+
+   if (shape)
+   {
+      CComPtr<IShapeProperties> props;
+      shape->get_ShapeProperties(&props);
+
+      CComPtr<IPoint2d> cgpoint;
+      props->get_Centroid(&cgpoint);
+
+      Float64 xcg;
+      cgpoint->get_X(&xcg);
+
+      return xcg*sign;
+   }
+   else
+   {
+      ATLASSERT(0); // client should be checking this
+      return 0.0;
+   }
+}
+
 
 Float64 CBridgeAgentImp::GetInterfaceWidth(pgsTypes::TrafficBarrierOrientation orientation)
 {
    // This is the offset from the edge of deck to the curb line (basically the connection 
    // width of the barrier)
-   CComPtr<IBarrier> lb;
+   CComPtr<ISidewalkBarrier> barrier;
 
    if ( orientation == pgsTypes::tboLeft )
-      m_Bridge->get_LeftBarrier(&lb);
+      m_Bridge->get_LeftBarrier(&barrier);
    else
-      m_Bridge->get_RightBarrier(&lb);
-
-   CComQIPtr<ISidewalkBarrier> barrier(lb);
+      m_Bridge->get_RightBarrier(&barrier);
 
    Float64 offset;
-   barrier->get_ConnectionWidth(0.00,&offset);
+   barrier->get_ExteriorCurbWidth(&offset);
    return offset;
 }
 
-Float64 CBridgeAgentImp::GetSidewalkWidth(pgsTypes::TrafficBarrierOrientation orientation)
+
+void CBridgeAgentImp::GetSidewalkDeadLoadEdges(pgsTypes::TrafficBarrierOrientation orientation, Float64* pintEdge, Float64* pextEdge)
 {
-   CComPtr<IBarrier> lb;
+   VALIDATE(BRIDGE);
 
+   CComPtr<ISidewalkBarrier> barrier;
    if ( orientation == pgsTypes::tboLeft )
-      m_Bridge->get_LeftBarrier(&lb);
-   else
-      m_Bridge->get_RightBarrier(&lb);
-
-   CComQIPtr<ISidewalkBarrier> barrier(lb);
-   Float64 width = 0;
-   if ( barrier )
    {
-      barrier->get_SidewalkWidth(&width);
+      m_Bridge->get_LeftBarrier(&barrier);
+   }
+   else
+   {
+      m_Bridge->get_RightBarrier(&barrier);
    }
 
-   return width;
+   VARIANT_BOOL has_sw;
+   barrier->get_HasSidewalk(&has_sw);
+
+   Float64 width = 0;
+   if ( has_sw!=VARIANT_FALSE )
+   {
+      CComPtr<IShape> swShape;
+      barrier->get_SidewalkShape(&swShape);
+
+      // slab extends to int side of int box if it exists
+      CComPtr<IRect2d> bbox;
+      swShape->get_BoundingBox(&bbox);
+
+      if ( orientation == pgsTypes::tboLeft )
+      {
+         bbox->get_Left(pextEdge);
+         bbox->get_Right(pintEdge);
+      }
+      else
+      {
+         bbox->get_Left(pintEdge);
+         bbox->get_Right(pextEdge);
+      }
+   }
+   else
+   {
+      ATLASSERT(0); // client should not call this if no sidewalk
+   }
+}
+
+void CBridgeAgentImp::GetSidewalkPedLoadEdges(pgsTypes::TrafficBarrierOrientation orientation, Float64* pintEdge, Float64* pextEdge)
+{
+   VALIDATE(BRIDGE);
+
+   CComPtr<ISidewalkBarrier> swbarrier;
+   if ( orientation == pgsTypes::tboLeft )
+   {
+      m_Bridge->get_LeftBarrier(&swbarrier);
+   }
+   else
+   {
+      m_Bridge->get_RightBarrier(&swbarrier);
+   }
+
+   VARIANT_BOOL has_sw;
+   swbarrier->get_HasSidewalk(&has_sw);
+   if(has_sw!=VARIANT_FALSE)
+   {
+      CComPtr<IBarrier> extbarrier;
+      swbarrier->get_ExteriorBarrier(&extbarrier);
+
+      // Sidewalk width for ped - sidewalk goes from interior edge of exterior barrier to sw width
+      CComPtr<IShape> pextbarshape;
+      extbarrier->get_Shape(&pextbarshape);
+      CComPtr<IRect2d> bbox;
+      pextbarshape->get_BoundingBox(&bbox);
+
+      // exterior edge
+      if ( orientation == pgsTypes::tboLeft )
+      {
+         bbox->get_Right(pextEdge);
+      }
+      else
+      {
+         bbox->get_Left(pextEdge);
+         *pextEdge *= -1.0;
+      }
+
+      Float64 width;
+      swbarrier->get_SidewalkWidth(&width);
+
+      *pintEdge = *pextEdge + width;
+   }
+   else
+   {
+      ATLASSERT(0); // client should not call this if no sidewalk
+      *pintEdge = 0.0;
+      *pextEdge = 0.0;
+   }
 }
 
 pgsTypes::TrafficBarrierOrientation CBridgeAgentImp::GetNearestBarrier(SpanIndexType span,GirderIndexType gdr)
@@ -12525,6 +12931,8 @@ void CBridgeAgentImp::GetProfileShape(SpanIndexType spanIdx,GirderIndexType gdrI
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSpanData* pSpan = pBridgeDesc->GetSpan(spanIdx);
+   GirderIndexType nGirders = pSpan->GetGirderCount();
+   gdrIdx = min(nGirders-1,gdrIdx);
    const GirderLibraryEntry* pGirderEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
 
 #if defined _DEBUG
@@ -12543,6 +12951,8 @@ bool CBridgeAgentImp::HasShearKey(SpanIndexType spanIdx,GirderIndexType gdrIdx,p
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSpanData* pSpan = pBridgeDesc->GetSpan(spanIdx);
+   GirderIndexType nGirders = pSpan->GetGirderCount();
+   gdrIdx = min(nGirders-1,gdrIdx);
    const GirderLibraryEntry* pGirderEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
    CComPtr<IBeamFactory> beamFactory;
    pGirderEntry->GetBeamFactory(&beamFactory);
@@ -12555,6 +12965,8 @@ void CBridgeAgentImp::GetShearKeyAreas(SpanIndexType spanIdx,GirderIndexType gdr
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSpanData* pSpan = pBridgeDesc->GetSpan(spanIdx);
+   GirderIndexType nGirders = pSpan->GetGirderCount();
+   gdrIdx = min(nGirders-1,gdrIdx);
    const GirderLibraryEntry* pGirderEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
    CComPtr<IBeamFactory> beamFactory;
    pGirderEntry->GetBeamFactory(&beamFactory);
@@ -12845,7 +13257,7 @@ void CBridgeAgentImp::GetProfile(IProfile** ppProfile)
 
 void CBridgeAgentImp::GetBarrierProperties(pgsTypes::TrafficBarrierOrientation orientation,IShapeProperties** props)
 {
-   CComPtr<IBarrier> barrier;
+   CComPtr<ISidewalkBarrier> barrier;
    if ( orientation == pgsTypes::tboLeft )
       m_Bridge->get_LeftBarrier(&barrier);
    else
