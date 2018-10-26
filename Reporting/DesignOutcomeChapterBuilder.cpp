@@ -267,8 +267,12 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
    arDesignOptions options = pArtifact->GetDesignOptions();
 
    // Start report with design notes. Notes will be written at end of this function
-   bool doNotes = (pArtifact->GetDoDesignFlexure()!=dtNoDesign && pArtifact->GetOutcome()==pgsDesignArtifact::Success) ||
-                   pArtifact->DoDesignNotesExist();
+   bool design_success = pArtifact->GetOutcome() == pgsDesignArtifact::Success;
+   bool conc_strength_controlled_by_shear = design_success && pArtifact->GetDoDesignShear() &&
+                                            pArtifact->GetFinalDesignState().GetAction()==pgsDesignArtifact::ConcreteStrengthDesignState::actShear;
+   bool doNotes = (design_success && pArtifact->GetDoDesignFlexure()!=dtNoDesign) || 
+                  conc_strength_controlled_by_shear || 
+                  pArtifact->DoDesignNotesExist();
 
    rptParagraph* pNotesParagraph = doNotes ? new rptParagraph() : NULL;
    if ( doNotes )
@@ -278,6 +282,9 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
       *pParagraph << _T("Design Notes:");
       *pChapter << pNotesParagraph;
    }
+
+   GET_IFACE2(pBroker, IGirderData, pGirderData);
+   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
 
    if (pArtifact->GetDoDesignFlexure()!=dtNoDesign)
    {
@@ -759,6 +766,11 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
             }
          }
       }
+      else if (conc_strength_controlled_by_shear)
+      {
+         *pNotesParagraph << _T("Concrete final strength was controlled by ")<<pArtifact->GetFinalDesignState().AsString() << rptNewLine;
+         *pNotesParagraph << _T(" and changed from ") << stress.SetValue(pgirderData->Material.Fc) << _T(" to ") << stress.SetValue(pArtifact->GetConcreteStrength()) << _T(".") <<rptNewLine;
+      }
    }
 }
 
@@ -852,7 +864,7 @@ void failed_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptCh
          break;
 
       case pgsDesignArtifact::ConflictWithLongReinforcementShearSpec:
-         *pParagraph << _T("Failed designing for longitudinal reinforcement for shear due to conflicting library information. Project criteria Shear Design tab says to use longitudinal rebar, while Shear Capacity tab disables use of mild steel rebar.") << rptNewLine;
+         *pParagraph << _T("Failed designing for longitudinal reinforcement for shear due to conflicting library information. The Girder Library Shear Design tab says to use longitudinal rebar, while the Project Criteria Shear Capacity tab disables use of mild steel rebar.") << rptNewLine;
          break;
 
       case pgsDesignArtifact::StrandsReqdForLongReinfShearAndFlexureTurnedOff:
@@ -988,9 +1000,10 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
    RowIndexType row = 0;
    (*pTable)(row++,0) << _T("Parameter");
 
+   (*pTable)(row++,0) << _T("Design Outcome");
+
    if (did_flexure)
    {
-      (*pTable)(row++,0) << _T("Flexural Design Outcome");
       (*pTable)(row++,0) << _T("Number of Straight Strands");
 
       if (is_harped)
@@ -1059,6 +1072,8 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
          (*pTable)(row++,col) <<color(Red)<<_T("Failed")<<color(Black);
       }
 
+      if (did_flexure)
+      {
       (*pTable)(row++,col) << pArtifact->GetNumStraightStrands();
 
       if (is_harped)
@@ -1106,6 +1121,7 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
 
       (*pTable)(row++,col) << stress.SetValue(pArtifact->GetReleaseStrength());
       (*pTable)(row++,col) << stress.SetValue(pArtifact->GetConcreteStrength());
+      }
 
       if (did_lifting)
       {
@@ -1184,8 +1200,8 @@ void process_artifacts(ColumnIndexType startIdx, ColumnIndexType endIdx, std::ve
 
 void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, ZoneIndexType nz, const CShearData& rsdata)
 {
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
 
    rptRcScalar scalar;
    scalar.SetFormat( sysNumericFormatTool::Fixed );
@@ -1271,7 +1287,6 @@ void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDispl
          else
          {
             (*pTables)(row,col++) << _T("none");
-            (*pTables)(row,col++) << _T("--");
             (*pTables)(row,col++) << _T("--");
             (*pTables)(row,col++) << _T("--");
             (*pTables)(row,col++) << _T("--");

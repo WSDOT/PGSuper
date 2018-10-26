@@ -3909,6 +3909,26 @@ void CBridgeAgentImp::LayoutPoiForShear(SpanIndexType span,GirderIndexType gdr)
       m_PoiMgr.AddPointOfInterest(poi_l);
       m_PoiMgr.AddPointOfInterest(poi_r);
    }
+
+   // POI's at stirrup zone boundaries
+   Float64 right_support_loc = length - right_end_size;
+   Float64 midLen = length/2.0;
+
+   ZoneIndexType npzs = GetNumPrimaryZones(span, gdr);
+   for (ZoneIndexType zn = 1; zn<npzs; zn++) // note that count starts at one
+   {
+      Float64 zStart, zEnd;
+      GetPrimaryZoneBounds(span, gdr, zn, &zStart, &zEnd);
+
+      // Nudge poi toward mid-span as this is where smaller Av/s will typically lie
+      zStart += zStart<midLen ? 0.001 : -0.001;
+
+      if (zStart>left_end_size && zStart<right_support_loc)
+      {
+         pgsPointOfInterest poi(stages,span,gdr,zStart, POI_FLEXURECAPACITY | POI_SHEAR | POI_ALLOUTPUT);
+         m_PoiMgr.AddPointOfInterest(poi);
+      }
+   }
 }
 
 void CBridgeAgentImp::LayoutPoiForBarCutoffs(SpanIndexType span,GirderIndexType gdr)
@@ -10901,6 +10921,60 @@ StrandIndexType CBridgeAgentImp::GetNumBondedStrandsAtSection(SpanIndexType span
    ATLASSERT(nDebondedStrands<=nStrands);
 
    return nStrands - nDebondedStrands;
+}
+
+std::vector<StrandIndexType> CBridgeAgentImp::GetDebondedStrandsAtSection(SpanIndexType span,GirderIndexType gdr,GirderEnd end,SectionIndexType sectionIdx,pgsTypes::StrandType strandType)
+{
+   VALIDATE( GIRDER );
+
+   std::vector<StrandIndexType> debondedStrands;
+
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(span,gdr,&girder);
+
+   switch( strandType )
+   {
+
+   case pgsTypes::Harped:
+   case pgsTypes::Temporary:
+                    // Assumed only bonded for the end 10'... PS force is constant through the debonded section
+                    // this is different than strands debonded at the ends and bonded in the middle
+                    // Treat this strand as bonded
+      return debondedStrands;
+      break;
+
+   case pgsTypes::Straight:
+      break; // fall through to below
+
+
+   default:
+      ATLASSERT(false); // should never get here
+      return debondedStrands;
+   }
+
+   HRESULT hr;
+   CollectionIndexType nStrands;
+   CComPtr<IIndexArray> strands;
+   if (end == IStrandGeometry::geLeftEnd)
+   {
+      // left
+      hr = girder->GetStraightStrandDebondAtLeftSection(sectionIdx,&strands);
+   }
+   else
+   {
+      hr = girder->GetStraightStrandDebondAtRightSection(sectionIdx,&strands);
+   }
+   ATLASSERT(SUCCEEDED(hr));
+   strands->get_Count(&nStrands);
+
+   for ( IndexType idx = 0; idx < nStrands; idx++ )
+   {
+      StrandIndexType strandIdx;
+      strands->get_Item(idx,&strandIdx);
+      debondedStrands.push_back(strandIdx);
+   }
+
+   return debondedStrands;
 }
 
 //-----------------------------------------------------------------------------

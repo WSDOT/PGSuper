@@ -377,7 +377,7 @@ CString CTxDOTOptionalDesignDoc::GetToolbarSectionName()
 void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
 {
    // Add the document's user interface stuff first
-   CEAFMainFrame* pFrame = (CEAFMainFrame*)AfxGetMainWnd();
+   CEAFMainFrame* pFrame = EAFGetMainFrame();
    if ( bIntegrate )
    {
       {
@@ -393,7 +393,7 @@ void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
       // use our status bar
       CTOGAStatusBar* pSB = new CTOGAStatusBar;
       pSB->Create(EAFGetMainFrame());
-      EAFGetMainFrame()->SetStatusBar(pSB);
+      pFrame->SetStatusBar(pSB);
    }
    else
    {
@@ -402,7 +402,7 @@ void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
       m_pMyToolBar = NULL;
 
       // put the status bar back the way it was
-      EAFGetMainFrame()->SetStatusBar(NULL);
+      pFrame->SetStatusBar(NULL);
    }
 
    // then call base class, which handles UI integration for

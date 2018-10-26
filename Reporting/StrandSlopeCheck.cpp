@@ -101,10 +101,12 @@ void CStrandSlopeCheck::Build(rptChapter* pChapter,
       pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
       pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
+      (*pTable)(0,0) << _T("");
+      (*pTable)(0,1) << _T("1 : n");
+
       (*pTable)(1,0) << _T("Allowable Slope");
       (*pTable)(2,0) << _T("Strand Slope");
       (*pTable)(3,0) << _T("Status");
-      (*pTable)(0,1) << _T("1 : n");
 
       (*pTable)(1,1) << slope.SetValue(pArtifact->GetCapacity());
       (*pTable)(2,1) << slope.SetValue(pArtifact->GetDemand());

@@ -108,6 +108,9 @@ private:
                             IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
                             IEAFDisplayUnits* pDisplayUnits) const;
 
+   void BuildStirrupLayoutCheck(rptChapter* pChapter,
+                                IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+                                IEAFDisplayUnits* pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 

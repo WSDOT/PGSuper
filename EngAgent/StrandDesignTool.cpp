@@ -1485,6 +1485,30 @@ bool pgsStrandDesignTool::UpdateConcreteStrength(Float64 fcRequired,pgsTypes::St
    return true;
 }
 
+bool pgsStrandDesignTool::UpdateConcreteStrengthForShear(Float64 fcRequired,pgsTypes::Stage stage,pgsTypes::LimitState limitState)
+{
+   Float64 fc_current = m_pArtifact->GetConcreteStrength();
+   LOG(_T("Update Final Concrete Strength for shear stress requirement. f'c required = ")<< ::ConvertFromSysUnits(fcRequired,unitMeasure::KSI) << _T(" KSI f'c current = ")<< ::ConvertFromSysUnits(fc_current,unitMeasure::KSI) << _T(" KSI"));;
+
+   // round up to nearest 100psi
+   fcRequired = CeilOff(fcRequired, m_ConcreteAccuracy );
+   LOG(_T("Round up to nearest 100psi. New Required value is now = ")<< ::ConvertFromSysUnits(fcRequired,unitMeasure::KSI) << _T(" KSI"));;
+
+   Float64 fc_max = GetMaximumConcreteStrength();
+   if (fcRequired>fc_max)
+   {
+      ATLASSERT(0); // should be checked by caller
+      LOG(_T("FAILED - f'c cannot exceed ")<< ::ConvertFromSysUnits(fc_max,unitMeasure::KSI) << _T(" KSI"));
+      return false;
+   }
+
+   m_FcControl.DoUpdateForShear(fcRequired, stage, limitState);
+   m_pArtifact->SetConcreteStrength(fcRequired);
+   m_bConfigDirty = true; // cache is dirty
+   LOG(_T("** Updated Final Concrete Strength to ")<< ::ConvertFromSysUnits(fcRequired,unitMeasure::KSI) << _T(" KSI"));
+
+   return true;
+}
 
 bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrengthResultType strengthResult,pgsTypes::Stage stage,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation)
 {
@@ -2621,7 +2645,7 @@ pgsDesignArtifact::ConcreteStrengthDesignState pgsStrandDesignTool::GetReleaseCo
 
    bool ismin = GetReleaseStrength() == GetMinimumReleaseStrength();
 
-   state.SetState(ismin, m_FciControl.Stage(), m_FciControl.StressType(), m_FciControl.LimitState(),m_FciControl.StressLocation());
+   state.SetStressState(ismin, m_FciControl.Stage(), m_FciControl.StressType(), m_FciControl.LimitState(),m_FciControl.StressLocation());
 
    return state;
 }
@@ -2632,7 +2656,18 @@ pgsDesignArtifact::ConcreteStrengthDesignState pgsStrandDesignTool::GetFinalConc
 
    bool ismin = GetConcreteStrength() == GetMinimumConcreteStrength();
 
-   state.SetState(ismin, m_FcControl.Stage(), m_FcControl.StressType(), m_FcControl.LimitState(),m_FcControl.StressLocation());
+   if (m_FcControl.ControllingAction()==pgsDesignArtifact::ConcreteStrengthDesignState::actStress)
+   {
+      // flexure controlled
+      state.SetStressState(ismin, m_FcControl.Stage(), m_FcControl.StressType(), m_FcControl.LimitState(),m_FcControl.StressLocation());
+   }
+   else
+   {
+      ATLASSERT(m_FcControl.ControllingAction()==pgsDesignArtifact::ConcreteStrengthDesignState::actShear);
+
+      // shear stress controlled
+      state.SetShearState(m_FcControl.Stage(), m_FcControl.LimitState());
+   }
 
    return state;
 }

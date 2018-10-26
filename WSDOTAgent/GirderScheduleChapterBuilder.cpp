@@ -57,6 +57,9 @@ static char THIS_FILE[] = __FILE__;
 #define STIRRUP_ERROR_LASTZONE   -6
 #define STIRRUP_ERROR_V6         -7
 
+#define DEBOND_ERROR_NONE        0
+#define DEBOND_ERROR_SYMMETRIC   -1
+
 /****************************************************************************
 CLASS
    CGirderScheduleChapterBuilder
@@ -98,19 +101,29 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    CComPtr<IBeamFactory> factory;
    pGdrLibEntry->GetBeamFactory(&factory);
    CLSID familyCLSID = factory->GetFamilyCLSID();
-   if ( CLSID_WFBeamFamily != familyCLSID && CLSID_UBeamFamily != familyCLSID )
+   if ( CLSID_WFBeamFamily != familyCLSID && CLSID_UBeamFamily != familyCLSID && CLSID_DeckBulbTeeBeamFamily != familyCLSID && CLSID_SlabBeamFamily != familyCLSID )
    {
       rptParagraph* pPara = new rptParagraph;
-      *pPara << _T("WSDOT girder schedules can only be created for WF and U sections") << rptNewLine;
+      *pPara << _T("WSDOT girder schedules can only be created for WF, U, Slab, and Deck Bulb Tee sections") << rptNewLine;
       *pChapter << pPara;
       return pChapter;
    }
+
+   GET_IFACE2( pBroker, IStrandGeometry, pStrandGeometry );
+   StrandIndexType NhMax = pStrandGeometry->GetMaxStrands(span,girder,pgsTypes::Harped);
+   if ( CLSID_SlabBeamFamily == familyCLSID && 0 < NhMax )
+   {
+      rptParagraph* pPara = new rptParagraph;
+      *pPara << _T("Cannot create girder schedule. WSDOT Slab Beams do not use harped strands and this girder has harped strand locations") << rptNewLine;
+      *pChapter << pPara;
+      return pChapter;
+   }
+
 
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pArtifact = pIArtifact->GetArtifact(span,girder);
 
    bool bCanReportPrestressInformation = true;
-   GET_IFACE2( pBroker, IStrandGeometry, pStrandGeometry );
 
    // WsDOT reports don't support Straight-Web strand option
    if (pStrandGeometry->GetAreHarpedStrandsForcedStraight(span, girder))
@@ -139,22 +152,11 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       *pPara << color(Red) << _T("The Specification Check Was Not Successful") << color(Black) << rptNewLine;
    }
 
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, loc,            pDisplayUnits->GetSpanLengthUnit(),    true );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,          pDisplayUnits->GetShearUnit(),         true );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,         pDisplayUnits->GetStressUnit(),        true );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, mod_e,          pDisplayUnits->GetModEUnit(),          true );
-   INIT_UV_PROTOTYPE( rptMomentUnitValue, moment,         pDisplayUnits->GetMomentUnit(),        true );
    INIT_UV_PROTOTYPE( rptAngleUnitValue,  angle,          pDisplayUnits->GetAngleUnit(),         true );
-   INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, wt_len, pDisplayUnits->GetForcePerLengthUnit(),true );
-   INIT_UV_PROTOTYPE( rptMomentPerAngleUnitValue, spring, pDisplayUnits->GetMomentPerAngleUnit(),true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, stirrup_spacing,pDisplayUnits->GetComponentDimUnit(),    true );
 
-   INIT_FRACTIONAL_LENGTH_PROTOTYPE( gdim,      IS_US_UNITS(pDisplayUnits), 8, pDisplayUnits->GetComponentDimUnit(), true, false );
-   INIT_FRACTIONAL_LENGTH_PROTOTYPE( glength,   IS_US_UNITS(pDisplayUnits), 4, pDisplayUnits->GetSpanLengthUnit(),   true, false );
+   INIT_FRACTIONAL_LENGTH_PROTOTYPE( gdim,      IS_US_UNITS(pDisplayUnits), 8, pDisplayUnits->GetComponentDimUnit(), true, true );
+   INIT_FRACTIONAL_LENGTH_PROTOTYPE( glength,   IS_US_UNITS(pDisplayUnits), 8, pDisplayUnits->GetSpanLengthUnit(),   true, true );
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -178,6 +180,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
    std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(span, girder,pgsTypes::BridgeSite1, POI_MIDSPAN);
    ATLASSERT(pmid.size()==1);
+   pgsPointOfInterest poiMidSpan(pmid.front());
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -193,8 +196,18 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    (*p_table)(++row,0) << _T("Girder");
    (*p_table)(row  ,1) << LABEL_GIRDER(girder);
 
-   (*p_table)(++row,0) << _T("Girder Series");
-   (*p_table)(row,  1) << pGirderTypes->GetGirderName(girder);
+   if ( familyCLSID == CLSID_SlabBeamFamily )
+   {
+      GET_IFACE2(pBroker,ISectProp2,pSectProp);
+      Float64 Hg = pSectProp->GetHg(pgsTypes::CastingYard,poiMidSpan);
+      (*p_table)(++row,0) << _T("Girder Height");
+      (*p_table)(row,1) << gdim.SetValue(Hg);
+   }
+   else
+   {
+      (*p_table)(++row,0) << _T("Girder Series");
+      (*p_table)(row,  1) << pGirderTypes->GetGirderName(girder);
+   }
 
    (*p_table)(++row,0) << _T("End 1 Type");
    (*p_table)(row  ,1) << _T("*");
@@ -202,18 +215,28 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    (*p_table)(++row,0) << _T("End 2 Type");
    (*p_table)(row  ,1) << _T("*");
 
-   if ( pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge )
+   if ( familyCLSID == CLSID_DeckBulbTeeBeamFamily )
    {
-      (*p_table)(++row,0) << _T("\"A\" Dimension at CL Bearings");
-      (*p_table)(row,  1) << gdim.SetValue(pBridgeDesc->GetSlabOffset());
+      GET_IFACE2(pBroker,IGirder,pIGirder);
+      Float64 B = pIGirder->GetTopWidth(poiMidSpan);
+      (*p_table)(++row,0) << _T("B");
+      (*p_table)(row,1) << glength.SetValue(B);
    }
    else
    {
-      (*p_table)(++row,0) << _T("\"A\" Dimension at CL Bearing End 1");
-      (*p_table)(row,  1) << gdim.SetValue(pGirderTypes->GetSlabOffset(girder,pgsTypes::metStart));
+      if ( pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge )
+      {
+         (*p_table)(++row,0) << _T("\"A\" Dimension at CL Bearings");
+         (*p_table)(row,  1) << gdim.SetValue(pBridgeDesc->GetSlabOffset());
+      }
+      else
+      {
+         (*p_table)(++row,0) << _T("\"A\" Dimension at CL Bearing End 1");
+         (*p_table)(row,  1) << gdim.SetValue(pGirderTypes->GetSlabOffset(girder,pgsTypes::metStart));
 
-      (*p_table)(++row,0) << _T("\"A\" Dimension at CL Bearing End 2");
-      (*p_table)(row,  1) << gdim.SetValue(pGirderTypes->GetSlabOffset(girder,pgsTypes::metEnd));
+         (*p_table)(++row,0) << _T("\"A\" Dimension at CL Bearing End 2");
+         (*p_table)(row,  1) << gdim.SetValue(pGirderTypes->GetSlabOffset(girder,pgsTypes::metEnd));
+      }
    }
 
    if ( familyCLSID == CLSID_WFBeamFamily )
@@ -228,7 +251,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    {
       Float64 L = (pLiftArtifact->GetGirderLength() - pLiftArtifact->GetClearSpanBetweenPickPoints())/2.0;
       (*p_table)(++row,0) << _T("Location of Lifting Loops, L");
-      (*p_table)(row  ,1) << loc.SetValue(L);
+      (*p_table)(row  ,1) << glength.SetValue(L);
    }
 
    (*p_table)(++row,0) << Sub2(_T("L"),_T("d"));
@@ -239,10 +262,10 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    {
       Float64 L = pHaulingArtifact->GetLeadingOverhang();
       (*p_table)(++row,0) << _T("Location of Lead Shipping Support, ") << Sub2(_T("L"),_T("L"));
-      (*p_table)(row  ,1) << loc.SetValue(L);
+      (*p_table)(row  ,1) << glength.SetValue(L);
       L = pHaulingArtifact->GetTrailingOverhang();
       (*p_table)(++row,0) << _T("Location of Trailing Shipping Support, ") << Sub2(_T("L"),_T("T"));
-      (*p_table)(row  ,1) << loc.SetValue(L);
+      (*p_table)(row  ,1) << glength.SetValue(L);
    }
 
    CComPtr<IDirection> objDirGirder;
@@ -321,18 +344,23 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    (*p_table)(++row,0) << RPT_FCI << _T(" (at Release)");
    (*p_table)(row  ,1) << stress.SetValue(pMaterial->GetFciGdr(span,girder));
 
-   StrandIndexType Nh = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Harped);
+   
    StrandIndexType Ns = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Straight);
+   StrandIndexType Nh = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Harped);
    if ( bCanReportPrestressInformation )
    {
-      (*p_table)(++row,0) << _T("Number of Harped Strands");
-      (*p_table)(row  ,1) << Nh;
-
       (*p_table)(++row,0) << _T("Number of Straight Strands");
       (*p_table)(row  ,1) << Ns;
-      StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(span,girder,pgsTypes::Straight);
-      if ( nDebonded != 0 )
-         (*p_table)(row,1) << _T(" (") << nDebonded << _T(" debonded)");
+
+      if ( CLSID_SlabBeamFamily != familyCLSID )
+      {
+         StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(span,girder,pgsTypes::Straight);
+         if ( nDebonded != 0 )
+            (*p_table)(row,1) << _T(" (") << nDebonded << _T(" debonded)");
+
+         (*p_table)(++row,0) << _T("Number of Harped Strands");
+         (*p_table)(row  ,1) << Nh;
+      }
 
       if ( 0 < pStrandGeometry->GetMaxStrands(span,girder,pgsTypes::Temporary ) )
       {
@@ -355,44 +383,50 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    }
    else
    {
-      (*p_table)(++row,0) << _T("Number of Harped Strands");
-      (*p_table)(row  ,1) << _T("#");
-
       (*p_table)(++row,0) << _T("Number of Straight Strands");
       (*p_table)(row  ,1) << _T("#");
+
+      if ( CLSID_SlabBeamFamily != familyCLSID )
+      {
+         (*p_table)(++row,0) << _T("Number of Harped Strands");
+         (*p_table)(row  ,1) << _T("#");
+      }
 
       (*p_table)(++row,0) << _T("Number of Temporary Strands");
       (*p_table)(row  ,1) << _T("#");
    }
 
    GET_IFACE2(pBroker, ISectProp2, pSectProp2 );
-   Float64 ybg = pSectProp2->GetYb(pgsTypes::CastingYard,pmid[0]);
+   Float64 ybg = pSectProp2->GetYb(pgsTypes::CastingYard,poiMidSpan);
    Float64 nEff;
-   Float64 sse = pStrandGeometry->GetSsEccentricity(pmid[0], &nEff);
+   Float64 sse = pStrandGeometry->GetSsEccentricity(poiMidSpan, &nEff);
    (*p_table)(++row,0) << _T("E");
    if (0 < Ns)
       (*p_table)(row,1) << gdim.SetValue(ybg-sse);
    else
       (*p_table)(row,1) << RPT_NA;
 
-   Float64 hse = pStrandGeometry->GetHsEccentricity(pmid[0], &nEff);
-   (*p_table)(++row,0) << Sub2(_T("F"),_T("C.L."));
-   if (0 < Nh)
-      (*p_table)(row,1) << gdim.SetValue(ybg-hse);
-   else
-      (*p_table)(row,1) << RPT_NA;
+   if ( CLSID_SlabBeamFamily != familyCLSID )
+   {
+      Float64 hse = pStrandGeometry->GetHsEccentricity(poiMidSpan, &nEff);
+      (*p_table)(++row,0) << Sub2(_T("F"),_T("C.L."));
+      if (0 < Nh)
+         (*p_table)(row,1) << gdim.SetValue(ybg-hse);
+      else
+         (*p_table)(row,1) << RPT_NA;
 
 
-   Float64 ytg = pSectProp2->GetYtGirder(pgsTypes::CastingYard,poiStart);
-   Float64 hss = pStrandGeometry->GetHsEccentricity(poiStart, &nEff);
-   (*p_table)(++row,0) << Sub2(_T("F"),_T("o"));
-   if (0 < Nh)
-   {
-      (*p_table)(row,1) << gdim.SetValue(ytg+hss);
-   }
-   else
-   {
-      (*p_table)(row,1) << RPT_NA;
+      Float64 ytg = pSectProp2->GetYtGirder(pgsTypes::CastingYard,poiStart);
+      Float64 hss = pStrandGeometry->GetHsEccentricity(poiStart, &nEff);
+      (*p_table)(++row,0) << Sub2(_T("F"),_T("o"));
+      if (0 < Nh)
+      {
+         (*p_table)(row,1) << gdim.SetValue(ytg+hss);
+      }
+      else
+      {
+         (*p_table)(row,1) << RPT_NA;
+      }
    }
 
    // Strand Extensions
@@ -426,20 +460,112 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       (*p_table)(row,1) << _T("");
    }
 
-   (*p_table)(++row,0) << _T("Screed Camber, C");
-   (*p_table)(row  ,1) << gdim.SetValue(pCamber->GetScreedCamber( pmid[0] ) );
+   int debondResults = DEBOND_ERROR_NONE;
+   if ( CLSID_SlabBeamFamily == familyCLSID )
+   {
+      // Debonding for slab beams
+      p_table->SetColumnSpan(++row,0,2);
+      p_table->SetColumnSpan(row,1,SKIP_CELL);
+      (*p_table)(row,0) << _T("Straight Strands to Debond");
+
+      std::vector<DebondInformation> debondInfo;
+      debondResults = GetDebondDetails(pBroker,span,girder,debondInfo);
+
+      if ( debondResults < 0 )
+      {
+         for ( int i = 0; i < 3; i++ )
+         {
+            p_table->SetColumnSpan(++row,0,2);
+            p_table->SetColumnSpan(row,1,SKIP_CELL);
+            (*p_table)(row,0) << _T("Group ") << (i+1);
+
+            (*p_table)(++row,0) << _T("Strands to Debond");
+            (*p_table)(row,1) << _T("%");
+            (*p_table)(++row,0) << _T("Sleeved Length at Ends to Prevent Bond");
+            (*p_table)(row,1) << _T("%");
+         }
+      }
+      else
+      {
+         int groupCount = 0;
+         std::vector<DebondInformation>::iterator iter(debondInfo.begin());
+         std::vector<DebondInformation>::iterator end(debondInfo.end());
+         for ( ; iter != end; iter++, groupCount++ )
+         {
+            DebondInformation& dbInfo = *iter;
+
+            p_table->SetColumnSpan(++row,0,2);
+            p_table->SetColumnSpan(row,1,SKIP_CELL);
+            (*p_table)(row,0) << _T("Group ") << (groupCount+1);
+
+            (*p_table)(++row,0) << _T("Strands to Debond");
+            std::vector<StrandIndexType>::iterator strandIter(dbInfo.Strands.begin());
+            std::vector<StrandIndexType>::iterator strandIterEnd(dbInfo.Strands.end());
+            for ( ; strandIter != strandIterEnd; strandIter++ )
+            {
+               StrandIndexType strandIdx = *strandIter;
+               (*p_table)(row,1) << _T(" ") << (strandIdx+1);
+            }
+
+            (*p_table)(++row,0) << _T("Sleeved Length at Ends to Prevent Bond");
+            (*p_table)(row,1) << glength.SetValue(dbInfo.Length);
+         }
+
+         for ( int i = groupCount; i < 3; i++ )
+         {
+            p_table->SetColumnSpan(++row,0,2);
+            p_table->SetColumnSpan(row,1,SKIP_CELL);
+            (*p_table)(row,0) << _T("Group ") << (i+1);
+
+            (*p_table)(++row,0) << _T("Strands to Debond");
+            (*p_table)(row,1) << _T("-");
+            (*p_table)(++row,0) << _T("Sleeved Length at Ends to Prevent Bond");
+            (*p_table)(row,1) << _T("-");
+         }
+      }
+   }
+
+   Float64 C = 0;
+   if ( pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
+   {
+      C = pCamber->GetScreedCamber( poiMidSpan ) ;
+      (*p_table)(++row,0) << _T("Screed Camber, C");
+      (*p_table)(row  ,1) << gdim.SetValue(C);
+   }
 
    // get # of days for creep
-   (*p_table)(++row,0) << _T("Lower bound camber at ")<< min_days<<_T(" days, 50% of D") <<Sub(min_days);
-   (*p_table)(row  ,1) << gdim.SetValue(0.5*pCamber->GetDCamberForGirderSchedule( pmid[0], CREEP_MINTIME) );
-   (*p_table)(++row,0) << _T("Upper bound camber at ")<< max_days<<_T(" days, D") << Sub(max_days);
-   (*p_table)(row  ,1) << gdim.SetValue(pCamber->GetDCamberForGirderSchedule( pmid[0], CREEP_MAXTIME) );
+   Float64 D = 999;
+   if ( pBridgeDesc->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
+   {
+      D = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MAXTIME);
+      (*p_table)(++row,0) << _T("D @ ") << max_days << _T(" days (") << Sub2(_T("D"),max_days) << _T(")");
+      if ( D < 0 )
+         (*p_table)(row  ,1) << color(Red) << gdim.SetValue(D) << color(Black);
+      else
+         (*p_table)(row  ,1) << gdim.SetValue(D);
+   }
+   else
+   {
+      D = 0.5*pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME);
+      (*p_table)(++row,0) << _T("Lower bound camber at ")<< min_days<<_T(" days, 50% of D") <<Sub(min_days);
+      if ( D < 0 )
+         (*p_table)(row  ,1) << color(Red) << gdim.SetValue(D) << color(Black);
+      else
+         (*p_table)(row  ,1) << gdim.SetValue(D);
+
+      (*p_table)(++row,0) << _T("Upper bound camber at ")<< max_days<<_T(" days, D") << Sub(max_days);
+      Float64 D120 = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MAXTIME) ;
+      if ( D120 < 0 )
+         (*p_table)(row  ,1) << color(Red) << gdim.SetValue(D120) << color(Black);
+      else
+         (*p_table)(row  ,1) << gdim.SetValue(D120);
+   }
 
 
    // Stirrups
    IndexType V1, V3, V5;
    Float64 V2, V4, V6;
-   int reinfDetailsResult = GetReinforcementDetails(pBroker,span,girder,familyCLSID == CLSID_UBeamFamily,&V1,&V2,&V3,&V4,&V5,&V6);
+   int reinfDetailsResult = GetReinforcementDetails(pBroker,span,girder,familyCLSID,&V1,&V2,&V3,&V4,&V5,&V6);
    if (reinfDetailsResult < 0)
    {
       (*p_table)(++row,0) << _T("V1");
@@ -460,40 +586,58 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       (*p_table)(++row,0) << _T("V1");
       (*p_table)(row,1) << V1;
       (*p_table)(++row,0) << _T("V2");
-      (*p_table)(row,1) << stirrup_spacing.SetValue(V2);
+      (*p_table)(row,1) << gdim.SetValue(V2);
       (*p_table)(++row,0) << _T("V3");
       (*p_table)(row,1) << V3;
       (*p_table)(++row,0) << _T("V4");
-      (*p_table)(row,1) << stirrup_spacing.SetValue(V4);
+      (*p_table)(row,1) << gdim.SetValue(V4);
       (*p_table)(++row,0) << _T("V5");
       (*p_table)(row,1) << V5;
       (*p_table)(++row,0) << _T("V6");
-      (*p_table)(row,1) << stirrup_spacing.SetValue(V6);
+      (*p_table)(row,1) << gdim.SetValue(V6);
    }
 
-   // Stirrup Zones
+   // Stirrup Height
 
-   // H1 (Hg + "A" + 3")
-   if ( pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge )
+   if ( familyCLSID == CLSID_WFBeamFamily || familyCLSID == CLSID_UBeamFamily )
    {
-      (*p_table)(++row,0) << _T("H1 (##)");
-      Float64 Hg = pSectProp2->GetHg(pgsTypes::CastingYard,poiStart);
-      Float64 H1 = pBridgeDesc->GetSlabOffset() + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
-      (*p_table)(row,  1) << gdim.SetValue(H1);
+      // H1 (Hg + "A" + 3")
+      if ( pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge )
+      {
+         (*p_table)(++row,0) << _T("H1 (##)");
+         Float64 Hg = pSectProp2->GetHg(pgsTypes::CastingYard,poiStart);
+         Float64 H1 = pBridgeDesc->GetSlabOffset() + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
+         (*p_table)(row,  1) << gdim.SetValue(H1);
+      }
+      else
+      {
+         (*p_table)(++row,0) << _T("H1 at End 1 (##)");
+         Float64 Hg = pSectProp2->GetHg(pgsTypes::CastingYard,poiStart);
+         Float64 H1 = pGirderTypes->GetSlabOffset(girder,pgsTypes::metStart) + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
+         (*p_table)(row,  1) << gdim.SetValue(H1);
+
+         (*p_table)(++row,0) << _T("H1 at End 2 (##)");
+         pgsPointOfInterest poiEnd(poiStart);
+         poiEnd.SetDistFromStart(pBridge->GetGirderLength(span,girder));
+         Hg = pSectProp2->GetHg(pgsTypes::CastingYard,poiEnd);
+         H1 = pGirderTypes->GetSlabOffset(girder,pgsTypes::metEnd) + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
+         (*p_table)(row,  1) << gdim.SetValue(H1);
+      }
    }
-   else
-   {
-      (*p_table)(++row,0) << _T("H1 at End 1 (##)");
-      Float64 Hg = pSectProp2->GetHg(pgsTypes::CastingYard,poiStart);
-      Float64 H1 = pGirderTypes->GetSlabOffset(girder,pgsTypes::metStart) + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
-      (*p_table)(row,  1) << gdim.SetValue(H1);
 
-      (*p_table)(++row,0) << _T("H1 at End 2 (##)");
-      pgsPointOfInterest poiEnd(poiStart);
-      poiEnd.SetDistFromStart(pBridge->GetGirderLength(span,girder));
-      Hg = pSectProp2->GetHg(pgsTypes::CastingYard,poiEnd);
-      H1 = pGirderTypes->GetSlabOffset(girder,pgsTypes::metEnd) + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
-      (*p_table)(row,  1) << gdim.SetValue(H1);
+   if ( D < C )
+   {
+      p = new rptParagraph;
+      *pChapter << p;
+
+      *p << color(Red) << Bold(_T("WARNING: Screen Camber, C, is less than the camber at time of deck casting, D. The girder will end up with a sag.")) << color(Black) << rptNewLine;
+   }
+   else if ( IsEqual(C,D,::ConvertToSysUnits(0.25,unitMeasure::Inch)) )
+   {
+      p = new rptParagraph;
+      *pChapter << p;
+
+      *p << color(Red) << Bold(_T("WARNING: Screen Camber, C, is nearly equal to the camber at time of deck casting, D. The girder may end up with a sag.")) << color(Black) << rptNewLine;
    }
 
 
@@ -502,11 +646,21 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    *p << _T("* End Types to be determined by the Designer.") << rptNewLine;
    *p << _T("** Intermediate Diaphragm Type to be determined by the Designer.") << rptNewLine;
    *p << _T("*** ") << Sub2(_T("L"),_T("d")) << _T(" to be determined by the Designer.") << rptNewLine;
+
+   if ( debondResults == DEBOND_ERROR_SYMMETRIC )
+   {
+      *p << _T("% Debonding must be symmetric for this girder schedule.") << rptNewLine;
+   }
+
    if ( !bCanReportPrestressInformation )
    {
       *p << _T("# Prestressing information could not be included in the girder schedule because strand input is not consistent with the standard WSDOT details.") << rptNewLine;
    }
-   *p << _T("## H1 is computed as the height of the girder H + 3\" + \"A\" Dimension. Designers shall check H1 for the effect of vertical curve and increase as necessary.") << rptNewLine;
+
+   if ( familyCLSID == CLSID_WFBeamFamily || familyCLSID == CLSID_UBeamFamily )
+   {
+      *p << _T("## H1 is computed as the height of the girder H + 3\" + \"A\" Dimension. Designers shall check H1 for the effect of vertical curve and increase as necessary.") << rptNewLine;
+   }
 
    if (reinfDetailsResult == STIRRUP_ERROR_ZONES)
    {
@@ -522,7 +676,10 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    }
    else if ( reinfDetailsResult == STIRRUP_ERROR_LASTZONE )
    {
-      *p << _T("### Reinforcement details could not be listed because spacing in the last zone is not 1'-6\" per the standard WSDOT details.") << rptNewLine;
+      if ( familyCLSID == CLSID_SlabBeamFamily )
+         *p << _T("### Reinforcement details could not be listed because spacing in the last zone is not 9\" per the standard WSDOT details.") << rptNewLine;
+      else
+         *p << _T("### Reinforcement details could not be listed because spacing in the last zone is not 1'-6\" per the standard WSDOT details.") << rptNewLine;
    }
    else if ( reinfDetailsResult == STIRRUP_ERROR_BARSIZE )
    {
@@ -536,13 +693,6 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    {
       *p << _T("### Reinforcement details could not be listed.") << rptNewLine;
    }
-
-
-
-   // Figure
-   p = new rptParagraph;
-   *pChapter << p;
-   *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("GirderSchedule.jpg")) << rptNewLine;
 
    return pChapter;
 }
@@ -570,7 +720,7 @@ CChapterBuilder* CGirderScheduleChapterBuilder::Clone() const
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,bool bIsUBeam,IndexType* pV1,Float64 *pV2,IndexType *pV3,Float64* pV4,IndexType *pV5,Float64* pV6) const
+int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,CLSID& familyCLSID,IndexType* pV1,Float64 *pV2,IndexType *pV3,Float64* pV4,IndexType *pV5,Float64* pV6) const
 {
    GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
    if ( !pStirrupGeometry->AreStirrupZonesSymmetrical(span,gdr) )
@@ -641,7 +791,7 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,Span
       if ( !IsEqual(v,Round(v)) )
          return STIRRUP_ERROR_ZONES;
 
-      if ( bIsUBeam )
+      if ( familyCLSID == CLSID_UBeamFamily )
       {
          if ( barSize != matRebar::bs4 )
             return STIRRUP_ERROR_BARSIZE;
@@ -668,7 +818,7 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,Span
    if ( !IsEqual(v,Round(v)) )
       return STIRRUP_ERROR_ZONES;
 
-   if ( bIsUBeam )
+   if ( familyCLSID == CLSID_UBeamFamily )
    {
       if ( barSize != matRebar::bs4 )
          return STIRRUP_ERROR_BARSIZE;
@@ -690,11 +840,19 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,Span
    zoneIdx = (nZones == 5 ? 4 : 5);
    pStirrupGeometry->GetPrimaryVertStirrupBarInfo(span,gdr,zoneIdx, &barSize, &count, &spacing);
 
-   if ( !IsEqual(spacing,::ConvertToSysUnits(18.0,unitMeasure::Inch)) )
-      return STIRRUP_ERROR_LASTZONE;
+   if ( familyCLSID == CLSID_WFBeamFamily || familyCLSID == CLSID_UBeamFamily )
+   {
+      if ( !IsEqual(spacing,::ConvertToSysUnits(18.0,unitMeasure::Inch)) )
+         return STIRRUP_ERROR_LASTZONE;
+   }
+   else
+   {
+      if ( !IsEqual(spacing,::ConvertToSysUnits(9.0,unitMeasure::Inch)) )
+         return STIRRUP_ERROR_LASTZONE;
+   }
 
 
-   if ( bIsUBeam )
+   if ( familyCLSID == CLSID_UBeamFamily || familyCLSID == CLSID_SlabBeamFamily )
    {
       if ( barSize != matRebar::bs4 )
          return STIRRUP_ERROR_BARSIZE;
@@ -706,4 +864,25 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,Span
    }
 
    return STIRRUP_ERROR_NONE;
+}
+
+int CGirderScheduleChapterBuilder::GetDebondDetails(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,std::vector<DebondInformation>& debondInfo) const
+{
+   GET_IFACE2( pBroker, IStrandGeometry, pStrandGeometry );
+   if ( !pStrandGeometry->IsDebondingSymmetric(span,gdr) )
+      return DEBOND_ERROR_SYMMETRIC;
+
+   // fail if not symmetric
+   SectionIndexType nSections = pStrandGeometry->GetNumDebondSections(span,gdr,IStrandGeometry::geLeftEnd,pgsTypes::Straight);
+   for ( SectionIndexType sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )
+   {
+      DebondInformation dbInfo;
+      dbInfo.Length = pStrandGeometry->GetDebondSection(span,gdr,IStrandGeometry::geLeftEnd,sectionIdx,pgsTypes::Straight);
+
+      dbInfo.Strands = pStrandGeometry->GetDebondedStrandsAtSection(span,gdr,IStrandGeometry::geLeftEnd,sectionIdx,pgsTypes::Straight);
+       
+      debondInfo.push_back(dbInfo);
+   }
+
+   return DEBOND_ERROR_NONE;
 }

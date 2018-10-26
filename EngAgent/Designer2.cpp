@@ -2475,7 +2475,7 @@ void pgsDesigner2::InitShearCheck(SpanIndexType span,GirderIndexType gdr,const s
    std::vector<pgsPointOfInterest>::const_iterator ite = VPoi.end();
    while(its != ite)
    {
-      const pgsPointOfInterest rpoi = *its;
+      const pgsPointOfInterest& rpoi = *its;
       if (rpoi.HasAttribute(pgsTypes::BridgeSite3, attrib))
       {
          csPoi.push_back(rpoi);
@@ -3055,7 +3055,7 @@ void pgsDesigner2::CheckConstructability(SpanIndexType span,GirderIndexType gdr,
 
       HAUNCHDETAILS haunch_details;
       pGdrHaunch->GetHaunchDetails(span,gdr,&haunch_details);
-      pArtifact->CheckStirrupLength( bDoStirrupsEngageDeck && 0.0 < haunch_details.HaunchDiff );
+      pArtifact->CheckStirrupLength( bDoStirrupsEngageDeck && ::IsGT(0.0,haunch_details.HaunchDiff) );
    }
 
    ///////////////////////////////////////////////////////////////
@@ -6826,6 +6826,21 @@ void pgsDesigner2::DesignShear(pgsDesignArtifact* pArtifact, bool bDoStartFromSc
                m_DesignerOutcome.SetOutcome(pgsDesignCodes::PermanentStrandsChanged);
                pArtifact->AddDesignNote(pgsDesignArtifact::dnStrandsAddedForLongReinfShear); // give user a note
             }
+         }
+      }
+      else if (sdo == pgsShearDesignTool::sdDesignFailedFromShearStress)
+      {
+         // Strut and tie required - see if we can find a f'c that will work
+         Float64 fcreqd = m_ShearDesignTool.GetFcRequiredForShearStress();
+
+         if (fcreqd < m_StrandDesignTool.GetMaximumConcreteStrength())
+         {
+            m_StrandDesignTool.UpdateConcreteStrengthForShear(fcreqd, pgsTypes::BridgeSite3, pgsTypes::StrengthI);
+         }
+         else
+         {
+            // We can't increase concrete strength enough. Just issue message
+            pArtifact->AddDesignNote(pgsDesignArtifact::dnShearRequiresStrutAndTie);
          }
       }
       else if (sdo != pgsShearDesignTool::sdSuccess)

@@ -125,13 +125,21 @@ public:
    class PGSEXTCLASS ConcreteStrengthDesignState
    {
    public:
+      enum Action {actStress, actShear}; // Concrete strength can be affected by flexural stress or shear stress
+
       ConcreteStrengthDesignState():
+      m_Action(actStress),
       m_MinimumControls(true)
       {;}
 
-      void SetState(bool controlledByMin, pgsTypes::Stage stage, pgsTypes::StressType stressType, 
+      // Conc strength controlled by flexural stress
+      void SetStressState(bool controlledByMin, pgsTypes::Stage stage, pgsTypes::StressType stressType, 
                     pgsTypes::LimitState limitState, pgsTypes::StressLocation stressLocation);
 
+      // Conc strength controlled by shear stress
+      void SetShearState(pgsTypes::Stage stage, pgsTypes::LimitState limitState);
+
+      Action GetAction() const;
       bool WasControlledByMinimum() const;
       pgsTypes::Stage Stage() const;
       pgsTypes::StressType StressType() const;
@@ -145,6 +153,7 @@ public:
       void Init() {m_MinimumControls=true;}
 
    private:
+      Action m_Action;
       bool m_MinimumControls;
       pgsTypes::Stage          m_Stage;
       pgsTypes::StressType     m_StressType;

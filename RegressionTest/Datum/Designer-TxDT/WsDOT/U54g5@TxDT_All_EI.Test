@@ -6,6 +6,7 @@
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -16,5 +17,6 @@ Tensile stress check failed for Service III for the Final with Live Load Stage (
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 
 

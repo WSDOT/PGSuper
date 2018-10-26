@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 66.67   9 10.50  1     1     IV    *    48  0.60  270 25.18 14.76  10 56.0  7.300  9.200    4.589   -5.250  10017  0.660  1.000  0.43 -0.13 -0.01 -0.02 -0.16 210.86 335.82   1.75   5.00   5.00
+ 66.67   9 10.50  1     1     IV    *    48  0.60  270 25.18 14.76  10 56.0  7.300  9.200    4.589   -5.251  10017  0.660  1.000  0.43 -0.13 -0.01 -0.02 -0.16 210.86 335.76   1.75   5.00   5.00
 
 
 The Specification Check was Successful
@@ -16,7 +16,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 66.67   9 10.50  1     5     IV    *    46  0.60  270 25.40 14.53  10 56.0  6.800  8.600    4.493   -5.061   9459  0.585  1.000  0.45 -0.15 -0.01  0.00 -0.16 192.54 331.46   1.75   5.00   5.00
+ 66.67   9 10.50  1     5     IV    *    46  0.60  270 25.40 14.53  10 56.0  6.800  8.600    4.492   -5.061   9459  0.585  1.000  0.45 -0.15 -0.01  0.00 -0.16 192.54 331.47   1.75   5.00   5.00
 
 
 The Specification Check was Successful
@@ -24,7 +24,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 66.67   9  7.92  2     1     IV    *    47  0.60  270 25.20 15.54   9 56.0  7.200  9.300    4.456   -5.146   9767  0.660  1.000  0.43 -0.12 -0.01 -0.02 -0.15 200.14 332.95   1.75   5.00   5.00
+ 66.67   9  7.92  2     1     IV    *    47  0.60  270 25.20 15.54   9 56.0  7.200  9.300    4.459   -5.148   9767  0.660  1.000  0.43 -0.12 -0.01 -0.02 -0.15 200.14 332.78   1.75   5.00   5.00
 
 
 The Specification Check was Successful

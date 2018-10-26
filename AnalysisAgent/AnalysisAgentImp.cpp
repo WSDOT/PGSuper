@@ -7515,6 +7515,18 @@ void CAnalysisAgentImp::GetLiveLoadShear(pgsTypes::LiveLoadType llType,pgsTypes:
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
    VARIANT_BOOL vbIncludeLLDF   = (bIncludeLLDF   ? VARIANT_TRUE : VARIANT_FALSE);
 
+   // TRICKY:
+   // For shear, we must flip sign of results to go from LBAM to beam coordinates. This means
+   // that the optimization must go the opposite way as well when using the envelopers
+   if (bat==MinSimpleContinuousEnvelope)
+   {
+      bat=MaxSimpleContinuousEnvelope;
+   }
+   else if (bat==MaxSimpleContinuousEnvelope)
+   {
+      bat=MinSimpleContinuousEnvelope;
+   }
+
    CComPtr<ILiveLoadModelSectionResults> minResults;
    CComPtr<ILiveLoadModelSectionResults> maxResults;
    CComBSTR bstrStage = pStageMap->GetStageName(stage);
@@ -8908,6 +8920,18 @@ void CAnalysisAgentImp::GetCombinedLiveLoadShear(pgsTypes::LiveLoadType llType,p
    CComBSTR bstrStage     = pStageMap->GetStageName(stage);
    VARIANT_BOOL incImpact = bIncludeImpact ? VARIANT_TRUE: VARIANT_FALSE;
 
+   // TRICKY:
+   // For shear, we must flip sign of results to go from LBAM to beam coordinates. This means
+   // that the optimization must go the opposite way as well when using the envelopers
+   if (bat==MinSimpleContinuousEnvelope)
+   {
+      bat=MaxSimpleContinuousEnvelope;
+   }
+   else if (bat==MaxSimpleContinuousEnvelope)
+   {
+      bat=MinSimpleContinuousEnvelope;
+   }
+
    CComPtr<ILoadCombinationSectionResults> maxResults, minResults;
    pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetFy, optMaximize, VARIANT_TRUE, incImpact, VARIANT_FALSE, &maxResults);
    pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetFy, optMinimize, VARIANT_TRUE, incImpact, VARIANT_FALSE, &minResults);
@@ -9246,6 +9270,18 @@ void CAnalysisAgentImp::GetShear(pgsTypes::LimitState ls,pgsTypes::Stage stage,c
 
          CComBSTR bstrLoadCombo = GetLoadCombinationName(ls);
          CComBSTR bstrStage     = pStageMap->GetStageName(stage);
+
+         // TRICKY:
+         // For shear, we must flip sign of results to go from LBAM to beam coordinates. This means
+         // that the optimization must go the opposite way as well when using the envelopers
+         if (bat==MinSimpleContinuousEnvelope)
+         {
+            bat=MaxSimpleContinuousEnvelope;
+         }
+         else if (bat==MaxSimpleContinuousEnvelope)
+         {
+            bat=MinSimpleContinuousEnvelope;
+         }
 
          VARIANT_BOOL bIncludeLiveLoad = (stage == pgsTypes::BridgeSite3 ? VARIANT_TRUE : VARIANT_FALSE );
          CComPtr<ILoadCombinationSectionResults> maxResults, minResults;
@@ -12508,37 +12544,53 @@ bool CAnalysisAgentImp::AreBearingReactionsAvailable(SpanIndexType span,GirderIn
 void CAnalysisAgentImp::GetBearingProductReaction(pgsTypes::Stage stage,ProductForceType type,SpanIndexType span,GirderIndexType gdr,
                                                   CombinationType cmbtype, BridgeAnalysisType bat,Float64* pLftEnd,Float64* pRgtEnd)
 {
-   if ( bat == SimpleSpan || bat == ContinuousSpan )
+   // Get Pois at supports
+   GET_IFACE(IPointOfInterest,pIPOI);
+   std::vector<pgsPointOfInterest> vPois( pIPOI->GetPointsOfInterest(span,gdr,stage, POI_0L | POI_10L,POIFIND_OR) );
+   ATLASSERT(vPois.size()==2);
+
+   pgsPointOfInterest lftPoi(vPois.front());
+   pgsPointOfInterest rgtPoi(vPois.back());
+
+   // Loop twice to pick up left and right ends
+   for (IndexType idx=0; idx<2; idx++)
    {
-      // Get Pois at supports
-      GET_IFACE(IPointOfInterest,pIPOI);
-      std::vector<pgsPointOfInterest> vPois( pIPOI->GetPointsOfInterest(span,gdr,stage, POI_0L | POI_10L,POIFIND_OR) );
-      ATLASSERT(vPois.size()==2);
+      BridgeAnalysisType tmpbat = bat;
+      std::vector<pgsPointOfInterest> vPoi;
+      if (idx==0)
+      {
+         vPoi.push_back(lftPoi);
+      }
+      else
+      {
+         vPoi.push_back(rgtPoi);
 
-      std::vector<sysSectionValue> sec_vals = GetShear(stage, type, vPois, bat, cmbtype);
+         // Extremely TRICKY:
+         // Below we are getting reactions from  end shear, we must flip sign of results to go 
+         // from LBAM to beam coordinates. This means that the optimization must go the opposite when using the envelopers.
+         if (bat==MinSimpleContinuousEnvelope)
+         {
+            tmpbat=MaxSimpleContinuousEnvelope;
+         }
+         else if (bat==MaxSimpleContinuousEnvelope)
+         {
+            tmpbat=MinSimpleContinuousEnvelope;
+         }
+      }
 
-      *pLftEnd =  sec_vals.front().Left();
-      *pRgtEnd = -sec_vals.back().Right();
+      std::vector<sysSectionValue> sec_vals = GetShear(stage, type, vPoi, tmpbat, cmbtype);
+
+      if (idx==0)
+      {
+         *pLftEnd =  sec_vals.front().Left();
+      }
+      else
+      {
+         *pRgtEnd = -sec_vals.front().Right();
+      }
    }
-   else
-   {
-      // we are enveloping... at the right end of the span, the max shear = min reaction and min shear = max reaction
 
-      // left end of span
-      GET_IFACE(IPointOfInterest,pIPOI);
-      std::vector<pgsPointOfInterest> vPois(pIPOI->GetPointsOfInterest(span,gdr,stage,POI_0L,POIFIND_OR));
-      ATLASSERT(vPois.size() == 1);
-      std::vector<sysSectionValue> left_shear = GetShear(stage,type,vPois,bat,cmbtype);
-      *pLftEnd = left_shear.front().Left();
-
-      // right end of span
-      BridgeAnalysisType batRight = (bat == MinSimpleContinuousEnvelope ? MaxSimpleContinuousEnvelope : MinSimpleContinuousEnvelope);
-      vPois = pIPOI->GetPointsOfInterest(span,gdr,stage,POI_10L,POIFIND_OR);
-      ATLASSERT(vPois.size() == 1);
-      std::vector<sysSectionValue> right_shear = GetShear(stage,type,vPois,batRight,cmbtype);
-      *pRgtEnd = -right_shear.front().Right();
-   }
-
+   // Last, add point loads from overhangs
    Float64 lft_pnt_load, rgt_pnt_load;
    bool found_load = GetOverhangPointLoads(span, gdr, stage, type, cmbtype, &lft_pnt_load, &rgt_pnt_load);
    if(found_load)
@@ -12569,56 +12621,67 @@ void CAnalysisAgentImp::GetBearingLiveLoadReaction(pgsTypes::LiveLoadType llType
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
    VARIANT_BOOL vbIncludeLLDF   = (bIncludeLLDF   ? VARIANT_TRUE : VARIANT_FALSE);
 
+   // Shear and reaction LLDF's can be different. Must ratio results by reaction/shear.
+   GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
+   Float64 lldfRatio = 1.0;
+   Float64 lldfShear;
+   pgsTypes::LimitState lldfLimitState;
+   if (bIncludeLLDF)
+   {
+      bool is_fatigue = llType==pgsTypes::lltFatigue || llType==pgsTypes::lltPermitRating_Special;
+      lldfLimitState = is_fatigue ? pgsTypes::FatigueI : pgsTypes::StrengthI;
+      lldfShear = pLLDF->GetShearDistFactor(span,gdr,lldfLimitState);
+   }
+
    GET_IFACE(IStageMap,pStageMap);
    CComBSTR bstrStage = pStageMap->GetStageName(stage);
 
    // Loop twice to pick up left and right ends
    for (IndexType idx=0; idx<2; idx++)
    {
+      BridgeAnalysisType tmpbat=bat;
       std::vector<pgsPointOfInterest> vPoi;
       if (idx==0)
       {
          vPoi.push_back(lftPoi);
+
+         // Extremely TRICKY:
+         // Below we are getting reactions from  end shear, we must flip sign of results to go 
+         // from LBAM to beam coordinates. This means that the optimization must go the opposite when using the envelopers.
+         if (bat==MinSimpleContinuousEnvelope)
+         {
+            tmpbat=MaxSimpleContinuousEnvelope;
+         }
+         else if (bat==MaxSimpleContinuousEnvelope)
+         {
+            tmpbat=MinSimpleContinuousEnvelope;
+         }
       }
       else
       {
          vPoi.push_back(rgtPoi);
       }
 
+      // Ratio for reaction/shear LLDF
+      if (bIncludeLLDF)
+      {
+         Float64 lldfReact = pLLDF->GetReactionDistFactor(span+idx, gdr, lldfLimitState);
+         lldfRatio = lldfReact/lldfShear;
+      }
+
       // Get max'd end shears from lbam
       ModelData* pModelData = UpdateLBAMPois(vPoi);
       CComPtr<ILBAMAnalysisEngine> pEngine;
-      GetEngine(pModelData,bat == SimpleSpan ? false : true, &pEngine);
+      GetEngine(pModelData,tmpbat == SimpleSpan ? false : true, &pEngine);
       CComPtr<IBasicVehicularResponse> response;
       pEngine->get_BasicVehicularResponse(&response); // used to get corresponding rotations
 
       CComPtr<ILiveLoadModelSectionResults> minResults;
       CComPtr<ILiveLoadModelSectionResults> maxResults;
-      if ( bat == SimpleSpan || bat == ContinuousSpan )
-      {
-         pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
-                roMember, fetFy, optMaximize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&maxResults);
-         pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
-                roMember, fetFy, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
-      }
-      else
-      {
-         if ( idx == 0 )
-         {
-            BridgeAnalysisType batLeft = (bat == MinSimpleContinuousEnvelope ? MaxSimpleContinuousEnvelope : MinSimpleContinuousEnvelope);
-            pModelData->pLiveLoadResponse[batLeft]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
+            pModelData->pLiveLoadResponse[tmpbat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
                    roMember, fetFy, optMaximize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&maxResults);
-            pModelData->pLiveLoadResponse[batLeft]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
+            pModelData->pLiveLoadResponse[tmpbat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
                    roMember, fetFy, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
-         }
-         else
-         {
-            pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
-                   roMember, fetFy, optMaximize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&maxResults);
-            pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
-                   roMember, fetFy, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
-         }
-      }
 
       // Extract reactions and corresponding rotations
       Float64 FyMaxLeft, FyMaxRight;
@@ -12635,8 +12698,8 @@ void CAnalysisAgentImp::GetBearingLiveLoadReaction(pgsTypes::LiveLoadType llType
       {
          // Left End
          // Reaction
-         *pLeftRmin = -FyMaxLeft;
-         *pLeftRmax = -FyMinLeft;
+         *pLeftRmin = -FyMaxLeft * lldfRatio;
+         *pLeftRmax = -FyMinLeft * lldfRatio;
 
          // Vehicle indexes
          if ( pLeftMinVehIdx )
@@ -12657,7 +12720,7 @@ void CAnalysisAgentImp::GetBearingLiveLoadReaction(pgsTypes::LiveLoadType llType
 
          Float64 T;
          result->get_ZLeft(&T);
-         *pLeftTmin = T;
+         *pLeftTmin = T * lldfRatio;
 
          results.Release();
          result.Release();
@@ -12669,14 +12732,14 @@ void CAnalysisAgentImp::GetBearingLiveLoadReaction(pgsTypes::LiveLoadType llType
 
          results->get_Item(0,&result);
          result->get_ZLeft(&T);
-         *pLeftTmax = T;
+         *pLeftTmax = T * lldfRatio;
       }
       else
       {
          // Right End 
          // Reaction
-         *pRightRmin = -FyMinRight;
-         *pRightRmax = -FyMaxRight;
+         *pRightRmin = -FyMinRight * lldfRatio;
+         *pRightRmax = -FyMaxRight * lldfRatio;
 
          // Vehicle indexes
          if ( pRightMinVehIdx )
@@ -12697,7 +12760,7 @@ void CAnalysisAgentImp::GetBearingLiveLoadReaction(pgsTypes::LiveLoadType llType
 
          Float64 T;
          result->get_ZRight(&T);
-         *pRightTmin = T;
+         *pRightTmin = T * lldfRatio;
 
          results.Release();
          result.Release();
@@ -12709,7 +12772,7 @@ void CAnalysisAgentImp::GetBearingLiveLoadReaction(pgsTypes::LiveLoadType llType
 
          results->get_Item(0,&result);
          result->get_ZRight(&T);
-         *pRightTmax = T;
+         *pRightTmax = T * lldfRatio;
       }
    }
 }
@@ -12939,14 +13002,39 @@ void CAnalysisAgentImp::GetBearingCombinedLiveLoadReaction(pgsTypes::LiveLoadTyp
 
    sysSectionValue lft_min_sec_val, lft_max_sec_val, rgt_min_sec_val, rgt_max_sec_val;
 
-   GetCombinedLiveLoadShear(llType, stage, lftPoi, bat, bIncludeImpact, &lft_min_sec_val, &lft_max_sec_val);
-   GetCombinedLiveLoadShear(llType, stage, rgtPoi, bat, bIncludeImpact, &rgt_min_sec_val, &rgt_max_sec_val);
+  // TRICKY:
+   // For shear, we must flip sign of results to go from LBAM to beam coordinates. This means
+   // that the optimization must go the opposite way as well when using the envelopers
+   BridgeAnalysisType right_bat;
+   if (bat==MinSimpleContinuousEnvelope)
+   {
+      right_bat = MaxSimpleContinuousEnvelope;
+   }
+   else if (bat==MaxSimpleContinuousEnvelope)
+   {
+      right_bat = MinSimpleContinuousEnvelope;
+   }
 
-   *pLeftRmin =  lft_min_sec_val.Left();
-   *pLeftRmax =  lft_max_sec_val.Left();
+   GetCombinedLiveLoadShear(llType, stage, lftPoi,       bat, bIncludeImpact, &lft_min_sec_val, &lft_max_sec_val);
+   GetCombinedLiveLoadShear(llType, stage, rgtPoi, right_bat, bIncludeImpact, &rgt_min_sec_val, &rgt_max_sec_val);
 
-   *pRightRmin = -rgt_max_sec_val.Right();
-   *pRightRmax = -rgt_min_sec_val.Right();
+   // Shear and reaction LLDF's can be different. Must ratio results by reaction/shear.
+   GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
+   bool is_fatigue = llType==pgsTypes::lltFatigue || llType==pgsTypes::lltPermitRating_Special;
+   pgsTypes::LimitState lldfLimitState = is_fatigue ? pgsTypes::FatigueI : pgsTypes::StrengthI;
+   Float64 lldfShear = pLLDF->GetShearDistFactor(span,gdr,lldfLimitState);
+
+   Float64 lldfLeftReact  = pLLDF->GetReactionDistFactor(span, gdr, lldfLimitState);
+   Float64 lldfRightReact = pLLDF->GetReactionDistFactor(span+1, gdr, lldfLimitState);
+
+   Float64 lldfLeftRatio = lldfLeftReact/lldfShear;
+   Float64 lldfRightRatio = lldfRightReact/lldfShear;
+
+   *pLeftRmin =  lft_min_sec_val.Left() * lldfLeftRatio;
+   *pLeftRmax =  lft_max_sec_val.Left() * lldfLeftRatio;
+
+   *pRightRmin = -rgt_max_sec_val.Right() * lldfRightRatio;
+   *pRightRmax = -rgt_min_sec_val.Right() * lldfRightRatio;
 }
 
 void CAnalysisAgentImp::GetBearingLimitStateReaction(pgsTypes::LimitState ls,pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,
@@ -13189,7 +13277,7 @@ CAnalysisAgentImp::SpanType CAnalysisAgentImp::GetSpanType(SpanIndexType span,bo
 }
 
 void CAnalysisAgentImp::AddDistributionFactors(IDistributionFactors* factors,Float64 length,Float64 gpM,Float64 gnM,Float64 gV,Float64 gR,
-                                               Float64 gF,Float64 gD, Float64 gPedes)
+                                               Float64 gFM,Float64 gFV,Float64 gD, Float64 gPedes)
 {
    CComPtr<IDistributionFactorSegment> dfSegment;
    dfSegment.CoCreateInstance(CLSID_DistributionFactorSegment);
@@ -13205,7 +13293,7 @@ void CAnalysisAgentImp::AddDistributionFactors(IDistributionFactors* factors,Flo
             gD,  gD,  // deflections
             gR,  gR,  // reaction
             gpM, gpM, // rotation
-            gF,       // fatigue
+            gFM, gFV, // fatigue
             gPedes    // pedestrian loading
             );
 
@@ -13281,11 +13369,12 @@ void CAnalysisAgentImp::ApplyLLDF_PinPin(SpanIndexType spanIdx,GirderIndexType g
    Float64 gnM = pLLDF->GetNegMomentDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
    Float64 gV  = pLLDF->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
    Float64 gR  =  99999999; // this parameter should not be used so use a value that is obviously wrong to easily detect bugs
-   Float64 gF  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
+   Float64 gFM  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
+   Float64 gFV  = pLLDF->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
    Float64 gD  = pLLDF->GetDeflectionDistFactor(spanIdx,gdrIdx);
    Float64 gPedes = this->GetPedestrianLiveLoad(spanIdx,gdrIdx); // factor is magnitude of pedestrian live load
 
-   AddDistributionFactors(distFactors,span_length,gpM,gnM,gV,gR,gF,gD,gPedes);
+   AddDistributionFactors(distFactors,span_length,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
 }
 
 void CAnalysisAgentImp::ApplyLLDF_PinFix(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors)
@@ -13326,17 +13415,18 @@ void CAnalysisAgentImp::ApplyLLDF_PinFix(SpanIndexType spanIdx,GirderIndexType g
    Float64 gnM = pLLDF->GetNegMomentDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
    Float64 gV  = pLLDF->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
    Float64 gR  =  99999999; // this parameter should not be used so use a value that is obviously wrong to easily detect bugs
-   Float64 gF  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
+   Float64 gFM  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
+   Float64 gFV  = pLLDF->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
    Float64 gD  = pLLDF->GetDeflectionDistFactor(spanIdx,gdrIdx);
 
    Float64 gPedes = this->GetPedestrianLiveLoad(spanIdx,gdrIdx); // factor is magnitude of pedestrian live load
 
-   AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gF,gD,gPedes);
+   AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
 
    // for the second part of the span, use the negative moment distribution factor that goes over the next pier
    gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
 
-   AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gF,gD,gPedes);
+   AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
 }
 
 void CAnalysisAgentImp::ApplyLLDF_FixPin(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors)
@@ -13377,15 +13467,16 @@ void CAnalysisAgentImp::ApplyLLDF_FixPin(SpanIndexType spanIdx,GirderIndexType g
    Float64 gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx,gdrIdx,pgsTypes::StrengthI,pgsTypes::Ahead); // DF over pier at start of span
    Float64 gV  = pLLDF->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
    Float64 gR  =  99999999; // this parameter not should be used so use a value that is obviously wrong to easily detect bugs
-   Float64 gF  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
+   Float64 gFM  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
+   Float64 gFV  = pLLDF->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
    Float64 gD  = pLLDF->GetDeflectionDistFactor(spanIdx,gdrIdx);
 
    Float64 gPedes = this->GetPedestrianLiveLoad(spanIdx,gdrIdx); // factor is magnitude of pedestrian live load
 
-   AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gF,gD,gPedes);
+   AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
 
    gnM = pLLDF->GetNegMomentDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI); // DF in the span
-   AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gF,gD,gPedes);
+   AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
 }
 
 void CAnalysisAgentImp::ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors)
@@ -13411,7 +13502,8 @@ void CAnalysisAgentImp::ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType g
    Float64 gnM;
    Float64 gV; 
    Float64 gR;
-   Float64 gF;
+   Float64 gFM  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
+   Float64 gFV  = pLLDF->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
    Float64 gD  = pLLDF->GetDeflectionDistFactor(spanIdx,gdrIdx);
    Float64 gPedes = this->GetPedestrianLiveLoad(spanIdx,gdrIdx); // factor is magnitude of pedestrian live load
 
@@ -13423,12 +13515,11 @@ void CAnalysisAgentImp::ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType g
       gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx,gdrIdx,pgsTypes::StrengthI,pgsTypes::Ahead);
       gV  = pLLDF->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
       gR  = 99999999; // this parameter should not be used so use a value that is obviously wrong to easily detect bugs
-      gF  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
 
-      AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gV,gR,gF,gD, gPedes);
+      AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gV,gR,gFM,gFV,gD, gPedes);
       
       gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
-      AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gV,gR,gF,gD,gPedes);
+      AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
    }
    else if ( num_cf_points_in_span == 1 )
    {
@@ -13436,15 +13527,14 @@ void CAnalysisAgentImp::ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType g
       gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx,gdrIdx,pgsTypes::StrengthI,pgsTypes::Ahead);
       gV  = pLLDF->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
       gR  = 99999999; // this parameter should not be used so use a value that is obviously wrong to easily detect bugs
-      gF  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
 
       Float64 seg_length_1 = cf_points_in_span[0] - span_start;
       Float64 seg_length_2 = span_end - cf_points_in_span[0];
 
-      AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gF,gD,gPedes);
+      AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
       
       gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
-      AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gF,gD,gPedes);
+      AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
    }
    else
    {
@@ -13452,19 +13542,18 @@ void CAnalysisAgentImp::ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType g
       gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx,gdrIdx,pgsTypes::StrengthI,pgsTypes::Ahead);
       gV  = pLLDF->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
       gR  =  99999999; // this parameter should not be used so use a value that is obviously wrong to easily detect bugs
-      gF  = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI);
 
       Float64 seg_length_1 = cf_points_in_span[0] - span_start;
       Float64 seg_length_2 = cf_points_in_span[1] - cf_points_in_span[0];
       Float64 seg_length_3 = span_end - cf_points_in_span[1];
 
-      AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gF,gD,gPedes);
+      AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
       
       gnM = pLLDF->GetNegMomentDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
-      AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gF,gD,gPedes);
+      AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
       
       gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
-      AddDistributionFactors(distFactors,seg_length_3,gpM,gnM,gV,gR,gF,gD,gPedes);
+      AddDistributionFactors(distFactors,seg_length_3,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
    }
 }
 
@@ -13512,7 +13601,7 @@ void CAnalysisAgentImp::ApplyLLDF_Support(PierIndexType pierIdx,GirderIndexType 
             gD,  gD,  // deflections
             gR,  gR,  // reaction
             gD,  gD,  // rotation
-            gF,       // fatigue
+            gF,  gF,  // fatigue
             gPedes    // pedestrian
             );
 }
