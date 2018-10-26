@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include "LoadRatingSummaryChapterBuilder.h"
-#include <PgsExt\ReportStyleHolder.h>
+#include <Reporting\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\ReportNotes.h>
 
@@ -61,7 +61,9 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
    CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGdrRptSpec->GetBroker(&pBroker);
-   GirderIndexType gdrLineIdx = pGdrRptSpec->GetGirder();
+   GroupIndexType grpIdx = pGdrRptSpec->GetGroupIndex();
+   GirderIndexType gdrIdx = pGdrRptSpec->GetGirderIndex();
+   CGirderKey girderKey(grpIdx,gdrIdx);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
@@ -255,7 +257,6 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
       return pChapter;
    }
 
-   // The rating settings are consistent with WSDOT policies... report the rating
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(),   true );
 
@@ -274,7 +275,6 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
 
    rptParagraph* pRemarks = new rptParagraph;
    (*pRemarks) << _T("Remarks:") << rptNewLine;
-   (*pRemarks) << _T("This load rating does not include rating factors for substructure elements.") << rptNewLine;
 
    rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,_T(""));
    (*pPara) << pTable << rptNewLine;
@@ -300,7 +300,7 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
    VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
    for ( VehicleIndexType vehIdx = 0; vehIdx < nVehicles; vehIdx++ )
    {
-      ReportRatingFactor(pBroker,pTable,row++,pIArtifact->GetRatingArtifact(gdrLineIdx,pgsTypes::lrLegal_Routine,vehIdx),pDisplayUnits,pRemarks);
+      ReportRatingFactor(pBroker,pTable,row++,pIArtifact->GetRatingArtifact(girderKey,pgsTypes::lrLegal_Routine,vehIdx),pDisplayUnits,pRemarks);
    }
 
 
@@ -308,7 +308,7 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
    nVehicles = pProductLoads->GetVehicleCount(llType);
    for ( VehicleIndexType vehIdx = 0; vehIdx < nVehicles; vehIdx++ )
    {
-      ReportRatingFactor(pBroker,pTable,row++,pIArtifact->GetRatingArtifact(gdrLineIdx,pgsTypes::lrLegal_Special,vehIdx),pDisplayUnits,pRemarks);
+      ReportRatingFactor(pBroker,pTable,row++,pIArtifact->GetRatingArtifact(girderKey,pgsTypes::lrLegal_Special,vehIdx),pDisplayUnits,pRemarks);
    }
 
    // Current WSDOT default is to have no trucks in the Permit Routine case so there is nothing to report
@@ -324,7 +324,7 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
    nVehicles = pProductLoads->GetVehicleCount(llType);
    for ( VehicleIndexType vehIdx = 0; vehIdx < nVehicles; vehIdx++ )
    {
-      ReportRatingFactor(pBroker,pTable,row++,pIArtifact->GetRatingArtifact(gdrLineIdx,pgsTypes::lrPermit_Special,vehIdx),pDisplayUnits,pRemarks);
+      ReportRatingFactor(pBroker,pTable,row++,pIArtifact->GetRatingArtifact(girderKey,pgsTypes::lrPermit_Special,vehIdx),pDisplayUnits,pRemarks);
    }
 
    pTable = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
@@ -341,8 +341,8 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
    (*pTable)(0,2)  << COLHDR(_T("Controlling Point") << rptNewLine << RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    row = 1;
-   ReportRatingFactor2(pBroker,pTable,row++,_T("Inventory"),pIArtifact->GetRatingArtifact(gdrLineIdx,pgsTypes::lrDesign_Inventory,INVALID_INDEX),pDisplayUnits,pRemarks);
-   ReportRatingFactor2(pBroker,pTable,row++,_T("Operating"),pIArtifact->GetRatingArtifact(gdrLineIdx,pgsTypes::lrDesign_Operating,INVALID_INDEX),pDisplayUnits,pRemarks);
+   ReportRatingFactor2(pBroker,pTable,row++,_T("Inventory"),pIArtifact->GetRatingArtifact(girderKey,pgsTypes::lrDesign_Inventory,INVALID_INDEX),pDisplayUnits,pRemarks);
+   ReportRatingFactor2(pBroker,pTable,row++,_T("Operating"),pIArtifact->GetRatingArtifact(girderKey,pgsTypes::lrDesign_Operating,INVALID_INDEX),pDisplayUnits,pRemarks);
 
    *pChapter << pRemarks;
 
@@ -359,7 +359,10 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    location.IncludeSpanAndGirder(true);
 
-   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
+   rptRcScalar scalar;
+   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
+   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
+   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
 
    rptCapacityToDemand rating_factor;
 
@@ -384,9 +387,11 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
 
       (*pTable)(row,2) << scalar.SetValue(pPositiveMoment->GetLiveLoadFactor());
 
-      pgsPointOfInterest poi = pPositiveMoment->GetPointOfInterest();
-      Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,3) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << _T(" (Positive Moment)");
+      pgsPointOfInterest poi( pPositiveMoment->GetGirderPointOfInterest() );
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
+      (*pTable)(row,3) << location.SetValue(POI_GIRDER,poi,endSize) << _T(" (Positive Moment)");
    }
    else if ( pNegativeMoment )
    {
@@ -399,9 +404,11 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
 
       (*pTable)(row,2) << scalar.SetValue(pNegativeMoment->GetLiveLoadFactor());
 
-      pgsPointOfInterest poi = pNegativeMoment->GetPointOfInterest();
-      Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,3) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << _T(" (Negative Moment)");
+      pgsPointOfInterest poi( pNegativeMoment->GetGirderPointOfInterest() );
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
+      (*pTable)(row,3) << location.SetValue(POI_GIRDER,poi,endSize) << _T(" (Negative Moment)");
    }
    else if ( pShear )
    {
@@ -414,9 +421,11 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
 
       (*pTable)(row,2) << scalar.SetValue(pShear->GetLiveLoadFactor());
 
-      pgsPointOfInterest poi = pShear->GetPointOfInterest();
-      Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,3) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << _T(" (Shear)");
+      pgsPointOfInterest poi( pShear->GetGirderPointOfInterest() );
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
+      (*pTable)(row,3) << location.SetValue(POI_GIRDER,poi,endSize) << _T(" (Shear)");
    }
    else if ( pStress )
    {
@@ -429,9 +438,11 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
 
       (*pTable)(row,2) << scalar.SetValue(pStress->GetLiveLoadFactor());
 
-      pgsPointOfInterest poi = pStress->GetPointOfInterest();
-      Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,3) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << _T(" (Stress)");
+      pgsPointOfInterest poi(  pStress->GetGirderPointOfInterest() );
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
+      (*pTable)(row,3) << location.SetValue(POI_GIRDER,poi,endSize) << _T(" (Stress)");
    }
    else if ( pYieldStressPositiveMoment )
    {
@@ -446,9 +457,11 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
 
       (*pTable)(row,2) << scalar.SetValue(pYieldStressPositiveMoment->GetLiveLoadFactor());
 
-      pgsPointOfInterest poi = pYieldStressPositiveMoment->GetPointOfInterest();
-      Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,3) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << _T(" (Yield Stress - Positive Moment)");
+      pgsPointOfInterest poi(  pYieldStressPositiveMoment->GetGirderPointOfInterest() );
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
+      (*pTable)(row,3) << location.SetValue(POI_GIRDER,poi,endSize) << _T(" (Yield Stress - Positive Moment)");
 
       if ( 0 < pYieldStressPositiveMoment->GetCrackingStressIncrement() )
       {
@@ -468,13 +481,15 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
 
       (*pTable)(row,2) << scalar.SetValue(pYieldStressNegativeMoment->GetLiveLoadFactor());
 
-      pgsPointOfInterest poi = pYieldStressNegativeMoment->GetPointOfInterest();
-      Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,3) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << _T(" (Yield Stress - Negative Moment)");
+      pgsPointOfInterest poi(  pYieldStressNegativeMoment->GetGirderPointOfInterest() );
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
+      (*pTable)(row,3) << location.SetValue(POI_GIRDER,poi,endSize) << _T(" (Yield Stress - Negative Moment)");
 
       if ( 0 < pYieldStressNegativeMoment->GetCrackingStressIncrement() )
       {
-         (*pRemarks) << pYieldStressNegativeMoment->GetVehicleName() << _T(": Section is cracked for Service I limit state") << rptNewLine;
+         (*pRemarks) << pYieldStressPositiveMoment->GetVehicleName() << _T(": Section is cracked for Service I limit state") << rptNewLine;
       }
    }
 }
@@ -484,7 +499,10 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    location.IncludeSpanAndGirder(true);
 
-   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
+   rptRcScalar scalar;
+   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
+   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
+   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
 
    rptCapacityToDemand rating_factor;
 
@@ -508,9 +526,11 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
          (*pTable)(row,1) << RF_PASS(rating_factor,RF);
 
 
-      pgsPointOfInterest poi = pPositiveMoment->GetPointOfInterest();
-      Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,2) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << _T(" (Positive Moment)");
+      pgsPointOfInterest poi(  pPositiveMoment->GetGirderPointOfInterest() );
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
+      (*pTable)(row,2) << location.SetValue(POI_GIRDER,poi,endSize) << _T(" (Positive Moment)");
    }
    else if ( pNegativeMoment )
    {
@@ -522,9 +542,11 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
          (*pTable)(row,1) << RF_PASS(rating_factor,RF);
 
 
-      pgsPointOfInterest poi = pNegativeMoment->GetPointOfInterest();
-      Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,2) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << _T(" (Negative Moment)");
+      pgsPointOfInterest poi( pNegativeMoment->GetGirderPointOfInterest() );
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
+      (*pTable)(row,2) << location.SetValue(POI_GIRDER,poi,endSize) << _T(" (Negative Moment)");
    }
    else if ( pShear )
    {
@@ -536,9 +558,11 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
          (*pTable)(row,1) << RF_PASS(rating_factor,RF);
 
 
-      pgsPointOfInterest poi = pShear->GetPointOfInterest();
-      Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,2) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << _T(" (Shear)");
+      pgsPointOfInterest poi( pShear->GetGirderPointOfInterest() );
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
+      (*pTable)(row,2) << location.SetValue(POI_GIRDER,poi,endSize) << _T(" (Shear)");
    }
    else if ( pStress )
    {
@@ -550,41 +574,10 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
          (*pTable)(row,1) << RF_PASS(rating_factor,RF);
 
 
-      pgsPointOfInterest poi = pStress->GetPointOfInterest();
-      Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,2) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << _T(" (Stress)");
-   }
-   else if ( pYieldStressPositiveMoment )
-   {
-      (*pTable)(row,0) << strTruck;
-      
-      if ( RF < 1 )
-         (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
-      else
-         (*pTable)(row,1) << RF_PASS(rating_factor,RF);
+      pgsPointOfInterest poi( pStress->GetGirderPointOfInterest() );
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-      (*pTable)(row,1) << rptNewLine << _T("(Stress Ratio)");
-
-
-      pgsPointOfInterest poi = pYieldStressPositiveMoment->GetPointOfInterest();
-      Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,2) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << _T(" (Yield Stress - Positive Moment)");
-   }
-   else if ( pYieldStressNegativeMoment )
-   {
-      (*pTable)(row,0) << strTruck;
-      
-      if ( RF < 1 )
-         (*pTable)(row,1) << RF_FAIL(rating_factor,RF);
-      else
-         (*pTable)(row,1) << RF_PASS(rating_factor,RF);
-
-      (*pTable)(row,1) << rptNewLine << _T("(Stress Ratio)");
-
-
-      pgsPointOfInterest poi = pYieldStressNegativeMoment->GetPointOfInterest();
-      Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,2) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << _T(" (Yield Stress - Negative Moment)");
+      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
+      (*pTable)(row,2) << location.SetValue(POI_GIRDER,poi,endSize) << _T(" (Stress)");
    }
 }
-

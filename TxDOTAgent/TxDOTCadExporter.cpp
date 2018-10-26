@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -96,25 +96,25 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 	//according to a strict predefined format.             		
 
 	CString default_name = "CADexport.txt",initial_filespec, initial_dir;
-	INT_PTR		stf = IDOK;
+	INT_PTR	stf = IDOK;
 	TCHAR	strFilter[] = {_T("CAD Export Files (*.txt)|*.txt||")};
 
    GET_IFACE2(pBroker,ISelection,pSelection);
    SpanIndexType spanIdx = pSelection->GetSpanIdx();
-   spanIdx = spanIdx == ALL_SPANS ? 0 : spanIdx; // default to 0
+   spanIdx = spanIdx<0 ? 0 : spanIdx; // default to 0
    GirderIndexType gdrIdx = pSelection->GetGirderIdx();
-   gdrIdx = gdrIdx == ALL_GIRDERS ? 0 : gdrIdx;
+   gdrIdx = gdrIdx<0 ? 0 : gdrIdx;
 
-   SpanGirderHashType hash = HashSpanGirder(spanIdx,gdrIdx);
-   std::vector<SpanGirderHashType> gdrlist;
-   gdrlist.push_back(hash);
+   CGirderKey girderKey(spanIdx,gdrIdx);
+   std::vector<CGirderKey> girderKeys;
+   girderKeys.push_back(girderKey);
 
 	/* Create ExportCADData dialog box object */
    BOOL bIsExtended = FALSE;
    {
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	   exportCADData  caddlg (pBroker, NULL);
-      caddlg.m_SelGdrs = gdrlist;
+      caddlg.m_GirderKeys = girderKeys;
       caddlg.m_IsExtended = bIsExtended;
 
 	   /* Open the ExportCADData dialog box */
@@ -122,7 +122,7 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 	   if (stf == IDOK)
 	   {
 		   /* Get user's span & beam id values */
-		   gdrlist = caddlg.m_SelGdrs;
+		   girderKeys  = caddlg.m_GirderKeys;
          bIsExtended = caddlg.m_IsExtended;
 	   }
 	   else
@@ -162,12 +162,12 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 	      /* (otherwise, progress bars will be repeatedly created & destroyed on the fly) */
          GET_IFACE2(pBroker,IProgress,pProgress);
 
-         bool multi = gdrlist.size()>1;
+         bool multi = girderKeys.size()>1;
          DWORD mask = multi ? PW_ALL : PW_ALL|PW_NOGAUGE; // Progress window has a cancel button,
          CEAFAutoProgress ap(pProgress,0,mask); 
 
          if (multi)
-            pProgress->Init(0,(short)gdrlist.size(),1);  // and for multi-girders, a gauge.
+            pProgress->Init(0,(short)girderKeys.size(),1);  // and for multi-girders, a gauge.
 
 		   /* Open/create the specified text file */
       	FILE	*fp = NULL;
@@ -181,13 +181,11 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
          TxDOTCadExportFormatType format = bIsExtended ? tcxTest : tcxNormal;
 
 	      /* Write CAD data to text file */
-         for (std::vector<SpanGirderHashType>::iterator it = gdrlist.begin(); it!= gdrlist.end(); it++)
+         for (std::vector<CGirderKey>::iterator it = girderKeys.begin(); it!= girderKeys.end(); it++)
          {
-            SpanIndexType span;
-            GirderIndexType gdr;
-            UnhashSpanGirder(*it, &span, &gdr);
+            CGirderKey& girderKey(*it);
 
-	         if (CAD_SUCCESS != TxDOT_WriteCADDataToFile(fp, pBroker, span, gdr, format,true) )
+	         if (CAD_SUCCESS != TxDOT_WriteCADDataToFile(fp, pBroker, girderKey, format,true) )
             {
 		         AfxMessageBox (_T("Warning: An error occured while writing to File"));
 		         return S_OK;

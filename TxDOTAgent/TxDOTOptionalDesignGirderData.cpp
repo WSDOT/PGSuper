@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,8 @@
 #include <GeomModel\IShape.h>
 #include <WBFLSections.h>
 #include <WBFLGenericBridge.h>
+
+#include <IFace\BeamFactory.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -85,7 +87,7 @@ void CTxDOTOptionalDesignGirderData::ResetData()
 
 void CTxDOTOptionalDesignGirderData::ResetStrandNoData()
 {
-   m_StrandFillType = sfStandard;
+   m_StandardStrandFill = true;
 
    // Data for standard fill
    // ========================
@@ -94,13 +96,10 @@ void CTxDOTOptionalDesignGirderData::ResetStrandNoData()
 
    // Data for non-standard fill
    // ==========================
-   m_StrandRowsAtCL;
-   m_StrandRowsAtEnds.clear();
+   m_UseDepressedStrands = true;
 
-   // Data for direct manip fill
-   // ===========================
-   m_DirectFilledStraightStrands.clear();
-   m_DirectFilledStraightDebond.clear();
+   m_StrandRowsAtCL.clear();
+   m_StrandRowsAtEnds.clear();
 }
 
 CString CTxDOTOptionalDesignGirderData::GetGirderEntryName()
@@ -137,9 +136,9 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("TxDOTOptionalGirderData"),2.0);
+   pStrSave->BeginUnit(_T("TxDOTOptionalGirderData"),1.0);
 
-   pStrSave->put_Property(_T("StrandFillType"),         CComVariant(m_StrandFillType));
+   pStrSave->put_Property(_T("StandardStrandFill"),         CComVariant(m_StandardStrandFill));
 
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
    const matPsStrand* pStrand = pPool->GetStrand(m_Grade, m_Type,m_Size);
@@ -158,7 +157,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
    pStrSave->put_Property(_T("Fci"), CComVariant(m_Fci));
    pStrSave->put_Property(_T("Fc"), CComVariant(m_Fc));
 
-   if (m_StrandFillType==sfStandard)
+   if (m_StandardStrandFill)
    {
       // Data for standard fill
       // ======================
@@ -168,11 +167,12 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
       pStrSave->put_Property(_T("StrandTo"), CComVariant(m_StrandTo));
       pStrSave->EndUnit(); //StandardFillData
    }
-   else if (m_StrandFillType==sfHarpedRows)
+   else
    {
       // Data for non-standard fill
       // ==========================
-      pStrSave->BeginUnit(_T("NonstandardFillData"),2.0);
+      pStrSave->BeginUnit(_T("NonstandardFillData"),1.0);
+      pStrSave->put_Property(_T("UseDepressedStrands"), CComVariant(m_UseDepressedStrands));
 
       RowIndexType rowcount = m_StrandRowsAtCL.size();
       pStrSave->put_Property(_T("StrandRowsAtCLCount"),CComVariant(rowcount));
@@ -198,33 +198,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
 
       pStrSave->EndUnit(); // NonstandardFillData
    }
-   else if (m_StrandFillType==sfDirectFill)
-   {
-      pStrSave->BeginUnit(_T("DirectSelectStrandFill"), 1.0);
-      pStrSave->BeginUnit(_T("StraightStrands"), 1.0);
-      pStrSave->put_Property(_T("NumStraightFill"), CComVariant( StrandIndexType(m_DirectFilledStraightStrands.size())));
-      for (DirectStrandFillCollection::const_iterator its=m_DirectFilledStraightStrands.begin(); its!=m_DirectFilledStraightStrands.end(); its++)
-      {
-         its->Save(pStrSave);
-      }
-      pStrSave->EndUnit(); // StraightStrands
 
-      pStrSave->BeginUnit(_T("StraightStrandDebonding"),1.0);
-      CollectionIndexType nDebondInfo = m_DirectFilledStraightDebond.size();
-      pStrSave->put_Property(_T("DebondInfoCount"),CComVariant(nDebondInfo));
-      std::vector<CDebondInfo>::iterator debond_iter;
-      for ( debond_iter = m_DirectFilledStraightDebond.begin(); debond_iter != m_DirectFilledStraightDebond.end(); debond_iter++ )
-      {
-         CDebondInfo& debond_info = *debond_iter;
-         debond_info.Save(pStrSave);
-      }
-      pStrSave->EndUnit(); // StraightStrandDebonding
-      pStrSave->EndUnit(); // DirectSelectStrandFill
-   }
-   else
-   {
-      ATLASSERT(0);
-   }
 
    pStrSave->EndUnit();
 
@@ -240,31 +214,15 @@ HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,IProgress
    try
    {
       hr = pStrLoad->BeginUnit(_T("TxDOTOptionalGirderData"));
-      Float64 version;
+      double version;
       pStrLoad->get_Version(&version);
 
       CComVariant var;
 
-      if (version<2.0)
-      {
-         // old version was either standard or non
-         var.vt = VT_BOOL;
-         hr = pStrLoad->get_Property(_T("StandardStrandFill"), &var );
-         if( var.boolVal!=VARIANT_FALSE )
-         {
-            m_StrandFillType = sfStandard;
-         }
-         else
-         {
-            m_StrandFillType = sfHarpedRows; // assume for now - may need to make direct fill downstream
-         }
-      }
-      else
-      {
-         var.vt = VT_I4;
-         hr = pStrLoad->get_Property(_T("StrandFillType"), &var );
-         m_StrandFillType = (StrandFillType)var.lVal;
-      }
+      var.Clear();
+      var.vt = VT_BOOL;
+      hr = pStrLoad->get_Property(_T("StandardStrandFill"), &var );
+      m_StandardStrandFill = var.boolVal!=VARIANT_FALSE;
 
       var.Clear();
       var.vt = VT_I4;
@@ -294,7 +252,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,IProgress
       hr = pStrLoad->get_Property(_T("Fc"), &var );
       m_Fc = var.dblVal;
 
-      if (m_StrandFillType==sfStandard)
+      if (m_StandardStrandFill)
       {
          hr = pStrLoad->BeginUnit(_T("StandardFillData"));
 
@@ -310,23 +268,14 @@ HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,IProgress
 
          hr = pStrLoad->EndUnit(); // end BridgeInputData
       }
-      else if (m_StrandFillType==sfHarpedRows)
+      else
       {
          hr = pStrLoad->BeginUnit(_T("NonstandardFillData"));
 
-         bool IsVersion1AndStraight = false; // Version 1.0 used rows to define straight strands
-                                             // We will take the easy way out and define identical row tables
-         if (version<2.0)
-         {
-            var.Clear();
-            var.vt = VT_BOOL;
-            hr = pStrLoad->get_Property(_T("UseDepressedStrands"), &var );
-            if(var.boolVal==VARIANT_FALSE)
-            {
-               // Old version, and previous assumption about harped strands was incorrect.
-               IsVersion1AndStraight = true;
-            }
-         }
+         var.Clear();
+         var.vt = VT_BOOL;
+         hr = pStrLoad->get_Property(_T("UseDepressedStrands"), &var );
+         m_UseDepressedStrands = var.boolVal!=VARIANT_FALSE;
 
          var.Clear();
          var.vt = VT_I4;
@@ -359,86 +308,28 @@ HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,IProgress
          hr = pStrLoad->get_Property(_T("StrandRowsAtEndsCount"), &var );
          rowcount = var.lVal;
 
-         if (IsVersion1AndStraight)
+         for (Int32 ir=0; ir<rowcount; ir++)
          {
-            ATLASSERT(rowcount==0); // old nondepressed had no data
+            hr = pStrLoad->BeginUnit(_T("StrandRowAtEnds"));
 
-            m_StrandRowsAtEnds = m_StrandRowsAtCL; // rows same at ends and middle - e.g., straight strands
-         }
-         else
-         {
-            for (Int32 ir=0; ir<rowcount; ir++)
-            {
-               hr = pStrLoad->BeginUnit(_T("StrandRowAtEnds"));
+            StrandRow row;
 
-               StrandRow row;
+            var.Clear();
+            var.vt = VT_R8;
+            hr = pStrLoad->get_Property(_T("RowElev"), &var );
+            row.RowElev = var.dblVal;
 
-               var.Clear();
-               var.vt = VT_R8;
-               hr = pStrLoad->get_Property(_T("RowElev"), &var );
-               row.RowElev = var.dblVal;
+            var.Clear();
+            var.vt = VT_I4;
+            hr = pStrLoad->get_Property(_T("StrandsInRow"), &var );
+            row.StrandsInRow = var.lVal;
 
-               var.Clear();
-               var.vt = VT_I4;
-               hr = pStrLoad->get_Property(_T("StrandsInRow"), &var );
-               row.StrandsInRow = var.lVal;
+            m_StrandRowsAtEnds.insert(row);
 
-               m_StrandRowsAtEnds.insert(row);
-
-               hr = pStrLoad->EndUnit();
-            }
+            hr = pStrLoad->EndUnit();
          }
 
          hr = pStrLoad->EndUnit(); // NonstandardFillData
-
-      }
-      else if (m_StrandFillType==sfDirectFill)
-      {
-         hr = pStrLoad->BeginUnit(_T("DirectSelectStrandFill"));
-         if (FAILED(hr))
-         {
-            ATLASSERT(0);
-            return hr;
-         }
-
-         m_DirectFilledStraightStrands.clear();
-
-         pStrLoad->BeginUnit(_T("StraightStrands"));
-         var.Clear();
-         var.vt = VT_UI2;
-         pStrLoad->get_Property(_T("NumStraightFill"), &var );
-         StrandIndexType nums = var.uiVal;
-         for (StrandIndexType is=0; is<nums; is++)
-         {
-            CDirectStrandFillInfo fi;
-            fi.Load(pStrLoad);
-            m_DirectFilledStraightStrands.AddFill(fi);
-         }
-         pStrLoad->EndUnit();  
-
-         // debond
-         m_DirectFilledStraightDebond.clear();
-         pStrLoad->BeginUnit(_T("StraightStrandDebonding"));
-         long nDebondInfo;
-         var.Clear();
-         var.vt = VT_I4;
-         pStrLoad->get_Property(_T("DebondInfoCount"),&var);
-         nDebondInfo = var.lVal;
-
-         int i = 0;
-         for ( i = 0; i < nDebondInfo; i++ )
-         {
-            CDebondInfo debond_info;
-            debond_info.Load(pStrLoad);
-            m_DirectFilledStraightDebond.push_back(debond_info);
-         }
-
-         pStrLoad->EndUnit(); // StraightStrandDebonding
-         pStrLoad->EndUnit();  // DirectSelectStrandFill
-      }
-      else
-      {
-         ATLASSERT(0);
       }
 
       hr = pStrLoad->EndUnit(); // TxDOTOptionalGirderData
@@ -448,42 +339,23 @@ HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,IProgress
       ATLASSERT(0);
    }
 
-   // One last step - clear out any strand data from fill methods not used
-   if (m_StrandFillType != sfStandard)
-   {
-      m_NumStrands = 0;
-      m_StrandTo = 0.0;
-   }
-
-   if (m_StrandFillType != sfHarpedRows)
-   {
-      m_StrandRowsAtCL.clear();
-      m_StrandRowsAtEnds.clear();
-   }
-
-   if (m_StrandFillType != sfDirectFill)
-   {
-      m_DirectFilledStraightStrands.clear();
-      m_DirectFilledStraightDebond.clear();
-   }
-
    return hr;
 }
 
 
 //======================== ACCESS     =======================================
-void CTxDOTOptionalDesignGirderData::SetStrandFillType(StrandFillType val)
+void CTxDOTOptionalDesignGirderData::SetStandardStrandFill(bool val)
 {
-   if (val != m_StrandFillType)
+   if (val != m_StandardStrandFill)
    {
-      m_StrandFillType = val;
+      m_StandardStrandFill = val;
       FireChanged(ITxDataObserver::ctGirder);
    }
 }
 
-CTxDOTOptionalDesignGirderData::StrandFillType CTxDOTOptionalDesignGirderData::GetStrandFillType() const
+bool CTxDOTOptionalDesignGirderData::GetStandardStrandFill() const
 {
-   return m_StrandFillType;
+   return m_StandardStrandFill;
 }
 
 void CTxDOTOptionalDesignGirderData::SetStrandData(matPsStrand::Grade grade,
@@ -705,8 +577,9 @@ bool CTxDOTOptionalDesignGirderData::ComputeEccentricities(GirderLibrary* pLib, 
       pGdrEntry->GetBeamFactory(&pFactory);
       GirderLibraryEntry::Dimensions dimensions = pGdrEntry->GetDimensions();
 
+      long DUMMY_AGENT_ID = -1;
       CComPtr<IGirderSection> gdrSection;
-      pFactory->CreateGirderSection(NULL,INVALID_ID,INVALID_INDEX,INVALID_INDEX,dimensions,&gdrSection);
+      pFactory->CreateGirderSection(NULL,DUMMY_AGENT_ID,dimensions,-1,-1,&gdrSection);
 
       CComPtr<IShape>  pShape;
       gdrSection.QueryInterface(&pShape);
@@ -791,11 +664,9 @@ bool CTxDOTOptionalDesignGirderData::ComputeEccentricities(GirderLibrary* pLib, 
       Float64 cg_end_harped_strands = numHarped>0 ? endFirstMom/numHarped : 0.0;
 
       // Adjust end harped strands for To
-      if (numHarped > 0)
-      {
-         Float64 adjust = To - ymax;
-         cg_end_harped_strands += adjust;
-      }
+      Float64 adjust = To - ymax;
+
+      cg_end_harped_strands += adjust;
 
       // Now can compute composite cg's and eccs'
       Float64 cg_end_comp = (numStraight*cg_straight_strands + numHarped*cg_end_harped_strands)/ns;
@@ -808,81 +679,23 @@ bool CTxDOTOptionalDesignGirderData::ComputeEccentricities(GirderLibrary* pLib, 
    return true;
 }
 
-bool CTxDOTOptionalDesignGirderData::ComputeDirectFillEccentricity(const GirderLibraryEntry* pGdrEntry, Float64* pEcc) const
+
+// Data for non-standard fill
+// ==========================
+void CTxDOTOptionalDesignGirderData::SetUseDepressedStrands(bool val)
 {
-   *pEcc = 0.0;
-
-   if (m_DirectFilledStraightStrands.GetFilledStrandCount() == 0)
-      return false;
-
-   if (pGdrEntry==NULL)
+   if (m_UseDepressedStrands!=val)
    {
-      return false;
+      m_UseDepressedStrands = val;
+      FireChanged(ITxDataObserver::ctGirder);
    }
-   else
-   {
-      // first need cg location of outer shape - this requires some work
-      CComPtr<IBeamFactory> pFactory;
-      pGdrEntry->GetBeamFactory(&pFactory);
-      GirderLibraryEntry::Dimensions dimensions = pGdrEntry->GetDimensions();
-
-      CComPtr<IGirderSection> gdrSection;
-      pFactory->CreateGirderSection(NULL,INVALID_ID,INVALID_INDEX,INVALID_INDEX,dimensions,&gdrSection);
-
-      CComPtr<IShape>  pShape;
-      gdrSection.QueryInterface(&pShape);
-
-      CComPtr<IShapeProperties> pShapeProps;
-      pShape->get_ShapeProperties(&pShapeProps);
-
-      Float64 ybot,ytop;
-      pShapeProps->get_Ybottom(&ybot);
-      pShapeProps->get_Ytop(&ytop);
-
-      Float64 height = ybot+ytop;
-
-      // Strands...
-      StrandIndexType maxStraight = pGdrEntry->GetMaxStraightStrands();
-      ASSERT(maxStraight > 0);
-
-      // compute ecc for straight group (assume non-sloping strands)
-      StrandIndexType max_straight_coords = pGdrEntry->GetNumStraightStrandCoordinates();
-      StrandIndexType num_straight_strands(0);
-      Float64 firstMom(0.0);
-
-      for(std::vector<CDirectStrandFillInfo>::const_iterator it=m_DirectFilledStraightStrands.begin(); it!=m_DirectFilledStraightStrands.end(); it++)
-      {
-         const CDirectStrandFillInfo& fillInfo = *it;
-
-         StrandIndexType strandIdx = fillInfo.permStrandGridIdx;
-         ATLASSERT(strandIdx<maxStraight);
-
-         Float64 Xstart, Ystart, Xend, Yend;
-         bool canDebond;
-         pGdrEntry->GetStraightStrandCoordinates(strandIdx, &Xstart, &Ystart, &Xend, &Yend, &canDebond);
-         if (Xstart>0.0)
-         {
-            num_straight_strands += 2;
-            firstMom += 2.0 * Ystart;
-         }
-         else
-         {
-            num_straight_strands += 1;
-            firstMom += Ystart;
-         }
-      }
-
-      Float64 cg_straight_strands = num_straight_strands>0 ? firstMom/num_straight_strands : 0.0;
-
-      *pEcc = ybot - cg_straight_strands;
-   }
-
-   return true;
 }
 
+bool CTxDOTOptionalDesignGirderData::GetUseDepressedStrands() const
+{
+   return m_UseDepressedStrands;
+}
 
-// Data for non-standard row fill
-// ==========================
 const CTxDOTOptionalDesignGirderData::StrandRowContainer CTxDOTOptionalDesignGirderData::GetStrandsAtCL() const
 {
    return m_StrandRowsAtCL;
@@ -915,7 +728,7 @@ void CTxDOTOptionalDesignGirderData::SetStrandsAtEnds(const CTxDOTOptionalDesign
 
 CTxDOTOptionalDesignGirderData::AvailableStrandsInRowContainer CTxDOTOptionalDesignGirderData::ComputeAvailableStrandRows(const GirderLibraryEntry* pGdrEntry)
 {
-   ASSERT(!(pGdrEntry->IsDifferentHarpedGridAtEndsUsed() && pGdrEntry->GetMaxHarpedStrands()>0) ); // we can't do separate grids
+   ASSERT(!pGdrEntry->IsDifferentHarpedGridAtEndsUsed()); // we can't do separate grids
 
    CTxDOTOptionalDesignGirderData::AvailableStrandsInRowContainer available_rows;
 
@@ -939,7 +752,7 @@ CTxDOTOptionalDesignGirderData::AvailableStrandsInRowContainer CTxDOTOptionalDes
 
          num_strands = x_strand==0.0 ? 1 : 2; // two strands if x>0.0
       }
-      else if (strand_type==GirderLibraryEntry::stAdjustable)
+      else if (strand_type==GirderLibraryEntry::stHarped)
       {
          Float64 Xhp, Yhp, Xend, Yend;
          pGdrEntry->GetHarpedStrandCoordinates(i_local, &x_strand, &y_strand, &Xhp, &Yhp, &Xend, &Yend); // all locations assumed same
@@ -984,36 +797,6 @@ CTxDOTOptionalDesignGirderData::AvailableStrandsInRowContainer CTxDOTOptionalDes
    }
 
    return available_rows;
-}
-
-// Data for direct manip fill
-// ===========================
-const DirectStrandFillCollection& CTxDOTOptionalDesignGirderData::GetDirectFilledStraightStrands() const
-{
-   return m_DirectFilledStraightStrands;
-}
-
-void CTxDOTOptionalDesignGirderData::SetDirectFilledStraightStrands(const DirectStrandFillCollection& coll)
-{
-   if (coll != m_DirectFilledStraightStrands)
-   {
-      m_DirectFilledStraightStrands = coll;
-      FireChanged(ITxDataObserver::ctGirder);
-   }
-}
-
-const std::vector<CDebondInfo>& CTxDOTOptionalDesignGirderData::GetDirectFilledStraightDebond() const
-{
-   return m_DirectFilledStraightDebond;
-}
-
-void CTxDOTOptionalDesignGirderData::SetDirectFilledStraightDebond(const std::vector<CDebondInfo>& coll)
-{
-   if (coll != m_DirectFilledStraightDebond)
-   {
-      m_DirectFilledStraightDebond = coll;
-      FireChanged(ITxDataObserver::ctGirder);
-   }
 }
 
 // Private data structures for CheckAndBuildStrandRows
@@ -1172,7 +955,7 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
    // At this point we are mostly done checking, and if we have a clone, time to make the strands
    if (pCloneGdrEntry != NULL)
    {
-      ASSERT(!pMasterGdrEntry->IsDifferentHarpedGridAtEndsUsed() && pMasterGdrEntry->GetMaxHarpedStrands()>0);
+      ASSERT(!pMasterGdrEntry->IsDifferentHarpedGridAtEndsUsed());
 
       ShRowIterator shit_cl  = shrows.begin();
       ShRowIterator shit_end = shrows.begin();
@@ -1231,7 +1014,7 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
                   // Create strand location and add it to global fill in clone
                   StrandIndexType nhnew = pCloneGdrEntry->AddHarpedStrandCoordinates(end_x, end_y, cl_x, cl_y, end_x, end_y);
 
-                  pCloneGdrEntry->AddStrandToPermStrandGrid(GirderLibraryEntry::stAdjustable, nhnew-1);
+                  pCloneGdrEntry->AddStrandToPermStrandGrid(GirderLibraryEntry::stHarped, nhnew-1);
 
                   incr_cl.WasFilled = true;  // unavailable after this point
                   incr_end.WasFilled = true;
@@ -1307,13 +1090,12 @@ void CTxDOTOptionalDesignGirderData::GetGlobalStrandCoordinate(const GirderLibra
    }
    else
    {
-      ASSERT(type==GirderLibraryEntry::stAdjustable);
+      ASSERT(type==GirderLibraryEntry::stHarped);
 
       Float64 xend, yend, xstart, ystart;
       pGdrEntry->GetHarpedStrandCoordinates(local_idx, &xstart, &ystart, pX, pY, &xend, &yend); 
    }
 }
-
 
 //======================== INQUIRY    =======================================
 
@@ -1326,7 +1108,7 @@ void CTxDOTOptionalDesignGirderData::MakeCopy(const CTxDOTOptionalDesignGirderDa
 
    m_pParent = rOther.m_pParent;
 
-   m_StrandFillType = rOther.m_StrandFillType;
+   m_StandardStrandFill = rOther.m_StandardStrandFill;
    m_Grade = rOther.m_Grade;
    m_Type = rOther.m_Type;
    m_Size = rOther.m_Size;
@@ -1337,11 +1119,9 @@ void CTxDOTOptionalDesignGirderData::MakeCopy(const CTxDOTOptionalDesignGirderDa
    m_NumStrands = rOther.m_NumStrands;
    m_StrandTo = rOther.m_StrandTo;
 
+   m_UseDepressedStrands = rOther.m_UseDepressedStrands;
    m_StrandRowsAtCL = rOther.m_StrandRowsAtCL;
    m_StrandRowsAtEnds = rOther.m_StrandRowsAtEnds;
-
-   m_DirectFilledStraightStrands = rOther.m_DirectFilledStraightStrands;
-   m_DirectFilledStraightDebond = rOther.m_DirectFilledStraightDebond;
 }
 
 void CTxDOTOptionalDesignGirderData::MakeAssignment(const CTxDOTOptionalDesignGirderData& rOther)

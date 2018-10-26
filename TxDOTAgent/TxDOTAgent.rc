@@ -38,7 +38,7 @@ END
 2 TEXTINCLUDE 
 BEGIN
     "#ifndef APSTUDIO_INVOKED\r\n"
-    "#include <PGSuperVersion.h>\r\n"
+    "#include "<PGSuperVersion.h>"\r\n"
     "#endif\r\n"
     "#include ""afxres.h""\r\n"
     "\0"
@@ -59,8 +59,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,9,2,1
- PRODUCTVERSION 2,9,2,1
+ FILEVERSION 3,0,0,0
+ PRODUCTVERSION 3,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -78,12 +78,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "TxDOTAgent Module"
-            VALUE "FileVersion", "2.9.2.1"
+            VALUE "FileVersion", "3.0.0.0"
             VALUE "InternalName", "TOGA"
-            VALUE "LegalCopyright", "Copyright © 1999-2016, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2013, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperTxDOTAgent.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.9.2.1"
+            VALUE "ProductVersion", "3.0.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -133,26 +133,26 @@ BEGIN
     EDITTEXT        IDC_JOB_NUMBER,54,64,132,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_ENGINEER,253,24,132,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_COMPANY,253,44,132,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_COMMENTS,253,64,132,31,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL
-    EDITTEXT        IDC_SPAN_NO,60,120,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    EDITTEXT        IDC_BEAM_NO,60,140,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    COMBOBOX        IDC_BEAM_TYPE,60,160,104,98,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_SPAN_LENGTH,218,120,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    EDITTEXT        IDC_BEAM_SPACING,218,140,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    EDITTEXT        IDC_SLAB_THICKNESS,218,159,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
+    EDITTEXT        IDC_COMMENTS,253,64,132,26,ES_MULTILINE | ES_AUTOHSCROLL
+    EDITTEXT        IDC_SPAN_NO,60,120,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_BEAM_NO,60,140,40,14,ES_AUTOHSCROLL
+    COMBOBOX        IDC_BEAM_TYPE,60,160,66,98,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_SPAN_LENGTH,202,120,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_BEAM_SPACING,202,140,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_SLAB_THICKNESS,202,159,40,14,ES_AUTOHSCROLL
     GROUPBOX        "General Information",IDC_STATIC,7,7,410,95
-    EDITTEXT        IDC_RELATIVE_HUMIDITY,347,120,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    EDITTEXT        IDC_LLDF_MOMENT,347,140,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    EDITTEXT        IDC_LLDF_SHEAR,347,159,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    EDITTEXT        IDC_EC_SLAB,60,204,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    EDITTEXT        IDC_EC_BEAM,218,205,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    EDITTEXT        IDC_FC_SLAB,347,205,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    EDITTEXT        IDC_FT,156,246,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    EDITTEXT        IDC_FB,347,247,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    EDITTEXT        IDC_MU,156,265,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    EDITTEXT        IDC_W_NONCOMP_DC,75,310,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    EDITTEXT        IDC_W_COMP_DC,218,310,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    EDITTEXT        IDC_W_COMP_DW,347,310,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
+    EDITTEXT        IDC_RELATIVE_HUMIDITY,347,120,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_LLDF_MOMENT,347,140,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_LLDF_SHEAR,347,159,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EC_SLAB,60,204,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EC_BEAM,202,205,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FC_SLAB,347,205,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FT,156,246,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FB,347,247,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_MU,156,265,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_W_NONCOMP_DC,75,310,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_W_COMP_DC,202,310,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_W_COMP_DW,347,310,40,14,ES_AUTOHSCROLL
     RTEXT           "Bridge",IDC_STATIC,24,27,24,8
     RTEXT           "Job Number",IDC_STATIC,11,67,38,8
     RTEXT           "Bridge ID",IDC_STATIC,8,48,40,8
@@ -163,12 +163,12 @@ BEGIN
     RTEXT           "Beam Type",IDC_STATIC,15,161,38,8
     RTEXT           "Beam No.",IDC_STATIC,12,142,40,8
     RTEXT           "Span No.",IDC_STATIC,12,123,40,8
-    RTEXT           "Beam Spacing",IDC_STATIC,162,143,51,8
-    RTEXT           "Slab Thickness",IDC_STATIC,165,161,48,8
-    RTEXT           "Span Length (CL Bearings)",IDC_STATIC,162,118,51,17
-    LTEXT           "ft",IDC_BEAM_SPACING_UNITS,262,144,8,8
-    LTEXT           "ft",IDC_SPAN_LENGTH_UNITS,262,125,8,8
-    LTEXT           "in",IDC_SLAB_THICKNESS_UNITS,262,162,8,8
+    RTEXT           "Beam Spacing",IDC_STATIC,146,143,51,8
+    RTEXT           "Slab Thickness",IDC_STATIC,144,161,53,8
+    RTEXT           "Span Length (CL Bearings)",IDC_STATIC,146,118,51,17
+    LTEXT           "ft",IDC_BEAM_SPACING_UNITS,246,144,8,8
+    LTEXT           "ft",IDC_SPAN_LENGTH_UNITS,246,125,8,8
+    LTEXT           "in",IDC_SLAB_THICKNESS_UNITS,246,162,8,8
     RTEXT           "Relative Humidity",IDC_STATIC,281,123,62,8
     LTEXT           "%",IDC_STATIC,389,123,8,8
     RTEXT           "LLDF (Moment)",IDC_STATIC,279,143,62,8
@@ -176,8 +176,8 @@ BEGIN
     GROUPBOX        "Material Properties",IDC_STATIC,7,188,410,40
     RTEXT           "Ec, Slab",IDC_STATIC,15,207,40,8
     LTEXT           "ksi",IDC_EC_SLAB_UNITS,102,207,15,8
-    RTEXT           "Ec, Beam",IDC_STATIC,172,208,40,8
-    LTEXT           "ksi",IDC_EC_BEAM_UNITS,260,208,15,8
+    RTEXT           "Ec, Beam",IDC_STATIC,156,208,40,8
+    LTEXT           "ksi",IDC_EC_BEAM_UNITS,244,208,15,8
     RTEXT           "f'c, Slab",IDC_STATIC,302,208,40,8
     LTEXT           "ksi",IDC_FC_SLAB_UNITS,390,208,15,8
     GROUPBOX        "Design Data",IDC_STATIC,7,235,410,53
@@ -190,8 +190,8 @@ BEGIN
     GROUPBOX        "Optional Uniform Design Loads",IDC_STATIC,7,294,410,40
     RTEXT           "W non-comp, DC",IDC_STATIC,12,313,60,8
     LTEXT           "kip/ft",IDC_W_NONCOMP_DC_UNITS,117,313,23,8
-    RTEXT           "W comp, DC",IDC_STATIC,163,313,49,8
-    LTEXT           "kip/ft",IDC_W_COMP_DC_UNITS,260,313,26,8
+    RTEXT           "W comp, DC",IDC_STATIC,147,313,49,8
+    LTEXT           "kip/ft",IDC_W_COMP_DC_UNITS,244,313,26,8
     RTEXT           "W Overlay",IDC_STATIC,289,313,51,8
     LTEXT           "kip/ft",IDC_W_COMP_DW_UNITS,390,313,21,8
     RTEXT           "* Note: Tension is negative",IDC_STATIC,232,268,135,8
@@ -206,15 +206,19 @@ STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Girder Input"
 FONT 8, "Microsoft Sans Serif", 400, 0, 0x0
 BEGIN
+    CONTROL         "Standard Strand Fill",IDC_ORIG_STANDARD_FILL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,26,23,79,10
+    CONTROL         "Use Depressed Strands",IDC_ORIG_USE_DEPRESSED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,83,37,91,10
     COMBOBOX        IDC_ORIG_STRAND_SIZE,62,54,48,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_ORIG_STRAND_TYPE,62,73,114,380,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_ORIG_FCI,62,93,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    EDITTEXT        IDC_ORIG_FC,62,114,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
+    EDITTEXT        IDC_ORIG_FCI,62,93,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ORIG_FC,62,114,40,14,ES_AUTOHSCROLL
     GROUPBOX        "Static",IDC_ORIG_BOX,196,8,250,175
+    CONTROL         "Standard Strand Fill",IDC_OPT_STANDARD_FILL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,218,79,10
+    CONTROL         "Use Depressed Strands",IDC_OPT_USE_DEPRESSED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,82,232,91,10
     COMBOBOX        IDC_OPT_STRAND_SIZE,61,249,48,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_OPT_STRAND_TYPE,61,268,114,380,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_OPT_FCI,61,288,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    EDITTEXT        IDC_OPT_FC,61,309,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
+    EDITTEXT        IDC_OPT_FCI,61,288,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_OPT_FC,61,309,40,14,ES_AUTOHSCROLL
     GROUPBOX        "Static",IDC_OPT_BOX,195,203,250,175
     RTEXT           "Strand Size",IDC_STATIC,17,251,39,8,0,WS_EX_TRANSPARENT
     RTEXT           "f'ci",IDC_STATIC,33,291,22,8
@@ -230,8 +234,6 @@ BEGIN
     LTEXT           "ksi",IDC_ORIG_FC_UNITS,104,117,15,8
     GROUPBOX        "Original Girder Design",IDC_STATIC,8,3,454,185
     RTEXT           "Strand Type",IDC_STATIC,16,75,39,8,0,WS_EX_TRANSPARENT
-    COMBOBOX        IDC_ORG_FILLTYPE_COMBO,17,24,164,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_OPT_FILLTYPE_COMBO,17,217,164,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_GIRDER_VIEW_PAGE DIALOGEX 0, 0, 396, 163
@@ -261,7 +263,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     COMBOBOX        IDC_OPT_NUM_STRANDS,104,34,48,424,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_OPT_TO,104,66,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
+    EDITTEXT        IDC_OPT_TO,104,66,40,14,ES_AUTOHSCROLL
     PUSHBUTTON      "Compute Eccentricity",IDC_OPT_COMPUTE,79,113,81,14
     RTEXT           "No. Strands",IDC_STATIC,60,36,39,8
     LTEXT           "No. Depressed Strands  ??",IDC_OPT_NO_DEPRESSED,104,52,123,11
@@ -277,7 +279,7 @@ CAPTION "Prestress Eccentricity"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,43,55,50,14
-    CTEXT           "Undefined",IDC_ECC_TEXT,15,18,103,26
+    RTEXT           "Undefined",IDC_ECC_TEXT,7,18,103,26
 END
 
 IDD_NONSTANDARD_FILL_DLG DIALOGEX 0, 0, 250, 175
@@ -349,33 +351,6 @@ BEGIN
     LTEXT           "Static",IDC_WARNING_MSG,7,7,248,76,0,WS_EX_STATICEDGE
     COMBOBOX        IDC_PROJECT_CRITERIA,67,93,182,93,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Select Entry:",IDC_STATIC,15,95,42,8
-END
-
-IDD_DIRECT_FILL_DLG DIALOGEX 0, 0, 251, 175
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    GROUPBOX        "Non-Standard, Direct-Fill, Straight Strand Layout",IDC_STATIC,25,13,205,135
-    PUSHBUTTON      "Select Strands...",IDC_SELECT_STRANDS,80,56,98,17
-    CTEXT           "No. of strands = 12, No. Debonded = 10",IDC_DIRECT_STATIC,55,81,148,21
-END
-
-IDD_GIRDER_SELECT_STRANDS DIALOGEX 0, 0, 479, 383
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
-CAPTION "Select Strands"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,7,362,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,63,362,50,14
-    CONTROL         "Custom1",IDC_STRAND_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,15,16,148,287
-    LTEXT           "",IDC_PICTURE,182,7,290,345,WS_BORDER
-    GROUPBOX        "Select Strands",IDC_GRID_STATIC,7,3,169,310
-    GROUPBOX        "View Settings",IDC_STATIC,7,326,169,29
-    COMBOBOX        IDC_COMBO_VIEWLOC,13,337,79,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Show Numbers",IDC_SHOW_NUMBERS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,109,340,58,10
-    PUSHBUTTON      "Help",ID_HELP,117,362,50,14
-    LTEXT           "Debonded",IDC_DEBONDED,309,360,116,8
-    LTEXT           "Straight",IDC_STRAIGHT,183,360,89,8
 END
 
 
@@ -464,7 +439,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 417
         VERTGUIDE, 60
-        VERTGUIDE, 218
+        VERTGUIDE, 202
         VERTGUIDE, 347
         TOPMARGIN, 7
         BOTTOMMARGIN, 383
@@ -550,22 +525,6 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 135
     END
-
-    IDD_DIRECT_FILL_DLG, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 244
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 168
-    END
-
-    IDD_GIRDER_SELECT_STRANDS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 472
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 376
-    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -616,16 +575,6 @@ BEGIN
     0
 END
 
-IDD_GIRDER_SELECT_STRANDS DLGINIT
-BEGIN
-    IDC_COMBO_VIEWLOC, 0x403, 19, 0
-0x6956, 0x7765, 0x6120, 0x2074, 0x6947, 0x6472, 0x7265, 0x4520, 0x646e, 
-"\000" 
-    IDC_COMBO_VIEWLOC, 0x403, 17, 0
-0x6956, 0x7765, 0x6120, 0x2074, 0x694d, 0x2d64, 0x7073, 0x6e61, "\000" 
-    0
-END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -643,7 +592,7 @@ END
 STRINGTABLE 
 BEGIN
     IDS_E_BADINSTALL        "There is an error with the %1 installation.  Please re-install the program."
-    IDS_E_PROBPERSISTS      "Contact your technical support representitive if this problem persists.\n Please include your project file and the %1 file found in the program directory."
+    IDS_E_PROBPERSISTS      "If this problem persists,  contact technical support at Bridge_Support@wsdot.wa.gov.\n Please include your project file and the %1 file found in the program directory."
     IDS_PROJCRIT_ERROR      "\nThe Project Criteria library entry with the name ""%s"" that was originally selected and saved in this TOGA project file does not exist in the current PGSuper Master Library.\n\nPlease select a valid Project Criteria entry from the list below, or close this project and configure PGSuper to use another Master Library (i.e., TxDOT's)."
     IDS_E_INVALIDFORMAT     "%1 is not a valid PGSuper project file."
     IDS_E_FILENOTFOUND      "File %1 was not found"
@@ -657,7 +606,7 @@ BEGIN
     IDS_E_USERDEFINED       "An unknown error occured while reading %1"
     IDS_GDR_ERROR           "The girder: ""%s"" does not exist in the master library.\nAnalyis cannot continue.\n\nIs PGSuper configured to use the TxDOT libraries and templates package?\nTOGA is a TxDOT-specific program and requires the TxDOT Master Library. If necessary, close this project and go to the Configure PGSuper menu to fix the problem."
     IDS_CONN_ERROR          "The connection: ""%s"" does not exist in the master library.\nAnalyis cannot continue.\n\nIs PGSuper configured to use the TxDOT libraries and templates package?\nTOGA is a TxDOT-specific program and requires the TxDOT Master Library. If necessary, close project and go to the Configure PGSuper menu to fix the problem."
-    IDS_GDR_ERROR3          "The girder: ""%s"" has Adjustable Straight strands in the web. TOGA only allows Harped strands.\nAnalyis cannot continue."
+    IDS_GDR_ERROR3          "The girder: ""%s"" has Straight-Web strands in the web. TOGA only allows Harped strands.\nAnalyis cannot continue."
 END
 
 STRINGTABLE 
@@ -691,11 +640,11 @@ BEGIN
     ID_FILE_EXPORTPGSUPERMODEL 
                             "Export current TOGA data to a PGSuper file for further evaluation"
     ID_LICENSE_AGREEMENT    "Read license agreement"
-    ID_VIEW_SECTIONCUTLOCATION "Move section cut location in Girder View"
 END
 
 STRINGTABLE 
 BEGIN
+    ID_VIEW_SECTIONCUTLOCATION "Move section cut location in Girder View"
     ID_VIEW_GIRDERVIEWSETTINGS "Change display settings in Girder View"
 END
 

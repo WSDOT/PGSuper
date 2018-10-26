@@ -1,25 +1,3 @@
-///////////////////////////////////////////////////////////////////////
-// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
-//                        Bridge and Structures Office
-//
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the Alternate Route Open Source License as 
-// published by the Washington State Department of Transportation, 
-// Bridge and Structures Office.
-//
-// This program is distributed in the hope that it will be useful, but 
-// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
-// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
-// the Alternate Route Open Source License for more details.
-//
-// You should have received a copy of the Alternate Route Open Source 
-// License along with this program; if not, write to the Washington 
-// State Department of Transportation, Bridge and Structures Office, 
-// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
-// Bridge_Support@wsdot.wa.gov
-///////////////////////////////////////////////////////////////////////
-
 // TxDOTOptionalDesignGirderViewPage.cpp : implementation file
 //
 
@@ -29,7 +7,6 @@
 #include "TxDOTOptionalDesignUtilities.h"
 
 #include <EAF\EAFDisplayUnits.h>
-#include "PGSuperUnits.h"
 
 #include "TogaGirderModelElevationView.h"
 #include "TogaGirderModelSectionView.h"
@@ -218,8 +195,10 @@ void CTxDOTOptionalDesignGirderViewPage::ShowCutDlg()
    GirderIndexType gdr;
    GetSpanAndGirderSelection(&span,&gdr);
 
+   CSegmentKey segmentKey(span,gdr,0);
+
    ATLASSERT( span != ALL_SPANS && gdr != ALL_GIRDERS  );
-   Uint16 nHarpPoints = pStrandGeom->GetNumHarpPoints(span,gdr);
+   Uint16 nHarpPoints = pStrandGeom->GetNumHarpPoints(segmentKey);
 
    CTogaSectionCutDlgEx dlg(nHarpPoints,m_CurrentCutLocation,0.0,high,m_CutLocation);
 
@@ -263,7 +242,7 @@ void CTxDOTOptionalDesignGirderViewPage::CutAtRightEnd()
 
 void CTxDOTOptionalDesignGirderViewPage::CutAtNext()
 {
-   Float64 f = m_CurrentCutLocation/m_MaxCutLocation;
+   double f = m_CurrentCutLocation/m_MaxCutLocation;
    f = ::RoundOff(f+0.1,0.1);
    if ( 1 < f )
       f = 1;
@@ -273,7 +252,7 @@ void CTxDOTOptionalDesignGirderViewPage::CutAtNext()
 
 void CTxDOTOptionalDesignGirderViewPage::CutAtPrev()
 {
-   Float64 f = m_CurrentCutLocation/m_MaxCutLocation;
+   double f = m_CurrentCutLocation/m_MaxCutLocation;
    f = ::RoundOff(f-0.1,0.1);
    if ( f < 0 )
       f = 0;
@@ -309,13 +288,15 @@ void CTxDOTOptionalDesignGirderViewPage::UpdateBar()
    SpanIndexType spanIdx, gdrIdx;
    GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
 
+   CSegmentKey segmentKey(spanIdx,gdrIdx,0);
+
    try
    {
       CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetUpdatedBroker();
       GET_IFACE2(pBroker, IBridge, pBridge);
 
       // cut location
-      Float64 gird_len = pBridge->GetGirderLength(spanIdx,gdrIdx);
+      Float64 gird_len = pBridge->GetSegmentLength(segmentKey);
       m_MaxCutLocation = gird_len;
 
       if (m_CutLocation==UserInput)
@@ -341,8 +322,8 @@ void CTxDOTOptionalDesignGirderViewPage::UpdateBar()
          GET_IFACE2(pBroker, IPointOfInterest, pPoi);
          std::vector<pgsPointOfInterest> poi;
          std::vector<pgsPointOfInterest>::iterator iter;
-         poi = pPoi->GetPointsOfInterest(spanIdx, gdrIdx, pgsTypes::CastingYard, POI_HARPINGPOINT);
-         CollectionIndexType nPoi = poi.size();
+         poi = pPoi->GetPointsOfInterest(segmentKey, POI_HARPINGPOINT);
+         IndexType nPoi = poi.size();
          ASSERT(0 < nPoi && nPoi <3);
          iter = poi.begin();
          pgsPointOfInterest left_hp_poi = *iter++;
@@ -449,6 +430,9 @@ void CTxDOTOptionalDesignGirderViewPage::OnBnClickedSectionCut()
    CutAtLocation();
 }
 
+
+
+
 void CTxDOTOptionalDesignGirderViewPage::DisplayErrorMode(TxDOTBrokerRetrieverException& exc)
 {
    m_pSectionView->ShowWindow(SW_HIDE);
@@ -457,7 +441,7 @@ void CTxDOTOptionalDesignGirderViewPage::DisplayErrorMode(TxDOTBrokerRetrieverEx
    m_SectionBtn.EnableWindow(FALSE);
 
    CString msg;
-   msg.Format(_T("Error - Analysis run Failed because: \n %s"),exc.Message);
+   msg.Format(_T("Error - Analysis run Failed because: \n %s \n More Information May be in Status Center"),exc.Message);
 
    m_ErrorMsgStatic.SetWindowText(msg);
    m_ErrorMsgStatic.ShowWindow(SW_SHOW);

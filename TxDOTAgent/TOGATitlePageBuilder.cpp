@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 
 #include "stdafx.h"
 #include "TOGATitlePageBuilder.h"
-#include <PgsExt\ReportStyleHolder.h>
+#include <Reporting\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\LibraryUsageParagraph.h>
 #include <Reporting\GirderSeedDataComparisonParagraph.h>
@@ -42,28 +42,15 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 CTOGATitlePageBuilder::CTOGATitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion) :
-CTitlePageBuilder(strTitle),
 m_pBroker(pBroker),
+m_Title(strTitle),
 m_bFullVersion(bFullVersion)
-{
-}
-
-CTOGATitlePageBuilder::CTOGATitlePageBuilder(const CTOGATitlePageBuilder& other) :
-CTitlePageBuilder(other),
-m_pBroker(other.m_pBroker),
-m_bFullVersion(other.m_bFullVersion)
 {
 }
 
 CTOGATitlePageBuilder::~CTOGATitlePageBuilder(void)
 {
 }
-
-CTitlePageBuilder* CTOGATitlePageBuilder::Clone() const
-{
-   return new CTOGATitlePageBuilder(*this);
-}
-
 
 bool CTOGATitlePageBuilder::NeedsUpdate(CReportHint* pHint,boost::shared_ptr<CReportSpecification>& pRptSpec)
 {
@@ -85,9 +72,9 @@ rptChapter* CTOGATitlePageBuilder::Build(boost::shared_ptr<CReportSpecification>
    pPara->SetStyleName(pgsReportStyleHolder::GetReportTitleStyle());
    *pTitlePage << pPara;
 #if defined _WIN64
-   *pPara << _T("TOGA")<< Super(symbol(TRADEMARK))<<_T(" (x64), a PGSuper")<<Super(symbol(TRADEMARK))<<_T(" Extension")<< rptNewLine;
+   *pPara << _T("TOGA")<< Super(symbol(TRADEMARK))<<_T(" (x64), A PGSuper")<<Super(symbol(TRADEMARK))<<_T(" Extension")<< rptNewLine;
 #else
-   *pPara << _T("TOGA")<< Super(symbol(TRADEMARK))<<_T(", a PGSuper")<<Super(symbol(TRADEMARK))<<_T(" Extension")<< rptNewLine;
+   *pPara << _T("TOGA")<< Super(symbol(TRADEMARK))<<_T(", A PGSuper")<<Super(symbol(TRADEMARK))<<_T(" Extension")<< rptNewLine;
 #endif
 
    pPara = new rptParagraph(pgsReportStyleHolder::GetCopyrightStyle());
@@ -151,7 +138,8 @@ rptChapter* CTOGATitlePageBuilder::Build(boost::shared_ptr<CReportSpecification>
 
 
    // girder seed data comparison
-   p = CGirderSeedDataComparisonParagraph().Build(m_pBroker, TOGA_SPAN, TOGA_FABR_GDR);
+   CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
+   p = CGirderSeedDataComparisonParagraph().Build(m_pBroker, fabrSegmentKey);
    if (p != NULL)
    {
       // only report if we have data
@@ -194,7 +182,7 @@ rptChapter* CTOGATitlePageBuilder::Build(boost::shared_ptr<CReportSpecification>
          CEAFStatusItem* pItem = pStatusCenter->GetByIndex(i);
 
          // Trim span/girder information. TOGA doesn't want this
-         // Blasts anything left of the first _T(":")
+         // Blasts anything left of the first ":"
          std::_tstring msg = pItem->GetDescription();
          std::size_t loc = msg.find(_T(':'));
          if (loc != std::_tstring::npos)

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -36,7 +36,6 @@
 #include <Material\PsStrand.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
-#include <pgsExt\PrestressData.h>
 
 // LOCAL INCLUDES
 //
@@ -91,11 +90,8 @@ class CTxDOTOptionalDesignGirderData
 {
 public:
    // Data
-   enum StrandFillType {sfStandard, sfHarpedRows, sfDirectFill};
-
-   // method used to fill strands
-   void SetStrandFillType(StrandFillType val);
-   StrandFillType GetStrandFillType() const;
+   void SetStandardStrandFill(bool val);
+   bool GetStandardStrandFill() const;
 
    void SetStrandData(matPsStrand::Grade grade,
                       matPsStrand::Type type,
@@ -116,34 +112,27 @@ public:
    StrandIndexType GetNumStrands();
    void SetNumStrands(StrandIndexType ns);
 
-   // Data for direct manip fill
-   // ===========================
-   const DirectStrandFillCollection& GetDirectFilledStraightStrands() const;
-   void SetDirectFilledStraightStrands(const DirectStrandFillCollection& coll) ;
-
-   const std::vector<CDebondInfo>& GetDirectFilledStraightDebond() const;
-   void SetDirectFilledStraightDebond(const std::vector<CDebondInfo>& info);
-
-   bool ComputeDirectFillEccentricity(const GirderLibraryEntry* pGdrEntry, Float64* pEcc) const;
-
-   // Utilities for standard fill
-   // ===========================
    void SetStrandTo(Float64 val);
    Float64 GetStrandTo() const;
 
+   // Utilities for standard fill
+   // ===========================
    std::vector<StrandIndexType> ComputeAvailableNumStrands(GirderLibrary* pLib); 
    bool ComputeToRange(GirderLibrary* pLib, StrandIndexType ns, Float64* pToLower, Float64* pToUpper);
    bool ComputeEccentricities(GirderLibrary* pLib, StrandIndexType ns, Float64 To, Float64* pEccEnds, Float64* pEccCL);
 
    // Data for non-standard fill
    // ==========================
+   void SetUseDepressedStrands(bool val);
+   bool GetUseDepressedStrands() const;
+
    // Struct and container for strand data
    struct StrandRow
    {
       Float64          RowElev;
       StrandIndexType  StrandsInRow;
 
-      StrandRow(): RowElev(-1.0), StrandsInRow(INVALID_INDEX)
+      StrandRow(): RowElev(-1.0), StrandsInRow(-1)
       {;}
 
       StrandRow(Float64 rowElev, StrandIndexType strandsInRow=0):
@@ -189,7 +178,7 @@ public:
       bool WasFilled; // For use by later filling routines
 
       StrandIncrement():
-      TotalStrands(0), GlobalFill(INVALID_INDEX), WasFilled(false)
+      TotalStrands(0), GlobalFill(-1), WasFilled(false)
       {;}
    };
 
@@ -288,7 +277,7 @@ protected:
    void MakeCopy(const CTxDOTOptionalDesignGirderData& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const CTxDOTOptionalDesignGirderData& rOther);
+   virtual void MakeAssignment(const CTxDOTOptionalDesignGirderData& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -297,8 +286,7 @@ private:
    // no default construction
    CTxDOTOptionalDesignGirderData();
    // GROUP: DATA MEMBERS
-
-   StrandFillType m_StrandFillType;
+   bool m_StandardStrandFill;
 
    matPsStrand::Grade m_Grade;
    matPsStrand::Type  m_Type;
@@ -312,15 +300,12 @@ private:
    StrandIndexType m_NumStrands;
    Float64 m_StrandTo;
 
-   // Data for harped-row fill
+   // Data for non-standard fill
    // ==========================
+   bool m_UseDepressedStrands;
+
    StrandRowContainer m_StrandRowsAtCL;
    StrandRowContainer m_StrandRowsAtEnds;
-
-   // Data for direct manip fill
-   // ===========================
-   DirectStrandFillCollection m_DirectFilledStraightStrands;
-   std::vector<CDebondInfo>   m_DirectFilledStraightDebond;
 
    // our parent
    CTxDOTOptionalDesignData* m_pParent;

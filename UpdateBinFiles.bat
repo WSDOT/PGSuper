@@ -20,13 +20,6 @@ copy /Y RegFreeCOM\x64\Release\TxDOTAgent.dll	%BINTARGET%\Extensions\TxDOT\x64\
 copy /Y TxDOTAgent\TOGA.chm			%BINTARGET%\Extensions\TxDOT\
 copy /Y TxDOTAgent\TogaTemplates\*.pgs		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
 copy /Y TxDOTAgent\TogaTemplates\*.togt		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
-copy /Y TxDOTAgent\TogaTemplates\*.ico		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
-
-REM - KDOT
-copy /Y RegFreeCOM\Win32\Release\KDOTExport.dll   %BINTARGET%\Extensions\KDOT\Win32\
-copy /Y RegFreeCOM\x64\Release\KDOTExport.dll	    %BINTARGET%\Extensions\KDOT\x64\
-copy /Y KDOTExport\Schema\KDOTExporter.xsd          %BINTARGET%\Extensions\KDOT\
-copy /Y \ARP\PGSuper\KDOT_Export.chm                %BINTARGET%\Extensions\KDOT\
 
 REM - Image files
 copy /Y images\*.gif				%BINTARGET%\images\
@@ -46,12 +39,24 @@ copy /Y PGSuper.chm				%BINTARGET%\App\
 copy /Y Trucks.pgs				%BINTARGET%\App\
 
 REM - Template Files
-copy /Y WSDOT.lbr				%BINTARGET%\Templates\
-copy /Y Templates\WSDOT\W-Girders\*.pgt		%BINTARGET%\Templates\W-Girders\
-copy /Y Templates\WSDOT\U-Girders\*.pgt		%BINTARGET%\Templates\U-Girders\
-copy /Y Templates\WSDOT\WF-Girders\*.pgt	%BINTARGET%\Templates\WF-Girders\
-copy /Y Templates\WSDOT\WBT-Girders\*.pgt	%BINTARGET%\Templates\WBT-Girders\
-copy /Y Templates\WSDOT\Deck_Bulb_Tees\*.pgt	%BINTARGET%\Templates\Deck_Bulb_Tees\
-copy /Y Templates\WSDOT\MultiWeb\*.pgt		%BINTARGET%\Templates\MultiWeb\
-copy /Y Templates\WSDOT\Slabs\*.pgt		%BINTARGET%\Templates\Slabs\
+copy /Y Templates\WSDOT.lbr				%BINTARGET%\Templates\
+copy /Y Templates\PGSuper\WSDOT\W-Girders\*.ico		%BINTARGET%\Templates\PGSuper\W-Girders\
+copy /Y Templates\PGSuper\WSDOT\W-Girders\*.pgt		%BINTARGET%\Templates\PGSuper\W-Girders\
+copy /Y Templates\PGSuper\WSDOT\U-Girders\*.ico		%BINTARGET%\Templates\PGSuper\U-Girders\
+copy /Y Templates\PGSuper\WSDOT\U-Girders\*.pgt		%BINTARGET%\Templates\PGSuper\U-Girders\
+copy /Y Templates\PGSuper\WSDOT\WF-Girders\*.ico	%BINTARGET%\Templates\PGSuper\WF-Girders\
+copy /Y Templates\PGSuper\WSDOT\WF-Girders\*.pgt	%BINTARGET%\Templates\PGSuper\WF-Girders\
+copy /Y Templates\PGSuper\WSDOT\WBT-Girders\*.ico	%BINTARGET%\Templates\PGSuper\WBT-Girders\
+copy /Y Templates\PGSuper\WSDOT\WBT-Girders\*.pgt	%BINTARGET%\Templates\PGSuper\WBT-Girders\
+copy /Y Templates\PGSuper\WSDOT\Deck_Bulb_Tees\*.ico	%BINTARGET%\Templates\PGSuper\Deck_Bulb_Tees\
+copy /Y Templates\PGSuper\WSDOT\Deck_Bulb_Tees\*.pgt	%BINTARGET%\Templates\PGSuper\Deck_Bulb_Tees\
+copy /Y Templates\PGSuper\WSDOT\MultiWeb\*.ico		%BINTARGET%\Templates\PGSuper\MultiWeb\
+copy /Y Templates\PGSuper\WSDOT\MultiWeb\*.pgt		%BINTARGET%\Templates\PGSuper\MultiWeb\
+copy /Y Templates\PGSuper\WSDOT\Slabs\*.ico		%BINTARGET%\Templates\PGSuper\Slabs\
+copy /Y Templates\PGSuper\WSDOT\Slabs\*.pgt		%BINTARGET%\Templates\PGSuper\Slabs\
+
+copy /Y Templates\PGSplice\WSDOT\I-Beams\*.ico          %BINTARGET%\Templates\PGSplice\I-Beams\
+copy /Y Templates\PGSplice\WSDOT\I-Beams\*.spt          %BINTARGET%\Templates\PGSplice\I-Beams\
+copy /Y Templates\PGSplice\WSDOT\U-Beams\*.ico          %BINTARGET%\Templates\PGSplice\U-Beams\
+copy /Y Templates\PGSplice\WSDOT\U-Beams\*.spt          %BINTARGET%\Templates\PGSplice\U-Beams\
 

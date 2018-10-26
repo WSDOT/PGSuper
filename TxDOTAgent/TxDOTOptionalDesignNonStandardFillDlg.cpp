@@ -1,25 +1,3 @@
-///////////////////////////////////////////////////////////////////////
-// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
-//                        Bridge and Structures Office
-//
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the Alternate Route Open Source License as 
-// published by the Washington State Department of Transportation, 
-// Bridge and Structures Office.
-//
-// This program is distributed in the hope that it will be useful, but 
-// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
-// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
-// the Alternate Route Open Source License for more details.
-//
-// You should have received a copy of the Alternate Route Open Source 
-// License along with this program; if not, write to the Washington 
-// State Department of Transportation, Bridge and Structures Office, 
-// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
-// Bridge_Support@wsdot.wa.gov
-///////////////////////////////////////////////////////////////////////
-
 // TxDOTOptionalDesignNonStandardFillDlg.cpp : implementation file
 //
 
@@ -27,6 +5,8 @@
 #include "resource.h"
 #include "TxDOTOptionalDesignNonStandardFillDlg.h"
 #include <WBFLGenericBridge.h>
+
+#include <IFace\BeamFactory.h>
 
 
 // CTxDOTOptionalDesignNonStandardFillDlg dialog
@@ -37,7 +17,6 @@ CTxDOTOptionalDesignNonStandardFillDlg::CTxDOTOptionalDesignNonStandardFillDlg(C
 	: CDialog(CTxDOTOptionalDesignNonStandardFillDlg::IDD, pParent),
    m_pGirderData(NULL),
    m_pBrokerRetriever(NULL),
-   m_UseDepressed(true),
    m_bFirstActive(true)
 {
 
@@ -51,6 +30,7 @@ void CTxDOTOptionalDesignNonStandardFillDlg::Init(CTxDOTOptionalDesignGirderData
 {
    m_pGirderData = pGirderData;
    m_pBrokerRetriever = pBrokerRetriever;
+   m_UseDepressed = m_pGirderData->GetUseDepressedStrands();
 
    // compute ybottom
    GirderLibrary* pLib = m_pBrokerRetriever->GetGirderLibrary();
@@ -63,8 +43,9 @@ void CTxDOTOptionalDesignNonStandardFillDlg::Init(CTxDOTOptionalDesignGirderData
    pGdrEntry->GetBeamFactory(&pFactory);
    GirderLibraryEntry::Dimensions dimensions = pGdrEntry->GetDimensions();
 
+   long DUMMY_AGENT_ID = -1;
    CComPtr<IGirderSection> gdrSection;
-   pFactory->CreateGirderSection(NULL,INVALID_ID,INVALID_INDEX,INVALID_INDEX,dimensions,&gdrSection);
+   pFactory->CreateGirderSection(NULL,DUMMY_AGENT_ID,dimensions,-1,-1,&gdrSection);
 
    CComPtr<IShape>  pShape;
    gdrSection.QueryInterface(&pShape);
@@ -139,7 +120,7 @@ void CTxDOTOptionalDesignNonStandardFillDlg::DoDataExchange(CDataExchange* pDX)
    }
    else
    {
-      if (pGdrEntry->IsDifferentHarpedGridAtEndsUsed() && pGdrEntry->GetMaxHarpedStrands()>0)
+      if (pGdrEntry->IsDifferentHarpedGridAtEndsUsed())
       {
          CString msg;
          msg.Format(_T("The girder entry with name: \"%s\" has harped strands with different locations at the ends and C.L. Cannot continue"),girder_name);

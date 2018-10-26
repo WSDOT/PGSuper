@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -96,15 +96,6 @@ private:
    // Prevent accidental copying and assignment
    CGirderScheduleChapterBuilder(const CGirderScheduleChapterBuilder&);
    CGirderScheduleChapterBuilder& operator=(const CGirderScheduleChapterBuilder&);
-
-   int GetReinforcementDetails(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,CLSID& familyCLSID,Float64* pz1Spacing,Float64 *pz1Length,Float64 *pz2Spacing,Float64* pz2Length,Float64 *pz3Spacing,Float64* pz3Length) const;
-
-   struct DebondInformation
-   {
-      std::vector<StrandIndexType> Strands;
-      Float64 Length;
-   };
-   int GetDebondDetails(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,std::vector<DebondInformation>& debondInfo) const;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

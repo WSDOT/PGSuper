@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -21,26 +21,25 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <PgsExt\ReportStyleHolder.h>
+#include <Reporting\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 
 #include "TxDOTOptionalDesignSummaryChapterBuilder.h"
 
-#include <PgsExt\PointOfInterest.h>
-#include <PgsExt\GirderData.h>
+#include <PgsExt\GirderPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\PierData.h>
-#include <PgsExt\BridgeDescription.h>
-#include <PgsExt\DebondUtil.h>
+#include <PgsExt\PierData2.h>
+#include <PgsExt\BridgeDescription2.h>
 
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
 #include <IFace\Artifact.h>
 #include <IFace\Project.h>
+#include <IFace\Intervals.h>
+
 #include "TxDOTOptionalDesignData.h"
 #include "TxDOTOptionalDesignUtilities.h"
-#include "TexasIBNSParagraphBuilder.h"
 
 #include <psgLib\ConnectionLibraryEntry.h>
 
@@ -86,18 +85,31 @@ LPCTSTR CTxDOTOptionalDesignSummaryChapterBuilder::GetName() const
 
 rptChapter* CTxDOTOptionalDesignSummaryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CBrokerReportSpecification* pBrokerRptSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSGRptSpec->GetSpan();
-   GirderIndexType girder = pSGRptSpec->GetGirder();
-
+   pBrokerRptSpec->GetBroker(&pBroker);
+   
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    GET_IFACE2(pBroker,IGetTogaData,pGetTogaData);
    const CTxDOTOptionalDesignData* pProjectData = pGetTogaData->GetTogaData();
+
+
+#if defined IGNORE_2007_CHANGES
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+
+   if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+   {
+
+      rptParagraph* pPara = new rptParagraph;
+      *pChapter << pPara;
+      *pPara << color(Red) << bold(ON) << _T("Changes to LRFD 4th Edition, 2007, Article 5.4.2.3.2 have been ignored.") << bold(OFF) << color(Black) << rptNewLine;
+   }
+#endif
 
    design_information( pChapter, pBroker, pProjectData, pDisplayUnits );
    design_data       ( pChapter, pBroker, pProjectData, pDisplayUnits );
@@ -146,21 +158,26 @@ CChapterBuilder* CTxDOTOptionalDesignSummaryChapterBuilder::Clone() const
 ////////////////////////// PRIVATE    ///////////////////////////////////////
 void design_information(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignData* pProjectData, IEAFDisplayUnits* pDisplayUnits)
 {
-   // interfaces
-   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
-   GET_IFACE2(pBroker, IBridgeMaterial, pMaterial);
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-   GET_IFACE2(pBroker,IEnvironment,pEnvironment);
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+   CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
 
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   // interfaces
+   GET_IFACE2(pBroker, IStrandGeometry,    pStrandGeometry );
+   GET_IFACE2(pBroker, IMaterials,         pMaterial);
+   GET_IFACE2(pBroker, IBridge,            pBridge);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IEnvironment,       pEnvironment);
+   GET_IFACE2(pBroker, ILiveLoads,         pLiveLoads);
+   GET_IFACE2(pBroker, IIntervals,         pIntervals);
+
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    // Setup up some unit value prototypes
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, component, pDisplayUnits->GetComponentDimUnit(), true );
-   INIT_UV_PROTOTYPE( rptPressureUnitValue, stress,      pDisplayUnits->GetStressUnit(), true );
-   INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDisplayUnits->GetModEUnit(),         true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,   length,    pDisplayUnits->GetSpanLengthUnit(),   true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,   component, pDisplayUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptPressureUnitValue, stress,    pDisplayUnits->GetStressUnit(),       true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,   modE,      pDisplayUnits->GetModEUnit(),         true );
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -180,25 +197,13 @@ void design_information(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    (*p_table)(row++,1) << pProjectData->GetBeamType();
 
    (*p_table)(row,0) << _T("Span Length (CL Bearings)") ;
-   (*p_table)(row++,1) << length.SetValue(pBridge->GetSpanLength(TOGA_SPAN,TOGA_FABR_GDR));
+   (*p_table)(row++,1) << length.SetValue(pBridge->GetSegmentSpanLength(fabrSegmentKey));
 
-   ASSERT(pgsTypes::sbsUniform==pBridgeDesc->GetGirderSpacingType() || pgsTypes::sbsUniformAdjacent==pBridgeDesc->GetGirderSpacingType());
-   Float64 spacing = pBridgeDesc->GetGirderSpacing();
-   if (pgsTypes::sbsUniformAdjacent==pBridgeDesc->GetGirderSpacingType())
-   {
-      // For adjacent girders, the spacing returned above is the joint spacing. Add the girder width to 
-      // this to get the CL-CL girder spacing
-      const CSpanData* pSpan = pBridgeDesc->GetSpan(TOGA_SPAN);
-      const GirderLibraryEntry* pGdr = pSpan->GetGirderTypes()->GetGirderLibraryEntry(TOGA_FABR_GDR);
-
-      Float64 wid = pGdr->GetBeamWidth(pgsTypes::metStart);
-      spacing += wid;
-   }
-
+   ASSERT(pgsTypes::sbsUniform == pBridgeDesc->GetGirderSpacingType());
    (*p_table)(row,0) << _T("Beam Spacing") ;
-   (*p_table)(row++,1) << length.SetValue(spacing);
+   (*p_table)(row++,1) << length.SetValue(pBridgeDesc->GetGirderSpacing());
 
-   pgsPointOfInterest zero_poi(TOGA_SPAN,TOGA_FABR_GDR,0.0);
+   pgsPointOfInterest zero_poi(fabrSegmentKey,0.0);
 
    (*p_table)(row,0) << _T("Slab Thickness");
    (*p_table)(row++,1) << component.SetValue(pBridge->GetStructuralSlabDepth( zero_poi ));
@@ -213,13 +218,13 @@ void design_information(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    (*p_table)(row++,1) << pProjectData->GetLldfShear();
 
    (*p_table)(row,0) << RPT_EC <<_T(" Slab");
-   (*p_table)(row++,1) << modE.SetValue( pMaterial->GetEcSlab() );
+   (*p_table)(row++,1) << modE.SetValue( pMaterial->GetDeckEc(liveLoadIntervalIdx) );
 
    (*p_table)(row,0) << RPT_EC <<_T(" Beam");
-   (*p_table)(row++,1) << modE.SetValue( pMaterial->GetEcGdr(TOGA_SPAN,TOGA_FABR_GDR) );
+   (*p_table)(row++,1) << modE.SetValue( pMaterial->GetSegmentEc(fabrSegmentKey,liveLoadIntervalIdx) );
 
    (*p_table)(row,0) << RPT_FC <<_T(" Slab");
-   (*p_table)(row++,1) << stress.SetValue( pMaterial->GetFcSlab() );
+   (*p_table)(row++,1) << stress.SetValue( pMaterial->GetDeckFc(liveLoadIntervalIdx) );
 
    (*p_table)(row,0) << _T("Project Criteria");
    (*p_table)(row++,1) << pProjectData->GetSelectedProjectCriteriaLibrary();
@@ -285,22 +290,27 @@ static void design_data(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
 }
 
 void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignGirderData* pGirderData,
-                          GirderIndexType gdr, IEAFDisplayUnits* pDisplayUnits)
+                          GirderIndexType gdrIdx, IEAFDisplayUnits* pDisplayUnits)
 {
+   CSegmentKey segmentKey(TOGA_SPAN,gdrIdx,0);
+
    // Setup up some unit value prototypes
    INIT_UV_PROTOTYPE( rptPressureUnitValue, stress,      pDisplayUnits->GetStressUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, component, pDisplayUnits->GetComponentDimUnit(), true );
 
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker, IBridgeMaterial, pMaterial);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IMaterials, pMaterial);
+
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   std::_tstring title = (gdr==TOGA_ORIG_GDR) ? _T("Original Girder Design") : _T("Fabricator Optional Girder Design");
+   std::_tstring title = (gdrIdx==TOGA_ORIG_GDR) ? _T("Original Girder Design") : _T("Fabricator Optional Girder Design");
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(2,title);
+   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(2,title.c_str());
    *p << p_table << rptNewLine;
 
    RowIndexType row = 0;
@@ -310,7 +320,7 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
    (*p_table)(row,0) << RPT_FC;
    (*p_table)(row++,1) << stress.SetValue( pGirderData->GetFc() );
 
-   const matPsStrand* pstrand = pMaterial->GetStrand(TOGA_SPAN,gdr,pgsTypes::Permanent);
+   const matPsStrand* pstrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
 
    (*p_table)(row,0) << _T("Prestressing Strands");
    (*p_table)(row++,1) << get_strand_size(pstrand->GetSize()) <<_T(", ")
@@ -319,68 +329,48 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
 
    (*p_table)(row,0) << _T("No. Strands");
 
-   CTxDOTOptionalDesignGirderData::StrandFillType fill_type = pGirderData->GetStrandFillType();
-
    std::_tstring note;
-   if (fill_type == CTxDOTOptionalDesignGirderData::sfStandard)
+   if (pGirderData->GetStandardStrandFill())
    {
       note = _T(" (standard fill used)");
    }
-   else if (fill_type == CTxDOTOptionalDesignGirderData::sfHarpedRows)
+   else
    {
-      note = _T(" (non-standard fill, with depressed strands)");
-   }
-   else if (fill_type == CTxDOTOptionalDesignGirderData::sfDirectFill)
-   {
-      note = _T(" (non-standard direct straight strand fill)");
+      note = (pGirderData->GetUseDepressedStrands()) ? _T(" (non-standard fill, with depressed strands)") : _T(" (non-standard fill, with all straight strands)");
    }
 
-   (*p_table)(row++,1) << pStrandGeometry->GetNumStrands(TOGA_SPAN,gdr,pgsTypes::Permanent) << note;
+   (*p_table)(row++,1) << pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Permanent) << note;
 
-   if( pStrandGeometry->GetNumStrands(TOGA_SPAN,gdr,pgsTypes::Permanent) > 0) // no use reporting strand data if there are none
+   if( pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Permanent) > 0) // no use reporting strand data if there are none
    {
-      StrandIndexType nh = pStrandGeometry->GetNumStrands(TOGA_SPAN,gdr,pgsTypes::Harped);
-      if (fill_type == CTxDOTOptionalDesignGirderData::sfStandard && nh>0)
+      if (pGirderData->GetStandardStrandFill())
       {
          (*p_table)(row,0) << _T("Girder Bottom to Topmost Strand (To)");
          (*p_table)(row++,1) << component.SetValue( pGirderData->GetStrandTo() );
       }
 
-      StrandIndexType ndb = pStrandGeometry->GetNumDebondedStrands(TOGA_SPAN, gdr, pgsTypes::Straight);
-      if (ndb>0)
-      {
-         (*p_table)(row,0) << _T("No. Debonded");
-         (*p_table)(row++,1) << ndb;
-      }
-
-      Float64 span2 = pBridge->GetSpanLength(TOGA_SPAN,gdr)/2.0;
-      pgsPointOfInterest midpoi(TOGA_SPAN,gdr,span2);
+      Float64 span2 = pBridge->GetSegmentSpanLength(segmentKey)/2.0;
+      pgsPointOfInterest midpoi(segmentKey,span2);
 
       (*p_table)(row,0) << _T("e")<<Sub(_T("CL"));
       Float64 neff;
-      (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(midpoi,false,&neff) );
+      (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(releaseIntervalIdx, midpoi,false,&neff) );
 
-      pgsPointOfInterest zeropoi(TOGA_SPAN,gdr,0.0);
+      pgsPointOfInterest zeropoi(segmentKey,0.0);
       (*p_table)(row,0) << _T("e")<<Sub(_T("girder ends"));
-      (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(zeropoi,false,&neff) );
+      (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(releaseIntervalIdx, zeropoi,false,&neff) );
 
       // non standard fill row tables
-      if (fill_type == CTxDOTOptionalDesignGirderData::sfHarpedRows)
+      if (!pGirderData->GetStandardStrandFill())
       {
          non_standard_table(pChapter, pDisplayUnits, _T("Non-Standard Strand Pattern at Girder Centerline"),
                             pGirderData->GetStrandsAtCL());
 
-         non_standard_table(pChapter, pDisplayUnits, _T("Non-Standard Strand Pattern at Girder Ends"),
-                            pGirderData->GetStrandsAtEnds());
-      }
-
-      if (fill_type == CTxDOTOptionalDesignGirderData::sfDirectFill)
-      {
-         // Write debond tables if direct fill
-         Float64 girder_length = pBridge->GetGirderLength(TOGA_SPAN, gdr);
-
-         TxDOTIBNSDebondWriter tx_writer(TOGA_SPAN, gdr, girder_length, pStrandGeometry);
-         tx_writer.WriteDebondData(p, pDisplayUnits, title);
+         if (pGirderData->GetUseDepressedStrands())
+         {
+            non_standard_table(pChapter, pDisplayUnits, _T("Non-Standard Strand Pattern at Girder Ends"),
+                               pGirderData->GetStrandsAtEnds());
+         }
       }
    }
 }
@@ -396,7 +386,7 @@ void non_standard_table(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits, c
 
    RowIndexType nrows = strandRows.size() + 1;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(nrows,tableName);
+   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(nrows,tableName.c_str());
    *p << p_table << rptNewLine;
 
    std::_tstring tit = _T("Row (") + component.GetUnitTag() + _T(")");

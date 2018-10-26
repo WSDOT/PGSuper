@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,7 @@
 #include <IFace\Artifact.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Allowables.h>
+#include <IFace\Intervals.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -48,7 +49,7 @@ CLASS
 
 CTxDOTOptionalDesignDocProxyAgent::CTxDOTOptionalDesignDocProxyAgent():
 m_NeedValidate(true),
-m_GirderArtifact(TOGA_SPAN, TOGA_FABR_GDR)
+m_GirderArtifact(CSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0))
 {
    m_pTxDOTOptionalDesignDoc = NULL;
 }
@@ -155,7 +156,7 @@ void CTxDOTOptionalDesignDocProxyAgent::SelectSpan(SpanIndexType spanIdx)
    ASSERT(0);
 }
 
-void CTxDOTOptionalDesignDocProxyAgent::SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx)
+void CTxDOTOptionalDesignDocProxyAgent::SelectGirder(const CGirderKey& girderKey)
 {
    ASSERT(0);
 }
@@ -304,26 +305,36 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
 {
    if ( m_NeedValidate )
    {
+      CSegmentKey origSegmentKey(TOGA_SPAN,TOGA_ORIG_GDR,0);
+      CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
+
       // build model
       IBroker* pBroker = this->m_pTxDOTOptionalDesignDoc->GetUpdatedBroker();
 
       GET_IFACE2(pBroker,IAllowableConcreteStress, pAllowable );
 
+      GET_IFACE2(pBroker,IIntervals,pIntervals);
+      IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(origSegmentKey);
+      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+    
       // Get responses from design based on original data
       GET_IFACE2(pBroker,IArtifact,pIArtifact);
-      const pgsGirderArtifact* pOriginalGdrArtifact = pIArtifact->GetArtifact(TOGA_SPAN, TOGA_ORIG_GDR);
+      const pgsGirderArtifact* pOriginalGdrArtifact = pIArtifact->GetGirderArtifact(origSegmentKey);
+      const pgsSegmentArtifact* pOriginalSegmentArtifact = pOriginalGdrArtifact->GetSegmentArtifact(0);
 
       const CTxDOTOptionalDesignData* pDesignData = GetTogaData();
 
       // Our model is always prismatic - max's will occur at mid-span poi
       GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-      std::vector<pgsPointOfInterest> vPOI = pIPoi->GetPointsOfInterest(TOGA_SPAN, TOGA_ORIG_GDR, pgsTypes::BridgeSite3,POI_MIDSPAN);
+      std::vector<pgsPointOfInterest> vPOI( pIPoi->GetPointsOfInterest(origSegmentKey, POI_MIDSPAN) );
       ATLASSERT( vPOI.size() == 1 );
-      const pgsPointOfInterest orig_ms_poi = vPOI.front();
+      pgsPointOfInterest orig_ms_poi = vPOI.front();
 
       // Find max compressive stress and compute stress factor from original model
       const pgsFlexuralStressArtifact* pOriginalStressArtifact;
-      pOriginalStressArtifact = pOriginalGdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(pgsTypes::BridgeSite3,pgsTypes::ServiceI,pgsTypes::Compression,orig_ms_poi.GetDistFromStart()));
+      pOriginalStressArtifact = pOriginalSegmentArtifact->GetFlexuralStressArtifactAtPoi( liveLoadIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,orig_ms_poi.GetID());
 
       Float64 fTop, fBot;
       pOriginalStressArtifact->GetExternalEffects( &fTop, &fBot );
@@ -335,7 +346,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       m_CtrlCompressiveStressFactor = ft_des/m_CtrlCompressiveStress;
 
       // Tensile stress factor
-      pOriginalStressArtifact = pOriginalGdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(pgsTypes::BridgeSite3,pgsTypes::ServiceIII,pgsTypes::Tension,orig_ms_poi.GetDistFromStart()));
+      pOriginalStressArtifact = pOriginalSegmentArtifact->GetFlexuralStressArtifactAtPoi( liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,orig_ms_poi.GetID());
       pOriginalStressArtifact->GetExternalEffects( &fTop, &fBot );
 
       m_CtrlTensileStress = fBot;
@@ -350,14 +361,22 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
 
       // Now we need results from fabricator model
       // =========================================
-      const pgsGirderArtifact* pFabricatorGdrArtifact = pIArtifact->GetArtifact(TOGA_SPAN, TOGA_FABR_GDR);
+      const pgsGirderArtifact* pFabricatorGdrArtifact = pIArtifact->GetGirderArtifact(fabrSegmentKey);
 
       // Create a copy of PGSuper's artifact and factor stresses in our new copy
       m_GirderArtifact = *pFabricatorGdrArtifact;
 
       // List of possible stress checks
       const int num_cases = 7;
-      pgsTypes::Stage       stages[num_cases] = {pgsTypes::BridgeSite1,pgsTypes::BridgeSite1,pgsTypes::BridgeSite2, pgsTypes::BridgeSite3, pgsTypes::BridgeSite3, pgsTypes::BridgeSite3, pgsTypes::BridgeSite3};
+      IntervalIndexType intervals[num_cases];
+      intervals[0] = castDeckIntervalIdx;
+      intervals[1] = castDeckIntervalIdx;
+      intervals[2] = compositeDeckIntervalIdx;
+      intervals[3] = liveLoadIntervalIdx;
+      intervals[4] = liveLoadIntervalIdx;
+      intervals[5] = liveLoadIntervalIdx;
+      intervals[6] = liveLoadIntervalIdx;
+
       pgsTypes::LimitState lstates[num_cases] = {pgsTypes::ServiceI,   pgsTypes::ServiceI,   pgsTypes::ServiceI,    pgsTypes::ServiceI   , pgsTypes::ServiceIII,  pgsTypes::FatigueI,    pgsTypes::ServiceIA};
       pgsTypes::StressType ststype[num_cases] = {pgsTypes::Tension,    pgsTypes::Compression,pgsTypes::Compression, pgsTypes::Compression, pgsTypes::Tension,     pgsTypes::Compression, pgsTypes::Compression};
 
@@ -369,8 +388,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
 
       for (int icase=0; icase<num_cases; icase++)
       {
-         vPOI = pIPoi->GetPointsOfInterest( TOGA_SPAN, TOGA_FABR_GDR, stages[icase], 
-                                            POI_FLEXURESTRESS | POI_TABULAR );
+         vPOI = pIPoi->GetPointsOfInterest(fabrSegmentKey);
          CHECK(vPOI.size()>0);
 
          if ( (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims && lstates[icase] == pgsTypes::FatigueI) || 
@@ -391,12 +409,11 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
          else
             k = 1.0;
 
-         std::vector<pgsPointOfInterest>::const_iterator iter;
-         for ( iter = vPOI.begin(); iter != vPOI.end(); iter++ )
+         CollectionIndexType nArtifacts = m_GirderArtifact.GetSegmentArtifact(0)->GetFlexuralStressArtifactCount( intervals[icase],lstates[icase],ststype[icase]);
+         for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++) 
          {
-            const pgsPointOfInterest& poi = *iter;
-
-            pFabrStressArtifact = m_GirderArtifact.GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(stages[icase],lstates[icase],ststype[icase],poi.GetDistFromStart()));
+            pFabrStressArtifact = m_GirderArtifact.GetSegmentArtifact(0)->GetFlexuralStressArtifact( intervals[icase],lstates[icase],ststype[icase],idx );
+            const pgsPointOfInterest& poi(pFabrStressArtifact->GetPointOfInterest());
 
             // factor external stresses
             Float64 fTopExt, fBotExt;
@@ -409,7 +426,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
 
             // recompute demand
             Float64 fTopPs, fBotPs;
-            pFabrStressArtifact->GetPrestressEffects( &fTopPs, &fBotPs );
+            pFabrStressArtifact->GetPretensionEffects( &fTopPs, &fBotPs );
 
             fTop = k*fTopPs + fTopExt;
             fBot = k*fBotPs + fBotExt;
@@ -419,7 +436,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
             // Compute and store required concrete strength
             if ( ststype[icase] == pgsTypes::Compression )
             {
-               Float64 c = pAllowable->GetAllowableCompressiveStressCoefficient(stages[icase],lstates[icase]);
+               Float64 c = pAllowable->GetAllowableCompressiveStressCoefficient(poi,intervals[icase],lstates[icase]);
                Float64 fc_reqd = (IsZero(c) ? 0 : _cpp_min(fTop,fBot)/-c);
                
                if ( fc_reqd < 0 ) // the minimum stress is tensile so compression isn't an issue
@@ -433,11 +450,11 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
                bool bCheckMax;
                Float64 fmax;
 
-               pAllowable->GetAllowableTensionStressCoefficient(stages[icase],lstates[icase],&t,&bCheckMax,&fmax);
+               pAllowable->GetAllowableTensionStressCoefficient(poi,intervals[icase],lstates[icase],false/*without rebar*/,&t,&bCheckMax,&fmax);
 
                // if this is bridge site 3, only look at the bottom stress (stress in the precompressed tensile zone)
                // otherwise, take the controlling tension
-               Float64 f = (stages[icase] == pgsTypes::BridgeSite3 ? fBot : _cpp_max(fTop,fBot));
+               Float64 f = (intervals[icase] == liveLoadIntervalIdx ? fBot : _cpp_max(fTop,fBot));
 
                Float64 fc_reqd;
                if (f>0.0)
@@ -463,19 +480,21 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       }
    
       // mid span in fab model
-      vPOI = pIPoi->GetPointsOfInterest(TOGA_SPAN, TOGA_FABR_GDR, pgsTypes::BridgeSite3,POI_MIDSPAN);
+      vPOI = pIPoi->GetPointsOfInterest(fabrSegmentKey, POI_MIDSPAN);
       ATLASSERT( vPOI.size() == 1 );
-      const pgsPointOfInterest fabr_ms_poi = vPOI.front();
+      pgsPointOfInterest fabr_ms_poi = vPOI.front();
 
       // Ultimate Moment
       const pgsFlexuralCapacityArtifact* pFabCap;
-      pFabCap = m_GirderArtifact.GetPositiveMomentFlexuralCapacityArtifact(pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,fabr_ms_poi.GetDistFromStart()));
+      pFabCap = m_GirderArtifact.FindPositiveMomentFlexuralCapacityArtifact(liveLoadIntervalIdx,pgsTypes::StrengthI,fabr_ms_poi);
+      ATLASSERT(pFabCap != NULL);
 
       m_UltimateMomentCapacity = pFabCap->GetCapacity();
 
       // Required from original model
       const pgsFlexuralCapacityArtifact* pOrigCap;
-      pOrigCap = pOriginalGdrArtifact->GetPositiveMomentFlexuralCapacityArtifact(pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,orig_ms_poi.GetDistFromStart()));
+      pOrigCap = pOriginalGdrArtifact->FindPositiveMomentFlexuralCapacityArtifact(liveLoadIntervalIdx,pgsTypes::StrengthI,orig_ms_poi);
+      ATLASSERT(pOrigCap != NULL);
 
       m_RequiredUltimateMoment = _cpp_max(pOrigCap->GetDemand(),pOrigCap->GetMinCapacity());
 
@@ -495,19 +514,24 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
 
 void CTxDOTOptionalDesignDocProxyAgent::CheckShear(IPointOfInterest* pIPoi)
 {
+      IBroker* pBroker = this->m_pTxDOTOptionalDesignDoc->GetUpdatedBroker();
+
+      GET_IFACE2(pBroker,IIntervals,pIntervals);
+      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+
+   CSegmentKey origSegmentKey(TOGA_SPAN,TOGA_ORIG_GDR,0);
+   CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
+
    m_ShearPassed = true; // until otherwise
 
-   const pgsStirrupCheckArtifact *pStirrups = m_GirderArtifact.GetStirrupCheckArtifact();
-
-   std::vector<pgsPointOfInterest> vPoi;
-   vPoi = pIPoi->GetPointsOfInterest(TOGA_SPAN, TOGA_FABR_GDR, pgsTypes::BridgeSite3, POI_SHEAR|POI_TABULAR);
-
-   std::vector<pgsPointOfInterest>::const_iterator i;
-   for ( i = vPoi.begin(); i != vPoi.end(); i++ )
+   const pgsStirrupCheckArtifact *pStirrups = m_GirderArtifact.GetSegmentArtifact(0)->GetStirrupCheckArtifact();
+   CollectionIndexType nArtifacts = pStirrups->GetStirrupCheckAtPoisArtifactCount(liveLoadIntervalIdx,pgsTypes::StrengthI);
+   for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
    {
-      const pgsPointOfInterest& poi = *i;
       // Only checking Strength I here. No TxDOT permit truck
-      const pgsStirrupCheckAtPoisArtifact* pPoiArtifacts = pStirrups->GetStirrupCheckAtPoisArtifact( pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,poi.GetDistFromStart()) );
+      const pgsStirrupCheckAtPoisArtifact* pPoiArtifacts = pStirrups->GetStirrupCheckAtPoisArtifact( liveLoadIntervalIdx,pgsTypes::StrengthI,idx );
+
+      const pgsPointOfInterest& poi = pPoiArtifacts->GetPointOfInterest();
 
       const pgsVerticalShearArtifact* pShear = pPoiArtifacts->GetVerticalShearArtifact();
       if (!pShear->Passed())

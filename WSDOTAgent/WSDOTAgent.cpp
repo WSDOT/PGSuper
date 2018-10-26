@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -47,9 +47,8 @@
 #include <IFace\GirderHandling.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\RatingSpecification.h>
-#include <IFace\Allowables.h>
+#include <IFace\Intervals.h>
 
-#include <Plugins\BeamFamilyCLSID.h>
 
 // Used to determine whether the DLL can be unloaded by OLE
 STDAPI DllCanUnloadNow(void)
@@ -65,6 +64,20 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
     return _AtlModule.DllGetClassObject(rclsid, riid, ppv);
 }
 
+HRESULT RegisterAgent(bool bRegister)
+{
+   HRESULT hr = S_OK;
+
+   hr = sysComCatMgr::RegWithCategory(CLSID_WSDOTAgent,CATID_PGSuperExtensionAgent,bRegister);
+   if ( FAILED(hr) )
+      return hr;
+
+   hr = sysComCatMgr::RegWithCategory(CLSID_WSDOTComponentInfo,CATID_BridgeLinkComponents,bRegister);
+   if ( FAILED(hr) )
+      return hr;
+
+   return S_OK;
+}
 
 // DllRegisterServer - Adds entries to the system registry
 STDAPI DllRegisterServer(void)
@@ -74,20 +87,18 @@ STDAPI DllRegisterServer(void)
     if ( FAILED(hr) )
        return hr;
 
-    sysComCatMgr::RegWithCategory(CLSID_WSDOTAgent,CATID_PGSuperExtensionAgent,true);
-    sysComCatMgr::RegWithCategory(CLSID_WSDOTComponentInfo,CATID_BridgeLinkComponents,true);
-
-    return hr;
+    return RegisterAgent(true);
 }
 
 
 // DllUnregisterServer - Removes entries from the system registry
 STDAPI DllUnregisterServer(void)
 {
-   sysComCatMgr::RegWithCategory(CLSID_WSDOTAgent,CATID_PGSuperExtensionAgent,false);
-   sysComCatMgr::RegWithCategory(CLSID_WSDOTComponentInfo,CATID_BridgeLinkComponents,false);
-	HRESULT hr = _AtlModule.DllUnregisterServer();
-	return hr;
+   HRESULT hr = RegisterAgent(false);
+   if ( FAILED(hr) )
+      return hr;
+
+	return _AtlModule.DllUnregisterServer();
 }
 
 //// DllInstall - Adds/Removes entries to the system registry per user

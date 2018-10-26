@@ -1,24 +1,3 @@
-///////////////////////////////////////////////////////////////////////
-// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
-//                        Bridge and Structures Office
-//
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the Alternate Route Open Source License as 
-// published by the Washington State Department of Transportation, 
-// Bridge and Structures Office.
-//
-// This program is distributed in the hope that it will be useful, but 
-// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
-// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
-// the Alternate Route Open Source License for more details.
-//
-// You should have received a copy of the Alternate Route Open Source 
-// License along with this program; if not, write to the Washington 
-// State Department of Transportation, Bridge and Structures Office, 
-// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
-// Bridge_Support@wsdot.wa.gov
-///////////////////////////////////////////////////////////////////////
 // TxDOTOptionalDesignGirderInputPage.cpp : implementation file
 //
 
@@ -68,9 +47,11 @@ CTxDOTOptionalDesignGirderInputPage::CTxDOTOptionalDesignGirderInputPage()
 	: CPropertyPage(CTxDOTOptionalDesignGirderInputPage::IDD),
    m_pBrokerRetriever(NULL),
    m_pData(NULL),
-   m_OrigStrandFillType( CTxDOTOptionalDesignGirderData::sfStandard),
-   m_OptStrandFillType( CTxDOTOptionalDesignGirderData::sfStandard),
-   m_GirderTypeChanged(false)
+   m_OptIsStandardFill(FALSE),
+   m_OrigIsStandardFill(FALSE),
+   m_GirderTypeChanged(false),
+   m_OptUseDepressed(FALSE),
+   m_OrigUseDepressed(FALSE)
 {
 }
 
@@ -85,10 +66,6 @@ BOOL CTxDOTOptionalDesignGirderInputPage::OnInitDialog()
 
    // Load data into local members
    LoadDialogData();
-
-
-   // Fill Type combo boxes
-   InitFillTypeCtrls();
 
    // Embed dialogs for strand editing into current. A discription may be found at
    // http://www.codeproject.com/KB/dialog/embedded_dialog.aspx
@@ -110,13 +87,9 @@ BOOL CTxDOTOptionalDesignGirderInputPage::OnInitDialog()
       m_OptNonStandardDlg.m_pGirderData = m_pData->GetPrecasterDesignGirderData();
       VERIFY(m_OptNonStandardDlg.Create(CTxDOTOptionalDesignNonStandardFillDlg::IDD, this));
       VERIFY(m_OptNonStandardDlg.SetWindowPos( GetDlgItem(IDC_OPT_BOX), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW|SWP_NOSIZE));//|SWP_NOMOVE));
-
-      m_OptDirectFillDlg.Init(m_pData->GetPrecasterDesignGirderData(), m_pBrokerRetriever, m_pData->GetGirderEntryName(), TOGA_FABR_GDR);
-      VERIFY(m_OptDirectFillDlg.Create(CTogaDirectFillDlg::IDD, this));
-      VERIFY(m_OptDirectFillDlg.SetWindowPos( GetDlgItem(IDC_OPT_BOX), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW|SWP_NOSIZE));//|SWP_NOMOVE));
    }
 
-   // Original design embedded dialogs
+   // Origian design embedded dialogs
    {
       CWnd* pBox = GetDlgItem(IDC_ORIG_BOX);
       pBox->ShowWindow(SW_HIDE);
@@ -133,10 +106,6 @@ BOOL CTxDOTOptionalDesignGirderInputPage::OnInitDialog()
       m_OrigNonStandardDlg.m_pGirderData = m_pData->GetOriginalDesignGirderData();
       VERIFY(m_OrigNonStandardDlg.Create(CTxDOTOptionalDesignNonStandardFillDlg::IDD, this));
       VERIFY(m_OrigNonStandardDlg.SetWindowPos( GetDlgItem(IDC_OPT_BOX), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW|SWP_NOSIZE));//|SWP_NOMOVE));
-
-      m_OrigDirectFillDlg.Init(m_pData->GetOriginalDesignGirderData(), m_pBrokerRetriever, m_pData->GetGirderEntryName(), TOGA_ORIG_GDR);
-      VERIFY(m_OrigDirectFillDlg.Create(CTogaDirectFillDlg::IDD, this));
-      VERIFY(m_OrigDirectFillDlg.SetWindowPos( GetDlgItem(IDC_OPT_BOX), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW|SWP_NOSIZE));//|SWP_NOMOVE));
    }
 
    // ---
@@ -146,8 +115,8 @@ BOOL CTxDOTOptionalDesignGirderInputPage::OnInitDialog()
    InitStrandSizeTypeCtrls();
 
    // Show embedded dialogs
-   OnCbnSelchangeOptFilltypeCombo();
-   OnCbnSelchangeOrgFilltypeCombo();
+   OnBnClickedOptStandardFill();
+   OnBnClickedOrigStandardFill();
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
@@ -168,7 +137,8 @@ void CTxDOTOptionalDesignGirderInputPage::DoDataExchange(CDataExchange* pDX)
    Float64 max_fc  = ::ConvertToSysUnits(15.0,  unitMeasure::KSI); 
 
    // precaster opt
-   DDX_CBItemData(pDX, IDC_OPT_FILLTYPE_COMBO, (int&)m_OptStrandFillType);
+   DDX_Check(pDX, IDC_OPT_STANDARD_FILL, m_OptIsStandardFill);
+   DDX_Check(pDX, IDC_OPT_USE_DEPRESSED, m_OptUseDepressed);
 
    DDX_UnitValueAndTag(pDX,IDC_OPT_FC, IDC_OPT_FC_UNITS, m_OptFc, pDisplayUnits->GetStressUnit() );
    DDV_UnitValueRange( pDX,IDC_OPT_FC,m_OptFc,min_fc, max_fc, pDisplayUnits->GetStressUnit() );
@@ -187,7 +157,8 @@ void CTxDOTOptionalDesignGirderInputPage::DoDataExchange(CDataExchange* pDX)
    }
 
    // original
-   DDX_CBItemData(pDX, IDC_ORG_FILLTYPE_COMBO, (int&)m_OrigStrandFillType);
+   DDX_Check(pDX, IDC_ORIG_STANDARD_FILL, m_OrigIsStandardFill);
+   DDX_Check(pDX, IDC_ORIG_USE_DEPRESSED, m_OrigUseDepressed);
 
    DDX_UnitValueAndTag(pDX,IDC_ORIG_FC, IDC_ORIG_FC_UNITS, m_OrigFc, pDisplayUnits->GetStressUnit() );
    DDV_UnitValueRange( pDX,IDC_ORIG_FC,m_OrigFc,min_fc, max_fc, pDisplayUnits->GetStressUnit() );
@@ -219,61 +190,47 @@ BOOL CTxDOTOptionalDesignGirderInputPage::UpdateData(BOOL bSaveAndValidate)
       return FALSE;
 
    // precaster optional data
-   if (CTxDOTOptionalDesignGirderData::sfStandard == m_OptStrandFillType)
+   if (m_OptIsStandardFill)
    {
       BOOL st = m_OptStandardDlg.UpdateData(bSaveAndValidate);
       if (!st)
          return FALSE;
    }
-   else if (CTxDOTOptionalDesignGirderData::sfHarpedRows == m_OptStrandFillType)
+   else
    {
       BOOL st = m_OptNonStandardDlg.UpdateData(bSaveAndValidate);
       if (!st)
          return FALSE;
    }
-   else if (CTxDOTOptionalDesignGirderData::sfDirectFill == m_OptStrandFillType)
-   {
-      BOOL st = m_OptDirectFillDlg.UpdateData(bSaveAndValidate);
-      if (!st)
-         return FALSE;
-   }
-   else
-      ATLASSERT(0);
 
    // original
-   if (CTxDOTOptionalDesignGirderData::sfStandard == m_OrigStrandFillType)
+   if (m_OrigIsStandardFill)
    {
       BOOL st = m_OrigStandardDlg.UpdateData(bSaveAndValidate);
       if (!st)
          return FALSE;
    }
-   else if (CTxDOTOptionalDesignGirderData::sfHarpedRows == m_OrigStrandFillType)
+   else
    {
       BOOL st = m_OrigNonStandardDlg.UpdateData(bSaveAndValidate);
       if (!st)
          return FALSE;
    }
-   else if (CTxDOTOptionalDesignGirderData::sfDirectFill == m_OrigStrandFillType)
-   {
-      BOOL st = m_OrigDirectFillDlg.UpdateData(bSaveAndValidate);
-      if (!st)
-         return FALSE;
-   }
-   else
-      ATLASSERT(0);
 
    return TRUE;
 }
 
 BEGIN_MESSAGE_MAP(CTxDOTOptionalDesignGirderInputPage, CPropertyPage)
    ON_CBN_SELCHANGE(IDC_OPT_STRAND_TYPE, &CTxDOTOptionalDesignGirderInputPage::OnCbnSelchangeOptStrandType)
+   ON_BN_CLICKED(IDC_OPT_STANDARD_FILL, &CTxDOTOptionalDesignGirderInputPage::OnBnClickedOptStandardFill)
+   ON_BN_CLICKED(IDC_OPT_USE_DEPRESSED, &CTxDOTOptionalDesignGirderInputPage::OnBnClickedOptUseDepressed)
    ON_CBN_SELCHANGE(IDC_ORIG_STRAND_TYPE, &CTxDOTOptionalDesignGirderInputPage::OnCbnSelchangeOrigStrandType)
+   ON_BN_CLICKED(IDC_ORIG_STANDARD_FILL, &CTxDOTOptionalDesignGirderInputPage::OnBnClickedOrigStandardFill)
+   ON_BN_CLICKED(IDC_ORIG_USE_DEPRESSED, &CTxDOTOptionalDesignGirderInputPage::OnBnClickedOrigUseDepressed)
    ON_WM_ERASEBKGND()
    ON_WM_CTLCOLOR()
    ON_COMMAND(ID_HELP, &CTxDOTOptionalDesignGirderInputPage::OnHelpFinder)
    ON_COMMAND(ID_HELP_FINDER, &CTxDOTOptionalDesignGirderInputPage::OnHelpFinder)
-   ON_CBN_SELCHANGE(IDC_ORG_FILLTYPE_COMBO, &CTxDOTOptionalDesignGirderInputPage::OnCbnSelchangeOrgFilltypeCombo)
-   ON_CBN_SELCHANGE(IDC_OPT_FILLTYPE_COMBO, &CTxDOTOptionalDesignGirderInputPage::OnCbnSelchangeOptFilltypeCombo)
 END_MESSAGE_MAP()
 
 void CTxDOTOptionalDesignGirderInputPage::OnTxDotDataChanged(int change)
@@ -293,8 +250,9 @@ void CTxDOTOptionalDesignGirderInputPage::LoadDialogData()
    m_OptFc = pOptGirderData->GetFc();
    m_OptFci = pOptGirderData->GetFci();
 
-   m_OptStrandFillType = pOptGirderData->GetStrandFillType();
+   m_OptIsStandardFill = pOptGirderData->GetStandardStrandFill();
    m_strOptNoStrands.Format(_T("%d"), pOptGirderData->GetNumStrands() );
+   m_OptUseDepressed = pOptGirderData->GetUseDepressedStrands();
 
    // original
    CTxDOTOptionalDesignGirderData* pOrigGirderData = m_pData->GetOriginalDesignGirderData();
@@ -302,8 +260,9 @@ void CTxDOTOptionalDesignGirderInputPage::LoadDialogData()
    m_OrigFc = pOrigGirderData->GetFc();
    m_OrigFci = pOrigGirderData->GetFci();
 
-   m_OrigStrandFillType = pOrigGirderData->GetStrandFillType();
+   m_OrigIsStandardFill = pOrigGirderData->GetStandardStrandFill();
    m_strOrigNoStrands.Format(_T("%d"), pOrigGirderData->GetNumStrands() );
+   m_OrigUseDepressed = pOrigGirderData->GetUseDepressedStrands();
 }
 
 void CTxDOTOptionalDesignGirderInputPage::SaveDialogData()
@@ -313,13 +272,16 @@ void CTxDOTOptionalDesignGirderInputPage::SaveDialogData()
    // Optional Design
    CTxDOTOptionalDesignGirderData* pOptGirderData = m_pData->GetPrecasterDesignGirderData();
 
-   pOptGirderData->SetStrandFillType(m_OptStrandFillType);
+   pOptGirderData->SetStandardStrandFill(m_OptIsStandardFill!=FALSE);
+
+   if (m_OptIsStandardFill==FALSE)
+      pOptGirderData->SetUseDepressedStrands(m_OptUseDepressed!=FALSE);
 
    CComboBox* pList = (CComboBox*)GetDlgItem( IDC_OPT_STRAND_SIZE );
    int sel = pList->GetCurSel();
    ASSERT(sel!=CB_ERR);
-   DWORD_PTR key = pList->GetItemData( sel );
-   const matPsStrand* pmat = pPool->GetStrand( (Int32)key );
+   Int32 key = (Int32)pList->GetItemData( sel );
+   const matPsStrand* pmat = pPool->GetStrand( key );
 
    pOptGirderData->SetStrandData(pmat->GetGrade(), pmat->GetType(), pmat->GetSize());
 
@@ -329,13 +291,16 @@ void CTxDOTOptionalDesignGirderInputPage::SaveDialogData()
    // Original Design
    CTxDOTOptionalDesignGirderData* pOrigGirderData = m_pData->GetOriginalDesignGirderData();
 
-   pOrigGirderData->SetStrandFillType(m_OrigStrandFillType);
+   pOrigGirderData->SetStandardStrandFill(m_OrigIsStandardFill!=FALSE);
+
+   if (m_OrigIsStandardFill==FALSE)
+      pOrigGirderData->SetUseDepressedStrands(m_OrigUseDepressed!=FALSE);
 
    pList = (CComboBox*)GetDlgItem( IDC_ORIG_STRAND_SIZE );
    sel = pList->GetCurSel();
    ASSERT(sel!=CB_ERR);
-   key = pList->GetItemData( sel );
-   pmat = pPool->GetStrand( (Int32)key );
+   key = (Int32)pList->GetItemData( sel );
+   pmat = pPool->GetStrand( key );
 
    pOrigGirderData->SetStrandData(pmat->GetGrade(), pmat->GetType(), pmat->GetSize());
 
@@ -413,68 +378,6 @@ void CTxDOTOptionalDesignGirderInputPage::InitOrigStrandSizeTypeCtrls()
    UpdateStrandSizeList( IDC_ORIG_STRAND_SIZE, grade, type, size);	
 }
 
-void CTxDOTOptionalDesignGirderInputPage::InitFillTypeCtrls()
-{
-   // Fill-Type combo boxes
-   CString girder =  m_pData->GetGirderEntryName();
-   GirderLibrary* pLib = m_pBrokerRetriever->GetGirderLibrary();
-   const GirderLibraryEntry* pGdrEntry = dynamic_cast<const GirderLibraryEntry*>(pLib->GetEntry(girder));
-   ASSERT(pGdrEntry!=NULL);
-
-   // Options depend on whether harped strands can exist
-   bool hasHarped = pGdrEntry->GetMaxHarpedStrands() > 0;
-
-   // add cb data
-   //original
-   CComboBox* pCBox = (CComboBox*)GetDlgItem(IDC_ORG_FILLTYPE_COMBO);
-   pCBox->ResetContent();
-
-   int idx = pCBox->AddString(_T("Standard sequential strand fill"));
-   pCBox->SetItemData(idx, DWORD(CTxDOTOptionalDesignGirderData::sfStandard));
-
-   if(hasHarped)
-   {
-      idx = pCBox->AddString(_T("Non-standard strand fill with depressed strands"));
-      pCBox->SetItemData(idx, DWORD(CTxDOTOptionalDesignGirderData::sfHarpedRows));
-   }
-
-   idx = pCBox->AddString(_T("Non-standard direct strand fill of straight strands"));
-   pCBox->SetItemData(idx, DWORD(CTxDOTOptionalDesignGirderData::sfDirectFill));
-
-   //optional
-   pCBox = (CComboBox*)GetDlgItem(IDC_OPT_FILLTYPE_COMBO);
-   pCBox->ResetContent();
-
-   idx = pCBox->AddString(_T("Standard sequential strand fill"));
-   pCBox->SetItemData(idx, DWORD(CTxDOTOptionalDesignGirderData::sfStandard));
-
-   if(hasHarped)
-   {
-      idx = pCBox->AddString(_T("Non-standard strand fill with depressed strands"));
-      pCBox->SetItemData(idx, DWORD(CTxDOTOptionalDesignGirderData::sfHarpedRows));
-   }
-
-   idx = pCBox->AddString(_T("Non-standard direct strand fill of straight strands"));
-   pCBox->SetItemData(idx, DWORD(CTxDOTOptionalDesignGirderData::sfDirectFill));
-
-   // it is possible that fill type uses harprd strands and we switched to a girder with none
-   if(!hasHarped)
-   {
-      if(m_OrigStrandFillType == CTxDOTOptionalDesignGirderData::sfHarpedRows)
-      {
-         pCBox = (CComboBox*)GetDlgItem(IDC_ORG_FILLTYPE_COMBO);
-         pCBox->SetCurSel(0);
-         OnCbnSelchangeOrgFilltypeCombo();
-      }
-
-      if(m_OptStrandFillType == CTxDOTOptionalDesignGirderData::sfHarpedRows)
-      {
-         pCBox = (CComboBox*)GetDlgItem(IDC_OPT_FILLTYPE_COMBO);
-         pCBox->SetCurSel(0);
-         OnCbnSelchangeOptFilltypeCombo();
-      }
-   }
-}
 
 void CTxDOTOptionalDesignGirderInputPage::UpdateStrandSizeList(long StrandSizeListCtrlID, matPsStrand::Grade grade,matPsStrand::Type type, matPsStrand::Size size)
 {
@@ -488,8 +391,8 @@ void CTxDOTOptionalDesignGirderInputPage::UpdateStrandSizeList(long StrandSizeLi
    matPsStrand::Size cur_size = size;
    if ( cur_sel != CB_ERR )
    {
-      DWORD_PTR cur_key = pList->GetItemData( cur_sel );
-      const matPsStrand* pCurStrand = pPool->GetStrand( (Int32)cur_key );
+      Int32 cur_key = (Int32)pList->GetItemData( cur_sel );
+      const matPsStrand* pCurStrand = pPool->GetStrand( cur_key );
       cur_size = pCurStrand->GetSize();
    }
 
@@ -553,22 +456,14 @@ BOOL CTxDOTOptionalDesignGirderInputPage::OnSetActive()
 {
    if (m_GirderTypeChanged)
    {
-      // fill type can change
-      InitFillTypeCtrls();
-
       // Need to alert our embedded dialogs when girder entry changes
       CString name = m_pData->GetGirderEntryName();
 
       m_OptStandardDlg.SetGirderEntryName(name);
       m_OrigStandardDlg.SetGirderEntryName(name);
-      m_OptDirectFillDlg.SetGirderEntryName(name);
-      m_OrigDirectFillDlg.SetGirderEntryName(name);
 
       m_GirderTypeChanged = false;
    }
-
-   m_OptDirectFillDlg.SetSpanLength(m_pData->GetSpanLength());
-   m_OrigDirectFillDlg.SetSpanLength(m_pData->GetSpanLength());
 
    if (!m_OptStandardDlg.OnFillSetActive())
    {
@@ -597,133 +492,115 @@ BOOL CTxDOTOptionalDesignGirderInputPage::OnKillActive()
 {
    // Data exchange for embedded dialogs
    // Only get data from active dialog, else ddv's will cause trouble
-   if (CTxDOTOptionalDesignGirderData::sfStandard == m_OptStrandFillType)
+   if (m_OptIsStandardFill)
    {
       if (!m_OptStandardDlg.OnFillKillActive())
       {
          return false;
       }
    }
-   else if (CTxDOTOptionalDesignGirderData::sfHarpedRows == m_OptStrandFillType)
+   else
    {
       if (!m_OptNonStandardDlg.OnFillKillActive())
       {
          return false;
       }
    }
-   else if (CTxDOTOptionalDesignGirderData::sfDirectFill == m_OptStrandFillType)
-   {
-      if (!m_OptDirectFillDlg.OnFillKillActive())
-      {
-         return false;
-      }
-   }
-   else
-   {
-      ATLASSERT(0);
-   }
 
-   if (CTxDOTOptionalDesignGirderData::sfStandard == m_OrigStrandFillType)
+   if (m_OrigIsStandardFill)
    {
       if (!m_OrigStandardDlg.OnFillKillActive())
       {
          return false;
       }
    }
-   else if (CTxDOTOptionalDesignGirderData::sfHarpedRows == m_OrigStrandFillType)
+   else
    {
       if (!m_OrigNonStandardDlg.OnFillKillActive())
       {
          return false;
       }
    }
-   else if (CTxDOTOptionalDesignGirderData::sfDirectFill == m_OrigStrandFillType)
-   {
-      if (!m_OrigDirectFillDlg.OnFillKillActive())
-      {
-         return false;
-      }
-   }
-   else
-   {
-      ATLASSERT(0);
-   }
 
    return CPropertyPage::OnKillActive();
 }
 
 
-void CTxDOTOptionalDesignGirderInputPage::OnCbnSelchangeOrgFilltypeCombo()
+void CTxDOTOptionalDesignGirderInputPage::OnBnClickedOptStandardFill()
 {
+   // Save data
+   CButton* pBut = (CButton*)GetDlgItem(IDC_OPT_STANDARD_FILL);
+   m_OptIsStandardFill = pBut->GetCheck()!=BST_UNCHECKED ? TRUE:FALSE;
+
+   // Show depressed option if non-standard
+   CWnd* pWnd = GetDlgItem(IDC_OPT_USE_DEPRESSED);
+   pWnd->ShowWindow( (m_OptIsStandardFill ? SW_HIDE:SW_SHOW) );
+
    // Show correct embedded dialog
-   CComboBox* pCBox = (CComboBox*)GetDlgItem(IDC_ORG_FILLTYPE_COMBO);
-   int sel = pCBox->GetCurSel();
-
-   m_OrigStrandFillType = (CTxDOTOptionalDesignGirderData::StrandFillType) pCBox->GetItemData(sel);
-
-   if (CTxDOTOptionalDesignGirderData::sfStandard == m_OrigStrandFillType)
-   {
-      m_OrigNonStandardDlg.ShowWindow(SW_HIDE);
-      m_OrigDirectFillDlg.ShowWindow(SW_HIDE);
-
-      m_OrigStandardDlg.ShowWindow(SW_SHOW);
-      m_OrigStandardDlg.OnFillSetActive();
-   }
-   else if (CTxDOTOptionalDesignGirderData::sfHarpedRows == m_OrigStrandFillType)
-   {
-      m_OrigStandardDlg.ShowWindow(SW_HIDE);
-      m_OrigDirectFillDlg.ShowWindow(SW_HIDE);
-
-      m_OrigNonStandardDlg.ShowWindow(SW_SHOW);
-      m_OrigNonStandardDlg.OnFillSetActive();
-
-      m_OrigNonStandardDlg.DoUseDepressed(true);
-   }
-   else if (CTxDOTOptionalDesignGirderData::sfDirectFill == m_OrigStrandFillType)
-   {
-      m_OrigStandardDlg.ShowWindow(SW_HIDE);
-      m_OrigNonStandardDlg.ShowWindow(SW_HIDE);
-
-      m_OrigDirectFillDlg.ShowWindow(SW_SHOW);
-      m_OrigDirectFillDlg.OnFillSetActive();
-   }
-}
-
-void CTxDOTOptionalDesignGirderInputPage::OnCbnSelchangeOptFilltypeCombo()
-{
-   // Show correct embedded dialog
-   CComboBox* pCBox = (CComboBox*)GetDlgItem(IDC_OPT_FILLTYPE_COMBO);
-   int sel = pCBox->GetCurSel();
-
-   m_OptStrandFillType = (CTxDOTOptionalDesignGirderData::StrandFillType) pCBox->GetItemData(sel);
-
-   if (CTxDOTOptionalDesignGirderData::sfStandard == m_OptStrandFillType)
+   if (m_OptIsStandardFill)
    {
       m_OptNonStandardDlg.ShowWindow(SW_HIDE);
-      m_OptDirectFillDlg.ShowWindow(SW_HIDE);
 
       m_OptStandardDlg.ShowWindow(SW_SHOW);
       m_OptStandardDlg.OnFillSetActive();
    }
-   else if (CTxDOTOptionalDesignGirderData::sfHarpedRows == m_OptStrandFillType)
+   else
    {
       m_OptStandardDlg.ShowWindow(SW_HIDE);
-      m_OptDirectFillDlg.ShowWindow(SW_HIDE);
 
       m_OptNonStandardDlg.ShowWindow(SW_SHOW);
       m_OptNonStandardDlg.OnFillSetActive();
-
-      m_OptNonStandardDlg.DoUseDepressed(true);
-   }
-   else if (CTxDOTOptionalDesignGirderData::sfDirectFill == m_OptStrandFillType)
-   {
-      m_OptStandardDlg.ShowWindow(SW_HIDE);
-      m_OptNonStandardDlg.ShowWindow(SW_HIDE);
-
-      m_OptDirectFillDlg.ShowWindow(SW_SHOW);
-      m_OptDirectFillDlg.OnFillSetActive();
    }
 }
+
+void CTxDOTOptionalDesignGirderInputPage::OnBnClickedOrigStandardFill()
+{
+   // Save data
+   CButton* pBut = (CButton*)GetDlgItem(IDC_ORIG_STANDARD_FILL);
+   m_OrigIsStandardFill = pBut->GetCheck()!=BST_UNCHECKED ? TRUE:FALSE;
+
+   // Show depressed option if non-standard
+   CWnd* pWnd = GetDlgItem(IDC_ORIG_USE_DEPRESSED);
+   pWnd->ShowWindow( (m_OrigIsStandardFill ? SW_HIDE:SW_SHOW) );
+
+   // Show correct embedded dialog
+   if (m_OrigIsStandardFill)
+   {
+      m_OrigNonStandardDlg.ShowWindow(SW_HIDE);
+
+      m_OrigStandardDlg.ShowWindow(SW_SHOW);
+      m_OrigStandardDlg.OnFillSetActive();
+   }
+   else
+   {
+      m_OrigStandardDlg.ShowWindow(SW_HIDE);
+
+      m_OrigNonStandardDlg.ShowWindow(SW_SHOW);
+      m_OrigNonStandardDlg.OnFillSetActive();
+   }
+}
+
+void CTxDOTOptionalDesignGirderInputPage::OnBnClickedOptUseDepressed()
+{
+   if (!m_OptIsStandardFill)
+   {
+      CButton* pBut = (CButton*)GetDlgItem(IDC_OPT_USE_DEPRESSED);
+      bool use_dep = pBut->GetCheck()!=BST_UNCHECKED ? TRUE:FALSE;
+
+      m_OptNonStandardDlg.DoUseDepressed(use_dep);
+   }
+ }
+
+void CTxDOTOptionalDesignGirderInputPage::OnBnClickedOrigUseDepressed()
+{
+   if (!m_OrigIsStandardFill)
+   {
+      CButton* pBut = (CButton*)GetDlgItem(IDC_ORIG_USE_DEPRESSED);
+      bool use_dep = pBut->GetCheck()!=BST_UNCHECKED ? TRUE:FALSE;
+
+      m_OrigNonStandardDlg.DoUseDepressed(use_dep);
+   }
+ }
 
 BOOL CTxDOTOptionalDesignGirderInputPage::OnEraseBkgnd(CDC* pDC)
 {

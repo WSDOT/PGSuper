@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -91,8 +91,8 @@ public:
 
 // ITxDOTCadExport
 public:
-   virtual int WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, GirderIndexType gdr, TxDOTCadExportFormatType format, bool designSucceeded);
-   virtual int WriteDistributionFactorsToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, GirderIndexType gdr);
+   virtual int WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CSegmentKey& segmentKey, TxDOTCadExportFormatType format, bool designSucceeded);
+   virtual int WriteDistributionFactorsToFile (FILE *fp, IBroker* pBroker, const CSegmentKey& segmentKey);
 
 // IEAFProcessCommandLine
 public:
@@ -102,7 +102,7 @@ protected:
    void ProcessTxDotCad(const CTxDOTCommandLineInfo& rCmdInfo);
    bool CreateTxDOTFileNames(const CString& output, CString* pErrFileName);
    bool DoTxDotCadReport(const CString& outputFileName, const CString& errorFileName, const CTxDOTCommandLineInfo& txInfo);
-   void SaveDesign(SpanIndexType span,GirderIndexType gdr,const pgsDesignArtifact* pArtifact);
+   void SaveFlexureDesign(const CSegmentKey& segmentKey,const arDesignOptions& designOptions, const pgsDesignArtifact* pArtifact);
 
    void ProcessTOGAReport(const CTxDOTCommandLineInfo& rCmdInfo);
    bool DoTOGAReport(const CString& outputFileName, const CTxDOTCommandLineInfo& txInfo);

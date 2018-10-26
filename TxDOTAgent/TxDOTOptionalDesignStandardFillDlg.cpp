@@ -1,25 +1,3 @@
-///////////////////////////////////////////////////////////////////////
-// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
-//                        Bridge and Structures Office
-//
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the Alternate Route Open Source License as 
-// published by the Washington State Department of Transportation, 
-// Bridge and Structures Office.
-//
-// This program is distributed in the hope that it will be useful, but 
-// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
-// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
-// the Alternate Route Open Source License for more details.
-//
-// You should have received a copy of the Alternate Route Open Source 
-// License along with this program; if not, write to the Washington 
-// State Department of Transportation, Bridge and Structures Office, 
-// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
-// Bridge_Support@wsdot.wa.gov
-///////////////////////////////////////////////////////////////////////
-
 // TxDOTOptionalDesignStandardFillDlg.cpp : implementation file
 //
 
@@ -37,7 +15,6 @@ IMPLEMENT_DYNAMIC(CTxDOTOptionalDesignStandardFillDlg, CDialog)
 CTxDOTOptionalDesignStandardFillDlg::CTxDOTOptionalDesignStandardFillDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CTxDOTOptionalDesignStandardFillDlg::IDD, pParent)
    , m_strNumStrands(_T(""))
-   , m_To(0)
    , m_bFirstActive(true)
 {
    m_pGirderData = NULL;
@@ -83,36 +60,25 @@ void CTxDOTOptionalDesignStandardFillDlg::DoDataExchange(CDataExchange* pDX)
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   DDX_CBStringExactCase(pDX, IDC_OPT_NUM_STRANDS, m_strNumStrands);
+   DDX_CBString(pDX, IDC_OPT_NUM_STRANDS, m_strNumStrands);
 
-   bool st = sysTokenizer::ParseLong(m_strNumStrands, &m_NumStrands);  // save num strands as integral value as well
+   bool st = sysTokenizer::ParseLong(m_strNumStrands, (long*)&m_NumStrands);  // save num strands as integral value as well
    ASSERT(st);
 
-   // only parse To value if we have harped strands
-   // it takes some effort here
-   GirderLibrary* pLib = m_pBrokerRetriever->GetGirderLibrary();
-   const GirderLibraryEntry* pGdrEntry = dynamic_cast<const GirderLibraryEntry*>(pLib->GetEntry(m_GirderEntryName));
-   ASSERT(pGdrEntry!=NULL);
-
-   StrandIndexType numStraight(0), numHarped(0);
-   if (pGdrEntry->GetPermStrandDistribution(m_NumStrands, &numStraight, &numHarped))
+   if (m_NumStrands>0) // only parse To value if we have strands
    {
-      if (numHarped>0) 
+      DDX_UnitValueAndTag(pDX,IDC_OPT_TO, IDC_OPT_TO_UNITS, m_To, pDisplayUnits->GetComponentDimUnit() );
+
+      if (pDX->m_bSaveAndValidate)
       {
-         DDX_UnitValueAndTag(pDX,IDC_OPT_TO, IDC_OPT_TO_UNITS, m_To, pDisplayUnits->GetComponentDimUnit() );
+         // some effort to respect To range
+         GirderLibrary* pLib = m_pBrokerRetriever->GetGirderLibrary();
 
-         if (pDX->m_bSaveAndValidate)
-         {
-            Float64 toLower, toUpper;
-            m_pGirderData->ComputeToRange(pLib, m_NumStrands, &toLower, &toUpper);
+         Float64 toLower, toUpper;
+         m_pGirderData->ComputeToRange(pLib, m_NumStrands, &toLower, &toUpper);
 
-            DDV_UnitValueRange( pDX,IDC_OPT_TO,m_To,toLower, toUpper, pDisplayUnits->GetComponentDimUnit() );
-         }
+         DDV_UnitValueRange( pDX,IDC_OPT_TO,m_To,toLower, toUpper, pDisplayUnits->GetComponentDimUnit() );
       }
-   }
-   else
-   {
-      ATLASSERT(0); // should never happen
    }
 
    if (pDX->m_bSaveAndValidate)
@@ -135,7 +101,6 @@ void CTxDOTOptionalDesignStandardFillDlg::LoadDialogData()
 
 void CTxDOTOptionalDesignStandardFillDlg::SaveDialogData()
 {
-   m_pGirderData->SetStrandFillType(CTxDOTOptionalDesignGirderData::sfStandard);
    m_pGirderData->SetNumStrands(m_NumStrands);
    m_pGirderData->SetStrandTo(m_To);
 }
@@ -166,7 +131,7 @@ void CTxDOTOptionalDesignStandardFillDlg::OnCbnSelchangeOptNumStrands()
    if (sel!=CB_ERR)
    {
       pBox->GetLBText(sel,m_strNumStrands);
-      bool st = sysTokenizer::ParseLong(m_strNumStrands, &m_NumStrands);  // save num strands as integral value as well
+      bool st = sysTokenizer::ParseLong(m_strNumStrands, (long*)&m_NumStrands);  // save num strands as integral value as well
       ASSERT(st);
    }
    else
@@ -203,7 +168,7 @@ void CTxDOTOptionalDesignStandardFillDlg::UpdateControls()
    }
 
    // To Value range
-   BOOL benable = numHarped>0 ? TRUE:FALSE;
+   BOOL benable = m_NumStrands>0 ? TRUE:FALSE;
 
    CWnd* pToEdit = GetDlgItem(IDC_OPT_TO);
    CWnd* pToUnit = GetDlgItem(IDC_OPT_TO_UNITS);
@@ -214,6 +179,7 @@ void CTxDOTOptionalDesignStandardFillDlg::UpdateControls()
    pToEdit->EnableWindow(benable);
    pToUnit->EnableWindow(benable);
    pToTag->EnableWindow(benable);
+   pCompute->EnableWindow(benable);
    pToRange->ShowWindow(benable?SW_SHOW:SW_HIDE);
 
    if (benable)
@@ -231,10 +197,6 @@ void CTxDOTOptionalDesignStandardFillDlg::UpdateControls()
 
       pToRange->SetWindowText(umsg);
    }
-
-   // ecc compute button
-   pCompute->EnableWindow(m_NumStrands>0 ? TRUE:FALSE);
-
 }
 
 void  CTxDOTOptionalDesignStandardFillDlg::UpdateLibraryData()
@@ -271,15 +233,7 @@ void CTxDOTOptionalDesignStandardFillDlg::OnBnClickedOptCompute()
    eccCL = ::ConvertFromSysUnits(eccCL,unitMeasure::Inch);
 
    CEccentricityDlg dlg;
-   if (eccCL != eccEnds)
-   {
-      dlg.m_Message.Format(_T("e, CL = %.3f in\n e, girder ends = %.3f in"), eccCL, eccEnds);
-   }
-   else
-   {
-      dlg.m_Message.Format(_T("e = %.3f in"), eccCL);
-   }
-
+   dlg.m_Message.Format(_T("e, CL = %.3f in\n e, girder ends = %.3f in"), eccCL, eccEnds);
    dlg.DoModal();
 }
 

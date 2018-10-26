@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -78,15 +78,11 @@ STDMETHODIMP CWSDOTAgentImp::Init2()
    //
    // Create report spec builders
    //
-   boost::shared_ptr<CReportSpecificationBuilder> pSpanGirderRptSpecBuilder( new CSpanGirderReportSpecificationBuilder(m_pBroker) );
-   boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder( new CGirderReportSpecificationBuilder(m_pBroker) );
+   boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder( new CGirderReportSpecificationBuilder(m_pBroker,CGirderKey(0,0)) );
    boost::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder( new CMultiViewSpanGirderReportSpecificationBuilder(m_pBroker) );
 
    // WSDOT Girder Schedule
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("WSDOT Girder Schedule"));
-#if defined _DEBUG || defined _BETA_VERSION
-   pRptBuilder->IncludeTimingChapter();
-#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CGirderScheduleChapterBuilder) );
@@ -94,9 +90,6 @@ STDMETHODIMP CWSDOTAgentImp::Init2()
 
    // WSDOT Summary Report
    pRptBuilder = new CReportBuilder(_T("WSDOT Summary Report"));
-#if defined _DEBUG || defined _BETA_VERSION
-   pRptBuilder->IncludeTimingChapter();
-#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(true)) ); // may have to move this chapter to a common DLL
@@ -106,9 +99,6 @@ STDMETHODIMP CWSDOTAgentImp::Init2()
 
    // WSDOT Load Rating Summary
    pRptBuilder = new CReportBuilder(_T("WSDOT Load Rating Summary"));
-#if defined _DEBUG || defined _BETA_VERSION
-   pRptBuilder->IncludeTimingChapter();
-#endif
 //   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false)) );
    pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLoadRatingSummaryChapterBuilder) );

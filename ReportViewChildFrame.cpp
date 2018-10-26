@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -54,12 +54,6 @@ BOOL CReportViewChildFrame::Create(LPCTSTR lpszClassName,
 				CMDIFrameWnd* pParentWnd,
 				CCreateContext* pContext)
 {
-#if defined _EAF_USING_MFC_FEATURE_PACK
-   // If MFC Feature pack is used, we are using tabbed MDI windows so we don't want
-   // the system menu or the minimize and maximize boxes
-   dwStyle &= ~(WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
-#endif
-
    BOOL bResult = CEAFOutputChildFrame::Create(lpszClassName,lpszWindowName,dwStyle,rect,pParentWnd,pContext);
    if ( bResult )
    {

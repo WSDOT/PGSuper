@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,7 @@
 #include "TxDOTOptionalDesignData.h"
 #include "TxDOTOptionalDesignUtilities.h"
 
-#include <PgsExt\ReportStyleHolder.h>
+#include <Reporting\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\FlexuralStressCheckTable.h>
 #include <Reporting\ReportNotes.h>
@@ -36,6 +36,7 @@
 #include <IFace\Artifact.h>
 #include <IFace\Project.h>
 #include <IFace\Allowables.h>
+#include <IFace\Intervals.h>
 
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
@@ -70,11 +71,13 @@ LPCTSTR CTogaStressChecksChapterBuilder::GetName() const
 
 rptChapter* CTogaStressChecksChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSGRptSpec->GetSpan();
-   GirderIndexType girder = pSGRptSpec->GetGirder();
+   pGirderRptSpec->GetBroker(&pBroker);
+   const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
+
+   // This is a single segment report
+   CSegmentKey segmentKey(girderKey,0);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
@@ -94,38 +97,50 @@ rptChapter* CTogaStressChecksChapterBuilder::Build(CReportSpecification* pRptSpe
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   BuildTableAndNotes(pChapter,pBroker,pDisplayUnits,pgsTypes::CastingYard,pgsTypes::ServiceI);
-   BuildTableAndNotes(pChapter,pBroker,pDisplayUnits,pgsTypes::BridgeSite1,pgsTypes::ServiceI);
-   BuildTableAndNotes(pChapter,pBroker,pDisplayUnits,pgsTypes::BridgeSite2,pgsTypes::ServiceI,pgsTypes::Compression);
-   BuildTableAndNotes(pChapter,pBroker,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::ServiceI,pgsTypes::Compression);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+
+
+   BuildTableAndNotes(pChapter,pBroker,pDisplayUnits,releaseIntervalIdx,      pgsTypes::ServiceI);
+   BuildTableAndNotes(pChapter,pBroker,pDisplayUnits,castDeckIntervalIdx,     pgsTypes::ServiceI);
+   BuildTableAndNotes(pChapter,pBroker,pDisplayUnits,compositeDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression);
+   BuildTableAndNotes(pChapter,pBroker,pDisplayUnits,liveLoadIntervalIdx,     pgsTypes::ServiceI,pgsTypes::Compression);
 
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
-      BuildTableAndNotes(pChapter,pBroker,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::ServiceIA,pgsTypes::Compression);
+      BuildTableAndNotes(pChapter,pBroker,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::ServiceIA,pgsTypes::Compression);
 
-   BuildTableAndNotes(pChapter,pBroker,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::ServiceIII,pgsTypes::Tension);
+   BuildTableAndNotes(pChapter,pBroker,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension);
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-      BuildTableAndNotes(pChapter,pBroker,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::FatigueI,pgsTypes::Compression);
+      BuildTableAndNotes(pChapter,pBroker,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::FatigueI,pgsTypes::Compression);
 
    return pChapter;
 }
 
 void CTogaStressChecksChapterBuilder::BuildTableAndNotes(rptChapter* pChapter, IBroker* pBroker,
                       IEAFDisplayUnits* pDisplayUnits,
-                      pgsTypes::Stage stage,
+                      IntervalIndexType intervalIdx,
                       pgsTypes::LimitState ls,
                       pgsTypes::StressType stress) const
 {
    // We need the artifact that we've doctored for txdot reasons
    GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
    const pgsGirderArtifact* pFactoredGdrArtifact = pGetTogaResults->GetFabricatorDesignArtifact();
+   const pgsSegmentArtifact* pSegmentArtifact = pFactoredGdrArtifact->GetSegmentArtifact(0);
 
    // Write notes from pgsuper default table, then our notes, then table
-  CFlexuralStressCheckTable().BuildNotes(pChapter, pFactoredGdrArtifact, pBroker, TOGA_SPAN, TOGA_FABR_GDR, pDisplayUnits,
-              stage, ls, stress);
+   CFlexuralStressCheckTable().BuildNotes(pChapter, pBroker, pSegmentArtifact, pDisplayUnits, intervalIdx, ls, stress);
 
 
-   if (stage!=pgsTypes::CastingYard)
+   CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(fabrSegmentKey);
+
+   if ( intervalIdx != releaseIntervalIdx)
    {
      // Toga Special notes
       rptParagraph* p = new rptParagraph;
@@ -141,16 +156,15 @@ void CTogaStressChecksChapterBuilder::BuildTableAndNotes(rptChapter* pChapter, I
 
 
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   const pgsGirderArtifact* pUnfactoredGdrArtifact = pIArtifact->GetArtifact(TOGA_SPAN, TOGA_FABR_GDR);
+   const pgsSegmentArtifact* pUnfactoredGdrArtifact = pIArtifact->GetSegmentArtifact(fabrSegmentKey);
 
-   BuildTable(pChapter, pBroker, pFactoredGdrArtifact, pUnfactoredGdrArtifact,
-              pDisplayUnits, stage, ls, stress);
+   BuildTable(pChapter, pBroker, pSegmentArtifact, pUnfactoredGdrArtifact, pDisplayUnits, intervalIdx, ls, stress);
 }
 
 void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* pBroker,
-                      const pgsGirderArtifact* pFactoredGdrArtifact, const pgsGirderArtifact* pUnfactoredGdrArtifact,
+                      const pgsSegmentArtifact* pFactoredGdrArtifact, const pgsSegmentArtifact* pUnfactoredGdrArtifact,
                       IEAFDisplayUnits* pDisplayUnits,
-                      pgsTypes::Stage stage,
+                      IntervalIndexType intervalIdx,
                       pgsTypes::LimitState limitState,
                       pgsTypes::StressType stressType) const
 {
@@ -165,16 +179,23 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
+   CSegmentKey fabrSegmentKey(TOGA_SPAN, TOGA_FABR_GDR,0);
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(fabrSegmentKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+
 
    // create and set up table
    const ColumnIndexType add_cols = 2;
    rptRcTable* p_table;
-   if (stage == pgsTypes::BridgeSite3 && limitState == pgsTypes::ServiceIII)
+   if (intervalIdx == liveLoadIntervalIdx && limitState == pgsTypes::ServiceIII)
       p_table = pgsReportStyleHolder::CreateDefaultTable(5+1,_T(""));
-   else if ( (stage == pgsTypes::BridgeSite2 && !pAllowable->CheckFinalDeadLoadTensionStress() ) || stage == pgsTypes::BridgeSite3)
+   else if (intervalIdx == compositeDeckIntervalIdx || intervalIdx == liveLoadIntervalIdx)
       p_table = pgsReportStyleHolder::CreateDefaultTable(8+add_cols,_T(""));
-   else if (stage == pgsTypes::CastingYard )
+   else if (intervalIdx == releaseIntervalIdx )
       p_table = pgsReportStyleHolder::CreateDefaultTable(10,_T(""));
    else
       p_table = pgsReportStyleHolder::CreateDefaultTable(9+add_cols,_T(""));
@@ -182,23 +203,23 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
    *p << p_table;
 
 
-   int col1=0;
-   int col2=0;
+   ColumnIndexType col1=0;
+   ColumnIndexType col2=0;
 
    p_table->SetRowSpan(0,col1,2);
-   p_table->SetRowSpan(1,col2++,SKIP_CELL);
-   if ( stage == pgsTypes::CastingYard )
+   p_table->SetRowSpan(1,col2++,-1);
+   if ( intervalIdx == releaseIntervalIdx )
       (*p_table)(0,col1++) << COLHDR(RPT_GDR_END_LOCATION,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    else
       (*p_table)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
-   GET_IFACE2(pBroker, IStageMap, pStageMap );
-   std::_tstring strLimitState = OLE2T(pStageMap->GetLimitStateName(limitState));
+   GET_IFACE2(pBroker, IEventMap, pEventMap );
+   std::_tstring strLimitState = OLE2T(pEventMap->GetLimitStateName(limitState));
 
    if ( limitState == pgsTypes::ServiceIII )
    {
       p_table->SetRowSpan(0,col1,2);
-      p_table->SetRowSpan(1,col2++,SKIP_CELL);
+      p_table->SetRowSpan(1,col2++,-1);
       (*p_table)(0,col1++) << COLHDR(_T("Prestress") << rptNewLine << RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    else
@@ -212,14 +233,14 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
    if ( limitState == pgsTypes::ServiceIII )
    {
       p_table->SetRowSpan(0,col1,2);
-      p_table->SetRowSpan(1,col2++,SKIP_CELL);
+      p_table->SetRowSpan(1,col2++,-1);
       (*p_table)(0,col1++) << COLHDR(_T("Calculated") << rptNewLine << strLimitState << rptNewLine << RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       p_table->SetRowSpan(0,col1,2);
-      p_table->SetRowSpan(1,col2++,SKIP_CELL);
+      p_table->SetRowSpan(1,col2++,-1);
       (*p_table)(0,col1++) << COLHDR(_T("Analysis") << rptNewLine << strLimitState << rptNewLine << RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
-   else if (stage==pgsTypes::CastingYard)
+   else if (intervalIdx == releaseIntervalIdx)
    {
       p_table->SetColumnSpan(0,col1,2);
       (*p_table)(0,col1++) << strLimitState;
@@ -242,7 +263,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
    if ( limitState == pgsTypes::ServiceIII )
    {
       p_table->SetRowSpan(0,col1,2);
-      p_table->SetRowSpan(1,col2++,SKIP_CELL);
+      p_table->SetRowSpan(1,col2++,-1);
       (*p_table)(0,col1++) << COLHDR(_T("Demand") << rptNewLine << RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    else
@@ -254,9 +275,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
    }
 
    // get allowable stresses
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( TOGA_SPAN, TOGA_FABR_GDR, stage, POI_FLEXURESTRESS | POI_TABULAR );
-   CHECK(vPoi.size()>0);
+   IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(fabrSegmentKey);
 
    const pgsFlexuralStressArtifact* pFactoredStressArtifact(NULL);
 
@@ -264,33 +283,33 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
    Float64 allowable_tension_with_rebar;
    Float64 allowable_compression;
 
-   if (stressType==pgsTypes::Tension && ((stage != pgsTypes::BridgeSite2) || (stage == pgsTypes::BridgeSite2 && pAllowable->CheckFinalDeadLoadTensionStress())) )
+   if (stressType==pgsTypes::Tension && (intervalIdx != compositeDeckIntervalIdx))
    {
-      pFactoredStressArtifact = pFactoredGdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(stage,limitState,pgsTypes::Tension,vPoi.begin()->GetDistFromStart()) );
+      pFactoredStressArtifact = pFactoredGdrArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Tension,0 );
       allowable_tension = pFactoredStressArtifact->GetCapacity();
       allowable_tension_with_rebar = pFactoredGdrArtifact->GetCastingYardCapacityWithMildRebar();
    }
 
-   if (stressType==pgsTypes::Compression || stage != pgsTypes::BridgeSite3)
+   if (stressType==pgsTypes::Compression || intervalIdx != liveLoadIntervalIdx)
    {
-      pFactoredStressArtifact = pFactoredGdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(stage,limitState,pgsTypes::Compression,vPoi.begin()->GetDistFromStart()) );
+      pFactoredStressArtifact = pFactoredGdrArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Compression,0 );
       allowable_compression = pFactoredStressArtifact->GetCapacity();
    }
 
 
-   if (stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3 )
+   if (intervalIdx == compositeDeckIntervalIdx || intervalIdx == liveLoadIntervalIdx )
    {
-      if ( stage == pgsTypes::BridgeSite2 || (stage == pgsTypes::BridgeSite3 && limitState != pgsTypes::ServiceIII) )
+      if ( intervalIdx == compositeDeckIntervalIdx || (intervalIdx == liveLoadIntervalIdx && limitState != pgsTypes::ServiceIII) )
       {
          p_table->SetRowSpan(0,col1,2);
-         p_table->SetRowSpan(1,col2++,SKIP_CELL);
+         p_table->SetRowSpan(1,col2++,-1);
          (*p_table)(0,col1++) <<_T("Compression") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
       }
 
-      if ( (stage == pgsTypes::BridgeSite2 && limitState == pgsTypes::ServiceI && pAllowable->CheckFinalDeadLoadTensionStress()) || (stage == pgsTypes::BridgeSite3 && limitState == pgsTypes::ServiceIII) )
+      if ( intervalIdx == liveLoadIntervalIdx && limitState == pgsTypes::ServiceIII )
       {
          p_table->SetRowSpan(0,col1,2);
-         p_table->SetRowSpan(1,col2++,SKIP_CELL);
+         p_table->SetRowSpan(1,col2++,-1);
          (*p_table)(0,col1) <<_T("Tension") << rptNewLine << _T("Status");
          if ( !IsZero(allowable_tension) )
             (*p_table)(0,col1) << rptNewLine << _T("(C/D)");
@@ -298,93 +317,75 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
          col1++;
       }
    }
-   else if ( stage == pgsTypes::CastingYard )
+   else if ( intervalIdx == releaseIntervalIdx )
    {
       p_table->SetRowSpan(0,col1,2);
-      p_table->SetRowSpan(1,col2++,SKIP_CELL);
+      p_table->SetRowSpan(1,col2++,-1);
       (*p_table)(0,col1++) << _T("Tension") << rptNewLine << _T("Status");
       if ( !IsZero(allowable_tension) )
          (*p_table)(0,col1-1) << rptNewLine << _T("w/o rebar") << rptNewLine << _T("(C/D)");
 
       p_table->SetRowSpan(0,col1,2);
-      p_table->SetRowSpan(1,col2++,SKIP_CELL);
+      p_table->SetRowSpan(1,col2++,-1);
       (*p_table)(0,col1++) << _T("Tension") << rptNewLine << _T("Status") << rptNewLine << _T("w/ rebar");
       if ( !IsZero(allowable_tension_with_rebar) )
          (*p_table)(0,col1-1) << rptNewLine << _T("(C/D)");
 
       p_table->SetRowSpan(0,col1,2);
-      p_table->SetRowSpan(1,col2++,SKIP_CELL);
+      p_table->SetRowSpan(1,col2++,-1);
       (*p_table)(0,col1++) << _T("Compression") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
    }
    else
    {
       p_table->SetRowSpan(0,col1,2);
-      p_table->SetRowSpan(1,col2++,SKIP_CELL);
+      p_table->SetRowSpan(1,col2++,-1);
       (*p_table)(0,col1++) <<_T("Tension")<<rptNewLine<<_T("Status");
       if ( !IsZero(allowable_tension) )
          (*p_table)(0,col1-1) << rptNewLine << _T("(C/D)");
 
       p_table->SetRowSpan(0,col1,2);
-      p_table->SetRowSpan(1,col2++,SKIP_CELL);
+      p_table->SetRowSpan(1,col2++,-1);
       (*p_table)(0,col1++) <<_T("Compression")<<rptNewLine<<_T("Status") << rptNewLine << _T("(C/D)");
    }
 
    p_table->SetNumberOfHeaderRows(2);
    for ( ColumnIndexType i = col1; i < p_table->GetNumberOfColumns(); i++ )
-      p_table->SetColumnSpan(0,i,SKIP_CELL);
+      p_table->SetColumnSpan(0,i,-1);
 
    // Fill up the table
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 end_size = pBridge->GetGirderStartConnectionLength(TOGA_SPAN,TOGA_FABR_GDR);
-   if ( stage == pgsTypes::CastingYard )
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(fabrSegmentKey);
+   if ( intervalIdx == releaseIntervalIdx )
       end_size = 0; // don't adjust if CY stage
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
-   std::vector<pgsPointOfInterest>::const_iterator iter;
-   for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
+   CollectionIndexType nArtifacts = pFactoredGdrArtifact->GetFlexuralStressArtifactCount(intervalIdx,limitState,stressType);
+   for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
    {
       ColumnIndexType col = 0;
-
-      const pgsPointOfInterest& poi = *iter;
-      (*p_table)(row,col) << location.SetValue( stage, poi, end_size );
 
       const pgsFlexuralStressArtifact* pFactoredOtherStressArtifact=0;
       const pgsFlexuralStressArtifact* pUnfactoredStressArtifact=0;
 
-      if(stage==pgsTypes::BridgeSite2 || stage==pgsTypes::BridgeSite3)
+      if ( intervalIdx == compositeDeckIntervalIdx || intervalIdx == liveLoadIntervalIdx )
       {
-         pFactoredStressArtifact = pFactoredGdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(stage,limitState,stressType,poi.GetDistFromStart()) );
-         ATLASSERT( pFactoredStressArtifact != NULL );
-         if ( pFactoredStressArtifact == NULL )
-            continue;
-
-         pUnfactoredStressArtifact = pUnfactoredGdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(stage,limitState,stressType,poi.GetDistFromStart()) );
-         ATLASSERT( pUnfactoredStressArtifact != NULL );
-         if ( pUnfactoredStressArtifact == NULL )
-            continue;
+         pFactoredStressArtifact   = pFactoredGdrArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,stressType,idx );
+         pUnfactoredStressArtifact = pUnfactoredGdrArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,stressType,idx );
       }
       else
       {
          // get both tension and compression for other than bss3
-         pFactoredStressArtifact      = pFactoredGdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(stage,limitState,pgsTypes::Tension,poi.GetDistFromStart()) );
-         ATLASSERT( pFactoredStressArtifact != NULL );
-         if ( pFactoredStressArtifact == NULL )
-            continue;
-
-         pFactoredOtherStressArtifact = pFactoredGdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(stage,limitState,pgsTypes::Compression,poi.GetDistFromStart()) );
-         ATLASSERT( pFactoredOtherStressArtifact != NULL );
-         if ( pFactoredOtherStressArtifact == NULL )
-            continue;
-
-         pUnfactoredStressArtifact      = pUnfactoredGdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(stage,limitState,pgsTypes::Tension,poi.GetDistFromStart()) );
-         ATLASSERT( pUnfactoredStressArtifact != NULL );
-         if ( pUnfactoredStressArtifact == NULL )
-            continue;
+         pFactoredStressArtifact      = pFactoredGdrArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Tension,idx );
+         pFactoredOtherStressArtifact = pFactoredGdrArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Compression,idx );
+         pUnfactoredStressArtifact    = pUnfactoredGdrArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Tension,idx );
       }
+
+      const pgsPointOfInterest& poi(pFactoredStressArtifact->GetPointOfInterest());
+      (*p_table)(row,col) << location.SetValue( intervalIdx, poi, end_size );
 
       Float64 fTop, fBot;
       // prestress
-      pFactoredStressArtifact->GetPrestressEffects( &fTop, &fBot );
+      pFactoredStressArtifact->GetPretensionEffects( &fTop, &fBot );
       if (limitState != pgsTypes::ServiceIII)
       {
          (*p_table)(row,++col) << stress.SetValue( fTop );
@@ -393,7 +394,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
       (*p_table)(row,++col) << stress.SetValue( fBot );
 
       // Calculated
-      if (stage != pgsTypes::CastingYard)
+      if (intervalIdx != releaseIntervalIdx)
       {
          pUnfactoredStressArtifact->GetExternalEffects( &fTop, &fBot );
          if (limitState != pgsTypes::ServiceIII)
@@ -423,12 +424,10 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
       (*p_table)(row,++col) << stress.SetValue( fBot );
 
       // Tension w/o rebar
-      if ( stage == pgsTypes::CastingYard || 
-//           stage == pgsTypes::GirderPlacement || 
-           stage == pgsTypes::TemporaryStrandRemoval || 
-           stage == pgsTypes::BridgeSite1 || 
-          (stage == pgsTypes::BridgeSite2 && limitState == pgsTypes::ServiceI && pAllowable->CheckFinalDeadLoadTensionStress() ) ||
-          (stage == pgsTypes::BridgeSite3 && limitState == pgsTypes::ServiceIII)
+      if ( intervalIdx == releaseIntervalIdx || 
+           intervalIdx == tsRemovalIntervalIdx || 
+           intervalIdx == castDeckIntervalIdx || 
+          (intervalIdx == liveLoadIntervalIdx && limitState == pgsTypes::ServiceIII)
          )
       {
          bool bPassed = (limitState == pgsTypes::ServiceIII ? pFactoredStressArtifact->BottomPassed() : pFactoredStressArtifact->Passed());
@@ -445,7 +444,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
       }
 
       // Tension w/ rebar
-      if ( stage == pgsTypes::CastingYard )
+      if ( intervalIdx == releaseIntervalIdx )
       {
          bool bPassed = ( fTop <= allowable_tension_with_rebar) && (fBot <= allowable_tension_with_rebar);
          if (bPassed)
@@ -465,16 +464,14 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
       }
 
       // Compression
-      if (stage == pgsTypes::CastingYard || 
-//          stage == pgsTypes::GirderPlacement ||
-          stage == pgsTypes::TemporaryStrandRemoval ||
-          stage == pgsTypes::BridgeSite1 ||
-          stage == pgsTypes::BridgeSite2 ||
-         (stage == pgsTypes::BridgeSite3 && (limitState == pgsTypes::ServiceI || limitState == pgsTypes::ServiceIA || limitState == pgsTypes::FatigueI))
+      if ( intervalIdx == releaseIntervalIdx || 
+           intervalIdx == tsRemovalIntervalIdx || 
+           intervalIdx == castDeckIntervalIdx || 
+          (intervalIdx == liveLoadIntervalIdx && limitState == pgsTypes::ServiceIII)
          )
       {
          bool bPassed;
-         if ( (stage == pgsTypes::BridgeSite2 && !pAllowable->CheckFinalDeadLoadTensionStress()) || stage == pgsTypes::BridgeSite3 )
+         if ( intervalIdx == compositeDeckIntervalIdx || intervalIdx == liveLoadIntervalIdx )
          {
             bPassed = pFactoredStressArtifact->Passed();
          }
@@ -501,23 +498,3 @@ CChapterBuilder* CTogaStressChecksChapterBuilder::Clone() const
 {
    return new CTogaStressChecksChapterBuilder;
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-

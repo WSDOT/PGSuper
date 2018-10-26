@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "ResolveGirderSpacingDlg.h"
 #include <System\Tokenizer.h>
-#include <MfcTools\CustomDDX.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -79,7 +79,7 @@ BOOL CResolveGirderSpacingDlg::OnInitDialog()
    DWORD item_data = HashGirderSpacing(pgsTypes::AtPierLine,pgsTypes::AlongItem);
    pCB->SetItemData(idx,item_data);
    
-   idx = pCB->AddString(_T("Measured normal to alignment at abutment/pier line"));
+   idx = pCB->AddString(_T("Measured normal to alignment at abutment/pier"));
    item_data = HashGirderSpacing(pgsTypes::AtPierLine,pgsTypes::NormalToItem);
    pCB->SetItemData(idx,item_data);
    

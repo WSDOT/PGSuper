@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,14 +32,12 @@
 #include <IFace\Test1250.h>
 #include <IFace\GirderHandling.h>
 
-#include <PgsExt\BridgeDescription.h>
+#include <PgsExt\BridgeDescription2.h>
 #include <DesignConfigUtil.h>
 
 #include <EAF\EAFAutoProgress.h>
 #include <EAF\EAFApp.h>
 #include <EAF\EAFUtilities.h>
-
-#include <MfcTools\XUnwind.h>
 
 #include <Reporting\PGSuperTitlePageBuilder.h>
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
@@ -109,28 +107,21 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
    // Create report spec builders
    //
 
-   boost::shared_ptr<CReportSpecificationBuilder> pSpanGirderRptSpecBuilder( new CSpanGirderReportSpecificationBuilder(m_pBroker) );
-   boost::shared_ptr<CReportSpecificationBuilder> pMultiGirderRptSpecBuilder( new CMultiGirderReportSpecificationBuilder(m_pBroker) );
+   boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder( new CGirderReportSpecificationBuilder(m_pBroker,CGirderKey(0,0)) );
    boost::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder( new CMultiViewSpanGirderReportSpecificationBuilder(m_pBroker) );
 
 
    // Texas Girder Schedule - use compacted title page
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("TxDOT Girder Schedule Report"));
-#if defined _DEBUG || defined _BETA_VERSION
-   pRptBuilder->IncludeTimingChapter();
-#endif
-   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false,false)) );
-   pRptBuilder->SetReportSpecificationBuilder( pMultiGirderRptSpecBuilder );
+   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false)) );
+   pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasIBNSChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasCamberAndDeflectionChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 
    // Texas Summary report - short
    pRptBuilder = new CReportBuilder(_T("TxDOT Summary Report (Short Form)"));
-#if defined _DEBUG || defined _BETA_VERSION
-   pRptBuilder->IncludeTimingChapter();
-#endif
-   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName(), false,false)) );
+   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(true)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasGirderSummaryChapterBuilder) );
@@ -142,10 +133,7 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
 
    // Texas Summary report - long form
    pRptBuilder = new CReportBuilder(_T("TxDOT Summary Report (Long Form)"));
-#if defined _DEBUG || defined _BETA_VERSION
-   pRptBuilder->IncludeTimingChapter();
-#endif
-   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName(),true,false)) );
+   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(true)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasGirderSummaryChapterBuilder) );
@@ -161,11 +149,8 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
 
    // TOGA Long Form
    pRptBuilder = new CReportBuilder(_T("TxDOT Optional Girder Analysis (TOGA) - Long Report"),true);
-#if defined _DEBUG || defined _BETA_VERSION
-   pRptBuilder->IncludeTimingChapter();
-#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CTOGATitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false)) );
-   pRptBuilder->SetReportSpecificationBuilder( pSpanGirderRptSpecBuilder );
+   pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTogaSpecCheckSummaryChapterBuilder(true)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTxDOTOptionalDesignSummaryChapterBuilder()) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTogaLongSectionChapterBuilder()) );
@@ -182,11 +167,8 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
 
    // TOGA Short Form
    pRptBuilder = new CReportBuilder(_T("TxDOT Optional Girder Analysis (TOGA) - Short Report"),true);
-#if defined _DEBUG || defined _BETA_VERSION
-   pRptBuilder->IncludeTimingChapter();
-#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CTOGATitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false)) );
-   pRptBuilder->SetReportSpecificationBuilder( pSpanGirderRptSpecBuilder );
+   pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTogaSpecCheckSummaryChapterBuilder(true)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTxDOTOptionalDesignSummaryChapterBuilder()) );
    pRptMgr->AddReportBuilder( pRptBuilder );
@@ -215,14 +197,14 @@ STDMETHODIMP CTxDOTAgentImp::ShutDown()
 
 /////////////////////////////////////////////////////////////////////////////
 // ITxDOTCadExport
-int CTxDOTAgentImp::WriteCADDataToFile(FILE *fp, IBroker* pBroker, SpanIndexType span, GirderIndexType gdr, TxDOTCadExportFormatType format, bool designSucceeded)
+int CTxDOTAgentImp::WriteCADDataToFile(FILE *fp, IBroker* pBroker, const CSegmentKey& segmentKey, TxDOTCadExportFormatType format, bool designSucceeded)
 {
-   return TxDOT_WriteCADDataToFile(fp,pBroker,span, gdr, format, designSucceeded);
+   return TxDOT_WriteCADDataToFile(fp,pBroker,segmentKey, format, designSucceeded);
 }
 
-int CTxDOTAgentImp::WriteDistributionFactorsToFile(FILE *fp, IBroker* pBroker, SpanIndexType span, GirderIndexType gdr)
+int CTxDOTAgentImp::WriteDistributionFactorsToFile(FILE *fp, IBroker* pBroker, const CSegmentKey& segmentKey)
 {
-   return TxDOT_WriteDistributionFactorsToFile(fp,pBroker,span,gdr);
+   return TxDOT_WriteDistributionFactorsToFile(fp,pBroker,segmentKey);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -269,13 +251,13 @@ void CTxDOTAgentImp::ProcessTxDotCad(const CTxDOTCommandLineInfo& rCmdInfo)
       ::AfxMessageBox(_T("Invalid girder specified on command line for TxDOT CAD report"));
       return;
    }
-/*
-   if (rCmdInfo.m_TxSpan != ALL_SPANS || rCmdInfo.m_TxSpan < 0)
+
+   if (rCmdInfo.m_TxSpan != ALL_SPANS /*&& rCmdInfo.m_TxSpan < 0*/)
    {
       ::AfxMessageBox(_T("Invalid span specified on command line for TxDOT CAD report"));
       return;
    }
-*/
+
    CString errfile;
    if (CreateTxDOTFileNames(rCmdInfo.m_TxOutputFile, &errfile))
    {
@@ -473,6 +455,8 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
       GirderIndexType girder;
       UnhashSpanGirder(key, &span, &girder);
 
+      CSegmentKey segmentKey(span,girder,0);
+
       CString strMessage;
       strMessage.Format(_T("Creating TxDOT CAD report for Span %d, Girder %s"),LABEL_SPAN(span), LABEL_GIRDER(girder));
       pProgress->UpdateMessage(strMessage);
@@ -483,25 +467,16 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
       {
          // get design options from library entry. 
          GET_IFACE(ISpecification,pSpecification);
+         arDesignOptions des_options = pSpecification->GetDesignOptions(segmentKey);
 
-         std::vector<arDesignOptions> des_options_coll = pSpecification->GetDesignOptions(span,girder);
-         IndexType do_cnt = des_options_coll.size();
-         IndexType do_idx = 1;
-
-         // Add command line settings to options
-         for(std::vector<arDesignOptions>::iterator it = des_options_coll.begin(); it!=des_options_coll.end(); it++)
+         // Set up for shear design. 
+         des_options.doDesignForShear = txInfo.m_TxRunType == CTxDOTCommandLineInfo::txrDesignShear;
+         if(des_options.doDesignForShear)
          {
-            arDesignOptions& des_options = *it;
-
-            // Set up for shear design. 
-            des_options.doDesignForShear = txInfo.m_TxRunType == CTxDOTCommandLineInfo::txrDesignShear;
-            if(des_options.doDesignForShear)
-            {
-               // If stirrup zones are not symmetrical in test file, design using existing layout
-               GET_IFACE(IStirrupGeometry,pStirrupGeom);
-               bool are_symm = pStirrupGeom->AreStirrupZonesSymmetrical(span, girder);
-               des_options.doDesignStirrupLayout = are_symm ? slLayoutStirrups : slRetainExistingLayout;
-            }
+            // If stirrup zones are not symmetrical in test file, design using existing layout
+            GET_IFACE(IStirrupGeometry,pStirrupGeom);
+            bool are_symm = pStirrupGeom->AreStirrupZonesSymmetrical(segmentKey);
+            des_options.doDesignStirrupLayout = are_symm ? slLayoutStirrups : slRetainExistingLayout;
          }
 
          GET_IFACE(IArtifact,pIArtifact);
@@ -509,7 +484,7 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
          try
          {
             // Design the girder
-            pArtifact = pIArtifact->CreateDesignArtifact( span,girder, des_options_coll);
+            pArtifact = pIArtifact->CreateDesignArtifact( segmentKey, des_options);
          
             if (pArtifact->GetOutcome() != pgsDesignArtifact::Success)
             {
@@ -517,8 +492,8 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
                designSucceeded=false;
             }
 
-            // Copy the design to the bridge
-            SaveDesign(span,girder, pArtifact);
+            // and copy the design to the bridge
+            SaveFlexureDesign(segmentKey, des_options, pArtifact);
          }
          catch(...)
          {
@@ -537,28 +512,16 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
       if (txInfo.m_TxRunType == CTxDOTCommandLineInfo::TxrDistributionFactors)
       {
          // Write distribution factor data to file
-         try
+         if (CAD_SUCCESS != pTxDOTCadExport->WriteDistributionFactorsToFile (fp, this->m_pBroker, segmentKey))
          {
-            if (CAD_SUCCESS != pTxDOTCadExport->WriteDistributionFactorsToFile (fp, this->m_pBroker, span, girder))
-            {
-               err_file <<_T("Warning: An error occured while writing to File")<<std::endl;
-	            return false;
-            }
-         }
-         catch(CXUnwind* pExc)
-         {
-            // Probable lldf out of range error
-            std::_tstring sCause;
-            pExc->GetErrorMessage(&sCause);
-            _ftprintf(fp, sCause.c_str());
-            _ftprintf(fp, _T("\n"));
-            pExc->Delete();
+            err_file <<_T("Warning: An error occured while writing to File")<<std::endl;
+	         return false;
          }
       }
       else
       {
          /* Write CAD data to text file */
-         if (CAD_SUCCESS != pTxDOTCadExport->WriteCADDataToFile(fp, this->m_pBroker, span, girder, (TxDOTCadExportFormatType)txInfo.m_TxFType, designSucceeded) )
+         if (CAD_SUCCESS != pTxDOTCadExport->WriteCADDataToFile(fp, this->m_pBroker, segmentKey, (TxDOTCadExportFormatType)txInfo.m_TxFType, designSucceeded) )
          {
             err_file <<_T("Warning: An error occured while writing to File")<<std::endl;
 	         return false;
@@ -606,33 +569,142 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
    return true;
 }
 
-void CTxDOTAgentImp::SaveDesign(SpanIndexType span,GirderIndexType gdr,const pgsDesignArtifact* pArtifact)
+
+void CTxDOTAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const arDesignOptions& designOptions,const pgsDesignArtifact* pArtifact)
 {
-   GET_IFACE(IGirderData,pGirderData);
+   GET_IFACE(ISegmentData,pSegmentData);
    GET_IFACE(IStrandGeometry, pStrandGeometry );
 
-   // Artifact does hard work of converting to girder data
-   CGirderData girderData = pArtifact->GetGirderData();
+   CStrandData strands = *pSegmentData->GetStrandData(segmentKey);
 
-   pGirderData->SetGirderData( girderData, span, gdr );
+   // Convert Harp offset data
+   // offsets are absolute measure in the design artifact
+   // convert them to the measurement basis that the CGirderData object is using
+   ConfigStrandFillVector fillvec = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, pArtifact->GetNumHarpedStrands());
 
-   arDesignOptions design_options = pArtifact->GetDesignOptions();
+   strands.HpOffsetAtEnd = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(segmentKey, fillvec,
+                                                                                  strands.HsoEndMeasurement, 
+                                                                                  pArtifact->GetHarpStrandOffsetEnd());
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   if (design_options.doDesignForFlexure != dtNoDesign && design_options.doDesignSlabOffset)
+
+#pragma Reminder("############ - Update with loop after updating Artifact #############")
+   // see if strand design data fits in grid
+   bool fills_grid=false;
+   StrandIndexType num_permanent = pArtifact->GetNumHarpedStrands() + pArtifact->GetNumStraightStrands();
+   StrandIndexType ns(0), nh(0);
+   if (designOptions.doStrandFillType==ftGridOrder)
    {
-      pgsTypes::SlabOffsetType slabOffsetType = pIBridgeDesc->GetSlabOffsetType();
-
-      if ( slabOffsetType == pgsTypes::sotBridge )
+      // we asked design to fill using grid, but this may be a non-standard design - let's check
+      if (pStrandGeometry->ComputeNumPermanentStrands(num_permanent, segmentKey, &ns, &nh))
       {
-         pIBridgeDesc->SetSlabOffset( pArtifact->GetSlabOffset(pgsTypes::metStart) );
-      }
-      else
-      {
-         pIBridgeDesc->SetSlabOffset( span, gdr, pArtifact->GetSlabOffset(pgsTypes::metStart), pArtifact->GetSlabOffset(pgsTypes::metEnd));
+         if (ns==pArtifact->GetNumStraightStrands() && nh==pArtifact->GetNumHarpedStrands() )
+         {
+            fills_grid = true;
+         }
       }
    }
+
+   if (fills_grid)
+   {
+      // CStrandData::npsTotal
+      ATLASSERT(num_permanent==ns+nh);
+
+
+      strands.SetTotalPermanentNstrands(num_permanent, ns, nh);
+
+      strands.Pjack[pgsTypes::Permanent]               = pArtifact->GetPjackStraightStrands() + pArtifact->GetPjackHarpedStrands();
+      strands.bPjackCalculated[pgsTypes::Permanent]    = pArtifact->GetUsedMaxPjackStraightStrands();
+   }
+   else
+   {
+      // CStrandData::npsStraightHarped;
+      strands.SetHarpedStraightNstrands(pArtifact->GetNumStraightStrands(), pArtifact->GetNumHarpedStrands());
+   }
+
+   strands.SetTemporaryNstrands(pArtifact->GetNumTempStrands());
+
+   strands.Pjack[pgsTypes::Harped]               = pArtifact->GetPjackHarpedStrands();
+   strands.Pjack[pgsTypes::Straight]             = pArtifact->GetPjackStraightStrands();
+   strands.Pjack[pgsTypes::Temporary]            = pArtifact->GetPjackTempStrands();
+   strands.bPjackCalculated[pgsTypes::Harped]    = pArtifact->GetUsedMaxPjackHarpedStrands();
+   strands.bPjackCalculated[pgsTypes::Straight]  = pArtifact->GetUsedMaxPjackStraightStrands();
+   strands.bPjackCalculated[pgsTypes::Temporary] = pArtifact->GetUsedMaxPjackTempStrands();
+   strands.LastUserPjack[pgsTypes::Harped]       = pArtifact->GetPjackHarpedStrands();
+   strands.LastUserPjack[pgsTypes::Straight]     = pArtifact->GetPjackStraightStrands();
+   strands.LastUserPjack[pgsTypes::Temporary]    = pArtifact->GetPjackTempStrands();
+
+   strands.TempStrandUsage = pArtifact->GetTemporaryStrandUsage();
+
+   // Get debond information from design artifact
+   strands.ClearDebondData();
+   strands.bSymmetricDebond = true;  // design is always symmetric
+
+
+   // TRICKY: Mapping from DEBONDCONFIG to CDebondInfo is tricky because
+   //         former designates individual strands and latter stores symmetric strands
+   //         in pairs.
+   // Use utility tool to make the strand indexing conversion
+   ConfigStrandFillVector strtfillvec = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Straight, pArtifact->GetNumStraightStrands());
+   ConfigStrandFillTool fillTool( strtfillvec );
+
+   DebondConfigCollection dbcoll = pArtifact->GetStraightStrandDebondInfo();
+   // sort this collection by strand idices to ensure we get it right
+   std::sort( dbcoll.begin(), dbcoll.end() ); // default < operator is by index
+
+   for (DebondConfigConstIterator dbit = dbcoll.begin(); dbit!=dbcoll.end(); dbit++)
+   {
+      const DEBONDCONFIG& rdbrinfo = *dbit;
+
+      CDebondData cdbi;
+
+      StrandIndexType gridIndex, otherPos;
+      fillTool.StrandPositionIndexToGridIndex(rdbrinfo.strandIdx, &gridIndex, &otherPos);
+
+      cdbi.strandTypeGridIdx = gridIndex;
+
+      // If there is another position, this is a pair. Increment to next position
+      if (otherPos != INVALID_INDEX)
+      {
+         dbit++;
+
+#ifdef _DEBUG
+         const DEBONDCONFIG& ainfo = *dbit;
+         StrandIndexType agrid;
+         fillTool.StrandPositionIndexToGridIndex(ainfo.strandIdx, &agrid, &otherPos);
+         ATLASSERT(agrid==gridIndex); // must have the same grid index
+#endif
+      }
+
+      cdbi.Length1    = rdbrinfo.LeftDebondLength;
+      cdbi.Length2    = rdbrinfo.RightDebondLength;
+
+      strands.Debond[pgsTypes::Straight].push_back(cdbi);
+   }
+   
+   pSegmentData->SetStrandData(segmentKey,strands);
+
+   // concrete
+   CGirderMaterial material = *pSegmentData->GetSegmentMaterial(segmentKey);
+   material.Concrete.Fci = pArtifact->GetReleaseStrength();
+   material.Concrete.Fc  = pArtifact->GetConcreteStrength();
+
+   pSegmentData->SetSegmentMaterial(segmentKey,material);
+
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   CBridgeDescription2 bridgeDesc = *pIBridgeDesc->GetBridgeDescription();
+   CGirderGroupData* pGroup = bridgeDesc.GetGirderGroup(segmentKey.groupIndex);
+   pGroup->GetGirder(segmentKey.girderIndex)->GetSegment(segmentKey.segmentIndex)->SetSlabOffset(pgsTypes::metStart,pArtifact->GetSlabOffset(pgsTypes::metStart));
+   pGroup->GetGirder(segmentKey.girderIndex)->GetSegment(segmentKey.segmentIndex)->SetSlabOffset(pgsTypes::metEnd,  pArtifact->GetSlabOffset(pgsTypes::metEnd));
+   pIBridgeDesc->SetBridgeDescription(bridgeDesc);
+
+   GET_IFACE(IGirderLifting,pLifting);
+   pLifting->SetLiftingLoopLocations(segmentKey,pArtifact->GetLeftLiftingLocation(),pArtifact->GetRightLiftingLocation());
+
+   GET_IFACE(IGirderHauling,pHauling);
+   pHauling->SetTruckSupportLocations(segmentKey,pArtifact->GetTrailingOverhang(),pArtifact->GetLeadingOverhang());
+
 }
+
 
 void CTxDOTAgentImp::ProcessTOGAReport(const CTxDOTCommandLineInfo& rCmdInfo)
 {

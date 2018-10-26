@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,13 +26,14 @@
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 
-#include "PGSuperDoc.h"
+#include "PGSuperDocBase.h"
 
 #include "ReportView.h"
 #include "Hints.h"
 
 #include "htmlhelp\HelpTopics.hh"
 
+#include <IFace\DocumentType.h>
 #include <EAF\EAFAutoProgress.h>
 #include <EAF\EAFStatusCenter.h>
 
@@ -206,8 +207,8 @@ CReportHint* CPGSuperReportView::TranslateHint(CView* pSender, LPARAM lHint, COb
 {
    if ( lHint == HINT_GIRDERCHANGED )
    {
-      CGirderHint* pGdrHint = (CGirderHint*)pHint;
-      CSpanGirderReportHint* pSGHint = new CSpanGirderReportHint(pGdrHint->spanIdx,pGdrHint->gdrIdx,pGdrHint->lHint);
+      CGirderHint* pGirderHint = (CGirderHint*)pHint;
+      CGirderReportHint* pSGHint = new CGirderReportHint(pGirderHint->girderKey,pGirderHint->lHint);
       return pSGHint;
    }
    return NULL;
@@ -227,7 +228,7 @@ bool CPGSuperReportView::CreateReport(CollectionIndexType rptIdx,bool bPromptFor
    // creation because the underlying framework doesn't support it directly.
 
    CEAFDocument* pEAFDoc = (CEAFDocument*)GetDocument();
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)pEAFDoc;
+   CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pEAFDoc;
    CEAFAutoCalcDocMixin* pAutoCalcDoc = dynamic_cast<CEAFAutoCalcDocMixin*>(pDoc);
    ATLASSERT(pAutoCalcDoc); // your document must use the autocalc mix in
 
@@ -271,6 +272,8 @@ bool CPGSuperReportView::CreateReport(CollectionIndexType rptIdx,bool bPromptFor
 
       if(rptSpec)
       {
+         GET_IFACE2(pBroker,IDocumentType,pDocType);
+
          CMultiViewSpanGirderReportSpecification* pSGRptSpec( dynamic_cast<CMultiViewSpanGirderReportSpecification*>(rptSpec.get()) );
 
          AFX_MANAGE_STATE(AfxGetStaticModuleState()); /////////
@@ -280,33 +283,41 @@ bool CPGSuperReportView::CreateReport(CollectionIndexType rptIdx,bool bPromptFor
 
          std::_tstring reportName = pSGRptSpec->GetReportName();
 
-         std::vector<SpanGirderHashType> girderList =  pSGRptSpec->GetGirderList();
-         ATLASSERT(!girderList.empty()); // UI should not allow this
+         const std::vector<CGirderKey>& girderKeys( pSGRptSpec->GetGirderKeys() );
+         ATLASSERT(!girderKeys.empty()); // UI should not allow this
 
          bool first(true);
-         for ( std::vector<SpanGirderHashType>::iterator it=girderList.begin(); it!=girderList.end(); it++)
+         std::vector<CGirderKey>::const_iterator iter(girderKeys.begin());
+         std::vector<CGirderKey>::const_iterator iterEnd(girderKeys.end());
+         for ( ; iter != iterEnd; iter++)
          {
-            SpanIndexType span;
-            GirderIndexType girder;
-            UnhashSpanGirder(*it, &span, &girder);
+            const CGirderKey& girderKey(*iter);
 
             // Progress button
             std::_tostringstream os;
-            os << _T("Span ") << LABEL_SPAN(span) << _T(" Girder ") << LABEL_GIRDER(girder) << std::ends;
+            if ( pDocType->IsPGSuperDocument() )
+            {
+               os << _T("Span ") << LABEL_SPAN(girderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(girderKey.girderIndex) << std::ends;
+            }
+            else
+            {
+               os << _T("Group ") << LABEL_GROUP(girderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(girderKey.girderIndex) << std::ends;
+            }
             pProgress->UpdateMessage(os.str().c_str());
 
             if ( pProgress->Continue() != S_OK )
                break; // cancel button pressed... quit creating reports
 
 
-            // Creata a CSpanGirderReportSpecification. A single report view news a specification for a 
-            // single girder.
-            // Set the span/girder to report on
-            boost::shared_ptr<CReportSpecification> pRptSpec( new CSpanGirderReportSpecification(*pSGRptSpec, span, girder) );
-            CSpanGirderReportSpecification* pMyReportSpec = (CSpanGirderReportSpecification*)pRptSpec.get();
+            // Creata a CSegmentReportSpecification. A single report view news a specification for a 
+            // single segmentr.
+            // Set the segment to report on
+            boost::shared_ptr<CReportSpecification> pRptSpec( new CGirderReportSpecification(pSGRptSpec->GetReportTitle().c_str(),pBroker,girderKey) );
+            CGirderReportSpecification* pMyReportSpec = (CGirderReportSpecification*)pRptSpec.get();
+            pRptSpec->SetChapterInfo(pSGRptSpec->GetChapterInfo());
 
             // Also need a SpanGirder Report Spec Builder for when the Edit button is pressed
-            boost::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder( new CSpanGirderReportSpecificationBuilder(pBroker) );
+            boost::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder( new CGirderReportSpecificationBuilder(pBroker,girderKey) );
 
             if ( first )
             {

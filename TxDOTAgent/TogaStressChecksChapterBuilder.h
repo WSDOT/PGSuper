@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,7 +28,7 @@
 #include <Reporting\PGSuperChapterBuilder.h>
 
 interface IEAFDisplayUnits;
-class pgsGirderArtifact;
+class pgsSegmentArtifact;
 
 /*****************************************************************************
 CLASS 
@@ -67,15 +67,15 @@ public:
    //------------------------------------------------------------------------
    virtual void BuildTableAndNotes(rptChapter* pChapter, IBroker* pBroker,
                       IEAFDisplayUnits* pDisplayUnits,
-                      pgsTypes::Stage stage,
+                      IntervalIndexType intervalIdx,
                       pgsTypes::LimitState ls,
                       pgsTypes::StressType stress=pgsTypes::Tension) const;
 
    //------------------------------------------------------------------------
    virtual void BuildTable(rptChapter* pChapter, IBroker* pBroker,
-                      const pgsGirderArtifact* pFactoredGdrArtifact, const pgsGirderArtifact* pUnfactoredGdrArtifact,
+                      const pgsSegmentArtifact* pFactoredGdrArtifact, const pgsSegmentArtifact* pUnfactoredGdrArtifact,
                       IEAFDisplayUnits* pDisplayUnits,
-                      pgsTypes::Stage stage,
+                      IntervalIndexType intervalIdx,
                       pgsTypes::LimitState ls,
                       pgsTypes::StressType stress=pgsTypes::Tension) const;
 

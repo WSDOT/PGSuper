@@ -1,32 +1,9 @@
-///////////////////////////////////////////////////////////////////////
-// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
-//                        Bridge and Structures Office
-//
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the Alternate Route Open Source License as 
-// published by the Washington State Department of Transportation, 
-// Bridge and Structures Office.
-//
-// This program is distributed in the hope that it will be useful, but 
-// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
-// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
-// the Alternate Route Open Source License for more details.
-//
-// You should have received a copy of the Alternate Route Open Source 
-// License along with this program; if not, write to the Washington 
-// State Department of Transportation, Bridge and Structures Office, 
-// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
-// Bridge_Support@wsdot.wa.gov
-///////////////////////////////////////////////////////////////////////
-
 #pragma once
 
 #include "TxDOTOptionalDesignData.h"
 #include "TxDOTOptionalDesignBrokerRetreiver.h"
 #include "TxDOTOptionalDesignStandardFillDlg.h"
 #include "TxDOTOptionalDesignNonStandardFillDlg.h"
-#include "TogaDirectFillDlg.h"
 
 // CTxDOTOptionalDesignGirderInputPage dialog
 
@@ -70,16 +47,15 @@ private:
    void InitStrandSizeTypeCtrls();
    void InitOptStrandSizeTypeCtrls();
    void InitOrigStrandSizeTypeCtrls();
-   void InitFillTypeCtrls();
 
    CString m_MostRecentLibraryEntry;
 
    // precaster optional design
    CTxDOTOptionalDesignStandardFillDlg    m_OptStandardDlg;
    CTxDOTOptionalDesignNonStandardFillDlg m_OptNonStandardDlg;
-   CTogaDirectFillDlg                     m_OptDirectFillDlg;
 
-   CTxDOTOptionalDesignGirderData::StrandFillType m_OptStrandFillType;
+   BOOL m_OptIsStandardFill;
+   BOOL m_OptUseDepressed;
    CString m_strOptNoStrands;
    Float64 m_OptFc;
    Float64 m_OptFci;
@@ -87,9 +63,9 @@ private:
    // Original design
    CTxDOTOptionalDesignStandardFillDlg    m_OrigStandardDlg;
    CTxDOTOptionalDesignNonStandardFillDlg m_OrigNonStandardDlg;
-   CTogaDirectFillDlg                     m_OrigDirectFillDlg;
 
-   CTxDOTOptionalDesignGirderData::StrandFillType m_OrigStrandFillType;
+   BOOL m_OrigIsStandardFill;
+   BOOL m_OrigUseDepressed;
    CString m_strOrigNoStrands;
    Float64 m_OrigFc;
    Float64 m_OrigFci;
@@ -98,11 +74,13 @@ private:
 public:
    virtual BOOL OnInitDialog();
    afx_msg void OnCbnSelchangeOptStrandType();
-   afx_msg void OnCbnSelchangeOptFilltypeCombo();
+   afx_msg void OnBnClickedOptStandardFill();
+   afx_msg void OnBnClickedOptUseDepressed();
 
    afx_msg void OnCbnSelchangeOrigStrandType();
    afx_msg void OnCbnSelchangeOrigNumStrands();
-   afx_msg void OnCbnSelchangeOrgFilltypeCombo();
+   afx_msg void OnBnClickedOrigStandardFill();
+   afx_msg void OnBnClickedOrigUseDepressed();
 
    virtual BOOL OnSetActive();
    virtual BOOL OnKillActive();

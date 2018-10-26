@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2016  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -33,7 +33,8 @@
 #include <PsgLib\LibraryManager.h>
 
 class CTxDOTOptionalDesignDocProxyAgent;
-class CBridgeDescription;
+class CBridgeDescription2;
+class CGirderGroupData;
 
 // Hints for views
 // in the OnUpdate method.
@@ -81,7 +82,6 @@ const UINT DEF_GV =  IDG_SV_SHOW_STRANDS     |
                      IDG_EV_DRAW_TO_SCALE    |
                      IDG_EV_SHOW_STIRRUPS    |
                      IDG_EV_SHOW_LONG_REINF;
-
 
 /*--------------------------------------------------------------------*/
 class CTxDOTOptionalDesignDoc : public CEAFBrokerDocument, public ITxDataObserver, public ITxDOTBrokerRetriever
@@ -183,10 +183,10 @@ private:
    void MarryPGSuperTemplateWithBroker(LPCTSTR lpszPathName);
    void PreprocessTemplateData();
    void UpdatePgsuperModelWithData();
-   void VerifyPgsuperTemplateData(CBridgeDescription& bridgeDesc);
+   void VerifyPgsuperTemplateData(CBridgeDescription2& bridgeDesc);
    void SetGirderData(CTxDOTOptionalDesignGirderData* pOdGirderData, GirderIndexType gdr,
                       LPCTSTR gdrName, const GirderLibraryEntry* pGdrEntry, Float64 EcBeam,
-                      CGirderTypes* pGirderTypes);
+                      CGirderGroupData* pGroup);
 
    void RecreateBroker();
 

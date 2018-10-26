@@ -44,7 +44,7 @@
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
-				AdditionalIncludeDirectories="\ARP\PGSuper\Include\Plugins;\ARP\WBFL\Include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)Include\Plugins&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				MkTypLibCompatible="false"
 				TargetEnvironment="1"
 				GenerateStublessProxies="true"
@@ -58,15 +58,13 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)Include&quot;;&quot;$(SolutionDir)Include\Plugins&quot;;&quot;$(SolutionDir)Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
+				AdditionalIncludeDirectories=".\;..\Include;..\Include\PlugIns;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;_ATL_NO_UUIDOF;ENABLE_LOGGING"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 			/>
@@ -143,7 +141,7 @@
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
-				AdditionalIncludeDirectories="\ARP\PGSuper\Include\Plugins;\ARP\WBFL\Include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)Include\Plugins&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				MkTypLibCompatible="false"
 				TargetEnvironment="3"
 				GenerateStublessProxies="true"
@@ -156,15 +154,13 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)Include&quot;;&quot;$(SolutionDir)Include\Plugins&quot;;&quot;$(SolutionDir)Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
+				AdditionalIncludeDirectories=".\;..\Include;..\Include\PlugIns;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;_ATL_NO_UUIDOF;ENABLE_LOGGING"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -242,7 +238,7 @@
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="NDEBUG"
-				AdditionalIncludeDirectories="\ARP\PGSuper\Include\Plugins;\ARP\WBFL\Include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)Include\Plugins&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				MkTypLibCompatible="false"
 				TargetEnvironment="1"
 				GenerateStublessProxies="true"
@@ -260,15 +256,13 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)Include&quot;;&quot;$(SolutionDir)Include\Plugins&quot;;&quot;$(SolutionDir)Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
+				AdditionalIncludeDirectories=".\;..\Include;..\Include\PlugIns;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
-				DebugInformationFormat="0"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -291,7 +285,7 @@
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\TxDOTAgent.def"
-				GenerateDebugInformation="false"
+				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -347,7 +341,7 @@
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="NDEBUG"
-				AdditionalIncludeDirectories="\ARP\PGSuper\Include\Plugins;\ARP\WBFL\Include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)Include\Plugins&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				MkTypLibCompatible="false"
 				TargetEnvironment="3"
 				GenerateStublessProxies="true"
@@ -364,15 +358,13 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)Include&quot;;&quot;$(SolutionDir)Include\Plugins&quot;;&quot;$(SolutionDir)Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
+				AdditionalIncludeDirectories=".\;..\Include;..\Include\PlugIns;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
-				DebugInformationFormat="0"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -395,7 +387,7 @@
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\TxDOTAgent.def"
-				GenerateDebugInformation="false"
+				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -451,7 +443,7 @@
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="NDEBUG"
-				AdditionalIncludeDirectories="\ARP\PGSuper\Include\Plugins;\ARP\WBFL\Include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)Include\Plugins&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				MkTypLibCompatible="false"
 				TargetEnvironment="1"
 				GenerateStublessProxies="true"
@@ -469,14 +461,11 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)Include&quot;;&quot;$(SolutionDir)Include\Plugins&quot;;&quot;$(SolutionDir)Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
+				AdditionalIncludeDirectories=".\;..\Include;..\Include\PlugIns;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				AssemblerListingLocation=".\Profile/"
-				ObjectFile=".\Profile/"
-				ProgramDataBaseFileName=".\Profile/"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -513,7 +502,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest"
+				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(ConfigurationName).manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -557,7 +546,7 @@
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="NDEBUG"
-				AdditionalIncludeDirectories="\ARP\PGSuper\Include\Plugins;\ARP\WBFL\Include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)Include\Plugins&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				MkTypLibCompatible="false"
 				TargetEnvironment="3"
 				GenerateStublessProxies="true"
@@ -574,14 +563,11 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)Include&quot;;&quot;$(SolutionDir)Include\Plugins&quot;;&quot;$(SolutionDir)Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
+				AdditionalIncludeDirectories=".\;..\Include;..\Include\PlugIns;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				AssemblerListingLocation=".\Profile/"
-				ObjectFile=".\Profile/"
-				ProgramDataBaseFileName=".\Profile/"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -618,7 +604,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest"
+				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(ConfigurationName).manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -864,10 +850,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\TogaDirectFillDlg.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\TogaDisplayObjectFactory.cpp"
 				>
 			</File>
@@ -892,10 +874,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\TOGAGirderSelectStrandsDlg.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\TogaGMDisplayMgrEventsImpl.cpp"
 				>
 			</File>
@@ -917,10 +895,6 @@
 			</File>
 			<File
 				RelativePath=".\TOGAStatusBar.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\TOGAStrandFillGrid.cpp"
 				>
 			</File>
 			<File
@@ -1028,10 +1002,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\TxDOTOptionalDesignUtilities.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\TxDOTOptionalDesignView.cpp"
 				>
 			</File>
@@ -1118,10 +1088,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\TogaDirectFillDlg.h"
-				>
-			</File>
-			<File
 				RelativePath=".\TogaDisplayObjectFactory.h"
 				>
 			</File>
@@ -1143,10 +1109,6 @@
 			</File>
 			<File
 				RelativePath=".\TogaGirderModelSectionView.h"
-				>
-			</File>
-			<File
-				RelativePath=".\TOGAGirderSelectStrandsDlg.h"
 				>
 			</File>
 			<File
@@ -1175,10 +1137,6 @@
 			</File>
 			<File
 				RelativePath=".\TOGAStatusBar.h"
-				>
-			</File>
-			<File
-				RelativePath=".\TOGAStrandFillGrid.h"
 				>
 			</File>
 			<File
