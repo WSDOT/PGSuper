@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Include>
-   <?define PGSuperVersion    = 2.7.3.3?> <!-- also change this version number in the BuildPGSuperImagesFragment.js file -->
+   <?define PGSuperVersion    = 2.7.3.4?> <!-- also change this version number in the BuildPGSuperImagesFragment.js file -->
    <?define BEToolboxVersion  = 2.0.0.2?>
    <?define WBFLVersion       = 3.6.3.3?>
 

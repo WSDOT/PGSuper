@@ -281,7 +281,7 @@ void CLongSteelGrid::SetRowStyle(ROWCOL nRow)
 
 	this->SetStyleRange(CGXRange(nRow,2), CGXStyle()
 			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
-			.SetChoiceList(_T("#3\n#4\n#5\n#6\n#8\n#9\n#10\n#11\n#14\n#18"))
+			.SetChoiceList(_T("#3\n#4\n#5\n#6\n#7\n#8\n#9\n#10\n#11\n#14\n#18"))
 			.SetValue(_T("#4"))
          .SetHorizontalAlignment(DT_RIGHT)
          );
