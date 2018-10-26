@@ -29,7 +29,7 @@ public:
 	virtual ~CCastClosureJointDlg();
 
 // Dialog Data
-	enum { IDD = IDD_CAST_CLOSOURE_JOINT };
+	enum { IDD = IDD_CAST_CLOSURE_JOINT };
 
    CTimelineManager m_TimelineMgr;
    EventIndexType m_EventIndex;

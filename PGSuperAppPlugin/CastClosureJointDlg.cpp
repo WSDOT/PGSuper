@@ -74,11 +74,19 @@ void CCastClosureJointDlg::DoDataExchange(CDataExchange* pDX)
       DDX_Text(pDX,IDC_AGE,age);
       DDV_GreaterThanZero(pDX,IDC_AGE,age);
       m_TimelineMgr.GetEventByIndex(m_EventIndex)->GetCastClosureJointActivity().SetConcreteAgeAtContinuity(age);
+
+      Float64 cure_duration;
+      DDX_Text(pDX,IDC_CURING,cure_duration);
+      DDV_NonNegativeDouble(pDX,IDC_CURING,cure_duration);
+      m_TimelineMgr.GetEventByIndex(m_EventIndex)->GetCastClosureJointActivity().SetCuringDuration(cure_duration);
    }
    else
    {
       Float64 age = m_TimelineMgr.GetEventByIndex(m_EventIndex)->GetCastClosureJointActivity().GetConcreteAgeAtContinuity();
       DDX_Text(pDX,IDC_AGE,age);
+
+      Float64 cure_duration = m_TimelineMgr.GetEventByIndex(m_EventIndex)->GetCastClosureJointActivity().GetCuringDuration();
+      DDX_Text(pDX,IDC_CURING,cure_duration);
    }
 }
 

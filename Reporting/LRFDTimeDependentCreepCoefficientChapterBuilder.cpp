@@ -109,7 +109,17 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
 
       *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("KhcEqn.png") ) << rptNewLine;
       *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
-      *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
+
+      if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2015Interims )
+      {
+         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
+      }
+      else
+      {
+         ATLASSERT(!bSI);
+         *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("KtdEqn-US2015.png")) << rptNewLine;
+      }
+
       *pPara << rptNewLine;
    } // spec
 

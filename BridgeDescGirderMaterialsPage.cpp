@@ -302,7 +302,8 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
 
    OnUserEci();
    OnUserEc();
-   OnConcreteStrength();
+
+   UpdateConcreteControls(true);
 
    EnableToolTips(TRUE);
 
@@ -786,12 +787,12 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
       UpdateEci();
       UpdateEc();
 
-      UpdateConcreteControls();
+      UpdateConcreteControls(true);
    }
 	
 }
 
-void CGirderDescGeneralPage::UpdateConcreteControls()
+void CGirderDescGeneralPage::UpdateConcreteControls(bool bSkipEcCheckBoxes)
 {
    if ( m_LossMethod == LOSSES_TIME_STEP )
    {
@@ -807,16 +808,19 @@ void CGirderDescGeneralPage::UpdateConcreteControls()
          GetDlgItem(idFc[j] )->EnableWindow( !bEnableFci );
       }
 
-      if ( i == IDC_FC1 ) // input based on f'ci
+      if ( !bSkipEcCheckBoxes )
       {
-         m_ctrlEciCheck.SetCheck(m_ctrlEcCheck.GetCheck());
-         m_ctrlEcCheck.SetCheck(FALSE); // can't check Ec
-      }
+         if ( i == IDC_FC1 ) // input based on f'ci
+         {
+            m_ctrlEciCheck.SetCheck(m_ctrlEcCheck.GetCheck());
+            m_ctrlEcCheck.SetCheck(FALSE); // can't check Ec
+         }
 
-      if ( i == IDC_FC2 ) // input is based on f'ci
-      {
-         m_ctrlEcCheck.SetCheck(m_ctrlEciCheck.GetCheck());
-         m_ctrlEciCheck.SetCheck(FALSE); // can't check Eci
+         if ( i == IDC_FC2 ) // input is based on f'ci
+         {
+            m_ctrlEcCheck.SetCheck(m_ctrlEciCheck.GetCheck());
+            m_ctrlEciCheck.SetCheck(FALSE); // can't check Eci
+         }
       }
    }
 

@@ -50,6 +50,7 @@
 #include <IFace\StatusCenter.h>
 #include <IFace\UpdateTemplates.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
 #include <IFace\Transactions.h>
 #include <IFace\DocumentType.h>

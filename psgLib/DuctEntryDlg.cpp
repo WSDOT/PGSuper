@@ -54,7 +54,7 @@ void CDuctEntryDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 
-	DDX_MetaFileStatic(pDX, IDC_ZDIM, m_DuctPicture,_T("ZDIM"), _T("Metafile") );
+	DDX_MetaFileStatic(pDX, IDC_ZDIM, m_DuctPicture,_T("ZDIM"), _T("Metafile"), EMF_FIT );
 
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();

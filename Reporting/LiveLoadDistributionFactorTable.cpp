@@ -99,7 +99,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       nCols += 3; // for fatigue limit state LLDF
    }
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Girder"));
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Moment and Shear"));
    (*pMasterTable)(0,0) << pTable;
 
    if ( girderKey.groupIndex == ALL_GROUPS )
@@ -200,7 +200,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       nCols++;
    }
 
-   rptRcTable* pTable2 = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Reactions"));
+   rptRcTable* pTable2 = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Reaction"));
    (*pMasterTable)(0,1) << pTable2;
    (*pTable2)(0,0) << _T("Pier");
    (*pTable2)(0,1) << _T("Strength/Service");

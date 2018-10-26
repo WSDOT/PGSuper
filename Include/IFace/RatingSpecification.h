@@ -26,6 +26,8 @@
 
 #include <psglib\librarymanager.h>
 
+#include <IFace\AnalysisResults.h> // for AxleConfiguration
+
 /*****************************************************************************
 INTERFACE
    IRatingSpecification
@@ -112,6 +114,19 @@ interface IRatingSpecification : IUnknown
    // Permit type for rating for special/limited crossing permit vehicle
    virtual void SetSpecialPermitType(pgsTypes::SpecialPermitType type) = 0;
    virtual pgsTypes::SpecialPermitType GetSpecialPermitType() = 0;
+
+   // Gets the Strength/Service Live Load factor for a permit rating type when the load factor is based on 
+   // the weight of the vehicle on the bridge (MBE 6A.4.5.4.2a-1)
+   // Use these methods if GetLiveLoadFactor(ls,true) returns a value that is less than zero. This means
+   // the load factor is computed based on the weight of the vehicle on the bridge.
+   virtual Float64 GetStrengthLiveLoadFactor(pgsTypes::LoadRatingType ratingType,AxleConfiguration& axleConfig) = 0;
+   virtual Float64 GetServiceLiveLoadFactor(pgsTypes::LoadRatingType ratingType) = 0;
+
+   // Returns the Strength/Service load factor for reactions at the specified pier.
+   // The vehicle index can be INVALID_INDEX which means the live load factor is that for the
+   // controlling live load reaction case
+   virtual Float64 GetReactionStrengthLiveLoadFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) = 0;
+   virtual Float64 GetReactionServiceLiveLoadFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) = 0;
 };
 
 /*****************************************************************************

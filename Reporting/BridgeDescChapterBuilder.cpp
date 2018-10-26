@@ -228,6 +228,13 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
    (*pTable)(row++,0) << _T("External (E)");
    (*pTable)(row++,0) << _T("Mid Ordinate (MO)");
 
+   (*pTable)(row++,0) << _T("TS");
+   (*pTable)(row++,0) << _T("SC");
+   (*pTable)(row++,0) << _T("PI");
+   (*pTable)(row++,0) << _T("CS");
+   (*pTable)(row++,0) << _T("ST");
+   (*pTable)(row++,0) << _T("CC");
+
    length.ShowUnitTag(true);
 
    ColumnIndexType col = 1;
@@ -401,6 +408,37 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
          (*pTable)(row++,col) << length.SetValue(chord);
          (*pTable)(row++,col) << length.SetValue(external);
          (*pTable)(row++,col) << length.SetValue(mid_ordinate);
+
+         CComPtr<IPoint2d> pnt;
+         Float64 x,y;
+         hc->get_TS(&pnt);
+         pnt->Location(&x,&y);
+         (*pTable)(row,col) << length.SetValue(y) << _T(", "); (*pTable)(row++,col) << length.SetValue(x);
+
+         pnt.Release();
+         hc->get_SC(&pnt);
+         pnt->Location(&x,&y);
+         (*pTable)(row,col) << length.SetValue(y) << _T(", "); (*pTable)(row++,col) << length.SetValue(x);
+
+         pnt.Release();
+         hc->get_PI(&pnt);
+         pnt->Location(&x,&y);
+         (*pTable)(row,col) << length.SetValue(y) << _T(", "); (*pTable)(row++,col) << length.SetValue(x);
+
+         pnt.Release();
+         hc->get_CS(&pnt);
+         pnt->Location(&x,&y);
+         (*pTable)(row,col) << length.SetValue(y) << _T(", "); (*pTable)(row++,col) << length.SetValue(x);
+
+         pnt.Release();
+         hc->get_ST(&pnt);
+         pnt->Location(&x,&y);
+         (*pTable)(row,col) << length.SetValue(y) << _T(", "); (*pTable)(row++,col) << length.SetValue(x);
+
+         pnt.Release();
+         hc->get_CC(&pnt);
+         pnt->Location(&x,&y);
+         (*pTable)(row,col) << length.SetValue(y) << _T(", "); (*pTable)(row++,col) << length.SetValue(x);
       }
    }
 }

@@ -4,10 +4,10 @@
 
 
 The Specification Check was Not Successful
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
-Splitting zone checks failed.
+Splitting zone check failed.
 Girder Dimension Detailing check failed
 
 
@@ -18,7 +18,7 @@ Girder Dimension Detailing check failed
 
 The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Splitting zone checks failed.
+Splitting zone check failed.
 Girder Dimension Detailing check failed
 
 
@@ -29,7 +29,7 @@ Girder Dimension Detailing check failed
 
 The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Splitting zone checks failed.
+Splitting zone check failed.
 Girder Dimension Detailing check failed
 
 

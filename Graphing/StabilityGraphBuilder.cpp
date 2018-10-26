@@ -213,6 +213,7 @@ bool CStabilityGraphBuilder::UpdateNow()
 
    GET_IFACE(IArtifact,pArtifact);
    GET_IFACE(IStrandGeometry,pStrandGeom);
+   GET_IFACE(IBridge,pBridge);
    GET_IFACE(IDocumentType,pDocType);
 
    CString subtitle;
@@ -229,6 +230,14 @@ bool CStabilityGraphBuilder::UpdateNow()
 
    Float64 hp1,hp2;
    pStrandGeom->GetHarpingPointLocations(segmentKey,&hp1,&hp2);
+
+   // if the harp point is at mid-span, move it back just a little
+   // we can't do a lifting analysis with both lifting points at mid-span
+   Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
+   if ( IsEqual(hp1,segment_length/2) )
+   {
+      hp1 -= 0.005;
+   }
 
    if ( graphType == GT_LIFTING )
    {

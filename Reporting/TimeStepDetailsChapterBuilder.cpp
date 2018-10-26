@@ -619,10 +619,10 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildFreeCreepDeformationTable(const
       const TIME_STEP_CONCRETE::CREEP_CURVATURE& deck_creep_curvature(*deck_curvature_iter);
 
       (*pTable)(rowIdx,colIdx++) << LABEL_INTERVAL(interval_of_load_application);
-      (*pTable)(rowIdx,colIdx++) << _T("(") << force.SetValue(girder_creep_strain.P) << _T("/(") << area.SetValue(girder_creep_strain.A) << _T("*") << modE.SetValue(girder_creep_strain.E) << _T("))*(") << girder_creep_strain.Ce << _T(" - ") << girder_creep_strain.Cs << _T(")=") << girder_creep_strain.e;
-      (*pTable)(rowIdx,colIdx++) << _T("(") << moment.SetValue(girder_creep_curvature.M) << _T("/(") << momI.SetValue(girder_creep_curvature.I) << _T("*") << modE.SetValue(girder_creep_curvature.E) << _T("))*(") << girder_creep_curvature.Ce << _T(" - ") << girder_creep_curvature.Cs << _T(")=") << curvature.SetValue(girder_creep_curvature.r);
-      (*pTable)(rowIdx,colIdx++) << _T("(") << force.SetValue(deck_creep_strain.P) << _T("/(") << area.SetValue(deck_creep_strain.A) << _T("*") << modE.SetValue(deck_creep_strain.E) << _T("))*(") << deck_creep_strain.Ce << _T(" - ") << deck_creep_strain.Cs << _T(")=") << deck_creep_strain.e;
-      (*pTable)(rowIdx,colIdx++) << _T("(") << moment.SetValue(deck_creep_curvature.M) << _T("/(") << momI.SetValue(deck_creep_curvature.I) << _T("*") << modE.SetValue(deck_creep_curvature.E) << _T("))*(") << deck_creep_curvature.Ce << _T(" - ") << deck_creep_curvature.Cs << _T(")=") << curvature.SetValue(deck_creep_curvature.r);
+      (*pTable)(rowIdx,colIdx++) << _T("(") << force.SetValue(girder_creep_strain.P) << _T("/(") << area.SetValue(girder_creep_strain.A) << _T(")(") << modE.SetValue(girder_creep_strain.E) << _T("))(") << girder_creep_strain.Ce << _T(" - ") << girder_creep_strain.Cs << _T(")=") << girder_creep_strain.e;
+      (*pTable)(rowIdx,colIdx++) << _T("(") << moment.SetValue(girder_creep_curvature.M) << _T("/(") << momI.SetValue(girder_creep_curvature.I) << _T(")(") << modE.SetValue(girder_creep_curvature.E) << _T("))(") << girder_creep_curvature.Ce << _T(" - ") << girder_creep_curvature.Cs << _T(")=") << curvature.SetValue(girder_creep_curvature.r);
+      (*pTable)(rowIdx,colIdx++) << _T("(") << force.SetValue(deck_creep_strain.P) << _T("/(") << area.SetValue(deck_creep_strain.A) << _T(")(") << modE.SetValue(deck_creep_strain.E) << _T("))(") << deck_creep_strain.Ce << _T(" - ") << deck_creep_strain.Cs << _T(")=") << deck_creep_strain.e;
+      (*pTable)(rowIdx,colIdx++) << _T("(") << moment.SetValue(deck_creep_curvature.M) << _T("/(") << momI.SetValue(deck_creep_curvature.I) << _T(")(") << modE.SetValue(deck_creep_curvature.E) << _T("))(") << deck_creep_curvature.Ce << _T(" - ") << deck_creep_curvature.Cs << _T(")=") << curvature.SetValue(deck_creep_curvature.r);
    }
 
    colIdx = 0;
@@ -740,9 +740,9 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildComponentRestrainingForceTable(
    rowIdx = pTable->GetNumberOfHeaderRows();
    colIdx = 0;
    (*pTable)(rowIdx,colIdx++) << _T("Girder");
-   (*pTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.Girder.eci << _T(")(") << area.SetValue(tsDetails.Girder.An) << _T("*") << modE.SetValue(tsDetails.Girder.E) << _T(")=") << force.SetValue(tsDetails.Girder.PrCreep);
-   (*pTable)(rowIdx,colIdx++) << _T("-(") << curvature.SetValue(tsDetails.Girder.rci) << _T(")(") << momI.SetValue(tsDetails.Girder.In) << _T("*") << modE.SetValue(tsDetails.Girder.E) << _T(")=") << moment.SetValue(tsDetails.Girder.MrCreep);
-   (*pTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.Girder.esi << _T(")(") << area.SetValue(tsDetails.Girder.An) << _T("*") << modE.SetValue(tsDetails.Girder.E) << _T(")=") << force.SetValue(tsDetails.Girder.PrShrinkage);
+   (*pTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.Girder.eci << _T(")(") << modE.SetValue(tsDetails.Girder.E) << _T(")(") << area.SetValue(tsDetails.Girder.An) << _T(") = ") << force.SetValue(tsDetails.Girder.PrCreep);
+   (*pTable)(rowIdx,colIdx++) << _T("-(") << curvature.SetValue(tsDetails.Girder.rci) << _T(")(") << modE.SetValue(tsDetails.Girder.E) << _T(")(") << momI.SetValue(tsDetails.Girder.In) << _T(") = ") << moment.SetValue(tsDetails.Girder.MrCreep);
+   (*pTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.Girder.esi << _T(")(") << modE.SetValue(tsDetails.Girder.E) << _T(")(") << area.SetValue(tsDetails.Girder.An) << _T(") = ") << force.SetValue(tsDetails.Girder.PrShrinkage);
    (*pTable)(rowIdx,colIdx++) << _T("");
    (*pTable)(rowIdx,colIdx++) << _T("");
    (*pTable)(rowIdx,colIdx++) << _T("");
@@ -750,9 +750,9 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildComponentRestrainingForceTable(
    rowIdx++;
    colIdx = 0;
    (*pTable)(rowIdx,colIdx++) << _T("Deck");
-   (*pTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.Deck.eci << _T(")(") << area.SetValue(tsDetails.Deck.An) << _T(" * ") << modE.SetValue(tsDetails.Deck.E) << _T(")=") << force.SetValue(tsDetails.Deck.PrCreep);
-   (*pTable)(rowIdx,colIdx++) << _T("-(") << curvature.SetValue(tsDetails.Deck.rci) << _T(")(") << momI.SetValue(tsDetails.Deck.In) << _T(" * ") << modE.SetValue(tsDetails.Deck.E) << _T(")=") << moment.SetValue(tsDetails.Deck.MrCreep);
-   (*pTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.Deck.esi << _T(")(") << area.SetValue(tsDetails.Deck.An) << _T("*") << modE.SetValue(tsDetails.Deck.E) << _T(")=") << force.SetValue(tsDetails.Deck.PrShrinkage);
+   (*pTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.Deck.eci << _T(")(") << modE.SetValue(tsDetails.Deck.E) << _T(")(") << area.SetValue(tsDetails.Deck.An) << _T(") = ") << force.SetValue(tsDetails.Deck.PrCreep);
+   (*pTable)(rowIdx,colIdx++) << _T("-(") << curvature.SetValue(tsDetails.Deck.rci) << _T(")(") << modE.SetValue(tsDetails.Deck.E) << _T(")(") << momI.SetValue(tsDetails.Deck.In) << _T(") = ") << moment.SetValue(tsDetails.Deck.MrCreep);
+   (*pTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.Deck.esi << _T(")(") << modE.SetValue(tsDetails.Deck.E) << _T(")(") << area.SetValue(tsDetails.Deck.An) << _T(") = ") << force.SetValue(tsDetails.Deck.PrShrinkage);
    (*pTable)(rowIdx,colIdx++) << _T("");
    (*pTable)(rowIdx,colIdx++) << _T("");
    (*pTable)(rowIdx,colIdx++) << _T("");
@@ -779,7 +779,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildComponentRestrainingForceTable(
       (*pTable)(rowIdx,colIdx++) << _T("");
       (*pTable)(rowIdx,colIdx++) << _T("");
       (*pTable)(rowIdx,colIdx++) << _T("");
-      (*pTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.Strands[strandType].er << _T(")(") << area.SetValue(tsDetails.Strands[strandType].As) << _T(")(") << modE.SetValue(tsDetails.Strands[strandType].E) << _T(")=") << force.SetValue(tsDetails.Strands[strandType].PrRelaxation);
+      (*pTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.Strands[strandType].er << _T(")(") << modE.SetValue(tsDetails.Strands[strandType].E) << _T(")(") << area.SetValue(tsDetails.Strands[strandType].As) << _T(") = ") << force.SetValue(tsDetails.Strands[strandType].PrRelaxation);
       (*pTable)(rowIdx,colIdx++) << _T("");
    }
 
@@ -793,7 +793,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildComponentRestrainingForceTable(
       (*pTable)(rowIdx,colIdx++) << _T("");
       (*pTable)(rowIdx,colIdx++) << _T("");
       (*pTable)(rowIdx,colIdx++) << _T("");
-      (*pTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.Tendons[tendonIdx].er << _T(")(") << area.SetValue(tsDetails.Tendons[tendonIdx].As) << _T(")(") << modE.SetValue(tsDetails.Tendons[tendonIdx].E) << _T(")=") << force.SetValue(tsDetails.Tendons[tendonIdx].PrRelaxation);
+      (*pTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.Tendons[tendonIdx].er << _T(")(") << modE.SetValue(tsDetails.Tendons[tendonIdx].E) << _T(")(") << area.SetValue(tsDetails.Tendons[tendonIdx].As) << _T(") = ") << force.SetValue(tsDetails.Tendons[tendonIdx].PrRelaxation);
       (*pTable)(rowIdx,colIdx++) << _T("");
    }
 
@@ -885,12 +885,12 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildSectionRestrainingDeformationTa
    rowIdx = pTable->GetNumberOfHeaderRows();
    colIdx = 0;
    (*pTable)(rowIdx,colIdx++) << _T("Composite Section");
-   (*pTable)(rowIdx,colIdx++) << tsDetails.er[TIMESTEP_CR];
-   (*pTable)(rowIdx,colIdx++) << curvature.SetValue(tsDetails.rr[TIMESTEP_CR]);
-   (*pTable)(rowIdx,colIdx++) << tsDetails.er[TIMESTEP_SH];
-   (*pTable)(rowIdx,colIdx++) << curvature.SetValue(tsDetails.rr[TIMESTEP_SH]);
-   (*pTable)(rowIdx,colIdx++) << tsDetails.er[TIMESTEP_RE];
-   (*pTable)(rowIdx,colIdx++) << curvature.SetValue(tsDetails.rr[TIMESTEP_RE]);
+   (*pTable)(rowIdx,colIdx++) << tsDetails.e[TIMESTEP_CR];
+   (*pTable)(rowIdx,colIdx++) << curvature.SetValue(tsDetails.r[TIMESTEP_CR]);
+   (*pTable)(rowIdx,colIdx++) << tsDetails.e[TIMESTEP_SH];
+   (*pTable)(rowIdx,colIdx++) << curvature.SetValue(tsDetails.r[TIMESTEP_SH]);
+   (*pTable)(rowIdx,colIdx++) << tsDetails.e[TIMESTEP_RE];
+   (*pTable)(rowIdx,colIdx++) << curvature.SetValue(tsDetails.r[TIMESTEP_RE]);
 
    return pTable;
 }

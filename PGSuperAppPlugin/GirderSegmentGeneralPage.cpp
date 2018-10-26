@@ -247,7 +247,8 @@ BOOL CGirderSegmentGeneralPage::OnInitDialog()
    {
       OnChangeFc();
    }
-   OnConcreteStrength();
+
+   UpdateConcreteControls(true);
 
    OnVariationTypeChanged();
 

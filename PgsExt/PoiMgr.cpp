@@ -637,10 +637,12 @@ bool pgsPoiMgr::ReplacePointOfInterest(PoiIDType ID,const pgsPointOfInterest& po
 }
 
 //======================== ACCESS     =======================================
-void pgsPoiMgr::SetTolerance(Float64 tol)
+Float64 pgsPoiMgr::SetTolerance(Float64 tol)
 {
+   Float64 oldTolerance = m_Tolerance;
    m_Tolerance = tol;
    pgsPointOfInterest::SetTolerance( m_Tolerance );
+   return oldTolerance;
 }
 
 Float64 pgsPoiMgr::GetTolerance() const

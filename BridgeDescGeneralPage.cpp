@@ -29,7 +29,6 @@
 #include "PGSuperUnits.h"
 #include "BridgeDescGeneralPage.h"
 #include "BridgeDescDlg.h"
-#include "UIHintsDlg.h"
 #include "Hints.h"
 
 #include "HtmlHelp\HelpTopics.hh"
@@ -1641,18 +1640,12 @@ BOOL CBridgeDescGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pRe
 
 void CBridgeDescGeneralPage::UIHint(const CString& strText,UINT mask)
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
    CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
 
    Uint32 hintSettings = pDoc->GetUIHintSettings();
    if ( sysFlags<Uint32>::IsClear(hintSettings,mask) )
    {
-      CUIHintsDlg dlg;
-      dlg.m_strTitle = _T("Hint");
-      dlg.m_strText = strText;
-      dlg.DoModal();
-      if ( dlg.m_bDontShowAgain )
+      if ( EAFShowUIHints(strText) )
       {
          sysFlags<Uint32>::Set(&hintSettings,mask);
          pDoc->SetUIHintSettings(hintSettings);

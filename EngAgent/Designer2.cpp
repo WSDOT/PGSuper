@@ -2731,7 +2731,7 @@ bool pgsDesigner2::IsDeepSection( const pgsPointOfInterest& poi)
    return ( ratio < Float64(MIN_SPAN_DEPTH_RATIO));
 }
 
-ZoneIndexType pgsDesigner2::GetCriticalSectionZone(const pgsPointOfInterest& poi)
+ZoneIndexType pgsDesigner2::GetCriticalSectionZone(const pgsPointOfInterest& poi,bool bIncludeCS)
 {
    Float64 x = poi.GetDistFromStart();
 
@@ -2742,9 +2742,22 @@ ZoneIndexType pgsDesigner2::GetCriticalSectionZone(const pgsPointOfInterest& poi
       CRITSECTDETAILS& csDetails(iter->first);
       CSegmentKey csSegmentKey = (csDetails.bAtFaceOfSupport ? csDetails.poiFaceOfSupport.GetSegmentKey() : csDetails.pCriticalSection->Poi.GetSegmentKey());
 
-      if ( csSegmentKey == poi.GetSegmentKey() && (csDetails.Start < x && x < csDetails.End) )
+      // generally, the critical section POI is not included in the critical section zone.
+      // however, in some cases, we want to get information about the critical section that
+      // is included in the m_CriticalSections data structure.
+      if ( bIncludeCS )
       {
-         return (ZoneIndexType)(iter - m_CriticalSections.begin());
+         if ( csSegmentKey == poi.GetSegmentKey() && ::InRange(csDetails.Start,x,csDetails.End) )
+         {
+            return (ZoneIndexType)(iter - m_CriticalSections.begin());
+         }
+      }
+      else
+      {
+         if ( csSegmentKey == poi.GetSegmentKey() && (csDetails.Start < x && x < csDetails.End) )
+         {
+            return (ZoneIndexType)(iter - m_CriticalSections.begin());
+         }
       }
    }
 
@@ -2799,55 +2812,54 @@ void pgsDesigner2::CheckUltimateShearCapacity( const pgsPointOfInterest& poi, co
       pArtifact->IsApplicable(true);
       pArtifact->SetCapacity( scd.pVn );
       pArtifact->SetDemand( scd.Vu );
+
+      // Make strut and tie check at CS
+      if ( poi.HasAttribute(POI_CRITSECTSHEAR1) || poi.HasAttribute(POI_CRITSECTSHEAR2) )
+      {
+         ZoneIndexType csZoneIdx = GetCriticalSectionZone(poi,true);
+         bool bStrutAndTieRequired = m_CriticalSections[csZoneIdx].second;
+         pArtifact->IsStrutAndTieRequired(bStrutAndTieRequired);
+         pArtifact->IsApplicable(true);
+      }
    }
    else
    {
       ATLASSERT(csZoneIdx != INVALID_INDEX); // we are in a CS zone so we better have a zone index
 
-      // Make strut and tie check at CS
-      if ( poi.HasAttribute(POI_CRITSECTSHEAR1 | POI_CRITSECTSHEAR2) )
+      // strength check is not applicable for this poi
+      pArtifact->IsApplicable(false);
+
+      const pgsPointOfInterest& csPoi(m_CriticalSections[csZoneIdx].first.bAtFaceOfSupport ? m_CriticalSections[csZoneIdx].first.poiFaceOfSupport : m_CriticalSections[csZoneIdx].first.pCriticalSection->Poi);
+
+      // the shear reinforcement must be at least as much as at the critical section
+      // See LRFD C5.8.3.2 (since the stress in the stirrups doesn't change between
+      // the support and the critical section, there should be at least as much 
+      // reinforcement between the end and the CS as there is at the CS)
+      Float64 AvS_provided = (0.0 < scd.S ? scd.Av/scd.S : 0.0);
+      Float64 AvS_at_CS;
+      Float64 s;
+      matRebar::Size size;
+      Float64 abar, nl;
+      if ( pConfig == NULL )
       {
-         bool bStrutAndTieRequired = m_CriticalSections[csZoneIdx].second;
-         pArtifact->IsStrutAndTieRequired(bStrutAndTieRequired);
-         pArtifact->IsApplicable(true);
+         // Use current bridge data
+         GET_IFACE(IStirrupGeometry,pStirrupGeom);
+         AvS_at_CS = pStirrupGeom->GetVertStirrupAvs( csPoi, &size, &abar, &nl, &s);
       }
       else
       {
-         // strength check is not applicable for this poi
-         pArtifact->IsApplicable(false);
+         // Use design config
+         GET_IFACE(IBridge, pBridge);
+         Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
+         Float64 location = poi.GetDistFromStart();
+         Float64 lft_supp_loc = pBridge->GetSegmentStartBearingOffset(segmentKey);
+         Float64 rgt_sup_loc = segment_length - pBridge->GetSegmentEndBearingOffset(segmentKey);
 
-         const pgsPointOfInterest& csPoi(m_CriticalSections[csZoneIdx].first.bAtFaceOfSupport ? m_CriticalSections[csZoneIdx].first.poiFaceOfSupport : m_CriticalSections[csZoneIdx].first.pCriticalSection->Poi);
-
-         // the shear reinforcement must be at least as much as at the critical section
-         // See LRFD C5.8.3.2 (since the stress in the stirrups doesn't change between
-         // the support and the critical section, there should be at least as much 
-         // reinforcement between the end and the CS as there is at the CS)
-         Float64 AvS_provided = (0.0 < scd.S ? scd.Av/scd.S : 0.0);
-         Float64 AvS_at_CS;
-         Float64 s;
-         matRebar::Size size;
-         Float64 abar, nl;
-         if ( pConfig == NULL )
-         {
-            // Use current bridge data
-            GET_IFACE(IStirrupGeometry,pStirrupGeom);
-            AvS_at_CS = pStirrupGeom->GetVertStirrupAvs( csPoi, &size, &abar, &nl, &s);
-         }
-         else
-         {
-            // Use design config
-            GET_IFACE(IBridge, pBridge);
-            Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
-            Float64 location = poi.GetDistFromStart();
-            Float64 lft_supp_loc = pBridge->GetSegmentStartBearingOffset(segmentKey);
-            Float64 rgt_sup_loc = segment_length - pBridge->GetSegmentEndBearingOffset(segmentKey);
-
-            AvS_at_CS = GetPrimaryStirrupAvs(pConfig->StirrupConfig, getVerticalStirrup, csPoi.GetDistFromStart(), segment_length, 
-                                             lft_supp_loc, rgt_sup_loc, &size, &abar, &nl, &s);
-         }
-
-         pArtifact->SetEndSpacing(AvS_provided,AvS_at_CS);
+         AvS_at_CS = GetPrimaryStirrupAvs(pConfig->StirrupConfig, getVerticalStirrup, csPoi.GetDistFromStart(), segment_length, 
+                                          lft_supp_loc, rgt_sup_loc, &size, &abar, &nl, &s);
       }
+
+      pArtifact->SetEndSpacing(AvS_provided,AvS_at_CS);
    }
 
    pArtifact->SetAvOverSReqd( scd.AvOverS_Reqd ); // leave a nugget for shear design algorithm
@@ -3866,8 +3878,6 @@ void pgsDesigner2::InitSupportZones(const CSegmentKey& segmentKey)
       PierIndexType pierIdx = pPier->GetIndex();
 
       // location of CL pier from start of segment
-#pragma Reminder("REVIEW: if CS from regression tests move, a likely culprit could be this parameter")
-      // if this is a bug, there is a bug in CEngAgentImp::CalculateShearCritSection
       Float64 XclBrg;
       pBridge->GetPierLocation(pierIdx,segmentKey,&XclBrg);
 
@@ -4069,7 +4079,7 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
       std::vector<pgsPointOfInterest> pois( pPoi->GetPointsOfInterest(segmentKey,POI_SPAN) );
       std::vector<pgsPointOfInterest> csPoi( pPoi->GetPointsOfInterest(segmentKey, limitState == pgsTypes::StrengthII ? POI_CRITSECTSHEAR2 : POI_CRITSECTSHEAR1) );
       pois.insert(pois.end(),csPoi.begin(),csPoi.end());
-      std::vector<pgsPointOfInterest> morePoi( pPoi->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT | POI_STIRRUP_ZONE | POI_CONCLOAD | POI_DIAPHRAGM | POI_DECKBARCUTOFF | POI_BARCUTOFF | POI_BARDEVELOP, POIFIND_OR) );
+      std::vector<pgsPointOfInterest> morePoi( pPoi->GetPointsOfInterest(segmentKey,POI_FACEOFSUPPORT | POI_HARPINGPOINT | POI_STIRRUP_ZONE | POI_CONCLOAD | POI_DIAPHRAGM | POI_DECKBARCUTOFF | POI_BARCUTOFF | POI_BARDEVELOP | POI_DEBOND, POIFIND_OR) );
       pois.insert(pois.end(),morePoi.begin(),morePoi.end()); 
 
       // if closures can take any load, add it to the list of poi
@@ -4438,10 +4448,17 @@ void pgsDesigner2::CheckSegmentDetailing(const CSegmentKey& segmentKey,pgsSegmen
 
 void pgsDesigner2::CheckStrandSlope(const CSegmentKey& segmentKey,pgsStrandSlopeArtifact* pArtifact)
 {
+   GET_IFACE(IStrandGeometry,pStrGeom);
+   StrandIndexType nStrands = pStrGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
+   if ( nStrands == 0 )
+   {
+      pArtifact->IsApplicable(false);
+      return;
+   }
+
    GET_IFACE(ISpecification,pSpec);
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(IMaterials,pMaterial);
-   GET_IFACE(IStrandGeometry,pStrGeom);
 
    GET_IFACE(IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
@@ -8107,9 +8124,6 @@ void pgsDesigner2::RefineDesignForAllowableStress(IProgress* pProgress)
 
    ATLASSERT(!m_DesignerOutcome.DidConcreteChange()); // if this flag is set going in, we will get false positive
 
-   GET_IFACE(IStrandGeometry,pStrandGeom);
-   StrandIndexType NtMax = pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary);
-
    GET_IFACE(IAllowableConcreteStress,pAllowable);
 
    // Our only option is to increase concrete strength, so let loop finish unless we fail.
@@ -8118,6 +8132,12 @@ void pgsDesigner2::RefineDesignForAllowableStress(IProgress* pProgress)
       if ( !pAllowable->IsStressCheckApplicable(segmentKey,task.intervalIdx,task.limitState,task.stressType) )
       {
          // stress check isn't applicable so move on to the next one
+         continue;
+      }
+
+      if ( task.intervalIdx == tsRemovalIntervalIdx && m_StrandDesignTool.GetNt() == 0 )
+      {
+         // if there aren't any temporary strands, don't refine design for temporary strand removal
          continue;
       }
 

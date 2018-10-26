@@ -44,12 +44,27 @@ protected:
    bool LayoutGeneralGirderLines(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry);
    bool LayoutDiaphragmLines(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry);
 
-   void ResolveGirderSpacingAtPier(IAlignment* pAlignment,Float64 alignmentOffset,const CPierData2* pPier,pgsTypes::PierFaceType pierFace,IPoint2dCollection** ppPoints,IBridgeGeometry* pBridgeGeometry);
-   void ResolveGirderSpacingAtTempSupport(IAlignment* pAlignment,Float64 alignmentOffset,const CTemporarySupportData* pTS,IPoint2dCollection** ppPoints,IBridgeGeometry* pBridgeGeometry);
-
-   // Resolves girder spacing from however it is input into an array of distances measured from the
+   // Resolves segment spacing from however it is input into an array of distances measured from the
    // alignment to the girder line, measured along the support direction.
-   void ResolveGirderSpacing(IAlignment* pAlignment,Float64 alignmentOffset,Float64 measureStation,IDirection* pMeasureDirection,IDirection* pSupportDirection,const CGirderSpacing2* pSpacing,IPoint2dCollection** ppPoints,IBridgeGeometry* pBridgeGeometry);
+   void ResolveSegmentSpacing(IBridgeGeometry* pBridgeGeometry,Float64 alignmentOffset,const CPrecastSegmentData* pSegment,IPoint2dCollection** ppStartPoints,IPoint2dCollection** ppEndPoints);
+
+   Float64 GetSkewAngle(IAlignment* pAlignment,Float64 measureStation,IDirection* pMeasureDirection);
+   Float64 GetLeftGirderOffset(IAlignment* pAlignment, Float64 alignmentOffset, Float64 measureStation, IDirection* pMeasureDirection, const CGirderSpacing2* pSpacing);
+   void GetSpacingDataAtPier(IBridgeGeometry* pBridgeGeometry,Float64 alignmentOffset,const CPierData2* pPier,pgsTypes::PierFaceType pierFace,Float64* pMeasureStation,IDirection** ppMeasureDirection,IDirection** ppSupportDirection,const CGirderSpacing2** ppSpacing);
+   void GetSpacingDataAtTempSupport(IBridgeGeometry* pBridgeGeometry,Float64 alignmentOffset,const CTemporarySupportData* pTS,Float64* pMeasureStation,IDirection** ppMeasureDirection,IDirection** ppSupportDirection,const CGirderSpacing2** ppSpacing);
+
+   void ResolveSegmentSpacing(IBridgeGeometry* pBridgeGeometry,
+                              Float64 alignmentOffset,
+                              Float64 startMeasureStation,
+                              IDirection* pStartMeasureDirection,
+                              IDirection* pStartSupportDirection,
+                              const CGirderSpacing2* pStartSpacing,
+                              Float64 endMeasureStation,
+                              IDirection* pEndMeasureDirection,
+                              IDirection* pEndSupportDirection,
+                              const CGirderSpacing2* pEndSpacing,
+                              IPoint2dCollection** ppStartPoints,
+                              IPoint2dCollection** ppEndPoints);
 
    void GetPierID(const CPrecastSegmentData* pSegment,PierIDType* pStartID,PierIDType* pEndID);
    void GetPierDirection(IAlignment* pAlignment,const CPierData2* pPier,IAngle** ppSkew,IDirection** ppDirection);

@@ -214,6 +214,9 @@ public:
    void EditGirderViewSettings(int nPage);
    afx_msg void OnViewGirderviewsettings();
    afx_msg void OnStatuscenterView();
+
+   virtual void ShowCustomReportHelp(eafTypes::CustomReportHelp helpType);
+
 };
 
 /////////////////////////////////////////////////////////////////////////////

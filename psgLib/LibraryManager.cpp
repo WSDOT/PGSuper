@@ -106,7 +106,7 @@ libLibraryManager()
    live_lib->AddReservedName(_T("AASHTO Legal Loads"));
    live_lib->AddReservedName(_T("Notional Rating Load (NRL)"));
    live_lib->AddReservedName(_T("Single-Unit SHVs"));
-   live_lib->AddReservedName(_T("No Live Load Defined")); // this is for the dummy live load, when one isn't defined for analysis
+   live_lib->AddReservedName(NO_LIVE_LOAD_DEFINED); // this is for the dummy live load, when one isn't defined for analysis
 
    // don't change the order that the libraries are added to the library manager
    // add new libraries at the end of this list

@@ -77,7 +77,7 @@ public:
    virtual rptRcTable* Build(IBroker* pBroker,const CGirderKey& girderKey,
                              pgsTypes::LiveLoadType llType,
                              const std::_tstring& strLLName,
-                             VehicleIndexType vehicleIndex, 
+                             VehicleIndexType vehicleIdx, 
                              pgsTypes::AnalysisType analysisType,
                              bool bReportTruckConfig,
                              bool bIncludeRotations,

@@ -119,7 +119,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copying files to BridgeLink"
-				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -221,7 +221,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copying files to BridgeLink"
-				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -267,11 +267,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="1"
-				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF"
 				RuntimeLibrary="2"
@@ -329,7 +324,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copying files to BridgeLink"
-				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -374,11 +369,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="1"
-				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;"
 				RuntimeLibrary="2"
@@ -436,7 +426,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copying files to BridgeLink"
-				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -543,7 +533,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copying files to BridgeLink"
-				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -649,7 +639,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copying files to BridgeLink"
-				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\"
+				CommandLine="xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\&#x0D;&#x0A;xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&#x0D;&#x0A;xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
@@ -1730,10 +1720,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\UIHintsDlg.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\Utilities.cpp"
 				>
 			</File>
@@ -2693,10 +2679,6 @@
 			</File>
 			<File
 				RelativePath="..\Include\IFace\Tools.h"
-				>
-			</File>
-			<File
-				RelativePath="..\UIHintsDlg.h"
 				>
 			</File>
 			<File

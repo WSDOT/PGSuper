@@ -775,9 +775,9 @@ void CGirderModelManager::GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsT
    {
       if ( TzMaxConfig )
       {
-         VehicleIndexType vehIdx;
-         TzMaxConfig->get_VehicleIndex(&vehIdx);
-         *pMaxConfig = vehIdx;
+         VehicleIndexType vehicleIdx;
+         TzMaxConfig->get_VehicleIndex(&vehicleIdx);
+         *pMaxConfig = vehicleIdx;
       }
       else
       {
@@ -789,9 +789,9 @@ void CGirderModelManager::GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsT
    {
       if ( TzMinConfig )
       {
-         VehicleIndexType vehIdx;
-         TzMinConfig->get_VehicleIndex(&vehIdx);
-         *pMinConfig = vehIdx;
+         VehicleIndexType vehicleIdx;
+         TzMinConfig->get_VehicleIndex(&vehicleIdx);
+         *pMinConfig = vehicleIdx;
       }
       else
       {
@@ -905,14 +905,14 @@ void CGirderModelManager::GetLiveLoadStress(IntervalIndexType intervalIdx,pgsTyp
    }
 }
 
-void CGirderModelManager::GetVehicularLiveLoadAxial(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pPmin,Float64* pPmax,AxleConfiguration* pMinAxleConfig,AxleConfiguration* pMaxAxleConfig)
+void CGirderModelManager::GetVehicularLiveLoadAxial(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pPmin,Float64* pPmax,AxleConfiguration* pMinAxleConfig,AxleConfiguration* pMaxAxleConfig)
 {
    std::vector<pgsPointOfInterest> vPoi;
    vPoi.push_back(poi);
    
    std::vector<Float64> Pmin, Pmax;
    std::vector<AxleConfiguration> minAxleConfig,maxAxleConfig;
-   GetVehicularLiveLoadAxial(intervalIdx,llType,vehicleIndex,vPoi,bat,bIncludeImpact,bIncludeLLDF,
+   GetVehicularLiveLoadAxial(intervalIdx,llType,vehicleIdx,vPoi,bat,bIncludeImpact,bIncludeLLDF,
                              &Pmin,&Pmax,
                              pMinAxleConfig ? &minAxleConfig : NULL,
                              pMaxAxleConfig ? &maxAxleConfig : NULL);
@@ -934,7 +934,7 @@ void CGirderModelManager::GetVehicularLiveLoadAxial(IntervalIndexType intervalId
    }
 }
 
-void CGirderModelManager::GetVehicularLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,sysSectionValue* pVmin,sysSectionValue* pVmax,
+void CGirderModelManager::GetVehicularLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,sysSectionValue* pVmin,sysSectionValue* pVmax,
                                AxleConfiguration* pMinLeftAxleConfig,
                                AxleConfiguration* pMinRightAxleConfig,
                                AxleConfiguration* pMaxLeftAxleConfig,
@@ -945,7 +945,7 @@ void CGirderModelManager::GetVehicularLiveLoadShear(IntervalIndexType intervalId
 
    std::vector<sysSectionValue> Vmin, Vmax;
    std::vector<AxleConfiguration> minLeftAxleConfig,minRightAxleConfig,maxLeftAxleConfig,maxRightAxleConfig;
-   GetVehicularLiveLoadShear(intervalIdx,llType,vehicleIndex,vPoi,bat,
+   GetVehicularLiveLoadShear(intervalIdx,llType,vehicleIdx,vPoi,bat,
                              bIncludeImpact, bIncludeLLDF,&Vmin,&Vmax,
                              pMinLeftAxleConfig  ? &minLeftAxleConfig  : NULL,
                              pMinRightAxleConfig ? &minRightAxleConfig : NULL,
@@ -979,14 +979,14 @@ void CGirderModelManager::GetVehicularLiveLoadShear(IntervalIndexType intervalId
    }
 }
 
-void CGirderModelManager::GetVehicularLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pMmin,Float64* pMmax,AxleConfiguration* pMinAxleConfig,AxleConfiguration* pMaxAxleConfig)
+void CGirderModelManager::GetVehicularLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pMmin,Float64* pMmax,AxleConfiguration* pMinAxleConfig,AxleConfiguration* pMaxAxleConfig)
 {
    std::vector<pgsPointOfInterest> vPoi;
    vPoi.push_back(poi);
    
    std::vector<Float64> Mmin, Mmax;
    std::vector<AxleConfiguration> minAxleConfig,maxAxleConfig;
-   GetVehicularLiveLoadMoment(intervalIdx,llType,vehicleIndex,vPoi,bat,bIncludeImpact,bIncludeLLDF,
+   GetVehicularLiveLoadMoment(intervalIdx,llType,vehicleIdx,vPoi,bat,bIncludeImpact,bIncludeLLDF,
                               &Mmin,&Mmax,
                               pMinAxleConfig ? &minAxleConfig : NULL,
                               pMaxAxleConfig ? &maxAxleConfig : NULL);
@@ -1008,14 +1008,14 @@ void CGirderModelManager::GetVehicularLiveLoadMoment(IntervalIndexType intervalI
    }
 }
 
-void CGirderModelManager::GetVehicularLiveLoadDeflection(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pDmin,Float64* pDmax,AxleConfiguration* pMinAxleConfig,AxleConfiguration* pMaxAxleConfig)
+void CGirderModelManager::GetVehicularLiveLoadDeflection(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pDmin,Float64* pDmax,AxleConfiguration* pMinAxleConfig,AxleConfiguration* pMaxAxleConfig)
 {
    std::vector<pgsPointOfInterest> vPoi;
    vPoi.push_back(poi);
 
    std::vector<Float64> Dmin, Dmax;
    std::vector<AxleConfiguration> minAxleConfig,maxAxleConfig;
-   GetVehicularLiveLoadDeflection(intervalIdx,llType,vehicleIndex,vPoi,bat,
+   GetVehicularLiveLoadDeflection(intervalIdx,llType,vehicleIdx,vPoi,bat,
                                     bIncludeImpact, bIncludeLLDF,&Dmin,&Dmax,
                                     pMinAxleConfig ? &minAxleConfig : NULL,
                                     pMaxAxleConfig ? &maxAxleConfig : NULL);
@@ -1037,14 +1037,14 @@ void CGirderModelManager::GetVehicularLiveLoadDeflection(IntervalIndexType inter
    }
 }
 
-void CGirderModelManager::GetVehicularLiveLoadRotation(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,AxleConfiguration* pMinAxleConfig,AxleConfiguration* pMaxAxleConfig)
+void CGirderModelManager::GetVehicularLiveLoadRotation(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,AxleConfiguration* pMinAxleConfig,AxleConfiguration* pMaxAxleConfig)
 {
    std::vector<pgsPointOfInterest> vPoi;
    vPoi.push_back(poi);
 
    std::vector<Float64> Rmin, Rmax;
    std::vector<AxleConfiguration> minAxleConfig,maxAxleConfig;
-   GetVehicularLiveLoadRotation(intervalIdx,llType,vehicleIndex,vPoi,bat,bIncludeImpact, bIncludeLLDF,
+   GetVehicularLiveLoadRotation(intervalIdx,llType,vehicleIdx,vPoi,bat,bIncludeImpact, bIncludeLLDF,
                                 &Rmin,&Rmax,
                                 pMinAxleConfig ? &minAxleConfig : NULL,
                                 pMaxAxleConfig ? &maxAxleConfig : NULL);
@@ -1066,14 +1066,14 @@ void CGirderModelManager::GetVehicularLiveLoadRotation(IntervalIndexType interva
    }
 }
 
-void CGirderModelManager::GetVehicularLiveLoadStress(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTopMin,Float64* pfTopMax,Float64* pfBotMin,Float64* pfBotMax,AxleConfiguration* pMinAxleConfigTop,AxleConfiguration* pMaxAxleConfigTop,AxleConfiguration* pMinAxleConfigBot,AxleConfiguration* pMaxAxleConfigBot)
+void CGirderModelManager::GetVehicularLiveLoadStress(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTopMin,Float64* pfTopMax,Float64* pfBotMin,Float64* pfBotMax,AxleConfiguration* pMinAxleConfigTop,AxleConfiguration* pMaxAxleConfigTop,AxleConfiguration* pMinAxleConfigBot,AxleConfiguration* pMaxAxleConfigBot)
 {
    std::vector<pgsPointOfInterest> vPoi;
    vPoi.push_back(poi);
 
    std::vector<Float64> fTopMin, fTopMax, fBotMin, fBotMax;
    std::vector<AxleConfiguration> minAxleConfigTop,maxAxleConfigTop,minAxleConfigBot,maxAxleConfigBot;
-   GetVehicularLiveLoadStress(intervalIdx,llType,vehicleIndex,vPoi,bat,bIncludeImpact,bIncludeLLDF,topLocation,botLocation,&fTopMin,&fTopMax,&fBotMin,&fBotMax,&minAxleConfigTop,&maxAxleConfigTop,&minAxleConfigBot,&maxAxleConfigBot);
+   GetVehicularLiveLoadStress(intervalIdx,llType,vehicleIdx,vPoi,bat,bIncludeImpact,bIncludeLLDF,topLocation,botLocation,&fTopMin,&fTopMax,&fBotMin,&fBotMax,&minAxleConfigTop,&maxAxleConfigTop,&minAxleConfigBot,&maxAxleConfigBot);
 
    ATLASSERT(fTopMin.size() == 1);
    ATLASSERT(fTopMax.size() == 1);
@@ -1959,18 +1959,18 @@ void CGirderModelManager::GetLiveLoadAxial(IntervalIndexType intervalIdx,pgsType
 
          if ( pPminTruck && FxMinRightConfig )
          {
-            VehicleIndexType vehIdx;
-            FxMinRightConfig->get_VehicleIndex(&vehIdx);
-            pPminTruck->push_back(vehIdx);
+            VehicleIndexType vehicleIdx;
+            FxMinRightConfig->get_VehicleIndex(&vehicleIdx);
+            pPminTruck->push_back(vehicleIdx);
          }
 
          pPmax->push_back( -FxMaxRight );
 
          if ( pPmaxTruck && FxMaxRightConfig )
          {
-            VehicleIndexType vehIdx;
-            FxMaxRightConfig->get_VehicleIndex(&vehIdx);
-            pPmaxTruck->push_back(vehIdx);
+            VehicleIndexType vehicleIdx;
+            FxMaxRightConfig->get_VehicleIndex(&vehicleIdx);
+            pPmaxTruck->push_back(vehicleIdx);
          }
       }
       else
@@ -1979,18 +1979,18 @@ void CGirderModelManager::GetLiveLoadAxial(IntervalIndexType intervalIdx,pgsType
 
          if ( pPminTruck && FxMinLeftConfig )
          {
-            VehicleIndexType vehIdx;
-            FxMinLeftConfig->get_VehicleIndex(&vehIdx);
-            pPminTruck->push_back(vehIdx);
+            VehicleIndexType vehicleIdx;
+            FxMinLeftConfig->get_VehicleIndex(&vehicleIdx);
+            pPminTruck->push_back(vehicleIdx);
          }
 
          pPmax->push_back( FxMaxLeft );
 
          if ( pPmaxTruck && FxMaxLeftConfig )
          {
-            VehicleIndexType vehIdx;
-            FxMaxLeftConfig->get_VehicleIndex(&vehIdx);
-            pPmaxTruck->push_back(vehIdx);
+            VehicleIndexType vehicleIdx;
+            FxMaxLeftConfig->get_VehicleIndex(&vehicleIdx);
+            pPmaxTruck->push_back(vehicleIdx);
          }
       }
    }
@@ -2070,15 +2070,15 @@ void CGirderModelManager::GetLiveLoadShear(IntervalIndexType intervalIdx,pgsType
       {
          if ( -FyMaxLeft < FyMaxRight && FyMaxRightConfig )
          {
-            VehicleIndexType vehIdx;
-            FyMaxRightConfig->get_VehicleIndex(&vehIdx);
-            pMminTruck->push_back(vehIdx);
+            VehicleIndexType vehicleIdx;
+            FyMaxRightConfig->get_VehicleIndex(&vehicleIdx);
+            pMminTruck->push_back(vehicleIdx);
          }
          else if ( FyMaxLeftConfig )
          {
-            VehicleIndexType vehIdx;
-            FyMaxLeftConfig->get_VehicleIndex(&vehIdx);
-            pMminTruck->push_back(vehIdx);
+            VehicleIndexType vehicleIdx;
+            FyMaxLeftConfig->get_VehicleIndex(&vehicleIdx);
+            pMminTruck->push_back(vehicleIdx);
          }
       }
 
@@ -2087,15 +2087,15 @@ void CGirderModelManager::GetLiveLoadShear(IntervalIndexType intervalIdx,pgsType
       {
          if ( -FyMinLeft < FyMinRight  && FyMinRightConfig )
          {
-            VehicleIndexType vehIdx;
-            FyMinRightConfig->get_VehicleIndex(&vehIdx);
-            pMmaxTruck->push_back(vehIdx);
+            VehicleIndexType vehicleIdx;
+            FyMinRightConfig->get_VehicleIndex(&vehicleIdx);
+            pMmaxTruck->push_back(vehicleIdx);
          }
          else if ( FyMinLeftConfig )
          {
-            VehicleIndexType vehIdx;
-            FyMinLeftConfig->get_VehicleIndex(&vehIdx);
-            pMmaxTruck->push_back(vehIdx);
+            VehicleIndexType vehicleIdx;
+            FyMinLeftConfig->get_VehicleIndex(&vehicleIdx);
+            pMmaxTruck->push_back(vehicleIdx);
          }
       }
    }
@@ -2169,18 +2169,18 @@ void CGirderModelManager::GetLiveLoadMoment(IntervalIndexType intervalIdx,pgsTyp
 
          if ( pMminTruck && MzMinRightConfig )
          {
-            VehicleIndexType vehIdx;
-            MzMinRightConfig->get_VehicleIndex(&vehIdx);
-            pMminTruck->push_back(vehIdx);
+            VehicleIndexType vehicleIdx;
+            MzMinRightConfig->get_VehicleIndex(&vehicleIdx);
+            pMminTruck->push_back(vehicleIdx);
          }
 
          pMmax->push_back( -MzMaxRight );
 
          if ( pMmaxTruck && MzMaxRightConfig )
          {
-            VehicleIndexType vehIdx;
-            MzMaxRightConfig->get_VehicleIndex(&vehIdx);
-            pMmaxTruck->push_back(vehIdx);
+            VehicleIndexType vehicleIdx;
+            MzMaxRightConfig->get_VehicleIndex(&vehicleIdx);
+            pMmaxTruck->push_back(vehicleIdx);
          }
       }
       else
@@ -2189,18 +2189,18 @@ void CGirderModelManager::GetLiveLoadMoment(IntervalIndexType intervalIdx,pgsTyp
 
          if ( pMminTruck && MzMinLeftConfig )
          {
-            VehicleIndexType vehIdx;
-            MzMinLeftConfig->get_VehicleIndex(&vehIdx);
-            pMminTruck->push_back(vehIdx);
+            VehicleIndexType vehicleIdx;
+            MzMinLeftConfig->get_VehicleIndex(&vehicleIdx);
+            pMminTruck->push_back(vehicleIdx);
          }
 
          pMmax->push_back( MzMaxLeft );
 
          if ( pMmaxTruck && MzMaxLeftConfig )
          {
-            VehicleIndexType vehIdx;
-            MzMaxLeftConfig->get_VehicleIndex(&vehIdx);
-            pMmaxTruck->push_back(vehIdx);
+            VehicleIndexType vehicleIdx;
+            MzMaxLeftConfig->get_VehicleIndex(&vehicleIdx);
+            pMmaxTruck->push_back(vehicleIdx);
          }
       }
    }
@@ -2258,16 +2258,16 @@ void CGirderModelManager::GetLiveLoadDeflection(IntervalIndexType intervalIdx,pg
 
       if ( pMaxConfig && DyMaxConfig )
       {
-         VehicleIndexType vehIdx;
-         DyMaxConfig->get_VehicleIndex(&vehIdx);
-         pMaxConfig->push_back(vehIdx);
+         VehicleIndexType vehicleIdx;
+         DyMaxConfig->get_VehicleIndex(&vehicleIdx);
+         pMaxConfig->push_back(vehicleIdx);
       }
 
       if ( pMinConfig && DyMinConfig )
       {
-         VehicleIndexType vehIdx;
-         DyMinConfig->get_VehicleIndex(&vehIdx);
-         pMinConfig->push_back(vehIdx);
+         VehicleIndexType vehicleIdx;
+         DyMinConfig->get_VehicleIndex(&vehicleIdx);
+         pMinConfig->push_back(vehicleIdx);
       }
 
       pDmin->push_back( DyMinLeft );
@@ -2327,16 +2327,16 @@ void CGirderModelManager::GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsT
 
       if ( pMaxConfig && RzMaxConfig )
       {
-         VehicleIndexType vehIdx;
-         RzMaxConfig->get_VehicleIndex(&vehIdx);
-         pMaxConfig->push_back(vehIdx);
+         VehicleIndexType vehicleIdx;
+         RzMaxConfig->get_VehicleIndex(&vehicleIdx);
+         pMaxConfig->push_back(vehicleIdx);
       }
 
       if ( pMinConfig && RzMinConfig )
       {
-         VehicleIndexType vehIdx;
-         RzMinConfig->get_VehicleIndex(&vehIdx);
-         pMinConfig->push_back(vehIdx);
+         VehicleIndexType vehicleIdx;
+         RzMinConfig->get_VehicleIndex(&vehicleIdx);
+         pMinConfig->push_back(vehicleIdx);
       }
 
       pRmin->push_back( RzMinLeft );
@@ -2431,30 +2431,30 @@ void CGirderModelManager::GetLiveLoadStress(IntervalIndexType intervalIdx,pgsTyp
 
          if ( pTopMinIndex )
          {
-            VehicleIndexType vehIdx;
-            fRightMaxConfig->get_VehicleIndex(&vehIdx);
-            pTopMinIndex->push_back(vehIdx);
+            VehicleIndexType vehicleIdx;
+            fRightMaxConfig->get_VehicleIndex(&vehicleIdx);
+            pTopMinIndex->push_back(vehicleIdx);
          }
 
          if ( pTopMaxIndex )
          {
-            VehicleIndexType vehIdx;
-            fRightMinConfig->get_VehicleIndex(&vehIdx);
-            pTopMaxIndex->push_back(vehIdx);
+            VehicleIndexType vehicleIdx;
+            fRightMinConfig->get_VehicleIndex(&vehicleIdx);
+            pTopMaxIndex->push_back(vehicleIdx);
          }
 
          if ( pBotMinIndex )
          {
-            VehicleIndexType vehIdx;
-            fRightMinConfig->get_VehicleIndex(&vehIdx);
-            pBotMinIndex->push_back(vehIdx);
+            VehicleIndexType vehicleIdx;
+            fRightMinConfig->get_VehicleIndex(&vehicleIdx);
+            pBotMinIndex->push_back(vehicleIdx);
          }
 
          if ( pBotMaxIndex )
          {
-            VehicleIndexType vehIdx;
-            fRightMaxConfig->get_VehicleIndex(&vehIdx);
-            pBotMaxIndex->push_back(vehIdx);
+            VehicleIndexType vehicleIdx;
+            fRightMaxConfig->get_VehicleIndex(&vehicleIdx);
+            pBotMaxIndex->push_back(vehicleIdx);
          }
       }
       else
@@ -2466,30 +2466,30 @@ void CGirderModelManager::GetLiveLoadStress(IntervalIndexType intervalIdx,pgsTyp
 
          if ( pTopMinIndex )
          {
-            VehicleIndexType vehIdx;
-            fLeftMaxConfig->get_VehicleIndex(&vehIdx);
-            pTopMinIndex->push_back(vehIdx);
+            VehicleIndexType vehicleIdx;
+            fLeftMaxConfig->get_VehicleIndex(&vehicleIdx);
+            pTopMinIndex->push_back(vehicleIdx);
          }
 
          if ( pTopMaxIndex )
          {
-            VehicleIndexType vehIdx;
-            fLeftMinConfig->get_VehicleIndex(&vehIdx);
-            pTopMaxIndex->push_back(vehIdx);
+            VehicleIndexType vehicleIdx;
+            fLeftMinConfig->get_VehicleIndex(&vehicleIdx);
+            pTopMaxIndex->push_back(vehicleIdx);
          }
 
          if ( pBotMinIndex )
          {
-            VehicleIndexType vehIdx;
-            fLeftMinConfig->get_VehicleIndex(&vehIdx);
-            pBotMinIndex->push_back(vehIdx);
+            VehicleIndexType vehicleIdx;
+            fLeftMinConfig->get_VehicleIndex(&vehicleIdx);
+            pBotMinIndex->push_back(vehicleIdx);
          }
 
          if ( pBotMaxIndex )
          {
-            VehicleIndexType vehIdx;
-            fLeftMaxConfig->get_VehicleIndex(&vehIdx);
-            pBotMaxIndex->push_back(vehIdx);
+            VehicleIndexType vehicleIdx;
+            fLeftMaxConfig->get_VehicleIndex(&vehicleIdx);
+            pBotMaxIndex->push_back(vehicleIdx);
          }
       }
 
@@ -2540,7 +2540,7 @@ void CGirderModelManager::GetLiveLoadStress(IntervalIndexType intervalIdx,pgsTyp
    }
 }
 
-void CGirderModelManager::GetVehicularLiveLoadAxial(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pPmin,std::vector<Float64>* pPmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig)
+void CGirderModelManager::GetVehicularLiveLoadAxial(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pPmin,std::vector<Float64>* pPmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig)
 {
    USES_CONVERSION;
 
@@ -2573,8 +2573,8 @@ void CGirderModelManager::GetVehicularLiveLoadAxial(IntervalIndexType intervalId
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
    DistributionFactorType dfType = (bIncludeLLDF   ? GetLiveLoadDistributionFactorType(llType) : dftNone);
 
-   pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIndex, roMember, fetFx, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
-   pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIndex, roMember, fetFx, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
+   pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIdx, roMember, fetFx, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
+   pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIdx, roMember, fetFx, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
 
    CComPtr<ILBAMModel> lbam_model;
    GetLBAM(pModelData,bat,&lbam_model);
@@ -2644,7 +2644,7 @@ void CGirderModelManager::GetVehicularLiveLoadAxial(IntervalIndexType intervalId
    }
 }
 
-void CGirderModelManager::GetVehicularLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax,
+void CGirderModelManager::GetVehicularLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax,
                                std::vector<AxleConfiguration>* pMinLeftAxleConfig,
                                std::vector<AxleConfiguration>* pMinRightAxleConfig,
                                std::vector<AxleConfiguration>* pMaxLeftAxleConfig,
@@ -2693,8 +2693,8 @@ void CGirderModelManager::GetVehicularLiveLoadShear(IntervalIndexType intervalId
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
    DistributionFactorType dfType = (bIncludeLLDF   ? GetLiveLoadDistributionFactorType(llType) : dftNone);
 
-   pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIndex, roMember, fetFy, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
-   pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIndex, roMember, fetFy, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
+   pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIdx, roMember, fetFy, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
+   pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIdx, roMember, fetFy, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
 
    CComPtr<ILBAMModel> lbam_model;
    GetLBAM(pModelData,bat,&lbam_model);
@@ -2750,7 +2750,7 @@ void CGirderModelManager::GetVehicularLiveLoadShear(IntervalIndexType intervalId
    }
 }
 
-void CGirderModelManager::GetVehicularLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig)
+void CGirderModelManager::GetVehicularLiveLoadMoment(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig)
 {
    USES_CONVERSION;
 
@@ -2783,8 +2783,8 @@ void CGirderModelManager::GetVehicularLiveLoadMoment(IntervalIndexType intervalI
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
    DistributionFactorType dfType = (bIncludeLLDF   ? GetLiveLoadDistributionFactorType(llType) : dftNone);
 
-   pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIndex, roMember, fetMz, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
-   pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIndex, roMember, fetMz, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
+   pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIdx, roMember, fetMz, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
+   pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIdx, roMember, fetMz, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
 
    CComPtr<ILBAMModel> lbam_model;
    GetLBAM(pModelData,bat,&lbam_model);
@@ -2854,7 +2854,7 @@ void CGirderModelManager::GetVehicularLiveLoadMoment(IntervalIndexType intervalI
    }
 }
 
-void CGirderModelManager::GetVehicularLiveLoadDeflection(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pDmin,std::vector<Float64>* pDmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig)
+void CGirderModelManager::GetVehicularLiveLoadDeflection(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pDmin,std::vector<Float64>* pDmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig)
 {
    USES_CONVERSION;
 
@@ -2887,8 +2887,8 @@ void CGirderModelManager::GetVehicularLiveLoadDeflection(IntervalIndexType inter
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
    DistributionFactorType dfType = (bIncludeLLDF   ? GetLiveLoadDistributionFactorType(llType) : dftNone);
 
-   pModelData->pVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, vehicleIndex, fetDy, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
-   pModelData->pVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, vehicleIndex, fetDy, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
+   pModelData->pVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetDy, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
+   pModelData->pVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetDy, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
    
    CComPtr<ILBAMModel> lbam_model;
    GetLBAM(pModelData,bat,&lbam_model);
@@ -2928,7 +2928,7 @@ void CGirderModelManager::GetVehicularLiveLoadDeflection(IntervalIndexType inter
    }
 }
 
-void CGirderModelManager::GetVehicularLiveLoadRotation(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig)
+void CGirderModelManager::GetVehicularLiveLoadRotation(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig)
 {
    USES_CONVERSION;
 
@@ -2961,8 +2961,8 @@ void CGirderModelManager::GetVehicularLiveLoadRotation(IntervalIndexType interva
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
    DistributionFactorType dfType = (bIncludeLLDF   ? GetLiveLoadDistributionFactorType(llType) : dftNone);
 
-   pModelData->pVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, vehicleIndex, fetRz, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
-   pModelData->pVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, vehicleIndex, fetRz, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
+   pModelData->pVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetRz, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
+   pModelData->pVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetRz, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
 
    CComPtr<ILBAMModel> lbam_model;
    GetLBAM(pModelData,bat,&lbam_model);
@@ -2999,7 +2999,7 @@ void CGirderModelManager::GetVehicularLiveLoadRotation(IntervalIndexType interva
    }
 }
 
-void CGirderModelManager::GetVehicularLiveLoadStress(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax,std::vector<AxleConfiguration>* pMinAxleConfigurationTop,std::vector<AxleConfiguration>* pMaxAxleConfigurationTop,std::vector<AxleConfiguration>* pMinAxleConfigurationBot,std::vector<AxleConfiguration>* pMaxAxleConfigurationBot)
+void CGirderModelManager::GetVehicularLiveLoadStress(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax,std::vector<AxleConfiguration>* pMinAxleConfigurationTop,std::vector<AxleConfiguration>* pMaxAxleConfigurationTop,std::vector<AxleConfiguration>* pMinAxleConfigurationBot,std::vector<AxleConfiguration>* pMaxAxleConfigurationBot)
 {
    USES_CONVERSION;
 
@@ -3049,8 +3049,8 @@ void CGirderModelManager::GetVehicularLiveLoadStress(IntervalIndexType intervalI
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
    DistributionFactorType dfType = (bIncludeLLDF   ? GetLiveLoadDistributionFactorType(llType) : dftNone);
 
-   pModelData->pVehicularResponse[bat]->ComputeStresses(m_LBAMPoi, bstrStage, llmt, vehicleIndex, fetMz, optMinimize, vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
-   pModelData->pVehicularResponse[bat]->ComputeStresses(m_LBAMPoi, bstrStage, llmt, vehicleIndex, fetMz, optMaximize, vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
+   pModelData->pVehicularResponse[bat]->ComputeStresses(m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetMz, optMinimize, vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
+   pModelData->pVehicularResponse[bat]->ComputeStresses(m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetMz, optMaximize, vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
 
    CComPtr<ILBAMModel> lbam_model;
    GetLBAM(pModelData,bat,&lbam_model);
@@ -5591,7 +5591,7 @@ void CGirderModelManager::GetReaction(const CGirderKey& girderKey,const std::vec
    }
 }
 
-void CGirderModelManager::GetVehicularLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig)
+void CGirderModelManager::GetVehicularLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig)
 {
    // Start by checking if the model exists
    CGirderModelData* pModelData = 0;
@@ -5626,8 +5626,8 @@ void CGirderModelManager::GetVehicularLiveLoadReaction(IntervalIndexType interva
       CComPtr<ILiveLoadModelResults> minResults;
       CComPtr<ILiveLoadModelResults> maxResults;
       CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
-      pModelData->pVehicularResponse[bat]->ComputeReactions( m_LBAMPoi, bstrStage, llmt, vehicleIndex, fetFy, optMinimize, vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
-      pModelData->pVehicularResponse[bat]->ComputeReactions( m_LBAMPoi, bstrStage, llmt, vehicleIndex, fetFy, optMaximize, vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
+      pModelData->pVehicularResponse[bat]->ComputeReactions( m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetFy, optMinimize, vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
+      pModelData->pVehicularResponse[bat]->ComputeReactions( m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetFy, optMaximize, vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
 
       CComPtr<ILiveLoadConfiguration> RzMaxConfig;
       CComPtr<ILiveLoadConfiguration> RzMinConfig;
@@ -5754,9 +5754,9 @@ void CGirderModelManager::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsT
             {
                if ( maxConfig )
                {
-                  VehicleIndexType vehIdx;
-                  maxConfig->get_VehicleIndex(&vehIdx);
-                  pMaxConfig->push_back(vehIdx);
+                  VehicleIndexType vehicleIdx;
+                  maxConfig->get_VehicleIndex(&vehicleIdx);
+                  pMaxConfig->push_back(vehicleIdx);
                   MaxConfig.Release();
                   MaxConfig = maxConfig;
                }
@@ -5777,9 +5777,9 @@ void CGirderModelManager::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsT
             {
                if ( minConfig )
                {
-                  VehicleIndexType vehIdx;
-                  minConfig->get_VehicleIndex(&vehIdx);
-                  pMinConfig->push_back(vehIdx);
+                  VehicleIndexType vehicleIdx;
+                  minConfig->get_VehicleIndex(&vehicleIdx);
+                  pMinConfig->push_back(vehicleIdx);
                   MinConfig.Release();
                   MinConfig = minConfig;
                }
@@ -5937,7 +5937,8 @@ void CGirderModelManager::GetContraflexurePoints(const CSpanKey& spanKey,Float64
    Float64 span_start = 0;
    for ( SpanIndexType i = 0; i < spanKey.spanIndex; i++ )
    {
-      span_start += pBridge->GetSpanLength(CSpanKey(i,spanKey.girderIndex));
+      GirderIndexType nGirders = pBridge->GetGirderCountBySpan(i);
+      span_start += pBridge->GetSpanLength(CSpanKey(i,Min(spanKey.girderIndex,nGirders-1)));
    }
 
    Float64 span_length = pBridge->GetSpanLength(spanKey);
@@ -6847,6 +6848,20 @@ void CGirderModelManager::CreateLBAMStages(GirderIndexType gdr,ILBAMModel* pMode
    // (interval index = stage index)
    CGirderKey girderKey(0,gdr);
 
+   // for cases where there is a different number of girders in each group
+   // find the first girder group that includes gdr
+   GET_IFACE(IBridge,pBridge);
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   {
+      girderKey.groupIndex = grpIdx;
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      if ( gdr < nGirders )
+      {
+         break;
+      }
+   }
+
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType nIntervals          = pIntervals->GetIntervalCount();
    IntervalIndexType startIntervalIdx    = pIntervals->GetFirstSegmentErectionInterval(girderKey);
@@ -7257,7 +7272,9 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
    //    ^               ^                  ^
    //  |-|<---- superstructure member offset = end distance (or cantilever length if applicable)
 
-   Float64 end_distance = pBridge->GetSegmentStartEndDistance(CSegmentKey(0,gdr,0));
+   GirderIndexType nGirders = pBridgeDesc->GetGirderGroup((GroupIndexType)0)->GetGirderCount();
+   GirderIndexType gdrIdx = Min(gdr,nGirders-1);
+   Float64 end_distance = pBridge->GetSegmentStartEndDistance(CSegmentKey(0,gdrIdx,0));
    ssms->put_Offset(end_distance);
 
    //
@@ -7533,6 +7550,8 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
             {
                nextSegmentKey.groupIndex = segmentKey.groupIndex + 1;
                nextSegmentKey.girderIndex = segmentKey.girderIndex;
+               GirderIndexType nGirders = pBridge->GetGirderCount(nextSegmentKey.groupIndex);
+               nextSegmentKey.girderIndex = Min(nextSegmentKey.girderIndex,nGirders-1);
                nextSegmentKey.segmentIndex = 0;
             }
 
@@ -9727,9 +9746,13 @@ void CGirderModelManager::ApplyPostTensionDeformation(ILBAMModel* pModel,GirderI
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
-      CGirderKey girderKey(grpIdx,gdrLineIdx);
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-      const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrLineIdx);
+
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+
+      CGirderKey girderKey(grpIdx,Min(gdrLineIdx,nGirders-1));
+
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
       GirderIDType gdrID = pGirder->GetID();
 
       const CPTData* pPTData = pGirder->GetPostTensioning();
@@ -11455,7 +11478,7 @@ void CGirderModelManager::AddPoiStressPoints(const pgsPointOfInterest& poi,IStag
 }
 
 ///////////////////////////
-void CGirderModelManager::GetVehicularLoad(ILBAMModel* pModel,LiveLoadModelType llType,VehicleIndexType vehicleIndex,IVehicularLoad** pVehicle)
+void CGirderModelManager::GetVehicularLoad(ILBAMModel* pModel,LiveLoadModelType llType,VehicleIndexType vehicleIdx,IVehicularLoad** pVehicle)
 {
    CComPtr<ILiveLoad> live_load;
    pModel->get_LiveLoad(&live_load);
@@ -11516,7 +11539,7 @@ void CGirderModelManager::GetVehicularLoad(ILBAMModel* pModel,LiveLoadModelType 
    CComPtr<IVehicularLoads> vehicles;
    liveload_model->get_VehicularLoads(&vehicles);
 
-   vehicles->get_Item(vehicleIndex,pVehicle);
+   vehicles->get_Item(vehicleIdx,pVehicle);
 }
 
 void CGirderModelManager::CreateAxleConfig(ILBAMModel* pModel,ILiveLoadConfiguration* pConfig,AxleConfiguration* pAxles)
@@ -11527,9 +11550,9 @@ void CGirderModelManager::CreateAxleConfig(ILBAMModel* pModel,ILiveLoadConfigura
    pConfig->get_LiveLoadModel(&llType);
 
    CComPtr<IVehicularLoad> pVehicle;
-   VehicleIndexType vehicleIndex;
-   pConfig->get_VehicleIndex(&vehicleIndex);
-   GetVehicularLoad(pModel,llType,vehicleIndex,&pVehicle);
+   VehicleIndexType vehicleIdx;
+   pConfig->get_VehicleIndex(&vehicleIdx);
+   GetVehicularLoad(pModel,llType,vehicleIdx,&pVehicle);
 
    if ( !pVehicle )
    {
@@ -13109,22 +13132,27 @@ void CGirderModelManager::ApplyLLDF_Support(const CSpanKey& spanKey,pgsTypes::Me
    Float64 gF  = pLLDF->GetReactionDistFactor(pierIdx,spanKey.girderIndex,pgsTypes::FatigueI);
    Float64 gD  = pLLDF->GetDeflectionDistFactor(spanKey);
 
+   GET_IFACE(IBridge,pBridge);
+
    // For pedestrian loads - take average of loads from adjacent spans
    Float64 leftPedes(0.0), rightPedes(0.0);
    Int32 nls(0);
    if(0 < pierIdx)
    {
       SpanIndexType prevSpanIdx = (SpanIndexType)(pierIdx-1);
-      leftPedes = GetPedestrianLiveLoad(CSpanKey(prevSpanIdx,spanKey.girderIndex));
+      GirderIndexType nGirders = pBridge->GetGirderCountBySpan(prevSpanIdx);
+      GirderIndexType gdrIdx = Min(spanKey.girderIndex,nGirders-1);
+      leftPedes = GetPedestrianLiveLoad(CSpanKey(prevSpanIdx,gdrIdx));
       nls++;
    }
 
-   GET_IFACE(IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
    if (pierIdx < nSpans)
    {
       SpanIndexType nextSpanIdx = (SpanIndexType)(pierIdx);
-      rightPedes = GetPedestrianLiveLoad(CSpanKey(nextSpanIdx,spanKey.girderIndex));
+      GirderIndexType nGirders = pBridge->GetGirderCountBySpan(nextSpanIdx);
+      GirderIndexType gdrIdx = Min(spanKey.girderIndex,nGirders-1);
+      rightPedes = GetPedestrianLiveLoad(CSpanKey(nextSpanIdx,gdrIdx));
       nls++;
    }
 
@@ -13267,6 +13295,8 @@ void CGirderModelManager::GetGirderSelfWeightLoad(const CSegmentKey& segmentKey,
       prevPoi = currPoi;
       Ag_Prev = Ag_Curr;
    }
+
+   GetPrecastDiaphragmLoads(segmentKey,pPointLoad);
 }
 
 void CGirderModelManager::GetPrecastDiaphragmLoads(const CSegmentKey& segmentKey, std::vector<DiaphragmLoad>* pLoads)
@@ -13371,9 +13401,17 @@ void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIn
    GroupIndexType backGroupIdx, aheadGroupIdx;
    pBridge->GetGirderGroupIndex(pierIdx,&backGroupIdx,&aheadGroupIdx);
 
-   CGirderKey backGirderKey(backGroupIdx,gdrIdx);
-   CGirderKey aheadGirderKey(aheadGroupIdx,gdrIdx);
-   CGirderKey girderKey(backGroupIdx == INVALID_INDEX ? aheadGirderKey : backGirderKey);
+   CGirderKey girderKey;
+   if ( backGroupIdx == INVALID_INDEX )
+   {
+      girderKey.groupIndex = aheadGroupIdx;
+      girderKey.girderIndex = Min(gdrIdx,pBridge->GetGirderCount(aheadGroupIdx)-1);
+   }
+   else
+   {
+      girderKey.groupIndex = backGroupIdx;
+      girderKey.girderIndex = Min(gdrIdx,pBridge->GetGirderCount(backGroupIdx)-1);
+   }
 
    pgsPointOfInterest poi = pPoi->GetPierPointOfInterest(girderKey,pierIdx);
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
@@ -14781,11 +14819,12 @@ MemberIDType CGirderModelManager::GetFirstSuperstructureMemberID(const CSegmentK
    // count number of SSMBRs in all groups and segments before the segment we are interested in
    for ( GroupIndexType g = 0; g < grpIdx; g++ )
    {
-      CGirderKey thisGirderKey(g,gdrIdx);
+      GirderIndexType nGirdersThisGroup = pBridge->GetGirderCount((GroupIndexType)g);
+      CGirderKey thisGirderKey(g,Min(gdrIdx,nGirdersThisGroup-1));
       SegmentIndexType nSegmentsThisGroup = pBridge->GetSegmentCount( thisGirderKey );
       for ( SegmentIndexType s = 0; s < nSegmentsThisGroup; s++ )
       {
-         CSegmentKey thisSegmentKey(g,gdrIdx,s);
+         CSegmentKey thisSegmentKey(thisGirderKey,s);
 
          IndexType nSSMbrs = GetSuperstructureMemberCount(thisSegmentKey);
 
@@ -14795,11 +14834,11 @@ MemberIDType CGirderModelManager::GetFirstSuperstructureMemberID(const CSegmentK
          pSegment->GetSupport(pgsTypes::metEnd,&pPier,&pTS);
          if ( pPier )
          {
-            nSSMbrs += GetSuperstructureMemberCount(pPier,gdrIdx);
+            nSSMbrs += GetSuperstructureMemberCount(pPier,thisSegmentKey.girderIndex);
          }
          else
          {
-            nSSMbrs += GetSuperstructureMemberCount(pTS,gdrIdx);
+            nSSMbrs += GetSuperstructureMemberCount(pTS,thisSegmentKey.girderIndex);
          }
          mbrID += (MemberIDType)nSSMbrs;
       } // next segment
@@ -15998,7 +16037,7 @@ VehicleIndexType CGirderModelManager::GetVehicleCount(pgsTypes::LiveLoadType llT
    return nVehicles;
 }
 
-Float64 CGirderModelManager::GetVehicleWeight(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex)
+Float64 CGirderModelManager::GetVehicleWeight(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx)
 {
    LiveLoadModelType llmt = g_LiveLoadModelType[llType];
 
@@ -16011,7 +16050,7 @@ Float64 CGirderModelManager::GetVehicleWeight(pgsTypes::LiveLoadType llType,Vehi
    GetLBAM(pModelData,bat,&lbam_model);
 
    CComPtr<IVehicularLoad> vehicle;
-   GetVehicularLoad(lbam_model,llmt,vehicleIndex,&vehicle);
+   GetVehicularLoad(lbam_model,llmt,vehicleIdx,&vehicle);
 
    Float64 W = 0;
    vehicle->SumAxleWeights(&W);
@@ -16030,13 +16069,13 @@ Float64 CGirderModelManager::GetVehicleWeight(pgsTypes::LiveLoadType llType,Vehi
    return W;
 }
 
-std::_tstring CGirderModelManager::GetLiveLoadName(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex)
+std::_tstring CGirderModelManager::GetLiveLoadName(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx)
 {
    USES_CONVERSION;
 
    LiveLoadModelType llmt = g_LiveLoadModelType[llType];
 
-   if ( vehicleIndex == INVALID_INDEX )
+   if ( vehicleIdx == INVALID_INDEX )
    {
       return OLE2T(GetLiveLoadName(llType));
    }
@@ -16051,7 +16090,7 @@ std::_tstring CGirderModelManager::GetLiveLoadName(pgsTypes::LiveLoadType llType
    GetLBAM(pModelData,bat,&lbam_model);
 
    CComPtr<IVehicularLoad> vehicle;
-   GetVehicularLoad(lbam_model,llmt,vehicleIndex,&vehicle);
+   GetVehicularLoad(lbam_model,llmt,vehicleIdx,&vehicle);
 
    CComBSTR bstrName;
    vehicle->get_Name(&bstrName);
@@ -16059,9 +16098,9 @@ std::_tstring CGirderModelManager::GetLiveLoadName(pgsTypes::LiveLoadType llType
    return OLE2T(bstrName);
 }
 
-pgsTypes::LiveLoadApplicabilityType CGirderModelManager::GetLiveLoadApplicability(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex)
+pgsTypes::LiveLoadApplicabilityType CGirderModelManager::GetLiveLoadApplicability(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx)
 {
-   ATLASSERT(vehicleIndex != INVALID_INDEX);
+   ATLASSERT(vehicleIdx != INVALID_INDEX);
 
    LiveLoadModelType llmt = g_LiveLoadModelType[llType];
 
@@ -16075,7 +16114,7 @@ pgsTypes::LiveLoadApplicabilityType CGirderModelManager::GetLiveLoadApplicabilit
    GetLBAM(pModelData,bat,&lbam_model);
 
    CComPtr<IVehicularLoad> vehicle;
-   GetVehicularLoad(lbam_model,llmt,vehicleIndex,&vehicle);
+   GetVehicularLoad(lbam_model,llmt,vehicleIdx,&vehicle);
 
    LiveLoadApplicabilityType applicability;
    vehicle->get_Applicability(&applicability);

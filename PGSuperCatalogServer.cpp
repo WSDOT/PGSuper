@@ -505,7 +505,7 @@ void CFtpPGSuperCatalogServer::FetchCatalog(IProgressMonitor* pProgress, bool to
          if ( !bSuccess || dwServiceType != AFX_INET_SERVICE_FTP )
          {
             CString msg;
-            msg.Format(_T("Error parsing catalog URL: %s"), catURL);
+            msg.Format(_T("Error parsing configuration URL: %s"), catURL);
             throw CCatalogServerException(CCatalogServerException::ceGettingCatalogFile, msg);
          }
          else
@@ -519,7 +519,7 @@ void CFtpPGSuperCatalogServer::FetchCatalog(IProgressMonitor* pProgress, bool to
             {
                // could not find or get the file (it may not be on the server)
                CString msg;
-               msg.Format(_T("Could not find catalog file on server at: %s"), catURL);
+               msg.Format(_T("Could not find configuration: %s"), catURL);
                throw CCatalogServerException(CCatalogServerException::ceGettingCatalogFile, msg);
             }
          }
@@ -529,7 +529,7 @@ void CFtpPGSuperCatalogServer::FetchCatalog(IProgressMonitor* pProgress, bool to
          pException->Delete();
 
          CString msg;
-         msg.Format(_T("An unknown ftp error occurred while trying to download the catalog file at: %s"),catURL);
+         msg.Format(_T("An unknown ftp error occurred while trying to access the configuration server: %s"),catURL);
          throw CCatalogServerException(CCatalogServerException::ceGettingCatalogFile,msg);
       }
 
@@ -541,7 +541,7 @@ void CFtpPGSuperCatalogServer::FetchCatalog(IProgressMonitor* pProgress, bool to
       if (! m_Catalog.Init(m_strLocalCatalog,strVersion) )
       {
          CString msg;
-         msg.Format(_T("Error occurred while reading the catalog file at: %s"),catURL);
+         msg.Format(_T("Error occurred while reading the configuration: %s"),catURL);
          throw CCatalogServerException(CCatalogServerException::ceGettingCatalogFile,msg);
       }
 
@@ -610,7 +610,7 @@ bool CFtpPGSuperCatalogServer::CheckForUpdates(const CString& publisher, IProgre
       // happen if registry values get trashed in the App class
       ATLASSERT(false);
       CString msg;
-      msg.Format(_T("The publisher %s was not found in the current catalog. This appears to be a programing bug."), publisher);
+      msg.Format(_T("The publisher %s was not found in the configuration information. This appears to be a programing bug."), publisher);
       throw CCatalogServerException(CCatalogServerException::ceGettingCatalogFile, msg);
    }
 

@@ -3109,7 +3109,7 @@ std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetHandlingDesignPointsOfIn
 
    // Remove any current support point poi's if not at different location
    std::vector<pgsPointOfInterest> vPoi;
-   m_PoiMgr.GetPointsOfInterest(segmentKey,poiReference | supportAttribute,POIMGR_AND,&vPoi);
+   m_PoiMgr.GetPointsOfInterest(segmentKey,poiReference | supportAttribute,POIMGR_AND,&vPoi); // get all pois with the support attribute
 
    std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
    std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
@@ -3119,11 +3119,14 @@ std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetHandlingDesignPointsOfIn
       Float64 poi_loc = poi.GetDistFromStart();
       if (IsEqual(poi_loc,left_support_point_loc) )
       {
-         // poi is already there, no need to re-add
+         // poi is at the location of the left support, no need to re-add
+         ATLASSERT(poi.CanMerge() == false);
          do_add_left = false; 
       }
       else if ( IsEqual(poi_loc,right_support_point_loc) )
       {
+         // poi is at the location of the right support, no need to re-add
+         ATLASSERT(poi.CanMerge() == false);
          do_add_right = false; 
       }
       else
@@ -3139,27 +3142,34 @@ std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetHandlingDesignPointsOfIn
             m_PoiMgr.RemovePointOfInterest(poi);
          }
 
-         PoiAttributeType attributes = poi.GetReferencedAttributes(poiReference);
-         if ( attributes != supportAttribute || poi.GetNonReferencedAttributes() != 0 )
-         {
-            // if the only flag that is set is support point attribute, remove it
-            // otherwise, clear the support point attribute bit and add the poi back
-            sysFlags<PoiAttributeType>::Clear(&attributes,supportAttribute);
-            poi.SetReferencedAttributes(attributes);
-            m_PoiMgr.AddPointOfInterest(poi);
-         }
+         ATLASSERT(poi.CanMerge() == false);
+         ATLASSERT(poi.GetNonReferencedAttributes() == 0);
+         ATLASSERT(poi.GetReferencedAttributes(poiReference) == supportAttribute);
+         // support poi cannot be merged so this code block is no longer needed.
+         // the two asserts above make sure this is true.
+         //PoiAttributeType attributes = poi.GetReferencedAttributes(poiReference);
+         //if ( attributes != supportAttribute || poi.GetNonReferencedAttributes() != 0 )
+         //{
+         //   // if the only flag that is set is support point attribute, remove it
+         //   // otherwise, clear the support point attribute bit and add the poi back
+         //   sysFlags<PoiAttributeType>::Clear(&attributes,supportAttribute);
+         //   poi.SetReferencedAttributes(attributes);
+         //   m_PoiMgr.AddPointOfInterest(poi);
+         //}
       }
    }
 
    if (do_add_left)
    {
       pgsPointOfInterest left_support_point(segmentKey,left_support_point_loc,supportAttribute | poiReference);
+      left_support_point.CanMerge(false); // don't ever want this poi to be merged with another poi
       m_PoiMgr.AddPointOfInterest(left_support_point);
    }
 
    if (do_add_right)
    {
       pgsPointOfInterest right_support_point(segmentKey,right_support_point_loc,supportAttribute | poiReference);
+      right_support_point.CanMerge(false); // don't ever want this poi to be merged with another poi
       m_PoiMgr.AddPointOfInterest(right_support_point);
    }
 

@@ -320,33 +320,33 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
 
    pgsTypes::LiveLoadType llType = ::GetLiveLoadType(pgsTypes::lrLegal_Routine);
    VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
-   for ( VehicleIndexType vehIdx = 0; vehIdx < nVehicles; vehIdx++ )
+   for ( VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++ )
    {
-      ReportRatingFactor(pBroker,pTable,row++,pIArtifact->GetRatingArtifact(girderKey,pgsTypes::lrLegal_Routine,vehIdx),pDisplayUnits,pRemarks);
+      ReportRatingFactor(pBroker,pTable,row++,pIArtifact->GetRatingArtifact(girderKey,pgsTypes::lrLegal_Routine,vehicleIdx),pDisplayUnits,pRemarks);
    }
 
 
    llType = ::GetLiveLoadType(pgsTypes::lrLegal_Special);
    nVehicles = pProductLoads->GetVehicleCount(llType);
-   for ( VehicleIndexType vehIdx = 0; vehIdx < nVehicles; vehIdx++ )
+   for ( VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++ )
    {
-      ReportRatingFactor(pBroker,pTable,row++,pIArtifact->GetRatingArtifact(girderKey,pgsTypes::lrLegal_Special,vehIdx),pDisplayUnits,pRemarks);
+      ReportRatingFactor(pBroker,pTable,row++,pIArtifact->GetRatingArtifact(girderKey,pgsTypes::lrLegal_Special,vehicleIdx),pDisplayUnits,pRemarks);
    }
 
    // Current WSDOT default is to have no trucks in the Permit Routine case so there is nothing to report
    //llType = ::GetLiveLoadType(pgsTypes::lrPermit_Routine);
    //nVehicles = pProductLoads->GetVehicleCount(llType);
-   //for ( VehicleIndexType vehIdx = 0; vehIdx < nVehicles; vehIdx++ )
+   //for ( VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++ )
    //{
-   //   ReportRatingFactor(pBroker,pTable,row++,pIArtifact->GetRatingArtifact(gdrLineIdx,pgsTypes::lrPermit_Routine,vehIdx),pDisplayUnits,pRemarks);
+   //   ReportRatingFactor(pBroker,pTable,row++,pIArtifact->GetRatingArtifact(gdrLineIdx,pgsTypes::lrPermit_Routine,vehicleIdx),pDisplayUnits,pRemarks);
    //}
 
 
    llType = ::GetLiveLoadType(pgsTypes::lrPermit_Special);
    nVehicles = pProductLoads->GetVehicleCount(llType);
-   for ( VehicleIndexType vehIdx = 0; vehIdx < nVehicles; vehIdx++ )
+   for ( VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++ )
    {
-      ReportRatingFactor(pBroker,pTable,row++,pIArtifact->GetRatingArtifact(girderKey,pgsTypes::lrPermit_Special,vehIdx),pDisplayUnits,pRemarks);
+      ReportRatingFactor(pBroker,pTable,row++,pIArtifact->GetRatingArtifact(girderKey,pgsTypes::lrPermit_Special,vehicleIdx),pDisplayUnits,pRemarks);
    }
 
    pTable = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
@@ -392,8 +392,6 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
    const pgsYieldStressRatioArtifact* pYieldStressPositiveMoment;
    const pgsYieldStressRatioArtifact* pYieldStressNegativeMoment;
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   
    Float64 RF = pRatingArtifact->GetRatingFactorEx(&pPositiveMoment,&pNegativeMoment,&pShear,&pStress,&pYieldStressPositiveMoment,&pYieldStressNegativeMoment);
    if ( pPositiveMoment )
    {
@@ -555,8 +553,6 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
    const pgsYieldStressRatioArtifact* pYieldStressPositiveMoment;
    const pgsYieldStressRatioArtifact* pYieldStressNegativeMoment;
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   
    Float64 RF = pRatingArtifact->GetRatingFactorEx(&pPositiveMoment,&pNegativeMoment,&pShear,&pStress,&pYieldStressPositiveMoment,&pYieldStressNegativeMoment);
    if ( pPositiveMoment )
    {

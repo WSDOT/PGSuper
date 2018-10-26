@@ -108,7 +108,7 @@ public:
    Float64 GetDeckShearFr(Float64 t);
    Float64 GetDeckFreeShrinkageStrain(Float64 t);
    Float64 GetDeckCreepCoefficient(Float64 t,Float64 tla);
-   Float64 GetDeckAgeingCoefficient(Float64 timeOfLoading);
+   Float64 GetDeckAgingCoefficient(Float64 timeOfLoading);
    matConcreteBase* GetDeckConcrete();
 
    Float64 GetSegmentCastingTime(const CSegmentKey& segmentKey);
@@ -118,7 +118,7 @@ public:
    Float64 GetSegmentShearFr(const CSegmentKey& segmentKey,Float64 t);
    Float64 GetSegmentFreeShrinkageStrain(const CSegmentKey& segmentKey,Float64 t);
    Float64 GetSegmentCreepCoefficient(const CSegmentKey& segmentKey,Float64 t,Float64 tla);
-   Float64 GetSegmentAgeingCoefficient(const CSegmentKey& segmentKey,Float64 timeOfLoading);
+   Float64 GetSegmentAgingCoefficient(const CSegmentKey& segmentKey,Float64 timeOfLoading);
    matConcreteBase* GetSegmentConcrete(const CSegmentKey& segmentKey);
 
    Float64 GetClosureJointCastingTime(const CClosureKey& closureKey);
@@ -128,7 +128,7 @@ public:
    Float64 GetClosureJointShearFr(const CClosureKey& closureKey,Float64 t);
    Float64 GetClosureJointFreeShrinkageStrain(const CClosureKey& closureKey,Float64 t);
    Float64 GetClosureJointCreepCoefficient(const CClosureKey& closureKey,Float64 t,Float64 tla);
-   Float64 GetClosureJointAgeingCoefficient(const CClosureKey& closureKey,Float64 timeOfLoading);
+   Float64 GetClosureJointAgingCoefficient(const CClosureKey& closureKey,Float64 timeOfLoading);
    matConcreteBase* GetClosureJointConcrete(const CClosureKey& closureKey);
 
    Float64 GetRailingSystemCastingTime(pgsTypes::TrafficBarrierOrientation orientation);
@@ -136,7 +136,7 @@ public:
    Float64 GetRailingSystemEc(pgsTypes::TrafficBarrierOrientation orientation,Float64 t);
    Float64 GetRailingSystemFreeShrinkageStrain(pgsTypes::TrafficBarrierOrientation orientation,Float64 t);
    Float64 GetRailingSystemCreepCoefficient(pgsTypes::TrafficBarrierOrientation orientation,Float64 t,Float64 tla);
-   Float64 GetRailingSystemAgeingCoefficient(pgsTypes::TrafficBarrierOrientation orientation,Float64 timeOfLoading);
+   Float64 GetRailingSystemAgingCoefficient(pgsTypes::TrafficBarrierOrientation orientation,Float64 timeOfLoading);
    matConcreteBase* GetRailingSystemConcrete(pgsTypes::TrafficBarrierOrientation orientation);
 
    matConcrete* GetPierConcrete(PierIndexType pierIdx);
@@ -175,8 +175,8 @@ private:
    // factory method for CEB-FIP concrete model
    matCEBFIPConcrete* CreateCEBFIPModel(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading);
 
-   // Returns the concrete ageing coefficient, X
-   Float64 GetConcreteAgeingCoefficient(const matConcreteBase* pConcrete,Float64 timeOfLoading);
+   // Returns the concrete Aging coefficient, X
+   Float64 GetConcreteAgingCoefficient(const matConcreteBase* pConcrete,Float64 timeOfLoading);
 
    // Material model for precast girder segments
    std::map< CSegmentKey, boost::shared_ptr<matConcreteBase> > m_pSegmentConcrete;

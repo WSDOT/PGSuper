@@ -351,20 +351,19 @@ void ListMomentCapacityFailures(IBroker* pBroker,FailureList& rFailures,const pg
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
-   std::_tstring strDescription(pIntervals->GetDescription(intervalIdx));
    std::_tstring strLimitState(pProductLoads->GetLimitStateName(ls));
 
    if ( MomentCapacityFailures(pBroker,pGirderArtifact,intervalIdx,ls,true) )
    {
       std::_tostringstream os;
-      os << _T("Ultimate moment capacity (positive moment) check failed for ") << strLimitState << _T(" Limit State in Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" ") << strDescription << std::ends;
+      os << _T("Ultimate moment capacity (positive moment) check failed for ") << strLimitState << _T(" Limit State") << std::ends;
       rFailures.push_back(os.str());
    }
 
    if ( MomentCapacityFailures(pBroker,pGirderArtifact,intervalIdx,ls,false) )
    {
       std::_tostringstream os;
-      os << _T("Ultimate moment capacity (negative moment) check failed for ") << strLimitState << _T(" Limit State in Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" ") << strDescription << std::ends;
+      os << _T("Ultimate moment capacity (negative moment) check failed for ") << strLimitState << _T(" Limit State") << std::ends;
       rFailures.push_back(os.str());
    }
 }
@@ -456,7 +455,7 @@ void ListHorizontalShearFailures(IBroker* pBroker,FailureList& rFailures,const p
          if ( !pShear->Passed() )
          {
             std::_tostringstream os;
-            os << _T("Horizontal Interface Shears/Length [5.8.4] check failed for ") << strLimitState << _T(" Limit State") << std::ends;
+            os << _T("Horizontal Interface Shears/Length check failed for ") << strLimitState << _T(" Limit State [5.8.4].") << std::ends;
             rFailures.push_back(os.str());
 
             return;
@@ -494,7 +493,7 @@ void ListStirrupDetailingFailures(IBroker* pBroker,FailureList& rFailures,const 
          if ( !pShear->Passed() )
          {
             std::_tostringstream os;
-            os << _T("Stirrup detailing checks failed for ") << strLimitState << _T(" Limit State in Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" ") << strDescription << std::ends;
+            os << _T("Stirrup detailing checks failed for the ") << strLimitState << _T(" Limit State in Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" ") << strDescription << std::ends;
             rFailures.push_back(os.str());
             return;
          }
@@ -574,11 +573,11 @@ void ListConfinementZoneFailures(IBroker* pBroker,FailureList& rFailures,const p
          CString strMsg;
          if ( 1 < nSegments )
          {
-            strMsg.Format(_T("Confinement zone checks failed for Segment %d."),LABEL_SEGMENT(segIdx));
+            strMsg.Format(_T("Confinement zone check failed for Segment %d."),LABEL_SEGMENT(segIdx));
          }
          else
          {
-            strMsg.Format(_T("Confinement zone checks failed."));
+            strMsg.Format(_T("Confinement zone check failed."));
          }
 
          rFailures.push_back(strMsg.GetBuffer());

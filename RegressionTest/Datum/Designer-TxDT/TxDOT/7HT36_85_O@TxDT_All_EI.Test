@@ -5,8 +5,8 @@
 
 The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Bursting zone checks failed.
-Confinement zone checks failed.
+Bursting zone check failed.
+Confinement zone check failed.
 Live Load Deflection check failed
 
 
@@ -17,8 +17,8 @@ Live Load Deflection check failed
 
 The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Bursting zone checks failed.
-Confinement zone checks failed.
+Bursting zone check failed.
+Confinement zone check failed.
 Live Load Deflection check failed
 
 

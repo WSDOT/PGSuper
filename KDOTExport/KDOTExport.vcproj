@@ -60,8 +60,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="1"
-				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="\ARP\PGSuper\Include\;&quot;\ARP\PGSuper\Include\$(PlatformName)&quot;;\ARP\PGSuper\Include\Plugins;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL"
 				StringPooling="true"
@@ -165,8 +163,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="1"
-				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="\ARP\PGSuper\Include\;&quot;\ARP\PGSuper\Include\$(PlatformName)&quot;;\ARP\PGSuper\Include\Plugins;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL"
 				StringPooling="true"

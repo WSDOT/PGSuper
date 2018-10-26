@@ -94,7 +94,7 @@ interface IArtifact : IUnknown
    virtual const pgsHaulingAnalysisArtifact* CreateHaulingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc) = 0;
 
    // Returns the RatingArtifact for the specified girder
-   virtual const pgsRatingArtifact* GetRatingArtifact(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex) = 0;
+   virtual const pgsRatingArtifact* GetRatingArtifact(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) = 0;
 };
 
 #endif // INCLUDED_IFACE_ARTIFACT_H_

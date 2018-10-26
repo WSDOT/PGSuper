@@ -61,12 +61,20 @@ void CCastDeckDlg::DoDataExchange(CDataExchange* pDX)
       DDX_Text(pDX,IDC_AGE,age);
       DDV_GreaterThanZero(pDX,IDC_AGE,age);
       m_TimelineMgr.GetEventByIndex(m_EventIndex)->GetCastDeckActivity().SetConcreteAgeAtContinuity(age);
+
+      Float64 cure_duration;
+      DDX_Text(pDX,IDC_CURING,cure_duration);
+      DDV_NonNegativeDouble(pDX,IDC_CURING,cure_duration);
+      m_TimelineMgr.GetEventByIndex(m_EventIndex)->GetCastDeckActivity().SetCuringDuration(cure_duration);
    }
    else
    {
       // Data going into the dialog
       Float64 age = m_TimelineMgr.GetEventByIndex(m_EventIndex)->GetCastDeckActivity().GetConcreteAgeAtContinuity();
       DDX_Text(pDX,IDC_AGE,age);
+
+      Float64 cure_duration = m_TimelineMgr.GetEventByIndex(m_EventIndex)->GetCastDeckActivity().GetCuringDuration();
+      DDX_Text(pDX,IDC_CURING,cure_duration);
    }
 }
 

@@ -5,8 +5,8 @@
 
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Splitting zone checks failed.
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Splitting zone check failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -16,9 +16,9 @@ Splitting zone checks failed.
 
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Splitting zone checks failed.
-Confinement zone checks failed.
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Splitting zone check failed.
+Confinement zone check failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -28,8 +28,8 @@ Confinement zone checks failed.
 
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Confinement zone checks failed.
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Confinement zone check failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -39,7 +39,7 @@ Confinement zone checks failed.
 
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Splitting zone checks failed.
+Splitting zone check failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -49,8 +49,8 @@ Splitting zone checks failed.
 
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Splitting zone checks failed.
-Confinement zone checks failed.
+Splitting zone check failed.
+Confinement zone check failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -60,8 +60,8 @@ Confinement zone checks failed.
 
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Splitting zone checks failed.
-Confinement zone checks failed.
+Splitting zone check failed.
+Confinement zone check failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -71,7 +71,7 @@ Confinement zone checks failed.
 
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Splitting zone checks failed.
+Splitting zone check failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -81,8 +81,8 @@ Splitting zone checks failed.
 
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Splitting zone checks failed.
-Confinement zone checks failed.
+Splitting zone check failed.
+Confinement zone check failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -92,8 +92,8 @@ Confinement zone checks failed.
 
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Splitting zone checks failed.
-Confinement zone checks failed.
+Splitting zone check failed.
+Confinement zone check failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -109,7 +109,7 @@ Compressive stress check failed for Service I for the Final without Live Load St
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Stirrup detailing checks failed for the Strength I Limit State.
-Splitting zone checks failed.
+Splitting zone check failed.
 Slab Offset ("A" Dimension) check failed
 Lifting checks failed
 Hauling checks failed
@@ -128,8 +128,8 @@ Compressive stress check failed for Service I for the Final without Live Load St
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Stirrup detailing checks failed for the Strength I Limit State.
-Splitting zone checks failed.
-Confinement zone checks failed.
+Splitting zone check failed.
+Confinement zone check failed.
 Slab Offset ("A" Dimension) check failed
 Lifting checks failed
 Hauling checks failed
@@ -146,9 +146,9 @@ Compressive stress check failed for Service I for the Casting Yard Stage (At Rel
 Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
 Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Splitting zone checks failed.
-Confinement zone checks failed.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Splitting zone check failed.
+Confinement zone check failed.
 Slab Offset ("A" Dimension) check failed
 Lifting checks failed
 Hauling checks failed
@@ -161,7 +161,7 @@ Hauling checks failed
 
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Splitting zone checks failed.
+Splitting zone check failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -177,8 +177,8 @@ Compressive stress check failed for Service I for the Final without Live Load St
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Stirrup detailing checks failed for the Strength I Limit State.
-Splitting zone checks failed.
-Confinement zone checks failed.
+Splitting zone check failed.
+Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed
 
@@ -196,9 +196,9 @@ Compressive stress check failed for Service I for the Deck and Diaphragm Placeme
 Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Splitting zone checks failed.
-Confinement zone checks failed.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Splitting zone check failed.
+Confinement zone check failed.
 Slab Offset ("A" Dimension) check failed
 Lifting checks failed
 Hauling checks failed
@@ -217,7 +217,7 @@ Compressive stress check failed for Service I for the Final without Live Load St
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Stirrup detailing checks failed for the Strength I Limit State.
-Splitting zone checks failed.
+Splitting zone check failed.
 Slab Offset ("A" Dimension) check failed
 Lifting checks failed
 Hauling checks failed
@@ -230,8 +230,8 @@ Hauling checks failed
 
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Splitting zone checks failed.
-Confinement zone checks failed.
+Splitting zone check failed.
+Confinement zone check failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -246,9 +246,9 @@ Compressive stress check failed for Service I for the Temporary Strand Removal S
 Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
 Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Splitting zone checks failed.
-Confinement zone checks failed.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Splitting zone check failed.
+Confinement zone check failed.
 Slab Offset ("A" Dimension) check failed
 Lifting checks failed
 Hauling checks failed
@@ -261,7 +261,7 @@ Hauling checks failed
 
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Splitting zone checks failed.
+Splitting zone check failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -277,8 +277,8 @@ Compressive stress check failed for Service I for the Final without Live Load St
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Stirrup detailing checks failed for the Strength I Limit State.
-Splitting zone checks failed.
-Confinement zone checks failed.
+Splitting zone check failed.
+Confinement zone check failed.
 Slab Offset ("A" Dimension) check failed
 Lifting checks failed
 Hauling checks failed
@@ -296,9 +296,9 @@ Compressive stress check failed for Service I for the Temporary Strand Removal S
 Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
 Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Splitting zone checks failed.
-Confinement zone checks failed.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Splitting zone check failed.
+Confinement zone check failed.
 Slab Offset ("A" Dimension) check failed
 Lifting checks failed
 Hauling checks failed
@@ -317,7 +317,7 @@ Compressive stress check failed for Service I for the Final without Live Load St
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Stirrup detailing checks failed for the Strength I Limit State.
-Splitting zone checks failed.
+Splitting zone check failed.
 Slab Offset ("A" Dimension) check failed
 Lifting checks failed
 Hauling checks failed
@@ -336,8 +336,8 @@ Compressive stress check failed for Service I for the Final without Live Load St
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Stirrup detailing checks failed for the Strength I Limit State.
-Splitting zone checks failed.
-Confinement zone checks failed.
+Splitting zone check failed.
+Confinement zone check failed.
 Slab Offset ("A" Dimension) check failed
 Lifting checks failed
 Hauling checks failed
@@ -350,9 +350,9 @@ Hauling checks failed
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Splitting zone checks failed.
-Confinement zone checks failed.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Splitting zone check failed.
+Confinement zone check failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -362,7 +362,7 @@ Confinement zone checks failed.
 
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -372,8 +372,8 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State for
 
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Confinement zone checks failed.
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Confinement zone check failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -383,7 +383,7 @@ Confinement zone checks failed.
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Confinement zone checks failed.
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Confinement zone check failed.
 
 

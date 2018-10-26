@@ -111,8 +111,6 @@ CChapterBuilder* CLoadRatingDetailsChapterBuilder::Clone() const
 
 void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,bool bSplicedGirder) const
 {
-   USES_CONVERSION;
-
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
    if ( !pRatingSpec->IsRatingEnabled(ratingType) )
@@ -127,14 +125,14 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
 
    bool bNegMoments = pBridge->ProcessNegativeMoments(ALL_SPANS);
 
-   CComBSTR bstrLiveLoadType = ::GetLiveLoadTypeName(ratingType);
+   CString strLiveLoadType = ::GetLiveLoadTypeName(ratingType);
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
-   pPara->SetName(OLE2T(bstrLiveLoadType));
+   pPara->SetName(strLiveLoadType);
    *pPara << pPara->GetName() << rptNewLine;
 
    std::_tstring strName = pProductLoads->GetLiveLoadName(llType,0);
-   if ( strName == _T("No Live Load Defined") )
+   if ( strName == NO_LIVE_LOAD_DEFINED )
    {
       pPara = new rptParagraph;
       *pChapter << pPara;
@@ -147,14 +145,14 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
    VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
    VehicleIndexType firstVehicleIdx = 0;
    VehicleIndexType lastVehicleIdx  = (ratingType == pgsTypes::lrDesign_Inventory || ratingType == pgsTypes::lrDesign_Operating ? 0 : nVehicles-1);
-   for ( VehicleIndexType vehIdx = firstVehicleIdx; vehIdx <= lastVehicleIdx; vehIdx++ )
+   for ( VehicleIndexType vehicleIdx = firstVehicleIdx; vehicleIdx <= lastVehicleIdx; vehicleIdx++ )
    {
       const pgsRatingArtifact* pRatingArtifact = pArtifact->GetRatingArtifact(girderKey,ratingType,
-         (ratingType == pgsTypes::lrDesign_Inventory || ratingType == pgsTypes::lrDesign_Operating) ? INVALID_INDEX : vehIdx);
+         (ratingType == pgsTypes::lrDesign_Inventory || ratingType == pgsTypes::lrDesign_Operating) ? INVALID_INDEX : vehicleIdx);
 
       if ( pRatingArtifact )
       {
-         std::_tstring strVehicleName = pProductLoads->GetLiveLoadName(llType,vehIdx);
+         std::_tstring strVehicleName = pProductLoads->GetLiveLoadName(llType,(ratingType == pgsTypes::lrDesign_Inventory || ratingType == pgsTypes::lrDesign_Operating) ? INVALID_INDEX : vehicleIdx);
 
          pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << pPara;

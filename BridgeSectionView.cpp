@@ -529,10 +529,9 @@ void CBridgeSectionView::UpdateGirderTooltips()
    CComPtr<IBroker> pBroker;
    pDoc->GetBroker(&pBroker);
 
-   //GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   GET_IFACE2(pBroker,IMaterials,pMaterial);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2_NOCHECK(pBroker,IStrandGeometry,pStrandGeom);
+   GET_IFACE2_NOCHECK(pBroker,IMaterials,pMaterial);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();

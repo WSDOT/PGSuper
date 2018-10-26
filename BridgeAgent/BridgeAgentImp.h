@@ -242,6 +242,7 @@ public:
    virtual std::vector<Float64> GetGirderSpacing(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::MeasurementLocation measureLocation,pgsTypes::MeasurementType measureType);
    virtual Float64 GetGirderOffset(GirderIndexType gdrIdx,PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::OffsetMeasurementType offsetMeasureDatum);
    virtual std::vector<SpaceBetweenGirder> GetGirderSpacing(Float64 station);
+   virtual std::vector<Float64> CBridgeAgentImp::GetGirderSpacing(SpanIndexType spanIdx,Float64 Xspan);
    virtual void GetSpacingAlongGirder(const CGirderKey& girderKey,Float64 Xg,Float64* leftSpacing,Float64* rightSpacing);
    virtual void GetSpacingAlongGirder(const pgsPointOfInterest& poi,Float64* leftSpacing,Float64* rightSpacing);
    virtual std::vector<std::pair<SegmentIndexType,Float64>> GetSegmentLengths(const CSpanKey& spanKey);
@@ -259,6 +260,7 @@ public:
    virtual Float64 GetSpanLength(SpanIndexType spanIdx,GirderIndexType gdrIdx);
    virtual Float64 GetSpanLength(const CSpanKey& spanKey);
    virtual Float64 GetFullSpanLength(const CSpanKey& spanKey);
+   virtual Float64 GetGirderlineLength(GirderIndexType gdrLineIdx);
    virtual Float64 GetCantileverLength(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::MemberEndType endType);
    virtual Float64 GetCantileverLength(const CSpanKey& spanKey,pgsTypes::MemberEndType endType);
    virtual Float64 GetSegmentStartEndDistance(const CSegmentKey& segmentKey);
@@ -397,28 +399,28 @@ public:
    virtual Float64 GetDeckConcreteAge(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType);
    virtual Float64 GetRailingSystemAge(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType);
 
-   virtual Float64 GetSegmentFc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetClosureJointFc(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetDeckFc(IntervalIndexType intervalIdx);
-   virtual Float64 GetRailingSystemFc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx);
+   virtual Float64 GetSegmentFc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle);
+   virtual Float64 GetClosureJointFc(const CSegmentKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle);
+   virtual Float64 GetDeckFc(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle);
+   virtual Float64 GetRailingSystemFc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle);
 
    virtual Float64 GetSegmentDesignFc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
    virtual Float64 GetClosureJointDesignFc(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
    virtual Float64 GetDeckDesignFc(IntervalIndexType intervalIdx);
 
-   virtual Float64 GetSegmentEc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
+   virtual Float64 GetSegmentEc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle);
    virtual Float64 GetSegmentEc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 trialFc,bool* pbChanged);
-   virtual Float64 GetClosureJointEc(const CClosureKey& closureKey,IntervalIndexType intervalIdx);
+   virtual Float64 GetClosureJointEc(const CClosureKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle);
    virtual Float64 GetClosureJointEc(const CClosureKey& closureKey,IntervalIndexType intervalIdx,Float64 trialFc,bool* pbChanged);
-   virtual Float64 GetDeckEc(IntervalIndexType intervalIdx);
-   virtual Float64 GetRailingSystemEc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx);
+   virtual Float64 GetDeckEc(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle);
+   virtual Float64 GetRailingSystemEc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle);
 
-   virtual Float64 GetSegmentFlexureFr(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetSegmentShearFr(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetClosureJointFlexureFr(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetClosureJointShearFr(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetDeckFlexureFr(IntervalIndexType intervalIdx);
-   virtual Float64 GetDeckShearFr(IntervalIndexType intervalIdx);
+   virtual Float64 GetSegmentFlexureFr(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle);
+   virtual Float64 GetSegmentShearFr(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle);
+   virtual Float64 GetClosureJointFlexureFr(const CSegmentKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle);
+   virtual Float64 GetClosureJointShearFr(const CSegmentKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle);
+   virtual Float64 GetDeckFlexureFr(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle);
+   virtual Float64 GetDeckShearFr(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle);
 
    virtual Float64 GetSegmentAgingCoefficient(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
    virtual Float64 GetClosureJointAgingCoefficient(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
@@ -719,7 +721,7 @@ public:
    virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(const CSpanKey& spanKey);
    virtual std::vector<pgsPointOfInterest> GetPointsOfInterest(const CSpanKey& spanKey,PoiAttributeType attrib,Uint32 mode = POIFIND_OR);
    virtual pgsPointOfInterest GetPointOfInterest(PoiIDType poiID);
-   virtual pgsPointOfInterest GetPointOfInterest(const CSegmentKey& segmentKey,Float64 Xs);
+   virtual pgsPointOfInterest GetPointOfInterest(const CSegmentKey& segmentKey,Float64 Xs,Float64 tolerance=0.001);
    virtual bool GetPointOfInterest(const CSegmentKey& segmentKey,Float64 station,IDirection* pDirection,pgsPointOfInterest* pPoi);
    virtual std::vector<pgsPointOfInterest> GetCriticalSections(pgsTypes::LimitState ls,const CGirderKey& girderKey);
    virtual std::vector<pgsPointOfInterest> GetCriticalSections(pgsTypes::LimitState ls,const CGirderKey& girderKey,const GDRCONFIG& config);
@@ -735,7 +737,7 @@ public:
    virtual bool IsOnGirder(const pgsPointOfInterest& poi);
    virtual bool IsInIntermediateDiaphragm(const pgsPointOfInterest& poi);
    virtual bool IsInCriticalSectionZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState);
-   virtual pgsPointOfInterest ConvertSpanPointToPoi(const CSpanKey& spanKey,Float64 Xspan);
+   virtual pgsPointOfInterest ConvertSpanPointToPoi(const CSpanKey& spanKey,Float64 Xspan,Float64 tolerance=0.001);
    virtual void ConvertPoiToSpanPoint(const pgsPointOfInterest& poi,CSpanKey* pSpanKey,Float64* pXspan);
    virtual void ConvertSpanPointToSegmentCoordiante(const CSpanKey& spanKey,Float64 Xspan,CSegmentKey* pSegmentKey,Float64* pXs);
    virtual void ConvertSegmentCoordinateToSpanPoint(const CSegmentKey& segmentKey,Float64 Xs,CSpanKey* pSpanKey,Float64* pXspan);
@@ -748,7 +750,7 @@ public:
    virtual std::vector<CSegmentKey> GetSegmentKeys(const std::vector<pgsPointOfInterest>& vPoi,const CGirderKey& girderKey);
    virtual std::vector<CGirderKey> GetGirderKeys(const std::vector<pgsPointOfInterest>& vPoi);
    virtual Float64 ConvertPoiToSegmentPathCoordinate(const pgsPointOfInterest& poi);
-   virtual pgsPointOfInterest ConvertSegmentPathCoordinateToPoi(const CSegmentKey& segmentKey,Float64 Xsp);
+   virtual pgsPointOfInterest ConvertSegmentPathCoordinateToPoi(const CSegmentKey& segmentKey,Float64 Xsp,Float64 tolerance=0.001);
    virtual Float64 ConvertSegmentPathCoordinateToSegmentCoordinate(const CSegmentKey& segmentKey,Float64 Xsp);
    virtual Float64 ConvertSegmentCoordinateToGirderCoordinate(const CSegmentKey& segmentKey,Float64 Xs);
    //virtual void ConvertGirderCoordinateToSegmentCoordinate(const CGirderKey& girderKey,Float64 Xg,CSegmentKey* pSegmentKey,Float64* pXs);
@@ -756,14 +758,14 @@ public:
    virtual Float64 ConvertSegmentPathCoordinateToGirderPathCoordinate(const CSegmentKey& segmentKey,Float64 Xsp);
    virtual Float64 ConvertSegmentCoordinateToSegmentPathCoordinate(const CSegmentKey& segmentKey,Float64 Xs);
    virtual Float64 ConvertPoiToGirderCoordinate(const pgsPointOfInterest& poi);
-   virtual pgsPointOfInterest ConvertGirderCoordinateToPoi(const CGirderKey& girderKey,Float64 Xg);
+   virtual pgsPointOfInterest ConvertGirderCoordinateToPoi(const CGirderKey& girderKey,Float64 Xg,Float64 tolerance=0.001);
    virtual Float64 ConvertPoiToGirderPathCoordinate(const pgsPointOfInterest& poi);
-   virtual pgsPointOfInterest ConvertGirderPathCoordinateToPoi(const CGirderKey& girderKey,Float64 Xgp);
+   virtual pgsPointOfInterest ConvertGirderPathCoordinateToPoi(const CGirderKey& girderKey,Float64 Xgp,Float64 tolerance=0.001);
    virtual Float64 ConvertGirderCoordinateToGirderPathCoordinate(const CGirderKey& girderKey,Float64 Xg);
    virtual Float64 ConvertGirderPathCoordinateToGirderCoordinate(const CGirderKey& girderKey,Float64 Xgp);
    virtual Float64 ConvertGirderPathCoordinateToGirderlineCoordinate(const CGirderKey& girderKey,Float64 Xgp);
    virtual Float64 ConvertPoiToGirderlineCoordinate(const pgsPointOfInterest& poi);
-   virtual pgsPointOfInterest ConvertGirderlineCoordinateToPoi(GirderIndexType gdrIdx,Float64 Xgl);
+   virtual pgsPointOfInterest ConvertGirderlineCoordinateToPoi(GirderIndexType gdrIdx,Float64 Xgl,Float64 tolerance=0.001);
    virtual Float64 ConvertRouteToBridgeLineCoordinate(Float64 station);
    virtual Float64 ConvertBridgeLineToRouteCoordinate(Float64 Xb);
    virtual Float64 ConvertPoiToBridgeLineCoordinate(const pgsPointOfInterest& poi);

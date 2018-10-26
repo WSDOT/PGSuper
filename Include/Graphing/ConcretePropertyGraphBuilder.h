@@ -66,6 +66,7 @@ public:
    virtual CEAFGraphControlWindow* GetGraphControlWindow();
 
 protected:
+   void Init();
    CConcretePropertyGraphController* m_pGraphController;
 
    afx_msg void OnShowGrid();

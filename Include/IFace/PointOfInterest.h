@@ -65,7 +65,7 @@ interface IPointOfInterest : public IUnknown
    // has been, or can be, defined at the location, returns an actual poi. Otherwise a poi is created 
    // (but not stored) and it will have an ID of INVALID_ID. NOTE: Xpoi is NOT in 
    // Segment Coordinates. Use ConvertSegmentCoordinateToPoi if the distance you have is in segment coordinates.
-   virtual pgsPointOfInterest GetPointOfInterest(const CSegmentKey& segmentKey,Float64 Xpoi) = 0;
+   virtual pgsPointOfInterest GetPointOfInterest(const CSegmentKey& segmentKey,Float64 Xpoi,Float64 tolerance=0.001) = 0;
 
    // Gets the point of interest where a line defined by station and direction intersects a segment
    // Returns true of the POI is found, or false if it is not.
@@ -146,7 +146,7 @@ interface IPointOfInterest : public IUnknown
 
    // Convert between POI and Segment Path Coordinates
    virtual Float64 ConvertPoiToSegmentPathCoordinate(const pgsPointOfInterest& poi) = 0;
-   virtual pgsPointOfInterest ConvertSegmentPathCoordinateToPoi(const CSegmentKey& segmentKey,Float64 Xsp) = 0;
+   virtual pgsPointOfInterest ConvertSegmentPathCoordinateToPoi(const CSegmentKey& segmentKey,Float64 Xsp,Float64 tolerance=0.001) = 0;
 
    // Convert between Segment and Segment Path Coordinates
    virtual Float64 ConvertSegmentPathCoordinateToSegmentCoordinate(const CSegmentKey& segmentKey,Float64 Xsp) = 0;
@@ -166,15 +166,15 @@ interface IPointOfInterest : public IUnknown
 
    // Convert between POI and Girder Path Coordinates
    virtual Float64 ConvertPoiToGirderPathCoordinate(const pgsPointOfInterest& poi) = 0;
-   virtual pgsPointOfInterest ConvertGirderPathCoordinateToPoi(const CGirderKey& girderKey,Float64 Xgp) = 0;
+   virtual pgsPointOfInterest ConvertGirderPathCoordinateToPoi(const CGirderKey& girderKey,Float64 Xgp,Float64 tolerance=0.001) = 0;
 
    // Convert between POI and Girder Coordinates
    virtual Float64 ConvertPoiToGirderCoordinate(const pgsPointOfInterest& poi) = 0;
-   virtual pgsPointOfInterest ConvertGirderCoordinateToPoi(const CGirderKey& girderKey,Float64 Xg) = 0;
+   virtual pgsPointOfInterest ConvertGirderCoordinateToPoi(const CGirderKey& girderKey,Float64 Xg,Float64 tolerance=0.001) = 0;
 
    // Convert between POI and Girderline Coordinates
    virtual Float64 ConvertPoiToGirderlineCoordinate(const pgsPointOfInterest& poi) = 0;
-   virtual pgsPointOfInterest ConvertGirderlineCoordinateToPoi(GirderIndexType gdrIdx,Float64 Xgl) = 0;
+   virtual pgsPointOfInterest ConvertGirderlineCoordinateToPoi(GirderIndexType gdrIdx,Float64 Xgl,Float64 tolerance=0.001) = 0;
 
    // Convert between Girder and Girder Path Coordinates
    virtual Float64 ConvertGirderCoordinateToGirderPathCoordinate(const CGirderKey& girderKey,Float64 Xg) = 0;
@@ -185,7 +185,7 @@ interface IPointOfInterest : public IUnknown
    //virtual Float64 ConvertGirderlineCoordinateToGirderPathCoordinate(const CGirderKey& girderKey,Float46 Xgl) = 0;
 
    // Converts between Span Point and Poi
-   virtual pgsPointOfInterest ConvertSpanPointToPoi(const CSpanKey& spanKey,Float64 Xspan) = 0;
+   virtual pgsPointOfInterest ConvertSpanPointToPoi(const CSpanKey& spanKey,Float64 Xspan,Float64 tolerance=0.001) = 0;
    virtual void ConvertPoiToSpanPoint(const pgsPointOfInterest& poi,CSpanKey* pSpanKey,Float64* pXspan) = 0;
 
    // Converts Span Point to Segment Coordiante

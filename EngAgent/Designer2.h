@@ -525,7 +525,7 @@ private:
 
    void InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const GDRCONFIG* pConfig);
    bool IsDeepSection( const pgsPointOfInterest& poi);
-   ZoneIndexType GetCriticalSectionZone(const pgsPointOfInterest& poi);
+   ZoneIndexType GetCriticalSectionZone(const pgsPointOfInterest& poi,bool bIncludeCS=false);
    void CheckStirrupRequirement( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, pgsVerticalShearArtifact* pArtifact );
    void CheckUltimateShearCapacity( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, Float64 vu, const GDRCONFIG* pConfig, pgsVerticalShearArtifact* pArtifact );
    void CheckHorizontalShear( const pgsPointOfInterest& poi, Float64 vu,

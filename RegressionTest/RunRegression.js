@@ -203,7 +203,7 @@ function RunTest (currFolder, currCommand)
      else
      {
          // testing TOGA - need to set library to txdot
-         SetPGSuperLibrary("TxDOT", "TxDOT");
+         SetPGSuperLibrary("TxDOTRegressionTest", "TxDOTRegressionTest");
           
          var fc = new Enumerator(subFolder.Files);
          for (; !fc.atEnd(); fc.moveNext())

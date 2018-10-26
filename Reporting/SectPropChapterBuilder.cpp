@@ -282,8 +282,8 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
          {
             CSegmentKey thisSegmentKey(grpIdx,gdrIdx,segIdx);
 
-            EventIndexType constructionEventIdx = pIBridgeDesc->GetSegmentConstructionEventIndex(thisSegmentKey);
-            EventIndexType liveLoadEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
+            IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
+            IntervalIndexType lastIntervalIdx    = pIntervals->GetIntervalCount()-1;
 
             if (!m_SimplifiedVersion)
             {
@@ -302,8 +302,8 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
             pPara = new rptParagraph();
             *pChapter << pPara;
 
-            bool bIsPrismatic_CastingYard = pGirder->IsPrismatic(constructionEventIdx,thisSegmentKey);
-            bool bIsPrismatic_Final       = pGirder->IsPrismatic(liveLoadEventIdx,thisSegmentKey);
+            bool bIsPrismatic_CastingYard = pGirder->IsPrismatic(releaseIntervalIdx,thisSegmentKey);
+            bool bIsPrismatic_Final       = pGirder->IsPrismatic(lastIntervalIdx,thisSegmentKey);
 
             // a little fake out here... if we have a no deck bridge and there is a sacrifical depth to
             // be worn off the girder themselves, the bridge site stage 3 properties are different from
@@ -330,8 +330,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                if ( bComposite )
                {
                   // there is a deck so we have composite, non-prismatic results
-                  IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-                  pTable = CSectionPropertiesTable2().Build(pBroker,pgsTypes::sptGross,thisSegmentKey,liveLoadIntervalIdx,pDisplayUnits);
+                  pTable = CSectionPropertiesTable2().Build(pBroker,pgsTypes::sptGross,thisSegmentKey,lastIntervalIdx,pDisplayUnits);
                   *pPara << pTable << rptNewLine;
                }
             }

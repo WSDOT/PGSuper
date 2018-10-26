@@ -125,7 +125,7 @@ void CConcreteManager::ValidateConcrete()
       EventIndexType castDeckEventIdx  = pTimelineMgr->GetCastDeckEventIndex();
       Float64   time_at_casting        = pTimelineMgr->GetStart(castDeckEventIdx);
       Float64   age_at_initial_loading = pTimelineMgr->GetEventByIndex(castDeckEventIdx)->GetCastDeckActivity().GetConcreteAgeAtContinuity();
-      Float64   cure_time              = age_at_initial_loading;
+      Float64   cure_time              = pTimelineMgr->GetEventByIndex(castDeckEventIdx)->GetCastDeckActivity().GetCuringDuration();
 
       // modulus of rupture coefficients
       Float64 time_step = time_at_casting + cure_time;
@@ -593,7 +593,7 @@ void CConcreteManager::ValidateConcreteParameters(boost::shared_ptr<matConcreteB
 
    std::_tstring strMsg;
 
-   Float64 time = pConcrete->GetTimeAtCasting() + pConcrete->GetCureTime() + 28.0;
+   Float64 time = pConcrete->GetTimeAtCasting() + 28.0;
    Float64 fc28 = pConcrete->GetFc(time);
    Float64 fci  = pConcrete->GetFc(pConcrete->GetCureTime());
    if (fc28 < fcMin )
@@ -754,6 +754,7 @@ matConcreteBase* CConcreteManager::CreateConcreteModel(LPCTSTR strName,const CCo
    pConcrete->SetMaxAggregateSize(concrete.MaxAggregateSize);
    pConcrete->SetRelativeHumidity(rh);
    pConcrete->SetTimeAtCasting(timeAtCasting);
+   pConcrete->SetAgeAtInitialLoading(ageAtInitialLoading);
    pConcrete->SetCureTime(cureTime);
    pConcrete->SetCureMethod((matConcreteBase::CureMethod)concrete.CureMethod);
    //pConcrete->SetVSRatio(vs); NOTE: volume to surface ratio is set during the level 2 validation 
@@ -1239,11 +1240,11 @@ Float64 CConcreteManager::GetRailingSystemCreepCoefficient(pgsTypes::TrafficBarr
    return m_pRailingConc[orientation]->GetCreepCoefficient(t,tla);
 }
 
-Float64 CConcreteManager::GetRailingSystemAgeingCoefficient(pgsTypes::TrafficBarrierOrientation orientation,Float64 timeOfLoading)
+Float64 CConcreteManager::GetRailingSystemAgingCoefficient(pgsTypes::TrafficBarrierOrientation orientation,Float64 timeOfLoading)
 {
    ValidateConcrete();
    ValidateRailingSystemConcrete();
-   return GetConcreteAgeingCoefficient(m_pRailingConc[orientation].get(),timeOfLoading);
+   return GetConcreteAgingCoefficient(m_pRailingConc[orientation].get(),timeOfLoading);
 }
 
 matConcreteBase* CConcreteManager::GetRailingSystemConcrete(pgsTypes::TrafficBarrierOrientation orientation)
@@ -1415,13 +1416,13 @@ Float64 CConcreteManager::GetDeckCreepCoefficient(Float64 t,Float64 tla)
    }
 }
 
-Float64 CConcreteManager::GetDeckAgeingCoefficient(Float64 timeOfLoading)
+Float64 CConcreteManager::GetDeckAgingCoefficient(Float64 timeOfLoading)
 {
    ValidateConcrete();
    ValidateDeckConcrete();
    if ( m_pDeckConc.get() != NULL )
    {
-      return GetConcreteAgeingCoefficient(m_pDeckConc.get(),timeOfLoading);
+      return GetConcreteAgingCoefficient(m_pDeckConc.get(),timeOfLoading);
    }
    else
    {
@@ -1480,11 +1481,11 @@ Float64 CConcreteManager::GetSegmentCreepCoefficient(const CSegmentKey& segmentK
    return m_pSegmentConcrete[segmentKey]->GetCreepCoefficient(t,tla);
 }
 
-Float64 CConcreteManager::GetSegmentAgeingCoefficient(const CSegmentKey& segmentKey,Float64 timeOfLoading)
+Float64 CConcreteManager::GetSegmentAgingCoefficient(const CSegmentKey& segmentKey,Float64 timeOfLoading)
 {
    ValidateConcrete();
    ValidateSegmentConcrete();
-   return GetConcreteAgeingCoefficient(m_pSegmentConcrete[segmentKey].get(),timeOfLoading);
+   return GetConcreteAgingCoefficient(m_pSegmentConcrete[segmentKey].get(),timeOfLoading);
 }
 
 matConcreteBase* CConcreteManager::GetSegmentConcrete(const CSegmentKey& segmentKey)
@@ -1538,11 +1539,11 @@ Float64 CConcreteManager::GetClosureJointCreepCoefficient(const CClosureKey& clo
    return m_pClosureConcrete[closureKey]->GetCreepCoefficient(t,tla);
 }
 
-Float64 CConcreteManager::GetClosureJointAgeingCoefficient(const CClosureKey& closureKey,Float64 timeOfLoading)
+Float64 CConcreteManager::GetClosureJointAgingCoefficient(const CClosureKey& closureKey,Float64 timeOfLoading)
 {
    ValidateConcrete();
    ValidateSegmentConcrete();
-   return GetConcreteAgeingCoefficient(m_pClosureConcrete[closureKey].get(),timeOfLoading);
+   return GetConcreteAgingCoefficient(m_pClosureConcrete[closureKey].get(),timeOfLoading);
 }
 
 matConcreteBase* CConcreteManager::GetClosureJointConcrete(const CClosureKey& closureKey)
@@ -1702,9 +1703,10 @@ matCEBFIPConcrete* CConcreteManager::CreateCEBFIPModel(const CConcreteMaterial& 
    return pConcrete;
 }
 
-Float64 CConcreteManager::GetConcreteAgeingCoefficient(const matConcreteBase* pConcrete,Float64 timeOfLoading)
+Float64 CConcreteManager::GetConcreteAgingCoefficient(const matConcreteBase* pConcrete,Float64 timeOfLoading)
 {
-   // based on "Approximate expressions for the ageing coefficient and the relaxation function in the viscoelastic
+   //return 1.0;
+   // based on "Approximate expressions for the Aging coefficient and the relaxation function in the viscoelastic
    // analysis of concrete structures", G. Lacidogna,, M. Tarantino. "Materials and Structures", Vol 29, April 1996, pp 131-140
    Float64 age = pConcrete->GetAge(timeOfLoading);
    if ( age < 0 )

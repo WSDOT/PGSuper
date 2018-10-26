@@ -621,12 +621,20 @@ void write_shear_stress_table(IBroker* pBroker,
 
    RowIndexType row = table->GetNumberOfHeaderRows();
    GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
    std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
    for ( ; i != end; i++ )
    {
       col = 0;
       const pgsPointOfInterest& poi = *i;
+
+      // Don't print poi that are inside of a CSS zone
+      if (pPoi->IsInCriticalSectionZone(poi,ls))
+      {
+         continue;
+      }
+
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
 
@@ -1911,7 +1919,12 @@ void write_Vs_table(IBroker* pBroker,
    {
       const pgsPointOfInterest& poi = *i;
 
-      bool is_end_rgn = pPoi->IsInCriticalSectionZone(poi,ls);
+
+      // Don't print poi that are inside of a CSS zone
+      if (pPoi->IsInCriticalSectionZone(poi,ls))
+      {
+         continue;
+      }
 
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi,&scd);
@@ -1931,27 +1944,18 @@ void write_Vs_table(IBroker* pBroker,
       }
       (*table)(row,5) << dim.SetValue( scd.dv );
 
-      if (!is_end_rgn)
+      if (scd.ShearInRange)
       {
-         if (scd.ShearInRange)
-         {
-            (*table)(row,6) << angle.SetValue( scd.Theta );
-            (*table)(row,7) << angle.SetValue( scd.Alpha );
-            (*table)(row,8) << shear.SetValue( scd.Vs );
-         }
-         else
-         {
-            print_footnote=true;
-            (*table)(row,6) << _T("*");
-            (*table)(row,7) << _T("*");
-            (*table)(row,8) << _T("*");
-         }
+         (*table)(row,6) << angle.SetValue( scd.Theta );
+         (*table)(row,7) << angle.SetValue( scd.Alpha );
+         (*table)(row,8) << shear.SetValue( scd.Vs );
       }
       else
       {
-         (*table)(row,6) << RPT_NA;
-         (*table)(row,7) << RPT_NA;
-         (*table)(row,8) << RPT_NA;
+         print_footnote=true;
+         (*table)(row,6) << _T("*");
+         (*table)(row,7) << _T("*");
+         (*table)(row,8) << _T("*");
       }
 
       row++;

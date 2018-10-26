@@ -572,12 +572,12 @@ void write_kdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType firstGroupIdx = (segmentKey.groupIndex == ALL_GROUPS ? 0 : segmentKey.groupIndex);
-   GroupIndexType lastGroupIdx  = (segmentKey.groupIndex == ALL_GROUPS ? nGroups-1: firstGroupIdx+1);
+   GroupIndexType lastGroupIdx  = (segmentKey.groupIndex == ALL_GROUPS ? nGroups-1: firstGroupIdx);
    for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
       GirderIndexType firstGirderIdx = Min(nGirders-2,(segmentKey.girderIndex == ALL_GIRDERS ? 0 : segmentKey.girderIndex));
-      GirderIndexType lastGirderIdx  = Min(nGirders-1,(segmentKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx + 1));
+      GirderIndexType lastGirderIdx  = Min(nGirders-1,(segmentKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx));
       for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
       {
          CSegmentKey thisSegmentKey(grpIdx,gdrIdx,segmentKey.segmentIndex);

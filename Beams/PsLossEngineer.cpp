@@ -1113,7 +1113,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
 
          // LRFD 5th Edition, 2010, C5.9.5.3
          // The approximate estimates of time-dependent prestress losses given in Eq 5.9.5.3-1 are intended for sections with composite decks only
-         GET_IFACE(IBridge,pBridge);
+         GET_IFACE_NOCHECK(IBridge,pBridge);
          if ( lrfdVersionMgr::FifthEdition2010 <= lrfdVersionMgr::GetVersion() && !pBridge->IsCompositeDeck() )
          {
             GET_IFACE(IEAFStatusCenter,pStatusCenter);
@@ -2671,7 +2671,6 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
-
    // Material Properties
    *pGdrCreepK1      = pMaterial->GetSegmentCreepK1(segmentKey);
    *pGdrCreepK2      = pMaterial->GetSegmentCreepK2(segmentKey);
@@ -2864,9 +2863,26 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
       *pMadlg = K_slab    * pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftSlab,      poi, bat, rtCumulative ) +
                 K_slabpad * pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftSlabPad,   poi, bat, rtCumulative ) + 
                 K_dia     *(pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftDiaphragm, poi, bat, rtCumulative ) + 
-                            pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftShearKey,  poi, bat, rtCumulative )) + 
-                K_userdc1 * pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftUserDC,    poi, bat, rtCumulative ) +
-                K_userdw1 * pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftUserDW,    poi, bat, rtCumulative );
+                            pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftShearKey,  poi, bat, rtCumulative ));
+
+      GET_IFACE(IPointOfInterest,pPoi);
+      CSpanKey spanKey;
+      Float64 Xspan;
+      pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
+      for ( int i = 0; i < 2; i++ )
+      {
+         pgsTypes::ProductForceType pfType = (i == 0 ? pgsTypes::pftUserDC : pgsTypes::pftUserDW);
+         Float64 K = (i == 0 ? K_userdc1 : K_userdw1);
+         std::vector<IntervalIndexType> vUserLoadIntervals = pIntervals->GetUserDefinedLoadIntervals(spanKey,pfType);
+         BOOST_FOREACH(IntervalIndexType intervalIdx,vUserLoadIntervals)
+         {
+            if ( intervalIdx <= castDeckIntervalIdx )
+            {
+               *pMadlg += K * pProdForces->GetMoment(intervalIdx, pfType, poi, bat, rtIncremental);
+            }
+         }
+      }
+
 
       if ( pDeck->DeckType == pgsTypes::sdtCompositeSIP )
       {
@@ -2885,9 +2901,25 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    }
 
    *pMsidl = K_railing * (pProdForces->GetMoment( railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi, bat, rtCumulative ) +
-                          pProdForces->GetMoment( railingSystemIntervalIdx, pgsTypes::pftSidewalk,       poi, bat, rtCumulative )) +
-             K_userdc2 *  pProdForces->GetMoment( compositeDeckIntervalIdx, pgsTypes::pftUserDC,         poi, bat, rtCumulative ) +
-             K_userdw2 *  pProdForces->GetMoment( compositeDeckIntervalIdx, pgsTypes::pftUserDW,         poi, bat, rtCumulative );
+                          pProdForces->GetMoment( railingSystemIntervalIdx, pgsTypes::pftSidewalk,       poi, bat, rtCumulative ));
+
+   GET_IFACE(IPointOfInterest,pPoi);
+   CSpanKey spanKey;
+   Float64 Xspan;
+   pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
+   for ( int i = 0; i < 2; i++ )
+   {
+      pgsTypes::ProductForceType pfType = (i == 0 ? pgsTypes::pftUserDC : pgsTypes::pftUserDW);
+      Float64 K = (i == 0 ? K_userdc2 : K_userdw2);
+      std::vector<IntervalIndexType> vUserLoadIntervals = pIntervals->GetUserDefinedLoadIntervals(spanKey,pfType);
+      BOOST_FOREACH(IntervalIndexType intervalIdx,vUserLoadIntervals)
+      {
+         if ( castDeckIntervalIdx < intervalIdx )
+         {
+            *pMsidl += K * pProdForces->GetMoment(intervalIdx, pfType, poi, bat, rtIncremental);
+         }
+      }
+   }
 
    // include the overlay dead load. even future overlays contribute dead load and creep effects
    // from the time it is installed until final. we don't know when "future" is and it is conservative

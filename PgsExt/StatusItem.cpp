@@ -254,7 +254,7 @@ eafTypes::StatusSeverityType pgsInformationalStatusCallback::GetSeverity()
 
 void pgsInformationalStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
-   EAFShowStatusMessage(pStatusItem,m_Severity,FALSE,0);
+   EAFShowStatusMessage(pStatusItem,m_Severity,FALSE,m_HelpID);
 }
 
 

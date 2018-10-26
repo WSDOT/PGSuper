@@ -52,28 +52,20 @@ boost::shared_ptr<CReportSpecification> CEquilibriumCheckReportSpecificationBuil
    // initialize dialog for the current cut location
    GET_IFACE(ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
-   CSegmentKey segmentKey;
-   if ( selection.Type == CSelection::Girder )
+   CGirderKey girderKey;
+   if ( selection.Type == CSelection::Girder || selection.Type == CSelection::Segment )
    {
-      segmentKey.groupIndex   = selection.GroupIdx;
-      segmentKey.girderIndex  = selection.GirderIdx;
-      segmentKey.segmentIndex = 0;
-   }
-   else if ( selection.Type == CSelection::Segment )
-   {
-      segmentKey.groupIndex   = selection.GroupIdx;
-      segmentKey.girderIndex  = selection.GirderIdx;
-      segmentKey.segmentIndex = selection.SegmentIdx;
+      girderKey.groupIndex   = selection.GroupIdx;
+      girderKey.girderIndex  = selection.GirderIdx;
    }
    else
    {
-      segmentKey.groupIndex   = 0;
-      segmentKey.girderIndex  = 0;
-      segmentKey.segmentIndex = 0;
+      girderKey.groupIndex   = 0;
+      girderKey.girderIndex  = 0;
    }
 
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPoi( pPOI->GetPointsOfInterest(segmentKey,POI_SPAN | POI_5L) );
+   std::vector<pgsPointOfInterest> vPoi( pPOI->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_SPAN | POI_5L) );
    ATLASSERT( vPoi.size() == 1 );
    pgsPointOfInterest initial_poi = vPoi.front();
 

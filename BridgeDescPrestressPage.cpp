@@ -267,7 +267,7 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check_Bool(pDX, IDC_TEMP_JACK, bPjackCalc);
    if ( pDX->m_bSaveAndValidate )
    {
-         pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Temporary,bPjackCalc);
+      pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Temporary,bPjackCalc);
    }
 
    pgsTypes::TTSUsage ttsUsage = pParent->m_pSegment->Strands.GetTemporaryStrandUsage();
@@ -529,6 +529,20 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
       pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,   pPool->GetStrand( m_StrandKey ));
 
       pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary, pPool->GetStrand( m_TempStrandKey ));
+
+      if ( m_CurrStrandDefinitionType == CStrandData::sdtTotal )
+      {
+         // Update Pjack for individual strand types
+         StrandIndexType nPermStrands = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Permanent);
+         if ( 0 < nPermStrands )
+         {
+            StrandIndexType nStraightStrands = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Straight);
+            StrandIndexType nHarpedStrands = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Harped);
+            Float64 Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Permanent);
+            pParent->m_pSegment->Strands.SetPjack(pgsTypes::Straight,Pjack*nStraightStrands/nPermStrands);
+            pParent->m_pSegment->Strands.SetPjack(pgsTypes::Harped,Pjack*nHarpedStrands/nPermStrands);
+         }
+      }
    }
 }
 

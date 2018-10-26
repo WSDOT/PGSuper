@@ -1660,10 +1660,8 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
                doText2.CoCreateInstance(CLSID_TextBlock);
 
                Float64 x1,y1, x2,y2;
-               pntEnd1->get_X(&x1);
-               pntEnd1->get_Y(&y1);
-               pntEnd2->get_X(&x2);
-               pntEnd2->get_Y(&y2);
+               pntEnd1->Location(&x1,&y1);
+               pntEnd2->Location(&x2,&y2);
 
                Float64 x = x1 + (x2-x1)/2;
                Float64 y = y1 + (y2-y1)/2;

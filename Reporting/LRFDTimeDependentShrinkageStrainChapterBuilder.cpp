@@ -70,7 +70,11 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
    *pChapter << pPara;
 
    bool bSI = IS_SI_UNITS(pDisplayUnits);
-   if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   if ( lrfdVersionMgr::SeventhEditionWith2015Interims <= lrfdVersionMgr::GetVersion() )
+   {
+      *pPara << rptRcImage(strImagePath + _T("LRFD_Shrinkage_2015.png")) << rptNewLine;
+   }
+   else if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() && lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2015Interims )
    {
       *pPara << rptRcImage(strImagePath + (bSI ? _T("LRFD_Shrinkage_2005_SI.png") : _T("LRFD_Shrinkage_2005_US.png"))) << rptNewLine;
    }

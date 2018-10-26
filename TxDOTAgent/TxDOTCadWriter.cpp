@@ -131,10 +131,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    GET_IFACE2(pBroker, IIntervals, pIntervals);
 
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType lastIntervalIdx          = pIntervals->GetIntervalCount()-1;
 
    // Use workerbee class to do actual writing of data
    bool is_test_output = (format== tcxTest) ? true : false;
@@ -215,9 +212,15 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    _tcsncpy_s(cnxt, count, str.c_str(), cnt);
 
 	/* 4. STRAND PATTERN */
-	TCHAR  strandPat[5+1]; 
+   StrandIndexType harpedCount   = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
+   StrandIndexType straightCount = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
+
+   TCHAR  strandPat[5+1]; 
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
-   if (pStrands->GetStrandDefinitionType() != CStrandData::sdtTotal)
+   bool do_write_ns_data = isHarpedDesign && 
+                           (pStrands->GetStrandDefinitionType() != CStrandData::sdtTotal) && 
+                           (0 < harpedCount + straightCount);
+   if (do_write_ns_data)
    {
 	   _tcscpy_s(strandPat, sizeof(strandPat)/sizeof(TCHAR), _T("*"));
    }
@@ -227,8 +230,6 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    }
 
 	/* 5. STRAND COUNT */
-   StrandIndexType harpedCount   = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
-   StrandIndexType straightCount = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
 
 	StrandIndexType strandNum = harpedCount + straightCount;
 
@@ -263,7 +264,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 	Float64 concreteRelStrength = ::ConvertFromSysUnits( value, unitMeasure::KSI );
 
 	/* 13. MINIMUM 28 DAY COMP. STRENGTH */
-	value = pMaterial->GetSegmentDesignFc(segmentKey,liveLoadIntervalIdx);
+	value = pMaterial->GetSegmentDesignFc(segmentKey,lastIntervalIdx);
 
 	Float64 min28dayCompStrength = ::ConvertFromSysUnits( value, unitMeasure::KSI );
 
@@ -271,16 +272,14 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    const pgsFlexuralStressArtifact* pArtifact;
    Float64 fcTop = 0.0, fcBot = 0.0, ftTop = 0.0, ftBot = 0.0;
 
-   pArtifact = pGdrArtifact->GetFlexuralStressArtifactAtPoi( liveLoadIntervalIdx, pgsTypes::ServiceI,pgsTypes::Compression,pmid[0].GetID() );
+   pArtifact = pGdrArtifact->GetFlexuralStressArtifactAtPoi( lastIntervalIdx, pgsTypes::ServiceI,pgsTypes::Compression,pmid[0].GetID() );
    fcTop = pArtifact->GetExternalEffects(pgsTypes::TopGirder);
-   fcBot = pArtifact->GetExternalEffects(pgsTypes::BottomGirder);
 	value = -fcTop;
 
 	Float64 designLoadCompStress = ::ConvertFromSysUnits( value, unitMeasure::KSI );
 
 	/* 15. DESIGN LOAD TENSILE STRESS (BOT CL) */
-   pArtifact = pGdrArtifact->GetFlexuralStressArtifactAtPoi( liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,pmid[0].GetID() );
-   ftTop = pArtifact->GetExternalEffects(pgsTypes::TopGirder);
+   pArtifact = pGdrArtifact->GetFlexuralStressArtifactAtPoi( lastIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,pmid[0].GetID() );
    ftBot = pArtifact->GetExternalEffects(pgsTypes::BottomGirder);
 	value = -ftBot;
 
@@ -288,7 +287,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 
    /* 16. REQUIRED MINIMUM ULTIMATE MOMENT CAPACITY */
    MINMOMENTCAPDETAILS mmcd;
-   pMomentCapacity->GetMinMomentCapacityDetails(liveLoadIntervalIdx,pmid[0],true,&mmcd);
+   pMomentCapacity->GetMinMomentCapacityDetails(lastIntervalIdx,pmid[0],true,&mmcd);
    value = Max(mmcd.Mu,mmcd.MrMin);
 
 	int reqMinUltimateMomentCapacity = (int)Round(::ConvertFromSysUnits( value, unitMeasure::KipFeet ));
@@ -301,8 +300,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 
    /* 17a - Non-Standard Design Data */
    std::_tstring ns_strand_str;
-   bool do_write_ns_data = isHarpedDesign && pStrands->GetStrandDefinitionType() != CStrandData::sdtTotal && !isExtendedVersion;
-   if (do_write_ns_data)
+   if (do_write_ns_data && !isExtendedVersion)
    {
       ns_strand_str = MakeNonStandardStrandString(pBroker,pmid[0]);
    }
@@ -344,14 +342,37 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 	   StrandIndexType dstrandNum = harpedCount;
 
 	   /* 11. DEPRESSED (HARPED) STRAND */
-      pStrandGeometry->GetHighestHarpedStrandLocation(segmentKey, &value);
+      Float64 dstrandTo;
 
-      // value is measured down from top of girder... we want it measured up from the bottom
-      GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-      Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, pois);
-      value += Hg;
+      // Determine if harped strands are straight by comparing harped eccentricity at end/mid
+      bool are_harped_straight(true);
+      if (0 < harpedCount)
+      {
+         Float64 nEff;
+         Float64 hs_ecc_end = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pois,pgsTypes::Harped,&nEff);
+         Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pmid[0],pgsTypes::Harped,&nEff);
+         are_harped_straight = IsEqual(hs_ecc_end, hs_ecc_mid);
+      }
 
-      Float64 dstrandTo = ::ConvertFromSysUnits( value, unitMeasure::Inch );
+      if(are_harped_straight)
+      {
+         // Report harped strands as straight
+         dstrandNum = 0;
+         dstrandTo = 0.0;
+      }
+      else
+      {
+         dstrandNum = harpedCount;
+
+         pStrandGeometry->GetHighestHarpedStrandLocation(segmentKey, &value);
+
+         // value is measured down from top of girder... we want it measured up from the bottom
+         GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+         Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, pois);
+         value += Hg;
+
+         dstrandTo = ::ConvertFromSysUnits( value, unitMeasure::Inch );
+      }
 
       // output
 	   //----- COL 10 ---- 
@@ -393,7 +414,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 	//----- COL 17aa ---- 
    workerB.WriteFloat64(shearDistFactor,_T("LLDFs"),5,_T("%5.3f"),true);
 
-   if (do_write_ns_data)
+   if (do_write_ns_data && !isExtendedVersion)
    {
       StrandIndexType cnt = Max(ns_strand_str.size(), (size_t)7);
       workerB.WriteString(ns_strand_str.c_str(),_T("NS Data"),(Int16)cnt,_T("%s"),true);
@@ -415,20 +436,21 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
       Float64 initialCamber = ::ConvertFromSysUnits( value, unitMeasure::Feet );
 
    	/* 19. DEFLECTION (SLAB AND DIAPHRAGMS)  */
-      value = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab,      pmid[0], bat, rtIncremental, false )
-            + pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftDiaphragm, pmid[0], bat, rtIncremental, false )
-            + pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftShearKey,  pmid[0], bat, rtIncremental, false );
+      value = pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftSlab,      pmid[0], bat, rtCumulative, false )
+            + pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftSlabPad,   pmid[0], bat, rtCumulative, false )
+            + pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftDiaphragm, pmid[0], bat, rtCumulative, false )
+            + pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftShearKey,  pmid[0], bat, rtCumulative, false );
 
       Float64 slabDiaphDeflection = ::ConvertFromSysUnits( value, unitMeasure::Feet );
 
    	/* 20. DEFLECTION (OVERLAY)  */
-      value = pProductForces->GetDeflection(overlayIntervalIdx, pgsTypes::pftOverlay, pmid[0], bat, rtIncremental, false );
+      value = pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftOverlay, pmid[0], bat, rtCumulative, false );
 
       Float64 overlayDeflection = ::ConvertFromSysUnits( value, unitMeasure::Feet );
 
    	/* 21. DEFLECTION (OTHER)  */
-      value =  pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, pmid[0], bat, rtIncremental, false );
-      value += pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftSidewalk,       pmid[0], bat, rtIncremental, false );
+      value =  pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftTrafficBarrier, pmid[0], bat, rtCumulative, false );
+      value += pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftSidewalk,       pmid[0], bat, rtCumulative, false );
 
       Float64 otherDeflection = ::ConvertFromSysUnits( value, unitMeasure::Feet );
 
@@ -442,7 +464,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
       Float64 initialLoss = ::ConvertFromSysUnits( value, unitMeasure::Kip );
 
    	/* 24. LOSSES (FINAL)  */
-      value = pLosses->GetEffectivePrestressLoss(pmid[0],pgsTypes::Permanent,railingSystemIntervalIdx,pgsTypes::End) * aps;
+      value = pLosses->GetEffectivePrestressLoss(pmid[0],pgsTypes::Permanent,lastIntervalIdx,pgsTypes::End) * aps;
 
       Float64 finalLoss = ::ConvertFromSysUnits( value, unitMeasure::Kip );
 
@@ -707,9 +729,18 @@ void TxDOTCadWriter::WriteInitialData(CadWriterWorkerBee& workerB)
       RowIndexType nrs = m_pStrandGeometry->GetNumRowsWithStrand(poi,pgsTypes::Straight);
       ATLASSERT((RowIndexType)m_Rows.size() == nrs); // could have more rows than rows with debonded strands
 
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+   
+      GET_IFACE2(pBroker, IIntervals, pIntervals);
+      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
+
+      GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+      Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, poi);
+
       // Where the rubber hits the road - Write first row
       const RowData& row = *(m_Rows.begin());
-      WriteRowData(workerB, row);
+      WriteRowData(workerB, row, Hg);
    }
 }
 
@@ -718,6 +749,17 @@ void TxDOTCadWriter::WriteFinalData(FILE *fp, bool isExtended)
    // fist write out remaining rows 
    if(!m_Rows.empty())
    {
+      pgsPointOfInterest poi(m_SegmentKey, m_GirderLength/2.0);
+
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+   
+      GET_IFACE2(pBroker, IIntervals, pIntervals);
+      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
+
+      GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+      Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, poi);
+
       Int16 nLeadingSpaces = isExtended ? 69 : 53; // more leading spaces for extended output
       Int16 nrow = 1;
       RowListIter riter = m_Rows.begin();
@@ -733,7 +775,7 @@ void TxDOTCadWriter::WriteFinalData(FILE *fp, bool isExtended)
             // leading blank spaces
             workerB.WriteBlankSpaces(nLeadingSpaces);
 
-            WriteRowData(workerB, row);
+            WriteRowData(workerB, row, Hg);
 
 	         // ------ END OF RECORD ----- 
             workerB.WriteToFile(fp);
@@ -764,11 +806,11 @@ void TxDOTCadWriter::WriteFinalData(FILE *fp, bool isExtended)
    }
 }
 
-void TxDOTCadWriter::WriteRowData(CadWriterWorkerBee& workerB, const RowData& row) const
+void TxDOTCadWriter::WriteRowData(CadWriterWorkerBee& workerB, const RowData& row, Float64 Hg) const
 {
 	//----- COL 11 ----- 
    // elevation of row
-   Float64 row_elev = ::ConvertFromSysUnits( row.m_Elevation, unitMeasure::Inch );
+   Float64 row_elev = ::ConvertFromSysUnits( Hg + row.m_Elevation, unitMeasure::Inch );
 
    workerB.WriteFloat64(row_elev,_T("Elev "),5,_T("%5.2f"),true);
 

@@ -8,7 +8,8 @@ The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Debond arrangement checks failed.
-Confinement zone checks failed.
+Splitting zone check failed.
+Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed
 
@@ -23,7 +24,8 @@ The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Debond arrangement checks failed.
-Confinement zone checks failed.
+Splitting zone check failed.
+Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed
 
@@ -38,7 +40,8 @@ The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Debond arrangement checks failed.
-Confinement zone checks failed.
+Splitting zone check failed.
+Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed
 

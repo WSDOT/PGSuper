@@ -27,13 +27,11 @@
 #include <EAF\EAFHints.h>
 
 // Hint Dialog states
-#define UIHINT_ENABLE_ALL                 0x0000
-#define UIHINT_DISABLE_ALL                0xFFFF
-#define UIHINT_SAME_NUMBER_OF_GIRDERS     0x0001
-#define UIHINT_SAME_GIRDER_SPACING        0x0002
-#define UIHINT_SAME_GIRDER_NAME           0x0004
-#define UIHINT_SINGLE_SLAB_OFFSET         0x0008
-#define UIHINT_FAVORITES_MENU             0x0010
+#define UIHINT_SAME_NUMBER_OF_GIRDERS     0x0002
+#define UIHINT_SAME_GIRDER_SPACING        0x0004
+#define UIHINT_SAME_GIRDER_NAME           0x0008
+#define UIHINT_SINGLE_SLAB_OFFSET         0x0010
+#define UIHINT_FAVORITES_MENU             0x0020
 
 // This file contains all the hints sets to the views
 // in the OnUpdate method.

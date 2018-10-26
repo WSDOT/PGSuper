@@ -254,11 +254,6 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
-				Optimization="3"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="1"
-				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="\ARP\PGSuper\Include;&quot;\ARP\PGSuper\Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;BUILDPSGLIBLIB;_ATL_NO_UUIDOF;_GXDLL"
 				RuntimeLibrary="2"
@@ -358,11 +353,6 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
-				Optimization="3"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="1"
-				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="\ARP\PGSuper\Include;&quot;\ARP\PGSuper\Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;BUILDPSGLIBLIB;_ATL_NO_UUIDOF;_GXDLL"
 				RuntimeLibrary="2"
@@ -4425,15 +4415,11 @@
 				>
 			</File>
 			<File
-				RelativePath="res\ico00002.ico"
-				>
-			</File>
-			<File
 				RelativePath="ico00002.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\ico00003.ico"
+				RelativePath="res\ico00002.ico"
 				>
 			</File>
 			<File
@@ -4441,11 +4427,15 @@
 				>
 			</File>
 			<File
-				RelativePath="ico00004.ico"
+				RelativePath="res\ico00003.ico"
 				>
 			</File>
 			<File
 				RelativePath="res\ico00004.ico"
+				>
+			</File>
+			<File
+				RelativePath="ico00004.ico"
 				>
 			</File>
 			<File
@@ -4457,11 +4447,11 @@
 				>
 			</File>
 			<File
-				RelativePath="res\icon1.ico"
+				RelativePath="icon1.ico"
 				>
 			</File>
 			<File
-				RelativePath="icon1.ico"
+				RelativePath="res\icon1.ico"
 				>
 			</File>
 			<File

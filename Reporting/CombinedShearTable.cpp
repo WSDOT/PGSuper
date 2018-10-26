@@ -159,7 +159,7 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
    GET_IFACE2_NOCHECK(pBroker,ILimitStateForces2,pLsForces2); // only used if liveLoadIntervalIdx <= intervalIdx
 
    GET_IFACE2(pBroker,IProductForces,pProdForces);
-   pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
 
    // Fill up the table

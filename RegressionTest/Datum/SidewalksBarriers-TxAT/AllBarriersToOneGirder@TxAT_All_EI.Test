@@ -6,7 +6,7 @@
 The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate vertical shear capacity check failed for Strength I Limit State
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul

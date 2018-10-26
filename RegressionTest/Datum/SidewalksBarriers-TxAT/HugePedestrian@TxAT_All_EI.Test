@@ -11,14 +11,14 @@ Compressive stress check failed for Service I for the Final without Live Load St
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State
+Ultimate vertical shear capacity check failed for Strength II Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
@@ -37,14 +37,14 @@ Compressive stress check failed for Service I for the Final without Live Load St
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State
+Ultimate vertical shear capacity check failed for Strength II Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
@@ -63,14 +63,14 @@ Compressive stress check failed for Service I for the Final without Live Load St
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State
+Ultimate vertical shear capacity check failed for Strength II Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
@@ -89,14 +89,14 @@ Compressive stress check failed for Service I for the Final without Live Load St
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State
+Ultimate vertical shear capacity check failed for Strength II Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
@@ -115,14 +115,14 @@ Compressive stress check failed for Service I for the Final without Live Load St
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State
+Ultimate vertical shear capacity check failed for Strength II Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
@@ -141,14 +141,14 @@ Compressive stress check failed for Service I for the Final without Live Load St
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State
+Ultimate vertical shear capacity check failed for Strength II Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
@@ -167,14 +167,14 @@ Compressive stress check failed for Service I for the Final without Live Load St
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State
+Ultimate vertical shear capacity check failed for Strength II Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
@@ -193,14 +193,14 @@ Compressive stress check failed for Service I for the Final without Live Load St
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State
+Ultimate vertical shear capacity check failed for Strength II Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
@@ -219,14 +219,14 @@ Compressive stress check failed for Service I for the Final without Live Load St
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State
+Ultimate vertical shear capacity check failed for Strength II Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
@@ -245,14 +245,14 @@ Compressive stress check failed for Service I for the Final without Live Load St
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State
+Ultimate vertical shear capacity check failed for Strength II Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
@@ -271,14 +271,14 @@ Compressive stress check failed for Service I for the Final without Live Load St
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State
+Ultimate vertical shear capacity check failed for Strength II Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
@@ -297,14 +297,14 @@ Compressive stress check failed for Service I for the Final without Live Load St
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State
+Ultimate vertical shear capacity check failed for Strength II Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.

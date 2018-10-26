@@ -223,6 +223,11 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
          fpe_ps = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
       }
 
+      if ( fpe_ps < 0 )
+      {
+         fpe_ps = 0;
+      }
+
       eps_initial = fpe_ps/Eps;
    }
 
@@ -241,6 +246,10 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
       if ( bIsOnGirder )
       {
          fpe = pPTForce->GetTendonStress(poi,intervalIdx,pgsTypes::End,ductIdx);
+         if ( fpe < 0 )
+         {
+            fpe = 0;
+         }
          e = fpe/Ept;
       }
       fpe_pt.push_back(fpe);
@@ -298,7 +307,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
 
    // create a problem to solve
    CComPtr<IGeneralSection> section;
-   CComPtr<IPoint2d> pntCompression; // location of the extreme compression faoce
+   CComPtr<IPoint2d> pntCompression; // location of the extreme compression face
    CComPtr<ISize2d> szOffset; // distance to offset coordinates from bridge model to capacity model
    std::map<StrandIndexType,Float64> bond_factors[2];
    Float64 dt; // depth from top of section to extreme layer of tensile reinforcement
@@ -879,19 +888,19 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
             pmcd->et = (pmcd->dt - pmcd->c)*0.003/(pmcd->c);
             if ( bIsSplicedGirder )
             {
-               pmcd->Phi = PhiC + 0.20*(pmcd->et - ecl)/(etl-ecl);
+               pmcd->Phi = PhiC + (PhiSP - PhiC)*(pmcd->et - ecl)/(etl-ecl);
             }
             else
             {
                if ( bPositiveMoment && (0 < Ns+Nh+Npt) )
                {
                   // Prestressed case
-                  pmcd->Phi = PhiC + 0.25*(pmcd->et - ecl)/(etl-ecl);
+                  pmcd->Phi = PhiC + (PhiPS - PhiC)*(pmcd->et - ecl)/(etl-ecl);
                }
                else
                {
                   // Plain reinforced case
-                  pmcd->Phi = PhiC + 0.15*(pmcd->et - ecl)/(etl-ecl);
+                  pmcd->Phi = PhiC + (PhiRC - PhiC)*(pmcd->et - ecl)/(etl-ecl);
                }
             }
          }
@@ -1463,7 +1472,7 @@ void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& 
 
    CComPtr<ICrackedSectionSolution> solution;
    m_CrackedSectionSolver->putref_Section(beam_section);
-   m_CrackedSectionSolver->put_Slices(20);
+   m_CrackedSectionSolver->put_Slices(1);
    m_CrackedSectionSolver->put_SliceGrowthFactor(2);
    m_CrackedSectionSolver->put_CGTolerance(0.001);
    HRESULT hr = m_CrackedSectionSolver->Solve(na_angle,&solution);
@@ -1475,43 +1484,8 @@ void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& 
    ///////////////////////////////////////////
    // Compute I-crack
    ///////////////////////////////////////////
-
-   // use the WBFL Sections library
-   CComPtr<ICompositeSection> composite_section;
-   composite_section.CoCreateInstance(CLSID_CompositeSection);
-
-   // add each slice into a composite section object
-   CollectionIndexType nSlices;
-   solution->get_SliceCount(&nSlices);
-   for ( CollectionIndexType sliceIdx = 0; sliceIdx < nSlices; sliceIdx++ )
-   {
-      CComPtr<ICrackedSectionSlice> slice;
-      solution->get_Slice(sliceIdx,&slice);
-
-      CComPtr<IShape> shape;
-      slice->get_Shape(&shape);
-
-      Float64 Efg, Ebg;
-      slice->get_Efg(&Efg);
-      slice->get_Ebg(&Ebg);
-
-      if ( !IsZero(Efg) )
-      {
-         // only add slices that aren't cracked
-         composite_section->AddSection(shape,Efg,1,VARIANT_FALSE,VARIANT_TRUE);
-
-         if ( !IsZero(Ebg) )
-         {
-            // add the void
-            composite_section->AddSection(shape,Ebg,1,VARIANT_TRUE,VARIANT_TRUE);
-         }
-      }
-   }
-
-   // get the elastic properties
-   CComQIPtr<ISection> section(composite_section);
    CComPtr<IElasticProperties> elastic_properties;
-   section->get_ElasticProperties(&elastic_properties);
+   solution->get_ElasticProperties(&elastic_properties);
 
    // transform properties into girder matieral
    GET_IFACE(IMaterials,pMaterials);
@@ -1624,20 +1598,17 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    Float64 dt = 0; // depth from compression face to extreme layer of tensile reinforcement
 
    StrandIndexType Ns(0), Nh(0);
-   //if ( bIsOnSegment )
-   //{
-      if ( pConfig )
-      {
-         Ns = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Straight);
-         Nh = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Harped);
-      }
-      else
-      {
-         GET_IFACE(IStrandGeometry, pStrandGeom);
-         Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
-         Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
-      }
-   //}
+   if ( pConfig )
+   {
+      Ns = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Straight);
+      Nh = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Harped);
+   }
+   else
+   {
+      GET_IFACE(IStrandGeometry, pStrandGeom);
+      Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
+      Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
+   }
 
    //
    // Create Materials
@@ -2026,15 +1997,17 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       }
    }
 
+   // add the deck to the model
+   GET_IFACE(ISectionProperties, pSectProp);
+   Float64 Weff = pSectProp->GetEffectiveFlangeWidth(poi);
+   Float64 Dslab = pBridge->GetStructuralSlabDepth(poi);
+
    if ( (pBridge->GetDeckType() != pgsTypes::sdtNone && // if there is a deck
          pBridge->IsCompositeDeck() && // the deck is composite
-         compositeDeckIntervalIdx <= intervalIdx) // interval at or after deck is composite
+         compositeDeckIntervalIdx <= intervalIdx && // interval at or after deck is composite
+         0 < Weff*Dslab) // the geometry of the bridge is good and the deck actually has area over this girder
       )
    {
-      // add the deck to the model
-      GET_IFACE(ISectionProperties, pSectProp);
-      Float64 Weff = pSectProp->GetEffectiveFlangeWidth(poi);
-      Float64 Dslab = pBridge->GetStructuralSlabDepth(poi);
 
       // so far, dt is measured from top of girder (if positive moment)
       // since we have a deck, add Dslab so that dt is measured from top of slab

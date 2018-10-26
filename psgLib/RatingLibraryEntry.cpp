@@ -74,151 +74,241 @@ bool CLiveLoadFactorModel::operator!=(const CLiveLoadFactorModel& other) const
 bool CLiveLoadFactorModel::operator==(const CLiveLoadFactorModel& other) const
 {
    if ( !IsEqual(m_Wlower,other.m_Wlower) )
+   {
       return false;
+   }
 
    if ( !IsEqual(m_Wupper,other.m_Wupper) )
+   {
       return false;
+   }
 
    if ( m_LiveLoadFactorType != other.m_LiveLoadFactorType )
+   {
       return false;
+   }
 
    if ( m_LiveLoadFactorModifier != other.m_LiveLoadFactorModifier )
+   {
       return false;
+   }
 
    if ( m_bAllowUserOverride != other.m_bAllowUserOverride )
+   {
       return false;
+   }
 
    if ( m_LiveLoadFactorType == pgsTypes::gllSingleValue )
    {
       if ( m_ADTT[0] != other.m_ADTT[0] )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[0],other.m_gLL_Lower[0]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Service[0],other.m_gLL_Service[0]) )
+      {
          return false;
+      }
    }
    else if ( m_LiveLoadFactorType == pgsTypes::gllStepped || m_LiveLoadFactorType == pgsTypes::gllLinear )
    {
       if ( m_ADTT[0] != other.m_ADTT[0] )
+      {
          return false;
+      }
 
       if ( m_ADTT[1] != other.m_ADTT[1] )
+      {
          return false;
+      }
 
       if ( m_ADTT[3] != other.m_ADTT[3] )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[0],other.m_gLL_Lower[0]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[1],other.m_gLL_Lower[1]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[3],other.m_gLL_Lower[3]) )
+      {
          return false;
+      }
 
 
       if ( !IsEqual(m_gLL_Service[0],other.m_gLL_Service[0]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Service[1],other.m_gLL_Service[1]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Service[3],other.m_gLL_Service[3]) )
+      {
          return false;
+      }
    }
    else if ( m_LiveLoadFactorType == pgsTypes::gllBilinear )
    {
       if ( m_ADTT[0] != other.m_ADTT[0] )
+      {
          return false;
+      }
 
       if ( m_ADTT[1] != other.m_ADTT[1] )
+      {
          return false;
+      }
 
       if ( m_ADTT[2] != other.m_ADTT[2] )
+      {
          return false;
+      }
 
       if ( m_ADTT[3] != other.m_ADTT[3] )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[0],other.m_gLL_Lower[0]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[1],other.m_gLL_Lower[1]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[2],other.m_gLL_Lower[2]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[3],other.m_gLL_Lower[3]) )
+      {
          return false;
+      }
 
 
       if ( !IsEqual(m_gLL_Service[0],other.m_gLL_Service[0]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Service[1],other.m_gLL_Service[1]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Service[2],other.m_gLL_Service[2]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Service[3],other.m_gLL_Service[3]) )
+      {
          return false;
+      }
    }
    else if ( m_LiveLoadFactorType == pgsTypes::gllBilinearWithWeight )
    {
       if ( m_ADTT[0] != other.m_ADTT[0] )
+      {
          return false;
+      }
 
       if ( m_ADTT[1] != other.m_ADTT[1] )
+      {
          return false;
+      }
 
       if ( m_ADTT[2] != other.m_ADTT[2] )
+      {
          return false;
+      }
 
       if ( m_ADTT[3] != other.m_ADTT[3] )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[0],other.m_gLL_Lower[0]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[1],other.m_gLL_Lower[1]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[2],other.m_gLL_Lower[2]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[3],other.m_gLL_Lower[3]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Upper[0],other.m_gLL_Upper[0]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Upper[1],other.m_gLL_Upper[1]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Upper[2],other.m_gLL_Upper[2]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Upper[3],other.m_gLL_Upper[3]) )
+      {
          return false;
+      }
 
 
 
       if ( !IsEqual(m_gLL_Service[0],other.m_gLL_Service[0]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Service[1],other.m_gLL_Service[1]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Service[2],other.m_gLL_Service[2]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Service[3],other.m_gLL_Service[3]) )
+      {
          return false;
+      }
    }
 
    return true;
@@ -333,7 +423,9 @@ void CLiveLoadFactorModel::GetServiceLiveLoadFactor(Float64* gll1,Float64* gll2,
 Float64 CLiveLoadFactorModel::GetStrengthLiveLoadFactor(Int16 adtt,Float64 W) const
 {
    if ( m_LiveLoadFactorType == pgsTypes::gllSingleValue )
+   {
       return m_gLL_Lower[0];
+   }
 
    if ( m_LiveLoadFactorType == pgsTypes::gllStepped )
    {
@@ -343,9 +435,13 @@ Float64 CLiveLoadFactorModel::GetStrengthLiveLoadFactor(Int16 adtt,Float64 W) co
       }
 
       if ( adtt < m_ADTT[0] )
+      {
          return m_gLL_Lower[0];
+      }
       else
+      {
          return m_gLL_Lower[1];
+      }
    }
 
    if ( m_LiveLoadFactorType == pgsTypes::gllLinear )
@@ -356,16 +452,24 @@ Float64 CLiveLoadFactorModel::GetStrengthLiveLoadFactor(Int16 adtt,Float64 W) co
       }
 
       if ( adtt <= m_ADTT[0] )
+      {
          return m_gLL_Lower[0];
+      }
 
       if ( m_ADTT[1] <= adtt )
+      {
          return m_gLL_Lower[1];
+      }
 
       // adtt is between values
       if ( m_LiveLoadFactorModifier == pgsTypes::gllmRoundUp )
+      {
          return m_gLL_Lower[1];
+      }
       else
+      {
          return ::LinInterp(adtt-m_ADTT[0],m_gLL_Lower[0],m_gLL_Lower[1],m_ADTT[1] - m_ADTT[0]);
+      }
    }
 
    if ( m_LiveLoadFactorType == pgsTypes::gllBilinear )
@@ -376,27 +480,39 @@ Float64 CLiveLoadFactorModel::GetStrengthLiveLoadFactor(Int16 adtt,Float64 W) co
       }
 
       if ( adtt <= m_ADTT[0] )
+      {
          return m_gLL_Lower[0];
+      }
 
       if ( m_ADTT[2] <= adtt )
+      {
          return m_gLL_Lower[2];
+      }
 
       if ( adtt <= m_ADTT[1] )
       {
          // between ADTT[0] and ADTT[1]
          if ( m_LiveLoadFactorModifier == pgsTypes::gllmRoundUp )
+         {
             return m_gLL_Lower[1];
+         }
          else
+         {
             return ::LinInterp(adtt-m_ADTT[0],m_gLL_Lower[0],m_gLL_Lower[1],m_ADTT[1] - m_ADTT[0]);
+         }
       }
 
       if ( adtt < m_ADTT[2] )
       {
          // between ADTT[1] and ADTT[2]
          if ( m_LiveLoadFactorModifier == pgsTypes::gllmRoundUp )
+         {
             return m_gLL_Lower[2];
+         }
          else
+         {
             return ::LinInterp(adtt-m_ADTT[1],m_gLL_Lower[1],m_gLL_Lower[2],m_ADTT[2] - m_ADTT[1]);
+         }
       }
    }
 
@@ -412,11 +528,17 @@ Float64 CLiveLoadFactorModel::GetStrengthLiveLoadFactor(Int16 adtt,Float64 W) co
          else
          {
             if ( W < m_Wlower )
+            {
                return m_gLL_Lower[3];
+            }
             else if ( m_Wupper <= W )
+            {
                return m_gLL_Upper[3];
+            }
             else
+            {
                return ::LinInterp(W-m_Wlower,m_gLL_Lower[4],m_gLL_Upper[4],m_Wupper-m_Wlower);
+            }
          }
       }
 
@@ -429,11 +551,17 @@ Float64 CLiveLoadFactorModel::GetStrengthLiveLoadFactor(Int16 adtt,Float64 W) co
          else
          {
             if ( W < m_Wlower )
+            {
                return m_gLL_Lower[0];
+            }
             else if ( m_Wupper <= W )
+            {
                return m_gLL_Upper[0];
+            }
             else
+            {
                return ::LinInterp(W-m_Wlower,m_gLL_Lower[0],m_gLL_Upper[0],m_Wupper-m_Wlower);
+            }
          }
       }
 
@@ -446,11 +574,17 @@ Float64 CLiveLoadFactorModel::GetStrengthLiveLoadFactor(Int16 adtt,Float64 W) co
          else
          {
             if ( W < m_Wlower )
+            {
                return m_gLL_Lower[2];
+            }
             else if ( m_Wupper <= W )
+            {
                return m_gLL_Upper[2];
+            }
             else
+            {
                return ::LinInterp(W-m_Wlower,m_gLL_Lower[2],m_gLL_Upper[2],m_Wupper-m_Wlower);
+            }
          }
       }
 
@@ -469,11 +603,17 @@ Float64 CLiveLoadFactorModel::GetStrengthLiveLoadFactor(Int16 adtt,Float64 W) co
 
             // interpolate on weight
             if ( W < m_Wlower )
+            {
                return g_Lower;
+            }
             else if ( m_Wupper <= W )
+            {
                return g_Upper;
+            }
             else
+            {
                return ::LinInterp(W-m_Wlower,g_Lower,g_Upper,m_Wupper-m_Wlower);
+            }
          }
       }
 
@@ -492,11 +632,17 @@ Float64 CLiveLoadFactorModel::GetStrengthLiveLoadFactor(Int16 adtt,Float64 W) co
 
             // interpolate on weight
             if ( W < m_Wlower )
+            {
                return g_Lower;
+            }
             else if ( m_Wupper <= W )
+            {
                return g_Upper;
+            }
             else
+            {
                return ::LinInterp(W-m_Wlower,g_Lower,g_Upper,m_Wupper-m_Wlower);
+            }
          }
       }
    }
@@ -520,9 +666,13 @@ Float64 CLiveLoadFactorModel::GetServiceLiveLoadFactor(Int16 adtt) const
       }
 
       if ( adtt < m_ADTT[0] )
+      {
          return m_gLL_Service[0];
+      }
       else
+      {
          return m_gLL_Service[1];
+      }
    }
 
    if ( m_LiveLoadFactorType == pgsTypes::gllLinear )
@@ -533,16 +683,24 @@ Float64 CLiveLoadFactorModel::GetServiceLiveLoadFactor(Int16 adtt) const
       }
 
       if ( adtt <= m_ADTT[0] )
+      {
          return m_gLL_Service[0];
+      }
 
       if ( m_ADTT[1] <= adtt )
+      {
          return m_gLL_Service[1];
+      }
 
       // adtt is between values
       if ( m_LiveLoadFactorModifier == pgsTypes::gllmRoundUp )
+      {
          return m_gLL_Service[1];
+      }
       else
+      {
          return ::LinInterp(adtt-m_ADTT[0],m_gLL_Service[0],m_gLL_Service[1],m_ADTT[1] - m_ADTT[0]);
+      }
    }
 
    if ( m_LiveLoadFactorType == pgsTypes::gllBilinear || m_LiveLoadFactorType == pgsTypes::gllBilinearWithWeight)
@@ -554,27 +712,39 @@ Float64 CLiveLoadFactorModel::GetServiceLiveLoadFactor(Int16 adtt) const
       }
 
       if ( adtt <= m_ADTT[0] )
+      {
          return m_gLL_Service[0];
+      }
 
       if ( m_ADTT[2] <= adtt )
+      {
          return m_gLL_Service[2];
+      }
 
       if ( adtt <= m_ADTT[1] )
       {
          // between ADTT[0] and ADTT[1]
          if ( m_LiveLoadFactorModifier == pgsTypes::gllmRoundUp )
+         {
             return m_gLL_Service[1];
+         }
          else
+         {
             return ::LinInterp(adtt-m_ADTT[0],m_gLL_Service[0],m_gLL_Service[1],m_ADTT[1] - m_ADTT[0]);
+         }
       }
 
       if ( adtt < m_ADTT[2] )
       {
          // between ADTT[1] and ADTT[2]
          if ( m_LiveLoadFactorModifier == pgsTypes::gllmRoundUp )
+         {
             return m_gLL_Service[2];
+         }
          else
+         {
             return ::LinInterp(adtt-m_ADTT[1],m_gLL_Service[1],m_gLL_Service[2],m_ADTT[2] - m_ADTT[1]);
+         }
       }
    }
 
@@ -662,147 +832,231 @@ bool CLiveLoadFactorModel::SaveMe(sysIStructuredSave* pSave)
 bool CLiveLoadFactorModel::LoadMe(sysIStructuredLoad* pLoad)
 {
    if ( !pLoad->BeginUnit(_T("LoadFactors")) )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    int value;
    if ( !pLoad->Property(_T("LiveLoadFactorType"),&value) )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    m_LiveLoadFactorType = (pgsTypes::LiveLoadFactorType)value;
 
    if ( m_LiveLoadFactorType == pgsTypes::gllSingleValue )
    {
       if ( !pLoad->Property(_T("LiveLoadFactor"),&m_gLL_Lower[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor_Service"),&m_gLL_Service[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
    }
    else if ( m_LiveLoadFactorType == pgsTypes::gllStepped || m_LiveLoadFactorType == pgsTypes::gllLinear )
    {
       if ( !pLoad->Property(_T("ADTT1"),&m_ADTT[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor1"),&m_gLL_Lower[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor2"),&m_gLL_Lower[1]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactorUnknownADTT"),&m_gLL_Lower[3]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor1_Service"),&m_gLL_Service[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor2_Service"),&m_gLL_Service[1]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactorUnknownADTT_Service"),&m_gLL_Service[3]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactorModifier"),&value) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
       
       m_LiveLoadFactorModifier = (pgsTypes::LiveLoadFactorModifier)value;
    }
    else if ( m_LiveLoadFactorType == pgsTypes::gllBilinear )
    {
       if ( !pLoad->Property(_T("ADTT1"),&m_ADTT[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor1"),&m_gLL_Lower[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("ADTT2"),&m_ADTT[1]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor2"),&m_gLL_Lower[1]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("ADTT3"),&m_ADTT[2]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor3"),&m_gLL_Lower[2]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactorUnknownADTT"),&m_gLL_Lower[3]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
 
       if ( !pLoad->Property(_T("LiveLoadFactor1_Service"),&m_gLL_Service[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor2_Service"),&m_gLL_Service[1]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor3_Service"),&m_gLL_Service[2]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactorUnknownADTT_Service"),&m_gLL_Service[3]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactorModifier"),&value) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
       
       m_LiveLoadFactorModifier = (pgsTypes::LiveLoadFactorModifier)value;
    }
    else if ( m_LiveLoadFactorType == pgsTypes::gllBilinearWithWeight )
    {
       if ( !pLoad->Property(_T("VehicleWeight1"),&m_Wlower) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("VehicleWeight2"),&m_Wupper) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("ADTT1"),&m_ADTT[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor1_Lower"),&m_gLL_Lower[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor1_Upper"),&m_gLL_Upper[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("ADTT2"),&m_ADTT[1]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor2_Lower"),&m_gLL_Lower[1]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor2_Upper"),&m_gLL_Upper[1]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("ADTT3"),&m_ADTT[2]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor3_Lower"),&m_gLL_Lower[2]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor3_Upper"),&m_gLL_Upper[2]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactorUnknownADTT_Lower"),&m_gLL_Lower[3]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactorUnknownADTT_Upper"),&m_gLL_Upper[3]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
 
       if ( !pLoad->Property(_T("LiveLoadFactor1_Service"),&m_gLL_Service[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor2_Service"),&m_gLL_Service[1]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor3_Service"),&m_gLL_Service[2]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactorUnknownADTT_Service"),&m_gLL_Service[3]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactorModifier"),&value) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
       
       m_LiveLoadFactorModifier = (pgsTypes::LiveLoadFactorModifier)value;
    }
@@ -812,10 +1066,14 @@ bool CLiveLoadFactorModel::LoadMe(sysIStructuredLoad* pLoad)
    }
 
    if ( !pLoad->Property(_T("AllowUserOverride"),&m_bAllowUserOverride) )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    if ( !pLoad->EndUnit() )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    return true;
 }
@@ -867,165 +1125,263 @@ bool CLiveLoadFactorModel2::operator!=(const CLiveLoadFactorModel2& other) const
 bool CLiveLoadFactorModel2::operator==(const CLiveLoadFactorModel2& other) const
 {
    if ( !IsEqual(m_PWRlower,other.m_PWRlower) )
+   {
       return false;
+   }
 
    if ( !IsEqual(m_PWRupper,other.m_PWRupper) )
+   {
       return false;
+   }
 
    if ( m_LiveLoadFactorType != other.m_LiveLoadFactorType )
+   {
       return false;
+   }
 
    if ( m_LiveLoadFactorModifier != other.m_LiveLoadFactorModifier )
+   {
       return false;
+   }
 
    if ( m_bAllowUserOverride != other.m_bAllowUserOverride )
+   {
       return false;
+   }
 
    if ( m_LiveLoadFactorType == pgsTypes::gllSingleValue )
    {
       if ( m_ADTT[0] != other.m_ADTT[0] )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[0],other.m_gLL_Lower[0]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Service[0],other.m_gLL_Service[0]) )
+      {
          return false;
+      }
    }
    else if ( m_LiveLoadFactorType == pgsTypes::gllStepped || m_LiveLoadFactorType == pgsTypes::gllLinear )
    {
       if ( m_ADTT[0] != other.m_ADTT[0] )
+      {
          return false;
+      }
 
       if ( m_ADTT[1] != other.m_ADTT[1] )
+      {
          return false;
+      }
 
       if ( m_ADTT[3] != other.m_ADTT[3] )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[0],other.m_gLL_Lower[0]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[1],other.m_gLL_Lower[1]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[3],other.m_gLL_Lower[3]) )
+      {
          return false;
+      }
 
 
       if ( !IsEqual(m_gLL_Service[0],other.m_gLL_Service[0]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Service[1],other.m_gLL_Service[1]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Service[3],other.m_gLL_Service[3]) )
+      {
          return false;
+      }
    }
    else if ( m_LiveLoadFactorType == pgsTypes::gllBilinear )
    {
       if ( m_ADTT[0] != other.m_ADTT[0] )
+      {
          return false;
+      }
 
       if ( m_ADTT[1] != other.m_ADTT[1] )
+      {
          return false;
+      }
 
       if ( m_ADTT[2] != other.m_ADTT[2] )
+      {
          return false;
+      }
 
       if ( m_ADTT[3] != other.m_ADTT[3] )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[0],other.m_gLL_Lower[0]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[1],other.m_gLL_Lower[1]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[2],other.m_gLL_Lower[2]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[3],other.m_gLL_Lower[3]) )
+      {
          return false;
+      }
 
 
       if ( !IsEqual(m_gLL_Service[0],other.m_gLL_Service[0]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Service[1],other.m_gLL_Service[1]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Service[2],other.m_gLL_Service[2]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Service[3],other.m_gLL_Service[3]) )
+      {
          return false;
+      }
    }
    else if ( m_LiveLoadFactorType == pgsTypes::gllBilinearWithWeight )
    {
       if ( m_ADTT[0] != other.m_ADTT[0] )
+      {
          return false;
+      }
 
       if ( m_ADTT[1] != other.m_ADTT[1] )
+      {
          return false;
+      }
 
       if ( m_ADTT[2] != other.m_ADTT[2] )
+      {
          return false;
+      }
 
       if ( m_ADTT[3] != other.m_ADTT[3] )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[0],other.m_gLL_Lower[0]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[1],other.m_gLL_Lower[1]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[2],other.m_gLL_Lower[2]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Lower[3],other.m_gLL_Lower[3]) )
+      {
          return false;
+      }
 
 
       if ( !IsEqual(m_gLL_Middle[0],other.m_gLL_Middle[0]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Middle[1],other.m_gLL_Middle[1]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Middle[2],other.m_gLL_Middle[2]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Middle[3],other.m_gLL_Middle[3]) )
+      {
          return false;
+      }
 
 
       if ( !IsEqual(m_gLL_Upper[0],other.m_gLL_Upper[0]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Upper[1],other.m_gLL_Upper[1]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Upper[2],other.m_gLL_Upper[2]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Upper[3],other.m_gLL_Upper[3]) )
+      {
          return false;
+      }
 
 
 
       if ( !IsEqual(m_gLL_Service[0],other.m_gLL_Service[0]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Service[1],other.m_gLL_Service[1]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Service[2],other.m_gLL_Service[2]) )
+      {
          return false;
+      }
 
       if ( !IsEqual(m_gLL_Service[3],other.m_gLL_Service[3]) )
+      {
          return false;
+      }
    }
 
    return true;
@@ -1156,7 +1512,9 @@ void CLiveLoadFactorModel2::GetServiceLiveLoadFactor(Float64* gll1,Float64* gll2
 Float64 CLiveLoadFactorModel2::GetStrengthLiveLoadFactor(Int16 adtt,Float64 PWR) const
 {
    if ( m_LiveLoadFactorType == pgsTypes::gllSingleValue )
+   {
       return m_gLL_Lower[0];
+   }
 
    if ( m_LiveLoadFactorType == pgsTypes::gllStepped )
    {
@@ -1166,9 +1524,13 @@ Float64 CLiveLoadFactorModel2::GetStrengthLiveLoadFactor(Int16 adtt,Float64 PWR)
       }
 
       if ( adtt < m_ADTT[0] )
+      {
          return m_gLL_Lower[0];
+      }
       else
+      {
          return m_gLL_Lower[1];
+      }
    }
 
    if ( m_LiveLoadFactorType == pgsTypes::gllLinear )
@@ -1179,16 +1541,24 @@ Float64 CLiveLoadFactorModel2::GetStrengthLiveLoadFactor(Int16 adtt,Float64 PWR)
       }
 
       if ( adtt <= m_ADTT[0] )
+      {
          return m_gLL_Lower[0];
+      }
 
       if ( m_ADTT[1] <= adtt )
+      {
          return m_gLL_Lower[1];
+      }
 
       // adtt is between values
       if ( m_LiveLoadFactorModifier == pgsTypes::gllmRoundUp )
+      {
          return m_gLL_Lower[1];
+      }
       else
+      {
          return ::LinInterp(adtt-m_ADTT[0],m_gLL_Lower[0],m_gLL_Lower[1],m_ADTT[1] - m_ADTT[0]);
+      }
    }
 
    if ( m_LiveLoadFactorType == pgsTypes::gllBilinear )
@@ -1199,27 +1569,39 @@ Float64 CLiveLoadFactorModel2::GetStrengthLiveLoadFactor(Int16 adtt,Float64 PWR)
       }
 
       if ( adtt <= m_ADTT[0] )
+      {
          return m_gLL_Lower[0];
+      }
 
       if ( m_ADTT[2] <= adtt )
+      {
          return m_gLL_Lower[2];
+      }
 
       if ( adtt <= m_ADTT[1] )
       {
          // between ADTT[0] and ADTT[1]
          if ( m_LiveLoadFactorModifier == pgsTypes::gllmRoundUp )
+         {
             return m_gLL_Lower[1];
+         }
          else
+         {
             return ::LinInterp(adtt-m_ADTT[0],m_gLL_Lower[0],m_gLL_Lower[1],m_ADTT[1] - m_ADTT[0]);
+         }
       }
 
       if ( adtt < m_ADTT[2] )
       {
          // between ADTT[1] and ADTT[2]
          if ( m_LiveLoadFactorModifier == pgsTypes::gllmRoundUp )
+         {
             return m_gLL_Lower[2];
+         }
          else
+         {
             return ::LinInterp(adtt-m_ADTT[1],m_gLL_Lower[1],m_gLL_Lower[2],m_ADTT[2] - m_ADTT[1]);
+         }
       }
    }
 
@@ -1235,11 +1617,17 @@ Float64 CLiveLoadFactorModel2::GetStrengthLiveLoadFactor(Int16 adtt,Float64 PWR)
          else
          {
             if ( PWR < m_PWRlower )
+            {
                return m_gLL_Lower[3];
+            }
             else if ( m_PWRupper <= PWR )
+            {
                return m_gLL_Upper[3];
+            }
             else
+            {
                return m_gLL_Middle[3];
+            }
          }
       }
 
@@ -1252,11 +1640,17 @@ Float64 CLiveLoadFactorModel2::GetStrengthLiveLoadFactor(Int16 adtt,Float64 PWR)
          else
          {
             if ( PWR < m_PWRlower )
+            {
                return m_gLL_Lower[0];
+            }
             else if ( m_PWRupper <= PWR )
+            {
                return m_gLL_Upper[0];
+            }
             else
+            {
                return m_gLL_Middle[0];
+            }
          }
       }
 
@@ -1269,11 +1663,17 @@ Float64 CLiveLoadFactorModel2::GetStrengthLiveLoadFactor(Int16 adtt,Float64 PWR)
          else
          {
             if ( PWR < m_PWRlower )
+            {
                return m_gLL_Lower[2];
+            }
             else if ( m_PWRupper <= PWR )
+            {
                return m_gLL_Upper[2];
+            }
             else
+            {
                return m_gLL_Middle[2];
+            }
          }
       }
 
@@ -1293,11 +1693,17 @@ Float64 CLiveLoadFactorModel2::GetStrengthLiveLoadFactor(Int16 adtt,Float64 PWR)
 
             // interpolate on permit weight ratio
             if ( PWR < m_PWRlower )
+            {
                return g_Lower;
+            }
             else if ( m_PWRupper <= PWR )
+            {
                return g_Upper;
+            }
             else
+            {
                return g_Middle;
+            }
          }
       }
 
@@ -1317,11 +1723,17 @@ Float64 CLiveLoadFactorModel2::GetStrengthLiveLoadFactor(Int16 adtt,Float64 PWR)
 
             // interpolate on permit weight ratio
             if ( PWR < m_PWRlower )
+            {
                return g_Lower;
+            }
             else if ( m_PWRupper <= PWR )
+            {
                return g_Upper;
+            }
             else
+            {
                return g_Middle;
+            }
          }
       }
    }
@@ -1335,7 +1747,9 @@ Float64 CLiveLoadFactorModel2::GetStrengthLiveLoadFactor(Int16 adtt,Float64 PWR)
 Float64 CLiveLoadFactorModel2::GetServiceLiveLoadFactor(Int16 adtt) const
 {
    if ( m_LiveLoadFactorType == pgsTypes::gllSingleValue )
+   {
       return m_gLL_Service[0];
+   }
 
    if ( m_LiveLoadFactorType == pgsTypes::gllStepped )
    {
@@ -1345,9 +1759,13 @@ Float64 CLiveLoadFactorModel2::GetServiceLiveLoadFactor(Int16 adtt) const
       }
 
       if ( adtt < m_ADTT[0] )
+      {
          return m_gLL_Service[0];
+      }
       else
+      {
          return m_gLL_Service[1];
+      }
    }
 
    if ( m_LiveLoadFactorType == pgsTypes::gllLinear )
@@ -1358,16 +1776,24 @@ Float64 CLiveLoadFactorModel2::GetServiceLiveLoadFactor(Int16 adtt) const
       }
 
       if ( adtt < m_ADTT[0] )
+      {
          return m_gLL_Service[0];
+      }
 
       if ( m_ADTT[1] < adtt )
+      {
          return m_gLL_Service[1];
+      }
 
       // adtt is between values
       if ( m_LiveLoadFactorModifier == pgsTypes::gllmRoundUp )
+      {
          return m_gLL_Service[1];
+      }
       else
+      {
          return ::LinInterp(adtt-m_ADTT[0],m_gLL_Service[0],m_gLL_Service[1],m_ADTT[1] - m_ADTT[0]);
+      }
    }
 
    if ( m_LiveLoadFactorType == pgsTypes::gllBilinear || m_LiveLoadFactorType == pgsTypes::gllBilinearWithWeight)
@@ -1379,27 +1805,39 @@ Float64 CLiveLoadFactorModel2::GetServiceLiveLoadFactor(Int16 adtt) const
       }
 
       if ( adtt < m_ADTT[0] )
+      {
          return m_gLL_Service[0];
+      }
 
       if ( m_ADTT[2] < adtt )
+      {
          return m_gLL_Service[2];
+      }
 
       if ( adtt < m_ADTT[1] )
       {
          // between ADTT[0] and ADTT[1]
          if ( m_LiveLoadFactorModifier == pgsTypes::gllmRoundUp )
+         {
             return m_gLL_Service[1];
+         }
          else
+         {
             return ::LinInterp(adtt-m_ADTT[0],m_gLL_Service[0],m_gLL_Service[1],m_ADTT[1] - m_ADTT[0]);
+         }
       }
 
       if ( adtt <= m_ADTT[2] )
       {
          // between ADTT[1] and ADTT[2]
          if ( m_LiveLoadFactorModifier == pgsTypes::gllmRoundUp )
+         {
             return m_gLL_Service[2];
+         }
          else
+         {
             return ::LinInterp(adtt-m_ADTT[1],m_gLL_Service[1],m_gLL_Service[2],m_ADTT[2] - m_ADTT[1]);
+         }
       }
    }
 
@@ -1491,159 +1929,251 @@ bool CLiveLoadFactorModel2::SaveMe(sysIStructuredSave* pSave)
 bool CLiveLoadFactorModel2::LoadMe(sysIStructuredLoad* pLoad)
 {
    if ( !pLoad->BeginUnit(_T("LoadFactors")) )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    int value;
    if ( !pLoad->Property(_T("LiveLoadFactorType"),&value) )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    m_LiveLoadFactorType = (pgsTypes::LiveLoadFactorType)value;
 
    if ( m_LiveLoadFactorType == pgsTypes::gllSingleValue )
    {
       if ( !pLoad->Property(_T("LiveLoadFactor"),&m_gLL_Lower[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor_Service"),&m_gLL_Service[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
    }
    else if ( m_LiveLoadFactorType == pgsTypes::gllStepped || m_LiveLoadFactorType == pgsTypes::gllLinear )
    {
       if ( !pLoad->Property(_T("ADTT1"),&m_ADTT[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor1"),&m_gLL_Lower[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor2"),&m_gLL_Lower[1]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactorUnknownADTT"),&m_gLL_Lower[3]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor1_Service"),&m_gLL_Service[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor2_Service"),&m_gLL_Service[1]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactorUnknownADTT_Service"),&m_gLL_Service[3]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactorModifier"),&value) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
       
       m_LiveLoadFactorModifier = (pgsTypes::LiveLoadFactorModifier)value;
    }
    else if ( m_LiveLoadFactorType == pgsTypes::gllBilinear )
    {
       if ( !pLoad->Property(_T("ADTT1"),&m_ADTT[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor1"),&m_gLL_Lower[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("ADTT2"),&m_ADTT[1]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor2"),&m_gLL_Lower[1]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("ADTT3"),&m_ADTT[2]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor3"),&m_gLL_Lower[2]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactorUnknownADTT"),&m_gLL_Lower[3]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
 
       if ( !pLoad->Property(_T("LiveLoadFactor1_Service"),&m_gLL_Service[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor2_Service"),&m_gLL_Service[1]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor3_Service"),&m_gLL_Service[2]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactorUnknownADTT_Service"),&m_gLL_Service[3]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactorModifier"),&value) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
       
       m_LiveLoadFactorModifier = (pgsTypes::LiveLoadFactorModifier)value;
    }
    else if ( m_LiveLoadFactorType == pgsTypes::gllBilinearWithWeight )
    {
       if ( !pLoad->Property(_T("PermitWeightRatio1"),&m_PWRlower) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("PermitWeightRatio2"),&m_PWRupper) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("ADTT1"),&m_ADTT[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor1_Lower"),&m_gLL_Lower[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor1_Middle"),&m_gLL_Middle[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor1_Upper"),&m_gLL_Upper[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("ADTT2"),&m_ADTT[1]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor2_Lower"),&m_gLL_Lower[1]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor2_Middle"),&m_gLL_Middle[1]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor2_Upper"),&m_gLL_Upper[1]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("ADTT3"),&m_ADTT[2]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor3_Lower"),&m_gLL_Lower[2]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor3_Middle"),&m_gLL_Middle[2]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor3_Upper"),&m_gLL_Upper[2]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactorUnknownADTT_Lower"),&m_gLL_Lower[3]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactorUnknownADTT_Middle"),&m_gLL_Middle[3]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactorUnknownADTT_Upper"),&m_gLL_Upper[3]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
 
       if ( !pLoad->Property(_T("LiveLoadFactor1_Service"),&m_gLL_Service[0]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor2_Service"),&m_gLL_Service[1]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactor3_Service"),&m_gLL_Service[2]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactorUnknownADTT_Service"),&m_gLL_Service[3]) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("LiveLoadFactorModifier"),&value) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
       
       m_LiveLoadFactorModifier = (pgsTypes::LiveLoadFactorModifier)value;
    }
@@ -1653,10 +2183,14 @@ bool CLiveLoadFactorModel2::LoadMe(sysIStructuredLoad* pLoad)
    }
 
    if ( !pLoad->Property(_T("AllowUserOverride"),&m_bAllowUserOverride) )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    if ( !pLoad->EndUnit() )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    return true;
 }
@@ -1816,6 +2350,14 @@ bool RatingLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    case lrfrVersionMgr::SecondEditionWith2013Interims:
       pSave->Property(_T("SpecificationVersion"), _T("LRFR2013"));
       break;
+      
+   case lrfrVersionMgr::SecondEditionWith2014Interims:
+      pSave->Property(_T("SpecificationVersion"), _T("LRFR2014"));
+      break;
+      
+   case lrfrVersionMgr::SecondEditionWith2015Interims:
+      pSave->Property(_T("SpecificationVersion"), _T("LRFR2015"));
+      break;
 
    default:
       ASSERT(0);
@@ -1920,183 +2462,281 @@ bool RatingLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 {
    if ( !pLoad->BeginUnit(_T("RatingLibraryEntry")) )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    Float64 version = pLoad->GetVersion();
    if (version < 1.0 || CURRENT_VERSION < version)
+   {
       THROW_LOAD(BadVersion,pLoad);
+   }
 
    std::_tstring name;
    if(!pLoad->Property(_T("Name"),&name))
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    SetName(name.c_str());
 
    if(!pLoad->Property(_T("Description"),&name))
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    SetDescription(name.c_str());
 
    std::_tstring strSpecVersion;
    if( !pLoad->Property(_T("SpecificationVersion"),&strSpecVersion) )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    if(strSpecVersion == _T("LRFR2008"))
+   {
       m_SpecificationVersion = lrfrVersionMgr::FirstEdition2008;
+   }
    else if(strSpecVersion == _T("LRFR2010"))
+   {
       m_SpecificationVersion = lrfrVersionMgr::FirstEditionWith2010Interims;
+   }
    else if (strSpecVersion == _T("LRFR2011"))
+   {
       m_SpecificationVersion = lrfrVersionMgr::SecondEdition2011;
+   }
    else if (strSpecVersion == _T("LRFR2011i"))
+   {
       m_SpecificationVersion = lrfrVersionMgr::SecondEditionWith2011Interims;
+   }
    else if (strSpecVersion == _T("LRFR2013"))
+   {
       m_SpecificationVersion = lrfrVersionMgr::SecondEditionWith2013Interims;
+   }
+   else if (strSpecVersion == _T("LRFR2014"))
+   {
+      m_SpecificationVersion = lrfrVersionMgr::SecondEditionWith2014Interims;
+   }
+   else if (strSpecVersion == _T("LRFR2015"))
+   {
+      m_SpecificationVersion = lrfrVersionMgr::SecondEditionWith2015Interims;
+   }
    else
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
 
    if ( !pLoad->Property(_T("AlwaysRate"),&m_bAlwaysRate) )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    if ( !pLoad->BeginUnit(_T("LiveLoadFactors_Design_Inventory")) )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
    {
       if ( !m_LiveLoadFactorModels[pgsTypes::lrDesign_Inventory].LoadMe(pLoad) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
    }
    else
    {
       if ( !m_LiveLoadFactorModels2[pgsTypes::lrDesign_Inventory].LoadMe(pLoad) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
    }
 
    if ( !pLoad->EndUnit() )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
 
    if ( !pLoad->BeginUnit(_T("LiveLoadFactors_Design_Operating")) )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
    {
       if ( !m_LiveLoadFactorModels[pgsTypes::lrDesign_Operating].LoadMe(pLoad) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
    }
    else
    {
       if ( !m_LiveLoadFactorModels2[pgsTypes::lrDesign_Operating].LoadMe(pLoad) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
    }
 
    if ( !pLoad->EndUnit() )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    if ( !pLoad->BeginUnit(_T("LiveLoadFactors_Legal_Routine")) )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
    {
       if ( !m_LiveLoadFactorModels[pgsTypes::lrLegal_Routine].LoadMe(pLoad) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
    }
    else
    {
       if ( !m_LiveLoadFactorModels2[pgsTypes::lrLegal_Routine].LoadMe(pLoad) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
    }
 
    if ( !pLoad->EndUnit() )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    if ( !pLoad->BeginUnit(_T("LiveLoadFactors_Legal_Special")) )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
    {
       if ( !m_LiveLoadFactorModels[pgsTypes::lrLegal_Special].LoadMe(pLoad) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
    }
    else
    {
       if ( !m_LiveLoadFactorModels2[pgsTypes::lrLegal_Special].LoadMe(pLoad) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
    }
 
    if ( !pLoad->EndUnit() )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    if ( !pLoad->BeginUnit(_T("LiveLoadFactors_Permit_Routine")) )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
    {
       if ( !m_LiveLoadFactorModels[pgsTypes::lrPermit_Routine].LoadMe(pLoad) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
    }
    else
    {
       if ( !m_LiveLoadFactorModels2[pgsTypes::lrPermit_Routine].LoadMe(pLoad) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
    }
 
    if ( !pLoad->EndUnit() )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    if ( !pLoad->BeginUnit(_T("LiveLoadFactors_Permit_SingleTripWithEscort")) )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
    {
       if ( !m_SpecialPermitLiveLoadFactorModels[pgsTypes::ptSingleTripWithEscort].LoadMe(pLoad) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
    }
    else
    {
       if ( !m_SpecialPermitLiveLoadFactorModels2[pgsTypes::ptSingleTripWithEscort].LoadMe(pLoad) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
    }
 
    if ( !pLoad->EndUnit() )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    if ( !pLoad->BeginUnit(_T("LiveLoadFactors_Permit_SingleTripWithTraffic")) )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
    {
       if ( !m_SpecialPermitLiveLoadFactorModels[pgsTypes::ptSingleTripWithTraffic].LoadMe(pLoad) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
    }
    else
    {
       if ( !m_SpecialPermitLiveLoadFactorModels2[pgsTypes::ptSingleTripWithTraffic].LoadMe(pLoad) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
    }
 
    if ( !pLoad->EndUnit() )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    if ( !pLoad->BeginUnit(_T("LiveLoadFactors_Permit_MultipleTripWithTraffic")) )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
    {
       if ( !m_SpecialPermitLiveLoadFactorModels[pgsTypes::ptMultipleTripWithTraffic].LoadMe(pLoad) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
    }
    else
    {
       if ( !m_SpecialPermitLiveLoadFactorModels2[pgsTypes::ptMultipleTripWithTraffic].LoadMe(pLoad) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
    }
 
    if ( !pLoad->EndUnit() )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    if ( !pLoad->EndUnit() )  // RatingLibraryEntry
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    return true;
 
@@ -2116,13 +2756,17 @@ bool RatingLibraryEntry::IsEqual(const RatingLibraryEntry& rOther, bool consider
       for ( int i = 0; i < 5; i++ )
       {
          if ( m_LiveLoadFactorModels[i] != rOther.m_LiveLoadFactorModels[i] )
+         {
             return false;
+         }
       }
 
       for ( int i = 0; i < 3; i++ )
       {
          if ( m_SpecialPermitLiveLoadFactorModels[i] != rOther.m_SpecialPermitLiveLoadFactorModels[i] )
+         {
             return false;
+         }
       }
    }
    else
@@ -2130,20 +2774,26 @@ bool RatingLibraryEntry::IsEqual(const RatingLibraryEntry& rOther, bool consider
       for ( int i = 0; i < 5; i++ )
       {
          if ( m_LiveLoadFactorModels2[i] != rOther.m_LiveLoadFactorModels2[i] )
+         {
             return false;
+         }
       }
 
       for ( int i = 0; i < 3; i++ )
       {
          if ( m_SpecialPermitLiveLoadFactorModels2[i] != rOther.m_SpecialPermitLiveLoadFactorModels2[i] )
+         {
             return false;
+         }
       }
    }
 
    if (considerName)
    {
       if ( GetName() != rOther.GetName() )
+      {
          return false;
+      }
    }
 
    return true;

@@ -32,6 +32,7 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <Beams\Interfaces.h>
 #include <map>
+#include <numeric>
 
 // Side where overhang value was used if in equation
 enum DfSide {dfLeft, dfRight};
@@ -742,7 +743,7 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(const CSpanKey& spa
    PierIndexType pierIdx = spanKey.spanIndex;
    Float64 pier_station = pBridge->GetPierStation(pierIdx); // station of start pier
 
-   Float64 ctrl_pier_span_loc = ctrl_station - pier_station;
+   Float64 Xspan = ctrl_station - pier_station;
 
    // Lane info
    pDetails->wLane = lrfdUtility::GetDesignLaneWidth( pDetails->wCurbToCurb );
@@ -757,8 +758,8 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(const CSpanKey& spa
    }
    else
    {
-      pDetails->leftSlabOverhang  = pBridge->GetLeftSlabOverhang(spanKey.spanIndex,ctrl_pier_span_loc);
-      pDetails->rightSlabOverhang = pBridge->GetRightSlabOverhang(spanKey.spanIndex,ctrl_pier_span_loc);
+      pDetails->leftSlabOverhang  = pBridge->GetLeftSlabOverhang(spanKey.spanIndex,Xspan);
+      pDetails->rightSlabOverhang = pBridge->GetRightSlabOverhang(spanKey.spanIndex,Xspan);
    }
 
    pDetails->leftCurbOverhang  = pDetails->leftSlabOverhang  - pBarriers->GetInterfaceWidth(pgsTypes::tboLeft);
@@ -775,16 +776,9 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(const CSpanKey& spa
    else
    {
       // Spacings normal to alignment
-      std::vector<SpaceBetweenGirder> vSpacing = pBridge->GetGirderSpacing(ctrl_station);
-      for (std::vector<SpaceBetweenGirder>::iterator itsg=vSpacing.begin(); itsg!=vSpacing.end(); itsg++)
-      {
-         const SpaceBetweenGirder& rspace = *itsg;
-         for (GirderIndexType ispc = rspace.firstGdrIdx; ispc < rspace.lastGdrIdx; ispc++)
-         {
-            pDetails->gdrSpacings.push_back(rspace.spacing);
-            tot_spc += rspace.spacing;
-         }
-      }
+      std::vector<Float64> vSpacing = pBridge->GetGirderSpacing(spanKey.spanIndex,Xspan);
+      pDetails->gdrSpacings = vSpacing;
+      tot_spc = std::accumulate(vSpacing.begin(),vSpacing.end(),0.0);
 
       ATLASSERT(pDetails->Nb-1 == pDetails->gdrSpacings.size());
 

@@ -79,7 +79,7 @@ void CLiftingCheck::Build(rptChapter* pChapter,
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << _T("Check for Lifting In Casting Yard [5.5.4.3]")<<rptNewLine;
+   *pTitle << _T("Check for Lifting In Casting Yard [5.5.4.3][5.9.4.1]")<<rptNewLine;
    *pTitle << _T("Lifting Stresses and Factor of Safety Against Cracking")<<rptNewLine;
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());

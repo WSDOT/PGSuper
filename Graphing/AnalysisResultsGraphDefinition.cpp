@@ -129,7 +129,7 @@ CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
 IDType id,
 const std::_tstring& name,
 pgsTypes::LiveLoadType llType,
-VehicleIndexType vehicleIndex,
+VehicleIndexType vehicleIdx,
 const std::vector<IntervalIndexType>& intervals,
 int apaction
 ): m_ID(id),m_Name(name)
@@ -139,7 +139,7 @@ int apaction
    m_IntervalApplicability.insert(intervals.begin(),intervals.end());
 
    m_ApplicableActions = apaction;
-   m_VehicleIndex = vehicleIndex;
+   m_VehicleIndex = vehicleIdx;
 }
 
 // constructor for ultimate forces

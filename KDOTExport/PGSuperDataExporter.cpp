@@ -77,7 +77,7 @@ STDMETHODIMP CPGSuperDataExporter::Init(UINT nCmdID)
 
 STDMETHODIMP CPGSuperDataExporter::GetMenuText(BSTR*  bstrText)
 {
-   *bstrText = CComBSTR("KDOT CAD Data");
+   *bstrText = CComBSTR("KDOT CAD Data...");
    return S_OK;
 }
 

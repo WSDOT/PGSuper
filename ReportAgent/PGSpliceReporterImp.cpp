@@ -78,15 +78,15 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
    VERIFY(pRptBuilder->InsertChapterBuilder(boost::shared_ptr<CChapterBuilder>(new CShrinkageStrainChapterBuilder),TEXT("Creep Coefficient Details")));
 
 
-   boost::shared_ptr<CReportSpecificationBuilder> pEquilibriumCheckSpecBuilder(new CEquilibriumCheckReportSpecificationBuilder(m_pBroker));
-   CReportBuilder* pMyRptBuilder = new CReportBuilder(_T("Equilibrium Check"));
 #if defined _DEBUG || defined _BETA_VERSION
+   boost::shared_ptr<CReportSpecificationBuilder> pEquilibriumCheckSpecBuilder(new CEquilibriumCheckReportSpecificationBuilder(m_pBroker));
+   CReportBuilder* pMyRptBuilder = new CReportBuilder(_T("(DEBUG) Equilibrium Check"));
    pMyRptBuilder->IncludeTimingChapter();
-#endif
    pMyRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pMyRptBuilder->GetName())) );
    pMyRptBuilder->SetReportSpecificationBuilder( pEquilibriumCheckSpecBuilder );
    pMyRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CEquilibriumCheckChapterBuilder) );
    pRptMgr->AddReportBuilder( pMyRptBuilder );
+#endif
 
    //boost::shared_ptr<CReportSpecificationBuilder> pInitialStrainAnalysisSpecBuilder(new CInitialStrainAnalysisReportSpecificationBuilder(m_pBroker));
    //pMyRptBuilder = new CReportBuilder(_T("Initial Strain Analysis"));

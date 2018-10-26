@@ -74,6 +74,7 @@ protected:
    virtual HRESULT SaveSubclassData(IStructuredSave* pStrSave,IProgress* pProgress);
 
    virtual LPCTSTR GetUnitName() = 0;
+   virtual Float64 GetUnitVersion() = 0;
 
    bool m_bEnabled;
    std::set<PierIDType> m_Piers;
@@ -83,7 +84,8 @@ protected:
 class PGSEXTCLASS CErectPiersActivity : public CSupportActivityBase
 {
 protected:
-   LPCTSTR GetUnitName() { return _T("ErectPiers"); }
+   virtual LPCTSTR GetUnitName() { return _T("ErectPiers"); }
+   virtual Float64 GetUnitVersion() { return 1.0; }
 };
 
 class PGSEXTCLASS CCastClosureJointActivity : public CSupportActivityBase
@@ -99,8 +101,12 @@ public:
    Float64 GetConcreteAgeAtContinuity() const;
    void SetConcreteAgeAtContinuity(Float64 age);
 
+   void SetCuringDuration(Float64 duration);
+   Float64 GetCuringDuration() const;
+
 protected:
-   LPCTSTR GetUnitName() { return _T("CastClosurePours"); }
+   virtual LPCTSTR GetUnitName() { return _T("CastClosurePours"); }
+   virtual Float64 GetUnitVersion() { return 2.0; }
 
    void MakeCopy(const CCastClosureJointActivity& rOther);
    virtual void MakeAssignment(const CCastClosureJointActivity& rOther);
@@ -109,4 +115,5 @@ protected:
    virtual HRESULT SaveSubclassData(IStructuredSave* pStrSave,IProgress* pProgress);
 
    Float64 m_Age; // age of concrete when continuity between segments is acheived
+   Float64 m_CuringDuration; // duration of time closure is cured (used in shrinkage computations)
 };

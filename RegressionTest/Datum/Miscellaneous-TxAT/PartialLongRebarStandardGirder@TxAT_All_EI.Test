@@ -4,7 +4,7 @@
 
 
 The Specification Check was Not Successful
-Splitting zone checks failed.
+Splitting zone check failed.
 Lifting checks failed
 
 
@@ -15,7 +15,7 @@ Lifting checks failed
 
 The Specification Check was Not Successful
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Splitting zone checks failed.
+Splitting zone check failed.
 Lifting checks failed
 
 
@@ -27,7 +27,7 @@ Lifting checks failed
 The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Splitting zone checks failed.
+Splitting zone check failed.
 Lifting checks failed
 Hauling checks failed
 

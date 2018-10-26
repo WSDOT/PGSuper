@@ -37,8 +37,6 @@ CPGSuperBaseAppPlugin::CPGSuperBaseAppPlugin()
 {
    m_CacheUpdateFrequency = Daily;
    m_SharedResourceType = srtInternetFtp;
-
-   m_DisplayFavoriteReports = FALSE;
 }
 
 CPGSuperBaseAppPlugin::~CPGSuperBaseAppPlugin()
@@ -119,7 +117,7 @@ void CPGSuperBaseAppPlugin::LoadRegistryValues()
    RegistryConvert();
    LoadSettings();
    LoadOptions();
-   LoadReportOptions();
+   LoadCustomReportInformation();
 }
 
 void CPGSuperBaseAppPlugin::LoadSettings()
@@ -224,38 +222,11 @@ void CPGSuperBaseAppPlugin::LoadOptions()
    m_WorkgroupTemplateFolderCache = pApp->GetProfileString(_T("Options"),GetWorkgroupTemplatesCacheKey(),strWorkgroupTemplates);
 }
 
-void CPGSuperBaseAppPlugin::LoadReportOptions()
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
-
-   CAutoRegistry autoReg(GetAppName());
-
-   // Favorite reports
-   m_DisplayFavoriteReports = pApp->GetProfileInt(_T("Options"),_T("DoDisplayFavoriteReports"),FALSE);
-
-   // Favorite report names are stored as Tab separated values
-   CString ReportList = pApp->GetProfileString(_T("Options"),_T("FavoriteReportsList"),_T(""));
-   m_FavoriteReports.clear();
-   sysTokenizer tokenizer(_T("\t"));
-   tokenizer.push_back(ReportList);
-   sysTokenizer::iterator it = tokenizer.begin();
-   while( it != tokenizer.end() )
-   {
-      m_FavoriteReports.push_back( *it );
-      it++;
-   }
-
-   // Custom Reports
-   m_CustomReports.LoadFromRegistry(pApp);
-
-}
-
 void CPGSuperBaseAppPlugin::SaveRegistryValues()
 {
    SaveSettings();
    SaveOptions();
-   SaveReportOptions();
+   SaveCustomReportInformation();
 }
 
 void CPGSuperBaseAppPlugin::SaveSettings()
@@ -295,35 +266,16 @@ void CPGSuperBaseAppPlugin::SaveOptions()
    pApp->WriteProfileString(_T("Options"),GetWorkgroupTemplatesCacheKey(),m_WorkgroupTemplateFolderCache);
 }
 
-void CPGSuperBaseAppPlugin::SaveReportOptions()
+void CPGSuperBaseAppPlugin::LoadCustomReportInformation()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
+   CEAFCustomReportMixin::LoadCustomReportInformation();
+}
 
-   CAutoRegistry autoReg(GetAppName());
-
-   // Favorite reports
-   pApp->WriteProfileInt(_T("Options"),_T("DoDisplayFavoriteReports"),m_DisplayFavoriteReports);
-
-   // report names are stored as Tab separated values
-   CString Favorites;
-   std::vector<std::_tstring>::const_iterator it = m_FavoriteReports.begin();
-   while (it != m_FavoriteReports.end())
-   {
-      if (it!= m_FavoriteReports.begin())
-      {
-         Favorites += _T("\t");
-      }
-
-      Favorites += it->c_str();
-
-      it++;
-   }
-
-   pApp->WriteProfileString(_T("Options"),_T("FavoriteReportsList"),Favorites);
-
-   // Custom Reports
-   m_CustomReports.SaveToRegistry(pApp);
+void CPGSuperBaseAppPlugin::SaveCustomReportInformation()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CEAFCustomReportMixin::SaveCustomReportInformation();
 }
 
 void CPGSuperBaseAppPlugin::RegistryConvert()
@@ -439,37 +391,6 @@ SharedResourceType CPGSuperBaseAppPlugin::GetSharedResourceType()
 {
    return m_SharedResourceType;
 }
-
-bool CPGSuperBaseAppPlugin::GetDoDisplayFavoriteReports() const
-{
-   return m_DisplayFavoriteReports!=FALSE;
-}
-
-void CPGSuperBaseAppPlugin::SetDoDisplayFavoriteReports(bool doDisplay)
-{
-   m_DisplayFavoriteReports = doDisplay ? TRUE : FALSE;
-}
-
-const std::vector<std::_tstring>& CPGSuperBaseAppPlugin::GetFavoriteReports() const
-{
-   return m_FavoriteReports;
-}
-
-void CPGSuperBaseAppPlugin::SetFavoriteReports(const std::vector<std::_tstring>& reports)
-{
-   m_FavoriteReports = reports;
-}
-
-const CEAFCustomReports& CPGSuperBaseAppPlugin::GetCustomReports() const
-{
-   return m_CustomReports;
-}
-
-void CPGSuperBaseAppPlugin::SetCustomReports(const CEAFCustomReports& reports)
-{
-   m_CustomReports = reports;
-}
-
 
 CString CPGSuperBaseAppPlugin::GetMasterLibraryPublisher() const
 {
@@ -636,7 +557,7 @@ void CPGSuperBaseAppPlugin::UpdateCache()
       // Things are totally screwed if we end up here. Reset to default library and templates from install
       RestoreLibraryAndTemplatesToDefault();
       CString msg;
-      msg.Format(_T("The following error occurred while loading Library and Template server information:\n %s \nThese settings have been restored to factory defaults."),error_msg);
+      msg.Format(_T("The following error occurred while accessing the configuration server:\n %s \nThese settings have been restored to defaults."),error_msg);
       ::AfxMessageBox(msg,MB_ICONINFORMATION);
    }
 }
@@ -964,20 +885,21 @@ CString CPGSuperBaseAppPlugin::GetDefaultMasterLibraryFile()
    CEAFApp* pApp = EAFGetApp();
 
    CString strAppPath = pApp->GetAppLocation();
+   strAppPath.MakeUpper();
 
 #if defined _DEBUG
 #if defined _WIN64
-   strAppPath.Replace(_T("RegFreeCOM\\x64\\Debug\\"),_T(""));
+   strAppPath.Replace(_T("REGFREECOM\\X64\\DEBUG\\"),_T(""));
 #else
-   strAppPath.Replace(_T("RegFreeCOM\\Win32\\Debug\\"),_T(""));
+   strAppPath.Replace(_T("REGFREECOM\\WIN32\\DEBUG\\"),_T(""));
 #endif
 #else
    // in a real release, the path doesn't contain RegFreeCOM\\Release, but that's
    // ok... the replace will fail and the string wont be altered.
 #if defined _WIN64
-   strAppPath.Replace(_T("RegFreeCOM\\x64\\Release\\"),_T(""));
+   strAppPath.Replace(_T("REGFREECOM\\X64\\RELEASE\\"),_T(""));
 #else
-   strAppPath.Replace(_T("RegFreeCOM\\Win32\\Release\\"),_T(""));
+   strAppPath.Replace(_T("REGFREECOM\\WIN32\\RELEASE\\"),_T(""));
 #endif
 #endif
 
@@ -989,20 +911,21 @@ CString CPGSuperBaseAppPlugin::GetDefaultWorkgroupTemplateFolder()
    CEAFApp* pApp = EAFGetApp();
 
    CString strAppPath = pApp->GetAppLocation();
+   strAppPath.MakeUpper();
 
 #if defined _DEBUG
 #if defined _WIN64
-   strAppPath.Replace(_T("RegFreeCOM\\x64\\Debug\\"),_T(""));
+   strAppPath.Replace(_T("REGFREECOM\\X64\\DEBUG\\"),_T(""));
 #else
-   strAppPath.Replace(_T("RegFreeCOM\\Win32\\Debug\\"),_T(""));
+   strAppPath.Replace(_T("REGFREECOM\\WIN32\\DEBUG\\"),_T(""));
 #endif
 #else
    // in a real release, the path doesn't contain RegFreeCOM\\Release, but that's
    // ok... the replace will fail and the string wont be altered.
 #if defined _WIN64
-   strAppPath.Replace(_T("RegFreeCOM\\x64\\Release\\"),_T(""));
+   strAppPath.Replace(_T("REGFREECOM\\X64\\RELEASE\\"),_T(""));
 #else
-   strAppPath.Replace(_T("RegFreeCOM\\Win32\\Release\\"),_T(""));
+   strAppPath.Replace(_T("REGFREECOM\\WIN32\\RELEASE\\"),_T(""));
 #endif
 #endif
 

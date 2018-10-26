@@ -90,7 +90,7 @@ public:
    CAnalysisResultsGraphDefinition(IDType id,const std::_tstring& name,pgsTypes::LimitState lstype,GraphType lctype,const std::vector<IntervalIndexType>& intervals);
 
    // constructor for vehicular live loads
-   CAnalysisResultsGraphDefinition(IDType id,const std::_tstring& name,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,const std::vector<IntervalIndexType>& intervals,int apaction);
+   CAnalysisResultsGraphDefinition(IDType id,const std::_tstring& name,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const std::vector<IntervalIndexType>& intervals,int apaction);
 
    // constructor for ultimate forces
    CAnalysisResultsGraphDefinition(IDType id,const std::_tstring& name,pgsTypes::LimitState lstype,GraphType lctype,const std::vector<IntervalIndexType>& intervals,int apaction);

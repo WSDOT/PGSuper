@@ -91,6 +91,8 @@ class dbgDumpContext;
 // need to have a reasonable upper limit of skew angle... use 88 degrees
 #define MAX_SKEW_ANGLE ::ToRadians(88.0)
 
+#define NO_LIVE_LOAD_DEFINED _T("No Live Load Defined")
+
 typedef struct pgsTypes
 {
    typedef enum SectionCoordinateType
@@ -1368,13 +1370,19 @@ inline pgsTypes::LiveLoadType LiveLoadTypeFromLimitState(pgsTypes::LimitState ls
 
 inline bool IsRatingLimitState(pgsTypes::LimitState ls)
 {
-   if ( ls == pgsTypes::StrengthI_Inventory    ||
-        ls == pgsTypes::StrengthI_Operating    ||
+   if ( ls == pgsTypes::StrengthI_Inventory ||
+        ls == pgsTypes::StrengthI_Operating ||
+        ls == pgsTypes::ServiceIII_Inventory ||
+        ls == pgsTypes::ServiceIII_Operating ||
         ls == pgsTypes::StrengthI_LegalRoutine ||
         ls == pgsTypes::StrengthI_LegalSpecial ||
+        ls == pgsTypes::ServiceIII_LegalRoutine ||
+        ls == pgsTypes::ServiceIII_LegalSpecial ||
         ls == pgsTypes::StrengthII_PermitRoutine ||
-        ls == pgsTypes::StrengthII_PermitSpecial 
-      )
+        ls == pgsTypes::ServiceI_PermitRoutine ||
+        ls == pgsTypes::StrengthII_PermitSpecial ||
+        ls == pgsTypes::ServiceI_PermitSpecial 
+     )
    {
       return true;
    }
@@ -1523,6 +1531,78 @@ inline pgsTypes::LoadRatingType RatingTypeFromLimitState(pgsTypes::LimitState ls
    return ratingType;
 }
 
+inline pgsTypes::LimitState GetStrengthLimitStateType(pgsTypes::LoadRatingType ratingType)
+{
+   pgsTypes::LimitState ls;
+   switch(ratingType)
+   {
+   case pgsTypes::lrDesign_Inventory:
+      ls = pgsTypes::StrengthI_Inventory;
+      break;
+
+   case pgsTypes::lrDesign_Operating:
+      ls = pgsTypes::StrengthI_Operating;
+      break;
+
+   case pgsTypes::lrLegal_Routine:
+      ls = pgsTypes::StrengthI_LegalRoutine;
+      break;
+
+   case pgsTypes::lrLegal_Special:
+      ls = pgsTypes::StrengthI_LegalSpecial;
+      break;
+
+   case pgsTypes::lrPermit_Routine:
+      ls = pgsTypes::StrengthII_PermitRoutine;
+      break;
+
+   case pgsTypes::lrPermit_Special:
+      ls = pgsTypes::StrengthII_PermitSpecial;
+      break;
+
+   default:
+      ATLASSERT(false); // SHOULD NEVER GET HERE (unless there is a new rating type)
+   }
+
+   return ls;
+}
+
+inline pgsTypes::LimitState GetServiceLimitStateType(pgsTypes::LoadRatingType ratingType)
+{
+   pgsTypes::LimitState ls;
+   switch(ratingType)
+   {
+   case pgsTypes::lrDesign_Inventory:
+      ls = pgsTypes::ServiceIII_Inventory;
+      break;
+
+   case pgsTypes::lrDesign_Operating:
+      ls = pgsTypes::ServiceIII_Operating;
+      break;
+
+   case pgsTypes::lrLegal_Routine:
+      ls = pgsTypes::ServiceIII_LegalRoutine;
+      break;
+
+   case pgsTypes::lrLegal_Special:
+      ls = pgsTypes::ServiceIII_LegalSpecial;
+      break;
+
+   case pgsTypes::lrPermit_Routine:
+      ls = pgsTypes::ServiceI_PermitRoutine;
+      break;
+
+   case pgsTypes::lrPermit_Special:
+      ls = pgsTypes::ServiceI_PermitSpecial;
+      break;
+
+   default:
+      ATLASSERT(false); // SHOULD NEVER GET HERE (unless there is a new rating type)
+   }
+
+   return ls;
+}
+
 inline pgsTypes::LiveLoadType GetLiveLoadType(pgsTypes::LoadRatingType ratingType)
 {
    pgsTypes::LiveLoadType llType;
@@ -1556,62 +1636,66 @@ inline pgsTypes::LiveLoadType GetLiveLoadType(pgsTypes::LoadRatingType ratingTyp
    return llType;
 }
 
-inline CComBSTR GetLiveLoadTypeName(pgsTypes::LiveLoadType llType)
+inline CString GetLiveLoadTypeName(pgsTypes::LiveLoadType llType)
 {
-   CComBSTR bstrName;
+   CString strName;
    switch(llType)
    {
    case pgsTypes::lltDesign:
-      bstrName = "Design";
+      strName = "Design";
       break;
 
    case pgsTypes::lltFatigue:
-      bstrName = "Fatigue";
+      strName = "Fatigue";
       break;
 
    case pgsTypes::lltLegalRating_Routine:
-      bstrName = "Legal Load - Routine Commercial Traffic";
+      strName = "Legal Load - Routine Commercial Traffic";
       break;
 
    case pgsTypes::lltLegalRating_Special:
-      bstrName = "Legal Load - Specialized Hauling Vehicles";
+      strName = "Legal Load - Specialized Hauling Vehicles";
       break;
 
    case pgsTypes::lltPedestrian:
-      bstrName = "Pedestrian";
+      strName = "Pedestrian";
       break;
 
    case pgsTypes::lltPermit:
-      bstrName = "Design Permit";
+      strName = "Design Permit";
       break;
 
    case pgsTypes::lltPermitRating_Routine:
-      bstrName = "Rating Permit - Routine/Annual Permit";
+      strName = "Rating Permit - Routine/Annual Permit";
       break;
 
    case pgsTypes::lltPermitRating_Special:
-      bstrName = "Rating Permit - Special/Limited Crossing Permit";
+      strName = "Rating Permit - Special/Limited Crossing Permit";
       break;
 
    default:
       ATLASSERT(false); // SHOULD NEVER GET HERE
    }
 
-   return bstrName;
+   return strName;
 }
 
-inline CComBSTR GetLiveLoadTypeName(pgsTypes::LoadRatingType ratingType)
+inline CString GetLiveLoadTypeName(pgsTypes::LoadRatingType ratingType)
 {
    pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
-   CComBSTR bstrName = GetLiveLoadTypeName(llType);
+   CString strName = GetLiveLoadTypeName(llType);
 
    if ( ratingType == pgsTypes::lrDesign_Inventory )
-      bstrName += CComBSTR(" - Inventory");
+   {
+      strName += CString(" - Inventory");
+   }
 
    if ( ratingType == pgsTypes::lrDesign_Operating )
-      bstrName += CComBSTR(" - Operating");
+   {
+      strName += CString(" - Operating");
+   }
 
-   return bstrName;
+   return strName;
 }
 
 inline bool IsDesignRatingType(pgsTypes::LoadRatingType ratingType)

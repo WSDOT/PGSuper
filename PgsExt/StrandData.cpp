@@ -526,6 +526,23 @@ bool CStrandData::operator==(const CStrandData& rOther) const
          }
       }
    }
+   else if ( m_NumPermStrandsType == sdtDirectSelection )
+   {
+      if ( m_StraightStrandFill != rOther.m_StraightStrandFill )
+      {
+         return false;
+      }
+
+      if ( m_HarpedStrandFill != rOther.m_HarpedStrandFill )
+      {
+         return false;
+      }
+
+      if ( m_TemporaryStrandFill != rOther.m_TemporaryStrandFill )
+      {
+         return false;
+      }
+   }
 
    for ( Uint16 i = 0; i < 4; i++ )
    {

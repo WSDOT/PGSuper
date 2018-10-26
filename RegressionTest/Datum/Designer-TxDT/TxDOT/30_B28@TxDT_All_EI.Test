@@ -28,7 +28,7 @@ The Specification Check was Successful
 
 
 The Specification Check was Not Successful
-Bursting zone checks failed.
+Bursting zone check failed.
 
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -37,7 +37,7 @@ Bursting zone checks failed.
 
 
 The Specification Check was Not Successful
-Bursting zone checks failed.
+Bursting zone check failed.
 
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -45,6 +45,7 @@ Bursting zone checks failed.
  30.33   7  0.14  2     4    4B28       22   1/2  270 11.12 11.12   4  2.50  22   4  4  0  0  0  0  0  0  0  0  0  4.000  5.000    2.749   -2.340    1661 0.303  0.456  0.18  0.00  0.00  0.00  0.00  37.10 119.96   1.00   1.00   1.00
 
 
-The Specification Check was Successful
+The Specification Check was Not Successful
+Bursting zone check failed.
 
 

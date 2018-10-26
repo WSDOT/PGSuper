@@ -5,7 +5,7 @@
 
 The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Splitting zone checks failed.
+Splitting zone check failed.
 Hauling checks failed
 
 
@@ -17,7 +17,7 @@ Hauling checks failed
 The Specification Check was Not Successful
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Splitting zone checks failed.
+Splitting zone check failed.
 Hauling checks failed
 
 
@@ -28,7 +28,7 @@ Hauling checks failed
 
 The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Splitting zone checks failed.
+Splitting zone check failed.
 Hauling checks failed
 
 

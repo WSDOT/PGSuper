@@ -357,17 +357,13 @@ Float64 pgsMomentRatingArtifact::GetRatingFactor() const
    }
    else
    {
-      Float64 p = m_SystemFactor * m_ConditionFactor;
-      if ( p < 0.85 )
-      {
-         p = 0.85; // 6A.4.2.1-3)
-      }
+      Float64 p = Max(m_SystemFactor*m_ConditionFactor,0.85); // MBE 6A.4.2.1-3
 
       Float64 C = p * m_CapacityRedutionFactor * m_MinimumReinforcementFactor * m_Mn;
       Float64 RFtop = C - m_gDC*m_Mdc - m_gDW*m_Mdw - m_gCR*m_Mcr - m_gSH*m_Msh - m_gRE*m_Mre - m_gPS*m_Mps;
       Float64 RFbot = m_gLL*m_Mllim;
 
-      if ( (0 < m_Mllim && RFtop < 0) || (m_Mllim < 0 && 0 < RFtop) )
+      if ( IsZero(C) || (0 < C && RFtop < 0) || (C < 0 && 0 < RFtop) )
       {
          // There isn't any capacity remaining for live load
          m_RF = 0;

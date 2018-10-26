@@ -271,11 +271,6 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm500 "
-				Optimization="3"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="1"
-				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories=".\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_AFXDLL;_ATL_NO_UUIDOF"
 				RuntimeLibrary="2"
@@ -381,11 +376,6 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm500 "
-				Optimization="3"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="1"
-				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories=".\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_AFXDLL;_ATL_NO_UUIDOF"
 				RuntimeLibrary="2"

@@ -188,6 +188,9 @@ interface IBridge : IUnknown
    // from/to the CL-Bearing.
    virtual Float64 GetFullSpanLength(const CSpanKey& spanKey) = 0;
 
+   // returns the length of a girderline
+   virtual Float64 GetGirderlineLength(GirderIndexType gdrLineIdx) = 0;
+
    // returns the layout length of a girder
    virtual Float64 GetGirderLayoutLength(const CGirderKey& girderKey) = 0;
 
@@ -329,6 +332,8 @@ interface IBridge : IUnknown
    // returns the spacing between girders. adjacent spaces that are the same are grouped together
    // the returned vector is empty if the spacings could not be determined (e.g. station is off the bridge)
    virtual std::vector<SpaceBetweenGirder> GetGirderSpacing(Float64 station) = 0;
+
+   virtual std::vector<Float64> GetGirderSpacing(SpanIndexType spanIdx,Float64 Xspan) = 0;
 
    // returns girder spacing at a pier. The vector will contain nGirders-1 spaces
    virtual std::vector<Float64> GetGirderSpacing(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,
@@ -601,10 +606,10 @@ interface IMaterials : IUnknown
    virtual Float64 GetRailingSystemAge(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) = 0;
 
    // Returns the concrete strength at the middle of an interval
-   virtual Float64 GetSegmentFc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetClosureJointFc(const CSegmentKey& closureKey,IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetDeckFc(IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetRailingSystemFc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx) = 0;
+   virtual Float64 GetSegmentFc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) = 0;
+   virtual Float64 GetClosureJointFc(const CSegmentKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) = 0;
+   virtual Float64 GetDeckFc(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) = 0;
+   virtual Float64 GetRailingSystemFc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) = 0;
 
    // Returns the design concrete strength at the middle of an interval
    // This differs from the concrete strength methods above in that it takes into account
@@ -614,20 +619,21 @@ interface IMaterials : IUnknown
    virtual Float64 GetDeckDesignFc(IntervalIndexType intervalIdx) = 0;
 
    // Returns the secant modulus at the middle of an interval
-   virtual Float64 GetSegmentEc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) = 0;
+   virtual Float64 GetSegmentEc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) = 0;
+   virtual Float64 GetClosureJointEc(const CClosureKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) = 0;
+   virtual Float64 GetDeckEc(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) = 0;
+   virtual Float64 GetRailingSystemEc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) = 0;
+
    virtual Float64 GetSegmentEc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 trialFc,bool* pbChanged) = 0;
-   virtual Float64 GetClosureJointEc(const CClosureKey& closureKey,IntervalIndexType intervalIdx) = 0;
    virtual Float64 GetClosureJointEc(const CClosureKey& closureKey,IntervalIndexType intervalIdx,Float64 trialFc,bool* pbChanged) = 0;
-   virtual Float64 GetDeckEc(IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetRailingSystemEc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx) = 0;
 
    // Returns the modulus of rupture at the middle of an interval
-   virtual Float64 GetSegmentFlexureFr(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetSegmentShearFr(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetClosureJointFlexureFr(const CSegmentKey& closureKey,IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetClosureJointShearFr(const CSegmentKey& closureKey,IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetDeckFlexureFr(IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetDeckShearFr(IntervalIndexType intervalIdx) = 0;
+   virtual Float64 GetSegmentFlexureFr(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) = 0;
+   virtual Float64 GetSegmentShearFr(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) = 0;
+   virtual Float64 GetClosureJointFlexureFr(const CSegmentKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) = 0;
+   virtual Float64 GetClosureJointShearFr(const CSegmentKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) = 0;
+   virtual Float64 GetDeckFlexureFr(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) = 0;
+   virtual Float64 GetDeckShearFr(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) = 0;
 
    // Returns the aging coefficient during an interval
    virtual Float64 GetSegmentAgingCoefficient(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) = 0;

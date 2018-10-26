@@ -68,10 +68,6 @@ UINT AheadControls[] =
    IDC_NEXT_REF_GIRDER_OFFSET_UNIT,
    IDC_NEXT_REF_GIRDER_FROM,
    IDC_NEXT_REF_GIRDER_OFFSET_TYPE,
-   //IDC_AHEAD_SLAB_OFFSET_NOTE,
-   //IDC_AHEAD_SLAB_OFFSET_LABEL,
-   //IDC_AHEAD_SLAB_OFFSET,
-   //IDC_AHEAD_SLAB_OFFSET_UNIT,
    IDC_NEXT_SPAN_CONSTANT_SPACING_NOTE
 };
 
@@ -592,8 +588,6 @@ HBRUSH CPierGirderSpacingPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
    case IDC_NUM_GIRDER_NEXT_SPAN_NOTE:
    case IDC_GIRDER_SPACING_NOTE_END_OF_PREV_SPAN:
    case IDC_GIRDER_SPACING_NOTE_START_OF_NEXT_SPAN:
-   case IDC_BACK_SLAB_OFFSET_NOTE:
-   case IDC_AHEAD_SLAB_OFFSET_NOTE:
       pDC->SetTextColor(HYPERLINK_COLOR);
       break;
    };
@@ -663,9 +657,6 @@ void CPierGirderSpacingPage::OnCopyToAheadSide()
    CString strWndTxt;
    GetDlgItem(IDC_PREV_REF_GIRDER_OFFSET)->GetWindowText( strWndTxt );
    GetDlgItem(IDC_NEXT_REF_GIRDER_OFFSET)->SetWindowText( strWndTxt );
-
-   GetDlgItem(IDC_BACK_SLAB_OFFSET)->GetWindowText( strWndTxt );
-   GetDlgItem(IDC_AHEAD_SLAB_OFFSET)->SetWindowText( strWndTxt );
 }
 
 void CPierGirderSpacingPage::OnCopyToBackSide() 
@@ -687,9 +678,6 @@ void CPierGirderSpacingPage::OnCopyToBackSide()
    CString strWndTxt;
    GetDlgItem(IDC_NEXT_REF_GIRDER_OFFSET)->GetWindowText( strWndTxt );
    GetDlgItem(IDC_PREV_REF_GIRDER_OFFSET)->SetWindowText( strWndTxt );
-
-   GetDlgItem(IDC_AHEAD_SLAB_OFFSET)->GetWindowText( strWndTxt );
-   GetDlgItem(IDC_BACK_SLAB_OFFSET)->SetWindowText( strWndTxt );
 }
 
 GirderIndexType CPierGirderSpacingPage::GetMinGirderCount(pgsTypes::PierFaceType pierFace)

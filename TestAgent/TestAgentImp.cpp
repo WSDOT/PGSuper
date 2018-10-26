@@ -2326,7 +2326,6 @@ bool CTestAgentImp::RunFabOptimizationTest(std::_tofstream& resultsFile, std::_t
 
 bool CTestAgentImp::RunLoadRatingTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, const CGirderKey& girderKey)
 {
-   USES_CONVERSION;
    std::_tstring pid      = GetProcessID();
    std::_tstring bridgeId = GetBridgeID();
 
@@ -2349,17 +2348,17 @@ bool CTestAgentImp::RunLoadRatingTest(std::_tofstream& resultsFile, std::_tofstr
 
       pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
       VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
-      for ( VehicleIndexType vehIdx = 0; vehIdx < nVehicles; vehIdx++ )
+      for ( VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++ )
       {
-         const pgsRatingArtifact* pArtifact = pArtifacts->GetRatingArtifact(girderKey,ratingType,vehIdx);
+         const pgsRatingArtifact* pArtifact = pArtifacts->GetRatingArtifact(girderKey,ratingType,vehicleIdx);
          if ( pArtifact == NULL )
          {
             continue;
          }
 
-         CComBSTR bstrRatingType = ::GetLiveLoadTypeName(ratingType);
-         std::_tstring strTruckName = pProductLoads->GetLiveLoadName(llType,vehIdx);
-         resultsFile << OLE2T(bstrRatingType) << _T(", ") << strTruckName << std::endl;
+         std::_tstring strRatingType = ::GetLiveLoadTypeName(ratingType);
+         std::_tstring strTruckName = pProductLoads->GetLiveLoadName(llType,vehicleIdx);
+         resultsFile << strRatingType << _T(", ") << strTruckName << std::endl;
 
          const pgsMomentRatingArtifact* pMomentArtifact = NULL;
          Float64 RF = pArtifact->GetMomentRatingFactorEx(true,&pMomentArtifact);

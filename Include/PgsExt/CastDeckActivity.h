@@ -48,6 +48,9 @@ public:
    void SetConcreteAgeAtContinuity(Float64 age);
    Float64 GetConcreteAgeAtContinuity() const;
 
+   void SetCuringDuration(Float64 duration);
+   Float64 GetCuringDuration() const;
+
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
 
@@ -57,6 +60,7 @@ protected:
    bool m_bEnabled;
    
    Float64 m_Age;
+   Float64 m_CuringDuration;
 
    // NOTE: In the future we may want to model the deck being cast in segments
    // much like a steel bridge. To do this, add a start and end station to this

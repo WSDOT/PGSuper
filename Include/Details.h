@@ -236,6 +236,12 @@ struct FPCDETAILS
 // data at poi's used to interpolate critical section
 struct CRITSECTIONDETAILSATPOI
 {
+   CRITSECTIONDETAILSATPOI() 
+   { 
+      // Critical section POI must be exact... do not merge them with other POI
+      Poi.CanMerge(false); 
+   }
+
    enum IntersectionType {DvIntersection, ThetaIntersection, NoIntersection};
    IntersectionType Intersection;
 
@@ -353,10 +359,12 @@ struct TIME_STEP_CONCRETE
    struct CREEP_STRAIN
    {
       Float64 P;
-      Float64 E; // modulus of elasticity used to compute creep strain
+      Float64 E; // modulus of elasticity used to compute creep strain (Not age adjusted)
       Float64 A;
-      Float64 Cs;
-      Float64 Ce;
+      Float64 Cs; // C(i+1/2,j)
+      Float64 Ce; // C(1-1/2,j)
+      Float64 Xs; // concrete Aging coefficient X(i+1/2,j)
+      Float64 Xe; // concrete Aging coefficient X(i-1/2,j)
       Float64 e;
       CREEP_STRAIN()
       {
@@ -365,6 +373,8 @@ struct TIME_STEP_CONCRETE
          A = 0;
          Cs = 0;
          Ce = 0;
+         Xs = 0;
+         Xe = 0;
          e = 0;
       }
    };
@@ -372,10 +382,12 @@ struct TIME_STEP_CONCRETE
    struct CREEP_CURVATURE
    {
       Float64 M;
-      Float64 E; // modulus of elasticity used to compute creep curvature
+      Float64 E; // modulus of elasticity used to compute creep curvature (Not age adjusted)
       Float64 I;
       Float64 Cs; // C(i+1/2,j)
       Float64 Ce; // C(1-1/2,j)
+      Float64 Xs; // concrete Aging coefficient X(i+1/2,j)
+      Float64 Xe; // concrete Aging coefficient X(i-1/2,j)
       Float64 r;
       CREEP_CURVATURE()
       {
@@ -384,11 +396,13 @@ struct TIME_STEP_CONCRETE
          I = 0;
          Cs = 0;
          Ce = 0;
+         Xs = 0;
+         Xe = 0;
          r = 0;
       }
    };
-   std::vector<CREEP_STRAIN> ec;    // = (dN(j)/(AE(j))*[C(i+1/2,j) - C(i-1/2,j)]
-   std::vector<CREEP_CURVATURE> rc; // = (dM(j)/(IE(j))*[C(i+1/2,j) - C(i-1/2,j)]
+   std::vector<CREEP_STRAIN> ec;    // = (dN(j)/(AE(j))*[X(i+1/2,j)*C(i+1/2,j) - X(i-1/2,j*)C(i-1/2,j)]
+   std::vector<CREEP_CURVATURE> rc; // = (dM(j)/(IE(j))*[X(i+1/2,j)*C(i+1/2,j) - X(i-1/2,j)*C(i-1/2,j)]
 
    // Unrestrained deformations due to creep and shrinkage in concrete during this interval
    Float64 esi; // shrinkage
@@ -712,9 +726,9 @@ struct TIME_STEP_DETAILS
    // Forces required to totally restrain the cross section for initial strains occuring during this interval
    Float64 Pr[3], Mr[3]; // index is one of the TIMESTEP_XXX constants
 
-   // Initial Strains (access array with pgsTypes::Back and pgsTypes::Ahead for left and right side of POI)
-   Float64 e[3][2]; // index is one of the TIMESTEP_XXX constants
-   Float64 r[3][2];
+   // Initial Strains 
+   Float64 e[3]; // index is one of the TIMESTEP_XXX constants
+   Float64 r[3];
 
    // Deformation due to externally applied loads and restraining forces in this interval
    Float64 der[19]; // axial strain
@@ -763,10 +777,8 @@ struct TIME_STEP_DETAILS
          Pr[i] = 0;
          Mr[i] = 0;
 
-         e[i][pgsTypes::Back]  = 0;
-         e[i][pgsTypes::Ahead] = 0;
-         r[i][pgsTypes::Back]  = 0;
-         r[i][pgsTypes::Ahead] = 0;
+         e[i] = 0;
+         r[i] = 0;
       }
 
       dP = 0;

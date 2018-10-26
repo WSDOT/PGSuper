@@ -99,7 +99,6 @@
 #include "BridgeLinkCATID.h"
 
 #include "Hints.h"
-#include "UIHintsDlg.h"
 
 #include "PGSuperException.h"
 #include <System\FileStream.h>
@@ -250,7 +249,6 @@ BEGIN_MESSAGE_MAP(CPGSuperDocBase, CEAFBrokerDocument)
 	ON_COMMAND(ID_LOADS_LLDF, OnLoadsLldf)
    ON_COMMAND(ID_LIVE_LOADS,OnLiveLoads)
 	ON_COMMAND(ID_INSERT, OnInsert)
-	ON_COMMAND(ID_OPTIONS_HINTS, OnOptionsHints)
 	ON_COMMAND(ID_OPTIONS_LABELS, OnOptionsLabels)
    ON_COMMAND(ID_PROJECT_LOSSES,OnLosses)
 
@@ -313,6 +311,10 @@ m_bAutoCalcEnabled(true)
    m_pPGSuperDocProxyAgent = NULL;
 
    m_CallbackID = 0;
+
+   SetCustomReportHelpID(eafTypes::crhCustomReport,IDH_CUSTOM_REPORT);
+   SetCustomReportHelpID(eafTypes::crhFavoriteReport,IDH_FAVORITE_REPORT);
+
 
    // Reserve a range of command IDs for extension agent commands (which are current supported)
    // and EAFDocumentPlugin objects (which are not currently supported in PGSuper)
@@ -1394,21 +1396,21 @@ BOOL CPGSuperDocBase::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
 
 void CPGSuperDocBase::OnCloseDocument()
 {
-   // Put report favorites options back into CPGSuperBaseAppPlugin
-   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSuperBaseAppPlugin* pPGSuperAppPlugin = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
+   //// Put report favorites options back into CPGSuperBaseAppPlugin
+   //CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+   //CComPtr<IEAFAppPlugin> pAppPlugin;
+   //pTemplate->GetPlugin(&pAppPlugin);
+   //CPGSuperBaseAppPlugin* pPGSuperAppPlugin = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
 
-   bool doDisplayFavorites = GetDoDisplayFavoriteReports();
-   std::vector<std::_tstring> Favorites = GetFavoriteReports();
+   //bool doDisplayFavorites = GetDoDisplayFavoriteReports();
+   //std::vector<std::_tstring> Favorites = GetFavoriteReports();
 
-   pPGSuperAppPlugin->SetDoDisplayFavoriteReports(doDisplayFavorites);
-   pPGSuperAppPlugin->SetFavoriteReports(Favorites);
+   //pPGSuperAppPlugin->SetDoDisplayFavoriteReports(doDisplayFavorites);
+   //pPGSuperAppPlugin->SetFavoriteReports(Favorites);
 
-   // user-defined custom reports
-   CEAFCustomReports reports = GetCustomReports();
-   pPGSuperAppPlugin->SetCustomReports(reports);
+   //// user-defined custom reports
+   //CEAFCustomReports reports = GetCustomReports();
+   //pPGSuperAppPlugin->SetCustomReports(reports);
 
    CEAFBrokerDocument::OnCloseDocument();
 
@@ -1448,12 +1450,33 @@ void CPGSuperDocBase::OnCreateInitialize()
 
 void CPGSuperDocBase::OnCreateFinalize()
 {
+   CEAFBrokerDocument::OnCreateFinalize();
+
    // Register callbacks for status items
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
    m_scidInformationalError  = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning)); 
    m_StatusGroupID = pStatusCenter->CreateStatusGroupID();
 
-   CEAFBrokerDocument::OnCreateFinalize();
+
+   //// do this here, instead of in Init()... SetFavoriteReports updates views, but during Init, the views
+   //// haven't been initialized yet. We got lucky that it didn't cause crashes.
+   //// Views are fully created here
+   //CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+   //CComPtr<IEAFAppPlugin> pAppPlugin;
+   //pTemplate->GetPlugin(&pAppPlugin);
+   //CPGSuperBaseAppPlugin* pPGSuper = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
+
+   //// Transfer report favorites and custom reports data from CPGSuperBaseAppPlugin to CEAFBrokerDocument (this)
+   //bool doDisplayFavorites = pPGSuper->GetDoDisplayFavoriteReports();
+   //std::vector<std::_tstring> Favorites = pPGSuper->GetFavoriteReports();
+
+   //SetDoDisplayFavoriteReports(doDisplayFavorites);
+   //SetFavoriteReports(Favorites);
+
+   //CEAFCustomReports customs = pPGSuper->GetCustomReports();
+   //SetCustomReports(customs);
+
+   //IntegrateCustomReports();
 
    PopulateReportMenu();
    PopulateGraphMenu();
@@ -1820,15 +1843,6 @@ BOOL CPGSuperDocBase::Init()
    pPGSuper->GetAppUnitSystem(&appUnitSystem);
    CreateDocUnitSystem(appUnitSystem,&m_DocUnitSystem);
 
-   // Transfer report favorites and custom reports data from CPGSuperBaseAppPlugin to CEAFBrokerDocument (this)
-   bool doDisplayFavorites = pPGSuper->GetDoDisplayFavoriteReports();
-   std::vector<std::_tstring> Favorites = pPGSuper->GetFavoriteReports();
-
-   SetDoDisplayFavoriteReports(doDisplayFavorites);
-   SetFavoriteReports(Favorites);
-
-   CEAFCustomReports customs = pPGSuper->GetCustomReports();
-   SetCustomReports(customs);
 
    // register the standard copy girder callback objects
    m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderType));
@@ -3237,7 +3251,7 @@ BOOL CPGSuperDocBase::GetToolTipMessageString(UINT nID, CString& rMessage) const
    return FALSE;
 }
 
-void CPGSuperDocBase::CreateReportView(CollectionIndexType rptIdx,bool bPrompt)
+void CPGSuperDocBase::CreateReportView(CollectionIndexType rptIdx,BOOL bPrompt)
 {
    if ( !bPrompt && m_Selection.Type == CSelection::None)
    {
@@ -3556,19 +3570,6 @@ void CPGSuperDocBase::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType
    pTransactions->Execute(pTxn);
 }
 
-void CPGSuperDocBase::OnOptionsHints() 
-{
-   CString strText;
-   strText = _T("Reset all user interface hints");
-   int result = AfxMessageBox(strText,MB_YESNO);
-   if ( result == IDYES )
-   {
-      UINT hintSettings = GetUIHintSettings();
-      hintSettings = UIHINT_ENABLE_ALL;
-      SetUIHintSettings(hintSettings);
-   }
-}
-
 void CPGSuperDocBase::OnOptionsLabels() 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -3735,9 +3736,9 @@ void CPGSuperDocBase::PopulateGraphMenu()
 
 void CPGSuperDocBase::LoadDocumentSettings()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CEAFBrokerDocument::LoadDocumentSettings();
 
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
 
    CString strAutoCalcDefault = pApp->GetLocalMachineString(_T("Settings"),_T("AutoCalc"), _T("On"));
@@ -3772,8 +3773,6 @@ void CPGSuperDocBase::LoadDocumentSettings()
 
    m_GirderModelEditorSettings = pApp->GetProfileInt(_T("Settings"),_T("GirderEditor"),def_bm);
 
-   m_UIHintSettings = pApp->GetProfileInt(_T("Settings"),_T("UIHints"),0); // default, all hints enabled
-
    CString strDefaultGirderLabelFormat = pApp->GetLocalMachineString(_T("Settings"),_T("GirderLabelFormat"),     _T("Alpha"));
    CString strGirderLabelFormat = pApp->GetProfileString(_T("Settings"),_T("GirderLabelFormat"),strDefaultGirderLabelFormat);
    if ( strGirderLabelFormat.CompareNoCase(_T("Alpha")) == 0 )
@@ -3804,9 +3803,9 @@ void CPGSuperDocBase::LoadDocumentSettings()
 
 void CPGSuperDocBase::SaveDocumentSettings()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CEAFBrokerDocument::SaveDocumentSettings();
 
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CWinApp* pApp = AfxGetApp();
 
    VERIFY(pApp->WriteProfileString( _T("Settings"),_T("AutoCalc"),m_bAutoCalcEnabled ? _T("On") : _T("Off") ));
@@ -3819,8 +3818,6 @@ void CPGSuperDocBase::SaveDocumentSettings()
 
    // girder editor view
    VERIFY(pApp->WriteProfileInt(_T("Settings"),_T("GirderEditor"),m_GirderModelEditorSettings));
-
-   VERIFY(pApp->WriteProfileInt(_T("Settings"),_T("UIHints"),m_UIHintSettings));
 
    VERIFY(pApp->WriteProfileString( _T("Settings"),_T("GirderLabelFormat"),pgsGirderLabel::UseAlphaLabel() ? _T("Alpha") : _T("Numeric") ));
 
@@ -3899,7 +3896,7 @@ BOOL CPGSuperDocBase::OnViewGraphs(NMHDR* pnmhdr,LRESULT* plr)
    }
 
    CMenu menu;
-   VERIFY( menu.LoadMenu(IDR_REPORTS) );
+   VERIFY( menu.LoadMenu(IDR_GRAPHS) );
    CMenu* pMenu = menu.GetSubMenu(0);
    pMenu->RemoveMenu(0,MF_BYPOSITION); // remove the placeholder
 
@@ -4138,18 +4135,10 @@ void CPGSuperDocBase::SetGirderEditorSettings(UINT settings)
    m_GirderModelEditorSettings = settings;
 }
 
-UINT CPGSuperDocBase::GetUIHintSettings() const
+void CPGSuperDocBase::ResetUIHints()
 {
-   return m_UIHintSettings;
-}
-
-void CPGSuperDocBase::SetUIHintSettings(UINT settings)
-{
-   m_UIHintSettings = settings;
-   if ( m_UIHintSettings == UIHINT_ENABLE_ALL )
-   {
-      m_pPGSuperDocProxyAgent->OnResetHints();
-   }
+   __super::ResetUIHints();
+   m_pPGSuperDocProxyAgent->OnResetHints();
 }
 
 bool CPGSuperDocBase::ShowProjectPropertiesOnNewProject()
@@ -4180,61 +4169,60 @@ long CPGSuperDocBase::GetReportViewKey()
 }
 
 
-void CPGSuperDocBase::OnChangedFavoriteReports(bool isFavorites,bool fromMenu)
+void CPGSuperDocBase::OnChangedFavoriteReports(BOOL bIsFavorites,BOOL bFromMenu)
 {
-   // Prompt user with hint about how this menu item works
-   if (fromMenu)
-   {
-      int mask = UIHINT_FAVORITES_MENU;
-      Uint32 hintSettings = GetUIHintSettings();
-      if ( sysFlags<Uint32>::IsClear(hintSettings,mask) )
-      {
-         AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   //// Prompt user with hint about how this menu item works
+   //if (fromMenu)
+   //{
+   //   int mask = UIHINT_FAVORITES_MENU;
+   //   Uint32 hintSettings = GetUIHintSettings();
+   //   if ( sysFlags<Uint32>::IsClear(hintSettings,mask) )
+   //   {
+   //      AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-         CUIHintsDlg dlg;
-         dlg.m_strTitle = _T("Hint");
-         dlg.m_strText = _T("This menu item allows you to display only your favorite reports in the Reports menus, or display all available reports. The change will occur the next time you open a Report menu.");
-         dlg.DoModal();
-         if ( dlg.m_bDontShowAgain )
-         {
-            sysFlags<Uint32>::Set(&hintSettings,mask);
-            SetUIHintSettings(hintSettings);
-         }
-      }
-   }
+   //      CString strText(_T("This menu item allows you to display only your favorite reports in the Reports menus, or display all available reports. The change will occur the next time you open a Report menu."));
+   //      if ( EAFShowUIHints(strText) )
+   //      {
+   //         sysFlags<Uint32>::Set(&hintSettings,mask);
+   //         SetUIHintSettings(hintSettings);
+   //      }
+   //   }
+   //}
 
    // update main menu submenu
+   __super::OnChangedFavoriteReports(bIsFavorites,bFromMenu);
    PopulateReportMenu();
 }
+//
+//void CPGSuperDocBase::OnCustomReportError(custReportErrorType error, const std::_tstring& reportName, const std::_tstring& otherName)
+//{
+//   std::_tostringstream os;
+//
+//   switch(error)
+//   {
+//      case creParentMissingAtLoad:
+//         os << _T("For custom report \"")<<reportName<<_T("\": the parent report ")<<otherName<<_T(" could not be found at program load time. The custom report was deleted.");
+//         break;
+//      case creParentMissingAtImport:
+//         os << _T("For custom report \"")<<reportName<<_T("\": the parent report ")<<otherName<<_T(" could not be found. The report may have depended on one of PGSuper's plug-ins. The custom report was deleted.");
+//         break;
+//      case creChapterMissingAtLoad:
+//      case creChapterMissingAtImport:
+//         os << _T("For custom report \"")<<reportName<<_T("\": the following chapter ")<<otherName<<_T(" does not exist in the pareent report. The chapter was removed. Perhaps the chapter name changed? You may want to edit the report.");
+//         break;
+//      default:
+//         ATLASSERT(false);
+//   };
+//
+//   GET_IFACE(IEAFStatusCenter,pStatusCenter);
+//   pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalError,os.str().c_str());
+//   pStatusCenter->Add(pStatusItem);
+//}
 
-void CPGSuperDocBase::OnCustomReportError(custReportErrorType error, const std::_tstring& reportName, const std::_tstring& otherName)
+void CPGSuperDocBase::ShowCustomReportHelp(eafTypes::CustomReportHelp helpType)
 {
-   std::_tostringstream os;
-
-   switch(error)
-   {
-      case creParentMissingAtLoad:
-         os << _T("For custom report \"")<<reportName<<_T("\": the parent report ")<<otherName<<_T(" could not be found at program load time. The custom report was deleted.");
-         break;
-      case creParentMissingAtImport:
-         os << _T("For custom report \"")<<reportName<<_T("\": the parent report ")<<otherName<<_T(" could not be found. The report may have depended on one of PGSuper's plug-ins. The custom report was deleted.");
-         break;
-      case creChapterMissingAtLoad:
-      case creChapterMissingAtImport:
-         os << _T("For custom report \"")<<reportName<<_T("\": the following chapter ")<<otherName<<_T(" does not exist in the pareent report. The chapter was removed. Perhaps the chapter name changed? You may want to edit the report.");
-         break;
-      default:
-         ATLASSERT(false);
-   };
-
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalError,os.str().c_str());
-   pStatusCenter->Add(pStatusItem);
-}
-
-void CPGSuperDocBase::OnCustomReportHelp(custRepportHelpType helpType)
-{
-   UINT helpID = helpType==crhCustomReport ? IDH_CUSTOM_REPORT : IDH_FAVORITE_REPORT;
-
-   ::HtmlHelp( NULL, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, helpID );
+   //UINT helpID = helpType==crhCustomReport ? IDH_CUSTOM_REPORT : IDH_FAVORITE_REPORT;
+   //::HtmlHelp( NULL, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, helpID );
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   __super::ShowCustomReportHelp(helpType);
 }

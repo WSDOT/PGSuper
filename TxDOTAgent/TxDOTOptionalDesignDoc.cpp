@@ -1672,3 +1672,9 @@ void CTxDOTOptionalDesignDoc::OnStatuscenterView()
 {
    CEAFBrokerDocument::OnViewStatusCenter();
 }
+
+void CTxDOTOptionalDesignDoc::ShowCustomReportHelp(eafTypes::CustomReportHelp helpType)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CEAFBrokerDocument::ShowCustomReportHelp(helpType);
+}

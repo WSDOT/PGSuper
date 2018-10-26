@@ -193,9 +193,6 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
       (*xs_table)(row++,1) << _T("-"); // Sbd
    }
 
-   (*xs_table)(row++,1) << _T("-"); // Qdeck
-   (*xs_table)(row++,1) << _T("-"); // Effective flange width
-
    (*xs_table)(row++,1) << l1.SetValue( pSectProp->GetKt(constructionIntervalIdx,poi) );
    (*xs_table)(row++,1) << l1.SetValue( pSectProp->GetKb(constructionIntervalIdx,poi) );
 
@@ -204,6 +201,12 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
 
    (*xs_table)(row++,1) << force_per_length.SetValue(pSectProp->GetSegmentWeightPerLength(segmentKey) );
    (*xs_table)(row++,1) << force.SetValue(pSectProp->GetSegmentWeight(segmentKey) );
+
+   if ( bComposite )
+   {
+      (*xs_table)(row++,1) << _T("-"); // Qdeck
+      (*xs_table)(row++,1) << _T("-"); // Effective flange width
+   }
 
    if ( bComposite )
    {

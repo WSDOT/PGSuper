@@ -33,7 +33,6 @@
 #include "BridgeDescDlg.h"
 #include <PgsExt\ConcreteDetailsDlg.h>
 #include "PGSuperAppPlugin\TimelineEventDlg.h"
-#include "UIHintsDlg.h"
 #include "Hints.h"
 
 #include <System\Flags.h>
@@ -1028,18 +1027,12 @@ void CBridgeDescDeckDetailsPage::UpdateSlabOffsetControls()
 
 void CBridgeDescDeckDetailsPage::UIHint(const CString& strText,UINT mask)
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
    CPGSuperDocBase* pDoc = (CPGSuperDocBase*)EAFGetDocument();
 
    Uint32 hintSettings = pDoc->GetUIHintSettings();
    if ( sysFlags<Uint32>::IsClear(hintSettings,mask) )
    {
-      CUIHintsDlg dlg;
-      dlg.m_strTitle = _T("Hint");
-      dlg.m_strText = strText;
-      dlg.DoModal();
-      if ( dlg.m_bDontShowAgain )
+      if ( EAFShowUIHints(strText) )
       {
          sysFlags<Uint32>::Set(&hintSettings,mask);
          pDoc->SetUIHintSettings(hintSettings);

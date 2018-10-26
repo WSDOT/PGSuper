@@ -162,7 +162,7 @@ void pgsLoadRater::MomentRating(const CGirderKey& girderKey,const std::vector<pg
    Float64 system_factor    = pRatingSpec->GetSystemFactorFlexure();
    bool bIncludePL = pRatingSpec->IncludePedestrianLiveLoad();
 
-   pgsTypes::LimitState ls = GetStrengthLimitStateType(ratingType);
+   pgsTypes::LimitState ls = ::GetStrengthLimitStateType(ratingType);
 
    Float64 gDC = pRatingSpec->GetDeadLoadFactor(ls);
    Float64 gDW = pRatingSpec->GetWearingSurfaceFactor(ls);
@@ -238,11 +238,12 @@ void pgsLoadRater::MomentRating(const CGirderKey& girderKey,const std::vector<pg
             AxleConfiguration MinAxleConfig, MaxAxleConfig, DummyAxleConfig;
             pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,truck_index,poi,batMin,true,true,&Mmin,&Dummy,&MinAxleConfig,&DummyAxleConfig);
             pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,truck_index,poi,batMax,true,true,&Dummy,&Mmax,&DummyAxleConfig,&MaxAxleConfig);
-            gLL = GetStrengthLiveLoadFactor(ratingType,bPositiveMoment ? MaxAxleConfig : MinAxleConfig);
+
+            gLL = pRatingSpec->GetStrengthLiveLoadFactor(ratingType,bPositiveMoment ? MaxAxleConfig : MinAxleConfig);
          }
          else
          {
-            gLL = GetServiceLiveLoadFactor(ratingType);
+            gLL = pRatingSpec->GetServiceLiveLoadFactor(ratingType);
          }
       }
 
@@ -255,7 +256,7 @@ void pgsLoadRater::MomentRating(const CGirderKey& girderKey,const std::vector<pg
       // and Mu > 0.... Since we are looking at the negative end of things, Mmin = 1.33Mu. +/- = -... it doesn't
       // make since for K to be negative... K < 0 indicates that the section is most definate NOT under reinforced.
       // No adjustment needs to be made for underreinforcement so take K = 1.0
-      Float64 K = (IsZero(vMmin[i].MrMin) ? 1.0 : vMmin[i].Mr/vMmin[i].MrMin);
+      Float64 K = (IsZero(vMmin[i].MrMin) ? 1.0 : vMmin[i].Mr/vMmin[i].MrMin); // MBE 6A.5.6
       if ( K < 0.0 || 1.0 < K )
       {
          K = 1.0;
@@ -310,7 +311,7 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const std::vector<pgs
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
 
-   pgsTypes::LimitState ls = GetStrengthLimitStateType(ratingType);
+   pgsTypes::LimitState ls = ::GetStrengthLimitStateType(ratingType);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
@@ -479,28 +480,28 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const std::vector<pgs
             {
                if (IsEqual(fabs(vLLIMmax[i].Left()),fabs(LLIMmax)))
                {
-                  gLL = GetStrengthLiveLoadFactor(ratingType,MaxLeftAxleConfig);
+                  gLL = pRatingSpec->GetStrengthLiveLoadFactor(ratingType,MaxLeftAxleConfig);
                }
                else
                {
-                  gLL = GetStrengthLiveLoadFactor(ratingType,MaxRightAxleConfig);
+                  gLL = pRatingSpec->GetStrengthLiveLoadFactor(ratingType,MaxRightAxleConfig);
                }
             }
             else
             {
                if (IsEqual(fabs(vLLIMmin[i].Left()),fabs(LLIMmin)))
                {
-                  gLL = GetStrengthLiveLoadFactor(ratingType,MinLeftAxleConfig);
+                  gLL = pRatingSpec->GetStrengthLiveLoadFactor(ratingType,MinLeftAxleConfig);
                }
                else
                {
-                  gLL = GetStrengthLiveLoadFactor(ratingType,MinRightAxleConfig);
+                  gLL = pRatingSpec->GetStrengthLiveLoadFactor(ratingType,MinRightAxleConfig);
                }
             }
          }
          else
          {
-            gLL = GetServiceLiveLoadFactor(ratingType);
+            gLL = pRatingSpec->GetServiceLiveLoadFactor(ratingType);
          }
       }
 
@@ -590,7 +591,7 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
    Float64 system_factor = pRatingSpec->GetSystemFactorFlexure();
    bool bIncludePL = pRatingSpec->IncludePedestrianLiveLoad();
 
-   pgsTypes::LimitState limitState = GetServiceLimitStateType(ratingType);
+   pgsTypes::LimitState limitState = ::GetServiceLimitStateType(ratingType);
    ATLASSERT(IsServiceIIILimitState(limitState)); // must be one of the Service III limit states
 
    Float64 gDC = pRatingSpec->GetDeadLoadFactor(limitState);
@@ -698,7 +699,7 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
          Float64 gLL = pRatingSpec->GetLiveLoadFactor(limitState,true);
          if ( gLL < 0 )
          {
-            gLL = GetServiceLiveLoadFactor(ratingType);
+            gLL = pRatingSpec->GetServiceLiveLoadFactor(ratingType);
          }
 
          Float64 W = pProductLoads->GetVehicleWeight(llType,truck_index);
@@ -748,9 +749,9 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
       VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
       VehicleIndexType startVehicleIdx = (vehicleIdx == INVALID_INDEX ? 0 : vehicleIdx);
       VehicleIndexType endVehicleIdx   = (vehicleIdx == INVALID_INDEX ? nVehicles-1: startVehicleIdx);
-      for ( VehicleIndexType vehIdx = startVehicleIdx; vehIdx <= endVehicleIdx; vehIdx++ )
+      for ( VehicleIndexType vehicleIdx = startVehicleIdx; vehicleIdx <= endVehicleIdx; vehicleIdx++ )
       {
-         pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType,vehIdx);
+         pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType,vehicleIdx);
          if ( applicability == pgsTypes::llaNegMomentAndInteriorPierReaction )
          {
             // we are processing positive moments and the live load vehicle is only applicable to negative moments
@@ -784,7 +785,7 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
    std::vector<Float64> vPLmin,vPLmax;
    GetMoments(girderKey,bPositiveMoment,ratingType, vehicleIdx, vPoi, vDCmin, vDCmax, vDWmin, vDWmax, vCRmin, vCRmax, vSHmin, vSHmax, vREmin, vREmax, vPSmin, vPSmax, vLLIMmin, vMinTruckIndex, vLLIMmax, vMaxTruckIndex, vPLmin, vPLmax);
 
-   pgsTypes::LimitState ls = GetServiceLimitStateType(ratingType);
+   pgsTypes::LimitState ls = ::GetServiceLimitStateType(ratingType);
 
    GET_IFACE(IRatingSpecification,pRatingSpec);
    bool bIncludePL = pRatingSpec->IncludePedestrianLiveLoad();
@@ -1150,11 +1151,11 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
                pProductForces->GetVehicularLiveLoadStress(loadRatingIntervalIdx,llType,truck_index,poi,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,true,true,topLocation,botLocation,&fMinTop,&fMaxTop,&fMaxTop,&fMaxBot,&MinAxleConfigTop,&MaxAxleConfigTop,&MinAxleConfigBot,&MaxAxleConfigBot);
             }
 
-            gLL = GetStrengthLiveLoadFactor(ratingType,MaxAxleConfigBot);
+            gLL = pRatingSpec->GetStrengthLiveLoadFactor(ratingType,MaxAxleConfigBot);
          }
          else
          {
-            gLL = GetServiceLiveLoadFactor(ratingType);
+            gLL = pRatingSpec->GetServiceLiveLoadFactor(ratingType);
          }
       }
 
@@ -1252,78 +1253,6 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
 
       ratingArtifact.AddArtifact(poi,stressRatioArtifact,bPositiveMoment);
    }
-}
-
-pgsTypes::LimitState pgsLoadRater::GetStrengthLimitStateType(pgsTypes::LoadRatingType ratingType)
-{
-   pgsTypes::LimitState ls;
-   switch(ratingType)
-   {
-   case pgsTypes::lrDesign_Inventory:
-      ls = pgsTypes::StrengthI_Inventory;
-      break;
-
-   case pgsTypes::lrDesign_Operating:
-      ls = pgsTypes::StrengthI_Operating;
-      break;
-
-   case pgsTypes::lrLegal_Routine:
-      ls = pgsTypes::StrengthI_LegalRoutine;
-      break;
-
-   case pgsTypes::lrLegal_Special:
-      ls = pgsTypes::StrengthI_LegalSpecial;
-      break;
-
-   case pgsTypes::lrPermit_Routine:
-      ls = pgsTypes::StrengthII_PermitRoutine;
-      break;
-
-   case pgsTypes::lrPermit_Special:
-      ls = pgsTypes::StrengthII_PermitSpecial;
-      break;
-
-   default:
-      ATLASSERT(false); // SHOULD NEVER GET HERE (unless there is a new rating type)
-   }
-
-   return ls;
-}
-
-pgsTypes::LimitState pgsLoadRater::GetServiceLimitStateType(pgsTypes::LoadRatingType ratingType)
-{
-   pgsTypes::LimitState ls;
-   switch(ratingType)
-   {
-   case pgsTypes::lrDesign_Inventory:
-      ls = pgsTypes::ServiceIII_Inventory;
-      break;
-
-   case pgsTypes::lrDesign_Operating:
-      ls = pgsTypes::ServiceIII_Operating;
-      break;
-
-   case pgsTypes::lrLegal_Routine:
-      ls = pgsTypes::ServiceIII_LegalRoutine;
-      break;
-
-   case pgsTypes::lrLegal_Special:
-      ls = pgsTypes::ServiceIII_LegalSpecial;
-      break;
-
-   case pgsTypes::lrPermit_Routine:
-      ls = pgsTypes::ServiceI_PermitRoutine;
-      break;
-
-   case pgsTypes::lrPermit_Special:
-      ls = pgsTypes::ServiceI_PermitSpecial;
-      break;
-
-   default:
-      ATLASSERT(false); // SHOULD NEVER GET HERE (unless there is a new rating type)
-   }
-
-   return ls;
 }
 
 void pgsLoadRater::GetMoments(const CGirderKey& girderKey,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, const std::vector<pgsPointOfInterest>& vPoi, std::vector<Float64>& vDCmin, std::vector<Float64>& vDCmax,std::vector<Float64>& vDWmin, std::vector<Float64>& vDWmax,std::vector<Float64>& vCRmin, std::vector<Float64>& vCRmax,std::vector<Float64>& vSHmin, std::vector<Float64>& vSHmax,std::vector<Float64>& vREmin, std::vector<Float64>& vREmax,std::vector<Float64>& vPSmin, std::vector<Float64>& vPSmax, std::vector<Float64>& vLLIMmin, std::vector<VehicleIndexType>& vMinTruckIndex,std::vector<Float64>& vLLIMmax,std::vector<VehicleIndexType>& vMaxTruckIndex,std::vector<Float64>& vPLmin,std::vector<Float64>& vPLmax)
@@ -1607,118 +1536,4 @@ void special_transform(IBridge* pBridge,IPointOfInterest* pPoi,IIntervals* pInte
          *outputIter = (*forceIter + *resultIter);
       }
    }
-}
-
-Float64 pgsLoadRater::GetStrengthLiveLoadFactor(pgsTypes::LoadRatingType ratingType,AxleConfiguration& axleConfig)
-{
-   Float64 sum_axle_weight = 0; // sum of axle weights on the bridge
-   Float64 firstAxleLocation = -1;
-   Float64 lastAxleLocation = 0;
-   BOOST_FOREACH(AxlePlacement& axle_placement,axleConfig)
-   {
-      sum_axle_weight += axle_placement.Weight;
-
-      if ( !IsZero(axle_placement.Weight) )
-      {
-         if ( firstAxleLocation < 0 )
-         {
-            firstAxleLocation = axle_placement.Location;
-         }
-
-         lastAxleLocation = axle_placement.Location;
-      }
-   }
-   
-   Float64 AL = fabs(firstAxleLocation - lastAxleLocation); // front axle to rear axle length (for axles on the bridge)
-
-   Float64 gLL = 0;
-   GET_IFACE(IRatingSpecification,pRatingSpec);
-   GET_IFACE(ILibrary,pLibrary);
-   const RatingLibraryEntry* pRatingEntry = pLibrary->GetRatingEntry( pRatingSpec->GetRatingSpecification().c_str() );
-   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
-   {
-      CLiveLoadFactorModel model;
-      if ( ratingType == pgsTypes::lrPermit_Routine )
-      {
-         model = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
-      }
-      else if ( ratingType == pgsTypes::lrPermit_Special )
-      {
-         model = pRatingEntry->GetLiveLoadFactorModel(pRatingSpec->GetSpecialPermitType());
-      }
-      else
-      {
-         model = pRatingEntry->GetLiveLoadFactorModel(ratingType);
-      }
-
-      gLL = model.GetStrengthLiveLoadFactor(pRatingSpec->GetADTT(),sum_axle_weight);
-   }
-   else
-   {
-      Float64 GVW = sum_axle_weight;
-      Float64 PermitWeightRatio = IsZero(AL) ? 0 : GVW/AL;
-      CLiveLoadFactorModel2 model;
-      if ( ratingType == pgsTypes::lrPermit_Routine )
-      {
-         model = pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrPermit_Routine);
-      }
-      else if ( ratingType == pgsTypes::lrPermit_Special )
-      {
-         model = pRatingEntry->GetLiveLoadFactorModel2(pRatingSpec->GetSpecialPermitType());
-      }
-      else
-      {
-         model = pRatingEntry->GetLiveLoadFactorModel2(ratingType);
-      }
-
-      gLL = model.GetStrengthLiveLoadFactor(pRatingSpec->GetADTT(),PermitWeightRatio);
-   }
-
-   return gLL;
-}
-
-Float64 pgsLoadRater::GetServiceLiveLoadFactor(pgsTypes::LoadRatingType ratingType)
-{
-   Float64 gLL = 0;
-   GET_IFACE(IRatingSpecification,pRatingSpec);
-   GET_IFACE(ILibrary,pLibrary);
-   const RatingLibraryEntry* pRatingEntry = pLibrary->GetRatingEntry( pRatingSpec->GetRatingSpecification().c_str() );
-   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
-   {
-      CLiveLoadFactorModel model;
-      if ( ratingType == pgsTypes::lrPermit_Routine )
-      {
-         model = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
-      }
-      else if ( ratingType == pgsTypes::lrPermit_Special )
-      {
-         model = pRatingEntry->GetLiveLoadFactorModel(pRatingSpec->GetSpecialPermitType());
-      }
-      else
-      {
-         model = pRatingEntry->GetLiveLoadFactorModel(ratingType);
-      }
-
-      gLL = model.GetServiceLiveLoadFactor(pRatingSpec->GetADTT());
-   }
-   else
-   {
-      CLiveLoadFactorModel2 model;
-      if ( ratingType == pgsTypes::lrPermit_Routine )
-      {
-         model = pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrPermit_Routine);
-      }
-      else if ( ratingType == pgsTypes::lrPermit_Special )
-      {
-         model = pRatingEntry->GetLiveLoadFactorModel2(pRatingSpec->GetSpecialPermitType());
-      }
-      else
-      {
-         model = pRatingEntry->GetLiveLoadFactorModel2(ratingType);
-      }
-
-      gLL = model.GetServiceLiveLoadFactor(pRatingSpec->GetADTT());
-   }
-
-   return gLL;
 }

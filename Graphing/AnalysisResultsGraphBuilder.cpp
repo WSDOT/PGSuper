@@ -23,7 +23,6 @@
 #include "stdafx.h"
 #include "resource.h"
 #include <Graphing\AnalysisResultsGraphBuilder.h>
-#include <Graphing\DrawBeamTool.h>
 #include "AnalysisResultsGraphController.h"
 #include "AnalysisResultsGraphDefinition.h"
 
@@ -475,15 +474,15 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
          ATLASSERT(false);
       }
 
-      VehicleIndexType vehicleIndex = 0;
+      VehicleIndexType vehicleIdx = 0;
       std::vector<std::_tstring>::iterator iter(strLLNames.begin());
       std::vector<std::_tstring>::iterator end(strLLNames.end());
-      for ( ; iter != end; iter++, vehicleIndex++ )
+      for ( ; iter != end; iter++, vehicleIdx++ )
       {
          std::_tstring& strName( *iter );
 
          // skip the dummy live load
-         if ( strName == _T("No Live Load Defined") )
+         if ( strName == NO_LIVE_LOAD_DEFINED )
          {
             continue;
          }
@@ -493,7 +492,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
          CAnalysisResultsGraphDefinition def(graphID++,
                                              strLLName,
                                              llType,
-                                             vehicleIndex,
+                                             vehicleIdx,
                                              vLiveLoadIntervals,
                                              action);
 
@@ -588,15 +587,15 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
          ATLASSERT(false);
       }
 
-      VehicleIndexType vehicleIndex = 0;
+      VehicleIndexType vehicleIdx = 0;
       std::vector<std::_tstring>::iterator iter(strLLNames.begin());
       std::vector<std::_tstring>::iterator end(strLLNames.end());
-      for ( ; iter != end; iter++, vehicleIndex++ )
+      for ( ; iter != end; iter++, vehicleIdx++ )
       {
          std::_tstring& strName( *iter );
 
          // skip the dummy live load
-         if ( strName == _T("No Live Load Defined") )
+         if ( strName == NO_LIVE_LOAD_DEFINED )
          {
             continue;
          }
@@ -606,7 +605,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
          CAnalysisResultsGraphDefinition def(graphID++,
                                              strLLName,
                                              llType,
-                                             vehicleIndex,
+                                             vehicleIdx,
                                              vLoadRatingIntervals,
                                              action);
 
@@ -1939,8 +1938,8 @@ void CAnalysisResultsGraphBuilder::LiveLoadGraph(IndexType graphIdx,const CAnaly
 
    pgsTypes::AnalysisType analysisType = GetAnalysisType();
 
-   VehicleIndexType vehicleIndex(graphDef.m_VehicleIndex);
-   ATLASSERT(vehicleIndex == INVALID_INDEX);
+   VehicleIndexType vehicleIdx(graphDef.m_VehicleIndex);
+   ATLASSERT(vehicleIdx == INVALID_INDEX);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
@@ -2155,7 +2154,7 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
    pgsTypes::AnalysisType analysisType = GetAnalysisType();
 
    pgsTypes::LiveLoadType llType(graphDef.m_LoadType.LiveLoadType);
-   VehicleIndexType vehicleIndex(graphDef.m_VehicleIndex);
+   VehicleIndexType vehicleIdx(graphDef.m_VehicleIndex);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
@@ -2206,9 +2205,9 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
          std::vector<Float64> Pmin, Pmax;
          if ( analysisType == pgsTypes::Envelope )
          {
-            if ( vehicleIndex != INVALID_INDEX )
+            if ( vehicleIdx != INVALID_INDEX )
             {
-               pForces->GetVehicularLiveLoadAxial(intervalIdx, llType, vehicleIndex, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Pmin, &Pmax);
+               pForces->GetVehicularLiveLoadAxial(intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Pmin, &Pmax);
             }
             else
             {
@@ -2217,9 +2216,9 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
 
             AddGraphPoints(min_data_series, xVals, Pmin);
 
-            if ( vehicleIndex != INVALID_INDEX )
+            if ( vehicleIdx != INVALID_INDEX )
             {
-               pForces->GetVehicularLiveLoadAxial(intervalIdx, llType, vehicleIndex, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Pmin, &Pmax);
+               pForces->GetVehicularLiveLoadAxial(intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Pmin, &Pmax);
             }
             else
             {
@@ -2230,9 +2229,9 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
          }
          else
          {
-            if ( vehicleIndex != INVALID_INDEX )
+            if ( vehicleIdx != INVALID_INDEX )
             {
-               pForces->GetVehicularLiveLoadAxial(intervalIdx, llType, vehicleIndex, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Pmin, &Pmax, NULL, NULL);
+               pForces->GetVehicularLiveLoadAxial(intervalIdx, llType, vehicleIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Pmin, &Pmax, NULL, NULL);
             }
             else
             {
@@ -2250,9 +2249,9 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
          std::vector<sysSectionValue> Vmin, Vmax;
          if ( analysisType == pgsTypes::Envelope )
          {
-            if ( vehicleIndex != INVALID_INDEX )
+            if ( vehicleIdx != INVALID_INDEX )
             {
-               pForces->GetVehicularLiveLoadShear(intervalIdx, llType, vehicleIndex, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Vmin, &Vmax);
+               pForces->GetVehicularLiveLoadShear(intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Vmin, &Vmax);
             }
             else
             {
@@ -2261,9 +2260,9 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
  
             AddGraphPoints(min_data_series, xVals, Vmin);
 
-            if ( vehicleIndex != INVALID_INDEX )
+            if ( vehicleIdx != INVALID_INDEX )
             {
-               pForces->GetVehicularLiveLoadShear(intervalIdx, llType, vehicleIndex, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Vmin, &Vmax);
+               pForces->GetVehicularLiveLoadShear(intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Vmin, &Vmax);
             }
             else
             {
@@ -2274,9 +2273,9 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
          }
          else
          {
-            if ( vehicleIndex != INVALID_INDEX )
+            if ( vehicleIdx != INVALID_INDEX )
             {
-               pForces->GetVehicularLiveLoadShear(intervalIdx, llType, vehicleIndex, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Vmin, &Vmax);
+               pForces->GetVehicularLiveLoadShear(intervalIdx, llType, vehicleIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Vmin, &Vmax);
             }
             else
             {
@@ -2294,9 +2293,9 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
          std::vector<Float64> Mmin, Mmax;
          if ( analysisType == pgsTypes::Envelope )
          {
-            if ( vehicleIndex != INVALID_INDEX )
+            if ( vehicleIdx != INVALID_INDEX )
             {
-               pForces->GetVehicularLiveLoadMoment(intervalIdx, llType, vehicleIndex, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Mmin, &Mmax);
+               pForces->GetVehicularLiveLoadMoment(intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Mmin, &Mmax);
             }
             else
             {
@@ -2305,9 +2304,9 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
 
             AddGraphPoints(min_data_series, xVals, Mmin);
 
-            if ( vehicleIndex != INVALID_INDEX )
+            if ( vehicleIdx != INVALID_INDEX )
             {
-               pForces->GetVehicularLiveLoadMoment(intervalIdx, llType, vehicleIndex, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Mmin, &Mmax);
+               pForces->GetVehicularLiveLoadMoment(intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Mmin, &Mmax);
             }
             else
             {
@@ -2318,9 +2317,9 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
          }
          else
          {
-            if ( vehicleIndex != INVALID_INDEX )
+            if ( vehicleIdx != INVALID_INDEX )
             {
-               pForces->GetVehicularLiveLoadMoment(intervalIdx, llType, vehicleIndex, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Mmin, &Mmax, NULL, NULL);
+               pForces->GetVehicularLiveLoadMoment(intervalIdx, llType, vehicleIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Mmin, &Mmax, NULL, NULL);
             }
             else
             {
@@ -2338,9 +2337,9 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
          std::vector<Float64> Dmin, Dmax;
          if ( analysisType == pgsTypes::Envelope )
          {
-            if ( vehicleIndex != INVALID_INDEX )
+            if ( vehicleIdx != INVALID_INDEX )
             {
-               pForces->GetVehicularLiveLoadDeflection(intervalIdx, llType, vehicleIndex, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Dmin, &Dmax);
+               pForces->GetVehicularLiveLoadDeflection(intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Dmin, &Dmax);
             }
             else
             {
@@ -2349,9 +2348,9 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
 
             AddGraphPoints(min_data_series, xVals, Dmin);
 
-            if ( vehicleIndex != INVALID_INDEX )
+            if ( vehicleIdx != INVALID_INDEX )
             {
-               pForces->GetVehicularLiveLoadDeflection(intervalIdx, llType, vehicleIndex, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Dmin, &Dmax);
+               pForces->GetVehicularLiveLoadDeflection(intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Dmin, &Dmax);
             }
             else
             {
@@ -2362,9 +2361,9 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
          }
          else
          {
-            if ( vehicleIndex != INVALID_INDEX )
+            if ( vehicleIdx != INVALID_INDEX )
             {
-               pForces->GetVehicularLiveLoadDeflection(intervalIdx, llType, vehicleIndex, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Dmin, &Dmax);
+               pForces->GetVehicularLiveLoadDeflection(intervalIdx, llType, vehicleIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Dmin, &Dmax);
             }
             else
             {
@@ -2382,9 +2381,9 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
          std::vector<Float64> Rmin, Rmax;
          if ( analysisType == pgsTypes::Envelope )
          {
-            if ( vehicleIndex != INVALID_INDEX )
+            if ( vehicleIdx != INVALID_INDEX )
             {
-               pForces->GetVehicularLiveLoadRotation(intervalIdx, llType, vehicleIndex, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Rmin, &Rmax);
+               pForces->GetVehicularLiveLoadRotation(intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Rmin, &Rmax);
             }
             else
             {
@@ -2393,9 +2392,9 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
 
             AddGraphPoints(min_data_series, xVals, Rmin);
 
-            if ( vehicleIndex != INVALID_INDEX )
+            if ( vehicleIdx != INVALID_INDEX )
             {
-               pForces->GetVehicularLiveLoadRotation(intervalIdx, llType, vehicleIndex, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Rmin, &Rmax);
+               pForces->GetVehicularLiveLoadRotation(intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Rmin, &Rmax);
             }
             else
             {
@@ -2406,9 +2405,9 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
          }
          else
          {
-            if ( vehicleIndex != INVALID_INDEX )
+            if ( vehicleIdx != INVALID_INDEX )
             {
-               pForces->GetVehicularLiveLoadRotation(intervalIdx, llType, vehicleIndex, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Rmin, &Rmax);
+               pForces->GetVehicularLiveLoadRotation(intervalIdx, llType, vehicleIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Rmin, &Rmax);
             }
             else
             {
@@ -2437,9 +2436,9 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
 
                if ( analysisType == pgsTypes::Envelope )
                {
-                  if ( vehicleIndex != INVALID_INDEX )
+                  if ( vehicleIdx != INVALID_INDEX )
                   {
-                     pForces->GetVehicularLiveLoadStress(intervalIdx, llType, vehicleIndex, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, topLocation, botLocation, &fTopMin, &fTopMax, &fBotMin, &fBotMax );
+                     pForces->GetVehicularLiveLoadStress(intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, topLocation, botLocation, &fTopMin, &fTopMax, &fBotMin, &fBotMax );
                   }
                   else
                   {
@@ -2448,9 +2447,9 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
                }
                else
                {
-                  if ( vehicleIndex != INVALID_INDEX )
+                  if ( vehicleIdx != INVALID_INDEX )
                   {
-                     pForces->GetVehicularLiveLoadStress(intervalIdx, llType, vehicleIndex, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, topLocation, botLocation, &fTopMin, &fTopMax, &fBotMin, &fBotMax );
+                     pForces->GetVehicularLiveLoadStress(intervalIdx, llType, vehicleIdx, vPoi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, topLocation, botLocation, &fTopMin, &fTopMax, &fBotMin, &fBotMax );
                   }
                   else
                   {
@@ -2958,7 +2957,7 @@ void CAnalysisResultsGraphBuilder::LiveLoadReactionGraph(IndexType graphIdx,cons
    pgsTypes::AnalysisType analysisType = GetAnalysisType();
 
    pgsTypes::LiveLoadType llType(graphDef.m_LoadType.LiveLoadType);
-   VehicleIndexType vehicleIndex(graphDef.m_VehicleIndex);
+   VehicleIndexType vehicleIdx(graphDef.m_VehicleIndex);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
@@ -3048,7 +3047,7 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadReactionGraph(IndexType grap
    pgsTypes::AnalysisType analysisType = GetAnalysisType();
 
    pgsTypes::LiveLoadType llType(graphDef.m_LoadType.LiveLoadType);
-   VehicleIndexType vehicleIndex(graphDef.m_VehicleIndex);
+   VehicleIndexType vehicleIdx(graphDef.m_VehicleIndex);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
@@ -3074,9 +3073,9 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadReactionGraph(IndexType grap
 
    if ( analysisType == pgsTypes::Envelope )
    {
-      if ( vehicleIndex != INVALID_INDEX )
+      if ( vehicleIdx != INVALID_INDEX )
       {
-         pReactions->GetVehicularLiveLoadReaction(intervalIdx,llType,vehicleIndex, vPiers, girderKey, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Rmin, &Rdummy);
+         pReactions->GetVehicularLiveLoadReaction(intervalIdx,llType,vehicleIdx, vPiers, girderKey, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Rmin, &Rdummy);
       }
       else
       {
@@ -3086,9 +3085,9 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadReactionGraph(IndexType grap
       Rmin.insert(Rmin.begin(),0.0);
       Rmin.push_back(0.0);
 
-      if ( vehicleIndex != INVALID_INDEX )
+      if ( vehicleIdx != INVALID_INDEX )
       {
-         pReactions->GetVehicularLiveLoadReaction(intervalIdx,llType,vehicleIndex, vPiers, girderKey, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Rdummy, &Rmax);
+         pReactions->GetVehicularLiveLoadReaction(intervalIdx,llType,vehicleIdx, vPiers, girderKey, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Rdummy, &Rmax);
       }
       else
       {
@@ -3100,9 +3099,9 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadReactionGraph(IndexType grap
    }
    else
    {
-      if ( vehicleIndex != INVALID_INDEX )
+      if ( vehicleIdx != INVALID_INDEX )
       {
-         pReactions->GetVehicularLiveLoadReaction(intervalIdx,llType,vehicleIndex, vPiers, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Rmin, &Rmax);
+         pReactions->GetVehicularLiveLoadReaction(intervalIdx,llType,vehicleIdx, vPiers, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Rmin, &Rmax);
       }
       else
       {
@@ -3242,16 +3241,20 @@ void CAnalysisResultsGraphBuilder::DeckShrinkageStressGraph(IndexType graphIdx,c
       Float64 x = *xIter;
 
       Float64 fTop(0.0), fBot(0.0);
-      if(intervalIdx >= dsIntervalIdx)
+      if(dsIntervalIdx <= intervalIdx)
       {
          pProductForces->GetDeckShrinkageStresses(poi, &fTop, &fBot);
       }
 
       if(bPlotTop)
+      {
          AddGraphPoint(top_data_series, x, fTop);
+      }
 
       if(bPlotBot)
-      AddGraphPoint(bot_data_series, x, fBot);
+      {
+         AddGraphPoint(bot_data_series, x, fBot);
+      }
    }
 }
 

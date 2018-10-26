@@ -269,16 +269,22 @@ void CConcreteGeneralPage::UpdateEc()
 
 void CConcreteGeneralPage::OnCopyMaterial() 
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	CCopyConcreteEntry dlg(false, this);
-   INT_PTR result = dlg.DoModal();
+   INT_PTR result;
+   std::auto_ptr<CCopyConcreteEntry> pDlg;
+
+   {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      pDlg = std::auto_ptr<CCopyConcreteEntry>(new CCopyConcreteEntry(false, this));
+      result = pDlg->DoModal();
+   }
+
    if ( result < 0 )
    {
       ::AfxMessageBox(_T("The Concrete library is empty"),MB_OK);
    }
    else if ( result == IDOK )
    {
-      const ConcreteLibraryEntry* entry = dlg.m_ConcreteEntry;
+      const ConcreteLibraryEntry* entry = pDlg->m_ConcreteEntry;
 
       if (entry != NULL)
       {

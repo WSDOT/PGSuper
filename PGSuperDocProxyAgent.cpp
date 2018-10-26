@@ -361,7 +361,7 @@ void CPGSuperDocProxyAgent::CreateLibraryEditorView()
    pViewReg->CreateView(m_LibraryEditorViewKey);
 }
 
-void CPGSuperDocProxyAgent::CreateReportView(CollectionIndexType rptIdx,bool bPromptForSpec)
+void CPGSuperDocProxyAgent::CreateReportView(CollectionIndexType rptIdx,BOOL bPromptForSpec)
 {
    CEAFReportViewCreationData data;
    data.m_RptIdx = rptIdx;

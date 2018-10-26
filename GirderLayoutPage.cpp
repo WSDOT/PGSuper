@@ -102,6 +102,19 @@ void CSpanGirderLayoutPage::DoDataExchange(CDataExchange* pDX)
    DDX_CBItemData(pDX, IDC_PREV_REF_GIRDER_OFFSET_TYPE, m_RefGirderOffsetType[pgsTypes::metStart]);
    DDX_CBItemData(pDX, IDC_NEXT_REF_GIRDER_OFFSET_TYPE, m_RefGirderOffsetType[pgsTypes::metEnd]);
 
+   if ( pDX->m_bSaveAndValidate && !::IsBridgeSpacing(pParent->m_BridgeDesc.GetGirderSpacingType()) && ::IsJointSpacing(pParent->m_BridgeDesc.GetGirderSpacingType()) )
+   {
+      // this is a special case for joint spacing
+      if ( m_RefGirderIdx[pgsTypes::metStart] != m_RefGirderIdx[pgsTypes::metEnd] || 
+         !IsEqual(m_RefGirderOffset[pgsTypes::metStart],m_RefGirderOffset[pgsTypes::metEnd]) || 
+         m_RefGirderOffsetType[pgsTypes::metStart] != m_RefGirderOffsetType[pgsTypes::metEnd] )
+      {
+         pDX->PrepareCtrl(IDC_PREV_REF_GIRDER);
+         AfxMessageBox(_T("Girders must be located the same at both ends of the span"));
+         pDX->Fail();
+      }
+   }
+
    // Now that all the data has been extracted from the controls, there are a few items that
    // are stored in class data members. Assign these items to the bridge model in the parent dialog
    if ( pDX->m_bSaveAndValidate )

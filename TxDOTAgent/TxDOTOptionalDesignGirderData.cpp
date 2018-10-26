@@ -139,7 +139,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("TxDOTOptionalGirderData"),2.0);
+   pStrSave->BeginUnit(_T("TxDOTOptionalGirderData"),3.0);
 
    pStrSave->put_Property(_T("StrandFillType"),         CComVariant(m_StrandFillType));
 
@@ -155,7 +155,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
       ASSERT(0);
    }
 
-   pStrSave->put_Property(_T("StrandMaterialKey"),         CComVariant(key));
+   pStrSave->put_Property(_T("StrandMaterialKey"),         CComVariant(key)); // starting with version 3, key contains a coating bit
 
    pStrSave->put_Property(_T("Fci"), CComVariant(m_Fci));
    pStrSave->put_Property(_T("Fc"), CComVariant(m_Fc));
@@ -272,6 +272,12 @@ HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,IProgress
       var.vt = VT_I4;
       hr = pStrLoad->get_Property(_T("StrandMaterialKey"), &var );
       Int32 key = var.lVal;
+      if ( version < 3 )
+      {
+         // prior to version 3, strand key did not contain a coating type bit.
+         // the assumption was the strand was uncoated. Add the bit for uncoated strand here.
+         key |= matPsStrand::None;
+      }
 
       lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
       const matPsStrand* pStrand = pPool->GetStrand(key);

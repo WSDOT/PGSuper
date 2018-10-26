@@ -238,7 +238,7 @@ HRESULT CSupportActivityBase::Load(IStructuredLoad* pStrLoad,IProgress* pProgres
 
 HRESULT CSupportActivityBase::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   pStrSave->BeginUnit(GetUnitName(),1.0);
+   pStrSave->BeginUnit(GetUnitName(),GetUnitVersion());
    pStrSave->put_Property(_T("Enabled"),CComVariant(m_bEnabled));
 
    if ( m_bEnabled )
@@ -305,6 +305,7 @@ void CSupportActivityBase::MakeAssignment(const CSupportActivityBase& rOther)
 CCastClosureJointActivity::CCastClosureJointActivity()
 {
    m_Age = 7.0; // days
+   m_CuringDuration = 3.0; // days (WSDOT Std Specs 6-02.3(11)
 }
 
 CCastClosureJointActivity::CCastClosureJointActivity(const CCastClosureJointActivity& rOther) :
@@ -335,6 +336,11 @@ bool CCastClosureJointActivity::operator==(const CCastClosureJointActivity& rOth
       return false;
    }
 
+   if ( !IsEqual(m_CuringDuration,rOther.m_CuringDuration) )
+   {
+      return false;
+   }
+
    return true;
 }
 
@@ -353,9 +359,20 @@ void CCastClosureJointActivity::SetConcreteAgeAtContinuity(Float64 age)
    m_Age = age;
 }
 
+void CCastClosureJointActivity::SetCuringDuration(Float64 duration)
+{
+   m_CuringDuration = duration;
+}
+
+Float64 CCastClosureJointActivity::GetCuringDuration() const
+{
+   return m_CuringDuration;
+}
+
 void CCastClosureJointActivity::MakeCopy(const CCastClosureJointActivity& rOther)
 {
    m_Age = rOther.m_Age;
+   m_CuringDuration = rOther.m_CuringDuration;
 }
 
 void CCastClosureJointActivity::MakeAssignment(const CCastClosureJointActivity& rOther)
@@ -377,6 +394,25 @@ HRESULT CCastClosureJointActivity::LoadSubclassData(IStructuredLoad* pStrLoad,IP
       }
 
       m_Age = var.dblVal;
+
+      Float64 version;
+      pStrLoad->get_Version(&version);
+      if ( 1 < version )
+      {
+         // added in version
+         var.vt = VT_R8;
+         HRESULT hr = pStrLoad->get_Property(_T("CuringDuration"),&var);
+         if ( FAILED(hr) )
+         {
+            return hr;
+         }
+
+         m_CuringDuration = var.dblVal;
+      }
+      else
+      {
+         m_CuringDuration = m_Age;
+      }
    }
    return S_OK;
 }
@@ -386,6 +422,7 @@ HRESULT CCastClosureJointActivity::SaveSubclassData(IStructuredSave* pStrSave,IP
    if ( m_bEnabled )
    {
       pStrSave->put_Property(_T("AgeAtContinuity"),CComVariant(m_Age));
+      pStrSave->put_Property(_T("CuringDuration"),CComVariant(m_CuringDuration));
    }
 
    return S_OK;

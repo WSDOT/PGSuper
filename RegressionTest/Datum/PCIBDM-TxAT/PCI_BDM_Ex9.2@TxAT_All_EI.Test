@@ -5,11 +5,11 @@ Warning: Non-standard debonding increment of  5.000 ft used  for beam 1 in span 
 
 
 The Specification Check was Not Successful
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
 Debond arrangement checks failed.
-Bursting zone checks failed.
-Confinement zone checks failed.
+Bursting zone check failed.
+Confinement zone check failed.
 Girder Dimension Detailing check failed
 
 
@@ -20,11 +20,11 @@ Warning: Non-standard debonding increment of  5.000 ft used  for beam 2 in span 
 
 
 The Specification Check was Not Successful
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
 Debond arrangement checks failed.
-Bursting zone checks failed.
-Confinement zone checks failed.
+Bursting zone check failed.
+Confinement zone check failed.
 Girder Dimension Detailing check failed
 
 
@@ -35,11 +35,11 @@ Warning: Non-standard debonding increment of  5.000 ft used  for beam 4 in span 
 
 
 The Specification Check was Not Successful
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
 Debond arrangement checks failed.
-Bursting zone checks failed.
-Confinement zone checks failed.
+Bursting zone check failed.
+Confinement zone check failed.
 Girder Dimension Detailing check failed
 
 

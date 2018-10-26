@@ -75,6 +75,27 @@ void CStrandSlopeCheck::Build(rptChapter* pChapter,
 {
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
+   // scan all the segments to see if there is an applicable strand slope check
+   bool bCheck = false;
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   {
+      const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+      const pgsStrandSlopeArtifact* pArtifact = pSegmentArtifact->GetStrandSlopeArtifact();
+      if ( pArtifact->IsApplicable() )
+      {
+         bCheck = true;
+         break; // there is one... so we can report
+      }
+   }
+
+   if ( bCheck == false )
+   {
+      // nothing to check
+      return;
+   }
+
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << _T("Strand Slope");
@@ -85,8 +106,6 @@ void CStrandSlopeCheck::Build(rptChapter* pChapter,
    *pChapter << pBody;
    *pBody << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Strand Slope.jpg") ) << rptNewLine;
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);

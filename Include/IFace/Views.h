@@ -31,7 +31,7 @@ interface IViews : public IUnknown
    virtual void CreateBridgeModelView() = 0;
    virtual void CreateLoadsView() = 0;
    virtual void CreateLibraryEditorView() = 0;
-   virtual void CreateReportView(CollectionIndexType rptIdx,bool bPromptForSpec=true) = 0;
+   virtual void CreateReportView(CollectionIndexType rptIdx,BOOL bPromptForSpec=TRUE) = 0;
    virtual void BuildReportMenu(CEAFMenu* pMenu,bool bQuickReport) = 0;
    virtual void CreateGraphView(CollectionIndexType graphIdx) = 0;
    virtual void BuildGraphMenu(CEAFMenu* pMenu) = 0;

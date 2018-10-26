@@ -652,14 +652,12 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
 
 rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType) const
 {
-   USES_CONVERSION;
-
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
    pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
 
    std::_tstring strName = pProductLoads->GetLiveLoadName(llType,0);
-   if ( strName == _T("No Live Load Defined") )
+   if ( strName == NO_LIVE_LOAD_DEFINED )
    {
       return NULL;
    }
@@ -679,8 +677,8 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,const CGirderKe
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), true );
    location.IncludeSpanAndGirder(true);
 
-   CComBSTR bstrTitle = ::GetLiveLoadTypeName(ratingType);
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,OLE2T(bstrTitle));
+   CString strTitle = ::GetLiveLoadTypeName(ratingType);
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,strTitle);
 
    pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -699,11 +697,11 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,const CGirderKe
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
    VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
-   for ( VehicleIndexType vehIdx = 0; vehIdx < nVehicles; vehIdx++ )
+   for ( VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++ )
    {
-      std::_tstring strName = pProductLoads->GetLiveLoadName(llType,vehIdx);
+      std::_tstring strName = pProductLoads->GetLiveLoadName(llType,vehicleIdx);
 
-      const pgsRatingArtifact* pRatingArtifact = pArtifact->GetRatingArtifact(girderKey,ratingType,vehIdx);
+      const pgsRatingArtifact* pRatingArtifact = pArtifact->GetRatingArtifact(girderKey,ratingType,vehicleIdx);
 
       const pgsMomentRatingArtifact* pPositiveMoment;
       const pgsMomentRatingArtifact* pNegativeMoment;
@@ -720,35 +718,35 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,const CGirderKe
       bool bIsStressRatio = false;
       if ( pPositiveMoment )
       {
-         ATLASSERT(vehIdx == pPositiveMoment->GetVehicleIndex());
+         ATLASSERT(vehicleIdx == pPositiveMoment->GetVehicleIndex());
          gLL = pPositiveMoment->GetLiveLoadFactor();
          strControlling = _T("Positive Moment");
          poi = pPositiveMoment->GetPointOfInterest();
       }
       else if ( pNegativeMoment )
       {
-         ATLASSERT(vehIdx == pNegativeMoment->GetVehicleIndex());
+         ATLASSERT(vehicleIdx == pNegativeMoment->GetVehicleIndex());
          gLL = pNegativeMoment->GetLiveLoadFactor();
          strControlling = _T("Negative Moment");
          poi = pNegativeMoment->GetPointOfInterest();
       }
       else if ( pShear )
       {
-         ATLASSERT(vehIdx == pShear->GetVehicleIndex());
+         ATLASSERT(vehicleIdx == pShear->GetVehicleIndex());
          gLL = pShear->GetLiveLoadFactor();
          strControlling = _T("Shear");
          poi = pShear->GetPointOfInterest();
       }
       else if ( pStress )
       {
-         ATLASSERT(vehIdx == pStress->GetVehicleIndex());
+         ATLASSERT(vehicleIdx == pStress->GetVehicleIndex());
          gLL = pStress->GetLiveLoadFactor();
          strControlling = _T("Stress");
          poi = pStress->GetPointOfInterest();
       }
       else if ( pYieldStressPositiveMoment )
       {
-         ATLASSERT(vehIdx == pYieldStressPositiveMoment->GetVehicleIndex());
+         ATLASSERT(vehicleIdx == pYieldStressPositiveMoment->GetVehicleIndex());
          gLL = pYieldStressPositiveMoment->GetLiveLoadFactor();
          strControlling = _T("Yield Stress Positive Moment");
          poi = pYieldStressPositiveMoment->GetPointOfInterest();
@@ -756,7 +754,7 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,const CGirderKe
       }
       else if ( pYieldStressNegativeMoment )
       {
-         ATLASSERT(vehIdx == pYieldStressNegativeMoment->GetVehicleIndex());
+         ATLASSERT(vehicleIdx == pYieldStressNegativeMoment->GetVehicleIndex());
          gLL = pYieldStressNegativeMoment->GetLiveLoadFactor();
          strControlling = _T("Yield Stress Negative Moment");
          poi = pYieldStressNegativeMoment->GetPointOfInterest();
@@ -824,15 +822,20 @@ rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,const CGirder
 
    RowIndexType row = table->GetNumberOfHeaderRows();
    VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
-   for ( VehicleIndexType vehIdx = 0; vehIdx < nVehicles; vehIdx++ )
+   for ( VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++ )
    {
       ColumnIndexType col = 0;
-      const pgsRatingArtifact* pRatingArtifact = pArtifact->GetRatingArtifact(girderKey,ratingType,vehIdx);
+      const pgsRatingArtifact* pRatingArtifact = pArtifact->GetRatingArtifact(girderKey,ratingType,vehicleIdx);
       if ( pRatingArtifact )
       {
          Float64 postingLoad, W, RF;
          std::_tstring strName;
          pRatingArtifact->GetSafePostingLoad(&postingLoad,&W,&RF,&strName);
+
+         if ( 1 <= RF )
+         {
+            continue;
+         }
 
          (*table)(row,col++) << strName;
          (*table)(row,col++) << tonnage.SetValue(W);

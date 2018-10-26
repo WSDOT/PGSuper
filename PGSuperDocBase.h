@@ -78,9 +78,9 @@ protected: // create from serialization only
 protected:
    virtual BOOL Init();
    virtual BOOL LoadSpecialAgents(IBrokerInitEx2* pBrokerInit); 
-   virtual void OnChangedFavoriteReports(bool isFavorites, bool fromMenu);
-   virtual void OnCustomReportError(custReportErrorType error, const std::_tstring& reportName, const std::_tstring& otherName);
-   virtual void OnCustomReportHelp(custRepportHelpType helpType);
+   virtual void OnChangedFavoriteReports(BOOL bIsFavorites, BOOL bFromMenu);
+   //virtual void OnCustomReportError(eafTypes::CustomReportError error, LPCTSTR lpszReportName, LPCTSTR lpszOtherName);
+   virtual void ShowCustomReportHelp(eafTypes::CustomReportHelp helpType);
 
 // CEAFAutoCalcDocMixin over-rides
 public:
@@ -185,9 +185,8 @@ public:
    UINT GetGirderEditorSettings() const;
    void SetGirderEditorSettings(UINT settings);
 
-   // set/get settings for UI hint dialogs
-   UINT GetUIHintSettings() const;
-   void SetUIHintSettings(UINT settings);
+   // called when the UI Hints have been reset
+   virtual void ResetUIHints();
 
    bool ShowProjectPropertiesOnNewProject();
    void ShowProjectPropertiesOnNewProject(bool bShow);
@@ -302,7 +301,6 @@ protected:
    UINT m_BridgeModelEditorSettings;
    UINT m_AlignmentEditorSettings;
    UINT m_GirderModelEditorSettings;
-   UINT m_UIHintSettings;
    bool m_bShowProjectProperties;
 
    CComPtr<IDocUnitSystem> m_DocUnitSystem;
@@ -360,7 +358,7 @@ protected:
 
    virtual CString GetToolbarSectionName();
 
-   virtual void CreateReportView(CollectionIndexType rptIdx,bool bPrompt);
+   virtual void CreateReportView(CollectionIndexType rptIdx,BOOL bPrompt);
    virtual void CreateGraphView(CollectionIndexType graphIdx);
 
    virtual void DeleteContents();
@@ -395,7 +393,6 @@ protected:
 	afx_msg void OnDeleteSelection();
 	afx_msg void OnUpdateDeleteSelection(CCmdUI* pCmdUI);
 	afx_msg void OnInsert();
-	afx_msg void OnOptionsHints();
    afx_msg void OnOptionsLabels();
    afx_msg void OnUpdateNow();
 	afx_msg void OnUpdateUpdateNow(CCmdUI* pCmdUI);

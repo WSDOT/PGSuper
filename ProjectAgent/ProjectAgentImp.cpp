@@ -48,6 +48,7 @@
 #include <IFace\StatusCenter.h>
 #include <IFace\UpdateTemplates.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
 #include <IFace\Transactions.h>
 #include <IFace\StatusCenter.h>
@@ -7391,6 +7392,177 @@ pgsTypes::SpecialPermitType CProjectAgentImp::GetSpecialPermitType()
    return m_SpecialPermitType;
 }
 
+Float64 CProjectAgentImp::GetStrengthLiveLoadFactor(pgsTypes::LoadRatingType ratingType,AxleConfiguration& axleConfig)
+{
+   ATLASSERT(::IsPermitRatingType(ratingType));
+
+#if defined _DEBUG
+   pgsTypes::LimitState ls = ::GetStrengthLimitStateType(ratingType);
+   ATLASSERT( GetLiveLoadFactor(ls,true) < 0 );
+#endif
+
+   Float64 sum_axle_weight = 0; // sum of axle weights on the bridge
+   Float64 firstAxleLocation = -1;
+   Float64 lastAxleLocation = 0;
+   BOOST_FOREACH(AxlePlacement& axle_placement,axleConfig)
+   {
+      sum_axle_weight += axle_placement.Weight;
+
+      if ( !IsZero(axle_placement.Weight) )
+      {
+         if ( firstAxleLocation < 0 )
+         {
+            firstAxleLocation = axle_placement.Location;
+         }
+
+         lastAxleLocation = axle_placement.Location;
+      }
+   }
+   
+   Float64 AL = fabs(firstAxleLocation - lastAxleLocation); // front axle to rear axle length (for axles on the bridge)
+
+   Float64 gLL = 0;
+   const RatingLibraryEntry* pRatingEntry = GetRatingEntry( GetRatingSpecification().c_str() );
+   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+   {
+      CLiveLoadFactorModel model;
+      if ( ratingType == pgsTypes::lrPermit_Special )
+      {
+         model = pRatingEntry->GetLiveLoadFactorModel(GetSpecialPermitType());
+      }
+      else
+      {
+         model = pRatingEntry->GetLiveLoadFactorModel(ratingType);
+      }
+
+      gLL = model.GetStrengthLiveLoadFactor(GetADTT(),sum_axle_weight);
+   }
+   else
+   {
+      Float64 GVW = sum_axle_weight;
+      Float64 PermitWeightRatio = IsZero(AL) ? 0 : GVW/AL;
+      CLiveLoadFactorModel2 model;
+      if ( ratingType == pgsTypes::lrPermit_Special )
+      {
+         model = pRatingEntry->GetLiveLoadFactorModel2(GetSpecialPermitType());
+      }
+      else
+      {
+         model = pRatingEntry->GetLiveLoadFactorModel2(ratingType);
+      }
+
+      gLL = model.GetStrengthLiveLoadFactor(GetADTT(),PermitWeightRatio);
+   }
+
+   return gLL;
+}
+
+Float64 CProjectAgentImp::GetServiceLiveLoadFactor(pgsTypes::LoadRatingType ratingType)
+{
+   ATLASSERT(::IsPermitRatingType(ratingType));
+
+#if defined _DEBUG
+   pgsTypes::LimitState ls = ::GetServiceLimitStateType(ratingType);
+   ATLASSERT( GetLiveLoadFactor(ls,true) < 0 );
+#endif
+
+   Float64 gLL = 0;
+   const RatingLibraryEntry* pRatingEntry = GetRatingEntry( GetRatingSpecification().c_str() );
+   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+   {
+      CLiveLoadFactorModel model;
+      if ( ratingType == pgsTypes::lrPermit_Special )
+      {
+         model = pRatingEntry->GetLiveLoadFactorModel(GetSpecialPermitType());
+      }
+      else
+      {
+         model = pRatingEntry->GetLiveLoadFactorModel(ratingType);
+      }
+
+      gLL = model.GetServiceLiveLoadFactor(GetADTT());
+   }
+   else
+   {
+      CLiveLoadFactorModel2 model;
+      if ( ratingType == pgsTypes::lrPermit_Special )
+      {
+         model = pRatingEntry->GetLiveLoadFactorModel2(GetSpecialPermitType());
+      }
+      else
+      {
+         model = pRatingEntry->GetLiveLoadFactorModel2(ratingType);
+      }
+
+      gLL = model.GetServiceLiveLoadFactor(GetADTT());
+   }
+
+   return gLL;
+}
+
+Float64 CProjectAgentImp::GetReactionStrengthLiveLoadFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx)
+{
+   pgsTypes::LimitState ls = ::GetStrengthLimitStateType(ratingType);
+   Float64 gLL = GetLiveLoadFactor(ls,true);
+   if ( gLL < 0 )
+   {
+      gLL = GetServiceLiveLoadFactor(ratingType);
+   }
+   return gLL;
+}
+
+Float64 CProjectAgentImp::GetReactionServiceLiveLoadFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx)
+{
+   pgsTypes::LimitState ls = ::GetServiceLimitStateType(ratingType);
+   Float64 gLL = GetLiveLoadFactor(ls,true);
+   if ( gLL < 0 )
+   {
+      GET_IFACE(IIntervals,pIntervals);
+      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+
+      pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
+
+      GET_IFACE(IProductForces,pProductForces);
+      pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+
+      GET_IFACE(IReactions,pReactions);
+
+      GroupIndexType grpIdx;
+      if ( pierIdx == 0 )
+      {
+         grpIdx = 0;
+      }
+      else if ( pierIdx == m_BridgeDescription.GetPierCount()-1 )
+      {
+         grpIdx = m_BridgeDescription.GetGirderGroupCount() - 1;
+      }
+      else
+      {
+         grpIdx = m_BridgeDescription.GetPier(pierIdx)->GetGirderGroup(pgsTypes::Ahead)->GetIndex();
+      }
+      CGirderKey girderKey(grpIdx,gdrIdx);
+
+      Float64 Rmin, Rmax;
+      AxleConfiguration minAxleConfig, maxAxleConfig;
+      if ( vehicleIdx == INVALID_INDEX )
+      {
+         IndexType minVehicleIdx, maxVehicleIdx;
+         pReactions->GetLiveLoadReaction(liveLoadIntervalIdx,llType,pierIdx,girderKey,bat,true/*include impact*/,false/*no LLDF*/,&Rmin,&Rmax,&minVehicleIdx,&maxVehicleIdx);
+         
+         Float64 rmin,rmax;
+         pReactions->GetVehicularLiveLoadReaction(liveLoadIntervalIdx,llType,maxVehicleIdx,pierIdx,girderKey,bat,true/*include impact*/,false/*no LLDF*/,&rmin,&rmax,NULL,&maxAxleConfig);
+         ATLASSERT(IsEqual(Rmax,rmax));
+      }
+      else
+      {
+         pReactions->GetVehicularLiveLoadReaction(liveLoadIntervalIdx,llType,vehicleIdx,pierIdx,girderKey,bat,true/*include impact*/,false/*no LLDF*/,&Rmin,&Rmax,&minAxleConfig,&maxAxleConfig);
+      }
+
+      gLL = GetStrengthLiveLoadFactor(ratingType,maxAxleConfig);
+   }
+   return gLL;
+}
+
 ////////////////////////////////////////////////////////////////////////
 // ISpecification Methods
 //
@@ -9811,7 +9983,9 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    // are removed all on the same day. Assuming max construction sequence (D120). The actual
    // don't matter unless the user switches to time-step analysis.
    pTimelineEvent = new CTimelineEvent;
-   pTimelineEvent->SetDay( ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetCreepDuration1Max(),unitMeasure::Day) );
+   Float64 day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetCreepDuration1Max(),unitMeasure::Day);
+   day = Max(day,28.0);
+   pTimelineEvent->SetDay( day );
    pTimelineEvent->SetDescription(_T("Erect Girders"));
    pTimelineEvent->GetErectSegmentsActivity().Enable();
    pTimelineEvent->GetErectSegmentsActivity().AddSegments(segmentIDs);
@@ -9819,7 +9993,9 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
 
    // Cast deck
    pTimelineEvent = new CTimelineEvent;
-   pTimelineEvent->SetDay( ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetCreepDuration2Max(),unitMeasure::Day) );
+   day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetCreepDuration2Max(),unitMeasure::Day);
+   day = Max(day,29.0);
+   pTimelineEvent->SetDay( day );
    pTimelineEvent->SetDescription(_T("Cast Deck (Bridge Site 1)"));
    pTimelineEvent->GetCastDeckActivity().Enable();
    pTimelineEvent->GetCastDeckActivity().SetConcreteAgeAtContinuity( 1.0 ); // 1 day
@@ -9827,7 +10003,9 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
 
    // traffic barrier/superimposed dead loads
    pTimelineEvent = new CTimelineEvent;
-   pTimelineEvent->SetDay( ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetCreepDuration2Max(),unitMeasure::Day) + 1.0); // deck is continuous
+   day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetCreepDuration2Max(),unitMeasure::Day) + 1.0;
+   day = Max(day,30.0);
+   pTimelineEvent->SetDay( day ); // deck is continuous
    pTimelineEvent->SetDescription(_T("Final without Live Load (Bridge Site 2)"));
    pTimelineEvent->GetApplyLoadActivity().Enable();
    pTimelineEvent->GetApplyLoadActivity().ApplyRailingSystemLoad(true);
@@ -9836,7 +10014,9 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
 
    // live load
    pTimelineEvent = new CTimelineEvent;
-   pTimelineEvent->SetDay(::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetTotalCreepDuration(),unitMeasure::Day));
+   day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetTotalCreepDuration(),unitMeasure::Day);
+   day = Max(day,31.0);
+   pTimelineEvent->SetDay( day );
    pTimelineEvent->SetDescription(_T("Final with Live Load (Bridge Site 3)"));
    pTimelineEvent->GetApplyLoadActivity().Enable();
    pTimelineEvent->GetApplyLoadActivity().ApplyLiveLoad(true);

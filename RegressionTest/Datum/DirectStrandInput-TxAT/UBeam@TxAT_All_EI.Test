@@ -11,9 +11,9 @@ Compressive stress check failed for Service I for the Final without Live Load St
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
 
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -27,9 +27,9 @@ Tensile stress check failed for Service I for the Deck and Diaphragm Placement S
 Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
 
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -45,7 +45,7 @@ Compressive stress check failed for Service I for the Final without Live Load St
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
 

@@ -30,7 +30,8 @@
 
 // Base class for all PGSuper Document-type application plugins
 // Performs common initialization expected by the CPGSuperDocBase class
-class CPGSuperBaseAppPlugin
+class CPGSuperBaseAppPlugin : 
+   public CEAFCustomReportMixin
 {
 public:
    CPGSuperBaseAppPlugin();
@@ -67,17 +68,8 @@ public:
 
    virtual BOOL UpdateProgramSettings(BOOL bFirstRun);
 
-   // Determine whether to display favorite reports or all reports in menu dropdowns
-   bool GetDoDisplayFavoriteReports() const;
-   void SetDoDisplayFavoriteReports(bool doDisplay);
-
-   // Current list of favorite reports
-   const std::vector<std::_tstring>& GetFavoriteReports() const;
-   void SetFavoriteReports(const std::vector<std::_tstring>& reports);
-
-   // Custom, user-defined reports
-   const CEAFCustomReports& GetCustomReports() const;
-   void SetCustomReports(const CEAFCustomReports& reports);
+   virtual void LoadCustomReportInformation();
+   virtual void SaveCustomReportInformation();
 
 protected:
    CString m_strAppProfileName; // this is the original app profile name before we mess with it
@@ -99,11 +91,6 @@ protected:
    CString m_EngineerName;
    CString m_CompanyName;
 
-   BOOL m_DisplayFavoriteReports;
-   std::vector<std::_tstring> m_FavoriteReports;
-
-   CEAFCustomReports m_CustomReports;
-
    virtual LPCTSTR GetCatalogServerKey();
    virtual LPCTSTR GetPublisherKey();
    virtual LPCTSTR GetMasterLibraryCacheKey();
@@ -114,11 +101,9 @@ protected:
    virtual void LoadRegistryValues();
    virtual void LoadSettings();
    virtual void LoadOptions();
-   virtual void LoadReportOptions();
    virtual void SaveRegistryValues();
    virtual void SaveSettings();
    virtual void SaveOptions();
-   virtual void SaveReportOptions();
 
    bool IsTimeToUpdateCache();
    bool AreUpdatesPending();

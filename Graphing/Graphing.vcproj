@@ -218,11 +218,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="1"
-				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="\ARP\PGSuper;\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
 				PreprocessorDefinitions="BUILDGRAPHINGLIB;WIN32;_WINDOWS;NDEBUG;_USRDLL"
 				RuntimeLibrary="2"
@@ -310,11 +305,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="1"
-				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="\ARP\PGSuper;\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
 				PreprocessorDefinitions="BUILDGRAPHINGLIB;WIN32;_WINDOWS;NDEBUG;_USRDLL"
 				RuntimeLibrary="2"

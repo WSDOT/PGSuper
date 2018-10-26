@@ -831,7 +831,7 @@ void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentK
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << _T("Details for Check for Hauling to Bridge Site [5.5.4.3]")<<rptNewLine;
+   *pTitle << _T("Details for Check for Hauling to Bridge Site [5.5.4.3][5.9.4.1]")<<rptNewLine;
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -1671,7 +1671,7 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(const CSegmentKey
 {
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << _T("Check for Hauling to Bridge Site [5.5.4.3]")<<rptNewLine;
+   *pTitle << _T("Check for Hauling to Bridge Site [5.5.4.3][5.9.4.1]")<<rptNewLine;
 
    GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
    SegmentIndexType nSegments = pBridgeDesc->GetGirder(segmentKey)->GetSegmentCount();

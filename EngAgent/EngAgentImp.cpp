@@ -306,7 +306,7 @@ void CEngAgentImp::ValidateArtifacts(const CGirderKey& girderKey)
 }
 
 //-----------------------------------------------------------------------------
-void CEngAgentImp::ValidateRatingArtifacts(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex)
+void CEngAgentImp::ValidateRatingArtifacts(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx)
 {
    GET_IFACE(IRatingSpecification,pRatingSpec);
    if ( !pRatingSpec->IsRatingEnabled(ratingType) )
@@ -315,7 +315,7 @@ void CEngAgentImp::ValidateRatingArtifacts(const CGirderKey& girderKey,pgsTypes:
    }
 
    std::map<RatingArtifactKey,pgsRatingArtifact>::iterator found;
-   RatingArtifactKey key(girderKey,vehicleIndex);
+   RatingArtifactKey key(girderKey,vehicleIdx);
    found = m_RatingArtifacts[ratingType].find(key);
    if ( found != m_RatingArtifacts[ratingType].end() )
    {
@@ -329,7 +329,7 @@ void CEngAgentImp::ValidateRatingArtifacts(const CGirderKey& girderKey,pgsTypes:
    os << "Load Rating Girder Line " << LABEL_GIRDER(girderKey.girderIndex) << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
-   pgsRatingArtifact artifact = m_LoadRater.Rate(girderKey,ratingType,vehicleIndex);
+   pgsRatingArtifact artifact = m_LoadRater.Rate(girderKey,ratingType,vehicleIdx);
 
    m_RatingArtifacts[ratingType].insert( std::make_pair(key,artifact) );
 }
@@ -342,10 +342,10 @@ const LOSSDETAILS* CEngAgentImp::FindLosses(const pgsPointOfInterest& poi,Interv
 
 //-----------------------------------------------------------------------------
 
-pgsRatingArtifact* CEngAgentImp::FindRatingArtifact(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex)
+pgsRatingArtifact* CEngAgentImp::FindRatingArtifact(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx)
 {
     std::map<RatingArtifactKey,pgsRatingArtifact>::iterator found;
-    RatingArtifactKey key(girderKey,vehicleIndex);
+    RatingArtifactKey key(girderKey,vehicleIdx);
     found = m_RatingArtifacts[ratingType].find( key );
     if ( found == m_RatingArtifacts[ratingType].end() )
     {
@@ -356,9 +356,9 @@ pgsRatingArtifact* CEngAgentImp::FindRatingArtifact(const CGirderKey& girderKey,
 }
 
 //-----------------------------------------------------------------------------
-const MINMOMENTCAPDETAILS* CEngAgentImp::ValidateMinMomentCapacity(IntervalIndexType intervalIdx,
-                                                                   const pgsPointOfInterest& poi,
-                                                                   bool bPositiveMoment)
+MINMOMENTCAPDETAILS CEngAgentImp::ValidateMinMomentCapacity(IntervalIndexType intervalIdx,
+                                                            const pgsPointOfInterest& poi,
+                                                             bool bPositiveMoment)
 {
    std::map<PoiIDKey,MINMOMENTCAPDETAILS>::iterator found;
    std::map<PoiIDKey,MINMOMENTCAPDETAILS>* pMap;
@@ -377,17 +377,24 @@ const MINMOMENTCAPDETAILS* CEngAgentImp::ValidateMinMomentCapacity(IntervalIndex
       found = pMap->find( key );
       if ( found != pMap->end() )
       {
-         return &((*found).second); // capacities have already been computed
+         return ((*found).second); // capacities have already been computed
       }
    }
 
    MINMOMENTCAPDETAILS mmcd;
    m_MomentCapEngineer.ComputeMinMomentCapacity(intervalIdx,poi,bPositiveMoment,&mmcd);
 
-   PoiIDKey key(poi,poi.GetID());
-   std::pair<std::map<PoiIDKey,MINMOMENTCAPDETAILS>::iterator,bool> retval;
-   retval = pMap->insert( std::make_pair(key,mmcd) );
-   return &((*(retval.first)).second);
+   if ( poi.GetID() == INVALID_ID )
+   {
+      return mmcd;
+   }
+   else
+   {
+      PoiIDKey key(poi,poi.GetID());
+      std::pair<std::map<PoiIDKey,MINMOMENTCAPDETAILS>::iterator,bool> retval;
+      retval = pMap->insert( std::make_pair(key,mmcd) );
+      return ((*(retval.first)).second);
+   }
 }
 
 //-----------------------------------------------------------------------------
@@ -861,7 +868,10 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
       Float64 Rmin,Rmax;
       pLSForces->GetReaction(intervalIdx,limitState,pierIdx,girderKey,bat,true,&Rmin, &Rmax);
 
-      if ( Rmin <= 0 )
+      Rmin = IsZero(Rmin,0.001) ? 0 : Rmin;
+      Rmax = IsZero(Rmax,0.001) ? 0 : Rmax;
+
+      if ( Rmin < 0 )
       {
          // this is an uplift reaction... use the face of support for the critical section
          csDetails.bAtFaceOfSupport = true;
@@ -2605,7 +2615,7 @@ Float64 CEngAgentImp::GetReactionDistFactor(PierIndexType pierIdx,GirderIndexTyp
    else
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
-      CGirderKey girderKey(pGroup->GetIndex(),gdrIdx);
+      CGirderKey girderKey(pGroup->GetIndex(),Min(gdrIdx,pGroup->GetGirderCount()-1));
       ValidateLiveLoadDistributionFactors(girderKey);
 
       return m_pDistFactorEngineer->GetReactionDF(pierIdx,gdrIdx,limitState);
@@ -2626,7 +2636,7 @@ Float64 CEngAgentImp::GetReactionDistFactor(PierIndexType pierIdx,GirderIndexTyp
    else
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
-      CGirderKey girderKey(pGroup->GetIndex(),gdrIdx);
+      CGirderKey girderKey(pGroup->GetIndex(),Min(gdrIdx,pGroup->GetGirderCount()-1));
       ValidateLiveLoadDistributionFactors(girderKey);
 
       return m_pDistFactorEngineer->GetReactionDF(pierIdx,gdrIdx,limitState,fcgdr);
@@ -2640,7 +2650,7 @@ Float64 CEngAgentImp::GetSkewCorrectionFactorForMoment(const CSpanKey& spanKey,p
    const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
    GroupIndexType grpIdx = pGroup->GetIndex();
-   CGirderKey girderKey(grpIdx,spanKey.girderIndex);
+   CGirderKey girderKey(grpIdx,Min(spanKey.girderIndex,pGroup->GetGirderCount()-1));
 
    ValidateLiveLoadDistributionFactors(girderKey);
 
@@ -2661,7 +2671,7 @@ Float64 CEngAgentImp::GetSkewCorrectionFactorForShear(const CSpanKey& spanKey,pg
    const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
    GroupIndexType grpIdx = pGroup->GetIndex();
-   CGirderKey girderKey(grpIdx,spanKey.girderIndex);
+   CGirderKey girderKey(grpIdx,Min(spanKey.girderIndex,pGroup->GetGirderCount()-1));
 
    ValidateLiveLoadDistributionFactors(girderKey);
 
@@ -3359,11 +3369,17 @@ Float64 CEngAgentImp::GetCrackingMoment(IntervalIndexType intervalIdx,const pgsP
    // Mcr = Sc(fr + fcpe) - Mdnc(Sc/Snc - 1) >= Scfr
    // This correction was made in LRFD 3rd Edition 2005.
    // 
-   // We are going to use the correct equation from 2nd Edition 2003 forward
+   // We are going to use the correct equation from 2nd Edition 2003 forward.
+   // The limiting value was removed in LRFD 6th Edition, 2012
    bool bAfter2002 = ( lrfdVersionMgr::SecondEditionWith2003Interims <= pSpecEntry->GetSpecificationType() ? true : false );
-   if ( bAfter2002 )
+   bool bBefore2012 = ( pSpecEntry->GetSpecificationType() <  lrfdVersionMgr::SixthEdition2012 ? true : false );
+   if ( bAfter2002 && bBefore2012 )
    {
-      Mcr = Min(cmd.Mcr,cmd.McrLimit);
+      Mcr = (bPositiveMoment ? Max(cmd.Mcr,cmd.McrLimit) : Min(cmd.Mcr,cmd.McrLimit));
+   }
+   else
+   {
+      Mcr = cmd.Mcr;
    }
 
    return Mcr;
@@ -3438,7 +3454,7 @@ void CEngAgentImp::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx,con
    ATLASSERT( llEventIdx <= intervalIdx );
 #endif
 
-   *pmmcd = *ValidateMinMomentCapacity(intervalIdx,poi,bPositiveMoment);
+   *pmmcd = ValidateMinMomentCapacity(intervalIdx,poi,bPositiveMoment);
 }
 
 void CEngAgentImp::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment,MINMOMENTCAPDETAILS* pmmcd)
@@ -4216,10 +4232,10 @@ const pgsHaulingAnalysisArtifact* CEngAgentImp::GetHaulingAnalysisArtifact(const
    return m_Designer.CheckHauling(segmentKey);
 }
 
-const pgsRatingArtifact* CEngAgentImp::GetRatingArtifact(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex)
+const pgsRatingArtifact* CEngAgentImp::GetRatingArtifact(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx)
 {
-   ValidateRatingArtifacts(girderKey,ratingType,vehicleIndex);
-   return FindRatingArtifact(girderKey,ratingType,vehicleIndex);
+   ValidateRatingArtifacts(girderKey,ratingType,vehicleIdx);
+   return FindRatingArtifact(girderKey,ratingType,vehicleIdx);
 }
 
 const pgsGirderDesignArtifact* CEngAgentImp::CreateDesignArtifact(const CGirderKey& girderKey,const std::vector<arDesignOptions>& designOptions)

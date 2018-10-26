@@ -29,6 +29,7 @@
 #include <IFace\DocumentType.h>
 #include <IFace\Selection.h>
 #include <IFace\Bridge.h>
+#include <IFace\GirderHandlingSpecCriteria.h>
 
 IMPLEMENT_DYNCREATE(CStabilityGraphController,CEAFGraphControlWindow)
 
@@ -70,6 +71,16 @@ BOOL CStabilityGraphController::OnInitDialog()
    pcbStage->AddString(_T("Transportation"));
    pcbStage->SetCurSel(0);
    m_GraphType = GT_LIFTING;
+
+   GET_IFACE(ISegmentHaulingSpecCriteria,pSpec);
+   if ( pSpec->GetHaulingAnalysisMethod() == pgsTypes::hmKDOT )
+   {
+      // Transportation stability graph isn't applicable for KDOT mode
+      // so disable and hide the mode selector
+      pcbStage->EnableWindow(FALSE);
+      pcbStage->ShowWindow(SW_HIDE);
+   }
+
 
    FillGroupCtrl();
 

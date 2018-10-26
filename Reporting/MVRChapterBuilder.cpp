@@ -474,14 +474,17 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          p = new rptParagraph;
          *pChapter << p;
 
-         CCombinedAxialTable().Build(pBroker,pChapter,thisGirderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
-         if ( bTimeDependentNote )
+         if ( bReportAxial )
          {
-            p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
-            *pChapter << p;
-            *p << TIME_DEPENDENT_NOTE << rptNewLine;
-            p = new rptParagraph;
-            *pChapter << p;
+            CCombinedAxialTable().Build(pBroker,pChapter,thisGirderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
+            if ( bTimeDependentNote )
+            {
+               p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+               *pChapter << p;
+               *p << TIME_DEPENDENT_NOTE << rptNewLine;
+               p = new rptParagraph;
+               *pChapter << p;
+            }
          }
          CCombinedMomentsTable().Build(pBroker,pChapter,thisGirderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
          if ( bTimeDependentNote )

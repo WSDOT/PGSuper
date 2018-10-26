@@ -517,20 +517,12 @@ CShearData2 CShearData::Convert() const
       shearData.ShearZones.push_back( zoneData );
    }
 
-#pragma Reminder("UPDATE: not converting all of the shear data")
-
-   //// Horiz interface zones, splitting and confinement data added in v 9
-   //typedef std::vector<CHorizontalInterfaceZoneData> HorizontalInterfaceZoneVec;
-   //typedef HorizontalInterfaceZoneVec::iterator HorizontalInterfaceZoneIterator;
-   //typedef HorizontalInterfaceZoneVec::const_iterator HorizontalInterfaceZoneConstIterator;
-   //typedef HorizontalInterfaceZoneVec::reverse_iterator HorizontalInterfaceZoneReverseIterator;
-   //typedef HorizontalInterfaceZoneVec::const_reverse_iterator HorizontalInterfaceZoneConstReverseIterator;
-   //HorizontalInterfaceZoneVec HorizontalInterfaceZones;
+   shearData.HorizontalInterfaceZones = HorizontalInterfaceZones;
    
-   //matRebar::Size SplittingBarSize;
-   //Float64 SplittingBarSpacing;
-   //Float64 SplittingZoneLength;
-   //Float64 nSplittingBars;
+   shearData.SplittingBarSize    = SplittingBarSize;
+   shearData.SplittingBarSpacing = SplittingBarSpacing;
+   shearData.SplittingZoneLength = SplittingZoneLength;
+   shearData.nSplittingBars      = nSplittingBars;
 
    shearData.ConfinementBarSize    = ConfinementBarSize;
    shearData.ConfinementBarSpacing = ConfinementBarSpacing;

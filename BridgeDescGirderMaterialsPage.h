@@ -109,7 +109,7 @@ protected:
    void UpdateSlabOffsetHyperLink();
    void UpdateSlabOffsetControls();
 
-   void UpdateConcreteControls();
+   void UpdateConcreteControls(bool bSkipEcCheckBoxes=false);
    void UpdateConcreteParametersToolTip();
    CString m_strTip;
 

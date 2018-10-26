@@ -79,3 +79,5 @@ CString PGSEXTFUNC GetLabel(const CPierData2* pPier,IEAFDisplayUnits* pDisplayUn
 CString PGSEXTFUNC GetLabel(const CTemporarySupportData* pTS,IEAFDisplayUnits* pDisplayUnits);
 
 CString PGSEXTFUNC ConcreteDescription(const CConcreteMaterial& concrete);
+
+LPCTSTR PGSEXTFUNC GetLimitStateName(pgsTypes::LimitState limitState);

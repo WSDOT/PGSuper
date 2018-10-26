@@ -36,6 +36,8 @@
 
 #include <PGSuperTypes.h>
 #include <IFace\Bridge.h>
+#include <EAF\EAFUtilities.h>
+#include <EAF\EAFApp.h>
 
 // LOCAL INCLUDES
 //
@@ -69,11 +71,28 @@ LOG
    // Location of template folders
 inline CString GetTOGAFolder()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CEAFApp* pApp = EAFGetApp();
 
-   CString strHelpFolderName =  AfxGetApp()->m_pszHelpFilePath;
-   int loc = strHelpFolderName.ReverseFind(_T('\\'));
-   CString strWorkgroupFolderName = strHelpFolderName.Left(loc+1) + _T("TogaTemplates");
+   CString strAppPath = pApp->GetAppLocation();
+   strAppPath.MakeUpper();
+
+#if defined _DEBUG
+#if defined _WIN64
+   strAppPath.Replace(_T("REGFREECOM\\X64\\DEBUG\\"),_T(""));
+#else
+   strAppPath.Replace(_T("REGFREECOM\\WIN32\\DEBUG\\"),_T(""));
+#endif
+#else
+   // in a real release, the path doesn't contain RegFreeCOM\\Release, but that's
+   // ok... the replace will fail and the string wont be altered.
+#if defined _WIN64
+   strAppPath.Replace(_T("REGFREECOM\\X64\\RELEASE\\"),_T(""));
+#else
+   strAppPath.Replace(_T("REGFREECOM\\WIN32\\RELEASE\\"),_T(""));
+#endif
+#endif
+
+   CString strWorkgroupFolderName = strAppPath + _T("\\TogaTemplates");
 
    return strWorkgroupFolderName;
 }

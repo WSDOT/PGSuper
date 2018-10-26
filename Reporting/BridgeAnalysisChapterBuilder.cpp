@@ -399,7 +399,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
       }
 
       // if the only loading is the DUMMY load, then move on
-      if ( strLLNames.size() == 1 && strLLNames[0] == std::_tstring(_T("No Live Load Defined")) )
+      if ( strLLNames.size() == 1 && strLLNames[0] == std::_tstring(NO_LIVE_LOAD_DEFINED) )
       {
          continue;
       }
@@ -490,7 +490,11 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
          CLiveLoadDistributionFactorTable().Build(pChapter,pBroker,girderKey,pDisplayUnits);
       }
 
-      CCombinedAxialTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
+      if ( bReportAxial )
+      {
+         CCombinedAxialTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
+      }
+
       CCombinedMomentsTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
       CCombinedShearTable().Build(  pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
       if ( castDeckIntervalIdx <= intervalIdx )

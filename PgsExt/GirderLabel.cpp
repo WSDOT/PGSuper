@@ -239,3 +239,118 @@ CString ConcreteDescription(const CConcreteMaterial& concrete)
 
    return strLabel;
 }
+
+LPCTSTR GetLimitStateName(pgsTypes::LimitState limitState)
+{
+   // these are the names that are displayed to the user in the UI and reports
+   // this must be in the same order as the LimitState enum
+   static LPCTSTR strNames[] =
+   {
+      _T("Service I"),
+      _T("Service IA"),
+      _T("Service III"),
+      _T("Strength I"),
+      _T("Strength II"),
+      _T("Fatigue I"),
+      _T("Strength I (Inventory)"),
+      _T("Strength I (Operating)"),
+      _T("Service III (Inventory)"),
+      _T("Service III (Operating)"),
+      _T("Strength I (Legal - Routine)"),
+      _T("Strength I (Legal - Special)"),
+      _T("Service III (Legal - Routine)"),
+      _T("Service III (Legal - Special)"),
+      _T("Strength II (Routine Permit Rating)"),
+      _T("Service I (Routine Permit Rating)"),
+      _T("Strength II (Special Permit Rating)"),
+      _T("Service I (Special Permit Rating)")
+   };
+
+   // the direct lookup in the array is faster, however if the enum changes (number of values or order of values)
+   // it isn't easily detectable... the switch/case below is slower but it can detect errors that result
+   // from changing the enum
+#if defined _DEBUG
+   std::_tstring strName;
+   switch(limitState)
+   {
+      case pgsTypes::ServiceI:
+         strName = _T("Service I");
+         break;
+
+      case pgsTypes::ServiceIA:
+         strName = _T("Service IA");
+         break;
+
+      case pgsTypes::ServiceIII:
+         strName = _T("Service III");
+         break;
+
+      case pgsTypes::StrengthI:
+         strName = _T("Strength I");
+         break;
+
+      case pgsTypes::StrengthII:
+         strName = _T("Strength II");
+         break;
+
+      case pgsTypes::FatigueI:
+         strName = _T("Fatigue I");
+         break;
+
+      case pgsTypes::StrengthI_Inventory:
+         strName = _T("Strength I (Inventory)");
+         break;
+
+      case pgsTypes::StrengthI_Operating:
+         strName = _T("Strength I (Operating)");
+         break;
+
+      case pgsTypes::ServiceIII_Inventory:
+         strName = _T("Service III (Inventory)");
+         break;
+
+      case pgsTypes::ServiceIII_Operating:
+         strName = _T("Service III (Operating)");
+         break;
+
+      case pgsTypes::StrengthI_LegalRoutine:
+         strName = _T("Strength I (Legal - Routine)");
+         break;
+
+      case pgsTypes::StrengthI_LegalSpecial:
+         strName = _T("Strength I (Legal - Special)");
+         break;
+
+      case pgsTypes::ServiceIII_LegalRoutine:
+         strName = _T("Service III (Legal - Routine)");
+         break;
+
+      case pgsTypes::ServiceIII_LegalSpecial:
+         strName = _T("Service III (Legal - Special)");
+         break;
+
+      case pgsTypes::StrengthII_PermitRoutine:
+         strName = _T("Strength II (Routine Permit Rating)");
+         break;
+
+      case pgsTypes::ServiceI_PermitRoutine:
+         strName = _T("Service I (Routine Permit Rating)");
+         break;
+
+      case pgsTypes::StrengthII_PermitSpecial:
+         strName = _T("Strength II (Special Permit Rating)");
+         break;
+
+      case pgsTypes::ServiceI_PermitSpecial:
+         strName = _T("Service I (Special Permit Rating)");
+         break;
+
+      default:
+         ATLASSERT(false); // SHOULD NEVER GET HERE
+   }
+
+   ATLASSERT(strName == std::_tstring(strNames[limitState]));
+#endif
+
+   return strNames[limitState];
+}

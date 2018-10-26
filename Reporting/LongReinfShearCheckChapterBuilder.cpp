@@ -324,7 +324,6 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter,CRe
    }
 
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -333,6 +332,8 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter,CRe
    for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
+
+      DuctIndexType nDucts = pTendonGeom->GetDuctCount(thisGirderKey);
 
       IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval();
 

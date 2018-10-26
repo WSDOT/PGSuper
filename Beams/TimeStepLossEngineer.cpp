@@ -42,6 +42,11 @@
 
 #include <numeric>
 
+#define USE_ALL_POI
+//#if defined _DEBUG
+//#undef USE_ALL_POI
+//#endif
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -158,6 +163,7 @@ const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& po
    {
       // couldn't find the POI we are interested in... need to approximate results
 
+#if defined USE_ALL_POI
       ATLASSERT( poi.GetID() == INVALID_ID || 
                  poi.IsHarpingPoint()      || 
                  poi.HasAttribute(POI_CRITSECTSHEAR1) || 
@@ -165,6 +171,7 @@ const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& po
                  poi.HasAttribute(POI_LIFT_SEGMENT) ||
                  poi.HasAttribute(POI_HAUL_SEGMENT)
                 );
+#endif 
       // losses were not computed at the POI we are looking for. This happens for a couple of reasons.
       // 1) The POI was created on the fly (its ID is INVALID_ID)
       // 2) Harp Points -> we tweak the position of the harp point so we get the results on the side
@@ -724,6 +731,23 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CGirderKey& girderKey,L
    {
       ANCHORSETDETAILS& anchorSetDetails( pLosses->AnchorSet[ductIdx] );
 
+      const CDuctData* pDuct = pPTData->GetDuct(ductIdx/nWebs);
+      Float64 Pj;
+      if ( pDuct->bPjCalc )
+      {
+         Pj = m_pPTForce->GetPjackMax(girderKey,pDuct->nStrands);
+      }
+      else
+      {
+         Pj = pDuct->Pj;
+      }
+
+      Float64 aps = pPTData->pStrand->GetNominalArea();
+      StrandIndexType nStrands = pDuct->nStrands;
+      Float64 Aps = aps*nStrands;
+      Float64 fpj = (nStrands == 0 ? 0 : Pj/Aps);
+
+
       // sum of friction and anchor set losses along the tendon (for computing average value)
       Float64 Sum_dfpF = 0;
       Float64 Sum_dfpA = 0;
@@ -772,6 +796,14 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CGirderKey& girderKey,L
             }
 
             frDetails.dfpA = dfpA[pgsTypes::metStart] + dfpA[pgsTypes::metEnd];
+
+            if ( fpj - frDetails.dfpF - frDetails.dfpA < 0 )
+            {
+               // anchor set loss cannot be so much that the effective prestress is "compressive" (a negative value)
+               // This happens in cases when the friction loss is very large (bad input) and the friction loss negates
+               // most of the jacking stress. The stress in the tendon goes to zero before the full seating can happen
+               frDetails.dfpA = fpj - frDetails.dfpF;
+            }
 
             Sum_dfpF += frDetails.dfpF;
             Sum_dfpA += frDetails.dfpA;
@@ -1365,15 +1397,22 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
 
          // Girder
          Float64 Cs, Ce;
+         Float64 Xs, Xe;
          if ( bIgnoreCreepEffects )
          {
             Cs = 0;
             Ce = 0;
+
+            Xs = 1.0;
+            Xe = 1.0;
          }
          else
          {
             Cs = (bIsInClosure ? m_pMaterials->GetClosureJointCreepCoefficient(closureKey,i,pgsTypes::Middle,intervalIdx,pgsTypes::Start) : m_pMaterials->GetSegmentCreepCoefficient(segmentKey,i,pgsTypes::Middle,intervalIdx,pgsTypes::Start));
             Ce = (bIsInClosure ? m_pMaterials->GetClosureJointCreepCoefficient(closureKey,i,pgsTypes::Middle,intervalIdx,pgsTypes::End)   : m_pMaterials->GetSegmentCreepCoefficient(segmentKey,i,pgsTypes::Middle,intervalIdx,pgsTypes::End));
+
+            Xs = (bIsInClosure ? m_pMaterials->GetClosureJointAgingCoefficient(closureKey,intervalIdx) : m_pMaterials->GetSegmentAgingCoefficient(segmentKey,intervalIdx));
+            Xe = (bIsInClosure ? m_pMaterials->GetClosureJointAgingCoefficient(closureKey,intervalIdx) : m_pMaterials->GetSegmentAgingCoefficient(segmentKey,intervalIdx));
          }
 
          Float64 dP_Girder = 0;
@@ -1397,8 +1436,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          Float64 EiGirder = (bIsInClosure ? m_pMaterials->GetClosureJointEc(closureKey,i) : m_pMaterials->GetSegmentEc(segmentKey,i));
          Float64 EiAGirder = EiGirder*iTimeStepDetails.Girder.An;
          Float64 EiIGirder = EiGirder*iTimeStepDetails.Girder.In;
-         Float64 e = IsZero(EiAGirder) ? 0 : (Ce-Cs)*dP_Girder/EiAGirder;
-         Float64 r = IsZero(EiIGirder) ? 0 : (Ce-Cs)*dM_Girder/EiIGirder;
+         Float64 e = IsZero(EiAGirder) ? 0 : (Xe*Ce-Xs*Cs)*dP_Girder/EiAGirder;
+         Float64 r = IsZero(EiIGirder) ? 0 : (Xe*Ce-Xs*Cs)*dM_Girder/EiIGirder;
 
          tsDetails.Girder.eci += e;
          tsDetails.Girder.rci += r;
@@ -1408,6 +1447,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          girderCreepStrain.P = dP_Girder;
          girderCreepStrain.Cs = Cs;
          girderCreepStrain.Ce = Ce;
+         girderCreepStrain.Xs = Xs;
+         girderCreepStrain.Xe = Xe;
          girderCreepStrain.e = e;
 
          girderCreepCurvature.I = iTimeStepDetails.Girder.In;
@@ -1415,6 +1456,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          girderCreepCurvature.M = dM_Girder;
          girderCreepCurvature.Cs = Cs;
          girderCreepCurvature.Ce = Ce;
+         girderCreepCurvature.Xs = Xs;
+         girderCreepCurvature.Xe = Xe;
          girderCreepCurvature.r = r;
 
          tsDetails.Girder.ec.push_back(girderCreepStrain);
@@ -1425,11 +1468,16 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          {
             Cs = 0;
             Ce = 0;
+            Xs = 1.0;
+            Xe = 1.0;
          }
          else
          {
             Cs = m_pMaterials->GetDeckCreepCoefficient(i,pgsTypes::Middle,intervalIdx,pgsTypes::Start);
             Ce = m_pMaterials->GetDeckCreepCoefficient(i,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+
+            Xs = m_pMaterials->GetDeckAgingCoefficient(intervalIdx);
+            Xe = m_pMaterials->GetDeckAgingCoefficient(intervalIdx);
          }
 
          // Modulus in interval i (not age adjusteded because we apply the creep coefficients Ce and Cs)
@@ -1437,8 +1485,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          Float64 EiADeck = EiDeck*iTimeStepDetails.Deck.An;
          Float64 EiIDeck = EiDeck*iTimeStepDetails.Deck.In;
 
-         e = IsZero(EiADeck) ? 0 : (Ce-Cs)*dP_Deck/EiADeck;
-         r = IsZero(EiIDeck) ? 0 : (Ce-Cs)*dM_Deck/EiIDeck;
+         e = IsZero(EiADeck) ? 0 : (Xe*Ce-Xs*Cs)*dP_Deck/EiADeck;
+         r = IsZero(EiIDeck) ? 0 : (Xe*Ce-Xs*Cs)*dM_Deck/EiIDeck;
 
          tsDetails.Deck.eci += e;
          tsDetails.Deck.rci += r;
@@ -1448,6 +1496,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          deckCreepStrain.P = dP_Deck;
          deckCreepStrain.Cs = Cs;
          deckCreepStrain.Ce = Ce;
+         deckCreepStrain.Xs = Xs;
+         deckCreepStrain.Xe = Xe;
          deckCreepStrain.e = e;
 
          deckCreepCurvature.I = iTimeStepDetails.Deck.In;
@@ -1455,6 +1505,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          deckCreepCurvature.M = dM_Deck;
          deckCreepCurvature.Cs = Cs;
          deckCreepCurvature.Ce = Ce;
+         deckCreepCurvature.Xs = Xs;
+         deckCreepCurvature.Xe = Xe;
          deckCreepCurvature.r = r;
 
          tsDetails.Deck.ec.push_back(deckCreepStrain);
@@ -1622,10 +1674,32 @@ void CTimeStepLossEngineer::AnalyzeInitialStrains(IntervalIndexType intervalIdx,
          Float64 e1  = (EA1 == 0 ? 0 : Pr1/EA1);
          Float64 r1  = (EI1 == 0 ? 0 : Mr1/EI1);
 
+         // if a poi is at a closure joint and the closure joint is not yet effective there can't be any loads applied
+         if ( (bIsInClosure1 && !bIsClosure1Effective) || 
+              !bIsOnSegment1)
+         {
+            e1 = 0;
+            r1 = 0;
+         }
+
+         tsDetails1.e[i] = e1;
+         tsDetails1.r[i] = r1;
+
          Float64 Pr2 = tsDetails2.Pr[i];
          Float64 Mr2 = tsDetails2.Mr[i];
          Float64 e2  = (EA2 == 0 ? 0 : Pr2/EA2);
          Float64 r2  = (EI2 == 0 ? 0 : Mr2/EI2);
+
+         // if a poi is at a closure joint and the closure joint is not yet effective there can't be any loads applied
+         if ( (bIsInClosure2 && !bIsClosure2Effective) ||
+              !bIsOnSegment2)
+         {
+            e2 = 0;
+            r2 = 0;
+         }
+
+         tsDetails2.e[i] = e2;
+         tsDetails2.r[i] = r2;
 
          // The formulation in "Time-Dependent Analysis of Composite Frames (Tadros 1977)" assumes that the
          // initial strains vary lineraly along the bridge. The underlying LBAM and FEM models
@@ -1634,22 +1708,6 @@ void CTimeStepLossEngineer::AnalyzeInitialStrains(IntervalIndexType intervalIdx,
          // NOTE: The negative sign is because we want equal and opposite strains
          Float64 e(-0.5*(e1 + e2));
          Float64 r(-0.5*(r1 + r2));
-
-         // if a poi is at a closure joint and the closure joint is not yet effective there can't be any loads applied
-         if ( (bIsInClosure1 && !bIsClosure1Effective) || 
-              (bIsInClosure2 && !bIsClosure2Effective) ||
-              !bIsOnSegment1 ||
-              !bIsOnSegment2)
-         {
-            e = 0;
-            r = 0;
-         }
-
-         tsDetails1.e[i][pgsTypes::Ahead] = e;
-         tsDetails1.r[i][pgsTypes::Ahead] = r;
-
-         tsDetails2.e[i][pgsTypes::Back] = e;
-         tsDetails2.r[i][pgsTypes::Back] = r;
 
          // create the loading as a product force load. This will directly yield the resultant
          // restraining force for the product force type
@@ -3241,7 +3299,7 @@ void CTimeStepLossEngineer::BoundAnchorSet(const CPTData* pPTData,const CDuctDat
          Dset1 = EvaluateAnchorSet(pPTData,pDuctData,ductIdx,endType,pLosses,fpj,Lg,frMinIter,XsetMax,&dfpAT,&dfpS);
          if ( Dset < Dset1 )
          {
-            // LsetMax is too big... we have an upper bound
+            // XsetMax is too big... we have an upper bound
             *pXsetMax  = XsetMax;
             *pDsetMax  = Dset1;
             *pdfpATMax = dfpAT;
@@ -3252,7 +3310,8 @@ void CTimeStepLossEngineer::BoundAnchorSet(const CPTData* pPTData,const CDuctDat
 
          if ( girder_length < XsetMax && IsEqual(Dset1,Dset1Last) )
          {
-            // we've got too far and
+            // XsetMax is beyond the end of the girder (which is ok) but the
+            // estimates of Dset aren't changing so we will never converge.
             *pXsetMax = girder_length;
             *pDsetMax = Dset;
             *pdfpATMax = dfpAT;
@@ -3794,19 +3853,21 @@ int CTimeStepLossEngineer::GetProductForceCount()
 std::vector<pgsPointOfInterest> CTimeStepLossEngineer::GetAnalysisLocations(const CGirderKey& girderKey)
 {
    // this does time-step analysis using every POI
+#if defined USE_ALL_POI
    return m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS));
-
-   // this does time-step analysis using span 10th points, segment start/end points, and closure joints
-   // this method is about 2x-6x faster. However, need to interpolate results for POIs that are not
-   // explicitly analyzed. This interpolation isn't done yet.
-   //std::vector<pgsPointOfInterest> vPoi = m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_SPAN);
-   //std::vector<pgsPointOfInterest> vPoi2 = m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_0L | POI_RELEASED_SEGMENT);
-   //std::vector<pgsPointOfInterest> vPoi3 = m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_10L | POI_RELEASED_SEGMENT);
-   //std::vector<pgsPointOfInterest> vPoi4 = m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_CLOSURE);
-   //vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
-   //vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
-   //vPoi.insert(vPoi.end(),vPoi4.begin(),vPoi4.end());
-   //std::sort(vPoi.begin(),vPoi.end());
-   //vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
-   //return vPoi;
+#else
+    //this does time-step analysis using span 10th points, segment start/end points, and closure joints
+    //this method is about 2x-6x faster. However, need to interpolate results for POIs that are not
+    //explicitly analyzed. This interpolation isn't done yet.
+   std::vector<pgsPointOfInterest> vPoi = m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_SPAN);
+   std::vector<pgsPointOfInterest> vPoi2 = m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_0L | POI_RELEASED_SEGMENT);
+   std::vector<pgsPointOfInterest> vPoi3 = m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_10L | POI_RELEASED_SEGMENT);
+   std::vector<pgsPointOfInterest> vPoi4 = m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_CLOSURE);
+   vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
+   vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
+   vPoi.insert(vPoi.end(),vPoi4.begin(),vPoi4.end());
+   std::sort(vPoi.begin(),vPoi.end());
+   vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
+   return vPoi;
+#endif
 }

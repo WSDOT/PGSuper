@@ -94,6 +94,8 @@ CLibraryEditorDoc::CLibraryEditorDoc()
 
    // Reserve command IDs for document plug ins
    GetPluginCommandManager()->ReserveCommandIDRange(LIBRARY_PLUGIN_COMMAND_COUNT);
+
+   UIHints(FALSE); // not using UIHints feature
 }
 
 CLibraryEditorDoc::~CLibraryEditorDoc()
@@ -269,6 +271,18 @@ HRESULT CLibraryEditorDoc::OpenDocumentRootNode(IStructuredSave* pStrSave)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());  
 
    return CEAFDocument::OpenDocumentRootNode(pStrSave);
+}
+
+void CLibraryEditorDoc::LoadDocumentSettings()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   __super::LoadDocumentSettings();
+}
+
+void CLibraryEditorDoc::SaveDocumentSettings()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   __super::SaveDocumentSettings();
 }
 
 CString CLibraryEditorDoc::GetRootNodeName()

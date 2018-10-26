@@ -93,7 +93,7 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << _T("Details for Check for Lifting In Casting Yard [5.5.4.3]")<<rptNewLine;
+   *pTitle << _T("Details for Check for Lifting In Casting Yard [5.5.4.3][5.9.4.1]")<<rptNewLine;
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;

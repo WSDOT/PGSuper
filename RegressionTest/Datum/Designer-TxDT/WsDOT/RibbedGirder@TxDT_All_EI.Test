@@ -5,10 +5,10 @@
 
 The Specification Check was Not Successful
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
-Confinement zone checks failed.
+Confinement zone check failed.
 Hauling checks failed
 
 
@@ -20,10 +20,10 @@ Hauling checks failed
 Girder design was Not Successful
 The Specification Check was Not Successful
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
-Confinement zone checks failed.
+Confinement zone check failed.
 Hauling checks failed
 
 
@@ -35,10 +35,10 @@ Hauling checks failed
 Girder design was Not Successful
 The Specification Check was Not Successful
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
-Confinement zone checks failed.
+Confinement zone check failed.
 Hauling checks failed
 
 

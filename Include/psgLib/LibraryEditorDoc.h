@@ -67,6 +67,9 @@ public:
    virtual BOOL GetStatusBarMessageString(UINT nID,CString& rMessage) const;
    virtual BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const;
 
+   virtual void LoadDocumentSettings();
+   virtual void SaveDocumentSettings();
+
    void OnImport(); // import library entries (command handler)
 
 // Implementation

@@ -117,6 +117,6 @@ public:
    void WriteFinalData(FILE *fp, bool isExtended);
 
 private:
-   void WriteRowData(CadWriterWorkerBee& workerBee, const RowData& row) const;
+   void WriteRowData(CadWriterWorkerBee& workerBee, const RowData& row,Float64 Hg) const;
 };
 

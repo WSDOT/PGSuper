@@ -470,7 +470,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
 {
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << _T("Check for Hauling to Bridge Site [5.5.4.3]")<<rptNewLine;
+   *pTitle << _T("Check for Hauling to Bridge Site [5.9.4.1]")<<rptNewLine;
    *pTitle << _T("Hauling Stresses for Girder with KDOT Dynamic Effects")<<rptNewLine;
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -739,7 +739,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << _T("Details for Check for Hauling to Bridge Site [5.5.4.3]")<<rptNewLine;
+   *pTitle << _T("Details for Check for Hauling to Bridge Site [5.9.4.1]")<<rptNewLine;
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;

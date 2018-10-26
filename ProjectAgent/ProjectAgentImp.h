@@ -424,6 +424,10 @@ public:
    virtual Float64 GetYieldStressLimitCoefficient();
    virtual void SetSpecialPermitType(pgsTypes::SpecialPermitType type);
    virtual pgsTypes::SpecialPermitType GetSpecialPermitType();
+   virtual Float64 GetStrengthLiveLoadFactor(pgsTypes::LoadRatingType ratingType,AxleConfiguration& axleConfig);
+   virtual Float64 GetServiceLiveLoadFactor(pgsTypes::LoadRatingType ratingType);
+   virtual Float64 GetReactionStrengthLiveLoadFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx);
+   virtual Float64 GetReactionServiceLiveLoadFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx);
 
 // ILibraryNames
 public:

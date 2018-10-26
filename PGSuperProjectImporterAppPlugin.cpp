@@ -60,7 +60,7 @@ void CPGSuperProjectImporterAppPlugin::FinalRelease()
 
 void CPGSuperProjectImporterAppPlugin::ConfigureProjectImporters()
 {
-   std::vector<CEAFPluginState> pluginStates = EAFManageApplicationPlugins(_T("Manage PGSuper Project Importers"),CATID_PGSuperProjectImporter,EAFGetMainFrame());
+   std::vector<CEAFPluginState> pluginStates = EAFManageApplicationPlugins(_T("Manage PGSuper Project Importers"),_T("Select the Project Importers that you want to be available."),CATID_PGSuperProjectImporter,EAFGetMainFrame());
    if ( pluginStates.size() == 0 )
    {
       return;

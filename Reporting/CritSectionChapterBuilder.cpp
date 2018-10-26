@@ -55,7 +55,7 @@ CPGSuperChapterBuilder(bSelect)
 //======================== OPERATIONS =======================================
 LPCTSTR CCritSectionChapterBuilder::GetName() const
 {
-   return TEXT("Critical Section For Shear Details");
+   return TEXT("Critical Section for Shear Details");
 }
 
 rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const

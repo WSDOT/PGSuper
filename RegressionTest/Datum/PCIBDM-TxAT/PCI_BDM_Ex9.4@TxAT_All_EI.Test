@@ -4,9 +4,9 @@
 
 
 The Specification Check was Not Successful
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Confinement zone checks failed.
+Confinement zone check failed.
 Slab Offset ("A" Dimension) check failed
 Lifting checks failed
 Hauling checks failed
@@ -19,7 +19,7 @@ Hauling checks failed
 
 The Specification Check was Not Successful
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Slab Offset ("A" Dimension) check failed
 
@@ -30,9 +30,9 @@ Slab Offset ("A" Dimension) check failed
 
 
 The Specification Check was Not Successful
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Confinement zone checks failed.
+Confinement zone check failed.
 Slab Offset ("A" Dimension) check failed
 Lifting checks failed
 Hauling checks failed

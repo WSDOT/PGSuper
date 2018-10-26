@@ -31,7 +31,8 @@ static char THIS_FILE[] = __FILE__;
 
 CCastDeckActivity::CCastDeckActivity()
 {
-   m_Age = 7.0; // days
+   m_CuringDuration = 14.0; // days (WSDOT Std. Specs 6-02.3(11)B2
+   m_Age = 14.0; // days
    m_bEnabled = false;
 }
 
@@ -66,6 +67,11 @@ bool CCastDeckActivity::operator==(const CCastDeckActivity& rOther) const
       return false;
    }
 
+   if ( !IsEqual(m_CuringDuration,rOther.m_CuringDuration) )
+   {
+      return false;
+   }
+
    return true;
 }
 
@@ -94,6 +100,16 @@ Float64 CCastDeckActivity::GetConcreteAgeAtContinuity() const
    return m_Age;
 }
 
+void CCastDeckActivity::SetCuringDuration(Float64 duration)
+{
+   m_CuringDuration = duration;
+}
+
+Float64 CCastDeckActivity::GetCuringDuration() const
+{
+   return m_CuringDuration;
+}
+
 HRESULT CCastDeckActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 {
    CHRException hr;
@@ -101,6 +117,9 @@ HRESULT CCastDeckActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    try
    {
       hr = pStrLoad->BeginUnit(_T("CastDeck"));
+
+      Float64 version;
+      pStrLoad->get_Version(&version);
 
       CComVariant var;
       var.vt = VT_BOOL;
@@ -112,6 +131,17 @@ HRESULT CCastDeckActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          var.vt = VT_R8;
          hr = pStrLoad->get_Property(_T("AgeAtContinuity"),&var);
          m_Age = var.dblVal;
+
+         if ( 1 < version )
+         {
+            // added in version 2
+            hr = pStrLoad->get_Property(_T("CuringDuration"),&var);
+            m_CuringDuration = var.dblVal;
+         }
+         else
+         {
+            m_CuringDuration = m_Age;
+         }
       }
 
       pStrLoad->EndUnit();
@@ -127,11 +157,12 @@ HRESULT CCastDeckActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
 HRESULT CCastDeckActivity::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("CastDeck"),1.0);
+   pStrSave->BeginUnit(_T("CastDeck"),2.0);
    pStrSave->put_Property(_T("Enabled"),CComVariant(m_bEnabled));
    if ( m_bEnabled )
    {
       pStrSave->put_Property(_T("AgeAtContinuity"),CComVariant(m_Age));
+      pStrSave->put_Property(_T("CuringDuration"),CComVariant(m_CuringDuration)); // added in version 2
    }
    pStrSave->EndUnit();
 
@@ -142,6 +173,7 @@ void CCastDeckActivity::MakeCopy(const CCastDeckActivity& rOther)
 {
    m_bEnabled = rOther.m_bEnabled;
    m_Age      = rOther.m_Age;
+   m_CuringDuration = rOther.m_CuringDuration;
 }
 
 void CCastDeckActivity::MakeAssignment(const CCastDeckActivity& rOther)

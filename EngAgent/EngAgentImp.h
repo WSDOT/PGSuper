@@ -294,7 +294,7 @@ public:
    virtual const pgsGirderDesignArtifact* GetDesignArtifact(const CGirderKey& girderKey);
    virtual void CreateLiftingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 supportLoc,pgsLiftingAnalysisArtifact* pArtifact);
    virtual const pgsHaulingAnalysisArtifact* CreateHaulingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc);
-   virtual const pgsRatingArtifact* GetRatingArtifact(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex);
+   virtual const pgsRatingArtifact* GetRatingArtifact(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx);
 
 // ICrackedSection
 public:
@@ -340,8 +340,8 @@ private:
 
    struct RatingArtifactKey
    {
-      RatingArtifactKey(const CGirderKey& girderKey,VehicleIndexType vehIdx)
-      { GirderKey = girderKey; VehicleIdx = vehIdx; }
+      RatingArtifactKey(const CGirderKey& girderKey,VehicleIndexType vehicleIdx)
+      { GirderKey = girderKey; VehicleIdx = vehicleIdx; }
 
       CGirderKey GirderKey;
       VehicleIndexType VehicleIdx;
@@ -399,7 +399,7 @@ private:
    // index 0 = Moment Type (Positive = 0, Negative = 1)
    std::map<PoiIDKey,MINMOMENTCAPDETAILS> m_NonCompositeMinMomentCapacity[2];
    std::map<PoiIDKey,MINMOMENTCAPDETAILS> m_CompositeMinMomentCapacity[2];
-   const MINMOMENTCAPDETAILS* ValidateMinMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment);
+   MINMOMENTCAPDETAILS ValidateMinMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment);
 
    typedef std::map<PoiIDKey,CRACKEDSECTIONDETAILS> CrackedSectionDetailsContainer;
    CrackedSectionDetailsContainer m_CrackedSectionDetails[2]; // 0 = positive moment, 1 = negative moment
@@ -452,12 +452,12 @@ private:
    void ValidateLiveLoadDistributionFactors(const CGirderKey& girderKey);
    void InvalidateLiveLoadDistributionFactors();
    void ValidateArtifacts(const CGirderKey& girderKey);
-   void ValidateRatingArtifacts(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex);
+   void ValidateRatingArtifacts(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx);
    void InvalidateArtifacts();
    void InvalidateRatingArtifacts();
 
    const LOSSDETAILS* FindLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx);
-   pgsRatingArtifact* FindRatingArtifact(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex);
+   pgsRatingArtifact* FindRatingArtifact(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx);
 
    DECLARE_LOGFILE;
 

@@ -148,7 +148,7 @@ BOOL CTrafficBarrierDlg::OnInitDialog()
    
    CDialog::OnInitDialog();
 
-   m_Picture.SetImage(_T("TrafficBarrier"),_T("Metafile"));
+   m_Picture.SetImage(_T("TrafficBarrier"),_T("Metafile"),EMF_FIT);
 
    // disable OK button if editing not allowed
    CString head;

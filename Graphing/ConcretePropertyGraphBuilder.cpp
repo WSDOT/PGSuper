@@ -72,19 +72,7 @@ m_pIntervalFormat(0),
 m_pYFormat(0),
 m_XAxisType(X_AXIS_TIME_LOG)
 {
-   m_pGraphController = new CConcretePropertyGraphController;
-
-   m_Scalar.Width = 7;
-   m_Scalar.Precision = 0;
-   m_Scalar.Format = sysNumericFormatTool::Fixed;
-
-   m_StrainScalar.Width = 3;
-   m_StrainScalar.Precision = 3;
-   m_StrainScalar.Format = sysNumericFormatTool::Engineering;
-
-   m_CreepScalar.Width = 6;
-   m_CreepScalar.Precision = 3;
-   m_CreepScalar.Format = sysNumericFormatTool::Fixed;
+   Init();
 
    SetName(_T("Concrete Properties"));
 }
@@ -97,15 +85,20 @@ m_pIntervalFormat(0),
 m_pYFormat(0),
 m_XAxisType(X_AXIS_TIME_LOG)
 {
+   Init();
+}
+
+void CConcretePropertyGraphBuilder::Init()
+{
    m_pGraphController = new CConcretePropertyGraphController;
 
    m_Scalar.Width = 7;
    m_Scalar.Precision = 0;
    m_Scalar.Format = sysNumericFormatTool::Fixed;
 
-   m_StrainScalar.Width = 3;
-   m_StrainScalar.Precision = 3;
-   m_StrainScalar.Format = sysNumericFormatTool::Engineering;
+   m_StrainScalar.Width = 5;
+   m_StrainScalar.Precision = 0;
+   m_StrainScalar.Format = sysNumericFormatTool::Fixed;
 
    m_CreepScalar.Width = 6;
    m_CreepScalar.Precision = 3;
@@ -321,7 +314,7 @@ void CConcretePropertyGraphBuilder::UpdateYAxis()
       {
       m_pYFormat = new ScalarTool(m_StrainScalar);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
-      std::_tstring strYAxisTitle = _T("Unrestrained Shrinkage Strain");
+      std::_tstring strYAxisTitle = _T("Unrestrained Shrinkage Strain (x10^6)");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
@@ -468,91 +461,159 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
 
       for ( IntervalIndexType intervalIdx = iIdx; intervalIdx < nIntervals; intervalIdx++ )
       {
+         Float64 xStart;
          Float64 xMiddle;
+         Float64 xEnd;
          if ( m_XAxisType == X_AXIS_TIME_LINEAR || m_XAxisType == X_AXIS_TIME_LOG )
          {
+            xStart  = pIntervals->GetTime(intervalIdx,pgsTypes::Start);
             xMiddle = pIntervals->GetTime(intervalIdx,pgsTypes::Middle);
+            xEnd    = pIntervals->GetTime(intervalIdx,pgsTypes::End);
          }
          else if ( m_XAxisType == X_AXIS_AGE_LINEAR || m_XAxisType == X_AXIS_AGE_LOG )
          {
             if ( m_GraphElement == GRAPH_ELEMENT_SEGMENT )
             {
+               xStart  = pMaterials->GetSegmentConcreteAge(m_SegmentKey,intervalIdx,pgsTypes::Start);
                xMiddle = pMaterials->GetSegmentConcreteAge(m_SegmentKey,intervalIdx,pgsTypes::Middle);
+               xEnd    = pMaterials->GetSegmentConcreteAge(m_SegmentKey,intervalIdx,pgsTypes::End);
             }
             else if ( m_GraphElement == GRAPH_ELEMENT_CLOSURE )
             {
+               xStart  = pMaterials->GetClosureJointConcreteAge(m_ClosureKey,intervalIdx,pgsTypes::Start);
                xMiddle = pMaterials->GetClosureJointConcreteAge(m_ClosureKey,intervalIdx,pgsTypes::Middle);
+               xEnd    = pMaterials->GetClosureJointConcreteAge(m_ClosureKey,intervalIdx,pgsTypes::End);
             }
             else
             {
+               xStart  = pMaterials->GetDeckConcreteAge(intervalIdx,pgsTypes::Start);
                xMiddle = pMaterials->GetDeckConcreteAge(intervalIdx,pgsTypes::Middle);
+               xEnd    = pMaterials->GetDeckConcreteAge(intervalIdx,pgsTypes::End);
             }
          }
          else
          {
+            xStart  = (Float64)LABEL_INTERVAL(intervalIdx-1);
+            xStart  = (intervalIdx == INVALID_INDEX ? 0 : xStart);
             xMiddle = (Float64)LABEL_INTERVAL(intervalIdx);
+            xEnd    = (Float64)LABEL_INTERVAL(intervalIdx+1);
+            xEnd    = (nIntervals <= xEnd ? nIntervals-1 : xEnd);
          }
 
          // this is value at middle of interval...
-         Float64 value;
+         Float64 startValue;
+         Float64 middleValue;
+         Float64 endValue;
          if ( m_GraphElement == GRAPH_ELEMENT_SEGMENT )
          {
             if ( m_GraphType == GRAPH_TYPE_FC )
             {
-               value = pMaterials->GetSegmentFc(m_SegmentKey,intervalIdx);
+               startValue  = pMaterials->GetSegmentFc(m_SegmentKey,intervalIdx,pgsTypes::Start);
+               middleValue = pMaterials->GetSegmentFc(m_SegmentKey,intervalIdx,pgsTypes::Middle);
+               endValue    = pMaterials->GetSegmentFc(m_SegmentKey,intervalIdx,pgsTypes::End);
             }
             else if ( m_GraphType == GRAPH_TYPE_EC )
             {
-               value = pMaterials->GetSegmentEc(m_SegmentKey,intervalIdx);
+               startValue  = pMaterials->GetSegmentEc(m_SegmentKey,intervalIdx,pgsTypes::Start);
+               middleValue = pMaterials->GetSegmentEc(m_SegmentKey,intervalIdx,pgsTypes::Middle);
+               endValue    = pMaterials->GetSegmentEc(m_SegmentKey,intervalIdx,pgsTypes::End);
             }
             else if ( m_GraphType == GRAPH_TYPE_SH )
             {
-               value = pMaterials->GetSegmentFreeShrinkageStrain(m_SegmentKey,intervalIdx,pgsTypes::Middle);
+               // shrinkage strain is a "compressive" strain so it's value is less than zero
+               // for plotting, we like it to be > 0 so multiple by -1e6 (this makes it micro strains)
+               startValue  = -1e6*pMaterials->GetSegmentFreeShrinkageStrain(m_SegmentKey,intervalIdx,pgsTypes::Start);
+               middleValue = -1e6*pMaterials->GetSegmentFreeShrinkageStrain(m_SegmentKey,intervalIdx,pgsTypes::Middle);
+               endValue    = -1e6*pMaterials->GetSegmentFreeShrinkageStrain(m_SegmentKey,intervalIdx,pgsTypes::End);
             }
             else if ( m_GraphType == GRAPH_TYPE_CR )
             {
-               value = pMaterials->GetSegmentCreepCoefficient(m_SegmentKey,iIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Middle);
+               if ( iIdx == intervalIdx )
+               {
+                  startValue  = pMaterials->GetSegmentCreepCoefficient(m_SegmentKey,iIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Middle);
+                  xStart = xMiddle;
+               }
+               else
+               {
+                  startValue  = pMaterials->GetSegmentCreepCoefficient(m_SegmentKey,iIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Start);
+               }
+               middleValue = pMaterials->GetSegmentCreepCoefficient(m_SegmentKey,iIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Middle);
+               endValue    = pMaterials->GetSegmentCreepCoefficient(m_SegmentKey,iIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
             }
          }
          else if ( m_GraphElement == GRAPH_ELEMENT_CLOSURE )
          {
             if ( m_GraphType == GRAPH_TYPE_FC )
             {
-               value = pMaterials->GetClosureJointFc(m_ClosureKey,intervalIdx);
+               startValue  = pMaterials->GetClosureJointFc(m_ClosureKey,intervalIdx,pgsTypes::Start);
+               middleValue = pMaterials->GetClosureJointFc(m_ClosureKey,intervalIdx,pgsTypes::Middle);
+               endValue    = pMaterials->GetClosureJointFc(m_ClosureKey,intervalIdx,pgsTypes::End);
             }
             else if ( m_GraphType == GRAPH_TYPE_EC )
             {
-               value = pMaterials->GetClosureJointEc(m_ClosureKey,intervalIdx);
+               startValue  = pMaterials->GetClosureJointEc(m_ClosureKey,intervalIdx,pgsTypes::Start);
+               middleValue = pMaterials->GetClosureJointEc(m_ClosureKey,intervalIdx,pgsTypes::Middle);
+               endValue    = pMaterials->GetClosureJointEc(m_ClosureKey,intervalIdx,pgsTypes::End);
             }
             else if ( m_GraphType == GRAPH_TYPE_SH )
             {
-               value = pMaterials->GetClosureJointFreeShrinkageStrain(m_ClosureKey,intervalIdx,pgsTypes::Middle);
+               startValue  = -1e6*pMaterials->GetClosureJointFreeShrinkageStrain(m_ClosureKey,intervalIdx,pgsTypes::Start);
+               middleValue = -1e6*pMaterials->GetClosureJointFreeShrinkageStrain(m_ClosureKey,intervalIdx,pgsTypes::Middle);
+               endValue    = -1e6*pMaterials->GetClosureJointFreeShrinkageStrain(m_ClosureKey,intervalIdx,pgsTypes::End);
             }
             else if ( m_GraphType == GRAPH_TYPE_CR )
             {
-               value = pMaterials->GetClosureJointCreepCoefficient(m_ClosureKey,iIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Middle);
+               if ( iIdx == intervalIdx )
+               {
+                  startValue  = pMaterials->GetClosureJointCreepCoefficient(m_ClosureKey,iIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Middle);
+                  xStart = xMiddle;
+               }
+               else
+               {
+                  startValue  = pMaterials->GetClosureJointCreepCoefficient(m_ClosureKey,iIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Start);
+               }
+               middleValue = pMaterials->GetClosureJointCreepCoefficient(m_ClosureKey,iIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Middle);
+               endValue    = pMaterials->GetClosureJointCreepCoefficient(m_ClosureKey,iIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
             }
          }
          else if ( m_GraphElement = GRAPH_ELEMENT_DECK )
          {
             if ( m_GraphType == GRAPH_TYPE_FC )
             {
-               value = pMaterials->GetDeckFc(intervalIdx);
+               startValue  = pMaterials->GetDeckFc(intervalIdx,pgsTypes::Start);
+               middleValue = pMaterials->GetDeckFc(intervalIdx,pgsTypes::Middle);
+               endValue    = pMaterials->GetDeckFc(intervalIdx,pgsTypes::End);
             }
             else if ( m_GraphType == GRAPH_TYPE_EC )
             {
-               value = pMaterials->GetDeckEc(intervalIdx);
+               startValue  = pMaterials->GetDeckEc(intervalIdx,pgsTypes::Start);
+               middleValue = pMaterials->GetDeckEc(intervalIdx,pgsTypes::Middle);
+               endValue    = pMaterials->GetDeckEc(intervalIdx,pgsTypes::End);
             }
             else if ( m_GraphType == GRAPH_TYPE_SH )
             {
-               value = pMaterials->GetDeckFreeShrinkageStrain(intervalIdx,pgsTypes::Middle);
+               startValue  = -1e6*pMaterials->GetDeckFreeShrinkageStrain(intervalIdx,pgsTypes::Start);
+               middleValue = -1e6*pMaterials->GetDeckFreeShrinkageStrain(intervalIdx,pgsTypes::Middle);
+               endValue    = -1e6*pMaterials->GetDeckFreeShrinkageStrain(intervalIdx,pgsTypes::End);
             }
             else if ( m_GraphType == GRAPH_TYPE_CR )
             {
-               value = pMaterials->GetDeckCreepCoefficient(iIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Middle);
+               if ( iIdx == intervalIdx )
+               {
+                  startValue  = pMaterials->GetDeckCreepCoefficient(iIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Middle);
+                  xStart = xMiddle;
+               }
+               else
+               {
+                  startValue  = pMaterials->GetDeckCreepCoefficient(iIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Start);
+               }
+               middleValue = pMaterials->GetDeckCreepCoefficient(iIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Middle);
+               endValue    = pMaterials->GetDeckCreepCoefficient(iIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
             }
          }
-         AddGraphPoint(dataSeries,xMiddle,value);
+         AddGraphPoint(dataSeries,xStart, startValue);
+         AddGraphPoint(dataSeries,xMiddle,middleValue);
+         AddGraphPoint(dataSeries,xEnd,   endValue);
       }
    }
 }

@@ -64,7 +64,7 @@ void CConnectionEntryDlg::DoDataExchange(CDataExchange* pDX)
 
    CString image_name = GetImageName(m_BearingOffsetMeasurementType,m_EndDistanceMeasurementType);
 
-	DDX_MetaFileStatic(pDX, IDC_CONNECTION_MF, m_ConnectionPicture,image_name, _T("Metafile") );
+	DDX_MetaFileStatic(pDX, IDC_CONNECTION_MF, m_ConnectionPicture,image_name, _T("Metafile"), EMF_FIT );
 
    DDX_UnitValueAndTag(pDX, IDC_END_DISTANCE, IDC_END_DISTANCE_T, m_GirderEndDistance, pDisplayUnits->ComponentDim );
    DDV_UnitValueZeroOrMore(pDX, IDC_END_DISTANCE, m_GirderEndDistance, pDisplayUnits->ComponentDim );

@@ -278,7 +278,7 @@ public:
    virtual void CreateBridgeModelView();
    virtual void CreateLoadsView();
    virtual void CreateLibraryEditorView();
-   virtual void CreateReportView(CollectionIndexType rptIdx,bool bPromptForSpec=true);
+   virtual void CreateReportView(CollectionIndexType rptIdx,BOOL bPromptForSpec=TRUE);
    virtual void BuildReportMenu(CEAFMenu* pMenu,bool bQuickReport);
    virtual void CreateGraphView(CollectionIndexType graphIdx);
    virtual void BuildGraphMenu(CEAFMenu* pMenu);

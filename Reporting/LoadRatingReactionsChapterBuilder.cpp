@@ -109,7 +109,7 @@ rptChapter* CLoadRatingReactionsChapterBuilder::Build(CReportSpecification* pRpt
       }
 
       // if the only loading is the DUMMY load, then move on
-      if ( strLLNames.size() == 1 && strLLNames[0] == std::_tstring(_T("No Live Load Defined")) )
+      if ( strLLNames.size() == 1 && strLLNames[0] == std::_tstring(NO_LIVE_LOAD_DEFINED) )
       {
          continue;
       }
@@ -156,15 +156,15 @@ rptChapter* CLoadRatingReactionsChapterBuilder::Build(CReportSpecification* pRpt
 
       std::vector<std::_tstring>::iterator llNameIter(strLLNames.begin());
       std::vector<std::_tstring>::iterator llNameIterEnd(strLLNames.end());
-      VehicleIndexType vehIdx = 0;
-      for ( ; llNameIter != llNameIterEnd; llNameIter++, vehIdx++ )
+      VehicleIndexType vehicleIdx = 0;
+      for ( ; llNameIter != llNameIterEnd; llNameIter++, vehicleIdx++ )
       {
          std::_tstring strLLName = *llNameIter;
 
          p = new rptParagraph;
          *pChapter << p;
          p->SetName( strLLName.c_str() );
-         *p << CVehicularLoadReactionTable().Build(pBroker,girderKey,llType,strLLName,vehIdx,analysisType,false,false,pDisplayUnits) << rptNewLine;
+         *p << CVehicularLoadReactionTable().Build(pBroker,girderKey,llType,strLLName,vehicleIdx,analysisType,false,false,pDisplayUnits) << rptNewLine;
          *p << LIVELOAD_PER_LANE << rptNewLine;
       }
    }

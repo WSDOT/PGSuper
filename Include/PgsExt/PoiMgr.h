@@ -135,16 +135,16 @@ public:
    //------------------------------------------------------------------------
    // Sets the tolerance for eliminating duplicate points of interest.  If two
    // points of interest, on the same segment, are with this tolerance of each
-   // other,  they are considered to be at the same point.  These std::vector<pgsPointOfInterest>'s are merged,
-   // maintaining the attributes of both std::vector<pgsPointOfInterest>. 
+   // other,  they are considered to be at the same point.  These POI's are merged,
+   // maintaining the attributes of both POI. 
    //
-   // If MergePOI is set to false, duplicate points are not merged.
+   // If pgsPointOfInterest::MergePOI is set to false, duplicate points are not merged.
    //
    // Changing the tolerance does not effect previously stored points of interest.
-   void SetTolerance(Float64 tol);
+   Float64 SetTolerance(Float64 tol);
 
    //------------------------------------------------------------------------
-   // Returns the std::vector<pgsPointOfInterest> tolerance.
+   // Returns the POI tolerance.
    Float64 GetTolerance() const;
 
    //------------------------------------------------------------------------

@@ -149,7 +149,6 @@
 #define IDR_FRAMING_GRID_CONTEXT        275
 #define IDD_BRIDGEDESC_RAILINGSYSTEM    276
 #define IDD_SELECT_ITEM                 277
-#define IDD_UIHINTS                     278
 #define IDD_BRIDGEDESC_FRAMING          279
 #define IDD_BRIDGE_EDITOR_PROFILE_PAGE  280
 #define IDD_RESOLVE_GIRDER_SPACING      281
@@ -157,6 +156,7 @@
 #define IDC_ADD_COLUMN                  288
 #define IDC_REMOVE_COLUMN               289
 #define IDR_REPORTS                     293
+#define IDR_GRAPHS                      294
 #define IDD_GIRDERLABELFORMAT           294
 #define IDI_EARTH                       296
 #define IDD_RATING_OPTIONS              299
@@ -198,7 +198,7 @@
 #define IDR_ACTIVITIES                  341
 #define IDD_ERECT_PIERS                 342
 #define IDD_REMOVE_TS                   343
-#define IDD_CAST_CLOSOURE_JOINT         345
+#define IDD_CAST_CLOSURE_JOINT         345
 #define IDD_APPLYLOADS                  346
 #define IDD_CONSTRUCT_SEGMENT           347
 #define IDD_STRESS_TENDON               348
@@ -583,6 +583,7 @@
 #define IDC_START_CANTILEVER_LENGTH     1259
 #define IDC_HEIGHT                      1259
 #define IDC_COLUMN_COUNT                1259
+#define IDC_CURING                      1259
 #define IDC_CONDITION_FACTOR            1260
 #define IDC_LOCATION                    1260
 #define IDC_SERVICE_III_DC              1260
@@ -867,7 +868,6 @@
 #define IDC_SAME_GIRDER_SPACING         1462
 #define IDC_RIGHT_SIDEWALK              1463
 #define IDC_IGNORE_ROA                  1464
-#define IDC_DONTSHOWAGAIN               1465
 #define IDC_SAMESLABOFFSET              1466
 #define IDC_SPACING_LABEL               1467
 #define IDC_ALIGNMENTOFFSET_UNIT        1468
@@ -1145,7 +1145,6 @@
 #define IDC_PIER_GIRDER_STATIC          1612
 #define IDC_LABEL                       1612
 #define IDC_RIGHT_SIDEWALK_LEFT_DEPTH_LABEL 1613
-#define IDC_TEXT                        1614
 #define IDC_NOTE                        1614
 #define IDC_ANCHORSET_UNIT              1614
 #define IDC_RIGHT_SIDEWALK_RIGHT_DEPTH_LABEL 1615
@@ -1572,6 +1571,7 @@
 #define IDC_FIXITY                      1857
 #define IDC_DIAPHRAGM_NOTE              1858
 #define IDC_SERVICE_I_CR                1859
+#define IDC_CURING_UNIT                 1859
 #define IDC_SERVICE_I_SH                1860
 #define IDC_SERVICE_I_PS                1861
 #define IDC_CHECK_YIELDING              1862
@@ -1742,14 +1742,15 @@
 #define ID_GRAPHS_                      36989
 #define ID_HELP_ABOUT                   36990
 #define ID_PROJECT_PROFILE              36991
+#define ID_BUTTON36993                  36993
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        367
-#define _APS_NEXT_COMMAND_VALUE         36992
-#define _APS_NEXT_CONTROL_VALUE         1859
+#define _APS_NEXT_COMMAND_VALUE         36994
+#define _APS_NEXT_CONTROL_VALUE         1860
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif
