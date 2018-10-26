@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@
 #include <ReportManager\ReportHint.h>
 #include <WBFLCore.h>
 #include <PgsExt\Keys.h>
+#include <PgsExt\PointOfInterest.h>
 
 class REPORTINGCLASS CSpanReportHint : public CReportHint
 {
@@ -195,3 +196,22 @@ protected:
    std::vector<CGirderKey> m_GirderKeys;
 };
 
+
+class REPORTINGCLASS CPointOfInterestReportSpecification :
+   public CBrokerReportSpecification
+{
+public:
+   CPointOfInterestReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const pgsPointOfInterest& poi);
+   CPointOfInterestReportSpecification(const CPointOfInterestReportSpecification& other);
+   ~CPointOfInterestReportSpecification(void);
+
+   virtual std::_tstring GetReportTitle() const;
+
+   void SetPointOfInterest(const pgsPointOfInterest& poi);
+   const pgsPointOfInterest& GetPointOfInterest() const;
+
+   virtual HRESULT Validate() const;
+
+protected:
+   pgsPointOfInterest m_POI;
+};

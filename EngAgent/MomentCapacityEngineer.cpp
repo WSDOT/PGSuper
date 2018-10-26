@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -155,7 +155,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    {
       // only for positive moment... strands are ignored for negative moment analysis
       GET_IFACE(IPretensionForce, pPrestressForce);
-      fpe_ps = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End,pgsTypes::ServiceI);
+      fpe_ps = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
       eps_initial = fpe_ps/Eps;
    }
 
@@ -195,11 +195,11 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
       GET_IFACE(IPretensionForce, pPrestressForce);
       if ( pConfig )
       {
-         fpe_ps = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End,pgsTypes::ServiceI,*pConfig);
+         fpe_ps = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End,*pConfig);
       }
       else
       {
-         fpe_ps = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End,pgsTypes::ServiceI);
+         fpe_ps = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
       }
 
       eps_initial = fpe_ps/Eps;
@@ -998,14 +998,14 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
    pgsTypes::StressLocation stressLocation = (bPositiveMoment ? pgsTypes::BottomGirder : pgsTypes::TopDeck);
 
    // Compute stress due to prestressing
-   Float64 Pps = pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End,pgsTypes::ServiceI);
+   Float64 Pps = pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
    Float64 ns_eff;
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    Float64 eps = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, pgsTypes::Permanent, &ns_eff ); // eccentricity of non-composite section
 
-   Float64 dfcpe = pPrestress->GetStress(poi,stressLocation,Pps,eps);
+   Float64 dfcpe = pPrestress->GetStress(releaseIntervalIdx, poi,stressLocation,Pps,eps);
    if ( dfcpe < 0 )
    {
       fcpe += dfcpe; // only want compression stress
@@ -1046,13 +1046,13 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
       GET_IFACE(IStrandGeometry,pStrandGeom);
       GET_IFACE(IPretensionStresses,pPrestress);
 
-      Float64 P = pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::Middle,pgsTypes::ServiceI,config);
+      Float64 P = pPrestressForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceI,config);
       Float64 ns_eff;
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
       Float64 e = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, config, pgsTypes::Permanent, &ns_eff ); // eccentricity of non-composite section
 
-      fcpe = -pPrestress->GetStress(poi,pgsTypes::BottomGirder,P,e);
+      fcpe = -pPrestress->GetStress(releaseIntervalIdx,poi,pgsTypes::BottomGirder,P,e);
    }
    else
    {
@@ -1162,28 +1162,37 @@ Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(IntervalIndexTy
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx     = pIntervals->GetCastDeckInterval(segmentKey);
-
    if ( bPositiveMoment )
    {
+      GET_IFACE(IBridge,pBridge);
+      GET_IFACE(IIntervals,pIntervals);
+      IntervalIndexType intervalIdx;
+      if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
+      {
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
+         intervalIdx = compositeDeckIntervalIdx - 1;
+      }
+      else
+      {
+         intervalIdx = pIntervals->GetIntervalCount(segmentKey) - 1;
+      }
+
       // Girder moment
-      Mdnc += pProductForces->GetMoment(erectSegmentIntervalIdx,pftGirder,poi, bat, rtIncremental);
+      Mdnc += pProductForces->GetMoment(intervalIdx,pftGirder,poi, bat, rtCumulative);
 
       // Slab moment
-      Mdnc += pProductForces->GetMoment(castDeckIntervalIdx,pftSlab,   poi, bat, rtIncremental);
-      Mdnc += pProductForces->GetMoment(castDeckIntervalIdx,pftSlabPad,poi, bat, rtIncremental);
+      Mdnc += pProductForces->GetMoment(intervalIdx,pftSlab,   poi, bat, rtCumulative);
+      Mdnc += pProductForces->GetMoment(intervalIdx,pftSlabPad,poi, bat, rtCumulative);
 
       // Diaphragm moment
-      Mdnc += pProductForces->GetMoment(castDeckIntervalIdx,pftDiaphragm,poi, bat, rtIncremental);
+      Mdnc += pProductForces->GetMoment(intervalIdx,pftDiaphragm,poi, bat, rtCumulative);
 
       // Shear Key moment
-      Mdnc += pProductForces->GetMoment(castDeckIntervalIdx,pftShearKey,poi, bat, rtIncremental);
+      Mdnc += pProductForces->GetMoment(intervalIdx,pftShearKey,poi, bat, rtCumulative);
 
       // User DC and User DW
-      Mdnc += pProductForces->GetMoment(castDeckIntervalIdx,pftUserDC,poi, bat, rtIncremental);
-      Mdnc += pProductForces->GetMoment(castDeckIntervalIdx,pftUserDW,poi, bat, rtIncremental);
+      Mdnc += pProductForces->GetMoment(intervalIdx,pftUserDC,poi, bat, rtCumulative);
+      Mdnc += pProductForces->GetMoment(intervalIdx,pftUserDW,poi, bat, rtCumulative);
    }
 
    return Mdnc;
@@ -1506,8 +1515,10 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
+   CClosureKey closureKey;
+   bool bIsInClosure = pPoi->IsInClosureJoint(poi,&closureKey);
+
    GET_IFACE(IIntervals,pIntervals);
-   ATLASSERT( pIntervals->GetLiveLoadInterval(segmentKey) <= intervalIdx );
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
 
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
@@ -1548,16 +1559,19 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    }
    else
    {
-      CClosureKey closureKey;
-      if ( pPoi->IsOffSegment(poi) )
+      if ( bIsInClosure )
       {
+         // poi is in a closure joint
+         matGirder->put_fc( pMaterial->GetClosureJointFc(closureKey,intervalIdx) );
+      }
+      else if ( pPoi->IsOffSegment(poi) )
+      {
+         // poi is not in the segment and isn't in a closure joint
+         // this means the POI is in a cast-in-place diaphragm between girder groups
          // assume cast in place diaphragms between groups is the same material as the deck
+         // because they are typically cast together
          ATLASSERT(poi.HasAttribute(POI_BOUNDARY_PIER) || poi.IsTenthPoint(POI_SPAN) == 1);
          matGirder->put_fc( pMaterial->GetDeckFc(segmentKey,intervalIdx) );
-      }
-      else if ( pPoi->IsInClosureJoint(poi,&closureKey) )
-      {
-         matGirder->put_fc( pMaterial->GetClosureJointFc(closureKey,intervalIdx) );
       }
       else
       {
@@ -1576,8 +1590,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    CComPtr<IRebarModel> matGirderRebar;
    matGirderRebar.CoCreateInstance(CLSID_RebarModel);
    Float64 E, Fy, Fu;
-   CClosureKey closureKey;
-   if ( pPoi->IsInClosureJoint(poi,&closureKey) )
+   if ( bIsInClosure )
    {
       pMaterial->GetClosureJointLongitudinalRebarProperties(closureKey,&E,&Fy,&Fu);
    }
@@ -1693,24 +1706,6 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    Float64 Yc; // elevation of the extreme compression fiber
    (*pntCompression)->get_Y(&Yc);
 
-   /////// -- NOTE -- //////
-   // Development length, and hence the development length adjustment factor, require the result
-   // of a moment capacity analysis. fps is needed to compute development length, yet, development
-   // length is needed to adjust the effectiveness of the strands for moment capacity analysis.
-   //
-   // This causes a circular dependency. However, the development length calculation only needs
-   // fps for the capacity at the mid-span section. Unless the bridge is extremely short, the
-   // strands will be fully developed at mid-span.
-   //
-   // If the poi is around mid-span, assume a development length factor of 1.0 otherwise compute it.
-   //
-   Float64 fra = 0.25; // 25% either side of centerline
-   bool bNearMidSpan = false;
-   if ( InRange(fra*segment_length,poi.GetDistFromStart(),(1-fra)*segment_length))
-   {
-      bNearMidSpan = true;
-   }
-
    if ( bPositiveMoment ) // only model strands for positive moment
    {
       // strands
@@ -1749,11 +1744,8 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 #endif
 
             ATLASSERT( 0 < strandIdxs.size() );
-            std::vector<StrandIndexType>::iterator iter(strandIdxs.begin());
-            std::vector<StrandIndexType>::iterator end(strandIdxs.end());
-            for ( ; iter != end; iter++ )
+            BOOST_FOREACH(StrandIndexType strandIdx,strandIdxs)
             {
-               StrandIndexType strandIdx = *iter;
                ATLASSERT( strandIdx < nStrands );
 
                bool bDebonded = bondTool.IsDebonded(strandIdx,strandType);
@@ -1877,7 +1869,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
          Float64 as;
          rebar->get_NominalArea(&as);
 
-         Float64 dev_length_factor = pRebarGeom->GetDevLengthFactor(segmentKey,item);
+         Float64 dev_length_factor = pRebarGeom->GetDevLengthFactor(poi,item);
 
          // create an "area perfect" square
          // (clips are lot faster than a circle)
@@ -2293,13 +2285,10 @@ bool pgsMomentCapacityEngineer::pgsBondTool::IsDebonded(StrandIndexType strandId
 
    GDRCONFIG& config = (m_bUseConfig ? m_Config : m_CurrentConfig);
 
-   std::vector<DEBONDCONFIG>::const_iterator iter;
-   for ( iter = config.PrestressConfig.Debond[strandType].begin(); iter != config.PrestressConfig.Debond[strandType].end(); iter++ )
+   BOOST_FOREACH(const DEBONDCONFIG& debondConfig,config.PrestressConfig.Debond[strandType])
    {
-      const DEBONDCONFIG& di = *iter;
-
-      if ( di.strandIdx == strandIdx &&
-          ((m_DistFromStart < di.DebondLength[pgsTypes::metStart]) || ((m_GirderLength - di.DebondLength[pgsTypes::metEnd]) < m_DistFromStart)) )
+      if ( debondConfig.strandIdx == strandIdx &&
+          ((m_DistFromStart < debondConfig.DebondLength[pgsTypes::metStart]) || ((m_GirderLength - debondConfig.DebondLength[pgsTypes::metEnd]) < m_DistFromStart)) )
       {
          // this strand is debonded at this POI... next strand
          bDebonded = true;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -183,7 +183,9 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
 
             pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
             *pChapter << pPara;
-            *pPara << _T("Loss = change in strand stress due to time dependent and elastic effects") << rptNewLine;
+            *pPara << _T("Time-Dependent Effects = change in strand stress due to creep, shrinkage, and relaxation") << rptNewLine;
+            *pPara << _T("Elastic Effects = change in strand stress due to elastic shortening and externally applied loads") << rptNewLine;
+            *pPara << Sub2(_T("f"),_T("pe")) << _T(" = ") << RPT_FPJ << _T(" - Time-Dependent Effects + Elastic Effects") << rptNewLine;
          } // segIdx
       } // gdrIdx
    } // spanIdx

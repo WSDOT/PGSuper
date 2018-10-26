@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -127,7 +127,7 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
    *pParagraph << _T("% Loss Final (Time dependent losses only) = (");
    *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(")/") << RPT_STRESS(_T("pj")) << rptNewLine;
 
-   *pParagraph << _T("% Net Loss (Time dependent losses and elastic gains) = (");
+   *pParagraph << _T("% Effective Loss (Time dependent losses and elastic gains) = (");
    *pParagraph << RPT_STRESS(_T("pj")) << _T(" - ");
    *pParagraph << RPT_STRESS(_T("pe")) << _T(")/") << RPT_STRESS(_T("pj")) << rptNewLine;
 
@@ -158,7 +158,7 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << _T("% Loss") << rptNewLine << _T("Final");
    (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << _T("% Net") << rptNewLine << _T("Loss");
+   (*table)(0,col++) << _T("% Effective") << rptNewLine << _T("Loss");
 
    table->m_NtMax = NtMax;
    table->m_pStrands = pStrands;
@@ -198,17 +198,20 @@ void CTotalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    (*this)(row,col++) << stress.SetValue(pDetails->pLosses->TimeDependentLosses());
 
    Float64 fpT = pDetails->pLosses->PermanentStrand_Final(); 
-
-   Float64 fpED   = pDetails->pLosses->ElasticGainDueToDeckPlacement();
-   Float64 fpSIDL = pDetails->pLosses->ElasticGainDueToSIDL();
-
-   // fpT includes elastic gains due to permanent loads
-   fpT += fpED+fpSIDL;
+   fpT += dfpES;
 
    (*this)(row,col++) << stress.SetValue(fpT);
    (*this)(row,col++) << scalar.SetValue( 100*fpT/fpj );
 
-   Float64 fpe = fpj - fpT + fpED + fpSIDL;
+   Float64 dfpED   = pDetails->pLosses->ElasticGainDueToDeckPlacement();
+   Float64 dfpSIDL = pDetails->pLosses->ElasticGainDueToSIDL();
+   Float64 fpe = fpj - fpT + dfpED + dfpSIDL;
+   if ( m_bUseGrossProperties )
+   {
+      Float64 dfpSS = pDetails->pLosses->ElasticGainDueToDeckShrinkage();
+      fpe += dfpSS;
+   }
+
    (*this)(row,col++) << stress.SetValue(fpe);
 
    (*this)(row,col++) << scalar.SetValue( 100*(fpj-fpe)/fpj );

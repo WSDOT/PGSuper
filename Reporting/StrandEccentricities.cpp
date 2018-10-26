@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -74,7 +74,6 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
    GET_IFACE2( pBroker, ILossParameters, pLossParams);
    pgsTypes::LossMethod lossMethod = pLossParams->GetLossMethod();
 
-   GET_IFACE2(pBroker,ISectionProperties,pSectProps);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -95,12 +94,10 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
          {
             CSegmentKey thisSegmentKey(grpIdx,gdrIdx,segIdx);
 
-            IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
-            IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(thisSegmentKey);
-            IntervalIndexType nIntervals = pIntervals->GetIntervalCount(thisSegmentKey);
-
             if ( lossMethod == pgsTypes::TIME_STEP )
             {
+               IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
+               IntervalIndexType nIntervals = pIntervals->GetIntervalCount(thisSegmentKey);
                for (IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
                {
                   CStrandEccTable ecc_table;
@@ -109,16 +106,7 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
             }
             else
             {
-               std::vector<IntervalIndexType> vIntervals;
-               if ( pSectProps->GetSectionPropertiesMode() == pgsTypes::spmTransformed )
-               {
-                  vIntervals.push_back(releaseIntervalIdx);
-                  vIntervals.push_back(compositeDeckIntervalIdx);
-               }
-               else
-               {
-                  vIntervals.push_back(releaseIntervalIdx);
-               }
+               std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(segmentKey));
 
                BOOST_FOREACH(IntervalIndexType intervalIdx,vIntervals)
                {

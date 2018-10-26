@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -119,7 +119,6 @@ private:
    CComPtr<IProductForces>     m_pProductForces;
    CComPtr<ICombinedForces>    m_pCombinedForces;
    CComPtr<IExternalLoading>   m_pExternalLoading;
-   CComPtr<IVirtualWork>       m_pVirtualWork;
    CComPtr<IEAFDisplayUnits>   m_pDisplayUnits;
 
 
@@ -150,24 +149,14 @@ private:
    void InitializeTimeStepAnalysis(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,LOSSDETAILS& details);
    void AnalyzeInitialStrains(IntervalIndexType intervalIdx,const CGirderKey& girderKey,LOSSES* pLosses);
    void FinalizeTimeStepAnalysis(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,LOSSDETAILS& details);
-   void ComputeDeflections(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,LOSSES* pLosses);
-   void ComputeIncrementalDeflections(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vAllPoi,const std::vector<Float64>& unitLoadMomentsPreviousInterval,const std::vector<Float64>& unitLoadMomentsThisInterval,const std::vector<sysSectionValue>& unitCoupleMomentsPreviousInterval,const std::vector<sysSectionValue>& unitCoupleMomentsThisInterval,LOSSES* pLosses);
-   void ComputeIncrementalDeflections(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vAllPoi,const std::vector<Float64>& unitLoadMoments,const std::vector<sysSectionValue>& unitCoupleMoments,LOSSES* pLosses);
 
    void ComputeAnchorSetLosses(const CPTData* pPTData,const CDuctData* pDuctData,DuctIndexType ductIdx,pgsTypes::MemberEndType endType,LOSSES* pLosses,Float64 Lg,SectionLossContainer::iterator& frMinIter,Float64* pdfpA,Float64* pdfpS,Float64* pXSet);
    void BoundAnchorSet(const CPTData* pPTData,const CDuctData* pDuctData,DuctIndexType ductIdx,pgsTypes::MemberEndType endType,Float64 Dset,LOSSES* pLosses,Float64 fpj,Float64 Lg,SectionLossContainer::iterator& frMinIter,Float64* pXsetMin,Float64* pDsetMin,Float64* pdfpATMin,Float64* pdfpSMin,Float64* pXsetMax,Float64* pDsetMax,Float64* pdfpATMax,Float64* pdfpSMax);
    Float64 EvaluateAnchorSet(const CPTData* pPTData,const CDuctData* pDuctData,DuctIndexType ductIdx,pgsTypes::MemberEndType endType,LOSSES* pLosses,Float64 fpj,Float64 Lg,SectionLossContainer::iterator& frMinIter,Float64 Xset,Float64* pdfpAT,Float64* pdfpS);
    LOSSDETAILS* GetLossDetails(LOSSES* pLosses,const pgsPointOfInterest& poi);
    std::vector<ProductForceType> GetApplicableProductLoads(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bExternalForcesOnly=false);
-   void MakeClosureJointAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& leftPoi,const pgsPointOfInterest& closurePoi,const pgsPointOfInterest& rightPoi,LOSSES* pLosses);
-
-
-   void InitializeDeflectionCalculations();
-   void InitializeErectionAdjustments(IntervalIndexType intervalIdx,const CSegmentKey& segmentKey,LOSSES* pLosses);
-   void GetErectionAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,ProductForceType pfType,Float64* pD,Float64* pR);
 
    int GetProductForceCount();
 
    CSegmentKey m_SegmentKey; // segment for which we are currently computing deflections
-   mathLinFunc2d m_ErectionAdjustment[19]; // adjusts deformations due to rigid body movement during erection
 };

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -617,8 +617,8 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
                continue;
             }
 #if defined REPORT_PRODUCT_LOAD_DETAILS
-            (*pTable2)(row2,col2  ) << pProductLoads->GetProductLoadName(pfType).c_str() << _T(" ") << force.SetValue(tsDetails.dPi[pfType]) << rptNewLine;
-            (*pTable2)(row2,col2+1) << pProductLoads->GetProductLoadName(pfType).c_str() << _T(" ") << moment.SetValue(tsDetails.dMi[pfType]) << rptNewLine;
+            (*pTable2)(row2,col2  ) << pProductLoads->GetProductLoadName(pfType) << _T(" ") << force.SetValue(tsDetails.dPi[pfType]) << rptNewLine;
+            (*pTable2)(row2,col2+1) << pProductLoads->GetProductLoadName(pfType) << _T(" ") << moment.SetValue(tsDetails.dMi[pfType]) << rptNewLine;
 #endif //REPORT_PRODUCT_LOAD_DETAILS
             dP += tsDetails.dPi[pfType];
             dM += tsDetails.dMi[pfType];
@@ -650,7 +650,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
             }
          }
 #endif // REPORT_INITIAL_STRAIN_DETAILS
-         (*pTable2)(row2,col2++) << tsDetails.Girder.e;
+         (*pTable2)(row2,col2++) << tsDetails.Girder.eci;
 
          
 #if defined REPORT_INITIAL_STRAIN_DETAILS
@@ -671,7 +671,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
             }
          }
 #endif // REPORT_INITIAL_STRAIN_DETAILS
-         (*pTable2)(row2,col2++) << curvature.SetValue(tsDetails.Girder.r);
+         (*pTable2)(row2,col2++) << curvature.SetValue(tsDetails.Girder.rci);
 
          (*pTable2)(row2,col2++) << force.SetValue(tsDetails.Girder.PrCreep);
          (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Girder.MrCreep);
@@ -702,7 +702,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
             }
          }
 #endif // REPORT_INITIAL_STRAIN_DETAILS
-         (*pTable2)(row2,col2++) << tsDetails.Deck.e;
+         (*pTable2)(row2,col2++) << tsDetails.Deck.eci;
 
          
 #if defined REPORT_INITIAL_STRAIN_DETAILS
@@ -723,7 +723,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
             }
          }
 #endif // REPORT_INITIAL_STRAIN_DETAILS
-         (*pTable2)(row2,col2++) << curvature.SetValue(tsDetails.Deck.r);
+         (*pTable2)(row2,col2++) << curvature.SetValue(tsDetails.Deck.rci);
 
          (*pTable2)(row2,col2++) << force.SetValue(tsDetails.Deck.PrCreep);
          (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Deck.MrCreep);
@@ -789,19 +789,19 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mr[TIMESTEP_SH] );
          (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mr[TIMESTEP_RE] );
 
-         (*pTable2)(row2,col2++) << tsDetails.e[TIMESTEP_CR][pgsTypes::Ahead];
-         (*pTable2)(row2,col2++) << tsDetails.e[TIMESTEP_SH][pgsTypes::Ahead];
-         (*pTable2)(row2,col2++) << tsDetails.e[TIMESTEP_RE][pgsTypes::Ahead];
-         (*pTable2)(row2,col2++) << curvature.SetValue(tsDetails.r[TIMESTEP_CR][pgsTypes::Ahead]);
-         (*pTable2)(row2,col2++) << curvature.SetValue(tsDetails.r[TIMESTEP_SH][pgsTypes::Ahead]);
-         (*pTable2)(row2,col2++) << curvature.SetValue(tsDetails.r[TIMESTEP_RE][pgsTypes::Ahead]);
+         (*pTable2)(row2,col2++) << _T("?")/*tsDetails.e[TIMESTEP_CR][pgsTypes::Ahead]*/;
+         (*pTable2)(row2,col2++) << _T("?")/*tsDetails.e[TIMESTEP_SH][pgsTypes::Ahead]*/;
+         (*pTable2)(row2,col2++) << _T("?")/*tsDetails.e[TIMESTEP_RE][pgsTypes::Ahead]*/;
+         (*pTable2)(row2,col2++) << _T("?")/*curvature.SetValue(tsDetails.r[TIMESTEP_CR][pgsTypes::Ahead])*/;
+         (*pTable2)(row2,col2++) << _T("?")/*curvature.SetValue(tsDetails.r[TIMESTEP_SH][pgsTypes::Ahead])*/;
+         (*pTable2)(row2,col2++) << _T("?")/*curvature.SetValue(tsDetails.r[TIMESTEP_RE][pgsTypes::Ahead])*/;
 
-         (*pTable2)(row2,col2++) << force.SetValue( tsDetails.Pre[TIMESTEP_CR] );
-         (*pTable2)(row2,col2++) << force.SetValue( tsDetails.Pre[TIMESTEP_SH] );
-         (*pTable2)(row2,col2++) << force.SetValue( tsDetails.Pre[TIMESTEP_RE] );
-         (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mre[TIMESTEP_CR]);
-         (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mre[TIMESTEP_SH]);
-         (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mre[TIMESTEP_RE]);
+         (*pTable2)(row2,col2++) << _T("?");//force.SetValue( tsDetails.Pre[TIMESTEP_CR] );
+         (*pTable2)(row2,col2++) << _T("?");//force.SetValue( tsDetails.Pre[TIMESTEP_SH] );
+         (*pTable2)(row2,col2++) << _T("?");//force.SetValue( tsDetails.Pre[TIMESTEP_RE] );
+         (*pTable2)(row2,col2++) << _T("?");//moment.SetValue(tsDetails.Mre[TIMESTEP_CR]);
+         (*pTable2)(row2,col2++) << _T("?");//moment.SetValue(tsDetails.Mre[TIMESTEP_SH]);
+         (*pTable2)(row2,col2++) <<_T("?");// moment.SetValue(tsDetails.Mre[TIMESTEP_RE]);
 
          Float64 der = 0;
          Float64 drr = 0;
@@ -938,12 +938,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
             pgsTypes::StrandType strandType = pgsTypes::StrandType(i);
 #if defined LUMP_STRANDS
             const TIME_STEP_STRAND& strand(tsDetails.Strands[strandType]);
-            Float64 dfpe = 0;
-            for ( int i = 0; i < N; i++ )
-            {
-               dfpe += strand.dfpe[i];
-            }
-            (*pTable2)(row2,col2++) << stress.SetValue(dfpe);
+            (*pTable2)(row2,col2++) << stress.SetValue(strand.dfpe);
             (*pTable2)(row2,col2++) << stress.SetValue(strand.fpe);
 #else
             StrandIndexType nStrands = pStrandGeom->GetStrandCount(segmentKey,strandType);
@@ -960,12 +955,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
          {
             const TIME_STEP_STRAND& tendon(tsDetails.Tendons[ductIdx]);
-            Float64 dfpe = 0;
-            for ( int i = 0; i < N; i++ )
-            {
-               dfpe += tendon.dfpe[i];
-            }
-            (*pTable2)(row2,col2+0) << stress.SetValue(dfpe) << rptNewLine;
+            (*pTable2)(row2,col2+0) << stress.SetValue(tendon.dfpe) << rptNewLine;
             (*pTable2)(row2,col2+1) << stress.SetValue(tendon.fpe)  << rptNewLine;
          }
          col2 += 2;
@@ -1220,10 +1210,10 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          const TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
          (*pTable3)(row3,col3++) << force.SetValue(tsDetails.Pr[TIMESTEP_CR]+tsDetails.Pr[TIMESTEP_SH]+tsDetails.Pr[TIMESTEP_RE]);
          (*pTable3)(row3,col3++) << moment.SetValue(tsDetails.Mr[TIMESTEP_CR]+tsDetails.Mr[TIMESTEP_SH]+tsDetails.Mr[TIMESTEP_RE]);
-         (*pTable3)(row3,col3++) << tsDetails.e[TIMESTEP_CR][pgsTypes::Ahead] + tsDetails.e[TIMESTEP_SH][pgsTypes::Ahead] + tsDetails.e[TIMESTEP_RE][pgsTypes::Ahead];
-         (*pTable3)(row3,col3++) << ::ConvertFromSysUnits(tsDetails.r[TIMESTEP_CR][pgsTypes::Ahead]+tsDetails.r[TIMESTEP_SH][pgsTypes::Ahead]+tsDetails.r[TIMESTEP_RE][pgsTypes::Ahead],pDisplayUnits->GetCurvatureUnit().UnitOfMeasure);
-         (*pTable3)(row3,col3++) << force.SetValue(tsDetails.Pre[TIMESTEP_CR]+tsDetails.Pre[TIMESTEP_SH]+tsDetails.Pre[TIMESTEP_RE]);
-         (*pTable3)(row3,col3++) << moment.SetValue(tsDetails.Mre[TIMESTEP_CR]+tsDetails.Mre[TIMESTEP_SH]+tsDetails.Mre[TIMESTEP_RE]);
+         (*pTable3)(row3,col3++) << _T("?")/*tsDetails.e[TIMESTEP_CR][pgsTypes::Ahead] + tsDetails.e[TIMESTEP_SH][pgsTypes::Ahead] + tsDetails.e[TIMESTEP_RE][pgsTypes::Ahead]*/;
+         (*pTable3)(row3,col3++) << _T("?")/*::ConvertFromSysUnits(tsDetails.r[TIMESTEP_CR][pgsTypes::Ahead]+tsDetails.r[TIMESTEP_SH][pgsTypes::Ahead]+tsDetails.r[TIMESTEP_RE][pgsTypes::Ahead],pDisplayUnits->GetCurvatureUnit().UnitOfMeasure)*/;
+         (*pTable3)(row3,col3++) << _T("?");//force.SetValue(tsDetails.Pre[TIMESTEP_CR]+tsDetails.Pre[TIMESTEP_SH]+tsDetails.Pre[TIMESTEP_RE]);
+         (*pTable3)(row3,col3++) << _T("?");//moment.SetValue(tsDetails.Mre[TIMESTEP_CR]+tsDetails.Mre[TIMESTEP_SH]+tsDetails.Mre[TIMESTEP_RE]);
       }
 
       row3++;
@@ -1259,7 +1249,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
    //   for ( int i = 0; i < N; i++ )
    //   {
    //      ProductForceType pfType = (ProductForceType)i;
-   //      std::_tstring strName = pProdLoads->GetProductLoadName(pfType);
+   //      LPCTSTR strName = pProdLoads->GetProductLoadName(pfType);
 
    //      pStressTable->SetColumnSpan(0,col,2);
    //      (*pStressTable)(0,col) << strName;
@@ -1319,7 +1309,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
    //   for ( int i = 0; i < N; i++ )
    //   {
    //      ProductForceType pfType = (ProductForceType)i;
-   //      std::_tstring strName = pProdLoads->GetProductLoadName(pfType);
+   //      LPCTSTR strName = pProdLoads->GetProductLoadName(pfType);
 
    //      pDeflectionTable->SetColumnSpan(0,col,2);
    //      (*pDeflectionTable)(0,col) << strName;

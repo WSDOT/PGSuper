@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -95,7 +95,9 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 	//a new file is created, and the data is written to the file		   
 	//according to a strict predefined format.             		
 
-	CString default_name = "CADexport.txt",initial_filespec, initial_dir;
+	CString default_name("CADexport.txt");
+   CString initial_filespec;
+   CString initial_dir;
 	INT_PTR	stf = IDOK;
 	TCHAR	strFilter[] = {_T("CAD Export Files (*.txt)|*.txt||")};
 

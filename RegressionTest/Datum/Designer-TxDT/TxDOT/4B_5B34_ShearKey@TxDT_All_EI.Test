@@ -36,35 +36,19 @@ Live Load Deflection check failed
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 23.96   6  0.08  2     2   4B34_        2   1/2  270 13.58 13.88   0  2.50   2   0  0  0  0  0  0  0  0  0  0  0  4.000 15.000    4.570   -3.795    3562 0.333  0.446 -0.79 -0.07 -0.03 -0.04 -0.13  -2.43   2.07   1.00   1.00   1.00
+ 23.96   6  0.08  2     2   4B34_       52   1/2  270 10.04  9.50  10  2.50  22  10  8  2  0  0  0  0  0  0  0  0  6.000  7.600    4.570   -3.795    3562 0.333  0.446  0.24 -0.07 -0.03 -0.04 -0.13 121.87 375.21   1.00   1.00   1.00
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
-Stresses in the prestressing strands are too high.
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 Live Load Deflection check failed
 
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 23.96   6  0.08  2     4   4B34_        2   1/2  270 13.58 13.88   0  2.50   2   0  0  0  0  0  0  0  0  0  0  0  4.000 15.000    4.570   -3.795    3562 0.333  0.446 -0.79 -0.07 -0.03 -0.04 -0.13  -2.43   2.07   1.00   1.00   1.00
+ 23.96   6  0.08  2     4   4B34_       52   1/2  270 10.04  9.50  10  2.50  22  10  8  2  0  0  0  0  0  0  0  0  6.000  7.600    4.570   -3.795    3562 0.333  0.446  0.24 -0.07 -0.03 -0.04 -0.13 121.87 375.21   1.00   1.00   1.00
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
-Stresses in the prestressing strands are too high.
-Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
-Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 Live Load Deflection check failed
 
 

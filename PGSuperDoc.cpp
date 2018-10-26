@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -262,7 +262,7 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,bool bDesignSlabOffset,const CGirder
 
    // set up default design options
    GET_IFACE(ISpecification,pSpec);
-   GET_IFACE(IBridge,pBridge);
+   GET_IFACE_NOCHECK(IBridge,pBridge);
    bool can_design_Adim    = pSpec->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
 
    bDesignSlabOffset = bDesignSlabOffset && can_design_Adim; // only design A if it's possible
@@ -411,7 +411,9 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool
       CEAFAutoProgress ap(pProgress,0,mask); 
 
       if (multi)
+      {
          pProgress->Init(0,(short)girderKeys.size(),1);  // and for multi-girders, a gauge.
+      }
 
       // Design all girders in list
       std::vector<CGirderKey>::const_iterator girderKeyIter(girderKeys.begin());
@@ -420,18 +422,34 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool
       {
          const CGirderKey& girderKey = *girderKeyIter;
 
-         arDesignOptions des_options = pSpecification->GetDesignOptions(girderKey);
-         des_options.doDesignSlabOffset = doDesignADim;
-         des_options.doDesignStirrupLayout = IsDesignStirrupsFromScratchEnabled() ?  slLayoutStirrups : slRetainExistingLayout;
-
-         if(!this->IsDesignFlexureEnabled())
+         // For each girder we can have multiple design strategies,
+         // but only one strategy is needed if we are designing for shear only
+         std::vector<arDesignOptions> des_options_coll = pSpecification->GetDesignOptions(girderKey);
+         if(!IsDesignFlexureEnabled() && 1 < des_options_coll.size() )
          {
-            des_options.doDesignForFlexure = dtNoDesign;
+            arDesignOptions tmp_opt = des_options_coll.front();
+            des_options_coll.clear();
+            des_options_coll.push_back(tmp_opt);  // remove all but one option
          }
 
-         des_options.doDesignForShear = this->IsDesignShearEnabled();
+         // We must doctor options for selections from dialog
+         for(std::vector<arDesignOptions>::iterator it = des_options_coll.begin(); it!=des_options_coll.end(); it++)
+         {
+            arDesignOptions& des_options = *it;
 
-         const pgsGirderDesignArtifact* pArtifact = pIArtifact->CreateDesignArtifact( girderKey, des_options);
+            des_options.doDesignSlabOffset = doDesignADim;
+            des_options.doDesignStirrupLayout = IsDesignStirrupsFromScratchEnabled() ?  slLayoutStirrups : slRetainExistingLayout;
+
+            if(!IsDesignFlexureEnabled())
+            {
+               des_options.doDesignForFlexure = dtNoDesign;
+            }
+
+            des_options.doDesignForShear = IsDesignShearEnabled();
+         }
+
+         // Design the girder
+         const pgsGirderDesignArtifact* pArtifact = pIArtifact->CreateDesignArtifact( girderKey, des_options_coll);
 
          pProgress->Increment();
 
@@ -482,23 +500,35 @@ void CPGSuperDoc::LoadDocumentSettings()
    CString strDefaultDesignFlexure = pApp->GetLocalMachineString(_T("Settings"),_T("DesignFlexure"),_T("On"));
    CString strDesignFlexure = pApp->GetProfileString(_T("Settings"),_T("DesignFlexure"),strDefaultDesignFlexure);
    if ( strDesignFlexure.CompareNoCase(_T("Off")) == 0 )
+   {
       m_bDesignFlexureEnabled = false;
+   }
    else
+   {
       m_bDesignFlexureEnabled = true;
+   }
 
    CString strDefaultDesignShear = pApp->GetLocalMachineString(_T("Settings"),_T("DesignShear"),_T("Off"));
    CString strDesignShear = pApp->GetProfileString(_T("Settings"),_T("DesignShear"),strDefaultDesignShear);
    if ( strDesignShear.CompareNoCase(_T("Off")) == 0 )
+   {
       m_bDesignShearEnabled = false;
+   }
    else
+   {
       m_bDesignShearEnabled = true;
+   }
 
    CString strDefaultDesignStirrupsFromScratch = pApp->GetLocalMachineString(_T("Settings"),_T("DesignStirrupsFromScratch"),_T("On"));
    CString strDesignStirrupsFromScratch = pApp->GetProfileString(_T("Settings"),_T("DesignStirrupsFromScratch"),strDefaultDesignStirrupsFromScratch);
    if ( strDesignStirrupsFromScratch.CompareNoCase(_T("Off")) == 0 )
+   {
       m_bDesignStirrupsFromScratchEnabled = false;
+   }
    else
+   {
       m_bDesignStirrupsFromScratchEnabled = true;
+   }
 }
 
 void CPGSuperDoc::SaveDocumentSettings()

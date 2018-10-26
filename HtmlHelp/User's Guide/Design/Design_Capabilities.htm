@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=921>
-<meta name=layout-width content=1234>
+<meta name=layout-height content=1025>
+<meta name=layout-width content=1289>
 
 
 <!--(Links)=========================================================-->
@@ -45,31 +45,37 @@
 
 <h1>Design Capabilities</h1>
 
-<p>There are many parameters involved when designing a precast girder bridge, 
- including girder spacing, girder size, span length, slab depth, slab overhang 
- width, and concrete strength. In the most general case, you could say, 
- &quot;There's a hole in the ground, design a bridge that spans it&quot;. 
- As you can see, design is a very open-ended activity.</p>
+<p>There are many parameters involved when designing a precast girder bridge 
+ superstructure, including girder spacing, girder size, span length, slab 
+ depth, slab overhang width, and concrete strength. In the most general 
+ case, you could say, &quot;There's a hole in the ground, design a bridge 
+ that spans it&quot;. As you can see, design is a very open-ended activity.</p>
 
-<p>The automated design feature in PGSuper has a more narrow scope. Given 
+<p>The automated girder designer in PGSuper has a more narrow scope. Given 
  basic bridge configuration information, it will make an estimate<span 
  style="font-style: italic;"> </span>at what some of the input parameters 
- should be for a selected girder. The automated design tool can design 
- for flexure and shear.</p>
+ should be for a selected girder. The girder designer can design for flexure 
+ and shear.</p>
 
 <p><span style="font-style: normal;">For flexure, PGSuper's design algorithm 
- will determine input for:</span></p>
+ can determine input for:</span></p>
 
 <ul>
 	
-	<li class=kadov-p><p><span style="font-style: normal;">Number of Straight 
- and Adjustable Strands (Harped or Straight-Web)</span></p></li>
+	<li class=kadov-p><p><span style="font-style: normal;">Prestressing 
+ Optimization Strategy (harped design, straight design, or debond design)</span></p></li>
+	
+	<li class=kadov-p><p>Number of Straight and Adjustable Strands (Harped 
+ or Adjustable-Straight)</p></li>
 	
 	<li class=kadov-p><p>Jacking Force of Straight and Adjustable Strands</p></li>
 	
-	<li class=kadov-p><p><span style="font-style: normal;">For Adjustable 
- strands; Harped Strand Offset at End of Girder and at Harping Point, or 
- offset of Straight-Web strands along girder</span></p></li>
+	<li class=kadov-p><p>For Adjustable strands; Harped Strand Offset at 
+ End of Girder and at Harping Point, or locations of Straight-Web strands 
+ along girder</p></li>
+	
+	<li class=kadov-p><p><span style="font-style: normal;">Debonding of 
+ Straight Strands, if enabled</span></p></li>
 	
 	<li class=kadov-p><p><span style="font-style: normal;">Concrete Release 
  Strength, f'<span style="vertical-align: sub;">ci</span></span></p></li>
@@ -101,7 +107,7 @@
 	<li class=kadov-p><p>Horizontal Interface Shear</p></li>
 	
 	<li class=kadov-p><p><span style="font-style: normal;">Splitting/Bursting 
- Reiforcement</span></p></li>
+ Reinforcement</span></p></li>
 	
 	<li class=kadov-p><p>Confinement Reinforcement</p></li>
 	
@@ -118,6 +124,11 @@
  Confinement are optional. These options may be turned off and on via the 
  <a href="../Appendix B - PGSuper Library Dialogs/Design_Tab.htm">Design 
  Tab</a> in the Project Criteria library.</p></li>
+	
+	<li class=kadov-p-CTip><p class=Tip>The strand type used for flexural 
+ designs is controlled by the available strand types for a girder and the 
+ prestressing optimization strategies selected on the <a href="../Appendix B - PGSuper Library Dialogs/Debonding_Tab.htm">Flexural 
+ Design Tab</a> in the girder library.</p></li>
 	
 	<li class=kadov-p-CTip><p class=Tip>Parameters that control transverse 
  reinforcement design are located on the <!--kadov_tag{{<spaces>}}-->&nbsp;<a 

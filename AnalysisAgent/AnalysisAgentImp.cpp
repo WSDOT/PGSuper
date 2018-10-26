@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -290,11 +290,11 @@ void CAnalysisAgentImp::BuildCamberModel(const CSegmentKey& segmentKey,bool bUse
       // Determine the prestress force
       if ( bUseConfig )
       {
-         Ph = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Harped,releaseIntervalIdx,pgsTypes::End,pgsTypes::ServiceI,config);
+         Ph = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Harped,releaseIntervalIdx,pgsTypes::End,config);
       }
       else
       {
-         Ph = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Harped,releaseIntervalIdx,pgsTypes::End,pgsTypes::ServiceI);
+         Ph = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Harped,releaseIntervalIdx,pgsTypes::End);
       }
 
       // get harping point locations
@@ -404,14 +404,14 @@ void CAnalysisAgentImp::BuildCamberModel(const CSegmentKey& segmentKey,bool bUse
    {
       ecc_straight_start = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiStart, config, pgsTypes::Straight, &nSsEffective);
       ecc_straight_end   = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiEnd,   config, pgsTypes::Straight, &nSsEffective);
-      Ps = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End,pgsTypes::ServiceI,config);
+      Ps = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End,config);
    }
    else
    {
       StrandIndexType Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
       ecc_straight_start = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiStart, pgsTypes::Straight, &nSsEffective);
       ecc_straight_end   = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiEnd,   pgsTypes::Straight, &nSsEffective);
-      Ps = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End,pgsTypes::ServiceI);
+      Ps = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End);
    }
    Msl = Ps*ecc_straight_start;
    Msr = Ps*ecc_straight_end;
@@ -444,7 +444,7 @@ void CAnalysisAgentImp::BuildCamberModel(const CSegmentKey& segmentKey,bool bUse
          // (ok, not at this section but lt past this section)
          Float64 nSsEffective;
 
-         Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End,pgsTypes::ServiceI,config);
+         Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End,config);
          ecc_straight_debond = pStrandGeom->GetEccentricity(releaseIntervalIdx, pgsPointOfInterest(segmentKey,location),config, pgsTypes::Straight, &nSsEffective);
 
          Ms = sign*Ps*ecc_straight_debond;
@@ -465,7 +465,7 @@ void CAnalysisAgentImp::BuildCamberModel(const CSegmentKey& segmentKey,bool bUse
 
          Float64 nSsEffective;
 
-         Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End,pgsTypes::ServiceI,config);
+         Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End,config);
          ecc_straight_debond = pStrandGeom->GetEccentricity(releaseIntervalIdx, pgsPointOfInterest(segmentKey,location),config, pgsTypes::Straight, &nSsEffective);
 
          Ms = sign*Ps*ecc_straight_debond;
@@ -498,7 +498,7 @@ void CAnalysisAgentImp::BuildCamberModel(const CSegmentKey& segmentKey,bool bUse
             // (ok, not at this section but lt past this section)
             Float64 nSsEffective;
 
-            Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End,pgsTypes::ServiceI);
+            Ps = nDebondedAtSection*pPrestressForce->GetPrestressForcePerStrand(mid_span_poi,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End);
             ecc_straight_debond = pStrandGeom->GetEccentricity(releaseIntervalIdx, pgsPointOfInterest(segmentKey,location), pgsTypes::Straight, &nSsEffective);
 
             Ms = sign*Ps*ecc_straight_debond;
@@ -603,14 +603,14 @@ void CAnalysisAgentImp::BuildTempCamberModel(const CSegmentKey& segmentKey,bool 
 
    if ( bUseConfig )
    {
-      Pti = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,tsInstallIntervalIdx,pgsTypes::End,pgsTypes::ServiceI,config);
-      Ptr = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,erectSegmentIntervalIdx,pgsTypes::End,pgsTypes::ServiceI,config);
+      Pti = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,tsInstallIntervalIdx,pgsTypes::End,config);
+      Ptr = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,erectSegmentIntervalIdx,pgsTypes::End,config);
       ecc = pStrandGeom->GetEccentricity(tsInstallIntervalIdx, pgsPointOfInterest(segmentKey,0.00),config, pgsTypes::Temporary, &nTsEffective);
    }
    else
    {
-      Pti = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,tsInstallIntervalIdx,pgsTypes::End,pgsTypes::ServiceI);
-      Ptr = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,erectSegmentIntervalIdx,pgsTypes::End,pgsTypes::ServiceI);
+      Pti = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,tsInstallIntervalIdx,pgsTypes::End);
+      Ptr = pPrestressForce->GetPrestressForce(mid_span_poi,pgsTypes::Temporary,erectSegmentIntervalIdx,pgsTypes::End);
       ecc = pStrandGeom->GetEccentricity(tsInstallIntervalIdx, pgsPointOfInterest(segmentKey,0.00), pgsTypes::Temporary, &nTsEffective);
    }
 
@@ -692,7 +692,6 @@ STDMETHODIMP CAnalysisAgentImp::RegInterfaces()
    pBrokerInit->RegInterface( IID_IContinuity,               this );
    pBrokerInit->RegInterface( IID_IBearingDesign,            this );
    pBrokerInit->RegInterface( IID_IPrecompressedTensileZone, this );
-   pBrokerInit->RegInterface( IID_IVirtualWork,              this );
    pBrokerInit->RegInterface( IID_IReactions,                this );
 
    return S_OK;
@@ -856,6 +855,16 @@ pgsTypes::BridgeAnalysisType CAnalysisAgentImp::GetBridgeAnalysisType(pgsTypes::
    return GetBridgeAnalysisType(analysisType,optimization);
 }
 
+
+Float64 CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
+{
+   std::vector<pgsPointOfInterest> vPoi;
+   vPoi.push_back(poi);
+   std::vector<Float64> results( GetAxial(intervalIdx,pfType,vPoi,bat,resultsType) );
+   ATLASSERT(results.size() == 1);
+   return results[0];
+}
+
 sysSectionValue CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
    std::vector<pgsPointOfInterest> vPoi;
@@ -907,11 +916,11 @@ void CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,ProductForceType
    *pfBot = fBot[0];
 }
 
-std::_tstring CAnalysisAgentImp::GetProductLoadName(ProductForceType pfType)
+LPCTSTR CAnalysisAgentImp::GetProductLoadName(ProductForceType pfType)
 {
    // these are the names that are displayed to the user in the UI and reports
    // this must be in the same order as the ProductForceType enum
-   static std::_tstring strNames[] = 
+   static LPCTSTR strNames[] = 
    {
       _T("Girder"),
       _T("Construction"),
@@ -1038,17 +1047,17 @@ std::_tstring CAnalysisAgentImp::GetProductLoadName(ProductForceType pfType)
       break;
    }
 
-   ATLASSERT(strName == strNames[pfType]);
+   ATLASSERT(strName == std::_tstring(strNames[pfType]));
 #endif
 
    return strNames[pfType];
 }
 
-std::_tstring CAnalysisAgentImp::GetLoadCombinationName(LoadingCombinationType loadCombo)
+LPCTSTR CAnalysisAgentImp::GetLoadCombinationName(LoadingCombinationType loadCombo)
 {
    // these are the names that are displayed to the user in the UI and reports
    // this must be in the same order as the LoadingCombinationType enum
-   static std::_tstring strNames[] =
+   static LPCTSTR strNames[] =
    {
    _T("DC"), 
    _T("DW"), 
@@ -1061,6 +1070,9 @@ std::_tstring CAnalysisAgentImp::GetLoadCombinationName(LoadingCombinationType l
    _T("PS")
    };
 
+   // the direct lookup in the array is faster, however if the enum changes (number of values or order of values)
+   // it isn't easily detectable... the switch/case below is slower but it can detect errors that result
+   // from changing the enum
 #if defined _DEBUG
    std::_tstring strName;
    switch(loadCombo)
@@ -1105,10 +1117,125 @@ std::_tstring CAnalysisAgentImp::GetLoadCombinationName(LoadingCombinationType l
       ATLASSERT(false);
    }
 
-   ATLASSERT(strName == strNames[loadCombo]);
+   ATLASSERT(strName == std::_tstring(strNames[loadCombo]));
 #endif
 
    return strNames[loadCombo];
+}
+
+LPCTSTR CAnalysisAgentImp::GetLimitStateName(pgsTypes::LimitState limitState)
+{
+   // these are the names that are displayed to the user in the UI and reports
+   // this must be in the same order as the LimitState enum
+   static LPCTSTR strNames[] =
+   {
+      _T("Service I"),
+      _T("Service IA"),
+      _T("Service III"),
+      _T("Strength I"),
+      _T("Strength II"),
+      _T("Fatigue I"),
+      _T("Strength I (Inventory)"),
+      _T("Strength I (Operating)"),
+      _T("Service III (Inventory)"),
+      _T("Service III (Operating)"),
+      _T("Strength I (Legal - Routine)"),
+      _T("Strength I (Legal - Special)"),
+      _T("Service III (Legal - Routine)"),
+      _T("Service III (Legal - Special)"),
+      _T("Strength II (Routine Permit Rating)"),
+      _T("Service I (Routine Permit Rating)"),
+      _T("Strength II (Special Permit Rating)"),
+      _T("Service I (Special Permit Rating)")
+   };
+
+   // the direct lookup in the array is faster, however if the enum changes (number of values or order of values)
+   // it isn't easily detectable... the switch/case below is slower but it can detect errors that result
+   // from changing the enum
+#if defined _DEBUG
+   std::_tstring strName;
+   switch(limitState)
+   {
+      case pgsTypes::ServiceI:
+         strName = _T("Service I");
+         break;
+
+      case pgsTypes::ServiceIA:
+         strName = _T("Service IA");
+         break;
+
+      case pgsTypes::ServiceIII:
+         strName = _T("Service III");
+         break;
+
+      case pgsTypes::StrengthI:
+         strName = _T("Strength I");
+         break;
+
+      case pgsTypes::StrengthII:
+         strName = _T("Strength II");
+         break;
+
+      case pgsTypes::FatigueI:
+         strName = _T("Fatigue I");
+         break;
+
+      case pgsTypes::StrengthI_Inventory:
+         strName = _T("Strength I (Inventory)");
+         break;
+
+      case pgsTypes::StrengthI_Operating:
+         strName = _T("Strength I (Operating)");
+         break;
+
+      case pgsTypes::ServiceIII_Inventory:
+         strName = _T("Service III (Inventory)");
+         break;
+
+      case pgsTypes::ServiceIII_Operating:
+         strName = _T("Service III (Operating)");
+         break;
+
+      case pgsTypes::StrengthI_LegalRoutine:
+         strName = _T("Strength I (Legal - Routine)");
+         break;
+
+      case pgsTypes::StrengthI_LegalSpecial:
+         strName = _T("Strength I (Legal - Special)");
+         break;
+
+      case pgsTypes::ServiceIII_LegalRoutine:
+         strName = _T("Service III (Legal - Routine)");
+         break;
+
+      case pgsTypes::ServiceIII_LegalSpecial:
+         strName = _T("Service III (Legal - Special)");
+         break;
+
+      case pgsTypes::StrengthII_PermitRoutine:
+         strName = _T("Strength II (Routine Permit Rating)");
+         break;
+
+      case pgsTypes::ServiceI_PermitRoutine:
+         strName = _T("Service I (Routine Permit Rating)");
+         break;
+
+      case pgsTypes::StrengthII_PermitSpecial:
+         strName = _T("Strength II (Special Permit Rating)");
+         break;
+
+      case pgsTypes::ServiceI_PermitSpecial:
+         strName = _T("Service I (Special Permit Rating)");
+         break;
+
+      default:
+         ATLASSERT(false); // SHOULD NEVER GET HERE
+   }
+
+   ATLASSERT(strName == std::_tstring(strNames[limitState]));
+#endif
+
+   return strNames[limitState];
 }
 
 void CAnalysisAgentImp::GetGirderSelfWeightLoad(const CSegmentKey& segmentKey,std::vector<GirderLoad>* pDistLoad,std::vector<DiaphragmLoad>* pPointLoad)
@@ -1394,7 +1521,6 @@ rkPPPartUniformLoad CAnalysisAgentImp::GetDesignSlabModel(Float64 fcgdr,Float64 
 {
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IMaterials,pMaterial);
-   GET_IFACE(IGirder,pGdr);
    GET_IFACE(ISectionProperties,pSectProp);
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
@@ -1470,6 +1596,7 @@ rkPPPartUniformLoad CAnalysisAgentImp::GetDesignSlabModel(Float64 fcgdr,Float64 
          }
          else
          {
+            GET_IFACE(IGirder,pGdr);
             Float64 top_width = pGdr->GetTopWidth(poi);
 
             // slab overhang from edge of girder (normal to alignment)
@@ -1591,12 +1718,58 @@ rkPPPartUniformLoad CAnalysisAgentImp::GetDesignSlabPadModel(Float64 fcgdr,Float
 
 void CAnalysisAgentImp::DumpAnalysisModels(GirderIndexType gdrIdx)
 {
+   m_pSegmentModelManager->DumpAnalysisModels(gdrIdx);
    m_pGirderModelManager->DumpAnalysisModels(gdrIdx);
 }
 
 void CAnalysisAgentImp::GetDeckShrinkageStresses(const pgsPointOfInterest& poi,Float64* pftop,Float64* pfbot)
 {
    m_pGirderModelManager->GetDeckShrinkageStresses(poi,pftop,pfbot);
+}
+
+std::vector<Float64> CAnalysisAgentImp::GetTimeStepPrestressAxial(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
+{
+   ATLASSERT(pfType == pftPretension || pfType == pftTotalPostTensioning || pfType == pftPrimaryPostTensioning || pfType == pftSecondaryEffects);
+   ATLASSERT(bat == pgsTypes::ContinuousSpan);
+
+   std::vector<Float64> P;
+   P.reserve(vPoi.size());
+
+   if ( pfType == pftTotalPostTensioning )
+   {
+      // the deflections due to total post-tensioning is the sum of the primary and secondary effects
+      std::vector<Float64> primary(  GetTimeStepPrestressAxial(intervalIdx,pftPrimaryPostTensioning,vPoi,bat,resultsType));
+      std::vector<Float64> secondary(GetTimeStepPrestressAxial(intervalIdx,pftSecondaryEffects,     vPoi,bat,resultsType));
+
+      std::transform(primary.begin(),primary.end(),secondary.begin(),std::back_inserter(P),std::plus<Float64>());
+      return P;
+   }
+
+
+   GET_IFACE(ILosses,pILosses);
+
+   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+   for ( ; iter != end; iter++ )
+   {
+      const pgsPointOfInterest& poi = *iter;
+
+      const LOSSDETAILS* pLossDetails = pILosses->GetLossDetails(poi,intervalIdx);
+      const TIME_STEP_DETAILS& tsDetails = pLossDetails->TimeStepDetails[intervalIdx];
+
+      Float64 dP = 0;
+      if ( resultsType == rtIncremental )
+      {
+         dP = tsDetails.dMi[pfType]; // incremental
+      }
+      else
+      {
+         dP = tsDetails.Mi[pfType]; // cumulative
+      }
+      P.push_back(dP);
+   }
+
+   return P;
 }
 
 std::vector<Float64> CAnalysisAgentImp::GetTimeStepPrestressMoment(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
@@ -1725,6 +1898,86 @@ void CAnalysisAgentImp::GetEquivPostTensionLoads(const CGirderKey& girderKey,Duc
 /////////////////////////////////////////////////////////////////////////////
 // IProductForces2
 //
+std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
+{
+   USES_CONVERSION;
+
+   std::vector<Float64> results;
+
+   if ( pfType == pftPretension || pfType == pftTotalPostTensioning || pfType == pftPrimaryPostTensioning || pfType == pftSecondaryEffects )
+   {
+      GET_IFACE( ILossParameters, pLossParams);
+      if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+      {
+         return GetTimeStepPrestressAxial(intervalIdx,pfType,vPoi,bat,resultsType);
+      }
+      else
+      {
+#if defined _DEBUG
+         GET_IFACE(IPointOfInterest,pPoi);
+         std::vector<CSegmentKey> vSegmentKeys(pPoi->GetSegmentKeys(vPoi));
+         ATLASSERT(vSegmentKeys.size() == 1); // this method assumes all the poi are for the same segment
+#endif
+         // This is not time-step analysis.
+         // The pretension effects are handled in the segment and girder models for
+         // elastic analysis... we want to use the code further down in this method.
+         if ( pfType == pftPretension )
+         {
+            // for elastic analysis, force effects due to pretensioning are always those at release
+            CSegmentKey segmentKey = vPoi.front().GetSegmentKey();
+            GET_IFACE(IIntervals,pIntervals);
+            IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+            intervalIdx = releaseIntervalIdx;
+         }
+
+         // Post-tensioning is not modeled for linear elastic analysis, so the
+         // results are zero
+         if ( pfType == pftPrimaryPostTensioning || pfType == pftSecondaryEffects )
+         {
+            results.resize(vPoi.size(),0.0);
+            return results;
+         }
+      }
+   }
+
+   if ( pfType == pftCreep || pfType == pftShrinkage || pfType == pftRelaxation )
+   {
+      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
+   }
+
+   try
+   {
+      GET_IFACE(IIntervals,pIntervals);
+      IntervalIndexType erectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(vPoi.front().GetSegmentKey());
+      if ( intervalIdx < erectionIntervalIdx )
+      {
+         // before erection - results are in the segment models
+         results = m_pSegmentModelManager->GetAxial(intervalIdx,pfType,vPoi,resultsType);
+      }
+      else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
+      {
+         // the incremental result at the time of erection is being requested. this is when
+         // we switch between segment models and girder models. the incremental results
+         // is the cumulative result this interval minus the cumulative result in the previous interval
+         std::vector<Float64> Aprev = GetAxial(intervalIdx-1,pfType,vPoi,bat,rtCumulative);
+         std::vector<Float64> Athis = GetAxial(intervalIdx,  pfType,vPoi,bat,rtCumulative);
+         std::transform(Athis.begin(),Athis.end(),Aprev.begin(),std::back_inserter(results),std::minus<Float64>());
+      }
+      else
+      {
+         results = m_pGirderModelManager->GetAxial(intervalIdx,pfType,vPoi,bat,resultsType);
+      }
+   }
+   catch(...)
+   {
+      // reset all of our data.
+      Invalidate(false);
+      throw;
+   }
+
+   return results;
+}
+
 std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
    USES_CONVERSION;
@@ -1872,44 +2125,149 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
 
 std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeElevationAdjustment)
 {
-   std::vector<Float64> vResults;
-   GET_IFACE( ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+#if defined _DEBUG
+   GET_IFACE(IPointOfInterest,pPoi);
+   std::vector<CGirderKey> vGirderKeys(pPoi->GetGirderKeys(vPoi));
+   ATLASSERT(vGirderKeys.size() == 1); // this method assumes all the poi are for the same girder
+#endif
+
+   if ( pfType == pftCreep || pfType == pftShrinkage || pfType == pftRelaxation )
    {
-      vResults = GetTimeStepDeflection(intervalIdx,pfType,vPoi,bat,resultsType);
+      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
+   }
+
+   std::vector<Float64> deflections;
+   deflections.reserve(vPoi.size());
+
+   if ( pfType == pftTotalPostTensioning )
+   {
+      pfType = pftEquivPostTensioning;
+   }
+
+   if ( pfType == pftSecondaryEffects || pfType == pftPrimaryPostTensioning )
+   {
+      deflections.resize(vPoi.size(),0.0);
    }
    else
    {
-      vResults = GetElasticDeflection(intervalIdx,pfType,vPoi,bat,resultsType);
+      try
+      {
+         GET_IFACE(IIntervals,pIntervals);
+         IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(vPoi.front().GetSegmentKey());
+
+         if ( intervalIdx < erectionIntervalIdx )
+         {
+            // before erection - results are in the segment models
+            deflections = m_pSegmentModelManager->GetDeflection(intervalIdx,pfType,vPoi,resultsType);
+         }
+         else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
+         {
+            // the incremental result at the time of erection is being requested. this is when
+            // we switch between segment models and girder models. the incremental results
+            // is the cumulative result this interval minus the cumulative result in the previous interval
+            std::vector<Float64> Dprev = GetDeflection(intervalIdx-1,pfType,vPoi,bat,rtCumulative,false);
+            std::vector<Float64> Dthis = GetDeflection(intervalIdx,  pfType,vPoi,bat,rtCumulative,false);
+            std::transform(Dthis.begin(),Dthis.end(),Dprev.begin(),std::back_inserter(deflections),std::minus<Float64>());
+         }
+         else
+         {
+#pragma Reminder("UPDATE: this isn't the right deflection")
+            // there is a problem with deflection like pftGirder. The deflection computed from
+            // the girder model manager is the deflection of teh girder self weight using Ec. 
+            // However the deflection is set based on Eci and then only changes because of
+            // changing boundary conditions from release, lifting, storage, transportation, and
+            // finally erection.
+            //
+            // Look at the camber details for a PGSuper analysis. You'll see that for the support location
+            // being the same for release, storage, and erection, the girder self-weight
+            // deflections are different. The modulus changing over time will not change the deflection,
+            // however that is exactly what is happening in this analysis..
+            //
+            // The same issue occurs for rotations.
+
+            deflections = m_pGirderModelManager->GetDeflection(intervalIdx,pfType,vPoi,bat,resultsType);
+         }
+      }
+      catch(...)
+      {
+         // reset all of our data.
+         Invalidate(false);
+         throw;
+      }
    }
 
    if ( bIncludeElevationAdjustment )
    {
-      ApplyElevationAdjustment(intervalIdx,vPoi,&vResults,NULL);
+      ApplyElevationAdjustment(intervalIdx,vPoi,&deflections,NULL);
    }
 
-   return vResults;
+   return deflections;
 }
 
 std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeSlopeAdjustment)
 {
-   std::vector<Float64> vResults;
-   GET_IFACE( ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+#if defined _DEBUG
+   GET_IFACE(IPointOfInterest,pPoi);
+   std::vector<CGirderKey> vGirderKeys(pPoi->GetGirderKeys(vPoi));
+   ATLASSERT(vGirderKeys.size() == 1); // this method assumes all the poi are for the same girder
+#endif
+
+   if ( pfType == pftCreep || pfType == pftShrinkage || pfType == pftRelaxation )
    {
-      vResults = GetTimeStepRotation(intervalIdx,pfType,vPoi,bat,resultsType);
+      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
+   }
+
+   std::vector<Float64> rotations;
+   rotations.reserve(vPoi.size());
+
+   if ( pfType == pftTotalPostTensioning )
+   {
+      pfType = pftEquivPostTensioning;
+   }
+
+   if ( pfType == pftSecondaryEffects || pfType == pftPrimaryPostTensioning )
+   {
+      rotations.resize(vPoi.size(),0.0);
    }
    else
    {
-      vResults = GetElasticRotation(intervalIdx,pfType,vPoi,bat,resultsType);
+      try
+      {
+         GET_IFACE(IIntervals,pIntervals);
+         IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(vPoi.front().GetSegmentKey());
+         if ( intervalIdx < erectionIntervalIdx )
+         {
+            // before erection - results are in the segment models
+            rotations = m_pSegmentModelManager->GetRotation(intervalIdx,pfType,vPoi,resultsType);
+         }
+         else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
+         {
+            // the incremental result at the time of erection is being requested. this is when
+            // we switch between segment models and girder models. the incremental results
+            // is the cumulative result this interval minus the cumulative result in the previous interval
+            std::vector<Float64> Rprev = GetRotation(intervalIdx-1,pfType,vPoi,bat,rtCumulative,false);
+            std::vector<Float64> Rthis = GetRotation(intervalIdx,  pfType,vPoi,bat,rtCumulative,false);
+            std::transform(Rthis.begin(),Rthis.end(),Rprev.begin(),std::back_inserter(rotations),std::minus<Float64>());
+         }
+         else
+         {
+            rotations = m_pGirderModelManager->GetRotation(intervalIdx,pfType,vPoi,bat,resultsType);
+         }
+      }
+      catch(...)
+      {
+         // reset all of our data.
+         Invalidate(false);
+         throw;
+      }
    }
 
    if ( bIncludeSlopeAdjustment )
    {
-      ApplyRotationAdjustment(intervalIdx,vPoi,&vResults,NULL);
+      ApplyRotationAdjustment(intervalIdx,vPoi,&rotations,NULL);
    }
 
-   return vResults;
+   return rotations;
 }
 
 void CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot)
@@ -2189,12 +2547,6 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
 {
    USES_CONVERSION;
 
-   //if comboType is  lcCR, lcSH, or lcRE, need to do the time-step analysis because it adds loads to the LBAM
-   if ( comboType == lcCR || comboType == lcSH || comboType == lcRE )
-   {
-      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
-   }
-
    std::vector<Float64> results;
    if ( comboType == lcPS )
    {
@@ -2212,29 +2564,137 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
          // add M to results and assign answer to results
          std::transform(M.begin(),M.end(),results.begin(),results.begin(),std::plus<Float64>());
       }
+
+      return results;
+   }
+
+   //if comboType is  lcCR, lcSH, or lcRE, need to do the time-step analysis because it adds loads to the LBAM
+   if ( comboType == lcCR || comboType == lcSH || comboType == lcRE )
+   {
+      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
+   }
+
+   try
+   {
+      GET_IFACE(IIntervals,pIntervals);
+      IntervalIndexType erectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(vPoi.front().GetSegmentKey());
+      if (intervalIdx < erectionIntervalIdx )
+      {
+         results = m_pSegmentModelManager->GetMoment(intervalIdx,comboType,vPoi,resultsType);
+      }
+      else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
+      {
+         // the incremental result at the time of erection is being requested. this is when
+         // we switch between segment models and girder models. the incremental results
+         // is the cumulative result this interval minus the cumulative result in the previous interval
+         std::vector<Float64> Mprev = GetMoment(intervalIdx-1,comboType,vPoi,bat,rtCumulative);
+         std::vector<Float64> Mthis = GetMoment(intervalIdx,  comboType,vPoi,bat,rtCumulative);
+         std::transform(Mthis.begin(),Mthis.end(),Mprev.begin(),std::back_inserter(results),std::minus<Float64>());
+      }
+      else
+      {
+         results = m_pGirderModelManager->GetMoment(intervalIdx,comboType,vPoi,bat,resultsType);
+      }
+   }
+   catch(...)
+   {
+      // reset all of our data.
+      Invalidate(false);
+      throw;
+   }
+
+   return results;
+}
+
+std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeElevationAdjustment)
+{
+#if defined _DEBUG
+   GET_IFACE(IPointOfInterest,pPoi);
+   std::vector<CSegmentKey> vSegmentKeys(pPoi->GetSegmentKeys(vPoi));
+   ATLASSERT(vSegmentKeys.size() == 1); // this method assumes all the poi are for the same segment
+#endif
+
+   std::vector<Float64> deflection;
+   try
+   {
+      GET_IFACE(IIntervals,pIntervals);
+      IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(vPoi.front().GetSegmentKey());
+      if ( intervalIdx < erectionIntervalIdx )
+      {
+         deflection = m_pSegmentModelManager->GetDeflection(intervalIdx,comboType,vPoi,resultsType);
+      }
+      else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
+      {
+         // the incremental result at the time of erection is being requested. this is when
+         // we switch between segment models and girder models. the incremental results
+         // is the cumulative result this interval minus the cumulative result in the previous interval
+         std::vector<Float64> Dprev = GetDeflection(intervalIdx-1,comboType,vPoi,bat,rtCumulative,false);
+         std::vector<Float64> Dthis = GetDeflection(intervalIdx,  comboType,vPoi,bat,rtCumulative,false);
+         std::transform(Dthis.begin(),Dthis.end(),Dprev.begin(),std::back_inserter(deflection),std::minus<Float64>());
+      }
+      else
+      {
+         deflection = m_pGirderModelManager->GetDeflection(intervalIdx,comboType,vPoi,bat,resultsType);
+      }
+   }
+   catch(...)
+   {
+      // reset all of our data.
+      Invalidate(false);
+      throw;
+   }
+
+   if ( bIncludeElevationAdjustment )
+   {
+      ApplyElevationAdjustment(intervalIdx,vPoi,&deflection,NULL);
+   }
+
+   return deflection;
+}
+
+std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeSlopeAdjustment)
+{
+#if defined _DEBUG
+   GET_IFACE(IPointOfInterest,pPoi);
+   std::vector<CGirderKey> vGirderKeys(pPoi->GetGirderKeys(vPoi));
+   ATLASSERT(vGirderKeys.size() == 1); // this method assumes all the poi are for the same girder
+#endif
+
+   std::vector<Float64> rotation;
+   if ( comboType == lcPS )
+   {
+      // secondary effects aren't directly computed. get the individual product forces
+      // and sum them up here
+      rotation.resize(vPoi.size(),0.0);
+      std::vector<ProductForceType> pfTypes = CProductLoadMap::GetProductForces(m_pBroker,comboType);
+      BOOST_FOREACH(ProductForceType pfType,pfTypes)
+      {
+         std::vector<Float64> delta = GetRotation(intervalIdx,pfType,vPoi,bat,resultsType,false);
+         std::transform(delta.begin(),delta.end(),rotation.begin(),rotation.begin(),std::plus<Float64>());
+      }
    }
    else
    {
       try
       {
          GET_IFACE(IIntervals,pIntervals);
-         IntervalIndexType erectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(vPoi.front().GetSegmentKey());
-         if (intervalIdx < erectionIntervalIdx )
+         IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(vPoi.front().GetSegmentKey());
+         if ( intervalIdx < erectionIntervalIdx )
          {
-            results = m_pSegmentModelManager->GetMoment(intervalIdx,comboType,vPoi,resultsType);
+            rotation = m_pSegmentModelManager->GetRotation(intervalIdx,comboType,vPoi,resultsType);
          }
          else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
          {
             // the incremental result at the time of erection is being requested. this is when
             // we switch between segment models and girder models. the incremental results
             // is the cumulative result this interval minus the cumulative result in the previous interval
-            std::vector<Float64> Mprev = GetMoment(intervalIdx-1,comboType,vPoi,bat,rtCumulative);
-            std::vector<Float64> Mthis = GetMoment(intervalIdx,  comboType,vPoi,bat,rtCumulative);
-            std::transform(Mthis.begin(),Mthis.end(),Mprev.begin(),std::back_inserter(results),std::minus<Float64>());
+            std::vector<Float64> Dprev = GetRotation(intervalIdx-1,comboType,vPoi,bat,rtCumulative,false);
+            std::vector<Float64> Dthis = GetRotation(intervalIdx,  comboType,vPoi,bat,rtCumulative,false);
+            std::transform(Dthis.begin(),Dthis.end(),Dprev.begin(),std::back_inserter(rotation),std::minus<Float64>());
          }
          else
          {
-            results = m_pGirderModelManager->GetMoment(intervalIdx,comboType,vPoi,bat,resultsType);
+            rotation = m_pGirderModelManager->GetRotation(intervalIdx,comboType,vPoi,bat,resultsType);
          }
       }
       catch(...)
@@ -2245,49 +2705,12 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
       }
    }
 
-   return results;
-}
-
-std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeElevationAdjustment)
-{
-   std::vector<Float64> vDy;
-   GET_IFACE( ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
-   {
-      vDy = GetTimeStepDeflection(intervalIdx,comboType,vPoi,bat,resultsType);
-   }
-   else
-   {
-      vDy = GetElasticDeflection(intervalIdx,comboType,vPoi,bat,resultsType);
-   }
-
-   if ( bIncludeElevationAdjustment )
-   {
-      ApplyElevationAdjustment(intervalIdx,vPoi,&vDy,NULL);
-   }
-
-   return vDy;
-}
-
-std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeSlopeAdjustment)
-{
-   std::vector<Float64> vRz;
-   GET_IFACE( ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
-   {
-      vRz = GetTimeStepRotation(intervalIdx,comboType,vPoi,bat,resultsType);
-   }
-   else
-   {
-      vRz = GetElasticRotation(intervalIdx,comboType,vPoi,bat,resultsType);
-   }
-
    if ( bIncludeSlopeAdjustment )
    {
-      ApplyRotationAdjustment(intervalIdx,vPoi,&vRz,NULL);
+      ApplyRotationAdjustment(intervalIdx,vPoi,&rotation,NULL);
    }
 
-   return vRz;
+   return rotation;
 }
 
 void CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot)
@@ -2610,14 +3033,38 @@ std::vector<Float64> CAnalysisAgentImp::GetSlabDesignMoment(pgsTypes::LimitState
 
 void CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,bool bIncludeElevationAdjustment,std::vector<Float64>* pMin,std::vector<Float64>* pMax)
 {
-   GET_IFACE( ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+#if defined _DEBUG
+   GET_IFACE(IPointOfInterest,pPoi);
+   std::vector<CGirderKey> vGirderKeys(pPoi->GetGirderKeys(vPoi));
+   ATLASSERT(vGirderKeys.size() == 1); // this method assumes all the poi are for the same girder
+#endif
+
+   const CSegmentKey& segmentKey(vPoi.front().GetSegmentKey());
+
+   // need to do the time-step analysis because it adds loads to the LBAM
+   ComputeTimeDependentEffects(segmentKey,intervalIdx);
+
+   pMin->clear();
+   pMax->clear();
+
+   try
    {
-      GetTimeStepDeflection(intervalIdx,limitState,vPoi,bat,bIncludePrestress,bIncludeLiveLoad,pMin,pMax);
+      GET_IFACE(IIntervals,pIntervals);
+      IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+      if ( intervalIdx < erectionIntervalIdx )
+      {
+         m_pSegmentModelManager->GetDeflection(intervalIdx,limitState,vPoi,bIncludePrestress,pMin,pMax);
+      }
+      else
+      {
+         m_pGirderModelManager->GetDeflection(intervalIdx,limitState,vPoi,bat,bIncludePrestress,bIncludeLiveLoad,pMin,pMax);
+      }
    }
-   else
+   catch(...)
    {
-      GetElasticDeflection(intervalIdx,limitState,vPoi,bat,bIncludePrestress,bIncludeLiveLoad,pMin,pMax);
+      // reset all of our data.
+      Invalidate(false);
+      throw;
    }
 
    if ( bIncludeElevationAdjustment )
@@ -2628,14 +3075,38 @@ void CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::Li
 
 void CAnalysisAgentImp::GetRotation(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,bool bIncludeSlopeAdjustment,std::vector<Float64>* pMin,std::vector<Float64>* pMax)
 {
-   GET_IFACE( ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+#if defined _DEBUG
+   GET_IFACE(IPointOfInterest,pPoi);
+   std::vector<CGirderKey> vGirderKeys(pPoi->GetGirderKeys(vPoi));
+   ATLASSERT(vGirderKeys.size() == 1); // this method assumes all the poi are for the same girder
+#endif
+
+   const CSegmentKey& segmentKey(vPoi.front().GetSegmentKey());
+
+   // need to do the time-step analysis because it adds loads to the LBAM
+   ComputeTimeDependentEffects(segmentKey,intervalIdx);
+
+   pMin->clear();
+   pMax->clear();
+
+   try
    {
-      GetTimeStepRotation(intervalIdx,limitState,vPoi,bat,bIncludePrestress,bIncludeLiveLoad,pMin,pMax);
+      GET_IFACE(IIntervals,pIntervals);
+      IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+      if ( intervalIdx < erectionIntervalIdx )
+      {
+         m_pSegmentModelManager->GetRotation(intervalIdx,limitState,vPoi,bIncludePrestress,pMin,pMax);
+      }
+      else
+      {
+         m_pGirderModelManager->GetRotation(intervalIdx,limitState,vPoi,bat,bIncludePrestress,bIncludeLiveLoad,pMin,pMax);
+      }
    }
-   else
+   catch(...)
    {
-      GetElasticRotation(intervalIdx,limitState,vPoi,bat,bIncludePrestress,bIncludeLiveLoad,pMin,pMax);
+      // reset all of our data.
+      Invalidate(false);
+      throw;
    }
 
    if ( bIncludeSlopeAdjustment )
@@ -2715,33 +3186,91 @@ bool CAnalysisAgentImp::AddLoadingToLoadCombination(const CGirderKey& girderKey,
    return true;
 }
 
-bool CAnalysisAgentImp::CreateConcentratedLoad(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi,LoadType loadType,Float64 P)
+bool CAnalysisAgentImp::CreateConcentratedLoad(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi,Float64 Fx,Float64 Fy,Float64 Mz)
 {
+   if ( IsZero(Fx) && IsZero(Fy) && IsZero(Mz) )
+   {
+      // don't add zero load
+      return true;
+   }
+
    GET_IFACE(IIntervals,pIntervals);
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
    if ( intervalIdx < erectionIntervalIdx )
    {
-      return m_pSegmentModelManager->CreateConcentratedLoad(intervalIdx,strLoadingName,poi,loadType,P);
+      return m_pSegmentModelManager->CreateConcentratedLoad(intervalIdx,strLoadingName,poi,Fx,Fy,Mz);
    }
    else
    {
-      return m_pGirderModelManager->CreateConcentratedLoad(intervalIdx,strLoadingName,poi,loadType,P);
+      return m_pGirderModelManager->CreateConcentratedLoad(intervalIdx,strLoadingName,poi,Fx,Fy,Mz);
    }
 }
 
-bool CAnalysisAgentImp::CreateConcentratedLoad(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,LoadType loadType,Float64 P)
+bool CAnalysisAgentImp::CreateConcentratedLoad(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,Float64 Fx,Float64 Fy,Float64 Mz)
 {
+   if ( IsZero(Fx) && IsZero(Fy) && IsZero(Mz) )
+   {
+      // don't add zero load
+      return true;
+   }
+
    GET_IFACE(IIntervals,pIntervals);
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
    if ( intervalIdx < erectionIntervalIdx )
    {
-      return m_pSegmentModelManager->CreateConcentratedLoad(intervalIdx,pfType,poi,loadType,P);
+      return m_pSegmentModelManager->CreateConcentratedLoad(intervalIdx,pfType,poi,Fx,Fy,Mz);
    }
    else
    {
-      return m_pGirderModelManager->CreateConcentratedLoad(intervalIdx,pfType,poi,loadType,P);
+      return m_pGirderModelManager->CreateConcentratedLoad(intervalIdx,pfType,poi,Fx,Fy,Mz);
+   }
+}
+
+bool CAnalysisAgentImp::CreateUniformLoad(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 wx,Float64 wy)
+{
+#pragma Reminder("UPDATE: this should be CreateDistributedLoad") 
+   // distributed load is the more general version and it is supported by the FEM model...
+   if ( IsZero(wx) && IsZero(wy) )
+   {
+      // don't add zero load
+      return true;
+   }
+
+   GET_IFACE(IIntervals,pIntervals);
+   const CSegmentKey& segmentKey(poi1.GetSegmentKey());
+   IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+   if ( intervalIdx < erectionIntervalIdx )
+   {
+      return m_pSegmentModelManager->CreateUniformLoad(intervalIdx,strLoadingName,poi1,poi2,wx,wy);
+   }
+   else
+   {
+      return m_pGirderModelManager->CreateUniformLoad(intervalIdx,strLoadingName,poi1,poi2,wx,wy);
+   }
+}
+
+bool CAnalysisAgentImp::CreateUniformLoad(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 wx,Float64 wy)
+{
+#pragma Reminder("UPDATE: this should be CreateDistributedLoad") 
+   // distributed load is the more general version and it is supported by the FEM model...
+   if ( IsZero(wx) && IsZero(wy) )
+   {
+      // don't add zero load
+      return true;
+   }
+
+   GET_IFACE(IIntervals,pIntervals);
+   const CSegmentKey& segmentKey(poi1.GetSegmentKey());
+   IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+   if ( intervalIdx < erectionIntervalIdx )
+   {
+      return m_pSegmentModelManager->CreateUniformLoad(intervalIdx,pfType,poi1,poi2,wx,wy);
+   }
+   else
+   {
+      return m_pGirderModelManager->CreateUniformLoad(intervalIdx,pfType,poi1,poi2,wx,wy);
    }
 }
 
@@ -4334,9 +4863,9 @@ Float64 CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const pgsPoin
    return m_pGirderModelManager->GetStress(intervalIdx,poi,stressLocation);
 }
 
-Float64 CAnalysisAgentImp::GetStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,Float64 P,Float64 e)
+Float64 CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,Float64 P,Float64 e)
 {
-   return m_pGirderModelManager->GetStress(poi,stressLocation,P,e);
+   return m_pGirderModelManager->GetStress(intervalIdx,poi,stressLocation,P,e);
 }
 
 Float64 CAnalysisAgentImp::GetStressPerStrand(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::StressLocation stressLocation)
@@ -4350,14 +4879,11 @@ Float64 CAnalysisAgentImp::GetStressPerStrand(IntervalIndexType intervalIdx,cons
    // elastic effects. If transformed properties analysis, we want the force at the start of the interval.
    pgsTypes::IntervalTimeType timeType (spMode == pgsTypes::spmGross ? pgsTypes::End : pgsTypes::Start);
 
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
-
-   Float64 P = pPsForce->GetPrestressForcePerStrand(poi,strandType,intervalIdx,timeType,pgsTypes::ServiceI);
+   Float64 P = pPsForce->GetPrestressForcePerStrand(poi,strandType,intervalIdx,timeType);
    Float64 nSEffective;
-   Float64 e = pStrandGeom->GetEccentricity(releaseIntervalIdx,poi,strandType,&nSEffective);
+   Float64 e = pStrandGeom->GetEccentricity(intervalIdx,poi,strandType,&nSEffective);
 
-   return GetStress(poi,stressLocation,P,e);
+   return GetStress(intervalIdx,poi,stressLocation,P,e);
 }
 
 Float64 CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,const GDRCONFIG& config)
@@ -4377,16 +4903,15 @@ Float64 CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsType
    pgsTypes::IntervalTimeType timeType (spMode == pgsTypes::spmGross ? pgsTypes::End : pgsTypes::Start);
 
    Float64 P;
-   P = pPsForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,timeType,pgsTypes::ServiceI,config);
-#pragma Reminder("UPDATE: need to get strand force with elastic gain due to live load")
-   // NOT YET SUPPORT WHEN CONFIG IS PASSED IN... be really careful with this. need to make sure
-   // the stress in the girder includes live load and the stress in the strands includes live load
-   // the call to GetPrestressForce above may already include live load if the interval is correct?
-   //IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
-   //if ( intervalIdx < liveLoadIntervalIdx )
-   //   P = pPsForce->GetPrestressForce(poi,config,pgsTypes::Permanent,intervalIdx,pgsTypes::End,pgsTypes::ServiceI);
-   //else
-   //   P = pPsForce->GetPrestressForceWithLiveLoad(poi,config,pgsTypes::Permanent,pgsTypes::ServiceI);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+   if ( intervalIdx < liveLoadIntervalIdx )
+   {
+      P = pPsForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,timeType,config);
+   }
+   else
+   {
+      P = pPsForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceI,config);
+   }
 
    // NOTE: since we are doing design, the main bridge model may not have temporary strand removal
    // intervals. Use the deck casting interval as the break point for "before temporary strands are removed"
@@ -4395,15 +4920,14 @@ Float64 CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsType
    bool bIncludeTemporaryStrands = intervalIdx < castDeckIntervalIdx ? true : false;
    if ( bIncludeTemporaryStrands ) 
    {
-      P += pPsForce->GetPrestressForce(poi,pgsTypes::Temporary,intervalIdx,timeType,pgsTypes::ServiceI,config);
+      P += pPsForce->GetPrestressForce(poi,pgsTypes::Temporary,intervalIdx,timeType,config);
    }
 
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
-
    Float64 nSEffective;
-   Float64 e = pStrandGeom->GetEccentricity(releaseIntervalIdx,poi, config, bIncludeTemporaryStrands, &nSEffective);
+   pgsTypes::SectionPropertyType spType = (spMode == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptTransformedNoncomposite);
+   Float64 e = pStrandGeom->GetEccentricity(spType,intervalIdx,poi, config, bIncludeTemporaryStrands, &nSEffective);
 
-   return GetStress(poi,stressLocation,P,e);
+   return GetStress(intervalIdx,poi,stressLocation,P,e);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -5809,44 +6333,6 @@ bool CAnalysisAgentImp::IsDeckPrecompressed(const CGirderKey& girderKey)
 }
 
 /////////////////////////////////////////////////
-// IVirtualWork
-std::vector<Float64> CAnalysisAgentImp::GetUnitLoadMoment(const std::vector<pgsPointOfInterest>& vPoi,const pgsPointOfInterest& unitLoadPOI,pgsTypes::BridgeAnalysisType bat,IntervalIndexType intervalIdx)
-{
-   std::vector<Float64> moments;
-
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType firstSegmentErectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(unitLoadPOI.GetSegmentKey());
-   if (intervalIdx < firstSegmentErectionIntervalIdx )
-   {
-      return m_pSegmentModelManager->GetUnitLoadMoment(intervalIdx,vPoi,unitLoadPOI);
-   }
-   else
-   {
-      return m_pGirderModelManager->GetUnitLoadMoment(intervalIdx,vPoi,bat,unitLoadPOI);
-   }
-
-   return moments;
-}
-
-std::vector<sysSectionValue> CAnalysisAgentImp::GetUnitCoupleMoment(const std::vector<pgsPointOfInterest>& vPoi,const pgsPointOfInterest& unitMomentPOI,pgsTypes::BridgeAnalysisType bat,IntervalIndexType intervalIdx)
-{
-   std::vector<sysSectionValue> moments;
-
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType firstSegmentErectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(unitMomentPOI.GetSegmentKey());
-   if (intervalIdx < firstSegmentErectionIntervalIdx )
-   {
-      return m_pSegmentModelManager->GetUnitCoupleMoment(intervalIdx,vPoi,unitMomentPOI);
-   }
-   else
-   {
-      return m_pGirderModelManager->GetUnitCoupleMoment(intervalIdx,vPoi,bat,unitMomentPOI);
-   }
-
-   return moments;
-}
-
-/////////////////////////////////////////////////
 // IReactions
 void CAnalysisAgentImp::GetSegmentReactions(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,ProductForceType pfType,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,Float64* pRleft,Float64* pRright)
 {
@@ -6354,10 +6840,9 @@ Float64 CAnalysisAgentImp::GetDeflectionAdjustmentFactor(const pgsPointOfInteres
 
    GET_IFACE(IMaterials,pMaterials);
    Float64 Ec = pMaterials->GetSegmentEc(poi.GetSegmentKey(),intervalIdx);
-   GET_IFACE(IMaterials,pMaterial);
-   Float64 Ec_adjusted = (config.bUserEc ? config.Ec : pMaterial->GetEconc(fc,pMaterial->GetSegmentStrengthDensity(poi.GetSegmentKey()),
-                                                                              pMaterial->GetSegmentEccK1(poi.GetSegmentKey()),
-                                                                              pMaterial->GetSegmentEccK2(poi.GetSegmentKey())));
+   Float64 Ec_adjusted = (config.bUserEc ? config.Ec : pMaterials->GetEconc(fc,pMaterials->GetSegmentStrengthDensity(poi.GetSegmentKey()),
+                                                                               pMaterials->GetSegmentEccK1(poi.GetSegmentKey()),
+                                                                               pMaterials->GetSegmentEccK2(poi.GetSegmentKey())));
 
    Float64 EI = Ec*Ix;
    Float64 EI_adjusted = Ec_adjusted * Ix_adjusted;
@@ -6926,661 +7411,6 @@ void CAnalysisAgentImp::GetElasticStress(IntervalIndexType intervalIdx,pgsTypes:
    }
    catch(...)
    {
-      Invalidate(false);
-      throw;
-   }
-}
-
-std::vector<Float64> CAnalysisAgentImp::GetTimeStepDeflection(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
-{
-   ATLASSERT(bat == pgsTypes::ContinuousSpan); // continous is the only valid analysis type for time step analysis
-
-   // Deflections are computing using the method of virtual work.
-   // See Structural Analysis, 4th Edition, Jack C. McCormac, pg365. Section 18.5, Application of Virtual Work to Beams and Frames
-
-   ATLASSERT(pfType != pftOverlayRating); // not used with time step analysis
-
-   std::vector<Float64> deflections;
-   deflections.reserve(vPoi.size());
-
-   if ( pfType == pftTotalPostTensioning )
-   {
-      // the deflections due to total post-tensioning is the sum of the primary and secondary effects
-      std::vector<Float64> primary(  GetTimeStepDeflection(intervalIdx,pftPrimaryPostTensioning,vPoi,bat,resultsType));
-      std::vector<Float64> secondary(GetTimeStepDeflection(intervalIdx,pftSecondaryEffects,     vPoi,bat,resultsType));
-
-      std::transform(primary.begin(),primary.end(),secondary.begin(),std::back_inserter(deflections),std::plus<Float64>());
-      return deflections;
-   }
-
-   GET_IFACE(ILosses,pILosses);
-
-   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-   for ( ; iter != end; iter++ )
-   {
-      const pgsPointOfInterest& poi = *iter;
-
-      const LOSSDETAILS* pLossDetails = pILosses->GetLossDetails(poi,intervalIdx);
-      Float64 delta;
-      if ( resultsType == rtIncremental )
-      {
-         delta = pLossDetails->TimeStepDetails[intervalIdx].dD[pfType]; // incremental
-      }
-      else
-      {
-         delta = pLossDetails->TimeStepDetails[intervalIdx].D[pfType]; // cummulative
-      }
-      deflections.push_back(delta);
-   }
-
-   return deflections;
-}
-
-std::vector<Float64> CAnalysisAgentImp::GetElasticDeflection(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
-{
-#if defined _DEBUG
-   GET_IFACE(IPointOfInterest,pPoi);
-   std::vector<CSegmentKey> vSegmentKeys(pPoi->GetSegmentKeys(vPoi));
-   ATLASSERT(vSegmentKeys.size() == 1); // this method assumes all the poi are for the same segment
-#endif
-
-   if ( pfType == pftCreep || pfType == pftShrinkage || pfType == pftRelaxation )
-   {
-#pragma Reminder("FINISH - elastic Rotation for time dependant effects after erection")
-      // there should be deflections due to creep (creep coefficient * elastic deflection)
-      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
-   }
-
-   std::vector<Float64> deflections;
-   deflections.reserve(vPoi.size());
-
-   GET_IFACE(IIntervals,pIntervals);
-
-   if ( pfType == pftSecondaryEffects )
-   {
-      // NOTE: this block is for completeness. There should not be a request for secondary forces for elastic
-      // analysis at this time. PGSuper does elastic analysis and there aren't secondary effects due to PT.
-      // At sometime in the future, this code may be used for PT box girders in which case this code would
-      // be relevant and correct.
-      ATLASSERT(false); // this is just to get your attention... why was this code called?
-      std::vector<Float64> total   = GetElasticDeflection(intervalIdx,pftEquivPostTensioning,vPoi,bat,resultsType);
-      std::vector<Float64> primary = GetElasticDeflection(intervalIdx,pftPrimaryPostTensioning,vPoi,bat,resultsType);
-      std::transform(total.begin(),total.end(),primary.begin(),std::back_inserter(deflections),std::minus<Float64>());
-   }
-   else
-   {
-      try
-      {
-         IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(vPoi.front().GetSegmentKey());
-
-         if ( intervalIdx < erectionIntervalIdx )
-         {
-            // before erection - results are in the segment models
-            deflections = m_pSegmentModelManager->GetDeflection(intervalIdx,pfType,vPoi,resultsType);
-         }
-         else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
-         {
-            // the incremental result at the time of erection is being requested. this is when
-            // we switch between segment models and girder models. the incremental results
-            // is the cumulative result this interval minus the cumulative result in the previous interval
-            std::vector<Float64> Dprev = GetElasticDeflection(intervalIdx-1,pfType,vPoi,bat,rtCumulative);
-            std::vector<Float64> Dthis = GetElasticDeflection(intervalIdx,  pfType,vPoi,bat,rtCumulative);
-            std::transform(Dthis.begin(),Dthis.end(),Dprev.begin(),std::back_inserter(deflections),std::minus<Float64>());
-         }
-         else
-         {
-#pragma Reminder("UPDATE: this isn't the right deflection")
-            // there is a problem with deflection like pftGirder. The deflection computed from
-            // the girder model manager is the deflection of teh girder self weight using Ec. 
-            // However the deflection is set based on Eci and then only changes because of
-            // changing boundary conditions from release, lifting, storage, transportation, and
-            // finally erection.
-            //
-            // Look at the camber details for a PGSuper analysis. You'll see that for the support location
-            // being the same for release, storage, and erection, the girder self-weight
-            // deflections are different. The modulus changing over time will not change the deflection,
-            // however that is exactly what is happening in this analysis..
-            //
-            // The same issue occurs for rotations.
-
-            deflections = m_pGirderModelManager->GetDeflection(intervalIdx,pfType,vPoi,bat,resultsType);
-         }
-      }
-      catch(...)
-      {
-         // reset all of our data.
-         Invalidate(false);
-         throw;
-      }
-   }
-
-   return deflections;
-}
-
-std::vector<Float64> CAnalysisAgentImp::GetTimeStepDeflection(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
-{
-   ATLASSERT(bat == pgsTypes::ContinuousSpan); // continous is the only valid analysis type for time step analysis
-   ATLASSERT(comboType != lcDWRating); // not setup to handle this yet
-
-   std::vector<Float64> deflections(vPoi.size(),0.0);
-
-   std::vector<ProductForceType> pfTypes = CProductLoadMap::GetProductForces(m_pBroker,comboType);
-   std::vector<ProductForceType>::iterator pfIter(pfTypes.begin());
-   std::vector<ProductForceType>::iterator pfIterEnd(pfTypes.end());
-   for ( ; pfIter != pfIterEnd; pfIter++ )
-   {
-      std::vector<Float64> delta(GetTimeStepDeflection(intervalIdx,*pfIter,vPoi,bat,resultsType));
-      std::transform(deflections.begin(),deflections.end(),delta.begin(),deflections.begin(),std::plus<Float64>());
-   }
-
-   return deflections;
-}
-
-std::vector<Float64> CAnalysisAgentImp::GetElasticDeflection(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
-{
-#if defined _DEBUG
-   GET_IFACE(IPointOfInterest,pPoi);
-   std::vector<CSegmentKey> vSegmentKeys(pPoi->GetSegmentKeys(vPoi));
-   ATLASSERT(vSegmentKeys.size() == 1); // this method assumes all the poi are for the same segment
-#endif
-
-   std::vector<Float64> deflection;
-   if ( comboType == lcCR || comboType == lcSH || comboType == lcRE )
-   {
-#pragma Reminder("FINISH - elastic deflection for time dependant effects after erection")
-      // there should be deflections due to creep (creep coefficient * elastic deflection)
-      deflection.resize(vPoi.size(),0.0);
-   }
-   else if ( comboType == lcPS )
-   {
-      deflection.resize(vPoi.size(),0.0);
-      // elastic analysis doesn't have PT so there aren't any secondary effects.
-      // if this ever changes, uncomment the code below to get deflections due to secondary effects
-      //std::vector<ProductForceType> pfTypes = m_pGirderModelManager->GetProductForces(lcPS);
-      //std::vector<ProductForceType>::iterator pfIter(pfTypes.begin());
-      //std::vector<ProductForceType>::iterator pfIterEnd(pfTypes.end());
-      //for ( ; pfIter != pfIterEnd; pfIter++ )
-      //{
-      //   ProductForceType pfType = *pfIter;
-      //   std::vector<Float64> delta = GetElasticDeflection(intervalIdx,pfType,vPoi,bat,resultsType);
-      //   std::transform(delta.begin(),delta.end(),deflection.begin(),deflection.begin(),std::plus<Float64>());
-      //}
-   }
-   else
-   {
-      try
-      {
-         GET_IFACE(IIntervals,pIntervals);
-         IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(vPoi.front().GetSegmentKey());
-         if ( intervalIdx < erectionIntervalIdx )
-         {
-            deflection = m_pSegmentModelManager->GetDeflection(intervalIdx,comboType,vPoi,resultsType);
-         }
-         else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
-         {
-            // the incremental result at the time of erection is being requested. this is when
-            // we switch between segment models and girder models. the incremental results
-            // is the cumulative result this interval minus the cumulative result in the previous interval
-            std::vector<Float64> Dprev = GetElasticDeflection(intervalIdx-1,comboType,vPoi,bat,rtCumulative);
-            std::vector<Float64> Dthis = GetElasticDeflection(intervalIdx,  comboType,vPoi,bat,rtCumulative);
-            std::transform(Dthis.begin(),Dthis.end(),Dprev.begin(),std::back_inserter(deflection),std::minus<Float64>());
-         }
-         else
-         {
-            deflection = m_pGirderModelManager->GetDeflection(intervalIdx,comboType,vPoi,bat,resultsType);
-         }
-      }
-      catch(...)
-      {
-         // reset all of our data.
-         Invalidate(false);
-         throw;
-      }
-   }
-
-   return deflection;
-}
-
-void CAnalysisAgentImp::GetTimeStepDeflection(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,std::vector<Float64>* pMin,std::vector<Float64>* pMax)
-{
-   // assumes all poi are from the same girder
-   ATLASSERT(bat == pgsTypes::ContinuousSpan); // continous is the only valid analysis type for time step analysis
-
-   pMin->clear();
-   pMax->clear();
-
-   pMin->reserve(vPoi.size());
-   pMax->reserve(vPoi.size());
-
-   const CSegmentKey& segmentKey(vPoi.front().GetSegmentKey());
-
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
-
-   GET_IFACE(ILoadFactors,pILoadFactors);
-   const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
-   Float64 gLLMin = pLoadFactors->LLIMmin[limitState];
-   Float64 gLLMax = pLoadFactors->LLIMmax[limitState];
-   Float64 gDCMin = pLoadFactors->DCmin[limitState];
-   Float64 gDCMax = pLoadFactors->DCmax[limitState];
-   Float64 gDWMin = pLoadFactors->DWmin[limitState];
-   Float64 gDWMax = pLoadFactors->DWmax[limitState];
-   Float64 gCRMax = pLoadFactors->CRmax[limitState];
-   Float64 gCRMin = pLoadFactors->CRmin[limitState];
-   Float64 gSHMax = pLoadFactors->SHmax[limitState];
-   Float64 gSHMin = pLoadFactors->SHmin[limitState];
-   Float64 gPSMax = pLoadFactors->PSmax[limitState];
-   Float64 gPSMin = pLoadFactors->PSmin[limitState];
-
-   Float64 gREMax = gCRMax;
-   Float64 gREMin = gCRMin;
-
-   std::vector<Float64> DC(GetTimeStepDeflection(intervalIdx,lcDC,vPoi,bat,rtCumulative));
-   std::vector<Float64> DW(GetTimeStepDeflection(intervalIdx,lcDW,vPoi,bat,rtCumulative));
-   std::vector<Float64> CR(GetTimeStepDeflection(intervalIdx,lcCR,vPoi,bat,rtCumulative));
-   std::vector<Float64> SH(GetTimeStepDeflection(intervalIdx,lcSH,vPoi,bat,rtCumulative));
-   std::vector<Float64> RE(GetTimeStepDeflection(intervalIdx,lcRE,vPoi,bat,rtCumulative));
-   std::vector<Float64> PS(GetTimeStepDeflection(intervalIdx,lcPS,vPoi,bat,rtCumulative));
-
-   std::vector<Float64> pretension;
-   std::vector<Float64> posttension;
-   if ( bIncludePrestress )
-   {
-      pretension  = GetTimeStepDeflection(intervalIdx,pftPretension,           vPoi,bat,rtCumulative);
-      posttension = GetTimeStepDeflection(intervalIdx,pftPrimaryPostTensioning,vPoi,bat,rtCumulative);
-   }
-   else
-   {
-      pretension.resize( DC.size(),0);
-      posttension.resize(DC.size(),0);
-   }
-
-   std::vector<Float64> LLMin,LLMax;
-   if ( intervalIdx < liveLoadIntervalIdx )
-   {
-      LLMin.insert(LLMin.begin(),vPoi.size(),0.0);
-      LLMax.insert(LLMax.begin(),vPoi.size(),0.0);
-   }
-   else
-   {
-      pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
-      GetCombinedLiveLoadDeflection(intervalIdx,llType,vPoi,bat,&LLMin,&LLMax);
-   }
-
-   IndexType nPoi = vPoi.size();
-   for ( IndexType idx = 0; idx < nPoi; idx++ )
-   {
-      Float64 dMax = (0 <= DC[idx] ? gDCMax : gDCMin)*DC[idx];
-      dMax += (::BinarySign(dMax) == ::BinarySign(DW[idx])    ? gDWMax : gDWMin)*DW[idx];
-      dMax += (::BinarySign(dMax) == ::BinarySign(CR[idx])    ? gCRMax : gCRMin)*CR[idx];
-      dMax += (::BinarySign(dMax) == ::BinarySign(SH[idx])    ? gSHMax : gSHMin)*SH[idx];
-      dMax += (::BinarySign(dMax) == ::BinarySign(RE[idx])    ? gREMax : gREMin)*RE[idx];
-      dMax += (::BinarySign(dMax) == ::BinarySign(PS[idx])    ? gPSMax : gPSMin)*PS[idx];
-      if ( bIncludeLiveLoad )
-      {
-         dMax += (::BinarySign(dMax) == ::BinarySign(LLMax[idx]) ? gLLMax : gLLMin)*LLMax[idx];
-      }
-      dMax += pretension[idx] + posttension[idx];
-      pMax->push_back(dMax);
-
-      Float64 dMin = (DC[idx] <= 0 ? gDCMax : gDCMin)*DC[idx];
-      dMin += (::BinarySign(dMin) == ::BinarySign(DW[idx])    ? gDWMax : gDWMin)*DW[idx];
-      dMin += (::BinarySign(dMin) == ::BinarySign(CR[idx])    ? gCRMax : gCRMin)*CR[idx];
-      dMin += (::BinarySign(dMin) == ::BinarySign(SH[idx])    ? gSHMax : gSHMin)*SH[idx];
-      dMin += (::BinarySign(dMin) == ::BinarySign(RE[idx])    ? gREMax : gREMin)*RE[idx];
-      dMin += (::BinarySign(dMin) == ::BinarySign(PS[idx])    ? gPSMax : gPSMin)*PS[idx];
-      if ( bIncludeLiveLoad )
-      {
-         dMin += (::BinarySign(dMin) == ::BinarySign(LLMin[idx]) ? gLLMax : gLLMin)*LLMin[idx];
-      }
-      dMin += pretension[idx] + posttension[idx];
-      pMin->push_back(dMin);
-   }
-}
-
-void CAnalysisAgentImp::GetElasticDeflection(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,std::vector<Float64>* pMin,std::vector<Float64>* pMax)
-{
-#if defined _DEBUG
-   GET_IFACE(IPointOfInterest,pPoi);
-   std::vector<CGirderKey> vGirderKeys(pPoi->GetGirderKeys(vPoi));
-   ATLASSERT(vGirderKeys.size() == 1); // this method assumes all the poi are for the same girder
-#endif
-
-   const CSegmentKey& segmentKey(vPoi.front().GetSegmentKey());
-
-   // need to do the time-step analysis because it adds loads to the LBAM
-   ComputeTimeDependentEffects(segmentKey,intervalIdx);
-
-   pMin->clear();
-   pMax->clear();
-
-   try
-   {
-      GET_IFACE(IIntervals,pIntervals);
-      IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
-      if ( intervalIdx < erectionIntervalIdx )
-      {
-         m_pSegmentModelManager->GetDeflection(intervalIdx,limitState,vPoi,bIncludePrestress,pMin,pMax);
-      }
-      else
-      {
-         m_pGirderModelManager->GetDeflection(intervalIdx,limitState,vPoi,bat,bIncludePrestress,bIncludeLiveLoad,pMin,pMax);
-      }
-   }
-   catch(...)
-   {
-      // reset all of our data.
-      Invalidate(false);
-      throw;
-   }
-}
-
-std::vector<Float64> CAnalysisAgentImp::GetTimeStepRotation(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
-{
-   ATLASSERT(bat == pgsTypes::ContinuousSpan); // continous is the only valid analysis type for time step analysis
-
-   // Deflections are computing using the method of virtual work.
-   // See Structural Analysis, 4th Edition, Jack C. McCormac, pg365. Section 18.5, Application of Virtual Work to Beams and Frames
-
-   ATLASSERT(pfType != pftOverlayRating); // not used with time step analysis
-
-   std::vector<Float64> rotations;
-   rotations.reserve(vPoi.size());
-
-   if ( pfType == pftTotalPostTensioning )
-   {
-      // the deflections due to total post-tensioning is the sum of the primary and secondary effects
-      std::vector<Float64> primary(  GetTimeStepRotation(intervalIdx,pftPrimaryPostTensioning,vPoi,bat,resultsType));
-      std::vector<Float64> secondary(GetTimeStepRotation(intervalIdx,pftSecondaryEffects,     vPoi,bat,resultsType));
-
-      std::transform(primary.begin(),primary.end(),secondary.begin(),std::back_inserter(rotations),std::plus<Float64>());
-      return rotations;
-   }
-
-   GET_IFACE(ILosses,pILosses);
-
-   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-   for ( ; iter != end; iter++ )
-   {
-      const pgsPointOfInterest& poi = *iter;
-
-      const LOSSDETAILS* pLossDetails = pILosses->GetLossDetails(poi,intervalIdx);
-      Float64 theta;
-      if ( resultsType == rtIncremental )
-      {
-         theta = pLossDetails->TimeStepDetails[intervalIdx].dR[pfType]; // incremental
-      }
-      else
-      {
-         theta = pLossDetails->TimeStepDetails[intervalIdx].R[pfType]; // cummulative
-      }
-      rotations.push_back(theta);
-   }
-
-   return rotations;
-}
-
-std::vector<Float64> CAnalysisAgentImp::GetElasticRotation(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
-{
-   USES_CONVERSION;
-
-#if defined _DEBUG
-   GET_IFACE(IPointOfInterest,pPoi);
-   std::vector<CGirderKey> vGirderKeys(pPoi->GetGirderKeys(vPoi));
-   ATLASSERT(vGirderKeys.size() == 1); // this method assumes all the poi are for the same girder
-#endif
-
-   if ( pfType == pftCreep || pfType == pftShrinkage || pfType == pftRelaxation )
-   {
-#pragma Reminder("FINISH - elastic Rotation for time dependant effects after erection")
-      // there should be deflections due to creep (creep coefficient * elastic deflection)
-      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
-   }
-
-   std::vector<Float64> rotations;
-
-   try
-   {
-      GET_IFACE(IIntervals,pIntervals);
-      IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(vPoi.front().GetSegmentKey());
-      if ( intervalIdx < erectionIntervalIdx )
-      {
-         // before erection - results are in the segment models
-         rotations = m_pSegmentModelManager->GetRotation(intervalIdx,pfType,vPoi,resultsType);
-      }
-      else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
-      {
-         // the incremental result at the time of erection is being requested. this is when
-         // we switch between segment models and girder models. the incremental results
-         // is the cumulative result this interval minus the cumulative result in the previous interval
-         std::vector<Float64> Rprev = GetRotation(intervalIdx-1,pfType,vPoi,bat,rtCumulative,false);
-         std::vector<Float64> Rthis = GetRotation(intervalIdx,  pfType,vPoi,bat,rtCumulative,false);
-         std::transform(Rthis.begin(),Rthis.end(),Rprev.begin(),std::back_inserter(rotations),std::minus<Float64>());
-      }
-      else
-      {
-         rotations = m_pGirderModelManager->GetRotation(intervalIdx,pfType,vPoi,bat,resultsType);
-      }
-   }
-   catch(...)
-   {
-      // reset all of our data.
-      Invalidate(false);
-      throw;
-   }
-   return rotations;
-}
-
-std::vector<Float64> CAnalysisAgentImp::GetTimeStepRotation(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
-{
-   ATLASSERT(bat == pgsTypes::ContinuousSpan); // continous is the only valid analysis type for time step analysis
-   ATLASSERT(comboType != lcDWRating); // not setup to handle this yet
-
-   std::vector<Float64> rotations(vPoi.size(),0.0);
-
-   std::vector<ProductForceType> pfTypes = CProductLoadMap::GetProductForces(m_pBroker,comboType);
-   std::vector<ProductForceType>::iterator pfIter(pfTypes.begin());
-   std::vector<ProductForceType>::iterator pfIterEnd(pfTypes.end());
-   for ( ; pfIter != pfIterEnd; pfIter++ )
-   {
-      std::vector<Float64> theta(GetTimeStepRotation(intervalIdx,*pfIter,vPoi,bat,resultsType));
-      std::transform(rotations.begin(),rotations.end(),theta.begin(),rotations.begin(),std::plus<Float64>());
-   }
-
-   return rotations;
-}
-
-std::vector<Float64> CAnalysisAgentImp::GetElasticRotation(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
-{
-#if defined _DEBUG
-   GET_IFACE(IPointOfInterest,pPoi);
-   std::vector<CGirderKey> vGirderKeys(pPoi->GetGirderKeys(vPoi));
-   ATLASSERT(vGirderKeys.size() == 1); // this method assumes all the poi are for the same girder
-#endif
-
-   std::vector<Float64> rotation;
-   if ( comboType == lcCR || comboType == lcSH || comboType == lcRE )
-   {
-#pragma Reminder("FINISH - elastic Rotation for time dependant effects after erection")
-      // there should be deflections due to creep (creep coefficient * elastic deflection)
-      rotation.resize(vPoi.size(),0.0);
-   }
-   else if ( comboType == lcPS )
-   {
-      rotation.resize(vPoi.size(),0.0);
-      // elastic analysis doesn't have PT so there aren't any secondary effects.
-      // if this ever changes, uncomment the code below to get Rotations due to secondary effects
-      //std::vector<ProductForceType> pfTypes = m_pGirderModelManager->GetProductForces(lcPS);
-      //std::vector<ProductForceType>::iterator pfIter(pfTypes.begin());
-      //std::vector<ProductForceType>::iterator pfIterEnd(pfTypes.end());
-      //for ( ; pfIter != pfIterEnd; pfIter++ )
-      //{
-      //   ProductForceType pfType = *pfIter;
-      //   std::vector<Float64> delta = GetElasticRotation(intervalIdx,pfType,vPoi,bat,resultsType);
-      //   std::transform(delta.begin(),delta.end(),Rotation.begin(),Rotation.begin(),std::plus<Float64>());
-      //}
-   }
-   else
-   {
-      try
-      {
-         GET_IFACE(IIntervals,pIntervals);
-         IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(vPoi.front().GetSegmentKey());
-         if ( intervalIdx < erectionIntervalIdx )
-         {
-            rotation = m_pSegmentModelManager->GetRotation(intervalIdx,comboType,vPoi,resultsType);
-         }
-         else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
-         {
-            // the incremental result at the time of erection is being requested. this is when
-            // we switch between segment models and girder models. the incremental results
-            // is the cumulative result this interval minus the cumulative result in the previous interval
-            std::vector<Float64> Dprev = GetElasticRotation(intervalIdx-1,comboType,vPoi,bat,rtCumulative);
-            std::vector<Float64> Dthis = GetElasticRotation(intervalIdx,  comboType,vPoi,bat,rtCumulative);
-            std::transform(Dthis.begin(),Dthis.end(),Dprev.begin(),std::back_inserter(rotation),std::minus<Float64>());
-         }
-         else
-         {
-            rotation = m_pGirderModelManager->GetRotation(intervalIdx,comboType,vPoi,bat,resultsType);
-         }
-      }
-      catch(...)
-      {
-         // reset all of our data.
-         Invalidate(false);
-         throw;
-      }
-   }
-
-   return rotation;
-}
-
-void CAnalysisAgentImp::GetTimeStepRotation(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,std::vector<Float64>* pMin,std::vector<Float64>* pMax)
-{
-   // assumes all poi are from the same girder
-   ATLASSERT(bat == pgsTypes::ContinuousSpan); // continous is the only valid analysis type for time step analysis
-
-   pMin->clear();
-   pMax->clear();
-
-   pMin->reserve(vPoi.size());
-   pMax->reserve(vPoi.size());
-
-   const CSegmentKey& segmentKey(vPoi.front().GetSegmentKey());
-
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
-
-   GET_IFACE(ILoadFactors,pILoadFactors);
-   const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
-   Float64 gLLMin = pLoadFactors->LLIMmin[limitState];
-   Float64 gLLMax = pLoadFactors->LLIMmax[limitState];
-   Float64 gDCMin = pLoadFactors->DCmin[limitState];
-   Float64 gDCMax = pLoadFactors->DCmax[limitState];
-   Float64 gDWMin = pLoadFactors->DWmin[limitState];
-   Float64 gDWMax = pLoadFactors->DWmax[limitState];
-   Float64 gCRMax = pLoadFactors->CRmax[limitState];
-   Float64 gCRMin = pLoadFactors->CRmin[limitState];
-   Float64 gSHMax = pLoadFactors->SHmax[limitState];
-   Float64 gSHMin = pLoadFactors->SHmin[limitState];
-   Float64 gPSMax = pLoadFactors->PSmax[limitState];
-   Float64 gPSMin = pLoadFactors->PSmin[limitState];
-
-   std::vector<Float64> DC(GetTimeStepRotation(intervalIdx,lcDC,vPoi,bat,rtCumulative));
-   std::vector<Float64> DW(GetTimeStepRotation(intervalIdx,lcDW,vPoi,bat,rtCumulative));
-   std::vector<Float64> CR(GetTimeStepRotation(intervalIdx,lcCR,vPoi,bat,rtCumulative));
-   std::vector<Float64> SH(GetTimeStepRotation(intervalIdx,lcSH,vPoi,bat,rtCumulative));
-   std::vector<Float64> PS(GetTimeStepRotation(intervalIdx,lcPS,vPoi,bat,rtCumulative));
-
-   std::vector<Float64> pretension;
-   std::vector<Float64> posttension;
-   if ( bIncludePrestress )
-   {
-      pretension  = GetTimeStepRotation(intervalIdx,pftPretension,            vPoi,bat,rtCumulative);
-      posttension = GetTimeStepRotation(intervalIdx,pftPrimaryPostTensioning,vPoi,bat,rtCumulative);
-
-      std::transform(pretension.begin(), pretension.end(), DC.begin(),DC.begin(),std::plus<Float64>());
-      std::transform(posttension.begin(),posttension.end(),DC.begin(),DC.begin(),std::plus<Float64>());
-   }
-   else
-   {
-      pretension.resize(DC.size(),0);
-      posttension.resize(DC.size(),0);
-   }
-
-   std::vector<Float64> LLMin,LLMax;
-   if ( intervalIdx < liveLoadIntervalIdx )
-   {
-      LLMin.insert(LLMin.begin(),vPoi.size(),0.0);
-      LLMax.insert(LLMax.begin(),vPoi.size(),0.0);
-   }
-   else
-   {
-      pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
-      GetCombinedLiveLoadRotation(intervalIdx,llType,vPoi,bat,&LLMin,&LLMax);
-   }
-
-   IndexType nPoi = vPoi.size();
-   for ( IndexType idx = 0; idx < nPoi; idx++ )
-   {
-      Float64 rMax = (0 <= DC[idx] ? gDCMax : gDCMin)*DC[idx];
-      rMax += (::BinarySign(rMax) == ::BinarySign(DW[idx])    ? gDWMax : gDWMin)*DW[idx];
-      rMax += (::BinarySign(rMax) == ::BinarySign(CR[idx])    ? gCRMax : gCRMin)*CR[idx];
-      rMax += (::BinarySign(rMax) == ::BinarySign(SH[idx])    ? gSHMax : gSHMin)*SH[idx];
-      rMax += (::BinarySign(rMax) == ::BinarySign(PS[idx])    ? gPSMax : gPSMin)*PS[idx];
-      if ( bIncludeLiveLoad )
-      {
-         rMax += (::BinarySign(rMax) == ::BinarySign(LLMax[idx]) ? gLLMax : gLLMin)*LLMax[idx];
-      }
-      pMax->push_back(rMax);
-
-      Float64 rMin = (DC[idx] <= 0 ? gDCMax : gDCMin)*DC[idx];
-      rMin += (::BinarySign(rMin) == ::BinarySign(DW[idx])    ? gDWMax : gDWMin)*DW[idx];
-      rMin += (::BinarySign(rMin) == ::BinarySign(CR[idx])    ? gCRMax : gCRMin)*CR[idx];
-      rMin += (::BinarySign(rMin) == ::BinarySign(SH[idx])    ? gSHMax : gSHMin)*SH[idx];
-      rMin += (::BinarySign(rMin) == ::BinarySign(PS[idx])    ? gPSMax : gPSMin)*PS[idx];
-      if ( bIncludeLiveLoad )
-      {
-         rMin += (::BinarySign(rMin) == ::BinarySign(LLMin[idx]) ? gLLMax : gLLMin)*LLMin[idx];
-      }
-      pMin->push_back(rMin);
-   }
-}
-
-void CAnalysisAgentImp::GetElasticRotation(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,std::vector<Float64>* pMin,std::vector<Float64>* pMax)
-{
-#if defined _DEBUG
-   GET_IFACE(IPointOfInterest,pPoi);
-   std::vector<CGirderKey> vGirderKeys(pPoi->GetGirderKeys(vPoi));
-   ATLASSERT(vGirderKeys.size() == 1); // this method assumes all the poi are for the same girder
-#endif
-
-   const CSegmentKey& segmentKey(vPoi.front().GetSegmentKey());
-
-   // need to do the time-step analysis because it adds loads to the LBAM
-   ComputeTimeDependentEffects(segmentKey,intervalIdx);
-
-   pMin->clear();
-   pMax->clear();
-
-   try
-   {
-      GET_IFACE(IIntervals,pIntervals);
-      IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
-      if ( intervalIdx < erectionIntervalIdx )
-      {
-         m_pSegmentModelManager->GetRotation(intervalIdx,limitState,vPoi,bIncludePrestress,pMin,pMax);
-      }
-      else
-      {
-         m_pGirderModelManager->GetRotation(intervalIdx,limitState,vPoi,bat,bIncludePrestress,bIncludeLiveLoad,pMin,pMax);
-      }
-   }
-   catch(...)
-   {
-      // reset all of our data.
       Invalidate(false);
       throw;
    }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -75,25 +75,9 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
    {
       CLongitudinalRebarData rebarData;
 
-#pragma Reminder("UPDATE: rebar grid should be doing the unit conversions")
-      ROWCOL nrows = m_Grid.GetRowCount();
-      for (ROWCOL i=1; i<=nrows; i++)
+      if ( !m_Grid.GetRebarData(&rebarData) )
       {
-         CLongitudinalRebarData::RebarRow row;
-         if (m_Grid.GetRowData(i,&row))
-         {
-            // values are in display units - must convert to system
-            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-            row.BarLength    = ::ConvertToSysUnits(row.BarLength, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure );
-            row.DistFromEnd  = ::ConvertToSysUnits(row.DistFromEnd, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure );
-            row.Cover        = ::ConvertToSysUnits(row.Cover,      pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-            row.BarSpacing   = ::ConvertToSysUnits(row.BarSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-            rebarData.RebarRows.push_back(row);
-         }
-         else
-         {
-            pDX->Fail();
-         }
+         pDX->Fail();
       }
 
 #pragma Reminder("UPDATE: need to validate at both ends because of tapered segments")
@@ -112,11 +96,8 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
       CComPtr<IPoint2d> point;
       point.CoCreateInstance(CLSID_Point2d);
       int rowIdx = 1;
-      std::vector<CLongitudinalRebarData::RebarRow>::iterator iter(rebarData.RebarRows.begin());
-      std::vector<CLongitudinalRebarData::RebarRow>::iterator end(rebarData.RebarRows.end());
-      for ( ; iter != end; iter++, rowIdx++ )
+      BOOST_FOREACH(CLongitudinalRebarData::RebarRow& row,rebarData.RebarRows)
       {
-         CLongitudinalRebarData::RebarRow& row = *iter;
          if (row.Cover < 0)
          {
             strMsg.Format(_T("The cover for row %d must be greater than zero."),rowIdx);
@@ -181,22 +162,7 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
                                         pParent->m_pSegment->LongitudinalRebarData.BarGrade);
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
 
-#pragma Reminder("UPDATE: rebar grid should be doing the unit conversions")
-      GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
-      CLongitudinalRebarData rebardata;
-      std::vector<CLongitudinalRebarData::RebarRow>::iterator iter(pParent->m_pSegment->LongitudinalRebarData.RebarRows.begin());
-      std::vector<CLongitudinalRebarData::RebarRow>::iterator iterEnd(pParent->m_pSegment->LongitudinalRebarData.RebarRows.end());
-      for ( ; iter != iterEnd; iter++ )
-      {
-         CLongitudinalRebarData::RebarRow row = *iter;
-         row.BarLength   = ::ConvertFromSysUnits(row.BarLength, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-         row.DistFromEnd = ::ConvertFromSysUnits(row.DistFromEnd, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-         row.BarSpacing  = ::ConvertFromSysUnits(row.BarSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-         row.Cover       = ::ConvertFromSysUnits(row.Cover,      pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-
-         rebardata.RebarRows.push_back(row);
-      }
-      m_Grid.FillGrid(rebardata);
+      m_Grid.FillGrid(pParent->m_pSegment->LongitudinalRebarData);
    }
 }
 

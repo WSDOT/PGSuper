@@ -1,3 +1,25 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2015  Washington State Department of Transportation
+//                        Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
 #if !defined(AFX_GIRDERDEBONDCRITERIAPAGE_H__F7C3C78F_28B6_466B_9933_C766C1BCA9ED__INCLUDED_)
 #define AFX_GIRDERDEBONDCRITERIAPAGE_H__F7C3C78F_28B6_466B_9933_C766C1BCA9ED__INCLUDED_
 
@@ -44,8 +66,18 @@ protected:
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 
-   void UpdateCheckBoxes();
+   BOOL OnInitDialog();
 
+   void UpdateCheckBoxes();
+   void UpdateDebondCheckBoxes();
+   void UpdateDesignCheckBoxes();
+
+   void EnableCtrls(int* ctrlIDs, BOOL enable);
+
+public:
+   afx_msg void OnBnClickedStraightDesignCheck();
+   afx_msg void OnBnClickedDebondDesignCheck();
+   afx_msg void OnBnClickedHarpedDesignCheck();
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1932,6 +1932,12 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSuperDocBase* pD
    CComPtr<iDisplayObjectFactory> factory;
    dispMgr->GetDisplayObjectFactory(0, &factory);
 
+
+   SpanIndexType startSpanIdx, endSpanIdx;
+   GetSpanRange(pBroker,girderKey,&startSpanIdx,&endSpanIdx);
+   Float64 span_offset = GetSpanStartLocation(CSpanKey(startSpanIdx,girderKey.girderIndex));
+
+
    // create load display objects from filtered list
    for (loadIdx = 0; loadIdx < nLoads; loadIdx++)
    {
@@ -1948,12 +1954,20 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSuperDocBase* pD
          {
             CSpanKey spanKey(spanIdx,girderKey.girderIndex);
 
+            Float64 cantilever_length = pBridge->GetCantileverLength(spanKey.spanIndex,spanKey.girderIndex,(spanKey.spanIndex == 0 ? pgsTypes::metStart : pgsTypes::metEnd));
             Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex,spanKey.girderIndex);
 
             Float64 location_from_left_end = pLoad->m_Location;
             if (pLoad->m_Fractional)
             {
-               location_from_left_end *= span_length;
+               if ( pLoad->m_bLoadOnCantilever )
+               {
+                  location_from_left_end *= cantilever_length;
+               }
+               else
+               {
+                  location_from_left_end *= span_length;
+               }
             }
 
             CComPtr<iDisplayObject> disp_obj;
@@ -1968,6 +1982,24 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSuperDocBase* pD
             pls->Init(point_disp, pBroker, *pLoad, loadIdx, span_length, max, color);
 
             Float64 x_position = GetSpanStartLocation(spanKey);
+            if ( pLoad->m_bLoadOnCantilever[pgsTypes::metStart] )
+            {
+               // x_position is measured from the start of the span... since the load is on
+               // the cantilever of the first span, we want to measure x_position from
+               // the left end (start) of the cantilever. Just back up x_position by
+               // the cantilever length
+               x_position -= cantilever_length;
+            }
+            else if ( pLoad->m_bLoadOnCantilever[pgsTypes::metEnd] )
+            {
+               // x_position is measured from the start of the span... since the load is on
+               // the cantilever at the end of the span, we want to measure x_position form
+               // the left end (start) of the cantilever. Just move x_position by
+               // the span length.
+               x_position += span_length;
+            }
+
+            x_position -= span_offset; // adjusts position for groups that are being displayed
             x_position += location_from_left_end;
 
             CComPtr<IPoint2d> point;
@@ -3385,7 +3417,7 @@ Float64 CGirderModelElevationView::GetSpanStartLocation(const CSpanKey& spanKey)
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker,IBridge,           pBridge);
+   GET_IFACE2_NOCHECK(pBroker,IBridge,           pBridge);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    SpanIndexType startSpanIdx = 0;
@@ -3527,4 +3559,22 @@ CString CGirderModelElevationView::GetClosureTooltip(IBroker* pBroker, const CCl
    CString strMsg = strMsg1 + strMsg2;
 
    return strMsg;
+}
+
+void CGirderModelElevationView::GetSpanRange(IBroker* pBroker,const CGirderKey& girderKey,SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx)
+{
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   PierIndexType startPierIdx, endPierIdx;
+   if ( girderKey.groupIndex == ALL_GROUPS )
+   {
+      startPierIdx = 0;
+      endPierIdx = pBridge->GetPierCount()-1;
+   }
+   else
+   {
+      pBridge->GetGirderGroupPiers(girderKey.groupIndex,&startPierIdx,&endPierIdx);
+   }
+
+   *pStartSpanIdx = (SpanIndexType)startPierIdx;
+   *pEndSpanIdx   = (SpanIndexType)(endPierIdx-1);
 }

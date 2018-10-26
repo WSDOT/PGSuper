@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -200,6 +200,12 @@ interface IBridge : IUnknown
 
    // returns the end to end length of the girder measured along the centerline of its segments
    virtual Float64 GetGirderLength(const CGirderKey& girderKey) = 0;
+
+   // returns the cantilever length of a girder. If the girder end is not cantilevered, returns 0.
+   // The cantilever length applies to spans where one of the end piers is designated as a cantilever.
+   // This is NOT the member end distance!
+   virtual Float64 GetCantileverLength(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::MemberEndType endType) = 0;
+   virtual Float64 GetCantileverLength(const CSpanKey& spanKey,pgsTypes::MemberEndType endType) = 0;
 
    ///////////////////////////////////////////////////
    // Segment geometry
@@ -742,8 +748,8 @@ interface ILongRebarGeometry : IUnknown
    virtual Float64 GetAsTopHalf(const pgsPointOfInterest& poi,bool bDevAdjust) = 0; // Fig. 5.8.3.4.2-3
    virtual Float64 GetAsGirderTopHalf(const pgsPointOfInterest& poi,bool bDevAdjust) = 0; // Fig. 5.8.3.4.2-3
    virtual Float64 GetAsDeckTopHalf(const pgsPointOfInterest& poi,bool bDevAdjust) = 0; // Fig. 5.8.3.4.2-3
-   virtual Float64 GetDevLengthFactor(const CSegmentKey& segmentKey,IRebarSectionItem* rebarItem) = 0;
-   virtual Float64 GetDevLengthFactor(IRebarSectionItem* rebarItem, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) = 0;
+   virtual Float64 GetDevLengthFactor(const pgsPointOfInterest& poi,IRebarSectionItem* rebarItem) = 0;
+   virtual Float64 GetDevLengthFactor(const pgsPointOfInterest& poi,IRebarSectionItem* rebarItem, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) = 0;
    virtual Float64 GetPPRTopHalf(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetPPRBottomHalf(const pgsPointOfInterest& poi) = 0;
 
@@ -868,6 +874,11 @@ interface IStrandGeometry : IUnknown
    virtual Float64 GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bIncTemp,Float64* nEffectiveStrands) = 0;
    virtual Float64 GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,Float64* nEffectiveStrands) = 0;
 
+   // Returns the geometric eccentricity of prestressing strands for the various strand types.
+   // Eccentricity is measured with respect to the centroid of the specified section type at the specified interval
+   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bIncTemp, Float64* nEffectiveStrands) = 0;
+   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, Float64* nEffectiveStrands) = 0;
+
    // Returns the distance from the top of the girder to the geometric CG of the strand in Girder Section Coordinates
    virtual Float64 GetStrandLocation(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx) = 0;
 
@@ -885,13 +896,12 @@ interface IStrandGeometry : IUnknown
    // Eccentricity is measured with respect to the centroid of the section at the specified interval
    virtual Float64 GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, bool bIncTemp, Float64* nEffectiveStrands) = 0;
    virtual Float64 GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, pgsTypes::StrandType strandType,Float64* nEffectiveStrands) = 0;
+
+   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, bool bIncTemp, Float64* nEffectiveStrands) = 0;
+   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, pgsTypes::StrandType strandType,Float64* nEffectiveStrands) = 0;
+
    virtual Float64 GetMaxStrandSlope(const pgsPointOfInterest& poi,StrandIndexType Nh,Float64 endShift,Float64 hpShift) = 0;
    virtual Float64 GetAvgStrandSlope(const pgsPointOfInterest& poi,StrandIndexType Nh,Float64 endShift,Float64 hpShift) = 0;
-
-   // Returns the geometric eccentricity of prestressing strands for the various strand types.
-   // Eccentricity is measured with respect to the centroid of the specified section type at the specified interval
-   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bIncTemp, Float64* nEffectiveStrands) = 0;
-   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, Float64* nEffectiveStrands) = 0;
 
    virtual Float64 GetApsBottomHalf(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust) = 0; // Fig. 5.8.3.4.2-3
    virtual Float64 GetApsBottomHalf(const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, DevelopmentAdjustmentType devAdjust) = 0; // Fig. 5.8.3.4.2-3
@@ -950,6 +960,10 @@ interface IStrandGeometry : IUnknown
 
    // Harped strands can be forced to be straight along their length
    virtual bool GetAreHarpedStrandsForcedStraight(const CSegmentKey& segmentKey)=0;
+
+   // Many of the harped strand geometry methods require the height of the girder segment at
+   // the start, end, and harp points. This method gets these values for the current girder
+   virtual void GetHarpedStrandControlHeights(const CSegmentKey& segmentKey,Float64* pHgStart,Float64* pHgHp1,Float64* pHgHp2,Float64* pHgEnd) = 0;
 
    // harped vertical offsets are measured from original strand locations in strand grid
    virtual Float64 GetGirderTopElevation(const CSegmentKey& segmentKey) = 0;  // highest point on girder section based on strand coordinates (bottom at 0.0)
@@ -1069,6 +1083,7 @@ interface ISectionProperties : IUnknown
 
    // Returns section properties for the specified interval. Section properties
    // are based on the specified section property type
+   virtual Float64 GetHg(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetAg(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetIx(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetIy(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) = 0;
@@ -1219,6 +1234,9 @@ interface IUserDefinedLoads : IUnknown
    struct UserPointLoad
    {
       UserDefinedLoadCase m_LoadCase;
+      bool                m_bLoadOnStartCantilever; // if true, the load is on the start cantilever of the span
+      bool                m_bLoadOnEndCantilever; // if true, the load is on the end cantilever of the span
+      // if neither are true, load is in the main span
       Float64             m_Location; // from the left end of the firs segment in the girder
       Float64             m_Magnitude;
       std::_tstring       m_Description;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -390,7 +390,18 @@ void CEditLoadsView::UpdatePointLoadItem(int irow, const CPointLoadData& ptLoad)
    }
    else
    {
-      strSpan.Format(_T("Span %d"),LABEL_SPAN(ptLoad.m_SpanKey.spanIndex));
+      if ( ptLoad.m_bLoadOnCantilever[pgsTypes::metStart] )
+      {
+         strSpan.Format(_T("Span %d Start Cantilever"),LABEL_SPAN(ptLoad.m_SpanKey.spanIndex));
+      }
+      else if ( ptLoad.m_bLoadOnCantilever[pgsTypes::metEnd] )
+      {
+         strSpan.Format(_T("Span %d End Cantilever"),LABEL_SPAN(ptLoad.m_SpanKey.spanIndex));
+      }
+      else
+      {
+         strSpan.Format(_T("Span %d"),LABEL_SPAN(ptLoad.m_SpanKey.spanIndex));
+      }
    }
 
    CString strGirder;

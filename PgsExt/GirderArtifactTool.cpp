@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -60,11 +60,9 @@ bool FlexureStressFailures(IBroker* pBroker,const CSegmentKey& segmentKey,Interv
 void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
                         const pgsGirderArtifact* pGirderArtifact,bool referToDetailsReport)
 {
-   USES_CONVERSION;
-
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
-   GET_IFACE2_NOCHECK(pBroker,IEventMap,pEventMap); // only used if there are failues
+   GET_IFACE2_NOCHECK(pBroker,IProductLoads,pProductLoads); // only used if there are failues
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
@@ -133,7 +131,7 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
             if ( FlexureStressFailures(pBroker,segmentKey,releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact,bBeamStresses) )
             {
                std::_tostringstream os;
-               os << _T("Compression stress check failed for ") << OLE2T(pEventMap->GetLimitStateName(pgsTypes::ServiceI)) << _T(" Limit State in Interval ") << LABEL_INTERVAL(releaseIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,releaseIntervalIdx);
+               os << _T("Compression stress check failed for ") << pProductLoads->GetLimitStateName(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(releaseIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,releaseIntervalIdx);
                if ( 1 < nSegments )
                {
                   os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
@@ -144,7 +142,7 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
             if ( FlexureStressFailures(pBroker,segmentKey,releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact,bBeamStresses) )
             {
                std::_tostringstream os;
-               os << _T("Tensile stress check failed for ") << OLE2T(pEventMap->GetLimitStateName(pgsTypes::ServiceI)) << _T(" Limit State in Interval ") << LABEL_INTERVAL(releaseIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,releaseIntervalIdx);
+               os << _T("Tensile stress check failed for ") << pProductLoads->GetLimitStateName(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(releaseIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,releaseIntervalIdx);
                if ( 1 < nSegments )
                {
                   os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
@@ -160,7 +158,7 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
                   if ( FlexureStressFailures(pBroker,segmentKey,tsRemovalIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact,bBeamStresses) )
                   {
                      std::_tostringstream os;
-                     os << _T("Compression stress check failed for ") << OLE2T(pEventMap->GetLimitStateName(pgsTypes::ServiceI)) << _T(" Limit State in Interval ") << LABEL_INTERVAL(tsRemovalIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,tsRemovalIntervalIdx);
+                     os << _T("Compression stress check failed for ") << pProductLoads->GetLimitStateName(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(tsRemovalIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,tsRemovalIntervalIdx);
                      if ( 1 < nSegments )
                      {
                         os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
@@ -171,7 +169,7 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
                   if ( FlexureStressFailures(pBroker,segmentKey,tsRemovalIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact,bBeamStresses) )
                   {
                      std::_tostringstream os;
-                     os << _T("Tensile stress check failed for ") << OLE2T(pEventMap->GetLimitStateName(pgsTypes::ServiceI)) << _T(" Limit State in Interval ") << LABEL_INTERVAL(tsRemovalIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,tsRemovalIntervalIdx);
+                     os << _T("Tensile stress check failed for ") << pProductLoads->GetLimitStateName(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(tsRemovalIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,tsRemovalIntervalIdx);
                      if ( 1 < nSegments )
                      {
                         os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
@@ -183,7 +181,7 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
                if ( FlexureStressFailures(pBroker,segmentKey,castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact,bBeamStresses) )
                {
                   std::_tostringstream os;
-                  os << _T("Compression stress check failed for ") << OLE2T(pEventMap->GetLimitStateName(pgsTypes::ServiceI)) << _T(" Limit State in Interval ") << LABEL_INTERVAL(castDeckIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,castDeckIntervalIdx);
+                  os << _T("Compression stress check failed for ") << pProductLoads->GetLimitStateName(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(castDeckIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,castDeckIntervalIdx);
                   if ( 1 < nSegments )
                   {
                      os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
@@ -194,7 +192,7 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
                if ( FlexureStressFailures(pBroker,segmentKey,castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact,bBeamStresses) )
                {
                   std::_tostringstream os;
-                  os << _T("Tensile stress check failed for ") << OLE2T(pEventMap->GetLimitStateName(pgsTypes::ServiceI)) << _T(" Limit State in Interval ") << LABEL_INTERVAL(castDeckIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,castDeckIntervalIdx);
+                  os << _T("Tensile stress check failed for ") << pProductLoads->GetLimitStateName(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(castDeckIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,castDeckIntervalIdx);
                   if ( 1 < nSegments )
                   {
                      os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
@@ -207,7 +205,7 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
          if ( FlexureStressFailures(pBroker,segmentKey,compositeDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact,bBeamStresses) )
          {
             std::_tostringstream os;
-            os << _T("Compression stress check failed for ") << OLE2T(pEventMap->GetLimitStateName(pgsTypes::ServiceI)) << _T(" Limit State in Interval ") << LABEL_INTERVAL(compositeDeckIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,compositeDeckIntervalIdx);
+            os << _T("Compression stress check failed for ") << pProductLoads->GetLimitStateName(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(compositeDeckIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,compositeDeckIntervalIdx);
             if ( bBeamStresses && 1 < nSegments )
             {
                os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
@@ -225,7 +223,7 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
             if ( FlexureStressFailures(pBroker,segmentKey,compositeDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact,bBeamStresses) )
             {
                std::_tostringstream os;
-               os << _T("Tension stress check failed for ") << OLE2T(pEventMap->GetLimitStateName(pgsTypes::ServiceI)) << _T(" Limit State in Interval ") << LABEL_INTERVAL(compositeDeckIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,compositeDeckIntervalIdx);
+               os << _T("Tension stress check failed for ") << pProductLoads->GetLimitStateName(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(compositeDeckIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,compositeDeckIntervalIdx);
                if ( bBeamStresses && 1 < nSegments )
                {
                   os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
@@ -241,7 +239,7 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
          if ( FlexureStressFailures(pBroker,segmentKey,lastIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact,bBeamStresses) )
          {
             std::_tostringstream os;
-            os << _T("Compression stress check failed for ") << OLE2T(pEventMap->GetLimitStateName(pgsTypes::ServiceI)) << _T(" Limit State in Interval ") << LABEL_INTERVAL(lastIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,lastIntervalIdx);
+            os << _T("Compression stress check failed for ") << pProductLoads->GetLimitStateName(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(lastIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,lastIntervalIdx);
             if ( bBeamStresses && 1 < nSegments )
             {
                os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
@@ -258,7 +256,7 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
             if ( FlexureStressFailures(pBroker,segmentKey,lastIntervalIdx,pgsTypes::ServiceIA,pgsTypes::Compression,pArtifact,bBeamStresses) )
             {
                std::_tostringstream os;
-               os << _T("Compression stress check failed for ") << OLE2T(pEventMap->GetLimitStateName(pgsTypes::ServiceIA)) << _T(" Limit State in Interval ") << LABEL_INTERVAL(lastIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,lastIntervalIdx);
+               os << _T("Compression stress check failed for ") << pProductLoads->GetLimitStateName(pgsTypes::ServiceIA) << _T(" Limit State in Interval ") << LABEL_INTERVAL(lastIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,lastIntervalIdx);
                if ( bBeamStresses && 1 < nSegments )
                {
                   os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
@@ -274,7 +272,7 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
          if ( FlexureStressFailures(pBroker,segmentKey,lastIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,pArtifact,bBeamStresses) )
          {
             std::_tostringstream os;
-            os << _T("Tensile stress check failed for ") << OLE2T(pEventMap->GetLimitStateName(pgsTypes::ServiceIII)) << _T(" Limit State in Interval ") << LABEL_INTERVAL(lastIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,lastIntervalIdx);
+            os << _T("Tensile stress check failed for ") << pProductLoads->GetLimitStateName(pgsTypes::ServiceIII) << _T(" Limit State in Interval ") << LABEL_INTERVAL(lastIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,lastIntervalIdx);
             if ( bBeamStresses && 1 < nSegments )
             {
                os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
@@ -291,7 +289,7 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
             if ( FlexureStressFailures(pBroker,segmentKey,lastIntervalIdx,pgsTypes::FatigueI,pgsTypes::Compression,pArtifact,bBeamStresses) )
             {
                std::_tostringstream os;
-               os << _T("Compression stress check failed for ") << OLE2T(pEventMap->GetLimitStateName(pgsTypes::FatigueI)) << _T(" Limit State in Interval ") << LABEL_INTERVAL(lastIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,lastIntervalIdx);
+               os << _T("Compression stress check failed for ") << pProductLoads->GetLimitStateName(pgsTypes::FatigueI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(lastIntervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,lastIntervalIdx);
                if ( bBeamStresses && 1 < nSegments )
                {
                   os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
@@ -328,15 +326,14 @@ bool MomentCapacityFailures(IBroker* pBroker,const pgsGirderArtifact* pGirderArt
 
 void ListMomentCapacityFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls)
 {
-   USES_CONVERSION;
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2_NOCHECK(pBroker,IEventMap,pEventMap); // only used if there is a failure
+   GET_IFACE2_NOCHECK(pBroker,IProductLoads,pProductLoads); // only used if there is a failure
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount(girderKey)-1;
    std::_tstring strDescription(pIntervals->GetDescription(girderKey,intervalIdx));
-   std::_tstring strLimitState(OLE2T(pEventMap->GetLimitStateName(ls)));
+   std::_tstring strLimitState(pProductLoads->GetLimitStateName(ls));
 
    if ( MomentCapacityFailures(pBroker,pGirderArtifact,intervalIdx,ls,true) )
    {
@@ -355,15 +352,14 @@ void ListMomentCapacityFailures(IBroker* pBroker,FailureList& rFailures,const pg
 
 void ListVerticalShearFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls)
 {
-   USES_CONVERSION;
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount(girderKey)-1;
    std::_tstring strDescription(pIntervals->GetDescription(girderKey,intervalIdx));
-   std::_tstring strLimitState(OLE2T(pEventMap->GetLimitStateName(ls)));
+   std::_tstring strLimitState(pProductLoads->GetLimitStateName(ls));
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
@@ -414,15 +410,14 @@ void ListVerticalShearFailures(IBroker* pBroker,FailureList& rFailures,const pgs
 
 void ListHorizontalShearFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls)
 {
-   USES_CONVERSION;
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount(girderKey)-1;
    std::_tstring strDescription(pIntervals->GetDescription(girderKey,intervalIdx));
-   std::_tstring strLimitState(OLE2T(pEventMap->GetLimitStateName(ls)));
+   std::_tstring strLimitState(pProductLoads->GetLimitStateName(ls));
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
@@ -453,15 +448,14 @@ void ListHorizontalShearFailures(IBroker* pBroker,FailureList& rFailures,const p
 
 void ListStirrupDetailingFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls)
 {
-   USES_CONVERSION;
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount(girderKey)-1;
    std::_tstring strDescription(pIntervals->GetDescription(girderKey,intervalIdx));
-   std::_tstring strLimitState(OLE2T(pEventMap->GetLimitStateName(ls)));
+   std::_tstring strLimitState(pProductLoads->GetLimitStateName(ls));
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -729,13 +729,12 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
    GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
 
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
    bool bPedLoading = pProductLoads->HasPedestrianLoad(girderKey);
 
    rptRcTable* p_table2;
-   RowIndexType row2 = CreateLimitStateTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table2,_T("Shear, Vu"),false,bDesign,bPermit,bRating,false,analysisType,pEventMap,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   RowIndexType row2 = CreateLimitStateTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table2,_T("Shear, Vu"),false,bDesign,bPermit,bRating,false,analysisType,pProductLoads,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
    *p << p_table2;
 
    if ( girderKey.groupIndex == ALL_GROUPS )

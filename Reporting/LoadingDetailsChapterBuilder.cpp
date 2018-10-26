@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -85,8 +85,6 @@ LPCTSTR CLoadingDetailsChapterBuilder::GetName() const
 
 rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   USES_CONVERSION;
-
    CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
@@ -1530,7 +1528,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
       (*p_table)(row,1) << strDC;
       row++;
 
-      (*p_table)(row,0) << _T("Superimposed Dead Loads (Bridge Site 2)");
+      (*p_table)(row,0) << _T("Final without Live Load (Bridge Site 2)");
       (*p_table)(row,1) << strDC<<_T(" + Traffic Barrier")<<rptNewLine
                       << _T("DW = Overlay");
       row++;
@@ -1578,12 +1576,12 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
    
    row = 1;
 
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
    if ( bDesign )
    {
       col = 0;
-      (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(pgsTypes::ServiceI));
+      (*p_table)(row,col++) << pProductLoads->GetLimitStateName(pgsTypes::ServiceI);
       (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::ServiceI]);
       (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::ServiceI]);
       (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::ServiceI]);
@@ -1598,7 +1596,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
       if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
       {
          col = 0;
-         (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(pgsTypes::ServiceIA));
+         (*p_table)(row,col++) << pProductLoads->GetLimitStateName(pgsTypes::ServiceIA);
          (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::ServiceIA]);
          (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::ServiceIA]);
          (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::ServiceIA]);
@@ -1612,7 +1610,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
       }
 
       col = 0;
-      (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(pgsTypes::ServiceIII));
+      (*p_table)(row,col++) << pProductLoads->GetLimitStateName(pgsTypes::ServiceIII);
       (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::ServiceIII]);
       (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::ServiceIII]);
       (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::ServiceIII]);
@@ -1627,7 +1625,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
          col = 0;
-         (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(pgsTypes::FatigueI));
+         (*p_table)(row,col++) << pProductLoads->GetLimitStateName(pgsTypes::FatigueI);
          (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::FatigueI]);
          (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::FatigueI]);
          (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::FatigueI]);
@@ -1641,7 +1639,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
       }
 
       col = 0;
-      (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(pgsTypes::StrengthI));
+      (*p_table)(row,col++) << pProductLoads->GetLimitStateName(pgsTypes::StrengthI);
       (*p_table)(row,col  ) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::StrengthI]) << _T("/");
       (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DCmin[pgsTypes::StrengthI]);
       (*p_table)(row,col  ) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::StrengthI]) << _T("/");
@@ -1658,7 +1656,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
       if ( bPermit )
       {
          col = 0;
-         (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(pgsTypes::StrengthII));
+         (*p_table)(row,col++) << pProductLoads->GetLimitStateName(pgsTypes::StrengthII);
          (*p_table)(row,col  ) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::StrengthII]) << _T("/");
          (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DCmin[pgsTypes::StrengthII]);
          (*p_table)(row,col  ) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::StrengthII]) << _T("/");
@@ -1683,7 +1681,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
          {
             col = 0;
             pgsTypes::LimitState ls = pgsTypes::ServiceIII_Inventory;
-            (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+            (*p_table)(row,col++) << pProductLoads->GetLimitStateName(ls);
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
             Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
@@ -1708,7 +1706,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
 
          pgsTypes::LimitState ls = pgsTypes::StrengthI_Inventory;
          col = 0;
-         (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+         (*p_table)(row,col++) << pProductLoads->GetLimitStateName(ls);
          (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
          (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
          Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
@@ -1738,7 +1736,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
          {
             col = 0;
             pgsTypes::LimitState ls = pgsTypes::ServiceIII_Operating;
-            (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+            (*p_table)(row,col++) << pProductLoads->GetLimitStateName(ls);
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
             Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
@@ -1764,7 +1762,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
 
          pgsTypes::LimitState ls = pgsTypes::StrengthI_Operating;
          col = 0;
-         (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+         (*p_table)(row,col++) << pProductLoads->GetLimitStateName(ls);
          (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
          (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
          Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
@@ -1794,7 +1792,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
          {
             col = 0;
             pgsTypes::LimitState ls = pgsTypes::ServiceIII_LegalRoutine;
-            (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+            (*p_table)(row,col++) << pProductLoads->GetLimitStateName(ls);
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
             Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
@@ -1820,7 +1818,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
 
          pgsTypes::LimitState ls = pgsTypes::StrengthI_LegalRoutine;
          col = 0;
-         (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+         (*p_table)(row,col++) << pProductLoads->GetLimitStateName(ls);
          (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
          (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
          Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
@@ -1851,7 +1849,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
          {
             col = 0;
             pgsTypes::LimitState ls = pgsTypes::ServiceIII_LegalSpecial;
-            (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+            (*p_table)(row,col++) << pProductLoads->GetLimitStateName(ls);
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
             Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
@@ -1877,7 +1875,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
 
          pgsTypes::LimitState ls = pgsTypes::StrengthI_LegalSpecial;
          col = 0;
-         (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+         (*p_table)(row,col++) << pProductLoads->GetLimitStateName(ls);
          (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
          (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
          Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
@@ -1907,7 +1905,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
          {
             col = 0;
             pgsTypes::LimitState ls = pgsTypes::ServiceI_PermitRoutine;
-            (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+            (*p_table)(row,col++) << pProductLoads->GetLimitStateName(ls);
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
             Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
@@ -1933,7 +1931,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
 
          pgsTypes::LimitState ls = pgsTypes::StrengthII_PermitRoutine;
          col = 0;
-         (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+         (*p_table)(row,col++) << pProductLoads->GetLimitStateName(ls);
          (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
          (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
          Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
@@ -1963,7 +1961,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
          {
             pgsTypes::LimitState ls = pgsTypes::ServiceI_PermitSpecial;
             col = 0;
-            (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+            (*p_table)(row,col++) << pProductLoads->GetLimitStateName(ls);
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
             Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
@@ -1989,7 +1987,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
 
          pgsTypes::LimitState ls = pgsTypes::StrengthII_PermitSpecial;
          col = 0;
-         (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+         (*p_table)(row,col++) << pProductLoads->GetLimitStateName(ls);
          (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
          (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
          Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);

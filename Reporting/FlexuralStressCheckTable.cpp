@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -165,8 +165,6 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter,
                                            pgsTypes::LimitState limitState,
                                            bool bGirderStresses) const
 {
-   USES_CONVERSION;
-
    // Build table
    INIT_UV_PROTOTYPE( rptPressureSectionValue, stress,   pDisplayUnits->GetStressUnit(), false );
    INIT_UV_PROTOTYPE( rptPressureSectionValue, stress_u, pDisplayUnits->GetStressUnit(), true );
@@ -180,8 +178,8 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter,
    bool bIsTendonStressingInterval = pIntervals->IsTendonStressingInterval(girderKey,intervalIdx);
    bool bIsStressingInterval = (intervalIdx == releaseIntervalIdx || bIsTendonStressingInterval);
 
-   GET_IFACE2(pBroker, IEventMap, pEventMap );
-   std::_tstring strLimitState = OLE2T(pEventMap->GetLimitStateName(limitState));
+   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+   std::_tstring strLimitState = pProductLoads->GetLimitStateName(limitState);
 
    std::_tostringstream os;
    os << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(": ") << pIntervals->GetDescription(girderKey,intervalIdx) << _T(" : ") << strLimitState << std::endl;
@@ -273,8 +271,6 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
                                            pgsTypes::LimitState limitState,
                                            bool bGirderStresses) const
 {
-   USES_CONVERSION;
-
    pgsTypes::StressLocation topLocation = (bGirderStresses ? pgsTypes::TopGirder    : pgsTypes::TopDeck);
    pgsTypes::StressLocation botLocation = (bGirderStresses ? pgsTypes::BottomGirder : pgsTypes::BottomDeck);
 
@@ -427,8 +423,8 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    }
 
 
-   GET_IFACE2(pBroker, IEventMap, pEventMap );
-   std::_tstring strLimitState = OLE2T(pEventMap->GetLimitStateName(limitState));
+   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+   std::_tstring strLimitState = pProductLoads->GetLimitStateName(limitState);
 
 
    if ( bIncludePrestress && ( bApplicableTensionTop || bApplicableCompressionTop || bApplicableTensionBot || bApplicableCompressionBot ) )

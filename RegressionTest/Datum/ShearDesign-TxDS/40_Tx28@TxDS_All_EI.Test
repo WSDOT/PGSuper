@@ -50,7 +50,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 40.00   5  9.00  3     1     Tx28       20   1/2  270  9.88  9.48   4  6.5  4.000  5.600    1.580   -2.176   1823  0.760  1.070  0.12 -0.03  0.00 -0.00 -0.03  44.96 126.74   1.00   1.00   1.00
+ 40.00   5  9.00  3     1     Tx28       20   1/2  270  9.88  9.48   4  6.5  4.000  5.600    1.580   -2.176   1823  0.760  1.070  0.11 -0.03  0.00 -0.00 -0.03  44.96 126.74   1.00   1.00   1.00
 
 
 The Specification Check was Successful
@@ -58,7 +58,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 40.00   5  9.00  3     2     Tx28       20   1/2  270  9.88  9.48   4  6.5  4.000  5.600    1.671   -2.282   1877  0.760  1.070  0.12 -0.03  0.00 -0.00 -0.04  44.96 124.81   1.00   1.00   1.00
+ 40.00   5  9.00  3     2     Tx28       20   1/2  270  9.88  9.48   4  6.5  4.000  5.600    1.671   -2.282   1877  0.760  1.070  0.11 -0.03  0.00 -0.00 -0.04  44.96 124.81   1.00   1.00   1.00
 
 
 The Specification Check was Successful
@@ -66,7 +66,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 40.00   5  9.00  3     3     Tx28       20   1/2  270  9.88  9.48   4  6.5  4.000  5.700    1.671   -2.282   1877  0.760  1.070  0.12 -0.03  0.00 -0.00 -0.04  44.96 124.81   1.00   1.00   1.00
+ 40.00   5  9.00  3     3     Tx28       20   1/2  270  9.88  9.48   4  6.5  4.000  5.700    1.671   -2.282   1877  0.760  1.070  0.11 -0.03  0.00 -0.00 -0.04  44.96 124.81   1.00   1.00   1.00
 
 
 The Specification Check was Successful
@@ -123,7 +123,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 40.00   5  9.00  6     1     Tx28       34   1/2  270  8.95  5.77   6 24.5  4.500  7.300    2.651   -3.455   2744  0.710  1.090  0.23 -0.08  0.00 -0.01 -0.09 103.15 274.98   1.00   1.00   1.00
+ 40.00   5  9.00  6     1     Tx28       34   1/2  270  8.95  5.77   6 24.5  4.500  7.300    2.651   -3.455   2744  0.710  1.090  0.22 -0.08  0.00 -0.01 -0.09 103.15 274.98   1.00   1.00   1.00
 
 
 The Specification Check was Successful
@@ -131,7 +131,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 40.00   5  9.00  6     2     Tx28       38   1/2  270  8.69  5.85   6 24.5  5.100  7.400    2.825   -3.643   2837  0.710  1.090  0.24 -0.10  0.00 -0.00 -0.11 119.97 324.63   1.00   1.00   1.00
+ 40.00   5  9.00  6     2     Tx28       38   1/2  270  8.69  5.85   6 24.5  5.100  7.400    2.825   -3.643   2837  0.710  1.090  0.23 -0.10  0.00 -0.00 -0.11 119.97 324.63   1.00   1.00   1.00
 
 
 The Specification Check was Successful
@@ -139,7 +139,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 40.00   5  9.00  6     3     Tx28       38   1/2  270  8.69  5.85   6 24.5  5.100  7.600    2.825   -3.643   2837  0.710  1.090  0.24 -0.10  0.00 -0.00 -0.11 119.97 324.63   1.00   1.00   1.00
+ 40.00   5  9.00  6     3     Tx28       38   1/2  270  8.69  5.85   6 24.5  5.100  7.600    2.825   -3.643   2837  0.710  1.090  0.23 -0.10  0.00 -0.00 -0.11 119.97 324.63   1.00   1.00   1.00
 
 
 The Specification Check was Successful

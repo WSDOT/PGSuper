@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -719,7 +719,6 @@ void CEngAgentImp::InvalidateShearCritSection()
 //-----------------------------------------------------------------------------
 const std::vector<CRITSECTDETAILS>& CEngAgentImp::ValidateShearCritSection(pgsTypes::LimitState limitState,const CGirderKey& girderKey)
 {
-   USES_CONVERSION;
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -742,10 +741,10 @@ const std::vector<CRITSECTDETAILS>& CEngAgentImp::ValidateShearCritSection(pgsTy
    GET_IFACE(IProgress, pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   GET_IFACE(IEventMap,pEventMap);
+   GET_IFACE(IProductLoads,pProductLoads);
    std::_tostringstream os;
 
-   os << _T("Computing ") << OLE2T(pEventMap->GetLimitStateName(limitState)) << _T(" critical section for shear for Girder ")
+   os << _T("Computing ") << pProductLoads->GetLimitStateName(limitState) << _T(" critical section for shear for Girder ")
       << LABEL_GIRDER(girderKey.girderIndex) << std::ends;
 
    pProgress->UpdateMessage( os.str().c_str() );
@@ -1426,24 +1425,54 @@ void CEngAgentImp::ClearDesignLosses()
    m_PsForceEngineer.ClearDesignLosses();
 }
 
-Float64 CEngAgentImp::GetPrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState)
+Float64 CEngAgentImp::GetEffectivePrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
 {
-   return m_PsForceEngineer.GetPrestressLoss(poi,strandType,intervalIdx,intervalTime,limitState);
+   return m_PsForceEngineer.GetEffectivePrestressLoss(poi,strandType,intervalIdx,intervalTime);
 }
 
-Float64 CEngAgentImp::GetPrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState,const GDRCONFIG& config)
+Float64 CEngAgentImp::GetEffectivePrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG& config)
 {
-   return m_PsForceEngineer.GetPrestressLoss(poi,strandType,intervalIdx,intervalTime,limitState,&config);
+   return m_PsForceEngineer.GetEffectivePrestressLoss(poi,strandType,intervalIdx,intervalTime,config);
 }
 
-Float64 CEngAgentImp::GetPrestressLossWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState)
+Float64 CEngAgentImp::GetEffectivePrestressLossWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState)
 {
-   return m_PsForceEngineer.GetPrestressLossWithLiveLoad(poi,strandType,limitState,NULL);
+   return m_PsForceEngineer.GetEffectivePrestressLossWithLiveLoad(poi,strandType,limitState);
 }
 
-Float64 CEngAgentImp::GetPrestressLossWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState,const GDRCONFIG& config)
+Float64 CEngAgentImp::GetEffectivePrestressLossWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState,const GDRCONFIG& config)
 {
-   return m_PsForceEngineer.GetPrestressLossWithLiveLoad(poi,strandType,limitState,&config);
+   return m_PsForceEngineer.GetEffectivePrestressLossWithLiveLoad(poi,strandType,limitState,config);
+}
+
+Float64 CEngAgentImp::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
+{
+   return m_PsForceEngineer.GetTimeDependentLosses(poi,strandType,intervalIdx,intervalTime);
+}
+
+Float64 CEngAgentImp::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG& config)
+{
+   return m_PsForceEngineer.GetTimeDependentLosses(poi,strandType,intervalIdx,intervalTime,&config);
+}
+
+Float64 CEngAgentImp::GetElasticEffects(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
+{
+   return m_PsForceEngineer.GetElasticEffects(poi,strandType,intervalIdx,intervalTime);
+}
+
+Float64 CEngAgentImp::GetElasticEffects(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG& config)
+{
+   return m_PsForceEngineer.GetElasticEffects(poi,strandType,intervalIdx,intervalTime,&config);
+}
+
+Float64 CEngAgentImp::GetElasticEffectsWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState)
+{
+   return m_PsForceEngineer.GetElasticEffectsWithLiveLoad(poi,strandType,limitState);
+}
+
+Float64 CEngAgentImp::GetElasticEffectsWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState,const GDRCONFIG& config)
+{
+   return m_PsForceEngineer.GetElasticEffectsWithLiveLoad(poi,strandType,limitState,&config);
 }
 
 Float64 CEngAgentImp::GetFrictionLoss(const pgsPointOfInterest& poi,DuctIndexType ductIdx)
@@ -1570,26 +1599,26 @@ Float64 CEngAgentImp::GetHoldDownForce(const CSegmentKey& segmentKey,const GDRCO
    return m_PsForceEngineer.GetHoldDownForce(segmentKey,config);
 }
 
-Float64 CEngAgentImp::GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState)
+Float64 CEngAgentImp::GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
 {
    Float64 cos = GetHorizPsComponent(m_pBroker,poi);
-   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime,limitState);
+   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime);
    Float64 Hp = fabs(cos*P); // this should always be positive
    return Hp;
 }
 
-Float64 CEngAgentImp::GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState,const GDRCONFIG& config)
+Float64 CEngAgentImp::GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG& config)
 {
    Float64 cos = GetHorizPsComponent(m_pBroker,poi,config);
-   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime,limitState,config);
+   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime,config);
    Float64 Hp = fabs(cos*P); // this should always be positive
    return Hp;
 }
 
-Float64 CEngAgentImp::GetVertHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState)
+Float64 CEngAgentImp::GetVertHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
 {
    Float64 sin = GetVertPsComponent(m_pBroker,poi);
-   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime,limitState);
+   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime);
    if ( IsZero(P) )
    {
       return 0;
@@ -1637,10 +1666,10 @@ Float64 CEngAgentImp::GetVertHarpedStrandForce(const pgsPointOfInterest& poi,Int
    return Vp;
 }
 
-Float64 CEngAgentImp::GetVertHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState,const GDRCONFIG& config)
+Float64 CEngAgentImp::GetVertHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG& config)
 {
    Float64 sin = GetVertPsComponent(m_pBroker,poi);
-   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime,limitState,config);
+   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime,config);
    Float64 Vp = sin*P;
 
    // determine sign of Vp. If Vp has the opposite sign as the shear due to the externally applied
@@ -1683,22 +1712,27 @@ Float64 CEngAgentImp::GetVertHarpedStrandForce(const pgsPointOfInterest& poi,Int
    return Vp;
 }
 
-Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState)
+Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
 {
-   return m_PsForceEngineer.GetPrestressForce(poi,strandType,intervalIdx,intervalTime,limitState);
+   return m_PsForceEngineer.GetPrestressForce(poi,strandType,intervalIdx,intervalTime);
 }
 
-Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState,const GDRCONFIG& config)
+Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG& config)
 {
-   return m_PsForceEngineer.GetPrestressForce(poi,strandType,intervalIdx,intervalTime,limitState,config);
+   return m_PsForceEngineer.GetPrestressForce(poi,strandType,intervalIdx,intervalTime,config);
 }
 
-Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState)
+Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,bool bIncludeElasticEffects)
+{
+   return m_PsForceEngineer.GetPrestressForce(poi,strandType,intervalIdx,intervalTime,bIncludeElasticEffects);
+}
+
+Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
-   Float64 Ps = GetPrestressForce(poi,strandType,intervalIdx,intervalTime,limitState);
+   Float64 Ps = GetPrestressForce(poi,strandType,intervalIdx,intervalTime);
 
    StrandIndexType nStrands = pStrandGeom->GetStrandCount(segmentKey,strandType);
    if ( nStrands == 0 )
@@ -1724,11 +1758,11 @@ Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,p
    return Ps/nStrands;
 }
 
-Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState,const GDRCONFIG& config)
+Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG& config)
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   Float64 Ps = GetPrestressForce(poi,strandType,intervalIdx,intervalTime,limitState,config);
+   Float64 Ps = GetPrestressForce(poi,strandType,intervalIdx,intervalTime,config);
    StrandIndexType nStrands = config.PrestressConfig.GetStrandCount(strandType);
    if ( nStrands == 0 )
    {
@@ -1752,14 +1786,14 @@ Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,p
    return Ps/nStrands;
 }
 
-Float64 CEngAgentImp::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState)
+Float64 CEngAgentImp::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
 {
-   return m_PsForceEngineer.GetEffectivePrestress(poi,strandType,intervalIdx,intervalTime,limitState);
+   return m_PsForceEngineer.GetEffectivePrestress(poi,strandType,intervalIdx,intervalTime);
 }
 
-Float64 CEngAgentImp::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::LimitState limitState,const GDRCONFIG& config)
+Float64 CEngAgentImp::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG& config)
 {
-   return m_PsForceEngineer.GetEffectivePrestress(poi,strandType,intervalIdx,intervalTime,limitState,&config);
+   return m_PsForceEngineer.GetEffectivePrestress(poi,strandType,intervalIdx,intervalTime,&config);
 }
 
 Float64 CEngAgentImp::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState)
@@ -1767,9 +1801,19 @@ Float64 CEngAgentImp::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& po
    return m_PsForceEngineer.GetPrestressForceWithLiveLoad(poi,strandType,limitState,NULL);
 }
 
+Float64 CEngAgentImp::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState,const GDRCONFIG& config)
+{
+   return m_PsForceEngineer.GetPrestressForceWithLiveLoad(poi,strandType,limitState,&config);
+}
+
 Float64 CEngAgentImp::GetEffectivePrestressWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState)
 {
    return m_PsForceEngineer.GetEffectivePrestressWithLiveLoad(poi,strandType,limitState,NULL);
+}
+
+Float64 CEngAgentImp::GetEffectivePrestressWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState,const GDRCONFIG& config)
+{
+   return m_PsForceEngineer.GetEffectivePrestressWithLiveLoad(poi,strandType,limitState,&config);
 }
 
 void CEngAgentImp::GetEccentricityEnvelope(const pgsPointOfInterest& rpoi,const GDRCONFIG& config, Float64* pLowerBound, Float64* pUpperBound)
@@ -4063,34 +4107,24 @@ const pgsRatingArtifact* CEngAgentImp::GetRatingArtifact(const CGirderKey& girde
    return FindRatingArtifact(girderKey,ratingType,vehicleIndex);
 }
 
-const pgsGirderDesignArtifact* CEngAgentImp::CreateDesignArtifact(const CGirderKey& girderKey,arDesignOptions options)
+const pgsGirderDesignArtifact* CEngAgentImp::CreateDesignArtifact(const CGirderKey& girderKey,const std::vector<arDesignOptions>& designOptions)
 {
    std::map<CGirderKey,pgsGirderDesignArtifact>::size_type cRemove = m_DesignArtifacts.erase(girderKey);
    ATLASSERT( cRemove == 0 || cRemove == 1 );
 
    std::pair<std::map<CGirderKey,pgsGirderDesignArtifact>::iterator,bool> retval;
+   pgsGirderDesignArtifact gdrDesignArtifact = m_Designer.Design(girderKey,designOptions);
 
-   pgsGirderDesignArtifact artifact(girderKey);
-   try 
+#pragma Reminder("UPDATE: assuming prestressed girder bridge")
+   // girder artifact should have an overall outcome for the design of all segments
+   SegmentIndexType segIdx = 0;
+   const pgsSegmentDesignArtifact* pSegmentDesignArtifact = gdrDesignArtifact.GetSegmentDesignArtifact(segIdx);
+   if ( pSegmentDesignArtifact->GetOutcome() == pgsSegmentDesignArtifact::DesignCancelled )
    {
-      artifact = m_Designer.Design(girderKey,options);
-   }
-   catch (pgsSegmentDesignArtifact::Outcome outcome)
-   {
-      if ( outcome == pgsSegmentDesignArtifact::DesignCancelled )
-      {
-         return NULL;
-      }
-      // investigation of m_Design.Design shows tht only a pgsSegmentDesignArtifact::DesignCancelled
-      // exception will be thrown. The code below isn't needed. It is commented out because the
-      // designer is really fragile and it may be helpful for debugging if the breadcrumb is left behind
-      //else 
-      //{
-      //   artifact.SetOutcome(outcome);
-      //}
+      return NULL;
    }
 
-   retval = m_DesignArtifacts.insert(std::make_pair(girderKey,artifact));
+   retval = m_DesignArtifacts.insert(std::make_pair(girderKey,gdrDesignArtifact));
    return &((*retval.first).second);
 }
 

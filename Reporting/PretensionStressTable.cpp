@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -93,7 +93,6 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(segmentKey));
    IntervalIndexType nIntervals = vIntervals.size();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
    IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval(segmentKey);
 
    ColumnIndexType nColumns;
@@ -180,8 +179,8 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
          {
             IntervalIndexType intervalIdx = *iter;
 
-            Float64 Fp = pForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,intervalTime,pgsTypes::ServiceI);
-            Float64 Ft = pForce->GetPrestressForce(poi,pgsTypes::Temporary,intervalIdx,intervalTime,pgsTypes::ServiceI);
+            Float64 Fp = pForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,intervalTime);
+            Float64 Ft = pForce->GetPrestressForce(poi,pgsTypes::Temporary,intervalIdx,intervalTime);
             (*p_table)(row,col) << _T("P (permanent) = ") << force.SetValue(Fp) << rptNewLine;
             (*p_table)(row,col) << _T("P (temporary) = ") << force.SetValue(Ft) << rptNewLine;
 
@@ -195,7 +194,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
       else
       {
          // Rating
-         Float64 Fp = pForce->GetPrestressForce(poi,pgsTypes::Permanent,loadRatingIntervalIdx,intervalTime,pgsTypes::ServiceI);
+         Float64 Fp = pForce->GetPrestressForce(poi,pgsTypes::Permanent,loadRatingIntervalIdx,intervalTime);
          (*p_table)(row,col) << _T("P (permanent) = ") << force.SetValue(Fp) << rptNewLine;
 
          Float64 fTop = pPrestress->GetStress(loadRatingIntervalIdx,poi,pgsTypes::TopGirder);

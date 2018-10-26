@@ -717,14 +717,6 @@
 				RelativePath=".\StressHistoryGraphController.cpp"
 				>
 			</File>
-			<File
-				RelativePath=".\VirtualWorkGraphBuilder.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\VirtualWorkGraphController.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -841,14 +833,6 @@
 			</File>
 			<File
 				RelativePath=".\StressHistoryGraphController.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\Graphing\VirtualWorkGraphBuilder.h"
-				>
-			</File>
-			<File
-				RelativePath=".\VirtualWorkGraphController.h"
 				>
 			</File>
 		</Filter>

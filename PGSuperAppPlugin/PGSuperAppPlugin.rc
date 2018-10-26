@@ -2601,7 +2601,7 @@ BEGIN
     LTEXT           "Static",IDC_TS_JACK_FORCE_UNIT,147,378,25,8
     LTEXT           "",IDC_PICTURE,182,7,290,345,WS_BORDER
     LTEXT           "Straight",IDC_STRAIGHT,183,355,89,8
-    LTEXT           "Harped",IDC_HARPED,303,355,89,8
+    LTEXT           "Harped",IDC_HARPED,281,355,111,8
     LTEXT           "Temporary",IDC_TEMPORARY,399,355,64,8
     LTEXT           "Debonded",IDC_DEBONDED,183,368,116,8
     LTEXT           "Extended Left",IDC_EXTENDED_LEFT,303,368,89,8
@@ -2767,18 +2767,19 @@ BEGIN
     LTEXT           "Static",IDC_TF_SPACING_UNITS,303,201,18,8
 END
 
-IDD_CLOSURE_LONGITUDINAL DIALOGEX 0, 0, 348, 214
+IDD_CLOSURE_LONGITUDINAL DIALOGEX 0, 0, 348, 233
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Long. Reinforcement"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
     LTEXT           "Reinforcement Material",IDC_STATIC,10,10,84,8
     COMBOBOX        IDC_MILD_STEEL_SELECTOR,98,7,147,43,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Rows of Longitudinal Mild Steel",IDC_STATIC,7,31,334,176,0,WS_EX_TRANSPARENT
+    GROUPBOX        "Rows of Longitudinal Mild Steel",IDC_STATIC,7,32,334,194,0,WS_EX_TRANSPARENT
     CONTROL         "Custom1",IDC_LONG_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,15,45,316,135
     PUSHBUTTON      "Insert Row",IDC_INSERTROW,75,186,63,14
     PUSHBUTTON      "Delete Row",IDC_REMOVEROWS,142,185,63,14
     PUSHBUTTON      "Append Row",IDC_APPEND_ROW,209,185,63,14
+    LTEXT           "Closure joint reinforcement is assumed to be well anchored into the adjacent precast segments and can be fully developed.",IDC_STATIC,29,205,298,19
 END
 
 IDD_SELECT_GIRDERSEGMENT DIALOGEX 0, 0, 227, 114
@@ -2887,7 +2888,7 @@ BEGIN
     PUSHBUTTON      "Insert Row",IDC_INSERTROW,75,186,63,14
     PUSHBUTTON      "Delete Row",IDC_REMOVEROWS,142,185,63,14
     PUSHBUTTON      "Append Row",IDC_APPEND_ROW,209,185,63,14
-    PUSHBUTTON      "Restore to Library Defaults",IDC_RESTORE_DEFAULTS1,94,212,159,14
+    PUSHBUTTON      "Restore to Library Defaults",IDC_RESTORE_DEFAULTS,94,212,159,14
 END
 
 IDD_SEGMENT_STIRRUPS DIALOGEX 0, 0, 362, 294
@@ -3335,8 +3336,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,23
- PRODUCTVERSION 3,0,0,23
+ FILEVERSION 3,0,0,24
+ PRODUCTVERSION 3,0,0,24
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3353,12 +3354,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.23"
+            VALUE "FileVersion", "3.0.0.24"
             VALUE "InternalName", "PGSuper"
-            VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.23"
+            VALUE "ProductVersion", "3.0.0.24"
         END
     END
     BLOCK "VarFileInfo"
@@ -3973,7 +3974,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 341
         TOPMARGIN, 7
-        BOTTOMMARGIN, 207
+        BOTTOMMARGIN, 226
     END
 
     IDD_SELECT_GIRDERSEGMENT, DIALOG

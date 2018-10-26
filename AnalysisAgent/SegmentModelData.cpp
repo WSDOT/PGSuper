@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,8 +32,6 @@ CSegmentModelData& CSegmentModelData::operator=(const CSegmentModelData& other)
    Interval        = other.Interval;
    Model           = other.Model;
    PoiMap          = other.PoiMap;
-   UnitLoadIDMap   = other.UnitLoadIDMap;
-   UnitMomentIDMap = other.UnitMomentIDMap;
    ExternalLoadMap = other.ExternalLoadMap;
    return *this;
 };

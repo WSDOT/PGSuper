@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -7378,64 +7378,75 @@ bool CProjectAgentImp::IsSlabOffsetDesignEnabled()
    return pSpecEntry->IsSlabOffsetDesignEnabled();
 }
 
-arDesignOptions CProjectAgentImp::GetDesignOptions(const CGirderKey& girderKey)
+std::vector<arDesignOptions> CProjectAgentImp::GetDesignOptions(const CGirderKey& girderKey)
 {
    const CSplicedGirderData* pGirder = GetGirder(girderKey);
 #pragma Reminder("UPDATE: assuming segment 0 for precast girder") // this may be ok since this method is only for PGSuper
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(0);
    const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
 
-   arDesignOptions options;
-
-   // determine flexural design from girder attributes
-   StrandIndexType nHarped = pGirderEntry->GetNumHarpedStrandCoordinates();
-   if ( 0 < nHarped && pSegment->Strands.GetAdjustableStrandType() == pgsTypes::asHarped)
-   {
-      options.doDesignForFlexure = dtDesignForHarping;
-   }
-   else if (pGirderEntry->CanDebondStraightStrands())
-   {
-      options.doDesignForFlexure = dtDesignForDebonding;
-   }
-   else
-   {
-      options.doDesignForFlexure = dtDesignFullyBonded;
-   }
+   std::vector<arDesignOptions> options;
 
    GET_IFACE(ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(m_Spec.c_str());
 
-   options.doDesignSlabOffset = pSpecEntry->IsSlabOffsetDesignEnabled();
-   options.doDesignHauling = pSpecEntry->IsHaulingDesignEnabled();
-   options.doDesignLifting = pSpecEntry->IsLiftingDesignEnabled();
-
-   if (options.doDesignForFlexure == dtDesignForHarping)
+   // For each girder we can have multiple design strategies
+   IndexType nStrategies = pGirderEntry->GetNumPrestressDesignStrategies();
+   for(IndexType strategyIdx = 0; strategyIdx < nStrategies; strategyIdx++)
    {
-      bool check, design;
-      Float64 d1, d2, d3;
-      pSpecEntry->GetHoldDownForce(&check, &design, &d1);
-      options.doDesignHoldDown = design;
+      arFlexuralDesignType design_type;
+      Float64 fc_max, fci_max;
+      pGirderEntry->GetPrestressDesignStrategy(strategyIdx, &design_type, &fci_max, &fc_max);
 
-      pSpecEntry->GetMaxStrandSlope(&check, &design, &d1, &d2, &d3);
-      options.doDesignSlope =  design;
-   }
-   else
-   {
-      options.doDesignHoldDown = false;
-      options.doDesignSlope    = false;
+      arDesignOptions option;
+
+      option.doDesignForFlexure = design_type;
+      option.maxFci = fci_max;
+      option.maxFc  = fc_max;
+
+      option.doDesignSlabOffset = pSpecEntry->IsSlabOffsetDesignEnabled();
+      option.doDesignHauling = pSpecEntry->IsHaulingDesignEnabled();
+      option.doDesignLifting = pSpecEntry->IsLiftingDesignEnabled();
+
+      if (option.doDesignForFlexure == dtDesignForHarping)
+      {
+         bool check, design;
+         Float64 d1, d2, d3;
+         pSpecEntry->GetHoldDownForce(&check, &design, &d1);
+         option.doDesignHoldDown = design;
+
+         pSpecEntry->GetMaxStrandSlope(&check, &design, &d1, &d2, &d3);
+         option.doDesignSlope =  design;
+      }
+      else
+      {
+         option.doDesignHoldDown = false;
+         option.doDesignSlope    = false;
+      }
+
+      option.doForceHarpedStrandsStraight = option.doDesignForFlexure  != dtDesignForHarping;
+
+      if (!option.doForceHarpedStrandsStraight)
+      {
+         // Harping uses spec order (until design algorithm is changed to work for other option)
+         option.doStrandFillType = pSpecEntry->GetDesignStrandFillType();
+      }
+      else if (option.doDesignForFlexure == dtDesignFullyBondedRaised ||
+               option.doDesignForFlexure == dtDesignForDebondingRaised)
+      {
+         // Raised strand designs use direct fill
+         option.doStrandFillType = ftDirectFill;
+      }
+      else
+      {
+         // For other straight designs we always fill using grid order 
+         option.doStrandFillType = ftGridOrder;
+      }
+
+      options.push_back(option);
    }
 
-   options.doForceHarpedStrandsStraight = pSegment->Strands.GetAdjustableStrandType() == pgsTypes::asStraight ? true : false;
-
-   if (!options.doForceHarpedStrandsStraight)
-   {
-      options.doStrandFillType = pSpecEntry->GetDesignStrandFillType();
-   }
-   else
-   {
-      // For straight-web designs we always fill using grid order (until design algorithm is changed to work for other option)
-      options.doStrandFillType = ftGridOrder;
-   }
+   ATLASSERT(!options.empty());
 
    return options;
 }
@@ -8587,90 +8598,6 @@ EventIndexType CProjectAgentImp::GetEventIndex(CComBSTR bstrEvent)
    int pos2 = strName.Find(_T(":"));
    EventIndexType eventIdx = (EventIndexType)_ttol(strName.Mid(pos1+6,pos2-pos1)); // 6 is the length of :Event "
    return eventIdx-1;
-}
-
-CComBSTR CProjectAgentImp::GetLimitStateName(pgsTypes::LimitState ls)
-{
-   CComBSTR bstrLimitState;
-   switch(ls)
-   {
-      case pgsTypes::ServiceI:
-         bstrLimitState = _T("Service I");
-         break;
-
-      case pgsTypes::ServiceIA:
-         bstrLimitState = _T("Service IA");
-         break;
-
-      case pgsTypes::ServiceIII:
-         bstrLimitState = _T("Service III");
-         break;
-
-      case pgsTypes::StrengthI:
-         bstrLimitState = _T("Strength I");
-         break;
-
-      case pgsTypes::StrengthII:
-         bstrLimitState = _T("Strength II");
-         break;
-
-      case pgsTypes::FatigueI:
-         bstrLimitState = _T("Fatigue I");
-         break;
-
-      case pgsTypes::StrengthI_Inventory:
-         bstrLimitState = _T("Strength I (Inventory)");
-         break;
-
-      case pgsTypes::StrengthI_Operating:
-         bstrLimitState = _T("Strength I (Operating)");
-         break;
-
-      case pgsTypes::ServiceIII_Inventory:
-         bstrLimitState = _T("Service III (Inventory)");
-         break;
-
-      case pgsTypes::ServiceIII_Operating:
-         bstrLimitState = _T("Service III (Operating)");
-         break;
-
-      case pgsTypes::StrengthI_LegalRoutine:
-         bstrLimitState = _T("Strength I (Legal - Routine)");
-         break;
-
-      case pgsTypes::StrengthI_LegalSpecial:
-         bstrLimitState = _T("Strength I (Legal - Special)");
-         break;
-
-      case pgsTypes::ServiceIII_LegalRoutine:
-         bstrLimitState = _T("Service III (Legal - Routine)");
-         break;
-
-      case pgsTypes::ServiceIII_LegalSpecial:
-         bstrLimitState = _T("Service III (Legal - Special)");
-         break;
-
-      case pgsTypes::StrengthII_PermitRoutine:
-         bstrLimitState = _T("Strength II (Routine Permit Rating)");
-         break;
-
-      case pgsTypes::ServiceI_PermitRoutine:
-         bstrLimitState = _T("Service I (Routine Permit Rating)");
-         break;
-
-      case pgsTypes::StrengthII_PermitSpecial:
-         bstrLimitState = _T("Strength II (Special Permit Rating)");
-         break;
-
-      case pgsTypes::ServiceI_PermitSpecial:
-         bstrLimitState = _T("Service I (Special Permit Rating)");
-         break;
-
-      default:
-         ATLASSERT(false); // SHOULD NEVER GET HERE
-   }
-
-   return bstrLimitState;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -9828,25 +9755,18 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    // traffic barrier/superimposed dead loads
    pTimelineEvent = new CTimelineEvent;
    pTimelineEvent->SetDay( ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetCreepDuration2Max(),unitMeasure::Day) + 1.0); // deck is continuous
-   pTimelineEvent->SetDescription(_T("Superimposed Dead Loads (Bridge Site 2)"));
+   pTimelineEvent->SetDescription(_T("Final without Live Load (Bridge Site 2)"));
    pTimelineEvent->GetApplyLoadActivity().Enable();
    pTimelineEvent->GetApplyLoadActivity().ApplyRailingSystemLoad(true);
-   if ( m_BridgeDescription.GetDeckDescription()->WearingSurface == pgsTypes::wstOverlay )
-   {
-      pTimelineEvent->GetApplyLoadActivity().ApplyOverlayLoad();
-   }
+   pTimelineEvent->GetApplyLoadActivity().ApplyOverlayLoad();
    pTimelineManager->AddTimelineEvent(pTimelineEvent,true,&eventIdx);
 
    // live load
    pTimelineEvent = new CTimelineEvent;
    pTimelineEvent->SetDay(::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetTotalCreepDuration(),unitMeasure::Day));
-   pTimelineEvent->SetDescription(_T("Open to Traffic (Bridge Site 3)"));
+   pTimelineEvent->SetDescription(_T("Final with Live Load (Bridge Site 3)"));
    pTimelineEvent->GetApplyLoadActivity().Enable();
    pTimelineEvent->GetApplyLoadActivity().ApplyLiveLoad(true);
-   if ( m_BridgeDescription.GetDeckDescription()->WearingSurface == pgsTypes::wstFutureOverlay )
-   {
-      pTimelineEvent->GetApplyLoadActivity().ApplyOverlayLoad();
-   }
    pTimelineManager->AddTimelineEvent(pTimelineEvent,true,&eventIdx);
 
    // user defined loads

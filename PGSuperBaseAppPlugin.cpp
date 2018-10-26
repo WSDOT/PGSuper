@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -189,8 +189,13 @@ void CPGSuperBaseAppPlugin::LoadOptions()
    m_MasterLibraryFileURL = pApp->GetProfileString(_T("Options"),GetMasterLibraryURLKey(),strDefaultMasterLibraryURL);
 
    // Cache file/folder for Internet or Local Network resources
-   m_MasterLibraryFileCache       = pApp->GetProfileString(_T("Options"),GetMasterLibraryCacheKey(),     GetCacheFolder()+GetMasterLibraryFileName());
-   m_WorkgroupTemplateFolderCache = pApp->GetProfileString(_T("Options"),GetWorkgroupTemplatesCacheKey(),GetCacheFolder()+GetTemplateSubFolderName()+"\\");
+   CString strMasterLibFile;
+   strMasterLibFile.Format(_T("%s%s"),GetCacheFolder(),GetMasterLibraryFileName());
+   m_MasterLibraryFileCache       = pApp->GetProfileString(_T("Options"),GetMasterLibraryCacheKey(),     strMasterLibFile);
+
+   CString strWorkgroupTemplates;
+   strWorkgroupTemplates.Format(_T("%s%s\\"),GetCacheFolder(),GetTemplateSubFolderName());
+   m_WorkgroupTemplateFolderCache = pApp->GetProfileString(_T("Options"),GetWorkgroupTemplatesCacheKey(),strWorkgroupTemplates);
 }
 
 void CPGSuperBaseAppPlugin::LoadReportOptions()

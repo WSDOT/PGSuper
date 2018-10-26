@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,8 @@
 #include <IFace\Bridge.h>
 #include <IFace\PointOfInterest.h>
 #include <PgsExt\PoiMgr.h>
+
+#include "RaisedStraightStrandDesignTool.h"
 
 #include <algorithm>
 #include<list>
@@ -145,7 +147,7 @@ public:
 
    void InitReleaseStrength(Float64 fci);
 
-   void RestoreDefaults(bool retainProportioning);
+   void RestoreDefaults(bool retainProportioning, bool justAddedRaisedStrands);
 
    // GROUP: OPERATIONS
    void FillArtifactWithFlexureValues();
@@ -170,12 +172,19 @@ public:
    bool AddStrands();
    bool AddTempStrands();
 
+   // This really doesn't actually add strands, it resequences fill to add raised straight strands for all straight designs. 
+   // Will fail if IsDesignRaisedStraight is false
+   bool AddRaisedStraightStrands();
+
+   // If fill order can be simplified - do it at final end of flexural design
+   void SimplifyDesignFillOrder(pgsSegmentDesignArtifact* pArtifact);
+
    StrandIndexType GetNextNumPermanentStrands(StrandIndexType prevNum);
    StrandIndexType GetPreviousNumPermanentStrands(StrandIndexType nextNum); 
    bool IsValidNumPermanentStrands(StrandIndexType num);
 
    void SetMinimumPermanentStrands(StrandIndexType num);
-   StrandIndexType GetMinimumPermanentStrands() const;
+   StrandIndexType GetMinimumPermanentStrands();
 
    StrandIndexType GuessInitialStrands();
    arDesignStrandFillType GetOriginalStrandFillType() const;
@@ -216,6 +225,9 @@ public:
    void GetEndOffsetBounds(Float64* pLower, Float64* pUpper) const;
    void GetHpOffsetBounds(Float64* pLower, Float64* pUpper) const;
 
+   Float64 GetHarpedHpOffsetIncrement(IStrandGeometry* pStrandGeom) const;
+   Float64 GetHarpedEndOffsetIncrement(IStrandGeometry* pStrandGeom) const;
+
    Float64 ComputeEndOffsetForEccentricity(const pgsPointOfInterest& poi, Float64 ecc);
    bool ComputeMinHarpedForEndZoneEccentricity(const pgsPointOfInterest& poi, Float64 ecc, IntervalIndexType intervalIdx, StrandIndexType* pNs, StrandIndexType* pNh);
 
@@ -250,12 +262,12 @@ public:
 
    // Given an amount of stress demand, return the minimum debond level to relieve the stress
    void GetDebondLevelForTopTension(Float64 psForcePerStrand, StrandIndexType nss, Float64 tensDemand, Float64 outboardDistance,
-                                    Float64 Yb, Float64 Ag, Float64 St,
+                                    Float64 Hg, Float64 Yb, Float64 Ag, Float64 St,
                                     DebondLevelType* pOutboardLevel, DebondLevelType* pInboardLevel);
 
    void GetDebondLevelForBottomCompression(Float64 psForcePerStrand, StrandIndexType nss, Float64 tensDemand, Float64 outboardDistance,
-                                           Float64 Yb, Float64 Ag, Float64 Sb,
-                                            DebondLevelType* pOutboardLevel, DebondLevelType* pInboardLevel);
+                                           Float64 Hg, Float64 Yb, Float64 Ag, Float64 Sb,
+                                           DebondLevelType* pOutboardLevel, DebondLevelType* pInboardLevel);
 
    // Debonding levels are integer values used to quantify the amount of strands debonded at
    // a given section.
@@ -276,9 +288,11 @@ public:
 
    // ACCESS
    //////////
-   const GDRCONFIG& GetSegmentConfiguration();
+   const GDRCONFIG& GetSegmentConfiguration() const;
 
-   arFlexuralDesignType GetFlexuralDesignType() const;
+   bool IsDesignDebonding() const;
+   bool IsDesignHarping() const;
+   bool IsDesignRaisedStraight() const;
 
    const CSegmentKey& GetSegmentKey() const
    {
@@ -388,8 +402,12 @@ private:
    CSegmentKey m_SegmentKey;
    arDesignOptions m_DesignOptions;
 
-   GDRCONFIG m_CachedConfig;
-   bool m_bConfigDirty;
+   const GirderLibraryEntry* m_pGirderEntry;
+   std::_tstring m_GirderEntryName;
+
+
+   mutable GDRCONFIG m_CachedConfig;
+   mutable bool m_bConfigDirty;
 
    arDesignStrandFillType m_StrandFillType;
    Float64                m_HarpedRatio;
@@ -397,6 +415,11 @@ private:
    StrandIndexType        m_MinPermanentStrands;
    StrandIndexType        m_MinTempStrands;
    Float64                m_MinSlabOffset;
+
+   Float64 m_HgStart;
+   Float64 m_HgHp1;
+   Float64 m_HgHp2;
+   Float64 m_HgEnd;
 
    // values cached for performance
    Float64 m_Aps[3]; // area of straight, harped, and temporary strand (use pgsTypes::StrandType enum)
@@ -411,6 +434,9 @@ private:
 
    // Points of interest to be used for design
    pgsPoiMgr m_PoiMgr;
+
+   // Tool for dealing with raised straight strand design - only used if this is the design type
+   boost::shared_ptr<pgsRaisedStraightStrandDesignTool> m_pRaisedStraightStrandDesignTool;
 
    // Classes to store information on what controlled release strength
    // and to control when to set values. 
@@ -645,6 +671,9 @@ private:
    ConcreteStrengthController m_FciControl;
    ConcreteStrengthController m_FcControl;
 
+   Float64 m_MaxFci;
+   Float64 m_MaxFc;
+
    // store whether release strength required additional rebar
    ConcStrengthResultType m_ReleaseStrengthResult;
 
@@ -703,7 +732,7 @@ private:
 
       void Init(IPoint2dCollection* strandLocations);
       // Stress relief from debonding at this level
-      Float64 ComputeReliefStress(Float64 psForcePerStrand,Float64 Yb, Float64 Ag, Float64 S) const;
+      Float64 ComputeReliefStress(Float64 psForcePerStrand,Float64 Hg,Float64 Yb, Float64 Ag, Float64 S) const;
    };
 
    typedef std::vector<DebondLevel>                DebondLevelCollection;

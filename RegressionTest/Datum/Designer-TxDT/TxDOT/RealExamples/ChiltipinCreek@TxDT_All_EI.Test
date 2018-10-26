@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33  1     1     Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.642   -3.205   3271  0.610  0.767  0.29 -0.08 -0.01 -0.00 -0.09  94.80 260.70   1.00   1.00   1.00
+ 48.00   7  7.33  1     1     Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.642   -3.205   3271  0.610  0.767  0.29 -0.08 -0.01 -0.00 -0.09  94.80 256.81   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -9,7 +9,7 @@ Bursting zone checks failed.
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33  1     2     Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.708   -3.283   3326  0.610  0.767  0.29 -0.09 -0.01 -0.00 -0.10  94.80 258.36   1.00   1.00   1.00
+ 48.00   7  7.33  1     2     Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.708   -3.283   3326  0.610  0.767  0.29 -0.09 -0.01 -0.00 -0.10  94.80 254.49   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -19,25 +19,7 @@ Bursting zone checks failed.
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33  1     4     Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.686   -3.192   3236  0.610  0.767  0.29 -0.09 -0.01  0.00 -0.09  94.80 261.03   1.00   1.00   1.00
-
-
-The Specification Check was Not Successful
-Bursting zone checks failed.
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33  2     1     Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.642   -3.205   3271  0.610  0.767  0.29 -0.08 -0.01 -0.00 -0.09  94.80 260.70   1.00   1.00   1.00
-
-
-The Specification Check was Not Successful
-Bursting zone checks failed.
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33  2     2     Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.708   -3.283   3326  0.610  0.767  0.29 -0.09 -0.01 -0.00 -0.10  94.80 258.36   1.00   1.00   1.00
+ 48.00   7  7.33  1     4     Tx34       32   1/2  270 11.64  8.26   6 24.5  4.700  5.000    2.686   -3.192   3236  0.610  0.767  0.28 -0.09 -0.01  0.00 -0.09  84.55 230.25   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -47,7 +29,7 @@ Bursting zone checks failed.
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33  2     4     Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.686   -3.192   3236  0.610  0.767  0.29 -0.09 -0.01  0.00 -0.09  94.80 261.03   1.00   1.00   1.00
+ 48.00   7  7.33  2     1     Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.642   -3.205   3271  0.610  0.767  0.29 -0.08 -0.01 -0.00 -0.09  94.80 256.81   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -56,16 +38,7 @@ Bursting zone checks failed.
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33  3     1     Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.642   -3.205   3271  0.610  0.767  0.29 -0.08 -0.01 -0.00 -0.09  94.80 260.70   1.00   1.00   1.00
-
-
-The Specification Check was Not Successful
-Bursting zone checks failed.
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33  3     2     Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.708   -3.283   3326  0.610  0.767  0.29 -0.09 -0.01 -0.00 -0.10  94.80 258.36   1.00   1.00   1.00
+ 48.00   7  7.33  2     2     Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.708   -3.283   3326  0.610  0.767  0.29 -0.09 -0.01 -0.00 -0.10  94.80 254.49   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -75,25 +48,7 @@ Bursting zone checks failed.
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33  3     4     Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.686   -3.192   3236  0.610  0.767  0.29 -0.09 -0.01  0.00 -0.09  94.80 261.03   1.00   1.00   1.00
-
-
-The Specification Check was Not Successful
-Bursting zone checks failed.
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33  4     1     Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.642   -3.205   3271  0.610  0.767  0.29 -0.08 -0.01 -0.00 -0.09  94.80 260.70   1.00   1.00   1.00
-
-
-The Specification Check was Not Successful
-Bursting zone checks failed.
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33  4     2     Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.708   -3.283   3326  0.610  0.767  0.29 -0.09 -0.01 -0.00 -0.10  94.80 258.36   1.00   1.00   1.00
+ 48.00   7  7.33  2     4     Tx34       32   1/2  270 11.64  8.26   6 24.5  4.700  5.000    2.686   -3.192   3236  0.610  0.767  0.28 -0.09 -0.01  0.00 -0.09  84.55 230.25   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -103,10 +58,59 @@ Bursting zone checks failed.
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 48.00   7  7.33  4     4     Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.686   -3.192   3236  0.610  0.767  0.29 -0.09 -0.01  0.00 -0.09  94.80 261.03   1.00   1.00   1.00
+ 48.00   7  7.33  3     1     Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.642   -3.205   3271  0.610  0.767  0.29 -0.08 -0.01 -0.00 -0.09  94.80 256.81   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
+Bursting zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 48.00   7  7.33  3     2     Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.708   -3.283   3326  0.610  0.767  0.29 -0.09 -0.01 -0.00 -0.10  94.80 254.49   1.00   1.00   1.00
+
+
+The Specification Check was Not Successful
+Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Bursting zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 48.00   7  7.33  3     4     Tx34       32   1/2  270 11.64  8.26   6 24.5  4.700  5.000    2.686   -3.192   3236  0.610  0.767  0.28 -0.09 -0.01  0.00 -0.09  84.55 230.25   1.00   1.00   1.00
+
+
+The Specification Check was Not Successful
+Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Bursting zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 48.00   7  7.33  4     1     Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.642   -3.205   3271  0.610  0.767  0.29 -0.08 -0.01 -0.00 -0.09  94.80 256.81   1.00   1.00   1.00
+
+
+The Specification Check was Not Successful
+Bursting zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 48.00   7  7.33  4     2     Tx34       34   1/2  270 11.48  7.25   6 30.5  4.700  5.000    2.708   -3.283   3326  0.610  0.767  0.29 -0.09 -0.01 -0.00 -0.10  94.80 254.49   1.00   1.00   1.00
+
+
+The Specification Check was Not Successful
+Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Bursting zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 48.00   7  7.33  4     4     Tx34       32   1/2  270 11.64  8.26   6 24.5  4.700  5.000    2.686   -3.192   3236  0.610  0.767  0.28 -0.09 -0.01  0.00 -0.09  84.55 230.25   1.00   1.00   1.00
+
+
+The Specification Check was Not Successful
+Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 Bursting zone checks failed.
 
 

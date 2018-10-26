@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -224,13 +224,13 @@ void CInitialStrainGraphBuilder::UpdateGraphData(GirderIndexType gdrIdx,CInitial
 
    int penWeight = GRAPH_PEN_WEIGHT;
 
-   IndexType crDataSeries = m_Graph.CreateDataSeries(_T("Creep"),     PS_SOLID,penWeight,RED);
-   IndexType shDataSeries = m_Graph.CreateDataSeries(_T("Shrinkage"), PS_SOLID,penWeight,BLUE);
-   IndexType reDataSeries = m_Graph.CreateDataSeries(_T("Relaxation"),PS_SOLID,penWeight,GREEN);
+   IndexType crDataSeries = m_Graph.CreateDataSeries(_T("Creep (R)"),     PS_SOLID,penWeight,RED);
+   IndexType shDataSeries = m_Graph.CreateDataSeries(_T("Shrinkage (R)"), PS_SOLID,penWeight,BLUE);
+   IndexType reDataSeries = m_Graph.CreateDataSeries(_T("Relaxation (R)"),PS_SOLID,penWeight,GREEN);
 
-   IndexType crDataSeries2 = m_Graph.CreateDataSeries(_T("Creep"),     PS_DASH,penWeight,ORANGERED);
-   IndexType shDataSeries2 = m_Graph.CreateDataSeries(_T("Shrinkage"), PS_DASH,penWeight,DODGERBLUE);
-   IndexType reDataSeries2 = m_Graph.CreateDataSeries(_T("Relaxation"),PS_DASH,penWeight,DARKGREEN);
+   IndexType crDataSeries2 = m_Graph.CreateDataSeries(_T("Creep"),     PS_DASHDOTDOT,penWeight,ORANGERED);
+   IndexType shDataSeries2 = m_Graph.CreateDataSeries(_T("Shrinkage"), PS_DASHDOTDOT,penWeight,DODGERBLUE);
+   IndexType reDataSeries2 = m_Graph.CreateDataSeries(_T("Relaxation"),PS_DASHDOTDOT,penWeight,DARKGREEN);
 
    IndexType crGirderDataSeries = m_Graph.CreateDataSeries(_T("CR - Girder"), PS_DASH,penWeight,RED);
    IndexType shGirderDataSeries = m_Graph.CreateDataSeries(_T("SH - Girder"), PS_DASH,penWeight,BLUE);
@@ -245,6 +245,7 @@ void CInitialStrainGraphBuilder::UpdateGraphData(GirderIndexType gdrIdx,CInitial
    IntervalIndexType intervalIdx = ((CIntervalGirderGraphControllerBase*)m_pGraphController)->GetInterval();
 
    GET_IFACE(ILosses,pLosses);
+   GET_IFACE(IProductForces,pProductForces);
 
    std::vector<pgsPointOfInterest>::iterator poiIter(vPoi.begin());
    std::vector<pgsPointOfInterest>::iterator poiIterEnd(vPoi.end());
@@ -262,27 +263,15 @@ void CInitialStrainGraphBuilder::UpdateGraphData(GirderIndexType gdrIdx,CInitial
          Float64 e;
          if ( bCreep )
          {
-            e = tsDetails.e[TIMESTEP_CR][pgsTypes::Back];
-            AddGraphPoint(crDataSeries,X,1e6*e);
-
-            e = tsDetails.e[TIMESTEP_CR][pgsTypes::Ahead];
-            AddGraphPoint(crDataSeries,X,1e6*e);
-
-            e = tsDetails.Girder.e;
+            e = tsDetails.Girder.eci;
             AddGraphPoint(crGirderDataSeries,X,1e6*e);
 
-            e = tsDetails.Deck.e;
+            e = tsDetails.Deck.eci;
             AddGraphPoint(crDeckDataSeries,X,1e6*e);
          }
 
          if ( bShrinkage )
          {
-            e = tsDetails.e[TIMESTEP_SH][pgsTypes::Back];
-            AddGraphPoint(shDataSeries,X,1e6*e);
-
-            e = tsDetails.e[TIMESTEP_SH][pgsTypes::Ahead];
-            AddGraphPoint(shDataSeries,X,1e6*e);
-
             e = tsDetails.Girder.esi;
             AddGraphPoint(shGirderDataSeries,X,1e6*e);
 
@@ -292,12 +281,6 @@ void CInitialStrainGraphBuilder::UpdateGraphData(GirderIndexType gdrIdx,CInitial
 
          if ( bRelaxation )
          {
-            e = tsDetails.e[TIMESTEP_RE][pgsTypes::Back];
-            AddGraphPoint(reDataSeries,X,1e6*e);
-
-            e = tsDetails.e[TIMESTEP_RE][pgsTypes::Ahead];
-            AddGraphPoint(reDataSeries,X,1e6*e);
-
             e = tsDetails.Strands[pgsTypes::Straight].er;
             AddGraphPoint(reStraightDataSeries,X,1e6*e);
 
@@ -313,35 +296,19 @@ void CInitialStrainGraphBuilder::UpdateGraphData(GirderIndexType gdrIdx,CInitial
          Float64 r;
          if ( bCreep )
          {
-            r = tsDetails.r[TIMESTEP_CR][pgsTypes::Back];
-            AddGraphPoint(crDataSeries,X,1e6*r);
-
-            r = tsDetails.r[TIMESTEP_CR][pgsTypes::Ahead];
-            AddGraphPoint(crDataSeries,X,1e6*r);
-
-            r = tsDetails.Girder.r;
+            r = tsDetails.Girder.rci;
             AddGraphPoint(crGirderDataSeries,X,1e6*r);
 
-            r = tsDetails.Deck.r;
+            r = tsDetails.Deck.rci;
             AddGraphPoint(crDeckDataSeries,X,1e6*r);
          }
 
          if ( bShrinkage )
          {
-            r = tsDetails.r[TIMESTEP_SH][pgsTypes::Back];
-            AddGraphPoint(shDataSeries,X,1e6*r);
-
-            r = tsDetails.r[TIMESTEP_SH][pgsTypes::Ahead];
-            AddGraphPoint(shDataSeries,X,1e6*r);
          }
 
          if ( bRelaxation )
          {
-            r = tsDetails.r[TIMESTEP_RE][pgsTypes::Back];
-            AddGraphPoint(reDataSeries,X,1e6*r);
-
-            r = tsDetails.r[TIMESTEP_RE][pgsTypes::Ahead];
-            AddGraphPoint(reDataSeries,X,1e6*r);
          }
       }
       else if ( graphType == CInitialStrainGraphBuilder::RestrainingForce )
@@ -353,7 +320,7 @@ void CInitialStrainGraphBuilder::UpdateGraphData(GirderIndexType gdrIdx,CInitial
             P = tsDetails.Pr[TIMESTEP_CR];
             AddGraphPoint(crDataSeries,X,P);
 
-            P = tsDetails.Pre[TIMESTEP_CR];
+            P = pProductForces->GetAxial(intervalIdx,pftCreep,poi,pgsTypes::ContinuousSpan,rtIncremental);
             AddGraphPoint(crDataSeries2,X,P);
 
             P = tsDetails.Girder.PrCreep;
@@ -368,7 +335,7 @@ void CInitialStrainGraphBuilder::UpdateGraphData(GirderIndexType gdrIdx,CInitial
             P = tsDetails.Pr[TIMESTEP_SH];
             AddGraphPoint(shDataSeries,X,P);
 
-            P = tsDetails.Pre[TIMESTEP_SH];
+            P = pProductForces->GetAxial(intervalIdx,pftShrinkage,poi,pgsTypes::ContinuousSpan,rtIncremental);
             AddGraphPoint(shDataSeries2,X,P);
 
             P = tsDetails.Girder.PrShrinkage;
@@ -383,7 +350,7 @@ void CInitialStrainGraphBuilder::UpdateGraphData(GirderIndexType gdrIdx,CInitial
             P = tsDetails.Pr[TIMESTEP_RE];
             AddGraphPoint(reDataSeries,X,P);
 
-            P = tsDetails.Pre[TIMESTEP_RE];
+            P = pProductForces->GetAxial(intervalIdx,pftRelaxation,poi,pgsTypes::ContinuousSpan,rtIncremental);
             AddGraphPoint(reDataSeries2,X,P);
 
             P = tsDetails.Strands[pgsTypes::Straight].PrRelaxation;
@@ -405,13 +372,13 @@ void CInitialStrainGraphBuilder::UpdateGraphData(GirderIndexType gdrIdx,CInitial
             M = tsDetails.Mr[TIMESTEP_CR];
             AddGraphPoint(crDataSeries,X,M);
 
-            M = tsDetails.Mre[TIMESTEP_CR];
+            M = pProductForces->GetMoment(intervalIdx,pftCreep,poi,pgsTypes::ContinuousSpan,rtIncremental);
             AddGraphPoint(crDataSeries2,X,M);
 
-            M = tsDetails.Girder.MrCreep;
+            M = tsDetails.Girder.MrCreep + tsDetails.Girder.PrCreep*(tsDetails.Ytr - tsDetails.Girder.Yn);
             AddGraphPoint(crGirderDataSeries,X,M);
 
-            M = tsDetails.Deck.MrCreep;
+            M = tsDetails.Deck.MrCreep + tsDetails.Deck.PrCreep*(tsDetails.Ytr - tsDetails.Deck.Yn);
             AddGraphPoint(crDeckDataSeries,X,M);
          }
 
@@ -420,15 +387,14 @@ void CInitialStrainGraphBuilder::UpdateGraphData(GirderIndexType gdrIdx,CInitial
             M = tsDetails.Mr[TIMESTEP_SH];
             AddGraphPoint(shDataSeries,X,M);
 
-            M = tsDetails.Mre[TIMESTEP_SH];
+            M = pProductForces->GetMoment(intervalIdx,pftShrinkage,poi,pgsTypes::ContinuousSpan,rtIncremental);
             AddGraphPoint(shDataSeries2,X,M);
 
-            // shrinkage doesn't cause moment in the individual pieces
-            //M = tsDetails.Girder.MrShrinkage;
-            //AddGraphPoint(shGirderDataSeries,X,M);
+            M = tsDetails.Girder.PrShrinkage*(tsDetails.Ytr - tsDetails.Girder.Yn);
+            AddGraphPoint(shGirderDataSeries,X,M);
 
-            //M = tsDetails.Deck.MrShrinkage;
-            //AddGraphPoint(shDeckDataSeries,X,M);
+            M = tsDetails.Deck.PrShrinkage*(tsDetails.Ytr - tsDetails.Deck.Yn);
+            AddGraphPoint(shDeckDataSeries,X,M);
          }
 
          if ( bRelaxation )
@@ -436,8 +402,17 @@ void CInitialStrainGraphBuilder::UpdateGraphData(GirderIndexType gdrIdx,CInitial
             M = tsDetails.Mr[TIMESTEP_RE];
             AddGraphPoint(reDataSeries,X,M);
 
-            M = tsDetails.Mre[TIMESTEP_RE];
+            M = pProductForces->GetMoment(intervalIdx,pftRelaxation,poi,pgsTypes::ContinuousSpan,rtIncremental);
             AddGraphPoint(reDataSeries2,X,M);
+
+            M = tsDetails.Strands[pgsTypes::Straight].PrRelaxation*(tsDetails.Ytr - tsDetails.Strands[pgsTypes::Straight].Ys);
+            AddGraphPoint(reStraightDataSeries,X,M);
+
+            M = tsDetails.Strands[pgsTypes::Harped].PrRelaxation*(tsDetails.Ytr - tsDetails.Strands[pgsTypes::Harped].Ys);
+            AddGraphPoint(reHarpedDataSeries,X,M);
+
+            M = tsDetails.Strands[pgsTypes::Temporary].PrRelaxation*(tsDetails.Ytr - tsDetails.Strands[pgsTypes::Temporary].Ys);
+            AddGraphPoint(reTemporaryDataSeries,X,M);
          }
       }
    }

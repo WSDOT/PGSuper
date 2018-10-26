@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -61,8 +61,6 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
                                   IntervalIndexType intervalIdx,
                                   pgsTypes::LimitState ls)
 {
-   USES_CONVERSION;
-
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
 
@@ -120,8 +118,8 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
-   (*pPara) << _T("Details for Horizontal Interface Shear Capacity (") << OLE2T(pEventMap->GetLimitStateName(ls)) << _T(") [5.8.4.1]") << rptNewLine;
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   (*pPara) << _T("Details for Horizontal Interface Shear Capacity (") << pProductLoads->GetLimitStateName(ls) << _T(") [5.8.4.1]") << rptNewLine;
 
    pPara = new rptParagraph();
    *pChapter << pPara;

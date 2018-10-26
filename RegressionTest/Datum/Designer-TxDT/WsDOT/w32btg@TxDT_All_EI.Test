@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00  1     1    W32BT  *    24  0.60  270 14.96  9.21   6 28.0  7.100  7.800    3.448   -4.846   2989  0.546  0.671  0.29 -0.08 -0.01 -0.01 -0.10 106.86 161.06   1.75   5.00   5.00
+ 28.25   5  6.00  1     1    W32BT  *    25  0.60  270 14.72 10.04   5 28.0  7.300  8.300    3.486   -4.866   3041  0.548  0.671  0.34 -0.08 -0.01 -0.01 -0.10 112.78 181.97   1.75   5.00   5.00
 
 
 Girder design was Not Successful
@@ -12,7 +12,7 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00  1     2    W32BT  *    24  0.60  270 14.96  9.21   6 28.0  7.100  7.800    3.442   -4.839   2989  0.546  0.671  0.29 -0.08 -0.01 -0.01 -0.10 106.86 161.32   1.75   5.00   5.00
+ 28.25   5  6.00  1     2    W32BT  *    25  0.60  270 14.72 10.04   5 28.0  7.400  8.300    3.480   -4.859   3048  0.548  0.671  0.33 -0.08 -0.01 -0.01 -0.10 112.17 180.27   1.75   5.00   5.00
 
 
 Girder design was Not Successful
@@ -24,7 +24,7 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00  1     3    W32BT  *    24  0.60  270 14.96  9.21   6 28.0  7.100  7.800    3.442   -4.839   2989  0.546  0.671  0.29 -0.08 -0.01 -0.01 -0.10 106.86 161.32   1.75   5.00   5.00
+ 28.25   5  6.00  1     3    W32BT  *    25  0.60  270 14.72 10.04   5 28.0  7.400  8.300    3.480   -4.859   3048  0.548  0.671  0.33 -0.08 -0.01 -0.01 -0.10 112.17 180.27   1.75   5.00   5.00
 
 
 Girder design was Not Successful

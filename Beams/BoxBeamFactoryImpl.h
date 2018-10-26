@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -51,7 +51,6 @@ public:
    virtual std::vector<const unitLength*> GetDimensionUnits(bool bSIUnits);
    virtual std::vector<Float64> GetDefaultDimensions();
    virtual bool IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey);
-   virtual Float64 GetVolume(IBroker* pBroker,const CSegmentKey& segmentKey);
    virtual CLSID GetFamilyCLSID();
    virtual std::_tstring GetGirderFamilyName();
    virtual std::_tstring GetPublisher();

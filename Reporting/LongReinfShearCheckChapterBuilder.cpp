@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -157,8 +157,6 @@ rptChapter* CLongReinfShearCheckChapterBuilder::Build(CReportSpecification* pRpt
 
 void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,CReportSpecification* pRptSpec,Uint16 level) const
 {
-   USES_CONVERSION;
-
    CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
@@ -200,8 +198,8 @@ void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,CRe
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
-   *pParagraph << OLE2T(pEventMap->GetLimitStateName(ls)) << rptNewLine;
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   *pParagraph << pProductLoads->GetLimitStateName(ls) << rptNewLine;
 
    // tables of details
    rptParagraph* ppar1 = create_table1_design(pBroker, intervalIdx, ls, pGirderArtifact, pDisplayUnits, level);
@@ -256,8 +254,6 @@ void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,CRe
 
 void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter,CReportSpecification* pRptSpec,Uint16 level) const
 {
-   USES_CONVERSION;
-
    CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
 
@@ -357,8 +353,8 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter,CRe
 
          pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << pParagraph;
-         GET_IFACE2(pBroker,IEventMap,pEventMap);
-         *pParagraph << OLE2T(pEventMap->GetLimitStateName(ls)) << rptNewLine;
+         GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+         *pParagraph << pProductLoads->GetLimitStateName(ls) << rptNewLine;
 
          // tables of details
          rptParagraph* ppar1 = create_table1_rating(pBroker, intervalIdx, ls, shearRatings, pDisplayUnits, level);

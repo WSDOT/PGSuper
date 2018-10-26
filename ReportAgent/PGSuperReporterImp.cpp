@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -207,26 +207,35 @@ STDMETHODIMP CPGSuperReporterImp::ShutDown()
 //
 HRESULT CPGSuperReporterImp::OnSpecificationChanged()
 {
+#if defined _DEBUG || defined _BETA_VERSION
    // Show/Hide time-step analysis reports based on the loss method
+   std::vector<std::_tstring> strReportNames;
+   strReportNames.push_back(_T("Stage by Stage Details Report"));
+   strReportNames.push_back(_T("Time Step Details Report"));
 
    GET_IFACE(IReportManager,pRptMgr);
-   std::vector<boost::shared_ptr<CReportBuilder>> vRptBuilders;
-   vRptBuilders.push_back( pRptMgr->GetReportBuilder(_T("Stage by Stage Details Report")) );
-
-   bool bHidden = true;
    GET_IFACE( ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
-   {
-      bHidden = false;
-   }
 
-   std::vector<boost::shared_ptr<CReportBuilder>>::iterator iter(vRptBuilders.begin());
-   std::vector<boost::shared_ptr<CReportBuilder>>::iterator end(vRptBuilders.end());
-   for ( ; iter != end; iter++ )
+   BOOST_FOREACH(const std::_tstring strReportName,strReportNames)
    {
-      boost::shared_ptr<CReportBuilder> pRptBuilder(*iter);
-      pRptBuilder->Hidden(bHidden);
+      std::vector<boost::shared_ptr<CReportBuilder>> vRptBuilders;
+      vRptBuilders.push_back( pRptMgr->GetReportBuilder(strReportName.c_str()) );
+
+      bool bHidden = true;
+      if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+      {
+         bHidden = false;
+      }
+
+      std::vector<boost::shared_ptr<CReportBuilder>>::iterator iter(vRptBuilders.begin());
+      std::vector<boost::shared_ptr<CReportBuilder>>::iterator end(vRptBuilders.end());
+      for ( ; iter != end; iter++ )
+      {
+         boost::shared_ptr<CReportBuilder> pRptBuilder(*iter);
+         pRptBuilder->Hidden(bHidden);
+      }
    }
+#endif // _DEBUG || _BETA_VERSION
 
    return S_OK;
 }

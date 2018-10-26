@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -181,16 +181,16 @@ void section_properties(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey&
          *pPara << CSectionPropertiesTable().Build(pBroker,segmentKey,false,pDisplayUnits);
 
          // non-prismatic, composite properties
-         *pPara << CSectionPropertiesTable2().Build(pBroker,segmentKey,lastIntervalIdx,pDisplayUnits);
+         *pPara << CSectionPropertiesTable2().Build(pBroker,pgsTypes::sptGross,segmentKey,lastIntervalIdx,pDisplayUnits);
       }
    }
    else
    {
       // non-prismatic, non-composite properties
-      *pPara << CSectionPropertiesTable2().Build(pBroker,segmentKey,releaseIntervalIdx,pDisplayUnits);
+      *pPara << CSectionPropertiesTable2().Build(pBroker,pgsTypes::sptGross,segmentKey,releaseIntervalIdx,pDisplayUnits);
 
       // non-prismatic, composite properties
-      *pPara << CSectionPropertiesTable2().Build(pBroker,segmentKey,lastIntervalIdx,pDisplayUnits);
+      *pPara << CSectionPropertiesTable2().Build(pBroker,pgsTypes::sptGross,segmentKey,lastIntervalIdx,pDisplayUnits);
    }
 }
 
@@ -298,9 +298,9 @@ void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& s
       }
    }
 
-   GET_IFACE2(pBroker,ILosses,pLosses);
+   GET_IFACE2(pBroker,IPretensionForce,pPretensionForce);
 
-   pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Prestress Losses at Mid Span"));
+   pTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Effective Prestress at Mid Span"));
    *p << pTable << rptNewLine;
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
@@ -313,20 +313,20 @@ void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& s
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
    IntervalIndexType lastIntervalIdx        = pIntervals->GetIntervalCount(segmentKey)-1;
 
-   (*pTable)(0,0) << _T("Prestress Loss at Lifting");
-   (*pTable)(0,1) << stress.SetValue( pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,liftSegmentIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI) );
+   (*pTable)(0,0) << _T("Effective Prestress at Lifting");
+   (*pTable)(0,1) << stress.SetValue( pPretensionForce->GetEffectivePrestress(poi,pgsTypes::Permanent,liftSegmentIntervalIdx,pgsTypes::Middle) );
 
-   (*pTable)(1,0) << _T("Prestress Loss at Shipping");
-   (*pTable)(1,1) << stress.SetValue( pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,haulSegmentIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI) );
+   (*pTable)(1,0) << _T("Effective Prestress at Shipping");
+   (*pTable)(1,1) << stress.SetValue( pPretensionForce->GetEffectivePrestress(poi,pgsTypes::Permanent,haulSegmentIntervalIdx,pgsTypes::Middle) );
 
-   (*pTable)(2,0) << _T("Prestress Loss at Final (without live load)");
-   (*pTable)(2,1) << stress.SetValue( pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,lastIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI) );
+   (*pTable)(2,0) << _T("Effective Prestress at Final (without live load)");
+   (*pTable)(2,1) << stress.SetValue( pPretensionForce->GetEffectivePrestress(poi,pgsTypes::Permanent,lastIntervalIdx,pgsTypes::Middle) );
 
-   (*pTable)(3,0) << _T("Prestress Loss at Final with Live Load (Service I)");
-   (*pTable)(3,1) << stress.SetValue( pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,lastIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI) );
+   (*pTable)(3,0) << _T("Effective Prestress at Final with Live Load (Service I)");
+   (*pTable)(3,1) << stress.SetValue( pPretensionForce->GetEffectivePrestress(poi,pgsTypes::Permanent,lastIntervalIdx,pgsTypes::Middle) );
 
-   (*pTable)(4,0) << _T("Prestress Loss at Final with Live Load (Service III)");
-   (*pTable)(4,1) << stress.SetValue( pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,lastIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceIII) );
+   (*pTable)(4,0) << _T("Effective Prestress at Final with Live Load (Service III)");
+   (*pTable)(4,1) << stress.SetValue( pPretensionForce->GetEffectivePrestress(poi,pgsTypes::Permanent,lastIntervalIdx,pgsTypes::Middle) );
 }
 
 void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits)
@@ -1043,7 +1043,7 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,_T("Superimposed Dead Load Stage Stresses (Bridge Site 2)"));
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,_T("Final without Live Load Stage Stresses (Bridge Site 2)"));
    *p << pTable << rptNewLine;
 
    // Setup the table

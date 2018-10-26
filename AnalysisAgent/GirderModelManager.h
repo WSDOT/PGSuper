@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -106,6 +106,7 @@ public:
 
 
    // IProductForces
+   Float64 GetAxial(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
    sysSectionValue GetShear(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
    Float64 GetMoment(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
    Float64 GetDeflection(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
@@ -135,6 +136,7 @@ public:
    void GetDeckShrinkageStresses(const pgsPointOfInterest& poi,Float64* pftop,Float64* pfbot);
 
    // IProductForce2
+   std::vector<Float64> GetAxial(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
    std::vector<sysSectionValue> GetShear(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
    std::vector<Float64> GetMoment(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
    std::vector<Float64> GetDeflection(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
@@ -196,16 +198,13 @@ public:
 
    std::vector<Float64> GetSlabDesignMoment(pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat);
 
-
-   // IVirtualWork
-   std::vector<Float64> GetUnitLoadMoment(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,const pgsPointOfInterest& unitLoadPOI);
-   std::vector<sysSectionValue> GetUnitCoupleMoment(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,const pgsPointOfInterest& unitMomentPOI);
-
    // IExternalLoading
    bool CreateLoading(const CGirderKey& girderKey,LPCTSTR strLoadingName);
    bool AddLoadingToLoadCombination(const CGirderKey& girderKey,LPCTSTR strLoadingName,LoadingCombinationType lcCombo);
-   bool CreateConcentratedLoad(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi,LoadType loadType,Float64 P);
-   bool CreateConcentratedLoad(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,LoadType loadType,Float64 P);
+   bool CreateConcentratedLoad(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi,Float64 Fx,Float64 Fy,Float64 Mz);
+   bool CreateConcentratedLoad(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,Float64 Fx,Float64 Fy,Float64 Mz);
+   bool CreateUniformLoad(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 wx,Float64 wy);
+   bool CreateUniformLoad(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 wx,Float64 wy);
    bool CreateInitialStrainLoad(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 e,Float64 r);
    bool CreateInitialStrainLoad(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 e,Float64 r);
    Float64 GetReaction(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,PierIndexType pier,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
@@ -266,7 +265,7 @@ public:
    void ChangeLiveLoadName(LPCTSTR strOldName,LPCTSTR strNewName);
 
    Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation);
-   Float64 GetStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,Float64 P,Float64 e);
+   Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,Float64 P,Float64 e);
    Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,DuctIndexType ductIdx);
 
    // this methods need to be public so the PGSuperLoadCombinationResponse object use them
@@ -446,16 +445,16 @@ private:
    void RenameLiveLoad(ILBAMModel* pModel,pgsTypes::LiveLoadType llType,LPCTSTR strOldName,LPCTSTR strNewName);
    CGirderModelData* UpdateLBAMPois(const std::vector<pgsPointOfInterest>& vPoi);
    void GetLBAM(CGirderModelData* pModelData,pgsTypes::BridgeAnalysisType bat,ILBAMModel** ppModel);
-   bool CreateConcentratedLoad(ILBAMModel* pModel,const pgsPoiMap& poiMap,IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi,LoadType loadType,Float64 P);
-   bool CreateConcentratedLoad(ILBAMModel* pModel,const pgsPoiMap& poiMap,IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,LoadType loadType,Float64 P);
+   bool CreateConcentratedLoad(ILBAMModel* pModel,const pgsPoiMap& poiMap,IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi,Float64 Fx,Float64 Fy,Float64 Mz);
+   bool CreateConcentratedLoad(ILBAMModel* pModel,const pgsPoiMap& poiMap,IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,Float64 Fx,Float64 Fy,Float64 Mz);
+   bool CreateUniformLoad(ILBAMModel* pModel,const pgsPoiMap& poiMap,IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 wx,Float64 wy);
+   bool CreateUniformLoad(ILBAMModel* pModel,const pgsPoiMap& poiMap,IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 wx,Float64 wy);
    bool CreateInitialStrainLoad(ILBAMModel* pModel,const pgsPoiMap& poiMap,IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 e,Float64 r);
    bool CreateInitialStrainLoad(ILBAMModel* pModel,const pgsPoiMap& poiMap,IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 e,Float64 r);
    void ConfigureLBAMPoisForReactions(const CGirderKey& girderKey,SupportIndexType supportIdx,pgsTypes::SupportType supportType,IntervalIndexType intervalIdx,pgsTypes::BridgeAnalysisType bat,bool bLiveLoadReaction);
    CollectionIndexType GetStressPointIndex(pgsTypes::StressLocation loc);
    CComBSTR GetLoadCaseName(LoadingCombinationType combo);
    bool GetLoadCaseTypeFromName(const CComBSTR& name, LoadingCombinationType* pCombo);
-
-   Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,Float64 P,Float64 e);
 
 #if defined _DEBUG
    void VerifyAnalysisType();

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -43,6 +43,7 @@ public:
 
    StageIndexType GetStageCount() const;
    StageIndexType GetStage(const CGirderKey& girderKey,IntervalIndexType intervalIdx) const; // this is the IStages interface
+   IntervalIndexType GetIntervalFromStage(const CGirderKey& girderKey,StageIndexType stageIdx) const;
    const std::map<IntervalIndexType,StageIndexType>& GetStageMap(const CGirderKey& girderKey) const;
    const std::map<CGirderKey,IntervalIndexType>& GetIntervalMap(StageIndexType stageIdx) const;
 

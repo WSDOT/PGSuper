@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -104,17 +104,44 @@ std::vector<pgsSegmentDesignArtifact::DesignNote> pgsSegmentDesignArtifact::GetD
    return m_DesignNotes;
 }
 
+bool pgsSegmentDesignArtifact::DoPreviouslyFailedDesignsExist() const
+{
+   return !m_PreviouslyFailedDesigns.empty();
+}
+
+void pgsSegmentDesignArtifact::AddFailedDesign(const arDesignOptions& options)
+{
+   m_PreviouslyFailedDesigns.push_back(options.doDesignForFlexure);
+}
+
+void pgsSegmentDesignArtifact::UpdateFailedFlexuralDesigns(const pgsSegmentDesignArtifact& artifact) const
+{
+   const std::vector<arFlexuralDesignType>& vFails(artifact.GetPreviouslyFailedFlexuralDesigns());
+   std::vector<arFlexuralDesignType>::const_reverse_iterator iter(vFails.rbegin());
+   std::vector<arFlexuralDesignType>::const_reverse_iterator end(vFails.rend());
+   for ( ; iter != end; iter++ )
+   {
+      arFlexuralDesignType failedDesignType = *iter;
+      m_PreviouslyFailedDesigns.insert(m_PreviouslyFailedDesigns.begin(),failedDesignType);
+   }
+}
+
+const std::vector<arFlexuralDesignType>& pgsSegmentDesignArtifact::GetPreviouslyFailedFlexuralDesigns() const
+{
+   return m_PreviouslyFailedDesigns;
+}
+
 const CSegmentKey& pgsSegmentDesignArtifact::GetSegmentKey() const
 {
    return m_SegmentKey;
 }
 
-void pgsSegmentDesignArtifact::SetDesignOptions(arDesignOptions options)
+void pgsSegmentDesignArtifact::SetDesignOptions(const arDesignOptions& options)
 {
    m_DesignOptions = options;
 }
 
-arDesignOptions pgsSegmentDesignArtifact::GetDesignOptions() const
+const arDesignOptions& pgsSegmentDesignArtifact::GetDesignOptions() const
 {
    return m_DesignOptions;
 }
@@ -156,7 +183,52 @@ void pgsSegmentDesignArtifact::SetNumHarpedStrands(StrandIndexType Nh)
 
 StrandIndexType pgsSegmentDesignArtifact::GetNumHarpedStrands() const
 {
-   return m_Nh;
+   if(dtDesignFullyBondedRaised==m_DesignOptions.doDesignForFlexure || 
+      dtDesignForDebondingRaised==m_DesignOptions.doDesignForFlexure)
+   {
+      return PRESTRESSCONFIG::CountStrandsInFill(m_RaisedAdjustableStrandFill);
+   }
+   else
+   {
+      return m_Nh;
+   }
+}
+
+pgsTypes::AdjustableStrandType pgsSegmentDesignArtifact::GetAdjustableStrandType() const
+{
+   // Strand type is based on design type
+   if (m_DesignOptions.doDesignForFlexure==dtDesignForHarping)
+   {
+      return pgsTypes::asHarped;
+   }
+   else if (m_DesignOptions.doDesignForFlexure==dtDesignForDebonding || 
+            m_DesignOptions.doDesignForFlexure==dtDesignFullyBonded  ||
+            m_DesignOptions.doDesignForFlexure==dtDesignFullyBondedRaised ||
+            m_DesignOptions.doDesignForFlexure==dtDesignForDebondingRaised)
+   {
+      return pgsTypes::asStraight;
+   }
+   else
+   {
+      ATLASSERT(false);
+      return pgsTypes::asStraight;
+   }
+}
+
+void pgsSegmentDesignArtifact::SetRaisedAdjustableStrands(const ConfigStrandFillVector& strandFill)
+{
+   ATLASSERT(dtDesignFullyBondedRaised==m_DesignOptions.doDesignForFlexure || 
+             dtDesignForDebondingRaised==m_DesignOptions.doDesignForFlexure);
+
+   m_RaisedAdjustableStrandFill = strandFill;
+}
+
+ConfigStrandFillVector pgsSegmentDesignArtifact::GetRaisedAdjustableStrands() const
+{
+   ATLASSERT(dtDesignFullyBondedRaised==m_DesignOptions.doDesignForFlexure ||
+             dtDesignForDebondingRaised==m_DesignOptions.doDesignForFlexure);
+
+   return m_RaisedAdjustableStrandFill;
 }
 
 void pgsSegmentDesignArtifact::SetPjackStraightStrands(Float64 Pj)
@@ -349,7 +421,18 @@ GDRCONFIG pgsSegmentDesignArtifact::GetSegmentConfiguration() const
    config.SegmentKey = m_SegmentKey;
 
    config.PrestressConfig.SetStrandFill(pgsTypes::Straight,  pStrandGeometry->ComputeStrandFill(m_SegmentKey, pgsTypes::Straight,  GetNumStraightStrands()));
-   config.PrestressConfig.SetStrandFill(pgsTypes::Harped,    pStrandGeometry->ComputeStrandFill(m_SegmentKey, pgsTypes::Harped,    GetNumHarpedStrands()));
+
+   // Raised designs store strand fill directly
+   if(dtDesignFullyBondedRaised  == m_DesignOptions.doDesignForFlexure || 
+      dtDesignForDebondingRaised == m_DesignOptions.doDesignForFlexure)
+   {
+      config.PrestressConfig.SetStrandFill(pgsTypes::Harped, m_RaisedAdjustableStrandFill );
+   }
+   else
+   {
+      config.PrestressConfig.SetStrandFill(pgsTypes::Harped, pStrandGeometry->ComputeStrandFill(m_SegmentKey, pgsTypes::Harped, GetNumHarpedStrands()));
+   }
+
    config.PrestressConfig.SetStrandFill(pgsTypes::Temporary, pStrandGeometry->ComputeStrandFill(m_SegmentKey, pgsTypes::Temporary, GetNumTempStrands()));
 
    config.PrestressConfig.Pjack[pgsTypes::Straight]  = GetPjackStraightStrands();
@@ -358,6 +441,8 @@ GDRCONFIG pgsSegmentDesignArtifact::GetSegmentConfiguration() const
 
    config.PrestressConfig.EndOffset = GetHarpStrandOffsetEnd();
    config.PrestressConfig.HpOffset  = GetHarpStrandOffsetHp();
+
+   config.PrestressConfig.AdjustableStrandType = GetAdjustableStrandType();
    
    config.PrestressConfig.Debond[pgsTypes::Straight] = m_SsDebondInfo; // we only design debond for straight strands
 
@@ -550,7 +635,7 @@ bool pgsSegmentDesignArtifact::ConcreteStrengthDesignState::GetRequiredAdditiona
    return m_RequiredAdditionalRebar;
 }
 
-inline LPCTSTR LimitStateString(pgsTypes::LimitState limitState)
+LPCTSTR LimitStateString(pgsTypes::LimitState limitState)
 {
 #pragma Reminder("REVIEW: I think this is a duplicate of what's on the IStageMap interface")
    // review the need for this method and eliminate if it is unnecessary
@@ -577,7 +662,7 @@ inline LPCTSTR LimitStateString(pgsTypes::LimitState limitState)
    }
 }
 
-inline LPCTSTR StressLocationString(pgsTypes::StressLocation loc)
+LPCTSTR StressLocationString(pgsTypes::StressLocation loc)
 {
    switch(loc)
    {
@@ -596,7 +681,7 @@ inline LPCTSTR StressLocationString(pgsTypes::StressLocation loc)
    }
 }
 
-inline LPCTSTR StressTypeString(pgsTypes::StressType type)
+LPCTSTR StressTypeString(pgsTypes::StressType type)
 {
    switch(type)
    {
@@ -688,6 +773,7 @@ void pgsSegmentDesignArtifact::MakeCopy(const pgsSegmentDesignArtifact& rOther)
 
    m_Ns                  = rOther.m_Ns;
    m_Nh                  = rOther.m_Nh;
+   m_RaisedAdjustableStrandFill = rOther.m_RaisedAdjustableStrandFill;
    m_Nt                  = rOther.m_Nt;
    m_PjS                 = rOther.m_PjS;
    m_PjH                 = rOther.m_PjH;
@@ -722,6 +808,8 @@ void pgsSegmentDesignArtifact::MakeCopy(const pgsSegmentDesignArtifact& rOther)
 
    m_ConcreteReleaseDesignState = rOther.m_ConcreteReleaseDesignState;
    m_ConcreteFinalDesignState = rOther.m_ConcreteFinalDesignState;
+
+   m_PreviouslyFailedDesigns = rOther.m_PreviouslyFailedDesigns;
 }
 
 void pgsSegmentDesignArtifact::MakeAssignment(const pgsSegmentDesignArtifact& rOther)
@@ -739,7 +827,7 @@ void pgsSegmentDesignArtifact::MakeAssignment(const pgsSegmentDesignArtifact& rO
 //======================== OPERATIONS =======================================
 void pgsSegmentDesignArtifact::Init()
 {
-   m_Outcome = Success;
+   m_Outcome = NoDesignRequested;
 
    m_DesignNotes.clear();
 
@@ -747,6 +835,7 @@ void pgsSegmentDesignArtifact::Init()
 
    m_Ns                  = 0;
    m_Nh                  = 0;
+   m_RaisedAdjustableStrandFill.clear();
    m_Nt                  = 0;
    m_PjS                 = 0;
    m_PjH                 = 0;
@@ -775,6 +864,8 @@ void pgsSegmentDesignArtifact::Init()
 
    m_ConcreteReleaseDesignState.Init();
    m_ConcreteFinalDesignState.Init();
+
+   m_PreviouslyFailedDesigns.clear();
 }
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================

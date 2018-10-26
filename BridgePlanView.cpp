@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -669,12 +669,12 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
         (lHint == HINT_GIRDERLABELFORMATCHANGED)  
       )
    {
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker,IBridge,pBridge);
+
       if ( lHint == HINT_BRIDGECHANGED )
       {
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IBridge,pBridge);
-
          if ( pHint )
          {
             // The span configuration of the bridge changed
@@ -711,13 +711,13 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
                }
             }
          }
-
-         // Make sure we aren't displaying spans past the end of the bridge
-         SpanIndexType nSpans = pBridge->GetSpanCount();
-         m_EndSpanIdx = (nSpans <= m_EndSpanIdx ? nSpans-1 : m_EndSpanIdx);
-
-         m_pFrame->InitSpanRange();
       }
+
+      // Make sure we aren't displaying spans past the end of the bridge
+      SpanIndexType nSpans = pBridge->GetSpanCount();
+      m_EndSpanIdx = (nSpans <= m_EndSpanIdx ? nSpans-1 : m_EndSpanIdx);
+
+      m_pFrame->InitSpanRange();
 
       UpdateDisplayObjects();
       UpdateDrawingScale();

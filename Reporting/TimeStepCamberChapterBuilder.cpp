@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -272,9 +272,9 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker,const CS
    for ( ; pfIter != pfIterEnd; pfIter++, i++ )
    {
       ProductForceType pfType = *pfIter;
-      std::_tstring strName = pProductLoads->GetProductLoadName(pfType);
+      LPCTSTR strName = pProductLoads->GetProductLoadName(pfType);
 
-      (*pTable)(0,col++) << COLHDR(Sub2(symbol(DELTA),strName.c_str()),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+      (*pTable)(0,col++) << COLHDR(Sub2(symbol(DELTA),strName),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
       pResults[i] = pForces->GetDeflection(intervalIdx,pfType,vPoi,bat,rtCumulative,true);
    }
@@ -384,9 +384,9 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
    for ( ; pfIter != pfIterEnd; pfIter++, i++ )
    {
       ProductForceType pfType = *pfIter;
-      std::_tstring strName = pProductLoads->GetProductLoadName(pfType);
+      LPCTSTR strName = pProductLoads->GetProductLoadName(pfType);
 
-      (*pTable)(0,col++) << COLHDR(Sub2(symbol(DELTA),strName.c_str()),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+      (*pTable)(0,col++) << COLHDR(Sub2(symbol(DELTA),strName),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
       // NOTE: Minus one because we want the interval immediately prior to deck placement
       // This is what the "D" dimension is.
@@ -539,9 +539,9 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
    for ( ; pfIter != pfIterEnd; pfIter++, i++ )
    {
       ProductForceType pfType = *pfIter;
-      std::_tstring strName = pProductLoads->GetProductLoadName(pfType);
+      LPCTSTR strName = pProductLoads->GetProductLoadName(pfType);
 
-      (*pTable)(0,col++) << COLHDR(Sub2(symbol(DELTA),strName.c_str()),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+      (*pTable)(0,col++) << COLHDR(Sub2(symbol(DELTA),strName),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
       pResults1[i] = pForces->GetDeflection(castDeckIntervalIdx-1,pfType,vPoi,bat,rtCumulative,true);
       pResults2[i] = pForces->GetDeflection(liveLoadIntervalIdx,  pfType,vPoi,bat,rtCumulative,true);
@@ -756,9 +756,9 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
    for ( ; pfIter != pfIterEnd; pfIter++, i++ )
    {
       ProductForceType pfType = *pfIter;
-      std::_tstring strName = pProductLoads->GetProductLoadName(pfType);
+      LPCTSTR strName = pProductLoads->GetProductLoadName(pfType);
 
-      (*pTable)(0,col++) << COLHDR(Sub2(symbol(DELTA),strName.c_str()),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+      (*pTable)(0,col++) << COLHDR(Sub2(symbol(DELTA),strName),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
       // NOTE: Minus one because we want the interval immediately prior to deck placement
       // This is what the "D" dimension is.

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,7 +40,7 @@ CPGSuperCatalogServers::~CPGSuperCatalogServers()
    m_Servers.clear();
 }
 
-void CPGSuperCatalogServers::SetTemplateFileExtenstion(const CString& strExt)
+void CPGSuperCatalogServers::SetTemplateFileExtenstion(LPCTSTR strExt)
 {
    m_strExt = strExt;
 }
@@ -64,7 +64,7 @@ const CPGSuperCatalogServer* CPGSuperCatalogServers::GetServer(CollectionIndexTy
    return iter->get();
 }
 
-const CPGSuperCatalogServer* CPGSuperCatalogServers::GetServer(const CString& strName) const
+const CPGSuperCatalogServer* CPGSuperCatalogServers::GetServer(LPCTSTR strName) const
 {
    ServerPtr target(new CFtpPGSuperCatalogServer(strName,CString("bogus"),m_strExt));
    Servers::const_iterator found = m_Servers.find( target );
@@ -89,7 +89,7 @@ void CPGSuperCatalogServers::RemoveServer(CollectionIndexType index)
    m_Servers.erase(iter);
 }
 
-void CPGSuperCatalogServers::RemoveServer(const CString& strName)
+void CPGSuperCatalogServers::RemoveServer(LPCTSTR strName)
 {
    ServerPtr target(new CFtpPGSuperCatalogServer(strName,CString("bogus"),m_strExt));
    Servers::iterator found = m_Servers.find(target);
@@ -99,7 +99,7 @@ void CPGSuperCatalogServers::RemoveServer(const CString& strName)
    }
 }
 
-bool CPGSuperCatalogServers::IsServerDefined(const CString& strName) const
+bool CPGSuperCatalogServers::IsServerDefined(LPCTSTR strName) const
 {
    ServerPtr target(new CFtpPGSuperCatalogServer(strName,CString("bogus"),m_strExt));
    Servers::const_iterator found = m_Servers.find(target);
@@ -173,7 +173,7 @@ void CPGSuperCatalogServers::LoadFromRegistry(CWinApp* theApp)
    if (!IsServerDefined(_T("WSDOT")))
       m_Servers.insert( ServerPtr(new CFtpPGSuperCatalogServer(m_strExt)) ); // wsdot
 
-   if (!IsServerDefined("TxDOT"))
+   if (!IsServerDefined(_T("TxDOT")))
       m_Servers.insert( ServerPtr( new CFtpPGSuperCatalogServer(CString("TxDOT"),CString("ftp://ftp.dot.state.tx.us/pub/txdot-info/brg/pgsuper/"),m_strExt) ) );
 }
 

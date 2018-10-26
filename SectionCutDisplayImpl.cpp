@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -223,8 +223,8 @@ void CSectionCutDisplayImpl::GetBoundingBox(iPointDisplayObject* pDO, Float64 Xg
 void CSectionCutDisplayImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF color,IPoint2d* userLoc)
 {
    Float64 Xgl;
-   userLoc->get_X(&Xgl);
-   Xgl= ::ForceIntoRange(m_MinCutLocation,Xgl,m_MaxCutLocation);
+   userLoc->get_X(&Xgl); // userLoc is in view coordinates... this has something to do with why we can't draw a section cut in the start cantilever
+   Xgl = ::ForceIntoRange(m_MinCutLocation,Xgl,m_MaxCutLocation);
 
    Float64 wtop, wleft, wright, wbottom;
    GetBoundingBox(pDO, Xgl, &wtop, &wleft, &wright, &wbottom);

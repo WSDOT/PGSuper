@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper Beam Factory
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This library is a part of the Washington Bridge Foundation Libraries
@@ -54,6 +54,7 @@ struct IStrandMover;
 interface IStages
 {
    virtual StageIndexType GetStage(const CGirderKey& girderKey,IntervalIndexType intervalIdx) const = 0;
+   virtual IntervalIndexType GetIntervalFromStage(const CGirderKey& girderKey,StageIndexType stageIdx) const = 0;
 };
 
 /*****************************************************************************
@@ -162,14 +163,8 @@ interface IBeamFactory : IUnknown
    virtual bool IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey) = 0;
 
    //---------------------------------------------------------------------------------
-   // Returns the volume of the member
-   virtual Float64 GetVolume(IBroker* pBroker,const CSegmentKey& segmentKey) = 0;
-
-   //---------------------------------------------------------------------------------
-   // Returns the surface area of the member including that of internal voids
-   // If bReduceForPoorlyVentilatedVoids is true, the surface area of internal voids is
-   // reduce by 50% per LRFD 5.4.2.3.2
-   virtual Float64 GetSurfaceArea(IBroker* pBroker,const CSegmentKey& segmentKey,bool bReduceForPoorlyVentilatedVoids) = 0;
+   // Returns the interal surface area of voids within the member
+   virtual Float64 GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the name of an image file that will be used in reports when the

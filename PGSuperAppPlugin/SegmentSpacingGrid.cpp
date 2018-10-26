@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -148,7 +148,7 @@ void CSegmentSpacingGrid::CustomInit()
       CGXStyle()
       .SetWrapText(TRUE)
       .SetAutoSize(TRUE)
-      .SetUserAttribute(GX_IDS_UA_TOOLTIPTEXT,"To regroup girder spacing, select column headings, right click over the grid, and select Expand or Join from the menu")
+      .SetUserAttribute(GX_IDS_UA_TOOLTIPTEXT,CString("To regroup girder spacing, select column headings, right click over the grid, and select Expand or Join from the menu"))
       );
 	
    GetParam()->EnableUndo(TRUE);

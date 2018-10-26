@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -312,7 +312,8 @@ public:
                     BarSpacingIsZero,
                     InteriorDiaphragmTooWide,
                     LongitudinalRebarOutsideOfGirder,
-                    TopFlangeBarSpacingIsZero
+                    TopFlangeBarSpacingIsZero,
+                    DesignAlgorithmStrategyMismatch
    };
 
    class GirderEntryDataError
@@ -681,13 +682,18 @@ public:
    LongShearCapacityIncreaseMethod GetLongShearCapacityIncreaseMethod() const;
    void SetLongShearCapacityIncreaseMethod(LongShearCapacityIncreaseMethod method);
 
+   // Prestressing design strategies
+   IndexType GetNumPrestressDesignStrategies() const;
+   void GetPrestressDesignStrategy(IndexType index,  arFlexuralDesignType* pFlexuralDesignType, Float64* pMaxFci, Float64* pMaxFc) const;
+
+   // call this to set data to strategy used before strategies were added
+   void SetDefaultPrestressDesignStrategy();
+
 protected:
    void MakeCopy(const GirderLibraryEntry& rOther);
 
    //------------------------------------------------------------------------
    virtual void MakeAssignment(const GirderLibraryEntry& rOther);
-  // GROUP: ACCESS
-  // GROUP: INQUIRY
 
 private:
    // GROUP: DATA MEMBERS
@@ -933,6 +939,34 @@ private:
    bool m_DoExtendBarsIntoDeck;
    bool m_DoBarsActAsConfinement;
    LongShearCapacityIncreaseMethod m_LongShearCapacityIncreaseMethod;
+
+   // Data members for prestressed design strategy
+   struct PrestressDesignStrategy
+   {
+      arFlexuralDesignType m_FlexuralDesignType;
+      Float64 m_MaxFci;
+      Float64 m_MaxFc;
+
+      bool operator == (const PrestressDesignStrategy& other) const
+      {
+         if(!m_FlexuralDesignType == other.m_FlexuralDesignType)
+            return false;
+
+         if(!::IsEqual(m_MaxFci, other.m_MaxFci))
+            return false;
+
+         if(!::IsEqual(m_MaxFc, other.m_MaxFc))
+            return false;
+
+         return true;
+      }
+   };
+
+   typedef std::vector<PrestressDesignStrategy> PrestressDesignStrategyContainer;
+   typedef PrestressDesignStrategyContainer::iterator PrestressDesignStrategyIterator;
+   typedef PrestressDesignStrategyContainer::const_iterator PrestressDesignStrategyConstIterator;
+
+   PrestressDesignStrategyContainer m_PrestressDesignStrategies;
 
 
    // GROUP: LIFECYCLE

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -359,8 +359,8 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
    GET_IFACE(IDocumentType,pDocType);
    if ( pDocType->IsPGSpliceDocument() )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftPrimaryPostTensioning), pftPrimaryPostTensioning, vAllIntervals, ACTIONS_ALL) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftSecondaryEffects),      pftSecondaryEffects,      vAllIntervals, ACTIONS_ALL) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftPrimaryPostTensioning), pftPrimaryPostTensioning, vAllIntervals, ACTIONS_FORCE_STRESS) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftSecondaryEffects),      pftSecondaryEffects,      vAllIntervals, ACTIONS_FORCE_STRESS) );
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftTotalPostTensioning),   pftTotalPostTensioning,   vAllIntervals, ACTIONS_ALL) );
    }
 

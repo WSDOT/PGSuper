@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -224,15 +224,29 @@ void txnDesignGirder::CacheFlexureDesignResults(DesignData& rdata)
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
-   GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
 
 #pragma Reminder("UPDATE: assuming precast girder bridge")
    SegmentIndexType segIdx = 0;
    const pgsSegmentDesignArtifact* pArtifact = rdata.m_DesignArtifact.GetSegmentDesignArtifact(segIdx);
    const CSegmentKey segmentKey = pArtifact->GetSegmentKey();
 
+   GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
+   std::_tstring gdrName = pGirder->GetGirderName();
+
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   Float64 HgStart, HgHp1, HgHp2, HgEnd;
+   pStrandGeom->GetHarpedStrandControlHeights(segmentKey,&HgStart,&HgHp1,&HgHp2,&HgEnd);
+
+
    arDesignOptions design_options = pArtifact->GetDesignOptions();
 
+   if (dtDesignFullyBondedRaised  != design_options.doDesignForFlexure &&
+       dtDesignForDebondingRaised != design_options.doDesignForFlexure)
+   {
    // old (existing) girder data
    rdata.m_Material[0]     = *pSegmentData->GetSegmentMaterial(segmentKey);
    rdata.m_Strands[0]      = *pSegmentData->GetStrandData(segmentKey);
@@ -243,51 +257,114 @@ void txnDesignGirder::CacheFlexureDesignResults(DesignData& rdata)
    rdata.m_Strands[1]      = rdata.m_Strands[0];
    rdata.m_HandlingData[1] = rdata.m_HandlingData[0];
 
-   // Convert Harp offset data
-   // offsets are absolute measure in the design artifact
-   // convert them to the measurement basis that the CGirderData object is using
-   ConfigStrandFillVector harpfillvec = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, pArtifact->GetNumHarpedStrands());
-
-
-   rdata.m_Strands[1].SetHarpStrandOffsetAtEnd(pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(segmentKey, 
-                                                                                       harpfillvec, 
-                                                                                       rdata.m_Strands[1].GetHarpStrandOffsetMeasurementAtEnd(), 
-                                                                                       pArtifact->GetHarpStrandOffsetEnd()));
-
-   rdata.m_Strands[1].SetHarpStrandOffsetAtHarpPoint(pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(segmentKey,
-                                                                                     harpfillvec, 
-                                                                                     rdata.m_Strands[1].GetHarpStrandOffsetMeasurementAtHarpPoint(), 
-                                                                                     pArtifact->GetHarpStrandOffsetHp()));
-
-   // see if strand design data fits in grid
-   bool fills_grid=false;
-   StrandIndexType num_permanent = pArtifact->GetNumHarpedStrands() + pArtifact->GetNumStraightStrands();
-   StrandIndexType ns(0), nh(0);
-   if (design_options.doStrandFillType == ftGridOrder)
-   {
-      // we asked design to fill using grid, but this may be a non-standard design - let's check
-      if (pStrandGeometry->ComputeNumPermanentStrands(num_permanent, segmentKey, &ns, &nh))
+      // Strand Designs using continuous fill for all stands
+      pgsTypes::AdjustableStrandType adjType;
+      if(dtDesignForHarping == design_options.doDesignForFlexure)
       {
-         if (ns == pArtifact->GetNumStraightStrands() && nh == pArtifact->GetNumHarpedStrands() )
+         adjType = pgsTypes::asHarped;
+      }
+      else
+      {
+         adjType = pgsTypes::asStraight;
+      }
+
+      rdata.m_Strands[1].SetAdjustableStrandType(adjType);
+
+
+      ConfigStrandFillVector harpfillvec = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, pArtifact->GetNumHarpedStrands());
+
+      // Convert Adjustable strand offset data
+      // offsets are absolute measure in the design artifact
+      // Convert them to the measurement basis that the CGirderData object is using, unless it's the default,
+      // then let's use a favorite
+      if (hsoLEGACY == rdata.m_Strands[1].GetHarpStrandOffsetMeasurementAtEnd())
+      {
+         rdata.m_Strands[1].SetHarpStrandOffsetMeasurementAtEnd(hsoBOTTOM2BOTTOM);
+      }
+
+      rdata.m_Strands[1].SetHarpStrandOffsetAtEnd(pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(gdrName.c_str(), adjType,
+                                                                                          HgStart, HgHp1, HgHp2, HgEnd,
+                                                                                          harpfillvec, 
+                                                                                          rdata.m_Strands[1].GetHarpStrandOffsetMeasurementAtEnd(), 
+                                                                                          pArtifact->GetHarpStrandOffsetEnd()));
+
+      if (hsoLEGACY == rdata.m_Strands[1].GetHarpStrandOffsetMeasurementAtHarpPoint())
+      {
+         rdata.m_Strands[1].SetHarpStrandOffsetMeasurementAtHarpPoint(hsoBOTTOM2BOTTOM);
+      }
+
+      rdata.m_Strands[1].SetHarpStrandOffsetAtHarpPoint(pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(gdrName.c_str(), adjType,
+                                                                                        HgStart, HgHp1, HgHp2, HgEnd,
+                                                                                        harpfillvec, 
+                                                                                        rdata.m_Strands[1].GetHarpStrandOffsetMeasurementAtHarpPoint(), 
+                                                                                        pArtifact->GetHarpStrandOffsetHp()));
+
+      // See if strand design data fits in grid
+      bool fills_grid=false;
+      StrandIndexType num_permanent = pArtifact->GetNumHarpedStrands() + pArtifact->GetNumStraightStrands();
+      StrandIndexType ns(0), nh(0);
+      if (design_options.doStrandFillType == ftGridOrder)
+      {
+         // we asked design to fill using grid, but this may be a non-standard design - let's check
+         if (pStrandGeometry->ComputeNumPermanentStrands(num_permanent, segmentKey, &ns, &nh))
          {
-            fills_grid = true;
+            if (ns == pArtifact->GetNumStraightStrands() && nh == pArtifact->GetNumHarpedStrands() )
+            {
+               fills_grid = true;
+            }
          }
       }
-   }
 
-   if ( fills_grid )
-   {
-      ATLASSERT(num_permanent==ns+nh);
-      rdata.m_Strands[1].SetTotalPermanentNstrands(num_permanent, ns, nh);
-      rdata.m_Strands[1].SetPjack(pgsTypes::Permanent, pArtifact->GetPjackStraightStrands() + pArtifact->GetPjackHarpedStrands());
-      rdata.m_Strands[1].IsPjackCalculated(pgsTypes::Permanent, pArtifact->GetUsedMaxPjackStraightStrands());
+      if ( fills_grid )
+      {
+         ATLASSERT(num_permanent==ns+nh);
+         rdata.m_Strands[1].SetTotalPermanentNstrands(num_permanent, ns, nh);
+         rdata.m_Strands[1].SetPjack(pgsTypes::Permanent,pArtifact->GetPjackStraightStrands() + pArtifact->GetPjackHarpedStrands());
+         rdata.m_Strands[1].IsPjackCalculated(pgsTypes::Permanent, pArtifact->GetUsedMaxPjackStraightStrands());
+      }
+      else
+      {
+         rdata.m_Strands[1].SetHarpedStraightNstrands(pArtifact->GetNumStraightStrands(), pArtifact->GetNumHarpedStrands());
+      }
+
+      rdata.m_Strands[1].SetTemporaryNstrands(pArtifact->GetNumTempStrands());
+
    }
    else
    {
-      rdata.m_Strands[1].SetHarpedStraightNstrands(pArtifact->GetNumStraightStrands(), pArtifact->GetNumHarpedStrands());
-   }
+      // Raised straight design
+      rdata.m_Strands[1].SetAdjustableStrandType(pgsTypes::asStraight);
 
-   rdata.m_Strands[1].SetTemporaryNstrands(pArtifact->GetNumTempStrands());
+      // Raised straight adjustable strands are filled directly, but others use fill order.
+      // must convert all to DirectStrandFillCollection
+      ConfigStrandFillVector strvec = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Straight, pArtifact->GetNumStraightStrands());
+      CDirectStrandFillCollection strfill = ConvertConfigToDirectStrandFill(strvec);
+      rdata.m_Strands[1].SetDirectStrandFillStraight(strfill);
+
+      CDirectStrandFillCollection harpfill = ConvertConfigToDirectStrandFill(pArtifact->GetRaisedAdjustableStrands());
+      rdata.m_Strands[1].SetDirectStrandFillHarped(harpfill);
+
+      ConfigStrandFillVector tempvec = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Temporary, pArtifact->GetNumTempStrands());
+      CDirectStrandFillCollection tempfill = ConvertConfigToDirectStrandFill(tempvec);
+      rdata.m_Strands[1].SetDirectStrandFillTemporary(tempfill);
+
+      // Convert Adjustable strand offset data. This is typically zero from library, but must be converted to input datum
+      // offsets are absolute measure in the design artifact
+      // convert them to the measurement basis that the CGirderData object is using
+      ConfigStrandFillVector harpfillvec = pArtifact->GetRaisedAdjustableStrands();
+         
+      rdata.m_Strands[1].SetHarpStrandOffsetAtEnd(pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(gdrName.c_str(), pgsTypes::asStraight,
+                                                                                          HgStart, HgHp1, HgHp2, HgEnd,
+                                                                                          harpfillvec, 
+                                                                                          rdata.m_Strands[1].GetHarpStrandOffsetMeasurementAtEnd(), 
+                                                                                          pArtifact->GetHarpStrandOffsetEnd()));
+
+      rdata.m_Strands[1].SetHarpStrandOffsetAtHarpPoint(pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(gdrName.c_str(), pgsTypes::asStraight,
+                                                                                        HgStart, HgHp1, HgHp2, HgEnd,
+                                                                                        harpfillvec, 
+                                                                                        rdata.m_Strands[1].GetHarpStrandOffsetMeasurementAtHarpPoint(), 
+                                                                                        pArtifact->GetHarpStrandOffsetHp()));
+   }
 
    rdata.m_Strands[1].SetPjack(pgsTypes::Harped,             pArtifact->GetPjackHarpedStrands());
    rdata.m_Strands[1].SetPjack(pgsTypes::Straight,           pArtifact->GetPjackStraightStrands());
@@ -367,11 +444,6 @@ void txnDesignGirder::CacheFlexureDesignResults(DesignData& rdata)
    }
 
    // deck offset
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
-   const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
-   const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
    rdata.m_SlabOffset[pgsTypes::metStart][0] = pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),segmentKey.girderIndex);
    rdata.m_SlabOffset[pgsTypes::metEnd][0]   = pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),  segmentKey.girderIndex);
    rdata.m_SlabOffset[pgsTypes::metStart][1] = pArtifact->GetSlabOffset(pgsTypes::metStart);

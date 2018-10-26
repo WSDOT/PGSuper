@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -108,14 +108,14 @@ void CEffectivePrestressGraphBuilder::UpdateYAxis()
       const unitmgtStressData& stressUnit = pDisplayUnits->GetStressUnit();
       m_pYFormat = new StressTool(stressUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
-      m_Graph.SetYAxisTitle(_T("Stress (")+m_pYFormat->UnitTag()+_T(")"));
+      m_Graph.SetYAxisTitle(_T("fpe (")+m_pYFormat->UnitTag()+_T(")"));
    }
    else
    {
       const unitmgtForceData& forceUnit = pDisplayUnits->GetGeneralForceUnit();
       m_pYFormat = new ForceTool(forceUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
-      m_Graph.SetYAxisTitle(_T("Force (")+m_pYFormat->UnitTag()+_T(")"));
+      m_Graph.SetYAxisTitle(_T("P (")+m_pYFormat->UnitTag()+_T(")"));
    }
 }
 
@@ -343,14 +343,6 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
 
          IntervalIndexType stressStrandIntervalIdx = pIntervals->GetStressStrandInterval(thisSegmentKey);
          IntervalIndexType releaseIntervalIdx      = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
-         IntervalIndexType liveLoadIntervalIdx     = pIntervals->GetLiveLoadInterval(thisSegmentKey);
-
-         pgsTypes::LimitState limitState = pgsTypes::ServiceI;
-         if ( liveLoadIntervalIdx <= intervalIdx )
-         {
-            limitState = pgsTypes::ServiceIII;
-         }
-
 
          Float64 X = *xIter;
 
@@ -366,12 +358,12 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
          
          if ( bStresses )
          {
-            Float64 fpe = pPSForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,time,limitState);
+            Float64 fpe = pPSForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,time);
             AddGraphPoint(dataSeries,X,fpe);
          }
          else
          {
-            Float64 Fpe = pPSForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,time,limitState);
+            Float64 Fpe = pPSForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,time,true/*include elastic effects*/);
             AddGraphPoint(dataSeries,X,Fpe);
          }
 
@@ -381,12 +373,12 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
             // elastic shortening that occurs during this interval
             if ( bStresses )
             {
-               Float64 fpe = pPSForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End,limitState);
+               Float64 fpe = pPSForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
                AddGraphPoint(dataSeries2,X,fpe);
             }
             else
             {
-               Float64 Fpe = pPSForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End,limitState);
+               Float64 Fpe = pPSForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
                AddGraphPoint(dataSeries2,X,Fpe);
             }
          }

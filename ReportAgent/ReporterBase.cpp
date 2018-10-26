@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -80,6 +80,8 @@
 #include <Reporting\BearingDesignParametersChapterBuilder.h>
 #include <Reporting\DistributionFactorDetailsChapterBuilder.h>
 
+#include <Reporting\TimeStepDetailsChapterBuilder.h>
+
 #include <Reporting\PointOfInterestChapterBuilder.h>
 
 #include <Reporting\DistributionFactorSummaryChapterBuilder.h>
@@ -116,6 +118,8 @@ HRESULT CReporterBase::InitCommonReportBuilders()
    // these are just some testing/debugging reports
    CreateStageByStageDetailsReport();
    CreatePointOfInterestReport();
+   CreateTimeStepDetailsReport();
+
    return S_OK;
 }
 
@@ -331,9 +335,6 @@ void CReporterBase::CreateDistributionFactorsReport()
 
 void CReporterBase::CreateStageByStageDetailsReport()
 {
-#pragma Reminder("UPDATE: this is a report for development purposes")
-   // either flesh out this report or eliminate it
-
    GET_IFACE(IReportManager,pRptMgr);
    boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder(  new CGirderReportSpecificationBuilder(m_pBroker,CGirderKey(0,0)) );
 
@@ -343,6 +344,18 @@ void CReporterBase::CreateStageByStageDetailsReport()
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CIntervalChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTendonGeometryChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTimeStepParametersChapterBuilder) );
+   pRptMgr->AddReportBuilder( pRptBuilder );
+}
+
+void CReporterBase::CreateTimeStepDetailsReport()
+{
+   GET_IFACE(IReportManager,pRptMgr);
+   boost::shared_ptr<CReportSpecificationBuilder> pPoiRptSpecBuilder(  new CPointOfInterestReportSpecificationBuilder(m_pBroker) );
+
+   CReportBuilder* pRptBuilder = new CReportBuilder(_T("Time Step Details Report"));
+   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
+   pRptBuilder->SetReportSpecificationBuilder( pPoiRptSpecBuilder );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTimeStepDetailsChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -67,10 +67,11 @@ typedef Uint32 PoiAttributeType; // NOTE: if more bits are needed use a 64-bit t
 //#define POI_REFERENCED4          0x00010000
 //#define POI_REFERENCED3          0x00008000
 //#define POI_REFERENCED2          0x00004000
-//#define POI_REFERENCED1          0x00002000
 
-#define POI_PICKPOINT              0x00001000 // POI at lifting pick point
-#define POI_BUNKPOINT              0x00000800 // POI at hauling bunk point
+#define POI_PICKPOINT              0x00002000 // POI at lifting pick point
+#define POI_BUNKPOINT              0x00001000 // POI at hauling bunk point
+
+#define POI_CANTILEVER             0x00000800 // POI is on the cantilevered portion of a span
 
 
 // The lower 12 bits are reserved for 10th point attributes

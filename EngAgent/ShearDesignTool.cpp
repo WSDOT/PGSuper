@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -977,7 +977,7 @@ Float64 pgsShearDesignTool::GetVerticalAvsDemand(Float64 distFromStart)
    }
    catch (mathXEvalError& e)
    {
-      std::wstring msg;
+      std::_tstring msg;
       e.GetErrorMessage(&msg);
       ATLASSERT(false); // This should never happen, but catch here to make debugging easier
       return 0.0;
@@ -1059,7 +1059,7 @@ Float64 pgsShearDesignTool::GetHorizontalAvsDemand(Float64 distFromStart)
    }
    catch (mathXEvalError& e)
    {
-      std::wstring msg;
+      std::_tstring msg;
       e.GetErrorMessage(&msg);
       ATLASSERT(false); // This should never happen, but catch here to make debugging easier
       return 0.0;
@@ -1076,7 +1076,7 @@ Float64 pgsShearDesignTool::GetVerticalAvsMaxInRange(Float64 leftBound, Float64 
    }
    catch (mathXEvalError& e)
    {
-      std::wstring msg;
+      std::_tstring msg;
       e.GetErrorMessage(&msg);
       ATLASSERT(false); // This should never happen, but catch here to make debugging easier
       return 0.0;
@@ -1097,7 +1097,7 @@ Float64 pgsShearDesignTool::GetHorizontalAvsMaxInRange(Float64 leftBound, Float6
    }
    catch (mathXEvalError& e)
    {
-      std::wstring msg;
+      std::_tstring msg;
       e.GetErrorMessage(&msg);
       ATLASSERT(false); // This should never happen, but catch here to make debugging easier
       return 0.0;

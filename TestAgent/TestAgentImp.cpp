@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1602,37 +1602,37 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
 
 // loss in permanent strands
       resultsFile<<bridgeId<<", "<<pid<<", 55001, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetElasticShortening(poi,pgsTypes::Permanent),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 55002, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,stressStrandsIntervalIdx,pgsTypes::End,pgsTypes::ServiceI),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 55003, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 55004, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,liftSegmentIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 55005, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,haulSegmentIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 55006, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,tsInstallIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 55007, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,erectSegmentIntervalIdx,pgsTypes::End,pgsTypes::ServiceI),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 55008, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,tsRemovalIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 55009, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,castDeckIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 55009a,"<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,compositeDeckIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 55010, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,liveLoadIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 55002, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Permanent,stressStrandsIntervalIdx,pgsTypes::End),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 55003, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 55004, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Permanent,liftSegmentIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 55005, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Permanent,haulSegmentIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 55006, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Permanent,tsInstallIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 55007, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Permanent,erectSegmentIntervalIdx,pgsTypes::End),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 55008, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Permanent,tsRemovalIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 55009, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Permanent,castDeckIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 55009a,"<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Permanent,compositeDeckIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 55010, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Permanent,liveLoadIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
 // loss in temporary strands
       resultsFile<<bridgeId<<", "<<pid<<", 55101, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetElasticShortening(poi,pgsTypes::Temporary),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 55102, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetPrestressLoss(poi,pgsTypes::Temporary,stressStrandsIntervalIdx,pgsTypes::End,pgsTypes::ServiceI),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 55103, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetPrestressLoss(poi,pgsTypes::Temporary,releaseIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 55104, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetPrestressLoss(poi,pgsTypes::Temporary,liftSegmentIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 55105, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetPrestressLoss(poi,pgsTypes::Temporary,haulSegmentIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 55106, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetPrestressLoss(poi,pgsTypes::Temporary,tsInstallIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 55107, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetPrestressLoss(poi,pgsTypes::Temporary,erectSegmentIntervalIdx,pgsTypes::End,pgsTypes::ServiceI),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 55108, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetPrestressLoss(poi,pgsTypes::Temporary,tsRemovalIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 55109, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetPrestressLoss(poi,pgsTypes::Temporary,castDeckIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 55109a,"<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetPrestressLoss(poi,pgsTypes::Temporary,compositeDeckIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 55110, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetPrestressLoss(poi,pgsTypes::Temporary,liveLoadIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 55102, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Temporary,stressStrandsIntervalIdx,pgsTypes::End),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 55103, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Temporary,releaseIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 55104, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Temporary,liftSegmentIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 55105, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Temporary,haulSegmentIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 55106, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Temporary,tsInstallIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 55107, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Temporary,erectSegmentIntervalIdx,pgsTypes::End),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 55108, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Temporary,tsRemovalIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 55109, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Temporary,castDeckIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 55109a,"<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Temporary,compositeDeckIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 55110, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Temporary,liveLoadIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ",15, "<<gdrIdx<<std::endl;
 
       // eff flange width
       resultsFile<<bridgeId<<", "<<pid<<", 50001, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pSp2->GetEffectiveFlangeWidth(poi), unitMeasure::Millimeter)) <<", 2, "<<gdrIdx<<std::endl;
 
       // force and stress in prestressing strands
-      resultsFile<<bridgeId<<", "<<pid<<", 50002, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI ), unitMeasure::MPa))    << ",15, " << gdrIdx << std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 50003, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetPrestressForce(    poi,pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI ), unitMeasure::Newton)) << ",15, " << gdrIdx << std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 50004, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,liveLoadIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI), unitMeasure::MPa))    << ",15, " << gdrIdx << std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 50005, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetPrestressForce(    poi,pgsTypes::Permanent,liveLoadIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI), unitMeasure::Newton)) << ",15, " << gdrIdx << std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50002, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::Start), unitMeasure::MPa))    << ",15, " << gdrIdx << std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50003, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetPrestressForce(    poi,pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::Start), unitMeasure::Newton)) << ",15, " << gdrIdx << std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50004, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,liveLoadIntervalIdx,pgsTypes::Middle), unitMeasure::MPa))    << ",15, " << gdrIdx << std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50005, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetPrestressForce(    poi,pgsTypes::Permanent,liveLoadIntervalIdx,pgsTypes::Middle), unitMeasure::Newton)) << ",15, " << gdrIdx << std::endl;
 
       // stresses due to external loads
       // casting yards
@@ -1745,7 +1745,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       pShearCapacity->GetShearCapacityDetails(pgsTypes::StrengthI, liveLoadIntervalIdx, poi,&scd);
       resultsFile<<bridgeId<<", "<<pid<<", 50031, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.Aps , unitMeasure::Millimeter2)) <<",15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50032, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.As , unitMeasure::Millimeter2)) <<",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 50033, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,erectSegmentIntervalIdx,pgsTypes::End,pgsTypes::ServiceI), unitMeasure::MPa)) <<",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50033, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,erectSegmentIntervalIdx,pgsTypes::End), unitMeasure::MPa)) <<",15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50038, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.As,unitMeasure::Millimeter2)) <<",15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50042, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.pVn , unitMeasure::Newton)) <<    ",15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50043, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.Vn , unitMeasure::Newton)) <<     ",15, "<<gdrIdx<<std::endl;
@@ -2153,9 +2153,19 @@ bool CTestAgentImp::RunDesignTest(std::_tofstream& resultsFile, std::_tofstream&
 
    // get design options from spec. Do shear and flexure
    GET_IFACE(ISpecification,pSpecification);
-   arDesignOptions des_options = pSpecification->GetDesignOptions(segmentKey);
+   std::vector<arDesignOptions> des_options_coll = pSpecification->GetDesignOptions(segmentKey);
+   IndexType do_cnt = des_options_coll.size();
+   IndexType do_idx = 1;
 
-   des_options.doDesignForShear = true;
+   // Add shear design to options
+   for(std::vector<arDesignOptions>::iterator it = des_options_coll.begin(); it!=des_options_coll.end(); it++)
+   {
+      arDesignOptions& des_options = *it;
+
+      des_options.doDesignForShear = true;
+      des_options.doDesignStirrupLayout = slLayoutStirrups; // always layout zones from scratch
+   }
+
 
    GET_IFACE(IArtifact,pIArtifact);
    const pgsGirderDesignArtifact* pGirderDesignArtifact;
@@ -2168,7 +2178,7 @@ bool CTestAgentImp::RunDesignTest(std::_tofstream& resultsFile, std::_tofstream&
 
    try
    {
-      pGirderDesignArtifact = pIArtifact->CreateDesignArtifact(segmentKey,des_options);
+      pGirderDesignArtifact = pIArtifact->CreateDesignArtifact(segmentKey,des_options_coll);
       pArtifact = pGirderDesignArtifact->GetSegmentDesignArtifact(segmentKey.segmentIndex);
    }
    catch(...)

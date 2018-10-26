@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -180,13 +180,6 @@ typedef struct EquivPretensionLoad
    Float64 M;  // magnitude of equivalent moment
 } EquivPretensionLoad;
 
-typedef enum LoadType
-{
-   ltFx, 
-   ltFy, 
-   ltMz
-};
-
 /*****************************************************************************
 INTERFACE
    IProductLoads
@@ -204,8 +197,9 @@ DEFINE_GUID(IID_IProductLoads,
 0x33fa7ee, 0xdaef, 0x42e0, 0x8f, 0x9, 0x1, 0x97, 0xc7, 0x7, 0x18, 0x10);
 interface IProductLoads : IUnknown
 {
-   virtual std::_tstring GetProductLoadName(ProductForceType pfType) = 0;
-   virtual std::_tstring GetLoadCombinationName(LoadingCombinationType loadCombo) = 0;
+   virtual LPCTSTR GetProductLoadName(ProductForceType pfType) = 0;
+   virtual LPCTSTR GetLoadCombinationName(LoadingCombinationType loadCombo) = 0;
+   virtual LPCTSTR GetLimitStateName(pgsTypes::LimitState limitState) = 0;
 
    // product loads applied to girder
    virtual void GetGirderSelfWeightLoad(const CSegmentKey& segmentKey,std::vector<GirderLoad>* pDistLoad,std::vector<DiaphragmLoad>* pPointLoad) = 0;
@@ -286,6 +280,7 @@ interface IProductForces : IUnknown
    virtual pgsTypes::BridgeAnalysisType GetBridgeAnalysisType(pgsTypes::AnalysisType analysisType,pgsTypes::OptimizationType optimization) = 0;
    virtual pgsTypes::BridgeAnalysisType GetBridgeAnalysisType(pgsTypes::OptimizationType optimization) = 0;
 
+   virtual Float64 GetAxial(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) = 0;
    virtual sysSectionValue GetShear(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) = 0;
    virtual Float64 GetMoment(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) = 0;
    virtual Float64 GetDeflection(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeElevationAdjustment) = 0;
@@ -370,6 +365,7 @@ DEFINE_GUID(IID_IProductForces2,
 0xe51ff04b, 0xb046, 0x43b9, 0x86, 0x96, 0x62, 0xab, 0x60, 0x6d, 0x2f, 0x4);
 interface IProductForces2 : IUnknown
 {
+   virtual std::vector<Float64> GetAxial(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) = 0;
    virtual std::vector<sysSectionValue> GetShear(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) = 0;
    virtual std::vector<Float64> GetMoment(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) = 0;
    virtual std::vector<Float64> GetDeflection(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeElevationAdjustment) = 0;
@@ -537,8 +533,12 @@ interface IExternalLoading : IUnknown
    virtual bool AddLoadingToLoadCombination(const CGirderKey& girderKey,LPCTSTR strLoadingName,LoadingCombinationType lcCombo) = 0;
 
    // creates a concentrated load
-   virtual bool CreateConcentratedLoad(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi,LoadType loadType,Float64 P) = 0;
-   virtual bool CreateConcentratedLoad(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,LoadType loadType,Float64 P) = 0;
+   virtual bool CreateConcentratedLoad(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi,Float64 Fx,Float64 Fy,Float64 Mz) = 0;
+   virtual bool CreateConcentratedLoad(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,Float64 Fx,Float64 Fy,Float64 Mz) = 0;
+
+   // creates a uniform load
+   virtual bool CreateUniformLoad(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 wx,Float64 wy) = 0;
+   virtual bool CreateUniformLoad(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 wx,Float64 wy) = 0;
 
    // creates a constant initial strain load between two POI.
    virtual bool CreateInitialStrainLoad(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 e,Float64 r) = 0;
@@ -576,7 +576,7 @@ interface IPretensionStresses : IUnknown
 {
    virtual Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc) = 0;
    virtual std::vector<Float64> GetStress(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation loc) = 0;
-   virtual Float64 GetStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,Float64 P,Float64 e) = 0;
+   virtual Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,Float64 P,Float64 e) = 0;
    virtual Float64 GetStressPerStrand(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::StressLocation loc) = 0;
    virtual Float64 GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,const GDRCONFIG& config) = 0;
 };
@@ -832,25 +832,6 @@ interface IPrecompressedTensileZone : IUnknown
    // it experiences direct stresses due to post-tensioning applied after the deck
    // has become composite
    virtual bool IsDeckPrecompressed(const CGirderKey& girderKey) = 0;
-};
-
-/*****************************************************************************
-INTERFACE
-   IVirtualWork
-
-DESCRIPTION
-   Interface to get unit load reponses used for virtual work calculations
-*****************************************************************************/
-// {4C72198B-4DA4-424d-BD6F-12AD394D84B6}
-DEFINE_GUID(IID_IVirtualWork, 
-0x4c72198b, 0x4da4, 0x424d, 0xbd, 0x6f, 0x12, 0xad, 0x39, 0x4d, 0x84, 0xb6);
-interface IVirtualWork : IUnknown
-{
-   // Returns the moments due to a unit load applied at unitLoadPOI
-   virtual std::vector<Float64> GetUnitLoadMoment(const std::vector<pgsPointOfInterest>& vPoi,const pgsPointOfInterest& unitLoadPOI,pgsTypes::BridgeAnalysisType bat,IntervalIndexType intervalIdx) = 0;
-
-   // Returns the moments due to a unit moment applied at unitMomentPOI
-   virtual std::vector<sysSectionValue> GetUnitCoupleMoment(const std::vector<pgsPointOfInterest>& vPoi,const pgsPointOfInterest& unitMomentPOI,pgsTypes::BridgeAnalysisType bat,IntervalIndexType intervalIdx) = 0;
 };
 
 /*****************************************************************************

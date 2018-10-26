@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -177,7 +177,7 @@ public:
    // Creates a hauling analysis artifact
    const pgsHaulingAnalysisArtifact* pgsDesigner2::CheckHauling(const CSegmentKey& segmentKey);
 
-   pgsGirderDesignArtifact Design(const CGirderKey& girderKey,arDesignOptions options);
+   pgsGirderDesignArtifact Design(const CGirderKey& girderKey,const std::vector<arDesignOptions>& DesOptionsColl);
 
    void GetHaunchDetails(const CGirderKey& girderKey,HAUNCHDETAILS* pHaunchDetails);
    void GetHaunchDetails(const CGirderKey& girderKey,const GDRCONFIG& config,HAUNCHDETAILS* pHaunchDetails);
@@ -197,6 +197,7 @@ public:
    void ClearArtifacts();
 
 protected:
+   void DoDesign(const CGirderKey& girderKey, const arDesignOptions& options, pgsGirderDesignArtifact& artifact);
    void MakeCopy(const pgsDesigner2& rOther);
    virtual void MakeAssignment(const pgsDesigner2& rOther);
 

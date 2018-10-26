@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -156,7 +156,7 @@ HRESULT CStrandFiller::SetStraightContinuousFill(IPrecastGirder* girder, StrandI
       return hr;
    }
 
-   hr = girder->put_StraightStrandFill(array);
+   hr = girder->putref_StraightStrandFill(array);
    if (FAILED(hr))
    {
       ATLASSERT(false);
@@ -176,7 +176,7 @@ HRESULT CStrandFiller::SetHarpedContinuousFill(IPrecastGirder* girder,  StrandIn
       return hr;
    }
 
-   hr = girder->put_HarpedStrandFill(array);
+   hr = girder->putref_HarpedStrandFill(array);
    if (FAILED(hr))
    {
       ATLASSERT(false);
@@ -196,7 +196,7 @@ HRESULT CStrandFiller::SetTemporaryContinuousFill(IPrecastGirder* girder, Strand
       return hr;
    }
 
-   hr = girder->put_TemporaryStrandFill(array);
+   hr = girder->putref_TemporaryStrandFill(array);
    if (FAILED(hr))
    {
       ATLASSERT(false);
@@ -1068,7 +1068,7 @@ HRESULT CStrandFiller::SetStraightDirectStrandFill(IPrecastGirder* girder,  cons
    CComPtr<IIndexArray> fillArray;
    this->ComputeStraightStrandFill(girder, pCollection, &fillArray);
 
-   return girder->put_StraightStrandFill(fillArray);
+   return girder->putref_StraightStrandFill(fillArray);
 }
 
 HRESULT CStrandFiller::SetHarpedDirectStrandFill(IPrecastGirder* girder,  const CDirectStrandFillCollection* pCollection)
@@ -1076,7 +1076,7 @@ HRESULT CStrandFiller::SetHarpedDirectStrandFill(IPrecastGirder* girder,  const 
    CComPtr<IIndexArray> fillArray;
    this->ComputeHarpedStrandFill(girder, pCollection, &fillArray);
 
-   return girder->put_HarpedStrandFill(fillArray);
+   return girder->putref_HarpedStrandFill(fillArray);
 }
 
 HRESULT CStrandFiller::SetTemporaryDirectStrandFill(IPrecastGirder* girder,  const CDirectStrandFillCollection* pCollection)
@@ -1084,6 +1084,6 @@ HRESULT CStrandFiller::SetTemporaryDirectStrandFill(IPrecastGirder* girder,  con
    CComPtr<IIndexArray> fillArray;
    this->ComputeTemporaryStrandFill(girder, pCollection, &fillArray);
 
-   return girder->put_TemporaryStrandFill(fillArray);
+   return girder->putref_TemporaryStrandFill(fillArray);
 }
 

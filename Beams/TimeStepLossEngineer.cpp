@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -54,9 +54,9 @@ HRESULT CTimeStepLossEngineer::FinalConstruct()
 {
    m_Bat = pgsTypes::ContinuousSpan;
 
-   m_strLoadingName[TIMESTEP_CR] = _T("Creep");
-   m_strLoadingName[TIMESTEP_SH] = _T("Shrinkage");
-   m_strLoadingName[TIMESTEP_RE] = _T("Relaxation");
+   m_strLoadingName[TIMESTEP_CR] = _T("CR_Restraint");
+   m_strLoadingName[TIMESTEP_SH] = _T("SH_Restraint");
+   m_strLoadingName[TIMESTEP_RE] = _T("RE_Restraint");
 
    return S_OK;
 }
@@ -92,10 +92,10 @@ const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& po
 
    CGirderKey girderKey(poi.GetSegmentKey());
 
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
    if ( intervalIdx == INVALID_INDEX )
    {
+      GET_IFACE(IIntervals,pIntervals);
+      IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
       intervalIdx = nIntervals-1;
    }
 
@@ -328,6 +328,11 @@ void CTimeStepLossEngineer::ComputeLosses(const CGirderKey& girderKey,IntervalIn
 
 void CTimeStepLossEngineer::ComputeLosses(const CGirderKey& girderKey,IntervalIndexType endAnalysisIntervalIdx,LOSSES* pLosses)
 {
+   if ( m_pProgress )
+   {
+      return;
+   }
+
    // Get frequently used interfaces
    // NOTE: We can't get this interfaces and hold them for the lifetime of this object
    // because it creates circular references. As a result there are massive memory leaks
@@ -350,7 +355,6 @@ void CTimeStepLossEngineer::ComputeLosses(const CGirderKey& girderKey,IntervalIn
    m_pBroker->GetInterface(IID_IProductForces,     (IUnknown**)&m_pProductForces);
    m_pBroker->GetInterface(IID_ICombinedForces,    (IUnknown**)&m_pCombinedForces);
    m_pBroker->GetInterface(IID_IExternalLoading,   (IUnknown**)&m_pExternalLoading);
-   m_pBroker->GetInterface(IID_IVirtualWork,       (IUnknown**)&m_pVirtualWork);
    m_pBroker->GetInterface(IID_IEAFDisplayUnits,   (IUnknown**)&m_pDisplayUnits);
 
    CEAFAutoProgress ap(m_pProgress);
@@ -385,7 +389,6 @@ void CTimeStepLossEngineer::ComputeLosses(const CGirderKey& girderKey,IntervalIn
    m_pProductForces.Release();
    m_pCombinedForces.Release();
    m_pExternalLoading.Release();
-   m_pVirtualWork.Release();
    m_pDisplayUnits.Release();
 }
 
@@ -697,6 +700,16 @@ void CTimeStepLossEngineer::ComputeSectionLosses(const CGirderKey& girderKey,Int
    IntervalIndexType nIntervals = m_pIntervals->GetIntervalCount(girderKey);
    IntervalIndexType startAnalysisIntervalIdx = pLosses->SectionLosses.begin()->second.TimeStepDetails.size();
 
+   if ( startAnalysisIntervalIdx == 0 )
+   {
+      // only want to do this once...
+      // ASSERTS are going to fire in GirderModelManager::AddLoadGroup because this loading has a name
+      // that is already used... that's ok and it is exactly what we want.
+      m_pExternalLoading->CreateLoading(girderKey,m_pProductLoads->GetProductLoadName(pftCreep));
+      m_pExternalLoading->CreateLoading(girderKey,m_pProductLoads->GetProductLoadName(pftShrinkage));
+      m_pExternalLoading->CreateLoading(girderKey,m_pProductLoads->GetProductLoadName(pftRelaxation));
+   }
+
    for ( IntervalIndexType intervalIdx = startAnalysisIntervalIdx; intervalIdx <= endAnalysisIntervalIdx; intervalIdx++ )
    {
       CString strMsg;
@@ -731,67 +744,6 @@ void CTimeStepLossEngineer::ComputeSectionLosses(const CGirderKey& girderKey,Int
 
          FinalizeTimeStepAnalysis(intervalIdx,poi,details);
       }
-
-      // Compute Deflections
-      // NOTE: the deflections at a strong back closure joint begin at the start
-      // of the interval when the closure becomes continuous with the rest of the girder.
-      // Typically, strong backs are located at the end of cantilevered segments. The
-      // tips of the cantilever have deflected prior to the closure joint being cast.
-      // For this reason, the deflection of the closure joint does not start at zero,
-      // but instead starts at the deflection of the cantilever. To account for
-      // this, we assign the average deflection of the cantilever tips to the closure joint.
-      // In order to do this, we need to compute the deflection at the ends of the segments
-      // on either side ofthe closure. When a closure POI is encountered, the deflection
-      // at the start of the next segment has not yet been computed. Make note that we
-      // just skipped over a closure joint POI and that the closure adjustment needs to 
-      // be made the next time through the loop
-
-      // use pointers so we don't have to copy the actual POIs
-      const pgsPointOfInterest* pLeftSegmentPoi; // segment POI to the left of a closure joint
-      const pgsPointOfInterest* pClosurePoi; // poi at the closure joint
-
-      bool bMakeClosureJointAdjustment = false; // is it time to make a closure joint adjustment?
-
-      InitializeDeflectionCalculations();
-
-      iter = pLosses->SectionLosses.begin();
-      for ( ; iter != end; iter++ )
-      {
-         const pgsPointOfInterest& poi(iter->first);
-
-         // compute the deflection at this poi
-         ComputeDeflections(intervalIdx,poi,pLosses);
-
-         if ( bMakeClosureJointAdjustment )
-         {
-            // it is time to make the closure joint adjustment
-            MakeClosureJointAdjustment(intervalIdx,*pLeftSegmentPoi,*pClosurePoi,poi,pLosses);
-         }
-
-         // determine if we need to make a closure joint adjustment
-         if ( poi.HasAttribute(POI_CLOSURE) )
-         {
-            // we are at a closure
-            pClosurePoi = &poi;
-
-            const CClosureKey& closureKey(poi.GetSegmentKey());
-            IntervalIndexType compositeClosureIntervalIdx = m_pIntervals->GetCompositeClosureJointInterval(closureKey);
-
-            const CClosureJointData* pClosure = m_pBridgeDesc->GetClosureJointData(closureKey);
-            const CTemporarySupportData* pTS = pClosure->GetTemporarySupport();
-            if ( pTS && pTS->GetSupportType() == pgsTypes::StrongBack && 
-                 intervalIdx == compositeClosureIntervalIdx-1 )
-            {
-               // closure is at a strong back and the closure is just about to become composite
-               bMakeClosureJointAdjustment = true;
-            }
-         }
-         else
-         {
-            bMakeClosureJointAdjustment = false;
-            pLeftSegmentPoi = &poi;
-         }
-      }
    }
 }
 
@@ -799,7 +751,12 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
 {
    // Initializes the time step analysis
    // Gets basic information about the cross section such as section properties.
-   // Computes the force required to restrain the initial strains due to creep, shrinkage, and relaxation at each POI.
+   // Computes the force required to restrain the initial strains due to creep, shrinkage, and relaxation at each POI
+   // during this interval for loads applied during previous intervals.
+   //
+   // Essentially, computing the second term in Eqns 2 and 3 to get the initial strains,
+   // computing the restraining forces in each piece with Eqns 10 and 11, and the composite
+   // section restraining forces with Eqns 12 and 13.
 
    bool bIgnoreCreepEffects      = m_pLossParams->IgnoreCreepEffects();
    bool bIgnoreShrinkageEffects  = m_pLossParams->IgnoreShrinkageEffects();
@@ -821,7 +778,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    IntervalIndexType compositeClosureIntervalIdx = (bIsClosure ? m_pIntervals->GetCompositeClosureJointInterval(closureKey) : INVALID_INDEX);
 
 
-   // Material Properties
+   // Material Properties (not age adjusted!)
    Float64 EGirder = (bIsClosure ? m_pMaterials->GetClosureJointEc(closureKey,intervalIdx) : m_pMaterials->GetSegmentEc(segmentKey,intervalIdx));
    Float64 EDeck = m_pMaterials->GetDeckEc(segmentKey,intervalIdx);
    Float64 EStrand[3] = { m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight)->GetE(),
@@ -1244,7 +1201,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    }
 
    // Compute unrestrained creep strain due to loads applied prior to this interval
-   // Tadros 1977, Equations 3 and 4
+   // Tadros 1977, Second term in Equations 3 and 4
    tsDetails.Girder.ec.reserve(intervalIdx);
    tsDetails.Girder.rc.reserve(intervalIdx);
    tsDetails.Deck.ec.reserve(intervalIdx);
@@ -1252,7 +1209,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
 
    if ( 0 < intervalIdx )
    {
-      for ( IntervalIndexType i = 0; i < intervalIdx-1; i++ )
+      for ( IntervalIndexType i = 0; i < intervalIdx; i++ )
       {
          TIME_STEP_CONCRETE::CREEP_STRAIN    girderCreepStrain,    deckCreepStrain;
          TIME_STEP_CONCRETE::CREEP_CURVATURE girderCreepCurvature, deckCreepCurvature;
@@ -1272,10 +1229,6 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
             Ce = (bIsClosure ? m_pMaterials->GetClosureJointCreepCoefficient(closureKey,i,pgsTypes::Middle,intervalIdx,pgsTypes::End)   : m_pMaterials->GetSegmentCreepCoefficient(segmentKey,i,pgsTypes::Middle,intervalIdx,pgsTypes::End));
          }
 
-         Float64 EGirder = (bIsClosure ? m_pMaterials->GetClosureJointEc(closureKey,i) : m_pMaterials->GetSegmentEc(segmentKey,i));
-         Float64 EAGirder = EGirder*iTimeStepDetails.Girder.An;
-         Float64 EIGirder = EGirder*iTimeStepDetails.Girder.In;
-
          Float64 dP_Girder = 0;
          Float64 dM_Girder = 0;
          Float64 dP_Deck = 0;
@@ -1293,21 +1246,25 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
             dM_Deck += iTimeStepDetails.Deck.dMi[pfType];
          }
 
-         Float64 e = IsZero(EAGirder) ? 0 : (Ce-Cs)*dP_Girder/EAGirder;
-         Float64 r = IsZero(EIGirder) ? 0 : (Ce-Cs)*dM_Girder/EIGirder;
+         // Modulus in interval i (not age adjusteded because we apply the creep coefficients Ce and Cs)
+         Float64 EiGirder = (bIsClosure ? m_pMaterials->GetClosureJointEc(closureKey,i) : m_pMaterials->GetSegmentEc(segmentKey,i));
+         Float64 EiAGirder = EGirder*iTimeStepDetails.Girder.An;
+         Float64 EiIGirder = EGirder*iTimeStepDetails.Girder.In;
+         Float64 e = IsZero(EiAGirder) ? 0 : (Ce-Cs)*dP_Girder/EiAGirder;
+         Float64 r = IsZero(EiIGirder) ? 0 : (Ce-Cs)*dM_Girder/EiIGirder;
 
-         tsDetails.Girder.e += e;
-         tsDetails.Girder.r += r;
+         tsDetails.Girder.eci += e;
+         tsDetails.Girder.rci += r;
 
          girderCreepStrain.A = iTimeStepDetails.Girder.An;
-         girderCreepStrain.E = EGirder;
+         girderCreepStrain.E = EiGirder;
          girderCreepStrain.P = dP_Girder;
          girderCreepStrain.Cs = Cs;
          girderCreepStrain.Ce = Ce;
          girderCreepStrain.e = e;
 
          girderCreepCurvature.I = iTimeStepDetails.Girder.In;
-         girderCreepCurvature.E = EGirder;
+         girderCreepCurvature.E = EiGirder;
          girderCreepCurvature.M = dM_Girder;
          girderCreepCurvature.Cs = Cs;
          girderCreepCurvature.Ce = Ce;
@@ -1328,25 +1285,26 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
             Ce = m_pMaterials->GetDeckCreepCoefficient(segmentKey,i,pgsTypes::Middle,intervalIdx,pgsTypes::End);
          }
 
-         Float64 Edeck = m_pMaterials->GetDeckEc(segmentKey,i);
-         Float64 EAdeck = Edeck*iTimeStepDetails.Deck.An;
-         Float64 EIdeck = Edeck*iTimeStepDetails.Deck.In;
+         // Modulus in interval i (not age adjusteded because we apply the creep coefficients Ce and Cs)
+         Float64 EiDeck = m_pMaterials->GetDeckEc(segmentKey,i);
+         Float64 EiADeck = EiDeck*iTimeStepDetails.Deck.An;
+         Float64 EiIDeck = EiDeck*iTimeStepDetails.Deck.In;
 
-         e = IsZero(EAdeck) ? 0 : (Ce-Cs)*dP_Deck/EAdeck;
-         r = IsZero(EIdeck) ? 0 : (Ce-Cs)*dM_Deck/EIdeck;
+         e = IsZero(EiADeck) ? 0 : (Ce-Cs)*dP_Deck/EiADeck;
+         r = IsZero(EiIDeck) ? 0 : (Ce-Cs)*dM_Deck/EiIDeck;
 
-         tsDetails.Deck.e += e;
-         tsDetails.Deck.r += r;
+         tsDetails.Deck.eci += e;
+         tsDetails.Deck.rci += r;
 
          deckCreepStrain.A = iTimeStepDetails.Deck.An;
-         deckCreepStrain.E = Edeck;
+         deckCreepStrain.E = EiDeck;
          deckCreepStrain.P = dP_Deck;
          deckCreepStrain.Cs = Cs;
          deckCreepStrain.Ce = Ce;
          deckCreepStrain.e = e;
 
          deckCreepCurvature.I = iTimeStepDetails.Deck.In;
-         deckCreepCurvature.E = Edeck;
+         deckCreepCurvature.E = EiDeck;
          deckCreepCurvature.M = dM_Deck;
          deckCreepCurvature.Cs = Cs;
          deckCreepCurvature.Ce = Ce;
@@ -1382,47 +1340,44 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
       tsDetails.Deck.esi = esi;
 
       // Compute forces to restrain creep and shrinkage deformations in each individual
-      // piece of the cross section. (Restraining forces for relaxation deformations
+      // piece of the cross section. (Restraining force for relaxation deformations
       // was done above)
 
       // The concrete shrinkage strain is negative (concrete parts want to get shorter). So, strain < 0.
       // It requires a tension force to restrain this deformation. The force, F = -1*(strain)(E)(A).
       // The -1*strain reverses the deformation and results in a tension force.
-      tsDetails.Girder.PrCreep     = -tsDetails.Girder.e   * tsDetails.Girder.An * EGirder; // Tadros 1977, Eqn 10
-      tsDetails.Girder.MrCreep     = -tsDetails.Girder.r   * tsDetails.Girder.In * EGirder; // Tadros 1977, Eqn 11
+      tsDetails.Girder.PrCreep     = -tsDetails.Girder.eci * tsDetails.Girder.An * EGirder; // Tadros 1977, Eqn 10
+      tsDetails.Girder.MrCreep     = -tsDetails.Girder.rci * tsDetails.Girder.In * EGirder; // Tadros 1977, Eqn 11
       tsDetails.Girder.PrShrinkage = -tsDetails.Girder.esi * tsDetails.Girder.An * EGirder; // Tadros 1977, Eqn 10
 
-      tsDetails.Deck.PrCreep     = -tsDetails.Deck.e   * tsDetails.Deck.An * EDeck; // Tadros 1977, Eqn 10
-      tsDetails.Deck.MrCreep     = -tsDetails.Deck.r   * tsDetails.Deck.In * EDeck; // Tadros 1977, Eqn 11
+      tsDetails.Deck.PrCreep     = -tsDetails.Deck.eci * tsDetails.Deck.An * EDeck; // Tadros 1977, Eqn 10
+      tsDetails.Deck.MrCreep     = -tsDetails.Deck.rci * tsDetails.Deck.In * EDeck; // Tadros 1977, Eqn 11
       tsDetails.Deck.PrShrinkage = -tsDetails.Deck.esi * tsDetails.Deck.An * EDeck; // Tadros 1977, Eqn 10
    }
 
-   // Compute the force/moment that is equal and opposite to the individual restraining forces.
+   // Total restraining force
    // Tadros 1977, Eqn 12 and 13.
    if ( releaseIntervalIdx <= intervalIdx )
    {
-      // Total Restraining Force applied to composite section... this force
-      // is equal and opposite the force applied to the individual section components
-      tsDetails.Pr[TIMESTEP_CR] = -(tsDetails.Girder.PrCreep     + tsDetails.Deck.PrCreep);
-      
-      tsDetails.Pr[TIMESTEP_SH] = -(tsDetails.Girder.PrShrinkage + tsDetails.Deck.PrShrinkage);
+      tsDetails.Pr[TIMESTEP_CR] = tsDetails.Girder.PrCreep     + tsDetails.Deck.PrCreep;
+      tsDetails.Pr[TIMESTEP_SH] = tsDetails.Girder.PrShrinkage + tsDetails.Deck.PrShrinkage;
       
 #if defined LUMP_STRANDS
-      tsDetails.Pr[TIMESTEP_RE] = -(tsDetails.Strands[pgsTypes::Straight ].PrRelaxation
-                                  + tsDetails.Strands[pgsTypes::Harped   ].PrRelaxation
-                                  + tsDetails.Strands[pgsTypes::Temporary].PrRelaxation);
+      tsDetails.Pr[TIMESTEP_RE] = tsDetails.Strands[pgsTypes::Straight ].PrRelaxation
+                                + tsDetails.Strands[pgsTypes::Harped   ].PrRelaxation
+                                + tsDetails.Strands[pgsTypes::Temporary].PrRelaxation;
 #endif // LUMP_STRANDS
 
-      tsDetails.Mr[TIMESTEP_CR] = -(tsDetails.Girder.MrCreep + tsDetails.Girder.PrCreep*(tsDetails.Ytr - tsDetails.Girder.Yn)
-                                  + tsDetails.Deck.MrCreep   + tsDetails.Deck.PrCreep  *(tsDetails.Ytr - tsDetails.Deck.Yn));
+      tsDetails.Mr[TIMESTEP_CR] = tsDetails.Girder.MrCreep + tsDetails.Girder.PrCreep*(tsDetails.Ytr - tsDetails.Girder.Yn)
+                                + tsDetails.Deck.MrCreep   + tsDetails.Deck.PrCreep  *(tsDetails.Ytr - tsDetails.Deck.Yn);
       
-      tsDetails.Mr[TIMESTEP_SH] = -(tsDetails.Girder.PrShrinkage*(tsDetails.Ytr - tsDetails.Girder.Yn)
-                                  + tsDetails.Deck.PrShrinkage  *(tsDetails.Ytr - tsDetails.Deck.Yn));
+      tsDetails.Mr[TIMESTEP_SH] = tsDetails.Girder.PrShrinkage*(tsDetails.Ytr - tsDetails.Girder.Yn)
+                                + tsDetails.Deck.PrShrinkage  *(tsDetails.Ytr - tsDetails.Deck.Yn);
       
 #if defined LUMP_STRANDS
-      tsDetails.Mr[TIMESTEP_RE] = -(tsDetails.Strands[pgsTypes::Straight ].PrRelaxation*(tsDetails.Ytr - tsDetails.Strands[pgsTypes::Straight ].Ys)
-                                  + tsDetails.Strands[pgsTypes::Harped   ].PrRelaxation*(tsDetails.Ytr - tsDetails.Strands[pgsTypes::Harped   ].Ys)
-                                  + tsDetails.Strands[pgsTypes::Temporary].PrRelaxation*(tsDetails.Ytr - tsDetails.Strands[pgsTypes::Temporary].Ys));
+      tsDetails.Mr[TIMESTEP_RE] = tsDetails.Strands[pgsTypes::Straight ].PrRelaxation*(tsDetails.Ytr - tsDetails.Strands[pgsTypes::Straight ].Ys)
+                                + tsDetails.Strands[pgsTypes::Harped   ].PrRelaxation*(tsDetails.Ytr - tsDetails.Strands[pgsTypes::Harped   ].Ys)
+                                + tsDetails.Strands[pgsTypes::Temporary].PrRelaxation*(tsDetails.Ytr - tsDetails.Strands[pgsTypes::Temporary].Ys);
 #endif // LUMP_STRANDS
 
 #if !defined LUMP_STRANDS
@@ -1438,8 +1393,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          for ( StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++ )
          {
             TIME_STEP_STRAND& strand = tsDetails.Strands[strandType][strandIdx];
-            tsDetails.Pr[TIMESTEP_RE] += -strand.PrRelaxation;
-            tsDetails.Mr[TIMESTEP_RE] += -strand.PrRelaxation*(tsDetails.Ytr - strand.Ys);
+            tsDetails.Pr[TIMESTEP_RE] += strand.PrRelaxation;
+            tsDetails.Mr[TIMESTEP_RE] += strand.PrRelaxation*(tsDetails.Ytr - strand.Ys);
          } // next strand
       } // next strand type
 #endif // !LUMP_STRANDS
@@ -1448,8 +1403,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
       {
          TIME_STEP_STRAND& tendon = tsDetails.Tendons[ductIdx];
 
-         tsDetails.Pr[TIMESTEP_RE] += -tendon.PrRelaxation;
-         tsDetails.Mr[TIMESTEP_RE] += -tendon.PrRelaxation*(tsDetails.Ytr - tendon.Ys);
+         tsDetails.Pr[TIMESTEP_RE] += tendon.PrRelaxation;
+         tsDetails.Mr[TIMESTEP_RE] += tendon.PrRelaxation*(tsDetails.Ytr - tendon.Ys);
       }
    }
 
@@ -1460,11 +1415,16 @@ void CTimeStepLossEngineer::AnalyzeInitialStrains(IntervalIndexType intervalIdx,
 {
    // Compute the response to the inital strains (see Tadros 1977, section titled "Effects of Initial Strains")
    
-   // Apply the force/moment that are equal and opposite to the sum of the restraining forces for the individual parts
-   // to the bridge frame and do a stiffness analysis. The resulting force and moment on the cross sections are
-   // the "external" forces due to creep, shrinkage, and relaxation
+   // Instead of applying forces that are equal and opposite to the sum of the restraining forces of the individual
+   // parts as described in the Tadros 1977 paper, we will apply member deformation/strain loads that are equal
+   // and opposite in magnitude of the initial strains. This will directly yield the restraining forces at each
+   // section caused by creep, shrinkage, and relaxation. These direct restraining forces will then be distributed
+   // to the individual elements of the cross section. This method yields the same results at the method described
+   // in the Tadros 1977 paper, however it also yields the resultant shear forces which are not readily available
+   // from the Tadros method.
 
-   // At each POI, compute the equivalent restraining loads and apply to the load group
+   SegmentIndexType nSegments = m_pBridge->GetSegmentCount(girderKey);
+
    SectionLossContainer::iterator iter1(pLosses->SectionLosses.begin());
    SectionLossContainer::iterator end(pLosses->SectionLosses.end());
    SectionLossContainer::iterator iter2(iter1);
@@ -1478,32 +1438,31 @@ void CTimeStepLossEngineer::AnalyzeInitialStrains(IntervalIndexType intervalIdx,
 
       CClosureKey closureKey1;
       bool bIsClosure1 = m_pPoi->IsInClosureJoint(poi1,&closureKey1);
-      bool bIsClosureEffective1 = (bIsClosure1 ? m_pIntervals->GetCompositeClosureJointInterval(closureKey1) <= intervalIdx : false);
+      bool bIsClosure1Effective = (bIsClosure1 ? m_pIntervals->GetCompositeClosureJointInterval(closureKey1) <= intervalIdx : false);
       
       const pgsPointOfInterest& poi2(iter2->first);
       const CSegmentKey& segmentKey2(poi2.GetSegmentKey());
       LOSSDETAILS& details2(iter2->second);
       CClosureKey closureKey2;
       bool bIsClosure2 = m_pPoi->IsInClosureJoint(poi2,&closureKey2);
-      bool bIsClosureEffective2 = (bIsClosure2 ? m_pIntervals->GetCompositeClosureJointInterval(closureKey2) <= intervalIdx : false);
+      bool bIsClosure2Effective = (bIsClosure2 ? m_pIntervals->GetCompositeClosureJointInterval(closureKey2) <= intervalIdx : false);
 
       TIME_STEP_DETAILS& tsDetails1(details1.TimeStepDetails[intervalIdx]);
       TIME_STEP_DETAILS& tsDetails2(details2.TimeStepDetails[intervalIdx]);
 
-      // Compute initial strain at poi1
       Float64 Atr1 = tsDetails1.Atr;
       Float64 Itr1 = tsDetails1.Itr;
       Float64 E1 = (bIsClosure1 ? m_pMaterials->GetClosureJointAgeAdjustedEc(closureKey1,intervalIdx) : m_pMaterials->GetSegmentAgeAdjustedEc(segmentKey1,intervalIdx));
       Float64 EA1 = Atr1*E1;
       Float64 EI1 = Itr1*E1;
 
-      // Compute initial strain at poi2
       Float64 Atr2 = tsDetails2.Atr;
       Float64 Itr2 = tsDetails2.Itr;
       Float64 E2 = (bIsClosure2 ? m_pMaterials->GetClosureJointAgeAdjustedEc(closureKey2,intervalIdx) : m_pMaterials->GetSegmentAgeAdjustedEc(segmentKey2,intervalIdx));
       Float64 EA2 = Atr2*E2;
       Float64 EI2 = Itr2*E2;
 
+      // Compute the initial strain at poi1 and poi2
       for ( int i = 0; i < 3; i++ ) // i is one of the TIMESTEP_XXX constants
       {
          Float64 Pr1 = tsDetails1.Pr[i];
@@ -1520,11 +1479,12 @@ void CTimeStepLossEngineer::AnalyzeInitialStrains(IntervalIndexType intervalIdx,
          // initial strains vary lineraly along the bridge. The underlying LBAM and FEM models
          // only supports constant imposed deformations so we are going to use the average
          // values between POI. In general, the POI are tightly spaced so this is a good approximation
-         Float64 e(0.5*(e1 + e2));
-         Float64 r(0.5*(r1 + r2));
+         // NOTE: The negative sign is because we want equal and opposite strains
+         Float64 e(-0.5*(e1 + e2));
+         Float64 r(-0.5*(r1 + r2));
 
-         // if POI is at a closure joint and the closure joint is not yet effective there can't be any strains applied
-         if ( (bIsClosure1 && !bIsClosureEffective1) || (bIsClosure2 && !bIsClosureEffective2) )
+         // if a poi is at a closure joint and the closure joint is not yet effective there can't be any loads applied
+         if ( (bIsClosure1 && !bIsClosure1Effective) || (bIsClosure2 && !bIsClosure2Effective) )
          {
             e = 0;
             r = 0;
@@ -1536,54 +1496,20 @@ void CTimeStepLossEngineer::AnalyzeInitialStrains(IntervalIndexType intervalIdx,
          tsDetails2.e[i][pgsTypes::Back] = e;
          tsDetails2.r[i][pgsTypes::Back] = r;
 
-         ProductForceType pfType = (i == 0 ? pftCreep : i == 1 ? pftShrinkage : pftRelaxation);
-         m_pExternalLoading->CreateInitialStrainLoad(intervalIdx,pfType,poi1,poi2,e,r);
-      }
-   }
-
-   // Get the interal forces caused by the initial strains
-   SectionLossContainer::iterator iter(pLosses->SectionLosses.begin());
-   for ( ; iter != end; iter++ )
-   {
-      const pgsPointOfInterest& poi(iter->first);
-      CClosureKey closureKey;
-      bool bIsClosure = m_pPoi->IsInClosureJoint(poi,&closureKey);
-      IntervalIndexType compositeClosureIntervalIdx = (bIsClosure ? m_pIntervals->GetCompositeClosureJointInterval(closureKey) : INVALID_INDEX);
-
-      LOSSDETAILS& details(iter->second);
-      TIME_STEP_DETAILS& tsDetails(details.TimeStepDetails[intervalIdx]);
-
-      for ( int i = 0; i < 3; i++ ) // i is one of the TIMESTEP_XXX constants
-      {
-         Float64 P = -m_pExternalLoading->GetAxial( intervalIdx,m_strLoadingName[i].c_str(),poi,m_Bat,rtIncremental);
-         Float64 M = -m_pExternalLoading->GetMoment(intervalIdx,m_strLoadingName[i].c_str(),poi,m_Bat,rtIncremental);
-
-         // If the POI is at a closure joint, and it is before the closure is composite
-         // with the adjacent girder segments, load doesn't get transfered to the concrete.
-         // At strongbacks, a moment is computed, but this is the moment in the strongback hardware,
-         // not the moment in the closure.
-         if ( bIsClosure && intervalIdx < compositeClosureIntervalIdx )
-         {
-            P = 0;
-            M = 0;
-         }
-
-         tsDetails.Pre[i] = P;
-         tsDetails.Mre[i] = M;
-
-         // Add the "external" force to the other forces on this section
+         // create the loading as a product force load. This will directly yield the resultant
+         // restraining force for the product force type
          ProductForceType pfType = (ProductForceType)(pftCreep + i);
-         tsDetails.dPi[pfType] -= tsDetails.Pre[i];
-         tsDetails.dMi[pfType] -= tsDetails.Mre[i];
+         m_pExternalLoading->CreateInitialStrainLoad(intervalIdx,pfType,poi1,poi2,e,r);
       }
    }
 }
 
 void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,LOSSDETAILS& details)
 {
-   // Determine the effect of the initial strains on the various parts of the cross section
-   // Determine the change in force in each part of the cross section
-   // Determine the stresses on the girder
+   // Determine the effect of the externally applied loads and the initial strains on the various parts 
+   // of the cross section using a transformed section analysis.
+   // Determine the change in force/moment in each part of the cross section.
+   // Determine the change in stress at the top and bottom of the concrete parts (girder and deck)
 
    TIME_STEP_DETAILS& tsDetails(details.TimeStepDetails[intervalIdx]);
 
@@ -1616,7 +1542,8 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
             // prestress loss is the intrinsic relaxation during this interval
             tsDetails.Strands[strandType].loss = tsDetails.Strands[strandType].fr;
 
-            tsDetails.Strands[strandType].dfpe[pftPretension] = -tsDetails.Strands[strandType].loss;
+            tsDetails.Strands[strandType].dfpei[pftPretension] = -tsDetails.Strands[strandType].loss;
+            tsDetails.Strands[strandType].dfpe += tsDetails.Strands[strandType].dfpei[pftPretension];
 
             if ( intervalIdx == stressStrandsIntervalIdx )
             {
@@ -1624,7 +1551,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
                // Force in the strand at the end of the interval is equal to Pj - Change in Force during this interval
                // Effective prestress = fpj + dfpe
                tsDetails.Strands[strandType].Pi[pftPretension] = tsDetails.Strands[strandType].Pj  + tsDetails.Strands[strandType].dPi[pftPretension];
-               tsDetails.Strands[strandType].fpe = tsDetails.Strands[strandType].fpj + tsDetails.Strands[strandType].dfpe[pftPretension];
+               tsDetails.Strands[strandType].fpe = tsDetails.Strands[strandType].fpj + tsDetails.Strands[strandType].dfpei[pftPretension];
             }
             else
             {
@@ -1634,7 +1561,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
                tsDetails.Strands[strandType].Pi[pftPretension] = prevTimeStepDetails.Strands[strandType].Pi[pftPretension] + tsDetails.Strands[strandType].dPi[pftPretension];
 
                // Effective prestress is effective prestress at end of previous interval plus change in stress during this interval
-               tsDetails.Strands[strandType].fpe = prevTimeStepDetails.Strands[strandType].fpe + tsDetails.Strands[strandType].dfpe[pftPretension];
+               tsDetails.Strands[strandType].fpe = prevTimeStepDetails.Strands[strandType].fpe + tsDetails.Strands[strandType].dfpei[pftPretension];
             }
 #else
             StrandIndexType nStrands = m_pStrandGeom->GetStrandCount(segmentKey,strandType);
@@ -1653,7 +1580,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
                   // Force in the strand at the end of the interval is equal to Pj - Change in Force during this interval
                   // Effective prestress = fpj + dfpe
                   strand.Pi[pftPretension] = strand.Pj  + strand.dPi[pftPretension];
-                  strand.fpe = strand.fpj + strand.dfpe[pftPretension];
+                  strand.fpe = strand.fpj + strand.dfpei[pftPretension];
                }
                else
                {
@@ -1663,7 +1590,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
                   strand.Pi[pftPretension] = prevTimeStepDetails.Strands[strandType][strandIdx].Pi[pftPretension] + strand.dPi[pftPretension];
 
                   // Effective prestress is effective prestress at end of previous interval plus change in stress during this interval
-                  strand.fpe = prevTimeStepDetails.Strands[strandType][strandIdx].fpe + strand.dfpe[pftPretension];
+                  strand.fpe = prevTimeStepDetails.Strands[strandType][strandIdx].fpe + strand.dfpei[pftPretension];
                }
             } // next strand idx
 #endif // LUMP_STRANDS
@@ -1681,11 +1608,6 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
                             m_pMaterials->GetClosureJointAgeAdjustedEc(closureKey,intervalIdx) : 
                             m_pMaterials->GetSegmentAgeAdjustedEc(segmentKey,intervalIdx));
       Float64 EaDeck     = m_pMaterials->GetDeckAgeAdjustedEc(segmentKey,intervalIdx);
-
-      Float64 EGirder  = (bIsClosure ? 
-                            m_pMaterials->GetClosureJointEc(closureKey,intervalIdx) : 
-                            m_pMaterials->GetSegmentEc(segmentKey,intervalIdx));
-      Float64 EDeck     = m_pMaterials->GetDeckEc(segmentKey,intervalIdx);
 
       Float64 EStrand[3] = { m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight)->GetE(),
                              m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Harped)->GetE(),
@@ -1716,21 +1638,12 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       Float64 EaDeck_An = EaDeck*tsDetails.Deck.An;
       Float64 EaDeck_In = EaDeck*tsDetails.Deck.In;
 
-      Float64 EGirder_Atr = EGirder*tsDetails.Atr;
-      Float64 EGirder_Itr = EGirder*tsDetails.Itr;
-
-      Float64 EGirder_An = EGirder*tsDetails.Girder.An;
-      Float64 EGirder_In = EGirder*tsDetails.Girder.In;
-
-      Float64 EDeck_An = EDeck*tsDetails.Deck.An;
-      Float64 EDeck_In = EDeck*tsDetails.Deck.In;
-
 #if defined _BETA_VERSION
-      // Verify section properties
+      // Verify transformed age-adjusted section properties
       Float64 EA  = 0;
       Float64 EAy = 0;
-      EA  = EGirder*tsDetails.Girder.An + EDeck*tsDetails.Deck.An;
-      EAy = EGirder*tsDetails.Girder.An*tsDetails.Girder.Yn + EDeck*tsDetails.Deck.An*tsDetails.Deck.Yn;
+      EA  = EaGirder*tsDetails.Girder.An + EaDeck*tsDetails.Deck.An;
+      EAy = EaGirder*tsDetails.Girder.An*tsDetails.Girder.Yn + EaDeck*tsDetails.Deck.An*tsDetails.Deck.Yn;
 
       EA  += EDeckRebar*tsDetails.DeckRebar[pgsTypes::drmTop].As + 
              EDeckRebar*tsDetails.DeckRebar[pgsTypes::drmBottom].As;
@@ -1784,12 +1697,12 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       }
 
       Float64 Ytr = IsZero(EA) ? 0 : EAy/EA;
-      Float64 Atr = IsZero(EGirder) ? 0 : EA/EGirder;
+      Float64 Atr = IsZero(EaGirder) ? 0 : EA/EaGirder;
 
       Float64 EI  = 0;
 
-      EI  = EGirder*(tsDetails.Girder.In + tsDetails.Girder.An*pow((Ytr - tsDetails.Girder.Yn),2));
-      EI += EDeck*(tsDetails.Deck.In + tsDetails.Deck.An*pow((Ytr - tsDetails.Deck.Yn),2));
+      EI  = EaGirder*(tsDetails.Girder.In + tsDetails.Girder.An*pow((Ytr - tsDetails.Girder.Yn),2));
+      EI += EaDeck*(tsDetails.Deck.In + tsDetails.Deck.An*pow((Ytr - tsDetails.Deck.Yn),2));
 
       EI += EDeckRebar*(tsDetails.DeckRebar[pgsTypes::drmTop   ].As*pow((Ytr - tsDetails.DeckRebar[pgsTypes::drmTop   ].Ys),2));
       EI += EDeckRebar*(tsDetails.DeckRebar[pgsTypes::drmBottom].As*pow((Ytr - tsDetails.DeckRebar[pgsTypes::drmBottom].Ys),2));
@@ -1835,7 +1748,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
          }
       }
 
-      Float64 Itr = IsZero(EGirder) ? 0 : EI/EGirder;
+      Float64 Itr = IsZero(EaGirder) ? 0 : EI/EaGirder;
 
       ATLASSERT(IsEqual(tsDetails.Ytr,Ytr));
       ATLASSERT(IsEqual(tsDetails.Atr,Atr));
@@ -1860,161 +1773,228 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
       IntervalIndexType compositeClosureIntervalIdx = (bIsClosure ? m_pIntervals->GetCompositeClosureJointInterval(closureKey) : INVALID_INDEX);
 
-      // Get Live Load Moment
-      Float64 MllMin, MllMax;
-      m_pCombinedForces->GetCombinedLiveLoadMoment(intervalIdx,pgsTypes::lltDesign,poi,m_Bat,&MllMin,&MllMax);
-
       //
-      // Compute total change of force on the section due to externally applied loads during this interval
-      //
-
-      std::vector<ProductForceType> vProductForces = GetApplicableProductLoads(intervalIdx,poi,true/*external forces only*/);
-      std::vector<ProductForceType>::iterator pfIter(vProductForces.begin());
-      std::vector<ProductForceType>::iterator pfIterEnd(vProductForces.end());
-      for ( ; pfIter != pfIterEnd; pfIter++ )
-      {
-         // Change in forces due to externally applied loads only occur in a small subset of the analysis intervals
-         // It is better to get this interface for each product force loading change than it is to get it for
-         // every interval analyzed.
-         ProductForceType pfType = *pfIter;
-
-         ATLASSERT(pfType != pftCreep);
-         ATLASSERT(pfType != pftShrinkage);
-         ATLASSERT(pfType != pftRelaxation);
-
-         // Get change in moment in this interval
-         Float64 dM = m_pProductForces->GetMoment(intervalIdx,pfType,poi,m_Bat, rtIncremental);
-
-         // If the POI is at a closure joint, and it is before the closure is composite
-         // with the adjacent girder segments, the moment is zero. At strongbacks,
-         // a moment is computed, but this is the moment in the strongback hardware,
-         // not the moment in the closure.
-         if ( bIsClosure && intervalIdx < compositeClosureIntervalIdx )
-         {
-            dM = 0;
-            MllMin = 0;
-            MllMax = 0;
-         }
-
-         tsDetails.dMi[pfType] += dM;
-         //tsDetails.dPi[pfType] += 0; // no axial loads are modeled so sum is always zero
-
-         tsDetails.Pi[pfType] += prevTimeStepDetails.Pi[pfType] + tsDetails.dPi[pfType];
-         tsDetails.Mi[pfType] += prevTimeStepDetails.Mi[pfType] + tsDetails.dMi[pfType];
-      }
-
-      //
-      // total change in axial and moment in this interval
+      // Compute total change of force on the section during this interval
       //
 
       int n = GetProductForceCount();
       for ( int i = 0; i < n; i++ ) 
       {
-         // Must do all product forces for externally applyed loads here because we
-         // are computing the forces due to each product type at the end of the current interval.
-         // If we skip a product force type, the summation will be wrong (current = prev + change)
          ProductForceType pfType = (ProductForceType)(i);
+
+         // Get change in force in this interval (this includes girder, slab, etc AND creep, shrinkage, and relaxation... live load is excluded and handled elsewhere)
+         Float64 dP = 0;
+         Float64 dM = 0;
+         if ( bIsClosure && intervalIdx < compositeClosureIntervalIdx )
+         {
+            // If the POI is at a closure joint, and it is before the closure is composite
+            // with the adjacent girder segments, the moment is zero. At strongbacks,
+            // a moment is computed, but this is the moment in the strongback hardware,
+            // not the moment in the closure.
+            dP = 0;
+            dM = 0;
+         }
+         else if ( pfType == pftPretension || pfType == pftPrimaryPostTensioning || pfType == pftSecondaryEffects )
+         {
+            // Don't get change in force for pre or post tensioning... these are taken care of in InitializeTimeStepAnalysis
+            // and if you try to get them, it will cause recursion
+            dP = tsDetails.dPi[pfType];
+            dM = tsDetails.dMi[pfType];
+         }
+         else if ( pfType == pftCreep || pfType == pftShrinkage || pfType == pftRelaxation )
+         {
+            std::_tstring strLoading(m_pProductLoads->GetProductLoadName(pfType));
+
+            dP = m_pExternalLoading->GetAxial(intervalIdx,strLoading.c_str(),poi,m_Bat, rtIncremental);
+            dM = m_pExternalLoading->GetMoment(intervalIdx,strLoading.c_str(),poi,m_Bat, rtIncremental);
+
+            // change in force this interval
+            tsDetails.dMi[pfType] += dM;
+            tsDetails.dPi[pfType] += dP;
+
+            // total change in force at the end of this interval
+            tsDetails.Pi[pfType] += prevTimeStepDetails.Pi[pfType] + tsDetails.dPi[pfType];
+            tsDetails.Mi[pfType] += prevTimeStepDetails.Mi[pfType] + tsDetails.dMi[pfType];
+         }
+         else
+         {
+            // for the product force types that get us here, none of them cause
+            // axial responses
+            dP = 0;//m_pProductForces->GetAxial(intervalIdx,pfType,poi,m_Bat, rtIncremental);
+            dM = m_pProductForces->GetMoment(intervalIdx,pfType,poi,m_Bat, rtIncremental);
+
+            // change in force this interval
+            tsDetails.dMi[pfType] += dM;
+            tsDetails.dPi[pfType] += dP;
+
+            // total change in force at the end of this interval
+            tsDetails.Pi[pfType] += prevTimeStepDetails.Pi[pfType] + tsDetails.dPi[pfType];
+            tsDetails.Mi[pfType] += prevTimeStepDetails.Mi[pfType] + tsDetails.dMi[pfType];
+         }
 
          // Deformation of the composite section this interval
          tsDetails.der[pfType] = (IsZero(EaGirder_Atr) ? 0 : tsDetails.dPi[pfType]/EaGirder_Atr);
          tsDetails.drr[pfType] = (IsZero(EaGirder_Itr) ? 0 : tsDetails.dMi[pfType]/EaGirder_Itr);
 
-         if ( pfType == pftCreep )
-         {
-            tsDetails.der[pfType] += (IsZero(EaGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_CR]/EaGirder_Atr);
-            tsDetails.drr[pfType] += (IsZero(EaGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_CR]/EaGirder_Itr);
-         }
-         else if ( pfType == pftShrinkage )
-         {
-            tsDetails.der[pfType] += (IsZero(EaGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_SH]/EaGirder_Atr);
-            tsDetails.drr[pfType] += (IsZero(EaGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_SH]/EaGirder_Itr);
-         }
-         else if ( pfType == pftRelaxation )
-         {
-            tsDetails.der[pfType] += (IsZero(EaGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_RE]/EaGirder_Atr);
-            tsDetails.drr[pfType] += (IsZero(EaGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_RE]/EaGirder_Itr);
-         }
-
          // Total deformation of the composite section
          tsDetails.er[pfType] = prevTimeStepDetails.er[pfType] + tsDetails.der[pfType];
          tsDetails.rr[pfType] = prevTimeStepDetails.rr[pfType] + tsDetails.drr[pfType];
 
+         //
+         // Distribute the changes in section forces to the individual elements of the cross section
+         //
+
          // Compute change in force in girder for this interval
-         tsDetails.Girder.dPi[pfType] += IsZero(EGirder_Atr) ? 0 : tsDetails.dPi[pfType]*EGirder_An/EGirder_Atr;
-         tsDetails.Girder.dPi[pfType] += IsZero(EGirder_Itr) ? 0 : tsDetails.dMi[pfType]*EGirder_An*(tsDetails.Ytr-tsDetails.Girder.Yn)/EGirder_Itr;
-         tsDetails.Girder.dMi[pfType] += IsZero(EGirder_Itr) ? 0 : tsDetails.dMi[pfType]*EGirder_In/EGirder_Itr;
+         Float64 dei = (IsZero(EaGirder_Atr) ? 0 : tsDetails.dPi[pfType]/EaGirder_Atr)
+                     + (IsZero(EaGirder_Itr) ? 0 : tsDetails.dMi[pfType]*(tsDetails.Ytr - tsDetails.Girder.Yn)/EaGirder_Itr);
+         Float64 dri = (IsZero(EaGirder_Itr) ? 0 : tsDetails.dMi[pfType]/EaGirder_Itr);
+         Float64 dPi = dei*EaGirder_An;
+         Float64 dMi = dri*EaGirder_In;
+
+         tsDetails.Girder.dei[pfType] += dei;
+         tsDetails.Girder.dri[pfType] += dri;
+         tsDetails.Girder.dPi[pfType] += dPi;
+         tsDetails.Girder.dMi[pfType] += dMi;
 
          if ( pfType == pftCreep )
          {
-            tsDetails.Girder.dPi[pfType] -= IsZero(EGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_CR]*EGirder_An/EGirder_Atr + tsDetails.Girder.PrCreep;
-            tsDetails.Girder.dPi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_CR]*EGirder_An*(tsDetails.Ytr-tsDetails.Girder.Yn)/EGirder_Itr;
-            tsDetails.Girder.dMi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_CR]*EGirder_In/EGirder_Itr + tsDetails.Girder.MrCreep;
+            dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_CR]/EaGirder_Atr;
+            dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_CR]*(tsDetails.Ytr - tsDetails.Girder.Yn)/EaGirder_Itr;
+            dri  = IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_CR]/EaGirder_Itr;
+
+            dPi = dei*EaGirder_An + tsDetails.Girder.PrCreep;
+            dMi = dri*EaGirder_In + tsDetails.Girder.MrCreep;
+
+            tsDetails.Girder.dei[pfType] += dei;
+            tsDetails.Girder.dri[pfType] += dri;
+            tsDetails.Girder.dPi[pfType] += dPi;
+            tsDetails.Girder.dMi[pfType] += dMi;
          }
          else if ( pfType == pftShrinkage )
          {
-            tsDetails.Girder.dPi[pfType] -= IsZero(EGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_SH]*EGirder_An/EGirder_Atr + tsDetails.Girder.PrShrinkage;
-            tsDetails.Girder.dPi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_SH]*EGirder_An*(tsDetails.Ytr-tsDetails.Girder.Yn)/EGirder_Itr;
-            tsDetails.Girder.dMi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_SH]*EGirder_In/EGirder_Itr;
+            dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_SH]/EaGirder_Atr;
+            dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_SH]*(tsDetails.Ytr - tsDetails.Girder.Yn)/EaGirder_Itr;
+            dri  = IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_SH]/EaGirder_Itr;
+
+            dPi = dei*EaGirder_An + tsDetails.Girder.PrShrinkage;
+            dMi = dri*EaGirder_In;
+
+            tsDetails.Girder.dei[pfType] += dei;
+            tsDetails.Girder.dri[pfType] += dri;
+            tsDetails.Girder.dPi[pfType] += dPi;
+            tsDetails.Girder.dMi[pfType] += dMi;
          }
          else if ( pfType == pftRelaxation )
          {
-            tsDetails.Girder.dPi[pfType] -= IsZero(EGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_RE]*EGirder_An/EGirder_Atr;
-            tsDetails.Girder.dPi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_RE]*EGirder_An*(tsDetails.Ytr-tsDetails.Girder.Yn)/EGirder_Itr;
-            tsDetails.Girder.dMi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_RE]*EGirder_In/EGirder_Itr;
+            dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_RE]/EaGirder_Atr;
+            dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_RE]*(tsDetails.Ytr - tsDetails.Girder.Yn)/EaGirder_Itr;
+            dri  = IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_RE]/EaGirder_Itr;
+
+            dPi = dei*EaGirder_An;
+            dMi = dri*EaGirder_In;
+
+            tsDetails.Girder.dei[pfType] += dei;
+            tsDetails.Girder.dri[pfType] += dri;
+            tsDetails.Girder.dPi[pfType] += dPi;
+            tsDetails.Girder.dMi[pfType] += dMi;
          }
 
-         tsDetails.Girder.Pi[pfType] += prevTimeStepDetails.Girder.Pi[pfType] + tsDetails.Girder.dPi[pfType];
-         tsDetails.Girder.Mi[pfType] += prevTimeStepDetails.Girder.Mi[pfType] + tsDetails.Girder.dMi[pfType];
+         tsDetails.Girder.Pi[pfType]  += prevTimeStepDetails.Girder.Pi[pfType] + tsDetails.Girder.dPi[pfType];
+         tsDetails.Girder.Mi[pfType]  += prevTimeStepDetails.Girder.Mi[pfType] + tsDetails.Girder.dMi[pfType];
+         tsDetails.Girder.dP          += tsDetails.Girder.dPi[pfType];
+         tsDetails.Girder.dM          += tsDetails.Girder.dMi[pfType];
+         tsDetails.Girder.P           += tsDetails.Girder.Pi[pfType];
+         tsDetails.Girder.M           += tsDetails.Girder.Mi[pfType];
 
-         tsDetails.Girder.dP += tsDetails.Girder.dPi[pfType];
-         tsDetails.Girder.dM += tsDetails.Girder.dMi[pfType];
-         tsDetails.Girder.P  += tsDetails.Girder.Pi[pfType];
-         tsDetails.Girder.M  += tsDetails.Girder.Mi[pfType];
+         tsDetails.Girder.ei[pfType]  += prevTimeStepDetails.Girder.ei[pfType] + tsDetails.Girder.dei[pfType];
+         tsDetails.Girder.ri[pfType]  += prevTimeStepDetails.Girder.ri[pfType] + tsDetails.Girder.dri[pfType];
+         tsDetails.Girder.de          += tsDetails.Girder.dei[pfType];
+         tsDetails.Girder.dr          += tsDetails.Girder.dri[pfType];
+         tsDetails.Girder.e           += tsDetails.Girder.ei[pfType];
+         tsDetails.Girder.r           += tsDetails.Girder.ri[pfType];
 
          // Compute girder stresses at end of interval
          // f = f end of previous interval + change in stress this interval
          if ( !IsZero(tsDetails.Girder.An) && !IsZero(tsDetails.Girder.In) )
          {
             tsDetails.Girder.f[pgsTypes::TopFace][pfType][rtIncremental] = tsDetails.Girder.dPi[pfType]/tsDetails.Girder.An + tsDetails.Girder.dMi[pfType]*tsDetails.Girder.Yn/tsDetails.Girder.In;
-            tsDetails.Girder.f[pgsTypes::TopFace][pfType][rtCumulative] = prevTimeStepDetails.Girder.f[pgsTypes::TopFace][pfType][rtCumulative] + tsDetails.Girder.f[pgsTypes::TopFace][pfType][rtIncremental];
+            tsDetails.Girder.f[pgsTypes::TopFace][pfType][rtCumulative]  = prevTimeStepDetails.Girder.f[pgsTypes::TopFace][pfType][rtCumulative] + tsDetails.Girder.f[pgsTypes::TopFace][pfType][rtIncremental];
             
             tsDetails.Girder.f[pgsTypes::BottomFace][pfType][rtIncremental] = tsDetails.Girder.dPi[pfType]/tsDetails.Girder.An + tsDetails.Girder.dMi[pfType]*(tsDetails.Girder.H + tsDetails.Girder.Yn)/tsDetails.Girder.In;
-            tsDetails.Girder.f[pgsTypes::BottomFace][pfType][rtCumulative] = prevTimeStepDetails.Girder.f[pgsTypes::BottomFace][pfType][rtCumulative] + tsDetails.Girder.f[pgsTypes::BottomFace][pfType][rtIncremental];
+            tsDetails.Girder.f[pgsTypes::BottomFace][pfType][rtCumulative]  = prevTimeStepDetails.Girder.f[pgsTypes::BottomFace][pfType][rtCumulative] + tsDetails.Girder.f[pgsTypes::BottomFace][pfType][rtIncremental];
          }
 
          if ( compositeDeckIntervalIdx <= intervalIdx )
          {
             // Compute change in force in deck for this interval
-            tsDetails.Deck.dPi[pfType] += IsZero(EGirder_Atr) ? 0 : tsDetails.dPi[pfType]*EDeck_An/EGirder_Atr;
-            tsDetails.Deck.dPi[pfType] += IsZero(EGirder_Itr) ? 0 : tsDetails.dMi[pfType]*EDeck_An*(tsDetails.Ytr-tsDetails.Deck.Yn)/EGirder_Itr;
-            tsDetails.Deck.dMi[pfType] += IsZero(EGirder_Itr) ? 0 : tsDetails.dMi[pfType]*EDeck_In/EGirder_Itr;
+            dei = (IsZero(EaGirder_Atr) ? 0 : tsDetails.dPi[pfType]/EaGirder_Atr)
+                + (IsZero(EaGirder_Itr) ? 0 : tsDetails.dMi[pfType]*(tsDetails.Ytr - tsDetails.Deck.Yn)/EaGirder_Itr);
+            dri = (IsZero(EaGirder_Itr) ? 0 : tsDetails.dMi[pfType]/EaGirder_Itr);
+            dPi = dei*EaDeck_An;
+            dMi = dri*EaDeck_In;
+
+            tsDetails.Deck.dei[pfType] += dei;
+            tsDetails.Deck.dri[pfType] += dri;
+            tsDetails.Deck.dPi[pfType] += dPi;
+            tsDetails.Deck.dMi[pfType] += dMi;
 
             if ( pfType == pftCreep )
             {
-               tsDetails.Deck.dPi[pfType] -= IsZero(EGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_CR]*EDeck_An/EGirder_Atr + tsDetails.Deck.PrCreep;
-               tsDetails.Deck.dPi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_CR]*EDeck_An*(tsDetails.Ytr-tsDetails.Deck.Yn)/EGirder_Itr;
-               tsDetails.Deck.dMi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_CR]*EDeck_In/EGirder_Itr + tsDetails.Deck.MrCreep;
+               dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_CR]/EaGirder_Atr;
+               dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_CR]*(tsDetails.Ytr - tsDetails.Deck.Yn)/EaGirder_Itr;
+               dri  = IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_CR]/EaGirder_Itr;
+
+               dPi = dei*EaDeck_An + tsDetails.Deck.PrCreep;
+               dMi = dri*EaDeck_In + tsDetails.Deck.MrCreep;
+
+               tsDetails.Deck.dei[pfType] += dei;
+               tsDetails.Deck.dri[pfType] += dri;
+               tsDetails.Deck.dPi[pfType] += dPi;
+               tsDetails.Deck.dMi[pfType] += dMi;
             }
             else if ( pfType == pftShrinkage )
             {
-               tsDetails.Deck.dPi[pfType] -= IsZero(EGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_SH]*EDeck_An/EGirder_Atr + tsDetails.Deck.PrShrinkage;
-               tsDetails.Deck.dPi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_SH]*EDeck_An*(tsDetails.Ytr-tsDetails.Deck.Yn)/EGirder_Itr;
-               tsDetails.Deck.dMi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_SH]*EDeck_In/EGirder_Itr;
+               dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_SH]/EaGirder_Atr;
+               dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_SH]*(tsDetails.Ytr - tsDetails.Deck.Yn)/EaGirder_Itr;
+               dri  = IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_SH]/EaGirder_Itr;
+
+               dPi = dei*EaDeck_An + tsDetails.Deck.PrShrinkage;
+               dMi = dri*EaDeck_In;
+
+               tsDetails.Deck.dei[pfType] += dei;
+               tsDetails.Deck.dri[pfType] += dri;
+               tsDetails.Deck.dPi[pfType] += dPi;
+               tsDetails.Deck.dMi[pfType] += dMi;
             }
             else if ( pfType == pftRelaxation )
             {
-               tsDetails.Deck.dPi[pfType] -= IsZero(EGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_RE]*EDeck_An/EGirder_Atr;
-               tsDetails.Deck.dPi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_RE]*EDeck_An*(tsDetails.Ytr-tsDetails.Deck.Yn)/EGirder_Itr;
-               tsDetails.Deck.dMi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_RE]*EDeck_In/EGirder_Itr;
+               dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_RE]/EaGirder_Atr;
+               dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_RE]*(tsDetails.Ytr - tsDetails.Deck.Yn)/EaGirder_Itr;
+               dri  = IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_RE]/EaGirder_Itr;
+
+               dPi = dei*EaDeck_An;
+               dMi = dri*EaDeck_In;
+
+               tsDetails.Deck.dei[pfType] += dei;
+               tsDetails.Deck.dri[pfType] += dri;
+               tsDetails.Deck.dPi[pfType] += dPi;
+               tsDetails.Deck.dMi[pfType] += dMi;
             }
 
-            tsDetails.Deck.Pi[pfType] += prevTimeStepDetails.Deck.Pi[pfType] + tsDetails.Deck.dPi[pfType];
-            tsDetails.Deck.Mi[pfType] += prevTimeStepDetails.Deck.Mi[pfType] + tsDetails.Deck.dMi[pfType];
+            tsDetails.Deck.Pi[pfType]  += prevTimeStepDetails.Deck.Pi[pfType] + tsDetails.Deck.dPi[pfType];
+            tsDetails.Deck.Mi[pfType]  += prevTimeStepDetails.Deck.Mi[pfType] + tsDetails.Deck.dMi[pfType];
+            tsDetails.Deck.dP          += tsDetails.Deck.dPi[pfType];
+            tsDetails.Deck.dM          += tsDetails.Deck.dMi[pfType];
+            tsDetails.Deck.P           += tsDetails.Deck.Pi[pfType];
+            tsDetails.Deck.M           += tsDetails.Deck.Mi[pfType];
 
-            tsDetails.Deck.dP += tsDetails.Deck.dPi[pfType];
-            tsDetails.Deck.dM += tsDetails.Deck.dMi[pfType];
-            tsDetails.Deck.P  += tsDetails.Deck.Pi[pfType];
-            tsDetails.Deck.M  += tsDetails.Deck.Mi[pfType];
+            tsDetails.Deck.ei[pfType]  += prevTimeStepDetails.Deck.ei[pfType] + tsDetails.Deck.dei[pfType];
+            tsDetails.Deck.ri[pfType]  += prevTimeStepDetails.Deck.ri[pfType] + tsDetails.Deck.dri[pfType];
+            tsDetails.Deck.de          += tsDetails.Deck.dei[pfType];
+            tsDetails.Deck.dr          += tsDetails.Deck.dri[pfType];
+            tsDetails.Deck.e           += tsDetails.Deck.ei[pfType];
+            tsDetails.Deck.r           += tsDetails.Deck.ri[pfType];
+
 
             // Compute deck stresses at end of interval
             // f = f end of previous interval + change in stress this interval
@@ -2031,31 +2011,51 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
             for ( int i = 0; i < 2; i++ )
             {
                pgsTypes::DeckRebarMatType mat = (pgsTypes::DeckRebarMatType)i;
-               tsDetails.DeckRebar[mat].dPi[pfType]  = IsZero(EGirder_Atr) ? 0 : tsDetails.dPi[pfType]*EDeckRebar*tsDetails.DeckRebar[mat].As/EGirder_Atr;
-               tsDetails.DeckRebar[mat].dPi[pfType] += IsZero(EGirder_Itr) ? 0 : tsDetails.dMi[pfType]*EDeckRebar*tsDetails.DeckRebar[mat].As*(tsDetails.Ytr - tsDetails.DeckRebar[mat].Ys)/EGirder_Itr;
+
+               dei = (IsZero(EaGirder_Atr) ? 0 : tsDetails.dPi[pfType]/EaGirder_Atr)
+                   + (IsZero(EaGirder_Itr) ? 0 : tsDetails.dMi[pfType]*(tsDetails.Ytr - tsDetails.DeckRebar[mat].Ys)/EaGirder_Itr);
+               dPi = dei*EDeckRebar*tsDetails.DeckRebar[mat].As;
+
+               tsDetails.DeckRebar[mat].dei[pfType] += dei;
+               tsDetails.DeckRebar[mat].dPi[pfType] += dPi;
 
                if ( pfType == pftCreep )
                {
-                  tsDetails.DeckRebar[mat].dPi[pfType] -= IsZero(EGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_CR]*EDeckRebar*tsDetails.DeckRebar[mat].As/EGirder_Atr;
-                  tsDetails.DeckRebar[mat].dPi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_CR]*EDeckRebar*tsDetails.DeckRebar[mat].As*(tsDetails.Ytr-tsDetails.DeckRebar[mat].Ys)/EGirder_Itr;
+                  dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_CR]/EaGirder_Atr;
+                  dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_CR]*(tsDetails.Ytr - tsDetails.DeckRebar[mat].Ys)/EaGirder_Itr;
+                  dPi  = dei*EDeckRebar*tsDetails.DeckRebar[mat].As;
+
+                  tsDetails.DeckRebar[mat].dei[pfType] += dei;
+                  tsDetails.DeckRebar[mat].dPi[pfType] += dPi;
                }
                else if ( pfType == pftShrinkage )
                {
-                  tsDetails.DeckRebar[mat].dPi[pfType] -= IsZero(EGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_SH]*EDeckRebar*tsDetails.DeckRebar[mat].As/EGirder_Atr;
-                  tsDetails.DeckRebar[mat].dPi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_SH]*EDeckRebar*tsDetails.DeckRebar[mat].As*(tsDetails.Ytr-tsDetails.DeckRebar[mat].Ys)/EGirder_Itr;
+                  dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_SH]/EaGirder_Atr;
+                  dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_SH]*(tsDetails.Ytr - tsDetails.DeckRebar[mat].Ys)/EaGirder_Itr;
+                  dPi  = dei*EDeckRebar*tsDetails.DeckRebar[mat].As;
+
+                  tsDetails.DeckRebar[mat].dei[pfType] += dei;
+                  tsDetails.DeckRebar[mat].dPi[pfType] += dPi;
                }
                else if ( pfType == pftRelaxation )
                {
-                  tsDetails.DeckRebar[mat].dPi[pfType] -= IsZero(EGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_RE]*EDeckRebar*tsDetails.DeckRebar[mat].As/EGirder_Atr;
-                  tsDetails.DeckRebar[mat].dPi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_RE]*EDeckRebar*tsDetails.DeckRebar[mat].As*(tsDetails.Ytr-tsDetails.DeckRebar[mat].Ys)/EGirder_Itr;
+                  dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_RE]/EaGirder_Atr;
+                  dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_RE]*(tsDetails.Ytr - tsDetails.DeckRebar[mat].Ys)/EaGirder_Itr;
+                  dPi  = dei*EDeckRebar*tsDetails.DeckRebar[mat].As;
+
+                  tsDetails.DeckRebar[mat].dei[pfType] += dei;
+                  tsDetails.DeckRebar[mat].dPi[pfType] += dPi;
                }
 
-               tsDetails.DeckRebar[mat].Pi[pfType] = prevTimeStepDetails.DeckRebar[mat].Pi[pfType] + tsDetails.DeckRebar[mat].dPi[pfType];
+               tsDetails.DeckRebar[mat].Pi[pfType]  += prevTimeStepDetails.DeckRebar[mat].Pi[pfType] + tsDetails.DeckRebar[mat].dPi[pfType];
+               tsDetails.DeckRebar[mat].dP          += tsDetails.DeckRebar[mat].dPi[pfType];
+               tsDetails.DeckRebar[mat].P           += tsDetails.DeckRebar[mat].Pi[pfType];
 
-               tsDetails.DeckRebar[mat].dP += tsDetails.DeckRebar[mat].dPi[pfType];
-               tsDetails.DeckRebar[mat].P  += tsDetails.DeckRebar[mat].Pi[pfType];
-            }
-         }
+               tsDetails.DeckRebar[mat].ei[pfType]  += prevTimeStepDetails.DeckRebar[mat].ei[pfType] + tsDetails.DeckRebar[mat].dei[pfType];
+               tsDetails.DeckRebar[mat].de          += tsDetails.DeckRebar[mat].dei[pfType];
+               tsDetails.DeckRebar[mat].e           += tsDetails.DeckRebar[mat].ei[pfType];
+            } // next deck rebar type
+         } // end if deck is composite
 
          // Compute change in force in girder rebar
          IndexType rebarIdx = 0;
@@ -2064,31 +2064,52 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
          for ( ; rebarIter != rebarIterEnd; rebarIter++, rebarIdx++ )
          {
             TIME_STEP_REBAR& tsRebar(*rebarIter);
-            tsRebar.dPi[pfType] += IsZero(EGirder_Atr) ? 0 : tsDetails.dPi[pfType]*EGirderRebar*tsRebar.As/EGirder_Atr;
-            tsRebar.dPi[pfType] += IsZero(EGirder_Itr) ? 0 : tsDetails.dMi[pfType]*EGirderRebar*tsRebar.As*(tsDetails.Ytr - tsRebar.Ys)/EGirder_Itr;
+            dei = (IsZero(EaGirder_Atr) ? 0 : tsDetails.dPi[pfType]/EaGirder_Atr)
+                + (IsZero(EaGirder_Itr) ? 0 : tsDetails.dMi[pfType]*(tsDetails.Ytr - tsRebar.Ys)/EaGirder_Itr);
+            dPi = dei*EGirderRebar*tsRebar.As;
+
+            tsRebar.dei[pfType] += dei;
+            tsRebar.dPi[pfType] += dPi;
 
             if ( pfType == pftCreep )
             {
-               tsRebar.dPi[pfType] -= IsZero(EGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_CR]*EGirderRebar*tsRebar.As/EGirder_Atr;
-               tsRebar.dPi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_CR]*EGirderRebar*tsRebar.As*(tsDetails.Ytr-tsRebar.Ys)/EGirder_Itr;
+               dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_CR]/EaGirder_Atr;
+               dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_CR]*(tsDetails.Ytr - tsRebar.Ys)/EaGirder_Itr;
+               dPi  = dei*EGirderRebar*tsRebar.As;
+
+               tsRebar.dei[pfType] += dei;
+               tsRebar.dPi[pfType] += dPi;
             }
             else if ( pfType == pftShrinkage )
             {
-               tsRebar.dPi[pfType] -= IsZero(EGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_SH]*EGirderRebar*tsRebar.As/EGirder_Atr;
-               tsRebar.dPi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_SH]*EGirderRebar*tsRebar.As*(tsDetails.Ytr-tsRebar.Ys)/EGirder_Itr;
+               dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_SH]/EaGirder_Atr;
+               dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_SH]*(tsDetails.Ytr - tsRebar.Ys)/EaGirder_Itr;
+               dPi  = dei*EGirderRebar*tsRebar.As;
+
+               tsRebar.dei[pfType] += dei;
+               tsRebar.dPi[pfType] += dPi;
             }
             else if ( pfType == pftRelaxation )
             {
-               tsRebar.dPi[pfType] -= IsZero(EGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_RE]*EGirderRebar*tsRebar.As/EGirder_Atr;
-               tsRebar.dPi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_RE]*EGirderRebar*tsRebar.As*(tsDetails.Ytr-tsRebar.Ys)/EGirder_Itr;
+               dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_RE]/EaGirder_Atr;
+               dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_RE]*(tsDetails.Ytr - tsRebar.Ys)/EaGirder_Itr;
+               dPi  = dei*EGirderRebar*tsRebar.As;
+
+               tsRebar.dei[pfType] += dei;
+               tsRebar.dPi[pfType] += dPi;
             }
 
-            tsRebar.Pi[pfType] = prevTimeStepDetails.GirderRebar[rebarIdx].Pi[pfType] + tsRebar.dPi[pfType];
-            tsRebar.dP += tsRebar.dPi[pfType];
-            tsRebar.P  += tsRebar.Pi[pfType];
+            tsRebar.Pi[pfType]  += prevTimeStepDetails.GirderRebar[rebarIdx].Pi[pfType] + tsRebar.dPi[pfType];
+            tsRebar.dP          += tsRebar.dPi[pfType];
+            tsRebar.P           += tsRebar.Pi[pfType];
+
+            tsRebar.ei[pfType]  += prevTimeStepDetails.GirderRebar[rebarIdx].ei[pfType] + tsRebar.dei[pfType];
+            tsRebar.de          += tsRebar.dei[pfType];
+            tsRebar.e           += tsRebar.ei[pfType];
          }
 
          // Compute change in force in strands
+         // Strands don't occur in closure joints
          CClosureKey closureKey;
          if ( !m_pPoi->IsInClosureJoint(poi,&closureKey) )
          {
@@ -2100,78 +2121,62 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
                pgsTypes::StrandType strandType = *strandTypeIter;
 #if defined LUMP_STRANDS
                // change in strand force
-               tsDetails.Strands[strandType].dPi[pfType] += IsZero(EGirder_Atr) ? 0 : tsDetails.dPi[pfType]*EStrand[strandType]*tsDetails.Strands[strandType].As/EGirder_Atr;
-               tsDetails.Strands[strandType].dPi[pfType] += IsZero(EGirder_Itr) ? 0 : tsDetails.dMi[pfType]*EStrand[strandType]*tsDetails.Strands[strandType].As*(tsDetails.Ytr - tsDetails.Strands[strandType].Ys)/EGirder_Itr;
+               dei = (IsZero(EaGirder_Atr) ? 0 : tsDetails.dPi[pfType]/EaGirder_Atr)
+                   + (IsZero(EaGirder_Itr) ? 0 : tsDetails.dMi[pfType]*(tsDetails.Ytr - tsDetails.Strands[strandType].Ys)/EaGirder_Itr);
+               dPi = dei*EStrand[strandType]*tsDetails.Strands[strandType].As;
+
+               tsDetails.Strands[strandType].dei[pfType] += dei;
+               tsDetails.Strands[strandType].dPi[pfType] += dPi;
 
                if ( pfType == pftCreep )
                {
-                  tsDetails.Strands[strandType].dPi[pfType] -= IsZero(EGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_CR]*EStrand[strandType]*tsDetails.Strands[strandType].As/EGirder_Atr;
-                  tsDetails.Strands[strandType].dPi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_CR]*EStrand[strandType]*tsDetails.Strands[strandType].As*(tsDetails.Ytr-tsDetails.Strands[strandType].Ys)/EGirder_Itr;
+                  dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_CR]/EaGirder_Atr;
+                  dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_CR]*(tsDetails.Ytr - tsDetails.Strands[strandType].Ys)/EaGirder_Itr;
+                  dPi  = dei*EStrand[strandType]*tsDetails.Strands[strandType].As;
+
+                  tsDetails.Strands[strandType].dei[pfType] += dei;
+                  tsDetails.Strands[strandType].dPi[pfType] += dPi;
                }
                else if ( pfType == pftShrinkage )
                {
-                  tsDetails.Strands[strandType].dPi[pfType] -= IsZero(EGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_SH]*EStrand[strandType]*tsDetails.Strands[strandType].As/EGirder_Atr;
-                  tsDetails.Strands[strandType].dPi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_SH]*EStrand[strandType]*tsDetails.Strands[strandType].As*(tsDetails.Ytr-tsDetails.Strands[strandType].Ys)/EGirder_Itr;
+                  dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_SH]/EaGirder_Atr;
+                  dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_SH]*(tsDetails.Ytr - tsDetails.Strands[strandType].Ys)/EaGirder_Itr;
+                  dPi  = dei*EStrand[strandType]*tsDetails.Strands[strandType].As;
+
+                  tsDetails.Strands[strandType].dei[pfType] += dei;
+                  tsDetails.Strands[strandType].dPi[pfType] += dPi;
                }
                else if ( pfType == pftRelaxation )
                {
-                  tsDetails.Strands[strandType].dPi[pfType] -= IsZero(EGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_RE]*EStrand[strandType]*tsDetails.Strands[strandType].As/EGirder_Atr + tsDetails.Strands[strandType].PrRelaxation;
-                  tsDetails.Strands[strandType].dPi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_RE]*EStrand[strandType]*tsDetails.Strands[strandType].As*(tsDetails.Ytr-tsDetails.Strands[strandType].Ys)/EGirder_Itr;
+                  dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_RE]/EaGirder_Atr;
+                  dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_RE]*(tsDetails.Ytr - tsDetails.Strands[strandType].Ys)/EaGirder_Itr;
+                  dPi  = dei*EStrand[strandType]*tsDetails.Strands[strandType].As + tsDetails.Strands[strandType].PrRelaxation;
+
+                  tsDetails.Strands[strandType].dei[pfType] += dei;
+                  tsDetails.Strands[strandType].dPi[pfType] += dPi;
                }
 
-               tsDetails.Strands[strandType].Pi[pfType]  = prevTimeStepDetails.Strands[strandType].Pi[pfType] + tsDetails.Strands[strandType].dPi[pfType];
-               tsDetails.Strands[strandType].dP += tsDetails.Strands[strandType].dPi[pfType];
-               tsDetails.Strands[strandType].P  += tsDetails.Strands[strandType].Pi[pfType];
+               tsDetails.Strands[strandType].Pi[pfType]  += prevTimeStepDetails.Strands[strandType].Pi[pfType] + tsDetails.Strands[strandType].dPi[pfType];
+               tsDetails.Strands[strandType].dP          += tsDetails.Strands[strandType].dPi[pfType];
+               tsDetails.Strands[strandType].P           += tsDetails.Strands[strandType].Pi[pfType];
  
+               tsDetails.Strands[strandType].ei[pfType]  += prevTimeStepDetails.Strands[strandType].ei[pfType] + tsDetails.Strands[strandType].dei[pfType];
+               tsDetails.Strands[strandType].de          += tsDetails.Strands[strandType].dei[pfType];
+               tsDetails.Strands[strandType].e           += tsDetails.Strands[strandType].ei[pfType];
+
                // Losses and effective prestress
-               tsDetails.Strands[strandType].dfpe[pfType] += IsZero(tsDetails.Strands[strandType].As) ? 0 : tsDetails.Strands[strandType].dPi[pfType]/tsDetails.Strands[strandType].As;
+               tsDetails.Strands[strandType].dfpei[pfType] += IsZero(tsDetails.Strands[strandType].As) ? 0 : tsDetails.Strands[strandType].dPi[pfType]/tsDetails.Strands[strandType].As;
+               tsDetails.Strands[strandType].dfpe += tsDetails.Strands[strandType].dfpei[pfType];
                if ( i == 0 )
                {
                   tsDetails.Strands[strandType].fpe  = prevTimeStepDetails.Strands[strandType].fpe;
                   tsDetails.Strands[strandType].loss = prevTimeStepDetails.Strands[strandType].loss;
                }
-               tsDetails.Strands[strandType].fpe  += tsDetails.Strands[strandType].dfpe[pfType];
-               tsDetails.Strands[strandType].loss -= tsDetails.Strands[strandType].dfpe[pfType];
+               tsDetails.Strands[strandType].fpe  += tsDetails.Strands[strandType].dfpei[pfType];
+               tsDetails.Strands[strandType].loss -= tsDetails.Strands[strandType].dfpei[pfType];
 
                // check total loss = fpj - fpe
                ATLASSERT(IsEqual(tsDetails.Strands[strandType].loss,details.TimeStepDetails[stressStrandsIntervalIdx].Strands[strandType].fpj - tsDetails.Strands[strandType].fpe));
-
-               // change in forces on composite section due to change in pretension forces this interval
-               Float64 dPps = -tsDetails.Strands[strandType].dPi[pfType];
-               Float64 dMps = -tsDetails.Strands[strandType].dPi[pfType]*(tsDetails.Ytr - tsDetails.Strands[strandType].Ys);
-
-               // deformation due the prestress loss this interval
-               Float64 deps = IsZero(EaGirder_Atr) ? 0 : dPps/EaGirder_Atr;
-               Float64 drps = IsZero(EaGirder_Itr) ? 0 : dMps/EaGirder_Itr;
-               tsDetails.der[pftPretension] += deps;
-               tsDetails.drr[pftPretension] += drps;
-               tsDetails.er[pftPretension]  += tsDetails.der[pftPretension];
-               tsDetails.rr[pftPretension]  += tsDetails.drr[pftPretension];
-
-               // change in force on girder concrete section due to loss in prestress this interal
-               Float64 dPpsg = deps*EGirder_An;
-               Float64 dMpsg = drps*EGirder_In;
-
-               // change in stress in girder due to prestress loss this interval
-               if ( !IsZero(tsDetails.Girder.An) && !IsZero(tsDetails.Girder.In) )
-               {
-                  tsDetails.Girder.f[pgsTypes::TopFace   ][pftPretension][rtIncremental] += dPpsg/tsDetails.Girder.An + dMpsg*tsDetails.Girder.Yn/tsDetails.Girder.In;
-                  tsDetails.Girder.f[pgsTypes::BottomFace][pftPretension][rtIncremental] += dPpsg/tsDetails.Girder.An + dMpsg*(tsDetails.Girder.H + tsDetails.Girder.Yn)/tsDetails.Girder.In;
-               }
-
-               // change in force on deck concrete section due to loss in prestress this interval
-               if ( compositeDeckIntervalIdx < intervalIdx )
-               {
-                  Float64 dPpsd = deps*EDeck_An;
-                  Float64 dMpsd = drps*EDeck_In;
-
-                  // change in stress in deck due to prestress loss this interval
-                  if ( !IsZero(tsDetails.Deck.An) && !IsZero(tsDetails.Deck.In) )
-                  {
-                     tsDetails.Deck.f[pgsTypes::TopFace   ][pftPretension][rtIncremental] += dPpsd/tsDetails.Deck.An + dMpsd*(tsDetails.Deck.Yn - tsDetails.Deck.H)/tsDetails.Deck.In;
-                     tsDetails.Deck.f[pgsTypes::BottomFace][pftPretension][rtIncremental] += dPpsd/tsDetails.Deck.An + dMpsd*tsDetails.Deck.Yn/tsDetails.Deck.In;
-                  }
-               }
 #else
                StrandIndexType nStrands = m_pStrandGeom->GetStrandCount(segmentKey,strandType);
                for ( StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++ )
@@ -2179,93 +2184,69 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
                   TIME_STEP_STRAND& strand = tsDetails.Strands[strandType][strandIdx];
 
                   // change in strand force
-                  strand.dPi[pfType] += IsZero(EGirder_Atr) ? 0 : tsDetails.dPi[pfType]*EStrand[strandType]*strand.As/EGirder_Atr;
-                  strand.dPi[pfType] += IsZero(EGirder_Itr) ? 0 : tsDetails.dMi[pfType]*EStrand[strandType]*strand.As*(tsDetails.Ytr - strand.Ys)/EGirder_Itr;
+                  dei = (IsZero(EaGirder_Atr) ? 0 : tsDetails.dPi[pfType]/EaGirder_Atr)
+                      + (IsZero(EaGirder_Itr) ? 0 : tsDetails.dMi[pfType]*(tsDetails.Ytr - strand.Ys)/EaGirder_Itr);
+                  dPi = dei*EStrand[strandType]*strand.As;
+
+                  strand.dei[pfType] += dei;
+                  strand.dPi[pfType] += dPi;
 
                   if ( pfType == pftCreep )
                   {
-                     strand.dPi[pfType] -= IsZero(EGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_CR]*EStrand[strandType]*tsDetails.Strands[strandType].As/EGirder_Atr;
-                     strand.dPi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_CR]*EStrand[strandType]*tsDetails.Strands[strandType].As*(tsDetails.Ytr-strand.Ys)/EGirder_Itr;
+                     dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_CR]/EaGirder_Atr;
+                     dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_CR]*(tsDetails.Ytr - strand.Ys)/EaGirder_Itr;
+                     dPi  = dei*EStrand[strandType]*tsDetails.Strands[strandType].As;
+
+                     strand.dei[pfType] += dei;
+                     strand.dPi[pfType] += dPi;
                   }
                   else if ( pfType == pftShrinkage )
                   {
-                     strand.dPi[pfType] -= IsZero(EGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_SH]*EStrand[strandType]*tsDetails.Strands[strandType].As/EGirder_Atr;
-                     strand.dPi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_SH]*EStrand[strandType]*tsDetails.Strands[strandType].As*(tsDetails.Ytr-strand.Ys)/EGirder_Itr;
+                     dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_SH]/EaGirder_Atr;
+                     dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_SH]*(tsDetails.Ytr - strand.Ys)/EaGirder_Itr;
+                     dPi  = dei*EStrand[strandType]*tsDetails.Strands[strandType].As;
+
+                     strand.dei[pfType] += dei;
+                     strand.dPi[pfType] += dPi;
                   }
                   else if ( pfType == pftRelaxation )
                   {
-                     strand.dPi[pfType] -= IsZero(EGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_RE]*EStrand[strandType]*tsDetails.Strands[strandType].As/EGirder_Atr + strand.PrRelaxation;
-                     strand.dPi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_RE]*EStrand[strandType]*tsDetails.Strands[strandType].As*(tsDetails.Ytr-strand.Ys)/EGirder_Itr;
+                     dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_RE]/EaGirder_Atr;
+                     dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_RE]*(tsDetails.Ytr - strand.Ys)/EaGirder_Itr;
+                     dPi  = dei*EStrand[strandType]*tsDetails.Strands[strandType].As + strand.PrRelaxation;
+
+                     strand.dei[pfType] += dei;
+                     strand.dPi[pfType] += dPi;
                   }
 
-                  strand.Pi[pfType]  = prevTimeStepDetails.Strands[strandType][strandIdx].Pi[pfType] + strand.dPi[pfType];
- 
-                  strand.dP += strand.dPi[pfType];
-                  strand.P  += strand.Pi[pfType];
+                  strand.Pi[pfType]  += prevTimeStepDetails.Strands[strandType][strandIdx].Pi[pfType] + strand.dPi[pfType];
+                  strand.dP          += strand.dPi[pfType];
+                  strand.P           += strand.Pi[pfType];
+
+                  strand.ei[pfType]  += prevTimeStepDetails.Strands[strandType][strandIdx].ei[pfType] + strands.dei[pfType];
+                  strand.de          += strands.dei[pfType];
+                  strand.e           += strands.ei[pfType];
 
                   // Losses and effective prestress
-                  strand.dfpe[pfType] += IsZero(strand.As) ? 0 : strand.dPi[pfType]/strand.As;
+                  strand.dfpei[pfType] += IsZero(strand.As) ? 0 : strand.dPi[pfType]/strand.As;
+                  strand.dfpe += strand.dfpei[pfType];
                   if ( i == 0 )
                   {
                     strand.fpe  = prevTimeStepDetails.Strands[strandType][strandIdx].fpe;
                     strand.loss = prevTimeStepDetails.Strands[strandType][strandIdx].loss;
                   }
-                  strand.fpe  += strand.dfpe[pfType];
-                  strand.loss -= strand.dfpe[pfType];
+                  strand.fpe  += strand.dfpei[pfType];
+                  strand.loss -= strand.dfpei[pfType];
 
                   // check total loss = fpj - fpe
                   ATLASSERT(IsEqual(strand.loss,details.TimeStepDetails[stressStrandsIntervalIdx].Strands[strandType][strandIdx].fpj - strand.fpe));
-
-                  // change in forces on composite section due to change in pretension forces
-                  Float64 dPps = -tsDetails.Strands[strandType][strandIdx].dPi[pfType];
-                  Float64 dMps = -tsDetails.Strands[strandType][strandIdx].dPi[pfType]*(tsDetails.Ytr - tsDetails.Strands[strandType][strandIdx].Ys);
-
-                  // deformation due to prestress loss
-                  Float64 deps = IsZero(EaGirder_Atr) ? 0 : dPps/EaGirder_Atr;
-                  Float64 drps = IsZero(EaGirder_Itr) ? 0 : dMps/EaGirder_Itr;
-                  tsDetails.der[pftPretension] += deps;
-                  tsDetials.drr[pftPretension] += drps;
-                  tsDetails.er[pftPretension]  += tsDetails.der[pftPretension];
-                  tsDetails.rr[pftPretension]  += tsDetails.drr[pftPretension];
-
-                  // change in force on girder concrete section due to loss in prestress
-                  Float64 dPpsg = deps*EGirder_An;
-                  Float64 dMpsg = drps*EGirder_In;
-
-                  // change in stress in girder due to prestress loss
-                  if ( !IsZero(tsDetails.Girder.An) && !IsZero(tsDetails.Girder.In) )
-                  {
-                     tsDetails.Girder.f[pgsTypes::TopFace   ][pftPretension][rtIncremental] += dPpsg/tsDetails.Girder.An + dMpsg*tsDetails.Girder.Yn/tsDetails.Girder.In;
-                     tsDetails.Girder.f[pgsTypes::BottomFace][pftPretension][rtIncremental] += dPpsg/tsDetails.Girder.An + dMpsg*(tsDetails.Girder.H + tsDetails.Girder.Yn)/tsDetails.Girder.In;
-                  }
-
-                  // change in force on deck concrete section due to loss in prestress
-                  if ( compositeDeckIntervalIdx < intervalIdx )
-                  {
-                     Float64 dPpsd = deps*EDeck_An;
-                     Float64 dMpsd = drps*EDeck_In;
-
-                     // change in stress in deck due to prestress loss
-                     if ( !IsZero(tsDetails.Deck.An) && !IsZero(tsDetails.Deck.In) )
-                     {
-                        tsDetails.Deck.f[pgsTypes::TopFace   ][pftPretension][rtIncremental] += dPpsd/tsDetails.Deck.An + dMpsd*(tsDetails.Deck.Yn - tsDetails.Deck.H)/tsDetails.Deck.In;
-                        tsDetails.Deck.f[pgsTypes::BottomFace][pftPretension][rtIncremental] += dPpsd/tsDetails.Deck.An + dMpsd*tsDetails.Deck.Yn/tsDetails.Deck.In;
-                     }
-                  }
-               }
+               } // next strand
 #endif // LUMP_STRANDS
             } // next strand type
 
             // force due to pretensioning at the end of this interval
             tsDetails.Pi[pftPretension] = prevTimeStepDetails.Pi[pftPretension] + tsDetails.dPi[pftPretension];
             tsDetails.Mi[pftPretension] = prevTimeStepDetails.Mi[pftPretension] + tsDetails.dMi[pftPretension];
-
-            // stress at end of this interval in girder/deck = stress at end of previous interval + change during this interval
-            tsDetails.Girder.f[pgsTypes::TopFace   ][pftPretension][rtCumulative] = prevTimeStepDetails.Girder.f[pgsTypes::TopFace   ][pftPretension][rtCumulative] + tsDetails.Girder.f[pgsTypes::TopFace   ][pftPretension][rtIncremental];
-            tsDetails.Girder.f[pgsTypes::BottomFace][pftPretension][rtCumulative] = prevTimeStepDetails.Girder.f[pgsTypes::BottomFace][pftPretension][rtCumulative] + tsDetails.Girder.f[pgsTypes::BottomFace][pftPretension][rtIncremental];
-
-            tsDetails.Deck.f[pgsTypes::TopFace   ][pftPretension][rtCumulative] = prevTimeStepDetails.Deck.f[pgsTypes::TopFace   ][pftPretension][rtCumulative] + tsDetails.Deck.f[pgsTypes::TopFace   ][pftPretension][rtIncremental];
-            tsDetails.Deck.f[pgsTypes::BottomFace][pftPretension][rtCumulative] = prevTimeStepDetails.Deck.f[pgsTypes::BottomFace][pftPretension][rtCumulative] + tsDetails.Deck.f[pgsTypes::BottomFace][pftPretension][rtIncremental];
          } // if not closure joint
 
          // Compute change in force in tendons
@@ -2279,33 +2260,53 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
             // tendon forces are already set in the Initialize method at and before the stressing interval
             if ( stressTendonIntervalIdx < intervalIdx )
             {
-               tendon.dPi[pfType] += IsZero(EGirder_Atr) ? 0 : tsDetails.dPi[pfType]*ETendon*tendon.As/EGirder_Atr;
-               tendon.dPi[pfType] += IsZero(EGirder_Itr) ? 0 : tsDetails.dMi[pfType]*ETendon*tendon.As*(tsDetails.Ytr - tendon.Ys)/EGirder_Itr;
+               dei = (IsZero(EaGirder_Atr) ? 0 : tsDetails.dPi[pfType]/EaGirder_Atr)
+                   + (IsZero(EaGirder_Itr) ? 0 : tsDetails.dMi[pfType]*(tsDetails.Ytr - tendon.Ys)/EaGirder_Itr);
+               dPi = dei*ETendon*tendon.As;
+
+               tendon.dei[pfType] += dei;
+               tendon.dPi[pfType] += dPi;
 
                if ( pfType == pftCreep )
                {
-                  tendon.dPi[pfType] -= IsZero(EGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_CR]*ETendon*tendon.As/EGirder_Atr;
-                  tendon.dPi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_CR]*ETendon*tendon.As*(tsDetails.Ytr-tendon.Ys)/EGirder_Itr;
+                  dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_CR]/EaGirder_Atr;
+                  dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_CR]*(tsDetails.Ytr - tendon.Ys)/EaGirder_Itr;
+                  dPi  = dei*ETendon*tendon.As;
+
+                  tendon.dei[pfType] += dei;
+                  tendon.dPi[pfType] += dPi;
                }
                else if ( pfType == pftShrinkage )
                {
-                  tendon.dPi[pfType] -= IsZero(EGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_SH]*ETendon*tendon.As/EGirder_Atr;
-                  tendon.dPi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_SH]*ETendon*tendon.As*(tsDetails.Ytr-tendon.Ys)/EGirder_Itr;
+                  dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_SH]/EaGirder_Atr;
+                  dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_SH]*(tsDetails.Ytr - tendon.Ys)/EaGirder_Itr;
+                  dPi  = dei*ETendon*tendon.As;
+
+                  tendon.dei[pfType] += dei;
+                  tendon.dPi[pfType] += dPi;
                }
                else if ( pfType == pftRelaxation )
                {
-                  tendon.dPi[pfType] -= IsZero(EGirder_Atr) ? 0 : tsDetails.Pr[TIMESTEP_RE]*ETendon*tendon.As/EGirder_Atr + tendon.PrRelaxation;
-                  tendon.dPi[pfType] -= IsZero(EGirder_Itr) ? 0 : tsDetails.Mr[TIMESTEP_RE]*ETendon*tendon.As*(tsDetails.Ytr-tendon.Ys)/EGirder_Itr;
+                  dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_RE]/EaGirder_Atr;
+                  dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_RE]*(tsDetails.Ytr - tendon.Ys)/EaGirder_Itr;
+                  dPi  = dei*ETendon*tendon.As + tendon.PrRelaxation;
+
+                  tendon.dei[pfType] += dei;
+                  tendon.dPi[pfType] += dPi;
                }
 
-               tendon.Pi[pfType] = prevTimeStepDetails.Tendons[ductIdx].Pi[pfType] + tendon.dPi[pfType];
+               tendon.Pi[pfType]  += prevTimeStepDetails.Tendons[ductIdx].Pi[pfType] + tendon.dPi[pfType];
+               tendon.dP          += tendon.dPi[pfType];
+               tendon.P           += tendon.Pi[pfType];
 
-               tendon.dP += tendon.dPi[pfType];
-               tendon.P  += tendon.Pi[pfType];
+               tendon.ei[pfType]  += prevTimeStepDetails.Tendons[ductIdx].ei[pfType] + tendon.dei[pfType];
+               tendon.de          += tendon.dei[pfType];
+               tendon.e           += tendon.ei[pfType];
             }
 
             // Losses prestress
-            tendon.dfpe[pfType] += (IsZero(tendon.As) ? 0 : tendon.dPi[pfType]/tendon.As);
+            tendon.dfpei[pfType] += (IsZero(tendon.As) ? 0 : tendon.dPi[pfType]/tendon.As);
+            tendon.dfpe += tendon.dfpei[pfType];
 
             if ( intervalIdx == stressTendonIntervalIdx )
             {
@@ -2315,8 +2316,8 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
                {
                   tendon.fpe = tendon.fpj;
                }
-               tendon.fpe  += tendon.dfpe[pfType];
-               tendon.loss += tendon.dfpe[pfType];
+               tendon.fpe  += tendon.dfpei[pfType];
+               tendon.loss += tendon.dfpei[pfType];
             }
             else if ( stressTendonIntervalIdx < intervalIdx )
             {
@@ -2327,25 +2328,36 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
                   tendon.loss = prevTimeStepDetails.Tendons[ductIdx].loss;
                }
 
-               tendon.fpe  += tendon.dfpe[pfType];
-               tendon.loss -= tendon.dfpe[pfType];
+               tendon.fpe  += tendon.dfpei[pfType];
+               tendon.loss -= tendon.dfpei[pfType];
 
                ATLASSERT(IsEqual(tendon.loss,details.TimeStepDetails[stressTendonIntervalIdx].Tendons[ductIdx].fpj - tendon.fpe));
             }
          } // next tendon
       } // next product force
 
+      //
       // Compute stress in the parts of the cross section due to live load
+      //
+
+      // Get Live Load Moment this interval
+      Float64 MllMin, MllMax;
+      m_pCombinedForces->GetCombinedLiveLoadMoment(intervalIdx,pgsTypes::lltDesign,poi,m_Bat,&MllMin,&MllMax);
+      if ( bIsClosure && intervalIdx < compositeClosureIntervalIdx )
+      {
+         MllMin = 0;
+         MllMax = 0;
+      }
 
       // Curvature due to live load moment
-      Float64 rLLMin = IsZero(EGirder_Itr) ? 0 : MllMin/EGirder_Itr;
-      Float64 rLLMax = IsZero(EGirder_Itr) ? 0 : MllMax/EGirder_Itr;
+      Float64 rLLMin = IsZero(EaGirder_Itr) ? 0 : MllMin/EaGirder_Itr;
+      Float64 rLLMax = IsZero(EaGirder_Itr) ? 0 : MllMax/EaGirder_Itr;
 
       // Axial force and moment in girder
-      Float64 Pmin = EGirder_An*rLLMin*(tsDetails.Ytr - tsDetails.Girder.Yn);
-      Float64 Pmax = EGirder_An*rLLMax*(tsDetails.Ytr - tsDetails.Girder.Yn);
-      Float64 Mmin = EGirder_In*rLLMin;
-      Float64 Mmax = EGirder_In*rLLMax;
+      Float64 Pmin = EaGirder_An*rLLMin*(tsDetails.Ytr - tsDetails.Girder.Yn);
+      Float64 Pmax = EaGirder_An*rLLMax*(tsDetails.Ytr - tsDetails.Girder.Yn);
+      Float64 Mmin = EaGirder_In*rLLMin;
+      Float64 Mmax = EaGirder_In*rLLMax;
 
       if ( !IsZero(tsDetails.Girder.An) && !IsZero(tsDetails.Girder.In) )
       {
@@ -2366,10 +2378,10 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
       // Compute stresses in deck due to live load
       // Axial force and moment in deck
-      Pmin = EDeck_An*rLLMin*(tsDetails.Ytr - tsDetails.Deck.Yn);
-      Pmax = EDeck_An*rLLMax*(tsDetails.Ytr - tsDetails.Deck.Yn);
-      Mmin = EDeck_In*rLLMin;
-      Mmax = EDeck_In*rLLMax;
+      Pmin = EaDeck_An*rLLMin*(tsDetails.Ytr - tsDetails.Deck.Yn);
+      Pmax = EaDeck_An*rLLMax*(tsDetails.Ytr - tsDetails.Deck.Yn);
+      Mmin = EaDeck_In*rLLMin;
+      Mmax = EaDeck_In*rLLMax;
 
       if ( compositeDeckIntervalIdx <= intervalIdx && !IsZero(tsDetails.Deck.An) && !IsZero(tsDetails.Deck.In) )
       {
@@ -2634,7 +2646,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
    }
    else
    {
-      // force at end of this intervale = force at end of previous interval plus change in force during this interval
+      // force at end of this interval = force at end of previous interval + change in force during this interval
       TIME_STEP_DETAILS& prevTimeStepDetails(details.TimeStepDetails[intervalIdx-1]);
       tsDetails.Pext = prevTimeStepDetails.Pext + tsDetails.dPext;
       tsDetails.Mext = prevTimeStepDetails.Mext + tsDetails.dMext;
@@ -2677,325 +2689,6 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
    }
 #endif // !_DEBUG
 #endif // _BETA_VERSION
-}
-
-void CTimeStepLossEngineer::ComputeDeflections(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,LOSSES* pLosses)
-{
-   // Deflections are computing using the method of virtual work.
-   // Reference:
-   // Structural Analysis, 4th Edition, Jack C. McCormac
-   // pg 365, Section 18.5, Application of Virtual Work to Beams and Frames
-   // pg 371, Section 18.6, Rotations or Slopes by Virtual Work
-   // Harper & Row, Publishers, New York, 1984
-   // ISBN 0-06-044342-1
-
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   IntervalIndexType releaseIntervalIdx = m_pIntervals->GetPrestressReleaseInterval(segmentKey);
-
-   if ( intervalIdx < releaseIntervalIdx )
-   {
-      return;
-   }
-
-   IntervalIndexType erectionIntervalIdx = m_pIntervals->GetErectSegmentInterval(segmentKey);
-
-   LOSSDETAILS* pDetails = GetLossDetails(pLosses,poi);
-   TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
-
-
-   CGirderKey girderKey(segmentKey);
-   Float64 duration = m_pIntervals->GetDuration(girderKey,intervalIdx);
-
-   std::vector<pgsPointOfInterest> vAllPoi(m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)));
-
-   // Only do the virtual work deflection calculations for product forces that cause deflections
-   // in this interval. (if the load doesn't cause deflection it would be a lot of work to
-   // get an answer of zero)
-   bool bIsErectionInterval = m_pIntervals->IsSegmentErectionInterval(segmentKey,intervalIdx);
-   bool bIsStorageInterval  = m_pIntervals->GetStorageInterval(segmentKey) == intervalIdx ? true : false;
-   std::vector<ProductForceType> vProductForces(GetApplicableProductLoads(intervalIdx,poi,true));
-   
-   // if strands have been stressed, they cause displacements in all non-zero duration intervals
-   if ( m_pIntervals->GetPrestressReleaseInterval(segmentKey) == intervalIdx ||
-       (m_pIntervals->GetFirstStressStrandInterval(girderKey) <= intervalIdx && !IsZero(duration)) )
-   {
-      vProductForces.push_back(pftPretension);
-   }
-
-   // if tendons have been stressed, they cause displacements in all non-zero duration intervals
-   if ( m_pIntervals->IsTendonStressingInterval(girderKey,intervalIdx) ||
-       (m_pIntervals->GetFirstTendonStressingInterval(girderKey) <= intervalIdx && !IsZero(duration)) )
-   {
-      vProductForces.push_back(pftPrimaryPostTensioning);
-      vProductForces.push_back(pftSecondaryEffects);
-   }
-
-   // time-dependent effects cause displacements in non-zero duration intervals
-   if ( !IsZero(duration) )
-   {
-      vProductForces.push_back(pftCreep);
-      vProductForces.push_back(pftShrinkage);
-      vProductForces.push_back(pftRelaxation);
-   }
-
-   // remove dupilcate product force types
-   std::sort(vProductForces.begin(),vProductForces.end());
-   vProductForces.erase(std::unique(vProductForces.begin(),vProductForces.end()),vProductForces.end());
-
-   if ( 0 < vProductForces.size() )
-   {
-      // Since we are going to compute some deflections, get the moment diagram for a unit load at the poi 
-      // that is being analyzed.
-      if ( bIsErectionInterval || bIsStorageInterval )
-      {
-         // Support locations of the erected segment are in a different location then when the segment was in storage.
-         // The incremental deflection calculations need to take this into account.
-         //
-         // This version of ComputeIncrementalDeflections accounts for the change in support locations however
-         // it is slower than the other version because more calculations are required. This is why we only
-         // want to use it for intervals when a segment is erected.
-         std::vector<Float64> unitLoadMomentsPreviousInterval = m_pVirtualWork->GetUnitLoadMoment(vAllPoi,poi,m_Bat,intervalIdx-1);
-         std::vector<Float64> unitLoadMomentsThisInterval     = m_pVirtualWork->GetUnitLoadMoment(vAllPoi,poi,m_Bat,intervalIdx);
-         ATLASSERT(unitLoadMomentsPreviousInterval.size() == vAllPoi.size());
-         ATLASSERT(unitLoadMomentsThisInterval.size() == vAllPoi.size());
-
-         std::vector<sysSectionValue> unitCoupleMomentsPreviousInterval = m_pVirtualWork->GetUnitCoupleMoment(vAllPoi,poi,m_Bat,intervalIdx-1);
-         std::vector<sysSectionValue> unitCoupleMomentsThisInterval     = m_pVirtualWork->GetUnitCoupleMoment(vAllPoi,poi,m_Bat,intervalIdx);
-         ATLASSERT(unitCoupleMomentsPreviousInterval.size() == vAllPoi.size());
-         ATLASSERT(unitCoupleMomentsThisInterval.size() == vAllPoi.size());
-
-         std::vector<ProductForceType>::iterator pfIter(vProductForces.begin());
-         std::vector<ProductForceType>::iterator pfIterEnd(vProductForces.end());
-         for ( ; pfIter != pfIterEnd; pfIter++ )
-         {
-            ProductForceType pfType = *pfIter;
-            ComputeIncrementalDeflections(intervalIdx,poi,pfType,vAllPoi,unitLoadMomentsPreviousInterval,unitLoadMomentsThisInterval,unitCoupleMomentsPreviousInterval,unitCoupleMomentsThisInterval,pLosses);
-         }
-      }
-      else
-      {
-         // this version of ComputeIncrementalDeflections doesn't account for changing support locations
-         std::vector<Float64> unitLoadMoments = m_pVirtualWork->GetUnitLoadMoment(vAllPoi,poi,m_Bat,intervalIdx);
-         ATLASSERT(unitLoadMoments.size() == vAllPoi.size());
-
-         std::vector<sysSectionValue> unitCoupleMoments = m_pVirtualWork->GetUnitCoupleMoment(vAllPoi,poi,m_Bat,intervalIdx);
-         ATLASSERT(unitCoupleMoments.size() == vAllPoi.size());
-
-         std::vector<ProductForceType>::iterator pfIter(vProductForces.begin());
-         std::vector<ProductForceType>::iterator pfIterEnd(vProductForces.end());
-         for ( ; pfIter != pfIterEnd; pfIter++ )
-         {
-            ProductForceType pfType = *pfIter;
-            ComputeIncrementalDeflections(intervalIdx,poi,pfType,vAllPoi,unitLoadMoments,unitCoupleMoments,pLosses);
-         }
-      }
-   }
-
-   InitializeErectionAdjustments(intervalIdx,segmentKey,pLosses);
-
-   int n = GetProductForceCount();
-   for ( int i = 0; i < n; i++ )
-   {
-      ProductForceType pfType = (ProductForceType)i;
-
-      Float64 dAdj, rAdj;
-      GetErectionAdjustment(intervalIdx,poi,pfType,&dAdj,&rAdj);
-      tsDetails.dD[pfType] += dAdj;
-      tsDetails.dR[pfType] += rAdj;
-
-      // compute total deflection in this interval
-      // total deflection this interval is deflection at end of last interval plus the change in this interval
-      tsDetails.D[pfType] += pDetails->TimeStepDetails[intervalIdx-1].D[pfType] + tsDetails.dD[pfType];
-      tsDetails.R[pfType] += pDetails->TimeStepDetails[intervalIdx-1].R[pfType] + tsDetails.dR[pfType];
-
-      tsDetails.dY += tsDetails.dD[pfType];
-      tsDetails.Y  += tsDetails.D[pfType];
-   }
-}
-
-void CTimeStepLossEngineer::ComputeIncrementalDeflections(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vAllPoi,const std::vector<Float64>& unitLoadMomentsPreviousInterval,const std::vector<Float64>& unitLoadMomentsThisInterval,const std::vector<sysSectionValue>& unitCoupleMomentsPreviousInterval,const std::vector<sysSectionValue>& unitCoupleMomentsThisInterval,LOSSES* pLosses)
-{
-   // This version accounts for changes in support locations between the previous interval and this interval
-   LOSSDETAILS* pDetails = GetLossDetails(pLosses,poi);
-   TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
-
-   ATLASSERT(unitLoadMomentsPreviousInterval.size()   == vAllPoi.size());
-   ATLASSERT(unitLoadMomentsThisInterval.size()       == vAllPoi.size());
-   ATLASSERT(unitCoupleMomentsPreviousInterval.size() == vAllPoi.size());
-   ATLASSERT(unitCoupleMomentsThisInterval.size()     == vAllPoi.size());
-
-   std::vector<Float64>::const_iterator prevIntervalMomentIter(unitLoadMomentsPreviousInterval.begin());
-   std::vector<Float64>::const_iterator prevIntervalMomentIterEnd(unitLoadMomentsPreviousInterval.end());
-   std::vector<Float64>::const_iterator thisIntervalMomentIter(unitLoadMomentsThisInterval.begin());
-   std::vector<Float64>::const_iterator thisIntervalMomentIterEnd(unitLoadMomentsThisInterval.end());
-   std::vector<sysSectionValue>::const_iterator prevIntervalCoupleIter(unitCoupleMomentsPreviousInterval.begin());
-   std::vector<sysSectionValue>::const_iterator prevIntervalCoupleIterEnd(unitCoupleMomentsPreviousInterval.end());
-   std::vector<sysSectionValue>::const_iterator thisIntervalCoupleIter(unitCoupleMomentsThisInterval.begin());
-   std::vector<sysSectionValue>::const_iterator thisIntervalCoupleIterEnd(unitCoupleMomentsThisInterval.end());
-   std::vector<pgsPointOfInterest>::const_iterator poiIter(vAllPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vAllPoi.end());
-
-   // "Subscripts"
-   // i = previous interval
-   // j = this interval
-   // 1 = section 1
-   // 2 = section 2
-   // l = unit load
-   // c = unit couple
-
-   // Initialize values for first time through the loop
-   Float64 delta = 0; // change in deflection during this interval
-   Float64 rotation = 0; // change in rotation during this interval
-   Float64 mli1 = *prevIntervalMomentIter; // unit load moment in the previous interval
-   Float64 mlj1 = *thisIntervalMomentIter; // unit load moment in this interval
-   sysSectionValue mci1 = *prevIntervalCoupleIter; // unit couple moment in the previous interval
-   sysSectionValue mcj1 = *thisIntervalCoupleIter; // unit couple moment in this interval
-
-   pgsPointOfInterest poi1(*poiIter); // can't be a reference because of the assignment in the loop below
-   Float64 x1 = m_pPoi->ConvertPoiToGirderCoordinate(poi1);
-   const LOSSDETAILS* pDetails1 = GetLossDetails(pLosses,poi1);
-   ATLASSERT(pDetails1->POI == poi1);
-
-   // advance the iterators so when we start the loop
-   // the iterators are at the second location
-   prevIntervalMomentIter++;
-   thisIntervalMomentIter++;
-   prevIntervalCoupleIter++;
-   thisIntervalCoupleIter++;
-   poiIter++;
-
-   for ( ; poiIter != poiIterEnd; poiIter++, prevIntervalMomentIter++, thisIntervalMomentIter++, prevIntervalCoupleIter++, thisIntervalCoupleIter++ )
-   {
-      Float64 mli2 = *prevIntervalMomentIter;
-      Float64 mlj2 = *thisIntervalMomentIter;
-
-      sysSectionValue mci2 = *prevIntervalCoupleIter;
-      sysSectionValue mcj2 = *thisIntervalCoupleIter;
-
-      const pgsPointOfInterest& poi2(*poiIter);
-
-      Float64 x2 = m_pPoi->ConvertPoiToGirderCoordinate(poi2);
-
-      const LOSSDETAILS* pDetails2 = GetLossDetails(pLosses,poi2);
-
-      const TIME_STEP_DETAILS& tsDetailsPrevInterval1 = pDetails1->TimeStepDetails[intervalIdx-1];
-      const TIME_STEP_DETAILS& tsDetailsPrevInterval2 = pDetails2->TimeStepDetails[intervalIdx-1];
-
-      const TIME_STEP_DETAILS& tsDetailsThisInterval1 = pDetails1->TimeStepDetails[intervalIdx];
-      const TIME_STEP_DETAILS& tsDetailsThisInterval2 = pDetails2->TimeStepDetails[intervalIdx];
-
-      ATLASSERT(pDetails2->POI == poi2);
-
-      // curvature at section 1 and 2 at the end of the previous interval
-      Float64 ci1 = tsDetailsPrevInterval1.rr[pfType];
-      Float64 ci2 = tsDetailsPrevInterval2.rr[pfType];
-
-      // change in curvature at sections 1 and 2 during this interval
-      Float64 dc1 = tsDetailsThisInterval1.drr[pfType];
-      Float64 dc2 = tsDetailsThisInterval2.drr[pfType];
-
-      // should be dividing (x2-x1)*(...) by 2 however it is faster to just
-      // divide by 2 at the end... here is an example of the algebra
-      // K = A/2 + B/2 + C/2 = (A+B+C)/2
-      // we only have to divide by 2 once instead of every time through the loop
-      delta    += (x2-x1)*((dc1*mlj1         + dc2*mlj2)        + (ci1*(mlj1-mli1)                 + ci2*(mlj2-mli2)));
-      rotation += (x2-x1)*((dc1*mcj1.Right() + dc2*mcj2.Left()) + (ci1*(mcj1.Right()-mci1.Right()) + ci2*(mcj2.Left()-mci2.Left())));
-
-      // get ready for next time through the loop
-      mli1      = mli2;
-      mlj1      = mlj2;
-      mci1      = mci2;
-      mcj1      = mcj2;
-      poi1      = poi2;
-      x1        = x2;
-      pDetails1 = pDetails2;
-   }
-
-   delta /= 2.0;
-   rotation /= 2.0;
-
-   tsDetails.dD[pfType] = delta;
-   tsDetails.dR[pfType] = rotation;
-}
-
-void CTimeStepLossEngineer::ComputeIncrementalDeflections(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vAllPoi,const std::vector<Float64>& unitLoadMoments,const std::vector<sysSectionValue>& unitCoupleMoments,LOSSES* pLosses)
-{
-   // this version assumes the support locations don't change from the previous interval to this interval
-   LOSSDETAILS* pDetails = GetLossDetails(pLosses,poi);
-   TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
-
-   ATLASSERT(unitLoadMoments.size() == vAllPoi.size());
-   ATLASSERT(unitCoupleMoments.size() == vAllPoi.size());
-
-   std::vector<Float64>::const_iterator momentIter(unitLoadMoments.begin());
-   std::vector<Float64>::const_iterator momentIterEnd(unitLoadMoments.end());
-   std::vector<sysSectionValue>::const_iterator coupleIter(unitCoupleMoments.begin());
-   std::vector<sysSectionValue>::const_iterator coupleIterEnd(unitCoupleMoments.end());
-   std::vector<pgsPointOfInterest>::const_iterator poiIter(vAllPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vAllPoi.end());
-
-   // "Subscripts"
-   // 1 = section 1
-   // 2 = section 2
-
-   // Initialize values for first time through the loop
-   Float64 delta = 0; // change in deflection during this interval
-   Float64 rotation = 0; // change in rotation during this interval
-   Float64 ml1 = *momentIter; // unit load moment
-   sysSectionValue mc1 = *coupleIter; // unit couple moment
-
-   pgsPointOfInterest poi1(*poiIter); // can't be a reference because of the assignment in the loop below
-   Float64 x1 = m_pPoi->ConvertPoiToGirderCoordinate(poi1);
-   const LOSSDETAILS* pDetails1 = GetLossDetails(pLosses,poi1);
-   ATLASSERT(pDetails1->POI == poi1);
-
-   // advance the iterators so when we start the loop
-   // the iterators are at the second location
-   momentIter++;
-   coupleIter++;
-   poiIter++;
-
-   for ( ; poiIter != poiIterEnd; poiIter++, momentIter++, coupleIter++ )
-   {
-      Float64 ml2 = *momentIter;
-      sysSectionValue mc2 = *coupleIter;
-
-      const pgsPointOfInterest& poi2(*poiIter);
-
-      Float64 x2 = m_pPoi->ConvertPoiToGirderCoordinate(poi2);
-
-      const LOSSDETAILS* pDetails2 = GetLossDetails(pLosses,poi2);
-
-      const TIME_STEP_DETAILS& tsDetails1 = pDetails1->TimeStepDetails[intervalIdx];
-      const TIME_STEP_DETAILS& tsDetails2 = pDetails2->TimeStepDetails[intervalIdx];
-
-      ATLASSERT(pDetails2->POI == poi2);
-
-      // change in curvature at sections 1 and 2 during this interval
-      Float64 dc1 = tsDetails1.drr[pfType];
-      Float64 dc2 = tsDetails2.drr[pfType];
-
-      // should be dividing (x2-x1)*(...) by 2 however it is faster to just
-      // divide by 2 at the end... here is an example of the algebra
-      // K = A/2 + B/2 + C/2 = (A+B+C)/2
-      // we only have to divde by 2 once instead of every time through the loop
-      delta    += (x2-x1)*(dc1*ml1 + dc2*ml2);
-      rotation += (x2-x1)*(dc1*mc1.Right() + dc2*mc2.Left());
-
-      // get ready for next time through the loop
-      ml1       = ml2;
-      mc1       = mc2;
-      poi1      = poi2;
-      x1        = x2;
-      pDetails1 = pDetails2;
-   }
-
-   delta /= 2.0;
-   rotation /= 2.0;
-
-   tsDetails.dD[pfType] = delta;
-   tsDetails.dR[pfType] = rotation;
 }
 
 void CTimeStepLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
@@ -3059,22 +2752,16 @@ void CTimeStepLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* 
          for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
          {
 #if defined LUMP_STRANDS
-            int N = sizeof(pLossDetails->TimeStepDetails[intervalIdx].Strands[pgsTypes::Straight].dfpe)/sizeof(pLossDetails->TimeStepDetails[intervalIdx].Strands[pgsTypes::Straight].dfpe[0]);
-            Float64 dfpe_Straight = 0;
-            Float64 dfpe_Harped   = 0;
-            for ( int i = 0; i < N; i++ )
-            {
-               dfpe_Straight += pLossDetails->TimeStepDetails[intervalIdx].Strands[pgsTypes::Straight].dfpe[i];
-               dfpe_Harped   += pLossDetails->TimeStepDetails[intervalIdx].Strands[pgsTypes::Harped].dfpe[i];
-            }
-            (*pPSLossTable)(row,col) << stress.SetValue( dfpe_Straight );
+            // dfpe is the change in force... values < 0 are losses (a reduction in force)
+            // however, in the context of this table, we want losses to be positive
+            // so that's why there is the - sign in stress.SetValue(-dfpe)
+            (*pPSLossTable)(row,col) << stress.SetValue( -pLossDetails->TimeStepDetails[intervalIdx].Strands[pgsTypes::Straight].dfpe );
             (*pPSLossTable)(row,col) << rptNewLine;
-            (*pPSLossTable)(row,col) << stress.SetValue( dfpe_Harped );
+            (*pPSLossTable)(row,col) << stress.SetValue( -pLossDetails->TimeStepDetails[intervalIdx].Strands[pgsTypes::Harped].dfpe );
 #else
-#pragma Reminder("UPDATE: reporting of loss in strands")
-            //(*pPSLossTable)(row,col) << stress.SetValue( pLossDetails->TimeStepDetails[intervalIdx].Strands[pgsTypes::Straight].dfpe );
-            //(*pPSLossTable)(row,col) << rptNewLine;
-            //(*pPSLossTable)(row,col) << stress.SetValue( pLossDetails->TimeStepDetails[intervalIdx].Strands[pgsTypes::Harped].dfpe );
+            (*pPSLossTable)(row,col) << stress.SetValue( pLossDetails->TimeStepDetails[intervalIdx].Strands[pgsTypes::Straight].dfpe );
+            (*pPSLossTable)(row,col) << rptNewLine;
+            (*pPSLossTable)(row,col) << stress.SetValue( pLossDetails->TimeStepDetails[intervalIdx].Strands[pgsTypes::Harped].dfpe );
 #endif // LUMP_STRANDS
             col++;
          }
@@ -3146,16 +2833,13 @@ void CTimeStepLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* 
 
             for ( IntervalIndexType intervalIdx = ptIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
             {
-               int N = sizeof(pLossDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].dfpe)/sizeof(pLossDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].dfpe[0]);
-               Float64 dfpe = 0;
-               for ( int i = 0; i < N; i++ )
-               {
-                  dfpe += pLossDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].dfpe[i];
-               }
-               (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( dfpe );
+               // dfpe is the change in force... values < 0 are losses (a reduction in force)
+               // however, in the context of this table, we want losses to be positive
+               // so that's why there is the - sign in stress.SetValue(-dfpe)
+               (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( -pLossDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].dfpe );
             }
 
-            (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( -pLossDetails->TimeStepDetails.back().Tendons[ductIdx].loss );
+            (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( pLossDetails->TimeStepDetails.back().Tendons[ductIdx].loss );
          }
       }
 
@@ -3849,244 +3533,6 @@ std::vector<ProductForceType> CTimeStepLossEngineer::GetApplicableProductLoads(I
    ATLASSERT(vProductForces.size() <= (bExternalForcesOnly ? 14 : GetProductForceCount()));
 
    return vProductForces;
-}
-
-void CTimeStepLossEngineer::MakeClosureJointAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& leftPoi,const pgsPointOfInterest& closurePoi,const pgsPointOfInterest& rightPoi,LOSSES* pLosses)
-{
-   // Take rigid body deflection at closure joint to be the deflection of the adjacent poi
-   // at the end of the previous interval
-
-   LOSSDETAILS* pLeftDetails    = GetLossDetails(pLosses,leftPoi);
-   LOSSDETAILS* pClosureDetails = GetLossDetails(pLosses,closurePoi);
-   LOSSDETAILS* pRightDetails   = GetLossDetails(pLosses,rightPoi);
-
-   TIME_STEP_DETAILS& leftTsDetails(pLeftDetails->TimeStepDetails[intervalIdx-1]);
-   TIME_STEP_DETAILS& rightTsDetails(pRightDetails->TimeStepDetails[intervalIdx-1]);
-   TIME_STEP_DETAILS& closureTsDetails(pClosureDetails->TimeStepDetails[intervalIdx]);
-
-   int n = GetProductForceCount();
-   for ( int i = 0; i < n; i++ )
-   {
-      ProductForceType pfType = (ProductForceType)i;
-
-      // incremental deflection this interval is the deflection at the end of the previous interval
-      // (rigid body movement)
-      Float64 dD = (leftTsDetails.D[pfType] + rightTsDetails.D[pfType])/2.0;
-
-      closureTsDetails.dD[pfType] += dD; // incremental deflection this interval
-      closureTsDetails.D[pfType]  += dD; // deflection at the end of this interval
-
-      // update the total deflection too
-      closureTsDetails.dY += dD;
-      closureTsDetails.Y  += dD;
-   }
-}
-
-void CTimeStepLossEngineer::InitializeDeflectionCalculations()
-{
-   // clears the segment key so that it is basically unassigned
-   // when InitializeErectionAdjustments is called for the first time for
-   // a given interval, the segment key is guarenteed to not be equal to 
-   // this segment key.
-   m_SegmentKey = CSegmentKey();
-}
-
-void CTimeStepLossEngineer::InitializeErectionAdjustments(IntervalIndexType intervalIdx,const CSegmentKey& segmentKey,LOSSES* pLosses)
-{
-   ASSERT_SEGMENT_KEY(segmentKey); // must be a full segment key
-
-   if ( m_SegmentKey.IsEqual(segmentKey) )
-   {
-      return; // adjustments have already been initialized, return now and don't duplicate work
-   }
-
-   // hang onto the current segment key
-   m_SegmentKey = segmentKey;
-
-   // reset the functions
-   int n = sizeof(m_ErectionAdjustment)/sizeof(m_ErectionAdjustment[0]);
-   for ( int i = 0; i < n; i++ )
-   {
-      m_ErectionAdjustment[i] = mathLinFunc2d();
-   }
-
-   IntervalIndexType erectionIntervalIdx = m_pIntervals->GetErectSegmentInterval(m_SegmentKey);
-
-   if ( intervalIdx == erectionIntervalIdx )
-   {
-      // When a segment is erected, in general, the location of the supports are different than
-      // where the segment was supported during storage. Consider a segment that is supported
-      // very near its ends during storage, then, when erected, it is supported near one end and
-      // near its center. This would be the case for a cantilevered segment that will receive a 
-      // drop in segment later in the construction sequence.
-      //
-      //     ---------------------------------    Storage
-      //     ^                               ^
-      //
-      //     ---------------------------------    Erection
-      //     ^                     ^
-      //
-      // The deflections due to externally applied loads are self-adjusting. The change in moment and hence
-      // the change in curvature account for the change is support locations. 
-      //
-      // The internal load deformations due to creep, shrinkage, and relaxation don't behave the same. 
-      // For the segment described above, there will be inelastic deflections at mid-segment during
-      // storage. The net deflection at the supports in the erected configuration must be zero. The
-      // only way to accomplish this is to recogize that there is rigid body motion of the
-      // inelastic deformations. That's the purpose of this code.
-      //
-      // Find the "hard" supports at the time of erection. These are the supports where the
-      // deflections are zero relative to the placement of the erected segment. Get
-      // the deflections at these locations in the previous interval. Compute the equation
-      // of the straight line connecting these points. The negative of the y-value of this
-      // line is the rigid body motion.
-      Float64 signLeft(1.0);
-      Float64 signRight(1.0);
-
-      std::vector<ProductForceType> vProductForces;
-      vProductForces.push_back(pftPretension);
-      vProductForces.push_back(pftCreep);
-      vProductForces.push_back(pftShrinkage);
-      vProductForces.push_back(pftRelaxation);
-
-      std::vector<pgsPointOfInterest> vPoi(m_pPoi->GetPointsOfInterest(m_SegmentKey,POI_INTERMEDIATE_TEMPSUPPORT | POI_INTERMEDIATE_PIER | POI_BOUNDARY_PIER | POI_ABUTMENT));
-      if ( vPoi.size() < 2 )
-      {
-         const CPrecastSegmentData* pSegment = m_pBridgeDesc->GetPrecastSegmentData(m_SegmentKey);
-         const CPierData2* pPier;
-         const CTemporarySupportData* pTS;
-         pSegment->GetSupport(pgsTypes::metStart,&pPier,&pTS);
-         if ( pPier || (pTS && pTS->GetSupportType() == pgsTypes::ErectionTower) )
-         {
-            std::vector<pgsPointOfInterest> vPoi2(m_pPoi->GetPointsOfInterest(m_SegmentKey,POI_ERECTED_SEGMENT | POI_0L));
-            ATLASSERT(vPoi2.size() == 1);
-            vPoi.insert(vPoi.begin(),vPoi2.begin(),vPoi2.end());
-         }
-
-         pSegment->GetSupport(pgsTypes::metEnd,&pPier,&pTS);
-         if ( pPier || (pTS && pTS->GetSupportType() == pgsTypes::ErectionTower) )
-         {
-            std::vector<pgsPointOfInterest> vPoi2(m_pPoi->GetPointsOfInterest(m_SegmentKey,POI_ERECTED_SEGMENT | POI_10L));
-            ATLASSERT(vPoi2.size() == 1);
-            vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
-         }
-
-         // eliminate duplicate POI
-         vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
-
-         // vPoi will have two entries if the segment is supported at one end by a pier/abutment and the
-         // other end by an erection tower, or if it is supported at both ends by an erection tower.
-
-         // if the segment is supported on one or both ends by strong backs vPoi.size() will be less than 2
-
-         if ( vPoi.size() < 2 )
-         {
-            // if there is less than 2 hard supports we have to use the adjacent segments
-            // to figure out the erection adjustment equation
-            SegmentIndexType nSegments = m_pBridge->GetSegmentCount(segmentKey);
-            
-            if ( m_SegmentKey.segmentIndex == 0 )
-            {
-               // the first segment has one hard support... use the start poi for the next segment
-               ATLASSERT(vPoi.size() == 1);
-               CSegmentKey nextSegmentKey(m_SegmentKey);
-               nextSegmentKey.segmentIndex++;
-               std::vector<pgsPointOfInterest> vPoiR(m_pPoi->GetPointsOfInterest(nextSegmentKey,POI_RELEASED_SEGMENT | POI_0L));
-               ATLASSERT(vPoiR.size() == 1);
-               vPoi.push_back(vPoiR.front());
-               signRight = -1;
-            }
-            else if ( m_SegmentKey.segmentIndex == nSegments-1 )
-            {
-               // the last segment has one hard support... use the end poi for the previous segment
-               ATLASSERT(vPoi.size() == 1);
-               CSegmentKey prevSegmentKey(m_SegmentKey);
-               prevSegmentKey.segmentIndex--;
-               std::vector<pgsPointOfInterest> vPoiL(m_pPoi->GetPointsOfInterest(prevSegmentKey,POI_RELEASED_SEGMENT | POI_10L));
-               ATLASSERT(vPoiL.size() == 1);
-               vPoi.insert(vPoi.begin(),vPoiL.front());
-               signLeft = -1;
-            }
-            else
-            {
-               // this is a drop-in...
-               ATLASSERT(pSegment->IsDropIn() == true);
-
-               vProductForces.push_back(pftGirder);
-
-               vPoi.clear();
-
-               CSegmentKey prevSegmentKey(m_SegmentKey);
-               prevSegmentKey.segmentIndex--;
-
-               
-               CSegmentKey nextSegmentKey(m_SegmentKey);
-               nextSegmentKey.segmentIndex++;
-
-               std::vector<pgsPointOfInterest> vPoiL(m_pPoi->GetPointsOfInterest(prevSegmentKey,POI_RELEASED_SEGMENT | POI_10L));
-               std::vector<pgsPointOfInterest> vPoiR(m_pPoi->GetPointsOfInterest(nextSegmentKey,POI_RELEASED_SEGMENT | POI_0L));
-               ATLASSERT(vPoiL.size() == 1 && vPoiR.size() == 1);
-               vPoi.push_back(vPoiL.front());
-               vPoi.push_back(vPoiR.front());
-
-               signLeft  = -1;
-               signRight = -1;
-            }
-         }
-      }
-
-      ATLASSERT( 2 <= vPoi.size() );
-      pgsPointOfInterest leftPoi(vPoi.front());
-      pgsPointOfInterest rightPoi(vPoi.back());
-
-      LOSSDETAILS* pLeftDetails    = GetLossDetails(pLosses,leftPoi);
-      LOSSDETAILS* pRightDetails   = GetLossDetails(pLosses,rightPoi);
-      ATLASSERT(pLeftDetails != NULL && pRightDetails != NULL);
-
-      Float64 Xs = m_pPoi->ConvertPoiToGirderPathCoordinate(leftPoi);
-      Float64 Xe = m_pPoi->ConvertPoiToGirderPathCoordinate(rightPoi);
-      Float64 Dx = Xe-Xs;
-      ATLASSERT(Xs < Xe && !IsZero(Dx));
-
-      std::vector<ProductForceType>::iterator pfIter(vProductForces.begin());
-      std::vector<ProductForceType>::iterator pfIterEnd(vProductForces.end());
-      for ( ; pfIter != pfIterEnd; pfIter++ )
-      {
-         ProductForceType pfType = *pfIter;
-
-         Float64 Ys = -signLeft*pLeftDetails->TimeStepDetails[intervalIdx-1].D[pfType];
-         Float64 Ye = -signRight*pRightDetails->TimeStepDetails[intervalIdx-1].D[pfType];
-
-         Float64 Dy = Ye-Ys;
-         Float64 slope = Dy/Dx;
-
-         // y = mx+b
-         // b = y-mx
-         Float64 b = Ys - slope*Xs;
-
-         m_ErectionAdjustment[pfType].SetSlope(slope);
-         m_ErectionAdjustment[pfType].SetYIntercept(b);
-      }
-   }
-}
-
-void CTimeStepLossEngineer::GetErectionAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,ProductForceType pfType,Float64* pD,Float64* pR)
-{
-   ATLASSERT(m_SegmentKey == poi.GetSegmentKey());
-
-   *pD = 0;
-   *pR = 0;
-
-   if ( poi.HasAttribute(POI_CLOSURE) )
-   {
-      // if POI is at a closure joint there isn't an erection adjustment.
-      // closures are cast after erection
-      return;
-   }
-
-   Float64 Xgp = m_pPoi->ConvertPoiToGirderPathCoordinate(poi);
-   *pD = m_ErectionAdjustment[pfType].Evaluate(Xgp);
-   *pR = m_ErectionAdjustment[pfType].GetSlope();
 }
 
 void CTimeStepLossEngineer::InitializeStrandTypes(const CSegmentKey& segmentKey)

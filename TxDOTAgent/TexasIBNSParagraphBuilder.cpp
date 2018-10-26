@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -66,7 +66,9 @@ static void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisp
                                      IStrandGeometry* pStrandGeometry, ISegmentData* pSegmentData, IPointOfInterest* pPointOfInterest,
                                      const CBridgeDescription2* pBridgeDesc, IArtifact* pIArtifact, ILiveLoadDistributionFactors* pDistFact,
                                      IMaterials* pMaterial, IMomentCapacity* pMomentCapacity,
-                                     bool bUnitsSI, bool areAnyTempStrands, bool areAllHarpedStrandsStraight, bool areAnyHarpedStrands);
+                                     bool bUnitsSI, bool areAnyTempStrandsInTable, bool areAllHarpedStrandsStraightInTable, 
+                                     bool areAnyHarpedStrandsInTable, bool areAnyDebondingInTable);
+
 
 
 /****************************************************************************
@@ -298,8 +300,9 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    // First thing - check if we can generate the girder schedule table at all.
-   bool areAnyHarpedStrands(false), areAnyBentHarpedStrands(false);
-   bool areAnyTempStrands(false), areAnyDebonding(false);
+   // Round up data common to all tables
+   bool areAnyHarpedStrandsInTable(false), areAnyBentHarpedStrandsInTable(false);
+   bool areAnyTempStrandsInTable(false), areAnyDebondingInTable(false);
    std::vector<CSegmentKey>::const_iterator itsg(segmentKeys.begin());
    std::vector<CSegmentKey>::const_iterator itsg_end(segmentKeys.end());
    for (; itsg != itsg_end; itsg++ )
@@ -309,9 +312,9 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
       StrandIndexType nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
-      if (nh>0)
+      if (0 < nh)
       {
-         areAnyHarpedStrands = true;
+         areAnyHarpedStrandsInTable = true;
 
          // check that eccentricity is same at ends and mid-girder
          pgsPointOfInterest pois(segmentKey,0.0);
@@ -323,18 +326,18 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
          Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pmid[0], pgsTypes::Harped, &nEff);
          if (! IsEqual(hs_ecc_end, hs_ecc_mid) )
          {
-            areAnyBentHarpedStrands = true;
+            areAnyBentHarpedStrandsInTable = true;
          }
       }
 
-      areAnyTempStrands   |= 0 < pStrandGeometry->GetMaxStrands(segmentKey,pgsTypes::Temporary);
-      areAnyDebonding     |= 0 < pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
+      areAnyTempStrandsInTable   |= 0 < pStrandGeometry->GetMaxStrands(segmentKey,pgsTypes::Temporary);
+      areAnyDebondingInTable     |= 0 < pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
    }
 
-   bool areAllHarpedStrandsStraight = areAnyHarpedStrands && !areAnyBentHarpedStrands;
+   bool areAllHarpedStrandsStraightInTable = areAnyHarpedStrandsInTable && !areAnyBentHarpedStrandsInTable;
 
    // Cannot have Harped and Debonded strands in same report
-   if (areAnyHarpedStrands && areAnyBentHarpedStrands && areAnyDebonding)
+   if (areAnyHarpedStrandsInTable && areAnyBentHarpedStrandsInTable && areAnyDebondingInTable)
    {
       *p << color(Red) << bold(ON) <<_T("Note: The TxDOT Girder Schedule report cannot be generated with mixed harped and debonded designs.")
          << _T("Please select other (similar) girders and try again.") << bold(OFF) << color(Black) << rptNewLine;
@@ -351,7 +354,9 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
          StrandIndexType ns = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
          StrandIndexType nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
 
-         bool isHarpedDesign = 0 < pStrandGeometry->GetMaxStrands(segmentKey, pgsTypes::Harped);
+         bool isHarpedDesign = !pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey) &&
+                              0 < pStrandGeometry->GetMaxStrands(segmentKey, pgsTypes::Harped);
+
          const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
          if ( IsNonStandardStrands( ns+nh, isHarpedDesign, pStrands->GetStrandDefinitionType()) )
@@ -400,11 +405,12 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
          WriteGirderScheduleTable(p, pBroker, pDisplayUnits, segmentKeys, start_idx, end_idx,
                                      pStrandGeometry, pSegmentData, pPointOfInterest,
                                      pBridgeDesc, pIArtifact, pDistFact, pMaterial, pMomentCapacity,
-                                     bUnitsSI, areAnyTempStrands, areAllHarpedStrandsStraight, areAnyHarpedStrands);
+                                     bUnitsSI, areAnyTempStrandsInTable, areAllHarpedStrandsStraightInTable, 
+                                     areAnyHarpedStrandsInTable, areAnyDebondingInTable);
       }
 
       // Write debond table(s)
-      if (!areAnyHarpedStrands)
+      if (areAnyDebondingInTable)
       {
          itsg = segmentKeys.begin();
          while(itsg != itsg_end)
@@ -426,7 +432,9 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
          StrandIndexType ns = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
          StrandIndexType nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
 
-         bool isHarpedDesign = 0 < pStrandGeometry->GetMaxStrands(segmentKey, pgsTypes::Harped);
+         bool isHarpedDesign = !pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey) &&
+                              0 < pStrandGeometry->GetMaxStrands(segmentKey, pgsTypes::Harped);
+
          const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
          if ( IsNonStandardStrands( ns+nh, isHarpedDesign, pStrands->GetStrandDefinitionType() ) )
@@ -494,7 +502,8 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
                               IStrandGeometry* pStrandGeometry, ISegmentData* pSegmentData, IPointOfInterest* pPointOfInterest,
                               const CBridgeDescription2* pBridgeDesc, IArtifact* pIArtifact, ILiveLoadDistributionFactors* pDistFact,
                               IMaterials* pMaterial, IMomentCapacity* pMomentCapacity,
-                              bool bUnitsSI, bool areAnyTempStrands, bool areAllHarpedStrandsStraight, bool areAnyHarpedStrands)
+                              bool bUnitsSI, bool areAnyTempStrandsInTable, bool areAllHarpedStrandsStraightInTable, 
+                              bool areAnyHarpedStrandsInTable, bool areAnyDebondingInTable)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
@@ -570,7 +579,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
 
       // Determine if harped strands are straight by comparing harped eccentricity at end/mid
       bool are_harped_straight(false);
-      if (nh>0)
+      if (0 < nh)
       {
          Float64 nEff;
          Float64 hs_ecc_end = pStrandGeometry->GetEccentricity(releaseIntervalIdx, pois, pgsTypes::Harped, &nEff);
@@ -614,7 +623,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       if(bFirst)
       {
          (*p_table)(row,0) << _T("Eccentricity @ CL");
-         if ( areAnyTempStrands )
+         if ( areAnyTempStrandsInTable )
             (*p_table)(row,0) << _T(" (w/o Temporary Strands)");
       }
 
@@ -624,7 +633,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       if(bFirst)
       {
          (*p_table)(row,0) << _T("Eccentricity @ End");
-         if ( areAnyTempStrands )
+         if ( areAnyTempStrandsInTable )
             (*p_table)(row,0) << _T(" (w/o Temporary Strands)");
       }
 
@@ -637,16 +646,16 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
          (*p_table)(row,0) << Bold(_T("Prestressing Strands"));
       }
 
-      if (areAnyHarpedStrands)
+      if (areAnyHarpedStrandsInTable)
       {
-         if (areAllHarpedStrandsStraight)
+         if (are_harped_straight)
          {
             (*p_table)(row++,col) << Bold(_T("Straight"));
 
             if (bFirst)
                (*p_table)(row,0) << _T("NO. (# of Harped Strands)");
 
-            (*p_table)(row++,col) << 0; // by definition
+            (*p_table)(row++,col) << nh;
          }
          else
          {
@@ -656,19 +665,19 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
                (*p_table)(row,0) << _T("NO. (# of Harped Strands)");
 
             (*p_table)(row++,col) << nh;
-
-            if (bFirst)
-               (*p_table)(row,0) << _T("Y")<<Sub(_T("b"))<<_T(" of Topmost Depressed Strand(s) @ End");
-
-            Float64 TO;
-            pStrandGeometry->GetHighestHarpedStrandLocation(segmentKey,&TO);
-            (*p_table)(row++,col) << ecc.SetValue(TO);
          }
+
+         if (bFirst)
+            (*p_table)(row,0) << _T("Y")<<Sub(_T("b"))<<_T(" of Topmost Depressed Strand(s) @ End");
+
+         Float64 TO;
+         pStrandGeometry->GetHighestHarpedStrandLocation(segmentKey,&TO);
+         (*p_table)(row++,col) << ecc.SetValue(TO);
       }
-      else
+
+      if ( areAnyDebondingInTable )
       {
-         // no harped strands, assume debond design
-         (*p_table)(row++,col) << Bold(_T("Debonded"));
+//         (*p_table)(row++,col) << Bold(_T("Debonded"));
 
          if (bFirst)
             (*p_table)(row,0) << _T("NO. (# of Debonded Strands)");

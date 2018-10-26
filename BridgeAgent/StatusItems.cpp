@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -184,10 +184,9 @@ void pgsPointLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    dlg.m_Message = pItem->GetDescription().c_str();
 
    INT_PTR result = dlg.DoModal();
-   GET_IFACE(IEAFTransactions,pTxn);
-
    if ( result == CDealWithLoadDlg::IDDELETELOAD )
    {
+      GET_IFACE(IEAFTransactions,pTxn);
       txnDeletePointLoad txn(pItem->m_LoadIndex);
       pTxn->Execute(txn);
 
@@ -254,10 +253,10 @@ void pgsDistributedLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    dlg.m_Message = pItem->GetDescription().c_str();
 
    INT_PTR result = dlg.DoModal();
-   GET_IFACE(IEAFTransactions,pTxn);
 
    if ( result == CDealWithLoadDlg::IDDELETELOAD )
    {
+      GET_IFACE(IEAFTransactions,pTxn);
       txnDeleteDistributedLoad txn(pItem->m_LoadIndex);
       pTxn->Execute(txn);
 
@@ -323,10 +322,10 @@ void pgsMomentLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    dlg.m_Message = pItem->GetDescription().c_str();
 
    INT_PTR result = dlg.DoModal();
-   GET_IFACE(IEAFTransactions,pTxn);
 
    if ( result == CDealWithLoadDlg::IDDELETELOAD )
    {
+      GET_IFACE(IEAFTransactions,pTxn);
       txnDeleteMomentLoad txn(pItem->m_LoadIndex);
       pTxn->Execute(txn);
 

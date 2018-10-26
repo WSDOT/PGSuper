@@ -801,6 +801,22 @@
 				>
 			</File>
 			<File
+				RelativePath=".\InitialStrainAnalysisChapterBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\InitialStrainAnalysisDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\InitialStrainAnalysisReportSpecification.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\InitialStrainAnalysisReportSpecificationBuilder.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\InterfaceShearDetails.cpp"
 				>
 			</File>
@@ -1081,6 +1097,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SelectPointOfInterestDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ShearCapacityDetailsChapterBuilder.cpp"
 				>
 			</File>
@@ -1214,6 +1234,10 @@
 			</File>
 			<File
 				RelativePath=".\TimeStepCamberChapterBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TimeStepDetailsChapterBuilder.cpp"
 				>
 			</File>
 			<File
@@ -1561,6 +1585,22 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\Reporting\InitialStrainAnalysisChapterBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath=".\InitialStrainAnalysisDlg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\InitialStrainAnalysisReportSpecification.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\InitialStrainAnalysisReportSpecificationBuilder.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\Reporting\InterfaceShearDetails.h"
 				>
 			</File>
@@ -1801,6 +1841,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SelectPointOfInterestDlg.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\Reporting\ShearCapacityDetailsChapterBuilder.h"
 				>
 			</File>
@@ -1886,6 +1930,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\TimeStepCamberChapterBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\TimeStepDetailsChapterBuilder.h"
 				>
 			</File>
 			<File

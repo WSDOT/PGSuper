@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -681,12 +681,11 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
 
    bool bPedLoading = pProductLoads->HasPedestrianLoad(girderKey);
 
    rptRcTable * p_table2;
-   RowIndexType row2 = CreateLimitStateTableHeading<rptMomentUnitTag,unitmgtMomentData>(&p_table2,_T("Moment, Mu"),false,bDesign,bPermit,bRating,true,analysisType,pEventMap,pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
+   RowIndexType row2 = CreateLimitStateTableHeading<rptMomentUnitTag,unitmgtMomentData>(&p_table2,_T("Moment, Mu"),false,bDesign,bPermit,bRating,true,analysisType,pProductLoads,pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
    *p << p_table2;
 
    if ( girderKey.groupIndex == ALL_GROUPS )

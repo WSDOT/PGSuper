@@ -9,7 +9,7 @@ Bursting zone checks failed.
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.00   5  8.50  1     2     Tx28       42   1/2  270  8.39  5.34   8 24.5  6.000  6.200    3.185   -3.994   3039  0.665  0.849  0.34 -0.13  0.00 -0.01 -0.13 130.06 366.40   0.00   0.00   0.00
+ 38.00   5  8.50  1     2     Tx28       42   1/2  270  8.39  5.72   8 22.5  6.200  6.400    3.185   -3.994   3039  0.665  0.849  0.34 -0.13  0.00 -0.01 -0.13 128.36 365.28   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
@@ -19,7 +19,7 @@ Bursting zone checks failed.
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.00   5  8.50  1     3     Tx28       42   1/2  270  8.39  5.34   8 24.5  6.000  6.200    3.185   -3.994   3039  0.665  0.849  0.34 -0.13  0.00 -0.01 -0.13 130.06 366.40   1.00   1.00   1.00
+ 38.00   5  8.50  1     3     Tx28       42   1/2  270  8.39  5.72   8 22.5  6.200  6.400    3.185   -3.994   3039  0.665  0.849  0.34 -0.13  0.00 -0.01 -0.13 128.36 365.28   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful

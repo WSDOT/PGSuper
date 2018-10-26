@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,7 @@
 #include <Reporting\SpanGirderReportDlg.h>
 #include <Reporting\MultiGirderReportDlg.h>
 #include "MultiViewReportDlg.h"
+#include "SelectPointOfInterestDlg.h"
 
 #include <IFace\Selection.h>
 #include <IFace\Project.h>
@@ -403,3 +404,72 @@ boost::shared_ptr<CReportSpecification> CMultiViewSpanGirderReportSpecificationB
    return pRptSpec;
 }
 
+
+////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+
+CPointOfInterestReportSpecificationBuilder::CPointOfInterestReportSpecificationBuilder(IBroker* pBroker) :
+CBrokerReportSpecificationBuilder(pBroker)
+{
+}
+
+CPointOfInterestReportSpecificationBuilder::~CPointOfInterestReportSpecificationBuilder(void)
+{
+}
+
+boost::shared_ptr<CReportSpecification> CPointOfInterestReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   // Prompt for span, girder, and chapter list
+   // initialize dialog for the current cut location
+   GET_IFACE(ISelection,pSelection);
+   CSelection selection = pSelection->GetSelection();
+   CSegmentKey segmentKey;
+   if ( selection.Type == CSelection::Girder )
+   {
+      segmentKey.groupIndex   = selection.GroupIdx;
+      segmentKey.girderIndex  = selection.GirderIdx;
+      segmentKey.segmentIndex = 0;
+   }
+   else if ( selection.Type == CSelection::Segment )
+   {
+      segmentKey.groupIndex   = selection.GroupIdx;
+      segmentKey.girderIndex  = selection.GirderIdx;
+      segmentKey.segmentIndex = selection.SegmentIdx;
+   }
+   else
+   {
+      segmentKey.groupIndex   = 0;
+      segmentKey.girderIndex  = 0;
+      segmentKey.segmentIndex = 0;
+   }
+
+   GET_IFACE(IPointOfInterest,pPOI);
+   std::vector<pgsPointOfInterest> vPoi( pPOI->GetPointsOfInterest(CSegmentKey(segmentKey.groupIndex,segmentKey.girderIndex,ALL_SEGMENTS),POI_SPAN | POI_5L) );
+   ATLASSERT( vPoi.size() == 1 );
+   pgsPointOfInterest initial_poi = vPoi.front();
+
+   boost::shared_ptr<CPointOfInterestReportSpecification> pInitRptSpec( boost::dynamic_pointer_cast<CPointOfInterestReportSpecification>(pRptSpec) );
+
+   CSelectPointOfInterestDlg dlg(m_pBroker,pInitRptSpec,initial_poi,POI_SPAN);
+
+   if ( dlg.DoModal() == IDOK )
+   {
+      boost::shared_ptr<CReportSpecification> pRptSpec( new CPointOfInterestReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.GetPointOfInterest()) );
+
+      rptDesc.ConfigureReportSpecification(pRptSpec);
+
+      return pRptSpec;
+   }
+
+   return boost::shared_ptr<CReportSpecification>();
+}
+
+boost::shared_ptr<CReportSpecification> CPointOfInterestReportSpecificationBuilder::CreateDefaultReportSpec(const CReportDescription& rptDesc)
+{
+   // always prompt
+   boost::shared_ptr<CReportSpecification> nullSpec;
+   return CreateReportSpec(rptDesc,nullSpec);
+}

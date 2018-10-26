@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperBeamFactory.AgeAdjustedMaterial.1 = s 'Age Adjusted Material'
+	{
+		CLSID = s '{6E0E1094-075A-4cad-80C1-0D423B6162BD}'
+	}
+	PGSuperBeamFactory.AgeAdjustedMaterial = s 'Age Adjusted Material'
+	{
+		CLSID = s '{6E0E1094-075A-4cad-80C1-0D423B6162BD}'
+		CurVer = s 'PGSuperBeamFactory.AgeAdjustedMaterial.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {6E0E1094-075A-4cad-80C1-0D423B6162BD} = s 'Age Adjusted Material'
+		{
+			ProgID = s 'PGSuperBeamFactory.AgeAdjustedMaterial.1'
+			VersionIndependentProgID = s 'PGSuperBeamFactory.AgeAdjustedMaterial'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s 'DC4B56B3-455B-41be-9509-289950E62190'
+		}
+	}
+}

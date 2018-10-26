@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -103,7 +103,7 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType interv
    // get all the cross section changes
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
    std::vector<pgsPointOfInterest> xsPOI = pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE);
-   pPOI->RemovePointsOfInterest(xsPOI,POI_ERECTED_SEGMENT);
+   pPOI->RemovePointsOfInterest(xsPOI,POI_ERECTED_SEGMENT,POI_ERECTED_SEGMENT | POI_CANTILEVER);
 
 
    // add support locations if there aren't already POIs at those locations

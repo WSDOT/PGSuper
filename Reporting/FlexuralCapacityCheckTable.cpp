@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\Project.h>
+#include <IFace\AnalysisResults.h>
 
 
 #ifdef _DEBUG
@@ -80,7 +81,6 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderA
                                                IntervalIndexType intervalIdx,
                                                pgsTypes::LimitState ls,bool bPositiveMoment,bool* pbOverReinforced) const
 {
-   USES_CONVERSION;
    bool bOverReinforced = false;
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
@@ -99,8 +99,8 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderA
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
-   std::_tstring strLimitState = OLE2T(pEventMap->GetLimitStateName(ls));
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   std::_tstring strLimitState = pProductLoads->GetLimitStateName(ls);
    std::_tstring strDirection  = (bPositiveMoment ? _T("Positive") : _T("Negative"));
 
    std::_tostringstream os;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,7 @@
 
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
+#include <IFace\Project.h>
 
 
 #ifdef _DEBUG
@@ -74,7 +75,15 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKe
                                    IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-   pgsTypes::SectionPropertyType spType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed );
+   pgsTypes::SectionPropertyType spType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptTransformedNoncomposite );
+
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   {
+      // need eccentricity based on complete transformed section for time-step analysis
+      spType = pgsTypes::sptTransformed;
+   }
+
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    bool bTempStrands = (0 < pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary) ? true : false);
 

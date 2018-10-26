@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,6 +31,7 @@
 class CStressHistoryGraphController;
 class arvPhysicalConverter;
 interface ILimitStateForces;
+interface ICombinedForces;
 interface IIntervals;
 
 class GRAPHINGCLASS CStressHistoryGraphBuilder : public CEAFAutoCalcGraphBuilder
@@ -72,11 +73,12 @@ protected:
 
    virtual bool UpdateNow();
 
+   pgsTypes::LimitState GetLimitState();
    void UpdateXAxis();
    void UpdateYAxis();
    void UpdateGraphTitle(const pgsPointOfInterest& poi);
    void UpdateGraphData(const pgsPointOfInterest& poi);
    Float64 GetX(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType,IIntervals* pIntervals);
-   void PlotStressPoints(Float64 x,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,IndexType dataSeries,ILimitStateForces* pLimitStateForces);
+   void PlotStressPoints(Float64 x,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,IndexType dataSeries,pgsTypes::LimitState limitState,pgsTypes::BridgeAnalysisType bat,Float64 gLL,IntervalIndexType liveLoadIntervalIdx,ICombinedForces* pCombinedForces,ILimitStateForces* pLimitStateForces);
    void AddGraphPoint(IndexType series, Float64 xval, Float64 yval);
 };

@@ -1,26 +1,6 @@
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 29.98   8  0.02  1     1    1)         44   1/2  270  4.00  3.82  10  2.50  22   8  0  4  4  0  0  0  0  0  0  0  5.200  8.300    4.724   -4.174    1093 0.396  0.396  0.28  0.00 -0.02 -0.02 -0.03 122.51 384.76   1.00   1.00   1.00
-                                                                       4.50  22   2  2  0  0  0  0  0  0  0  0  0 
-
-
-Girder design was Not Successful
-The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Compressive stress check failed for Service IA for the Final with Live Load Stage (Bridge Site 3).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Stirrup detailing checks failed for the Strength I Limit State.
-Debond arrangement checks failed.
-Bursting zone checks failed.
-Confinement zone checks failed.
-Live Load Deflection check failed
-
-
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 29.98   8  0.02  1     2    1)         40   1/2  270  4.10  3.87   8  2.50  22   8  4  2  2  0  0  0  0  0  0  0  5.100  9.700    4.348   -3.874     995 0.342  0.342  0.25  0.00 -0.02 -0.02 -0.03 102.96 326.92   1.00   1.00   1.00
+ 29.98   8  0.02  1     1    1)         44   1/2  270  4.00  3.95   2  2.50  22   2  2  0  0  0  0  0  0  0  0  0  8.000 11.400    4.724   -4.174    1093 0.396  0.396  0.23  0.00 -0.02 -0.02 -0.03 103.20 367.24   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -34,7 +14,7 @@ Live Load Deflection check failed
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 29.98   8  0.02  1     5    1)         36   1/2  270  4.22  4.07   6  2.50  22   6  2  2  2  0  0  0  0  0  0  0  4.800  8.800    4.121   -3.646     952 0.342  0.342  0.23  0.00 -0.02  0.00 -0.02  86.13 278.64   1.00   1.00   1.00
+ 29.98   8  0.02  1     2    1)         40   1/2  270  4.10  3.87   8  2.50  22   8  4  2  2  0  0  0  0  0  0  0  5.100  9.700    4.348   -3.874     995 0.342  0.342  0.25  0.00 -0.02 -0.02 -0.03 102.96 322.88   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -42,6 +22,19 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State for
 Stirrup detailing checks failed for the Strength I Limit State.
 Debond arrangement checks failed.
 Bursting zone checks failed.
+Confinement zone checks failed.
+Live Load Deflection check failed
+
+
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 29.98   8  0.02  1     5    1)         36   1/2  270  4.22  4.00   8  2.50  22   8  4  2  2  0  0  0  0  0  0  0  4.600  8.800    4.121   -3.646     952 0.342  0.342  0.23  0.00 -0.02  0.00 -0.02  87.59 275.94   1.00   1.00   1.00
+
+
+The Specification Check was Not Successful
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+Stirrup detailing checks failed for the Strength I Limit State.
+Debond arrangement checks failed.
 Confinement zone checks failed.
 Live Load Deflection check failed
 

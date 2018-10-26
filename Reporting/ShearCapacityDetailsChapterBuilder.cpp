@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -443,8 +443,7 @@ void write_shear_dimensions_table(IBroker* pBroker,
                              IntervalIndexType intervalIdx,
                              const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   USES_CONVERSION;
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
    // Setup the table
    rptParagraph* pParagraph;
@@ -452,8 +451,8 @@ void write_shear_dimensions_table(IBroker* pBroker,
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   pParagraph->SetName(OLE2T(pEventMap->GetLimitStateName(ls)));
-   *pParagraph << _T("Effective Shear Dimensions for ") << OLE2T(pEventMap->GetLimitStateName(ls)) << _T(" [From Article 5.8.2.7]") << rptNewLine;
+   pParagraph->SetName(pProductLoads->GetLimitStateName(ls));
+   *pParagraph << _T("Effective Shear Dimensions for ") << pProductLoads->GetLimitStateName(ls) << _T(" [From Article 5.8.2.7]") << rptNewLine;
 
    
    CGirderKey girderKey = vPoi.front().GetSegmentKey();
@@ -543,8 +542,6 @@ void write_shear_stress_table(IBroker* pBroker,
                               IntervalIndexType intervalIdx,
                               const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   USES_CONVERSION;
-
    rptParagraph* pParagraph;
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
@@ -600,9 +597,9 @@ void write_shear_stress_table(IBroker* pBroker,
 
    ColumnIndexType nColumns = (nDucts == 0 ? 7 : 9);
 
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    CString strTitle;
-   strTitle.Format(_T("Factored Shear Stresses for %s"),OLE2T(pEventMap->GetLimitStateName(ls)));
+   strTitle.Format(_T("Factored Shear Stresses for %s"),pProductLoads->GetLimitStateName(ls));
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns,strTitle);
 
    //if ( segmentKey.groupIndex == ALL_GROUPS )
@@ -673,8 +670,6 @@ void write_fpc_table(IBroker* pBroker,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   USES_CONVERSION;
-
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -691,14 +686,14 @@ void write_fpc_table(IBroker* pBroker,
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    if ( shear_capacity_method == scmVciVcw )
    {
-      *pParagraph << RPT_STRESS(_T("pc")) << _T(" [for use in Eqn 5.8.3.4.3-3] - ") << OLE2T(pEventMap->GetLimitStateName(ls)) << rptNewLine;
+      *pParagraph << RPT_STRESS(_T("pc")) << _T(" [for use in Eqn 5.8.3.4.3-3] - ") << pProductLoads->GetLimitStateName(ls) << rptNewLine;
    }
    else
    {
-      *pParagraph << RPT_STRESS(_T("pc")) << _T(" [for use in Eqn C5.8.3.4.2-1] - ") << OLE2T(pEventMap->GetLimitStateName(ls)) << rptNewLine;
+      *pParagraph << RPT_STRESS(_T("pc")) << _T(" [for use in Eqn C5.8.3.4.2-1] - ") << pProductLoads->GetLimitStateName(ls) << rptNewLine;
    }
 
    *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Fpc Pic.jpg")) << rptNewLine;
@@ -805,14 +800,13 @@ void write_fpce_table(IBroker* pBroker,
                       IntervalIndexType intervalIdx,
                       const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   USES_CONVERSION;
    rptParagraph* pParagraph;
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
-   *pParagraph << Sub2(_T("M"),_T("cre")) << OLE2T(pEventMap->GetLimitStateName(ls)) << _T(" [Eqn 5.8.3.4.3-2]") << rptNewLine;
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   *pParagraph << Sub2(_T("M"),_T("cre")) << pProductLoads->GetLimitStateName(ls) << _T(" [Eqn 5.8.3.4.3-2]") << rptNewLine;
 
    *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Mcre.png")) << rptNewLine;
    *pParagraph << rptNewLine;
@@ -896,8 +890,6 @@ void write_fpo_table(IBroker* pBroker,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   USES_CONVERSION;
-
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -914,8 +906,8 @@ void write_fpo_table(IBroker* pBroker,
       *pParagraph << _T(" [Eqn C5.8.3.4.2-1]");
    }
 
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
-   *pParagraph << _T(" - ") << OLE2T(pEventMap->GetLimitStateName(ls)) << rptNewLine;
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   *pParagraph << _T(" - ") << pProductLoads->GetLimitStateName(ls) << rptNewLine;
 
    pParagraph = new rptParagraph();
    *pChapter << pParagraph;
@@ -1101,8 +1093,6 @@ void write_Fe_table(IBroker* pBroker,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   USES_CONVERSION;
-
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -1116,8 +1106,8 @@ void write_Fe_table(IBroker* pBroker,
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
-   *pParagraph << Sub2(_T("F"),symbol(epsilon)) << _T(" [Eqn 5.8.3.4.2-3] - ") << OLE2T(pEventMap->GetLimitStateName(ls)) << rptNewLine;
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   *pParagraph << Sub2(_T("F"),symbol(epsilon)) << _T(" [Eqn 5.8.3.4.2-3] - ") << pProductLoads->GetLimitStateName(ls) << rptNewLine;
 
    *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Fe.png")) << rptNewLine;
 
@@ -1231,8 +1221,6 @@ void write_ex_table(IBroker* pBroker,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   USES_CONVERSION;
-
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -1252,8 +1240,8 @@ void write_ex_table(IBroker* pBroker,
       *pParagraph << _T(" [Eqn 5.8.3.4.2-2] ");
    }
 
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
-   *pParagraph << _T("- ") << OLE2T(pEventMap->GetLimitStateName(ls)) << rptNewLine;
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   *pParagraph << _T("- ") << pProductLoads->GetLimitStateName(ls) << rptNewLine;
 
    if ( bAfter2007 )
    {
@@ -1569,8 +1557,6 @@ void write_btsummary_table(IBroker* pBroker,
                        IntervalIndexType intervalIdx,
                        const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   USES_CONVERSION;
-
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -1585,9 +1571,9 @@ void write_btsummary_table(IBroker* pBroker,
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    CString strTitle;
-   strTitle.Format(_T("Shear Parameters Summary - %s"),OLE2T(pEventMap->GetLimitStateName(ls)));
+   strTitle.Format(_T("Shear Parameters Summary - %s"),pProductLoads->GetLimitStateName(ls));
    *pParagraph << strTitle << rptNewLine;
 
    pParagraph = new rptParagraph();
@@ -1789,15 +1775,13 @@ void write_Vs_table(IBroker* pBroker,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   USES_CONVERSION;
-
    rptParagraph* pParagraph;
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
-   *pParagraph << _T("Shear Resistance Provided By Shear Reinforcement - ") << OLE2T(pEventMap->GetLimitStateName(ls)) << rptNewLine;
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   *pParagraph << _T("Shear Resistance Provided By Shear Reinforcement - ") << pProductLoads->GetLimitStateName(ls) << rptNewLine;
 
    *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("Vs.png")) << rptNewLine;
    *pParagraph << rptNewLine;
@@ -1909,15 +1893,13 @@ void write_Vc_table(IBroker* pBroker,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   USES_CONVERSION;
-
    rptParagraph* pParagraph;
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
-   *pParagraph << _T("Shear Resistance Provided By Tensile Stress in the Concrete - ") << OLE2T(pEventMap->GetLimitStateName(ls)) << rptNewLine;
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   *pParagraph << _T("Shear Resistance Provided By Tensile Stress in the Concrete - ") << pProductLoads->GetLimitStateName(ls) << rptNewLine;
 
 #pragma Reminder("UPDATE: assuming all segments are the same") // getting data for the first segment
    CSegmentKey segmentKey = vPoi.front().GetSegmentKey();
@@ -2073,15 +2055,13 @@ void write_Vci_table(IBroker* pBroker,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   USES_CONVERSION;
-
    rptParagraph* pParagraph;
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
-   *pParagraph << OLE2T(pEventMap->GetLimitStateName(ls)) << _T(" - ");
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   *pParagraph << pProductLoads->GetLimitStateName(ls) << _T(" - ");
 
 #pragma Reminder("UPDATE: assuming all segments are the same") // getting data for the first segment
    CSegmentKey segmentKey = vPoi.front().GetSegmentKey();
@@ -2195,15 +2175,13 @@ void write_Vcw_table(IBroker* pBroker,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   USES_CONVERSION;
-
    rptParagraph* pParagraph;
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
-   *pParagraph << OLE2T(pEventMap->GetLimitStateName(ls)) << _T(" - ");
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   *pParagraph << pProductLoads->GetLimitStateName(ls) << _T(" - ");
 
    *pParagraph << _T("Shear Resistance Provided by Concrete when inclined cracking results from excessive principal tension in the web.") << rptNewLine;
 
@@ -2312,15 +2290,13 @@ void write_theta_table(IBroker* pBroker,
                        IntervalIndexType intervalIdx,
                        const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   USES_CONVERSION;
-
    rptParagraph* pParagraph;
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
-   *pParagraph << OLE2T(pEventMap->GetLimitStateName(ls)) << _T(" - ");
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   *pParagraph << pProductLoads->GetLimitStateName(ls) << _T(" - ");
 
    *pParagraph << _T("Angle of inclination of diagonal compressive stress [LRFD 5.8.3.3 and 5.8.3.4.3]") << rptNewLine;
 
@@ -2434,8 +2410,6 @@ void write_Vn_table(IBroker* pBroker,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   USES_CONVERSION;
-
    GET_IFACE2(pBroker,ISpecification, pSpec);
    GET_IFACE2(pBroker,ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -2445,9 +2419,9 @@ void write_Vn_table(IBroker* pBroker,
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
 
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    CString strName;
-   strName.Format(_T("Nominal Shear Resistance - %s"),OLE2T(pEventMap->GetLimitStateName(ls)));
+   strName.Format(_T("Nominal Shear Resistance - %s"),pProductLoads->GetLimitStateName(ls));
 
    *pChapter << pParagraph;
 
@@ -2602,8 +2576,6 @@ void write_Avs_table(IBroker* pBroker,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   USES_CONVERSION;
-
    GET_IFACE2(pBroker,ISpecification, pSpec);
    GET_IFACE2(pBroker,ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -2611,9 +2583,9 @@ void write_Avs_table(IBroker* pBroker,
 
    rptParagraph* pParagraph;
 
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    CString strLabel;
-   strLabel.Format(_T("Required Shear Reinforcement - %s"),OLE2T(pEventMap->GetLimitStateName(ls)));
+   strLabel.Format(_T("Required Shear Reinforcement - %s"),pProductLoads->GetLimitStateName(ls));
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pParagraph << strLabel << rptNewLine;
@@ -2729,7 +2701,6 @@ void write_bar_spacing_table(IBroker* pBroker,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   USES_CONVERSION;
    GET_IFACE2(pBroker,ISpecification, pSpec);
    GET_IFACE2(pBroker,ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -2737,9 +2708,9 @@ void write_bar_spacing_table(IBroker* pBroker,
 
    rptParagraph* pParagraph;
 
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    CString strLabel;
-   strLabel.Format(_T("Required Stirrup Spacing - %s"),OLE2T(pEventMap->GetLimitStateName(ls)));
+   strLabel.Format(_T("Required Stirrup Spacing - %s"),pProductLoads->GetLimitStateName(ls));
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pParagraph << strLabel << rptNewLine;

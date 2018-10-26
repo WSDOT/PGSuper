@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -252,50 +252,6 @@ bool CBoxBeamFactoryImpl::IsPrismatic(IBroker* pBroker,const CSegmentKey& segmen
 
    return IsZero(endBlockLength) ? true : false;
 }
-
-Float64 CBoxBeamFactoryImpl::GetVolume(IBroker* pBroker,const CSegmentKey& segmentKey)
-{
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-   GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-
-   pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
-
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE) );
-   ATLASSERT( 2 <= vPOI.size() );
-   Float64 V = 0;
-   std::vector<pgsPointOfInterest>::iterator iter( vPOI.begin() );
-   pgsPointOfInterest prev_poi = *iter;
-   Float64 prev_area;
-   if ( spMode == pgsTypes::spmGross )
-      prev_area = pSectProp->GetAg(releaseIntervalIdx,prev_poi);
-   else
-      prev_area = pSectProp->GetNetAg(releaseIntervalIdx,prev_poi);
-
-   iter++;
-
-   std::vector<pgsPointOfInterest>::const_iterator end(vPOI.end());
-   for ( ; iter != end; iter++ )
-   {
-      pgsPointOfInterest poi = *iter;
-      Float64 area;
-      if ( spMode == pgsTypes::spmGross )
-         area = pSectProp->GetAg(releaseIntervalIdx,poi);
-      else
-         area = pSectProp->GetNetAg(releaseIntervalIdx,poi);
-
-      Float64 avg_area = (prev_area + area)/2;
-      V += avg_area*(poi.GetDistFromStart() - prev_poi.GetDistFromStart());
-
-      prev_poi = poi;
-      prev_area = area;
-   }
-
-   return V;
-}
-
 
 CLSID CBoxBeamFactoryImpl::GetFamilyCLSID()
 {

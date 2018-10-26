@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -70,8 +70,7 @@ public:
    virtual void SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions);
    virtual IBeamFactory::Dimensions LoadSectionDimensions(sysIStructuredLoad* pLoad);
    virtual bool IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey);
-   virtual Float64 GetVolume(IBroker* pBroker,const CSegmentKey& segmentKey);
-   virtual Float64 GetSurfaceArea(IBroker* pBroker,const CSegmentKey& segmentKey,bool bReduceForPoorlyVentilatedVoids);
+   virtual Float64 GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey);
    virtual std::_tstring GetImage();
    virtual std::_tstring GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType);
    virtual std::_tstring GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType);

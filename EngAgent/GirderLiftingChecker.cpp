@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -580,20 +580,20 @@ void pgsGirderLiftingChecker::ComputeLiftingStresses(const CSegmentKey& segmentK
 
       if ( bUseConfig && !liftConfig.bIgnoreGirderConfig )
       {
-         hps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Harped,liftSegmentIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI,liftConfig.GdrConfig);
+         hps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Harped,liftSegmentIntervalIdx,pgsTypes::Middle,liftConfig.GdrConfig);
          he        = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,liftConfig.GdrConfig, pgsTypes::Harped, &nfh);
-         sps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Straight,liftSegmentIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI,liftConfig.GdrConfig);
+         sps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Straight,liftSegmentIntervalIdx,pgsTypes::Middle,liftConfig.GdrConfig);
          se        = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,liftConfig.GdrConfig, pgsTypes::Straight, &nfs);
-         tps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,liftSegmentIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI,liftConfig.GdrConfig);
+         tps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,liftSegmentIntervalIdx,pgsTypes::Middle,liftConfig.GdrConfig);
          te        = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,liftConfig.GdrConfig, pgsTypes::Temporary, &nft);
       }
       else
       {
-         hps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Harped,liftSegmentIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI);
+         hps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Harped,liftSegmentIntervalIdx,pgsTypes::Middle);
          he        = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,pgsTypes::Harped,&nfh);
-         sps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Straight,liftSegmentIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI);
+         sps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Straight,liftSegmentIntervalIdx,pgsTypes::Middle);
          se        = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,pgsTypes::Straight,&nfs);
-         tps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,liftSegmentIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI);
+         tps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,liftSegmentIntervalIdx,pgsTypes::Middle);
          te        = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,pgsTypes::Temporary,&nft);
       }
 

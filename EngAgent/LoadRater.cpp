@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -929,7 +929,7 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
       {
          // positive moment - use fpe (effective prestress)
          GET_IFACE(IPretensionForce,pPrestressForce);
-         fpe = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,loadRatingIntervalIdx,pgsTypes::Middle,ls);
+         fpe = pPrestressForce->GetEffectivePrestressWithLiveLoad(poi,pgsTypes::Permanent,ls);
       }
       else
       {

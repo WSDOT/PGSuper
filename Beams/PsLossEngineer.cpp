@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -2648,13 +2648,13 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    // eccentricity of the temporary strands
    *petemp = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, config, pgsTypes::Temporary, &nStrandsEffective);
 
-   pgsTypes::SectionPropertyType spType = (pgsTypes::SectionPropertyType)(pSectProp->GetSectionPropertiesMode());
-   *pSectionProperties = (lrfdLosses::SectionPropertiesType)(spType);
+   pgsTypes::SectionPropertyType spType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
+   *pSectionProperties = (spType == pgsTypes::sptGross ? lrfdLosses::sptGross : lrfdLosses::sptTransformed);
 
    *pPerimeter = pSectProp->GetPerimeter(poi);
-   *pAg  = pSectProp->GetAg( spType, erectIntervalIdx, poi );
-   *pIg  = pSectProp->GetIx( spType, erectIntervalIdx, poi );
-   *pYbg = pSectProp->GetY(  spType, erectIntervalIdx, poi, pgsTypes::BottomGirder );
+   *pAg  = pSectProp->GetAg( spType, releaseIntervalIdx, poi );
+   *pIg  = pSectProp->GetIx( spType, releaseIntervalIdx, poi );
+   *pYbg = pSectProp->GetY(  spType, releaseIntervalIdx, poi, pgsTypes::BottomGirder );
    *pAc  = pSectProp->GetAg( spType, liveLoadIntervalIdx, poi, config.Fc );
    *pIc  = pSectProp->GetIx( spType, liveLoadIntervalIdx, poi, config.Fc );
    *pYbc = pSectProp->GetY(  spType, liveLoadIntervalIdx, poi, pgsTypes::BottomGirder, config.Fc );
@@ -2766,7 +2766,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    {
       // effectiveness factors don't apply for transformed properties
       // elastic gains are computed impliciity and can't be scaled.
-      *pKsh = 1.0;
+      *pKsh     = 1.0;
       K_slab    = 1.0;
       K_slabpad = 1.0;
       K_dia     = 1.0;

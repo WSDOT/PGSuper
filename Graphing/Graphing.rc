@@ -69,8 +69,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,23
- PRODUCTVERSION 3,0,0,23
+ FILEVERSION 3,0,0,24
+ PRODUCTVERSION 3,0,0,24
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -88,12 +88,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper Graphing"
-            VALUE "FileVersion", "3.0.0.23"
+            VALUE "FileVersion", "3.0.0.24"
             VALUE "InternalName", "Graphing"
-            VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperGraphing.dll"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.23"
+            VALUE "ProductVersion", "3.0.0.24"
         END
     END
     BLOCK "VarFileInfo"
@@ -235,19 +235,6 @@ BEGIN
     CONTROL         "Show Grid",IDC_GRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,301,48,10
 END
 
-IDD_VIRTUALWORK_GRAPH_CONTROLLER DIALOGEX 0, 0, 156, 88
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    COMBOBOX        IDC_GIRDER,7,7,142,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Show Grid",IDC_GRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,71,48,10
-    CONTROL         "Show Girder",IDC_BEAM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,67,71,55,10
-    COMBOBOX        IDC_INTERVAL,7,23,142,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_POI,7,39,142,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Unit Force",IDC_FORCE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,7,55,49,10
-    CONTROL         "Unit Moment",IDC_MOMENT,"Button",BS_AUTORADIOBUTTON,58,55,56,10
-END
-
 IDD_INITIALSTRAIN_GRAPH_CONTROLLER DIALOGEX 0, 0, 156, 190
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -342,14 +329,6 @@ BEGIN
         VERTGUIDE, 13
         TOPMARGIN, 7
         BOTTOMMARGIN, 362
-    END
-
-    IDD_VIRTUALWORK_GRAPH_CONTROLLER, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 149
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 81
     END
 
     IDD_INITIALSTRAIN_GRAPH_CONTROLLER, DIALOG

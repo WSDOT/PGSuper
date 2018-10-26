@@ -69,8 +69,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,23
- PRODUCTVERSION 3,0,0,23
+ FILEVERSION 3,0,0,24
+ PRODUCTVERSION 3,0,0,24
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -88,12 +88,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper Reporting"
-            VALUE "FileVersion", "3.0.0.23"
+            VALUE "FileVersion", "3.0.0.24"
             VALUE "InternalName", "Reporting"
-            VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperReporting.dll"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.23"
+            VALUE "ProductVersion", "3.0.0.24"
         END
     END
     BLOCK "VarFileInfo"
@@ -205,6 +205,28 @@ BEGIN
     LTEXT           "Static",IDC_LOCATION,7,74,302,8
 END
 
+IDD_POI_SELECT DIALOGEX 0, 0, 316, 92
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Select Point of Interest"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,205,71,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,259,71,50,14
+    CONTROL         "",IDC_SLIDER,"msctls_trackbar32",WS_TABSTOP,7,16,302,15
+    LTEXT           "Static",IDC_LOCATION,7,44,302,8
+END
+
+IDD_INITIAL_STRAIN_ANALYSIS DIALOGEX 0, 0, 316, 60
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Initial Strain Analysis"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,205,39,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,259,39,50,14
+    LTEXT           "Interval",IDC_STATIC,7,7,26,8
+    COMBOBOX        IDC_INTERVAL,41,7,268,121,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -260,6 +282,22 @@ BEGIN
         RIGHTMARGIN, 309
         TOPMARGIN, 7
         BOTTOMMARGIN, 116
+    END
+
+    IDD_POI_SELECT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 309
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 85
+    END
+
+    IDD_INITIAL_STRAIN_ANALYSIS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 309
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 53
     END
 END
 #endif    // APSTUDIO_INVOKED

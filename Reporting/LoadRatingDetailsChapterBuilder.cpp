@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -290,7 +290,7 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
    {
       col = 0;
       const pgsPointOfInterest& poi = iter->first;
-      if ( !poi.IsTenthPoint(POI_SPAN) && !poi.HasAttribute(POI_CLOSURE) && poi != controllingPoi )
+      if ( !ReportAtThisPoi(poi,controllingPoi) )
       {
          continue;
       }
@@ -426,7 +426,7 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
    {
       col = 0;
       const pgsPointOfInterest& poi = iter->first;
-      if ( !poi.IsTenthPoint(POI_SPAN) && !poi.HasAttribute(POI_CLOSURE) && poi != controllingPoi )
+      if ( !ReportAtThisPoi(poi,controllingPoi) )
       {
          continue;
       }
@@ -571,7 +571,7 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
    {
       col = 0;
       const pgsPointOfInterest& poi = iter->first;
-      if ( !poi.IsTenthPoint(POI_SPAN) && !poi.HasAttribute(POI_CLOSURE) && poi != controllingPoi )
+      if ( !ReportAtThisPoi(poi,controllingPoi) )
       {
          continue;
       }
@@ -743,7 +743,7 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    {
       col = 0;
       const pgsPointOfInterest& poi = iter->first;
-      if ( !poi.IsTenthPoint(POI_SPAN) && !poi.HasAttribute(POI_CLOSURE) && poi != controllingPoi )
+      if ( !ReportAtThisPoi(poi,controllingPoi) )
       {
          continue;
       }
@@ -848,5 +848,21 @@ void CLoadRatingDetailsChapterBuilder::LoadPostingDetails(rptChapter* pChapter,I
    else
    {
       (*table)(row,col++) << _T("-");
+   }
+}
+
+bool CLoadRatingDetailsChapterBuilder::ReportAtThisPoi(const pgsPointOfInterest& poi,const pgsPointOfInterest& controllingPoi) const
+{
+   if ( poi == controllingPoi || 
+        poi.IsTenthPoint(POI_SPAN) || 
+        poi.HasAttribute(POI_CLOSURE) || 
+        poi.HasAttribute(POI_SPAN | POI_CANTILEVER)
+      )
+   {
+      return true;
+   }
+   else
+   {
+      return false;
    }
 }

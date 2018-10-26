@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -61,10 +61,20 @@ CTimeDependentLossFinalTable* CTimeDependentLossFinalTable::PrepareTable(rptChap
    GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
 
+   GET_IFACE2(pBroker,ISectionProperties,pSectProps);
+   pgsTypes::SectionPropertyMode spMode = pSectProps->GetSectionPropertiesMode();
+
    // Create and configure the table
-   ColumnIndexType numColumns = 6;
+   ColumnIndexType numColumns = 5;
+   if ( spMode == pgsTypes::spmGross )
+   {
+      numColumns++;
+   }
+
    CTimeDependentLossFinalTable* table = new CTimeDependentLossFinalTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
+
+   table->m_SectionPropertiesMode = spMode;
 
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
    
@@ -76,15 +86,24 @@ CTimeDependentLossFinalTable* CTimeDependentLossFinalTable::PrepareTable(rptChap
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   *pParagraph << symbol(DELTA) << italic(ON) << _T("f") << subscript(ON) << _T("pLT") << subscript(ON) << _T("df") << subscript(OFF) << subscript(OFF) << italic(OFF) << _T(" = ") << symbol(DELTA) << RPT_STRESS(_T("pSD")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pCD")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pR2")) << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pSS")) << rptNewLine;
+   *pParagraph << symbol(DELTA) << italic(ON) << _T("f") << subscript(ON) << _T("pLT") << subscript(ON) << _T("df") << subscript(OFF) << subscript(OFF) << italic(OFF) << _T(" = ") << symbol(DELTA) << RPT_STRESS(_T("pSD")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pCD")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pR2"));
+   if ( table->m_SectionPropertiesMode == pgsTypes::spmGross )
+   {
+      *pParagraph << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pSS"));
+   }
+   *pParagraph << rptNewLine;
 
+   ColumnIndexType colIdx = 0;
    *pParagraph << table << rptNewLine;
-   (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,1) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSD")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,2) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pCD")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR2")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,4) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSS")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,5) << COLHDR(symbol(DELTA) << italic(ON) << _T("f") << subscript(ON) << _T("pLT") << subscript(ON) << _T("df") << subscript(OFF) << subscript(OFF) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,colIdx++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,colIdx++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSD")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,colIdx++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pCD")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,colIdx++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR2")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   if ( table->m_SectionPropertiesMode == pgsTypes::spmGross )
+   {
+      (*table)(0,colIdx++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSS")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   }
+   (*table)(0,colIdx++) << COLHDR(symbol(DELTA) << italic(ON) << _T("f") << subscript(ON) << _T("pLT") << subscript(ON) << _T("df") << subscript(OFF) << subscript(OFF) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
 
    return table;
@@ -100,9 +119,13 @@ void CTimeDependentLossFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,
       return;
    }
 
-   (*this)(row,1) << stress.SetValue(ptl->ShrinkageLossAfterDeckPlacement());
-   (*this)(row,2) << stress.SetValue(ptl->CreepLossAfterDeckPlacement());
-   (*this)(row,3) << stress.SetValue(ptl->RelaxationLossAfterDeckPlacement());
-   (*this)(row,4) << stress.SetValue(ptl->ElasticGainDueToDeckShrinkage());
-   (*this)(row,5) << stress.SetValue(ptl->TimeDependentLossesAfterDeck());
+   ColumnIndexType colIdx = 1;
+   (*this)(row,colIdx++) << stress.SetValue(ptl->ShrinkageLossAfterDeckPlacement());
+   (*this)(row,colIdx++) << stress.SetValue(ptl->CreepLossAfterDeckPlacement());
+   (*this)(row,colIdx++) << stress.SetValue(ptl->RelaxationLossAfterDeckPlacement());
+   if ( m_SectionPropertiesMode == pgsTypes::spmGross )
+   {
+      (*this)(row,colIdx++) << stress.SetValue(ptl->ElasticGainDueToDeckShrinkage());
+   }
+   (*this)(row,colIdx++) << stress.SetValue(ptl->TimeDependentLossesAfterDeck());
 }

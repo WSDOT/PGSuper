@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -246,7 +246,6 @@ void CDeflectionHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& p
 
    IndexType dataSeries = m_Graph.CreateDataSeries(_T(""), PS_SOLID, penWeight, color);
 
-   GET_IFACE(IProductForces,pProductForces);
    GET_IFACE(ILimitStateForces,pLimitStateForces);
    GET_IFACE(IIntervals,pIntervals);
 
@@ -261,63 +260,6 @@ void CDeflectionHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& p
       Float64 x = GetX(segmentKey,intervalIdx,pgsTypes::End,pIntervals);
       PlotDeflection(x,poi,intervalIdx,dataSeries,pLimitStateForces);
    }
-
-   //IntervalIndexType releaseIntervalIdx  = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   //for ( IntervalIndexType intervalIdx = 1; intervalIdx < nIntervals; intervalIdx++ )
-   //{
-   //   IntervalIndexType prevIntervalIdx = intervalIdx-1;
-
-   //   Float64 xStart, xEnd;
-   //   if ( m_XAxisType == X_AXIS_TIME_LINEAR || m_XAxisType == X_AXIS_TIME_LOG )
-   //   {
-   //      xStart = pIntervals->GetTime(segmentKey,intervalIdx,pgsTypes::Start);
-   //      xEnd   = pIntervals->GetTime(segmentKey,intervalIdx,pgsTypes::End);
-   //   }
-   //   else
-   //   {
-   //      xEnd   = (Float64)LABEL_INTERVAL(intervalIdx);
-   //      xStart = xEnd - 1;
-   //   }
-
-   //   Float64 yStartMin(0), yStartMax(0);
-   //   Float64 yEndMin(0), yEndMax(0);
-   //   Float64 yStartNoLLMin(0), yStartNoLLMax(0);
-   //   Float64 yEndNoLLMin(0), yEndNoLLMax(0);
-   //   if ( releaseIntervalIdx <= intervalIdx )
-   //   {
-   //      pgsTypes::BridgeAnalysisType batMin = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
-   //      pgsTypes::BridgeAnalysisType batMax = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
-
-   //      bool bIncludePrestress = true;
-   //      bool bIncludeLiveLoad = true;
-   //      Float64 yDummy;
-   //      if ( batMin == batMax )
-   //      {
-   //         pLimitStateForces->GetDeflection(prevIntervalIdx,pgsTypes::ServiceI,poi,batMin,bIncludePrestress,bIncludeLiveLoad,bIncludeElevationAdjustment,&yStartMin,&yStartMax);
-   //         pLimitStateForces->GetDeflection(    intervalIdx,pgsTypes::ServiceI,poi,batMin,bIncludePrestress,bIncludeLiveLoad,bIncludeElevationAdjustment,&yEndMin,  &yEndMax);
-   //      }
-   //      else
-   //      {
-   //         pLimitStateForces->GetDeflection(prevIntervalIdx,pgsTypes::ServiceI,poi,batMin,bIncludePrestress,bIncludeLiveLoad,bIncludeElevationAdjustment,&yStartMin,&yDummy);
-   //         pLimitStateForces->GetDeflection(    intervalIdx,pgsTypes::ServiceI,poi,batMin,bIncludePrestress,bIncludeLiveLoad,bIncludeElevationAdjustment,&yEndMin,  &yDummy);
-
-   //         pLimitStateForces->GetDeflection(prevIntervalIdx,pgsTypes::ServiceI,poi,batMax,bIncludePrestress,bIncludeLiveLoad,bIncludeElevationAdjustment,&yDummy,&yStartMax);
-   //         pLimitStateForces->GetDeflection(    intervalIdx,pgsTypes::ServiceI,poi,batMax,bIncludePrestress,bIncludeLiveLoad,bIncludeElevationAdjustment,&yDummy,&yEndMax);
-   //      }
-
-   //      pLimitStateForces->GetDeflection(prevIntervalIdx,pgsTypes::ServiceI,poi,batMin,bIncludePrestress,false,bIncludeElevationAdjustment,&yStartNoLLMin,&yStartNoLLMax);
-   //      pLimitStateForces->GetDeflection(    intervalIdx,pgsTypes::ServiceI,poi,batMin,bIncludePrestress,false,bIncludeElevationAdjustment,&yEndNoLLMin,  &yEndNoLLMax);
-   //   }
-
-   //   AddGraphPoint(minDataSeriesIdx,xStart,yStartMin);
-   //   AddGraphPoint(minDataSeriesIdx,xEnd,  yEndMin);
-
-   //   AddGraphPoint(dataSeriesIdx, xStart, yStartNoLLMin);
-   //   AddGraphPoint(dataSeriesIdx, xEnd,   yEndNoLLMin);
-
-   //   AddGraphPoint(maxDataSeriesIdx,xStart,yStartMax);
-   //   AddGraphPoint(maxDataSeriesIdx,xEnd,  yEndMax);
-   //}
 }
 
 Float64 CDeflectionHistoryGraphBuilder::GetX(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType,IIntervals* pIntervals)

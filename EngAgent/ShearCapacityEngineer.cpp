@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -311,15 +311,15 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
    {
       eps = pStrandGeometry->GetEccentricity( releaseIntervalIdx, poi, *pConfig, pgsTypes::Permanent, &neff);
 
-      Pps = pPsForce->GetHorizHarpedStrandForce(poi, finalIntervalIdx,pgsTypes::End, pgsTypes::ServiceI, *pConfig)
-         + pPsForce->GetPrestressForce(poi,pgsTypes::Straight, finalIntervalIdx,pgsTypes::End,pgsTypes::ServiceI,*pConfig);
+      Pps = pPsForce->GetHorizHarpedStrandForce(poi, finalIntervalIdx,pgsTypes::End, *pConfig)
+         + pPsForce->GetPrestressForce(poi,pgsTypes::Straight, finalIntervalIdx,pgsTypes::End,*pConfig);
    }
    else
    {
       eps = pStrandGeometry->GetEccentricity( releaseIntervalIdx, poi, pgsTypes::Permanent, &neff);
 
-      Pps = pPsForce->GetHorizHarpedStrandForce(poi, finalIntervalIdx,pgsTypes::End, pgsTypes::ServiceI)
-          + pPsForce->GetPrestressForce(poi,pgsTypes::Straight, finalIntervalIdx,pgsTypes::End, pgsTypes::ServiceI);
+      Pps = pPsForce->GetHorizHarpedStrandForce(poi, finalIntervalIdx,pgsTypes::End)
+          + pPsForce->GetPrestressForce(poi,pgsTypes::Straight, finalIntervalIdx,pgsTypes::End);
    }
 
 
@@ -639,18 +639,33 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    GET_IFACE(ILongRebarGeometry,pLongRebarGeometry);
 
    if ( bTensionOnBottom )
+   {
       pscd->As = pLongRebarGeometry->GetAsBottomHalf(poi,true);
+   }
    else
+   {
       pscd->As = pLongRebarGeometry->GetAsTopHalf(poi,true);
+   }
 
-   pMaterial->GetSegmentLongitudinalRebarProperties(segmentKey,&Es,&fy,&fu);
+   if ( bIsInClosureJoint )
+   {
+      pMaterial->GetClosureJointLongitudinalRebarProperties(closureKey,&Es,&fy,&fu);
+   }
+   else
+   {
+      pMaterial->GetSegmentLongitudinalRebarProperties(segmentKey,&Es,&fy,&fu);
+   }
    pscd->Es = Es;
 
    // areas on tension side of axis
    if ( bTensionOnBottom )
+   {
       pscd->Ac = pSectProp->GetAcBottomHalf(poi); 
+   }
    else
+   {
       pscd->Ac = pSectProp->GetAcTopHalf(poi); 
+   }
 
    return true;
 }
@@ -665,6 +680,10 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
+   GET_IFACE(IPointOfInterest,pPoi);
+   CClosureKey closureKey;
+   bool bIsInClosureJoint = pPoi->IsInClosureJoint(poi,&closureKey);
+
    GET_IFACE(IPretensionForce,pPsForce);
    GET_IFACE_NOCHECK(IPosttensionForce,pPTForce); // not used when design
    GET_IFACE(IMomentCapacity,pMomentCapacity);
@@ -676,12 +695,12 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,
    // vertical component of prestress force
    if (pConfig == NULL)
    {
-      pscd->Vps = pPsForce->GetVertHarpedStrandForce(poi,intervalIdx,pgsTypes::End,pgsTypes::ServiceI);
+      pscd->Vps = pPsForce->GetVertHarpedStrandForce(poi,intervalIdx,pgsTypes::End);
       pscd->Vpt = pPTForce->GetVerticalTendonForce(poi,intervalIdx,pgsTypes::End,ALL_DUCTS);
    }
    else
    {
-      pscd->Vps = pPsForce->GetVertHarpedStrandForce(poi,intervalIdx,pgsTypes::End,pgsTypes::ServiceI,*pConfig);
+      pscd->Vps = pPsForce->GetVertHarpedStrandForce(poi,intervalIdx,pgsTypes::End,*pConfig);
 
       // if there is a config, this is a pretensioned bridge so no tendons.
       pscd->Vpt = 0;
@@ -745,12 +764,12 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,
    if (pConfig == NULL)
    {
       pscd->fpc = pShearCapacity->GetFpc(poi);
-      pscd->fpeps = pPsForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End,pgsTypes::ServiceI);
+      pscd->fpeps = pPsForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
    }
    else
    {
       pscd->fpc = pShearCapacity->GetFpc(poi, *pConfig);
-      pscd->fpeps = pPsForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End,pgsTypes::ServiceI,*pConfig);
+      pscd->fpeps = pPsForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End,*pConfig);
    }
 
    if ( bAfter1999 )
@@ -778,9 +797,13 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,
    if (pConfig == NULL)
    {
       if ( pscd->bTensionBottom )
+      {
          apsu = pStrandGeometry->GetApsBottomHalf(poi,dlaAccurate);
+      }
       else
+      {
          apsu = pStrandGeometry->GetApsTopHalf(poi,dlaAccurate);
+      }
    }
    else
    {
@@ -788,17 +811,25 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,
       // change results slightly in the end zones for some files. If this becomes problematic, check out the 
       // factor in CBridgeAgentImp::GetApsTensionSide where the accurate method is used only in end zones.
       if ( pscd->bTensionBottom )
+      {
          apsu = pStrandGeometry->GetApsBottomHalf(poi,*pConfig,dlaApproximate);
+      }
       else                                                             
+      {
          apsu = pStrandGeometry->GetApsTopHalf(poi,*pConfig,dlaApproximate);
+      }
    }
 
    pscd->Aps = apsu;
 
    if ( pscd->bTensionBottom )
+   {
       pscd->Apt = pTendonGeometry->GetAptBottomHalf(poi);
+   }
    else
+   {
       pscd->Apt = pTendonGeometry->GetAptTopHalf(poi);
+   }
 
 #if defined _DEBUG
    if ( pConfig != NULL )
@@ -836,44 +867,87 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,
 
    pscd->McrDetails.Mcr = pscd->McrDetails.Sbc*(pscd->McrDetails.fr + pscd->McrDetails.fcpe - pscd->McrDetails.Mdnc/pscd->McrDetails.Sb);
 
-   pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(segmentKey);
-   pscd->ConcreteType = concType;
-   switch( concType )
+   if ( bIsInClosureJoint )
    {
-   case pgsTypes::Normal:
-      pscd->bHasFct = false;
-      pscd->fct = 0;
-      break;
-
-   case pgsTypes::AllLightweight:
-      if ( pMaterial->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey) )
+      pscd->ConcreteType = pMaterial->GetClosureJointConcreteType(closureKey);
+      switch( pscd->ConcreteType )
       {
-         pscd->bHasFct = true;
-         pscd->fct = pMaterial->GetSegmentConcreteAggSplittingStrength(segmentKey);
-      }
-      else
-      {
+      case pgsTypes::Normal:
          pscd->bHasFct = false;
          pscd->fct = 0;
-      }
-      break;
+         break;
 
-   case pgsTypes::SandLightweight:
-      if ( pMaterial->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey) )
-      {
-         pscd->bHasFct = true;
-         pscd->fct = pMaterial->GetSegmentConcreteAggSplittingStrength(segmentKey);
+      case pgsTypes::AllLightweight:
+         if ( pMaterial->DoesClosureJointConcreteHaveAggSplittingStrength(closureKey) )
+         {
+            pscd->bHasFct = true;
+            pscd->fct = pMaterial->GetClosureJointConcreteAggSplittingStrength(closureKey);
+         }
+         else
+         {
+            pscd->bHasFct = false;
+            pscd->fct = 0;
+         }
+         break;
+
+      case pgsTypes::SandLightweight:
+         if ( pMaterial->DoesClosureJointConcreteHaveAggSplittingStrength(closureKey) )
+         {
+            pscd->bHasFct = true;
+            pscd->fct = pMaterial->GetClosureJointConcreteAggSplittingStrength(closureKey);
+         }
+         else
+         {
+            pscd->bHasFct = false;
+            pscd->fct = 0;
+         }
+         break;
+
+      default:
+         ATLASSERT(false); // is there a new concrete type
+         break;
       }
-      else
+   }
+   else
+   {
+      pscd->ConcreteType = pMaterial->GetSegmentConcreteType(segmentKey);
+      switch( pscd->ConcreteType )
       {
+      case pgsTypes::Normal:
          pscd->bHasFct = false;
          pscd->fct = 0;
-      }
-      break;
+         break;
 
-   default:
-      ATLASSERT(false); // is there a new concrete type
-      break;
+      case pgsTypes::AllLightweight:
+         if ( pMaterial->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey) )
+         {
+            pscd->bHasFct = true;
+            pscd->fct = pMaterial->GetSegmentConcreteAggSplittingStrength(segmentKey);
+         }
+         else
+         {
+            pscd->bHasFct = false;
+            pscd->fct = 0;
+         }
+         break;
+
+      case pgsTypes::SandLightweight:
+         if ( pMaterial->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey) )
+         {
+            pscd->bHasFct = true;
+            pscd->fct = pMaterial->GetSegmentConcreteAggSplittingStrength(segmentKey);
+         }
+         else
+         {
+            pscd->bHasFct = false;
+            pscd->fct = 0;
+         }
+         break;
+
+      default:
+         ATLASSERT(false); // is there a new concrete type
+         break;
+      }
    }
 
    return true;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -109,10 +109,13 @@ typedef struct pgsTypes
    // Defines a type of section property
    typedef enum SectionPropertyType
    {
-      sptGross,        // Based on concrete outline only
-      sptTransformed,  // Strand, rebar, tendons are transformed
-      sptNetGirder,    // Girder concrete only with holes for strands/rebar/ducts
-      sptNetDeck       // Deck concrete only with holes for rebar
+      sptGrossNoncomposite,       // Based on concrete outline only. Gross section of non-composite girder only, regardless of analysis interval
+      sptGross,                   // Based on concrete outline only. Deck is transformed to equivalent girder concrete
+      sptTransformedNoncomposite, // Transformed section of non-composite girder onlye, regardless of analysis interval. All materials transformed to equivalent girder concrete
+      sptTransformed,             // All materials including strand, rebar, tendons are transformed to equivalent girder concrete
+      sptNetGirder,               // Non-composite girder section with holes for strands/rebar/ducts
+      sptNetDeck,                 // Deck section with holes for rebar
+      sptSectionPropertyTypeCount
    } SectionPropertyType;
 
    // describes how a precast segment varies along its length
@@ -819,8 +822,10 @@ struct PRESTRESSCONFIG
    Float64 HpOffset;  // Offset of harped strands at the harping point
    pgsTypes::TTSUsage TempStrandUsage;
 
+   pgsTypes::AdjustableStrandType AdjustableStrandType; // can be asHarped or asStraight only
+
    PRESTRESSCONFIG():
-   EndOffset(0.0), HpOffset(0.0), TempStrandUsage(pgsTypes::ttsPretensioned)
+   EndOffset(0.0), HpOffset(0.0), TempStrandUsage(pgsTypes::ttsPretensioned), AdjustableStrandType(pgsTypes::asHarped)
    {
       for (int i=0; i<3; i++)
       {
@@ -955,6 +960,9 @@ inline bool PRESTRESSCONFIG::operator==(const PRESTRESSCONFIG& other) const
    if (TempStrandUsage != other.TempStrandUsage)
       return false;
 
+   if (AdjustableStrandType != other.AdjustableStrandType)
+      return false;
+
    return true;
 }
 
@@ -978,6 +986,8 @@ inline void PRESTRESSCONFIG::MakeCopy( const PRESTRESSCONFIG& other )
    HpOffset  = other.HpOffset;
 
    TempStrandUsage = other.TempStrandUsage;
+
+   AdjustableStrandType = other.AdjustableStrandType;
 }
 
 //-----------------------------------------------------------------------------
@@ -1097,8 +1107,9 @@ struct HANDLINGCONFIG
    Float64 RightOverhang;  // overhang closest to cab of truck when used from hauling
 };
 
-enum arFlexuralDesignType { dtNoDesign, dtDesignForHarping, dtDesignForDebonding, dtDesignFullyBonded };
-enum arDesignStrandFillType { ftGridOrder, ftMinimizeHarping };
+enum arFlexuralDesignType { dtNoDesign, dtDesignForHarping, dtDesignForDebonding, dtDesignFullyBonded,
+                            dtDesignFullyBondedRaised, dtDesignForDebondingRaised }; // raised straight strands
+enum arDesignStrandFillType { ftGridOrder, ftMinimizeHarping, ftDirectFill }; // direct fill used for raised straight
 enum arDesignStirrupLayoutType { slLayoutStirrups, slRetainExistingLayout };
 
 struct arDesignOptions
@@ -1113,6 +1124,9 @@ struct arDesignOptions
    arDesignStrandFillType doStrandFillType;
    bool doForceHarpedStrandsStraight;
 
+   Float64 maxFci;
+   Float64 maxFc;
+
    bool doDesignForShear;
 
    arDesignStirrupLayoutType doDesignStirrupLayout;
@@ -1120,7 +1134,9 @@ struct arDesignOptions
    arDesignOptions(): doDesignForFlexure(dtNoDesign), doDesignSlabOffset(false), doDesignLifting(false), doDesignHauling(false),
                       doDesignSlope(false), doDesignHoldDown(false), doDesignForShear(false), 
                       doStrandFillType(ftMinimizeHarping), doDesignStirrupLayout(slLayoutStirrups),
-                      doForceHarpedStrandsStraight(false)
+                      doForceHarpedStrandsStraight(false),
+                      maxFci(0.0),
+                      maxFc(0.0)
    {;}
 };
 
@@ -1513,6 +1529,37 @@ inline bool IsGirderStressLocation(pgsTypes::StressLocation stressLocation)
 inline bool IsDeckStressLocation(pgsTypes::StressLocation stressLocation)
 {
    return !IsGirderStressLocation(stressLocation);
+}
+
+inline std::_tstring GetDesignTypeName(arFlexuralDesignType type)
+{
+   switch (type)
+   {
+   case dtDesignForHarping:
+      return std::_tstring(_T("Harped Strand"));
+      break;
+
+   case dtDesignForDebonding:
+      return std::_tstring(_T("Debonded Straight Strand"));
+      break;
+
+   case dtDesignFullyBonded:
+      return std::_tstring(_T("Straight Strand"));
+      break;
+
+   case dtDesignFullyBondedRaised:
+      return std::_tstring(_T("Raised Straight Strand"));
+      break;
+
+   case dtDesignForDebondingRaised:
+      return std::_tstring(_T("Debonded and Raised Straight Strand"));
+      break;
+
+   default:
+      ATLASSERT(0);
+   }
+
+   return std::_tstring(_T("Unknown Design Type"));
 }
 
 #endif // INCLUDED_PGSUPERTYPES_H_

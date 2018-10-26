@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -41,7 +41,6 @@
 #include <Graphing\DeflectionHistoryGraphBuilder.h>
 
 #if defined _DEBUG || defined _BETA_VERSION
-#include <Graphing\VirtualWorkGraphBuilder.h>
 #include <Graphing\InitialStrainGraphBuilder.h>
 #endif
 
@@ -64,7 +63,6 @@ void CGrapherBase::InitCommonGraphBuilders()
    pGraphMgr->AddGraphBuilder(new CDeflectionHistoryGraphBuilder);
 
 #if defined _DEBUG || defined _BETA_VERSION
-   pGraphMgr->AddGraphBuilder(new CVirtualWorkGraphBuilder);
    pGraphMgr->AddGraphBuilder(new CInitialStrainGraphBuilder);
 #endif
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,6 +31,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFAutoProgress.h>
 #include <PgsExt\PhysicalConverter.h>
+#include <PgsExt\LoadFactors.h>
 
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
@@ -260,8 +261,12 @@ bool CStressHistoryGraphBuilder::UpdateNow()
 
 void CStressHistoryGraphBuilder::UpdateGraphTitle(const pgsPointOfInterest& poi)
 {
+   pgsTypes::LimitState limitState = GetLimitState();
+
+   GET_IFACE(IProductLoads,pProductLoads);
+
    CString strGraphTitle;
-   strGraphTitle.Format(_T("Stress History"));
+   strGraphTitle.Format(_T("Stress History (%s - Without Live Load)"),pProductLoads->GetLimitStateName(limitState));
    m_Graph.SetTitle(std::_tstring(strGraphTitle));
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
@@ -311,10 +316,19 @@ void CStressHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
 
    GET_IFACE(IIntervals,pIntervals);
    GET_IFACE_NOCHECK(ILimitStateForces,pLimitStateForces); // only used if a stress location is checked
+   GET_IFACE_NOCHECK(ICombinedForces,pCombinedForces);
+
+   pgsTypes::LimitState limitState = GetLimitState();
+   GET_IFACE(ILoadFactors,pLoadFactors);
+   Float64 gLL = pLoadFactors->GetLoadFactors()->LLIMmin[limitState];
+
+   GET_IFACE(IProductForces,pProductForces);
+   pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
    IntervalIndexType startIntervalIdx = 0;
 
    // Plot points at start of first interval, then at the end of all the intervals
@@ -324,7 +338,7 @@ void CStressHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
       if ( m_bPlot[i] )
       {
          pgsTypes::StressLocation stressLocation = (pgsTypes::StressLocation)i;
-         PlotStressPoints(x,poi,stressLocation,startIntervalIdx,dataSeries[i],pLimitStateForces);
+         PlotStressPoints(x,poi,stressLocation,startIntervalIdx,dataSeries[i],limitState,bat,gLL,liveLoadIntervalIdx,pCombinedForces,pLimitStateForces);
       }
    }
 
@@ -337,7 +351,7 @@ void CStressHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
          if ( m_bPlot[i] )
          {
             pgsTypes::StressLocation stressLocation = (pgsTypes::StressLocation)i;
-            PlotStressPoints(x,poi,stressLocation,intervalIdx,dataSeries[i],pLimitStateForces);
+            PlotStressPoints(x,poi,stressLocation,intervalIdx,dataSeries[i],limitState,bat,gLL,liveLoadIntervalIdx,pCombinedForces,pLimitStateForces);
          }
       }
    }
@@ -364,12 +378,22 @@ Float64 CStressHistoryGraphBuilder::GetX(const CSegmentKey& segmentKey,IntervalI
    return x;
 }
 
-void CStressHistoryGraphBuilder::PlotStressPoints(Float64 x,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,IndexType dataSeries,ILimitStateForces* pLimitStateForces)
+void CStressHistoryGraphBuilder::PlotStressPoints(Float64 x,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,IndexType dataSeries,pgsTypes::LimitState limitState,pgsTypes::BridgeAnalysisType bat,Float64 gLL,IntervalIndexType liveLoadIntervalIdx,ICombinedForces* pCombinedForces,ILimitStateForces* pLimitStateForces)
 {
    bool bIncludePrestress = true;
 
    Float64 fMinEnd, fMaxEnd;
-   pLimitStateForces->GetStress(intervalIdx,pgsTypes::ServiceI,poi,pgsTypes::ContinuousSpan,bIncludePrestress,stressLocation,&fMinEnd,&fMaxEnd);
+   pLimitStateForces->GetStress(intervalIdx,limitState,poi,pgsTypes::ContinuousSpan,bIncludePrestress,stressLocation,&fMinEnd,&fMaxEnd);
+
+   // get live load stress
+   Float64 fTopMin(0), fTopMax(0), fBotMin(0), fBotMax(0);
+   if ( liveLoadIntervalIdx <= intervalIdx )
+   {
+      pCombinedForces->GetCombinedLiveLoadStress(intervalIdx,pgsTypes::lltDesign,poi,bat,stressLocation,pgsTypes::BottomGirder,&fTopMin,&fTopMax,&fBotMin,&fBotMax);
+   }
+
+   // remove live load from combintation
+   fMinEnd -= gLL*fTopMin;
 
    AddGraphPoint(dataSeries,x,fMinEnd);
 }
@@ -401,6 +425,11 @@ void CStressHistoryGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
    m_Graph.Draw(pDC->GetSafeHdc());
 
    pDC->RestoreDC(save);
+}
+
+pgsTypes::LimitState CStressHistoryGraphBuilder::GetLimitState()
+{
+   return pgsTypes::ServiceI;
 }
 
 void CStressHistoryGraphBuilder::UpdateXAxis()

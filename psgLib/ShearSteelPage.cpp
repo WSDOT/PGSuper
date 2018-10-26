@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -53,7 +53,7 @@ const DWORD CShearSteelPage::IDD = IDD_EDIT_SHEAR_STEEL;
 IMPLEMENT_DYNCREATE(CShearSteelPage, CPropertyPage)
 
 CShearSteelPage::CShearSteelPage():
-m_AllowRestoreDefaults(false)
+m_bAllowRestoreDefaults(false)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -353,17 +353,15 @@ BOOL CShearSteelPage::OnInitDialog()
    CEAFDocument* pEAFDoc = EAFGetDocument();
    bool bFilterBySpec = true;
    if ( pEAFDoc->IsKindOf(RUNTIME_CLASS(CLibraryEditorDoc)) )
+   {
       bFilterBySpec = false;
+   }
 
-   CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   FillRebarMaterialComboBox(pc,bFilterBySpec);
-
+   FillRebarMaterialComboBox((CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR),bFilterBySpec);
    FillBarComboBox((CComboBox*)GetDlgItem(IDC_SPLITTING_BAR_SIZE));
    FillBarComboBox((CComboBox*)GetDlgItem(IDC_CONFINE_BAR_SIZE));
 
-   // 
-   CWnd* pw = (CWnd*)GetDlgItem(IDC_RESTORE_DEFAULTS);
-   pw->ShowWindow(m_AllowRestoreDefaults ? SW_SHOW:SW_HIDE);
+   GetDlgItem(IDC_RESTORE_DEFAULTS)->ShowWindow(m_bAllowRestoreDefaults ? SW_SHOW : SW_HIDE);
 
 	CPropertyPage::OnInitDialog();
 

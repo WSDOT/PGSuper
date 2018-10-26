@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -58,8 +58,6 @@ void CPrestressTool::GetPretensionStress(IntervalIndexType intervalIdx,ResultsTy
       const CSegmentKey& segmentKey(poi.GetSegmentKey());
    
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
-      pgsTypes::LimitState limitState = (intervalIdx < liveLoadIntervalIdx ? pgsTypes::ServiceI : pgsTypes::ServiceIII);
       if ( intervalIdx < releaseIntervalIdx )
       {
          pfTop->push_back(0);
@@ -67,9 +65,13 @@ void CPrestressTool::GetPretensionStress(IntervalIndexType intervalIdx,ResultsTy
       }
       else
       {
-         Float64 A  = pSectProp->GetAg(releaseIntervalIdx,poi);
-         Float64 St = pSectProp->GetS(releaseIntervalIdx,poi,topLocation);
-         Float64 Sb = pSectProp->GetS(releaseIntervalIdx,poi,botLocation);
+         // want section properties based on the non-composite girder in this interval. the prestress force is applied to the non-composite girder section
+         // and the stress analysis needs to occur on the section properties for this interval.
+         pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
+         pgsTypes::SectionPropertyType spType = (spMode == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptTransformedNoncomposite);
+         Float64 A  = pSectProp->GetAg(spType,intervalIdx,poi);
+         Float64 St = pSectProp->GetS(spType,intervalIdx,poi,topLocation);
+         Float64 Sb = pSectProp->GetS(spType,intervalIdx,poi,botLocation);
 
          Float64 fTop = 0;
          Float64 fBot = 0;
@@ -79,10 +81,11 @@ void CPrestressTool::GetPretensionStress(IntervalIndexType intervalIdx,ResultsTy
             StrandIndexType nStrands = pStrandGeom->GetStrandCount(segmentKey,strandType);
             if ( 0 < nStrands )
             {
-               Float64 P = pPrestressForce->GetPrestressForce(poi,strandType,intervalIdx,pgsTypes::End,limitState);
+               pgsTypes::IntervalTimeType intervalTime = (spMode == pgsTypes::spmGross ? pgsTypes::End : pgsTypes::Start);
+               Float64 P = pPrestressForce->GetPrestressForce(poi,strandType,intervalIdx,intervalTime);
                
                Float64 nEffectiveStrands;
-               Float64 e = pStrandGeom->GetEccentricity(releaseIntervalIdx,poi,strandType,&nEffectiveStrands);
+               Float64 e = pStrandGeom->GetEccentricity(spType,intervalIdx,poi,strandType,&nEffectiveStrands);
 
                Float64 ft = (IsZero(A) || IsZero(St) ? 0 : -P/A - P*e/St);
                ft = IsZero(ft) ? 0 : ft;

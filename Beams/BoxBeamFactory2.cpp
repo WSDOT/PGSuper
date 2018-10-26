@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -414,15 +414,10 @@ IBeamFactory::Dimensions CBoxBeamFactory2::LoadSectionDimensions(sysIStructuredL
    return dimensions;
 }
 
-Float64 CBoxBeamFactory2::GetSurfaceArea(IBroker* pBroker,const CSegmentKey& segmentKey,bool bReduceForPoorlyVentilatedVoids)
+Float64 CBoxBeamFactory2::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey)
 {
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-   Float64 perimeter = pSectProp->GetPerimeter(pgsPointOfInterest(segmentKey,0.00));
-   
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 Lg = pBridge->GetSegmentLength(segmentKey);
-
-   Float64 solid_box_surface_area = perimeter*Lg;
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -436,12 +431,7 @@ Float64 CBoxBeamFactory2::GetSurfaceArea(IBroker* pBroker,const CSegmentKey& seg
 
    Float64 void_surface_area = Lg*( 2*(H2 - F1 - F2) + 2*(W2 - F1 - F2) + 2*sqrt(2*F1*F1) + 2*sqrt(2*F2*F2) );
 
-   if ( bReduceForPoorlyVentilatedVoids )
-      void_surface_area *= 0.50;
-
-   Float64 surface_area = solid_box_surface_area + void_surface_area;
-
-   return surface_area;
+   return void_surface_area;
 }
 
 void CBoxBeamFactory2::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 

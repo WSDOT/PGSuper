@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -302,7 +302,7 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
             Float64 as;
             rebar->get_NominalArea(&as);
 
-            Float64 dev_length_factor = m_pRebarGeom->GetDevLengthFactor(item, conc_type, fci, isfct, fct);
+            Float64 dev_length_factor = m_pRebarGeom->GetDevLengthFactor(poi, item, conc_type, fci, isfct, fct);
 
             if ( IsGE(1.0,dev_length_factor) ) // Bars must be fully developed before higher 
                                                // allowable stress can be used.

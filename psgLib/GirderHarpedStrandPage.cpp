@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -36,22 +36,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-// Names are slightly different in library than rest of program
-inline LPCTSTR LOCAL_LABEL_HARP_TYPE(pgsTypes::AdjustableStrandType type)
-{
-   if (pgsTypes::asHarped == type)
-   {
-      return _T("Harped");
-   }
-   else  if (pgsTypes::asStraight == type)
-   {
-      return _T("Adj. Straight");
-   }
-   else
-   {
-      return _T("Adjustable");
-   }
-}
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -273,8 +257,7 @@ void CGirderHarpedStrandPage::UpdateStraightAdjust()
 {
    BOOL enable = pgsTypes::asHarped!=GetAdjustableStrandType() ? TRUE : FALSE;
 
-   int ctrls[] = {IDC_STR_INCREMENT, IDC_STR_INCREMENT_T, 
-                  IDC_STR_LSL, IDC_STR_LSL_T, IDC_STR_LSL_S, IDC_COMBO_STR_LSL,
+   int ctrls[] = {IDC_STR_LSL, IDC_STR_LSL_T, IDC_STR_LSL_S, IDC_COMBO_STR_LSL,
                   IDC_STR_USL, IDC_STR_USL_T, IDC_STR_USL_S, IDC_COMBO_STR_USL,
                   -1};
 
@@ -396,18 +379,6 @@ void CGirderHarpedStrandPage::OnCbnSelchangeWebStrandTypeCombo()
 
    pw = (CWnd*)GetDlgItem(IDC_REVERSE_HARPED_STRAND_ORDER);
    pw->EnableWindow(pgsTypes::asStraight != adj_type);
-
-   if (use_harped)
-   {
-      msg = _T("Vertical Adjustment of Harped Strands");
-   }
-   else
-   {
-      msg = _T("Vertical Adjustment of Adjustable Strands");
-   }
-
-   pw = (CWnd*)GetDlgItem(IDC_VERT_ADJUST_GROUP);
-   pw->SetWindowText(msg);
 
    UpdateHpAdjust();
    UpdateEndAdjust();

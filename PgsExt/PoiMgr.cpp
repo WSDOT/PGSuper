@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -273,6 +273,12 @@ PoiIDType pgsPoiMgr::AddPointOfInterest(const pgsPointOfInterest& poi)
       // assert if we are about to roll over the id
       ATLASSERT(ms_NextID != MAX_ID);
       id = ms_NextID++;
+   }
+   else
+   {
+      // if in new POI has already been assigned an ID
+      // make sure the next POI ID won't conflict with it
+      ms_NextID = Max(ms_NextID,id+1);
    }
 
    // Don't copy poi and put it in because this is a very highly utilized function and copies don't come cheap

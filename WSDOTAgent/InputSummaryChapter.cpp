@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -103,7 +103,7 @@ rptChapter* CInputSummaryChapter::Build(CReportSpecification* pRptSpec,Uint16 le
       GET_IFACE2( pBroker, IStrandGeometry, pStrandGeometry );
       if (pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey))
       {
-         *p << color(Red) << Bold(_T("Warning: This is a non-standard girder because it utilizes straight adjustable strands. WSDOT Standard Girders utilize harped strands.")) << color(Black) << rptNewLine;
+         *p << color(Red) << Bold(_T("Warning: This is a non-standard girder because it utilizies straight adjustable strands. WSDOT Standard Girders utilize harped strands.")) << color(Black) << rptNewLine;
       }
 
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -111,7 +111,7 @@ rptChapter* CInputSummaryChapter::Build(CReportSpecification* pRptSpec,Uint16 le
 
       if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectSelection)
       {
-         *p << color(Red) << Bold(_T("Warning: This is a non-standard girder because it utilizes Direct Strand Fill. WSDOT Standard Girders utilize sequentially filled strands.")) << color(Black) << rptNewLine;
+         *p << color(Red) << Bold(_T("Warning: This is a non-standard girder because it utilizies Direct Strand Fill. WSDOT Standard Girders utilize sequentially filled strands.")) << color(Black) << rptNewLine;
       }
 
       girder_line_geometry( pChapter, pBroker, segmentKey, pDisplayUnits );

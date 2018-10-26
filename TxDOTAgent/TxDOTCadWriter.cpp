@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -133,8 +133,9 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    bool is_test_output = (format== tcxTest) ? true : false;
    CadWriterWorkerBee workerB(is_test_output);//
 
-   // determine type of output
-   bool isHarpedDesign = 0 < pStrandGeometry->GetMaxStrands(segmentKey, pgsTypes::Harped);
+   // Determine type of output and number of strands
+   bool isHarpedDesign = !pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey) &&
+                        0 < pStrandGeometry->GetMaxStrands(segmentKey, pgsTypes::Harped);
 
 	/* Create pois at the start of girder and mid-span */
    pgsPointOfInterest pois(segmentKey, 0.0);
@@ -410,12 +411,12 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 
    	/* 23. LOSSES (INITIAL)  */
       Float64 aps = pStrandGeometry->GetAreaPrestressStrands(segmentKey,releaseIntervalIdx,false);
-      value = pLosses->GetPrestressLoss(pmid[0],pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::Start,pgsTypes::ServiceI) * aps;
+      value = pLosses->GetEffectivePrestressLoss(pmid[0],pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::Start) * aps;
 
       Float64 initialLoss = ::ConvertFromSysUnits( value, unitMeasure::Kip );
 
    	/* 24. LOSSES (FINAL)  */
-      value = pLosses->GetPrestressLoss(pmid[0],pgsTypes::Permanent,railingSystemIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI) * aps;
+      value = pLosses->GetEffectivePrestressLoss(pmid[0],pgsTypes::Permanent,railingSystemIntervalIdx,pgsTypes::Middle) * aps;
 
       Float64 finalLoss = ::ConvertFromSysUnits( value, unitMeasure::Kip );
 

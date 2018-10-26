@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -87,7 +87,6 @@ void CGirderModelData::CreateAnalysisEngine(ILBAMModel* theModel,pgsTypes::Bridg
 
    // get the various response interfaces from the engine so we don't have to do it over and over again
    engine->get_LoadGroupResponse(&pLoadGroupResponse[bat]);
-   engine->get_UnitLoadResponse(&pUnitLoadResponse[bat]);
    engine->get_LoadCaseResponse(&pLoadCaseResponse[bat]);
    engine->get_ContraflexureResponse(&pContraflexureResponse[bat]);
    engine->get_LoadCombinationResponse(&pLoadComboResponse[bat]);
@@ -239,9 +238,6 @@ void CGirderModelData::operator=(const CGirderModelData& other)
 
    pLoadCaseResponse[pgsTypes::SimpleSpan]      = other.pLoadCaseResponse[pgsTypes::SimpleSpan];
    pLoadCaseResponse[pgsTypes::ContinuousSpan]  = other.pLoadCaseResponse[pgsTypes::ContinuousSpan];
-
-   pUnitLoadResponse[pgsTypes::SimpleSpan]      = other.pUnitLoadResponse[pgsTypes::SimpleSpan];
-   pUnitLoadResponse[pgsTypes::ContinuousSpan]  = other.pUnitLoadResponse[pgsTypes::ContinuousSpan];
 
    pLiveLoadResponse[pgsTypes::SimpleSpan]                  = other.pLiveLoadResponse[pgsTypes::SimpleSpan];
    pLiveLoadResponse[pgsTypes::ContinuousSpan]              = other.pLiveLoadResponse[pgsTypes::ContinuousSpan];

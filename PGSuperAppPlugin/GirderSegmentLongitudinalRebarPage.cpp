@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -72,7 +72,7 @@ void CGirderSegmentLongitudinalRebarPage::DoDataExchange(CDataExchange* pDX)
       int idx;
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
       GetStirrupMaterial(idx,pSegment->LongitudinalRebarData.BarType,pSegment->LongitudinalRebarData.BarGrade);
-      m_Grid.GetRebarData(pSegment->LongitudinalRebarData.RebarRows);
+      m_Grid.GetRebarData(&pSegment->LongitudinalRebarData);
    }
    else
    {
@@ -124,9 +124,11 @@ BOOL CGirderSegmentLongitudinalRebarPage::OnInitDialog()
 	m_Grid.SubclassDlgItem(IDC_LONG_GRID, this);
    m_Grid.CustomInit();
 
-   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-   CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   FillRebarMaterialComboBox(pc);
+   FillRebarMaterialComboBox((CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR));
+
+   // Currently, precast segments don't have default longitudinal reinforcement
+   // Hide the button in the UI
+   GetDlgItem(IDC_RESTORE_DEFAULTS)->ShowWindow(SW_HIDE);
 
    CPropertyPage::OnInitDialog();
 	

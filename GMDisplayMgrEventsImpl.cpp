@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -156,7 +156,7 @@ STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr*
       pMenu->RemoveMenu(ID_RIGHT_HP,MF_BYCOMMAND,NULL);
    }
 
-#pragma Reminder("REVIEW: context menu items incorrect of less that two harp points")
+#pragma Reminder("REVIEW: context menu items incorrect if less that two harp points")
    // If a PGSuper girder/segment has less than two harp points, the context menu will not be correct
    // There isn't a left/right harp points.
 

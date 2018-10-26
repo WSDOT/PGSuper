@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,6 +32,9 @@
 
 #include <Reporting\EquilibriumCheckReportSpecificationBuilder.h>
 #include <Reporting\EquilibriumCheckChapterBuilder.h>
+
+#include <Reporting\InitialStrainAnalysisReportSpecificationBuilder.h>
+#include <Reporting\InitialStrainAnalysisChapterBuilder.h>
 
 // Interfaces
 #include <IFace\Project.h>
@@ -75,12 +78,18 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
    VERIFY(pRptBuilder->InsertChapterBuilder(boost::shared_ptr<CChapterBuilder>(new CShrinkageStrainChapterBuilder),TEXT("Creep Coefficient Details")));
 
 
-   boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder(new CEquilibriumCheckReportSpecificationBuilder(m_pBroker));
-
+   boost::shared_ptr<CReportSpecificationBuilder> pEquilibriumCheckSpecBuilder(new CEquilibriumCheckReportSpecificationBuilder(m_pBroker));
    CReportBuilder* pMyRptBuilder = new CReportBuilder(_T("Equilibrium Check"));
-   pMyRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
-   pMyRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
+   pMyRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pMyRptBuilder->GetName())) );
+   pMyRptBuilder->SetReportSpecificationBuilder( pEquilibriumCheckSpecBuilder );
    pMyRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CEquilibriumCheckChapterBuilder) );
+   pRptMgr->AddReportBuilder( pMyRptBuilder );
+
+   boost::shared_ptr<CReportSpecificationBuilder> pInitialStrainAnalysisSpecBuilder(new CInitialStrainAnalysisReportSpecificationBuilder(m_pBroker));
+   pMyRptBuilder = new CReportBuilder(_T("Initial Strain Analysis"));
+   pMyRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pMyRptBuilder->GetName())) );
+   pMyRptBuilder->SetReportSpecificationBuilder( pInitialStrainAnalysisSpecBuilder );
+   pMyRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CInitialStrainAnalysisChapterBuilder) );
    pRptMgr->AddReportBuilder( pMyRptBuilder );
 
    return S_OK;

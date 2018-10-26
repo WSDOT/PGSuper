@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1061,12 +1061,17 @@ void pgsPointOfInterest::UpdateAttributeString()
 
          if ( sysFlags<PoiAttributeType>::IsSet(m_RefAttributes[i],POI_PICKPOINT) )
          {
-            os << _T("(POI_PICKPOINT | ");
+            os << _T("(POI_PICKPOINT | ") << strReference << _T(") | ");
          }
 
          if ( sysFlags<PoiAttributeType>::IsSet(m_RefAttributes[i],POI_BUNKPOINT) )
          {
-            os << _T("(POI_BUNKPOINT | ");
+            os << _T("(POI_BUNKPOINT | ") << strReference << _T(") | ");
+         }
+
+         if ( sysFlags<PoiAttributeType>::IsSet(m_RefAttributes[i],POI_CANTILEVER) )
+         {
+            os << _T("(POI_CANTILEVER | ") << strReference << _T(") | ");
          }
 
          if ( IsTenthPoint(refAttribute) == 1 )

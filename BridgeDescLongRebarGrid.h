@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -79,15 +79,17 @@ public:
    void Insertrow();
    void Removerows();
    void Appendrow();
+
+   // fill grid with data
+   void FillGrid(const CLongitudinalRebarData& rebarData);
+   bool GetRebarData(CLongitudinalRebarData* pRebarData);
+
+private:
    // get a cell value whether is is selected or not
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
    // get data for a row
    bool GetRowData(ROWCOL nRow, CLongitudinalRebarData::RebarRow* plsi);
-   // fill grid with data
-   void FillGrid(const CLongitudinalRebarData& rebarData);
-   void GetRebarData(std::vector<CLongitudinalRebarData::RebarRow>& rebarRows);
 
-private:
    // changes formating of cell when measurement type changes
    pgsTypes::RebarLayoutType GetLayout(ROWCOL nRow);
    void OnLayoutTypeChanged(ROWCOL nRow);

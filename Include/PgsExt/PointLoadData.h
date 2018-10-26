@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -167,6 +167,7 @@ public:
    UserLoads::LoadCase   m_LoadCase;
 
    CSpanKey m_SpanKey;
+   bool     m_bLoadOnCantilever[2]; // if true, the load is on the cantilever and not the span itself, use pgsTypes::MemberEndType to access array
    Float64  m_Location;   // measured from CL bearing at start of span
    bool     m_Fractional;
    Float64  m_Magnitude;

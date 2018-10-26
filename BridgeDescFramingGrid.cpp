@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -262,6 +262,22 @@ void CBridgeDescFramingGrid::OnAddPier()
 
    CBridgeDescDlg* pDlg = (CBridgeDescDlg*)(pParent->GetParent());
    ASSERT( pDlg->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg) ) );
+
+   PierIndexType nPiers = pDlg->m_BridgeDesc.GetPierCount();
+   IndexType n = 0; 
+   for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
+   {
+      const CPierData2* pPier = pDlg->m_BridgeDesc.GetPier(pierIdx);
+      if ( !pPier->HasCantilever() )
+      {
+         n++;
+      }
+   }
+   if ( n == 0 )
+   {
+      AfxMessageBox(_T("A span cannot be inserted into the bridge.\r\nRemove one of the cantilevers and try again."),MB_OK | MB_ICONINFORMATION);
+      return;
+   }
 
    // add at end of bridge
    CInsertSpanDlg dlg(&pDlg->m_BridgeDesc);;

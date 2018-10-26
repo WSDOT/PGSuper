@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,8 @@
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
+
+#include <PgsExt\ReportPointOfInterest.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -506,5 +508,52 @@ HRESULT CMultiViewSpanGirderReportSpecification::Validate() const
       }
    }
 
+   return CBrokerReportSpecification::Validate();
+}
+
+//////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+
+CPointOfInterestReportSpecification::CPointOfInterestReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const pgsPointOfInterest& poi) :
+CBrokerReportSpecification(strReportName,pBroker)
+{
+   m_POI = poi;
+}
+
+CPointOfInterestReportSpecification::CPointOfInterestReportSpecification(const CPointOfInterestReportSpecification& other) :
+CBrokerReportSpecification(other)
+{
+   m_POI = other.m_POI;
+}
+
+CPointOfInterestReportSpecification::~CPointOfInterestReportSpecification(void)
+{
+}
+
+std::_tstring CPointOfInterestReportSpecification::GetReportTitle() const
+{
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+
+   INIT_UV_PROTOTYPE(rptPointOfInterest, rptPOI, pDisplayUnits->GetSpanLengthUnit(), true);
+   rptPOI.SetValue(POI_SPAN,m_POI);
+
+   CString msg;
+   msg.Format(_T("%s - %s"),GetReportName().c_str(),rptPOI.AsString().c_str());
+   return std::_tstring(msg);
+}
+
+void CPointOfInterestReportSpecification::SetPointOfInterest(const pgsPointOfInterest& poi)
+{
+   m_POI = poi;
+}
+
+const pgsPointOfInterest& CPointOfInterestReportSpecification::GetPointOfInterest() const
+{
+   return m_POI;
+}
+
+HRESULT CPointOfInterestReportSpecification::Validate() const
+{
    return CBrokerReportSpecification::Validate();
 }

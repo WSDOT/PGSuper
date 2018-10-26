@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -691,7 +691,6 @@ void CCombinedReactionTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* 
    GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
 
    // TRICKY:
    // Use the adapter class to get the reaction response functions we need and to iterate piers
@@ -719,7 +718,7 @@ void CCombinedReactionTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* 
 
    rptRcTable * p_table;
    RowIndexType row = CreateLimitStateTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table, strLabel.c_str(),
-                             true,bDesign,bPermit,bRating,false,analysisType,pEventMap,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
+                             true,bDesign,bPermit,bRating,false,analysisType,pProductLoads,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
    *p << p_table;
 
 

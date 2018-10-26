@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,12 +30,14 @@
 #include <IFace\Bridge.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\Intervals.h>
 
 #include <Lrfd\RebarPool.h>
 
 #include <PgsExt\GirderDesignArtifact.h>
 
 #include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\GirderLabel.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -58,6 +60,7 @@ void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDispl
 void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, const CShearData2* pShearData);
 void write_additional_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, const CShearData2* pShearData);
 void write_design_notes(rptParagraph* pParagraph, const std::vector<pgsSegmentDesignArtifact::DesignNote>& notes);
+void write_design_failures(rptParagraph* pParagraph, const pgsSegmentDesignArtifact* pArtifact);
 
 // Function to compute columns in table that attempts to group all girders in a span per table
 static const int MIN_TBL_COLS=3; // Minimum columns in multi-girder table
@@ -279,12 +282,20 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
    INIT_UV_PROTOTYPE( rptLengthUnitValue, distance, pDisplayUnits->GetXSectionDimUnit(), true );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),       true );
 
+   GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
+   std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_SPAN | POI_5L);
+   ATLASSERT(vPoi.size()==1);
+   pgsPointOfInterest poiMS = vPoi.front();
    arDesignOptions options = pArtifact->GetDesignOptions();
 
    // Start report with design notes. Notes will be written at end of this function
    bool design_success = WasDesignSuccessful( pArtifact->GetOutcome() );
-   bool doNotes = (pArtifact->GetDoDesignFlexure()!=dtNoDesign && design_success) || 
-                   pArtifact->DoDesignNotesExist();
+   bool conc_strength_controlled_by_shear = design_success && pArtifact->GetDoDesignShear() &&
+                                            pArtifact->GetFinalDesignState().GetAction()==pgsSegmentDesignArtifact::ConcreteStrengthDesignState::actShear;
+   bool doNotes = (design_success && pArtifact->GetDoDesignFlexure()!=dtNoDesign) || 
+                  conc_strength_controlled_by_shear || 
+                  pArtifact->DoPreviouslyFailedDesignsExist() ||
+                  pArtifact->DoDesignNotesExist();
 
    rptParagraph* pNotesParagraph = doNotes ? new rptParagraph() : NULL;
    if ( doNotes )
@@ -295,7 +306,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
       *pChapter << pNotesParagraph;
    }
 
-   if (pArtifact->GetDoDesignFlexure()!=dtNoDesign)
+   if (pArtifact->GetDoDesignFlexure() != dtNoDesign)
    {
       GDRCONFIG config = pArtifact->GetSegmentConfiguration();
 
@@ -307,29 +318,33 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
       *pChapter << pParagraph;
       *pParagraph << _T("Flexure Design:");
 
-      // Make note if original strands were filled using direct input
-      if (pStrands->GetStrandDefinitionType() == CStrandData::sdtDirectSelection)
-      {
-         pParagraph = new rptParagraph();
-         *pChapter << pParagraph;
-         *pParagraph << color(Blue)<<_T("Note that current strands are filled using direct selection.") << color(Black);
-      }
+      pParagraph = new rptParagraph();
+      *pChapter << pParagraph;
 
-      // see if fill order type was changed
-      if (options.doStrandFillType==ftGridOrder)
+      // Design strategy
+      *pParagraph << color(Blue)<< _T("A ")<<GetDesignTypeName(options.doDesignForFlexure)<< _T(" design strategy was used.") << color(Black);
+
+      // Fill type
+      if (options.doStrandFillType == ftDirectFill)
       {
-         StrandIndexType num_permanent = pArtifact->GetNumHarpedStrands() + pArtifact->GetNumStraightStrands();
+         *pParagraph << color(Blue)<< _T("Strands for design will be filled using direct selection.") << color(Black);
+      }
+      else
+      {
          // we asked design to fill using grid, but this may be a non-standard design - let's check
+         StrandIndexType num_permanent = pArtifact->GetNumHarpedStrands() + pArtifact->GetNumStraightStrands();
          GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
 
          StrandIndexType ns, nh;
          if (pStrandGeometry->ComputeNumPermanentStrands(num_permanent, segmentKey, &ns, &nh))
          {
-            if (ns!=pArtifact->GetNumStraightStrands() )
+            if (ns != pArtifact->GetNumStraightStrands() )
             {
-               pParagraph = new rptParagraph();
-               *pChapter << pParagraph;
-               *pParagraph << color(Blue)<<_T("Note that strand fill order has been changed from ")<<Bold(_T("Number of Permanent"))<<_T(" to ")<< Bold(_T("Number of Straight and Number of Harped")) << _T(" strands.") << color(Black);
+               *pParagraph << color(Blue)<<_T(" Strands for design were filled using Number of Straight and Number of Harped strands.") << color(Black);
+            }
+            else
+            {
+               *pParagraph << color(Blue)<<_T(" Strands for design were filled using the Permanent fill order defined in the girder library.") << color(Black);
             }
          }
       }
@@ -350,6 +365,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
       (*pTable)(row,2) << _T("Current Value");
 
       row++;
+
       GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
 
       // current offsets, measured in absolute
@@ -363,7 +379,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
       // print straight debond information if exists
       CollectionIndexType ddb = config.PrestressConfig.Debond[pgsTypes::Straight].size();
       StrandIndexType pdb = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight);
-      if (ddb>0 || pdb>0)
+      if (0 < ddb || 0 < pdb)
       {
          (*pTable)(row,1) << _T(" (")<<ddb<<_T(" debonded)");
          (*pTable)(row,2) << _T(" (")<<pdb<<_T(" debonded)");
@@ -402,13 +418,20 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
          row++;
       }
 
-      if (0 < config.PrestressConfig.GetStrandCount(pgsTypes::Harped) && !options.doForceHarpedStrandsStraight)
+      Float64 HgStart, HgHp1, HgHp2, HgEnd;
+      pStrandGeometry->GetHarpedStrandControlHeights(segmentKey,&HgStart,&HgHp1,&HgHp2,&HgEnd);
+
+      if (0 < pStrands->GetStrandCount(pgsTypes::Harped) && 
+          options.doDesignForFlexure == dtDesignForHarping &&
+          !options.doForceHarpedStrandsStraight)
       {
          HarpedStrandOffsetType HsoEnd = pStrands->GetHarpStrandOffsetMeasurementAtEnd();
 
-#pragma Reminder("Designer will drive adjustable strand type here - may need to add strand type and library entry name")
-         bool doAdjust = (0.0 <= pStrandGeometry->GetHarpedEndOffsetIncrement(segmentKey) ? true : false);
+         GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+         const CSplicedGirderData* pGirder = pIBridgeDesc->GetGirder(segmentKey);
+         std::_tstring gdrName = pGirder->GetGirderName();
 
+         bool doAdjust = (0.0 <= pStrandGeometry->GetHarpedEndOffsetIncrement(gdrName.c_str(), pgsTypes::asHarped) ? true : false);
          if (doAdjust)
          {
             switch( HsoEnd )
@@ -448,24 +471,33 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
 
             const ConfigStrandFillVector& confvec_design = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
 
-            Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(segmentKey,
+            Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(gdrName.c_str(), pgsTypes::asHarped,
+                                                                                HgStart, HgHp1, HgHp2, HgEnd,
                                                                                 confvec_design, 
                                                                                 HsoEnd, 
                                                                                 pArtifact->GetHarpStrandOffsetEnd());
             (*pTable)(row,1) << length.SetValue(offset);
 
-            ConfigStrandFillVector confvec_current = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, pStrands->GetStrandCount(pgsTypes::Harped));
+            if (pStrands->GetAdjustableStrandType() == pgsTypes::asHarped)
+            {
+               ConfigStrandFillVector confvec_current = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, pStrands->GetStrandCount(pgsTypes::Harped));
 
-            offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(segmentKey, confvec_current, 
-                                                                         HsoEnd, abs_offset_end);
+               offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(segmentKey, confvec_current, 
+                                                                            HsoEnd, abs_offset_end);
 
-            (*pTable)(row,2) << length.SetValue(offset);
+               (*pTable)(row,2) << length.SetValue(offset);
+            }
+            else
+            {
+               // old design was straight - offset not applicable
+               (*pTable)(row,2) << _T("N/A");
+            }
 
             row++;
          }
 
          // At harping points
-         doAdjust = (0.0 <= pStrandGeometry->GetHarpedHpOffsetIncrement(segmentKey) ? true : false);
+         doAdjust = pStrandGeometry->GetHarpedHpOffsetIncrement(gdrName.c_str(), pgsTypes::asHarped) >= 0.0;
 
          if (doAdjust)
          {
@@ -507,23 +539,45 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
 
             const ConfigStrandFillVector& confvec_design = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
 
-            Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(segmentKey,
+            Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(gdrName.c_str(), pgsTypes::asHarped,
+                                                                                HgStart, HgHp1, HgHp2, HgEnd,
                                                                                 confvec_design, 
                                                                                 HsoHp, 
                                                                                 pArtifact->GetHarpStrandOffsetHp());
 
             (*pTable)(row,1) << length.SetValue(offset);
 
-            ConfigStrandFillVector confvec_current = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, pStrands->GetStrandCount(pgsTypes::Harped));
 
-            offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(segmentKey,
-                                                                        confvec_current, 
-                                                                        HsoHp, abs_offset_hp);
-            (*pTable)(row,2) << length.SetValue(offset);
+            if (pStrands->GetAdjustableStrandType() == pgsTypes::asHarped)
+            {
+               ConfigStrandFillVector confvec_current = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, pStrands->GetStrandCount(pgsTypes::Harped));
+
+               offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(gdrName.c_str(), pgsTypes::asHarped,
+                                                                           HgStart, HgHp1, HgHp2, HgEnd,
+                                                                           confvec_current, 
+                                                                           HsoHp, abs_offset_hp);
+               (*pTable)(row,2) << length.SetValue(offset);
+            }
+            else
+            {
+               // old design was straight - offset not applicable
+               (*pTable)(row,2) << _T("N/A");
+            }
 
             row++;
          }
       }
+
+      GET_IFACE2(pBroker,IIntervals,pIntervals);
+      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+      Float64 neff;
+      Float64 ecc_design  = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, config, false, &neff);
+      Float64 ecc_current = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, false, &neff);
+
+      (*pTable)(row,0) << _T("Eccentricity of Permanent Strands at Midspan");
+      (*pTable)(row,1) << length.SetValue(ecc_design);
+      (*pTable)(row,2) << length.SetValue(ecc_current);
+      row++;
 
       (*pTable)(row,0) << RPT_FCI;
       (*pTable)(row,1) << stress.SetValue(pArtifact->GetReleaseStrength());
@@ -700,6 +754,11 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
    // End up with some notes about Design
    if ( doNotes )
    {
+      if (pArtifact->DoPreviouslyFailedDesignsExist())
+      {
+         write_design_failures(pNotesParagraph, pArtifact);
+      }
+
       // Explicit notes created during design
       if (pArtifact->DoDesignNotesExist())
       {
@@ -725,15 +784,10 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
          }
 
          // Negative camber is not technically a spec check, but a warning
-         GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
-         std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_5L);
-         ATLASSERT(vPoi.size()==1);
-         pgsPointOfInterest poi = *vPoi.begin();
-
          GDRCONFIG config = pArtifact->GetSegmentConfiguration();
 
          GET_IFACE2(pBroker,ICamber,pCamber);
-         Float64 excess_camber = pCamber->GetExcessCamber(poi,config,CREEP_MAXTIME);
+         Float64 excess_camber = pCamber->GetExcessCamber(poiMS,config,CREEP_MAXTIME);
          if ( excess_camber < 0 )
          {
             *pNotesParagraph<<color(Red)<< _T("Warning:  Excess camber is negative, indicating a potential sag in the beam.")<<color(Black)<< rptNewLine;
@@ -956,38 +1010,38 @@ void failed_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisp
    write_artifact_data(pBroker,pChapter,pDisplayUnits,pArtifact);
 }
 
-std::wstring GetDesignNoteString(pgsSegmentDesignArtifact::DesignNote note)
+std::_tstring GetDesignNoteString(pgsSegmentDesignArtifact::DesignNote note)
 {
    switch (note)
    {
    case pgsSegmentDesignArtifact::dnShearRequiresStrutAndTie:
-      return std::wstring(_T("WARNING: A strut and tie analysis is required in the girder end zones per LRFD 5.8.3.2. This design will fail a spec check."));
+      return std::_tstring(_T("WARNING: A strut and tie analysis is required in the girder end zones per LRFD 5.8.3.2. This design will fail a spec check."));
       break;
 
    case pgsSegmentDesignArtifact::dnExistingShearDesignPassedSpecCheck:
-      return std::wstring(_T("The existing stirrup input data passed the shear specification check. No design modificatons were made."));
+      return std::_tstring(_T("The existing stirrup input data passed the shear specification check. No design modificatons were made."));
       break;
 
    case pgsSegmentDesignArtifact::dnStrandsAddedForLongReinfShear:
-      return std::wstring(_T("The number of strands was controlled by longitudinal reinforcement for shear requirements."));
+      return std::_tstring(_T("The number of strands was controlled by longitudinal reinforcement for shear requirements."));
       break;
 
    case pgsSegmentDesignArtifact::dnLongitudinalBarsNeeded4FlexuralTensionCy:
-      return std::wstring(_T("Refer to the release \"Allowable Tension Reinforcement Requirements\" sections in the Details report for more information about required longitudinal reinforcement."));
+      return std::_tstring(_T("Refer to the release \"Allowable Tension Reinforcement Requirements\" sections in the Details report for more information about required longitudinal reinforcement."));
       break;
 
    case pgsSegmentDesignArtifact::dnLongitudinalBarsNeeded4FlexuralTensionLifting:
-      return std::wstring(_T("Refer to the lifting \"Allowable Tension Reinforcement Requirements\" sections in the Details report for more information about required longitudinal reinforcement."));
+      return std::_tstring(_T("Refer to the lifting \"Allowable Tension Reinforcement Requirements\" sections in the Details report for more information about required longitudinal reinforcement."));
       break;
 
    case pgsSegmentDesignArtifact::dnLongitudinalBarsNeeded4FlexuralTensionHauling:
-      return std::wstring(_T("Refer to the hauling \"Allowable Tension Reinforcement Requirements\" sections in the Details report for more information about required longitudinal reinforcement."));
+      return std::_tstring(_T("Refer to the hauling \"Allowable Tension Reinforcement Requirements\" sections in the Details report for more information about required longitudinal reinforcement."));
       break;
 
    default:
       ATLASSERT(false);
    }
-   return std::wstring();
+   return std::_tstring();
 }
 
 void write_design_notes(rptParagraph* pParagraph, const std::vector<pgsSegmentDesignArtifact::DesignNote>& notes)
@@ -1001,6 +1055,15 @@ void write_design_notes(rptParagraph* pParagraph, const std::vector<pgsSegmentDe
    }
 }
 
+void write_design_failures(rptParagraph* pParagraph, const pgsSegmentDesignArtifact* pArtifact)
+{
+   std::vector<arFlexuralDesignType> failures = pArtifact->GetPreviouslyFailedFlexuralDesigns();
+   for(std::vector<arFlexuralDesignType>::iterator itf=failures.begin(); itf!=failures.end(); itf++)
+   {
+      *pParagraph <<color(Blue)<<_T("Design attempt for a: ")<< GetDesignTypeName( *itf )<<_T(" design strategy - Failed") <<color(Black)<<rptNewLine;
+   }
+}
+
 void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
                      IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,rptChapter* pChapter,
                      IEAFDisplayUnits* pDisplayUnits,IArtifact* pIArtifact)
@@ -1011,6 +1074,8 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),       true );
 
    GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
+   GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    // Since girder types, design info, etc can be different for each girder, process information for all
    // artifacts to get control data
@@ -1052,7 +1117,10 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
       (*pTable)(row++,0) << _T("Number of Straight Strands");
 
       if (is_harped)
-         (*pTable)(row++,0) << _T("Number of Harped Strands");
+      {
+         (*pTable)(row++,0) << _T("Number of Adjustable Strands");
+         (*pTable)(row++,0) << _T("Adjustable Strand Type");
+      }
 
       if (is_temporary)
          (*pTable)(row++,0) << _T("Number of Temporary Strands");
@@ -1064,6 +1132,8 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
 
       if (is_temporary)
          (*pTable)(row++,0) << _T("Temporary Strand Jacking Force");
+
+      (*pTable)(row++,0) << _T("Eccentricity of Permanent Strands at Midspan");
 
       if (is_harped)
       {
@@ -1096,15 +1166,21 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
    {
       pTable->SetColumnWidth(col,0.75);
 
+#pragma Reminder("UPDATE: assuming precast girder bridge") // assumes only one segment design artifact
+      SegmentIndexType segIdx = 0;
+
       const CGirderKey& girderKey = girderKeys[gdr_idx];
+      
+      std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(CSegmentKey(girderKey,segIdx),POI_SPAN | POI_5L);
+      ATLASSERT(vPoi.size()==1);
+      pgsPointOfInterest poiMS = vPoi.front();
 
       row = 0;
 
       (*pTable)(row++,col) << _T("Span ") << LABEL_GROUP(girderKey.groupIndex) <<rptNewLine<<_T("Girder ")<<LABEL_GIRDER(girderKey.girderIndex);
 
       const pgsGirderDesignArtifact* pGirderDesignArtifact = pArtifacts[idx++];
-#pragma Reminder("UPDATE: assuming precast girder bridge") // assumes only one segment design artifact
-      const pgsSegmentDesignArtifact* pArtifact = pGirderDesignArtifact->GetSegmentDesignArtifact(0);
+      const pgsSegmentDesignArtifact* pArtifact = pGirderDesignArtifact->GetSegmentDesignArtifact(segIdx);
       const CSegmentKey& segmentKey(pArtifact->GetSegmentKey());
 
       pgsSegmentDesignArtifact::Outcome outcome = pArtifact->GetOutcome();
@@ -1117,53 +1193,97 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
          (*pTable)(row++,col) <<color(Red)<<_T("Failed")<<color(Black);
       }
 
-      (*pTable)(row++,col) << pArtifact->GetNumStraightStrands();
-
-      if (is_harped)
-         (*pTable)(row++,col) << pArtifact->GetNumHarpedStrands();
-
-      if (is_temporary)
-         (*pTable)(row++,col) << pArtifact->GetNumTempStrands();
-
-      GDRCONFIG config = pArtifact->GetSegmentConfiguration();
-
-      // jacking forces
-      (*pTable)(row++,col) << force.SetValue(config.PrestressConfig.Pjack[pgsTypes::Straight]);
-
-      if (is_harped)
-         (*pTable)(row++,col) << force.SetValue(config.PrestressConfig.Pjack[pgsTypes::Harped]);
-
-      if (is_temporary)
-         (*pTable)(row++,col) << force.SetValue(config.PrestressConfig.Pjack[pgsTypes::Temporary]);
-
-      if (is_harped)
+      if (did_flexure)
       {
-         if (pArtifact->GetNumHarpedStrands()>0)
+         GDRCONFIG config = pArtifact->GetSegmentConfiguration();
+
+         (*pTable)(row,col) << pArtifact->GetNumStraightStrands();
+         // Debond into
+         StrandIndexType ddb = config.PrestressConfig.Debond[pgsTypes::Straight].size();
+         if(0 < ddb)
          {
-            const ConfigStrandFillVector& confvec_design = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
-
-
-            Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(segmentKey,
-                                                                                confvec_design, 
-                                                                                hsoTOP2BOTTOM, 
-                                                                                pArtifact->GetHarpStrandOffsetEnd());
-            (*pTable)(row++,col) << length.SetValue(offset);
-
-            offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(segmentKey,
-                                                                        confvec_design, 
-                                                                        hsoBOTTOM2BOTTOM, 
-                                                                        pArtifact->GetHarpStrandOffsetHp());
-            (*pTable)(row++,col) << length.SetValue(offset);
+            (*pTable)(row,col) << _T("(") << ddb << _T(")");
          }
-         else
+         row++;
+
+         pgsTypes::AdjustableStrandType adjType = pArtifact->GetAdjustableStrandType();
+         if (is_harped)
          {
-            (*pTable)(row++,col) << _T("-");
-            (*pTable)(row++,col) << _T("-");
+            (*pTable)(row++,col) << pArtifact->GetNumHarpedStrands();
+            (*pTable)(row++,col) << ABR_LABEL_HARP_TYPE(adjType==pgsTypes::asStraight);
          }
+
+         if (is_temporary)
+         {
+            (*pTable)(row++,col) << pArtifact->GetNumTempStrands();
+         }
+
+         // jacking forces
+         (*pTable)(row++,col) << force.SetValue(config.PrestressConfig.Pjack[pgsTypes::Straight]);
+
+         if (is_harped)
+         {
+            (*pTable)(row++,col) << force.SetValue(config.PrestressConfig.Pjack[pgsTypes::Harped]);
+         }
+
+         if (is_temporary)
+         {
+            (*pTable)(row++,col) << force.SetValue(config.PrestressConfig.Pjack[pgsTypes::Temporary]);
+         }
+
+         GET_IFACE2(pBroker,IIntervals,pIntervals);
+         IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+         Float64 neff;
+         Float64 ecc_design  = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, config, false, &neff);
+         (*pTable)(row++,col) << length.SetValue(ecc_design);
+
+         if (is_harped)
+         {
+            if (adjType==pgsTypes::asHarped && pArtifact->GetNumHarpedStrands()>0)
+            {
+               const CSplicedGirderData* pGirder = pIBridgeDesc->GetGirder(segmentKey);
+               std::_tstring gdrName = pGirder->GetGirderName();
+
+               const ConfigStrandFillVector& confvec_design = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
+
+               bool doAdjust = pStrandGeometry->GetHarpedEndOffsetIncrement(gdrName.c_str(), pgsTypes::asHarped) >= 0.0;
+               if (doAdjust)
+               {
+                  Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(segmentKey,
+                                                                                      confvec_design, 
+                                                                                      hsoTOP2BOTTOM, 
+                                                                                      pArtifact->GetHarpStrandOffsetEnd());
+                  (*pTable)(row++,col) << length.SetValue(offset);
+               }
+               else
+               {
+                  (*pTable)(row++,col) << _T("-");
+               }
+
+               doAdjust = pStrandGeometry->GetHarpedHpOffsetIncrement(gdrName.c_str(), pgsTypes::asHarped) >= 0.0;
+               if (doAdjust)
+               {
+                  Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(segmentKey,
+                                                                              confvec_design, 
+                                                                              hsoBOTTOM2BOTTOM, 
+                                                                              pArtifact->GetHarpStrandOffsetHp());
+                  (*pTable)(row++,col) << length.SetValue(offset);
+               }
+               else
+               {
+                  (*pTable)(row++,col) << _T("-");
+               }
+            }
+            else
+            {
+               (*pTable)(row++,col) << _T("-");
+               (*pTable)(row++,col) << _T("-");
+            }
+         }
+
+         (*pTable)(row++,col) << stress.SetValue(pArtifact->GetReleaseStrength());
+         (*pTable)(row++,col) << stress.SetValue(pArtifact->GetConcreteStrength());
       }
-
-      (*pTable)(row++,col) << stress.SetValue(pArtifact->GetReleaseStrength());
-      (*pTable)(row++,col) << stress.SetValue(pArtifact->GetConcreteStrength());
 
       if (did_lifting)
       {

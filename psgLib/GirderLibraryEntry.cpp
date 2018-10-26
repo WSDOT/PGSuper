@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -80,7 +80,7 @@ static char THIS_FILE[] = __FILE__;
 // from 20.0 to 21.0 Web strands can be harped or straight e.g.,  ForceHarpedStrandsStraight
 // from 21.0 to 22.0 Added layout options for longitudinal rebar
 // from 22   to 23   Changed ForceHarpedStrandsStraight to AdjustableStrandType for more flexibility
-// from 23.0 to 24.0 Added option for variable depth girders
+// from 23   to 24   Added Prestressed design strategies (2.9), Added option for variable depth girders (3.0)
 #define CURRENT_VERSION 24.0
 
 // predicate function for comparing doubles
@@ -123,7 +123,7 @@ m_HarpPointReference(mlBearing),
 m_LongitudinalBarType(matRebar::A615),
 m_LongitudinalBarGrade(matRebar::Grade60),
 m_bOddNumberOfHarpedStrands(true),
-m_AdjustableStrandType(pgsTypes::asHarped),
+m_AdjustableStrandType(pgsTypes::asHarped), // Adjustable strand type - harp was only option before 21
 // debonding criteria - use aashto defaults
 m_MaxDebondStrands(0.25),
 m_MaxDebondStrandsPerRow(0.40),
@@ -207,6 +207,8 @@ m_MaxDebondLengthByHardDistance(-1.0)
    m_LongShearCapacityIncreaseMethod   = isAddingRebar;
    
    InitCLSIDMap();
+
+   SetDefaultPrestressDesignStrategy();
 }
 
 GirderLibraryEntry::GirderLibraryEntry(const GirderLibraryEntry& rOther) :
@@ -316,7 +318,9 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("UseMinHarpingPointLocation"),m_bMinHarpingPointLocation);
 
    if ( m_bMinHarpingPointLocation )
+   {
       pSave->Property(_T("MinHarpingPointLocation"),m_MinHarpingPointLocation);
+   }
 
    pSave->Property(_T("HarpingPointReference"),    (long)m_HarpPointReference);
    pSave->Property(_T("HarpingPointMeasure"),      (long)m_HarpPointMeasure); // added in version 4
@@ -469,9 +473,13 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
       pSave->Property(_T("BarLength"), (*itl).BarLength);
 
       if (itl->Face==pgsTypes::BottomFace)
+      {
          pSave->Property(_T("Face"), _T("Bottom"));
+      }
       else
+      {
          pSave->Property(_T("Face"), _T("Top"));
+      }
 
       pSave->Property(_T("NumberOfBars"), (*itl).NumberOfBars);
       pSave->Property(_T("BarSize"),  (Int32)(*itl).BarSize);
@@ -543,6 +551,22 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    }
    pSave->EndUnit(); // ShearDesign
 
+
+   // PrestressDesignStrategies added in version 24
+   pSave->BeginUnit(_T("PrestressDesignStrategies"),1.0);
+   for (PrestressDesignStrategyIterator iter = m_PrestressDesignStrategies.begin(); iter != m_PrestressDesignStrategies.end(); iter++)
+   {
+      pSave->BeginUnit(_T("PrestressDesignStrategy"), 1.0);
+
+      PrestressDesignStrategy& strategy = *iter;
+
+      pSave->Property(_T("FlexuralDesignType"), strategy.m_FlexuralDesignType);
+      pSave->Property(_T("MaxFc"), strategy.m_MaxFc);
+      pSave->Property(_T("MaxFci"), strategy.m_MaxFci);
+
+      pSave->EndUnit();
+   }
+   pSave->EndUnit(); // PrestressDesignStrategies
 
    pSave->EndUnit();
 
@@ -635,15 +659,15 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          // this data block is "officially" added in version 24 however, this was originally part
          // of the version 23 data block during pgsplice development. PGSuper version 2.9
          // was updated and used version 23. This creates a problem. When loading a PGSuper
-         // file from version 2.9 we are going to encounter version 23 of this datablock however
+         // file from version 2.9 we are going to encounter version 23 or 24 of this datablock however
          // it wont have the expected data. To work around this problem, let it fail
          // and move on.
          if ( 22 < version )
          {
             bool bOkToFail = false;
-            if ( version == 23 )
+            if ( version == 23 || version == 24 )
             {
-               bOkToFail = true; // it is OK of version 23 datablock fails
+               bOkToFail = true; // it is OK if version 23 datablock fails
             }
 
             bool bDidBeginUnit = true;
@@ -1476,8 +1500,6 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          pLoad->Property(_T("OddNumberOfHarpedStrands"),&m_bOddNumberOfHarpedStrands);
 
-         // Adjustable strand type - harp was only option before 21
-         m_AdjustableStrandType = pgsTypes::asHarped;
          if ( 21.0 == version || 22.0 == version )
          {
             bool forceStr;
@@ -1652,7 +1674,6 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if(!pLoad->Property(_T("StressMitigationType"), &smtype))
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
-
       }
 
       // shear zones
@@ -2044,6 +2065,78 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
+      // Strand data is all loaded now - need to clean up adjustable strand type so design strategies
+      // get set up correctly next
+      if ( 23.0 >= version)
+      {
+         m_AdjustableStrandType = m_HarpedStrands.empty() ? pgsTypes::asStraight : pgsTypes::asHarped;
+      }
+      // Prestress design strategies
+      m_PrestressDesignStrategies.clear();
+      if (24.0 <= version)
+      {
+         bool bOkToFail = false;
+         if ( version == 24 )
+         {
+            bOkToFail = true; // it is OK if version 24 datablock fails
+         }
+
+         bool bDidBeginUnit = true;
+         if (!pLoad->BeginUnit(_T("PrestressDesignStrategies")))
+         {
+            bDidBeginUnit = false;
+         }
+
+         if ( bDidBeginUnit )
+         {
+            while( pLoad->BeginUnit(_T("PrestressDesignStrategy")) )
+            {
+               PrestressDesignStrategy strategy;
+               Int32 lval;
+               if(!pLoad->Property(_T("FlexuralDesignType"),&lval))
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+
+               strategy.m_FlexuralDesignType = (arFlexuralDesignType)lval;
+
+               if(!pLoad->Property(_T("MaxFc"), &strategy.m_MaxFc))
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+
+               if(!pLoad->Property(_T("MaxFci"), &strategy.m_MaxFci))
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+
+               if(!pLoad->EndUnit()) // PrestressDesignStrategy
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+
+               m_PrestressDesignStrategies.push_back(strategy);
+            }
+
+            if ( !pLoad->EndUnit() ) // PrestressDesignStrategies
+               THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+         else
+         {
+            // BeginUnit failed...
+            if ( !bOkToFail )
+            {
+               // not ok to fail so throw an error exceptoin
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+            else
+            {
+               // ok to fail... this means we have a PGSuper file with version 24 datablock
+               // the PrestressDesignStrategies datablock isn't valid so we just want to
+               // use the defaults
+
+               // Note that this must happen after all prestress data is loaded - careful if you want to move this block
+               SetDefaultPrestressDesignStrategy();
+            }
+         }
+      }
+      else
+      {
+         // Note that this must happen after all prestress data is loaded - careful if you want to move this block
+         SetDefaultPrestressDesignStrategy();
+      }
 
       if(!pLoad->EndUnit())
          THROW_LOAD(InvalidFileFormat,pLoad);
@@ -2249,6 +2342,8 @@ bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther, bool consider
    test &= m_DoExtendBarsIntoDeck == rOther.m_DoExtendBarsIntoDeck;
    test &= m_DoBarsActAsConfinement == rOther.m_DoBarsActAsConfinement;
    test &= m_LongShearCapacityIncreaseMethod == rOther.m_LongShearCapacityIncreaseMethod;
+
+   test &= m_PrestressDesignStrategies == rOther.m_PrestressDesignStrategies;
 
    if (considerName)
       test &= this->GetName()==rOther.GetName();
@@ -2712,6 +2807,65 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
       }
 
       num++;
+   }
+
+   // Design Algorithm strategies
+   bool cant_straight = pgsTypes::asHarped   ==  GetAdjustableStrandType() && 
+                                                 GetNumHarpedStrandCoordinates() > 0 &&
+                                                 IsDifferentHarpedGridAtEndsUsed();
+   bool cant_harp     = pgsTypes::asStraight ==  GetAdjustableStrandType();
+   bool cant_debond   = pgsTypes::asHarped   ==  GetAdjustableStrandType() || !CanDebondStraightStrands();
+
+   // Find any incompatible strategies and remove them
+   PrestressDesignStrategyConstIterator it = m_PrestressDesignStrategies.begin();
+   while(it != m_PrestressDesignStrategies.end())
+   {
+      bool did_remove(false);
+
+      if ( cant_straight && (dtDesignFullyBonded==it->m_FlexuralDesignType || dtDesignFullyBondedRaised==it->m_FlexuralDesignType))
+      {
+         pvec->push_back(GirderEntryDataError(DesignAlgorithmStrategyMismatch,
+                         _T("An all straight bonded strand flexural design algorithm strategy is selected and adjustable strands can only be harped - The strategy has been removed.") ));
+
+         m_PrestressDesignStrategies.erase(it);
+         did_remove = true;
+      }
+
+      if ( cant_harp && dtDesignForHarping==it->m_FlexuralDesignType )
+      {
+
+         pvec->push_back(GirderEntryDataError(DesignAlgorithmStrategyMismatch,
+                         _T("A harped strand flexural design algorithm strategy is selected and harped strands are not allowed - The strategy has been removed.") ));
+
+         m_PrestressDesignStrategies.erase(it);
+         did_remove = true;
+      }
+
+      if ( cant_debond && (dtDesignForDebonding==it->m_FlexuralDesignType ||
+                           dtDesignForDebondingRaised==it->m_FlexuralDesignType))
+      {
+
+         pvec->push_back(GirderEntryDataError(DesignAlgorithmStrategyMismatch,
+                         _T("A debonded strand flexural design algorithm strategy is selected and no debondable strands exist - The strategy has been removed.") ));
+
+         m_PrestressDesignStrategies.erase(it);
+         did_remove = true;
+      }
+
+      if (did_remove)
+      {
+         it = m_PrestressDesignStrategies.begin();
+      }
+      else
+      {
+         it++;
+      }
+   }
+
+   if (m_PrestressDesignStrategies.size()==0)
+   {
+      pvec->push_back(GirderEntryDataError(DesignAlgorithmStrategyMismatch,
+                      _T("At least one flexural design algorithm strategy must be selected - Please go to the Flexural Design tab and select a strategy") ));
    }
 }
 
@@ -3634,6 +3788,8 @@ void GirderLibraryEntry::MakeCopy(const GirderLibraryEntry& rOther)
    m_DoExtendBarsIntoDeck            = rOther.m_DoExtendBarsIntoDeck;
    m_DoBarsActAsConfinement          = rOther.m_DoBarsActAsConfinement;
    m_LongShearCapacityIncreaseMethod = rOther.m_LongShearCapacityIncreaseMethod;
+
+   m_PrestressDesignStrategies     = rOther.m_PrestressDesignStrategies;
 }
 
 void GirderLibraryEntry::MakeAssignment(const GirderLibraryEntry& rOther)
@@ -4112,6 +4268,52 @@ GirderLibraryEntry::LongShearCapacityIncreaseMethod GirderLibraryEntry::GetLongS
 void GirderLibraryEntry::SetLongShearCapacityIncreaseMethod(LongShearCapacityIncreaseMethod method) 
 {
    m_LongShearCapacityIncreaseMethod = method;
+}
+
+IndexType GirderLibraryEntry::GetNumPrestressDesignStrategies() const
+{
+   return m_PrestressDesignStrategies.size();
+}
+
+void GirderLibraryEntry::GetPrestressDesignStrategy(IndexType index,  arFlexuralDesignType* pFlexuralDesignType, Float64* pMaxFci, Float64* pMaxFc) const
+{
+   ATLASSERT(index>=0 && index<m_PrestressDesignStrategies.size());
+   const PrestressDesignStrategy& rds = m_PrestressDesignStrategies[index];
+
+   *pFlexuralDesignType = rds.m_FlexuralDesignType;
+   *pMaxFci = rds.m_MaxFci; 
+   *pMaxFc = rds.m_MaxFc;
+}
+
+void GirderLibraryEntry::SetDefaultPrestressDesignStrategy()
+{
+   // Set prestress design options to pre 2015 defaults. 
+   // i.e., a single strategy based on prestressing in girder
+   m_PrestressDesignStrategies.clear();
+
+   // old algorithm used 15ksi
+   Float64 str15 = ::ConvertToSysUnits( 15.0 ,unitMeasure::KSI);
+
+   PrestressDesignStrategy ds;
+   ds.m_MaxFc  = str15;
+   ds.m_MaxFci = str15;
+
+   StrandIndexType  nh = GetNumHarpedStrandCoordinates();
+
+   if (nh>0 && m_AdjustableStrandType==pgsTypes::asHarped || m_AdjustableStrandType==pgsTypes::asStraightOrHarped)
+   {
+      ds.m_FlexuralDesignType = dtDesignForHarping;
+   }
+   else if ( CanDebondStraightStrands() )
+   {
+      ds.m_FlexuralDesignType  = dtDesignForDebonding;
+   }
+   else
+   {
+      ds.m_FlexuralDesignType  = dtDesignFullyBonded;
+   }
+
+   m_PrestressDesignStrategies.push_back(ds);
 }
 
 //======================== ACCESS     =======================================

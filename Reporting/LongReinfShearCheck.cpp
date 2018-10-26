@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -85,8 +85,6 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
                               IntervalIndexType intervalIdx,pgsTypes::LimitState ls,
                               IEAFDisplayUnits* pDisplayUnits) const
 {
-   USES_CONVERSION;
-
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
@@ -97,8 +95,8 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
 
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
-   *pTitle << _T("Longitudinal Reinforcement for Shear Check - ") << OLE2T(pEventMap->GetLimitStateName(ls)) << _T(" [5.8.3.5]");
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   *pTitle << _T("Longitudinal Reinforcement for Shear Check - ") << pProductLoads->GetLimitStateName(ls) << _T(" [5.8.3.5]");
 
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
@@ -196,8 +194,6 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
                               pgsTypes::LimitState ls,
                               IEAFDisplayUnits* pDisplayUnits) const
 {
-   USES_CONVERSION;
-
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    location.IncludeSpanAndGirder(true);
 
@@ -210,8 +206,8 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
 
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
-   *pTitle << _T("Longitudinal Reinforcement for Shear Check - ") << OLE2T(pEventMap->GetLimitStateName(ls)) << _T(" [5.8.3.5]");
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   *pTitle << _T("Longitudinal Reinforcement for Shear Check - ") << pProductLoads->GetLimitStateName(ls) << _T(" [5.8.3.5]");
 
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;

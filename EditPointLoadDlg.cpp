@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -102,24 +102,23 @@ void CEditPointLoadDlg::DoDataExchange(CDataExchange* pDX)
       }
 
       ival = m_SpanCB.GetCurSel();
+      m_Load.m_SpanKey.spanIndex = m_Spans[ival].spanIdx;
+      m_Load.m_bLoadOnCantilever[pgsTypes::metStart] = m_Spans[ival].bStartCantilever;
+      m_Load.m_bLoadOnCantilever[pgsTypes::metEnd]   = m_Spans[ival].bEndCantilever;
 
-      SpanIndexType spanIdx;
       GirderIndexType gdrIdx;
-
-      if (ival == m_SpanCB.GetCount()-1)
-         spanIdx = ALL_GROUPS;
-      else
-         spanIdx = ival;
-
       ival = m_GirderCB.GetCurSel();
       if (ival == m_GirderCB.GetCount()-1 )
+      {
          gdrIdx = ALL_GIRDERS;
+      }
       else
+      {
          gdrIdx = ival;
+      }
 
-
-      m_Load.m_SpanKey.spanIndex   = spanIdx;
       m_Load.m_SpanKey.girderIndex = gdrIdx;
+      
 
       // location takes some effort
       Float64 locval;
@@ -161,6 +160,65 @@ void CEditPointLoadDlg::DoDataExchange(CDataExchange* pDX)
          }
       }
    }
+   else
+   {
+      GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+      SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
+      if ( nSpans <= m_Load.m_SpanKey.spanIndex && m_Load.m_SpanKey.spanIndex != ALL_SPANS )
+      {
+         ::AfxMessageBox(_T("Warning - The span for this load is out of range. Resetting to Span 1"));
+         m_Load.m_SpanKey.spanIndex = 0;
+         m_Load.m_bLoadOnCantilever[pgsTypes::metStart] = false;
+         m_Load.m_bLoadOnCantilever[pgsTypes::metEnd]   = false;
+      }
+
+      if ( m_Load.m_bLoadOnCantilever )
+      {
+         ATLASSERT(m_Load.m_SpanKey.spanIndex == 0 || m_Load.m_SpanKey.spanIndex == nSpans-1);
+         const CSpanData2* pSpan = pBridgeDesc->GetSpan(m_Load.m_SpanKey.spanIndex);
+         if ( (m_Load.m_SpanKey.spanIndex == 0 && !pSpan->GetPrevPier()->HasCantilever())
+              ||
+              (m_Load.m_SpanKey.spanIndex == nSpans-1 && !pSpan->GetNextPier()->HasCantilever())
+            )
+         {
+            ::AfxMessageBox(_T("Warning - The span for this loading does not have a cantilever. Moving the load into the span"));
+            m_Load.m_bLoadOnCantilever[pgsTypes::metStart] = false;
+            m_Load.m_bLoadOnCantilever[pgsTypes::metEnd]   = false;
+         }
+      }
+
+      int i = 0;
+      std::vector<SpanType>::iterator iter(m_Spans.begin());
+      std::vector<SpanType>::iterator end(m_Spans.end());
+      for ( ; iter != end; iter++, i++ )
+      {
+         SpanType& spanType(*iter);
+         if ( spanType.spanIdx == m_Load.m_SpanKey.spanIndex && 
+            spanType.bStartCantilever == m_Load.m_bLoadOnCantilever[pgsTypes::metStart] &&
+            spanType.bEndCantilever == m_Load.m_bLoadOnCantilever[pgsTypes::metEnd] )
+         {
+            m_SpanCB.SetCurSel(i);
+            break;
+         }
+      }
+      ATLASSERT(m_SpanCB.GetCurSel() != CB_ERR);
+
+      const CSpanData2* pSpan = pBridgeDesc->GetSpan(m_Load.m_SpanKey.spanIndex);
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+
+      if ( nGirders <= m_Load.m_SpanKey.girderIndex && m_Load.m_SpanKey.girderIndex != ALL_GIRDERS )
+      {
+         m_Load.m_SpanKey.girderIndex = 0;
+
+         CString strMsg;
+         strMsg.Format(_T("Warning - The Girder for this load is out of range. Resetting to Girder %s"),LABEL_GIRDER(m_Load.m_SpanKey.girderIndex));
+         ::AfxMessageBox(strMsg);
+      }
+
+      DDX_CBIndex(pDX,IDC_GIRDERS,m_Load.m_SpanKey.girderIndex);
+   }
 }
 
 
@@ -200,66 +258,12 @@ BOOL CEditPointLoadDlg::OnInitDialog()
       m_Load.m_EventIndex = (EventIndexType)pcbEvent->GetItemData(0);
    }
 
+   UpdateSpanList();
+   UpdateGirderList();
+
 	CDialog::OnInitDialog();
 
    m_WasLiveLoad = m_Load.m_LoadCase == UserLoads::LL_IM;
-
-   // groups, girders
-   GET_IFACE(IBridgeDescription, pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
-
-   for (SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++)
-   {
-      CString str;
-      str.Format(_T("Span %d"), LABEL_SPAN(spanIdx));
-      m_SpanCB.AddString(str);
-   }
-
-   m_SpanCB.AddString(_T("All Spans"));
-
-    if (m_Load.m_SpanKey.spanIndex == ALL_SPANS)
-    {
-       m_SpanCB.SetCurSel((int)nSpans);
-    }
-    else
-    {
-      if ( 0 <= m_Load.m_SpanKey.spanIndex && m_Load.m_SpanKey.spanIndex < nSpans)
-      {
-         m_SpanCB.SetCurSel((int)m_Load.m_SpanKey.spanIndex);
-      }
-      else
-      {
-         ::AfxMessageBox(_T("Warning - The span for this load is out of range. Resetting to Span 1"));
-
-         m_Load.m_SpanKey.spanIndex = 0;
-         m_SpanCB.SetCurSel((int)m_Load.m_SpanKey.spanIndex);
-      }
-    }
-
-   UpdateGirderList();
-
-    if (m_Load.m_SpanKey.girderIndex == ALL_GIRDERS)
-    {
-       m_GirderCB.SetCurSel( m_GirderCB.GetCount()-1 );
-    }
-    else
-    {
-      if (0 <= m_Load.m_SpanKey.girderIndex && m_Load.m_SpanKey.girderIndex < GirderIndexType(m_GirderCB.GetCount()-1) )
-      {
-         m_GirderCB.SetCurSel((int)m_Load.m_SpanKey.girderIndex);
-      }
-      else
-      {
-         m_Load.m_SpanKey.girderIndex = 0;
-
-         CString strMsg;
-         strMsg.Format(_T("Warning - The Girder for this load is out of range. Resetting to Girder %s"),LABEL_GIRDER(m_Load.m_SpanKey.girderIndex));
-         ::AfxMessageBox(strMsg);
-
-         m_GirderCB.SetCurSel((int)m_Load.m_SpanKey.girderIndex);
-      }
-    }
 
    // location
    m_FractionalCtrl.SetCheck(m_Load.m_Fractional);
@@ -321,7 +325,9 @@ void CEditPointLoadDlg::UpdateEventLoadCase(bool isInitial)
    {
       pcbEvent->ResetContent();
       const CTimelineEvent* pTimelineEvent = pIBridgeDesc->GetEventByIndex(liveLoadEventIdx);
-      int idx = pcbEvent->AddString(pTimelineEvent->GetDescription());
+      CString strEvent;
+      strEvent.Format(_T("Event %d: %s"),LABEL_EVENT(liveLoadEventIdx),pTimelineEvent->GetDescription());
+      int idx = pcbEvent->AddString(strEvent);
       pcbEvent->SetItemData(idx,DWORD_PTR(liveLoadEventIdx));
       pcbEvent->SetCurSel(0);
       pcbEvent->EnableWindow(FALSE);
@@ -334,11 +340,14 @@ void CEditPointLoadDlg::UpdateEventLoadCase(bool isInitial)
       {
          pcbEvent->ResetContent();
          const CTimelineEvent* pTimelineEvent = pIBridgeDesc->GetEventByIndex(castDeckEventIdx);
-         int idx = pcbEvent->AddString(pTimelineEvent->GetDescription());
+         CString strEvent;
+         strEvent.Format(_T("Event %d: %s"),LABEL_EVENT(castDeckEventIdx),pTimelineEvent->GetDescription());
+         int idx = pcbEvent->AddString(strEvent);
          pcbEvent->SetItemData(idx,DWORD_PTR(castDeckEventIdx));
 
          pTimelineEvent = pIBridgeDesc->GetEventByIndex(railingSystemEventIdx);
-         idx = pcbEvent->AddString(pTimelineEvent->GetDescription());
+         strEvent.Format(_T("Event %d: %s"),LABEL_EVENT(railingSystemEventIdx),pTimelineEvent->GetDescription());
+         idx = pcbEvent->AddString(strEvent);
          pcbEvent->SetItemData(idx,DWORD_PTR(railingSystemEventIdx));
 
          pcbEvent->EnableWindow(TRUE);
@@ -346,9 +355,13 @@ void CEditPointLoadDlg::UpdateEventLoadCase(bool isInitial)
          if (isInitial)
          {
             if ( m_Load.m_EventIndex == castDeckEventIdx )
+            {
                pcbEvent->SetCurSel(0);
+            }
             else if ( m_Load.m_EventIndex == railingSystemEventIdx )
+            {
                pcbEvent->SetCurSel(1);
+            }
             else
             {
                pcbEvent->SetCurSel(0);
@@ -387,10 +400,14 @@ void CEditPointLoadDlg::OnEditchangeGirders()
 
 void CEditPointLoadDlg::UpdateSpanLength() 
 {
-	int spanIdx = m_SpanCB.GetCurSel();
-	int gdrIdx  = m_GirderCB.GetCurSel();
+   CComboBox* pcbSpans = (CComboBox*)GetDlgItem(IDC_SPANS);
 
-   if (spanIdx == m_SpanCB.GetCount()-1 || spanIdx == m_SpanCB.GetCount()-1)
+   int idx = pcbSpans->GetCurSel();
+   SpanIndexType spanIdx = m_Spans[idx].spanIdx;
+
+   int gdrIdx  = m_GirderCB.GetCurSel();
+
+   if (spanIdx == ALL_SPANS || gdrIdx == m_GirderCB.GetCount()-1)
    {
       CString str(_T("Span Length = N/A"));
       m_SpanLengthCtrl.SetWindowText(str);
@@ -399,10 +416,20 @@ void CEditPointLoadDlg::UpdateSpanLength()
    {
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
       GET_IFACE(IBridge, pBridge);
-      Float64 span_length = pBridge->GetSpanLength(spanIdx,gdrIdx);
-      CString str;
-      str.Format(_T("Span Length = %s"),FormatDimension(span_length,pDisplayUnits->GetSpanLengthUnit()));
-      m_SpanLengthCtrl.SetWindowText(str);
+      if ( m_Spans[idx].bStartCantilever || m_Spans[idx].bEndCantilever )
+      {
+         Float64 cantilever_length = pBridge->GetCantileverLength(spanIdx,gdrIdx,(m_Spans[idx].bStartCantilever ? pgsTypes::metStart : pgsTypes::metEnd));
+         CString str;
+         str.Format(_T("Cantilever Length = %s"),FormatDimension(cantilever_length,pDisplayUnits->GetSpanLengthUnit()));
+         m_SpanLengthCtrl.SetWindowText(str);
+      }
+      else
+      {
+         Float64 span_length = pBridge->GetSpanLength(spanIdx,gdrIdx);
+         CString str;
+         str.Format(_T("Span Length = %s"),FormatDimension(span_length,pDisplayUnits->GetSpanLengthUnit()));
+         m_SpanLengthCtrl.SetWindowText(str);
+      }
    }
 }
 
@@ -411,22 +438,91 @@ void CEditPointLoadDlg::OnHelp()
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_EDIT_POINT_LOADS );
 }
 
+void CEditPointLoadDlg::UpdateSpanList()
+{
+   CComboBox* pcbSpans = (CComboBox*)GetDlgItem(IDC_SPANS);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
+
+   for (SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++)
+   {
+      if ( spanIdx == 0 )
+      {
+         const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
+         const CPierData2* pPier = pSpan->GetPrevPier();
+         if ( pPier->HasCantilever() )
+         {
+            CString str;
+            str.Format(_T("Span %d Start Cantilever"), LABEL_SPAN(spanIdx));
+            pcbSpans->AddString(str);
+            SpanType spanType;
+            spanType.spanIdx = spanIdx;
+            spanType.bStartCantilever = true;
+            spanType.bEndCantilever = false;
+            m_Spans.push_back(spanType);
+         }
+      }
+
+      CString str;
+      str.Format(_T("Span %d"), LABEL_SPAN(spanIdx));
+      pcbSpans->AddString(str);
+      SpanType spanType;
+      spanType.spanIdx = spanIdx;
+      spanType.bStartCantilever = false;
+      spanType.bEndCantilever = false;
+      m_Spans.push_back(spanType);
+
+      if ( spanIdx == nSpans-1 )
+      {
+         const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
+         const CPierData2* pPier = pSpan->GetNextPier();
+         if ( pPier->HasCantilever() )
+         {
+            CString str;
+            str.Format(_T("Span %d End Cantilever"), LABEL_SPAN(spanIdx));
+            pcbSpans->AddString(str);
+            SpanType spanType;
+            spanType.spanIdx = spanIdx;
+            spanType.bStartCantilever = false;
+            spanType.bEndCantilever = true;
+            m_Spans.push_back(spanType);
+         }
+      }
+   }
+
+   pcbSpans->AddString(_T("All Spans"));
+   SpanType spanType;
+   spanType.spanIdx = ALL_SPANS;
+   spanType.bStartCantilever = false;
+   spanType.bEndCantilever = false;
+   m_Spans.push_back(spanType);
+}
+
 void CEditPointLoadDlg::UpdateGirderList()
 {
+   CComboBox* pcbSpans = (CComboBox*)GetDlgItem(IDC_SPANS);
+   CComboBox* pcbGirders = (CComboBox*)GetDlgItem(IDC_GIRDERS);
+
    GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   SpanIndexType spanIdx = (SpanIndexType)m_SpanCB.GetCurSel();
+   int idx = pcbSpans->GetCurSel();
+   if ( idx == CB_ERR )
+   {
+      idx = 0;
+   }
+   SpanIndexType spanIdx = m_Spans[idx].spanIdx;
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
 
-   int curSel = m_GirderCB.GetCurSel();
-   BOOL bAllSelected = (curSel == m_GirderCB.GetCount()-1);
-   m_GirderCB.ResetContent();
+   int curSel = pcbGirders->GetCurSel();
+   BOOL bAllSelected = (curSel == pcbGirders->GetCount()-1);
+   pcbGirders->ResetContent();
 
    GirderIndexType nMaxGirders = 9999; // this is the maximum number of girders that can be listed
                                        // in the combo box (not the maximum number of girders)
-   if ( spanIdx == nSpans )
+   if ( spanIdx == ALL_SPANS )
    {
       // loading applies to all spans
       // need to find the span with the fewest girders
@@ -452,27 +548,31 @@ void CEditPointLoadDlg::UpdateGirderList()
    {
       CString str;
       str.Format(_T("Girder %s"), LABEL_GIRDER(gdrIdx));
-      m_GirderCB.AddString(str);
+      pcbGirders->AddString(str);
    }
 
-    m_GirderCB.AddString(_T("All Girders"));
+    pcbGirders->AddString(_T("All Girders"));
     if ( curSel != CB_ERR )
     {
        if ( bAllSelected )
        {
-         m_GirderCB.SetCurSel( m_GirderCB.GetCount()-1 );
+         pcbGirders->SetCurSel( m_GirderCB.GetCount()-1 );
        }
        else
        {
-          if ( m_GirderCB.GetCount()-1 == curSel )
+          if ( pcbGirders->GetCount()-1 == curSel )
+          {
              curSel = 0;
+          }
 
-         curSel = m_GirderCB.SetCurSel( curSel );
+         curSel = pcbGirders->SetCurSel( curSel );
        }
     }
 
     if ( curSel == CB_ERR )
-       m_GirderCB.SetCurSel(0);
+    {
+       pcbGirders->SetCurSel(0);
+    }
 }
 
 void CEditPointLoadDlg::FillEventList()

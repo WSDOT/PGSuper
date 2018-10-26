@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -471,16 +471,25 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
       {
          // get design options from library entry. 
          GET_IFACE(ISpecification,pSpecification);
-         arDesignOptions des_options = pSpecification->GetDesignOptions(segmentKey);
 
-         // Set up for shear design. 
-         des_options.doDesignForShear = txInfo.m_TxRunType == CTxDOTCommandLineInfo::txrDesignShear;
-         if(des_options.doDesignForShear)
+         std::vector<arDesignOptions> des_options_coll = pSpecification->GetDesignOptions(segmentKey);
+         IndexType do_cnt = des_options_coll.size();
+         IndexType do_idx = 1;
+
+         // Add command line settings to options
+         for(std::vector<arDesignOptions>::iterator it = des_options_coll.begin(); it!=des_options_coll.end(); it++)
          {
-            // If stirrup zones are not symmetrical in test file, design using existing layout
-            GET_IFACE(IStirrupGeometry,pStirrupGeom);
-            bool are_symm = pStirrupGeom->AreStirrupZonesSymmetrical(segmentKey);
-            des_options.doDesignStirrupLayout = are_symm ? slLayoutStirrups : slRetainExistingLayout;
+            arDesignOptions& des_options = *it;
+
+            // Set up for shear design. 
+            des_options.doDesignForShear = txInfo.m_TxRunType == CTxDOTCommandLineInfo::txrDesignShear;
+            if(des_options.doDesignForShear)
+            {
+               // If stirrup zones are not symmetrical in test file, design using existing layout
+               GET_IFACE(IStirrupGeometry,pStirrupGeom);
+               bool are_symm = pStirrupGeom->AreStirrupZonesSymmetrical(segmentKey);
+               des_options.doDesignStirrupLayout = are_symm ? slLayoutStirrups : slRetainExistingLayout;
+            }
          }
 
          GET_IFACE(IArtifact,pIArtifact);
@@ -489,7 +498,7 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
          try
          {
             // Design the girder
-            pGirderDesignArtifact = pIArtifact->CreateDesignArtifact( segmentKey, des_options);
+            pGirderDesignArtifact = pIArtifact->CreateDesignArtifact( segmentKey, des_options_coll);
             pArtifact = pGirderDesignArtifact->GetSegmentDesignArtifact(segmentKey.segmentIndex);
             ATLASSERT(segmentKey.IsEqual(pArtifact->GetSegmentKey()));
          
@@ -499,8 +508,8 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
                designSucceeded=false;
             }
 
-            // and copy the design to the bridge
-            SaveFlexureDesign(segmentKey, des_options, pArtifact);
+            // Copy the design to the bridge
+            SaveFlexureDesign(segmentKey, pArtifact);
          }
          catch(...)
          {
@@ -577,12 +586,13 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
 }
 
 
-void CTxDOTAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const arDesignOptions& designOptions,const pgsSegmentDesignArtifact* pArtifact)
+void CTxDOTAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const pgsSegmentDesignArtifact* pArtifact)
 {
    GET_IFACE(ISegmentData,pSegmentData);
    GET_IFACE(IStrandGeometry, pStrandGeometry );
 
    CStrandData strands = *pSegmentData->GetStrandData(segmentKey);
+   arDesignOptions designOptions = pArtifact->GetDesignOptions();
 
    // Convert Harp offset data
    // offsets are absolute measure in the design artifact

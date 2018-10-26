@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -73,7 +73,7 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    INIT_UV_PROTOTYPE(rptForceUnitValue,     force,      pDisplayUnits->GetGeneralForceUnit(),    true);
-   INIT_UV_PROTOTYPE(rptMomentUnitValue,    moment,     pDisplayUnits->GetMomentUnit(),          true);
+   INIT_UV_PROTOTYPE(rptMomentUnitValue,    moment,     pDisplayUnits->GetSmallMomentUnit(),     true);
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    dist,       pDisplayUnits->GetComponentDimUnit(),    true);
    INIT_UV_PROTOTYPE(rptAreaUnitValue,      area,       pDisplayUnits->GetAreaUnit(),            true);
    INIT_UV_PROTOTYPE(rptLength4UnitValue,   inertia,    pDisplayUnits->GetMomentOfInertiaUnit(), true);
@@ -154,377 +154,8 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
    *pPara << _T("E = ")  << modE.SetValue(tsDetails.Strands[pgsTypes::Temporary].E) << rptNewLine;
    *pPara << rptNewLine;
 
-   //*pPara << _T("Axial") << rptNewLine;
-   //*pPara << rptNewLine;
-   //*pPara << _T("External Forces") << rptNewLine;
-
    int N = sizeof(tsDetails.dPi)/sizeof(tsDetails.dPi[0]);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   //Float64 dPext = 0;
-   //for ( int i = 0; i < N; i++ )
-   //{
-   //   ProductForceType pfType = (ProductForceType)i;
-
-   //   *pPara << _T("dP (") << pProductLoads->GetProductLoadName(pfType).c_str() << _T(") = ") << force.SetValue(tsDetails.dPi[pfType]) << rptNewLine;
-
-   //   dPext += tsDetails.dPi[pfType];
-   //}
-
-   //*pPara << rptNewLine;
-
-   //*pPara << _T("Total External dP = ") << force.SetValue(dPext) << rptNewLine;
-
-   //*pPara << rptNewLine;
-
-   //*pPara << _T("Internal Forces") << rptNewLine;
-
-   //*pPara << rptNewLine;
-
-   //Float64 dPint = 0;
-
-   //*pPara << _T("Girder") << rptNewLine;
-   //Float64 dPgirder = 0;
-   //for ( int i = 0; i < N; i++ )
-   //{
-   //   ProductForceType pfType = (ProductForceType)i;
-   //   
-   //   Float64 dP = tsDetails.Girder.dPi[pfType];
-   //   *pPara << _T("dP (") << pProductLoads->GetProductLoadName(pfType).c_str() << _T(") = ") << force.SetValue(dP) << rptNewLine;
-
-   //   dPgirder += dP;
-   //}
-   //*pPara << _T("Total Girder dP = ") << force.SetValue(dPgirder) << rptNewLine;
-   //dPint += dPgirder;
-
-   //*pPara << rptNewLine;
-
-   //*pPara << _T("Deck") << rptNewLine;
-   //Float64 dPdeck = 0;
-   //for ( int i = 0; i < N; i++ )
-   //{
-   //   ProductForceType pfType = (ProductForceType)i;
-   //   Float64 dP = tsDetails.Deck.dPi[pfType];
-   //   *pPara << _T("dP (") << pProductLoads->GetProductLoadName(pfType).c_str() << _T(") = ") << force.SetValue(dP) << rptNewLine;
-
-   //   dPdeck += dP;
-   //}
-   //*pPara << _T("Total Deck dP = ") << force.SetValue(dPdeck) << rptNewLine;
-   //dPint += dPdeck;
-
-   //*pPara << rptNewLine;
-   //*pPara << _T("Deck Rebar - Top Mat") << rptNewLine;
-   //Float64 dPtopMat = 0;
-   //for ( int i = 0; i < N; i++ )
-   //{
-   //   ProductForceType pfType = (ProductForceType)i;
-   //   Float64 dP = tsDetails.DeckRebar[pgsTypes::drmTop].dPi[pfType];
-   //   *pPara << _T("dP (") << pProductLoads->GetProductLoadName(pfType).c_str() << _T(") = ") << force.SetValue(dP) << rptNewLine;
-   //   dPtopMat += dP;
-   //}
-   //*pPara << _T("Top Mat Deck Rebar dP = ") << force.SetValue(dPtopMat) << rptNewLine;
-   //dPint += dPtopMat;
-
-   //*pPara << rptNewLine;
-   //*pPara << _T("Deck Rebar - Bottom Mat") << rptNewLine;
-   //Float64 dPbotMat = 0;
-   //for ( int i = 0; i < N; i++ )
-   //{
-   //   ProductForceType pfType = (ProductForceType)i;
-
-   //   Float64 dP = tsDetails.DeckRebar[pgsTypes::drmBottom].dPi[pfType];
-   //   *pPara << _T("dP (") << pProductLoads->GetProductLoadName(pfType).c_str() << _T(") = ") << force.SetValue(dP) << rptNewLine;
-   //   dPbotMat += dP;
-   //}
-   //*pPara << _T("Bottom Mat Deck Rebar dP = ") << force.SetValue(dPbotMat) << rptNewLine;
-   //dPint += dPbotMat;
-
-   //*pPara << rptNewLine;
-
-   //*pPara << _T("Girder Rebar") << rptNewLine;
-   //iter = tsDetails.GirderRebar.begin();
-   //for ( ; iter != end; iter++ )
-   //{
-   //   *pPara << _T("Rebar Entry ") << (iter - tsDetails.GirderRebar.begin())+1 << rptNewLine;
-   //   Float64 dPrebar = 0;
-   //   for ( int i = 0; i < N; i++ )
-   //   {
-   //      ProductForceType pfType = (ProductForceType)i;
-   //      Float64 dP = iter->dPi[pfType];
-   //      *pPara << _T("dP (") << pProductLoads->GetProductLoadName(pfType).c_str() << _T(") = ") << force.SetValue(dP) << rptNewLine;
-   //      dPrebar += dP;
-   //   }
-   //   *pPara << _T("Rebar Entry ") << (iter - tsDetails.GirderRebar.begin())+1 << _T(" dP = ") << force.SetValue(dPrebar) << rptNewLine;
-   //   *pPara << rptNewLine;
-   //   dPint += dPrebar;
-   //}
-
-   //*pPara << rptNewLine;
-
-   //*pPara << _T("Straight Strands") << rptNewLine;
-   //Float64 dPstrand = 0;
-   //for ( int i = 0; i < N; i++ )
-   //{
-   //   ProductForceType pfType = (ProductForceType)i;
-   //   Float64 dP = tsDetails.Strands[pgsTypes::Straight].dPi[pfType];
-   //   *pPara << _T("dP (") << pProductLoads->GetProductLoadName(pfType).c_str() << _T(") = ") << force.SetValue(dP) << rptNewLine;
-   //   dPstrand += dP;
-   //}
-   //dPint += dPstrand;
-   //*pPara << _T("Straight Strands Total dP = ") << force.SetValue(dPstrand) << rptNewLine;
-
-   //*pPara << rptNewLine;
-
-   //*pPara << _T("Harped Strands") << rptNewLine;
-   //dPstrand = 0;
-   //for ( int i = 0; i < N; i++ )
-   //{
-   //   ProductForceType pfType = (ProductForceType)i;
-   //   Float64 dP = tsDetails.Strands[pgsTypes::Harped].dPi[pfType];
-   //   *pPara << _T("dP (") << pProductLoads->GetProductLoadName(pfType).c_str() << _T(") = ") << force.SetValue(dP) << rptNewLine;
-   //   dPstrand += dP;
-   //}
-   //dPint += dPstrand;
-   //*pPara << _T("Harped Strands Total dP = ") << force.SetValue(dPstrand) << rptNewLine;
-
-   //*pPara << rptNewLine;
-
-   //*pPara << _T("Temporary Strands") << rptNewLine;
-   //dPstrand = 0;
-   //for ( int i = 0; i < N; i++ )
-   //{
-   //   ProductForceType pfType = (ProductForceType)i;
-   //   Float64 dP = tsDetails.Strands[pgsTypes::Temporary].dPi[pfType];
-   //   *pPara << _T("dP (") << pProductLoads->GetProductLoadName(pfType).c_str() << _T(") = ") << force.SetValue(dP) << rptNewLine;
-   //   dPstrand += dP;
-   //}
-   //dPint += dPstrand;
-   //*pPara << _T("Temporary Strands Total dP = ") << force.SetValue(dPstrand) << rptNewLine;
-
-   //*pPara << rptNewLine;
-   //*pPara << _T("Tendons") << rptNewLine;
-   //for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
-   //{
-   //   *pPara << _T("Duct ") << LABEL_DUCT(ductIdx) << rptNewLine;
-
-   //   Float64 dPtendon = 0;
-   //   for ( int i = 0; i < N; i++ )
-   //   {
-   //      ProductForceType pfType = (ProductForceType)i;
-
-   //      Float64 dP = tsDetails.Tendons[ductIdx].dPi[i];
-   //      *pPara << _T("dP (") << pProductLoads->GetProductLoadName(pfType).c_str() << _T(") = ") << force.SetValue(dP) << rptNewLine;
-   //      dPtendon += dP;
-   //   }
-   //   *pPara << _T("Duct ") << LABEL_DUCT(ductIdx) << _T(" Total dP = ") << force.SetValue(dPtendon) << rptNewLine;
-   //   *pPara << rptNewLine;
-   //   dPint += dPtendon;
-   //}
-
-   //*pPara << rptNewLine;
-
-   //*pPara << _T("Total Internal dP = ") << force.SetValue(dPint) << rptNewLine;
-
-   //*pPara << rptNewLine;
-
-   //*pPara << _T("Moment") << rptNewLine;
-   //*pPara << rptNewLine;
-
-   //*pPara << _T("External Forces") << rptNewLine;
-
-   //Float64 dMext = 0;
-
-   //for ( int i = 0; i < N; i++ )
-   //{
-   //   ProductForceType pfType = (ProductForceType)i;
-
-   //   *pPara << _T("dM (") << pProductLoads->GetProductLoadName(pfType).c_str() << _T(") = ") << moment.SetValue(tsDetails.dMi[pfType]) << rptNewLine;
-
-   //   dMext += tsDetails.dMi[pfType];
-   //}
-
-   //*pPara << rptNewLine;
-
-   //*pPara << _T("Total External dM = ") << moment.SetValue(dMext) << rptNewLine;
-
-   //*pPara << rptNewLine;
-
-   //*pPara << _T("Internal Forces") << rptNewLine;
-
-   //*pPara << rptNewLine;
-   //*pPara << _T("Girder") << rptNewLine;
-
-   //Float64 dMint = 0;
-   //Float64 dMgirder = 0;
-   //for ( int i = 0; i < N; i++ )
-   //{
-   //   ProductForceType pfType = (ProductForceType)i;
-
-   //   Float64 dM = tsDetails.Girder.dMi[pfType] + tsDetails.Girder.dPi[pfType]*(tsDetails.Ytr - tsDetails.Girder.Yn);
-   //   *pPara << _T("dM (") << pProductLoads->GetProductLoadName(pfType).c_str() << _T(") = dM + dP(Ytr - Yn) = ");
-   //   *pPara << moment.SetValue(tsDetails.Girder.dMi[pfType]) << _T(" + ") << force.SetValue(tsDetails.Girder.dPi[pfType]);
-   //   *pPara << _T("(") << dist.SetValue(tsDetails.Ytr) << _T(" - ");
-   //   *pPara << dist.SetValue(tsDetails.Girder.Yn) << _T(") = ");
-   //   *pPara << moment.SetValue(dM) << rptNewLine;
-
-   //   dMgirder += dM;
-   //}
-   //*pPara << _T("Total Girder dM = ") << moment.SetValue(dMgirder) << rptNewLine;
-   //dMint += dMgirder;
-
-   //*pPara << rptNewLine;
-
-   //*pPara << _T("Deck") << rptNewLine;
-   //Float64 dMdeck = 0;
-   //for ( int i = 0; i < N; i++ )
-   //{
-   //   ProductForceType pfType = (ProductForceType)i;
-   //   Float64 dM = tsDetails.Deck.dMi[pfType] + tsDetails.Deck.dPi[pfType]*(tsDetails.Ytr - tsDetails.Deck.Yn);
-   //   *pPara << _T("dM (") << pProductLoads->GetProductLoadName(pfType).c_str() << _T(") = dM + dP(Ytr - Yn) = ");
-   //   *pPara << moment.SetValue(tsDetails.Deck.dMi[pfType]) << _T(" + ") << force.SetValue(tsDetails.Deck.dPi[pfType]);
-   //   *pPara << _T("(") << dist.SetValue(tsDetails.Ytr) << _T(" - ");
-   //   *pPara << dist.SetValue(tsDetails.Deck.Yn) << _T(") = ");
-   //   *pPara << moment.SetValue(dM) << rptNewLine;
-   //   dMdeck += dM;
-   //}
-   //*pPara << _T("Total Deck dM = ") << moment.SetValue(dMdeck) << rptNewLine;
-   //dMint += dMdeck;
-
-   //*pPara << rptNewLine;
-   //*pPara << _T("Deck Rebar - Top Mat") << rptNewLine;
-   //Float64 dMtopMat = 0;
-   //for ( int i = 0; i < N; i++ )
-   //{
-   //   ProductForceType pfType = (ProductForceType)i;
-   //   Float64 dP = tsDetails.DeckRebar[pgsTypes::drmTop].dPi[pfType];
-   //   Float64 dM = dP*(tsDetails.Ytr - tsDetails.DeckRebar[pgsTypes::drmTop].Ys);
-   //   *pPara << _T("dM (") << pProductLoads->GetProductLoadName(pfType).c_str() << _T(") = dP(Ytr - Ys) = ") << force.SetValue(dP);
-   //   *pPara << _T("(") << dist.SetValue(tsDetails.Ytr) << _T(" - ");
-   //   *pPara << dist.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop].Ys) << _T(") = ");
-   //   *pPara << moment.SetValue(dM) << rptNewLine;
-   //   dMtopMat += dM;
-   //}
-   //*pPara << _T("Top Mat Deck Rebar dM = ") << moment.SetValue(dMtopMat) << rptNewLine;
-   //dMint += dMtopMat;
-
-   //*pPara << rptNewLine;
-   //*pPara << _T("Deck Rebar - Bottom Mat") << rptNewLine;
-   //Float64 dMbotMat = 0;
-   //for ( int i = 0; i < N; i++ )
-   //{
-   //   ProductForceType pfType = (ProductForceType)i;
-   //   Float64 dP = tsDetails.DeckRebar[pgsTypes::drmBottom].dPi[pfType];
-   //   Float64 dM = dP*(tsDetails.Ytr - tsDetails.DeckRebar[pgsTypes::drmBottom].Ys);
-   //   *pPara << _T("dM (") << pProductLoads->GetProductLoadName(pfType).c_str() << _T(") = dP(Ytr - Ys) = ") << force.SetValue(dP);
-   //   *pPara << _T("(") << dist.SetValue(tsDetails.Ytr) << _T(" - ");
-   //   *pPara << dist.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom].Ys) << _T(") = ");
-   //   *pPara << moment.SetValue(dM) << rptNewLine;
-   //   dMbotMat += dM;
-   //}
-   //*pPara << _T("Bottom Mat Deck Rebar dM = ") << moment.SetValue(dMbotMat) << rptNewLine;
-   //dMint += dMbotMat;
-
-   //*pPara << rptNewLine;
-
-   //*pPara << _T("Girder Rebar") << rptNewLine;
-   //iter = tsDetails.GirderRebar.begin();
-   //for ( ; iter != end; iter++ )
-   //{
-   //   *pPara << _T("Rebar Entry ") << (iter - tsDetails.GirderRebar.begin())+1 << rptNewLine;
-   //   Float64 dMrebar = 0;
-   //   for ( int i = 0; i < N; i++ )
-   //   {
-   //      ProductForceType pfType = (ProductForceType)i;
-   //      Float64 dP = iter->dPi[pfType];
-   //      Float64 dM = dP*(tsDetails.Ytr - iter->Ys);
-   //      *pPara << _T("dM (") << pProductLoads->GetProductLoadName(pfType).c_str() << _T(") = dP(Ytr - Ys) = ") << force.SetValue(dP);
-   //      *pPara << dist.SetValue(tsDetails.Ytr) << _T(" - ");
-   //      *pPara << dist.SetValue(iter->Ys) << _T(") = ");
-   //      *pPara << moment.SetValue(dM) << rptNewLine;
-   //      dMrebar += dM;
-   //   }
-   //   *pPara << _T("Rebar Entry ") << (iter - tsDetails.GirderRebar.begin())+1 << _T(" dM = ") << moment.SetValue(dMrebar) << rptNewLine;
-   //   *pPara << rptNewLine;
-   //   dMint += dMrebar;
-   //}
-
-
-   //*pPara << rptNewLine;
-
-   //*pPara << _T("Straight Strands") << rptNewLine;
-   //Float64 dMstrand = 0;
-   //for ( int i = 0; i < N; i++ )
-   //{
-   //   ProductForceType pfType = (ProductForceType)i;
-   //   Float64 dP = tsDetails.Strands[pgsTypes::Straight].dPi[pfType];
-   //   Float64 dM = dP*(tsDetails.Ytr - tsDetails.Strands[pgsTypes::Straight].Ys);
-   //   *pPara << _T("dM (") << pProductLoads->GetProductLoadName(pfType).c_str() << _T(") = dP(Ytr - Ys) = ") << force.SetValue(dP);
-   //   *pPara << _T("(") << dist.SetValue(tsDetails.Ytr) << _T(" - ");
-   //   *pPara << dist.SetValue(tsDetails.Strands[pgsTypes::Straight].Ys) << _T(") = ");
-   //   *pPara << moment.SetValue(dM) << rptNewLine;
-   //   dMstrand += dM;
-   //}
-   //dMint += dMstrand;
-   //*pPara << _T("Straight Strands Total dM = ") << moment.SetValue(dMstrand) << rptNewLine;
-
-   //*pPara << rptNewLine;
-
-   //*pPara << _T("Harped Strands") << rptNewLine;
-   //dMstrand = 0;
-   //for ( int i = 0; i < N; i++ )
-   //{
-   //   ProductForceType pfType = (ProductForceType)i;
-   //   Float64 dP = tsDetails.Strands[pgsTypes::Harped].dPi[pfType];
-   //   Float64 dM = dP*(tsDetails.Ytr - tsDetails.Strands[pgsTypes::Harped].Ys);
-   //   *pPara << _T("dM (") << pProductLoads->GetProductLoadName(pfType).c_str() << _T(") = dP(Ytr - Ys) = ") << force.SetValue(dP);
-   //   *pPara << _T("(") << dist.SetValue(tsDetails.Ytr) << _T(" - ");
-   //   *pPara << dist.SetValue(tsDetails.Strands[pgsTypes::Harped].Ys) << _T(") = ");
-   //   *pPara << moment.SetValue(dM) << rptNewLine;
-   //   dMstrand += dM;
-   //}
-   //dMint += dMstrand;
-   //*pPara << _T("Harped Strands Total dM = ") << moment.SetValue(dMstrand) << rptNewLine;
-
-   //*pPara << rptNewLine;
-
-   //*pPara << _T("Temporary Strands") << rptNewLine;
-   //dMstrand = 0;
-   //for ( int i = 0; i < N; i++ )
-   //{
-   //   ProductForceType pfType = (ProductForceType)i;
-   //   Float64 dP = tsDetails.Strands[pgsTypes::Temporary].dPi[pfType];
-   //   Float64 dM = dP*(tsDetails.Ytr - tsDetails.Strands[pgsTypes::Temporary].Ys);
-   //   *pPara << _T("dM (") << pProductLoads->GetProductLoadName(pfType).c_str() << _T(") = dP(Ytr - Ys) = ") << force.SetValue(dP);
-   //   *pPara << _T("(") << dist.SetValue(tsDetails.Ytr) << _T(" - ");
-   //   *pPara << dist.SetValue(tsDetails.Strands[pgsTypes::Temporary].Ys) << _T(") = ");
-   //   *pPara << moment.SetValue(dM) << rptNewLine;
-   //   dMstrand += dM;
-   //}
-   //dMint += dMstrand;
-   //*pPara << _T("Temporary Strands Total dM = ") << moment.SetValue(dMstrand) << rptNewLine;
-
-   //*pPara << rptNewLine;
-   //*pPara << _T("Tendons") << rptNewLine;
-   //for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
-   //{
-   //   *pPara << _T("Duct ") << LABEL_DUCT(ductIdx) << rptNewLine;
-   //   Float64 dMtendon = 0;
-   //   for ( int i = 0; i < N; i++ )
-   //   {
-   //      ProductForceType pfType = (ProductForceType)i;
-   //      Float64 dM = tsDetails.Tendons[ductIdx].dPi[i]*(tsDetails.Ytr - tsDetails.Tendons[ductIdx].Ys);
-   //      *pPara << _T("dM (") << pProductLoads->GetProductLoadName(pfType).c_str() << _T(") = dP(Ytr - Ys) = ") << force.SetValue(tsDetails.Tendons[ductIdx].dPi[i]);
-   //      *pPara << _T("(") << dist.SetValue(tsDetails.Ytr) << _T(" - ");
-   //      *pPara << dist.SetValue(tsDetails.Tendons[ductIdx].Ys) << _T(") = ") << moment.SetValue(dM) << rptNewLine;
-   //      dMtendon += dM;
-   //   }
-   //   *pPara << _T("Duct ") << LABEL_DUCT(ductIdx) << _T(" Total dM = ") << moment.SetValue(dMtendon) << rptNewLine;
-   //   *pPara << rptNewLine;
-   //   dMint += dMtendon;
-   //}
-
-   //*pPara << rptNewLine;
-
-   //*pPara << _T("Total Internal dM = ") << moment.SetValue(dMint) << rptNewLine;
 
    *pPara << rptNewLine;
    *pPara << rptNewLine;
@@ -537,14 +168,14 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
    *pPara << _T("Deck.MrCreep = ") << moment.SetValue(tsDetails.Deck.MrCreep) << rptNewLine;
    *pPara << rptNewLine;
    
-   *pPara << _T("Pr Creep = -(Girder.PrCreep + Deck.PrCreep) = -(") << force.SetValue(tsDetails.Girder.PrCreep) << _T(" + ");
+   *pPara << _T("Pr Creep = (Girder.PrCreep + Deck.PrCreep) = (") << force.SetValue(tsDetails.Girder.PrCreep) << _T(" + ");
    *pPara << force.SetValue(tsDetails.Deck.PrCreep) << _T(") = ");
    *pPara << force.SetValue(tsDetails.Pr[TIMESTEP_CR]) << rptNewLine;
-   *pPara << _T("Pr Shrinkage = -(Girder.PrShrinkage + Deck.PrShrinkage) = -(") << force.SetValue(tsDetails.Girder.PrShrinkage) << _T(" + ");
+   *pPara << _T("Pr Shrinkage = (Girder.PrShrinkage + Deck.PrShrinkage) = (") << force.SetValue(tsDetails.Girder.PrShrinkage) << _T(" + ");
    *pPara << force.SetValue(tsDetails.Deck.PrShrinkage) << _T(") = ");
    *pPara << force.SetValue(tsDetails.Pr[TIMESTEP_SH]) << rptNewLine;
    *pPara << rptNewLine;
-   *pPara << _T("Mr Creep = -(Girder.MrCreep + Girder.PrCreep(Ytr - Ys) + Deck.MrCreep + Deck.PrCreep(Ytr - Ys)) = -(");
+   *pPara << _T("Mr Creep = (Girder.MrCreep + Girder.PrCreep(Ytr - Ys) + Deck.MrCreep + Deck.PrCreep(Ytr - Ys)) = (");
    *pPara << moment.SetValue(tsDetails.Girder.MrCreep) << _T(" + ");
    *pPara << force.SetValue(tsDetails.Girder.PrCreep) << _T("(") << dist.SetValue(tsDetails.Ytr) << _T(" - ");
    *pPara << dist.SetValue(tsDetails.Girder.Yn) << _T(") + ");
@@ -552,18 +183,35 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
    *pPara << force.SetValue(tsDetails.Deck.PrCreep) << _T("(") << dist.SetValue(tsDetails.Ytr) << _T(" - ");
    *pPara << dist.SetValue(tsDetails.Deck.Yn) << _T(")) = ");
    *pPara << moment.SetValue(tsDetails.Mr[TIMESTEP_CR]) << rptNewLine;
-   *pPara << _T("Mr Shrinkage = -(Girder.PrShrinkage(Ytr - Ys) + Deck.PrShrinkage(Ytr - Ys)) = -(");
+   *pPara << _T("Mr Shrinkage = (Girder.PrShrinkage(Ytr - Ys) + Deck.PrShrinkage(Ytr - Ys)) = (");
    *pPara << force.SetValue(tsDetails.Girder.PrShrinkage) << _T("(") << dist.SetValue(tsDetails.Ytr) << _T(" - ");
    *pPara << dist.SetValue(tsDetails.Girder.Yn) << _T(") + ");
    *pPara << force.SetValue(tsDetails.Deck.PrShrinkage) << _T("(") << dist.SetValue(tsDetails.Ytr) << _T(" - ");
    *pPara << dist.SetValue(tsDetails.Deck.Yn) << _T(")) = ");
    *pPara << moment.SetValue(tsDetails.Mr[TIMESTEP_SH]) << rptNewLine;
    *pPara << rptNewLine;
-   *pPara << _T("Pre Creep = ") << force.SetValue(tsDetails.Pre[TIMESTEP_CR]) << rptNewLine;
-   *pPara << _T("Pre Shrinkage = ") << force.SetValue(tsDetails.Pre[TIMESTEP_SH]) << rptNewLine;
+   *pPara << _T("Pr Relaxation = (") << force.SetValue(tsDetails.Strands[pgsTypes::Straight].PrRelaxation) << _T(" + ");
+   *pPara << force.SetValue(tsDetails.Strands[pgsTypes::Harped].PrRelaxation) << _T(" + ");
+   *pPara << force.SetValue(tsDetails.Strands[pgsTypes::Temporary].PrRelaxation) << _T(") = ");
+   *pPara << force.SetValue(tsDetails.Pr[TIMESTEP_RE]) << rptNewLine;
+   *pPara << _T("Mr Relaxation = (Straight.PrRelaxation(Ytr - Ys) + Harped.PrRelaxation(Ytr - Ys) + Temporary.PrRelaxation(Ytr - Ys)");
+   *pPara << _T(" = (") << force.SetValue(tsDetails.Strands[pgsTypes::Straight].PrRelaxation) << _T("(") << dist.SetValue(tsDetails.Ytr) << _T(" - ");
+   *pPara << dist.SetValue(tsDetails.Strands[pgsTypes::Straight].Ys) << _T(") + ");
+   *pPara << force.SetValue(tsDetails.Strands[pgsTypes::Harped].PrRelaxation) << _T("(") << dist.SetValue(tsDetails.Ytr) << _T(" - ");
+   *pPara << dist.SetValue(tsDetails.Strands[pgsTypes::Harped].Ys) << _T(") + ");
+   *pPara << force.SetValue(tsDetails.Strands[pgsTypes::Temporary].PrRelaxation) << _T("(") << dist.SetValue(tsDetails.Ytr) << _T(" - ");
+   *pPara << dist.SetValue(tsDetails.Strands[pgsTypes::Temporary].Ys) << _T(") = ");
+   *pPara << moment.SetValue(tsDetails.Mr[TIMESTEP_RE]) << rptNewLine;
    *pPara << rptNewLine;
-   *pPara << _T("Mre Creep = ") << moment.SetValue(tsDetails.Mre[TIMESTEP_CR]) << rptNewLine;
-   *pPara << _T("Mre Shrinkage = ") << moment.SetValue(tsDetails.Mre[TIMESTEP_SH]) << rptNewLine;
+
+   GET_IFACE2(pBroker,IProductForces,pProductForces);
+   *pPara << _T("Pre Creep = ") << force.SetValue(pProductForces->GetAxial(intervalIdx,pftCreep,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
+   *pPara << _T("Pre Shrinkage = ") << force.SetValue(pProductForces->GetAxial(intervalIdx,pftShrinkage,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
+   *pPara << _T("Pre Relaxation = ") << force.SetValue(pProductForces->GetAxial(intervalIdx,pftRelaxation,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
+   *pPara << rptNewLine;
+   *pPara << _T("Mre Creep = ") << moment.SetValue(pProductForces->GetMoment(intervalIdx,pftCreep,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
+   *pPara << _T("Mre Shrinkage = ") << moment.SetValue(pProductForces->GetMoment(intervalIdx,pftShrinkage,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
+   *pPara << _T("Mre Relaxation = ") << moment.SetValue(pProductForces->GetMoment(intervalIdx,pftRelaxation,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
 
    *pPara << rptNewLine;
    *pPara << rptNewLine;
@@ -575,7 +223,7 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
       Float64 sum_dP = 0;
       Float64 dP = 0;
       ProductForceType pfType = (ProductForceType)i;
-      *pPara << pProductLoads->GetProductLoadName(pfType).c_str() << rptNewLine;
+      *pPara << pProductLoads->GetProductLoadName(pfType) << rptNewLine;
 
       dP = tsDetails.Girder.dPi[pfType];
       sum_dP += dP;
@@ -620,8 +268,9 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
          *pPara << _T("Duct ") << LABEL_DUCT(ductIdx) << _T(" dP = ") << force.SetValue(dP) << rptNewLine;
       }
 
-      *pPara << _T("Total Interval dP = ") << force.SetValue(sum_dP) << rptNewLine;
-      *pPara << _T("Total External dP = ") << force.SetValue(tsDetails.dPi[pfType]) << rptNewLine;
+      *pPara << _T("Sum Individual dP = ") << force.SetValue(sum_dP) << rptNewLine;
+      *pPara << _T("Total Internal dP = ") << force.SetValue(tsDetails.dPi[pfType]) << rptNewLine;
+      *pPara << _T("Total External dP = ") << force.SetValue(pProductForces->GetAxial(intervalIdx,pfType,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
    }
 
    *pPara << rptNewLine;
@@ -634,7 +283,7 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
       Float64 dP = 0;
       Float64 dM = 0;
       ProductForceType pfType = (ProductForceType)i;
-      *pPara << pProductLoads->GetProductLoadName(pfType).c_str() << rptNewLine;
+      *pPara << pProductLoads->GetProductLoadName(pfType) << rptNewLine;
 
       dP = tsDetails.Girder.dPi[pfType];
       dM = tsDetails.Girder.dMi[pfType] + dP*(tsDetails.Ytr - tsDetails.Girder.Yn);
@@ -688,8 +337,9 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
          *pPara << _T("Duct ") << LABEL_DUCT(ductIdx) << _T(" dM = ") << moment.SetValue(dM) << rptNewLine;
       }
 
-      *pPara << _T("Total Interval dM = ") << moment.SetValue(sum_dM) << rptNewLine;
-      *pPara << _T("Total External dM = ") << moment.SetValue(tsDetails.dMi[pfType]) << rptNewLine;
+      *pPara << _T("Sum Individual dM = ") << moment.SetValue(sum_dM) << rptNewLine;
+      *pPara << _T("Total Internal dM = ") << moment.SetValue(tsDetails.dMi[pfType]) << rptNewLine;
+      *pPara << _T("Total External dM = ") << moment.SetValue(pProductForces->GetMoment(intervalIdx,pfType,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
    }
 
    return pChapter;

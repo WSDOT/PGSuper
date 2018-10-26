@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -485,7 +485,7 @@ interface ISpecification : IUnknown
    virtual void SetAnalysisType(pgsTypes::AnalysisType analysisType) = 0;
    virtual pgsTypes::AnalysisType GetAnalysisType() = 0;
 
-   virtual arDesignOptions GetDesignOptions(const CGirderKey& girderKey) = 0;
+   virtual std::vector<arDesignOptions> GetDesignOptions(const CGirderKey& girderKey) = 0;
 
    virtual bool IsSlabOffsetDesignEnabled() = 0; // global setting from library
 
@@ -1061,8 +1061,6 @@ interface IEventMap : IUnknown
    virtual CComBSTR GetEventName(EventIndexType eventIdx) = 0;  
    virtual EventIndexType GetEventIndex(CComBSTR bstrEvent) = 0;
    virtual EventIndexType GetEventCount() = 0;
-
-   virtual CComBSTR GetLimitStateName(pgsTypes::LimitState ls) = 0;  
 };
 
 /*****************************************************************************

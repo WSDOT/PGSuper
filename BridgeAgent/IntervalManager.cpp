@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1214,6 +1214,36 @@ StageIndexType CIntervalManager::GetStage(const CGirderKey& girderKey,IntervalIn
 
    StageIndexType stageIdx = foundInterval->second;
    return stageIdx;
+}
+
+IntervalIndexType CIntervalManager::GetIntervalFromStage(const CGirderKey& girderKey,StageIndexType stageIdx) const
+{
+   ASSERT_GIRDER_KEY(girderKey);
+   ATLASSERT(stageIdx != INVALID_INDEX);
+
+   std::map<CGirderKey,std::map<IntervalIndexType,StageIndexType>>::const_iterator foundGirder(m_StageMap.find(girderKey));
+   ATLASSERT(foundGirder != m_StageMap.end());
+
+   const std::map<IntervalIndexType,StageIndexType>& vIntervalMap(foundGirder->second);
+   std::map<IntervalIndexType,StageIndexType>::const_iterator iter(vIntervalMap.begin());
+   std::map<IntervalIndexType,StageIndexType>::const_iterator iter2(vIntervalMap.begin());
+   iter2++;
+   std::map<IntervalIndexType,StageIndexType>::const_iterator end(vIntervalMap.end());
+   for ( ; iter2 != end; iter++,iter2++ )
+   {
+      if ( iter->second <= stageIdx && stageIdx < iter2->second )
+      {
+         return iter->first;
+      }
+   }
+
+   if (iter->second == stageIdx )
+   {
+      return iter->first;
+   }
+
+   ATLASSERT(false); // not found
+   return INVALID_INDEX;
 }
 
 const std::map<IntervalIndexType,StageIndexType>& CIntervalManager::GetStageMap(const CGirderKey& girderKey) const

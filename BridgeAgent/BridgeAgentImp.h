@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -60,11 +60,6 @@
 class gmTrafficBarrier;
 class matPsStrand;
 
-#define SPT_GROSS       0
-#define SPT_TRANSFORMED 1
-#define SPT_NET_GIRDER  2
-#define SPT_NET_DECK    3
-
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeAgentImp
 class ATL_NO_VTABLE CBridgeAgentImp : 
@@ -86,12 +81,14 @@ class ATL_NO_VTABLE CBridgeAgentImp :
    public ISegmentHaulingPointsOfInterest,
    public IBridgeDescriptionEventSink,
    public ISpecificationEventSink,
+   public ILossParametersEventSink,
    public IUserDefinedLoads,
    public ITempSupport,
    public IGirder,
    public ITendonGeometry,
    public IIntervals
 {
+   friend class CStrandMoverSwapper;
 public:
    CBridgeAgentImp()
 	{
@@ -125,6 +122,7 @@ BEGIN_COM_MAP(CBridgeAgentImp)
    COM_INTERFACE_ENTRY(ISegmentHaulingPointsOfInterest)
    COM_INTERFACE_ENTRY(IBridgeDescriptionEventSink)
    COM_INTERFACE_ENTRY(ISpecificationEventSink)
+   COM_INTERFACE_ENTRY(ILossParametersEventSink)
    COM_INTERFACE_ENTRY(IUserDefinedLoads)
    COM_INTERFACE_ENTRY(ITempSupport)
    COM_INTERFACE_ENTRY(IGirder)
@@ -225,6 +223,8 @@ public:
    virtual Float64 GetSpanLength(SpanIndexType spanIdx,GirderIndexType gdrIdx);
    virtual Float64 GetSpanLength(const CSpanKey& spanKey);
    virtual Float64 GetFullSpanLength(const CSpanKey& spanKey);
+   virtual Float64 GetCantileverLength(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::MemberEndType endType);
+   virtual Float64 GetCantileverLength(const CSpanKey& spanKey,pgsTypes::MemberEndType endType);
    virtual Float64 GetSegmentStartEndDistance(const CSegmentKey& segmentKey);
    virtual Float64 GetSegmentEndEndDistance(const CSegmentKey& segmentKey);
    virtual Float64 GetSegmentStartBearingOffset(const CSegmentKey& segmentKey);
@@ -472,8 +472,8 @@ public:
    virtual Float64 GetAsTopHalf(const pgsPointOfInterest& poi,bool bDevAdjust);
    virtual Float64 GetAsGirderTopHalf(const pgsPointOfInterest& poi,bool bDevAdjust);
    virtual Float64 GetAsDeckTopHalf(const pgsPointOfInterest& poi,bool bDevAdjust);
-   virtual Float64 GetDevLengthFactor(const CSegmentKey& segmentKey,IRebarSectionItem* rebarItem);
-   virtual Float64 GetDevLengthFactor(IRebarSectionItem* rebarItem, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct);
+   virtual Float64 GetDevLengthFactor(const pgsPointOfInterest& poi,IRebarSectionItem* rebarItem);
+   virtual Float64 GetDevLengthFactor(const pgsPointOfInterest& poi,IRebarSectionItem* rebarItem, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct);
    virtual Float64 GetPPRTopHalf(const pgsPointOfInterest& poi);
    virtual Float64 GetPPRBottomHalf(const pgsPointOfInterest& poi);
    virtual Float64 GetCoverTopMat();
@@ -552,6 +552,10 @@ private:
 public:
    virtual Float64 GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bIncTemp, Float64* nEffectiveStrands);
    virtual Float64 GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, Float64* nEffectiveStrands);
+
+   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bIncTemp, Float64* nEffectiveStrands);
+   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, Float64* nEffectiveStrands);
+
    virtual Float64 GetStrandLocation(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, IntervalIndexType intervalIdx);
    virtual Float64 GetMaxStrandSlope(const pgsPointOfInterest& poi);
    virtual Float64 GetAvgStrandSlope(const pgsPointOfInterest& poi);
@@ -559,11 +563,11 @@ public:
    virtual Float64 GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, bool bIncTemp, Float64* nEffectiveStrands);
    virtual Float64 GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, pgsTypes::StrandType strandType, Float64* nEffectiveStrands);
    
+   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, bool bIncTemp, Float64* nEffectiveStrands);
+   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, pgsTypes::StrandType strandType,Float64* nEffectiveStrands);
+
    virtual Float64 GetMaxStrandSlope(const pgsPointOfInterest& poi,StrandIndexType Nh,Float64 endShift,Float64 hpShift);
    virtual Float64 GetAvgStrandSlope(const pgsPointOfInterest& poi,StrandIndexType Nh,Float64 endShift,Float64 hpShift);
-
-   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bIncTemp, Float64* nEffectiveStrands);
-   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, Float64* nEffectiveStrands);
 
    virtual Float64 GetApsBottomHalf(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust);
    virtual Float64 GetApsBottomHalf(const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, DevelopmentAdjustmentType devAdjust);
@@ -586,6 +590,8 @@ public:
 
    // Harped strands can be forced to be straight along their length
    virtual bool GetAreHarpedStrandsForcedStraight(const CSegmentKey& segmentKey);
+
+   virtual void GetHarpedStrandControlHeights(const CSegmentKey& segmentKey,Float64* pHgStart,Float64* pHgHp1,Float64* pHgHp2,Float64* pHgEnd);
 
      // highest point on girder section based on strand coordinates (bottom at 0.0)
    virtual Float64 GetGirderTopElevation(const CSegmentKey& segmentKey);
@@ -751,6 +757,7 @@ public:
    virtual Float64 GetY(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,Float64 fcgdr);
    virtual Float64 GetS(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,Float64 fcgdr);
 
+   virtual Float64 GetHg(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
    virtual Float64 GetAg(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
    virtual Float64 GetIx(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
    virtual Float64 GetIy(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
@@ -849,6 +856,10 @@ public:
 public:
    virtual HRESULT OnSpecificationChanged();
    virtual HRESULT OnAnalysisTypeChanged();
+
+// ILossParametersEventSink
+public:
+   virtual HRESULT OnLossParametersChanged();
 
 // IUserDefinedLoads
 public:
@@ -1005,6 +1016,7 @@ private:
    Uint16 m_Level;
    DWORD m_dwBridgeDescCookie;
    DWORD m_dwSpecificationCookie;
+   DWORD m_dwLossParametersCookie;
 
    StatusGroupIDType m_LoadStatusGroupID; // ID used to identify user load-related status items created by this agent
 
@@ -1038,7 +1050,6 @@ private:
    CComPtr<IEffectiveFlangeWidthTool> m_EffFlangeWidthTool;
    typedef struct SectProp
    {
-
       CComPtr<ISection> Section;
       CComPtr<IElasticProperties> ElasticProps;
       CComPtr<IShapeProperties> ShapeProps;
@@ -1054,9 +1065,11 @@ private:
       SectProp() { YtopGirder = 0; Perimeter = 0; bComposite = false; Qslab = 0; AcBottomHalf = 0; AcTopHalf = 0; }
    } SectProp;
    typedef std::map<PoiIntervalKey,SectProp> SectPropContainer; // Key = PoiIntervalKey object
-   std::auto_ptr<SectPropContainer> m_pSectProps[4]; // index = one of the SPT_xxxx constants
+   std::auto_ptr<SectPropContainer> m_pSectProps[pgsTypes::sptSectionPropertyTypeCount]; // index = one of the pgsTypes::SectionPropertyType constants
+   void InvalidateSectionProperties(pgsTypes::SectionPropertyType sectPropType);
    static UINT DeleteSectionProperties(LPVOID pParam);
-   SectProp GetSectionProperties(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,int sectPropType);
+   pgsTypes::SectionPropertyType GetSectionPropertiesType(); // returns the section properties types for the current section properties mode
+   SectProp GetSectionProperties(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::SectionPropertyType sectPropType);
    Float64 ComputeY(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,IShapeProperties* sprops);
    Float64 ComputeYtopGirder(IShapeProperties* compositeProps,IShapeProperties* beamProps);
 
@@ -1288,9 +1301,9 @@ private:
    Float64 GetSsLocation(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx);
    Float64 GetTempLocation(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx);
 
-   Float64 GetHsEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, Float64* nEffectiveStrands);
-   Float64 GetSsEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, Float64* nEffectiveStrands);
-   Float64 GetTempEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, Float64* nEffectiveStrands);
+   Float64 GetHsEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, Float64* nEffectiveStrands);
+   Float64 GetSsEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, Float64* nEffectiveStrands);
+   Float64 GetTempEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, Float64* nEffectiveStrands);
    Float64 GetHsEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, Float64* nEffectiveStrands);
    Float64 GetSsEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, Float64* nEffectiveStrands);
    Float64 GetTempEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, Float64* nEffectiveStrands);

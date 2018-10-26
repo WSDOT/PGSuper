@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -224,30 +224,31 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificat
    p = CLibraryUsageParagraph().Build(m_pBroker);
    *pTitlePage << p;
 
-   // girder seed data comparison
-   if ( pGirderRptSpec != NULL || pSpanRptSpec != NULL )
-   {
-      CGirderKey girderKey;
+   // There isn't any seed data for spliced girders
+   //// girder seed data comparison
+   //if ( pGirderRptSpec != NULL || pSpanRptSpec != NULL )
+   //{
+   //   CGirderKey girderKey;
 
-      if (pGirderRptSpec != NULL )
-      {
-         girderKey = pGirderRptSpec->GetGirderKey();
-      }
-      else
-      {
-         GET_IFACE(IBridge,pBridge);
-         girderKey.groupIndex = pBridge->GetGirderGroupIndex(pSpanRptSpec->GetSpan());
-         girderKey.girderIndex = ALL_GIRDERS;
-      }
+   //   if (pGirderRptSpec != NULL )
+   //   {
+   //      girderKey = pGirderRptSpec->GetGirderKey();
+   //   }
+   //   else
+   //   {
+   //      GET_IFACE(IBridge,pBridge);
+   //      girderKey.groupIndex = pBridge->GetGirderGroupIndex(pSpanRptSpec->GetSpan());
+   //      girderKey.girderIndex = ALL_GIRDERS;
+   //   }
 
-      p = CGirderSeedDataComparisonParagraph().Build(m_pBroker,girderKey);
+   //   p = CGirderSeedDataComparisonParagraph().Build(m_pBroker,girderKey);
 
-      if (p != NULL)
-      {
-         // only report if we have data
-         *pTitlePage << p;
-      }
-   }
+   //   if (p != NULL)
+   //   {
+   //      // only report if we have data
+   //      *pTitlePage << p;
+   //   }
+   //}
 
    rptRcTable* pTable;
    int row = 0;

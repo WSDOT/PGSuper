@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -327,19 +327,42 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                if ( bComposite )
                {
                   // there is a deck so we have composite, non-prismatic results
-                  IntervalIndexType intervalIdx = pIntervals->GetInterval(thisSegmentKey,liveLoadEventIdx);
-                  pTable = CSectionPropertiesTable2().Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits);
+                  IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(thisSegmentKey);
+                  pTable = CSectionPropertiesTable2().Build(pBroker,pgsTypes::sptGross,thisSegmentKey,liveLoadIntervalIdx,pDisplayUnits);
                   *pPara << pTable << rptNewLine;
                }
             }
             else if ( !bIsPrismatic_CastingYard && !bIsPrismatic_Final )
             {
-               IntervalIndexType nIntervals = pIntervals->GetIntervalCount(thisSegmentKey);
-               IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
-               for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
+               GET_IFACE2(pBroker,ILossParameters,pLossParams);
+               if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
                {
-                  rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits);
-                  *pPara << pTable << rptNewLine;
+                  IntervalIndexType nIntervals = pIntervals->GetIntervalCount(thisSegmentKey);
+                  IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
+                  for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
+                  {
+                     rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,pgsTypes::sptTransformed,thisSegmentKey,intervalIdx,pDisplayUnits);
+                     *pPara << pTable << rptNewLine;
+                  }
+               }
+               else
+               {
+                  std::vector<IntervalIndexType> vIntervals = pIntervals->GetSpecCheckIntervals(thisSegmentKey);
+                  IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(thisSegmentKey);
+                  BOOST_FOREACH(IntervalIndexType intervalIdx,vIntervals)
+                  {
+                     pgsTypes::SectionPropertyType spType1 = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformedNoncomposite);
+                     pgsTypes::SectionPropertyType spType2 = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
+
+                     rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,spType1,thisSegmentKey,intervalIdx,pDisplayUnits);
+                     *pPara << pTable << rptNewLine;
+
+                     if ( compositeDeckIntervalIdx <= intervalIdx && pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed )
+                     {
+                        rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,spType2,thisSegmentKey,intervalIdx,pDisplayUnits);
+                        *pPara << pTable << rptNewLine;
+                     }
+                  }
                }
 
                pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
@@ -349,10 +372,24 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                pPara = new rptParagraph;
                *pChapter << pPara;
 
-               for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
+               if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
                {
-                  rptRcTable* pTable = CNetGirderPropertiesTable().Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits);
-                  *pPara << pTable << rptNewLine;
+                  IntervalIndexType nIntervals = pIntervals->GetIntervalCount(thisSegmentKey);
+                  IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
+                  for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
+                  {
+                     rptRcTable* pTable = CNetGirderPropertiesTable().Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits);
+                     *pPara << pTable << rptNewLine;
+                  }
+               }
+               else
+               {
+                  std::vector<IntervalIndexType> vIntervals = pIntervals->GetSpecCheckIntervals(thisSegmentKey);
+                  BOOST_FOREACH(IntervalIndexType intervalIdx,vIntervals)
+                  {
+                     rptRcTable* pTable = CNetGirderPropertiesTable().Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits);
+                     *pPara << pTable << rptNewLine;
+                  }
                }
             }
             else if ( !bIsPrismatic_CastingYard && bIsPrismatic_Final )

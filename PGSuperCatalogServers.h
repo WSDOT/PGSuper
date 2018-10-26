@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,14 +32,14 @@ class CPGSuperCatalogServers
 public:
    CPGSuperCatalogServers();
    ~CPGSuperCatalogServers();
-   void SetTemplateFileExtenstion(const CString& strExt);
+   void SetTemplateFileExtenstion(LPCTSTR strExt);
    void AddServer(CPGSuperCatalogServer* pserver);
    CollectionIndexType GetServerCount() const;
    const CPGSuperCatalogServer* GetServer(CollectionIndexType index) const;
-   const CPGSuperCatalogServer* GetServer(const CString& strName) const;
+   const CPGSuperCatalogServer* GetServer(LPCTSTR strName) const;
    void RemoveServer(CollectionIndexType index);
-   void RemoveServer(const CString& strName);
-   bool IsServerDefined(const CString& strName) const;
+   void RemoveServer(LPCTSTR strName);
+   bool IsServerDefined(LPCTSTR strName) const;
 
    void LoadFromRegistry(CWinApp* theApp);
    void SaveToRegistry(CWinApp* theApp) const;

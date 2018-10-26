@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -85,7 +85,7 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
    rptRcTable* p_table = CreateUserLoadHeading<rptAngleUnitTag,unitmgtAngleData>(strTitle.GetBuffer(),true,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IProductForces,pForces);
+   GET_IFACE2(pBroker,IProductForces,pProdForces);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
    GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
 
@@ -95,7 +95,6 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
 
    PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(startGroupIdx);
 
-   GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
@@ -150,12 +149,12 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
       {
          if (reactionDecider.DoReport(intervalIdx))
          {
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDC,   poi, maxBAT, rtCumulative, false ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDC,   poi, minBAT, rtCumulative, false ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDW,   poi, maxBAT, rtCumulative, false ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDW,   poi, minBAT, rtCumulative, false ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserLLIM, poi, maxBAT, rtCumulative, false ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserLLIM, poi, minBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pftUserDC,   poi, maxBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pftUserDC,   poi, minBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pftUserDW,   poi, maxBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pftUserDW,   poi, minBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pftUserLLIM, poi, maxBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pftUserLLIM, poi, minBAT, rtCumulative, false ) );
          }
          else
          {
@@ -171,9 +170,9 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
       {
          if (reactionDecider.DoReport(intervalIdx))
          {
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDC,   poi, maxBAT, rtCumulative, false ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserDW,   poi, maxBAT, rtCumulative, false ) );
-            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( intervalIdx, pftUserLLIM, poi, maxBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pftUserDC,   poi, maxBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pftUserDW,   poi, maxBAT, rtCumulative, false ) );
+            (*p_table)(row,col++) << rotation.SetValue( pProdForces->GetRotation( intervalIdx, pftUserLLIM, poi, maxBAT, rtCumulative, false ) );
          }
          else
          {

@@ -44,7 +44,7 @@ void CClosureJointLongitudinalReinforcementPage::DoDataExchange(CDataExchange* p
       int idx;
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
       GetStirrupMaterial(idx,rebarData.BarType,rebarData.BarGrade);
-      m_Grid.GetRebarData(rebarData.RebarRows);
+      m_Grid.GetRebarData(&rebarData);
    }
    else
    {

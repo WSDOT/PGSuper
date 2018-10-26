@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,6 +40,8 @@
 #include <PgsExt\StatusItem.h>
 
 #include <PgsExt\BridgeDescription2.h>
+
+#include "AgeAdjustedMaterial.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -239,50 +241,22 @@ void CSplicedIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
    }
 
    // Beam materials
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,IMaterials,pMaterial);
-   CComPtr<IMaterial> segmentMaterial, closureMaterial[2];
-   segmentMaterial.CoCreateInstance(CLSID_Material);
 
-   if ( bHasClosure[etStart] )
-   {
-      closureMaterial[etStart].CoCreateInstance(CLSID_Material);
-   }
+   // NOTE: TRICKY CODE FOR SPLICED GIRDER BEAMS
+   // We need to model the material with an age adjusted modulus. The age adjusted modulus
+   // is E/(1+Y) where Y is the creep coefficient. In order to get the creep coefficient
+   // we need the Volume and Surface Area of the segment (for the V/S ratio). This method
+   // gets called during the creation of the bridge model. The bridge model is not
+   // ready to compute V or S. Calling IMaterial::GetSegmentAgeAdjustedEc() will cause
+   // recusion and validation errors. Using the age adjusted material object we can
+   // delay the calls to GetAgeAdjustedEc until well after the time the bridge model
+   // is validated.
+   GET_IFACE2(pBroker,IMaterials,pMaterials);
 
-   if ( bHasClosure[etEnd] )
-   {
-      closureMaterial[etEnd].CoCreateInstance(CLSID_Material);
-   }
-
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(segmentKey);
-   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
-   {
-      Float64 E = pMaterial->GetSegmentEc(segmentKey,intervalIdx);
-      Float64 D = pMaterial->GetSegmentWeightDensity(segmentKey,intervalIdx);
-
-      StageIndexType stageIdx = pStages->GetStage(segmentKey,intervalIdx);
-
-      segmentMaterial->put_E(stageIdx,E);
-      segmentMaterial->put_Density(stageIdx,D);
-
-      if ( bHasClosure[etStart] )
-      {
-         CClosureKey closureKey(segmentKey.groupIndex,segmentKey.girderIndex,segmentKey.segmentIndex-1);
-         E = pMaterial->GetClosureJointEc(closureKey,intervalIdx);
-         D = pMaterial->GetSegmentWeightDensity(closureKey,intervalIdx);
-         closureMaterial[etStart]->put_E(stageIdx,E);
-         closureMaterial[etStart]->put_Density(stageIdx,D);
-      }
-
-      if ( bHasClosure[etEnd] )
-      {
-         CClosureKey closureKey(segmentKey);
-         E = pMaterial->GetClosureJointEc(closureKey,intervalIdx);
-         D = pMaterial->GetSegmentWeightDensity(closureKey,intervalIdx);
-         closureMaterial[etEnd]->put_E(stageIdx,E);
-         closureMaterial[etEnd]->put_Density(stageIdx,D);
-      }
-   }
+   CComObject<CAgeAdjustedMaterial>* pSegmentMaterial;
+   CComObject<CAgeAdjustedMaterial>::CreateInstance(&pSegmentMaterial);
+   CComPtr<IAgeAdjustedMaterial> segmentMaterial = pSegmentMaterial;
+   segmentMaterial->InitSegment(segmentKey,pStages,pMaterials);
 
    CComQIPtr<IShape> shape(gdrSection);
    ATLASSERT(shape);
@@ -290,13 +264,25 @@ void CSplicedIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
 
    if ( bHasClosure[etStart] )
    {
-      segment->put_ClosureJointForegroundMaterial(etStart,closureMaterial[etStart]);
+      CClosureKey closureKey(segmentKey.groupIndex,segmentKey.girderIndex,segmentKey.segmentIndex-1);
+      CComObject<CAgeAdjustedMaterial>* pClosureMaterial;
+      CComObject<CAgeAdjustedMaterial>::CreateInstance(&pClosureMaterial);
+      CComPtr<IAgeAdjustedMaterial> closureMaterial = pClosureMaterial;
+      closureMaterial->InitClosureJoint(closureKey,pStages,pMaterials);
+
+      segment->put_ClosureJointForegroundMaterial(etStart,closureMaterial);
       segment->put_ClosureJointBackgroundMaterial(etStart,NULL);
    }
 
    if ( bHasClosure[etEnd] )
    {
-      segment->put_ClosureJointForegroundMaterial(etEnd,closureMaterial[etEnd]);
+      CClosureKey closureKey(segmentKey);
+      CComObject<CAgeAdjustedMaterial>* pClosureMaterial;
+      CComObject<CAgeAdjustedMaterial>::CreateInstance(&pClosureMaterial);
+      CComPtr<IAgeAdjustedMaterial> closureMaterial = pClosureMaterial;
+      closureMaterial->InitClosureJoint(closureKey,pStages,pMaterials);
+
+      segment->put_ClosureJointForegroundMaterial(etEnd,closureMaterial);
       segment->put_ClosureJointBackgroundMaterial(etEnd,NULL);
    }
 
@@ -723,99 +709,9 @@ bool CSplicedIBeamFactory::IsPrismatic(IBroker* pBroker,const CSegmentKey& segme
    return false;
 }
 
-Float64 CSplicedIBeamFactory::GetVolume(IBroker* pBroker,const CSegmentKey& segmentKey)
+Float64 CSplicedIBeamFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey)
 {
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-   GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-
-   pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
-
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE) );
-   ATLASSERT( 2 <= vPOI.size() );
-   Float64 V = 0;
-   std::vector<pgsPointOfInterest>::iterator iter( vPOI.begin() );
-   pgsPointOfInterest prev_poi = *iter;
-   Float64 prev_area;
-   if ( spMode == pgsTypes::spmGross )
-      prev_area = pSectProp->GetAg(releaseIntervalIdx,prev_poi);
-   else
-      prev_area = pSectProp->GetNetAg(releaseIntervalIdx,prev_poi);
-
-   iter++;
-
-#pragma Reminder("UPDATE: this will over-estimate volume for parabolically tapered beams")
-   std::vector<pgsPointOfInterest>::const_iterator end(vPOI.end());
-   for ( ; iter != end; iter++ )
-   {
-      pgsPointOfInterest poi = *iter;
-      Float64 area;
-      if ( spMode == pgsTypes::spmGross )
-         area = pSectProp->GetAg(releaseIntervalIdx,poi);
-      else
-         area = pSectProp->GetNetAg(releaseIntervalIdx,poi);
-
-      Float64 avg_area = (prev_area + area)/2;
-      V += avg_area*(poi.GetDistFromStart() - prev_poi.GetDistFromStart());
-
-      prev_poi = poi;
-      prev_area = area;
-   }
-
-   return V;
-}
-
-Float64 CSplicedIBeamFactory::GetSurfaceArea(IBroker* pBroker,const CSegmentKey& segmentKey,bool bReduceForPoorlyVentilatedVoids)
-{
-   // compute surface area along length of member
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-   GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE) );
-   ATLASSERT( 2 <= vPOI.size() );
-   Float64 S = 0;
-   std::vector<pgsPointOfInterest>::iterator iter( vPOI.begin() );
-   pgsPointOfInterest prev_poi = *iter;
-   Float64 prev_perimeter = pSectProp->GetPerimeter(prev_poi);
-   iter++;
-
-   std::vector<pgsPointOfInterest>::const_iterator end(vPOI.end());
-   for ( ; iter != end; iter++ )
-   {
-      pgsPointOfInterest poi = *iter;
-      Float64 perimeter = pSectProp->GetPerimeter(poi);
-
-#pragma Reminder("UPDATE: this will over-estimate surface area for parabolically tapered beams")
-      Float64 avg_perimeter = (prev_perimeter + perimeter)/2;
-      S += avg_perimeter*(poi.GetDistFromStart() - prev_poi.GetDistFromStart());
-
-      prev_poi = poi;
-      prev_perimeter = perimeter;
-   }
-
-   // Add area for both ends
-   pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
-
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-
-   Float64 start_area;
-   if ( spMode == pgsTypes::spmGross )
-      start_area = pSectProp->GetAg(releaseIntervalIdx,vPOI.front());
-   else
-      start_area = pSectProp->GetNetAg(releaseIntervalIdx,vPOI.front());
-
-   Float64 end_area;
-   if ( spMode == pgsTypes::spmGross )
-      end_area = pSectProp->GetAg(releaseIntervalIdx,vPOI.back());
-   else
-      end_area = pSectProp->GetNetAg(releaseIntervalIdx,vPOI.back());
-
-   S += (start_area + end_area);
-
-   return S;
+   return 0;
 }
 
 std::_tstring CSplicedIBeamFactory::GetImage()

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -51,7 +51,6 @@ public:
    CComPtr<ILoadGroupResponse>       pLoadGroupResponse[2]; // Girder, Traffic Barrier, etc
    CComPtr<ILoadCaseResponse>        pLoadCaseResponse[2];  // DC, DW, etc
    CComPtr<IContraflexureResponse>   pContraflexureResponse[2];
-   CComPtr<IUnitLoadResponse>        pUnitLoadResponse[2];
 
    // first index is force effect: fetFx, fetFy, fetMz
    // second index is optimization: optMinimize, optMaximize

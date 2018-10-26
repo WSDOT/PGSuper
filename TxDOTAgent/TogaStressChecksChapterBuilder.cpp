@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -110,12 +110,16 @@ rptChapter* CTogaStressChecksChapterBuilder::Build(CReportSpecification* pRptSpe
    BuildTableAndNotes(pChapter,pBroker,pDisplayUnits,liveLoadIntervalIdx,     pgsTypes::ServiceI,pgsTypes::Compression);
 
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+   {
       BuildTableAndNotes(pChapter,pBroker,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::ServiceIA,pgsTypes::Compression);
+   }
 
    BuildTableAndNotes(pChapter,pBroker,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension);
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+   {
       BuildTableAndNotes(pChapter,pBroker,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::FatigueI,pgsTypes::Compression);
+   }
 
    return pChapter;
 }
@@ -167,8 +171,6 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
                       pgsTypes::LimitState limitState,
                       pgsTypes::StressType stressType) const
 {
-   USES_CONVERSION;
-
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptPressureSectionValue, stress, pDisplayUnits->GetStressUnit(), false );
@@ -192,13 +194,21 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
    const ColumnIndexType add_cols = 2;
    rptRcTable* p_table;
    if (intervalIdx == liveLoadIntervalIdx && limitState == pgsTypes::ServiceIII)
+   {
       p_table = pgsReportStyleHolder::CreateDefaultTable(5+1,_T(""));
+   }
    else if ( (intervalIdx == compositeDeckIntervalIdx && !pAllowable->CheckFinalDeadLoadTensionStress()) || intervalIdx == liveLoadIntervalIdx)
+   {
       p_table = pgsReportStyleHolder::CreateDefaultTable(8+add_cols,_T(""));
+   }
    else if (intervalIdx == releaseIntervalIdx )
+   {
       p_table = pgsReportStyleHolder::CreateDefaultTable(10,_T(""));
+   }
    else
+   {
       p_table = pgsReportStyleHolder::CreateDefaultTable(9+add_cols,_T(""));
+   }
 
    *p << p_table;
 
@@ -209,12 +219,16 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
    p_table->SetRowSpan(0,col1,2);
    p_table->SetRowSpan(1,col2++,-1);
    if ( intervalIdx == releaseIntervalIdx )
+   {
       (*p_table)(0,col1++) << COLHDR(RPT_GDR_END_LOCATION,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   }
    else
+   {
       (*p_table)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   }
 
-   GET_IFACE2(pBroker, IEventMap, pEventMap );
-   std::_tstring strLimitState = OLE2T(pEventMap->GetLimitStateName(limitState));
+   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+   std::_tstring strLimitState = pProductLoads->GetLimitStateName(limitState);
 
    if ( limitState == pgsTypes::ServiceIII )
    {
@@ -310,7 +324,9 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
          p_table->SetRowSpan(1,col2++,-1);
          (*p_table)(0,col1) <<_T("Tension") << rptNewLine << _T("Status");
          if ( !IsZero(allowable_tension) )
+         {
             (*p_table)(0,col1) << rptNewLine << _T("(C/D)");
+         }
 
          col1++;
       }
@@ -321,13 +337,17 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
       p_table->SetRowSpan(1,col2++,-1);
       (*p_table)(0,col1++) << _T("Tension") << rptNewLine << _T("Status");
       if ( !IsZero(allowable_tension) )
+      {
          (*p_table)(0,col1-1) << rptNewLine << _T("w/o rebar") << rptNewLine << _T("(C/D)");
+      }
 
       p_table->SetRowSpan(0,col1,2);
       p_table->SetRowSpan(1,col2++,-1);
       (*p_table)(0,col1++) << _T("Tension") << rptNewLine << _T("Status") << rptNewLine << _T("w/ rebar");
       if ( !IsZero(allowable_tension_with_rebar) )
+      {
          (*p_table)(0,col1-1) << rptNewLine << _T("(C/D)");
+      }
 
       p_table->SetRowSpan(0,col1,2);
       p_table->SetRowSpan(1,col2++,-1);
@@ -339,7 +359,9 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
       p_table->SetRowSpan(1,col2++,-1);
       (*p_table)(0,col1++) <<_T("Tension")<<rptNewLine<<_T("Status");
       if ( !IsZero(allowable_tension) )
+      {
          (*p_table)(0,col1-1) << rptNewLine << _T("(C/D)");
+      }
 
       p_table->SetRowSpan(0,col1,2);
       p_table->SetRowSpan(1,col2++,-1);
@@ -430,18 +452,26 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
       {
          bool bPassed = (limitState == pgsTypes::ServiceIII ? pFactoredStressArtifact->Passed(pgsTypes::BottomGirder) : pFactoredStressArtifact->BeamPassed());
 	      if ( bPassed )
+         {
 		     (*p_table)(row,++col) << RPT_PASS;
+         }
 	      else
+         {
 		     (*p_table)(row,++col) << RPT_FAIL;
+         }
 
 
          Float64 fAllowTop,fAllowBot,allowable_tension;
          fAllowTop = pFactoredStressArtifact->GetCapacity(pgsTypes::TopGirder);
          fAllowBot = pFactoredStressArtifact->GetCapacity(pgsTypes::BottomGirder);
          if (fTop < fBot )
+         {
             allowable_tension = fAllowBot;
+         }
          else
+         {
             allowable_tension = fAllowTop;
+         }
 
          if ( !IsZero(allowable_tension) )
          {
@@ -490,17 +520,25 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
          }
 
          if ( bPassed )
+         {
             (*p_table)(row, ++col) << RPT_PASS;
+         }
 	      else
+         {
 		      (*p_table)(row, ++col) << RPT_FAIL;
+         }
 
          Float64 fAllowTop,fAllowBot,allowable_compression;
          fAllowTop = pFactoredStressArtifact->GetCapacity(pgsTypes::TopGirder);
          fAllowBot = pFactoredStressArtifact->GetCapacity(pgsTypes::BottomGirder);
          if (fTop < fBot )
+         {
             allowable_compression = fAllowTop;
+         }
          else
+         {
             allowable_compression = fAllowBot;
+         }
 
          Float64 f = Min(fTop,fBot);
          (*p_table)(row,col) << rptNewLine <<_T("(")<< cap_demand.SetValue(allowable_compression,f,bPassed)<<_T(")");

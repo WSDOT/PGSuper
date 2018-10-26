@@ -20,8 +20,11 @@
 #define IDC_REPORT_TITLE                3006
 #define IDD_EQUILIBRIUM_CHECK           3006
 #define IDC_DESIGN                      3007
+#define IDD_POI_SELECT                  3007
 #define IDC_CHECK2                      3008
 #define IDC_RATING                      3008
+#define IDD_DIALOG1                     3008
+#define IDD_INITIAL_STRAIN_ANALYSIS     3008
 #define IDC_RADIO1                      3009
 #define IDC_RADIO2                      3010
 #define IDC_SELECT_MULTIPLE_BUTTON      3011
@@ -35,7 +38,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        3007
+#define _APS_NEXT_RESOURCE_VALUE        3009
 #define _APS_NEXT_COMMAND_VALUE         32771
 #define _APS_NEXT_CONTROL_VALUE         3015
 #define _APS_NEXT_SYMED_VALUE           3000

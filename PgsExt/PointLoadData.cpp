@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -50,7 +50,8 @@ m_Location(0.5),
 m_Fractional(true),
 m_Description(_T(""))
 {
-
+   m_bLoadOnCantilever[pgsTypes::metStart] = false;
+   m_bLoadOnCantilever[pgsTypes::metEnd]   = false;
 }
 
 CPointLoadData::CPointLoadData(const CPointLoadData& other)
@@ -82,6 +83,16 @@ bool CPointLoadData::operator == (const CPointLoadData& rOther) const
    }
 
    if (!m_SpanKey.IsEqual(rOther.m_SpanKey))
+   {
+      return false;
+   }
+
+   if ( m_bLoadOnCantilever[pgsTypes::metStart] != rOther.m_bLoadOnCantilever[pgsTypes::metStart] )
+   {
+      return false;
+   }
+
+   if ( m_bLoadOnCantilever[pgsTypes::metEnd] != rOther.m_bLoadOnCantilever[pgsTypes::metEnd] )
    {
       return false;
    }
@@ -119,7 +130,7 @@ HRESULT CPointLoadData::Save(IStructuredSave* pSave)
 {
    HRESULT hr;
 
-   pSave->BeginUnit(_T("PointLoad"),5.0); // changed to version 4 with PGSplice
+   pSave->BeginUnit(_T("PointLoad"),6.0);
 
    hr = pSave->put_Property(_T("ID"),CComVariant(m_ID));
    if ( FAILED(hr) )
@@ -151,6 +162,19 @@ HRESULT CPointLoadData::Save(IStructuredSave* pSave)
    }
 
    hr = pSave->put_Property(_T("Girder"),CComVariant(gdrIdx));
+   if ( FAILED(hr) )
+   {
+      return hr;
+   }
+
+   // added in version 6
+   hr = pSave->put_Property(_T("LoadOnStartCantilever"),CComVariant(m_bLoadOnCantilever[pgsTypes::metStart]));
+   if ( FAILED(hr) )
+   {
+      return hr;
+   }
+
+   hr = pSave->put_Property(_T("LoadOnEndCantilever"),CComVariant(m_bLoadOnCantilever[pgsTypes::metEnd]));
    if ( FAILED(hr) )
    {
       return hr;
@@ -303,6 +327,27 @@ HRESULT CPointLoadData::Load(IStructuredLoad* pLoad)
    {
       m_SpanKey.girderIndex = ALL_GIRDERS;
    }
+
+   if ( 6 <= version )
+   {
+      var.vt = VT_I4;
+      hr = pLoad->get_Property(_T("LoadOnStartCantilever"),&var);
+      if ( FAILED(hr) )
+      {
+         return hr;
+      }
+
+      m_bLoadOnCantilever[pgsTypes::metStart] = var.lVal != 0;
+
+      var.vt = VT_I4;
+      hr = pLoad->get_Property(_T("LoadOnEndCantilever"),&var);
+      if ( FAILED(hr) )
+      {
+         return hr;
+      }
+
+      m_bLoadOnCantilever[pgsTypes::metEnd] = var.lVal != 0;
+   }
    
    var.vt = VT_R8;
    hr = pLoad->get_Property(_T("Location"),&var);
@@ -348,14 +393,16 @@ HRESULT CPointLoadData::Load(IStructuredLoad* pLoad)
 
 void CPointLoadData::MakeCopy(const CPointLoadData& rOther)
 {
-   m_ID          = rOther.m_ID;
-   m_EventIndex  = rOther.m_EventIndex;
-   m_LoadCase    = rOther.m_LoadCase;
-   m_SpanKey     = rOther.m_SpanKey;
-   m_Location    = rOther.m_Location;
-   m_Fractional  = rOther.m_Fractional;
-   m_Magnitude   = rOther.m_Magnitude;
-   m_Description = rOther.m_Description;
+   m_ID                                    = rOther.m_ID;
+   m_EventIndex                            = rOther.m_EventIndex;
+   m_LoadCase                              = rOther.m_LoadCase;
+   m_SpanKey                               = rOther.m_SpanKey;
+   m_bLoadOnCantilever[pgsTypes::metStart] = rOther.m_bLoadOnCantilever[pgsTypes::metStart];
+   m_bLoadOnCantilever[pgsTypes::metEnd]   = rOther.m_bLoadOnCantilever[pgsTypes::metEnd];
+   m_Location                              = rOther.m_Location;
+   m_Fractional                            = rOther.m_Fractional;
+   m_Magnitude                             = rOther.m_Magnitude;
+   m_Description                           = rOther.m_Description;
 }
 
 void CPointLoadData::MakeAssignment(const CPointLoadData& rOther)

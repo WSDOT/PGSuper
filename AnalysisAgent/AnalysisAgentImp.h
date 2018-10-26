@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -58,7 +58,6 @@ class ATL_NO_VTABLE CAnalysisAgentImp :
    public IContinuity,
    public IBearingDesign,
    public IPrecompressedTensileZone,
-   public IVirtualWork,
    public IReactions,
    public IBridgeDescriptionEventSink,
    public ISpecificationEventSink,
@@ -92,7 +91,6 @@ BEGIN_COM_MAP(CAnalysisAgentImp)
    COM_INTERFACE_ENTRY(IContinuity)
    COM_INTERFACE_ENTRY(IBearingDesign)
    COM_INTERFACE_ENTRY(IPrecompressedTensileZone)
-   COM_INTERFACE_ENTRY(IVirtualWork)
    COM_INTERFACE_ENTRY(IReactions)
    COM_INTERFACE_ENTRY(IBridgeDescriptionEventSink)
    COM_INTERFACE_ENTRY(ISpecificationEventSink)
@@ -124,8 +122,9 @@ public:
 
 // IProductLoads
 public:
-   virtual std::_tstring GetProductLoadName(ProductForceType pfType);
-   virtual std::_tstring GetLoadCombinationName(LoadingCombinationType loadCombo);
+   virtual LPCTSTR GetProductLoadName(ProductForceType pfType);
+   virtual LPCTSTR GetLoadCombinationName(LoadingCombinationType loadCombo);
+   virtual LPCTSTR GetLimitStateName(pgsTypes::LimitState limitState);
    virtual void GetGirderSelfWeightLoad(const CSegmentKey& segmentKey,std::vector<GirderLoad>* pDistLoad,std::vector<DiaphragmLoad>* pPointLoad);
    virtual Float64 GetTrafficBarrierLoad(const CSegmentKey& segmentKey);
    virtual Float64 GetSidewalkLoad(const CSegmentKey& segmentKey);
@@ -165,6 +164,7 @@ public:
 public:
    virtual pgsTypes::BridgeAnalysisType GetBridgeAnalysisType(pgsTypes::AnalysisType analysisType,pgsTypes::OptimizationType optimization);
    virtual pgsTypes::BridgeAnalysisType GetBridgeAnalysisType(pgsTypes::OptimizationType optimization);
+   virtual Float64 GetAxial(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
    virtual sysSectionValue GetShear(IntervalIndexType intervalIdx,ProductForceType type,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
    virtual Float64 GetMoment(IntervalIndexType intervalIdx,ProductForceType type,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
    virtual Float64 GetDeflection(IntervalIndexType intervalIdx,ProductForceType type,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeElevationAdjustment);
@@ -209,6 +209,7 @@ public:
 
 // IProductForces2
 public:
+   virtual std::vector<Float64> GetAxial(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
    virtual std::vector<sysSectionValue> GetShear(IntervalIndexType intervalIdx,ProductForceType type,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
    virtual std::vector<Float64> GetMoment(IntervalIndexType intervalIdx,ProductForceType type,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
    virtual std::vector<Float64> GetDeflection(IntervalIndexType intervalIdx,ProductForceType type,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,bool bIncludeElevationAdjustment);
@@ -286,8 +287,10 @@ public:
 public:
    virtual bool CreateLoading(const CGirderKey& girderKey,LPCTSTR strLoadingName);
    virtual bool AddLoadingToLoadCombination(const CGirderKey& girderKey,LPCTSTR strLoadingName,LoadingCombinationType lcCombo);
-   virtual bool CreateConcentratedLoad(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi,LoadType loadType,Float64 P);
-   virtual bool CreateConcentratedLoad(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,LoadType loadType,Float64 P);
+   virtual bool CreateConcentratedLoad(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi,Float64 Fx,Float64 Fy,Float64 Mz);
+   virtual bool CreateConcentratedLoad(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,Float64 Fx,Float64 Fy,Float64 Mz);
+   virtual bool CreateUniformLoad(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 wx,Float64 wy);
+   virtual bool CreateUniformLoad(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 wx,Float64 wy);
    virtual bool CreateInitialStrainLoad(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 e,Float64 r);
    virtual bool CreateInitialStrainLoad(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 e,Float64 r);
    virtual Float64 GetAxial(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
@@ -307,7 +310,7 @@ public:
 // IPretensionStresses
 public:
    virtual Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc);
-   virtual Float64 GetStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,Float64 P,Float64 e);
+   virtual Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,Float64 P,Float64 e);
    virtual Float64 GetStressPerStrand(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::StressLocation loc);
    virtual Float64 GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,const GDRCONFIG& config);
    virtual std::vector<Float64> GetStress(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation loc);
@@ -403,11 +406,6 @@ public:
    virtual bool IsInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,pgsTypes::StressLocation stressLocation);
    virtual bool IsInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,pgsTypes::StressLocation stressLocation, const GDRCONFIG* pConfig);
    virtual bool IsDeckPrecompressed(const CGirderKey& girderKey);
-
-// IVirtualWork
-public:
-   virtual std::vector<Float64> GetUnitLoadMoment(const std::vector<pgsPointOfInterest>& vPoi,const pgsPointOfInterest& unitLoadPOI,pgsTypes::BridgeAnalysisType bat,IntervalIndexType intervalIdx);
-   virtual std::vector<sysSectionValue> GetUnitCoupleMoment(const std::vector<pgsPointOfInterest>& vPoi,const pgsPointOfInterest& unitMomentPOI,pgsTypes::BridgeAnalysisType bat,IntervalIndexType intervalIdx);
 
 // IReactions
 public:
@@ -572,25 +570,8 @@ private:
    void GetTimeStepStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,pgsTypes::StressLocation loc,std::vector<Float64>* pMin,std::vector<Float64>* pMax);
    void GetElasticStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,pgsTypes::StressLocation loc,std::vector<Float64>* pMin,std::vector<Float64>* pMax);
 
+   std::vector<Float64> GetTimeStepPrestressAxial(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
    std::vector<Float64> GetTimeStepPrestressMoment(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
-
-   std::vector<Float64> GetTimeStepDeflection(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
-   std::vector<Float64> GetElasticDeflection(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
-
-   std::vector<Float64> GetTimeStepDeflection(IntervalIndexType intervalIdx,LoadingCombinationType combo,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
-   std::vector<Float64> GetElasticDeflection(IntervalIndexType intervalIdx,LoadingCombinationType combo,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
-
-   void GetTimeStepDeflection(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,std::vector<Float64>* pMin,std::vector<Float64>* pMax);
-   void GetElasticDeflection(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,std::vector<Float64>* pMin,std::vector<Float64>* pMax);
-
-   std::vector<Float64> GetTimeStepRotation(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
-   std::vector<Float64> GetElasticRotation(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
-
-   std::vector<Float64> GetTimeStepRotation(IntervalIndexType intervalIdx,LoadingCombinationType combo,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
-   std::vector<Float64> GetElasticRotation(IntervalIndexType intervalIdx,LoadingCombinationType combo,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
-
-   void GetTimeStepRotation(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,std::vector<Float64>* pMin,std::vector<Float64>* pMax);
-   void GetElasticRotation(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludePrestress,bool bIncludeLiveLoad,std::vector<Float64>* pMin,std::vector<Float64>* pMax);
 
    void ApplyElevationAdjustment(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,std::vector<Float64>* pDeflection1,std::vector<Float64>* pDeflection2);
    void ApplyRotationAdjustment(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,std::vector<Float64>* pDeflection1,std::vector<Float64>* pDeflection2);

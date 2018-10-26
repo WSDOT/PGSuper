@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -66,6 +66,8 @@
 #include "SplicedIBeamFactoryImpl.h"
 #include "SplicedNUBeamFactoryImpl.h"
 #include "SplicedUBeamFactory.h"
+
+#include "AgeAdjustedMaterial.h"
 
 #include <Plugins\Beams.h>
 #include <Plugins\Beams_i.c>
@@ -148,6 +150,8 @@ BEGIN_OBJECT_MAP(ObjectMap)
 
    OBJECT_ENTRY(CLSID_PsBeamLossEngineer,   CPsBeamLossEngineer)
    OBJECT_ENTRY(CLSID_TimeStepLossEngineer, CTimeStepLossEngineer)
+
+   OBJECT_ENTRY(CLSID_AgeAdjustedMaterial, CAgeAdjustedMaterial)
 END_OBJECT_MAP()
 
 class CBeamsApp : public CWinApp

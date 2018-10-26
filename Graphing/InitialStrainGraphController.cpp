@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -95,6 +95,8 @@ bool CInitialStrainGraphController::Relaxation()
 
 void CInitialStrainGraphController::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
+   CIntervalGirderGraphControllerBase::OnUpdate(pSender,lHint,pHint);
+
    if ( lHint == HINT_BRIDGECHANGED )
    {
       // The bridge changed, so reset the controls

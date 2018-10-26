@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,6 +32,7 @@
 #include "HtmlHelp\HelpTopics.hh"
 
 #include <IFace\Project.h>
+#include <IFace\DocumentType.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <PgsExt\PierData.h>
 #include <algorithm>
@@ -167,6 +168,15 @@ BOOL CBridgeDescFramingPage::OnInitDialog()
    // causes the Remove Span button to be enabled/disabled
    EnableRemovePierBtn(m_Grid.EnableRemovePierBtn());
    EnableRemoveTemporarySupportBtn(m_Grid.EnableRemoveTemporarySupportBtn());
+
+   // I don't like using this interface because we should be a generic as possible
+   // I can't think of a different way to this this right now.
+   // Also, in the future, PGSuper will support temporary supports in the form of shoring towers during erection
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   if ( pDocType->IsPGSuperDocument() )
+   {
+      GetDlgItem(IDC_ADD_TEMP_SUPPORT)->EnableWindow(FALSE);
+   }
 
 	
 	return TRUE;  // return TRUE unless you set the focus to a control

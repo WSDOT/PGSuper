@@ -62,6 +62,7 @@
 #define IDR_SPLICEDIBEAMFAMILY          233
 #define IDR_SPLICEDUBEAMFAMILY          234
 #define IDI_SPLICED_NUBEAM              235
+#define IDR_AGE_ADJUSTED_MATERIAL       236
 
 // Next default values for new objects
 // 

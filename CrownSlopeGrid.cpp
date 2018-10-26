@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -140,7 +140,7 @@ void CCrownSlopeGrid::CustomInit()
 			.SetValue(_T("Section\n#"))
 		);
 
-   CString cv = "Station";
+   CString cv("Station");
 	this->SetStyleRange(CGXRange(0,1), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell

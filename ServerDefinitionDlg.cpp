@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2014  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -97,7 +97,7 @@ void CServerDefinitionDlg::DoDataExchange(CDataExchange* pDX)
    //}}AFX_DATA_MAP
 
    // These are for the local network option
-   DDX_FilenameControl(pDX, IDC_LIBRARY_FILE_LOCATION, IDC_LIBRARY_FILE_BROWSE,m_ctrlLibraryFile, 0/*GF_FILEMUSTEXIST*/, "Please specify library file", "Library Files (*.lbr)|*.lbr||");
+   DDX_FilenameControl(pDX, IDC_LIBRARY_FILE_LOCATION, IDC_LIBRARY_FILE_BROWSE,m_ctrlLibraryFile, 0/*GF_FILEMUSTEXIST*/, CString("Please specify library file"), CString("Library Files (*.lbr)|*.lbr||"));
    DDX_FilenameValue(pDX, m_ctrlLibraryFile, m_LocalMasterLibraryFile);
 
    if ( pDX->m_bSaveAndValidate && m_ServerType==srtLocal )
@@ -105,7 +105,7 @@ void CServerDefinitionDlg::DoDataExchange(CDataExchange* pDX)
       DDV_FilenameControl(pDX, m_ctrlLibraryFile);
    }
 
-   DDX_FolderControl(pDX, IDC_WORKGROUP_TEMPLATE_LOCATION, IDC_WORKGROUP_TEMPLATE_BROWSE, m_ctrlWorkgroupFolder, 0, "Please specify a folder");
+   DDX_FolderControl(pDX, IDC_WORKGROUP_TEMPLATE_LOCATION, IDC_WORKGROUP_TEMPLATE_BROWSE, m_ctrlWorkgroupFolder, 0, CString("Please specify a folder"));
    DDX_FolderValue(pDX, m_ctrlWorkgroupFolder, m_LocalWorkgroupTemplateFolder);
 
    if ( pDX->m_bSaveAndValidate && m_ServerType==srtLocal )

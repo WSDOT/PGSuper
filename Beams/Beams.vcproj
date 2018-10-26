@@ -653,6 +653,10 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
+				RelativePath=".\AgeAdjustedMaterial.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\Beams\AutoLib.h"
 				>
 			</File>
@@ -734,10 +738,6 @@
 			</File>
 			<File
 				RelativePath="DeckShrinkageLossTable.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\IFace\DistFactorEngineer.h"
 				>
 			</File>
 			<File
@@ -977,6 +977,10 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
+			<File
+				RelativePath=".\AgeAdjustedMaterial.rgs"
+				>
+			</File>
 			<File
 				RelativePath="Res\BoxBeam.emf"
 				>
@@ -1262,6 +1266,10 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
+			<File
+				RelativePath=".\AgeAdjustedMaterial.cpp"
+				>
+			</File>
 			<File
 				RelativePath=".\BeamFamilyImpl.cpp"
 				>
@@ -4246,6 +4254,14 @@
 		<Filter
 			Name="IFace"
 			>
+			<File
+				RelativePath="..\Include\IFace\AgeAdjustedMaterial.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\IFace\DistFactorEngineer.h"
+				>
+			</File>
 			<File
 				RelativePath="..\Include\IFace\PsLossEngineer.h"
 				>
