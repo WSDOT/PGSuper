@@ -40,7 +40,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define CURRENT_VERSION 43.0
+#define CURRENT_VERSION 44.0
+// NOTE: CURRENT_VERSION CANNOT BE GREATER THAN 49.0
+// Version 3.0 branch starts at data block version 50.0
 
 
 /****************************************************************************
@@ -149,6 +151,7 @@ m_CreepDuration2Min(::ConvertToSysUnits(40,unitMeasure::Day)),
 m_CreepDuration1Max(::ConvertToSysUnits(90,unitMeasure::Day)),
 m_CreepDuration2Max(::ConvertToSysUnits(120,unitMeasure::Day)),
 m_TotalCreepDuration(::ConvertToSysUnits(2000,unitMeasure::Day)),
+m_CamberVariability(0.50),
 m_LossMethod(LOSSES_AASHTO_REFINED),
 m_BeforeXferLosses(0),
 m_AfterXferLosses(0),
@@ -271,6 +274,8 @@ m_RelaxationLossMethod(RLM_REFINED)
    m_MaxGirderFc[pgsTypes::SandLightweight]           = ::ConvertToSysUnits(9.0,unitMeasure::KSI);
    m_MaxConcreteUnitWeight[pgsTypes::SandLightweight] = ::ConvertToSysUnits(125.,unitMeasure::LbfPerFeet3);
    m_MaxConcreteAggSize[pgsTypes::SandLightweight]    = ::ConvertToSysUnits(1.5,unitMeasure::Inch);
+
+   m_DoCheckStirrupSpacingCompatibility = true;
 }
 
 SpecLibraryEntry::SpecLibraryEntry(const SpecLibraryEntry& rOther) :
@@ -558,6 +563,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("CreepDuration2Max"),m_CreepDuration2Max);
    pSave->Property(_T("XferTime"),m_XferTime);
    pSave->Property(_T("TotalCreepDuration"),m_TotalCreepDuration);
+   pSave->Property(_T("CamberVariability"),m_CamberVariability);
 
    pSave->Property(_T("LossMethod"),(Int16)m_LossMethod);
    pSave->Property(_T("FinalLosses"),m_FinalLosses);
@@ -644,6 +650,10 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
       pSave->EndUnit(); // SandLightweight;
    pSave->EndUnit(); // Limits
 
+   // Added in version 44
+   pSave->BeginUnit(_T("Warnings"),1.0);
+         pSave->Property(_T("DoCheckStirrupSpacingCompatibility"), m_DoCheckStirrupSpacingCompatibility);
+   pSave->EndUnit(); // Warnings
 
    // Added in 14.0 removed in version 41
    //std::_tstring strLimitState[] = {_T("ServiceI"),_T("ServiceIA"),_T("ServiceIII"),_T("StrengthI"),_T("StrengthII"),_T("FatigueI")};
@@ -1688,6 +1698,12 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             m_CreepDuration1Max = m_CreepDuration1Min;
          }
       }
+
+      if ( 44 <= version )
+      {
+         if ( !pLoad->Property(_T("CamberVariability"),&m_CamberVariability))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+      }
  
       if ( !pLoad->Property(_T("LossMethod"),&temp) )
          THROW_LOAD(InvalidFileFormat,pLoad );
@@ -1988,6 +2004,18 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                THROW_LOAD(InvalidFileFormat,pLoad);
 
          if ( !pLoad->EndUnit() ) // Limits
+            THROW_LOAD(InvalidFileFormat,pLoad);
+      }
+
+      if ( 44 <= version )
+      {
+         if ( !pLoad->BeginUnit(_T("Warnings")) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+            if ( !pLoad->Property(_T("DoCheckStirrupSpacingCompatibility"),&m_DoCheckStirrupSpacingCompatibility) )
+               THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->EndUnit() ) // Warnings
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
@@ -2375,6 +2403,7 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TESTD(m_CreepDuration1Max          , rOther.m_CreepDuration1Max          );
    TESTD(m_CreepDuration2Max          , rOther.m_CreepDuration2Max          );
    TESTD(m_TotalCreepDuration  , rOther.m_TotalCreepDuration  );
+   TESTD(m_CamberVariability   , rOther.m_CamberVariability  );
    TEST (m_LossMethod                 , rOther.m_LossMethod                 );
    TESTD(m_FinalLosses                , rOther.m_FinalLosses                );
    TESTD(m_ShippingLosses             , rOther.m_ShippingLosses             );
@@ -2436,6 +2465,8 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
       TESTD(m_MaxConcreteUnitWeight[i] , rOther.m_MaxConcreteUnitWeight[i] );
       TESTD(m_MaxConcreteAggSize[i]    , rOther.m_MaxConcreteAggSize[i] );
    }
+
+   TEST (m_DoCheckStirrupSpacingCompatibility, rOther.m_DoCheckStirrupSpacingCompatibility);
 
    TEST (m_EnableSlabOffsetCheck         , rOther.m_EnableSlabOffsetCheck            );
    TEST (m_EnableSlabOffsetDesign        , rOther.m_EnableSlabOffsetDesign );
@@ -3414,6 +3445,16 @@ Float64 SpecLibraryEntry::GetTotalCreepDuration() const
    return m_TotalCreepDuration;
 }
 
+void SpecLibraryEntry::SetCamberVariability(Float64 var)
+{
+   m_CamberVariability = var;
+}
+
+Float64 SpecLibraryEntry::GetCamberVariability() const
+{
+   return m_CamberVariability;
+}
+
 int SpecLibraryEntry::GetLossMethod() const
 {
    return m_LossMethod;
@@ -3812,6 +3853,16 @@ void SpecLibraryEntry::SetMaxConcreteAggSize(pgsTypes::ConcreteType type,Float64
 Float64 SpecLibraryEntry::GetMaxConcreteAggSize(pgsTypes::ConcreteType type) const
 {
    return m_MaxConcreteAggSize[type];
+}
+
+void SpecLibraryEntry::SetDoCheckStirrupSpacingCompatibility(bool doCheck)
+{
+   m_DoCheckStirrupSpacingCompatibility = doCheck;
+}
+
+bool SpecLibraryEntry::GetDoCheckStirrupSpacingCompatibility() const
+{
+   return m_DoCheckStirrupSpacingCompatibility;
 }
 
 void SpecLibraryEntry::EnableSlabOffsetCheck(bool enable)
@@ -4214,6 +4265,7 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_CreepDuration2Min          = rOther.m_CreepDuration2Min;
    m_CreepDuration2Max          = rOther.m_CreepDuration2Max;
    m_TotalCreepDuration  = rOther.m_TotalCreepDuration;
+   m_CamberVariability   = rOther.m_CamberVariability;
 
    m_LossMethod                 = rOther.m_LossMethod;
    m_FinalLosses                = rOther.m_FinalLosses;
@@ -4276,6 +4328,8 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
       m_MaxConcreteUnitWeight[i] = rOther.m_MaxConcreteUnitWeight[i];
       m_MaxConcreteAggSize[i]    = rOther.m_MaxConcreteAggSize[i];
    }
+
+   m_DoCheckStirrupSpacingCompatibility = rOther.m_DoCheckStirrupSpacingCompatibility;
 
    m_EnableSlabOffsetCheck = rOther.m_EnableSlabOffsetCheck;
    m_EnableSlabOffsetDesign = rOther.m_EnableSlabOffsetDesign;

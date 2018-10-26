@@ -177,8 +177,14 @@ PoiIDType pgsPoiMgr::AddPointOfInterest(const pgsPointOfInterest& poi)
       pgsPointOfInterest& curpoi = *i;
       if ( AtSamePlace( curpoi, poi ) )
       {
-         curpoi.MergeStageAttributes(poi);
-         return curpoi.m_ID; // no need to resort vector
+         if ( curpoi.MergeStageAttributes(poi) )
+         {
+            return curpoi.m_ID; // no need to re-sort vector
+         }
+         else
+         {
+            break; // poi's can't be merged... just break out of here and continue
+         }
       }
    }
 

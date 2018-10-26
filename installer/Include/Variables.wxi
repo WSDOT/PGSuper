@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Include>
-   <?define PGSuperVersion    = 2.8.0.7?> <!-- also change this version number in the BuildPGSuperImagesFragment.js file -->
-   <?define BEToolboxVersion  = 2.1.0.0?>
-   <?define WBFLVersion       = 3.7.0.7?>
+   <?define PGSuperVersion    = 2.8.1.0?> <!-- also change this version number in the BuildPGSuperImagesFragment.js file -->
+   <?define BEToolboxVersion  = 2.1.1.0?>
+   <?define WBFLVersion       = 3.7.1.0?>
 
    <?if $(var.Platform) = "x64"?>
       <?define ProgramFilesDirectory = ProgramFiles64Folder?>

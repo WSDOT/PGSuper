@@ -6785,6 +6785,26 @@ std::_tstring CAnalysisAgentImp::GetLiveLoadName(pgsTypes::LiveLoadType llType,V
    return OLE2T(bstrName);
 }
 
+pgsTypes::LiveLoadApplicabilityType CAnalysisAgentImp::GetLiveLoadApplicability(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex)
+{
+   ATLASSERT(vehicleIndex != INVALID_INDEX);
+
+   LiveLoadModelType llmt = g_LiveLoadModelType[llType];
+
+   ModelData* pModelData = 0;
+   pModelData = GetModelData(0); // get model data for girder line zero since all have the same live loads
+
+   CComPtr<ILBAMModel> lbam_model;
+   GetModel(pModelData,SimpleSpan,&lbam_model);
+
+   CComPtr<IVehicularLoad> vehicle;
+   GetVehicularLoad(lbam_model,llmt,vehicleIndex,&vehicle);
+
+   LiveLoadApplicabilityType applicability;
+   vehicle->get_Applicability(&applicability);
+   return (pgsTypes::LiveLoadApplicabilityType)applicability;
+}
+
 VehicleIndexType CAnalysisAgentImp::GetVehicleCount(pgsTypes::LiveLoadType llType)
 {
    LiveLoadModelType llmt = g_LiveLoadModelType[llType];
@@ -6799,6 +6819,7 @@ VehicleIndexType CAnalysisAgentImp::GetVehicleCount(pgsTypes::LiveLoadType llTyp
    vehicular_loads->get_Count(&nVehicles);
    return nVehicles;
 }
+
 
 Float64 CAnalysisAgentImp::GetVehicleWeight(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex)
 {
@@ -10930,6 +10951,19 @@ void CAnalysisAgentImp::GetStraightStrandEquivLoading(SpanIndexType spanIdx,Gird
 
       loads->push_back( std::make_pair(M,X+x) );
    }
+}
+
+Float64 CAnalysisAgentImp::GetLowerBoundCamberVariabilityFactor()const
+{
+   GET_IFACE(ILibrary,pLibrary);
+   GET_IFACE(ISpecification,pSpec);
+
+   const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry( pSpec->GetSpecification().c_str() );
+
+   Float64 fac = pSpecEntry->GetCamberVariability();
+
+   fac = 1.0-fac;
+   return fac;
 }
 
 /////////////////////////////////////////////////////////////////////////////

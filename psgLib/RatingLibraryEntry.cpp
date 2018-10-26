@@ -1301,7 +1301,7 @@ Float64 CLiveLoadFactorModel2::GetStrengthLiveLoadFactor(Int16 adtt,Float64 PWR)
          }
       }
 
-      if ( adtt < m_ADTT[2] )
+      if ( adtt <= m_ADTT[2] )
       {
          // between ADTT[1] and ADTT[2]
          if ( m_LiveLoadFactorModifier == pgsTypes::gllmRoundUp )
@@ -1393,7 +1393,7 @@ Float64 CLiveLoadFactorModel2::GetServiceLiveLoadFactor(Int16 adtt) const
             return ::LinInterp(adtt-m_ADTT[0],m_gLL_Service[0],m_gLL_Service[1],m_ADTT[1] - m_ADTT[0]);
       }
 
-      if ( adtt < m_ADTT[2] )
+      if ( adtt <= m_ADTT[2] )
       {
          // between ADTT[1] and ADTT[2]
          if ( m_LiveLoadFactorModifier == pgsTypes::gllmRoundUp )

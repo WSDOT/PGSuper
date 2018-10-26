@@ -23,7 +23,7 @@
 #pragma once
 
 #ifndef _PGSUPER_VERSION
-#define _PGSUPER_VERSION 280 // version 2.8.0
+#define _PGSUPER_VERSION 281 // version 2.8.1
 #endif
 
 // includes WBFL Version macro and

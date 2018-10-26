@@ -1446,7 +1446,7 @@ pgsFlexuralCapacityArtifact pgsDesigner2::CreateFlexuralCapacityArtifact(const p
    bool c_over_de = ( pSpec->GetMomentCapacityMethod() == LRFD_METHOD && pSpecEntry->GetSpecificationType() < lrfdVersionMgr::ThirdEditionWith2006Interims );
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
-   pgsFlexuralCapacityArtifact artifact;
+   pgsFlexuralCapacityArtifact artifact(bPositiveMoment);
 
    Float64 Mu;
    if ( bPositiveMoment )
@@ -2584,7 +2584,7 @@ void pgsDesigner2::CheckMomentCapacity(SpanIndexType span,GirderIndexType gdr,pg
 
       // negative moment is a different story. there must be a negative moment connection
       // at one end of the girder
-      pgsFlexuralCapacityArtifact nm_artifact;
+      pgsFlexuralCapacityArtifact nm_artifact(false);
       bool bComputeNegativeMomentCapacity = pBridge->ProcessNegativeMoments(span);
 
       if ( stage == pgsTypes::BridgeSite3 && bComputeNegativeMomentCapacity )

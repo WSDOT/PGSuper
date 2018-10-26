@@ -1,0 +1,311 @@
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19  11  9.83  1     1     1)    *    58  0.60  270 31.73 13.93  18 70.0  7.100  9.200    5.469   -6.109  17129  0.773  0.940  0.44 -0.26  0.00 -0.03 -0.29 286.12 339.28   3.00   6.17   6.17
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Splitting zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19  11 10.67  1     2     1)    *    59  0.60  270 31.69 13.42  19 70.0  7.200  9.300    5.513   -6.173  17340  0.798  0.968  0.43 -0.27  0.00 -0.03 -0.29 294.93 346.38   3.00   6.17   6.17
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Splitting zone checks failed.
+Confinement zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19  11  9.00  1     6     1)    *    52  0.60  270 31.97 13.97  16 70.0  6.200  7.500    5.006   -5.400  15186  0.769  0.940  0.41 -0.27  0.00  0.00 -0.27 245.06 319.52   3.00   6.17   6.17
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Stirrup detailing checks failed for the Strength I Limit State.
+Confinement zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19  11  9.83  2     1     1)    *    59  0.60  270 31.69 13.42  19 70.0  7.100  9.300    5.622   -6.265  17511  0.772  0.940  0.45 -0.28  0.00 -0.03 -0.30 294.74 343.00   3.00   6.17   6.17
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Splitting zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19  11 10.67  2     2     1)    *    60  0.60  270 31.66 12.92  20 70.0  7.300  9.300    5.685   -6.350  17772  0.796  0.968  0.44 -0.29  0.00 -0.03 -0.31 301.89 342.89   3.00   6.17   6.17
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Splitting zone checks failed.
+Confinement zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19  11  9.00  2     6     1)    *    69  0.60  270 31.28 13.11  23 70.0  8.500  9.800    5.255   -5.572  18224  0.776  0.940  0.48 -0.25  0.00  0.00 -0.25 375.89 481.82   3.00   6.17   6.17
+
+
+The Specification Check was Not Successful
+Splitting zone checks failed.
+Confinement zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19  11  9.83  3     1     1)    *    56  0.60  270 31.80 13.37  18 70.0  6.800  8.600    5.221   -5.822  16395  0.773  0.941  0.44 -0.24  0.00 -0.03 -0.27 273.88 331.82   3.00   6.17   6.17
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19  11 10.67  3     2     1)    *    58  0.60  270 31.73 13.93  18 70.0  7.100  9.000    5.420   -6.084  17118  0.798  0.968  0.44 -0.26  0.00 -0.03 -0.29 288.87 333.27   3.00   6.17   6.17
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Confinement zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19  11  9.00  3     6     1)    *    63  0.60  270 31.44 15.82  17 70.0  7.600  9.400    5.170   -5.507  16910  0.776  0.940  0.48 -0.25  0.00  0.00 -0.25 330.21 429.10   3.00   6.17   6.17
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Splitting zone checks failed.
+Confinement zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19  11  9.83  4     1     1)    *    56  0.60  270 31.80 13.37  18 70.0  6.800  8.600    5.153   -5.786  16370  0.773  0.941  0.44 -0.23  0.00 -0.03 -0.26 273.88 334.46   3.00   6.17   6.17
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19  11 10.67  4     2     1)    *    59  0.60  270 31.69 13.42  19 70.0  7.200  9.000    5.350   -6.048  17095  0.798  0.968  0.43 -0.25  0.00 -0.03 -0.28 295.97 350.93   3.00   6.17   6.17
+
+
+The Specification Check was Not Successful
+Splitting zone checks failed.
+Confinement zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19  11  9.00  4     6     1)    *    70  0.60  270 31.26 12.74  24 70.0  6.200  7.400    5.011   -5.381  17425  0.768  0.940  0.62 -0.28  0.00  0.00 -0.28 440.36 597.36   3.00   6.17   6.17
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
+Compressive stress check failed for Service I for the Temporary Strand Removal Stage.
+Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
+Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
+Stirrup detailing checks failed for the Strength I Limit State.
+Splitting zone checks failed.
+Confinement zone checks failed.
+Slab Offset ("A" Dimension) check failed
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19  11  9.85  5     1     1)    *    57  0.60  270 31.76 12.85  19 70.0  6.900  8.700    5.258   -5.889  16609  0.774  0.942  0.44 -0.24  0.00 -0.03 -0.27 281.89 337.43   3.00   6.17   6.17
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19  11 10.64  5     2     1)    *    58  0.60  270 31.73 13.93  18 70.0  7.000  9.000    5.393   -6.070  17103  0.789  0.958  0.43 -0.26  0.00 -0.03 -0.28 288.88 343.54   3.00   6.17   6.17
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Splitting zone checks failed.
+Confinement zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19  11  9.00  5     6     1)    *    70  0.60  270 31.26 12.74  24 70.0  5.600  6.700    4.803   -5.012  16832  0.745  0.918  0.67 -0.28  0.00 -0.00 -0.28 458.16 667.46   3.00   6.17   6.17
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
+Compressive stress check failed for Service I for the Temporary Strand Removal Stage.
+Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
+Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
+Stirrup detailing checks failed for the Strength I Limit State.
+Splitting zone checks failed.
+Confinement zone checks failed.
+Slab Offset ("A" Dimension) check failed
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19  10  9.85  6     1     1)    *    57  0.60  270 31.76 12.85  19 70.0  6.900  8.700    5.181   -5.817  16458  0.774  0.942  0.44 -0.23  0.00 -0.03 -0.26 281.82 343.00   3.00   6.17   6.17
+
+
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19  10  9.51  6     2     1)    *    58  0.60  270 31.73 13.93  18 70.0  7.000  9.000    5.256   -5.908  16637  0.766  0.930  0.44 -0.24  0.00 -0.03 -0.27 290.14 347.39   3.00   6.17   6.17
+
+
+The Specification Check was Not Successful
+Confinement zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19  10  9.00  6     6     1)    *    70  0.60  270 31.26 12.74  24 70.0  5.600  6.700    4.712   -4.895  16799  0.717  0.884  0.67 -0.27  0.00  0.00 -0.27 458.11 674.71   3.00   6.17   6.17
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
+Compressive stress check failed for Service I for the Temporary Strand Removal Stage.
+Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
+Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
+Stirrup detailing checks failed for the Strength I Limit State.
+Splitting zone checks failed.
+Confinement zone checks failed.
+Slab Offset ("A" Dimension) check failed
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19   9  9.84  7     1     1)    *    56  0.60  270 31.80 13.37  18 70.0  6.800  8.600    5.263   -5.895  16618  0.774  0.941  0.44 -0.25  0.00 -0.03 -0.27 273.67 326.18   3.00   6.17   6.17
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19   9  9.51  7     2     1)    *    57  0.60  270 31.76 12.85  19 70.0  6.900  8.700    5.331   -5.986  16802  0.764  0.930  0.43 -0.26  0.00 -0.03 -0.28 281.92 327.66   3.00   6.17   6.17
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Confinement zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19   9  9.00  7     5     1)    *    70  0.60  270 31.26 12.74  24 70.0  5.800  6.800    4.894   -5.129  16998  0.771  0.948  0.65 -0.29  0.00  0.00 -0.29 451.91 644.50   3.00   6.17   6.17
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
+Compressive stress check failed for Service I for the Temporary Strand Removal Stage.
+Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
+Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
+Stirrup detailing checks failed for the Strength I Limit State.
+Splitting zone checks failed.
+Confinement zone checks failed.
+Slab Offset ("A" Dimension) check failed
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19   9  9.84  8     1     1)    *    57  0.60  270 31.76 12.85  19 70.0  6.900  8.800    5.279   -5.903  16636  0.774  0.941  0.44 -0.24  0.00 -0.03 -0.27 281.91 337.69   3.00   6.17   6.17
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19   9  9.49  8     2     1)    *    57  0.60  270 31.76 12.85  19 70.0  6.900  8.800    5.338   -5.990  16808  0.764  0.930  0.43 -0.26  0.00 -0.03 -0.28 281.87 328.88   3.00   6.17   6.17
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Confinement zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19   9  8.71  8     5     1)    *    65  0.60  270 31.38 14.80  19 70.0  7.900  9.100    4.597   -4.643  16877  0.676  0.824  0.49 -0.21  0.00  0.00 -0.21 345.92 500.97   3.00   6.17   6.17
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Splitting zone checks failed.
+Confinement zone checks failed.
+Hauling checks failed
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19   8  9.84  9     1     1)    *    45  0.60  270 32.24 12.55  15 70.0  5.700  7.100    4.104   -4.658  13358  0.794  0.941  0.33 -0.16  0.00 -0.02 -0.18 202.54 284.51   3.00   6.17   6.17
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Stirrup detailing checks failed for the Strength I Limit State.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19   8  9.52  9     2     1)    *    46  0.60  270 32.27 14.09  14 70.0  5.800  7.500    4.198   -4.772  13614  0.787  0.930  0.34 -0.17  0.00 -0.02 -0.18 210.64 289.29   3.00   6.17   6.17
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Confinement zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19   8  9.00  9     5     1)    *    55  0.60  270 31.73 19.44  11 70.0  7.100  8.500    3.807   -3.908  14716  0.745  0.878  0.40 -0.14  0.00  0.00 -0.14 275.31 432.26   3.00   6.17   6.17
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
+Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Confinement zone checks failed.
+
+

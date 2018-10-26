@@ -374,7 +374,7 @@ bool CNUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    if ( d2 < 0.0 )
    {
       std::_tostringstream os;
-      os << _T("D2 must be a positive value") << std::ends;
+      os << _T("D2 must be zero or greater") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -382,7 +382,7 @@ bool CNUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    if ( d3 < 0.0 )
    {
       std::_tostringstream os;
-      os << _T("D3 must be a positive value") << std::ends;
+      os << _T("D3 must be zero or greater") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -399,16 +399,16 @@ bool CNUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    if ( d5 < 0.0 )
    {
       std::_tostringstream os;
-      os << _T("D5 must be a positive value") << std::ends;
+      os << _T("D5 must be zero or greater") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
-   if ( r1 <= 0.0 )
+   if ( r1 < 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][5];
       std::_tostringstream os;
-      os << _T("R1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
+      os << _T("R1 must be zero or greater") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -416,7 +416,7 @@ bool CNUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    if ( r2 < 0.0 )
    {
       std::_tostringstream os;
-      os << _T("R2 must be a positive value") << std::ends;
+      os << _T("R2 must be zero or greater") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -424,16 +424,16 @@ bool CNUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    if ( r3 < 0.0 )
    {
       std::_tostringstream os;
-      os << _T("R3 must be a positive value") << std::ends;
+      os << _T("R3 must be zero or greater") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
-   if ( r4 <= 0.0 )
+   if ( r4 < 0.0 )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][8];
       std::_tostringstream os;
-      os << _T("R4 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
+      os << _T("R4 must be zero or greater") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -447,10 +447,10 @@ bool CNUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
       return false;
    }   
 
-   if ( w2 < 0.0 )
+   if ( w2 <= 0.0 )
    {
       std::_tostringstream os;
-      os << _T("W2 must be a positive value") << std::ends;
+      os << _T("W2 must be greater than 0.0") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -464,10 +464,18 @@ bool CNUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
       return false;
    }   
    
-   if ( d5 < c1 )
+   if ( d1 < r3 )
    {
       std::_tostringstream os;
-      os << _T("C1 must be less than d5") << std::ends;
+      os << _T("R3 must be less than or equal to D1") << std::ends;
+      *strErrMsg = os.str();
+      return false;
+   }   
+
+   if ( d5 < r4 + c1 )
+   {
+      std::_tostringstream os;
+      os << _T("R4 + C1 must be less than or equal to D5") << std::ends;
       *strErrMsg = os.str();
       return false;
    }   

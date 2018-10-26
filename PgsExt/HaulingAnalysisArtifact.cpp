@@ -849,7 +849,7 @@ void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(SpanIndexType s
 
    GET_IFACE2(pBroker,IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
    std::vector<pgsPointOfInterest> poi_vec;
-   poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(span,girder,POI_FLEXURESTRESS);
+   poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(span,girder,POI_FLEXURESTRESS | POI_SECTCHANGE,POIFIND_OR);
 
    RowIndexType row = 1;
    std::vector<pgsPointOfInterest>::const_iterator i;
@@ -1684,7 +1684,7 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(SpanIndexType spa
 
    GET_IFACE2(pBroker,IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
    std::vector<pgsPointOfInterest> poi_vec;
-   poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(span,girder,POI_FLEXURESTRESS);
+   poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(span,girder,POI_FLEXURESTRESS | POI_SECTCHANGE,POIFIND_OR);
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(11,_T(""));
    *p << p_table;
@@ -1878,7 +1878,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildInclinedStressTable(SpanIndexType spa
 
    GET_IFACE2(pBroker,IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
    std::vector<pgsPointOfInterest> poi_vec;
-   poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(span,girder,POI_FLEXURESTRESS);
+   poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(span,girder,POI_FLEXURESTRESS | POI_SECTCHANGE,POIFIND_OR);
 
    RowIndexType row = 1;
    for (std::vector<pgsPointOfInterest>::const_iterator i = poi_vec.begin(); i!= poi_vec.end(); i++)
@@ -2066,7 +2066,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapte
    Float64 overhang = this->GetTrailingOverhang();
 
    GET_IFACE2(pBroker,IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
-   std::vector<pgsPointOfInterest> vPoi = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(span,girder,POI_FLEXURESTRESS);
+   std::vector<pgsPointOfInterest> vPoi = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(span,girder,POI_FLEXURESTRESS | POI_SECTCHANGE,POIFIND_OR);
    CHECK(vPoi.size()>0);
 
    std::_tstring tablename;

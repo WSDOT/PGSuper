@@ -157,6 +157,7 @@ public:
    //------------------------------------------------------------------------
    // Returns true if this poi is less than rOther, based on location
    bool operator==(const pgsPointOfInterest& rOther) const;
+   bool operator!=(const pgsPointOfInterest& rOther) const;
 
 
    //------------------------------------------------------------------------
@@ -228,7 +229,7 @@ public:
 
    //------------------------------------------------------------------------
    // Merge stage attributes for this POI with another's
-   void MergeStageAttributes(const pgsPointOfInterest& rOther);
+   bool MergeStageAttributes(const pgsPointOfInterest& rOther);
 
    void MakeTenthPoint(pgsTypes::Stage stage,Uint16 tenthPoint);
    void MakeTenthPoint(const std::vector<pgsTypes::Stage>& stages,Uint16 tenthPoint);

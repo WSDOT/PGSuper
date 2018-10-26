@@ -580,7 +580,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(SpanIndexType span,
 
    GET_IFACE2(pBroker,IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
    std::vector<pgsPointOfInterest> poi_vec;
-   poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(span,girder,POI_FLEXURESTRESS);
+   poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(span,girder,POI_FLEXURESTRESS | POI_SECTCHANGE,POIFIND_OR);
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(7,_T(""));
    *p << p_table;
@@ -755,7 +755,7 @@ void  pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(SpanIndexType sp
 
    GET_IFACE2(pBroker,IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
    std::vector<pgsPointOfInterest> poi_vec;
-   poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(span,girder,POI_FLEXURESTRESS);
+   poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(span,girder,POI_FLEXURESTRESS | POI_SECTCHANGE,POIFIND_OR);
 
    RowIndexType row = 1;
    std::vector<pgsPointOfInterest>::const_iterator i;
@@ -853,7 +853,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapter
    Float64 overhang = this->GetTrailingOverhang();
 
    GET_IFACE2(pBroker,IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
-   std::vector<pgsPointOfInterest> vPoi = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(span,girder,POI_FLEXURESTRESS);
+   std::vector<pgsPointOfInterest> vPoi = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(span,girder,POI_FLEXURESTRESS | POI_SECTCHANGE,POIFIND_OR);
    CHECK(vPoi.size()>0);
 
    std::_tstring tablename(_T("Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2] - Hauling"));

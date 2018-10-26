@@ -159,6 +159,8 @@ txnEditSpanData CSpanDetailsDlg::GetEditSpanData()
    editSpanData.bSameGirderType                    = UseSameGirderType();
    editSpanData.GirderSpacingType                  = GetGirderSpacingType();
    editSpanData.GirderMeasurementLocation          = GetMeasurementLocation();
+   editSpanData.GirderTypes                        = GetGirderTypes();
+
    // more spacing below
 
    // Connections and Spacing
@@ -167,10 +169,10 @@ txnEditSpanData CSpanDetailsDlg::GetEditSpanData()
       pgsTypes::MemberEndType end = (i == 0 ? pgsTypes::metStart : pgsTypes::metEnd);
 
       // Boundary conditions
-      editSpanData.m_ConnectionType[end]        = GetConnectionType(end);
+      editSpanData.m_ConnectionType[end] = GetConnectionType(end);
 
       // Spacing
-      editSpanData.GirderSpacing[end] = GetGirderSpacing(end);
+      editSpanData.GirderSpacing[end == pgsTypes::metStart ? pgsTypes::Ahead : pgsTypes::Back] = GetGirderSpacing(end);
 
       // Connections
       for ( int j = 0; j < 2; j++ )

@@ -4015,7 +4015,7 @@ void CBridgeAgentImp::LayoutPoiForSlabBarCutoffs(SpanIndexType span,GirderIndexT
          {
             Float64 dist_from_start = nmRebarData.RightCutoff - girder_start_dist;
             if ( gdr_length < dist_from_start )
-               dist_from_start = gdr_length - 0.0015;
+               dist_from_start = gdr_length - girder_start_dist;
 
             m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start,attribute) );
             m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start+0.0015,POI_FLEXURECAPACITY | POI_GRAPHICAL) );
@@ -4028,7 +4028,7 @@ void CBridgeAgentImp::LayoutPoiForSlabBarCutoffs(SpanIndexType span,GirderIndexT
          {
             Float64 dist_from_start = gdr_length - (nmRebarData.LeftCutoff - girder_end_dist);
             if ( dist_from_start < 0 )
-               dist_from_start = 0.0015;
+               dist_from_start = girder_end_dist;
 
             m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start-0.0015,POI_FLEXURECAPACITY | POI_GRAPHICAL) );
             m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start,attribute) );
@@ -6407,6 +6407,28 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
 
    Float64 stationInc   = (endStation - startStation)/(nPoints-1);
 
+   // Store all deck stations in a set so we are sorted and don't have any duplicate points
+   std::set<Float64> deckStations;
+   Float64 station   = startStation;
+
+   for (CollectionIndexType pntIdx = 0; pntIdx < nPoints; pntIdx++ )
+   {
+      deckStations.insert(station);
+      station += stationInc;
+   }
+
+   // Add in deck transition stations so we don't miss sharp changes in deck geometry
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CDeckDescription* pDeck = pIBridgeDesc->GetDeckDescription();
+
+   std::vector<CDeckPoint>::const_iterator itdend = pDeck->DeckEdgePoints.end();
+   for(std::vector<CDeckPoint>::const_iterator itd = pDeck->DeckEdgePoints.begin(); itd!=itdend; itd++)
+   {
+      Float64 dstat = itd->Station;
+      // No need to check if location is on bridge - that will be picked up later
+      deckStations.insert(dstat);
+   }
+
    CComPtr<IDirection> startDirection, endDirection;
    GetPierDirection(startPierIdx,&startDirection);
    GetPierDirection(endPierIdx,  &endDirection);
@@ -6414,7 +6436,6 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
    startDirection->get_Value(&dirStart);
    endDirection->get_Value(&dirEnd);
 
-   Float64 station   = startStation;
 
    // Locate points along right side of deck
    // Get station of deck points at first and last piers, projected normal to aligment
@@ -6432,9 +6453,11 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
    // Same for the last deck edge. We must deal with this
    thePoints->Add(objStartPointRight);
 
-   CollectionIndexType pntIdx;
-   for (pntIdx = 0; pntIdx < nPoints; pntIdx++ )
+   std::set<Float64>::const_iterator itstend = deckStations.end();
+   for (std::set<Float64>::const_iterator itst = deckStations.begin(); itst!=itstend; itst++)
    {
+      station = *itst;
+
       if (station > start_normal_station_right && station < end_normal_station_right)
       {
          CComPtr<IDirection> objDirection;
@@ -6446,8 +6469,6 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
 
          thePoints->Add(point);
       }
-
-      station   += stationInc;
    }
 
    thePoints->Add(objEndPointRight);
@@ -6464,9 +6485,11 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
 
    thePoints->Add(objEndPointLeft);
 
-   station   = endStation;
-   for ( pntIdx = 0; pntIdx < nPoints; pntIdx++ )
+   std::set<Float64>::const_reverse_iterator itstrend = deckStations.rend();
+   for (std::set<Float64>::const_reverse_iterator itstr = deckStations.rbegin(); itstr!=itstrend; itstr++)
    {
+      station = *itstr;
+
       if (station > start_normal_station_left && station < end_normal_station_left)
       {
          CComPtr<IDirection> objDirection;
@@ -6478,8 +6501,6 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
 
          thePoints->Add(point);
       }
-
-      station   -= stationInc;
    }
 
    thePoints->Add(objStartPointLeft);
@@ -16566,7 +16587,7 @@ Float64 CBridgeAgentImp::GetAsDeckMats(const pgsPointOfInterest& poi,ILongRebarG
          if ( rebarData.TopRebarSize != matRebar::bsNone )
          {
             pBar = lrfdRebarPool::GetInstance()->GetRebar( rebarData.TopRebarType, rebarData.TopRebarGrade, rebarData.TopRebarSize );
-            As_Top = pBar->GetNominalArea()/rebarData.TopSpacing;
+            As_Top = IsZero(rebarData.TopSpacing) ? 0 : pBar->GetNominalArea()/rebarData.TopSpacing;
          }
 
          As_Top += rebarData.TopLumpSum;
@@ -16578,7 +16599,7 @@ Float64 CBridgeAgentImp::GetAsDeckMats(const pgsPointOfInterest& poi,ILongRebarG
          if ( rebarData.BottomRebarSize != matRebar::bsNone )
          {
             pBar = lrfdRebarPool::GetInstance()->GetRebar( rebarData.BottomRebarType, rebarData.BottomRebarGrade, rebarData.BottomRebarSize );
-            As_Bottom = pBar->GetNominalArea()/rebarData.BottomSpacing;
+            As_Bottom = IsZero(rebarData.BottomSpacing) ? 0 : pBar->GetNominalArea()/rebarData.BottomSpacing;
          }
 
          As_Bottom += rebarData.BottomLumpSum;

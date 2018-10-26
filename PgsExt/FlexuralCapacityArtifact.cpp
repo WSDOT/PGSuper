@@ -38,8 +38,9 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-pgsFlexuralCapacityArtifact::pgsFlexuralCapacityArtifact()
+pgsFlexuralCapacityArtifact::pgsFlexuralCapacityArtifact(bool bPositiveMoment)
 {
+   m_bPositiveMoment = bPositiveMoment;
    m_cde = 0;
    m_cdeMax = 0.42;
    m_Mu = 0;
@@ -125,55 +126,26 @@ bool pgsFlexuralCapacityArtifact::IsOverReinforced() const
 
 bool pgsFlexuralCapacityArtifact::IsUnderReinforced() const
 {
-   int demand_sign   = BinarySign( m_Mu );
-   int capacity_sign = BinarySign( m_Mr );
-   if ( !IsZero(m_Mr) && (demand_sign != capacity_sign) )
-      return false;
-
-   if ( 0 < m_Mr && !IsZero(m_Mr) )
+   if ( m_bPositiveMoment )
    {
-      // positive moment
-      if ( m_Mr < m_MrMin && !IsEqual(m_Mr,m_MrMin) )
-         return true;
-   }
-   else if ( m_Mr < 0 && !IsZero(m_Mr) )
-   {
-      // negative moment
-      if ( m_MrMin < m_Mr && !IsEqual(m_Mr,m_MrMin) )
-         return true;
+      return IsLT(m_Mr,m_MrMin) ? true : false;
    }
    else
    {
-	   // Mr is zero... if MrMin is not zero, then the section is under reinforced
-	   if ( !IsZero(m_MrMin) )
-		   return true;
+      return IsGT(m_MrMin,m_Mr) ? true : false;
    }
-
-   return false;
 }
 
 bool pgsFlexuralCapacityArtifact::CapacityPassed() const
 {
-   if ( 0 < m_Mr && !IsZero(m_Mr) )
+   if ( m_bPositiveMoment )
    {
-      // positive moment
-      if ( m_Mr < m_Mu )
-         return false;
-   }
-   else if ( m_Mr < 0 && !IsZero(m_Mr) )
-   {
-      // negative moment
-      if ( m_Mu < m_Mr )
-         return false;
+      return IsLE(m_Mu,m_Mr) ? true : false;
    }
    else
    {
-	   // m_Mr, capacity is zero...
-	   if ( !IsZero(m_Mu) )
-		   return false;
+      return IsGE(m_Mr,m_Mu) ? true : false;
    }
-
-   return true;
 }
 
 bool pgsFlexuralCapacityArtifact::Passed() const
@@ -204,6 +176,7 @@ void pgsFlexuralCapacityArtifact::MakeCopy(const pgsFlexuralCapacityArtifact& rO
    m_MrMin  = rOther.m_MrMin;
    m_Mu     = rOther.m_Mu;
    m_Mr     = rOther.m_Mr;
+   m_bPositiveMoment = rOther.m_bPositiveMoment;
 }
 
 void pgsFlexuralCapacityArtifact::MakeAssignment(const pgsFlexuralCapacityArtifact& rOther)

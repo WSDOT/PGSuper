@@ -82,6 +82,7 @@ public:
                              VehicleIndexType vehicleIndex, 
                              pgsTypes::AnalysisType analysisType,
                              bool bReportTruckConfig,
+                             bool bIncludeRotations,
                              IEAFDisplayUnits* pDisplayUnits) const;
 
    // GROUP: ACCESS

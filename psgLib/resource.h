@@ -528,8 +528,11 @@
 #define IDC_NC_CREEP                    1207
 #define IDC_NC_CREEP_TAG                1208
 #define IDC_SPECIFICATION               1209
+#define IDC_NC_CREEP2                   1209
+#define IDC_CAMBER_VARIABILITY          1209
 #define IDC_K1                          1210
 #define IDC_EC_K1                       1210
+#define IDC_NC_CREEP_TAG2               1210
 #define IDC_MAX_DEBOND                  1211
 #define IDC_EC_K2                       1211
 #define IDC_MAX_DEBOND_PER_ROW          1212
@@ -824,6 +827,7 @@
 #define IDC_CHECK_SPLITTING             1444
 #define IDC_TOP_FLANGE_ROUGHENED        1444
 #define IDC_IS_SUPPORT_LESS_THAN        1444
+#define IDC_CHECK_STIRRUP_COMPATIBILITY 1444
 #define IDC_BRIDGE_LENGTH               1445
 #define IDC_EXTEND_DECK_BARS            1445
 #define IDC_DESIGN_SPLITTING            1445

@@ -716,6 +716,12 @@ void CSpecMainSheet::ExchangeCreepData(CDataExchange* pDX)
    DDX_Text(pDX,IDC_CURING_TIME_FACTOR,m_Entry.m_CuringMethodTimeAdjustmentFactor);
    DDV_MinMaxDouble(pDX,m_Entry.m_CuringMethodTimeAdjustmentFactor,1,999);
 
+   DDX_Percentage(pDX,IDC_CAMBER_VARIABILITY, m_Entry.m_CamberVariability);
+   if ( pDX->m_bSaveAndValidate )
+   {
+      Float64 val = m_Entry.m_CamberVariability * 100.0;
+      DDV_Range( pDX, mfcDDV::LE,mfcDDV::GE,val,0.0,100.0);
+   }
 }
 
 void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
@@ -917,6 +923,8 @@ void CSpecMainSheet::ExchangeLimitsData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_LWC_GIRDER_FC,   IDC_LWC_GIRDER_FC_UNIT,   m_Entry.m_MaxGirderFc[pgsTypes::AllLightweight],           pDisplayUnits->Stress);
    DDX_UnitValueAndTag(pDX, IDC_LWC_UNIT_WEIGHT, IDC_LWC_UNIT_WEIGHT_UNIT, m_Entry.m_MaxConcreteUnitWeight[pgsTypes::AllLightweight], pDisplayUnits->Density);
    DDX_UnitValueAndTag(pDX, IDC_LWC_AGG_SIZE,    IDC_LWC_AGG_SIZE_UNIT,    m_Entry.m_MaxConcreteAggSize[pgsTypes::AllLightweight],    pDisplayUnits->ComponentDim);
+
+   DDX_Check_Bool(pDX, IDC_CHECK_STIRRUP_COMPATIBILITY, m_Entry.m_DoCheckStirrupSpacingCompatibility);
 }
  
 void CSpecMainSheet::UploadDesignData(CDataExchange* pDX)

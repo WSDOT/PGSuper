@@ -210,6 +210,7 @@ void CBoxBeamFactoryImpl::LayoutSectionChangePointsOfInterest(IBroker* pBroker,S
 
       if ( end_length < endBlockLength )
       {
+         ebStages.clear();
          ebStages.push_back(pgsTypes::CastingYard); // end block is after brg... only add to cy stage
          ebStages.push_back(pgsTypes::Lifting);
          ebStages.push_back(pgsTypes::Hauling);
