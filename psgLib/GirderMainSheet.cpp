@@ -531,7 +531,7 @@ void CGirderMainSheet::UploadTransverseData()
    // last confinement zone
    m_ShearSteelPage.FillLastZone(vec.size());
    int sel = m_Entry.GetNumConfinementZones();
-   if (sel <= vec.size())
+   if (sel <= (int)vec.size())
    {
       m_ShearSteelPage.m_LastZone.SetCurSel(sel);
    }

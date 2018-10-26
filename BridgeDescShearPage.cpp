@@ -117,7 +117,7 @@ void CGirderDescShearPage::DoDataExchange(CDataExchange* pDX)
             lsi.StirrupSpacing = ::ConvertToSysUnits(lsi.StirrupSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
             // make sure stirrup spacing is greater than zone length
-            if ((0 < lsi.VertBarSize || 0 < lsi.HorzBarSize) && zn < nrows)
+            if ((matRebar::bsNone != lsi.VertBarSize || matRebar::bsNone != lsi.HorzBarSize) && zn < nrows)
             {
                if (lsi.ZoneLength<lsi.StirrupSpacing)
                {
@@ -129,7 +129,7 @@ void CGirderDescShearPage::DoDataExchange(CDataExchange* pDX)
             }
 
             // make sure stirrup spacing is >0 if stirrups or confinement bars exist
-            if ( (0 < lsi.VertBarSize || 0 < lsi.HorzBarSize) && lsi.StirrupSpacing<=0.0)
+            if ( (matRebar::bsNone != lsi.VertBarSize || matRebar::bsNone != lsi.HorzBarSize) && lsi.StirrupSpacing<=0.0)
             {
                CString msg;
                msg.Format(_T("Bar spacing must be greater than zero if stirrups exist in Shear Zone %d"),zn);
@@ -188,7 +188,7 @@ void CGirderDescShearPage::DoDataExchange(CDataExchange* pDX)
       // last confinement zone
       FillLastZone(vec.size());
       Int32 sel = m_ShearData.NumConfinementZones;
-      if (sel <= vec.size())
+      if (sel <= (Int32)vec.size())
       {
          m_LastZone.SetCurSel(sel);
       }

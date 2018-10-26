@@ -34,6 +34,8 @@
 
 #include <algorithm>
 
+#include <LRFD\RebarPool.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -106,15 +108,16 @@ void CBridgeDescDeckRebarGrid::AddRow()
    SetRowStyle(nRow);
 
    // Set some default data
+   CBridgeDescDeckReinforcementPage* pParent = (CBridgeDescDeckReinforcementPage*)GetParent();
    CDeckRebarData::NegMomentRebarData rebarData;
    rebarData.PierIdx = 1;
    rebarData.Mat = CDeckRebarData::TopMat;
    rebarData.LumpSum = 0;
-   rebarData.RebarGrade = matRebar::Grade60;
-   rebarData.RebarType = matRebar::A615;
-   rebarData.RebarSize = matRebar::bs3;
-   rebarData.Spacing = ::ConvertToSysUnits(18,unitMeasure::Inch);
-   rebarData.LeftCutoff = ::ConvertToSysUnits(10,unitMeasure::Feet);
+   rebarData.RebarGrade = pParent->m_RebarData.TopRebarGrade;
+   rebarData.RebarType  = pParent->m_RebarData.TopRebarType;
+   rebarData.RebarSize  = matRebar::bs3;
+   rebarData.Spacing     = ::ConvertToSysUnits(18,unitMeasure::Inch);
+   rebarData.LeftCutoff  = ::ConvertToSysUnits(10,unitMeasure::Feet);
    rebarData.RightCutoff = ::ConvertToSysUnits(10,unitMeasure::Feet);
 
    PutRowData(nRow,rebarData);
@@ -344,12 +347,10 @@ bool CBridgeDescDeckRebarGrid::GetRowData(ROWCOL nRow, CDeckRebarData::NegMoment
    pRebarData->LumpSum = As;
 
    // bar size
-#pragma Reminder("BUG: rebar in grid")
-   //CString strBar = GetCellValue(nRow,4);
-   //if ( strBar == _T("None") )
-   //   pRebarData->RebarKey = INVALID_BAR_SIZE;
-   //else
-   //   pRebarData->RebarKey = _tstoi( strBar.Right(1) );
+   CBridgeDescDeckReinforcementPage* pParent = (CBridgeDescDeckReinforcementPage*)GetParent();
+   pRebarData->RebarGrade = pParent->m_RebarData.TopRebarGrade;
+   pRebarData->RebarType  = pParent->m_RebarData.TopRebarType;
+   pRebarData->RebarSize  = GetBarSize(nRow,4);
    
    // spacing
    CString strSpacing = GetCellValue(nRow,5);
@@ -370,6 +371,35 @@ bool CBridgeDescDeckRebarGrid::GetRowData(ROWCOL nRow, CDeckRebarData::NegMoment
    pRebarData->RightCutoff = cutoff;
 
    return true;
+}
+
+matRebar::Size CBridgeDescDeckRebarGrid::GetBarSize(ROWCOL row,ROWCOL col)
+{
+   CString s = GetCellValue(row, col);
+   s.TrimLeft();
+   int l = s.GetLength();
+   CString s2 = s.Right(l-1);
+   int i = _tstoi(s2);
+   if (s.IsEmpty() || (i==0))
+      return matRebar::bsNone;
+
+   switch(i)
+   {
+   case 3:  return matRebar::bs3;
+   case 4:  return matRebar::bs4;
+   case 5:  return matRebar::bs5;
+   case 6:  return matRebar::bs6;
+   case 7:  return matRebar::bs7;
+   case 8:  return matRebar::bs8;
+   case 9:  return matRebar::bs9;
+   case 10: return matRebar::bs10;
+   case 11: return matRebar::bs11;
+   case 14: return matRebar::bs14;
+   case 18: return matRebar::bs18;
+   default: ATLASSERT(false);
+   }
+
+   return matRebar::bsNone;
 }
 
 void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::NegMomentRebarData& rebarData)
@@ -393,17 +423,9 @@ void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::Neg
    SetValueRange(CGXRange(nRow,3),As);
 
    // bar size
-#pragma Reminder("BUG: rebar in grid")
-   //if ( rebarData.RebarKey == INVALID_BAR_SIZE )
-   //{
-   //   SetValueRange(CGXRange(nRow,4),_T("None"));
-   //}
-   //else
-   //{
-   //   CString strValue;
-   //   strValue.Format(_T("#%d"),rebarData.RebarKey);
-   //   SetValueRange(CGXRange(nRow,4),strValue);
-   //}
+   CString tmp;
+   tmp.Format(_T("%s"),lrfdRebarPool::GetBarSize(rebarData.RebarSize).c_str());
+   VERIFY(SetValueRange(CGXRange(nRow, 4), tmp));
 
    // spacing
    double spacing = rebarData.Spacing;
