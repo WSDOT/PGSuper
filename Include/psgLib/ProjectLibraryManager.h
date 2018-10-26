@@ -49,6 +49,7 @@ public:
    Float64 m_LLIMmax[6];
 
    // General Lump Sum loss paramters
+   bool m_bGeneralLumpSum;
    Float64 m_FinalLosses;
    Float64 m_LiftingLosses;
    Float64 m_ShippingLosses;

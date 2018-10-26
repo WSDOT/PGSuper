@@ -922,11 +922,15 @@ void failed_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisp
          break;
 
       case pgsDesignArtifact::NoDevelopmentLengthForLongReinfShear:
-         *pParagraph << _T("Additional longitudinal MS bars are required to meet longitudinal reinforcement for shear requirements. However, the face of support is at the end of the girder, so there is no room for rebar development. Consider changing the connection to allow for development.") << rptNewLine;
+         *pParagraph << _T("Additional longitudinal mild steel reinforcement bars are required to meet longitudinal reinforcement for shear requirements. However, the face of support is at the end of the girder, so there is no room for rebar development. Consider changing the connection to allow for development.") << rptNewLine;
          break;
 
       case pgsDesignArtifact::NoStrandDevelopmentLengthForLongReinfShear:
          *pParagraph << _T("Additional strands are required to meet longitudinal reinforcement for shear requirements. However, the face of support is at the end of the girder, so there is no room for prestress development. Consider changing the connection to allow for development.") << rptNewLine;
+         break;
+
+      case pgsDesignArtifact::TooManyBarsForLongReinfShear:
+         *pParagraph << _T("Could not add enough mild steel reinforcement to meet longitudinal reinforcement for shear requirements while maintaining minimum spacing requirements per LRFD 5.10.3.1.2.") << rptNewLine;
          break;
 
       case pgsDesignArtifact::TooMuchStrandsForLongReinfShear:

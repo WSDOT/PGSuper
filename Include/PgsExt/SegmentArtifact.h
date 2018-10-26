@@ -106,10 +106,10 @@ public:
    const pgsConstructabilityArtifact* GetConstructabilityArtifact() const;
    pgsConstructabilityArtifact* GetConstructabilityArtifact();
 
-   void SetLiftingAnalysisArtifact(pgsLiftingAnalysisArtifact* artifact);
+   void SetLiftingAnalysisArtifact(const pgsLiftingAnalysisArtifact* artifact);
    const pgsLiftingAnalysisArtifact* GetLiftingAnalysisArtifact() const;
    
-   void SetHaulingAnalysisArtifact(pgsHaulingAnalysisArtifact*  artifact);
+   void SetHaulingAnalysisArtifact(const pgsHaulingAnalysisArtifact*  artifact);
    const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact() const;
 
    void SetCastingYardCapacityWithMildRebar(Float64 fAllow);
@@ -187,8 +187,8 @@ private:
 
    pgsPrecastIGirderDetailingArtifact m_PrecastIGirderDetailingArtifact;
 
-   std::auto_ptr<pgsLiftingAnalysisArtifact> m_pLiftingAnalysisArtifact;
-   std::auto_ptr<pgsHaulingAnalysisArtifact> m_pHaulingAnalysisArtifact;
+   const pgsLiftingAnalysisArtifact* m_pLiftingAnalysisArtifact; // pointer is not owned by this object
+   const pgsHaulingAnalysisArtifact* m_pHaulingAnalysisArtifact; // pointer is not owned by this object
 
    pgsDebondArtifact m_DebondArtifact[3];
    Float64 m_CastingYardAllowable; // allowable tensile stress for casting yard with required mild rebar

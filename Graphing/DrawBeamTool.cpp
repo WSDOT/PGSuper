@@ -655,33 +655,40 @@ void CDrawBeamTool::DrawPier(IntervalIndexType intervalIdx,const CPierData2* pPi
    }
    else
    {
-      const CClosurePourData* pClosurePour = pPier->GetClosurePour(0);
-      ATLASSERT(pClosurePour);
-      CClosureKey closureKey(pClosurePour->GetClosureKey());
-      IntervalIndexType closurePourIntervalIdx = pIntervals->GetCastClosurePourInterval(closureKey);
-
       pgsTypes::PierSegmentConnectionType connectionType = pPier->GetSegmentConnectionType();
-      if ( connectionType == pgsTypes::psctContinousClosurePour )
-      {
-         if ( closurePourIntervalIdx < intervalIdx )
-            DrawContinuous(p,pDC);
-         else
-            DrawHinge(p,pDC);
-      }
-      else if ( connectionType == pgsTypes::psctIntegralClosurePour )
-      {
-         if ( closurePourIntervalIdx < intervalIdx )
-            DrawIntegral(p,pDC);
-         else
-            DrawHinge(p,pDC);
-      }
-      else if ( connectionType == pgsTypes::psctContinuousSegment )
+      if ( connectionType == pgsTypes::psctContinuousSegment )
       {
          DrawContinuous(p,pDC);
       }
       else if ( connectionType == pgsTypes::psctIntegralSegment )
       {
          DrawIntegral(p,pDC);
+      }
+      else
+      {
+         const CClosurePourData* pClosurePour = pPier->GetClosurePour(0); // use gdrIdx = 0 because closure is the same for all girders
+         ATLASSERT(pClosurePour);
+         CClosureKey closureKey(pClosurePour->GetClosureKey());
+         IntervalIndexType closurePourIntervalIdx = pIntervals->GetCastClosurePourInterval(closureKey);
+
+         if ( connectionType == pgsTypes::psctContinousClosurePour )
+         {
+            if ( closurePourIntervalIdx < intervalIdx )
+               DrawContinuous(p,pDC);
+            else
+               DrawHinge(p,pDC);
+         }
+         else if ( connectionType == pgsTypes::psctIntegralClosurePour )
+         {
+            if ( closurePourIntervalIdx < intervalIdx )
+               DrawIntegral(p,pDC);
+            else
+               DrawHinge(p,pDC);
+         }
+         else
+         {
+            ATLASSERT(false); // is there a new connectionType?
+         }
       }
    }
 

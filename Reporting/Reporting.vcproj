@@ -1131,6 +1131,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TendonStressCheckTable.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\TimeStepParametersChapterBuilder.cpp"
 				>
 			</File>
@@ -1140,6 +1144,10 @@
 			</File>
 			<File
 				RelativePath=".\TSRemovalMomentsTable.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TSRemovalReactionTable.cpp"
 				>
 			</File>
 			<File
@@ -1715,6 +1723,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\Reporting\TendonStressCheckTable.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\Reporting\TimeStepParametersChapterBuilder.h"
 				>
 			</File>
@@ -1724,6 +1736,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\TSRemovalMomentsTable.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\TSRemovalReactionTable.h"
 				>
 			</File>
 			<File

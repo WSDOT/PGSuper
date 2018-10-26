@@ -252,12 +252,14 @@ void CSplicedUBeamFactory::LayoutGirderLine(IBroker* pBroker,StatusGroupIDType s
 
    if ( bHasClosure[etStart] )
    {
-      segment->put_ClosurePourMaterial(etStart,closureMaterial[etStart]);
+      segment->put_ClosurePourForegroundMaterial(etStart,closureMaterial[etStart]);
+      segment->put_ClosurePourBackgroundMaterial(etStart,NULL);
    }
 
    if ( bHasClosure[etEnd] )
    {
-      segment->put_ClosurePourMaterial(etEnd,closureMaterial[etEnd]);
+      segment->put_ClosurePourForegroundMaterial(etEnd,closureMaterial[etEnd]);
+      segment->put_ClosurePourBackgroundMaterial(etEnd,NULL);
    }
 
    ssmbr->AddSegment(segment);

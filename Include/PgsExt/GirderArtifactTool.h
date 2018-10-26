@@ -77,23 +77,6 @@ inline bool flexure_stress_failures(IBroker* pBroker,const CSegmentKey& segmentK
       const pgsFlexuralStressArtifact* pFlexure = pArtifact->GetFlexuralStressArtifact( intervalIdx,ls,stressType,idx );
       if( !pFlexure->Passed() )
          return true;
-/*
-      if ( liveLoadIntervalIdx <= intervalIdx && ls == pgsTypes::ServiceIII )
-      {
-	      if( !pFlexure->BottomPassed() )
-            return true;;
-      }
-      else if ( liveLoadIntervalIdx <= intervalIdx && (ls == pgsTypes::ServiceIA || ls == pgsTypes::ServiceI || ls == pgsTypes::FatigueI )  )
-      {
-	      if( !pFlexure->TopPassed() )
-            return true;
-      }
-      else
-      {
-	      if( !pFlexure->Passed() )
-            return true;
-      }
-*/
    }
 
    return false;
@@ -105,12 +88,18 @@ inline void list_stress_failures(IBroker* pBroker, FailureList& rFailures,
 {
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
-   const pgsTendonStressArtifact* pTendonStress = pGirderArtifact->GetTendonStressArtifact();
-   if ( !pTendonStress->Passed() )
+   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
+   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
-#pragma Reminder("UPDATE: need to do a better job reporting tendon stress failures")
-      // There are several reasons
-      rFailures.push_back(_T("Stresses in the tendons are too high."));
+      const pgsTendonStressArtifact* pTendonStress = pGirderArtifact->GetTendonStressArtifact(ductIdx);
+      if ( !pTendonStress->Passed() )
+      {
+   #pragma Reminder("UPDATE: need to do a better job reporting tendon stress failures")
+         // Which duct?
+         // There are several reasons - what failed?
+         rFailures.push_back(_T("Stresses in the tendons are too high."));
+      }
    }
 
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -463,12 +452,6 @@ inline void list_various_failures(IBroker* pBroker,FailureList& rFailures,const 
       {
          rFailures.push_back(_T("Global Girder Stability check failed"));
       }
-
-      if ( !pConstruct->RebarGeometryCheckPassed() )
-      {
-         rFailures.push_back(_T("Rebars are located outside of the girder section. Rebar geometry check failed"));
-      }
-
       // Lifting
       const pgsLiftingAnalysisArtifact* pLifting = pArtifact->GetLiftingAnalysisArtifact();
       if (pLifting!=NULL && !pLifting->Passed() )

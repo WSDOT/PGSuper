@@ -491,6 +491,13 @@ struct pgsTypes
       TXDOT_REFINED_2004  = 10, // TxDOT's May, 09 decision is to use refined losses from AASHTO 2004
       TIME_STEP           = 11, // Losses are computed with a time-step method
    } LossMethod;
+
+   typedef enum JackingEndType
+   {
+      jeLeft,
+      jeRight,
+      jeBoth
+   } JackingEndType;
 };
 
 

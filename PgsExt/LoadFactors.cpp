@@ -46,9 +46,9 @@ CLoadFactors::CLoadFactors()
 
    DCmin[pgsTypes::ServiceIA]   = 0.5;      DCmax[pgsTypes::ServiceIA]   = 0.5;
    DWmin[pgsTypes::ServiceIA]   = 0.5;      DWmax[pgsTypes::ServiceIA]   = 0.5;
-   CRmin[pgsTypes::ServiceIA]   = 0.5;      CRmax[pgsTypes::ServiceIA]   = 0.5;
-   SHmin[pgsTypes::ServiceIA]   = 0.5;      SHmax[pgsTypes::ServiceIA]   = 0.5;
-   PSmin[pgsTypes::ServiceIA]   = 0.5;      PSmax[pgsTypes::ServiceIA]   = 0.5;
+   CRmin[pgsTypes::ServiceIA]   = 0.0;      CRmax[pgsTypes::ServiceIA]   = 0.0;
+   SHmin[pgsTypes::ServiceIA]   = 0.0;      SHmax[pgsTypes::ServiceIA]   = 0.0;
+   PSmin[pgsTypes::ServiceIA]   = 0.0;      PSmax[pgsTypes::ServiceIA]   = 0.0;
    LLIMmin[pgsTypes::ServiceIA] = 1.0;      LLIMmax[pgsTypes::ServiceIA] = 1.0;
 
    DCmin[pgsTypes::ServiceIII]   = 1.0;     DCmax[pgsTypes::ServiceIII]   = 1.0;
@@ -60,23 +60,23 @@ CLoadFactors::CLoadFactors()
 
    DCmin[pgsTypes::StrengthI]   = 0.90;     DCmax[pgsTypes::StrengthI]   = 1.25;
    DWmin[pgsTypes::StrengthI]   = 0.65;     DWmax[pgsTypes::StrengthI]   = 1.50;
-   CRmin[pgsTypes::StrengthI]   = 0.90;     CRmax[pgsTypes::StrengthI]   = 1.25;
-   SHmin[pgsTypes::StrengthI]   = 0.90;     SHmax[pgsTypes::StrengthI]   = 1.25;
-   PSmin[pgsTypes::StrengthI]   = 0.90;     PSmax[pgsTypes::StrengthI]   = 1.25;
+   CRmin[pgsTypes::StrengthI]   = 1.00;     CRmax[pgsTypes::StrengthI]   = 1.00;
+   SHmin[pgsTypes::StrengthI]   = 1.00;     SHmax[pgsTypes::StrengthI]   = 1.00;
+   PSmin[pgsTypes::StrengthI]   = 1.00;     PSmax[pgsTypes::StrengthI]   = 1.00;
    LLIMmin[pgsTypes::StrengthI] = 1.75;     LLIMmax[pgsTypes::StrengthI] = 1.75;
 
    DCmin[pgsTypes::StrengthII]   = 0.90;    DCmax[pgsTypes::StrengthII]   = 1.25;
    DWmin[pgsTypes::StrengthII]   = 0.65;    DWmax[pgsTypes::StrengthII]   = 1.50;
-   CRmin[pgsTypes::StrengthII]   = 0.90;    CRmax[pgsTypes::StrengthII]   = 1.25;
-   SHmin[pgsTypes::StrengthII]   = 0.90;    SHmax[pgsTypes::StrengthII]   = 1.25;
-   PSmin[pgsTypes::StrengthII]   = 0.90;    PSmax[pgsTypes::StrengthII]   = 1.25;
+   CRmin[pgsTypes::StrengthII]   = 1.00;    CRmax[pgsTypes::StrengthII]   = 1.00;
+   SHmin[pgsTypes::StrengthII]   = 1.00;    SHmax[pgsTypes::StrengthII]   = 1.00;
+   PSmin[pgsTypes::StrengthII]   = 1.00;    PSmax[pgsTypes::StrengthII]   = 1.00;
    LLIMmin[pgsTypes::StrengthII] = 1.35;    LLIMmax[pgsTypes::StrengthII] = 1.35;
 
    DCmin[pgsTypes::FatigueI]   = 0.5;      DCmax[pgsTypes::FatigueI]   = 0.5;
    DWmin[pgsTypes::FatigueI]   = 0.5;      DWmax[pgsTypes::FatigueI]   = 0.5;
-   CRmin[pgsTypes::FatigueI]   = 0.5;      CRmax[pgsTypes::FatigueI]   = 0.5;
-   SHmin[pgsTypes::FatigueI]   = 0.5;      SHmax[pgsTypes::FatigueI]   = 0.5;
-   PSmin[pgsTypes::FatigueI]   = 0.5;      PSmax[pgsTypes::FatigueI]   = 0.5;
+   CRmin[pgsTypes::FatigueI]   = 0.0;      CRmax[pgsTypes::FatigueI]   = 0.0;
+   SHmin[pgsTypes::FatigueI]   = 0.0;      SHmax[pgsTypes::FatigueI]   = 0.0;
+   PSmin[pgsTypes::FatigueI]   = 0.0;      PSmax[pgsTypes::FatigueI]   = 0.0;
    LLIMmin[pgsTypes::FatigueI] = 1.5;      LLIMmax[pgsTypes::FatigueI] = 1.5;
 }
 
@@ -201,12 +201,12 @@ HRESULT CLoadFactors::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
    pStrLoad->BeginUnit(_T("LoadFactors"));
 
+   Float64 version;
+   pStrLoad->get_Version(&version);
+
    for ( int i = 0; i < nLimitStates; i++ )
    {
       pStrLoad->BeginUnit(strLimitState[i].c_str());
-
-      Float64 version;
-      pStrLoad->get_Version(&version);
 
       CComVariant var;
       var.vt = VT_R8;

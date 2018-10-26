@@ -234,7 +234,7 @@ void CCrownSlopeGrid::SetRowData(ROWCOL nRow,CrownData2& data)
    objStation.CoCreateInstance(CLSID_Station);
    objStation->put_Value(station);
    CComBSTR bstrStation;
-   objStation->AsString(unit_mode,&bstrStation);
+   objStation->AsString(unit_mode,VARIANT_FALSE,&bstrStation);
    SetValueRange(CGXRange(nRow,1),CString(bstrStation));
 
    SetValueRange(CGXRange(nRow,2),data.Left);

@@ -184,24 +184,24 @@ pgsConstructabilityArtifact* pgsSegmentArtifact::GetConstructabilityArtifact()
    return &m_ConstructabilityArtifact;
 }
 
-void pgsSegmentArtifact::SetLiftingAnalysisArtifact(pgsLiftingAnalysisArtifact* artifact)
+void pgsSegmentArtifact::SetLiftingAnalysisArtifact(const pgsLiftingAnalysisArtifact* artifact)
 {
-   m_pLiftingAnalysisArtifact = std::auto_ptr<pgsLiftingAnalysisArtifact>(artifact);
+   m_pLiftingAnalysisArtifact = artifact;
 }
 
 const pgsLiftingAnalysisArtifact* pgsSegmentArtifact::GetLiftingAnalysisArtifact() const
 {
-   return m_pLiftingAnalysisArtifact.get();
+   return m_pLiftingAnalysisArtifact;
 }
 
-void pgsSegmentArtifact::SetHaulingAnalysisArtifact(pgsHaulingAnalysisArtifact* artifact)
+void pgsSegmentArtifact::SetHaulingAnalysisArtifact(const pgsHaulingAnalysisArtifact* artifact)
 {
-   m_pHaulingAnalysisArtifact = std::auto_ptr<pgsHaulingAnalysisArtifact>(artifact);;
+   m_pHaulingAnalysisArtifact = artifact;
 }
 
 const pgsHaulingAnalysisArtifact* pgsSegmentArtifact::GetHaulingAnalysisArtifact() const
 {
-   return m_pHaulingAnalysisArtifact.get();
+   return m_pHaulingAnalysisArtifact;
 }
 
 void pgsSegmentArtifact::SetCastingYardCapacityWithMildRebar(Float64 fAllow)
@@ -238,10 +238,10 @@ bool pgsSegmentArtifact::Passed() const
 
    bPassed &= m_PrecastIGirderDetailingArtifact.Passed();
 
-   if (m_pLiftingAnalysisArtifact.get()!=NULL)
+   if (m_pLiftingAnalysisArtifact != NULL)
       bPassed &= m_pLiftingAnalysisArtifact->Passed();
 
-   if (m_pHaulingAnalysisArtifact.get()!=NULL)
+   if (m_pHaulingAnalysisArtifact != NULL)
       bPassed &= m_pHaulingAnalysisArtifact->Passed();
 
    for ( Uint16 i = 0; i < 3; i++ )
@@ -339,7 +339,7 @@ Float64 pgsSegmentArtifact::GetRequiredConcreteStrength() const
 #pragma Reminder("REVIEW: why is lifting used to determine f'c")
    // This came from the merge of RDP's code for mild rebar for tension
    // Why is lifting being considered for final strength? Lifting controls release strength
-   if (m_pLiftingAnalysisArtifact.get() != NULL)
+   if (m_pLiftingAnalysisArtifact != NULL)
    {
       Float64 fc_reqd_Lifting_comp, fc_reqd_Lifting_tens, fc_reqd_Lifting_tens_wbar;
       m_pLiftingAnalysisArtifact->GetRequiredConcreteStrength(&fc_reqd_Lifting_comp,&fc_reqd_Lifting_tens, &fc_reqd_Lifting_tens_wbar);
@@ -352,7 +352,7 @@ Float64 pgsSegmentArtifact::GetRequiredConcreteStrength() const
       fc_reqd = _cpp_max(fc_reqd,fc_reqd_Lifting);
    }
 
-   if (m_pHaulingAnalysisArtifact.get()!=NULL)
+   if (m_pHaulingAnalysisArtifact != NULL)
    {
       Float64 fc_reqd_hauling_comp, fc_reqd_hauling_tens, fc_reqd_hauling_tens_wbar;
       m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(&fc_reqd_hauling_comp,&fc_reqd_hauling_tens, &fc_reqd_hauling_tens_wbar);
@@ -402,7 +402,7 @@ Float64 pgsSegmentArtifact::GetRequiredReleaseStrength() const
       }
    }
  
-   if (m_pLiftingAnalysisArtifact.get() != NULL)
+   if (m_pLiftingAnalysisArtifact != NULL)
    {
       Float64 fc_reqd_lifting_comp,fc_reqd_lifting_tens_norebar,fc_reqd_lifting_tens_withrebar;
       m_pLiftingAnalysisArtifact->GetRequiredConcreteStrength(&fc_reqd_lifting_comp,&fc_reqd_lifting_tens_norebar,&fc_reqd_lifting_tens_withrebar);
@@ -432,16 +432,8 @@ void pgsSegmentArtifact::MakeCopy(const pgsSegmentArtifact& rOther)
    m_HoldDownForceArtifact           = rOther.m_HoldDownForceArtifact;
    m_ConstructabilityArtifact        = rOther.m_ConstructabilityArtifact;
 
-   if(rOther.m_pLiftingAnalysisArtifact.get() != NULL)
-   {
-      m_pLiftingAnalysisArtifact  = std::auto_ptr<pgsLiftingAnalysisArtifact>(new pgsLiftingAnalysisArtifact);
-      *m_pLiftingAnalysisArtifact = *rOther.m_pLiftingAnalysisArtifact;
-   }
-
-   if(rOther.m_pHaulingAnalysisArtifact.get() != NULL)
-   {
-      m_pHaulingAnalysisArtifact = std::auto_ptr<pgsHaulingAnalysisArtifact>(rOther.m_pHaulingAnalysisArtifact->Clone());
-   }
+   m_pLiftingAnalysisArtifact = rOther.m_pLiftingAnalysisArtifact;
+   m_pHaulingAnalysisArtifact = rOther.m_pHaulingAnalysisArtifact;
 
    m_CastingYardAllowable            = rOther.m_CastingYardAllowable;
    for ( Uint16 i = 0; i < 3; i++ )

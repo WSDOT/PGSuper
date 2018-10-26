@@ -61,9 +61,14 @@ inline bool DoDoReportAtPier(PierIndexType pierIdx,const CGirderKey& girderKey, 
       {
          return bleft;
       }
-      else
+      else if ( pierIdx == endPierIdx )
       {
          return bright;
+      }
+      else
+      {
+         // this is a pier within a group (splice girder) and girder bearing reactions aren't available here
+         return false;
       }
    }
 }

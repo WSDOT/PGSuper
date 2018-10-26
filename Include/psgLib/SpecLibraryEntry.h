@@ -68,6 +68,9 @@ PSGLIBTPL sysSubjectT<SpecLibraryEntryObserver, SpecLibraryEntry>;
 #define BEFORE_TRANSFER  1
 #define AFTER_TRANSFER   2
 #define AFTER_ALL_LOSSES 3
+#define PRIOR_TO_SEATING 1
+#define ANCHORAGES_AFTER_SEATING 2
+#define ELSEWHERE_AFTER_SEATING 4
 
 #define STRESS_REL 0
 #define LOW_RELAX  1
@@ -911,6 +914,10 @@ public:
    void SetStrandStressCoefficient(UINT stage,UINT strandType, Float64 coeff);
    Float64 GetStrandStressCoefficient(UINT stage,UINT strandType) const;
 
+   bool CheckTendonStressAtJacking() const;
+   bool CheckTendonStressPriorToSeating() const;
+   Float64 GetTendonStressCoefficient(UINT state,UINT strandType) const;
+
    //------------------------------------------------------------------------
    // Determine if we want to evaluate deflection due to live load ala LRFD 2.5.2.5.2
    bool GetDoEvaluateLLDeflection() const;
@@ -1224,6 +1231,11 @@ private:
    // Strand stress coefficients
    bool m_bCheckStrandStress[4];
    Float64 m_StrandStressCoeff[4][2];
+
+   // Tendon Stress Coefficients
+   bool m_bCheckTendonStressAtJacking;
+   bool m_bCheckTendonStressPriorToSeating;
+   Float64 m_TendonStressCoeff[5][2];
 
    // live load deflection
    bool m_bDoEvaluateDeflection;

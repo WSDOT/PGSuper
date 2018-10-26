@@ -170,6 +170,7 @@ CStrandData::CStrandData()
    ResetPrestressData();
 
    NumPermStrandsType = CStrandData::npsStraightHarped;
+   bConvertExtendedStrands = false;
 }  
 
 CStrandData::CStrandData(const CStrandData& rOther)
@@ -701,7 +702,7 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("PrestressData"),11.0);
+   pStrSave->BeginUnit(_T("PrestressData"),12.0);
 
    pStrSave->put_Property(_T("HsoEndMeasurement"), CComVariant(HsoEndMeasurement));
    pStrSave->put_Property(_T("HpOffsetAtEnd"), CComVariant(HpOffsetAtEnd));
@@ -715,6 +716,73 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("NumTempStrands"), CComVariant(Nstrands[pgsTypes::Temporary]));
    pStrSave->put_Property(_T("NumPermanentStrands"), CComVariant(Nstrands[pgsTypes::Permanent]));
 
+
+   // added in version 12
+   pStrSave->BeginUnit(_T("ExtendedStrands"),2.0); // storing grid index in version 2 (version 1 was strand index)
+   pStrSave->BeginUnit(_T("Start"),1.0);
+   pStrSave->BeginUnit(_T("Straight"),1.0);
+   pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Straight][pgsTypes::metStart].size()));
+   std::vector<GridIndexType>::iterator iter(NextendedStrands[pgsTypes::Straight][pgsTypes::metStart].begin());
+   std::vector<GridIndexType>::iterator end(NextendedStrands[pgsTypes::Straight][pgsTypes::metStart].end());
+   for ( ; iter != end; iter++ )
+   {
+      pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
+   }
+   pStrSave->EndUnit(); // Straight
+
+   pStrSave->BeginUnit(_T("Harped"),1.0);
+   pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Harped][pgsTypes::metStart].size()));
+   iter = NextendedStrands[pgsTypes::Harped][pgsTypes::metStart].begin();
+   end  = NextendedStrands[pgsTypes::Harped][pgsTypes::metStart].end();
+   for ( ; iter != end; iter++ )
+   {
+      pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
+   }
+   pStrSave->EndUnit(); // Harped
+
+   pStrSave->BeginUnit(_T("Temporary"),1.0);
+   pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Temporary][pgsTypes::metStart].size()));
+   iter = NextendedStrands[pgsTypes::Temporary][pgsTypes::metStart].begin();
+   end  = NextendedStrands[pgsTypes::Temporary][pgsTypes::metStart].end();
+   for ( ; iter != end; iter++ )
+   {
+      pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
+   }
+   pStrSave->EndUnit(); // Temporary
+    pStrSave->EndUnit(); // Start
+
+   pStrSave->BeginUnit(_T("End"),1.0);
+   pStrSave->BeginUnit(_T("Straight"),1.0);
+   pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Straight][pgsTypes::metEnd].size()));
+   iter = NextendedStrands[pgsTypes::Straight][pgsTypes::metEnd].begin();
+   end  = NextendedStrands[pgsTypes::Straight][pgsTypes::metEnd].end();
+   for ( ; iter != end; iter++ )
+   {
+      pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
+   }
+   pStrSave->EndUnit(); // Straight
+
+   pStrSave->BeginUnit(_T("Harped"),1.0);
+   pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Harped][pgsTypes::metEnd].size()));
+   iter = NextendedStrands[pgsTypes::Harped][pgsTypes::metEnd].begin();
+   end  = NextendedStrands[pgsTypes::Harped][pgsTypes::metEnd].end();
+   for ( ; iter != end; iter++ )
+   {
+      pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
+   }
+   pStrSave->EndUnit(); // Harped
+
+   pStrSave->BeginUnit(_T("Temporary"),1.0);
+   pStrSave->put_Property(_T("Count"),CComVariant(NextendedStrands[pgsTypes::Temporary][pgsTypes::metEnd].size()));
+   iter = NextendedStrands[pgsTypes::Temporary][pgsTypes::metEnd].begin();
+   end  = NextendedStrands[pgsTypes::Temporary][pgsTypes::metEnd].end();
+   for ( ; iter != end; iter++ )
+   {
+      pStrSave->put_Property(_T("Strand"),CComVariant(*iter));
+   }
+   pStrSave->EndUnit(); // Temporary
+   pStrSave->EndUnit(); // End
+   pStrSave->EndUnit(); // ExtendedStrands
 
    if (NumPermStrandsType == CStrandData::npsDirectSelection)
    {
@@ -767,10 +835,10 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->BeginUnit(_T("StraightStrandDebonding"),1.0);
    StrandIndexType nDebondInfo = Debond[pgsTypes::Straight].size();
    pStrSave->put_Property(_T("DebondInfoCount"),CComVariant(nDebondInfo));
-   std::vector<CDebondData>::iterator iter;
-   for ( iter = Debond[pgsTypes::Straight].begin(); iter != Debond[pgsTypes::Straight].end(); iter++ )
+   std::vector<CDebondData>::iterator debond_iter;
+   for ( debond_iter = Debond[pgsTypes::Straight].begin(); debond_iter != Debond[pgsTypes::Straight].end(); debond_iter++ )
    {
-      CDebondData& debond_info = *iter;
+      CDebondData& debond_info = *debond_iter;
       debond_info.Save(pStrSave,pProgress);
    }
    pStrSave->EndUnit(); // StraightStrandDebonding
@@ -779,9 +847,9 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->BeginUnit(_T("HarpedStrandDebonding"),1.0);
    nDebondInfo = Debond[pgsTypes::Harped].size();
    pStrSave->put_Property(_T("DebondInfoCount"),CComVariant(nDebondInfo));
-   for ( iter = Debond[pgsTypes::Harped].begin(); iter != Debond[pgsTypes::Harped].end(); iter++ )
+   for ( debond_iter = Debond[pgsTypes::Harped].begin(); debond_iter != Debond[pgsTypes::Harped].end(); debond_iter++ )
    {
-      CDebondData& debond_info = *iter;
+      CDebondData& debond_info = *debond_iter;
       debond_info.Save(pStrSave,pProgress);
    }
    pStrSave->EndUnit(); // HarpedStrandDebonding
@@ -790,9 +858,9 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->BeginUnit(_T("TemporaryStrandDebonding"),1.0);
    nDebondInfo = Debond[pgsTypes::Temporary].size();
    pStrSave->put_Property(_T("DebondInfoCount"),CComVariant(nDebondInfo));
-   for ( iter = Debond[pgsTypes::Temporary].begin(); iter != Debond[pgsTypes::Temporary].end(); iter++ )
+   for ( debond_iter = Debond[pgsTypes::Temporary].begin(); debond_iter != Debond[pgsTypes::Temporary].end(); debond_iter++ )
    {
-      CDebondData& debond_info = *iter;
+      CDebondData& debond_info = *debond_iter;
       debond_info.Save(pStrSave,pProgress);
    }
    pStrSave->EndUnit(); // TemporaryStrandDebonding
@@ -983,7 +1051,12 @@ void CStrandData::ResetPrestressData()
       LastUserPjack[i] = 0;
 
       if (i<3)
+      {
          Debond[i].clear();
+
+         NextendedStrands[i][pgsTypes::metStart].clear();
+         NextendedStrands[i][pgsTypes::metEnd].clear();
+      }
    }
 
    ClearDirectFillData();

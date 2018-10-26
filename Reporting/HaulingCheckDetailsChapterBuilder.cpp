@@ -74,17 +74,36 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
-   GET_IFACE2(pBroker,IArtifact,pArtifacts);
 
-   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
+   if (!pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
-      CSegmentKey segmentKey(girderKey,segIdx);
-
-      // Artifact does heavy lifting
-      const pgsSegmentArtifact* pArtifact = pArtifacts->GetSegmentArtifact(segmentKey);
-      const pgsHaulingAnalysisArtifact* pHaulArtifact = pArtifact->GetHaulingAnalysisArtifact();
-
-      pHaulArtifact->BuildHaulingDetailsReport(segmentKey, pChapter, pBroker, pDisplayUnits);
+      rptParagraph* p = new rptParagraph;
+      *pChapter << p;
+      *p <<color(Red)<<_T("Hauling analysis disabled in Project Criteria library entry. No analysis performed.")<<color(Black)<<rptNewLine;
+   }
+   else
+   {
+      GET_IFACE2(pBroker,IArtifact,pArtifacts);
+   
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   
+   
+   
+   
+   
+   
+   
+      {
+         CSegmentKey segmentKey(girderKey,segIdx);
+   
+   
+   
+   
+         // Artifact does heavy lifting
+         const pgsHaulingAnalysisArtifact* pHaulArtifact = pArtifacts->GetHaulingAnalysisArtifact(segmentKey);
+         pHaulArtifact->BuildHaulingDetailsReport(segmentKey, pChapter, pBroker, pDisplayUnits);
+      }
    }
 
 

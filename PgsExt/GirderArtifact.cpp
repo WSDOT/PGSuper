@@ -217,19 +217,21 @@ pgsClosurePourArtifact* pgsGirderArtifact::GetClosurePourArtifact(SegmentIndexTy
    return &(*found);
 }
 
-void pgsGirderArtifact::SetTendonStressArtifact(const pgsTendonStressArtifact& artifact)
+void pgsGirderArtifact::SetTendonStressArtifact(DuctIndexType ductIdx,const pgsTendonStressArtifact& artifact)
 {
-   m_TendonStressArtifact = artifact;
+   m_TendonStressArtifacts.insert(std::make_pair(ductIdx,artifact));
 }
 
-const pgsTendonStressArtifact* pgsGirderArtifact::GetTendonStressArtifact() const
+const pgsTendonStressArtifact* pgsGirderArtifact::GetTendonStressArtifact(DuctIndexType ductIdx) const
 {
-   return &m_TendonStressArtifact;
+   std::map<DuctIndexType,pgsTendonStressArtifact>::const_iterator found(m_TendonStressArtifacts.find(ductIdx));
+   ATLASSERT(found != m_TendonStressArtifacts.end());
+   return &(found->second);
 }
 
-pgsTendonStressArtifact* pgsGirderArtifact::GetTendonStressArtifact()
+pgsTendonStressArtifact* pgsGirderArtifact::GetTendonStressArtifact(DuctIndexType ductIdx)
 {
-   return &m_TendonStressArtifact;
+   return &m_TendonStressArtifacts[ductIdx];
 }
 
 void pgsGirderArtifact::AddDeflectionCheckArtifact(const pgsDeflectionCheckArtifact& artifact)
@@ -281,8 +283,14 @@ Float64 pgsGirderArtifact::GetRequiredReleaseStrength() const
 
 bool pgsGirderArtifact::Passed() const
 {
-   if ( !m_TendonStressArtifact.Passed() )
-      return false;
+   std::map<DuctIndexType,pgsTendonStressArtifact>::const_iterator iter(m_TendonStressArtifacts.begin());
+   std::map<DuctIndexType,pgsTendonStressArtifact>::const_iterator end(m_TendonStressArtifacts.end());
+   for ( ; iter != end; iter++ )
+   {
+      const pgsTendonStressArtifact& artifact = iter->second;
+      if ( !artifact.Passed() )
+         return false;
+   }
 
    for ( IndexType lsIdx = 0; lsIdx < (IndexType)(pgsTypes::LimitStateCount); lsIdx++ )
    {
@@ -307,11 +315,11 @@ bool pgsGirderArtifact::Passed() const
       }
    }
 
-   std::set<pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
-   std::set<pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
-   for ( ; iter != end; iter++ )
+   std::set<pgsSegmentArtifact>::const_iterator segIter(m_SegmentArtifacts.begin());
+   std::set<pgsSegmentArtifact>::const_iterator segEnd(m_SegmentArtifacts.end());
+   for ( ; segIter != segEnd; segIter++ )
    {
-      const pgsSegmentArtifact& artifact = *iter;
+      const pgsSegmentArtifact& artifact = *segIter;
       if ( !artifact.Passed() )
          return false;
    }
@@ -331,7 +339,7 @@ bool pgsGirderArtifact::Passed() const
 void pgsGirderArtifact::MakeCopy(const pgsGirderArtifact& rOther)
 {
    m_GirderKey                 = rOther.m_GirderKey;
-   m_TendonStressArtifact      = rOther.m_TendonStressArtifact;
+   m_TendonStressArtifacts     = rOther.m_TendonStressArtifacts;
 
    for ( IndexType lsIdx = 0; lsIdx < (IndexType)(pgsTypes::LimitStateCount); lsIdx++ )
    {

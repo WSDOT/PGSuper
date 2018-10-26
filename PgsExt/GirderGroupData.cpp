@@ -538,11 +538,23 @@ Float64 CGirderGroupData::GetSlabOffset(GirderIndexType gdrIdx,pgsTypes::MemberE
    Float64 offset;
    pgsTypes::SlabOffsetType slabOffsetType = m_pBridge->GetSlabOffsetType();
    if ( slabOffsetType == pgsTypes::sotBridge )
+   {
       offset = m_pBridge->GetSlabOffset();
+   }
    else if ( slabOffsetType == pgsTypes::sotGroup )
+   {
+      if ( m_pBridge->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
+         return 0;
+
       offset = m_SlabOffset[end].front();
+   }
    else
+   {
+      if ( m_pBridge->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
+         return 0;
+
       offset = m_SlabOffset[end][gdrIdx];
+   }
 
    return offset;
 }

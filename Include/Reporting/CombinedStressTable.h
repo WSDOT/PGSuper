@@ -103,7 +103,7 @@ protected:
    //------------------------------------------------------------------------
    virtual void BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
-                      IEAFDisplayUnits* pDisplayUnits,
+                      IEAFDisplayUnits* pDisplayUnits,IntervalIndexType intervalIdx,
                       pgsTypes::AnalysisType analysisType,
                       bool bDesign = true,bool bRating = true) const;
 

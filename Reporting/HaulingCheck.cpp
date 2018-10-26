@@ -78,18 +78,16 @@ CHaulingCheck& CHaulingCheck::operator= (const CHaulingCheck& rOther)
 
 //======================== OPERATIONS =======================================
 void CHaulingCheck::Build(rptChapter* pChapter,
-                              IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
+                              IBroker* pBroker,const CGirderKey& girderKey,
                               IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
-   const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
+   GET_IFACE2(pBroker,IArtifact,pArtifacts);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
-      const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
-      const pgsHaulingAnalysisArtifact* pHaulArtifact = pSegmentArtifact->GetHaulingAnalysisArtifact();
-
       CSegmentKey segmentKey(girderKey,segIdx);
+      const pgsHaulingAnalysisArtifact* pHaulArtifact = pArtifacts->GetHaulingAnalysisArtifact(segmentKey);
       pHaulArtifact->BuildHaulingCheckReport(segmentKey, pChapter, pBroker, pDisplayUnits);
    }
 }

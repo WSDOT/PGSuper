@@ -463,13 +463,7 @@ public:
    CParabolicDuctGeometry      ParabolicDuctGeometry;
    COffsetDuctGeometry         OffsetDuctGeometry;
 
-   typedef enum TendonJacking
-   {
-      Left,
-      Right,
-      Both
-   } TendonJacking;
-   TendonJacking JackingEnd;
+   pgsTypes::JackingEndType JackingEnd;
 };
 
 /*****************************************************************************

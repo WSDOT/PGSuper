@@ -501,41 +501,43 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
    {
       plldf->I = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi);
    }
+   
+   Float64 Ix, Iy, A, Ip, Yt;
+   Ix = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi);
+   Iy = pSectProp->GetIy(pgsTypes::sptGross,releaseIntervalIdx,poi);
+   A  = pSectProp->GetAg(pgsTypes::sptGross,releaseIntervalIdx,poi);
+   Yt = pSectProp->GetYtGirder(pgsTypes::sptGross,releaseIntervalIdx,poi);
 
    plldf->PossionRatio = 0.2;
 
    pgsTypes::TrafficBarrierOrientation side = pBarriers->GetNearestBarrier(segmentKey);
    plldf->CurbOffset = pBarriers->GetInterfaceWidth(side);
 
-   Float64 EcDeck    = pMaterials->GetDeckEc(llIntervalIdx);
-   Float64 Ix, Iy, A, Ip, Yt;
-   if ( fcgdr < 0 )
+   if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
    {
-      // fcgdr < 0 means use the current bridge model
-      Float64 EcSegment = pMaterials->GetSegmentEc(segmentKey,llIntervalIdx);
-
-      plldf->n = EcSegment/EcDeck;
-
-      Ix = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi);
-      Iy = pSectProp->GetIy(pgsTypes::sptGross,releaseIntervalIdx,poi);
-      A  = pSectProp->GetAg(pgsTypes::sptGross,releaseIntervalIdx,poi);
-      Yt = pSectProp->GetYtGirder(pgsTypes::sptGross,releaseIntervalIdx,poi);
+      plldf->n = 1.0;
    }
    else
    {
-      GET_IFACE(IMaterials,pMaterial);
-      Float64 Ecgdr = pMaterial->GetEconc(fcgdr,
-                                          pMaterial->GetSegmentStrengthDensity(segmentKey),
-                                          pMaterial->GetSegmentEccK1(segmentKey),
-                                          pMaterial->GetSegmentEccK2(segmentKey)
-                                          );
-
-      plldf->n     = Ecgdr / EcDeck;
-
-      Ix = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi,fcgdr);
-      Iy = pSectProp->GetIy(pgsTypes::sptGross,releaseIntervalIdx,poi,fcgdr);
-      A  = pSectProp->GetAg(pgsTypes::sptGross,releaseIntervalIdx,poi,fcgdr);
-      Yt = pSectProp->GetYtGirder(pgsTypes::sptGross,releaseIntervalIdx,poi,fcgdr);
+      Float64 EcDeck    = pMaterials->GetDeckEc(llIntervalIdx);
+      if ( fcgdr < 0 )
+      {
+         // fcgdr < 0 means use the current bridge model
+         Float64 EcSegment = pMaterials->GetSegmentEc(segmentKey,llIntervalIdx);
+   
+         plldf->n = EcSegment/EcDeck;
+      }
+      else
+      {
+         GET_IFACE(IMaterials,pMaterial);
+         Float64 Ecgdr = pMaterial->GetEconc(fcgdr,
+                                             pMaterial->GetSegmentStrengthDensity(segmentKey),
+                                             pMaterial->GetSegmentEccK1(segmentKey),
+                                             pMaterial->GetSegmentEccK2(segmentKey)
+                                             );
+   
+         plldf->n     = Ecgdr / EcDeck;
+      }
    }
 
    // compute de (inside edge of barrier to CL of exterior web)
@@ -557,13 +559,22 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
    plldf->Ig = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi);
 
    // Assume slab thickness includes top flange
-   Float64 ts = pBridge->GetStructuralSlabDepth(poi);
-   Float64 tf = pGirder->GetMinTopFlangeThickness(poi);
-   plldf->ts = ts + tf;
+   if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+   {
+      plldf->ts = pGirder->GetMinTopFlangeThickness(poi);
+      plldf->eg = plldf->Yt - plldf->ts/2;
+   }
+   else
+   {
+      Float64 ts = pBridge->GetStructuralSlabDepth(poi);
+      Float64 tf =  pGirder->GetMinTopFlangeThickness(poi);
+      plldf->ts = ts + tf;
 
-   // location of cg of combined slab wrt top of girder
-   Float64 tscg = (ts*ts/2.0 - tf*tf/2.0)/(ts+tf);
-   plldf->eg    = plldf->Yt + tscg;
+      // location of cg of combined slab wrt top of girder
+      Float64 tscg = (ts*ts/2.0 - tf*tf/2.0)/(ts+tf);
+      plldf->eg    = plldf->Yt + tscg;
+   }
+
 
    WebIndexType nWebs = pGirder->GetWebCount(segmentKey);
    plldf->connectedAsUnit = ( pDeck->TransverseConnectivity == pgsTypes::atcConnectedAsUnit ? true : false);

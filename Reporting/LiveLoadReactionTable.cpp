@@ -217,7 +217,7 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
       }
 
 
-      if (pier == 0 || pier == pBridge->GetPierCount()-1 )
+      if (pier == 0 || pier == nPiers-1 )
          (*p_table)(row,0) << _T("Abutment ") << LABEL_PIER(pier);
       else
          (*p_table)(row,0) << _T("Pier ") << LABEL_PIER(pier);

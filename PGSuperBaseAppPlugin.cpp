@@ -335,7 +335,7 @@ CString CPGSuperBaseAppPlugin::GetMasterLibraryPublisher() const
    return strPublisher;
 }
 
-void CPGSuperBaseAppPlugin::UpdateProgramSettings(BOOL bFirstRun) 
+BOOL CPGSuperBaseAppPlugin::UpdateProgramSettings(BOOL bFirstRun) 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -404,8 +404,12 @@ void CPGSuperBaseAppPlugin::UpdateProgramSettings(BOOL bFirstRun)
       {
          SaveRegistryValues(); // Saves all the current settings to the registery
                                // There is no sense waiting until PGSuper closes to do this
-       }
+      }
+
+      return (result == IDOK ? TRUE : FALSE);
    }
+
+   return FALSE;
 }
 
 void CPGSuperBaseAppPlugin::UpdateCache()

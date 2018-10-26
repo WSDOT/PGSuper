@@ -38,7 +38,7 @@
 #include <lrfd\Rebar.h>
 #include <psglib\SpecLibraryEntry.h>
 #include <pgsext\statusitem.h>
-#include <DesignConfigUtil.h>
+#include <PgsExt\DesignConfigUtil.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -83,9 +83,9 @@ public:
    const pgsClosurePourArtifact* GetClosurePourArtifact(SegmentIndexType segIdx) const;
    pgsClosurePourArtifact* GetClosurePourArtifact(SegmentIndexType segIdx);
 
-   void SetTendonStressArtifact(const pgsTendonStressArtifact& artifact);
-   const pgsTendonStressArtifact* GetTendonStressArtifact() const;
-   pgsTendonStressArtifact* GetTendonStressArtifact();
+   void SetTendonStressArtifact(DuctIndexType ductIdx,const pgsTendonStressArtifact& artifact);
+   const pgsTendonStressArtifact* GetTendonStressArtifact(DuctIndexType ductIdx) const;
+   pgsTendonStressArtifact* GetTendonStressArtifact(DuctIndexType ductIdx);
 
    void AddDeflectionCheckArtifact(const pgsDeflectionCheckArtifact& artifact);
    IndexType GetDeflectionCheckArtifactCount();
@@ -103,7 +103,7 @@ protected:
 
 private:
    CGirderKey m_GirderKey;
-   pgsTendonStressArtifact m_TendonStressArtifact;
+   std::map<DuctIndexType,pgsTendonStressArtifact> m_TendonStressArtifacts;
 
    std::map<IntervalIndexType,std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>> m_FlexuralCapacityArtifacts[pgsTypes::LimitStateCount];
 

@@ -40,15 +40,13 @@
 #include <IFace\ResistanceFactors.h>
 #include <IFace\Intervals.h>
 
-#if defined _DEBUG
 #include <IFace\DocumentType.h>
-#endif
 
 #include "Designer2.h"
 #include "PsForceEng.h"
 #include "GirderHandlingChecker.h"
 #include "GirderLiftingChecker.h"
-#include <DesignConfigUtil.h>
+#include <PgsExt\DesignConfigUtil.h>
 
 #include "StatusItems.h"
 #include <PgsExt\StatusItem.h>
@@ -494,8 +492,107 @@ void pgsDesigner2::GetHaunchDetails(const CSegmentKey& segmentKey,bool bUseConfi
    pHaunchDetails->HaunchDiff = max_actual_haunch_depth_diff;
 }
 
-pgsGirderArtifact pgsDesigner2::Check(const CGirderKey& girderKey)
+void pgsDesigner2::ClearArtifacts()
 {
+   m_CheckArtifacts.clear();
+   m_LiftingAnalysisArtifacts.clear();
+
+   std::map<CSegmentKey,const pgsHaulingAnalysisArtifact*>::iterator iter(m_HaulingAnalysisArtifacts.begin());
+   std::map<CSegmentKey,const pgsHaulingAnalysisArtifact*>::iterator end(m_HaulingAnalysisArtifacts.end());
+   for ( ; iter != end; iter++ )
+   {
+      const pgsHaulingAnalysisArtifact* pHaulingArtifact = iter->second;
+      delete pHaulingArtifact;
+      pHaulingArtifact = NULL;
+   }
+   m_HaulingAnalysisArtifacts.clear();
+}
+
+const pgsGirderArtifact* pgsDesigner2::GetGirderArtifact(const CGirderKey& girderKey)
+{
+   std::map<CGirderKey,pgsGirderArtifact>::iterator found;
+   found = m_CheckArtifacts.find(girderKey);
+   if ( found != m_CheckArtifacts.end() )
+      return &(found->second);
+
+   return NULL;
+}
+
+const pgsLiftingAnalysisArtifact* pgsDesigner2::GetLiftingAnalysisArtifact(const CSegmentKey& segmentKey)
+{
+   std::map<CSegmentKey,pgsLiftingAnalysisArtifact>::iterator found;
+   found = m_LiftingAnalysisArtifacts.find(segmentKey);
+   if ( found != m_LiftingAnalysisArtifacts.end() )
+      return &(found->second);
+
+   return NULL;
+}
+
+const pgsHaulingAnalysisArtifact* pgsDesigner2::GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey)
+{
+   std::map<CSegmentKey,const pgsHaulingAnalysisArtifact*>::iterator found;
+   found = m_HaulingAnalysisArtifacts.find(segmentKey);
+   if ( found != m_HaulingAnalysisArtifacts.end() )
+      return found->second;
+
+   return NULL;
+}
+
+const pgsLiftingAnalysisArtifact* pgsDesigner2::CheckLifting(const CSegmentKey& segmentKey)
+{
+   // if we already have the artifact, return it
+   const pgsLiftingAnalysisArtifact* pLiftingArtifact = GetLiftingAnalysisArtifact(segmentKey);
+   if ( pLiftingArtifact )
+      return pLiftingArtifact;
+
+   // Nope... need to compute it
+   pgsLiftingAnalysisArtifact liftingArtifact;
+   pgsGirderLiftingChecker lifting_checker(m_pBroker,m_StatusGroupID);
+   lifting_checker.CheckLifting(segmentKey,&liftingArtifact);
+
+   m_LiftingAnalysisArtifacts.insert(std::make_pair(segmentKey,liftingArtifact));
+
+   pLiftingArtifact = GetLiftingAnalysisArtifact(segmentKey);
+   ATLASSERT(pLiftingArtifact != NULL);
+   return pLiftingArtifact;
+}
+
+const pgsHaulingAnalysisArtifact* pgsDesigner2::CheckHauling(const CSegmentKey& segmentKey)
+{
+   return CheckHauling(segmentKey,LOGGER);
+}
+
+const pgsHaulingAnalysisArtifact* pgsDesigner2::CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE)
+{
+   // if we already have the artifact, return it
+   const pgsHaulingAnalysisArtifact* pHaulingArtifact = GetHaulingAnalysisArtifact(segmentKey);
+   if ( pHaulingArtifact )
+      return pHaulingArtifact;
+
+   // Nope... need to compute it
+
+   // Use factory function to create correct hauling checker
+   pgsGirderHandlingChecker checker_factory(m_pBroker,m_StatusGroupID);
+   std::auto_ptr<pgsGirderHaulingChecker> hauling_checker( checker_factory.CreateGirderHaulingChecker() );
+
+   pHaulingArtifact = hauling_checker->CheckHauling(segmentKey,LOGFILE);
+         
+   m_HaulingAnalysisArtifacts.insert(std::make_pair(segmentKey,pHaulingArtifact));
+
+   pHaulingArtifact = GetHaulingAnalysisArtifact(segmentKey);
+   ATLASSERT(pHaulingArtifact != NULL);
+   return pHaulingArtifact;
+}
+
+const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey)
+{
+   // if we already have the artifact, return it
+   const pgsGirderArtifact* pGdrArtifact = GetGirderArtifact(girderKey);
+   if ( pGdrArtifact )
+      return pGdrArtifact;
+
+   // Nope... create the artifact
+
    USES_CONVERSION;
 
    // must be checking a specific girder
@@ -527,7 +624,6 @@ pgsGirderArtifact pgsDesigner2::Check(const CGirderKey& girderKey)
    // going to need this inside the loop
    GET_IFACE(IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
    GET_IFACE(IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
-   pgsGirderLiftingChecker lifting_checker(m_pBroker,m_StatusGroupID);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx     = pIntervals->GetLiveLoadInterval();
@@ -638,22 +734,14 @@ pgsGirderArtifact pgsDesigner2::Check(const CGirderKey& girderKey)
       // Check Lifting
       if ( pGirderLiftingSpecCriteria->IsLiftingAnalysisEnabled() )
       {
-         pgsLiftingAnalysisArtifact* pLiftingAnalysisArtifact = new(pgsLiftingAnalysisArtifact);
-
-         lifting_checker.CheckLifting(segmentKey,pLiftingAnalysisArtifact);
-         pSegmentArtifact->SetLiftingAnalysisArtifact(pLiftingAnalysisArtifact);
+         const pgsLiftingAnalysisArtifact* pLiftingArtifact = CheckLifting(segmentKey);
+         pSegmentArtifact->SetLiftingAnalysisArtifact(pLiftingArtifact);
       }
 
       // Check Hauling
       if ( pGirderHaulingSpecCriteria->IsHaulingAnalysisEnabled() )
       {
-         // Use factory function to create correct hauling checker
-         pgsGirderHandlingChecker checker_factory(m_pBroker,m_StatusGroupID);
-
-         std::auto_ptr<pgsGirderHaulingChecker> hauling_checker( checker_factory.CreateGirderHaulingChecker() );
-
-         pgsHaulingAnalysisArtifact* pHaulingAnalysisArtifact = hauling_checker->CheckHauling(segmentKey,LOGGER);
-         
+         const pgsHaulingAnalysisArtifact* pHaulingAnalysisArtifact = CheckHauling(segmentKey);
          pSegmentArtifact->SetHaulingAnalysisArtifact(pHaulingAnalysisArtifact);
       }
 
@@ -687,9 +775,14 @@ pgsGirderArtifact pgsDesigner2::Check(const CGirderKey& girderKey)
    CheckLiveLoadDeflection(girderKey,&gdrArtifact);
 
    // check tendon stresses
-   CheckTendonStresses(girderKey,gdrArtifact.GetTendonStressArtifact());
+   CheckTendonStresses(girderKey,&gdrArtifact);
 
-   return gdrArtifact;
+   // add the artfict to the cache
+   m_CheckArtifacts.insert( std::make_pair(girderKey,gdrArtifact) );
+
+   pGdrArtifact = GetGirderArtifact(girderKey);
+   ATLASSERT(pGdrArtifact != NULL); // get the artifact from the cache.... this is what we want to return
+   return pGdrArtifact;
 }
 
 void CheckProgress(IProgress* pProgress)
@@ -761,12 +854,12 @@ void pgsDesigner2::ConfigureStressCheckTasks(const CSegmentKey& segmentKey)
 
    task.intervalIdx = tsRemovalIntervalIdx;
    task.ls          = pgsTypes::ServiceI;
-   task.type        = pgsTypes::Compression;
+   task.type        = pgsTypes::Tension;
    m_StressCheckTasks.push_back(task);
 
    task.intervalIdx = tsRemovalIntervalIdx;
    task.ls          = pgsTypes::ServiceI;
-   task.type        = pgsTypes::Tension;
+   task.type        = pgsTypes::Compression;
    m_StressCheckTasks.push_back(task);
 }
 
@@ -1205,12 +1298,18 @@ void pgsDesigner2::MakeAssignment(const pgsDesigner2& rOther)
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
 
-void pgsDesigner2::CheckTendonStresses(const CGirderKey& girderKey,pgsTendonStressArtifact* pArtifact)
+void pgsDesigner2::CheckTendonStresses(const CGirderKey& girderKey,pgsGirderArtifact* pGirderArtifact)
 {
    GET_IFACE(IProgress, pProgress);
    CEAFAutoProgress ap(pProgress);
 
    GET_IFACE(ITendonGeometry,pTendonGeom);
+   GET_IFACE(IPosttensionForce,pPTForce);
+   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IAllowableTendonStress,pAllowables);
+
+   IntervalIndexType finalIntervalIdx = pIntervals->GetIntervalCount()-1;
+
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
@@ -1221,8 +1320,59 @@ void pgsDesigner2::CheckTendonStresses(const CGirderKey& girderKey,pgsTendonStre
          << std::ends;
       pProgress->UpdateMessage( os.str().c_str() );
 
-#pragma Reminder("UPDATE: impliment this method")
-      // do the actual checking here
+      IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+
+      pgsTypes::JackingEndType jackingEnd = pTendonGeom->GetJackingEnd(girderKey,ductIdx);
+
+      Float64 fpbtMax    = -DBL_MAX;
+      Float64 fseatMax   = -DBL_MAX;
+      Float64 fanchorMax = -DBL_MAX;
+      Float64 fpeMax     = -DBL_MAX;
+      GET_IFACE(IPointOfInterest,pIPOI);
+      std::vector<pgsPointOfInterest> vPoi(pIPOI->GetPointsOfInterest(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,ALL_SEGMENTS)));
+      std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
+      std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
+      for ( ; iter != end; iter++ )
+      {
+         pgsPointOfInterest& poi(*iter);
+
+         Float64 fpbt = pPTForce->GetTendonStress(poi,stressTendonIntervalIdx,pgsTypes::Start,ductIdx);
+         fpbtMax = max(fpbtMax,fpbt);
+
+         Float64 fseat = pPTForce->GetTendonStress(poi,stressTendonIntervalIdx,pgsTypes::End,ductIdx);
+         fseatMax = max(fseatMax,fseat);
+
+         Float64 fpe = pPTForce->GetTendonStress(poi,finalIntervalIdx,pgsTypes::End,ductIdx);
+         fpeMax = max(fpeMax,fpe);
+      }
+
+      if ( jackingEnd == pgsTypes::jeLeft )
+      {
+         fanchorMax = pPTForce->GetTendonStress(vPoi.front(),stressTendonIntervalIdx,pgsTypes::End,ductIdx);
+      }
+      else if ( jackingEnd == pgsTypes::jeRight )
+      {
+         fanchorMax = pPTForce->GetTendonStress(vPoi.back(),stressTendonIntervalIdx,pgsTypes::End,ductIdx);
+      }
+      else
+      {
+         fanchorMax = max(pPTForce->GetTendonStress(vPoi.front(),stressTendonIntervalIdx,pgsTypes::End,ductIdx),pPTForce->GetTendonStress(vPoi.back(),stressTendonIntervalIdx,pgsTypes::End,ductIdx));
+      }
+
+      pgsTendonStressArtifact artifact;
+      if ( pAllowables->CheckTendonStressAtJacking() )
+      {
+         artifact.SetCheckAtJacking(pAllowables->GetAllowableAtJacking(girderKey),pTendonGeom->GetFpj(girderKey,ductIdx));
+      }
+      else
+      {
+         artifact.SetCheckPriorToSeating(pAllowables->GetAllowablePriorToSeating(girderKey),fpbtMax);
+      }
+
+      artifact.SetCheckAtAnchoragesAfterSeating(pAllowables->GetAllowableAfterAnchorSetAtAnchorage(girderKey),fanchorMax);
+      artifact.SetCheckAfterSeating(pAllowables->GetAllowableAfterAnchorSet(girderKey),fseatMax);
+      artifact.SetCheckAfterLosses(pAllowables->GetAllowableAfterLosses(girderKey),fpeMax);
+      pGirderArtifact->SetTendonStressArtifact(ductIdx,artifact);
    }
 }
 
@@ -1302,272 +1452,6 @@ void pgsDesigner2::CheckStrandStresses(const CSegmentKey& segmentKey,pgsStrandSt
 
 void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std::vector<pgsPointOfInterest>& vPoi,const StressCheckTask& task,pgsSegmentArtifact* pSegmentArtifact)
 {
-#pragma Reminder("UPDATE: remove obsolete code")
-/*
-   USES_CONVERSION;
-
-   GET_IFACE(IPretensionStresses,      pPretensionStresses);
-   GET_IFACE(IPosttensionStresses,     pPosttensionStresses);
-   GET_IFACE(ILimitStateForces,        pLimitStateForces);
-   GET_IFACE(IAllowableConcreteStress, pAllowable );
-   GET_IFACE(IGirder,                  pGirder);
-   GET_IFACE(ISectionProperties,       pSectProp);
-   GET_IFACE(IShapes,                  pShapes);
-   GET_IFACE(IMaterials,               pMaterial);
-   GET_IFACE(ISpecification,           pSpec);
-   GET_IFACE(IContinuity,              pContinuity);
-   GET_IFACE(IEventMap,                pStages);
-
-   GET_IFACE(IIntervals, pIntervals);
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
-
-   Float64 AsMax = 0;
-
-   pgsTypes::BridgeAnalysisType batTop, batBottom;
-   GetBridgeAnalysisType(segmentKey.girderIndex,task,batTop,batBottom);
-
-   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
-   for ( ; poiIter != poiIterEnd; poiIter++)
-   {
-      const pgsPointOfInterest& poi = *poiIter;
-
-      Float64 Es, fy, fu;
-      if ( poi.HasAttribute(POI_CLOSURE) )
-      {
-         pMaterial->GetClosurePourLongitudinalRebarProperties(segmentKey,&Es,&fy,&fu);
-      }
-      else
-      {
-         pMaterial->GetSegmentLongitudinalRebarProperties(segmentKey,&Es,&fy,&fu);
-      }
-
-      Float64 fs = 0.5*fy;
-      Float64 fsMax = (bUnitsSI ? ::ConvertToSysUnits(206.0,unitMeasure::MPa) : ::ConvertToSysUnits(30.0,unitMeasure::KSI) );
-      if ( fsMax < fs )
-          fs = fsMax;
-
-      pgsFlexuralStressArtifact artifact(poi);
-
-      // get girder stress due to prestressing
-      Float64 fTopPretension, fBotPretension;
-      fTopPretension = pPretensionStresses->GetStress(task.intervalIdx,poi,pgsTypes::TopGirder);
-      fBotPretension = pPretensionStresses->GetStress(task.intervalIdx,poi,pgsTypes::BottomGirder);
-
-      // get girder stress due to post-tensioning
-      Float64 fTopPosttension, fBotPosttension;
-      fTopPosttension = pPosttensionStresses->GetStress(task.intervalIdx,poi,pgsTypes::TopGirder,   ALL_DUCTS);
-      fBotPosttension = pPosttensionStresses->GetStress(task.intervalIdx,poi,pgsTypes::BottomGirder,ALL_DUCTS);
-
-      // get girder stress due to external loads (top)
-      Float64 fTopLimitStateMin, fTopLimitStateMax;
-      pLimitStateForces->GetStress(task.ls,task.intervalIdx,poi,pgsTypes::TopGirder,false,batTop,&fTopLimitStateMin,&fTopLimitStateMax);
-      Float64 fTopLimitState = (task.type == pgsTypes::Compression ? fTopLimitStateMin : fTopLimitStateMax );
-
-      // get girder stress due to external loads (bottom)
-      Float64 fBotLimitStateMin, fBotLimitStateMax;
-      pLimitStateForces->GetStress(task.ls,task.intervalIdx,poi,pgsTypes::BottomGirder,false,batBottom,&fBotLimitStateMin,&fBotLimitStateMax);
-      Float64 fBotLimitState = (task.type == pgsTypes::Compression ? fBotLimitStateMin : fBotLimitStateMax );
-
-      // get allowable stress
-      Float64 fAllowable = pAllowable->GetAllowableStress(poi,task.intervalIdx,task.ls,task.type);
-
-      Float64 k;
-      if (task.ls == pgsTypes::ServiceIA || task.ls == pgsTypes::FatigueI )
-         k = 0.5; // Use half prestress stress if Service IA or Fatigue I (See Tbl 5.9.4.2.1-1)
-      else
-         k = 1.0;
-      
-      Float64 fTop = fTopLimitState + k*(fTopPretension + fTopPosttension);
-      Float64 fBot = fBotLimitState + k*(fBotPretension + fBotPosttension);
-
-      fTop = (IsZero(fTop) ? 0 : fTop);
-      fBot = (IsZero(fBot) ? 0 : fBot);
-
-      artifact.SetDemand( fTop, fBot );
-      artifact.SetCapacity(fAllowable,task.ls,task.type);
-      artifact.SetExternalEffects(fTopLimitState,fBotLimitState);
-      artifact.SetPretensionEffects(fTopPretension,fBotPretension);
-      artifact.SetPosttensionEffects(fTopPosttension,fBotPosttension);
-
-      // determine what concrete strength (if any) would work for this section. 
-      // what concrete strength is required to satisify the allowable stress criteria
-      // if there isn't a strength that works, use a value of -1
-      if ( task.type == pgsTypes::Compression )
-      {
-         Float64 c = pAllowable->GetAllowableCompressiveStressCoefficient(poi,task.intervalIdx,task.ls);
-         Float64 fc_reqd = (IsZero(c) ? 0 : _cpp_min(fTop,fBot)/-c);
-         
-         if ( fc_reqd < 0 ) // the minimum stress is tensile so compression isn't an issue
-            fc_reqd = 0;
-
-         artifact.SetRequiredConcreteStrength(fc_reqd);
-      }
-      else
-      {
-         Float64 t;
-         bool bCheckMax;
-         Float64 fmax;
-
-         // false = without rebar
-         pAllowable->GetAllowableTensionStressCoefficient(poi,task.intervalIdx,task.ls,false,&t,&bCheckMax,&fmax);
-
-         // if live load is applied, only look at the bottom stress (stress in the precompressed tensile zone)
-         // otherwise, take the controlling tension
-         Float64 f = (liveLoadIntervalIdx <= task.intervalIdx ? fBot : _cpp_max(fTop,fBot));
-
-         Float64 fc_reqd;
-         if (0.0 < f)
-         {
-            fc_reqd = (IsZero(t) ? 0 : BinarySign(f)*pow(f/t,2));
-         }
-         else
-         {
-            // the maximum stress is compressive so tension isn't an issue
-            fc_reqd = 0;
-         }
-
-         if ( bCheckMax &&                  // allowable stress is limited -AND-
-              (0 < fc_reqd) &&              // there is a concrete strength that might work -AND-
-              (pow(fmax/t,2) < fc_reqd) )   // that strength will exceed the max limit on allowable
-         {
-            // then that concrete strength wont really work afterall
-            if ( task.intervalIdx == releaseIntervalIdx )
-            {
-               // unless we are in the casting yard, then we can add some additional rebar
-               // and go to a higher limit
-               bool bCheckMaxAlt;
-               Float64 fMaxAlt;
-               Float64 talt;
-               // true = with rebar
-               pAllowable->GetAllowableTensionStressCoefficient(poi,releaseIntervalIdx,pgsTypes::ServiceI,true,&talt,&bCheckMaxAlt,&fMaxAlt);
-               fc_reqd = pow(f/talt,2);
-            }
-            else
-            {
-               // too bad... this isn't going to work
-               fc_reqd = -1;
-            }
-         }
-         artifact.SetRequiredConcreteStrength(fc_reqd);
-      }
-
-      // Determine mild steel requirement for alternative tensile stress (casting yard only)
-      if ( task.intervalIdx == releaseIntervalIdx )
-      {
-         Float64 Yna = -1;
-         Float64 Area = 0;
-         Float64 H = pGirder->GetHeight(poi);
-
-         Float64 T = 0;
-         if ( fTop <= 0 && fBot <= 0 )
-         {
-             // compression over entire cross section
-            T = 0;
-         }
-         else if ( 0 <= fTop && 0 <= fBot )
-         {
-             // tension over entire cross section
-             Area = pSectProp->GetAg(releaseIntervalIdx,poi);
-             Float64 fAvg = (fTop + fBot)/2;
-             T = fAvg * Area;
-
-             ATLASSERT( T != 0 );
-         }
-         else
-         {
-            ATLASSERT( BinarySign(fBot) != BinarySign(fTop) );
-
-            // Location of neutral axis from Bottom of Girder
-            Yna = (IsZero(fBot) ? 0 : H - (fTop*H/(fTop-fBot)) );
-
-            ATLASSERT( 0 <= Yna );
-
-            CComPtr<IShape> shape;
-            pShapes->GetSegmentShape(releaseIntervalIdx,poi,false,pgsTypes::scGirder,&shape);
-
-            CComQIPtr<IXYPosition> position(shape);
-            CComPtr<IPoint2d> bc;
-            position->get_LocatorPoint(lpBottomCenter,&bc);
-            Float64 Y;
-            bc->get_Y(&Y);
-
-            CComPtr<ILine2d> line;
-            line.CoCreateInstance(CLSID_Line2d);
-            CComPtr<IPoint2d> p1, p2;
-            p1.CoCreateInstance(CLSID_Point2d);
-            p2.CoCreateInstance(CLSID_Point2d);
-            p1->Move(-10000,Y+Yna);
-            p2->Move( 10000,Y+Yna);
-
-            Float64 fAvg;
-
-            // line clips away left hand side
-            if ( 0 <= fTop && fBot <= 0 )
-            {
-                // Tension top, compression bottom
-                // line needs to go right to left
-               line->ThroughPoints(p2,p1);
-
-               fAvg = fTop / 2;
-            }
-            else if ( fTop <= 0 && 0 <= fBot )
-            {
-                // Compression Top, Tension Bottom
-                // line needs to go left to right
-               line->ThroughPoints(p1,p2);
-
-               fAvg = fBot / 2;
-            }
-
-            CComPtr<IShape> clipped_shape;
-            shape->ClipWithLine(line,&clipped_shape);
-
-            if ( clipped_shape )
-            {
-               CComPtr<IShapeProperties> props;
-               clipped_shape->get_ShapeProperties(&props);
-
-               props->get_Area(&Area);
-            }
-            else
-            {
-               Area = 0;
-            }
-
-            T = fAvg * Area;
-
-            ATLASSERT( T != 0 );
-         }
-
-         Float64 As = T/fs;
-         ATLASSERT( 0 <= As );
-
-         artifact.IsAlternativeTensileStressApplicable(true);
- 
-         // true = with bonded rebar
-         Float64 fAllow = pAllowable->GetAllowableStress(poi,releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,true); 
-         artifact.SetAlternativeTensileStressParameters(Yna,Area,T,As,fAllow);
-
-         AsMax = _cpp_max(As,AsMax);
-      }
-
-      pSegmentArtifact->AddFlexuralStressArtifact(task.intervalIdx,task.ls,task.type,artifact);
-   }
-
-   if ( task.intervalIdx == releaseIntervalIdx && task.type == pgsTypes::Tension )
-   {
-       pSegmentArtifact->SetCastingYardMildRebarRequirement(AsMax);
-       // true = with bonded rebar
-       Float64 fAllow = pAllowable->GetAllowableStress(vPoi.front(),releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,true); 
-       pSegmentArtifact->SetCastingYardCapacityWithMildRebar(fAllow);
-   }
-*/
    USES_CONVERSION;
 
    GET_IFACE(IProgress, pProgress);
@@ -2770,20 +2654,6 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
    Float64 end_end_size   = pBridge->GetSegmentEndBearingOffset(segmentKey);
    Float64 length         = pBridge->GetSegmentLength(segmentKey);
 
-#pragma Reminder("OBSOLETE: remove when done with shear stuff")
-   //// check to see if we are outside of the faces of support.... If so, then this check doesn't apply
-   //GET_IFACE(IPointOfInterest, pIPoi);
-   //std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,POI_FACEOFSUPPORT) );
-   //ATLASSERT(vPoi.size() == 2);
-   //pgsPointOfInterest leftFaceOfSupport(vPoi.front());
-   //pgsPointOfInterest rightFaceOfSupport(vPoi.back());
-
-   //if ( poi.GetDistFromStart() < leftFaceOfSupport.GetDistFromStart() || rightFaceOfSupport.GetDistFromStart() < poi.GetDistFromStart() )
-   //{
-   //   pArtifact->SetApplicability(false);
-   //   return;
-   //}
-
    ZoneIndexType supportZoneIdx = GetSupportZoneIndex(poi);
    if ( supportZoneIdx != INVALID_INDEX )
    {
@@ -3968,17 +3838,6 @@ void pgsDesigner2::CheckConstructability(const CSegmentKey& segmentKey,pgsConstr
          pArtifact->SetGlobalGirderStabilityParameters(Wbottom1,Ybottom1,orientation);
       }
    }
-
-   ///////////////////////////////////////////////////////////////
-   //
-   // Check if any longitudinal rebars are located outside 
-   // of the girder cross section.
-   //
-   ///////////////////////////////////////////////////////////////
-   GET_IFACE(ILongRebarGeometry,pLongRebarGeometry);
-   std::vector<RowIndexType> outBoundRows = pLongRebarGeometry->CheckLongRebarGeometry(segmentKey);
-   pArtifact->SetRebarRowsOutsideOfSection(outBoundRows);
-
 }
 
 void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,pgsDebondArtifact* pArtifact)
@@ -6137,7 +5996,7 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
       LOG(_T("Removing temporary strands for lifting analysis"));
       config.PrestressConfig.ClearStrandFill(pgsTypes::Temporary);
    }
-#if defined _DEBUG
+#if defined ENABLE_LOGGING
    else
    {
       LOG(_T("Phase 2 Lifting Design - Design for Lifting with Temporary Strands"));
@@ -6321,7 +6180,7 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
       Float64 ecc_comp = compute_required_eccentricity(P_for_bot,Agb,Sbg,fbot,fHpMin);
       LOG(_T("Eccentricity Required to control Bottom Compression   = ") << ::ConvertFromSysUnits(ecc_comp, unitMeasure::Inch) << _T(" in"));
 
-#if defined _DEBUG
+#if defined ENABLE_LOGGING
       if( ecc_tens < ecc_comp)
          LOG(_T("Tension Controls")); 
       else
@@ -6513,7 +6372,7 @@ std::vector<DebondLevelType> pgsDesigner2::DesignForLiftingDebonding(bool bPropo
       LOG(_T("Removing temporary strands for lifting analysis"));
       config.PrestressConfig.ClearStrandFill(pgsTypes::Temporary);
    }
-#if defined _DEBUG
+#if defined ENABLE_LOGGING
    else
    {
       LOG(_T("Phase 2 Lifting Design - Design for Lifting with Temporary Strands"));
@@ -6526,11 +6385,11 @@ std::vector<DebondLevelType> pgsDesigner2::DesignForLiftingDebonding(bool bPropo
    IGirderLiftingDesignPointsOfInterest* pPoiLd = dynamic_cast<IGirderLiftingDesignPointsOfInterest*>(&m_StrandDesignTool);
    pgsDesignCodes::OutcomeType result = checker.DesignLifting(segmentKey,config,pPoiLd,&artifact,LOGGER);
 
-//#if defined _DEBUG
-//   LOG(_T("-- Dump of Lifting Artifact After Design --"));
-//   artifact.Dump(LOGGER);
-//   LOG(_T("-- End Dump of Lifting Artifact --"));
-//#endif
+#if defined _DEBUG
+   LOG(_T("-- Dump of Lifting Artifact After Design --"));
+   artifact.Dump(LOGGER);
+   LOG(_T("-- End Dump of Lifting Artifact --"));
+#endif
 
    CHECK_PROGRESS;
 
@@ -7586,7 +7445,7 @@ void pgsDesigner2::DesignShear(pgsDesignArtifact* pArtifact, bool bDoStartFromSc
       pgsShearDesignTool::ShearDesignOutcome sdo = m_ShearDesignTool.DesignStirrups(leftCS.GetDistFromStart(), rightCS.GetDistFromStart());
       if (sdo == pgsShearDesignTool::sdRestartWithAdditionalLongRebar)
       {
-         // Additional rebar is needed for long reinf for shear. Add #5 bars, if possible
+         // Additional rebar is needed for long reinf for shear. Add bars, if possible
          Float64 av_add = m_ShearDesignTool.GetRequiredAsForLongReinfShear();
 
          GET_IFACE(IMaterials,pMaterial);
@@ -7596,28 +7455,69 @@ void pgsDesigner2::DesignShear(pgsDesignArtifact* pArtifact, bool bDoStartFromSc
          lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
          ATLASSERT(pool != NULL);
 
-         const matRebar* pRebar = pool->GetRebar(barType,barGrade,matRebar::bs5);
-         Float64 av_onebar = pRebar->GetNominalArea();
+         Float64 max_agg_size = pMaterial->GetSegmentMaxAggrSize(segmentKey); // for 1.33 max agg size for bar spacing
 
-         Float64 nbars = av_add/av_onebar;
-         nbars = CeilOff(nbars, 2.0); // round up to next two-bar increment
-
-         // Make sure spacing fits in girder
          GET_IFACE(IGirder,pGirder);
          Float64 wFlange = pGirder->GetBottomWidth(pgsPointOfInterest(segmentKey, 0.0));
-         wFlange -= 2*one_inch; // some cover
-         Float64 dspacing = wFlange/(nbars-1);
-         Float64 spacing = FloorOff(dspacing, one_inch); // try for a reasonable spacing
-         if (spacing == 0.0)
+         Float64 spacing_width = wFlange - 2*one_inch; // this is the c-c width of the two outer-most bars
+                                                       // this will equal (nbars-1)*spacing
+
+         Float64 nbars = 0;
+         Float64 spacing = 0;
+         matRebar::Size barSize;
+         bool bBarSpacingOK = false;
+         matRebar::Size barSizes[] = {matRebar::bs5,matRebar::bs6,matRebar::bs7};
+         int nBarSizes = sizeof(barSizes)/sizeof(matRebar::Size);
+         for ( int i = 0; i < nBarSizes; i++ )
          {
-            spacing = dspacing; // take any old spacing
+            barSize = barSizes[i];
+            const matRebar* pRebar = pool->GetRebar(barType,barGrade,barSize);
+            Float64 av_onebar = pRebar->GetNominalArea();
+            Float64 db = pRebar->GetNominalDimension();
+
+            // min clear spacing per 5.10.3.1.2.
+            Float64 min_clear = Max3(one_inch,1.33*max_agg_size,db);
+            Float64 min_bar_spacing = min_clear + db;
+
+            nbars = av_add/av_onebar;
+            nbars = CeilOff(nbars, 1.0); // round up to next bar increment
+
+            // Make sure spacing fits in girder
+            if ( nbars == 1 )
+            {
+               spacing = 0;
+               bBarSpacingOK = true;
+               break;
+            }
+            else
+            {
+               Float64 dspacing = spacing_width/(nbars-1);
+               spacing = FloorOff(dspacing, one_inch/4); // try for a reasonable spacing
+               if (spacing == 0.0)
+               {
+                  spacing = dspacing; // take any old spacing
+               }
+
+               if ( min_bar_spacing < spacing )
+               {
+                  bBarSpacingOK = true;
+                  break; // we have a spacing that works or there is only one bar so spacing is irrelevant
+               }
+            }
+         }
+
+         if ( !bBarSpacingOK )
+         {
+            // could not find a bar spacing that works
+            pArtifact->SetOutcome(pgsDesignArtifact::TooManyBarsForLongReinfShear);
+            m_DesignerOutcome.AbortDesign();
          }
 
          // Add row of bars
          CLongitudinalRebarData& rebar_data = pArtifact->GetLongitudinalRebarData();
 
          CLongitudinalRebarData::RebarRow row;
-         row.BarSize = matRebar::bs5;
+         row.BarSize = barSize;
          row.Cover = 2.0*one_inch;
          row.Face = pgsTypes::GirderBottom;
          row.NumberOfBars = (Int32)nbars;
@@ -7767,23 +7667,23 @@ bool pgsDesigner2::CollapseZoneData(CShearZoneData zoneData[MAX_ZONES], ZoneInde
 void pgsDesigner2::GetBridgeAnalysisType(GirderIndexType gdr,const StressCheckTask& task,pgsTypes::BridgeAnalysisType& batTop,pgsTypes::BridgeAnalysisType& batBottom)
 {
    GET_IFACE(ISpecification, pSpec);
-   GET_IFACE(IContinuity,pContinuity);
 
-   CGirderKey girderKey(ALL_GROUPS,gdr);
-   pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
-
-   // if the bridge has continuity at the piers, and the continuity is not fully
-   // effective, need to get simple span analysis results
-   GET_IFACE(IBridge,pBridge);
-   SpanIndexType nSpans = pBridge->GetSpanCount();
-   bool bDummy, bIntergralStart, bIntegralEnd;
-   pBridge->IsIntegralAtPier(0,&bDummy,&bIntergralStart);
-   pBridge->IsIntegralAtPier(1,&bIntegralEnd,&bDummy);
-
-   if ( 1 < nSpans || (nSpans == 1 && (bIntergralStart || bIntegralEnd)) )
+   // this is a little bit of a hack. the analysis type for PGSplice documents
+   // is always continuous.
+   pgsTypes::AnalysisType analysisType;
+   GET_IFACE(IDocumentType,pDocType);
+   if ( pDocType->IsPGSpliceDocument() )
    {
-      if ( !pContinuity->IsContinuityFullyEffective(girderKey) )
-         analysisType = pgsTypes::Simple;
+      analysisType = pSpec->GetAnalysisType();
+   }
+   else
+   {
+      CGirderKey girderKey(ALL_GROUPS,gdr);
+      analysisType = pgsTypes::Simple;
+
+      GET_IFACE(IContinuity,pContinuity);
+      if ( pContinuity->IsContinuityFullyEffective(girderKey) )
+         analysisType = pSpec->GetAnalysisType();
    }
 
    if ( analysisType == pgsTypes::Simple )

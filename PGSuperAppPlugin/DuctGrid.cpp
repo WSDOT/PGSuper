@@ -650,7 +650,7 @@ void CDuctGrid::GetDuctData(ROWCOL row,CDuctData& duct,EventIndexType& stressing
 
    duct.Size             = _tstol(GetCellValue(row,nDuctSizeCol));
    duct.nStrands         = _tstoi(GetCellValue(row,nNumStrandCol));
-   duct.JackingEnd       = (CDuctData::TendonJacking)_tstoi(GetCellValue(row,nJackEndCol));
+   duct.JackingEnd       = (pgsTypes::JackingEndType)_tstoi(GetCellValue(row,nJackEndCol));
    duct.bPjCalc          = 0 < _tstoi(GetCellValue(row,nPjackCheckCol)) ? false : true;
    duct.Pj               = _tstof(GetCellValue(row,nPjackCol));
    duct.Pj = ::ConvertToSysUnits(duct.Pj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);

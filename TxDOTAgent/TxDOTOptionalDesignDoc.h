@@ -83,6 +83,7 @@ const UINT DEF_GV =  IDG_SV_SHOW_STRANDS     |
                      IDG_EV_SHOW_STIRRUPS    |
                      IDG_EV_SHOW_LONG_REINF;
 
+
 /*--------------------------------------------------------------------*/
 class CTxDOTOptionalDesignDoc : public CEAFBrokerDocument, public ITxDataObserver, public ITxDOTBrokerRetriever
 {

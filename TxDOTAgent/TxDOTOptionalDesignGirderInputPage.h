@@ -4,6 +4,7 @@
 #include "TxDOTOptionalDesignBrokerRetreiver.h"
 #include "TxDOTOptionalDesignStandardFillDlg.h"
 #include "TxDOTOptionalDesignNonStandardFillDlg.h"
+#include "TogaDirectFillDlg.h"
 
 // CTxDOTOptionalDesignGirderInputPage dialog
 
@@ -47,15 +48,16 @@ private:
    void InitStrandSizeTypeCtrls();
    void InitOptStrandSizeTypeCtrls();
    void InitOrigStrandSizeTypeCtrls();
+   void InitFillTypeCtrls();
 
    CString m_MostRecentLibraryEntry;
 
    // precaster optional design
    CTxDOTOptionalDesignStandardFillDlg    m_OptStandardDlg;
    CTxDOTOptionalDesignNonStandardFillDlg m_OptNonStandardDlg;
+   CTogaDirectFillDlg                     m_OptDirectFillDlg;
 
-   BOOL m_OptIsStandardFill;
-   BOOL m_OptUseDepressed;
+   CTxDOTOptionalDesignGirderData::StrandFillType m_OptStrandFillType;
    CString m_strOptNoStrands;
    Float64 m_OptFc;
    Float64 m_OptFci;
@@ -63,9 +65,9 @@ private:
    // Original design
    CTxDOTOptionalDesignStandardFillDlg    m_OrigStandardDlg;
    CTxDOTOptionalDesignNonStandardFillDlg m_OrigNonStandardDlg;
+   CTogaDirectFillDlg                     m_OrigDirectFillDlg;
 
-   BOOL m_OrigIsStandardFill;
-   BOOL m_OrigUseDepressed;
+   CTxDOTOptionalDesignGirderData::StrandFillType m_OrigStrandFillType;
    CString m_strOrigNoStrands;
    Float64 m_OrigFc;
    Float64 m_OrigFci;
@@ -74,13 +76,11 @@ private:
 public:
    virtual BOOL OnInitDialog();
    afx_msg void OnCbnSelchangeOptStrandType();
-   afx_msg void OnBnClickedOptStandardFill();
-   afx_msg void OnBnClickedOptUseDepressed();
+   afx_msg void OnCbnSelchangeOptFilltypeCombo();
 
    afx_msg void OnCbnSelchangeOrigStrandType();
    afx_msg void OnCbnSelchangeOrigNumStrands();
-   afx_msg void OnBnClickedOrigStandardFill();
-   afx_msg void OnBnClickedOrigUseDepressed();
+   afx_msg void OnCbnSelchangeOrgFilltypeCombo();
 
    virtual BOOL OnSetActive();
    virtual BOOL OnKillActive();

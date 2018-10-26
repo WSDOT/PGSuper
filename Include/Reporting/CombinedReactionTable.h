@@ -50,7 +50,7 @@ LOG
 class REPORTINGCLASS CCombinedReactionTable
 {
 public:
-   // This class serves Float64 duty. It can report pier reactions or girder bearing reactions.
+   // This class serves double duty. It can report pier reactions or girder bearing reactions.
    // The two are identical except for the title and the interfaces they use to get responses
    enum TableType { PierReactionsTable, BearingReactionsTable};
 
@@ -116,7 +116,7 @@ protected:
 
    virtual void BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,bool includeImpact,
-                      IEAFDisplayUnits* pDisplayUnits,
+                      IEAFDisplayUnits* pDisplayUnits,IntervalIndexType intervalIdx,
                       pgsTypes::AnalysisType analysisType, TableType tableType,
                       bool bDesign=true,bool bRating=true) const;
 

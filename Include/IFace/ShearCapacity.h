@@ -89,7 +89,7 @@ interface IShearCapacity : IUnknown
    virtual ZoneIndexType GetCriticalSectionZoneIndex(pgsTypes::LimitState limitState,const pgsPointOfInterest& poi) = 0;
 
    // Returns the start and end of a critical section zone in Girder Coordinates
-   virtual void GetCriticalSectionZoneBoundary(pgsTypes::LimitState ls,const CSegmentKey& segmentKey,ZoneIndexType csZoneIdx,Float64* pStart,Float64* pEnd) = 0;
+   virtual void GetCriticalSectionZoneBoundary(pgsTypes::LimitState ls,const CGirderKey& girderKey,ZoneIndexType csZoneIdx,Float64* pStart,Float64* pEnd) = 0;
 
    // Returns the location of the critical sections in Girder Coordinates
    virtual std::vector<Float64> GetCriticalSections(pgsTypes::LimitState limitState,const CGirderKey& girderKey) = 0;

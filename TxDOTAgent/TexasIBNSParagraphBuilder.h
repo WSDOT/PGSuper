@@ -23,6 +23,9 @@
 #ifndef INCLUDED_TEXASIBNSPARAGRAPHBUILDER_H_
 #define INCLUDED_TEXASIBNSPARAGRAPHBUILDER_H_
 
+#include <PgsExt\DebondUtil.h>
+#include "TxDOTOptionalDesignUtilities.h"
+
 #include <PgsExt\SegmentKey.h>
 
 interface IEAFDisplayUnits;
@@ -64,6 +67,21 @@ private:
    CTexasIBNSParagraphBuilder& operator=(const CTexasIBNSParagraphBuilder&);
 
    void WriteDebondTable(rptParagraph* pPara, IBroker* pBroker, const CSegmentKey& segmentKey, IEAFDisplayUnits* pDisplayUnits) const;
+};
+
+/****************************************************************************
+CLASS	TxDOTIBNSDebondWriter
+   Writes debond table to reports
+****************************************************************************/
+
+class TxDOTIBNSDebondWriter : public TxDOTDebondTool
+{
+public:
+   TxDOTIBNSDebondWriter(const CSegmentKey& segmentKey, Float64 girderLength, IStrandGeometry* pStrandGeometry):
+   TxDOTDebondTool(segmentKey, girderLength, pStrandGeometry)
+   {;}
+
+   void WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits, const std::_tstring& optionalName);
 };
 
 #endif // INCLUDED_TEXASIBNSParagraphBUILDER_H_

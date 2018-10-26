@@ -51,9 +51,15 @@ public:
    Float64 StrengthI_DW;
    Float64 StrengthI_LL_Inventory;
    Float64 StrengthI_LL_Operating;
+   Float64 StrengthI_CR;
+   Float64 StrengthI_SH;
+   Float64 StrengthI_PS;
    Float64 ServiceIII_DC;
    Float64 ServiceIII_DW;
    Float64 ServiceIII_LL;
+   Float64 ServiceIII_CR;
+   Float64 ServiceIII_SH;
+   Float64 ServiceIII_PS;
    Float64 AllowableTensionCoefficient;
    bool    bRateForShear;
 
@@ -78,10 +84,16 @@ public:
    Float64 StrengthI_DW;
    Float64 StrengthI_LL_Routine;
    Float64 StrengthI_LL_Special;
+   Float64 StrengthI_CR;
+   Float64 StrengthI_SH;
+   Float64 StrengthI_PS;
    Float64 ServiceIII_DC;
    Float64 ServiceIII_DW;
    Float64 ServiceIII_LL_Routine;
    Float64 ServiceIII_LL_Special;
+   Float64 ServiceIII_CR;
+   Float64 ServiceIII_SH;
+   Float64 ServiceIII_PS;
    Float64 AllowableTensionCoefficient;
    bool    bRateForStress;
    bool    bRateForShear;
@@ -109,10 +121,18 @@ public:
    Float64 StrengthII_DW;
    Float64 StrengthII_LL_Routine;
    Float64 StrengthII_LL_Special;
+   Float64 StrengthII_CR;
+   Float64 StrengthII_SH;
+   Float64 StrengthII_PS;
+
    Float64 ServiceI_DC;
    Float64 ServiceI_DW;
    Float64 ServiceI_LL_Routine;
    Float64 ServiceI_LL_Special;
+   Float64 ServiceI_CR;
+   Float64 ServiceI_SH;
+   Float64 ServiceI_PS;
+
    bool    bRateForShear;
    bool    bCheckReinforcementYielding;
    Float64 YieldStressCoefficient;

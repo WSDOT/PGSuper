@@ -28,6 +28,8 @@
 #include "BridgeDescLongitudinalRebar.h"
 #include "GirderDescDlg.h"
 #include <IFace\Project.h>
+#include <IFace\Bridge.h>
+#include <IFace\Intervals.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <MFCTools\CustomDDX.h>
 #include "HtmlHelp\HelpTopics.hh"
@@ -90,6 +92,67 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
          }
          else
          {
+            pDX->Fail();
+         }
+      }
+
+#pragma Reminder("UPDATE: need to validate at both ends because of tapered segments")
+      // Validate geometry of the bars
+      GET_IFACE2(pBroker,IIntervals,pIntervals);
+      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(pParent->m_SegmentKey);
+      GET_IFACE2(pBroker,IPointOfInterest,pPOI);
+      pgsPointOfInterest poi(pPOI->GetPointOfInterest(pParent->m_SegmentKey,0.0));
+      GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+      Float64 height = pSectProp->GetHg(releaseIntervalIdx,poi);
+      GET_IFACE2(pBroker,IShapes,pShapes);
+      CComPtr<IShape> shape;
+      pShapes->GetSegmentShape(releaseIntervalIdx,poi,false,pgsTypes::scGirder,&shape);
+
+      CString strMsg;
+      CComPtr<IPoint2d> point;
+      point.CoCreateInstance(CLSID_Point2d);
+      int rowIdx = 1;
+      std::vector<CLongitudinalRebarData::RebarRow>::iterator iter(rebarData.RebarRows.begin());
+      std::vector<CLongitudinalRebarData::RebarRow>::iterator end(rebarData.RebarRows.end());
+      for ( ; iter != end; iter++, rowIdx++ )
+      {
+         CLongitudinalRebarData::RebarRow& row = *iter;
+         if (row.Cover < 0)
+         {
+            strMsg.Format(_T("The cover for row %d must be greater than zero."),rowIdx);
+            AfxMessageBox(strMsg);
+            pDX->Fail();
+         }
+
+         if (row.NumberOfBars == INVALID_INDEX)
+         {
+            strMsg.Format(_T("The number of bars in row %d must be greater than zero."),rowIdx);
+            AfxMessageBox(strMsg);
+            pDX->Fail();
+         }
+
+         if ( 1 < row.NumberOfBars && row.BarSpacing < 0)
+         {
+            strMsg.Format(_T("The bar spacing in row %d must be greater than zero."),rowIdx);
+            AfxMessageBox(strMsg);
+            pDX->Fail();
+         }
+
+         // make sure bars are inside of girder - use shape symmetry
+         gpPoint2d testpnt;
+         testpnt.X() = row.BarSpacing * (row.NumberOfBars-1)/2.;
+         if (row.Face==pgsTypes::GirderBottom)
+            testpnt.Y() = row.Cover;
+         else
+            testpnt.Y() = height-row.Cover;
+
+         point->Move(testpnt.X(),testpnt.Y());
+         VARIANT_BOOL bPointInShape;
+         shape->PointInShape( point,&bPointInShape );
+         if ( bPointInShape == VARIANT_FALSE )
+         {
+            strMsg.Format(_T("One or more of the bars in row %d are outside of the girder section."),rowIdx);
+            AfxMessageBox(strMsg);
             pDX->Fail();
          }
       }

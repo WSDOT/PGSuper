@@ -85,16 +85,13 @@ void CStrandStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
-   if ( 1 < nSegments )
-   {
-      rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-      *pPara << _T("Strand Stresses [5.9.3]");
-      *pChapter << pPara;
-   }
-
-   rptParagraph* pPara = new rptParagraph;
-   *pChapter << pPara;
+   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   *pPara << _T("Strand Stresses");
    pPara->SetName(_T("Strand Stresses"));
+   *pChapter << pPara;
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
 
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -132,10 +129,6 @@ void CStrandStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
       if ( 1 < nSegments )
       {
          strTitle.Format(_T("Segment %d"),LABEL_SEGMENT(segIdx));
-      }
-      else
-      {
-         strTitle = _T("Strand Stresses [5.9.3]");
       }
 
       rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nColumns,strTitle);
@@ -206,7 +199,7 @@ void CStrandStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 
             if ( strandType == strandTypes.front() )
             {
-	            (*p_table)(row,col++) << _T("At Jacking");
+	            (*p_table)(row,col++) << _T("At Jacking (") << RPT_FPJ << _T(")");
 	            (*p_table)(row,col++) << stress.SetValue( capacity );
             }
 	         (*p_table)(row,col++) << stress.SetValue( demand );
@@ -227,7 +220,7 @@ void CStrandStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 	         pArtifact->GetCheckBeforeXfer( strandType, &demand, &capacity, &bPassed );
             if ( strandType == strandTypes.front() )
             {
-   	         (*p_table)(row,col++) << _T("Before Prestress Transfer");
+   	         (*p_table)(row,col++) << _T("Before Prestress Transfer (") << RPT_FPBT << _T(")");
 	            (*p_table)(row,col++) << stress.SetValue( capacity );
             }
 	         (*p_table)(row,col++) << stress.SetValue( demand );
@@ -248,7 +241,7 @@ void CStrandStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 	         pArtifact->GetCheckAfterXfer( strandType, &demand, &capacity, &bPassed );
             if ( strandType == strandTypes.front() )
             {
-   	         (*p_table)(row,col++) << _T("After Prestress Transfer");
+   	         (*p_table)(row,col++) << _T("After Prestress Transfer (") << RPT_FPT << _T(")");
 	            (*p_table)(row,col++) << stress.SetValue( capacity );
             }
 	         (*p_table)(row,col++) << stress.SetValue( demand );
@@ -269,7 +262,7 @@ void CStrandStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 	         pArtifact->GetCheckAfterLosses( strandType, &demand, &capacity, &bPassed );
             if ( strandType == strandTypes.front() )
             {
-   	         (*p_table)(row,col++) << _T("After All Losses and Elastic Gains") << rptNewLine << _T("including Live Load");
+   	         (*p_table)(row,col++) << _T("After All Losses and Elastic Gains") << rptNewLine << _T("including Live Load (") << RPT_FPE << _T(")");
 	            (*p_table)(row,col++) << stress.SetValue( capacity );
             }
 	         (*p_table)(row,col++) << stress.SetValue( demand );

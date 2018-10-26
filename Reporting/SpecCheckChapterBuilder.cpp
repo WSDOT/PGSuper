@@ -24,6 +24,7 @@
 #include <Reporting\SpecCheckChapterBuilder.h>
 #include <Reporting\ReportNotes.h>
 #include <Reporting\StrandStressCheckTable.h>
+#include <Reporting\TendonStressCheckTable.h>
 #include <Reporting\FlexuralStressCheckTable.h>
 #include <Reporting\FlexuralCapacityCheckTable.h>
 #include <Reporting\ShearCheckTable.h>
@@ -126,8 +127,15 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 
+   pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   *pPara << _T("Stress Limitations on Prestressing Tendons [5.9.3]");
+   *pChapter << pPara;
+
    // Stresses in prestressing strands
    CStrandStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
+
+   // Stresses in tendons
+   CTendonStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
 
    // report the required concrete strengths for the current bridge configuration
    rptParagraph* p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
@@ -192,27 +200,11 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    // report flexural stresses at various stages
    CContinuityCheck().Build(pChapter,pBroker,girderKey,pDisplayUnits);
 
-
-   //GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   //bool bTempStrands = false;
-   //for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-   //{
-   //   CSegmentKey segmentKey(girderKey,segIdx);
-   //   StrandIndexType Nt = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Temporary);
-   //   if ( 0 < Nt )
-   //   {
-   //      bTempStrands = true;
-   //      break;
-   //   }
-   //}
-
    std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
    std::vector<IntervalIndexType>::iterator end(vIntervals.end());
    for ( ; iter != end; iter++ )
    {
       IntervalIndexType intervalIdx = *iter;
-      //if ( intervalIdx == tsRemovalIntervalIdx && !bTempStrands )
-      //   continue;
 
       // skip lifting and hauling... the reporting is different. See below
       if ( intervalIdx == liftingIntervalIdx || intervalIdx == haulingIntervalIdx )
@@ -372,7 +364,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       p->SetName(_T("Lifting"));
       *pChapter << p;
 
-      CLiftingCheck().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
+      CLiftingCheck().Build(pChapter,pBroker,girderKey,pDisplayUnits);
    }
 
    // Hauling
@@ -383,7 +375,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       p->SetName(_T("Hauling"));
       *pChapter << p;
 
-      CHaulingCheck().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
+      CHaulingCheck().Build(pChapter,pBroker,girderKey,pDisplayUnits);
    }
 
    // Constructability Checks
@@ -418,9 +410,6 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    // Global Stability Check
    CConstructabilityCheckTable().BuildGlobalGirderStabilityCheck(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
-
-   // Longitudinal rebar geometry check
-   CConstructabilityCheckTable().BuildLongitudinalRebarGeometryCheck(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
 
    // Load rating
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);

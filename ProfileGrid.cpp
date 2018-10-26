@@ -230,7 +230,7 @@ void CProfileGrid::SetRowData(ROWCOL nRow,VertCurveData& data)
    objStation.CoCreateInstance(CLSID_Station);
    objStation->put_Value(station);
    CComBSTR bstrStation;
-   objStation->AsString(unit_mode,&bstrStation);
+   objStation->AsString(unit_mode,VARIANT_FALSE,&bstrStation);
    SetValueRange(CGXRange(nRow,1),CString(bstrStation));
 
    Float64 grade = data.ExitGrade*100;

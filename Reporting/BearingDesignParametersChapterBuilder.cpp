@@ -25,11 +25,14 @@
 #include <Reporting\ReportNotes.h>
 #include <Reporting\ProductReactionTable.h>
 #include <Reporting\ProductRotationTable.h>
+#include <Reporting\TSRemovalReactionTable.h>
+#include <Reporting\TSRemovalRotationTable.h>
 #include <Reporting\UserReactionTable.h>
 #include <Reporting\UserRotationTable.h>
 #include <Reporting\VehicularLoadResultsTable.h>
 #include <Reporting\VehicularLoadReactionTable.h>
 #include <Reporting\CombinedReactionTable.h>
+#include <Reporting\ReactionInterfaceAdapters.h>
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -78,7 +81,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   
+
    GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 
@@ -88,7 +91,6 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    GET_IFACE2(pBroker,IBearingDesign,pBearing);
 
    // Don't create report if no simple span ends
-#pragma Reminder("REVIEW") // what about spliced girders with a pier in the middle of a girder?
    bool doStartPier, doEndPier;
    pBearing->AreBearingReactionsAvailable(girderKey, &doStartPier, &doEndPier);
    if( !(doStartPier || doEndPier) )
@@ -112,6 +114,8 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    if (bPedestrian)
       *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+
+   CTSRemovalReactionTable().Build(pChapter,pBroker,girderKey,pSpec->GetAnalysisType(),CTSRemovalReactionTable::BearingReactionsTable,pDisplayUnits);
 
    *p << rptNewLine;
 
@@ -159,6 +163,8 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    if (bPedestrian)
       *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+
+   CTSRemovalRotationTable().Build(pChapter,pBroker,girderKey,pSpec->GetAnalysisType(),pDisplayUnits);
 
    *p << rptNewLine;
 
@@ -227,9 +233,20 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    std::vector<pgsPointOfInterest> vPoi1( pPOI->GetPointsOfInterest(CSegmentKey(girderKey,0),POI_ERECTED_SEGMENT | POI_0L,POIFIND_AND) );
    std::vector<pgsPointOfInterest> vPoi2( pPOI->GetPointsOfInterest(CSegmentKey(girderKey,nSegments-1),POI_ERECTED_SEGMENT | POI_10L,POIFIND_AND) );
 
+
+   // TRICKY: use adapter class to get correct reaction interfaces
+   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
+   std::auto_ptr<IProductReactionAdapter> pForces = std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, startPierIdx, endPierIdx) );
+
    PierIndexType pier = 0;
-   for ( pier = startPierIdx; pier < endPierIdx; pier++ )
+   for ( pier = startPierIdx; pier <= endPierIdx; pier++ )
    {
+      if (!pForces->DoReportAtPier(pier, girderKey))
+      {
+         // Don't report pier if information is not available
+         continue;
+      }      
+      
       ColumnIndexType col = 0;
 
       pgsTypes::PierFaceType pierFace = (pier == startPierIdx ? pgsTypes::Ahead : pgsTypes::Back );
@@ -369,10 +386,10 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    {
       col = 0;
 
-      if ( endPierIdx == 0 || endPierIdx == nPiers )
-         (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(endPierIdx-1);
+      if ( endPierIdx == 0 || endPierIdx == nPiers-1 )
+         (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(endPierIdx);
       else
-         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(endPierIdx-1);
+         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(endPierIdx);
 
       (*pTable)(row,col++) << reaction.SetValue( endRPmax );
       (*pTable)(row,col++) << rotation.SetValue( endTCmax );
@@ -412,8 +429,14 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    row = pTable->GetNumberOfHeaderRows();
 
-   for ( pier = startPierIdx; pier < endPierIdx; pier++ )
+   for ( pier = startPierIdx; pier <= endPierIdx; pier++ )
    {
+      if (!pForces->DoReportAtPier(pier, girderKey))
+      {
+         // Don't report pier if information is not available
+         continue;
+      }      
+
       ColumnIndexType col = 0;
 
       pgsTypes::PierFaceType pierFace = (pier == startPierIdx ? pgsTypes::Ahead : pgsTypes::Back );

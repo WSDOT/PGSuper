@@ -92,11 +92,17 @@ void CLegalRatingPage::DoDataExchange(CDataExchange* pDX)
    DDX_Text(pDX,IDC_STRENGTH_I_DW,m_Data.StrengthI_DW);
    DDX_Keyword(pDX,IDC_STRENGTH_I_LL_ROUTINE,_T("Compute"),m_Data.StrengthI_LL_Routine);
    DDX_Keyword(pDX,IDC_STRENGTH_I_LL_SPECIAL,_T("Compute"),m_Data.StrengthI_LL_Special);
-   
+   DDX_Text(pDX,IDC_STRENGTH_I_CR,m_Data.StrengthI_CR);
+   DDX_Text(pDX,IDC_STRENGTH_I_SH,m_Data.StrengthI_SH);
+   DDX_Text(pDX,IDC_STRENGTH_I_PS,m_Data.StrengthI_PS);
+
    DDX_Text(pDX,IDC_SERVICE_III_DC,m_Data.ServiceIII_DC);
    DDX_Text(pDX,IDC_SERVICE_III_DW,m_Data.ServiceIII_DW);
    DDX_Keyword(pDX,IDC_SERVICE_III_LL_ROUTINE,_T("Compute"),m_Data.ServiceIII_LL_Routine);
    DDX_Keyword(pDX,IDC_SERVICE_III_LL_SPECIAL,_T("Compute"),m_Data.ServiceIII_LL_Special);
+   DDX_Text(pDX,IDC_SERVICE_III_CR,m_Data.ServiceIII_CR);
+   DDX_Text(pDX,IDC_SERVICE_III_SH,m_Data.ServiceIII_SH);
+   DDX_Text(pDX,IDC_SERVICE_III_PS,m_Data.ServiceIII_PS);
 
    DDX_Check_Bool(pDX,IDC_RATE_FOR_STRESS, m_Data.bRateForStress);
    DDX_Check_Bool(pDX,IDC_RATE_FOR_SHEAR,  m_Data.bRateForShear);
@@ -271,6 +277,28 @@ BOOL CLegalRatingPage::OnSetActive()
    {
       GetDlgItem(IDC_STRENGTH_I_LL_SPECIAL)->EnableWindow(TRUE);
       GetDlgItem(IDC_SERVICE_III_LL_SPECIAL)->EnableWindow(TRUE);
+   }
+
+   GET_IFACE2(broker,ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+
+   if ( pSpecEntry->GetLossMethod() != pgsTypes::TIME_STEP )
+   {
+      GetDlgItem(IDC_STRENGTH_I_PLUS)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_I_CR)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_I_CR_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_I_SH)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_I_SH_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_I_PS)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_I_PS_LABEL)->ShowWindow(SW_HIDE);
+
+      GetDlgItem(IDC_SERVICE_III_PLUS)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_SERVICE_III_CR)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_SERVICE_III_CR_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_SERVICE_III_SH)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_SERVICE_III_SH_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_SERVICE_III_PS)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_SERVICE_III_PS_LABEL)->ShowWindow(SW_HIDE);
    }
 
    return TRUE;

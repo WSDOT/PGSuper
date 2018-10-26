@@ -60,7 +60,8 @@ protected:
 	//{{AFX_MSG(CSpecPSLimitPage)
 	virtual BOOL OnInitDialog();
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
-	afx_msg void OnChecked();
+	afx_msg void OnPsChecked();
+	afx_msg void OnPtChecked();
 	afx_msg void OnCheckPsAfterTransfer();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()

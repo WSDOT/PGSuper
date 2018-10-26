@@ -1220,7 +1220,10 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
       CComBSTR bstrBearing;
       direction_formatter->Format(bearing_value,CComBSTR("°,\',\""),&bstrBearing);
 
-      (*pLayoutTable)(row1,0) << _T("Pier ") << LABEL_PIER(pierIdx);
+      if ( pPier->IsAbutment() )
+         (*pLayoutTable)(row1,0) << _T("Abutment ") << LABEL_PIER(pierIdx);
+      else
+         (*pLayoutTable)(row1,0) << _T("Pier ") << LABEL_PIER(pierIdx);
 
       (*pLayoutTable)(row1,1) << rptRcStation(pPier->GetStation(), &pDisplayUnits->GetStationFormat() );
       (*pLayoutTable)(row1,2) << RPT_BEARING(OLE2T(bstrBearing));
@@ -1296,9 +1299,12 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
       //
       // Connection table
       //
-      (*pConnectionTable)(row2,0) << _T("Pier ") << LABEL_PIER(pierIdx);
-
       bool bAbutment = pPier->IsAbutment();
+      if ( bAbutment )
+         (*pConnectionTable)(row2,0) << _T("Abutment ") << LABEL_PIER(pierIdx);
+      else
+         (*pConnectionTable)(row2,0) << _T("Pier ") << LABEL_PIER(pierIdx);
+
 
       // back side
       if ( pPier->GetPrevSpan() )
@@ -2557,7 +2563,7 @@ void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    INIT_UV_PROTOTYPE( rptStressUnitValue, olay,     pDisplayUnits->GetOverlayWeightUnit(), true );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),        true );
 
-   rptRcTable* table = pgsReportStyleHolder::CreateTableNoHeading(1,_T(""));
+   rptRcTable* table = pgsReportStyleHolder::CreateTableNoHeading(1);
    table->EnableRowStriping(false);
    *pPara2 << table;
 

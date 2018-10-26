@@ -1156,6 +1156,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\DesignConfigUtil.cpp"
+				>
+			</File>
+			<File
 				RelativePath="DistributedLoadData.cpp"
 				>
 				<FileConfiguration
@@ -1827,6 +1831,10 @@
 			</File>
 			<File
 				RelativePath=".\KdotHaulingAnalysisArtifact.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\LiftHaulConstants.cpp"
 				>
 			</File>
 			<File
@@ -3242,6 +3250,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\DesignArtifact.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\DesignConfigUtil.h"
 				>
 			</File>
 			<File

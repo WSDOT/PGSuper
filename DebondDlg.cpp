@@ -28,7 +28,7 @@
 #include "DebondDlg.h"
 #include "GirderDescDlg.h"
 #include "PGSuperColors.h"
-#include <DesignConfigUtil.h>
+#include <PgsExt\DesignConfigUtil.h>
 
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>

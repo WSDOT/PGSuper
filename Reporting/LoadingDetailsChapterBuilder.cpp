@@ -1418,6 +1418,10 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
    // LRFD Limit States
    GET_IFACE2(pBroker,ILoadFactors,pLF);
    const CLoadFactors* pLoadFactors = pLF->GetLoadFactors();
+
+   GET_IFACE2(pBroker,ILossParameters,pLossParameters);
+   pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
+
    RowIndexType row = 0;
 
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
@@ -1427,7 +1431,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(2);
    *pPara << p_table;
 
    p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
@@ -1483,16 +1487,27 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   p_table = pgsReportStyleHolder::CreateDefaultTable(4,_T(""));
+   ColumnIndexType nColumns = 4;
+   if ( loss_method == pgsTypes::TIME_STEP )
+      nColumns = 7;
+
+   p_table = pgsReportStyleHolder::CreateDefaultTable(nColumns);
    p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
    p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
    *pPara << p_table;
 
 
-   (*p_table)(0,0) << _T("Limit State");
-   (*p_table)(0,1) << Sub2(symbol(gamma),_T("DC"));
-   (*p_table)(0,2) << Sub2(symbol(gamma),_T("DW"));
-   (*p_table)(0,3) << Sub2(symbol(gamma),_T("LL"));
+   ColumnIndexType col = 0;
+   (*p_table)(0,col++) << _T("Limit State");
+   (*p_table)(0,col++) << Sub2(symbol(gamma),_T("DC"));
+   (*p_table)(0,col++) << Sub2(symbol(gamma),_T("DW"));
+   (*p_table)(0,col++) << Sub2(symbol(gamma),_T("LL"));
+   if ( loss_method == pgsTypes::TIME_STEP )
+   {
+      (*p_table)(0,col++) << Sub2(symbol(gamma),_T("CR"));
+      (*p_table)(0,col++) << Sub2(symbol(gamma),_T("SH"));
+      (*p_table)(0,col++) << Sub2(symbol(gamma),_T("PS"));
+   }
    
    row = 1;
 
@@ -1500,52 +1515,94 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
 
    if ( bDesign )
    {
-      (*p_table)(row,0) << OLE2T(pEventMap->GetLimitStateName(pgsTypes::ServiceI));
-      (*p_table)(row,1) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::ServiceI]);
-      (*p_table)(row,2) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::ServiceI]);
-      (*p_table)(row,3) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::ServiceI]);
+      col = 0;
+      (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(pgsTypes::ServiceI));
+      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::ServiceI]);
+      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::ServiceI]);
+      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::ServiceI]);
+      if ( loss_method == pgsTypes::TIME_STEP )
+      {
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->CRmax[pgsTypes::ServiceI]);
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->SHmax[pgsTypes::ServiceI]);
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->PSmax[pgsTypes::ServiceI]);
+      }
       row++;
 
       if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
       {
-         (*p_table)(row,0) << OLE2T(pEventMap->GetLimitStateName(pgsTypes::ServiceIA));
-         (*p_table)(row,1) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::ServiceIA]);
-         (*p_table)(row,2) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::ServiceIA]);
-         (*p_table)(row,3) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::ServiceIA]);
+         col = 0;
+         (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(pgsTypes::ServiceIA));
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::ServiceIA]);
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::ServiceIA]);
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::ServiceIA]);
+         if ( loss_method == pgsTypes::TIME_STEP )
+         {
+            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->CRmax[pgsTypes::ServiceIA]);
+            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->SHmax[pgsTypes::ServiceIA]);
+            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->PSmax[pgsTypes::ServiceIA]);
+         }
          row++;
       }
 
-      (*p_table)(row,0) << OLE2T(pEventMap->GetLimitStateName(pgsTypes::ServiceIII));
-      (*p_table)(row,1) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::ServiceIII]);
-      (*p_table)(row,2) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::ServiceIII]);
-      (*p_table)(row,3) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::ServiceIII]);
+      col = 0;
+      (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(pgsTypes::ServiceIII));
+      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::ServiceIII]);
+      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::ServiceIII]);
+      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::ServiceIII]);
+      if ( loss_method == pgsTypes::TIME_STEP )
+      {
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->CRmax[pgsTypes::ServiceIII]);
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->SHmax[pgsTypes::ServiceIII]);
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->PSmax[pgsTypes::ServiceIII]);
+      }
       row++;
 
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
-         (*p_table)(row,0) << OLE2T(pEventMap->GetLimitStateName(pgsTypes::FatigueI));
-         (*p_table)(row,1) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::FatigueI]);
-         (*p_table)(row,2) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::FatigueI]);
-         (*p_table)(row,3) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::FatigueI]);
+         col = 0;
+         (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(pgsTypes::FatigueI));
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::FatigueI]);
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::FatigueI]);
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::FatigueI]);
+         if ( loss_method == pgsTypes::TIME_STEP )
+         {
+            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->CRmax[pgsTypes::FatigueI]);
+            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->SHmax[pgsTypes::FatigueI]);
+            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->PSmax[pgsTypes::FatigueI]);
+         }
          row++;
       }
 
-      (*p_table)(row,0) << OLE2T(pEventMap->GetLimitStateName(pgsTypes::StrengthI));
-      (*p_table)(row,1) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::StrengthI]) << _T("/");
-      (*p_table)(row,1) << scalar.SetValue(pLoadFactors->DCmin[pgsTypes::StrengthI]);
-      (*p_table)(row,2) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::StrengthI]) << _T("/");
-      (*p_table)(row,2) << scalar.SetValue(pLoadFactors->DWmin[pgsTypes::StrengthI]);
-      (*p_table)(row,3) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::StrengthI]);
+      col = 0;
+      (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(pgsTypes::StrengthI));
+      (*p_table)(row,col  ) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::StrengthI]) << _T("/");
+      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DCmin[pgsTypes::StrengthI]);
+      (*p_table)(row,col  ) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::StrengthI]) << _T("/");
+      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DWmin[pgsTypes::StrengthI]);
+      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::StrengthI]);
+      if ( loss_method == pgsTypes::TIME_STEP )
+      {
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->CRmax[pgsTypes::StrengthI]);
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->SHmax[pgsTypes::StrengthI]);
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->PSmax[pgsTypes::StrengthI]);
+      }
       row++;
 
       if ( bPermit )
       {
-         (*p_table)(row,0) << OLE2T(pEventMap->GetLimitStateName(pgsTypes::StrengthII));
-         (*p_table)(row,1) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::StrengthII]) << _T("/");
-         (*p_table)(row,1) << scalar.SetValue(pLoadFactors->DCmin[pgsTypes::StrengthII]);
-         (*p_table)(row,2) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::StrengthII]) << _T("/");
-         (*p_table)(row,2) << scalar.SetValue(pLoadFactors->DWmin[pgsTypes::StrengthII]);
-         (*p_table)(row,3) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::StrengthII]);
+         col = 0;
+         (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(pgsTypes::StrengthII));
+         (*p_table)(row,col  ) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::StrengthII]) << _T("/");
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DCmin[pgsTypes::StrengthII]);
+         (*p_table)(row,col  ) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::StrengthII]) << _T("/");
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DWmin[pgsTypes::StrengthII]);
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::StrengthII]);
+         if ( loss_method == pgsTypes::TIME_STEP )
+         {
+            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->CRmax[pgsTypes::StrengthII]);
+            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->SHmax[pgsTypes::StrengthII]);
+            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->PSmax[pgsTypes::StrengthII]);
+         }
          row++;
       }
    }
@@ -1557,37 +1614,52 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
       {
          if ( pRatingSpec->RateForStress(pgsTypes::lrDesign_Inventory) )
          {
+            col = 0;
             pgsTypes::LimitState ls = pgsTypes::ServiceIII_Inventory;
-            (*p_table)(row,0) << OLE2T(pEventMap->GetLimitStateName(ls));
-            (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
-            (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
+            (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
             Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
             if ( gLL < 0 )
             {
-               (*p_table)(row,3) << _T("*");
+               (*p_table)(row,col++) << _T("*");
                bFootNote = true;
             }
             else
             {
-               (*p_table)(row,3) << scalar.SetValue(gLL);
+               (*p_table)(row,col++) << scalar.SetValue(gLL);
             }
 
+            if ( loss_method == pgsTypes::TIME_STEP )
+            {
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
+            }
             row++;
          }
 
          pgsTypes::LimitState ls = pgsTypes::StrengthI_Inventory;
-         (*p_table)(row,0) << OLE2T(pEventMap->GetLimitStateName(ls));
-         (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
-         (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
+         col = 0;
+         (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+         (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
+         (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
          Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
          if ( gLL < 0 )
          {
-            (*p_table)(row,3) << _T("*");
+            (*p_table)(row,col++) << _T("*");
             bFootNote = true;
          }
          else
          {
-            (*p_table)(row,3) << scalar.SetValue(gLL);
+            (*p_table)(row,col++) << scalar.SetValue(gLL);
+         }
+
+         if ( loss_method == pgsTypes::TIME_STEP )
+         {
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
          }
 
          row++;
@@ -1597,37 +1669,53 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
       {
          if ( pRatingSpec->RateForStress(pgsTypes::lrDesign_Operating) )
          {
+            col = 0;
             pgsTypes::LimitState ls = pgsTypes::ServiceIII_Operating;
-            (*p_table)(row,0) << OLE2T(pEventMap->GetLimitStateName(ls));
-            (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
-            (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
+            (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
             Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
             if ( gLL < 0 )
             {
-               (*p_table)(row,3) << _T("*");
+               (*p_table)(row,col++) << _T("*");
                bFootNote = true;
             }
             else
             {
-               (*p_table)(row,3) << scalar.SetValue(gLL);
+               (*p_table)(row,col++) << scalar.SetValue(gLL);
+            }
+
+            if ( loss_method == pgsTypes::TIME_STEP )
+            {
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
             }
 
             row++;
          }
 
          pgsTypes::LimitState ls = pgsTypes::StrengthI_Operating;
-         (*p_table)(row,0) << OLE2T(pEventMap->GetLimitStateName(ls));
-         (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
-         (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
+         col = 0;
+         (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+         (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
+         (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
          Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
          if ( gLL < 0 )
          {
-            (*p_table)(row,3) << _T("*");
+            (*p_table)(row,col++) << _T("*");
             bFootNote = true;
          }
          else
          {
-            (*p_table)(row,3) << scalar.SetValue(gLL);
+            (*p_table)(row,col++) << scalar.SetValue(gLL);
+         }
+
+         if ( loss_method == pgsTypes::TIME_STEP )
+         {
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
          }
 
          row++;
@@ -1637,37 +1725,53 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
       {
          if ( pRatingSpec->RateForStress(pgsTypes::lrLegal_Routine) )
          {
+            col = 0;
             pgsTypes::LimitState ls = pgsTypes::ServiceIII_LegalRoutine;
-            (*p_table)(row,0) << OLE2T(pEventMap->GetLimitStateName(ls));
-            (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
-            (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
+            (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
             Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
             if ( gLL < 0 )
             {
-               (*p_table)(row,3) << _T("*");
+               (*p_table)(row,col++) << _T("*");
                bFootNote = true;
             }
             else
             {
-               (*p_table)(row,3) << scalar.SetValue(gLL);
+               (*p_table)(row,col++) << scalar.SetValue(gLL);
+            }
+
+            if ( loss_method == pgsTypes::TIME_STEP )
+            {
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
             }
 
             row++;
          }
 
          pgsTypes::LimitState ls = pgsTypes::StrengthI_LegalRoutine;
-         (*p_table)(row,0) << OLE2T(pEventMap->GetLimitStateName(ls));
-         (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
-         (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
+         col = 0;
+         (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+         (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
+         (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
          Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
          if ( gLL < 0 )
          {
-            (*p_table)(row,3) << _T("*");
+            (*p_table)(row,col++) << _T("*");
             bFootNote = true;
          }
          else
          {
-            (*p_table)(row,3) << scalar.SetValue(gLL);
+            (*p_table)(row,col++) << scalar.SetValue(gLL);
+         }
+
+         if ( loss_method == pgsTypes::TIME_STEP )
+         {
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
          }
 
          row++;
@@ -1678,37 +1782,53 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
       {
          if ( pRatingSpec->RateForStress(pgsTypes::lrLegal_Special) )
          {
+            col = 0;
             pgsTypes::LimitState ls = pgsTypes::ServiceIII_LegalSpecial;
-            (*p_table)(row,0) << OLE2T(pEventMap->GetLimitStateName(ls));
-            (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
-            (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
+            (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
             Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
             if ( gLL < 0 )
             {
-               (*p_table)(row,3) << _T("*");
+               (*p_table)(row,col++) << _T("*");
                bFootNote = true;
             }
             else
             {
-               (*p_table)(row,3) << scalar.SetValue(gLL);
+               (*p_table)(row,col++) << scalar.SetValue(gLL);
+            }
+
+            if ( loss_method == pgsTypes::TIME_STEP )
+            {
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
             }
 
             row++;
          }
 
          pgsTypes::LimitState ls = pgsTypes::StrengthI_LegalSpecial;
-         (*p_table)(row,0) << OLE2T(pEventMap->GetLimitStateName(ls));
-         (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
-         (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
+         col = 0;
+         (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+         (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
+         (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
          Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
          if ( gLL < 0 )
          {
-            (*p_table)(row,3) << _T("*");
+            (*p_table)(row,col++) << _T("*");
             bFootNote = true;
          }
          else
          {
-            (*p_table)(row,3) << scalar.SetValue(gLL);
+            (*p_table)(row,col++) << scalar.SetValue(gLL);
+         }
+
+         if ( loss_method == pgsTypes::TIME_STEP )
+         {
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
          }
 
          row++;
@@ -1718,37 +1838,53 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
       {
          if ( pRatingSpec->RateForStress(pgsTypes::lrPermit_Routine) )
          {
+            col = 0;
             pgsTypes::LimitState ls = pgsTypes::ServiceI_PermitRoutine;
-            (*p_table)(row,0) << OLE2T(pEventMap->GetLimitStateName(ls));
-            (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
-            (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
+            (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
             Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
             if ( gLL < 0 )
             {
-               (*p_table)(row,3) << _T("*");
+               (*p_table)(row,col++) << _T("*");
                bFootNote = true;
             }
             else
             {
-               (*p_table)(row,3) << scalar.SetValue(gLL);
+               (*p_table)(row,col++) << scalar.SetValue(gLL);
+            }
+
+            if ( loss_method == pgsTypes::TIME_STEP )
+            {
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
             }
 
             row++;
          }
 
          pgsTypes::LimitState ls = pgsTypes::StrengthII_PermitRoutine;
-         (*p_table)(row,0) << OLE2T(pEventMap->GetLimitStateName(ls));
-         (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
-         (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
+         col = 0;
+         (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+         (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
+         (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
          Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
          if ( gLL < 0 )
          {
-            (*p_table)(row,3) << _T("*");
+            (*p_table)(row,col++) << _T("*");
             bFootNote = true;
          }
          else
          {
-            (*p_table)(row,3) << scalar.SetValue(gLL);
+            (*p_table)(row,col++) << scalar.SetValue(gLL);
+         }
+
+         if ( loss_method == pgsTypes::TIME_STEP )
+         {
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
          }
 
          row++;
@@ -1759,36 +1895,52 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
          if ( pRatingSpec->RateForStress(pgsTypes::lrPermit_Special) )
          {
             pgsTypes::LimitState ls = pgsTypes::ServiceI_PermitSpecial;
-            (*p_table)(row,0) << OLE2T(pEventMap->GetLimitStateName(ls));
-            (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
-            (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
+            col = 0;
+            (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
             Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
             if ( gLL < 0 )
             {
-               (*p_table)(row,3) << _T("*");
+               (*p_table)(row,col++) << _T("*");
                bFootNote = true;
             }
             else
             {
-               (*p_table)(row,3) << scalar.SetValue(gLL);
+               (*p_table)(row,col++) << scalar.SetValue(gLL);
+            }
+
+            if ( loss_method == pgsTypes::TIME_STEP )
+            {
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
+               (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
             }
 
             row++;
          }
 
          pgsTypes::LimitState ls = pgsTypes::StrengthII_PermitSpecial;
-         (*p_table)(row,0) << OLE2T(pEventMap->GetLimitStateName(ls));
-         (*p_table)(row,1) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
-         (*p_table)(row,2) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
+         col = 0;
+         (*p_table)(row,col++) << OLE2T(pEventMap->GetLimitStateName(ls));
+         (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetDeadLoadFactor(ls));
+         (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetWearingSurfaceFactor(ls));
          Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
          if ( gLL < 0 )
          {
-            (*p_table)(row,3) << _T("*");
+            (*p_table)(row,col++) << _T("*");
             bFootNote = true;
          }
          else
          {
-            (*p_table)(row,3) << scalar.SetValue(gLL);
+            (*p_table)(row,col++) << scalar.SetValue(gLL);
+         }
+
+         if ( loss_method == pgsTypes::TIME_STEP )
+         {
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
+            (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetPrestressFactor(ls));
          }
 
          row++;
@@ -1915,6 +2067,9 @@ void CLoadingDetailsChapterBuilder::ReportCamberLoads(rptChapter* pChapter,bool 
 
 static bool IsSlabLoadUniform(const std::vector<SlabLoad>& slabLoads, pgsTypes::SupportedDeckType deckType)
 {
+   if ( slabLoads.size() == 0 )
+      return true;
+
    bool is_panel = deckType==pgsTypes::sdtCompositeSIP ? true : false;
 
    std::vector<SlabLoad>::const_iterator i1,i2;
@@ -1942,6 +2097,9 @@ static bool IsSlabLoadUniform(const std::vector<SlabLoad>& slabLoads, pgsTypes::
 
 static bool IsOverlayLoadUniform(const std::vector<OverlayLoad>& overlayLoads)
 {
+   if ( overlayLoads.size() == 0 )
+      return true;
+
    std::vector<OverlayLoad>::const_iterator i1,i2;
    i1 = overlayLoads.begin();
    i2 = overlayLoads.begin()+1;
@@ -1964,6 +2122,9 @@ static bool IsOverlayLoadUniform(const std::vector<OverlayLoad>& overlayLoads)
 
 static bool IsShearKeyLoadUniform(const std::vector<ShearKeyLoad>& loads)
 {
+   if ( loads.size() == 0 )
+      return true;
+
    std::vector<ShearKeyLoad>::const_iterator i1,i2;
    i1 = loads.begin();
    i2 = loads.begin()+1;
@@ -1989,6 +2150,9 @@ static bool IsShearKeyLoadUniform(const std::vector<ShearKeyLoad>& loads)
 
 static bool IsConstructionLoadUniform(const std::vector<ConstructionLoad>& loads)
 {
+   if ( loads.size() == 0 )
+      return true;
+
    std::vector<ConstructionLoad>::const_iterator i1,i2;
    i1 = loads.begin();
    i2 = loads.begin()+1;

@@ -144,6 +144,8 @@ void CTendonStressGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,GirderInde
    // clear graph
    m_Graph.ClearData();
 
+   ATLASSERT(ductIdx != INVALID_INDEX);
+
    // Get the points of interest we need.
    GET_IFACE(IPointOfInterest,pIPoi);
    CSegmentKey segmentKey(grpIdx,gdrIdx,ALL_SEGMENTS);
@@ -163,7 +165,7 @@ void CTendonStressGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,GirderInde
    IndexType dataSeries4 = m_Graph.CreateDataSeries(_T("fpe with Max LL+IM"),PS_SOLID,1,PURPLE);
    IndexType dataSeries5 = m_Graph.CreateDataSeries(_T("fpe with Min LL+IM"),PS_SOLID,1,MAROON);
 
-   GET_IFACE(ILosses,pLosses);
+   GET_IFACE(IPosttensionForce,pPTForce);
 
    std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
    std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
@@ -171,34 +173,31 @@ void CTendonStressGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,GirderInde
    for ( ; iter != end; iter++, xIter++ )
    {
       pgsPointOfInterest& poi = *iter;
-      const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi);
 
       Float64 X = *xIter;
 
-      Float64 fpj  = 0;
-      Float64 fpe  = 0;
-      Float64 dfpF = 0;
-      Float64 dfpA = 0;
-      if ( ductIdx != INVALID_INDEX && stressTendonIntervalIdx <= intervalIdx )
+      Float64 fpbt = 0; // stress immediately before transfer
+      Float64 fpat = 0; // stress immediately after transfer
+      Float64 fpe  = 0; // stress in tendon this interval
+      if ( stressTendonIntervalIdx <= intervalIdx )
       {
-         fpj  = pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpj;
-         fpe  = pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpe;
-         dfpF = pDetails->FrictionLossDetails[ductIdx].dfpF;
-         dfpA = pDetails->FrictionLossDetails[ductIdx].dfpA;
+         fpbt = pPTForce->GetTendonStress(poi,stressTendonIntervalIdx,pgsTypes::Start,ductIdx);
+         fpat = pPTForce->GetTendonStress(poi,stressTendonIntervalIdx,pgsTypes::End,  ductIdx);
+
+         fpe  = pPTForce->GetTendonStress(poi,intervalIdx,pgsTypes::End,  ductIdx);
       }
      
-      Float64 fpj2 = fpj + dfpA;
-      AddGraphPoint(dataSeries1,X,fpj2);
-      AddGraphPoint(dataSeries2,X,fpj);
+      AddGraphPoint(dataSeries1,X,fpbt);
+      AddGraphPoint(dataSeries2,X,fpat);
 
       AddGraphPoint(dataSeries3,X,fpe);
 
       if ( liveLoadIntervalIdx <= intervalIdx )
       {
-         Float64 fpeLLMax = pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpeLLMax;
+         Float64 fpeLLMax = pPTForce->GetTendonStress(poi,intervalIdx,pgsTypes::End,ductIdx,false,true);
          AddGraphPoint(dataSeries4,X,fpeLLMax);
 
-         Float64 fpeLLMin = pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpeLLMin;
+         Float64 fpeLLMin = pPTForce->GetTendonStress(poi,intervalIdx,pgsTypes::End,ductIdx,true,false);
          AddGraphPoint(dataSeries5,X,fpeLLMin);
       }
    }

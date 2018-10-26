@@ -262,44 +262,6 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
    } // next segment
 }
 
-void CConstructabilityCheckTable::BuildLongitudinalRebarGeometryCheck(rptChapter* pChapter,IBroker* pBroker,const pgsGirderArtifact* pGdrArtifact,IEAFDisplayUnits* pDisplayUnits) const
-{
-   const CGirderKey& girderKey(pGdrArtifact->GetGirderKey());
-
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-   {
-      const pgsSegmentArtifact* pSegmentArtifact = pGdrArtifact->GetSegmentArtifact(segIdx);
-      const pgsConstructabilityArtifact* pArtifact = pSegmentArtifact->GetConstructabilityArtifact();
-      
-      if ( !pArtifact->RebarGeometryCheckPassed() )
-      {
-#pragma Reminder("REVIEW: may need to report group/girder/segment")
-         rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
-         *pChapter << pTitle;
-         *pTitle << _T("Longitudinal rebars exist outside of the girder section - ") << RPT_FAIL;
-
-         rptParagraph* pBody = new rptParagraph;
-         *pChapter << pBody;
-
-         std::vector<RowIndexType> rows = pArtifact->GetRebarRowsOutsideOfSection();
-
-         *pBody << _T("Bars are located outside of the section in the following rows: ");
-
-         CollectionIndexType nRows = rows.size();
-         for (CollectionIndexType rowIdx = 0; rowIdx < nRows; rowIdx++)
-         {
-            CollectionIndexType row = rows.at(rowIdx);
-            *pBody << row+1;
-
-            if (rowIdx != nRows-1)
-               *pBody << _T(", ");
-         } // next row
-      } // if
-   } // next segment
-}
-
 //======================== ACCESS     =======================================
 //======================== INQUIRY    =======================================
 

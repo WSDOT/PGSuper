@@ -102,6 +102,9 @@ public:
 
 // IAllowableTendonStress
 public:
+   virtual bool CheckTendonStressAtJacking();
+   virtual bool CheckTendonStressPriorToSeating();
+   virtual Float64 GetAllowableAtJacking(const CGirderKey& girderKey);
    virtual Float64 GetAllowablePriorToSeating(const CGirderKey& girderKey);
    virtual Float64 GetAllowableAfterAnchorSetAtAnchorage(const CGirderKey& girderKey);
    virtual Float64 GetAllowableAfterAnchorSet(const CGirderKey& girderKey);

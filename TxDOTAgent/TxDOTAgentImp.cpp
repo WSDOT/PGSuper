@@ -33,7 +33,7 @@
 #include <IFace\GirderHandling.h>
 
 #include <PgsExt\BridgeDescription2.h>
-#include <DesignConfigUtil.h>
+#include <PgsExt\DesignConfigUtil.h>
 
 #include <EAF\EAFAutoProgress.h>
 #include <EAF\EAFApp.h>
@@ -644,7 +644,7 @@ void CTxDOTAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const arDes
    strands.bSymmetricDebond = true;  // design is always symmetric
 
 
-   // TRICKY: Mapping from DEBONDCONFIG to CDebondInfo is tricky because
+   // TRICKY: Mapping from DEBONDCONFIG to CDebondData is tricky because
    //         former designates individual strands and latter stores symmetric strands
    //         in pairs.
    // Use utility tool to make the strand indexing conversion

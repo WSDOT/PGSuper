@@ -47,6 +47,7 @@
 #include <Reporting\TSRemovalMomentsTable.h>
 #include <Reporting\TSRemovalShearTable.h>
 #include <Reporting\TSRemovalDisplacementsTable.h>
+#include <Reporting\TSRemovalReactionTable.h>
 #include <Reporting\TSRemovalRotationTable.h>
 
 #include <IFace\Bridge.h>
@@ -235,6 +236,8 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       LiveLoadTableFooter(pBroker,p,thisGirderKey,bDesign,bRating);
       *p << rptNewLine;
 
+      CTSRemovalReactionTable().Build(pChapter,pBroker,thisGirderKey,analysisType,CTSRemovalReactionTable::PierReactionsTable,pDisplayUnits);
+
       // For girder bearing reactions
       GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
       bool bDoBearingReaction, bDummy;
@@ -346,10 +349,10 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          CLiveLoadDistributionFactorTable().Build(pChapter,pBroker,girderKey,pDisplayUnits);
       }
 
-      CCombinedMomentsTable().Build(pBroker,pChapter,girderKey,pDisplayUnits, intervalIdx, analysisType, bDesign, bRating);
+      CCombinedMomentsTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
+      CCombinedShearTable().Build(  pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
       if ( castDeckIntervalIdx <= intervalIdx )
       {
-         CCombinedShearTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
          CCombinedReactionTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx,analysisType,CCombinedReactionTable::PierReactionsTable, bDesign, bRating);
          if( bDoBearingReaction )
          {

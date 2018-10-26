@@ -430,9 +430,6 @@ void CTxDOTOptionalDesignGirderViewPage::OnBnClickedSectionCut()
    CutAtLocation();
 }
 
-
-
-
 void CTxDOTOptionalDesignGirderViewPage::DisplayErrorMode(TxDOTBrokerRetrieverException& exc)
 {
    m_pSectionView->ShowWindow(SW_HIDE);
@@ -441,7 +438,7 @@ void CTxDOTOptionalDesignGirderViewPage::DisplayErrorMode(TxDOTBrokerRetrieverEx
    m_SectionBtn.EnableWindow(FALSE);
 
    CString msg;
-   msg.Format(_T("Error - Analysis run Failed because: \n %s \n More Information May be in Status Center"),exc.Message);
+   msg.Format(_T("Error - Analysis run Failed because: \n %s"),exc.Message);
 
    m_ErrorMsgStatic.SetWindowText(msg);
    m_ErrorMsgStatic.ShowWindow(SW_SHOW);

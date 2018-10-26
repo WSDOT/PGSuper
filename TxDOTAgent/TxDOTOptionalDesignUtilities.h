@@ -127,47 +127,10 @@ inline CString get_strand_size( matPsStrand::Size size )
    return sz;
 }
 
-inline BOOL ParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry, 
+
+BOOL ParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry, 
                               CString& leftConnEntry, CString& rightConnEntry,
-                              CString& projectCriteriaEntry)
-{
-   // Read girder type, connection types, and pgsuper template file name
-   std::_tifstream ifile(lpszPathName);
-   if ( !ifile )
-   {
-      CString msg;
-      msg.Format(_T("Error opening template file: %s - File not found?"),lpszPathName);
-      AfxMessageBox(msg );
-      ASSERT( 0 ); // this should never happen
-      return FALSE;
-   }
-
-   TCHAR line[1024];
-   ifile.getline(line,1024);
-
-   // comma delimited file in format of:
-   // GirderEntryName, EndConnection, StartConnection, ProjectCriteria
-   sysTokenizer tokenizer(_T(","));
-   tokenizer.push_back(line);
-
-   sysTokenizer::size_type nitems = tokenizer.size();
-   if (nitems<4) // Don't limit to allow new items to be added
-   {
-      CString msg;
-      msg.Format(_T("Error reading template file: %s - Invalid Format"),lpszPathName);
-      AfxMessageBox(msg );
-      return FALSE;
-   }
-
-   // set our data values
-   girderEntry = tokenizer[0].c_str();
-   leftConnEntry = tokenizer[1].c_str();
-   rightConnEntry = tokenizer[2].c_str();
-   projectCriteriaEntry = tokenizer[3].c_str();
-
-   return TRUE;
-}
-
+                              CString& projectCriteriaEntry);
 
 class OptionalDesignHarpedFillUtil
 {
@@ -216,192 +179,22 @@ public:
    static StrandRowSet GetStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi);
 };
 
-inline OptionalDesignHarpedFillUtil::StrandRowSet OptionalDesignHarpedFillUtil::GetStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi)
-{
-   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+OptionalDesignHarpedFillUtil::StrandRowSet GetStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi);
 
-   // Want to list filled strands in each row location. Loop over and build fill string
-   StrandRowSet strandrows;
+//
+// Take a girder entry with harped and straight strands and its clone. Make clone have strands converted to all
+// straight with debonding
+class GirderLibraryEntry;
 
-   // Harped
-   CComPtr<IPoint2dCollection> hs_points;
-   pStrandGeometry->GetStrandPositions(midPoi, pgsTypes::Harped, &hs_points);
+void MakeHarpedCloneStraight(const GirderLibraryEntry* pGdrEntry, GirderLibraryEntry* pGdrClone);
 
-   RowIndexType nrows = pStrandGeometry->GetNumRowsWithStrand(midPoi.GetSegmentKey(),pgsTypes::Harped);
-   for (RowIndexType rowIdx=0; rowIdx!=nrows; rowIdx++)
-   {
-      std::vector<StrandIndexType> hstrands = pStrandGeometry->GetStrandsInRow(midPoi.GetSegmentKey(), rowIdx, pgsTypes::Harped);
-      for (std::vector<StrandIndexType>::iterator sit=hstrands.begin(); sit!=hstrands.end(); sit++)
-      {
-         StrandIndexType idx = *sit;
-         CComPtr<IPoint2d> point;
-         hs_points->get_Item(idx,&point);
-         Float64 Y;
-         point->get_Y(&Y);
-
-         Float64 X;
-         point->get_X(&X);
-
-         if (X>0.0)
-         {
-            TCHAR fill_char = GetFillString(X);
-
-            StrandRow srow(Y);
-            StrandRowIter srit = strandrows.find(srow);
-            if (srit != strandrows.end())
-            {
-               srit->fillListString += fill_char;
-            }
-            else
-            {
-               srow.fillListString += fill_char;
-               strandrows.insert(srow);
-            }
-         }
-      }
-   }
-
-
-   // Straight
-   CComPtr<IPoint2dCollection> ss_points;
-   pStrandGeometry->GetStrandPositions(midPoi, pgsTypes::Straight, &ss_points);
-
-   nrows = pStrandGeometry->GetNumRowsWithStrand(midPoi.GetSegmentKey(),pgsTypes::Straight);
-   for (RowIndexType rowIdx=0; rowIdx!=nrows; rowIdx++)
-   {
-      std::vector<StrandIndexType> sstrands = pStrandGeometry->GetStrandsInRow(midPoi.GetSegmentKey(), rowIdx, pgsTypes::Straight);
-      for (std::vector<StrandIndexType>::iterator sit=sstrands.begin(); sit!=sstrands.end(); sit++)
-      {
-         StrandIndexType idx = *sit;
-         CComPtr<IPoint2d> point;
-         ss_points->get_Item(idx,&point);
-         Float64 Y;
-         point->get_Y(&Y);
-
-         Float64 X;
-         point->get_X(&X);
-
-         if (X>0.0)
-         {
-            TCHAR fill_char = GetFillString(X);
-
-            StrandRow srow(Y);
-            StrandRowIter srit = strandrows.find(srow);
-            if (srit != strandrows.end())
-            {
-               srit->fillListString += fill_char;
-            }
-            else
-            {
-               srow.fillListString += fill_char;
-               strandrows.insert(srow);
-            }
-         }
-      }
-   }
-
-   return strandrows;
-}
 
 // Function to compute columns in table that attempts to group all girders in a span per table
 // Returns a list of number of columns per table. Size of list is number of tables to be created
 static const int MIN_TBL_COLS=3; // Minimum columns in multi-girder table
 static const int MAX_TBL_COLS=8; // Maximum columns in multi-girder table
 
-inline std::list<ColumnIndexType> ComputeTableCols(const std::vector<CGirderKey>& girderKeys)
-{
-   // Idea here is to break tables at spans, but also try to group if all girders are from different spans
-   // First build list of sizes of contiguous blocks of spans
-   std::list<ColumnIndexType> contiguous_blocks1;
-   GroupIndexType current_group(INVALID_INDEX);
-   bool first=false;
-   for(std::vector<CGirderKey>::const_iterator it=girderKeys.begin(); it!=girderKeys.end(); it++)
-   {
-      const CGirderKey& girderKey(*it);
-
-      if (first || current_group!=girderKey.groupIndex)
-      {
-         first = false;
-         current_group = girderKey.groupIndex;
-         contiguous_blocks1.push_back(1);
-      }
-      else
-      {
-         contiguous_blocks1.back()++;
-      }
-   }
-
-   // Next break blocks into list of table-sized chunks 
-   std::list<ColumnIndexType> contiguous_blocks2;
-   for(std::list<ColumnIndexType>::const_iterator it=contiguous_blocks1.begin(); it!=contiguous_blocks1.end(); it++)
-   {
-      ColumnIndexType ncols = *it;
-      if (MAX_TBL_COLS < ncols)
-      {
-         ColumnIndexType num_big_chunks = ncols / MAX_TBL_COLS;
-         ColumnIndexType rmdr = ncols % MAX_TBL_COLS;
-
-         for (ColumnIndexType ich=0; ich<num_big_chunks; ich++)
-         {
-            contiguous_blocks2.push_back(MAX_TBL_COLS);
-         }
-
-         if(rmdr != 0)
-         {
-            contiguous_blocks2.push_back(rmdr);
-         }
-      }
-      else
-      {
-         contiguous_blocks2.push_back(ncols);
-      }
-   }
-
-   // Now we have a "right-sized" columns, but we could have a list of one-column tables, which
-   // would be ugly. If all num colums are LE than min, combine into a wider, but not pretty table
-   bool is_ugly = true;
-   for(std::list<ColumnIndexType>::const_iterator it=contiguous_blocks2.begin(); it!=contiguous_blocks2.end(); it++)
-   {
-      ColumnIndexType ncols = *it;
-      if (ncols > MIN_TBL_COLS)
-      {
-         is_ugly = false; // we have at least one table of minimum width - we're not ugly.
-         break;
-      }
-   }
-
-   std::list<ColumnIndexType> final_blocks;
-   if (!is_ugly)
-   {
-      final_blocks = contiguous_blocks2;
-   }
-   else
-   {
-      // work to combine blocks
-      std::list<ColumnIndexType>::const_iterator it=contiguous_blocks2.begin();
-      while(it!=contiguous_blocks2.end())
-      {
-         ColumnIndexType ncols = *it;
-         while (ncols<=MAX_TBL_COLS)
-         {
-            it++;
-            if (it==contiguous_blocks2.end() || ncols+(*it) > MAX_TBL_COLS)
-            {
-               final_blocks.push_back(ncols);
-               break;
-            }
-            else
-            {
-               ncols+= (*it);
-            }
-         }
-      }
-   }
-
-   return final_blocks;
-}
-
-
+std::list<ColumnIndexType> ComputeTableCols(const std::vector<CGirderKey>& girderKeys);
 
 
 #endif // INCLUDED_PGSEXT_TXDOTOPTIONALDESIGNUTILILITIES_H_

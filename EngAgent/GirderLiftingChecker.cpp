@@ -227,6 +227,7 @@ pgsDesignCodes::OutcomeType pgsGirderLiftingChecker::DesignLifting(const CSegmen
    Float64 loc = min_location;
 
    HANDLINGCONFIG lift_config;
+   lift_config.bIgnoreGirderConfig = false;
    lift_config.GdrConfig = config;
 
    pgsLiftingAnalysisArtifact artifact;

@@ -92,7 +92,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
 
-   rptRcTable* pMasterTable = pgsReportStyleHolder::CreateTableNoHeading(2,NULL);
+   rptRcTable* pMasterTable = pgsReportStyleHolder::CreateTableNoHeading(2,_T("Live Load Distribution Factors"));
    *pBody << pMasterTable;
    pMasterTable->SetInsideBorderStyle(rptRiStyle::NOBORDER);
    pMasterTable->SetOutsideBorderStyle(rptRiStyle::NOBORDER);

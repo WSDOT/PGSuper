@@ -105,11 +105,11 @@ BOOL CStationCutDlg::OnInitDialog()
    station->put_Value(::ConvertFromSysUnits(m_LowerBound, m_bSIUnits ? unitMeasure::Meter : unitMeasure::Feet) );
 
    CComBSTR bstrLowerBound;
-   station->AsString(m_bSIUnits ? umSI : umUS, &bstrLowerBound);
+   station->AsString(m_bSIUnits ? umSI : umUS, VARIANT_FALSE,&bstrLowerBound);
 
    station->put_Value(::ConvertFromSysUnits(m_UpperBound, m_bSIUnits ? unitMeasure::Meter : unitMeasure::Feet) );
    CComBSTR bstrUpperBound;
-   station->AsString(m_bSIUnits ? umSI : umUS, &bstrUpperBound);
+   station->AsString(m_bSIUnits ? umSI : umUS, VARIANT_FALSE,&bstrUpperBound);
 
 
    CString strLabel;

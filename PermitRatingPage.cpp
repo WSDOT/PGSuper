@@ -74,11 +74,17 @@ void CPermitRatingPage::DoDataExchange(CDataExchange* pDX)
    DDX_Text(pDX,IDC_STRENGTH_II_DW,m_Data.StrengthII_DW);
    DDX_Keyword(pDX,IDC_STRENGTH_II_LL_PERMIT, _T("Compute"),m_Data.StrengthII_LL_Routine);
    DDX_Keyword(pDX,IDC_STRENGTH_II_LL_PERMIT2,_T("Compute"),m_Data.StrengthII_LL_Special);
+   DDX_Text(pDX,IDC_STRENGTH_II_CR,m_Data.StrengthII_CR);
+   DDX_Text(pDX,IDC_STRENGTH_II_SH,m_Data.StrengthII_SH);
+   DDX_Text(pDX,IDC_STRENGTH_II_PS,m_Data.StrengthII_PS);
    
    DDX_Text(pDX,IDC_SERVICE_I_DC,m_Data.ServiceI_DC);
    DDX_Text(pDX,IDC_SERVICE_I_DW,m_Data.ServiceI_DW);
    DDX_Keyword(pDX,IDC_SERVICE_I_LL_PERMIT, _T("Compute"),m_Data.ServiceI_LL_Routine);
    DDX_Keyword(pDX,IDC_SERVICE_I_LL_PERMIT2,_T("Compute"),m_Data.ServiceI_LL_Special);
+   DDX_Text(pDX,IDC_SERVICE_I_CR,m_Data.ServiceI_CR);
+   DDX_Text(pDX,IDC_SERVICE_I_SH,m_Data.ServiceI_SH);
+   DDX_Text(pDX,IDC_SERVICE_I_PS,m_Data.ServiceI_PS);
 
    DDX_Check_Bool(pDX,IDC_RATE_FOR_SHEAR,m_Data.bRateForShear);
    DDX_Check_Bool(pDX,IDC_CHECK_YIELDING,m_Data.bCheckReinforcementYielding);
@@ -285,6 +291,28 @@ BOOL CPermitRatingPage::OnSetActive()
    {
       GetDlgItem(IDC_STRENGTH_II_LL_PERMIT)->EnableWindow(TRUE);
       GetDlgItem(IDC_SERVICE_I_LL_PERMIT)->EnableWindow(TRUE);
+   }
+
+   GET_IFACE2(broker,ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+
+   if ( pSpecEntry->GetLossMethod() != pgsTypes::TIME_STEP )
+   {
+      GetDlgItem(IDC_STRENGTH_II_PLUS)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_II_CR)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_II_CR_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_II_SH)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_II_SH_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_II_PS)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_STRENGTH_II_PS_LABEL)->ShowWindow(SW_HIDE);
+
+      GetDlgItem(IDC_SERVICE_I_PLUS)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_SERVICE_I_CR)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_SERVICE_I_CR_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_SERVICE_I_SH)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_SERVICE_I_SH_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_SERVICE_I_PS)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_SERVICE_I_PS_LABEL)->ShowWindow(SW_HIDE);
    }
 
    return TRUE;

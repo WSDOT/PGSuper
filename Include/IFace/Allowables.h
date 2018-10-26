@@ -85,6 +85,9 @@ DEFINE_GUID(IID_IAllowableTendonStress,
 0xfc5c901a, 0xc65b, 0x4d10, 0x98, 0xa8, 0x3b, 0x1, 0xee, 0xa8, 0x60, 0x44);
 interface IAllowableTendonStress : IUnknown
 {
+   virtual bool CheckTendonStressAtJacking() = 0;
+   virtual bool CheckTendonStressPriorToSeating() = 0;
+   virtual Float64 GetAllowableAtJacking(const CGirderKey& girderKey) = 0;
    virtual Float64 GetAllowablePriorToSeating(const CGirderKey& girderKey) = 0;
    virtual Float64 GetAllowableAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) = 0;
    virtual Float64 GetAllowableAfterAnchorSet(const CGirderKey& girderKey) = 0;

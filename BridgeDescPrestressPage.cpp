@@ -32,7 +32,7 @@
 #include "DebondDlg.h"
 #include "GirderSelectStrandsDlg.h"
 
-#include <DesignConfigUtil.h>
+#include <PgsExt\DesignConfigUtil.h>
 
 #include <Material\PsStrand.h>
 #include <LRFD\StrandPool.h>
@@ -530,8 +530,8 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
       idx = pCB->AddString(_T("Number of Straight and Number of Straight-Web"));
       pCB->SetItemData(idx,(DWORD_PTR)CStrandData::npsStraightHarped);
 
-      GetDlgItem(IDC_VERT_GROUP)->SetWindowTextW(_T("Vertical Location of Straight-Web Strands"));
-      GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowTextW(_T("Along Girder"));
+      GetDlgItem(IDC_VERT_GROUP)->SetWindowText(_T("Vertical Location of Straight-Web Strands"));
+      GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowText(_T("Along Girder"));
 
       DisappearHpOffsetControls();
    }
@@ -540,8 +540,8 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
       idx = pCB->AddString(_T("Number of Straight and Number of Harped"));
       pCB->SetItemData(idx,(DWORD_PTR)CStrandData::npsStraightHarped);
 
-      GetDlgItem(IDC_VERT_GROUP)->SetWindowTextW(_T("Vertical Location of Harped Strands"));
-      GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowTextW(_T("Girder Ends"));
+      GetDlgItem(IDC_VERT_GROUP)->SetWindowText(_T("Vertical Location of Harped Strands"));
+      GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowText(_T("Girder Ends"));
    }
 
    idx = pCB->AddString(_T("Direct Selection of Strand Locations"));

@@ -241,16 +241,16 @@ CProjectAgentImp::CProjectAgentImp()
 
    m_gDC[IndexFromLimitState(pgsTypes::StrengthI_Inventory)] = 1.25;
    m_gDW[IndexFromLimitState(pgsTypes::StrengthI_Inventory)] = 1.50;
-   m_gCR[IndexFromLimitState(pgsTypes::StrengthI_Inventory)] = 1.25;
-   m_gSH[IndexFromLimitState(pgsTypes::StrengthI_Inventory)] = 1.25;
-   m_gPS[IndexFromLimitState(pgsTypes::StrengthI_Inventory)] = 1.25;
+   m_gCR[IndexFromLimitState(pgsTypes::StrengthI_Inventory)] = 1.00;
+   m_gSH[IndexFromLimitState(pgsTypes::StrengthI_Inventory)] = 1.00;
+   m_gPS[IndexFromLimitState(pgsTypes::StrengthI_Inventory)] = 1.00;
    m_gLL[IndexFromLimitState(pgsTypes::StrengthI_Inventory)] = -1;
 
    m_gDC[IndexFromLimitState(pgsTypes::StrengthI_Operating)] = 1.25;
    m_gDW[IndexFromLimitState(pgsTypes::StrengthI_Operating)] = 1.50;
-   m_gCR[IndexFromLimitState(pgsTypes::StrengthI_Operating)] = 1.25;
-   m_gSH[IndexFromLimitState(pgsTypes::StrengthI_Operating)] = 1.25;
-   m_gPS[IndexFromLimitState(pgsTypes::StrengthI_Operating)] = 1.25;
+   m_gCR[IndexFromLimitState(pgsTypes::StrengthI_Operating)] = 1.00;
+   m_gSH[IndexFromLimitState(pgsTypes::StrengthI_Operating)] = 1.00;
+   m_gPS[IndexFromLimitState(pgsTypes::StrengthI_Operating)] = 1.00;
    m_gLL[IndexFromLimitState(pgsTypes::StrengthI_Operating)] = -1;
 
    m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)] = 1.00;
@@ -269,9 +269,9 @@ CProjectAgentImp::CProjectAgentImp()
 
    m_gDC[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)] = 1.25;
    m_gDW[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)] = 1.50;
-   m_gCR[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)] = 1.25;
-   m_gSH[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)] = 1.25;
-   m_gPS[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)] = 1.25;
+   m_gCR[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)] = 1.00;
+   m_gSH[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)] = 1.00;
+   m_gPS[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)] = 1.00;
    m_gLL[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)] = -1;
 
    m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)] = 1.00;
@@ -283,23 +283,23 @@ CProjectAgentImp::CProjectAgentImp()
 
    m_gDC[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)] = 1.25;
    m_gDW[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)] = 1.50;
-   m_gCR[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)] = 1.25;
-   m_gSH[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)] = 1.25;
-   m_gPS[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)] = 1.25;
+   m_gCR[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)] = 1.00;
+   m_gSH[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)] = 1.00;
+   m_gPS[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)] = 1.00;
    m_gLL[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)] = -1;
 
    m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)] = 1.00;
    m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)] = 1.00;
-   m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)] = 1.00;
-   m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)] = 1.00;
-   m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)] = 1.00;
+   m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)] = 1.00;
+   m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)] = 1.00;
+   m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)] = 1.00;
    m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)] = -1;
 
    m_gDC[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)] = 1.25;
    m_gDW[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)] = 1.50;
-   m_gCR[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)] = 1.25;
-   m_gSH[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)] = 1.25;
-   m_gPS[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)] = 1.25;
+   m_gCR[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)] = 1.00;
+   m_gSH[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)] = 1.00;
+   m_gPS[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)] = 1.00;
    m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)] = -1;
 
    m_gDC[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)] = 1.00;
@@ -311,9 +311,9 @@ CProjectAgentImp::CProjectAgentImp()
 
    m_gDC[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = 1.25;
    m_gDW[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = 1.50;
-   m_gCR[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = 1.25;
-   m_gSH[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = 1.25;
-   m_gPS[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = 1.25;
+   m_gCR[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = 1.00;
+   m_gSH[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = 1.00;
+   m_gPS[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = 1.00;
    m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = -1;
 
    m_gDC[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)] = 1.00;
@@ -3933,6 +3933,17 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
          m_LoadFactors.DWmax[i]   = temp_manager.m_DWmax[i];
          m_LoadFactors.LLIMmax[i] = temp_manager.m_LLIMmax[i];
       }
+
+      m_bGeneralLumpSum               = temp_manager.m_bGeneralLumpSum;
+      m_BeforeXferLosses              = temp_manager.m_BeforeXferLosses;
+      m_AfterXferLosses               = temp_manager.m_AfterXferLosses;
+      m_LiftingLosses                 = temp_manager.m_LiftingLosses;
+      m_ShippingLosses                = temp_manager.m_ShippingLosses;
+      m_BeforeTempStrandRemovalLosses = temp_manager.m_BeforeTempStrandRemovalLosses;
+      m_AfterTempStrandRemovalLosses  = temp_manager.m_AfterTempStrandRemovalLosses;
+      m_AfterDeckPlacementLosses      = temp_manager.m_AfterDeckPlacementLosses;
+      m_AfterSIDLLosses               = temp_manager.m_AfterSIDLLosses;
+      m_FinalLosses                   = temp_manager.m_FinalLosses;
 
       m_Dset                = temp_manager.m_DSet;
       m_WobbleFriction      = temp_manager.m_WobbleFriction;

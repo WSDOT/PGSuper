@@ -188,7 +188,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(2,_T(""));
+   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(2);
    *p << p_table;
 
    RowIndexType row = 0;

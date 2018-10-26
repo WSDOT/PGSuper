@@ -69,7 +69,7 @@ public:
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
    virtual void Build(rptChapter* pChapter,
-                      IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
+                      IBroker* pBroker,const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits) const;
 
 protected:

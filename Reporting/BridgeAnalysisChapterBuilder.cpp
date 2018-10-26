@@ -52,6 +52,7 @@
 #include <Reporting\TSRemovalMomentsTable.h>
 #include <Reporting\TSRemovalShearTable.h>
 #include <Reporting\TSRemovalDisplacementsTable.h>
+#include <Reporting\TSRemovalReactionTable.h>
 #include <Reporting\TSRemovalRotationTable.h>
 
 #include <IFace\Bridge.h>
@@ -208,8 +209,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
       }
    }
 
-#pragma Reminder("Report reactions due to temporary support removal")
-   //CTSRemovalReactionsTable().Build(pChapter,pBroker,girderKey,m_AnalysisType,pDisplayUnits);
+   CTSRemovalReactionTable().Build(pChapter,pBroker,girderKey,m_AnalysisType,CTSRemovalReactionTable::PierReactionsTable,pDisplayUnits);
 
    // Product Displacements
    p = new rptParagraph;
@@ -391,10 +391,10 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
          CLiveLoadDistributionFactorTable().Build(pChapter,pBroker,girderKey,pDisplayUnits);
       }
 
-      CCombinedMomentsTable().Build(pBroker,pChapter,girderKey,pDisplayUnits, intervalIdx, analysisType, bDesign, bRating);
+      CCombinedMomentsTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
+      CCombinedShearTable().Build(  pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
       if ( castDeckIntervalIdx <= intervalIdx )
       {
-         CCombinedShearTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
          CCombinedReactionTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx,analysisType,CCombinedReactionTable::PierReactionsTable, bDesign, bRating);
 #pragma Reminder("UPDATE: this crashes for ALL_GROUPS")
          //if( bDoBearingReaction )

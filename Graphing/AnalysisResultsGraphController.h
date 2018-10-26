@@ -48,6 +48,7 @@ protected:
    afx_msg void OnAnalysisTypeClicked();
    //}}AFX_MSG
 
+   virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
    virtual void OnGirderChanged();
    virtual void OnIntervalChanged();
 

@@ -30,7 +30,6 @@
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\GirderData.h>
 #include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\DebondUtil.h>
 
 #include <psgLib\SpecLibraryEntry.h>
 #include <psgLib\GirderLibraryEntry.h>
@@ -43,8 +42,6 @@
 #include <IFace\Project.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\Intervals.h>
-
-#include "TxDOTOptionalDesignUtilities.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -73,21 +70,10 @@ static void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisp
 
 
 /****************************************************************************
-CLASS	CTexasIBNSParagraphBuilder
+CLASS	TxDOTIBNSDebondWriter
 ****************************************************************************/
 
-
-class TxDOTIBNSDebondWriter : public TxDOTDebondTool
-{
-public:
-   TxDOTIBNSDebondWriter(const CSegmentKey& segmentKey, Float64 girderLength, IStrandGeometry* pStrandGeometry):
-   TxDOTDebondTool(segmentKey, girderLength, pStrandGeometry)
-   {;}
-
-   void WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits);
-};
-
-void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits)
+void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits, const std::_tstring& optionalName)
 {
    *pPara<<rptNewLine; // make some space
 
@@ -95,13 +81,19 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
    Compute();
 
    StrandIndexType nss = m_pStrandGeometry->GetNumStrands(m_SegmentKey,pgsTypes::Straight);
+   bool is_optional = optionalName.size() > 0;
 
    // see if we have an error condition - don't build table if so
    if (nss==0 || m_OutCome==SectionMismatch || m_OutCome==TooManySections || m_OutCome==SectionsNotSymmetrical)
    {
-      SpanIndexType spanIdx = m_SegmentKey.groupIndex;
-      GirderIndexType gdrIdx = m_SegmentKey.girderIndex;
-      *pPara <<bold(ON)<< _T("Debonding Information for Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << bold(OFF) << rptNewLine;
+      if (is_optional)
+      {
+         *pPara <<bold(ON)<< _T("Debonding Information for ") << optionalName << bold(OFF) << rptNewLine;
+      }
+      else
+      {
+         *pPara <<bold(ON)<< _T("Debonding Information for Span ") << LABEL_SPAN(m_SegmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(m_SegmentKey.girderIndex) << bold(OFF) << rptNewLine;
+      }
 
       if(nss==0)
       {
@@ -132,14 +124,18 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
 
       uloc.SetFormat(sysNumericFormatTool::Automatic);
 
-      SpanIndexType spanIdx = m_SegmentKey.groupIndex;
-      GirderIndexType gdrIdx = m_SegmentKey.girderIndex;
-
       const ColumnIndexType num_cols=13;
       std::_tostringstream os;
-      os <<_T("Debonded Strand Pattern for Span ")<<LABEL_SPAN(spanIdx)<<_T(" Girder ")<<LABEL_GIRDER(gdrIdx);
+      if (is_optional)
+      {
+         os << _T("NS Direct-Fill Strand Pattern for ") << optionalName;
+      }
+      else
+      {
+         os <<_T("Debonded Strand Pattern for Span ")<<LABEL_SPAN(m_SegmentKey.groupIndex)<<_T(" Girder ")<<LABEL_GIRDER(m_SegmentKey.girderIndex);
+      }
 
-      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(num_cols,os.str().c_str());
+      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(num_cols,os.str());
       *pPara << p_table;
 
       // This table has a very special header
@@ -177,7 +173,7 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
          loc_inc++;
       }
 
-      if (m_NumDebonded == 0)
+      if (m_NumDebonded == 0 && !is_optional)
       {
          // no debonded strands, just write one row
          row++;
@@ -216,7 +212,7 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
          {
             const RowData& rowdata = *riter;
 
-            if( !rowdata.m_Sections.empty()) // Only write row if it has debonding
+            if( !rowdata.m_Sections.empty() || is_optional) // Only write row if it has debonding, or we are writing optional design
             {
                row++; // table 
 
@@ -266,6 +262,10 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IEAFDisplayUnits
       }
    }
 }
+
+/****************************************************************************
+CLASS	CTexasIBNSParagraphBuilder
+****************************************************************************/
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -486,9 +486,7 @@ void CTexasIBNSParagraphBuilder::WriteDebondTable(rptParagraph* pPara, IBroker* 
    // Need compute tool to decipher debond data
    TxDOTIBNSDebondWriter tx_writer(segmentKey, segment_length, pStrandGeometry);
 
-   tx_writer.WriteDebondData(pPara,pDisplayUnits);
-
-
+   tx_writer.WriteDebondData(pPara, pDisplayUnits, std::_tstring());
 }
 
 void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits,

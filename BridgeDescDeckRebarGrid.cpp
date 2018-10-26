@@ -307,24 +307,12 @@ void CBridgeDescDeckRebarGrid::SetRowStyle(ROWCOL nRow)
 {
    GetParam()->EnableUndo(FALSE);
 
-   if ( 0 < m_nContinuousPiers )
-   {
-	   this->SetStyleRange(CGXRange(nRow,1), CGXStyle()
-			   .SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
-			   .SetChoiceList(m_strPiers)
-			   .SetValue(m_strPiers.Left(m_strPiers.Find(_T("\n"),0)))
-            .SetHorizontalAlignment(DT_RIGHT)
-            );
-   }
-   else
-   {
-	   this->SetStyleRange(CGXRange(nRow,1), CGXStyle()
-			   .SetValue(_T(""))
-            .SetEnabled(FALSE)
-            .SetFormat(GX_FMT_HIDDEN)
-            .SetInterior(::GetSysColor(COLOR_BTNFACE))
-            );
-   }
+   this->SetStyleRange(CGXRange(nRow,1), CGXStyle()
+		   .SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
+		   .SetChoiceList(m_strPiers)
+		   .SetValue(m_strPiers.Left(m_strPiers.Find(_T("\n"),0)))
+         .SetHorizontalAlignment(DT_RIGHT)
+         );
 
    CString strMats = (m_bEnableTopMat && m_bEnableBottomMat ? _T("Top\nBottom") : _T("Top"));
    this->SetStyleRange(CGXRange(nRow,2), CGXStyle()
@@ -460,6 +448,21 @@ void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::Neg
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
 
+   CBridgeDescDeckReinforcementPage* pParent = (CBridgeDescDeckReinforcementPage*)GetParent();
+   ASSERT(pParent);
+
+   CBridgeDescDlg* pGrandParent = (CBridgeDescDlg*)(pParent->GetParent());
+   ASSERT( pGrandParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
+   const CPierData2* pPier = pGrandParent->m_BridgeDesc.GetPier(rebarData.PierIdx);
+   if ( !pPier->IsContinuousConnection() )
+   {
+      HideRows(nRow,nRow,TRUE);
+   }
+   else
+   {
+      HideRows(nRow,nRow,FALSE);
+   }
+
    // pier index
    SetValueRange(CGXRange(nRow,1),(LONG)(rebarData.PierIdx+1L));
 
@@ -482,12 +485,6 @@ void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::Neg
    SetValueRange(CGXRange(nRow,5),spacing);
 
    // Cutoffs - don't input cut-offs for non-continuous side of pier
-   CBridgeDescDeckReinforcementPage* pParent = (CBridgeDescDeckReinforcementPage*)GetParent();
-   ASSERT(pParent);
-
-   CBridgeDescDlg* pGrandParent = (CBridgeDescDlg*)(pParent->GetParent());
-   ASSERT( pGrandParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
-   const CPierData2* pPier = pGrandParent->m_BridgeDesc.GetPier(rebarData.PierIdx);
 
    // left cutoff
    Float64 cutoff = rebarData.LeftCutoff;

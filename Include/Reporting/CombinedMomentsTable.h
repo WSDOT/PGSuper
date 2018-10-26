@@ -103,7 +103,7 @@ protected:
 
    void BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
-                      IEAFDisplayUnits* pDisplayUnits,
+                      IEAFDisplayUnits* pDisplayUnits,IntervalIndexType intervalIdx,
                       pgsTypes::AnalysisType analysisType,
                       bool bDesign,bool bRating) const;
    // GROUP: DATA MEMBERS

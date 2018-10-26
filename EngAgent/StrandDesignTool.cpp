@@ -1332,7 +1332,7 @@ public:
 
 void pgsStrandDesignTool::DumpDesignParameters()
 {
-#ifdef _DEBUG
+#if ENABLE_LOGGING
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
 
@@ -2847,7 +2847,7 @@ std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetLiftingDesignPointsOfInt
    //return vPoi2;
 }
 
-std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetHaulingDesignPointsOfInterest(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType poiReference,Uint32 mode)
+std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetHaulingDesignPointsOfInterest(const CSegmentKey& segmentKey,Uint16 nPnts,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType poiReference,Uint32 mode)
 {
    return GetHandlingDesignPointsOfInterest(segmentKey,leftOverhang,rightOverhang,POI_HAUL_SEGMENT,POI_BUNKPOINT,mode);
 

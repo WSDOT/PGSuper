@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "AnalysisResultsGraphController.h"
+#include "Hints.h"
 #include <Graphing\AnalysisResultsGraphBuilder.h>
 
 #include <EAF\EAFUtilities.h>
@@ -159,6 +160,23 @@ void CAnalysisResultsGraphController::OnAnalysisTypeClicked()
    m_AnalysisType = analysisType;
 
    UpdateGraph();
+}
+
+void CAnalysisResultsGraphController::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+{
+   CGirderGraphControllerBase::OnUpdate(pSender,lHint,pHint);
+
+   if ( 
+        lHint == HINT_LIVELOADCHANGED || 
+        lHint == HINT_BRIDGECHANGED   ||
+        lHint == HINT_SPECCHANGED     ||
+        lHint == HINT_RATINGSPECCHANGED
+      )
+   {
+      ((CAnalysisResultsGraphBuilder*)GetGraphBuilder())->UpdateGraphDefinitions();
+      FillLoadCaseList();
+      UpdateGraph();
+   }
 }
 
 void CAnalysisResultsGraphController::OnGirderChanged()

@@ -39,22 +39,6 @@ public:
 };
 
 // Function for comparing two required concrete strengths. -1 means infinite
-#pragma Reminder("UPDATE: remove inline and implement function in a CPP file")
-inline Float64 CompareConcreteStrength(Float64 maxConc, Float64 newConc)
-{
-   // -1 is magic number meaning no possible value
-   if (maxConc==-1.0)
-   {
-      return -1.0;
-   }
-   else if (newConc<0)
-   {
-      return -1.0;
-   }
-   else
-   {
-      return max(maxConc, newConc);
-   }
-}
+Float64 CompareConcreteStrength(Float64 maxConc, Float64 newConc);
 
 #endif // INCLUDED_PGSEXT_LIFTHAULCONSTANTS_H_

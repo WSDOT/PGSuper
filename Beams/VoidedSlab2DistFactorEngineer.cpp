@@ -511,11 +511,11 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlab2DistFactorEngineer::GetLLDFParam
    IntervalIndexType llIntervalIdx = pIntervals->GetLiveLoadInterval();
    if (0 < fcgdr)
    {
-      plldf->I = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi,fcgdr);
+      plldf->I = pSectProp->GetIx(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
    }
    else
    {
-      plldf->I = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi);
+      plldf->I = pSectProp->GetIx(pgsTypes::sptGross,llIntervalIdx,poi);
    }
 
    plldf->PossionRatio = 0.2;
@@ -544,15 +544,15 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlab2DistFactorEngineer::GetLLDFParam
       Float64 Ix, Iy, A, Ip;
       if (fcgdr>0)
       {
-         Ix = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi,fcgdr);
-         Iy = pSectProp->GetIy(pgsTypes::sptGross,releaseIntervalIdx,poi,fcgdr);
-         A  = pSectProp->GetAg(pgsTypes::sptGross,releaseIntervalIdx,poi,fcgdr);
+         Ix = pSectProp->GetIx(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
+         Iy = pSectProp->GetIy(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
+         A  = pSectProp->GetAg(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
       }
       else
       {
-         Ix = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi);
-         Iy = pSectProp->GetIy(pgsTypes::sptGross,releaseIntervalIdx,poi);
-         A  = pSectProp->GetAg(pgsTypes::sptGross,releaseIntervalIdx,poi);
+         Ix = pSectProp->GetIx(pgsTypes::sptGross,llIntervalIdx,poi);
+         Iy = pSectProp->GetIy(pgsTypes::sptGross,llIntervalIdx,poi);
+         A  = pSectProp->GetAg(pgsTypes::sptGross,llIntervalIdx,poi);
       }
 
       Ip = Ix + Iy;

@@ -85,6 +85,7 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
    GET_IFACE2(pBroker,IProductForces,pProductForces);
    GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
    GET_IFACE2(pBroker,IBridge,pBridge);
+   PierIndexType nPiers = pBridge->GetPierCount();
 
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
@@ -119,7 +120,7 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
 
       ColumnIndexType col = 0;
 
-      if ( pier == 0 || pier == pBridge->GetPierCount()-1 )
+      if ( pier == 0 || pier == nPiers-1 )
          (*p_table)(row,col++) << _T("Abutment ") << LABEL_PIER(pier);
       else
          (*p_table)(row,col++) << _T("Pier ") << LABEL_PIER(pier);

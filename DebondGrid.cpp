@@ -33,7 +33,7 @@
 #include <Units\Measure.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <DesignConfigUtil.h>
+#include <PgsExt\DesignConfigUtil.h>
 #include "PGSuperUnits.h"
 
 #ifdef _DEBUG

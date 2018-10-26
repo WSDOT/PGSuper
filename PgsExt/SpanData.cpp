@@ -782,9 +782,16 @@ Float64 CSpanData::GetSlabOffset(pgsTypes::MemberEndType end) const
    pgsTypes::SlabOffsetType slabOffsetType = m_pBridgeDesc->GetSlabOffsetType();
 
    if ( slabOffsetType == pgsTypes::sotBridge )
+   {
       return m_pBridgeDesc->GetSlabOffset();
+   }
    else if ( slabOffsetType == pgsTypes::sotGroup )
+   {
+      if ( m_pBridgeDesc->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
+         return 0;
+
       return m_SlabOffset[end];
+   }
 
    return m_GirderTypes.GetSlabOffset(0,end); // a reasonable default
 }

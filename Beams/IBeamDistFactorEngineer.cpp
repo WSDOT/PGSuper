@@ -457,42 +457,48 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
    GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
    pDistFactors->VerifyDistributionFactorRequirements(poi);
 
-   plldf->ts = pBridge->GetStructuralSlabDepth(poi);
-
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType llIntervalIdx = pIntervals->GetLiveLoadInterval();
-   Float64 EcDeck    = pMaterials->GetDeckEc(llIntervalIdx);
 
-   // use release interval for girder properties because we want the non-composite gross properties. we know it is non-composite at release
-   if ( fcgdr < 0 )
+   plldf->I  = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi);
+   plldf->A  = pSectProp->GetAg(pgsTypes::sptGross,releaseIntervalIdx,poi);
+   plldf->Yt = pSectProp->GetYtGirder(pgsTypes::sptGross,releaseIntervalIdx,poi);
+
+   if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
    {
-      // fcgdr < 0 means use the current bridge model
-      Float64 EcSegment = pMaterials->GetSegmentEc(segmentKey,llIntervalIdx);
-
-      plldf->n = EcSegment/EcDeck;
-
-      plldf->I  = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi);
-      plldf->A  = pSectProp->GetAg(pgsTypes::sptGross,releaseIntervalIdx,poi);
-      plldf->Yt = pSectProp->GetYtGirder(pgsTypes::sptGross,releaseIntervalIdx,poi);
+      // no deck so modular ratio is 1.0 (Eg/Eg)
+      plldf->n = 1.0;
+      plldf->ts = pGdr->GetMinTopFlangeThickness(poi);
+      plldf->eg = plldf->Yt - plldf->ts/2; // measure eg to the center of the top flange
    }
    else
    {
-      GET_IFACE(IMaterials,pMaterial);
-      Float64 Ecgdr = pMaterial->GetEconc(fcgdr,
-                                          pMaterial->GetSegmentStrengthDensity(segmentKey),
-                                          pMaterial->GetSegmentEccK1(segmentKey),
-                                          pMaterial->GetSegmentEccK2(segmentKey)
-                                          );
+      plldf->ts = pBridge->GetStructuralSlabDepth(poi);
 
-      plldf->n  = Ecgdr / EcDeck;
+      Float64 EcDeck    = pMaterials->GetDeckEc(llIntervalIdx);
+   
+      // use release interval for girder properties because we want the non-composite gross properties. we know it is non-composite at release
+      if ( fcgdr < 0 )
+      {
+         // fcgdr < 0 means use the current bridge model
+         Float64 EcSegment = pMaterials->GetSegmentEc(segmentKey,llIntervalIdx);
+   
+         plldf->n = EcSegment/EcDeck;
+      }
+      else
+      {
+         GET_IFACE(IMaterials,pMaterial);
+         Float64 Ecgdr = pMaterial->GetEconc(fcgdr,
+                                             pMaterial->GetSegmentStrengthDensity(segmentKey),
+                                             pMaterial->GetSegmentEccK1(segmentKey),
+                                             pMaterial->GetSegmentEccK2(segmentKey)
+                                             );
+         plldf->n  = Ecgdr / EcDeck;
+      }
 
-      plldf->I  = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi,fcgdr);
-      plldf->A  = pSectProp->GetAg(pgsTypes::sptGross,releaseIntervalIdx,poi,fcgdr);
-      plldf->Yt = pSectProp->GetYtGirder(pgsTypes::sptGross,releaseIntervalIdx,poi,fcgdr);
+      plldf->eg    = plldf->Yt + plldf->ts/2;
    }
-
-   plldf->eg    = plldf->Yt + plldf->ts/2;
 
    plldf->L = GetEffectiveSpanLength(spanOrPierIdx,gdrIdx,dfType);
 

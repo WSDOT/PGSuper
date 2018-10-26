@@ -872,6 +872,7 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
 
 void CSpecMainSheet::ExchangePSLimitData(CDataExchange* pDX)
 {
+   // Strand Data
    DDX_Check_Bool(pDX, IDC_CHECK_PS_AT_JACKING, m_Entry.m_bCheckStrandStress[AT_JACKING]);
  	DDX_Text(pDX, IDC_PS_AT_JACKING_SR, m_Entry.m_StrandStressCoeff[AT_JACKING][STRESS_REL]);
    DDV_GreaterThanZero(pDX, IDC_PS_AT_JACKING_SR, m_Entry.m_StrandStressCoeff[AT_JACKING][STRESS_REL]);
@@ -890,12 +891,39 @@ void CSpecMainSheet::ExchangePSLimitData(CDataExchange* pDX)
  	DDX_Text(pDX, IDC_PS_AFTER_TRANSFER_LR, m_Entry.m_StrandStressCoeff[AFTER_TRANSFER][LOW_RELAX]);
    DDV_GreaterThanZero(pDX, IDC_PS_AFTER_TRANSFER_LR, m_Entry.m_StrandStressCoeff[AFTER_TRANSFER][LOW_RELAX]);
 
-//   DDX_Check_Bool(pDX, IDC_CHECK_PS_AFTER_ALL_LOSSES, m_Entry.m_bCheckStrandStress[AFTER_ALL_LOSSES]);
    m_Entry.m_bCheckStrandStress[AFTER_ALL_LOSSES] = true;
  	DDX_Text(pDX, IDC_PS_AFTER_ALL_LOSSES_SR, m_Entry.m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL]);
    DDV_GreaterThanZero(pDX, IDC_PS_AFTER_ALL_LOSSES_SR, m_Entry.m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL]);
  	DDX_Text(pDX, IDC_PS_AFTER_ALL_LOSSES_LR, m_Entry.m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]);
    DDV_GreaterThanZero(pDX, IDC_PS_AFTER_ALL_LOSSES_LR, m_Entry.m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]);
+
+   // Tendon Data
+   DDX_Check_Bool(pDX, IDC_CHECK_PT_AT_JACKING, m_Entry.m_bCheckTendonStressAtJacking);
+   DDX_Text(pDX,IDC_PT_AT_JACKING_SR,m_Entry.m_TendonStressCoeff[AT_JACKING][STRESS_REL]);
+   DDV_GreaterThanZero(pDX, IDC_PT_AT_JACKING_SR, m_Entry.m_TendonStressCoeff[AT_JACKING][STRESS_REL]);
+   DDX_Text(pDX,IDC_PT_AT_JACKING_LR,m_Entry.m_TendonStressCoeff[AT_JACKING][LOW_RELAX]);
+   DDV_GreaterThanZero(pDX, IDC_PT_AT_JACKING_LR, m_Entry.m_TendonStressCoeff[AT_JACKING][LOW_RELAX]);
+
+   DDX_Check_Bool(pDX, IDC_CHECK_PT_BEFORE_TRANSFER, m_Entry.m_bCheckTendonStressPriorToSeating);
+   DDX_Text(pDX,IDC_PT_BEFORE_TRANSFER_SR,m_Entry.m_TendonStressCoeff[PRIOR_TO_SEATING][STRESS_REL]);
+   DDV_GreaterThanZero(pDX, IDC_PT_BEFORE_TRANSFER_SR, m_Entry.m_TendonStressCoeff[PRIOR_TO_SEATING][STRESS_REL]);
+   DDX_Text(pDX,IDC_PT_BEFORE_TRANSFER_LR,m_Entry.m_TendonStressCoeff[PRIOR_TO_SEATING][LOW_RELAX]);
+   DDV_GreaterThanZero(pDX, IDC_PT_BEFORE_TRANSFER_LR, m_Entry.m_TendonStressCoeff[PRIOR_TO_SEATING][LOW_RELAX]);
+
+   DDX_Text(pDX,IDC_PT_ANCHORAGE_AFTER_ANCHORSET_SR,m_Entry.m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][STRESS_REL]);
+   DDV_GreaterThanZero(pDX, IDC_PT_ANCHORAGE_AFTER_ANCHORSET_SR, m_Entry.m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][STRESS_REL]);
+   DDX_Text(pDX,IDC_PT_ANCHORAGE_AFTER_ANCHORSET_LR,m_Entry.m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][LOW_RELAX]);
+   DDV_GreaterThanZero(pDX, IDC_PT_ANCHORAGE_AFTER_ANCHORSET_LR, m_Entry.m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][LOW_RELAX]);
+
+   DDX_Text(pDX,IDC_PT_ELSEWHERE_AFTER_ANCHORSET_SR,m_Entry.m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][STRESS_REL]);
+   DDV_GreaterThanZero(pDX, IDC_PT_ELSEWHERE_AFTER_ANCHORSET_SR, m_Entry.m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][STRESS_REL]);
+   DDX_Text(pDX,IDC_PT_ELSEWHERE_AFTER_ANCHORSET_LR,m_Entry.m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][LOW_RELAX]);
+   DDV_GreaterThanZero(pDX, IDC_PT_ELSEWHERE_AFTER_ANCHORSET_LR, m_Entry.m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][LOW_RELAX]);
+
+   DDX_Text(pDX,IDC_PT_AFTER_ALL_LOSSES_SR,m_Entry.m_TendonStressCoeff[AFTER_ALL_LOSSES][STRESS_REL]);
+   DDV_GreaterThanZero(pDX, IDC_PT_AFTER_ALL_LOSSES_SR, m_Entry.m_TendonStressCoeff[AFTER_ALL_LOSSES][STRESS_REL]);
+   DDX_Text(pDX,IDC_PT_AFTER_ALL_LOSSES_LR,m_Entry.m_TendonStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]);
+   DDV_GreaterThanZero(pDX, IDC_PT_AFTER_ALL_LOSSES_LR, m_Entry.m_TendonStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]);
 }
 
 void CSpecMainSheet::ExchangeLimitsData(CDataExchange* pDX)

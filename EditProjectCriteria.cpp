@@ -64,8 +64,8 @@ void txnEditProjectCriteria::Execute(int i)
    GET_IFACE2(pBroker, ISpecification, pSpec );
 
    pEvents->HoldEvents(); // don't fire any changed events until all changes are done
-   pSpec->SetSpecification( m_strProjectCriteria[i] );
    pSpec->SetAnalysisType(m_AnalysisType[i]);
+   pSpec->SetSpecification( m_strProjectCriteria[i] );
    pEvents->FirePendingEvents();
 }
 

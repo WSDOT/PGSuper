@@ -64,8 +64,10 @@ void CSpecPSLimitPage::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CSpecPSLimitPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CSpecPSLimitPage)
-	ON_BN_CLICKED(IDC_CHECK_PS_AT_JACKING, OnChecked)
-	ON_BN_CLICKED(IDC_CHECK_PS_BEFORE_TRANSFER, OnChecked)
+	ON_BN_CLICKED(IDC_CHECK_PS_AT_JACKING, OnPsChecked)
+	ON_BN_CLICKED(IDC_CHECK_PS_BEFORE_TRANSFER, OnPsChecked)
+	ON_BN_CLICKED(IDC_CHECK_PT_AT_JACKING, OnPtChecked)
+	ON_BN_CLICKED(IDC_CHECK_PT_BEFORE_TRANSFER, OnPtChecked)
 	ON_BN_CLICKED(IDC_CHECK_PS_AFTER_TRANSFER, OnCheckPsAfterTransfer)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
@@ -78,7 +80,8 @@ BOOL CSpecPSLimitPage::OnInitDialog()
 {
 	CPropertyPage::OnInitDialog();
 	
-   OnChecked();
+   OnPsChecked();
+   OnPtChecked();
    OnCheckPsAfterTransfer();
 
 
@@ -92,10 +95,16 @@ LRESULT CSpecPSLimitPage::OnCommandHelp(WPARAM, LPARAM lParam)
    return TRUE;
 }
 
-void CSpecPSLimitPage::OnChecked() 
+void CSpecPSLimitPage::OnPsChecked() 
 {
 	EnableControls(IsDlgButtonChecked(IDC_CHECK_PS_AT_JACKING),IDC_PS_AT_JACKING_SR,IDC_PS_AT_JACKING_LR);
 	EnableControls(IsDlgButtonChecked(IDC_CHECK_PS_BEFORE_TRANSFER),IDC_PS_BEFORE_TRANSFER_SR,IDC_PS_BEFORE_TRANSFER_LR);
+}
+
+void CSpecPSLimitPage::OnPtChecked() 
+{
+	EnableControls(IsDlgButtonChecked(IDC_CHECK_PT_AT_JACKING),IDC_PT_AT_JACKING_SR,IDC_PT_AT_JACKING_LR);
+	EnableControls(IsDlgButtonChecked(IDC_CHECK_PT_BEFORE_TRANSFER),IDC_PT_BEFORE_TRANSFER_SR,IDC_PT_BEFORE_TRANSFER_LR);
 }
 
 void CSpecPSLimitPage::EnableControls(BOOL bEnable,UINT nSR,UINT nLR)

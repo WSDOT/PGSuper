@@ -30,8 +30,9 @@
 #if _MSC_VER >= 1000
 #pragma once
 #endif // _MSC_VER >= 1000
+#include <EAF\EAFChildFrame.h>
 
-class CTxDOTOptionalDesignChildFrame : public CMDIChildWnd
+class CTxDOTOptionalDesignChildFrame : public CEAFChildFrame
 {
 	DECLARE_DYNCREATE(CTxDOTOptionalDesignChildFrame)
 public:
@@ -59,19 +60,22 @@ public:
 
 // Generated message map functions
 protected:
+   CSize m_szFrame;
+
 	//{{AFX_MSG(CTxDOTOptionalDesignChildFrame)
 		// NOTE - the ClassWizard will add and remove member functions here.
 		//    DO NOT EDIT what you see in these blocks of generated code!
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 public:
-   virtual void ActivateFrame(int nCmdShow = -1);
+   void SetFrameSize(int cx,int cy);
 protected:
    virtual void OnUpdateFrameTitle(BOOL bAddToTitle);
 public:
    afx_msg void OnLicenseAgreement();
    afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
    afx_msg void OnHelpFinder();
+   afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
 };
 
 /////////////////////////////////////////////////////////////////////////////

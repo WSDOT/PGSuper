@@ -236,11 +236,11 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
 
          // determine from which end of the girder to measure the angular change of the tendon path
          pgsTypes::MemberEndType endType;
-         if ( pDuct->JackingEnd == CDuctData::Left )
+         if ( pDuct->JackingEnd == pgsTypes::jeLeft )
          {
             endType = pgsTypes::metStart;
          }
-         else if ( pDuct->JackingEnd == CDuctData::Right )
+         else if ( pDuct->JackingEnd == pgsTypes::jeRight )
          {
             endType = pgsTypes::metEnd;
          }
@@ -374,7 +374,7 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CGirderKey& girderKey,L
       //
       //anchor_set.p[pgsTypes::metEnd] = Aps*(fr1-fr2)/(L/2);
 
-      if ( !IsZero(anchor_set.p[pgsTypes::metStart]) && (pDuct->JackingEnd == CDuctData::Left || pDuct->JackingEnd == CDuctData::Both) )
+      if ( !IsZero(anchor_set.p[pgsTypes::metStart]) && (pDuct->JackingEnd == pgsTypes::jeLeft || pDuct->JackingEnd == pgsTypes::jeBoth) )
       {
          anchor_set.Lset[pgsTypes::metStart] = sqrt(Dset*Aps*Eps/anchor_set.p[pgsTypes::metStart]);
       }
@@ -383,7 +383,7 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CGirderKey& girderKey,L
          anchor_set.Lset[pgsTypes::metStart] = 0;
       }
 
-      if ( !IsZero(anchor_set.p[pgsTypes::metEnd]) && (pDuct->JackingEnd == CDuctData::Right || pDuct->JackingEnd == CDuctData::Both)  )
+      if ( !IsZero(anchor_set.p[pgsTypes::metEnd]) && (pDuct->JackingEnd == pgsTypes::jeRight || pDuct->JackingEnd == pgsTypes::jeBoth)  )
       {
          anchor_set.Lset[pgsTypes::metEnd] = sqrt(Dset*Aps*Eps/anchor_set.p[pgsTypes::metEnd]);
       }

@@ -114,30 +114,43 @@ public:
    void SetBroker(IBroker* pBroker);
    void SetStatusGroupID(StatusGroupIDType statusGroupID);
 
-   pgsGirderArtifact Check(const CGirderKey& girderKey);
+   // Creates a girder check artifact.
+   const pgsGirderArtifact* Check(const CGirderKey& girderKey);
+
+   // Creates a lifting analysis artifact
+   const pgsLiftingAnalysisArtifact* CheckLifting(const CSegmentKey& segmentKey);
+
+   // Creates a hauling analysis artifact
+   const pgsHaulingAnalysisArtifact* pgsDesigner2::CheckHauling(const CSegmentKey& segmentKey);
+
    pgsDesignArtifact Design(const CGirderKey& girderKey,arDesignOptions options);
 
    void GetHaunchDetails(const CSegmentKey& segmentKey,HAUNCHDETAILS* pHaunchDetails);
    void GetHaunchDetails(const CSegmentKey& segmentKey,const GDRCONFIG& config,HAUNCHDETAILS* pHaunchDetails);
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   // Returns a girder check artifact if the girder was already checked, otherwise returns NULL
+   const pgsGirderArtifact* GetGirderArtifact(const CGirderKey& girderKey);
+
+   // Returns a lifting analysis artifact if the segment was already checked, otherwise returns NULL
+   const pgsLiftingAnalysisArtifact* GetLiftingAnalysisArtifact(const CSegmentKey& segmentKey);
+
+   // Returns a nauling analysis artifact if the segment was already checked, otherwise returns NULL
+   const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey);
+
+   // Clears all cached artifacts
+   void ClearArtifacts();
 
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
    void MakeCopy(const pgsDesigner2& rOther);
-
-   //------------------------------------------------------------------------
    virtual void MakeAssignment(const pgsDesigner2& rOther);
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
+   std::map<CGirderKey,pgsGirderArtifact> m_CheckArtifacts;
+   std::map<CSegmentKey,pgsLiftingAnalysisArtifact> m_LiftingAnalysisArtifacts;
+   std::map<CSegmentKey,const pgsHaulingAnalysisArtifact*> m_HaulingAnalysisArtifacts;
+
+   const pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE);
+
    struct StressCheckTask
    {
       IntervalIndexType intervalIdx;
@@ -189,7 +202,7 @@ private:
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
 
-   void CheckTendonStresses(const CGirderKey& girderKey,pgsTendonStressArtifact* pArtifact);
+   void CheckTendonStresses(const CGirderKey& girderKey,pgsGirderArtifact* pGirderArtifact);
    void CheckStrandStresses(const CSegmentKey& segmentKey,pgsStrandStressArtifact* pArtifact);
    void CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig,pgsTypes::StressType type, pgsSegmentArtifact* pSegmentArtifact);
    void CheckSegmentStresses(const CSegmentKey& segmentKey,const std::vector<pgsPointOfInterest>& vPoi,const StressCheckTask& task,pgsSegmentArtifact* pSegmentArtifact);

@@ -20,21 +20,23 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#pragma once
-#include <PGSuperTypes.h>
+#include <PgsExt\PgsExtLib.h>
+#include <PgsExt\DesignConfigUtil.h>
 #include <LRFD\RebarPool.h>
-#include <IFace\Bridge.h>
 
-#pragma Reminder("UPDATE: too many inline functions") // CLEAN THIS UP!!!!
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
 
-// Various utility functions that operate on CONFIG objects in PGSuperTypes.h
 
 //////////////////////////////////////////////////////////////////////////
 ///////////// Functions for Strand Design...  ////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 
 // convert config fill to compacted DirectStrandFillCollection
-inline DirectStrandFillCollection ConvertConfigToDirectStrandFill(const ConfigStrandFillVector& rconfigfil)
+DirectStrandFillCollection ConvertConfigToDirectStrandFill(const ConfigStrandFillVector& rconfigfil)
 {
    DirectStrandFillCollection coll;
    ConfigStrandFillConstIterator it = rconfigfil.begin();
@@ -57,7 +59,7 @@ inline DirectStrandFillCollection ConvertConfigToDirectStrandFill(const ConfigSt
    return coll;
 }
 
-inline ConfigStrandFillVector ConvertDirectToConfigFill(IStrandGeometry* pStrandGeometry, pgsTypes::StrandType type, 
+ConfigStrandFillVector ConvertDirectToConfigFill(IStrandGeometry* pStrandGeometry, pgsTypes::StrandType type, 
                                                         LPCTSTR strGirderName, const DirectStrandFillCollection& coll)
 {
    // start with unfilled grid (0 strands)
@@ -82,7 +84,7 @@ inline ConfigStrandFillVector ConvertDirectToConfigFill(IStrandGeometry* pStrand
    return vec;
 }
 
-inline ConfigStrandFillVector ConvertDirectToConfigFill(IStrandGeometry* pStrandGeometry, pgsTypes::StrandType type, 
+ConfigStrandFillVector ConvertDirectToConfigFill(IStrandGeometry* pStrandGeometry, pgsTypes::StrandType type, 
                                                         const CSegmentKey& segmentKey, 
                                                         const DirectStrandFillCollection& coll)
 {
@@ -108,222 +110,211 @@ inline ConfigStrandFillVector ConvertDirectToConfigFill(IStrandGeometry* pStrand
    return vec;
 }
 
-// mean/lean compute class for computing strand ordering information
-class ConfigStrandFillTool
+// Return position indices (as from IStrandGeometry::GetStrandPositions) for our fill for given grid index. 
+// One or both may be INVALID_INDEX if no strands filled at gridIndex
+void ConfigStrandFillTool::GridIndexToStrandPositionIndex(GridIndexType gridIndex, StrandIndexType* pStrand1, StrandIndexType* pStrand2) const
 {
-public:
-   // Return position indices (as from IStrandGeometry::GetStrandPositions) for our fill for given grid index. 
-   // One or both may be INVALID_INDEX if no strands filled at gridIndex
-   void GridIndexToStrandPositionIndex(GridIndexType gridIndex, StrandIndexType* pStrand1, StrandIndexType* pStrand2) const
-   {
-      ATLASSERT(gridIndex<m_CoordinateIndices.size());
-      // Return values from pre-build data structure
-      const std::pair<StrandIndexType, StrandIndexType>& sp = m_CoordinateIndices[gridIndex];
-      *pStrand1 = sp.first;
-      *pStrand2 = sp.second;
-   }
+   ATLASSERT(gridIndex<m_CoordinateIndices.size());
+   // Return values from pre-build data structure
+   const std::pair<StrandIndexType, StrandIndexType>& sp = m_CoordinateIndices[gridIndex];
+   *pStrand1 = sp.first;
+   *pStrand2 = sp.second;
+}
 
 
-   // Get grid index for a given strand position index
-   // Also get the other strand position index if two strands are located at this grid position, or INVALID_INDEX if only one
-   void StrandPositionIndexToGridIndex(StrandIndexType strandPosIndex, GridIndexType* pGridIndex, StrandIndexType* pOtherStrandPosition) const
+// Get grid index for a given strand position index
+// Also get the other strand position index if two strands are located at this grid position, or INVALID_INDEX if only one
+void ConfigStrandFillTool::StrandPositionIndexToGridIndex(StrandIndexType strandPosIndex, GridIndexType* pGridIndex, StrandIndexType* pOtherStrandPosition) const
+{
+   ATLASSERT(strandPosIndex != INVALID_INDEX);
+   GridIndexType gridIdx(0);
+   std::vector< std::pair<StrandIndexType, StrandIndexType> >::const_iterator it   = m_CoordinateIndices.begin();
+   std::vector< std::pair<StrandIndexType, StrandIndexType> >::const_iterator itend   = m_CoordinateIndices.end();
+   while(it != itend)
    {
-      ATLASSERT(strandPosIndex != INVALID_INDEX);
-      GridIndexType gridIdx(0);
-      std::vector< std::pair<StrandIndexType, StrandIndexType> >::const_iterator it   = m_CoordinateIndices.begin();
-      std::vector< std::pair<StrandIndexType, StrandIndexType> >::const_iterator itend   = m_CoordinateIndices.end();
-      while(it != itend)
+      if (it->first == strandPosIndex)
       {
-         if (it->first == strandPosIndex)
-         {
-            *pGridIndex = gridIdx;
-            *pOtherStrandPosition = it->second;
-            return;
-         }
-         else if (it->second == strandPosIndex)
-         {
-            *pGridIndex = gridIdx;
-            *pOtherStrandPosition = it->first;
-            return;
-         }
-
-         gridIdx++;
-         it++;
+         *pGridIndex = gridIdx;
+         *pOtherStrandPosition = it->second;
+         return;
+      }
+      else if (it->second == strandPosIndex)
+      {
+         *pGridIndex = gridIdx;
+         *pOtherStrandPosition = it->first;
+         return;
       }
 
-      ATLASSERT(0); // We shouldn't be sending in invalid positions
-      *pGridIndex = INVALID_INDEX;
-      *pOtherStrandPosition = INVALID_INDEX;
+      gridIdx++;
+      it++;
    }
 
-   // Only way to construct us is with a valid fill vector
-   ConfigStrandFillTool(const ConfigStrandFillVector& rFillVec)
+   ATLASSERT(0); // We shouldn't be sending in invalid positions
+   *pGridIndex = INVALID_INDEX;
+   *pOtherStrandPosition = INVALID_INDEX;
+}
+
+// Only way to construct us is with a valid fill vector
+ConfigStrandFillTool::ConfigStrandFillTool(const ConfigStrandFillVector& rFillVec)
+{
+   // build data structures with fill for each grid location
+   m_CoordinateIndices.reserve(rFillVec.size());
+   ConfigStrandFillConstIterator it    = rFillVec.begin();
+   ConfigStrandFillConstIterator itend = rFillVec.end();
+   StrandIndexType fillNo = 0;
+   while(it != itend)
    {
-      // build data structures with fill for each grid location
-      m_CoordinateIndices.reserve(rFillVec.size());
-      ConfigStrandFillConstIterator it    = rFillVec.begin();
-      ConfigStrandFillConstIterator itend = rFillVec.end();
-      StrandIndexType fillNo = 0;
-      while(it != itend)
+      std::pair<StrandIndexType, StrandIndexType> thepair;
+
+      if (*it==0)
       {
-         std::pair<StrandIndexType, StrandIndexType> thepair;
-
-         if (*it==0)
-         {
-            thepair.first  = INVALID_INDEX;
-            thepair.second = INVALID_INDEX;
-         }
-         else if (*it==1)
-         {
-            thepair.first  = fillNo++;
-            thepair.second = INVALID_INDEX;
-         }
-         else
-         {
-            ATLASSERT(*it==2); // only options
-            thepair.first  = fillNo++;
-            thepair.second = fillNo++;
-         }
-
-         m_CoordinateIndices.push_back(thepair);
-
-         it++;
+         thepair.first  = INVALID_INDEX;
+         thepair.second = INVALID_INDEX;
       }
-   }
-private:
-   ConfigStrandFillTool();
+      else if (*it==1)
+      {
+         thepair.first  = fillNo++;
+         thepair.second = INVALID_INDEX;
+      }
+      else
+      {
+         ATLASSERT(*it==2); // only options
+         thepair.first  = fillNo++;
+         thepair.second = fillNo++;
+      }
 
-   std::vector< std::pair<StrandIndexType, StrandIndexType> > m_CoordinateIndices;
-};
+      m_CoordinateIndices.push_back(thepair);
+
+      it++;
+   }
+}
 
 //////////////////////////////////////////////////////////////////////////
 ///////////// Functions for Stirrup Design... ////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-template<class IteratorType>
-ZoneIndexType GetZoneIndexAtLocation(Float64 location, Float64 girderLength, Float64 startSupportLoc, Float64 endSupportLoc,
-                             bool bSymmetrical, IteratorType& rItBegin, IteratorType& rItEnd, ZoneIndexType collSize)
-{
-   CHECK(collSize>0);
+//template<class IteratorType>
+//ZoneIndexType GetZoneIndexAtLocation(Float64 location, Float64 girderLength, Float64 startSupportLoc, Float64 endSupportLoc,
+//                             bool bSymmetrical, IteratorType& rItBegin, IteratorType& rItEnd, ZoneIndexType collSize)
+//{
+//   CHECK(collSize>0);
+//
+//   ZoneIndexType zone = 0;
+//
+//   if (bSymmetrical)
+//   {
+//      bool on_left=true;
+//
+//      if (girderLength/2. < location)  // zones are symmetric about mid-span
+//      {
+//         location = girderLength-location;
+//         on_left=false;
+//      }
+//      ATLASSERT(0 <= location);
+//
+//      Float64 end_dist;
+//      if (on_left)
+//         end_dist = startSupportLoc;
+//      else
+//         end_dist = girderLength-endSupportLoc;
+//
+//      // find zone
+//      Float64 ezloc=0.0;
+//      ZoneIndexType znum=0;
+//      bool found=false;
+//      // need to give value a little 'shove' so that pois inboard from the support
+//      // are assigned the zone to the left, and pois outboard from the support
+//      // are assigned the zone to the right.
+//      const Float64 tol = 1.0e-6;
+//      for (IteratorType it = rItBegin; it != rItEnd; it++)
+//      {
+//         ezloc += it->ZoneLength;
+//         if (location < end_dist+tol)
+//         {
+//            if (location+tol < ezloc)
+//            {
+//               found = true;
+//               break;
+//            }
+//         }
+//         else
+//         {
+//            if (location < ezloc+tol)
+//            {
+//               found = true;
+//               break;
+//            }
+//         }
+//         znum++;
+//      }
+//
+//      if (found)
+//      {
+//         zone = znum;
+//      }
+//      else
+//      {
+//         // not found - must be in middle
+//         ATLASSERT(collSize != 0); // -1 will cause an underflow 
+//         zone = collSize-1;
+//      }
+//   }
+//   else
+//   {
+//      // not symmetrical
+//      // find zone
+//      Float64 ezloc=0.0;
+//      ZoneIndexType znum=0;
+//      bool found=false;
+//      // need to give value a little 'shove' so that pois inboard from the support
+//      // are assigned the zone to the left, and pois outboard from the support
+//      // are assigned the zone to the right.
+//      const Float64 tol = 1.0e-6;
+//      for (IteratorType it = rItBegin; it != rItEnd; it++)
+//      {
+//         ezloc += it->ZoneLength;
+//         if (location < startSupportLoc + tol)
+//         {
+//            if (location+tol<ezloc)
+//            {
+//               found = true;
+//               break;
+//            }
+//         }
+//         else if (location + tol > endSupportLoc)
+//         {
+//            if (location<ezloc+tol)
+//            {
+//               found = true;
+//               break;
+//            }
+//         }
+//         else
+//         {
+//            if (location<ezloc+tol)
+//            {
+//               found = true;
+//               break;
+//            }
+//         }
+//
+//         znum++;
+//      }
+//
+//      if (found)
+//      {
+//         zone = znum;
+//      }
+//      else
+//      {
+//         zone = collSize-1; // extend last zone to end of girder
+//      }
+//   }
+//
+//   return zone;
+//}
 
-   ZoneIndexType zone = 0;
 
-   if (bSymmetrical)
-   {
-      bool on_left=true;
-
-      if (girderLength/2. < location)  // zones are symmetric about mid-span
-      {
-         location = girderLength-location;
-         on_left=false;
-      }
-      ATLASSERT(0 <= location);
-
-      Float64 end_dist;
-      if (on_left)
-         end_dist = startSupportLoc;
-      else
-         end_dist = girderLength-endSupportLoc;
-
-      // find zone
-      Float64 ezloc=0.0;
-      ZoneIndexType znum=0;
-      bool found=false;
-      // need to give value a little 'shove' so that pois inboard from the support
-      // are assigned the zone to the left, and pois outboard from the support
-      // are assigned the zone to the right.
-      const Float64 tol = 1.0e-6;
-      for (IteratorType it = rItBegin; it != rItEnd; it++)
-      {
-         ezloc += it->ZoneLength;
-         if (location < end_dist+tol)
-         {
-            if (location+tol < ezloc)
-            {
-               found = true;
-               break;
-            }
-         }
-         else
-         {
-            if (location < ezloc+tol)
-            {
-               found = true;
-               break;
-            }
-         }
-         znum++;
-      }
-
-      if (found)
-      {
-         zone = znum;
-      }
-      else
-      {
-         // not found - must be in middle
-         ATLASSERT(collSize != 0); // -1 will cause an underflow 
-         zone = collSize-1;
-      }
-   }
-   else
-   {
-      // not symmetrical
-      // find zone
-      Float64 ezloc=0.0;
-      ZoneIndexType znum=0;
-      bool found=false;
-      // need to give value a little 'shove' so that pois inboard from the support
-      // are assigned the zone to the left, and pois outboard from the support
-      // are assigned the zone to the right.
-      const Float64 tol = 1.0e-6;
-      for (IteratorType it = rItBegin; it != rItEnd; it++)
-      {
-         ezloc += it->ZoneLength;
-         if (location < startSupportLoc + tol)
-         {
-            if (location+tol<ezloc)
-            {
-               found = true;
-               break;
-            }
-         }
-         else if (location + tol > endSupportLoc)
-         {
-            if (location<ezloc+tol)
-            {
-               found = true;
-               break;
-            }
-         }
-         else
-         {
-            if (location<ezloc+tol)
-            {
-               found = true;
-               break;
-            }
-         }
-
-         znum++;
-      }
-
-      if (found)
-      {
-         zone = znum;
-      }
-      else
-      {
-         zone = collSize-1; // extend last zone to end of girder
-      }
-   }
-
-   return zone;
-}
-
-
-enum PrimaryStirrupType {getVerticalStirrup, getHorizShearStirrup};
-
-inline Float64 GetPrimaryStirrupAvs(const STIRRUPCONFIG& config, PrimaryStirrupType type, Float64 location, 
+Float64 GetPrimaryStirrupAvs(const STIRRUPCONFIG& config, PrimaryStirrupType type, Float64 location, 
                                  Float64 gdrLength, Float64 leftSupportLoc,Float64 rgtSupportLoc,
                                  matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pNBars, Float64* pSpacing)
 {
@@ -367,7 +358,7 @@ inline Float64 GetPrimaryStirrupAvs(const STIRRUPCONFIG& config, PrimaryStirrupT
    }
 }
 
-inline Float64 GetAdditionalHorizInterfaceAvs(const STIRRUPCONFIG& config, Float64 location, 
+Float64 GetAdditionalHorizInterfaceAvs(const STIRRUPCONFIG& config, Float64 location, 
                                               Float64 gdrLength, Float64 leftSupportLoc,Float64 rgtSupportLoc,
                                               matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pNBars, Float64* pSpacing)
 {
@@ -403,7 +394,7 @@ inline Float64 GetAdditionalHorizInterfaceAvs(const STIRRUPCONFIG& config, Float
 }
 
 
-inline void GetConfinementInfoFromStirrupConfig(const STIRRUPCONFIG& config, 
+void GetConfinementInfoFromStirrupConfig(const STIRRUPCONFIG& config, 
                                                 Float64 reqdStartZl, matRebar::Size* pStartRBsiz, Float64* pStartZL, Float64* pStartS,
                                                 Float64 reqdEndZl,   matRebar::Size* pEndRBsiz,   Float64* pEndZL,   Float64* pEndS)
 {
@@ -494,7 +485,7 @@ inline void GetConfinementInfoFromStirrupConfig(const STIRRUPCONFIG& config,
    }
 }
 
-inline Float64 GetPrimaryAvLeftEnd(const STIRRUPCONFIG& config, matRebar::Type barType, matRebar::Grade barGrade,
+Float64 GetPrimaryAvLeftEnd(const STIRRUPCONFIG& config, matRebar::Type barType, matRebar::Grade barGrade,
                                 Float64 gdrLength, Float64 rangeLength)
 {
    ATLASSERT(rangeLength<gdrLength/2.0); // This function was designed for splitting zone, which should never be too long
@@ -544,7 +535,7 @@ inline Float64 GetPrimaryAvLeftEnd(const STIRRUPCONFIG& config, matRebar::Type b
    return Av;
 }
 
-inline Float64 GetPrimaryAvRightEnd(const STIRRUPCONFIG& config, matRebar::Type barType, matRebar::Grade barGrade,
+Float64 GetPrimaryAvRightEnd(const STIRRUPCONFIG& config, matRebar::Type barType, matRebar::Grade barGrade,
                                     Float64 gdrLength, Float64 rangeLength)
 {
    ATLASSERT(rangeLength<gdrLength/2.0); // This function was designed for splitting zone, which should never be too long
@@ -603,7 +594,7 @@ inline Float64 GetPrimaryAvRightEnd(const STIRRUPCONFIG& config, matRebar::Type 
    return Av;
 }
 
-inline void GetSplittingAvFromStirrupConfig(const STIRRUPCONFIG& config, matRebar::Type barType, matRebar::Grade barGrade,
+void GetSplittingAvFromStirrupConfig(const STIRRUPCONFIG& config, matRebar::Type barType, matRebar::Grade barGrade,
                                             Float64 gdrLength,
                                             Float64 reqdStartZl, Float64* pStartAv,
                                             Float64 reqdEndZl,   Float64* pEndAv)
@@ -645,7 +636,7 @@ inline void GetSplittingAvFromStirrupConfig(const STIRRUPCONFIG& config, matReba
    }
 }
 
-inline void WriteShearDataToStirrupConfig(const CShearData2* pShearData, STIRRUPCONFIG& rConfig)
+void WriteShearDataToStirrupConfig(const CShearData2* pShearData, STIRRUPCONFIG& rConfig)
 {
    rConfig.bAreZonesSymmetrical    = pShearData->bAreZonesSymmetrical;
    rConfig.bIsRoughenedSurface     = pShearData->bIsRoughenedSurface;
@@ -725,7 +716,7 @@ inline void WriteShearDataToStirrupConfig(const CShearData2* pShearData, STIRRUP
    rConfig.ConfinementZoneLength = pShearData->ConfinementZoneLength;
 }
 
-inline bool DoAllStirrupsEngageDeck( const STIRRUPCONFIG& config)
+bool DoAllStirrupsEngageDeck( const STIRRUPCONFIG& config)
 {
    if (config.ShearZones.empty())
    {
@@ -748,7 +739,7 @@ inline bool DoAllStirrupsEngageDeck( const STIRRUPCONFIG& config)
 }
 // NOTE: The method below could be useful to a design algorithm sometime in the future.
 /*
-inline void  WriteLongitudinalRebarDataToConfig(const CLongitudinalRebarData& rRebarData, LONGITUDINALREBARCONFIG& rConfig)
+void  WriteLongitudinalRebarDataToConfig(const CLongitudinalRebarData& rRebarData, LONGITUDINALREBARCONFIG& rConfig)
 {
    rConfig.BarGrade = rRebarData.BarGrade;
    rConfig.BarType = rRebarData.BarType;

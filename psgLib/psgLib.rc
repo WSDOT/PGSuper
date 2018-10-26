@@ -74,8 +74,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,4
- PRODUCTVERSION 3,0,0,4
+ FILEVERSION 3,0,0,5
+ PRODUCTVERSION 3,0,0,5
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +93,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.0.0.4"
+            VALUE "FileVersion", "3.0.0.5"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2013, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.4"
+            VALUE "ProductVersion", "3.0.0.5"
         END
     END
     BLOCK "VarFileInfo"
@@ -615,41 +615,78 @@ BEGIN
     LTEXT           "Sand Lightweight",IDC_STATIC,103,87,56,8
 END
 
-IDD_SPEC_STRANDS DIALOG  0, 0, 242, 252
+IDD_SPEC_STRANDS DIALOGEX 0, 0, 408, 271
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Stress Limits for Prestressing Tendons (LRFD 5.9.3)",IDC_STATIC,7,7,228,233
-    CONTROL         "Check at Jacking",IDC_CHECK_PS_AT_JACKING,"Button",BS_AUTORADIOBUTTON | WS_GROUP,30,35,71,10
+    GROUPBOX        "Stress Limits for Prestressing (LRFD 5.9.3)",IDC_STATIC,7,7,177,257
+    CONTROL         "Check at Jacking",IDC_CHECK_PS_AT_JACKING,"Button",BS_AUTORADIOBUTTON | WS_GROUP,17,24,71,10
     CONTROL         "Check Immediately Prior to Transfer",IDC_CHECK_PS_BEFORE_TRANSFER,
-                    "Button",BS_AUTORADIOBUTTON,30,85,127,10
-    LTEXT           "Stress Relieved Strands",IDC_STATIC,60,50,76,8
-    EDITTEXT        IDC_PS_AT_JACKING_SR,140,46,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "* fpu",IDC_STATIC,180,50,21,8
-    LTEXT           "Low Relaxation Strands",IDC_STATIC,60,65,76,8
-    EDITTEXT        IDC_PS_AT_JACKING_LR,140,60,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "* fpu",IDC_STATIC,180,65,21,8
-    LTEXT           "Stress Relieved Strands",IDC_STATIC,60,101,76,8
-    EDITTEXT        IDC_PS_BEFORE_TRANSFER_SR,140,96,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "* fpu",IDC_STATIC,180,101,24,8
-    LTEXT           "Low Relaxation Strands",IDC_STATIC,60,115,76,8
-    EDITTEXT        IDC_PS_BEFORE_TRANSFER_LR,140,111,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "* fpu",IDC_STATIC,180,115,24,8
+                    "Button",BS_AUTORADIOBUTTON,17,74,127,10
+    LTEXT           "Stress Relieved Strands",IDC_STATIC,32,39,76,8
+    EDITTEXT        IDC_PS_AT_JACKING_SR,112,35,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "fpu",IDC_STATIC,152,39,21,8
+    LTEXT           "Low Relaxation Strands",IDC_STATIC,32,52,76,8
+    EDITTEXT        IDC_PS_AT_JACKING_LR,112,49,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "fpu",IDC_STATIC,152,52,21,8
+    LTEXT           "Stress Relieved Strands",IDC_STATIC,32,90,76,8
+    EDITTEXT        IDC_PS_BEFORE_TRANSFER_SR,112,85,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "fpu",IDC_STATIC,152,90,24,8
+    LTEXT           "Low Relaxation Strands",IDC_STATIC,32,103,76,8
+    EDITTEXT        IDC_PS_BEFORE_TRANSFER_LR,112,100,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "fpu",IDC_STATIC,152,103,24,8
     CONTROL         "Check After Transfer",IDC_CHECK_PS_AFTER_TRANSFER,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,30,135,81,10
-    LTEXT           "Stress Relieved Strands",IDC_STATIC,60,150,76,8
-    EDITTEXT        IDC_PS_AFTER_TRANSFER_SR,140,145,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "* fpu",IDC_STATIC,180,150,18,8
-    LTEXT           "Low Relaxation Strands",IDC_STATIC,60,164,76,8
-    EDITTEXT        IDC_PS_AFTER_TRANSFER_LR,140,160,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "* fpu",IDC_STATIC,180,164,23,8
-    LTEXT           "Stress Relieved Strands",IDC_STATIC,60,200,76,8
-    EDITTEXT        IDC_PS_AFTER_ALL_LOSSES_SR,140,195,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "* fpy",IDC_STATIC,180,200,22,8
-    LTEXT           "Low Relaxation Strands",IDC_STATIC,60,215,76,8
-    EDITTEXT        IDC_PS_AFTER_ALL_LOSSES_LR,140,210,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "* fpy",IDC_STATIC,180,215,22,8
-    LTEXT           "After all losses",IDC_STATIC,30,187,46,8
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,17,124,81,10
+    LTEXT           "Stress Relieved Strands",IDC_STATIC,32,139,76,8
+    EDITTEXT        IDC_PS_AFTER_TRANSFER_SR,112,134,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "fpu",IDC_STATIC,152,139,18,8
+    LTEXT           "Low Relaxation Strands",IDC_STATIC,32,151,76,8
+    EDITTEXT        IDC_PS_AFTER_TRANSFER_LR,112,149,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "fpu",IDC_STATIC,152,151,23,8
+    LTEXT           "Stress Relieved Strands",IDC_STATIC,32,234,76,8
+    EDITTEXT        IDC_PS_AFTER_ALL_LOSSES_SR,112,229,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "fpy",IDC_STATIC,152,234,22,8
+    LTEXT           "Low Relaxation Strands",IDC_STATIC,32,247,76,8
+    EDITTEXT        IDC_PS_AFTER_ALL_LOSSES_LR,112,244,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "fpy",IDC_STATIC,152,247,22,8
+    LTEXT           "After all losses",IDC_STATIC,17,221,46,8
+    GROUPBOX        "Stress Limits for Post-tensioning (LRFD 5.9.3)",IDC_STATIC,192,7,209,257
+    CONTROL         "Check at Jacking",IDC_CHECK_PT_AT_JACKING,"Button",BS_AUTORADIOBUTTON | WS_GROUP,204,24,71,10
+    CONTROL         "Check prior to seating",IDC_CHECK_PT_BEFORE_TRANSFER,
+                    "Button",BS_AUTORADIOBUTTON,206,74,85,10
+    LTEXT           "Stress Relieved Strands",IDC_STATIC,217,39,76,8
+    EDITTEXT        IDC_PT_AT_JACKING_SR,297,36,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "fpu",IDC_STATIC,337,39,21,8
+    LTEXT           "Low Relaxation Strands",IDC_STATIC,217,53,76,8
+    EDITTEXT        IDC_PT_AT_JACKING_LR,297,50,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "fpu",IDC_STATIC,337,53,21,8
+    LTEXT           "Stress Relieved Strands",IDC_STATIC,217,90,76,8
+    EDITTEXT        IDC_PT_BEFORE_TRANSFER_SR,297,86,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "fpy",IDC_STATIC,337,90,24,8
+    LTEXT           "Low Relaxation Strands",IDC_STATIC,217,103,76,8
+    EDITTEXT        IDC_PT_BEFORE_TRANSFER_LR,297,101,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "fpy",IDC_STATIC,337,103,24,8
+    LTEXT           "Stress Relieved Strands",IDC_STATIC,217,140,76,8
+    EDITTEXT        IDC_PT_ANCHORAGE_AFTER_ANCHORSET_SR,297,135,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "fpu",IDC_STATIC,337,140,18,8
+    LTEXT           "Low Relaxation Strands",IDC_STATIC,217,151,76,8
+    EDITTEXT        IDC_PT_ANCHORAGE_AFTER_ANCHORSET_LR,297,150,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "fpu",IDC_STATIC,337,151,23,8
+    LTEXT           "Stress Relieved Strands",IDC_STATIC,217,193,76,8
+    EDITTEXT        IDC_PT_ELSEWHERE_AFTER_ANCHORSET_SR,297,188,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "fpu",IDC_STATIC,337,193,22,8
+    LTEXT           "Low Relaxation Strands",IDC_STATIC,217,205,76,8
+    EDITTEXT        IDC_PT_ELSEWHERE_AFTER_ANCHORSET_LR,297,202,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "fpu",IDC_STATIC,337,205,22,8
+    LTEXT           "At anchorages and couples immediately after anchor set",IDC_STATIC,206,121,177,8
+    LTEXT           "Elsewhere along length of member away from anchorages at anchor set",IDC_STATIC,206,168,187,19
+    LTEXT           "Stress Relieved Strands",IDC_STATIC,216,236,76,8
+    EDITTEXT        IDC_PT_AFTER_ALL_LOSSES_SR,296,231,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "fpy",IDC_STATIC,336,236,22,8
+    LTEXT           "Low Relaxation Strands",IDC_STATIC,216,248,76,8
+    EDITTEXT        IDC_PT_AFTER_ALL_LOSSES_LR,296,244,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "fpy",IDC_STATIC,336,248,22,8
+    LTEXT           "After all losses",IDC_STATIC,206,222,46,8
 END
 
 IDD_SPEC_CREEP DIALOG  0, 0, 275, 242
@@ -1697,9 +1734,9 @@ BEGIN
     IDD_SPEC_STRANDS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 235
+        RIGHTMARGIN, 401
         TOPMARGIN, 7
-        BOTTOMMARGIN, 245
+        BOTTOMMARGIN, 264
     END
 
     IDD_SPEC_CREEP, DIALOG

@@ -627,13 +627,16 @@ void CBridgeDescription2::SetSlabOffset(Float64 slabOffset)
 
 Float64 CBridgeDescription2::GetSlabOffset() const
 {
+   if ( m_Deck.DeckType == pgsTypes::sdtNone )
+      return 0;
+
    return m_SlabOffset;
 }
 
 Float64 CBridgeDescription2::GetMaxSlabOffset() const
 {
    if ( m_SlabOffsetType == pgsTypes::sotBridge )
-      return m_SlabOffset;
+      return GetSlabOffset();
 
    Float64 maxSlabOffset = 0;
    std::vector<CGirderGroupData*>::const_iterator grpIter(m_GirderGroups.begin());
@@ -763,7 +766,10 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
    {
       if ( pPierData == NULL )
       {
-         ATLASSERT(false); // this should not happen... pPierData must reference a pier if newSpanLength is < 0.
+         //ATLASSERT(false); // this should not happen... pPierData must reference a pier if newSpanLength is < 0.
+         // RAB - 9/12/2013: I commented out the assert because it often fires when loading a bridge description from
+         // an older version of PGSuper. The older files load correctly so this really isn't a problem.
+
          // Just so we don't have problems in release builds, make the new span length 100 ft and keep going
          newSpanLength = ::ConvertToSysUnits(100.0,unitMeasure::Feet);
       }

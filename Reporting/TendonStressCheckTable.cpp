@@ -1,0 +1,194 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2013  Washington State Department of Transportation
+//                        Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
+#include "StdAfx.h"
+#include <Reporting\TendonStressCheckTable.h>
+
+#include <PgsExt\GirderArtifact.h>
+#include <PgsExt\TendonStressArtifact.h>
+#include <PgsExt\CapacityToDemand.h>
+
+#include <IFace\Bridge.h>
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
+/****************************************************************************
+CLASS
+   CTendonStressCheckTable
+****************************************************************************/
+
+CTendonStressCheckTable::CTendonStressCheckTable()
+{
+}
+
+CTendonStressCheckTable::CTendonStressCheckTable(const CTendonStressCheckTable& rOther)
+{
+   MakeCopy(rOther);
+}
+
+CTendonStressCheckTable::~CTendonStressCheckTable()
+{
+}
+
+CTendonStressCheckTable& CTendonStressCheckTable::operator= (const CTendonStressCheckTable& rOther)
+{
+   if( this != &rOther )
+   {
+      MakeAssignment(rOther);
+   }
+
+   return *this;
+}
+
+//======================== OPERATIONS =======================================
+void CTendonStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,IEAFDisplayUnits* pDisplayUnits) const
+{
+   const CGirderKey& girderKey = pGirderArtifact->GetGirderKey();
+
+   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeometry);
+   DuctIndexType nDucts = pTendonGeometry->GetDuctCount(girderKey);
+   if ( nDucts == 0 )
+      return;
+
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
+   
+   rptCapacityToDemand cap_demand;
+
+   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   *pPara << _T("Tendon Stresses");
+   pPara->SetName(_T("Tendon Stresses"));
+   *pChapter << pPara;
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+
+   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+   {
+      const pgsTendonStressArtifact* pTendonArtifact = pGirderArtifact->GetTendonStressArtifact(ductIdx);
+
+      CString strTitle;
+      strTitle.Format(_T("Duct %d"),LABEL_DUCT(ductIdx));
+      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(4,strTitle);
+      *pPara << p_table;
+
+      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      (*p_table)(0,0) << _T("");
+      if ( pTendonArtifact->IsAtJackingApplicable() )
+        (*p_table)(1,0) << _T("At Jacking (") << RPT_FPJ << _T(")");
+      else
+        (*p_table)(1,0) << _T("Prior to seating - short-term ") << RPT_FPBT << _T(" may be allowed");
+
+      (*p_table)(2,0) << _T("At anchorages and couplers immediately after anchor set");
+      (*p_table)(3,0) << _T("Elsewhere along length of member away from anchorages and couplers immediately after anchor set");
+      (*p_table)(4,0) << _T("At service limit state after losses (") << RPT_FPE << _T(")");
+   
+      (*p_table)(0,1) << COLHDR(_T("Allowable") << rptNewLine << _T("Stress"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,2) << COLHDR(_T("Tendon") << rptNewLine << _T("Stress"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,3) << _T("Status") << rptNewLine << _T("(C/D)");
+
+      Float64 capacity,demand;
+      bool bPassed;
+      if ( pTendonArtifact->IsAtJackingApplicable() )
+         pTendonArtifact->GetCheckAtJacking(&capacity,&demand,&bPassed);
+      else
+         pTendonArtifact->GetCheckPriorToSeating(&capacity,&demand,&bPassed);
+
+      (*p_table)(1,1) << stress.SetValue(capacity);
+      (*p_table)(1,2) << stress.SetValue(demand);
+	   if ( bPassed )
+		   (*p_table)(1,3) << RPT_PASS;
+      else
+		   (*p_table)(1,3) << RPT_FAIL;
+
+      (*p_table)(1,3) << rptNewLine << _T("(") << cap_demand.SetValue(capacity,demand,bPassed) << _T(")");
+
+      pTendonArtifact->GetCheckAtAnchoragesAfterSeating(&capacity,&demand,&bPassed);
+      (*p_table)(2,1) << stress.SetValue(capacity);
+      (*p_table)(2,2) << stress.SetValue(demand);
+	   if ( bPassed )
+		   (*p_table)(2,3) << RPT_PASS;
+      else
+		   (*p_table)(2,3) << RPT_FAIL;
+
+      (*p_table)(2,3) << rptNewLine << _T("(") << cap_demand.SetValue(capacity,demand,bPassed) << _T(")");
+
+      pTendonArtifact->GetCheckAfterSeating(&capacity,&demand,&bPassed);
+      (*p_table)(3,1) << stress.SetValue(capacity);
+      (*p_table)(3,2) << stress.SetValue(demand);
+	   if ( bPassed )
+		   (*p_table)(3,3) << RPT_PASS;
+      else
+		   (*p_table)(3,3) << RPT_FAIL;
+
+      (*p_table)(3,3) << rptNewLine << _T("(") << cap_demand.SetValue(capacity,demand,bPassed) << _T(")");
+
+      pTendonArtifact->GetCheckAfterLosses(&capacity,&demand,&bPassed);
+      (*p_table)(4,1) << stress.SetValue(capacity);
+      (*p_table)(4,2) << stress.SetValue(demand);
+	   if ( bPassed )
+		   (*p_table)(4,3) << RPT_PASS;
+      else
+		   (*p_table)(4,3) << RPT_FAIL;
+
+      (*p_table)(4,3) << rptNewLine << _T("(") << cap_demand.SetValue(capacity,demand,bPassed) << _T(")");
+   } // next duct
+}
+
+void CTendonStressCheckTable::MakeCopy(const CTendonStressCheckTable& rOther)
+{
+   // Add copy code here...
+}
+
+void CTendonStressCheckTable::MakeAssignment(const CTendonStressCheckTable& rOther)
+{
+   MakeCopy( rOther );
+}
+
+#if defined _DEBUG
+bool CTendonStressCheckTable::AssertValid() const
+{
+   return true;
+}
+
+void CTendonStressCheckTable::Dump(dbgDumpContext& os) const
+{
+   os << _T("Dump for CTendonStressCheckTable") << endl;
+}
+#endif // _DEBUG
+
+#if defined _UNITTEST
+bool CTendonStressCheckTable::TestMe(dbgLog& rlog)
+{
+   TESTME_PROLOGUE("CTendonStressCheckTable");
+
+   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CTendonStressCheckTable");
+
+   TESTME_EPILOG("CTendonStressCheckTable");
+}
+#endif // _UNITTEST

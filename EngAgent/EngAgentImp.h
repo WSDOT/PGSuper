@@ -172,8 +172,8 @@ public:
 public:
    virtual Float64 GetPjackMax(const CGirderKey& girderKey,StrandIndexType nStrands);
    virtual Float64 GetPjackMax(const CGirderKey& girderKey,const matPsStrand& strand,StrandIndexType nStrands);
-   virtual Float64 GetTendonForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx);
-   virtual Float64 GetTendonStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx);
+   virtual Float64 GetTendonForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad,bool bIncludeMaxLiveLoad);
+   virtual Float64 GetTendonStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad,bool bIncludeMaxLiveLoad);
 
 
 // ILiveLoadDistributionFactors
@@ -235,7 +235,7 @@ public:
    virtual Float64 GetFpc(const pgsPointOfInterest& poi,const GDRCONFIG& config);
    virtual void GetFpcDetails(const pgsPointOfInterest& poi, const GDRCONFIG& config,FPCDETAILS* pmcd);
    virtual ZoneIndexType GetCriticalSectionZoneIndex(pgsTypes::LimitState limitState,const pgsPointOfInterest& poi);
-   virtual void GetCriticalSectionZoneBoundary(pgsTypes::LimitState ls,const CSegmentKey& segmentKey,ZoneIndexType csZoneIdx,Float64* pStart,Float64* pEnd);
+   virtual void GetCriticalSectionZoneBoundary(pgsTypes::LimitState ls,const CGirderKey& girderKeyegmentKey,ZoneIndexType csZoneIdx,Float64* pStart,Float64* pEnd);
    virtual std::vector<Float64> GetCriticalSections(pgsTypes::LimitState limitState,const CGirderKey& girderKey);
    virtual std::vector<Float64> GetCriticalSections(pgsTypes::LimitState limitState,const CGirderKey& girderKey,const GDRCONFIG& config);
    virtual const std::vector<CRITSECTDETAILS>& GetCriticalSectionDetails(pgsTypes::LimitState limitState,const CGirderKey& girderKey);
@@ -255,6 +255,8 @@ public:
 public:
    virtual const pgsGirderArtifact* GetGirderArtifact(const CGirderKey& girderKey);
    virtual const pgsSegmentArtifact* GetSegmentArtifact(const CSegmentKey& segmentKey);
+   virtual const pgsLiftingAnalysisArtifact* GetLiftingAnalysisArtifact(const CSegmentKey& segmentKey);
+   virtual const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey);
    virtual const pgsClosurePourArtifact* GetClosurePourArtifact(const CSegmentKey& segmentKey);
    virtual const pgsDesignArtifact* CreateDesignArtifact(const CGirderKey& girderKey,arDesignOptions design);
    virtual const pgsDesignArtifact* GetDesignArtifact(const CGirderKey& girderKey);
@@ -298,7 +300,6 @@ public:
 private:
    DECLARE_AGENT_DATA;
 
-   std::map<CGirderKey,pgsGirderArtifact> m_CheckArtifacts;
    std::map<CGirderKey,pgsDesignArtifact> m_DesignArtifacts;
 
    struct RatingArtifactKey
@@ -398,7 +399,7 @@ private:
 
    std::map<CSegmentKey,HAUNCHDETAILS> m_HaunchDetails;
 
-   // Lifting analysis artifacts
+   // Lifting and hauling analysis artifact cache for ad-hoc analysis (typically during design)
    std::map<CSegmentKey, std::map<Float64,pgsLiftingAnalysisArtifact,Float64_less> > m_LiftingArtifacts;
    std::map<CSegmentKey, std::map<Float64,boost::shared_ptr<pgsHaulingAnalysisArtifact>,Float64_less> > m_HaulingArtifacts;
 
@@ -420,7 +421,6 @@ private:
    void InvalidateRatingArtifacts();
 
    const LOSSDETAILS* FindLosses(const pgsPointOfInterest& poi);
-   pgsGirderArtifact* FindArtifact(const CGirderKey& girderKey);
    pgsRatingArtifact* FindRatingArtifact(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex);
 
    DECLARE_LOGFILE;

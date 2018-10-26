@@ -174,7 +174,7 @@ void pgsKdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,b
       Loh = haulConfig.LeftOverhang;
       Roh = haulConfig.RightOverhang;
 
-      poi_vec = pPOId->GetHaulingDesignPointsOfInterest(segmentKey,Loh,Roh);
+      poi_vec = pPOId->GetHaulingDesignPointsOfInterest(segmentKey,2,Loh,Roh);
    }
    else
    {

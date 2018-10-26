@@ -231,12 +231,13 @@ BOOL CBridgeDescGeneralPage::OnInitDialog()
 
    UpdateGirderSpacingLimits();
 
-   if ( !IsBridgeSpacing(m_GirderSpacingType) )
+   if ( IsGirderSpacing(m_GirderSpacingType) )
       EnableGirderSpacing(FALSE,FALSE);
 
 	CPropertyPage::OnInitDialog();
    
    m_NumGdrSpinner.SetRange32((int)m_MinGirderCount,(int)MAX_GIRDERS_PER_SPAN);
+
    UDACCEL accel[2];
    accel[0].nInc = 1;
    accel[0].nSec = 5;
@@ -505,45 +506,10 @@ void CBridgeDescGeneralPage::EnableGirderSpacing(BOOL bEnable,BOOL bClearControl
    pAllowable->EnableWindow(bEnable);
    pAllowable->ShowWindow(bClearControls ? SW_HIDE : SW_SHOW);
 
-   CComboBox* pcbGirderMeasure = (CComboBox*)GetDlgItem(IDC_GIRDER_SPACING_MEASURE);
-   pcbGirderMeasure->EnableWindow(bEnable);
-   pcbGirderMeasure->ShowWindow(bClearControls ? SW_HIDE : SW_SHOW);
-
-   CComboBox* pcbRefGirder = (CComboBox*)GetDlgItem(IDC_REF_GIRDER);
-   pcbRefGirder->EnableWindow(bEnable);
-   pcbRefGirder->ShowWindow(bClearControls ? SW_HIDE : SW_SHOW);
-
-   CWnd* pcbRefGirderLabel = GetDlgItem(IDC_REF_GIRDER_LABEL);
-   pcbRefGirderLabel->EnableWindow(bEnable);
-   pcbRefGirderLabel->ShowWindow(bClearControls ? SW_HIDE : SW_SHOW);
-
-   CEdit* pRefGirderOffset = (CEdit*)GetDlgItem(IDC_REF_GIRDER_OFFSET);
-   pRefGirderOffset->EnableWindow(bEnable);
-   pRefGirderOffset->ShowWindow(bClearControls ? SW_HIDE : SW_SHOW);
-
-   CWnd* pRefGirderOffsetTag = GetDlgItem(IDC_REF_GIRDER_OFFSET_UNIT);
-   pRefGirderOffsetTag->EnableWindow(bEnable);
-   pRefGirderOffsetTag->ShowWindow(bClearControls ? SW_HIDE : SW_SHOW);
-
-   CComboBox* pcbRefGirderOffsetType = (CComboBox*)GetDlgItem(IDC_REF_GIRDER_OFFSET_TYPE);
-   pcbRefGirderOffsetType->EnableWindow(bEnable);
-   pcbRefGirderOffsetType->ShowWindow(bClearControls ? SW_HIDE : SW_SHOW);
-
-   CWnd* pcbRefGirderOffsetTypeLabel = GetDlgItem(IDC_REF_GIRDER_OFFSET_TYPE_LABEL);
-   pcbRefGirderOffsetTypeLabel->EnableWindow(bEnable);
-   pcbRefGirderOffsetTypeLabel->ShowWindow(bClearControls ? SW_HIDE : SW_SHOW);
-
    if ( !bEnable && bClearControls )
    {
       pEdit->SetSel(0,-1);
       pEdit->Clear();
-
-      pRefGirderOffset->SetSel(0,-1);
-      pRefGirderOffset->Clear();
-
-      pcbGirderMeasure->SetCurSel(-1);
-      pcbRefGirder->SetCurSel(-1);
-      pcbRefGirderOffsetType->SetCurSel(-1);
    }
 }
 
@@ -1150,7 +1116,12 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
    GetDlgItem(IDC_SPACING)->EnableWindow(bEnable);
    GetDlgItem(IDC_SPACING_UNIT)->EnableWindow(bEnable);
    GetDlgItem(IDC_ALLOWABLE_SPACING)->EnableWindow(bEnable);
-   GetDlgItem(IDC_GIRDER_SPACING_MEASURE)->EnableWindow(bEnable);
+
+
+   if ( ::IsBridgeSpacing(m_GirderSpacingType) )
+      bEnable = TRUE;
+   else
+      bEnable = FALSE;
 
    GetDlgItem(IDC_REF_GIRDER_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_REF_GIRDER)->EnableWindow(bEnable);
@@ -1158,6 +1129,7 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
    GetDlgItem(IDC_REF_GIRDER_OFFSET_UNIT)->EnableWindow(bEnable);
    GetDlgItem(IDC_REF_GIRDER_OFFSET_TYPE_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_REF_GIRDER_OFFSET_TYPE)->EnableWindow(bEnable);
+   GetDlgItem(IDC_GIRDER_SPACING_MEASURE)->EnableWindow(bEnable);
 
    // update the the unit of measure
    CComPtr<IBroker> pBroker;

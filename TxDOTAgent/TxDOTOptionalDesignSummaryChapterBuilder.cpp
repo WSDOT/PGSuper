@@ -30,6 +30,7 @@
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\PierData2.h>
 #include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\DebondUtil.h>
 
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
@@ -40,6 +41,7 @@
 
 #include "TxDOTOptionalDesignData.h"
 #include "TxDOTOptionalDesignUtilities.h"
+#include "TexasIBNSParagraphBuilder.h"
 
 #include <psgLib\ConnectionLibraryEntry.h>
 
@@ -184,7 +186,7 @@ void design_information(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    (*p_table)(row,0) << _T("Span Length (CL Bearings)") ;
    (*p_table)(row++,1) << length.SetValue(pBridge->GetSegmentSpanLength(fabrSegmentKey));
 
-   ASSERT(pgsTypes::sbsUniform == pBridgeDesc->GetGirderSpacingType());
+   ASSERT(pgsTypes::sbsUniform==pBridgeDesc->GetGirderSpacingType() || pgsTypes::sbsUniformAdjacent==pBridgeDesc->GetGirderSpacingType());
    (*p_table)(row,0) << _T("Beam Spacing") ;
    (*p_table)(row++,1) << length.SetValue(pBridgeDesc->GetGirderSpacing());
 
@@ -314,24 +316,38 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
 
    (*p_table)(row,0) << _T("No. Strands");
 
+   CTxDOTOptionalDesignGirderData::StrandFillType fill_type = pGirderData->GetStrandFillType();
+
    std::_tstring note;
-   if (pGirderData->GetStandardStrandFill())
+   if (fill_type == CTxDOTOptionalDesignGirderData::sfStandard)
    {
       note = _T(" (standard fill used)");
    }
-   else
+   else if (fill_type == CTxDOTOptionalDesignGirderData::sfHarpedRows)
    {
-      note = (pGirderData->GetUseDepressedStrands()) ? _T(" (non-standard fill, with depressed strands)") : _T(" (non-standard fill, with all straight strands)");
+      note = _T(" (non-standard fill, with depressed strands)");
+   }
+   else if (fill_type == CTxDOTOptionalDesignGirderData::sfDirectFill)
+   {
+      note = _T(" (non-standard direct straight strand fill)");
    }
 
    (*p_table)(row++,1) << pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Permanent) << note;
 
    if( pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Permanent) > 0) // no use reporting strand data if there are none
    {
-      if (pGirderData->GetStandardStrandFill())
+      StrandIndexType nh = pStrandGeometry->GetNumStrands(segmentKey,pgsTypes::Harped);
+      if (fill_type == CTxDOTOptionalDesignGirderData::sfStandard && nh>0)
       {
          (*p_table)(row,0) << _T("Girder Bottom to Topmost Strand (To)");
          (*p_table)(row++,1) << component.SetValue( pGirderData->GetStrandTo() );
+      }
+
+      StrandIndexType ndb = pStrandGeometry->GetNumDebondedStrands(segmentKey, pgsTypes::Straight);
+      if (ndb>0)
+      {
+         (*p_table)(row,0) << _T("No. Debonded");
+         (*p_table)(row++,1) << ndb;
       }
 
       Float64 span2 = pBridge->GetSegmentSpanLength(segmentKey)/2.0;
@@ -346,16 +362,22 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
       (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(releaseIntervalIdx, zeropoi,false,&neff) );
 
       // non standard fill row tables
-      if (!pGirderData->GetStandardStrandFill())
+      if (fill_type == CTxDOTOptionalDesignGirderData::sfHarpedRows)
       {
          non_standard_table(pChapter, pDisplayUnits, _T("Non-Standard Strand Pattern at Girder Centerline"),
                             pGirderData->GetStrandsAtCL());
 
-         if (pGirderData->GetUseDepressedStrands())
-         {
-            non_standard_table(pChapter, pDisplayUnits, _T("Non-Standard Strand Pattern at Girder Ends"),
-                               pGirderData->GetStrandsAtEnds());
-         }
+         non_standard_table(pChapter, pDisplayUnits, _T("Non-Standard Strand Pattern at Girder Ends"),
+                            pGirderData->GetStrandsAtEnds());
+      }
+
+      if (fill_type == CTxDOTOptionalDesignGirderData::sfDirectFill)
+      {
+         // Write debond tables if direct fill
+         Float64 girder_length = pBridge->GetSegmentLength(segmentKey);
+
+         TxDOTIBNSDebondWriter tx_writer(segmentKey, girder_length, pStrandGeometry);
+         tx_writer.WriteDebondData(p, pDisplayUnits, title);
       }
    }
 }

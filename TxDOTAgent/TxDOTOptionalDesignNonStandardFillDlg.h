@@ -21,13 +21,13 @@ public:
 
    CTxDOTOptionalDesignGirderData* m_pGirderData;
    ITxDOTBrokerRetriever* m_pBrokerRetriever;
-   bool m_UseDepressed;
    Float64 m_yBottom;
 
 private:
    CStrandRowGrid m_GridAtCL;
    CStrandRowGrid m_GridAtEnds;
 
+   bool m_UseDepressed; // was used in previous version of toga to show only one grid if all straight strands
    bool m_bFirstActive;
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

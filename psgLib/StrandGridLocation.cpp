@@ -168,12 +168,12 @@ BOOL CStrandGridLocation::OnInitDialog()
    if (m_UseHarpedWebStrands)
    {
       pcb->AddString(_T("Harped"));
-      pbox->SetWindowTextW(_T("Location at Harping Points"));
+      pbox->SetWindowText(_T("Location at Harping Points"));
    }
    else
    {
       pcb->AddString(_T("Straight-Web"));
-      pbox->SetWindowTextW(_T("Location along Girder"));
+      pbox->SetWindowText(_T("Location along Girder"));
 
       HideEndBox();
    }

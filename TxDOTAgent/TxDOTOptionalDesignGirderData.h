@@ -36,6 +36,7 @@
 #include <Material\PsStrand.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
+#include <PgsExt\StrandData.h>
 
 // LOCAL INCLUDES
 //
@@ -90,8 +91,11 @@ class CTxDOTOptionalDesignGirderData
 {
 public:
    // Data
-   void SetStandardStrandFill(bool val);
-   bool GetStandardStrandFill() const;
+   enum StrandFillType {sfStandard, sfHarpedRows, sfDirectFill};
+
+   // method used to fill strands
+   void SetStrandFillType(StrandFillType val);
+   StrandFillType GetStrandFillType() const;
 
    void SetStrandData(matPsStrand::Grade grade,
                       matPsStrand::Type type,
@@ -112,27 +116,34 @@ public:
    StrandIndexType GetNumStrands();
    void SetNumStrands(StrandIndexType ns);
 
-   void SetStrandTo(Float64 val);
-   Float64 GetStrandTo() const;
+   // Data for direct manip fill
+   // ===========================
+   const DirectStrandFillCollection& GetDirectFilledStraightStrands() const;
+   void SetDirectFilledStraightStrands(const DirectStrandFillCollection& coll) ;
+
+   const std::vector<CDebondData>& GetDirectFilledStraightDebond() const;
+   void SetDirectFilledStraightDebond(const std::vector<CDebondData>& info);
+
+   bool ComputeDirectFillEccentricity(const GirderLibraryEntry* pGdrEntry, Float64* pEcc) const;
 
    // Utilities for standard fill
    // ===========================
+   void SetStrandTo(Float64 val);
+   Float64 GetStrandTo() const;
+
    std::vector<StrandIndexType> ComputeAvailableNumStrands(GirderLibrary* pLib); 
    bool ComputeToRange(GirderLibrary* pLib, StrandIndexType ns, Float64* pToLower, Float64* pToUpper);
    bool ComputeEccentricities(GirderLibrary* pLib, StrandIndexType ns, Float64 To, Float64* pEccEnds, Float64* pEccCL);
 
    // Data for non-standard fill
    // ==========================
-   void SetUseDepressedStrands(bool val);
-   bool GetUseDepressedStrands() const;
-
    // Struct and container for strand data
    struct StrandRow
    {
       Float64          RowElev;
       StrandIndexType  StrandsInRow;
 
-      StrandRow(): RowElev(-1.0), StrandsInRow(-1)
+      StrandRow(): RowElev(-1.0), StrandsInRow(INVALID_INDEX)
       {;}
 
       StrandRow(Float64 rowElev, StrandIndexType strandsInRow=0):
@@ -178,7 +189,7 @@ public:
       bool WasFilled; // For use by later filling routines
 
       StrandIncrement():
-      TotalStrands(0), GlobalFill(-1), WasFilled(false)
+      TotalStrands(0), GlobalFill(INVALID_INDEX), WasFilled(false)
       {;}
    };
 
@@ -277,7 +288,7 @@ protected:
    void MakeCopy(const CTxDOTOptionalDesignGirderData& rOther);
 
    //------------------------------------------------------------------------
-   virtual void MakeAssignment(const CTxDOTOptionalDesignGirderData& rOther);
+   void MakeAssignment(const CTxDOTOptionalDesignGirderData& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -286,7 +297,8 @@ private:
    // no default construction
    CTxDOTOptionalDesignGirderData();
    // GROUP: DATA MEMBERS
-   bool m_StandardStrandFill;
+
+   StrandFillType m_StrandFillType;
 
    matPsStrand::Grade m_Grade;
    matPsStrand::Type  m_Type;
@@ -300,12 +312,15 @@ private:
    StrandIndexType m_NumStrands;
    Float64 m_StrandTo;
 
-   // Data for non-standard fill
+   // Data for harped-row fill
    // ==========================
-   bool m_UseDepressedStrands;
-
    StrandRowContainer m_StrandRowsAtCL;
    StrandRowContainer m_StrandRowsAtEnds;
+
+   // Data for direct manip fill
+   // ===========================
+   DirectStrandFillCollection m_DirectFilledStraightStrands;
+   std::vector<CDebondData>   m_DirectFilledStraightDebond;
 
    // our parent
    CTxDOTOptionalDesignData* m_pParent;

@@ -67,7 +67,6 @@ interface IRoadway : IUnknown
 {
    virtual Float64 GetCrownPointOffset(Float64 station) = 0;
    virtual Float64 GetCrownSlope(Float64 station,Float64 offset) = 0;
-   virtual void GetCrownSlope(Float64 station,Float64* pLeftSlope,Float64* pRightSlope) = 0;
    virtual Float64 GetProfileGrade(Float64 station) = 0;
    virtual Float64 GetElevation(Float64 station,Float64 offset) = 0;
    virtual void GetBearing(Float64 station,IDirection** ppBearing) = 0;

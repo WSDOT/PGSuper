@@ -874,6 +874,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TogaDirectFillDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\TogaDisplayObjectFactory.cpp"
 				>
 			</File>
@@ -898,6 +902,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TOGAGirderSelectStrandsDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\TogaGMDisplayMgrEventsImpl.cpp"
 				>
 			</File>
@@ -919,6 +927,10 @@
 			</File>
 			<File
 				RelativePath=".\TOGAStatusBar.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TOGAStrandFillGrid.cpp"
 				>
 			</File>
 			<File
@@ -1026,6 +1038,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TxDOTOptionalDesignUtilities.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\TxDOTOptionalDesignView.cpp"
 				>
 			</File>
@@ -1112,6 +1128,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TogaDirectFillDlg.h"
+				>
+			</File>
+			<File
 				RelativePath=".\TogaDisplayObjectFactory.h"
 				>
 			</File>
@@ -1133,6 +1153,10 @@
 			</File>
 			<File
 				RelativePath=".\TogaGirderModelSectionView.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TOGAGirderSelectStrandsDlg.h"
 				>
 			</File>
 			<File
@@ -1161,6 +1185,10 @@
 			</File>
 			<File
 				RelativePath=".\TOGAStatusBar.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TOGAStrandFillGrid.h"
 				>
 			</File>
 			<File

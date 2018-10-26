@@ -38,9 +38,9 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CTxDOTOptionalDesignChildFrame
 
-IMPLEMENT_DYNCREATE(CTxDOTOptionalDesignChildFrame, CMDIChildWnd)
+IMPLEMENT_DYNCREATE(CTxDOTOptionalDesignChildFrame, CEAFChildFrame)
 
-BEGIN_MESSAGE_MAP(CTxDOTOptionalDesignChildFrame, CMDIChildWnd)
+BEGIN_MESSAGE_MAP(CTxDOTOptionalDesignChildFrame, CEAFChildFrame)
 	//{{AFX_MSG_MAP(CTxDOTOptionalDesignChildFrame)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 		//    DO NOT EDIT what you see in these blocks of generated code !
@@ -50,6 +50,7 @@ BEGIN_MESSAGE_MAP(CTxDOTOptionalDesignChildFrame, CMDIChildWnd)
    ON_WM_HELPINFO()
    ON_COMMAND(ID_HELP_FINDER, &CTxDOTOptionalDesignChildFrame::OnHelpFinder)
    ON_COMMAND(ID_HELP, &CTxDOTOptionalDesignChildFrame::OnHelpFinder)
+   ON_WM_GETMINMAXINFO()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -65,11 +66,11 @@ CTxDOTOptionalDesignChildFrame::~CTxDOTOptionalDesignChildFrame()
 
 BOOL CTxDOTOptionalDesignChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
-   // get rid of system menu and resizable frame
-   cs.style = WS_CHILD;
-
-	if( !CMDIChildWnd::PreCreateWindow(cs) )
+	if( !CEAFChildFrame::PreCreateWindow(cs) )
 		return FALSE;
+
+   // Make the frame start in a maximized state
+   cs.style = WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_MAXIMIZE; // start the window in a maximized state
 
 	return TRUE;
 }
@@ -80,12 +81,12 @@ BOOL CTxDOTOptionalDesignChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 #ifdef _DEBUG
 void CTxDOTOptionalDesignChildFrame::AssertValid() const
 {
-	CMDIChildWnd::AssertValid();
+	CEAFChildFrame::AssertValid();
 }
 
 void CTxDOTOptionalDesignChildFrame::Dump(CDumpContext& dc) const
 {
-	CMDIChildWnd::Dump(dc);
+	CEAFChildFrame::Dump(dc);
 }
 
 #endif //_DEBUG
@@ -93,13 +94,10 @@ void CTxDOTOptionalDesignChildFrame::Dump(CDumpContext& dc) const
 /////////////////////////////////////////////////////////////////////////////
 // CTxDOTOptionalDesignChildFrame message handlers
 
-
-void CTxDOTOptionalDesignChildFrame::ActivateFrame(int nCmdShow)
+void CTxDOTOptionalDesignChildFrame::SetFrameSize(int cx,int cy)
 {
-   if (nCmdShow == -1)
-      nCmdShow = SW_SHOWMAXIMIZED;
-
-   CMDIChildWnd::ActivateFrame(nCmdShow);
+   m_szFrame.cx = cx;
+   m_szFrame.cy = cy;
 }
 
 void CTxDOTOptionalDesignChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
@@ -135,4 +133,19 @@ void CTxDOTOptionalDesignChildFrame::OnHelpFinder()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CWinApp* pApp = AfxGetApp();
    ::HtmlHelp( *this, pApp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_WELCOME );
+}
+
+void CTxDOTOptionalDesignChildFrame::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
+{
+   CEAFChildFrame::OnGetMinMaxInfo(lpMMI); // get the default values
+
+   if ( !IsZoomed() && !IsIconic() )
+   {
+   // Want to prevent resizing so we are going to
+   // set the min and max tracking size ot the same values
+   lpMMI->ptMinTrackSize.x = m_szFrame.cx;
+   lpMMI->ptMinTrackSize.y = m_szFrame.cy;
+   lpMMI->ptMaxTrackSize.x = m_szFrame.cx;
+   lpMMI->ptMaxTrackSize.y = m_szFrame.cy;
+   }
 }

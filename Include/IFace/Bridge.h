@@ -318,6 +318,7 @@ interface IBridge : IUnknown
    virtual bool IsFutureOverlay() = 0;
    virtual Float64 GetOverlayWeight() = 0;
    virtual Float64 GetOverlayDepth() = 0;
+   virtual Float64 GetSacrificalDepth() = 0;
    virtual Float64 GetFillet() = 0;
    virtual Float64 GetGrossSlabDepth(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetStructuralSlabDepth(const pgsPointOfInterest& poi) = 0;
@@ -662,8 +663,6 @@ interface ILongRebarGeometry : IUnknown
    virtual void GetRebarLayout(const CSegmentKey& segmentKey, IRebarLayout** rebarLayout) = 0;
 
    virtual REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) = 0;
-   //Return index of any rebar rows that have bars outside of the girder section. An empty vector means PASS
-   virtual std::vector<RowIndexType> CheckLongRebarGeometry(const CSegmentKey& segmentKey) = 0;
 };
 
 /*****************************************************************************
@@ -1335,6 +1334,7 @@ interface ITendonGeometry : public IUnknown
 
    // returns the jacking force
    virtual Float64 GetPjack(const CGirderKey& girderKey,DuctIndexType ductIdx) = 0;
+   virtual Float64 GetFpj(const CGirderKey& girderKey,DuctIndexType ductIdx) = 0;
 
    // returns the distance from the top of the non-composite girder to the CG of the tendon
    // adjustments are made for the tendon being shifted within the duct
@@ -1351,6 +1351,9 @@ interface ITendonGeometry : public IUnknown
    // returns the cummulative angular change of the tendon path between two POIs
    // if poi1 is to the left of poi2, it is assumed that jacking is from the left end otherwise it is from the right end
    virtual Float64 GetAngularChange(const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,DuctIndexType ductIdx) = 0;
+
+   // returns the end from which the PT tendon is jacked
+   virtual pgsTypes::JackingEndType GetJackingEnd(const CGirderKey& girderKey,DuctIndexType ductIdx) = 0;
 };
 
 #endif // INCLUDED_IFACE_BRIDGE_H_

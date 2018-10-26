@@ -1667,10 +1667,16 @@ void CPGSuperDocBase::OnRatingSpec()
    oldData.m_Design.StrengthI_DW           = pSpec->GetWearingSurfaceFactor(pgsTypes::StrengthI_Inventory);
    oldData.m_Design.StrengthI_LL_Inventory = pSpec->GetLiveLoadFactor(      pgsTypes::StrengthI_Inventory);
    oldData.m_Design.StrengthI_LL_Operating = pSpec->GetLiveLoadFactor(      pgsTypes::StrengthI_Operating);
+   oldData.m_Design.StrengthI_CR           = pSpec->GetCreepFactor(         pgsTypes::StrengthI_Inventory);
+   oldData.m_Design.StrengthI_SH           = pSpec->GetShrinkageFactor(     pgsTypes::StrengthI_Inventory);
+   oldData.m_Design.StrengthI_PS           = pSpec->GetPrestressFactor(     pgsTypes::StrengthI_Inventory);
 
    oldData.m_Design.ServiceIII_DC          = pSpec->GetDeadLoadFactor(      pgsTypes::ServiceIII_Inventory);
    oldData.m_Design.ServiceIII_DW          = pSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_Inventory);
    oldData.m_Design.ServiceIII_LL          = pSpec->GetLiveLoadFactor(      pgsTypes::ServiceIII_Inventory);
+   oldData.m_Design.ServiceIII_CR          = pSpec->GetCreepFactor(         pgsTypes::ServiceIII_Inventory);
+   oldData.m_Design.ServiceIII_SH          = pSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_Inventory);
+   oldData.m_Design.ServiceIII_PS          = pSpec->GetPrestressFactor(     pgsTypes::ServiceIII_Inventory);
 
    oldData.m_Design.AllowableTensionCoefficient = pSpec->GetAllowableTensionCoefficient(pgsTypes::lrDesign_Inventory);
    oldData.m_Design.bRateForShear = pSpec->RateForShear(pgsTypes::lrDesign_Inventory);
@@ -1687,11 +1693,17 @@ void CPGSuperDocBase::OnRatingSpec()
    oldData.m_Legal.StrengthI_DW         = pSpec->GetWearingSurfaceFactor(pgsTypes::StrengthI_LegalRoutine);
    oldData.m_Legal.StrengthI_LL_Routine = pSpec->GetLiveLoadFactor(      pgsTypes::StrengthI_LegalRoutine);
    oldData.m_Legal.StrengthI_LL_Special = pSpec->GetLiveLoadFactor(      pgsTypes::StrengthI_LegalSpecial);
+   oldData.m_Legal.StrengthI_CR         = pSpec->GetCreepFactor(         pgsTypes::StrengthI_LegalSpecial);
+   oldData.m_Legal.StrengthI_SH         = pSpec->GetShrinkageFactor(     pgsTypes::StrengthI_LegalSpecial);
+   oldData.m_Legal.StrengthI_PS         = pSpec->GetPrestressFactor(     pgsTypes::StrengthI_LegalSpecial);
 
    oldData.m_Legal.ServiceIII_DC         = pSpec->GetDeadLoadFactor(      pgsTypes::ServiceIII_LegalRoutine);
    oldData.m_Legal.ServiceIII_DW         = pSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_LegalRoutine);
    oldData.m_Legal.ServiceIII_LL_Routine = pSpec->GetLiveLoadFactor(      pgsTypes::ServiceIII_LegalRoutine);
    oldData.m_Legal.ServiceIII_LL_Special = pSpec->GetLiveLoadFactor(      pgsTypes::ServiceIII_LegalSpecial);
+   oldData.m_Legal.ServiceIII_CR         = pSpec->GetCreepFactor(         pgsTypes::ServiceIII_LegalSpecial);
+   oldData.m_Legal.ServiceIII_SH         = pSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_LegalSpecial);
+   oldData.m_Legal.ServiceIII_PS         = pSpec->GetPrestressFactor(     pgsTypes::ServiceIII_LegalSpecial);
 
    oldData.m_Legal.AllowableTensionCoefficient = pSpec->GetAllowableTensionCoefficient(pgsTypes::lrLegal_Routine);
    oldData.m_Legal.bRateForShear    = pSpec->RateForShear(pgsTypes::lrLegal_Routine);
@@ -1703,18 +1715,30 @@ void CPGSuperDocBase::OnRatingSpec()
    oldData.m_Permit.StrengthII_DC         = pSpec->GetDeadLoadFactor(      pgsTypes::StrengthII_PermitRoutine);
    oldData.m_Permit.StrengthII_DW         = pSpec->GetWearingSurfaceFactor(pgsTypes::StrengthII_PermitRoutine);
    oldData.m_Permit.StrengthII_LL_Routine = pSpec->GetLiveLoadFactor(      pgsTypes::StrengthII_PermitRoutine);
+   oldData.m_Permit.StrengthII_CR         = pSpec->GetCreepFactor(         pgsTypes::StrengthII_PermitRoutine);
+   oldData.m_Permit.StrengthII_SH         = pSpec->GetShrinkageFactor(     pgsTypes::StrengthII_PermitRoutine);
+   oldData.m_Permit.StrengthII_PS         = pSpec->GetPrestressFactor(     pgsTypes::StrengthII_PermitRoutine);
 
    oldData.m_Permit.StrengthII_DC         = pSpec->GetDeadLoadFactor(      pgsTypes::StrengthII_PermitSpecial);
    oldData.m_Permit.StrengthII_DW         = pSpec->GetWearingSurfaceFactor(pgsTypes::StrengthII_PermitSpecial);
    oldData.m_Permit.StrengthII_LL_Special = pSpec->GetLiveLoadFactor(      pgsTypes::StrengthII_PermitSpecial);
+   oldData.m_Permit.StrengthII_CR         = pSpec->GetCreepFactor(         pgsTypes::StrengthII_PermitSpecial);
+   oldData.m_Permit.StrengthII_SH         = pSpec->GetShrinkageFactor(     pgsTypes::StrengthII_PermitSpecial);
+   oldData.m_Permit.StrengthII_PS         = pSpec->GetPrestressFactor(     pgsTypes::StrengthII_PermitSpecial);
 
    oldData.m_Permit.ServiceI_DC         = pSpec->GetDeadLoadFactor(      pgsTypes::ServiceI_PermitRoutine);
    oldData.m_Permit.ServiceI_DW         = pSpec->GetWearingSurfaceFactor(pgsTypes::ServiceI_PermitRoutine);
    oldData.m_Permit.ServiceI_LL_Routine = pSpec->GetLiveLoadFactor(      pgsTypes::ServiceI_PermitRoutine);
+   oldData.m_Permit.ServiceI_CR         = pSpec->GetCreepFactor(         pgsTypes::ServiceI_PermitRoutine);
+   oldData.m_Permit.ServiceI_SH         = pSpec->GetShrinkageFactor(     pgsTypes::ServiceI_PermitRoutine);
+   oldData.m_Permit.ServiceI_PS         = pSpec->GetPrestressFactor(     pgsTypes::ServiceI_PermitRoutine);
 
    oldData.m_Permit.ServiceI_DC         = pSpec->GetDeadLoadFactor(      pgsTypes::ServiceI_PermitSpecial);
    oldData.m_Permit.ServiceI_DW         = pSpec->GetWearingSurfaceFactor(pgsTypes::ServiceI_PermitSpecial);
    oldData.m_Permit.ServiceI_LL_Special = pSpec->GetLiveLoadFactor(      pgsTypes::ServiceI_PermitSpecial);
+   oldData.m_Permit.ServiceI_CR         = pSpec->GetCreepFactor(         pgsTypes::ServiceI_PermitSpecial);
+   oldData.m_Permit.ServiceI_SH         = pSpec->GetShrinkageFactor(     pgsTypes::ServiceI_PermitSpecial);
+   oldData.m_Permit.ServiceI_PS         = pSpec->GetPrestressFactor(     pgsTypes::ServiceI_PermitSpecial);
 
    oldData.m_Permit.IM_Truck_Routine = pLiveLoads->GetTruckImpact(pgsTypes::lltPermitRating_Routine);
    oldData.m_Permit.IM_Lane_Routine  = pLiveLoads->GetLaneImpact( pgsTypes::lltPermitRating_Routine);

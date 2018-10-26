@@ -30,6 +30,7 @@
 #include <Reporting\OptionalDeflectionCheck.h>
 #include <Reporting\LongReinfShearCheck.h>
 #include <Reporting\GirderDetailingCheck.h>
+#include <Reporting\DebondCheckTable.h>
 #include "TexasShearChapterBuilder.h"
 
 #include <PgsExt\GirderPointOfInterest.h>
@@ -129,6 +130,13 @@ rptChapter* CTexasShearChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
 
    // Girder Detailing
    CGirderDetailingCheck(true).Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
+
+   // Debonding check if applicable
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   if ( pStrandGeometry->GetNumDebondedStrands(CSegmentKey(girderKey,0),pgsTypes::Straight) )
+   {
+      CDebondCheckTable().Build(pChapter, pBroker,pGirderArtifact,pgsTypes::Straight, pDisplayUnits);
+   }
 
    return pChapter;
 }

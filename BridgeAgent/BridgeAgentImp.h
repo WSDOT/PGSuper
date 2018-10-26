@@ -169,7 +169,6 @@ public:
 public:
    virtual Float64 GetCrownPointOffset(Float64 station);
    virtual Float64 GetCrownSlope(Float64 station,Float64 offset);
-   virtual void GetCrownSlope(Float64 station,Float64* pLeftSlope,Float64* pRightSlope);
    virtual Float64 GetProfileGrade(Float64 station);
    virtual Float64 GetElevation(Float64 station,Float64 offset);
    virtual void GetBearing(Float64 station,IDirection** ppBearing);
@@ -261,6 +260,7 @@ public:
    virtual bool IsFutureOverlay();
    virtual Float64 GetOverlayWeight();
    virtual Float64 GetOverlayDepth();
+   virtual Float64 GetSacrificalDepth();
    virtual Float64 GetFillet();
    virtual Float64 GetGrossSlabDepth(const pgsPointOfInterest& poi);
    virtual Float64 GetStructuralSlabDepth(const pgsPointOfInterest& poi);
@@ -471,7 +471,6 @@ public:
    virtual Float64 GetPPRBottomHalf(const pgsPointOfInterest& poi,const GDRCONFIG& config);
    virtual void CBridgeAgentImp::GetRebarLayout(const CSegmentKey& segmentKey, IRebarLayout** rebarLayout);
    virtual REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(IRebar* rebar, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct);
-   virtual std::vector<RowIndexType> CheckLongRebarGeometry(const CSegmentKey& segmentKey);
 
 // IStirrupGeometry
 public:
@@ -866,7 +865,7 @@ public:
 // IGirderHaulingPointsOfInterest
 public:
    virtual std::vector<pgsPointOfInterest> GetHaulingPointsOfInterest(const CSegmentKey& segmentKey,PoiAttributeType attrib,Uint32 mode = POIFIND_AND);
-   virtual std::vector<pgsPointOfInterest> GetHaulingDesignPointsOfInterest(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType attrib,Uint32 mode = POIFIND_AND);
+   virtual std::vector<pgsPointOfInterest> GetHaulingDesignPointsOfInterest(const CSegmentKey& segmentKey,Uint16 nPnts,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType attrib,Uint32 mode = POIFIND_AND);
    virtual Float64 GetMinimumOverhang(const CSegmentKey& segmentKey);
 
 // IBridgeDescriptionEventSink
@@ -934,10 +933,12 @@ public:
    virtual StrandIndexType GetStrandCount(const CGirderKey& girderKey,DuctIndexType ductIdx);
    virtual Float64 GetTendonArea(const CGirderKey& girderKey,IntervalIndexType intervalIdx,DuctIndexType ductIdx);
    virtual Float64 GetPjack(const CGirderKey& girderKey,DuctIndexType ductIdx);
+   virtual Float64 GetFpj(const CGirderKey& girderKey,DuctIndexType ductIdx);
    virtual Float64 GetDuctOffset(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx);
    virtual Float64 GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx);
    virtual Float64 GetAngularChange(const pgsPointOfInterest& poi,DuctIndexType ductIdx,pgsTypes::MemberEndType endType);
    virtual Float64 GetAngularChange(const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,DuctIndexType ductIdx);
+   virtual pgsTypes::JackingEndType GetJackingEnd(const CGirderKey& girderKey,DuctIndexType ductIdx);
 
 // IIntervals
 public:
@@ -1196,6 +1197,7 @@ private:
 
    void GetSlabEdgePoint(Float64 station, IDirection* direction,DirectionType side,IPoint2d** point);
    void GetSlabEdgePoint(Float64 station, IDirection* direction,DirectionType side,IPoint3d** point);
+   void CreateCompositeOverlayEdgePaths(const CBridgeDescription2* pBridgeDesc,IPath** ppLeftPath,IPath** ppRightPath);
 
    REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(const CComBSTR& name, Float64 Ab, Float64 db, Float64 fy, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct);
 

@@ -60,7 +60,7 @@ public:
 
    CString GetMasterLibraryPublisher() const;
 
-   void UpdateProgramSettings(BOOL bFirstRun);
+   virtual BOOL UpdateProgramSettings(BOOL bFirstRun);
 
 protected:
    SharedResourceType   m_SharedResourceType;     // method for using shared resources (Master lib and Workgroup templates)

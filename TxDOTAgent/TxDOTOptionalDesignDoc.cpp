@@ -47,6 +47,7 @@
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
 #include <IReportManager.h>
+#include <IFace\BeamFactory.h>
 
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\GirderGroupData.h>
@@ -378,7 +379,7 @@ CString CTxDOTOptionalDesignDoc::GetToolbarSectionName()
 void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
 {
    // Add the document's user interface stuff first
-   CEAFMainFrame* pFrame = (CEAFMainFrame*)AfxGetMainWnd();
+   CEAFMainFrame* pFrame = EAFGetMainFrame();
    if ( bIntegrate )
    {
       {
@@ -394,7 +395,7 @@ void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
       // use our status bar
       CTOGAStatusBar* pSB = new CTOGAStatusBar;
       pSB->Create(EAFGetMainFrame());
-      EAFGetMainFrame()->SetStatusBar(pSB);
+      pFrame->SetStatusBar(pSB);
    }
    else
    {
@@ -403,7 +404,7 @@ void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
       m_pMyToolBar = NULL;
 
       // put the status bar back the way it was
-      EAFGetMainFrame()->SetStatusBar(NULL);
+      pFrame->SetStatusBar(NULL);
    }
 
    // then call base class, which handles UI integration for
@@ -416,8 +417,8 @@ void CTxDOTOptionalDesignDoc::LoadDocumentSettings()
    // read document-based INI/Registry settings
    CEAFBrokerDocument::LoadDocumentSettings();
 
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
+   CEAFApp* pApp = EAFGetApp();
+
    m_GirderModelEditorSettings = pApp->GetProfileInt(_T("Settings"),_T("GirderView"), DEF_GV);
 }
 
@@ -426,8 +427,8 @@ void CTxDOTOptionalDesignDoc::SaveDocumentSettings()
    // Write document level INI/Registry settings
    CEAFBrokerDocument::SaveDocumentSettings();
 
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
+   CEAFApp* pApp = EAFGetApp();
+
    VERIFY(pApp->WriteProfileInt(_T("Settings"),_T("GirderView"),m_GirderModelEditorSettings));
 }
 
@@ -463,7 +464,7 @@ BOOL CTxDOTOptionalDesignDoc::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
    m_ProjectData.SetBeamType(name, false); // don't fire
 
    // Use pgsuper's engineer name and company if available
-   CWinApp* pApp = AfxGetApp();
+   CEAFApp* pApp = EAFGetApp();
    CString engName    = pApp->GetProfileString(_T("Options"),_T("EngineerName"));
    m_ProjectData.SetEngineer(engName);
 
@@ -818,9 +819,9 @@ SpecLibrary* CTxDOTOptionalDesignDoc::GetSpecLibrary()
 
 void CTxDOTOptionalDesignDoc::InitializeLibraryManager()
 {
+
    // Use same master library as PGSuper
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
+   CEAFApp* pApp = EAFGetApp();
    CString strMasterLibaryFile    = pApp->GetProfileString(_T("Options"),_T("MasterLibraryCache"));
    if (strMasterLibaryFile.IsEmpty())
    {
@@ -867,7 +868,7 @@ void CTxDOTOptionalDesignDoc::InitializeLibraryManager()
          if ( !m_LibMgr.LoadMe( &load ) )
          {
             TxDOTBrokerRetrieverException exc;
-            exc.Message = _T("An uknown error occurred while loading the master library file.");
+            exc.Message = _T("An unknown error occurred while loading the master library file.");
             WATCH(exc.Message);
             throw exc;
          }
@@ -1016,12 +1017,16 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
       throw exc;
    }
 
-   if (pGdrEntry->IsDifferentHarpedGridAtEndsUsed())
+   if (pGdrEntry->IsDifferentHarpedGridAtEndsUsed()  && pGdrEntry->GetMaxHarpedStrands()>0)
    {
       TxDOTBrokerRetrieverException exc;
       exc.Message.Format(_T("The girder entry with name: \"%s\" has harped strands with different locations at the ends and C.L. Cannot continue"),gdr_name);
       throw exc;
    }
+
+   CComPtr<IBeamFactory> factory;
+   pGdrEntry->GetBeamFactory(&factory);
+   bridgeDesc.SetGirderFamilyName( factory->GetGirderFamilyName().c_str() );
 
    bridgeDesc.SetGirderName(gdr_name);
    bridgeDesc.SetGirderLibraryEntry(pGdrEntry);
@@ -1044,19 +1049,65 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
       pGroup->SetGirderLibraryEntry(iGroup,pGdrEntry);
    }
 
+   CDeckDescription2* pDeck = bridgeDesc.GetDeckDescription();
    // beam spacing
-   Float64 gdr_width = pGdrEntry->GetBeamWidth(pgsTypes::metStart);
    Float64 spacing = m_ProjectData.GetBeamSpacing();
-   if (spacing < gdr_width)
+   pgsTypes::SupportedBeamSpacings sbs = factory->GetSupportedBeamSpacings();
+
+   // Use uniform spread spacing if it is available
+   if (std::find(sbs.begin(), sbs.end(), pgsTypes::sbsUniform) != sbs.end())
    {
-      gdr_width = ::ConvertFromSysUnits(gdr_width, unitMeasure::Feet);
+      // spread uniform
+      Float64 gdr_width = pGdrEntry->GetBeamWidth(pgsTypes::metStart);
+      if (spacing < gdr_width)
+      {
+         gdr_width = ::ConvertFromSysUnits(gdr_width, unitMeasure::Feet);
+         TxDOTBrokerRetrieverException exc;
+         exc.Message.Format(_T("The girder spacing must be greater than the girder width of %f feet"),gdr_width);
+         throw exc;
+      }
+
+      Float64 sd = m_ProjectData.GetSlabThickness();
+      sd = ::ConvertFromSysUnits(sd, unitMeasure::Inch);
+      if (sd < 4.0)
+      {
+         TxDOTBrokerRetrieverException exc;
+         exc.Message = _T("Slab thickness for spread beams must be 4 inches or greater.");
+         throw exc;
+      }
+
+      bridgeDesc.SetGirderSpacingType(pgsTypes::sbsUniform);
+      bridgeDesc.SetGirderSpacing(spacing);
+      pDeck->DeckType = pgsTypes::sdtCompositeCIP;
+   }
+   else if (std::find(sbs.begin(), sbs.end(), pgsTypes::sbsUniformAdjacent) != sbs.end())
+   {
+      // Otherwise, adjacent uniform. Get joint width limit
+      Float64 sd = m_ProjectData.GetSlabThickness();
+      pgsTypes::SupportedDeckType sdt = sd > 0 ? pgsTypes::sdtCompositeOverlay : pgsTypes::sdtNone;
+      Float64 minSpc, maxSpc;
+      factory->GetAllowableSpacingRange(pGdrEntry->GetDimensions(), sdt, pgsTypes::sbsUniformAdjacent, &minSpc, &maxSpc);
+ 
+      const Float64 Tol=0.01; // centimeter
+      if (spacing < minSpc-Tol || spacing > maxSpc+Tol)
+      {
+         minSpc = ::ConvertFromSysUnits(minSpc, unitMeasure::Feet);
+         maxSpc = ::ConvertFromSysUnits(maxSpc, unitMeasure::Feet);
+         TxDOTBrokerRetrieverException exc;
+         exc.Message.Format(_T("Allowable Beam Spacing is bounded by the beam width plus allowed joint spacing. Value must be between a minimum of %f feet and a maximum of %f feet"),minSpc, maxSpc);
+         throw exc;
+      }
+
+      bridgeDesc.SetGirderSpacingType(pgsTypes::sbsUniformAdjacent);
+      bridgeDesc.SetGirderSpacing(spacing-minSpc); // input value is joint width
+      pDeck->DeckType = sdt;
+   }
+   else
+   {
       TxDOTBrokerRetrieverException exc;
-      exc.Message.Format(_T("The girder spacing must be greater than the girder width of %f feet"),gdr_width);
+      exc.Message = _T("Fatal Error - Selected girder type must support uniform spread or adjacent spacing.");
       throw exc;
    }
-
-   bridgeDesc.SetGirderSpacingType(pgsTypes::sbsUniform);
-   bridgeDesc.SetGirderSpacing(spacing);
 
    // connections
    // Left
@@ -1114,8 +1165,6 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    Float64 span_length = m_ProjectData.GetSpanLength();
    span_length += conn_len;
    bridgeDesc.SetSpanLength(0,span_length);
-
-   CDeckDescription2* pDeck = bridgeDesc.GetDeckDescription();
 
    // Slab Thickness. Must also set slab offset and sac depth
    Float64 slab_thick = m_ProjectData.GetSlabThickness();
@@ -1227,7 +1276,6 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    w = m_ProjectData.GetWCompDw();
    Float64 wl = w / spacing;
 
-   pDeck->DeckType = pgsTypes::sdtCompositeCIP;
    pDeck->WearingSurface = pgsTypes::wstFutureOverlay;
    pDeck->bInputAsDepthAndDensity = false;
    pDeck->OverlayWeight = wl;
@@ -1319,7 +1367,8 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
    lrd.CopyGirderEntryData( *pGdrEntry );
 
    // See if standard or nonstandard fill
-   if (pOdGirderData->GetStandardStrandFill())
+   CTxDOTOptionalDesignGirderData::StrandFillType fill_type =  pOdGirderData->GetStrandFillType();
+   if (fill_type == CTxDOTOptionalDesignGirderData::sfStandard)
    {
       strands.NumPermStrandsType = CStrandData::npsTotal;
 
@@ -1337,9 +1386,9 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
       strands.HsoEndMeasurement = hsoTOP2BOTTOM;
       strands.HpOffsetAtEnd = pOdGirderData->GetStrandTo();
    }
-   else
+   else if (fill_type == CTxDOTOptionalDesignGirderData::sfHarpedRows)
    {
-      // Non-standard fill 
+      // Non-standard fill using rows
       StrandIndexType straight_strands_to_fill = 0;
       StrandIndexType harped_strands_to_fill = 0;
       
@@ -1350,120 +1399,41 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
       // We'll be adding strands later
       clone_entry.ClearAllStrands();
 
-      // Can have two types of non-standard fill
-      if (pOdGirderData->GetUseDepressedStrands())
+      // With depressed strands - the hard way
+      CString error_msg;
+      if (!pOdGirderData->CheckAndBuildStrandRows(pGdrEntry,
+         pOdGirderData->GetStrandsAtCL(),pOdGirderData->GetStrandsAtEnds(), error_msg, &clone_entry))
       {
-         // With depressed strands - the hard way
-         CString error_msg;
-         if (!pOdGirderData->CheckAndBuildStrandRows(pGdrEntry,
-            pOdGirderData->GetStrandsAtCL(),pOdGirderData->GetStrandsAtEnds(), error_msg, &clone_entry))
-         {
-            TxDOTBrokerRetrieverException exc;
-            exc.Message = error_msg;
-            throw exc;
-         }
-
-         // Our cloned entry has only the strand locations we need, now we can fill them
-         straight_strands_to_fill = clone_entry.GetMaxStraightStrands();
-         harped_strands_to_fill   = clone_entry.GetMaxHarpedStrands();
-
-         StrandIndexType nt_max = straight_strands_to_fill + harped_strands_to_fill;
-
-         // check that strand count matches
-         StrandIndexType tot_chk=0;
-         CTxDOTOptionalDesignGirderData::StrandRowContainer strandrows = pOdGirderData->GetStrandsAtCL();
-         for(CTxDOTOptionalDesignGirderData::StrandRowIterator sit=strandrows.begin(); sit!=strandrows.end(); sit++)
-         {
-            tot_chk += sit->StrandsInRow;
-         }
-
-         if (tot_chk != nt_max)
-         {
-            TxDOTBrokerRetrieverException exc;
-            exc.Message = _T("The total number of strands in the generated library entry does not match the input number of strands. This is a programming error - Cannot continue.");
-            throw exc;
-         }
-
-         // We don't adjust strands for this case - they are where they need to be
-         clone_entry.UseDifferentHarpedGridAtEnds(true);
-         clone_entry.AllowVerticalAdjustmentEnd(false);
-         clone_entry.AllowVerticalAdjustmentHP(false);
+         TxDOTBrokerRetrieverException exc;
+         exc.Message = error_msg;
+         throw exc;
       }
-      else
+
+      // Our cloned entry has only the strand locations we need, now we can fill them
+      straight_strands_to_fill = clone_entry.GetMaxStraightStrands();
+      harped_strands_to_fill   = clone_entry.GetMaxHarpedStrands();
+
+      StrandIndexType nt_max = straight_strands_to_fill + harped_strands_to_fill;
+
+      // check that strand count matches
+      StrandIndexType tot_chk=0;
+      CTxDOTOptionalDesignGirderData::StrandRowContainer strandrows = pOdGirderData->GetStrandsAtCL();
+      for(CTxDOTOptionalDesignGirderData::StrandRowIterator sit=strandrows.begin(); sit!=strandrows.end(); sit++)
       {
-
-         // All straight strands - fill harped strands as straight
-         // Get available strands at each row in for our library entry
-         CTxDOTOptionalDesignGirderData::AvailableStrandsInRowContainer available_rows;
-         available_rows = pOdGirderData->ComputeAvailableStrandRows(pGdrEntry); 
-
-         CTxDOTOptionalDesignGirderData::StrandRowContainer strandrows = pOdGirderData->GetStrandsAtCL();
-         for(CTxDOTOptionalDesignGirderData::StrandRowIterator sit=strandrows.begin(); sit!=strandrows.end(); sit++)
-         {
-            Float64         row_elev       = sit->RowElev;
-            StrandIndexType strands_in_row = sit->StrandsInRow;
-
-            // Find current row in available rows
-            CTxDOTOptionalDesignGirderData::AvailableStrandsInRow tester(row_elev);
-            CTxDOTOptionalDesignGirderData::AvailableStrandsInRowIterator avit = available_rows.find(tester);
-            if (avit != available_rows.end())
-            {
-               // Found strands - copy to our clone entry
-               StrandIndexType num_filled = 0;
-
-               CTxDOTOptionalDesignGirderData::AvailableStrandsInRow& ravrow = *avit;
-               for(std::vector<CTxDOTOptionalDesignGirderData::StrandIncrement>::iterator srit = ravrow.AvailableStrandIncrements.begin();
-                   srit != ravrow.AvailableStrandIncrements.end(); srit++)
-               {
-                  if (num_filled >= strands_in_row)
-                  {
-                     break;
-                  }
-
-                  StrandIndexType glob_idx = srit->GlobalFill;
-
-                  if (glob_idx > -1) // don't look at zero strands location
-                  {
-                     // Convert either to straight. Assume prismatic section
-                     Float64 xStrand(0),yStrand(0);
-                     CTxDOTOptionalDesignGirderData::GetGlobalStrandCoordinate(pGdrEntry, glob_idx, &xStrand, &yStrand);
-
-                     ASSERT(xStrand>0.0); // TxDOT doesn't typically use middle strands
-
-                     // Add straight strand to clone and update global index
-                     StrandIndexType stridx = clone_entry.AddStraightStrandCoordinates(xStrand,yStrand,xStrand,yStrand,false);
-
-                     clone_entry.AddStrandToPermStrandGrid(GirderLibraryEntry::stStraight, stridx-1);
-
-                     num_filled += xStrand>0.0 ? 2 : 1;
-                  }
-               }
-
-               straight_strands_to_fill += num_filled;
-
-               if (num_filled != strands_in_row)
-               {
-                  ASSERT(0);
-                  Float64 elev_in = ::ConvertFromSysUnits(row_elev, unitMeasure::Inch);
-                  TxDOTBrokerRetrieverException exc;
-                  exc.Message.Format(_T("Non-Standard strand input data tried and failed to fill %d strands at %.3f in. from the girder bottom. Input data does not match library."),strands_in_row,row_elev);
-                  throw exc;
-               }
-            }
-            else
-            {
-               Float64 elev_in = ::ConvertFromSysUnits(row_elev, unitMeasure::Inch);
-               TxDOTBrokerRetrieverException exc;
-               exc.Message.Format(_T("Non-Standard strand input data specified a strand at %.3f in. from the girder bottom. There are no stands at this location in the library."),elev_in);
-               throw exc;
-            }
-         }
-
-         // No harped strands and no need to adjust them
-         clone_entry.UseDifferentHarpedGridAtEnds(false);
-         clone_entry.AllowVerticalAdjustmentEnd(false);
-         clone_entry.AllowVerticalAdjustmentHP(false);
+         tot_chk += sit->StrandsInRow;
       }
+
+      if (tot_chk != nt_max)
+      {
+         TxDOTBrokerRetrieverException exc;
+         exc.Message = _T("The total number of strands in the generated library entry does not match the input number of strands. This is a programming error - Cannot continue.");
+         throw exc;
+      }
+
+      // We don't adjust strands for this case - they are where they need to be
+      clone_entry.UseDifferentHarpedGridAtEnds(true);
+      clone_entry.AllowVerticalAdjustmentEnd(false);
+      clone_entry.AllowVerticalAdjustmentHP(false);
 
       // We have our modified entry - now add it to the library and set our girder to reference it
       GET_IFACE(ILibrary, pLib );
@@ -1486,12 +1456,49 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
       pGroup->GetGirder(gdr)->SetGirderLibraryEntry(pclone);
 
       // Must set strands after library entry, otherwise data is reset
-      strands.NumPermStrandsType = CStrandData::npsTotal;
-
-      strands.Nstrands[pgsTypes::Permanent] = straight_strands_to_fill + harped_strands_to_fill;
-      strands.Nstrands[pgsTypes::Straight ] = straight_strands_to_fill;
-      strands.Nstrands[pgsTypes::Harped]    = harped_strands_to_fill;
+      strands.SetTotalPermanentNstrands(straight_strands_to_fill + harped_strands_to_fill, straight_strands_to_fill, harped_strands_to_fill);
    }
+   else if (fill_type == CTxDOTOptionalDesignGirderData::sfDirectFill)
+   {
+      std::_tstring girder_name = pGdrEntry->GetName();
+
+      // If girder entry has harped strands, we must make them straight in a cloned version
+      StrandIndexType nah = pGdrEntry->GetMaxHarpedStrands();
+      if(nah > 0)
+      {
+         GirderLibraryEntry clone_entry(*pGdrEntry);
+
+         MakeHarpedCloneStraight(pGdrEntry, &clone_entry);
+
+         // We have our modified entry - now add it to the library and set our girder to reference it
+         GET_IFACE(ILibrary, pLib );
+         GirderLibrary& rLibrary =  pLib->GetGirderLibrary();
+
+         std::_tstring clone_name = MakeCloneName(girder_name, gdr);
+    
+         while(!rLibrary.AddEntry(clone_entry, clone_name.c_str()))
+         {
+            // Name taken - create a new one (not pretty)
+            clone_name += _T("x");
+         }
+
+         // Use the clone for our model
+         girder_name = clone_name;
+         pGdrEntry = pLib->GetGirderEntry(clone_name.c_str());
+         ASSERT(pGdrEntry);
+      }
+
+      // Set to girder
+      pGroup->GetGirder(gdr)->SetGirderName(girder_name.c_str());
+      pGroup->GetGirder(gdr)->SetGirderLibraryEntry(pGdrEntry);
+
+      // Must set strands after library entry, otherwise data is reset
+      strands.SetDirectStrandFillStraight(pOdGirderData->GetDirectFilledStraightStrands());
+      strands.ClearDebondData();
+      strands.Debond[pgsTypes::Straight] = pOdGirderData->GetDirectFilledStraightDebond();
+   }
+   else
+      ATLASSERT(0);
 
    // Get Jacking 
    GET_IFACE(IPretensionForce, pPrestress );

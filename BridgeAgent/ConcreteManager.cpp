@@ -90,46 +90,49 @@ void CConcreteManager::ValidateConcrete()
    //
    //////////////////////////////////////////////////////////////////////////////
    const CDeckDescription2* pDeck = m_pBridgeDesc->GetDeckDescription();
-   Float64 modE;
-   if ( pDeck->Concrete.bUserEc )
+   if ( pDeck->DeckType != pgsTypes::sdtNone )
    {
-      modE = pDeck->Concrete.Ec;
-   }
-   else
-   {
-      modE = lrfdConcreteUtil::ModE(pDeck->Concrete.Fc, 
-                                    pDeck->Concrete.StrengthDensity, 
-                                    false /* ignore LRFD range checks */ );
-
-      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+      Float64 modE;
+      if ( pDeck->Concrete.bUserEc )
       {
-         modE *= (pDeck->Concrete.EcK1*pDeck->Concrete.EcK2);
+         modE = pDeck->Concrete.Ec;
       }
-   }
+      else
+      {
+         modE = lrfdConcreteUtil::ModE(pDeck->Concrete.Fc, 
+                                       pDeck->Concrete.StrengthDensity, 
+                                       false /* ignore LRFD range checks */ );
 
-   // save these parameters for later so we don't have to look them up every time they are needed
-   m_DeckEcK1        = pDeck->Concrete.EcK1;
-   m_DeckEcK2        = pDeck->Concrete.EcK2;
-   m_DeckCreepK1     = pDeck->Concrete.CreepK1;
-   m_DeckCreepK2     = pDeck->Concrete.CreepK2;
-   m_DeckShrinkageK1 = pDeck->Concrete.ShrinkageK1;
-   m_DeckShrinkageK2 = pDeck->Concrete.ShrinkageK2;
+         if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+         {
+            modE *= (pDeck->Concrete.EcK1*pDeck->Concrete.EcK2);
+         }
+      }
 
-   // Time dependent model
-   EventIndexType castDeckEventIdx  = m_pBridgeDesc->GetTimelineManager()->GetCastDeckEventIndex();
-   Float64   time_at_casting        = m_pBridgeDesc->GetTimelineManager()->GetStart(castDeckEventIdx);
-   Float64   age_at_initial_loading = m_pBridgeDesc->GetTimelineManager()->GetEventByIndex(castDeckEventIdx)->GetCastDeckActivity().GetConcreteAgeAtContinuity();
-   Float64   cure_time              = age_at_initial_loading;
+      // save these parameters for later so we don't have to look them up every time they are needed
+      m_DeckEcK1        = pDeck->Concrete.EcK1;
+      m_DeckEcK2        = pDeck->Concrete.EcK2;
+      m_DeckCreepK1     = pDeck->Concrete.CreepK1;
+      m_DeckCreepK2     = pDeck->Concrete.CreepK2;
+      m_DeckShrinkageK1 = pDeck->Concrete.ShrinkageK1;
+      m_DeckShrinkageK2 = pDeck->Concrete.ShrinkageK2;
+
+      // Time dependent model
+      EventIndexType castDeckEventIdx  = m_pBridgeDesc->GetTimelineManager()->GetCastDeckEventIndex();
+      Float64   time_at_casting        = m_pBridgeDesc->GetTimelineManager()->GetStart(castDeckEventIdx);
+      Float64   age_at_initial_loading = m_pBridgeDesc->GetTimelineManager()->GetEventByIndex(castDeckEventIdx)->GetCastDeckActivity().GetConcreteAgeAtContinuity();
+      Float64   cure_time              = age_at_initial_loading;
 #pragma Reminder("REVIEW: is this the correct V/S ratio for the deck?")
-   // can't get deck properties until the model is build... and that is what we are doing here so there is recursion
+      // can't get deck properties until the model is build... and that is what we are doing here so there is recursion
 
-   //Float64 vsDeck = pSectProp->GetTributaryDeckArea(poi)/pSectProp->GetTributaryFlangeWidth(poi);
-   Float64 vsDeck = 1.5;
-   // *NOTE* Only the top portion of the Deck is exposed to drying
+      //Float64 vsDeck = pSectProp->GetTributaryDeckArea(poi)/pSectProp->GetTributaryFlangeWidth(poi);
+      Float64 vsDeck = 1.5;
+      // *NOTE* Only the top portion of the Deck is exposed to drying
 
-   // modulus of rupture coefficients
-   Float64 time_step = time_at_casting + cure_time;
-   m_pDeckConc.reset( CreateConcreteModel(_T("Deck Concrete"),pDeck->Concrete,time_at_casting,cure_time,age_at_initial_loading,time_step,vsDeck) );
+      // modulus of rupture coefficients
+      Float64 time_step = time_at_casting + cure_time;
+      m_pDeckConc.reset( CreateConcreteModel(_T("Deck Concrete"),pDeck->Concrete,time_at_casting,cure_time,age_at_initial_loading,time_step,vsDeck) );
+   }
 
    //////////////////////////////////////////////////////////////////////////////
    //
@@ -138,9 +141,10 @@ void CConcreteManager::ValidateConcrete()
    //////////////////////////////////////////////////////////////////////////////
    EventIndexType railingSystemEventIdx = m_pBridgeDesc->GetTimelineManager()->GetRailingSystemLoadEventIndex();
    IntervalIndexType intervalIdx = pIntervals->GetInterval(railingSystemEventIdx);
-   time_at_casting = pIntervals->GetStart(intervalIdx);
-   age_at_initial_loading = 0.0; // assume railing system load is at full strength immediately
-   cure_time = 0.0;
+   Float64 time_at_casting = pIntervals->GetStart(intervalIdx);
+   Float64 age_at_initial_loading = 0.0; // assume railing system load is at full strength immediately
+   Float64 cure_time = 0.0;
+   Float64 modE;
 
    const CRailingSystem* pLeftRailingSystem = m_pBridgeDesc->GetLeftRailingSystem();
    if ( pLeftRailingSystem->Concrete.bUserEc )
@@ -159,7 +163,7 @@ void CConcreteManager::ValidateConcrete()
       }
    }
 
-   time_step = time_at_casting + cure_time;
+   Float64 time_step = time_at_casting + cure_time;
    m_pRailingConc[pgsTypes::tboLeft].reset( CreateConcreteModel(_T("Left Railing Concrete"), pLeftRailingSystem->Concrete,time_at_casting,cure_time,age_at_initial_loading,time_step,0.0) );
 
    const CRailingSystem* pRightRailingSystem = m_pBridgeDesc->GetRightRailingSystem();
@@ -295,93 +299,96 @@ void CConcreteManager::ValidateConcrete()
    }
 
    // Check Deck concrete
-   Float64 time = m_pDeckConc->GetTimeAtCasting() + m_pDeckConc->GetCureTime() + 28.0;
-   Float64 fc28 = m_pDeckConc->GetFc(time);
-   if ( fc28 < fcMin && !IsEqual(fc28,fcMin) )
+   if ( pDeck->DeckType != pgsTypes::sdtNone )
    {
-      std::_tstring strMsg;
-      strMsg = bSI ? _T("Deck concrete cannot be less than 28 MPa per LRFD 5.4.2.1") 
-                   : _T("Deck concrete cannot be less than 4 KSI per LRFD 5.4.2.1");
-      CSegmentKey dummyKey;
-      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::FinalStrength,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
-      pStatusCenter->Add(pStatusItem);
-      //strMsg += std::_tstring(_T("\nSee Status Center for Details"));
-      //THROW_UNWIND(strMsg.c_str(),-1);
-   }
+      Float64 time = m_pDeckConc->GetTimeAtCasting() + m_pDeckConc->GetCureTime() + 28.0;
+      Float64 fc28 = m_pDeckConc->GetFc(time);
+      if ( fc28 < fcMin && !IsEqual(fc28,fcMin) )
+      {
+         std::_tstring strMsg;
+         strMsg = bSI ? _T("Deck concrete cannot be less than 28 MPa per LRFD 5.4.2.1") 
+                      : _T("Deck concrete cannot be less than 4 KSI per LRFD 5.4.2.1");
+         CSegmentKey dummyKey;
+         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::FinalStrength,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
+         pStatusCenter->Add(pStatusItem);
+         //strMsg += std::_tstring(_T("\nSee Status Center for Details"));
+         //THROW_UNWIND(strMsg.c_str(),-1);
+      }
 
-   pgsTypes::ConcreteType slabConcreteType = (pgsTypes::ConcreteType)m_pDeckConc->GetType();
-   Float64 max_slab_fc = pLimits->GetMaxSlabFc(slabConcreteType);
-   if (  max_slab_fc < fc28 && !IsEqual(max_slab_fc,fc28) )
-   {
-      Float64 fcMax = ::ConvertFromSysUnits(max_slab_fc,pDisplayUnits->GetStressUnit().UnitOfMeasure);
-      std::_tostringstream os;
-      os << _T("Slab concrete strength exceeds the normal value of ") << fcMax << _T(" ") << pDisplayUnits->GetStressUnit().UnitOfMeasure.UnitTag();
+      pgsTypes::ConcreteType slabConcreteType = (pgsTypes::ConcreteType)m_pDeckConc->GetType();
+      Float64 max_slab_fc = pLimits->GetMaxSlabFc(slabConcreteType);
+      if (  max_slab_fc < fc28 && !IsEqual(max_slab_fc,fc28) )
+      {
+         Float64 fcMax = ::ConvertFromSysUnits(max_slab_fc,pDisplayUnits->GetStressUnit().UnitOfMeasure);
+         std::_tostringstream os;
+         os << _T("Slab concrete strength exceeds the normal value of ") << fcMax << _T(" ") << pDisplayUnits->GetStressUnit().UnitOfMeasure.UnitTag();
 
-      std::_tstring strMsg = os.str();
+         std::_tstring strMsg = os.str();
 
-      CSegmentKey dummyKey;
-      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::FinalStrength,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
-      pStatusCenter->Add(pStatusItem);
-   }
+         CSegmentKey dummyKey;
+         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::FinalStrength,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
+         pStatusCenter->Add(pStatusItem);
+      }
 
-   Float64 max_wc = pLimits->GetMaxConcreteUnitWeight(slabConcreteType);
-   Float64 MaxWc = ::ConvertFromSysUnits(max_wc,pDisplayUnits->GetDensityUnit().UnitOfMeasure);
+      Float64 max_wc = pLimits->GetMaxConcreteUnitWeight(slabConcreteType);
+      Float64 MaxWc = ::ConvertFromSysUnits(max_wc,pDisplayUnits->GetDensityUnit().UnitOfMeasure);
 
-   Float64 strength_density = m_pDeckConc->GetStrengthDensity();
-   if ( max_wc < strength_density && !IsEqual(max_wc,strength_density,0.0001) )
-   {
-      std::_tostringstream os;
-      os << _T("Slab concrete density for strength calculations exceeds the normal value of ") << MaxWc << _T(" ") << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
+      Float64 strength_density = m_pDeckConc->GetStrengthDensity();
+      if ( max_wc < strength_density && !IsEqual(max_wc,strength_density,0.0001) )
+      {
+         std::_tostringstream os;
+         os << _T("Slab concrete density for strength calculations exceeds the normal value of ") << MaxWc << _T(" ") << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
 
-      std::_tstring strMsg = os.str();
+         std::_tstring strMsg = os.str();
 
-      CSegmentKey dummyKey;
-      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::Density,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
-      pStatusCenter->Add(pStatusItem);
-   }
+         CSegmentKey dummyKey;
+         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::Density,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
+         pStatusCenter->Add(pStatusItem);
+      }
 
-   Float64 weight_density = m_pDeckConc->GetWeightDensity();
-   if ( max_wc < weight_density && !IsEqual(max_wc,weight_density,0.0001) )
-   {
-      std::_tostringstream os;
-      os << _T("Slab concrete density for weight calculations exceeds the normal value of ") << MaxWc << _T(" ") << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
+      Float64 weight_density = m_pDeckConc->GetWeightDensity();
+      if ( max_wc < weight_density && !IsEqual(max_wc,weight_density,0.0001) )
+      {
+         std::_tostringstream os;
+         os << _T("Slab concrete density for weight calculations exceeds the normal value of ") << MaxWc << _T(" ") << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
 
-      std::_tstring strMsg = os.str();
+         std::_tstring strMsg = os.str();
 
-      CSegmentKey dummyKey;
-      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::DensityForWeight,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
-      pStatusCenter->Add(pStatusItem);
-   }
+         CSegmentKey dummyKey;
+         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::DensityForWeight,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
+         pStatusCenter->Add(pStatusItem);
+      }
 
-   if ( !IsConcreteDensityInRange(strength_density, (pgsTypes::ConcreteType)m_pDeckConc->GetType()) )
-   {
-      std::_tostringstream os;
-      if ( m_pDeckConc->GetType() == pgsTypes::Normal )
-         os << _T("Slab concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
-      else
-         os << _T("Slab concrete density is out of range for Lightweight Concrete per LRFD 5.2.");
+      if ( !IsConcreteDensityInRange(strength_density, (pgsTypes::ConcreteType)m_pDeckConc->GetType()) )
+      {
+         std::_tostringstream os;
+         if ( m_pDeckConc->GetType() == pgsTypes::Normal )
+            os << _T("Slab concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
+         else
+            os << _T("Slab concrete density is out of range for Lightweight Concrete per LRFD 5.2.");
 
-      std::_tstring strMsg = os.str();
+         std::_tstring strMsg = os.str();
 
-      CSegmentKey dummyKey;
-      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::Density,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
-      pStatusCenter->Add(pStatusItem);
-   }
+         CSegmentKey dummyKey;
+         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::Density,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
+         pStatusCenter->Add(pStatusItem);
+      }
 
-   Float64 max_agg_size = pLimits->GetMaxConcreteAggSize(slabConcreteType);
-   Float64 MaxAggSize = ::ConvertFromSysUnits(max_agg_size,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+      Float64 max_agg_size = pLimits->GetMaxConcreteAggSize(slabConcreteType);
+      Float64 MaxAggSize = ::ConvertFromSysUnits(max_agg_size,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
-   Float64 agg_size = m_pDeckConc->GetMaxAggregateSize();
-   if ( max_agg_size < agg_size && !IsEqual(max_agg_size,agg_size))
-   {
-      std::_tostringstream os;
-      os << _T("Slab concrete aggregate size exceeds the normal value of ") << MaxAggSize << _T(" ") << pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag();
+      Float64 agg_size = m_pDeckConc->GetMaxAggregateSize();
+      if ( max_agg_size < agg_size && !IsEqual(max_agg_size,agg_size))
+      {
+         std::_tostringstream os;
+         os << _T("Slab concrete aggregate size exceeds the normal value of ") << MaxAggSize << _T(" ") << pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag();
 
-      std::_tstring strMsg = os.str();
+         std::_tstring strMsg = os.str();
 
-      CSegmentKey dummyKey;
-      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::AggSize,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
-      pStatusCenter->Add(pStatusItem);
+         CSegmentKey dummyKey;
+         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::AggSize,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
+         pStatusCenter->Add(pStatusItem);
+      }
    }
 
 
@@ -901,37 +908,55 @@ Float64 CConcreteManager::GetClosurePourShrinkageK2(const CSegmentKey& closureKe
 pgsTypes::ConcreteType CConcreteManager::GetDeckConcreteType()
 {
    ValidateConcrete();
-   return (pgsTypes::ConcreteType)m_pDeckConc->GetType();
+   if ( m_pDeckConc.get() != NULL )
+      return (pgsTypes::ConcreteType)m_pDeckConc->GetType();
+   else
+      return pgsTypes::Normal;
 }
 
 bool CConcreteManager::DoesDeckConcreteHaveAggSplittingStrength()
 {
    ValidateConcrete();
-   return m_pDeckConc->HasAggSplittingStrength();
+   if ( m_pDeckConc.get() != NULL )
+      return m_pDeckConc->HasAggSplittingStrength();
+   else
+      return false;
 }
 
 Float64 CConcreteManager::GetDeckConcreteAggSplittingStrength()
 {
    ValidateConcrete();
-   return m_pDeckConc->GetAggSplittingStrength();
+   if ( m_pDeckConc.get() != NULL )
+      return m_pDeckConc->GetAggSplittingStrength();
+   else
+      return 0;
 }
 
 Float64 CConcreteManager::GetDeckStrengthDensity()
 {
    ValidateConcrete();
-   return m_pDeckConc->GetStrengthDensity();
+   if ( m_pDeckConc.get() != NULL )
+      return m_pDeckConc->GetStrengthDensity();
+   else
+      return 0;
 }
 
 Float64 CConcreteManager::GetDeckWeightDensity()
 {
    ValidateConcrete();
-   return m_pDeckConc->GetWeightDensity();
+   if ( m_pDeckConc.get() != NULL )
+      return m_pDeckConc->GetWeightDensity();
+   else
+      return 0;
 }
 
 Float64 CConcreteManager::GetDeckMaxAggrSize()
 {
    ValidateConcrete();
-   return m_pDeckConc->GetMaxAggregateSize();
+   if ( m_pDeckConc.get() != NULL )
+      return m_pDeckConc->GetMaxAggregateSize();
+   else
+      return 0;
 }
 
 Float64 CConcreteManager::GetDeckEccK1()
@@ -1106,43 +1131,64 @@ Float64 CConcreteManager::GetShearFrCoefficient(const CSegmentKey& segmentKey)
 Float64 CConcreteManager::GetDeckCastingTime()
 {
    ValidateConcrete();
-   return m_pDeckConc->GetTimeAtCasting();
+   if ( m_pDeckConc.get() != NULL )
+      return m_pDeckConc->GetTimeAtCasting();
+   else
+      return 0;
 }
 
 Float64 CConcreteManager::GetDeckFc(Float64 t)
 {
    ValidateConcrete();
-   return m_pDeckConc->GetFc(t);
+   if ( m_pDeckConc.get() != NULL )
+      return m_pDeckConc->GetFc(t);
+   else
+      return 0;
 }
 
 Float64 CConcreteManager::GetDeckEc(Float64 t)
 {
    ValidateConcrete();
-   return m_pDeckConc->GetEc(t);
+   if ( m_pDeckConc.get() != NULL )
+      return m_pDeckConc->GetEc(t);
+   else
+      return 0;
 }
 
 Float64 CConcreteManager::GetDeckFlexureFr(Float64 t)
 {
    ValidateConcrete();
-   return m_pDeckConc->GetFlexureFr(t);
+   if ( m_pDeckConc.get() != NULL )
+      return m_pDeckConc->GetFlexureFr(t);
+   else
+      return 0;
 }
 
 Float64 CConcreteManager::GetDeckShearFr(Float64 t)
 {
    ValidateConcrete();
-   return m_pDeckConc->GetShearFr(t);
+   if ( m_pDeckConc.get() != NULL )
+      return m_pDeckConc->GetShearFr(t);
+   else
+      return 0;
 }
 
 Float64 CConcreteManager::GetDeckFreeShrinkageStrain(Float64 t)
 {
    ValidateConcrete();
-   return m_pDeckConc->GetFreeShrinkageStrain(t);
+   if ( m_pDeckConc.get() != NULL )
+      return m_pDeckConc->GetFreeShrinkageStrain(t);
+   else
+      return 0;
 }
 
 Float64 CConcreteManager::GetDeckCreepCoefficient(Float64 t,Float64 tla)
 {
    ValidateConcrete();
-   return m_pDeckConc->GetCreepCoefficient(t,tla);
+   if ( m_pDeckConc.get() != NULL )
+      return m_pDeckConc->GetCreepCoefficient(t,tla);
+   else
+      return 0;
 }
 
 Float64 CConcreteManager::GetSegmentCastingTime(const CSegmentKey& segmentKey)

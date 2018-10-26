@@ -27,7 +27,7 @@
 #include <IFace\Bridge.h>
 #include <PgsExt\GirderLabel.h>
 #include <PgsExt\DesignArtifact.h>
-#include <DesignConfigUtil.h>
+#include <PgsExt\DesignConfigUtil.h>
 #include <EAF\EAFUtilities.h>
 #include <IFace\Intervals.h>
 

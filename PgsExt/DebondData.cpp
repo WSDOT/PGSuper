@@ -67,7 +67,7 @@ HRESULT CDebondData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
 HRESULT CDebondData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("DebondInfo"),1.0);
+   pStrSave->BeginUnit(_T("DebondInfo"),2.0);
    pStrSave->put_Property(_T("Strand"),    CComVariant(strandTypeGridIdx));
    pStrSave->put_Property(_T("Length1"),    CComVariant(Length1));
    pStrSave->put_Property(_T("Length2"),    CComVariant(Length2));

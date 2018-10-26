@@ -1108,8 +1108,6 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    Float64 left_curb_offset  = pBridge->GetLeftCurbOffset(cut_dist_from_start);
    Float64 right_curb_offset = pBridge->GetRightCurbOffset(cut_dist_from_start);
 
-   Float64 cpo = pAlignment->GetCrownPointOffset(cut_station);
-
    CComPtr<IDirection> normal;
    pAlignment->GetBearingNormal(cut_station,&normal);
 
@@ -1120,8 +1118,8 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    if ( left_shape )
    {
       // rotate the shape to match the crown slope
-      Float64 slope = ::BinarySign(cpo-left_curb_offset)*pAlignment->GetCrownSlope(cut_station,left_curb_offset);
-      Float64 angle = -atan(slope);
+      Float64 slope = pAlignment->GetCrownSlope(cut_station,left_curb_offset);
+      Float64 angle = atan(slope);
 
       // Rotate shape around edge of deck - this is where barrier origin is placed
       Float64 left_offset = pBridge->GetLeftSlabEdgeOffset(cut_dist_from_start);
@@ -1160,7 +1158,7 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    if ( right_shape )
    {
       // rotate the shape to match the crown slope
-      Float64 slope = ::BinarySign(right_curb_offset-cpo)*pAlignment->GetCrownSlope(cut_station,right_curb_offset);
+      Float64 slope = pAlignment->GetCrownSlope(cut_station,right_curb_offset);
       Float64 angle = atan(slope);
       CComQIPtr<IXYPosition> position(right_shape);
       CComPtr<IPoint2d> hook_point;

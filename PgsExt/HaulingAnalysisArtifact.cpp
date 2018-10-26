@@ -23,6 +23,8 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\HaulingAnalysisArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
+#include <PgsExt\SplicedGirderData.h>
+#include <PgsExt\GirderLabel.h>
 
 #include "PGSuperUnits.h"
 
@@ -779,6 +781,15 @@ void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentK
    INIT_UV_PROTOTYPE( rptLength4UnitValue, mom_I,  pDisplayUnits->GetMomentOfInertiaUnit(),         true );
 
    //location.IncludeSpanAndGirder(span == ALL_SPANS);
+
+   GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
+   SegmentIndexType nSegments = pBridgeDesc->GetGirder(segmentKey)->GetSegmentCount();
+   if ( 1 < nSegments )
+   {
+      rptParagraph* p = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle() );
+      *pChapter << p;
+      *p << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << rptNewLine;
+   }
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
@@ -1599,6 +1610,18 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(const CSegmentKey
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << _T("Check for Hauling to Bridge Site [5.5.4.3]")<<rptNewLine;
+
+   GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
+   SegmentIndexType nSegments = pBridgeDesc->GetGirder(segmentKey)->GetSegmentCount();
+   if ( 1 < nSegments )
+   {
+      rptParagraph* p = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle() );
+      *pChapter << p;
+      *p << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << rptNewLine;
+   }
+
+   pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   *pChapter << pTitle;
    *pTitle << _T("Hauling Stresses for Plumb Girder With Impact, and Factor of Safety Against Cracking")<<rptNewLine;
 
    rptRcScalar scalar;
@@ -1768,7 +1791,7 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(const CSegmentKey
       (*p_table)(row,col++) << stress.SetValue(fTopMin);
       (*p_table)(row,col++) << stress.SetValue(fBotMin);
 
-      if (fTensTop>0)
+      if (0 < fTensTop)
       {
          (*p_table)(row,col++) << stress.SetValue(tensCapacityTop);
       }
@@ -1777,7 +1800,7 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(const CSegmentKey
          (*p_table)(row,col++) << _T("-");
       }
 
-      if (fTensBottom>0)
+      if (0 < fTensBottom)
       {
          (*p_table)(row,col++) << stress.SetValue(tensCapacityBottom);
       }
@@ -1932,7 +1955,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildOtherTables(rptChapter* pChapter,
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(2,_T(""));
+   rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(2);
    p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    p_table->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT));
@@ -1960,7 +1983,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildOtherTables(rptChapter* pChapter,
    p = new rptParagraph;
    *pChapter << p;
 
-   p_table = pgsReportStyleHolder::CreateTableNoHeading(2,_T(""));
+   p_table = pgsReportStyleHolder::CreateTableNoHeading(2);
    p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    p_table->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT));
@@ -1991,7 +2014,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildOtherTables(rptChapter* pChapter,
    p = new rptParagraph;
    *pChapter << p;
 
-   p_table = pgsReportStyleHolder::CreateTableNoHeading(2,_T(""));
+   p_table = pgsReportStyleHolder::CreateTableNoHeading(2);
    p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    p_table->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT));
@@ -2023,7 +2046,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildOtherTables(rptChapter* pChapter,
    p = new rptParagraph;
    *pChapter << p;
 
-   p_table = pgsReportStyleHolder::CreateTableNoHeading(2,_T(""));
+   p_table = pgsReportStyleHolder::CreateTableNoHeading(2);
    p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    p_table->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT));

@@ -57,14 +57,10 @@ rptChapter* CLiftingCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IArtifact,pArtifacts);
-
-   const pgsGirderArtifact* pGirderArtifact = pArtifacts->GetGirderArtifact(girderKey);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   CLiftingCheck check;
-   check.Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
+   CLiftingCheck().Build(pChapter,pBroker,girderKey,pDisplayUnits);
 
    return pChapter;
 }

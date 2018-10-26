@@ -317,8 +317,13 @@ Float64 CClosurePourData::GetSlabOffset() const
    }
    else
    {
+      if ( m_pGirder->GetGirderGroup()->GetBridgeDescription()->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
+         return 0;
+
       return m_SlabOffset;
    }
+
+   ATLASSERT(false); // should never get here
 }
 
 void CClosurePourData::SetConcrete(const CConcreteMaterial& concrete)

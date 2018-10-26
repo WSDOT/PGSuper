@@ -793,6 +793,11 @@ void CPierGirderSpacingPage::UpdateGirderSpacingState(pgsTypes::PierFaceType pie
    m_cbGirderSpacingMeasurement[pierFace].EnableWindow(bEnable);
    m_GirderSpacingGrid[pierFace].Enable(bEnable);
 
+   if ( IsBridgeSpacing(m_SpacingType) )
+      bEnable = FALSE;
+   else
+      bEnable = TRUE;
+
    if ( pierFace == pgsTypes::Back )
    {
       GetDlgItem(IDC_PREV_SPAN_SPACING_LABEL)->EnableWindow(       bEnable );
@@ -823,10 +828,6 @@ void CPierGirderSpacingPage::UpdateCopyButtonState(BOOL bEnable)
    {
       bEnable = FALSE; // nothing to copy if same girder spacing for entire bridge
    }
-
-   if ( !m_GirderSpacingGrid[pgsTypes::Ahead].InputSpacing() || !m_GirderSpacingGrid[pgsTypes::Back].InputSpacing() )
-      bEnable = FALSE; // spacing range is zero so there isn't any spacing to input
-
 
    GetDlgItem(IDC_BACK_COPY)->EnableWindow(bEnable);
    GetDlgItem(IDC_AHEAD_COPY)->EnableWindow(bEnable);
@@ -1223,11 +1224,28 @@ void CPierGirderSpacingPage::UpdateGirderSpacingHyperLinkText()
 
    m_GirderSpacingHyperLink[pgsTypes::Back].SetWindowText(strBackSpacingNote);
    m_GirderSpacingHyperLink[pgsTypes::Back].SetURL(strGirderSpacingURL);
-   m_GirderSpacingHyperLink[pgsTypes::Back].EnableWindow(bEnable);
 
    m_GirderSpacingHyperLink[pgsTypes::Ahead].SetWindowText(strAheadSpacingNote);
    m_GirderSpacingHyperLink[pgsTypes::Ahead].SetURL(strGirderSpacingURL);
-   m_GirderSpacingHyperLink[pgsTypes::Ahead].EnableWindow(bEnable);
+
+   if ( ::IsBridgeSpacing(m_SpacingType) )
+      bEnable = FALSE;
+   else
+      bEnable = TRUE;
+
+   GetDlgItem(IDC_PREV_REF_GIRDER_LABEL)->EnableWindow(         bEnable );
+   GetDlgItem(IDC_PREV_REF_GIRDER)->EnableWindow(               bEnable );
+   GetDlgItem(IDC_PREV_REF_GIRDER_FROM)->EnableWindow(          bEnable );
+   GetDlgItem(IDC_PREV_REF_GIRDER_OFFSET)->EnableWindow(        bEnable );
+   GetDlgItem(IDC_PREV_REF_GIRDER_OFFSET_UNIT)->EnableWindow(   bEnable );
+   GetDlgItem(IDC_PREV_REF_GIRDER_OFFSET_TYPE)->EnableWindow(   bEnable );
+
+   GetDlgItem(IDC_NEXT_REF_GIRDER_LABEL)->EnableWindow(         bEnable );
+   GetDlgItem(IDC_NEXT_REF_GIRDER)->EnableWindow(               bEnable );
+   GetDlgItem(IDC_NEXT_REF_GIRDER_FROM)->EnableWindow(          bEnable );
+   GetDlgItem(IDC_NEXT_REF_GIRDER_OFFSET)->EnableWindow(        bEnable );
+   GetDlgItem(IDC_NEXT_REF_GIRDER_OFFSET_UNIT)->EnableWindow(   bEnable );
+   GetDlgItem(IDC_NEXT_REF_GIRDER_OFFSET_TYPE)->EnableWindow(   bEnable );
 }
 
 void CPierGirderSpacingPage::UpdateSlabOffsetHyperLinkText()

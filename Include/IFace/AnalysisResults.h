@@ -78,8 +78,10 @@ enum ProductForceType
 enum LoadingCombination
 { 
    lcDC, 
-   lcDW,
-   lcDWRating,
+   lcDW,        // total DW
+   lcDWRating,  // DW for loading rating
+   lcDWp,       // DW for permanent loads only
+   lcDWf,       // DW for future loads only
    lcCR,
    lcSH,
    lcPS

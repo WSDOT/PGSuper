@@ -14,17 +14,18 @@
 
 <meta http-equiv=content-type content="text/html; charset=windows-1252">
 <meta name="template" content="TxDOTTopicTemplate.htt">
+<meta name=topic-check-list content="Ran Smart Index">
 <meta name=generator content="RoboHELP by eHelp Corporation - www.ehelp.com">
 <meta name=generator-major-version content=0.1>
 <meta name=generator-minor-version content=1>
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1104>
-<meta name=layout-width content=1333>
+<meta name=layout-height content=1315>
+<meta name=layout-width content=1234>
 
 
- <meta name="topic-check-list" content="Ran Smart Index"><!--(Links)=========================================================-->
+<!--(Links)=========================================================-->
 
 <link rel="StyleSheet" href="default.css">
 
@@ -41,7 +42,10 @@
 <h1>Girder Input Tab</h1>
 
 <p>This tab defines prestressing and concrete strength design parameters 
- for the Original Girder Design and the Fabricator Optional Girder Design</p>
+ for the Original Girder Design and the Fabricator Optional Girder Design.</p>
+
+<p class=Tip>Note: This tab can not be accessed until all data on the Bridge 
+ Input tab has been filled out correctly.</p>
 
 <h2>Original Girder Design, and Fabricator Optional Girder Design</h2>
 
@@ -87,7 +91,7 @@
 			border-right-style: None;
 			border-top-style: None;"
 	width=412px>
-<p>Input the release strength, f'ci, for the girder concrete.</td></tr>
+<p>Input the release strength, f'ci, for the girder concrete in KSI</td></tr>
 
 <tr style="x-cell-content-align: top;"
 	valign=top>
@@ -109,23 +113,27 @@
 			border-right-style: None;"
 	width=412px>
 <p>This is the crushing strength, or final compressive strength, for the 
- material as defined by most common specifications. This strength is normally 
- defined as the stress value at a strain of 0.003 at 28 days.</td></tr>
+ material as defined by most common specifications in KSI. This strength 
+ is normally defined as the stress value at a strain of 0.003 at 28 days.</td></tr>
 </table>
 
 <h2>Strand Fill Information</h2>
 
-<p>Strands may be filled using the standard fill sequence, or using a row-by-row 
- definition. Use the check boxes to select a standard fill sequence, row-by-row 
- with harped strands, or row-by-row using all straight strands. The number 
- of strand information and available rows are populated automatically from 
- the current girder type.</p>
+<p>Strands may be filled using the standard fill sequence, a row-by-row 
+ non-standard definition, or by direct selection of strand locations. Use 
+ the combo box to select the fill type. The number of strand information 
+ and available rows are populated automatically for the current beam type.</p>
 
-<h3>Standard Strand Fill</h3>
+<p>Strand locations may be viewed on the <a href="Girder_View_Tab.htm">Girder 
+ View Tab</a> <!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}-->once 
+ all input data on this tab has been validated.</p>
 
-<p>If the Standard Strand Fill option is checked, strands are filled in 
- the order defined on TxDOT standard precast design plan sheets for the 
- selected girder type (e.g., IBND sheets) as quoted below:</p>
+<h3>Standard Sequential Strand Fill</h3>
+
+<p>This is the simplest way to define strand fill. If the Standard Sequential 
+ Strand Fill option is selected, strands are filled in the order defined 
+ by the TxDOT standard precast design plan sheets for the selected girder 
+ type (e.g., IBND sheets). For example, as quoted below:</p>
 
 <p style="font-style: italic; text-align: center;"
 	align=center>“For depressed strand designed beams, strands shall be 
@@ -137,8 +145,8 @@
  the 2&quot; spacing so that, at the beam ends, the upper two strands are 
  in the position shown in the table.”</p>
 
-<p>The actual fill order is taken from the TxDOT PGSuper Master library. 
- This is the simplest way to define strand fill.</p>
+<p>The actual fill order is defined in the TxDOT PGSuper Master library. 
+ </p>
 
 <!--(Table)=========================================================-->
 <table x-use-null-cells
@@ -206,7 +214,7 @@
 			border-right-style: None;
 			border-left-style: None;"
 	width=112px>
-<p style="font-weight: bold; text-align: right;"
+<p style="text-align: right; font-weight: bold;"
 	align=right>Compute Eccentricity</td>
 <td style="width: 412px;
 			padding-right: 10px;
@@ -218,31 +226,43 @@
  data</td></tr>
 </table>
 
-<h3>Non-Standard Strand Fill</h3>
+<h3>Non-Standard Strand Fill with Depressed Strands</h3>
 
-<p>If the Standard Strand Fill option is unchecked, strands may be filled 
- using a row-by-row description. Select the number of strands to be placed 
- in each row using the available locations listed in the combo boxes.</p>
+<p>This option is available only if the current girder contains depressed 
+ strands. If the Non-Standard Strand Fill with Depressed Strands is selected, 
+ strands may be filled using a row-by-row description. Select the number 
+ of strands to be placed in each row using the available locations listed 
+ in the combo boxes.</p>
 
 <p>The strand row locations are measured from the bottom of the girder. 
  Available rows and number of strands per row are based on the permanent 
  strand locations defined in PGSuper's girder library entry for the given 
  girder type. The fill sequence in each row is defined by the relative 
- fill order within the library entry. The row locations cannot be edited.</p>
+ fill order within the library entry. The row locations cannot be edited. 
+ </p>
 
-<p>If &quot;Use Depressed Strands&quot; is checked, two input grids of 
- strand rows are presented, one representing strand locations at the girder 
- ends, and one representing strand locations at the centerline between 
- the hold-down points. Note that the number of straight strands and number 
- of harped strands at both locations must match in order for the fill data 
- to be valid.</p>
+<p>Two input grids of strand rows are presented, one representing strand 
+ locations at the girder ends, and one representing strand locations at 
+ the centerline between the hold-down points. Note that the number of straight 
+ strands and number of harped strands at both locations must match in order 
+ for the fill data to be valid.</p>
 
-<p>If &quot;Use Depressed Strands&quot; is left unchecked, then the girder 
- is filled with all straight strands using a single input grid.</p>
+<h3>Non-Standard Direct Strand Fill of Straight Strands</h3>
 
-<p>Strand locations may be viewed on the <a href="Girder_View_Tab.htm">Girder 
- View Tab</a> <!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}-->once 
- the input data has been validated.</p>
+<p>Select this option to fill straight strands non-sequentially by directly 
+ selecting the individual strand locations to be filled.</p>
+
+<p><span style="font-weight: bold;">Note: </span>Beam types with depressed 
+ strands will be modified as follows for the direct fill option:</p>
+
+<ul style="list-style: disc;"
+	type=disc>
+	
+	<li class=kadov-p><p>All depressed strand locations are converted to 
+ straight, non-debondable.</p></li>
+	
+	<li class=kadov-p><p>Straight strand locations are made debondable.</p></li>
+</ul>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

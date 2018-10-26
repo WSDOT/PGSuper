@@ -1228,13 +1228,16 @@ void CBridgeDescription::SetSlabOffset(Float64 slabOffset)
 
 Float64 CBridgeDescription::GetSlabOffset() const
 {
+   if ( m_Deck.DeckType == pgsTypes::sdtNone )
+      return 0;
+
    return m_SlabOffset;
 }
 
 Float64 CBridgeDescription::GetMaxSlabOffset() const
 {
    if ( m_SlabOffsetType == pgsTypes::sotBridge )
-      return m_SlabOffset;
+      return GetSlabOffset();
 
    const CSpanData* pSpan = GetSpan(0);
    Float64 maxSlabOffset = 0;

@@ -126,10 +126,10 @@ void CCombinedReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
          BuildLiveLoad(pBroker, pChapter, girderKey, pDisplayUnits, analysisType, tableType, true, false, true);
 
       if (bDesign)
-         BuildLimitStateTable(pBroker, pChapter, girderKey, true, pDisplayUnits, analysisType, tableType, true, false);
+         BuildLimitStateTable(pBroker, pChapter, girderKey, true, pDisplayUnits, intervalIdx, analysisType, tableType, true, false);
 
       if (bRating)
-         BuildLimitStateTable(pBroker, pChapter, girderKey, true, pDisplayUnits, analysisType, tableType, false, true);
+         BuildLimitStateTable(pBroker, pChapter, girderKey, true, pDisplayUnits, intervalIdx, analysisType, tableType, false, true);
    }
 }
 
@@ -148,11 +148,11 @@ void CCombinedReactionTable::BuildForBearingDesign(IBroker* pBroker, rptChapter*
    {
       // first no impact
       BuildLiveLoad(pBroker, pChapter, girderKey, pDisplayUnits, analysisType, tableType, false, true, false);
-      BuildLimitStateTable(pBroker, pChapter, girderKey, false, pDisplayUnits, analysisType, tableType, true, false);
+      BuildLimitStateTable(pBroker, pChapter, girderKey, false, pDisplayUnits, intervalIdx, analysisType, tableType, true, false);
 
       // with impact
       BuildLiveLoad(pBroker, pChapter, girderKey, pDisplayUnits, analysisType, tableType, true, true, false);
-      BuildLimitStateTable(pBroker, pChapter, girderKey, true, pDisplayUnits, analysisType, tableType, true, false);
+      BuildLimitStateTable(pBroker, pChapter, girderKey, true, pDisplayUnits, intervalIdx, analysisType, tableType, true, false);
    }
 }
 
@@ -170,7 +170,7 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
    rptRcTable* p_table = 0;
    
    GET_IFACE2(pBroker,IBridge,pBridge);
-
+   PierIndexType nPiers = pBridge->GetPierCount();
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -251,147 +251,81 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
          continue; // don't report piers that have no bearing information
       }
 
-      if (pier == 0 || pier == pBridge->GetPierCount()-1 )
+      if (pier == 0 || pier == nPiers-1 )
          (*p_table)(row,0) << _T("Abutment ") << LABEL_PIER(pier);
       else
          (*p_table)(row,0) << _T("Pier ") << LABEL_PIER(pier);
 
-      //if ( intervalIdx < castDeckIntervalIdx )
-      //{
-      //   (*p_table)(row,1) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
-      //   pILsForces->GetReaction( pgsTypes::ServiceI, intervalIdx, pier, thisGirderKey, maxBAT, true, &min, &max );
-      //   (*p_table)(row,2) << reaction.SetValue( max );
-      //}
-      //else// if ( intervalIdx == castDeckIntervalIdx )
-      //{
-         ColumnIndexType col = 1;
-         if ( analysisType == pgsTypes::Envelope /*&& continuityIntervalIdx == castDeckIntervalIdx*/ )
+      ColumnIndexType col = 1;
+      if ( analysisType == pgsTypes::Envelope /*&& continuityIntervalIdx == castDeckIntervalIdx*/ )
+      {
+         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
+         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, thisGirderKey, ctIncremental, minBAT ) );
+         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
+         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, thisGirderKey, ctIncremental, minBAT ) );
+
+         if ( bTimeStepMethod )
          {
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, thisGirderKey, ctIncremental, minBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, thisGirderKey, ctIncremental, minBAT ) );
-
-            if ( bTimeStepMethod )
-            {
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, pier, thisGirderKey, ctIncremental, minBAT ) );
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, pier, thisGirderKey, ctIncremental, minBAT ) );
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, pier, thisGirderKey, ctIncremental, minBAT ) );
-            }
-
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, thisGirderKey, ctCummulative, minBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, thisGirderKey, ctCummulative, minBAT ) );
-
-            if ( bTimeStepMethod )
-            {
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, pier, thisGirderKey, ctCummulative, minBAT ) );
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, pier, thisGirderKey, ctCummulative, minBAT ) );
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, pier, thisGirderKey, ctCummulative, minBAT ) );
-            }
-
-            if ( intervalIdx < liveLoadIntervalIdx )
-            {
-               pILsForces->GetReaction( pgsTypes::ServiceI, intervalIdx, pier, thisGirderKey, maxBAT, true, &min, &max );
-               (*p_table)(row,col++) << reaction.SetValue( max );
-
-               pILsForces->GetReaction( pgsTypes::ServiceI, intervalIdx, pier, thisGirderKey, minBAT,true,  &min, &max );
-               (*p_table)(row,col++) << reaction.SetValue( min );
-            }
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, pier, thisGirderKey, ctIncremental, minBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, pier, thisGirderKey, ctIncremental, minBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, pier, thisGirderKey, ctIncremental, minBAT ) );
          }
-         else
+
+         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
+         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, thisGirderKey, ctCummulative, minBAT ) );
+         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
+         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, thisGirderKey, ctCummulative, minBAT ) );
+
+         if ( bTimeStepMethod )
          {
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
-
-            if ( bTimeStepMethod )
-            {
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
-            }
-
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
-
-            if ( bTimeStepMethod )
-            {
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
-            }
-
-            if ( intervalIdx < liveLoadIntervalIdx )
-            {
-               pILsForces->GetReaction( pgsTypes::ServiceI, intervalIdx, pier, thisGirderKey, maxBAT, true, &min, &max );
-               (*p_table)(row,col++) << reaction.SetValue( max );
-            }
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, pier, thisGirderKey, ctCummulative, minBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, pier, thisGirderKey, ctCummulative, minBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, pier, thisGirderKey, ctCummulative, minBAT ) );
          }
-      //}
-#pragma Reminder("OBSOLETE: remove obsolete code")
-      //else if ( intervalIdx == compositeDeckIntervalIdx )
-      //{
-      //   ColumnIndexType col = 1;
 
-      //   if ( analysisType == pgsTypes::Envelope )
-      //   {
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, segmentKey, ctIncremental, maxBAT ) );
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, segmentKey, ctIncremental, minBAT ) );
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, segmentKey, ctIncremental, maxBAT ) );
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, segmentKey, ctIncremental, minBAT ) );
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, segmentKey, ctCummulative, maxBAT ) );
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, segmentKey, ctCummulative, minBAT ) );
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, segmentKey, ctCummulative, maxBAT ) );
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, segmentKey, ctCummulative, minBAT ) );
+         if ( intervalIdx < liveLoadIntervalIdx )
+         {
+            pILsForces->GetReaction( pgsTypes::ServiceI, intervalIdx, pier, thisGirderKey, maxBAT, true, &min, &max );
+            (*p_table)(row,col++) << reaction.SetValue( max );
 
-      //      pILsForces->GetReaction( pgsTypes::ServiceI, intervalIdx, pier, segmentKey, maxBAT, true, &min, &max );
-      //      (*p_table)(row,col++) << reaction.SetValue( max );
+            pILsForces->GetReaction( pgsTypes::ServiceI, intervalIdx, pier, thisGirderKey, minBAT,true,  &min, &max );
+            (*p_table)(row,col++) << reaction.SetValue( min );
+         }
+      }
+      else
+      {
+         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
+         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
 
-      //      pILsForces->GetReaction( pgsTypes::ServiceI, intervalIdx, pier, segmentKey, minBAT, true, &min, &max );
-      //      (*p_table)(row,col++) << reaction.SetValue( min );
-      //   }
-      //   else
-      //   {
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, segmentKey, ctIncremental, maxBAT ) );
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, segmentKey, ctIncremental, maxBAT ) );
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, segmentKey, ctCummulative, maxBAT ) );
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, segmentKey, ctCummulative, maxBAT ) );
+         if ( bTimeStepMethod )
+         {
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, pier, thisGirderKey, ctIncremental, maxBAT ) );
+         }
 
-      //      pILsForces->GetReaction( pgsTypes::ServiceI, intervalIdx, pier, segmentKey, maxBAT, true, &min, &max );
-      //      (*p_table)(row,col++) << reaction.SetValue( max );
-      //   }
+         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
+         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
 
-      //}
-      //else if ( intervalIdx == liveLoadIntervalIdx )
-      //{
-      //   ColumnIndexType col = 1;
+         if ( bTimeStepMethod )
+         {
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcCR, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcSH, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcPS, intervalIdx, pier, thisGirderKey, ctCummulative, maxBAT ) );
+         }
 
-      //   if ( analysisType == pgsTypes::Envelope )
-      //   {
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, segmentKey, ctIncremental, maxBAT ) );
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, segmentKey, ctIncremental, minBAT ) );
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, segmentKey, ctIncremental, maxBAT ) );
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, segmentKey, ctIncremental, minBAT ) );
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, segmentKey, ctCummulative, maxBAT ) );
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, segmentKey, ctCummulative, minBAT ) );
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, segmentKey, ctCummulative, maxBAT ) );
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, segmentKey, ctCummulative, minBAT ) );
-      //   }
-      //   else
-      //   {
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, segmentKey, ctIncremental, maxBAT ) );
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, segmentKey, ctIncremental, maxBAT ) );
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( lcDC, intervalIdx, pier, segmentKey, ctCummulative, maxBAT ) );
-      //      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( bRating ? lcDWRating : lcDW, intervalIdx, pier, segmentKey, ctCummulative, maxBAT ) );
-      //   }
-      //}
+         if ( intervalIdx < liveLoadIntervalIdx )
+         {
+            pILsForces->GetReaction( pgsTypes::ServiceI, intervalIdx, pier, thisGirderKey, maxBAT, true, &min, &max );
+            (*p_table)(row,col++) << reaction.SetValue( max );
+         }
+      }
 
       row++;
    }
@@ -413,6 +347,7 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
    INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDisplayUnits->GetShearUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
+   PierIndexType nPiers = pBridge->GetPierCount();
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -484,7 +419,7 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
          continue; // don't report piers that have no bearing information
       }
 
-      if (pier == 0 || pier == pBridge->GetPierCount()-1 )
+      if (pier == 0 || pier == nPiers-1 )
          (*p_table)(row,0) << _T("Abutment ") << LABEL_PIER(pier);
       else
          (*p_table)(row,0) << _T("Pier ") << LABEL_PIER(pier);
@@ -740,15 +675,13 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
 
 void CCombinedReactionTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
                                          const CGirderKey& girderKey, bool includeImpact,
-                                         IEAFDisplayUnits* pDisplayUnits,
+                                         IEAFDisplayUnits* pDisplayUnits,IntervalIndexType intervalIdx,
                                          pgsTypes::AnalysisType analysisType, TableType tableType,
                                          bool bDesign,bool bRating) const
 {
    ATLASSERT(!(bDesign&&bRating)); // these are separate tables, can't do both
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval();
-
 
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );

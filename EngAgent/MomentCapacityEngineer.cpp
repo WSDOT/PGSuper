@@ -882,11 +882,19 @@ void pgsMomentCapacityEngineer::GetCrackingMomentFactors(bool bPositiveMoment,Fl
       }
       else
       {
-         GET_IFACE(IMaterials,pMaterials);
-         Float64 E,fy,fu;
-         pMaterials->GetDeckRebarProperties(&E,&fy,&fu);
+         GET_IFACE(IBridge,pBridge);
+         if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+         {
+            *pG3 = 1.0; // prestress concrete (no deck, so all we have is the beam)
+         }
+         else
+         {
+            GET_IFACE(IMaterials,pMaterials);
+            Float64 E,fy,fu;
+            pMaterials->GetDeckRebarProperties(&E,&fy,&fu);
 
-         *pG3 = fy/fu;
+            *pG3 = fy/fu;
+         }
       }
    }
    else
@@ -985,29 +993,35 @@ Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(IntervalIndexTy
 
 Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment)
 {
-   GET_IFACE(IProductForces,pProductForces);
    GET_IFACE(IMaterials,pMaterial);
-   GET_IFACE(ISectionProperties,pSectProp);
-   GET_IFACE(IStrandGeometry,pStrandGeom);
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    Float64 fr;   // Rupture stress
    // Compute modulus of rupture
    if ( bPositiveMoment )
+   {
       fr = pMaterial->GetSegmentFlexureFr(segmentKey,intervalIdx);
+   }
    else
-      fr = pMaterial->GetDeckFlexureFr(intervalIdx);
+   {
+      GET_IFACE(IBridge,pBridge);
+      if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+      {
+         fr = pMaterial->GetSegmentFlexureFr(segmentKey,intervalIdx);
+      }
+      else
+      {
+         fr = pMaterial->GetDeckFlexureFr(intervalIdx);
+      }
+   }
 
    return fr;
 }
 
 Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType intervalIdx,const GDRCONFIG& config,bool bPositiveMoment)
 {
-   GET_IFACE(IProductForces,pProductForces);
    GET_IFACE(IMaterials,pMaterial);
-   GET_IFACE(ISectionProperties,pSectProp);
-   GET_IFACE(IStrandGeometry,pStrandGeom);
 
    Float64 fr;   // Rupture stress
    // Compute modulus of rupture
@@ -1018,7 +1032,16 @@ Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType interva
    }
    else
    {
-      fr = pMaterial->GetDeckFlexureFr(intervalIdx);
+      GET_IFACE(IBridge,pBridge);
+      if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+      {
+#pragma Reminder("BUG: need modulus of rupture for fc and the specified interval")
+         fr = pMaterial->GetFlexureModRupture(config.Fc,config.ConcType);
+      }
+      else
+      {
+         fr = pMaterial->GetDeckFlexureFr(intervalIdx);
+      }
    }
 
    return fr;
@@ -1389,14 +1412,17 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    // the interval when the deck becomes composite, remove
    // the deck from the shape model (we only want the beam).
    // The deck gets modeled below
-   if ( compositeDeckIntervalIdx <= intervalIdx )
+   if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
    {
-      // This assumes the deck is the last shape in the composite!
-      ATLASSERT(compBeam != NULL);
-      CollectionIndexType shapeCount;
-      compBeam->get_Count(&shapeCount);
-      ATLASSERT(shapeCount != 1);
-      compBeam->Remove(shapeCount-1);
+      if ( compositeDeckIntervalIdx <= intervalIdx )
+      {
+         // This assumes the deck is the last shape in the composite!
+         ATLASSERT(compBeam != NULL);
+         CollectionIndexType shapeCount;
+         compBeam->get_Count(&shapeCount);
+         ATLASSERT(shapeCount != 1);
+         compBeam->Remove(shapeCount-1);
+      }
    }
 
    // offset each shape so that the origin of the composite (if it is composite)

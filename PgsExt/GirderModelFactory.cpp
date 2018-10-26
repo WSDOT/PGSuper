@@ -78,6 +78,8 @@ Float64 pgsGirderModelFactory::BuildModel(IBroker* pBroker,IntervalIndexType int
    // get all the cross section changes
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
    std::vector<pgsPointOfInterest> xsPOI = pPOI->GetPointsOfInterest(segmentKey,POI_SECTCHANGE,POIFIND_OR);
+   pPOI->RemovePointsOfInterest(xsPOI,POI_ERECTED_SEGMENT);
+
 
    // add section data for the support locations
    if ( !IsEqual(leftSupportLoc,xsPOI.front().GetDistFromStart()) )
@@ -215,8 +217,9 @@ void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segme
    
    MemberIDType mbrID = 0;
    LoadIDType loadID = 0;
-   std::vector<GirderLoad>::iterator gdrLoadIter;
-   for ( gdrLoadIter = gdrLoads.begin(); gdrLoadIter != gdrLoads.end(); gdrLoadIter++ )
+   std::vector<GirderLoad>::iterator gdrLoadIter(gdrLoads.begin());
+   std::vector<GirderLoad>::iterator gdrLoadIterEnd(gdrLoads.end());
+   for ( ; gdrLoadIter != gdrLoadIterEnd; gdrLoadIter++ )
    {
       GirderLoad& gdrLoad = *gdrLoadIter;
 
@@ -314,8 +317,9 @@ void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segme
    loading->get_PointLoads(&pointLoads);
 
 
-   std::vector<DiaphragmLoad>::iterator diaLoadIter;
-   for ( diaLoadIter = diaphLoads.begin(); diaLoadIter != diaphLoads.end(); diaLoadIter++ )
+   std::vector<DiaphragmLoad>::iterator diaLoadIter(diaphLoads.begin());
+   std::vector<DiaphragmLoad>::iterator diaLoadIterEnd(diaphLoads.end());
+   for ( ; diaLoadIter != diaLoadIterEnd; diaLoadIter++ )
    {
       Float64 x;
       DiaphragmLoad& diaphragmLoad = *diaLoadIter;

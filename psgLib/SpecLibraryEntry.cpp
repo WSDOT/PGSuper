@@ -40,7 +40,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define CURRENT_VERSION 44.0
+#define CURRENT_VERSION 45.0
 
 
 /****************************************************************************
@@ -211,6 +211,19 @@ m_RelaxationLossMethod(RLM_REFINED)
    m_StrandStressCoeff[AFTER_TRANSFER][LOW_RELAX]    = 0.74;
    m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL] = 0.80;
    m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]  = 0.80;
+
+   m_bCheckTendonStressAtJacking      = false;
+   m_bCheckTendonStressPriorToSeating = true;
+   m_TendonStressCoeff[AT_JACKING][STRESS_REL]               = 0.76;
+   m_TendonStressCoeff[AT_JACKING][LOW_RELAX]                = 0.80;
+   m_TendonStressCoeff[PRIOR_TO_SEATING][STRESS_REL]         = 0.90;
+   m_TendonStressCoeff[PRIOR_TO_SEATING][LOW_RELAX]          = 0.90;
+   m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][STRESS_REL] = 0.70;
+   m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][LOW_RELAX]  = 0.70;
+   m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][STRESS_REL]  = 0.70;
+   m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][LOW_RELAX]   = 0.74;
+   m_TendonStressCoeff[AFTER_ALL_LOSSES][STRESS_REL]         = 0.80;
+   m_TendonStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]          = 0.80;
 
 
    m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal]          = ::ConvertToSysUnits(0.37,unitMeasure::SqrtKSI);
@@ -586,6 +599,21 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("CheckStrandStressAfterAllLosses"),m_bCheckStrandStress[AFTER_ALL_LOSSES]);
    pSave->Property(_T("Coeff_AfterAllLosses_StressRel"),m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL]);
    pSave->Property(_T("Coeff_AfterAllLosses_LowRelax"),m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]);
+
+   // added in version 45
+   pSave->Property(_T("CheckTendonStressAtJacking"),m_bCheckTendonStressAtJacking);
+   pSave->Property(_T("CheckTendonStressPriorToSeating"),m_bCheckTendonStressPriorToSeating);
+   pSave->Property(_T("Coeff_AtJacking_StressRel"),m_TendonStressCoeff[AT_JACKING][STRESS_REL]);
+   pSave->Property(_T("Coeff_AtJacking_LowRelax"),m_TendonStressCoeff[AT_JACKING][LOW_RELAX]);
+   pSave->Property(_T("Coeff_PriorToSeating_StressRel"),m_TendonStressCoeff[PRIOR_TO_SEATING][STRESS_REL]);
+   pSave->Property(_T("Coeff_PriorToSeating_LowRelax"),m_TendonStressCoeff[PRIOR_TO_SEATING][LOW_RELAX]);
+   pSave->Property(_T("Coeff_AtAnchoragesAfterSeating_StressRel"),m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][STRESS_REL]);
+   pSave->Property(_T("Coeff_AtAnchoragesAfterSeating_LowRelax"),m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][LOW_RELAX]);
+   pSave->Property(_T("Coeff_ElsewhereAfterSeating_StressRel"),m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][STRESS_REL]);
+   pSave->Property(_T("Coeff_ElsewhereAfterSeating_LowRelax"),m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][LOW_RELAX]);
+   pSave->Property(_T("Coeff_AfterAllLosses_StressRel"),m_TendonStressCoeff[AFTER_ALL_LOSSES][STRESS_REL]);
+   pSave->Property(_T("Coeff_AfterAllLosses_LowRelax"),m_TendonStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]);
+   
 
    // added in version 23, removed version 4
    //pSave->Property(_T("AnchorSet"),m_Dset);
@@ -1697,6 +1725,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
  
       if ( !pLoad->Property(_T("LossMethod"),&temp) )
          THROW_LOAD(InvalidFileFormat,pLoad );
+
       m_LossMethod = temp;
 
       if ( 43 < version )
@@ -1708,6 +1737,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          m_TimeDependentModel = temp;
       }
 
+      Float64 LiftingLosses;
+      Float64 ShippingLosses;
+      Float64 BeforeXferLosses;
+      Float64 AfterXferLosses;
+      Float64 BeforeTempStrandRemovalLosses;
+      Float64 AfterTempStrandRemovalLosses;
+      Float64 AfterDeckPlacementLosses;
+      Float64 AfterSIDLLosses;
+      Float64 FinalLosses;
       if ( 42 < version )
       {
          if ( !pLoad->Property(_T("ShippingLosses"),&m_ShippingLosses) )
@@ -1718,21 +1756,17 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
       else
       {
-         Float64 FinalLosses;
          if ( !pLoad->Property(_T("FinalLosses"),&FinalLosses) )
             THROW_LOAD(InvalidFileFormat,pLoad );
 
-         Float64 ShippingLosses;
          if ( !pLoad->Property(_T("ShippingLosses"),&ShippingLosses) )
             THROW_LOAD(InvalidFileFormat,pLoad );
 
          m_ShippingLosses = ShippingLosses;
 
-         Float64 BeforeXferLosses;
          if ( !pLoad->Property(_T("BeforeXferLosses"),&BeforeXferLosses) )
             THROW_LOAD(InvalidFileFormat,pLoad );
 
-         Float64 AfterXferLosses;
          if ( !pLoad->Property(_T("AfterXferLosses"),&AfterXferLosses) )
             THROW_LOAD(InvalidFileFormat,pLoad );
 
@@ -1743,11 +1777,6 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                THROW_LOAD(InvalidFileFormat,pLoad );
          }
 
-         Float64 LiftingLosses;
-         Float64 BeforeTempStrandRemovalLosses;
-         Float64 AfterTempStrandRemovalLosses;
-         Float64 AfterDeckPlacementLosses;
-         Float64 AfterSIDLLosses;
          if ( 22 <= version )
          {
             if ( !pLoad->Property(_T("LiftingLosses"),&LiftingLosses) )
@@ -1780,24 +1809,29 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             AfterDeckPlacementLosses      = FinalLosses;
             AfterSIDLLosses               = FinalLosses;
          }
+      }
 
-
-         const libILibrary* pLib = GetLibrary();
-         psgProjectLibraryManager* pLibMgr = dynamic_cast<psgProjectLibraryManager*>(pLib->GetLibraryManager());
-         if ( pLibMgr )
+      const libILibrary* pLib = GetLibrary();
+      psgProjectLibraryManager* pLibMgr = dynamic_cast<psgProjectLibraryManager*>(pLib->GetLibraryManager());
+      if ( pLibMgr )
+      {
+         // the cast above is successful if we are loading the library entry that is in use.... capture
+         // the data so that we don't change the user's actual data.
+         pLibMgr->m_bGeneralLumpSum               = false;
+         if ( m_LossMethod == 3 )
          {
-            // the cast above is successful if we are loading the library entry that is in use.... capture
-            // the data so that we don't change the user's actual data.
-            pLibMgr->m_FinalLosses                   = FinalLosses;
-            pLibMgr->m_LiftingLosses                 = LiftingLosses;
-            pLibMgr->m_ShippingLosses                = ShippingLosses;
-            pLibMgr->m_BeforeXferLosses              = BeforeXferLosses;
-            pLibMgr->m_AfterXferLosses               = AfterXferLosses;
-            pLibMgr->m_BeforeTempStrandRemovalLosses = BeforeTempStrandRemovalLosses;
-            pLibMgr->m_AfterTempStrandRemovalLosses  = AfterTempStrandRemovalLosses;
-            pLibMgr->m_AfterDeckPlacementLosses      = AfterDeckPlacementLosses;
-            pLibMgr->m_AfterSIDLLosses               = AfterSIDLLosses;
+            pLibMgr->m_bGeneralLumpSum = true;
+            m_LossMethod = LOSSES_AASHTO_REFINED;
          }
+         pLibMgr->m_FinalLosses                   = FinalLosses;
+         pLibMgr->m_LiftingLosses                 = LiftingLosses;
+         pLibMgr->m_ShippingLosses                = ShippingLosses;
+         pLibMgr->m_BeforeXferLosses              = BeforeXferLosses;
+         pLibMgr->m_AfterXferLosses               = AfterXferLosses;
+         pLibMgr->m_BeforeTempStrandRemovalLosses = BeforeTempStrandRemovalLosses;
+         pLibMgr->m_AfterTempStrandRemovalLosses  = AfterTempStrandRemovalLosses;
+         pLibMgr->m_AfterDeckPlacementLosses      = AfterDeckPlacementLosses;
+         pLibMgr->m_AfterSIDLLosses               = AfterSIDLLosses;
       }
 
       if ( 19 <= version )
@@ -1872,6 +1906,46 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             m_bCheckStrandStress[AFTER_ALL_LOSSES] = true;
             break;
          }
+      }
+
+      if ( 44 < version )
+      {
+         // added in version 45
+         if ( !pLoad->Property(_T("CheckTendonStressAtJacking"),&m_bCheckTendonStressAtJacking) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("CheckTendonStressPriorToSeating"),&m_bCheckTendonStressPriorToSeating) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("Coeff_AtJacking_StressRel"),&m_TendonStressCoeff[AT_JACKING][STRESS_REL]) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("Coeff_AtJacking_LowRelax"),&m_TendonStressCoeff[AT_JACKING][LOW_RELAX]) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("Coeff_PriorToSeating_StressRel"),&m_TendonStressCoeff[PRIOR_TO_SEATING][STRESS_REL]) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("Coeff_PriorToSeating_LowRelax"),&m_TendonStressCoeff[PRIOR_TO_SEATING][LOW_RELAX]) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("Coeff_AtAnchoragesAfterSeating_StressRel"),&m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][STRESS_REL]) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("Coeff_AtAnchoragesAfterSeating_LowRelax"),&m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][LOW_RELAX]) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("Coeff_ElsewhereAfterSeating_StressRel"),&m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][STRESS_REL]) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("Coeff_ElsewhereAfterSeating_LowRelax"),&m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][LOW_RELAX]) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("Coeff_AfterAllLosses_StressRel"),&m_TendonStressCoeff[AFTER_ALL_LOSSES][STRESS_REL]) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("Coeff_AfterAllLosses_LowRelax"),&m_TendonStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
       if ( 22 < version && version < 44)
@@ -2478,6 +2552,19 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TESTD(m_StrandStressCoeff[AFTER_TRANSFER][LOW_RELAX], rOther.m_StrandStressCoeff[AFTER_TRANSFER][LOW_RELAX]    );
    TESTD(m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL], rOther.m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL] );
    TESTD(m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX], rOther.m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]  );
+
+   TEST(m_bCheckTendonStressAtJacking,rOther.m_bCheckTendonStressAtJacking);
+   TEST(m_bCheckTendonStressPriorToSeating,rOther.m_bCheckTendonStressPriorToSeating);
+   TESTD(m_TendonStressCoeff[AT_JACKING][STRESS_REL],rOther.m_TendonStressCoeff[AT_JACKING][STRESS_REL]);
+   TESTD(m_TendonStressCoeff[AT_JACKING][LOW_RELAX],rOther.m_TendonStressCoeff[AT_JACKING][LOW_RELAX]);
+   TESTD(m_TendonStressCoeff[PRIOR_TO_SEATING][STRESS_REL],rOther.m_TendonStressCoeff[PRIOR_TO_SEATING][STRESS_REL]);
+   TESTD(m_TendonStressCoeff[PRIOR_TO_SEATING][LOW_RELAX],rOther.m_TendonStressCoeff[PRIOR_TO_SEATING][LOW_RELAX]);
+   TESTD(m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][STRESS_REL],rOther.m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][STRESS_REL]);
+   TESTD(m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][LOW_RELAX],rOther.m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][LOW_RELAX]);
+   TESTD(m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][STRESS_REL],rOther.m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][STRESS_REL]);
+   TESTD(m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][LOW_RELAX],rOther.m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][LOW_RELAX]);
+   TESTD(m_TendonStressCoeff[AFTER_ALL_LOSSES][STRESS_REL],rOther.m_TendonStressCoeff[AFTER_ALL_LOSSES][STRESS_REL]);
+   TESTD(m_TendonStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX],rOther.m_TendonStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]);
 
    TEST (m_bDoEvaluateDeflection , rOther.m_bDoEvaluateDeflection );
    TESTD(m_DeflectionLimit       , rOther.m_DeflectionLimit );
@@ -3383,6 +3470,21 @@ Float64 SpecLibraryEntry::GetStrandStressCoefficient(UINT stage,UINT strandType)
    return m_StrandStressCoeff[stage][strandType];
 }
 
+bool SpecLibraryEntry::CheckTendonStressAtJacking() const
+{
+   return m_bCheckTendonStressAtJacking;
+}
+
+bool SpecLibraryEntry::CheckTendonStressPriorToSeating() const
+{
+   return m_bCheckTendonStressPriorToSeating;
+}
+
+Float64 SpecLibraryEntry::GetTendonStressCoefficient(UINT stage,UINT strandType) const
+{
+   return m_TendonStressCoeff[stage][strandType];
+}
+
 GirderIndexType SpecLibraryEntry::GetMaxGirdersDistTrafficBarrier() const
 {
    return m_Bs2MaxGirdersTrafficBarrier;
@@ -4220,6 +4322,19 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_StrandStressCoeff[AFTER_TRANSFER][LOW_RELAX]    = rOther.m_StrandStressCoeff[AFTER_TRANSFER][LOW_RELAX];
    m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL] = rOther.m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL];
    m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]  = rOther.m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX];
+
+   m_bCheckTendonStressAtJacking = rOther.m_bCheckTendonStressAtJacking;
+   m_bCheckTendonStressPriorToSeating = rOther.m_bCheckTendonStressPriorToSeating;
+   m_TendonStressCoeff[AT_JACKING][STRESS_REL] = rOther.m_TendonStressCoeff[AT_JACKING][STRESS_REL];
+   m_TendonStressCoeff[AT_JACKING][LOW_RELAX] = rOther.m_TendonStressCoeff[AT_JACKING][LOW_RELAX];
+   m_TendonStressCoeff[PRIOR_TO_SEATING][STRESS_REL] = rOther.m_TendonStressCoeff[PRIOR_TO_SEATING][STRESS_REL];
+   m_TendonStressCoeff[PRIOR_TO_SEATING][LOW_RELAX] = rOther.m_TendonStressCoeff[PRIOR_TO_SEATING][LOW_RELAX];
+   m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][STRESS_REL] = rOther.m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][STRESS_REL];
+   m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][LOW_RELAX] = rOther.m_TendonStressCoeff[ANCHORAGES_AFTER_SEATING][LOW_RELAX];
+   m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][STRESS_REL] = rOther.m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][STRESS_REL];
+   m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][LOW_RELAX] = rOther.m_TendonStressCoeff[ELSEWHERE_AFTER_SEATING][LOW_RELAX];
+   m_TendonStressCoeff[AFTER_ALL_LOSSES][STRESS_REL] = rOther.m_TendonStressCoeff[AFTER_ALL_LOSSES][STRESS_REL];
+   m_TendonStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX] = rOther.m_TendonStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX];
 
    m_bDoEvaluateDeflection = rOther.m_bDoEvaluateDeflection;
    m_DeflectionLimit       = rOther.m_DeflectionLimit;

@@ -61,12 +61,9 @@ rptChapter* CHaulingCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IArtifact,pArtifact);
-   const pgsGirderArtifact* pGirderArtifact = pArtifact->GetGirderArtifact(girderKey);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
-   CHaulingCheck check;
-   check.Build(pChapter, pBroker, pGirderArtifact, pDisplayUnits);
+   CHaulingCheck().Build(pChapter, pBroker, girderKey, pDisplayUnits);
 
    return pChapter;
 }

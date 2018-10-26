@@ -753,7 +753,7 @@ CDuctData::CDuctData()
    LastUserPj = 0.0;
 
    DuctGeometryType = CDuctGeometry::Linear;
-   JackingEnd = Left;
+   JackingEnd = pgsTypes::jeLeft;
 }
 
 CDuctData::CDuctData(const CSplicedGirderData* pGirder)
@@ -767,7 +767,7 @@ CDuctData::CDuctData(const CSplicedGirderData* pGirder)
    LastUserPj = 0.0;
 
    DuctGeometryType = CDuctGeometry::Linear;
-   JackingEnd = Left;
+   JackingEnd = pgsTypes::jeLeft;
 
    Init(pGirder);
 }
@@ -877,11 +877,11 @@ HRESULT CDuctData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    var.vt = VT_BSTR;
    pStrLoad->get_Property(_T("StressingEnd"),&var);
    if ( CComBSTR(_T("Left")) == CComBSTR(var.bstrVal) )
-      JackingEnd = Left;
+      JackingEnd = pgsTypes::jeLeft;
    else if ( CComBSTR(_T("Right")) == CComBSTR(var.bstrVal) )
-      JackingEnd = Right;
+      JackingEnd = pgsTypes::jeRight;
    else
-      JackingEnd = Both;
+      JackingEnd = pgsTypes::jeBoth;
 
    var.vt = VT_BSTR;
    pStrLoad->get_Property(_T("Geometry"),&var);
@@ -914,7 +914,7 @@ HRESULT CDuctData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("CalcPj"),CComVariant(bPjCalc ? VARIANT_TRUE : VARIANT_FALSE));
    pStrSave->put_Property(_T("Pj"),CComVariant(Pj));
    pStrSave->put_Property(_T("LastUserPj"),CComVariant(LastUserPj));
-   pStrSave->put_Property(_T("StressingEnd"),CComVariant(JackingEnd == Left ? _T("Left") : (JackingEnd == Right ? _T("Right") : _T("Both"))));
+   pStrSave->put_Property(_T("StressingEnd"),CComVariant(JackingEnd == pgsTypes::jeLeft ? _T("Left") : (JackingEnd == pgsTypes::jeRight ? _T("Right") : _T("Both"))));
    switch ( DuctGeometryType )
    {
    case CDuctGeometry::Linear:

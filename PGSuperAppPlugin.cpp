@@ -66,6 +66,30 @@ CString CPGSuperAppPlugin::GetTemplateFileExtension()
    return strTemplateSuffix;
 }
 
+BOOL CPGSuperAppPlugin::UpdateProgramSettings(BOOL bFirstRun)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   BOOL bHandled = CPGSuperBaseAppPlugin::UpdateProgramSettings(bFirstRun);
+   if ( bHandled )
+   {
+      // Need to find if the PGSuper Project Importer app-plugin has been loaded.
+      // If so, tell it to re-initialize with the updated program settings
+      CEAFApp* pApp = EAFGetApp();
+
+      CEAFAppPluginManager* pAppPluginMgr = pApp->GetAppPluginManager();
+
+      CComPtr<IEAFAppPlugin> importerPlugin;
+      pAppPluginMgr->GetPlugin(CLSID_PGSuperProjectImporterAppPlugin,&importerPlugin);
+      if ( importerPlugin )
+      {
+         CPGSuperBaseAppPlugin* pBasePlugin = dynamic_cast<CPGSuperBaseAppPlugin*>(importerPlugin.p);
+         ATLASSERT(pBasePlugin);
+         pBasePlugin->DefaultInit();
+      }
+   }
+   return bHandled;
+}
+
 HRESULT CPGSuperAppPlugin::FinalConstruct()
 {
    return OnFinalConstruct(); // CPGSuperBaseAppPlugin

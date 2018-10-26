@@ -19,7 +19,7 @@
 #include "HtmlHelp\HelpTopics.hh"
 
 #include "PGSuperColors.h"
-#include <DesignConfigUtil.h>
+#include <PgsExt\DesignConfigUtil.h>
 
 #include "GirderDescDlg.h" // for ReconcileDebonding
 
@@ -150,6 +150,7 @@ BEGIN_MESSAGE_MAP(CGirderSegmentStrandsPage, CPropertyPage)
 	ON_CBN_SELCHANGE(IDC_STRAND_SIZE, OnStrandTypeChanged)
 	ON_BN_CLICKED(IDC_SYMMETRIC_DEBOND, OnSymmetricDebond)
 	ON_WM_PAINT()
+   ON_WM_CTLCOLOR()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -932,6 +933,23 @@ void CGirderSegmentStrandsPage::OnChange()
    str.Format(_T("Debonded=%d (%.1f%%)"), ndbs,percent);
    CWnd* pNdb = GetDlgItem(IDC_NUM_DEBONDED);
    pNdb->SetWindowText(str);
+
+   StrandIndexType nExtStrands = m_Grid.GetNumExtendedStrands(pgsTypes::metStart);
+   str.Format(_T("Extended Left=%d"),nExtStrands);
+   CWnd* pNExt = GetDlgItem(IDC_NUM_EXTENDED_LEFT);
+   pNExt->SetWindowText(str);
+
+   nExtStrands = m_Grid.GetNumExtendedStrands(pgsTypes::metEnd);
+   str.Format(_T("Extended Right=%d"),nExtStrands);
+   pNExt = GetDlgItem(IDC_NUM_EXTENDED_RIGHT);
+   pNExt->SetWindowText(str);
+
+   CWnd* pPicture = GetDlgItem(IDC_PICTURE);
+   CRect rect;
+   pPicture->GetWindowRect(rect);
+   ScreenToClient(&rect);
+   InvalidateRect(rect);
+   UpdateWindow();
 }
 
 const CSegmentKey& CGirderSegmentStrandsPage::GetSegmentKey()
@@ -1004,4 +1022,27 @@ void CGirderSegmentStrandsPage::UpdateGrid()
 
    m_Grid.FillGrid(*pSegment);
    m_Grid.SelectRange(CGXRange().SetTable(), FALSE);
+}
+
+HBRUSH CGirderSegmentStrandsPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+   HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
+   int ID = pWnd->GetDlgCtrlID();
+   switch( ID )
+   {
+   case IDC_NUMSTRAIGHT:
+      pDC->SetTextColor(STRAIGHT_FILL_COLOR);
+      break;
+
+   case IDC_NUM_DEBONDED:
+      pDC->SetTextColor(DEBOND_FILL_COLOR);
+      break;
+
+   case IDC_NUM_EXTENDED_LEFT:
+   case IDC_NUM_EXTENDED_RIGHT:
+      pDC->SetTextColor(EXTENDED_FILL_COLOR);
+      break;
+   }
+
+   return hbr;
 }

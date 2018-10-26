@@ -2242,9 +2242,9 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    *pAg  = pSectProp->GetAg( spType, erectIntervalIdx, poi );
    *pIg  = pSectProp->GetIx( spType, erectIntervalIdx, poi );
    *pYbg = pSectProp->GetYb( spType, erectIntervalIdx, poi );
-   *pAc  = pSectProp->GetAg( spType, compositeDeckIntervalIdx, poi, config.Fc );
-   *pIc  = pSectProp->GetIx( spType, compositeDeckIntervalIdx, poi, config.Fc );
-   *pYbc = pSectProp->GetYb( spType, compositeDeckIntervalIdx, poi, config.Fc );
+   *pAc  = pSectProp->GetAg( spType, liveLoadIntervalIdx, poi, config.Fc );
+   *pIc  = pSectProp->GetIx( spType, liveLoadIntervalIdx, poi, config.Fc );
+   *pYbc = pSectProp->GetYb( spType, liveLoadIntervalIdx, poi, config.Fc );
 
    *pVolume = pSectProp->GetVolume(segmentKey);
    *pSurfaceArea = pSectProp->GetSurfaceArea(segmentKey);
@@ -2254,9 +2254,9 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
       *pAn   = pSectProp->GetNetAg(erectIntervalIdx, poi);
       *pIn   = pSectProp->GetNetIg(erectIntervalIdx, poi);
       *pYbn  = pSectProp->GetNetYbg(erectIntervalIdx, poi);
-      *pAcn  = pSectProp->GetNetAg(compositeDeckIntervalIdx, poi);
-      *pIcn  = pSectProp->GetNetIg(compositeDeckIntervalIdx, poi);
-      *pYbcn = pSectProp->GetNetYbg(compositeDeckIntervalIdx, poi);
+      *pAcn  = pSectProp->GetNetAg(liveLoadIntervalIdx, poi);
+      *pIcn  = pSectProp->GetNetIg(liveLoadIntervalIdx, poi);
+      *pYbcn = pSectProp->GetNetYbg(liveLoadIntervalIdx, poi);
    }
    else
    {
@@ -2357,7 +2357,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    if ( spType == pgsTypes::sptTransformed )
    {
       // effectiveness factors don't apply for transformed properties
-      // elastic gains are computed impliciity and can't be scaled
+      // elastic gains are computed impliciity and can't be scaled.
       *pKsh = 1.0;
       K_slab = 1.0;
       K_slabpad = 1.0;

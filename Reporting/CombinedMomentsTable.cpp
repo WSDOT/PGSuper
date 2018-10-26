@@ -93,10 +93,10 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
          BuildCombinedLiveTable(pBroker, pChapter, girderKey, pDisplayUnits, analysisType, false, true);
 
       if (bDesign)
-         BuildLimitStateTable(pBroker, pChapter, girderKey, pDisplayUnits, analysisType, true, false);
+         BuildLimitStateTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, true, false);
 
       if (bRating)
-         BuildLimitStateTable(pBroker, pChapter, girderKey, pDisplayUnits, analysisType, false, true);
+         BuildLimitStateTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, false, true);
    }
 }
 
@@ -648,14 +648,13 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
 
 void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
                                                const CGirderKey& girderKey,
-                                               IEAFDisplayUnits* pDisplayUnits,
+                                               IEAFDisplayUnits* pDisplayUnits,IntervalIndexType intervalIdx,
                                                pgsTypes::AnalysisType analysisType,
                                                bool bDesign,bool bRating) const
 {
    ATLASSERT(!(bDesign&&bRating)); // these are separate tables, can't do both
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval(); // always
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
@@ -735,90 +734,166 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
       std::vector<Float64> slabStrengthII_Permit_Special;
 
       // NOTE: need slab moments for other strength limit states
-
-      if ( bDesign )
+      if ( minBAT == maxBAT )
       {
-         pLsForces2->GetMoment( pgsTypes::ServiceI, intervalIdx, vPoi, maxBAT, &dummy, &maxServiceI );
-         pLsForces2->GetMoment( pgsTypes::ServiceI, intervalIdx, vPoi, minBAT, &minServiceI, &dummy );
-
-         if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+         if ( bDesign )
          {
-            pLsForces2->GetMoment( pgsTypes::ServiceIA, intervalIdx, vPoi, maxBAT, &dummy, &maxServiceIA );
-            pLsForces2->GetMoment( pgsTypes::ServiceIA, intervalIdx, vPoi, minBAT, &minServiceIA, &dummy );
+            pLsForces2->GetMoment( pgsTypes::ServiceI, intervalIdx, vPoi, maxBAT, &minServiceI, &maxServiceI );
+
+            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+            {
+               pLsForces2->GetMoment( pgsTypes::ServiceIA, intervalIdx, vPoi, maxBAT, &minServiceIA, &maxServiceIA );
+            }
+            else
+            {
+               pLsForces2->GetMoment( pgsTypes::FatigueI, intervalIdx, vPoi, maxBAT, &minFatigueI, &maxFatigueI );
+            }
+
+            pLsForces2->GetMoment( pgsTypes::ServiceIII, intervalIdx, vPoi, maxBAT, &minServiceIII, &maxServiceIII );
+
+            pLsForces2->GetMoment( pgsTypes::StrengthI, intervalIdx, vPoi, maxBAT, &minStrengthI, &maxStrengthI );
+            slabStrengthI = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI,vPoi,minBAT);
+
+            if ( bPermit )
+            {
+               pLsForces2->GetMoment( pgsTypes::StrengthII, intervalIdx, vPoi, maxBAT, &minStrengthII, &maxStrengthII );
+              slabStrengthII = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthII,vPoi,minBAT);
+            }
          }
-         else
+
+         if ( bRating )
          {
-            pLsForces2->GetMoment( pgsTypes::FatigueI, intervalIdx, vPoi, maxBAT, &dummy, &maxFatigueI );
-            pLsForces2->GetMoment( pgsTypes::FatigueI, intervalIdx, vPoi, minBAT, &minFatigueI, &dummy );
-         }
+            // Design - Inventory
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
+            {
+               pLsForces2->GetMoment( pgsTypes::StrengthI_Inventory, intervalIdx, vPoi, maxBAT, &minStrengthI_Inventory, &maxStrengthI_Inventory );
+               slabStrengthI_Inventory = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_Inventory,vPoi,minBAT);
+            }
 
-         pLsForces2->GetMoment( pgsTypes::ServiceIII, intervalIdx, vPoi, maxBAT, &dummy, &maxServiceIII );
-         pLsForces2->GetMoment( pgsTypes::ServiceIII, intervalIdx, vPoi, minBAT, &minServiceIII, &dummy );
+            // Design - Operating
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
+            {
+               pLsForces2->GetMoment( pgsTypes::StrengthI_Operating, intervalIdx, vPoi, maxBAT, &minStrengthI_Operating, &maxStrengthI_Operating );
+               slabStrengthI_Operating = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_Operating,vPoi,minBAT);
+            }
 
-         pLsForces2->GetMoment( pgsTypes::StrengthI, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthI );
-         pLsForces2->GetMoment( pgsTypes::StrengthI, intervalIdx, vPoi, minBAT, &minStrengthI, &dummy );
-         slabStrengthI = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI,vPoi,minBAT);
+            // Legal - Routine
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               pLsForces2->GetMoment( pgsTypes::StrengthI_LegalRoutine, intervalIdx, vPoi, maxBAT, &minStrengthI_Legal_Routine, &maxStrengthI_Legal_Routine );
+               slabStrengthI_Legal_Routine = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_LegalRoutine,vPoi,minBAT);
+            }
 
-         if ( bPermit )
-         {
-            pLsForces2->GetMoment( pgsTypes::StrengthII, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthII );
-            pLsForces2->GetMoment( pgsTypes::StrengthII, intervalIdx, vPoi, minBAT, &minStrengthII, &dummy );
-           slabStrengthII = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthII,vPoi,minBAT);
+            // Legal - Special
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               pLsForces2->GetMoment( pgsTypes::StrengthI_LegalSpecial, intervalIdx, vPoi, maxBAT, &minStrengthI_Legal_Special, &maxStrengthI_Legal_Special );
+               slabStrengthI_Legal_Special = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_LegalSpecial,vPoi,minBAT);
+            }
+
+            // Permit Rating - Routine
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            {
+               pLsForces2->GetMoment( pgsTypes::ServiceI_PermitRoutine, intervalIdx, vPoi, maxBAT, &minServiceI_Permit_Routine, &maxServiceI_Permit_Routine );
+               pLsForces2->GetMoment( pgsTypes::StrengthII_PermitRoutine, intervalIdx, vPoi, maxBAT, &minStrengthII_Permit_Routine, &maxStrengthII_Permit_Routine );
+               slabStrengthII_Permit_Routine = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthII_PermitRoutine,vPoi,minBAT);
+            }
+
+            // Permit Rating - Special
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            {
+               pLsForces2->GetMoment( pgsTypes::ServiceI_PermitSpecial, intervalIdx, vPoi, maxBAT, &minServiceI_Permit_Special, &maxServiceI_Permit_Special );
+               pLsForces2->GetMoment( pgsTypes::StrengthII_PermitSpecial, intervalIdx, vPoi, maxBAT, &minStrengthII_Permit_Special, &maxStrengthII_Permit_Special );
+               slabStrengthII_Permit_Special = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthII_PermitSpecial,vPoi,minBAT);
+            }
          }
       }
-
-      if ( bRating )
+      else
       {
-         // Design - Inventory
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
+         if ( bDesign )
          {
-            pLsForces2->GetMoment( pgsTypes::StrengthI_Inventory, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthI_Inventory );
-            pLsForces2->GetMoment( pgsTypes::StrengthI_Inventory, intervalIdx, vPoi, maxBAT, &minStrengthI_Inventory, &dummy );
-            slabStrengthI_Inventory = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_Inventory,vPoi,minBAT);
+            pLsForces2->GetMoment( pgsTypes::ServiceI, intervalIdx, vPoi, maxBAT, &dummy, &maxServiceI );
+            pLsForces2->GetMoment( pgsTypes::ServiceI, intervalIdx, vPoi, minBAT, &minServiceI, &dummy );
+
+            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+            {
+               pLsForces2->GetMoment( pgsTypes::ServiceIA, intervalIdx, vPoi, maxBAT, &dummy, &maxServiceIA );
+               pLsForces2->GetMoment( pgsTypes::ServiceIA, intervalIdx, vPoi, minBAT, &minServiceIA, &dummy );
+            }
+            else
+            {
+               pLsForces2->GetMoment( pgsTypes::FatigueI, intervalIdx, vPoi, maxBAT, &dummy, &maxFatigueI );
+               pLsForces2->GetMoment( pgsTypes::FatigueI, intervalIdx, vPoi, minBAT, &minFatigueI, &dummy );
+            }
+
+            pLsForces2->GetMoment( pgsTypes::ServiceIII, intervalIdx, vPoi, maxBAT, &dummy, &maxServiceIII );
+            pLsForces2->GetMoment( pgsTypes::ServiceIII, intervalIdx, vPoi, minBAT, &minServiceIII, &dummy );
+
+            pLsForces2->GetMoment( pgsTypes::StrengthI, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthI );
+            pLsForces2->GetMoment( pgsTypes::StrengthI, intervalIdx, vPoi, minBAT, &minStrengthI, &dummy );
+            slabStrengthI = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI,vPoi,minBAT);
+
+            if ( bPermit )
+            {
+               pLsForces2->GetMoment( pgsTypes::StrengthII, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthII );
+               pLsForces2->GetMoment( pgsTypes::StrengthII, intervalIdx, vPoi, minBAT, &minStrengthII, &dummy );
+              slabStrengthII = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthII,vPoi,minBAT);
+            }
          }
 
-         // Design - Operating
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
+         if ( bRating )
          {
-            pLsForces2->GetMoment( pgsTypes::StrengthI_Operating, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthI_Operating );
-            pLsForces2->GetMoment( pgsTypes::StrengthI_Operating, intervalIdx, vPoi, minBAT, &minStrengthI_Operating, &dummy );
-            slabStrengthI_Operating = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_Operating,vPoi,minBAT);
-         }
+            // Design - Inventory
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
+            {
+               pLsForces2->GetMoment( pgsTypes::StrengthI_Inventory, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthI_Inventory );
+               pLsForces2->GetMoment( pgsTypes::StrengthI_Inventory, intervalIdx, vPoi, maxBAT, &minStrengthI_Inventory, &dummy );
+               slabStrengthI_Inventory = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_Inventory,vPoi,minBAT);
+            }
 
-         // Legal - Routine
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-         {
-            pLsForces2->GetMoment( pgsTypes::StrengthI_LegalRoutine, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthI_Legal_Routine );
-            pLsForces2->GetMoment( pgsTypes::StrengthI_LegalRoutine, intervalIdx, vPoi, maxBAT, &minStrengthI_Legal_Routine, &dummy );
-            slabStrengthI_Legal_Routine = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_LegalRoutine,vPoi,minBAT);
-         }
+            // Design - Operating
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
+            {
+               pLsForces2->GetMoment( pgsTypes::StrengthI_Operating, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthI_Operating );
+               pLsForces2->GetMoment( pgsTypes::StrengthI_Operating, intervalIdx, vPoi, minBAT, &minStrengthI_Operating, &dummy );
+               slabStrengthI_Operating = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_Operating,vPoi,minBAT);
+            }
 
-         // Legal - Special
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-         {
-            pLsForces2->GetMoment( pgsTypes::StrengthI_LegalSpecial, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthI_Legal_Special );
-            pLsForces2->GetMoment( pgsTypes::StrengthI_LegalSpecial, intervalIdx, vPoi, minBAT, &minStrengthI_Legal_Special, &dummy );
-            slabStrengthI_Legal_Special = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_LegalSpecial,vPoi,minBAT);
-         }
+            // Legal - Routine
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               pLsForces2->GetMoment( pgsTypes::StrengthI_LegalRoutine, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthI_Legal_Routine );
+               pLsForces2->GetMoment( pgsTypes::StrengthI_LegalRoutine, intervalIdx, vPoi, maxBAT, &minStrengthI_Legal_Routine, &dummy );
+               slabStrengthI_Legal_Routine = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_LegalRoutine,vPoi,minBAT);
+            }
 
-         // Permit Rating - Routine
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-         {
-            pLsForces2->GetMoment( pgsTypes::ServiceI_PermitRoutine, intervalIdx, vPoi, maxBAT, &dummy, &maxServiceI_Permit_Routine );
-            pLsForces2->GetMoment( pgsTypes::ServiceI_PermitRoutine, intervalIdx, vPoi, minBAT, &minServiceI_Permit_Routine, &dummy );
-            pLsForces2->GetMoment( pgsTypes::StrengthII_PermitRoutine, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthII_Permit_Routine );
-            pLsForces2->GetMoment( pgsTypes::StrengthII_PermitRoutine, intervalIdx, vPoi, minBAT, &minStrengthII_Permit_Routine, &dummy );
-            slabStrengthII_Permit_Routine = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthII_PermitRoutine,vPoi,minBAT);
-         }
+            // Legal - Special
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               pLsForces2->GetMoment( pgsTypes::StrengthI_LegalSpecial, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthI_Legal_Special );
+               pLsForces2->GetMoment( pgsTypes::StrengthI_LegalSpecial, intervalIdx, vPoi, minBAT, &minStrengthI_Legal_Special, &dummy );
+               slabStrengthI_Legal_Special = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_LegalSpecial,vPoi,minBAT);
+            }
 
-         // Permit Rating - Special
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-         {
-            pLsForces2->GetMoment( pgsTypes::ServiceI_PermitSpecial, intervalIdx, vPoi, maxBAT, &dummy, &maxServiceI_Permit_Special );
-            pLsForces2->GetMoment( pgsTypes::ServiceI_PermitSpecial, intervalIdx, vPoi, minBAT, &minServiceI_Permit_Special, &dummy );
-            pLsForces2->GetMoment( pgsTypes::StrengthII_PermitSpecial, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthII_Permit_Special );
-            pLsForces2->GetMoment( pgsTypes::StrengthII_PermitSpecial, intervalIdx, vPoi, minBAT, &minStrengthII_Permit_Special, &dummy );
-            slabStrengthII_Permit_Special = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthII_PermitSpecial,vPoi,minBAT);
+            // Permit Rating - Routine
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            {
+               pLsForces2->GetMoment( pgsTypes::ServiceI_PermitRoutine, intervalIdx, vPoi, maxBAT, &dummy, &maxServiceI_Permit_Routine );
+               pLsForces2->GetMoment( pgsTypes::ServiceI_PermitRoutine, intervalIdx, vPoi, minBAT, &minServiceI_Permit_Routine, &dummy );
+               pLsForces2->GetMoment( pgsTypes::StrengthII_PermitRoutine, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthII_Permit_Routine );
+               pLsForces2->GetMoment( pgsTypes::StrengthII_PermitRoutine, intervalIdx, vPoi, minBAT, &minStrengthII_Permit_Routine, &dummy );
+               slabStrengthII_Permit_Routine = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthII_PermitRoutine,vPoi,minBAT);
+            }
+
+            // Permit Rating - Special
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            {
+               pLsForces2->GetMoment( pgsTypes::ServiceI_PermitSpecial, intervalIdx, vPoi, maxBAT, &dummy, &maxServiceI_Permit_Special );
+               pLsForces2->GetMoment( pgsTypes::ServiceI_PermitSpecial, intervalIdx, vPoi, minBAT, &minServiceI_Permit_Special, &dummy );
+               pLsForces2->GetMoment( pgsTypes::StrengthII_PermitSpecial, intervalIdx, vPoi, maxBAT, &dummy, &maxStrengthII_Permit_Special );
+               pLsForces2->GetMoment( pgsTypes::StrengthII_PermitSpecial, intervalIdx, vPoi, minBAT, &minStrengthII_Permit_Special, &dummy );
+               slabStrengthII_Permit_Special = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthII_PermitSpecial,vPoi,minBAT);
+            }
          }
       }
 

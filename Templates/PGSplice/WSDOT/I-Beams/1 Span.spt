@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PGSplice version="3">
-  <Version>3.0.0.0</Version>
+  <Version>3.0.0.5</Version>
   <Broker version="1">
     <Agent version="1">
       <CLSID>{256B5B5B-762C-4693-8802-6B0351290FEA}</CLSID>
       <LIBRARY_MANAGER version="2">
-        <TimeStamp>3547828863</TimeStamp>
+        <TimeStamp>3558108513</TimeStamp>
         <LIBRARY_MANAGER_ENTRY version="1">
           <LIBRARY_NAME>CONCRETE_LIBRARY</LIBRARY_NAME>
           <LIBRARY version="1">
@@ -18,20 +18,6 @@
           <LIBRARY version="1">
             <LIBRARY_ID_NAME>CONNECTION_LIBRARY</LIBRARY_ID_NAME>
             <LIBRARY_DISPLAY_NAME>Connections</LIBRARY_DISPLAY_NAME>
-            <LIBRARY_ENTRY version="1">
-              <ENTRY_KEY>End Type A (WF36G)</ENTRY_KEY>
-              <ConnectionLibraryEntry version="5">
-                <Name>End Type A (WF36G)</Name>
-                <DiaphragmHeight>1.2191999999999998</DiaphragmHeight>
-                <GirderEndDistance>0.52069999999999994</GirderEndDistance>
-                <GirderBearingOffset>0.82550000000000001</GirderBearingOffset>
-                <SupportWidth>0.30479999999999996</SupportWidth>
-                <EndDistanceMeasurementType>FromBearingNormalToPier</EndDistanceMeasurementType>
-                <BearingOffsetMeasurementType>NormalToPier</BearingOffsetMeasurementType>
-                <DiaphragmWidth>0.67309999999999992</DiaphragmWidth>
-                <DiaphragmLoadType>ApplyAtBearingCenterline</DiaphragmLoadType>
-              </ConnectionLibraryEntry>
-            </LIBRARY_ENTRY>
           </LIBRARY>
         </LIBRARY_MANAGER_ENTRY>
         <LIBRARY_MANAGER_ENTRY version="1">
@@ -608,7 +594,7 @@
             <LIBRARY_DISPLAY_NAME>Project Criteria</LIBRARY_DISPLAY_NAME>
             <LIBRARY_ENTRY version="1">
               <ENTRY_KEY>WSDOT - Spliced Girders</ENTRY_KEY>
-              <SpecificationLibraryEntry version="44">
+              <SpecificationLibraryEntry version="45">
                 <Name>WSDOT - Spliced Girders</Name>
                 <Description>AASHTO LRFD Bridge Design Specification, 6th Edition 2012 - US Units, modified to reflect WSDOT design practices</Description>
                 <SpecificationType>AashtoLrfd2012</SpecificationType>
@@ -679,10 +665,10 @@
                 <LiftingPointLocationAccuracy>0.076200000000000004</LiftingPointLocationAccuracy>
                 <MinHaulingSupportLocation>-1</MinHaulingSupportLocation>
                 <HaulingSupportLocationAccuracy>0.15240000000000001</HaulingSupportLocationAccuracy>
-                <UseMinTruckSupportLocationFactor>1</UseMinTruckSupportLocationFactor>
-                <MinTruckSupportLocationFactor>0.1</MinTruckSupportLocationFactor>
-                <OverhangGFactor>3.0</OverhangGFactor>
-                <InteriorGFactor>1.0</InteriorGFactor>
+                <UseMinTruckSupportLocationFactor>-1</UseMinTruckSupportLocationFactor>
+                <MinTruckSupportLocationFactor>0.10000000000000001</MinTruckSupportLocationFactor>
+                <OverhangGFactor>3</OverhangGFactor>
+                <InteriorGFactor>1</InteriorGFactor>
                 <CastingYardTensileStressLimitWithMildRebar>630.18887682959996</CastingYardTensileStressLimitWithMildRebar>
                 <LiftingTensileStressLimitWithMildRebar>498.89952749010001</LiftingTensileStressLimitWithMildRebar>
                 <HaulingTensileStressLimitWithMildRebar>498.89952749010001</HaulingTensileStressLimitWithMildRebar>
@@ -779,6 +765,18 @@
                 <Coeff_AfterTransfer_StressRel>0.69999999999999996</Coeff_AfterTransfer_StressRel>
                 <Coeff_AfterTransfer_LowRelax>0.73999999999999999</Coeff_AfterTransfer_LowRelax>
                 <CheckStrandStressAfterAllLosses>-1</CheckStrandStressAfterAllLosses>
+                <Coeff_AfterAllLosses_StressRel>0.80000000000000004</Coeff_AfterAllLosses_StressRel>
+                <Coeff_AfterAllLosses_LowRelax>0.80000000000000004</Coeff_AfterAllLosses_LowRelax>
+                <CheckTendonStressAtJacking>0</CheckTendonStressAtJacking>
+                <CheckTendonStressPriorToSeating>-1</CheckTendonStressPriorToSeating>
+                <Coeff_AtJacking_StressRel>0.76000000000000001</Coeff_AtJacking_StressRel>
+                <Coeff_AtJacking_LowRelax>0.80000000000000004</Coeff_AtJacking_LowRelax>
+                <Coeff_PriorToSeating_StressRel>0.90000000000000002</Coeff_PriorToSeating_StressRel>
+                <Coeff_PriorToSeating_LowRelax>0.90000000000000002</Coeff_PriorToSeating_LowRelax>
+                <Coeff_AtAnchoragesAfterSeating_StressRel>0.69999999999999996</Coeff_AtAnchoragesAfterSeating_StressRel>
+                <Coeff_AtAnchoragesAfterSeating_LowRelax>0.69999999999999996</Coeff_AtAnchoragesAfterSeating_LowRelax>
+                <Coeff_ElsewhereAfterSeating_StressRel>0.69999999999999996</Coeff_ElsewhereAfterSeating_StressRel>
+                <Coeff_ElsewhereAfterSeating_LowRelax>0.73999999999999999</Coeff_ElsewhereAfterSeating_LowRelax>
                 <Coeff_AfterAllLosses_StressRel>0.80000000000000004</Coeff_AfterAllLosses_StressRel>
                 <Coeff_AfterAllLosses_LowRelax>0.80000000000000004</Coeff_AfterAllLosses_LowRelax>
                 <RelaxationLossMethod>1</RelaxationLossMethod>
@@ -2007,7 +2005,7 @@
                     <RightEndBlockLength>0</RightEndBlockLength>
                     <RightEndBlockTransition>0</RightEndBlockTransition>
                     <RightEndBlockWidth>0</RightEndBlockWidth>
-                    <PrestressData version="11">
+                    <PrestressData version="12">
                       <HsoEndMeasurement>-1</HsoEndMeasurement>
                       <HpOffsetAtEnd>0</HpOffsetAtEnd>
                       <HsoHpMeasurement>-1</HsoHpMeasurement>
@@ -2017,6 +2015,30 @@
                       <NumStraightStrands>0</NumStraightStrands>
                       <NumTempStrands>0</NumTempStrands>
                       <NumPermanentStrands>0</NumPermanentStrands>
+                      <ExtendedStrands version="2">
+                        <Start version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </Start>
+                        <End version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </End>
+                      </ExtendedStrands>
                       <PjHarped>0</PjHarped>
                       <PjStraight>0</PjStraight>
                       <PjTemp>0</PjTemp>
@@ -2203,7 +2225,7 @@
                     <RightEndBlockLength>0</RightEndBlockLength>
                     <RightEndBlockTransition>0</RightEndBlockTransition>
                     <RightEndBlockWidth>0</RightEndBlockWidth>
-                    <PrestressData version="11">
+                    <PrestressData version="12">
                       <HsoEndMeasurement>-1</HsoEndMeasurement>
                       <HpOffsetAtEnd>0</HpOffsetAtEnd>
                       <HsoHpMeasurement>-1</HsoHpMeasurement>
@@ -2213,6 +2235,30 @@
                       <NumStraightStrands>0</NumStraightStrands>
                       <NumTempStrands>0</NumTempStrands>
                       <NumPermanentStrands>0</NumPermanentStrands>
+                      <ExtendedStrands version="2">
+                        <Start version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </Start>
+                        <End version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </End>
+                      </ExtendedStrands>
                       <PjHarped>0</PjHarped>
                       <PjStraight>0</PjStraight>
                       <PjTemp>0</PjTemp>
@@ -2399,7 +2445,7 @@
                     <RightEndBlockLength>0</RightEndBlockLength>
                     <RightEndBlockTransition>0</RightEndBlockTransition>
                     <RightEndBlockWidth>0</RightEndBlockWidth>
-                    <PrestressData version="11">
+                    <PrestressData version="12">
                       <HsoEndMeasurement>-1</HsoEndMeasurement>
                       <HpOffsetAtEnd>0</HpOffsetAtEnd>
                       <HsoHpMeasurement>-1</HsoHpMeasurement>
@@ -2409,6 +2455,30 @@
                       <NumStraightStrands>0</NumStraightStrands>
                       <NumTempStrands>0</NumTempStrands>
                       <NumPermanentStrands>0</NumPermanentStrands>
+                      <ExtendedStrands version="2">
+                        <Start version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </Start>
+                        <End version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </End>
+                      </ExtendedStrands>
                       <PjHarped>0</PjHarped>
                       <PjStraight>0</PjStraight>
                       <PjTemp>0</PjTemp>
@@ -2566,7 +2636,7 @@
                     <RightEndBlockLength>0</RightEndBlockLength>
                     <RightEndBlockTransition>0</RightEndBlockTransition>
                     <RightEndBlockWidth>0</RightEndBlockWidth>
-                    <PrestressData version="11">
+                    <PrestressData version="12">
                       <HsoEndMeasurement>-1</HsoEndMeasurement>
                       <HpOffsetAtEnd>0</HpOffsetAtEnd>
                       <HsoHpMeasurement>-1</HsoHpMeasurement>
@@ -2576,6 +2646,30 @@
                       <NumStraightStrands>0</NumStraightStrands>
                       <NumTempStrands>0</NumTempStrands>
                       <NumPermanentStrands>0</NumPermanentStrands>
+                      <ExtendedStrands version="2">
+                        <Start version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </Start>
+                        <End version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </End>
+                      </ExtendedStrands>
                       <PjHarped>0</PjHarped>
                       <PjStraight>0</PjStraight>
                       <PjTemp>0</PjTemp>
@@ -2762,7 +2856,7 @@
                     <RightEndBlockLength>0</RightEndBlockLength>
                     <RightEndBlockTransition>0</RightEndBlockTransition>
                     <RightEndBlockWidth>0</RightEndBlockWidth>
-                    <PrestressData version="11">
+                    <PrestressData version="12">
                       <HsoEndMeasurement>-1</HsoEndMeasurement>
                       <HpOffsetAtEnd>0</HpOffsetAtEnd>
                       <HsoHpMeasurement>-1</HsoHpMeasurement>
@@ -2772,6 +2866,30 @@
                       <NumStraightStrands>0</NumStraightStrands>
                       <NumTempStrands>0</NumTempStrands>
                       <NumPermanentStrands>0</NumPermanentStrands>
+                      <ExtendedStrands version="2">
+                        <Start version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </Start>
+                        <End version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </End>
+                      </ExtendedStrands>
                       <PjHarped>0</PjHarped>
                       <PjStraight>0</PjStraight>
                       <PjTemp>0</PjTemp>
@@ -2958,7 +3076,7 @@
                     <RightEndBlockLength>0</RightEndBlockLength>
                     <RightEndBlockTransition>0</RightEndBlockTransition>
                     <RightEndBlockWidth>0</RightEndBlockWidth>
-                    <PrestressData version="11">
+                    <PrestressData version="12">
                       <HsoEndMeasurement>-1</HsoEndMeasurement>
                       <HpOffsetAtEnd>0</HpOffsetAtEnd>
                       <HsoHpMeasurement>-1</HsoHpMeasurement>
@@ -2968,6 +3086,30 @@
                       <NumStraightStrands>0</NumStraightStrands>
                       <NumTempStrands>0</NumTempStrands>
                       <NumPermanentStrands>0</NumPermanentStrands>
+                      <ExtendedStrands version="2">
+                        <Start version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </Start>
+                        <End version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </End>
+                      </ExtendedStrands>
                       <PjHarped>0</PjHarped>
                       <PjStraight>0</PjStraight>
                       <PjTemp>0</PjTemp>
@@ -3125,7 +3267,7 @@
                     <RightEndBlockLength>0</RightEndBlockLength>
                     <RightEndBlockTransition>0</RightEndBlockTransition>
                     <RightEndBlockWidth>0</RightEndBlockWidth>
-                    <PrestressData version="11">
+                    <PrestressData version="12">
                       <HsoEndMeasurement>-1</HsoEndMeasurement>
                       <HpOffsetAtEnd>0</HpOffsetAtEnd>
                       <HsoHpMeasurement>-1</HsoHpMeasurement>
@@ -3135,6 +3277,30 @@
                       <NumStraightStrands>0</NumStraightStrands>
                       <NumTempStrands>0</NumTempStrands>
                       <NumPermanentStrands>0</NumPermanentStrands>
+                      <ExtendedStrands version="2">
+                        <Start version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </Start>
+                        <End version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </End>
+                      </ExtendedStrands>
                       <PjHarped>0</PjHarped>
                       <PjStraight>0</PjStraight>
                       <PjTemp>0</PjTemp>
@@ -3321,7 +3487,7 @@
                     <RightEndBlockLength>0</RightEndBlockLength>
                     <RightEndBlockTransition>0</RightEndBlockTransition>
                     <RightEndBlockWidth>0</RightEndBlockWidth>
-                    <PrestressData version="11">
+                    <PrestressData version="12">
                       <HsoEndMeasurement>-1</HsoEndMeasurement>
                       <HpOffsetAtEnd>0</HpOffsetAtEnd>
                       <HsoHpMeasurement>-1</HsoHpMeasurement>
@@ -3331,6 +3497,30 @@
                       <NumStraightStrands>0</NumStraightStrands>
                       <NumTempStrands>0</NumTempStrands>
                       <NumPermanentStrands>0</NumPermanentStrands>
+                      <ExtendedStrands version="2">
+                        <Start version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </Start>
+                        <End version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </End>
+                      </ExtendedStrands>
                       <PjHarped>0</PjHarped>
                       <PjStraight>0</PjStraight>
                       <PjTemp>0</PjTemp>
@@ -3517,7 +3707,7 @@
                     <RightEndBlockLength>0</RightEndBlockLength>
                     <RightEndBlockTransition>0</RightEndBlockTransition>
                     <RightEndBlockWidth>0</RightEndBlockWidth>
-                    <PrestressData version="11">
+                    <PrestressData version="12">
                       <HsoEndMeasurement>-1</HsoEndMeasurement>
                       <HpOffsetAtEnd>0</HpOffsetAtEnd>
                       <HsoHpMeasurement>-1</HsoHpMeasurement>
@@ -3527,6 +3717,30 @@
                       <NumStraightStrands>0</NumStraightStrands>
                       <NumTempStrands>0</NumTempStrands>
                       <NumPermanentStrands>0</NumPermanentStrands>
+                      <ExtendedStrands version="2">
+                        <Start version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </Start>
+                        <End version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </End>
+                      </ExtendedStrands>
                       <PjHarped>0</PjHarped>
                       <PjStraight>0</PjStraight>
                       <PjTemp>0</PjTemp>
@@ -3684,7 +3898,7 @@
                     <RightEndBlockLength>0</RightEndBlockLength>
                     <RightEndBlockTransition>0</RightEndBlockTransition>
                     <RightEndBlockWidth>0</RightEndBlockWidth>
-                    <PrestressData version="11">
+                    <PrestressData version="12">
                       <HsoEndMeasurement>-1</HsoEndMeasurement>
                       <HpOffsetAtEnd>0</HpOffsetAtEnd>
                       <HsoHpMeasurement>-1</HsoHpMeasurement>
@@ -3694,6 +3908,30 @@
                       <NumStraightStrands>0</NumStraightStrands>
                       <NumTempStrands>0</NumTempStrands>
                       <NumPermanentStrands>0</NumPermanentStrands>
+                      <ExtendedStrands version="2">
+                        <Start version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </Start>
+                        <End version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </End>
+                      </ExtendedStrands>
                       <PjHarped>0</PjHarped>
                       <PjStraight>0</PjStraight>
                       <PjTemp>0</PjTemp>
@@ -3880,7 +4118,7 @@
                     <RightEndBlockLength>0</RightEndBlockLength>
                     <RightEndBlockTransition>0</RightEndBlockTransition>
                     <RightEndBlockWidth>0</RightEndBlockWidth>
-                    <PrestressData version="11">
+                    <PrestressData version="12">
                       <HsoEndMeasurement>-1</HsoEndMeasurement>
                       <HpOffsetAtEnd>0</HpOffsetAtEnd>
                       <HsoHpMeasurement>-1</HsoHpMeasurement>
@@ -3890,6 +4128,30 @@
                       <NumStraightStrands>0</NumStraightStrands>
                       <NumTempStrands>0</NumTempStrands>
                       <NumPermanentStrands>0</NumPermanentStrands>
+                      <ExtendedStrands version="2">
+                        <Start version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </Start>
+                        <End version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </End>
+                      </ExtendedStrands>
                       <PjHarped>0</PjHarped>
                       <PjStraight>0</PjStraight>
                       <PjTemp>0</PjTemp>
@@ -4076,7 +4338,7 @@
                     <RightEndBlockLength>0</RightEndBlockLength>
                     <RightEndBlockTransition>0</RightEndBlockTransition>
                     <RightEndBlockWidth>0</RightEndBlockWidth>
-                    <PrestressData version="11">
+                    <PrestressData version="12">
                       <HsoEndMeasurement>-1</HsoEndMeasurement>
                       <HpOffsetAtEnd>0</HpOffsetAtEnd>
                       <HsoHpMeasurement>-1</HsoHpMeasurement>
@@ -4086,6 +4348,30 @@
                       <NumStraightStrands>0</NumStraightStrands>
                       <NumTempStrands>0</NumTempStrands>
                       <NumPermanentStrands>0</NumPermanentStrands>
+                      <ExtendedStrands version="2">
+                        <Start version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </Start>
+                        <End version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </End>
+                      </ExtendedStrands>
                       <PjHarped>0</PjHarped>
                       <PjStraight>0</PjStraight>
                       <PjTemp>0</PjTemp>
@@ -4243,7 +4529,7 @@
                     <RightEndBlockLength>0</RightEndBlockLength>
                     <RightEndBlockTransition>0</RightEndBlockTransition>
                     <RightEndBlockWidth>0</RightEndBlockWidth>
-                    <PrestressData version="11">
+                    <PrestressData version="12">
                       <HsoEndMeasurement>-1</HsoEndMeasurement>
                       <HpOffsetAtEnd>0</HpOffsetAtEnd>
                       <HsoHpMeasurement>-1</HsoHpMeasurement>
@@ -4253,6 +4539,30 @@
                       <NumStraightStrands>0</NumStraightStrands>
                       <NumTempStrands>0</NumTempStrands>
                       <NumPermanentStrands>0</NumPermanentStrands>
+                      <ExtendedStrands version="2">
+                        <Start version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </Start>
+                        <End version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </End>
+                      </ExtendedStrands>
                       <PjHarped>0</PjHarped>
                       <PjStraight>0</PjStraight>
                       <PjTemp>0</PjTemp>
@@ -4439,7 +4749,7 @@
                     <RightEndBlockLength>0</RightEndBlockLength>
                     <RightEndBlockTransition>0</RightEndBlockTransition>
                     <RightEndBlockWidth>0</RightEndBlockWidth>
-                    <PrestressData version="11">
+                    <PrestressData version="12">
                       <HsoEndMeasurement>-1</HsoEndMeasurement>
                       <HpOffsetAtEnd>0</HpOffsetAtEnd>
                       <HsoHpMeasurement>-1</HsoHpMeasurement>
@@ -4449,6 +4759,30 @@
                       <NumStraightStrands>0</NumStraightStrands>
                       <NumTempStrands>0</NumTempStrands>
                       <NumPermanentStrands>0</NumPermanentStrands>
+                      <ExtendedStrands version="2">
+                        <Start version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </Start>
+                        <End version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </End>
+                      </ExtendedStrands>
                       <PjHarped>0</PjHarped>
                       <PjStraight>0</PjStraight>
                       <PjTemp>0</PjTemp>
@@ -4635,7 +4969,7 @@
                     <RightEndBlockLength>0</RightEndBlockLength>
                     <RightEndBlockTransition>0</RightEndBlockTransition>
                     <RightEndBlockWidth>0</RightEndBlockWidth>
-                    <PrestressData version="11">
+                    <PrestressData version="12">
                       <HsoEndMeasurement>-1</HsoEndMeasurement>
                       <HpOffsetAtEnd>0</HpOffsetAtEnd>
                       <HsoHpMeasurement>-1</HsoHpMeasurement>
@@ -4645,6 +4979,30 @@
                       <NumStraightStrands>0</NumStraightStrands>
                       <NumTempStrands>0</NumTempStrands>
                       <NumPermanentStrands>0</NumPermanentStrands>
+                      <ExtendedStrands version="2">
+                        <Start version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </Start>
+                        <End version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </End>
+                      </ExtendedStrands>
                       <PjHarped>0</PjHarped>
                       <PjStraight>0</PjStraight>
                       <PjTemp>0</PjTemp>
@@ -4802,7 +5160,7 @@
                     <RightEndBlockLength>0</RightEndBlockLength>
                     <RightEndBlockTransition>0</RightEndBlockTransition>
                     <RightEndBlockWidth>0</RightEndBlockWidth>
-                    <PrestressData version="11">
+                    <PrestressData version="12">
                       <HsoEndMeasurement>-1</HsoEndMeasurement>
                       <HpOffsetAtEnd>0</HpOffsetAtEnd>
                       <HsoHpMeasurement>-1</HsoHpMeasurement>
@@ -4812,6 +5170,30 @@
                       <NumStraightStrands>0</NumStraightStrands>
                       <NumTempStrands>0</NumTempStrands>
                       <NumPermanentStrands>0</NumPermanentStrands>
+                      <ExtendedStrands version="2">
+                        <Start version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </Start>
+                        <End version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </End>
+                      </ExtendedStrands>
                       <PjHarped>0</PjHarped>
                       <PjStraight>0</PjStraight>
                       <PjTemp>0</PjTemp>
@@ -4998,7 +5380,7 @@
                     <RightEndBlockLength>0</RightEndBlockLength>
                     <RightEndBlockTransition>0</RightEndBlockTransition>
                     <RightEndBlockWidth>0</RightEndBlockWidth>
-                    <PrestressData version="11">
+                    <PrestressData version="12">
                       <HsoEndMeasurement>-1</HsoEndMeasurement>
                       <HpOffsetAtEnd>0</HpOffsetAtEnd>
                       <HsoHpMeasurement>-1</HsoHpMeasurement>
@@ -5008,6 +5390,30 @@
                       <NumStraightStrands>0</NumStraightStrands>
                       <NumTempStrands>0</NumTempStrands>
                       <NumPermanentStrands>0</NumPermanentStrands>
+                      <ExtendedStrands version="2">
+                        <Start version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </Start>
+                        <End version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </End>
+                      </ExtendedStrands>
                       <PjHarped>0</PjHarped>
                       <PjStraight>0</PjStraight>
                       <PjTemp>0</PjTemp>
@@ -5194,7 +5600,7 @@
                     <RightEndBlockLength>0</RightEndBlockLength>
                     <RightEndBlockTransition>0</RightEndBlockTransition>
                     <RightEndBlockWidth>0</RightEndBlockWidth>
-                    <PrestressData version="11">
+                    <PrestressData version="12">
                       <HsoEndMeasurement>-1</HsoEndMeasurement>
                       <HpOffsetAtEnd>0</HpOffsetAtEnd>
                       <HsoHpMeasurement>-1</HsoHpMeasurement>
@@ -5204,6 +5610,30 @@
                       <NumStraightStrands>0</NumStraightStrands>
                       <NumTempStrands>0</NumTempStrands>
                       <NumPermanentStrands>0</NumPermanentStrands>
+                      <ExtendedStrands version="2">
+                        <Start version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </Start>
+                        <End version="1">
+                          <Straight version="1">
+                            <Count>0</Count>
+                          </Straight>
+                          <Harped version="1">
+                            <Count>0</Count>
+                          </Harped>
+                          <Temporary version="1">
+                            <Count>0</Count>
+                          </Temporary>
+                        </End>
+                      </ExtendedStrands>
                       <PjHarped>0</PjHarped>
                       <PjStraight>0</PjStraight>
                       <PjTemp>0</PjTemp>
@@ -5350,12 +5780,12 @@
             <DCmax>0.5</DCmax>
             <DWmin>0.5</DWmin>
             <DWmax>0.5</DWmax>
-            <CRmin>0.5</CRmin>
-            <CRmax>0.5</CRmax>
-            <SHmin>0.5</SHmin>
-            <SHmax>0.5</SHmax>
-            <PSmin>0.5</PSmin>
-            <PSmax>0.5</PSmax>
+            <CRmin>0</CRmin>
+            <CRmax>0</CRmax>
+            <SHmin>0</SHmin>
+            <SHmax>0</SHmax>
+            <PSmin>0</PSmin>
+            <PSmax>0</PSmax>
             <LLIMmin>1</LLIMmin>
             <LLIMmax>1</LLIMmax>
           </ServiceIA>
@@ -5378,12 +5808,12 @@
             <DCmax>1.25</DCmax>
             <DWmin>0.65000000000000002</DWmin>
             <DWmax>1.5</DWmax>
-            <CRmin>0.90000000000000002</CRmin>
-            <CRmax>1.25</CRmax>
-            <SHmin>0.90000000000000002</SHmin>
-            <SHmax>1.25</SHmax>
-            <PSmin>0.90000000000000002</PSmin>
-            <PSmax>1.25</PSmax>
+            <CRmin>1</CRmin>
+            <CRmax>1</CRmax>
+            <SHmin>1</SHmin>
+            <SHmax>1</SHmax>
+            <PSmin>1</PSmin>
+            <PSmax>1</PSmax>
             <LLIMmin>1.75</LLIMmin>
             <LLIMmax>1.75</LLIMmax>
           </StrengthI>
@@ -5392,12 +5822,12 @@
             <DCmax>1.25</DCmax>
             <DWmin>0.65000000000000002</DWmin>
             <DWmax>1.5</DWmax>
-            <CRmin>0.90000000000000002</CRmin>
-            <CRmax>1.25</CRmax>
-            <SHmin>0.90000000000000002</SHmin>
-            <SHmax>1.25</SHmax>
-            <PSmin>0.90000000000000002</PSmin>
-            <PSmax>1.25</PSmax>
+            <CRmin>1</CRmin>
+            <CRmax>1</CRmax>
+            <SHmin>1</SHmin>
+            <SHmax>1</SHmax>
+            <PSmin>1</PSmin>
+            <PSmax>1</PSmax>
             <LLIMmin>1.3500000000000001</LLIMmin>
             <LLIMmax>1.3500000000000001</LLIMmax>
           </StrengthII>
@@ -5406,12 +5836,12 @@
             <DCmax>0.5</DCmax>
             <DWmin>0.5</DWmin>
             <DWmax>0.5</DWmax>
-            <CRmin>0.5</CRmin>
-            <CRmax>0.5</CRmax>
-            <SHmin>0.5</SHmin>
-            <SHmax>0.5</SHmax>
-            <PSmin>0.5</PSmin>
-            <PSmax>0.5</PSmax>
+            <CRmin>0</CRmin>
+            <CRmax>0</CRmax>
+            <SHmin>0</SHmin>
+            <SHmax>0</SHmax>
+            <PSmin>0</PSmin>
+            <PSmax>0</PSmax>
             <LLIMmin>1.5</LLIMmin>
             <LLIMmax>1.5</LLIMmax>
           </FatigueI>
@@ -5507,9 +5937,9 @@
             <Enabled>-1</Enabled>
             <DC_StrengthI>1</DC_StrengthI>
             <DW_StrengthI>1</DW_StrengthI>
-            <CR_StrengthI>1.25</CR_StrengthI>
-            <SH_StrengthI>1.25</SH_StrengthI>
-            <PS_StrengthI>1.25</PS_StrengthI>
+            <CR_StrengthI>1</CR_StrengthI>
+            <SH_StrengthI>1</SH_StrengthI>
+            <PS_StrengthI>1</PS_StrengthI>
             <LL_StrengthI>-1</LL_StrengthI>
             <DC_ServiceIII>1.25</DC_ServiceIII>
             <DW_ServiceIII>1.5</DW_ServiceIII>
@@ -5524,9 +5954,9 @@
             <Enabled>-1</Enabled>
             <DC_StrengthI>1</DC_StrengthI>
             <DW_StrengthI>1</DW_StrengthI>
-            <CR_StrengthI>1.25</CR_StrengthI>
-            <SH_StrengthI>1.25</SH_StrengthI>
-            <PS_StrengthI>1.25</PS_StrengthI>
+            <CR_StrengthI>1</CR_StrengthI>
+            <SH_StrengthI>1</SH_StrengthI>
+            <PS_StrengthI>1</PS_StrengthI>
             <LL_StrengthI>-1</LL_StrengthI>
             <DC_ServiceIII>1</DC_ServiceIII>
             <DW_ServiceIII>1</DW_ServiceIII>
@@ -5541,16 +5971,16 @@
             <Enabled>-1</Enabled>
             <DC_StrengthI>1.25</DC_StrengthI>
             <DW_StrengthI>1.5</DW_StrengthI>
-            <CR_StrengthI>1.25</CR_StrengthI>
-            <SH_StrengthI>1.25</SH_StrengthI>
-            <PS_StrengthI>1.25</PS_StrengthI>
+            <CR_StrengthI>1</CR_StrengthI>
+            <SH_StrengthI>1</SH_StrengthI>
+            <PS_StrengthI>1</PS_StrengthI>
             <LL_StrengthI>-1</LL_StrengthI>
             <DC_ServiceIII>1.5</DC_ServiceIII>
-            <DW_ServiceIII>-1</DW_ServiceIII>
+            <DW_ServiceIII>1</DW_ServiceIII>
             <CR_ServiceIII>1</CR_ServiceIII>
             <SH_ServiceIII>1</SH_ServiceIII>
             <PS_ServiceIII>1</PS_ServiceIII>
-            <LL_ServiceIII>498.89952749010001</LL_ServiceIII>
+            <LL_ServiceIII>-1</LL_ServiceIII>
             <AllowableTensionCoefficient>498.89952749010001</AllowableTensionCoefficient>
             <RateForShear>-1</RateForShear>
             <RateForStress>-1</RateForStress>
@@ -5560,16 +5990,16 @@
             <Enabled>-1</Enabled>
             <DC_StrengthI>1</DC_StrengthI>
             <DW_StrengthI>1</DW_StrengthI>
-            <CR_StrengthI>1.25</CR_StrengthI>
-            <SH_StrengthI>1.25</SH_StrengthI>
-            <PS_StrengthI>1.25</PS_StrengthI>
+            <CR_StrengthI>1</CR_StrengthI>
+            <SH_StrengthI>1</SH_StrengthI>
+            <PS_StrengthI>1</PS_StrengthI>
             <LL_StrengthI>-1</LL_StrengthI>
             <DC_ServiceIII>1.5</DC_ServiceIII>
-            <DW_ServiceIII>-1</DW_ServiceIII>
-            <CR_ServiceIII>-6.2774385622041925e+066</CR_ServiceIII>
-            <SH_ServiceIII>-6.2774385622041925e+066</SH_ServiceIII>
-            <PS_ServiceIII>-6.2774385622041925e+066</PS_ServiceIII>
-            <LL_ServiceIII>498.89952749010001</LL_ServiceIII>
+            <DW_ServiceIII>1</DW_ServiceIII>
+            <CR_ServiceIII>1</CR_ServiceIII>
+            <SH_ServiceIII>1</SH_ServiceIII>
+            <PS_ServiceIII>1</PS_ServiceIII>
+            <LL_ServiceIII>-1</LL_ServiceIII>
             <AllowableTensionCoefficient>498.89952749010001</AllowableTensionCoefficient>
             <RateForShear>-1</RateForShear>
             <RateForStress>-1</RateForStress>
@@ -5577,17 +6007,17 @@
           <PermitRoutineRating version="3">
             <Enabled>-1</Enabled>
             <DC_StrengthII>1</DC_StrengthII>
-            <DW_StrengthII>-1</DW_StrengthII>
-            <CR_StrengthII>1.25</CR_StrengthII>
-            <SH_StrengthII>1.25</SH_StrengthII>
-            <PS_StrengthII>1.25</PS_StrengthII>
-            <LL_StrengthII>498.89952749010001</LL_StrengthII>
+            <DW_StrengthII>1</DW_StrengthII>
+            <CR_StrengthII>1</CR_StrengthII>
+            <SH_StrengthII>1</SH_StrengthII>
+            <PS_StrengthII>1</PS_StrengthII>
+            <LL_StrengthII>-1</LL_StrengthII>
             <DC_ServiceI>1</DC_ServiceI>
-            <DW_ServiceI>-1</DW_ServiceI>
+            <DW_ServiceI>1</DW_ServiceI>
             <CR_ServiceI>1</CR_ServiceI>
             <SH_ServiceI>1</SH_ServiceI>
             <PS_ServiceI>1</PS_ServiceI>
-            <LL_ServiceI>498.89952749010001</LL_ServiceI>
+            <LL_ServiceI>-1</LL_ServiceI>
             <AllowableYieldStressCoefficient>0.90000000000000002</AllowableYieldStressCoefficient>
             <RateForShear>-1</RateForShear>
             <RateForStress>-1</RateForStress>
@@ -5595,17 +6025,17 @@
           <PermitSpecialRating version="3">
             <Enabled>-1</Enabled>
             <DC_StrengthII>1.5</DC_StrengthII>
-            <DW_StrengthII>-1</DW_StrengthII>
-            <CR_StrengthII>1.25</CR_StrengthII>
-            <SH_StrengthII>1.25</SH_StrengthII>
-            <PS_StrengthII>1.25</PS_StrengthII>
-            <LL_StrengthII>498.89952749010001</LL_StrengthII>
+            <DW_StrengthII>1</DW_StrengthII>
+            <CR_StrengthII>1</CR_StrengthII>
+            <SH_StrengthII>1</SH_StrengthII>
+            <PS_StrengthII>1</PS_StrengthII>
+            <LL_StrengthII>-1</LL_StrengthII>
             <DC_ServiceI>1.5</DC_ServiceI>
-            <DW_ServiceI>-1</DW_ServiceI>
+            <DW_ServiceI>1</DW_ServiceI>
             <CR_ServiceI>1</CR_ServiceI>
             <SH_ServiceI>1</SH_ServiceI>
             <PS_ServiceI>1</PS_ServiceI>
-            <LL_ServiceI>498.89952749010001</LL_ServiceI>
+            <LL_ServiceI>-1</LL_ServiceI>
             <SpecialPermitType>1</SpecialPermitType>
             <RateForShear>-1</RateForShear>
             <RateForStress>-1</RateForStress>

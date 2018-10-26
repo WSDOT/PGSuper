@@ -912,27 +912,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,GirderI
 #endif
 
             std::vector<pgsPointOfInterest> vCSPoi(pIPoi->GetCriticalSections(pgsTypes::StrengthI,poi.GetSegmentKey()));
-
-            //if ( poi.IsTenthPoint(POI_ERECTED_SEGMENT) == 1 )
-            //{
-            //   // POI is at the CL Bearing at the start of the segment... there is a jump is shear
-            //   // so we want both the regular shear and the critical section shear here
-            //   Float64 X = xVals2.at(vPoi2.size());
-            //   xVals2.insert(xVals2.begin()+vPoi2.size(),X);
-            //   vPoi2.push_back(poi);
-            //   vPoi2.push_back(vCSPoi[csZoneIdx]);
-            //}
-            //else if ( poi.IsTenthPoint(POI_ERECTED_SEGMENT) == 11 )
-            //{
-            //   Float64 X = xVals2.at(vPoi2.size());
-            //   xVals2.insert(xVals2.begin()+vPoi2.size(),X);
-            //   vPoi2.push_back(vCSPoi[csZoneIdx]);
-            //   vPoi2.push_back(poi);
-            //}
-            //else
-            {
-               vPoi2.push_back(vCSPoi[csZoneIdx]);
-            }
+            vPoi2.push_back(vCSPoi[csZoneIdx]);
          }
          else
          {
@@ -957,8 +937,8 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,GirderI
 
       case graphLiveLoad:
          LiveLoadGraph(graphDef,intervalIdx,actionType,vPoi,xVals);
-         //if ( actionType == actionShear && liveLoadIntervalIdx <= intervalIdx )
-         //   LiveLoadGraph(graphDef,intervalIdx,actionType,vPoi2,xVals2,true);
+         if ( actionType == actionShear && liveLoadIntervalIdx <= intervalIdx )
+            LiveLoadGraph(graphDef,intervalIdx,actionType,vPoi2,xVals2,true);
          break;
 
       case graphVehicularLiveLoad:
@@ -994,8 +974,8 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,GirderI
       case graphCapacity:
       case graphMinCapacity:
          LimitStateLoadGraph(graphDef,intervalIdx,actionType,vPoi,xVals);
-         //if ( actionType == actionShear && liveLoadIntervalIdx <= intervalIdx )
-         //   LimitStateLoadGraph(graphDef,intervalIdx,actionType,vPoi2,xVals2,true);
+         if ( actionType == actionShear && liveLoadIntervalIdx <= intervalIdx )
+            LimitStateLoadGraph(graphDef,intervalIdx,actionType,vPoi2,xVals2,true);
          break;
 
       default:

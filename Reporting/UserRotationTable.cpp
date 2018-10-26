@@ -79,6 +79,7 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
 
    GET_IFACE2(pBroker,IProductForces,pForces);
    GET_IFACE2(pBroker,IBridge,pBridge);
+   PierIndexType nPiers = pBridge->GetPierCount();
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
@@ -118,7 +119,7 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
       ColumnIndexType col = 0;
       pgsPointOfInterest& poi = vPoi[pier-startPier];
 
-      if ( pier == 0 || pier == pBridge->GetPierCount()-1 )
+      if ( pier == 0 || pier == nPiers-1 )
          (*p_table)(row,col++) << _T("Abutment ") << LABEL_PIER(pier);
       else
          (*p_table)(row,col++) << _T("Pier ") << LABEL_PIER(pier);

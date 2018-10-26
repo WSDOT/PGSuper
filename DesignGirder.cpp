@@ -23,7 +23,7 @@
 #include "PGSuperAppPlugin\stdafx.h"
 #include "DesignGirder.h"
 #include "PGSuperDoc.h"
-#include <DesignConfigUtil.h>
+#include <PgsExt\DesignConfigUtil.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -186,6 +186,10 @@ void txnDesignGirder::DoExecute(int i)
 #pragma Reminder("BUG: this may be a bug")
          // RAB: commented this block out when merging RDP's shear design code over
          // I think the call to SetShearData above is enough for this version of PGSuper/PGSplice
+
+         // RAB: 9/9/2013... on the Patches and Head branches, the block of code below
+         // was moved above the SetSegemntShearData call above because it was wiping out
+         // the shear data.
 
 
          //if (design_options.doDesignForFlexure==dtNoDesign)

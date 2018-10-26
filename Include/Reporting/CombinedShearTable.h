@@ -92,7 +92,7 @@ protected:
    void BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits,
-                      IntervalIndexType intervalIDx,pgsTypes::AnalysisType analysisType,
+                      IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
                       bool bDesign=true,bool bRating=true) const;
 
    void BuildCombinedLiveTable(IBroker* pBroker, rptChapter* pChapter,
@@ -104,7 +104,7 @@ protected:
    void BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits,
-                      pgsTypes::AnalysisType analysisType,
+                      IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
                       bool bDesign=true,bool bRating=true) const;
    //------------------------------------------------------------------------
    void MakeCopy(const CCombinedShearTable& rOther);

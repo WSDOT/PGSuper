@@ -1593,15 +1593,18 @@ void CSplicedGirderData::AssertValid()
       _ASSERT( pSegment->GetSpanIndex(pgsTypes::metStart) <= pSegment->GetSpanIndex(pgsTypes::metEnd) );
 
       // start location of segment must be same as or after the start location of the segment's start span
-      Float64 segStartLoc, segEndLoc;
-      pSegment->GetStations(&segStartLoc,&segEndLoc);
-      if (pStartSpan)
+      if ( m_pGirderGroup->GetBridgeDescription() != NULL )
       {
-         _ASSERT( ::IsLE(pStartSpan->GetPrevPier()->GetStation(),segStartLoc) );
-      }
-      if ( pEndSpan )
-      {
-         _ASSERT( ::IsGE(segEndLoc,pEndSpan->GetNextPier()->GetStation()) );
+         Float64 segStartLoc, segEndLoc;
+         pSegment->GetStations(&segStartLoc,&segEndLoc);
+         if (pStartSpan)
+         {
+            _ASSERT( ::IsLE(pStartSpan->GetPrevPier()->GetStation(),segStartLoc) );
+         }
+         if ( pEndSpan )
+         {
+            _ASSERT( ::IsGE(segEndLoc,pEndSpan->GetNextPier()->GetStation()) );
+         }
       }
 
       CClosurePourData* pLeftClosure  = pSegment->GetLeftClosure();

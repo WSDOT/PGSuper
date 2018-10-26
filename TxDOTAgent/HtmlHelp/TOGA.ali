@@ -6,3 +6,4 @@ IDH_WELCOME=Welcome.htm
 IDH_GIRDER_INPUT=Girder_Description_Tab.htm
 IDH_REPORT_TAB=Analysis_Report_Tab.htm
 IDH_LICENSE=License_Agreement.htm
+IDH_GIRDER_DIRECT_STRAND_FILL=Select_Strands_Dialog.htm

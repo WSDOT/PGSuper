@@ -30,6 +30,142 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 
+
+// Returns true if C/D 1 is less than C/D 2
+bool IsCDLess(cdSense sense, Float64 capacity1, Float64 demand1, Float64 capacity2, Float64 demand2)
+{
+   // First do some input sanity checking
+#if defined _DEBUG
+   if (sense==cdPositive)
+      ATLASSERT(capacity1>=0.0 && capacity2>=0.0); // Signs of capacites cannot be different
+   else
+      ATLASSERT(capacity1<=0.0 && capacity2<=0.0); // ""
+#endif
+
+   // We must deal with all of the edge cases
+   bool icz1 = IsZero(capacity1);
+   bool icz2 = IsZero(capacity2);
+   if (icz1 && icz2)
+   {
+      // Both capacities are zero. Largest demand wins
+      if (sense==cdPositive)
+      {
+         return demand1 > demand2;
+      }
+      else
+      {
+         return demand1 < demand2;
+      }
+   }
+   else if (icz1)
+   {
+      // Capacity 1 is zero, and capacity 2 is not. Zero always wins
+      return true;
+   }
+   else if (icz2)
+   {
+      // Capacity 2 is zero, and capacity 1 is not. Zero always wins
+      return false;
+   }
+   else
+   {
+      // We have two non-zero capacities.
+      // Make sure we don't divide by zero
+      bool idz1 = IsZero(demand1);
+      bool idz2 = IsZero(demand2);
+      if (idz1 && idz2)
+      {
+         // Both demands are zero. smallest capacity wins
+         if (sense==cdPositive)
+         {
+            return capacity1 < capacity2;
+         }
+         else
+         {
+            return capacity1 > capacity2;
+         }
+      }
+      else if (idz1)
+      {
+         return false; // c/0 == inf
+      }
+      else if (idz2)
+      {
+         return true;
+      }
+      else
+      {
+         // We have numbers...
+         Float64 cd1 = capacity1/demand1;
+         Float64 cd2 = capacity2/demand2;
+
+         // But, have to deal with negative c/d's
+         if (cd2 < 0.0)
+         {
+            if(cd1>0.0)
+            {
+               return true;
+            }
+            else
+            {
+               // both negative
+               return cd1 < cd2;
+            }
+         }
+         else
+         {
+            if (cd1 < 0.0)
+            {
+               return false;
+            }
+            else
+            {
+               // Finally can compare two positive c/d's
+               return cd1 < cd2;
+            }
+         }
+      }
+   }
+}
+
+// Function to determine tensile stress and capacity due to controlling impact
+// 
+void DetermineControllingTensileStress(Float64 fUp, Float64 fNone, Float64 fDown, 
+                                       Float64 capUp, Float64 capNone, Float64 capDown,
+                                       Float64* pfCtrl, Float64 * pCapCtrl)
+{
+   if (fUp<=TOLERANCE && fNone<=TOLERANCE && fDown<=TOLERANCE)
+   {
+      // Entire section is in compression always. Just use max stress for demand and min for capacity
+      *pfCtrl = Max3(fUp, fNone, fDown);
+      *pCapCtrl = capUp; // which doesn't matter. since we have all compression, they are all minimum
+   }
+   else
+   {
+      // Have tension for at least one impact. Find min c/d of the three
+      // Use function to compare c/d's
+      if ( IsCDLess(cdPositive, capUp, fUp, capNone, fNone))
+      {
+         // Up is less than none, compare to down
+         if ( IsCDLess(cdPositive, capUp, fUp, capDown, fDown))
+         {
+            *pfCtrl   = fUp;
+            *pCapCtrl = capUp;
+         }
+      }
+      else if ( IsCDLess(cdPositive, capNone, fNone, capDown, fDown))
+      {
+         *pfCtrl   = fNone;
+         *pCapCtrl = capNone;
+      }
+      else
+      {
+         *pfCtrl   = fDown;
+         *pCapCtrl = capDown;
+      }
+   }
+}
+
 /****************************************************************************
 CLASS
    pgsCapacityToDemand
