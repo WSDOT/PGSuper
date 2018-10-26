@@ -40,6 +40,7 @@
 
 // FORWARD DECLARATIONS
 //
+class pgsLibraryEntryDifferenceItem;
 class LiveLoadLibraryEntry;
 class LiveLoadLibraryEntryObserver;
 #pragma warning(disable:4231)
@@ -210,9 +211,11 @@ public:
    void SetMaxVariableAxleSpacing(Float64 val);
    Float64 GetMaxVariableAxleSpacing() const;
 
-   //------------------------------------------------------------------------
-   // Equality - test if two entries are equal. Ignore names by default
-   bool IsEqual(const LiveLoadLibraryEntry& rOther, bool considerName=false) const;
+   // Compares this library entry with rOther. Returns true if the entries are the same.
+   // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
+   bool Compare(const LiveLoadLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool bReturnOnFirstDifference=false,bool considerName=false) const;
+
+   bool IsEqual(const LiveLoadLibraryEntry& rOther,bool bConsiderName=false) const;
 
    // GROUP: INQUIRY
 
@@ -232,6 +235,9 @@ public:
 
    typedef std::vector<Axle> AxleContainer;
    typedef AxleContainer::iterator AxleIterator;
+
+   static CString GetConfigurationType(LiveLoadConfigurationType configuration);
+   static CString GetApplicabilityType(pgsTypes::LiveLoadApplicabilityType applicability);
 
 private:
    // GROUP: DATA MEMBERS

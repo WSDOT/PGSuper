@@ -851,7 +851,9 @@ void CBridgePlanView::UpdateSegmentTooltips()
             StrandIndexType Ns = pSegment->Strands.GetStrandCount(pgsTypes::Straight);
             StrandIndexType Nh = pSegment->Strands.GetStrandCount(pgsTypes::Harped);
             StrandIndexType Nt = pSegment->Strands.GetStrandCount(pgsTypes::Temporary);
-            StrandIndexType Nsd = pSegment->Strands.GetDebondCount(pgsTypes::Straight,pGirder->GetGirderLibraryEntry());
+            StrandIndexType Nsd_Start = pSegment->Strands.GetDebondCount(pgsTypes::Straight,pgsTypes::metStart,pGirder->GetGirderLibraryEntry());
+            StrandIndexType Nsd_End   = pSegment->Strands.GetDebondCount(pgsTypes::Straight,pgsTypes::metEnd,pGirder->GetGirderLibraryEntry());
+            StrandIndexType Nsd = Nsd_Start + Nsd_End;
        
             std::_tstring harp_type(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey)));
 	
@@ -1001,7 +1003,7 @@ void CBridgePlanView::UpdateSectionCut(iPointDisplayObject* pntDO,BOOL bRedraw)
    pRoadway->GetBearing(station,&bearing);
 
    CComPtr<IPoint2d> point;
-   pRoadway->GetPoint(station,0.00,bearing,&point);
+   pRoadway->GetPoint(station,0.00,bearing,pgsTypes::pcGlobal,&point);
 
    pntDO->SetPosition(point,bRedraw,FALSE);
 }
@@ -1287,22 +1289,22 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
    // use the min/max station as the start and end of the bridge for purposes
    // of defining the alignment station range
    CComPtr<IPoint2d> start_left, start_alignment, start_bridge, start_right;
-   pBridge->GetPierPoints(startPierIdx,&start_left,&start_alignment,&start_bridge,&start_right);
+   pBridge->GetPierPoints(startPierIdx,pgsTypes::pcGlobal,&start_left,&start_alignment,&start_bridge,&start_right);
    Float64 start1,start2,start3,start4,offset;
-   pRoadway->GetStationAndOffset(start_left,&start1,&offset);
-   pRoadway->GetStationAndOffset(start_alignment,&start2,&offset);
-   pRoadway->GetStationAndOffset(start_bridge,&start3,&offset);
-   pRoadway->GetStationAndOffset(start_right,&start4,&offset);
+   pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,start_left,&start1,&offset);
+   pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,start_alignment,&start2,&offset);
+   pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,start_bridge,&start3,&offset);
+   pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,start_right,&start4,&offset);
    start_station = Min(start1,start2,start3,start4);
    start_station -= length1/n;
 
    CComPtr<IPoint2d> end_left, end_alignment, end_bridge, end_right;
-   pBridge->GetPierPoints(endPierIdx,&end_left,&end_alignment,&end_bridge,&end_right);
+   pBridge->GetPierPoints(endPierIdx,pgsTypes::pcGlobal,&end_left,&end_alignment,&end_bridge,&end_right);
    Float64 end1,end2,end3,end4;
-   pRoadway->GetStationAndOffset(end_left,&end1,&offset);
-   pRoadway->GetStationAndOffset(end_alignment,&end2,&offset);
-   pRoadway->GetStationAndOffset(end_bridge,&end3,&offset);
-   pRoadway->GetStationAndOffset(end_right,&end4,&offset);
+   pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,end_left,&end1,&offset);
+   pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,end_alignment,&end2,&offset);
+   pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,end_bridge,&end3,&offset);
+   pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,end_right,&end4,&offset);
    end_station = Max(end1,end2,end3,end4);
    end_station += length2/n;
 
@@ -1338,7 +1340,7 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
    for ( long i = 0; i < nPoints; i++, station += station_inc)
    {
       CComPtr<IPoint2d> p;
-      pRoadway->GetPoint(station,0.00,bearing,&p);
+      pRoadway->GetPoint(station,0.00,bearing,pgsTypes::pcGlobal,&p);
       doAlignment->AddPoint(p);
 
       if ( alignment_offset != 0 )
@@ -1346,7 +1348,7 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
          p.Release();
          CComPtr<IDirection> normal;
          pRoadway->GetBearingNormal(station,&normal);
-         pRoadway->GetPoint(station,alignment_offset,normal,&p);
+         pRoadway->GetPoint(station,alignment_offset,normal,pgsTypes::pcGlobal,&p);
          doCLBridge->AddPoint(p);
       }
    }
@@ -1430,7 +1432,7 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
 #endif // _SHOW_CL_GIRDER
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IGirder,pIGirder);
+   GET_IFACE2_NOCHECK(pBroker,IGirder,pIGirder);
    GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
    GET_IFACE2_NOCHECK(pBroker,ITempSupport,pTempSupport); // only gets used if there are temporary supports
 
@@ -1463,7 +1465,7 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
 
             // get the segment geometry points
             CComPtr<IPoint2d> pntSupport1,pntEnd1,pntBrg1,pntBrg2,pntEnd2,pntSupport2;
-            pIGirder->GetSegmentEndPoints(segmentKey,&pntSupport1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntSupport2);
+            pIGirder->GetSegmentEndPoints(segmentKey,pgsTypes::pcGlobal,&pntSupport1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntSupport2);
 
             const CPrecastSegmentData* pSegment    = pGirder->GetSegment(segIdx);
             const CClosureJointData* pStartClosure = pSegment->GetStartClosure();
@@ -1748,7 +1750,7 @@ void CBridgePlanView::BuildGirderDisplayObjects()
 
                // segment end points
                CComPtr<IPoint2d> pntSupport1,pntEnd1,pntBrg1,pntBrg2,pntEnd2,pntSupport2;
-               pIGirder->GetSegmentEndPoints(segmentKey,&pntSupport1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntSupport2);
+               pIGirder->GetSegmentEndPoints(segmentKey,pgsTypes::pcGlobal,&pntSupport1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntSupport2);
 
                // girder labels
                Float64 x1,y1, x2,y2;
@@ -1851,7 +1853,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
 
       // get the pier control points
       CComPtr<IPoint2d> left,alignment_pt,bridge_pt,right;
-      pBridge->GetPierPoints(pierIdx,&left,&alignment_pt,&bridge_pt,&right);
+      pBridge->GetPierPoints(pierIdx,pgsTypes::pcGlobal,&left,&alignment_pt,&bridge_pt,&right);
 
       // create a point display object for the left side of the pier
       // add a socket to it
@@ -2077,10 +2079,10 @@ void CBridgePlanView::BuildPierDisplayObjects()
       alignmentOffset /= cos(skew);
 
       CComPtr<IPoint2d> ahead_point;
-      pAlignment->GetPoint(station,-alignmentOffset,direction,&ahead_point);
+      pAlignment->GetPoint(station,-alignmentOffset,direction,pgsTypes::pcGlobal,&ahead_point);
 
       CComPtr<IPoint2d> back_point;
-      pAlignment->GetPoint(station,-alignmentOffset,direction,&back_point);
+      pAlignment->GetPoint(station,-alignmentOffset,direction,pgsTypes::pcGlobal,&back_point);
 
       if ( settings & IDB_PV_LABEL_PIERS )
       {
@@ -2133,7 +2135,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
          // connection
          Float64 right_slab_edge_offset = pBridge->GetRightSlabEdgeOffset(pierIdx);
          CComPtr<IPoint2d> connection_label_point;
-         pAlignment->GetPoint(station,-right_slab_edge_offset/cos(skew),direction,&connection_label_point);
+         pAlignment->GetPoint(station,-right_slab_edge_offset/cos(skew),direction,pgsTypes::pcGlobal,&connection_label_point);
 
          // make the baseline of the connection text parallel to the alignment
          direction.Release();
@@ -2189,7 +2191,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
             Float64 span_length = station - last_station;
 
             CComPtr<IPoint2d> pntInSpan;
-            pAlignment->GetPoint(last_station + span_length/2,0.00,direction,&pntInSpan);
+            pAlignment->GetPoint(last_station + span_length/2,0.00,direction,pgsTypes::pcGlobal,&pntInSpan);
 
             CComPtr<IDirection> dirParallel;
             pAlignment->GetBearing(last_station + span_length/2,&dirParallel);
@@ -2287,14 +2289,14 @@ void CBridgePlanView::BuildPierDisplayObjects()
    Float64 station = pBridge->GetPierStation(0);
    pBridge->GetPierDirection(0,&dir);
    CComPtr<IPoint2d> rotation_center;
-   pAlignment->GetPoint(station,0.00,dir,&rotation_center);
+   pAlignment->GetPoint(station,0.00,dir,pgsTypes::pcGlobal,&rotation_center);
 
    // get point on alignment at last pier
    CComPtr<IPoint2d> end_point;
    dir.Release();
    station = pBridge->GetPierStation(nPiers-1);
    pBridge->GetPierDirection(nPiers-1,&dir);
-   pAlignment->GetPoint(station,0.00,dir,&end_point);
+   pAlignment->GetPoint(station,0.00,dir,pgsTypes::pcGlobal,&end_point);
 
    // get the direction of the line from the start of the bridge to the end
    // this represents the amount we want to rotate the display
@@ -2395,7 +2397,7 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
 
       // get the control points
       CComPtr<IPoint2d> left,alignment_pt,bridge_pt,right;
-      pTemporarySupport->GetControlPoints(tsIdx,&left,&alignment_pt,&bridge_pt,&right);
+      pTemporarySupport->GetControlPoints(tsIdx,pgsTypes::pcGlobal,&left,&alignment_pt,&bridge_pt,&right);
 
       CComPtr<IDirection> direction;
       pTemporarySupport->GetDirection(tsIdx,&direction);
@@ -2563,10 +2565,10 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
       alignmentOffset /= cos(skew);
 
       CComPtr<IPoint2d> ahead_point;
-      pAlignment->GetPoint(station,-alignmentOffset,direction,&ahead_point);
+      pAlignment->GetPoint(station,-alignmentOffset,direction,pgsTypes::pcGlobal,&ahead_point);
 
       CComPtr<IPoint2d> back_point;
-      pAlignment->GetPoint(station,-alignmentOffset,direction,&back_point);
+      pAlignment->GetPoint(station,-alignmentOffset,direction,pgsTypes::pcGlobal,&back_point);
 
       if ( settings & IDB_PV_LABEL_PIERS )
       {
@@ -2619,7 +2621,7 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
          Float64 Xb = station - pBridgeDesc->GetPier(0)->GetStation();
          Float64 left_slab_edge_offset = pBridge->GetLeftSlabEdgeOffset(Xb);
          CComPtr<IPoint2d> connection_label_point;
-         pAlignment->GetPoint(station,-left_slab_edge_offset/cos(skew),direction,&connection_label_point);
+         pAlignment->GetPoint(station,-left_slab_edge_offset/cos(skew),direction,pgsTypes::pcGlobal,&connection_label_point);
 
          // make the baseline of the connection text parallel to the alignment
          direction.Release();
@@ -2741,8 +2743,8 @@ void CBridgePlanView::BuildClosureJointDisplayObjects()
             // we want left segment (back) end 2 and right segment (ahead) end 1 points to 
             // build the display object
             CComPtr<IPoint2d> pntSupport1[2],pntEnd1[2],pntBrg1[2],pntBrg2[2],pntEnd2[2],pntSupport2[2];
-            pIGirder->GetSegmentEndPoints(leftSegmentKey,  &pntSupport1[pgsTypes::Back], &pntEnd1[pgsTypes::Back], &pntBrg1[pgsTypes::Back], &pntBrg2[pgsTypes::Back], &pntEnd2[pgsTypes::Back], &pntSupport2[pgsTypes::Back]);
-            pIGirder->GetSegmentEndPoints(rightSegmentKey, &pntSupport1[pgsTypes::Ahead],&pntEnd1[pgsTypes::Ahead],&pntBrg1[pgsTypes::Ahead],&pntBrg2[pgsTypes::Ahead],&pntEnd2[pgsTypes::Ahead],&pntSupport2[pgsTypes::Ahead]);
+            pIGirder->GetSegmentEndPoints(leftSegmentKey,  pgsTypes::pcGlobal,&pntSupport1[pgsTypes::Back], &pntEnd1[pgsTypes::Back], &pntBrg1[pgsTypes::Back], &pntBrg2[pgsTypes::Back], &pntEnd2[pgsTypes::Back], &pntSupport2[pgsTypes::Back]);
+            pIGirder->GetSegmentEndPoints(rightSegmentKey, pgsTypes::pcGlobal,&pntSupport1[pgsTypes::Ahead],&pntEnd1[pgsTypes::Ahead],&pntBrg1[pgsTypes::Ahead],&pntBrg2[pgsTypes::Ahead],&pntEnd2[pgsTypes::Ahead],&pntSupport2[pgsTypes::Ahead]);
 
             // create display objects for points at ends of segments
             // also add a socket for each point
@@ -2871,7 +2873,7 @@ void CBridgePlanView::BuildSpanDisplayObjects()
    for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx <= lastSpanIdx; spanIdx++ )
    {
       CComPtr<IPoint2dCollection> points;
-      pBridge->GetSpanPerimeter(spanIdx,10,&points);
+      pBridge->GetSpanPerimeter(spanIdx,10,pgsTypes::pcGlobal,&points);
 
       CComPtr<IPolyShape> poly_shape;
       poly_shape.CoCreateInstance(CLSID_PolyShape);
@@ -2951,7 +2953,7 @@ void CBridgePlanView::BuildSlabDisplayObjects()
    SpanIndexType firstSpanIdx = (m_StartSpanIdx == ALL_SPANS ? 0 : m_StartSpanIdx);
    SpanIndexType lastSpanIdx  = (m_EndSpanIdx  == ALL_SPANS ? nSpans-1 : m_EndSpanIdx);
    CComPtr<IPoint2dCollection> points;
-   pBridge->GetSlabPerimeter(firstSpanIdx,lastSpanIdx,10*(lastSpanIdx-firstSpanIdx+1),&points);
+   pBridge->GetSlabPerimeter(firstSpanIdx,lastSpanIdx,10*(lastSpanIdx-firstSpanIdx+1),pgsTypes::pcGlobal,&points);
 
    CComPtr<IPolyShape> poly_shape;
    poly_shape.CoCreateInstance(CLSID_PolyShape);
@@ -3160,14 +3162,14 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
 	            CComPtr<IDirection> normal;
 	            pAlignment->GetBearingNormal(station,&normal);
 	            CComPtr<IPoint2d> pntLeft;
-	            pAlignment->GetPoint(station,offset,normal,&pntLeft);
+	            pAlignment->GetPoint(station,offset,normal,pgsTypes::pcGlobal,&pntLeft);
 	
                poi = pPoi->ConvertSpanPointToPoi(spanKey2,right_diaphragm.Location);
 	            pBridge->GetStationAndOffset(poi,&station,&offset);
 	            normal.Release();
 	            pAlignment->GetBearingNormal(station,&normal);
 	            CComPtr<IPoint2d> pntRight;
-	            pAlignment->GetPoint(station,offset,normal,&pntRight);
+	            pAlignment->GetPoint(station,offset,normal,pgsTypes::pcGlobal,&pntRight);
 	
 	            // create a point on the left side of the diaphragm
 	            CComPtr<iPointDisplayObject> doLeft;

@@ -75,10 +75,10 @@ END_MESSAGE_MAP()
 BOOL CCEBFIPConcretePage::OnInitDialog() 
 {
    CComboBox* pcbCementType = (CComboBox*)GetDlgItem(IDC_CEMENT_TYPE);
-   pcbCementType->SetItemData(pcbCementType->AddString(_T("Rapid Hardening, High Strength Cemetn (RS)")),pgsTypes::RS);
-   pcbCementType->SetItemData(pcbCementType->AddString(_T("Normal Hardening Cement (N)")),pgsTypes::N);
-   pcbCementType->SetItemData(pcbCementType->AddString(_T("Rapid Hardening Cement (R)")),pgsTypes::R);
-   pcbCementType->SetItemData(pcbCementType->AddString(_T("Slowly Hardening Cement (SL)")),pgsTypes::SL);
+   pcbCementType->SetItemData(pcbCementType->AddString(ConcreteLibraryEntry::GetCEBFIPCementType(pgsTypes::RS)),pgsTypes::RS);
+   pcbCementType->SetItemData(pcbCementType->AddString(ConcreteLibraryEntry::GetCEBFIPCementType(pgsTypes::N)),pgsTypes::N);
+   pcbCementType->SetItemData(pcbCementType->AddString(ConcreteLibraryEntry::GetCEBFIPCementType(pgsTypes::R)),pgsTypes::R);
+   pcbCementType->SetItemData(pcbCementType->AddString(ConcreteLibraryEntry::GetCEBFIPCementType(pgsTypes::SL)),pgsTypes::SL);
 
    m_bUseCEBFIPParameters = !m_bUserParameters;
 

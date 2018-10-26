@@ -17,7 +17,7 @@ Modulus of Rupture for Cracking Moment
 ---------------------------------------
 Define the coefficient for computing the modulus of rupture used for computing the cracking moment in the stability analysis.
 
-Lifting Parameters
+Lifting Analysis Parameters
 -------------------
 Define lifting stability analysis parameters
 

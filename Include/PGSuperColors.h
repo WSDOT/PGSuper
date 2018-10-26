@@ -96,7 +96,7 @@
 // background color for metafiles that are displayed in dialogs
 #define METAFILE_BACKGROUND_COLOR WHITE
 
-#define NO_DEBOND_FILL_COLOR GREY90
-#define NO_DEBOND_FILL_COLOR_NAME _T("light grey")
+#define NOT_DEBONDABLE_FILL_COLOR GREY90
+#define NOT_DEBONDABLE_FILL_COLOR_NAME _T("light grey")
 
 #endif // INCLUDED_COLORS_H_

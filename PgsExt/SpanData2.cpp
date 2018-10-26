@@ -501,7 +501,7 @@ void CSpanData2::ProtectFillet() const
    {
       // probably switched from fttBridge. Get fillet value from bridge and assign as a default
       Float64 defVal = m_pBridgeDesc->GetFillet();
-      defVal = max(0.0, defVal);
+      defVal = Max(0.0, defVal);
 
       m_Fillets.assign(nGirders,defVal);
    }

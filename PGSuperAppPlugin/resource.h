@@ -798,11 +798,14 @@
 #define IDC_ADJUSTABLE_COMBO            1407
 #define IDC_PIER_MODEL_TYPE             1407
 #define IDC_HAUNCH_SHAPE                1407
+#define IDC_DESIGNA_FROM                1407
 #define IDC_GIRDER_ORIENTATION          1408
 #define IDC_GIRDER_GIRDER               1408
 #define IDC_AHEAD_DIAPHRAGM_LOAD        1408
 #define IDC_A_TYPE                      1408
 #define IDC_HAUNCH_SHAPE2               1408
+#define IDC_DESIGNA_FROM2               1408
+#define IDC_DESIGNA_TO                  1408
 #define IDC_PIER                        1409
 #define IDC_FATIGUE_PEDES_COMBO         1409
 #define IDC_FILLET_TYPE                 1409
@@ -875,6 +878,7 @@
 #define IDC_START_CANTILEVER            1446
 #define IDC_DRAW_BRIDGE                 1446
 #define IDC_EPOXY                       1446
+#define IDC_CHECK_ADESIGN               1446
 #define IDC_SYMMETRIC_DEBOND            1447
 #define IDC_END_CANTILEVER              1447
 #define IDC_FUTURE_WS                   1448
@@ -1656,6 +1660,9 @@
 #define IDC_SOURCE_LABEL                1886
 #define IDC_TARGET_LABEL                1887
 #define IDC_FILLET_GRID                 1888
+#define IDC_DESIGNA_STATIC              1888
+#define IDC_EXTENDED_STRANDS_LABEL      1889
+#define IDC_DEBONDED_STRANDS_LABEL      1890
 #define IDC_SERVICE_III_PLUS            1899
 #define IDC_RATE_FOR_STRESS             1962
 #define IDC_APPLIST                     3333
@@ -1818,9 +1825,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        372
+#define _APS_NEXT_RESOURCE_VALUE        373
 #define _APS_NEXT_COMMAND_VALUE         36997
-#define _APS_NEXT_CONTROL_VALUE         1888
+#define _APS_NEXT_CONTROL_VALUE         1891
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

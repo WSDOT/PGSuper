@@ -162,6 +162,7 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDispl
    RowIndexType row = pTable->GetNumberOfHeaderRows();
    while ( pPier != NULL )
    {
+      ColumnIndexType col = 0;
       PierIndexType pierIdx = pPier->GetIndex();
 
       CComPtr<IDirection> bearing;
@@ -184,32 +185,36 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDispl
 
       if ( pPier->IsAbutment() )
       {
-         (*pTable)(row,0) << _T("Abutment ") << LABEL_PIER(pierIdx);
+         (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(pierIdx);
       }
       else
       {
-         (*pTable)(row,0) << _T("Pier ") << LABEL_PIER(pierIdx);
+         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pierIdx);
       }
 
-      (*pTable)(row,1) << rptRcStation(pPier->GetStation(), &pDisplayUnits->GetStationFormat() );
-      (*pTable)(row,2) << RPT_BEARING(OLE2T(bstrBearing));
-      (*pTable)(row,3) << RPT_ANGLE(OLE2T(bstrAngle));
+      (*pTable)(row,col++) << rptRcStation(pPier->GetStation(), &pDisplayUnits->GetStationFormat() );
+      (*pTable)(row,col++) << RPT_BEARING(OLE2T(bstrBearing));
+      (*pTable)(row,col++) << RPT_ANGLE(OLE2T(bstrAngle));
 
       CComPtr<IPoint2d> pntLeft,pntAlignment,pntBridge,pntRight;
-      pBridge->GetPierPoints(pierIdx,&pntLeft,&pntAlignment,&pntBridge,&pntRight);
+      pBridge->GetPierPoints(pierIdx,pgsTypes::pcGlobal,&pntLeft,&pntAlignment,&pntBridge,&pntRight);
 
       offset.ShowUnitTag(false);
       Float64 x,y;
       pntAlignment->get_X(&x);
       pntAlignment->get_Y(&y);
-      (*pTable)(row,4) << offset.SetValue(x);
-      (*pTable)(row,5) << offset.SetValue(y);
-      (*pTable)(row,6) << offset.SetValue( pAlignment->GetElevation(pPier->GetStation(),0.0) );
+      (*pTable)(row,col++) << offset.SetValue(x);
+      (*pTable)(row,col++) << offset.SetValue(y);
+      (*pTable)(row,col++) << offset.SetValue( pAlignment->GetElevation(pPier->GetStation(),0.0) );
 
       if ( pPier->GetNextSpan() )
+      {
          pPier = pPier->GetNextSpan()->GetNextPier();
+      }
       else
+      {
          pPier = NULL;
+      }
 
       row++;
    }

@@ -387,47 +387,8 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
 	                  *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_US.png")) << rptNewLine;
 	               }
 	               else
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	               {
 	                  *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_SI.png")) << rptNewLine;
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	               }
 	            }
 

@@ -1932,38 +1932,74 @@ bool CBridgeAgentImp::BuildCogoModel()
       }
    }
 
-   // move the alignment into the correct position
+   // Move the alignment such that the intersection of the alignment and the pierline of the first pier
+   // is at coordinate (0,0). The purpose of doing this is to keep the bridge model in a local coordinate
+   // system.
 
-   // get coordinate at the station the user wants to use as the reference station
+   // 1) Get station of first pierline
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   Float64 station = pIBridgeDesc->GetPier(0)->GetStation();
+
+   // 2) Create a point at the intersection of the alignment and the first pierline
    CComPtr<IPoint2d> objRefPoint1;
-   alignment->LocatePoint(CComVariant(alignment_data.RefStation),omtAlongDirection, 0.00,CComVariant(0.00),&objRefPoint1);
+   alignment->LocatePoint(CComVariant(station),omtAlongDirection, 0.00,CComVariant(0.00),&objRefPoint1);
 
-   // create a point where the reference station should pass through
+   // 3) create a point at the origin of the coordinate system.
    CComPtr<IPoint2d> objRefPoint2;
    objRefPoint2.CoCreateInstance(CLSID_Point2d);
-   objRefPoint2->Move(alignment_data.xRefPoint,alignment_data.yRefPoint);
+   objRefPoint2->Move(0,0);
 
-   // measure the distance and direction between the point on alignment and the desired ref point
+   // 4) measure the distance and direction between the point on alignment and the desired origin
    CComQIPtr<IMeasure2> measure(m_CogoEngine);
    Float64 distance;
    CComPtr<IDirection> objDirection;
    measure->Inverse(objRefPoint1,objRefPoint2,&distance,&objDirection);
 
-   // move the alignment such that it passes through the ref point
+   // 5) move the alignment such that the intersection of the alignment and the first pierline is at the origin
    alignment->Move(distance,objDirection);
 
-#if defined _DEBUG
-   CComPtr<IPoint2d> objPnt;
-   alignment->LocatePoint(CComVariant(alignment_data.RefStation),omtAlongDirection, 0.0,CComVariant(0.0),&objPnt);
-   Float64 x1,y1,x2,y2;
-   objPnt->Location(&x1,&y1);
-   objRefPoint2->Location(&x2,&y2);
-   ATLASSERT(IsZero(x1-x2));
-   ATLASSERT(IsZero(y1-y2));
+   // NOTE: THE BRIDGE AND ALIGNMENT ARE NOW IN THE LOCAL COORDINATE SYSTEM
 
-   ATLASSERT(IsZero(x1-alignment_data.xRefPoint));
-   ATLASSERT(IsZero(y1-alignment_data.yRefPoint));
-#endif
+   // 6) determine the location of the actual alignment reference point in the local coordinate system
+   CComPtr<IPoint2d> objRefPoint;
+   alignment->LocatePoint(CComVariant(alignment_data.RefStation),omtAlongDirection, 0.00,CComVariant(0.00),&objRefPoint);
+   Float64 dx,dy;
+   objRefPoint->Location(&dx,&dy);
+   m_DeltaX = alignment_data.xRefPoint - dx;
+   m_DeltaY = alignment_data.yRefPoint - dy;
+
+   // move the alignment into the correct position
+
+//   // get coordinate at the station the user wants to use as the reference station
+//   CComPtr<IPoint2d> objRefPoint1;
+//   alignment->LocatePoint(CComVariant(alignment_data.RefStation),omtAlongDirection, 0.00,CComVariant(0.00),&objRefPoint1);
+//
+//   // create a point where the reference station should pass through
+//   CComPtr<IPoint2d> objRefPoint2;
+//   objRefPoint2.CoCreateInstance(CLSID_Point2d);
+//   objRefPoint2->Move(alignment_data.xRefPoint,alignment_data.yRefPoint);
+//
+//   // measure the distance and direction between the point on alignment and the desired ref point
+//   CComQIPtr<IMeasure2> measure(m_CogoEngine);
+//   Float64 distance;
+//   CComPtr<IDirection> objDirection;
+//   measure->Inverse(objRefPoint1,objRefPoint2,&distance,&objDirection);
+//
+//   // move the alignment such that it passes through the ref point
+//   alignment->Move(distance,objDirection);
+//
+//#if defined _DEBUG
+//   CComPtr<IPoint2d> objPnt;
+//   alignment->LocatePoint(CComVariant(alignment_data.RefStation),omtAlongDirection, 0.0,CComVariant(0.0),&objPnt);
+//   Float64 x1,y1,x2,y2;
+//   objPnt->Location(&x1,&y1);
+//   objRefPoint2->Location(&x2,&y2);
+//   ATLASSERT(IsZero(x1-x2));
+//   ATLASSERT(IsZero(y1-y2));
+//
+//   ATLASSERT(IsZero(x1-alignment_data.xRefPoint));
+//   ATLASSERT(IsZero(y1-alignment_data.yRefPoint));
+//#endif
 
    // Setup the profile
    if ( profile_data.VertCurves.size() == 0 )
@@ -2169,7 +2205,6 @@ bool CBridgeAgentImp::BuildCogoModel()
    }
 
    // NOTE: width of roadway surface is arbitrary... just make sure it is wider than the bridge
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    Float64 bridge_width = pBridgeDesc->GetBridgeWidth(); // this is an approximate width, but we are going to double it so that's ok
    if ( bridge_width <= 0 )
@@ -2531,6 +2566,7 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription2* pBridgeDesc)
 
    Float64 gross_slab_depth = pBridgeDesc->GetDeckDescription()->GrossDepth;
    pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->DeckType;
+   pgsTypes::HaunchShapeType haunchShape = pBridgeDesc->GetDeckDescription()->HaunchShape;
 
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -2609,6 +2645,13 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription2* pBridgeDesc)
             }
 
             segment->SetHaunchDepth(startHaunch,midHaunch,endHaunch);
+
+            if (haunchShape==pgsTypes::hsSquare)
+            {
+               // fillet in model is only used to draw
+               fillet = 0.0;
+            }
+
             segment->put_Fillet(fillet);
 
             // if these fire, something is really messed up
@@ -3757,7 +3800,7 @@ void CBridgeAgentImp::ValidateElevationAdjustments(const CSegmentKey& segmentKey
    // the start end of the segment to one of the supports used to establish
    // the segment slope
    CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
-   GetSegmentEndPoints(segmentKey,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
+   GetSegmentEndPoints(segmentKey,pgsTypes::pcLocal,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
 
    // segment slope is established by its supports
    std::vector<const CPierData2*> vPiers(pSegment->GetPiers());
@@ -3817,7 +3860,7 @@ void CBridgeAgentImp::ValidateElevationAdjustments(const CSegmentKey& segmentKey
 
          // we have two unique supports, so the segment slope can be computed
          CComPtr<IPoint2d> pntTS, pntPier;
-         VERIFY(GetSegmentTempSupportIntersection(segmentKey,pFirstTS->GetIndex(),&pntTS));
+         VERIFY(GetSegmentTempSupportIntersection(segmentKey,pFirstTS->GetIndex(),pgsTypes::pcLocal,&pntTS));
 
          if ( pPier->GetStation() < pFirstTS->GetStation() )
          {
@@ -3914,8 +3957,8 @@ void CBridgeAgentImp::ValidateElevationAdjustments(const CSegmentKey& segmentKey
       {
          // we have two unique erection towers, the segment slope can be computed
          CComPtr<IPoint2d> pntFirst, pntLast;
-         VERIFY(GetSegmentTempSupportIntersection(segmentKey,pFirstTS->GetIndex(),&pntFirst));
-         VERIFY(GetSegmentTempSupportIntersection(segmentKey,pLastTS->GetIndex(),  &pntLast));
+         VERIFY(GetSegmentTempSupportIntersection(segmentKey,pFirstTS->GetIndex(),pgsTypes::pcLocal,&pntFirst));
+         VERIFY(GetSegmentTempSupportIntersection(segmentKey,pLastTS->GetIndex(),pgsTypes::pcLocal,  &pntLast));
 
          Float64 dist;
          pntLast->DistanceEx(pntFirst,&dist);
@@ -5944,7 +5987,7 @@ void CBridgeAgentImp::GetStartPoint(Float64 n,Float64* pStartStation,Float64* pS
       hc->get_TS(&pntTS);
 
       Float64 tsStation, offset;
-      GetStationAndOffset(pntTS,&tsStation,&offset);
+      GetStationAndOffset(pgsTypes::pcLocal,pntTS,&tsStation,&offset);
       *pStartStation = Min(*pStartStation,tsStation);
    }
 
@@ -6016,7 +6059,9 @@ void CBridgeAgentImp::GetStartPoint(Float64 n,Float64* pStartStation,Float64* pS
    CComPtr<IPoint2d> refPoint;
    alignment->LocatePoint(CComVariant(objRefStation),omtNormal,0.0,CComVariant(0),&refPoint);
    Float64 x,y;
-   refPoint->Location(&x,&y);
+   refPoint->Location(&x,&y); // this is in local coordinates, we want it in global coordinates
+   x += m_DeltaX;
+   y += m_DeltaY;
    if ( !IsZero(refStation) || !IsZero(x) || !IsZero(y) )
    {
       // we'll ignore the ref point at 0+00 (N 0, E 0)
@@ -6024,7 +6069,7 @@ void CBridgeAgentImp::GetStartPoint(Float64 n,Float64* pStartStation,Float64* pS
       *pStartStation = Min(*pStartStation,refStation);
    }
 
-   GetPoint(*pStartStation,0,NULL,ppPoint);
+   GetPoint(*pStartStation,0,NULL,pgsTypes::pcGlobal,ppPoint);
    *pStartElevation = GetElevation(*pStartStation,0);
    *pGrade = GetProfileGrade(*pStartStation);
 }
@@ -6049,7 +6094,7 @@ void CBridgeAgentImp::GetEndPoint(Float64 n,Float64* pEndStation,Float64* pEndEl
       hc->get_ST(&pntST);
 
       Float64 stStation, offset;
-      GetStationAndOffset(pntST,&stStation,&offset);
+      GetStationAndOffset(pgsTypes::pcLocal,pntST,&stStation,&offset);
       *pEndStation = Max(*pEndStation,stStation);
    }
 
@@ -6104,7 +6149,7 @@ void CBridgeAgentImp::GetEndPoint(Float64 n,Float64* pEndStation,Float64* pEndEl
       *pEndStation = Max(*pEndStation,station);
    }
 
-   GetPoint(*pEndStation,0,NULL,ppPoint);
+   GetPoint(*pEndStation,0,NULL,pgsTypes::pcGlobal,ppPoint);
    *pEndElevation = GetElevation(*pEndStation,0);
    *pGrade = GetProfileGrade(*pEndStation);
 }
@@ -6189,6 +6234,81 @@ void CBridgeAgentImp::GetCurve(CollectionIndexType idx,IHorzCurve** ppCurve)
 
    HRESULT hr = curves->get_Item(key,ppCurve);
    ATLASSERT(SUCCEEDED(hr));
+}
+
+void CBridgeAgentImp::GetCurvePoint(IndexType hcIdx,CurvePointTypes cpType,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint)
+{
+   CComPtr<IHorzCurve> curve;
+   GetCurve(hcIdx,&curve);
+   CComPtr<IPoint2d> pnt;
+   switch(cpType)
+   {
+   case cptTS:
+      curve->get_TS(&pnt);
+      break;
+
+   case cptSC:
+      curve->get_SC(&pnt);
+      break;
+
+   case cptPI:
+      curve->get_PI(&pnt);
+      break;
+
+   case cptCS:
+      curve->get_CS(&pnt);
+      break;
+
+   case cptST:
+      curve->get_ST(&pnt);
+      break;
+
+   case cptCC:
+      curve->get_CC(&pnt);
+      break;
+
+   case cptCCC:
+      curve->get_CCC(&pnt);
+      break;
+
+   default:
+      ATLASSERT(false); // is there a new curve point type?
+   }
+
+   CComPtr<IPoint2d> clone;
+   pnt->Clone(&clone);
+   if ( pcType == pgsTypes::pcGlobal )
+   {
+      clone->Offset(m_DeltaX,m_DeltaY);
+   }
+
+   clone.CopyTo(ppPoint);
+}
+
+HCURVESTATIONS CBridgeAgentImp::GetCurveStations(IndexType hcIdx)
+{
+   HCURVESTATIONS stations;
+
+   GET_IFACE(IRoadwayData, pAlignment ); 
+   AlignmentData2 alignment = pAlignment->GetAlignmentData2();
+   HorzCurveData& hc_data = alignment.HorzCurves[hcIdx];
+
+   CComPtr<IHorzCurve> hc;
+   GetCurve(hcIdx,&hc);
+
+   Float64 bk_tangent_length;
+   hc->get_BkTangentLength(&bk_tangent_length);
+
+   Float64 total_length;
+   hc->get_TotalLength(&total_length);
+
+   stations.TSStation = hc_data.PIStation - bk_tangent_length;
+   stations.SCStation = hc_data.PIStation - bk_tangent_length + hc_data.EntrySpiral;
+   stations.PIStation = hc_data.PIStation;
+   stations.CSStation = hc_data.PIStation - bk_tangent_length + total_length - hc_data.ExitSpiral;
+   stations.STStation = hc_data.PIStation - bk_tangent_length + total_length;
+
+   return stations;
 }
 
 CollectionIndexType CBridgeAgentImp::GetVertCurveCount()
@@ -6298,7 +6418,7 @@ void CBridgeAgentImp::GetRoadwaySurface(Float64 station,IDirection* pDirection,I
    points.CopyTo(ppPoints);
 }
 
-void CBridgeAgentImp::GetPoint(Float64 station,Float64 offset,IDirection* pBearing,IPoint2d** ppPoint)
+void CBridgeAgentImp::GetPoint(Float64 station,Float64 offset,IDirection* pBearing,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint)
 
 {
    VALIDATE( COGO_MODEL );
@@ -6307,14 +6427,30 @@ void CBridgeAgentImp::GetPoint(Float64 station,Float64 offset,IDirection* pBeari
    GetAlignment(&alignment);
 
    alignment->LocatePoint(CComVariant(station),omtAlongDirection, offset,CComVariant(pBearing),ppPoint);
+
+   if ( pcType == pgsTypes::pcGlobal )
+   {
+      (*ppPoint)->Offset(m_DeltaX,m_DeltaY);
+   }
 }
 
-void CBridgeAgentImp::GetStationAndOffset(IPoint2d* point,Float64* pStation,Float64* pOffset)
+void CBridgeAgentImp::GetStationAndOffset(pgsTypes::PlanCoordinateType pcType,IPoint2d* pPoint,Float64* pStation,Float64* pOffset)
 {
    VALIDATE( COGO_MODEL );
 
    CComPtr<IAlignment> alignment;
    GetAlignment(&alignment);
+
+   CComPtr<IPoint2d> point(pPoint);
+   if ( pcType == pgsTypes::pcGlobal )
+   {
+      // the inbound point is in global coordinates, we need to convert it to local coordinates
+      // We don't want to alter the original point so make a copy
+      point.Release();
+      pPoint->Clone(&point);
+      point->Offset(-m_DeltaX,-m_DeltaY);
+      // point is now in local coordinates
+   }
 
    CComPtr<IStation> station;
    Float64 offset;
@@ -7005,7 +7141,7 @@ std::vector<Float64> CBridgeAgentImp::GetGirderSpacing(PierIndexType pierIdx,pgs
    m_Bridge->get_Alignment(&alignment);
 
    CComPtr<IPoint2d> pntLeft,pntAlignment,pntBridge,pntRight;
-   GetPierPoints(pierIdx,&pntLeft,&pntAlignment,&pntBridge,&pntRight);
+   GetPierPoints(pierIdx,pgsTypes::pcLocal,&pntLeft,&pntAlignment,&pntBridge,&pntRight);
 
    CComPtr<ILine2d> measureLine; // only used if we are measuring normal to item (CLPier or CLBrg)
    if ( measureType == pgsTypes::NormalToItem )
@@ -7039,7 +7175,7 @@ std::vector<Float64> CBridgeAgentImp::GetGirderSpacing(PierIndexType pierIdx,pgs
          CSegmentKey rightSegmentKey = GetSegmentAtPier(pierIdx,CGirderKey(grpIdx,nGirders-1));
 
          CComPtr<IPoint2d> pntPier1,pntEnd1,pntBrg1,pntBrg2,pntEnd2,pntPier2;
-         GetSegmentEndPoints(leftSegmentKey,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
+         GetSegmentEndPoints(leftSegmentKey,pgsTypes::pcLocal,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
          CComPtr<IPoint2d> p1 = (pierFace == pgsTypes::Ahead ? pntBrg1 : pntBrg2);
 
          pntPier1.Release();
@@ -7048,7 +7184,7 @@ std::vector<Float64> CBridgeAgentImp::GetGirderSpacing(PierIndexType pierIdx,pgs
          pntBrg2.Release();
          pntEnd2.Release();
          pntPier2.Release();
-         GetSegmentEndPoints(rightSegmentKey,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
+         GetSegmentEndPoints(rightSegmentKey,pgsTypes::pcLocal,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
          CComPtr<IPoint2d> p2 = (pierFace == pgsTypes::Ahead ? pntBrg1 : pntBrg2);
 
          CComPtr<ILine2d> clBrgLine;
@@ -7150,13 +7286,13 @@ Float64 CBridgeAgentImp::GetGirderOffset(GirderIndexType gdrIdx,PierIndexType pi
 {
    VALIDATE(GIRDER);
    CComPtr<IPoint2d> pntLeft, pntAlignment, pntBridge, pntRight;
-   GetPierPoints(pierIdx,&pntLeft,&pntAlignment,&pntBridge,&pntRight);
+   GetPierPoints(pierIdx,pgsTypes::pcLocal,&pntLeft,&pntAlignment,&pntBridge,&pntRight);
 
    GroupIndexType grpIdx = GetGirderGroupAtPier(pierIdx,pierFace);
    CSegmentKey segmentKey(GetSegmentAtPier(pierIdx,CGirderKey(grpIdx,gdrIdx)));
 
    CComPtr<IPoint2d> pntSegment;
-   bool bResult = GetSegmentPierIntersection(segmentKey,pierIdx,&pntSegment);
+   bool bResult = GetSegmentPierIntersection(segmentKey,pierIdx,pgsTypes::pcLocal,&pntSegment);
    ATLASSERT(bResult == true);
 
    // Create a coordinate system with origin at pntAlignment/pntBridge and the x-axis
@@ -7815,11 +7951,11 @@ Float64 CBridgeAgentImp::GetSegmentOffset(const CSegmentKey& segmentKey,Float64 
    return offset;
 }
 
-void CBridgeAgentImp::GetPoint(const CSegmentKey& segmentKey,Float64 Xpoi,IPoint2d** ppPoint)
+void CBridgeAgentImp::GetPoint(const CSegmentKey& segmentKey,Float64 Xpoi,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint)
 {
    VALIDATE( BRIDGE );
    CComPtr<IPoint2d> pntPier1,pntEnd1,pntBrg1,pntBrg2,pntEnd2,pntPier2;
-   GetSegmentEndPoints(segmentKey,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
+   GetSegmentEndPoints(segmentKey,pcType,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
 
    CComPtr<ILocate2> locate;
    m_CogoEngine->get_Locate(&locate);
@@ -7827,13 +7963,13 @@ void CBridgeAgentImp::GetPoint(const CSegmentKey& segmentKey,Float64 Xpoi,IPoint
    ATLASSERT( SUCCEEDED(hr) );
 }
 
-void CBridgeAgentImp::GetPoint(const pgsPointOfInterest& poi,IPoint2d** ppPoint)
+void CBridgeAgentImp::GetPoint(const pgsPointOfInterest& poi,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint)
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
-   GetPoint(segmentKey,poi.GetDistFromStart(),ppPoint);
+   GetPoint(segmentKey,poi.GetDistFromStart(),pcType,ppPoint);
 }
 
-bool CBridgeAgentImp::GetSegmentPierIntersection(const CSegmentKey& segmentKey,PierIndexType pierIdx,IPoint2d** ppPoint)
+bool CBridgeAgentImp::GetSegmentPierIntersection(const CSegmentKey& segmentKey,PierIndexType pierIdx,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint)
 {
    VALIDATE(BRIDGE);
    CComPtr<IGirderLine> girderLine;
@@ -7857,10 +7993,16 @@ bool CBridgeAgentImp::GetSegmentPierIntersection(const CSegmentKey& segmentKey,P
       ATLASSERT(hr == COGO_E_NOINTERSECTION);
       return false;
    }
+
+   if ( pcType == pgsTypes::pcGlobal )
+   {
+      (*ppPoint)->Offset(m_DeltaX,m_DeltaY);
+   }
+
    return true;
 }
 
-bool CBridgeAgentImp::GetSegmentTempSupportIntersection(const CSegmentKey& segmentKey,SupportIndexType tsIdx,IPoint2d** ppPoint)
+bool CBridgeAgentImp::GetSegmentTempSupportIntersection(const CSegmentKey& segmentKey,SupportIndexType tsIdx,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint)
 {
    VALIDATE(BRIDGE);
    CComPtr<IGirderLine> girderLine;
@@ -7885,6 +8027,12 @@ bool CBridgeAgentImp::GetSegmentTempSupportIntersection(const CSegmentKey& segme
       ATLASSERT(hr == COGO_E_NOINTERSECTION);
       return false;
    }
+
+   if ( pcType == pgsTypes::pcGlobal )
+   {
+      (*ppPoint)->Offset(m_DeltaX,m_DeltaY);
+   }
+
    return true;
 }
 
@@ -7893,9 +8041,9 @@ void CBridgeAgentImp::GetStationAndOffset(const CSegmentKey& segmentKey,Float64 
    VALIDATE( BRIDGE );
 
    CComPtr<IPoint2d> point;
-   GetPoint(segmentKey,Xpoi,&point);
+   GetPoint(segmentKey,Xpoi,pgsTypes::pcLocal,&point);
 
-   GetStationAndOffset(point,pStation,pOffset);
+   GetStationAndOffset(pgsTypes::pcLocal,point,pStation,pOffset);
 }
 
 void CBridgeAgentImp::GetStationAndOffset(const pgsPointOfInterest& poi,Float64* pStation,Float64* pOffset)
@@ -8107,10 +8255,10 @@ bool CBridgeAgentImp::IsObtuseCorner(const CSpanKey& spanKey,pgsTypes::MemberEnd
          pgsPointOfInterest poiEndRight   = GetPierPointOfInterest(CGirderKey(grpIdx,nGirders-1),endPierIdx);
 
          CComPtr<IPoint2d> pntStartLeft, pntEndLeft, pntStartRight, pntEndRight;
-         GetPoint(poiStartLeft, &pntStartLeft);
-         GetPoint(poiEndLeft,   &pntEndLeft);
-         GetPoint(poiStartRight,&pntStartRight);
-         GetPoint(poiEndRight,  &pntEndRight);
+         GetPoint(poiStartLeft,  pgsTypes::pcLocal, &pntStartLeft);
+         GetPoint(poiEndLeft,    pgsTypes::pcLocal, &pntEndLeft);
+         GetPoint(poiStartRight, pgsTypes::pcLocal, &pntStartRight);
+         GetPoint(poiEndRight,   pgsTypes::pcLocal, &pntEndRight);
 
          Float64 d1,d2;
          pntStartLeft->DistanceEx(pntEndRight,&d1);
@@ -8429,6 +8577,15 @@ void CBridgeAgentImp::GetSegmentAngle(const CSegmentKey& segmentKey,pgsTypes::Me
    }
 
    supportDirection->AngleBetween(gdrDir,ppAngle);
+}
+
+void CBridgeAgentImp::GetSegmentSkewAngle(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,IAngle** ppAngle)
+{
+   GetSegmentAngle(segmentKey,endType,ppAngle);
+   Float64 v;
+   (*ppAngle)->get_Value(&v);
+   v = M_PI - v;
+   (*ppAngle)->put_Value(v);
 }
 
 CSegmentKey CBridgeAgentImp::GetSegmentAtPier(PierIndexType pierIdx,const CGirderKey& girderKey)
@@ -9697,7 +9854,7 @@ Float64 CBridgeAgentImp::GetRightOverlayToeOffset(const pgsPointOfInterest& poi)
    return GetRightOverlayToeOffset(Xb);
 }
 
-void CBridgeAgentImp::GetSlabPerimeter(CollectionIndexType nPoints,IPoint2dCollection** points)
+void CBridgeAgentImp::GetSlabPerimeter(CollectionIndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** points)
 {
    VALIDATE( BRIDGE );
 
@@ -9708,9 +9865,14 @@ void CBridgeAgentImp::GetSlabPerimeter(CollectionIndexType nPoints,IPoint2dColle
    geometry->get_DeckBoundary(&deckBoundary);
 
    deckBoundary->get_Perimeter(nPoints,points);
+
+   if ( pcType == pgsTypes::pcGlobal )
+   {
+      (*points)->Offset(m_DeltaX,m_DeltaY);
+   }
 }
 
-void CBridgeAgentImp::GetSpanPerimeter(SpanIndexType spanIdx,CollectionIndexType nPoints,IPoint2dCollection** points)
+void CBridgeAgentImp::GetSpanPerimeter(SpanIndexType spanIdx,CollectionIndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** points)
 {
    VALIDATE( BRIDGE );
 
@@ -9727,46 +9889,51 @@ void CBridgeAgentImp::GetSpanPerimeter(SpanIndexType spanIdx,CollectionIndexType
    PierIDType endPierID   = ::GetPierLineID(endPierIdx);
    
    deckBoundary->get_PerimeterEx(nPoints,startPierID,endPierID,points);
+
+   if ( pcType == pgsTypes::pcGlobal )
+   {
+      (*points)->Offset(m_DeltaX,m_DeltaY);
+   }
 }
 
-void CBridgeAgentImp::GetLeftSlabEdgePoint(Float64 station, IDirection* direction,IPoint2d** point)
+void CBridgeAgentImp::GetLeftSlabEdgePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint2d** point)
 {
-   GetSlabEdgePoint(station,direction,qcbLeft,point);
+   GetSlabEdgePoint(station,direction,qcbLeft,pcType,point);
 }
 
-void CBridgeAgentImp::GetLeftSlabEdgePoint(Float64 station, IDirection* direction,IPoint3d** point)
+void CBridgeAgentImp::GetLeftSlabEdgePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint3d** point)
 {
-   GetSlabEdgePoint(station,direction,qcbLeft,point);
+   GetSlabEdgePoint(station,direction,qcbLeft,pcType,point);
 }
 
-void CBridgeAgentImp::GetRightSlabEdgePoint(Float64 station, IDirection* direction,IPoint2d** point)
+void CBridgeAgentImp::GetRightSlabEdgePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint2d** point)
 {
-   GetSlabEdgePoint(station,direction,qcbRight,point);
+   GetSlabEdgePoint(station,direction,qcbRight,pcType,point);
 }
 
-void CBridgeAgentImp::GetRightSlabEdgePoint(Float64 station, IDirection* direction,IPoint3d** point)
+void CBridgeAgentImp::GetRightSlabEdgePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint3d** point)
 {
-   GetSlabEdgePoint(station,direction,qcbRight,point);
+   GetSlabEdgePoint(station,direction,qcbRight,pcType,point);
 }
 
-void CBridgeAgentImp::GetLeftCurbLinePoint(Float64 station, IDirection* direction,IPoint2d** point)
+void CBridgeAgentImp::GetLeftCurbLinePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint2d** point)
 {
-   GetCurbLinePoint(station,direction,qcbLeft,point);
+   GetCurbLinePoint(station,direction,qcbLeft,pcType,point);
 }
 
-void CBridgeAgentImp::GetLeftCurbLinePoint(Float64 station, IDirection* direction,IPoint3d** point)
+void CBridgeAgentImp::GetLeftCurbLinePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint3d** point)
 {
-   GetCurbLinePoint(station,direction,qcbLeft,point);
+   GetCurbLinePoint(station,direction,qcbLeft,pcType,point);
 }
 
-void CBridgeAgentImp::GetRightCurbLinePoint(Float64 station, IDirection* direction,IPoint2d** point)
+void CBridgeAgentImp::GetRightCurbLinePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint2d** point)
 {
-   GetCurbLinePoint(station,direction,qcbRight,point);
+   GetCurbLinePoint(station,direction,qcbRight,pcType,point);
 }
 
-void CBridgeAgentImp::GetRightCurbLinePoint(Float64 station, IDirection* direction,IPoint3d** point)
+void CBridgeAgentImp::GetRightCurbLinePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint3d** point)
 {
-   GetCurbLinePoint(station,direction,qcbRight,point);
+   GetCurbLinePoint(station,direction,qcbRight,pcType,point);
 }
 
 Float64 CBridgeAgentImp::GetPierStation(PierIndexType pierIdx)
@@ -9790,7 +9957,7 @@ Float64 CBridgeAgentImp::GetPierStation(PierIndexType pierIdx)
 }
 
 
-void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx,CollectionIndexType nPoints,IPoint2dCollection** points)
+void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx,CollectionIndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** points)
 {
 /*
 // This would be easier, but it doesn't model the deck in the cantilevers for cantilevered end spans
@@ -9811,6 +9978,7 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
    deckBoundary->get_PerimeterEx(nPoints,startPierID,endPierID,points);
 */
 
+   // NOTE: Do all work in local coordinates and then convert at end if requested
    VALIDATE( BRIDGE );
 
    CComPtr<IAlignment> alignment;
@@ -9831,7 +9999,7 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
    if ( startSpanIdx == 0 )
    {
       CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
-      GetSegmentEndPoints(CSegmentKey(0,0,0),&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
+      GetSegmentEndPoints(CSegmentKey(0,0,0),pgsTypes::pcLocal,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
 
       CComPtr<IPoint2d> p1 = pntEnd1;
 
@@ -9843,7 +10011,7 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
       pntPier2.Release();
 
       GirderIndexType nGirders = GetGirderCountBySpan(startSpanIdx);
-      GetSegmentEndPoints(CSegmentKey(0,nGirders-1,0),&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
+      GetSegmentEndPoints(CSegmentKey(0,nGirders-1,0),pgsTypes::pcLocal,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
 
       CComPtr<IPoint2d> p2 = pntEnd1;
 
@@ -9881,7 +10049,7 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
       GroupIndexType grpIdx = GetGirderGroupIndex(endSpanIdx);
       SegmentIndexType segIdx = GetSegmentCount(grpIdx,0)-1;
       CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
-      GetSegmentEndPoints(CSegmentKey(grpIdx,0,segIdx),&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
+      GetSegmentEndPoints(CSegmentKey(grpIdx,0,segIdx),pgsTypes::pcLocal,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
 
       CComPtr<IPoint2d> p1 = pntEnd2;
 
@@ -9893,7 +10061,7 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
       pntPier2.Release();
 
       GirderIndexType nGirders = GetGirderCountBySpan(endSpanIdx);
-      GetSegmentEndPoints(CSegmentKey(grpIdx,nGirders-1,segIdx),&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
+      GetSegmentEndPoints(CSegmentKey(grpIdx,nGirders-1,segIdx),pgsTypes::pcLocal,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
       
       CComPtr<IPoint2d> p2 = pntEnd2;
 
@@ -9964,8 +10132,8 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
    Float64 start_normal_station_right, end_normal_station_right;
    Float64 offset;
 
-   GetStationAndOffset(objStartPointRight,&start_normal_station_right,&offset);
-   GetStationAndOffset(objEndPointRight,  &end_normal_station_right,  &offset);
+   GetStationAndOffset(pgsTypes::pcLocal,objStartPointRight,&start_normal_station_right,&offset);
+   GetStationAndOffset(pgsTypes::pcLocal,objEndPointRight,  &end_normal_station_right,  &offset);
 
    // If there is a skew, the first deck edge can be before the pier station, or after it. 
    // Same for the last deck edge. We must deal with this
@@ -9995,8 +10163,8 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
 
    Float64 start_normal_station_left, end_normal_station_left;
 
-   GetStationAndOffset(objStartPointLeft,&start_normal_station_left,&offset);
-   GetStationAndOffset(objEndPointLeft,  &end_normal_station_left,  &offset);
+   GetStationAndOffset(pgsTypes::pcLocal,objStartPointLeft,&start_normal_station_left,&offset);
+   GetStationAndOffset(pgsTypes::pcLocal,objEndPointLeft,  &end_normal_station_left,  &offset);
 
    thePoints->Add(objEndPointLeft);
 
@@ -10019,6 +10187,11 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
 
    (*points) = thePoints;
    (*points)->AddRef();
+
+   if ( pcType == pgsTypes::pcGlobal )
+   {
+      (*points)->Offset(m_DeltaX,m_DeltaY);
+   }
 }
 
 Float64 CBridgeAgentImp::GetAheadBearingStation(PierIndexType pierIdx,const CGirderKey& girderKey)
@@ -10165,7 +10338,7 @@ void CBridgeAgentImp::GetPierSkew(PierIndexType pierIdx,IAngle** ppAngle)
    line->get_Skew(ppAngle);
 }
 
-void CBridgeAgentImp::GetPierPoints(PierIndexType pierIdx,IPoint2d** left,IPoint2d** alignment,IPoint2d** bridge,IPoint2d** right)
+void CBridgeAgentImp::GetPierPoints(PierIndexType pierIdx,pgsTypes::PlanCoordinateType pcType,IPoint2d** left,IPoint2d** alignment,IPoint2d** bridge,IPoint2d** right)
 {
    VALIDATE( BRIDGE );
 
@@ -10175,10 +10348,18 @@ void CBridgeAgentImp::GetPierPoints(PierIndexType pierIdx,IPoint2d** left,IPoint
    CComPtr<IPierLine> pierLine;
    geometry->FindPierLine(::GetPierLineID(pierIdx),&pierLine);
 
+   pierLine->get_LeftPoint(left);
    pierLine->get_AlignmentPoint(alignment);
    pierLine->get_BridgePoint(bridge);
-   pierLine->get_LeftPoint(left);
    pierLine->get_RightPoint(right);
+
+   if ( pcType == pgsTypes::pcGlobal )
+   {
+      (*left)->Offset(m_DeltaX,m_DeltaY);
+      (*alignment)->Offset(m_DeltaX,m_DeltaY);
+      (*bridge)->Offset(m_DeltaX,m_DeltaY);
+      (*right)->Offset(m_DeltaX,m_DeltaY);
+   }
 }
 
 void CBridgeAgentImp::IsContinuousAtPier(PierIndexType pierIdx,bool* pbLeft,bool* pbRight)
@@ -10309,10 +10490,10 @@ void CBridgeAgentImp::GetContinuityEventIndex(PierIndexType pierIdx,EventIndexTy
 bool CBridgeAgentImp::GetPierLocation(PierIndexType pierIdx,const CSegmentKey& segmentKey,Float64* pXs)
 {
    CComPtr<IPoint2d> pntSupport1,pntEnd1,pntBrg1,pntBrg2,pntEnd2,pntSupport2;
-   GetSegmentEndPoints(segmentKey,&pntSupport1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntSupport2);
+   GetSegmentEndPoints(segmentKey,pgsTypes::pcLocal,&pntSupport1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntSupport2);
 
    CComPtr<IPoint2d> pntPier;
-   if ( !GetSegmentPierIntersection(segmentKey,pierIdx,&pntPier) )
+   if ( !GetSegmentPierIntersection(segmentKey,pierIdx,pgsTypes::pcLocal,&pntPier) )
    {
       return false;
    }
@@ -10787,10 +10968,10 @@ void CBridgeAgentImp::GetTemporarySupportLocation(SupportIndexType tsIdx,GirderI
 bool CBridgeAgentImp::GetTemporarySupportLocation(SupportIndexType tsIdx,const CSegmentKey& segmentKey,Float64* pXs)
 {
    CComPtr<IPoint2d> pntSupport1,pntEnd1,pntBrg1,pntBrg2,pntEnd2,pntSupport2;
-   GetSegmentEndPoints(segmentKey,&pntSupport1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntSupport2);
+   GetSegmentEndPoints(segmentKey,pgsTypes::pcLocal,&pntSupport1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntSupport2);
 
    CComPtr<IPoint2d> pntTS;
-   if ( !GetSegmentTempSupportIntersection(segmentKey,tsIdx,&pntTS) )
+   if ( !GetSegmentTempSupportIntersection(segmentKey,tsIdx,pgsTypes::pcLocal,&pntTS) )
    {
       return false;
    }
@@ -16640,6 +16821,13 @@ void CBridgeAgentImp::GetStrandPositionsEx(const pgsPointOfInterest& poi,const P
    ATLASSERT(SUCCEEDED(hr));
 }
 
+void CBridgeAgentImp::GetStrandPositionEx(const pgsPointOfInterest& poi, StrandIndexType strandIdx,pgsTypes::StrandType strandType, const PRESTRESSCONFIG& rconfig,IPoint2d** ppPoint)
+{
+   CComPtr<IPoint2dCollection> points;
+   GetStrandPositionsEx(poi,rconfig,strandType,&points);
+   points->get_Item(strandIdx,ppPoint);
+}
+
 void CBridgeAgentImp::GetStrandPositionsEx(LPCTSTR strGirderName,Float64 HgStart,Float64 HgHp1,Float64 HgHp2,Float64 HgEnd,const PRESTRESSCONFIG& rconfig,
                                            pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,
                                            IPoint2dCollection** ppPoints)
@@ -17611,7 +17799,7 @@ bool CBridgeAgentImp::GetPointOfInterest(const CSegmentKey& segmentKey,Float64 s
    }
    
    CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
-   GetSegmentEndPoints(segmentKey,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
+   GetSegmentEndPoints(segmentKey,pgsTypes::pcLocal,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
 
    Float64 Xpoi;
    pntEnd1->DistanceEx(pntOnSegment,&Xpoi);
@@ -17642,7 +17830,7 @@ bool CBridgeAgentImp::GetPointOfInterest(const CGirderKey& girderKey,Float64 sta
             // we found the exact point
             CSegmentKey segmentKey(girderKey,segIdx);
             CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
-            GetSegmentEndPoints(segmentKey,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
+            GetSegmentEndPoints(segmentKey,pgsTypes::pcLocal,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
 
             Float64 Xpoi;
             pntEnd1->DistanceEx(pntOnSegment,&Xpoi);
@@ -17673,7 +17861,7 @@ bool CBridgeAgentImp::GetPointOfInterest(const CGirderKey& girderKey,Float64 sta
    {
       CSegmentKey segmentKey(girderKey,*segIter);
       CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
-      GetSegmentEndPoints(segmentKey,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
+      GetSegmentEndPoints(segmentKey,pgsTypes::pcLocal,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
       
       Float64 dist1;
       pntEnd1->DistanceEx(*pntIter,&dist1);
@@ -18609,13 +18797,15 @@ Float64 CBridgeAgentImp::ConvertPoiToGirderlineCoordinate(const pgsPointOfIntere
    for ( GroupIndexType grpIdx = 0; grpIdx < segmentKey.groupIndex; grpIdx++ )
    {
       CGirderKey girderKey(grpIdx,segmentKey.girderIndex);
+      girderKey.girderIndex = Min(girderKey.girderIndex,GetGirderCount(grpIdx)-1);
       Float64 girder_layout_length = GetGirderLayoutLength(girderKey);
       sum_girder_layout_length += girder_layout_length;
    }
 
    // sum_girder_layout_length is measured from CL Pier 0, we want it measured from the start face of the girder
-   Float64 brg_offset = GetSegmentStartBearingOffset(CSegmentKey(0,segmentKey.girderIndex,0));
-   Float64 end_dist   = GetSegmentStartEndDistance(CSegmentKey(0,segmentKey.girderIndex,0));
+   CSegmentKey segKey(0,Min(segmentKey.girderIndex,GetGirderCount(0)-1),0);
+   Float64 brg_offset = GetSegmentStartBearingOffset(segKey);
+   Float64 end_dist   = GetSegmentStartEndDistance(segKey);
    Float64 start_offset = brg_offset - end_dist; // distance from CL Pier 0 to start face of girder
    sum_girder_layout_length -= start_offset;
 
@@ -18646,7 +18836,7 @@ pgsPointOfInterest CBridgeAgentImp::ConvertGirderlineCoordinateToPoi(GirderIndex
       Float64 Xend   = 0; // distance from Pier 0 to end of current group
       for ( grpIdx = 0; grpIdx < nGroups; grpIdx++ )
       {
-         CGirderKey girderKey(grpIdx,gdrIdx);
+         CGirderKey girderKey(grpIdx,Min(gdrIdx,GetGirderCount(grpIdx)-1));
          Xend += GetGirderLayoutLength(girderKey); // update end of current group
 
          // is target point in this group?
@@ -19464,8 +19654,8 @@ Float64 CBridgeAgentImp::GetDistTopSlabToTopGirder(const pgsPointOfInterest& poi
    // camber effects are ignored
    VALIDATE( BRIDGE );
 
-   // top of girder reference chord elevation
-   Float64 yc = GetTopGirderReferenceChordElevation(poi);
+   // top of girder chord elevation
+   Float64 yc = GetTopGirderChordElevation(poi);
 
    // get station and offset for poi
    Float64 station,offset;
@@ -19475,13 +19665,7 @@ Float64 CBridgeAgentImp::GetDistTopSlabToTopGirder(const pgsPointOfInterest& poi
    // top of alignment elevation above girder
    Float64 ya = GetElevation(station,offset);
 
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   // Use unadjusted A at start of girder
-   Float64 Astart, Aend;
-   GetSlabOffset(segmentKey,&Astart,&Aend);
-
-   return ya - yc + Astart;
+   return ya - yc;
 }
 
 Float64 CBridgeAgentImp::GetDistTopSlabToTopGirder(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend)
@@ -19489,8 +19673,8 @@ Float64 CBridgeAgentImp::GetDistTopSlabToTopGirder(const pgsPointOfInterest& poi
    // camber effects are ignored
    VALIDATE( BRIDGE );
 
-   // top of girder reference chord elevation
-   Float64 yc = GetTopGirderReferenceChordElevation(poi, Astart, Aend);
+   // top of girder chord elevation
+   Float64 yc = GetTopGirderChordElevation(poi, Astart, Aend);
 
    // get station and offset for poi
    Float64 station,offset;
@@ -19500,10 +19684,7 @@ Float64 CBridgeAgentImp::GetDistTopSlabToTopGirder(const pgsPointOfInterest& poi
    // top of alignment elevation above girder
    Float64 ya = GetElevation(station,offset);
 
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   // Use unadjusted A at start of girder
-   return ya - yc + Astart;
+   return ya - yc;
 }
 
 void CBridgeAgentImp::ReportEffectiveFlangeWidth(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
@@ -19752,10 +19933,10 @@ Float64 CBridgeAgentImp::GetSegmentWeight(const CSegmentKey& segmentKey)
 Float64 CBridgeAgentImp::GetSegmentHeightAtPier(const CSegmentKey& segmentKey,PierIndexType pierIdx)
 {
    CComPtr<IPoint2d> pntSupport1,pntEnd1,pntBrg1,pntBrg2,pntEnd2,pntSupport2;
-   GetSegmentEndPoints(segmentKey,&pntSupport1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntSupport2);
+   GetSegmentEndPoints(segmentKey,pgsTypes::pcLocal,&pntSupport1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntSupport2);
 
    CComPtr<IPoint2d> pntPier;
-   GetSegmentPierIntersection(segmentKey,pierIdx,&pntPier);
+   GetSegmentPierIntersection(segmentKey,pierIdx,pgsTypes::pcLocal,&pntPier);
 
    Float64 dist_from_start;
    pntPier->DistanceEx(pntEnd1,&dist_from_start);
@@ -19772,10 +19953,10 @@ Float64 CBridgeAgentImp::GetSegmentHeightAtPier(const CSegmentKey& segmentKey,Pi
 Float64 CBridgeAgentImp::GetSegmentHeightAtTemporarySupport(const CSegmentKey& segmentKey,SupportIndexType tsIdx)
 {
    CComPtr<IPoint2d> pntSupport1,pntEnd1,pntBrg1,pntBrg2,pntEnd2,pntSupport2;
-   GetSegmentEndPoints(segmentKey,&pntSupport1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntSupport2);
+   GetSegmentEndPoints(segmentKey,pgsTypes::pcLocal,&pntSupport1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntSupport2);
 
    CComPtr<IPoint2d> pntTS;
-   GetSegmentTempSupportIntersection(segmentKey,tsIdx,&pntTS);
+   GetSegmentTempSupportIntersection(segmentKey,tsIdx,pgsTypes::pcLocal,&pntTS);
 
    Float64 Xpoi;
    pntTS->DistanceEx(pntEnd1,&Xpoi);
@@ -20747,21 +20928,22 @@ const std::vector<IUserDefinedLoads::UserMomentLoad>* CBridgeAgentImp::GetMoment
 
 /////////////////////////////////////////////////////
 // ITempSupport
-void CBridgeAgentImp::GetControlPoints(SupportIndexType tsIdx,IPoint2d** ppLeft,IPoint2d** ppAlignment,IPoint2d** ppBridge,IPoint2d** ppRight)
+void CBridgeAgentImp::GetControlPoints(SupportIndexType tsIdx,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppLeft,IPoint2d** ppAlignment,IPoint2d** ppBridge,IPoint2d** ppRight)
 {
    VALIDATE( BRIDGE );
 
    CComPtr<IBridgeGeometry> geometry;
    m_Bridge->get_BridgeGeometry(&geometry);
 
-   CComPtr<IPierLine> pier;
+   CComPtr<IPierLine> pierline;
    SupportIDType tsID = ::GetTempSupportLineID(tsIdx);
-   geometry->FindPierLine( tsID, &pier);
-   pier->get_AlignmentPoint(ppAlignment);
+   geometry->FindPierLine( tsID, &pierline);
+   pierline->get_AlignmentPoint(ppAlignment);
+   pierline->get_BridgePoint(ppBridge);
 
    // left and right edge points... intersect CL pier with deck edge
    CComPtr<ILine2d> line;
-   pier->get_Centerline(&line);
+   pierline->get_Centerline(&line);
 
    // get the left and right segment girder line that touch this temporary support
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
@@ -20808,6 +20990,14 @@ void CBridgeAgentImp::GetControlPoints(SupportIndexType tsIdx,IPoint2d** ppLeft,
    CComPtr<IPath> right_path;
    right_girderline->get_Path( &right_path);
    right_path->Intersect(line,*ppAlignment,ppRight);
+
+   if ( pcType == pgsTypes::pcGlobal )
+   {
+      (*ppLeft)->Offset(m_DeltaX,m_DeltaY);
+      (*ppAlignment)->Offset(m_DeltaX,m_DeltaY);
+      (*ppBridge)->Offset(m_DeltaX,m_DeltaY);
+      (*ppRight)->Offset(m_DeltaX,m_DeltaY);
+   }
 }
 
 void CBridgeAgentImp::GetDirection(SupportIndexType tsIdx,IDirection** ppDirection)
@@ -21670,33 +21860,22 @@ Float64 CBridgeAgentImp::GetOrientation(const CSegmentKey& segmentKey)
    return orientation;
 }
 
-Float64 CBridgeAgentImp::GetTopGirderReferenceChordElevation(const pgsPointOfInterest& poi)
+Float64 CBridgeAgentImp::GetProfileChordElevation(const pgsPointOfInterest& poi)
 {
+   // elevation of the top of girder reference chord
+   // the reference chord is a straight line that intersects the top of deck deck at the start and end CL bearings
+   // Profile effects are computed by finding the distance between the top of roadway surface and this chord line.
    VALIDATE( BRIDGE );
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   Float64 Astart, Aend;
-   GetSlabOffset(segmentKey,&Astart,&Aend);
-
-   return GetTopGirderReferenceChordElevation(poi, Astart, Aend);
-}
-
-Float64 CBridgeAgentImp::GetTopGirderReferenceChordElevation(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend)
-{
-   // elevation of the top of girder reference chord
-   // the reference chord is a straight line parallel to the top of the
-   // undeformed girder, based on a constant slab offset, that intersects
-   // the deck at the start and end CL bearings
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
    CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
-   GetSegmentEndPoints(segmentKey,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
+   GetSegmentEndPoints(segmentKey,pgsTypes::pcLocal,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
 
    Float64 startStation, startOffset;
-   GetStationAndOffset(pntBrg1,&startStation,&startOffset);
+   GetStationAndOffset(pgsTypes::pcLocal,pntBrg1,&startStation,&startOffset);
 
    Float64 endStation, endOffset;
-   GetStationAndOffset(pntBrg2,&endStation,&endOffset);
+   GetStationAndOffset(pgsTypes::pcLocal,pntBrg2,&endStation,&endOffset);
 
    Float64 startElevation = GetElevation(startStation,startOffset);
    Float64 endElevation   = GetElevation(endStation,  endOffset);
@@ -21710,9 +21889,52 @@ Float64 CBridgeAgentImp::GetTopGirderReferenceChordElevation(const pgsPointOfInt
 
    Float64 dist_from_left_bearing = Xpoi - end_size;
 
-   Float64 deltaA = Aend - Astart;
+   Float64 yc = ::LinInterp(dist_from_left_bearing,startElevation,endElevation,length);
 
-   Float64 yc = ::LinInterp(dist_from_left_bearing,startElevation,endElevation-deltaA,length);
+   return yc;
+}
+
+Float64 CBridgeAgentImp::GetTopGirderChordElevation(const pgsPointOfInterest& poi)
+{
+   VALIDATE( BRIDGE );
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+   Float64 Astart, Aend;
+   GetSlabOffset(segmentKey,&Astart,&Aend);
+
+   return GetTopGirderChordElevation(poi, Astart, Aend);
+}
+
+Float64 CBridgeAgentImp::GetTopGirderChordElevation(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend)
+{
+   // elevation of the top of girder reference chord
+   // the reference chord is a straight line parallel to the top of the
+   // undeformed girder, based on a constant slab offset, that intersects
+   // the deck at the start and end CL bearings
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+   CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
+   GetSegmentEndPoints(segmentKey,pgsTypes::pcLocal,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
+
+   Float64 startStation, startOffset;
+   GetStationAndOffset(pgsTypes::pcLocal,pntBrg1,&startStation,&startOffset);
+
+   Float64 endStation, endOffset;
+   GetStationAndOffset(pgsTypes::pcLocal,pntBrg2,&endStation,&endOffset);
+
+   Float64 startElevation = GetElevation(startStation,startOffset);
+   Float64 endElevation   = GetElevation(endStation,  endOffset);
+
+   Float64 length;
+   pntBrg1->DistanceEx(pntBrg2,&length);
+
+   Float64 Xpoi = poi.GetDistFromStart();
+
+   Float64 end_size = GetSegmentStartEndDistance(segmentKey);
+
+   Float64 dist_from_left_bearing = Xpoi - end_size;
+
+   Float64 yc = ::LinInterp(dist_from_left_bearing,startElevation-Astart,endElevation-Aend,length);
 
    return yc;
 }
@@ -21790,11 +22012,21 @@ void CBridgeAgentImp::GetShearKeyAreas(const CGirderKey& girderKey,pgsTypes::Sup
    beamFactory->GetShearKeyAreas(pGirderEntry->GetDimensions(), spacingType, uniformArea, areaPerJoint);
 }
 
-void CBridgeAgentImp::GetSegmentEndPoints(const CSegmentKey& segmentKey,IPoint2d** ppSupport1,IPoint2d** ppEnd1,IPoint2d** ppBrg1,IPoint2d** ppBrg2,IPoint2d** ppEnd2,IPoint2d** ppSupport2)
+void CBridgeAgentImp::GetSegmentEndPoints(const CSegmentKey& segmentKey,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppSupport1,IPoint2d** ppEnd1,IPoint2d** ppBrg1,IPoint2d** ppBrg2,IPoint2d** ppEnd2,IPoint2d** ppSupport2)
 {
    CComPtr<IGirderLine> girderLine;
    GetGirderLine(segmentKey,&girderLine);
    girderLine->GetEndPoints(ppSupport1,ppEnd1,ppBrg1,ppBrg2,ppEnd2,ppSupport2);
+
+   if ( pcType == pgsTypes::pcGlobal )
+   {
+      (*ppSupport1)->Offset(m_DeltaX,m_DeltaY);
+      (*ppEnd1)->Offset(m_DeltaX,m_DeltaY);
+      (*ppBrg1)->Offset(m_DeltaX,m_DeltaY);
+      (*ppBrg2)->Offset(m_DeltaX,m_DeltaY);
+      (*ppEnd2)->Offset(m_DeltaX,m_DeltaY);
+      (*ppSupport2)->Offset(m_DeltaX,m_DeltaY);
+   }
 }
 
 Float64 CBridgeAgentImp::GetSegmentLength(const CSegmentKey& segmentKey)
@@ -21849,13 +22081,13 @@ Float64 CBridgeAgentImp::GetSegmentSlope(const CSegmentKey& segmentKey)
    VALIDATE(BRIDGE);
 
    CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
-   GetSegmentEndPoints(segmentKey,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
+   GetSegmentEndPoints(segmentKey,pgsTypes::pcLocal,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
 
    Float64 station,offset;
-   GetStationAndOffset(pntBrg1,&station,&offset);
+   GetStationAndOffset(pgsTypes::pcLocal,pntBrg1,&station,&offset);
    Float64 elev1 = GetElevation(station,offset);
 
-   GetStationAndOffset(pntBrg2,&station,&offset);
+   GetStationAndOffset(pgsTypes::pcLocal,pntBrg2,&station,&offset);
    Float64 elev2 = GetElevation(station,offset);
 
    Float64 Astart, Aend;
@@ -27090,26 +27322,31 @@ void CBridgeAgentImp::GetShapeProperties(pgsTypes::SectionPropertyType sectPropT
    eprops->TransformProperties(Ecgdr,ppShapeProps);
 }
 
-void CBridgeAgentImp::GetSlabEdgePoint(Float64 station, IDirection* direction,DirectionType side,IPoint2d** point)
+void CBridgeAgentImp::GetSlabEdgePoint(Float64 station, IDirection* direction,DirectionType side,pgsTypes::PlanCoordinateType pcType,IPoint2d** point)
 {
    VALIDATE(BRIDGE);
 
    HRESULT hr = m_BridgeGeometryTool->DeckEdgePoint(m_Bridge,station,direction,side,point);
    ATLASSERT(SUCCEEDED(hr));
+
+   if ( pcType == pgsTypes::pcGlobal )
+   {
+      (*point)->Offset(m_DeltaX,m_DeltaY);
+   }
 }
 
-void CBridgeAgentImp::GetSlabEdgePoint(Float64 station, IDirection* direction,DirectionType side,IPoint3d** point)
+void CBridgeAgentImp::GetSlabEdgePoint(Float64 station, IDirection* direction,DirectionType side,pgsTypes::PlanCoordinateType pcType,IPoint3d** point)
 {
    VALIDATE(BRIDGE);
 
    CComPtr<IPoint2d> pnt2d;
-   GetSlabEdgePoint(station,direction,side,&pnt2d);
+   GetSlabEdgePoint(station,direction,side,pcType,&pnt2d);
 
    Float64 x,y;
    pnt2d->Location(&x,&y);
 
    Float64 normal_station,offset;
-   GetStationAndOffset(pnt2d,&normal_station,&offset);
+   GetStationAndOffset(pcType,pnt2d,&normal_station,&offset);
 
    Float64 elev = GetElevation(normal_station,offset);
 
@@ -27121,26 +27358,31 @@ void CBridgeAgentImp::GetSlabEdgePoint(Float64 station, IDirection* direction,Di
    (*point)->AddRef();
 }
 
-void CBridgeAgentImp::GetCurbLinePoint(Float64 station, IDirection* direction,DirectionType side,IPoint2d** point)
+void CBridgeAgentImp::GetCurbLinePoint(Float64 station, IDirection* direction,DirectionType side,pgsTypes::PlanCoordinateType pcType,IPoint2d** point)
 {
    VALIDATE(BRIDGE);
 
    HRESULT hr = m_BridgeGeometryTool->CurbLinePoint(m_Bridge,station,direction,side,point);
    ATLASSERT(SUCCEEDED(hr));
+
+   if ( pcType == pgsTypes::pcGlobal )
+   {
+      (*point)->Offset(m_DeltaX,m_DeltaY);
+   }
 }
 
-void CBridgeAgentImp::GetCurbLinePoint(Float64 station, IDirection* direction,DirectionType side,IPoint3d** point)
+void CBridgeAgentImp::GetCurbLinePoint(Float64 station, IDirection* direction,DirectionType side,pgsTypes::PlanCoordinateType pcType,IPoint3d** point)
 {
    VALIDATE(BRIDGE);
 
    CComPtr<IPoint2d> pnt2d;
-   GetCurbLinePoint(station,direction,side,&pnt2d);
+   GetCurbLinePoint(station,direction,side,pcType,&pnt2d);
 
    Float64 x,y;
    pnt2d->Location(&x,&y);
 
    Float64 normal_station,offset;
-   GetStationAndOffset(pnt2d,&normal_station,&offset);
+   GetStationAndOffset(pcType,pnt2d,&normal_station,&offset);
 
    Float64 elev = GetElevation(normal_station,offset);
 

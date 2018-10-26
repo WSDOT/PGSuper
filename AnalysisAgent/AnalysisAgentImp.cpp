@@ -1370,9 +1370,9 @@ bool CAnalysisAgentImp::ReportAxialResults()
    return false;
 }
 
-void CAnalysisAgentImp::GetGirderSelfWeightLoad(const CSegmentKey& segmentKey,std::vector<GirderLoad>* pDistLoad,std::vector<DiaphragmLoad>* pPointLoad)
+void CAnalysisAgentImp::GetSegmentSelfWeightLoad(const CSegmentKey& segmentKey,std::vector<SegmentLoad>* pSegmentLoads,std::vector<DiaphragmLoad>* pDiaphragmLoads,std::vector<ClosureJointLoad>* pClosureJointLoads)
 {
-   m_pGirderModelManager->GetGirderSelfWeightLoad(segmentKey,pDistLoad,pPointLoad);
+   m_pGirderModelManager->GetSegmentSelfWeightLoad(segmentKey,pSegmentLoads,pDiaphragmLoads,pClosureJointLoads);
 }
 
 std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,bool bTempStrandInstallation)

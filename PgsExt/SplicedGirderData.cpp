@@ -892,37 +892,7 @@ CGirderKey CSplicedGirderData::GetGirderKey() const
 
 void CSplicedGirderData::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face)
 {
-   ATLASSERT(m_pGirderGroup != NULL); // must be part of a group to insert a span
-
-   PierIndexType startPierIdx = m_Segments.front()->GetSpan(pgsTypes::metStart)->GetPier(pgsTypes::metStart)->GetIndex();
-   PierIndexType endPierIdx   = m_Segments.back()->GetSpan(pgsTypes::metEnd)->GetPier(pgsTypes::metEnd)->GetIndex();
-
-   ATLASSERT(startPierIdx <= refPierIdx && refPierIdx <= endPierIdx); // if this fires you are attempting to add a span that is outside of this group
-
-   if ( refPierIdx == startPierIdx )
-   {
-      // Adding a span at the start of the group. 
-      // The span reference for the start segment for this girder must be adjusted.
-      SpanIndexType spanIdx = (SpanIndexType)refPierIdx;
-      if ( face == pgsTypes::Back && spanIdx != 0 )
-      {
-         spanIdx--;
-      }
-
-      const CSpanData2* pSpan = m_pGirderGroup->GetBridgeDescription()->GetSpan(spanIdx);
-      m_Segments.front()->SetSpan(pgsTypes::metStart,pSpan);
-   }
-
-   if ( refPierIdx == endPierIdx )
-   {
-      // Adding a span at the end of the group.
-      // The span refernece for the last segment for this girder must be updated.
-      SpanIndexType spanIdx = (SpanIndexType)refPierIdx;
-      const CSpanData2* pSpan = m_pGirderGroup->GetBridgeDescription()->GetSpan(spanIdx);
-      m_Segments.back()->SetSpan(pgsTypes::metEnd,pSpan);
-   }
-
-   // Update post-tensioning
+   UpdateSegments();
    m_PTData.InsertSpan(refPierIdx,face);
 }
 

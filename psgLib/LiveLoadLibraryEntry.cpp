@@ -32,6 +32,9 @@
 #include "LiveLoadDlg.h"
 
 #include <MathEx.h>
+#include <EAF\EAFApp.h>
+#include <psgLib\LibraryEntryDifferenceItem.h>
+#include <PgsExt\GirderLabel.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -210,37 +213,150 @@ bool LiveLoadLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
    return true;
 }
 
-bool LiveLoadLibraryEntry::IsEqual(const LiveLoadLibraryEntry& rOther, bool considerName) const
+CString LiveLoadLibraryEntry::GetConfigurationType(LiveLoadConfigurationType configuration)
 {
-   bool test =  m_IsNotional == rOther.m_IsNotional  &&
-                m_LiveLoadConfigurationType == rOther.m_LiveLoadConfigurationType  &&
-                m_LiveLoadApplicabilityType == rOther.m_LiveLoadApplicabilityType &&
-                m_VariableAxleIndex == rOther.m_VariableAxleIndex &&
-                ::IsEqual(m_LaneLoadSpanLength,rOther.m_LaneLoadSpanLength) &&
-                ::IsEqual(m_MaxVariableAxleSpacing,rOther.m_MaxVariableAxleSpacing);
-
-   if (test)
+   LPCTSTR lpszConfiguration;
+   switch(configuration )
    {
-      AxleIndexType size = m_Axles.size();
-      test &= ( size == rOther.m_Axles.size() );
+   case LiveLoadLibraryEntry::lcTruckOnly:
+      lpszConfiguration = _T("Truck Only");
+      break;
+      
+   case LiveLoadLibraryEntry::lcLaneOnly:
+      lpszConfiguration = _T("Lane Load Only");
+      break;
+      
+   case LiveLoadLibraryEntry::lcTruckPlusLane:
+      lpszConfiguration = _T("Sum of Lane Load and Truck");
+      break;
 
-      if (test)
-      {
-         for (AxleIndexType iaxl=0; iaxl<size; iaxl++)
-         {
-            const Axle& axle = m_Axles[iaxl];
-            const Axle& otheraxle = rOther.m_Axles[iaxl];
+   case LiveLoadLibraryEntry::lcTruckLaneEnvelope:
+      lpszConfiguration = _T("Envelope of Lane Load and Truck");
+      break;
 
-            test &= ::IsEqual(axle.Weight,  otheraxle.Weight);
-            test &= ::IsEqual(axle.Spacing, otheraxle.Spacing);
-         }
-      }
+   default:
+      ATLASSERT(false); // should never get here
    }
 
-   if (considerName)
-      test &= this->GetName()==rOther.GetName();
+   return lpszConfiguration;
+}
 
-   return test;
+CString LiveLoadLibraryEntry::GetApplicabilityType(pgsTypes::LiveLoadApplicabilityType applicability)
+{
+   LPCTSTR lpszApplicability;
+   switch(applicability)
+   {
+   case pgsTypes::llaEntireStructure:
+      lpszApplicability = _T("Use for all actions at all locations");
+      break;
+
+   case pgsTypes::llaContraflexure:
+      lpszApplicability = _T("Use only for negative moments between points of contraflexure and interior pier reactions");
+      break;
+
+   case pgsTypes::llaNegMomentAndInteriorPierReaction:
+      lpszApplicability = _T("Use only for negative moments and interior pier reactions");
+      break;
+
+   default:
+      ATLASSERT(false); // should never get here
+   }
+   return lpszApplicability;
+}
+
+bool LiveLoadLibraryEntry::IsEqual(const LiveLoadLibraryEntry& rOther,bool bConsiderName) const
+{
+   std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+   return Compare(rOther,vDifferences,true,bConsiderName);
+}
+
+bool LiveLoadLibraryEntry::Compare(const LiveLoadLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool bReturnOnFirstDifference, bool considerName) const
+{
+   CEAFApp* pApp = EAFGetApp();
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
+   if ( m_IsNotional != rOther.m_IsNotional )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceBooleanItem(_T("Neglect axles that do not contribute to the maximum load effect under consideration"),m_IsNotional,rOther.m_IsNotional,_T("Checked"),_T("Unchecked")));
+   }
+
+   if ( m_LiveLoadConfigurationType != rOther.m_LiveLoadConfigurationType )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Load Type"),GetConfigurationType(m_LiveLoadConfigurationType),GetConfigurationType(rOther.m_LiveLoadConfigurationType)));
+   }
+
+   if ( m_LiveLoadApplicabilityType != rOther.m_LiveLoadApplicabilityType )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Usage"),GetApplicabilityType(m_LiveLoadApplicabilityType),GetApplicabilityType(rOther.m_LiveLoadApplicabilityType)));
+   }
+
+   if ( !::IsEqual(m_LaneLoad,rOther.m_LaneLoad) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceForcePerLengthItem(_T("Lane Load"),m_LaneLoad,rOther.m_LaneLoad,pDisplayUnits->ForcePerLength));
+   }
+
+   if ( !::IsEqual(m_LaneLoadSpanLength,rOther.m_LaneLoadSpanLength) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("Lane Load Minimum Span Length"),m_LaneLoadSpanLength,rOther.m_LaneLoadSpanLength,pDisplayUnits->SpanLength));
+   }
+
+   if ( m_LiveLoadConfigurationType != LiveLoadLibraryEntry::lcLaneOnly )
+   {
+      AxleIndexType nAxles = m_Axles.size();
+      if ( nAxles != rOther.m_Axles.size() )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceIndexItem(_T("Number of Axles"),nAxles,rOther.m_Axles.size()));
+      }
+
+      if ( m_VariableAxleIndex != rOther.m_VariableAxleIndex )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceIndexItem(_T("Variable Axle Index"),m_VariableAxleIndex,rOther.m_VariableAxleIndex));
+      }
+
+      if ( !::IsEqual(m_MaxVariableAxleSpacing,rOther.m_MaxVariableAxleSpacing) )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("Maximum Variable Axle Spacing"),m_MaxVariableAxleSpacing,rOther.m_MaxVariableAxleSpacing,pDisplayUnits->SpanLength));
+      }
+
+      for ( AxleIndexType axleIdx = 0; axleIdx < nAxles; axleIdx++ )
+      {
+         const Axle& axle = m_Axles[axleIdx];
+         const Axle& otherAxle = rOther.m_Axles[axleIdx];
+
+         if ( !::IsEqual(axle.Weight,otherAxle.Weight) )
+         {
+            RETURN_ON_DIFFERENCE;
+            CString strAxle;
+            strAxle.Format(_T("Axle %d - Weight"),LABEL_INDEX(axleIdx));
+            vDifferences.push_back(new pgsLibraryEntryDifferenceForceItem(strAxle,axle.Weight,otherAxle.Weight,pDisplayUnits->GeneralForce));
+         }
+
+         if ( !::IsEqual(axle.Spacing,otherAxle.Spacing) )
+         {
+            RETURN_ON_DIFFERENCE;
+            CString strAxle;
+            strAxle.Format(_T("Axle %d - Spacing"),LABEL_INDEX(axleIdx));
+            vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(strAxle,axle.Spacing,otherAxle.Spacing,pDisplayUnits->SpanLength));
+         }
+      }
+
+   }
+
+   if (considerName &&  GetName() != rOther.GetName() )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
+   }
+
+   return vDifferences.size() == 0 ? true : false;
 }
 
 

@@ -69,7 +69,7 @@ public:
 
    // IProduct Loads
    CComBSTR GetLoadGroupName(pgsTypes::ProductForceType type);
-   void GetGirderSelfWeightLoad(const CSegmentKey& segmentKey,std::vector<GirderLoad>* pDistLoad,std::vector<DiaphragmLoad>* pPointLoad);
+   void GetSegmentSelfWeightLoad(const CSegmentKey& segmentKey,std::vector<SegmentLoad>* pSegmentLoads,std::vector<DiaphragmLoad>* pDiaphragmLoad,std::vector<ClosureJointLoad>* pClosureJointLoads);
    Float64 GetTrafficBarrierLoad(const CSegmentKey& segmentKey);
    Float64 GetSidewalkLoad(const CSegmentKey& segmentKey);
    bool HasPedestrianLoad();
@@ -95,6 +95,7 @@ public:
    void GetPrecastDiaphragmLoads(const CSegmentKey& segmentKey, std::vector<DiaphragmLoad>* pLoads);
    void GetIntermediateDiaphragmLoads(const CSpanKey& spanKey, std::vector<DiaphragmLoad>* pLoads);
    void GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIndexType gdrIdx,Float64* pPback, Float64 *pMback, Float64* pPahead, Float64* pMahead);
+   void GetClosureJointLoads(const CClosureKey& closureKey,std::vector<ClosureJointLoad>* pLoads);
 
    bool HasShearKeyLoad(const CGirderKey& girderKey); // checks for load in adjacent continuous beams as well as current beam
    void GetShearKeyLoad(const CSegmentKey& segmentKey,std::vector<ShearKeyLoad>* pLoads);
@@ -325,6 +326,7 @@ private:
    BoundaryConditionType GetLBAMBoundaryConditions(bool bContinuous,const CPierData2* pPier);
    void GetLBAMBoundaryConditions(bool bContinuous,const CTimelineManager* pTimelineMgr,GroupIndexType grpIdx,const CPrecastSegmentData* pSegment,pgsTypes::MemberEndType endType,ISuperstructureMember* pSSMbr);
    void ApplySelfWeightLoad(ILBAMModel* pModel, pgsTypes::AnalysisType analysisType,GirderIndexType gdrLineIdx);
+   MemberIDType ApplyClosureJointSelfWeightLoad(ILBAMModel* pModel,pgsTypes::AnalysisType analysisType,MemberIDType mbrID,const CClosureKey& closureKey,const std::vector<ClosureJointLoad>& vClosureJointLoads);
    void ApplyDiaphragmLoad(ILBAMModel* pModel, pgsTypes::AnalysisType analysisType,GirderIndexType gdrLineIdx);
    void ApplySlabLoad(ILBAMModel* pModel, pgsTypes::AnalysisType analysisType,GirderIndexType gdrLineIdx);
    void ApplyOverlayLoad(ILBAMModel* pModel, pgsTypes::AnalysisType analysisType,GirderIndexType gdrLineIdx,bool bContinuousModel);
@@ -420,11 +422,11 @@ private:
 
    void GetCantileverSlabLoads(const CSegmentKey& segmentKey, Float64* pP1, Float64* pP2);
 
-   // Applies linear distributed loads to an LBAM member. Returns the ID of the next superstructure member to be loaded.
+   // Applies linear distributed load to the LBAM members that represent a segment. Returns the ID of the next superstructure member to be loaded.
    // ssmbrID is the ID of the first superstructure to load
    // segmentKey identifies the segment that is being loaded
    // vLoads is a vector of loads
-   MemberIDType ApplyDistributedLoads(IntervalIndexType intervalIdx,ILBAMModel* pModel,pgsTypes::AnalysisType analysisType,MemberIDType ssmbrID,const CSegmentKey& segmentKey,const std::vector<LinearLoad>& vLoads,BSTR bstrStage,BSTR bstrLoadGroup);
+   MemberIDType ApplyDistributedLoadsToSegment(IntervalIndexType intervalIdx,ILBAMModel* pModel,pgsTypes::AnalysisType analysisType,MemberIDType ssmbrID,const CSegmentKey& segmentKey,const std::vector<LinearLoad>& vLoads,BSTR bstrStage,BSTR bstrLoadGroup);
 
    void GetSlabLoad(const CSegmentKey& segmentKey, std::vector<LinearLoad>& vSlabLoads, std::vector<LinearLoad>& vHaunchLoads, std::vector<LinearLoad>& vPanelLoads);
    void GetMainSpanOverlayLoad(const CSegmentKey& segmentKey, std::vector<OverlayLoad>* pOverlayLoads);

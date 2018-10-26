@@ -112,7 +112,7 @@ void CGirderSelectStrandsPage::DoDataExchange(CDataExchange* pDX)
    for (int i = 0; i < 3; i++ )
    {
       pgsTypes::StrandType strandType = pgsTypes::StrandType(i);
-      bPjackCalculated[strandType] = m_pStrands->IsPjackCalculated(strandType);
+      bPjackCalculated[strandType] = !m_pStrands->IsPjackCalculated(strandType);
       Pjack[strandType]            = m_pStrands->GetPjack(strandType);
    }
 
@@ -129,7 +129,7 @@ void CGirderSelectStrandsPage::DoDataExchange(CDataExchange* pDX)
       for ( int i = 0; i < 3; i++ )
       {
          pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-         m_pStrands->IsPjackCalculated(strandType,bPjackCalculated[strandType]);
+         m_pStrands->IsPjackCalculated(strandType,!bPjackCalculated[strandType]);
          m_pStrands->SetPjack(strandType,Pjack[strandType]);
       }
 
@@ -1377,7 +1377,7 @@ void CGirderSelectStrandsPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
    else
    {
       pCheck->EnableWindow( TRUE );
-      bEnableUserInput= IsDlgButtonChecked( nCheckBox )!=BST_CHECKED ? TRUE : FALSE;
+      bEnableUserInput= IsDlgButtonChecked( nCheckBox )== BST_CHECKED ? TRUE : FALSE;
    }
 
    CWnd* pWnd = GetDlgItem( nEdit );
@@ -1385,14 +1385,14 @@ void CGirderSelectStrandsPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
    CWnd* pUnitWnd = GetDlgItem( nUnit );
    pUnitWnd->EnableWindow( bEnableUserInput );
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
    Float64 Pjack = 0;
    if ( !bEnableUserInput && nStrands != 0 )
    {
       // Compute pjack and fill in value
+
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       // Get the edit control value and save it as the last user input force
       CString val_as_text;
@@ -1421,6 +1421,10 @@ void CGirderSelectStrandsPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
    else if (nStrands == 0)
    {
       // zero out pjack
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
       Float64 jack=0.0;
       CDataExchange dx(this,FALSE);
       DDX_UnitValueAndTag( &dx, nEdit, nUnit, jack, pDisplayUnits->GetGeneralForceUnit() );

@@ -34,8 +34,6 @@
 #include <PgsExt\MomentLoadData.h>
 #include <PgsExt\ClosureJointData.h>
 
-#include <ctype.h> // for toupper
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -104,6 +102,7 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr)
 
    // work through all the events in the timeline and build analysis intervals and modeling stages
    EventIndexType nEvents = pTimelineMgr->GetEventCount();
+   ATLASSERT(0 < nEvents);
    for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
    {
       const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
@@ -118,6 +117,7 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr)
    // If we aren't doing type step analysis, this is a PGSuper project
    // Append the old Bridge Site names to the interval descriptions for
    // continuity with previous versions
+   ATLASSERT(0 < m_Intervals.size());
    if ( m_bIsPGSuper )
    {
       m_Intervals[m_ReleaseIntervals.begin()->second].Description += _T(" (Casting Yard)");

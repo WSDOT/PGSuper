@@ -16,13 +16,13 @@ Each geometric effect is considered independently of the others. The total geome
 
 Notation
 -------------
-x<sub>i</sub> = Station at section <i>i</i>
-z<sub>i</sub> = Normal offset from the alignment to the centerline of girder at section <i>i</i>.
+x<sub>i</sub> = Station at section <i>i</i>. <br>
+z<sub>i</sub> = Normal offset from the alignment to the centerline of girder at section <i>i</i>. <br>
 y<sub>a</sub>(x<sub>i</sub>,z<sub>i</sub>) = Elevation of the roadway surface at station x<sub>i</sub> and normal offset z<sub>i</sub>.
 
 Deck Effect
 ------------
-The distance between the top of the girder and the top of the roadway surface, most obviously be at least the thickness of the slab plus the fillet depth.
+The distance between the top of the girder and the top of the roadway surface, must obviously be at least the thickness of the slab plus the fillet depth.
 
 ![](DeckEffect.png)
 
@@ -32,8 +32,6 @@ Excess Camber Effect
 --------------------
 The slab haunch must be thickened to accommodate any camber that remains in the girder after slab casting.
 
-When the slab offset is computed to match the roadway profile, the camber that remains in the girder after all deflections occur must be accounted for. The slab haunch is thickened by the ![]excess camber.
-
 ![](ExcessCamberEffect.png)
 
 Profile Effect
@@ -42,7 +40,7 @@ The profile effect accounts for changes in the roadway profile along the length 
 
 ![](ProfileEffect.png)
 
-The figure above is obviously highly exaggerated. It illustrates that the profile effect component is equal to the distance the girder must be placed below the profile grade line such that the lowest point on the profile just touches the top of the girder. In the case of a sag vertical curve, the slab haunch must be thickened at the ends of the girder. In the case of a crown vertical curve, the slab haunch depth may be reduced.
+The figure above is obviously highly exaggerated. It illustrates that the profile effect is the greatest distance between the finished grade and a straight line. In the case of a sag vertical curve, the slab haunch must be thickened at the ends of the girder. In the case of a crown vertical curve, the slab haunch depth may be reduced.
 
 ![](ProfileEffectEqn.png)  
 
@@ -50,12 +48,12 @@ Where
 
 ![](ProfileEffectDeltaEqn.png)
 
-is the difference between the roadway surface directly above the centerline of the girder and a chord line, parallel to the top of the girder (ignoring camber effects), connecting the points defined by the intersection of the centerline of bearing and the roadway surface.
+is the difference between the roadway surface directly above the centerline of the girder and the profile chord line.
 
-The chord line is given by 
+The profile chord line is given by 
 ![](GirderChordEqn.png)
 
-Girder orientation Effect
+Girder Orientation Effect
 ----------------------------
 The girder orientation effect accounts for the difference in slope between the roadway surface and the top of the girder. Girders such as I-beams are oriented with their main axis plumb. Other girders such as U-beams, box beams, and slabs can be oriented with their main axis normal to the roadway surface. The orientation of the girder with respect to the roadway surface, and changes in the roadway surface along the length of the girder (superelevation transitions) define the Girder Orientation Effect.
 

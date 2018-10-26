@@ -137,6 +137,9 @@ public:
    void SetFillet(Float64 Fillet);
    Float64 GetFillet(bool bGetRawValue = false) const;
 
+   // returns the greatest fillet value defined for the bridge
+   Float64 GetMaxFillet() const;
+
    // =================================================================================
    // Spans and Girder Groups
    // =================================================================================

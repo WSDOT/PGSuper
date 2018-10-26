@@ -138,27 +138,27 @@ BOOL CLiveLoadDlg::OnInitDialog()
 
    // Fill Load Type combo box
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_CONFIG_TYPE);
-   int idx = pCB->AddString(_T("Truck Only"));
+   int idx = pCB->AddString(LiveLoadLibraryEntry::GetConfigurationType(LiveLoadLibraryEntry::lcTruckOnly));
    pCB->SetItemData(idx,LiveLoadLibraryEntry::lcTruckOnly);
 
-   idx = pCB->AddString(_T("Lane Load Only"));
+   idx = pCB->AddString(LiveLoadLibraryEntry::GetConfigurationType(LiveLoadLibraryEntry::lcLaneOnly));
    pCB->SetItemData(idx,LiveLoadLibraryEntry::lcLaneOnly);
 
-   idx = pCB->AddString(_T("Sum of Lane Load and Truck"));
+   idx = pCB->AddString(LiveLoadLibraryEntry::GetConfigurationType(LiveLoadLibraryEntry::lcTruckPlusLane));
    pCB->SetItemData(idx,LiveLoadLibraryEntry::lcTruckPlusLane);
 
-   idx = pCB->AddString(_T("Envelope of Lane Load and Truck"));
+   idx = pCB->AddString(LiveLoadLibraryEntry::GetConfigurationType(LiveLoadLibraryEntry::lcTruckLaneEnvelope));
    pCB->SetItemData(idx,LiveLoadLibraryEntry::lcTruckLaneEnvelope);
 
    // Fill Usage combo box
    pCB = (CComboBox*)GetDlgItem(IDC_USAGE);
-   idx = pCB->AddString(_T("Use for all actions at all locations"));
+   idx = pCB->AddString(LiveLoadLibraryEntry::GetApplicabilityType(pgsTypes::llaEntireStructure));
    pCB->SetItemData(idx,pgsTypes::llaEntireStructure);
 
-   idx = pCB->AddString(_T("Use only for negative moments between points of contraflexure and interior pier reactions"));
+   idx = pCB->AddString(LiveLoadLibraryEntry::GetApplicabilityType(pgsTypes::llaContraflexure));
    pCB->SetItemData(idx,pgsTypes::llaContraflexure);
 
-   idx = pCB->AddString(_T("Use only for negative moments and interior pier reactions"));
+   idx = pCB->AddString(LiveLoadLibraryEntry::GetApplicabilityType(pgsTypes::llaNegMomentAndInteriorPierReaction));
    pCB->SetItemData(idx,pgsTypes::llaNegMomentAndInteriorPierReaction);
 
 

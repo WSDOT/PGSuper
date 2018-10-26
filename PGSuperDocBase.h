@@ -310,7 +310,7 @@ protected:
 
    CSelection m_Selection;
 
-   bool m_bDesignSlabOffset;
+   arSlabOffsetDesignType m_DesignSlabOffset;
 
    // callback IDs for any status callbacks we register
    StatusCallbackIDType m_scidInformationalError;

@@ -1880,6 +1880,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\LibraryEntryDifferenceItem.cpp"
+				>
+			</File>
+			<File
 				RelativePath="LibraryManager.cpp"
 				>
 				<FileConfiguration
@@ -4095,7 +4099,11 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEntryConflict.h"
+				RelativePath="..\Include\psgLib\LibraryEntryConflict.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\psgLib\LibraryEntryDifferenceItem.h"
 				>
 			</File>
 			<File

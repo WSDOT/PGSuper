@@ -134,7 +134,13 @@ bool DiaphragmLayoutEntry::LoadMe(sysIStructuredLoad* pLoad)
    return true;
 }
 
-bool DiaphragmLayoutEntry::IsEqual(const DiaphragmLayoutEntry& rOther, bool considerName) const
+bool DiaphragmLayoutEntry::IsEqual(const DiaphragmLayoutEntry& rOther,bool bConsiderName) const
+{
+   std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+   return Compare(rOther,vDifferences,true,bConsiderName);
+}
+
+bool DiaphragmLayoutEntry::Compare(const DiaphragmLayoutEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool bReturnOnFirstDifference, bool considerName) const
 {
    bool test =   m_DiaphragmLayoutVec == rOther.m_DiaphragmLayoutVec;
 

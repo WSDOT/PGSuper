@@ -27,6 +27,7 @@
 #include <libraryFw\LibraryEntry.h>
 #include <System\SubjectT.h>
 
+class pgsLibraryEntryDifferenceItem;
 class ConnectionLibraryEntry;
 class ConnectionLibraryEntryObserver;
 #pragma warning(disable:4231)
@@ -106,6 +107,9 @@ public:
       AlongGirder = 0, 
       NormalToPier = 1
    };
+   static CString GetBearingOffsetMeasurementType(ConnectionLibraryEntry::BearingOffsetMeasurementType measurementType);
+   static CString GetEndDistanceMeasurementType(ConnectionLibraryEntry::EndDistanceMeasurementType measurementType);
+   static CString GetDiaphragmLoadType(ConnectionLibraryEntry::DiaphragmLoadType loadType);
 
    static std::_tstring StringForEndDistanceMeasurementType(EndDistanceMeasurementType type);
    static ConnectionLibraryEntry::EndDistanceMeasurementType EndDistanceMeasurementTypeFromString(LPCTSTR strType);
@@ -212,9 +216,11 @@ public:
    // Note: This call only valid if DiaphragmLoadType==ApplyAtSpecifiedLocation 
    void SetDiaphragmLoadLocation(Float64 loc);
 
-   //------------------------------------------------------------------------
-   // Equality - test if two entries are equal. Ignore names by default
-   bool IsEqual(const ConnectionLibraryEntry& rOther, bool considerName=false) const;
+   // Compares this library entry with rOther. Returns true if the entries are the same.
+   // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
+   bool Compare(const ConnectionLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,bool bReturnOnFirstDifference=false, bool considerName=false) const;
+
+   bool IsEqual(const ConnectionLibraryEntry& rOther,bool bConsiderName=false) const;
 
    // GROUP: INQUIRY
 

@@ -151,7 +151,7 @@ BOOL CGirderDescDebondPage::OnSetActive()
    if (bCanDebond)
    {
       CString n;
-      n.Format(_T("\n- Strands shown in %s cannot be debonded"),NO_DEBOND_FILL_COLOR_NAME);
+      n.Format(_T("\n- Strands shown in %s cannot be debonded"),NOT_DEBONDABLE_FILL_COLOR_NAME);
       note += n;
    }
    GetDlgItem(IDC_NOTE2)->SetWindowText(note);
@@ -384,13 +384,13 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
    CPen strand_pen(PS_SOLID,1,STRAND_BORDER_COLOR);
-   CPen no_debond_pen(PS_SOLID,1,NO_DEBOND_FILL_COLOR);
+   CPen no_debond_pen(PS_SOLID,1,NOT_DEBONDABLE_FILL_COLOR);
    CPen debond_pen(PS_SOLID,1,DEBOND_FILL_COLOR);
    CPen extended_pen(PS_SOLID,1,EXTENDED_FILL_COLOR);
    CPen* old_pen = (CPen*)pDC->SelectObject(&strand_pen);
 
    CBrush strand_brush(STRAND_FILL_COLOR);
-   CBrush no_debond_brush(NO_DEBOND_FILL_COLOR);
+   CBrush no_debond_brush(NOT_DEBONDABLE_FILL_COLOR);
    CBrush debond_brush(DEBOND_FILL_COLOR);
    CBrush extended_brush(EXTENDED_FILL_COLOR);
    CBrush* old_brush = (CBrush*)pDC->SelectObject(&strand_brush);

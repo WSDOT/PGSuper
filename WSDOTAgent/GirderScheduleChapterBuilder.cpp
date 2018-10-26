@@ -288,33 +288,12 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       (*pTable)(row  ,1) << glength.SetValue(L);
    }
 
-   CComPtr<IDirection> objDirGirder;
-   pBridge->GetSegmentBearing(segmentKey,&objDirGirder);
-   Float64 dirGdr;
-   objDirGirder->get_Value(&dirGdr);
-
-   CComPtr<IDirection> objDir1;
-   pBridge->GetPierDirection(span,&objDir1);
-   Float64 dir1;
-   objDir1->get_Value(&dir1);
-
-   CComPtr<IDirection> objDir2;
-   pBridge->GetPierDirection(span+1,&objDir2);
-   Float64 dir2;
-   objDir1->get_Value(&dir2);
-
-   CComPtr<IAngle> objAngle1;
-   objDirGirder->AngleBetween(objDir1,&objAngle1);
-   Float64 t1;
+   CComPtr<IAngle> objAngle1, objAngle2;
+   pBridge->GetSegmentSkewAngle(segmentKey,pgsTypes::metStart,&objAngle1);
+   pBridge->GetSegmentSkewAngle(segmentKey,pgsTypes::metEnd,  &objAngle2);
+   Float64 t1,t2;
    objAngle1->get_Value(&t1);
-
-   CComPtr<IAngle> objAngle2;
-   objDirGirder->AngleBetween(objDir2,&objAngle2);
-   Float64 t2;
    objAngle2->get_Value(&t2);
-
-   t1 -= M_PI;
-   t2 -= M_PI;
 
    (*pTable)(++row,0) << Sub2(symbol(theta),_T("1"));
    (*pTable)(row  ,1) << angle.SetValue(t1);

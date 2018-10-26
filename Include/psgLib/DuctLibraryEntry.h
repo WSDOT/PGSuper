@@ -30,6 +30,7 @@
 #include <System\SubjectT.h>
 
 
+class pgsLibraryEntryDifferenceItem;
 class DuctLibraryEntry;
 class DuctLibraryEntryObserver;
 #pragma warning(disable:4231)
@@ -99,8 +100,11 @@ public:
    Float64 GetInsideArea() const;
 
    //------------------------------------------------------------------------
-   // Equality - test if two entries are equal. Ignore names by default
-   bool IsEqual(const DuctLibraryEntry& rOther, bool considerName=false) const;
+   // Compares this library entry with rOther. Returns true if the entries are the same.
+   // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
+   bool Compare(const DuctLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,bool bReturnOnFirstDifference=false,bool considerName=false) const;
+ 
+   bool IsEqual(const DuctLibraryEntry& rOther,bool bConsiderName=false) const;
 
 protected:
    void MakeCopy(const DuctLibraryEntry& rOther);

@@ -202,7 +202,7 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
    Float64 tSlab = pBridge->GetGrossSlabDepth( pgsPointOfInterest(m_SegmentKey,0.00) );
    m_AbsoluteMinimumSlabOffset = tSlab;
 
-   if ( pBridge->GetDeckType() == pgsTypes::sdtNone || !(m_DesignOptions.doDesignSlabOffset) )
+   if ( pBridge->GetDeckType() == pgsTypes::sdtNone || m_DesignOptions.doDesignSlabOffset == sodNoADesign )
    {
       // if there is no deck, set the artifact value to the current value
       PierIndexType startPierIdx, endPierIdx;
@@ -229,9 +229,19 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
       m_pArtifact->SetSlabOffset( pgsTypes::metEnd,   defaultA);
    }
 
-#pragma Reminder("Set initial design fillet here")
+   // Set initial design fillet here
+   Float64 fillet = pBridge->GetFillet(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex);
+   if ( m_DesignOptions.doDesignSlabOffset == sodAandFillet)
+   {
+      Float64 min_fillet = m_pGirderEntry->GetMinFilletValue();
+      if (fillet < min_fillet)
+      {
+         LOG(_T("Setting fillet value from = ") << ::ConvertFromSysUnits(fillet,unitMeasure::Inch) << _T("in to minimum required value of ")<< ::ConvertFromSysUnits(min_fillet,unitMeasure::Inch) << _T("in") );
+         fillet = min_fillet;
+      }
+   }
 
-   m_pArtifact->SetFillet(pBridge->GetFillet(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex));
+   m_pArtifact->SetFillet(fillet);
 
    // Initialize Prestressing
    m_pArtifact->SetNumStraightStrands( 0 );
@@ -2089,14 +2099,6 @@ Float64 pgsStrandDesignTool::GetAbsoluteMinimumSlabOffset() const
 Float64 pgsStrandDesignTool::GetFillet() const
 {
    return m_pArtifact->GetFillet();
-}
-
-void pgsStrandDesignTool::SetFillet(Float64 f)
-{
-   ATLASSERT(f>0.0);
-   m_pArtifact->SetFillet(f);
-
-   m_bConfigDirty = true; // cache is dirty
 }
 
 void pgsStrandDesignTool::SetLiftingLocations(Float64 left,Float64 right)

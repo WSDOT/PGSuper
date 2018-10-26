@@ -44,12 +44,17 @@
 
 #include <MathEx.h>
 
+#include <WBFLSTL.h>
+
 #include <WBFLGeometry.h>
 #include <WBFLSections.h>
 #include <WBFLGenericBridge.h>
 #include <WBFLGenericBridgeTools.h>
 
 #include <LRFD\RebarPool.h>
+
+#include <EAF\EAFApp.h>
+#include <psgLib\LibraryEntryDifferenceItem.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -87,17 +92,14 @@ static char THIS_FILE[] = __FILE__;
 #define CURRENT_VERSION 26.0
 
 // predicate function for comparing doubles
-inline bool EqualDoublePred(Float64 i, Float64 j) {
+inline bool EqualDoublePred(Float64 i, Float64 j) 
+{
    return ::IsEqual(i,j);
 }
 
-inline void make_upper( std::_tstring::iterator begin,std::_tstring::iterator end)
+inline bool CompareDimensions(const GirderLibraryEntry::Dimension& d1,const GirderLibraryEntry::Dimension& d2)
 {
-   while ( begin != end )
-   {
-      *begin = toupper(*begin);
-      begin++;
-   }
+   return (d1.first == d2.first && ::IsEqual(d1.second,d2.second));
 }
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
@@ -110,6 +112,28 @@ inline void make_upper( std::_tstring::iterator begin,std::_tstring::iterator en
 // in psgLibraryManager's destructor.
 GirderLibraryEntry::ClassFactoryCollection GirderLibraryEntry::ms_ClassFactories;
 
+CString GirderLibraryEntry::GetAdjustableStrandType(pgsTypes::AdjustableStrandType strandType)
+{
+   LPCTSTR lpszStrandType;
+   switch(strandType)
+   {
+   case pgsTypes::asHarped:
+      lpszStrandType = _T("Adjustable Strands are Harped");
+      break;
+
+   case pgsTypes::asStraight:
+      lpszStrandType = _T("Adjustable Strands are Straight");
+      break;
+
+   case pgsTypes::asStraightOrHarped:
+      lpszStrandType = _T("Adjustable can be Harped or Straight");
+      break;
+
+   default:
+      ATLASSERT(false); // should never get here
+   }
+   return lpszStrandType;
+}
 
 /****************************************************************************
 CLASS
@@ -2864,107 +2888,232 @@ void GirderLibraryEntry::LoadIBeamDimensions(sysIStructuredLoad* pLoad)
    m_Dimensions.push_back(Dimension(_T("EndBlockTransition"),0.0));
 }
 
-bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther, bool considerName) const
+bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther,bool bConsiderName) const
 {
-#pragma Reminder("UPDATE - this would be faster to return false on first fail")
-   bool test = true;
+   std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+   return Compare(rOther,vDifferences,true,bConsiderName);
+}
 
-   test &= (m_bUseDifferentHarpedGridAtEnds       == rOther.m_bUseDifferentHarpedGridAtEnds);
-   test &= (m_bOddNumberOfHarpedStrands           == rOther.m_bOddNumberOfHarpedStrands);
-   test &= (m_AdjustableStrandType                == rOther.m_AdjustableStrandType);
+bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool bReturnOnFirstDifference, bool considerName) const
+{
+   CEAFApp* pApp = EAFGetApp();
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-   test &= (m_HPAdjustment             == rOther.m_HPAdjustment);
-   test &= (m_EndAdjustment            == rOther.m_EndAdjustment);
-   test &= (m_StraightAdjustment       == rOther.m_StraightAdjustment);
-//   test &= (m_StirrupBarType           == rOther.m_StirrupBarType);
-//   test &= (m_StirrupBarGrade          == rOther.m_StirrupBarGrade);
-//   test &= (m_LastConfinementZone      == rOther.m_LastConfinementZone);
-   test &= (m_HarpingPointLocation     == rOther.m_HarpingPointLocation);
-   test &= (m_bMinHarpingPointLocation == rOther.m_bMinHarpingPointLocation);
+   CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_pBeamFactory);
+   bool bSplicedGirder = (splicedBeamFactory == NULL ? false : true);
 
-   if ( m_bMinHarpingPointLocation )
+
+   //
+   // General Tab
+   //
+   if ( m_Dimensions.size() != rOther.m_Dimensions.size() ||
+       !std::equal(m_Dimensions.begin(),m_Dimensions.end(),rOther.m_Dimensions.begin(),CompareDimensions) ||
+       (bSplicedGirder ? m_bIsVariableDepthSectionEnabled != rOther.m_bIsVariableDepthSectionEnabled : false)
+       )
    {
-      test &= (m_MinHarpingPointLocation == rOther.m_MinHarpingPointLocation);
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Girder Dimensions are different"),_T(""),_T("")));
    }
 
-   test &= (m_HarpPointReference       == rOther.m_HarpPointReference);
-   test &= (m_HarpPointMeasure         == rOther.m_HarpPointMeasure);
-
-   test &= (m_StraightStrands  == rOther.m_StraightStrands);
-   test &= (m_HarpedStrands    == rOther.m_HarpedStrands);
-   test &= (m_TemporaryStrands == rOther.m_TemporaryStrands);
-
-   test &= (m_PermanentStrands == rOther.m_PermanentStrands);
-
-   test &= (m_ShearData == rOther.m_ShearData);
-
-//   test &= (m_ShearZoneInfo == rOther.m_ShearZoneInfo);
-   test &= (m_LongSteelInfo == rOther.m_LongSteelInfo);
-
-//   test &= (m_ConfinementBarSize       == rOther.m_ConfinementBarSize);
-//   test &= (m_TopFlangeShearBarSize    == rOther.m_TopFlangeShearBarSize);
-//   test &= (m_TopFlangeShearBarSpacing == rOther.m_TopFlangeShearBarSpacing);
-
-   test &= (m_MaxDebondStrands == rOther.m_MaxDebondStrands);
-   test &= (m_MaxDebondStrandsPerRow == rOther.m_MaxDebondStrandsPerRow);
-   test &= (m_MaxNumDebondedStrandsPerSection == rOther.m_MaxNumDebondedStrandsPerSection);
-   test &= (m_MaxDebondedStrandsPerSection == rOther.m_MaxDebondedStrandsPerSection);
-   test &= (m_MinDebondLength == rOther.m_MinDebondLength);
-   test &= (m_DefaultDebondLength == rOther.m_DefaultDebondLength);
-
-   test &= (m_MaxDebondLengthBySpanFraction == rOther.m_MaxDebondLengthBySpanFraction);
-   test &= (m_MaxDebondLengthByHardDistance == rOther.m_MaxDebondLengthByHardDistance);
-
-   test &= (m_LongitudinalBarType  == rOther.m_LongitudinalBarType);
-   test &= (m_LongitudinalBarGrade == rOther.m_LongitudinalBarGrade);
-
-   test &= (m_Dimensions == rOther.m_Dimensions);
-
-//   test &= (m_bStirrupsEngageDeck == rOther.m_bStirrupsEngageDeck);
-//   test &= (m_bIsRoughenedSurface == rOther.m_bIsRoughenedSurface);
-
-   test &= (m_DiaphragmLayoutRules == rOther.m_DiaphragmLayoutRules);
-
-   test &= m_StirrupSizeBarComboColl == rOther.m_StirrupSizeBarComboColl;
-
-   // Must first check that size of vectors match,
-   if (m_AvailableBarSpacings.size() != rOther.m_AvailableBarSpacings.size())
+   //
+   // Permanent Strands Tab
+   //
+   if ( !bSplicedGirder )
    {
-      return false;
+      if ( m_AdjustableStrandType != rOther.m_AdjustableStrandType )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Adjustable Strand Type"),GetAdjustableStrandType(m_AdjustableStrandType),GetAdjustableStrandType(rOther.m_AdjustableStrandType)));
+      }
+
+      if ( m_bOddNumberOfHarpedStrands != rOther.m_bOddNumberOfHarpedStrands )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceBooleanItem(_T("Coerce Odd Number of Harped Strands"),m_bOddNumberOfHarpedStrands,rOther.m_bOddNumberOfHarpedStrands,_T("Checked"),_T("Unchecked")));
+      }
+
+      if ( m_bUseDifferentHarpedGridAtEnds != rOther.m_bUseDifferentHarpedGridAtEnds )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceBooleanItem(_T("Use Different Harped Strand Locations at Girder Ends"),m_bUseDifferentHarpedGridAtEnds,rOther.m_bUseDifferentHarpedGridAtEnds,_T("Checked"),_T("Unchecked")));
+      }
+
+      if ( m_StraightStrands != rOther.m_StraightStrands )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Straight Strands Positions are different"),_T(""),_T("")));
+      }
+      if ( m_HarpedStrands != rOther.m_HarpedStrands  )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Harped Strands Positions are different"),_T(""),_T("")));
+      }
+      if ( m_PermanentStrands != rOther.m_PermanentStrands )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Permanent Strands Positions are different"),_T(""),_T("")));
+      }
+
+      if ( m_HPAdjustment != rOther.m_HPAdjustment )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Harped strand adjustment at harping points are different"),_T(""),_T("")));
+      }
+
+      if ( m_EndAdjustment != rOther.m_EndAdjustment )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Harped strand adjustment at girder ends are different"),_T(""),_T("")));
+      }
+
+      if ( m_StraightAdjustment != rOther.m_StraightAdjustment )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Adjustable straight strand adjustment are different"),_T(""),_T("")));
+      }
    }
 
-   // then we can compare content
-   if (!std::equal(m_AvailableBarSpacings.begin(), m_AvailableBarSpacings.end(), rOther.m_AvailableBarSpacings.begin(), EqualDoublePred))
+   //
+   // Temporary Strands Tab
+   //
+   if ( !bSplicedGirder )
    {
-      return false;
+      if ( m_TemporaryStrands != rOther.m_TemporaryStrands )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Temporary Strands Positions are different"),_T(""),_T("")));
+      }
    }
 
-   test &= ::IsEqual(m_MaxSpacingChangeInZone, rOther.m_MaxSpacingChangeInZone);
-   test &= ::IsEqual(m_MaxShearCapacityChangeInZone, rOther.m_MaxShearCapacityChangeInZone);
-   test &= m_MinZoneLengthSpacings == rOther.m_MinZoneLengthSpacings;
-   test &= ::IsEqual(m_MinZoneLengthLength, rOther.m_MinZoneLengthLength);
-   test &= m_DoExtendBarsIntoDeck == rOther.m_DoExtendBarsIntoDeck;
-   test &= m_DoBarsActAsConfinement == rOther.m_DoBarsActAsConfinement;
-   test &= m_LongShearCapacityIncreaseMethod == rOther.m_LongShearCapacityIncreaseMethod;
-
-   test &= m_PrestressDesignStrategies == rOther.m_PrestressDesignStrategies;
-
-   test &= ::IsEqual(m_MinFilletValue, rOther.m_MinFilletValue);
-   test &= m_DoCheckMinHaunchAtBearingLines == rOther.m_DoCheckMinHaunchAtBearingLines;
-   if (m_DoCheckMinHaunchAtBearingLines)
+   //
+   // Flexure Design Tab (Debonding Tab for spliced girders)
+   //
+   if ( !::IsEqual(m_MaxDebondStrands,      rOther.m_MaxDebondStrands)                ||
+        !::IsEqual(m_MaxDebondStrandsPerRow,rOther.m_MaxDebondStrandsPerRow)          ||
+        m_MaxNumDebondedStrandsPerSection != rOther.m_MaxNumDebondedStrandsPerSection ||
+        !::IsEqual(m_MaxDebondedStrandsPerSection,rOther.m_MaxDebondedStrandsPerSection) )
    {
-      test &= ::IsEqual(m_MinHaunchAtBearingLines, rOther.m_MinHaunchAtBearingLines);
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Debonding Strand Limits are different"),_T(""),_T("")));
    }
-   test &= m_ExcessiveSlabOffsetWarningTolerance == rOther.m_ExcessiveSlabOffsetWarningTolerance;
-
-   test &= m_CamberMultipliers == rOther.m_CamberMultipliers;
-
-   if (considerName)
+   
+   if ( !bSplicedGirder )
    {
-      test &= this->GetName()==rOther.GetName();
+      if ( !::IsEqual(m_MinDebondLength,               rOther.m_MinDebondLength)                 ||
+           !::IsEqual(m_DefaultDebondLength,           rOther.m_DefaultDebondLength)             ||
+           !::IsEqual(m_MaxDebondLengthBySpanFraction, rOther.m_MaxDebondLengthBySpanFraction)   ||
+           !::IsEqual(m_MaxDebondLengthByHardDistance, rOther.m_MaxDebondLengthByHardDistance) )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Criteria for Debond Distances are different"),_T(""),_T("")));
+      }
+
+      if ( m_PrestressDesignStrategies != rOther.m_PrestressDesignStrategies )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Prestress Design Stratigies are different"),_T(""),_T("")));
+      }
    }
 
-   return test;
+   //
+   // Shear Design Tab
+   //
+   if ( !bSplicedGirder )
+   {
+      if ( m_StirrupSizeBarComboColl != rOther.m_StirrupSizeBarComboColl ||
+           m_AvailableBarSpacings.size() != rOther.m_AvailableBarSpacings.size() ||
+           !std::equal(m_AvailableBarSpacings.begin(),m_AvailableBarSpacings.end(),rOther.m_AvailableBarSpacings.begin(),EqualDoublePred) ||
+           !::IsEqual(m_MaxSpacingChangeInZone, rOther.m_MaxSpacingChangeInZone) ||
+           !::IsEqual(m_MaxShearCapacityChangeInZone, rOther.m_MaxShearCapacityChangeInZone) ||
+           m_MinZoneLengthSpacings != rOther.m_MinZoneLengthSpacings ||
+           !::IsEqual(m_MinZoneLengthLength, rOther.m_MinZoneLengthLength) ||
+           m_DoExtendBarsIntoDeck != rOther.m_DoExtendBarsIntoDeck ||
+           m_DoBarsActAsConfinement != rOther.m_DoBarsActAsConfinement ||
+           m_LongShearCapacityIncreaseMethod != rOther.m_LongShearCapacityIncreaseMethod )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Shear Design Parameters are different"),_T(""),_T("")));
+      }
+   }
+
+   //
+   // Harping Points Tab
+   //
+   if ( !bSplicedGirder )
+   {
+      if ( !::IsEqual(m_HarpingPointLocation,rOther.m_HarpingPointLocation) ||
+         (m_bMinHarpingPointLocation != rOther.m_bMinHarpingPointLocation || (m_bMinHarpingPointLocation == true && !::IsEqual(m_MinHarpingPointLocation,rOther.m_MinHarpingPointLocation))) ||
+           m_HarpPointReference != rOther.m_HarpPointReference ||
+           m_HarpPointMeasure != rOther.m_HarpPointMeasure )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Harping Point locations are different"),_T(""),_T("")));
+      }
+   }
+
+   //
+   // Long. Reinforcement Tab
+   //
+   if ( !bSplicedGirder )
+   {
+      if ( m_LongitudinalBarType != rOther.m_LongitudinalBarType ||
+           m_LongitudinalBarGrade != rOther.m_LongitudinalBarGrade ||
+           m_LongSteelInfo != rOther.m_LongSteelInfo )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Long. Reinforcement seed values are different"),_T(""),_T("")));
+      }
+   }
+
+   //
+   // Trans. Reinforcement Tab
+   //
+   if ( !bSplicedGirder )
+   {
+      if (m_ShearData != rOther.m_ShearData)
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Transv. Reinforcement seed values are different"),_T(""),_T("")));
+      }
+   }
+
+   //
+   // Haunch and Camber Tab
+   //
+   if ( !::IsEqual(m_MinFilletValue, rOther.m_MinFilletValue) ||
+        (m_DoCheckMinHaunchAtBearingLines != rOther.m_DoCheckMinHaunchAtBearingLines || (m_DoCheckMinHaunchAtBearingLines == true && !::IsEqual(m_MinHaunchAtBearingLines, rOther.m_MinHaunchAtBearingLines))) ||
+        !::IsEqual(m_ExcessiveSlabOffsetWarningTolerance,rOther.m_ExcessiveSlabOffsetWarningTolerance)
+        )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Haunch Design Parameters are different"),_T(""),_T("")));
+   }
+
+   if ( !bSplicedGirder )
+   {
+      if ( m_CamberMultipliers != rOther.m_CamberMultipliers )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Camber Multipliers are different"),_T(""),_T("")));
+      }
+   }
+
+   //
+   // Diaphragms Tab
+   //
+   if ( m_DiaphragmLayoutRules != rOther.m_DiaphragmLayoutRules )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Diaphragm Layout Rules are different"),_T(""),_T("")));
+   }
+
+   if (considerName &&  GetName() != rOther.GetName() )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
+   }
+
+   return vDifferences.size() == 0 ? true : false;
 }
 
 void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVec* pvec)
@@ -3556,6 +3705,11 @@ void GirderLibraryEntry::GetBeamFactory(IBeamFactory** ppFactory) const
 {
    (*ppFactory) = m_pBeamFactory;
    (*ppFactory)->AddRef();
+}
+
+std::_tstring GirderLibraryEntry::GetGirderName() const
+{
+   return m_pBeamFactory->GetName(); // name of the general girder type (e.g. WSDOT U-Beam), not to be confused with a library entry name ("U55G6")
 }
 
 std::_tstring GirderLibraryEntry::GetGirderFamilyName() const

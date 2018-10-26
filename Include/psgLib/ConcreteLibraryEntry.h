@@ -41,6 +41,7 @@
 
 // FORWARD DECLARATIONS
 //
+class pgsLibraryEntryDifferenceItem;
 class ConcreteLibraryEntry;
 class ConcreteLibraryEntryObserver;
 #pragma warning(disable:4231)
@@ -102,6 +103,11 @@ class PSGLIBCLASS ConcreteLibraryEntry : public libLibraryEntry, public ISupport
        public sysSubjectT<ConcreteLibraryEntryObserver, ConcreteLibraryEntry>
 {
 public:
+   static CString GetConcreteType(pgsTypes::ConcreteType type);
+   static CString GetConcreteCureMethod(pgsTypes::CureMethod method);
+   static CString GetACI209CementType(pgsTypes::ACI209CementType type);
+   static CString GetCEBFIPCementType(pgsTypes::CEBFIPCementType type);
+
    // GROUP: LIFECYCLE
 
    //------------------------------------------------------------------------
@@ -242,8 +248,11 @@ public:
    void SetCEBFIPCementType(pgsTypes::CEBFIPCementType cementType);
 
    //------------------------------------------------------------------------
-   // Equality - test if two entries are equal. Ignore names by default
-   bool IsEqual(const ConcreteLibraryEntry& rOther, bool considerName=false) const;
+   // Compares this library entry with rOther. Returns true if the entries are the same.
+   // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
+   bool Compare(const ConcreteLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,bool bReturnOnFirstDifference=false, bool considerName=false) const;
+   
+   bool IsEqual(const ConcreteLibraryEntry& rOther,bool bConsiderName=false) const;
 
    // GROUP: INQUIRY
 

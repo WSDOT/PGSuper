@@ -640,7 +640,7 @@ bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
       Float64 mf_u = ::ConvertFromSysUnits(min_topflange,*pUnit);
 
       std::_tostringstream os;
-      os << _T("Wmin must be greater than or equal to T1 + 2.0*(W1 + W2) = ")<<mf_u<< pUnit->UnitTag() <<_T(" = ") << std::ends;
+      os << _T("Wmin must be greater than or equal to T1 + 2.0*(W1 + W2) = ")<<mf_u<< pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
       return false;
    }

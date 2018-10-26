@@ -1358,58 +1358,65 @@ void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSDocBase* pDoc, IBr
             }
 
             // straight strands
-            CComPtr<IPoint2dCollection> spoints, epoints;
-            pStrandGeometry->GetStrandPositions(start_poi, pgsTypes::Straight,&spoints);
-            pStrandGeometry->GetStrandPositions(end_poi,   pgsTypes::Straight,&epoints);
-            CollectionIndexType nStrandPoints;
-            spoints->get_Count(&nStrandPoints);
-            CollectionIndexType strandPointIdx;
-            for (strandPointIdx = 0; strandPointIdx < nStrandPoints; strandPointIdx++)
+            if ( 0 < pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight) )
             {
-               // strand points measured from bottom of girder
-               CComPtr<IPoint2d> pntStart, pntEnd;
-               spoints->get_Item(strandPointIdx,&pntStart);
-               epoints->get_Item(strandPointIdx,&pntEnd);
+               CComPtr<IPoint2dCollection> spoints, epoints;
+               pStrandGeometry->GetStrandPositions(start_poi, pgsTypes::Straight,&spoints);
+               pStrandGeometry->GetStrandPositions(end_poi,   pgsTypes::Straight,&epoints);
 
-               Float64 yStart, yEnd;
-               pntStart->get_Y(&yStart);
-               pntEnd->get_Y(&yEnd);
+               CollectionIndexType nStrandPoints;
+               spoints->get_Count(&nStrandPoints);
 
-               from_point->put_Y(yStart);
-               to_point->put_Y(yEnd);
-               
-               BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
-
-               Float64 start,end;
-               if ( pStrandGeometry->IsStrandDebonded(segmentKey,strandPointIdx,pgsTypes::Straight,&start,&end) )
+               for (CollectionIndexType strandPointIdx = 0; strandPointIdx < nStrandPoints; strandPointIdx++)
                {
-                  // Left debond point
-                  CComPtr<IPoint2d> left_debond;
-                  left_debond.CoCreateInstance(CLSID_Point2d);
-                  left_debond->Move(start_offset + running_segment_length + start,yStart);
+                  // strand points measured from bottom of girder
+                  CComPtr<IPoint2d> pntStart, pntEnd;
+                  spoints->get_Item(strandPointIdx,&pntStart);
+                  epoints->get_Item(strandPointIdx,&pntEnd);
 
-                  BuildLine(pDebondDL, from_point, left_debond, DEBOND_FILL_COLOR );
-                  BuildDebondTick(pDebondDL, left_debond, DEBOND_FILL_COLOR );
+                  Float64 yStart, yEnd;
+                  pntStart->get_Y(&yStart);
+                  pntEnd->get_Y(&yEnd);
 
-                  CComPtr<IPoint2d> right_debond;
-                  right_debond.CoCreateInstance(CLSID_Point2d);
-                  right_debond->Move(start_offset + running_segment_length + end,yEnd);
+                  from_point->put_Y(yStart);
+                  to_point->put_Y(yEnd);
+                  
+                  BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
 
-                  BuildLine(pDebondDL, right_debond, to_point, DEBOND_FILL_COLOR);
-                  BuildDebondTick(pDebondDL, right_debond, DEBOND_FILL_COLOR );
+                  Float64 start,end;
+                  if ( pStrandGeometry->IsStrandDebonded(segmentKey,strandPointIdx,pgsTypes::Straight,&start,&end) )
+                  {
+                     // Left debond point
+                     CComPtr<IPoint2d> left_debond;
+                     left_debond.CoCreateInstance(CLSID_Point2d);
+                     left_debond->Move(start_offset + running_segment_length + start,yStart);
+
+                     BuildLine(pDebondDL, from_point, left_debond, DEBOND_FILL_COLOR );
+                     BuildDebondTick(pDebondDL, left_debond, DEBOND_FILL_COLOR );
+
+                     CComPtr<IPoint2d> right_debond;
+                     right_debond.CoCreateInstance(CLSID_Point2d);
+                     right_debond->Move(start_offset + running_segment_length + end,yEnd);
+
+                     BuildLine(pDebondDL, right_debond, to_point, DEBOND_FILL_COLOR);
+                     BuildDebondTick(pDebondDL, right_debond, DEBOND_FILL_COLOR );
+                  }
                }
             }
 
             // harped strands
-            if ( 0 < vPOI.size() )
+            if ( 0 < pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped) )
             {
                CComPtr<IPoint2dCollection> spoints, hp1points, hp2points, epoints;
                pStrandGeometry->GetStrandPositions(start_poi, pgsTypes::Harped,&spoints);
                pStrandGeometry->GetStrandPositions(hp1_poi,   pgsTypes::Harped,&hp1points);
                pStrandGeometry->GetStrandPositions(hp2_poi,   pgsTypes::Harped,&hp2points);
                pStrandGeometry->GetStrandPositions(end_poi,   pgsTypes::Harped,&epoints);
+
+               CollectionIndexType nStrandPoints;
                spoints->get_Count(&nStrandPoints);
-               for (strandPointIdx = 0; strandPointIdx < nStrandPoints; strandPointIdx++)
+
+               for (CollectionIndexType strandPointIdx = 0; strandPointIdx < nStrandPoints; strandPointIdx++)
                {
                   CComPtr<IPoint2d> start_pos, hp1_pos, hp2_pos, end_pos;
                   spoints->get_Item(strandPointIdx,&start_pos);
@@ -1468,29 +1475,36 @@ void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSDocBase* pDoc, IBr
             }
 
             // Temporary strands
-            spoints.Release();
-            epoints.Release();
-            pStrandGeometry->GetStrandPositions(start_poi, pgsTypes::Temporary,&spoints);
-            pStrandGeometry->GetStrandPositions(end_poi,   pgsTypes::Temporary,&epoints);
-            spoints->get_Count(&nStrandPoints);
-            for (strandPointIdx = 0; strandPointIdx < nStrandPoints; strandPointIdx++)
+            if ( 0 < pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Temporary) )
             {
-               CComPtr<IPoint2d> pntStart, pntEnd;
-               spoints->get_Item(strandPointIdx, &pntStart);
-               epoints->get_Item(strandPointIdx, &pntEnd);
-
-               Float64 y;
-               from_point->put_X(group_offset + running_segment_length);
-               pntStart->get_Y(&y);
-               from_point->put_Y(y);
-
-               to_point->put_X(group_offset + running_segment_length + segment_length);
-               pntEnd->get_Y(&y);
-               to_point->put_Y(y);
+               CComPtr<IPoint2dCollection> spoints, epoints;
+               spoints.Release();
+               epoints.Release();
+               pStrandGeometry->GetStrandPositions(start_poi, pgsTypes::Temporary,&spoints);
+               pStrandGeometry->GetStrandPositions(end_poi,   pgsTypes::Temporary,&epoints);
                
-               BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
+               CollectionIndexType nStrandPoints;
+               spoints->get_Count(&nStrandPoints);
+
+               for (CollectionIndexType strandPointIdx = 0; strandPointIdx < nStrandPoints; strandPointIdx++)
+               {
+                  CComPtr<IPoint2d> pntStart, pntEnd;
+                  spoints->get_Item(strandPointIdx, &pntStart);
+                  epoints->get_Item(strandPointIdx, &pntEnd);
+
+                  Float64 y;
+                  from_point->put_X(group_offset + running_segment_length);
+                  pntStart->get_Y(&y);
+                  from_point->put_Y(y);
+
+                  to_point->put_X(group_offset + running_segment_length + segment_length);
+                  pntEnd->get_Y(&y);
+                  to_point->put_Y(y);
+                  
+                  BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
+               }
             }
-            }
+         } // if after release event
 
          running_segment_length += segment_layout_length - start_offset;
       } // end of segment loop
@@ -2728,13 +2742,21 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
       {
          CGirderKey gdrKey(girderKey);
          gdrKey.groupIndex = grpIdx;
+         gdrKey.girderIndex = Min(girderKey.girderIndex,pBridge->GetGirderCount(grpIdx)-1);
          Float64 group_length = pBridge->GetGirderLayoutLength(gdrKey);
          girderlineOffset -= group_length;
       }
    }
 
-   Float64 brgOffset = pBridge->GetSegmentStartBearingOffset(CSegmentKey(0,girderKey.girderIndex,0));
-   Float64 endDist   = pBridge->GetSegmentStartEndDistance(CSegmentKey(0,girderKey.girderIndex,0));
+   CGirderKey gdrKey(girderKey);
+   if ( girderKey.groupIndex == ALL_GROUPS )
+   {
+      gdrKey.groupIndex = 0;
+      gdrKey.girderIndex = Min(girderKey.girderIndex,pBridge->GetGirderCount(0)-1);
+   }
+
+   Float64 brgOffset = pBridge->GetSegmentStartBearingOffset(CSegmentKey(gdrKey,0));
+   Float64 endDist   = pBridge->GetSegmentStartEndDistance(CSegmentKey(gdrKey,0));
    Float64 offset = brgOffset - endDist;
    std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_ABUTMENT | POI_BOUNDARY_PIER | POI_INTERMEDIATE_PIER));
    std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
@@ -3437,7 +3459,11 @@ Float64 CGirderModelElevationView::GetSpanStartLocation(const CSpanKey& spanKey)
 
    for (SpanIndexType spanIdx = startSpanIdx; spanIdx < endSpanIdx; spanIdx++ )
    {
-      Float64 span_length = pBridge->GetSpanLength(spanIdx,spanKey.girderIndex);
+      const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      GirderIndexType gdrIdx = Min(spanKey.girderIndex,nGirders-1);
+      Float64 span_length = pBridge->GetSpanLength(spanIdx,gdrIdx);
       span_offset += span_length;
    }
 

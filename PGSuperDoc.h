@@ -58,7 +58,7 @@ public:
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
-   void DesignGirder(bool bPrompt,bool bDesignSlabOffset,const CGirderKey& girderKey);
+   void DesignGirder(bool bPrompt,arSlabOffsetDesignType designSlabOffset,const CGirderKey& girderKey);
 
    virtual bool EditGirderDescription(const CGirderKey& girderKey,int nPage);
    virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage);
@@ -99,7 +99,7 @@ protected:
    bool m_bDesignShearEnabled;
    bool m_bDesignStirrupsFromScratchEnabled;
 
-   void DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool doDesignADim);
+   void DoDesignGirder(const std::vector<CGirderKey>& girderKeys, arSlabOffsetDesignType designADim);
 
    virtual CPGSuperPluginMgrBase* CreatePluginManager() { return new CPGSuperPluginMgr(); }
 

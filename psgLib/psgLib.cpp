@@ -32,6 +32,7 @@
 
 #include <psgLib\psgLib.h>
 #include <psgLib\StructuredLoad.h>
+#include <psgLib\LibraryEntryDifferenceItem.h>
 #include "LibraryEntryConflict.h"
 
 #include <WBFLGeometry_i.c>
@@ -205,24 +206,42 @@ bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, co
       {
          // name is the same, now compare contents
          pproject = projectLib.LookupEntry(name.c_str());
-         PRECONDITION(pproject!=0);
+         ATLASSERT(pproject!=0);
 
-         if (!pmaster->IsEqual(*pproject))
+         std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+         bool bSame = (bForceUpdate ? pmaster->IsEqual(*pproject) : pmaster->Compare(*pproject,vDifferences));
+         if (!bSame)
          {
             // we have a conflict - ask user what he wants to do about it.
+            if ( !bForceUpdate && vDifferences.size() == 0 )
+            {
+               // the library entry was lazy and didn't specify the exact nature of the conflict.
+               // provide something to show in the conflict resolution dialog
+               vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Unspecified conflicts"),_T(""),_T("")));
+            }
+
             LibConflictOutcome res;
             std::_tstring new_name;
 
             if ( bForceUpdate )
+            {
                res = OverWrite;
+            }
             else
-               res = psglibResolveLibraryEntryConflict(name,libName,master_keys,isImported,&new_name);
+            {
+               res = psglibResolveLibraryEntryConflict(name,libName,master_keys,isImported,vDifferences,&new_name);
+            }
+
+            std::for_each(vDifferences.begin(),vDifferences.end(),pgsDeleteLibraryEntryConflictItem);
+            vDifferences.clear();
 
             if (res==Rename)
             {
                // user wants to rename entry - add renamed entry to list
                if (!pMasterLib->AddEntry(*pproject, new_name.c_str(),false))
+               {
                   return false;
+               }
 
                master_keys.push_back(new_name);
 
@@ -235,7 +254,9 @@ bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, co
                pList->AddConflict(*pMasterLib, name, name);
             }
             else
+            {
                ATLASSERT(false);
+            }
          }
          pmaster->Release();
          pproject->Release();
@@ -244,9 +265,11 @@ bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, co
       {
          // Project entry is totally unique. copy it into master library
          const EntryType* pproject = projectLib.LookupEntry(name.c_str());
-         PRECONDITION(pproject!=0);
+         ATLASSERT(pproject!=0);
          if (!pMasterLib->AddEntry(*pproject, pproject->GetName().c_str(),false))
+         {
             return false;
+         }
 
          pproject->Release();
       }
@@ -261,41 +284,50 @@ bool PSGLIBFUNC WINAPI psglibDealWithLibraryConflicts(ConflictList* pList, psgLi
    // match and the entries are the same, no problem. If the entry names match and the entries are
    // different, we have a conflict
 
-     if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetConcreteLibrary()), 
-                                    projectMgr.GetConcreteLibrary(), _T("Concrete Library"), ConcreteLibraryEntry(),isImported,bForceUpdate))
+     if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetConcreteLibrary()), projectMgr.GetConcreteLibrary(), _T("Concrete Library"), ConcreteLibraryEntry(),isImported,bForceUpdate))
+     {
         return false;
+     }
 
-     if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetConnectionLibrary()), 
-                                    projectMgr.GetConnectionLibrary(), _T("Connection Library"), ConnectionLibraryEntry(),isImported,bForceUpdate))
+     if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetConnectionLibrary()), projectMgr.GetConnectionLibrary(), _T("Connection Library"), ConnectionLibraryEntry(),isImported,bForceUpdate))
+     {
         return false;
+     }
 
-     if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetGirderLibrary()), 
-                                    projectMgr.GetGirderLibrary(), _T("Girder Library"), GirderLibraryEntry(),isImported,bForceUpdate))
+     if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetGirderLibrary()),  projectMgr.GetGirderLibrary(), _T("Girder Library"), GirderLibraryEntry(),isImported,bForceUpdate))
+     {
         return false;
+     }
 
-     if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetDiaphragmLayoutLibrary()), 
-                                    projectMgr.GetDiaphragmLayoutLibrary(), _T("Diaphragm Library"), DiaphragmLayoutEntry(),isImported,bForceUpdate))
+     if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetDiaphragmLayoutLibrary()), projectMgr.GetDiaphragmLayoutLibrary(), _T("Diaphragm Library"), DiaphragmLayoutEntry(),isImported,bForceUpdate))
+     {
         return false;
+     }
 
-     if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetTrafficBarrierLibrary()), 
-                                    projectMgr.GetTrafficBarrierLibrary(), _T("Traffic Barrier Library"), TrafficBarrierEntry(),isImported,bForceUpdate))
+     if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetTrafficBarrierLibrary()), projectMgr.GetTrafficBarrierLibrary(), _T("Traffic Barrier Library"), TrafficBarrierEntry(),isImported,bForceUpdate))
+     {
         return false;
+     }
 
-     if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetSpecLibrary(), 
-                                    *(projectMgr.GetSpecLibrary()), _T("Project Criteria Library"), SpecLibraryEntry(),isImported,bForceUpdate))
+     if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetSpecLibrary(), *(projectMgr.GetSpecLibrary()), _T("Project Criteria Library"), SpecLibraryEntry(),isImported,bForceUpdate))
+     {
         return false;
+     }
 
-     if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetLiveLoadLibrary(), 
-                                    *(projectMgr.GetLiveLoadLibrary()), _T("User Defined Live Load Library"), LiveLoadLibraryEntry(),isImported,bForceUpdate))
+     if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetLiveLoadLibrary(), *(projectMgr.GetLiveLoadLibrary()), _T("User Defined Live Load Library"), LiveLoadLibraryEntry(),isImported,bForceUpdate))
+     {
         return false;
+     }
 
-     if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetRatingLibrary(), 
-                                    *(projectMgr.GetRatingLibrary()), _T("Rating Criteria Library"), RatingLibraryEntry(),isImported,bForceUpdate))
+     if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetRatingLibrary(), *(projectMgr.GetRatingLibrary()), _T("Rating Criteria Library"), RatingLibraryEntry(),isImported,bForceUpdate))
+     {
         return false;
+     }
 
-     if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetDuctLibrary(), 
-                                    *(projectMgr.GetDuctLibrary()), _T("Duct Library"), DuctLibraryEntry(),isImported,bForceUpdate))
+     if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetDuctLibrary(), *(projectMgr.GetDuctLibrary()), _T("Duct Library"), DuctLibraryEntry(),isImported,bForceUpdate))
+     {
         return false;
+     }
 
    return true;
 }
@@ -313,7 +345,9 @@ bool do_make_saveable_copy(const libILibrary& lib, libILibrary* ptempLib)
       {
          std::auto_ptr<libLibraryEntry> pent(lib.CreateEntryClone(key));
          if (!ptempLib->AddEntry(*pent, key))
+         {
             return false;
+         }
       }
    }
    return true;
@@ -324,39 +358,57 @@ bool PSGLIBFUNC WINAPI psglibMakeSaveableCopy(const psgLibraryManager& libMgr, p
 {
    // concrete entries
    if (!do_make_saveable_copy(libMgr.GetConcreteLibrary(), &(ptempManager->GetConcreteLibrary())))
+   {
       return false;
+   }
 
    // connections
    if (!do_make_saveable_copy(libMgr.GetConnectionLibrary(), &(ptempManager->GetConnectionLibrary())))
+   {
       return false;
+   }
 
    // girders
    if (!do_make_saveable_copy(libMgr.GetGirderLibrary(), &(ptempManager->GetGirderLibrary())))
+   {
       return false;
+   }
 
    // diaphragms
    if (!do_make_saveable_copy(libMgr.GetDiaphragmLayoutLibrary(), &(ptempManager->GetDiaphragmLayoutLibrary())))
+   {
       return false;
+   }
 
    // traffic barriers
    if (!do_make_saveable_copy(libMgr.GetTrafficBarrierLibrary(), &(ptempManager->GetTrafficBarrierLibrary())))
+   {
       return false;
+   }
 
    // project criteria
    if (!do_make_saveable_copy( *(libMgr.GetSpecLibrary()), ptempManager->GetSpecLibrary()))
+   {
       return false;
+   }
 
    // user defined live load
    if (!do_make_saveable_copy( *(libMgr.GetLiveLoadLibrary()), ptempManager->GetLiveLoadLibrary()))
+   {
       return false;
+   }
 
    // rating specification
    if (!do_make_saveable_copy( *(libMgr.GetRatingLibrary()), ptempManager->GetRatingLibrary()))
+   {
       return false;
+   }
 
    // duct specification
    if (!do_make_saveable_copy( *(libMgr.GetDuctLibrary()), ptempManager->GetDuctLibrary()))
+   {
       return false;
+   }
 
    return true;
 }
@@ -369,11 +421,16 @@ void PSGLIBFUNC WINAPI psglibCreateLibNameEnum( std::vector<std::_tstring>* pNam
    prjLib.KeyList( *pNames );
 }
 
-LibConflictOutcome PSGLIBFUNC WINAPI psglibResolveLibraryEntryConflict(const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported,std::_tstring* pNewName)
+void pgsDeleteLibraryEntryConflictItem(pgsLibraryEntryDifferenceItem* pItem)
+{
+   delete pItem;
+}
+
+LibConflictOutcome PSGLIBFUNC WINAPI psglibResolveLibraryEntryConflict(const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,std::_tstring* pNewName)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CLibraryEntryConflict dlg(entryName,libName, keylists, isImported);
+   CLibraryEntryConflict dlg(entryName,libName, keylists, isImported, vDifferences);
    dlg.DoModal();
 
    CLibraryEntryConflict::OutCome outcom = dlg.m_OutCome;
@@ -390,7 +447,7 @@ LibConflictOutcome PSGLIBFUNC WINAPI psglibResolveLibraryEntryConflict(const std
    }
    else
    {
-      ASSERT(0);
+      ATLASSERT(false);
    }
 
    CEAFDocument* pDoc = EAFGetDocument();
@@ -417,7 +474,9 @@ bool PSGLIBFUNC WINAPI psglibImportEntries(IStructuredLoad* pStrLoad,psgLibraryM
    // merge project library into master library and deal with conflicts
    ConflictList the_conflict_list;
    if (!psglibDealWithLibraryConflicts(&the_conflict_list, pLibMgr, temp_manager,true,false))
+   {
       return false;
+   }
 
    return true;
 }
@@ -426,7 +485,9 @@ HRESULT pgslibReadProjectDocHeader(LPCTSTR lpszRootNodeName,IStructuredLoad* pSt
 {
    HRESULT hr = pStrLoad->BeginUnit(lpszRootNodeName);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    Float64 ver;
    pStrLoad->get_Version(&ver);
@@ -437,19 +498,27 @@ HRESULT pgslibReadProjectDocHeader(LPCTSTR lpszRootNodeName,IStructuredLoad* pSt
       var.vt = VT_BSTR;
       hr = pStrLoad->get_Property(_T("Version"),&var);
       if ( FAILED(hr) )
+      {
          return hr;
+      }
 
       hr = pStrLoad->BeginUnit(_T("Broker"));
       if ( FAILED(hr) )
+      {
          return hr;
+      }
 
       hr = pStrLoad->BeginUnit(_T("Agent"));
       if ( FAILED(hr) )
+      {
          return hr;
+      }
 
       hr = pStrLoad->get_Property(_T("CLSID"),&var);
       if ( FAILED(hr) )
+      {
          return hr;
+      }
    }
 
    return S_OK;
@@ -467,19 +536,25 @@ HRESULT pgslibReadLibraryDocHeader(IStructuredLoad* pStrLoad,eafTypes::UnitMode*
 
    HRESULT hr = pStrLoad->BeginUnit(_T("LIBRARY_EDITOR"));
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    Float64 ver;
    pStrLoad->get_Version(&ver);
    if (ver!=1.0)
+   {
       return E_FAIL; // bad version
+   }
 
    // editor units
    CComVariant var;
    var.vt = VT_BSTR;
    hr = pStrLoad->get_Property(_T("EDIT_UNITS"),&var);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    std::_tstring str(OLE2T(var.bstrVal));
 
@@ -501,15 +576,21 @@ HRESULT pgslibLoadLibrary(LPCTSTR strFileName,psgLibraryManager* pLibMgr,eafType
    pStrLoad.CoCreateInstance(CLSID_StructuredLoad);
    HRESULT hr = pStrLoad->Open(strFileName);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    hr =  pgslibLoadLibrary(pStrLoad,pLibMgr,pUnitMode);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    hr = pStrLoad->Close();
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    return S_OK;
 }
@@ -524,7 +605,9 @@ HRESULT pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,e
       pLibMgr->ClearAllEntries();
 
       if ( FAILED(pgslibReadLibraryDocHeader(pStrLoad,pUnitMode)) )
+      {
          THROW_LOAD(InvalidFileFormat,(&load));
+      }
 
       // load the library 
       pLibMgr->LoadMe(&load);
@@ -586,7 +669,9 @@ HRESULT RegisterComponents(bool bRegister)
    // Need to register the library application plugin with the PGSuperAppPlugin category
    hr = sysComCatMgr::RegWithCategory(CLSID_LibraryAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
    if ( FAILED(hr) )
+   {
       return hr;
+   }
 
    return S_OK;
 }

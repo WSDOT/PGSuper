@@ -32,7 +32,7 @@
 interface IBroker;
 #include "PGSuperAppPlugin\resource.h"
 #include "MultiGirderSelectDlg.h"
-
+#include <PGSuperTypes.h>
 #include <IFace\Artifact.h>
 /////////////////////////////////////////////////////////////////////////////
 // CDesignGirderDlg dialog
@@ -41,7 +41,7 @@ class CDesignGirderDlg : public CDialog
 {
 // Construction
 public:
-	CDesignGirderDlg(GroupIndexType grpIdx,GirderIndexType gdrIdx, bool enableA, bool designA, IBroker* pBroker, CWnd* pParent = NULL);   // standard constructor
+	CDesignGirderDlg(GroupIndexType grpIdx,GirderIndexType gdrIdx, bool enableA, arSlabOffsetDesignType designA, IBroker* pBroker, CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CDesignGirderDlg)
@@ -62,7 +62,7 @@ public:
 
 // return design options
 public:
-   bool m_DesignA;
+   arSlabOffsetDesignType m_DesignSlabOffset;
    std::vector<CGirderKey> m_GirderKeys;
 
 // Implementation

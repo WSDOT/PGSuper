@@ -386,11 +386,17 @@ protected:
    static Uint16 GetAttributeTenthPoint(PoiAttributeType attribute);
 
 protected:
+
    PoiIDType m_ID;
    CSegmentKey m_SegmentKey;
-   Float64 m_Xpoi; // distance from left end of segment (left face of the actual bridge member)
-   // AKA Segment Coorodinate
+   Float64 m_Xpoi; // distance from left end of segment (left face of the actual bridge member), AKA Segment Coorodinate
    
+#if defined _DEBUG 
+   // NOTE: this is a weird place to put this, but it makes it easy to see the attributes string in the debugger
+   std::_tstring m_strAttributes;
+   void UpdateAttributeString();
+#endif // _DEBUG
+
    bool m_bHasSegmentPathCoordinate; // tracks if m_Xsp has been set
    Float64 m_Xsp; // location of this POI in segment path coordiantes (X=0 is at the CL Pier/CL TS at the start of this segment)
 
@@ -415,14 +421,11 @@ protected:
    friend pgsPoiMgr; // This guy sets the POI id.
 
 public:
-   #if defined _DEBUG
+#if defined _DEBUG
    //------------------------------------------------------------------------
    // Returns true if the object is in a valid state, otherwise returns false.
    virtual bool AssertValid() const;
-
-   std::_tstring m_strAttributes;
-   void UpdateAttributeString();
-#endif // _DEBUG
+#endif
 };
 
 

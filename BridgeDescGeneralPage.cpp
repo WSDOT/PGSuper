@@ -1279,36 +1279,39 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
       m_Deck.DeckEdgePoints.clear();
    }
    
-   m_Deck.DeckType = newDeckType;
-
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+   m_Deck.DeckType = newDeckType;
+   pParent->m_BridgeDesc.GetDeckDescription()->DeckType = newDeckType; // need to updated deck type here so calls to GetMaxFillet() work properly
+
    if ( m_Deck.DeckType == pgsTypes::sdtCompositeCIP || m_Deck.DeckType == pgsTypes::sdtCompositeOverlay )
    {
       Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
+      Float64 fillet = pParent->m_BridgeDesc.GetMaxFillet();
       if ( minSlabOffset < m_Deck.GrossDepth )
       {
          m_Deck.GrossDepth = minSlabOffset;
 
          // Since we are changing deck type here, data could be whacky. So use lrfd 9.7.1.1—Minimum Depth and Cover to
          // insure that we have a reasonable slab depth
-         if (m_Deck.GrossDepth < 0.0)
+         if (m_Deck.GrossDepth <= 0.0)
          {
-            m_Deck.GrossDepth = ::ConvertToSysUnits(7.0, unitMeasure::Inch);
+            m_Deck.GrossDepth = Max(::ConvertToSysUnits(7.0, unitMeasure::Inch),fillet);
          }
       }
    }
    else if ( m_Deck.DeckType == pgsTypes::sdtCompositeSIP )
    {
       Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
+      Float64 fillet = pParent->m_BridgeDesc.GetMaxFillet();
       if ( minSlabOffset < m_Deck.GrossDepth + m_Deck.PanelDepth )
       {
          m_Deck.GrossDepth = minSlabOffset - m_Deck.PanelDepth; // decrease the cast depth
 
          // Since we are changing deck type here, data could be wacky. So use lrfd 9.7.1.1—Minimum Depth and Cover to
          // insure that we have a reasonable slab depth
-         if (m_Deck.GrossDepth < 0.0)
+         if (m_Deck.GrossDepth <= 0.0)
          {
-            m_Deck.GrossDepth = max(::ConvertToSysUnits(7.0, unitMeasure::Inch) - m_Deck.PanelDepth, 0.0);
+            m_Deck.GrossDepth = Max(::ConvertToSysUnits(7.0, unitMeasure::Inch) - m_Deck.PanelDepth, fillet);
          }
       }
    }

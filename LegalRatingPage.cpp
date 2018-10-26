@@ -129,7 +129,7 @@ END_MESSAGE_MAP()
 
 BOOL CLegalRatingPage::OnInitDialog()
 {
-   EnableToolTips();
+   VERIFY(EnableToolTips());
 
    CPropertyPage::OnInitDialog();
 
@@ -173,6 +173,7 @@ BOOL CLegalRatingPage::OnInitDialog()
 
 BOOL CLegalRatingPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
 {
+   WATCH(_T("CLegalRatingPage::OnToolTipNotify"));
    pgsTypes::LimitState limit_state;
    bool bIsLoadFactorTip = false;
 

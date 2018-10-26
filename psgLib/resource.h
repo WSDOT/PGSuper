@@ -1231,6 +1231,8 @@
 #define IDS_E_BADINSTALL                1636
 #define IDC_DEFAULT_DISTANCE_LABEL      1636
 #define IDS_E_PROBPERSISTS              1638
+#define IDC_LIST2                       1639
+#define IDC_CONFLICT_LIST               1639
 #define IDS_E_INVALIDFORMAT             1640
 #define IDS_E_FILENOTFOUND              1642
 #define IDS_E_READ                      1644
@@ -1266,7 +1268,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        312
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1638
+#define _APS_NEXT_CONTROL_VALUE         1640
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

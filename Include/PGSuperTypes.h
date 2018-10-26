@@ -101,6 +101,12 @@ typedef struct pgsTypes
       scGirder  // Girder Section Coordinates
    } SectionCoordinateType;
 
+   typedef enum PlanCoordinateType
+   {
+      pcLocal, // coordinate is in the local coordinate system
+      pcGlobal // coordinate is in the global coordinate system
+   } PlanCoordinateType;
+
    // Defines the section property mode that is being used for analysis
    typedef enum SectionPropertyMode
    {
@@ -1228,12 +1234,13 @@ struct HANDLINGCONFIG
 enum arFlexuralDesignType { dtNoDesign, dtDesignForHarping, dtDesignForDebonding, dtDesignFullyBonded,
                             dtDesignFullyBondedRaised, dtDesignForDebondingRaised }; // raised straight strands
 enum arDesignStrandFillType { ftGridOrder, ftMinimizeHarping, ftDirectFill }; // direct fill used for raised straight
+enum arSlabOffsetDesignType { sodNoADesign, sodAOnly, sodAandFillet }; 
 enum arDesignStirrupLayoutType { slLayoutStirrups, slRetainExistingLayout };
 
 struct arDesignOptions
 {
    arFlexuralDesignType doDesignForFlexure;
-   bool doDesignSlabOffset;
+   arSlabOffsetDesignType doDesignSlabOffset;
    bool doDesignLifting;
    bool doDesignHauling;
    bool doDesignSlope;
@@ -1249,7 +1256,7 @@ struct arDesignOptions
 
    arDesignStirrupLayoutType doDesignStirrupLayout;
 
-   arDesignOptions(): doDesignForFlexure(dtNoDesign), doDesignSlabOffset(false), doDesignLifting(false), doDesignHauling(false),
+   arDesignOptions(): doDesignForFlexure(dtNoDesign), doDesignSlabOffset(sodNoADesign), doDesignLifting(false), doDesignHauling(false),
                       doDesignSlope(false), doDesignHoldDown(false), doDesignForShear(false), 
                       doStrandFillType(ftMinimizeHarping), doDesignStirrupLayout(slLayoutStirrups),
                       doForceHarpedStrandsStraight(false),

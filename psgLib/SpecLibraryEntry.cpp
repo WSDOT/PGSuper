@@ -32,13 +32,16 @@
 
 #include <MathEx.h>
 
+#include <EAF\EAFApp.h>
+#include <psgLib\LibraryEntryDifferenceItem.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define CURRENT_VERSION 54.0 // jumped to version 50 for PGSplice development... this leaves a gap
+#define CURRENT_VERSION 55.0 // jumped to version 50 for PGSplice development... this leaves a gap
 // between version 44 (PGSuper head branch, version 2.9) and PGSplice 
 // when loading data that was added after version 44 it is ok for the load to fail for now.
 // once this is merged to the head branch, data added from the then CURRENT_VERSION and later can't fail
@@ -109,8 +112,8 @@ m_CompStressHauling(0.6),
 m_TensStressHauling(0),
 m_DoTensStressHaulingMax(false),
 m_TensStressHaulingMax(0),
-m_HeHaulingCrackFs(1.0),
-m_HeHaulingRollFs(1.5),
+m_HaulingCrackFs(1.0),
+m_HaulingRollFs(1.5),
 m_TruckRollStiffnessMethod(1),
 m_TruckRollStiffness(ConvertToSysUnits(40000.,unitMeasure::KipInchPerRadian)),
 m_AxleWeightLimit(ConvertToSysUnits(18.,unitMeasure::Kip)),
@@ -119,8 +122,6 @@ m_MinRollStiffness(ConvertToSysUnits(28000.,unitMeasure::KipInchPerRadian)),
 m_TruckGirderHeight(ConvertToSysUnits(108.0,unitMeasure::Inch)),
 m_TruckRollCenterHeight(ConvertToSysUnits(24.0,unitMeasure::Inch)),
 m_TruckAxleWidth(ConvertToSysUnits(36.0,unitMeasure::Inch)),
-m_HeErectionCrackFs(1.0),
-m_HeErectionFailFs(1.5),
 m_RoadwaySuperelevation(0.06),
 m_TempStrandRemovalCompStress(0.45),
 m_TempStrandRemovalTensStress(::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI)),
@@ -139,7 +140,6 @@ m_Bs2DoTensStressMax(false),
 m_Bs2TensStressMax(ConvertToSysUnits(0.2,unitMeasure::KSI)),
 m_TrafficBarrierDistributionType(pgsTypes::tbdGirder),
 m_Bs2MaxGirdersTrafficBarrier(4),
-m_Bs2MaxGirdersUtility(4),
 m_OverlayLoadDistribution(pgsTypes::olDistributeEvenly),
 m_Bs3CompStressServ(0.6),
 m_Bs3CompStressService1A(0.4),
@@ -506,8 +506,8 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("TensStressHauling"),m_TensStressHauling);
    pSave->Property(_T("DoTensStressHaulingMax"),m_DoTensStressHaulingMax); 
    pSave->Property(_T("TensStressHaulingMax"), m_TensStressHaulingMax);
-   pSave->Property(_T("HeHaulingCrackFs"), m_HeHaulingCrackFs);
-   pSave->Property(_T("HeHaulingFailFs"), m_HeHaulingRollFs);
+   pSave->Property(_T("HeHaulingCrackFs"), m_HaulingCrackFs);
+   pSave->Property(_T("HeHaulingFailFs"), m_HaulingRollFs);
    pSave->Property(_T("RoadwaySuperelevation"), m_RoadwaySuperelevation);
    pSave->Property(_T("TruckRollStiffnessMethod"), (long)m_TruckRollStiffnessMethod);
    pSave->Property(_T("TruckRollStiffness"), m_TruckRollStiffness);
@@ -517,8 +517,8 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("TruckGirderHeight"), m_TruckGirderHeight);
    pSave->Property(_T("TruckRollCenterHeight"), m_TruckRollCenterHeight);
    pSave->Property(_T("TruckAxleWidth"), m_TruckAxleWidth);
-   pSave->Property(_T("HeErectionCrackFs"), m_HeErectionCrackFs);
-   pSave->Property(_T("HeErectionFailFs"), m_HeErectionFailFs);
+   //pSave->Property(_T("HeErectionCrackFs"), m_HeErectionCrackFs); // removed in version 55.0
+   //pSave->Property(_T("HeErectionFailFs"), m_HeErectionFailFs); // removed in version 55.0
    pSave->Property(_T("MaxGirderWgt"),m_MaxGirderWgt);
 
    // Added at version 53
@@ -567,7 +567,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 
    pSave->Property(_T("Bs2TrafficBarrierDistributionType"),(Int16)m_TrafficBarrierDistributionType); // added in version 36
    pSave->Property(_T("Bs2MaxGirdersTrafficBarrier"), m_Bs2MaxGirdersTrafficBarrier);
-   pSave->Property(_T("Bs2MaxGirdersUtility"), m_Bs2MaxGirdersUtility);
+   //pSave->Property(_T("Bs2MaxGirdersUtility"), m_Bs2MaxGirdersUtility); // removed in version 55
    pSave->Property(_T("OverlayLoadDistribution"), (Int32)m_OverlayLoadDistribution); // added in version 34
    pSave->Property(_T("HaunchLoadComputationType"), (Int32)m_HaunchLoadComputationType); // added in version 54
    pSave->Property(_T("HaunchLoadCamberTolerance"), m_HaunchLoadCamberTolerance);        // ""
@@ -1365,12 +1365,12 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if(!pLoad->Property(_T("HeHaulingCrackFs"), &m_HeHaulingCrackFs))
+      if(!pLoad->Property(_T("HeHaulingCrackFs"), &m_HaulingCrackFs))
       {
          THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if(!pLoad->Property(_T("HeHaulingFailFs"), &m_HeHaulingRollFs))
+      if(!pLoad->Property(_T("HeHaulingFailFs"), &m_HaulingRollFs))
       {
          THROW_LOAD(InvalidFileFormat,pLoad);
       }
@@ -1435,14 +1435,19 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if(!pLoad->Property(_T("HeErectionCrackFs"), &m_HeErectionCrackFs))
+      if ( version < 55.0 )
       {
-         THROW_LOAD(InvalidFileFormat,pLoad);
-      }
+         // removed in version 55.0 (this parameters are never used)
+         Float64 value;
+         if(!pLoad->Property(_T("HeErectionCrackFs"), &value))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
-      if(!pLoad->Property(_T("HeErectionFailFs"), &m_HeErectionFailFs))
-      {
-         THROW_LOAD(InvalidFileFormat,pLoad);
+         if(!pLoad->Property(_T("HeErectionFailFs"), &value))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if ( 1.3 <= version )
@@ -1620,9 +1625,14 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
-         if(!pLoad->Property(_T("BsMaxGirdersUtility"), &m_Bs2MaxGirdersUtility))
+         if ( version < 55 )
          {
-            THROW_LOAD(InvalidFileFormat,pLoad);
+            // this parameter never used... removed in version 55
+            Float64 value;
+            if(!pLoad->Property(_T("BsMaxGirdersUtility"), &value))
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
 
          m_TempStrandRemovalCompStress      = m_Bs1CompStress;
@@ -1819,9 +1829,14 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
-         if(!pLoad->Property(_T("Bs2MaxGirdersUtility"), &m_Bs2MaxGirdersUtility))
+         if ( version < 55 )
          {
-            THROW_LOAD(InvalidFileFormat,pLoad);
+            // this parameter was never used. removed in version 55
+            Float64 value;
+            if(!pLoad->Property(_T("Bs2MaxGirdersUtility"), &value))
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
 
          if ( 33.0 < version )
@@ -3676,317 +3691,835 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
 }
 
-#define TEST(a,b) if ( a != b ) return false
-#define TESTD(a,b) if ( !::IsEqual(a,b) ) return false
-
-//#define TEST(a,b) if ( a != b ) { CString strMsg; strMsg.Format(_T("%s != %s"),_T(#a),_T(#b)); AfxMessageBox(strMsg); return false; }
-//#define TESTD(a,b) if ( !::IsEqual(a,b) ) { CString strMsg; strMsg.Format(_T("!::IsEqual(%s,%s)"),_T(#a),_T(#b)); AfxMessageBox(strMsg); return false; }
-
-bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName) const
+bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther,bool bConsiderName) const
 {
-   TEST (m_SpecificationType          , rOther.m_SpecificationType          );
-   TEST (m_SpecificationUnits         , rOther.m_SpecificationUnits         );
-   TEST (m_Description                , rOther.m_Description                );
-   TEST (m_SectionPropertyMode        , rOther.m_SectionPropertyMode      );
-   TEST (m_DoCheckStrandSlope         , rOther.m_DoCheckStrandSlope         );
-   TEST (m_DoDesignStrandSlope        , rOther.m_DoDesignStrandSlope        );
-   TESTD(m_MaxSlope05                 , rOther.m_MaxSlope05                 );
-   TESTD(m_MaxSlope06                 , rOther.m_MaxSlope06                 );
-   TESTD(m_MaxSlope07                 , rOther.m_MaxSlope07                 );
-   TEST (m_DoCheckHoldDown            , rOther.m_DoCheckHoldDown            );
-   TEST (m_DoDesignHoldDown           , rOther.m_DoDesignHoldDown            );
-   TESTD(m_HoldDownForce              , rOther.m_HoldDownForce              );
-   TEST (m_DoCheckSplitting           , rOther.m_DoCheckSplitting           );
-   TEST (m_DoDesignSplitting           , rOther.m_DoDesignSplitting         );
-   TEST (m_DoCheckConfinement           , rOther.m_DoCheckConfinement       );
-   TEST (m_DoDesignConfinement           , rOther.m_DoDesignConfinement     );
-   TESTD(m_StirrupSpacingCoefficient[0], rOther.m_StirrupSpacingCoefficient[0]);
-   TESTD(m_StirrupSpacingCoefficient[1], rOther.m_StirrupSpacingCoefficient[1]);
-   TESTD(m_MaxStirrupSpacing[0]          , rOther.m_MaxStirrupSpacing[0]          );
-   TESTD(m_MaxStirrupSpacing[1]          , rOther.m_MaxStirrupSpacing[1]          );
-   TESTD(m_CyLiftingCrackFs          , rOther.m_CyLiftingCrackFs          );
-   TESTD(m_CyLiftingFailFs           , rOther.m_CyLiftingFailFs           );
-   TESTD(m_CyCompStressServ           , rOther.m_CyCompStressServ           );
-   TESTD(m_CyCompStressLifting       , rOther.m_CyCompStressLifting       );
-   TESTD(m_CyTensStressServ           , rOther.m_CyTensStressServ           );
-   TEST (m_CyDoTensStressServMax      , rOther.m_CyDoTensStressServMax      );
-   TESTD(m_CyTensStressServMax        , rOther.m_CyTensStressServMax        );
-   TESTD(m_CyTensStressLifting        , rOther.m_CyTensStressLifting        );
-   TEST (m_CyDoTensStressLiftingMax   , rOther.m_CyDoTensStressLiftingMax   );
-   TESTD(m_CyTensStressLiftingMax     , rOther.m_CyTensStressLiftingMax     );
-   TESTD(m_SplittingZoneLengthFactor,    rOther.m_SplittingZoneLengthFactor   );
-   TESTD(m_LiftingUpwardImpact        , rOther.m_LiftingUpwardImpact        );
-   TESTD(m_LiftingDownwardImpact      , rOther.m_LiftingDownwardImpact      );
-   TESTD(m_HaulingUpwardImpact        , rOther.m_HaulingUpwardImpact        );
-   TESTD(m_HaulingDownwardImpact      , rOther.m_HaulingDownwardImpact      );
-   TEST (m_CuringMethod               , rOther.m_CuringMethod               );
-   TEST (m_EnableLiftingCheck         , rOther.m_EnableLiftingCheck         );
-   TEST (m_EnableLiftingDesign        , rOther.m_EnableLiftingDesign        );
-   TESTD(m_PickPointHeight            , rOther.m_PickPointHeight            );
-   TESTD(m_MaxGirderWgt,                rOther.m_MaxGirderWgt               );
-   TEST(m_LimitStateConcreteStrength,  rOther.m_LimitStateConcreteStrength);
+   std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+   return Compare(rOther,vDifferences,true,bConsiderName);
+}
 
-   TESTD(m_LiftingLoopTolerance       , rOther.m_LiftingLoopTolerance       );
-   TESTD(m_MinCableInclination        , rOther.m_MinCableInclination        );
-   TESTD(m_MaxGirderSweepLifting      , rOther.m_MaxGirderSweepLifting      );
-   TESTD(m_MaxGirderSweepHauling      , rOther.m_MaxGirderSweepHauling      );
-   TEST (m_EnableHaulingCheck         , rOther.m_EnableHaulingCheck            );
-   TEST (m_EnableHaulingDesign        , rOther.m_EnableHaulingDesign           );
-   TEST (m_HaulingAnalysisMethod      , rOther.m_HaulingAnalysisMethod       );
-   TESTD(m_HaulingSupportDistance          , rOther.m_HaulingSupportDistance );
-   TESTD(m_HaulingSupportPlacementTolerance, rOther.m_HaulingSupportPlacementTolerance );
-   TESTD(m_HaulingCamberPercentEstimate    , rOther.m_HaulingCamberPercentEstimate );
-   TESTD(m_CompStressHauling       , rOther.m_CompStressHauling         );
-   TESTD(m_TensStressHauling          , rOther.m_TensStressHauling          );
-   TEST (m_DoTensStressHaulingMax     , rOther.m_DoTensStressHaulingMax     );
-   TESTD(m_TensStressHaulingMax       , rOther.m_TensStressHaulingMax       );
-   TESTD(m_HeHaulingCrackFs           , rOther.m_HeHaulingCrackFs           );
-   TESTD(m_HeHaulingRollFs            , rOther.m_HeHaulingRollFs            );
-   TESTD(m_RoadwaySuperelevation      , rOther.m_RoadwaySuperelevation      );
-   TEST (m_TruckRollStiffnessMethod   , rOther.m_TruckRollStiffnessMethod   );
-   TESTD(m_TruckRollStiffness         , rOther.m_TruckRollStiffness         );
-   TESTD(m_AxleWeightLimit            , rOther.m_AxleWeightLimit            );
-   TESTD(m_AxleStiffness              , rOther.m_AxleStiffness              );
-   TESTD(m_MinRollStiffness           , rOther.m_MinRollStiffness           );
-   TESTD(m_MaxHaulingOverhang         , rOther.m_MaxHaulingOverhang         );
-   TESTD(m_TruckGirderHeight          , rOther.m_TruckGirderHeight          );
-   TESTD(m_TruckRollCenterHeight      , rOther.m_TruckRollCenterHeight      );
-   TESTD(m_TruckAxleWidth             , rOther.m_TruckAxleWidth             );
-   TESTD(m_HeErectionCrackFs          , rOther.m_HeErectionCrackFs          );
-   TESTD(m_HeErectionFailFs           , rOther.m_HeErectionFailFs           );
-   TESTD(m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal] , rOther.m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal] );
-   TESTD(m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight] , rOther.m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight] );
-   TESTD(m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight] , rOther.m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight] );
+bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool bReturnOnFirstDifference, bool considerName) const
+{
+   CEAFApp* pApp = EAFGetApp();
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-   TESTD(m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal] , rOther.m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal] );
-   TESTD(m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight] , rOther.m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight] );
-   TESTD(m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight] , rOther.m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight] );
-
-   TESTD(m_CyTensStressServWithRebar  , rOther.m_CyTensStressServWithRebar );
-   TESTD(m_TensStressLiftingWithRebar , rOther.m_TensStressLiftingWithRebar );
-   TESTD(m_TensStressHaulingWithRebar , rOther.m_TensStressHaulingWithRebar );
-
-   TESTD(m_TempStrandRemovalCompStress     , rOther.m_TempStrandRemovalCompStress              );
-   TESTD(m_TempStrandRemovalTensStress     , rOther.m_TempStrandRemovalTensStress              );
-   TEST (m_TempStrandRemovalDoTensStressMax, rOther.m_TempStrandRemovalDoTensStressMax         );
-   TESTD(m_TempStrandRemovalTensStressMax  , rOther.m_TempStrandRemovalTensStressMax           );
-   TESTD(m_TempStrandRemovalTensStressWithRebar, rOther.m_TempStrandRemovalTensStressWithRebar );
-
-   TEST(m_bCheckTemporaryStresses, rOther.m_bCheckTemporaryStresses);
-   TESTD(m_Bs1CompStress              , rOther.m_Bs1CompStress              );
-   TESTD(m_Bs1TensStress              , rOther.m_Bs1TensStress              );
-   TEST (m_Bs1DoTensStressMax         , rOther.m_Bs1DoTensStressMax         );
-   TESTD(m_Bs1TensStressMax           , rOther.m_Bs1TensStressMax           );
-   TESTD(m_Bs2CompStress              , rOther.m_Bs2CompStress              );
-   TEST( m_bCheckBs2Tension           , rOther.m_bCheckBs2Tension           );
-   TESTD(m_Bs2TensStress              , rOther.m_Bs2TensStress              );
-   TEST( m_Bs2DoTensStressMax         , rOther.m_Bs2DoTensStressMax         );
-   TESTD(m_Bs2TensStressMax           , rOther.m_Bs2TensStressMax           );
-   TEST (m_TrafficBarrierDistributionType, rOther.m_TrafficBarrierDistributionType);
-   TEST (m_Bs2MaxGirdersTrafficBarrier, rOther.m_Bs2MaxGirdersTrafficBarrier );
-   TEST (m_Bs2MaxGirdersUtility       , rOther.m_Bs2MaxGirdersUtility        );
-   TEST (m_OverlayLoadDistribution    , rOther.m_OverlayLoadDistribution     );
-   TEST (m_HaunchLoadComputationType  , rOther.m_HaunchLoadComputationType     );
-   TEST (m_HaunchLoadCamberTolerance  , rOther.m_HaunchLoadCamberTolerance     );
-   TESTD(m_Bs3CompStressServ          , rOther.m_Bs3CompStressServ           );
-   TESTD(m_Bs3CompStressService1A     , rOther.m_Bs3CompStressService1A      );
-   TESTD(m_Bs3TensStressServNc        , rOther.m_Bs3TensStressServNc         );
-   TEST (m_Bs3DoTensStressServNcMax   , rOther.m_Bs3DoTensStressServNcMax    );
-   TESTD(m_Bs3TensStressServNcMax     , rOther.m_Bs3TensStressServNcMax      );
-   TESTD(m_Bs3TensStressServSc        , rOther.m_Bs3TensStressServSc         );
-   TEST (m_Bs3DoTensStressServScMax   , rOther.m_Bs3DoTensStressServScMax    );
-   TESTD(m_Bs3TensStressServScMax     , rOther.m_Bs3TensStressServScMax      );
-//   TEST (m_Bs3IgnoreRangeOfApplicability , rOther.m_Bs3IgnoreRangeOfApplicability );
-   TEST (m_Bs3LRFDOverReinforcedMomentCapacity , rOther.m_Bs3LRFDOverReinforcedMomentCapacity );
-   TESTD(m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal] , rOther.m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal] );
-   TESTD(m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight] , rOther.m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight] );
-   TESTD(m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight] , rOther.m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight] );
-   TESTD(m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal] , rOther.m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal] );
-   TESTD(m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight] , rOther.m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight] );
-   TESTD(m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight] , rOther.m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight] );
-
-   TEST (m_CreepMethod                , rOther.m_CreepMethod                );
-   TESTD(m_XferTime                   , rOther.m_XferTime                   );
-   TESTD(m_CreepFactor                , rOther.m_CreepFactor                );
-   TESTD(m_CreepDuration1Min          , rOther.m_CreepDuration1Min          );
-   TESTD(m_CreepDuration2Min          , rOther.m_CreepDuration2Min          );
-   TESTD(m_CreepDuration1Max          , rOther.m_CreepDuration1Max          );
-   TESTD(m_CreepDuration2Max          , rOther.m_CreepDuration2Max          );
-   TESTD(m_TotalCreepDuration  , rOther.m_TotalCreepDuration  );
-   TESTD(m_CamberVariability   , rOther.m_CamberVariability  );
-   TEST (m_LossMethod                 , rOther.m_LossMethod                 );
-   TESTD(m_FinalLosses                , rOther.m_FinalLosses                );
-   TEST (m_TimeDependentModel         , rOther.m_TimeDependentModel         );
-   TESTD(m_ShippingLosses             , rOther.m_ShippingLosses             );
-   TESTD(m_BeforeXferLosses           , rOther.m_BeforeXferLosses           );
-   TESTD(m_AfterXferLosses            , rOther.m_AfterXferLosses            );
-   TESTD(m_ShippingTime               , rOther.m_ShippingTime               );
-   TESTD(m_LiftingLosses              , rOther.m_LiftingLosses              );
-   TESTD(m_BeforeTempStrandRemovalLosses , rOther.m_BeforeTempStrandRemovalLosses );
-   TESTD(m_AfterTempStrandRemovalLosses  , rOther.m_AfterTempStrandRemovalLosses );
-   TESTD(m_AfterDeckPlacementLosses      , rOther.m_AfterDeckPlacementLosses );
-   TESTD(m_AfterSIDLLosses               , rOther.m_AfterSIDLLosses );
-
-   TEST(m_bUpdatePTParameters,rOther.m_bUpdatePTParameters);
-   TESTD(m_Dset,rOther.m_Dset);
-   TESTD(m_WobbleFriction,rOther.m_WobbleFriction);
-   TESTD(m_FrictionCoefficient,rOther.m_FrictionCoefficient);
-
-   TESTD(m_SlabElasticGain          , rOther.m_SlabElasticGain);
-   TESTD(m_SlabPadElasticGain       , rOther.m_SlabPadElasticGain);
-   TESTD(m_DiaphragmElasticGain     , rOther.m_DiaphragmElasticGain);
-   TESTD(m_UserDCElasticGainBS1     , rOther.m_UserDCElasticGainBS1);
-   TESTD(m_UserDWElasticGainBS1     , rOther.m_UserDWElasticGainBS1);
-   TESTD(m_UserDCElasticGainBS2     , rOther.m_UserDCElasticGainBS2);
-   TESTD(m_UserDWElasticGainBS2     , rOther.m_UserDWElasticGainBS2);
-   TESTD(m_RailingSystemElasticGain , rOther.m_RailingSystemElasticGain);
-   TESTD(m_OverlayElasticGain       , rOther.m_OverlayElasticGain);
-   TESTD(m_SlabShrinkageElasticGain , rOther.m_SlabShrinkageElasticGain);
-   TESTD(m_LiveLoadElasticGain      , rOther.m_LiveLoadElasticGain);
-
-   TEST (m_LldfMethod                 , rOther.m_LldfMethod                 );
-   TEST (m_LongReinfShearMethod       , rOther.m_LongReinfShearMethod       );
-
-   TEST (m_bCheckStrandStress[CSS_AT_JACKING],        rOther.m_bCheckStrandStress[CSS_AT_JACKING]);
-   TEST (m_bCheckStrandStress[CSS_BEFORE_TRANSFER],   rOther.m_bCheckStrandStress[CSS_BEFORE_TRANSFER]);
-   TEST (m_bCheckStrandStress[CSS_AFTER_TRANSFER],   rOther.m_bCheckStrandStress[CSS_AFTER_TRANSFER]);
-   TEST (m_bCheckStrandStress[CSS_AFTER_ALL_LOSSES], rOther.m_bCheckStrandStress[CSS_AFTER_ALL_LOSSES]);
-
-   TESTD(m_StrandStressCoeff[CSS_AT_JACKING][STRESS_REL], rOther.m_StrandStressCoeff[CSS_AT_JACKING][STRESS_REL]       );
-   TESTD(m_StrandStressCoeff[CSS_AT_JACKING][LOW_RELAX], rOther.m_StrandStressCoeff[CSS_AT_JACKING][LOW_RELAX]        );
-   TESTD(m_StrandStressCoeff[CSS_BEFORE_TRANSFER][STRESS_REL], rOther.m_StrandStressCoeff[CSS_BEFORE_TRANSFER][STRESS_REL]  );
-   TESTD(m_StrandStressCoeff[CSS_BEFORE_TRANSFER][LOW_RELAX], rOther.m_StrandStressCoeff[CSS_BEFORE_TRANSFER][LOW_RELAX]   );
-   TESTD(m_StrandStressCoeff[CSS_AFTER_TRANSFER][STRESS_REL], rOther.m_StrandStressCoeff[CSS_AFTER_TRANSFER][STRESS_REL]   );
-   TESTD(m_StrandStressCoeff[CSS_AFTER_TRANSFER][LOW_RELAX], rOther.m_StrandStressCoeff[CSS_AFTER_TRANSFER][LOW_RELAX]    );
-   TESTD(m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL], rOther.m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL] );
-   TESTD(m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX], rOther.m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]  );
-
-   TEST(m_bCheckTendonStressAtJacking,rOther.m_bCheckTendonStressAtJacking);
-   TEST(m_bCheckTendonStressPriorToSeating,rOther.m_bCheckTendonStressPriorToSeating);
-   TESTD(m_TendonStressCoeff[CSS_AT_JACKING][STRESS_REL],rOther.m_TendonStressCoeff[CSS_AT_JACKING][STRESS_REL]);
-   TESTD(m_TendonStressCoeff[CSS_AT_JACKING][LOW_RELAX],rOther.m_TendonStressCoeff[CSS_AT_JACKING][LOW_RELAX]);
-   TESTD(m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][STRESS_REL],rOther.m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][STRESS_REL]);
-   TESTD(m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][LOW_RELAX],rOther.m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][LOW_RELAX]);
-   TESTD(m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][STRESS_REL],rOther.m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][STRESS_REL]);
-   TESTD(m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][LOW_RELAX],rOther.m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][LOW_RELAX]);
-   TESTD(m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][STRESS_REL],rOther.m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][STRESS_REL]);
-   TESTD(m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][LOW_RELAX],rOther.m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][LOW_RELAX]);
-   TESTD(m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL],rOther.m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL]);
-   TESTD(m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX],rOther.m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]);
-
-   TEST (m_bDoEvaluateDeflection , rOther.m_bDoEvaluateDeflection );
-   TESTD(m_DeflectionLimit       , rOther.m_DeflectionLimit );
-
-   TEST (m_bIncludeRebar_Moment , rOther.m_bIncludeRebar_Moment );
-   TEST (m_bIncludeRebar_Shear , rOther.m_bIncludeRebar_Shear );
-
-   for ( int i = 0; i < 3; i++ )
+   //
+   // General Tab
+   //
+   if ( m_Description != rOther.m_Description )
    {
-      TESTD(m_MaxSlabFc[i]             , rOther.m_MaxSlabFc[i] );
-      TESTD(m_MaxSegmentFci[i]          , rOther.m_MaxSegmentFci[i] );
-      TESTD(m_MaxSegmentFc[i]           , rOther.m_MaxSegmentFc[i] );
-      TESTD(m_MaxConcreteUnitWeight[i] , rOther.m_MaxConcreteUnitWeight[i] );
-      TESTD(m_MaxConcreteAggSize[i]    , rOther.m_MaxConcreteAggSize[i] );
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Description"),m_Description.c_str(),rOther.m_Description.c_str()));
    }
 
-   TEST (m_DoCheckStirrupSpacingCompatibility, rOther.m_DoCheckStirrupSpacingCompatibility);
-   TEST (m_bCheckSag, rOther.m_bCheckSag);
-   if ( m_bCheckSag )
+   if ( m_SpecificationType != rOther.m_SpecificationType )
    {
-      TEST(m_SagCamberType,rOther.m_SagCamberType);
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Design Criteria Basis"),lrfdVersionMgr::GetVersionString(m_SpecificationType),lrfdVersionMgr::GetVersionString(rOther.m_SpecificationType)));
+   }
+
+   if ( lrfdVersionMgr::ThirdEditionWith2006Interims < m_SpecificationType && m_SpecificationUnits != rOther.m_SpecificationUnits )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Specification Units Systems are different"),_T(""),_T("")));
+   }
+
+   if ( m_SectionPropertyMode != rOther.m_SectionPropertyMode || m_EffFlangeWidthMethod != rOther.m_EffFlangeWidthMethod )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Section Properties are different"),_T(""),_T("")));
+   }
+
+   //
+   // Spec. Checking and Design Tab
+   //
+   if ( m_DoCheckHoldDown != rOther.m_DoCheckHoldDown || 
+        m_DoDesignHoldDown != rOther.m_DoDesignHoldDown ||
+        !::IsEqual(m_HoldDownForce,rOther.m_HoldDownForce) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Hold Down Force requirements are different"),_T(""),_T("")));
+   }
+
+   if ( m_DoCheckStrandSlope != rOther.m_DoCheckStrandSlope ||
+        m_DoDesignStrandSlope != rOther.m_DoDesignStrandSlope ||
+        !::IsEqual(m_MaxSlope05, rOther.m_MaxSlope05) ||
+        !::IsEqual(m_MaxSlope06, rOther.m_MaxSlope06) ||
+        !::IsEqual(m_MaxSlope07, rOther.m_MaxSlope07) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Strand Slope requirements are different"),_T(""),_T("")));
+   }
+
+   if ( m_DoCheckSplitting != rOther.m_DoCheckSplitting ||
+        m_DoDesignSplitting != rOther.m_DoDesignSplitting ||
+        !::IsEqual(m_SplittingZoneLengthFactor,rOther.m_SplittingZoneLengthFactor) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Splitting Resistance requirements are different"),_T(""),_T("")));
+   }
+
+   if ( m_DoCheckConfinement != rOther.m_DoCheckConfinement ||
+        m_DoDesignConfinement != rOther.m_DoDesignConfinement )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Confinement Reinforcement requirements are different"),_T(""),_T("")));
+   }
+
+   if ( m_EnableLiftingCheck != rOther.m_EnableLiftingCheck ||
+      m_EnableLiftingDesign != rOther.m_EnableLiftingDesign ||
+      !::IsEqual(m_MinLiftPoint,rOther.m_MinLiftPoint) ||
+      !::IsEqual(m_LiftPointAccuracy,rOther.m_LiftPointAccuracy) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Lifting Check/Design Options are different"),_T(""),_T("")));
+   }
+
+   if ( m_EnableHaulingCheck != rOther.m_EnableHaulingCheck ||
+        m_EnableHaulingDesign != rOther.m_EnableHaulingDesign ||
+        !::IsEqual(m_MinHaulPoint, rOther.m_MinHaulPoint) ||
+        !::IsEqual(m_HaulPointAccuracy, rOther.m_HaulPointAccuracy) ||
+        (m_UseMinTruckSupportLocationFactor != rOther.m_UseMinTruckSupportLocationFactor || (m_UseMinTruckSupportLocationFactor == true && !::IsEqual(m_MinTruckSupportLocationFactor,rOther.m_MinTruckSupportLocationFactor))) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Hauling Check/Design Options are different"),_T(""),_T("")));
+   }
+
+   if ( m_EnableSlabOffsetCheck != rOther.m_EnableSlabOffsetCheck ||
+        m_EnableSlabOffsetDesign != rOther.m_EnableSlabOffsetDesign )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Slab Offset (\"A\" Dimension) Check/Design Options are different"),_T(""),_T("")));
+   }
+
+   if ( m_bDoEvaluateDeflection != rOther.m_bDoEvaluateDeflection ||
+       (m_bDoEvaluateDeflection == true && !::IsEqual(m_DeflectionLimit, rOther.m_DeflectionLimit)) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Live Load Deflection Check Options are different"),_T(""),_T("")));
+   }
+
+   if ( m_bCheckBottomFlangeClearance != rOther.m_bCheckBottomFlangeClearance ||
+       (m_bCheckBottomFlangeClearance == true && !::IsEqual(m_Cmin,rOther.m_Cmin)) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Bottom Flange Clearance Check Options are different"),_T(""),_T("")));
+   }
+
+   if ( m_DesignStrandFillType != rOther.m_DesignStrandFillType )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Harped Strand Design Strategies are different"),_T(""),_T("")));
+   }
+
+   if ( m_LossMethod == LOSSES_TIME_STEP && m_LimitStateConcreteStrength != rOther.m_LimitStateConcreteStrength )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Concrete Strength for Limit State Evaluations are different"),_T(""),_T("")));
    }
 
 
-   TEST (m_EnableSlabOffsetCheck         , rOther.m_EnableSlabOffsetCheck            );
-   TEST (m_EnableSlabOffsetDesign        , rOther.m_EnableSlabOffsetDesign );
-
-   TEST (m_DesignStrandFillType            , rOther.m_DesignStrandFillType );
-   TEST (m_EffFlangeWidthMethod            , rOther.m_EffFlangeWidthMethod );
-   TEST (m_ShearFlowMethod                 , rOther.m_ShearFlowMethod );
-   TESTD(m_MaxInterfaceShearConnectorSpacing, rOther.m_MaxInterfaceShearConnectorSpacing);
-
-   TEST (m_ShearCapacityMethod             , rOther.m_ShearCapacityMethod );
-   TESTD(m_CuringMethodTimeAdjustmentFactor , rOther.m_CuringMethodTimeAdjustmentFactor );
-
-   TESTD(m_MinLiftPoint      , rOther.m_MinLiftPoint );
-   TESTD(m_LiftPointAccuracy , rOther.m_LiftPointAccuracy );
-   TESTD(m_MinHaulPoint      , rOther.m_MinHaulPoint );
-   TESTD(m_HaulPointAccuracy , rOther.m_HaulPointAccuracy);
-
-   TEST(m_bUpdateLoadFactors,rOther.m_bUpdateLoadFactors);
-   for ( int i = 0; i < 6; i++ )
+   //
+   // Prestressed Elements Tab
+   //
+   if ( !::IsEqual(m_CyCompStressServ, rOther.m_CyCompStressServ) ||
+        !::IsEqual(m_CyTensStressServ, rOther.m_CyTensStressServ) ||
+        !::IsEqual(m_CyTensStressServWithRebar, rOther.m_CyTensStressServWithRebar) ||
+        (m_CyDoTensStressServMax != rOther.m_CyDoTensStressServMax || (m_CyDoTensStressServMax == true && !::IsEqual(m_CyTensStressServMax, rOther.m_CyTensStressServMax))) )
    {
-      TESTD( m_DCmin[i], rOther.m_DCmin[i] );
-      TESTD( m_DWmin[i], rOther.m_DWmin[i] );
-      TESTD( m_LLIMmin[i], rOther.m_LLIMmin[i] );
-      TESTD( m_DCmax[i], rOther.m_DCmax[i] );
-      TESTD( m_DWmax[i], rOther.m_DWmax[i] );
-      TESTD( m_LLIMmax[i], rOther.m_LLIMmax[i] );
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Stress Limits for Temporary Stresses before Losses are different"),_T(""),_T("")));
    }
 
-   TEST(m_UseMinTruckSupportLocationFactor , rOther.m_UseMinTruckSupportLocationFactor);
-   TESTD(m_MinTruckSupportLocationFactor , rOther.m_MinTruckSupportLocationFactor);
-   TESTD(m_OverhangGFactor , rOther.m_OverhangGFactor);
-   TESTD(m_InteriorGFactor , rOther.m_InteriorGFactor);
-
-   TESTD(m_PedestrianLoad,   rOther.m_PedestrianLoad);
-   TESTD(m_MinSidewalkWidth, rOther.m_MinSidewalkWidth);
-
-   TESTD(m_MaxAngularDeviationBetweenGirders, rOther.m_MaxAngularDeviationBetweenGirders);
-   TESTD(m_MinGirderStiffnessRatio,           rOther.m_MinGirderStiffnessRatio);
-   TESTD(m_LLDFGirderSpacingLocation,         rOther.m_LLDFGirderSpacingLocation);
-
-   TEST (m_LimitDistributionFactorsToLanesBeams             , rOther.m_LimitDistributionFactorsToLanesBeams );
-   TEST (m_PrestressTransferComputationType, rOther.m_PrestressTransferComputationType);
-
-   TEST(m_RelaxationLossMethod,rOther.m_RelaxationLossMethod);
-   TEST(m_FcgpComputationMethod,rOther.m_FcgpComputationMethod);
-
-   for ( int i = 0; i < 3; i++ )
+   bool bServiceITension = (m_bCheckBs2Tension == rOther.m_bCheckBs2Tension);
+   if ( bServiceITension && !::IsEqual(m_Bs2TensStress, rOther.m_Bs2TensStress) )
    {
-      TESTD(m_PhiFlexureTensionPS[i],      rOther.m_PhiFlexureTensionPS[i]);
-      TESTD(m_PhiFlexureTensionRC[i],      rOther.m_PhiFlexureTensionRC[i]);
-      TESTD(m_PhiFlexureTensionSpliced[i], rOther.m_PhiFlexureTensionSpliced[i]);
-      TESTD(m_PhiFlexureCompression[i],    rOther.m_PhiFlexureCompression[i]);
-      TESTD(m_PhiShear[i],                 rOther.m_PhiShear[i]);
-
-      TESTD(m_PhiClosureJointFlexure[i],rOther.m_PhiClosureJointFlexure[i]);
-      TESTD(m_PhiClosureJointShear[i],  rOther.m_PhiClosureJointShear[i]);
+      bServiceITension = false;
+   }
+   if ( bServiceITension && m_Bs2DoTensStressMax != rOther.m_Bs2DoTensStressMax )
+   {
+      bServiceITension = false;
+   }
+   if ( bServiceITension && m_Bs2DoTensStressMax && !::IsEqual(m_Bs2TensStressMax,rOther.m_Bs2TensStressMax) )
+   {
+      bServiceITension = false;
    }
 
-   TEST( m_bIncludeForNegMoment, rOther.m_bIncludeForNegMoment);
-   TEST( m_bAllowStraightStrandExtensions, rOther.m_bAllowStraightStrandExtensions);
-
-   TESTD(m_ClosureCompStressAtStressing             , rOther.m_ClosureCompStressAtStressing);
-   TESTD(m_ClosureTensStressPTZAtStressing          , rOther.m_ClosureTensStressPTZAtStressing);
-   TESTD(m_ClosureTensStressPTZWithRebarAtStressing , rOther.m_ClosureTensStressPTZWithRebarAtStressing);
-   TESTD(m_ClosureTensStressAtStressing             , rOther.m_ClosureTensStressAtStressing);
-   TESTD(m_ClosureTensStressWithRebarAtStressing    , rOther.m_ClosureTensStressWithRebarAtStressing);
-   TESTD(m_ClosureCompStressAtService               , rOther.m_ClosureCompStressAtService);
-   TESTD(m_ClosureCompStressWithLiveLoadAtService   , rOther.m_ClosureCompStressWithLiveLoadAtService);
-   TESTD(m_ClosureTensStressPTZAtService            , rOther.m_ClosureTensStressPTZAtService);
-   TESTD(m_ClosureTensStressPTZWithRebarAtService   , rOther.m_ClosureTensStressPTZWithRebarAtService);
-   TESTD(m_ClosureTensStressAtService               , rOther.m_ClosureTensStressAtService);
-   TESTD(m_ClosureTensStressWithRebarAtService      , rOther.m_ClosureTensStressWithRebarAtService);
-   TESTD(m_ClosureCompStressFatigue                 , rOther.m_ClosureCompStressFatigue);
-
-
-   TEST(m_bCheckBottomFlangeClearance,rOther.m_bCheckBottomFlangeClearance);
-   TESTD(m_Cmin,rOther.m_Cmin);
-
-   TESTD(m_DuctAreaPushRatio, rOther.m_DuctAreaPushRatio);
-   TESTD(m_DuctAreaPullRatio, rOther.m_DuctAreaPullRatio);
-   TESTD(m_DuctDiameterRatio, rOther.m_DuctDiameterRatio);
-
-   if (considerName)
+   if ( !::IsEqual(m_Bs2CompStress, rOther.m_Bs2CompStress) ||
+        !::IsEqual(m_Bs3CompStressServ, rOther.m_Bs3CompStressServ) ||
+        !bServiceITension ||
+        !::IsEqual(m_Bs3TensStressServNc, rOther.m_Bs3TensStressServNc) ||
+        (m_Bs3DoTensStressServNcMax != rOther.m_Bs3DoTensStressServNcMax  || (m_Bs3DoTensStressServNcMax == true && !::IsEqual(m_Bs3TensStressServNcMax, rOther.m_Bs3TensStressServNcMax))) ||
+        !::IsEqual(m_Bs3TensStressServSc, rOther.m_Bs3TensStressServSc) ||
+        (m_Bs3DoTensStressServScMax != rOther.m_Bs3DoTensStressServScMax || (m_Bs3DoTensStressServScMax == true && !::IsEqual(m_Bs3TensStressServScMax, rOther.m_Bs3TensStressServScMax))) )
    {
-      if ( GetName() != rOther.GetName() )
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Stress Limits at Service Limit State after Losses are different"),_T(""),_T("")));
+   }
+
+   if ( !::IsEqual(m_Bs3CompStressService1A, rOther.m_Bs3CompStressService1A) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Allowable Concrete Stress at Fatigue Limit State are different"),_T(""),_T("")));
+   }
+
+   bool bTempStrandRemovalStresses = true;
+   bool bDeckPlacementStresses = true;
+   if ( m_bCheckTemporaryStresses != rOther.m_bCheckTemporaryStresses )
+   {
+      if ( !::IsEqual(m_TempStrandRemovalCompStress, rOther.m_TempStrandRemovalCompStress) ||
+         !::IsEqual(m_TempStrandRemovalTensStress, rOther.m_TempStrandRemovalTensStress) ||
+         (m_TempStrandRemovalDoTensStressMax != rOther.m_TempStrandRemovalDoTensStressMax || (m_TempStrandRemovalDoTensStressMax == true && !::IsEqual(m_TempStrandRemovalTensStressMax, rOther.m_TempStrandRemovalTensStressMax))) ||
+         !::IsEqual(m_TempStrandRemovalTensStressWithRebar, rOther.m_TempStrandRemovalTensStressWithRebar) )
       {
-         return false;
+         bTempStrandRemovalStresses = false;
+      }
+
+      if ( !::IsEqual(m_Bs1CompStress, rOther.m_Bs1CompStress) ||
+           !::IsEqual(m_Bs1TensStress, rOther.m_Bs1TensStress) ||
+           (m_Bs1DoTensStressMax != rOther.m_Bs1DoTensStressMax || (m_Bs2DoTensStressMax == true && !::IsEqual(m_Bs1TensStressMax, rOther.m_Bs1TensStressMax))) )
+      {
+         bDeckPlacementStresses = false;
       }
    }
 
-   return true;
+   if ( m_bCheckTemporaryStresses != rOther.m_bCheckTemporaryStresses ||
+      (m_bCheckTemporaryStresses == true && (!bTempStrandRemovalStresses || !bDeckPlacementStresses)) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Stress Limits for Temporary Loading Conditions are different"),_T(""),_T("")));
+   }
+
+   //
+   // Closure Joints Tab
+   //
+   if ( !::IsEqual(m_ClosureCompStressAtStressing             , rOther.m_ClosureCompStressAtStressing) ||
+        !::IsEqual(m_ClosureTensStressPTZAtStressing          , rOther.m_ClosureTensStressPTZAtStressing) ||
+        !::IsEqual(m_ClosureTensStressPTZWithRebarAtStressing , rOther.m_ClosureTensStressPTZWithRebarAtStressing) ||
+        !::IsEqual(m_ClosureTensStressAtStressing             , rOther.m_ClosureTensStressAtStressing) ||
+        !::IsEqual(m_ClosureTensStressWithRebarAtStressing    , rOther.m_ClosureTensStressWithRebarAtStressing) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Closure Joint Stress Limits for Temporary Stresses before Losses are different"),_T(""),_T("")));
+   }
+
+   if ( !::IsEqual(m_ClosureCompStressAtService               , rOther.m_ClosureCompStressAtService) ||
+        !::IsEqual(m_ClosureCompStressWithLiveLoadAtService   , rOther.m_ClosureCompStressWithLiveLoadAtService) ||
+        !::IsEqual(m_ClosureTensStressPTZAtService            , rOther.m_ClosureTensStressPTZAtService) ||
+        !::IsEqual(m_ClosureTensStressPTZWithRebarAtService   , rOther.m_ClosureTensStressPTZWithRebarAtService) ||
+        !::IsEqual(m_ClosureTensStressAtService               , rOther.m_ClosureTensStressAtService) ||
+        !::IsEqual(m_ClosureTensStressWithRebarAtService      , rOther.m_ClosureTensStressWithRebarAtService) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Closure Joint Stress Limits at Service Limit State after Losses are different"),_T(""),_T("")));
+   }
+   
+   if ( !::IsEqual(m_ClosureCompStressFatigue, rOther.m_ClosureCompStressFatigue) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Closure Joint Allowable Concrete Stress at Fatigue Limit State are different"),_T(""),_T("")));
+   }
+
+   //
+   // Prestressing Tab
+   //
+   bool bPSAtJacking = true;
+   if ( m_bCheckStrandStress[CSS_AT_JACKING] != rOther.m_bCheckStrandStress[CSS_AT_JACKING] ||
+      (m_bCheckStrandStress[CSS_AT_JACKING] == true && (!::IsEqual(m_StrandStressCoeff[CSS_AT_JACKING][STRESS_REL], rOther.m_StrandStressCoeff[CSS_AT_JACKING][STRESS_REL]) || 
+                                                        !::IsEqual(m_StrandStressCoeff[CSS_AT_JACKING][LOW_RELAX], rOther.m_StrandStressCoeff[CSS_AT_JACKING][LOW_RELAX]))) )
+   {
+      bPSAtJacking = false;
+   }
+
+   bool bPSBeforeXfer = true;
+   if ( m_bCheckStrandStress[CSS_BEFORE_TRANSFER] != rOther.m_bCheckStrandStress[CSS_BEFORE_TRANSFER] ||
+      (m_bCheckStrandStress[CSS_BEFORE_TRANSFER] == true && (!::IsEqual(m_StrandStressCoeff[CSS_BEFORE_TRANSFER][STRESS_REL], rOther.m_StrandStressCoeff[CSS_BEFORE_TRANSFER][STRESS_REL]) || 
+                                                        !::IsEqual(m_StrandStressCoeff[CSS_BEFORE_TRANSFER][LOW_RELAX], rOther.m_StrandStressCoeff[CSS_BEFORE_TRANSFER][LOW_RELAX]))) )
+   {
+      bPSBeforeXfer = false;
+   }
+
+   bool bPSAfterXfer = true;
+   if ( m_bCheckStrandStress[CSS_AFTER_TRANSFER] != rOther.m_bCheckStrandStress[CSS_AFTER_TRANSFER] ||
+      (m_bCheckStrandStress[CSS_AFTER_TRANSFER] == true && (!::IsEqual(m_StrandStressCoeff[CSS_AFTER_TRANSFER][STRESS_REL], rOther.m_StrandStressCoeff[CSS_AFTER_TRANSFER][STRESS_REL]) || 
+                                                        !::IsEqual(m_StrandStressCoeff[CSS_AFTER_TRANSFER][LOW_RELAX], rOther.m_StrandStressCoeff[CSS_AFTER_TRANSFER][LOW_RELAX]))) )
+   {
+      bPSAfterXfer = false;
+   }
+
+   bool bPSFinal = true;
+   if ( m_bCheckStrandStress[CSS_AFTER_ALL_LOSSES] != rOther.m_bCheckStrandStress[CSS_AFTER_ALL_LOSSES] ||
+      (m_bCheckStrandStress[CSS_AFTER_ALL_LOSSES] == true && (!::IsEqual(m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL], rOther.m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL]) || 
+                                                        !::IsEqual(m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX], rOther.m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]))) )
+   {
+      bPSFinal = false;
+   }
+
+   if ( !bPSAtJacking || !bPSBeforeXfer || !bPSAfterXfer || !bPSFinal )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Stress Limits for Prestressing are different"),_T(""),_T("")));
+   }
+
+   bool bPTAtJacking = true;
+   if ( m_bCheckTendonStressAtJacking != rOther.m_bCheckTendonStressAtJacking ||
+      (m_bCheckTendonStressAtJacking == true && (!::IsEqual(m_TendonStressCoeff[CSS_AT_JACKING][STRESS_REL],rOther.m_TendonStressCoeff[CSS_AT_JACKING][STRESS_REL]) || 
+                                                 !::IsEqual(m_TendonStressCoeff[CSS_AT_JACKING][LOW_RELAX],rOther.m_TendonStressCoeff[CSS_AT_JACKING][LOW_RELAX]))) )
+   {
+      bPTAtJacking = false;
+   }
+
+   bool bPTPriorToSeating = true;
+   if ( m_bCheckTendonStressPriorToSeating != rOther.m_bCheckTendonStressPriorToSeating ||
+      (m_bCheckTendonStressPriorToSeating == true && ( !::IsEqual(m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][STRESS_REL],rOther.m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][STRESS_REL]) || 
+                                                       !::IsEqual(m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][LOW_RELAX],rOther.m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][LOW_RELAX]))) )
+   {
+      bPTPriorToSeating = false;
+   }
+
+   bool bPTAfterSeating = true;
+   if ( !::IsEqual(m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][STRESS_REL],rOther.m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][STRESS_REL]) ||
+        !::IsEqual(m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][LOW_RELAX],rOther.m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][LOW_RELAX]) )
+   {
+      bPTAfterSeating = false;
+   }
+
+   bool bPTElsewhereAfterSeating = true;
+   if ( !::IsEqual(m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][STRESS_REL],rOther.m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][STRESS_REL]) ||
+        !::IsEqual(m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][LOW_RELAX],rOther.m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][LOW_RELAX]) )
+   {
+      bPTElsewhereAfterSeating = false;
+   }
+
+   bool bPTFinal = true;
+   if ( !::IsEqual(m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL],rOther.m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL]) ||
+        !::IsEqual(m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX],rOther.m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]) )
+   {
+      bPTFinal = false;
+   }
+
+   if ( !bPTAtJacking || !bPTPriorToSeating || !bPTAfterSeating || !bPTElsewhereAfterSeating || !bPTFinal )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Stress Limits for Post-tensioning are different"),_T(""),_T("")));
+   }
+
+
+   if ( m_bAllowStraightStrandExtensions != rOther.m_bAllowStraightStrandExtensions || 
+        m_PrestressTransferComputationType != rOther.m_PrestressTransferComputationType )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Pretensioned Strand Options are different"),_T(""),_T("")));
+   }
+
+   if ( !::IsEqual(m_DuctAreaPushRatio, rOther.m_DuctAreaPushRatio) ||
+        !::IsEqual(m_DuctAreaPullRatio, rOther.m_DuctAreaPullRatio) ||
+        !::IsEqual(m_DuctDiameterRatio, rOther.m_DuctDiameterRatio) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Size of Ducts parameters are different"),_T(""),_T("")));
+   }
+
+   //
+   // Lifting Tab
+   //
+   if ( !::IsEqual(m_CyLiftingCrackFs, rOther.m_CyLiftingCrackFs) || 
+        !::IsEqual(m_CyLiftingFailFs,  rOther.m_CyLiftingFailFs) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Lifting Factors of Safety are different"),_T(""),_T("")));
+   }
+
+   if ( !::IsEqual(m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal], rOther.m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal]) ||
+        !::IsEqual(m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight] , rOther.m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) ||
+        (lrfdVersionMgr::SeventhEditionWith2016Interims <= GetSpecificationType() ? !::IsEqual(m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight], rOther.m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) : false) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Modulus of Rupture for Cracking Moment During Lifting are different"),_T(""),_T("")));
+   }
+
+   if ( !::IsEqual(m_LiftingUpwardImpact  , rOther.m_LiftingUpwardImpact) ||
+        !::IsEqual(m_LiftingDownwardImpact, rOther.m_LiftingDownwardImpact) ||
+        !::IsEqual(m_PickPointHeight      , rOther.m_PickPointHeight) ||
+        !::IsEqual(m_LiftingLoopTolerance , rOther.m_LiftingLoopTolerance) ||
+        !::IsEqual(m_MaxGirderSweepLifting, rOther.m_MaxGirderSweepLifting) ||
+        !::IsEqual(m_MinCableInclination  , rOther.m_MinCableInclination) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Lifting Analysis Parameters are different"),_T(""),_T("")));
+   }
+
+   if ( !::IsEqual(m_CyCompStressLifting, rOther.m_CyCompStressLifting) ||
+        !::IsEqual(m_CyTensStressLifting        , rOther.m_CyTensStressLifting) ||
+        (m_CyDoTensStressLiftingMax != rOther.m_CyDoTensStressLiftingMax || (m_CyDoTensStressLiftingMax == true && !::IsEqual(m_CyTensStressLiftingMax, rOther.m_CyTensStressLiftingMax))) ||
+        !::IsEqual(m_TensStressLiftingWithRebar , rOther.m_TensStressLiftingWithRebar) ||
+        !::IsEqual(m_TensStressHaulingWithRebar , rOther.m_TensStressHaulingWithRebar) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Lifting Allowable Concrete Stresses are different"),_T(""),_T("")));
+   }
+
+
+   //
+   // Hauling Tab
+   //
+   if ( m_HaulingAnalysisMethod != rOther.m_HaulingAnalysisMethod )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Hauling Analysis Methods are different"),_T(""),_T("")));
+   }
+   else
+   {
+      if ( m_HaulingAnalysisMethod == pgsTypes::hmWSDOT )
+      {
+         // WSDOT method
+         if ( !::IsEqual(m_HaulingCrackFs, rOther.m_HaulingCrackFs) ||
+              !::IsEqual(m_HaulingRollFs, rOther.m_HaulingRollFs) )
+         {
+            RETURN_ON_DIFFERENCE;
+            vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Hauling Factors of Safety are different"),_T(""),_T("")));
+         }
+
+         if ( !::IsEqual(m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal], rOther.m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal]) ||
+              !::IsEqual(m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight] , rOther.m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) ||
+              (lrfdVersionMgr::SeventhEditionWith2016Interims <= GetSpecificationType() ? !::IsEqual(m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight], rOther.m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) : false) )
+         {
+            RETURN_ON_DIFFERENCE;
+            vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Modulus of Rupture for Cracking Moment During Hauling are different"),_T(""),_T("")));
+         }
+
+         bool bRollStiffness = true;
+         if ( m_TruckRollStiffnessMethod != rOther.m_TruckRollStiffnessMethod )
+         {
+            bRollStiffness = false;
+         }
+         else
+         {
+            if ( m_TruckRollStiffnessMethod == 0 ) 
+            {
+               if ( !::IsEqual(m_TruckRollStiffness, rOther.m_TruckRollStiffness) )
+               {
+                  bRollStiffness = false;
+               }
+            }
+            else
+            {
+               if ( !::IsEqual(m_AxleWeightLimit,  rOther.m_AxleWeightLimit) ||
+                    !::IsEqual(m_AxleStiffness,    rOther.m_AxleStiffness) ||
+                    !::IsEqual(m_MinRollStiffness, rOther.m_MinRollStiffness) )
+               {
+                  bRollStiffness = false;
+               }
+            }
+         }
+
+         if ( !::IsEqual(m_HaulingUpwardImpact, rOther.m_HaulingUpwardImpact) ||
+            !::IsEqual(m_HaulingDownwardImpact, rOther.m_HaulingDownwardImpact) ||
+            !bRollStiffness ||
+            !::IsEqual(m_TruckGirderHeight, rOther.m_TruckGirderHeight) ||
+            !::IsEqual(m_TruckRollCenterHeight, rOther.m_TruckRollCenterHeight) ||
+            !::IsEqual(m_TruckAxleWidth, rOther.m_TruckAxleWidth) ||
+            !::IsEqual(m_HaulingSupportDistance, rOther.m_HaulingSupportDistance) ||
+            !::IsEqual(m_MaxHaulingOverhang, rOther.m_MaxHaulingOverhang) ||
+            !::IsEqual(m_RoadwaySuperelevation, rOther.m_RoadwaySuperelevation) ||
+            !::IsEqual(m_MaxGirderSweepHauling, rOther.m_MaxGirderSweepHauling) ||
+            !::IsEqual(m_HaulingSupportPlacementTolerance, rOther.m_HaulingSupportPlacementTolerance) ||
+            !::IsEqual(m_HaulingCamberPercentEstimate, rOther.m_HaulingCamberPercentEstimate) ||
+            !::IsEqual(m_MaxGirderWgt, rOther.m_MaxGirderWgt) )
+         {
+            RETURN_ON_DIFFERENCE;
+            vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Hauling Analysis Parameters are different"),_T(""),_T("")));
+         }
+      }
+      else
+      {
+         // KDOT method
+         if ( !::IsEqual(m_OverhangGFactor, rOther.m_OverhangGFactor) ||
+              !::IsEqual(m_InteriorGFactor, rOther.m_InteriorGFactor) )
+         {
+            RETURN_ON_DIFFERENCE;
+            vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Hauling Dynamic Load Factors are different"),_T(""),_T("")));
+         }
+      }
+
+      // common to both methods
+      if ( !::IsEqual(m_CompStressHauling, rOther.m_CompStressHauling) ||
+           !::IsEqual(m_TensStressHauling, rOther.m_TensStressHauling) ||
+           (m_DoTensStressHaulingMax != rOther.m_DoTensStressHaulingMax  || (m_DoTensStressHaulingMax == true && !::IsEqual(m_TensStressHaulingMax, rOther.m_TensStressHaulingMax))) )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Hauling Allowable Concrete Stresses are different"),_T(""),_T("")));
+      }
+   }
+
+   //
+   // Loads Tab
+   //
+   if ( m_Bs2MaxGirdersTrafficBarrier != rOther.m_Bs2MaxGirdersTrafficBarrier ||
+        m_TrafficBarrierDistributionType != rOther.m_TrafficBarrierDistributionType )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Distribution of Railing System Loads are different"),_T(""),_T("")));
+   }
+
+   if ( !::IsEqual(m_PedestrianLoad, rOther.m_PedestrianLoad) ||
+        !::IsEqual(m_MinSidewalkWidth, rOther.m_MinSidewalkWidth) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Pedestrian Live Loads are different"),_T(""),_T("")));
+   }
+
+   if ( m_OverlayLoadDistribution != rOther.m_OverlayLoadDistribution )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Distribution of Overlay Dead Load is different"),_T(""),_T("")));
+   }
+
+   if ( m_LldfMethod != rOther.m_LldfMethod ||
+        m_LimitDistributionFactorsToLanesBeams != rOther.m_LimitDistributionFactorsToLanesBeams ||
+        !::IsEqual(m_MaxAngularDeviationBetweenGirders, rOther.m_MaxAngularDeviationBetweenGirders) ||
+        !::IsEqual(m_MinGirderStiffnessRatio,           rOther.m_MinGirderStiffnessRatio) ||
+        !::IsEqual(m_LLDFGirderSpacingLocation,         rOther.m_LLDFGirderSpacingLocation) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Live Load Distribution Factors are different"),_T(""),_T("")));
+   }
+
+   if ( m_HaunchLoadComputationType != rOther.m_HaunchLoadComputationType ||
+      (m_HaunchLoadComputationType == pgsTypes::hlcAccountForCamber && !::IsEqual(m_HaunchLoadCamberTolerance, rOther.m_HaunchLoadCamberTolerance)) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Haunch Loads are different"),_T(""),_T("")));
+   }
+
+   //
+   // Moment Capacity Tab
+   //
+   if ( (GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims && m_Bs3LRFDOverReinforcedMomentCapacity != rOther.m_Bs3LRFDOverReinforcedMomentCapacity) ||
+        m_bIncludeRebar_Moment != rOther.m_bIncludeRebar_Moment ||
+        !::IsEqual(m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal], rOther.m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal]) ||
+        !::IsEqual(m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight], rOther.m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) ||
+        (GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2016Interims && !::IsEqual(m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight], rOther.m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight])) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Moment Capacity parameters are different"),_T(""),_T("")));
+   }
+
+   bool bPhiFactors = true;
+   for ( int i = 0; i < 3 && bPhiFactors == true; i++ )
+   {
+      pgsTypes::ConcreteType concreteType = pgsTypes::ConcreteType(i);
+      if ( concreteType == pgsTypes::AllLightweight && lrfdVersionMgr::SeventhEditionWith2016Interims <= GetSpecificationType() )
+      {
+         // All Lightweight not used after LRFD2016, there is only Lightweight and thos parameters are stored with pgsTypes::SandLightweight
+         continue;
+      }
+
+      if ( !::IsEqual(m_PhiFlexureTensionPS[concreteType],      rOther.m_PhiFlexureTensionPS[concreteType]) ||
+           !::IsEqual(m_PhiFlexureTensionRC[concreteType],      rOther.m_PhiFlexureTensionRC[concreteType]) ||
+           !::IsEqual(m_PhiFlexureTensionSpliced[concreteType], rOther.m_PhiFlexureTensionSpliced[concreteType]) ||
+           !::IsEqual(m_PhiFlexureCompression[concreteType],    rOther.m_PhiFlexureCompression[concreteType]) ||
+           !::IsEqual(m_PhiShear[concreteType],                 rOther.m_PhiShear[concreteType]) ||
+           !::IsEqual(m_PhiClosureJointFlexure[concreteType],rOther.m_PhiClosureJointFlexure[concreteType]) ||
+           !::IsEqual(m_PhiClosureJointShear[concreteType],  rOther.m_PhiClosureJointShear[concreteType]) )
+      {
+         bPhiFactors = false;
+      }
+   }
+   if ( !bPhiFactors )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Moment Resistance Factors are different"),_T(""),_T("")));
+   }
+
+   if ( m_bIncludeForNegMoment != rOther.m_bIncludeForNegMoment )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Negative Moment Capacity parameters are different"),_T(""),_T("")));
+   }
+
+   //
+   // Shear Capacity Tab
+   //
+
+   if ( m_ShearCapacityMethod != rOther.m_ShearCapacityMethod ||
+      !::IsEqual(m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal], rOther.m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal]) ||
+      !::IsEqual(m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight], rOther.m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) || 
+      (GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2016Interims && !::IsEqual(m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight], rOther.m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight])) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Shear Capacity parameters are different"),_T(""),_T("")));
+   }
+
+   bPhiFactors = true;
+   for ( int i = 0; i < 3 && bPhiFactors == true; i++ )
+   {
+      pgsTypes::ConcreteType concreteType = pgsTypes::ConcreteType(i);
+      if ( concreteType == pgsTypes::AllLightweight && lrfdVersionMgr::SeventhEditionWith2016Interims <= GetSpecificationType() )
+      {
+         // All Lightweight not used after LRFD2016, there is only Lightweight and thos parameters are stored with pgsTypes::SandLightweight
+         continue;
+      }
+
+      if ( !::IsEqual(m_PhiShear[concreteType], rOther.m_PhiShear[concreteType]) )
+      {
+         bPhiFactors = false;
+      }
+   }
+   if ( !bPhiFactors )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Shear Resistance Factors are different"),_T(""),_T("")));
+   }
+
+   if ( !::IsEqual(m_StirrupSpacingCoefficient[0], rOther.m_StirrupSpacingCoefficient[0]) ||
+        !::IsEqual(m_StirrupSpacingCoefficient[1], rOther.m_StirrupSpacingCoefficient[1]) ||
+        !::IsEqual(m_MaxStirrupSpacing[0],         rOther.m_MaxStirrupSpacing[0]          ) ||
+        !::IsEqual(m_MaxStirrupSpacing[1],         rOther.m_MaxStirrupSpacing[1]          ) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Minimum Spacing of Transverse Reinforcement requirements are different"),_T(""),_T("")));
+   }
+
+   if ( m_LongReinfShearMethod != rOther.m_LongReinfShearMethod ||
+        m_bIncludeRebar_Shear  != rOther.m_bIncludeRebar_Shear )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Longitindal Reinforcement for Shear requirements are different"),_T(""),_T("")));
+   }
+   
+   if ( m_ShearFlowMethod != rOther.m_ShearFlowMethod ||
+        !::IsEqual(m_MaxInterfaceShearConnectorSpacing, rOther.m_MaxInterfaceShearConnectorSpacing) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Horizontal Interface Shear requirements are different"),_T(""),_T("")));
+   }
+
+
+   //
+   // Creep and Camber Tab
+   //
+   if ( !::IsEqual(m_XferTime, rOther.m_XferTime) ||
+        !::IsEqual(m_CreepDuration1Min, rOther.m_CreepDuration1Min) ||
+        !::IsEqual(m_CreepDuration2Min, rOther.m_CreepDuration2Min) ||
+        !::IsEqual(m_CreepDuration1Max, rOther.m_CreepDuration1Max) ||
+        !::IsEqual(m_CreepDuration2Max, rOther.m_CreepDuration2Max) ||
+        !::IsEqual(m_TotalCreepDuration, rOther.m_TotalCreepDuration) ||
+        !::IsEqual(m_CamberVariability, rOther.m_CamberVariability) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Creep and Camber parameters are different"),_T(""),_T("")));
+   }
+
+   if ( m_CuringMethod != rOther.m_CuringMethod ||
+      (m_CuringMethod == CURING_ACCELERATED && (!::IsEqual(m_CuringMethodTimeAdjustmentFactor, rOther.m_CuringMethodTimeAdjustmentFactor))) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Curing of Precast Concrete parameters are different"),_T(""),_T("")));
+   }
+
+   ATLASSERT(m_CreepMethod == CREEP_LRFD);
+   ATLASSERT(::IsEqual(m_CreepFactor,2.0));
+
+   //
+   // Losses Tab
+   //
+
+   // no elastic gains before LRFD2005
+   if ( m_LossMethod != rOther.m_LossMethod )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Prestress Loss Methods are different"),_T(""),_T("")));
+   }
+   else
+   {
+      if ( m_LossMethod == LOSSES_AASHTO_REFINED || m_LossMethod == LOSSES_WSDOT_REFINED )
+      {
+         if ( AreElasticGainsApplicable() )
+         {
+            if ( !::IsEqual(m_ShippingTime, rOther.m_ShippingTime) || 
+                 m_RelaxationLossMethod != rOther.m_RelaxationLossMethod )
+            {
+               RETURN_ON_DIFFERENCE;
+               vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Prestress Loss Parameters are different"),_T(""),_T("")));
+            }
+
+            if ( !::IsEqual(m_SlabElasticGain, rOther.m_SlabElasticGain) ||
+                 !::IsEqual(m_SlabPadElasticGain, rOther.m_SlabPadElasticGain) ||
+                 !::IsEqual(m_DiaphragmElasticGain, rOther.m_DiaphragmElasticGain) ||
+                 !::IsEqual(m_UserDCElasticGainBS1, rOther.m_UserDCElasticGainBS1) ||
+                 !::IsEqual(m_UserDWElasticGainBS1, rOther.m_UserDWElasticGainBS1) ||
+                 !::IsEqual(m_UserDCElasticGainBS2, rOther.m_UserDCElasticGainBS2) ||
+                 !::IsEqual(m_UserDWElasticGainBS2, rOther.m_UserDWElasticGainBS2) ||
+                 !::IsEqual(m_RailingSystemElasticGain, rOther.m_RailingSystemElasticGain) ||
+                 !::IsEqual(m_OverlayElasticGain, rOther.m_OverlayElasticGain) ||
+                 !::IsEqual(m_SlabShrinkageElasticGain, rOther.m_SlabShrinkageElasticGain) ||
+                 !::IsEqual(m_LiveLoadElasticGain, rOther.m_LiveLoadElasticGain) )
+            {
+               RETURN_ON_DIFFERENCE;
+               vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Elastic Gains are different"),_T(""),_T("")));
+            }
+         }
+         else
+         {
+            if ( !::IsEqual(m_ShippingLosses, rOther.m_ShippingLosses) ||
+                 m_RelaxationLossMethod != rOther.m_RelaxationLossMethod )
+            {
+               RETURN_ON_DIFFERENCE;
+               vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Prestress Loss Parameters are different"),_T(""),_T("")));
+            }
+         }
+      }
+      else if ( m_LossMethod == LOSSES_TXDOT_REFINED_2004 )
+      {
+         if ( GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004 )
+         {
+            if ( !::IsEqual(m_ShippingLosses, rOther.m_ShippingLosses) ||
+                 m_RelaxationLossMethod != rOther.m_RelaxationLossMethod )
+            {
+               RETURN_ON_DIFFERENCE;
+               vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Prestress Loss Parameters are different"),_T(""),_T("")));
+            }
+         }
+         else
+         {
+            if ( !::IsEqual(m_ShippingTime, rOther.m_ShippingTime) || 
+                 m_RelaxationLossMethod != rOther.m_RelaxationLossMethod )
+            {
+               RETURN_ON_DIFFERENCE;
+               vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Prestress Loss Parameters are different"),_T(""),_T("")));
+            }
+         }
+      }
+      else if ( m_LossMethod == LOSSES_TXDOT_REFINED_2013 )
+      {
+         if ( !::IsEqual(m_ShippingLosses, rOther.m_ShippingLosses) ||
+              m_RelaxationLossMethod != rOther.m_RelaxationLossMethod ||
+              m_FcgpComputationMethod != rOther.m_FcgpComputationMethod )
+         {
+            RETURN_ON_DIFFERENCE;
+            vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Prestress Loss Parameters are different"),_T(""),_T("")));
+         }
+      }
+      else if ( m_LossMethod == LOSSES_AASHTO_LUMPSUM )
+      {
+         if ( AreElasticGainsApplicable() )
+         {
+            if ( !::IsEqual(m_SlabElasticGain, rOther.m_SlabElasticGain) ||
+                 !::IsEqual(m_SlabPadElasticGain, rOther.m_SlabPadElasticGain) ||
+                 !::IsEqual(m_DiaphragmElasticGain, rOther.m_DiaphragmElasticGain) ||
+                 !::IsEqual(m_UserDCElasticGainBS1, rOther.m_UserDCElasticGainBS1) ||
+                 !::IsEqual(m_UserDWElasticGainBS1, rOther.m_UserDWElasticGainBS1) ||
+                 !::IsEqual(m_UserDCElasticGainBS2, rOther.m_UserDCElasticGainBS2) ||
+                 !::IsEqual(m_UserDWElasticGainBS2, rOther.m_UserDWElasticGainBS2) ||
+                 !::IsEqual(m_RailingSystemElasticGain, rOther.m_RailingSystemElasticGain) ||
+                 !::IsEqual(m_OverlayElasticGain, rOther.m_OverlayElasticGain) ||
+                 !::IsEqual(m_LiveLoadElasticGain, rOther.m_LiveLoadElasticGain) )
+            {
+               RETURN_ON_DIFFERENCE;
+               vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Elastic Gains are different"),_T(""),_T("")));
+            }
+         }
+         else
+         {
+            if ( !::IsEqual(m_ShippingLosses, rOther.m_ShippingLosses) ||
+                 m_RelaxationLossMethod != rOther.m_RelaxationLossMethod )
+            {
+               RETURN_ON_DIFFERENCE;
+               vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Prestress Loss Parameters are different"),_T(""),_T("")));
+            }
+         }
+      }
+      else if ( m_LossMethod == LOSSES_WSDOT_LUMPSUM )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Prestress Loss Methods are different"),_T(""),_T("")));
+      }
+      else
+      {
+         ATLASSERT(m_LossMethod == LOSSES_TIME_STEP);
+         if ( m_TimeDependentModel != rOther.m_TimeDependentModel )
+         {
+            RETURN_ON_DIFFERENCE;
+            vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Time-Dependent Models are different"),_T(""),_T("")));
+         }
+      }
+   }
+
+   //
+   // Limits and Warnings Tab
+   //
+   if ( m_DoCheckStirrupSpacingCompatibility != rOther.m_DoCheckStirrupSpacingCompatibility ||
+        (m_bCheckSag != rOther.m_bCheckSag || (m_bCheckSag == true && m_SagCamberType != rOther.m_SagCamberType)) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("General Warnings are different"),_T(""),_T("")));
+   }
+
+   bool bConcreteLimits = true;
+   for ( int i = 0; i < 3 && bConcreteLimits == true; i++ )
+   {
+      pgsTypes::ConcreteType concreteType = pgsTypes::ConcreteType(i);
+      if ( concreteType == pgsTypes::AllLightweight && lrfdVersionMgr::SeventhEditionWith2016Interims <= GetSpecificationType() )
+      {
+         // All Lightweight not used after LRFD2016, there is only Lightweight and thos parameters are stored with pgsTypes::SandLightweight
+         continue;
+      }
+
+      if ( !::IsEqual(m_MaxSlabFc[i]             , rOther.m_MaxSlabFc[i] )             ||
+           !::IsEqual(m_MaxSegmentFci[i]         , rOther.m_MaxSegmentFci[i] )         ||
+           !::IsEqual(m_MaxSegmentFc[i]          , rOther.m_MaxSegmentFc[i] )          ||
+           !::IsEqual(m_MaxClosureFci[i]         , rOther.m_MaxClosureFci[i] )         ||
+           !::IsEqual(m_MaxClosureFc[i]          , rOther.m_MaxClosureFc[i] )          ||
+           !::IsEqual(m_MaxConcreteUnitWeight[i] , rOther.m_MaxConcreteUnitWeight[i] ) ||
+           !::IsEqual(m_MaxConcreteAggSize[i]    , rOther.m_MaxConcreteAggSize[i] ) )
+      {
+         bConcreteLimits = false;
+      }
+   }
+   if ( !bConcreteLimits )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Concrete Limits are different"),_T(""),_T("")));
+   }
+
+   if (considerName &&  GetName() != rOther.GetName() )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
+   }
+
+   // Don't compare the placehold values for abandonded parameters
+   //if ( m_LossMethod == 3 /*this is the old LOSSES_GENERAL_LUMPSUM that existed prior to version 50*/ )
+   //{
+   //   TESTD(m_FinalLosses                , rOther.m_FinalLosses                );
+   //   TESTD(m_BeforeXferLosses           , rOther.m_BeforeXferLosses           );
+   //   TESTD(m_AfterXferLosses            , rOther.m_AfterXferLosses            );
+   //   TESTD(m_LiftingLosses              , rOther.m_LiftingLosses              );
+   //   TESTD(m_BeforeTempStrandRemovalLosses , rOther.m_BeforeTempStrandRemovalLosses );
+   //   TESTD(m_AfterTempStrandRemovalLosses  , rOther.m_AfterTempStrandRemovalLosses );
+   //   TESTD(m_AfterDeckPlacementLosses      , rOther.m_AfterDeckPlacementLosses );
+   //   TESTD(m_AfterSIDLLosses               , rOther.m_AfterSIDLLosses );
+   //}
+
+   //if ( m_bUpdatePTParameters )
+   //{
+   //   TESTD(m_Dset,rOther.m_Dset);
+   //   TESTD(m_WobbleFriction,rOther.m_WobbleFriction);
+   //   TESTD(m_FrictionCoefficient,rOther.m_FrictionCoefficient);
+   //}
+
+   //TEST(m_bUpdateLoadFactors,rOther.m_bUpdateLoadFactors);
+   //for ( int i = 0; i < 6; i++ )
+   //{
+   //   TESTD( m_DCmin[i], rOther.m_DCmin[i] );
+   //   TESTD( m_DWmin[i], rOther.m_DWmin[i] );
+   //   TESTD( m_LLIMmin[i], rOther.m_LLIMmin[i] );
+   //   TESTD( m_DCmax[i], rOther.m_DCmax[i] );
+   //   TESTD( m_DWmax[i], rOther.m_DWmax[i] );
+   //   TESTD( m_LLIMmax[i], rOther.m_LLIMmax[i] );
+   //}
+
+   return vDifferences.size() == 0 ? true : false;
 }
 
 //======================== ACCESS     =======================================
@@ -4464,22 +4997,22 @@ void SpecLibraryEntry::SetHaulingMaximumTensionStress(bool doCheck, Float64 stre
 
 Float64 SpecLibraryEntry::GetHaulingCrackingFOS() const
 {
-   return m_HeHaulingCrackFs;
+   return m_HaulingCrackFs;
 }
 
 void SpecLibraryEntry::SetHaulingCrackingFOS(Float64 fs)
 {
-   m_HeHaulingCrackFs = fs;
+   m_HaulingCrackFs = fs;
 }
 
 Float64 SpecLibraryEntry::GetHaulingFailureFOS() const
 {
-   return m_HeHaulingRollFs;
+   return m_HaulingRollFs;
 }
 
 void SpecLibraryEntry::SetHaulingFailureFOS(Float64 fs)
 {
-   m_HeHaulingRollFs = fs;
+   m_HaulingRollFs = fs;
 }
 
 int SpecLibraryEntry::GetTruckRollStiffnessMethod() const
@@ -4570,26 +5103,6 @@ Float64 SpecLibraryEntry::GetRoadwaySuperelevation() const
 void SpecLibraryEntry::SetRoadwaySuperelevation(Float64 dist)
 {
    m_RoadwaySuperelevation = dist;
-}
-
-Float64 SpecLibraryEntry::GetErectionCrackFs() const
-{
-   return m_HeErectionCrackFs;
-}
-
-void SpecLibraryEntry::SetErectionCrackFs(Float64 fs)
-{
-   m_HeErectionCrackFs = fs;
-}
-
-Float64 SpecLibraryEntry::GetErectionFailFs() const
-{
-   return m_HeErectionFailFs;
-}
-
-void SpecLibraryEntry::SetErectionFailFs(Float64 fs)
-{
-   m_HeErectionFailFs = fs;
 }
 
 void SpecLibraryEntry::SetHaulingModulusOfRuptureFactor(Float64 fr,pgsTypes::ConcreteType type)
@@ -6122,8 +6635,8 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_TensStressHauling          = rOther.m_TensStressHauling;
    m_DoTensStressHaulingMax     = rOther.m_DoTensStressHaulingMax;
    m_TensStressHaulingMax       = rOther.m_TensStressHaulingMax;
-   m_HeHaulingCrackFs           = rOther.m_HeHaulingCrackFs;
-   m_HeHaulingRollFs            = rOther.m_HeHaulingRollFs;
+   m_HaulingCrackFs           = rOther.m_HaulingCrackFs;
+   m_HaulingRollFs            = rOther.m_HaulingRollFs;
 
    m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal] = rOther.m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal];
    m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight] = rOther.m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight];
@@ -6146,8 +6659,6 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_TruckGirderHeight          = rOther.m_TruckGirderHeight;
    m_TruckRollCenterHeight      = rOther.m_TruckRollCenterHeight;
    m_TruckAxleWidth             = rOther.m_TruckAxleWidth;
-   m_HeErectionCrackFs          = rOther.m_HeErectionCrackFs;
-   m_HeErectionFailFs           = rOther.m_HeErectionFailFs;
    m_RoadwaySuperelevation      = rOther.m_RoadwaySuperelevation;
    m_MaxGirderWgt               = rOther.m_MaxGirderWgt;
 
@@ -6171,7 +6682,6 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_Bs2TensStressMax           = rOther.m_Bs2TensStressMax;
    m_TrafficBarrierDistributionType = rOther.m_TrafficBarrierDistributionType;
    m_Bs2MaxGirdersTrafficBarrier= rOther.m_Bs2MaxGirdersTrafficBarrier;
-   m_Bs2MaxGirdersUtility       = rOther.m_Bs2MaxGirdersUtility;
    m_OverlayLoadDistribution    = rOther.m_OverlayLoadDistribution;
    m_HaunchLoadComputationType    = rOther.m_HaunchLoadComputationType;
    m_HaunchLoadCamberTolerance    = rOther.m_HaunchLoadCamberTolerance;

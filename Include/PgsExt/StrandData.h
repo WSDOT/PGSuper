@@ -212,6 +212,7 @@ public:
    void AddExtendedStrand(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,GridIndexType gridIdx);
    const std::vector<GridIndexType>& GetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType) const;
    void SetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,const std::vector<GridIndexType>& extStrands);
+   bool IsExtendedStrand(pgsTypes::StrandType strandType,GridIndexType gridIdx,pgsTypes::MemberEndType endType) const;
 
    //------------------------------------------------------------------------
    // Resets all the prestressing input to default values.
@@ -220,12 +221,13 @@ public:
    void ClearExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType);
 
    void ClearDebondData();
-   StrandIndexType GetDebondCount(pgsTypes::StrandType strandType,const GirderLibraryEntry* pGirderLibEntry) const;
+   StrandIndexType GetDebondCount(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,const GirderLibraryEntry* pGirderLibEntry) const;
    void SetDebonding(pgsTypes::StrandType strandType,const std::vector<CDebondData>& vDebond);
    const std::vector<CDebondData>& GetDebonding(pgsTypes::StrandType strandType) const;
    std::vector<CDebondData>& GetDebonding(pgsTypes::StrandType strandType);
    bool IsSymmetricDebond() const;
    void IsSymmetricDebond(bool bIsSymmetric);
+   bool IsDebonded(pgsTypes::StrandType strandType,GridIndexType gridIdx,pgsTypes::MemberEndType endType,Float64* pLdebond) const;
 
    void SetStrandMaterial(pgsTypes::StrandType strandType,const matPsStrand* pStrandMaterial);
    const matPsStrand* GetStrandMaterial(pgsTypes::StrandType strandType) const;

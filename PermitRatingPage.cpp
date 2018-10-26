@@ -146,7 +146,7 @@ END_MESSAGE_MAP()
 
 BOOL CPermitRatingPage::OnInitDialog()
 {
-   EnableToolTips();
+   VERIFY(EnableToolTips());
 
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_PERMIT_TYPE);
    int idx = pCB->AddString(_T("Single Trip with escort"));

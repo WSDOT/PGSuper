@@ -76,10 +76,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CollectionIndexType IndexFromLimitState(pgsTypes::LimitState ls)
+inline CollectionIndexType IndexFromLimitState(pgsTypes::LimitState ls)
 {
-   CollectionIndexType index = (int)ls - (int)pgsTypes::StrengthI_Inventory;
-   return index;
+   return (IndexType)((int)ls - (int)pgsTypes::StrengthI_Inventory);
 }
 
 // set a tolerance for IsEqual's in this class. Main reason for having the 
@@ -240,6 +239,13 @@ CProjectAgentImp::CProjectAgentImp()
 
    m_AllowableYieldStressCoefficient = 0.9;
 
+   memset(&m_gDC[0],0,sizeof(m_gDC));
+   memset(&m_gDW[0],0,sizeof(m_gDW));
+   memset(&m_gCR[0],0,sizeof(m_gCR));
+   memset(&m_gRE[0],0,sizeof(m_gRE));
+   memset(&m_gSH[0],0,sizeof(m_gSH));
+   memset(&m_gPS[0],0,sizeof(m_gPS));
+   memset(&m_gLL[0],0,sizeof(m_gLL));
 
    m_gDC[IndexFromLimitState(pgsTypes::StrengthI_Inventory)] = 1.25;
    m_gDW[IndexFromLimitState(pgsTypes::StrengthI_Inventory)] = 1.50;
@@ -824,19 +830,19 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
          if ( 2 < version )
          {
             pLoad->get_Property(_T("CR_StrengthI"),&var);
-            pObj->m_gCR[IndexFromLimitState(pgsTypes::StrengthI_Inventory)+indexOffset] = var.dblVal;
+            pObj->m_gCR[IndexFromLimitState(pgsTypes::StrengthI_Inventory)/*+indexOffset*/] = var.dblVal; // don't add indexOffset here because this data didn't exist in version 1
 
             pLoad->get_Property(_T("SH_StrengthI"),&var);
-            pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthI_Inventory)+indexOffset] = var.dblVal;
+            pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthI_Inventory)/*+indexOffset*/] = var.dblVal;
 
             if ( 3 < version )
             {
                pLoad->get_Property(_T("RE_StrengthI"),&var);
-               pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthI_Inventory)+indexOffset] = var.dblVal;
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthI_Inventory)/*+indexOffset*/] = var.dblVal;
             }
 
             pLoad->get_Property(_T("PS_StrengthI"),&var);
-            pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthI_Inventory)+indexOffset] = var.dblVal;
+            pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthI_Inventory)/*+indexOffset*/] = var.dblVal;
          }
 
          pLoad->get_Property(_T("LL_StrengthI"),&var);
@@ -851,19 +857,19 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
          if ( 2 < version )
          {
             pLoad->get_Property(_T("CR_ServiceIII"),&var);
-            pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)+indexOffset] = var.dblVal;
+            pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)/*+indexOffset*/] = var.dblVal;
 
             pLoad->get_Property(_T("SH_ServiceIII"),&var);
-            pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)+indexOffset] = var.dblVal;
+            pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)/*+indexOffset*/] = var.dblVal;
 
             if ( 3 < version )
             {
                pLoad->get_Property(_T("RE_ServiceIII"),&var);
-               pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)+indexOffset] = var.dblVal;
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)/*+indexOffset*/] = var.dblVal;
             }
 
             pLoad->get_Property(_T("PS_ServiceIII"),&var);
-            pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)+indexOffset] = var.dblVal;
+            pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_Inventory)/*+indexOffset*/] = var.dblVal;
          }
 
          pLoad->get_Property(_T("LL_ServiceIII"),&var);
@@ -905,19 +911,19 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
          if ( 2 < version )
          {
             pLoad->get_Property(_T("CR_StrengthI"),&var);
-            pObj->m_gCR[IndexFromLimitState(pgsTypes::StrengthI_Operating)+indexOffset] = var.dblVal;
+            pObj->m_gCR[IndexFromLimitState(pgsTypes::StrengthI_Operating)/*+indexOffset*/] = var.dblVal;
 
             pLoad->get_Property(_T("SH_StrengthI"),&var);
-            pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthI_Operating)+indexOffset] = var.dblVal;
+            pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthI_Operating)/*+indexOffset*/] = var.dblVal;
 
             if ( 3 < version )
             {
                pLoad->get_Property(_T("RE_StrengthI"),&var);
-               pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthI_Operating)+indexOffset] = var.dblVal;
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthI_Operating)/*+indexOffset*/] = var.dblVal;
             }
 
             pLoad->get_Property(_T("PS_StrengthI"),&var);
-            pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthI_Operating)+indexOffset] = var.dblVal;
+            pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthI_Operating)/*+indexOffset*/] = var.dblVal;
          }
 
          pLoad->get_Property(_T("LL_StrengthI"),&var);
@@ -932,19 +938,19 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
          if ( 2 < version )
          {
             pLoad->get_Property(_T("CR_ServiceIII"),&var);
-            pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_Operating)+indexOffset] = var.dblVal;
+            pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_Operating)/*+indexOffset*/] = var.dblVal;
 
             pLoad->get_Property(_T("SH_ServiceIII"),&var);
-            pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_Operating)+indexOffset] = var.dblVal;
+            pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_Operating)/*+indexOffset*/] = var.dblVal;
 
             if ( 3 < version ) 
             {
                pLoad->get_Property(_T("RE_ServiceIII"),&var);
-               pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_Operating)+indexOffset] = var.dblVal;
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_Operating)/*+indexOffset*/] = var.dblVal;
             }
 
             pLoad->get_Property(_T("PS_ServiceIII"),&var);
-            pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_Operating)+indexOffset] = var.dblVal;
+            pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_Operating)/*+indexOffset*/] = var.dblVal;
          }
 
          pLoad->get_Property(_T("LL_ServiceIII"),&var);
@@ -987,19 +993,19 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
          if ( 2 < version )
          {
             pLoad->get_Property(_T("CR_StrengthI"),&var);
-            pObj->m_gCR[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)+indexOffset] = var.dblVal;
+            pObj->m_gCR[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)/*+indexOffset*/] = var.dblVal;
 
             pLoad->get_Property(_T("SH_StrengthI"),&var);
-            pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)+indexOffset] = var.dblVal;
+            pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)/*+indexOffset*/] = var.dblVal;
 
             if ( 3 < version )
             {
                pLoad->get_Property(_T("RE_StrengthI"),&var);
-               pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)+indexOffset] = var.dblVal;
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)/*+indexOffset*/] = var.dblVal;
             }
 
             pLoad->get_Property(_T("PS_StrengthI"),&var);
-            pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)+indexOffset] = var.dblVal;
+            pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthI_LegalRoutine)/*+indexOffset*/] = var.dblVal;
          }
 
          pLoad->get_Property(_T("LL_StrengthI"),&var);
@@ -1014,19 +1020,19 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
          if ( 2 < version )
          {
             pLoad->get_Property(_T("CR_ServiceIII"),&var);
-            pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)+indexOffset] = var.dblVal;
+            pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)/*+indexOffset*/] = var.dblVal;
 
             pLoad->get_Property(_T("SH_ServiceIII"),&var);
-            pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)+indexOffset] = var.dblVal;
+            pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)/*+indexOffset*/] = var.dblVal;
 
             if ( 3 < version )
             {
                pLoad->get_Property(_T("RE_ServiceIII"),&var);
-               pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)+indexOffset] = var.dblVal;
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)/*+indexOffset*/] = var.dblVal;
             }
 
             pLoad->get_Property(_T("PS_ServiceIII"),&var);
-            pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)+indexOffset] = var.dblVal;
+            pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_LegalRoutine)/*+indexOffset*/] = var.dblVal;
          }
 
          pLoad->get_Property(_T("LL_ServiceIII"),&var);
@@ -1075,19 +1081,19 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
          if ( 2 < version )
          {
             pLoad->get_Property(_T("CR_StrengthI"),&var);
-            pObj->m_gCR[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)+indexOffset] = var.dblVal;
+            pObj->m_gCR[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)/*+indexOffset*/] = var.dblVal;
 
             pLoad->get_Property(_T("SH_StrengthI"),&var);
-            pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)+indexOffset] = var.dblVal;
+            pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)/*+indexOffset*/] = var.dblVal;
 
             if ( 3 < version )
             {
                pLoad->get_Property(_T("RE_StrengthI"),&var);
-               pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)+indexOffset] = var.dblVal;
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)/*+indexOffset*/] = var.dblVal;
             }
 
             pLoad->get_Property(_T("PS_StrengthI"),&var);
-            pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)+indexOffset] = var.dblVal;
+            pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthI_LegalSpecial)/*+indexOffset*/] = var.dblVal;
          }
 
          pLoad->get_Property(_T("LL_StrengthI"),&var);
@@ -1102,19 +1108,19 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
          if ( 2 < version )
          {
             pLoad->get_Property(_T("CR_ServiceIII"),&var);
-            pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)+indexOffset] = var.dblVal;
+            pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)/*+indexOffset*/] = var.dblVal;
 
             pLoad->get_Property(_T("SH_ServiceIII"),&var);
-            pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)+indexOffset] = var.dblVal;
+            pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)/*+indexOffset*/] = var.dblVal;
 
             if ( 3 < version )
             {
                pLoad->get_Property(_T("RE_ServiceIII"),&var);
-               pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)+indexOffset] = var.dblVal;
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)/*+indexOffset*/] = var.dblVal;
             }
 
             pLoad->get_Property(_T("PS_ServiceIII"),&var);
-            pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)+indexOffset] = var.dblVal;
+            pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_LegalSpecial)/*+indexOffset*/] = var.dblVal;
          }
 
          pLoad->get_Property(_T("LL_ServiceIII"),&var);
@@ -1160,19 +1166,19 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
          if ( 2 < version )
          {
             pLoad->get_Property(_T("CR_StrengthII"),&var);
-            pObj->m_gCR[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)+indexOffset] = var.dblVal;
+            pObj->m_gCR[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)/*+indexOffset*/] = var.dblVal;
 
             pLoad->get_Property(_T("SH_StrengthII"),&var);
-            pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)+indexOffset] = var.dblVal;
+            pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)/*+indexOffset*/] = var.dblVal;
 
             if ( 3 < version )
             {
                pLoad->get_Property(_T("RE_StrengthII"),&var);
-               pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)+indexOffset] = var.dblVal;
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)/*+indexOffset*/] = var.dblVal;
             }
 
             pLoad->get_Property(_T("PS_StrengthII"),&var);
-            pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)+indexOffset] = var.dblVal;
+            pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)/*+indexOffset*/] = var.dblVal;
          }
 
          pLoad->get_Property(_T("LL_StrengthII"),&var);
@@ -1187,19 +1193,19 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
          if ( 2 < version )
          {
             pLoad->get_Property(_T("CR_ServiceI"),&var);
-            pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)+indexOffset] = var.dblVal;
+            pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)/*+indexOffset*/] = var.dblVal;
 
             pLoad->get_Property(_T("SH_ServiceI"),&var);
-            pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)+indexOffset] = var.dblVal;
+            pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)/*+indexOffset*/] = var.dblVal;
 
             if ( 3 < version )
             {
                pLoad->get_Property(_T("RE_ServiceI"),&var);
-               pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)+indexOffset] = var.dblVal;
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)/*+indexOffset*/] = var.dblVal;
             }
 
             pLoad->get_Property(_T("PS_ServiceI"),&var);
-            pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)+indexOffset] = var.dblVal;
+            pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)/*+indexOffset*/] = var.dblVal;
          }
 
          pLoad->get_Property(_T("LL_ServiceI"),&var);
@@ -1208,25 +1214,25 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
          if ( 4 < version )
          {
             pLoad->get_Property(_T("DC_ServiceIII"),&var);
-            pObj->m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)+indexOffset] = var.dblVal;
+            pObj->m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)/*+indexOffset*/] = var.dblVal;
 
             pLoad->get_Property(_T("DW_ServiceIII"),&var);
-            pObj->m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)+indexOffset] = var.dblVal;
+            pObj->m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)/*+indexOffset*/] = var.dblVal;
 
             pLoad->get_Property(_T("CR_ServiceIII"),&var);
-            pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)+indexOffset] = var.dblVal;
+            pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)/*+indexOffset*/] = var.dblVal;
 
             pLoad->get_Property(_T("SH_ServiceIII"),&var);
-            pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)+indexOffset] = var.dblVal;
+            pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)/*+indexOffset*/] = var.dblVal;
 
             pLoad->get_Property(_T("RE_ServiceIII"),&var);
-            pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)+indexOffset] = var.dblVal;
+            pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)/*+indexOffset*/] = var.dblVal;
 
             pLoad->get_Property(_T("PS_ServiceIII"),&var);
-            pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)+indexOffset] = var.dblVal;
+            pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)/*+indexOffset*/] = var.dblVal;
 
             pLoad->get_Property(_T("LL_ServiceIII"),&var);
-            pObj->m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)+indexOffset] = var.dblVal;
+            pObj->m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)/*+indexOffset*/] = var.dblVal;
          
             var.vt = VT_BOOL;
             pLoad->get_Property(_T("CheckYieldStress"),&var);
@@ -1284,19 +1290,19 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
          if ( 2 < version )
          {
             pLoad->get_Property(_T("CR_StrengthII"),&var);
-            pObj->m_gCR[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)+indexOffset] = var.dblVal;
+            pObj->m_gCR[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)/*+indexOffset*/] = var.dblVal;
 
             pLoad->get_Property(_T("SH_StrengthII"),&var);
-            pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)+indexOffset] = var.dblVal;
+            pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)/*+indexOffset*/] = var.dblVal;
 
             if ( 3 < version )
             {
                pLoad->get_Property(_T("RE_StrengthII"),&var);
-               pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)+indexOffset] = var.dblVal;
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)/*+indexOffset*/] = var.dblVal;
             }
 
             pLoad->get_Property(_T("PS_StrengthII"),&var);
-            pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)+indexOffset] = var.dblVal;
+            pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)/*+indexOffset*/] = var.dblVal;
          }
 
          pLoad->get_Property(_T("LL_StrengthII"),&var);
@@ -1311,19 +1317,19 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
          if ( 2 < version )
          {
             pLoad->get_Property(_T("CR_ServiceI"),&var);
-            pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)+indexOffset] = var.dblVal;
+            pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)/*+indexOffset*/] = var.dblVal;
 
             pLoad->get_Property(_T("SH_ServiceI"),&var);
-            pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)+indexOffset] = var.dblVal;
+            pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)/*+indexOffset*/] = var.dblVal;
 
             if ( 3 < version )
             {
                pLoad->get_Property(_T("RE_ServiceI"),&var);
-               pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)+indexOffset] = var.dblVal;
+               pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)/*+indexOffset*/] = var.dblVal;
             }
 
             pLoad->get_Property(_T("PS_ServiceI"),&var);
-            pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)+indexOffset] = var.dblVal;
+            pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)/*+indexOffset*/] = var.dblVal;
          }
 
          pLoad->get_Property(_T("LL_ServiceI"),&var);
@@ -1333,25 +1339,25 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
          if ( 4 < version )
          {
             pLoad->get_Property(_T("DC_ServiceIII"),&var);
-            pObj->m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)+indexOffset] = var.dblVal;
+            pObj->m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)/*+indexOffset*/] = var.dblVal;
 
             pLoad->get_Property(_T("DW_ServiceIII"),&var);
-            pObj->m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)+indexOffset] = var.dblVal;
+            pObj->m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)/*+indexOffset*/] = var.dblVal;
 
             pLoad->get_Property(_T("CR_ServiceIII"),&var);
-            pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)+indexOffset] = var.dblVal;
+            pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)/*+indexOffset*/] = var.dblVal;
 
             pLoad->get_Property(_T("SH_ServiceIII"),&var);
-            pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)+indexOffset] = var.dblVal;
+            pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)/*+indexOffset*/] = var.dblVal;
 
             pLoad->get_Property(_T("RE_ServiceIII"),&var);
-            pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)+indexOffset] = var.dblVal;
+            pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)/*+indexOffset*/] = var.dblVal;
 
             pLoad->get_Property(_T("PS_ServiceIII"),&var);
-            pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)+indexOffset] = var.dblVal;
+            pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)/*+indexOffset*/] = var.dblVal;
 
             pLoad->get_Property(_T("LL_ServiceIII"),&var);
-            pObj->m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)+indexOffset] = var.dblVal;
+            pObj->m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)/*+indexOffset*/] = var.dblVal;
          
             var.vt = VT_BOOL;
             pLoad->get_Property(_T("CheckYieldStress"),&var);
@@ -1381,6 +1387,37 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
          }
 
          pLoad->EndUnit(); // PermitSpecialRating
+
+         if ( version < 2 )
+         {
+            // The bug in storing/reading load factors from data block version 1, described above, wrote out bad data for the PermitSpecial cases
+            // This data was never accessed in PGSuper v 2.9.x and earlier so it was never an issue. However, the data is accessed in v3.0.x and later.
+            // So that we don't have bad data, copy the data from the PermitRoute cases. 
+            pObj->m_gDC[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = pObj->m_gDC[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)];
+            pObj->m_gDW[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = pObj->m_gDW[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)];
+            pObj->m_gCR[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = pObj->m_gCR[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)];
+            pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = pObj->m_gSH[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)];
+            pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = pObj->m_gRE[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)];
+            pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = pObj->m_gPS[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)];
+            pObj->m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitSpecial)] = pObj->m_gLL[IndexFromLimitState(pgsTypes::StrengthII_PermitRoutine)];
+
+            pObj->m_gDC[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)] = pObj->m_gDC[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)];
+            pObj->m_gDW[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)] = pObj->m_gDW[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)];
+            pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)] = pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)];
+            pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)] = pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)];
+            pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)] = pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)];
+            pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)] = pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)];
+            pObj->m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitSpecial)] = pObj->m_gLL[IndexFromLimitState(pgsTypes::ServiceI_PermitRoutine)];
+
+            pObj->m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)] = pObj->m_gDC[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)];
+            pObj->m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)] = pObj->m_gDW[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)];
+            pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)] = pObj->m_gCR[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)];
+            pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)] = pObj->m_gSH[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)];
+            pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)] = pObj->m_gRE[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)];
+            pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)] = pObj->m_gPS[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)];
+            pObj->m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_PermitSpecial)] = pObj->m_gLL[IndexFromLimitState(pgsTypes::ServiceIII_PermitRoutine)];
+         }
+
          }
          //////////////////////////////////////////////////////
 
@@ -5149,7 +5186,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 
    Fire_BridgeChanged();
 
-   return hr;
+   return (the_conflict_list.AreThereAnyConflicts() ? S_FALSE : S_OK);
 }
 
 STDMETHODIMP CProjectAgentImp::Save(IStructuredSave* pStrSave)
@@ -7884,7 +7921,7 @@ std::vector<arDesignOptions> CProjectAgentImp::GetDesignOptions(const CGirderKey
       option.maxFci = fci_max;
       option.maxFc  = fc_max;
 
-      option.doDesignSlabOffset = pSpecEntry->IsSlabOffsetDesignEnabled();
+      option.doDesignSlabOffset = pSpecEntry->IsSlabOffsetDesignEnabled() ? sodAOnly : sodNoADesign; // option same as in 2.9x versions
       option.doDesignHauling = pSpecEntry->IsHaulingDesignEnabled();
       option.doDesignLifting = pSpecEntry->IsLiftingDesignEnabled();
 

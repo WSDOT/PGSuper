@@ -22,6 +22,7 @@
 
 #include "StdAfx.h"
 #include <psgLib\DuctLibraryEntry.h>
+#include <psgLib\LibraryEntryDifferenceItem.h>
 
 #include <System\IStructuredSave.h>
 #include <System\IStructuredLoad.h>
@@ -30,6 +31,8 @@
 #include "resource.h"
 #include "DuctEntryDlg.h"
 #include <Units\sysUnits.h>
+
+#include <EAF\EAFApp.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -122,18 +125,42 @@ bool DuctLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
    return true;
 }
 
-bool DuctLibraryEntry::IsEqual(const DuctLibraryEntry& rOther, bool considerName) const
+bool DuctLibraryEntry::IsEqual(const DuctLibraryEntry& rOther,bool bConsiderName) const
 {
-   bool test = ::IsEqual(m_OD, rOther.m_OD) &&
-               ::IsEqual(m_ID, rOther.m_ID) &&
-               ::IsEqual(m_Z,  rOther.m_Z);
+   std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+   return Compare(rOther,vDifferences,true,bConsiderName);
+}
 
-   if (considerName)
+bool DuctLibraryEntry::Compare(const DuctLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool bReturnOnFirstDifference, bool considerName) const
+{
+   CEAFApp* pApp = EAFGetApp();
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
+   if ( !::IsEqual(m_OD,rOther.m_OD) )
    {
-      test &= this->GetName()==rOther.GetName();
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("OD"),m_OD,rOther.m_OD,pDisplayUnits->ComponentDim));
    }
 
-   return test;
+   if ( !::IsEqual(m_ID,rOther.m_ID) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("ID"),m_ID,rOther.m_ID,pDisplayUnits->ComponentDim));
+   }
+
+   if ( !::IsEqual(m_Z,rOther.m_Z) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("Z"),m_Z,rOther.m_Z,pDisplayUnits->ComponentDim));
+   }
+
+   if (considerName &&  GetName() != rOther.GetName() )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
+   }
+
+   return vDifferences.size() == 0 ? true : false;
 }
 
 

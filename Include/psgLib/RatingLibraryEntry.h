@@ -29,6 +29,7 @@
 #include <System\SubjectT.h>
 #include <Lrfd\LRFRVersionMgr.h>
 
+class pgsLibraryEntryDifferenceItem;
 class CRatingDialog;
 class RatingLibraryEntry;
 class RatingLibraryEntryObserver;
@@ -213,6 +214,9 @@ class PSGLIBCLASS RatingLibraryEntry : public libLibraryEntry, public ISupportIc
 
 public:
 
+   static CString GetLoadRatingType(pgsTypes::LoadRatingType ratingType);
+   static CString GetSpecialPermitType(pgsTypes::SpecialPermitType permitType);
+
    //------------------------------------------------------------------------
    // Default constructor
    RatingLibraryEntry();
@@ -241,9 +245,11 @@ public:
    // Load from structured storage
    virtual bool LoadMe(sysIStructuredLoad* pLoad);
 
-   //------------------------------------------------------------------------
-   // Equality - test if two entries are equal. Ignore names by default
-   virtual bool IsEqual(const RatingLibraryEntry& rOther, bool considerName=false) const;
+   // Compares this library entry with rOther. Returns true if the entries are the same.
+   // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
+   bool Compare(const RatingLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool bReturnOnFirstDifference=false,bool considerName=false) const;
+
+   bool IsEqual(const RatingLibraryEntry& rOther,bool bConsiderName=false) const;
 
    //------------------------------------------------------------------------
    // Get the icon for this entry

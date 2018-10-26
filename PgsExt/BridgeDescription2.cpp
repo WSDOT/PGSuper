@@ -844,6 +844,36 @@ Float64 CBridgeDescription2::GetFillet(bool bGetRawValue) const
    return m_Fillet;
 }
 
+Float64 CBridgeDescription2::GetMaxFillet() const
+{
+   if ( m_FilletType == pgsTypes::fttBridge )
+   {
+      return GetFillet();
+   }
+
+   Float64 maxFillet = -DBL_MAX;
+   std::vector<CGirderGroupData*>::const_iterator grpIter(m_GirderGroups.begin());
+   std::vector<CGirderGroupData*>::const_iterator grpIterEnd(m_GirderGroups.end());
+   for ( ; grpIter != grpIterEnd; grpIter++ )
+   {
+      CGirderGroupData* pGroup = *grpIter;
+      SpanIndexType startSpanIdx = (SpanIndexType)pGroup->GetPierIndex(pgsTypes::metStart);
+      SpanIndexType endSpanIdx   = (SpanIndexType)pGroup->GetPierIndex(pgsTypes::metEnd)-1;
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+      {
+         for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
+         {
+            const CSpanData2* pSpan = GetSpan(spanIdx);
+            Float64 fillet = pSpan->GetFillet(gdrIdx);
+            maxFillet = Max(maxFillet,fillet);
+         }
+      }
+   }
+
+   return maxFillet;
+}
+
 void CBridgeDescription2::CreateFirstSpan(const CPierData2* pFirstPier,const CSpanData2* pFirstSpan,const CPierData2* pNextPier,EventIndexType pierErectionEventIdx)
 {
    _ASSERT( 0 == m_Piers.size() && 0 == m_Spans.size() ); // this call should only be made once
@@ -1997,6 +2027,7 @@ bool CBridgeDescription2::SetSpanLength(SpanIndexType spanIdx,Float64 newLength)
       return false;
    }
 
+   Float64 startSpanStation = pSpan->GetPrevPier()->GetStation();
    Float64 endSpanStation = pSpan->GetNextPier()->GetStation();
 
    // move all the piers from the end of this span to the end of the bridge
@@ -2008,6 +2039,9 @@ bool CBridgeDescription2::SetSpanLength(SpanIndexType spanIdx,Float64 newLength)
       pSpan = pNextPier->GetNextSpan();
    }
 
+   pSpan = GetSpan(spanIdx);
+   Float64 newEndSpanStation = pSpan->GetNextPier()->GetStation();
+
    std::vector<CTemporarySupportData*>::iterator tsIter(m_TemporarySupports.begin());
    std::vector<CTemporarySupportData*>::iterator tsIterEnd(m_TemporarySupports.end());
    for ( ; tsIter != tsIterEnd; tsIter++ )
@@ -2017,7 +2051,20 @@ bool CBridgeDescription2::SetSpanLength(SpanIndexType spanIdx,Float64 newLength)
 
       if ( endSpanStation < tsStation )
       {
+         // temporary support is in a span that follows the span whose length is changing
          pTS->SetStation( tsStation + deltaL );
+      }
+      else if ( newEndSpanStation < tsStation )
+      {
+         // the temporary support is in the span that is changing length and the end of the span will come before the temporary 
+         // support making it invalid. move the temorary support keeping its relative location within the span
+
+         ATLASSERT(::InRange(startSpanStation,tsStation,endSpanStation));
+         ATLASSERT(deltaL < 0);
+
+         // for shrinking spans, maintain the relative position of the temporary support within the span
+         Float64 newTSStation = (tsStation - startSpanStation)*(endSpanStation + deltaL - startSpanStation)/(endSpanStation - startSpanStation) + startSpanStation;
+         pTS->SetStation(newTSStation);
       }
    }
 

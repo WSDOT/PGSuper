@@ -86,7 +86,7 @@ END_MESSAGE_MAP()
 // CDesignRatingPage message handlers
 BOOL CDesignRatingPage::OnInitDialog()
 {
-   EnableToolTips();
+   VERIFY(EnableToolTips());
 
    CPropertyPage::OnInitDialog();
 
@@ -96,6 +96,7 @@ BOOL CDesignRatingPage::OnInitDialog()
 
 BOOL CDesignRatingPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
 {
+   WATCH(_T("CDesignRatingPage::OnToolTipNotify"));
    pgsTypes::LimitState limit_state;
    bool bIsLoadFactorTip = false;
 

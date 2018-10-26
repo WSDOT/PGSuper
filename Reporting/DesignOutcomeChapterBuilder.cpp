@@ -55,7 +55,7 @@ void failed_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisp
 void successful_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
 void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,IArtifact* pIArtifact);
 void process_artifacts(ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, IArtifact* pIArtifact,
-                       const pgsGirderDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, bool& didSlabOffset, bool& isHarped, bool& isTemporary);
+                       const pgsGirderDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, bool& didSlabOffset, bool& didFillet, bool& isHarped, bool& isTemporary);
 void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits,Float64 girderLength, ZoneIndexType nz,const CShearData2* pShearData);
 void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, const CShearData2* pShearData);
 void write_additional_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, const CShearData2* pShearData);
@@ -602,7 +602,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
       row++;
 
       GET_IFACE2(pBroker,IBridge,pBridge);
-      if ( (pBridge->GetDeckType()!=pgsTypes::sdtNone) && options.doDesignSlabOffset )
+      if ( (pBridge->GetDeckType()!=pgsTypes::sdtNone) && (options.doDesignSlabOffset != sodNoADesign) )
       {
          GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
          const CGirderGroupData* pGroup = pIBridgeDesc->GetBridgeDescription()->GetGirderGroup(segmentKey.groupIndex);
@@ -628,6 +628,14 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
             (*pTable)(row,0) << _T("Slab Offset at End (\"A\" Dimension)");
             (*pTable)(row,1) << length.SetValue( pArtifact->GetSlabOffset(pgsTypes::metEnd) );
             (*pTable)(row,2) << length.SetValue( pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),segmentKey.girderIndex));
+            row++;
+         }
+
+         if ( options.doDesignSlabOffset == sodAandFillet )
+         {
+            (*pTable)(row,0) << _T("Fillet");
+            (*pTable)(row,1) << length.SetValue( pArtifact->GetFillet() );
+            (*pTable)(row,2) << length.SetValue( pIBridgeDesc->GetFillet(segmentKey.groupIndex,segmentKey.girderIndex));
             row++;
          }
       }
@@ -811,7 +819,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
          *pNotesParagraph << rptNewLine;
 
          GET_IFACE2(pBroker,IBridge,pBridge);
-         if ( (pBridge->GetDeckType()!=pgsTypes::sdtNone) && options.doDesignSlabOffset )
+         if ( (pBridge->GetDeckType()!=pgsTypes::sdtNone) && (options.doDesignSlabOffset!=sodNoADesign) )
          {
             GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
             if ( pIBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge )
@@ -1098,11 +1106,12 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
    bool did_lifting;
    bool did_hauling;
    bool did_slaboffset;
+   bool did_fillet;
    bool is_harped;
    bool is_temporary;
 
    process_artifacts(startIdx, endIdx, girderKeys, pIArtifact,
-                     pArtifacts, did_flexure, did_shear, did_lifting, did_hauling, did_slaboffset, is_harped, is_temporary);
+                     pArtifacts, did_flexure, did_shear, did_lifting, did_hauling, did_slaboffset, did_fillet, is_harped, is_temporary);
 
    if (!did_flexure && !did_shear)
    {
@@ -1175,6 +1184,11 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
    if (did_slaboffset)
    {
       (*pTable)(row++,0) << _T("Slab Offset (A Dimension)");
+   }
+
+   if (did_fillet)
+   {
+      (*pTable)(row++,0) << _T("Fillet");
    }
 
    // Titles are now printed. Print results information
@@ -1323,12 +1337,18 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
          (*pTable)(row++,col) << length.SetValue( pArtifact->GetSlabOffset(pgsTypes::metStart) );
       }
 
+      if (did_fillet)
+      {
+         (*pTable)(row++,col) << length.SetValue( pArtifact->GetFillet() );
+      }
+
       col++;
    }
 }
 
 void process_artifacts(ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, IArtifact* pIArtifact,
-                       const pgsGirderDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, bool& didSlabOffset, bool& isHarped, bool& isTemporary)
+                       const pgsGirderDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, 
+                       bool& didSlabOffset, bool& didFillet, bool& isHarped, bool& isTemporary)
 {
    // Set all outcomes to false
    didFlexure = false;
@@ -1336,6 +1356,7 @@ void process_artifacts(ColumnIndexType startIdx, ColumnIndexType endIdx, const s
    didLifting = false;
    didHauling = false;
    didSlabOffset = false;
+   didFillet = false;
    isHarped = false;
    isTemporary = false;
 
@@ -1371,9 +1392,14 @@ void process_artifacts(ColumnIndexType startIdx, ColumnIndexType endIdx, const s
          didHauling = true;
       }
 
-      if (options.doDesignSlabOffset)
+      if (options.doDesignSlabOffset != sodNoADesign)
       {
          didSlabOffset = true;
+
+         if (options.doDesignSlabOffset == sodAandFillet)
+         {
+            didFillet = true;
+         }
       }
 
       // report harped information if we have any harped designs or, if we have harped strands

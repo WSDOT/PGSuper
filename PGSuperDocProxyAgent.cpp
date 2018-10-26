@@ -1154,7 +1154,9 @@ void CPGSuperDocProxyAgent::SelectProjectCriteria()
 // IDesign
 void CPGSuperDocProxyAgent::DesignGirder(bool bPrompt,bool bDesignSlabOffset,const CGirderKey& girderKey)
 {
-   ((CPGSuperDoc*)m_pMyDocument)->DesignGirder(bPrompt,bDesignSlabOffset,girderKey);
+   arSlabOffsetDesignType designSlabOffset = bDesignSlabOffset ? sodAOnly : sodNoADesign;
+
+   ((CPGSuperDoc*)m_pMyDocument)->DesignGirder(bPrompt,designSlabOffset,girderKey);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////

@@ -344,7 +344,7 @@ void CConstructabilityCheckTable::BuildMinimumFilletCheck(rptChapter* pChapter,I
    }
 
    (*pTable)(0,col++) << COLHDR(_T("Fillet Provided"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*pTable)(0,col++) << COLHDR(_T("Fillet Required"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(0,col++) << COLHDR(_T("Minimum")<<rptNewLine<<_T("Fillet Required"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*pTable)(0,col++) << _T("Status");
 
    RowIndexType row=0;
@@ -480,7 +480,7 @@ void CConstructabilityCheckTable::BuildHaunchGeometryComplianceCheck(rptChapter*
       rptParagraph* pBody = new rptParagraph;
       *pChapter << pBody;
       *pBody << pTable;
-      *pBody << _T("Fillet values are haunch depths taken at mid-span. Computed Fillet is based on computed excess camber. User-input Fillet and Slab Offsets are used to compute load due to haunch. See Slab Haunch Details chapter in Details Report for more information.");
+      *pBody << _T("Fillet values are minimum haunch depths taken at mid-span. Computed Fillet is based on computed excess camber. User-input Fillet and Slab Offsets are used to compute load due to haunch. See Slab Haunch Details chapter in Details Report for more information.");
    }
    else
    {

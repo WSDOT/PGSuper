@@ -36,6 +36,9 @@
 #include <Material\ACI209Concrete.h>
 #include <Material\CEBFIPConcrete.h>
 
+#include <EAF\EAFApp.h>
+#include <psgLib\LibraryEntryDifferenceItem.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -48,6 +51,97 @@ CLASS
    ConcreteLibraryEntry
 ****************************************************************************/
 
+
+CString ConcreteLibraryEntry::GetConcreteType(pgsTypes::ConcreteType type)
+{
+   LPCTSTR lpszType;
+   switch (type)
+   {
+   case pgsTypes::Normal:
+      lpszType = _T("Normal weight");
+      break;
+
+   case pgsTypes::AllLightweight:
+      lpszType = _T("All lightweight");
+      break;
+
+   case pgsTypes::SandLightweight:
+      lpszType = _T("Sand lightweight");
+      break;
+
+   default:
+      ATLASSERT(false);
+   }
+   return lpszType;
+}
+
+CString ConcreteLibraryEntry::GetConcreteCureMethod(pgsTypes::CureMethod method)
+{
+   LPCTSTR lpszType;
+   switch(method)
+   {
+   case pgsTypes::Moist:
+      lpszType = _T("Moist");
+      break;
+
+   case pgsTypes::Steam:
+      lpszType = _T("Steam");
+      break;
+
+   default:
+      ATLASSERT(false);
+   }
+
+   return lpszType;
+}
+
+CString ConcreteLibraryEntry::GetACI209CementType(pgsTypes::ACI209CementType type)
+{
+   LPCTSTR lpszType;
+   switch(type)
+   {
+   case pgsTypes::TypeI:
+      lpszType = _T("Type I");
+      break;
+
+   case pgsTypes::TypeIII:
+      lpszType = _T("Type III");
+      break;
+
+   default:
+      ATLASSERT(false);
+   }
+
+   return lpszType;
+}
+
+CString ConcreteLibraryEntry::GetCEBFIPCementType(pgsTypes::CEBFIPCementType type)
+{
+   LPCTSTR lpszType;
+   switch(type)
+   {
+   case pgsTypes::RS:
+      lpszType = _T("Rapid Hardening, High Strength Cemetn (RS)");
+      break;
+
+   case pgsTypes::N:
+      lpszType = _T("Normal Hardening Cement (N)");
+      break;
+
+   case pgsTypes::R:
+      lpszType = _T("Rapid Hardening Cement (R)");
+      break;
+
+   case pgsTypes::SL:
+      lpszType = _T("Slowly Hardening Cement (SL)");
+      break;
+
+   default:
+      ATLASSERT(false);
+   }
+
+   return lpszType;
+}
 
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
@@ -448,62 +542,182 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
    return true;
 }
 
-bool ConcreteLibraryEntry::IsEqual(const ConcreteLibraryEntry& rOther, bool considerName) const
+bool ConcreteLibraryEntry::IsEqual(const ConcreteLibraryEntry& rOther,bool bConsiderName) const
 {
-   bool test =   m_Type == rOther.m_Type &&
-                 ::IsEqual(m_Fc,      rOther.m_Fc)      &&
-                 ::IsEqual(m_Ds,      rOther.m_Ds)      &&
-                 ::IsEqual(m_Dw,      rOther.m_Dw)      &&
-                 ::IsEqual(m_AggSize, rOther.m_AggSize ) &&
-                 ::IsEqual(m_EccK1,   rOther.m_EccK1)      &&
-                 ::IsEqual(m_EccK2,   rOther.m_EccK2)      &&
-                 ::IsEqual(m_CreepK1,   rOther.m_CreepK1)      &&
-                 ::IsEqual(m_CreepK2,   rOther.m_CreepK2)      &&
-                 ::IsEqual(m_ShrinkageK1,   rOther.m_ShrinkageK1)      &&
-                 ::IsEqual(m_ShrinkageK2,   rOther.m_ShrinkageK2)      &&
-                 m_bUserEc == rOther.m_bUserEc &&
-                 ::IsEqual(m_Ec,rOther.m_Ec);
+   std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+   return Compare(rOther,vDifferences,true,bConsiderName);
+}
+
+bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool bReturnOnFirstDifference, bool considerName) const
+{
+   CEAFApp* pApp = EAFGetApp();
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
+   if ( m_Type != rOther.m_Type )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Type"),GetConcreteType(m_Type),GetConcreteType(rOther.m_Type)));
+   }
+
+   if ( !::IsEqual(m_Fc,rOther.m_Fc) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStressItem(_T("f'c"),m_Fc,rOther.m_Fc,pDisplayUnits->Stress));
+   }
+
+   if ( !::IsEqual(m_Ds,rOther.m_Ds) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceDensityItem(_T("Unit Weight"),m_Ds,rOther.m_Ds,pDisplayUnits->Density));
+   }
+
+   if ( !::IsEqual(m_Dw,rOther.m_Dw) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceDensityItem(_T("Unit Weight with Reinforcement"),m_Dw,rOther.m_Dw,pDisplayUnits->Density));
+   }
+
+   if ( m_bUserEc != rOther.m_bUserEc )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceBooleanItem(_T("Mod. Elasticity, Ec"),m_bUserEc,rOther.m_bUserEc,_T("Checked"),_T("Unchecked")));
+   }
+
+   if ( m_bUserEc && !::IsEqual(m_Ec,rOther.m_Ec) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStressItem(_T("Ec"),m_Ec,rOther.m_Ec,pDisplayUnits->ModE));
+   }
+
+   if ( !::IsEqual(m_AggSize,rOther.m_AggSize) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("Max. Aggregate Size"),m_AggSize,rOther.m_AggSize,pDisplayUnits->ComponentDim));
+   }
+
+   if ( !::IsEqual(m_EccK1,rOther.m_EccK1) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("Mod. E, K1"),m_EccK1,rOther.m_EccK1));
+   }
+
+   if ( !::IsEqual(m_EccK2,rOther.m_EccK2) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("Mod. E, K2"),m_EccK2,rOther.m_EccK2));
+   }
+
+   if ( !::IsEqual(m_CreepK1,rOther.m_CreepK1) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("Creep, K1"),m_CreepK1,rOther.m_CreepK1));
+   }
+
+   if ( !::IsEqual(m_CreepK2,rOther.m_CreepK2) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("Creep, K2"),m_CreepK2,rOther.m_CreepK2));
+   }
+
+   if ( !::IsEqual(m_ShrinkageK1,rOther.m_ShrinkageK1) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("Shrinkage, K1"),m_ShrinkageK1,rOther.m_ShrinkageK1));
+   }
+
+   if ( !::IsEqual(m_ShrinkageK2,rOther.m_ShrinkageK2) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("Shrinkage, K2"),m_ShrinkageK2,rOther.m_ShrinkageK2));
+   }
 
    if ( m_Type != pgsTypes::Normal )
    {
-      test &= (m_bHasFct == rOther.m_bHasFct);
-
-      if ( m_bHasFct )
+      if ( m_bHasFct != rOther.m_bHasFct )
       {
-         test &= ::IsEqual(m_Fct,rOther.m_Fct);
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceBooleanItem(_T("Agg. Splitting Strength, fct"),m_bHasFct,rOther.m_bHasFct,_T("Checked"),_T("Unchecked")));
+      }
+
+      if ( m_bHasFct && !::IsEqual(m_Fct,rOther.m_Fct) )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStressItem(_T("Fct"),m_Fct,rOther.m_Fct,pDisplayUnits->Stress));
       }
    }
 
-   test &= (m_bUserACIParameters == rOther.m_bUserACIParameters);
+
+   if ( m_bUserACIParameters != rOther.m_bUserACIParameters )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceBooleanItem(_T("Use time parameters from ACI 209R-92"),m_bUserACIParameters,rOther.m_bUserACIParameters,_T("Checked"),_T("Unchecked")));
+   }
+
    if ( m_bUserACIParameters )
    {
-      test &= ::IsEqual(m_A,rOther.m_A);
-      test &= ::IsEqual(m_B,rOther.m_B);
+      if ( !::IsEqual(m_A,rOther.m_A) )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("a"),m_A,rOther.m_A));
+      }
+
+      if ( !::IsEqual(m_B,rOther.m_B) )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("Beta"),m_B,rOther.m_B));
+      }
    }
    else
    {
-      test &= m_CureMethod   == rOther.m_CureMethod;
-      test &= m_ACI209CementType   == rOther.m_ACI209CementType;
+      if ( m_CureMethod != rOther.m_CureMethod )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Cure Method"),GetConcreteCureMethod(m_CureMethod),GetConcreteCureMethod(rOther.m_CureMethod)));
+      }
+
+      if ( m_ACI209CementType != rOther.m_ACI209CementType )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Cement Type"),GetACI209CementType(m_ACI209CementType),GetACI209CementType(rOther.m_ACI209CementType)));
+      }
    }
 
-   test &= (m_bUserCEBFIPParameters == rOther.m_bUserCEBFIPParameters);
+   if ( m_bUserCEBFIPParameters != rOther.m_bUserCEBFIPParameters )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceBooleanItem(_T("Use time parameters from CEB-FIP Model Code"),m_bUserCEBFIPParameters,rOther.m_bUserCEBFIPParameters,_T("Checked"),_T("Unchecked")));
+   }
+
    if ( m_bUserCEBFIPParameters )
    {
-      test &= ::IsEqual(m_S,rOther.m_S);
-      test &= ::IsEqual(m_BetaSc,rOther.m_BetaSc);
+      if ( !::IsEqual(m_S,rOther.m_S) )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("S"),m_S,rOther.m_S));
+      }
+
+      if ( !::IsEqual(m_BetaSc,rOther.m_BetaSc) )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("Beta SC"),m_BetaSc,rOther.m_BetaSc));
+      }
    }
    else
    {
-      test &= m_CEBFIPCementType == rOther.m_CEBFIPCementType;
+      if ( m_CEBFIPCementType != rOther.m_CEBFIPCementType )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Cement Type"),GetCEBFIPCementType(m_CEBFIPCementType),GetCEBFIPCementType(rOther.m_CEBFIPCementType)));
+      }
    }
 
-
-   if (considerName)
+   if (considerName &&  GetName() != rOther.GetName() )
    {
-      test &= this->GetName()==rOther.GetName();
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
    }
 
-   return test;
+   return vDifferences.size() == 0 ? true : false;
 }
 
 

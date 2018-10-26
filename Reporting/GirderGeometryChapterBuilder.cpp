@@ -280,7 +280,7 @@ void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             CSegmentKey segmentKey(girderKey,segIdx);
 
             CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
-            pGdr->GetSegmentEndPoints(segmentKey,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
+            pGdr->GetSegmentEndPoints(segmentKey,pgsTypes::pcGlobal,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
 
             if ( nSpans != nGroups )
             {
@@ -295,7 +295,7 @@ void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             (*pTable)(row,col++) << cogoPoint.SetValue(y);
 
             Float64 station, offset, elev;
-            pAlignment->GetStationAndOffset(pntPier1,&station,&offset);
+            pAlignment->GetStationAndOffset(pgsTypes::pcGlobal,pntPier1,&station,&offset);
             elev = pAlignment->GetElevation(station,offset);
             (*pTable)(row,col++) << cogoPoint.SetValue(elev);
 
@@ -304,7 +304,7 @@ void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             (*pTable)(row,col++) << cogoPoint.SetValue(x);
             (*pTable)(row,col++) << cogoPoint.SetValue(y);
 
-            pAlignment->GetStationAndOffset(pntEnd1,&station,&offset);
+            pAlignment->GetStationAndOffset(pgsTypes::pcGlobal,pntEnd1,&station,&offset);
             elev = pAlignment->GetElevation(station,offset);
             (*pTable)(row,col++) << cogoPoint.SetValue(elev);
 
@@ -313,7 +313,7 @@ void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             (*pTable)(row,col++) << cogoPoint.SetValue(x);
             (*pTable)(row,col++) << cogoPoint.SetValue(y);
 
-            pAlignment->GetStationAndOffset(pntBrg1,&station,&offset);
+            pAlignment->GetStationAndOffset(pgsTypes::pcGlobal,pntBrg1,&station,&offset);
             elev = pAlignment->GetElevation(station,offset);
             (*pTable)(row,col++) << cogoPoint.SetValue(elev);
 
@@ -322,7 +322,7 @@ void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             (*pTable)(row,col++) << cogoPoint.SetValue(x);
             (*pTable)(row,col++) << cogoPoint.SetValue(y);
 
-            pAlignment->GetStationAndOffset(pntBrg2,&station,&offset);
+            pAlignment->GetStationAndOffset(pgsTypes::pcGlobal,pntBrg2,&station,&offset);
             elev = pAlignment->GetElevation(station,offset);
             (*pTable)(row,col++) << cogoPoint.SetValue(elev);
 
@@ -331,7 +331,7 @@ void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             (*pTable)(row,col++) << cogoPoint.SetValue(x);
             (*pTable)(row,col++) << cogoPoint.SetValue(y);
 
-            pAlignment->GetStationAndOffset(pntEnd2,&station,&offset);
+            pAlignment->GetStationAndOffset(pgsTypes::pcGlobal,pntEnd2,&station,&offset);
             elev = pAlignment->GetElevation(station,offset);
             (*pTable)(row,col++) << cogoPoint.SetValue(elev);
 
@@ -340,7 +340,7 @@ void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             (*pTable)(row,col++) << cogoPoint.SetValue(x);
             (*pTable)(row,col++) << cogoPoint.SetValue(y);
 
-            pAlignment->GetStationAndOffset(pntPier2,&station,&offset);
+            pAlignment->GetStationAndOffset(pgsTypes::pcGlobal,pntPier2,&station,&offset);
             elev = pAlignment->GetElevation(station,offset);
             (*pTable)(row,col++) << cogoPoint.SetValue(elev);
 
@@ -516,7 +516,7 @@ void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
             CSegmentKey segmentKey(girderKey,segIdx);
 
             CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
-            pGdr->GetSegmentEndPoints(segmentKey,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
+            pGdr->GetSegmentEndPoints(segmentKey,pgsTypes::pcGlobal,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
 
             if ( nSpans != nGroups )
             {
@@ -526,7 +526,7 @@ void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
             Float64 x,y;
             Float64 station, offset, elev;
 
-            pAlignment->GetStationAndOffset(pntPier1,&station,&offset);
+            pAlignment->GetStationAndOffset(pgsTypes::pcGlobal,pntPier1,&station,&offset);
             elev = pAlignment->GetElevation(station,offset);
 
             pntPier1->get_X(&x);
@@ -535,7 +535,7 @@ void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
             (*pTable)(row,col++) << RPT_OFFSET(offset,cogoPoint);
             (*pTable)(row,col++) << cogoPoint.SetValue(elev);
 
-            pAlignment->GetStationAndOffset(pntEnd1,&station,&offset);
+            pAlignment->GetStationAndOffset(pgsTypes::pcGlobal,pntEnd1,&station,&offset);
             elev = pAlignment->GetElevation(station,offset);
 
             pntEnd1->get_X(&x);
@@ -544,7 +544,7 @@ void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
             (*pTable)(row,col++) << RPT_OFFSET(offset,cogoPoint);
             (*pTable)(row,col++) << cogoPoint.SetValue(elev);
 
-            pAlignment->GetStationAndOffset(pntBrg1,&station,&offset);
+            pAlignment->GetStationAndOffset(pgsTypes::pcGlobal,pntBrg1,&station,&offset);
             elev = pAlignment->GetElevation(station,offset);
 
             pntBrg1->get_X(&x);
@@ -553,7 +553,7 @@ void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
             (*pTable)(row,col++) << RPT_OFFSET(offset,cogoPoint);
             (*pTable)(row,col++) << cogoPoint.SetValue(elev);
 
-            pAlignment->GetStationAndOffset(pntBrg2,&station,&offset);
+            pAlignment->GetStationAndOffset(pgsTypes::pcGlobal,pntBrg2,&station,&offset);
             elev = pAlignment->GetElevation(station,offset);
 
             pntBrg2->get_X(&x);
@@ -562,7 +562,7 @@ void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
             (*pTable)(row,col++) << RPT_OFFSET(offset,cogoPoint);
             (*pTable)(row,col++) << cogoPoint.SetValue(elev);
 
-            pAlignment->GetStationAndOffset(pntEnd2,&station,&offset);
+            pAlignment->GetStationAndOffset(pgsTypes::pcGlobal,pntEnd2,&station,&offset);
             elev = pAlignment->GetElevation(station,offset);
 
             pntEnd2->get_X(&x);
@@ -571,7 +571,7 @@ void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
             (*pTable)(row,col++) << RPT_OFFSET(offset,cogoPoint);
             (*pTable)(row,col++) << cogoPoint.SetValue(elev);
 
-            pAlignment->GetStationAndOffset(pntPier2,&station,&offset);
+            pAlignment->GetStationAndOffset(pgsTypes::pcGlobal,pntPier2,&station,&offset);
             elev = pAlignment->GetElevation(station,offset);
 
             pntPier2->get_X(&x);

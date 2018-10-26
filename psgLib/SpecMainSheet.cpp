@@ -405,10 +405,10 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
       m_Entry.m_HaulingAnalysisMethod = pgsTypes::hmWSDOT;
    }
 
-	DDX_Text(pDX, IDC_HE_HAULING_FS_CRACK, m_Entry.m_HeHaulingCrackFs);
-   DDV_NonNegativeDouble(pDX, IDC_HE_HAULING_FS_CRACK, m_Entry.m_HeHaulingCrackFs);
-	DDX_Text(pDX, IDC_HE_HAULING_FS_ROLLOVER, m_Entry.m_HeHaulingRollFs);
-   DDV_NonNegativeDouble(pDX, IDC_HE_HAULING_FS_ROLLOVER, m_Entry.m_HeHaulingRollFs);
+	DDX_Text(pDX, IDC_HE_HAULING_FS_CRACK, m_Entry.m_HaulingCrackFs);
+   DDV_NonNegativeDouble(pDX, IDC_HE_HAULING_FS_CRACK, m_Entry.m_HaulingCrackFs);
+	DDX_Text(pDX, IDC_HE_HAULING_FS_ROLLOVER, m_Entry.m_HaulingRollFs);
+   DDV_NonNegativeDouble(pDX, IDC_HE_HAULING_FS_ROLLOVER, m_Entry.m_HaulingRollFs);
 
 	DDX_Text(pDX, IDC_HAULING_COMPRESSION, m_Entry.m_CompStressHauling);
    DDV_GreaterThanZero(pDX, IDC_HAULING_COMPRESSION, m_Entry.m_CompStressHauling);

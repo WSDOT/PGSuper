@@ -99,6 +99,9 @@ public:
 
       m_bUserLoadsValidated  = false;
       m_bDeckParametersValidated = false;
+
+      m_DeltaX = 0;
+      m_DeltaY = 0;
 	}
 
    HRESULT FinalConstruct();
@@ -173,10 +176,12 @@ public:
    virtual Float64 GetElevation(Float64 station,Float64 offset);
    virtual void GetBearing(Float64 station,IDirection** ppBearing);
    virtual void GetBearingNormal(Float64 station,IDirection** ppNormal);
-   virtual void GetPoint(Float64 station,Float64 offset,IDirection* pBearing,IPoint2d** ppPoint);
-   virtual void GetStationAndOffset(IPoint2d* point,Float64* pStation,Float64* pOffset);
+   virtual void GetPoint(Float64 station,Float64 offset,IDirection* pBearing,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint);
+   virtual void GetStationAndOffset(pgsTypes::PlanCoordinateType pcType,IPoint2d* point,Float64* pStation,Float64* pOffset);
    virtual CollectionIndexType GetCurveCount();
    virtual void GetCurve(CollectionIndexType idx,IHorzCurve** ppCurve);
+   virtual void GetCurvePoint(IndexType hcIdx,CurvePointTypes cpType,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint);
+   virtual HCURVESTATIONS GetCurveStations(IndexType hcIdx);
    virtual CollectionIndexType GetVertCurveCount();
    virtual void GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve);
    virtual void GetRoadwaySurface(Float64 station,IDirection* pDirection,IPoint2dCollection** ppPoints);
@@ -277,16 +282,17 @@ public:
    virtual Float64 GetCLPierToSegmentEndDistance(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,pgsTypes::MeasurementType measure);
    virtual Float64 GetSegmentOffset(const CSegmentKey& segmentKey,Float64 station);
    virtual void GetSegmentAngle(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,IAngle** ppAngle);
+   virtual void GetSegmentSkewAngle(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,IAngle** ppAngle);
    virtual void GetSegmentBearing(const CSegmentKey& segmentKey,IDirection** ppBearing);
    virtual CSegmentKey GetSegmentAtPier(PierIndexType pierIdx,const CGirderKey& girderKey);
    virtual void GetSpansForSegment(const CSegmentKey& segmentKey,SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx);
    virtual GDRCONFIG GetSegmentConfiguration(const CSegmentKey& segmentKey);
    virtual void ModelCantilevers(const CSegmentKey& segmentKey,bool* pbStartCantilever,bool* pbEndCantilever);
    virtual bool GetSpan(Float64 station,SpanIndexType* pSpanIdx);
-   virtual void GetPoint(const CSegmentKey& segmentKey,Float64 Xpoi,IPoint2d** ppPoint);
-   virtual void GetPoint(const pgsPointOfInterest& poi,IPoint2d** ppPoint);
-   virtual bool GetSegmentPierIntersection(const CSegmentKey& segmentKey,PierIndexType pierIdx,IPoint2d** ppPoint);
-   virtual bool GetSegmentTempSupportIntersection(const CSegmentKey& segmentKey,SupportIndexType tsIdx,IPoint2d** ppPoint);
+   virtual void GetPoint(const CSegmentKey& segmentKey,Float64 Xpoi,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint);
+   virtual void GetPoint(const pgsPointOfInterest& poi,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint);
+   virtual bool GetSegmentPierIntersection(const CSegmentKey& segmentKey,PierIndexType pierIdx,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint);
+   virtual bool GetSegmentTempSupportIntersection(const CSegmentKey& segmentKey,SupportIndexType tsIdx,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint);
    virtual void GetStationAndOffset(const CSegmentKey& segmentKey,Float64 Xpoi,Float64* pStation,Float64* pOffset);
    virtual void GetStationAndOffset(const pgsPointOfInterest& poi,Float64* pStation,Float64* pOffset);
    virtual bool IsInteriorGirder(const CGirderKey& girderKey);
@@ -342,23 +348,23 @@ public:
    virtual Float64 GetRightOverlayToeOffset(Float64 Xb);
    virtual Float64 GetLeftOverlayToeOffset(const pgsPointOfInterest& poi);
    virtual Float64 GetRightOverlayToeOffset(const pgsPointOfInterest& poi);
-   virtual void GetSlabPerimeter(CollectionIndexType nPoints,IPoint2dCollection** points);
-   virtual void GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx,CollectionIndexType nPoints,IPoint2dCollection** points);
-   virtual void GetSpanPerimeter(SpanIndexType spanIdx,CollectionIndexType nPoints,IPoint2dCollection** points);
-   virtual void GetLeftSlabEdgePoint(Float64 station, IDirection* direction,IPoint2d** point);
-   virtual void GetLeftSlabEdgePoint(Float64 station, IDirection* direction,IPoint3d** point);
-   virtual void GetRightSlabEdgePoint(Float64 station, IDirection* direction,IPoint2d** point);
-   virtual void GetRightSlabEdgePoint(Float64 station, IDirection* direction,IPoint3d** point);
-   virtual void GetLeftCurbLinePoint(Float64 station, IDirection* direction,IPoint2d** point);
-   virtual void GetLeftCurbLinePoint(Float64 station, IDirection* direction,IPoint3d** point);
-   virtual void GetRightCurbLinePoint(Float64 station, IDirection* direction,IPoint2d** point);
-   virtual void GetRightCurbLinePoint(Float64 station, IDirection* direction,IPoint3d** point);
+   virtual void GetSlabPerimeter(CollectionIndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** points);
+   virtual void GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx,CollectionIndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** points);
+   virtual void GetSpanPerimeter(SpanIndexType spanIdx,CollectionIndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** points);
+   virtual void GetLeftSlabEdgePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint2d** point);
+   virtual void GetLeftSlabEdgePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint3d** point);
+   virtual void GetRightSlabEdgePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint2d** point);
+   virtual void GetRightSlabEdgePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint3d** point);
+   virtual void GetLeftCurbLinePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint2d** point);
+   virtual void GetLeftCurbLinePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint3d** point);
+   virtual void GetRightCurbLinePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint2d** point);
+   virtual void GetRightCurbLinePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint3d** point);
    virtual Float64 GetPierStation(PierIndexType pierIdx);
    virtual Float64 GetAheadBearingStation(PierIndexType pierIdx,const CGirderKey& girderKey);
    virtual Float64 GetBackBearingStation(PierIndexType pierIdx,const CGirderKey& girderKey);
    virtual void GetPierDirection(PierIndexType pierIdx,IDirection** ppDirection);
    virtual void GetPierSkew(PierIndexType pierIdx,IAngle** ppAngle);
-   virtual void GetPierPoints(PierIndexType pierIdx,IPoint2d** left,IPoint2d** alignment,IPoint2d** bridge,IPoint2d** right);
+   virtual void GetPierPoints(PierIndexType pierIdx,pgsTypes::PlanCoordinateType pcType,IPoint2d** left,IPoint2d** alignment,IPoint2d** bridge,IPoint2d** right);
    virtual void IsContinuousAtPier(PierIndexType pierIdx,bool* pbLeft,bool* pbRight);
    virtual void IsIntegralAtPier(PierIndexType pierIdx,bool* pbLeft,bool* pbRight);
    virtual void GetContinuityEventIndex(PierIndexType pierIdx,EventIndexType* pLeft,EventIndexType* pRight);
@@ -624,6 +630,7 @@ public:
    virtual Float64 GetPjack(const CSegmentKey& segmentKey,bool bIncTemp);
    virtual void GetStrandPosition(const pgsPointOfInterest& poi, StrandIndexType strandIdx,pgsTypes::StrandType type, IPoint2d** ppPoint);
    virtual void GetStrandPositions(const pgsPointOfInterest& poi, pgsTypes::StrandType type, IPoint2dCollection** ppPoints);
+   virtual void GetStrandPositionEx(const pgsPointOfInterest& poi, StrandIndexType strandIdx,pgsTypes::StrandType type, const PRESTRESSCONFIG& rconfig,IPoint2d** ppPoint);
    virtual void GetStrandPositionsEx(const pgsPointOfInterest& poi,const PRESTRESSCONFIG& rconfig, pgsTypes::StrandType type, IPoint2dCollection** ppPoints);
    virtual void GetStrandPositionsEx(LPCTSTR strGirderName, Float64 HgStart,Float64 HgHp1,Float64 HgHp2,Float64 HgEnd,const PRESTRESSCONFIG& rconfig, pgsTypes::StrandType type,pgsTypes::MemberEndType endType, IPoint2dCollection** ppPoints);
 
@@ -932,7 +939,7 @@ public:
 
 // ITempSupport
 public:
-   virtual void GetControlPoints(SupportIndexType tsIdx,IPoint2d** ppLeft,IPoint2d** ppAlignment_pt,IPoint2d** ppBridge_pt,IPoint2d** ppRight);
+   virtual void GetControlPoints(SupportIndexType tsIdx,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppLeft,IPoint2d** ppAlignment_pt,IPoint2d** ppBridge_pt,IPoint2d** ppRight);
    virtual void GetDirection(SupportIndexType tsIdx,IDirection** ppDirection);
    virtual void GetSkew(SupportIndexType tsIdx,IAngle** ppAngle);
 
@@ -971,10 +978,11 @@ public:
    virtual Float64 GetWebThickness(const pgsPointOfInterest& poi,WebIndexType webIdx);
    virtual Float64 GetCL2ExteriorWebDistance(const pgsPointOfInterest& poi);
    virtual Float64 GetWebWidth(const pgsPointOfInterest& poi);
-   virtual void GetSegmentEndPoints(const CSegmentKey& segmentKey,IPoint2d** pntPier1,IPoint2d** pntEnd1,IPoint2d** pntBrg1,IPoint2d** pntBrg2,IPoint2d** pntEnd2,IPoint2d** pntPier2);
+   virtual void GetSegmentEndPoints(const CSegmentKey& segmentKey,pgsTypes::PlanCoordinateType pcType,IPoint2d** pntPier1,IPoint2d** pntEnd1,IPoint2d** pntBrg1,IPoint2d** pntBrg2,IPoint2d** pntEnd2,IPoint2d** pntPier2);
    virtual Float64 GetOrientation(const CSegmentKey& segmentKey);
-   virtual Float64 GetTopGirderReferenceChordElevation(const pgsPointOfInterest& poi);
-   virtual Float64 GetTopGirderReferenceChordElevation(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend);
+   virtual Float64 GetProfileChordElevation(const pgsPointOfInterest& poi);
+   virtual Float64 GetTopGirderChordElevation(const pgsPointOfInterest& poi);
+   virtual Float64 GetTopGirderChordElevation(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend);
    virtual Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,MatingSurfaceIndexType matingSurfaceIdx);
    virtual Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,const GDRCONFIG& config,MatingSurfaceIndexType matingSurfaceIdx);
    virtual Float64 GetSplittingZoneHeight(const pgsPointOfInterest& poi);
@@ -1087,6 +1095,10 @@ private:
    CComPtr<ICogoEngine> m_CogoEngine; // this is not the cogo model!!! just an engine to do computations with
    CComPtr<ICogoModel> m_CogoModel;
    CComPtr<IGenericBridge> m_Bridge;
+
+   // Add these values to local coordinates to get global coordinates
+   Float64 m_DeltaX;
+   Float64 m_DeltaY;
 
    CComPtr<IBridgeGeometryTool> m_BridgeGeometryTool;
 
@@ -1381,10 +1393,10 @@ private:
 
    void NoDeckEdgePoint(GroupIndexType grpIdx,SegmentIndexType segIdx,pgsTypes::MemberEndType end,DirectionType side,IPoint2d** ppPoint);
 
-   void GetSlabEdgePoint(Float64 station, IDirection* direction,DirectionType side,IPoint2d** point);
-   void GetSlabEdgePoint(Float64 station, IDirection* direction,DirectionType side,IPoint3d** point);
-   void GetCurbLinePoint(Float64 station, IDirection* direction,DirectionType side,IPoint2d** point);
-   void GetCurbLinePoint(Float64 station, IDirection* direction,DirectionType side,IPoint3d** point);
+   void GetSlabEdgePoint(Float64 station, IDirection* direction,DirectionType side,pgsTypes::PlanCoordinateType pcType,IPoint2d** point);
+   void GetSlabEdgePoint(Float64 station, IDirection* direction,DirectionType side,pgsTypes::PlanCoordinateType pcType,IPoint3d** point);
+   void GetCurbLinePoint(Float64 station, IDirection* direction,DirectionType side,pgsTypes::PlanCoordinateType pcType,IPoint2d** point);
+   void GetCurbLinePoint(Float64 station, IDirection* direction,DirectionType side,pgsTypes::PlanCoordinateType pcType,IPoint3d** point);
    void CreateCompositeOverlayEdgePaths(const CBridgeDescription2* pBridgeDesc,IPath** ppLeftPath,IPath** ppRightPath);
 
    boost::shared_ptr<mathFunction2d> CreateGirderProfile(const CSplicedGirderData* pGirder);

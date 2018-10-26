@@ -139,13 +139,13 @@ BOOL CConcreteEntryGeneralPage::OnInitDialog()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CComboBox* pcbConcreteType = (CComboBox*)GetDlgItem(IDC_CONCRETE_TYPE);
-   int idx = pcbConcreteType->AddString(_T("Normal weight"));
+   int idx = pcbConcreteType->AddString(ConcreteLibraryEntry::GetConcreteType(pgsTypes::Normal));
    pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::Normal);
 
-   idx = pcbConcreteType->AddString(_T("All lightweight"));
+   idx = pcbConcreteType->AddString(ConcreteLibraryEntry::GetConcreteType(pgsTypes::AllLightweight));
    pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::AllLightweight);
 
-   idx = pcbConcreteType->AddString(_T("Sand lightweight"));
+   idx = pcbConcreteType->AddString(ConcreteLibraryEntry::GetConcreteType(pgsTypes::SandLightweight));
    pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::SandLightweight);
 
 	CPropertyPage::OnInitDialog();

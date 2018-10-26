@@ -63,6 +63,7 @@
 #include "TogaSpecCheckSummaryChapterBuilder.h"
 #include "TogaCamberAndDeflectionChapterBuilder.h"
 #include "TogaLongSectionChapterBuilder.h"
+#include "TexasHaunchChapterBuilder.h"
 
 #include "TxDOTCadWriter.h"
 
@@ -127,6 +128,7 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
    pRptBuilder->SetReportSpecificationBuilder( pMultiGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasIBNSChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasCamberAndDeflectionChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasHaunchChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 
    // Texas Summary report - short
@@ -142,6 +144,7 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLiveLoadDetailsChapterBuilder(true,false)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CUserDefinedLoadsChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasCamberAndDeflectionChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasHaunchChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 
    // Texas Summary report - long form
@@ -157,6 +160,7 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLiveLoadDetailsChapterBuilder(true,false)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CUserDefinedLoadsChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasCamberAndDeflectionChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasHaunchChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasPrestressSummaryChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasStressChecksChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasMomentCapacityChapterBuilder) );
@@ -179,6 +183,7 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CUserDefinedLoadsChapterBuilder(true,true)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasPrestressSummaryChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTogaCamberAndDeflectionChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasHaunchChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTogaStressChecksChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasMomentCapacityChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasShearChapterBuilder) );
@@ -625,7 +630,7 @@ void CTxDOTAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const pgsSe
 
    const arDesignOptions& design_options = pArtifact->GetDesignOptions();
 
-   if (design_options.doDesignForFlexure != dtNoDesign && design_options.doDesignSlabOffset)
+   if (design_options.doDesignForFlexure != dtNoDesign && design_options.doDesignSlabOffset != sodNoADesign)
    {
       pgsTypes::SlabOffsetType slabOffsetType = pIBridgeDesc->GetSlabOffsetType();
 

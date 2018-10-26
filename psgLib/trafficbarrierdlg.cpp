@@ -107,7 +107,7 @@ void CTrafficBarrierDlg::DoDataExchange(CDataExchange* pDX)
       GetDlgItem(IDC_WEIGHT_UNIT)->SetWindowText(strTag);
    }
 
-   DDX_UnitValueAndTag(pDX, IDC_EC, IDC_EC_UNIT, m_Ec, pDisplayUnits->Stress );
+   DDX_UnitValueAndTag(pDX, IDC_EC, IDC_EC_UNIT, m_Ec, pDisplayUnits->ModE );
 
    DDX_UnitValueAndTag(pDX, IDC_CURBOFFSET, IDC_CURBOFFSET_UNIT, m_CurbOffset, pDisplayUnits->ComponentDim );
 }
@@ -135,10 +135,10 @@ void CTrafficBarrierDlg::OnHelp()
 BOOL CTrafficBarrierDlg::OnInitDialog() 
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_WEIGHT_METHOD);
-   int idx = pCB->AddString(_T("Compute properties from barrier shape and materials"));
+   int idx = pCB->AddString(TrafficBarrierEntry::GetWeightMethodType(TrafficBarrierEntry::Compute));
    pCB->SetItemData(idx,(DWORD)TrafficBarrierEntry::Compute);
 
-   idx = pCB->AddString(_T("Use these properties"));
+   idx = pCB->AddString(TrafficBarrierEntry::GetWeightMethodType(TrafficBarrierEntry::Input));
    pCB->SetItemData(idx,(DWORD)TrafficBarrierEntry::Input);
 
 	m_PointsGrid.SubclassDlgItem(IDC_TB_POINTS, this);

@@ -124,7 +124,7 @@ public:
    virtual LPCTSTR GetLoadCombinationName(LoadingCombinationType loadCombo);
    virtual LPCTSTR GetLimitStateName(pgsTypes::LimitState limitState);
    virtual bool ReportAxialResults();
-   virtual void GetGirderSelfWeightLoad(const CSegmentKey& segmentKey,std::vector<GirderLoad>* pDistLoad,std::vector<DiaphragmLoad>* pPointLoad);
+   virtual void GetSegmentSelfWeightLoad(const CSegmentKey& segmentKey,std::vector<SegmentLoad>* pSegmentLoads,std::vector<DiaphragmLoad>* pDiaphragmLoads,std::vector<ClosureJointLoad>* pClosureJointLoads);
    virtual std::vector<EquivPretensionLoad> GetEquivPretensionLoads(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,bool bTempStrandInstallation=true);
    virtual Float64 GetTrafficBarrierLoad(const CSegmentKey& segmentKey);
    virtual Float64 GetSidewalkLoad(const CSegmentKey& segmentKey);

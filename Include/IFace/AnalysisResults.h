@@ -96,7 +96,8 @@ struct OverlayLoad : public LinearLoad
 };
 
 typedef OverlayLoad ConstructionLoad;
-typedef LinearLoad GirderLoad;
+typedef LinearLoad SegmentLoad;
+typedef LinearLoad ClosureJointLoad;
 
 typedef struct SlabLoad
 {
@@ -170,8 +171,8 @@ interface IProductLoads : IUnknown
    // reported when there are physical piers or post-tensioning in the bridge model
    virtual bool ReportAxialResults() = 0;
 
-   // product loads applied to girder
-   virtual void GetGirderSelfWeightLoad(const CSegmentKey& segmentKey,std::vector<GirderLoad>* pDistLoad,std::vector<DiaphragmLoad>* pPointLoad) = 0;
+   // product loads applied to a segment including the closure joint load at the right end of the segment
+   virtual void GetSegmentSelfWeightLoad(const CSegmentKey& segmentKey,std::vector<SegmentLoad>* pSegmentLoads,std::vector<DiaphragmLoad>* pDiaphragmLoads,std::vector<ClosureJointLoad>* pClosureJointLoads) = 0;
 
    // gets the equivalent pretension forces. If strandType is pgsTypes::Temporary, bTempStrandInstallation is used to determine of the equivalent loads
    // are for the installation or removal interval

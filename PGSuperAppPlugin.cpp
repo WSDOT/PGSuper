@@ -290,6 +290,8 @@ void CPGSuperAppPlugin::UpdateTemplates()
 {
    USES_CONVERSION;
 
+   CAutoRegistry autoReg(GetAppName());
+
    CEAFApp* pApp = EAFGetApp();
 
    int result = AfxMessageBox(_T("All of the template library entries will be updated to match the Master Library.\n\nDo you want to proceed?"),MB_YESNO);
@@ -346,10 +348,11 @@ void CPGSuperAppPlugin::UpdateTemplates()
          
          CString strState = pApp->GetProfileString(strSection,OLE2T(pszCLSID),_T("Enabled"));
          extension_states.push_back(std::make_pair(OLE2T(pszCLSID),strState));
-         ::CoTaskMemFree((void*)pszCLSID);
 
          // Disable the extension
          pApp->WriteProfileString(strSection,OLE2T(pszCLSID),_T("Disabled"));
+
+         ::CoTaskMemFree((void*)pszCLSID);
       }
    }
 

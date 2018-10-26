@@ -254,7 +254,7 @@ bool CPGSuperDoc::EditClosureJointDescription(const CClosureKey& closureKey,int 
    return true;
 }
 
-void CPGSuperDoc::DesignGirder(bool bPrompt,bool bDesignSlabOffset,const CGirderKey& girderKey)
+void CPGSuperDoc::DesignGirder(bool bPrompt,arSlabOffsetDesignType designSlabOffset,const CGirderKey& girderKey)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -281,7 +281,14 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,bool bDesignSlabOffset,const CGirder
    GET_IFACE_NOCHECK(IBridge,pBridge);
    bool can_design_Adim    = pSpec->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
 
-   bDesignSlabOffset = bDesignSlabOffset && can_design_Adim; // only design A if it's possible
+   if (!can_design_Adim)
+   {
+      m_DesignSlabOffset = sodNoADesign; // only show design A if it's possible
+   }
+   else
+   {
+      m_DesignSlabOffset = designSlabOffset;
+   }
 
    std::vector<CGirderKey> girderKeys;
    if ( bPrompt )
@@ -291,7 +298,7 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,bool bDesignSlabOffset,const CGirder
 
       CDesignGirderDlg dlg(thisGirderKey.groupIndex, 
                            thisGirderKey.girderIndex,
-                           can_design_Adim, bDesignSlabOffset, m_pBroker);
+                           can_design_Adim, m_DesignSlabOffset, m_pBroker);
 
       // Set initial dialog values based on last stored in registry. These may be changed
       // internally by dialog based on girder type, and other library values
@@ -301,12 +308,10 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,bool bDesignSlabOffset,const CGirder
 
       if ( dlg.DoModal() == IDOK )
       {
-         bDesignSlabOffset    = dlg.m_DesignA != FALSE;    // we can override library setting here
-
          EnableDesignFlexure(dlg.m_DesignForFlexure == TRUE ? true : false);
          EnableDesignShear(  dlg.m_DesignForShear   == TRUE ? true : false);
          EnableDesignStirrupsFromScratch( dlg.m_StartWithCurrentStirrupLayout==TRUE ? false : true);
-         m_bDesignSlabOffset = bDesignSlabOffset; // retain value for current document
+         m_DesignSlabOffset = dlg.m_DesignSlabOffset; // retain value for current document
 
          girderKeys = dlg.m_GirderKeys;
 
@@ -327,12 +332,12 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,bool bDesignSlabOffset,const CGirder
       girderKeys.push_back(thisGirderKey);
    }
 
-   DoDesignGirder(girderKeys, bDesignSlabOffset);
+   DoDesignGirder(girderKeys, m_DesignSlabOffset);
 }
 
 void CPGSuperDoc::OnProjectDesignGirder() 
 {
-   DesignGirder(true,m_bDesignSlabOffset,CGirderKey(m_Selection.GroupIdx,m_Selection.GirderIdx));
+   DesignGirder(true,m_DesignSlabOffset,CGirderKey(m_Selection.GroupIdx,m_Selection.GirderIdx));
 }
 
 void CPGSuperDoc::OnUpdateProjectDesignGirderDirectHoldSlabOffset(CCmdUI* pCmdUI)
@@ -364,21 +369,15 @@ void CPGSuperDoc::OnProjectAnalysis()
 
 void CPGSuperDoc::OnProjectDesignGirderDirect()
 {
-   GET_IFACE(ISpecification,pSpecification);
-   GET_IFACE_NOCHECK(IBridge,pBridge); // might not get used due to short-circuit evaluation
-   bool bDesignSlabOffset = pSpecification->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
-   m_bDesignSlabOffset = bDesignSlabOffset; // retain setting in document
-
-   DesignGirder(false,bDesignSlabOffset,CGirderKey(m_Selection.GroupIdx,m_Selection.GirderIdx));
+   DesignGirder(false,sodAandFillet,CGirderKey(m_Selection.GroupIdx,m_Selection.GirderIdx));
 }
 
 void CPGSuperDoc::OnProjectDesignGirderDirectHoldSlabOffset()
 {
-   m_bDesignSlabOffset = false; // retain setting in document
-   DesignGirder(false,false,CGirderKey(m_Selection.GroupIdx,m_Selection.GirderIdx));
+   DesignGirder(false,sodNoADesign,CGirderKey(m_Selection.GroupIdx,m_Selection.GirderIdx));
 }
 
-void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool doDesignADim)
+void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, arSlabOffsetDesignType designADim)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    GET_IFACE(ISpecification,pSpecification);
@@ -423,10 +422,13 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool
          {
             arDesignOptions& des_options = *it;
 
-            des_options.doDesignSlabOffset = doDesignADim;
             des_options.doDesignStirrupLayout = IsDesignStirrupsFromScratchEnabled() ?  slLayoutStirrups : slRetainExistingLayout;
 
-            if(!IsDesignFlexureEnabled())
+            if(IsDesignFlexureEnabled())
+            {
+               des_options.doDesignSlabOffset = designADim;
+            }
+            else
             {
                des_options.doDesignForFlexure = dtNoDesign;
             }
@@ -458,16 +460,18 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool
 
    pMGRptSpec->SetGirderKeys(girderKeys);
 
-   CDesignOutcomeDlg dlg(pMGRptSpec);
+   CDesignOutcomeDlg dlg(pMGRptSpec, girderKeys, designADim);
    if ( dlg.DoModal() == IDOK )
    {
+      SlabOffsetDesignSelectionType slabOffsetDType;
+      SpanIndexType fromSpan;
+      GirderIndexType fromGirder;
+      bool doDesignSO = dlg.GetSlabOffsetDesign(&slabOffsetDType, &fromSpan, &fromGirder);
+
       // Create our transaction and execute
       GET_IFACE(IEAFTransactions,pTransactions);
-      GET_IFACE(IBridgeDescription,pIBridgeDesc);
 
-      pgsTypes::SlabOffsetType slabOffsetType = pIBridgeDesc->GetSlabOffsetType();
-
-      txnDesignGirder* pTxn = new txnDesignGirder(pArtifacts,slabOffsetType);
+      txnDesignGirder* pTxn = new txnDesignGirder(pArtifacts,slabOffsetDType,fromSpan,fromGirder);
 
       pTransactions->Execute(pTxn);
    }

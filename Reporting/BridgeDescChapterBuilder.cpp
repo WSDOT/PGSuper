@@ -292,7 +292,8 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
       else
       {
          CComPtr<IHorzCurve> hc;
-         pRoadway->GetCurve(col-1,&hc);
+         IndexType hcIdx = col-1;
+         pRoadway->GetCurve(hcIdx,&hc);
 
          CComPtr<IDirection> bkTangent;
          CComPtr<IDirection> fwdTangent;
@@ -311,44 +312,35 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
          CComBSTR bstrFwdTangent;
          direction_formatter->Format(fwd_tangent_value,CComBSTR("°,\',\""),&bstrFwdTangent);
 
-         Float64 bk_tangent_length;
-         hc->get_BkTangentLength(&bk_tangent_length);
+         HCURVESTATIONS stations = pRoadway->GetCurveStations(hcIdx);
 
-         Float64 total_length;
-         hc->get_TotalLength(&total_length);
-
-         Float64 ts,sc,cs,st;
-         ts = hc_data.PIStation - bk_tangent_length;
-         sc = hc_data.PIStation - bk_tangent_length + hc_data.EntrySpiral;
-         cs = hc_data.PIStation - bk_tangent_length + total_length - hc_data.ExitSpiral;
-         st = hc_data.PIStation - bk_tangent_length + total_length;
          (*pTable)(row++,col) << RPT_BEARING(OLE2T(bstrBkTangent));
          (*pTable)(row++,col) << RPT_BEARING(OLE2T(bstrFwdTangent));
-         if ( IsEqual(ts,sc) )
+         if ( IsEqual(stations.TSStation,stations.SCStation) )
          {
             (*pTable)(row++,col) << _T("-");
             (*pTable)(row++,col) << _T("-");
-            (*pTable)(row++,col) << rptRcStation(ts, &pDisplayUnits->GetStationFormat());
+            (*pTable)(row++,col) << rptRcStation(stations.TSStation, &pDisplayUnits->GetStationFormat());
          }
          else
          {
-            (*pTable)(row++,col) << rptRcStation(ts, &pDisplayUnits->GetStationFormat());
-            (*pTable)(row++,col) << rptRcStation(sc, &pDisplayUnits->GetStationFormat());
+            (*pTable)(row++,col) << rptRcStation(stations.TSStation, &pDisplayUnits->GetStationFormat());
+            (*pTable)(row++,col) << rptRcStation(stations.SCStation, &pDisplayUnits->GetStationFormat());
             (*pTable)(row++,col) << _T("-");
          }
-         (*pTable)(row++,col) << rptRcStation(hc_data.PIStation, &pDisplayUnits->GetStationFormat());
+         (*pTable)(row++,col) << rptRcStation(stations.PIStation, &pDisplayUnits->GetStationFormat());
 
-         if ( IsEqual(cs,st) )
+         if ( IsEqual(stations.CSStation,stations.STStation) )
          {
-            (*pTable)(row++,col) << rptRcStation(cs, &pDisplayUnits->GetStationFormat());
+            (*pTable)(row++,col) << rptRcStation(stations.CSStation, &pDisplayUnits->GetStationFormat());
             (*pTable)(row++,col) << _T("-");
             (*pTable)(row++,col) << _T("-");
          }
          else
          {
             (*pTable)(row++,col) << _T("-");
-            (*pTable)(row++,col) << rptRcStation(cs, &pDisplayUnits->GetStationFormat());
-            (*pTable)(row++,col) << rptRcStation(st, &pDisplayUnits->GetStationFormat());
+            (*pTable)(row++,col) << rptRcStation(stations.CSStation, &pDisplayUnits->GetStationFormat());
+            (*pTable)(row++,col) << rptRcStation(stations.STStation, &pDisplayUnits->GetStationFormat());
          }
 
          CurveDirectionType direction;
@@ -411,32 +403,32 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
 
          CComPtr<IPoint2d> pnt;
          Float64 x,y;
-         hc->get_TS(&pnt);
+         pRoadway->GetCurvePoint(hcIdx,cptTS,pgsTypes::pcGlobal,&pnt);
          pnt->Location(&x,&y);
          (*pTable)(row,col) << length.SetValue(y) << _T(", "); (*pTable)(row++,col) << length.SetValue(x);
 
          pnt.Release();
-         hc->get_SC(&pnt);
+         pRoadway->GetCurvePoint(hcIdx,cptSC,pgsTypes::pcGlobal,&pnt);
          pnt->Location(&x,&y);
          (*pTable)(row,col) << length.SetValue(y) << _T(", "); (*pTable)(row++,col) << length.SetValue(x);
 
          pnt.Release();
-         hc->get_PI(&pnt);
+         pRoadway->GetCurvePoint(hcIdx,cptPI,pgsTypes::pcGlobal,&pnt);
          pnt->Location(&x,&y);
          (*pTable)(row,col) << length.SetValue(y) << _T(", "); (*pTable)(row++,col) << length.SetValue(x);
 
          pnt.Release();
-         hc->get_CS(&pnt);
+         pRoadway->GetCurvePoint(hcIdx,cptCS,pgsTypes::pcGlobal,&pnt);
          pnt->Location(&x,&y);
          (*pTable)(row,col) << length.SetValue(y) << _T(", "); (*pTable)(row++,col) << length.SetValue(x);
 
          pnt.Release();
-         hc->get_ST(&pnt);
+         pRoadway->GetCurvePoint(hcIdx,cptST,pgsTypes::pcGlobal,&pnt);
          pnt->Location(&x,&y);
          (*pTable)(row,col) << length.SetValue(y) << _T(", "); (*pTable)(row++,col) << length.SetValue(x);
 
          pnt.Release();
-         hc->get_CC(&pnt);
+         pRoadway->GetCurvePoint(hcIdx,cptCC,pgsTypes::pcGlobal,&pnt);
          pnt->Location(&x,&y);
          (*pTable)(row,col) << length.SetValue(y) << _T(", "); (*pTable)(row++,col) << length.SetValue(x);
       }

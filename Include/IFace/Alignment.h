@@ -31,9 +31,8 @@ COPYRIGHT
 
 // SYSTEM INCLUDES
 //
-#include <WBFLTypes.h>
+#include <PGSuperTypes.h>
 #include <WBFLCogo.h>
-
 
 // PROJECT INCLUDES
 //
@@ -50,6 +49,26 @@ interface IPoint2d;
 
 // MISCELLANEOUS
 //
+
+typedef struct HCURVESTATIONS
+{
+   Float64 TSStation;
+   Float64 SCStation;
+   Float64 PIStation;
+   Float64 CSStation;
+   Float64 STStation;
+} HCURVESTATIONS;
+
+typedef enum CurvePointTypes
+{
+   cptTS,
+   cptSC,
+   cptPI,
+   cptCS,
+   cptST,
+   cptCC,
+   cptCCC
+} CurvePointTypes;
 
 /*****************************************************************************
 INTERFACE
@@ -86,13 +105,30 @@ interface IRoadway : IUnknown
    virtual Float64 GetElevation(Float64 station,Float64 offset) = 0;
    virtual void GetBearing(Float64 station,IDirection** ppBearing) = 0;
    virtual void GetBearingNormal(Float64 station,IDirection** ppNormal) = 0;
-   virtual void GetPoint(Float64 station,Float64 offset,IDirection* pBearing,IPoint2d** ppPoint) = 0;
-   virtual void GetStationAndOffset(IPoint2d* point,Float64* pStation,Float64* pOffset) = 0;
-   virtual CollectionIndexType GetCurveCount() = 0;
-   virtual void GetCurve(CollectionIndexType idx,IHorzCurve** ppCurve) = 0;
-   virtual CollectionIndexType GetVertCurveCount() = 0;
-   virtual void GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve) = 0;
+   virtual void GetPoint(Float64 station,Float64 offset,IDirection* pBearing,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint) = 0;
+   virtual void GetStationAndOffset(pgsTypes::PlanCoordinateType pcType,IPoint2d* point,Float64* pStation,Float64* pOffset) = 0;
 
+   ////////////////////////
+   // Horizontal Curves
+   ////////////////////////
+
+   // Returns number of horizontal curves 
+   virtual IndexType GetCurveCount() = 0;
+
+   // Returns a horizontal curve object. Points are in local coordinates
+   virtual void GetCurve(IndexType hcIdx,IHorzCurve** ppCurve) = 0;
+
+   // Returns key points for a horizontal curve
+   virtual void GetCurvePoint(IndexType hcIdx,CurvePointTypes cpType,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint) = 0;
+
+   // Returns the stations of key points for a horizontal curve
+   virtual HCURVESTATIONS GetCurveStations(IndexType hcIdx) = 0;
+
+   virtual IndexType GetVertCurveCount() = 0;
+   virtual void GetVertCurve(IndexType idx,IVertCurve** ppCurve) = 0;
+
+   // returns the points along the roadway surface for a line at the specified station and direction
+   // the x value is the alignment offset, and the y value is the elevation of the surface
    virtual void GetRoadwaySurface(Float64 station,IDirection* pDirection,IPoint2dCollection** ppPoints) = 0;
 
    virtual Float64 GetCrownPointOffset(Float64 station) = 0;

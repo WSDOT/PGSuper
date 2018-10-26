@@ -289,7 +289,7 @@ void CAlignmentPlanView::BuildAlignmentDisplayObjects()
    for ( long i = 0; i < nPoints; i++, station += station_inc)
    {
       CComPtr<IPoint2d> p;
-      pRoadway->GetPoint(station,0.00,bearing,&p);
+      pRoadway->GetPoint(station,0.00,bearing,pgsTypes::pcGlobal,&p);
       doAlignment->AddPoint(p);
    }
 
@@ -314,13 +314,13 @@ void CAlignmentPlanView::BuildAlignmentDisplayObjects()
    CComPtr<IDirection> dir;
    pRoadway->GetBearingNormal(start_station,&dir);
    CComPtr<IPoint2d> rotation_center;
-   pRoadway->GetPoint(start_station,0.00,dir,&rotation_center);
+   pRoadway->GetPoint(start_station,0.00,dir,pgsTypes::pcGlobal,&rotation_center);
 
    // get point on alignment at last pier
    CComPtr<IPoint2d> end_point;
    dir.Release();
    pRoadway->GetBearingNormal(end_station,&dir);
-   pRoadway->GetPoint(end_station,0.00,dir,&end_point);
+   pRoadway->GetPoint(end_station,0.00,dir,pgsTypes::pcGlobal,&end_point);
 
    // get the direction of the line from the start to the end
    // this represents the amount we want to rotate the display
@@ -375,7 +375,7 @@ void CAlignmentPlanView::BuildBridgeDisplayObjects()
    // Draw the deck
    SpanIndexType nSpans = pBridge->GetSpanCount();
    CComPtr<IPoint2dCollection> points;
-   pBridge->GetSlabPerimeter(0,nSpans-1,10*nSpans,&points);
+   pBridge->GetSlabPerimeter(0,nSpans-1,10*nSpans,pgsTypes::pcGlobal,&points);
 
    CComPtr<IPolyShape> poly_shape;
    poly_shape.CoCreateInstance(CLSID_PolyShape);
@@ -432,7 +432,7 @@ void CAlignmentPlanView::BuildBridgeDisplayObjects()
       CComPtr<IDirection> normal;
       pRoadway->GetBearingNormal(station,&normal);
       CComPtr<IPoint2d> p;
-      pRoadway->GetPoint(station,alignment_offset,normal,&p);
+      pRoadway->GetPoint(station,alignment_offset,normal,pgsTypes::pcGlobal,&p);
       doBridgeLine->AddPoint(p);
    }
 
@@ -487,7 +487,7 @@ void CAlignmentPlanView::BuildLabelDisplayObjects()
          CComPtr<IPoint2d> pntPI;
          hc->get_PI(&pntPI);
          Float64 station, offset;
-         pRoadway->GetStationAndOffset(pntPI,&station,&offset);
+         pRoadway->GetStationAndOffset(pgsTypes::pcLocal,pntPI,&station,&offset);
          CreateStationLabel(label_display_list,station,_T("PI"));
       }
       else
@@ -497,37 +497,37 @@ void CAlignmentPlanView::BuildLabelDisplayObjects()
          hc->get_SpiralLength(spExit,&Ls2);
 
          CComPtr<IPoint2d> pntTS, pntSC, pntCS, pntST;
-         hc->get_TS(&pntTS);
-         hc->get_SC(&pntSC);
-         hc->get_CS(&pntCS);
-         hc->get_ST(&pntST);
+         pRoadway->GetCurvePoint(hcIdx,cptTS,pgsTypes::pcGlobal,&pntTS);
+         pRoadway->GetCurvePoint(hcIdx,cptSC,pgsTypes::pcGlobal,&pntSC);
+         pRoadway->GetCurvePoint(hcIdx,cptCS,pgsTypes::pcGlobal,&pntCS);
+         pRoadway->GetCurvePoint(hcIdx,cptST,pgsTypes::pcGlobal,&pntST);
 
          Float64 station, offset;
          if ( IsZero(Ls1) )
          {
-            pRoadway->GetStationAndOffset(pntTS,&station,&offset);
+            pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,pntTS,&station,&offset);
             CreateStationLabel(label_display_list,station,_T("PC"));
          }
          else
          {
-            pRoadway->GetStationAndOffset(pntTS,&station,&offset);
+            pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,pntTS,&station,&offset);
             CreateStationLabel(label_display_list,station,_T("TS"));
 
-            pRoadway->GetStationAndOffset(pntSC,&station,&offset);
+            pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,pntSC,&station,&offset);
             CreateStationLabel(label_display_list,station,_T("SC"));
          }
 
          if ( IsZero(Ls2) )
          {
-            pRoadway->GetStationAndOffset(pntST,&station,&offset);
+            pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,pntST,&station,&offset);
             CreateStationLabel(label_display_list,station,_T("PT"));
          }
          else
          {
-            pRoadway->GetStationAndOffset(pntCS,&station,&offset);
+            pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,pntCS,&station,&offset);
             CreateStationLabel(label_display_list,station,_T("CS"));
 
-            pRoadway->GetStationAndOffset(pntST,&station,&offset);
+            pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,pntST,&station,&offset);
             CreateStationLabel(label_display_list,station,_T("ST"));
          }
       }
@@ -544,7 +544,7 @@ void CAlignmentPlanView::CreateStationLabel(iDisplayList* pDisplayList,Float64 s
 
 
    CComPtr<IPoint2d> p;
-   pRoadway->GetPoint(station,0.00,NULL,&p);
+   pRoadway->GetPoint(station,0.00,NULL,pgsTypes::pcGlobal,&p);
 
    CComPtr<iTextBlock> doLabel;
    doLabel.CoCreateInstance(CLSID_TextBlock);

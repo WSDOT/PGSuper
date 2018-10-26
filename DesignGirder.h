@@ -30,10 +30,20 @@
 #include <PsgLib\ShearData.h>
 #include <PgsExt\HandlingData.h>
 
+typedef enum SlabOffsetDesignSelectionType
+{
+   sodtBridge,
+   sodtPier,  
+   sodtGirder,
+   sodtAllSelectedGirders ,
+   sodtDoNotDesign
+} SlabOffsetType;
+
+
 class txnDesignGirder : public txnTransaction
 {
 public:
-   txnDesignGirder(std::vector<const pgsGirderDesignArtifact*>& artifacts, pgsTypes::SlabOffsetType slabOffsetType);
+   txnDesignGirder(std::vector<const pgsGirderDesignArtifact*>& artifacts, SlabOffsetDesignSelectionType soSelectionType, SpanIndexType fromSpan, GirderIndexType fromGirder);
    ~txnDesignGirder();
 
    virtual bool Execute();
@@ -60,15 +70,60 @@ private:
 
       // index 0 = old data (before design), 1 = new data (design outcome)
       CPrecastSegmentData m_SegmentData[2];
-      Float64 m_SlabOffset[2][2]; // first index is pgsTypes::MemberEndType
-      pgsTypes::SlabOffsetType m_SlabOffsetType[2];
    };
 
    typedef std::vector<DesignData> DesignDataColl;
    typedef DesignDataColl::iterator DesignDataIter;
    typedef DesignDataColl::const_iterator DesignDataConstIter;
-
    DesignDataColl m_DesignDataColl;
+
+   // Slab Offset data is a bit more challenging:
+   // Must store slab offset data unique for old and new data. no other way to make undoable
+   // New design data
+   SlabOffsetDesignSelectionType m_NewSlabOffsetType;
+   SpanIndexType m_FromSpanIdx;
+   GirderIndexType m_FromGirderIdx;
+   bool    m_DidSlabOffsetDesign; // true only if slab offset was designed
+   Float64 m_DesignSlabOffset[2]; // ahead:back
+
+   pgsTypes::FilletType m_NewFilletType;
+   bool    m_DidFilletDesign; // true only if fillet was designed
+   Float64 m_DesignFillet;
+
+   // Old data
+   pgsTypes::SlabOffsetType m_OldSlabOffsetType;
+   Float64 m_OldBridgeSlabOffset; // Only if old type was sotBridge
+   typedef struct OldSlabOffsetData // Data for each girder or span/pier depending on SlabOffsetType
+   {
+      GroupIndexType  GroupIdx;
+      PierIndexType   PierIdx;
+      GirderIndexType GirderIdx; // only used for sotGirder
+      Float64 SlabOffset;
+
+      // constructor
+      OldSlabOffsetData(GroupIndexType groupIdx, PierIndexType pierIdx, GirderIndexType girderIdx, Float64 slabOffset):
+         GroupIdx(groupIdx),PierIdx(pierIdx),GirderIdx(girderIdx),SlabOffset(slabOffset)
+         {;}
+
+   } OldSlabOffsetData;
+   std::vector<OldSlabOffsetData> m_OldSlabOffsetData;
+
+   pgsTypes::FilletType m_OldFilletType;
+   Float64 m_OldBridgeFillet; // Only if old type was fttBridge
+   typedef struct OldFilletData // Data for each girder or span/pier depending on FilletType
+   {
+      GroupIndexType  GroupIdx;
+      GirderIndexType GirderIdx; // only used for fttGirder
+      Float64 Fillet;
+
+      // constructor
+      OldFilletData(GroupIndexType groupIdx, GirderIndexType girderIdx, Float64 Fillet):
+         GroupIdx(groupIdx),GirderIdx(girderIdx),Fillet(Fillet)
+         {;}
+
+   } OldFilletData;
+   std::vector<OldFilletData> m_OldFilletData;
+
 };
 
 #endif // INCLUDED_DESIGNGIRDER_H_

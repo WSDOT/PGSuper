@@ -20,7 +20,7 @@ Roll Over | Enter the minimum factor of safety against roll over of the hauling 
 ### Modulus of Rupture for Cracking Moment ###
 Define the coefficient for computing the modulus of rupture used for computing the cracking moment in the stability analysis.
 
-### Hauling Parameters ###
+### Hauling Analysis Parameters ###
 Define hauling stability analysis parameters
 
 Item | Description

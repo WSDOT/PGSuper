@@ -377,6 +377,7 @@ public:
 
    void GetHaunchDetails(const CSpanKey& spanKey,HAUNCHDETAILS* pHaunchDetails);
    void GetHaunchDetails(const CSpanKey& spanKey,const GDRCONFIG& config,HAUNCHDETAILS* pHaunchDetails);
+   Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi);
 
    pgsEccEnvelope GetEccentricityEnvelope(const pgsPointOfInterest& rpoi,const GDRCONFIG& config);
 

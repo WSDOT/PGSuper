@@ -76,6 +76,7 @@
 #include <IFace\EditByUI.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
+#include <IFace\Constructability.h>
 
 #include "TxDOTOptionalDesignData.h"
 #include "TogaSupportDrawStrategy.h"

@@ -857,20 +857,14 @@ void CGirderModelChildFrame::OnUpdateDesignGirderDirectHoldSlabOffset(CCmdUI* pC
 
 void CGirderModelChildFrame::OnDesignGirderDirect()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,ISpecification,pSpecification);
-   GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
-   bool bDesignSlabOffset = pSpecification->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
-
    CPGSuperDoc* pDoc = (CPGSuperDoc*)EAFGetDocument();
-   pDoc->DesignGirder(false,bDesignSlabOffset,m_GirderKey);
+   pDoc->DesignGirder(false,sodAOnly,m_GirderKey);
 }
 
 void CGirderModelChildFrame::OnDesignGirderDirectHoldSlabOffset()
 {
    CPGSuperDoc* pDoc = (CPGSuperDoc*)EAFGetDocument();
-   pDoc->DesignGirder(false,false,m_GirderKey);
+   pDoc->DesignGirder(false,sodNoADesign,m_GirderKey);
 }
 
 

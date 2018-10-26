@@ -1581,7 +1581,7 @@ void CStrandData::AddExtendedStrand(pgsTypes::StrandType strandType,pgsTypes::Me
    std::sort(m_NextendedStrands[strandType][endType].begin(),m_NextendedStrands[strandType][endType].end());
 }
 
-const std::vector<StrandIndexType>& CStrandData::GetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType) const
+const std::vector<GridIndexType>& CStrandData::GetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType) const
 {
    return m_NextendedStrands[strandType][endType];
 }
@@ -1589,6 +1589,12 @@ const std::vector<StrandIndexType>& CStrandData::GetExtendedStrands(pgsTypes::St
 void CStrandData::SetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,const std::vector<StrandIndexType>& extStrands)
 {
    m_NextendedStrands[strandType][endType] = extStrands;
+}
+
+bool CStrandData::IsExtendedStrand(pgsTypes::StrandType strandType,GridIndexType gridIdx,pgsTypes::MemberEndType endType) const
+{
+   std::vector<GridIndexType>::const_iterator found = std::find(m_NextendedStrands[strandType][endType].begin(),m_NextendedStrands[strandType][endType].end(),gridIdx);
+   return found != m_NextendedStrands[strandType][endType].end();
 }
 
 // Resets all the prestressing put to default values
@@ -1634,7 +1640,7 @@ void CStrandData::ClearDirectFillData()
    m_TemporaryStrandFill.clear();
 }
 
-StrandIndexType CStrandData::GetDebondCount(pgsTypes::StrandType strandType,const GirderLibraryEntry* pGirderLibEntry) const
+StrandIndexType CStrandData::GetDebondCount(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,const GirderLibraryEntry* pGirderLibEntry) const
 {
    if (strandType == pgsTypes::Permanent)
    {
@@ -1650,7 +1656,7 @@ StrandIndexType CStrandData::GetDebondCount(pgsTypes::StrandType strandType,cons
       for ( ; rowIter != rowIterEnd; rowIter++ )
       {
          const CStrandRow& row = *rowIter;
-         if ( row.m_bIsDebonded[pgsTypes::metStart] || row.m_bIsDebonded[pgsTypes::metEnd] )
+         if ( row.m_StrandType == strandType && row.m_bIsDebonded[endType] )
          {
             nDebondedStrands += row.m_nStrands;
          }
@@ -1719,6 +1725,20 @@ bool CStrandData::IsSymmetricDebond() const
 void CStrandData::IsSymmetricDebond(bool bIsSymmetric)
 {
    m_bSymmetricDebond = bIsSymmetric;
+}
+
+bool CStrandData::IsDebonded(pgsTypes::StrandType strandType,GridIndexType gridIdx,pgsTypes::MemberEndType endType,Float64* pLdebond) const
+{
+   *pLdebond = 0;
+   std::vector<CDebondData>::const_iterator found = std::find_if(m_Debond[strandType].begin(),m_Debond[strandType].end(),FindDebondByGridIndex(gridIdx));
+   if ( found == m_Debond[strandType].end() )
+   {
+      return false;
+   }
+
+   const CDebondData& debondData = *found;
+   *pLdebond = debondData.Length[endType];
+   return true;
 }
 
 void CStrandData::SetStrandMaterial(pgsTypes::StrandType strandType,const matPsStrand* pStrandMaterial)
@@ -1995,7 +2015,5 @@ void CStrandData::ProcessStrandRowData()
    m_Nstrands[pgsTypes::Harped]    = nStrands[pgsTypes::Harped];
    m_Nstrands[pgsTypes::Temporary] = nStrands[pgsTypes::Temporary];
    m_Nstrands[pgsTypes::Permanent] = 0;
-
-   m_bSymmetricDebond = false;
 }
 

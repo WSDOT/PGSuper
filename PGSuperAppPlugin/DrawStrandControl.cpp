@@ -235,8 +235,6 @@ void CDrawStrandControl::OnPaint()
 
    CPen pen(PS_SOLID,1,SEGMENT_BORDER_COLOR);
    CBrush brush(SEGMENT_FILL_COLOR);
-   CPen strandPen(PS_SOLID,1,STRAND_BORDER_COLOR);
-   CBrush strandBrush(STRAND_FILL_COLOR);
 
    CPen* pOldPen = dc.SelectObject(&pen);
    CBrush* pOldBrush = dc.SelectObject(&brush);
@@ -246,8 +244,6 @@ void CDrawStrandControl::OnPaint()
    Draw(&dc,centerMapper,m_BottomFlange,FALSE);
    DrawShape(&dc,rightMapper,m_Shape[pgsTypes::metEnd]);
 
-   dc.SelectObject(&strandPen);
-   dc.SelectObject(&strandBrush);
    DrawStrands(&dc,leftMapper,centerMapper,rightMapper);
 
    // Clean up
@@ -322,6 +318,19 @@ void CDrawStrandControl::DrawStrands(CDC* pDC,grlibPointMapper& leftMapper,grlib
    GET_IFACE2_NOCHECK(pBroker,IGirder,pGirder);
    GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
 
+   CPen strandPen(PS_SOLID,1,STRAND_BORDER_COLOR);
+   CBrush strandBrush(STRAND_FILL_COLOR);
+
+   CPen tempStrandPen(PS_SOLID,1,TEMPORARY_FILL_COLOR);
+   CBrush tempStrandBrush(TEMPORARY_FILL_COLOR);
+
+   CPen extendedPen(PS_SOLID,1,EXTENDED_FILL_COLOR);
+   CBrush extendedBrush(EXTENDED_FILL_COLOR);
+
+   CPen debondedPen(PS_SOLID,1,DEBOND_FILL_COLOR);
+   CBrush debondedBrush(DEBOND_FILL_COLOR);
+
+
    const CStrandRowCollection& strandRows = m_pSegment->Strands.GetStrandRows();
    CStrandRowCollection::const_iterator iter(strandRows.begin());
    CStrandRowCollection::const_iterator iterEnd(strandRows.end());
@@ -329,6 +338,11 @@ void CDrawStrandControl::DrawStrands(CDC* pDC,grlibPointMapper& leftMapper,grlib
    {
       const CStrandRow& strandRow(*iter);
       GridIndexType nGridPoints = strandRow.m_nStrands/2; // strand grid is only half the full grid (just the grid on the positive X side)
+      if ( ::IsOdd(strandRow.m_nStrands) )
+      {
+         nGridPoints++;
+      }
+
       Float64 Xi = strandRow.m_InnerSpacing/2; // distance from CL Girder to first strand
 
       // grid points are in Girder Section Coordinates (0,0 is at the top center of the girder)
@@ -340,7 +354,17 @@ void CDrawStrandControl::DrawStrands(CDC* pDC,grlibPointMapper& leftMapper,grlib
          if ( Z[i] < 0 )
          {
             // fractional measure
-            Z[i] *= -1.0*m_SegmentLength;
+            if ( Z[i] < -1 )
+            {
+               // fractional length can't be more than 100%
+               // this is probably a case where the user changed the unit of measure to % and hasn't updated the input value yet
+               // just turn this into a direct value input and proceed. The grid validation will balk at the bad input
+               Z[i] *= -1;
+            }
+            else
+            {
+               Z[i] *= -1.0*m_SegmentLength;
+            }
          }
 
          Y[i] = strandRow.m_Y[i];
@@ -381,6 +405,22 @@ void CDrawStrandControl::DrawStrands(CDC* pDC,grlibPointMapper& leftMapper,grlib
             rect.InflateRect(minStrandSize.cx-rect.Width(),minStrandSize.cy-rect.Height());
          }
 
+         if ( strandRow.m_bIsExtendedStrand[pgsTypes::metStart] )
+         {
+            pDC->SelectObject(&extendedPen);
+            pDC->SelectObject(&extendedBrush);
+         }
+         else if ( strandRow.m_bIsDebonded[pgsTypes::metStart] )
+         {
+            pDC->SelectObject(&debondedPen);
+            pDC->SelectObject(&debondedBrush);
+         }
+         else
+         {
+            pDC->SelectObject(strandRow.m_StrandType == pgsTypes::Temporary ? &tempStrandPen : &strandPen);
+            pDC->SelectObject(strandRow.m_StrandType == pgsTypes::Temporary ? &tempStrandBrush : &strandBrush);
+         }
+
          pDC->Ellipse(&rect);
 
          leftMapper.WPtoDP(-X-m_Radius,Y[LOCATION_START]-m_Radius,&rect.left,&rect.top); 
@@ -409,6 +449,23 @@ void CDrawStrandControl::DrawStrands(CDC* pDC,grlibPointMapper& leftMapper,grlib
             rect.InflateRect(minStrandSize.cx-rect.Width(),minStrandSize.cy-rect.Height());
          }
 
+
+         if ( strandRow.m_bIsExtendedStrand[pgsTypes::metEnd] )
+         {
+            pDC->SelectObject(&extendedPen);
+            pDC->SelectObject(&extendedBrush);
+         }
+         else if ( strandRow.m_bIsDebonded[pgsTypes::metEnd] )
+         {
+            pDC->SelectObject(&debondedPen);
+            pDC->SelectObject(&debondedBrush);
+         }
+         else
+         {
+            pDC->SelectObject(strandRow.m_StrandType == pgsTypes::Temporary ? &tempStrandPen : &strandPen);
+            pDC->SelectObject(strandRow.m_StrandType == pgsTypes::Temporary ? &tempStrandBrush : &strandBrush);
+         }
+
          pDC->Ellipse(&rect);
 
          rightMapper.WPtoDP(-X-m_Radius,Y[LOCATION_END]-m_Radius,&rect.left,&rect.top); 
@@ -431,6 +488,9 @@ void CDrawStrandControl::DrawStrands(CDC* pDC,grlibPointMapper& leftMapper,grlib
 
          centerMapper.WPtoDP(z,Y[LOCATION_START],&dx,&dy);
          pDC->MoveTo(dx,dy);
+
+         pDC->SelectObject(&strandPen);
+         pDC->SelectObject(&strandBrush);
 
          if ( strandRow.m_StrandType == pgsTypes::Harped )
          {

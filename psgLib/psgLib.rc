@@ -10,7 +10,6 @@
 #include "afxres.h"
 #include "EAF\EAFResources.h"
 #include "grid\gxresrc.h"
-
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -69,8 +68,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,49
- PRODUCTVERSION 3,0,0,49
+ FILEVERSION 3,0,0,50
+ PRODUCTVERSION 3,0,0,50
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -88,12 +87,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.0.0.49"
+            VALUE "FileVersion", "3.0.0.50"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2016, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.49"
+            VALUE "ProductVersion", "3.0.0.50"
         END
     END
     BLOCK "VarFileInfo"
@@ -456,7 +455,7 @@ BEGIN
     LTEXT           "MPa",IDC_HAULING_TENSION_MAX_UNIT,396,308,29,8,NOT WS_GROUP
     LTEXT           "In areas with sufficient bonded reinforcement",IDC_STATIC_GH11,13,335,152,9,NOT WS_GROUP
     LTEXT           "sqrt(f'c (MPa))",IDC_HAULING_TENSION_WITH_REBAR_UNIT,216,331,45,8,NOT WS_GROUP
-    GROUPBOX        "Hauling Parameters",IDC_STATIC_GH12,7,82,467,175
+    GROUPBOX        "Hauling Analysis Parameters",IDC_STATIC_GH12,7,82,467,175
     LTEXT           "Roll Stiffness of Truck Trailer",IDC_STATIC_GH13,15,118,92,8,NOT WS_GROUP
     LTEXT           "kip-in/rad",IDC_ROLL_STIFFNESS_UNITS,109,132,33,8,NOT WS_GROUP
     LTEXT           "kip/axle",IDC_AXLE_WEIGHT_UNITS,109,146,26,8,NOT WS_GROUP
@@ -706,7 +705,7 @@ BEGIN
     CONTROL         "But not greater than ",IDC_CHECK_LIFTING_TENSION_MAX,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,263,247,77,10
     EDITTEXT        IDC_LIFTING_TENSION_MAX,343,244,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "MPa",IDC_LIFTING_TENSION_MAX_UNIT,389,248,25,8
+    LTEXT           "MPa",IDC_LIFTING_TENSION_MAX_UNIT,387,248,24,8
     LTEXT           "In areas with sufficient bonded reinforcement",IDC_STATIC_ACSSB,15,267,143,8
     EDITTEXT        IDC_LIFTING_TENSION_WITH_REBAR,167,265,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'ci (MPa))",IDC_LIFTING_TENSION_WITH_REBAR_UNIT,211,267,48,8
@@ -716,7 +715,7 @@ BEGIN
     LTEXT           "Down",IDC_STATIC_LCYDOWN,116,102,22,8
     EDITTEXT        IDC_IMPACT_DOWNWARD_LIFTING,140,100,27,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,172,102,8,8
-    GROUPBOX        "Lifting Parameters",IDC_STATIC_LCP,7,80,406,119
+    GROUPBOX        "Lifting Analysis Parameters",IDC_STATIC_LCP,7,80,406,119
     LTEXT           "Height of Pick Point Above Top of Girder",IDC_STATIC_LCPHPP,15,129,143,8
     EDITTEXT        IDC_PICK_POINT_HEIGHT,165,124,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Inches",IDC_PICK_POINT_HEIGHT_UNITS,209,129,25,8
@@ -819,17 +818,19 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,96,74,50,14
 END
 
-IDD_LIBRARY_ENTRY_CONFLICT DIALOGEX 0, 0, 212, 137
+IDD_LIBRARY_ENTRY_CONFLICT DIALOGEX 0, 0, 498, 253
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Library Entry Conflict"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "Overwrite With Master",IDC_OVERWRITE,66,115,80,14
-    PUSHBUTTON      "Rename Entry",IDC_RENAME_ENTRY,7,115,50,14
-    LTEXT           "A conflict occurred while reading the library entries. An entry in the project library has the same name as an entry in the Master Library, but not the same data values.",IDC_CONFLICT_TOP,7,7,198,35
-    PUSHBUTTON      "Help",ID_HELP,155,115,50,14
-    LTEXT           "The entry name is %s in the %s",IDC_ENTRY_TEXT,7,46,198,27
-    LTEXT           "You must resolve this before the rest of the project file can be loaded. Please choose if you would like to rename the project entry and retain its values, or overwrite the project entry with values from the Master Library.",IDC_CONFLICT_BOTTOM,7,75,198,38
+    DEFPUSHBUTTON   "Overwrite With Master",IDC_OVERWRITE,355,231,80,14
+    PUSHBUTTON      "Rename Entry",IDC_RENAME_ENTRY,301,231,50,14
+    LTEXT           "A conflict occurred while reading the library entries. An entry in the project library has the same name as an entry in the Master Library, but not the same data values.",IDC_CONFLICT_TOP,7,7,484,16
+    PUSHBUTTON      "Help",ID_HELP,441,231,50,14
+    LTEXT           "The entry name is %s in the %s",IDC_ENTRY_TEXT,7,28,484,11
+    LTEXT           "You must resolve this before the rest of the project file can be loaded. Please choose if you would like to rename the project entry and retain its values, or overwrite the project entry with values from the Master Library.",IDC_CONFLICT_BOTTOM,7,44,484,21
+    CONTROL         "",IDC_CONFLICT_LIST,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,82,484,141
+    LTEXT           "Differences",IDC_STATIC,7,70,37,8
 END
 
 IDD_SECTIONVIEW DIALOGEX 0, 0, 440, 393
@@ -1928,9 +1929,9 @@ BEGIN
     IDD_LIBRARY_ENTRY_CONFLICT, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 205
+        RIGHTMARGIN, 491
         TOPMARGIN, 7
-        BOTTOMMARGIN, 129
+        BOTTOMMARGIN, 245
     END
 
     IDD_SECTIONVIEW, DIALOG
@@ -2180,16 +2181,6 @@ END
 
 IDD_GIRDER_PERMANENT_STRANDS DLGINIT
 BEGIN
-    IDC_WEB_STRAND_TYPE_COMBO, 0x403, 30, 0
-0x6441, 0x756a, 0x7473, 0x6261, 0x656c, 0x5320, 0x7274, 0x6e61, 0x7364, 
-0x6120, 0x6572, 0x4820, 0x7261, 0x6570, 0x0064, 
-    IDC_WEB_STRAND_TYPE_COMBO, 0x403, 32, 0
-0x6441, 0x756a, 0x7473, 0x6261, 0x656c, 0x5320, 0x7274, 0x6e61, 0x7364, 
-0x6120, 0x6572, 0x5320, 0x7274, 0x6961, 0x6867, 0x0074, 
-    IDC_WEB_STRAND_TYPE_COMBO, 0x403, 37, 0
-0x6441, 0x756a, 0x7473, 0x6261, 0x656c, 0x6320, 0x6e61, 0x6220, 0x2065, 
-0x6148, 0x7072, 0x6465, 0x6f20, 0x2072, 0x7453, 0x6172, 0x6769, 0x7468, 
-"\000" 
     IDC_COMBO_HP_LSL, 0x403, 4, 0
 0x6f54, 0x0070, 
     IDC_COMBO_HP_LSL, 0x403, 7, 0
@@ -2562,7 +2553,6 @@ LANGUAGE 9, 1
 #include "afxres.rc"         // Standard components
 #endif
 #include "grid\gxres.rc"               // Objective Grid resources
-
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

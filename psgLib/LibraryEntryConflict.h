@@ -26,7 +26,7 @@
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
-// LibraryEntryConflict.h : header file
+// LibraryEntryConflictDlg.h : header file
 //
 
 /////////////////////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@ class CLibraryEntryConflict : public CDialog
 {
 // Construction
 public:
-   CLibraryEntryConflict(const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported, CWnd* pParent = NULL);
+   CLibraryEntryConflict(const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported, const std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,CWnd* pParent = NULL);
 
 // Dialog Data
 	//{{AFX_DATA(CLibraryEntryConflict)
@@ -45,6 +45,7 @@ public:
 	CStatic	m_ConflictBottom;
 	CStatic	m_ConflictTop;
 	CStatic	m_EntryText;
+   CListCtrl m_ConflictList;
 	//}}AFX_DATA
 
 
@@ -73,6 +74,7 @@ public:
    CString m_LibName;
    CString m_NewName;
    const std::vector<std::_tstring>& m_KeyList;
+   const std::vector<pgsLibraryEntryDifferenceItem*>& m_vDifferences;
    bool m_IsImported; // are libraries coming from import or project?
 };
 

@@ -39,6 +39,8 @@
 #include <IFace\DistributionFactors.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Alignment.h>
+#include <IFace\Constructability.h>
+
 #include <EAF\EAFStatusCenter.h>
 #include <EAF\EAFAutoProgress.h>
 
@@ -8138,9 +8140,6 @@ BoundaryConditionType CGirderModelManager::GetLBAMBoundaryConditions(bool bConti
 
 void CGirderModelManager::ApplySelfWeightLoad(ILBAMModel* pModel,pgsTypes::AnalysisType analysisType,GirderIndexType gdrIdx)
 {
-#pragma Reminder("UPDATE: need to add dead load of closure joints in the interval when they are cast")
-   // closure joint dead loads can be modeled as a point load or a distributed load over the length of the joint
-
    GET_IFACE(IIntervals,pIntervals);
    GET_IFACE(IBridge,pBridge);
 
@@ -8202,9 +8201,9 @@ void CGirderModelManager::ApplySelfWeightLoad(ILBAMModel* pModel,pgsTypes::Analy
          // gives us what we want. Moment, shear, and reactions are also the most commonly requested
          // results so we don't incur the overhead of adding in storage interval results.
          //
-         // When we get the increment deformations (deflection and rotation) from the LBAM, for the girder dead load
+         // When we get the incremental deformations (deflection and rotation) from the LBAM, for the girder dead load
          // or any load combination or limit state that uses the girder dead load, we have to subtract the response
-         // do to pftGirder and add in the response do to pftGirder_Incremental.
+         // due to pftGirder and add in the response do to pftGirder_Incremental.
          // For cumulative results, remove pftGirder, add pftGirder_Incremental, and add the cumulative response
          // from the storage interval.
          IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
@@ -8251,35 +8250,171 @@ void CGirderModelManager::ApplySelfWeightLoad(ILBAMModel* pModel,pgsTypes::Analy
          } // next load
 
          // get the dead load items
-         std::vector<GirderLoad> vGirderLoads;
+         std::vector<SegmentLoad> vSegmentLoads;
          std::vector<DiaphragmLoad> vDiaphragmLoads;
-         GetGirderSelfWeightLoad(segmentKey,&vGirderLoads,&vDiaphragmLoads);
+         std::vector<ClosureJointLoad> vClosureJointLoads;
+         GetSegmentSelfWeightLoad(segmentKey,&vSegmentLoads,&vDiaphragmLoads,&vClosureJointLoads);
          // precast diaphragm loads (vDiaphragmLoads) are applied in ApplyIntermediateDiaphragmLoads
 
-         mbrID = ApplyDistributedLoads(erectSegmentIntervalIdx,pModel,analysisType,mbrID,segmentKey,vGirderLoads,bstrStage,bstrLoadGroup);
+         mbrID = ApplyDistributedLoadsToSegment(erectSegmentIntervalIdx,pModel,analysisType,mbrID,segmentKey,vSegmentLoads,bstrStage,bstrLoadGroup);
 
-         const CPierData2* pPier;
-         const CTemporarySupportData* pTS;
-         pSplicedGirder->GetSegment(segIdx)->GetSupport(pgsTypes::metEnd,&pPier,&pTS);
-         if ( pPier && pPier->IsInteriorPier() )
+         if ( segIdx < nSegments-1 )
          {
-            mbrID += 2; // +2 to jump over left/right side intermediate diaphragm/closure SSMBR
+            mbrID = ApplyClosureJointSelfWeightLoad(pModel,analysisType,mbrID,segmentKey,vClosureJointLoads);
          }
-         else if ( segIdx < nSegments-1 )
-         {
-            mbrID++; // +1 to jump over the closure joint SSMBR
-         }
+
+         //const CPierData2* pPier;
+         //const CTemporarySupportData* pTS;
+         //pSplicedGirder->GetSegment(segIdx)->GetSupport(pgsTypes::metEnd,&pPier,&pTS);
+         //if ( pPier && pPier->IsInteriorPier() )
+         //{
+         //   mbrID += 2; // +2 to jump over left/right side intermediate diaphragm/closure SSMBR
+         //}
+         //else if ( segIdx < nSegments-1 )
+         //{
+         //   mbrID++; // +1 to jump over the closure joint SSMBR
+         //}
       } // next segment
 
-      CSegmentKey segmentKey(pSplicedGirder->GetGirderKey(),nSegments-1);
-      Float64 right_brg_offset = pBridge->GetSegmentEndBearingOffset( segmentKey );
-      Float64 right_end_dist   = pBridge->GetSegmentEndEndDistance( segmentKey );
+      CSegmentKey lastSegmentKey(pSplicedGirder->GetGirderKey(),nSegments-1);
+      Float64 right_brg_offset = pBridge->GetSegmentEndBearingOffset( lastSegmentKey );
+      Float64 right_end_dist   = pBridge->GetSegmentEndEndDistance( lastSegmentKey );
 
       if ( !IsZero(right_brg_offset - right_end_dist) )
       {
          mbrID++; // +1 more to get to the CL of the intermediate pier
       }
    } // next group
+}
+
+MemberIDType CGirderModelManager::ApplyClosureJointSelfWeightLoad(ILBAMModel* pModel,pgsTypes::AnalysisType analysisType,MemberIDType mbrID,const CClosureKey& closureKey,const std::vector<ClosureJointLoad>& vClosureJointLoads)
+{
+   // NOTE: We must run through this method even if vClosureJointLoads.size() == 0. This method counts the closure joint superstructure members and returns the ssmbrID of the 
+   // next superstructure member to be loaded in the overall bridge model
+
+#if defined _DEBUG
+   // used below to error check loading geometry
+   CComPtr<ISuperstructureMembers> ssmbrs;
+   pModel->get_SuperstructureMembers(&ssmbrs);
+#endif
+
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType castCJIntervalIdx = pIntervals->GetCastClosureJointInterval(closureKey);
+
+   CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftGirder) );
+   CComBSTR bstrStage(GetLBAMStageName(castCJIntervalIdx));
+
+   // Apply load to model
+   CComPtr<IDistributedLoads> distLoads;
+   pModel->get_DistributedLoads(&distLoads);
+
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   const CSplicedGirderData* pSplicedGirder = pBridgeDesc->GetGirderGroup(closureKey.groupIndex)->GetGirder(closureKey.girderIndex);
+
+   const CPierData2* pPier;
+   const CTemporarySupportData* pTS;
+   pSplicedGirder->GetSegment(closureKey.segmentIndex)->GetSupport(pgsTypes::metEnd,&pPier,&pTS);
+   if ( pPier && pPier->IsInteriorPier() )
+   {
+      // closure joint is modeled by two superstructure members
+      if ( 0 < vClosureJointLoads.size() )
+      {
+#if defined _DEBUG
+         CComPtr<ISuperstructureMember> ssmbr;
+         ssmbrs->get_Item(mbrID,&ssmbr);
+         Float64 Lssmbr;
+         ssmbr->get_Length(&Lssmbr);
+         ATLASSERT(IsEqual(vClosureJointLoads[0].EndLoc-vClosureJointLoads[0].StartLoc,Lssmbr));
+#endif
+         CComPtr<IDistributedLoad> wLeft;
+         wLeft.CoCreateInstance(CLSID_DistributedLoad);
+         wLeft->put_MemberType(mtSuperstructureMember);
+         wLeft->put_MemberID(mbrID);
+         wLeft->put_Direction(ldFy);
+         wLeft->put_WStart(vClosureJointLoads[0].wStart);
+         wLeft->put_WEnd(vClosureJointLoads[0].wEnd);
+         wLeft->put_StartLocation(vClosureJointLoads[0].StartLoc);
+         wLeft->put_EndLocation(vClosureJointLoads[0].EndLoc);
+
+         CComPtr<IDistributedLoadItem> loadItem;
+         distLoads->Add(bstrStage,bstrLoadGroup,wLeft,&loadItem);
+      }
+
+      mbrID++;
+
+      if ( 0 < vClosureJointLoads.size() )
+      {
+         ATLASSERT(vClosureJointLoads.size() == 2);
+#if defined _DEBUG
+         CComPtr<ISuperstructureMember> ssmbr;
+         ssmbrs->get_Item(mbrID,&ssmbr);
+         Float64 Lssmbr;
+         ssmbr->get_Length(&Lssmbr);
+         ATLASSERT(IsEqual(vClosureJointLoads[1].EndLoc-vClosureJointLoads[1].StartLoc,Lssmbr));
+#endif
+         CComPtr<IDistributedLoad> wRight;
+         wRight.CoCreateInstance(CLSID_DistributedLoad);
+         wRight->put_MemberType(mtSuperstructureMember);
+         wRight->put_MemberID(mbrID);
+         wRight->put_Direction(ldFy);
+         wRight->put_WStart(vClosureJointLoads[1].wStart);
+         wRight->put_WEnd(vClosureJointLoads[1].wEnd);
+         wRight->put_StartLocation(vClosureJointLoads[1].StartLoc - vClosureJointLoads[0].EndLoc);
+         wRight->put_EndLocation(vClosureJointLoads[1].EndLoc - vClosureJointLoads[1].StartLoc);
+
+         CComPtr<IDistributedLoadItem> loadItem;
+         distLoads->Add(bstrStage,bstrLoadGroup,wRight,&loadItem);
+      }
+
+      mbrID++;
+   }
+   else //if ( segIdx < nSegments-1 )
+   {
+      // closure joint is modeled by one superstructure member
+      if ( 0 < vClosureJointLoads.size() )
+      {
+         ATLASSERT(vClosureJointLoads.size() == 2);
+#if defined _DEBUG
+         CComPtr<ISuperstructureMember> ssmbr;
+         ssmbrs->get_Item(mbrID,&ssmbr);
+         Float64 Lssmbr;
+         ssmbr->get_Length(&Lssmbr);
+         ATLASSERT(IsEqual(vClosureJointLoads[1].EndLoc - vClosureJointLoads[0].StartLoc,Lssmbr));
+#endif
+
+         CComPtr<IDistributedLoad> wLeft;
+         wLeft.CoCreateInstance(CLSID_DistributedLoad);
+         wLeft->put_MemberType(mtSuperstructureMember);
+         wLeft->put_MemberID(mbrID);
+         wLeft->put_Direction(ldFy);
+         wLeft->put_WStart(vClosureJointLoads[0].wStart);
+         wLeft->put_WEnd(vClosureJointLoads[0].wEnd);
+         wLeft->put_StartLocation(vClosureJointLoads[0].StartLoc);
+         wLeft->put_EndLocation(vClosureJointLoads[0].EndLoc);
+
+         CComPtr<IDistributedLoadItem> loadItem;
+         distLoads->Add(bstrStage,bstrLoadGroup,wLeft,&loadItem);
+
+         CComPtr<IDistributedLoad> wRight;
+         wRight.CoCreateInstance(CLSID_DistributedLoad);
+         wRight->put_MemberType(mtSuperstructureMember);
+         wRight->put_MemberID(mbrID);
+         wRight->put_Direction(ldFy);
+         wRight->put_WStart(vClosureJointLoads[1].wStart);
+         wRight->put_WEnd(vClosureJointLoads[1].wEnd);
+         wRight->put_StartLocation(vClosureJointLoads[1].StartLoc);
+         wRight->put_EndLocation(vClosureJointLoads[1].EndLoc);
+
+         loadItem.Release();
+         distLoads->Add(bstrStage,bstrLoadGroup,wRight,&loadItem);
+      }
+
+      mbrID++;
+   }
+
+   return mbrID;
 }
 
 void CGirderModelManager::ApplyDiaphragmLoad(ILBAMModel* pModel,pgsTypes::AnalysisType analysisType,GirderIndexType gdr)
@@ -8327,9 +8462,9 @@ void CGirderModelManager::ApplySlabLoad(ILBAMModel* pModel,pgsTypes::AnalysisTyp
          std::vector<LinearLoad> vSlabLoads, vHaunchLoads, vPanelLoads;
          GetSlabLoad(segmentKey,vSlabLoads,vHaunchLoads,vPanelLoads);
 
-         ApplyDistributedLoads(castSlabInterval,pModel,analysisType,mbrID,segmentKey,vSlabLoads,bstrStage,bstrSlabLoadGroup);
-         ApplyDistributedLoads(castSlabInterval,pModel,analysisType,mbrID,segmentKey,vHaunchLoads,bstrStage,bstrSlabPadLoadGroup);
-         mbrID = ApplyDistributedLoads(castSlabInterval,pModel,analysisType,mbrID,segmentKey,vPanelLoads,bstrStage,bstrPanelLoadGroup);
+         ApplyDistributedLoadsToSegment(castSlabInterval,pModel,analysisType,mbrID,segmentKey,vSlabLoads,bstrStage,bstrSlabLoadGroup);
+         ApplyDistributedLoadsToSegment(castSlabInterval,pModel,analysisType,mbrID,segmentKey,vHaunchLoads,bstrStage,bstrSlabPadLoadGroup);
+         mbrID = ApplyDistributedLoadsToSegment(castSlabInterval,pModel,analysisType,mbrID,segmentKey,vPanelLoads,bstrStage,bstrPanelLoadGroup);
 
          const CPierData2* pPier;
          const CTemporarySupportData* pTS;
@@ -8448,11 +8583,11 @@ void CGirderModelManager::ApplyOverlayLoad(ILBAMModel* pModel,pgsTypes::Analysis
             vLinearLoads.push_back(load);
          }
 
-         MemberIDType newMbrID = ApplyDistributedLoads(overlayIntervalIdx,pModel,analysisType,mbrID,segmentKey,vLinearLoads,bstrStage,bstrLoadGroup);
+         MemberIDType newMbrID = ApplyDistributedLoadsToSegment(overlayIntervalIdx,pModel,analysisType,mbrID,segmentKey,vLinearLoads,bstrStage,bstrLoadGroup);
 
          if ( !bFutureOverlay )
          {
-            ApplyDistributedLoads(overlayIntervalIdx,pModel,analysisType,mbrID,segmentKey,vLinearLoads,bstrStage,bstrLoadGroupRating);
+            ApplyDistributedLoadsToSegment(overlayIntervalIdx,pModel,analysisType,mbrID,segmentKey,vLinearLoads,bstrStage,bstrLoadGroupRating);
          }
 
          // model the load at the closure joint
@@ -8644,7 +8779,7 @@ void CGirderModelManager::ApplyConstructionLoad(ILBAMModel* pModel,pgsTypes::Ana
             vLinearLoads.push_back(load);
          }
 
-         MemberIDType newMbrID = ApplyDistributedLoads(castDeckIntervalIdx,pModel,analysisType,mbrID,segmentKey,vLinearLoads,bstrStage,bstrLoadGroup);
+         MemberIDType newMbrID = ApplyDistributedLoadsToSegment(castDeckIntervalIdx,pModel,analysisType,mbrID,segmentKey,vLinearLoads,bstrStage,bstrLoadGroup);
 
          // model the load at the closure joint
          if ( segIdx != nSegments-1 )
@@ -8827,7 +8962,7 @@ void CGirderModelManager::ApplyShearKeyLoad(ILBAMModel* pModel,pgsTypes::Analysi
             vLinearLoads.push_back(load);
          }
 
-         mbrID = ApplyDistributedLoads(castDeckIntervalIdx,pModel,analysisType,mbrID,segmentKey,vLinearLoads,bstrStage,bstrLoadGroup);
+         mbrID = ApplyDistributedLoadsToSegment(castDeckIntervalIdx,pModel,analysisType,mbrID,segmentKey,vLinearLoads,bstrStage,bstrLoadGroup);
 
          // Shear key and joint loads do not get applied to
          // closure joints or piers
@@ -9001,8 +9136,8 @@ void CGirderModelManager::ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel,
          swLoad.wEnd     = Wsw_per_girder;
          swLoads.push_back(swLoad);
 
-         MemberIDType newMbrID = ApplyDistributedLoads(railingSystemIntervalIdx,pModel,analysisType,mbrID,segmentKey,tbLoads,bstrStage,bstrBarrierLoadGroup);
-         ApplyDistributedLoads(railingSystemIntervalIdx,pModel,analysisType,mbrID,segmentKey,swLoads,bstrStage,bstrSidewalkLoadGroup);
+         MemberIDType newMbrID = ApplyDistributedLoadsToSegment(railingSystemIntervalIdx,pModel,analysisType,mbrID,segmentKey,tbLoads,bstrStage,bstrBarrierLoadGroup);
+         ApplyDistributedLoadsToSegment(railingSystemIntervalIdx,pModel,analysisType,mbrID,segmentKey,swLoads,bstrStage,bstrSidewalkLoadGroup);
 
          // model the load at the closure joint
          if ( segIdx != nSegments-1 )
@@ -11220,14 +11355,14 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
 
             // get location where CL-Segment intersects CL-Pier (could be betweens ends of segment or after end of segment)
             CComPtr<IPoint2d> pntSegPierIntersection;
-            bool bIntersect = pBridge->GetSegmentPierIntersection(segmentKey,pPier->GetIndex(),&pntSegPierIntersection);
+            bool bIntersect = pBridge->GetSegmentPierIntersection(segmentKey,pPier->GetIndex(),pgsTypes::pcLocal,&pntSegPierIntersection);
             ATLASSERT(bIntersect == true);
 
             // get the distance from the the start face of the segment to the intersection point
             // with the CL pier.
             GET_IFACE(IGirder, pGdr);
             CComPtr<IPoint2d> pntSupport[2],pntEnd[2],pntBrg[2];
-            pGdr->GetSegmentEndPoints(segmentKey,
+            pGdr->GetSegmentEndPoints(segmentKey,pgsTypes::pcLocal,
                                       &pntSupport[pgsTypes::metStart],&pntEnd[pgsTypes::metStart],&pntBrg[pgsTypes::Start],
                                       &pntBrg[pgsTypes::metEnd],      &pntEnd[pgsTypes::metEnd],  &pntSupport[pgsTypes::metEnd]);
 
@@ -13619,7 +13754,7 @@ pgsTypes::ProductForceType CGirderModelManager::GetProductForceType(const CComBS
    return m_ProductLoadMap.GetProductForceType(bstrLoadGroup);
 }
 
-void CGirderModelManager::GetGirderSelfWeightLoad(const CSegmentKey& segmentKey,std::vector<GirderLoad>* pDistLoad,std::vector<DiaphragmLoad>* pPointLoad)
+void CGirderModelManager::GetSegmentSelfWeightLoad(const CSegmentKey& segmentKey,std::vector<SegmentLoad>* pSegmentLoads,std::vector<DiaphragmLoad>* pDiaphragmLoads,std::vector<ClosureJointLoad>* pClosureJointLoads)
 {
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -13644,24 +13779,35 @@ void CGirderModelManager::GetGirderSelfWeightLoad(const CSegmentKey& segmentKey,
       pgsPointOfInterest& currPoi = *iter;
       Float64 Ag_Curr = pSectProp->GetAg(pgsTypes::sptGross,intervalIdx,currPoi);
 
-      GirderLoad load;
+      SegmentLoad load;
       load.StartLoc = prevPoi.GetDistFromStart();
       load.EndLoc   = currPoi.GetDistFromStart();
       load.wStart   = -Ag_Prev*density*g;
       load.wEnd     = -Ag_Curr*density*g;
 
-      pDistLoad->push_back(load);
+      pSegmentLoads->push_back(load);
 
       prevPoi = currPoi;
       Ag_Prev = Ag_Curr;
    }
 
-   GetPrecastDiaphragmLoads(segmentKey,pPointLoad);
+   GetPrecastDiaphragmLoads(segmentKey,pDiaphragmLoads);
+
+   GET_IFACE(IBridge,pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(segmentKey);
+   if ( segmentKey.segmentIndex < nSegments-1 )
+   {
+      GetClosureJointLoads(segmentKey,pClosureJointLoads);
+   }
 }
 
 void CGirderModelManager::GetPrecastDiaphragmLoads(const CSegmentKey& segmentKey, std::vector<DiaphragmLoad>* pLoads)
 {
-   ATLASSERT(pLoads != NULL);
+   if ( pLoads == NULL )
+   {
+      return;
+   }
+
    pLoads->clear();
 
    GET_IFACE( IBridge,    pBridge   );
@@ -13706,7 +13852,11 @@ void CGirderModelManager::GetPrecastDiaphragmLoads(const CSegmentKey& segmentKey
 
 void CGirderModelManager::GetIntermediateDiaphragmLoads(const CSpanKey& spanKey, std::vector<DiaphragmLoad>* pLoads)
 {
-   ATLASSERT(pLoads != NULL);
+   if ( pLoads == NULL )
+   {
+      return;
+   }
+
    pLoads->clear();
 
    GET_IFACE( IBridge,    pBridge   );
@@ -13874,12 +14024,86 @@ void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIn
    }
 }
 
-MemberIDType CGirderModelManager::ApplyDistributedLoads(IntervalIndexType intervalIdx,ILBAMModel* pModel,pgsTypes::AnalysisType analysisType,MemberIDType ssmbrID,const CSegmentKey& segmentKey,const std::vector<LinearLoad>& vLoads,BSTR bstrStage,BSTR bstrLoadGroup)
+void CGirderModelManager::GetClosureJointLoads(const CClosureKey& closureKey,std::vector<ClosureJointLoad>* pLoads)
+{
+   if ( pLoads == NULL )
+   {
+      return;
+   }
+
+   pLoads->clear();
+
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType castCJIntervalIdx = pIntervals->GetCastClosureJointInterval(closureKey);
+   IntervalIndexType compositeCJIntervalIdx = pIntervals->GetCompositeClosureJointInterval(closureKey);
+
+   // Get Points of interest at the end faces of the adjacent segments. 
+   CSegmentKey leftSegmentKey(closureKey);
+   CSegmentKey rightSegmentKey(closureKey);
+   rightSegmentKey.segmentIndex++;
+
+   GET_IFACE(IPointOfInterest,pPoi);
+   std::vector<pgsPointOfInterest> vPoi;
+   vPoi = pPoi->GetPointsOfInterest(leftSegmentKey,POI_RELEASED_SEGMENT | POI_10L);
+   ATLASSERT(vPoi.size() == 1);
+   pgsPointOfInterest poiLeftFace(vPoi.front());
+
+   vPoi = pPoi->GetPointsOfInterest(closureKey,POI_CLOSURE);
+   ATLASSERT(vPoi.size() == 1);
+   pgsPointOfInterest poiCenter(vPoi.front());
+
+   vPoi = pPoi->GetPointsOfInterest(rightSegmentKey,POI_RELEASED_SEGMENT | POI_0L);
+   ATLASSERT(vPoi.size() == 1);
+   pgsPointOfInterest poiRightFace(vPoi.front());
+
+   IntervalIndexType leftSegmentReleaseIntervalIdx  = pIntervals->GetPrestressReleaseInterval(leftSegmentKey);
+   IntervalIndexType rightSegmentReleaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(rightSegmentKey);
+
+   GET_IFACE(ISectionProperties,pSectProps);
+   Float64 Aleft  = pSectProps->GetAg(pgsTypes::sptGross,leftSegmentReleaseIntervalIdx,poiLeftFace);
+   Float64 Acenter = pSectProps->GetAg(pgsTypes::sptGrossNoncomposite,compositeCJIntervalIdx,poiCenter);
+   Float64 Aright = pSectProps->GetAg(pgsTypes::sptGross,rightSegmentReleaseIntervalIdx,poiRightFace);
+
+   GET_IFACE(IMaterials,pMaterials);
+   Float64 density = pMaterials->GetClosureJointWeightDensity(closureKey,castCJIntervalIdx);
+
+   Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
+
+   Float64 Wleft   = Aleft   * density * g;
+   Float64 Wcenter = Acenter * density * g;
+   Float64 Wright  = Aright  * density * g;
+
+   // Get left and right side CJ length
+   Float64 Lleft, Lright;
+   GET_IFACE(IBridge,pBridge);
+   pBridge->GetClosureJointSize(closureKey,&Lleft,&Lright);
+
+   ClosureJointLoad leftLoad;
+   leftLoad.StartLoc = 0.0;
+   leftLoad.EndLoc = Lleft;
+   leftLoad.wStart = -Wleft;
+   leftLoad.wEnd   = -Wcenter;
+   pLoads->push_back(leftLoad);
+
+   ClosureJointLoad rightLoad;
+   rightLoad.StartLoc = Lleft;
+   rightLoad.EndLoc   = rightLoad.StartLoc + Lright;
+   rightLoad.wStart   = -Wcenter;
+   rightLoad.wEnd     = -Wright;
+   pLoads->push_back(rightLoad);
+}
+
+MemberIDType CGirderModelManager::ApplyDistributedLoadsToSegment(IntervalIndexType intervalIdx,ILBAMModel* pModel,pgsTypes::AnalysisType analysisType,MemberIDType ssmbrID,const CSegmentKey& segmentKey,const std::vector<LinearLoad>& vLoads,BSTR bstrStage,BSTR bstrLoadGroup)
 {
 #if defined _DEBUG
    // used below to error check loading geometry
    CComPtr<ISuperstructureMembers> ssmbrs;
    pModel->get_SuperstructureMembers(&ssmbrs);
+
+   // even though we can get the first superstructure member ID for a particular segment, it is faster to pass in this value.
+   // GetFirstSuperstructureMemberID has to iterate throught the structure to get the member IDs. This method is called
+   // when building models so we generally know where we are in the model so we can just pass that information into this method.
+   ATLASSERT(ssmbrID == GetFirstSuperstructureMemberID(segmentKey));
 #endif
 
    GET_IFACE(IIntervals,pIntervals);
@@ -14162,7 +14386,8 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    GET_IFACE(IMaterials,pMaterial);
    GET_IFACE(IPointOfInterest,pPoi);
    GET_IFACE(ISectionProperties,pSectProp);
-   GET_IFACE( ISpecification, pSpec );
+   GET_IFACE(ISpecification, pSpec );
+   GET_IFACE(IGirderHaunch, pHaunch );
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
@@ -14417,8 +14642,11 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       // Excess camber of girder
       Float64 camber = camberShape->Evaluate(poi.GetDistFromStart());
 
+      // Add girder orientiation effect since fillet is measured at min haunch depth
+      Float64 girder_orientation_effect = pHaunch->GetSectionGirderOrientationEffect(poi);
+
       // slab pad load
-      Float64 real_pad_hgt = top_girder_to_top_slab - cast_depth - camber;
+      Float64 real_pad_hgt = top_girder_to_top_slab - cast_depth + girder_orientation_effect - camber;
 
       // Don't use negative haunch depth for loading
       Float64 pad_hgt = real_pad_hgt > 0.0 ? real_pad_hgt : 0.0;
@@ -15284,7 +15512,7 @@ CComBSTR CGirderModelManager::GetLiveLoadName(pgsTypes::LiveLoadType llt)
 
 MemberIDType CGirderModelManager::GetFirstSuperstructureMemberID(const CSegmentKey& segmentKey)
 {
-   // segments can be modeled with up to 3 superstructure members (even more if we every model them as non-prismatc)
+   // segments can be modeled with up to 3 superstructure members (even more if we ever model them as non-prismatc)
    // this method returns the ID of the first SSMbr used to model the specified segment
    GroupIndexType   grpIdx = segmentKey.groupIndex;
    GirderIndexType  gdrIdx = segmentKey.girderIndex;

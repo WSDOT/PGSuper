@@ -50,4 +50,10 @@ typedef struct CamberMultipliers
 
       return test;
    }
+
+   bool operator!=(const CamberMultipliers& rOther) const
+   {
+      return !operator==(rOther);
+   }
+
 } CamberMultipliers;

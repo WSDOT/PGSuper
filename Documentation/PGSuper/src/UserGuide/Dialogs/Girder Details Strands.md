@@ -20,9 +20,9 @@ Adjustable Strands | Select the adjustable strand type
 Specify Filling of Strands Using | Select the method for filling the strands grid defined in the girder library entry associated with this girder.
 [Select Strands...] | Open the Select Strands window
 [Define Strands...] | Open the Define Strands window
-Number of Straight Strands | Enter the number of straight strands. Check the Calculating Jacking Force box and enter a value, otherwise the maximum jacking force will assumed.
-Number of Harped Strands | Enter the number of straight strands. Check the Calculating Jacking Force box and enter a value, otherwise the maximum jacking force will assumed.
-Number of Temporary Strands | Enter the number of temporary strands. Check the Calculating Jacking Force box and enter a value, otherwise the maximum jacking force will assumed.
+Number of Straight Strands | Enter the number of straight strands. Check the Pjack box and enter a value, otherwise the maximum jacking force will assumed.
+Number of Harped Strands | Enter the number of straight strands. Check the Pjack box and enter a value, otherwise the maximum jacking force will assumed.
+Number of Temporary Strands | Enter the number of temporary strands. Check the Pjack box and enter a value, otherwise the maximum jacking force will assumed.
 Temporary Installation | Use the drop down list to select when the temporary strands are installed.
 
 Vertical Location of Harped Strands

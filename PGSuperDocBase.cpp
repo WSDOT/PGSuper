@@ -296,7 +296,7 @@ END_MESSAGE_MAP()
 // CPGSDocBase construction/destruction
 
 CPGSDocBase::CPGSDocBase():
-m_bDesignSlabOffset(true),
+m_DesignSlabOffset(sodAandFillet),
 m_bAutoCalcEnabled(true)
 {
 	EnableAutomation();
@@ -1483,22 +1483,6 @@ BOOL CPGSDocBase::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
 
 void CPGSDocBase::OnCloseDocument()
 {
-   //// Put report favorites options back into CPGSAppPluginBase
-   //CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-   //CComPtr<IEAFAppPlugin> pAppPlugin;
-   //pTemplate->GetPlugin(&pAppPlugin);
-   //CPGSAppPluginBase* pPGSuperAppPlugin = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
-
-   //bool doDisplayFavorites = GetDoDisplayFavoriteReports();
-   //std::vector<std::_tstring> Favorites = GetFavoriteReports();
-
-   //pPGSuperAppPlugin->SetDoDisplayFavoriteReports(doDisplayFavorites);
-   //pPGSuperAppPlugin->SetFavoriteReports(Favorites);
-
-   //// user-defined custom reports
-   //CEAFCustomReports reports = GetCustomReports();
-   //pPGSuperAppPlugin->SetCustomReports(reports);
-
    CEAFBrokerDocument::OnCloseDocument();
 
    CBeamFamilyManager::Reset();
@@ -4364,8 +4348,15 @@ void CPGSDocBase::DeleteContents()
 
 BOOL CPGSDocBase::LoadAgents()
 {
-   // set the modulus state to ours so when load agents reads the registry its does so from the right location
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   // set up the registry stuff so we read from the correct location
+   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+   CComPtr<IEAFAppPlugin> pAppPlugin;
+   pTemplate->GetPlugin(&pAppPlugin);
+   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+
+   CEAFApp* pApp = EAFGetApp();
+   CAutoRegistry autoReg(pPGSBase->GetAppName(),pApp);
+
    return __super::LoadAgents();
 }
 

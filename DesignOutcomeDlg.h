@@ -32,7 +32,9 @@
 #include "PGSuperAppPlugin\resource.h"
 #include <PgsExt\GirderDesignArtifact.h>
 #include <Reporting\SpanGirderReportSpecification.h>
+#include "DesignGirder.h"
 #include <boost\shared_ptr.hpp>
+#include "afxwin.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CDesignOutcomeDlg dialog
@@ -41,7 +43,7 @@ class CDesignOutcomeDlg : public CDialog
 {
 // Construction
 public:
-   CDesignOutcomeDlg(boost::shared_ptr<CMultiGirderReportSpecification>& pRptSpec,CWnd* pParent=NULL);
+   CDesignOutcomeDlg(boost::shared_ptr<CMultiGirderReportSpecification>& pRptSpec,const std::vector<CGirderKey>& girderKeys, arSlabOffsetDesignType designADim, CWnd* pParent=NULL);
 
 // Dialog Data
 	//{{AFX_DATA(CDesignOutcomeDlg)
@@ -51,8 +53,16 @@ public:
 	CButton	m_Cancel;
 	CButton	m_Print;
 	CButton	m_Help;
+   CButton m_ADesignCheckBox;
+   CComboBox m_ADesignFromCombo;
+   CStatic m_ADesignStatic;
+   CComboBox m_ADesignToCombo;
 	//}}AFX_DATA
 
+// Operations
+   // Returns true if A design exists, and returns method for setting A for design. 
+   // for sotGirder, use the individual A's per girder designed.
+   bool GetSlabOffsetDesign(SlabOffsetDesignSelectionType* pSoSelectionType, SpanIndexType* pFromSpan, GirderIndexType* pFromGirder);
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -67,6 +77,8 @@ protected:
 
    boost::shared_ptr<CMultiGirderReportSpecification> m_pRptSpec;
    boost::shared_ptr<CReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
+   const std::vector<CGirderKey> m_GirderKeys;
+   arSlabOffsetDesignType m_DesignADimType;
 
 	// Generated message map functions
 	//{{AFX_MSG(CDesignOutcomeDlg)
@@ -78,6 +90,14 @@ protected:
 	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+public:
+   afx_msg void OnBnClickedCheckAdesign();
+   afx_msg void OnCbnSelchangeDesignaFrom();
+
+private:
+   SlabOffsetDesignSelectionType m_SoSelectionType;
+   SpanIndexType m_FromSpanIdx;
+   GirderIndexType m_FromGirderIdx;
 };
 
 //{{AFX_INSERT_LOCATION}}

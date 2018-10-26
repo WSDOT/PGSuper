@@ -25,6 +25,7 @@
 
 #include "stdafx.h"
 #include <psgLib\psgLib.h>
+#include <psgLib\LibraryEntryDifferenceItem.h>
 #include "LibraryEntryConflict.h"
 #include "RenameLibraryEntry.h"
 #include <EAF\EAFDocument.h>
@@ -40,12 +41,13 @@ static char THIS_FILE[] = __FILE__;
 
 
 CLibraryEntryConflict::CLibraryEntryConflict(const std::_tstring& entryName, const std::_tstring& libName, 
-                                             const std::vector<std::_tstring>& keylists, bool isImported, CWnd* pParent)
+                                             const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,CWnd* pParent)
 	: CDialog(CLibraryEntryConflict::IDD, pParent),
    m_KeyList(keylists),
    m_EntryName(entryName.c_str()),
    m_LibName(libName.c_str()),
-   m_IsImported(isImported)
+   m_IsImported(isImported),
+   m_vDifferences(vDifferences)
 {
 	//{{AFX_DATA_INIT(CLibraryEntryConflict)
 		// NOTE: the ClassWizard will add member initialization here
@@ -61,6 +63,7 @@ void CLibraryEntryConflict::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CONFLICT_BOTTOM, m_ConflictBottom);
 	DDX_Control(pDX, IDC_CONFLICT_TOP, m_ConflictTop);
 	DDX_Control(pDX, IDC_ENTRY_TEXT, m_EntryText);
+   DDX_Control(pDX, IDC_CONFLICT_LIST, m_ConflictList);
 	//}}AFX_DATA_MAP
 }
 
@@ -120,7 +123,9 @@ void CLibraryEntryConflict::OnRenameEntry()
          }
       }
       else
+      {
          done=true;
+      }
    }
 }
 
@@ -137,6 +142,32 @@ BOOL CLibraryEntryConflict::OnInitDialog()
 	CString text;
    text.Format(_T("The entry name is %s in the %s"),m_EntryName,m_LibName);
    m_EntryText.SetWindowText(text);
+
+   // Fill up the conflict list
+   m_ConflictList.InsertColumn(0,_T("Item"));
+   m_ConflictList.InsertColumn(1,m_IsImported ? _T("Project+Master Library") : _T("Master Library"));
+   m_ConflictList.InsertColumn(2,m_IsImported ? _T("Imported Library") : _T("Project Library"));
+
+   int maxItemLength = 4;
+   CString strConflicts;
+   int idx = 0;
+   std::vector<pgsLibraryEntryDifferenceItem*>::const_iterator iter(m_vDifferences.begin());
+   std::vector<pgsLibraryEntryDifferenceItem*>::const_iterator iterEnd(m_vDifferences.end());
+   for ( ; iter != iterEnd; iter++, idx++ )
+   {
+      const pgsLibraryEntryDifferenceItem* pConflict = *iter;
+      CString strItem, strOldValue, strNewValue;
+      pConflict->GetConflict(&strItem,&strOldValue,&strNewValue);
+
+      maxItemLength = Max(maxItemLength,strItem.GetLength());
+
+      m_ConflictList.InsertItem(LVIF_TEXT,(int)idx,strItem,0,0,0,0);
+      m_ConflictList.SetItemText(idx,1,strOldValue);
+      m_ConflictList.SetItemText(idx,2,strNewValue);
+   }
+   m_ConflictList.SetColumnWidth(0,4 < maxItemLength ? LVSCW_AUTOSIZE : LVSCW_AUTOSIZE_USEHEADER);
+   m_ConflictList.SetColumnWidth(1,LVSCW_AUTOSIZE_USEHEADER);
+   m_ConflictList.SetColumnWidth(2,LVSCW_AUTOSIZE_USEHEADER);
 
    if (m_IsImported)
    {
@@ -163,12 +194,5 @@ BOOL CLibraryEntryConflict::OnInitDialog()
 
 void CLibraryEntryConflict::OnHelp() 
 {
-   if (m_IsImported)
-   {
-      EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_DIALOG_LIBIMPORTENTRYCONFLICT  );
-   }
-   else
-   {
-      EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_DIALOG_LIBENTRYCONFLICT );
-   }
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), m_IsImported ? IDH_DIALOG_LIBIMPORTENTRYCONFLICT : IDH_DIALOG_LIBENTRYCONFLICT );
 }

@@ -55,6 +55,7 @@
 // FORWARD DECLARATIONS
 //
 
+class pgsLibraryEntryDifferenceItem;
 class CGirderMainSheet;
 class GirderLibraryEntry;
 class GirderLibraryEntryObserver;
@@ -158,6 +159,8 @@ class PSGLIBCLASS GirderLibraryEntry : public libLibraryEntry, public ISupportIc
 public:
    typedef std::map<std::_tstring,CClassFactoryHolder> ClassFactoryCollection;
    static ClassFactoryCollection ms_ClassFactories;
+
+   static CString GetAdjustableStrandType(pgsTypes::AdjustableStrandType strandType);
 
    // the dialog is our friend.
    friend CGirderMainSheet;
@@ -388,6 +391,7 @@ public:
    void SetBeamFactory(IBeamFactory* pFactory);
    void GetBeamFactory(IBeamFactory** ppFactory) const;
 
+   std::_tstring GetGirderName() const;
    std::_tstring GetGirderFamilyName() const;
 
    //------------------------------------------------------------------------
@@ -640,9 +644,11 @@ public:
    void SetDiaphragmLayoutRules(const DiaphragmLayoutRules& rules);
    const DiaphragmLayoutRules& GetDiaphragmLayoutRules() const;
 
-   //------------------------------------------------------------------------
-   // Equality - test if two entries are equal. Ignore names by default
-   bool IsEqual(const GirderLibraryEntry& rOther, bool considerName=false) const;
+   // Compares this library entry with rOther. Returns true if the entries are the same.
+   // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
+   bool Compare(const GirderLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool bReturnOnFirstDifference=false,bool considerName=false) const;
+
+   bool IsEqual(const GirderLibraryEntry& rOther,bool bConsiderName=false) const;
 
    //------------------------------------------------------------------------
    // Get name of section from factory
@@ -767,7 +773,7 @@ private:
          {;}
 
       bool operator==(const StraightStrandLocation& rOther) const
-      {return m_Xstart==rOther.m_Xstart && m_Ystart==rOther.m_Ystart && m_Xend==rOther.m_Xend && m_Yend==rOther.m_Yend && m_bCanDebond==rOther.m_bCanDebond;}
+      {return ::IsEqual(m_Xstart,rOther.m_Xstart) && ::IsEqual(m_Ystart,rOther.m_Ystart) && ::IsEqual(m_Xend,rOther.m_Xend) && ::IsEqual(m_Yend,rOther.m_Yend) && m_bCanDebond==rOther.m_bCanDebond;}
    };
 
    typedef std::vector<StraightStrandLocation>       StraightStrandCollection;
@@ -800,12 +806,12 @@ private:
 
       bool operator==(const HarpedStrandLocation& rOther) const
       {
-         return m_Xhp    == rOther.m_Xhp    && 
-                m_Yhp    == rOther.m_Yhp    && 
-                m_Xstart == rOther.m_Xstart && 
-                m_Ystart == rOther.m_Ystart &&
-                m_Xend   == rOther.m_Xend   && 
-                m_Yend   == rOther.m_Yend;
+         return ::IsEqual(m_Xhp,    rOther.m_Xhp)    && 
+                ::IsEqual(m_Yhp,    rOther.m_Yhp)    && 
+                ::IsEqual(m_Xstart, rOther.m_Xstart) && 
+                ::IsEqual(m_Ystart, rOther.m_Ystart) &&
+                ::IsEqual(m_Xend,   rOther.m_Xend)   && 
+                ::IsEqual(m_Yend,   rOther.m_Yend);
       }
    };
 
@@ -868,6 +874,11 @@ private:
             return false;
          }
       } 
+
+      bool operator!=(const HarpedStrandAdjustment& rOther) const
+      {
+         return !operator==(rOther);
+      }
    };
 
 	HarpedStrandAdjustment m_HPAdjustment;

@@ -141,6 +141,8 @@ CPierData2::CPierData2(const CPierData2& rOther)
    m_GirderSpacing[pgsTypes::Ahead].SetPier(this);
 
    MakeCopy(rOther,true /*copy data only*/);
+
+   m_SegmentConnectionType = pgsTypes::psctContinuousSegment; // this must be continuous segment. this is assumed through the system for new piers. MakeCopy copied rOther's value so make it correct here!
 }
 
 CPierData2::~CPierData2()

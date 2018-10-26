@@ -78,12 +78,12 @@ END_MESSAGE_MAP()
 BOOL CACIConcretePage::OnInitDialog() 
 {
    CComboBox* pcbCureMethod = (CComboBox*)GetDlgItem(IDC_CURE_METHOD);
-   pcbCureMethod->SetItemData(pcbCureMethod->AddString(_T("Moist")),pgsTypes::Moist);
-   pcbCureMethod->SetItemData(pcbCureMethod->AddString(_T("Steam")),pgsTypes::Steam);
+   pcbCureMethod->SetItemData(pcbCureMethod->AddString(ConcreteLibraryEntry::GetConcreteCureMethod(pgsTypes::Moist)),pgsTypes::Moist);
+   pcbCureMethod->SetItemData(pcbCureMethod->AddString(ConcreteLibraryEntry::GetConcreteCureMethod(pgsTypes::Steam)),pgsTypes::Steam);
 
    CComboBox* pcbCementType = (CComboBox*)GetDlgItem(IDC_CEMENT_TYPE);
-   pcbCementType->SetItemData(pcbCementType->AddString(_T("Type I")),pgsTypes::TypeI);
-   pcbCementType->SetItemData(pcbCementType->AddString(_T("Type III")),pgsTypes::TypeIII);
+   pcbCementType->SetItemData(pcbCementType->AddString(ConcreteLibraryEntry::GetACI209CementType(pgsTypes::TypeI  )),pgsTypes::TypeI);
+   pcbCementType->SetItemData(pcbCementType->AddString(ConcreteLibraryEntry::GetACI209CementType(pgsTypes::TypeIII)),pgsTypes::TypeIII);
    
    m_bUseACIParameters = !m_bUserParameters;
 

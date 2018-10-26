@@ -45,11 +45,11 @@ static char THIS_FILE[] = __FILE__;
 // CDesignGirderDlg dialog
 
 
-CDesignGirderDlg::CDesignGirderDlg(GroupIndexType grpIdx,GirderIndexType gdrIdx, bool enableA, bool designA, 
+CDesignGirderDlg::CDesignGirderDlg(GroupIndexType grpIdx,GirderIndexType gdrIdx, bool enableA, arSlabOffsetDesignType designA, 
                                    IBroker* pBroker, CWnd* pParent /*=NULL*/)
 	: CDialog(CDesignGirderDlg::IDD, pParent),
    m_EnableA(enableA),
-   m_DesignA(designA)
+   m_DesignSlabOffset(designA)
    , m_DesignRadioNum(0)
    , m_StartWithCurrentStirrupLayout(FALSE)
 {
@@ -72,32 +72,12 @@ void CDesignGirderDlg::DoDataExchange(CDataExchange* pDX)
    //{{AFX_DATA_MAP(CDesignGirderDlg)
    DDX_CBIndex(pDX, IDC_GIRDER, (int&)m_Girder);
    DDX_CBIndex(pDX, IDC_SPAN, (int&)m_Group);
+   DDX_CBEnum(pDX, IDC_DESIGN_A, (int&)m_DesignSlabOffset);
    DDX_Check(pDX, IDC_DESIGN_FLEXURE, m_DesignForFlexure);
    DDX_Check(pDX, IDC_DESIGN_SHEAR, m_DesignForShear);
    DDX_Radio(pDX, IDC_RADIO_SINGLE, m_DesignRadioNum);
    DDX_Check(pDX, IDC_START_WITH_LAYOUT, m_StartWithCurrentStirrupLayout);
    //}}AFX_DATA_MAP
-
-   if (m_EnableA)
-   {
-      CButton* pA= (CButton*)GetDlgItem( IDC_DESIGN_A );
-
-      if (pDX->m_bSaveAndValidate)
-      {
-         if (m_DesignForFlexure)
-         {
-            m_DesignA = pA->GetCheck()==0; // control asks opposite
-         }
-         else
-         {
-            m_DesignA = false; // No A design if no flexural design
-         }
-      }
-      else
-      {
-         pA->SetCheck(m_DesignA?0:1);
-      }
-   }
 
    if (pDX->m_bSaveAndValidate)
    {
@@ -164,12 +144,8 @@ BOOL CDesignGirderDlg::OnInitDialog()
    pSpanBox->SetCurSel((int)m_Group);
    UpdateGirderComboBox(m_Group);
 
-   // don't ask/show A design option unless it's enabled
-   CWnd* pACheck = GetDlgItem( IDC_DESIGN_A );
-   pACheck->ShowWindow(m_EnableA ? SW_SHOW : SW_HIDE);
-
-   CWnd* pADim = GetDlgItem( IDC_ADIM_STATIC );
-   pADim->ShowWindow(m_EnableA ? SW_SHOW : SW_HIDE);
+   CButton* pA= (CButton*)GetDlgItem( IDC_DESIGN_A );
+   pA->EnableWindow(m_EnableA?TRUE:FALSE);
 
 	CDialog::OnInitDialog();
 
@@ -292,24 +268,8 @@ void CDesignGirderDlg::UpdateADimCtrl()
       CButton* pAFlex = (CButton*)GetDlgItem( IDC_DESIGN_FLEXURE );
       BOOL flexure_checked = (pAFlex->GetCheck()==1) ? TRUE:FALSE;
 
-      BOOL benable = flexure_checked;
-/*
-      if(flexure_checked)
-      {
-         // disable A if multiple girders are selected
-         if( IsDlgButtonChecked(IDC_RADIO_SINGLE) == BST_CHECKED )
-         {
-            benable = TRUE;
-         }
-         else
-         {
-            benable = (1 < m_GirderKeys.size() ? FALSE : TRUE);
-         }
-      }
-*/
-      ATLASSERT(0);
       CButton* pA= (CButton*)GetDlgItem( IDC_DESIGN_A );
-      pA->EnableWindow(benable);
+      pA->EnableWindow(flexure_checked);
    }
 }
 

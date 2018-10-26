@@ -61,6 +61,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
 #include <IFace\GirderHandling.h>
+#include <IFace\Constructability.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

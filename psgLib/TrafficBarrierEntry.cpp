@@ -43,6 +43,9 @@ CLASS
 #include <LRFD\ConcreteUtil.h>
 #include <LRFD\VersionMgr.h>
 
+#include <EAF\EAFApp.h>
+#include <psgLib\LibraryEntryDifferenceItem.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -376,32 +379,83 @@ bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
    return true;
 }
 
-bool TrafficBarrierEntry::IsEqual(const TrafficBarrierEntry& rOther, bool considerName) const
+CString TrafficBarrierEntry::GetWeightMethodType(TrafficBarrierEntry::WeightMethod weightMethod)
 {
-   bool test = false;
+   LPCTSTR lpszMethod;
+   switch(weightMethod)
+   {
+   case Compute:
+      lpszMethod = _T("Compute properties from barrier shape and materials");
+      break;
 
+   case Input:
+      lpszMethod = _T("Use these properties");
+      break;
+
+   default:
+      ATLASSERT(false); // should never get here
+   }
+
+   return lpszMethod;
+}
+
+bool TrafficBarrierEntry::IsEqual(const TrafficBarrierEntry& rOther,bool bConsiderName) const
+{
+   std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+   return Compare(rOther,vDifferences,true,bConsiderName);
+}
+
+bool TrafficBarrierEntry::Compare(const TrafficBarrierEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool bReturnOnFirstDifference, bool considerName) const
+{
+   CEAFApp* pApp = EAFGetApp();
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   
    if ( m_WeightMethod != rOther.m_WeightMethod )
-      return false;
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Properties"),GetWeightMethodType(m_WeightMethod),GetWeightMethodType(rOther.m_WeightMethod)));
+   }
 
-   if ( !::IsEqual(m_Weight,rOther.m_Weight) )
-      return false;
+   if ( m_WeightMethod == TrafficBarrierEntry::Input )
+   {
+      if ( !::IsEqual(m_Weight,rOther.m_Weight) )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceForcePerLengthItem(_T("Weight"),m_Weight,rOther.m_Weight,pDisplayUnits->ForcePerLength));
+      }
 
-   if ( !::IsEqual(m_Ec,rOther.m_Ec) )
-      return false;
+      if ( !::IsEqual(m_Ec,rOther.m_Ec) )
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.push_back(new pgsLibraryEntryDifferenceStressItem(_T("Ec"),m_Ec,rOther.m_Ec,pDisplayUnits->ModE));
+      }
+   }
 
    if ( m_bStructurallyContinuous != rOther.m_bStructurallyContinuous )
-      return false;
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceBooleanItem(_T("Barrier is Structurally Continuous"),m_bStructurallyContinuous,rOther.m_bStructurallyContinuous,_T("Checked"),_T("Unchecked")));
+   }
 
    if ( !::IsEqual(m_CurbOffset,rOther.m_CurbOffset) )
-      return false;
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("Curb Offset"),m_CurbOffset,rOther.m_CurbOffset,pDisplayUnits->ComponentDim));
+   }
 
    if ( !ComparePoints(m_BarrierPoints,rOther.m_BarrierPoints) )
-      return false;
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Barrier Shapes are different"),_T(""),_T("")));
+   }
    
-   if (considerName && GetName() != rOther.GetName() )
-      return false;
+   if (considerName &&  GetName() != rOther.GetName() )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
+   }
 
-   return true;
+   return vDifferences.size() == 0 ? true : false;
 }
 
 //======================== ACCESS     =======================================

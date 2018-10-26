@@ -262,10 +262,10 @@ void CConnectionEntryDlg::FillBearingOffsetComboBox()
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_BEARING_OFFSET_MEASURE);
    pCB->ResetContent();
 
-   int idx = pCB->AddString(_T("Measured Normal to Abutment/Pier Line"));
+   int idx = pCB->AddString(ConnectionLibraryEntry::GetBearingOffsetMeasurementType(ConnectionLibraryEntry::NormalToPier));
    pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::NormalToPier));
 
-   idx = pCB->AddString(_T("Measured Along Centerline Girder"));
+   idx = pCB->AddString(ConnectionLibraryEntry::GetBearingOffsetMeasurementType(ConnectionLibraryEntry::AlongGirder));
    pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::AlongGirder));
 }
 
@@ -274,16 +274,16 @@ void CConnectionEntryDlg::FillEndDistanceComboBox()
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_END_DISTANCE_MEASURE);
    pCB->ResetContent();
 
-   int idx = pCB->AddString(_T("Measured from CL Bearing, Along Girder"));
+   int idx = pCB->AddString(ConnectionLibraryEntry::GetEndDistanceMeasurementType(ConnectionLibraryEntry::FromBearingAlongGirder));
    pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromBearingAlongGirder));
 
-   idx = pCB->AddString(_T("Measured from and Normal to CL Bearing"));
+   idx = pCB->AddString(ConnectionLibraryEntry::GetEndDistanceMeasurementType(ConnectionLibraryEntry::FromBearingNormalToPier));
    pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromBearingNormalToPier));
 
-   idx = pCB->AddString(_T("Measured from Abutment/Pier Line, Along Girder"));
+   idx = pCB->AddString(ConnectionLibraryEntry::GetEndDistanceMeasurementType(ConnectionLibraryEntry::FromPierAlongGirder));
    pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromPierAlongGirder));
 
-   idx = pCB->AddString(_T("Measured from and Normal to the Abutment/Pier Line"));
+   idx = pCB->AddString(ConnectionLibraryEntry::GetEndDistanceMeasurementType(ConnectionLibraryEntry::FromPierNormalToPier));
    pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromPierNormalToPier));
 }
 

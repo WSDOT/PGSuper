@@ -2,14 +2,16 @@ Library Conflict {#ug_dialogs_library_conflict}
 ==============================================
 PGSuper and PGSplice project files are completely self-contained. Even though your bridge model references entries in a library, copies are those entries are kept in the project file. This allows you to open your project on a computer that doesn't have the PGSuper or PGSplice Configuration originally used or share your project with a colleague on the other side of the world that doesn't have access to your PGSuper/PGSplice Configuration. 
 
-If your library in your configuration is changed, by perhaps your PGSuper/PGSplice Administrator, or if your colleague should happen to have a library entry in his configuration that has the same name, but different values than one of the entries in your project, the software need guidance for resolving the conflict. The alternative is to silently ignore this difference which changes your project.
+If your library in your configuration is changed, by perhaps your PGSuper/PGSplice Administrator, or if your colleague should happen to have a library entry in his configuration that has the same name, but different values than one of the entries in your project, the software need guidance for resolving the conflict.
 
 We leave it up to you to resolve the conflict. At this point you have two choices:
 
 Choice | Description
 -------|--------------
-[Rename Entry] | Use this option to rename the entry in your project file that is in conflict. All references to this library entry will be updated to refer to the renamed entry. By selection this option, all data remained unchanged (except for the entry's name)
+[Rename Entry] | Use this option to rename the entry in your project file that is in conflict. All references to this library entry will be updated to refer to the renamed entry. By selection this option, all data remain unchanged (except for the entry's name)
 [Overwrite] | Use this option to overwrite the library entry in your project file with the one from the current configuration. This updates your project data.
+
+The differences list will describe what is different between the conflicting library entries. The difference list may contain specific data values or a general description of the difference.s
 
 Remarks
 --------

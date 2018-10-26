@@ -100,6 +100,12 @@ BOOL CGirderPermanentStrandPage::OnInitDialog()
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
    ASSERT(pDad);
 
+   CComboBox* pcb = (CComboBox*)GetDlgItem(IDC_WEB_STRAND_TYPE_COMBO);
+   pcb->AddString(GirderLibraryEntry::GetAdjustableStrandType(pgsTypes::asHarped));
+   pcb->AddString(GirderLibraryEntry::GetAdjustableStrandType(pgsTypes::asStraight));
+   pcb->AddString(GirderLibraryEntry::GetAdjustableStrandType(pgsTypes::asStraightOrHarped));
+
+
 	CPropertyPage::OnInitDialog();
 	
 	m_MainGrid.SubclassDlgItem(IDC_HARP_STRAND_GRID, this);

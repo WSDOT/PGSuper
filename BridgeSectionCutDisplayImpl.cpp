@@ -218,7 +218,7 @@ void CBridgeSectionCutDisplayImpl::GetBoundingBox(iPointDisplayObject* pDO, Floa
 void CBridgeSectionCutDisplayImpl::GetSectionCutPointsInWorldSpace(iPointDisplayObject* pDO,IPoint2d* userLoc,IPoint2d** p1,IPoint2d** p2)
 {
    Float64 station, offset;
-   m_pRoadway->GetStationAndOffset(userLoc,&station,&offset);
+   m_pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,userLoc,&station,&offset);
    
    CComPtr<IDirection> normal;
    m_pRoadway->GetBearingNormal(station,&normal);
@@ -229,8 +229,8 @@ void CBridgeSectionCutDisplayImpl::GetSectionCutPointsInWorldSpace(iPointDisplay
    Float64 left  = m_pBridge->GetLeftSlabEdgeOffset(Xb);
    Float64 right = m_pBridge->GetRightSlabEdgeOffset(Xb);
 
-   m_pRoadway->GetPoint(station, left, normal,p1);
-   m_pRoadway->GetPoint(station, right,normal,p2);
+   m_pRoadway->GetPoint(station, left,  normal, pgsTypes::pcGlobal, p1);
+   m_pRoadway->GetPoint(station, right, normal, pgsTypes::pcGlobal, p2);
 
    Float64 x1,y1;
    (*p1)->get_X(&x1);
@@ -367,12 +367,12 @@ STDMETHODIMP_(void) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnDragMo
    pThis->m_pRoadway->GetBearing(pos,&direction);
 
    CComPtr<IPoint2d> point;
-   pThis->m_pRoadway->GetPoint(pos,0.00,direction,&point);
+   pThis->m_pRoadway->GetPoint(pos,0.00,direction,pgsTypes::pcGlobal,&point);
 
    point->OffsetEx(offset);
 
    Float64 station, alignment_offset;
-   pThis->m_pRoadway->GetStationAndOffset(point,&station,&alignment_offset);
+   pThis->m_pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,point,&station,&alignment_offset);
 
    pThis->PutPosition(station);
 }

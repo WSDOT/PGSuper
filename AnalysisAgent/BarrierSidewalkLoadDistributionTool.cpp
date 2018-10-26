@@ -483,8 +483,8 @@ void pgsBarrierSidewalkLoadDistributionTool::BuildGeometryModel()
    midDirection->put_Value(midDirVal);
 
    CComPtr<IPoint2d> leftSlabEdgePoint, rightSlabEdgePoint;
-   m_pIBridge->GetLeftSlabEdgePoint(midStation, midDirection, &leftSlabEdgePoint);
-   m_pIBridge->GetRightSlabEdgePoint(midStation, midDirection, &rightSlabEdgePoint);
+   m_pIBridge->GetLeftSlabEdgePoint( midStation, midDirection, pgsTypes::pcLocal, &leftSlabEdgePoint);
+   m_pIBridge->GetRightSlabEdgePoint(midStation, midDirection, pgsTypes::pcLocal, &rightSlabEdgePoint);
 
    m_RefLine->ThroughPoints(rightSlabEdgePoint, leftSlabEdgePoint);
 
@@ -492,8 +492,8 @@ void pgsBarrierSidewalkLoadDistributionTool::BuildGeometryModel()
    Float64 nextStation = midStation + ::ConvertToSysUnits(1.0,unitMeasure::Feet);
 
    CComPtr<IPoint2d> leftSlabEdgePoint1, rightSlabEdgePoint1;
-   m_pIBridge->GetLeftSlabEdgePoint(nextStation, midDirection, &leftSlabEdgePoint1);
-   m_pIBridge->GetRightSlabEdgePoint(nextStation, midDirection, &rightSlabEdgePoint1);
+   m_pIBridge->GetLeftSlabEdgePoint( nextStation, midDirection, pgsTypes::pcLocal, &leftSlabEdgePoint1);
+   m_pIBridge->GetRightSlabEdgePoint(nextStation, midDirection, pgsTypes::pcLocal, &rightSlabEdgePoint1);
 
    m_LeftSlabEdgeLine->ThroughPoints( leftSlabEdgePoint,  leftSlabEdgePoint1);
    m_RightSlabEdgeLine->ThroughPoints(rightSlabEdgePoint, rightSlabEdgePoint1);
@@ -509,7 +509,7 @@ void pgsBarrierSidewalkLoadDistributionTool::BuildGeometryModel()
       CSegmentKey segmentKey(m_GroupIdx,gdrIdx,m_SegmentIdx);
       // Create line along girder CL
       CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
-      m_pIGirder->GetSegmentEndPoints(segmentKey, &pntPier1, &pntEnd1, &pntBrg1, &pntBrg2, &pntEnd2, &pntPier2);
+      m_pIGirder->GetSegmentEndPoints(segmentKey, pgsTypes::pcLocal, &pntPier1, &pntEnd1, &pntBrg1, &pntBrg2, &pntEnd2, &pntPier2);
 
       constrLine->ThroughPoints(pntPier1, pntPier2);
 

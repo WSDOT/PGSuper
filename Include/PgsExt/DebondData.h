@@ -46,3 +46,13 @@ private:
    bool needsConversion; // Previous versions had two indices for strand data this can only be converted
                          // after we have access to the girder library
 };
+
+// Use in std::find_if
+class FindDebondByGridIndex
+{
+public:
+   FindDebondByGridIndex(GridIndexType gridIdx) : m_GridIndex(gridIdx) {}
+   bool operator()(const CDebondData& debondData) const { return debondData.strandTypeGridIdx == m_GridIndex; }
+private:
+   GridIndexType m_GridIndex;
+};

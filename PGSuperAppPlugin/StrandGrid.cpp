@@ -42,6 +42,19 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
+#define ERROR_SUCCESS                                 0
+#define ERROR_STRAND_COUNT                            1
+#define ERROR_S1_MUST_BE_ZERO                         2
+#define ERROR_S1_MUST_BE_POSITIVE                     3
+#define ERROR_S2_MUST_BE_POSITIVE                     4
+#define ERROR_Y_MUST_BE_POSITIVE                      5
+#define ERROR_DEBOND_LENGTH_MORE_THAN_SEGMENT         6
+#define ERROR_LEFT_DEBOND_LENGTH_MUST_BE_POSITIVE     7
+#define ERROR_RIGHT_DEBOND_LENGTH_MUST_BE_POSITIVE    8
+#define ERROR_LEFT_HARP_POINT_FRACTION                9
+#define ERROR_RIGHT_HARP_POINT_FRACTION               10
+
 /////////////////////////////////////////////////////////////////////////////
 // CStrandGrid
 
@@ -803,12 +816,15 @@ void CStrandGrid::UpdateStrandData(CDataExchange* pDX,CStrandData* pStrands)
       for ( ROWCOL row = 2; row <= nRows; row++ )
       {
          CStrandRow strandRow = GetStrandRow(row);
-
-         // if pDX is not NULL we are validating data
-         if ( pDX != NULL && !Validate(row,strandRow) )
+         UINT result = Validate(row,strandRow);
+         if ( result != ERROR_SUCCESS )
          {
             // row data isn't valid
-            pDX->Fail();
+            if ( pDX )
+            {
+               ShowValidationError(row,result);
+               pDX->Fail();
+            }
          }
          strandRows.push_back(strandRow);
       }
@@ -930,8 +946,20 @@ void CStrandGrid::UpdateExtendedStrandProperties(ROWCOL nRow)
       SetStyleRange(CGXRange(nRow,26),disabled_style);
    }
 
-   if ( !bHarpStrands )
+   if ( bHarpStrands )
    {
+      // can't be extended strands
+      SetStyleRange(CGXRange(nRow,21,nRow,22),CGXStyle(disabled_style).SetValue(0L));
+
+      // can't be debonded
+      SetStyleRange(CGXRange(nRow,23),CGXStyle(disabled_style).SetValue(0L));
+      SetStyleRange(CGXRange(nRow,24),CGXStyle(disabled_style));
+      SetStyleRange(CGXRange(nRow,25),CGXStyle(disabled_style).SetValue(0L));
+      SetStyleRange(CGXRange(nRow,26),CGXStyle(disabled_style));
+   }
+   else
+   {
+      // Harp point int parameters
       SetStyleRange(CGXRange(nRow,7,nRow,18),disabled_style);
    }
 
@@ -977,48 +1005,33 @@ void CStrandGrid::UpdateExtendedStrandProperties(ROWCOL nRow)
 	GetParam()->EnableUndo(TRUE);
 }
 
-bool CStrandGrid::Validate(ROWCOL nRow,CStrandRow& strandRow)
+UINT CStrandGrid::Validate(ROWCOL nRow,CStrandRow& strandRow)
 {
    if ( strandRow.m_nStrands == 0 )
    {
-      CString strMsg;
-      strMsg.Format(_T("Row %d: Number of strands must be greater than zero"),nRow-1);
-      AfxMessageBox(strMsg);
-      return false;
+      return ERROR_STRAND_COUNT;
    }
 
    // Check inner spacing requirements
    if ( IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_InnerSpacing) )
    {
-      CString strMsg;
-      strMsg.Format(_T("Row %d: S1 must be zero when the number of strands is odd"),nRow-1);
-      AfxMessageBox(strMsg);
-      return false;
+      return ERROR_S1_MUST_BE_ZERO;
    }
    else if ( IsEven(strandRow.m_nStrands) && IsLE(strandRow.m_InnerSpacing,0.0,0.0) )
    {
-      CString strMsg;
-      strMsg.Format(_T("Row %d: S1 must be greater than zero when the number of strands is even"),nRow-1);
-      AfxMessageBox(strMsg);
-      return false;
+      return ERROR_S1_MUST_BE_POSITIVE;
    }
 
    // Check main spacing requirement
    if ( 3 < strandRow.m_nStrands && IsLE(strandRow.m_Spacing,0.0,0.0) )
    {
-      CString strMsg;
-      strMsg.Format(_T("Row %d: S2 must be greater than zero"),nRow-1);
-      AfxMessageBox(strMsg);
-      return false;
+      return ERROR_S2_MUST_BE_POSITIVE;
    }
 
    // Check position
    if ( IsLE(strandRow.m_Y[pgsTypes::metStart],0.0,0.0) || IsLE(strandRow.m_Y[pgsTypes::metStart],0.0,0.0) )
    {
-      CString strMsg;
-      strMsg.Format(_T("Row %d: Location of strand, Y, must greater than zero"),nRow-1);
-      AfxMessageBox(strMsg);
-      return false;
+      return ERROR_Y_MUST_BE_POSITIVE;
    }
 
    // Check debond length
@@ -1028,28 +1041,83 @@ bool CStrandGrid::Validate(ROWCOL nRow,CStrandRow& strandRow)
       Float64 l2 = (strandRow.m_bIsDebonded[pgsTypes::metEnd]   ? strandRow.m_DebondLength[pgsTypes::metEnd]   : 0);
       if ( m_SegmentLength < (l1+l2) )
       {
-         CString strMsg;
-         strMsg.Format(_T("Row %d: Debond lengths exceed the length of the segment"),nRow-1);
-         AfxMessageBox(strMsg);
-         return false;
+         return ERROR_DEBOND_LENGTH_MORE_THAN_SEGMENT;
       }
 
       if ( strandRow.m_bIsDebonded[pgsTypes::metStart] && ::IsLE(strandRow.m_DebondLength[pgsTypes::metStart],0.0) )
       {
-         CString strMsg;
-         strMsg.Format(_T("Row %d: Left end debond length must be greater than 0.0"),nRow-1);
-         AfxMessageBox(strMsg);
-         return false;
+         return ERROR_LEFT_DEBOND_LENGTH_MUST_BE_POSITIVE;
       }
 
       if ( strandRow.m_bIsDebonded[pgsTypes::metEnd] && ::IsLE(strandRow.m_DebondLength[pgsTypes::metEnd],0.0) )
       {
-         CString strMsg;
-         strMsg.Format(_T("Row %d: Right end debond length must be greater than 0.0"),nRow-1);
-         AfxMessageBox(strMsg);
-         return false;
+         return ERROR_RIGHT_DEBOND_LENGTH_MUST_BE_POSITIVE;
       }
    }
 
-   return true;
+   // Check harp point locations
+   if ( strandRow.m_X[1] < -1 )
+   {
+      return ERROR_LEFT_HARP_POINT_FRACTION;
+   }
+
+   if ( strandRow.m_X[2] < -1 )
+   {
+      return ERROR_RIGHT_HARP_POINT_FRACTION;
+   }
+
+   return ERROR_SUCCESS;
+}
+
+void CStrandGrid::ShowValidationError(ROWCOL nRow,UINT iError)
+{
+   CString strMsg;
+   switch(iError)
+   {
+   case ERROR_STRAND_COUNT:
+      strMsg.Format(_T("Row %d: Number of strands must be greater than zero"),nRow-1);
+      break;
+
+   case ERROR_S1_MUST_BE_ZERO:
+      strMsg.Format(_T("Row %d: S1 must be zero when the number of strands is odd"),nRow-1);
+      break;
+
+   case ERROR_S1_MUST_BE_POSITIVE:
+      strMsg.Format(_T("Row %d: S1 must be greater than zero when the number of strands is even"),nRow-1);
+      break;
+
+   case ERROR_S2_MUST_BE_POSITIVE:
+      strMsg.Format(_T("Row %d: S2 must be greater than zero"),nRow-1);
+      break;
+
+   case ERROR_Y_MUST_BE_POSITIVE:
+      strMsg.Format(_T("Row %d: Location of strand, Y, must greater than zero"),nRow-1);
+      break;
+
+   case ERROR_DEBOND_LENGTH_MORE_THAN_SEGMENT:
+      strMsg.Format(_T("Row %d: Debond lengths exceed the length of the segment"),nRow-1);
+      break;
+
+   case ERROR_LEFT_DEBOND_LENGTH_MUST_BE_POSITIVE:
+      strMsg.Format(_T("Row %d: Left end debond length must be greater than 0.0"),nRow-1);
+      break;
+
+   case ERROR_RIGHT_DEBOND_LENGTH_MUST_BE_POSITIVE:
+      strMsg.Format(_T("Row %d: Right end debond length must be greater than 0.0"),nRow-1);
+      break;
+
+   case ERROR_LEFT_HARP_POINT_FRACTION:
+      strMsg.Format(_T("Row %d: Left harp point fractional location must be less than 100%s"),nRow-1,_T("%"));
+      break;
+
+   case ERROR_RIGHT_HARP_POINT_FRACTION:
+      strMsg.Format(_T("Row %d: Right harp point fractional location must be less than 100%s"),nRow-1,_T("%"));
+      break;
+   
+   default:
+      ATLASSERT(false); // should never get here
+      strMsg.Format(_T("Row %d: Unknown error"),nRow-1);
+   }
+
+   AfxMessageBox(strMsg);
 }

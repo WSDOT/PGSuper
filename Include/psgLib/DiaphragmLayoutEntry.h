@@ -50,6 +50,7 @@
 
 // FORWARD DECLARATIONS
 //
+class pgsLibraryEntryDifferenceItem;
 class DiaphragmLayoutEntry;
 class DiaphragmLayoutEntryObserver;
 #pragma warning(disable:4231)
@@ -168,9 +169,11 @@ public:
    // GetDiaphragmLayout - get diaphragm layout
    DiaphragmLayoutVec GetDiaphragmLayout() const;
 
-   //------------------------------------------------------------------------
-   // Equality - test if two entries are equal. Ignore names by default
-   bool IsEqual(const DiaphragmLayoutEntry& rOther, bool considerName=false) const;
+   // Compares this library entry with rOther. Returns true if the entries are the same.
+   // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
+   bool Compare(const DiaphragmLayoutEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool bReturnOnFirstDifference=false,bool considerName=false) const;
+
+   bool IsEqual(const DiaphragmLayoutEntry& rOther,bool bConsiderName=false) const;
 
    // GROUP: INQUIRY
 

@@ -89,4 +89,5 @@ public:
    void EnableRemoveButton(BOOL bEnable);
 
    void OnChange();
+   afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 };

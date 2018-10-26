@@ -3931,6 +3931,12 @@ void CEngAgentImp::GetHaunchDetails(const CSpanKey& spanKey,HAUNCHDETAILS* pDeta
    *pDetails = (*found).second;
 }
 
+Float64 CEngAgentImp::GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi)
+{
+   return m_Designer.GetSectionGirderOrientationEffect(poi);
+}
+
+
 /////////////////////////////////////////////////////////////////////////////
 // IFabricationOptimization
 void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentKey,FABRICATIONOPTIMIZATIONDETAILS* pDetails)

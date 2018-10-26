@@ -96,7 +96,8 @@ private:
 
    void UpdateExtendedStrandProperties(ROWCOL nRow);
 
-   bool Validate(ROWCOL nRow,CStrandRow& strandRow);
+   UINT Validate(ROWCOL nRow,CStrandRow& strandRow);
+   void ShowValidationError(ROWCOL nRow,UINT iError);
 };
 
 /////////////////////////////////////////////////////////////////////////////

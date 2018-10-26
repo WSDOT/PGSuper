@@ -619,7 +619,7 @@ bool CTestAgentImp::RunHaunchTest(std::_tofstream& resultsFile, std::_tofstream&
       Float64 orientation = ::ConvertFromSysUnits(haunch.GirderOrientationEffect, unitMeasure::Millimeter);
       Float64 profile = ::ConvertFromSysUnits(haunch.ProfileEffect, unitMeasure::Millimeter);
       Float64 required = ::ConvertFromSysUnits(haunch.RequiredHaunchDepth, unitMeasure::Millimeter);
-      Float64 actual = ::ConvertFromSysUnits(haunch.ActualHaunchDepth, unitMeasure::Millimeter);
+      Float64 actual = ::ConvertFromSysUnits(haunch.TopSlabToTopGirder, unitMeasure::Millimeter);
 
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 89000, ")<<loc<<_T(", ")<< QUITE(camber) <<_T(", 7, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 89001, ")<<loc<<_T(", ")<< QUITE(orientation) <<_T(", 7, ")<<gdr<<std::endl;
@@ -641,7 +641,7 @@ bool CTestAgentImp::RunGeometryTest(std::_tofstream& resultsFile, std::_tofstrea
    GirderIndexType gdr = segmentKey.girderIndex;
 
    CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
-   pGirder->GetSegmentEndPoints(segmentKey,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
+   pGirder->GetSegmentEndPoints(segmentKey,pgsTypes::pcGlobal,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
 
    Float64 x,y;
    pntPier1->Location(&x,&y);

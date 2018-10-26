@@ -317,6 +317,7 @@ public:
 public:
    virtual Float64 GetRequiredSlabOffset(const CSpanKey& spanKey);
    virtual void GetHaunchDetails(const CSpanKey& spanKey,HAUNCHDETAILS* pDetails);
+   virtual Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi);
 
 // IFabricationOptimization
 public:

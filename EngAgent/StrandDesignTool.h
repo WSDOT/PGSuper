@@ -352,7 +352,6 @@ public:
    Float64 GetAbsoluteMinimumSlabOffset() const; // based on girder library entry
 
    Float64 GetFillet() const;
-   void SetFillet(Float64 f);
 
    // Lifting and hauling
    void SetLiftingLocations(Float64 left,Float64 right);

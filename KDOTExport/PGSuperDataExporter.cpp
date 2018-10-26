@@ -378,11 +378,11 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
 
          // Station and offset of girder line ends
          CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
-         pGirder->GetSegmentEndPoints(segmentKey,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
+         pGirder->GetSegmentEndPoints(segmentKey,pgsTypes::pcLocal,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
 
          Float64 startStation, startOffset, endStation, endOffset;
-         pAlignment->GetStationAndOffset(pntPier1,&startStation,&startOffset);
-         pAlignment->GetStationAndOffset(pntPier2,&endStation,  &endOffset);
+         pAlignment->GetStationAndOffset(pgsTypes::pcLocal,pntPier1,&startStation,&startOffset);
+         pAlignment->GetStationAndOffset(pgsTypes::pcLocal,pntPier2,&endStation,  &endOffset);
 
          Float64 startPierStation = pBridge->GetPierStation(0);
          Float64 startBrDistance = startStation - startPierStation;

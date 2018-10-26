@@ -188,15 +188,26 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
             RowIndexType row = p_table->GetNumberOfHeaderRows();
 
-            std::vector<GirderLoad> gdrLoad;
+            std::vector<SegmentLoad> segLoad;
             std::vector<DiaphragmLoad> diaLoad;
-            pProdLoads->GetGirderSelfWeightLoad(thisSegmentKey,&gdrLoad,&diaLoad);
-            bool bUniformGirderDeadLoad = (gdrLoad.size() == 1 && IsEqual(gdrLoad[0].wStart,gdrLoad[0].wEnd) ? true : false);
+            std::vector<ClosureJointLoad> cjLoad;
+            pProdLoads->GetSegmentSelfWeightLoad(thisSegmentKey,&segLoad,&diaLoad,&cjLoad);
+            bool bUniformGirderDeadLoad = (segLoad.size() == 1 && IsEqual(segLoad[0].wStart,segLoad[0].wEnd) ? true : false);
+
+            bool bCJLoad = cjLoad.size() == 0 ? false : true;
+            bool bUniformCJDeadLoad = bCJLoad ? (IsEqual(cjLoad[0].wStart,cjLoad[0].wEnd) && IsEqual(cjLoad[1].wStart,cjLoad[1].wEnd)) : true;;
+
             if ( bUniformGirderDeadLoad )
             {
                // girder load is uniform
                (*p_table)(row,0) << _T("Girder");
-               (*p_table)(row++,1) << fpl.SetValue(-gdrLoad[0].wStart);
+               (*p_table)(row++,1) << fpl.SetValue(-segLoad[0].wStart);
+            }
+
+            if ( bCJLoad && bUniformCJDeadLoad )
+            {
+               (*p_table)(row,0) << _T("Closure Joint");
+               (*p_table)(row++,1) << fpl.SetValue(-cjLoad[0].wStart);
             }
 
             // Sum of railing system loads not shown in simplified version
@@ -233,10 +244,35 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
                (*p_table)(0,3) << COLHDR(_T("End Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
                row = p_table->GetNumberOfHeaderRows();
-               std::vector<GirderLoad>::iterator iter;
-               for ( iter = gdrLoad.begin(); iter != gdrLoad.end(); iter++ )
+               std::vector<SegmentLoad>::iterator iter;
+               for ( iter = segLoad.begin(); iter != segLoad.end(); iter++ )
                {
-                  GirderLoad& load = *iter;
+                  SegmentLoad& load = *iter;
+
+                  (*p_table)(row,0) << loc.SetValue(load.StartLoc);
+                  (*p_table)(row,1) << loc.SetValue(load.EndLoc);
+                  (*p_table)(row,2) << fpl.SetValue(-load.wStart);
+                  (*p_table)(row,3) << fpl.SetValue(-load.wEnd);
+                  row++;
+               }
+            }
+
+
+            if ( bCJLoad && !bUniformCJDeadLoad )
+            {
+               p_table = pgsReportStyleHolder::CreateDefaultTable(4,_T("Closure Joint Self-Weight"));
+               *pPara << rptNewLine << p_table << rptNewLine;
+
+               (*p_table)(0,0) << COLHDR(_T("Load Start,")<<rptNewLine<<_T("From Left End of CJ"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+               (*p_table)(0,1) << COLHDR(_T("Load End,")<<rptNewLine<<_T("From Left End of CJ"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+               (*p_table)(0,2) << COLHDR(_T("Start Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+               (*p_table)(0,3) << COLHDR(_T("End Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+
+               row = p_table->GetNumberOfHeaderRows();
+               std::vector<ClosureJointLoad>::iterator iter;
+               for ( iter = cjLoad.begin(); iter != cjLoad.end(); iter++ )
+               {
+                  ClosureJointLoad& load = *iter;
 
                   (*p_table)(row,0) << loc.SetValue(load.StartLoc);
                   (*p_table)(row,1) << loc.SetValue(load.EndLoc);
@@ -583,7 +619,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
          GET_IFACE2( pBroker, ISpecification, pSpec );
          if (pgsTypes::hlcAccountForCamber == pSpec->GetHaunchLoadComputationType())
          {
-            *pNotePara <<rptNewLine<< _T("Haunch weight includes effects of roadway geometry. Load is reduced for camber assuming that excess camber is a linear-piecewise parabola defined by the user-input Fillet dimension at mid-span.");
+            *pNotePara <<rptNewLine<< _T("Haunch weight includes effects of roadway geometry. Haunch depth used when computing haunch load is reduced for camber assuming that excess camber is a linear-piecewise parabola defined by the user-input Fillet dimension at mid-span.");
          }
          else
          {

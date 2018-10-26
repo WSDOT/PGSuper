@@ -43,6 +43,7 @@
 
 // FORWARD DECLARATIONS
 //
+class pgsLibraryEntryDifferenceItem;
 class TrafficBarrierEntry;
 class TrafficBarrierEntryObserver;
 #pragma warning(disable:4231)
@@ -112,6 +113,7 @@ public:
       Compute,
       Input
    };
+   static CString GetWeightMethodType(TrafficBarrierEntry::WeightMethod weightMethod);
 
    //------------------------------------------------------------------------
    // Default constructor
@@ -166,9 +168,11 @@ public:
    void SetCurbOffset(Float64 curbOffset);
    Float64 GetCurbOffset() const;
 
-   //------------------------------------------------------------------------
-   // Equality - test if two entries are equal. Ignore names by default
-   bool IsEqual(const TrafficBarrierEntry& rOther, bool considerName=false) const;
+   // Compares this library entry with rOther. Returns true if the entries are the same.
+   // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
+   bool Compare(const TrafficBarrierEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool bReturnOnFirstDifference=false,bool considerName=false) const;
+
+   bool IsEqual(const TrafficBarrierEntry& rOther,bool bConsiderName=false) const;
 
    // GROUP: INQUIRY
 

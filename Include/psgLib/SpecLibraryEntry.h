@@ -47,6 +47,7 @@
 
 // FORWARD DECLARATIONS
 //
+class pgsLibraryEntryDifferenceItem;
 class CSpecMainSheet;
 class SpecLibraryEntry;
 class SpecLibraryEntryObserver;
@@ -183,8 +184,11 @@ public:
    // Load from structured storage
    virtual bool LoadMe(sysIStructuredLoad* pLoad);
 
-   // test if two entries are equal. Ignore names by default
-   virtual bool IsEqual(const SpecLibraryEntry& rOther, bool considerName=false) const;
+   // Compares this library entry with rOther. Returns true if the entries are the same.
+   // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
+   bool Compare(const SpecLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool bReturnOnFirstDifference=false,bool considerName=false) const;
+
+   bool IsEqual(const SpecLibraryEntry& rOther,bool bConsiderName=false) const;
 
    // Get the icon for this entry
    virtual HICON GetIcon() const;
@@ -1239,8 +1243,8 @@ private:
    bool    m_EnableHaulingDesign;
    pgsTypes::HaulingAnalysisMethod m_HaulingAnalysisMethod;
 
-   Float64 m_HeHaulingCrackFs;
-   Float64 m_HeHaulingRollFs;
+   Float64 m_HaulingCrackFs;
+   Float64 m_HaulingRollFs;
    
    int     m_TruckRollStiffnessMethod;
    Float64 m_TruckRollStiffness;
@@ -1251,8 +1255,6 @@ private:
    Float64 m_TruckGirderHeight;
    Float64 m_TruckRollCenterHeight;
    Float64 m_TruckAxleWidth;
-   Float64 m_HeErectionCrackFs;
-   Float64 m_HeErectionFailFs;
    Float64 m_RoadwaySuperelevation;
    Float64 m_MaxGirderSweepHauling;
    Float64 m_HaulingSupportDistance;
@@ -1305,7 +1307,6 @@ private:
    Float64 m_Bs2TensStressMax;
    pgsTypes::TrafficBarrierDistribution m_TrafficBarrierDistributionType;
    GirderIndexType  m_Bs2MaxGirdersTrafficBarrier;
-   GirderIndexType  m_Bs2MaxGirdersUtility;
    pgsTypes::OverlayLoadDistributionType m_OverlayLoadDistribution;
    pgsTypes::HaunchLoadComputationType m_HaunchLoadComputationType;
    Float64 m_HaunchLoadCamberTolerance;

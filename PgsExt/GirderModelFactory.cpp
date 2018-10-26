@@ -277,9 +277,10 @@ void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segme
    CComPtr<IFem2dJointCollection> joints;
    (*ppModel)->get_Joints(&joints);
 
-   std::vector<GirderLoad> gdrLoads;
+   std::vector<SegmentLoad> segLoads;
    std::vector<DiaphragmLoad> diaphLoads;
-   pProductLoads->GetGirderSelfWeightLoad(segmentKey,&gdrLoads,&diaphLoads);
+   std::vector<ClosureJointLoad> cjLoads;
+   pProductLoads->GetSegmentSelfWeightLoad(segmentKey,&segLoads,&diaphLoads,&cjLoads);
 
    // apply girder self weight load
    CComPtr<IFem2dDistributedLoadCollection> distributedLoads;
@@ -287,16 +288,16 @@ void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segme
    
    MemberIDType mbrID = 0;
    LoadIDType loadID = 0;
-   std::vector<GirderLoad>::iterator gdrLoadIter(gdrLoads.begin());
-   std::vector<GirderLoad>::iterator gdrLoadIterEnd(gdrLoads.end());
-   for ( ; gdrLoadIter != gdrLoadIterEnd; gdrLoadIter++ )
+   std::vector<SegmentLoad>::iterator segLoadIter(segLoads.begin());
+   std::vector<SegmentLoad>::iterator segLoadIterEnd(segLoads.end());
+   for ( ; segLoadIter != segLoadIterEnd; segLoadIter++ )
    {
-      GirderLoad& gdrLoad = *gdrLoadIter;
+      SegmentLoad& segLoad = *segLoadIter;
 
-      Float64 wStart = gdrLoad.wStart;
-      Float64 wEnd   = gdrLoad.wEnd;
-      Float64 start  = gdrLoad.StartLoc;
-      Float64 end    = gdrLoad.EndLoc;
+      Float64 wStart = segLoad.wStart;
+      Float64 wEnd   = segLoad.wEnd;
+      Float64 start  = segLoad.StartLoc;
+      Float64 end    = segLoad.EndLoc;
 
       if ( !bModelLeftCantilever && ::IsLT(start,leftSupportLoc) )
       {
@@ -589,9 +590,10 @@ void pgsKdotHaulingGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmen
    CComPtr<IFem2dJointCollection> joints;
    (*ppModel)->get_Joints(&joints);
 
-   std::vector<GirderLoad> gdrLoads;
+   std::vector<SegmentLoad> segLoads;
    std::vector<DiaphragmLoad> diaphLoads;
-   pProductLoads->GetGirderSelfWeightLoad(segmentKey,&gdrLoads,&diaphLoads);
+   std::vector<ClosureJointLoad> cjLoads;
+   pProductLoads->GetSegmentSelfWeightLoad(segmentKey,&segLoads,&diaphLoads,&cjLoads);
 
    // apply dynamically factored girder self weight load
    CComPtr<IFem2dDistributedLoadCollection> distributedLoads;
@@ -599,16 +601,16 @@ void pgsKdotHaulingGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmen
    
    MemberIDType mbrID = 0;
    LoadIDType loadID = 0;
-   std::vector<GirderLoad>::iterator gdrLoadIter(gdrLoads.begin());
-   std::vector<GirderLoad>::iterator gdrLoadIterEnd(gdrLoads.end());
-   for ( ; gdrLoadIter != gdrLoadIterEnd; gdrLoadIter++ )
+   std::vector<SegmentLoad>::iterator segLoadIter(segLoads.begin());
+   std::vector<SegmentLoad>::iterator segLoadIterEnd(segLoads.end());
+   for ( ; segLoadIter != segLoadIterEnd; segLoadIter++ )
    {
-      GirderLoad& gdrLoad = *gdrLoadIter;
+      SegmentLoad& segLoad = *segLoadIter;
 
-      Float64 wStart = gdrLoad.wStart;
-      Float64 wEnd   = gdrLoad.wEnd;
-      Float64 start  = gdrLoad.StartLoc;
-      Float64 end    = gdrLoad.EndLoc;
+      Float64 wStart = segLoad.wStart;
+      Float64 wEnd   = segLoad.wEnd;
+      Float64 start  = segLoad.StartLoc;
+      Float64 end    = segLoad.EndLoc;
 
       // apply the loading
       MemberIDType mbrIDStart; // member ID at the start of the load

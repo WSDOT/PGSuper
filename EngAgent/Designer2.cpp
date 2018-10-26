@@ -290,6 +290,70 @@ void pgsDesigner2::GetHaunchDetails(const CSpanKey& spanKey,const GDRCONFIG& con
    GetHaunchDetails(spanKey,true,config,pHaunchDetails);
 }
 
+// Function we need to reuse
+static Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi, Float64 x, Float64 z, MatingSurfaceIndexType nMatingSurfaces,
+                                          Float64 topWidth, Float64 girderOrientation,
+                                          IRoadway* pAlignment, IBridge* pBridge, IGirder* pGdr,
+                                          Float64* pCrownSlope)
+{
+   // girder orientation effect
+   *pCrownSlope = 0;
+   Float64 pivot_crown = 0; // accounts for the pivot point being over a girder
+   if ( nMatingSurfaces == 1 )
+   {
+      // single top flange situation
+      // to account for the case when the pivot point is over the girder, compute an
+      // average crown slope based on the elevation at the flange tips
+      Float64 Wtf = pGdr->GetTopFlangeWidth(poi);
+
+      Float64 ya_left  = pAlignment->GetElevation(x,z-Wtf/2);
+      Float64 ya_right = pAlignment->GetElevation(x,z+Wtf/2);
+
+      *pCrownSlope = (ya_left - ya_right)/Wtf;
+
+      Float64 ya = pAlignment->GetElevation(x,z);
+      if ( (ya_left < ya && ya_right < ya) || (ya < ya_left && ya < ya_right) )
+      {
+         pivot_crown = ya - (ya_left+ya_right)/2;
+      }
+   }
+   else
+   {
+      // multiple mating surfaces (like a U-beam)
+      // If there is a pivot point in the profile grade between the exterior mating surfaces
+      // it is unclear which crown slope to use... to work around this, we will use the 
+      // slope of the line connecting the two exterior mating surfaces
+      ATLASSERT( 2 <= nMatingSurfaces );
+
+      // this is at CL mating surface... we need out to out
+      Float64 left_mating_surface_offset  = pGdr->GetMatingSurfaceLocation(poi,0);
+      Float64 right_mating_surface_offset = pGdr->GetMatingSurfaceLocation(poi,nMatingSurfaces-1);
+
+      // width of mating surface
+      Float64 left_mating_surface_width  = pGdr->GetMatingSurfaceWidth(poi,0);
+      Float64 right_mating_surface_width = pGdr->GetMatingSurfaceWidth(poi,nMatingSurfaces-1);
+
+      // add half the width to get the offset to the outside edge of the top of the section
+      left_mating_surface_offset  += ::BinarySign(left_mating_surface_offset) * left_mating_surface_width/2;
+      right_mating_surface_offset += ::BinarySign(right_mating_surface_offset)* right_mating_surface_width/2;
+
+      Float64 ya_left  = pAlignment->GetElevation(x,z+left_mating_surface_offset);
+      Float64 ya_right = pAlignment->GetElevation(x,z+right_mating_surface_offset);
+
+      *pCrownSlope = (ya_left - ya_right)/(right_mating_surface_offset - left_mating_surface_offset);
+
+      Float64 ya = pAlignment->GetElevation(x,z);
+      if ( (ya_left < ya && ya_right < ya) || (ya < ya_left && ya < ya_right) )
+      {
+         pivot_crown = ya - (ya_left+ya_right)/2;
+      }
+   }
+
+   Float64 section_girder_orientation_effect = pivot_crown + (topWidth/2)*(fabs(*pCrownSlope - girderOrientation)/(sqrt(1+girderOrientation*girderOrientation)));
+
+   return section_girder_orientation_effect;
+}
+
 void pgsDesigner2::GetHaunchDetails(const CSpanKey& spanKey,bool bUseConfig,const GDRCONFIG& config,HAUNCHDETAILS* pHaunchDetails)
 {
    GET_IFACE(ICamber,pCamber);
@@ -344,8 +408,6 @@ void pgsDesigner2::GetHaunchDetails(const CSpanKey& spanKey,bool bUseConfig,cons
 
       Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
-      Float64 girder_slope = pBridge->GetSegmentSlope(segmentKey);
-
       MatingSurfaceIndexType nMatingSurfaces = pGdr->GetNumberOfMatingSurfaces(segmentKey);
 
       Float64 girder_orientation = pGdr->GetOrientation(segmentKey);
@@ -361,23 +423,17 @@ void pgsDesigner2::GetHaunchDetails(const CSpanKey& spanKey,bool bUseConfig,cons
 
       Float64 camber_effect = -99999;
       Float64 D,C;
-      Float64 yc;
       if ( bUseConfig )
       {
          camber_effect = pCamber->GetExcessCamber(poi, config, CREEP_MAXTIME );
          C = pCamber->GetScreedCamber(poi,config);
          D = pCamber->GetDCamberForGirderSchedule(poi,config,CREEP_MAXTIME);
-
-         // top of girder elevation (ignoring camber effects)
-         yc = pGdr->GetTopGirderReferenceChordElevation(poi, config.SlabOffset[pgsTypes::metStart], config.SlabOffset[pgsTypes::metEnd]);
       }
       else
       {
          camber_effect = pCamber->GetExcessCamber(poi, CREEP_MAXTIME );
          C = pCamber->GetScreedCamber(poi);
          D = pCamber->GetDCamberForGirderSchedule(poi,CREEP_MAXTIME);
-
-         yc = pGdr->GetTopGirderReferenceChordElevation(poi);
       }
 
       ATLASSERT(IsEqual(camber_effect,D-C));
@@ -393,6 +449,8 @@ void pgsDesigner2::GetHaunchDetails(const CSpanKey& spanKey,bool bUseConfig,cons
       pBridge->GetStationAndOffset(poi,&x,&z);
       z = IsZero(z) ? 0 : z;
 
+      // top of girder elevation (ignoring camber effects)
+      Float64 yc = pGdr->GetProfileChordElevation(poi);
 
       // top of alignment elevation above girder
       Float64 ya = pAlignment->GetElevation(x,z);
@@ -403,59 +461,10 @@ void pgsDesigner2::GetHaunchDetails(const CSpanKey& spanKey,bool bUseConfig,cons
       diff_max = Max(diff_max,section_profile_effect);
 
       // girder orientation effect
-      Float64 pivot_crown = 0; // accounts for the pivot point being over a girder
-      Float64 crown_slope = 0;
-      if ( nMatingSurfaces == 1 )
-      {
-         // single top flange situation
-         // to account for the case when the pivot point is over the girder, compute an
-         // average crown slope based on the elevation at the flange tips
-         Float64 Wtf = pGdr->GetTopFlangeWidth(poi);
-
-         Float64 ya_left  = pAlignment->GetElevation(x,z-Wtf/2);
-         Float64 ya_right = pAlignment->GetElevation(x,z+Wtf/2);
-
-         crown_slope = (ya_left - ya_right)/Wtf;
-
-         Float64 ya = pAlignment->GetElevation(x,z);
-         if ( (ya_left < ya && ya_right < ya) || (ya < ya_left && ya < ya_right) )
-         {
-            pivot_crown = ya - (ya_left+ya_right)/2;
-         }
-      }
-      else
-      {
-         // multiple mating surfaces (like a U-beam)
-         // If there is a pivot point in the profile grade between the exterior mating surfaces
-         // it is unclear which crown slope to use... to work around this, we will use the 
-         // slope of the line connecting the two exterior mating surfaces
-         ATLASSERT( 2 <= nMatingSurfaces );
-
-         // this is at CL mating surface... we need out to out
-         Float64 left_mating_surface_offset  = pGdr->GetMatingSurfaceLocation(poi,0);
-         Float64 right_mating_surface_offset = pGdr->GetMatingSurfaceLocation(poi,nMatingSurfaces-1);
-
-         // width of mating surface
-         Float64 left_mating_surface_width  = pGdr->GetMatingSurfaceWidth(poi,0);
-         Float64 right_mating_surface_width = pGdr->GetMatingSurfaceWidth(poi,nMatingSurfaces-1);
-
-         // add half the width to get the offset to the outside edge of the top of the section
-         left_mating_surface_offset  += ::BinarySign(left_mating_surface_offset) * left_mating_surface_width/2;
-         right_mating_surface_offset += ::BinarySign(right_mating_surface_offset)* right_mating_surface_width/2;
-
-         Float64 ya_left  = pAlignment->GetElevation(x,z+left_mating_surface_offset);
-         Float64 ya_right = pAlignment->GetElevation(x,z+right_mating_surface_offset);
-
-         crown_slope = (ya_left - ya_right)/(right_mating_surface_offset - left_mating_surface_offset);
-
-         Float64 ya = pAlignment->GetElevation(x,z);
-         if ( (ya_left < ya && ya_right < ya) || (ya < ya_left && ya < ya_right) )
-         {
-            pivot_crown = ya - (ya_left+ya_right)/2;
-         }
-      }
-
-      Float64 section_girder_orientation_effect = pivot_crown + (top_width/2)*(fabs(crown_slope - girder_orientation)/(sqrt(1+girder_orientation*girder_orientation)));
+      Float64 crown_slope;
+      Float64 section_girder_orientation_effect = ::GetSectionGirderOrientationEffect(poi, x, z, nMatingSurfaces, top_width, girder_orientation,
+                                                                                      pAlignment, pBridge, pGdr, 
+                                                                                      &crown_slope);
 
       SECTIONHAUNCH haunch;
       haunch.PointOfInterest = poi;
@@ -474,7 +483,7 @@ void pgsDesigner2::GetHaunchDetails(const CSpanKey& spanKey,bool bUseConfig,cons
       haunch.tSlab = tSlab;
       haunch.Wtop = top_width;
       haunch.ElevTopGirder = elev_top_girder;
-      haunch.ActualHaunchDepth = haunch.ElevAlignment - haunch.ElevTopGirder;
+      haunch.TopSlabToTopGirder = haunch.ElevAlignment - haunch.ElevTopGirder;
 
       haunch.RequiredHaunchDepth = -(ya - yc - tSlab - fillet - section_girder_orientation_effect - camber_effect);
 
@@ -487,7 +496,7 @@ void pgsDesigner2::GetHaunchDetails(const CSpanKey& spanKey,bool bUseConfig,cons
 
       // if haunch depth diff is > 0, the haunch is deeper towards the middle of the girder
       // if haunch depth diff is < 0, the haunch is deeper at the CL Bearing
-      Float64 haunch_depth_diff = haunch.ActualHaunchDepth - slab_offset;
+      Float64 haunch_depth_diff = haunch.TopSlabToTopGirder - slab_offset;
       if ( fabs(max_actual_haunch_depth_diff) < fabs(haunch_depth_diff) )
       {
          max_actual_haunch_depth_diff = haunch_depth_diff;
@@ -518,6 +527,32 @@ void pgsDesigner2::GetHaunchDetails(const CSpanKey& spanKey,bool bUseConfig,cons
    // this is the maximum difference in the haunch depth between the end of the girder and
    // any other point along the girder... if this too big, stirrups may need to be adjusted
    pHaunchDetails->HaunchDiff = max_actual_haunch_depth_diff;
+}
+
+Float64 pgsDesigner2::GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi)
+{
+   GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IRoadway,pAlignment);
+   GET_IFACE(IGirder,pGdr);
+
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+   MatingSurfaceIndexType nMatingSurfaces = pGdr->GetNumberOfMatingSurfaces(segmentKey);
+
+   Float64 girder_orientation = pGdr->GetOrientation(segmentKey);
+
+   Float64 top_width = pGdr->GetTopWidth(poi);
+
+   // get station and normal offset for this poi
+   Float64 x,z;
+   pBridge->GetStationAndOffset(poi,&x,&z);
+   z = IsZero(z) ? 0 : z;
+
+   // girder orientation effect
+   Float64 crown_slope;
+   Float64 section_girder_orientation_effect = ::GetSectionGirderOrientationEffect(poi, x, z, nMatingSurfaces, top_width, girder_orientation,
+                                                                                   pAlignment, pBridge, pGdr, 
+                                                                                   &crown_slope);
+   return section_girder_orientation_effect;
 }
 
 void pgsDesigner2::ClearArtifacts()
@@ -1310,7 +1345,7 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
                }
             }
 
-            if (options.doDesignSlabOffset)
+            if (options.doDesignSlabOffset != sodNoADesign)
             {
                pProgress->UpdateMessage(_T("Designing Slab Offset Outer Loop"));
 
@@ -1404,7 +1439,7 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
          return;
       }
 
-      if (artifact.GetDesignOptions().doDesignSlabOffset)
+      if (artifact.GetDesignOptions().doDesignSlabOffset != sodNoADesign)
       {
          LOG(_T("Final Slab Offset before rounding (Start) ") << ::ConvertFromSysUnits( artifact.GetSlabOffset(pgsTypes::metStart),unitMeasure::Inch) << _T(" in and (End) ") << ::ConvertFromSysUnits( artifact.GetSlabOffset(pgsTypes::metEnd),unitMeasure::Inch) << _T(" in"));
          Float64 start_offset = RoundSlabOffset(artifact.GetSlabOffset(pgsTypes::metStart));
@@ -4903,12 +4938,12 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
          HAUNCHDETAILS haunch_details;
          pGdrHaunch->GetHaunchDetails(spanKey,&haunch_details);
 
-         // Need haunch depth at mid-span - get details there
+         // Need fillet depth at mid-span - get details there
          std::vector<SECTIONHAUNCH>::const_iterator hit( std::find_if(haunch_details.Haunch.begin(),haunch_details.Haunch.end(),FindMidSpanHaunch()) );
 
          if (hit != haunch_details.Haunch.end())
          {
-            Float64 haunch_depth = hit->ActualHaunchDepth - hit->tSlab;
+            Float64 haunch_depth = hit->TopSlabToTopGirder - hit->tSlab - hit->GirderOrientationEffect;
             artifact.SetComputedFillet(haunch_depth);
          }
          else
@@ -5438,7 +5473,7 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
    Int16 cIter = 0;
    Int16 nFutileAttempts=0;
    Int16 nIterMax = 40;
-   Int16 nIterEarlyStage = options.doDesignSlabOffset ? 10 : 5; // Early design stage - NOTE: DO NOT change this value unless you run all design tests VERY SENSITIVE!!!
+   Int16 nIterEarlyStage = (options.doDesignSlabOffset != sodNoADesign) ? 10 : 5; // Early design stage - NOTE: DO NOT change this value unless you run all design tests VERY SENSITIVE!!!
    StrandIndexType Ns, Nh, Nt;
    Float64 fc, fci, start_slab_offset, end_slab_offset;
 
@@ -5600,9 +5635,9 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
          }
       }
 
-      if (options.doDesignSlabOffset)
+      if (options.doDesignSlabOffset != sodNoADesign)
       {
-         pProgress->UpdateMessage(_T("Designing Slab Offset"));
+         pProgress->UpdateMessage(_T("Designing Slab Offset - inner loop"));
          DesignSlabOffset( pProgress );
 
          CHECK_PROGRESS;

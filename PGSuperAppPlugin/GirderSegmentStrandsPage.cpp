@@ -179,6 +179,7 @@ BEGIN_MESSAGE_MAP(CGirderSegmentStrandsPage, CPropertyPage)
    ON_BN_CLICKED(IDC_ADD, &CGirderSegmentStrandsPage::OnBnClickedAdd)
    ON_BN_CLICKED(IDC_REMOVE, &CGirderSegmentStrandsPage::OnBnClickedRemove)
    ON_BN_CLICKED(IDC_EPOXY, &CGirderSegmentStrandsPage::OnEpoxyChanged)
+   ON_WM_CTLCOLOR()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -548,5 +549,48 @@ void CGirderSegmentStrandsPage::OnChange()
    strLabel.Format(_T("Temporary Strands (%d)"),m_pSegment->Strands.GetStrandCount(pgsTypes::Temporary));
    GetDlgItem(IDC_TS_LABEL)->SetWindowText(strLabel);
 
+   IndexType nExtendedStart = m_pSegment->Strands.GetExtendedStrands(pgsTypes::Straight,pgsTypes::metStart).size();
+   nExtendedStart += m_pSegment->Strands.GetExtendedStrands(pgsTypes::Harped,pgsTypes::metStart).size();
+   nExtendedStart += m_pSegment->Strands.GetExtendedStrands(pgsTypes::Temporary,pgsTypes::metStart).size();
+
+   IndexType nExtendedEnd = m_pSegment->Strands.GetExtendedStrands(pgsTypes::Straight,pgsTypes::metEnd).size();
+   nExtendedEnd += m_pSegment->Strands.GetExtendedStrands(pgsTypes::Harped,pgsTypes::metEnd).size();
+   nExtendedEnd += m_pSegment->Strands.GetExtendedStrands(pgsTypes::Temporary,pgsTypes::metEnd).size();
+
+   strLabel.Format(_T("Extended Strands (Left %d, Right %d)"),nExtendedStart,nExtendedEnd);
+   GetDlgItem(IDC_EXTENDED_STRANDS_LABEL)->SetWindowText(strLabel);
+
+
+   IndexType nDebondingStart = m_pSegment->Strands.GetDebondCount(pgsTypes::Straight,pgsTypes::metStart,NULL);
+   nDebondingStart += m_pSegment->Strands.GetDebondCount(pgsTypes::Harped,pgsTypes::metStart,NULL);
+   nDebondingStart += m_pSegment->Strands.GetDebondCount(pgsTypes::Temporary,pgsTypes::metStart,NULL);
+
+   IndexType nDebondingEnd = m_pSegment->Strands.GetDebondCount(pgsTypes::Straight,pgsTypes::metEnd,NULL);
+   nDebondingEnd += m_pSegment->Strands.GetDebondCount(pgsTypes::Harped,pgsTypes::metEnd,NULL);
+   nDebondingEnd += m_pSegment->Strands.GetDebondCount(pgsTypes::Temporary,pgsTypes::metEnd,NULL);
+
+   strLabel.Format(_T("Debonded Strands (Start %d, End %d)"),nDebondingStart,nDebondingEnd);
+   GetDlgItem(IDC_DEBONDED_STRANDS_LABEL)->SetWindowText(strLabel);
+
    UpdateStrandControls();
+}
+
+HBRUSH CGirderSegmentStrandsPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+   HBRUSH hbr = CPropertyPage::OnCtlColor(pDC,pWnd,nCtlColor);
+   if ( pWnd->GetDlgCtrlID() == IDC_TS_LABEL )
+   {
+      pDC->SetTextColor( TEMPORARY_FILL_COLOR );
+   }
+   else if ( pWnd->GetDlgCtrlID() == IDC_EXTENDED_STRANDS_LABEL )
+   {
+      pDC->SetTextColor( EXTENDED_FILL_COLOR );
+   }
+   else if ( pWnd->GetDlgCtrlID() == IDC_DEBONDED_STRANDS_LABEL )
+   {
+      pDC->SetTextColor( DEBOND_FILL_COLOR );
+   }
+
+
+   return hbr;
 }

@@ -22,10 +22,11 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\ReportStyleHolder.h>
-#include <ctype.h>
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFApp.h>
+
+#include <WBFLSTL.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -408,15 +409,6 @@ void pgsReportStyleHolder::ConfigureTable(rptRcTable* pTable)
    {
       pTable->SetColumnStyle( i, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT) );
       pTable->SetStripeRowColumnStyle( i, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT) );
-   }
-}
-
-void make_upper( std::_tstring::iterator begin,std::_tstring::iterator end)
-{
-   while ( begin != end )
-   {
-      *begin = toupper(*begin);
-      begin++;
    }
 }
 

@@ -379,13 +379,13 @@ void CAlignmentProfileView::BuildBridgeDisplayObjects()
          pIGirder->GetSegmentProfile( segmentKey, true/*include closures*/, &segmentShape);
 
          CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
-         pIGirder->GetSegmentEndPoints(segmentKey,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
+         pIGirder->GetSegmentEndPoints(segmentKey,pgsTypes::pcGlobal,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
 
          Float64 slope = pBridge->GetSegmentSlope(segmentKey);
          Float64 angle = atan(slope);
 
          Float64 station,offset;
-         pAlignment->GetStationAndOffset(pntEnd1,&station,&offset);
+         pAlignment->GetStationAndOffset(pgsTypes::pcGlobal,pntEnd1,&station,&offset);
 
          Float64 elev = pAlignment->GetElevation(station,offset);
 

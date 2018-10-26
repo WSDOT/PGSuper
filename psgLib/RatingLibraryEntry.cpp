@@ -27,6 +27,9 @@
 
 #include <Units\Units.h>
 
+#include <EAF\EAFApp.h>
+#include <psgLib\LibraryEntryDifferenceItem.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -2201,6 +2204,60 @@ bool CLiveLoadFactorModel2::LoadMe(sysIStructuredLoad* pLoad)
 CLASS
    RatingLibraryEntry
 ****************************************************************************/
+CString RatingLibraryEntry::GetLoadRatingType(pgsTypes::LoadRatingType ratingType)
+{
+   LPCTSTR lpszRatingType;
+   switch(ratingType)
+   {
+   case pgsTypes::lrDesign_Inventory:
+      lpszRatingType = _T("Design - Inventory");
+      break;
+
+   case pgsTypes::lrDesign_Operating:
+      lpszRatingType = _T("Design - Operating");
+      break;
+
+   case pgsTypes::lrLegal_Routine:
+      lpszRatingType = _T("Legal - Routine");
+      break;
+
+   case pgsTypes::lrLegal_Special:
+      lpszRatingType = _T("Legal - Special");
+      break;
+
+   case pgsTypes::lrPermit_Routine:
+      lpszRatingType = _T("Permit - Routine");
+      break;
+
+   default:
+      ATLASSERT(false); // should never get here
+   }
+   return lpszRatingType;
+}
+
+CString RatingLibraryEntry::GetSpecialPermitType(pgsTypes::SpecialPermitType permitType)
+{
+   LPCTSTR lpszPermitType;
+   switch(permitType)
+   {
+   case pgsTypes::ptSingleTripWithEscort:
+      lpszPermitType = _T("Permit - Special, Single trip with escort");
+      break;
+
+   case pgsTypes::ptSingleTripWithTraffic:
+      lpszPermitType = _T("Permit - Special, Single trip with traffic");
+      break;
+
+   case pgsTypes::ptMultipleTripWithTraffic:
+      lpszPermitType = _T("Permit - Special, Multiple trips with traffic");
+      break;
+
+   default:
+      ATLASSERT(false); // should never get here
+   }
+
+   return lpszPermitType;
+}
 
 RatingLibraryEntry::RatingLibraryEntry() :
 m_SpecificationVersion(lrfrVersionMgr::SecondEditionWith2016Interims),
@@ -2683,30 +2740,58 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
 }
 
-#define TEST(a,b) if ( a != b ) return false
-#define TESTD(a,b) if ( !::IsEqual(a,b) ) return false
-
-bool RatingLibraryEntry::IsEqual(const RatingLibraryEntry& rOther, bool considerName) const
+bool RatingLibraryEntry::IsEqual(const RatingLibraryEntry& rOther,bool bConsiderName) const
 {
-   TEST (m_Description                , rOther.m_Description                );
-   TEST (m_SpecificationVersion       , rOther.m_SpecificationVersion       );
-   TEST (m_bAlwaysRate                , rOther.m_bAlwaysRate                );
+   std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+   return Compare(rOther,vDifferences,true,bConsiderName);
+}
+
+bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool bReturnOnFirstDifference, bool considerName) const
+{
+   CEAFApp* pApp = EAFGetApp();
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
+   if ( m_Description != rOther.m_Description )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Description"),m_Description.c_str(),rOther.m_Description.c_str()));
+   }
+
+   if ( m_SpecificationVersion != rOther.m_SpecificationVersion )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Rating Criteria Basis"),lrfrVersionMgr::GetVersionString(m_SpecificationVersion),lrfrVersionMgr::GetVersionString(rOther.m_SpecificationVersion)));
+   }
+
+   if ( m_bAlwaysRate != rOther.m_bAlwaysRate )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceBooleanItem(_T("Always load rate when performing a specification check"),m_bAlwaysRate,rOther.m_bAlwaysRate,_T("Checked"),_T("Unchecked")));
+   }
 
    if ( lrfrVersionMgr::GetVersion() < lrfrVersionMgr::SecondEditionWith2013Interims)
    {
       for ( int i = 0; i < 5; i++ )
       {
-         if ( m_LiveLoadFactorModels[i] != rOther.m_LiveLoadFactorModels[i] )
+         pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)i;
+         if ( m_LiveLoadFactorModels[ratingType] != rOther.m_LiveLoadFactorModels[ratingType] )
          {
-            return false;
+            RETURN_ON_DIFFERENCE;
+            CString str;
+            str.Format(_T("Live Load Factors are different for %s"),RatingLibraryEntry::GetLoadRatingType(ratingType));
+            vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(str,_T(""),_T("")));
          }
       }
 
       for ( int i = 0; i < 3; i++ )
       {
-         if ( m_SpecialPermitLiveLoadFactorModels[i] != rOther.m_SpecialPermitLiveLoadFactorModels[i] )
+         pgsTypes::SpecialPermitType permitType = (pgsTypes::SpecialPermitType)i;
+         if ( m_SpecialPermitLiveLoadFactorModels[permitType] != rOther.m_SpecialPermitLiveLoadFactorModels[permitType] )
          {
-            return false;
+            RETURN_ON_DIFFERENCE;
+            CString str;
+            str.Format(_T("Live Load Factors are different for %s"),RatingLibraryEntry::GetSpecialPermitType(permitType));
+            vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(str,_T(""),_T("")));
          }
       }
    }
@@ -2714,30 +2799,36 @@ bool RatingLibraryEntry::IsEqual(const RatingLibraryEntry& rOther, bool consider
    {
       for ( int i = 0; i < 5; i++ )
       {
-         if ( m_LiveLoadFactorModels2[i] != rOther.m_LiveLoadFactorModels2[i] )
+         pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)i;
+         if ( m_LiveLoadFactorModels2[ratingType] != rOther.m_LiveLoadFactorModels2[ratingType] )
          {
-            return false;
+            RETURN_ON_DIFFERENCE;
+            CString str;
+            str.Format(_T("Live Load Factors are different for %s"),RatingLibraryEntry::GetLoadRatingType(ratingType));
+            vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(str,_T(""),_T("")));
          }
       }
 
       for ( int i = 0; i < 3; i++ )
       {
-         if ( m_SpecialPermitLiveLoadFactorModels2[i] != rOther.m_SpecialPermitLiveLoadFactorModels2[i] )
+         pgsTypes::SpecialPermitType permitType = (pgsTypes::SpecialPermitType)i;
+         if ( m_SpecialPermitLiveLoadFactorModels2[permitType] != rOther.m_SpecialPermitLiveLoadFactorModels2[permitType] )
          {
-            return false;
+            RETURN_ON_DIFFERENCE;
+            CString str;
+            str.Format(_T("Live Load Factors are different for %s"),RatingLibraryEntry::GetSpecialPermitType(permitType));
+            vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(str,_T(""),_T("")));
          }
       }
    }
 
-   if (considerName)
+   if (considerName &&  GetName() != rOther.GetName() )
    {
-      if ( GetName() != rOther.GetName() )
-      {
-         return false;
-      }
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
    }
 
-   return true;
+   return vDifferences.size() == 0 ? true : false;
 }
 
 void RatingLibraryEntry::MakeCopy(const RatingLibraryEntry& rOther)

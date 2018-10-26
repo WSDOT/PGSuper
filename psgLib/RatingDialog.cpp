@@ -48,25 +48,25 @@ CRatingDialog::CRatingDialog( RatingLibraryEntry& rentry,
    m_Entry(rentry),
    m_bAllowEditing(allowEditing)
 {
-   m_LiveLoadFactorsPage1[0] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,_T("Design - Inventory"),pgsTypes::lrDesign_Inventory);
-   m_LiveLoadFactorsPage1[1] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,_T("Design - Operating"),pgsTypes::lrDesign_Operating);
-   m_LiveLoadFactorsPage1[2] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,_T("Legal - Routine"),pgsTypes::lrLegal_Routine);
-   m_LiveLoadFactorsPage1[3] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,_T("Legal - Special"),pgsTypes::lrLegal_Special);
+   m_LiveLoadFactorsPage1[0] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrDesign_Inventory),pgsTypes::lrDesign_Inventory);
+   m_LiveLoadFactorsPage1[1] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrDesign_Operating),pgsTypes::lrDesign_Operating);
+   m_LiveLoadFactorsPage1[2] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrLegal_Routine),pgsTypes::lrLegal_Routine);
+   m_LiveLoadFactorsPage1[3] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrLegal_Special),pgsTypes::lrLegal_Special);
 
-   m_PermitLiveLoadFactorsPage1[0] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,_T("Permit - Routine"),pgsTypes::lrPermit_Routine);
-   m_PermitLiveLoadFactorsPage1[1] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,_T("Permit - Special, Single trip with escort"),pgsTypes::lrPermit_Special,pgsTypes::ptSingleTripWithEscort);
-   m_PermitLiveLoadFactorsPage1[2] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,_T("Permit - Special, Single trip with traffic"),pgsTypes::lrPermit_Special,pgsTypes::ptSingleTripWithTraffic);
-   m_PermitLiveLoadFactorsPage1[3] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,_T("Permit - Special, Multiple trips with traffic"),pgsTypes::lrPermit_Special,pgsTypes::ptMultipleTripWithTraffic);
+   m_PermitLiveLoadFactorsPage1[0] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrPermit_Routine),pgsTypes::lrPermit_Routine);
+   m_PermitLiveLoadFactorsPage1[1] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,RatingLibraryEntry::GetSpecialPermitType(pgsTypes::ptSingleTripWithEscort),pgsTypes::lrPermit_Special,pgsTypes::ptSingleTripWithEscort);
+   m_PermitLiveLoadFactorsPage1[2] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,RatingLibraryEntry::GetSpecialPermitType(pgsTypes::ptSingleTripWithTraffic),pgsTypes::lrPermit_Special,pgsTypes::ptSingleTripWithTraffic);
+   m_PermitLiveLoadFactorsPage1[3] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS1,RatingLibraryEntry::GetSpecialPermitType(pgsTypes::ptMultipleTripWithTraffic),pgsTypes::lrPermit_Special,pgsTypes::ptMultipleTripWithTraffic);
 
-   m_LiveLoadFactorsPage2[0] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2,_T("Design - Inventory"),pgsTypes::lrDesign_Inventory);
-   m_LiveLoadFactorsPage2[1] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2,_T("Design - Operating"),pgsTypes::lrDesign_Operating);
-   m_LiveLoadFactorsPage2[2] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2,_T("Legal - Routine"),pgsTypes::lrLegal_Routine);
-   m_LiveLoadFactorsPage2[3] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2,_T("Legal - Special"),pgsTypes::lrLegal_Special);
+   m_LiveLoadFactorsPage2[0] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2,RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrDesign_Inventory),pgsTypes::lrDesign_Inventory);
+   m_LiveLoadFactorsPage2[1] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2,RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrDesign_Operating),pgsTypes::lrDesign_Operating);
+   m_LiveLoadFactorsPage2[2] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2,RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrLegal_Routine),pgsTypes::lrLegal_Routine);
+   m_LiveLoadFactorsPage2[3] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2,RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrLegal_Special),pgsTypes::lrLegal_Special);
 
-   m_PermitLiveLoadFactorsPage2[0] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2,_T("Permit - Routine"),pgsTypes::lrPermit_Routine);
-   m_PermitLiveLoadFactorsPage2[1] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2,_T("Permit - Special, Single trip with escort"),pgsTypes::lrPermit_Special,pgsTypes::ptSingleTripWithEscort);
-   m_PermitLiveLoadFactorsPage2[2] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2,_T("Permit - Special, Single trip with traffic"),pgsTypes::lrPermit_Special,pgsTypes::ptSingleTripWithTraffic);
-   m_PermitLiveLoadFactorsPage2[3] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2,_T("Permit - Special, Multiple trips with traffic"),pgsTypes::lrPermit_Special,pgsTypes::ptMultipleTripWithTraffic);
+   m_PermitLiveLoadFactorsPage2[0] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2,RatingLibraryEntry::GetLoadRatingType(pgsTypes::lrPermit_Routine),pgsTypes::lrPermit_Routine);
+   m_PermitLiveLoadFactorsPage2[1] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2,RatingLibraryEntry::GetSpecialPermitType(pgsTypes::ptSingleTripWithEscort),pgsTypes::lrPermit_Special,pgsTypes::ptSingleTripWithEscort);
+   m_PermitLiveLoadFactorsPage2[2] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2,RatingLibraryEntry::GetSpecialPermitType(pgsTypes::ptSingleTripWithTraffic),pgsTypes::lrPermit_Special,pgsTypes::ptSingleTripWithTraffic);
+   m_PermitLiveLoadFactorsPage2[3] = new CLiveLoadFactorsPage(IDD_LIVE_LOAD_FACTORS2,RatingLibraryEntry::GetSpecialPermitType(pgsTypes::ptMultipleTripWithTraffic),pgsTypes::lrPermit_Special,pgsTypes::ptMultipleTripWithTraffic);
 
    Init();
 }

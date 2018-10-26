@@ -48,7 +48,7 @@ struct SECTIONHAUNCH
    Float64 ProfileEffect;
    Float64 RequiredHaunchDepth;
    Float64 ElevTopGirder;
-   Float64 ActualHaunchDepth;
+   Float64 TopSlabToTopGirder;
 };
 
 struct HAUNCHDETAILS
