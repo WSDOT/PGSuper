@@ -179,7 +179,7 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,SpanIndexType sp
    const pgsGirderArtifact* gdrArtifact = pIArtifact->GetArtifact(span,girder);
 
    std::vector<pgsPointOfInterest> vPoi;
-   vPoi = pIPoi->GetPointsOfInterest( stage, span, girder, POI_FLEXURECAPACITY | POI_TABULAR);
+   vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_FLEXURECAPACITY | POI_TABULAR);
 
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
    if ( stage == pgsTypes::CastingYard )
@@ -194,10 +194,10 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,SpanIndexType sp
       const pgsPointOfInterest& poi = *i;
 
       // Skip POI at critical section for shear if we are reporting on BridgeSite1
-      if ( stage == pgsTypes::BridgeSite1 && poi.HasAttribute(ls == pgsTypes::StrengthI ? POI_CRITSECTSHEAR1 : POI_CRITSECTSHEAR2) )
+      if ( stage == pgsTypes::BridgeSite1 && poi.HasAttribute(pgsTypes::BridgeSite3, ls == pgsTypes::StrengthI ? POI_CRITSECTSHEAR1 : POI_CRITSECTSHEAR2) )
          continue;
 
-      (*p_table)(row,col++) << location.SetValue( poi, end_size );
+      (*p_table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
 
       const pgsFlexuralCapacityArtifact* pArtifact;
       if ( bPositiveMoment )

@@ -102,11 +102,7 @@ void CGirderMainSheet::Init()
 
 void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_Check_Bool(pDX,IDC_PT,m_Entry.m_bCanPostTension);
@@ -204,11 +200,7 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
 
 bool CGirderMainSheet::ExchangeTemporaryStrandData(CDataExchange* pDX)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    // controls data
@@ -254,11 +246,7 @@ bool CGirderMainSheet::ExchangeTemporaryStrandData(CDataExchange* pDX)
 
 void CGirderMainSheet::UploadTemporaryStrandData()
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    // upload Temporary strand data into grid - convert units first
@@ -287,11 +275,7 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
 {
    // move data from grid back to library entry
    // controls data
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_Check_Bool(pDX,IDC_ALLOW_HP_ADJUST, m_Entry.m_HPAdjustment.m_AllowVertAdjustment );
@@ -388,11 +372,7 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
 
 void CGirderMainSheet::UploadStrandData()
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    // upload harped strand data into grid - convert units first
@@ -440,11 +420,7 @@ void CGirderMainSheet::UploadStrandData()
 
 void CGirderMainSheet::UploadLongitudinalData()
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    GirderLibraryEntry::LongSteelInfoVec vec = m_Entry.GetLongSteelInfo();
@@ -460,11 +436,7 @@ void CGirderMainSheet::UploadLongitudinalData()
 
 void CGirderMainSheet::ExchangeLongitudinalData(CDataExchange* pDX)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    // longitudinal steel information from grid and store it
@@ -490,11 +462,7 @@ void CGirderMainSheet::ExchangeLongitudinalData(CDataExchange* pDX)
 
 void CGirderMainSheet::ExchangeTransverseData(CDataExchange* pDX)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    if (!pDX->m_bSaveAndValidate)
@@ -588,11 +556,7 @@ void CGirderMainSheet::ExchangeTransverseData(CDataExchange* pDX)
 
 void CGirderMainSheet::UploadTransverseData()
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    // fill grid
@@ -661,11 +625,7 @@ void CGirderMainSheet::ExchangeDiaphragmData(CDataExchange* pDX)
 
 void CGirderMainSheet::ExchangeHarpPointData(CDataExchange* pDX)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    int hpRef = (int)m_Entry.m_HarpPointReference;
@@ -708,11 +668,7 @@ void CGirderMainSheet::ExchangeHarpPointData(CDataExchange* pDX)
 
 void CGirderMainSheet::ExchangeDebondCriteriaData(CDataExchange* pDX)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_Percentage(pDX,IDC_MAX_TOTAL_STRANDS, m_Entry.m_MaxDebondStrands);
@@ -851,11 +807,7 @@ void CGirderMainSheet::MiscOnFractional()
 
 void CGirderMainSheet::MiscOnAbsolute()
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 

@@ -223,18 +223,26 @@ void CMultiWebFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,Span
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 gdrLength = pBridge->GetGirderLength(span,gdr);
 
-   pgsPointOfInterest poiStart(pgsTypes::CastingYard,span,gdr,0.00,POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
-   pgsPointOfInterest poiEnd(pgsTypes::CastingYard,span,gdr,gdrLength,POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
+   pgsPointOfInterest poiStart(span,gdr,0.00);
+   poiStart.AddStage(pgsTypes::CastingYard,POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
+   poiStart.AddStage(pgsTypes::Lifting,    POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
+   poiStart.AddStage(pgsTypes::Hauling,    POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
+
+   pgsPointOfInterest poiEnd(span,gdr,gdrLength);
+   poiEnd.AddStage(pgsTypes::CastingYard,POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
+   poiEnd.AddStage(pgsTypes::Lifting,    POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
+   poiEnd.AddStage(pgsTypes::Hauling,    POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
+
    pPoiMgr->AddPointOfInterest(poiStart);
    pPoiMgr->AddPointOfInterest(poiEnd);
 
    // move bridge site poi to the start/end bearing
-   std::set<pgsTypes::Stage> stages;
-   stages.insert(pgsTypes::GirderPlacement);
-   stages.insert(pgsTypes::TemporaryStrandRemoval);
-   stages.insert(pgsTypes::BridgeSite1);
-   stages.insert(pgsTypes::BridgeSite2);
-   stages.insert(pgsTypes::BridgeSite3);
+   std::vector<pgsTypes::Stage> stages;
+   stages.push_back(pgsTypes::GirderPlacement);
+   stages.push_back(pgsTypes::TemporaryStrandRemoval);
+   stages.push_back(pgsTypes::BridgeSite1);
+   stages.push_back(pgsTypes::BridgeSite2);
+   stages.push_back(pgsTypes::BridgeSite3);
    
    Float64 start_length = pBridge->GetGirderStartConnectionLength(span,gdr);
    Float64 end_length   = pBridge->GetGirderEndConnectionLength(span,gdr);
@@ -242,10 +250,14 @@ void CMultiWebFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,Span
    poiEnd.SetDistFromStart(gdrLength-end_length);
 
    poiStart.RemoveStage(pgsTypes::CastingYard);
-   poiStart.AddStages(stages);
+   poiStart.RemoveStage(pgsTypes::Lifting);
+   poiStart.RemoveStage(pgsTypes::Hauling);
+   poiStart.AddStages(stages,POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
 
    poiEnd.RemoveStage(pgsTypes::CastingYard);
-   poiEnd.AddStages(stages);
+   poiEnd.RemoveStage(pgsTypes::Lifting);
+   poiEnd.RemoveStage(pgsTypes::Hauling);
+   poiEnd.AddStages(stages,POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
 
    pPoiMgr->AddPointOfInterest(poiStart);
    pPoiMgr->AddPointOfInterest(poiEnd);

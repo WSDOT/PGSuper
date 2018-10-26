@@ -605,7 +605,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Prisma
     GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
     GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-    std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite2,span,gdr, POI_MIDSPAN);
+    std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(span,gdr, pgsTypes::BridgeSite2,POI_MIDSPAN);
     ATLASSERT(vPoi.size() == 1);
     pgsPointOfInterest poi = vPoi[0];
 
@@ -763,7 +763,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Nonpri
    INIT_UV_PROTOTYPE( rptLengthUnitValue, xdim,   pDisplayUnits->GetComponentDimUnit(),   false );
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite2,span,gdr, POI_TABULAR);
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(span,gdr, pgsTypes::BridgeSite2,POI_TABULAR);
 
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,gdr);
 
@@ -776,7 +776,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Nonpri
       EffFlangeWidth efw;
       EffectiveFlangeWidthDetails(bridge,poi.GetSpan(),poi.GetGirder(),poi.GetDistFromStart(),&efw);
 
-      (*table)(row,0) << location.SetValue( poi, end_size );
+      (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite2, poi, end_size );
       if ( efw.m_Details )
       {
 
@@ -874,7 +874,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim2,    pDisplayUnits->GetComponentDimUnit(),    true );
    INIT_UV_PROTOTYPE( rptAreaUnitValue,       area,    pDisplayUnits->GetAreaUnit(),            true );
 
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite2,span,gdr, POI_MIDSPAN);
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(span,gdr, pgsTypes::BridgeSite2,POI_MIDSPAN);
    ATLASSERT(vPoi.size() == 1);
    pgsPointOfInterest poi = vPoi[0];
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,gdr);
@@ -1054,7 +1054,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
    INIT_UV_PROTOTYPE( rptLengthUnitValue, xdim2,     pDisplayUnits->GetComponentDimUnit(), true  );
    INIT_UV_PROTOTYPE( rptAreaUnitValue, area,     pDisplayUnits->GetAreaUnit(), true  );
 
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite2,span,gdr, POI_TABULAR);
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(span,gdr, pgsTypes::BridgeSite2,POI_TABULAR);
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,gdr);
 
    RowIndexType row = table->GetNumberOfHeaderRows();
@@ -1067,7 +1067,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
       EffectiveFlangeWidthDetails(bridge,poi.GetSpan(),poi.GetGirder(),poi.GetDistFromStart(),&efw);
 
       int col = 0;
-      (*table)(row,col++) << location.SetValue( poi, end_size );
+      (*table)(row,col++) << location.SetValue( pgsTypes::BridgeSite2, poi, end_size );
       if ( !use_tributary_width )
       {
          ATLASSERT(efw.m_Details);
@@ -1187,7 +1187,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
    INIT_UV_PROTOTYPE( rptLengthUnitValue, spanLength, pDisplayUnits->GetSpanLengthUnit(),   true  );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length,     pDisplayUnits->GetComponentDimUnit(), true  );
 
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite2,span,gdr, POI_MIDSPAN);
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(span,gdr, pgsTypes::BridgeSite2,POI_MIDSPAN);
    ATLASSERT(vPoi.size() == 1);
    pgsPointOfInterest poi = vPoi[0];
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,gdr);
@@ -1300,7 +1300,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
    INIT_UV_PROTOTYPE( rptLengthUnitValue, spanLength, pDisplayUnits->GetSpanLengthUnit(),   true  );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length,     pDisplayUnits->GetComponentDimUnit(), true  );
 
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite2,span,gdr, POI_TABULAR);
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(span,gdr, pgsTypes::BridgeSite2,POI_TABULAR);
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,gdr);
 
    bool bLeftGirder = (gdr == 0 ? true : false);
@@ -1314,7 +1314,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
       CComPtr<IEffectiveFlangeWidthDetails> details;
       EffectiveFlangeWidthEx(bridge,poi.GetSpan(),poi.GetGirder(),poi.GetDistFromStart(),&details);
 
-      (*table)(row,0) << location.SetValue( poi, end_size );
+      (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite2, poi, end_size );
 
       double effSpanLength;
       details->get_EffectiveSpanLength(&effSpanLength);

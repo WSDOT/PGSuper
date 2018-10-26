@@ -297,7 +297,7 @@ void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,G
    *p << pTable << rptNewLine;
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
-   std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,span,girder,POI_MIDSPAN);
+   std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(span,girder,pgsTypes::BridgeSite3,POI_MIDSPAN);
    CHECK(vPoi.size()==1);
    pgsPointOfInterest poi = *vPoi.begin();
 
@@ -344,7 +344,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
    bool bSidewalk = pProductLoads->HasSidewalkLoad(span,girder);
 
    // Get Midspan std::vector<pgsPointOfInterest>
-   std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,span,girder,POI_MIDSPAN);
+   std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(span,girder,pgsTypes::BridgeSite3,POI_MIDSPAN);
    CHECK(vPoi.size()==1);
    pgsPointOfInterest poi = *vPoi.begin();
 
@@ -530,12 +530,12 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    std::vector<pgsPointOfInterest>::iterator iter;
 
    //    PS Xfer from end of girder
-   vPoi = pIPOI->GetPointsOfInterest(pgsTypes::CastingYard,span,girder,POI_PSXFER);
+   vPoi = pIPOI->GetPointsOfInterest(span,girder,pgsTypes::CastingYard,POI_PSXFER);
    pgsPointOfInterest psxfer_left  = vPoi.front();
    pgsPointOfInterest psxfer_right = vPoi.back();
 
    //    H from end of girder
-   vPoi = pIPOI->GetPointsOfInterest(pgsTypes::CastingYard,span,girder,POI_H);
+   vPoi = pIPOI->GetPointsOfInterest(span,girder,pgsTypes::CastingYard,POI_H);
    CHECK( vPoi.size() == 2 );
    iter = vPoi.begin();
    pgsPointOfInterest h_left  = *iter++;
@@ -547,7 +547,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    Uint16 hp_count = 0;
    if ( 0 < NhMax )
    {
-      vPoi = pIPOI->GetPointsOfInterest(pgsTypes::CastingYard,span,girder,POI_HARPINGPOINT);
+      vPoi = pIPOI->GetPointsOfInterest(span,girder,pgsTypes::CastingYard,POI_HARPINGPOINT);
       hp_count = vPoi.size();
       iter = vPoi.begin();
       hp_left = *iter;
@@ -887,14 +887,14 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    std::vector<pgsPointOfInterest>::iterator iter;
 
    //    H from end of girder
-   vPoi = pIPOI->GetPointsOfInterest(stage,span,girder,POI_H);
+   vPoi = pIPOI->GetPointsOfInterest(span,girder,stage,POI_H);
    CHECK( vPoi.size() == 2 );
    iter = vPoi.begin();
    pgsPointOfInterest h_left  = *iter++;
    pgsPointOfInterest h_right = *iter++;
 
    //   Midspan
-   vPoi = pIPOI->GetPointsOfInterest(stage,span,girder,POI_MIDSPAN);
+   vPoi = pIPOI->GetPointsOfInterest(span,girder,stage,POI_MIDSPAN);
    pgsPointOfInterest cl = *vPoi.begin();
 
    // Get artifacts
@@ -1025,14 +1025,14 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    std::vector<pgsPointOfInterest>::iterator iter;
 
    //    H from end of girder
-   vPoi = pIPOI->GetPointsOfInterest(stage,span,girder,POI_H);
+   vPoi = pIPOI->GetPointsOfInterest(span,girder,stage,POI_H);
    CHECK( vPoi.size() == 2 );
    iter = vPoi.begin();
    pgsPointOfInterest h_left  = *iter++;
    pgsPointOfInterest h_right = *iter++;
 
    //   Midspan
-   vPoi = pIPOI->GetPointsOfInterest(stage,span,girder,POI_MIDSPAN);
+   vPoi = pIPOI->GetPointsOfInterest(span,girder,stage,POI_MIDSPAN);
    pgsPointOfInterest cl = *vPoi.begin();
 
    // Get artifacts
@@ -1122,14 +1122,14 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    std::vector<pgsPointOfInterest>::iterator iter;
 
    //    H from end of girder
-   vPoi = pIPOI->GetPointsOfInterest(stage,span,girder,POI_H);
+   vPoi = pIPOI->GetPointsOfInterest(span,girder,stage,POI_H);
    CHECK( vPoi.size() == 2 );
    iter = vPoi.begin();
    pgsPointOfInterest h_left  = *iter++;
    pgsPointOfInterest h_right = *iter++;
 
    //   Midspan
-   vPoi = pIPOI->GetPointsOfInterest(stage,span,girder,POI_MIDSPAN);
+   vPoi = pIPOI->GetPointsOfInterest(span,girder,stage,POI_MIDSPAN);
    iter = vPoi.begin();
    pgsPointOfInterest cl = *iter;
 
@@ -1333,7 +1333,7 @@ void shear_capacity(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Gir
    long NhMax = pStrandGeom->GetMaxStrands(span,girder,pgsTypes::Harped);
 
    // Get Points of Interest
-   std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,span,girder,POI_H | POI_15H | POI_HARPINGPOINT,POIFIND_OR);
+   std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(span,girder,pgsTypes::BridgeSite3,POI_H | POI_15H | POI_HARPINGPOINT,POIFIND_OR);
    CHECK( vPoi.size() == 4 || vPoi.size() == 5 || vPoi.size() == 6 );
    std::vector<pgsPointOfInterest>::iterator iter;
    Uint16 hp_count = vPoi.size() - 4; // subtract 4 because of h and 1.5h left and right

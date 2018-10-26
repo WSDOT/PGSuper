@@ -90,7 +90,7 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
    }
 
    std::vector<std::string> special_permit_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltPermitRating_Special);
-   if ( special_permit_loads.size() != 2 && special_permit_loads[0] != "OL1"  && special_permit_loads[1] != "OL2")
+   if ( special_permit_loads.size() != 2 || (special_permit_loads.size() == 2 && special_permit_loads[0] != "OL1"  && special_permit_loads[1] != "OL2") )
    {
       bIsWSDOTRating = false;
    }
@@ -177,7 +177,7 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
 
    (*pPara) << "Bridge Name: " << pProjectProperties->GetBridgeName() << rptNewLine;
    (*pPara) << "Bridge Number: " << pProjectProperties->GetBridgeId() << rptNewLine;
-   (*pPara) << "Span Types : PCB" << rptNewLine;
+   (*pPara) << "Span Types : PCG" << rptNewLine;
    (*pPara) << "Bridge Length : " << length.SetValue(pBridge->GetLength()) << rptNewLine;
    (*pPara) << "Rated By: " << pProjectProperties->GetEngineer() << rptNewLine;
    (*pPara) << "Date : " << date.AsString() << rptNewLine;
@@ -190,6 +190,9 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
 
    pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
    pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+
+   pTable->SetColumnStyle(3, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(3, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
    (*pTable)(0,0) << "Truck";
    (*pTable)(0,1) << "RF";
@@ -238,6 +241,9 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
 
    pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
    pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+
+   pTable->SetColumnStyle(2, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(2, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
    (*pTable)(0,0) << "NBI Rating";
    (*pTable)(0,1) << "RF";
@@ -290,7 +296,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
 
       pgsPointOfInterest poi = pPositiveMoment->GetPointOfInterest();
       Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,3) << location.SetValue(poi,endSize) << " (Positive Moment)";
+      (*pTable)(row,3) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << " (Positive Moment)";
    }
    else if ( pNegativeMoment )
    {
@@ -305,7 +311,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
 
       pgsPointOfInterest poi = pNegativeMoment->GetPointOfInterest();
       Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,3) << location.SetValue(poi,endSize) << " (Negative Moment)";
+      (*pTable)(row,3) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << " (Negative Moment)";
    }
    else if ( pShear )
    {
@@ -320,7 +326,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
 
       pgsPointOfInterest poi = pShear->GetPointOfInterest();
       Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,3) << location.SetValue(poi,endSize) << " (Shear)";
+      (*pTable)(row,3) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << " (Shear)";
    }
    else if ( pStress )
    {
@@ -335,7 +341,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
 
       pgsPointOfInterest poi = pStress->GetPointOfInterest();
       Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,3) << location.SetValue(poi,endSize) << " (Stress)";
+      (*pTable)(row,3) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << " (Stress)";
    }
    else if ( pYieldStressPositiveMoment )
    {
@@ -352,7 +358,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
 
       pgsPointOfInterest poi = pYieldStressPositiveMoment->GetPointOfInterest();
       Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,3) << location.SetValue(poi,endSize) << " (Yield Stress - Positive Moment)";
+      (*pTable)(row,3) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << " (Yield Stress - Positive Moment)";
    }
    else if ( pYieldStressNegativeMoment )
    {
@@ -369,7 +375,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
 
       pgsPointOfInterest poi = pYieldStressNegativeMoment->GetPointOfInterest();
       Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,3) << location.SetValue(poi,endSize) << " (Yield Stress - Negative Moment)";
+      (*pTable)(row,3) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << " (Yield Stress - Negative Moment)";
    }
 }
 
@@ -407,7 +413,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
 
       pgsPointOfInterest poi = pPositiveMoment->GetPointOfInterest();
       Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,2) << location.SetValue(poi,endSize) << " (Positive Moment)";
+      (*pTable)(row,2) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << " (Positive Moment)";
    }
    else if ( pNegativeMoment )
    {
@@ -421,7 +427,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
 
       pgsPointOfInterest poi = pNegativeMoment->GetPointOfInterest();
       Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,2) << location.SetValue(poi,endSize) << " (Negative Moment)";
+      (*pTable)(row,2) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << " (Negative Moment)";
    }
    else if ( pShear )
    {
@@ -435,7 +441,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
 
       pgsPointOfInterest poi = pShear->GetPointOfInterest();
       Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,2) << location.SetValue(poi,endSize) << " (Shear)";
+      (*pTable)(row,2) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << " (Shear)";
    }
    else if ( pStress )
    {
@@ -449,7 +455,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
 
       pgsPointOfInterest poi = pStress->GetPointOfInterest();
       Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,2) << location.SetValue(poi,endSize) << " (Stress)";
+      (*pTable)(row,2) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << " (Stress)";
    }
    else if ( pYieldStressPositiveMoment )
    {
@@ -465,7 +471,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
 
       pgsPointOfInterest poi = pYieldStressPositiveMoment->GetPointOfInterest();
       Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,2) << location.SetValue(poi,endSize) << " (Yield Stress - Positive Moment)";
+      (*pTable)(row,2) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << " (Yield Stress - Positive Moment)";
    }
    else if ( pYieldStressNegativeMoment )
    {
@@ -481,6 +487,6 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
 
       pgsPointOfInterest poi = pYieldStressNegativeMoment->GetPointOfInterest();
       Float64 endSize = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,2) << location.SetValue(poi,endSize) << " (Yield Stress - Negative Moment)";
+      (*pTable)(row,2) << location.SetValue(pgsTypes::BridgeSite3,poi,endSize) << " (Yield Stress - Negative Moment)";
    }
 }

@@ -53,7 +53,6 @@ CLiveLoadDlg::CLiveLoadDlg(bool allowEditing, CWnd* pParent /*=NULL*/)
 	m_IsNotional = FALSE;
 	//}}AFX_DATA_INIT
 
-   m_bHasVariableAxle = false;
    m_VariableAxleIndex = FIXED_AXLE_TRUCK;
 
    m_UsageType = LiveLoadLibraryEntry::llaEntireStructure;
@@ -61,11 +60,7 @@ CLiveLoadDlg::CLiveLoadDlg(bool allowEditing, CWnd* pParent /*=NULL*/)
 
 void CLiveLoadDlg::DoDataExchange(CDataExchange* pDX)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 	CDialog::DoDataExchange(pDX);
@@ -82,11 +77,6 @@ void CLiveLoadDlg::DoDataExchange(CDataExchange* pDX)
 
    DDX_UnitValueAndTag( pDX, IDC_BRIDGE_LENGTH,  IDC_BRIDGE_LENGTH_UNITS, m_LaneLoadSpanLength, pDisplayUnits->SpanLength );
    DDV_UnitValueZeroOrMore( pDX, IDC_BRIDGE_LENGTH, m_LaneLoadSpanLength, pDisplayUnits->SpanLength );
-
-   DDX_Check_Bool(pDX,IDC_IS_VARIABLE_AXLE_TRUCK,m_bHasVariableAxle);
-   DDX_CBIndex(pDX, IDC_AXLE_LIST, m_VariableAxleIndex );
-
-   DDX_UnitValueAndTag( pDX, IDC_VARIABLE_AXLE_SPACING,  IDC_VARIABLE_AXLE_SPACING_UNITS, m_MaxVariableAxleSpacing, pDisplayUnits->SpanLength );
 
    DDV_GXGridWnd(pDX, &m_Grid);
    if (pDX->m_bSaveAndValidate)
@@ -114,22 +104,6 @@ void CLiveLoadDlg::DoDataExchange(CDataExchange* pDX)
             pDX->Fail();
          }
       }
-
-      if ( m_bHasVariableAxle )
-      {
-         // max variable axle spacing must be greater than spacing given in the girder
-         LiveLoadLibraryEntry::Axle axle = m_Axles[m_VariableAxleIndex];
-         if ( m_MaxVariableAxleSpacing < axle.Spacing )
-         {
-            pDX->PrepareEditCtrl(IDC_VARIABLE_AXLE_SPACING);
-            AfxMessageBox("Variable axle maximum spacing must be greater than the minimum spacing given in the truck configuration grid",MB_OK | MB_ICONEXCLAMATION);
-            pDX->Fail();
-         }
-      }
-      else
-      {
-         m_VariableAxleIndex = FIXED_AXLE_TRUCK;
-      }
    }
    else
    {
@@ -147,7 +121,6 @@ BEGIN_MESSAGE_MAP(CLiveLoadDlg, CDialog)
 	ON_BN_CLICKED(IDC_DELETE, OnDelete)
 	ON_CBN_SELCHANGE(IDC_CONFIG_TYPE, OnSelchangeConfigType)
 	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
-   ON_BN_CLICKED(IDC_IS_VARIABLE_AXLE_TRUCK,OnVariableAxleTruck)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -190,12 +163,7 @@ BOOL CLiveLoadDlg::OnInitDialog()
    pCB->SetItemData(idx,LiveLoadLibraryEntry::llaNegMomentAndInteriorPierReaction);
 
 
-   m_bHasVariableAxle = (m_VariableAxleIndex == FIXED_AXLE_TRUCK ? false : true);
-
 	CDialog::OnInitDialog();
-
-   UpdateVariableAxleChoice();
-   OnVariableAxleTruck();
 	
 	OnEnableDelete(false);
    UpdateConfig();	
@@ -221,15 +189,11 @@ BOOL CLiveLoadDlg::OnInitDialog()
 void CLiveLoadDlg::OnAdd() 
 {
 	m_Grid.Appendrow();
-
-   UpdateVariableAxleChoice();
 }
 
 void CLiveLoadDlg::OnDelete() 
 {
    m_Grid.Removerows();
-
-   UpdateVariableAxleChoice();
 }
 
 void CLiveLoadDlg::OnEnableDelete(bool canDelete)
@@ -259,7 +223,6 @@ void CLiveLoadDlg::UpdateConfig()
    //CWnd* paxles = GetDlgItem(IDC_AXLES_GRID);
    CWnd* pdel   = GetDlgItem(IDC_DELETE);
    CWnd* padd   = GetDlgItem(IDC_ADD);
-   CWnd* pvariable = GetDlgItem(IDC_IS_VARIABLE_AXLE_TRUCK);
 
    bool do_live(true), do_lane(true);
 
@@ -290,38 +253,6 @@ void CLiveLoadDlg::UpdateConfig()
    //paxles->EnableWindow(do_live?TRUE:FALSE);
    pdel->EnableWindow(do_live?TRUE:FALSE);
    padd->EnableWindow(do_live?TRUE:FALSE);
-   pvariable->EnableWindow(do_live?TRUE:FALSE);
 
    this->m_Grid.Enable(do_live?TRUE:FALSE);
-}
-
-void CLiveLoadDlg::UpdateVariableAxleChoice()
-{
-   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_AXLE_LIST);
-
-   int selIdx = pCB->GetCurSel();
-   pCB->ResetContent();
-   int nAxles = m_Grid.GetRowCount();
-   for ( int i = 1; i < nAxles; i++ )
-   {
-      CString str;
-      str.Format("%d",i+1);
-      pCB->AddString(str);
-   }
-
-   if ( selIdx == CB_ERR )
-      pCB->SetCurSel(0);
-   else if ( selIdx < nAxles )
-      pCB->SetCurSel(selIdx);
-   else
-      pCB->SetCurSel(pCB->GetCount()-1);
-}
-
-void CLiveLoadDlg::OnVariableAxleTruck()
-{
-   BOOL bEnable = IsDlgButtonChecked(IDC_IS_VARIABLE_AXLE_TRUCK);
-   GetDlgItem(IDC_AXLE_LIST_LABEL)->EnableWindow(bEnable);
-   GetDlgItem(IDC_AXLE_LIST)->EnableWindow(bEnable);
-   GetDlgItem(IDC_VARIABLE_AXLE_SPACING)->EnableWindow(bEnable);
-   GetDlgItem(IDC_VARIABLE_AXLE_SPACING_UNITS)->EnableWindow(bEnable);
 }

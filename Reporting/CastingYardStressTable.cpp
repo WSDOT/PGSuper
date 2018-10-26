@@ -78,7 +78,6 @@ rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,SpanIndexType span,G
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
    location.IncludeSpanAndGirder(span == ALL_SPANS);
-   location.MakeGirderPoi();
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,"Casting Yard Stresses");
 
@@ -95,7 +94,7 @@ rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,SpanIndexType span,G
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( pgsTypes::CastingYard, span, girder, POI_FLEXURESTRESS | POI_TABULAR );
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, pgsTypes::CastingYard, POI_FLEXURESTRESS | POI_TABULAR );
 
    GET_IFACE2(pBroker,IProductForces,pProductForces);
    GET_IFACE2(pBroker,IPrestressStresses,pPrestress);
@@ -106,7 +105,7 @@ rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,SpanIndexType span,G
    for ( i = vPoi.begin(); i != vPoi.end(); i++ )
    {
       const pgsPointOfInterest& poi = *i;
-      (*p_table)(row,0) << location.SetValue( poi );
+      (*p_table)(row,0) << location.SetValue( pgsTypes::CastingYard, poi );
 
       double fTop, fBot;
       pProductForces->GetStress(pgsTypes::CastingYard,pftGirder, poi, SimpleSpan, &fTop, &fBot);

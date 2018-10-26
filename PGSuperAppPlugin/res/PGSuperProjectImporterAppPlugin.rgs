@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuper.PGSuperProjectImporterAppPlugin.1 = s 'PGSuper Project Importer'
+	{
+		CLSID = s '{552AB673-3D3D-47E6-AFD6-4EA033A8A7F2}'
+	}
+	PGSuper.PGSuperProjectImporterAppPlugin = s 'PGSuper Project Importer'
+	{
+		CLSID = s '{552AB673-3D3D-47E6-AFD6-4EA033A8A7F2}'
+		CurVer = s 'PGSuper.PGSuperProjectImporterAppPlugin.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {552AB673-3D3D-47E6-AFD6-4EA033A8A7F2} = s 'PGSuper Project Importer'
+		{
+			ProgID = s 'PGSuper.PGSuperProjectImporterAppPlugin.1'
+			VersionIndependentProgID = s 'PGSuper.PGSuperProjectImporterAppPlugin'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+		}
+	}
+}

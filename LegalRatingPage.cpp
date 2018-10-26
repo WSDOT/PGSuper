@@ -23,7 +23,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "LegalRatingPage.h"
 #include "RatingOptionsDlg.h"
 #include <MFCTools\CustomDDX.h>

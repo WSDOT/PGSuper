@@ -22,16 +22,82 @@
 
 #pragma once
 
+#include "PGSuperCatalogServers.h"
+#include <EAF\EAFApp.h>
+
 // Base class for all PGSuper Document-type application plugins
 // Performs common initialization expected by the CPGSuperDoc class
 class CPGSuperBaseAppPlugin
 {
 public:
+   CPGSuperBaseAppPlugin();
+
    HRESULT OnFinalConstruct();
    void OnFinalRelease();
 
+   // call these from Init and Terminate
+   virtual void DefaultInit();
+   virtual void DefaultTerminate();
+
+
    void GetAppUnitSystem(IAppUnitSystem** ppAppUnitSystem);
 
+   CString GetEngineerName();
+   CString GetEngineerCompany();
+
+   CString GetMasterLibraryFile();
+   CString GetCachedMasterLibraryFile();
+   void GetTemplateFolders(CString& strWorkgroupFolder);
+
+   void SetCacheUpdateFrequency(CacheUpdateFrequency frequence);
+   CacheUpdateFrequency GetCacheUpdateFrequency();
+
+   void SetSharedResourceType(SharedResourceType resType);
+   SharedResourceType GetSharedResourceType();
+
+   CString GetMasterLibraryPublisher() const;
+
+   void UpdateProgramSettings(BOOL bFirstRun);
+
+protected:
+   SharedResourceType   m_SharedResourceType;     // method for using shared resources (Master lib and Workgroup templates)
+   CacheUpdateFrequency m_CacheUpdateFrequency;
+
+   CString m_CurrentCatalogServer; // name of current catalog server
+   CString m_Publisher;     // Name of publisher in m_CurrentServer
+   CString m_MasterLibraryFileURL; // URL of a published Master library file
+
+   // Cache file/folder for Internet or Local Network resources
+   CString m_MasterLibraryFileCache; 
+   CString m_WorkgroupTemplateFolderCache;
+
+   CString m_UserTemplateFolder;
+
+   CString m_EngineerName;
+   CString m_CompanyName;
+
+   void RegistryConvert(); // Convert any old registry settings for current program (move into app plugin class)
+   void LoadRegistryValues();
+   void SaveRegistryValues();
+
+   bool IsTimeToUpdateCache();
+   bool AreUpdatesPending();
+
+   void UpdateCache(); // only updates if needed
+   bool DoCacheUpdate(); // always does the update
+   sysDate GetLastCacheUpdateDate();
+   void SetLastCacheUpdateDate(const sysDate& date);
+   bool UpdateCatalogCache(IProgressMonitor* pProgress);
+   void RestoreLibraryAndTemplatesToDefault();
+   void DeleteCache(LPCSTR pstrCache);
+   void RecursiveDelete(LPCSTR pstr);
+   
+   CString GetDefaultMasterLibraryFile();
+   CString GetDefaultWorkgroupTemplateFolder();
+   CString GetCacheFolder();
+   CString GetSaveCacheFolder();
+
 private:
+   CPGSuperCatalogServers m_CatalogServers;
    CComPtr<IAppUnitSystem> m_AppUnitSystem;
 };

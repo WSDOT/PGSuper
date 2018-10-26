@@ -129,9 +129,6 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,SpanIndexType span,GirderInd
    INIT_UV_PROTOTYPE( rptPointOfInterest, spanloc, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthSectionValue, ecc,    pDisplayUnits->GetComponentDimUnit(),  false );
 
-   gdrloc.MakeGirderPoi();
-   spanloc.MakeSpanPoi();
-
    GET_IFACE2( pBroker, IPointOfInterest, pPoi );
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -145,13 +142,13 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,SpanIndexType span,GirderInd
    // Get all the tabular poi's for flexure and shear
    // Merge the two vectors to form one vector to report on.
    std::vector<pgsPointOfInterest> poi[6];
-   poi[0] = pPoi->GetPointsOfInterest(pgsTypes::BridgeSite1,span,girder,POI_FLEXURESTRESS   | POI_TABULAR);
-   poi[1] = pPoi->GetPointsOfInterest(pgsTypes::BridgeSite1,span,girder,POI_FLEXURECAPACITY | POI_TABULAR);
-   poi[2] = pPoi->GetPointsOfInterest(pgsTypes::BridgeSite1,span,girder,POI_SHEAR           | POI_TABULAR);
+   poi[0] = pPoi->GetPointsOfInterest(span,girder,pgsTypes::BridgeSite1,POI_FLEXURESTRESS   | POI_TABULAR);
+   poi[1] = pPoi->GetPointsOfInterest(span,girder,pgsTypes::BridgeSite1,POI_FLEXURECAPACITY | POI_TABULAR);
+   poi[2] = pPoi->GetPointsOfInterest(span,girder,pgsTypes::BridgeSite1,POI_SHEAR           | POI_TABULAR);
    
-   poi[3] = pPoi->GetPointsOfInterest(pgsTypes::CastingYard,span,girder,POI_FLEXURESTRESS   | POI_TABULAR);
-   poi[4] = pPoi->GetPointsOfInterest(pgsTypes::CastingYard,span,girder,POI_PICKPOINT);
-   poi[5] = pPoi->GetPointsOfInterest(pgsTypes::CastingYard,span,girder,POI_BUNKPOINT);
+   poi[3] = pPoi->GetPointsOfInterest(span,girder,pgsTypes::CastingYard,POI_FLEXURESTRESS   | POI_TABULAR);
+   poi[4] = pPoi->GetPointsOfInterest(span,girder,pgsTypes::CastingYard,POI_PICKPOINT);
+   poi[5] = pPoi->GetPointsOfInterest(span,girder,pgsTypes::CastingYard,POI_BUNKPOINT);
 
    std::set< std::pair<pgsPointOfInterest,pgsTypes::Stage> > pois; // use a set to eliminate duplicates
    std::set< std::pair<pgsPointOfInterest,pgsTypes::Stage> >::iterator iter;
@@ -187,13 +184,13 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,SpanIndexType span,GirderInd
 
       if ( stage == pgsTypes::CastingYard )
       {
-         (*p_table)(row,col++) << gdrloc.SetValue( poi);
+         (*p_table)(row,col++) << gdrloc.SetValue(stage, poi);
          (*p_table)(row,col++) << "";
       }
       else
       {
          (*p_table)(row,col++) << "";
-         (*p_table)(row,col++) << spanloc.SetValue( poi, end_size );
+         (*p_table)(row,col++) << spanloc.SetValue( stage, poi, end_size );
       }
 
       if ( !bSkipToNextRow )

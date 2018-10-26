@@ -58,29 +58,10 @@ CMainFrame::~CMainFrame()
 {
 }
 
-CEAFStatusBar* CMainFrame::CreateStatusBar()
-{
-   // replace base class implemenation and use our own status bar
-   std::auto_ptr<CPGSuperStatusBar> pStatusBar(new CPGSuperStatusBar());
-	if (!pStatusBar->Create(this) )
-	{
-      return NULL;
-	}
-
-   return pStatusBar.release();
-}
-
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
    if (CEAFMainFrame::OnCreate(lpCreateStruct) == -1)
       return -1;
-
-
-   // Status bar is created by the base class
-
-   // since the document isn't open yet, don't display the analysis mode or the autocalc mode
-   CPGSuperStatusBar* pStatusBar = (CPGSuperStatusBar*)m_pStatusBar;
-   pStatusBar->Reset();
 
    return 0;
 }
@@ -103,40 +84,12 @@ void CMainFrame::Dump(CDumpContext& dc) const
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame message handlers
 
-void CMainFrame::AutoCalcEnabled( bool bEnable )
+BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
-   CEAFDocument* pDoc = GetDocument();
-   if ( pDoc )
-   {
-      CString status_text;
-      if ( bEnable )
-         status_text.LoadString(ID_INDICATOR_AUTOCALC_ON);
-      else
-         status_text.LoadString(ID_INDICATOR_AUTOCALC_OFF);
+   if ( !CEAFMainFrame::PreCreateWindow(cs) )
+      return FALSE;
 
-      CPGSuperStatusBar* pStatusBar = (CPGSuperStatusBar*)m_pStatusBar;
-      int idx = pStatusBar->GetAutoCalcPaneIndex();
-      m_pStatusBar->SetPaneText(idx, status_text, TRUE);
-   }
-}
+   cs.style &= ~WS_VISIBLE;
 
-void CMainFrame::SetAnalysisTypeStatusIndicator(pgsTypes::AnalysisType analysisType)
-{
-   CString strAnalysisType;
-   switch( analysisType )
-   {
-   case pgsTypes::Simple:
-      strAnalysisType = "Simple Span";
-      break;
-   case pgsTypes::Continuous:
-      strAnalysisType = "Continuous";
-      break;
-   case pgsTypes::Envelope:
-      strAnalysisType = "Envelope";
-      break;
-   }
-
-   CPGSuperStatusBar* pStatusBar = (CPGSuperStatusBar*)m_pStatusBar;
-   int idx = pStatusBar->GetAnalysisModePaneIndex();
-   m_pStatusBar->SetPaneText(idx,strAnalysisType,TRUE);
+   return TRUE;
 }

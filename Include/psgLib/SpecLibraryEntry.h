@@ -953,12 +953,12 @@ public:
    void SetCuringMethodTimeAdjustmentFactor(double f);
    double GetCuringMethodTimeAdjustmentFactor() const;
 
-   void SetMininumTruckSupportLocation(double x);
+   void SetMininumTruckSupportLocation(double x); // < 0 means use Hg
    double GetMininumTruckSupportLocation() const;
    void SetTruckSupportLocationAccuracy(double x);
    double GetTruckSupportLocationAccuracy() const;
 
-   void SetMininumLiftingPointLocation(double x);
+   void SetMininumLiftingPointLocation(double x); // < 0 means use Hg
    double GetMininumLiftingPointLocation() const;
    void SetLiftingPointLocationAccuracy(double x);
    double GetLiftingPointLocationAccuracy() const;

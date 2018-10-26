@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "RatingOptionsDlg.h"
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>

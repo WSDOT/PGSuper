@@ -27,7 +27,6 @@
 #include "resource.h"
 #include "pgsuper.h"
 #include "PGSuperStatusBar.h"
-#include "PGSuperDoc.h"
 #include "PGSuperColors.h"
 #include <IFace\StatusCenter.h>
 
@@ -152,4 +151,36 @@ void CPGSuperStatusBar::Reset()
 
    idx = GetAutoCalcPaneIndex();
    SetPaneText( idx, "" );
+}
+
+void CPGSuperStatusBar::AutoCalcEnabled( bool bEnable )
+{
+   CString status_text;
+   if ( bEnable )
+      status_text.LoadString(ID_INDICATOR_AUTOCALC_ON);
+   else
+      status_text.LoadString(ID_INDICATOR_AUTOCALC_OFF);
+
+   int idx = GetAutoCalcPaneIndex();
+   SetPaneText(idx, status_text, TRUE);
+}
+
+void CPGSuperStatusBar::SetAnalysisTypeStatusIndicator(pgsTypes::AnalysisType analysisType)
+{
+   CString strAnalysisType;
+   switch( analysisType )
+   {
+   case pgsTypes::Simple:
+      strAnalysisType = "Simple Span";
+      break;
+   case pgsTypes::Continuous:
+      strAnalysisType = "Continuous";
+      break;
+   case pgsTypes::Envelope:
+      strAnalysisType = "Envelope";
+      break;
+   }
+
+   int idx = GetAnalysisModePaneIndex();
+   SetPaneText(idx,strAnalysisType,TRUE);
 }

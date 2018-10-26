@@ -50,11 +50,7 @@ CConcreteEntryDlg::CConcreteEntryDlg(bool allowEditing, CWnd* pParent /*=NULL*/)
 	//{{AFX_DATA_INIT(CConcreteEntryDlg)
 	m_EntryName = _T("");
 	//}}AFX_DATA_INIT
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
 
    m_MinNWCDensity = pApp->GetUnitsMode() == eafTypes::umUS ? ::ConvertToSysUnits(135.0,unitMeasure::LbfPerFeet3) : ::ConvertToSysUnits(2150.,unitMeasure::KgPerMeter3);
    m_bIsStrengthNWC = true;
@@ -64,11 +60,7 @@ CConcreteEntryDlg::CConcreteEntryDlg(bool allowEditing, CWnd* pParent /*=NULL*/)
 
 void CConcreteEntryDlg::DoDataExchange(CDataExchange* pDX)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    CDialog::DoDataExchange(pDX);
@@ -201,11 +193,7 @@ void CConcreteEntryDlg::OnChangeDw()
 
 HBRUSH CConcreteEntryDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);

@@ -109,7 +109,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
       GirderIndexType lastGirderIdx  = min(nGirders,  (gdr == ALL_GIRDERS ? nGirders : firstGirderIdx + 1));
       for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx < lastGirderIdx; gdrIdx++ )
       {
-         std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,spanIdx,gdrIdx,POI_ALL,POIFIND_OR);
+         std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::BridgeSite3,POI_ALL,POIFIND_OR);
          ATLASSERT( vPOI.size() != 0 );
          pgsPointOfInterest dummy_poi = vPOI[0];
 
@@ -228,7 +228,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
 
             bond_factor = ForceIntoRange(0.0,bond_factor,1.0);
 
-            (*pTable)(row,0) << location.SetValue( poi, end_size );
+            (*pTable)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
             (*pTable)(row,1) << stress.SetValue(bonded_details.fps);
             (*pTable)(row,2) << stress.SetValue(bonded_details.fpe);
             (*pTable)(row,3) << length.SetValue(bonded_details.db);

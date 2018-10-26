@@ -178,9 +178,9 @@ m_EffFlangeWidthMethod(pgsTypes::efwmLRFD),
 m_ShearFlowMethod(sfmClassical),
 m_ShearCapacityMethod(scmBTTables),
 m_CuringMethodTimeAdjustmentFactor(7),
-m_MinLiftPoint(::ConvertToSysUnits(1.0,unitMeasure::Feet)),
+m_MinLiftPoint(-1), // H
 m_LiftPointAccuracy(::ConvertToSysUnits(0.25,unitMeasure::Feet)),
-m_MinHaulPoint(::ConvertToSysUnits(5.0,unitMeasure::Feet)),
+m_MinHaulPoint(-1), // H
 m_HaulPointAccuracy(::ConvertToSysUnits(0.5,unitMeasure::Feet)),
 m_PedestrianLoad(::ConvertToSysUnits(0.075,unitMeasure::KSF)),
 m_MinSidewalkWidth(::ConvertToSysUnits(2.0,unitMeasure::Feet)),

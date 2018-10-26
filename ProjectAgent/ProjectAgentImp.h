@@ -71,7 +71,6 @@ class ATL_NO_VTABLE CProjectAgentImp :
    public CProxyILoadModifiersEventSink<CProjectAgentImp>,
    public IAgentEx,
    public IAgentPersist,
-   public IVersionInfo,
    public IProjectProperties,
    public IEnvironment,
    public IRoadwayData,
@@ -103,7 +102,6 @@ BEGIN_COM_MAP(CProjectAgentImp)
 	COM_INTERFACE_ENTRY(IAgent)
    COM_INTERFACE_ENTRY(IAgentEx)
 	COM_INTERFACE_ENTRY(IAgentPersist)
-   COM_INTERFACE_ENTRY(IVersionInfo)
 	COM_INTERFACE_ENTRY(IProjectProperties)
    COM_INTERFACE_ENTRY(IEnvironment)
    COM_INTERFACE_ENTRY(IRoadwayData)
@@ -154,13 +152,6 @@ public:
 public:
 	STDMETHOD(Load)(/*[in]*/ IStructuredLoad* pStrLoad);
 	STDMETHOD(Save)(/*[in]*/ IStructuredSave* pStrSave);
-
-// IVersionInfo
-public:
-   virtual void SetVersionString(const std::string& strVer);
-   virtual std::string GetVersionString();
-   virtual void SetVersion(const std::string& strVer);
-   virtual std::string GetVersion();
 
 // IProjectProperties
 public:
@@ -485,9 +476,6 @@ private:
 
    pgsTypes::AnalysisType m_AnalysisType;
    bool m_bGetAnalysisTypeFromLibrary; // if true, we are reading old input... get the analysis type from the library entry
-
-   std::string m_VersionString; // version string
-   std::string m_Version; // version string
 
    std::vector<std::string> m_GirderFamilyNames;
 

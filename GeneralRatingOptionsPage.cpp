@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include <MfcTools\CustomDDX.h>
 #include <MfcTools\Prompts.h>
 #include "GeneralRatingOptionsPage.h"

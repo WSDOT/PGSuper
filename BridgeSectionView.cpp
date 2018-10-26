@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperDoc.h"
 #include <IFace\DrawBridgeSettings.h>
 #include "BridgeSectionView.h"
@@ -310,6 +310,7 @@ void CBridgeSectionView::OnInitialUpdate()
 #ifdef _DEBUG
 void CBridgeSectionView::AssertValid() const
 {
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
 	CDisplayView::AssertValid();
 }
 
@@ -404,6 +405,8 @@ void CBridgeSectionView::HandleLButtonDown(UINT nFlags, CPoint logPoint)
 
 void CBridgeSectionView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    if ( logPoint.x < 0 || logPoint.y < 0 )
    {
       // the context menu key or Shift+F10 was pressed
@@ -622,10 +625,6 @@ void CBridgeSectionView::BuildTitleDisplayObjects()
 
 void CBridgeSectionView::BuildGirderDisplayObjects()
 {
-   CWnd* pWnd = GetParent()->GetParent();
-   ATLASSERT( pWnd->IsKindOf( RUNTIME_CLASS(CBridgeModelViewChildFrame) ) );
-   CBridgeModelViewChildFrame* pFrame = (CBridgeModelViewChildFrame*)pWnd;
-
    CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
    CComPtr<IBroker> pBroker;
    pDoc->GetBroker(&pBroker);
@@ -778,7 +777,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
 
       // Register an event sink with the girder display object so that we can handle double clicks
       // on the girder differently then a general double click
-      CBridgeSectionViewGirderDisplayObjectEvents* pEvents = new CBridgeSectionViewGirderDisplayObjectEvents(spanIndex,gdrIndex,nSpans,nGirdersThisSpan,pFrame); // ref count = 1
+      CBridgeSectionViewGirderDisplayObjectEvents* pEvents = new CBridgeSectionViewGirderDisplayObjectEvents(spanIndex,gdrIndex,nSpans,nGirdersThisSpan,m_pFrame); // ref count = 1
       IUnknown* unk = pEvents->GetInterface(&IID_iDisplayObjectEvents); // ref count = 1
       CComQIPtr<iDisplayObjectEvents,&IID_iDisplayObjectEvents> events(unk); // ref count = 2
       dispObj->RegisterEventSink(events); // ref count = 3

@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "pgsuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "pgsuperDoc.h"
 #include "FactorOfSafetyChildFrame.h"
 #include "FactorOfSafetyView.h"
@@ -56,6 +56,24 @@ m_Grid(true)
 
 CFactorOfSafetyChildFrame::~CFactorOfSafetyChildFrame()
 {
+}
+
+BOOL CFactorOfSafetyChildFrame::Create(LPCTSTR lpszClassName,
+				LPCTSTR lpszWindowName,
+				DWORD dwStyle,
+				const RECT& rect,
+				CMDIFrameWnd* pParentWnd,
+				CCreateContext* pContext)
+{
+   BOOL bResult = CEAFOutputChildFrame::Create(lpszClassName,lpszWindowName,dwStyle,rect,pParentWnd,pContext);
+   if ( bResult )
+   {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      HICON hIcon = AfxGetApp()->LoadIcon(IDR_FACTOROFSAFETY);
+      SetIcon(hIcon,TRUE);
+   }
+
+   return bResult;
 }
 
 BEGIN_MESSAGE_MAP(CFactorOfSafetyChildFrame, CEAFOutputChildFrame)
@@ -92,6 +110,7 @@ int CFactorOfSafetyChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CEAFOutputChildFrame::OnCreate(lpCreateStruct) == -1)
 		return -1;
 	
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	if ( !m_SettingsBar.Create( this, IDD_STABILITY_BAR, CBRS_TOP, IDD_STABILITY_BAR) )
 	{
 		TRACE0("Failed to create control bar\n");
@@ -317,3 +336,16 @@ LRESULT CFactorOfSafetyChildFrame::OnCommandHelp(WPARAM, LPARAM lParam)
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_STABILITY_VIEW );
    return TRUE;
 }
+
+#ifdef _DEBUG
+void CFactorOfSafetyChildFrame::AssertValid() const
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+	CEAFOutputChildFrame::AssertValid();
+}
+
+void CFactorOfSafetyChildFrame::Dump(CDumpContext& dc) const
+{
+	CEAFOutputChildFrame::Dump(dc);
+}
+#endif //_DEBUG

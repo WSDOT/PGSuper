@@ -166,7 +166,7 @@ rptChapter* CMomentCapacityDetailsChapterBuilder::Build(CReportSpecification* pR
          pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
          *pChapter << pPara;
          *pPara << "Positive Moment Capacity Details" << rptNewLine;
-         vPoi = pIPOI->GetPointsOfInterest(pgsTypes::BridgeSite3, spanIdx, gdrIdx, POI_FLEXURECAPACITY | POI_SHEAR, POIFIND_OR );
+         vPoi = pIPOI->GetPointsOfInterest(spanIdx, gdrIdx, pgsTypes::BridgeSite3, POI_FLEXURECAPACITY | POI_SHEAR, POIFIND_OR );
 
          write_moment_data_table(pBroker,pDisplayUnits,spanIdx,gdrIdx, vPoi, pChapter, pgsTypes::BridgeSite3, "Final with Live Load (Bridge Site 3)",true);
          if ( !m_bCapacityOnly )
@@ -332,7 +332,7 @@ void write_moment_data_table(IBroker* pBroker,
 
       col = 0;
 
-      (*table)(row,col++) << location.SetValue( poi, end_size );
+      (*table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
       (*table)(row,col++) << dim.SetValue( mcd.c );
       (*table)(row,col++) << dim.SetValue( mcd.dc );
       (*table)(row,col++) << dim.SetValue( mcd.de );
@@ -446,7 +446,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
       CRACKINGMOMENTDETAILS cmd;
       pMomentCapacity->GetCrackingMomentDetails(stage,poi,bPositiveMoment,&cmd);
 
-      (*table)(row,0) << location.SetValue( poi, end_size );
+      (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
       (*table)(row,1) << stress.SetValue( cmd.fr );
       (*table)(row,2) << stress.SetValue( cmd.fcpe);
       (*table)(row,3) << sect_mod.SetValue( cmd.Sb );
@@ -538,7 +538,7 @@ void write_min_moment_data_table(IBroker* pBroker,
       MINMOMENTCAPDETAILS mmcd;
       pMomentCapacity->GetMinMomentCapacityDetails(stage,poi,bPositiveMoment,&mmcd);
 
-      (*table)(row,0) << location.SetValue( poi, end_size );
+      (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
       (*table)(row,1) << moment.SetValue( mmcd.Mcr );
       (*table)(row,2) << moment.SetValue( mmcd.MrMin1 );
       (*table)(row,3) << mmcd.LimitState;
@@ -655,7 +655,7 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
 
       if ( mcd.bOverReinforced )
       {
-         (*table)(row,0) << location.SetValue( poi, end_size );
+         (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
          (*table)(row,1) << scalar.SetValue( mcd.Beta1Slab );
          (*table)(row,2) << stress.SetValue( mcd.FcSlab );
          (*table)(row,3) << dim.SetValue( mcd.b );

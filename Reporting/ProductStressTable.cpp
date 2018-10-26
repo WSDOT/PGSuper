@@ -219,7 +219,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
 
    // Get all the tabular poi's for flexure and shear
    // Merge the two vectors to form one vector to report on.
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite3,span,gdr, POI_ALL, POIFIND_OR);
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(span,gdr, pgsTypes::BridgeSite3,POI_ALL, POIFIND_OR);
 
    std::vector<Float64> fTopGirder, fBotGirder;
    std::vector<Float64> fTopDiaphragm, fBotDiaphragm;
@@ -441,7 +441,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
 
       ColumnIndexType col = 0;
 
-      (*p_table)(row,col++) << location.SetValue( poi, end_size );
+      (*p_table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
 
       (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopGirder[index]) << rptNewLine;
       (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotGirder[index]);

@@ -52,7 +52,7 @@ class REPORTINGCLASS CBridgeDescDetailsChapterBuilder : public CPGSuperChapterBu
 {
 public:
    // GROUP: LIFECYCLE
-   CBridgeDescDetailsChapterBuilder();
+   CBridgeDescDetailsChapterBuilder(bool bOmitStrandLocations = false);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
@@ -81,6 +81,7 @@ protected:
 private:
    // GROUP: DATA MEMBERS
    // GROUP: LIFECYCLE
+   bool m_bOmitStrandLocations;
 
    // Prevent accidental copying and assignment
    CBridgeDescDetailsChapterBuilder(const CBridgeDescDetailsChapterBuilder&);

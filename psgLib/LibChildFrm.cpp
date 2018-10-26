@@ -47,6 +47,24 @@ CLibChildFrame::~CLibChildFrame()
 {
 }
 
+BOOL CLibChildFrame::Create(LPCTSTR lpszClassName,
+				LPCTSTR lpszWindowName,
+				DWORD dwStyle,
+				const RECT& rect,
+				CMDIFrameWnd* pParentWnd,
+				CCreateContext* pContext)
+{
+   BOOL bResult = CLibraryEditorChildFrame::Create(lpszClassName,lpszWindowName,dwStyle,rect,pParentWnd,pContext);
+   if ( bResult )
+   {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      HICON hIcon = AfxGetApp()->LoadIcon(IDR_LIBRARYTYPE);
+      SetIcon(hIcon,TRUE);
+   }
+
+   return bResult;
+}
+
 
 BEGIN_MESSAGE_MAP(CLibChildFrame, CLibraryEditorChildFrame)
 	//{{AFX_MSG_MAP(CLibChildFrame)

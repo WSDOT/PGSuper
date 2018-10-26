@@ -149,7 +149,7 @@ public:
    virtual Float64 GetLiftingModulusOfRupture(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetLiftingModulusOfRupture(Float64 fci);
    virtual Float64 GetLiftingModulusOfRuptureCoefficient();
-   virtual Float64 GetMinimumLiftingPointLocation() const;
+   virtual Float64 GetMinimumLiftingPointLocation(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::MemberEndType end) const;
    virtual Float64 GetLiftingPointLocationAccuracy() const;
 
 // IGirderHaulingSpecCriteria
@@ -185,7 +185,7 @@ public:
    virtual Float64 GetHaulingModulusOfRuptureCoefficient();
    virtual Float64 GetHaulingModulusOfRupture(Float64 fc);
    virtual Float64 GetHaulingModulusOfRupture(SpanIndexType span,GirderIndexType gdr);
-   virtual Float64 GetMinimumHaulingSupportLocation() const;
+   virtual Float64 GetMinimumHaulingSupportLocation(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::MemberEndType end) const;
    virtual Float64 GetHaulingSupportLocationAccuracy() const;
 
 // IDebondLimits

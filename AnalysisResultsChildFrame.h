@@ -72,7 +72,17 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CAnalysisResultsChildFrame)
 	public:
+	virtual BOOL Create(LPCTSTR lpszClassName,
+				LPCTSTR lpszWindowName,
+				DWORD dwStyle = WS_CHILD | WS_VISIBLE | WS_OVERLAPPEDWINDOW,
+				const RECT& rect = rectDefault,
+				CMDIFrameWnd* pParentWnd = NULL,
+				CCreateContext* pContext = NULL);
 	//}}AFX_VIRTUAL
+#ifdef _DEBUG
+	virtual void AssertValid() const;
+	virtual void Dump(CDumpContext& dc) const;
+#endif
 
 // Implementation
 protected:

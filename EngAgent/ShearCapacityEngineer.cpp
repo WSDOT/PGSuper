@@ -730,7 +730,7 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
          ATLASSERT(shear_capacity_method == scmWSDOT2001);
 
          GET_IFACE(IPointOfInterest,pPOI);
-         std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,poi.GetSpan(),poi.GetGirder(),POI_15H);
+         std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(poi.GetSpan(),poi.GetGirder(),pgsTypes::BridgeSite3,POI_15H);
          ATLASSERT(vPOI.size() == 2);
          double l1 = vPOI[0].GetDistFromStart();
          double l2 = vPOI[1].GetDistFromStart();

@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "DisplayObjectFactory.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperDoc.h"
 
 #include "mfcdual.h"

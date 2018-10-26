@@ -503,11 +503,7 @@ HBRUSH CSectionViewDialog::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 
 BOOL CSectionViewDialog::OnInitDialog() 
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    CDialog::OnInitDialog();

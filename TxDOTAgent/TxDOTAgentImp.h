@@ -28,8 +28,12 @@
 #include "TxDOTAgent_i.h"
 
 #include <EAF\EAFInterfaceCache.h>
+#include <EAF\EAFUIIntegration.h>
 
 #include <IFace\TxDOTCadExport.h>
+#include "TxDOTCommandLineInfo.h"
+
+#include <PgsExt\DesignArtifact.h>
 
 
 #if defined(_WIN32_WCE) && !defined(_CE_DCOM) && !defined(_CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA)
@@ -44,6 +48,7 @@ class ATL_NO_VTABLE CTxDOTAgentImp :
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<CTxDOTAgentImp, &CLSID_TxDOTAgent>,
 	public IAgentEx,
+   public IEAFProcessCommandLine,
    public ITxDOTCadExport
 {
 public:
@@ -58,6 +63,7 @@ DECLARE_NOT_AGGREGATABLE(CTxDOTAgentImp)
 BEGIN_COM_MAP(CTxDOTAgentImp)
 	COM_INTERFACE_ENTRY(IAgentEx)
    COM_INTERFACE_ENTRY(ITxDOTCadExport)
+   COM_INTERFACE_ENTRY(IEAFProcessCommandLine)
 END_COM_MAP()
 
 
@@ -87,6 +93,16 @@ public:
 public:
    virtual int WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, GirderIndexType gdr, TxDOTCadExportFormatType format, bool designSucceeded);
    virtual int WriteDistributionFactorsToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, GirderIndexType gdr);
+
+// IEAFProcessCommandLine
+public:
+   virtual BOOL ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo);
+
+protected:
+   void ProcessTxDotCad(const CTxDOTCommandLineInfo& rCmdInfo);
+   bool CreateTxDOTFileNames(const CString& output, CString* pErrFileName);
+   bool DoTxDotCadReport(const CString& outputFileName, const CString& errorFileName, const CTxDOTCommandLineInfo& txInfo);
+   void SaveFlexureDesign(SpanIndexType span,GirderIndexType gdr,const arDesignOptions& designOptions, const pgsDesignArtifact* pArtifact);
 
 private:
    DECLARE_AGENT_DATA;

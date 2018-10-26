@@ -105,7 +105,7 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,SpanIndexType sp
    const pgsStirrupCheckArtifact* pstirrup_artifact= gdrArtifact->GetStirrupCheckArtifact();
    CHECK(pstirrup_artifact);
 
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stage, span, girder, POI_TABULAR|POI_SHEAR );
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_TABULAR|POI_SHEAR );
 
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
    if ( stage == pgsTypes::CastingYard )
@@ -126,7 +126,7 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,SpanIndexType sp
 
       const pgsStirrupDetailArtifact* pArtifact = psArtifact->GetStirrupDetailArtifact();
 
-      (*table)(row,0) << location.SetValue( poi, end_size );
+      (*table)(row,0) << location.SetValue( stage, poi, end_size );
 
       BarSizeType bs= pArtifact->GetBarSize();
       if (bs!=0)

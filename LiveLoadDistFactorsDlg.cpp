@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "LiveLoadDistFactorsDlg.h"
 #include <MFCTools\CustomDDX.h>
 #include <..\htmlhelp\helptopics.hh>

@@ -37,11 +37,6 @@
 #include <EAF\EAFApp.h>
 
 #include "MainFrm.h"
-#include "PGSuperCatalogServers.h"
-#include "PGSuperCommandLineInfo.h"
-
-#include <System\Date.h>
-#include <PsgLib\LibraryManager.h>
 
 //   DECLARE_LOGFILE;
 #if defined ENABLE_LOGGING
@@ -51,15 +46,6 @@ static dbgLogDumpContext m_Log;
 class CXShutDown;
 class CPGSuperCommandLineInfo;
 
-enum CacheUpdateFrequency
-{
-   Never,
-   Always,
-   Daily,
-   Weekly,
-   Monthly
-};
-
 
 extern class CComModule _Module;
 
@@ -68,20 +54,23 @@ extern class CComModule _Module;
 // See PGSuper.cpp for the implementation of this class
 //
 
-class CPGSuperApp : public CEAFApp
+class CPGSuperApp : public CEAFPluginApp
 {
 public:
 	CPGSuperApp();
 
 // CEAFApp overrides
+public:
+   virtual OLECHAR* GetAppPluginCategoryName();
+   virtual CATID GetAppPluginCategoryID();
+
 protected:
    virtual CEAFSplashScreenInfo GetSplashScreenInfo();
    virtual LPCTSTR GetRegistryKey();
-   virtual BOOL CreateApplicationPlugins();
    virtual CMDIFrameWnd* CreateMainFrame();
    virtual CDocManager* CreateDocumentManager();
-   virtual CEAFCommandLineInfo& GetCommandLineInfo();
    virtual CATID GetComponentInfoCategoryID();
+   virtual CString GetProductCode();
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -89,7 +78,6 @@ protected:
 	public:
 	virtual BOOL InitInstance();
 	virtual int ExitInstance();
-	virtual LRESULT ProcessWndProcException(CException* e, const MSG* pMsg);
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -100,20 +88,11 @@ protected:
 	afx_msg void OnHelpInetWsdot();
 	afx_msg void OnHelpInetPgsuper();
    afx_msg void OnHelpInetARP();
-	afx_msg void OnProgramSettings();
    afx_msg void OnScreenSize();
 	//}}AFX_MSG
-	afx_msg void OnProgramSettings(BOOL bFirstRun);
 	DECLARE_MESSAGE_MAP()
 
 public:
-   CString GetEngineerName();
-   CString GetEngineerCompany();
-
-   CString GetMasterLibraryFile();
-   CString GetCachedMasterLibraryFile();
-   void GetTemplateFolders(CString& strWorkgroupFolder);
-
    CString GetVersion(bool bIncludeBuildNumber) const;
    CString GetVersionString(bool bIncludeBuildNumber) const;
 
@@ -122,68 +101,9 @@ public:
    CString GetWsdotBridgeUrl();
    CString GetPGSuperUrl();
 
-    void SetCacheUpdateFrequency(CacheUpdateFrequency frequence);
-    CacheUpdateFrequency GetCacheUpdateFrequency();
-
-    void SetSharedResourceType(SharedResourceType resType);
-    SharedResourceType GetSharedResourceType();
-
-    CString GetMasterLibraryPublisher() const;
-
 private:
-
-   CPGSuperCommandLineInfo m_CommandLineInfo;
-
-   CPGSuperCatalogServers m_CatalogServers;
-
    virtual void RegistryInit(); // All registry initialization goes here
    virtual void RegistryExit(); // All registry cleanup goes here
-   void RegistryConvert(); // Convert any old registry settings for current program (move into app plugin class)
-
-   void Process1250Testing(const CPGSuperCommandLineInfo& cmdInfo);
-   void ProcessTxDotCad(const CPGSuperCommandLineInfo& cmdInfo);
-
-   SharedResourceType   m_SharedResourceType;     // method for using shared resources (Master lib and Workgroup templates)
-   CacheUpdateFrequency m_CacheUpdateFrequency;
-
-   CString m_CurrentCatalogServer; // name of current catalog server
-   CString m_Publisher;     // Name of publisher in m_CurrentServer
-   CString m_MasterLibraryFileURL; // URL of a published Master library file
-
-   // Cache file/folder for Internet or Local Network resources
-   CString m_MasterLibraryFileCache; 
-   CString m_WorkgroupTemplateFolderCache;
-
-   CString m_UserTemplateFolder;
-
-   CString m_EngineerName;
-   CString m_CompanyName;
-
-   bool IsTimeToUpdateCache();
-   bool AreUpdatesPending();
-
-   void UpdateCache(); // only updates if needed
-   bool DoCacheUpdate(); // always does the update
-   CTime GetLastCacheUpdateTime();
-   void SetLastCacheUpdateTime(const CTime& time);
-   bool UpdateCatalogCache(IProgressMonitor* pProgress);
-   void RestoreLibraryAndTemplatesToDefault();
-   void DeleteCache(LPCSTR pstrCache);
-   void RecursiveDelete(LPCSTR pstr);
-   
-   CString GetDefaultMasterLibraryFile();
-   CString GetDefaultWorkgroupTemplateFolder();
-   CString GetCacheFolder();
-   CString GetSaveCacheFolder();
-
-
-   sysDate GetInstallDate();
-   sysDate GetLastRunDate();
-
-   sysDate m_LastRunDate;
-
-   BOOL IsFirstRun();
-
 };
 
 extern CPGSuperApp theApp;

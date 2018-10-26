@@ -270,7 +270,8 @@ STDMETHODIMP_(bool) CPointLoadDrawStrategyImpl::XDisplayObjectEvents::OnRButtonD
 
 STDMETHODIMP_(bool) CPointLoadDrawStrategyImpl::XDisplayObjectEvents::OnRButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
 {
-   METHOD_PROLOGUE(CPointLoadDrawStrategyImpl,DisplayObjectEvents);
+   METHOD_PROLOGUE_(CPointLoadDrawStrategyImpl,DisplayObjectEvents);
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CComPtr<iDisplayList> list;
    pDO->GetDisplayList(&list);
@@ -402,6 +403,7 @@ void CPointLoadDrawStrategyImpl::GetLSymbolSize(iCoordinateMap* pMap, long* psx,
 
 void CPointLoadDrawStrategyImpl::EditLoad()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    GET_IFACE(IUserDefinedLoadData, pUdl);
 
    CHECK(0 <= m_LoadIndex && m_LoadIndex < pUdl->GetPointLoadCount());

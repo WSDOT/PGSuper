@@ -176,80 +176,6 @@ struct SuperstructureMemberData
 // useful functions
 static void CreateSuperstructureMember(Float64 length,const std::vector<SuperstructureMemberData>& vData,ISuperstructureMember** ppMbr);
 
-
-LoadCaseIDType get_load_case_id(ProductForceType type)
-{
-   LoadCaseIDType lcid;
-   switch(type)
-   {
-   case pftGirder:
-      lcid = g_lcidGirder;
-      break;
-
-   case pftConstruction:
-      lcid = g_lcidConstruction;
-      break;
-
-   case pftSlab:
-      lcid = g_lcidSlab;
-      break;
-
-   case pftDiaphragm: 
-      lcid = g_lcidDiaphragm;
-      break;
-
-   case pftSidewalk:
-      lcid = g_lcidSidewalk;
-      break;
-
-   case pftTrafficBarrier:
-      lcid = g_lcidTrafficBarrier;
-      break;
-
-   case pftOverlay:
-      lcid = g_lcidOverlay;
-      break;
-
-   case pftOverlayRating:
-      lcid = g_lcidOverlayRating;
-      break;
-
-   case pftShearKey:
-      lcid = g_lcidShearKey;
-      break;
-
-   default: // should never get here!!!
-      CHECK(false);
-   }
-
-   return lcid;
-}
-
-Int32 get_stress_point_id(pgsTypes::StressLocation loc)
-{
-   Int32 spid;
-   switch(loc)
-   {
-   case pgsTypes::BottomGirder:
-      spid = g_BottomGirder;
-      break;
-
-   case pgsTypes::TopGirder:
-      spid = g_TopGirder;
-      break;
-
-   case pgsTypes::TopSlab:
-      spid = g_TopSlab;
-      break;
-
-   default: // should never get here!!!
-      CHECK(false);
-   }
-
-   return spid;
-}
-
-
 static void AddLoadCase(ILoadCases* loadCases, BSTR name, BSTR description)
 {
    HRESULT hr;
@@ -464,8 +390,8 @@ void CAnalysisAgentImp::ModelData::operator=(const CAnalysisAgentImp::ModelData&
    pLoadComboResponse[MinSimpleContinuousEnvelope] = other.pLoadComboResponse[MinSimpleContinuousEnvelope];
    pLoadComboResponse[MaxSimpleContinuousEnvelope] = other.pLoadComboResponse[MaxSimpleContinuousEnvelope];
 
-   pConcurrentComboResponse[SimpleSpan]                  = other.pConcurrentComboResponse[SimpleSpan];
-   pConcurrentComboResponse[ContinuousSpan]              = other.pConcurrentComboResponse[ContinuousSpan];
+   pConcurrentComboResponse[SimpleSpan]            = other.pConcurrentComboResponse[SimpleSpan];
+   pConcurrentComboResponse[ContinuousSpan]        = other.pConcurrentComboResponse[ContinuousSpan];
 
    pVehicularResponse[SimpleSpan]                  = other.pVehicularResponse[SimpleSpan];
    pVehicularResponse[ContinuousSpan]              = other.pVehicularResponse[ContinuousSpan];
@@ -1120,7 +1046,7 @@ void CAnalysisAgentImp::BuildBridgeSiteModel(GirderIndexType gdr,bool bContinuou
 
          // stiffness for optional deflection live load - same for all segments
 #pragma Reminder("UPDATE: Assuming prismatic members")
-         std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,spanIdx,gdrIdx,POI_MIDSPAN);
+         std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::BridgeSite3,POI_MIDSPAN);
          ATLASSERT( vPOI.size() == 1 );
          const pgsPointOfInterest& poi = vPOI.front();
          Float64 ei_defl = pSectProp2->GetBridgeEIxx( poi.GetDistFromStart() );
@@ -1280,7 +1206,7 @@ CAnalysisAgentImp::cyModelData CAnalysisAgentImp::BuildCastingYardModels(SpanInd
 
    // Get points of interest
    GET_IFACE(IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPOI = pIPoi->GetPointsOfInterest(pgsTypes::CastingYard,spanIdx,gdrIdx,POI_ALL,POIFIND_OR);
+   std::vector<pgsPointOfInterest> vPOI = pIPoi->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_ALL,POIFIND_OR);
 
    // Build the Girder Model
    cyModelData model_data;
@@ -1491,7 +1417,7 @@ void CAnalysisAgentImp::BuildCamberModel(SpanIndexType spanIdx,GirderIndexType g
    // Create the FEM model (includes girder dead load)
    //
    Lg = pBridge->GetGirderLength(spanIdx,gdrIdx);
-   vPOI = pIPoi->GetPointsOfInterest(spanIdx,gdrIdx,POI_ALL,POIFIND_OR);
+   vPOI = pIPoi->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_ALL,POIFIND_OR);
 
    GET_IFACE(IGirderLiftingPointsOfInterest,pLiftPOI);
    std::vector<pgsPointOfInterest> liftingPOI = pLiftPOI->GetLiftingPointsOfInterest(spanIdx,gdrIdx,POI_ALL,POIFIND_OR);
@@ -1522,10 +1448,10 @@ void CAnalysisAgentImp::BuildCamberModel(SpanIndexType spanIdx,GirderIndexType g
    LoadIDType ptLoadID;
    pointLoads->get_Count(&ptLoadID);
 
-   vPOI = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite3,spanIdx,gdrIdx,POI_MIDSPAN);
+   vPOI = pIPoi->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::BridgeSite3,POI_MIDSPAN);
    ATLASSERT( vPOI.size() == 1 );
    pgsPointOfInterest mid_span_poi = vPOI.front();
-   ATLASSERT( mid_span_poi.IsMidSpan() == true );
+   ATLASSERT( mid_span_poi.IsMidSpan(pgsTypes::BridgeSite3) == true );
 
    pgsPointOfInterest poiStart(spanIdx,gdrIdx,0.0);
    pgsPointOfInterest poiEnd(spanIdx,gdrIdx,Lg);
@@ -1551,7 +1477,7 @@ void CAnalysisAgentImp::BuildCamberModel(SpanIndexType spanIdx,GirderIndexType g
 
       // get harping point locations
       vPOI.clear(); // recycle the vector
-      vPOI = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite3,spanIdx,gdrIdx,POI_HARPINGPOINT);
+      vPOI = pIPoi->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::BridgeSite3,POI_HARPINGPOINT);
       ATLASSERT( 0 <= vPOI.size() && vPOI.size() < 3 );
       pgsPointOfInterest hp1_poi;
       pgsPointOfInterest hp2_poi;
@@ -1815,7 +1741,7 @@ void CAnalysisAgentImp::BuildTempCamberModel(SpanIndexType spanIdx,GirderIndexTy
       Ec  = pMaterial->GetEcGdr(spanIdx,gdrIdx);
    }
 
-   vPOI = pIPoi->GetPointsOfInterest(spanIdx,gdrIdx,POI_ALL,POIFIND_OR);
+   vPOI = pIPoi->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_ALL,POIFIND_OR);
 
    GET_IFACE(IGirderLiftingPointsOfInterest,pLiftPOI);
    std::vector<pgsPointOfInterest> liftingPOI = pLiftPOI->GetLiftingPointsOfInterest(spanIdx,gdrIdx,POI_ALL,POIFIND_OR);
@@ -1833,7 +1759,7 @@ void CAnalysisAgentImp::BuildTempCamberModel(SpanIndexType spanIdx,GirderIndexTy
    pgsGirderModelFactory::CreateGirderModel(m_pBroker,spanIdx,gdrIdx,0.0,L,Ec, g_lcidGirder,false,vPOI,&pReleaseModelData->Model,&pReleaseModelData->PoiMap);
 
    // Determine the prestress forces and eccentricities
-   vPOI = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite3,spanIdx,gdrIdx,POI_MIDSPAN);
+   vPOI = pIPoi->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::BridgeSite3,POI_MIDSPAN);
    CHECK( vPOI.size() != 0 );
    const pgsPointOfInterest& mid_span_poi = vPOI.front();
 
@@ -2068,7 +1994,8 @@ void CAnalysisAgentImp::ApplySelfWeightLoad(ILBAMModel* pModel,GirderIndexType g
       GetGirderSelfWeightLoad(spanIdx,gdrIdx,&vGirderLoads,&vDiaphragmLoads);
 
       // apply distributed load segments
-      Float64 Pstart, Pend; // point loads at start and end to account for the selfweight of the girder overhang
+      Float64 Pstart = 0;
+      Float64 Pend = 0; // point loads at start and end to account for the selfweight of the girder overhang
       std::vector<GirderLoad>::iterator iter;
       for ( iter = vGirderLoads.begin(); iter != vGirderLoads.end(); iter++ )
       {
@@ -2648,7 +2575,7 @@ void CAnalysisAgentImp::ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel, G
       // in the deep beam case, just apply the reaction load and not the moment
       // otherwise apply the reaction and moment
       GET_IFACE(IPointOfInterest,pPOI);
-      std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,spanIdx,gdrIdx,POI_SECTCHANGE);
+      std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::BridgeSite3,POI_SECTCHANGE);
       ATLASSERT( 2 <= vPOI.size() );
       Float64 gdrHeightStart = pGdr->GetHeight( vPOI.front() );
       Float64 gdrHeightEnd   = pGdr->GetHeight( vPOI.back() );
@@ -3978,7 +3905,7 @@ CAnalysisAgentImp::ModelData* CAnalysisAgentImp::GetModelData(GirderIndexType gd
 
       // create the points of interest in the analysis models
       GET_IFACE(IPointOfInterest,pPOI);
-      std::vector<pgsPointOfInterest> vPoi = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,ALL_SPANS,gdr,POI_ALLOUTPUT | POI_ALLACTIONS,POIFIND_OR);
+      std::vector<pgsPointOfInterest> vPoi = pPOI->GetPointsOfInterest(ALL_SPANS,gdr,pgsTypes::BridgeSite3,POI_ALLOUTPUT | POI_ALLACTIONS,POIFIND_OR);
       std::vector<pgsPointOfInterest>::iterator iter;
       for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
       {
@@ -4171,21 +4098,6 @@ pgsTypes::Stage CAnalysisAgentImp::GetGirderDeadLoadStage(SpanIndexType span,Gir
 
 pgsTypes::Stage CAnalysisAgentImp::GetGirderDeadLoadStage(GirderIndexType gdrLineIdx)
 {
-//   // if anywhere in this girder line, if a girder can have temporary strands
-//   // then the load goes into the TemporaryStrandRemoval stage
-//   // otherwise this stage is skipped and the loads go into GirderPlacement
-//
-//   GET_IFACE(IBridge,pBridge);
-//   GET_IFACE(IStrandGeometry,pStrandGeom);
-//   long nSpans = pBridge->GetSpanCount();
-//   for ( long span = 0; span < nSpans; span++ )
-//   {
-//      long NtMax = pStrandGeom->GetMaxStrands(span,gdrLineIdx,pgsTypes::Temporary);
-//
-//      if ( 0 < NtMax )
-//         return pgsTypes::TemporaryStrandRemoval;
-//   }
-//
    return pgsTypes::GirderPlacement;
 }
 
@@ -4299,7 +4211,7 @@ void CAnalysisAgentImp::GetGirderSelfWeightLoad(SpanIndexType spanIdx,GirderInde
 {
    // get all the cross section changes
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> xsPOI = pPOI->GetPointsOfInterest(pgsTypes::CastingYard,spanIdx,gdrIdx,POI_SECTCHANGE,POIFIND_OR);
+   std::vector<pgsPointOfInterest> xsPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_SECTCHANGE,POIFIND_OR);
 
    GET_IFACE(IBridgeMaterial,pMaterial);
    Float64 density = pMaterial->GetWgtDensityGdr(spanIdx,gdrIdx);
@@ -4519,7 +4431,7 @@ void CAnalysisAgentImp::GetMainSpanSlabLoad(SpanIndexType span,GirderIndexType g
    // Get some important POIs that we will be using later
    PoiAttributeType attrib = POI_ALLACTIONS;
    std::vector<pgsPointOfInterest> vPoi;
-   vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite3,span,gdrIdx,attrib,POIFIND_OR);
+   vPoi = pIPoi->GetPointsOfInterest(span,gdrIdx,pgsTypes::BridgeSite3,attrib,POIFIND_OR);
    CHECK(vPoi.size()!=0);
 
    bool bIsInteriorGirder = pBridge->IsInteriorGirder(span,gdrIdx);
@@ -4537,6 +4449,7 @@ void CAnalysisAgentImp::GetMainSpanSlabLoad(SpanIndexType span,GirderIndexType g
 
       Float64 top_girder_to_top_slab = pSectProp2->GetDistTopSlabToTopGirder(poi);
       Float64 gross_depth = pBridge->GetGrossSlabDepth(poi);
+      Float64 slab_offset = pBridge->GetSlabOffset(poi);
 
       if ( nGirders == 1 )
       {
@@ -4628,7 +4541,7 @@ void CAnalysisAgentImp::GetMainSpanSlabLoad(SpanIndexType span,GirderIndexType g
             else if ( pDeck->OverhangTaper == pgsTypes::TopTopFlange )
             {
                // deck overhang tapers to the top of the top flange
-               overhang_depth_at_flange_tip = top_girder_to_top_slab;
+               overhang_depth_at_flange_tip = slab_offset;
             }
             else if ( pDeck->OverhangTaper == pgsTypes::BottomTopFlange )
             {
@@ -4640,7 +4553,7 @@ void CAnalysisAgentImp::GetMainSpanSlabLoad(SpanIndexType span,GirderIndexType g
                else
                   flange_thickness = pGdr->GetTopFlangeThickness(poi,nFlanges-1);
 
-               overhang_depth_at_flange_tip = top_girder_to_top_slab + flange_thickness;
+               overhang_depth_at_flange_tip = slab_offset + flange_thickness;
             }
             else
             {
@@ -4843,7 +4756,7 @@ void CAnalysisAgentImp::GetMainSpanOverlayLoad(SpanIndexType span,GirderIndexTyp
    // Get some important POIs that we will be using later
    PoiAttributeType attrib = POI_ALLACTIONS;
    std::vector<pgsPointOfInterest> vPoi;
-   vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite3,span,gdrIdx,attrib,POIFIND_OR);
+   vPoi = pIPoi->GetPointsOfInterest(span,gdrIdx,pgsTypes::BridgeSite3,attrib,POIFIND_OR);
    CHECK(vPoi.size()!=0);
 
    GET_IFACE(ISectProp2,pSectProp2);
@@ -4945,7 +4858,7 @@ void CAnalysisAgentImp::GetMainConstructionLoad(SpanIndexType span,GirderIndexTy
    // Get some important POIs that we will be using later
    PoiAttributeType attrib = POI_ALLACTIONS;
    std::vector<pgsPointOfInterest> vPoi;
-   vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite1,span,gdrIdx,attrib,POIFIND_OR);
+   vPoi = pIPoi->GetPointsOfInterest(span,gdrIdx,pgsTypes::BridgeSite1,attrib,POIFIND_OR);
    CHECK(vPoi.size()!=0);
 
    GET_IFACE(ISectProp2,pSectProp2);
@@ -5076,7 +4989,7 @@ void CAnalysisAgentImp::GetMainSpanShearKeyLoad(SpanIndexType span,GirderIndexTy
       GET_IFACE(IPointOfInterest,pIPoi);
       PoiAttributeType attrib = POI_ALLACTIONS;
       std::vector<pgsPointOfInterest> vPoi;
-      vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite3,span,gdrIdx,attrib,POIFIND_OR);
+      vPoi = pIPoi->GetPointsOfInterest(span,gdrIdx,pgsTypes::BridgeSite3,attrib,POIFIND_OR);
       CHECK(vPoi.size()!=0);
 
       int num_poi = vPoi.size();
@@ -9791,7 +9704,7 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(SpanIndexT
    }
 
    GET_IFACE(IPointOfInterest, IPoi);
-   std::vector<pgsPointOfInterest> pois = IPoi->GetPointsOfInterest(pgsTypes::BridgeSite3,span,gdr,POI_MIDSPAN);
+   std::vector<pgsPointOfInterest> pois = IPoi->GetPointsOfInterest(span,gdr,pgsTypes::BridgeSite3,POI_MIDSPAN);
    ATLASSERT(pois.size() == 1);
    pgsPointOfInterest poi = pois[0];
 

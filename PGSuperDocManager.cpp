@@ -23,8 +23,6 @@
 #include "stdafx.h"
 #include "PGSuperDocManager.h"
 #include "PGSuper.h"
-#include "PGSuperDocTemplate.h"
-#include "PGSuperDoc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

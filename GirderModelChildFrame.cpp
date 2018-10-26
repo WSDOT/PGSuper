@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
 #include "GirderModelChildFrame.h"
@@ -94,6 +94,24 @@ CGirderModelChildFrame::~CGirderModelChildFrame()
 {
 }
 
+BOOL CGirderModelChildFrame::Create(LPCTSTR lpszClassName,
+				LPCTSTR lpszWindowName,
+				DWORD dwStyle,
+				const RECT& rect,
+				CMDIFrameWnd* pParentWnd,
+				CCreateContext* pContext)
+{
+   BOOL bResult = CSplitChildFrame::Create(lpszClassName,lpszWindowName,dwStyle,rect,pParentWnd,pContext);
+   if ( bResult )
+   {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      HICON hIcon = AfxGetApp()->LoadIcon(IDR_GIRDERMODELEDITOR);
+      SetIcon(hIcon,TRUE);
+   }
+
+   return bResult;
+}
+
 BEGIN_MESSAGE_MAP(CGirderModelChildFrame, CSplitChildFrame)
 	//{{AFX_MSG_MAP(CGirderModelChildFrame)
 	ON_WM_CREATE()
@@ -153,6 +171,7 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CSplitChildFrame::OnCreate(lpCreateStruct) == -1)
 		return -1;
 	
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	if ( !m_SettingsBar.Create( this, IDD_GIRDER_ELEVATION_BAR, CBRS_TOP, IDD_GIRDER_ELEVATION_BAR) )
 	{
 		TRACE0("Failed to create control bar\n");
@@ -216,6 +235,7 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 CGirderModelElevationView* CGirderModelChildFrame::GetGirderModelElevationView() const
 {
+   AFX_MANAGE_STATE(AfxGetAppModuleState()); // GetPane does the "AssertValid" thing, the module state has to be correct
    CWnd* pwnd = m_SplitterWnd.GetPane(0, 0);
    CGirderModelElevationView* pvw = dynamic_cast<CGirderModelElevationView*>(pwnd);
    ASSERT(pvw);
@@ -224,6 +244,7 @@ CGirderModelElevationView* CGirderModelChildFrame::GetGirderModelElevationView()
 
 CGirderModelSectionView* CGirderModelChildFrame::GetGirderModelSectionView() const
 {
+   AFX_MANAGE_STATE(AfxGetAppModuleState()); // GetPane does the "AssertValid" thing, the module state has to be correct
    CWnd* pwnd = m_SplitterWnd.GetPane(1, 0);
    CGirderModelSectionView* pvw = dynamic_cast<CGirderModelSectionView*>(pwnd);
    ASSERT(pvw);
@@ -335,7 +356,7 @@ void CGirderModelChildFrame::UpdateBar()
          GET_IFACE2(pBroker, IPointOfInterest, pPoi);
          std::vector<pgsPointOfInterest> poi;
          std::vector<pgsPointOfInterest>::iterator iter;
-         poi = pPoi->GetPointsOfInterest(pgsTypes::CastingYard, spanIdx, gdrIdx, POI_HARPINGPOINT);
+         poi = pPoi->GetPointsOfInterest(spanIdx, gdrIdx, pgsTypes::CastingYard, POI_HARPINGPOINT);
          int nPoi = poi.size();
          ASSERT(0 < nPoi && nPoi <3);
          iter = poi.begin();
@@ -433,6 +454,8 @@ void CGirderModelChildFrame::OnSectionCut()
 
 void CGirderModelChildFrame::ShowCutDlg()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CPGSuperDoc* pdoc = (CPGSuperDoc*) GetActiveDocument();
    Float64 val  = m_CurrentCutLocation;
    Float64 high = m_MaxCutLocation;
@@ -510,6 +533,8 @@ void CGirderModelChildFrame::CutAtPrev()
 
 void CGirderModelChildFrame::CutAtLocation()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);

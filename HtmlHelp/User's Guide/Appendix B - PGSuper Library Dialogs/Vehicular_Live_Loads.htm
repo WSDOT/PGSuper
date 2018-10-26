@@ -20,8 +20,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=684>
-<meta name=layout-width content=873>
+<meta name=layout-height content=736>
+<meta name=layout-width content=947>
 
 
 <!--(Links)=========================================================-->
@@ -46,7 +46,19 @@
 
 <h6>Usage</h6>
 
-<p>&nbsp;</p>
+<p>Select how this live load is to be used for analysis. Options are:</p>
+
+<ol style="list-style: decimal;"
+	type=1>
+	
+	<li class=kadov-p><p>Use for all actions at all locations</p></li>
+	
+	<li class=kadov-p><p>Use only for negative moments between points of 
+ contraflexure and interior pier reactions</p></li>
+	
+	<li class=kadov-p><p>Use only for negative moments and interior pier 
+ reactions</p></li>
+</ol>
 
 <h6>Load Type</h6>
 
@@ -56,7 +68,7 @@
 <table x-use-null-cells
 		style="x-cell-content-align: top;
 				width: 100%;
-				border-spacing: 0;
+				border-spacing: 0px;
 				border-spacing: 0px;"
 		cellspacing=0
 		width=100%>
@@ -193,7 +205,7 @@
 <h6>Lane Load</h6>
 
 <p>Input the magnitude of the lane load and the span length for which it 
- will be applied. If any span length, measured as the pier-to-pier distance 
+ will be applied. If any span length, measured as the pier-to-pier distance, 
  exceeds the threshold value, the lane load will be applied. A span length 
  of zero will cause the lane load to always be applied.</p>
 
@@ -201,13 +213,14 @@
 
 <p>Describe the truck configuration. Trucks are defined as a series of 
  axle weights and spacing. Use the Add and Delete buttons to define the 
- axles. A single axle spacing can be optional designated as a variable 
- spacing. The spacing value in the grid will be taken as the minimum value 
- and the secondary value will be taken as the maximum axle spacing.</p>
+ axles. Spacing is measured as the distance between axles. A single axle 
+ spacing can be optional designated as a variable spacing. For a variable 
+ spacing, input the axle spacing as <span style="font-style: italic;">min</span><span>-</span><span 
+ style="font-style: italic;">max </span><span>(e.g. 14-30).</span> </p>
 
 <p>Axles not contributing to the maximum load effect under consideration 
- can be optionally neglected. This is typically done with notional loads 
- such as HL-93 and NRL.</p>
+ can be neglected. This is typically done with notional loads such as HL-93 
+ and NRL.</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

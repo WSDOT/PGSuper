@@ -71,7 +71,7 @@ CPrestressStressTable& CPrestressStressTable::operator= (const CPrestressStressT
 
 //======================== OPERATIONS =======================================
 rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                            IEAFDisplayUnits* pDisplayUnits) const
+                                            bool bDesign,IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, gdrpoi, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -79,10 +79,7 @@ rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,SpanIndexType span,Gir
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
    gdrpoi.IncludeSpanAndGirder(span == ALL_SPANS);
-   gdrpoi.MakeGirderPoi();
-
    spanpoi.IncludeSpanAndGirder(span == ALL_SPANS);
-   spanpoi.MakeSpanPoi();
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
@@ -101,7 +98,7 @@ rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,SpanIndexType span,Gir
       }
    }
 
-   int nColumns = ( bTempStrands ? 7 : 6 );
+   int nColumns = (bDesign ? (bTempStrands ? 7 : 6) : 2);
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nColumns,"Prestress Stresses");
 
    if ( span == ALL_SPANS )
@@ -109,27 +106,41 @@ rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,SpanIndexType span,Gir
       p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-      p_table->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      p_table->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      if ( bDesign )
+      {
+         p_table->SetColumnStyle(1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+         p_table->SetStripeRowColumnStyle(1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      }
    }
 
    // Set up table headings
    int col = 0;
-   (*p_table)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,col++) << COLHDR("Casting Yard",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   
-   if ( bTempStrands )
-      (*p_table)(0,col++) << COLHDR("Temporary" << rptNewLine << "Strand" << rptNewLine << "Removal",      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   if ( bDesign )
+   {
+      (*p_table)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*p_table)(0,col++) << COLHDR("Casting Yard",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      
+      if ( bTempStrands )
+         (*p_table)(0,col++) << COLHDR("Temporary" << rptNewLine << "Strand" << rptNewLine << "Removal",      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-   (*p_table)(0,col++) << COLHDR("Bridge Site 1",      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(0,col++) << COLHDR("Bridge Site 2",      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(0,col++) << COLHDR("Bridge Site 3",      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR("Bridge Site 1",      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR("Bridge Site 2",      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR("Bridge Site 3",      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   }
+   else
+   {
+      (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*p_table)(0,col++) << COLHDR("Bridge Site 3",      rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   }
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi1 = pIPoi->GetPointsOfInterest( pgsTypes::CastingYard, span, girder, POI_FLEXURESTRESS | POI_TABULAR );
-   std::vector<pgsPointOfInterest> vPoi2 = pIPoi->GetPointsOfInterest( pgsTypes::BridgeSite1, span, girder, POI_FLEXURESTRESS | POI_TABULAR );
+   std::vector<pgsPointOfInterest> vPoi1;
+   if ( bDesign )
+      vPoi1 = pIPoi->GetPointsOfInterest( span, girder, pgsTypes::CastingYard, POI_FLEXURESTRESS | POI_TABULAR );
+   
+   std::vector<pgsPointOfInterest> vPoi2 = pIPoi->GetPointsOfInterest( span, girder, pgsTypes::BridgeSite1, POI_FLEXURESTRESS | POI_TABULAR );
    
    std::set< std::pair<pgsPointOfInterest,pgsTypes::Stage> > pois; // use a set to eliminate duplicates
 
@@ -171,44 +182,51 @@ rptRcTable* CPrestressStressTable::Build(IBroker* pBroker,SpanIndexType span,Gir
       Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
       if ( stage == pgsTypes::CastingYard )
       {
-         (*p_table)(row,col++) << gdrpoi.SetValue( poi );
-         (*p_table)(row,col++) << "";
+         (*p_table)(row,col++) << gdrpoi.SetValue( stage, poi );
+
+         if ( bDesign )
+            (*p_table)(row,col++) << "";
       }
       else
       {
-         (*p_table)(row,col++) << "";
-         (*p_table)(row,col++) << spanpoi.SetValue( poi, end_size  );
+         if ( bDesign )
+            (*p_table)(row,col++) << "";
+
+         (*p_table)(row,col++) << spanpoi.SetValue( stage, poi, end_size  );
       }
 
       if ( !bSkipToNextRow )
       {
-         double fTop, fBot;
-         fTop = pPrestress->GetStress(pgsTypes::CastingYard,poi,pgsTypes::TopGirder);
-         fBot = pPrestress->GetStress(pgsTypes::CastingYard,poi,pgsTypes::BottomGirder);
-         (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue( fTop ) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue( fBot );
-         col++;
-
-         if ( bTempStrands )
+         Float64 fTop, fBot;
+         if ( bDesign )
          {
-            fTop = pPrestress->GetStress(pgsTypes::TemporaryStrandRemoval,poi,pgsTypes::TopGirder);
-            fBot = pPrestress->GetStress(pgsTypes::TemporaryStrandRemoval,poi,pgsTypes::BottomGirder);
+            fTop = pPrestress->GetStress(pgsTypes::CastingYard,poi,pgsTypes::TopGirder);
+            fBot = pPrestress->GetStress(pgsTypes::CastingYard,poi,pgsTypes::BottomGirder);
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue( fTop ) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue( fBot );
+            col++;
+
+            if ( bTempStrands )
+            {
+               fTop = pPrestress->GetStress(pgsTypes::TemporaryStrandRemoval,poi,pgsTypes::TopGirder);
+               fBot = pPrestress->GetStress(pgsTypes::TemporaryStrandRemoval,poi,pgsTypes::BottomGirder);
+               (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue( fTop ) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue( fBot );
+               col++;
+            }
+
+            fTop = pPrestress->GetStress(pgsTypes::BridgeSite1,poi,pgsTypes::TopGirder);
+            fBot = pPrestress->GetStress(pgsTypes::BridgeSite1,poi,pgsTypes::BottomGirder);
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue( fTop ) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue( fBot );
+            col++;
+
+            fTop = pPrestress->GetStress(pgsTypes::BridgeSite2,poi,pgsTypes::TopGirder);
+            fBot = pPrestress->GetStress(pgsTypes::BridgeSite2,poi,pgsTypes::BottomGirder);
             (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue( fTop ) << rptNewLine;
             (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue( fBot );
             col++;
          }
-
-         fTop = pPrestress->GetStress(pgsTypes::BridgeSite1,poi,pgsTypes::TopGirder);
-         fBot = pPrestress->GetStress(pgsTypes::BridgeSite1,poi,pgsTypes::BottomGirder);
-         (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue( fTop ) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue( fBot );
-         col++;
-
-         fTop = pPrestress->GetStress(pgsTypes::BridgeSite2,poi,pgsTypes::TopGirder);
-         fBot = pPrestress->GetStress(pgsTypes::BridgeSite2,poi,pgsTypes::BottomGirder);
-         (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue( fTop ) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue( fBot );
-         col++;
 
          fTop = pPrestress->GetStress(pgsTypes::BridgeSite3,poi,pgsTypes::TopGirder);
          fBot = pPrestress->GetStress(pgsTypes::BridgeSite3,poi,pgsTypes::BottomGirder);

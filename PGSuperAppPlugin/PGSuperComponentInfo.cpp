@@ -21,10 +21,12 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "PGSuperLibrary_i.h"
+#include "PGSuperAppPlugin_i.h"
 #include "PGSuperComponentInfo.h"
 #include "resource.h"
 #include <MFCTools\VersionInfo.h>
+#include <EAF\EAFApp.h>
+#include <EAF\EAFUtilities.h>
 
 HRESULT CPGSuperComponentInfo::FinalConstruct()
 {
@@ -51,8 +53,7 @@ CString CPGSuperComponentInfo::GetName()
 
 CString CPGSuperComponentInfo::GetDescription()
 {
-   AFX_MANAGE_STATE(AfxGetAppModuleState());
-   CString strExe = AfxGetApp()->m_pszExeName;
+   CString strExe = EAFGetApp()->m_pszExeName;
    strExe += ".exe";
 
    CVersionInfo verInfo;
@@ -61,14 +62,14 @@ CString CPGSuperComponentInfo::GetDescription()
    CString strCopyright = verInfo.GetLegalCopyright();
 
    CString strDesc;
-   strDesc.Format("Precast-Prestressed Girder Design, Analysis, and Rating\nVersion %s\n%s",strVersion,strCopyright);
+   strDesc.Format("Precast-Prestressed Girder Bridge Design, Analysis, and Rating\nVersion %s\n%s",strVersion,strCopyright);
    return strDesc;
 }
 
 HICON CPGSuperComponentInfo::GetIcon()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   return AfxGetApp()->LoadIcon(IDI_GIRDER_ENTRY);
+   return AfxGetApp()->LoadIcon(IDI_PGSUPER);
 }
 
 bool CPGSuperComponentInfo::HasMoreInfo()

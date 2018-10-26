@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include "EditBoundaryConditions.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include <IFace\Project.h>
 
 #ifdef _DEBUG

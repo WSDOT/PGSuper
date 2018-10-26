@@ -191,10 +191,10 @@ CProjectAgentImp::CProjectAgentImp()
    m_TruckImpact[pgsTypes::lltPermit]  = 0.00;
    m_TruckImpact[pgsTypes::lltFatigue] = 0.15;
    m_TruckImpact[pgsTypes::lltPedestrian] = -1000.0; // obvious bogus value
-   m_TruckImpact[pgsTypes::lltLegalRating_Routine]  = 0.33;
-   m_TruckImpact[pgsTypes::lltLegalRating_Special]  = 0.33;
-   m_TruckImpact[pgsTypes::lltPermitRating_Routine] = 0.33;
-   m_TruckImpact[pgsTypes::lltPermitRating_Special] = 0.33;
+   m_TruckImpact[pgsTypes::lltLegalRating_Routine]  = 0.10; // assume new, smooth riding surface
+   m_TruckImpact[pgsTypes::lltLegalRating_Special]  = 0.10;
+   m_TruckImpact[pgsTypes::lltPermitRating_Routine] = 0.10;
+   m_TruckImpact[pgsTypes::lltPermitRating_Special] = 0.10;
 
    m_LaneImpact[pgsTypes::lltDesign]  = 0.00;
    m_LaneImpact[pgsTypes::lltPermit]  = 0.00;
@@ -2921,7 +2921,6 @@ STDMETHODIMP CProjectAgentImp::RegInterfaces()
 {
    CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
 
-   pBrokerInit->RegInterface( IID_IVersionInfo,          this );
    pBrokerInit->RegInterface( IID_IProjectProperties,    this );
    pBrokerInit->RegInterface( IID_IEnvironment,          this );
    pBrokerInit->RegInterface( IID_IRoadwayData,          this );
@@ -3759,28 +3758,6 @@ void CProjectAgentImp::ValidateStrands(SpanIndexType span,GirderIndexType girder
       // clear out status items on a clean pass, because we made them
       RemoveGirderStatusItems(span, girder);
    }
-}
-
-//////////////////////////////////////////////////////////////////////
-// IVersionInfo
-void CProjectAgentImp::SetVersionString(const std::string& strVer)
-{
-   m_VersionString = strVer;
-}
-
-std::string CProjectAgentImp::GetVersionString()
-{
-   return m_VersionString;
-}
-
-void CProjectAgentImp::SetVersion(const std::string& strVer)
-{
-   m_Version = strVer;
-}
-
-std::string CProjectAgentImp::GetVersion()
-{
-   return m_Version;
 }
 
 //////////////////////////////////////////////////////////////////////

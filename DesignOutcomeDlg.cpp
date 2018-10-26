@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "DesignOutcomeDlg.h"
 #include "HtmlHelp\HelpTopics.hh"
 
@@ -32,6 +32,8 @@
 
 #include <IFace\Artifact.h>
 #include <IReportManager.h>
+
+#include <EAF\EAFApp.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -204,12 +206,14 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
    m_pBrowser->Size(rect.Size());
 
    // restore the size of the window
-   CPGSuperApp* pApp = (CPGSuperApp*)AfxGetApp();
-   WINDOWPLACEMENT wp;
-   if (pApp->ReadWindowPlacement("DesignOutcome",&wp))
    {
-      CRect rect(wp.rcNormalPosition);
-      SetWindowPos(NULL,0,0,rect.Size().cx,rect.Size().cy,SWP_NOMOVE);
+      CEAFApp* pApp = EAFGetApp();
+      WINDOWPLACEMENT wp;
+      if (pApp->ReadWindowPlacement("DesignOutcome",&wp))
+      {
+         CRect rect(wp.rcNormalPosition);
+         SetWindowPos(NULL,0,0,rect.Size().cx,rect.Size().cy,SWP_NOMOVE);
+      }
    }
 
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -226,12 +230,13 @@ void CDesignOutcomeDlg::CleanUp()
    // save the size of the window
    WINDOWPLACEMENT wp;
    wp.length = sizeof wp;
-   CPGSuperApp* pApp = (CPGSuperApp*)AfxGetApp();
-   if (GetWindowPlacement(&wp))
    {
-      wp.flags = 0;
-      wp.showCmd = SW_SHOWNORMAL;
-      pApp->WriteWindowPlacement("DesignOutcome",&wp);
+      CEAFApp* pApp = EAFGetApp();
+      if (GetWindowPlacement(&wp))
+      {
+         wp.flags = 0;
+         wp.showCmd = SW_SHOWNORMAL;
+         pApp->WriteWindowPlacement("DesignOutcome",&wp);
+      }
    }
-
 }

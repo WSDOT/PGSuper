@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "pgsuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "SpanDisplayObjectEvents.h"
 #include "mfcdual.h"
 #include "pgsuperdoc.h"
@@ -163,7 +163,9 @@ STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnKeyDown(i
 
 STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSpanDisplayObjectEvents,Events);
+   METHOD_PROLOGUE_(CBridgePlanViewSpanDisplayObjectEvents,Events);
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 
    if ( pDO->IsSelected() )
    {
@@ -339,7 +341,9 @@ STDMETHODIMP_(bool) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnKeyDow
 
 STDMETHODIMP_(bool) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSpanDisplayObjectEvents,Events);
+   METHOD_PROLOGUE_(CBridgeSectionViewSpanDisplayObjectEvents,Events);
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 
    if ( pDO->IsSelected() )
    {

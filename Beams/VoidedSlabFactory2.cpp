@@ -64,6 +64,7 @@ HRESULT CVoidedSlab2Factory::FinalConstruct()
    m_DimNames.push_back("S2");
    m_DimNames.push_back("C1");
    m_DimNames.push_back("C2");
+   m_DimNames.push_back("C3");
    m_DimNames.push_back("Jmax");
    m_DimNames.push_back("EndBlockLength");
 
@@ -78,6 +79,7 @@ HRESULT CVoidedSlab2Factory::FinalConstruct()
    m_DefaultDims.push_back(::ConvertToSysUnits(12.5,unitMeasure::Inch)); // S2
    m_DefaultDims.push_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // C1
    m_DefaultDims.push_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // C2
+   m_DefaultDims.push_back(::ConvertToSysUnits( 1.0,unitMeasure::Inch)); // C3
    m_DefaultDims.push_back(::ConvertToSysUnits(1.0,unitMeasure::Inch));  // Max Joint Spacing
    m_DefaultDims.push_back(::ConvertToSysUnits(36.0,unitMeasure::Inch)); // End Block Length
 
@@ -93,6 +95,7 @@ HRESULT CVoidedSlab2Factory::FinalConstruct()
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // S2
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // C1
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // C2
+   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // C3
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // Max joint size
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // End Block Length
 
@@ -108,6 +111,7 @@ HRESULT CVoidedSlab2Factory::FinalConstruct()
    m_DimUnits[1].push_back(&unitMeasure::Inch); // S2
    m_DimUnits[1].push_back(&unitMeasure::Inch); // C1
    m_DimUnits[1].push_back(&unitMeasure::Inch); // C2
+   m_DimUnits[1].push_back(&unitMeasure::Inch); // C3
    m_DimUnits[1].push_back(&unitMeasure::Inch); // Max joint size
    m_DimUnits[1].push_back(&unitMeasure::Inch); // End Block Length
 
@@ -121,14 +125,15 @@ void CVoidedSlab2Factory::CreateGirderSection(IBroker* pBroker,long statusGroupI
    CComPtr<IVoidedSlab2> beam;
    gdrsection->get_Beam(&beam);
 
-   double H,W,D1,D2,H1,H2,S1,S2,C1,C2,J,EndBlockLength;
+   double H,W,D1,D2,H1,H2,S1,S2,C1,C2,C3,J,EndBlockLength;
    long N;
-   GetDimensions(dimensions,H,W,D1,D2,H1,H2,S1,S2,C1,C2,N,J,EndBlockLength);
+   GetDimensions(dimensions,H,W,D1,D2,H1,H2,S1,S2,C1,C2,C3,N,J,EndBlockLength);
 
    beam->put_Height(H);
    beam->put_Width(W);
    beam->put_C1(C1);
    beam->put_C2(C2);
+   beam->put_C3(C3);
    beam->put_ExteriorVoidDiameter(D1);
    beam->put_InteriorVoidDiameter(D2);
    beam->put_ExteriorVoidElevation(H1);
@@ -218,18 +223,26 @@ void CVoidedSlab2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,S
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 gdrLength = pBridge->GetGirderLength(span,gdr);
 
-   pgsPointOfInterest poiStart(pgsTypes::CastingYard,span,gdr,0.00,     POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
-   pgsPointOfInterest poiEnd(  pgsTypes::CastingYard,span,gdr,gdrLength,POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
+   pgsPointOfInterest poiStart(span,gdr,0.00);
+   poiStart.AddStage(pgsTypes::CastingYard,POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
+   poiStart.AddStage(pgsTypes::Lifting,    POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
+   poiStart.AddStage(pgsTypes::Hauling,    POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
+
+   pgsPointOfInterest poiEnd(span,gdr,gdrLength);
+   poiEnd.AddStage(pgsTypes::CastingYard,POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
+   poiEnd.AddStage(pgsTypes::Lifting,    POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
+   poiEnd.AddStage(pgsTypes::Hauling,    POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
+
    pPoiMgr->AddPointOfInterest(poiStart);
    pPoiMgr->AddPointOfInterest(poiEnd);
 
    // move bridge site poi to the start/end bearing
-   std::set<pgsTypes::Stage> stages;
-   stages.insert(pgsTypes::GirderPlacement);
-   stages.insert(pgsTypes::TemporaryStrandRemoval);
-   stages.insert(pgsTypes::BridgeSite1);
-   stages.insert(pgsTypes::BridgeSite2);
-   stages.insert(pgsTypes::BridgeSite3);
+   std::vector<pgsTypes::Stage> stages;
+   stages.push_back(pgsTypes::GirderPlacement);
+   stages.push_back(pgsTypes::TemporaryStrandRemoval);
+   stages.push_back(pgsTypes::BridgeSite1);
+   stages.push_back(pgsTypes::BridgeSite2);
+   stages.push_back(pgsTypes::BridgeSite3);
    
    Float64 start_length = pBridge->GetGirderStartConnectionLength(span,gdr);
    Float64 end_length   = pBridge->GetGirderEndConnectionLength(span,gdr);
@@ -237,10 +250,14 @@ void CVoidedSlab2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,S
    poiEnd.SetDistFromStart(gdrLength-end_length);
 
    poiStart.RemoveStage(pgsTypes::CastingYard);
-   poiStart.AddStages(stages);
+   poiStart.RemoveStage(pgsTypes::Lifting);
+   poiStart.RemoveStage(pgsTypes::Hauling);
+   poiStart.AddStages(stages,POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
 
    poiEnd.RemoveStage(pgsTypes::CastingYard);
-   poiEnd.AddStages(stages);
+   poiEnd.RemoveStage(pgsTypes::Lifting);
+   poiEnd.RemoveStage(pgsTypes::Hauling);
+   poiEnd.AddStages(stages,POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
 
    pPoiMgr->AddPointOfInterest(poiStart);
    pPoiMgr->AddPointOfInterest(poiEnd);
@@ -256,23 +273,36 @@ void CVoidedSlab2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,S
    {
       Float64 delta = 1.5*pPoiMgr->GetTolerance();
 
-      stages.insert(pgsTypes::CastingYard);
+      stages.push_back(pgsTypes::CastingYard);
+      stages.push_back(pgsTypes::Lifting);
+      stages.push_back(pgsTypes::Hauling);
 
-      std::set<pgsTypes::Stage> ebStages;
+      std::vector<pgsTypes::Stage> ebStages;
       if ( start_length < endBlockLength )
-         ebStages.insert(pgsTypes::CastingYard); // end block is after brg... only add to cy stage
+      {
+         ebStages.push_back(pgsTypes::CastingYard); // end block is after brg... only add to cy stage
+         ebStages.push_back(pgsTypes::Lifting); // end block is after brg... only add to cy stage
+         ebStages.push_back(pgsTypes::Hauling); // end block is after brg... only add to cy stage
+      }
       else
+      {
          ebStages = stages; // all stages
+      }
 
       pPoiMgr->AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,endBlockLength,       POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL) );
       pPoiMgr->AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,endBlockLength+delta,                  POI_TABULAR | POI_GRAPHICAL) );
 
 
       if ( end_length < endBlockLength )
-         ebStages.insert(pgsTypes::CastingYard);
+      {
+         ebStages.push_back(pgsTypes::CastingYard); // end block is after brg... only add to cy stage
+         ebStages.push_back(pgsTypes::Lifting); // end block is after brg... only add to cy stage
+         ebStages.push_back(pgsTypes::Hauling); // end block is after brg... only add to cy stage
+      }
       else
-         ebStages = stages;
-
+      {
+         ebStages = stages; // all stages
+      }
 
       pPoiMgr->AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,gdrLength - (endBlockLength+delta),                  POI_TABULAR | POI_GRAPHICAL) );
       pPoiMgr->AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,gdrLength - endBlockLength,         POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL) );
@@ -347,9 +377,9 @@ void CVoidedSlab2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dime
 
    // Set the shapes for harped strand bounds 
    // Voided slabs don't normally support harped strands, so the question
-   double H,W,D1,D2,H1,H2,S1,S2,C1,C2,J,EndBlockLength;
+   double H,W,D1,D2,H1,H2,S1,S2,C1,C2,C3,J,EndBlockLength;
    long N;
-   GetDimensions(dimensions,H,W,D1,D2,H1,H2,S1,S2,C1,C2,N,J,EndBlockLength);
+   GetDimensions(dimensions,H,W,D1,D2,H1,H2,S1,S2,C1,C2,C3,N,J,EndBlockLength);
 
    double width = W;
    double depth = H;
@@ -486,9 +516,9 @@ std::vector<const unitLength*> CVoidedSlab2Factory::GetDimensionUnits(bool bSIUn
 
 bool CVoidedSlab2Factory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSI,std::string* strErrMsg)
 {
-   double H,W,D1,D2,H1,H2,S1,S2,C1,C2,J,EndBlockLength;
+   double H,W,D1,D2,H1,H2,S1,S2,C1,C2,C3,J,EndBlockLength;
    long N;
-   GetDimensions(dimensions,H,W,D1,D2,H1,H2,S1,S2,C1,C2,N,J,EndBlockLength);
+   GetDimensions(dimensions,H,W,D1,D2,H1,H2,S1,S2,C1,C2,C3,N,J,EndBlockLength);
 
    if ( H <= 0.0 )
    {
@@ -674,7 +704,7 @@ bool CVoidedSlab2Factory::ValidateDimensions(const IBeamFactory::Dimensions& dim
 void CVoidedSlab2Factory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions)
 {
    std::vector<std::string>::iterator iter;
-   pSave->BeginUnit("VoidedSlab2Dimensions",2.0);
+   pSave->BeginUnit("VoidedSlab2Dimensions",3.0);
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
       std::string name = *iter;
@@ -703,9 +733,20 @@ IBeamFactory::Dimensions CVoidedSlab2Factory::LoadSectionDimensions(sysIStructur
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
       std::string name = *iter;
-      Float64 value;
+      Float64 value = 0;
       if ( !pLoad->Property(name.c_str(),&value) )
-         THROW_LOAD(InvalidFileFormat,pLoad);
+      {
+         if ( name == "C3" && dimVersion < 3)
+         {
+            // C3 was introduced in dimVersion 3
+            // if version is less, it is ok to fail and continue
+            value = 0;
+         }
+         else
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+      }
 
       dimensions.push_back( std::make_pair(name,value) );
    }
@@ -732,7 +773,7 @@ Float64 CVoidedSlab2Factory::GetVolume(IBroker* pBroker,SpanIndexType spanIdx,Gi
    GET_IFACE2(pBroker,ISectProp2,pSectProp2);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
 
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::CastingYard,spanIdx,gdrIdx,POI_SECTCHANGE);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_SECTCHANGE);
    ATLASSERT( 2 <= vPOI.size() );
    Float64 V = 0;
    std::vector<pgsPointOfInterest>::iterator iter = vPOI.begin();
@@ -960,7 +1001,7 @@ HICON  CVoidedSlab2Factory::GetIcon()
 }
 
 void CVoidedSlab2Factory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
-                      double& H,double& W,double& D1,double& D2,double& H1,double& H2,double& S1,double& S2,double& C1,double& C2,long& N,double& J,double& EndBlockLength)
+                      double& H,double& W,double& D1,double& D2,double& H1,double& H2,double& S1,double& S2,double& C1,double& C2,double& C3,long& N,double& J,double& EndBlockLength)
 {
    H = GetDimension(dimensions,"H");
    W = GetDimension(dimensions,"W");
@@ -972,6 +1013,7 @@ void CVoidedSlab2Factory::GetDimensions(const IBeamFactory::Dimensions& dimensio
    S2 = GetDimension(dimensions,"S2");
    C1 = GetDimension(dimensions,"C1");
    C2 = GetDimension(dimensions,"C2");
+   C3 = GetDimension(dimensions,"C3");
    N = (long)GetDimension(dimensions,"Number_of_Voids");
    J = GetDimension(dimensions,"Jmax");
    EndBlockLength = GetDimension(dimensions,"EndBlockLength");

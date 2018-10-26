@@ -28,8 +28,12 @@
 #include <IFace\UpdateTemplates.h>
 #include <IFace\Selection.h>
 #include <IFace\EditByUI.h>
-#include <EAF\EAFDisplayUnits.h>
 #include <IFace\RatingSpecification.h>
+#include <IFace\VersionInfo.h>
+#include <EAF\EAFDisplayUnits.h>
+
+#include "PGSuperStatusBar.h"
+#include <EAF\EAFStatusBar.h>
 
 
 class CPGSuperDoc;
@@ -78,7 +82,8 @@ class CPGSuperDocProxyAgent :
    public IUIEvents,
    public IUpdateTemplates,
    public ISelection,
-   public IEditByUI
+   public IEditByUI,
+   public IVersionInfo
 {
 public:
    CPGSuperDocProxyAgent();
@@ -100,6 +105,7 @@ BEGIN_COM_MAP(CPGSuperDocProxyAgent)
    COM_INTERFACE_ENTRY(IUpdateTemplates)
    COM_INTERFACE_ENTRY(ISelection)
    COM_INTERFACE_ENTRY(IEditByUI)
+   COM_INTERFACE_ENTRY(IVersionInfo)
 END_COM_MAP()
 
 public:
@@ -178,6 +184,12 @@ public:
    virtual void HoldEvents(bool bHold=true);
    virtual void FirePendingEvents();
 
+// IVersionInfo
+public:
+   virtual CString GetVersionString(bool bIncludeBuildNumber=false);
+   virtual CString GetVersion(bool bIncludeBuildNumber=false);
+
+
 // ISelection
 public:
    virtual PierIndexType GetPierIdx();
@@ -200,11 +212,9 @@ public:
    virtual bool EditPointLoad(CollectionIndexType loadIdx);
    virtual bool EditDistributedLoad(CollectionIndexType loadIdx);
    virtual bool EditMomentLoad(CollectionIndexType loadIdx);
-
-public:
-   UINT GetStdToolBarID();
-   UINT GetLibToolBarID();
-   UINT GetHelpToolBarID();
+   virtual UINT GetStdToolBarID();
+   virtual UINT GetLibToolBarID();
+   virtual UINT GetHelpToolBarID();
 
 private:
    DECLARE_AGENT_DATA;
@@ -254,5 +264,8 @@ private:
 
    void CreateAcceleratorKeys();
    void RemoveAcceleratorKeys();
+
+   void CreateStatusBar();
+   void ResetStatusBar();
 };
 

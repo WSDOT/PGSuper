@@ -54,11 +54,7 @@ void CDiaphragmDefinitionDlg::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CDiaphragmDefinitionDlg)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_String(pDX,IDC_DESCRIPTION,m_Rule.Description);
@@ -158,11 +154,7 @@ void CDiaphragmDefinitionDlg::OnMeasurementTypeChanged()
    else
    {
       CDataExchange dx(this,FALSE);
-      CEAFApp* pApp;
-      {
-         AFX_MANAGE_STATE(AfxGetAppModuleState());
-         pApp = (CEAFApp*)AfxGetApp();
-      }
+      CEAFApp* pApp = EAFGetApp();
       const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
       DDX_Tag(&dx,IDC_LOCATION_UNIT,pDisplayUnits->SpanLength);
    }

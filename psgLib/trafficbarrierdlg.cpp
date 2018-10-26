@@ -65,11 +65,7 @@ CTrafficBarrierDlg::CTrafficBarrierDlg(bool allowEditing,
 
 void CTrafficBarrierDlg::DoDataExchange(CDataExchange* pDX)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 

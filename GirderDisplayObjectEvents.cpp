@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "pgsuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "GirderDisplayObjectEvents.h"
 #include "mfcdual.h"
 #include "pgsuperdoc.h"
@@ -207,7 +207,8 @@ STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnKeyDown
 
 STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewGirderDisplayObjectEvents,Events);
+   METHOD_PROLOGUE_(CBridgePlanViewGirderDisplayObjectEvents,Events);
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    if ( pDO->IsSelected() )
    {
@@ -223,9 +224,10 @@ STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnContext
       CPGSuperDoc* pPGSuperDoc = (CPGSuperDoc*)pDoc;
 
       CMenu menu;
-      VERIFY(menu.LoadMenu(IDR_SELECTED_GIRDER_CONTEXT));
+      menu.LoadMenu(IDR_SELECTED_GIRDER_CONTEXT);
+      CEAFMenu contextMenu(menu.Detach(),pPGSuperDoc->GetPluginCommandManager());
 
-      CMenu* pmnuReport = menu.GetSubMenu(0);
+      CEAFMenu* pmnuReport = contextMenu.GetSubMenu(0);
 
       pPGSuperDoc->BuildReportMenu(pmnuReport,true);
 
@@ -421,7 +423,8 @@ STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnKeyD
 
 STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewGirderDisplayObjectEvents,Events);
+   METHOD_PROLOGUE_(CBridgeSectionViewGirderDisplayObjectEvents,Events);
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    if ( pDO->IsSelected() )
    {
@@ -437,9 +440,10 @@ STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnCont
       CPGSuperDoc* pPGSuperDoc = (CPGSuperDoc*)pDoc;
 
       CMenu menu;
-      VERIFY(menu.LoadMenu(IDR_SELECTED_GIRDER_CONTEXT));
+      menu.LoadMenu(IDR_SELECTED_GIRDER_CONTEXT);
+      CEAFMenu contextMenu(menu.Detach(),pPGSuperDoc->GetPluginCommandManager());
 
-      CMenu* pmnuReport = menu.GetSubMenu(0);
+      CEAFMenu* pmnuReport = contextMenu.GetSubMenu(0);
 
       pPGSuperDoc->BuildReportMenu(pmnuReport,true);
 

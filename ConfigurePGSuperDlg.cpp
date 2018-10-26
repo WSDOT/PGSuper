@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "ConfigurePGSuperDlg.h"
 #include "CatalogServerDlg.h"
 #include "HtmlHelp\HelpTopics.hh"
@@ -267,6 +267,8 @@ void CConfigurePGSuperDlg::ServerList()
 
 void CConfigurePGSuperDlg::OnAddCatalogServer()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CCatalogServerDlg dlg;
    dlg.m_Servers = m_Servers;
    if ( dlg.DoModal() == IDOK )

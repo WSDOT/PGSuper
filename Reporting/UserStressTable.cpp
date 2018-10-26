@@ -102,7 +102,7 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,SpanIndexType span,GirderIn
    {
       // Get all the tabular poi's for flexure and shear
       // Merge the two vectors to form one vector to report on.
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite1,spanIdx,girder, POI_ALL, POIFIND_OR);
+      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(spanIdx,girder, pgsTypes::BridgeSite1,POI_ALL, POIFIND_OR);
 
       Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,girder);
 
@@ -158,7 +158,7 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,SpanIndexType span,GirderIn
 
          const pgsPointOfInterest& poi = *i;
 
-         (*p_table)(row,col++) << location.SetValue( poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
 
          if ( analysisType == pgsTypes::Envelope )
          {

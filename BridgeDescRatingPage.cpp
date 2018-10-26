@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "BridgeDescRatingPage.h"
 #include "BridgeDescDlg.h"
 #include <MFCTools\CustomDDX.h>

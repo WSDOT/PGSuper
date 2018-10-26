@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "GirderDescRatingPage.h"
 #include "GirderDescDlg.h"
 #include <MFCTools\CustomDDX.h>

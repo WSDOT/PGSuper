@@ -22,9 +22,9 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "PGSuper.h"
 #include "PGSuperDocTemplate.h"
 #include "PGSuperDoc.h"
+#include "PGSuperBaseAppPlugin.h"
 
 #include "PGSuperCatCom.h"
 #include "Plugins\PGSuperIEPlugin.h"
@@ -40,21 +40,19 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNAMIC(CPGSuperDocTemplate,CEAFDocTemplate)
 
 CPGSuperDocTemplate::CPGSuperDocTemplate(UINT nIDResource,
-                   CRuntimeClass* pDocClass,
-                   CRuntimeClass* pFrameClass,
-                   CRuntimeClass* pViewClass,
-                   HMENU hSharedMenu,
-                   int maxViewCount)
-: CEAFDocTemplate(nIDResource,pDocClass,pFrameClass,pViewClass,hSharedMenu,maxViewCount)
+                                         IEAFCommandCallback* pCallback,
+                                         CRuntimeClass* pDocClass,
+                                         CRuntimeClass* pFrameClass,
+                                         CRuntimeClass* pViewClass,
+                                         HMENU hSharedMenu,
+                                         int maxViewCount)
+: CEAFDocTemplate(nIDResource,pCallback,pDocClass,pFrameClass,pViewClass,hSharedMenu,maxViewCount)
 {
-   // Register the component categories PGSuper needs
-   sysComCatMgr::CreateCategory(L"PGSuper Agent",CATID_PGSuperAgent);
-   sysComCatMgr::CreateCategory(L"PGSuper Extension Agent",CATID_PGSuperExtensionAgent);
-   sysComCatMgr::CreateCategory(L"PGSuper Beam Family",CATID_BeamFamily);
-   sysComCatMgr::CreateCategory(L"PGSuper Project Importer Plugin",CATID_PGSuperProjectImporter);
-   sysComCatMgr::CreateCategory(L"PGSuper Data Importer Plugin",CATID_PGSuperDataImporter);
-   sysComCatMgr::CreateCategory(L"PGSuper Data Exporter Plugin",CATID_PGSuperDataExporter);
+}
 
+void CPGSuperDocTemplate::SetPlugin(IEAFAppPlugin* pPlugin)
+{
+   CEAFDocTemplate::SetPlugin(pPlugin);
    LoadTemplateInformation();
 }
 
@@ -67,12 +65,13 @@ CString CPGSuperDocTemplate::GetTemplateGroupItemDescription(const CEAFTemplateI
 
 void CPGSuperDocTemplate::LoadTemplateInformation()
 {
-   CPGSuperApp* pApp = (CPGSuperApp*)AfxGetApp();
-
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pApp = AfxGetApp();
    HICON defaultIcon = pApp->LoadIcon(IDR_PGSUPER_TEMPLATE_ICON);
 
+   CPGSuperBaseAppPlugin* pAppPlugin = dynamic_cast<CPGSuperBaseAppPlugin*>(m_pPlugin);
    CString strWorkgroupFolderName;
-   pApp->GetTemplateFolders(strWorkgroupFolderName);
+   pAppPlugin->GetTemplateFolders(strWorkgroupFolderName);
 
    m_TemplateGroup.Clear();
 
@@ -134,6 +133,8 @@ void CPGSuperDocTemplate::FindInFolder(LPCSTR strPath,CEAFTemplateGroup* pGroup,
 
 void CPGSuperDocTemplate::FindTemplateFiles(LPCSTR strPath,CEAFTemplateGroup* pGroup,HICON folderIcon)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CString strTemplateSuffix;
    VERIFY(strTemplateSuffix.LoadString(IDS_TEMPLATE_FILE_SUFFIX));
    ASSERT(!strTemplateSuffix.IsEmpty());

@@ -114,7 +114,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 
 	/* Create pois at the start of girder and mid-span */
 	pgsPointOfInterest pois(span, gdr, 0.0);
-	std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(pgsTypes::BridgeSite1, span, gdr, POI_MIDSPAN);
+	std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(span, gdr, pgsTypes::BridgeSite1, POI_MIDSPAN);
 	CHECK(pmid.size() == 1);
 
 

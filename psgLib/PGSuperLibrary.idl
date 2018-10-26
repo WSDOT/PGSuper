@@ -26,12 +26,4 @@ library PGSuperLibrary
 	{
 		interface IUnknown;
    };
-
-   [
-      uuid(3EB252D0-84CF-4f09-98CA-9C0A80472258)
-   ]
-   coclass PGSuperComponentInfo
-   {
-      interface IUnknown;
-   }
 };

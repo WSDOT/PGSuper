@@ -172,11 +172,7 @@ void CSpecMainSheet::ExchangeDescrData(CDataExchange* pDX)
 
 void CSpecMainSheet::ExchangeCyData(CDataExchange* pDX)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 
@@ -249,11 +245,7 @@ void CSpecMainSheet::ExchangeCyData(CDataExchange* pDX)
 
 void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 
@@ -297,8 +289,8 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_IMPACT_DOWNWARD_LIFTING, m_Entry.m_LiftingDownwardImpact);
    DDV_MinMaxDouble(pDX, m_Entry.m_LiftingDownwardImpact, 0.0, 1.0);
  
-   DDX_UnitValueAndTag(pDX, IDC_MIN_LIFTING_POINT,IDC_MIN_LIFTING_POINT_UNIT,m_Entry.m_MinLiftPoint, pDisplayUnits->SpanLength );
-   DDV_UnitValueGreaterThanZero(pDX, IDC_MIN_LIFTING_POINT,m_Entry.m_MinLiftPoint, pDisplayUnits->SpanLength );
+   DDX_KeywordUnitValueAndTag(pDX,IDC_MIN_LIFTING_POINT,IDC_MIN_LIFTING_POINT_UNIT,_T("H"),m_Entry.m_MinLiftPoint, pDisplayUnits->SpanLength);
+
    DDX_UnitValueAndTag(pDX, IDC_LIFTING_POINT_LOCATION_ACCURACY,IDC_LIFTING_POINT_LOCATION_ACCURACY_UNIT,m_Entry.m_LiftPointAccuracy, pDisplayUnits->SpanLength );
    DDV_UnitValueGreaterThanZero(pDX, IDC_LIFTING_POINT_LOCATION_ACCURACY,m_Entry.m_LiftPointAccuracy, pDisplayUnits->SpanLength );
 
@@ -310,11 +302,7 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
 
 void CSpecMainSheet::ExchangeHaulingData(CDataExchange* pDX)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 
@@ -383,19 +371,15 @@ void CSpecMainSheet::ExchangeHaulingData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_MAXWGT, IDC_MAXWGT_UNITS, m_Entry.m_MaxGirderWgt, pDisplayUnits->GeneralForce );
    DDV_UnitValueGreaterThanZero(pDX, IDC_MAXWGT,m_Entry.m_MaxGirderWgt, pDisplayUnits->GeneralForce );
  
-   DDX_UnitValueAndTag(pDX, IDC_MIN_TRUCK_SUPPORT,IDC_MIN_TRUCK_SUPPORT_UNIT,m_Entry.m_MinHaulPoint, pDisplayUnits->SpanLength );
-   DDV_UnitValueGreaterThanZero(pDX, IDC_MIN_TRUCK_SUPPORT,m_Entry.m_MinHaulPoint, pDisplayUnits->SpanLength );
+   DDX_KeywordUnitValueAndTag(pDX,IDC_MIN_TRUCK_SUPPORT,IDC_MIN_TRUCK_SUPPORT_UNIT,_T("H"),m_Entry.m_MinHaulPoint, pDisplayUnits->SpanLength);
+
    DDX_UnitValueAndTag(pDX, IDC_TRUCK_SUPPORT_LOCATION_ACCURACY,IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_UNIT,m_Entry.m_HaulPointAccuracy, pDisplayUnits->SpanLength );
    DDV_UnitValueGreaterThanZero(pDX, IDC_TRUCK_SUPPORT_LOCATION_ACCURACY,m_Entry.m_HaulPointAccuracy, pDisplayUnits->SpanLength );
 }
 
 void CSpecMainSheet::ExchangeBs1Data(CDataExchange* pDX)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 
@@ -438,11 +422,7 @@ void CSpecMainSheet::ExchangeBs2Data(CDataExchange* pDX)
 
 void CSpecMainSheet::ExchangeBsData(CDataExchange* pDX)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 	DDX_Text(pDX, IDC_BS_COMP_STRESS_SERV, m_Entry.m_Bs3CompStressServ);
@@ -481,11 +461,7 @@ void CSpecMainSheet::ExchangeBsData(CDataExchange* pDX)
 
 void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_CBIndex(pDX, IDC_MOMENT, m_Entry.m_Bs3LRFDOverReinforcedMomentCapacity );
@@ -531,11 +507,7 @@ void CSpecMainSheet::CheckShearCapacityMethod()
 
 void CSpecMainSheet::ExchangeShearCapacityData(CDataExchange* pDX)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_CBIndex(pDX, IDC_LRSH, m_Entry.m_LongReinfShearMethod); 
@@ -568,11 +540,7 @@ void CSpecMainSheet::ExchangeDeflectionsData(CDataExchange* pDX)
 
 void CSpecMainSheet::ExchangeCreepData(CDataExchange* pDX)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_UnitValueAndTag(pDX, IDC_XFER_TIME, IDC_XFER_TIME_TAG, m_Entry.m_XferTime, pDisplayUnits->Time );
@@ -600,11 +568,7 @@ void CSpecMainSheet::ExchangeCreepData(CDataExchange* pDX)
 
 void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_UnitValueAndTag(pDX, IDC_FINAL, IDC_FINAL_TAG, m_Entry.m_FinalLosses, pDisplayUnits->Stress);
@@ -629,12 +593,14 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
                LOSSES_WSDOT_LUMPSUM,
                LOSSES_GENERAL_LUMPSUM};
 
+   int map_size = sizeof(map)/sizeof(int);
+
    if ( pDX->m_bSaveAndValidate )
    {
       // data is coming out of the dialog
       int rad_ord;
       DDX_CBIndex(pDX,IDC_LOSS_METHOD,rad_ord);
-      CHECK(0 <= rad_ord && rad_ord < 5);
+      CHECK(0 <= rad_ord && rad_ord < map_size);
       m_Entry.m_LossMethod = map[rad_ord];
 
       if ( m_Entry.m_LossMethod == LOSSES_AASHTO_REFINED || m_Entry.m_LossMethod == LOSSES_WSDOT_REFINED || 
@@ -661,7 +627,9 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
          DDX_UnitValueAndTag(pDX, IDC_SHIPPING2, IDC_SHIPPING2_TAG, m_Entry.m_ShippingLosses, pDisplayUnits->Stress);
       }
       else
+      {
          m_Entry.m_ShippingLosses = 0;
+      }
 
       // transfer length data
       DDX_CBIndex(pDX,IDC_COMBO_TRANSFER,rad_ord);
@@ -675,8 +643,8 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
       int idx=0;
       while(m_Entry.m_LossMethod != map[idx])
       {
-         CHECK(idx<4);
-         if (4 < idx)
+         CHECK(idx<map_size);
+         if (map_size < idx)
          {
             idx = 0;
             break;
@@ -760,11 +728,7 @@ void CSpecMainSheet::ExchangePSLimitData(CDataExchange* pDX)
 
 void CSpecMainSheet::ExchangeLimitsData(CDataExchange* pDX)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_UnitValueAndTag(pDX, IDC_FC_SLAB, IDC_FC_SLAB_UNIT, m_Entry.m_MaxSlabFc, pDisplayUnits->Stress);

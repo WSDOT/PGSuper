@@ -149,7 +149,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    Uint32 minlegs;
    bool do_note=false;
    RowIndexType row = table->GetNumberOfHeaderRows();
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stage, span, girder, POI_TABULAR|POI_SHEAR );
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_TABULAR|POI_SHEAR );
    std::vector<pgsPointOfInterest>::const_iterator i;
    for ( i = vPoi.begin(); i != vPoi.end(); i++ )
    {
@@ -163,7 +163,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
 
       ColumnIndexType col = 0;
 
-      (*table)(row,col++) << location.SetValue( poi, end_size );
+      (*table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
       (*table)(row,col++) << dim.SetValue( pArtifact->GetSMax() );
       (*table)(row,col++) << dim.SetValue( pArtifact->GetSall() );
 
@@ -193,17 +193,17 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
       (*table)(row,col++) << shear.SetValue( vu );
       (*table)(row,col++) << shear.SetValue( vr );
 
-      if (pArtifact->GetBv()>=bvmax)
+      if (bvmax <= pArtifact->GetBv())
       {
-         if (pArtifact->GetNumLegs()<pArtifact->GetNumLegsReqd())
+         if (pArtifact->GetNumLegs() < pArtifact->GetNumLegsReqd())
          {
-            (*table)(row,col++) << color(Blue)<< "*" << color(Black);
+            (*table)(row,col) << color(Blue)<< "* " << color(Black);
             do_note = true;
             minlegs = pArtifact->GetNumLegsReqd();
          }
       }
 
-      bool bPassed = pArtifact->Passed();
+      bool bPassed = pArtifact->StrengthPassed();
       if ( bPassed )
          (*table)(row,col) << RPT_PASS;
       else

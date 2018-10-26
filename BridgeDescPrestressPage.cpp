@@ -1490,7 +1490,7 @@ void CGirderDescPrestressPage::OnSelchangeHpComboEnd()
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CString strOffset;
-      CWnd* pWnd = GetDlgItem(IDC_HP_CB_END);
+      CWnd* pWnd = GetDlgItem(IDC_HPOFFSET_END);
       pWnd->GetWindowText(strOffset);
       double offset = atof(strOffset);
       offset = ::ConvertToSysUnits(offset,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);

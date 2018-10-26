@@ -211,11 +211,7 @@ BOOL CTrafficBarrierGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 
 void CTrafficBarrierGrid::ResetGrid()
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 
@@ -284,11 +280,7 @@ void CTrafficBarrierGrid::ResetGrid()
 
 void CTrafficBarrierGrid::UploadData(CDataExchange* pDX, IPoint2dCollection* points)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    CComPtr<IEnumPoint2d> enum_points;
@@ -318,11 +310,7 @@ void CTrafficBarrierGrid::UploadData(CDataExchange* pDX, IPoint2dCollection* poi
 
 void CTrafficBarrierGrid::DownloadData(CDataExchange* pDX, IPoint2dCollection* points)
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    points->Clear();

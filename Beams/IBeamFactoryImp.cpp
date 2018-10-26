@@ -286,20 +286,27 @@ void CIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,SpanInd
 
    PoiAttributeType attrib = POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL;
 
-   pgsPointOfInterest poiStart(pgsTypes::CastingYard, span,gdr,0.00,attrib);
-   pgsPointOfInterest poiEnd(pgsTypes::CastingYard, span,gdr,gdrLength,attrib);
+   pgsPointOfInterest poiStart(span,gdr,0.00);
+   poiStart.AddStage(pgsTypes::CastingYard,attrib);
+   poiStart.AddStage(pgsTypes::Lifting,    attrib);
+   poiStart.AddStage(pgsTypes::Hauling,    attrib);
+
+   pgsPointOfInterest poiEnd(span,gdr,gdrLength);
+   poiEnd.AddStage(pgsTypes::CastingYard,attrib);
+   poiEnd.AddStage(pgsTypes::Lifting,    attrib);
+   poiEnd.AddStage(pgsTypes::Hauling,    attrib);
 
    pPoiMgr->AddPointOfInterest(poiStart);
    pPoiMgr->AddPointOfInterest(poiEnd);
 
 
    // move bridge site poi to the start/end bearing
-   std::set<pgsTypes::Stage> stages;
-   stages.insert(pgsTypes::GirderPlacement);
-   stages.insert(pgsTypes::TemporaryStrandRemoval);
-   stages.insert(pgsTypes::BridgeSite1);
-   stages.insert(pgsTypes::BridgeSite2);
-   stages.insert(pgsTypes::BridgeSite3);
+   std::vector<pgsTypes::Stage> stages;
+   stages.push_back(pgsTypes::GirderPlacement);
+   stages.push_back(pgsTypes::TemporaryStrandRemoval);
+   stages.push_back(pgsTypes::BridgeSite1);
+   stages.push_back(pgsTypes::BridgeSite2);
+   stages.push_back(pgsTypes::BridgeSite3);
    
 
    Float64 start_length = pBridge->GetGirderStartConnectionLength(span,gdr);
@@ -308,42 +315,61 @@ void CIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,SpanInd
    poiEnd.SetDistFromStart(gdrLength-end_length);
 
    poiStart.RemoveStage(pgsTypes::CastingYard);
-   poiStart.AddStages(stages);
+   poiStart.RemoveStage(pgsTypes::Lifting);
+   poiStart.RemoveStage(pgsTypes::Hauling);
+   poiStart.AddStages(stages,attrib);
 
    poiEnd.RemoveStage(pgsTypes::CastingYard);
-   poiEnd.AddStages(stages);
+   poiEnd.RemoveStage(pgsTypes::Lifting);
+   poiEnd.RemoveStage(pgsTypes::Hauling);
+   poiEnd.AddStages(stages,attrib);
 
    pPoiMgr->AddPointOfInterest(poiStart);
    pPoiMgr->AddPointOfInterest(poiEnd);
 
 
    // end block transition points
-   pgsPointOfInterest poiStartEndBlock1(pgsTypes::CastingYard, span, gdr, ebLength,                            attrib | POI_ALLACTIONS);
-   pgsPointOfInterest poiStartEndBlock2(pgsTypes::CastingYard, span, gdr, ebLength  + ebTransition,            attrib | POI_ALLACTIONS);
-   pgsPointOfInterest poiEndEndBlock2(  pgsTypes::CastingYard, span, gdr, gdrLength - ebLength - ebTransition, attrib | POI_ALLACTIONS);
-   pgsPointOfInterest poiEndEndBlock1(  pgsTypes::CastingYard, span, gdr, gdrLength - ebLength,                attrib | POI_ALLACTIONS);
+   pgsPointOfInterest poiStartEndBlock1(span, gdr, ebLength);
+   poiStartEndBlock1.AddStage(pgsTypes::CastingYard,attrib | POI_ALLACTIONS);
+   poiStartEndBlock1.AddStage(pgsTypes::Lifting,    attrib | POI_ALLACTIONS);
+   poiStartEndBlock1.AddStage(pgsTypes::Hauling,    attrib | POI_ALLACTIONS);
+
+   pgsPointOfInterest poiStartEndBlock2(span, gdr, ebLength  + ebTransition);
+   poiStartEndBlock2.AddStage(pgsTypes::CastingYard,attrib | POI_ALLACTIONS);
+   poiStartEndBlock2.AddStage(pgsTypes::Lifting,    attrib | POI_ALLACTIONS);
+   poiStartEndBlock2.AddStage(pgsTypes::Hauling,    attrib | POI_ALLACTIONS);
+
+   pgsPointOfInterest poiEndEndBlock2(  span, gdr, gdrLength - ebLength - ebTransition);
+   poiEndEndBlock2.AddStage(pgsTypes::CastingYard,attrib | POI_ALLACTIONS);
+   poiEndEndBlock2.AddStage(pgsTypes::Lifting,    attrib | POI_ALLACTIONS);
+   poiEndEndBlock2.AddStage(pgsTypes::Hauling,    attrib | POI_ALLACTIONS);
+
+   pgsPointOfInterest poiEndEndBlock1(  span, gdr, gdrLength - ebLength);
+   poiEndEndBlock1.AddStage(pgsTypes::CastingYard,attrib | POI_ALLACTIONS);
+   poiEndEndBlock1.AddStage(pgsTypes::Lifting,    attrib | POI_ALLACTIONS);
+   poiEndEndBlock1.AddStage(pgsTypes::Hauling,    attrib | POI_ALLACTIONS);
 
    // add end block transition to late stages if after start bearing
    if ( poiStart.GetDistFromStart() < poiStartEndBlock1.GetDistFromStart() )
-      poiStartEndBlock1.AddStages(stages);
+      poiStartEndBlock1.AddStages(stages,attrib);
 
    pPoiMgr->AddPointOfInterest(poiStartEndBlock1);
 
    // add end block transition if after start bearing
    if ( poiStart.GetDistFromStart() < poiStartEndBlock2.GetDistFromStart() )
-      poiStartEndBlock2.AddStages(stages);
+      poiStartEndBlock2.AddStages(stages,attrib);
 
    pPoiMgr->AddPointOfInterest(poiStartEndBlock2);
 
    // add end block transion if before end bearing
    if ( poiEndEndBlock2.GetDistFromStart() < poiEnd.GetDistFromStart() )
-      poiEndEndBlock2.AddStages(stages);
+      poiEndEndBlock2.AddStages(stages,attrib);
 
    pPoiMgr->AddPointOfInterest(poiEndEndBlock2);
 
    // add end block transion if before end bearing
    if ( poiEndEndBlock1.GetDistFromStart() < poiEnd.GetDistFromStart() )
-      poiEndEndBlock1.AddStages(stages);
+      poiEndEndBlock1.AddStages(stages,attrib);
 
    pPoiMgr->AddPointOfInterest(poiEndEndBlock1);
 }
@@ -684,7 +710,7 @@ Float64 CIBeamFactory::GetVolume(IBroker* pBroker,SpanIndexType spanIdx,GirderIn
    GET_IFACE2(pBroker,ISectProp2,pSectProp2);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
 
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::CastingYard,spanIdx,gdrIdx,POI_SECTCHANGE);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_SECTCHANGE);
    ATLASSERT( 2 <= vPOI.size() );
    Float64 V = 0;
    std::vector<pgsPointOfInterest>::iterator iter = vPOI.begin();
@@ -712,7 +738,7 @@ Float64 CIBeamFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,Gir
    GET_IFACE2(pBroker,ISectProp2,pSectProp2);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
 
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::CastingYard,spanIdx,gdrIdx,POI_SECTCHANGE);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_SECTCHANGE);
    ATLASSERT( 2 <= vPOI.size() );
    Float64 S = 0;
    std::vector<pgsPointOfInterest>::iterator iter = vPOI.begin();

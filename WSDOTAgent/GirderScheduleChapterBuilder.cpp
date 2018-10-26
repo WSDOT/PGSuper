@@ -134,7 +134,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    Float64 max_days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
 
    GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
-   std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(pgsTypes::BridgeSite1, span, girder,POI_MIDSPAN);
+   std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(span, girder,pgsTypes::BridgeSite1, POI_MIDSPAN);
    ATLASSERT(pmid.size()==1);
 
    GET_IFACE2(pBroker,IBridge,pBridge);

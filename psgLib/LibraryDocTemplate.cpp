@@ -33,12 +33,13 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNAMIC(CLibraryDocTemplate,CEAFDocTemplate)
 
 CLibraryDocTemplate::CLibraryDocTemplate(UINT nIDResource,
-                   CRuntimeClass* pDocClass,
-                   CRuntimeClass* pFrameClass,
-                   CRuntimeClass* pViewClass,
-                   HMENU hSharedMenu,
-                   int maxViewCount) : 
-CEAFDocTemplate(nIDResource,pDocClass,pFrameClass,pViewClass,hSharedMenu,maxViewCount)
+                                         IEAFCommandCallback* pCallback,
+                                         CRuntimeClass* pDocClass,
+                                         CRuntimeClass* pFrameClass,
+                                         CRuntimeClass* pViewClass,
+                                         HMENU hSharedMenu,
+                                         int maxViewCount) : 
+CEAFDocTemplate(nIDResource,pCallback,pDocClass,pFrameClass,pViewClass,hSharedMenu,maxViewCount)
 {
 }
 

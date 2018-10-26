@@ -20,15 +20,12 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_SLABDISPLAYOBJECTEVENTS_H__4C0EE0CB_964D_407D_9204_311964B859D5__INCLUDED_)
-#define AFX_SLABDISPLAYOBJECTEVENTS_H__4C0EE0CB_964D_407D_9204_311964B859D5__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // SlabDisplayObjectEvents.h : header file
 //
 
+#include "PGSuperDoc.h"
 
 #include <DManip\DManip.h>
 interface IBroker;
@@ -126,8 +123,3 @@ private:
    void SelectPrev();
    void SelectNext();
 };
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_SLABDISPLAYOBJECTEVENTS_H__4C0EE0CB_964D_407D_9204_311964B859D5__INCLUDED_)

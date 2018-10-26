@@ -246,64 +246,60 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::CastingYard, analysisType);
    //   CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::CastingYard);
    //   CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::CastingYard);
-   }
 
-   p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-   *pChapter << p;
-   *p << "Responses - Girder Placement" << rptNewLine;
-   p->SetName("Combined Results - Girder Placement");
-   CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::GirderPlacement, analysisType);
-   CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::GirderPlacement,   analysisType);
-   if ( bDesign )
-      CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::GirderPlacement,analysisType);
-
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   SpanIndexType nSpans = pBridge->GetSpanCount();
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   bool bTempStrands = false;
-   SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
-   SpanIndexType lastSpanIdx  = (span == ALL_SPANS ? nSpans : firstSpanIdx+1);
-   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx < lastSpanIdx; spanIdx++ )
-   {
-      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-      GirderIndexType gdrIdx = (nGirders <= girder ? nGirders-1 : girder);
-      if ( 0 < pStrandGeom->GetMaxStrands(spanIdx,gdrIdx,pgsTypes::Temporary) )
-      {
-         bTempStrands = true;
-         break;
-      }
-   }
-   if ( bTempStrands )
-   {
-      // if there can be temporary strands, report the loads at the temporary strand removal stage
-      // because this is when the girder load is applied
       p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << p;
-      *p << "Responses - Temporary Strand Removal Stage" << rptNewLine;
-      p->SetName("Combined Results - Temporary Strand Removal");
-      CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval, analysisType);
-      CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval, analysisType);
-      if ( bDesign )
-         CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval, analysisType);
-   }
+      *p << "Responses - Girder Placement" << rptNewLine;
+      p->SetName("Combined Results - Girder Placement");
+      CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::GirderPlacement, analysisType);
+      CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::GirderPlacement,   analysisType);
+      CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::GirderPlacement,analysisType);
 
-   p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-   *pChapter << p;
-   *p << "Responses - Deck and Diaphragm Placement (Bridge Site 1)" << rptNewLine;
-   p->SetName("Combined Results - Deck and Diaphragm Placement (Bridge Site 1)");
-   CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite1, analysisType);
-   CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite1, analysisType);
-   if ( bDesign )
+      GET_IFACE2(pBroker,IBridge,pBridge);
+      SpanIndexType nSpans = pBridge->GetSpanCount();
+      GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+      bool bTempStrands = false;
+      SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
+      SpanIndexType lastSpanIdx  = (span == ALL_SPANS ? nSpans : firstSpanIdx+1);
+      for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx < lastSpanIdx; spanIdx++ )
+      {
+         GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
+         GirderIndexType gdrIdx = (nGirders <= girder ? nGirders-1 : girder);
+         if ( 0 < pStrandGeom->GetMaxStrands(spanIdx,gdrIdx,pgsTypes::Temporary) )
+         {
+            bTempStrands = true;
+            break;
+         }
+      }
+      if ( bTempStrands )
+      {
+         // if there can be temporary strands, report the loads at the temporary strand removal stage
+         // because this is when the girder load is applied
+         p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         *pChapter << p;
+         *p << "Responses - Temporary Strand Removal Stage" << rptNewLine;
+         p->SetName("Combined Results - Temporary Strand Removal");
+         CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval, analysisType);
+         CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval, analysisType);
+         CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval, analysisType);
+      }
+
+      p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      *pChapter << p;
+      *p << "Responses - Deck and Diaphragm Placement (Bridge Site 1)" << rptNewLine;
+      p->SetName("Combined Results - Deck and Diaphragm Placement (Bridge Site 1)");
+      CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite1, analysisType);
+      CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite1, analysisType);
       CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite1, analysisType);
 
-   p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-   *pChapter << p;
-   *p << "Responses - Superimposed Dead Loads (Bridge Site 2)" << rptNewLine;
-   p->SetName("Combined Results - Superimposed Dead Loads (Bridge Site 2)");
-   CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2, analysisType);
-   CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2, analysisType);
-   if ( bDesign )
+      p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      *pChapter << p;
+      *p << "Responses - Superimposed Dead Loads (Bridge Site 2)" << rptNewLine;
+      p->SetName("Combined Results - Superimposed Dead Loads (Bridge Site 2)");
+      CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2, analysisType);
+      CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2, analysisType);
       CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2, analysisType);
+   }
 
    p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << p;

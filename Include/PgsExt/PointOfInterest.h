@@ -88,10 +88,6 @@ typedef Uint64 PoiAttributeType;
 // 0x0000 0000 0000 2000 - Unused
 // 0x0000 0000 0000 4000 - Unused
 // 0x0000 0000 0000 8000 - Unused
-// 0x0000 0000 0001 0000 - If set, L = Lspan, if clear, L = Lgirder
-
-#define POI_GIRDER_POINT 0x0000000000020000
-#define POI_SPAN_POINT   0x0000000000010000
 
 /*****************************************************************************
 CLASS 
@@ -122,13 +118,10 @@ LOG
 class PGSEXTCLASS pgsPointOfInterest
 {
 public:
-   //------------------------------------------------------------------------
    pgsPointOfInterest();
-
-   //------------------------------------------------------------------------
-   pgsPointOfInterest(SpanIndexType span,GirderIndexType gdr,Float64 distFromStart,PoiAttributeType attrib = POI_ALLACTIONS | POI_ALLOUTPUT);
+   pgsPointOfInterest(SpanIndexType span,GirderIndexType gdr,Float64 distFromStart);
    pgsPointOfInterest(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart,PoiAttributeType attrib = POI_ALLACTIONS | POI_ALLOUTPUT);
-   pgsPointOfInterest(std::set<pgsTypes::Stage> stages,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart,PoiAttributeType attrib = POI_ALLACTIONS | POI_ALLOUTPUT);
+   pgsPointOfInterest(std::vector<pgsTypes::Stage> stages,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart,PoiAttributeType attrib = POI_ALLACTIONS | POI_ALLOUTPUT);
 
    //------------------------------------------------------------------------
    // Copy constructor
@@ -186,14 +179,20 @@ public:
    Float64 GetDistFromStart() const;
 
    //------------------------------------------------------------------------
-   // Sets the attributes of this POI
-   void SetAttributes(PoiAttributeType attrib);
+   // Sets the POI stage attributes
+   void SetAttributes(pgsTypes::Stage stage,PoiAttributeType attrib);
+
+   //------------------------------------------------------------------------
+   // Sets the POI attributes for a list of stages
+   // The same attribute is applied to all stages
+   void SetAttributes(const std::vector<pgsTypes::Stage>& stages,PoiAttributeType attrib);
 
    //------------------------------------------------------------------------
    // Returns the attributes of this POI.
-   PoiAttributeType GetAttributes() const;
+   PoiAttributeType GetAttributes(pgsTypes::Stage stage) const;
 
-   void MakeTenthPoint(PoiAttributeType basisType,Uint16 tenthPoint);
+   void MakeTenthPoint(pgsTypes::Stage stage,Uint16 tenthPoint);
+   void MakeTenthPoint(const std::vector<pgsTypes::Stage>& stages,Uint16 tenthPoint);
 
    //------------------------------------------------------------------------
    // Tolerance for comparing distance from start.
@@ -202,51 +201,51 @@ public:
 
    //------------------------------------------------------------------------
    // Returns true if this poi is used for flexure.
-   bool IsFlexureCapacity() const;
-   bool IsFlexureStress() const;
+   bool IsFlexureCapacity(pgsTypes::Stage stage) const;
+   bool IsFlexureStress(pgsTypes::Stage stage) const;
 
    //------------------------------------------------------------------------
    // Returns true if this poi is used for shear.
-   bool IsShear() const;
+   bool IsShear(pgsTypes::Stage stage) const;
 
    //------------------------------------------------------------------------
    // Returns true if this poi is used for displacement.
-   bool IsDisplacement() const;
+   bool IsDisplacement(pgsTypes::Stage stage) const;
 
    //------------------------------------------------------------------------
    // Returns true if this poi is at a harping point
-   bool IsHarpingPoint() const;
+   bool IsHarpingPoint(pgsTypes::Stage stage) const;
 
    //------------------------------------------------------------------------
    // Returns true if this poi is at the point of application of a concentrated
    // load.
-   bool IsConcentratedLoad() const;
+   bool IsConcentratedLoad(pgsTypes::Stage stage) const;
 
    //------------------------------------------------------------------------
-   bool IsMidSpan() const;
+   bool IsMidSpan(pgsTypes::Stage stage) const;
 
    //------------------------------------------------------------------------
    // Returns true if this poi is used for tabular reports.
-   bool IsTabular() const;
+   bool IsTabular(pgsTypes::Stage stage) const;
 
    //------------------------------------------------------------------------
    // Returns true if this poi is used for creating graphics.
-   bool IsGraphical() const;
+   bool IsGraphical(pgsTypes::Stage stage) const;
 
    //------------------------------------------------------------------------
    // Returns true if this poi is h from the end of the girder or face of support.
-   bool IsAtH() const;
+   bool IsAtH(pgsTypes::Stage stage) const;
 
    //------------------------------------------------------------------------
    // Returns true if this poi is 1.5h from the end of the girder or face of support.
-   bool IsAt15H() const;
+   bool IsAt15H(pgsTypes::Stage stage) const;
 
    //------------------------------------------------------------------------
    // Returns 1-11 if this point is a tenth point, zero if not.
    // 1 is start , 11 is end
-   Uint16 IsATenthPoint(PoiAttributeType basisType) const;
+   Uint16 IsATenthPoint(pgsTypes::Stage stage) const;
 
-   bool HasAttribute(PoiAttributeType attribute) const;
+   bool HasAttribute(pgsTypes::Stage stage,PoiAttributeType attribute) const;
 
    //------------------------------------------------------------------------
    // utility functions for inserting and extracting tenth point information
@@ -254,11 +253,11 @@ public:
    static void SetAttributeTenthPoint(Uint16 tenthPoint, PoiAttributeType* attribute);
    static Uint16 GetAttributeTenthPoint(PoiAttributeType attribute);
 
-   void AddStage(pgsTypes::Stage stage);
-   void AddStages(std::set<pgsTypes::Stage> stages);
+   void AddStage(pgsTypes::Stage stage,PoiAttributeType attribute);
+   void AddStages(std::vector<pgsTypes::Stage> stages,PoiAttributeType attribute);
    void RemoveStage(pgsTypes::Stage stage);
    bool HasStage(pgsTypes::Stage stage) const;
-   std::set<pgsTypes::Stage> GetStages() const;
+   std::vector<pgsTypes::Stage> GetStages() const;
    Uint32 GetStageCount() const;
 
 protected:
@@ -273,11 +272,11 @@ private:
    SpanIndexType m_Span;
    GirderIndexType m_Girder;
    Float64 m_DistFromStart;
-   PoiAttributeType m_Attributes;
 
    static Float64 ms_Tol;
 
-   std::set<pgsTypes::Stage> m_Stages;
+   typedef std::map<pgsTypes::Stage,PoiAttributeType> StageContainer;
+   StageContainer m_Stages;
 
    friend pgsPoiMgr; // This guy sets the POI id.
 
@@ -286,18 +285,7 @@ public:
    //------------------------------------------------------------------------
    // Returns true if the object is in a valid state, otherwise returns false.
    virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const;
-   #endif // _DEBUG
-
-   #if defined _UNITTEST
-   //------------------------------------------------------------------------
-   // Runs a self-diagnostic test.  Returns true if the test passed,
-   // otherwise false.
-   static bool TestMe(dbgLog& rlog);
-   #endif // _UNITTEST
+#endif // _DEBUG
 };
 
 /*****************************************************************************
@@ -324,16 +312,9 @@ class PGSEXTCLASS rptPointOfInterest : public rptLengthUnitValue
 {
 public:
    //------------------------------------------------------------------------
-   rptPointOfInterest(const pgsPointOfInterest& poi,
-                      Float64 endOffest,
-                      const unitLength* pUnitOfMeasure,
-                      Float64 zeroTolerance = 0.,
-                      bool bShowUnitTag = true,bool bSpanPOI  = true);
-
-   //------------------------------------------------------------------------
    rptPointOfInterest(const unitLength* pUnitOfMeasure = 0,
                       Float64 zeroTolerance = 0.,
-                      bool bShowUnitTag = true,bool bSpanPOI  = true);
+                      bool bShowUnitTag = true);
 
    //------------------------------------------------------------------------
    rptPointOfInterest(const rptPointOfInterest& rOther);
@@ -345,29 +326,12 @@ public:
    virtual rptReportContent* CreateClone() const;
 
    //------------------------------------------------------------------------
-   virtual rptReportContent& SetValue(const pgsPointOfInterest& poi,Float64 endOffset = 0.0);
+   virtual rptReportContent& SetValue(pgsTypes::Stage stage,const pgsPointOfInterest& poi,Float64 endOffset = 0.0);
 
    //------------------------------------------------------------------------
    std::string AsString() const;
 
-   //------------------------------------------------------------------------
-   // Make this a girder poi, that is, distance is measured from the
-   // left end of the girder
-   void MakeGirderPoi(bool bGirderPOI=true);
-
-   //------------------------------------------------------------------------
-   // Make this a span poi, that is, distance is measured from the
-   // left end of the span (usually from the left bearing)
-   void MakeSpanPoi(bool bSpanPOI=true);
-
-   //------------------------------------------------------------------------
-   // Returns true if this is a span poi
-   bool IsSpanPoi() const;
-
-   //------------------------------------------------------------------------
-   // Returns true if this is a girder poi
-   bool IsGirderPoi() const;
-
+   // Prefixes the POI with Span s Girder g
    void IncludeSpanAndGirder(bool bIncludeSpanAndGirder);
    bool IncludeSpanAndGirder() const;
 
@@ -385,8 +349,8 @@ protected:
    void MakeAssignment(const rptPointOfInterest& rOther);
 
 private:
-   pgsPointOfInterest m_Poi;
-   bool m_bSpanPOI;
+   pgsPointOfInterest m_POI;
+   pgsTypes::Stage m_Stage;
    bool m_bPrefixAttributes;
    bool m_bIncludeSpanAndGirder;
 };

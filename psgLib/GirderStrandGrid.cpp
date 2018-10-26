@@ -180,11 +180,7 @@ void CGirderStrandGrid::Removerows()
 
 void CGirderStrandGrid::CustomInit()
 {
-   CEAFApp* pApp;
-   {
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      pApp = (CEAFApp*)AfxGetApp();
-   }
+   CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    // Initialize the grid. For CWnd based grids this call is // 

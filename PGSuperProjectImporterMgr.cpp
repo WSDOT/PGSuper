@@ -57,7 +57,7 @@ bool CPGSuperProjectImporterMgr::LoadImporters()
    pICatInfo->EnumClassesOfCategories(nID,ID,0,NULL,&pIEnumCLSID);
 
    // load all importers
-   CEAFApp* pApp = (CEAFApp*)AfxGetApp();
+   CEAFApp* pApp = EAFGetApp();
 
    const int nCLSID = 5;
    CLSID clsid[nCLSID]; 
@@ -89,10 +89,10 @@ bool CPGSuperProjectImporterMgr::LoadImporters()
             else
             {
                Record record;
-               record.commandID = 0; // project importers don't use command IDs
-               record.Importer  = importer;
+               record.clsid    = clsid[i];
+               record.Importer = importer;
 
-               m_ImporterRecords.push_back( record );
+               m_ImporterRecords.insert( record );
             }
          }
          ::CoTaskMemFree((void*)pszCLSID);
@@ -107,34 +107,51 @@ void CPGSuperProjectImporterMgr::UnloadImporters()
    m_ImporterRecords.clear();
 }
 
-Uint32 CPGSuperProjectImporterMgr::GetImporterCount() const
+CollectionIndexType CPGSuperProjectImporterMgr::GetImporterCount() const
 {
    return m_ImporterRecords.size();
 }
 
-void CPGSuperProjectImporterMgr::GetImporter(Uint32 key,bool bByIndex,IPGSuperProjectImporter** ppImporter)
+void CPGSuperProjectImporterMgr::GetImporter(CollectionIndexType idx,IPGSuperProjectImporter** ppImporter)
 {
-   if ( bByIndex )
+   std::set<Record>::iterator iter;
+   CollectionIndexType count = 0;
+   for ( iter = m_ImporterRecords.begin(); iter != m_ImporterRecords.end(); iter++, count++ )
    {
-      (*ppImporter) = m_ImporterRecords[key].Importer;
-      (*ppImporter)->AddRef();
-   }
-   else
-   {
-      std::vector<Record>::iterator iter;
-      for ( iter = m_ImporterRecords.begin(); iter != m_ImporterRecords.end(); iter++ )
+      if ( count == idx )
       {
-         if ( key == (*iter).commandID )
-         {
-            (*ppImporter) = (*iter).Importer;
-            (*ppImporter)->AddRef();
-            return;
-         }
+         (*ppImporter) = iter->Importer;
+         (*ppImporter)->AddRef();
+         break;
       }
    }
 }
 
-UINT CPGSuperProjectImporterMgr::GetImporterCommand(Uint32 idx) const
+void CPGSuperProjectImporterMgr::GetImporter(const CLSID& clsid,IPGSuperProjectImporter** ppImporter)
 {
-   return m_ImporterRecords[idx].commandID;
+   Record record;
+   record.clsid = clsid;
+   std::set<Record>::iterator found = m_ImporterRecords.find(record);
+   if ( found != m_ImporterRecords.end() )
+   {
+      (*ppImporter) = found->Importer;
+      (*ppImporter)->AddRef();
+   }
+}
+
+void CPGSuperProjectImporterMgr::AddImporter(const CLSID& clsid,IPGSuperProjectImporter* pImporter)
+{
+   Record record;
+   record.clsid    = clsid;
+   record.Importer = pImporter;
+   m_ImporterRecords.insert(record);
+}
+
+void CPGSuperProjectImporterMgr::RemoveImporter(const CLSID& clsid)
+{
+   Record record;
+   record.clsid = clsid;
+   std::set<Record>::iterator found = m_ImporterRecords.find(record);
+   if( found != m_ImporterRecords.end() )
+      m_ImporterRecords.erase(found);
 }

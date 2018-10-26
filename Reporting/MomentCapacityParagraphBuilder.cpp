@@ -88,7 +88,7 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
    GET_IFACE2(pBroker,IMomentCapacity,pMomentCap);
 
    // Get Midspan std::vector<pgsPointOfInterest>
-   std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,span,girder,POI_MIDSPAN);
+   std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(span,girder,pgsTypes::BridgeSite3,POI_MIDSPAN);
    pgsPointOfInterest poi = *vPoi.begin();
 
    const pgsGirderArtifact* pArtifact = pIArtifact->GetArtifact(span,girder);

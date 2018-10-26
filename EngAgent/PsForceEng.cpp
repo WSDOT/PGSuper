@@ -103,12 +103,18 @@ void pgsPsForceEng::Invalidate()
 
    // Set transfer comp type to invalid
    m_PrestressTransferComputationType=(pgsTypes::PrestressTransferComputationType)-1; 
-}
+}     
 
 void pgsPsForceEng::ReportLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    CreateLossEngineer(span,gdr);
    m_LossEngineer->BuildReport(span,gdr,pChapter,pDisplayUnits);
+}
+
+void pgsPsForceEng::ReportFinalLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
+{
+   CreateLossEngineer(span,gdr);
+   m_LossEngineer->ReportFinalLosses(span,gdr,pChapter,pDisplayUnits);
 }
 
 void pgsPsForceEng::ComputeLosses(const pgsPointOfInterest& poi,LOSSDETAILS* pLosses)
@@ -169,7 +175,7 @@ Float64 pgsPsForceEng::GetPjackMax(SpanIndexType span,GirderIndexType gdr,const 
 
       // fake up some data so losses are computed before transfer
       GET_IFACE(IPointOfInterest,pPOI);
-      std::vector<pgsPointOfInterest> vPoi = pPOI->GetPointsOfInterest( pgsTypes::CastingYard, span, gdr, POI_MIDSPAN);
+      std::vector<pgsPointOfInterest> vPoi = pPOI->GetPointsOfInterest( span, gdr, pgsTypes::CastingYard, POI_MIDSPAN);
       pgsPointOfInterest poi = vPoi[0];
 
       GET_IFACE(IBridge,pBridge);
@@ -659,7 +665,7 @@ Float64 pgsPsForceEng::GetHoldDownForce(SpanIndexType span,GirderIndexType gdr)
    if (0 < Nh)
    {
       GET_IFACE(IPointOfInterest,pPOI);
-      std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,span,gdr,POI_HARPINGPOINT);
+      std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(span,gdr,pgsTypes::BridgeSite3,POI_HARPINGPOINT);
    
       // no hold down force if there aren't any harped strands
       if ( vPOI.size() == 0 )
@@ -692,7 +698,7 @@ Float64 pgsPsForceEng::GetHoldDownForce(SpanIndexType span,GirderIndexType gdr,c
    if (config.Nstrands[pgsTypes::Harped] > 0)
    {
       GET_IFACE(IPointOfInterest,pPOI);
-      std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,span,gdr,POI_HARPINGPOINT);
+      std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(span,gdr,pgsTypes::BridgeSite3,POI_HARPINGPOINT);
    
       // no hold down force if there aren't any harped strands
       if ( vPOI.size() == 0 )

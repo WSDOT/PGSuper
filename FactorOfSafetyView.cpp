@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "pgsuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperDoc.h"
 #include "FactorOfSafetyView.h"
 #include "PGSuperException.h"

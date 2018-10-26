@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuper.PGSuperAppPlugin.1 = s 'PGSuper'
+	{
+		CLSID = s '{C1731920-FBCA-40FA-959D-9B749F03DEC0}'
+	}
+	PGSuper.PGSuperAppPlugin = s 'PGSuper'
+	{
+		CLSID = s '{C1731920-FBCA-40FA-959D-9B749F03DEC0}'
+		CurVer = s 'PGSuper.PGSuperAppPlugin.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {C1731920-FBCA-40FA-959D-9B749F03DEC0} = s 'PGSuper'
+		{
+			ProgID = s 'PGSuper.PGSuperAppPlugin.1'
+			VersionIndependentProgID = s 'PGSuper.PGSuperAppPlugin'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+		}
+	}
+}

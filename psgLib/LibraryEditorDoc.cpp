@@ -132,7 +132,7 @@ void CLibraryEditorDoc::Dump(CDumpContext& dc) const
 void CLibraryEditorDoc::DoIntegrateWithUI(BOOL bIntegrate)
 {
    // Add the document's user interface stuff first
-   CEAFMainFrame* pFrame = (CEAFMainFrame*)AfxGetMainWnd();
+   CEAFMainFrame* pFrame = EAFGetMainFrame();
    if ( bIntegrate )
    {
       // set up the toolbar here
@@ -160,7 +160,7 @@ HRESULT CLibraryEditorDoc::WriteTheDocument(IStructuredSave* pStrSave)
    try
    {
       // save editor-specific information
-      CEAFApp* pApp = (CEAFApp*)AfxGetApp();
+      CEAFApp* pApp = EAFGetApp();
       mysave.BeginUnit("LIBRARY_EDITOR", 1.0);
       if (pApp->GetUnitsMode() == eafTypes::umUS)
          mysave.Property("EDIT_UNITS", "US");
@@ -193,7 +193,7 @@ HRESULT CLibraryEditorDoc::LoadTheDocument(IStructuredLoad* pStrLoad)
       return hr;
 
 
-   CEAFApp* pApp = (CEAFApp*)AfxGetApp();
+   CEAFApp* pApp = EAFGetApp();
    pApp->SetUnitsMode(unitMode);
 	
    m_LibraryManager.EnableEditingForAllEntries(true);
@@ -234,6 +234,16 @@ HRESULT CLibraryEditorDoc::OpenDocumentRootNode(IStructuredSave* pStrSave)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());  
 
    return CEAFDocument::OpenDocumentRootNode(pStrSave);
+}
+
+CString CLibraryEditorDoc::GetRootNodeName()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CString strAppUnit = AfxGetApp()->m_pszAppName;
+   strAppUnit.Trim();
+   strAppUnit.Replace(" ","");
+
+   return strAppUnit;
 }
 
 void CLibraryEditorDoc::OnImport()

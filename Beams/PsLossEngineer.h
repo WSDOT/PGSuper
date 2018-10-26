@@ -51,6 +51,8 @@ public:
    virtual LOSSDETAILS ComputeLossesForDesign(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config);
    virtual void BuildReport(BeamType beamType,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
 
+   virtual void ReportFinalLosses(BeamType beamType,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+
 private:
    IBroker* m_pBroker;
    StatusGroupIDType m_StatusGroupID;
@@ -67,8 +69,8 @@ private:
 
    void ReportRefinedMethod(BeamType beamType,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,Uint16 level,LossAgency lossAgency);
    void ReportApproxLumpSumMethod(BeamType beamType,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,Uint16 level,bool isWsdot);
-   void ReportGeneralLumpSumMethod(BeamType beamType,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-   void ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+   void ReportGeneralLumpSumMethod(BeamType beamType,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,bool bDesign,Uint16 level);
+   void ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,bool bDesign,Uint16 level);
 
    void ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
    void ReportRefinedMethod2005(rptChapter* pChapter,BeamType beamType,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
@@ -78,8 +80,8 @@ private:
    typedef std::set< std::pair<pgsPointOfInterest,pgsTypes::Stage> > PoiSet;
    typedef std::vector<pgsPointOfInterest> PoiVector;
 
-   void ReportLocation(rptRcTable* pTable,int row,const pgsPointOfInterest& poi,pgsTypes::Stage stage,Float64 endsize,IEAFDisplayUnits* pDisplayUnits);
-   void ReportLocation(rptRcTable* pTable,int row,const pgsPointOfInterest& poi,Float64 endsize,IEAFDisplayUnits* pDisplayUnits);
+   void ReportLocation2(rptRcTable* pTable,int row,pgsTypes::Stage stage,const pgsPointOfInterest& poi,Float64 endsize,IEAFDisplayUnits* pDisplayUnits);
+   void ReportLocation(rptRcTable* pTable,int row,pgsTypes::Stage stage,const pgsPointOfInterest& poi,Float64 endsize,IEAFDisplayUnits* pDisplayUnits);
 
    void ReportInitialRelaxation(rptChapter* pChapter,bool bTemporaryStrands,const lrfdLosses* pLosses,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
    void ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pChapter,const LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
@@ -140,6 +142,10 @@ private:
                            Float64* pCoeffFriction,
                            Float64* pAngleChange
                            );
+
+   void ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamType beamType,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,LossAgency lossAgency);
+   void ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamType beamType,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits);
+   void ReportFinalLossesRefinedMethodBefore2005(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits);
 
    bool m_bComputingLossesForDesign; 
 };

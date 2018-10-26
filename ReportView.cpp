@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 
 #include "PGSuperDoc.h"
 
@@ -82,6 +82,23 @@ void CPGSuperReportView::Dump(CDumpContext& dc) const
 
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperReportView message handlers
+void CPGSuperReportView::OnInitialUpdate()
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IEAFStatusCenter,pStatusCenter);
+
+   if ( pStatusCenter->GetSeverity() == eafTypes::statusError )
+   {
+      m_bUpdateError = true;
+      m_ErrorMsg = "Errors exist that prevent analysis. Review the errors posted in the status center for more information";
+      Invalidate();
+      UpdateWindow();
+      return;
+   }
+
+   CEAFAutoCalcReportView::OnInitialUpdate();
+}
 
 void CPGSuperReportView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
 {
@@ -127,15 +144,21 @@ HRESULT CPGSuperReportView::UpdateReportBrowser()
    return CEAFAutoCalcReportView::UpdateReportBrowser();
 }
 
+void CPGSuperReportView::RefreshReport()
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IProgress,pProgress);
+   CEAFAutoProgress progress(pProgress);
+   pProgress->UpdateMessage("Updating report...");
+
+   CEAFAutoCalcReportView::RefreshReport();
+}
+
 int CPGSuperReportView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
 	if (CEAFAutoCalcReportView::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
    return 0;
-}
-
-void CPGSuperReportView::CreateEditButton()
-{
-   CEAFAutoCalcReportView::CreateEditButton();
 }

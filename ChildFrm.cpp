@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 
 #include "ChildFrm.h"
 
@@ -74,6 +74,7 @@ BOOL CChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 #ifdef _DEBUG
 void CChildFrame::AssertValid() const
 {
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
 	CMDIChildWnd::AssertValid();
 }
 

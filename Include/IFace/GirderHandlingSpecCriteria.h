@@ -106,7 +106,7 @@ interface IGirderLiftingSpecCriteria : IUnknown
    virtual Float64 GetLiftingModulusOfRupture(Float64 fci)=0;
    virtual Float64 GetLiftingModulusOfRuptureCoefficient()=0;
 
-   virtual Float64 GetMinimumLiftingPointLocation() const = 0;
+   virtual Float64 GetMinimumLiftingPointLocation(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::MemberEndType end) const = 0;
    virtual Float64 GetLiftingPointLocationAccuracy() const = 0;
 };
 
@@ -180,7 +180,7 @@ interface IGirderHaulingSpecCriteria : IUnknown
 
    virtual Float64 GetMaxGirderWgt() const = 0;
 
-   virtual Float64 GetMinimumHaulingSupportLocation() const = 0;
+   virtual Float64 GetMinimumHaulingSupportLocation(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::MemberEndType end) const = 0;
    virtual Float64 GetHaulingSupportLocationAccuracy() const = 0;
 };
 

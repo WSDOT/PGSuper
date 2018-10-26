@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "CopyConcreteEntry.h"
 #include "HtmlHelp\HelpTopics.hh"
 #include "PGSuperDoc.h"

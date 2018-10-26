@@ -409,7 +409,7 @@ bool CTestAgentImp::RunHL93Test(std::ofstream& resultsFile, std::ofstream& poiFi
    PoiAttributeType attrib = POI_TABULAR | POI_FLEXURESTRESS;
    std::vector<pgsPointOfInterest> vPoi;
 
-   vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite3, span,gdr,attrib);
+   vPoi = pIPoi->GetPointsOfInterest( span,gdr,pgsTypes::BridgeSite3,attrib);
 
    Uint32 npoi = vPoi.size();
    for (Uint32 i=0; i<npoi; i++)
@@ -530,7 +530,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::ofstream& resultsFile, std::ofstr
    PoiAttributeType attrib = POI_TABULAR | POI_FLEXURESTRESS;
    std::vector<pgsPointOfInterest> vPoi;
 
-   vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite3, span,gdr,attrib);
+   vPoi = pIPoi->GetPointsOfInterest( span,gdr,pgsTypes::BridgeSite3,attrib);
 
    Uint32 npoi = vPoi.size();
    for (Uint32 i=0; i<npoi; i++)
@@ -657,7 +657,7 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::ofstream& resultsFile, std::o
    PoiAttributeType attrib = POI_TABULAR | POI_FLEXURESTRESS;
    std::vector<pgsPointOfInterest> vPoi;
 
-   vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite3, span,gdr,attrib);
+   vPoi = pIPoi->GetPointsOfInterest( span,gdr,pgsTypes::BridgeSite3,attrib);
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
    BridgeAnalysisType bat;
@@ -846,7 +846,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::ofstream& resultsFile, std::
 
    PoiAttributeType attrib = POI_TABULAR; //POI_FLEXURESTRESS;// | POI_FLEXURECAPACITY | POI_SHEAR;
    std::vector<pgsPointOfInterest> vPoi;
-   vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite3, span,gdr,attrib);
+   vPoi = pIPoi->GetPointsOfInterest( span,gdr,pgsTypes::BridgeSite3,attrib);
    for (std::vector<pgsPointOfInterest>::iterator it=vPoi.begin(); it!=vPoi.end(); it++)
    {
       const pgsPointOfInterest& poi = *it;
@@ -898,7 +898,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::ofstream& resultsFile, std::
       // eff flange width
       resultsFile<<bridgeId<<", "<<pid<<", 50001, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pSp2->GetEffectiveFlangeWidth(poi), unitMeasure::Millimeter)) <<", 2, "<<gdr<<std::endl;
 
-      if ( poi.IsFlexureStress() )
+      if ( poi.IsFlexureStress(pgsTypes::BridgeSite3) )
       {
          // force and stress in prestressing strands
          resultsFile<<bridgeId<<", "<<pid<<", 50002, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterXfer), unitMeasure::MPa)) <<         ",15, "<<gdr<<std::endl;
@@ -954,7 +954,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::ofstream& resultsFile, std::
          resultsFile<<bridgeId<<", "<<pid<<", 56025, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(pgsTypes::BridgeSite3,poi,pgsTypes::BottomGirder), unitMeasure::MPa)) <<         ",15, "<<gdr<<std::endl;
       }
 
-      if ( poi.IsFlexureCapacity() || poi.IsShear() )
+      if ( poi.IsFlexureCapacity(pgsTypes::BridgeSite3) || poi.IsShear(pgsTypes::BridgeSite3) )
       {
          // positive moment capacity
          CRACKINGMOMENTDETAILS cmd;
@@ -1057,7 +1057,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::ofstream& resultsFile, std::
       resultsFile<<bridgeId<<", "<<pid<<", 100203, "<<loc<<", "<<(int)(pSDArtifact->Passed()?1:0)<<", 15, "<<gdr<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 100204, "<<loc<<", "<<(int)(pAHsrtifact->Passed()?1:0)<<", 15, "<<gdr<<std::endl;
 
-      if ( poi.IsFlexureStress() && poi.HasStage(pgsTypes::BridgeSite1) && poi.HasStage(pgsTypes::BridgeSite2) && poi.HasStage(pgsTypes::BridgeSite3) )
+      if ( poi.IsFlexureStress(pgsTypes::BridgeSite1) && poi.IsFlexureStress(pgsTypes::BridgeSite2) && poi.IsFlexureStress(pgsTypes::BridgeSite3) )
       {
          const pgsFlexuralStressArtifact* pStresses;
          pStresses = gdrArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::BridgeSite1,pgsTypes::ServiceI,pgsTypes::Tension,poi.GetDistFromStart()));
@@ -1182,7 +1182,7 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::ofstream& resultsFile, std::
    pgsPointOfInterest pois(span,gdr,0.0);
 
    GET_IFACE(IPointOfInterest, pPointOfInterest );
-   std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(pgsTypes::BridgeSite1, span, gdr, POI_MIDSPAN);
+   std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest( span, gdr, pgsTypes::BridgeSite1,POI_MIDSPAN);
    CHECK(pmid.size()==1);
 
    Float64 loc = pmid[0].GetDistFromStart();
@@ -1373,7 +1373,7 @@ bool CTestAgentImp::RunCamberTest(std::ofstream& resultsFile, std::ofstream& poi
 
    GET_IFACE(IPointOfInterest,pPointsOfInterest);
    std::vector<pgsPointOfInterest> poi_vec;
-   poi_vec = pPointsOfInterest->GetPointsOfInterest(pgsTypes::BridgeSite3,span,gdr,POI_MIDSPAN);
+   poi_vec = pPointsOfInterest->GetPointsOfInterest(span,gdr,pgsTypes::BridgeSite3,POI_MIDSPAN);
    CHECK(poi_vec.size()==1);
    pgsPointOfInterest& poi_midspan = poi_vec[0];
 

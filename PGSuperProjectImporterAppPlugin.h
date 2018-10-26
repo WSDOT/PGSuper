@@ -1,16 +1,52 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
 #pragma once
+#include "PGSuperAppPlugin\PGSuperAppPlugin_i.h"
 #include <EAF\EAFAppPlugin.h>
 #include "PGSuperBaseAppPlugin.h"
+#include "PGSuperAppPlugin\resource.h"
 
-// {552AB673-3D3D-47e6-AFD6-4EA033A8A7F2}
-DEFINE_GUID(CLSID_PGSuperProjectImporterDocumentPlugin, 
-0x552ab673, 0x3d3d, 0x47e6, 0xaf, 0xd6, 0x4e, 0xa0, 0x33, 0xa8, 0xa7, 0xf2);
+
+class CPGSuperProjectImporterAppPlugin;
+
+class CProjectImportersCmdTarget : public CCmdTarget
+{
+public:
+   CProjectImportersCmdTarget() {};
+
+   afx_msg void OnConfigureProjectImporters();
+
+   CPGSuperProjectImporterAppPlugin* m_pMyAppPlugin;
+
+   DECLARE_MESSAGE_MAP()
+};
 
 class ATL_NO_VTABLE CPGSuperProjectImporterAppPlugin : 
    public CPGSuperBaseAppPlugin,
    public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CPGSuperProjectImporterAppPlugin, &CLSID_PGSuperProjectImporterDocumentPlugin>,
-   public IEAFAppPlugin
+   public CComCoClass<CPGSuperProjectImporterAppPlugin, &CLSID_PGSuperProjectImporterAppPlugin>,
+   public IEAFAppPlugin,
+   public IEAFCommandCallback
 {
 public:
    CPGSuperProjectImporterAppPlugin()
@@ -22,12 +58,18 @@ public:
 
 BEGIN_COM_MAP(CPGSuperProjectImporterAppPlugin)
    COM_INTERFACE_ENTRY(IEAFAppPlugin)
+   COM_INTERFACE_ENTRY(IEAFCommandCallback)
 END_COM_MAP()
 
 BEGIN_CONNECTION_POINT_MAP(CPGSuperProjectImporterAppPlugin)
 END_CONNECTION_POINT_MAP()
 
+DECLARE_REGISTRY_RESOURCEID(IDR_PGSUPERPROJECTIMPORTERAPPPLUGIN)
+
    HMENU m_hMenuShared;
+   CProjectImportersCmdTarget m_MyCmdTarget;
+
+   void ConfigureProjectImporters();
 
 // IEAFAppPlugin
 public:
@@ -38,4 +80,12 @@ public:
    virtual HMENU GetSharedMenuHandle();
    virtual UINT GetDocumentResourceID();
    virtual CString GetName();
+
+// IEAFCommandCallback
+public:
+   virtual BOOL OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo);
+   virtual void GetStatusBarMessageString(UINT nID, CString& rMessage) const;
+   virtual void GetToolTipMessageString(UINT nID, CString& rMessage) const;
 };
+
+OBJECT_ENTRY_AUTO(__uuidof(PGSuperProjectImporterAppPlugin), CPGSuperProjectImporterAppPlugin)

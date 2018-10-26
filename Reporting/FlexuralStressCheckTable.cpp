@@ -93,10 +93,6 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,Span
    rptCapacityToDemand cap_demand;
 
    location.IncludeSpanAndGirder(span == ALL_SPANS);
-   if ( stage == pgsTypes::CastingYard )
-      location.MakeGirderPoi();
-   else
-      location.MakeSpanPoi();
 
    std::string strStage;
    std::string aux_msg1;
@@ -311,7 +307,7 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,Span
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* gdrArtifact = pIArtifact->GetArtifact(span,girder);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stage, span, girder, POI_FLEXURESTRESS | POI_TABULAR );
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_FLEXURESTRESS | POI_TABULAR );
    CHECK(vPoi.size()>0);
 
    const pgsFlexuralStressArtifact* pArtifact;
@@ -523,7 +519,7 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,Span
       ColumnIndexType col = 0;
 
       const pgsPointOfInterest& poi = *iter;
-      (*p_table)(row,col) << location.SetValue( poi, end_size );
+      (*p_table)(row,col) << location.SetValue( stage, poi, end_size );
 
       const pgsFlexuralStressArtifact* pOtherArtifact=0;
       if(stage==pgsTypes::BridgeSite2 || stage==pgsTypes::BridgeSite3)

@@ -25,6 +25,15 @@
 
 #include "PGSuperCatalog.h"
 
+enum CacheUpdateFrequency
+{
+   Never,
+   Always,
+   Daily,
+   Weekly,
+   Monthly
+};
+
 // Enum to describe server connection, which describes server type
 enum SharedResourceType
 {

@@ -553,7 +553,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
 
       // Negative camber is not technically a spec check, but a warning
       GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
-      std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,span,gdr,POI_MIDSPAN);
+      std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(span,gdr,pgsTypes::BridgeSite3,POI_MIDSPAN);
       CHECK(vPoi.size()==1);
       pgsPointOfInterest poi = *vPoi.begin();
 

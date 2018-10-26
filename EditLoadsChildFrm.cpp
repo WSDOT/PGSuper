@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PgSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 
 #include "EditLoadsChildFrm.h"
 
@@ -71,6 +71,24 @@ BOOL CEditLoadsChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 }
 
 
+BOOL CEditLoadsChildFrame::Create(LPCTSTR lpszClassName,
+				LPCTSTR lpszWindowName,
+				DWORD dwStyle,
+				const RECT& rect,
+				CMDIFrameWnd* pParentWnd,
+				CCreateContext* pContext)
+{
+   BOOL bResult = CMDIChildWnd::Create(lpszClassName,lpszWindowName,dwStyle,rect,pParentWnd,pContext);
+   if ( bResult )
+   {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      HICON hIcon = AfxGetApp()->LoadIcon(IDR_EDITLOADS);
+      SetIcon(hIcon,TRUE);
+   }
+
+   return bResult;
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CEditLoadsChildFrame diagnostics
@@ -78,6 +96,7 @@ BOOL CEditLoadsChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 #ifdef _DEBUG
 void CEditLoadsChildFrame::AssertValid() const
 {
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
 	CMDIChildWnd::AssertValid();
 }
 

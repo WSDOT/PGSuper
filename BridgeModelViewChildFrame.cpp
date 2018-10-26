@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "pgsuperDoc.h"
 #include "BridgeModelViewChildFrame.h"
 #include "BridgeSectionView.h"
@@ -61,6 +61,23 @@ CBridgeModelViewChildFrame::~CBridgeModelViewChildFrame()
 {
 }
 
+BOOL CBridgeModelViewChildFrame::Create(LPCTSTR lpszClassName,
+				LPCTSTR lpszWindowName,
+				DWORD dwStyle,
+				const RECT& rect,
+				CMDIFrameWnd* pParentWnd,
+				CCreateContext* pContext)
+{
+   BOOL bResult = CSplitChildFrame::Create(lpszClassName,lpszWindowName,dwStyle,rect,pParentWnd,pContext);
+   if ( bResult )
+   {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      HICON hIcon = AfxGetApp()->LoadIcon(IDR_BRIDGEMODELEDITOR);
+      SetIcon(hIcon,TRUE);
+   }
+
+   return bResult;
+}
 
 BEGIN_MESSAGE_MAP(CBridgeModelViewChildFrame, CSplitChildFrame)
 	//{{AFX_MSG_MAP(CBridgeModelViewChildFrame)
@@ -123,6 +140,7 @@ void CBridgeModelViewChildFrame::DoFilePrint(bool direct)
 
 CBridgePlanView* CBridgeModelViewChildFrame::GetBridgePlanView() 
 {
+   AFX_MANAGE_STATE(AfxGetAppModuleState()); // GetPane calls AssertValid, Must be in the application module state
    CWnd* pwnd = m_SplitterWnd.GetPane(0, 0);
    CBridgePlanView* pvw = dynamic_cast<CBridgePlanView*>(pwnd);
    ASSERT(pvw);
@@ -131,11 +149,25 @@ CBridgePlanView* CBridgeModelViewChildFrame::GetBridgePlanView()
 
 CBridgeSectionView* CBridgeModelViewChildFrame::GetBridgeSectionView() 
 {
+   AFX_MANAGE_STATE(AfxGetAppModuleState()); // GetPane calls AssertValid, Must be in the application module state
    CWnd* pwnd = m_SplitterWnd.GetPane(1, 0);
    CBridgeSectionView* pvw = dynamic_cast<CBridgeSectionView*>(pwnd);
    ASSERT(pvw);
    return pvw;
 }
+
+#if defined _DEBUG
+void CBridgeModelViewChildFrame::AssertValid() const
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   CSplitChildFrame::AssertValid();
+}
+
+void CBridgeModelViewChildFrame::Dump(CDumpContext& dc) const
+{
+   CSplitChildFrame::Dump(dc);
+}
+#endif 
 
 int CBridgeModelViewChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
@@ -174,6 +206,8 @@ const char* CBridgeModelViewChildFrame::GetDeckTypeName(pgsTypes::SupportedDeckT
 
 void CBridgeModelViewChildFrame::ShowCutDlg()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CPGSuperDoc* pDoc = (CPGSuperDoc*) GetActiveDocument();
    CComPtr<IBroker> pBroker;
    pDoc->GetBroker(&pBroker);
@@ -448,6 +482,8 @@ void CBridgeModelViewChildFrame::OnUpdateDeleteSpan(CCmdUI* pCmdUI)
 
 void CBridgeModelViewChildFrame::OnInsertSpan() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    SpanIndexType spanIdx;
    CBridgePlanView* pView = GetBridgePlanView();
 	if ( pView->GetSelectedSpan(&spanIdx) )
@@ -489,6 +525,8 @@ void CBridgeModelViewChildFrame::OnInsertSpan()
 
 void CBridgeModelViewChildFrame::OnInsertPier() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    PierIndexType pierIdx;
    CBridgePlanView* pView = GetBridgePlanView();
 	if ( pView->GetSelectedPier(&pierIdx) )

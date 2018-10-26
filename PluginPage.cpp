@@ -23,12 +23,14 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PluginPage.h"
 #include "PGSuperPluginMgr.h"
 
 #include "PGSuperCatCom.h"
 #include "HtmlHelp\HelpTopics.hh"
+
+#include <EAF\EAFApp.h>
 
 // CPluginPage dialog
 
@@ -114,7 +116,8 @@ bool CPluginPage::InitList(const CATID& catid)
    CString strSection( m_PageType == EXTENSION_AGENT_PAGE ? "Extensions" : "Plugins" );
 
    // Load Importers
-   CEAFApp* pApp = (CEAFApp*)AfxGetApp();
+   CEAFApp* pApp = EAFGetApp();
+
    while ( SUCCEEDED(pIEnumCLSID->Next(nPlugins,clsid,&nFetched)) && 0 < nFetched)
    {
       for ( ULONG i = 0; i < nFetched; i++ )
@@ -143,7 +146,7 @@ bool CPluginPage::InitList(const CATID& catid)
 
 void CPluginPage::OnOK()
 {
-   CEAFApp* pApp = (CEAFApp*)AfxGetApp();
+   CEAFApp* pApp = EAFGetApp();
 
    CString strSection( m_PageType == EXTENSION_AGENT_PAGE ? "Extensions" : "Plugins" );
 

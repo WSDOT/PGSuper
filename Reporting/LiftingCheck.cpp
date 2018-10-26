@@ -100,7 +100,6 @@ void CLiftingCheck::Build(rptChapter* pChapter,
    INIT_UV_PROTOTYPE( rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), true);
 
    location.IncludeSpanAndGirder(span == ALL_SPANS);
-   location.MakeSpanPoi();
 
 
    rptParagraph* p = new rptParagraph;
@@ -192,7 +191,7 @@ void CLiftingCheck::Build(rptChapter* pChapter,
       pgsLiftingStressCheckArtifact stressArtifact = pLiftArtifact->GetLiftingStressCheckArtifact(poi.GetDistFromStart());
       pgsLiftingCrackingCheckArtifact crackArtifact =  pLiftArtifact->GetLiftingCrackingCheckArtifact(poi.GetDistFromStart());
  
-      (*p_table)(row,0) << location.SetValue( poi,overhang );
+      (*p_table)(row,0) << location.SetValue( pgsTypes::Lifting,poi,overhang );
       (*p_table)(row,1) << stress.SetValue(stressArtifact.GetMaximumConcreteCompressiveStress());
       (*p_table)(row,2) << stress.SetValue(stressArtifact.GetMaximumConcreteTensileStress());
 

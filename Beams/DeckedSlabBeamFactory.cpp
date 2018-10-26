@@ -196,18 +196,26 @@ void CDeckedSlabBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroke
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 gdrLength = pBridge->GetGirderLength(span,gdr);
 
-   pgsPointOfInterest poiStart(pgsTypes::CastingYard,span,gdr,0.00,POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
-   pgsPointOfInterest poiEnd(pgsTypes::CastingYard,span,gdr,gdrLength,POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
+   pgsPointOfInterest poiStart(span,gdr,0.00);
+   poiStart.AddStage(pgsTypes::CastingYard,POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
+   poiStart.AddStage(pgsTypes::Lifting,    POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
+   poiStart.AddStage(pgsTypes::Hauling,    POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
+
+   pgsPointOfInterest poiEnd(span,gdr,gdrLength);
+   poiEnd.AddStage(pgsTypes::CastingYard,POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
+   poiEnd.AddStage(pgsTypes::Lifting,    POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
+   poiEnd.AddStage(pgsTypes::Hauling,    POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
+
    pPoiMgr->AddPointOfInterest(poiStart);
    pPoiMgr->AddPointOfInterest(poiEnd);
 
    // move bridge site poi to the start/end bearing
-   std::set<pgsTypes::Stage> stages;
-   stages.insert(pgsTypes::GirderPlacement);
-   stages.insert(pgsTypes::TemporaryStrandRemoval);
-   stages.insert(pgsTypes::BridgeSite1);
-   stages.insert(pgsTypes::BridgeSite2);
-   stages.insert(pgsTypes::BridgeSite3);
+   std::vector<pgsTypes::Stage> stages;
+   stages.push_back(pgsTypes::GirderPlacement);
+   stages.push_back(pgsTypes::TemporaryStrandRemoval);
+   stages.push_back(pgsTypes::BridgeSite1);
+   stages.push_back(pgsTypes::BridgeSite2);
+   stages.push_back(pgsTypes::BridgeSite3);
    
    Float64 start_length = pBridge->GetGirderStartConnectionLength(span,gdr);
    Float64 end_length   = pBridge->GetGirderEndConnectionLength(span,gdr);
@@ -215,10 +223,14 @@ void CDeckedSlabBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroke
    poiEnd.SetDistFromStart(gdrLength-end_length);
 
    poiStart.RemoveStage(pgsTypes::CastingYard);
-   poiStart.AddStages(stages);
+   poiStart.RemoveStage(pgsTypes::Lifting);
+   poiStart.RemoveStage(pgsTypes::Hauling);
+   poiStart.AddStages(stages,POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
 
    poiEnd.RemoveStage(pgsTypes::CastingYard);
-   poiEnd.AddStages(stages);
+   poiEnd.RemoveStage(pgsTypes::Lifting);
+   poiEnd.RemoveStage(pgsTypes::Hauling);
+   poiEnd.AddStages(stages,POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
 
    pPoiMgr->AddPointOfInterest(poiStart);
    pPoiMgr->AddPointOfInterest(poiEnd);
@@ -234,21 +246,37 @@ void CDeckedSlabBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroke
    {
       Float64 delta = 1.5*pPoiMgr->GetTolerance();
 
-      stages.insert(pgsTypes::CastingYard);
+      stages.push_back(pgsTypes::CastingYard);
 
-      std::set<pgsTypes::Stage> ebStages;
+      stages.push_back(pgsTypes::CastingYard);
+      stages.push_back(pgsTypes::Lifting);
+      stages.push_back(pgsTypes::Hauling);
+
+      std::vector<pgsTypes::Stage> ebStages;
       if ( start_length < endBlockLength )
-         ebStages.insert(pgsTypes::CastingYard); // end block is after brg... only add to cy stage
+      {
+         ebStages.push_back(pgsTypes::CastingYard); // end block is after brg... only add to cy stage
+         ebStages.push_back(pgsTypes::Lifting);
+         ebStages.push_back(pgsTypes::Hauling);
+      }
       else
+      {
          ebStages = stages; // all stages
+      }
 
       pPoiMgr->AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,endBlockLength,       POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL) );
       pPoiMgr->AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,endBlockLength+delta,                  POI_TABULAR | POI_GRAPHICAL) );
 
       if ( end_length < endBlockLength )
-         ebStages.insert(pgsTypes::CastingYard);
+      {
+         ebStages.push_back(pgsTypes::CastingYard); // end block is after brg... only add to cy stage
+         ebStages.push_back(pgsTypes::Lifting);
+         ebStages.push_back(pgsTypes::Hauling);
+      }
       else
-         ebStages = stages;
+      {
+         ebStages = stages; // all stages
+      }
 
       pPoiMgr->AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,gdrLength - (endBlockLength+delta),                  POI_TABULAR | POI_GRAPHICAL) );
       pPoiMgr->AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,gdrLength - endBlockLength,         POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL) );
@@ -512,7 +540,7 @@ Float64 CDeckedSlabBeamFactory::GetVolume(IBroker* pBroker,SpanIndexType spanIdx
    GET_IFACE2(pBroker,ISectProp2,pSectProp2);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
 
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::CastingYard,spanIdx,gdrIdx,POI_SECTCHANGE);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_SECTCHANGE);
    ATLASSERT( 2 <= vPOI.size() );
    Float64 V = 0;
    std::vector<pgsPointOfInterest>::iterator iter = vPOI.begin();

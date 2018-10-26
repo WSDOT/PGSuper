@@ -296,7 +296,8 @@ STDMETHODIMP_(bool) CDistributedLoadDrawStrategyImpl::XDisplayObjectEvents::OnRB
 
 STDMETHODIMP_(bool) CDistributedLoadDrawStrategyImpl::XDisplayObjectEvents::OnRButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
 {
-   METHOD_PROLOGUE(CDistributedLoadDrawStrategyImpl,DisplayObjectEvents);
+   METHOD_PROLOGUE_(CDistributedLoadDrawStrategyImpl,DisplayObjectEvents);
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CComPtr<iDisplayList> list;
    pDO->GetDisplayList(&list);
@@ -546,6 +547,8 @@ CSize GetLArrowSize(iCoordinateMap* pMap)
 
 void CDistributedLoadDrawStrategyImpl::EditLoad()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    GET_IFACE(IUserDefinedLoadData, pUdl);
 
    ATLASSERT(0 <= m_LoadIndex && m_LoadIndex < pUdl->GetDistributedLoadCount());

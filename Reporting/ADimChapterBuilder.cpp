@@ -145,7 +145,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    {
       SECTIONHAUNCH& haunch = *iter;
 
-      (*pTable1)(row1,0) << location.SetValue( haunch.PointOfInterest, end_size );
+      (*pTable1)(row1,0) << location.SetValue( pgsTypes::BridgeSite3, haunch.PointOfInterest, end_size );
       (*pTable1)(row1,1) << rptRcStation(haunch.Station, &pDisplayUnits->GetStationFormat() );
 
       (*pTable1)(row1,2) << dim.SetValue( fabs(haunch.Offset) );
@@ -162,7 +162,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
 
       row1++;
 
-      (*pTable2)(row2,0) << location.SetValue( haunch.PointOfInterest, end_size );
+      (*pTable2)(row2,0) << location.SetValue( pgsTypes::BridgeSite3, haunch.PointOfInterest, end_size );
       (*pTable2)(row2,1) << haunch.CrownSlope;
       (*pTable2)(row2,2) << haunch.GirderOrientation;
       (*pTable2)(row2,3) << comp.SetValue( haunch.Wtop );

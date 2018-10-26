@@ -890,10 +890,25 @@ Float64 CSpecAgentImp::GetLiftingModulusOfRupture(Float64 fci)
    return x*sqrt(fci);
 }
 
-Float64 CSpecAgentImp::GetMinimumLiftingPointLocation() const
+Float64 CSpecAgentImp::GetMinimumLiftingPointLocation(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::MemberEndType end) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetMininumLiftingPointLocation();
+   Float64 min_lift_point = pSpec->GetMininumLiftingPointLocation();
+
+   // if less than zero, then use H from the end of the girder
+   if ( min_lift_point < 0 )
+   {
+      GET_IFACE(IBridge,pBridge);
+      pgsPointOfInterest poi(spanIdx,gdrIdx,0.0);
+      if ( end == pgsTypes::metEnd )
+      {
+         poi.SetDistFromStart( pBridge->GetGirderLength(spanIdx,gdrIdx) );
+      }
+      GET_IFACE(ISectProp2,pSectProp);
+      min_lift_point = pSectProp->GetHg( pgsTypes::CastingYard, poi );
+   }
+
+   return min_lift_point;
 }
 
 Float64 CSpecAgentImp::GetLiftingPointLocationAccuracy() const
@@ -1100,10 +1115,25 @@ Float64 CSpecAgentImp::GetMaxGirderWgt() const
    return pSpec->GetMaxGirderWeight();
 }
 
-Float64 CSpecAgentImp::GetMinimumHaulingSupportLocation() const
+Float64 CSpecAgentImp::GetMinimumHaulingSupportLocation(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::MemberEndType end) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetMininumTruckSupportLocation();
+   Float64 min_pick_point = pSpec->GetMininumTruckSupportLocation();
+
+   // if less than zero, then use H from the end of the girder
+   if ( min_pick_point < 0 )
+   {
+      GET_IFACE(IBridge,pBridge);
+      pgsPointOfInterest poi(spanIdx,gdrIdx,0.0);
+      if ( end == pgsTypes::metEnd )
+      {
+         poi.SetDistFromStart( pBridge->GetGirderLength(spanIdx,gdrIdx) );
+      }
+      GET_IFACE(ISectProp2,pSectProp);
+      min_pick_point = pSectProp->GetHg( pgsTypes::CastingYard, poi );
+   }
+
+   return min_pick_point;
 }
 
 Float64 CSpecAgentImp::GetHaulingSupportLocationAccuracy() const
@@ -1161,7 +1191,7 @@ void CSpecAgentImp::GetMaxDebondLength(SpanIndexType span, GirderIndexType gdr, 
    Float64 gdrlength = pBridge->GetGirderLength(span, gdr);
 
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,span,gdr,POI_MIDSPAN);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(span,gdr,pgsTypes::BridgeSite3,POI_MIDSPAN);
    pgsPointOfInterest poi = vPOI[0];
 
    // always use half girder length - development length

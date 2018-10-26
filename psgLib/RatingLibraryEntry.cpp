@@ -826,10 +826,10 @@ CLASS
 ****************************************************************************/
 
 RatingLibraryEntry::RatingLibraryEntry() :
-m_SpecificationVersion(lrfrVersionMgr::FirstEdition2008),
+m_SpecificationVersion(lrfrVersionMgr::FirstEditionWith2010Interims),
 m_bAlwaysRate(false)
 {
-   SetDescription("Default Rating Specification based on AASHTO MBE 1st Edition, 2008");
+   SetDescription("Default Rating Specification based on AASHTO MBE 1st Edition, 2008 with 2010 interim provisions");
 
    m_LiveLoadFactorModels[pgsTypes::lrDesign_Inventory].SetLiveLoadFactorType(pgsTypes::gllSingleValue);
    m_LiveLoadFactorModels[pgsTypes::lrDesign_Inventory].SetLowerLiveLoadFactor(1.75,-1,-1,-1);
@@ -918,10 +918,20 @@ bool RatingLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property("Name", GetName().c_str());
    pSave->Property("Description", GetDescription().c_str());
 
-   if (m_SpecificationVersion == lrfrVersionMgr::FirstEdition2008)
+   switch (m_SpecificationVersion)
+   {
+   case lrfrVersionMgr::FirstEdition2008:
       pSave->Property("SpecificationVersion", "LRFR2008");
-   else
+      break;
+
+   case lrfrVersionMgr::FirstEditionWith2010Interims:
+      pSave->Property("SpecificationVersion", "LRFR2010");
+      break;
+
+   default:
       ASSERT(0);
+      pSave->Property("SpecificationVersion", "LRFR2008");
+   }
 
    pSave->Property("AlwaysRate",m_bAlwaysRate);
 
@@ -988,6 +998,8 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
    if(strSpecVersion == "LRFR2008")
       m_SpecificationVersion = lrfrVersionMgr::FirstEdition2008;
+   else if(strSpecVersion == "LRFR2010")
+      m_SpecificationVersion = lrfrVersionMgr::FirstEditionWith2010Interims;
    else
       THROW_LOAD(InvalidFileFormat,pLoad);
 

@@ -154,7 +154,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite3,span,girder, POI_TABULAR);
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(span, girder, pgsTypes::BridgeSite3, POI_TABULAR);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    location.IncludeSpanAndGirder(span == ALL_SPANS);
@@ -168,7 +168,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    {
       pgsPointOfInterest poi = *iter;
       Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-      (*pTable)(row,0) << location.SetValue( poi, end_size );
+      (*pTable)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
 
       double pM, nM, V;
       pDistFact->GetDistributionFactors(poi,pgsTypes::StrengthI,&pM,&nM,&V);

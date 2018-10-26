@@ -30,6 +30,7 @@
 #include "WSDOTAgent_i.h"
 #include "dllmain.h"
 
+#include "BridgeLinkCatCom.h"
 #include "PGSuperCatCom.h"
 #include <System\ComCatMgr.h>
 
@@ -72,7 +73,7 @@ STDAPI DllRegisterServer(void)
        return hr;
 
     sysComCatMgr::RegWithCategory(CLSID_WSDOTAgent,CATID_PGSuperExtensionAgent,true);
-    sysComCatMgr::RegWithCategory(CLSID_WSDOTComponentInfo,CATID_PGSuperComponents,true);
+    sysComCatMgr::RegWithCategory(CLSID_WSDOTComponentInfo,CATID_BridgeLinkComponents,true);
 
     return hr;
 }
@@ -82,7 +83,7 @@ STDAPI DllRegisterServer(void)
 STDAPI DllUnregisterServer(void)
 {
    sysComCatMgr::RegWithCategory(CLSID_WSDOTAgent,CATID_PGSuperExtensionAgent,false);
-   sysComCatMgr::RegWithCategory(CLSID_WSDOTComponentInfo,CATID_PGSuperComponents,false);
+   sysComCatMgr::RegWithCategory(CLSID_WSDOTComponentInfo,CATID_BridgeLinkComponents,false);
 	HRESULT hr = _AtlModule.DllUnregisterServer();
 	return hr;
 }

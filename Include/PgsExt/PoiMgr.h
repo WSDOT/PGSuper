@@ -127,8 +127,11 @@ public:
    pgsPointOfInterest GetPointOfInterest(pgsTypes::Stage stage,SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 distFromStart);
 
    //------------------------------------------------------------------------
-   // Returns the point of interest nearest to the specified location.
+   // Returns the point of interest nearest to the specified location, regardless of stage.
    pgsPointOfInterest GetNearestPointOfInterest(SpanIndexType span,GirderIndexType gdr,Float64 distFromStart);
+
+   //------------------------------------------------------------------------
+   // Returns the point of interest nearest to the specified location that is defined in at least the given stage
    pgsPointOfInterest GetNearestPointOfInterest(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,Float64 distFromStart);
 
    //------------------------------------------------------------------------
@@ -137,21 +140,22 @@ public:
 
    //------------------------------------------------------------------------
    // Returns a vector of pointers to Points of Interest that have the
-   // specified attributes for the specified girder.
-   void GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,PoiAttributeType attrib,Uint32 mode,std::vector<pgsPointOfInterest>* pPois) const;
+   // specified attributes for the given stage.
+   void GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,PoiAttributeType attrib,Uint32 mode,std::vector<pgsPointOfInterest>* pPois) const;
 
    //------------------------------------------------------------------------
    // Returns a vector of pointers to Points of Interest that belong to the specified stage
    // and have the specified attributes for the specified girder.
-   void GetPointsOfInterest(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,PoiAttributeType attrib,Uint32 mode,std::vector<pgsPointOfInterest>* pPois) const;
+   // must match attribute in all stages
+   void GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,std::vector<pgsTypes::Stage> stages,PoiAttributeType attrib,Uint32 mode,std::vector<pgsPointOfInterest>* pPois) const;
 
-   //------------------------------------------------------------------------
-   // Returns a vector of pointers to Points of Interest that belong to the specified stage
-   // and have the specified attributes for the specified girder.
-   // must match all stages
-   void GetPointsOfInterest(std::set<pgsTypes::Stage> stages,SpanIndexType span,GirderIndexType gdr,PoiAttributeType attrib,Uint32 mode,std::vector<pgsPointOfInterest>* pPois) const;
+   std::vector<pgsPointOfInterest> GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr) const;
 
    void GetTenthPointPOIs(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,std::vector<pgsPointOfInterest>* pPois) const;
+
+   //------------------------------------------------------------------------
+   // Replaces a previously defined point of interest
+   bool ReplacePointOfInterest(PoiIDType ID,const pgsPointOfInterest& poi);
 
    // GROUP: ACCESS
 
@@ -200,14 +204,12 @@ private:
 
    bool AtSamePlace(const pgsPointOfInterest& a,const pgsPointOfInterest& b);
    pgsPointOfInterest Merge(const pgsPointOfInterest& a,const pgsPointOfInterest& b);
-   void AndFind(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const;
-   void AndFind(std::set<pgsTypes::Stage> stages,SpanIndexType span,GirderIndexType gdr,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const;
-   void AndFind(SpanIndexType span,GirderIndexType gdr,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const;
-   bool AndFind(const pgsPointOfInterest& poi,SpanIndexType span,GirderIndexType gdr,PoiAttributeType attrib) const;
-   void OrFind(std::set<pgsTypes::Stage> stages,SpanIndexType span,GirderIndexType gdr,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const;
-   void OrFind(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const;
-   void OrFind(SpanIndexType span,GirderIndexType gdr,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const;
-   bool OrFind(const pgsPointOfInterest& poi,SpanIndexType span,GirderIndexType gdr,PoiAttributeType attrib) const;
+   void AndFind(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const;
+   void AndFind(SpanIndexType span,GirderIndexType gdr,std::vector<pgsTypes::Stage> stages,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const;
+   bool AndFind(const pgsPointOfInterest& poi,SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,PoiAttributeType attrib) const;
+   void OrFind(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const;
+   void OrFind(SpanIndexType span,GirderIndexType gdr,std::vector<pgsTypes::Stage> stages,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const;
+   bool OrFind(const pgsPointOfInterest& poi,SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,PoiAttributeType attrib) const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

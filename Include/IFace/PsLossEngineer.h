@@ -67,6 +67,8 @@ interface IPsLossEngineer : IUnknown
    //---------------------------------------------------------------------
    // Creates a detailed report of the effective flange width computation
    virtual void BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
+
+   virtual void ReportFinalLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
 };
 
 #endif // INCLUDED_IFACE_PSLOSSENGINEER_H_

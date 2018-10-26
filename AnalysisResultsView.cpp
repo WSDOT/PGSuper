@@ -463,7 +463,7 @@ void CAnalysisResultsView::DoUpdateNow()
 
    // Get the points of interest we need.
    GET_IFACE2(m_pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stage, span, girder, POI_GRAPHICAL );
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_GRAPHICAL );
 
    // response action - moment, shear, displacement, or stress
    ActionType action = m_pFrame->GetAction();
@@ -964,14 +964,14 @@ void CAnalysisResultsView::VehicularLiveLoadGraph(int graphIdx,pgsTypes::Stage s
    VehicleIndexType vehicleIndex = m_pFrame->GetVehicleIndex(graphIdx);
 
    // data series for moment, shears and deflections
-   Uint32 min_data_series = m_Graph.CreateDataSeries(strDataLabel+" - Min",PS_SOLID,1,c);
-   Uint32 max_data_series = m_Graph.CreateDataSeries(strDataLabel+" - Max",PS_SOLID,1,c);
+   Uint32 min_data_series = m_Graph.CreateDataSeries("",          PS_SOLID,1,c);
+   Uint32 max_data_series = m_Graph.CreateDataSeries(strDataLabel,PS_SOLID,1,c);
 
    // data series for stresses
-   Uint32 stress_top_max = m_Graph.CreateDataSeries(strDataLabel+" - Max Top",PS_STRESS_TOP,1,c);
-   Uint32 stress_top_min = m_Graph.CreateDataSeries(strDataLabel+" - Min Top",PS_STRESS_TOP,1,c);
-   Uint32 stress_bot_max = m_Graph.CreateDataSeries(strDataLabel+" - Max Bottom",PS_STRESS_BOTTOM,1,c);
-   Uint32 stress_bot_min = m_Graph.CreateDataSeries(strDataLabel+" - Min Bottom",PS_STRESS_BOTTOM,1,c);
+   Uint32 stress_top_max = m_Graph.CreateDataSeries(strDataLabel+" - Top",   PS_STRESS_TOP,   1,c);
+   Uint32 stress_top_min = m_Graph.CreateDataSeries("",                      PS_STRESS_TOP,   1,c);
+   Uint32 stress_bot_max = m_Graph.CreateDataSeries(strDataLabel+" - Bottom",PS_STRESS_BOTTOM,1,c);
+   Uint32 stress_bot_min = m_Graph.CreateDataSeries("",                      PS_STRESS_BOTTOM,1,c);
 
    std::vector<Float64> xVals;
    std::vector<pgsPointOfInterest>::const_iterator i;
@@ -993,7 +993,7 @@ void CAnalysisResultsView::VehicularLiveLoadGraph(int graphIdx,pgsTypes::Stage s
          std::vector<Float64> Mmin, Mmax;
          if ( analysis_type == pgsTypes::Envelope )
          {
-            if ( vehicleIndex != Uint32_Max )
+            if ( vehicleIndex != INVALID_INDEX )
                pForces->GetVehicularLiveLoadMoment(llType, vehicleIndex, stage, vPoi, MinSimpleContinuousEnvelope, true, false, &Mmin, &Mmax);
             else
                pForces->GetLiveLoadMoment(llType, stage, vPoi, MinSimpleContinuousEnvelope, true, false, &Mmin, &Mmax);
@@ -1009,7 +1009,7 @@ void CAnalysisResultsView::VehicularLiveLoadGraph(int graphIdx,pgsTypes::Stage s
          }
          else
          {
-            if ( vehicleIndex != Uint32_Max )
+            if ( vehicleIndex != INVALID_INDEX )
                pForces->GetVehicularLiveLoadMoment(llType, vehicleIndex, stage, vPoi, analysis_type == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &Mmin, &Mmax, NULL, NULL);
             else
                pForces->GetLiveLoadMoment(llType, stage, vPoi, analysis_type == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &Mmin, &Mmax, NULL, NULL);
@@ -1025,14 +1025,14 @@ void CAnalysisResultsView::VehicularLiveLoadGraph(int graphIdx,pgsTypes::Stage s
          std::vector<sysSectionValue> Vmin, Vmax;
          if ( analysis_type == pgsTypes::Envelope )
          {
-            if ( vehicleIndex != Uint32_Max )
+            if ( vehicleIndex != INVALID_INDEX )
                pForces->GetVehicularLiveLoadShear(llType, vehicleIndex, stage, vPoi, MinSimpleContinuousEnvelope, true, false, &Vmin, &Vmax);
             else
                pForces->GetLiveLoadShear(llType, stage, vPoi, MinSimpleContinuousEnvelope, true, false, &Vmin, &Vmax);
 
             AddGraphPoints(min_data_series, xVals, Vmin);
 
-            if ( vehicleIndex != Uint32_Max )
+            if ( vehicleIndex != INVALID_INDEX )
                pForces->GetVehicularLiveLoadShear(llType, vehicleIndex, stage, vPoi, MaxSimpleContinuousEnvelope, true, false, &Vmin, &Vmax);
             else
                pForces->GetLiveLoadShear(llType, stage, vPoi, MaxSimpleContinuousEnvelope, true, false, &Vmin, &Vmax);
@@ -1041,7 +1041,7 @@ void CAnalysisResultsView::VehicularLiveLoadGraph(int graphIdx,pgsTypes::Stage s
          }
          else
          {
-            if ( vehicleIndex != Uint32_Max )
+            if ( vehicleIndex != INVALID_INDEX )
                pForces->GetVehicularLiveLoadShear(llType, vehicleIndex, stage, vPoi, analysis_type == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &Vmin, &Vmax);
             else
                pForces->GetLiveLoadShear(llType, stage, vPoi, analysis_type == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &Vmin, &Vmax);
@@ -1056,14 +1056,14 @@ void CAnalysisResultsView::VehicularLiveLoadGraph(int graphIdx,pgsTypes::Stage s
          std::vector<Float64> Dmin, Dmax;
          if ( analysis_type == pgsTypes::Envelope )
          {
-            if ( vehicleIndex != Uint32_Max )
+            if ( vehicleIndex != INVALID_INDEX )
                pForces->GetVehicularLiveLoadDisplacement(llType, vehicleIndex, stage, vPoi, MinSimpleContinuousEnvelope, true, false, &Dmin, &Dmax);
             else
                pForces->GetLiveLoadDisplacement(llType, stage, vPoi, MinSimpleContinuousEnvelope, true, false, &Dmin, &Dmax);
 
             AddGraphPoints(min_data_series, xVals, Dmin);
 
-            if ( vehicleIndex != Uint32_Max )
+            if ( vehicleIndex != INVALID_INDEX )
                pForces->GetVehicularLiveLoadDisplacement(llType, vehicleIndex, stage, vPoi, MaxSimpleContinuousEnvelope, true, false, &Dmin, &Dmax);
             else
                pForces->GetLiveLoadDisplacement(llType, stage, vPoi, MaxSimpleContinuousEnvelope, true, false, &Dmin, &Dmax);
@@ -1072,7 +1072,7 @@ void CAnalysisResultsView::VehicularLiveLoadGraph(int graphIdx,pgsTypes::Stage s
          }
          else
          {
-            if ( vehicleIndex != Uint32_Max )
+            if ( vehicleIndex != INVALID_INDEX )
                pForces->GetVehicularLiveLoadDisplacement(llType, vehicleIndex, stage, vPoi, analysis_type == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &Dmin, &Dmax);
             else
                pForces->GetLiveLoadDisplacement(llType, stage, vPoi, analysis_type == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &Dmin, &Dmax);
@@ -1087,7 +1087,7 @@ void CAnalysisResultsView::VehicularLiveLoadGraph(int graphIdx,pgsTypes::Stage s
          std::vector<Float64> fTopMin, fTopMax, fBotMin, fBotMax;
          if ( analysis_type == pgsTypes::Envelope )
          {
-            if ( vehicleIndex != Uint32_Max )
+            if ( vehicleIndex != INVALID_INDEX )
                pForces->GetVehicularLiveLoadStress(llType, vehicleIndex, stage, vPoi, MaxSimpleContinuousEnvelope, true, false, &fTopMin, &fTopMax, &fBotMin, &fBotMax );
             else
                pForces->GetLiveLoadStress(llType, stage, vPoi, MaxSimpleContinuousEnvelope, true, false, &fTopMin, &fTopMax, &fBotMin, &fBotMax );
@@ -1099,7 +1099,7 @@ void CAnalysisResultsView::VehicularLiveLoadGraph(int graphIdx,pgsTypes::Stage s
          }
          else
          {
-            if ( vehicleIndex != Uint32_Max )
+            if ( vehicleIndex != INVALID_INDEX )
                pForces->GetVehicularLiveLoadStress(llType, vehicleIndex, stage, vPoi, analysis_type == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &fTopMin, &fTopMax, &fBotMin, &fBotMax );
             else
                pForces->GetLiveLoadStress(llType, stage, vPoi, analysis_type == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &fTopMin, &fTopMax, &fBotMin, &fBotMax );

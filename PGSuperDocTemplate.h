@@ -28,11 +28,14 @@ class CPGSuperDocTemplate : public CEAFDocTemplate
 {
 public:
    CPGSuperDocTemplate(UINT nIDResource,
-                   CRuntimeClass* pDocClass,
-                   CRuntimeClass* pFrameClass,
-                   CRuntimeClass* pViewClass,
-                   HMENU hSharedMenu = NULL,
-                   int maxViewCount = -1);
+                       IEAFCommandCallback* pCallback,
+                       CRuntimeClass* pDocClass,
+                       CRuntimeClass* pFrameClass,
+                       CRuntimeClass* pViewClass,
+                       HMENU hSharedMenu = NULL,
+                       int maxViewCount = -1);
+
+   virtual void SetPlugin(IEAFAppPlugin* pPlugin);
 
    virtual CString GetTemplateGroupItemDescription(const CEAFTemplateItem* pItem) const;
 

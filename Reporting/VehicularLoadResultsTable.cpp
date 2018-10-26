@@ -175,7 +175,7 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,SpanIndexType spa
    {
       // Get all the tabular poi's for flexure and shear
       // Merge the two vectors to form one vector to report on.
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite3,spanIdx,girder, POI_ALL, POIFIND_OR);
+      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(spanIdx,girder, pgsTypes::BridgeSite3,POI_ALL, POIFIND_OR);
 
       GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
       GirderIndexType gdrIdx = min(girder,nGirders-1);
@@ -231,7 +231,7 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,SpanIndexType spa
 
          col = 0;
 
-         (*p_table)(row,col++) << location.SetValue( poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
 
          if ( bReportTruckConfig )
          {

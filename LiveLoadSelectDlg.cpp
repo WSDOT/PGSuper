@@ -24,7 +24,8 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "PGSuperAppPlugin\Resource.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "LiveLoadSelectDlg.h"
 #include <..\htmlhelp\helptopics.hh>
 #include <MfcTools\CustomDDX.h>
@@ -123,7 +124,7 @@ void CLiveLoadSelectDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CLiveLoadSelectDlg, CDialog)
 	//{{AFX_MSG_MAP(CLiveLoadSelectDlg)
-	ON_COMMAND(ID_HELP, OnHelp)
+	ON_BN_CLICKED(IDC_HELPME, OnHelp)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 

@@ -284,7 +284,7 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, SpanIndexType	
    // create pois at the start of girder and mid-span
    pgsPointOfInterest pois(span,girder,0.0);
    GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
-   std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(pgsTypes::BridgeSite1, span, girder,POI_MIDSPAN);
+   std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(span, girder,pgsTypes::BridgeSite1, POI_MIDSPAN);
    CHECK(pmid.size()==1);
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(2,"TxDOT Girder Schedule");

@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperDoc.h"
 #include "BridgeDescDeckDetailsPage.h"
 #include "BridgeDescDlg.h"
@@ -43,6 +43,8 @@
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include "PGSuperUnits.h"
+
+#include <EAF\EAFMainFrame.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -222,22 +224,11 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
             pDX->PrepareEditCtrl(IDC_ADIM);
             pDX->Fail();
          }
-
-         //if ( bCheckDepth && 
-         //     grossDepth < pParent->m_BridgeDesc.GetDeckDescription()->OverhangEdgeDepth &&
-         //     pParent->m_BridgeDesc.GetDeckDescription()->DeckType != pgsTypes::sdtCompositeOverlay  )
-         //{
-         //   AfxMessageBox(strMsg2);
-         //   pDX->PrepareEditCtrl(IDC_OVERHANG_DEPTH);
-         //   pDX->Fail();
-         //}
       }
       else
       {
-         // Slab offset is girder by girder. Have user adjust the slab depth if it doesn't
+         // Slab offset is span-by-span or girder-by-girder. Have user adjust the slab depth if it doesn't
          // fit with the current values for slab offset.
-
-         pParent->m_BridgeDesc.SetSlabOffsetType(pgsTypes::sotGirder);
 
          Float64 maxSlabOffset = pParent->m_BridgeDesc.GetMaxSlabOffset();
 
@@ -837,8 +828,10 @@ void CBridgeDescDeckDetailsPage::UpdateSlabOffsetControls()
 
 void CBridgeDescDeckDetailsPage::UIHint(const CString& strText,UINT mask)
 {
-   CMainFrame* pFrame = (CMainFrame*)AfxGetMainWnd();
-   CPGSuperDoc* pDoc  = (CPGSuperDoc*)pFrame->GetDocument();
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   CEAFMainFrame* pFrame = EAFGetMainFrame();
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)pFrame->GetDocument();
 
    Uint32 hintSettings = pDoc->GetUIHintSettings();
    if ( sysFlags<Uint32>::IsClear(hintSettings,mask) )

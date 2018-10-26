@@ -818,7 +818,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    // LRFD Limit States
    pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara<< "LRFD Limit States"<<rptNewLine;
+   *pPara<< "Limit States"<<rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -832,11 +832,10 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    p_table->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
    p_table->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
-   (*p_table)(0,0) << "Stage";
-   (*p_table)(0,1) << "Load Case";
-
-   (*p_table)(1,0) << "Casting Yard";
-   (*p_table)(1,1) << "DC = Girder";
+   RowIndexType row = 0;
+   (*p_table)(row,0) << "Stage";
+   (*p_table)(row,1) << "Load Case";
+   row++;
 
    std::string strDC;
    if (one_girder_has_shear_key)
@@ -848,24 +847,35 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
       strDC = "DC = Girder + Diaphragms + Construction + Slab";
    }
 
-   (*p_table)(2,0) << "Deck and Diaphragm Placement (Bridge Site 1)";
-   (*p_table)(2,1) << strDC;
+   if ( bDesign )
+   {
+      (*p_table)(row,0) << "Casting Yard";
+      (*p_table)(row,1) << "DC = Girder";
+      row++;
 
-   (*p_table)(3,0) << "Superimposed Dead Loads (Bridge Site 2)";
-   (*p_table)(3,1) << strDC<<" + Traffic Barrier"<<rptNewLine
-                   << "DW = Overlay";
 
-   (*p_table)(4,0) << "Final with Live Load (Bridge Site 3)";
-   (*p_table)(4,1) << strDC<<" + Traffic Barrier"<<rptNewLine
+      (*p_table)(row,0) << "Deck and Diaphragm Placement (Bridge Site 1)";
+      (*p_table)(row,1) << strDC;
+      row++;
+
+      (*p_table)(row,0) << "Superimposed Dead Loads (Bridge Site 2)";
+      (*p_table)(row,1) << strDC<<" + Traffic Barrier"<<rptNewLine
+                      << "DW = Overlay";
+      row++;
+   }
+
+   (*p_table)(row,0) << "Final with Live Load (Bridge Site 3)";
+   (*p_table)(row,1) << strDC<<" + Traffic Barrier"<<rptNewLine
                    << "DW = Future Overlay"<< rptNewLine
                    << "LL+IM = Live Load + Impact" << rptNewLine
                    << "PL = Pedestrian Live Load" << rptNewLine;
+   row++;
 
 
    // LRFD Limit States Load Factors
    pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara<< "LRFD Limit State Load Factors"<<rptNewLine;
+   *pPara<< "Limit State Load Factors"<<rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -891,7 +901,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    (*p_table)(0,3) << Sub2(symbol(gamma),"LL");
    
    
-   RowIndexType row = 1;
+   row = 1;
 
    GET_IFACE2(pBroker,IStageMap,pStageMap);
 

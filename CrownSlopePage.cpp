@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "CrownSlopePage.h"
 #include "AlignmentDescriptionDlg.h"
 #include <MfcTools\CogoDDX.h>
