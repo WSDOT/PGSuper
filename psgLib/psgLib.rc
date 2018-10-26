@@ -74,8 +74,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,22
- PRODUCTVERSION 3,0,0,22
+ FILEVERSION 3,0,0,23
+ PRODUCTVERSION 3,0,0,23
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +93,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.0.0.22"
+            VALUE "FileVersion", "3.0.0.23"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.22"
+            VALUE "ProductVersion", "3.0.0.23"
         END
     END
     BLOCK "VarFileInfo"
@@ -596,6 +596,7 @@ CAPTION "Creep and Camber"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     GROUPBOX        "General Creep and Camber Parameters",IDC_STATIC,8,6,260,231
+    CTEXT           "NOTE: These parameters do not apply to Time-Step analysis",IDC_STATIC,20,20,239,10,WS_BORDER
     LTEXT           "Time from stressing to prestress transfer",IDC_STATIC,17,38,158,17
     EDITTEXT        IDC_XFER_TIME,209,38,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "hrs",IDC_XFER_TIME_TAG,240,38,18,8
@@ -611,19 +612,18 @@ BEGIN
     EDITTEXT        IDC_CREEP_DURATION2_MIN,179,95,24,14,ES_RIGHT | ES_AUTOHSCROLL
     EDITTEXT        IDC_CREEP_DURATION2_MAX,209,95,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_CREEP_DURATION2_TAG,240,95,18,8
-    LTEXT           "Variability between upper and lower bound camber",IDC_STATIC,19,129,166,9
-    EDITTEXT        IDC_CAMBER_VARIABILITY,198,127,35,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "%",IDC_NC_CREEP_TAG2,240,129,8,8
-    LTEXT           "Total Creep Duration",IDC_STATIC,19,152,170,9
-    EDITTEXT        IDC_NC_CREEP,198,149,35,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_NC_CREEP_TAG,240,152,19,8
+    LTEXT           "Total Creep Duration",IDC_STATIC,19,124,170,9
+    EDITTEXT        IDC_NC_CREEP,198,121,35,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_NC_CREEP_TAG,240,124,19,8
+    LTEXT           "Variability between upper and lower bound camber",IDC_STATIC,19,148,166,9
+    EDITTEXT        IDC_CAMBER_VARIABILITY,198,146,35,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_NC_CREEP_TAG2,240,148,8,8
     GROUPBOX        "Curing of Precast Concrete",IDC_STATIC,11,171,253,61,WS_GROUP
-    CONTROL         "Normal",IDC_CURING_METHOD,"Button",BS_AUTORADIOBUTTON | WS_GROUP,23,186,38,10
-    CONTROL         "Accelerated (Steam or Rad. Heat)",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,23,198,125,10
-    LTEXT           "1 day of steam or radiant heat curing is equal to ",IDC_STATIC,19,213,152,8
-    EDITTEXT        IDC_CURING_TIME_FACTOR,172,211,18,14,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "days of normal curing",IDC_STATIC,194,214,68,8
-    CTEXT           "NOTE: These parameters do not apply to Time-Step analysis",IDC_STATIC,20,20,239,10,WS_BORDER
+    CONTROL         "Normal (moist)",IDC_CURING_METHOD,"Button",BS_AUTORADIOBUTTON | WS_GROUP,23,186,60,10
+    CONTROL         "Accelerated (steam or radiant heat)",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,23,198,125,10
+    LTEXT           "1 day of accelerated curing is equal to ",IDC_STATIC,27,213,123,8
+    EDITTEXT        IDC_CURING_TIME_FACTOR,152,211,18,14,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "days of normal curing",IDC_STATIC,174,213,68,8
 END
 
 IDD_SPEC_LOSSES DIALOGEX 0, 0, 494, 224
@@ -997,12 +997,12 @@ BEGIN
     LTEXT           "Static",IDC_NWC_CLOSURE_FC_UNIT,132,116,29,8
     EDITTEXT        IDC_LWC_CLOSURE_FC,160,113,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_LWC_CLOSURE_FC_UNIT,202,116,29,8
-    LTEXT           "Concrete Unit Weight",IDC_STATIC,14,168,69,8
+    LTEXT           "Concrete Unit Weight",IDC_STATIC,14,150,69,8
     EDITTEXT        IDC_NWC_UNIT_WEIGHT,89,148,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_NWC_UNIT_WEIGHT_UNIT,132,150,29,8
     EDITTEXT        IDC_LWC_UNIT_WEIGHT,160,148,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_LWC_UNIT_WEIGHT_UNIT,203,150,29,8
-    LTEXT           "Max Aggregate Size",IDC_STATIC,14,150,64,8
+    LTEXT           "Max Aggregate Size",IDC_STATIC,14,168,64,8
     EDITTEXT        IDC_NWC_AGG_SIZE,89,166,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_NWC_AGG_SIZE_UNIT,132,168,29,8
     EDITTEXT        IDC_LWC_AGG_SIZE,160,166,40,14,ES_RIGHT | ES_AUTOHSCROLL

@@ -711,6 +711,7 @@ Float64 pgsStrandDesignTool::ComputeEccentricity(const pgsPointOfInterest& poi,I
    ATLASSERT(poi.GetSegmentKey() == m_SegmentKey);
 
    GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(m_SegmentKey);
    ATLASSERT(castDeckIntervalIdx != INVALID_INDEX);
    bool bIncTempStrands = (intervalIdx < castDeckIntervalIdx ? true : false);
@@ -726,7 +727,7 @@ Float64 pgsStrandDesignTool::ComputeEccentricity(const pgsPointOfInterest& poi,I
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
    Float64 neff;
-   return pStrandGeom->GetEccentricity(intervalIdx, poi, guess, bIncTempStrands, &neff);
+   return pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, guess, bIncTempStrands, &neff);
 }
 
 Float64 pgsStrandDesignTool::GetTransferLength(pgsTypes::StrandType strandType) const
@@ -1050,7 +1051,7 @@ void pgsStrandDesignTool::ComputeMinStrands()
          config.PrestressConfig.SetStrandFill(pgsTypes::Harped,   hfillvec);
 
          Float64 neff;
-         Float64 ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx,mid_pois[0],config,false,&neff);
+         Float64 ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx,mid_pois[0],config,pgsTypes::Permanent,&neff);
          LOG(_T("Computed ecc = ")<<ecc<<_T(" for ns=")<<ns<<_T(" nh=")<<nh);
          if (0. < ecc)
          {
@@ -2210,15 +2211,15 @@ Float64 pgsStrandDesignTool::ComputeEndOffsetForEccentricity(const pgsPointOfInt
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
 
-   Float64 ecc_ss = pStrandGeom->GetSsEccentricity(releaseIntervalIdx, poi, guess, &neff_ss);
-   Float64 ecc_ts = pStrandGeom->GetTempEccentricity(releaseIntervalIdx, poi, guess, &neff_ts);
+   Float64 ecc_ss = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, guess, pgsTypes::Straight,  &neff_ss);
+   Float64 ecc_ts = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, guess, pgsTypes::Temporary, &neff_ts);
 
    // compute hs eccentricities for end offsets of 1.0 and -1.0, and extrapolate the required offset
    guess.PrestressConfig.EndOffset = 1.0;
-   Float64 ecc_hs_p1 = pStrandGeom->GetHsEccentricity(releaseIntervalIdx, poi, guess, &neff_hs);
+   Float64 ecc_hs_p1 = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, guess, pgsTypes::Harped, &neff_hs);
 
    guess.PrestressConfig.EndOffset = -1.0;
-   Float64 ecc_hs_m1 = pStrandGeom->GetHsEccentricity(releaseIntervalIdx, poi, guess, &neff_hs);
+   Float64 ecc_hs_m1 = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, guess, pgsTypes::Harped, &neff_hs);
 
    Float64 neff = neff_ss + neff_hs + neff_ts;
    ATLASSERT(neff>0.0);
@@ -2274,15 +2275,15 @@ Float64 pgsStrandDesignTool::ComputeHpOffsetForEccentricity(const pgsPointOfInte
       GET_IFACE(IStrandGeometry,pStrandGeom);
       Float64 neff_ss(0.0), neff_ts(0.0), neff_hs(0.0);
 
-      Float64 ecc_ss = pStrandGeom->GetSsEccentricity(releaseIntervalIdx, poi, guess, &neff_ss);
+      Float64 ecc_ss = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, guess, pgsTypes::Straight, &neff_ss);
 
-      Float64 ecc_ts = bIncTempStrands ? pStrandGeom->GetTempEccentricity(releaseIntervalIdx, poi, guess, &neff_ts) : 0.0;
+      Float64 ecc_ts = bIncTempStrands ? pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, guess, pgsTypes::Temporary, &neff_ts) : 0.0;
 
       // compute hs eccentricities for hp offsets of +1.0 and -1.0, and extrapolate the required offset
       guess.PrestressConfig.HpOffset = 1.0;
-      Float64 ecc_hs_p1 = pStrandGeom->GetHsEccentricity(releaseIntervalIdx, poi, guess, &neff_hs);
+      Float64 ecc_hs_p1 = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, guess, pgsTypes::Harped, &neff_hs);
       guess.PrestressConfig.HpOffset = -1.0;
-      Float64 ecc_hs_m1 = pStrandGeom->GetHsEccentricity(releaseIntervalIdx, poi, guess, &neff_hs);
+      Float64 ecc_hs_m1 = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, guess, pgsTypes::Harped, &neff_hs);
 
       Float64 neff = neff_ss + neff_hs + neff_ts;
       ATLASSERT(neff>0.0);
@@ -2559,7 +2560,7 @@ bool pgsStrandDesignTool::ComputeAddHarpedForMidZoneReleaseEccentricity(const pg
       Float64 off_end= this->GetHarpStrandOffsetEnd();
 
       Float64 neff_ss(0.0), neff_ts(0.0), neff_hs(0.0);
-      Float64 ecc_ts = nt>0 ? pStrandGeom->GetTempEccentricity(releaseIntervalIdx, poi, guess, &neff_ts) : 0.0;
+      Float64 ecc_ts = 0 < nt ? pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, guess, pgsTypes::Temporary, &neff_ts) : 0.0;
 
       // loop until our eccentricity gets smaller than the target, then step back
       StrandIndexType ns, nh;

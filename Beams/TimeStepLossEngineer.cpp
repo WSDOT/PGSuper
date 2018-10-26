@@ -53,6 +53,11 @@ static char THIS_FILE[] = __FILE__;
 HRESULT CTimeStepLossEngineer::FinalConstruct()
 {
    m_Bat = pgsTypes::ContinuousSpan;
+
+   m_strLoadingName[TIMESTEP_CR] = _T("Creep");
+   m_strLoadingName[TIMESTEP_SH] = _T("Shrinkage");
+   m_strLoadingName[TIMESTEP_RE] = _T("Relaxation");
+
    return S_OK;
 }
 
@@ -688,8 +693,10 @@ void CTimeStepLossEngineer::ComputeSectionLosses(const CGirderKey& girderKey,Int
    bool bIgnoreRelaxationEffects = m_pLossParams->IgnoreRelaxationEffects();
    bool bIgnoreTimeDependentEffects = bIgnoreCreepEffects && bIgnoreShrinkageEffects && bIgnoreRelaxationEffects;
 
+   IntervalIndexType releaseIntervalIdx = m_pIntervals->GetFirstPrestressReleaseInterval(girderKey);
    IntervalIndexType nIntervals = m_pIntervals->GetIntervalCount(girderKey);
    IntervalIndexType startAnalysisIntervalIdx = pLosses->SectionLosses.begin()->second.TimeStepDetails.size();
+
    for ( IntervalIndexType intervalIdx = startAnalysisIntervalIdx; intervalIdx <= endAnalysisIntervalIdx; intervalIdx++ )
    {
       CString strMsg;
@@ -709,7 +716,7 @@ void CTimeStepLossEngineer::ComputeSectionLosses(const CGirderKey& girderKey,Int
          InitializeTimeStepAnalysis(intervalIdx,poi,details);
       }
 
-      if ( !bIgnoreTimeDependentEffects && 0 < m_pIntervals->GetDuration(girderKey,intervalIdx) )
+      if ( !bIgnoreTimeDependentEffects && 0 < m_pIntervals->GetDuration(girderKey,intervalIdx) && releaseIntervalIdx <= intervalIdx )
       {
          AnalyzeInitialStrains(intervalIdx,girderKey,pLosses);
       }
@@ -809,12 +816,13 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    IntervalIndexType compositeDeckIntervalIdx = m_pIntervals->GetCompositeDeckInterval(segmentKey);
    IntervalIndexType liveLoadIntervalIdx      = m_pIntervals->GetLiveLoadInterval(segmentKey);
 
-   bool bIsClosure = m_pPoi->IsInClosureJoint(poi);
-   IntervalIndexType compositeClosureIntervalIdx = (bIsClosure ? m_pIntervals->GetCompositeClosureJointInterval(segmentKey) : INVALID_INDEX);
+   CClosureKey closureKey;
+   bool bIsClosure = m_pPoi->IsInClosureJoint(poi,&closureKey);
+   IntervalIndexType compositeClosureIntervalIdx = (bIsClosure ? m_pIntervals->GetCompositeClosureJointInterval(closureKey) : INVALID_INDEX);
 
 
    // Material Properties
-   Float64 EGirder = (bIsClosure ? m_pMaterials->GetClosureJointEc(segmentKey,intervalIdx) : m_pMaterials->GetSegmentEc(segmentKey,intervalIdx));
+   Float64 EGirder = (bIsClosure ? m_pMaterials->GetClosureJointEc(closureKey,intervalIdx) : m_pMaterials->GetSegmentEc(segmentKey,intervalIdx));
    Float64 EDeck = m_pMaterials->GetDeckEc(segmentKey,intervalIdx);
    Float64 EStrand[3] = { m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight)->GetE(),
                           m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Harped)->GetE(),
@@ -826,7 +834,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
 
    if ( bIsClosure )
    {
-      m_pMaterials->GetClosureJointLongitudinalRebarProperties(segmentKey,&EGirderRebar,&Fy,&Fu);
+      m_pMaterials->GetClosureJointLongitudinalRebarProperties(closureKey,&EGirderRebar,&Fy,&Fu);
    }
    else
    {
@@ -1260,11 +1268,11 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          }
          else
          {
-            Cs = (bIsClosure ? m_pMaterials->GetClosureJointCreepCoefficient(segmentKey,i,pgsTypes::Middle,intervalIdx,pgsTypes::Start) : m_pMaterials->GetSegmentCreepCoefficient(segmentKey,i,pgsTypes::Middle,intervalIdx,pgsTypes::Start));
-            Ce = (bIsClosure ? m_pMaterials->GetClosureJointCreepCoefficient(segmentKey,i,pgsTypes::Middle,intervalIdx,pgsTypes::End)   : m_pMaterials->GetSegmentCreepCoefficient(segmentKey,i,pgsTypes::Middle,intervalIdx,pgsTypes::End));
+            Cs = (bIsClosure ? m_pMaterials->GetClosureJointCreepCoefficient(closureKey,i,pgsTypes::Middle,intervalIdx,pgsTypes::Start) : m_pMaterials->GetSegmentCreepCoefficient(segmentKey,i,pgsTypes::Middle,intervalIdx,pgsTypes::Start));
+            Ce = (bIsClosure ? m_pMaterials->GetClosureJointCreepCoefficient(closureKey,i,pgsTypes::Middle,intervalIdx,pgsTypes::End)   : m_pMaterials->GetSegmentCreepCoefficient(segmentKey,i,pgsTypes::Middle,intervalIdx,pgsTypes::End));
          }
 
-         Float64 EGirder = (bIsClosure ? m_pMaterials->GetClosureJointEc(segmentKey,i) : m_pMaterials->GetSegmentEc(segmentKey,i));
+         Float64 EGirder = (bIsClosure ? m_pMaterials->GetClosureJointEc(closureKey,i) : m_pMaterials->GetSegmentEc(segmentKey,i));
          Float64 EAGirder = EGirder*iTimeStepDetails.Girder.An;
          Float64 EIGirder = EGirder*iTimeStepDetails.Girder.In;
 
@@ -1357,7 +1365,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
       }
       else
       {
-         esi = (bIsClosure ? m_pMaterials->GetClosureJointFreeShrinkageStrain(segmentKey,intervalIdx) : m_pMaterials->GetSegmentFreeShrinkageStrain(segmentKey,intervalIdx));
+         esi = (bIsClosure ? m_pMaterials->GetClosureJointFreeShrinkageStrain(closureKey,intervalIdx) : m_pMaterials->GetSegmentFreeShrinkageStrain(segmentKey,intervalIdx));
       }
 
       tsDetails.Girder.esi = esi;
@@ -1456,16 +1464,6 @@ void CTimeStepLossEngineer::AnalyzeInitialStrains(IntervalIndexType intervalIdx,
    // to the bridge frame and do a stiffness analysis. The resulting force and moment on the cross sections are
    // the "external" forces due to creep, shrinkage, and relaxation
 
-   // Create a load group for the restraining forces in this interval
-   std::_tstring strLoadGroupName[3] = {_T("Creep"),_T("Shrinkage"),_T("Relaxation")};
-
-#pragma Reminder("UPDATE: CreateLoadGroup doesn't work") // using hard coded InitialStrains loads groups created in the analysis agent
-//   // for the time being... get this fixed
-//   //pExtLoading->CreateLoadGroup(strLoadGroupName[TIMESTEP_CR].c_str());
-//   //pExtLoading->CreateLoadGroup(strLoadGroupName[TIMESTEP_SH].c_str());
-//   //pExtLoading->CreateLoadGroup(strLoadGroupName[TIMESTEP_RE].c_str());
-//   // Using pre-defined product load types pftCreep, pftShrinkage, pftRelaxation
-
    // At each POI, compute the equivalent restraining loads and apply to the load group
    SectionLossContainer::iterator iter1(pLosses->SectionLosses.begin());
    SectionLossContainer::iterator end(pLosses->SectionLosses.end());
@@ -1477,14 +1475,17 @@ void CTimeStepLossEngineer::AnalyzeInitialStrains(IntervalIndexType intervalIdx,
       const pgsPointOfInterest& poi1(iter1->first);
       const CSegmentKey& segmentKey1(poi1.GetSegmentKey());
       LOSSDETAILS& details1(iter1->second);
-      bool bIsClosure1 = poi1.HasAttribute(POI_CLOSURE);
-      bool bIsClosureEffective1 = (bIsClosure1 ? m_pIntervals->GetCompositeClosureJointInterval(segmentKey1) <= intervalIdx : false);
+
+      CClosureKey closureKey1;
+      bool bIsClosure1 = m_pPoi->IsInClosureJoint(poi1,&closureKey1);
+      bool bIsClosureEffective1 = (bIsClosure1 ? m_pIntervals->GetCompositeClosureJointInterval(closureKey1) <= intervalIdx : false);
       
       const pgsPointOfInterest& poi2(iter2->first);
       const CSegmentKey& segmentKey2(poi2.GetSegmentKey());
       LOSSDETAILS& details2(iter2->second);
-      bool bIsClosure2 = poi2.HasAttribute(POI_CLOSURE);
-      bool bIsClosureEffective2 = (bIsClosure2 ? m_pIntervals->GetCompositeClosureJointInterval(segmentKey2) <= intervalIdx : false);
+      CClosureKey closureKey2;
+      bool bIsClosure2 = m_pPoi->IsInClosureJoint(poi2,&closureKey2);
+      bool bIsClosureEffective2 = (bIsClosure2 ? m_pIntervals->GetCompositeClosureJointInterval(closureKey2) <= intervalIdx : false);
 
       TIME_STEP_DETAILS& tsDetails1(details1.TimeStepDetails[intervalIdx]);
       TIME_STEP_DETAILS& tsDetails2(details2.TimeStepDetails[intervalIdx]);
@@ -1492,14 +1493,14 @@ void CTimeStepLossEngineer::AnalyzeInitialStrains(IntervalIndexType intervalIdx,
       // Compute initial strain at poi1
       Float64 Atr1 = tsDetails1.Atr;
       Float64 Itr1 = tsDetails1.Itr;
-      Float64 E1 = (bIsClosure1 ? m_pMaterials->GetClosureJointAgeAdjustedEc(segmentKey1,intervalIdx) : m_pMaterials->GetSegmentAgeAdjustedEc(segmentKey1,intervalIdx));
+      Float64 E1 = (bIsClosure1 ? m_pMaterials->GetClosureJointAgeAdjustedEc(closureKey1,intervalIdx) : m_pMaterials->GetSegmentAgeAdjustedEc(segmentKey1,intervalIdx));
       Float64 EA1 = Atr1*E1;
       Float64 EI1 = Itr1*E1;
 
       // Compute initial strain at poi2
       Float64 Atr2 = tsDetails2.Atr;
       Float64 Itr2 = tsDetails2.Itr;
-      Float64 E2 = (bIsClosure2 ? m_pMaterials->GetClosureJointAgeAdjustedEc(segmentKey2,intervalIdx) : m_pMaterials->GetSegmentAgeAdjustedEc(segmentKey2,intervalIdx));
+      Float64 E2 = (bIsClosure2 ? m_pMaterials->GetClosureJointAgeAdjustedEc(closureKey2,intervalIdx) : m_pMaterials->GetSegmentAgeAdjustedEc(segmentKey2,intervalIdx));
       Float64 EA2 = Atr2*E2;
       Float64 EI2 = Itr2*E2;
 
@@ -1535,7 +1536,8 @@ void CTimeStepLossEngineer::AnalyzeInitialStrains(IntervalIndexType intervalIdx,
          tsDetails2.e[i][pgsTypes::Back] = e;
          tsDetails2.r[i][pgsTypes::Back] = r;
 
-         m_pExternalLoading->CreateInitialStrainLoad(intervalIdx,poi1,poi2,e,r,strLoadGroupName[i].c_str());
+         ProductForceType pfType = (i == 0 ? pftCreep : i == 1 ? pftShrinkage : pftRelaxation);
+         m_pExternalLoading->CreateInitialStrainLoad(intervalIdx,pfType,poi1,poi2,e,r);
       }
    }
 
@@ -1544,16 +1546,17 @@ void CTimeStepLossEngineer::AnalyzeInitialStrains(IntervalIndexType intervalIdx,
    for ( ; iter != end; iter++ )
    {
       const pgsPointOfInterest& poi(iter->first);
-      bool bIsClosure = m_pPoi->IsInClosureJoint(poi);
-      IntervalIndexType compositeClosureIntervalIdx = (bIsClosure ? m_pIntervals->GetCompositeClosureJointInterval(poi.GetSegmentKey()) : INVALID_INDEX);
+      CClosureKey closureKey;
+      bool bIsClosure = m_pPoi->IsInClosureJoint(poi,&closureKey);
+      IntervalIndexType compositeClosureIntervalIdx = (bIsClosure ? m_pIntervals->GetCompositeClosureJointInterval(closureKey) : INVALID_INDEX);
 
       LOSSDETAILS& details(iter->second);
       TIME_STEP_DETAILS& tsDetails(details.TimeStepDetails[intervalIdx]);
 
       for ( int i = 0; i < 3; i++ ) // i is one of the TIMESTEP_XXX constants
       {
-         Float64 P = -m_pExternalLoading->GetAxial( intervalIdx,strLoadGroupName[i].c_str(),poi,m_Bat,rtIncremental);
-         Float64 M = -m_pExternalLoading->GetMoment(intervalIdx,strLoadGroupName[i].c_str(),poi,m_Bat,rtIncremental);
+         Float64 P = -m_pExternalLoading->GetAxial( intervalIdx,m_strLoadingName[i].c_str(),poi,m_Bat,rtIncremental);
+         Float64 M = -m_pExternalLoading->GetMoment(intervalIdx,m_strLoadingName[i].c_str(),poi,m_Bat,rtIncremental);
 
          // If the POI is at a closure joint, and it is before the closure is composite
          // with the adjacent girder segments, load doesn't get transfered to the concrete.
@@ -1587,7 +1590,8 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
    CGirderKey girderKey(segmentKey);
 
-   bool bIsClosure = m_pPoi->IsInClosureJoint(poi);
+   CClosureKey closureKey;
+   bool bIsClosure = m_pPoi->IsInClosureJoint(poi,&closureKey);
 
    IntervalIndexType stressStrandsIntervalIdx = m_pIntervals->GetStressStrandInterval(segmentKey);
    IntervalIndexType releaseIntervalIdx       = m_pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -1674,12 +1678,12 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
       // get some material properties that we are going to need for the analysis
       Float64 EaGirder  = (bIsClosure ? 
-                            m_pMaterials->GetClosureJointAgeAdjustedEc(segmentKey,intervalIdx) : 
+                            m_pMaterials->GetClosureJointAgeAdjustedEc(closureKey,intervalIdx) : 
                             m_pMaterials->GetSegmentAgeAdjustedEc(segmentKey,intervalIdx));
       Float64 EaDeck     = m_pMaterials->GetDeckAgeAdjustedEc(segmentKey,intervalIdx);
 
       Float64 EGirder  = (bIsClosure ? 
-                            m_pMaterials->GetClosureJointEc(segmentKey,intervalIdx) : 
+                            m_pMaterials->GetClosureJointEc(closureKey,intervalIdx) : 
                             m_pMaterials->GetSegmentEc(segmentKey,intervalIdx));
       Float64 EDeck     = m_pMaterials->GetDeckEc(segmentKey,intervalIdx);
 
@@ -1694,7 +1698,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
       if ( bIsClosure )
       {
-         m_pMaterials->GetClosureJointLongitudinalRebarProperties(segmentKey,&EGirderRebar,&Fy,&Fu);
+         m_pMaterials->GetClosureJointLongitudinalRebarProperties(closureKey,&EGirderRebar,&Fy,&Fu);
       }
       else
       {
@@ -1854,7 +1858,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 #endif // !_DEBUG
 #endif // _BETA_VERSION
 
-      IntervalIndexType compositeClosureIntervalIdx = (bIsClosure ? m_pIntervals->GetCompositeClosureJointInterval(segmentKey) : INVALID_INDEX);
+      IntervalIndexType compositeClosureIntervalIdx = (bIsClosure ? m_pIntervals->GetCompositeClosureJointInterval(closureKey) : INVALID_INDEX);
 
       // Get Live Load Moment
       Float64 MllMin, MllMax;
@@ -2085,7 +2089,8 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
          }
 
          // Compute change in force in strands
-         if ( !m_pPoi->IsInClosureJoint(poi) )
+         CClosureKey closureKey;
+         if ( !m_pPoi->IsInClosureJoint(poi,&closureKey) )
          {
             const std::vector<pgsTypes::StrandType>& strandTypes = GetStrandTypes(segmentKey);
             std::vector<pgsTypes::StrandType>::const_iterator strandTypeIter(strandTypes.begin());
@@ -2305,7 +2310,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
             if ( intervalIdx == stressTendonIntervalIdx )
             {
                // tendons are stressed, but not released
-               // effective stress at end of interval is fpj - relaxation in this interval
+               // effective stress at end of interval is fpj
                if ( i == 0 )
                {
                   tendon.fpe = tendon.fpj;
@@ -2388,7 +2393,8 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       // Girder Rebar (not captured, isn't of any value)
 
       // Strands
-      if ( !m_pPoi->IsInClosureJoint(poi) )
+      CClosureKey closureKey;
+      if ( !m_pPoi->IsInClosureJoint(poi,&closureKey) )
       {
          const std::vector<pgsTypes::StrandType>& strandTypes = GetStrandTypes(segmentKey);
          std::vector<pgsTypes::StrandType>::const_iterator strandTypeIter(strandTypes.begin());
@@ -2434,8 +2440,8 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
                   strand.dFllMin = rLLMin*EStrand[strandType]*(tsDetails.Ytr - strand.Ys);
                   strand.dFllMax = rLLMax*EStrand[strandType]*(tsDetails.Ytr - strand.Ys);
                }
-               strand.fpeLLMin  = strand.fpe  + strand.dFllMin;
-               strand.lossLLMin = strand.loss - strand.dFllMin;
+               strand.fpeLLMin  = strand.fpe  + strand.dFllMin;  // increasing stress in strand...
+               strand.lossLLMin = strand.loss - strand.dFllMin;  // ...is the same as decreasing its loss
 
                strand.fpeLLMax  = strand.fpe  + strand.dFllMax;
                strand.lossLLMax = strand.loss - strand.dFllMax;
@@ -2466,8 +2472,8 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
          tendon.fpeLLMin  = tendon.fpe  + tendon.dFllMin;
          tendon.lossLLMin = tendon.loss - tendon.dFllMin;
 
-         tendon.fpeLLMax  = tendon.fpe  + tendon.dFllMax;
-         tendon.lossLLMax = tendon.loss - tendon.dFllMax;
+         tendon.fpeLLMax  = tendon.fpe  + tendon.dFllMax; // increasing stress in tendon due to external load...
+         tendon.lossLLMax = tendon.loss - tendon.dFllMax; // ... is the same as reducing the loss
       } // next tendon
 
 
@@ -3149,7 +3155,7 @@ void CTimeStepLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* 
                (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( dfpe );
             }
 
-            (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( pLossDetails->TimeStepDetails.back().Tendons[ductIdx].loss );
+            (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( -pLossDetails->TimeStepDetails.back().Tendons[ductIdx].loss );
          }
       }
 
@@ -3622,7 +3628,8 @@ std::vector<ProductForceType> CTimeStepLossEngineer::GetApplicableProductLoads(I
       bIsTempSupportRemovalInterval = (found == vTSRemovalIntervals.end() ? false : true);
    }
 
-   bool bIsClosure = m_pPoi->IsInClosureJoint(poi);
+   CClosureKey closureKey;
+   bool bIsClosure = m_pPoi->IsInClosureJoint(poi,&closureKey);
    IntervalIndexType compositeClosureIntervalIdx = m_pIntervals->GetCompositeClosureJointInterval(segmentKey);
 
    // Force effects due to girder self weight occur at prestress release, storage, and erection of this interval,

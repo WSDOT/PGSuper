@@ -91,6 +91,8 @@ void CACIParametersDlg::UpdateParameters()
    Float64 t1 = ::ConvertFromSysUnits(m_t1,unitMeasure::Day);
    matACI209Concrete::ComputeParameters(m_fc1,t1,m_fc2,28,&m_A,&m_B);
 
+   m_A = ::ConvertToSysUnits(m_A,unitMeasure::Day);
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);

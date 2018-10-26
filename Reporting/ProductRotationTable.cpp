@@ -79,32 +79,27 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
    INIT_UV_PROTOTYPE( rptAngleUnitValue,  rotation, pDisplayUnits->GetRadAngleUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
+   bool bHasOverlay    = pBridge->HasOverlay();
    bool bFutureOverlay = pBridge->IsFutureOverlay();
    PierIndexType nPiers = pBridge->GetPierCount();
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(girderKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(girderKey);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(girderKey);
-   IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval(girderKey);
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(girderKey);
-   IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetLastSegmentErectionInterval(girderKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(CGirderKey(girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex,girderKey.girderIndex));
 
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
+   bool bContinuousBeforeDeckCasting;
    GroupIndexType startGroup, endGroup;
-   IntervalIndexType continityIntervalIdx;
 
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
 
-   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continityIntervalIdx,&startGroup,&endGroup);
+   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
 
    PierIndexType startPier = pBridge->GetGirderGroupStartPier(startGroup);
    PierIndexType endPier   = pBridge->GetGirderGroupEndPier(endGroup);
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Rotations"));
-   RowIndexType row = ConfigureProductLoadTableHeading<rptAngleUnitTag,unitmgtAngleData>(pBroker,p_table,true,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,overlayIntervalIdx != INVALID_INDEX,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,continityIntervalIdx,castDeckIntervalIdx,pRatingSpec,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptAngleUnitTag,unitmgtAngleData>(pBroker,p_table,true,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,pRatingSpec,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
 
 
    // get poi at start and end of each segment in the girder
@@ -144,9 +139,17 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
       const ReactionLocation& reactionLocation( iter.CurrentItem() );
       ATLASSERT(reactionLocation.Face!=rftMid); // this table not built for pier reactions
 
+      const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
+
+      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(thisGirderKey);
+      IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(thisGirderKey);
+      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(thisGirderKey);
+      IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval(thisGirderKey);
+      IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(thisGirderKey);
+
       (*p_table)(row,col++) << reactionLocation.PierLabel;
 
-      ReactionDecider reactionDecider(BearingReactionsTable,reactionLocation,girderKey,pBridge,pIntervals);
+      ReactionDecider reactionDecider(BearingReactionsTable,reactionLocation,thisGirderKey,pBridge,pIntervals);
 
       pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx-startPierIdx];
       IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
@@ -193,7 +196,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
 
       if ( bConstruction )
       {
-         if ( analysisType == pgsTypes::Envelope && continityIntervalIdx == castDeckIntervalIdx )
+         if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
          {
             if ( reactionDecider.DoReport(castDeckIntervalIdx) )
             {
@@ -219,7 +222,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
          }
       }
 
-      if ( analysisType == pgsTypes::Envelope && continityIntervalIdx == castDeckIntervalIdx )
+      if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
       {
          if ( reactionDecider.DoReport(castDeckIntervalIdx) )
          {
@@ -254,7 +257,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
 
       if ( bDeckPanels )
       {
-         if ( analysisType == pgsTypes::Envelope && continityIntervalIdx == castDeckIntervalIdx )
+         if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
          {
             if ( reactionDecider.DoReport(castDeckIntervalIdx) )
             {
@@ -588,7 +591,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
             (*p_table)(row,col++) << RPT_NA;
          }
 
-         if ( overlayIntervalIdx != INVALID_INDEX )
+         if ( bHasOverlay )
          {
             if ( reactionDecider.DoReport(overlayIntervalIdx) )
             {

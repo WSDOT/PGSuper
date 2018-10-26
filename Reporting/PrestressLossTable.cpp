@@ -175,8 +175,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,const CSegmentKey& segme
    (*p_table)(row++,0) << _T("After Deck Placement");
    (*p_table)(row++,0) << _T("After Superimposed Dead Loads");
    (*p_table)(row++,0) << _T("Final");
-   (*p_table)(row++,0) << _T("Final with Live Load (Service I)");
-   (*p_table)(row++,0) << _T("Final with Live Load (Service III)");
+   (*p_table)(row++,0) << _T("Final with Live Load");
 
    // Fill up the table with data.
 
@@ -231,7 +230,6 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,const CSegmentKey& segme
    (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,railingSystemIntervalIdx,pgsTypes::End/*pgsTypes::AfterSIDL*/,pgsTypes::ServiceI) );
    // NOTE: using Middle is correct. this gives the value without live load and that is what we want.
    (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,lastIntervalIdx,pgsTypes::Middle/*pgsTypes::AfterLosses*/,pgsTypes::ServiceI) );
-   (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/,pgsTypes::ServiceI) );
    (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/,pgsTypes::ServiceIII) );
 
    ///////////////////////////////////
@@ -265,7 +263,6 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,const CSegmentKey& segme
    (*p_table)(row++,col) << stress.SetValue( pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,railingSystemIntervalIdx,pgsTypes::End,pgsTypes::ServiceI)/*pLosses->GetSIDLLosses(poi,pgsTypes::Permanent)*/ );
    // NOTE: using Middle is correct. this gives the value without live load and that is what we want.
    (*p_table)(row++,col) << stress.SetValue( pLosses->GetPrestressLoss(poi,pgsTypes::Permanent,lastIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI)/*pLosses->GetFinal(poi,pgsTypes::Permanent)*/ );
-   (*p_table)(row++,col) << stress.SetValue( pLosses->GetPrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceI)/*pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent)*/ );
    (*p_table)(row++,col) << stress.SetValue( pLosses->GetPrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceIII)/*pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent)*/ );
    
    ///////////////////////////////////
@@ -298,7 +295,6 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,const CSegmentKey& segme
    (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,railingSystemIntervalIdx,pgsTypes::End,pgsTypes::ServiceI) );
    // NOTE: using Middle is correct. this gives the value without live load and that is what we want.
    (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,lastIntervalIdx,pgsTypes::Middle/*pgsTypes::AfterLosses*/,pgsTypes::ServiceI) );
-   (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestressWithLiveLoad(poi,pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/,pgsTypes::ServiceI) );
    (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestressWithLiveLoad(poi,pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/,pgsTypes::ServiceIII) );
 
    if ( bTempStrands )

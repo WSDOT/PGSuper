@@ -114,7 +114,7 @@ void CCombinedReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
    BuildCombinedDeadTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, tableType, bDesign, bRating);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(CGirderKey(girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex,girderKey.girderIndex));
 
    if ( liveLoadIntervalIdx <= intervalIdx )
    {
@@ -178,10 +178,6 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
 
    GET_IFACE2_NOCHECK(pBroker,ILimitStateForces,pLsForces); // only used for certain reaction table types and intervals after live load is applied
 
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(girderKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(girderKey);
-
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -204,27 +200,13 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
    // Use iterator to walk locations
    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
 
-   EventIndexType continuityEventIndex = MAX_INDEX;
-   for ( iter.First(); !iter.IsDone(); iter.Next())
-   {
-      const ReactionLocation& reactionLocation( iter.CurrentItem() );
-      if ( pBridge->IsBoundaryPier(reactionLocation.PierIdx) )
-      {
-         EventIndexType leftContinuityEventIdx, rightContinuityEventIdx;
-         pBridge->GetContinuityEventIndex(reactionLocation.PierIdx,&leftContinuityEventIdx,&rightContinuityEventIdx);
-         continuityEventIndex = Min(continuityEventIndex,leftContinuityEventIdx);
-         continuityEventIndex = Min(continuityEventIndex,rightContinuityEventIdx);
-      }
-   }
-   IntervalIndexType continuityIntervalIdx = pIntervals->GetInterval(girderKey,continuityEventIndex);
-
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
    rptRcTable* p_table=0;
 
-   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,pBroker,girderKey,(tableType==PierReactionsTable ? _T("Total Girderline Reactions at Abutments and Piers"): _T("Girder Bearing Reactions")),
-                                 true ,bRating,intervalIdx,continuityIntervalIdx,
+   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,pBroker,iter.CurrentItem().GirderKey,(tableType==PierReactionsTable ? _T("Total Girderline Reactions at Abutments and Piers"): _T("Girder Bearing Reactions")),
+                                 true ,bRating,intervalIdx,
                                  analysisType,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    *p << p_table;
@@ -238,6 +220,11 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
    for (iter.First(); !iter.IsDone(); iter.Next())
    {
       const ReactionLocation& reactionLocation( iter.CurrentItem() );
+
+      CGirderKey thisGirderKey(reactionLocation.GirderKey);
+      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(thisGirderKey);
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(thisGirderKey);
+      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(thisGirderKey);
 
      (*p_table)(row,0) << reactionLocation.PierLabel;
 
@@ -353,7 +340,6 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
    ATLASSERT(!(bDesign&&bRating)); // these are separate tables, can't do both
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
 
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -378,6 +364,7 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
    else
    {
       GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
+      IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval(CGirderKey(girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex, girderKey.girderIndex));
       pForces =  std::auto_ptr<ICmbLsReactionAdapter>(new CmbLsBearingDesignReactionAdapter(pBearingDesign, intervalIdx, girderKey) );
    }
 
@@ -405,7 +392,7 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
 
    rptRcTable* p_table=0;
    RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table, strLabel.c_str(),
-                                 true,bDesign,bPermit,bPedLoading,bRating,false,includeImpact,intervalIdx,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
+                                 true,bDesign,bPermit,bPedLoading,bRating,false,includeImpact,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
    *p << p_table;
 
    // Compute start column for pedestrian-combined columns if needed
@@ -429,7 +416,9 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
       const ReactionLocation& reactionLocation( iter.CurrentItem() );
 
       PierIndexType pier = reactionLocation.PierIdx;
-      CGirderKey girderKey(reactionLocation.GirderKey);
+      CGirderKey thisGirderKey(reactionLocation.GirderKey);
+
+      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(thisGirderKey);
 
      (*p_table)(row,0) << reactionLocation.PierLabel;
 
@@ -443,18 +432,18 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
             Float64 pedMin(0), pedMax(0);
             if ( bPedLoading )
             {
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltPedestrian, reactionLocation, maxBAT, includeImpact, &min, &pedMax );
+               pForces->GetCombinedLiveLoadReaction( liveLoadIntervalIdx, pgsTypes::lltPedestrian, reactionLocation, maxBAT, includeImpact, &min, &pedMax );
                (*p_table)(row,col++) << reaction.SetValue( pedMax );
 
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltPedestrian, reactionLocation, minBAT, includeImpact, &pedMin, &max );
+               pForces->GetCombinedLiveLoadReaction( liveLoadIntervalIdx, pgsTypes::lltPedestrian, reactionLocation, minBAT, includeImpact, &pedMin, &max );
                (*p_table)(row,col++) << reaction.SetValue( pedMin );
             }
 
             // Design
-            pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltDesign, reactionLocation, maxBAT, includeImpact, &min, &max );
+            pForces->GetCombinedLiveLoadReaction( liveLoadIntervalIdx, pgsTypes::lltDesign, reactionLocation, maxBAT, includeImpact, &min, &max );
             (*p_table)(row,col++) << reaction.SetValue( max );
 
-            pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltDesign, reactionLocation, minBAT, includeImpact, &min, &max );
+            pForces->GetCombinedLiveLoadReaction( liveLoadIntervalIdx, pgsTypes::lltDesign, reactionLocation, minBAT, includeImpact, &min, &max );
             (*p_table)(row,col++) << reaction.SetValue( min );
 
 
@@ -467,10 +456,10 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
             // Fatigue
             if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
             {
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltFatigue, reactionLocation, maxBAT, includeImpact, &min, &max );
+               pForces->GetCombinedLiveLoadReaction( liveLoadIntervalIdx, pgsTypes::lltFatigue, reactionLocation, maxBAT, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
 
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltFatigue, reactionLocation, minBAT, includeImpact, &min, &max );
+               pForces->GetCombinedLiveLoadReaction( liveLoadIntervalIdx, pgsTypes::lltFatigue, reactionLocation, minBAT, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( min );
 
                if (bPedLoading)
@@ -482,10 +471,10 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
 
             if ( bPermit )
             {
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltPermit, reactionLocation, maxBAT, includeImpact, &min, &max );
+               pForces->GetCombinedLiveLoadReaction( liveLoadIntervalIdx, pgsTypes::lltPermit, reactionLocation, maxBAT, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
 
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltPermit, reactionLocation, minBAT, includeImpact, &min, &max );
+               pForces->GetCombinedLiveLoadReaction( liveLoadIntervalIdx, pgsTypes::lltPermit, reactionLocation, minBAT, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( min );
 
                if (bPedLoading)
@@ -498,58 +487,60 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
 
          if ( bRating )
          {
+            IntervalIndexType ratingIntervalIdx = pIntervals->GetLoadRatingInterval(thisGirderKey);
+
             Float64 pedMin(0), pedMax(0);
             if ( bPedLoading && pRatingSpec->IncludePedestrianLiveLoad() )
             {
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltPedestrian, reactionLocation, maxBAT, includeImpact, &min, &pedMax );
+               pForces->GetCombinedLiveLoadReaction( ratingIntervalIdx, pgsTypes::lltPedestrian, reactionLocation, maxBAT, includeImpact, &min, &pedMax );
                (*p_table)(row,col++) << reaction.SetValue( pedMax );
 
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltPedestrian, reactionLocation, minBAT, includeImpact, &pedMin, &max );
+               pForces->GetCombinedLiveLoadReaction( ratingIntervalIdx, pgsTypes::lltPedestrian, reactionLocation, minBAT, includeImpact, &pedMin, &max );
                (*p_table)(row,col++) << reaction.SetValue( pedMin );
             }
 
             if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
             {
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltDesign, reactionLocation, maxBAT, includeImpact, &min, &max );
+               pForces->GetCombinedLiveLoadReaction( ratingIntervalIdx, pgsTypes::lltDesign, reactionLocation, maxBAT, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
 
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltDesign, reactionLocation, minBAT, includeImpact, &min, &max );
+               pForces->GetCombinedLiveLoadReaction( ratingIntervalIdx, pgsTypes::lltDesign, reactionLocation, minBAT, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
             {
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltLegalRating_Routine, reactionLocation, maxBAT, includeImpact, &min, &max );
+               pForces->GetCombinedLiveLoadReaction( ratingIntervalIdx, pgsTypes::lltLegalRating_Routine, reactionLocation, maxBAT, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
 
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltLegalRating_Routine, reactionLocation, minBAT, includeImpact, &min, &max );
+               pForces->GetCombinedLiveLoadReaction( ratingIntervalIdx, pgsTypes::lltLegalRating_Routine, reactionLocation, minBAT, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
             {
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltLegalRating_Special, reactionLocation, maxBAT, includeImpact, &min, &max );
+               pForces->GetCombinedLiveLoadReaction( ratingIntervalIdx, pgsTypes::lltLegalRating_Special, reactionLocation, maxBAT, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
 
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltLegalRating_Special, reactionLocation, minBAT, includeImpact, &min, &max );
+               pForces->GetCombinedLiveLoadReaction( ratingIntervalIdx, pgsTypes::lltLegalRating_Special, reactionLocation, minBAT, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
             {
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltPermitRating_Routine, reactionLocation, maxBAT, includeImpact, &min, &max );
+               pForces->GetCombinedLiveLoadReaction( ratingIntervalIdx, pgsTypes::lltPermitRating_Routine, reactionLocation, maxBAT, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
 
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltPermitRating_Routine, reactionLocation, minBAT, includeImpact, &min, &max );
+               pForces->GetCombinedLiveLoadReaction( ratingIntervalIdx, pgsTypes::lltPermitRating_Routine, reactionLocation, minBAT, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
             {
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltPermitRating_Special, reactionLocation, maxBAT, includeImpact, &min, &max );
+               pForces->GetCombinedLiveLoadReaction( ratingIntervalIdx, pgsTypes::lltPermitRating_Special, reactionLocation, maxBAT, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
 
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltPermitRating_Special, reactionLocation, minBAT, includeImpact, &min, &max );
+               pForces->GetCombinedLiveLoadReaction( ratingIntervalIdx, pgsTypes::lltPermitRating_Special, reactionLocation, minBAT, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
          }
@@ -561,12 +552,12 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
             Float64 pedMin(0), pedMax(0);
             if ( bPedLoading )
             {
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltPedestrian, reactionLocation, maxBAT, includeImpact, &pedMin, &pedMax );
+               pForces->GetCombinedLiveLoadReaction( liveLoadIntervalIdx, pgsTypes::lltPedestrian, reactionLocation, maxBAT, includeImpact, &pedMin, &pedMax );
                (*p_table)(row,col++) << reaction.SetValue( pedMax );
                (*p_table)(row,col++) << reaction.SetValue( pedMin );
             }
 
-            pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltDesign, reactionLocation, maxBAT, includeImpact, &min, &max );
+            pForces->GetCombinedLiveLoadReaction( liveLoadIntervalIdx, pgsTypes::lltDesign, reactionLocation, maxBAT, includeImpact, &min, &max );
             (*p_table)(row,col++) << reaction.SetValue( max );
             (*p_table)(row,col++) << reaction.SetValue( min );
 
@@ -578,7 +569,7 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
 
             if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
             {
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltFatigue, reactionLocation, maxBAT, includeImpact, &min, &max );
+               pForces->GetCombinedLiveLoadReaction( liveLoadIntervalIdx, pgsTypes::lltFatigue, reactionLocation, maxBAT, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
                (*p_table)(row,col++) << reaction.SetValue( min );
 
@@ -591,7 +582,7 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
 
             if ( bPermit )
             {
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltPermit, reactionLocation, maxBAT, includeImpact, &min, &max );
+               pForces->GetCombinedLiveLoadReaction( liveLoadIntervalIdx, pgsTypes::lltPermit, reactionLocation, maxBAT, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
                (*p_table)(row,col++) << reaction.SetValue( min );
 
@@ -605,45 +596,47 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
 
          if ( bRating )
          {
+            IntervalIndexType ratingIntervalIdx = pIntervals->GetLoadRatingInterval(thisGirderKey);
+
             Float64 pedMin(0), pedMax(0);
             if ( bPedLoading && pRatingSpec->IncludePedestrianLiveLoad() )
             {
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltPedestrian, reactionLocation, maxBAT, includeImpact, &pedMin, &pedMax );
+               pForces->GetCombinedLiveLoadReaction( ratingIntervalIdx, pgsTypes::lltPedestrian, reactionLocation, maxBAT, includeImpact, &pedMin, &pedMax );
                (*p_table)(row,col++) << reaction.SetValue( pedMax );
                (*p_table)(row,col++) << reaction.SetValue( pedMin );
             }
 
             if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
             {
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltDesign, reactionLocation, maxBAT, includeImpact, &min, &max );
+               pForces->GetCombinedLiveLoadReaction( ratingIntervalIdx, pgsTypes::lltDesign, reactionLocation, maxBAT, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
             {
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltLegalRating_Routine, reactionLocation, maxBAT, includeImpact, &min, &max );
+               pForces->GetCombinedLiveLoadReaction( ratingIntervalIdx, pgsTypes::lltLegalRating_Routine, reactionLocation, maxBAT, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
             {
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltLegalRating_Special, reactionLocation, maxBAT, includeImpact, &min, &max );
+               pForces->GetCombinedLiveLoadReaction( ratingIntervalIdx, pgsTypes::lltLegalRating_Special, reactionLocation, maxBAT, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
             {
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltPermitRating_Routine, reactionLocation, maxBAT, includeImpact, &min, &max );
+               pForces->GetCombinedLiveLoadReaction( ratingIntervalIdx, pgsTypes::lltPermitRating_Routine, reactionLocation, maxBAT, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
             {
-               pForces->GetCombinedLiveLoadReaction( intervalIdx, pgsTypes::lltPermitRating_Special, reactionLocation, maxBAT, includeImpact, &min, &max );
+               pForces->GetCombinedLiveLoadReaction( ratingIntervalIdx, pgsTypes::lltPermitRating_Special, reactionLocation, maxBAT, includeImpact, &min, &max );
                (*p_table)(row,col++) << reaction.SetValue( max );
                (*p_table)(row,col++) << reaction.SetValue( min );
             }

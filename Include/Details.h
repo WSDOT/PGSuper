@@ -510,16 +510,16 @@ struct TIME_STEP_STRAND
    // also fpe = fpe (previous) + Sum(dfpe[i]) (this interval)
 
    // sum of losses up to and including this interval
-   Float64 loss; // = loss (previous) + dFps
+   Float64 loss; // = loss (previous) + dfpe
 
    // Elastic effect of live load on effective prestress
    Float64 dFllMin;
    Float64 fpeLLMin; // fpe + dFll;
-   Float64 lossLLMin; // loss + dFll;
+   Float64 lossLLMin; // loss - dFll;
 
    Float64 dFllMax;
    Float64 fpeLLMax; // fpe + dFll;
-   Float64 lossLLMax; // loss + dFll;
+   Float64 lossLLMax; // loss - dFll;
 
    // This value can be checked by (-Pj+P) = fpe*Aps
    TIME_STEP_STRAND()

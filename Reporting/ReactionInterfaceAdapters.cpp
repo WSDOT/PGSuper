@@ -150,7 +150,16 @@ ReactionLocationContainer GetPierReactionLocations(const CGirderKey& girderKey, 
    {
       for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
       {
-         ReactionLocation location = MakeReactionLocation(pierIdx, nPiers, rftMid, girderKey);
+         GroupIndexType backGroupIdx,aheadGroupIdx;
+         pBridge->GetGirderGroupIndex(pierIdx,&backGroupIdx,&aheadGroupIdx);
+
+         CGirderKey thisGirderKey(aheadGroupIdx,girderKey.girderIndex);
+         if ( aheadGroupIdx == INVALID_INDEX )
+         {
+            thisGirderKey.groupIndex = backGroupIdx;
+         }
+
+         ReactionLocation location = MakeReactionLocation(pierIdx, nPiers, rftMid, thisGirderKey);
          container.push_back( location );
       }
    }

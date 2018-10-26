@@ -19,27 +19,43 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
+
 #pragma once
 
-#include <IFace\AnalysisResults.h>
+#include <Graphing\GraphingExp.h>
+#include <Graphing\GirderGraphBuilderBase.h>
 
-// Mapping between ProductForceType contants and consistent human-readable name
-class CProductLoadMap
+class CInitialStrainGraphController;
+
+class GRAPHINGCLASS CInitialStrainGraphBuilder : public CGirderGraphBuilderBase
 {
 public:
-   CProductLoadMap();
-   ProductForceType GetProductForceType(CComBSTR bstrLoadGroupName);
-   CComBSTR GetGroupLoadName(ProductForceType pfType);
-   LoadCaseIDType GetLoadCaseID(ProductForceType pfType);
-   LoadCaseIDType GetMaxLoadCaseID();
+   enum GraphType
+   {
+      InitialStrain,
+      InitialCurvature,
+      RestrainingForce,
+      RestrainingMoment
+   };
 
-   static std::vector<ProductForceType> GetProductForces(IBroker* pBroker,LoadingCombinationType combo);
+public:
+   CInitialStrainGraphBuilder();
+   CInitialStrainGraphBuilder(const CInitialStrainGraphBuilder& other);
+   virtual ~CInitialStrainGraphBuilder();
 
-private:
-   void AddLoadItem(ProductForceType pfType,CComBSTR bstrLoadGroupName,LoadCaseIDType lcid);
+   virtual int InitializeGraphController(CWnd* pParent,UINT nID);
+   virtual BOOL CreateGraphController(CWnd* pParent,UINT nID);
+   virtual CGraphBuilder* Clone();
 
-   std::map<ProductForceType,CComBSTR> m_ProductForceTypeToLoadName;
-   std::map<CComBSTR,ProductForceType> m_LoadNameToProductForceType;
-   std::map<ProductForceType,LoadCaseIDType> m_ProductForceTypeToLoadCaseID;
-   LoadCaseIDType m_LoadCaseID;
+protected:
+   virtual CGirderGraphControllerBase* CreateGraphController();
+   virtual bool UpdateNow();
+
+   DECLARE_MESSAGE_MAP()
+
+   void UpdateYAxisUnits(CInitialStrainGraphBuilder::GraphType graphType);
+   void UpdateGraphTitle(GirderIndexType gdrIdx,CInitialStrainGraphBuilder::GraphType graphType);
+   void UpdateGraphData(GirderIndexType gdrIdx,CInitialStrainGraphBuilder::GraphType graphType);
+
+   virtual IntervalIndexType GetBeamDrawInterval();
 };

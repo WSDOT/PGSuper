@@ -447,6 +447,8 @@ void CConcreteManager::ValidateConcrete2()
       Float64 V = pSectProp->GetDeckVolume();
       Float64 vsDeck = IsZero(S) ? DBL_MAX : V/S;
 
+      vsDeck = ::RoundOff(vsDeck,::ConvertToSysUnits(0.5,unitMeasure::Millimeter));
+
       m_pDeckConc->SetVSRatio(vsDeck);
    }
 
@@ -481,6 +483,8 @@ void CConcreteManager::ValidateConcrete2()
 
             Float64 vsSegment = IsZero(S) ? DBL_MAX : V/S;
 
+            vsSegment = ::RoundOff(vsSegment,::ConvertToSysUnits(0.5,unitMeasure::Millimeter));
+
             m_pSegmentConcrete[segmentKey]->SetVSRatio(vsSegment);
 
             if ( segIdx < nSegments-1 )
@@ -490,6 +494,8 @@ void CConcreteManager::ValidateConcrete2()
                Float64 V = pSectProp->GetClosureJointVolume(closureKey);
 
                Float64 vsClosure = IsZero(S) ? DBL_MAX : V/S;
+
+               vsClosure = ::RoundOff(vsClosure,::ConvertToSysUnits(0.5,unitMeasure::Millimeter));
 
                m_pClosureConcrete[closureKey]->SetVSRatio(vsClosure);
             }

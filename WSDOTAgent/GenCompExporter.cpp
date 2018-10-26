@@ -65,7 +65,7 @@ STDMETHODIMP CGenCompExporter::Export(IBroker* pBroker)
 
    if ( dlg.DoModal() != IDOK )
    {
-      return S_OK;
+      return S_FALSE;
    }
 
    // write some bridge data to a text file
@@ -162,8 +162,12 @@ STDMETHODIMP CGenCompExporter::Export(IBroker* pBroker)
       }
 
       CString strPathName = fileDlg.GetPathName();
-      return SaveGenCompModel(strPathName,genCompXML.get());
+      if (  SaveGenCompModel(strPathName,genCompXML.get()) )
+      {
+         AfxMessageBox(_T("Export complete"),MB_OK | MB_ICONEXCLAMATION);
+         return S_OK;
+      }
    }		
 
-   return S_OK;
+   return S_FALSE;
 }

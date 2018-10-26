@@ -107,15 +107,16 @@ STDMETHODIMP CCurvelExporter::GetCommandHintText(BSTR*  bstrText)
    return S_OK;   
 }
 
-#define TEST_CODE
+#define xTEST_CODE
 STDMETHODIMP CCurvelExporter::Export(IBroker* pBroker)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
 #pragma Reminder("UPDATE: remove test code after creating example")
    // There are two block of code here, conditionally compiled with the TEST_CODE macro.
    // The TEST_CODE was used to prototype and test the OpenBridgeML Units implementation
    // RAB left it here for an example until such time a simple example is developed
    // to demonstrate OpenBridgeML
-#if defined xTEST_CODE
+#if defined TEST_CODE
 	CFileDialog fileDlg(FALSE,_T("curvel"),_T("Example1a.curvel"),OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("Curvel File (*.curvel)|*.curvel||"));
 	if (fileDlg.DoModal() == IDOK)
 	{
@@ -287,7 +288,6 @@ STDMETHODIMP CCurvelExporter::Export(IBroker* pBroker)
 	CFileDialog fileDlg(FALSE,_T("curvel"),_T("PGSuperExport.curvel"),OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("Curvel File (*.curvel)|*.curvel||"));
 	if (fileDlg.DoModal() == IDOK)
 	{
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       GET_IFACE2(pBroker,IRoadwayData,pRoadway);
       std::auto_ptr<Curvel> curvelXML( CreateCurvelModel() ); // create a default curvel model
 
@@ -314,6 +314,7 @@ STDMETHODIMP CCurvelExporter::Export(IBroker* pBroker)
          // Curvel supports a single vertical curve, select which vertical curve to export to Curvel
          if ( 1 < profileData.VertCurves.size() )
          {
+            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
             CString strList;
             std::vector<VertCurveData>::iterator iter(profileData.VertCurves.begin());
             std::vector<VertCurveData>::iterator end(profileData.VertCurves.end());
@@ -328,7 +329,7 @@ STDMETHODIMP CCurvelExporter::Export(IBroker* pBroker)
             }
             curveIdx = AfxChoose(_T("Multiple Vertical Curves"),_T("Curvel is limited to a single vertical curve. Select the vertical curve to export."),strList,0,TRUE);
             if ( curveIdx == -1 )
-               return FALSE;
+               return S_FALSE;
          }
          
          VertCurveData& vCurve(profileData.VertCurves[curveIdx]);
@@ -389,6 +390,7 @@ STDMETHODIMP CCurvelExporter::Export(IBroker* pBroker)
 
          if ( bNotifyCrownPointOffset )
          {
+            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
             CString strMsg;
             strMsg.Format(_T("Curvel is limited to a single crown point offset. The exported crown point offset is %s."),::FormatOffset(crownPointOffset,pDisplayUnits->GetAlignmentLengthUnit(),false));
             AfxMessageBox(strMsg,MB_OK | MB_ICONINFORMATION);
@@ -410,6 +412,7 @@ STDMETHODIMP CCurvelExporter::Export(IBroker* pBroker)
       else
       {
          CString strOptions;
+         GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
          for ( std::size_t i = 0; i < nSections; i++ )
          {
             CrownData2& crown = sectionData.Superelevations[i];
@@ -428,7 +431,7 @@ STDMETHODIMP CCurvelExporter::Export(IBroker* pBroker)
          choices = AfxMultiChoice(_T("Select Cross Sections"),_T("Select three consecutive cross sections to export to Curvel."),strOptions,&validator,choices,TRUE);
          if ( choices.size() == 0 )
          {
-            return FALSE;
+            return S_FALSE;
          }
 
          ATLASSERT(choices.size()==3);
@@ -511,10 +514,10 @@ STDMETHODIMP CCurvelExporter::Export(IBroker* pBroker)
       if ( SaveCurvelModel(strPathName,curvelXML.get()) )
       {
          AfxMessageBox(_T("Export complete"),MB_OK | MB_ICONEXCLAMATION);
-         return TRUE;
+         return S_OK;
       }
 	}	
 #endif // TEST_CODE
 
-   return FALSE;
+   return S_FALSE;
 }

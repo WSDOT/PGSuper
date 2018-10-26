@@ -498,6 +498,7 @@ interface IBridge : IUnknown
 
    virtual bool IsAbutment(PierIndexType pierIdx) = 0; // returns true if pier is an end abutment
    virtual bool IsPier(PierIndexType pierIdx) = 0; // returns true if pier is an intermediate pier
+   virtual bool HasCantilever(PierIndexType pierIdx) = 0; // returns true if the span is cantilevered at this pier
 
    virtual bool IsInteriorPier(PierIndexType pierIdx) = 0; // returns true if the pier is interior to a girder group
    virtual bool IsBoundaryPier(PierIndexType pierIdx) = 0; // returns true if the pier is at a boundary of a girder group
@@ -862,12 +863,10 @@ DEFINE_GUID(IID_IStrandGeometry,
 0x99b7a322, 0x67a8, 0x11d2, 0x88, 0x3a, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
 interface IStrandGeometry : IUnknown
 {
-   // Returns the eccentricity to the resultant force for the various strand types
-   virtual Float64 GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bIncTemp, Float64* nEffectiveStrands) = 0;
-   virtual Float64 GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, Float64* nEffectiveStrands) = 0;
-   virtual Float64 GetHsEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, Float64* nEffectiveStrands) = 0;
-   virtual Float64 GetSsEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, Float64* nEffectiveStrands) = 0;
-   virtual Float64 GetTempEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, Float64* nEffectiveStrands) = 0;
+   // Returns the geometric eccentricity of prestressing strands for the various strand types.
+   // Eccentricity is measured with respect to the centroid of the section at the specified interval
+   virtual Float64 GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bIncTemp,Float64* nEffectiveStrands) = 0;
+   virtual Float64 GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,Float64* nEffectiveStrands) = 0;
 
    // Returns the distance from the top of the girder to the geometric CG of the strand in Girder Section Coordinates
    virtual Float64 GetStrandLocation(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx) = 0;
@@ -882,19 +881,17 @@ interface IStrandGeometry : IUnknown
    // for normal configuration of harped strands)
    virtual Float64 GetAvgStrandSlope(const pgsPointOfInterest& poi) = 0;
 
+   // Returns the geometric eccentricity of prestressing strands for the various strand types for the specified configuration.
+   // Eccentricity is measured with respect to the centroid of the section at the specified interval
    virtual Float64 GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, bool bIncTemp, Float64* nEffectiveStrands) = 0;
-   virtual Float64 GetHsEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, Float64* nEffectiveStrands) = 0;
-   virtual Float64 GetSsEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, Float64* nEffectiveStrands) = 0;
-   virtual Float64 GetTempEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, Float64* nEffectiveStrands) = 0;
+   virtual Float64 GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, pgsTypes::StrandType strandType,Float64* nEffectiveStrands) = 0;
    virtual Float64 GetMaxStrandSlope(const pgsPointOfInterest& poi,StrandIndexType Nh,Float64 endShift,Float64 hpShift) = 0;
    virtual Float64 GetAvgStrandSlope(const pgsPointOfInterest& poi,StrandIndexType Nh,Float64 endShift,Float64 hpShift) = 0;
 
-   // strand eccentrity measured from the CG of the specified section type... pgsTypes::sptNetDeck is not a valid parameter
+   // Returns the geometric eccentricity of prestressing strands for the various strand types.
+   // Eccentricity is measured with respect to the centroid of the specified section type at the specified interval
    virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bIncTemp, Float64* nEffectiveStrands) = 0;
    virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, Float64* nEffectiveStrands) = 0;
-   virtual Float64 GetHsEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, Float64* nEffectiveStrands) = 0;
-   virtual Float64 GetSsEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, Float64* nEffectiveStrands) = 0;
-   virtual Float64 GetTempEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, Float64* nEffectiveStrands) = 0;
 
    virtual Float64 GetApsBottomHalf(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust) = 0; // Fig. 5.8.3.4.2-3
    virtual Float64 GetApsBottomHalf(const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, DevelopmentAdjustmentType devAdjust) = 0; // Fig. 5.8.3.4.2-3

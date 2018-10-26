@@ -81,8 +81,9 @@ void CTSRemovalStressTable::Build(rptChapter* pChapter,IBroker* pBroker,const CG
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS ? true : false);
 
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
-   IntervalIndexType continuityIntervalIdx;
+   bool bContinuousBeforeDeckCasting;
    GET_IFACE2(pBroker,IBridge,pBridge);
+   bool bHasOverlay      = pBridge->HasOverlay();
    bool bIsFutureOverlay = pBridge->IsFutureOverlay();
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -147,7 +148,7 @@ void CTSRemovalStressTable::Build(rptChapter* pChapter,IBroker* pBroker,const CG
          IntervalIndexType tsrIntervalIdx = *iter;
 
          GroupIndexType startGroupIdx, endGroupIdx; // use these so we don't mess up the loop parameters
-         ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,false,false,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuityIntervalIdx,&startGroupIdx,&endGroupIdx);
+         ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,false,false,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroupIdx,&endGroupIdx);
          bPedLoading = false;
          bPermit     = false;
 
@@ -171,8 +172,8 @@ void CTSRemovalStressTable::Build(rptChapter* pChapter,IBroker* pBroker,const CG
             p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
          }
 
-         RowIndexType row = ConfigureProductLoadTableHeading<rptStressUnitTag,unitmgtStressData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,overlayIntervalIdx != INVALID_INDEX,bIsFutureOverlay,false,bPedLoading,
-                                                                                                 bPermit,false,analysisType,continuityIntervalIdx,castDeckIntervalIdx,
+         RowIndexType row = ConfigureProductLoadTableHeading<rptStressUnitTag,unitmgtStressData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bHasOverlay,bIsFutureOverlay,false,bPedLoading,
+                                                                                                 bPermit,false,analysisType,bContinuousBeforeDeckCasting,
                                                                                                  pRatingSpec,pDisplayUnits,pDisplayUnits->GetStressUnit());
 
 
@@ -244,7 +245,7 @@ void CTSRemovalStressTable::Build(rptChapter* pChapter,IBroker* pBroker,const CG
          pForces2->GetStress( tsrIntervalIdx, pftTrafficBarrier, vPoi, minBAT, rtIncremental, topLocation, botLocation, &fTopMinTrafficBarrier, &fBotMinTrafficBarrier );
 
          std::vector<Float64> fTopMaxOverlay, fTopMinOverlay, fBotMaxOverlay, fBotMinOverlay;
-         if ( overlayIntervalIdx != INVALID_INDEX )
+         if ( bHasOverlay )
          {
             pForces2->GetStress( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, maxBAT, rtIncremental, topLocation, botLocation, &fTopMaxOverlay, &fBotMaxOverlay );
             pForces2->GetStress( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, minBAT, rtIncremental, topLocation, botLocation, &fTopMinOverlay, &fBotMinOverlay );
@@ -282,7 +283,7 @@ void CTSRemovalStressTable::Build(rptChapter* pChapter,IBroker* pBroker,const CG
 
             if ( bShearKey )
             {
-               if ( analysisType == pgsTypes::Envelope )
+               if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
                {
                   (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxShearKey[index]) << rptNewLine;
                   (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxShearKey[index]);
@@ -302,7 +303,7 @@ void CTSRemovalStressTable::Build(rptChapter* pChapter,IBroker* pBroker,const CG
 
             if ( bConstruction )
             {
-               if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
+               if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
                {
                   (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxConstruction[index]) << rptNewLine;
                   (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxConstruction[index]);
@@ -320,7 +321,7 @@ void CTSRemovalStressTable::Build(rptChapter* pChapter,IBroker* pBroker,const CG
                }
             }
 
-            if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
+            if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
             {
                (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSlab[index]) << rptNewLine;
                (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSlab[index]);
@@ -351,7 +352,7 @@ void CTSRemovalStressTable::Build(rptChapter* pChapter,IBroker* pBroker,const CG
 
             if ( bDeckPanels )
             {
-               if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
+               if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
                {
                   (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSlabPanel[index]) << rptNewLine;
                   (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSlabPanel[index]);

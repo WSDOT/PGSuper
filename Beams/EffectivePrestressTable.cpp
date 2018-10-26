@@ -67,6 +67,10 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
 
    // Create and configure the table
    ColumnIndexType numColumns = 10;
+   if ( loss_method == LOSSES_AASHTO_REFINED || loss_method == LOSSES_WSDOT_REFINED )
+   {
+      numColumns++;
+   }
 
    CEffectivePrestressTable* table = new CEffectivePrestressTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
@@ -83,10 +87,10 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
 
 
    GET_IFACE2(pBroker,ILoadFactors,pLoadFactors);
-   Float64 gLL = pLoadFactors->GetLoadFactors()->LLIMmax[pgsTypes::ServiceIII];
+   table->m_gLL = pLoadFactors->GetLoadFactors()->LLIMmax[pgsTypes::ServiceIII];
 
    std::_tostringstream os;
-   os << gLL;
+   os << table->m_gLL;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -95,10 +99,12 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
       *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(" = ") << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pLT")) << rptNewLine;
       *pParagraph << RPT_STRESS(_T("pe")) << _T(" = ") << RPT_STRESS(_T("pj")) << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(" + ")
                   << symbol(DELTA) << RPT_STRESS(_T("pED")) << _T(" + ")
-                  << symbol(DELTA) << RPT_STRESS(_T("pSIDL")) << rptNewLine;
+                  << symbol(DELTA) << RPT_STRESS(_T("pSIDL")) << _T(" + ")
+                  << symbol(DELTA) << RPT_STRESS(_T("pSS")) << rptNewLine;
       *pParagraph << RPT_STRESS(_T("pe")) << _T(" = ") << RPT_STRESS(_T("pj")) << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(" + ")
                   << symbol(DELTA) << RPT_STRESS(_T("pED")) << _T(" + ")
                   << symbol(DELTA) << RPT_STRESS(_T("pSIDL")) << _T(" + ")
+                  << symbol(DELTA) << RPT_STRESS(_T("pSS")) << _T(" + ")
                   << _T("(") << os.str().c_str() << _T(")") << symbol(DELTA) << RPT_STRESS(_T("pLL")) << rptNewLine;
    }
    else
@@ -115,6 +121,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pED")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSIDL")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSS")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLL")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -134,26 +141,26 @@ void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
 
    Float64 fpED   = pDetails->pLosses->ElasticGainDueToDeckPlacement();
    Float64 fpSIDL = pDetails->pLosses->ElasticGainDueToSIDL();
+   Float64 fpSS   = pDetails->pLosses->ElasticGainDueToDeckShrinkage();
    Float64 fpLL   = pDetails->pLosses->ElasticGainDueToLiveLoad();
 
    // fpT includes elastic gains due to permanent loads
-   fpT += fpED+fpSIDL;
+   // elastic gains are subtracted when computing fpT so add them back
+   // in so we are left with just time dependent losses (see below)
 
    (*this)(row,col++) << stress.SetValue(fpj);
    (*this)(row,col++) << stress.SetValue(fpES);
    (*this)(row,col++) << stress.SetValue(fpLT);
-   (*this)(row,col++) << stress.SetValue(fpT);
+   (*this)(row,col++) << stress.SetValue(fpT+fpED+fpSIDL+fpSS);
    (*this)(row,col++) << stress.SetValue(fpED);
    (*this)(row,col++) << stress.SetValue(fpSIDL);
+   (*this)(row,col++) << stress.SetValue(fpSS);
    (*this)(row,col++) << stress.SetValue(fpLL);
 
-   Float64 fpe = fpj - fpT + fpED + fpSIDL;
+   Float64 fpe = fpj - fpT;
 
    (*this)(row,col++) << stress.SetValue(fpe);
 
-   GET_IFACE2(pBroker,ILoadFactors,pLoadFactors);
-   Float64 gLL = pLoadFactors->GetLoadFactors()->LLIMmax[pgsTypes::ServiceIII];
-
-   fpe += gLL*fpLL;
+   fpe += m_gLL*fpLL; // add elastic gain due to live load
    (*this)(row,col++) << stress.SetValue(fpe);
 }

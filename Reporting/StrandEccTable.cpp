@@ -167,7 +167,7 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKe
       Float64 nEff;
       if ( 0 < Ns )
       {
-         (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetSsEccentricity( spType, intervalIdx, poi, &nEff ) );
+         (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetEccentricity( spType, intervalIdx, poi, pgsTypes::Straight, &nEff ) );
       }
       else
       {
@@ -176,7 +176,7 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKe
 
       if ( 0 < Nh )
       {
-         (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetHsEccentricity( spType, intervalIdx, poi, &nEff ) );
+         (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetEccentricity( spType, intervalIdx, poi, pgsTypes::Harped, &nEff ) );
       }
       else
       {
@@ -187,17 +187,17 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKe
       {
          if ( 0 < Nt )
          {
-            (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetTempEccentricity( spType, intervalIdx, poi, &nEff ) );
+            (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetEccentricity( spType, intervalIdx, poi, pgsTypes::Temporary, &nEff ) );
          }
          else
          {
             (*p_table)(row,col++) << _T("-");
          }
 
-         (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetEccentricity( spType, intervalIdx, poi, true, &nEff ) );
+         (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetEccentricity( spType, intervalIdx, poi, true /*include temporary strands*/, &nEff ) );
       }
 
-      (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetEccentricity( spType, intervalIdx, poi, false, &nEff ) );
+      (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetEccentricity( spType, intervalIdx, poi, false/*exclude temporary strands*/, &nEff ) );
 
       if ( 0 < Nh )
       {

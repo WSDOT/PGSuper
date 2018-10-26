@@ -78,8 +78,9 @@ void CTSRemovalRotationTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
    INIT_UV_PROTOTYPE( rptAngleUnitValue,  rotation, pDisplayUnits->GetRadAngleUnit(), false );
 
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
-   IntervalIndexType continuityIntervalIdx;
+   bool bContinuousBeforeDeckCasting;
    GET_IFACE2(pBroker,IBridge,pBridge);
+   bool bHasOverlay      = pBridge->HasOverlay();
    bool bIsFutureOverlay = pBridge->IsFutureOverlay();
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -140,7 +141,7 @@ void CTSRemovalRotationTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
          IntervalIndexType tsrIntervalIdx = *iter;
 
          GroupIndexType startGroupIdx, endGroupIdx; // use these so we don't mess up the loop parameters
-         ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,false,false,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuityIntervalIdx,&startGroupIdx,&endGroupIdx);
+         ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,false,false,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroupIdx,&endGroupIdx);
          bPedLoading = false;
          bPermit     = false;
 
@@ -166,8 +167,8 @@ void CTSRemovalRotationTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 
          location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-         RowIndexType row = ConfigureProductLoadTableHeading<rptAngleUnitTag,unitmgtAngleData>(pBroker,p_table,true,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,overlayIntervalIdx != INVALID_INDEX,bIsFutureOverlay,false,bPedLoading,
-                                                                                               bPermit,false,analysisType,continuityIntervalIdx,castDeckIntervalIdx,
+         RowIndexType row = ConfigureProductLoadTableHeading<rptAngleUnitTag,unitmgtAngleData>(pBroker,p_table,true,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bHasOverlay,bIsFutureOverlay,false,bPedLoading,
+                                                                                               bPermit,false,analysisType,bContinuousBeforeDeckCasting,
                                                                                                pRatingSpec,pDisplayUnits,pDisplayUnits->GetAngleUnit());
 
 
@@ -289,7 +290,7 @@ void CTSRemovalRotationTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
             (*p_table)(row,col++) << rotation.SetValue( girder[index] );
             (*p_table)(row,col++) << rotation.SetValue( diaphragm[index] );
 
-            if ( bShearKey )
+            if ( bShearKey && bContinuousBeforeDeckCasting )
             {
                if ( analysisType == pgsTypes::Envelope )
                {
@@ -304,7 +305,7 @@ void CTSRemovalRotationTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 
             if ( bConstruction )
             {
-               if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
+               if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
                {
                   (*p_table)(row,col++) << rotation.SetValue( maxConstruction[index] );
                   (*p_table)(row,col++) << rotation.SetValue( minConstruction[index] );
@@ -315,7 +316,7 @@ void CTSRemovalRotationTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
                }
             }
 
-            if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
+            if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
             {
                (*p_table)(row,col++) << rotation.SetValue( maxSlab[index] );
                (*p_table)(row,col++) << rotation.SetValue( minSlab[index] );
@@ -332,7 +333,7 @@ void CTSRemovalRotationTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 
             if ( bDeckPanels )
             {
-               if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
+               if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
                {
                   (*p_table)(row,col++) << rotation.SetValue( maxDeckPanel[index] );
                   (*p_table)(row,col++) << rotation.SetValue( minDeckPanel[index] );

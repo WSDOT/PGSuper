@@ -319,8 +319,8 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
          ATLASSERT(pmid.size()==1);
 
          Float64 nEff;
-         Float64 hs_ecc_end = pStrandGeometry->GetHsEccentricity(releaseIntervalIdx,pois, &nEff);
-         Float64 hs_ecc_mid = pStrandGeometry->GetHsEccentricity(releaseIntervalIdx,pmid[0], &nEff);
+         Float64 hs_ecc_end = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pois, pgsTypes::Harped, &nEff);
+         Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pmid[0], pgsTypes::Harped, &nEff);
          if (! IsEqual(hs_ecc_end, hs_ecc_mid) )
          {
             areAnyBentHarpedStrands = true;
@@ -573,8 +573,8 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       if (nh>0)
       {
          Float64 nEff;
-         Float64 hs_ecc_end = pStrandGeometry->GetHsEccentricity(releaseIntervalIdx, pois, &nEff);
-         Float64 hs_ecc_mid = pStrandGeometry->GetHsEccentricity(releaseIntervalIdx, pmid[0], &nEff);
+         Float64 hs_ecc_end = pStrandGeometry->GetEccentricity(releaseIntervalIdx, pois, pgsTypes::Harped, &nEff);
+         Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx, pmid[0], pgsTypes::Harped, &nEff);
          are_harped_straight = IsEqual(hs_ecc_end, hs_ecc_mid);
       }
 

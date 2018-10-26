@@ -115,7 +115,7 @@ LRESULT CACIConcretePage::OnCommandHelp(WPARAM, LPARAM lParam)
 void CACIConcretePage::OnUserParameters()
 {
    BOOL bEnable = IsDlgButtonChecked(IDC_USER);
-   GetDlgItem(IDC_CURE_METHOD)->EnableWindow(bEnable);
+   //GetDlgItem(IDC_CURE_METHOD)->EnableWindow(bEnable); // always want this to be enabled
    GetDlgItem(IDC_CEMENT_TYPE)->EnableWindow(bEnable);
 
    GetDlgItem(IDC_ALPHA_LABEL)->EnableWindow(!bEnable);

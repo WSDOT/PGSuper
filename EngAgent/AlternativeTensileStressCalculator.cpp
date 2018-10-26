@@ -94,9 +94,10 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
    Float64 Es, fy, fu;
    if ( m_bGirderStresses )
    {
-      if ( m_pPoi->IsInClosureJoint(poi) )
+      CClosureKey closureKey;
+      if ( m_pPoi->IsInClosureJoint(poi,&closureKey) )
       {
-         m_pMaterials->GetClosureJointLongitudinalRebarProperties(segmentKey,&Es,&fy,&fu);
+         m_pMaterials->GetClosureJointLongitudinalRebarProperties(closureKey,&Es,&fy,&fu);
       }
       else
       {
@@ -266,12 +267,13 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
          bool isfct;
          if ( pConfig == NULL )
          {
-            if ( m_pPoi->IsInClosureJoint(poi) )
+            CClosureKey closureKey;
+            if ( m_pPoi->IsInClosureJoint(poi,&closureKey) )
             {
-               fci       = m_pMaterials->GetClosureJointFc(segmentKey,m_IntervalIdx);
-               conc_type = m_pMaterials->GetClosureJointConcreteType(segmentKey);
-               isfct     = m_pMaterials->DoesClosureJointConcreteHaveAggSplittingStrength(segmentKey);
-               fct       = isfct ? m_pMaterials->GetClosureJointConcreteAggSplittingStrength(segmentKey) : 0.0;
+               fci       = m_pMaterials->GetClosureJointFc(closureKey,m_IntervalIdx);
+               conc_type = m_pMaterials->GetClosureJointConcreteType(closureKey);
+               isfct     = m_pMaterials->DoesClosureJointConcreteHaveAggSplittingStrength(closureKey);
+               fct       = isfct ? m_pMaterials->GetClosureJointConcreteAggSplittingStrength(closureKey) : 0.0;
             }
             else
             {

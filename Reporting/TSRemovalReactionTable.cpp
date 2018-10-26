@@ -79,8 +79,9 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
    INIT_UV_PROTOTYPE( rptForceUnitValue,  reaction, pDisplayUnits->GetShearUnit(), false );
 
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
-   IntervalIndexType continuityIntervalIdx;
+   bool bContinuousBeforeDeckCasting;
    GET_IFACE2(pBroker,IBridge,pBridge);
+   bool bHasOverlay      = pBridge->HasOverlay();
    bool bIsFutureOverlay = pBridge->IsFutureOverlay();
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -89,6 +90,7 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 
    GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(girderKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
    IntervalIndexType overlayIntervalIdx  = pIntervals->GetOverlayInterval(girderKey);
 
    // Get the results
@@ -144,7 +146,7 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
          IntervalIndexType tsrIntervalIdx = *iter;
 
          GroupIndexType startGroupIdx, endGroupIdx; // use these so we don't mess up the loop parameters
-         ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,false,false,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuityIntervalIdx,&startGroupIdx,&endGroupIdx);
+         ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,false,false,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroupIdx,&endGroupIdx);
          bPedLoading = false;
          bPermit     = false;
 
@@ -161,7 +163,7 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
          }
          else
          {
-            pForces =  std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, continuityIntervalIdx, girderKey) );
+            pForces =  std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, compositeDeckIntervalIdx, girderKey) );
          }
 
          CString strLabel;
@@ -180,8 +182,8 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 
          location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-         RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,true,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,overlayIntervalIdx != INVALID_INDEX,bIsFutureOverlay,false,bPedLoading,
-                                                                                               bPermit,false,analysisType,continuityIntervalIdx,castDeckIntervalIdx,
+         RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,true,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bHasOverlay,bIsFutureOverlay,false,bPedLoading,
+                                                                                               bPermit,false,analysisType,bContinuousBeforeDeckCasting,
                                                                                                pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
          if ( bAreThereUserLoads )

@@ -300,6 +300,7 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
    ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
 
    GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(girderKey);
    IntervalIndexType finalIntervalIdx = pIntervals->GetIntervalCount(girderKey) - 1;
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
@@ -308,14 +309,14 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
    Float64 eps, Pps;
    if ( pConfig )
    {
-      eps = pStrandGeometry->GetEccentricity( castDeckIntervalIdx, poi, *pConfig, false, &neff);
+      eps = pStrandGeometry->GetEccentricity( releaseIntervalIdx, poi, *pConfig, pgsTypes::Permanent, &neff);
 
       Pps = pPsForce->GetHorizHarpedStrandForce(poi, finalIntervalIdx,pgsTypes::End, pgsTypes::ServiceI, *pConfig)
          + pPsForce->GetPrestressForce(poi,pgsTypes::Straight, finalIntervalIdx,pgsTypes::End,pgsTypes::ServiceI,*pConfig);
    }
    else
    {
-      eps = pStrandGeometry->GetEccentricity( castDeckIntervalIdx, poi, false, &neff);
+      eps = pStrandGeometry->GetEccentricity( releaseIntervalIdx, poi, pgsTypes::Permanent, &neff);
 
       Pps = pPsForce->GetHorizHarpedStrandForce(poi, finalIntervalIdx,pgsTypes::End, pgsTypes::ServiceI)
           + pPsForce->GetPrestressForce(poi,pgsTypes::Straight, finalIntervalIdx,pgsTypes::End, pgsTypes::ServiceI);
@@ -542,9 +543,11 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    GET_IFACE(IMaterials,         pMaterial);
    GET_IFACE(IPointOfInterest,   pPoi);
 
-   if ( pPoi->IsInClosureJoint(poi) )
+   CClosureKey closureKey;
+   bool bIsInClosureJoint = pPoi->IsInClosureJoint(poi,&closureKey);
+   if ( bIsInClosureJoint )
    {
-      pscd->Phi = pResistanceFactors->GetClosureJointShearResistanceFactor( pMaterial->GetSegmentConcreteType(segmentKey) );
+      pscd->Phi = pResistanceFactors->GetClosureJointShearResistanceFactor( pMaterial->GetClosureJointConcreteType(closureKey) );
    }
    else
    {
@@ -589,10 +592,9 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    // stirrup properties
    GET_IFACE(IStirrupGeometry,pStirrups);
    Float64 Es, fy, fu;
-
-   if ( pPoi->IsInClosureJoint(poi) )
+   if ( bIsInClosureJoint )
    {
-      pMaterial->GetClosureJointTransverseRebarProperties(segmentKey,&Es,&fy,&fu);
+      pMaterial->GetClosureJointTransverseRebarProperties(closureKey,&Es,&fy,&fu);
    }
    else
    {

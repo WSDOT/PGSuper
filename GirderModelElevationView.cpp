@@ -1591,7 +1591,7 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSuperDocBase* pDo
                Float64 Ybg = pSectProp->GetY(intervalIdx,prev_poi,pgsTypes::BottomGirder);
                Float64 Hg  = pSectProp->GetHg(intervalIdx,prev_poi);
                Float64 nEff;
-               Float64 ecc = pStrandGeometry->GetEccentricity(intervalIdx, prev_poi, false, &nEff);
+               Float64 ecc = pStrandGeometry->GetEccentricity(intervalIdx, prev_poi, pgsTypes::Permanent, &nEff);
                from_y = Ybg - (Hg+ecc);
 
 /*
@@ -1612,7 +1612,7 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSuperDocBase* pDo
                
                   Ybg = pSectProp->GetY(intervalIdx,poi,pgsTypes::BottomGirder);
                   Hg  = pSectProp->GetHg(intervalIdx,poi);
-                  ecc = pStrandGeometry->GetEccentricity(intervalIdx, poi, false, &nEff);
+                  ecc = pStrandGeometry->GetEccentricity(intervalIdx, poi, pgsTypes::Permanent, &nEff);
                   to_y = Ybg - (Hg+ecc);
 
                   Float64 X = pPoi->ConvertPoiToGirderPathCoordinate(prev_poi);

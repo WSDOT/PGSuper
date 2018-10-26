@@ -51,6 +51,8 @@ BEGIN_MESSAGE_MAP(CGirderPropertiesGraphController, CIntervalGirderGraphControll
    ON_CBN_SELCHANGE( IDC_PROPERTY, OnPropertyChanged )
    ON_BN_CLICKED(IDC_TRANSFORMED, OnSectionPropertiesChanged)
    ON_BN_CLICKED(IDC_GROSS, OnSectionPropertiesChanged)
+   ON_BN_CLICKED(IDC_NET_GIRDER, OnSectionPropertiesChanged)
+   ON_BN_CLICKED(IDC_NET_DECK, OnSectionPropertiesChanged)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -67,7 +69,7 @@ BOOL CGirderPropertiesGraphController::OnInitDialog()
    GET_IFACE(ISectionProperties,pSectProp);
    m_SectionPropertyType = (pgsTypes::SectionPropertyType)(pSectProp->GetSectionPropertiesMode());
 
-   CheckRadioButton(IDC_TRANSFORMED,IDC_GROSS,(m_SectionPropertyType == pgsTypes::sptTransformed ? IDC_TRANSFORMED : IDC_GROSS));
+   CheckRadioButton(IDC_TRANSFORMED,IDC_NET_DECK,m_SectionPropertyType + IDC_TRANSFORMED);
 
    UpdateSectionPropertyTypeControls();
 
@@ -106,8 +108,17 @@ void CGirderPropertiesGraphController::OnPropertyChanged()
 
 void CGirderPropertiesGraphController::OnSectionPropertiesChanged()
 {
-   int i = GetCheckedRadioButton(IDC_TRANSFORMED,IDC_GROSS);
-   pgsTypes::SectionPropertyType spType = (i == IDC_TRANSFORMED ? pgsTypes::sptTransformed : pgsTypes::sptGross);
+   int i = GetCheckedRadioButton(IDC_TRANSFORMED,IDC_NET_DECK);
+   pgsTypes::SectionPropertyType spType;
+   if ( i == IDC_TRANSFORMED )
+      spType = pgsTypes::sptTransformed;
+   else if ( i == IDC_GROSS )
+      spType = pgsTypes::sptGross;
+   else if ( i == IDC_NET_GIRDER )
+      spType = pgsTypes::sptNetGirder;
+   else if ( i == IDC_NET_DECK )
+      spType = pgsTypes::sptNetDeck;
+
    if ( spType != m_SectionPropertyType )
    {
       m_SectionPropertyType = spType;
@@ -157,6 +168,8 @@ void CGirderPropertiesGraphController::UpdateSectionPropertyTypeControls()
 
    GetDlgItem(IDC_TRANSFORMED)->EnableWindow(bEnable);
    GetDlgItem(IDC_GROSS)->EnableWindow(bEnable);
+   GetDlgItem(IDC_NET_GIRDER)->EnableWindow(bEnable);
+   GetDlgItem(IDC_NET_DECK)->EnableWindow(bEnable);
 }
 
 #ifdef _DEBUG

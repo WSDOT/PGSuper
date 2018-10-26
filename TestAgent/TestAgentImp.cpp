@@ -2095,13 +2095,13 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
    GET_IFACE(ISectionProperties, pSectProp );
    Float64 ybg = pSectProp->GetY(releaseIntervalIdx,pois,pgsTypes::BottomGirder);
    Float64 nEff;
-   Float64 sse = pStrandGeometry->GetSsEccentricity(releaseIntervalIdx,pois, &nEff);
+   Float64 sse = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pois, pgsTypes::Straight, &nEff);
    if (0 < ns)
    {
       resultsFile<<bridgeId<<", "<<pid<<", 123016, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(ybg-sse, unitMeasure::Millimeter)) <<   ", 101, "<<gdrIdx<<std::endl;
    }
 
-   Float64 hse = pStrandGeometry->GetHsEccentricity(releaseIntervalIdx,pmid[0], &nEff);
+   Float64 hse = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pmid[0],pgsTypes::Harped,&nEff);
    if (0 < nh)
    {
       resultsFile<<bridgeId<<", "<<pid<<", 123017, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(ybg-hse, unitMeasure::Millimeter)) <<   ", 101, "<<gdrIdx<<std::endl;
@@ -2115,13 +2115,13 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
       GDRCONFIG config = pBridge->GetSegmentConfiguration(segmentKey);
       config.PrestressConfig.SetStrandFill(pgsTypes::Harped, fillvec);
 
-      Float64 eh2 = pStrandGeometry->GetHsEccentricity( releaseIntervalIdx,pmid[0], config, &nEff );
+      Float64 eh2 = pStrandGeometry->GetEccentricity( releaseIntervalIdx,pmid[0], config, pgsTypes::Harped, &nEff );
       Float64 Fb  = pSectProp->GetY(releaseIntervalIdx,pois,pgsTypes::BottomGirder) - eh2;
       resultsFile<<bridgeId<<", "<<pid<<", 123018, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(Fb, unitMeasure::Millimeter)) <<   ", 101, "<<gdrIdx<<std::endl;
    }
 
    Float64 ytg = pSectProp->GetY(releaseIntervalIdx,pois,pgsTypes::TopGirder);
-   Float64 hss = pStrandGeometry->GetHsEccentricity(releaseIntervalIdx,pois, &nEff);
+   Float64 hss = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pois,pgsTypes::Harped,&nEff);
    if (0 < nh)
    {
       resultsFile<<bridgeId<<", "<<pid<<", 123019, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(ytg+hss, unitMeasure::Millimeter)) <<   ", 101, "<<gdrIdx<<std::endl;

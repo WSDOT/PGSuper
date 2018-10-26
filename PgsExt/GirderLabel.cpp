@@ -201,8 +201,9 @@ CString ConcreteDescription(const CConcreteMaterial& concrete)
          {
             GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-            strLabel.Format(_T("%s, ACI 209R-92, a = %s, Beta = %4.2f"),
+            strLabel.Format(_T("%s, ACI 209R-92, %s cured, a = %s, Beta = %4.2f"),
                matConcrete::GetTypeName((matConcrete::Type)concrete.Type,true).c_str(),
+               concrete.CureMethod == pgsTypes::Steam ? _T("Steam") : _T("Moist"),
                ::FormatDimension(concrete.A,pDisplayUnits->GetFractionalDaysUnit()),
                concrete.B);
          }

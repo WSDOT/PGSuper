@@ -40,8 +40,9 @@
 #include <Graphing\ConcretePropertyGraphBuilder.h>
 #include <Graphing\DeflectionHistoryGraphBuilder.h>
 
-#if defined _BETA_VERSION
+#if defined _DEBUG || defined _BETA_VERSION
 #include <Graphing\VirtualWorkGraphBuilder.h>
+#include <Graphing\InitialStrainGraphBuilder.h>
 #endif
 
 #ifdef _DEBUG
@@ -64,6 +65,7 @@ void CGrapherBase::InitCommonGraphBuilders()
 
 #if defined _DEBUG || defined _BETA_VERSION
    pGraphMgr->AddGraphBuilder(new CVirtualWorkGraphBuilder);
+   pGraphMgr->AddGraphBuilder(new CInitialStrainGraphBuilder);
 #endif
 }
 

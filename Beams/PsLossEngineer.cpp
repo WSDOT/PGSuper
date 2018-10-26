@@ -2552,6 +2552,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    GET_IFACE( ILibrary,                pLibrary);
    GET_IFACE( ILoadFactors,            pILoadFactors );
    GET_IFACE( IIntervals,              pIntervals );
+   GET_IFACE( IGirder,                 pGirder);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
@@ -2639,13 +2640,13 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
 
    
    // eccentricity of the permanent strands at release
-   *pepermRelease = pStrandGeom->GetEccentricity( releaseIntervalIdx,  poi, config, false, &nStrandsEffective);
+   *pepermRelease = pStrandGeom->GetEccentricity( releaseIntervalIdx,  poi, config, pgsTypes::Permanent, &nStrandsEffective);
 
    // eccentricity of permanent strands when the deck is cast
-   *pepermFinal   = pStrandGeom->GetEccentricity( castDeckIntervalIdx, poi, config, false, &nStrandsEffective);
+   *pepermFinal   = pStrandGeom->GetEccentricity( castDeckIntervalIdx, poi, config, pgsTypes::Permanent, &nStrandsEffective);
 
    // eccentricity of the temporary strands
-   *petemp = pStrandGeom->GetTempEccentricity( releaseIntervalIdx, poi, config, &nStrandsEffective);
+   *petemp = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, config, pgsTypes::Temporary, &nStrandsEffective);
 
    pgsTypes::SectionPropertyType spType = (pgsTypes::SectionPropertyType)(pSectProp->GetSectionPropertiesMode());
    *pSectionProperties = (lrfdLosses::SectionPropertiesType)(spType);
@@ -2837,8 +2838,16 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    *ptf = pSpecEntry->GetTotalCreepDuration();
 
    *pAslab = pSectProp->GetTributaryDeckArea(poi);
-   *pPslab = pSectProp->GetTributaryFlangeWidth(poi);
-   // *NOTE* Only the top portion of the slab is exposed to drying
+
+   Float64 wTop = 0;
+   FlangeIndexType nFlanges = pGirder->GetNumberOfTopFlanges(segmentKey);
+   for ( FlangeIndexType flangeIdx = 0; flangeIdx < nFlanges; flangeIdx++ )
+   {
+      Float64 wtf = pGirder->GetTopFlangeWidth(poi,flangeIdx);
+      wTop += wtf;
+   }
+   *pPslab = 2*pSectProp->GetTributaryFlangeWidth(poi) - wTop;
+
 
    // Update the data members of the loss calculation object.  It will take care of the rest
    switch (config.PrestressConfig.TempStrandUsage)

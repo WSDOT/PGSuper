@@ -607,7 +607,7 @@ RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,
 
 template <class M,class T>
 RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker* pBroker,const CGirderKey& girderKey,LPCTSTR strLabel,bool bPierTable, bool bRating,IntervalIndexType intervalIdx,
-                                               IntervalIndexType continuityIntervalIdx,pgsTypes::AnalysisType analysisType,
+                                               pgsTypes::AnalysisType analysisType,
                                                IEAFDisplayUnits* pDisplayUnits,const T& unitT)
 {
    ASSERT_GIRDER_KEY(girderKey);
@@ -653,7 +653,7 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker*
 
    pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,strLabel);
 
-   if ( analysisType == pgsTypes::Envelope /*&& continuityIntervalIdx == castDeckIntervalIdx*/ )
+   if ( analysisType == pgsTypes::Envelope )
    {
       nRows = 2;
 
@@ -792,7 +792,7 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker*
 
 template <class M,class T>
 RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,bool bPierTable,bool bDesign,bool bPermit,
-                                                   bool bPedLoading,bool bRating,bool is4Stress, bool includeImpact, IntervalIndexType intervalIdx,
+                                                   bool bPedLoading,bool bRating,bool is4Stress, bool includeImpact,
                                                    pgsTypes::AnalysisType analysisType,IRatingSpecification* pRatingSpec,
                                                    IEAFDisplayUnits* pDisplayUnits,const T& unitT)
 {

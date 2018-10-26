@@ -253,7 +253,8 @@ bool pgsSegmentArtifact::WasWithRebarAllowableStressUsed(IntervalIndexType inter
    {
       pgsFlexuralStressArtifact& artifact(*iter);
       const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
-      bool bIsClosure = pPoi->IsInClosureJoint(poi);
+      CClosureKey closureKey;
+      bool bIsClosure = pPoi->IsInClosureJoint(poi,&closureKey);
       if ( (attribute == POI_CLOSURE &&  bIsClosure) || // test if attribute is POI_CLOSURE and artifact is for a closure -OR-
            (attribute == 0           && !bIsClosure)    // test if attribute is 0 and artifact is not for a closure
           )
@@ -281,7 +282,8 @@ bool pgsSegmentArtifact::WasSegmentWithRebarAllowableStressUsed(IntervalIndexTyp
    {
       pgsFlexuralStressArtifact& artifact(*iter);
       const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
-      bool bIsClosure = pPoi->IsInClosureJoint(poi);
+      CClosureKey closureKey;
+      bool bIsClosure = pPoi->IsInClosureJoint(poi,&closureKey);
       if ( !bIsClosure )
       {
          if ( artifact.WasWithRebarAllowableStressUsed(pgsTypes::TopGirder) ||
@@ -308,7 +310,8 @@ bool pgsSegmentArtifact::WasClosureJointWithRebarAllowableStressUsed(IntervalInd
    {
       pgsFlexuralStressArtifact& artifact(*iter);
       const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
-      bool bIsClosure = pPoi->IsInClosureJoint(poi);
+      CClosureKey closureKey;
+      bool bIsClosure = pPoi->IsInClosureJoint(poi,&closureKey);
       if ( bIsClosure )
       {
          if ( (artifact.IsInPrecompressedTensileZone(pgsTypes::TopGirder) == bIsInPTZ && // PTZ status of top matches bIsInPTZ
@@ -461,7 +464,8 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(IntervalIndexType
          {
             const pgsFlexuralStressArtifact& artifact(*artifactIter);
             const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
-            if ( pPoi->IsInClosureJoint(poi) )
+            CClosureKey closureKey;
+            if ( pPoi->IsInClosureJoint(poi,&closureKey) )
             {
                continue;
             }
@@ -514,7 +518,8 @@ Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength(IntervalInde
          {
             const pgsFlexuralStressArtifact& artifact(*artifactIter);
             const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
-            if ( !pPoi->IsInClosureJoint(poi) )
+            CClosureKey closureKey;
+            if ( !pPoi->IsInClosureJoint(poi,&closureKey) )
             {
                continue;
             }
@@ -616,7 +621,8 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength() const
       {
          const pgsFlexuralStressArtifact& artifact(*artifactIter);
          const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
-         if ( pPoi->IsInClosureJoint(poi) )
+         CClosureKey closureKey;
+         if ( pPoi->IsInClosureJoint(poi,&closureKey) )
          {
             continue;
          }
@@ -689,7 +695,8 @@ Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength() const
       {
          const pgsFlexuralStressArtifact& artifact(*artifactIter);
          const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
-         if ( pPoi->IsInClosureJoint(poi) )
+         CClosureKey closureKey;
+         if ( pPoi->IsInClosureJoint(poi,&closureKey) )
          {
             for ( int i = 0; i < 2; i++ )
             {

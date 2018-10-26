@@ -96,7 +96,7 @@ BOOL CACIConcretePage::OnInitDialog()
 void CACIConcretePage::OnUserParameters()
 {
    BOOL bEnable = IsDlgButtonChecked(IDC_USER);
-   GetDlgItem(IDC_CURE_METHOD)->EnableWindow(bEnable);
+   //GetDlgItem(IDC_CURE_METHOD)->EnableWindow(bEnable); // want this to always be enabled
    GetDlgItem(IDC_CEMENT_TYPE)->EnableWindow(bEnable);
 
    GetDlgItem(IDC_ALPHA_LABEL)->EnableWindow(!bEnable);
@@ -115,14 +115,18 @@ void CACIConcretePage::OnCureMethod()
 {
    BOOL bUseACI = IsDlgButtonChecked(IDC_USER);
    if ( bUseACI )
+   {
       UpdateParameters();
+   }
 }
 
 void CACIConcretePage::OnCementType()
 {
    BOOL bUseACI = IsDlgButtonChecked(IDC_USER);
    if ( bUseACI )
+   {
       UpdateParameters();
+   }
 }
 
 void CACIConcretePage::UpdateParameters()

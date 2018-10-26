@@ -19,27 +19,45 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
+
 #pragma once
 
-#include <IFace\AnalysisResults.h>
+#include <Graphing\InitialStrainGraphBuilder.h>
+#include <Graphing\GirderGraphControllerBase.h>
 
-// Mapping between ProductForceType contants and consistent human-readable name
-class CProductLoadMap
+class CInitialStrainGraphController : public CIntervalGirderGraphControllerBase
 {
 public:
-   CProductLoadMap();
-   ProductForceType GetProductForceType(CComBSTR bstrLoadGroupName);
-   CComBSTR GetGroupLoadName(ProductForceType pfType);
-   LoadCaseIDType GetLoadCaseID(ProductForceType pfType);
-   LoadCaseIDType GetMaxLoadCaseID();
+   CInitialStrainGraphController();
+   DECLARE_DYNCREATE(CInitialStrainGraphController);
 
-   static std::vector<ProductForceType> GetProductForces(IBroker* pBroker,LoadingCombinationType combo);
+   virtual IndexType GetGraphCount();
 
-private:
-   void AddLoadItem(ProductForceType pfType,CComBSTR bstrLoadGroupName,LoadCaseIDType lcid);
+   bool Creep();
+   bool Shrinkage();
+   bool Relaxation();
 
-   std::map<ProductForceType,CComBSTR> m_ProductForceTypeToLoadName;
-   std::map<CComBSTR,ProductForceType> m_LoadNameToProductForceType;
-   std::map<ProductForceType,LoadCaseIDType> m_ProductForceTypeToLoadCaseID;
-   LoadCaseIDType m_LoadCaseID;
+   CInitialStrainGraphBuilder::GraphType GetGraphType();
+
+   // called by the framework when the view's OnUpdate method is called
+   virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+
+protected:
+   virtual BOOL OnInitDialog();
+
+   void FillGraphType();
+ 
+
+	//{{AFX_MSG(CInitialStrainGraphController)
+   afx_msg void OnGraphTypeChanged();
+   afx_msg void OnEffectTypeChanged(UINT nIDC);
+   //}}AFX_MSG
+
+	DECLARE_MESSAGE_MAP()
+
+#ifdef _DEBUG
+public:
+   void AssertValid() const;
+   void Dump(CDumpContext& dc) const;
+#endif //_DEBUG
 };

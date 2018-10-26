@@ -308,7 +308,8 @@ Float64 CSpecAgentImp::GetAllowableCompressionStress(const pgsPointOfInterest& p
    if ( IsGirderStressLocation(stressLocation) )
    {
       GET_IFACE(IPointOfInterest,pPoi);
-      if ( pPoi->IsInClosureJoint(poi) )
+      CClosureKey closureKey;
+      if ( pPoi->IsInClosureJoint(poi,&closureKey) )
       {
          return GetClosureJointAllowableCompressionStress(poi,intervalIdx,ls);
       }
@@ -329,7 +330,8 @@ Float64 CSpecAgentImp::GetAllowableTensionStress(const pgsPointOfInterest& poi,p
    if ( IsGirderStressLocation(stressLocation) )
    {
       GET_IFACE(IPointOfInterest,pPoi);
-      if ( pPoi->IsInClosureJoint(poi) )
+      CClosureKey closureKey;
+      if ( pPoi->IsInClosureJoint(poi,&closureKey) )
       {
          return GetClosureJointAllowableTensionStress(poi,intervalIdx,ls,bWithBondedReinforcement,bInPrecompressedTensileZone);
       }
@@ -357,9 +359,10 @@ Float64 CSpecAgentImp::GetAllowableTensionStress(pgsTypes::LoadRatingType rating
    if ( IsGirderStressLocation(stressLocation) )
    {
       GET_IFACE(IPointOfInterest,pPoi);
-      if ( pPoi->IsInClosureJoint(poi) )
+      CClosureKey closureKey;
+      if ( pPoi->IsInClosureJoint(poi,&closureKey) )
       {
-         fc = pMaterials->GetClosureJointFc(segmentKey,ratingIntervalIdx);
+         fc = pMaterials->GetClosureJointFc(closureKey,ratingIntervalIdx);
       }
       else
       {
@@ -384,7 +387,8 @@ Float64 CSpecAgentImp::GetAllowableCompressionStressCoefficient(const pgsPointOf
    if ( IsGirderStressLocation(stressLocation) )
    {
       GET_IFACE(IPointOfInterest,pPoi);
-      if ( pPoi->IsInClosureJoint(poi) )
+      CClosureKey closureKey;
+      if ( pPoi->IsInClosureJoint(poi,&closureKey) )
       {
          return GetClosureJointAllowableCompressionStressCoefficient(poi,intervalIdx,ls);
       }
@@ -405,7 +409,8 @@ void CSpecAgentImp::GetAllowableTensionStressCoefficient(const pgsPointOfInteres
    if ( IsGirderStressLocation(stressLocation) )
    {
       GET_IFACE(IPointOfInterest,pPoi);
-      if ( pPoi->IsInClosureJoint(poi) )
+      CClosureKey closureKey;
+      if ( pPoi->IsInClosureJoint(poi,&closureKey) )
       {
          GetClosureJointAllowableTensionStressCoefficient(poi,intervalIdx,ls,bWithBondedReinforcement,bInPrecompressedTensileZone,pCoeff,pbMax,pMaxValue);
       }
@@ -553,7 +558,8 @@ std::vector<Float64> CSpecAgentImp::GetGirderAllowableCompressionStress(const st
    for ( ; iter != end; iter++ )
    {
       const pgsPointOfInterest& poi = *iter;
-      if ( pPoi->IsInClosureJoint(poi) )
+      CClosureKey closureKey;
+      if ( pPoi->IsInClosureJoint(poi,&closureKey) )
       {
          vStress.push_back( GetClosureJointAllowableCompressionStress(poi,intervalIdx,ls));
       }
@@ -594,7 +600,8 @@ std::vector<Float64> CSpecAgentImp::GetGirderAllowableTensionStress(const std::v
    for ( ; iter != end; iter++ )
    {
       const pgsPointOfInterest& poi = *iter;
-      if ( pPoi->IsInClosureJoint(poi) )
+      CClosureKey closureKey;
+      if ( pPoi->IsInClosureJoint(poi,&closureKey) )
       {
          vStress.push_back( GetClosureJointAllowableTensionStress(poi,intervalIdx,ls,bWithBondededReinforcement,bInPrecompressedTensileZone));
       }

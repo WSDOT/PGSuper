@@ -395,6 +395,9 @@ void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    {
       ATLASSERT(false); // is there a new curing method
    }
+   
+   *pPara << _T("1 day of steam or radiant heat curing is equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing") << rptNewLine;
+   *pPara << rptNewLine;
 
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
 
@@ -958,10 +961,6 @@ void write_creep(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDispl
 
    Float64 Cfactor = pSpecEntry->GetCamberVariability();
    *pPara << _T("Variability between upper and lower bound camber : ") << 100*Cfactor << rptNewLine;
-
-   *pPara << rptNewLine << rptNewLine;
-
-   *pPara << _T("1 day of steam or radiant heat curing is equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing") << rptNewLine;
 }
 
 void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry)

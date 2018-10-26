@@ -392,7 +392,7 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
       case StrandEccentricity:
          {
          GET_IFACE(IStrandGeometry,pStrandGeom);
-         value1 = pStrandGeom->GetEccentricity(sectPropType,intervalIdx,poi,true,&nEffectiveStrands);
+         value1 = pStrandGeom->GetEccentricity(sectPropType,intervalIdx,poi,true/*include temp strands*/,&nEffectiveStrands);
          break;
          }
 
@@ -418,9 +418,10 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
          {
          GET_IFACE(IMaterials,pMaterials);
          GET_IFACE(IPointOfInterest,pPoi);
-         if ( pPoi->IsInClosureJoint(poi) )
+         CClosureKey closureKey;
+         if ( pPoi->IsInClosureJoint(poi,&closureKey) )
          {
-            value1 = pMaterials->GetClosureJointFc(poi.GetSegmentKey(),intervalIdx);
+            value1 = pMaterials->GetClosureJointFc(closureKey,intervalIdx);
          }
          else
          {
@@ -438,9 +439,10 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
          {
          GET_IFACE(IMaterials,pMaterials);
          GET_IFACE(IPointOfInterest,pPoi);
-         if ( pPoi->IsInClosureJoint(poi) )
+         CClosureKey closureKey;
+         if ( pPoi->IsInClosureJoint(poi,&closureKey) )
          {
-            value1 = pMaterials->GetClosureJointEc(poi.GetSegmentKey(),intervalIdx);
+            value1 = pMaterials->GetClosureJointEc(closureKey,intervalIdx);
          }
          else
          {
@@ -458,9 +460,10 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
          {
          GET_IFACE(IMaterials,pMaterials);
          GET_IFACE(IPointOfInterest,pPoi);
-         if ( pPoi->IsInClosureJoint(poi) )
+         CClosureKey closureKey;
+         if ( pPoi->IsInClosureJoint(poi,&closureKey) )
          {
-            value1 = pMaterials->GetClosureJointAgeAdjustedEc(poi.GetSegmentKey(),intervalIdx);
+            value1 = pMaterials->GetClosureJointAgeAdjustedEc(closureKey,intervalIdx);
          }
          else
          {

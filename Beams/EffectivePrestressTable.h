@@ -60,4 +60,5 @@ private:
 
    pgsTypes::LossMethod m_LossMethod;
    bool m_bUseGrossProperties;
+   Float64 m_gLL;
 };

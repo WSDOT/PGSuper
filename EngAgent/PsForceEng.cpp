@@ -660,8 +660,7 @@ Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,Stra
    // adjust for prestress force in the development
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-
-   Float64 poi_loc = poi.GetDistFromStart();
+   Float64 Xpoi = poi.GetDistFromStart();
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
    Float64 bond_start, bond_end;
@@ -673,12 +672,12 @@ Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,Stra
    if ( bDebonded )
    {
       // measure bonded length
-      left_bonded_length = poi_loc - bond_start;
-      right_bonded_length = bond_end - poi_loc;
+      left_bonded_length = Xpoi - bond_start;
+      right_bonded_length = bond_end - Xpoi;
    }
    else if ( bExtendedStrand )
    {
-      // strand is extended into end diaphragm... the development lenght adjustment is 1.0
+      // strand is extended into end diaphragm... the development length adjustment is 1.0
       return 1.0;
    }
    else
@@ -687,8 +686,8 @@ Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,Stra
       GET_IFACE(IBridge,pBridge);
       Float64 gdr_length  = pBridge->GetSegmentLength(segmentKey);
 
-      left_bonded_length  = poi_loc;
-      right_bonded_length = gdr_length - poi_loc;
+      left_bonded_length  = Xpoi;
+      right_bonded_length = gdr_length - Xpoi;
    }
 
    Float64 lpx = Min(left_bonded_length, right_bonded_length);

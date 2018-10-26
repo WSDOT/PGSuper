@@ -170,7 +170,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
          ColumnIndexType col = 0;
 
          (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
-         Float64 smax = pArtifact->GetSmax();
+         Float64 smax = pArtifact->GetSpacing();
          if (0.0 < smax)
          {
             (*table)(row,col++) << dim.SetValue( smax );

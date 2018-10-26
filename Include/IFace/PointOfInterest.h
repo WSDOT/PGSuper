@@ -105,8 +105,9 @@ interface IPointOfInterest : public IUnknown
 
    // Returns true if the poi is in the closure joint. This includes points with the POI_CLOSURE attribute and
    // points that simply fall between the end face of segments. Returns false if the poi is not within
-   // the closure joint or exactly on the end faces of the segment.
-   virtual bool IsInClosureJoint(const pgsPointOfInterest& poi) = 0;
+   // the closure joint or exactly on the end faces of the segment. pClosureKey will return the closure key
+   // for the closure joint that the poi falls in.
+   virtual bool IsInClosureJoint(const pgsPointOfInterest& poi,CClosureKey* pClosureKey) = 0;
 
    // returns true if the poi is on/off the segment. This determination is made based soley on
    // the location of the poi and the length of the segment

@@ -101,7 +101,9 @@ void CCEBFIPConcretePage::OnCbnSelchangeCementType()
 {
    BOOL bUseCEBFIP = IsDlgButtonChecked(IDC_USER);
    if ( bUseCEBFIP )
+   {
       UpdateParameters();
+   }
 }
 
 void CCEBFIPConcretePage::OnBnClickedUser()

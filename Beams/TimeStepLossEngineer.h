@@ -95,6 +95,8 @@ public:
 private:
    pgsTypes::BridgeAnalysisType m_Bat;
 
+   std::_tstring m_strLoadingName[3]; // contains the loading names for the artifical restraint loads
+
    StatusCallbackIDType m_scidProjectCriteria;
 
    // This are interfaces that are used over and over and over

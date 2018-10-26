@@ -71,6 +71,7 @@ protected:
    void EnableShippingLosses(BOOL bEnable);
    void EnableRefinedShippingTime(BOOL bEnable);
    void EnableApproximateShippingTime(BOOL bEnable);
+   void EnableRelaxation(BOOL bEnable);
    void EnableElasticGains(BOOL bEnable);
    void EnableTimeDependentModel(BOOL bEnable);
    void EnableTxDOT2013(BOOL bEnable);

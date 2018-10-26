@@ -86,11 +86,12 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    bool bDeckPanels = (pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP ? true : false);
+   bool bHasOverlay    = pBridge->HasOverlay();
    bool bFutureOverlay = pBridge->IsFutureOverlay();
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
+   GroupIndexType startGroup = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType endGroup   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroup);
 
    GET_IFACE2(pBroker,IProductForces,pForces);
    GET_IFACE2(pBroker,IProductForces2,pForces2);
@@ -99,6 +100,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
    pgsTypes::BridgeAnalysisType minBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(girderKey);
 
    GET_IFACE2(pBroker,IProductLoads,pLoads);
    bool bPedLoading = pLoads->HasPedestrianLoad(girderKey);
@@ -125,8 +127,8 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
    EventIndexType continuityEventIdx = MAX_INDEX;
-   PierIndexType firstPierIdx = pBridge->GetGirderGroupStartPier(firstGroupIdx);
-   PierIndexType lastPierIdx  = pBridge->GetGirderGroupEndPier(lastGroupIdx);
+   PierIndexType firstPierIdx = pBridge->GetGirderGroupStartPier(startGroup);
+   PierIndexType lastPierIdx  = pBridge->GetGirderGroupEndPier(endGroup);
    for (PierIndexType pierIdx = firstPierIdx; pierIdx <= lastPierIdx; pierIdx++ )
    {
       if ( pBridge->IsBoundaryPier(pierIdx) )
@@ -138,126 +140,10 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
       }
    }
 
-   IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetLastSegmentErectionInterval(girderKey);
    IntervalIndexType continuityIntervalIdx    = pIntervals->GetInterval(girderKey,continuityEventIdx);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(girderKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(girderKey);
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(girderKey);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(girderKey);
-   IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval(girderKey);
 
-   ColumnIndexType nCols = 7;
-
-   if ( bDeckPanels )
-   {
-      if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx)
-      {
-         nCols += 2;
-      }
-      else
-      {
-         nCols++;
-      }
-   }
-
-   if ( bConstruction )
-   {
-      if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx)
-      {
-         nCols += 2;
-      }
-      else
-      {
-         nCols++;
-      }
-   }
-
-   if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx)
-   {
-      nCols += 2; // add one more each for min/max slab and slab pad
-   }
-
-   if ( analysisType == pgsTypes::Envelope )
-   {
-      nCols += 2; // add one more each for min/max overlay and min/max traffic barrier
-   }
-
-   if ( bDesign )
-   {
-      if ( bPedLoading )
-      {
-         nCols += 2;
-      }
-
-      nCols += 2;
-
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-      {
-         nCols += 2; // fatigue
-      }
-
-      if ( bPermit )
-      {
-         nCols += 2;
-      }
-   }
-
-   if ( bSlabShrinkage )
-   {
-      nCols++; // slab shrikage
-   }
-
-   if ( bSidewalk )
-   {
-      if (analysisType == pgsTypes::Envelope )
-      {
-         nCols += 2;
-      }
-      else
-      {
-         nCols++;
-      }
-   }
-
-   if ( bShearKey )
-   {
-      if (analysisType == pgsTypes::Envelope )
-      {
-         nCols += 2;
-      }
-      else
-      {
-         nCols++;
-      }
-   }
-
-   if ( bRating )
-   {
-      if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
-      {
-         nCols += 2;
-      }
-
-      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-      {
-         nCols += 2;
-      }
-
-      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-      {
-         nCols += 2;
-      }
-
-      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-      {
-         nCols += 2;
-      }
-
-      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-      {
-         nCols += 2;
-      }
-   }
+   bool bContinuousBeforeDeckCasting;
+   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
 
    std::_tstring strTitle(bGirderStresses ? _T("Girder Stresses") : _T("Deck Stresses"));
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,strTitle);
@@ -268,363 +154,341 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   RowIndexType row = ConfigureProductLoadTableHeading<rptStressUnitTag,unitmgtStressData>(pBroker,p_table,false,bSlabShrinkage,bConstruction,bDeckPanels,bSidewalk,bShearKey,overlayIntervalIdx != INVALID_INDEX,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,continuityIntervalIdx,castDeckIntervalIdx,pRatingSpec,pDisplayUnits,pDisplayUnits->GetStressUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptStressUnitTag,unitmgtStressData>(pBroker,p_table,false,bSlabShrinkage,bConstruction,bDeckPanels,bSidewalk,bShearKey,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,pRatingSpec,pDisplayUnits,pDisplayUnits->GetStressUnit());
 
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
-   // Get all the tabular poi's for flexure and shear
-   // Merge the two vectors to form one vector to report on.
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_ERECTED_SEGMENT) );
-
-   std::vector<Float64> fTopGirder, fBotGirder;
-   std::vector<Float64> fTopDiaphragm, fBotDiaphragm;
-   std::vector<Float64> fTopMaxConstruction, fTopMinConstruction, fBotMaxConstruction, fBotMinConstruction;
-   std::vector<Float64> fTopMaxSlab, fTopMinSlab, fBotMaxSlab, fBotMinSlab;
-   std::vector<Float64> fTopMaxSlabPad, fTopMinSlabPad, fBotMaxSlabPad, fBotMinSlabPad;
-   std::vector<Float64> fTopMaxSlabPanel, fTopMinSlabPanel, fBotMaxSlabPanel, fBotMinSlabPanel;
-   std::vector<Float64> fTopMaxOverlay, fTopMinOverlay, fBotMaxOverlay, fBotMinOverlay;
-   std::vector<Float64> fTopMaxSidewalk, fTopMinSidewalk, fBotMaxSidewalk, fBotMinSidewalk;
-   std::vector<Float64> fTopMaxShearKey, fTopMinShearKey, fBotMaxShearKey, fBotMinShearKey;
-   std::vector<Float64> fTopMaxTrafficBarrier, fTopMinTrafficBarrier, fBotMaxTrafficBarrier, fBotMinTrafficBarrier;
-   std::vector<Float64> fTopMaxPedestrianLL, fBotMaxPedestrianLL;
-   std::vector<Float64> fTopMinPedestrianLL, fBotMinPedestrianLL;
-   std::vector<Float64> fTopMaxDesignLL, fBotMaxDesignLL;
-   std::vector<Float64> fTopMinDesignLL, fBotMinDesignLL;
-   std::vector<Float64> fTopMaxFatigueLL, fBotMaxFatigueLL;
-   std::vector<Float64> fTopMinFatigueLL, fBotMinFatigueLL;
-   std::vector<Float64> fTopMaxPermitLL, fBotMaxPermitLL;
-   std::vector<Float64> fTopMinPermitLL, fBotMinPermitLL;
-   std::vector<Float64> fTopMaxLegalRoutineLL, fBotMaxLegalRoutineLL;
-   std::vector<Float64> fTopMinLegalRoutineLL, fBotMinLegalRoutineLL;
-   std::vector<Float64> fTopMaxLegalSpecialLL, fBotMaxLegalSpecialLL;
-   std::vector<Float64> fTopMinLegalSpecialLL, fBotMinLegalSpecialLL;
-   std::vector<Float64> fTopMaxPermitRoutineLL, fBotMaxPermitRoutineLL;
-   std::vector<Float64> fTopMinPermitRoutineLL, fBotMinPermitRoutineLL;
-   std::vector<Float64> fTopMaxPermitSpecialLL, fBotMaxPermitSpecialLL;
-   std::vector<Float64> fTopMinPermitSpecialLL, fBotMinPermitSpecialLL;
-   std::vector<Float64> dummy1, dummy2;
-
-   pForces2->GetStress( erectSegmentIntervalIdx, pftGirder, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopGirder, &fBotGirder);
-   pForces2->GetStress( castDeckIntervalIdx, pftDiaphragm, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopDiaphragm, &fBotDiaphragm);
-
-   pForces2->GetStress( castDeckIntervalIdx, pftSlab, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxSlab, &fBotMaxSlab );
-   pForces2->GetStress( castDeckIntervalIdx, pftSlab, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinSlab, &fBotMinSlab );
-
-   pForces2->GetStress( castDeckIntervalIdx, pftSlabPad, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxSlabPad, &fBotMaxSlabPad );
-   pForces2->GetStress( castDeckIntervalIdx, pftSlabPad, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinSlabPad, &fBotMinSlabPad );
-
-   if ( bConstruction )
+   for ( GroupIndexType grpIdx = startGroup; grpIdx <= endGroup; grpIdx++ )
    {
-      pForces2->GetStress( castDeckIntervalIdx, pftConstruction, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxConstruction, &fBotMaxConstruction );
-      pForces2->GetStress( castDeckIntervalIdx, pftConstruction, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinConstruction, &fBotMinConstruction );
-   }
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
 
-   if ( bDeckPanels )
-   {
-      pForces2->GetStress( castDeckIntervalIdx, pftSlabPanel, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxSlabPanel, &fBotMaxSlabPanel );
-      pForces2->GetStress( castDeckIntervalIdx, pftSlabPanel, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinSlabPanel, &fBotMinSlabPanel );
-   }
+      CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
-   if ( bSidewalk )
-   {
-      pForces2->GetStress( railingSystemIntervalIdx, pftSidewalk, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxSidewalk, &fBotMaxSidewalk);
-      pForces2->GetStress( railingSystemIntervalIdx, pftSidewalk, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinSidewalk, &fBotMinSidewalk);
-   }
+      CSegmentKey allSegmentsKey(thisGirderKey,ALL_SEGMENTS);
+      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey,POI_ERECTED_SEGMENT) );
 
-   if ( bShearKey )
-   {
-      pForces2->GetStress( castDeckIntervalIdx, pftShearKey, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxShearKey, &fBotMaxShearKey);
-      pForces2->GetStress( castDeckIntervalIdx, pftShearKey, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinShearKey, &fBotMinShearKey);
-   }
+      IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetLastSegmentErectionInterval(thisGirderKey);
+      IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(thisGirderKey);
+      IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(thisGirderKey);
+      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(thisGirderKey);
+      IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval(thisGirderKey);
 
-   pForces2->GetStress( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxTrafficBarrier, &fBotMaxTrafficBarrier);
-   pForces2->GetStress( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinTrafficBarrier, &fBotMinTrafficBarrier);
 
-   if ( overlayIntervalIdx != INVALID_INDEX )
-   {
-      pForces2->GetStress( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxOverlay, &fBotMaxOverlay);
-      pForces2->GetStress( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinOverlay, &fBotMinOverlay);
-   }
+      std::vector<Float64> fTopGirder, fBotGirder;
+      std::vector<Float64> fTopDiaphragm, fBotDiaphragm;
+      std::vector<Float64> fTopMaxConstruction, fTopMinConstruction, fBotMaxConstruction, fBotMinConstruction;
+      std::vector<Float64> fTopMaxSlab, fTopMinSlab, fBotMaxSlab, fBotMinSlab;
+      std::vector<Float64> fTopMaxSlabPad, fTopMinSlabPad, fBotMaxSlabPad, fBotMinSlabPad;
+      std::vector<Float64> fTopMaxSlabPanel, fTopMinSlabPanel, fBotMaxSlabPanel, fBotMinSlabPanel;
+      std::vector<Float64> fTopMaxOverlay, fTopMinOverlay, fBotMaxOverlay, fBotMinOverlay;
+      std::vector<Float64> fTopMaxSidewalk, fTopMinSidewalk, fBotMaxSidewalk, fBotMinSidewalk;
+      std::vector<Float64> fTopMaxShearKey, fTopMinShearKey, fBotMaxShearKey, fBotMinShearKey;
+      std::vector<Float64> fTopMaxTrafficBarrier, fTopMinTrafficBarrier, fBotMaxTrafficBarrier, fBotMinTrafficBarrier;
+      std::vector<Float64> fTopMaxPedestrianLL, fBotMaxPedestrianLL;
+      std::vector<Float64> fTopMinPedestrianLL, fBotMinPedestrianLL;
+      std::vector<Float64> fTopMaxDesignLL, fBotMaxDesignLL;
+      std::vector<Float64> fTopMinDesignLL, fBotMinDesignLL;
+      std::vector<Float64> fTopMaxFatigueLL, fBotMaxFatigueLL;
+      std::vector<Float64> fTopMinFatigueLL, fBotMinFatigueLL;
+      std::vector<Float64> fTopMaxPermitLL, fBotMaxPermitLL;
+      std::vector<Float64> fTopMinPermitLL, fBotMinPermitLL;
+      std::vector<Float64> fTopMaxLegalRoutineLL, fBotMaxLegalRoutineLL;
+      std::vector<Float64> fTopMinLegalRoutineLL, fBotMinLegalRoutineLL;
+      std::vector<Float64> fTopMaxLegalSpecialLL, fBotMaxLegalSpecialLL;
+      std::vector<Float64> fTopMinLegalSpecialLL, fBotMinLegalSpecialLL;
+      std::vector<Float64> fTopMaxPermitRoutineLL, fBotMaxPermitRoutineLL;
+      std::vector<Float64> fTopMinPermitRoutineLL, fBotMinPermitRoutineLL;
+      std::vector<Float64> fTopMaxPermitSpecialLL, fBotMaxPermitSpecialLL;
+      std::vector<Float64> fTopMinPermitSpecialLL, fBotMinPermitSpecialLL;
+      std::vector<Float64> dummy1, dummy2;
 
-   if ( bPedLoading )
-   {
-      pForces2->GetLiveLoadStress(liveLoadIntervalIdx, pgsTypes::lltPedestrian, vPoi, maxBAT, true, true, topLocation, botLocation, &dummy1, &fTopMaxPedestrianLL, &dummy2, &fBotMaxPedestrianLL);
-      pForces2->GetLiveLoadStress(liveLoadIntervalIdx, pgsTypes::lltPedestrian, vPoi, minBAT, true, true, topLocation, botLocation, &fTopMinPedestrianLL, &dummy1, &fBotMinPedestrianLL, &dummy2);
-   }
+      pForces2->GetStress( erectSegmentIntervalIdx, pftGirder, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopGirder, &fBotGirder);
+      pForces2->GetStress( castDeckIntervalIdx, pftDiaphragm, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopDiaphragm, &fBotDiaphragm);
 
-   if ( bDesign )
-   {
-      pForces2->GetLiveLoadStress(liveLoadIntervalIdx, pgsTypes::lltDesign, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxDesignLL, &dummy2, &fBotMaxDesignLL);
-      pForces2->GetLiveLoadStress(liveLoadIntervalIdx, pgsTypes::lltDesign, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinDesignLL, &dummy1, &fBotMinDesignLL, &dummy2);
+      pForces2->GetStress( castDeckIntervalIdx, pftSlab, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxSlab, &fBotMaxSlab );
+      pForces2->GetStress( castDeckIntervalIdx, pftSlab, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinSlab, &fBotMinSlab );
 
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-      {
-         pForces2->GetLiveLoadStress(liveLoadIntervalIdx, pgsTypes::lltFatigue, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxFatigueLL, &dummy2, &fBotMaxFatigueLL);
-         pForces2->GetLiveLoadStress(liveLoadIntervalIdx, pgsTypes::lltFatigue, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinFatigueLL, &dummy1, &fBotMinFatigueLL, &dummy2);
-      }
-
-      if ( bPermit )
-      {
-         pForces2->GetLiveLoadStress(liveLoadIntervalIdx, pgsTypes::lltPermit, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxPermitLL, &dummy2, &fBotMaxPermitLL);
-         pForces2->GetLiveLoadStress(liveLoadIntervalIdx, pgsTypes::lltPermit, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinPermitLL, &dummy1, &fBotMinPermitLL, &dummy2);
-      }
-   }
-
-   if ( bRating )
-   {
-      if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
-      {
-         pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltDesign, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxDesignLL, &dummy2, &fBotMaxDesignLL);
-         pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltDesign, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinDesignLL, &dummy1, &fBotMinDesignLL, &dummy2);
-      }
-
-      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-      {
-         pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Routine, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxLegalRoutineLL, &dummy2, &fBotMaxLegalRoutineLL);
-         pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Routine, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinLegalRoutineLL, &dummy1, &fBotMinLegalRoutineLL, &dummy2);
-      }
-
-      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-      {
-         pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxLegalSpecialLL, &dummy2, &fBotMaxLegalSpecialLL);
-         pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinLegalSpecialLL, &dummy1, &fBotMinLegalSpecialLL, &dummy2);
-      }
-
-      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-      {
-         pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltPermitRating_Routine, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxPermitRoutineLL, &dummy2, &fBotMaxPermitRoutineLL);
-         pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltPermitRating_Routine, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinPermitRoutineLL, &dummy1, &fBotMinPermitRoutineLL, &dummy2);
-      }
-
-      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-      {
-         pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltPermitRating_Special, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxPermitSpecialLL, &dummy2, &fBotMaxPermitSpecialLL);
-         pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltPermitRating_Special, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinPermitSpecialLL, &dummy1, &fBotMinPermitSpecialLL, &dummy2);
-      }
-   }
-
-   // Fill up the table
-   IndexType index = 0;
-   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-   for ( ; i != end; i++, index++ )
-   {
-      const pgsPointOfInterest& poi = *i;
-   
-      ColumnIndexType col = 0;
-
-      (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
-
-      (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopGirder[index]) << rptNewLine;
-      (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotGirder[index]);
-      col++;
-
-      (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDiaphragm[index]) << rptNewLine;
-      (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDiaphragm[index]);
-      col++;
-
-      if ( bShearKey )
-      {
-         if ( analysisType == pgsTypes::Envelope )
-         {
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxShearKey[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxShearKey[index]);
-            col++;
-
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinShearKey[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinShearKey[index]);
-            col++;
-         }
-         else
-         {
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxShearKey[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxShearKey[index]);
-            col++;
-         }
-      }
+      pForces2->GetStress( castDeckIntervalIdx, pftSlabPad, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxSlabPad, &fBotMaxSlabPad );
+      pForces2->GetStress( castDeckIntervalIdx, pftSlabPad, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinSlabPad, &fBotMinSlabPad );
 
       if ( bConstruction )
       {
-         if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
-         {
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxConstruction[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxConstruction[index]);
-            col++;
-
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinConstruction[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinConstruction[index]);
-            col++;
-         }
-         else
-         {
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxConstruction[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxConstruction[index]);
-            col++;
-         }
-      }
-
-      if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
-      {
-         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSlab[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSlab[index]);
-         col++;
-
-         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinSlab[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinSlab[index]);
-         col++;
-
-         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSlabPad[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSlabPad[index]);
-         col++;
-
-         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinSlabPad[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinSlabPad[index]);
-         col++;
-      }
-      else
-      {
-         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSlab[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSlab[index]);
-         col++;
-
-         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSlabPad[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSlabPad[index]);
-         col++;
-      }
-
-      if ( bSlabShrinkage )
-      {
-         ATLASSERT(bGirderStresses); // slab shrinkage stresses only applicable to girder stresses
-         Float64 ft_ss, fb_ss;
-         pForces->GetDeckShrinkageStresses(poi,&ft_ss,&fb_ss);
-
-         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(ft_ss) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fb_ss);
-         col++;
+         pForces2->GetStress( castDeckIntervalIdx, pftConstruction, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxConstruction, &fBotMaxConstruction );
+         pForces2->GetStress( castDeckIntervalIdx, pftConstruction, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinConstruction, &fBotMinConstruction );
       }
 
       if ( bDeckPanels )
       {
-         if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
-         {
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSlabPanel[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSlabPanel[index]);
-            col++;
-
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinSlabPanel[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinSlabPanel[index]);
-            col++;
-         }
-         else
-         {
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSlabPanel[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSlabPanel[index]);
-            col++;
-         }
+         pForces2->GetStress( castDeckIntervalIdx, pftSlabPanel, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxSlabPanel, &fBotMaxSlabPanel );
+         pForces2->GetStress( castDeckIntervalIdx, pftSlabPanel, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinSlabPanel, &fBotMinSlabPanel );
       }
 
-      if ( analysisType == pgsTypes::Envelope )
+      if ( bSidewalk )
       {
-         if ( bSidewalk )
-         {
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSidewalk[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSidewalk[index]);
-            col++;
-
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinSidewalk[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinSidewalk[index]);
-            col++;
-         }
-
-         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxTrafficBarrier[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxTrafficBarrier[index]);
-         col++;
-
-         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinTrafficBarrier[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinTrafficBarrier[index]);
-         col++;
-
-         if ( overlayIntervalIdx != INVALID_INDEX )
-         {
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxOverlay[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxOverlay[index]);
-            col++;
-
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinOverlay[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinOverlay[index]);
-            col++;
-         }
+         pForces2->GetStress( railingSystemIntervalIdx, pftSidewalk, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxSidewalk, &fBotMaxSidewalk);
+         pForces2->GetStress( railingSystemIntervalIdx, pftSidewalk, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinSidewalk, &fBotMinSidewalk);
       }
-      else
+
+      if ( bShearKey )
       {
-         if ( bSidewalk )
-         {
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSidewalk[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSidewalk[index]);
-            col++;
-         }
+         pForces2->GetStress( castDeckIntervalIdx, pftShearKey, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxShearKey, &fBotMaxShearKey);
+         pForces2->GetStress( castDeckIntervalIdx, pftShearKey, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinShearKey, &fBotMinShearKey);
+      }
 
-         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxTrafficBarrier[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxTrafficBarrier[index]);
-         col++;
+      pForces2->GetStress( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxTrafficBarrier, &fBotMaxTrafficBarrier);
+      pForces2->GetStress( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinTrafficBarrier, &fBotMinTrafficBarrier);
 
-         if ( overlayIntervalIdx != INVALID_INDEX )
-         {
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxOverlay[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxOverlay[index]);
-            col++;
-         }
+      if ( bHasOverlay )
+      {
+         pForces2->GetStress( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxOverlay, &fBotMaxOverlay);
+         pForces2->GetStress( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinOverlay, &fBotMinOverlay);
       }
 
       if ( bPedLoading )
       {
-         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxPedestrianLL[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxPedestrianLL[index]);
-         col++;
-
-         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinPedestrianLL[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinPedestrianLL[index]);
-         col++;
+         pForces2->GetLiveLoadStress(liveLoadIntervalIdx, pgsTypes::lltPedestrian, vPoi, maxBAT, true, true, topLocation, botLocation, &dummy1, &fTopMaxPedestrianLL, &dummy2, &fBotMaxPedestrianLL);
+         pForces2->GetLiveLoadStress(liveLoadIntervalIdx, pgsTypes::lltPedestrian, vPoi, minBAT, true, true, topLocation, botLocation, &fTopMinPedestrianLL, &dummy1, &fBotMinPedestrianLL, &dummy2);
       }
 
       if ( bDesign )
       {
-         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxDesignLL[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxDesignLL[index]);
-         col++;
-
-         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinDesignLL[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinDesignLL[index]);
-         col++;
+         pForces2->GetLiveLoadStress(liveLoadIntervalIdx, pgsTypes::lltDesign, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxDesignLL, &dummy2, &fBotMaxDesignLL);
+         pForces2->GetLiveLoadStress(liveLoadIntervalIdx, pgsTypes::lltDesign, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinDesignLL, &dummy1, &fBotMinDesignLL, &dummy2);
 
          if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
          {
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxFatigueLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxFatigueLL[index]);
-            col++;
-
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinFatigueLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinFatigueLL[index]);
-            col++;
+            pForces2->GetLiveLoadStress(liveLoadIntervalIdx, pgsTypes::lltFatigue, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxFatigueLL, &dummy2, &fBotMaxFatigueLL);
+            pForces2->GetLiveLoadStress(liveLoadIntervalIdx, pgsTypes::lltFatigue, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinFatigueLL, &dummy1, &fBotMinFatigueLL, &dummy2);
          }
 
          if ( bPermit )
          {
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxPermitLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxPermitLL[index]);
-            col++;
-
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinPermitLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinPermitLL[index]);
-            col++;
+            pForces2->GetLiveLoadStress(liveLoadIntervalIdx, pgsTypes::lltPermit, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxPermitLL, &dummy2, &fBotMaxPermitLL);
+            pForces2->GetLiveLoadStress(liveLoadIntervalIdx, pgsTypes::lltPermit, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinPermitLL, &dummy1, &fBotMinPermitLL, &dummy2);
          }
       }
 
       if ( bRating )
       {
          if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+         {
+            pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltDesign, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxDesignLL, &dummy2, &fBotMaxDesignLL);
+            pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltDesign, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinDesignLL, &dummy1, &fBotMinDesignLL, &dummy2);
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+         {
+            pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Routine, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxLegalRoutineLL, &dummy2, &fBotMaxLegalRoutineLL);
+            pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Routine, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinLegalRoutineLL, &dummy1, &fBotMinLegalRoutineLL, &dummy2);
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+         {
+            pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxLegalSpecialLL, &dummy2, &fBotMaxLegalSpecialLL);
+            pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinLegalSpecialLL, &dummy1, &fBotMinLegalSpecialLL, &dummy2);
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+         {
+            pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltPermitRating_Routine, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxPermitRoutineLL, &dummy2, &fBotMaxPermitRoutineLL);
+            pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltPermitRating_Routine, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinPermitRoutineLL, &dummy1, &fBotMinPermitRoutineLL, &dummy2);
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+         {
+            pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltPermitRating_Special, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxPermitSpecialLL, &dummy2, &fBotMaxPermitSpecialLL);
+            pForces2->GetLiveLoadStress(loadRatingIntervalIdx, pgsTypes::lltPermitRating_Special, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinPermitSpecialLL, &dummy1, &fBotMinPermitSpecialLL, &dummy2);
+         }
+      }
+
+      // Fill up the table
+      IndexType index = 0;
+      std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+      for ( ; i != end; i++, index++ )
+      {
+         const pgsPointOfInterest& poi = *i;
+      
+         ColumnIndexType col = 0;
+
+         (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+
+         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopGirder[index]) << rptNewLine;
+         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotGirder[index]);
+         col++;
+
+         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDiaphragm[index]) << rptNewLine;
+         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDiaphragm[index]);
+         col++;
+
+         if ( bShearKey )
+         {
+            if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
+            {
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxShearKey[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxShearKey[index]);
+               col++;
+
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinShearKey[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinShearKey[index]);
+               col++;
+            }
+            else
+            {
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxShearKey[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxShearKey[index]);
+               col++;
+            }
+         }
+
+         if ( bConstruction )
+         {
+            if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
+            {
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxConstruction[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxConstruction[index]);
+               col++;
+
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinConstruction[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinConstruction[index]);
+               col++;
+            }
+            else
+            {
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxConstruction[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxConstruction[index]);
+               col++;
+            }
+         }
+
+         if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
+         {
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSlab[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSlab[index]);
+            col++;
+
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinSlab[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinSlab[index]);
+            col++;
+
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSlabPad[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSlabPad[index]);
+            col++;
+
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinSlabPad[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinSlabPad[index]);
+            col++;
+         }
+         else
+         {
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSlab[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSlab[index]);
+            col++;
+
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSlabPad[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSlabPad[index]);
+            col++;
+         }
+
+         if ( bSlabShrinkage )
+         {
+            ATLASSERT(bGirderStresses); // slab shrinkage stresses only applicable to girder stresses
+            Float64 ft_ss, fb_ss;
+            pForces->GetDeckShrinkageStresses(poi,&ft_ss,&fb_ss);
+
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(ft_ss) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fb_ss);
+            col++;
+         }
+
+         if ( bDeckPanels )
+         {
+            if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
+            {
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSlabPanel[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSlabPanel[index]);
+               col++;
+
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinSlabPanel[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinSlabPanel[index]);
+               col++;
+            }
+            else
+            {
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSlabPanel[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSlabPanel[index]);
+               col++;
+            }
+         }
+
+         if ( analysisType == pgsTypes::Envelope )
+         {
+            if ( bSidewalk )
+            {
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSidewalk[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSidewalk[index]);
+               col++;
+
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinSidewalk[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinSidewalk[index]);
+               col++;
+            }
+
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxTrafficBarrier[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxTrafficBarrier[index]);
+            col++;
+
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinTrafficBarrier[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinTrafficBarrier[index]);
+            col++;
+
+            if ( bHasOverlay )
+            {
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxOverlay[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxOverlay[index]);
+               col++;
+
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinOverlay[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinOverlay[index]);
+               col++;
+            }
+         }
+         else
+         {
+            if ( bSidewalk )
+            {
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSidewalk[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSidewalk[index]);
+               col++;
+            }
+
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxTrafficBarrier[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxTrafficBarrier[index]);
+            col++;
+
+            if ( bHasOverlay )
+            {
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxOverlay[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxOverlay[index]);
+               col++;
+            }
+         }
+
+         if ( bPedLoading )
+         {
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxPedestrianLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxPedestrianLL[index]);
+            col++;
+
+            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinPedestrianLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinPedestrianLL[index]);
+            col++;
+         }
+
+         if ( bDesign )
          {
             (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxDesignLL[index]) << rptNewLine;
             (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxDesignLL[index]);
@@ -633,55 +497,91 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
             (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinDesignLL[index]) << rptNewLine;
             (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinDesignLL[index]);
             col++;
+
+            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            {
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxFatigueLL[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxFatigueLL[index]);
+               col++;
+
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinFatigueLL[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinFatigueLL[index]);
+               col++;
+            }
+
+            if ( bPermit )
+            {
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxPermitLL[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxPermitLL[index]);
+               col++;
+
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinPermitLL[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinPermitLL[index]);
+               col++;
+            }
          }
 
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+         if ( bRating )
          {
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxLegalRoutineLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxLegalRoutineLL[index]);
-            col++;
+            if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+            {
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxDesignLL[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxDesignLL[index]);
+               col++;
 
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinLegalRoutineLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinLegalRoutineLL[index]);
-            col++;
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinDesignLL[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinDesignLL[index]);
+               col++;
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxLegalRoutineLL[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxLegalRoutineLL[index]);
+               col++;
+
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinLegalRoutineLL[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinLegalRoutineLL[index]);
+               col++;
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxLegalSpecialLL[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxLegalSpecialLL[index]);
+               col++;
+
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinLegalSpecialLL[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinLegalSpecialLL[index]);
+               col++;
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            {
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxPermitRoutineLL[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxPermitRoutineLL[index]);
+               col++;
+
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinPermitRoutineLL[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinPermitRoutineLL[index]);
+               col++;
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            {
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxPermitSpecialLL[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxPermitSpecialLL[index]);
+               col++;
+
+               (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinPermitSpecialLL[index]) << rptNewLine;
+               (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinPermitSpecialLL[index]);
+               col++;
+            }
          }
 
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-         {
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxLegalSpecialLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxLegalSpecialLL[index]);
-            col++;
-
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinLegalSpecialLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinLegalSpecialLL[index]);
-            col++;
-         }
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-         {
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxPermitRoutineLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxPermitRoutineLL[index]);
-            col++;
-
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinPermitRoutineLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinPermitRoutineLL[index]);
-            col++;
-         }
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-         {
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxPermitSpecialLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxPermitSpecialLL[index]);
-            col++;
-
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinPermitSpecialLL[index]) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinPermitSpecialLL[index]);
-            col++;
-         }
-      }
-
-      row++;
-   }
+         row++;
+      } // next poi
+   } // next group
 
    return p_table;
 }

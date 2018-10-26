@@ -81,20 +81,18 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
+   bool bHasOverlay    = pBridge->HasOverlay();
    bool bFutureOverlay = pBridge->IsFutureOverlay();
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx     = pIntervals->GetCastDeckInterval(girderKey);
-   IntervalIndexType overlayIntervalIdx      = pIntervals->GetOverlayInterval(girderKey);
-   IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetLastSegmentErectionInterval(girderKey);
 
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
+   bool bContinuousBeforeDeckCasting;
    GroupIndexType startGroup, endGroup;
-   IntervalIndexType continuityIntervalIdx;
 
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
 
-   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuityIntervalIdx,&startGroup,&endGroup);
+   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Shears"));
 
@@ -107,7 +105,7 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
 
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,overlayIntervalIdx != INVALID_INDEX,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,continuityIntervalIdx,castDeckIntervalIdx,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IProductForces,pForces);
@@ -124,6 +122,9 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
 
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
+      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(thisGirderKey);
+      IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetLastSegmentErectionInterval(thisGirderKey);
+      IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(thisGirderKey);
       IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(thisGirderKey);
       IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(thisGirderKey);
       IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval(thisGirderKey);
@@ -202,7 +203,7 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
       maxTrafficBarrier = pForces2->GetShear( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, maxBAT, rtCumulative );
       minTrafficBarrier = pForces2->GetShear( railingSystemIntervalIdx, pftTrafficBarrier, vPoi, minBAT, rtCumulative );
 
-      if ( overlayIntervalIdx != INVALID_INDEX )
+      if ( bHasOverlay )
       {
          maxOverlay = pForces2->GetShear( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, maxBAT, rtCumulative );
          minOverlay = pForces2->GetShear( overlayIntervalIdx, bRating && !bDesign ? pftOverlayRating : pftOverlay, vPoi, minBAT, rtCumulative );
@@ -278,7 +279,7 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
 
          if ( bShearKey )
          {
-            if ( analysisType == pgsTypes::Envelope )
+            if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
             {
                (*p_table)(row,col++) << shear.SetValue( maxShearKey[index] );
                (*p_table)(row,col++) << shear.SetValue( minShearKey[index] );
@@ -291,7 +292,7 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
 
          if ( bConstruction )
          {
-            if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
+            if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
             {
                (*p_table)(row,col++) << shear.SetValue( maxConstruction[index] );
                (*p_table)(row,col++) << shear.SetValue( minConstruction[index] );
@@ -302,7 +303,7 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
             }
          }
 
-         if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
+         if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
          {
             (*p_table)(row,col++) << shear.SetValue( maxSlab[index] );
             (*p_table)(row,col++) << shear.SetValue( minSlab[index] );
@@ -319,7 +320,7 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
 
          if ( bDeckPanels )
          {
-            if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
+            if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
             {
                (*p_table)(row,col++) << shear.SetValue( maxDeckPanel[index] );
                (*p_table)(row,col++) << shear.SetValue( minDeckPanel[index] );

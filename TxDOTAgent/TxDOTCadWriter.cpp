@@ -240,12 +240,12 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 
 	/* 8. STRAND ECCENTRICITY AT CENTER LINE */
    Float64 nEff;
-	value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pmid[0], false, &nEff );
+   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pmid[0], pgsTypes::Permanent, &nEff );
 
 	Float64 strandEccCL = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
 	/* 9. STRAND ECCENTRICITY AT END */
-   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pois, false, &nEff );
+   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pois, pgsTypes::Permanent, &nEff );
 
 	Float64 strandEccEnd = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 

@@ -77,8 +77,9 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
    INIT_UV_PROTOTYPE( rptMomentSectionValue,     moment,   pDisplayUnits->GetMomentUnit(),     false );
 
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
-   IntervalIndexType continuityIntervalIdx;
+   bool bContinuousBeforeDeckCasting;
    GET_IFACE2(pBroker,IBridge,pBridge);
+   bool bHasOverlay      = pBridge->HasOverlay();
    bool bIsFutureOverlay = pBridge->IsFutureOverlay();
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -136,7 +137,7 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
          IntervalIndexType tsrIntervalIdx = *iter;
 
          GroupIndexType startGroupIdx, endGroupIdx; // use these so we don't mess up the loop parameters
-         ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,false,false,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuityIntervalIdx,&startGroupIdx,&endGroupIdx);
+         ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,false,false,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroupIdx,&endGroupIdx);
          bPedLoading = false;
          bPermit     = false;
 
@@ -162,8 +163,8 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
 
          location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-         RowIndexType row = ConfigureProductLoadTableHeading<rptMomentUnitTag,unitmgtMomentData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,overlayIntervalIdx != INVALID_INDEX,bIsFutureOverlay,false,bPedLoading,
-                                                                                                 bPermit,false,analysisType,continuityIntervalIdx,castDeckIntervalIdx,
+         RowIndexType row = ConfigureProductLoadTableHeading<rptMomentUnitTag,unitmgtMomentData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bHasOverlay,bIsFutureOverlay,false,bPedLoading,
+                                                                                                 bPermit,false,analysisType,bContinuousBeforeDeckCasting,
                                                                                                  pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
 
          if ( bAreThereUserLoads )
@@ -231,7 +232,7 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
 
          maxTrafficBarrier = pForces2->GetMoment( tsrIntervalIdx, pftTrafficBarrier, vPoi, maxBAT, rtIncremental );
          minTrafficBarrier = pForces2->GetMoment( tsrIntervalIdx, pftTrafficBarrier, vPoi, minBAT, rtIncremental );
-         if ( overlayIntervalIdx != INVALID_INDEX )
+         if ( bHasOverlay )
          {
             maxOverlay = pForces2->GetMoment( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, maxBAT, rtIncremental );
             minOverlay = pForces2->GetMoment( tsrIntervalIdx, /*bRating && !bDesign ? pftOverlayRating : */pftOverlay, vPoi, minBAT, rtIncremental );
@@ -262,7 +263,7 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
 
             if ( bShearKey )
             {
-               if ( analysisType == pgsTypes::Envelope )
+               if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
                {
                   (*p_table)(row,col++) << moment.SetValue( maxShearKey[index] );
                   (*p_table)(row,col++) << moment.SetValue( minShearKey[index] );
@@ -275,7 +276,7 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
 
             if ( bConstruction )
             {
-               if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
+               if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
                {
                   (*p_table)(row,col++) << moment.SetValue( maxConstruction[index] );
                   (*p_table)(row,col++) << moment.SetValue( minConstruction[index] );
@@ -286,7 +287,7 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
                }
             }
 
-            if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
+            if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
             {
                (*p_table)(row,col++) << moment.SetValue( maxSlab[index] );
                (*p_table)(row,col++) << moment.SetValue( minSlab[index] );
@@ -303,7 +304,7 @@ void CTSRemovalMomentsTable::Build(rptChapter* pChapter,IBroker* pBroker,const C
 
             if ( bDeckPanels )
             {
-               if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
+               if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
                {
                   (*p_table)(row,col++) << moment.SetValue( maxDeckPanel[index] );
                   (*p_table)(row,col++) << moment.SetValue( minDeckPanel[index] );

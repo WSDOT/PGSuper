@@ -518,6 +518,7 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
    GET_IFACE(IPointOfInterest,               pPoi);
    GET_IFACE(IIntervals,                     pIntervals);
 
+   IntervalIndexType releaseIntervalIdx     = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
 
    // Get allowable tension for with and without rebar cases
@@ -586,20 +587,20 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
       if ( bUseConfig && !haulConfig.bIgnoreGirderConfig )
       {
          hps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Harped,haulSegmentIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI,haulConfig.GdrConfig);
-         he = pStrandGeometry->GetHsEccentricity(haulSegmentIntervalIdx,poi,haulConfig.GdrConfig, &nfh);
+         he = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,haulConfig.GdrConfig,pgsTypes::Harped, &nfh);
          sps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Straight,haulSegmentIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI,haulConfig.GdrConfig);
-         se = pStrandGeometry->GetSsEccentricity(haulSegmentIntervalIdx,poi,haulConfig.GdrConfig,&nfs);
+         se = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,haulConfig.GdrConfig,pgsTypes::Straight,&nfs);
          tps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,haulSegmentIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI,haulConfig.GdrConfig);
-         te = pStrandGeometry->GetTempEccentricity(haulSegmentIntervalIdx,poi,haulConfig.GdrConfig,&nft);
+         te = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,haulConfig.GdrConfig,pgsTypes::Temporary,&nft);
       }
       else
       {
          hps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Harped,haulSegmentIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI);
-         he = pStrandGeometry->GetHsEccentricity(haulSegmentIntervalIdx,poi,&nfh);
+         he = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,pgsTypes::Harped,&nfh);
          sps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Straight,haulSegmentIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI);
-         se = pStrandGeometry->GetSsEccentricity(haulSegmentIntervalIdx,poi,&nfs);
+         se = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,pgsTypes::Straight,&nfs);
          tps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,haulSegmentIntervalIdx,pgsTypes::Middle,pgsTypes::ServiceI);
-         te = pStrandGeometry->GetTempEccentricity(haulSegmentIntervalIdx,poi,&nft);
+         te = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,pgsTypes::Temporary,&nft);
       }
 
       Float64 total_ps_force = hps_force + sps_force + tps_force;

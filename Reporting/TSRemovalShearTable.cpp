@@ -77,8 +77,9 @@ void CTSRemovalShearTable::Build(rptChapter* pChapter,IBroker* pBroker,const CGi
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
 
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
-   IntervalIndexType continuityIntervalIdx;
+   bool bContinuousBeforeDeckCasting;
    GET_IFACE2(pBroker,IBridge,pBridge);
+   bool bHasOverlay      = pBridge->HasOverlay();
    bool bIsFutureOverlay = pBridge->IsFutureOverlay();
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -134,7 +135,7 @@ void CTSRemovalShearTable::Build(rptChapter* pChapter,IBroker* pBroker,const CGi
          IntervalIndexType tsrIntervalIdx = *iter;
 
          GroupIndexType startGroupIdx, endGroupIdx; // use these so we don't mess up the loop parameters
-         ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,false,false,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuityIntervalIdx,&startGroupIdx,&endGroupIdx);
+         ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,false,false,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroupIdx,&endGroupIdx);
          bPedLoading = false;
          bPermit     = false;
 
@@ -160,8 +161,8 @@ void CTSRemovalShearTable::Build(rptChapter* pChapter,IBroker* pBroker,const CGi
 
          location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-         RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,overlayIntervalIdx != INVALID_INDEX,bIsFutureOverlay,false,bPedLoading,
-                                                                                                 bPermit,false,analysisType,continuityIntervalIdx,castDeckIntervalIdx,
+         RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bHasOverlay,bIsFutureOverlay,false,bPedLoading,
+                                                                                                 bPermit,false,analysisType,bContinuousBeforeDeckCasting,
                                                                                                  pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
          if ( bAreThereUserLoads )
@@ -260,7 +261,7 @@ void CTSRemovalShearTable::Build(rptChapter* pChapter,IBroker* pBroker,const CGi
 
             if ( bShearKey )
             {
-               if ( analysisType == pgsTypes::Envelope )
+               if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
                {
                   (*p_table)(row,col++) << shear.SetValue( maxShearKey[index] );
                   (*p_table)(row,col++) << shear.SetValue( minShearKey[index] );
@@ -273,7 +274,7 @@ void CTSRemovalShearTable::Build(rptChapter* pChapter,IBroker* pBroker,const CGi
 
             if ( bConstruction )
             {
-               if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
+               if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
                {
                   (*p_table)(row,col++) << shear.SetValue( maxConstruction[index] );
                   (*p_table)(row,col++) << shear.SetValue( minConstruction[index] );
@@ -284,7 +285,7 @@ void CTSRemovalShearTable::Build(rptChapter* pChapter,IBroker* pBroker,const CGi
                }
             }
 
-            if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
+            if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
             {
                (*p_table)(row,col++) << shear.SetValue( maxSlab[index] );
                (*p_table)(row,col++) << shear.SetValue( minSlab[index] );
@@ -301,7 +302,7 @@ void CTSRemovalShearTable::Build(rptChapter* pChapter,IBroker* pBroker,const CGi
 
             if ( bDeckPanels )
             {
-               if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
+               if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
                {
                   (*p_table)(row,col++) << shear.SetValue( maxDeckPanel[index] );
                   (*p_table)(row,col++) << shear.SetValue( minDeckPanel[index] );

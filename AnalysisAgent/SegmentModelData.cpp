@@ -34,5 +34,6 @@ CSegmentModelData& CSegmentModelData::operator=(const CSegmentModelData& other)
    PoiMap          = other.PoiMap;
    UnitLoadIDMap   = other.UnitLoadIDMap;
    UnitMomentIDMap = other.UnitMomentIDMap;
+   ExternalLoadMap = other.ExternalLoadMap;
    return *this;
 };

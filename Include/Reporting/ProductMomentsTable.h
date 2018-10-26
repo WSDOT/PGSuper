@@ -35,7 +35,7 @@ std::_tstring REPORTINGFUNC LiveLoadPrefix(pgsTypes::LiveLoadType llType);
 void REPORTINGFUNC LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,const CGirderKey& girderKey,bool bDesign,bool bRating);
 
 ColumnIndexType REPORTINGFUNC GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey& girderkKey,pgsTypes::AnalysisType analysisType,bool bDesign,bool bRating,
-                                                             bool* pbConstruction,bool* pbDeckPanels,bool* pbSidewalk,bool* pbShearKey,bool* pbPedLoading,bool* pbPermit,IntervalIndexType* pContinuityInterval,GroupIndexType* pStartGroup,GroupIndexType* pEndGroup);
+                                                             bool* pbConstruction,bool* pbDeckPanels,bool* pbSidewalk,bool* pbShearKey,bool* pbPedLoading,bool* pbPermit,bool* pbContinuousBeforeDeckCasting,GroupIndexType* pStartGroup,GroupIndexType* pEndGroup);
 
 /*****************************************************************************
 CLASS 
@@ -98,7 +98,7 @@ protected:
 
 template <class M,class T>
 RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_table,bool bPierTable,bool bSlabShrinkage,bool bConstruction,bool bDeckPanels,bool bSidewalk,bool bShearKey,bool bOverlay,bool bIsFutureOverlay,
-                                     bool bDesign,bool bPedLoading,bool bPermit,bool bRating,pgsTypes::AnalysisType analysisType,IntervalIndexType continuityInterval,IntervalIndexType castDeckIntervalIdx,IRatingSpecification* pRatingSpec,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
+                                     bool bDesign,bool bPedLoading,bool bPermit,bool bRating,pgsTypes::AnalysisType analysisType,bool bContinuousBeforeDeckCasting,IRatingSpecification* pRatingSpec,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
 {
    p_table->SetNumberOfHeaderRows(2);
 
@@ -131,7 +131,7 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
 
    if ( bShearKey )
    {
-      if ( analysisType == pgsTypes::Envelope && continuityInterval <= castDeckIntervalIdx )
+      if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
       {
          p_table->SetColumnSpan(0,row1col,2);
          (*p_table)(0,row1col++) << pProductLoads->GetProductLoadName(pftShearKey).c_str();
@@ -148,7 +148,7 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
 
    if ( bConstruction )
    {
-      if ( analysisType == pgsTypes::Envelope && continuityInterval <= castDeckIntervalIdx )
+      if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
       {
          p_table->SetColumnSpan(0,row1col,2);
          (*p_table)(0,row1col++) << pProductLoads->GetProductLoadName(pftConstruction).c_str();
@@ -163,7 +163,7 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
       }
    }
 
-   if ( analysisType == pgsTypes::Envelope && continuityInterval <= castDeckIntervalIdx )
+   if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
    {
       p_table->SetColumnSpan(0,row1col,2);
       (*p_table)(0,row1col++) << pProductLoads->GetProductLoadName(pftSlab).c_str();
@@ -195,7 +195,7 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
 
    if ( bDeckPanels )
    {
-      if ( analysisType == pgsTypes::Envelope && continuityInterval <= castDeckIntervalIdx )
+      if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
       {
          p_table->SetColumnSpan(0,row1col,2);
          (*p_table)(0,row1col++) << pProductLoads->GetProductLoadName(pftSlabPanel).c_str();

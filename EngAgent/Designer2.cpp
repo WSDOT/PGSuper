@@ -1785,7 +1785,8 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std:
          if ( IsGirderStressLocation(stressLocation) )
          {
             // Stress check in Girder Segment or Closure Joint (not in deck)
-            if ( pPoi->IsInClosureJoint(poi) )
+            CClosureKey closureKey;
+            if ( pPoi->IsInClosureJoint(poi,&closureKey) )
             {
                // Stress check in Closure Joint
 
@@ -2011,9 +2012,11 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std:
          pgsAlternativeTensileStressCalculator altCalc(segmentKey, task.intervalIdx, pBridge, pGirder, pShapes, pSectProps, pRebarGeom, pMaterials, pPoi, true/*limit bar stress to 30 ksi*/, bSISpec, i == 0 ? true /*girder stresses*/ : false /*deck stresses*/);
 
 
-         if ( pAllowable->HasAllowableTensionWithRebarOption(task.intervalIdx,bIsInPTZ[TOP],!pPoi->IsInClosureJoint(poi),segmentKey) )
+         CClosureKey closureKey;
+         bool bIsInClosure = pPoi->IsInClosureJoint(poi,&closureKey);
+         if ( pAllowable->HasAllowableTensionWithRebarOption(task.intervalIdx,bIsInPTZ[TOP],!bIsInClosure,segmentKey) )
          {
-            if ( i == 0 && pPoi->IsInClosureJoint(poi) && bIsInPTZ[TOP] )
+            if ( i == 0 && bIsInClosure && bIsInPTZ[TOP] )
             {
                // the bar stress is not limited to 30 ksi (see LRFD Tables 5.9.4.1.2-1 and -2)
                // in the precompressed tensile zone for closure joints
@@ -2041,9 +2044,9 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std:
          }
 
 
-         if ( pAllowable->HasAllowableTensionWithRebarOption(task.intervalIdx,bIsInPTZ[BOT],!pPoi->IsInClosureJoint(poi),segmentKey) )
+         if ( pAllowable->HasAllowableTensionWithRebarOption(task.intervalIdx,bIsInPTZ[BOT],!bIsInClosure,segmentKey) )
          {
-            if ( i == 0 && pPoi->IsInClosureJoint(poi) && bIsInPTZ[BOT] )
+            if ( i == 0 && bIsInClosure && bIsInPTZ[BOT] )
             {
                // the bar stress is not limited to 30 ksi (see LRFD Tables 5.9.4.1.2-1 and -2)
                // in the precompressed tensile zone for closure joints
@@ -2769,12 +2772,12 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
       if (pConfig == NULL)
       {
          GET_IFACE(IStrandGeometry,pStrandGeom);
-         ecc = pStrandGeom->GetEccentricity(castDeckIntervalIdx,poi,false,&nEffStrands); // based on non-composite cg
+         ecc = pStrandGeom->GetEccentricity(castDeckIntervalIdx,poi,pgsTypes::Permanent,&nEffStrands); // based on non-composite cg
       }
       else
       {
          GET_IFACE(IStrandGeometry,pStrandGeom);
-         ecc = pStrandGeom->GetEccentricity(castDeckIntervalIdx,poi,*pConfig,false,&nEffStrands); // based on non-composite cg
+         ecc = pStrandGeom->GetEccentricity(castDeckIntervalIdx,poi,*pConfig,pgsTypes::Permanent,&nEffStrands); // based on non-composite cg
       }
 
       Float64 Yt = pSectProp->GetY(castDeckIntervalIdx,poi,pgsTypes::TopGirder,fcGdr); // non-composite girder
@@ -2847,7 +2850,8 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
    GET_IFACE(IResistanceFactors,pResistanceFactors);
    GET_IFACE(IPointOfInterest,pPoi);
    Float64 phiGirder;
-   if ( pPoi->IsInClosureJoint(poi) )
+   CClosureKey closureKey;
+   if ( pPoi->IsInClosureJoint(poi,&closureKey) )
    {
       phiGirder = pResistanceFactors->GetClosureJointShearResistanceFactor(gdrConcType);
    }
@@ -3173,9 +3177,11 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
       matRebar::Type type;
       matRebar::Grade grade;
 
-      if ( pPoi->IsInClosureJoint(poi) )
+      CClosureKey closureKey;
+      bool bIsInClosure = pPoi->IsInClosureJoint(poi,&closureKey);
+      if ( bIsInClosure )
       {
-         pMaterial->GetClosureJointTransverseRebarMaterial(segmentKey, &type, &grade);
+         pMaterial->GetClosureJointTransverseRebarMaterial(closureKey, &type, &grade);
       }
       else
       {
@@ -3187,9 +3193,9 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
 
       Float64 db = pRebar->GetNominalDimension();
       Float64 as;
-      if ( pPoi->IsInClosureJoint(poi) )
+      if ( bIsInClosure )
       {
-         as = pMaterial->GetClosureJointMaxAggrSize(segmentKey);
+         as = pMaterial->GetClosureJointMaxAggrSize(closureKey);
       }
       else
       {
@@ -3990,10 +3996,11 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
       // Take max absolute value for demand
       Float64 Vu = Max(abs(Vmin.Left()),abs(Vmax.Left()),abs(Vmin.Right()),abs(Vmax.Right()));
 
-      if ( pPoi->IsInClosureJoint(poi) )
+      CClosureKey closureKey;
+      if ( pPoi->IsInClosureJoint(poi,&closureKey) )
       {
-         fc_girder = pMaterials->GetClosureJointFc(segmentKey,intervalIdx);
-         pMaterials->GetClosureJointTransverseRebarProperties(segmentKey,&Es,&fy,&fu);
+         fc_girder = pMaterials->GetClosureJointFc(closureKey,intervalIdx);
+         pMaterials->GetClosureJointTransverseRebarProperties(closureKey,&Es,&fy,&fu);
       }
 
       pgsStirrupCheckAtPoisArtifact artifact;

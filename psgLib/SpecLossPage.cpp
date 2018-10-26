@@ -93,6 +93,9 @@ void CSpecLossPage::OnLossMethodChanged()
       bEnable = pParent->m_Entry.GetSectionPropertyMode() == pgsTypes::spmTransformed ? FALSE : bEnable;
 
       EnableElasticGains(bEnable);
+
+      bEnable = (0 <= method && method < 4) ? TRUE : FALSE;
+      EnableRelaxation(bEnable);
    }
    else
    {
@@ -103,6 +106,7 @@ void CSpecLossPage::OnLossMethodChanged()
       EnableTxDOT2013(FALSE);
       EnableTimeDependentModel(TRUE);
       EnableElasticGains(FALSE);
+      EnableRelaxation(FALSE);
    }
 }
 
@@ -146,13 +150,17 @@ void CSpecLossPage::EnableTxDOT2013(BOOL bEnable)
    ENABLE_WINDOW(IDC_FCPG_COMBO);
 }
 
+void CSpecLossPage::EnableRelaxation(BOOL bEnable)
+{
+   CWnd* pWnd;
+   ENABLE_WINDOW(IDC_RELAXATION_LOSS_METHOD_LABEL);
+   ENABLE_WINDOW(IDC_RELAXATION_LOSS_METHOD);
+}
+
 void CSpecLossPage::EnableElasticGains(BOOL bEnable)
 {
    CWnd* pWnd;
    ENABLE_WINDOW(IDC_ELASTIC_GAINS_GROUP);
-
-   ENABLE_WINDOW(IDC_RELAXATION_LOSS_METHOD_LABEL);
-   ENABLE_WINDOW(IDC_RELAXATION_LOSS_METHOD);
 
    ENABLE_WINDOW(IDC_EG_LABEL);
 

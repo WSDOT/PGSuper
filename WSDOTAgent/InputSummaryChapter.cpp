@@ -561,8 +561,8 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segme
    pStrandGeom->GetHarpStrandOffsets(segmentKey,&EndOffset,&HpOffset);
 
    Float64 nEff;
-   es = pStrandGeom->GetSsEccentricity( releaseIntervalIdx, poi, &nEff );
-   eh = pStrandGeom->GetHsEccentricity( releaseIntervalIdx, poi, &nEff );
+   es = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, pgsTypes::Straight, &nEff );
+   eh = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, pgsTypes::Harped,   &nEff );
 
    if ( 0 < Nh  )
    {
@@ -574,14 +574,14 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segme
       ConfigStrandFillVector hfill = pStrandGeom->ComputeStrandFill(segmentKey, pgsTypes::Harped, ns1);
       config.PrestressConfig.SetStrandFill(pgsTypes::Harped, hfill);
 
-      eh2 = pStrandGeom->GetHsEccentricity( releaseIntervalIdx, poi, config, &nEff ); //** See Note Below
+      eh2 = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, config, pgsTypes::Harped, &nEff ); //** See Note Below
    }
    else
    {
       eh2 = eh;
    }
 
-   ehe = pStrandGeom->GetHsEccentricity( releaseIntervalIdx, pgsPointOfInterest(segmentKey,0.00), &nEff );
+   ehe = pStrandGeom->GetEccentricity( releaseIntervalIdx, pgsPointOfInterest(segmentKey,0.00), pgsTypes::Harped, &nEff );
 
    // ** eh2 is the eccentricity of a harped strand, at the midspan. We use this value to compute Fb.
    //    Fb is the distance from the bottom of the girder to the "lower bundle". This is a WSDOT

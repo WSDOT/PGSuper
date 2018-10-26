@@ -9,8 +9,9 @@
 #define IDD_STRESSHISTORY_GRAPH_CONTROLLER 198
 #define IDD_GIRDER_PROPERTIES_GRAPH_CONTROLLER 199
 #define IDD_CONCRETE_PROPERTY_GRAPH_CONTROLLER 200
-#define IDD_VIRTUALWORK_GRAPH_CONTROLLER 201
-#define IDD_DEFLECTIONHISTORY_GRAPH_CONTROLLER 202
+#define IDD_DEFLECTIONHISTORY_GRAPH_CONTROLLER 201
+#define IDD_VIRTUALWORK_GRAPH_CONTROLLER 202
+#define IDD_INITIALSTRAIN_GRAPH_CONTROLLER 203
 #define IDC_EVENT                       1096
 #define IDC_SIMPLE                      1478
 #define IDC_SIMPLE2                     1479
@@ -67,6 +68,12 @@
 #define IDC_MOMENT                      3064
 #define IDC_CHECK1                      3065
 #define IDC_ELEV_ADJUSTMENT             3065
+#define IDC_CREEP                       3065
+#define IDC_SHRINKAGE                   3066
+#define IDC_RELAXATION                  3067
+#define IDC_NET_GIRDER                  3069
+#define IDC_RADIO1                      3070
+#define IDC_NET_DECK                    3070
 
 // Next default values for new objects
 // 
@@ -74,7 +81,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        205
 #define _APS_NEXT_COMMAND_VALUE         32774
-#define _APS_NEXT_CONTROL_VALUE         3066
+#define _APS_NEXT_CONTROL_VALUE         3071
 #define _APS_NEXT_SYMED_VALUE           3000
 #endif
 #endif

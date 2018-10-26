@@ -76,7 +76,7 @@ CEffectOfPostTensionedTemporaryStrandsTable* CEffectOfPostTensionedTemporaryStra
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    Float64 nEffectiveStrands;
-   Float64 ept = pStrandGeom->GetTempEccentricity( tsInstallIntervalIdx, pgsPointOfInterest(segmentKey,0), &nEffectiveStrands);
+   Float64 ept = pStrandGeom->GetEccentricity( tsInstallIntervalIdx, pgsPointOfInterest(segmentKey,0), pgsTypes::Temporary, &nEffectiveStrands);
    Float64 Apt = pStrandGeom->GetStrandArea(segmentKey,tsInstallIntervalIdx,pgsTypes::Temporary);
    StrandIndexType Npt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 

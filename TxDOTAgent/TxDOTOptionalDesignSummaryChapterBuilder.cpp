@@ -355,11 +355,11 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
 
       (*p_table)(row,0) << _T("e")<<Sub(_T("CL"));
       Float64 neff;
-      (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(releaseIntervalIdx, midpoi,false,&neff) );
+      (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(releaseIntervalIdx, midpoi,pgsTypes::Permanent, &neff) );
 
       pgsPointOfInterest zeropoi(segmentKey,0.0);
       (*p_table)(row,0) << _T("e")<<Sub(_T("girder ends"));
-      (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(releaseIntervalIdx, zeropoi,false,&neff) );
+      (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(releaseIntervalIdx, zeropoi,pgsTypes::Permanent,&neff) );
 
       // non standard fill row tables
       if (fill_type == CTxDOTOptionalDesignGirderData::sfHarpedRows)

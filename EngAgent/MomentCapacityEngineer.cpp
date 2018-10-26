@@ -449,7 +449,8 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    GET_IFACE(IResistanceFactors,pResistanceFactors);
    GET_IFACE(IPointOfInterest,pPoi);
    Float64 PhiRC,PhiPS,PhiSP,PhiC;
-   if ( pPoi->IsInClosureJoint(poi) )
+   CClosureKey closureKey;
+   if ( pPoi->IsInClosureJoint(poi,&closureKey) )
    {
       pmcd->Phi = pResistanceFactors->GetClosureJointFlexureResistanceFactor(concType);
    }
@@ -781,7 +782,8 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
 
       // Compute Phi based on the net tensile strain....
       // This not applicable at closure joints
-      if ( !pPoi->IsInClosureJoint(poi) )
+      CClosureKey closureKey;
+      if ( !pPoi->IsInClosureJoint(poi,&closureKey) )
       {
          if ( IsZero(pmcd->c) ) 
          {
@@ -1001,7 +1003,7 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   Float64 eps = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, false, &ns_eff ); // eccentricity of non-composite section
+   Float64 eps = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, pgsTypes::Permanent, &ns_eff ); // eccentricity of non-composite section
 
    Float64 dfcpe = pPrestress->GetStress(poi,stressLocation,Pps,eps);
    if ( dfcpe < 0 )
@@ -1048,7 +1050,7 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
       Float64 ns_eff;
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
-      Float64 e = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, config, false, &ns_eff ); // eccentricity of non-composite section
+      Float64 e = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, config, pgsTypes::Permanent, &ns_eff ); // eccentricity of non-composite section
 
       fcpe = -pPrestress->GetStress(poi,pgsTypes::BottomGirder,P,e);
    }
@@ -1256,7 +1258,8 @@ void pgsMomentCapacityEngineer::GetSectionProperties(IntervalIndexType intervalI
       GET_IFACE(IPointOfInterest,pPoi);
 
       Sbc = pSectProp->GetS(intervalIdx,poi,pgsTypes::BottomGirder);
-      if ( pPoi->IsInClosureJoint(poi) )
+      CClosureKey closureKey;
+      if ( pPoi->IsInClosureJoint(poi,&closureKey) )
       {
          Sb = Sbc;
       }
@@ -1512,24 +1515,16 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    Float64 dt = 0; // depth from compression face to extreme layer of tensile reinforcement
 
    StrandIndexType Ns(0), Nh(0);
-   if ( pPoi->IsOffSegment(poi) )
+   if ( pConfig )
    {
-      Ns = 0;
-      Nh = 0;
+      Ns = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Straight);
+      Nh = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Harped);
    }
    else
    {
-      if ( pConfig )
-      {
-         Ns = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Straight);
-         Nh = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Harped);
-      }
-      else
-      {
-         GET_IFACE(IStrandGeometry, pStrandGeom);
-         Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
-         Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
-      }
+      GET_IFACE(IStrandGeometry, pStrandGeom);
+      Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
+      Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
    }
 
    //
@@ -1553,9 +1548,16 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    }
    else
    {
-      if ( pPoi->IsInClosureJoint(poi) )
+      CClosureKey closureKey;
+      if ( pPoi->IsOffSegment(poi) )
       {
-         matGirder->put_fc( pMaterial->GetClosureJointFc(segmentKey,intervalIdx) );
+         // assume cast in place diaphragms between groups is the same material as the deck
+         ATLASSERT(poi.HasAttribute(POI_BOUNDARY_PIER) || poi.IsTenthPoint(POI_SPAN) == 1);
+         matGirder->put_fc( pMaterial->GetDeckFc(segmentKey,intervalIdx) );
+      }
+      else if ( pPoi->IsInClosureJoint(poi,&closureKey) )
+      {
+         matGirder->put_fc( pMaterial->GetClosureJointFc(closureKey,intervalIdx) );
       }
       else
       {
@@ -1574,9 +1576,10 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    CComPtr<IRebarModel> matGirderRebar;
    matGirderRebar.CoCreateInstance(CLSID_RebarModel);
    Float64 E, Fy, Fu;
-   if ( pPoi->IsInClosureJoint(poi) )
+   CClosureKey closureKey;
+   if ( pPoi->IsInClosureJoint(poi,&closureKey) )
    {
-      pMaterial->GetClosureJointLongitudinalRebarProperties(segmentKey,&E,&Fy,&Fu);
+      pMaterial->GetClosureJointLongitudinalRebarProperties(closureKey,&E,&Fy,&Fu);
    }
    else
    {

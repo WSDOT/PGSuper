@@ -90,17 +90,18 @@ public:
    }
 };
 
-typedef ScalarFormatTool<unitmgtScalar>        ScalarTool;
-typedef PhysicalFormatTool<unitmgtLengthData>  LengthTool;
-typedef PhysicalFormatTool<unitmgtMomentData>  MomentTool;
-typedef PhysicalFormatTool<unitmgtLengthData>  DeflectionTool;
-typedef PhysicalFormatTool<unitmgtAngleData>   RotationTool;
-typedef PhysicalFormatTool<unitmgtStressData>  StressTool;
-typedef PhysicalFormatTool<unitmgtForceData>   ShearTool;
-typedef PhysicalFormatTool<unitmgtForceData>   ForceTool;
-typedef PhysicalFormatTool<unitmgtTimeData>    TimeTool;
-typedef PhysicalFormatTool<unitmgtLength2Data> AreaTool;
-typedef PhysicalFormatTool<unitmgtLength3Data> SectionModulusTool;
-typedef PhysicalFormatTool<unitmgtLength4Data> MomentOfInertiaTool;
+typedef ScalarFormatTool<unitmgtScalar>          ScalarTool;
+typedef PhysicalFormatTool<unitmgtLengthData>    LengthTool;
+typedef PhysicalFormatTool<unitmgtMomentData>    MomentTool;
+typedef PhysicalFormatTool<unitmgtLengthData>    DeflectionTool;
+typedef PhysicalFormatTool<unitmgtAngleData>     RotationTool;
+typedef PhysicalFormatTool<unitmgtStressData>    StressTool;
+typedef PhysicalFormatTool<unitmgtForceData>     ShearTool;
+typedef PhysicalFormatTool<unitmgtForceData>     ForceTool;
+typedef PhysicalFormatTool<unitmgtTimeData>      TimeTool;
+typedef PhysicalFormatTool<unitmgtLength2Data>   AreaTool;
+typedef PhysicalFormatTool<unitmgtLength3Data>   SectionModulusTool;
+typedef PhysicalFormatTool<unitmgtLength4Data>   MomentOfInertiaTool;
+typedef PhysicalFormatTool<unitmgtPerLengthData> CurvatureTool;
 
 #endif // INCLUDED_PHYSICALCONVERTER_H_

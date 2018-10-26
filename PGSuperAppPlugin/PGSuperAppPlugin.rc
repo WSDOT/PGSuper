@@ -2718,17 +2718,17 @@ BEGIN
     LTEXT           "Installation Event",IDC_EVENT_LABEL,167,7,57,8
 END
 
-IDD_CLOSURE_GENERAL DIALOGEX 0, 0, 235, 171
+IDD_CLOSURE_GENERAL DIALOGEX 0, 0, 318, 148
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "General"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
-    LTEXT           "location",IDC_LOCATION,7,7,221,8
+    LTEXT           "location",IDC_LOCATION,7,7,304,8
     LTEXT           "Length",IDC_LENGTH,7,25,93,8
-    LTEXT           "Installation Event",IDC_STATIC,7,42,38,17
-    COMBOBOX        IDC_EVENT,47,44,181,98,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "NOTE: Changes to the Installation Event apply to all closure joints at this temporary support.",IDC_STATIC,7,65,221,20
-    LTEXT           "concrete type",IDC_CONCRETE_TYPE_LABEL,7,94,221,8
+    LTEXT           "Installation Event",IDC_STATIC,7,46,66,8
+    COMBOBOX        IDC_EVENT,77,44,181,98,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "NOTE: Changes to the Installation Event apply to all closure joints at this temporary support.",IDC_STATIC,7,65,304,20
+    LTEXT           "concrete type",IDC_CONCRETE_TYPE_LABEL,7,87,304,12
     CONTROL         "f'ci",IDC_FC1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,7,110,25,10
     CONTROL         "f'c",IDC_FC2,"Button",BS_AUTORADIOBUTTON,7,128,23,10
     EDITTEXT        IDC_FCI,35,108,40,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -2741,7 +2741,7 @@ BEGIN
     CONTROL         "Ec",IDC_USER_EC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,129,23,10
     EDITTEXT        IDC_EC,137,126,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_EC_UNIT,182,129,19,8
-    PUSHBUTTON      "More Properties...",IDC_MORE_PROPERTIES,72,150,90,14
+    PUSHBUTTON      "More Properties...",IDC_MORE_PROPERTIES,212,116,90,14
 END
 
 IDD_CLOSURE_STIRRUPS DIALOGEX 0, 0, 362, 223
@@ -2858,7 +2858,7 @@ BEGIN
     LTEXT           "Static",IDC_RIGHT_END_BLOCK_WIDTH_UNIT,283,222,19,8
     LTEXT           "Custom1",IDC_DRAW_SEGMENT,14,242,355,51,NOT WS_GROUP | WS_TABSTOP
     GROUPBOX        "Precast Segment Concrete Properties",IDC_STATIC,7,308,370,66
-    LTEXT           "Static",IDC_CONCRETE_TYPE_LABEL,17,322,242,8
+    LTEXT           "Static",IDC_CONCRETE_TYPE_LABEL,17,322,352,8
     CONTROL         "f'ci",IDC_FC1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,23,339,25,10
     CONTROL         "f'c",IDC_FC2,"Button",BS_AUTORADIOBUTTON,23,353,23,10
     EDITTEXT        IDC_FCI,51,335,40,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -3335,8 +3335,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,22
- PRODUCTVERSION 3,0,0,22
+ FILEVERSION 3,0,0,23
+ PRODUCTVERSION 3,0,0,23
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3353,12 +3353,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.22"
+            VALUE "FileVersion", "3.0.0.23"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.22"
+            VALUE "ProductVersion", "3.0.0.23"
         END
     END
     BLOCK "VarFileInfo"
@@ -3955,9 +3955,9 @@ BEGIN
     IDD_CLOSURE_GENERAL, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 228
+        RIGHTMARGIN, 311
         TOPMARGIN, 7
-        BOTTOMMARGIN, 164
+        BOTTOMMARGIN, 141
     END
 
     IDD_CLOSURE_STIRRUPS, DIALOG

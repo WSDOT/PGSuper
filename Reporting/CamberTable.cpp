@@ -289,7 +289,6 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
       Float64 DgdrStorage  = pProduct->GetDeflection(storageIntervalIdx,pftGirder,storagePoi,bat,rtCumulative,false);
       Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pftGirder,erectedPoi,bat,rtCumulative,false);
 
-#pragma Reminder("UPDATE: should be able to get this as a product load result")
       //Float64 Dtpsr = pProduct->GetDeflection(tempStrandRemovalIntervalIdx,pftPretension,erectedPoi,bat,rtIncremental,false);
       Float64 Dtpsr = pCamber->GetReleaseTempPrestressDeflection( erectedPoi );
 
@@ -301,7 +300,6 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
       //Float64 Dtpsr      = pCamber->GetReleaseTempPrestressDeflection( erectedPoi );
       //Dgirder    = pProductForces->GetGirderDeflectionForCamber( poi );
       //Dgirder    = pProduct->GetDeflection(storageIntervalIdx,pftGirder,poi,bat,rtCumulative,false);
-#pragma Reminder("UPDATE: creep should be a product load result")
       Float64 Dcreep1    = pCamber->GetCreepDeflection( storagePoi, ICamber::cpReleaseToDiaphragm, constructionRate );
       Float64 Ddiaphragm = pCamber->GetDiaphragmDeflection( erectedPoi );
       Float64 Dshearkey  = pProduct->GetDeflection(castDeckIntervalIdx,pftShearKey,erectedPoi,bat, rtCumulative, false);
@@ -560,17 +558,18 @@ void CCamberTable::Build_CIP(IBroker* pBroker,const CSegmentKey& segmentKey,
       const pgsPointOfInterest& storagePoi(*storagePoiIter);
       const pgsPointOfInterest& erectedPoi(*erectedPoiIter);
 
-      Float64 DpsRelease   = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,releasePoi,bat,rtCumulative,false);
-      Float64 DpsStorage   = pProduct->GetDeflection(storageIntervalIdx,pftPretension,storagePoi,bat,rtCumulative,false);
+      Float64 DpsRelease  = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,releasePoi,bat,rtCumulative,false);
+      Float64 DpsStorage  = pProduct->GetDeflection(storageIntervalIdx,pftPretension,storagePoi,bat,rtCumulative,false);
       Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pftPretension,erectedPoi,bat,rtCumulative,false);
 
-      Float64 DgdrRelease  = pProduct->GetDeflection(releaseIntervalIdx,pftGirder,releasePoi,bat,rtCumulative,false);
-      Float64 DgdrStorage  = pProduct->GetDeflection(storageIntervalIdx,pftGirder,storagePoi,bat,rtCumulative,false);
+      Float64 DgdrRelease = pProduct->GetDeflection(releaseIntervalIdx,pftGirder,releasePoi,bat,rtCumulative,false);
+      Float64 DgdrStorage = pProduct->GetDeflection(storageIntervalIdx,pftGirder,storagePoi,bat,rtCumulative,false);
       Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pftGirder,erectedPoi,bat,rtCumulative,false);
 
-#pragma Reminder("FINISH: get creep deflection as a product load")
-      Float64 Dcreep       = pCamber->GetCreepDeflection( storagePoi, ICamber::cpReleaseToDeck, constructionRate );
+      // NOTE: Get the creep deflection from the ICamber interface because it takes the construction rate 
+      // into account. Getting creep deflection as a product load assumes the maximum construction rate
       //Float64 Dcreep       = pProduct->GetDeflection(storageIntervalIdx,pftCreep,storagePoi,bat,rtCumulative,false);
+      Float64 Dcreep       = pCamber->GetCreepDeflection( storagePoi, ICamber::cpReleaseToDeck, constructionRate );
 
       Float64 Ddiaphragm   = pProduct->GetDeflection(castDeckIntervalIdx,pftDiaphragm,erectedPoi,bat, rtCumulative, false);
       Float64 Dshearkey    = pProduct->GetDeflection(castDeckIntervalIdx,pftShearKey,erectedPoi,bat, rtCumulative, false);
@@ -825,27 +824,19 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
       const pgsPointOfInterest& storagePoi(*storagePoiIter);
       const pgsPointOfInterest& erectedPoi(*erectedPoiIter);
 
-      Float64 DpsRelease   = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,releasePoi,bat,rtCumulative,false);
-      Float64 DpsStorage   = pProduct->GetDeflection(storageIntervalIdx,pftPretension,storagePoi,bat,rtCumulative,false);
+      Float64 DpsRelease  = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,releasePoi,bat,rtCumulative,false);
+      Float64 DpsStorage  = pProduct->GetDeflection(storageIntervalIdx,pftPretension,storagePoi,bat,rtCumulative,false);
       Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pftPretension,erectedPoi,bat,rtCumulative,false);
 
-      Float64 DgdrRelease  = pProduct->GetDeflection(releaseIntervalIdx,pftGirder,releasePoi,bat,rtCumulative,false);
-      Float64 DgdrStorage  = pProduct->GetDeflection(storageIntervalIdx,pftGirder,storagePoi,bat,rtCumulative,false);
+      Float64 DgdrRelease = pProduct->GetDeflection(releaseIntervalIdx,pftGirder,releasePoi,bat,rtCumulative,false);
+      Float64 DgdrStorage = pProduct->GetDeflection(storageIntervalIdx,pftGirder,storagePoi,bat,rtCumulative,false);
       Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pftGirder,erectedPoi,bat,rtCumulative,false);
 
-#pragma Reminder("UPDATE: should be able to get this as a product load result")
+      // NOTE: Get the creep deflection from the ICamber interface because it takes the construction rate 
+      // into account. Getting creep deflection as a product load assumes the maximum construction rate
       //Float64 Dtpsr = pProduct->GetDeflection(tempStrandRemovalIntervalIdx,pftPretension,erectedPoi,bat,rtIncremental,false);
       Float64 Dtpsr = pCamber->GetReleaseTempPrestressDeflection( erectedPoi );
 
-      //Float64 Dps1, Dps, Dtpsi, Dtpsr, Dgirder, Dcreep1, Ddiaphragm, Dshearkey, Dpanel, Ddeck, Dcreep2, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2;
-      //Dps1       = pCamber->GetPrestressDeflection( poi, false );
-      //Dps        = pCamber->GetPrestressDeflection( poi, true );
-      //Dps1       = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
-      //Dps        = pProduct->GetDeflection(storageIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
-      //Dtpsi      = pCamber->GetInitialTempPrestressDeflection( poi,true );
-      //Dtpsr      = pCamber->GetReleaseTempPrestressDeflection( poi );
-      //Dgirder    = pProductForces->GetGirderDeflectionForCamber( poi );
-      //Dgirder    = pProduct->GetDeflection(storageIntervalIdx,pftGirder,poi,bat,rtCumulative,false);
       Float64 Dcreep1    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpReleaseToDiaphragm, constructionRate );
       Float64 Ddiaphragm = pCamber->GetDiaphragmDeflection( erectedPoi );
       Float64 Ddeck      = pProduct->GetDeflection(castDeckIntervalIdx,pftSlab,erectedPoi,bat, rtCumulative, false);
@@ -1106,22 +1097,14 @@ void CCamberTable::Build_SIP(IBroker* pBroker,const CSegmentKey& segmentKey,
       const pgsPointOfInterest& storagePoi(*storagePoiIter);
       const pgsPointOfInterest& erectedPoi(*erectedPoiIter);
 
-      Float64 DpsRelease   = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,releasePoi,bat,rtCumulative,false);
-      Float64 DpsStorage   = pProduct->GetDeflection(storageIntervalIdx,pftPretension,storagePoi,bat,rtCumulative,false);
+      Float64 DpsRelease  = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,releasePoi,bat,rtCumulative,false);
+      Float64 DpsStorage  = pProduct->GetDeflection(storageIntervalIdx,pftPretension,storagePoi,bat,rtCumulative,false);
       Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pftPretension,erectedPoi,bat,rtCumulative,false);
 
-      Float64 DgdrRelease  = pProduct->GetDeflection(releaseIntervalIdx,pftGirder,releasePoi,bat,rtCumulative,false);
-      Float64 DgdrStorage  = pProduct->GetDeflection(storageIntervalIdx,pftGirder,storagePoi,bat,rtCumulative,false);
+      Float64 DgdrRelease = pProduct->GetDeflection(releaseIntervalIdx,pftGirder,releasePoi,bat,rtCumulative,false);
+      Float64 DgdrStorage = pProduct->GetDeflection(storageIntervalIdx,pftGirder,storagePoi,bat,rtCumulative,false);
       Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pftGirder,erectedPoi,bat,rtCumulative,false);
 
-      //Float64 Dps1, Dps, Dgirder, Dcreep, Ddiaphragm, Dshearkey, Dpanel, Ddeck, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2;
-      //Dps1       = pCamber->GetPrestressDeflection( poi, false );
-      //Dps        = pCamber->GetPrestressDeflection( poi, true );
-      //Dps1       = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
-      //Dps        = pProduct->GetDeflection(storageIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
-      //Dgirder    = pProductForces->GetGirderDeflectionForCamber( poi );
-      //Dgirder    = pProduct->GetDeflection(storageIntervalIdx,pftGirder,poi,bat,rtCumulative,false);
-#pragma Reminder("FINISH: get creep deflection as a product load")
       Float64 Dcreep     = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpReleaseToDeck, constructionRate );
       Float64 Ddiaphragm = pProduct->GetDeflection(castDeckIntervalIdx,pftDiaphragm,erectedPoi,bat, rtCumulative, false);
       Float64 Dshearkey  = pProduct->GetDeflection(castDeckIntervalIdx,pftShearKey,erectedPoi,bat, rtCumulative, false);
@@ -1363,7 +1346,6 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,const CSegmentKey& 
    pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    // Fill up the tables
-   // Fill up the tables
    RowIndexType row1a = table1a->GetNumberOfHeaderRows();
    RowIndexType row1b = table1b->GetNumberOfHeaderRows();
    RowIndexType row2 = table2->GetNumberOfHeaderRows();
@@ -1378,27 +1360,17 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,const CSegmentKey& 
       const pgsPointOfInterest& storagePoi(*storagePoiIter);
       const pgsPointOfInterest& erectedPoi(*erectedPoiIter);
 
-      Float64 DpsRelease   = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,releasePoi,bat,rtCumulative,false);
-      Float64 DpsStorage   = pProduct->GetDeflection(storageIntervalIdx,pftPretension,storagePoi,bat,rtCumulative,false);
+      Float64 DpsRelease  = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,releasePoi,bat,rtCumulative,false);
+      Float64 DpsStorage  = pProduct->GetDeflection(storageIntervalIdx,pftPretension,storagePoi,bat,rtCumulative,false);
       Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pftPretension,erectedPoi,bat,rtCumulative,false);
 
-      Float64 DgdrRelease  = pProduct->GetDeflection(releaseIntervalIdx,pftGirder,releasePoi,bat,rtCumulative,false);
-      Float64 DgdrStorage  = pProduct->GetDeflection(storageIntervalIdx,pftGirder,storagePoi,bat,rtCumulative,false);
+      Float64 DgdrRelease = pProduct->GetDeflection(releaseIntervalIdx,pftGirder,releasePoi,bat,rtCumulative,false);
+      Float64 DgdrStorage = pProduct->GetDeflection(storageIntervalIdx,pftGirder,storagePoi,bat,rtCumulative,false);
       Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pftGirder,erectedPoi,bat,rtCumulative,false);
 
-#pragma Reminder("UPDATE: should be able to get this as a product load result")
       //Float64 Dtpsr = pProduct->GetDeflection(tempStrandRemovalIntervalIdx,pftPretension,erectedPoi,bat,rtIncremental,false);
       Float64 Dtpsr = pCamber->GetReleaseTempPrestressDeflection( erectedPoi );
 
-      //Float64 Dps1, Dps, Dtpsi, Dtpsr, Dgirder, Dcreep1, Ddiaphragm, Dshearkey, Ddeck, Dcreep2, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2, Dcreep3;
-      //Dps1       = pCamber->GetPrestressDeflection( poi, false );
-      //Dps        = pCamber->GetPrestressDeflection( poi, true );
-      //Dps1       = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
-      //Dps        = pProduct->GetDeflection(storageIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
-      //Dtpsi      = pCamber->GetInitialTempPrestressDeflection( poi,true );
-      //Dtpsr      = pCamber->GetReleaseTempPrestressDeflection( poi );
-      //Dgirder    = pProductForces->GetGirderDeflectionForCamber( poi );
-      //Dgirder    = pProduct->GetDeflection(storageIntervalIdx,pftGirder,poi,bat,rtCumulative,false);
       Float64 Dcreep1    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpReleaseToDiaphragm, constructionRate );
       Float64 Ddiaphragm = pCamber->GetDiaphragmDeflection( erectedPoi );
       Float64 Dshearkey  = pProduct->GetDeflection(castDeckIntervalIdx,pftShearKey,erectedPoi,bat, rtCumulative, false);
@@ -1653,21 +1625,14 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
       const pgsPointOfInterest& storagePoi(*storagePoiIter);
       const pgsPointOfInterest& erectedPoi(*erectedPoiIter);
 
-      Float64 DpsRelease   = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,releasePoi,bat,rtCumulative,false);
-      Float64 DpsStorage   = pProduct->GetDeflection(storageIntervalIdx,pftPretension,storagePoi,bat,rtCumulative,false);
+      Float64 DpsRelease  = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,releasePoi,bat,rtCumulative,false);
+      Float64 DpsStorage  = pProduct->GetDeflection(storageIntervalIdx,pftPretension,storagePoi,bat,rtCumulative,false);
       Float64 DpsErected  = pProduct->GetDeflection(erectionIntervalIdx,pftPretension,erectedPoi,bat,rtCumulative,false);
 
-      Float64 DgdrRelease  = pProduct->GetDeflection(releaseIntervalIdx,pftGirder,releasePoi,bat,rtCumulative,false);
-      Float64 DgdrStorage  = pProduct->GetDeflection(storageIntervalIdx,pftGirder,storagePoi,bat,rtCumulative,false);
+      Float64 DgdrRelease = pProduct->GetDeflection(releaseIntervalIdx,pftGirder,releasePoi,bat,rtCumulative,false);
+      Float64 DgdrStorage = pProduct->GetDeflection(storageIntervalIdx,pftGirder,storagePoi,bat,rtCumulative,false);
       Float64 DgdrErected = pProduct->GetDeflection(erectionIntervalIdx,pftGirder,erectedPoi,bat,rtCumulative,false);
 
-      //Float64 Dps1, Dps, Dgirder, Dcreep1, Ddiaphragm, Dshearkey, Dcreep2, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2, Dcreep3;
-      //Dps1       = pCamber->GetPrestressDeflection( poi, false );
-      //Dps        = pCamber->GetPrestressDeflection( poi, true );
-      //Dps1       = pProduct->GetDeflection(releaseIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
-      //Dps        = pProduct->GetDeflection(storageIntervalIdx,pftPretension,poi,bat,rtCumulative,false);
-      //Dgirder    = pProductForces->GetGirderDeflectionForCamber( poi );
-      //Dgirder    = pProduct->GetDeflection(storageIntervalIdx,pftGirder,poi,bat,rtCumulative,false);
       Float64 Dcreep1    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpReleaseToDiaphragm, constructionRate );
       Float64 Ddiaphragm = pCamber->GetDiaphragmDeflection( erectedPoi );
       Float64 Dshearkey  = pProduct->GetDeflection(castDeckIntervalIdx,pftShearKey,      erectedPoi,bat, rtCumulative, false);
