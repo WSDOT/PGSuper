@@ -642,6 +642,14 @@ CLSID CDeckedSlabBeamFactory::GetCLSID()
    return CLSID_DeckedSlabBeamFactory;
 }
 
+std::_tstring CDeckedSlabBeamFactory::GetName()
+{
+   USES_CONVERSION;
+   LPOLESTR pszUserType;
+   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
+   return std::_tstring( OLE2T(pszUserType) );
+}
+
 CLSID CDeckedSlabBeamFactory::GetFamilyCLSID()
 {
    return CLSID_DeckedSlabBeamFamily;

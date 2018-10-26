@@ -116,6 +116,8 @@ CogoObjectID g_AlignmentID = 999;
 #define LEFT_DECK_EDGE_LAYOUT_LINE_ID  -500
 #define RIGHT_DECK_EDGE_LAYOUT_LINE_ID -501
 
+#define DECK_REBAR_OFFSET 0.0015 // distance from the deck rebar cutoff point to the adjacent POI that is offset just a little so we capture jumps
+
 class PoiNotInSpan
 {
 public:
@@ -744,6 +746,12 @@ void CBridgeAgentImp::ValidatePointsOfInterest(const CGirderKey& girderKey)
       {
          firstGdrIdx = girderKey.girderIndex;
          lastGdrIdx  = firstGdrIdx;
+      }
+
+      GirderIndexType nGirdersThisGroup = pGroup->GetGirderCount();
+      if ( nGirdersThisGroup <= lastGdrIdx )
+      {
+         lastGdrIdx = nGirdersThisGroup-1;
       }
 
       for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx <= lastGdrIdx; gdrIdx++ )
@@ -4744,6 +4752,9 @@ void CBridgeAgentImp::LayoutPoiForSlabBarCutoffs(const CGirderKey& girderKey)
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckRebarData& rebarData = pBridgeDesc->GetDeckDescription()->DeckRebarData;
 
+   CComPtr<IGeomUtil2d> geomUtil;
+   geomUtil.CoCreateInstance(CLSID_GeomUtil);
+
    PierIndexType startPierIdx, endPierIdx;
    GetGirderGroupPiers(girderKey.groupIndex,&startPierIdx,&endPierIdx);
    for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
@@ -4751,15 +4762,43 @@ void CBridgeAgentImp::LayoutPoiForSlabBarCutoffs(const CGirderKey& girderKey)
       std::vector<CDeckRebarData::NegMomentRebarData> vSupplementalRebarData(rebarData.GetSupplementalReinforcement(pierIdx));
       BOOST_FOREACH(CDeckRebarData::NegMomentRebarData& nmRebarData,vSupplementalRebarData)
       {
+         CComPtr<IPierLine> pierLine;
+         GetPierLine(pierIdx,&pierLine);
+
+         CComPtr<ILine2d> centerlinePier;
+         pierLine->get_Centerline(&centerlinePier);
+
+         CComPtr<IAngle> objSkewAngle;
+         pierLine->get_Skew(&objSkewAngle);
+         Float64 skewAngle;
+         objSkewAngle->get_Value(&skewAngle);
+
          if ( pierIdx != endPierIdx )
          {
             // on ahead side of pier... do this for all pier except that last one in this group
             // the ahead side doesn't exist if this is the last group or it will be handled
             // when the next group is processed
+
+            Float64 offset = nmRebarData.RightCutoff*cos(skewAngle);
+
+            CComPtr<ILine2d> pAheadLine;
+            geomUtil->CreateParallelLine(centerlinePier,offset,&pAheadLine);
+
             SpanIndexType spanIdx = (SpanIndexType)pierIdx;
             CSpanKey spanKey(spanIdx,girderKey.girderIndex);
             Float64 Xspan = nmRebarData.RightCutoff;
+
+            // this is the poi measuring the right cutoff along the CL girder... this
+            // we don't actually want to do this. we want to measure bar cutoff
+            // in the direction of the alignment at the pier.
+            // This poi is near the one we want so it makes finding the actual location quicker
             pgsPointOfInterest poi = ConvertSpanPointToPoi(spanKey,Xspan);
+
+            Float64 Xpoi;
+            SegmentIndexType segIdx;
+            VERIFY(GirderLineIntersect(girderKey,pAheadLine,poi.GetSegmentKey().segmentIndex,&segIdx,&Xpoi));
+            poi.SetSegmentKey(CSegmentKey(girderKey,segIdx));
+            poi.SetDistFromStart(Xpoi);
             poi.SetID(INVALID_ID);
             poi.ClearAttributes();
             poi.SetNonReferencedAttributes(POI_DECKBARCUTOFF);
@@ -4767,7 +4806,7 @@ void CBridgeAgentImp::LayoutPoiForSlabBarCutoffs(const CGirderKey& girderKey)
 
             // put a POI just after the bar cutoff so we capture jumps in capacity
             poi.ClearAttributes();
-            poi.SetDistFromStart(poi.GetDistFromStart()+0.0015);
+            poi.SetDistFromStart(poi.GetDistFromStart()+DECK_REBAR_OFFSET);
             m_PoiMgr.AddPointOfInterest( poi );
          }
 
@@ -4777,12 +4816,23 @@ void CBridgeAgentImp::LayoutPoiForSlabBarCutoffs(const CGirderKey& girderKey)
             // the back side doesn't exist if this is the first group or it was handled
             // when the previous group was processed
 
+            Float64 offset = nmRebarData.LeftCutoff*cos(skewAngle);
+
+            CComPtr<ILine2d> pBackLine;
+            geomUtil->CreateParallelLine(centerlinePier,-offset,&pBackLine);
+
             SpanIndexType spanIdx = SpanIndexType(pierIdx-1);
             CSpanKey spanKey(spanIdx,girderKey.girderIndex);
             Float64 spanLength = GetSpanLength(spanKey);
             Float64 Xspan = spanLength - nmRebarData.LeftCutoff;
 
             pgsPointOfInterest poi = ConvertSpanPointToPoi(spanKey,Xspan);
+            Float64 Xpoi;
+            SegmentIndexType segIdx;
+            VERIFY(GirderLineIntersect(girderKey,pBackLine,poi.GetSegmentKey().segmentIndex,&segIdx,&Xpoi));
+            poi.SetSegmentKey(CSegmentKey(girderKey,segIdx));
+            poi.SetDistFromStart(Xpoi);
+
             poi.SetID(INVALID_ID);
             poi.ClearAttributes();
             poi.SetNonReferencedAttributes(POI_DECKBARCUTOFF);
@@ -4790,7 +4840,7 @@ void CBridgeAgentImp::LayoutPoiForSlabBarCutoffs(const CGirderKey& girderKey)
 
             // put a POI just before the bar cutoff so we capture jumps in capacity
             poi.ClearAttributes();
-            poi.SetDistFromStart(poi.GetDistFromStart()-0.0015);
+            poi.SetDistFromStart(poi.GetDistFromStart()-DECK_REBAR_OFFSET);
             m_PoiMgr.AddPointOfInterest( poi );
          }
       }
@@ -6894,17 +6944,30 @@ bool CBridgeAgentImp::IsRightExteriorGirder(const CGirderKey& girderKey)
 
    return location == ltRightExteriorGirder ? true : false;
 }
+
 bool CBridgeAgentImp::IsObtuseCorner(const CSpanKey& spanKey,pgsTypes::MemberEndType endType)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
    GirderIndexType nGirders = pSpan->GetGirderCount();
-   if ( 2 <= spanKey.girderIndex && spanKey.girderIndex <= nGirders-3 )
+
+   // in general, only the exterior and first interior girders are correctable
+   bool bIsLeftSideCorrectableGirder = (spanKey.girderIndex < 2 ? true : false);
+   bool bIsRightSideCorrectableGirder = (nGirders-2 <= spanKey.girderIndex ? true : false);
+   if ( pBridgeDesc->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
    {
-      // obtuse corner is for computing the skew correction factor for shear
-      // it only applies to the exterior and first interior girder
-      // since this girder isn't one of those, we'll say it is not in an obtuse corner
+      // There is not a composite deck so we consider this a deck system bridge.
+      // Per LRFD 4.6.2.2.3c (2014) "In determining the end shear in deck system
+      // bridges, the skew correction at the obtuse corner shall be applied to
+      // all the beams". 
+      bIsLeftSideCorrectableGirder  = true;
+      bIsRightSideCorrectableGirder = true;
+   }
+
+   if ( !bIsLeftSideCorrectableGirder && !bIsRightSideCorrectableGirder )
+   {
+      // girder is not skew corrected so say we are not in an obtuse corner
       return false;
    }
    else
@@ -6945,8 +7008,8 @@ bool CBridgeAgentImp::IsObtuseCorner(const CSpanKey& spanKey,pgsTypes::MemberEnd
             //
             // *** = Obtuse corner
             //
-            if ( (endType == pgsTypes::metStart && spanKey.girderIndex < 2) ||
-                 (endType == pgsTypes::metEnd   && nGirders-2 <= spanKey.girderIndex )
+            if ( (endType == pgsTypes::metStart && bIsLeftSideCorrectableGirder) ||
+                 (endType == pgsTypes::metEnd   && bIsRightSideCorrectableGirder )
                )
             {
                return true;
@@ -6969,8 +7032,8 @@ bool CBridgeAgentImp::IsObtuseCorner(const CSpanKey& spanKey,pgsTypes::MemberEnd
             //
             // *** = Obtuse corner
             //
-            if ( (endType == pgsTypes::metStart && nGirders-2 <= spanKey.girderIndex) ||
-                 (endType == pgsTypes::metEnd   && spanKey.girderIndex < 2)
+            if ( (endType == pgsTypes::metStart && bIsRightSideCorrectableGirder) ||
+                 (endType == pgsTypes::metEnd   && bIsLeftSideCorrectableGirder)
                )
             {
                return true;
@@ -7003,8 +7066,8 @@ bool CBridgeAgentImp::IsObtuseCorner(const CSpanKey& spanKey,pgsTypes::MemberEnd
             }
 
             ATLASSERT( !IsZero(endSkewAngle) );
-            if ( (0 < endSkewAngle && spanKey.girderIndex < 2) ||
-                 (endSkewAngle < 0 && nGirders-2 <= spanKey.girderIndex) )
+            if ( (0 < endSkewAngle && bIsLeftSideCorrectableGirder) ||
+                 (endSkewAngle < 0 && bIsRightSideCorrectableGirder) )
             {
                return true;
             }
@@ -7024,8 +7087,8 @@ bool CBridgeAgentImp::IsObtuseCorner(const CSpanKey& spanKey,pgsTypes::MemberEnd
             }
 
             ATLASSERT( !IsZero(startSkewAngle) );
-            if ( (0 < startSkewAngle && nGirders-2 <= spanKey.girderIndex) ||
-                 (startSkewAngle < 0 && spanKey.girderIndex < 2) )
+            if ( (0 < startSkewAngle && bIsRightSideCorrectableGirder) ||
+                 (startSkewAngle < 0 && bIsLeftSideCorrectableGirder) )
             {
                return true;
             }
@@ -7058,7 +7121,7 @@ bool CBridgeAgentImp::IsObtuseCorner(const CSpanKey& spanKey,pgsTypes::MemberEnd
             {
                // obtuse corners are on the left side
                ATLASSERT( 0 <= endSkewAngle );
-               if ( spanKey.girderIndex < 2 )
+               if ( bIsLeftSideCorrectableGirder )
                {
                   return true;
                }
@@ -7068,7 +7131,7 @@ bool CBridgeAgentImp::IsObtuseCorner(const CSpanKey& spanKey,pgsTypes::MemberEnd
                // obtuse corners are on the right side
                ATLASSERT( 0 <= startSkewAngle);
                ATLASSERT( endSkewAngle < 0 );
-               if ( nGirders-2 <= spanKey.girderIndex )
+               if ( bIsRightSideCorrectableGirder )
                {
                   return true;
                }
@@ -7078,8 +7141,8 @@ bool CBridgeAgentImp::IsObtuseCorner(const CSpanKey& spanKey,pgsTypes::MemberEnd
          {
             // shortest distance is from start,left to end,right so obtuse corners are
             // at the start,right and end,left
-            if ( (endType == pgsTypes::metStart && spanKey.girderIndex < 2) ||
-                 (endType == pgsTypes::metEnd && nGirders-2 <= spanKey.girderIndex) )
+            if ( (endType == pgsTypes::metStart && bIsLeftSideCorrectableGirder) ||
+                 (endType == pgsTypes::metEnd && bIsRightSideCorrectableGirder) )
             {
                return true;
             }
@@ -7089,8 +7152,8 @@ bool CBridgeAgentImp::IsObtuseCorner(const CSpanKey& spanKey,pgsTypes::MemberEnd
             ATLASSERT(d2 < d1);
             // shortest distance is from the start,right to end,left so the obtuse corners are
             // at the start,left and end,right
-            if ( (endType == pgsTypes::metStart && nGirders-2 <= spanKey.girderIndex) ||
-                 (endType == pgsTypes::metEnd && spanKey.girderIndex < 2) )
+            if ( (endType == pgsTypes::metStart && bIsRightSideCorrectableGirder) ||
+                 (endType == pgsTypes::metEnd && bIsLeftSideCorrectableGirder) )
             {
                return true;
             }
@@ -25016,125 +25079,109 @@ void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::Dec
       // negative moment reinforcement
       //
 
-      // pier rebar layout is measured relative to the piers so we want to work in span coordinates
-      CSpanKey spanKey;
-      Float64 Xspan;
-      ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
-
-      Float64 spanLength = GetSpanLength(spanKey); // span length measured along CL Girder
-      Float64 dist_from_cl_prev_pier = Xspan;
-      Float64 dist_to_cl_next_pier = spanLength - Xspan;
-
-      PierIndexType prevPierIdx = (PierIndexType)spanKey.spanIndex;
-      PierIndexType nextPierIdx = prevPierIdx+1;
-
+      Float64 station, offset;
+      GetStationAndOffset(poi,&station,&offset);
+      Float64 firstPierStation = GetPierStation(0);
       std::vector<CDeckRebarData::NegMomentRebarData>::const_iterator iter(rebarData.NegMomentRebar.begin());
       std::vector<CDeckRebarData::NegMomentRebarData>::const_iterator end(rebarData.NegMomentRebar.end());
       for ( ; iter != end; iter++ )
       {
          const CDeckRebarData::NegMomentRebarData& nmRebarData = *iter;
 
-         if ( (bTopMat    && (nmRebarData.Mat == CDeckRebarData::TopMat)) ||
-              (bBottomMat && (nmRebarData.Mat == CDeckRebarData::BottomMat)) )
+         Float64 pierStation = GetPierStation(nmRebarData.PierIdx);
+         
+         CComPtr<IAngle> objSkewAngle;
+         GetPierSkew(nmRebarData.PierIdx,&objSkewAngle);
+         Float64 skewAngle;
+         objSkewAngle->get_Value(&skewAngle);
+
+         Float64 stationAdjustment = offset*tan(skewAngle);
+
+         Float64 start = pierStation - nmRebarData.LeftCutoff + stationAdjustment;
+         Float64 end = start + (nmRebarData.LeftCutoff + nmRebarData.RightCutoff);
+         if ( ::InRange(start,station,end) )
          {
-            bool bAddRebarForPrevPier = ( nmRebarData.PierIdx == prevPierIdx && IsLE(dist_from_cl_prev_pier,nmRebarData.RightCutoff) );
-            bool bAddRebarForNextPier = ( nmRebarData.PierIdx == nextPierIdx && IsLE(dist_to_cl_next_pier,  nmRebarData.LeftCutoff ) );
-            const CPierData2* pPier = pBridgeDesc->GetPier(nmRebarData.PierIdx);
-            bool bIsContinuous = pPier->IsContinuous();
-            bool bIsIntegralLeft, bIsIntegralRight;
-            pPier->IsIntegral(&bIsIntegralLeft,&bIsIntegralRight);
+            if ( (bTopMat    && (nmRebarData.Mat == CDeckRebarData::TopMat)) ||
+                 (bBottomMat && (nmRebarData.Mat == CDeckRebarData::BottomMat)) )
+            {
+               const CPierData2* pPier = pBridgeDesc->GetPier(nmRebarData.PierIdx);
+               bool bIsContinuous = pPier->IsContinuous();
+               bool bIsIntegralLeft, bIsIntegralRight;
+               pPier->IsIntegral(&bIsIntegralLeft,&bIsIntegralRight);
 
-            // only add rebar if (1) supplemental rebar extends to or past this poi and
-            // (2) if the pier is continuous or integral such that negative moments occur
-            bool bAddRebar = false;
-            if ( bAddRebarForPrevPier && (bIsContinuous || bIsIntegralLeft) )
-            {
-               bAddRebar = true;
-            }
-
-            if ( bAddRebarForNextPier && (bIsContinuous || bIsIntegralRight) )
-            {
-               bAddRebar = true;
-            }
-            
-            if ( bAddRebar )
-            {
-               if ( (barType == pgsTypes::drbIndividual || barType == pgsTypes::drbAll) && nmRebarData.RebarSize != matRebar::bsNone )
+               if ( bIsContinuous || (bIsIntegralLeft || bIsIntegralRight) )
                {
-                  // Explicit rebar. Reduce area for development if needed.
-                  pBar = lrfdRebarPool::GetInstance()->GetRebar( nmRebarData.RebarType, nmRebarData.RebarGrade, nmRebarData.RebarSize);
-
-                  IndexType nBars = IsZero(nmRebarData.Spacing) ? 0 : IndexType(Weff/nmRebarData.Spacing) + 1;
-
-                  Float64 As = nBars*pBar->GetNominalArea()/Weff;
-                  Float64 db = pBar->GetNominalDimension();
-
-                  if ( bAdjForDevLength )
+                  if ( (barType == pgsTypes::drbIndividual || barType == pgsTypes::drbAll) && nmRebarData.RebarSize != matRebar::bsNone )
                   {
-                     // Get development length of bar
+                     // Explicit rebar. Reduce area for development if needed.
+                     pBar = lrfdRebarPool::GetInstance()->GetRebar( nmRebarData.RebarType, nmRebarData.RebarGrade, nmRebarData.RebarSize);
 
-                     // remove metric from bar name
-                     std::_tstring barst(pBar->GetName());
-                     std::size_t sit = barst.find(_T(" "));
-                     if (sit != std::_tstring::npos)
+                     IndexType nBars = IsZero(nmRebarData.Spacing) ? 0 : IndexType(Weff/nmRebarData.Spacing) + 1;
+
+                     Float64 As = nBars*pBar->GetNominalArea()/Weff;
+                     Float64 db = pBar->GetNominalDimension();
+
+                     if ( bAdjForDevLength )
                      {
-                        barst.erase(sit, barst.size()-1);
+                        // Get development length of bar
+
+                        // remove metric from bar name
+                        std::_tstring barst(pBar->GetName());
+                        std::size_t sit = barst.find(_T(" "));
+                        if (sit != std::_tstring::npos)
+                        {
+                           barst.erase(sit, barst.size()-1);
+                        }
+
+                        CComBSTR barname(barst.c_str());
+                        REBARDEVLENGTHDETAILS devdet = GetRebarDevelopmentLengthDetails(barname, pBar->GetNominalArea(), 
+                                                                                        pBar->GetNominalDimension(), pBar->GetYieldStrength(), 
+                                                                                        pDeck->Concrete.Type, pDeck->Concrete.Fc, 
+                                                                                        pDeck->Concrete.bHasFct, pDeck->Concrete.Fct);
+                        Float64 ld = devdet.ldb;
+
+                        Float64 left_bar_length = station - start; // distance from left end of bar to poi
+                        Float64 right_bar_length = end - station; // distance from right end of bar to poi
+                        Float64 bar_cutoff = Min(left_bar_length,right_bar_length); // cutoff length from POI
+
+                        bar_cutoff = IsZero(bar_cutoff) ? 0 : bar_cutoff;
+
+                        // Reduce As for development if needed
+                        if (ld < bar_cutoff)
+                        {
+                           ATLASSERT(0 < ld);
+                           As *= bar_cutoff / ld;
+                        }
                      }
 
-                     CComBSTR barname(barst.c_str());
-                     REBARDEVLENGTHDETAILS devdet = GetRebarDevelopmentLengthDetails(barname, pBar->GetNominalArea(), 
-                                                                                     pBar->GetNominalDimension(), pBar->GetYieldStrength(), 
-                                                                                     pDeck->Concrete.Type, pDeck->Concrete.Fc, 
-                                                                                     pDeck->Concrete.bHasFct, pDeck->Concrete.Fct);
-                     Float64 ld = devdet.ldb;
-
-                     Float64 bar_cutoff; // cutoff length from POI
-                     if ( nmRebarData.PierIdx == prevPierIdx )
+                     if (nmRebarData.Mat == CDeckRebarData::TopMat)
                      {
-                        bar_cutoff = nmRebarData.RightCutoff - dist_from_cl_prev_pier;
+                        Float64 Yb = tSlab - topCover - db/2;
+                        YbAs_Top += Yb*As;
+                        As_Top += As;
                      }
                      else
                      {
-                        bar_cutoff = nmRebarData.LeftCutoff - dist_to_cl_next_pier;
+                        Float64 Yb = bottomCover + db/2;
+                        YbAs_Bottom += Yb*As;
+                        As_Bottom += As;
                      }
+                  }
 
-                     bar_cutoff = IsZero(bar_cutoff) ? 0 : bar_cutoff;
-
-                     // Reduce As for development if needed
-                     if (ld < bar_cutoff)
+                  // Lump sum bars are not adjusted for development
+                  if ( (barType == pgsTypes::drbLumpSum || barType == pgsTypes::drbAll) )
+                  {
+                     if (nmRebarData.Mat == CDeckRebarData::TopMat)
                      {
-                        ATLASSERT(0 < ld);
-                        As *= bar_cutoff / ld;
+                        Float64 Yb = tSlab - topCover;
+                        YbAs_Top += Yb*nmRebarData.LumpSum;
+                        As_Top   += nmRebarData.LumpSum;
                      }
-                  }
-
-                  if (nmRebarData.Mat == CDeckRebarData::TopMat)
-                  {
-                     Float64 Yb = tSlab - topCover - db/2;
-                     YbAs_Top += Yb*As;
-                     As_Top += As;
-                  }
-                  else
-                  {
-                     Float64 Yb = bottomCover + db/2;
-                     YbAs_Bottom += Yb*As;
-                     As_Bottom += As;
-                  }
-               }
-
-               // Lump sum bars are not adjusted for development
-               if ( (barType == pgsTypes::drbLumpSum || barType == pgsTypes::drbAll) )
-               {
-                  if (nmRebarData.Mat == CDeckRebarData::TopMat)
-                  {
-                     Float64 Yb = tSlab - topCover;
-                     YbAs_Top += Yb*nmRebarData.LumpSum;
-                     As_Top   += nmRebarData.LumpSum;
-                  }
-                  else
-                  {
-                     YbAs_Bottom += bottomCover*nmRebarData.LumpSum;
-                     As_Bottom   += nmRebarData.LumpSum;
+                     else
+                     {
+                        YbAs_Bottom += bottomCover*nmRebarData.LumpSum;
+                        As_Bottom   += nmRebarData.LumpSum;
+                     }
                   }
                }
             }
@@ -25423,8 +25470,6 @@ void CBridgeAgentImp::CreateTendons(const CBridgeDescription2* pBridgeDesc,const
    const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
    const CPTData* pPTData = pGirder->GetPostTensioning();
    DuctIndexType nDucts = pPTData->GetDuctCount();
-
-   WebIndexType nWebs = GetWebCount(girderKey);
 
    const matPsStrand* pStrand = pPTData->pStrand;
 
@@ -26207,3 +26252,77 @@ Float64 CBridgeAgentImp::GetRelaxation(Float64 fpi,const matPsStrand* pStrand,Fl
    return fr;
 }
 
+bool CBridgeAgentImp::GirderLineIntersect(const CGirderKey& girderKey,ILine2d* pLine,SegmentIndexType segIdxHint,SegmentIndexType* pSegIdx,Float64* pXs)
+{
+   ASSERT_GIRDER_KEY(girderKey);
+   // First try the hint... if it is right, we are done fast
+   CSegmentKey segmentKey(girderKey,segIdxHint);
+   if ( SegmentLineIntersect(segmentKey,pLine,pXs) )
+   {
+      *pSegIdx = segIdxHint;
+      return true;
+   }
+
+   // work our way out from the hint segment
+   // Let's say there are 10 segments and the hint is for segment index = 6
+   // we want to try set 5, 7, 4, 8, 3, 9, 2, 1, 0... don't want to try 6 because
+   // we already did... working out from the hint alternating sides
+   SegmentIndexType nSegments = GetSegmentCount(girderKey);
+   std::vector<SegmentIndexType> segments;
+   segments.reserve(nSegments-1);
+
+   SegmentIndexType e1 = segIdxHint;
+   SegmentIndexType e2 = nSegments-1-segIdxHint;
+   SegmentIndexType end = segIdxHint == 0 ? nSegments-1 : Max(e1,e2);
+   for (SegmentIndexType i = 1; i <= end; i++ )
+   {
+      if ( i <= e1 )
+      {
+         segments.push_back(segIdxHint-i);
+      }
+
+      if ( i <= e2 )
+      {
+         segments.push_back(segIdxHint+i);
+      }
+   }
+
+   BOOST_FOREACH(SegmentIndexType segIdx,segments)
+   {
+      CSegmentKey segmentKey(girderKey,segIdx);
+      if ( SegmentLineIntersect(segmentKey,pLine,pXs) )
+      {
+         *pSegIdx = segIdx;
+         return true;
+      }
+   }
+
+   return false;
+}
+
+bool CBridgeAgentImp::SegmentLineIntersect(const CSegmentKey& segmentKey,ILine2d* pLine,Float64* pXs)
+{
+   ASSERT_SEGMENT_KEY(segmentKey);
+
+   VALIDATE(BRIDGE);
+   CComPtr<IGirderLine> girderLine;
+   GetGirderLine(segmentKey,&girderLine);
+
+   CComPtr<IPath> path;
+   girderLine->get_Path(&path);
+
+   CComPtr<IPoint2d> pntStartOfSegment;
+   girderLine->get_EndPoint(etStart,&pntStartOfSegment);
+
+   CComPtr<IPoint2d> pnt;
+   HRESULT hr = path->IntersectEx(pLine,pntStartOfSegment,VARIANT_FALSE,VARIANT_FALSE,&pnt);
+   if ( FAILED(hr) )
+   {
+      ATLASSERT(hr == COGO_E_NOINTERSECTION);
+      return false;
+   }
+
+   pntStartOfSegment->DistanceEx(pnt,pXs);
+
+   return true;
+}

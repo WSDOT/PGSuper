@@ -67,6 +67,10 @@ LPCTSTR CTimeStepDetailsChapterBuilder::GetName() const
 
 rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
+#if defined _BETA_VERSION
+   sysTime startTime;
+#endif // _BETA_VERSION
+
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -575,6 +579,14 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       // Distribution of internal forces to each element of the cross section
 
    } // next interval
+
+#if defined _BETA_VERSION
+   sysTime endTime;
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+   Uint32 duration = endTime.Seconds() - startTime.Seconds();
+   (*pPara) << _T("Elapsed time = ") << duration << _T(" seconds") << rptNewLine;
+#endif // _BETA_VERSION
 
    return pChapter;
 }

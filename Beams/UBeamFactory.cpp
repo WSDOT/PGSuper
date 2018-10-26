@@ -658,6 +658,14 @@ CLSID CUBeamFactory::GetCLSID()
    return CLSID_UBeamFactory;
 }
 
+std::_tstring CUBeamFactory::GetName()
+{
+   USES_CONVERSION;
+   LPOLESTR pszUserType;
+   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
+   return std::_tstring( OLE2T(pszUserType) );
+}
+
 CLSID CUBeamFactory::GetFamilyCLSID()
 {
    return CLSID_UBeamFamily;

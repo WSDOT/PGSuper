@@ -776,6 +776,14 @@ CLSID CSplicedNUBeamFactory::GetCLSID()
    return CLSID_SplicedNUBeamFactory;
 }
 
+std::_tstring CSplicedNUBeamFactory::GetName()
+{
+   USES_CONVERSION;
+   LPOLESTR pszUserType;
+   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
+   return std::_tstring( OLE2T(pszUserType) );
+}
+
 CLSID CSplicedNUBeamFactory::GetFamilyCLSID()
 {
    return CLSID_SplicedIBeamFamily;

@@ -175,7 +175,7 @@ void CLibraryEditorChildFrame::DoUpdateDuplicateEntry(CCmdUI* pCmdUI)
 {
    CLibEditorListView* pList= this->GetListView();
    ASSERT(pList);
-   pCmdUI->Enable(pList->IsItemSelected());
+   pCmdUI->Enable(pList->CanDuplicateEntry());
 }
 
 void CLibraryEditorChildFrame::DoUpdateDeleteEntry(CCmdUI* pCmdUI) 

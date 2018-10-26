@@ -705,6 +705,14 @@ CLSID CTxDotDoubleTFactory::GetCLSID()
    return CLSID_TxDotDoubleTFactory;
 }
 
+std::_tstring CTxDotDoubleTFactory::GetName()
+{
+   USES_CONVERSION;
+   LPOLESTR pszUserType;
+   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
+   return std::_tstring( OLE2T(pszUserType) );
+}
+
 CLSID CTxDotDoubleTFactory::GetFamilyCLSID()
 {
    return CLSID_DoubleTeeBeamFamily;

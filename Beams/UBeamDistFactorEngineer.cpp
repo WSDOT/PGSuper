@@ -1087,7 +1087,7 @@ std::_tstring CUBeamDistFactorEngineer::GetComputationDescription(const CGirderK
    }
    else if ( lldfMethod == LLDF_TXDOT )
    {
-      descr += std::_tstring(_T("TxDOT Method per Section 3 of the TxDOT LRFD Bridge Design Manual, Revised April, 2007"));
+      descr += std::_tstring(_T("TxDOT Method per per TxDOT Bridge Design Manual - LRFD"));
    }
    else if ( lldfMethod == LLDF_LRFD )
    {

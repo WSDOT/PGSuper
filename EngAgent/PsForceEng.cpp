@@ -920,6 +920,12 @@ Float64 pgsPsForceEng::GetEffectivePrestressWithLiveLoad(const pgsPointOfInteres
 
 Float64 pgsPsForceEng::GetEffectivePrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime)
 {
+   GET_IFACE(IPointOfInterest,pPoi);
+   if ( pPoi->IsOffSegment(poi) )
+   {
+      return 0;
+   }
+
    // fpe = fpj - loss + gain
    // fpe = fpj - effective loss
    // effective loss = loss - gain
@@ -931,6 +937,12 @@ Float64 pgsPsForceEng::GetEffectivePrestressLoss(const pgsPointOfInterest& poi,p
 
 Float64 pgsPsForceEng::GetEffectivePrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG& config)
 {
+   GET_IFACE(IPointOfInterest,pPoi);
+   if ( pPoi->IsOffSegment(poi) )
+   {
+      return 0;
+   }
+
    Float64 time_dependent_loss = GetTimeDependentLosses(poi,strandType,intervalIdx,intervalTime,&config);
    Float64 elastic_effects     = GetElasticEffects(poi,strandType,intervalIdx,intervalTime,&config);
    Float64 effective_loss = time_dependent_loss - elastic_effects;
@@ -939,6 +951,12 @@ Float64 pgsPsForceEng::GetEffectivePrestressLoss(const pgsPointOfInterest& poi,p
 
 Float64 pgsPsForceEng::GetEffectivePrestressLossWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState)
 {
+   GET_IFACE(IPointOfInterest,pPoi);
+   if ( pPoi->IsOffSegment(poi) )
+   {
+      return 0;
+   }
+
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx;
    if ( IsRatingLimitState(limitState) )
@@ -958,6 +976,12 @@ Float64 pgsPsForceEng::GetEffectivePrestressLossWithLiveLoad(const pgsPointOfInt
 
 Float64 pgsPsForceEng::GetEffectivePrestressLossWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState,const GDRCONFIG& config)
 {
+   GET_IFACE(IPointOfInterest,pPoi);
+   if ( pPoi->IsOffSegment(poi) )
+   {
+      return 0;
+   }
+
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx;
    if ( IsRatingLimitState(limitState) )
@@ -984,6 +1008,12 @@ Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsT
 
 Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig)
 {
+   GET_IFACE(IPointOfInterest,pPoi);
+   if ( pPoi->IsOffSegment(poi) )
+   {
+      return 0;
+   }
+
    GET_IFACE(ILosses,pLosses);
    const LOSSDETAILS* pDetails;
    if ( pConfig )
@@ -1000,6 +1030,12 @@ Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsT
 
 Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const LOSSDETAILS* pDetails)
 {
+   GET_IFACE(IPointOfInterest,pPoi);
+   if ( pPoi->IsOffSegment(poi) )
+   {
+      return 0;
+   }
+
    // NOTE: Losses are just time-dependent change in prestress force.
    // Losses do not include elastic effects include elastic shortening or elastic gains due to external loads
    //
@@ -1293,6 +1329,12 @@ Float64 pgsPsForceEng::GetElasticEffects(const pgsPointOfInterest& poi,pgsTypes:
 
 Float64 pgsPsForceEng::GetElasticEffects(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig)
 {
+   GET_IFACE(IPointOfInterest,pPoi);
+   if ( pPoi->IsOffSegment(poi) )
+   {
+      return 0;
+   }
+
    GET_IFACE(ILosses,pLosses);
    const LOSSDETAILS* pDetails;
    if ( pConfig )

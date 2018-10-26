@@ -843,9 +843,19 @@ void CBridgeDescGeneralPage::FillDeckTypeComboBox()
    pgsTypes::SupportedDeckTypes deckTypes = m_Factory->GetSupportedDeckTypes(m_GirderSpacingType);
 
    CComboBox* pcbDeck = (CComboBox*)GetDlgItem(IDC_DECK_TYPE);
+   int cursel = pcbDeck->GetCurSel();
+   pgsTypes::SupportedDeckType deckType;
+   if ( cursel != CB_ERR )
+   {
+      deckType = (pgsTypes::SupportedDeckType)pcbDeck->GetItemData(cursel);
+   }
+   else
+   {
+      deckType = m_Deck.DeckType;
+   }
+
    pcbDeck->ResetContent();
 
-   int cursel = CB_ERR;
    pgsTypes::SupportedDeckTypes::iterator iter;
    int selidx = 0;
    for ( iter = deckTypes.begin(); iter != deckTypes.end(); iter++ )
@@ -856,7 +866,7 @@ void CBridgeDescGeneralPage::FillDeckTypeComboBox()
 
       pcbDeck->SetItemData(selidx,(DWORD)*iter);
 
-      if ( *iter == m_Deck.DeckType )
+      if ( *iter == deckType )
       {
          cursel = selidx;
       }
@@ -1040,6 +1050,7 @@ void CBridgeDescGeneralPage::OnGirderNameChanged()
 
 
    UpdateSuperstructureDescription();
+   FillDeckTypeComboBox();
 }
 
 void CBridgeDescGeneralPage::OnGirderConnectivityChanged() 

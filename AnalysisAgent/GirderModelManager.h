@@ -305,11 +305,13 @@ private:
    // There is one girder model for each girder line in the bridge model.
    std::map<GirderIndexType,CGirderModelData> m_GirderModels;
    CGirderModelData* GetGirderModel(GirderIndexType gdrLineIdx);
+   CGirderModelData* GetGirderModel(GirderIndexType gdrLineIdx,pgsTypes::BridgeAnalysisType bat);
    void ValidateGirderModels(const CGirderKey& girderKey);
    GirderIndexType GetGirderLineIndex(const CGirderKey& girderKey);
 
    void CheckGirderEndGeometry(IBridge* pBridge,const CGirderKey& girderKey);
    void BuildModel(GirderIndexType gdrLineIdx);
+   void BuildModel(GirderIndexType gdrLineIdx,pgsTypes::BridgeAnalysisType bat);
    void BuildLBAM(GirderIndexType gdr,bool bContinuousModel,IContraflexureResponse* pContraflexureResponse,IContraflexureResponse* pDeflContraflexureResponse,ILBAMModel* pModel);
    void CreateLBAMStages(GirderIndexType gdrLineIdx,ILBAMModel* pModel);
    void CreateLBAMSpans(GirderIndexType gdrLineIdx,bool bContinuousModel,const lrfdLoadModifier& loadModifier,ILBAMModel* pModel);

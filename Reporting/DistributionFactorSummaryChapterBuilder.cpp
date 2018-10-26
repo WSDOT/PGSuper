@@ -205,8 +205,6 @@ void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,
       pDistFact->GetDistributionFactors(poi_end, pgsTypes::StrengthI, &pM, &nm, &VEnd);
       nM.Right() = nm;
 
-      sysSectionValue V(VStart,VEnd);
-
       (*pTable)(row,1) << df.SetValue(pM);
 
       if ( bNegMoments )
@@ -218,7 +216,15 @@ void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,
          (*pTable)(row,2) << _T("------");
       }
 
-      (*pTable)(row,3) << dfV.SetValue(V);
+      if ( IsEqual(VStart,VEnd) )
+      {
+         (*pTable)(row,3) << dfV.SetValue(VStart);
+      }
+      else
+      {
+         (*pTable)(row,3) << dfV.SetValue(VStart) << _T(" (Left End)") << rptNewLine;
+         (*pTable)(row,3) << dfV.SetValue(VEnd) << _T(" (Right End)");
+      }
 
 
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
@@ -228,9 +234,6 @@ void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,
 
          pDistFact->GetDistributionFactors(poi_end,pgsTypes::FatigueI,&pM,&nm,&VEnd);
          nM.Right() = nm;
-
-         V.Left() = VStart;
-         V.Right() = VEnd;
 
          (*pTable)(row,4) << df.SetValue(pM);
 
@@ -243,7 +246,15 @@ void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,
             (*pTable)(row,5) << _T("------");
          }
 
-         (*pTable)(row,6) << dfV.SetValue(V);
+         if ( IsEqual(VStart,VEnd) )
+         {
+            (*pTable)(row,6) << dfV.SetValue(VStart);
+         }
+         else
+         {
+            (*pTable)(row,6) << dfV.SetValue(VStart) << _T(" (Left End)") << rptNewLine;
+            (*pTable)(row,6) << dfV.SetValue(VEnd) << _T(" (Right End)");
+         }
       }
 
       row++;

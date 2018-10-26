@@ -70,8 +70,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,27
- PRODUCTVERSION 3,0,0,27
+ FILEVERSION 3,0,0,28
+ PRODUCTVERSION 3,0,0,28
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -89,12 +89,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PgsExt DLL"
-            VALUE "FileVersion", "3.0.0.27"
+            VALUE "FileVersion", "3.0.0.28"
             VALUE "InternalName", "PgsExt"
             VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PgsExt.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.27"
+            VALUE "ProductVersion", "3.0.0.28"
         END
     END
     BLOCK "VarFileInfo"

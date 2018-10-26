@@ -51,6 +51,25 @@ struct ISuperstructureMember;
 struct IGirderSection;
 struct IStrandMover;
 
+// In order for PGSuper 2.x to work on the same computer as PGSuper 3.x we
+// had to change all the Class IDs of the beam factories. Files saved with
+// version 2.x have the old CLSIDs and we need the new CLSID to create
+// the beam factory. This is easy to implement for our own beam factories,
+// however, we need a way to translate CLSIDs for extension beams. That is
+// what objects of this type do. External publishers of beam factors
+// must register their BeamFactoryCLSIDTranslator with the BeamFactoryCLSIDTranslator
+// category. We will discover all registered translaters and include them in the
+// CLSID translation process.
+
+// {2A687193-C7AD-4943-83AC-BF577CF805E2}
+DEFINE_GUID(IID_IBeamFactoryCLSIDTranslator, 
+0x2a687193, 0xc7ad, 0x4943, 0x83, 0xac, 0xbf, 0x57, 0x7c, 0xf8, 0x5, 0xe2);
+interface IBeamFactoryCLSIDTranslator : public IUnknown
+{
+   virtual bool TranslateCLSID(LPCTSTR oldCLSID,LPCTSTR* newCLSID) = 0;
+};
+
+
 /*****************************************************************************
 INTERFACE
    IBeamFactory
@@ -176,6 +195,11 @@ interface IBeamFactory : IUnknown
    //---------------------------------------------------------------------------------
    // Returns the class identifier for the beam factory
    virtual CLSID GetCLSID() = 0;
+
+   //---------------------------------------------------------------------------------
+   // Returns a name string that identifies this beam factory
+   // this is not guarenteed to be unique
+   virtual std::_tstring GetName() = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the class identifier for the beam family

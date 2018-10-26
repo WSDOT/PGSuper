@@ -721,7 +721,6 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
    {
       ShowEndOffsetControls(FALSE);
       ShowHpOffsetControls(FALSE);
-      GetDlgItem(IDC_HP_NOTE)->ShowWindow(SW_HIDE);
    }
 
    return TRUE;  // return TRUE unless you set the focus to a control
@@ -1939,7 +1938,6 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
    // show hidden controls
    ShowEndOffsetControls(TRUE);
    ShowHpOffsetControls(TRUE);
-   GetDlgItem(IDC_HP_NOTE)->ShowWindow(SW_SHOW);
 
 #pragma Reminder("IMPLEMENT: if converting from direct input to a library strand fill type, ask user if it is ok to throw away all strands")
    // direct input is not going to be, in general, compatible with a library.
@@ -2161,7 +2159,6 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
          HideControls(1, newStrandDefinitionType); 
          ShowEndOffsetControls(FALSE);
          ShowHpOffsetControls(FALSE);
-         GetDlgItem(IDC_HP_NOTE)->ShowWindow(SW_HIDE);
       }
       else
       {

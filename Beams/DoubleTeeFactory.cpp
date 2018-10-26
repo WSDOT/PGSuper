@@ -240,7 +240,7 @@ void CDoubleTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDT
    CComObject<CMultiWebDistFactorEngineer>::CreateInstance(&pEngineer);
    pEngineer->SetBroker(pBroker,statusGroupID);
 
-   pEngineer->SetBeamType(CMultiWebDistFactorEngineer::btMultiWebTee);
+   pEngineer->SetBeamType(IMultiWebDistFactorEngineer::btMultiWebTee);
 
    (*ppEng) = pEngineer;
    (*ppEng)->AddRef();
@@ -582,6 +582,14 @@ std::_tstring CDoubleTeeFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBro
 CLSID CDoubleTeeFactory::GetCLSID()
 {
    return CLSID_DoubleTeeFactory;
+}
+
+std::_tstring CDoubleTeeFactory::GetName()
+{
+   USES_CONVERSION;
+   LPOLESTR pszUserType;
+   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
+   return std::_tstring( OLE2T(pszUserType) );
 }
 
 CLSID CDoubleTeeFactory::GetFamilyCLSID()

@@ -765,6 +765,14 @@ CLSID CVoidedSlabFactory::GetCLSID()
    return CLSID_VoidedSlabFactory;
 }
 
+std::_tstring CVoidedSlabFactory::GetName()
+{
+   USES_CONVERSION;
+   LPOLESTR pszUserType;
+   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
+   return std::_tstring( OLE2T(pszUserType) );
+}
+
 CLSID CVoidedSlabFactory::GetFamilyCLSID()
 {
    return CLSID_SlabBeamFamily;

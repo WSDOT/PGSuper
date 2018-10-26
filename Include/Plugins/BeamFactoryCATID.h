@@ -22,6 +22,11 @@
 
 #pragma once
 
+// {8317D6CA-D247-4661-B8AA-34A9AB5BFF7D}
+DEFINE_GUID(CATID_BeamFactoryCLSIDTranslator, 
+0x8317d6ca, 0xd247, 0x4661, 0xb8, 0xaa, 0x34, 0xa9, 0xab, 0x5b, 0xff, 0x7d);
+
+
 /////////////////////////////////////////////////////////////////////////////
 // Beam factory category - CATIDs
 

@@ -1318,6 +1318,9 @@ private:
    Float64 GetTempEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, Float64* nEffectiveStrands);
 
    Float64 GetSuperstructureDepth(PierIndexType pierIdx);
+
+   bool GirderLineIntersect(const CGirderKey& girderKey,ILine2d* pLine,SegmentIndexType segIdxHint,SegmentIndexType* pSegIdx,Float64* pXs);
+   bool SegmentLineIntersect(const CSegmentKey& segmentKey,ILine2d* pLine,Float64* pXs);
 };
 
 #endif //__BRIDGEAGENT_H_

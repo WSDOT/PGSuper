@@ -25,6 +25,7 @@
 
 #include <EAF\EAFUtilities.h>
 #include <IFace\Project.h>
+#include <IFace\Bridge.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\GirderLabel.h>
 
@@ -703,7 +704,29 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
             const CSplicedGirderData* pGirder = pBridgeDesc->FindGirder(tendonKey.girderID);
             tendonKey.girderKey = pGirder->GetGirderKey();
          }
-         m_StressTendonIntervals.insert(std::make_pair(tendonKey,stressTendonIntervalIdx));
+
+         // we need to know the number of webs in a girder, but since we are in the middle
+         // of validating the overall bridge model, we can't make a request throught the
+         // IGirder interface. Doing so would cause recursion and *crash*. 
+         //
+         // Here is an alternative method that works
+         const CSplicedGirderData* pGirder = pBridgeDesc->GetGirderGroup(tendonKey.girderKey.groupIndex)->GetGirder(tendonKey.girderKey.girderIndex);
+         const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
+         CComPtr<IBeamFactory> factory;
+         pGdrEntry->GetBeamFactory(&factory);
+
+         CComPtr<IGirderSection> gdrSection;
+         factory->CreateGirderSection(NULL,INVALID_ID,pGdrEntry->GetDimensions(),-1,-1,&gdrSection);
+
+         WebIndexType nWebs;
+         gdrSection->get_WebCount(&nWebs);
+
+         for ( WebIndexType webIdx = 0; webIdx < nWebs; webIdx++ )
+         {
+            DuctIndexType thisDuctIdx = nWebs*tendonKey.ductIdx + webIdx;
+            CTendonKey thisTendonKey(tendonKey.girderKey,thisDuctIdx);
+            m_StressTendonIntervals.insert(std::make_pair(thisTendonKey,stressTendonIntervalIdx));
+         }
       }
    }
 

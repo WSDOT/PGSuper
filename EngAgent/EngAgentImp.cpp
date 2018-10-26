@@ -2618,9 +2618,6 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
 
    SpanIndexType nSpans = pBridge->GetSpanCount();
 
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
-   Float64 dist_from_start = poi.GetDistFromStart() - end_size;
-
    Float64 dfPoints[2];
    IndexType nPoints;
    GetNegMomentDistFactorPoints(spanKey,&dfPoints[0],&nPoints);
@@ -2634,12 +2631,6 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
       Float64 skewFactor = GetSkewCorrectionFactorForShear(spanKey,limitState);
       if ( !IsEqual(skewFactor,1.0) )
       {
-#if defined _DEBUG
-         // girder must be an exterior or first interior girder
-         GirderIndexType nGirders = pBridge->GetGirderCountBySpan(spanKey.spanIndex);
-         ATLASSERT( spanKey.girderIndex <= 1 || nGirders-2 <= spanKey.girderIndex );
-#endif
-
          Float64 span_length = pBridge->GetSpanLength(spanKey);
          Float64 L = span_length/2;
 
@@ -2652,11 +2643,11 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
          if ( bObtuseStart && !bObtuseEnd )
          {
             // obtuse corner is at the start of the span...
-            if ( dist_from_start <= L )
+            if ( Xspan <= L )
             {
                // ... and this poi is in the first half of the span so 
                // the skew factor needs to vary from its full value to 1.0 at mid-span
-               Float64 adjustedSkewFactor = skewFactor - (1.0 - skewFactor)*dist_from_start/L;
+               Float64 adjustedSkewFactor = (L - Xspan)*(skewFactor - 1.0)/L + 1.0;
                (*V) = gV*adjustedSkewFactor;
             }
             else
@@ -2670,7 +2661,7 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
          {
             ATLASSERT(pBridge->IsObtuseCorner(spanKey,pgsTypes::metEnd) == true);
             // obtuse corner is at the end of the span...
-            if ( dist_from_start <= L )
+            if ( Xspan <= L )
             {
                // ... and this poi is in the first half of the span so
                // the skew correction factor isn't used
@@ -2681,21 +2672,21 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
                // ... and this poi is past the first half of the span so
                // the skew factor needs vary from 1.0 at mid-span to its full value
                // at the end of the span
-               Float64 adjustedSkewFactor = (dist_from_start - L)*(skewFactor - 1.0)/(span_length - L) + 1.0;
+               Float64 adjustedSkewFactor = (Xspan - L)*(skewFactor - 1.0)/(span_length - L) + 1.0;
                (*V) = gV*adjustedSkewFactor;
             }
          }
          else if ( bObtuseStart && bObtuseEnd )
          {
             // obtuse on both ends
-            if ( dist_from_start <= L )
+            if ( Xspan <= L )
             {
-               Float64 adjustedSkewFactor = skewFactor - (1.0 - skewFactor)*dist_from_start/L;
+               Float64 adjustedSkewFactor = (L - Xspan)*(skewFactor - 1.0)/L + 1.0;
                (*V) = gV*adjustedSkewFactor;
             }
             else
             {
-               Float64 adjustedSkewFactor = (dist_from_start - L)*(skewFactor - 1.0)/(span_length - L) + 1.0;
+               Float64 adjustedSkewFactor = (Xspan - L)*(skewFactor - 1.0)/(span_length - L) + 1.0;
                (*V) = gV*adjustedSkewFactor;
             }
          }
@@ -2711,11 +2702,11 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
             if ( IsZero(skewAngle) )
             {
                // right angle is at the start, treat is as the obtuse corner...
-               if ( dist_from_start <= L )
+               if ( Xspan <= L )
                {
                   // ... and this poi is in the first half of the span so 
                   // the skew factor needs to vary from its full value to 1.0 at mid-span
-                  Float64 adjustedSkewFactor = skewFactor - (1.0 - skewFactor)*dist_from_start/L;
+                  Float64 adjustedSkewFactor = (L - Xspan)*(skewFactor - 1.0)/L + 1.0;
                   (*V) = gV*adjustedSkewFactor;
                }
                else
@@ -2728,7 +2719,7 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
             else
             {
                // right angle is at the end, treat it as the obtuse corner...
-               if ( dist_from_start <= L )
+               if ( Xspan <= L )
                {
                   // ... and this poi is in the first half of the span so
                   // the skew correction factor isn't used
@@ -2739,7 +2730,7 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
                   // ... and this poi is past the first half of the span so
                   // the skew factor needs vary from 1.0 at mid-span to its full value
                   // at the end of the span
-                  Float64 adjustedSkewFactor = (dist_from_start - L)*(skewFactor - 1.0)/(span_length - L) + 1.0;
+                  Float64 adjustedSkewFactor = (Xspan - L)*(skewFactor - 1.0)/(span_length - L) + 1.0;
                   (*V) = gV*adjustedSkewFactor;
                }
             }
@@ -2755,7 +2746,7 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
    }
    else if ( nPoints == 1 )
    {
-      if ( dist_from_start < dfPoints[0] )
+      if ( Xspan < dfPoints[0] )
       {  
          // right of contraflexure point
          bool bContinuousOnLeft, bContinuousOnRight;
@@ -2798,11 +2789,11 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
    }
    else
    {
-      if ( dist_from_start < dfPoints[0] )
+      if ( Xspan < dfPoints[0] )
       {
          *nM = GetNegMomentDistFactorAtPier(prev_pier,spanKey.girderIndex,limitState,pgsTypes::Ahead);
       }
-      else if ( dfPoints[0] <= dist_from_start && dist_from_start <= dfPoints[1] )
+      else if ( ::InRange(dfPoints[0],Xspan,dfPoints[1]) )
       {
          *nM = GetNegMomentDistFactor(spanKey,limitState);
       }
@@ -2964,16 +2955,19 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
          table->SetRowSpan(1,0,-1);
          (*table)(0,0) << _T("");
 
-         table->SetColumnSpan(0,1,3);
+         table->SetColumnSpan(0,1,4);
          (*table)(0,1) << _T("Strength/Service");
 
-         table->SetColumnSpan(0,2,3);
-         (*table)(0,2) << _T("Fatigue");
+         table->SetColumnSpan(0,2,SKIP_CELL);
+         table->SetColumnSpan(0,3,SKIP_CELL);
+         table->SetColumnSpan(0,4,SKIP_CELL);
 
-         table->SetColumnSpan(0,3,-1);
-         table->SetColumnSpan(0,4,-1);
-         table->SetColumnSpan(0,5,-1);
-         table->SetColumnSpan(0,6,-1);
+         table->SetColumnSpan(0,5,4);
+         (*table)(0,5) << _T("Fatigue");
+
+         table->SetColumnSpan(0,6,SKIP_CELL);
+         table->SetColumnSpan(0,7,SKIP_CELL);
+         table->SetColumnSpan(0,8,SKIP_CELL);
 
          (*table)(1,1) << _T("+M");
          (*table)(1,2) << _T("-M");

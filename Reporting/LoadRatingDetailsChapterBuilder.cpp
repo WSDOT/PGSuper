@@ -248,7 +248,6 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
 
    rptCapacityToDemand rating_factor;
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
    ColumnIndexType col = 0;
 
    (*table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -655,7 +654,7 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
 
    *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ReinforcementYieldingParameters.png") ) << rptNewLine;
 
-   ColumnIndexType nColumns = 17;
+   ColumnIndexType nColumns = 18;
    if ( bSplicedGirder )
    {
       nColumns += 4;
@@ -668,7 +667,6 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    //*pPara << table << rptNewLine; // don't add table here... see below
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,  location, pDisplayUnits->GetSpanLengthUnit(),      false );
    location.IncludeSpanAndGirder(true);
@@ -682,8 +680,6 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    rptCapacityToDemand rating_factor;
-
-   GET_IFACE2(pBroker,IBridge,pBridge);
 
    ColumnIndexType col = 0;
 
@@ -701,7 +697,7 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("LL+IM")) << _T("( *)"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("cr")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("bcr")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,col++) << COLHDR(Sub2(_T("d"),_T("ps")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,col++) << COLHDR(Sub2(_T("d"),_T("s")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*table)(0,col++) << COLHDR(_T("c"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*table)(0,col++) << COLHDR(Sub2(_T("I"),_T("cr")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
    (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -711,6 +707,7 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    (*table)(0,col++) << COLHDR(RPT_STRESS(_T("s")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(RPT_STRESS(_T("r")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << _T("Stress") << rptNewLine << _T("Ratio") << rptNewLine << RPT_STRESS(_T("r")) << _T("/") << RPT_STRESS(_T("s"));
+   (*table)(0,col++) << _T("Reinf.") << rptNewLine << _T("Type");
 
    const pgsYieldStressRatioArtifact* pControllingRating;
    pRatingArtifact->GetYieldStressRatioEx(bPositiveMoment,&pControllingRating);
@@ -750,10 +747,42 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
 
       pgsYieldStressRatioArtifact& artifact = iter->second;
 
-      Float64 pM, nM, V;
-      pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
-      pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special ? pgsTypes::FatigueI : pgsTypes::StrengthI);
-      pDistFact->GetDistributionFactors(poi,limit_state,&pM,&nM,&V);
+      Float64 rebarSR = artifact.GetRebarStressRatio();
+      Float64 strandSR = artifact.GetStrandStressRatio();
+      Float64 tendonSR = artifact.GetTendonStressRatio();
+
+      Float64 SR = Min(rebarSR,strandSR,tendonSR);
+      IndexType srIdx = MinIndex(rebarSR,strandSR,tendonSR);
+
+      Float64 d;
+      Float64 E;
+      Float64 f;
+      Float64 fy;
+      Float64 fs;
+      Float64 fcr;
+      Float64 fallow;
+      if ( srIdx == 0 )
+      {
+         artifact.GetRebar(&d,&f,&fy,&E);
+         fcr = artifact.GetRebarCrackingStressIncrement();
+         fs = artifact.GetRebarStress();
+         fallow = artifact.GetRebarAllowableStress();
+      }
+      else if ( srIdx == 1 )
+      {
+         artifact.GetStrand(&d,&f,&fy,&E);
+         fcr = artifact.GetStrandCrackingStressIncrement();
+         fs = artifact.GetStrandStress();
+         fallow = artifact.GetStrandAllowableStress();
+      }
+      else
+      {
+         artifact.GetTendon(&d,&f,&fy,&E);
+         fcr = artifact.GetTendonCrackingStressIncrement();
+         fs = artifact.GetTendonStress();
+         fallow = artifact.GetTendonAllowableStress();
+      }
+
 
       (*table)(row,col++) << location.SetValue( POI_SPAN,  poi );
       (*table)(row,col++) << moment.SetValue(artifact.GetDeadLoadMoment());
@@ -765,28 +794,41 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
          (*table)(row,col++) << moment.SetValue(artifact.GetRelaxationMoment());
          (*table)(row,col++) << moment.SetValue(artifact.GetSecondaryEffectsMoment());
       }
-      (*table)(row,col++) << scalar.SetValue(bPositiveMoment ? pM : nM);
+      (*table)(row,col++) << scalar.SetValue(artifact.GetLiveLoadDistributionFactor());
       (*table)(row,col++) << moment.SetValue(artifact.GetLiveLoadMoment());
       (*table)(row,col++) << moment.SetValue(artifact.GetCrackingMoment());
       (*table)(row,col++) << moment.SetValue(artifact.GetExcessMoment());
-      (*table)(row,col++) << dim.SetValue(artifact.GetReinforcementDepth());
+      (*table)(row,col++) << dim.SetValue(d);
       (*table)(row,col++) << dim.SetValue(artifact.GetCrackDepth());
       (*table)(row,col++) << mom_i.SetValue(artifact.GetIcr());
-      (*table)(row,col++) << stress.SetValue(artifact.GetEffectivePrestress());
-      (*table)(row,col++) << stress.SetValue(artifact.GetCrackingStressIncrement());
-      (*table)(row,col++) << mod_e.SetValue(artifact.GetEs());
+      (*table)(row,col++) << stress.SetValue(f);
+      (*table)(row,col++) << stress.SetValue(fcr);
+      (*table)(row,col++) << mod_e.SetValue(E);
       (*table)(row,col++) << mod_e.SetValue(artifact.GetEg());
-      (*table)(row,col++) << stress.SetValue(artifact.GetStrandStress());
-      (*table)(row,col++) << stress.SetValue(artifact.GetAllowableStress());
+      (*table)(row,col++) << stress.SetValue(fs);
+      (*table)(row,col++) << stress.SetValue(fallow);
 
-      Float64 stress_ratio = artifact.GetStressRatio();
-      if ( stress_ratio < 1 )
+
+      if ( SR < 1 )
       {
-         (*table)(row,col++) << RF_FAIL(rating_factor,stress_ratio);
+         (*table)(row,col++) << RF_FAIL(rating_factor,SR);
       }
       else
       {
-         (*table)(row,col++) << RF_PASS(rating_factor,stress_ratio);
+         (*table)(row,col++) << RF_PASS(rating_factor,SR);
+      }
+
+      if ( srIdx == 0 )
+      {
+         (*table)(row,col++) << _T("Rebar");
+      }
+      else if ( srIdx == 1 )
+      {
+         (*table)(row,col++) << _T("Strand");
+      }
+      else
+      {
+         (*table)(row,col++) << _T("Tendon");
       }
 
       row++;

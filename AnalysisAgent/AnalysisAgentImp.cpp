@@ -2061,9 +2061,9 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
       else
       {
 #if defined _DEBUG
-         GET_IFACE(IPointOfInterest,pPoi);
-         std::vector<CSegmentKey> vSegmentKeys(pPoi->GetSegmentKeys(vPoi));
-         ATLASSERT(vSegmentKeys.size() == 1); // this method assumes all the poi are for the same segment
+         //GET_IFACE(IPointOfInterest,pPoi);
+         //std::vector<CSegmentKey> vSegmentKeys(pPoi->GetSegmentKeys(vPoi));
+         //ATLASSERT(vSegmentKeys.size() == 1); // this method assumes all the poi are for the same segment
 #endif
          // This is not time-step analysis.
          // The pretension effects are handled in the segment and girder models for

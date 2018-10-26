@@ -763,6 +763,14 @@ CLSID CTaperedIBeamFactory::GetCLSID()
    return CLSID_TaperedIBeamFactory;
 }
 
+std::_tstring CTaperedIBeamFactory::GetName()
+{
+   USES_CONVERSION;
+   LPOLESTR pszUserType;
+   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
+   return std::_tstring( OLE2T(pszUserType) );
+}
+
 CLSID CTaperedIBeamFactory::GetFamilyCLSID()
 {
    return CLSID_WFBeamFamily;

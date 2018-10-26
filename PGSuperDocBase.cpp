@@ -3751,10 +3751,13 @@ void CPGSuperDocBase::SaveDocumentSettings()
 
 void CPGSuperDocBase::OnLogFileOpened()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CEAFBrokerDocument::OnLogFileOpened();
 
    GET_IFACE(IEAFProjectLog,pLog);
    CString strMsg;
+
    CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
    strMsg.Format(_T("PGSuper version %s"),pApp->GetVersion(false).GetBuffer(100));
    pLog->LogMessage(strMsg);

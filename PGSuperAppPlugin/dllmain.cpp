@@ -124,7 +124,11 @@ CString CPGSuperAppPluginApp::GetVersion(bool bIncludeBuildNumber) const
    strExe += ".dll";
 
    CVersionInfo verInfo;
-   verInfo.Load(strExe);
+   if ( !verInfo.Load(strExe) )
+   {
+      ATLASSERT(false);
+      return CString(_T("Unknown"));
+   }
    
    CString strVersion = verInfo.GetProductVersionAsString();
 

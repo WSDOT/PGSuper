@@ -43,6 +43,7 @@
 #include <BridgeLinkCATID.h>
 
 #include "PGSuperLibraryMgrCATID.h"
+#include <Plugins\BeamFactoryCATID.h>
 #include <PGSuperCatCom.h>
 #include <PGSpliceCatCom.h>
 

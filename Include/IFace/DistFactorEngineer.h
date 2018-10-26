@@ -114,5 +114,16 @@ interface IDistFactorEngineer : IUnknown
    virtual Float64 GetSkewCorrectionFactorForShear(const CSpanKey& spanKey,pgsTypes::LimitState ls) = 0;
 };
 
+// {6B0D91AD-A60F-4ce3-8E4A-766E7852E38C}
+DEFINE_GUID(IID_IMultiWebDistFactorEngineer, 
+0x6b0d91ad, 0xa60f, 0x4ce3, 0x8e, 0x4a, 0x76, 0x6e, 0x78, 0x52, 0xe3, 0x8c);
+interface IMultiWebDistFactorEngineer : IUnknown
+{
+   enum BeamType  {btMultiWebTee, btDeckBulbTee, btDeckedSlabBeam};
+
+   virtual void SetBeamType(BeamType bt) = 0;
+   virtual BeamType GetBeamType()  = 0;
+};
+
 #endif // INCLUDED_IFACE_DISTFACTORENGINEER_H_
 

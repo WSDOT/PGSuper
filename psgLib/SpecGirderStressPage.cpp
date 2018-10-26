@@ -212,29 +212,42 @@ void CSpecGirderStressPage::OnCheckSevereServiceIIITensionMax()
 void CSpecGirderStressPage::OnCheckTemporaryStresses()
 {
    CButton* pchk = (CButton*)GetDlgItem(IDC_CHECK_TEMPORARY_STRESSES);
-   BOOL bIsChecked = pchk->GetCheck();
+   BOOL bEnable = pchk->GetCheck() == BST_CHECKED;
 
-   GetDlgItem(IDC_TEMP_STRAND_REMOVAL_GROUP)->EnableWindow(bIsChecked);
-   GetDlgItem(IDC_TS_REMOVAL_COMPRESSION_LABEL)->EnableWindow(bIsChecked);
-   GetDlgItem(IDC_TS_REMOVAL_COMPRESSION)->EnableWindow(bIsChecked);
-   GetDlgItem(IDC_TS_REMOVAL_COMPRESS_FC)->EnableWindow(bIsChecked);
-   GetDlgItem(IDC_TS_REMOVAL_TENSION_LABEL)->EnableWindow(bIsChecked);
-   GetDlgItem(IDC_TS_REMOVAL_TENSION)->EnableWindow(bIsChecked);
-   GetDlgItem(IDC_TS_REMOVAL_TENSION_UNIT)->EnableWindow(bIsChecked);
-   GetDlgItem(IDC_CHECK_TS_REMOVAL_TENSION_MAX)->EnableWindow(bIsChecked);
-   GetDlgItem(IDC_TS_REMOVAL_TENSION_MAX)->EnableWindow(bIsChecked);
-   GetDlgItem(IDC_TS_REMOVAL_TENSION_MAX_UNIT)->EnableWindow(bIsChecked);
+   GetDlgItem(IDC_TEMP_STRAND_REMOVAL_GROUP)->EnableWindow(bEnable);
+   GetDlgItem(IDC_TS_REMOVAL_COMPRESSION_LABEL)->EnableWindow(bEnable);
+   GetDlgItem(IDC_TS_REMOVAL_COMPRESSION)->EnableWindow(bEnable);
+   GetDlgItem(IDC_TS_REMOVAL_COMPRESS_FC)->EnableWindow(bEnable);
 
-   GetDlgItem(IDC_AFTER_DECK_GROUP)->EnableWindow(bIsChecked);
-   GetDlgItem(IDC_AFTER_DECK_COMPRESSION_LABEL)->EnableWindow(bIsChecked);
-   GetDlgItem(IDC_AFTER_DECK_COMPRESSION)->EnableWindow(bIsChecked);
-   GetDlgItem(IDC_AFTER_DECK_COMPRESSION_FC)->EnableWindow(bIsChecked);
-   GetDlgItem(IDC_AFTER_DECK_TENSION_LABEL)->EnableWindow(bIsChecked);
-   GetDlgItem(IDC_AFTER_DECK_TENSION)->EnableWindow(bIsChecked);
-   GetDlgItem(IDC_AFTER_DECK_TENSION_UNIT)->EnableWindow(bIsChecked);
-   GetDlgItem(IDC_CHECK_AFTER_DECK_TENSION_MAX)->EnableWindow(bIsChecked);
-   GetDlgItem(IDC_AFTER_DECK_TENSION_MAX)->EnableWindow(bIsChecked);
-   GetDlgItem(IDC_AFTER_DECK_TENSION_MAX_UNIT)->EnableWindow(bIsChecked);
+   GetDlgItem(IDC_TS_REMOVAL_TENSION_LABEL)->EnableWindow(bEnable);
+   GetDlgItem(IDC_TS_REMOVAL_TENSION)->EnableWindow(bEnable);
+   GetDlgItem(IDC_TS_REMOVAL_TENSION_UNIT)->EnableWindow(bEnable);
+
+   GetDlgItem(IDC_CHECK_TS_REMOVAL_TENSION_MAX)->EnableWindow(bEnable);
+   BOOL bEnable2 = bEnable;
+   if ( IsDlgButtonChecked(IDC_CHECK_TS_REMOVAL_TENSION_MAX) != BST_CHECKED )
+   {
+      bEnable2 = FALSE;
+   }
+   GetDlgItem(IDC_TS_REMOVAL_TENSION_MAX)->EnableWindow(bEnable2);
+   GetDlgItem(IDC_TS_REMOVAL_TENSION_MAX_UNIT)->EnableWindow(bEnable2);
+
+   GetDlgItem(IDC_AFTER_DECK_GROUP)->EnableWindow(bEnable);
+   GetDlgItem(IDC_AFTER_DECK_COMPRESSION_LABEL)->EnableWindow(bEnable);
+   GetDlgItem(IDC_AFTER_DECK_COMPRESSION)->EnableWindow(bEnable);
+   GetDlgItem(IDC_AFTER_DECK_COMPRESSION_FC)->EnableWindow(bEnable);
+   GetDlgItem(IDC_AFTER_DECK_TENSION_LABEL)->EnableWindow(bEnable);
+   GetDlgItem(IDC_AFTER_DECK_TENSION)->EnableWindow(bEnable);
+   GetDlgItem(IDC_AFTER_DECK_TENSION_UNIT)->EnableWindow(bEnable);
+
+   GetDlgItem(IDC_CHECK_AFTER_DECK_TENSION_MAX)->EnableWindow(bEnable);
+   BOOL bEnable3 = bEnable;
+   if ( IsDlgButtonChecked(IDC_CHECK_AFTER_DECK_TENSION_MAX) != BST_CHECKED )
+   {
+      bEnable3 = FALSE;
+   }
+   GetDlgItem(IDC_AFTER_DECK_TENSION_MAX)->EnableWindow(bEnable3);
+   GetDlgItem(IDC_AFTER_DECK_TENSION_MAX_UNIT)->EnableWindow(bEnable3);
 }
 
 #pragma Reminder("UPDATE: need correct help context id")

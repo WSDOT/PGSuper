@@ -487,6 +487,7 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
       pgsPointOfInterest& poi(*iter);
 
       LOSSDETAILS details;
+      details.FrictionLossDetails.reserve(nDucts);
 #if defined _DEBUG
       details.POI = poi;
 #endif
@@ -640,6 +641,8 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CGirderKey& girderKey,L
    // the input allows the PT to start and end at any arbitrary point along the girder
 
    DuctIndexType nDucts = m_pTendonGeom->GetDuctCount(girderKey);
+   pLosses->AnchorSet.reserve(nDucts);
+
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
       const CDuctData* pDuct = pPTData->GetDuct(ductIdx/nWebs);

@@ -626,6 +626,14 @@ CLSID CMultiWebFactory::GetCLSID()
    return CLSID_MultiWebFactory;
 }
 
+std::_tstring CMultiWebFactory::GetName()
+{
+   USES_CONVERSION;
+   LPOLESTR pszUserType;
+   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
+   return std::_tstring( OLE2T(pszUserType) );
+}
+
 CLSID CMultiWebFactory::GetFamilyCLSID()
 {
    return CLSID_RibbedBeamFamily;

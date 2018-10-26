@@ -6,6 +6,8 @@
 #include "LinearDuctDlg.h"
 #include "SplicedGirderDescDlg.h"
 
+#include <IFace\Bridge.h>
+
 void DDX_DuctGeometry(CDataExchange* pDX,CLinearDuctGrid& grid,CLinearDuctGeometry& ductGeometry)
 {
    CLinearDuctGeometry::MeasurementType measurementType = ductGeometry.GetMeasurementType();
@@ -19,6 +21,56 @@ void DDX_DuctGeometry(CDataExchange* pDX,CLinearDuctGrid& grid,CLinearDuctGeomet
    {
       DDX_CBEnum(pDX,IDC_LOCATION,measurementType);
       grid.SetData(ductGeometry);
+   }
+}
+
+void DDV_DuctGeometry(CDataExchange* pDX,const CGirderKey& girderKey,CLinearDuctGeometry& ductGeometry)
+{
+   if ( !pDX->m_bSaveAndValidate )
+   {
+      return;
+   }
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   Float64 Lg = pBridge->GetGirderLength(girderKey);
+
+   CLinearDuctGeometry::MeasurementType measurementType = ductGeometry.GetMeasurementType();
+
+   Float64 Xg = 0;
+   CollectionIndexType nPoints = ductGeometry.GetPointCount();
+   for ( CollectionIndexType pntIdx = 0; pntIdx < nPoints; pntIdx++ )
+   {
+      Float64 location, offset;
+      CDuctGeometry::OffsetType offsetType;
+      ductGeometry.GetPoint(pntIdx,&location,&offset,&offsetType);
+
+      Float64 dXg = location;
+      if ( location < 0 )
+      {
+         // location is fractional length of girder
+         dXg *= -Lg;
+      }
+
+      if ( measurementType == CLinearDuctGeometry::FromPrevious )
+      {
+         Xg += dXg;
+      }
+      else
+      {
+         Xg = dXg; // location was measured from start of girder
+      }
+
+      if ( Lg < Xg )
+      {
+         CString strMsg;
+         strMsg.Format(_T("Duct point %d is beyond the end of the girder. Adjust duct point location."),(pntIdx+1));
+         AfxMessageBox(strMsg,MB_ICONEXCLAMATION | MB_OK);
+         pDX->PrepareCtrl(IDC_POINT_GRID);
+         pDX->Fail();
+      }
    }
 }
 
@@ -40,6 +92,7 @@ void CLinearDuctDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
    DDX_DuctGeometry(pDX,m_Grid,m_DuctGeometry);
+   DDV_DuctGeometry(pDX,GetGirderKey(),m_DuctGeometry);
 }
 
 
@@ -47,6 +100,7 @@ BEGIN_MESSAGE_MAP(CLinearDuctDlg, CDialog)
    ON_BN_CLICKED(IDC_ADD, &CLinearDuctDlg::OnAddPoint)
    ON_BN_CLICKED(IDC_DELETE, &CLinearDuctDlg::OnDeletePoint)
    ON_BN_CLICKED(ID_HELP,&CLinearDuctDlg::OnHelp)
+   ON_CBN_DROPDOWN(IDC_LOCATION, &CLinearDuctDlg::OnMeasurementTypeChanging )
    ON_CBN_SELCHANGE(IDC_LOCATION, &CLinearDuctDlg::OnMeasurementTypeChanged )
 END_MESSAGE_MAP()
 
@@ -89,9 +143,23 @@ void CLinearDuctDlg::OnDuctChanged()
    m_pGirderlineDlg->OnDuctChanged();
 }
 
+void CLinearDuctDlg::OnMeasurementTypeChanging()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_LOCATION);
+   m_PrevMeasurmentTypeIdx = pCB->GetCurSel();
+}
+
 void CLinearDuctDlg::OnMeasurementTypeChanged()
 {
-   m_Grid.SetMeasurementType(GetMeasurementType());
+   if ( UpdateData() ) // update data first to make sure the grid has valid data in it before converting it to another basis
+   {
+      m_Grid.SetMeasurementType(GetMeasurementType());
+   }
+   else
+   {
+      CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_LOCATION);
+      pCB->SetCurSel(m_PrevMeasurmentTypeIdx);
+   }
 }
 
 void CLinearDuctDlg::OnHelp()

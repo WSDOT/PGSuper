@@ -61,6 +61,7 @@ PSGLIBTPL sysSubjectT<GirderLibraryEntryObserver, GirderLibraryEntry>;
 
 interface IStrandGrid;
 interface IBeamFactory;
+interface IBeamFactoryCLSIDTranslator;
 
 // MISCELLANEOUS
 //
@@ -983,7 +984,8 @@ private:
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
-   std::map<std::_tstring,std::_tstring> m_CLSIDMap; // maps old PGSuper CLSIDs to new BridgeLink CLSIDs
+   std::map<std::_tstring,std::_tstring> m_CLSIDMap; // maps PGSuper v2.x CLSIDs to PGSuper v3.x CLSIDs
+   std::vector<CComPtr<IBeamFactoryCLSIDTranslator>> m_ExternalCLSIDTranslators; // maps PGSuper v2.x CLSIDs to PGSuper v3.x CLSIDs for external beam publishers
    void InitCLSIDMap();
    std::_tstring TranslateCLSID(const std::_tstring& strCLSID);
 };

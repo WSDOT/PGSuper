@@ -223,6 +223,8 @@ void Register(bool bRegister)
    //////////////////////////////////////////////////////////////
    if ( bRegister )
    {
+      sysComCatMgr::CreateCategory(L"PGSuper Beam Factory CLSID Translator", CATID_BeamFactoryCLSIDTranslator);
+
       sysComCatMgr::CreateCategory(L"PGSuper I-Beam Factories",             CATID_WFBeamFactory);
       sysComCatMgr::CreateCategory(L"PGSuper U-Beam Factories",             CATID_UBeamFactory);
       sysComCatMgr::CreateCategory(L"PGSuper Deck Bulb Tee Beam Factories", CATID_DeckBulbTeeBeamFactory);
@@ -237,6 +239,8 @@ void Register(bool bRegister)
    }
    else
    {
+      sysComCatMgr::RemoveCategory(CATID_BeamFactoryCLSIDTranslator,true);
+
       sysComCatMgr::RemoveCategory(CATID_WFBeamFactory,true);
       sysComCatMgr::RemoveCategory(CATID_UBeamFactory,true);
       sysComCatMgr::RemoveCategory(CATID_DeckBulbTeeBeamFactory,true);

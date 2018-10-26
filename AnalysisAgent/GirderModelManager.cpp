@@ -5649,7 +5649,7 @@ void CGirderModelManager::GetBearingCombinedReaction(IntervalIndexType intervalI
                                 pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,Float64* pLftEnd,Float64* pRgtEnd)
 {
    // Use lbam to get load case for this combination
-   CGirderModelData* pModelData = GetGirderModel(GetGirderLineIndex(girderKey));
+   CGirderModelData* pModelData = GetGirderModel(GetGirderLineIndex(girderKey),bat);
 
    CComPtr<ILBAMModel> lbam;
    GetLBAM(pModelData, bat, &lbam);
@@ -5888,7 +5888,16 @@ CGirderModelData* CGirderModelManager::GetGirderModel(GirderIndexType gdrLineIdx
    return pModelData;
 }
 
-void CGirderModelManager::BuildModel(GirderIndexType gdrLineIdx)
+CGirderModelData* CGirderModelManager::GetGirderModel(GirderIndexType gdrLineIdx,pgsTypes::BridgeAnalysisType bat)
+{
+   BuildModel(gdrLineIdx,bat); // builds or updates the model if necessary
+   std::map<GirderIndexType,CGirderModelData>::iterator found = m_GirderModels.find(gdrLineIdx);
+   ATLASSERT( found != m_GirderModels.end() ); // should always find it!
+   CGirderModelData* pModelData = &(*found).second;
+   return pModelData;
+}
+
+void CGirderModelManager::BuildModel(GirderIndexType gdrLineIdx,pgsTypes::BridgeAnalysisType bat)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -5914,22 +5923,22 @@ void CGirderModelManager::BuildModel(GirderIndexType gdrLineIdx)
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    // if the models are already build, leave now
-   if ( analysisType == pgsTypes::Simple && pModelData->m_Model != NULL )
+   if ( bat == pgsTypes::SimpleSpan && pModelData->m_Model != NULL )
    {
       return;
    }
-   else if ( analysisType == pgsTypes::Continuous && pModelData->m_ContinuousModel != NULL )
+   else if ( bat == pgsTypes::ContinuousSpan && pModelData->m_ContinuousModel != NULL )
    {
       return;
    }
-   else if ( analysisType == pgsTypes::Envelope && pModelData->m_Model != NULL && pModelData->m_ContinuousModel != NULL )
+   else if ( (bat == pgsTypes::MaxSimpleContinuousEnvelope || bat == pgsTypes::MinSimpleContinuousEnvelope) && pModelData->m_Model != NULL && pModelData->m_ContinuousModel != NULL )
    {
       return;
    }
 
    // build the simple span model
    bool bBuildSimple = false;
-   if ( (analysisType == pgsTypes::Simple || analysisType == pgsTypes::Envelope) && pModelData->m_Model == NULL )
+   if ( (bat == pgsTypes::SimpleSpan || bat == pgsTypes::MaxSimpleContinuousEnvelope || bat == pgsTypes::MinSimpleContinuousEnvelope) && pModelData->m_Model == NULL )
    {
       std::_tostringstream os;
       os << _T("Building Simple Span Bridge Site Analysis model for Girderline ") << LABEL_GIRDER(gdrLineIdx) << std::ends;
@@ -5945,7 +5954,7 @@ void CGirderModelManager::BuildModel(GirderIndexType gdrLineIdx)
 
    // build the simple made continuous model
    bool bBuildContinuous = false;
-   if ( (analysisType == pgsTypes::Continuous || analysisType == pgsTypes::Envelope) && pModelData->m_ContinuousModel == NULL )
+   if ( (bat == pgsTypes::ContinuousSpan || bat == pgsTypes::MaxSimpleContinuousEnvelope || bat == pgsTypes::MinSimpleContinuousEnvelope) && pModelData->m_ContinuousModel == NULL )
    {
       std::_tostringstream os;
       os << _T("Building Continuous Bridge Site Analysis model for Girderline ") << LABEL_GIRDER(gdrLineIdx) << std::ends;
@@ -6007,6 +6016,16 @@ void CGirderModelManager::BuildModel(GirderIndexType gdrLineIdx)
          }
       }
    }
+}
+
+void CGirderModelManager::BuildModel(GirderIndexType gdrLineIdx)
+{
+   GET_IFACE(ISpecification,pSpec);
+   pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
+
+   GET_IFACE(IProductForces,pProductForces);
+   pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
+   BuildModel(gdrLineIdx,bat);
 }
 
 void CGirderModelManager::BuildLBAM(GirderIndexType gdrLineIdx,bool bContinuousModel,IContraflexureResponse* pContraflexureResponse,IContraflexureResponse* pDeflContraflexureResponse,ILBAMModel* pModel)

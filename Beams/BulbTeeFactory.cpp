@@ -837,6 +837,14 @@ CLSID CBulbTeeFactory::GetCLSID()
    return CLSID_BulbTeeFactory;
 }
 
+std::_tstring CBulbTeeFactory::GetName()
+{
+   USES_CONVERSION;
+   LPOLESTR pszUserType;
+   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
+   return std::_tstring( OLE2T(pszUserType) );
+}
+
 CLSID CBulbTeeFactory::GetFamilyCLSID()
 {
    return CLSID_DeckBulbTeeBeamFamily;

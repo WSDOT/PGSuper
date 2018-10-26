@@ -196,18 +196,18 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
       row++;
 
       (*pTable)(row,0) << _T("Design Rating");
-      (*pTable)(row,1) << ((!pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) ) ? _T("False") : _T("True"));
-      (*pTable)(row,2) << _T("True");
+      (*pTable)(row,1) << ((!pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) ) ? _T("Unselected (unchecked)") : _T("Selected (checked)"));
+      (*pTable)(row,2) << _T("Selected (checked)");
       row++;
 
       (*pTable)(row,0) << _T("Legal Rating");
-      (*pTable)(row,1) << ((!pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) || !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) ) ? _T("False") : _T("True"));
-      (*pTable)(row,2) << _T("True");
+      (*pTable)(row,1) << ((!pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) || !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) ) ? _T("Unselected (unchecked)") : _T("Selected (checked)"));
+      (*pTable)(row,2) << _T("Selected (checked)");
       row++;
 
       (*pTable)(row,0) << _T("Permit Rating");
-      (*pTable)(row,1) << ((!pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) ) ? _T("False") : _T("True"));
-      (*pTable)(row,2) << _T("True");
+      (*pTable)(row,1) << ((!pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) ) ? _T("Unselected (unchecked)") : _T("Selected (checked)"));
+      (*pTable)(row,2) << _T("Selected (checked)");
       row++;
 
       (*pTable)(row,0) << _T("Design Load Rating: Live Loads for Design");
@@ -487,9 +487,19 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
       pgsPointOfInterest poi(  pYieldStressPositiveMoment->GetPointOfInterest() );
       (*pTable)(row,3) << location.SetValue(POI_SPAN,poi) << _T(" (Yield Stress - Positive Moment)");
 
-      if ( 0 < pYieldStressPositiveMoment->GetCrackingStressIncrement() )
+      if ( 0 < pYieldStressPositiveMoment->GetRebarCrackingStressIncrement() )
       {
-         (*pRemarks) << pYieldStressPositiveMoment->GetVehicleName() << _T(": Section is cracked for Service I limit state") << rptNewLine;
+         (*pRemarks) << pYieldStressPositiveMoment->GetVehicleName() << _T(": Section is cracked at rebar for Service I limit state") << rptNewLine;
+      }
+
+      if ( 0 < pYieldStressPositiveMoment->GetStrandCrackingStressIncrement() )
+      {
+         (*pRemarks) << pYieldStressPositiveMoment->GetVehicleName() << _T(": Section is cracked at strand for Service I limit state") << rptNewLine;
+      }
+
+      if ( 0 < pYieldStressPositiveMoment->GetTendonCrackingStressIncrement() )
+      {
+         (*pRemarks) << pYieldStressPositiveMoment->GetVehicleName() << _T(": Section is cracked at tendon for Service I limit state") << rptNewLine;
       }
    }
    else if ( pYieldStressNegativeMoment )
@@ -512,9 +522,19 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
       pgsPointOfInterest poi(  pYieldStressNegativeMoment->GetPointOfInterest() );
       (*pTable)(row,3) << location.SetValue(POI_SPAN,poi) << _T(" (Yield Stress - Negative Moment)");
 
-      if ( 0 < pYieldStressNegativeMoment->GetCrackingStressIncrement() )
+      if ( 0 < pYieldStressNegativeMoment->GetRebarCrackingStressIncrement() )
       {
-         (*pRemarks) << pYieldStressNegativeMoment->GetVehicleName() << _T(": Section is cracked for Service I limit state") << rptNewLine;
+         (*pRemarks) << pYieldStressNegativeMoment->GetVehicleName() << _T(": Section is cracked at rebar for Service I limit state") << rptNewLine;
+      }
+
+      if ( 0 < pYieldStressNegativeMoment->GetStrandCrackingStressIncrement() )
+      {
+         (*pRemarks) << pYieldStressNegativeMoment->GetVehicleName() << _T(": Section is cracked at strand for Service I limit state") << rptNewLine;
+      }
+
+      if ( 0 < pYieldStressNegativeMoment->GetTendonCrackingStressIncrement() )
+      {
+         (*pRemarks) << pYieldStressNegativeMoment->GetVehicleName() << _T(": Section is cracked at tendon for Service I limit state") << rptNewLine;
       }
    }
 }

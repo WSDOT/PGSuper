@@ -582,7 +582,6 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
       if ( vStressLocations.size() == 0 )
       {
          // no sections are in the precompressed tensile zone... how is this possible?
-         ATLASSERT(false);
          pgsStressRatingArtifact stressArtifact;
          ratingArtifact.AddArtifact(poi,stressArtifact);
          continue; // next POI
@@ -760,7 +759,6 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
 
    GET_IFACE(IMomentCapacity,pMomentCapacity);
    std::vector<CRACKINGMOMENTDETAILS> vMcr = pMomentCapacity->GetCrackingMomentDetails(loadRatingIntervalIdx,vPoi,bPositiveMoment);
-   std::vector<MOMENTCAPACITYDETAILS> vM = pMomentCapacity->GetMomentCapacityDetails(loadRatingIntervalIdx,vPoi,bPositiveMoment);
 
    GET_IFACE(ICrackedSection,pCrackedSection);
    std::vector<CRACKEDSECTIONDETAILS> vCrackedSection = pCrackedSection->GetCrackedSectionDetails(vPoi,bPositiveMoment);
@@ -773,7 +771,6 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
    ATLASSERT(vPoi.size()     == vPSmax.size());
    ATLASSERT(vPoi.size()     == vLLIMmax.size());
    ATLASSERT(vPoi.size()     == vMcr.size());
-   ATLASSERT(vPoi.size()     == vM.size());
    ATLASSERT(vPoi.size()     == vCrackedSection.size());
    ATLASSERT(vDCmin.size()   == vDCmax.size());
    ATLASSERT(vDWmin.size()   == vDWmax.size());
@@ -807,32 +804,225 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
    pgsTypes::StressLocation topLocation = pgsTypes::TopDeck;
    pgsTypes::StressLocation botLocation = pgsTypes::BottomGirder;
 
+   GET_IFACE(ISectionProperties,pSectProp);
+   GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE(IBridge,pBridge);
+   GET_IFACE(ILongRebarGeometry,pRebarGeom);
+   GET_IFACE(IStrandGeometry,pStrandGeom);
+   GET_IFACE(ITendonGeometry,pTendonGeom);
+
    // Create artifacts
    CollectionIndexType nPOI = vPoi.size();
    for ( CollectionIndexType i = 0; i < nPOI; i++ )
    {
       const pgsPointOfInterest& poi = vPoi[i];
-
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+      // since girderKey covers all groups, we have to get nDucts based on
+      // the girder associated with the current poi (remember that segmentKey can act as a girderKey)
+      DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
+
+      CClosureKey closureKey;
+      bool bIsInClosureJoint = pPoi->IsInClosureJoint(poi,&closureKey);
+      bool bIsOnSegment = pPoi->IsOnSegment(poi);
+      bool bIsOnGirder = pPoi->IsOnGirder(poi);
+
+      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+      Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,poi);
+      Float64 ts = pBridge->GetStructuralSlabDepth(poi);
+      if ( !bIsOnGirder || bIsInClosureJoint )
+      {
+         Hg = pSectProp->GetHg(loadRatingIntervalIdx,poi);
+         Hg -= ts;
+      }
 
       // Get material properties
       GET_IFACE(IMaterials,pMaterials);
       Float64 Eg = pMaterials->GetSegmentEc(segmentKey,loadRatingIntervalIdx);
-      Float64 Es, fy, fu;
+
+      Float64 Eb, Eps, Ept; // mod E of rebar, strand, tendon
+      Float64 fyb, fyps, fypt; // yield strength of bar, strand, tendon
+      Float64 fu;
+
       if ( bPositiveMoment )
       {
-         Es = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Permanent)->GetE();
-         fy = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Permanent)->GetYieldStrength();
+         // extreme tension rebar is going to be in the girder
+         if ( bIsInClosureJoint )
+         {
+            pMaterials->GetClosureJointLongitudinalRebarProperties(closureKey,&Eb,&fyb,&fu);
+         }
+         else
+         {
+            pMaterials->GetSegmentLongitudinalRebarProperties(segmentKey,&Eb,&fyb,&fu);
+         }
       }
       else
       {
-         pMaterials->GetDeckRebarProperties(&Es,&fy,&fu);
+         // extreme tension rebar is going to be in the deck
+         pMaterials->GetDeckRebarProperties(&Eb,&fyb,&fu);
       }
 
+      Eps  = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Permanent)->GetE();
+      fyps = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Permanent)->GetYieldStrength();
+
+      // NOTE: it is important to use segmentKey here
+      Ept  = pMaterials->GetTendonMaterial(segmentKey)->GetE();
+      fypt = pMaterials->GetTendonMaterial(segmentKey)->GetYieldStrength();
+
+
+      // Get distance to reinforcement from extreme compression face
+
+      // keep track of whether or not the type of reinforcement is used
+      bool bRebar   = false;
+      bool bStrands = false;
+      bool bTendons = false;
+
+      // rebar
+      Float64 db;
+      if ( bPositiveMoment )
+      {
+         // extreme tension rebar is going to be in the girder, furthest from the top of the girder
+         CComPtr<IRebarSection> rebarSection;
+         pRebarGeom->GetRebars(poi,&rebarSection);
+
+         IndexType count;
+         rebarSection->get_Count(&count);
+         if ( 0 < count )
+         {
+            bRebar = true;
+         }
+
+         CComPtr<IEnumRebarSectionItem> enumRebarSectionItem;
+         rebarSection->get__EnumRebarSectionItem(&enumRebarSectionItem);
+
+         Float64 Y = DBL_MAX;
+         CComPtr<IRebarSectionItem> rebarSectionItem;
+         while ( enumRebarSectionItem->Next(1,&rebarSectionItem,NULL) != S_FALSE )
+         {
+            CComPtr<IPoint2d> location;
+            rebarSectionItem->get_Location(&location);
+            Float64 y;
+            location->get_Y(&y); // this is in girder section coordinates so (0,0) is at top center... y should be < 0
+            ATLASSERT(y < 0);
+            Y = Min(Y,y);
+            rebarSectionItem.Release();
+         }
+
+         db = ts - Y;
+      }
+      else
+      {
+         // extreme tension rebar is going to be in the deck
+         Float64 As;
+         Float64 Y; // distance from top of girder to rebar
+         pRebarGeom->GetDeckReinforcing(poi,pgsTypes::drmTop,pgsTypes::drbAll,pgsTypes::drcAll,false,&As,&Y);
+         if ( IsZero(As) )
+         {
+            // no top mat, try bottom mat
+            pRebarGeom->GetDeckReinforcing(poi,pgsTypes::drmBottom,pgsTypes::drbAll,pgsTypes::drcAll,false,&As,&Y);
+         }
+
+         db = Hg + Y;
+
+         if ( !IsZero(As) )
+         {
+            bRebar = true;
+         }
+      }
+
+      // strand
+      Float64 dps;
+      Float64 Y = (bPositiveMoment ? DBL_MAX : -DBL_MAX);
+      if ( bIsOnSegment )
+      {
+         for ( int j = 0; j < 2; j++ )
+         {
+            pgsTypes::StrandType strandType = (pgsTypes::StrandType)j;
+            CComPtr<IPoint2dCollection> strandPoints;
+            pStrandGeom->GetStrandPositions(poi, strandType, &strandPoints);
+            IndexType nStrands;
+            strandPoints->get_Count(&nStrands);
+            if ( 0 < nStrands )
+            {
+               bStrands = true;
+            }
+            for ( IndexType strandIdx = 0; strandIdx < nStrands; strandIdx++ )
+            {
+               CComPtr<IPoint2d> pnt;
+               strandPoints->get_Item(strandIdx,&pnt);
+               Float64 y;
+               pnt->get_Y(&y);
+               ATLASSERT( y < 0 );
+               if ( bPositiveMoment )
+               {
+                  Y = Min(Y,y); // want furthest from top
+               }
+               else
+               {
+                  Y = Max(Y,y); // want closest to top
+               }
+            }
+         } // next strand type
+      }
+      if ( bPositiveMoment )
+      {
+         dps = ts - Y;
+      }
+      else
+      {
+         dps = Hg + Y;
+      }
+
+      // tendon
+      Float64 dpt;
+      DuctIndexType ductIdx = INVALID_INDEX; // index of the duct that is furthest from the compression face
+      Y = (bPositiveMoment ? DBL_MAX : -DBL_MAX);
+      if ( bIsOnGirder )
+      {
+         if ( 0 < nDucts )
+         {
+            bTendons = true;
+         }
+         for ( DuctIndexType theDuctIdx = 0; theDuctIdx < nDucts; theDuctIdx++ )
+         {
+            CComPtr<IPoint2d> pnt;
+            pTendonGeom->GetDuctPoint(poi,theDuctIdx,&pnt);
+            Float64 y;
+            pnt->get_Y(&y);
+            ATLASSERT(y < 0);
+            if ( bPositiveMoment )
+            {
+               if ( MinIndex(Y,y) == 1 )
+               {
+                  ductIdx = theDuctIdx;
+               }
+
+               Y = Min(Y,y); // want furthest from top
+            }
+            else
+            {
+               if ( MaxIndex(Y,y) == 1 )
+               {
+                  ductIdx = theDuctIdx;
+               }
+
+               Y = Max(Y,y); // want closest to top
+            }
+         }
+      }
+      if ( bPositiveMoment )
+      {
+         dpt = ts - Y;
+      }
+      else
+      {
+         dpt = Hg + Y;
+      }
+      
       // Get allowable
       Float64 K = pRatingSpec->GetYieldStressLimitCoefficient();
-      Float64 fr = K*fy; // 6A.5.4.2.2b 
 
+      Float64 gM;
       if ( ratingType == pgsTypes::lrPermit_Special ) // if it is any of the special permit types
       {
          // The live load distribution factor used for special permits is one loaded lane without multiple presense factor.
@@ -842,23 +1032,31 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
          //
          // vLLIMmin and vLLIMmax includes the one lane LLDF... divide out this LLDF and multiply by the correct LLDF
 
-         Float64 gpM_Old, gnM_Old, gV;
-         Float64 gpM_New, gnM_New;
+         Float64 gpM_Service, gnM_Service, gV;
+         Float64 gpM_Fatigue, gnM_Fatigue;
       
          GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
-         pLLDF->GetDistributionFactors(poi,pgsTypes::FatigueI,              &gpM_Old,&gnM_Old,&gV);
-         pLLDF->GetDistributionFactors(poi,pgsTypes::ServiceI_PermitSpecial,&gpM_New,&gnM_New,&gV);
+         pLLDF->GetDistributionFactors(poi,pgsTypes::FatigueI,              &gpM_Fatigue,&gnM_Fatigue,&gV);
+         pLLDF->GetDistributionFactors(poi,pgsTypes::ServiceI_PermitSpecial,&gpM_Service,&gnM_Service,&gV);
 
          if ( bPositiveMoment )
          {
-            Float64 g = gpM_New/gpM_Old;
-            vLLIMmax[i] *= g;
+            gM = gpM_Fatigue;
+            vLLIMmax[i] *= gpM_Fatigue/gpM_Service;
          }
          else
          {
-            Float64 g = gnM_New/gnM_Old;
-            vLLIMmin[i] *= g;
+            gM = gnM_Fatigue;
+            vLLIMmin[i] *= gnM_Fatigue/gnM_Service;
          }
+      }
+      else
+      {
+         ATLASSERT(ratingType == pgsTypes::lrPermit_Routine);
+         Float64 gpM, gnM, gV;
+         GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
+         pLLDF->GetDistributionFactors(poi,pgsTypes::ServiceI_PermitRoutine,&gpM,&gnM,&gV);
+         gM = (bPositiveMoment ? gpM : gnM);
       }
 
       Float64 DC   = (bPositiveMoment ? vDCmax[i]   : vDCmin[i]);
@@ -920,28 +1118,49 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
       Float64 Mcr = vMcr[i].Mcr;
 
       Float64 Icr = vCrackedSection[i].Icr;
-      Float64 c   = vCrackedSection[i].c;
+      Float64 c   = vCrackedSection[i].c; // measured from tension face to crack
 
-      Float64 dps = vM[i].dt;
+      // make sure reinforcement is on the tension side of the crack
+      bRebar   = (db  < Hg + ts - c ? false : bRebar);
+      bStrands = (dps < Hg + ts - c ? false : bStrands);
+      bTendons = (dpt < Hg + ts - c ? false : bTendons);
 
-      Float64 fpe; // stress in reinforcement before cracking
-      if ( bPositiveMoment )
+      // Stress in reinforcement before cracking
+      Float64 fb  = 0;
+      if ( bRebar )
       {
-         // positive moment - use fpe (effective prestress)
-         GET_IFACE(IPretensionForce,pPrestressForce);
-         fpe = pPrestressForce->GetEffectivePrestressWithLiveLoad(poi,pgsTypes::Permanent,ls);
-      }
-      else
-      {
-         // negative moment - compute stress in deck rebar for uncracked section
-         GET_IFACE(ISectionProperties,pSectProp);
          Float64 I = pSectProp->GetIx(loadRatingIntervalIdx,poi);
-         Float64 y = pSectProp->GetY(loadRatingIntervalIdx,poi,pgsTypes::TopDeck);
-         
-         y -= top_slab_cover; 
+         Float64 y;
+         if ( bPositiveMoment )
+         {
+            Float64 Ytg = pSectProp->GetY(loadRatingIntervalIdx,poi,pgsTypes::TopGirder);
+            y = db - Ytg;
+         }
+         else
+         {
+            Float64 Ybg = pSectProp->GetY(loadRatingIntervalIdx,poi,pgsTypes::BottomGirder);
+            y = db - Ybg;
+         }
 
-         fpe = -(Es/Eg)*Mcr*y/I; // - sign is to make the stress come out positive (tension) because Mcr is < 0
+         fb = (Eb/Eg)*fabs(Mcr)*y/I;
       }
+
+      Float64 fps = 0;
+      if ( bStrands )
+      {
+         GET_IFACE(IPretensionForce,pPrestressForce);
+         fps = pPrestressForce->GetEffectivePrestressWithLiveLoad(poi,pgsTypes::Permanent,ls);
+      }
+
+      Float64 fpt = 0;
+      if ( bTendons )
+      {
+         GET_IFACE(IPosttensionForce,pPTForce);
+         bool bIncludeMinLiveLoad = !bPositiveMoment;
+         bool bIncludeMaxLiveLoad = bPositiveMoment;
+         fpt = pPTForce->GetTendonStress(poi,loadRatingIntervalIdx,pgsTypes::End,ductIdx,bIncludeMinLiveLoad,bIncludeMaxLiveLoad);
+      }
+
 
       Float64 W = pProductLoads->GetVehicleWeight(llType,truck_index);
 
@@ -951,7 +1170,7 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
       stressRatioArtifact.SetVehicleIndex(truck_index);
       stressRatioArtifact.SetVehicleWeight(W);
       stressRatioArtifact.SetVehicleName(strVehicleName.c_str());
-      stressRatioArtifact.SetAllowableStress(fr);
+      stressRatioArtifact.SetAllowableStressRatio(K);
       stressRatioArtifact.SetDeadLoadFactor(gDC);
       stressRatioArtifact.SetDeadLoadMoment(DC);
       stressRatioArtifact.SetWearingSurfaceFactor(gDW);
@@ -964,15 +1183,28 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
       stressRatioArtifact.SetRelaxationMoment(RE);
       stressRatioArtifact.SetSecondaryEffectsFactor(gPS);
       stressRatioArtifact.SetSecondaryEffectsMoment(PS);
+      stressRatioArtifact.SetLiveLoadDistributionFactor(gM);
       stressRatioArtifact.SetLiveLoadFactor(gLL);
       stressRatioArtifact.SetLiveLoadMoment(LLIM+PL);
       stressRatioArtifact.SetCrackingMoment(Mcr);
       stressRatioArtifact.SetIcr(Icr);
-      stressRatioArtifact.SetCrackDepth(c);
-      stressRatioArtifact.SetReinforcementDepth(dps);
-      stressRatioArtifact.SetEffectivePrestress(fpe);
-      stressRatioArtifact.SetEs(Es);
+      stressRatioArtifact.SetCrackDepth(vCrackedSection[i].c);
       stressRatioArtifact.SetEg(Eg);
+
+      if ( bRebar )
+      {
+         stressRatioArtifact.SetRebar(db,fb,fyb,Eb);
+      }
+
+      if ( bStrands )
+      {
+         stressRatioArtifact.SetStrand(dps,fps,fyps,Eps);
+      }
+
+      if ( bTendons )
+      {
+         stressRatioArtifact.SetTendon(dpt,fpt,fypt,Ept);
+      }
 
       ratingArtifact.AddArtifact(poi,stressRatioArtifact,bPositiveMoment);
    }

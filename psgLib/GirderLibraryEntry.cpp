@@ -40,6 +40,7 @@
 #include "ComCat.h"
 #include "PGSuperCatCom.h"
 #include "PGSpliceCatCom.h"
+#include <Plugins\BeamFactoryCATID.h>
 
 #include <MathEx.h>
 
@@ -244,6 +245,43 @@ void GirderLibraryEntry::InitCLSIDMap()
    m_CLSIDMap.insert(std::make_pair(_T("{59BAD0A2-91F0-4E8A-8A90-4241787E9B50}"),_T("{5D6AFD91-84F4-4755-9AF7-B760114A4551}")));
    m_CLSIDMap.insert(std::make_pair(_T("{AC828108-B982-4C95-867B-B4BF4E37B7EB}"),_T("{2583C7C1-FF57-4113-B45B-702CFA6AD013}")));
    m_CLSIDMap.insert(std::make_pair(_T("{9C219793-A1F1-402A-B865-0AA6BD22B0A6}"),_T("{DEFA27AD-3D22-481B-9006-627C65D2648F}")));
+
+   // Create external beam factory publisher CLSID translators
+   CComPtr<ICatRegister> pICatReg = 0;
+   HRESULT hr;
+   hr = ::CoCreateInstance( CLSID_StdComponentCategoriesMgr,
+                            NULL,
+                            CLSCTX_INPROC_SERVER,
+                            IID_ICatRegister,
+                            (void**)&pICatReg );
+   if ( FAILED(hr) )
+   {
+      CString msg;
+      msg.Format(_T("Failed to create Component Category Manager. hr = %d\nIs the correct version of Internet Explorer installed"), hr);
+      AfxMessageBox(msg,MB_OK | MB_ICONWARNING);
+      return;
+   }
+
+   CComPtr<ICatInformation> pICatInfo;
+   pICatReg->QueryInterface(IID_ICatInformation,(void**)&pICatInfo);
+   CComPtr<IEnumCLSID> pIEnumCLSID;
+
+   const int nID = 1;
+   CATID ID[nID];
+   ID[0] = CATID_BeamFactoryCLSIDTranslator;
+
+   pICatInfo->EnumClassesOfCategories(nID,ID,0,NULL,&pIEnumCLSID);
+
+   CLSID clsid[1];
+   while ( pIEnumCLSID->Next(1,clsid,NULL) != S_FALSE )
+   {
+      CComPtr<IBeamFactoryCLSIDTranslator> translator;
+      hr = ::CoCreateInstance(clsid[0],NULL,CLSCTX_ALL,IID_IBeamFactoryCLSIDTranslator,(void**)&translator);
+      if ( SUCCEEDED(hr) )
+      {
+         m_ExternalCLSIDTranslators.push_back(translator);
+      }
+   }
 }
 
 //======================== OPERATORS  =======================================
@@ -575,11 +613,25 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 
 std::_tstring GirderLibraryEntry::TranslateCLSID(const std::_tstring& strCLSID)
 {
+   // check our map first
    std::map<std::_tstring,std::_tstring>::iterator found(m_CLSIDMap.find(strCLSID));
-   if ( found == m_CLSIDMap.end() )
-      return strCLSID;
+   if ( found != m_CLSIDMap.end() )
+   {
+      return found->second;
+   }
 
-   return found->second;
+   // check third party translaters
+   BOOST_FOREACH(CComPtr<IBeamFactoryCLSIDTranslator>& translator,m_ExternalCLSIDTranslators)
+   {
+      LPCTSTR newCLSID;
+      if ( translator->TranslateCLSID(strCLSID.c_str(),&newCLSID) )
+      {
+         return std::_tstring(newCLSID);
+      }
+   }
+
+   // no translation availble... just return the original CLSID
+   return strCLSID;
 }
 
 bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
@@ -2144,6 +2196,40 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
    else
    {
       return false; // not a GirderLibraryEntry
+   }
+
+   //
+   // if my factory type isn't registered with the system, I can't be copied
+   //
+
+   // get family name
+   std::_tstring strFamilyName = m_pBeamFactory->GetGirderFamilyName();
+
+   // get family object
+   CComPtr<IBeamFamily> beamFamily;
+   CBeamFamilyManager::GetBeamFamily(strFamilyName.c_str(),&beamFamily);
+
+   if ( beamFamily )
+   {
+      // get registered names
+      CComPtr<IBeamFactory> beam_factory;
+      std::vector<CString> factoryNames = beamFamily->GetFactoryNames();
+      std::sort(factoryNames.begin(),factoryNames.end());
+
+      // get my name
+      std::_tstring strFactoryName = m_pBeamFactory->GetName();
+
+      // search for my name
+      std::vector<CString>::iterator found = std::find(factoryNames.begin(),factoryNames.end(),strFactoryName.c_str());
+      if ( found == factoryNames.end() )
+      {
+         // my name isn't registered... don't allow copying
+         EnableCopying(false);
+      }
+   }
+   else
+   {
+      EnableCopying(false);
    }
 
    return true;

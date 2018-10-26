@@ -251,6 +251,15 @@ bool CBoxBeamFactoryImpl::IsPrismatic(IBroker* pBroker,const CSegmentKey& segmen
    return IsZero(endBlockLength) ? true : false;
 }
 
+
+std::_tstring CBoxBeamFactoryImpl::GetName()
+{
+   USES_CONVERSION;
+   LPOLESTR pszUserType;
+   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
+   return std::_tstring( OLE2T(pszUserType) );
+}
+
 CLSID CBoxBeamFactoryImpl::GetFamilyCLSID()
 {
    return CLSID_BoxBeamFamily;

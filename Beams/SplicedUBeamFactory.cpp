@@ -657,6 +657,14 @@ CLSID CSplicedUBeamFactory::GetCLSID()
    return CLSID_SplicedUBeamFactory;
 }
 
+std::_tstring CSplicedUBeamFactory::GetName()
+{
+   USES_CONVERSION;
+   LPOLESTR pszUserType;
+   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
+   return std::_tstring( OLE2T(pszUserType) );
+}
+
 CLSID CSplicedUBeamFactory::GetFamilyCLSID()
 {
    return CLSID_SplicedUBeamFamily;

@@ -31,11 +31,14 @@ protected:
    CLinearDuctGrid m_Grid;
    CSplicedGirderGeneralPage* m_pGirderlineDlg;
 
+   int m_PrevMeasurmentTypeIdx;
+
 	DECLARE_MESSAGE_MAP()
 public:
    virtual BOOL OnInitDialog();
    afx_msg void OnAddPoint();
    afx_msg void OnDeletePoint();
+   afx_msg void OnMeasurementTypeChanging();
    afx_msg void OnMeasurementTypeChanged();
    afx_msg void OnHelp();
 

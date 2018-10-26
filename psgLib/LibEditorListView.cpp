@@ -273,9 +273,10 @@ void CLibEditorListView::OnRButtonDown(UINT nFlags, CPoint point)
          libILibrary* plib = (libILibrary*)rlist.GetItemData(m_ItemSelected);
          ASSERT(plib);
          UINT dodel = plib->IsEditingEnabled(entry_name) ? MF_ENABLED|MF_STRING : MF_GRAYED|MF_STRING;
+         UINT dodup = plib->IsCopyingEnabled(entry_name) ? MF_ENABLED|MF_STRING : MF_GRAYED|MF_STRING;
 
          menu.AppendMenu( dodel,                  IDM_DELETE_ENTRY, _T("Delete") );
-         menu.AppendMenu( MF_STRING | MF_ENABLED, IDM_DUPLICATE_ENTRY, _T("Duplicate") );
+         menu.AppendMenu( dodup,                  IDM_DUPLICATE_ENTRY, _T("Duplicate") );
          menu.AppendMenu( MF_STRING | MF_ENABLED, IDM_EDIT_ENTRY, _T("Edit") );
          menu.AppendMenu( dodel,                  IDM_RENAME_ENTRY, _T("Rename") );
 
@@ -464,9 +465,32 @@ void CLibEditorListView::DuplicateSelectedEntry()
    CString entry_name;
    libILibrary* plib;
    if(GetSelectedEntry(&entry_name, &plib))
+   {
       this->DuplicateEntry(plib,entry_name);
+   }
    else
+   {
       ASSERT(0);
+   }
+}
+
+bool CLibEditorListView::CanDuplicateEntry()
+{
+   CString entry_name;
+   libILibrary* plib;
+   if( !GetSelectedEntry(&entry_name, &plib) )
+   {
+      return false;
+   }
+
+   const libLibraryEntry* pEntry = plib->GetEntry(entry_name);
+   if ( pEntry )
+   {
+      return pEntry->IsCopyingEnabled();
+   }
+
+   ATLASSERT(false); // entry should have been retrieved
+   return false;
 }
 
 void CLibEditorListView::EditSelectedEntry()

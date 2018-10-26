@@ -74,8 +74,9 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   SpanIndexType startSpanIdx = pBridge->GetGirderGroupStartSpan(girderKey.groupIndex);
-   SpanIndexType endSpanIdx   = pBridge->GetGirderGroupEndSpan(girderKey.groupIndex);
+   SpanIndexType startSpanIdx, endSpanIdx;
+   pBridge->GetGirderGroupSpans(girderKey.groupIndex,&startSpanIdx,&endSpanIdx);
+
    bool bNegMoments = false;
    for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
    {
@@ -147,7 +148,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_SPAN) );
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+   location.IncludeSpanAndGirder(startSpanIdx != endSpanIdx);
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 

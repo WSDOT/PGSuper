@@ -799,6 +799,14 @@ CLSID CIBeamFactory::GetCLSID()
    return CLSID_WFBeamFactory;
 }
 
+std::_tstring CIBeamFactory::GetName()
+{
+   USES_CONVERSION;
+   LPOLESTR pszUserType;
+   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
+   return std::_tstring( OLE2T(pszUserType) );
+}
+
 CLSID CIBeamFactory::GetFamilyCLSID()
 {
    return CLSID_WFBeamFamily;

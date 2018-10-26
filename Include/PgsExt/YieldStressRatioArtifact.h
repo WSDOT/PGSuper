@@ -69,8 +69,8 @@ public:
    void SetVehicleName(LPCTSTR str);
    std::_tstring GetVehicleName() const;
 
-   void SetAllowableStress(Float64 fr);
-   Float64 GetAllowableStress() const;
+   void SetAllowableStressRatio(Float64 K);
+   Float64 GetAllowableStressRatio() const;
 
    void SetDeadLoadFactor(Float64 gDC);
    Float64 GetDeadLoadFactor() const;
@@ -107,6 +107,9 @@ public:
 
    void SetSecondaryEffectsMoment(Float64 Mps);
    Float64 GetSecondaryEffectsMoment() const;
+   
+   void SetLiveLoadDistributionFactor(Float64 gM);
+   Float64 GetLiveLoadDistributionFactor() const;
 
    void SetLiveLoadFactor(Float64 gLL);
    Float64 GetLiveLoadFactor() const;
@@ -123,31 +126,56 @@ public:
    void SetCrackDepth(Float64 c);
    Float64 GetCrackDepth() const;
 
-   void SetReinforcementDepth(Float64 dps);
-   Float64 GetReinforcementDepth() const;
+   void SetRebar(Float64 db,Float64 fb,Float64 fyb,Float64 Eb);
+   bool GetRebar(Float64* pdb, Float64* pfb,Float64* pfyb,Float64* pEb) const;
 
-   void SetEffectivePrestress(Float64 fpe);
-   Float64 GetEffectivePrestress() const;
+   void SetStrand(Float64 dps,Float64 fps,Float64 fyps,Float64 Eps);
+   bool GetStrand(Float64* pdps,Float64* pfps,Float64* pfyps,Float64* pEps) const;
 
-   void SetEs(Float64 Es);
-   Float64 GetEs() const;
+   void SetTendon(Float64 dpt,Float64 fpt,Float64 fypt,Float64 Ept);
+   bool GetTendon(Float64* pdpt,Float64* pfpt,Float64* pfypt,Float64* pEpt);
 
    void SetEg(Float64 Eg);
    Float64 GetEg() const;
 
    Float64 GetExcessMoment() const;
-   Float64 GetCrackingStressIncrement() const;
+
+   Float64 GetRebarCrackingStressIncrement() const;
+   Float64 GetRebarStress() const;
+   Float64 GetRebarStressRatio() const;
+   Float64 GetRebarAllowableStress() const;
+
+   Float64 GetStrandCrackingStressIncrement() const;
    Float64 GetStrandStress() const;
+   Float64 GetStrandStressRatio() const;
+   Float64 GetStrandAllowableStress() const;
+
+   Float64 GetTendonCrackingStressIncrement() const;
+   Float64 GetTendonStress() const;
+   Float64 GetTendonStressRatio() const;
+   Float64 GetTendonAllowableStress() const;
+
    Float64 GetStressRatio() const;
 
 protected:
    void MakeCopy(const pgsYieldStressRatioArtifact& rOther);
    virtual void MakeAssignment(const pgsYieldStressRatioArtifact& rOther);
+   void ComputeStressRatios() const;
+   void ComputeStressRatio(Float64 d,Float64 E,Float64 fbcr,Float64 fy,Float64* pfcr,Float64* pfs,Float64* pRF) const;
 
    mutable bool m_bRFComputed;
-   mutable Float64 m_RF;
-   mutable Float64 m_fcr;
-   mutable Float64 m_fs;
+
+   mutable Float64 m_RebarRF;
+   mutable Float64 m_StrandRF;
+   mutable Float64 m_TendonRF;
+
+   mutable Float64 m_fcrRebar;
+   mutable Float64 m_fcrStrand;
+   mutable Float64 m_fcrTendon;
+   
+   mutable Float64 m_fsRebar;
+   mutable Float64 m_fsStrand;
+   mutable Float64 m_fsTendon;
 
    pgsPointOfInterest m_POI;
 
@@ -157,20 +185,17 @@ protected:
    Float64 m_VehicleWeight;
    std::_tstring m_strVehicleName;
 
-   Float64 m_fr;
-   Float64 m_fpe;
+   Float64 m_AllowableStressRatio; // stress in reinforcement should not exceed this times the yield strength
    Float64 m_Mdc;
    Float64 m_Mdw;
    Float64 m_Mcr;
    Float64 m_Msh;
    Float64 m_Mre;
    Float64 m_Mps;
-   Float64 m_Mllim;
+   Float64 m_Mllim; // includes LLDF
    Float64 m_Mcrack;
    Float64 m_Icrack;
    Float64 m_c;
-   Float64 m_dps;
-   Float64 m_Es;
    Float64 m_Eg;
    Float64 m_gDC;
    Float64 m_gDW;
@@ -179,4 +204,23 @@ protected:
    Float64 m_gRE;
    Float64 m_gPS;
    Float64 m_gLL;
+   Float64 m_gM;   // LLDF used.. in Mllim... just holding on to it here for reporting
+
+   bool m_bRebar;
+   Float64 m_db;  // depth to reinforcement from extreme compression face
+   Float64 m_fb;  // stress in reinforcement beforc cracking
+   Float64 m_fyb; // yield strength
+   Float64 m_Eb;  // mod E.
+
+   bool m_bStrand;
+   Float64 m_dps;  // depth to reinforcement from extreme compression face
+   Float64 m_fps;  // stress in reinforcement beforc cracking
+   Float64 m_fyps; // yield strength
+   Float64 m_Eps;  // mod E.
+
+   bool m_bTendon;
+   Float64 m_dpt;  // depth to reinforcement from extreme compression face
+   Float64 m_fpt;  // stress in reinforcement beforc cracking
+   Float64 m_fypt; // yield strength
+   Float64 m_Ept;  // mod E.
 };

@@ -28,7 +28,7 @@
 // For static binding, define BEAMSLIB
 // For dynamic binding, nothing is required to be defined
 
-#if defined BUILDBEAMSLIB && !definedBEAMSLIB
+#if defined BUILDBEAMSLIB && !defined BEAMSLIB
 #define BEAMSCLASS __declspec(dllexport)
 #define BEAMSFUNC  __declspec(dllexport)
 #define BEAMSTPL   template class BEAMSCLASS 

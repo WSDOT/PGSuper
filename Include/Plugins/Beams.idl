@@ -241,7 +241,7 @@ library PGSuperBeamFactory
 
    // Distribution Factor Engineers
    [
-      uuid(3AC40380-8764-4087-BD7C-47A50A369AE6)
+      uuid(DFC0191F-F606-46aa-AC82-13B44878AA3B)
    ]
    coclass IBeamDistFactorEngineer
    {
@@ -289,7 +289,7 @@ library PGSuperBeamFactory
    };
 
    [
-      uuid(43BA23FE-C697-4277-A1C0-943E6E9DFBF9)
+      uuid(7B95DAC5-4E68-4e16-8504-22D21A0E6B52)
    ]
    coclass VoidedSlab2DistFactorEngineer
    {
