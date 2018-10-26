@@ -38,7 +38,7 @@ Repeat this process to create the third span
 
 We are going to input the span lengths using a feature known as In-place Editing. Left button click the mouse on the length of Span 1 in the Bridge View. An edit box should appear. Input the span length of 43.74ft
 
-![](Tutorial_Sidewalks_Inplace_Edit.png)
+![](Tutorial_Advanced_Example_2_Inplace_Edit.png)
 
 Repeat this process for Spans 2 and 3. The span lengths are 68.48 ft and 63.93 ft respectively.
 

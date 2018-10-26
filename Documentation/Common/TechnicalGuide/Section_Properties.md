@@ -1,6 +1,6 @@
 Section Properties {#tg_section_properties}
 ======================================
-PGSuper ignores the slab haunch and fillets when calculating composite section properties.
+PGSuper ignores the deck haunch and fillets when calculating composite section properties.
 
 ![](CompositeProperties.gif)
 

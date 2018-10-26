@@ -290,7 +290,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
 
    row++;
 
-   (*pTable)(row,0) << _T("Deflection (Slab and Diaphragms)");
+   (*pTable)(row,0) << _T("Deflection (Deck and Diaphragms)");
    (*pTable)(row,1) << disp.SetValue( delta_dl_orig );
    (*pTable)(row,2) << dispft.SetValue( delta_dl_orig );
 

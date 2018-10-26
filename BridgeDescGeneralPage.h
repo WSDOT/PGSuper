@@ -139,6 +139,7 @@ protected:
 
    Float64 m_MinGirderSpacing;
    Float64 m_MaxGirderSpacing;
+   Float64 m_GirderSpacingTolerance;
 
    CDeckDescription2 m_Deck;
    std::vector<CDeckPoint> m_CacheDeckEdgePoints;

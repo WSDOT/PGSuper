@@ -355,7 +355,7 @@ void CConcreteManager::ValidateConcrete()
       if (  max_slab_fc < fc28 && !IsEqual(max_slab_fc,fc28) )
       {
          std::_tostringstream os;
-         os << _T("Slab concrete strength (" << (LPCTSTR)::FormatDimension(fc28,pDisplayUnits->GetStressUnit()) << ") exceeds the normal value of ") << (LPCTSTR)::FormatDimension(max_slab_fc,pDisplayUnits->GetStressUnit());
+         os << _T("Deck concrete strength (" << (LPCTSTR)::FormatDimension(fc28,pDisplayUnits->GetStressUnit()) << ") exceeds the normal value of ") << (LPCTSTR)::FormatDimension(max_slab_fc,pDisplayUnits->GetStressUnit());
 
          std::_tstring strMsg = os.str();
 
@@ -371,7 +371,7 @@ void CConcreteManager::ValidateConcrete()
       if ( max_wc < strength_density && !IsEqual(max_wc,strength_density,0.0001) )
       {
          std::_tostringstream os;
-         os << _T("Slab concrete density for strength calculations exceeds the normal value of ") << MaxWc << _T(" ") << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
+         os << _T("Deck concrete density for strength calculations exceeds the normal value of ") << MaxWc << _T(" ") << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
 
          std::_tstring strMsg = os.str();
 
@@ -384,7 +384,7 @@ void CConcreteManager::ValidateConcrete()
       if ( max_wc < weight_density && !IsEqual(max_wc,weight_density,0.0001) )
       {
          std::_tostringstream os;
-         os << _T("Slab concrete density for weight calculations exceeds the normal value of ") << MaxWc << _T(" ") << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
+         os << _T("Deck concrete density for weight calculations exceeds the normal value of ") << MaxWc << _T(" ") << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
 
          std::_tstring strMsg = os.str();
 
@@ -398,11 +398,11 @@ void CConcreteManager::ValidateConcrete()
          std::_tostringstream os;
          if ( m_pDeckConc->GetType() == pgsTypes::Normal )
          {
-            os << _T("Slab concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
+            os << _T("Deck concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
          }
          else
          {
-            os << _T("Slab concrete density is out of range for Lightweight Concrete per LRFD 5.2.");
+            os << _T("Deck concrete density is out of range for Lightweight Concrete per LRFD 5.2.");
          }
 
          std::_tstring strMsg = os.str();
@@ -419,7 +419,7 @@ void CConcreteManager::ValidateConcrete()
       if ( max_agg_size < agg_size && !IsEqual(max_agg_size,agg_size))
       {
          std::_tostringstream os;
-         os << _T("Slab concrete aggregate size exceeds the normal value of ") << MaxAggSize << _T(" ") << pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag();
+         os << _T("Deck concrete aggregate size exceeds the normal value of ") << MaxAggSize << _T(" ") << pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag();
 
          std::_tstring strMsg = os.str();
 

@@ -11,6 +11,8 @@ Minimum Fillet | Enter the minimum permissible depth from the bottom of the slab
 Minimum Required Haunch Depth at Bearing Centerlines | When checked, the haunch depth at bearing centerlines is compared to the input value.
 Excessive Haunch Depth Warning Tolerance | Defines the tolerance for issuing a warning that the haunch depth is too deep. A deep haunch depth is not a structural problem, but you may be wasting material.
 
+> TIP: Refer to @ref tg_slab_offset in the @ref technical_guide for more information about how the slab offset and fillet dimensions are used for slab offset design.
+
 Deflection Multipliers for Computing Camber
 -----------------------------------------
 Enter deflection multipliers for computing camber. See @ref tg_camber in the @ref technical_guide for specific information about how camber is computed.

@@ -143,7 +143,6 @@ Float64 CBulbTeeDistFactorEngineer::GetSkewCorrectionFactorForShear(const CSpanK
 
 std::_tstring CBulbTeeDistFactorEngineer::GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
 {
-   GET_IFACE(ILiveLoads,pLiveLoads);
    GET_IFACE(ISpecification,    pSpec);
    GET_IFACE(ILibrary,pLib);
 
@@ -168,6 +167,7 @@ std::_tstring CBulbTeeDistFactorEngineer::GetComputationDescription(const CGirde
       }
 
       // special string if roa is ignored
+      GET_IFACE(ILiveLoads,pLiveLoads);
       std::_tstring strAction( pLiveLoads->GetLLDFSpecialActionText() );
       if ( !strAction.empty() )
       {

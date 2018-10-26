@@ -928,7 +928,8 @@ void CBridgeDescription2::CreateFirstSpan(const CPierData2* pFirstPier,const CSp
    pGroup->SetPiers(m_Piers.front(),m_Piers.back());
    pGroup->SetIndex(m_GirderGroups.size());
    pGroup->SetID( GetNextGirderGroupID() );
-   pGroup->Initialize(Max((GirderIndexType)1,m_nGirders));
+   m_nGirders = Max((GirderIndexType)1,m_nGirders);
+   pGroup->Initialize(m_nGirders);
    m_GirderGroups.push_back(pGroup);
 
    // Set the erection event for the new pier
@@ -1338,6 +1339,19 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
       // Make the new group have the same number of girders as the reference group
       GirderIndexType nGirders = pRefGroup->GetGirderCount();
       pNewGroup->Initialize(nGirders); // creates girders and initializes the slab offsets
+
+      // Copy the girder type grouping information
+      GroupIndexType nTypeGroups = pRefGroup->GetGirderTypeGroupCount();
+      for ( GroupIndexType girderTypeGroupIdx = 0; girderTypeGroupIdx < nTypeGroups; girderTypeGroupIdx++ )
+      {
+         GirderIndexType firstGdrIdx, lastGdrIdx;
+         std::_tstring strName;
+         pRefGroup->GetGirderTypeGroup(girderTypeGroupIdx,&firstGdrIdx,&lastGdrIdx,&strName);
+         GroupIndexType idx = pNewGroup->CreateGirderTypeGroup(firstGdrIdx,lastGdrIdx);
+         ATLASSERT(idx == girderTypeGroupIdx);
+         pNewGroup->SetGirderName(girderTypeGroupIdx,strName.c_str());
+      }
+
 
       // Make the staging match the reference group
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
@@ -2167,6 +2181,7 @@ const CTemporarySupportData* CBridgeDescription2::FindTemporarySupport(SupportID
 SupportIndexType CBridgeDescription2::SetTemporarySupportByIndex(SupportIndexType tsIdx,const CTemporarySupportData& tsData)
 {
    ATLASSERT( 0 <= tsIdx && tsIdx < (SupportIndexType)m_TemporarySupports.size() );
+   ATLASSERT( m_Piers.front()->GetStation() < tsData.GetStation() && tsData.GetStation() < m_Piers.back()->GetStation() );
 
    CTemporarySupportData* pTS = m_TemporarySupports[tsIdx];
    ATLASSERT(pTS->GetIndex() == tsIdx);
@@ -2179,14 +2194,14 @@ SupportIndexType CBridgeDescription2::SetTemporarySupportByIndex(SupportIndexTyp
          // temporary support is not changing spans
          std::vector<CTemporarySupportData*> vTS = pSpan->GetTemporarySupports();
          ATLASSERT( 1 <= vTS.size() );
-         if ( vTS.size() == 1 || // this is only one temp support in the span
-              (tsIdx == 0 && tsData.GetStation() < vTS[1]->GetStation()) || // this is the first temp support and it is still before the second TS
-              (tsIdx == vTS.size()-1 && vTS[tsIdx-1]->GetStation() < tsData.GetStation()) || // this is the last temp support and it is still after the second to last TS
-              (vTS[tsIdx-1]->GetStation() < tsData.GetStation() && tsData.GetStation() < vTS[tsIdx+1]->GetStation()) // the TS is still between the same two TS
-              )
+         SupportIndexType ltsIdx = tsIdx - vTS.front()->GetIndex(); // local temporary support index (index in vTS... tsIdx is index in m_TemporarySupports)
+
+         Float64 thisTSStation = tsData.GetStation();
+         Float64 prevTSStation = (ltsIdx == 0 ? -DBL_MAX : vTS[ltsIdx-1]->GetStation());
+         Float64 nextTSStation = (ltsIdx == vTS.size()-1 ? DBL_MAX : vTS[ltsIdx+1]->GetStation());
+         if ( prevTSStation < thisTSStation && thisTSStation < nextTSStation )
          {
-            // temporary support does not change relative position in the span with respect to other
-            // temporary supports
+            // this temporary support does not change relative position in the span with respect to the other temporary supports
             pTS->CopyTemporarySupportData(&tsData);
             return tsIdx;
          }

@@ -29,7 +29,7 @@ Pier 2 | Back of Pavement Seat : 2+86.66 <br> Skew : 11 00 00 R
 Girders | 6 - W58G @ 6ft
 Prestressing | To Be Determined by Design
 Slab |  Gross Depth : 7.5 in<br>Overhang : 3.25 ft (18.25 ft from CL Bridge to edge of deck)<br>Slab Offset (aka Haunch or "A" Dimension) : To Be Determined by Design<br>Wearing Surface (Sacrificial Depth) : 0.5 in
-Materials | Girder : Concrete, 28 day Strength, To Be Determined by Design<br>Girder: Concrete, release strength, To Be Determined by Design<br>Slab : Concrete, 28 day Strength, 4 ksi<br>Strands : 0.6 in Grade 270 Low Relaxation
+Materials | Girder : Concrete, 28 day Strength, To Be Determined by Design<br>Girder: Concrete, release strength, To Be Determined by Design<br>Deck : Concrete, 28 day Strength, 4 ksi<br>Strands : 0.6 in Grade 270 Low Relaxation
 Special Loads | A 10 kip overhead sign structure is placed at mid-span.
 
 > NOTE: "A" Dimension is a WSDOT term that denotes the distance from the top of the girder to the top of the slab, measured at the centerline of bearing. Other common terms are "Slab Offset" and "Haunch"

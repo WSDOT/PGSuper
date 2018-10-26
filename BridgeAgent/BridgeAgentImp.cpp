@@ -1143,7 +1143,7 @@ void CBridgeAgentImp::ValidatePointLoads()
             // add a point of interest at this load location in every interval
             CSegmentKey segmentKey;
             Float64 Xs;
-            ConvertSpanPointToSegmentCoordiante(thisSpanKey,pPointLoad->m_Location,&segmentKey,&Xs);
+            ConvertSpanPointToSegmentCoordiante(thisSpanKey,upl.m_Location,&segmentKey,&Xs);
 
             Float64 segLength = GetSegmentLength(segmentKey);
             Xs = ::ForceIntoRange(0.0,Xs,segLength);
@@ -1530,7 +1530,7 @@ void CBridgeAgentImp::ValidateMomentLoads()
             // add a point of interest at this load location in every interval
             CSegmentKey segmentKey;
             Float64 Xs;
-            ConvertSpanPointToSegmentCoordiante(thisSpanKey,pMomentLoad->m_Location,&segmentKey,&Xs);
+            ConvertSpanPointToSegmentCoordiante(thisSpanKey,upl.m_Location,&segmentKey,&Xs);
 
             Float64 segLength = GetSegmentLength(segmentKey);
             Xs = ::ForceIntoRange(0.0,Xs,segLength);
@@ -1724,7 +1724,18 @@ bool CBridgeAgentImp::BuildCogoModel()
       // and 2 entry spiral lengths. This is completely arbitrary but will ensure that 
       // we are starting on the back tangent
       HorzCurveData& first_curve_data = *(alignment_data.HorzCurves.begin());
-      prev_curve_ST_station = first_curve_data.PIStation - 2*(first_curve_data.Radius + first_curve_data.EntrySpiral);
+
+      // NOTE: The commented code below is correct, however it is commented out because
+      // ultimate there will be a crash because of issues in the COGO Path model.
+      // Also see NOTE below and Mantis 575
+      //if ( IsZero(first_curve_data.Radius) )
+      //{
+      //   prev_curve_ST_station = first_curve_data.PIStation - 100;
+      //}
+      //else
+      {
+         prev_curve_ST_station = first_curve_data.PIStation - 2*(first_curve_data.Radius + first_curve_data.EntrySpiral);
+      }
 
       CogoObjectID curveID = 1;
       CollectionIndexType curveIdx = 0;
@@ -1750,7 +1761,7 @@ bool CBridgeAgentImp::BuildCogoModel()
 
             // locate the PI
             CComPtr<IPoint2d> pi;
-            locate->ByDistDir(pbt, pi_station, CComVariant( back_tangent ),0.00,&pi);
+            locate->ByDistDir(pbt, pi_station - prev_curve_ST_station, CComVariant( back_tangent ),0.00,&pi);
 
             // add the PI
             points->AddEx(curveID,pi);
@@ -1927,7 +1938,18 @@ bool CBridgeAgentImp::BuildCogoModel()
          if ( curveIdx == 0 )
          {
             // this is the first curve so set the reference station at the TS 
-            alignment->put_RefStation( CComVariant(pi_station - T) );
+
+            // NOTE: The commented code below is correct, however it is commented out because
+            // ultimate there will be a crash because of issues in the COGO Path model.
+            // Also see NOTE above and Mantis 575
+            //if ( IsZero(curve_data.Radius) )
+            //{
+            //   alignment->put_RefStation( CComVariant(pi_station - 100) );
+            //}
+            //else
+            {
+               alignment->put_RefStation( CComVariant(pi_station - T) );
+            }
          }
       }
    }
@@ -1967,39 +1989,6 @@ bool CBridgeAgentImp::BuildCogoModel()
    objRefPoint->Location(&dx,&dy);
    m_DeltaX = alignment_data.xRefPoint - dx;
    m_DeltaY = alignment_data.yRefPoint - dy;
-
-   // move the alignment into the correct position
-
-//   // get coordinate at the station the user wants to use as the reference station
-//   CComPtr<IPoint2d> objRefPoint1;
-//   alignment->LocatePoint(CComVariant(alignment_data.RefStation),omtAlongDirection, 0.00,CComVariant(0.00),&objRefPoint1);
-//
-//   // create a point where the reference station should pass through
-//   CComPtr<IPoint2d> objRefPoint2;
-//   objRefPoint2.CoCreateInstance(CLSID_Point2d);
-//   objRefPoint2->Move(alignment_data.xRefPoint,alignment_data.yRefPoint);
-//
-//   // measure the distance and direction between the point on alignment and the desired ref point
-//   CComQIPtr<IMeasure2> measure(m_CogoEngine);
-//   Float64 distance;
-//   CComPtr<IDirection> objDirection;
-//   measure->Inverse(objRefPoint1,objRefPoint2,&distance,&objDirection);
-//
-//   // move the alignment such that it passes through the ref point
-//   alignment->Move(distance,objDirection);
-//
-//#if defined _DEBUG
-//   CComPtr<IPoint2d> objPnt;
-//   alignment->LocatePoint(CComVariant(alignment_data.RefStation),omtAlongDirection, 0.0,CComVariant(0.0),&objPnt);
-//   Float64 x1,y1,x2,y2;
-//   objPnt->Location(&x1,&y1);
-//   objRefPoint2->Location(&x2,&y2);
-//   ATLASSERT(IsZero(x1-x2));
-//   ATLASSERT(IsZero(y1-y2));
-//
-//   ATLASSERT(IsZero(x1-alignment_data.xRefPoint));
-//   ATLASSERT(IsZero(y1-alignment_data.yRefPoint));
-//#endif
 
    // Setup the profile
    if ( profile_data.VertCurves.size() == 0 )
@@ -2140,7 +2129,6 @@ bool CBridgeAgentImp::BuildCogoModel()
 
          m_VertCurveKeys.insert(std::make_pair(curveIdx,curveID));
         
-
          profile->AddEx(vc);
 
          Float64 g1,g2;
@@ -2236,29 +2224,42 @@ bool CBridgeAgentImp::BuildCogoModel()
 
    if ( 0 < alignment_data.HorzCurves.size() )
    {
+      HorzCurveData& curve_data = alignment_data.HorzCurves.front();
       CComPtr<IHorzCurveCollection> curves;
       m_CogoModel->get_HorzCurves(&curves);
-      CComPtr<IHorzCurve> hc;
-      CogoObjectID curveID;
-      curves->ID(0,&curveID);
-      curves->get_Item(curveID,&hc);
+      IndexType nHCurves;
+      curves->get_Count(&nHCurves);
 
-      CComPtr<IPoint2d> pntTS;
-      hc->get_TS(&pntTS);
+      if ( IsZero(curve_data.Radius) || nHCurves == 0 )
+      {
+         startStation = Min(startStation,curve_data.PIStation);
+      }
+      else
+      {
+         CComPtr<IHorzCurve> hc;
+         CogoObjectID curveID;
+         curves->ID(0,&curveID);
+         curves->get_Item(curveID,&hc);
 
-      CComPtr<IStation> objStation;
-      Float64 offset;
-      alignment->Offset(pntTS,&objStation,&offset);
+         CComPtr<IPoint2d> pntTS;
+         hc->get_TS(&pntTS);
 
-      Float64 station;
-      objStation->get_NormalizedValue(alignment,&station);
-      startStation = Min(startStation,station);
+         CComPtr<IStation> objStation;
+         Float64 offset;
+         alignment->Offset(pntTS,&objStation,&offset);
+
+         Float64 station;
+         objStation->get_NormalizedValue(alignment,&station);
+         startStation = Min(startStation,station);
+      }
    }
 
-   if ( 0 < profile_data.VertCurves.size() )
+   CComPtr<IVertCurveCollection> vcurves;
+   m_CogoModel->get_VertCurves(&vcurves);
+   IndexType nVCurves;
+   vcurves->get_Count(&nVCurves);
+   if ( 0 < nVCurves )
    {
-      CComPtr<IVertCurveCollection> vcurves;
-      m_CogoModel->get_VertCurves(&vcurves);
       CComPtr<IVertCurve> vc;
       CogoObjectID curveID;
       vcurves->ID(0,&curveID);
@@ -2313,26 +2314,36 @@ bool CBridgeAgentImp::BuildCogoModel()
 
    if ( 0 < alignment_data.HorzCurves.size() )
    {
+      HorzCurveData& curve_data = alignment_data.HorzCurves.back();
       CComPtr<IHorzCurveCollection> curves;
       m_CogoModel->get_HorzCurves(&curves);
-      CComPtr<IHorzCurve> hc;
-      CogoObjectID curveID;
-      curves->ID(alignment_data.HorzCurves.size()-1,&curveID);
-      curves->get_Item(curveID,&hc); // 1 is the ID of the first curve
+      IndexType nHCurves;
+      curves->get_Count(&nHCurves);
+      if ( IsZero(curve_data.Radius) || nHCurves == 0 )
+      {
+         endStation = Max(endStation,curve_data.PIStation);
+      }
+      else
+      {
+         CComPtr<IHorzCurve> hc;
+         CogoObjectID curveID;
+         curves->ID(alignment_data.HorzCurves.size()-1,&curveID);
+         curves->get_Item(curveID,&hc); // 1 is the ID of the first curve
 
-      CComPtr<IPoint2d> pntST;
-      hc->get_ST(&pntST);
+         CComPtr<IPoint2d> pntST;
+         hc->get_ST(&pntST);
 
-      CComPtr<IStation> objStation;
-      Float64 offset;
-      alignment->Offset(pntST,&objStation,&offset);
+         CComPtr<IStation> objStation;
+         Float64 offset;
+         alignment->Offset(pntST,&objStation,&offset);
 
-      Float64 station;
-      objStation->get_NormalizedValue(alignment,&station);
-      endStation = Max(endStation,station);
+         Float64 station;
+         objStation->get_NormalizedValue(alignment,&station);
+         endStation = Max(endStation,station);
+      }
    }
 
-   if ( 0 < profile_data.VertCurves.size() )
+   if ( 0 < nVCurves )
    {
       CComPtr<IVertCurveCollection> vcurves;
       m_CogoModel->get_VertCurves(&vcurves);
@@ -15273,7 +15284,14 @@ Float64 CBridgeAgentImp::GetPjack(const CSegmentKey& segmentKey,pgsTypes::Strand
    const CPrecastSegmentData* pSegment = pBridgeDesc->GetPrecastSegmentData(segmentKey);
    if ( type == pgsTypes::Permanent )
    {
-      return pSegment->Strands.GetPjack(pgsTypes::Straight) + pSegment->Strands.GetPjack(pgsTypes::Harped);
+      if ( pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtTotal )
+      {
+         return pSegment->Strands.GetPjack(pgsTypes::Permanent);
+      }
+      else
+      {
+         return pSegment->Strands.GetPjack(pgsTypes::Straight) + pSegment->Strands.GetPjack(pgsTypes::Harped);
+      }
    }
    else
    {
@@ -15283,7 +15301,7 @@ Float64 CBridgeAgentImp::GetPjack(const CSegmentKey& segmentKey,pgsTypes::Strand
 
 Float64 CBridgeAgentImp::GetPjack(const CSegmentKey& segmentKey,bool bIncTemp)
 {
-   Float64 Pj = GetPjack(segmentKey,pgsTypes::Straight) + GetPjack(segmentKey,pgsTypes::Harped);
+   Float64 Pj = GetPjack(segmentKey,pgsTypes::Permanent);
    if ( bIncTemp )
    {
       Pj += GetPjack(segmentKey,pgsTypes::Temporary);
@@ -18212,9 +18230,8 @@ void CBridgeAgentImp::ConvertSpanPointToSegmentPathCoordiante(const CSpanKey& sp
    ConvertSpanPointToSegmentCoordiante(spanKey,Xspan,pSegmentKey,&Xs);
    Float64 brgOffset = GetSegmentStartBearingOffset(*pSegmentKey);
    Float64 endDist   = GetSegmentStartEndDistance(*pSegmentKey);
-   Float64 offset_dist = brgOffset - endDist;
-   offset_dist = IsZero(offset_dist) ? 0 : offset_dist;
-   Float64 Xsp = Xs - offset_dist;
+   Float64 end_offset = brgOffset - endDist;
+   Float64 Xsp = Xs + end_offset;
    *pXsp = Xsp;
 }
 
@@ -18444,7 +18461,7 @@ Float64 CBridgeAgentImp::ConvertSegmentPathCoordinateToSegmentCoordinate(const C
    // |<------- Xsp ----->>
    // |<-- brg offset->|
    // |   |<-end dist->|
-   // |<->|-- add this distance (start_offset) to Xs to get Xsp
+   // |<->|-- subtract this distance (start_offset) from Xsp to get Xs
    // |   |<--- Xs -------->>
    // |   |
    // |   +---------------------------------------/
@@ -23419,8 +23436,8 @@ Float64 CBridgeAgentImp::GetDuctLength(const CGirderKey& girderKey,DuctIndexType
 
 Float64 CBridgeAgentImp::GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx)
 {
-   pgsTypes::SectionPropertyType spType = (pgsTypes::SectionPropertyType)(GetSectionPropertiesMode());
-   return GetEccentricity(spType,intervalIdx,poi,ductIdx);
+   pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
+   return GetEccentricity(sectPropType,intervalIdx,poi,ductIdx);
 }
 
 Float64 CBridgeAgentImp::GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx)
@@ -28568,7 +28585,8 @@ void CBridgeAgentImp::ComputeHpFill(const GirderLibraryEntry* pGdrEntry,IStrandG
 
 Float64 CBridgeAgentImp::ComputePierDiaphragmHeight(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace)
 {
-   // Compute Pier Diaphragm Height as Hgirder + "A" Dimension (slab offset) - tSlab
+   // Compute Pier Diaphragm Height as Hgirder + "A" Dimension (slab offset) - tSlab + Cross Slope Effect
+
    // This makes the height of the diaphragm go from the bottom of the girder to the bottom of the slab
    // In the future, we will want to include bearing heights and bearing recess dimensions
 
@@ -28599,7 +28617,17 @@ Float64 CBridgeAgentImp::ComputePierDiaphragmHeight(PierIndexType pierIdx,pgsTyp
          Float64 tSlab = GetGrossSlabDepth(poi);
          Float64 Hg = GetHg(releaseIntervalIdx,vPoi.front());
          Float64 A = GetSlabOffset(grpIdx,pierIdx,gdrIdx);
-         Float64 h = Hg + A - tSlab;
+
+         Float64 Wbf = GetBottomWidth(poi);
+
+         Float64 station,offset;
+         GetStationAndOffset(poi,&station,&offset);
+         Float64 md = GetSlope(station,offset);
+         Float64 mg = GetOrientation(segmentKey);
+
+         Float64 girder_orientation_effect = Wbf*fabs((md-mg)/sqrt(1+mg*mg));
+
+         Float64 h = Hg + A + girder_orientation_effect - tSlab;
          H = Max(H,h);
       } // next girder
    } // next group

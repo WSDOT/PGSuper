@@ -136,7 +136,7 @@ void CConstructabilityCheckTable::BuildSlabOffsetTable(rptChapter* pChapter,IBro
       SpanIndexType startSpanIdx, endSpanIdx;
       pConstrArtifact->GetSpans(&startSpanIdx,&endSpanIdx);
 
-      for (SpanIndexType spanIdx=startSpanIdx; spanIdx<=endSpanIdx; spanIdx++)
+      for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
       {
          const pgsSpanConstructabilityArtifact* pArtifact = pConstrArtifact->GetSpanArtifact(spanIdx);
 
@@ -325,7 +325,7 @@ void CConstructabilityCheckTable::BuildMinimumFilletCheck(rptChapter* pChapter,I
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << _T("Minimum Filllet Depth");
+   *pTitle << _T("Minimum Fillet Depth");
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
    *pBody << pTable;
@@ -343,8 +343,8 @@ void CConstructabilityCheckTable::BuildMinimumFilletCheck(rptChapter* pChapter,I
       (*pTable)(0,col++) << _T("Girder");
    }
 
-   (*pTable)(0,col++) << COLHDR(_T("Fillet Provided"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*pTable)(0,col++) << COLHDR(_T("Minimum")<<rptNewLine<<_T("Fillet Required"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(0,col++) << COLHDR(_T("Provided"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(0,col++) << COLHDR(_T("Required"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*pTable)(0,col++) << _T("Status");
 
    RowIndexType row=0;

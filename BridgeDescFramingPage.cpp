@@ -236,8 +236,31 @@ void CBridgeDescFramingPage::OnRemoveTemporarySupport()
 void CBridgeDescFramingPage::OnOrientPiers()
 {
    CString strResult;
-   if ( AfxQuestion(_T("Orient Piers"),_T("Enter orientation of all piers and temporary supports"),_T("NORMAL"),strResult) )
+   BOOL bDone = FALSE;
+   do
    {
-      m_Grid.SetPierOrientation(strResult);
+      if ( AfxQuestion(_T("Orient Piers"),_T("Enter orientation of all piers and temporary supports"),_T("NORMAL"),strResult) )
+      {
+         CComPtr<IBroker> pBroker;
+         EAFGetBroker(&pBroker);
+         GET_IFACE2(pBroker,IValidate,pValidate);
+         UINT result = pValidate->Orientation(strResult);
+         if ( result == VALIDATE_SUCCESS )
+         {
+            m_Grid.SetPierOrientation(strResult);
+            bDone = TRUE;
+         }
+         else
+         {
+            CString strMsg;
+            strMsg.Format(_T("\"%s\" is not a validate orientation"),strResult);
+            AfxMessageBox(strMsg,MB_ICONEXCLAMATION | MB_OK);
+         }
+      }
+      else
+      {
+         bDone = TRUE; // user canceled so we are done
+      }
    }
+   while ( !bDone ); // keep looping until we get a valid response
 }

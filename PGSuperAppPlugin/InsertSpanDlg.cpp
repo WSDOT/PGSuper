@@ -70,6 +70,8 @@ void CInsertSpanDlg::DoDataExchange(CDataExchange* pDX)
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_UnitValueAndTag(pDX,IDC_SPAN_LENGTH,IDC_SPAN_LENGTH_UNIT,m_SpanLength,pDisplayUnits->GetSpanLengthUnit());
+   DDV_UnitValueGreaterThanZero(pDX,IDC_SPAN_LENGTH,m_SpanLength,pDisplayUnits->GetSpanLengthUnit());
+
    DDX_CBIndex(pDX,IDC_LOCATION,m_LocationIdx);
    DDX_Check_Bool(pDX,IDC_NEW_GROUP,m_bCreateNewGroup);
    DDX_CBItemData(pDX,IDC_EVENT,m_EventIndex);

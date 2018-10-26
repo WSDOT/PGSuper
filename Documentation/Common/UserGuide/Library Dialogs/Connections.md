@@ -21,7 +21,7 @@ Support Width | The width of the support, centered on the centerline of bearing.
 
 End Diaphragm Dimensions
 ========================
-End diaphragm dimensions, along with the weight density for the currently-selected slab concrete type, and the girder spacing/overhang width are used for calculating end diaphragm loads. Diaphragms are assumed to be rectangular.
+End diaphragm dimensions, along with the weight density for the currently-selected deck concrete type, and the girder spacing/overhang width are used for calculating end diaphragm loads. Diaphragms are assumed to be rectangular.
 
 Item | Description
 ----|------

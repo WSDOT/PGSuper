@@ -17,7 +17,7 @@ Diaphragm location | Enter the location of the diaphragm
 
 Diaphragm Dimensions
 --------------------
-These dimensions are used to compute the weight of the diaphragm based on the girder spacing (or internal girder void size) and the weight density of the slab concrete.
+These dimensions are used to compute the weight of the diaphragm based on the girder spacing (or internal girder void size) and the weight density of the deck concrete.
 
 > NOTE: The diaphragm length is measured from center to center of the exterior webs of the girders. The ends of the diaphragms are not sloped to match the shape of slope webs, like those found in U girders.
 

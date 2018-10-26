@@ -2,7 +2,7 @@ Horizontal Alignment {#ug_dialogs_horizontal_alignment}
 ==============================================
 Define the horizontal alignment of the roadway. The horizontal alignment is defined by a sequence of horizontal curves.
 
-The back tangent of the first curve and the forward tangent of the last curve are project backwards and forwards along the alignment.
+The back tangent of the first curve and the forward tangent of the last curve are projected backwards and forwards along the alignment.
 
 Alignment Definition
 ----------------------
@@ -31,7 +31,7 @@ NOTE: A PI angle point can be modeled by defining a horizontal curve with a Radi
 
 Horizontal Alignment Control Point
 ---------------------------------------
-The horizontal alignment control point defined the Northing and Easting of a specific point on the alignment.
+The horizontal alignment control point defining the Northing and Easting of a specific point on the alignment.
 
 
 Item | Description

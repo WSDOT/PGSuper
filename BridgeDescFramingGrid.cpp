@@ -1180,44 +1180,19 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	else if (nCol==2)
 	{
          // orientation
-      CString strOrientation(s);
-      strOrientation.MakeUpper(); // do comparisons in upper case
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker,IValidate,pValidate);
+      UINT result = pValidate->Orientation(s);
 
-      if (strOrientation.IsEmpty())
+      if (result == VALIDATE_INVALID)
       {
-			SetWarningText (_T("Orientation must not be blank"));
+			SetWarningText (_T("Orientation is invalid"));
          return FALSE;
       }
-
-      if ( strOrientation == _T("NORMAL") || (strOrientation.GetLength() == 1 && strOrientation[0] == 'N') )
+      else if ( result == VALIDATE_SKEW_ANGLE )
       {
-         return TRUE;
-      }
-
-      HRESULT hr_angle = m_objAngle->FromString(CComBSTR(strOrientation));
-      if ( SUCCEEDED(hr_angle) )
-      {
-         Float64 value;
-         m_objAngle->get_Value(&value);
-         if ( value < -MAX_SKEW_ANGLE || MAX_SKEW_ANGLE < value )
-         {
-   		   SetWarningText (_T("Skew angle must be less than 88 deg"));
-            return FALSE;
-         }
-         else
-         {
-            return TRUE;
-         }
-      }
-
-      HRESULT hr_direction = m_objDirection->FromString(CComBSTR( strOrientation ));
-      if ( SUCCEEDED(hr_direction) )
-      {
-         return TRUE;
-      }
-      else
-      {
- 		   SetWarningText (_T("Orientation is invalid"));
+		   SetWarningText (_T("Skew angle must be less than 88 deg"));
          return FALSE;
       }
    }
@@ -1246,6 +1221,12 @@ BOOL CBridgeDescFramingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
       {
          SupportIndexType tsIdx = GetTemporarySupportIndex(nRow);
          CTemporarySupportData tsData = GetTemporarySupportRowData(nRow);
+         if ( tsData.GetStation() <= pDlg->m_BridgeDesc.GetPier(0)->GetStation() ||
+              pDlg->m_BridgeDesc.GetPier(pDlg->m_BridgeDesc.GetPierCount()-1)->GetStation() <= tsData.GetStation() )
+         {
+            // new station is not on the bridge
+            return FALSE;
+         }
          pDlg->m_BridgeDesc.SetTemporarySupportByIndex(tsIdx,tsData);
          const CTemporarySupportData* pTS = pDlg->m_BridgeDesc.GetTemporarySupport(tsIdx);
          FillTemporarySupportRow(nRow,pTS); // updates station and orientation formatting

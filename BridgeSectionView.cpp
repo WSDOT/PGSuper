@@ -912,7 +912,7 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
    events.Release();
 
    
-   CString strMsg1(_T("Double click to edit slab.\r\nRight click for more options."));
+   CString strMsg1(_T("Double click to edit deck.\r\nRight click for more options."));
 
    CString strMsg2;
    if ( deckType != pgsTypes::sdtNone )

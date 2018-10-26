@@ -11,6 +11,12 @@ Span Length | Enter the span length measured along the alignment between the abu
 
 The length of the span is changed by moving all the up-station piers.
 
+Fillet
+---------------------------
+Define the Fillet for this span.
+
+If the Fillet is defined by span and you click the hyperlink to change the fillet to be a single value for the entire bridge, the fillet defined for this span will be applied to the entire bridge.
+
 Slab Offset ("A" Dimension)
 ---------------------------
 Define the slab offset for the span.

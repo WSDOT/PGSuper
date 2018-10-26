@@ -73,12 +73,6 @@ BOOL CBridgeModelViewChildFrame::PreCreateWindow(CREATESTRUCT& cs)
    // force this window to be maximized (not sure why WS_VISIBLE is required)
    cs.style |= WS_MAXIMIZE | WS_VISIBLE;
 
-#if defined _EAF_USING_MFC_FEATURE_PACK
-   // If MFC Feature pack is used, we are using tabbed MDI windows so we don't want
-   // the system menu or the minimize and maximize boxes
-   cs.style &= ~(WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
-#endif
-
    return __super::PreCreateWindow(cs);
 }
 
@@ -262,22 +256,12 @@ int CBridgeModelViewChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
    {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-#if defined _EAF_USING_MFC_FEATURE_PACK
-	if ( !m_SettingsBar.Create( _T("Title"), this, FALSE, IDD_BRIDGEVIEW_CONTROLS, CBRS_TOP, IDD_BRIDGEVIEW_CONTROLS) )
-#else
 	if ( !m_SettingsBar.Create( this, IDD_BRIDGEVIEW_CONTROLS, CBRS_TOP, IDD_BRIDGEVIEW_CONTROLS) )
-#endif
 	{
 		TRACE0("Failed to create control bar\n");
 		return -1;      // fail to create
 	}
    }
-
-#if defined _EAF_USING_MFC_FEATURE_PACK
-   EnableDocking(CBRS_ALIGN_TOP);
-   m_SettingsBar.EnableDocking(CBRS_ALIGN_TOP);
-   m_SettingsBar.DockToFrameWindow(CBRS_ALIGN_TOP);
-#endif
 
    m_SettingsBar.CheckRadioButton(IDC_BRIDGE,IDC_ALIGNMENT,IDC_BRIDGE);
 

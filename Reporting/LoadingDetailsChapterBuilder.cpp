@@ -476,7 +476,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
    {
       pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << pPara;
-      *pPara<< _T("Slab Load Applied Along Girder")<<rptNewLine;
+      *pPara<< _T("Deck Load Applied Along Girder")<<rptNewLine;
       
       pgsTypes::SupportedDeckType deck_type = pBridge->GetDeckType();
 
@@ -492,11 +492,11 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
 
       if (is_uniform)
       {
-         *pNotePara << _T("Slab Load is uniform along entire girder length.");
+         *pNotePara << _T("Deck Load is uniform along entire girder length.");
       }
       else
       {
-         *pNotePara << _T("Slab Load is approximated with Linear Load Segments applied along the length of the girder. Segments located outside of bearings are applied as point loads/moments at bearings.");
+         *pNotePara << _T("Deck Load is approximated with Linear Load Segments applied along the length of the girder. Segments located outside of bearings are applied as point loads/moments at bearings.");
       }
 
       pPara = new rptParagraph;
@@ -522,7 +522,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
             (*p_table)(row++,1) << fpl.SetValue(-slab_load.MainSlabLoad);
             (*p_table)(row,0) << _T("Haunch Weight");
             (*p_table)(row++,1) << fpl.SetValue(-slab_load.PadLoad);
-            (*p_table)(row,0) << _T("Total Slab Weight");
+            (*p_table)(row,0) << _T("Total Deck Weight");
             (*p_table)(row++,1) << fpl.SetValue(-slab_load.PanelLoad-slab_load.MainSlabLoad-slab_load.PadLoad);
          }
          else
@@ -535,7 +535,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
             (*p_table)(0,2) << COLHDR(_T("Cast Slab Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
             (*p_table)(0,3) << COLHDR(_T("Assumed")<<rptNewLine<<_T("Haunch Depth"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
             (*p_table)(0,4) << COLHDR(_T("Haunch Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-            (*p_table)(0,5) << COLHDR(_T("Total Slab Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+            (*p_table)(0,5) << COLHDR(_T("Total Deck Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
             RowIndexType row = p_table->GetNumberOfHeaderRows();
             for ( std::vector<SlabLoad>::iterator i = slab_loads.begin(); i != slab_loads.end(); i++ )
@@ -581,7 +581,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
                (*p_table)(row,0) << _T("Haunch Weight");
                (*p_table)(row++,1) << fpl.SetValue(-slab_load.PadLoad);
             }
-            (*p_table)(row,0) << _T("Total Slab Weight");
+            (*p_table)(row,0) << _T("Total Deck Weight");
             (*p_table)(row++,1) << fpl.SetValue(-slab_load.MainSlabLoad-slab_load.PadLoad);
          }
          else
@@ -593,7 +593,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
             (*p_table)(0,1) << COLHDR(_T("Main Slab Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
             (*p_table)(0,2) << COLHDR(_T("Assumed")<<rptNewLine<<_T("Haunch Depth"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
             (*p_table)(0,3) << COLHDR(_T("Haunch Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-            (*p_table)(0,4) << COLHDR(_T("Total Slab Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+            (*p_table)(0,4) << COLHDR(_T("Total Deck Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
             RowIndexType row = p_table->GetNumberOfHeaderRows();
             for (std::vector<SlabLoad>::iterator i = slab_loads.begin(); i!=slab_loads.end(); i++)
@@ -633,7 +633,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
          // slab cantilever loads
          pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << pPara;
-         *pPara<< _T("Slab Cantilever Loads")<<rptNewLine;
+         *pPara<< _T("Deck Slab Cantilever Loads")<<rptNewLine;
       
          pPara = new rptParagraph;
          *pChapter << pPara;
@@ -1402,11 +1402,11 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
    std::_tstring strDC;
    if (one_girder_has_shear_key)
    {
-      strDC = _T("DC = Girder + Diaphragms + Shear Key + Construction + Slab");
+      strDC = _T("DC = Girder + Diaphragms + Shear Key + Construction + Deck");
    }
    else
    {
-      strDC = _T("DC = Girder + Diaphragms + Construction + Slab");
+      strDC = _T("DC = Girder + Diaphragms + Construction + Deck");
    }
 
    if ( bDesign )

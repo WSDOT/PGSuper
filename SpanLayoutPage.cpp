@@ -78,6 +78,7 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_UnitValueAndTag(pDX,IDC_SPAN_LENGTH,IDC_SPAN_LENGTH_UNIT,m_SpanLength,pDisplayUnits->GetSpanLengthUnit());
+   DDV_UnitValueGreaterThanZero(pDX,IDC_SPAN_LENGTH,m_SpanLength,pDisplayUnits->GetSpanLengthUnit());
 
    PierIndexType startPierIdx = pParent->m_pSpanData->GetPrevPier()->GetIndex();
    PierIndexType endPierIdx   = pParent->m_pSpanData->GetNextPier()->GetIndex();

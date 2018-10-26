@@ -10,6 +10,7 @@
 #include "afxres.h"
 #include "EAF\EAFResources.h"
 #include "grid\gxresrc.h"
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -68,8 +69,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,50
- PRODUCTVERSION 3,0,0,50
+ FILEVERSION 3,0,0,51
+ PRODUCTVERSION 3,0,0,51
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -87,12 +88,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.0.0.50"
+            VALUE "FileVersion", "3.0.0.51"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2016, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.50"
+            VALUE "ProductVersion", "3.0.0.51"
         END
     END
     BLOCK "VarFileInfo"
@@ -601,7 +602,7 @@ BEGIN
     LTEXT           "Static",IDC_CREEP_DURATION1_TAG,240,69,18,8
     LTEXT           "Min",IDC_STATIC,185,85,12,8
     LTEXT           "Max",IDC_STATIC,215,85,14,8
-    LTEXT           "Time from prestress transfer until slab casting or application of superimposed dead loads on noncomposite girders",IDC_STATIC,17,95,159,25
+    LTEXT           "Time from prestress transfer until deck casting or application of superimposed dead loads on noncomposite girders",IDC_STATIC,17,95,159,25
     EDITTEXT        IDC_CREEP_DURATION2_MIN,179,95,24,14,ES_RIGHT | ES_AUTOHSCROLL
     EDITTEXT        IDC_CREEP_DURATION2_MAX,209,95,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_CREEP_DURATION2_TAG,240,95,18,8
@@ -649,10 +650,10 @@ BEGIN
     LTEXT           "Diaphragms",IDC_EG_DIAPHRAGM_LABEL,290,72,38,8
     EDITTEXT        IDC_EG_DIAPHRAGM,404,69,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_EG_DIAPHRAGM_UNIT,431,72,8,8
-    LTEXT           "User DC (Before Slab Placement)",IDC_EG_DC_BS2_LABEL,290,89,106,8
+    LTEXT           "User DC (Before Deck Placement)",IDC_EG_DC_BS2_LABEL,290,89,106,8
     EDITTEXT        IDC_EG_DC_BS2,404,86,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_EG_DC_BS2_UNIT,431,89,8,8
-    LTEXT           "User DW (Before Slab Placement)",IDC_EG_DW_BS2_LABEL,290,106,108,8
+    LTEXT           "User DW (Before Deck Placement)",IDC_EG_DW_BS2_LABEL,290,106,108,8
     EDITTEXT        IDC_EG_DW_BS2,404,103,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_EG_DW_BS2_UNIT,431,106,8,8
     LTEXT           "Railing System",IDC_EG_RAILING_LABEL,290,121,47,8
@@ -661,10 +662,10 @@ BEGIN
     LTEXT           "Overlay",IDC_EG_OVERLAY_LABEL,290,137,25,8
     EDITTEXT        IDC_EG_OVERLAY,404,134,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_EG_OVERLAY_UNIT,431,137,8,8
-    LTEXT           "User DC (After Slab Placement)",IDC_EG_DC_BS3_LABEL,290,153,100,8
+    LTEXT           "User DC (After Deck Placement)",IDC_EG_DC_BS3_LABEL,290,153,100,8
     EDITTEXT        IDC_EG_DC_BS3,404,150,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_EG_DC_BS3_UNIT,431,153,8,8
-    LTEXT           "User DW (After Slab Placement)",IDC_EG_DW_BS3_LABEL,290,169,102,8
+    LTEXT           "User DW (After Deck Placement)",IDC_EG_DW_BS3_LABEL,290,169,102,8
     EDITTEXT        IDC_EG_DW_BS3,404,166,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_EG_DW_BS3_UNIT,431,169,8,8
     LTEXT           "Slab Shrinkage",IDC_EG_SHRINKAGE_LABEL,290,185,49,8
@@ -974,7 +975,7 @@ BEGIN
     GROUPBOX        "Concrete Limits",IDC_STATIC,7,102,310,164
     LTEXT           "Normal Weight",IDC_STATIC,85,110,48,8
     LTEXT           "Lightweight",IDC_STATIC,163,110,37,8
-    LTEXT           "Slab f'c",IDC_STATIC,51,127,24,8
+    LTEXT           "Deck f'c",IDC_STATIC,51,127,24,8
     EDITTEXT        IDC_NWC_FC_SLAB,89,125,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_NWC_FC_SLAB_UNIT,131,127,29,8
     EDITTEXT        IDC_LWC_FC_SLAB,160,125,40,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -1662,7 +1663,7 @@ BEGIN
     LTEXT           "Allowable tolerance between user-input camber and actual camber taken at mid-span",IDC_HAUNCH_TOLER_STATIC,48,387,167,20
     EDITTEXT        IDC_HAUNCH_TOLER,221,389,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_HAUNCH_TOLER_UNIT,264,392,19,8
-    LTEXT           "Computation of distributed load due to slab haunch:",IDC_STATIC,14,355,167,8
+    LTEXT           "Computation of distributed load due to deck haunch:",IDC_STATIC,14,355,167,8
     GROUPBOX        "Haunch Load",IDC_STATIC,6,310,338,105
     CTEXT           "NOTE: These parameters do not apply to Time-Step analysis, where excess camber is always assumed to be zero when computing haunch load.",IDC_STATIC,23,324,302,20,WS_BORDER
 END
@@ -2553,6 +2554,7 @@ LANGUAGE 9, 1
 #include "afxres.rc"         // Standard components
 #endif
 #include "grid\gxres.rc"               // Objective Grid resources
+
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

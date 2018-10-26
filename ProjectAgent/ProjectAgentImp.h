@@ -98,7 +98,8 @@ class ATL_NO_VTABLE CProjectAgentImp :
    public ILiveLoads,
    public IEventMap,
    public IEffectiveFlangeWidth,
-   public ILossParameters
+   public ILossParameters,
+   public IValidate
 {  
 public:
 	CProjectAgentImp(); 
@@ -138,6 +139,7 @@ BEGIN_COM_MAP(CProjectAgentImp)
    COM_INTERFACE_ENTRY(IEventMap)
    COM_INTERFACE_ENTRY(IEffectiveFlangeWidth)
    COM_INTERFACE_ENTRY(ILossParameters)
+   COM_INTERFACE_ENTRY(IValidate)
 END_COM_MAP()
 
 BEGIN_CONNECTION_POINT_MAP(CProjectAgentImp)
@@ -625,6 +627,10 @@ public:
    virtual Float64 GetFinalLosses();
    virtual void SetFinalLosses(Float64 loss);
 
+// IValidate
+public:
+   virtual UINT Orientation(LPCTSTR lpszOrientation);
+
 #ifdef _DEBUG
    bool AssertValid() const;
 #endif//
@@ -641,6 +647,10 @@ private:
    typedef StatusContainer::iterator StatusIterator;
 
    StatusContainer m_CurrentGirderStatusItems;
+
+   // used for validating orientation strings
+   CComPtr<IAngle> m_objAngle;
+   CComPtr<IDirection> m_objDirection;
 
    std::_tstring m_BridgeName;
    std::_tstring m_BridgeID;
@@ -913,6 +923,13 @@ private:
    // returns true of there are user loads of the specified type defined for
    // the specified girder
    bool HasUserLoad(const CGirderKey& girderKey,UserLoads::LoadCase lcType);
+
+   // Early beta versions of PGS stored the event index with user defined loads
+   // This was problematic because event indexs can change. They should
+   // have been stored with the event ID. When we detect older beta files
+   // use this method to update the event index to an event id
+   bool m_bUpdateUserDefinedLoads; // if true, user defined loads need to be updated
+   void UpdateUserDefinedLoads(bool bFromID);
 };
 
 #endif //__PROJECTAGENT_H_

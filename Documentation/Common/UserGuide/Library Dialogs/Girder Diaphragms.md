@@ -2,7 +2,7 @@ Diaphragms {#ug_library_dialogs_girder_diaphragms}
 ==============================================
 The location of intermediate diaphragms are defined by a set of rules based on span length. Intermediate diaphragms are created in teh bridge model for all applicable rules.
 
-The loads due to intermediate diaphragms are included in the dead load analysis. The concrete for intermediate diaphragms is assumed to be the same as that used for the slab.
+The loads due to intermediate diaphragms are included in the dead load analysis. The concrete for intermediate diaphragms is assumed to be the same as that used for the deck.
 
 Intermediate Diaphragm Layout Rules
 -----------------------------------

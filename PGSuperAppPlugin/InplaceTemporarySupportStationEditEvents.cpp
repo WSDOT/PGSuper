@@ -25,6 +25,9 @@
 #include "InplaceTemporarySupportStationEditEvents.h"
 #include "EditTemporarySupportStation.h"
 
+#include <IFace\Bridge.h>
+#include <EAF\EAFDisplayUnits.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -48,6 +51,21 @@ void CInplaceTemporarySupportStationEditEvents::Handle_OnChanged(iDisplayObject*
 
    if ( IsEqual(old_station,new_station) )
       return;
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   PierIndexType nPiers = pBridge->GetPierCount();
+   Float64 startStation = pBridge->GetPierStation(0);
+   Float64 endStation = pBridge->GetPierStation(nPiers-1);
+   if ( new_station <= startStation || endStation <= new_station )
+   {
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      CString strMsg;
+      strMsg.Format(_T("Station %s is not on the bridge"),::FormatStation(pDisplayUnits->GetStationFormat(),new_station));
+      AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
+      return;
+   }
 
    txnEditTemporarySupportStation* pTxn = new txnEditTemporarySupportStation(m_TSIdx,old_station,new_station);
    txnTxnManager::GetInstance()->Execute(pTxn);

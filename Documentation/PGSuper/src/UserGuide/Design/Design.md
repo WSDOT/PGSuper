@@ -48,7 +48,7 @@ To use the Girder Designer:
 3. Select your design options. 
 4. Press [Run Design] to start the design.
 
-> TIP: You can quickly design a girder by right clicking on it in the Bridge View or the Girder View, and *Design Girder* from the context menu
+> TIP: You can quickly design a girder by right clicking on it in the Bridge View or the Girder View, and *Design Girder* from the context menu. The girder will be designed using the most recently set options in the Girder Designer window.
 
 When the design finishes, you will be presented with the Design Outcome report.
 
@@ -62,9 +62,11 @@ Before you accept design, it is prudent to carefully review the Design Outcome R
 ### Accepting/Reject a Design ###
 After reviewing the Design Outcome Report, you must decide to accept or reject the Girder Designer's proposed design. Press [Accept the Design] to accept the proposed design and update your bridge model. If you do not want to change your bridge model, press [Reject the Design].
 
-> TIP: Always run a full specification check (Details Report, or Spec. Check Report) after you run a design. Approximations made by the Girder Designer may not satisfy all of the project criteria or the LRFD requirements.
+> NOTE: If a slab offset design is selected when designing multiple girders, you will be prompted to select which slab offset design to use for each, or all of the girders in the bridge as shown in the bottom of the figure below. PGSuper will check your haunch design, but formulation of a global slab offset design for all girders in your bridge is left up to you, the engineer.
 
-> TIP: The Girder Designer is not perfect. It may fail even if a successful design is possible. It might be possible to create a "better" design by defining your own girder, reviewing results, and modifying the girder definition.
+> TIP: Always run a full specification check (Details Report, or Spec. Check Report) after running a design. Approximations made by the Girder Designer may not satisfy all of the project criteria or the LRFD requirements.
+
+> TIP: The Girder Designer is very good, but not perfect. It may fail even if a successful design is possible. Or, it might be possible to create a "better" design by defining your own girder input, reviewing results, and modifying girder data manually.
 
 Advanced Design Options
 ------------------------
@@ -83,18 +85,20 @@ Prestress Optimization strategies are configured on the @ref ug_library_dialogs_
 
 The design strategies are attempted in the order shown. When a strategy fails, the Girder Designer will proceed to the next strategy until all have been exhausted. Each design strategy has concrete strength limits that define the maximum values of the release and final concrete strengths. If the design requires concrete strengths in excess of these limits the Girder Design will move on to the next strategy.
 
+> TIP: The more strategies you select, the longer it may take to complete a design.
+
 Designing with Transformed Section Properties
 ---------------------------------------------
-Stress analysis can be based on gross or transformed section properties. When transformed section properties are used the area, centroid, and section moduli of the girder change with both time (properties use a modular ratio of Eps/Eci at release and Eps/Ec at final) and the number and configuration of the strands. Concrete strength and strand arrangements are constantly being optimized during the design process. As you can image, convergence on a design when transformed section properties are used can be challanging.
+Stress analysis can be based on gross or transformed section properties. When transformed section properties are used the area, centroid, and section moduli of the girder change with both time (properties use a modular ratio of Eps/Eci at release and Eps/Ec at final) and the number and configuration of the strands. Concrete strength and strand arrangements are constantly being optimized during the design process causing section properties to change at each iteration. As you can imagine, convergence on a design when transformed section properties are used can be challenging.
 
 When stress analysis is based on transformed section properties, the girder design is based on the section properties at the beginning of the design. Section properties are not updated during design.
 
 To further optimize your design, 
-1. Use the Girder Designer to design a girder. The design will be based on the transformd section properties computed from the current concrete strengths and prestressing defined for the girder.
+1. Use the Girder Designer to design a girder. The design will be based on the transformed section properties computed from current concrete strengths and prestressing defined for the girder.
 2. Create a Spec Check report
 3. Review the section titled "Required Concrete Strengths". This section lists the minimum concrete strengths required to satisfy the allowable concrete stress limitations.
 4. Update the concrete strength in your girder to the minimum required values obtained from Step 3.
 5. Design the girder again. The design will be based on the transformed section properties computed from the concrete strengths defined in Step 4 and the strands determined in Step 1.
 6. Repeat until the design as converged.
 
-> TIP: The type of section properties used is defined in the @ref ug_library_dialogs_project_criteria, @ref ug_library_dialogs_project_criteria_general tab.
+> TIP: The option whether to use transformed or gross section properties is selected in the @ref ug_library_dialogs_project_criteria, @ref ug_library_dialogs_project_criteria_general tab.

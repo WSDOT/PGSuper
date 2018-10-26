@@ -839,6 +839,7 @@ CTimelineEvent* CTimelineManager::GetEventByIndex(EventIndexType eventIdx)
 
 CTimelineEvent* CTimelineManager::GetEventByID(IDType id)
 {
+   ATLASSERT(id != INVALID_ID);
    ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());

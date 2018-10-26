@@ -47,8 +47,21 @@ Location to Measure Girder Spacing For Distribution Factors | Enter the fraction
 
 > NOTES:
 > * The location of maximum deck width will be used to determine the spacing used to compute the live load distribution factors.
-> * Spacing are measured normal to the alignment at the station of the location determined above.
-> * Most LRFD distribution factor methods use a single value (S) for girder spacing as a parameter. However, PGSuper allows spacing to vary (splay), if desired. If the spacing to the left and right side of the girder are different, PGSuper will use the average of the two adjacent spacing where a single value is needed. The actual spacing are used when using the lever rule or statical method.
+> * Spacings are measured normal to the alignment at the station of the location determined above.
+> * Most LRFD distribution factor methods use a single value (S) for girder spacing as a parameter. However, PGSuper allows spacing to vary (splay), if desired. If the spacing to the left and right side of the girder are different, PGSuper will use the average of the two adjacent spacings where a single value is needed. Note that the actual spacings are used when using the lever rule or statical method.
 > * If the fractional distance is not 0.5, the width of the bridge is evaluated at two locations. If the width of the bridge is the same at both locations, the section that is nearest the start of the span will be used.
 
 > TIP: You can forego the computation of live load distribution factors and enter your own values.
+
+Haunch Load
+-----------
+Select the method for computing the distributed load from the haunch. 
+Method | Description
+-----|----------------
+Assume zero excess camber | The top of the girder is assumed to be straight (zero camber) for purposes of computing the haunch dead load. This is the method used by WSDOT and the only method available for spliced girders.
+Excess camber defined by parabola (PGSuper only) | The top of the girder is assumed to follow a parabolic curve defined by the slab offsets at the ends of the girder, and the user-input Fillet dimension. A specification check is performed to insure that the excess camber predicted by the parabola is within tolerance of the computed excess camber.
+
+#### Allowable Tolerance Between User-input and Computed Excess Camber ####
+Enter a tolerance for the parabolic case. The tolerance will be used to compare the haunch depth predicted by the user-input fillet to the haunch depth predicted using the computed excess camber at mid-span. A spec check fail results if user-input haunch depth used to apply haunch load is not within tolerance. Make sure to enter a reasonable value for the tolerance (i.e., a value near zero will make it practically impossible to pass the spec check).
+
+> TIP: Refer to the Slab Haunch loading section of @ref tg_structural_analysis_models for detailed information about how the slab offset and fillet dimensions are used for computing the haunch loading.

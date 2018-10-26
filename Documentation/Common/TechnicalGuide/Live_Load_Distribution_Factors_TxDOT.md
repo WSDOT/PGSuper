@@ -6,8 +6,8 @@ Section 3.5: Precast Concrete I Beams
 --------------------------------------
 Live load distribution factors must conform to AASHTO LRFD Bridge Design Specifications, Article 4.6.2.2.2 for flexural moment and Article 4.6.2.2.3 for shear, except as noted below:
 
-* For exterior beam design with a slab cantilever length equal to or less than one-half of the adjacent interior beam spacing, use the live load distribution factor for the interior beam. The slab cantilever length is defined as the distance from the center line of the exterior beam to the edge of the slab. 
-* For exterior beam design with a slab cantilever length exceeding one-half of the adjacent interior beam spacing, use the lever rule with the multiple presence factor of 1.0 for single lane to determine the live load distribution. The live load used to design the exterior beam must never be less than the live load used to design an interior beam.
+* For exterior beam design with a deck slab cantilever length equal to or less than one-half of the adjacent interior beam spacing, use the live load distribution factor for the interior beam. The deck slab cantilever length is defined as the distance from the center line of the exterior beam to the edge of the deck. 
+* For exterior beam design with a deck slab cantilever length exceeding one-half of the adjacent interior beam spacing, use the lever rule with the multiple presence factor of 1.0 for single lane to determine the live load distribution. The live load used to design the exterior beam must never be less than the live load used to design an interior beam.
 * Do not use the special analysis based on conventional approximation for loads on piles per AASHTO LRFD Bridge Design Specifications, Article C4.6.2.2.2d, unless the effectiveness of diaphragms on the lateral distribution of truck loads is investigated.
 
 Section 3.6: Prestressed Concrete U Beams (Types U40 and U54)
@@ -30,7 +30,7 @@ Section 3.9: Prestressed Concrete Box Beams (Types B20, B28, B34, and B40)
 --------------------------------------------------------------------------
 Live load distribution factors must conform to AASHTO LRFD Bridge Design Specifications, Article 4.6.2.2.2 and Article 4.6.2.2.3. Use:
 
-* Cross section (f) with bridges having a composite concrete slab
+* Cross section (f) with bridges having a composite concrete deck
 * Cross section (g) with bridges having ACP applied directly to tops of beams, assuming beams are sufficiently connected to act as a unit.
 * Do not apply the skew correction factor for moment as suggested in Article 4.6.2.2.2e.
 

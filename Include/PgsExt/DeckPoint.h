@@ -86,7 +86,7 @@ public:
    HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
 
    Float64 Station;   // station where this edge point is measured
-   Float64 LeftEdge;  // + = right of measurement datum
+   Float64 LeftEdge;  // + = left of measurement datum (even thought this is technically an offset, we are using absolute values to keep things simple for the user)
    Float64 RightEdge; // + = right of measurement datum
    pgsTypes::OffsetMeasurementType MeasurementType; // datum of measurement
    pgsTypes::DeckPointTransitionType LeftTransitionType; // how the deck edge transitions to the next point

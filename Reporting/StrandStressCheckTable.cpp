@@ -178,7 +178,9 @@ void CStrandStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
       }
 
       for ( ColumnIndexType i = col1; i < nColumns; i++ )
+      {
          p_table->SetColumnSpan(0,i,SKIP_CELL);
+      }
 
       Float64 demand, capacity;
       bool bPassed;

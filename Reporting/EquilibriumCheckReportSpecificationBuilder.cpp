@@ -66,7 +66,6 @@ boost::shared_ptr<CReportSpecification> CEquilibriumCheckReportSpecificationBuil
 
    GET_IFACE(IPointOfInterest,pPOI);
    std::vector<pgsPointOfInterest> vPoi( pPOI->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_SPAN | POI_5L) );
-   ATLASSERT( vPoi.size() == 1 );
    pgsPointOfInterest initial_poi = vPoi.front();
 
    boost::shared_ptr<CEquilibriumCheckReportSpecification> pInitRptSpec( boost::dynamic_pointer_cast<CEquilibriumCheckReportSpecification>(pRptSpec) );

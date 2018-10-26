@@ -384,7 +384,7 @@ void pgsDesigner2::GetHaunchDetails(const CSpanKey& spanKey,bool bUseConfig,cons
    pBridge->GetStationAndOffset(firstPoi,&station,&offset);
    offset = IsZero(offset) ? 0 : offset;
 
-   // the girder reference line passes through the deck at this station and offset
+   // the profile chord reference line passes through the deck at this station and offset
    Float64 Y_girder_ref_line_left_bearing = pAlignment->GetElevation(station,offset);
 
    Float64 max_tslab_and_fillet = 0;
@@ -6422,7 +6422,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
 
       // Compute required stress due to prestressing
       Float64 k = pLoadFactors->DCmax[designParams.limit_state];
-      designParams.fpre = (designParams.fAllow - f_demand)/k;
+      designParams.fpre = IsZero(k) ? 0 : (designParams.fAllow - f_demand)/k;
 
       LOG(_T("Reqd stress due to prestressing (") << designParams.strLimitState << _T(") = ") << ::ConvertFromSysUnits(designParams.fpre,unitMeasure::KSI) << _T(" KSI") );
    }

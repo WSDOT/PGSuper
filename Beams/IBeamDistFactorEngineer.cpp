@@ -164,7 +164,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
       Float64 station,offset;
       pBridge->GetStationAndOffset(poi,&station, &offset);
       Float64 supp_dist = span_lldf.ControllingLocation - pBridge->GetSegmentStartEndDistance(segmentKey);
-      (*pPara) << _T("Deck Width, Girder Spacing and Slab Overhang are measured along a line that is normal to the alignment and passing through a point ") << location.SetValue(supp_dist) << _T(" from the left support along the centerline of girder. ");
+      (*pPara) << _T("Deck Width, Girder Spacing and Deck Overhang are measured along a line that is normal to the alignment and passing through a point ") << location.SetValue(supp_dist) << _T(" from the left support along the centerline of girder. ");
       (*pPara) << _T("The measurement line passes through Station ") << rptRcStation(station, &pDisplayUnits->GetStationFormat() ) << _T(" (") << RPT_OFFSET(offset,offsetFormatter) << _T(")") << rptNewLine;
       (*pPara) << _T("Bridge Width: W = ") << xdim.SetValue(span_lldf.W) << rptNewLine;
       (*pPara) << _T("Roadway Width: w = ") << xdim.SetValue(span_lldf.wCurbToCurb) << rptNewLine;
@@ -173,7 +173,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
       (*pPara) << _T("Number of Girders: N") << Sub(_T("b")) << _T(" = ") << span_lldf.Nb << rptNewLine;
       (*pPara) << _T("Girder Spacing: ") << Sub2(_T("S"),_T("avg")) << _T(" = ") << xdim.SetValue(span_lldf.Savg) << rptNewLine;
       Float64 so = span_lldf.Side==dfLeft ? span_lldf.leftSlabOverhang:span_lldf.rightSlabOverhang;
-      (*pPara) << _T("Slab Overhang = ") << xdim.SetValue(so) << rptNewLine;
+      (*pPara) << _T("Deck Overhang = ") << xdim.SetValue(so) << rptNewLine;
       Float64 de = span_lldf.Side==dfLeft ? span_lldf.leftCurbOverhang : span_lldf.rightCurbOverhang;
       (*pPara) << _T("Distance from exterior web of exterior girder to curb line: d") << Sub(_T("e")) << _T(" = ") << xdim.SetValue(de) << rptNewLine;
       (*pPara) << _T("Skew Angle at start: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew1)) << rptNewLine;

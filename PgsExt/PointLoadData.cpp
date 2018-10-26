@@ -44,6 +44,7 @@ CPointLoadData::CPointLoadData():
 m_ID(INVALID_ID),
 m_LoadCase(UserLoads::DC),
 m_EventIndex(INVALID_INDEX),
+m_EventID(INVALID_ID),
 m_SpanKey(0,0),
 m_Magnitude(0.0),
 m_Location(0.5),
@@ -73,6 +74,11 @@ CPointLoadData& CPointLoadData::operator=(const CPointLoadData& other)
 bool CPointLoadData::operator == (const CPointLoadData& rOther) const
 {
    if (m_EventIndex != rOther.m_EventIndex)
+   {
+      return false;
+   }
+
+   if ( m_EventID != rOther.m_EventID )
    {
       return false;
    }
@@ -130,7 +136,7 @@ HRESULT CPointLoadData::Save(IStructuredSave* pSave)
 {
    HRESULT hr;
 
-   pSave->BeginUnit(_T("PointLoad"),6.0);
+   pSave->BeginUnit(_T("PointLoad"),7.0);
 
    hr = pSave->put_Property(_T("ID"),CComVariant(m_ID));
    if ( FAILED(hr) )
@@ -144,7 +150,7 @@ HRESULT CPointLoadData::Save(IStructuredSave* pSave)
       return hr;
    }
 
-   hr = pSave->put_Property(_T("EventIndex"),CComVariant((long)m_EventIndex));
+   hr = pSave->put_Property(_T("EventID"),CComVariant((long)m_EventID)); // storing ID starting with version 7
    if ( FAILED(hr) )
    {
       return hr;
@@ -268,14 +274,23 @@ HRESULT CPointLoadData::Load(IStructuredLoad* pLoad)
       return STRLOAD_E_INVALIDFORMAT;
    }
 
-   var.vt = VT_INDEX;
    if ( version < 4 )
    {
+      var.vt = VT_INDEX;
       hr = pLoad->get_Property(_T("Stage"),&var);
+      m_EventIndex = VARIANT2INDEX(var);
+   }
+   else if ( version < 7 )
+   {
+      var.vt = VT_INDEX;
+      hr = pLoad->get_Property(_T("EventIndex"),&var);
+      m_EventIndex = VARIANT2INDEX(var);
    }
    else
    {
-      hr = pLoad->get_Property(_T("EventIndex"),&var);
+      var.vt = VT_ID;
+      hr = pLoad->get_Property(_T("EventID"),&var);
+      m_EventID = VARIANT2ID(var);
    }
 
    if ( FAILED(hr) )
@@ -283,7 +298,6 @@ HRESULT CPointLoadData::Load(IStructuredLoad* pLoad)
       return hr;
    }
 
-   m_EventIndex = VARIANT2INDEX(var);
    // prior to version 3, stages were 0=BridgeSite1, 1=BridgeSite2, 2=BridgeSite3
    // Version 3 and later, stages are pgsTypes::BridgeSite1, pgsTypes::BridgeSite2, pgsTypes::BridgeSite3
    // adjust the stage value here
@@ -395,6 +409,7 @@ void CPointLoadData::MakeCopy(const CPointLoadData& rOther)
 {
    m_ID                                    = rOther.m_ID;
    m_EventIndex                            = rOther.m_EventIndex;
+   m_EventID                               = rOther.m_EventID;
    m_LoadCase                              = rOther.m_LoadCase;
    m_SpanKey                               = rOther.m_SpanKey;
    m_bLoadOnCantilever[pgsTypes::metStart] = rOther.m_bLoadOnCantilever[pgsTypes::metStart];

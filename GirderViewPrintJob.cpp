@@ -167,7 +167,7 @@ void CGirderViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    pDC->SetTextAlign(TA_LEFT|TA_TOP);
    GET_IFACE(IEventMap,pEventMap);
    CString tstr = pEventMap->GetEventName(m_pFrame->GetEvent());
-   CString topcap = _T("Elevation View (Loading shown in ") + tstr + _T(")");
+   CString topcap = _T("Elevation View (") + tstr + _T(")");
    CSize csiz = pDC->GetTextExtent( topcap );
    int x = (rcPrint.left+rcPrint.right)/2 - csiz.cx/2;
    int y = pvrect.bottom + 2*csiz.cy;

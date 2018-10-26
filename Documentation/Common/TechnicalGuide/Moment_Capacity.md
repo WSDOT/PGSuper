@@ -39,7 +39,7 @@ The strain <span style="font-family:Symbol">e</span><sub>2</sub> is the strain i
 
 Cross Section Geometry and Materials Used for Calculating Capacities
 ---------------------------------------------------------------------
-The cross sectional geometry used for calculating the moment capacity of a girder is the same as that used for calculating section properties. Mild steel longitudinal reinforcement in the girder and in the slab is not considered in the capacity calculation.
+The cross sectional geometry used for calculating the moment capacity of a girder is the same as that used for calculating section properties. Mild steel longitudinal reinforcement in the girder and in the deck is not considered in the capacity calculation.
 
 Strain in the Prestressing Steel
 --------------------------------
@@ -63,7 +63,7 @@ Maximum Reinforcement Limits
 
 The maximum amount of reinforcement is limited such that c/d<sub>e</sub> <= 0.42. When this ratio is exceeded, the maximum design moment capacity is computed in accordance with LRFD C5.7.3.3.1.
 
-There is a sudden drop in usable capacity when c/d<sub>e</sub> transitions from just below 0.42 to just over 0.42. Furthermore, the equations in LRFD C5.7.3.3.1 do not adequately account for the different concrete materials in the slab and girder. WSDOT uses a variable capacity reduction factor method for dealing with this situation.
+There is a sudden drop in usable capacity when c/d<sub>e</sub> transitions from just below 0.42 to just over 0.42. Furthermore, the equations in LRFD C5.7.3.3.1 do not adequately account for the different concrete materials in the deck and girder. WSDOT uses a variable capacity reduction factor method for dealing with this situation.
 
 If the design criteria in this program is set to use the WSDOT BDM method of computing the capacity of over-reinforced sections, the nominal capacity will be computed using the strain compatibility analysis as described above. Then a reduced capacity reduction factor will be computed by
 

@@ -40,6 +40,7 @@ CDistributedLoadData::CDistributedLoadData():
 m_ID(INVALID_ID),
 m_LoadCase(UserLoads::DC),
 m_EventIndex(INVALID_INDEX),
+m_EventID(INVALID_ID),
 m_Type(UserLoads::Trapezoidal),
 m_WStart(0.0),
 m_WEnd(0.0),
@@ -69,6 +70,9 @@ CDistributedLoadData& CDistributedLoadData::operator=(const CDistributedLoadData
 bool CDistributedLoadData::operator == (const CDistributedLoadData& rOther) const
 {
    if (m_EventIndex != rOther.m_EventIndex)
+      return false;
+
+   if (m_EventID != rOther.m_EventID)
       return false;
 
    if (m_LoadCase != rOther.m_LoadCase)
@@ -111,7 +115,7 @@ HRESULT CDistributedLoadData::Save(IStructuredSave* pSave)
 {
    HRESULT hr;
 
-   pSave->BeginUnit(_T("DistributedLoad"),5.0); // changed for version 4 with PGSplice
+   pSave->BeginUnit(_T("DistributedLoad"),6.0); // changed for version 4 with PGSplice
 
    hr = pSave->put_Property(_T("ID"),CComVariant(m_ID));
    if ( FAILED(hr) )
@@ -121,7 +125,7 @@ HRESULT CDistributedLoadData::Save(IStructuredSave* pSave)
    if ( FAILED(hr) )
       return hr;
 
-   hr = pSave->put_Property(_T("EventIndex"),CComVariant((long)m_EventIndex));
+   hr = pSave->put_Property(_T("EventID"),CComVariant((long)m_EventID)); // changed to event ID in version 6
    if ( FAILED(hr) )
       return hr;
 
@@ -209,11 +213,17 @@ HRESULT CDistributedLoadData::Load(IStructuredLoad* pLoad)
       return hr;
 
    if (var.lVal==UserLoads::DC)
+   {
       m_LoadCase = UserLoads::DC;
+   }
    else if(var.lVal==UserLoads::DW)
+   {
       m_LoadCase = UserLoads::DW;
+   }
    else if(var.lVal==UserLoads::LL_IM)
+   {
       m_LoadCase = UserLoads::LL_IM;
+   }
    else
    {
       ATLASSERT(false);
@@ -222,17 +232,26 @@ HRESULT CDistributedLoadData::Load(IStructuredLoad* pLoad)
 
    if ( version < 4 )
    {
+      var.vt = VT_INDEX;
       hr = pLoad->get_Property(_T("Stage"),&var);
+      m_EventIndex = VARIANT2INDEX(var);
    }
-   else
+   else if ( version < 6 )
    {
       var.vt = VT_INDEX;
       hr = pLoad->get_Property(_T("EventIndex"),&var);
+      m_EventIndex = VARIANT2INDEX(var);
    }
+   else
+   {
+      var.vt = VT_ID;
+      hr = pLoad->get_Property(_T("EventID"),&var);
+      m_EventID = VARIANT2INDEX(var);
+   }
+
    if ( FAILED(hr) )
       return hr;
 
-   m_EventIndex = VARIANT2INDEX(var);
    // prior to version 3, stages were 0=BridgeSite1, 1=BridgeSite2, 2=BridgeSite3
    // Version 3 and later, stages are pgsTypes::BridgeSite1, pgsTypes::BridgeSite2, pgsTypes::BridgeSite3
    // adjust the stage value here
@@ -255,9 +274,13 @@ HRESULT CDistributedLoadData::Load(IStructuredLoad* pLoad)
       return hr;
 
    if (var.lVal==UserLoads::Uniform)
+   {
       m_Type = UserLoads::Uniform;
+   }
    else if (var.lVal==UserLoads::Trapezoidal)
+   {
       m_Type = UserLoads::Trapezoidal;
+   }
    else
    {
       ATLASSERT(false);
@@ -338,6 +361,7 @@ void CDistributedLoadData::MakeCopy(const CDistributedLoadData& rOther)
 {
    m_ID            = rOther.m_ID;
    m_EventIndex    = rOther.m_EventIndex;
+   m_EventID       = rOther.m_EventID;
    m_LoadCase      = rOther.m_LoadCase;
    m_Type          = rOther.m_Type;
    m_SpanKey       = rOther.m_SpanKey;

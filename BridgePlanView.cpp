@@ -2995,7 +2995,7 @@ void CBridgePlanView::BuildSlabDisplayObjects()
    CComQIPtr<iDisplayObject,&IID_iDisplayObject> dispObj(doPnt);
    dispObj->RegisterEventSink(events);
 
-   CString strMsg1(_T("Double click to edit slab.\r\nRight click for more options."));
+   CString strMsg1(_T("Double click to edit deck.\r\nRight click for more options."));
 
    CString strMsg2;
 

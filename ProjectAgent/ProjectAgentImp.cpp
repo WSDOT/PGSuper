@@ -430,6 +430,11 @@ CProjectAgentImp::CProjectAgentImp()
 
 
    m_BridgeStabilityStatusItemID = INVALID_ID;
+
+   m_objAngle.CoCreateInstance(CLSID_Angle);
+   m_objDirection.CoCreateInstance(CLSID_Direction);
+
+   m_bUpdateUserDefinedLoads = false;
 }
 
 CProjectAgentImp::~CProjectAgentImp()
@@ -3825,7 +3830,8 @@ HRESULT CProjectAgentImp::UserLoadsDataProc(IStructuredSave* pSave,IStructuredLo
    HRESULT hr = S_OK;
    if ( pSave )
    {
-      pSave->BeginUnit(_T("UserDefinedLoads"),3.0);
+      pSave->BeginUnit(_T("UserDefinedLoads"),4.0);
+      // starting with version 4 of this data block, the point, distributed, and moment loads save the loading event ID instead of index
 
       pObj->SavePointLoads(pSave);
       pObj->SaveDistributedLoads(pSave);
@@ -3862,6 +3868,11 @@ HRESULT CProjectAgentImp::UserLoadsDataProc(IStructuredSave* pSave,IStructuredLo
             {
                return hr;
             }
+         }
+
+         if ( version < 4 )
+         {
+            pObj->m_bUpdateUserDefinedLoads = true;
          }
 
          if ( 3 <= version )
@@ -4296,6 +4307,7 @@ STDMETHODIMP CProjectAgentImp::RegInterfaces()
    pBrokerInit->RegInterface( IID_IEventMap,             this );
    pBrokerInit->RegInterface( IID_IEffectiveFlangeWidth, this );
    pBrokerInit->RegInterface( IID_ILossParameters,       this );
+   pBrokerInit->RegInterface( IID_IValidate,             this );
 
    return S_OK;
 };
@@ -4908,6 +4920,8 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 {
    HRESULT hr = S_OK;
 
+   m_bUpdateUserDefinedLoads = false;
+
 //   GET_IFACE( IProgress, pProgress );
 //   CEAFAutoProgress ap(pProgress);
    IProgress* pProgress = 0; // progress window causes big trouble running in windowless mode
@@ -5180,6 +5194,8 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    SpecificationChanged(false);  
    RatingSpecificationChanged(false);
 
+   UpdateUserDefinedLoads(!m_bUpdateUserDefinedLoads);
+
    ValidateBridgeModel();
 
    ASSERTVALID;
@@ -5187,6 +5203,160 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    Fire_BridgeChanged();
 
    return (the_conflict_list.AreThereAnyConflicts() ? S_FALSE : S_OK);
+}
+
+void CProjectAgentImp::UpdateUserDefinedLoads(bool bFromID)
+{
+   if ( bFromID )
+   {
+      // user defined loads were stored with event id... get the event idx
+      CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
+
+      PointLoadList::iterator ptIter(m_PointLoads.begin());
+      PointLoadList::iterator ptIterEnd(m_PointLoads.end());
+      for ( ; ptIter != ptIterEnd; ptIter++ )
+      {
+         CPointLoadData& ptLoad(*ptIter);
+         ptLoad.m_EventIndex = pTimelineMgr->GetEventIndex(ptLoad.m_EventID);
+      }
+
+      DistributedLoadList::iterator distIter(m_DistributedLoads.begin());
+      DistributedLoadList::iterator distIterEnd(m_DistributedLoads.end());
+      for ( ; distIter != distIterEnd; distIter++ )
+      {
+         CDistributedLoadData& distLoad(*distIter);
+         distLoad.m_EventIndex = pTimelineMgr->GetEventIndex(distLoad.m_EventID);
+      }
+
+      MomentLoadList::iterator momIter(m_MomentLoads.begin());
+      MomentLoadList::iterator momIterEnd(m_MomentLoads.end());
+      for ( ; momIter != momIterEnd; momIter++ )
+      {
+         CMomentLoadData& momLoad(*momIter);
+         momLoad.m_EventIndex = pTimelineMgr->GetEventIndex(momLoad.m_EventID);
+      }
+   }
+   else
+   {
+      // user defined loads were stored with event index... get the event id
+      // This is basically a data fix-up routine... we know which events user loads
+      // are applied because the apply load activity stores the load id... we just have to
+      // match the load ids and then we have the event index and event id
+      CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
+      EventIndexType nEvents = pTimelineMgr->GetEventCount();
+      for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
+      {
+         CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(eventIdx);
+         CApplyLoadActivity& applyLoadActivity(pEvent->GetApplyLoadActivity());
+         if ( applyLoadActivity.IsEnabled() && applyLoadActivity.IsUserLoadApplied() )
+         {
+            PointLoadList::iterator ptIter(m_PointLoads.begin());
+            PointLoadList::iterator ptIterEnd(m_PointLoads.end());
+            for ( ; ptIter != ptIterEnd; ptIter++ )
+            {
+               CPointLoadData& ptLoad(*ptIter);
+               if ( applyLoadActivity.HasUserLoad(ptLoad.m_ID) )
+               {
+                  ptLoad.m_EventIndex = eventIdx;
+                  ptLoad.m_EventID = pEvent->GetID();
+               }
+            }
+
+            DistributedLoadList::iterator distIter(m_DistributedLoads.begin());
+            DistributedLoadList::iterator distIterEnd(m_DistributedLoads.end());
+            for ( ; distIter != distIterEnd; distIter++ )
+            {
+               CDistributedLoadData& distLoad(*distIter);
+               if ( applyLoadActivity.HasUserLoad(distLoad.m_ID) )
+               {
+                  distLoad.m_EventIndex = eventIdx;
+                  distLoad.m_EventID = pEvent->GetID();
+               }
+            }
+
+            MomentLoadList::iterator momIter(m_MomentLoads.begin());
+            MomentLoadList::iterator momIterEnd(m_MomentLoads.end());
+            for ( ; momIter != momIterEnd; momIter++ )
+            {
+               CMomentLoadData& momLoad(*momIter);
+               if ( applyLoadActivity.HasUserLoad(momLoad.m_ID) )
+               {
+                  momLoad.m_EventIndex = eventIdx;
+                  momLoad.m_EventID = pEvent->GetID();
+               }
+            }
+         } // end if applied
+      } // next event
+
+      // when loading old PGSuper files, there isn't a timeline manager and load application activity data stored
+      // there can still be cases that did not get fixed up above. Go through the loads and find any remaining loads
+      // that don't have a valid event ID and fix it the best we can
+      PointLoadList::iterator ptIter(m_PointLoads.begin());
+      PointLoadList::iterator ptIterEnd(m_PointLoads.end());
+      for ( ; ptIter != ptIterEnd; ptIter++ )
+      {
+         CPointLoadData& ptLoad(*ptIter);
+         ptLoad.m_EventID = INVALID_ID;
+      }
+
+      DistributedLoadList::iterator distIter(m_DistributedLoads.begin());
+      DistributedLoadList::iterator distIterEnd(m_DistributedLoads.end());
+      for ( ; distIter != distIterEnd; distIter++ )
+      {
+         CDistributedLoadData& distLoad(*distIter);
+         distLoad.m_EventID = INVALID_ID;
+      }
+
+      MomentLoadList::iterator momIter(m_MomentLoads.begin());
+      MomentLoadList::iterator momIterEnd(m_MomentLoads.end());
+      for ( ; momIter != momIterEnd; momIter++ )
+      {
+         CMomentLoadData& momLoad(*momIter);
+         momLoad.m_EventID = INVALID_ID;
+      }
+
+      ptIter = m_PointLoads.begin();
+      ptIterEnd = m_PointLoads.end();
+      for ( ; ptIter != ptIterEnd; ptIter++ )
+      {
+         CPointLoadData& ptLoad(*ptIter);
+         if ( ptLoad.m_EventID == INVALID_ID )
+         {
+            CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(ptLoad.m_EventIndex);
+            CApplyLoadActivity& applyLoadActivity(pEvent->GetApplyLoadActivity());
+            applyLoadActivity.AddUserLoad(ptLoad.m_ID);
+            ptLoad.m_EventID = pEvent->GetID();
+         }
+      }
+
+      distIter = m_DistributedLoads.begin();
+      distIterEnd = m_DistributedLoads.end();
+      for ( ; distIter != distIterEnd; distIter++ )
+      {
+         CDistributedLoadData& distLoad(*distIter);
+         if ( distLoad.m_EventID == INVALID_ID )
+         {
+            CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(distLoad.m_EventIndex);
+            CApplyLoadActivity& applyLoadActivity(pEvent->GetApplyLoadActivity());
+            applyLoadActivity.AddUserLoad(distLoad.m_ID);
+            distLoad.m_EventID = pEvent->GetID();
+         }
+      }
+
+      momIter = m_MomentLoads.begin();
+      momIterEnd = m_MomentLoads.end();
+      for ( ; momIter != momIterEnd; momIter++ )
+      {
+         CMomentLoadData& momLoad(*momIter);
+         if ( momLoad.m_EventID == INVALID_ID )
+         {
+            CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(momLoad.m_EventIndex);
+            CApplyLoadActivity& applyLoadActivity(pEvent->GetApplyLoadActivity());
+            applyLoadActivity.AddUserLoad(momLoad.m_ID);
+            momLoad.m_EventID = pEvent->GetID();
+         }
+      }
+   }
 }
 
 STDMETHODIMP CProjectAgentImp::Save(IStructuredSave* pStrSave)
@@ -5648,6 +5818,8 @@ void CProjectAgentImp::SetBridgeDescription(const CBridgeDescription2& desc)
       
       UseBridgeLibraryEntries();
 
+      UpdateUserDefinedLoads(true);
+
       Fire_BridgeChanged();
    }
 }
@@ -6047,6 +6219,9 @@ const CTimelineManager* CProjectAgentImp::GetTimelineManager()
 void CProjectAgentImp::SetTimelineManager(const CTimelineManager& timelineMgr)
 {
    m_BridgeDescription.SetTimelineManager(&timelineMgr);
+
+   UpdateUserDefinedLoads(true);
+
    Fire_BridgeChanged();
 }
 
@@ -6054,6 +6229,9 @@ EventIndexType CProjectAgentImp::AddTimelineEvent(const CTimelineEvent& timeline
 {
    EventIndexType idx;
    m_BridgeDescription.GetTimelineManager()->AddTimelineEvent(timelineEvent,true,&idx);
+
+   UpdateUserDefinedLoads(true);
+
    Fire_BridgeChanged();
    return idx;
 }
@@ -8448,11 +8626,15 @@ CollectionIndexType CProjectAgentImp::GetPointLoadCount() const
 
 CollectionIndexType CProjectAgentImp::AddPointLoad(const CPointLoadData& pld)
 {
+   ATLASSERT(pld.m_EventIndex != INVALID_INDEX);
+   ATLASSERT(pld.m_EventID != INVALID_ID);
+
    m_PointLoads.push_back(pld);
    m_PointLoads.back().m_ID = UserLoads::ms_NextPointLoadID++;
 
    CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
    CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(pld.m_EventIndex);
+   ATLASSERT(pEvent->GetID() == pld.m_EventID); // if this fires, the data in pld is wrong
    pEvent->GetApplyLoadActivity().AddUserLoad(m_PointLoads.back().m_ID);
 
    FireContinuityRelatedSpanChange(pld.m_SpanKey,GCH_LOADING_ADDED);
@@ -8486,6 +8668,8 @@ const CPointLoadData* CProjectAgentImp::FindPointLoad(LoadIDType loadID) const
 void CProjectAgentImp::UpdatePointLoad(CollectionIndexType idx, const CPointLoadData& pld)
 {
    ATLASSERT(0 <= idx && idx < GetPointLoadCount() );
+   ATLASSERT(pld.m_EventIndex != INVALID_INDEX);
+   ATLASSERT(pld.m_EventID != INVALID_ID);
 
    if ( m_PointLoads[idx] != pld )
    {
@@ -8498,12 +8682,13 @@ void CProjectAgentImp::UpdatePointLoad(CollectionIndexType idx, const CPointLoad
       }
 
       CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
-      CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(m_PointLoads[idx].m_EventIndex);
+      CTimelineEvent* pEvent = pTimelineMgr->GetEventByID(m_PointLoads[idx].m_EventID);
       pEvent->GetApplyLoadActivity().RemoveUserLoad(m_PointLoads[idx].m_ID);
 
       m_PointLoads[idx] = pld;
 
       pEvent = pTimelineMgr->GetEventByIndex(pld.m_EventIndex);
+      ATLASSERT(pEvent->GetID() == pld.m_EventID); // if this fires, the data in pld is wrong
       pEvent->GetApplyLoadActivity().AddUserLoad(m_PointLoads[idx].m_ID);
 
       FireContinuityRelatedSpanChange(pld.m_SpanKey,GCH_LOADING_CHANGED);
@@ -8518,7 +8703,7 @@ void CProjectAgentImp::DeletePointLoad(CollectionIndexType idx)
    it += idx;
 
    CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
-   CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(m_PointLoads[idx].m_EventIndex);
+   CTimelineEvent* pEvent = pTimelineMgr->GetEventByID(m_PointLoads[idx].m_EventID);
    pEvent->GetApplyLoadActivity().RemoveUserLoad(m_PointLoads[idx].m_ID);
 
    CSpanKey& key( it->m_SpanKey );
@@ -8533,14 +8718,17 @@ CollectionIndexType CProjectAgentImp::GetDistributedLoadCount() const
    return m_DistributedLoads.size();
 }
 
-
 CollectionIndexType CProjectAgentImp::AddDistributedLoad(const CDistributedLoadData& pld)
 {
+   ATLASSERT(pld.m_EventIndex != INVALID_INDEX);
+   ATLASSERT(pld.m_EventID != INVALID_ID);
+
    m_DistributedLoads.push_back(pld);
    m_DistributedLoads.back().m_ID = UserLoads::ms_NextDistributedLoadID++;
 
    CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
    CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(pld.m_EventIndex);
+   ATLASSERT(pEvent->GetID() == pld.m_EventID); // if this fires, the data in pld is wrong
    pEvent->GetApplyLoadActivity().AddUserLoad(m_DistributedLoads.back().m_ID);
 
    FireContinuityRelatedSpanChange(pld.m_SpanKey,GCH_LOADING_ADDED);
@@ -8574,6 +8762,8 @@ const CDistributedLoadData* CProjectAgentImp::FindDistributedLoad(LoadIDType loa
 void CProjectAgentImp::UpdateDistributedLoad(CollectionIndexType idx, const CDistributedLoadData& pld)
 {
    ATLASSERT(0 <= idx && idx < GetDistributedLoadCount() );
+   ATLASSERT(pld.m_EventIndex != INVALID_INDEX);
+   ATLASSERT(pld.m_EventID != INVALID_ID);
 
    if ( m_DistributedLoads[idx] != pld )
    {
@@ -8586,12 +8776,13 @@ void CProjectAgentImp::UpdateDistributedLoad(CollectionIndexType idx, const CDis
       }
 
       CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
-      CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(m_DistributedLoads[idx].m_EventIndex);
+      CTimelineEvent* pEvent = pTimelineMgr->GetEventByID(m_DistributedLoads[idx].m_EventID);
       pEvent->GetApplyLoadActivity().RemoveUserLoad(m_DistributedLoads[idx].m_ID);
 
       m_DistributedLoads[idx] = pld;
 
       pEvent = pTimelineMgr->GetEventByIndex(pld.m_EventIndex);
+      ATLASSERT(pEvent->GetID() == pld.m_EventID); // if this fires, the data in pld is wrong
       pEvent->GetApplyLoadActivity().AddUserLoad(m_DistributedLoads[idx].m_ID);
 
       FireContinuityRelatedSpanChange(pld.m_SpanKey,GCH_LOADING_CHANGED);
@@ -8603,7 +8794,7 @@ void CProjectAgentImp::DeleteDistributedLoad(CollectionIndexType idx)
    ATLASSERT(0 <= idx && idx < GetDistributedLoadCount() );
 
    CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
-   CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(m_DistributedLoads[idx].m_EventIndex);
+   CTimelineEvent* pEvent = pTimelineMgr->GetEventByID(m_DistributedLoads[idx].m_EventID);
    pEvent->GetApplyLoadActivity().RemoveUserLoad(m_DistributedLoads[idx].m_ID);
 
    CSpanKey& key( m_DistributedLoads[idx].m_SpanKey );
@@ -8622,11 +8813,15 @@ CollectionIndexType CProjectAgentImp::GetMomentLoadCount() const
 
 CollectionIndexType CProjectAgentImp::AddMomentLoad(const CMomentLoadData& pld)
 {
+   ATLASSERT(pld.m_EventIndex != INVALID_INDEX);
+   ATLASSERT(pld.m_EventID != INVALID_ID);
+
    m_MomentLoads.push_back(pld);
    m_MomentLoads.back().m_ID = UserLoads::ms_NextMomentLoadID++;
 
    CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
    CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(pld.m_EventIndex);
+   ATLASSERT(pEvent->GetID() == pld.m_EventID); // if this fires, the data in pld is wrong
    pEvent->GetApplyLoadActivity().AddUserLoad(m_MomentLoads.back().m_ID);
    
    FireContinuityRelatedSpanChange(pld.m_SpanKey,GCH_LOADING_ADDED);
@@ -8660,6 +8855,8 @@ const CMomentLoadData* CProjectAgentImp::FindMomentLoad(LoadIDType loadID) const
 void CProjectAgentImp::UpdateMomentLoad(CollectionIndexType idx, const CMomentLoadData& pld)
 {
    ATLASSERT(0 <= idx && idx < GetMomentLoadCount() );
+   ATLASSERT(pld.m_EventIndex != INVALID_INDEX);
+   ATLASSERT(pld.m_EventID != INVALID_ID);
 
    if ( m_MomentLoads[idx] != pld )
    {
@@ -8672,10 +8869,14 @@ void CProjectAgentImp::UpdateMomentLoad(CollectionIndexType idx, const CMomentLo
       }
 
       CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
-      CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(m_MomentLoads[idx].m_EventIndex);
+      CTimelineEvent* pEvent = pTimelineMgr->GetEventByID(m_MomentLoads[idx].m_EventID);
       pEvent->GetApplyLoadActivity().RemoveUserLoad(m_MomentLoads[idx].m_ID);
 
       m_MomentLoads[idx] = pld;
+
+      pEvent = pTimelineMgr->GetEventByIndex(pld.m_EventIndex);
+      ATLASSERT(pEvent->GetID() == pld.m_EventID); // if this fires, the data in pld is wrong
+      pEvent->GetApplyLoadActivity().AddUserLoad(pld.m_ID);
 
       FireContinuityRelatedSpanChange(pld.m_SpanKey,GCH_LOADING_CHANGED);
    }
@@ -8689,7 +8890,7 @@ void CProjectAgentImp::DeleteMomentLoad(CollectionIndexType idx)
    it += idx;
 
    CTimelineManager* pTimelineMgr = m_BridgeDescription.GetTimelineManager();
-   CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(m_MomentLoads[idx].m_EventIndex);
+   CTimelineEvent* pEvent = pTimelineMgr->GetEventByID(m_MomentLoads[idx].m_EventID);
    pEvent->GetApplyLoadActivity().RemoveUserLoad(m_MomentLoads[idx].m_ID);
 
    CSpanKey& key( it->m_SpanKey );
@@ -9621,6 +9822,47 @@ void CProjectAgentImp::SetFinalLosses(Float64 loss)
    }
 }
 
+////////////////////////////////////////////////////////////////////////
+// IValidate
+UINT CProjectAgentImp::Orientation(LPCTSTR lpszOrientation)
+{
+   CString strOrientation(lpszOrientation);
+   strOrientation.MakeUpper(); // do comparisons in upper case
+
+   if (strOrientation.IsEmpty())
+   {
+      VALIDATE_INVALID;
+   }
+
+   if ( strOrientation == _T("NORMAL") || (strOrientation.GetLength() == 1 && strOrientation[0] == 'N') )
+   {
+      return VALIDATE_SUCCESS;
+   }
+
+   HRESULT hr_angle = m_objAngle->FromString(CComBSTR(strOrientation));
+   if ( SUCCEEDED(hr_angle) )
+   {
+      Float64 value;
+      m_objAngle->get_Value(&value);
+      if ( value < -MAX_SKEW_ANGLE || MAX_SKEW_ANGLE < value )
+      {
+         return VALIDATE_SKEW_ANGLE;
+      }
+      else
+      {
+         return VALIDATE_SUCCESS;
+      }
+   }
+
+   HRESULT hr_direction = m_objDirection->FromString(CComBSTR( strOrientation ));
+   if ( SUCCEEDED(hr_direction) )
+   {
+      return VALIDATE_SUCCESS;
+   }
+
+   return VALIDATE_INVALID;
+}
+
 
 ////////////////////////////////////////////////////////////////////////
 // Helper Methods
@@ -10359,12 +10601,17 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    pTimelineManager->AddTimelineEvent(pTimelineEvent,true,&eventIdx);
 
    // user defined loads
+   if ( m_bUpdateUserDefinedLoads )
+   {
+      UpdateUserDefinedLoads(!m_bUpdateUserDefinedLoads);
+   }
+
    PointLoadListIterator ptLoadIter(m_PointLoads.begin());
    PointLoadListIterator ptLoadIterEnd(m_PointLoads.end());
    for ( ; ptLoadIter != ptLoadIterEnd; ptLoadIter++ )
    {
       CPointLoadData& ptLoad = *ptLoadIter;
-      pTimelineEvent = pTimelineManager->GetEventByIndex(ptLoad.m_EventIndex);
+      pTimelineEvent = pTimelineManager->GetEventByID(ptLoad.m_EventID);
       pTimelineEvent->GetApplyLoadActivity().AddUserLoad(ptLoad.m_ID);
    }
 
@@ -10373,7 +10620,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    for ( ; distLoadIter != distLoadIterEnd; distLoadIter++ )
    {
       CDistributedLoadData& distLoad = *distLoadIter;
-      pTimelineEvent = pTimelineManager->GetEventByIndex(distLoad.m_EventIndex);
+      pTimelineEvent = pTimelineManager->GetEventByID(distLoad.m_EventID);
       pTimelineEvent->GetApplyLoadActivity().AddUserLoad(distLoad.m_ID);
    }
 
@@ -10382,7 +10629,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    for ( ; momLoadIter != momLoadIterEnd; momLoadIter++ )
    {
       CMomentLoadData& momentLoad = *momLoadIter;
-      pTimelineEvent = pTimelineManager->GetEventByIndex(momentLoad.m_EventIndex);
+      pTimelineEvent = pTimelineManager->GetEventByID(momentLoad.m_EventID);
       pTimelineEvent->GetApplyLoadActivity().AddUserLoad(momentLoad.m_ID);
    }
 }

@@ -373,7 +373,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
    vProductForces.push_back(pgsTypes::pftShrinkage);
    vProductForces.push_back(pgsTypes::pftRelaxation);
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(vProductForces.size()+2,_T("Deflections immediately prior to slab casting"));
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(vProductForces.size()+2,_T("Deflections immediately prior to deck casting"));
 
    std::vector<Float64>* pResults = new std::vector<Float64>[vProductForces.size()];
 
@@ -528,7 +528,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
    vProductForces.push_back(pgsTypes::pftShrinkage);
    vProductForces.push_back(pgsTypes::pftRelaxation);
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(vProductForces.size()+2,_T("Deflections from slab casting to service (Screed Camber)"));
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(vProductForces.size()+2,_T("Deflections from deck casting to service (Screed Camber)"));
 
    std::vector<Float64>* pResults1 = new std::vector<Float64>[vProductForces.size()];
    std::vector<Float64>* pResults2 = new std::vector<Float64>[vProductForces.size()];

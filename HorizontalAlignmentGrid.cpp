@@ -341,6 +341,12 @@ bool CHorizontalAlignmentGrid::GetRowData(ROWCOL nRow,Float64* pStation,Float64*
    {
       angle->get_Value(pFwdTangent);
       *pbFwdTangent = false;
+
+      if ( ::IsLE(*pFwdTangent,-M_PI) || ::IsGE(M_PI,*pFwdTangent) || ::IsZero(*pFwdTangent) )
+      {
+         // a curve delta has been input... delta must be between -PI and PI (but not exactly +\-PI)
+         return false;
+      }
    }
    else
    {
@@ -366,6 +372,13 @@ bool CHorizontalAlignmentGrid::GetRowData(ROWCOL nRow,Float64* pStation,Float64*
    CString strExitSpiral = GetCellValue(nRow,5);
    *pExitSpiral = _tstof(strExitSpiral);
    *pExitSpiral = ::ConvertToSysUnits(*pExitSpiral,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+
+   if ( ::IsLE(*pRadius,0.0) || ::IsLT(*pEntrySpiral,0.0) || ::IsLT(*pExitSpiral,0.0) )
+   {
+      // Radius must be greater than zero
+      // Spirals must be a positive value
+      return false;
+   }
 
    return true;
 }

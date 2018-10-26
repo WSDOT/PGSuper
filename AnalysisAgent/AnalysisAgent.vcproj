@@ -1048,6 +1048,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\AnalysisResult.h"
+				>
+			</File>
+			<File
 				RelativePath=".\BarrierSidewalkLoadDistributionTool.h"
 				>
 			</File>

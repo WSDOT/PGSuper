@@ -6,7 +6,7 @@ Diaphragm Height
 ------------------
 The height of the diaphragm is computed as:
 
-H<sub>dia</sub> = H<sub>g</sub> + "A" - t<sub>slab</sub>
+H<sub>dia</sub> = H<sub>g</sub> + "A" + H<sub>go</sub> - t<sub>slab</sub>
 
 ![](DiaphragmHeight.png)
 

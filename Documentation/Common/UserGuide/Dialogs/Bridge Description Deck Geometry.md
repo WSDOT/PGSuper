@@ -1,6 +1,6 @@
 Deck Geometry and Materials {#ug_dialogs_bridge_description_deck_geometry}
 ==============================================
-The deck type select from the @ref ug_dialogs_bridge_description_general tab and the deck casting event are listed at the top of this tab. Use the drop down list to select the deck casting event (PGSplice only).
+The deck type selected on the @ref ug_dialogs_bridge_description_general tab and the deck casting event are listed at the top of this tab. Use the drop down list to select the deck casting event (PGSplice only).
 
 Cross Section
 -------------
@@ -51,9 +51,10 @@ Define the geometry of the slab haunch
 Item | Description
 -----|-------------
 Haunch Shape | Select the shape of the slab haunch. This setting is for graphical presentation purposes only
-Fillet | Enter the depth of the slab fillet
-Slab offset type | Use the drop down list to select the method for defining the slab offset
-Slab Offset ("A" Dimensions) | Enter the slab offset dimension for the bridge
+Fillet<sup>*</sup> | Enter the depth of the slab fillet. Note that a single Fillet can be defined for the whole bridge, per span, or per girder. 
+Slab Offset ("A" Dimensions) | Enter the slab offset dimension for the bridge. Note that a single Slab Offset can be defined for the whole bridge, per bearing line, or per girder. 
+
+<sup>*</sup>The Fillet is the least allowable haunch depth along a girder, and is used by PGSuper to compute the required “A” dimension during a specification check and design, and if selected, may be used when computing the load due to the haunch. Refer to @ref tg_slab_offset and the Slab Haunch loading section of @ref tg_structural_analysis_models for more information.
 
 Material
 --------------

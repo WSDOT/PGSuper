@@ -96,6 +96,7 @@ private:
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
 
    void SelectRow(ROWCOL nRow);
+   BOOL ValidatePoint(CDeckPoint& point,IEAFDisplayUnits* pDisplayUnits);
 
    // need a station object to convert stations between text and values
    // create this object once and use it over and over

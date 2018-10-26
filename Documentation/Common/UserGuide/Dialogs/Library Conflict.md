@@ -4,7 +4,7 @@ PGSuper and PGSplice project files are completely self-contained. Even though yo
 
 If your library in your configuration is changed, by perhaps your PGSuper/PGSplice Administrator, or if your colleague should happen to have a library entry in his configuration that has the same name, but different values than one of the entries in your project, the software need guidance for resolving the conflict.
 
-We leave it up to you to resolve the conflict. At this point you have two choices:
+We leave it up to you to resolve the conflict. A list of differences are presented to help you make the decision. At this point you have two choices:
 
 Choice | Description
 -------|--------------

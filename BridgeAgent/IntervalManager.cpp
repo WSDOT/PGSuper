@@ -77,8 +77,8 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr)
    m_LiveLoadIntervalIdx      = INVALID_INDEX;
    m_OverlayIntervalIdx       = INVALID_INDEX;
    m_RailingSystemIntervalIdx = INVALID_INDEX;
-   m_UserLoadInterval[0].clear();
-   m_UserLoadInterval[1].clear();
+   m_UserLoadInterval[UserLoads::DC].clear();
+   m_UserLoadInterval[UserLoads::DW].clear();
 
    m_StressStrandIntervals.clear();
    m_ReleaseIntervals.clear();
@@ -1249,17 +1249,20 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent
             {
                loadCase = pPointLoad->m_LoadCase;
                spanKey = pPointLoad->m_SpanKey;
+               ATLASSERT(pPointLoad->m_EventIndex == eventIdx);
             }
             else if ( pDistributedLoad )
             {
                loadCase = pDistributedLoad->m_LoadCase;
                spanKey = pDistributedLoad->m_SpanKey;
+               ATLASSERT(pDistributedLoad->m_EventIndex == eventIdx);
             }
             else
             {
                ATLASSERT(pMomentLoad);
                loadCase = pMomentLoad->m_LoadCase;
                spanKey = pMomentLoad->m_SpanKey;
+               ATLASSERT(pMomentLoad->m_EventIndex == eventIdx);
             }
 
             if ( loadCase != UserLoads::LL_IM )

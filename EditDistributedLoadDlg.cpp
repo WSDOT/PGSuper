@@ -97,6 +97,10 @@ void CEditDistributedLoadDlg::DoDataExchange(CDataExchange* pDX)
       GET_IFACE(IBridgeDescription, pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
+
+      const CTimelineEvent* pEvent = pTimelineMgr->GetEventByIndex(m_Load.m_EventIndex);
+      m_Load.m_EventID = pEvent->GetID();
+
       EventIndexType liveLoadEventIdx = pTimelineMgr->GetLiveLoadEventIndex();
 
       if ( m_Load.m_LoadCase == UserLoads::LL_IM && m_Load.m_EventIndex != liveLoadEventIdx )

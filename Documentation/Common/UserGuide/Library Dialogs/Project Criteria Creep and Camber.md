@@ -8,7 +8,7 @@ Item | Description
 -----|---------------
 Time from stressing to prestress transfer | Enter the time from stressing of the pretension strands to imparting the force onto the girder. This time is used to compute initial relaxation losses.
 Time from prestress transfer until temporary strand removal/diaphragm casting | Enter the range of times when temporary strands will be removed and diaphragms cast
-Time from prestress transfer until slab casting or application of superimposed dead loads on noncomposite girders | Enter the range of time for this loading condition
+Time from prestress transfer until deck casting or application of superimposed dead loads on noncomposite girders | Enter the range of time for this loading condition
 Total Creep Duration | Enter the total creep duration. Only used for bridges without composite decks.
 Variability between upper and lower bound camber | Enter the amount of camber variability that is to be expected.
 

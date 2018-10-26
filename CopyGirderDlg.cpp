@@ -397,7 +397,14 @@ void CCopyGirderDlg::OnBnClickedRadio()
 
    GetDlgItem(IDC_SELECT_GIRDERS)->EnableWindow(enab_mpl);
 
-   CopyToSelectionChanged();
+   if ( enab_mpl && m_MultiDialogSelections.size() == 0 )
+   {
+      OnBnClickedSelectGirders();
+   }
+   else
+   {
+      CopyToSelectionChanged();
+   }
 }
 
 void CCopyGirderDlg::OnBnClickedSelectGirders()

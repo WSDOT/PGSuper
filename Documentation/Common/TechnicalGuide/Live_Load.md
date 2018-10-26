@@ -1,6 +1,6 @@
 Live Load {#tg_live_load}
 ======================================
-In addition to supporting the HL93 live load as defined in LRFD 3.6.1.3, you to apply your own live loads and envelopes of live loads. Live loads can be defined for two different load categories:
+In addition to supporting the HL93 live load as defined in LRFD 3.6.1.3, you can apply your own live loads and envelopes of live loads. Live loads can be defined for two different load categories:
 
 1. Design Limit States
     * Service I

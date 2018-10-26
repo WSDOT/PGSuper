@@ -197,7 +197,7 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
    {
       p_table->SetRowSpan(0,row1col,2);
       p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-      (*p_table)(0,row1col++) << COLHDR(_T("Slab") << rptNewLine << _T("Shrinkage"), M, unitT );
+      (*p_table)(0,row1col++) << COLHDR(_T("Deck") << rptNewLine << _T("Shrinkage"), M, unitT );
    }
 
    if ( bDeckPanels )

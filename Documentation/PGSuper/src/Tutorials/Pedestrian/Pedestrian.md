@@ -15,7 +15,7 @@ The configuration of our example bridge is as follows:
 Item | Description
 -----|--------------
 Girder | 1 - WSDOT U54G6
-Slab Width | 16 ft
+Deck Width | 16 ft
 Curb-to-Curb Width | 13'-10" (16'-0" deck width)
 Span Configuration | 2 - 120 ft spans made continuous after deck placement
 Pedestrian Load | Per AASHTO LRFD 4th Edition 2008, Article 3.6.1.6

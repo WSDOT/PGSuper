@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "SegmentModelManager.h"
 #include "PrestressTool.h"
+#include "AnalysisResult.h"
 
 #include <EAF\EAFAutoProgress.h>
 #include <PgsExt\GirderModelFactory.h>
@@ -1315,11 +1316,9 @@ void CSegmentModelManager::GetReaction(const CSegmentKey& segmentKey,IntervalInd
    LoadCaseIDType lcid = GetLoadCaseID(pModelData,strLoadingName);
 
    Float64 fx,mz;
-   HRESULT hr = results->ComputeReactions(lcid,leftJntID,&fx,pRleft,&mz);
-   ATLASSERT(SUCCEEDED(hr));
-
-   hr = results->ComputeReactions(lcid,leftJntID,&fx,pRright,&mz);
-   ATLASSERT(SUCCEEDED(hr));
+   CAnalysisResult ar;
+   ar = results->ComputeReactions(lcid,leftJntID,&fx,pRleft,&mz);
+   ar = results->ComputeReactions(lcid,leftJntID,&fx,pRright,&mz);
 }
 
 void CSegmentModelManager::GetStress(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot)
@@ -1363,7 +1362,20 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
    {
       std::vector<sysSectionValue> fxPrev, fyPrev, mzPrev, fxThis, fyThis, mzThis;
       std::vector<Float64>         dxPrev, dyPrev, rzPrev, dxThis, dyThis, rzThis;
-      GetSectionResults(intervalIdx-1,lcid,vPoi,&fxPrev,&fyPrev,&mzPrev,&dxPrev,&dyPrev,&rzPrev);
+      if ( intervalIdx == 0 )
+      {
+         fxPrev.resize(vPoi.size(),sysSectionValue(0.0,0.0));
+         fyPrev.resize(vPoi.size(),sysSectionValue(0.0,0.0));
+         mzPrev.resize(vPoi.size(),sysSectionValue(0.0,0.0));
+         dxPrev.resize(vPoi.size(),0.0);
+         dyPrev.resize(vPoi.size(),0.0);
+         rzPrev.resize(vPoi.size(),0.0);
+      }
+      else
+      {
+         GetSectionResults(intervalIdx-1,lcid,vPoi,&fxPrev,&fyPrev,&mzPrev,&dxPrev,&dyPrev,&rzPrev);
+      }
+
       GetSectionResults(intervalIdx  ,lcid,vPoi,&fxThis,&fyThis,&mzThis,&dxThis,&dyThis,&rzThis);
       
       std::transform(fxThis.begin(),fxThis.end(),fxPrev.begin(),std::back_inserter(*pvFx),std::minus<sysSectionValue>());
@@ -1386,7 +1398,20 @@ void CSegmentModelManager::GetPrestressSectionResults(IntervalIndexType interval
    {
       std::vector<sysSectionValue> fxPrev, fyPrev, mzPrev, fxThis, fyThis, mzThis;
       std::vector<Float64>         dxPrev, dyPrev, rzPrev, dxThis, dyThis, rzThis;
-      GetPrestressSectionResults(intervalIdx-1,vPoi,&fxPrev,&fyPrev,&mzPrev,&dxPrev,&dyPrev,&rzPrev);
+      if ( intervalIdx == 0 )
+      {
+         fxPrev.resize(vPoi.size(),sysSectionValue(0.0,0.0));
+         fyPrev.resize(vPoi.size(),sysSectionValue(0.0,0.0));
+         mzPrev.resize(vPoi.size(),sysSectionValue(0.0,0.0));
+         dxPrev.resize(vPoi.size(),0.0);
+         dyPrev.resize(vPoi.size(),0.0);
+         rzPrev.resize(vPoi.size(),0.0);
+      }
+      else
+      {
+         GetPrestressSectionResults(intervalIdx-1,vPoi,&fxPrev,&fyPrev,&mzPrev,&dxPrev,&dyPrev,&rzPrev);
+      }
+
       GetPrestressSectionResults(intervalIdx  ,vPoi,&fxThis,&fyThis,&mzThis,&dxThis,&dyThis,&rzThis);
       
       std::transform(fxThis.begin(),fxThis.end(),fxPrev.begin(),std::back_inserter(*pvFx),std::minus<sysSectionValue>());
@@ -1494,13 +1519,12 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
 
          Float64 FxRight(0), FyRight(0), MzRight(0);
          Float64 FxLeft(0),  FyLeft(0),  MzLeft(0);
-         HRESULT hr = results->ComputePOIForces(lcid,poi_id,mftLeft,lotGlobal,&FxLeft,&FyLeft,&MzLeft);
-         ATLASSERT(SUCCEEDED(hr));
+         CAnalysisResult ar;
+         ar = results->ComputePOIForces(lcid,poi_id,mftLeft,lotGlobal,&FxLeft,&FyLeft,&MzLeft);
 
          FyLeft *= -1;
 
-         hr = results->ComputePOIForces(lcid,poi_id,mftRight,lotGlobal,&FxRight,&FyRight,&MzRight);
-         ATLASSERT(SUCCEEDED(hr));
+         ar = results->ComputePOIForces(lcid,poi_id,mftRight,lotGlobal,&FxRight,&FyRight,&MzRight);
 
          sysSectionValue fx(FxLeft,FxRight);
          sysSectionValue fy(FyLeft,FyRight);
@@ -1511,8 +1535,7 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
          pvMz->push_back(mz);
 
          Float64 dx(0),dy(0),rz(0);
-         hr = results->ComputePOIDeflections(lcid,poi_id,lotGlobal,&dx,&dy,&rz);
-         ATLASSERT(SUCCEEDED(hr));
+         ar = results->ComputePOIDeflections(lcid,poi_id,lotGlobal,&dx,&dy,&rz);
 
          pvDx->push_back(dx);
          pvDy->push_back(dy);
@@ -1640,8 +1663,7 @@ void CSegmentModelManager::GetSectionStress(IntervalIndexType intervalIdx,LoadCa
    }
    else
    {
-      HRESULT hr = results->ComputePOIForces(lcid,poi_id,face,lotMember,&fx,&fy,&mz);
-      ATLASSERT(SUCCEEDED(hr));
+      CAnalysisResult ar = results->ComputePOIForces(lcid,poi_id,face,lotMember,&fx,&fy,&mz);
    }
 
    GET_IFACE(ISectionProperties, pSectProp);
@@ -1698,8 +1720,7 @@ void CSegmentModelManager::GetReaction(const CSegmentKey& segmentKey,IntervalInd
             joint->get_ID(&jntID);
 
             Float64 fx,fy,mz;
-            HRESULT hr = results->ComputeReactions(lcid,jntID,&fx,&fy,&mz);
-            ATLASSERT(SUCCEEDED(hr));
+            CAnalysisResult ar = results->ComputeReactions(lcid,jntID,&fx,&fy,&mz);
 
             reactions.push_back(fy);
          }
@@ -1753,8 +1774,7 @@ Float64 CSegmentModelManager::GetReaction(IntervalIndexType intervalIdx,LoadCase
    }
 
    Float64 fx,fy,mz;
-   HRESULT hr = results->ComputeReactions(lcid,jointID,&fx,&fy,&mz);
-   ATLASSERT(SUCCEEDED(hr));
+   CAnalysisResult ar = results->ComputeReactions(lcid,jointID,&fx,&fy,&mz);
    return fy;
 }
 
@@ -1912,13 +1932,21 @@ CSegmentModelData* CSegmentModelManager::GetSegmentModel(const CSegmentKey& segm
    ATLASSERT(releaseIntervalIdx <= intervalIdx && intervalIdx <= erectionIntervalIdx);
 
    if ( intervalIdx < liftingIntervalIdx )
+   {
       return GetReleaseModel(segmentKey);
+   }
    else if ( liftingIntervalIdx <= intervalIdx && intervalIdx < storageIntervalIdx )
+   {
       return GetLiftingModel(segmentKey);
+   }
    else if ( storageIntervalIdx <= intervalIdx && intervalIdx < haulingIntervalIdx )
+   {
       return GetStorageModel(segmentKey);
+   }
    else if ( haulingIntervalIdx <= intervalIdx && intervalIdx < erectionIntervalIdx )
+   {
       return GetHaulingModel(segmentKey);
+   }
 
    ATLASSERT(false);
    return NULL;

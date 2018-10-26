@@ -60,7 +60,7 @@ DELEGATE_CUSTOM_INTERFACE(CMomentLoadDrawStrategyImpl,EditLoad);
 
 
 void CMomentLoadDrawStrategyImpl::XStrategy::Init(iPointDisplayObject* pDO, IBroker* pBroker, CMomentLoadData load,
-                                                 CollectionIndexType loadIndex, Float64 girderDepth, Float64 spanLength, 
+                                                 CollectionIndexType loadIndex, Float64 spanLength, 
                                                  Float64 maxMagnitude, COLORREF color)
 {
    METHOD_PROLOGUE(CMomentLoadDrawStrategyImpl,Strategy);
@@ -70,7 +70,6 @@ void CMomentLoadDrawStrategyImpl::XStrategy::Init(iPointDisplayObject* pDO, IBro
    pThis->m_pBroker = pBroker;
    pThis->m_Color = color;
    pThis->m_MaxMagnitude = maxMagnitude;
-   pThis->m_GirderDepth = girderDepth;
    pThis->m_SpanLength = spanLength;
 }
 
@@ -171,7 +170,8 @@ void CMomentLoadDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORRE
    Uint32 radius = diameter / 2;
 
    // line style and width
-   bool funky_load = m_Load.m_Magnitude==0.0 || wx>m_SpanLength;
+   Float64 location = (m_Load.m_Fractional ? m_SpanLength*m_Load.m_Location : m_Load.m_Location);
+   bool funky_load = ::IsZero(m_Load.m_Magnitude) || m_SpanLength < location;
 
    int nWidth    = funky_load ? 1 : 2;
    int nPenStyle = funky_load ? PS_DOT : PS_SOLID;
@@ -367,9 +367,13 @@ void CMomentLoadDrawStrategyImpl::GetTSymbolSize(iCoordinateMap* pMap, Uint32* p
 {
    Float64 frac = Max( (fabs(m_Load.m_Magnitude)/m_MaxMagnitude), 1.0/6.0); // minimum symbol size
    if (frac!=0.0)
+   {
       *pd = Uint32(frac * Float64(SSIZE));
+   }
    else
+   {
       *pd = SSIZE;
+   }
 
 //   *psx = SSIZE/6.;
 }

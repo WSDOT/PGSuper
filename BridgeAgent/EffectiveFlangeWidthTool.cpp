@@ -507,7 +507,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
 	
 	            // overhang is too big
 	            std::_tostringstream os;
-	            os << "The slab overhang exceeds S/2. The overhang is taken to be equal to S/2 for purposes of computing the effective flange width and the effect of structurally continuous barriers has been ignored. (LRFD 4.6.2.6.1)" << std::endl;
+	            os << "The deck overhang exceeds S/2. The overhang is taken to be equal to S/2 for purposes of computing the effective flange width and the effect of structurally continuous barriers has been ignored. (LRFD 4.6.2.6.1)" << std::endl;
 	
 	            pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalWarning,os.str().c_str());
 	            pStatusCenter->Add(pStatusItem);
@@ -1169,7 +1169,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
          }
          else
          {
-            *pPara << _T("Effective flange width is take to be the slab overhangs") << rptNewLine;
+            *pPara << _T("Effective flange width is taken to be the deck overhangs") << rptNewLine;
             *pPara << _T("Left Overhang from CL girder = ") << xdim.SetValue(efw.twLeft) << rptNewLine;
             *pPara << _T("Right Overhang from CL girder = ") << xdim.SetValue(efw.twRight) << rptNewLine;
          }
@@ -1431,7 +1431,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
    *pPara << symbol(DOT) << _T(" 12 times the average thickness of the slab, plus the greater of the web thickness");
    *pPara << _T(" OR one-half the width of the top flange of the girder (") << Sub2(_T("w"),_T("2")) << _T(")") << rptNewLine;
    *pPara << symbol(DOT) << _T(" The average spacing of adjacent webs for interior webs (") << Sub2(_T("w"),_T("3")) << _T(")") << rptNewLine;
-   *pPara << symbol(DOT) << _T(" The slab overhang plus one-half of the spacing to the adjacent interor web for exterior webs (") << Sub2(_T("w"),_T("3")) << _T(")") << rptNewLine;
+   *pPara << symbol(DOT) << _T(" The deck slab overhang plus one-half of the spacing to the adjacent interor web for exterior webs (") << Sub2(_T("w"),_T("3")) << _T(")") << rptNewLine;
    *pPara << rptNewLine;
    
    *pPara << Sub2(_T("w"),_T("2")) << _T(" = ") << symbol(SUM) << Sub2(_T("w"),_T("2")) << _T(" for each web") << rptNewLine;
@@ -1538,7 +1538,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
    *pPara << symbol(DOT) << _T(" 12 times the average thickness of the slab, plus the greater of the web thickness");
    *pPara << _T(" OR one-half the width of the top flange of the girder (") << Sub2(_T("w"),_T("3")) << _T(")") << rptNewLine;
    *pPara << symbol(DOT) << _T(" The average spacing of adjacent webs for interior webs (") << Sub2(_T("w"),_T("3")) << _T(")") << rptNewLine;
-   *pPara << symbol(DOT) << _T(" The slab overhang plus one-half of the spacing to the adjacent interor web for exterior webs (") << Sub2(_T("w"),_T("3")) << _T(")") << rptNewLine;
+   *pPara << symbol(DOT) << _T(" The deck slab overhang plus one-half of the spacing to the adjacent interor web for exterior webs (") << Sub2(_T("w"),_T("3")) << _T(")") << rptNewLine;
    *pPara << rptNewLine;
    
    *pPara << Sub2(_T("w"),_T("2")) << _T(" = ") << symbol(SUM) << Sub2(_T("w"),_T("2")) << _T(" for each web") << rptNewLine;

@@ -415,7 +415,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,const CSegmentK
    }
    else
    {
-      (*pTable)(row,0) << _T("Estimated camber immediately before slab casting at ")<< min_days<<_T(" days, D");
+      (*pTable)(row,0) << _T("Estimated camber immediately before deck casting at ")<< min_days<<_T(" days, D");
    }
 
    Float64 D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MINTIME);
@@ -435,7 +435,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,const CSegmentK
    }
    else
    {
-      (*pTable)(row,0) << _T("Estimated camber immediately before slab casting  at ")<< max_days<<_T(" days, D");
+      (*pTable)(row,0) << _T("Estimated camber immediately before deck casting  at ")<< max_days<<_T(" days, D");
    }
 
    D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MAXTIME);
@@ -472,7 +472,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,const CSegmentK
    (*pTable)(row,1) << disp.SetValue( delta_gdr );
    row++;
 
-   (*pTable)(row,0) << _T("Deflection (Slab and Diaphragms)");
+   (*pTable)(row,0) << _T("Deflection (Deck and Diaphragms)");
    (*pTable)(row,1) << disp.SetValue( delta_dl );
    row++;
 

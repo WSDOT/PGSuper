@@ -156,7 +156,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
       }
    }
 
-   *pParagraph << _T("Girder stresses due to slab shrinkage") << rptNewLine;
+   *pParagraph << _T("Girder stresses due to deck shrinkage") << rptNewLine;
    if ( spMode == pgsTypes::spmGross )
    {
       *pParagraph << rptRcImage(strImagePath + _T("SlabShrinkageStress_Ftop_Gross.png")) << rptNewLine;

@@ -275,6 +275,13 @@ bool CProfileGrid::GetRowData(ROWCOL nRow,Float64* pStation,Float64* pGrade,Floa
    *pL2 = _tstof(strL2);
    *pL2 = ::ConvertToSysUnits(*pL2,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
+   if (*pL1 < 0 || *pL2 < 0 || (::IsZero(*pL1) && !::IsZero(*pL2)) )
+   {
+      // curve lengths must be zero or greater
+      // if L1 is zero, L2 must also be zero
+      return false;
+   }
+
    return true;
 }
 

@@ -13,6 +13,7 @@
 #include "afxres.h"
 #include <EAF\EAFResources.h>
 #include "grid\gxresrc.h"
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -3452,8 +3453,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,50
- PRODUCTVERSION 3,0,0,50
+ FILEVERSION 3,0,0,51
+ PRODUCTVERSION 3,0,0,51
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3470,12 +3471,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.50"
+            VALUE "FileVersion", "3.0.0.51"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2016, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.50"
+            VALUE "ProductVersion", "3.0.0.51"
         END
     END
     BLOCK "VarFileInfo"

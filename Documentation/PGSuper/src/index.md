@@ -6,7 +6,7 @@ PGSuper is licensed under the terms and conditions of the [Alternate Route Open 
 
 Manuals
 ----------
-* @ref tutorials - Get started quicking by working through the tutorials
-* @ref user_guide - Get more indepth information
+* @ref tutorials - Get started quickly by working through the tutorials
+* @ref user_guide - Get more in-depth information
 * @ref technical_guide - Get the technical details
 * @ref administrator_guide - Learn how to customize and deploy PGSuper in your organization

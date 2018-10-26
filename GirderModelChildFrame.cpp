@@ -113,6 +113,42 @@ BOOL CGirderModelChildFrame::Create(LPCTSTR lpszClassName,
    return bResult;
 }
 
+BOOL CGirderModelChildFrame::OnCmdMsg(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo)
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+
+   // capture the current selection
+   CSelection selection = pDoc->GetSelection();
+
+   bool bSync = DoSyncWithBridgeModelView();
+   BOOL bIsQuickReportCommand = pDoc->IsReportCommand(nID,TRUE);
+   if ( bIsQuickReportCommand && nCode == CN_COMMAND /*&& !bSync*/ )
+   {
+      // the command is for a "quick report" and we are not sync'ed with the bridge view... we want to use our selection
+     
+      // get the selection for this view
+      const CGirderKey& girderKey = GetSelection();
+
+      // create and set the main selection.... later, when the report is created, it will call GetSelection and our selection will be returned
+      CSelection ourSelection;
+      ourSelection.Type = CSelection::Girder;
+      ourSelection.GroupIdx = girderKey.groupIndex;
+      ourSelection.GirderIdx = girderKey.girderIndex;
+      pDoc->SetSelection(ourSelection,FALSE/* don't broadcast a selection change notification */);
+   }
+   
+   // continue with normal command processing
+   BOOL bHandled = CSplitChildFrame::OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);
+
+   if ( bIsQuickReportCommand && nCode == CN_COMMAND /*&& !bSync*/ )
+   {
+      // we messed with the selection, so put it back the way it was
+      pDoc->SetSelection(selection,FALSE/* don't broadcast a selection change notification */);
+   }
+
+   return bHandled;
+}
+
 BEGIN_MESSAGE_MAP(CGirderModelChildFrame, CSplitChildFrame)
 	//{{AFX_MSG_MAP(CGirderModelChildFrame)
 	ON_WM_CREATE()

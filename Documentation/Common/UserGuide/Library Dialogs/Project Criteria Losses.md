@@ -32,4 +32,4 @@ Elastic Gains
 --------------
 When gross section properties are used for stress analysis, elastic gains are be computed and added to the effective prestress force to approximate the transformed section analysis that was used when developing the prestress loss method (See NCHRP Report 496). For refined estimates (LRFD 5.9.5.4), for LRFD 2005 and later, define the percentage of the various external loads that will contribute to the elastic gains.
 
-Gains due to slab shrinkage must also include increased stresses at the top and bottom of the girder. Slab shrinkage is computed as defined in LRFD 5.9.5.4.3d. The shrinkage strain is scaled by the percentage defined on this tab. The stresses in the girders is computed using equation 5.9.5.4.3d-2 with St and Sb being substituted for epc/Ic.
+Gains due to deck shrinkage must also include increased stresses at the top and bottom of the girder. Deck shrinkage is computed as defined in LRFD 5.9.5.4.3d. The shrinkage strain is scaled by the percentage defined on this tab. The stresses in the girders is computed using equation 5.9.5.4.3d-2 with St and Sb being substituted for epc/Ic.

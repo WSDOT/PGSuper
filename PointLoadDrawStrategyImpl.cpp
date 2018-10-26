@@ -172,7 +172,7 @@ void CPointLoadDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF
 
    // line style and width
    Float64 location = (m_Load.m_Fractional ? m_SpanLength*m_Load.m_Location : m_Load.m_Location);
-   bool funky_load = m_Load.m_Magnitude==0.0 || m_SpanLength < location;
+   bool funky_load = ::IsZero(m_Load.m_Magnitude) || m_SpanLength < location;
 
    int nWidth    = funky_load ? 1 : 2;
    int nPenStyle = funky_load ? PS_DOT : PS_SOLID;

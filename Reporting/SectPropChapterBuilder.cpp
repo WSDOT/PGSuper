@@ -221,7 +221,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       if ( bComposite )
       {
          GET_IFACE2(pBroker, IMaterials,         pMaterial);
-        (*pPara) << _T("Slab   ") << RPT_EC << _T(" = ") << modE.SetValue( pMaterial->GetDeckEc28() ) << rptNewLine;
+        (*pPara) << _T("Deck   ") << RPT_EC << _T(" = ") << modE.SetValue( pMaterial->GetDeckEc28() ) << rptNewLine;
         (*pPara) << rptNewLine;
       }
    }

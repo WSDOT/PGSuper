@@ -93,27 +93,24 @@ static char THIS_FILE[] = __FILE__;
 #define SECTION_CUT_ID   100
 
 
-static std::_tstring GetLoadGroupNameForUserLoad(UserLoads::LoadCase lc)
+static CString GetLoadGroupNameForUserLoad(UserLoads::LoadCase lc)
 {
    switch(lc)
    {
       case UserLoads::DC:
-         return std::_tstring(_T("DC"));
-      break;
+         return _T("DC");
 
       case UserLoads::DW:
-         return std::_tstring(_T("DW"));
-      break;
+         return _T("DW");
 
       case UserLoads::LL_IM:
-         return std::_tstring(_T("LL_IM"));
-      break;
+         return _T("LL_IM");
 
-         default:
+      default:
          ATLASSERT(false); // SHOULD NEVER GET HERE
    }
 
-   return std::_tstring(_T("Error"));
+   return _T("Error");
 }
 
 static COLORREF GetLoadGroupColor(UserLoads::LoadCase lc)
@@ -142,13 +139,13 @@ static COLORREF GetLoadGroupColor(UserLoads::LoadCase lc)
 static void CreateLegendEntry(UserLoads::LoadCase lc, iLegendDisplayObject* legend)
 {
    COLORREF color = GetLoadGroupColor(lc);
-   std::_tstring name =  GetLoadGroupNameForUserLoad(lc);
+   CString name = GetLoadGroupNameForUserLoad(lc);
 
    CComPtr<iSymbolLegendEntry> legend_entry;
    legend_entry.CoCreateInstance(CLSID_LegendEntry);
 
    // add entry to legend
-   legend_entry->put_Name(CComBSTR(name.c_str()));
+   legend_entry->put_Name(CComBSTR(name));
    legend_entry->put_Color(color);
    legend_entry->put_DoDrawLine(FALSE);
    legend->AddEntry(legend_entry);
@@ -473,8 +470,7 @@ void CGirderModelElevationView::UpdateDisplayObjects()
    {
       BuildPointLoadDisplayObjects(      pDoc, pBroker, girderKey, eventIdx, dispMgr, cases_exist);
       BuildDistributedLoadDisplayObjects(pDoc, pBroker, girderKey, eventIdx, dispMgr, cases_exist);
-#pragma Reminder("UPDATE: display object for moment loads not working")
-      //BuildMomentLoadDisplayObjects(pDoc, pBroker, girderKey, dispMgr, cases_exist);
+      BuildMomentLoadDisplayObjects(pDoc, pBroker, girderKey, eventIdx, dispMgr, cases_exist);
    }
 
    if (settings & IDG_EV_SHOW_DIMENSIONS)
@@ -1930,6 +1926,7 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserDefinedLoadData);
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
 
    CollectionIndexType nLoads =  pUserDefinedLoadData->GetPointLoadCount();
    SpanIndexType nSpans = pBridge->GetSpanCount();
@@ -1951,9 +1948,9 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
    dispMgr->GetDisplayObjectFactory(0, &factory);
 
 
-   SpanIndexType startSpanIdx, endSpanIdx;
-   GetSpanRange(pBroker,girderKey,&startSpanIdx,&endSpanIdx);
-   Float64 span_offset = GetSpanStartLocation(CSpanKey(startSpanIdx,girderKey.girderIndex));
+   SpanIndexType displayStartSpanIdx, displayEndSpanIdx;
+   GetSpanRange(pBroker,girderKey,&displayStartSpanIdx,&displayEndSpanIdx);
+   Float64 span_offset = GetSpanStartLocation(CSpanKey(displayStartSpanIdx,girderKey.girderIndex));
 
 
    // create load display objects from filtered list
@@ -1970,30 +1967,33 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
          SpanIndexType endSpanIdx   = (pLoad->m_SpanKey.spanIndex == ALL_SPANS ? nSpans-1 : startSpanIdx);
          for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
          {
+            if ( spanIdx < displayStartSpanIdx || displayEndSpanIdx < spanIdx )
+            {
+               // this span is not being displayed
+               continue;
+            }
+
             CSpanKey spanKey(spanIdx,girderKey.girderIndex);
             GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanIdx);
-
-            Float64 start_end_distance = pBridge->GetSegmentStartEndDistance(CSegmentKey(grpIdx,girderKey.girderIndex,0));
 
             Float64 cantilever_length = pBridge->GetCantileverLength(spanKey.spanIndex,spanKey.girderIndex,(spanKey.spanIndex == 0 ? pgsTypes::metStart : pgsTypes::metEnd));
             Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex,spanKey.girderIndex);
 
-            Float64 location_from_left_end = pLoad->m_Location;
+            Float64 Xspan = pLoad->m_Location;
             if (pLoad->m_Fractional)
             {
                if ( pLoad->m_bLoadOnCantilever[pgsTypes::metStart] )
                {
-                  location_from_left_end *= cantilever_length;
+                  Xspan *= cantilever_length;
                }
                else if ( pLoad->m_bLoadOnCantilever[pgsTypes::metEnd] )
                {
-                  location_from_left_end *= cantilever_length;
-                  location_from_left_end += span_length;
+                  Xspan *= cantilever_length;
+                  Xspan += span_length;
                }
                else
                {
-                  location_from_left_end *= span_length;
-                  location_from_left_end += start_end_distance;
+                  Xspan *= span_length;
                }
             }
 
@@ -2008,26 +2008,13 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
             CComQIPtr<iPointLoadDrawStrategy,&IID_iPointLoadDrawStrategy> pls(pStrategy);
             pls->Init(point_disp, pBroker, *pLoad, loadIdx, span_length, max, color);
 
-            Float64 x_position = GetSpanStartLocation(spanKey);
-            if ( pLoad->m_bLoadOnCantilever[pgsTypes::metStart] )
-            {
-               // x_position is measured from the start of the span... since the load is on
-               // the cantilever of the first span, we want to measure x_position from
-               // the left end (start) of the cantilever. Just back up x_position by
-               // the cantilever length
-               x_position -= cantilever_length;
-            }
-            else if ( pLoad->m_bLoadOnCantilever[pgsTypes::metEnd] )
-            {
-               // x_position is measured from the start of the span... since the load is on
-               // the cantilever at the end of the span, we want to measure x_position form
-               // the left end (start) of the cantilever. Just move x_position by
-               // the span length.
-               x_position += span_length;
-            }
+            CSegmentKey segmentKey;
+            Float64 Xsp;
+            pPoi->ConvertSpanPointToSegmentPathCoordiante(spanKey,Xspan,&segmentKey,&Xsp);
+            Float64 x_position = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey,Xsp);
 
-            x_position -= span_offset; // adjusts position for groups that are being displayed
-            x_position += location_from_left_end;
+            Float64 start_of_span_location = GetSpanStartLocation(spanKey);
+            x_position += start_of_span_location - span_offset;
 
             CComPtr<IPoint2d> point;
             point.CoCreateInstance(__uuidof(Point2d));
@@ -2041,11 +2028,11 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
             EAFGetBroker(&pBroker);
             GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
             CString strMagnitude = FormatDimension(pLoad->m_Magnitude,pDisplayUnits->GetGeneralForceUnit(),true);
-            CString strLocation  = FormatDimension(location_from_left_end,pDisplayUnits->GetSpanLengthUnit(),true);
+            CString strLocation  = FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit(),true);
 
             CString strToolTip;
             strToolTip.Format(_T("Point Load\r\nP = %s  L = %s from left end of span\r\n%s Load Case"),
-                               strMagnitude,strLocation,GetLoadGroupNameForUserLoad(pLoad->m_LoadCase).c_str());
+                               strMagnitude,strLocation,GetLoadGroupNameForUserLoad(pLoad->m_LoadCase));
 
             if ( pLoad->m_Description != _T("") )
             {
@@ -2074,6 +2061,10 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* 
 
    CollectionIndexType nLoads =  pUserDefinedLoadData->GetDistributedLoadCount();
    SpanIndexType nSpans = pBridge->GetSpanCount();
+
+   SpanIndexType displayStartSpanIdx, displayEndSpanIdx;
+   GetSpanRange(pBroker,girderKey,&displayStartSpanIdx,&displayEndSpanIdx);
+   Float64 span_offset = GetSpanStartLocation(CSpanKey(displayStartSpanIdx,girderKey.girderIndex));
 
    // filter loads and determine magnitude of max load
    Float64 max = 0.0;
@@ -2107,6 +2098,12 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* 
          SpanIndexType endSpanIdx   = (pLoad->m_SpanKey.spanIndex == ALL_SPANS ? nSpans-1 : startSpanIdx);
          for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
          {
+            if ( spanIdx < displayStartSpanIdx || displayEndSpanIdx < spanIdx )
+            {
+               // this span is not being displayed
+               continue;
+            }
+
             CSpanKey spanKey(spanIdx,girderKey.girderIndex);
 
             Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex,spanKey.girderIndex);
@@ -2150,7 +2147,7 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* 
 
             CComPtr<IPoint2d> point;
             point.CoCreateInstance(__uuidof(Point2d));
-            point->put_X(x_position + wstart_loc);
+            point->put_X(x_position + wstart_loc - span_offset);
             point->put_Y(0.0);
 
             point_disp->SetPosition(point, FALSE, FALSE);
@@ -2167,7 +2164,7 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* 
 
             CString strToolTip;
             strToolTip.Format(_T("Distributed Load\r\nWstart = %s  Wend = %s\r\nLstart = %s  Lend = %s from left end of span\r\n%s Load Case"),
-                               strStartMagnitude,strEndMagnitude,strStartLocation,strEndLocation,GetLoadGroupNameForUserLoad(pLoad->m_LoadCase).c_str());
+                               strStartMagnitude,strEndMagnitude,strStartLocation,strEndLocation,GetLoadGroupNameForUserLoad(pLoad->m_LoadCase));
 
             if ( pLoad->m_Description != _T("") )
             {
@@ -2192,27 +2189,37 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSDocBase* pDoc,
    ATLASSERT(pDL);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IGirder,pGirder);
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserDefinedLoadData);
 
-   // Moment loads are only used in PGSuper documents
-   ATLASSERT(EAFGetDocument()->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)));
+   CollectionIndexType nLoads =  pUserDefinedLoadData->GetMomentLoadCount();
+   SpanIndexType nSpans = pBridge->GetSpanCount();
 
-   CSegmentKey segmentKey(girderKey,0);
+#if defined _DEBUG
+   if ( EAFGetDocument()->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
+   {
+      // there shouldn't be any moment loads for PGSplice
+      ATLASSERT(nLoads == 0);
+   }
+#endif
 
-   Float64 gdr_length = pBridge->GetSegmentLength(segmentKey);
-   Float64 start_lgth = pBridge->GetSegmentStartEndDistance(segmentKey);
-   Float64 end_lgth   = pBridge->GetSegmentEndEndDistance(segmentKey);
-   Float64 span_lgth   = gdr_length - start_lgth - end_lgth;
+   if ( nLoads == 0 )
+   {
+      return;
+   }
 
-   CollectionIndexType num_loads =  pUserDefinedLoadData->GetMomentLoadCount();
+   GET_IFACE2_NOCHECK(pBroker,IGirder,pGirder);
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
+
+   SpanIndexType displayStartSpanIdx, displayEndSpanIdx;
+   GetSpanRange(pBroker,girderKey,&displayStartSpanIdx,&displayEndSpanIdx);
+   Float64 span_offset = GetSpanStartLocation(CSpanKey(displayStartSpanIdx,girderKey.girderIndex));
+
 
    // filter loads and determine magnitude of max load
    Float64 max = 0.0;
-   CollectionIndexType ild;
-   for (ild=0; ild<num_loads; ild++)
+   for (IndexType loadIdx = 0; loadIdx < nLoads; loadIdx++ )
    {
-      const CMomentLoadData* pLoad = pUserDefinedLoadData->GetMomentLoad(ild);
+      const CMomentLoadData* pLoad = pUserDefinedLoadData->GetMomentLoad(loadIdx);
 
       if (IsLoadApplicable(pBroker,pLoad,eventIdx,girderKey))
       {
@@ -2224,9 +2231,9 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSDocBase* pDoc,
    dispMgr->GetDisplayObjectFactory(0, &factory);
 
    // create load display objects from filtered list
-   for (ild=0; ild<num_loads; ild++)
+   for (IndexType loadIdx = 0; loadIdx < nLoads; loadIdx++)
    {
-      const CMomentLoadData* pLoad = pUserDefinedLoadData->GetMomentLoad(ild);
+      const CMomentLoadData* pLoad = pUserDefinedLoadData->GetMomentLoad(loadIdx);
 
       if (IsLoadApplicable(pBroker,pLoad,eventIdx,girderKey))
       {
@@ -2242,55 +2249,74 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSDocBase* pDoc,
 
          COLORREF color = GetLoadGroupColor(pLoad->m_LoadCase);
 
-         Float64 location;
-         if (pLoad->m_Fractional)
+         SpanIndexType startSpanIdx = (pLoad->m_SpanKey.spanIndex == ALL_SPANS ? 0 : pLoad->m_SpanKey.spanIndex);
+         SpanIndexType endSpanIdx   = (pLoad->m_SpanKey.spanIndex == ALL_SPANS ? nSpans-1 : startSpanIdx);
+         for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
          {
-            location = start_lgth + span_lgth * pLoad->m_Location;
+            if ( spanIdx < displayStartSpanIdx || displayEndSpanIdx < spanIdx )
+            {
+               // this span is not being displayed
+               continue;
+            }
+
+            CSpanKey spanKey(spanIdx,girderKey.girderIndex);
+            GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanIdx);
+
+            Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex,spanKey.girderIndex);
+
+            Float64 Xspan = pLoad->m_Location;
+            if (pLoad->m_Fractional)
+            {
+               Xspan *= span_length;
+            }
+
+            CComPtr<iDisplayObject> disp_obj;
+            factory->Create(CMomentLoadDrawStrategyImpl::ms_Format,NULL,&disp_obj);
+
+            CComQIPtr<iPointDisplayObject,&IID_iPointDisplayObject> point_disp(disp_obj);
+
+            CComPtr<iDrawPointStrategy> pStrategy;
+            point_disp->GetDrawingStrategy(&pStrategy);
+
+            CComQIPtr<iMomentLoadDrawStrategy,&IID_iMomentLoadDrawStrategy> pls(pStrategy);
+            pls->Init(point_disp, pBroker, *pLoad, loadIdx, span_length, max, color);
+
+            CSegmentKey segmentKey;
+            Float64 Xsp;
+            pPoi->ConvertSpanPointToSegmentPathCoordiante(spanKey,Xspan,&segmentKey,&Xsp);
+            Float64 x_position = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey,Xsp);
+
+            Float64 start_of_span_location = GetSpanStartLocation(spanKey);
+            x_position += start_of_span_location - span_offset;
+
+            CComPtr<IPoint2d> point;
+            point.CoCreateInstance(__uuidof(Point2d));
+            point->put_X(x_position);
+            point->put_Y(0.0);
+
+            point_disp->SetPosition(point, FALSE, FALSE);
+
+            // tool tip
+            CComPtr<IBroker> pBroker;
+            EAFGetBroker(&pBroker);
+            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+            CString strMagnitude = FormatDimension(pLoad->m_Magnitude,pDisplayUnits->GetMomentUnit(),true);
+            CString strLocation  = FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit(),true);
+
+            CString strTooltip;
+            strTooltip.Format(_T("Moment Load\r\nM = %s L = %s from left end of girder\r\n%s Load Case"),strMagnitude,strLocation,GetLoadGroupNameForUserLoad(pLoad->m_LoadCase));
+            if ( pLoad->m_Description != _T("") )
+            {
+               strTooltip += _T("\r\n") + CString(pLoad->m_Description.c_str());
+            }
+
+            point_disp->SetMaxTipWidth(TOOLTIP_WIDTH);
+            point_disp->SetTipDisplayTime(TOOLTIP_DURATION);
+            point_disp->SetToolTipText(strTooltip);
+            point_disp->SetID(loadIdx);
+
+            pDL->AddDisplayObject(disp_obj);
          }
-         else
-         {
-            location = start_lgth + pLoad->m_Location;
-         }
-
-         Float64 gdr_hgt = pGirder->GetHeight( pgsPointOfInterest(segmentKey,location) );
-
-         CComQIPtr<iMomentLoadDrawStrategy,&IID_iMomentLoadDrawStrategy> pls(pStrategy);
-         pls->Init(point_disp, pBroker, *pLoad, ild, gdr_hgt, span_lgth+start_lgth, max, color);
-
-         CComPtr<IPoint2d> point;
-         point.CoCreateInstance(__uuidof(Point2d));
-         point->put_X(location);
-         point->put_Y(0.0);
-
-         point_disp->SetPosition(point, FALSE, FALSE);
-
-         // tool tip
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-         CString strMagnitude = FormatDimension(pLoad->m_Magnitude,pDisplayUnits->GetMomentUnit(),true);
-         CString strLocation  = FormatDimension(location,pDisplayUnits->GetSpanLengthUnit(),true);
-
-         std::_tostringstream os;
-         os << _T("Moment Load\r\n");
-         os << _T("M = ") << strMagnitude;
-         os << _T("   ");
-         os << _T("L = ") << strLocation << _T(" from left end of girder");
-         os << _T("\r\n");
-         os << GetLoadGroupNameForUserLoad(pLoad->m_LoadCase) << _T(" Load Case");
-
-         if ( pLoad->m_Description != _T("") )
-         {
-            os << _T("\r\n");
-            os << pLoad->m_Description;
-         }
-
-         point_disp->SetMaxTipWidth(TOOLTIP_WIDTH);
-         point_disp->SetTipDisplayTime(TOOLTIP_DURATION);
-         point_disp->SetToolTipText(os.str().c_str());
-         point_disp->SetID(ild);
-
-         pDL->AddDisplayObject(disp_obj);
       }
    }
 }
@@ -2300,28 +2326,21 @@ void CGirderModelElevationView::BuildLegendDisplayObjects(CPGSDocBase* pDoc, IBr
    if (casesExist[UserLoads::DC] || casesExist[UserLoads::DW] || casesExist[UserLoads::LL_IM])
    {
       CollectionIndexType prevNumEntries(INVALID_INDEX);
-      if (!m_Legend)
-      {
-         m_Legend.CoCreateInstance(CLSID_LegendDisplayObject);
-         m_Legend->put_Title(CComBSTR(_T("Legend")));
-         m_Legend->put_DoDrawBorder(TRUE);
-         m_Legend->put_IsDraggable(TRUE);
+      m_Legend.Release();
+      m_Legend.CoCreateInstance(CLSID_LegendDisplayObject);
+      m_Legend->put_Title(CComBSTR(_T("Legend")));
+      m_Legend->put_DoDrawBorder(TRUE);
+      m_Legend->put_IsDraggable(TRUE);
 
-         // locate the legend at the top left corner the first time through only
-         this->ScaleToFit(false);
-         CComPtr<IRect2d> rect;
-         m_pDispMgr->GetBoundingBox(m_pCoordinateMap, false, &rect);
+      // locate the legend at the top left corner the first time through only
+      this->ScaleToFit(false);
+      CComPtr<IRect2d> rect;
+      m_pDispMgr->GetBoundingBox(m_pCoordinateMap, false, &rect);
 
-         CComPtr<IPoint2d> point;
-         rect->get_TopRight(&point);
+      CComPtr<IPoint2d> point;
+      rect->get_TopRight(&point);
 
-         m_Legend->put_Position(point,FALSE,FALSE);
-      }
-      else
-      {
-         m_Legend->get_NumEntries(&prevNumEntries);
-         m_Legend->ClearEntries();
-      }
+      m_Legend->put_Position(point,FALSE,FALSE);
 
       CollectionIndexType nEntries = 0;
       if (casesExist[UserLoads::DC])
@@ -3463,8 +3482,21 @@ Float64 CGirderModelElevationView::GetSpanStartLocation(const CSpanKey& spanKey)
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
       GirderIndexType nGirders = pGroup->GetGirderCount();
       GirderIndexType gdrIdx = Min(spanKey.girderIndex,nGirders-1);
-      Float64 span_length = pBridge->GetSpanLength(spanIdx,gdrIdx);
-      span_offset += span_length;
+
+      std::vector<std::pair<SegmentIndexType,Float64>> vSegments = pBridge->GetSegmentLengths(CSpanKey(spanIdx,gdrIdx));
+      std::vector<std::pair<SegmentIndexType,Float64>>::iterator iter(vSegments.begin());
+      std::vector<std::pair<SegmentIndexType,Float64>>::iterator end(vSegments.end());
+      for ( ; iter != end; iter++ )
+      {
+         span_offset += iter->second;
+      }
+
+      if ( pGroup->GetPier(pgsTypes::metStart)->GetSpan(pgsTypes::Ahead) == pSpan )
+      {
+         CSegmentKey segmentKey(pGroup->GetIndex(),gdrIdx,0);
+         Float64 brgOffset = pBridge->GetSegmentStartBearingOffset(segmentKey);
+         span_offset += brgOffset;
+      }
    }
 
    return span_offset;

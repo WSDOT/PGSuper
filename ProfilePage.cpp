@@ -82,6 +82,15 @@ void CProfilePage::DoDataExchange(CDataExchange* pDX)
          pDX->Fail();
       }
 
+      if ( 0 < m_ProfileData.VertCurves.size() )
+      {
+         if ( m_ProfileData.VertCurves.front().PVIStation < m_ProfileData.Station )
+         {
+            AfxMessageBox(_T("PVI Station of the first vertical curve cannot be before the Reference Point Station"));
+            pDX->Fail();
+         }
+      }
+
       int curveID = 1;
       std::vector<VertCurveData>::iterator iter;
       for ( iter = m_ProfileData.VertCurves.begin(); iter != m_ProfileData.VertCurves.end(); iter++, curveID++ )

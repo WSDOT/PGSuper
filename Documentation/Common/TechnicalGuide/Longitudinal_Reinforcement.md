@@ -9,7 +9,7 @@ Each of these conditions is described in more detail in the sections below.
 
 Ultimate Moment Capacity
 ------------------------
-@ref tg_moment_capacity is computing using a strain compatibility method. If longitudinal rebar exists in a section, and the option to use girder longitudinal rebar for moment capacity is enabled, this reinforcement will be utilized when computing the ultimate positive moment capacity only. The effectiveness of partially developed reinforcement will be reduced according to LRFD 5.11.2.1.
+@ref tg_moment_capacity is computing using the strain compatibility method. If longitudinal rebar exists in a section, and the option to use girder longitudinal rebar for moment capacity is enabled, this reinforcement will be utilized when computing the ultimate positive moment capacity only. The effectiveness of partially developed reinforcement will be reduced according to LRFD 5.11.2.1.
 
 > NOTE: The value of shear depth, d<sub>v</sub>, which is used extensively in shear capacity computations, is computed as part of the ultimate moment capacity analysis. Hence, shear capacity can be affected indirectly by the existence of longitudinal reinforcement. We have noted several cases where longitudinal steel reduces d<sub>v</sub>, which will result in a reduction of vertical shear capacity and may reduce longitudinal reinforcement for shear capacity. This behavior can be quite unexpected.
 

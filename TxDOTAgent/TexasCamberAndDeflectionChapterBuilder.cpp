@@ -417,7 +417,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       row++;
 
       if (bFirst)
-         (*pTable)(row,0) << _T("Deflection (Slab and Diaphragms)");
+         (*pTable)(row,0) << _T("Deflection (Deck and Diaphragms)");
 
       if (isSingleGirder)
          (*pTable)(row,1) << disp.SetValue( delta_dl );

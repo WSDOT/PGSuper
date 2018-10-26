@@ -523,6 +523,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
                               bool areAnyHarpedStrandsInTable, bool areAnyDebondingInTable)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
 
 #if defined _DEBUG
    GET_IFACE2(pBroker,IGirder,pGirder);
@@ -693,8 +694,14 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
          if (bFirst)
             (*p_table)(row,0) << _T("Y")<<Sub(_T("b"))<<_T(" of Topmost Depressed Strand(s) @ End");
 
+         Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, pois);
+
          Float64 TO;
          pStrandGeometry->GetHighestHarpedStrandLocationEnds(segmentKey,&TO);
+
+         // value is measured down from top of girder... we want it measured up from the bottom
+         TO += Hg;
+
          (*p_table)(row++,col) << ecc.SetValue(TO);
       }
 

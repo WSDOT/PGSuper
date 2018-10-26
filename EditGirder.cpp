@@ -44,6 +44,8 @@ txnEditGirderData::txnEditGirderData(const txnEditGirderData& rOther)
 
    m_Girder = rOther.m_Girder;
 
+   m_TimelineMgr = rOther.m_TimelineMgr;
+
    m_SlabOffsetType = rOther.m_SlabOffsetType;
    m_SlabOffset[pgsTypes::metStart] = rOther.m_SlabOffset[pgsTypes::metStart];
    m_SlabOffset[pgsTypes::metEnd] = rOther.m_SlabOffset[pgsTypes::metEnd];
@@ -167,7 +169,7 @@ bool txnEditGirder::IsRepeatable()
 
 void txnEditGirder::SetGirderData(const CGirderKey& girderKey,const txnEditGirderData& gdrData,bool bUndo)
 {
-   /// this is a precast girder bridge (PGSuepr) so there is only the one segment
+   /// this is a precast girder bridge (PGSuper) so there is only the one segment
    CSegmentKey segmentKey(girderKey.groupIndex,girderKey.girderIndex,0);
 
    CComPtr<IBroker> pBroker;

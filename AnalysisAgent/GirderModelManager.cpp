@@ -49,6 +49,8 @@
 
 #include <Math\MathUtils.h>
 
+#include "AnalysisResult.h"
+
 
 #if defined _DEBUG
 #define VERIFY_NOT_TIME_STEP_ANALYSIS VerifyAnalysisType()
@@ -508,15 +510,15 @@ Float64 CGirderModelManager::GetReaction(IntervalIndexType intervalIdx,pgsTypes:
 
    if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
    {
-      pModelData->pMinLoadGroupResponseEnvelope[fetFy][optMinimize]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
+      CAnalysisResult ar = pModelData->pMinLoadGroupResponseEnvelope[fetFy][optMinimize]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
    }
    else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
    {
-      pModelData->pMaxLoadGroupResponseEnvelope[fetFy][optMaximize]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
+      CAnalysisResult ar = pModelData->pMaxLoadGroupResponseEnvelope[fetFy][optMaximize]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
    }
    else
    {
-      pModelData->pLoadGroupResponse[bat]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
+      CAnalysisResult ar = pModelData->pLoadGroupResponse[bat]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
    }
 
 
@@ -767,9 +769,10 @@ void CGirderModelManager::GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsT
    CComPtr<ILiveLoadModelSectionResults> maxResults;
    CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
 
-   pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+   CAnalysisResult ar;
+   ar = pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
                        fetRz, optMaximize, vlcDefault, vbIncludeImpact, vbIncludeLLDF, VARIANT_TRUE,&maxResults);
-   pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+   ar = pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
                        fetRz, optMinimize, vlcDefault, vbIncludeImpact, vbIncludeLLDF, VARIANT_TRUE,&minResults);
 
 
@@ -1182,12 +1185,13 @@ void CGirderModelManager::GetDeflLiveLoadDeflection(IProductForces::DeflectionLi
    CComPtr<ILiveLoadModelSectionResults> minResults;
    CComPtr<ILiveLoadModelSectionResults> maxResults;
 
+   CAnalysisResult ar;
    if (type==IProductForces::DeflectionLiveLoadEnvelope)
    {
-      pModelData->pDeflLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStageName, lltDeflection, 
+      ar = pModelData->pDeflLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStageName, lltDeflection, 
              fetDy, optMaximize, vlcDefault, VARIANT_TRUE,VARIANT_TRUE, VARIANT_FALSE,&maxResults);
 
-      pModelData->pDeflLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStageName, lltDeflection, 
+      ar = pModelData->pDeflLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStageName, lltDeflection, 
              fetDy, optMinimize, vlcDefault, VARIANT_TRUE,VARIANT_TRUE, VARIANT_FALSE,&minResults);
    }
    else
@@ -1197,10 +1201,10 @@ void CGirderModelManager::GetDeflLiveLoadDeflection(IProductForces::DeflectionLi
       // Assumes VehicularLoads are put in in same order as enum;
       VehicleIndexType trk_idx = (VehicleIndexType)type;
 
-      pModelData->pDeflEnvelopedVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStageName, lltDeflection, trk_idx,
+      ar = pModelData->pDeflEnvelopedVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStageName, lltDeflection, trk_idx,
              fetDy, optMaximize, vlcDefault, VARIANT_TRUE,dftSingleLane, VARIANT_FALSE,&maxResults);
 
-      pModelData->pDeflEnvelopedVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStageName, lltDeflection, trk_idx,
+      ar = pModelData->pDeflEnvelopedVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStageName, lltDeflection, trk_idx,
              fetDy, optMinimize, vlcDefault, VARIANT_TRUE,dftSingleLane, VARIANT_FALSE,&minResults);
    }
 
@@ -1340,15 +1344,15 @@ std::vector<Float64> CGirderModelManager::GetAxial(IntervalIndexType intervalIdx
       CComPtr<ISectionResult3Ds> section_results;
       if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
       {
-         pModelData->pMinLoadGroupResponseEnvelope[fetFx][optMinimize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
+         CAnalysisResult ar = pModelData->pMinLoadGroupResponseEnvelope[fetFx][optMinimize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
       }
       else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
       {
-         pModelData->pMaxLoadGroupResponseEnvelope[fetFx][optMaximize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
+         CAnalysisResult ar = pModelData->pMaxLoadGroupResponseEnvelope[fetFx][optMaximize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
       }
       else
       {
-         pModelData->pLoadGroupResponse[bat]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
+         CAnalysisResult ar = pModelData->pLoadGroupResponse[bat]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
       }
 
 
@@ -1439,15 +1443,15 @@ std::vector<sysSectionValue> CGirderModelManager::GetShear(IntervalIndexType int
       CComPtr<ISectionResult3Ds> section_results;
       if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
       {
-         pModelData->pMinLoadGroupResponseEnvelope[fetFy][optMaximize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
+         CAnalysisResult ar = pModelData->pMinLoadGroupResponseEnvelope[fetFy][optMaximize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
       }
       else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
       {
-         pModelData->pMaxLoadGroupResponseEnvelope[fetFy][optMinimize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
+         CAnalysisResult ar = pModelData->pMaxLoadGroupResponseEnvelope[fetFy][optMinimize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
       }
       else
       {
-         pModelData->pLoadGroupResponse[bat]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
+         CAnalysisResult ar = pModelData->pLoadGroupResponse[bat]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
       }
 
       std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
@@ -1529,15 +1533,15 @@ std::vector<Float64> CGirderModelManager::GetMoment(IntervalIndexType intervalId
       CComPtr<ISectionResult3Ds> section_results;
       if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
       {
-         pModelData->pMinLoadGroupResponseEnvelope[fetMz][optMinimize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
+         CAnalysisResult ar = pModelData->pMinLoadGroupResponseEnvelope[fetMz][optMinimize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
       }
       else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
       {
-         pModelData->pMaxLoadGroupResponseEnvelope[fetMz][optMaximize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
+         CAnalysisResult ar = pModelData->pMaxLoadGroupResponseEnvelope[fetMz][optMaximize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
       }
       else
       {
-         pModelData->pLoadGroupResponse[bat]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
+         CAnalysisResult ar = pModelData->pLoadGroupResponse[bat]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
       }
 
 
@@ -1674,15 +1678,15 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
       CComPtr<ISectionResult3Ds> section_results;
       if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
       {
-         pModelData->pMinLoadGroupResponseEnvelope[fetDy][optMinimize]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
+         CAnalysisResult ar = pModelData->pMinLoadGroupResponseEnvelope[fetDy][optMinimize]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
       }
       else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
       {
-         pModelData->pMaxLoadGroupResponseEnvelope[fetDy][optMaximize]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
+         CAnalysisResult ar = pModelData->pMaxLoadGroupResponseEnvelope[fetDy][optMaximize]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
       }
       else
       {
-         pModelData->pLoadGroupResponse[bat]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
+         CAnalysisResult ar = pModelData->pLoadGroupResponse[bat]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
       }
 
       GET_IFACE_NOCHECK(IProductForces,pProductForces);
@@ -1791,15 +1795,15 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
       CComPtr<ISectionResult3Ds> section_results;
       if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
       {
-         pModelData->pMinLoadGroupResponseEnvelope[fetRz][optMinimize]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
+         CAnalysisResult ar = pModelData->pMinLoadGroupResponseEnvelope[fetRz][optMinimize]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
       }
       else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
       {
-         pModelData->pMaxLoadGroupResponseEnvelope[fetRz][optMaximize]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
+         CAnalysisResult ar = pModelData->pMaxLoadGroupResponseEnvelope[fetRz][optMaximize]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
       }
       else
       {
-         pModelData->pLoadGroupResponse[bat]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
+         CAnalysisResult ar = pModelData->pLoadGroupResponse[bat]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
       }
 
       std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
@@ -1878,20 +1882,21 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::Prod
 
    ResultsSummationType resultsSummation = (resultsType == rtIncremental ? rsIncremental : rsCumulative);
 
+   CAnalysisResult ar;
    CComPtr<ISectionStressResults> min_results, max_results, results;
    if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
    {
-      pModelData->pMinLoadGroupResponseEnvelope[fetMz][optMaximize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &max_results);
-      pModelData->pMinLoadGroupResponseEnvelope[fetMz][optMinimize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &min_results);
+      ar = pModelData->pMinLoadGroupResponseEnvelope[fetMz][optMaximize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &max_results);
+      ar = pModelData->pMinLoadGroupResponseEnvelope[fetMz][optMinimize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &min_results);
    }
    else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
    {
-      pModelData->pMaxLoadGroupResponseEnvelope[fetMz][optMaximize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &max_results);
-      pModelData->pMaxLoadGroupResponseEnvelope[fetMz][optMinimize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &min_results);
+      ar = pModelData->pMaxLoadGroupResponseEnvelope[fetMz][optMaximize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &max_results);
+      ar = pModelData->pMaxLoadGroupResponseEnvelope[fetMz][optMinimize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &min_results);
    }
    else
    {
-      pModelData->pLoadGroupResponse[bat]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &results);
+      ar = pModelData->pLoadGroupResponse[bat]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &results);
    }
 
    CollectionIndexType stress_point_index_top = GetStressPointIndex(topLocation);
@@ -2004,9 +2009,10 @@ void CGirderModelManager::GetLiveLoadAxial(IntervalIndexType intervalIdx,pgsType
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
    VARIANT_BOOL vbIncludeLLDF   = (bIncludeLLDF   ? VARIANT_TRUE : VARIANT_FALSE);
 
-   pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
+   CAnalysisResult ar;
+   ar = pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
           roMember, fetFx, optMaximize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&maxResults);
-   pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
+   ar = pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
           roMember, fetFx, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
 
 
@@ -2120,9 +2126,10 @@ void CGirderModelManager::GetLiveLoadShear(IntervalIndexType intervalIdx,pgsType
    CComPtr<ILiveLoadModelSectionResults> minResults;
    CComPtr<ILiveLoadModelSectionResults> maxResults;
    CComBSTR bstrStage(GetLBAMStageName(intervalIdx));
-   pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
+   CAnalysisResult ar;
+   ar = pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
           roMember, fetFy, optMaximize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&maxResults);
-   pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
+   ar = pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
           roMember, fetFy, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
 
    IndexType idx = 0;
@@ -2216,9 +2223,10 @@ void CGirderModelManager::GetLiveLoadMoment(IntervalIndexType intervalIdx,pgsTyp
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
    VARIANT_BOOL vbIncludeLLDF   = (bIncludeLLDF   ? VARIANT_TRUE : VARIANT_FALSE);
 
-   pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
+   CAnalysisResult ar;
+   ar = pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
           roMember, fetMz, optMaximize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&maxResults);
-   pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
+   ar = pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
           roMember, fetMz, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
 
 
@@ -2320,9 +2328,10 @@ void CGirderModelManager::GetLiveLoadDeflection(IntervalIndexType intervalIdx,pg
    CComPtr<ILiveLoadModelSectionResults> minResults;
    CComPtr<ILiveLoadModelSectionResults> maxResults;
    CComBSTR bstrStage(GetLBAMStageName(intervalIdx));
-   pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+   CAnalysisResult ar;
+   ar = pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
                        fetDy, optMaximize, vlcDefault, vbIncludeImpact, vbIncludeLLDF, VARIANT_TRUE,&maxResults);
-   pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+   ar = pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
                        fetDy, optMinimize, vlcDefault, vbIncludeImpact, vbIncludeLLDF, VARIANT_TRUE,&minResults);
 
    IndexType idx = 0;
@@ -2389,9 +2398,10 @@ void CGirderModelManager::GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsT
    CComPtr<ILiveLoadModelSectionResults> minResults;
    CComPtr<ILiveLoadModelSectionResults> maxResults;
    CComBSTR bstrStage(GetLBAMStageName(intervalIdx));
-   pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+   CAnalysisResult ar;
+   ar = pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
                        fetRz, optMaximize, vlcDefault, vbIncludeImpact, vbIncludeLLDF, VARIANT_TRUE,&maxResults);
-   pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+   ar = pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
                        fetRz, optMinimize, vlcDefault, vbIncludeImpact, vbIncludeLLDF, VARIANT_TRUE,&minResults);
 
    IndexType idx = 0;
@@ -2476,9 +2486,10 @@ void CGirderModelManager::GetLiveLoadStress(IntervalIndexType intervalIdx,pgsTyp
    CComPtr<ILiveLoadModelStressResults> minResults;
    CComPtr<ILiveLoadModelStressResults> maxResults;
    CComBSTR bstrStage(GetLBAMStageName(intervalIdx));
-   pModelData->pLiveLoadResponse[bat]->ComputeStresses( m_LBAMPoi, bstrStage, llmt, 
+   CAnalysisResult ar;
+   ar = pModelData->pLiveLoadResponse[bat]->ComputeStresses( m_LBAMPoi, bstrStage, llmt, 
           fetMz, optMaximize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&maxResults);
-   pModelData->pLiveLoadResponse[bat]->ComputeStresses( m_LBAMPoi, bstrStage, llmt, 
+   ar = pModelData->pLiveLoadResponse[bat]->ComputeStresses( m_LBAMPoi, bstrStage, llmt, 
           fetMz, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
 
    CollectionIndexType top_stress_point_index = GetStressPointIndex(topLocation);
@@ -2655,8 +2666,9 @@ void CGirderModelManager::GetVehicularLiveLoadAxial(IntervalIndexType intervalId
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
    DistributionFactorType dfType = (bIncludeLLDF   ? GetLiveLoadDistributionFactorType(llType) : dftNone);
 
-   pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIdx, roMember, fetFx, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
-   pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIdx, roMember, fetFx, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
+   CAnalysisResult ar;
+   ar = pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIdx, roMember, fetFx, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
+   ar = pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIdx, roMember, fetFx, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
 
    CComPtr<ILBAMModel> lbam_model;
    GetLBAM(pModelData,bat,&lbam_model);
@@ -2775,8 +2787,9 @@ void CGirderModelManager::GetVehicularLiveLoadShear(IntervalIndexType intervalId
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
    DistributionFactorType dfType = (bIncludeLLDF   ? GetLiveLoadDistributionFactorType(llType) : dftNone);
 
-   pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIdx, roMember, fetFy, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
-   pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIdx, roMember, fetFy, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
+   CAnalysisResult ar;
+   ar = pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIdx, roMember, fetFy, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
+   ar = pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIdx, roMember, fetFy, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
 
    CComPtr<ILBAMModel> lbam_model;
    GetLBAM(pModelData,bat,&lbam_model);
@@ -2865,8 +2878,9 @@ void CGirderModelManager::GetVehicularLiveLoadMoment(IntervalIndexType intervalI
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
    DistributionFactorType dfType = (bIncludeLLDF   ? GetLiveLoadDistributionFactorType(llType) : dftNone);
 
-   pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIdx, roMember, fetMz, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
-   pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIdx, roMember, fetMz, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
+   CAnalysisResult ar;
+   ar = pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIdx, roMember, fetMz, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
+   ar = pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIdx, roMember, fetMz, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
 
    CComPtr<ILBAMModel> lbam_model;
    GetLBAM(pModelData,bat,&lbam_model);
@@ -2969,8 +2983,9 @@ void CGirderModelManager::GetVehicularLiveLoadDeflection(IntervalIndexType inter
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
    DistributionFactorType dfType = (bIncludeLLDF   ? GetLiveLoadDistributionFactorType(llType) : dftNone);
 
-   pModelData->pVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetDy, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
-   pModelData->pVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetDy, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
+   CAnalysisResult ar;
+   ar = pModelData->pVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetDy, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
+   ar = pModelData->pVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetDy, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
    
    CComPtr<ILBAMModel> lbam_model;
    GetLBAM(pModelData,bat,&lbam_model);
@@ -3043,8 +3058,9 @@ void CGirderModelManager::GetVehicularLiveLoadRotation(IntervalIndexType interva
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
    DistributionFactorType dfType = (bIncludeLLDF   ? GetLiveLoadDistributionFactorType(llType) : dftNone);
 
-   pModelData->pVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetRz, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
-   pModelData->pVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetRz, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
+   CAnalysisResult ar;
+   ar = pModelData->pVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetRz, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
+   ar = pModelData->pVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetRz, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
 
    CComPtr<ILBAMModel> lbam_model;
    GetLBAM(pModelData,bat,&lbam_model);
@@ -3131,8 +3147,9 @@ void CGirderModelManager::GetVehicularLiveLoadStress(IntervalIndexType intervalI
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
    DistributionFactorType dfType = (bIncludeLLDF   ? GetLiveLoadDistributionFactorType(llType) : dftNone);
 
-   pModelData->pVehicularResponse[bat]->ComputeStresses(m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetMz, optMinimize, vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
-   pModelData->pVehicularResponse[bat]->ComputeStresses(m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetMz, optMaximize, vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
+   CAnalysisResult ar;
+   ar = pModelData->pVehicularResponse[bat]->ComputeStresses(m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetMz, optMinimize, vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
+   ar = pModelData->pVehicularResponse[bat]->ComputeStresses(m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetMz, optMaximize, vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
 
    CComPtr<ILBAMModel> lbam_model;
    GetLBAM(pModelData,bat,&lbam_model);
@@ -3257,15 +3274,15 @@ Float64 CGirderModelManager::GetReaction(IntervalIndexType intervalIdx,LoadingCo
    CComPtr<IResult3Ds> results;
    if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
    {
-      pModelData->pMinLoadCaseResponseEnvelope[fetFy][optMinimize]->ComputeReactions(bstrLoadCase,m_LBAMPoi,bstrStage,resultsSummation,&results);
+      CAnalysisResult ar = pModelData->pMinLoadCaseResponseEnvelope[fetFy][optMinimize]->ComputeReactions(bstrLoadCase,m_LBAMPoi,bstrStage,resultsSummation,&results);
    }
    else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
    {
-      pModelData->pMaxLoadCaseResponseEnvelope[fetFy][optMaximize]->ComputeReactions(bstrLoadCase,m_LBAMPoi,bstrStage,resultsSummation,&results);
+      CAnalysisResult ar = pModelData->pMaxLoadCaseResponseEnvelope[fetFy][optMaximize]->ComputeReactions(bstrLoadCase,m_LBAMPoi,bstrStage,resultsSummation,&results);
    }
    else
    {
-      pModelData->pLoadCaseResponse[bat]->ComputeReactions(bstrLoadCase,m_LBAMPoi,bstrStage,resultsSummation,&results);
+      CAnalysisResult ar = pModelData->pLoadCaseResponse[bat]->ComputeReactions(bstrLoadCase,m_LBAMPoi,bstrStage,resultsSummation,&results);
    }
 
    Float64 Fy = 0;
@@ -3386,15 +3403,15 @@ std::vector<Float64> CGirderModelManager::GetAxial(IntervalIndexType intervalIdx
    CComPtr<ISectionResult3Ds> sectionResults;
    if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
    {
-      pModelData->pMinLoadCaseResponseEnvelope[fetFx][optMinimize]->ComputeForces(bstrLoadCase,m_LBAMPoi,bstrStage,roMember,rsType,&sectionResults);
+      CAnalysisResult ar = pModelData->pMinLoadCaseResponseEnvelope[fetFx][optMinimize]->ComputeForces(bstrLoadCase,m_LBAMPoi,bstrStage,roMember,rsType,&sectionResults);
    }
    else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
    {
-      pModelData->pMaxLoadCaseResponseEnvelope[fetFx][optMaximize]->ComputeForces(bstrLoadCase,m_LBAMPoi,bstrStage,roMember,rsType,&sectionResults);
+      CAnalysisResult ar = pModelData->pMaxLoadCaseResponseEnvelope[fetFx][optMaximize]->ComputeForces(bstrLoadCase,m_LBAMPoi,bstrStage,roMember,rsType,&sectionResults);
    }
    else
    {
-      pModelData->pLoadCaseResponse[bat]->ComputeForces(bstrLoadCase,m_LBAMPoi,bstrStage,roMember,rsType,&sectionResults);
+      CAnalysisResult ar = pModelData->pLoadCaseResponse[bat]->ComputeForces(bstrLoadCase,m_LBAMPoi,bstrStage,roMember,rsType,&sectionResults);
    }
 
    IndexType idx = 0;
@@ -3434,15 +3451,15 @@ std::vector<sysSectionValue> CGirderModelManager::GetShear(IntervalIndexType int
    CComPtr<ISectionResult3Ds> sectionResults;
    if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
    {
-      pModelData->pMinLoadCaseResponseEnvelope[fetFy][optMaximize]->ComputeForces(bstrLoadCase,m_LBAMPoi,bstrStage,roMember,rsType,&sectionResults);
+      CAnalysisResult ar = pModelData->pMinLoadCaseResponseEnvelope[fetFy][optMaximize]->ComputeForces(bstrLoadCase,m_LBAMPoi,bstrStage,roMember,rsType,&sectionResults);
    }
    else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
    {
-      pModelData->pMaxLoadCaseResponseEnvelope[fetFy][optMinimize]->ComputeForces(bstrLoadCase,m_LBAMPoi,bstrStage,roMember,rsType,&sectionResults);
+      CAnalysisResult ar = pModelData->pMaxLoadCaseResponseEnvelope[fetFy][optMinimize]->ComputeForces(bstrLoadCase,m_LBAMPoi,bstrStage,roMember,rsType,&sectionResults);
    }
    else
    {
-      pModelData->pLoadCaseResponse[bat]->ComputeForces(bstrLoadCase,m_LBAMPoi,bstrStage,roMember,rsType,&sectionResults);
+      CAnalysisResult ar = pModelData->pLoadCaseResponse[bat]->ComputeForces(bstrLoadCase,m_LBAMPoi,bstrStage,roMember,rsType,&sectionResults);
    }
 
    IndexType idx = 0;
@@ -3481,15 +3498,15 @@ std::vector<Float64> CGirderModelManager::GetMoment(IntervalIndexType intervalId
    CComPtr<ISectionResult3Ds> sectionResults;
    if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
    {
-      pModelData->pMinLoadCaseResponseEnvelope[fetMz][optMinimize]->ComputeForces(bstrLoadCase,m_LBAMPoi,bstrStage,roMember,rsType,&sectionResults);
+      CAnalysisResult ar = pModelData->pMinLoadCaseResponseEnvelope[fetMz][optMinimize]->ComputeForces(bstrLoadCase,m_LBAMPoi,bstrStage,roMember,rsType,&sectionResults);
    }
    else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
    {
-      pModelData->pMaxLoadCaseResponseEnvelope[fetMz][optMaximize]->ComputeForces(bstrLoadCase,m_LBAMPoi,bstrStage,roMember,rsType,&sectionResults);
+      CAnalysisResult ar = pModelData->pMaxLoadCaseResponseEnvelope[fetMz][optMaximize]->ComputeForces(bstrLoadCase,m_LBAMPoi,bstrStage,roMember,rsType,&sectionResults);
    }
    else
    {
-      pModelData->pLoadCaseResponse[bat]->ComputeForces(bstrLoadCase,m_LBAMPoi,bstrStage,roMember,rsType,&sectionResults);
+      CAnalysisResult ar = pModelData->pLoadCaseResponse[bat]->ComputeForces(bstrLoadCase,m_LBAMPoi,bstrStage,roMember,rsType,&sectionResults);
    }
 
    IndexType idx = 0;
@@ -3531,15 +3548,15 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
    CComPtr<ISectionResult3Ds> results;
    if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
    {
-      pModelData->pMinLoadCaseResponseEnvelope[fetFy][optMinimize]->ComputeDeflections(bstrLoadCase,m_LBAMPoi,bstrStage,rsType,&results);
+      CAnalysisResult ar = pModelData->pMinLoadCaseResponseEnvelope[fetFy][optMinimize]->ComputeDeflections(bstrLoadCase,m_LBAMPoi,bstrStage,rsType,&results);
    }
    else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
    {
-      pModelData->pMaxLoadCaseResponseEnvelope[fetFy][optMaximize]->ComputeDeflections(bstrLoadCase,m_LBAMPoi,bstrStage,rsType,&results);
+      CAnalysisResult ar = pModelData->pMaxLoadCaseResponseEnvelope[fetFy][optMaximize]->ComputeDeflections(bstrLoadCase,m_LBAMPoi,bstrStage,rsType,&results);
    }
    else
    {
-      pModelData->pLoadCaseResponse[bat]->ComputeDeflections(bstrLoadCase,m_LBAMPoi,bstrStage,rsType,&results);
+      CAnalysisResult ar = pModelData->pLoadCaseResponse[bat]->ComputeDeflections(bstrLoadCase,m_LBAMPoi,bstrStage,rsType,&results);
    }
 
    std::vector<Float64> badGirderDeflection;
@@ -3616,15 +3633,15 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
    CComPtr<ISectionResult3Ds> results;
    if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
    {
-      pModelData->pMinLoadCaseResponseEnvelope[fetMz][optMinimize]->ComputeDeflections(bstrLoadCase,m_LBAMPoi,bstrStage,rsType,&results);
+      CAnalysisResult ar = pModelData->pMinLoadCaseResponseEnvelope[fetMz][optMinimize]->ComputeDeflections(bstrLoadCase,m_LBAMPoi,bstrStage,rsType,&results);
    }
    else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
    {
-      pModelData->pMaxLoadCaseResponseEnvelope[fetMz][optMaximize]->ComputeDeflections(bstrLoadCase,m_LBAMPoi,bstrStage,rsType,&results);
+      CAnalysisResult ar = pModelData->pMaxLoadCaseResponseEnvelope[fetMz][optMaximize]->ComputeDeflections(bstrLoadCase,m_LBAMPoi,bstrStage,rsType,&results);
    }
    else
    {
-      pModelData->pLoadCaseResponse[bat]->ComputeDeflections(bstrLoadCase,m_LBAMPoi,bstrStage,rsType,&results);
+      CAnalysisResult ar = pModelData->pLoadCaseResponse[bat]->ComputeDeflections(bstrLoadCase,m_LBAMPoi,bstrStage,rsType,&results);
    }
 
    std::vector<Float64> badGirderRotation;
@@ -3701,19 +3718,20 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,LoadingCombina
    ResultsSummationType rsType = (resultsType == rtIncremental ? rsIncremental : rsCumulative);
 
    CComPtr<ISectionStressResults> min_results, max_results, results;
+   CAnalysisResult ar;
    if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
    {
-      pModelData->pMinLoadCaseResponseEnvelope[fetMz][optMaximize]->ComputeStresses(bstrLoadCase, m_LBAMPoi, bstrStage, rsType, &max_results);
-      pModelData->pMinLoadCaseResponseEnvelope[fetMz][optMinimize]->ComputeStresses(bstrLoadCase, m_LBAMPoi, bstrStage, rsType, &min_results);
+      ar = pModelData->pMinLoadCaseResponseEnvelope[fetMz][optMaximize]->ComputeStresses(bstrLoadCase, m_LBAMPoi, bstrStage, rsType, &max_results);
+      ar = pModelData->pMinLoadCaseResponseEnvelope[fetMz][optMinimize]->ComputeStresses(bstrLoadCase, m_LBAMPoi, bstrStage, rsType, &min_results);
    }
    else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
    {
-      pModelData->pMaxLoadCaseResponseEnvelope[fetMz][optMaximize]->ComputeStresses(bstrLoadCase, m_LBAMPoi, bstrStage, rsType, &max_results);
-      pModelData->pMaxLoadCaseResponseEnvelope[fetMz][optMinimize]->ComputeStresses(bstrLoadCase, m_LBAMPoi, bstrStage, rsType, &min_results);
+      ar = pModelData->pMaxLoadCaseResponseEnvelope[fetMz][optMaximize]->ComputeStresses(bstrLoadCase, m_LBAMPoi, bstrStage, rsType, &max_results);
+      ar = pModelData->pMaxLoadCaseResponseEnvelope[fetMz][optMinimize]->ComputeStresses(bstrLoadCase, m_LBAMPoi, bstrStage, rsType, &min_results);
    }
    else
    {
-      pModelData->pLoadCaseResponse[bat]->ComputeStresses(bstrLoadCase, m_LBAMPoi, bstrStage, rsType, &results);
+      ar = pModelData->pLoadCaseResponse[bat]->ComputeStresses(bstrLoadCase, m_LBAMPoi, bstrStage, rsType, &results);
    }
 
    CollectionIndexType stress_point_index_top = GetStressPointIndex(topLocation);
@@ -3819,8 +3837,9 @@ void CGirderModelManager::GetCombinedLiveLoadAxial(IntervalIndexType intervalIdx
    CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
 
    CComPtr<ILoadCombinationSectionResults> maxResults, minResults;
-   pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetFx, optMaximize, VARIANT_TRUE, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
-   pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetFx, optMinimize, VARIANT_TRUE, VARIANT_TRUE, VARIANT_FALSE, &minResults);
+   CAnalysisResult ar;
+   ar = pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetFx, optMaximize, VARIANT_TRUE, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
+   ar = pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetFx, optMinimize, VARIANT_TRUE, VARIANT_TRUE, VARIANT_FALSE, &minResults);
 
    GET_IFACE(IPointOfInterest,pPoi);
    IndexType idx = 0;
@@ -3879,8 +3898,9 @@ void CGirderModelManager::GetCombinedLiveLoadShear(IntervalIndexType intervalIdx
    }
 
    CComPtr<ILoadCombinationSectionResults> maxResults, minResults;
-   pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetFy, optMaximize, VARIANT_TRUE, incImpact, VARIANT_FALSE, &maxResults);
-   pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetFy, optMinimize, VARIANT_TRUE, incImpact, VARIANT_FALSE, &minResults);
+   CAnalysisResult ar;
+   ar = pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetFy, optMaximize, VARIANT_TRUE, incImpact, VARIANT_FALSE, &maxResults);
+   ar = pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetFy, optMinimize, VARIANT_TRUE, incImpact, VARIANT_FALSE, &minResults);
 
    IndexType idx = 0;
    std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
@@ -3926,8 +3946,9 @@ void CGirderModelManager::GetCombinedLiveLoadMoment(IntervalIndexType intervalId
    CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
 
    CComPtr<ILoadCombinationSectionResults> maxResults, minResults;
-   pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetMz, optMaximize, VARIANT_TRUE, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
-   pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetMz, optMinimize, VARIANT_TRUE, VARIANT_TRUE, VARIANT_FALSE, &minResults);
+   CAnalysisResult ar;
+   ar = pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetMz, optMaximize, VARIANT_TRUE, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
+   ar = pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetMz, optMinimize, VARIANT_TRUE, VARIANT_TRUE, VARIANT_FALSE, &minResults);
 
    GET_IFACE(IPointOfInterest,pPoi);
    IndexType idx = 0;
@@ -3973,8 +3994,9 @@ void CGirderModelManager::GetCombinedLiveLoadDeflection(IntervalIndexType interv
    CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
 
    CComPtr<ILoadCombinationSectionResults> maxResults, minResults;
-   pModelData->pLoadComboResponse[bat]->ComputeDeflections(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetDy, optMaximize, VARIANT_TRUE, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
-   pModelData->pLoadComboResponse[bat]->ComputeDeflections(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetDy, optMinimize, VARIANT_TRUE, VARIANT_TRUE, VARIANT_FALSE, &minResults);
+   CAnalysisResult ar;
+   ar = pModelData->pLoadComboResponse[bat]->ComputeDeflections(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetDy, optMaximize, VARIANT_TRUE, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
+   ar = pModelData->pLoadComboResponse[bat]->ComputeDeflections(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetDy, optMinimize, VARIANT_TRUE, VARIANT_TRUE, VARIANT_FALSE, &minResults);
 
    IndexType idx = 0;
    std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
@@ -4006,8 +4028,9 @@ void CGirderModelManager::GetCombinedLiveLoadRotation(IntervalIndexType interval
    CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
 
    CComPtr<ILoadCombinationSectionResults> maxResults, minResults;
-   pModelData->pLoadComboResponse[bat]->ComputeDeflections(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetRz, optMaximize, VARIANT_TRUE, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
-   pModelData->pLoadComboResponse[bat]->ComputeDeflections(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetRz, optMinimize, VARIANT_TRUE, VARIANT_TRUE, VARIANT_FALSE, &minResults);
+   CAnalysisResult ar;
+   ar = pModelData->pLoadComboResponse[bat]->ComputeDeflections(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetRz, optMaximize, VARIANT_TRUE, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
+   ar = pModelData->pLoadComboResponse[bat]->ComputeDeflections(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetRz, optMinimize, VARIANT_TRUE, VARIANT_TRUE, VARIANT_FALSE, &minResults);
 
    IndexType idx = 0;
    std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
@@ -4043,8 +4066,9 @@ void CGirderModelManager::GetCombinedLiveLoadStress(IntervalIndexType intervalId
    CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
 
    CComPtr<ILoadCombinationStressResults> maxResults, minResults;
-   pModelData->pLoadComboResponse[bat]->ComputeStresses(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetMz, optMaximize, VARIANT_TRUE, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
-   pModelData->pLoadComboResponse[bat]->ComputeStresses(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetMz, optMinimize, VARIANT_TRUE, VARIANT_TRUE, VARIANT_FALSE, &minResults);
+   CAnalysisResult ar;
+   ar = pModelData->pLoadComboResponse[bat]->ComputeStresses(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetMz, optMaximize, VARIANT_TRUE, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
+   ar = pModelData->pLoadComboResponse[bat]->ComputeStresses(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetMz, optMinimize, VARIANT_TRUE, VARIANT_TRUE, VARIANT_FALSE, &minResults);
 
 
    CollectionIndexType top_stress_point_index = GetStressPointIndex(topLocation);
@@ -4171,8 +4195,9 @@ void CGirderModelManager::GetReaction(IntervalIndexType intervalIdx,pgsTypes::Li
    VARIANT_BOOL bIncludeLiveLoad = (liveLoadIntervalIdx <= intervalIdx ? VARIANT_TRUE : VARIANT_FALSE );
 
    CComPtr<ILoadCombinationResults> maxResults, minResults;
-   pModelData->pLoadComboResponse[bat]->ComputeReactions(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetFy, optMaximize, bIncludeLiveLoad, vbIncludeImpact, VARIANT_FALSE, &maxResults);
-   pModelData->pLoadComboResponse[bat]->ComputeReactions(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetFy, optMinimize, bIncludeLiveLoad, vbIncludeImpact, VARIANT_FALSE, &minResults);
+   CAnalysisResult ar;
+   ar = pModelData->pLoadComboResponse[bat]->ComputeReactions(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetFy, optMaximize, bIncludeLiveLoad, vbIncludeImpact, VARIANT_FALSE, &maxResults);
+   ar = pModelData->pLoadComboResponse[bat]->ComputeReactions(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetFy, optMinimize, bIncludeLiveLoad, vbIncludeImpact, VARIANT_FALSE, &minResults);
 
    Float64 FyMax = 0;
    Float64 FyMin = 0;
@@ -4260,8 +4285,9 @@ void CGirderModelManager::GetConcurrentShear(IntervalIndexType intervalIdx,pgsTy
    VARIANT_BOOL bIncludeLiveLoad = (liveLoadIntervalIdx <= intervalIdx ? VARIANT_TRUE : VARIANT_FALSE );
 
    CComPtr<ILoadCombinationSectionResults> maxResults, minResults;
-   pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetMz, optMaximize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_TRUE, &maxResults);
-   pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetMz, optMinimize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_TRUE, &minResults);
+   CAnalysisResult ar;
+   ar = pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetMz, optMaximize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_TRUE, &maxResults);
+   ar = pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetMz, optMinimize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_TRUE, &minResults);
 
    // Get the loading configuraitons that caused max/min moments
    CComPtr<ILoadCombinationResultConfiguration> maxResultConfigLeft, maxResultConfigRight;
@@ -4276,18 +4302,18 @@ void CGirderModelManager::GetConcurrentShear(IntervalIndexType intervalIdx,pgsTy
    CComPtr<ISectionResult3Ds> maxShearsLeft, maxShearsRight, minShearsLeft, minShearsRight;
    if ( bat == pgsTypes::SimpleSpan || bat == pgsTypes::ContinuousSpan )
    {
-      pModelData->pConcurrentComboResponse[bat]->ComputeForces(m_LBAMPoi, bstrStage, roMember, maxResultConfigLeft, &maxShearsLeft);
-      pModelData->pConcurrentComboResponse[bat]->ComputeForces(m_LBAMPoi, bstrStage, roMember, maxResultConfigRight,&maxShearsRight);
-      pModelData->pConcurrentComboResponse[bat]->ComputeForces(m_LBAMPoi, bstrStage, roMember, minResultConfigLeft, &minShearsLeft);
-      pModelData->pConcurrentComboResponse[bat]->ComputeForces(m_LBAMPoi, bstrStage, roMember, minResultConfigRight,&minShearsRight);
+      ar = pModelData->pConcurrentComboResponse[bat]->ComputeForces(m_LBAMPoi, bstrStage, roMember, maxResultConfigLeft, &maxShearsLeft);
+      ar = pModelData->pConcurrentComboResponse[bat]->ComputeForces(m_LBAMPoi, bstrStage, roMember, maxResultConfigRight,&maxShearsRight);
+      ar = pModelData->pConcurrentComboResponse[bat]->ComputeForces(m_LBAMPoi, bstrStage, roMember, minResultConfigLeft, &minShearsLeft);
+      ar = pModelData->pConcurrentComboResponse[bat]->ComputeForces(m_LBAMPoi, bstrStage, roMember, minResultConfigRight,&minShearsRight);
    }
    else
    {
       CComQIPtr<IConcurrentLoadCombinationResponse> concurrent_response(pModelData->pLoadComboResponse[bat]);
-      concurrent_response->ComputeForces(m_LBAMPoi, bstrStage, roMember, maxResultConfigLeft, &maxShearsLeft);
-      concurrent_response->ComputeForces(m_LBAMPoi, bstrStage, roMember, maxResultConfigRight,&maxShearsRight);
-      concurrent_response->ComputeForces(m_LBAMPoi, bstrStage, roMember, minResultConfigLeft, &minShearsLeft);
-      concurrent_response->ComputeForces(m_LBAMPoi, bstrStage, roMember, minResultConfigRight,&minShearsRight);
+      ar = concurrent_response->ComputeForces(m_LBAMPoi, bstrStage, roMember, maxResultConfigLeft, &maxShearsLeft);
+      ar = concurrent_response->ComputeForces(m_LBAMPoi, bstrStage, roMember, maxResultConfigRight,&maxShearsRight);
+      ar = concurrent_response->ComputeForces(m_LBAMPoi, bstrStage, roMember, minResultConfigLeft, &minShearsLeft);
+      ar = concurrent_response->ComputeForces(m_LBAMPoi, bstrStage, roMember, minResultConfigRight,&minShearsRight);
    }
 
    CComPtr<ISectionResult3D> result;
@@ -4394,8 +4420,9 @@ void CGirderModelManager::GetAxial(IntervalIndexType intervalIdx,pgsTypes::Limit
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    VARIANT_BOOL bIncludeLiveLoad = (liveLoadIntervalIdx <= intervalIdx ? VARIANT_TRUE : VARIANT_FALSE );
    CComPtr<ILoadCombinationSectionResults> maxResults, minResults;
-   pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetFx, optMaximize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
-   pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetFx, optMinimize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &minResults);
+   CAnalysisResult ar;
+   ar = pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetFx, optMaximize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
+   ar = pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetFx, optMinimize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &minResults);
 
    IndexType idx = 0;
    std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
@@ -4447,8 +4474,9 @@ void CGirderModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::Limit
    VARIANT_BOOL bIncludeLiveLoad = (liveLoadIntervalIdx <= intervalIdx ? VARIANT_TRUE : VARIANT_FALSE );
 
    CComPtr<ILoadCombinationSectionResults> maxResults, minResults;
-   pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetFy, optMaximize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
-   pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetFy, optMinimize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &minResults);
+   CAnalysisResult ar;
+   ar = pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetFy, optMaximize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
+   ar = pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetFy, optMinimize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &minResults);
 
    IndexType idx = 0;
    std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
@@ -4485,8 +4513,9 @@ void CGirderModelManager::GetMoment(IntervalIndexType intervalIdx,pgsTypes::Limi
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    VARIANT_BOOL bIncludeLiveLoad = (liveLoadIntervalIdx <= intervalIdx ? VARIANT_TRUE : VARIANT_FALSE );
    CComPtr<ILoadCombinationSectionResults> maxResults, minResults;
-   pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetMz, optMaximize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
-   pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetMz, optMinimize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &minResults);
+   CAnalysisResult ar;
+   ar = pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetMz, optMaximize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
+   ar = pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetMz, optMinimize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &minResults);
 
    IndexType idx = 0;
    std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
@@ -4526,8 +4555,9 @@ void CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::
    VARIANT_BOOL vbIncludeLiveLoad = (liveLoadIntervalIdx <= intervalIdx && bIncludeLiveLoad ? VARIANT_TRUE : VARIANT_FALSE );
 
    CComPtr<ILoadCombinationSectionResults> maxResults, minResults;
-   pModelData->pLoadComboResponse[bat]->ComputeDeflections(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetDy, optMaximize, vbIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
-   pModelData->pLoadComboResponse[bat]->ComputeDeflections(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetDy, optMinimize, vbIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &minResults);
+   CAnalysisResult ar;
+   ar = pModelData->pLoadComboResponse[bat]->ComputeDeflections(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetDy, optMaximize, vbIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
+   ar = pModelData->pLoadComboResponse[bat]->ComputeDeflections(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetDy, optMinimize, vbIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &minResults);
 
    // the limit state contains girder deflections based on the full weight of the girder being applied at erection.
    // (the limit state contains the load "Girder", not "Girder_Increment". We do this so the limit state definitions are consistent for all cases. The down side is that
@@ -4630,8 +4660,9 @@ void CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::Li
    VARIANT_BOOL vbIncludeLiveLoad = (liveLoadIntervalIdx <= intervalIdx && bIncludeLiveLoad ? VARIANT_TRUE : VARIANT_FALSE );
 
    CComPtr<ILoadCombinationSectionResults> maxResults, minResults;
-   pModelData->pLoadComboResponse[bat]->ComputeDeflections(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetRz, optMaximize, vbIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
-   pModelData->pLoadComboResponse[bat]->ComputeDeflections(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetRz, optMinimize, vbIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &minResults);
+   CAnalysisResult ar;
+   ar = pModelData->pLoadComboResponse[bat]->ComputeDeflections(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetRz, optMaximize, vbIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
+   ar = pModelData->pLoadComboResponse[bat]->ComputeDeflections(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetRz, optMinimize, vbIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &minResults);
 
    // the limit state contains girder rotations based on the full weight of the girder being applied at erection.
    // (the limit state contains the load "Girder", not "Girder_Increment". We do this so the limit state definitions are consistent for all cases. The down side is that
@@ -4738,8 +4769,9 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::Limi
 
    CComPtr<ILoadCombinationStressResults> maxResults, minResults;
 
-   pModelData->pLoadComboResponse[bat]->ComputeStresses(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetMz, optMaximize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
-   pModelData->pLoadComboResponse[bat]->ComputeStresses(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetMz, optMinimize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &minResults);
+   CAnalysisResult ar;
+   ar = pModelData->pLoadComboResponse[bat]->ComputeStresses(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetMz, optMaximize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
+   ar = pModelData->pLoadComboResponse[bat]->ComputeStresses(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetMz, optMinimize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &minResults);
 
 
    GET_IFACE(IPointOfInterest, pPoi);
@@ -4851,7 +4883,7 @@ std::vector<Float64> CGirderModelManager::GetSlabDesignMoment(pgsTypes::LimitSta
 
    VARIANT_BOOL bIncludeLiveLoad = VARIANT_TRUE;
    CComPtr<ILoadCombinationSectionResults> minResults;
-   pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetMz, optMinimize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_TRUE,  &minResults);
+   CAnalysisResult ar = pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetMz, optMinimize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_TRUE,  &minResults);
 
    IndexType idx = 0;
    std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
@@ -5225,15 +5257,15 @@ std::vector<Float64> CGirderModelManager::GetAxial(IntervalIndexType intervalIdx
    CComPtr<ISectionResult3Ds> section_results;
    if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
    {
-      pModelData->pMinLoadGroupResponseEnvelope[fetMz][optMinimize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
+      CAnalysisResult ar = pModelData->pMinLoadGroupResponseEnvelope[fetMz][optMinimize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
    }
    else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
    {
-      pModelData->pMaxLoadGroupResponseEnvelope[fetMz][optMaximize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
+      CAnalysisResult ar = pModelData->pMaxLoadGroupResponseEnvelope[fetMz][optMaximize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
    }
    else
    {
-      pModelData->pLoadGroupResponse[bat]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
+      CAnalysisResult ar = pModelData->pLoadGroupResponse[bat]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
    }
 
    IndexType idx = 0;
@@ -5282,15 +5314,15 @@ std::vector<sysSectionValue> CGirderModelManager::GetShear(IntervalIndexType int
    CComPtr<ISectionResult3Ds> section_results;
    if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
    {
-      pModelData->pMinLoadGroupResponseEnvelope[fetFy][optMinimize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
+      CAnalysisResult ar = pModelData->pMinLoadGroupResponseEnvelope[fetFy][optMinimize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
    }
    else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
    {
-      pModelData->pMaxLoadGroupResponseEnvelope[fetFy][optMaximize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
+      CAnalysisResult ar = pModelData->pMaxLoadGroupResponseEnvelope[fetFy][optMaximize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
    }
    else
    {
-      pModelData->pLoadGroupResponse[bat]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
+      CAnalysisResult ar = pModelData->pLoadGroupResponse[bat]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
    }
 
    IndexType idx = 0;
@@ -5331,15 +5363,15 @@ std::vector<Float64> CGirderModelManager::GetMoment(IntervalIndexType intervalId
    CComPtr<ISectionResult3Ds> section_results;
    if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
    {
-      pModelData->pMinLoadGroupResponseEnvelope[fetMz][optMinimize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
+      CAnalysisResult ar = pModelData->pMinLoadGroupResponseEnvelope[fetMz][optMinimize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
    }
    else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
    {
-      pModelData->pMaxLoadGroupResponseEnvelope[fetMz][optMaximize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
+      CAnalysisResult ar = pModelData->pMaxLoadGroupResponseEnvelope[fetMz][optMaximize]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
    }
    else
    {
-      pModelData->pLoadGroupResponse[bat]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
+      CAnalysisResult ar = pModelData->pLoadGroupResponse[bat]->ComputeForces(bstrLoadGroup,m_LBAMPoi,bstrStage,roMember,resultsSummation,&section_results);
    }
 
    IndexType idx = 0;
@@ -5388,15 +5420,15 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
    CComPtr<ISectionResult3Ds> section_results;
    if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
    {
-      pModelData->pMinLoadGroupResponseEnvelope[fetDy][optMinimize]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
+      CAnalysisResult ar = pModelData->pMinLoadGroupResponseEnvelope[fetDy][optMinimize]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
    }
    else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
    {
-      pModelData->pMaxLoadGroupResponseEnvelope[fetDy][optMaximize]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
+      CAnalysisResult ar = pModelData->pMaxLoadGroupResponseEnvelope[fetDy][optMaximize]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
    }
    else
    {
-      pModelData->pLoadGroupResponse[bat]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
+      CAnalysisResult ar = pModelData->pLoadGroupResponse[bat]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
    }
 
    std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
@@ -5433,15 +5465,15 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
    CComPtr<ISectionResult3Ds> section_results;
    if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
    {
-      pModelData->pMinLoadGroupResponseEnvelope[fetRz][optMinimize]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
+      CAnalysisResult ar = pModelData->pMinLoadGroupResponseEnvelope[fetRz][optMinimize]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
    }
    else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
    {
-      pModelData->pMaxLoadGroupResponseEnvelope[fetRz][optMaximize]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
+      CAnalysisResult ar = pModelData->pMaxLoadGroupResponseEnvelope[fetRz][optMaximize]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
    }
    else
    {
-      pModelData->pLoadGroupResponse[bat]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
+      CAnalysisResult ar = pModelData->pLoadGroupResponse[bat]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
    }
 
    std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
@@ -5480,19 +5512,20 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,LPCTSTR strLoa
    ResultsSummationType resultsSummation = (resultsType == rtIncremental ? rsIncremental : rsCumulative);
 
    CComPtr<ISectionStressResults> min_results, max_results, results;
+   CAnalysisResult ar;
    if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
    {
-      pModelData->pMinLoadGroupResponseEnvelope[fetMz][optMaximize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &max_results);
-      pModelData->pMinLoadGroupResponseEnvelope[fetMz][optMinimize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &min_results);
+      ar = pModelData->pMinLoadGroupResponseEnvelope[fetMz][optMaximize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &max_results);
+      ar = pModelData->pMinLoadGroupResponseEnvelope[fetMz][optMinimize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &min_results);
    }
    else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
    {
-      pModelData->pMaxLoadGroupResponseEnvelope[fetMz][optMaximize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &max_results);
-      pModelData->pMaxLoadGroupResponseEnvelope[fetMz][optMinimize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &min_results);
+      ar = pModelData->pMaxLoadGroupResponseEnvelope[fetMz][optMaximize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &max_results);
+      ar = pModelData->pMaxLoadGroupResponseEnvelope[fetMz][optMinimize]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &min_results);
    }
    else
    {
-      pModelData->pLoadGroupResponse[bat]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &results);
+      ar = pModelData->pLoadGroupResponse[bat]->ComputeStresses(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &results);
    }
 
    CollectionIndexType stress_point_index_top = GetStressPointIndex(topLocation);
@@ -5605,15 +5638,15 @@ std::vector<Float64> CGirderModelManager::GetReaction(const CGirderKey& girderKe
 
       if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
       {
-         pModelData->pMinLoadGroupResponseEnvelope[fetFy][optMinimize]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
+         CAnalysisResult ar = pModelData->pMinLoadGroupResponseEnvelope[fetFy][optMinimize]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
       }
       else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
       {
-         pModelData->pMaxLoadGroupResponseEnvelope[fetFy][optMaximize]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
+         CAnalysisResult ar = pModelData->pMaxLoadGroupResponseEnvelope[fetFy][optMaximize]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
       }
       else
       {
-         pModelData->pLoadGroupResponse[bat]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
+         CAnalysisResult ar = pModelData->pLoadGroupResponse[bat]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
       }
 
       Float64 Fy = 0;
@@ -5687,15 +5720,15 @@ std::vector<Float64> CGirderModelManager::GetReaction(const CGirderKey& girderKe
       {
          if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
          {
-            pModelData->pMinLoadGroupResponseEnvelope[fetFy][optMinimize]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
+            CAnalysisResult ar = pModelData->pMinLoadGroupResponseEnvelope[fetFy][optMinimize]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
          }
          else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
          {
-            pModelData->pMaxLoadGroupResponseEnvelope[fetFy][optMaximize]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
+            CAnalysisResult ar = pModelData->pMaxLoadGroupResponseEnvelope[fetFy][optMaximize]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
          }
          else
          {
-            pModelData->pLoadGroupResponse[bat]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
+            CAnalysisResult ar = pModelData->pLoadGroupResponse[bat]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
          }
 
          Fy = 0;
@@ -5769,15 +5802,15 @@ std::vector<Float64> CGirderModelManager::GetReaction(const CGirderKey& girderKe
       {
          if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
          {
-            pModelData->pMinLoadCaseResponseEnvelope[fetFy][optMinimize]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
+            CAnalysisResult ar = pModelData->pMinLoadCaseResponseEnvelope[fetFy][optMinimize]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
          }
          else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
          {
-            pModelData->pMaxLoadCaseResponseEnvelope[fetFy][optMaximize]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
+            CAnalysisResult ar = pModelData->pMaxLoadCaseResponseEnvelope[fetFy][optMaximize]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
          }
          else
          {
-            pModelData->pLoadCaseResponse[bat]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
+            CAnalysisResult ar = pModelData->pLoadCaseResponse[bat]->ComputeReactions(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&results);
          }
 
          CollectionIndexType nResults;
@@ -5842,8 +5875,9 @@ void CGirderModelManager::GetReaction(const CGirderKey& girderKey,const std::vec
       else
       {
          CComPtr<ILoadCombinationResults> maxResults, minResults;
-         pModelData->pLoadComboResponse[bat]->ComputeReactions(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetFy, optMaximize, bIncludeLiveLoad, vbIncludeImpact, VARIANT_FALSE, &maxResults);
-         pModelData->pLoadComboResponse[bat]->ComputeReactions(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetFy, optMinimize, bIncludeLiveLoad, vbIncludeImpact, VARIANT_FALSE, &minResults);
+         CAnalysisResult ar;
+         ar = pModelData->pLoadComboResponse[bat]->ComputeReactions(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetFy, optMaximize, bIncludeLiveLoad, vbIncludeImpact, VARIANT_FALSE, &maxResults);
+         ar = pModelData->pLoadComboResponse[bat]->ComputeReactions(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetFy, optMinimize, bIncludeLiveLoad, vbIncludeImpact, VARIANT_FALSE, &minResults);
 
          CollectionIndexType nResults;
          maxResults->get_Count(&nResults);
@@ -5899,8 +5933,9 @@ void CGirderModelManager::GetVehicularLiveLoadReaction(IntervalIndexType interva
       CComPtr<ILiveLoadModelResults> minResults;
       CComPtr<ILiveLoadModelResults> maxResults;
       CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
-      pModelData->pVehicularResponse[bat]->ComputeReactions( m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetFy, optMinimize, vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
-      pModelData->pVehicularResponse[bat]->ComputeReactions( m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetFy, optMaximize, vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
+      CAnalysisResult ar;
+      ar = pModelData->pVehicularResponse[bat]->ComputeReactions( m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetFy, optMinimize, vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
+      ar = pModelData->pVehicularResponse[bat]->ComputeReactions( m_LBAMPoi, bstrStage, llmt, vehicleIdx, fetFy, optMaximize, vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
 
       CComPtr<ILiveLoadConfiguration> RzMaxConfig;
       CComPtr<ILiveLoadConfiguration> RzMinConfig;
@@ -6058,9 +6093,10 @@ void CGirderModelManager::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsT
    CComPtr<ILiveLoadModelResults> maxResults;
    CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
 
-   pModelData->pLiveLoadResponse[bat]->ComputeReactions( m_LBAMPoi, bstrStage, llmt, 
+   CAnalysisResult ar;
+   ar = pModelData->pLiveLoadResponse[bat]->ComputeReactions( m_LBAMPoi, bstrStage, llmt, 
           fetFy, optMaximize, vlcDefault, vbIncludeImpact, vbIncludeLLDF, VARIANT_TRUE,&maxResults);
-   pModelData->pLiveLoadResponse[bat]->ComputeReactions( m_LBAMPoi, bstrStage, llmt, 
+   ar = pModelData->pLiveLoadResponse[bat]->ComputeReactions( m_LBAMPoi, bstrStage, llmt, 
           fetFy, optMinimize, vlcDefault, vbIncludeImpact, vbIncludeLLDF, VARIANT_TRUE,&minResults);
 
    CComPtr<ILiveLoadConfiguration> MinConfig;
@@ -6230,8 +6266,9 @@ void CGirderModelManager::GetCombinedLiveLoadReaction(IntervalIndexType interval
    CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
 
    CComPtr<ILoadCombinationResults> maxResults, minResults;
-   pModelData->pLoadComboResponse[bat]->ComputeReactions(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetFy, optMaximize, VARIANT_TRUE, vbIncludeImpact, VARIANT_FALSE, &maxResults);
-   pModelData->pLoadComboResponse[bat]->ComputeReactions(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetFy, optMinimize, VARIANT_TRUE, vbIncludeImpact, VARIANT_FALSE, &minResults);
+   CAnalysisResult ar;
+   ar = pModelData->pLoadComboResponse[bat]->ComputeReactions(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetFy, optMaximize, VARIANT_TRUE, vbIncludeImpact, VARIANT_FALSE, &maxResults);
+   ar = pModelData->pLoadComboResponse[bat]->ComputeReactions(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetFy, optMinimize, VARIANT_TRUE, vbIncludeImpact, VARIANT_FALSE, &minResults);
 
    CollectionIndexType nResults;
    maxResults->get_Count(&nResults);
@@ -6442,9 +6479,10 @@ void CGirderModelManager::GetBearingLiveLoadRotation(IntervalIndexType intervalI
          CComPtr<ILiveLoadModelSectionResults> maxResults;
 
          // may need to swap bat type for envelope mode... see product reactions
-         pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+         CAnalysisResult ar;
+         ar = pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
                 fetRz, optMaximize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&maxResults);
-         pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+         ar = pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
                 fetRz, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
 
          // Extract rotations and corresponding reactions
@@ -6533,9 +6571,10 @@ void CGirderModelManager::GetBearingLiveLoadRotation(IntervalIndexType intervalI
          }
 
          // may need to swap bat type for envelope mode... see product reactions
-         pModelData->pLiveLoadResponse[tmpbat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+         CAnalysisResult ar;
+         ar = pModelData->pLiveLoadResponse[tmpbat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
                 fetRz, optMaximize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&maxResults);
-         pModelData->pLiveLoadResponse[tmpbat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+         ar = pModelData->pLiveLoadResponse[tmpbat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
                 fetRz, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
 
 
@@ -14387,7 +14426,6 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    GET_IFACE(IPointOfInterest,pPoi);
    GET_IFACE(ISectionProperties,pSectProp);
    GET_IFACE(ISpecification, pSpec );
-   GET_IFACE(IGirderHaunch, pHaunch );
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
@@ -14434,6 +14472,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       std::vector<pgsPointOfInterest> vSupPoi( pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_0L | POI_5L | POI_10L) );
       ATLASSERT(vSupPoi.size()==3); // this haunch shape only for pgsuper-type models
       const pgsPointOfInterest& poi_left(vSupPoi.front());
+      const pgsPointOfInterest& poi_mid(vSupPoi[1]);
       const pgsPointOfInterest& poi_right(vSupPoi.back());
 
       Float64 fillet;
@@ -14451,26 +14490,29 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       }
       else
       {
-         Float64 top_girder_to_top_slab = pSectProp->GetDistTopSlabToTopGirder(poi_left);
-         Float64 cast_depth             = pBridge->GetCastSlabDepth(poi_left);
-         Float64 Hlft  = top_girder_to_top_slab - cast_depth;
-
-         top_girder_to_top_slab = pSectProp->GetDistTopSlabToTopGirder(poi_right);
-         cast_depth             = pBridge->GetCastSlabDepth(poi_right);
-         Float64 Hrgt = top_girder_to_top_slab - cast_depth;
-
          // Get fillet at mid-span. Big time assumption of PGSuper-type bridge here
-         const pgsPointOfInterest& poi_mid(vSupPoi[1]);
          CSpanKey spanKey;
          Float64 Xspan;
          pPoi->ConvertPoiToSpanPoint(poi_mid,&spanKey,&Xspan);
-
          fillet = pBridge->GetFillet(spanKey.spanIndex, segmentKey.girderIndex);
+
+         Float64 cast_depth             = pBridge->GetCastSlabDepth(poi_left);
+         Float64 top_girder_to_top_slab = pSectProp->GetDistTopSlabToTopGirder(poi_left);
+         Float64 Hlft  = top_girder_to_top_slab - cast_depth;
+
+         cast_depth             = pBridge->GetCastSlabDepth(poi_right);
+         top_girder_to_top_slab = pSectProp->GetDistTopSlabToTopGirder(poi_right);
+         Float64 Hrgt = top_girder_to_top_slab - cast_depth;
 
          Havg = (Hlft + Hrgt)/2.0;
       }
 
-      Float64 assummed_excess_camber = Havg - fillet;
+      // For this case, the depth of the load is measured at girder CL, while the fillet is at the flange tips.
+      // We must add in the girder_orientation_effect to bring the load depth to the girder CL
+      GET_IFACE(IGirderHaunch, pHaunch );
+      Float64 girder_orientation_effect = pHaunch->GetSectionGirderOrientationEffect(poi_mid);
+
+      Float64 assummed_excess_camber = Havg + girder_orientation_effect - fillet;
 
       // Create function with parabolic shape
       camberShape = std::auto_ptr<mathFunction2d>( new mathPolynomial2d (GenerateParabola(poi_left.GetDistFromStart(),poi_right.GetDistFromStart(),assummed_excess_camber)));
@@ -14496,12 +14538,10 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
 
       Float64 top_girder_to_top_slab;
       Float64 slab_offset;
-      Float64 fillet;
       if (useDesignValues)
       {
          top_girder_to_top_slab = pSectProp->GetDistTopSlabToTopGirder(poi,dsnAstart,dsnAend);
          slab_offset            = pBridge->GetSlabOffset(poi,dsnAstart,dsnAend);
-         fillet = dsnFillet;
       }
       else
       {
@@ -14511,7 +14551,6 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
          CSpanKey spanKey;
          Float64 Xspan;
          pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
-         fillet = pBridge->GetFillet(spanKey.spanIndex, segmentKey.girderIndex);
       }
 
       Float64 cast_depth             = pBridge->GetCastSlabDepth(poi);
@@ -14642,11 +14681,8 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       // Excess camber of girder
       Float64 camber = camberShape->Evaluate(poi.GetDistFromStart());
 
-      // Add girder orientiation effect since fillet is measured at min haunch depth
-      Float64 girder_orientation_effect = pHaunch->GetSectionGirderOrientationEffect(poi);
-
-      // slab pad load
-      Float64 real_pad_hgt = top_girder_to_top_slab - cast_depth + girder_orientation_effect - camber;
+      // height of pad for slab pad load
+      Float64 real_pad_hgt = top_girder_to_top_slab - cast_depth - camber;
 
       // Don't use negative haunch depth for loading
       Float64 pad_hgt = real_pad_hgt > 0.0 ? real_pad_hgt : 0.0;

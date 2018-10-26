@@ -35,7 +35,7 @@ public:
 
    BEGIN_INTERFACE_PART(Strategy,iMomentLoadDrawStrategy)
       STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker, CMomentLoadData load, CollectionIndexType loadIndex, 
-                            Float64 girderDepth, Float64 spanLength, Float64 maxMagnitude, COLORREF color);
+                            Float64 spanLength, Float64 maxMagnitude, COLORREF color);
    END_INTERFACE_PART(Strategy)
 
 
@@ -85,7 +85,6 @@ private:
    IBroker*       m_pBroker;
    COLORREF m_Color;
    Float64  m_MaxMagnitude;
-   Float64  m_GirderDepth;
    Float64  m_SpanLength;
 
    CComPtr<IPoint2d> m_CachePoint;

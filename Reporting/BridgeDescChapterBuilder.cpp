@@ -907,7 +907,7 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
       Float64 Ec = pMaterials->GetDeckEc(intervalIdx);
       Float64 lambda = pMaterials->GetDeckLambda();
 
-      (*pTable)(row,0) << _T("Slab");
+      (*pTable)(row,0) << _T("Deck");
       write_lrfd_concrete_row(pDisplayUnits,pTable,-1.0,fc,-1.0,Ec,lambda,pDeck->Concrete,row);
    }
 }
@@ -1105,7 +1105,7 @@ void write_aci209_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
       Float64 fc28 = pMaterials->GetDeckFc28();
       Float64 Ec28 = pMaterials->GetDeckEc28();
 
-      (*pTable)(row,0) << _T("Slab");
+      (*pTable)(row,0) << _T("Deck");
       write_aci209_concrete_row(pDisplayUnits,pTable,fc28,Ec28,pDeck->Concrete,row,bAASHTOParameters);
       row++;
    }
@@ -1259,7 +1259,7 @@ void write_cebfip_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
       Float64 fc28 = pMaterials->GetDeckFc28();
       Float64 Ec28 = pMaterials->GetDeckEc28();
 
-      (*pTable)(row,0) << _T("Slab");
+      (*pTable)(row,0) << _T("Deck");
       write_cebfip_concrete_row(pDisplayUnits,pTable,fc28,Ec28,pDeck->Concrete,row);
       row++;
    }

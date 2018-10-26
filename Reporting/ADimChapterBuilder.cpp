@@ -53,7 +53,7 @@ CPGSuperChapterBuilder(bSelect)
 //======================== OPERATIONS =======================================
 LPCTSTR CADimChapterBuilder::GetName() const
 {
-   return TEXT("Slab Haunch Details");
+   return TEXT("Deck Haunch Details");
 }
 
 rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
@@ -231,14 +231,14 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
 
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
       *pChapter << pPara;
-      *pPara << Super(_T("*")) << _T(" required slab offset from top of girder to top of slab at centerline bearing for geometric effects at this point. (Slab Thickness + Fillet + Camber Effect + Profile Effect + Girder Orientation Effect)") << rptNewLine;
+      *pPara << Super(_T("*")) << _T(" required slab offset from top of girder to top of deck at centerline bearing for geometric effects at this point. (Slab Thickness + Fillet + Camber Effect + Profile Effect + Girder Orientation Effect)") << rptNewLine;
 
       if ( slabOffsetType == pgsTypes::sotBridge )
       {
          // one _T("A") dimension for whole bridge
          Float64 A = pBridgeDesc->GetSlabOffset();
          *pPara << Super(_T("**")) << _T(" includes the effects of camber and based on Slab Offset of ") << comp.SetValue(A) << _T(".") << rptNewLine;
-         *pPara << Super(_T("***")) << _T(" top of girder to top of slab based on Slab Offset of ") << comp.SetValue(A) << _T(". (Profile Grade Elevation - Top Girder Elevation)") << rptNewLine;
+         *pPara << Super(_T("***")) << _T(" top of girder to top of deck based on Slab Offset of ") << comp.SetValue(A) << _T(". (Profile Grade Elevation - Top Girder Elevation)") << rptNewLine;
       }
       else
       {
@@ -249,7 +249,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
          *pPara << Super(_T("**")) << _T(" includes the effects of camber and based on Slab Offset at the start of the girder of ") << comp.SetValue(Astart);
          *pPara << _T(" and a Slab Offset at the end of the girder of ") << comp.SetValue(Aend) << _T(".") << rptNewLine;
 
-         *pPara << Super(_T("***")) << _T(" actual depth from top C.L. of girder to top of slab based on Slab Offset at the start of the girder of ") << comp.SetValue(Astart);
+         *pPara << Super(_T("***")) << _T(" actual depth from top C.L. of girder to top of deck based on Slab Offset at the start of the girder of ") << comp.SetValue(Astart);
          *pPara << _T(" and a Slab Offset at the end of the girder of ") << comp.SetValue(Aend) << _T(". (Profile Grade Elevation - Top Girder Elevation)") << rptNewLine;
       }
 
@@ -257,7 +257,6 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       *pPara << Super(_T("&&")) << _T(" Edge Haunch Depth = Haunch Depth at Edge of Top Flange = CL Haunch Depth - Girder Orientation Effect")  << rptNewLine;
 
       comp.ShowUnitTag(true);
-      *pPara << Super(_T("&&")) << _T(" Minimum haunch depth = Haunch Depth CL - Girder Orientation Effect , (aka, Computed Fillet)")  << rptNewLine;
       *pPara << _T("Required Slab Offset at intersection of centerline bearing and centerline girder (\"A\" Dimension): ") << comp.SetValue(haunch_details.RequiredSlabOffset) << rptNewLine;
       *pPara << _T("Maximum Change in Haunch Depth between Bearings: ") << comp.SetValue(haunch_details.HaunchDiff) << rptNewLine;
    }

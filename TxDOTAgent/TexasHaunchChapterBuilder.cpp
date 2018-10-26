@@ -378,13 +378,13 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
 
       // slab deflections
       if (bFirst)
-         (*pTable)(row,0) << _T("DL Defl Slab @ Pt A {1/4 pt} (") << dispft.GetUnitTag() << _T(") ");
+         (*pTable)(row,0) << _T("DL Defl Deck @ Pt A {1/4 pt} (") << dispft.GetUnitTag() << _T(") ");
 
       (*pTable)(row,col) << dispft.SetValue( (delta_slab2+delta_slab3)/2.0 );
       row++;
 
       if (bFirst)
-         (*pTable)(row,0) << _T("DL Defl Slab @ Pt B {1/2 pt} (") << dispft.GetUnitTag() << _T(") ");
+         (*pTable)(row,0) << _T("DL Defl Deck @ Pt B {1/2 pt} (") << dispft.GetUnitTag() << _T(") ");
 
       (*pTable)(row,col) << dispft.SetValue( delta_slab5 );
       row++;
@@ -392,7 +392,7 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
       if (!areDeflsSymm)
       {
          if (bFirst)
-            (*pTable)(row,0) << _T("DL Defl Slab @ Pt A2 {3/4 pt} (") << dispft.GetUnitTag() << _T(") ");
+            (*pTable)(row,0) << _T("DL Defl Deck @ Pt A2 {3/4 pt} (") << dispft.GetUnitTag() << _T(") ");
 
          (*pTable)(row,col) << dispft.SetValue( (delta_slab7+delta_slab8)/2.0 );
          row++;

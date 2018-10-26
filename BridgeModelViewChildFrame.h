@@ -38,12 +38,6 @@ class CBridgeSectionView;
 class CAlignmentPlanView;
 class CAlignmentProfileView;
 
-#if defined _EAF_USING_MFC_FEATURE_PACK
-#include <EAF\EAFPaneDialog.h>
-#else
-#define CEAFPaneDialog CDialogBar
-#endif
-
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeModelViewChildFrame frame
 
@@ -145,7 +139,7 @@ protected:
    Float64 m_CurrentCutLocation;
    void UpdateCutLocation(Float64 cut);
 
-   CEAFPaneDialog m_SettingsBar;
+   CDialogBar m_SettingsBar;
 public:
    afx_msg void OnStartSpanChanged(NMHDR *pNMHDR, LRESULT *pResult);
    afx_msg void OnEndSpanChanged(NMHDR *pNMHDR, LRESULT *pResult);

@@ -61,6 +61,11 @@ CBridgeDescGeneralPage::CBridgeDescGeneralPage() : CPropertyPage(CBridgeDescGene
    m_CacheGirderConnectivityIdx = CB_ERR;
    m_CacheDeckTypeIdx = CB_ERR;
 
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   m_GirderSpacingTolerance = pow(10.0,-pDisplayUnits->GetXSectionDimUnit().Precision);
+
    m_bSetActive = false;
 }
 
@@ -127,12 +132,12 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    if ( m_GirderSpacingType == pgsTypes::sbsUniform || m_GirderSpacingType == pgsTypes::sbsConstantAdjacent )
    {
       // check girder spacing
-      if ( IsEqual(m_GirderSpacing,m_MinGirderSpacing) )
+      if ( IsEqual(m_GirderSpacing,m_MinGirderSpacing,m_GirderSpacingTolerance) )
       {
          m_GirderSpacing = m_MinGirderSpacing;
       }
 
-      if ( IsEqual(m_GirderSpacing,m_MaxGirderSpacing) )
+      if ( IsEqual(m_GirderSpacing,m_MaxGirderSpacing,m_GirderSpacingTolerance) )
       {
          m_GirderSpacing = m_MaxGirderSpacing;
       }
@@ -426,11 +431,11 @@ void CBridgeDescGeneralPage::OnSameNumGirders()
 #pragma Reminder("UPDATE: confirm this instructional message is accurate")
       if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
       {
-         strText = CString(_T("By unchecking this box, each girder group can have a different number of girders. To define the number of girders in a girder group, edit the Group Details for each group.\n\nGroup Details can be edited by selecting the Framing tab and then pressing the edit button for a group."));
+         strText = CString(_T("By unchecking this box, each girder group can have a different number of girders. To define the number of girders in a girder group, edit the Group Details for each group.\n\nGroup Details can be edited by selecting the Layout tab and then pressing the edit button for a group."));
       }
       else
       {
-         strText = CString(_T("By unchecking this box, each span can have a different number of girders. To define the number of girders in a span, edit the Span Details for each span.\n\nSpan Details can be edited by selecting the Framing tab and then pressing the edit button for a span."));
+         strText = CString(_T("By unchecking this box, each span can have a different number of girders. To define the number of girders in a span, edit the Span Details for each span.\n\nSpan Details can be edited by selecting the Layout tab and then pressing the edit button for a span."));
       }
    }
    // enable/disable the associated controls
@@ -483,11 +488,11 @@ void CBridgeDescGeneralPage::OnSameGirderName()
 #pragma Reminder("UPDATE: confirm this instructional message is accurate")
       if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
       {
-         strText = CString(_T("By unchecking this box, a different girder type can be assigned to each girder. To do this, edit the Group Details for each group.\n\nGroup Details can be edited by selecting the Framing tab and then pressing the edit button for a group."));
+         strText = CString(_T("By unchecking this box, a different girder type can be assigned to each girder. To do this, edit the Group Details for each group.\n\nGroup Details can be edited by selecting the Layout tab and then pressing the edit button for a group."));
       }
       else
       {
-         strText = CString(_T("By unchecking this box, a different girder type can be assigned to each girder. To do this, edit the Span Details for each span.\n\nSpan Details can be edited by selecting the Framing tab and then pressing the edit button for a span."));
+         strText = CString(_T("By unchecking this box, a different girder type can be assigned to each girder. To do this, edit the Span Details for each span.\n\nSpan Details can be edited by selecting the Layout tab and then pressing the edit button for a span."));
       }
    }
 
@@ -1213,11 +1218,11 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
       CEAFDocument* pDoc = EAFGetDocument();
       if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
       {
-         strText = _T("By selecting this option, a different spacing can be used between each girder. To do this, edit the Group Details for each group.\n\nGroup Details can be edited by selecting the Framing tab and then pressing the edit button for a group.");
+         strText = _T("By selecting this option, a different spacing can be used between each girder. To do this, edit the Group Details for each group.\n\nGroup Details can be edited by selecting the Layout tab and then pressing the edit button for a group.");
       }
       else
       {
-         strText = _T("By selecting this option, a different spacing can be used between each girder. To do this, edit the Span Details for each span.\n\nSpan Details can be edited by selecting the Framing tab and then pressing the edit button for a span.");
+         strText = _T("By selecting this option, a different spacing can be used between each girder. To do this, edit the Span Details for each span.\n\nSpan Details can be edited by selecting the Layout tab and then pressing the edit button for a span.");
       }
       UIHint(strText,UIHINT_SAME_GIRDER_SPACING);
    }
@@ -1600,11 +1605,11 @@ BOOL CBridgeDescGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pRe
          {
             if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
             {
-               m_strToolTipText = _T("Check this option to define the number of girders in all groups. Otherwise, open the Framing tab and click on the Edit Group Details button to define the number of girders in a particular group.");
+               m_strToolTipText = _T("Check this option to define the number of girders in all groups. Otherwise, open the Layout tab and click on the Edit Group Details button to define the number of girders in a particular group.");
             }
             else
             {
-               m_strToolTipText = _T("Check this option to define the number of girders in all spans. Otherwise, open the Framing tab and click on the Edit Span Details button to define the number of girders in a particular span.");
+               m_strToolTipText = _T("Check this option to define the number of girders in all spans. Otherwise, open the Layout tab and click on the Edit Span Details button to define the number of girders in a particular span.");
             }
          }
 
@@ -1620,11 +1625,11 @@ BOOL CBridgeDescGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pRe
          {
             if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
             {
-               m_strToolTipText = _T("Check this option to use the same girder in all groups. Otherwise, open the Framing tab and click on the Edit Group Details button to assign a different girder type to each girder in a particular group.");
+               m_strToolTipText = _T("Check this option to use the same girder in all groups. Otherwise, open the Layout tab and click on the Edit Group Details button to assign a different girder type to each girder in a particular group.");
             }
             else
             {
-               m_strToolTipText = _T("Check this option to use the same girder in all spans. Otherwise, open the Framing tab and click on the Edit Span Details button to assign a different girder type to each girder in a particular span.");
+               m_strToolTipText = _T("Check this option to use the same girder in all spans. Otherwise, open the Layout tab and click on the Edit Span Details button to assign a different girder type to each girder in a particular span.");
             }
          }
 

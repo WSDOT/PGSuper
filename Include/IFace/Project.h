@@ -1209,3 +1209,20 @@ interface ILossParametersEventSink : IUnknown
 {
    virtual HRESULT OnLossParametersChanged() = 0;
 };
+
+
+/*****************************************************************************
+INTERFACE
+   IValidate
+*****************************************************************************/
+#define VALIDATE_SUCCESS 0
+#define VALIDATE_INVALID 1 // the string is bad (NULL or blank)
+#define VALIDATE_SKEW_ANGLE 2
+
+// {C3D02F95-D861-483d-8A41-11FC3A16D77F}
+DEFINE_GUID(IID_IValidate, 
+0xc3d02f95, 0xd861, 0x483d, 0x8a, 0x41, 0x11, 0xfc, 0x3a, 0x16, 0xd7, 0x7f);
+interface IValidate: IUnknown
+{
+   virtual UINT Orientation(LPCTSTR lpszOrientation) = 0;
+};

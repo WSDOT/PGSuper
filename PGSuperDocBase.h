@@ -90,16 +90,16 @@ public:
 // Operations
 public:
    CSelection GetSelection();
-   void SetSelection(const CSelection& selection);
-   void SelectPier(PierIndexType pierIdx);
-   void SelectSpan(SpanIndexType spanIdx);
-   void SelectGirder(const CGirderKey& girderKey);
-   void SelectSegment(const CSegmentKey& segmentKey);
-   void SelectClosureJoint(const CClosureKey& closureKey);
-   void SelectTemporarySupport(SupportIDType tsID);
-   void SelectDeck();
-   void SelectAlignment();
-   void ClearSelection();
+   void SetSelection(const CSelection& selection,BOOL bNotify=TRUE);
+   void SelectPier(PierIndexType pierIdx,BOOL bNotify=TRUE);
+   void SelectSpan(SpanIndexType spanIdx,BOOL bNotify=TRUE);
+   void SelectGirder(const CGirderKey& girderKey,BOOL bNotify=TRUE);
+   void SelectSegment(const CSegmentKey& segmentKey,BOOL bNotify=TRUE);
+   void SelectClosureJoint(const CClosureKey& closureKey,BOOL bNotify=TRUE);
+   void SelectTemporarySupport(SupportIDType tsID,BOOL bNotify=TRUE);
+   void SelectDeck(BOOL bNotify=TRUE);
+   void SelectAlignment(BOOL bNotify=TRUE);
+   void ClearSelection(BOOL bNotify=TRUE);
 
    void OnLibMgrChanged(psgLibraryManager* pNewLibMgr);
 

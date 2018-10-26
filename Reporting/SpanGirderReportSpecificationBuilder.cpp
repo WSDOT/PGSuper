@@ -86,8 +86,6 @@ boost::shared_ptr<CReportSpecification> CSpanReportSpecificationBuilder::CreateD
    GET_IFACE(ISelection,pSelection);
    SpanIndexType spanIdx = pSelection->GetSelectedSpan();
 
-   ATLASSERT( spanIdx != INVALID_INDEX );
-
    spanIdx = (spanIdx == INVALID_INDEX ? 0 : spanIdx );
    boost::shared_ptr<CReportSpecification> pRptSpec( new CSpanReportSpecification(rptDesc.GetReportName(),m_pBroker,spanIdx) );
 
@@ -207,8 +205,42 @@ boost::shared_ptr<CReportSpecification> CGirderReportSpecificationBuilder::Creat
    CGirderKey girderKey(m_GirderKey);
    if ( selection.Type == CSelection::Girder || selection.Type == CSelection::Segment )
    {
-      girderKey.groupIndex   = selection.GroupIdx;
-      girderKey.girderIndex  = selection.GirderIdx;
+      GET_IFACE(IBridge,pBridge);
+      GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+      if ( selection.GroupIdx == ALL_GROUPS && selection.GirderIdx != ALL_GIRDERS && nGroups == 1 )
+      {
+         // there is exactly one group and we have a valid girder number so take ALL_GROUPS to mean group 0... no prompting required
+         girderKey.groupIndex = 0;
+         girderKey.girderIndex = selection.GirderIdx;
+      }
+      else if ( selection.GroupIdx == ALL_GROUPS || selection.GirderIdx == ALL_GIRDERS )
+      {
+         // we need a specific girder and don't have it.... going to have to prompt the user
+
+         // lets try to get the girder key close
+         if ( selection.GroupIdx != ALL_GROUPS )
+         {
+            m_GirderKey.groupIndex = selection.GroupIdx;
+         }
+
+         if ( selection.GirderIdx != ALL_GIRDERS )
+         {
+            m_GirderKey.girderIndex = selection.GirderIdx;
+         }
+
+         boost::shared_ptr<CReportSpecification> nullSpec;
+         boost::shared_ptr<CReportSpecification> pRptSpec = CreateReportSpec(rptDesc,nullSpec);
+
+         // put the girder key back the way it was
+         m_GirderKey = girderKey;
+
+         return pRptSpec;
+      }
+      else
+      {
+         girderKey.groupIndex   = selection.GroupIdx;
+         girderKey.girderIndex  = selection.GirderIdx;
+      }
    }
    boost::shared_ptr<CReportSpecification> pRptSpec( new CGirderReportSpecification(rptDesc.GetReportName(),m_pBroker,girderKey) );
 
@@ -299,6 +331,33 @@ boost::shared_ptr<CReportSpecification> CMultiGirderReportSpecificationBuilder::
       girderKey.girderIndex = 0;
    }
 
+   GET_IFACE(IBridge,pBridge);
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   if ( girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex != ALL_GIRDERS && nGroups == 1 )
+   {
+      // there is exactly one group and we have a valid girder number so take ALL_GROUPS to mean group 0... no prompting required
+      girderKey.groupIndex = 0;
+   }
+   else if ( girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS )
+   {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      // we don't have a proper girder key.... prompt the user
+      boost::shared_ptr<CReportSpecification> nullSpec;
+      CSpanGirderReportDlg dlg(m_pBroker,rptDesc,SpanGirderAndChapters,nullSpec);
+      dlg.m_Group  = girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex;
+      dlg.m_Girder = girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex;
+
+      if ( dlg.DoModal() == IDOK )
+      {
+         girderKey.groupIndex  = dlg.m_Group;
+         girderKey.girderIndex = dlg.m_Girder;
+      }
+      else
+      {
+         return boost::shared_ptr<CReportSpecification>();
+      }
+   }
+
    std::vector<CGirderKey> girderKeys;
    girderKeys.push_back(girderKey);
 
@@ -356,6 +415,8 @@ boost::shared_ptr<CReportSpecification> CMultiViewSpanGirderReportSpecificationB
          girderKey.girderIndex = 0;
       }
 
+      ASSERT_GIRDER_KEY(girderKey);
+
       CMultiViewReportDlg dlg(m_pBroker,rptDesc,pRptSpec,girderKey);
 
       if ( dlg.DoModal() == IDOK )
@@ -395,6 +456,33 @@ boost::shared_ptr<CReportSpecification> CMultiViewSpanGirderReportSpecificationB
    {
       girderKey.groupIndex  = 0;
       girderKey.girderIndex = 0;
+   }
+
+   GET_IFACE(IBridge,pBridge);
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   if ( girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex != ALL_GIRDERS && nGroups == 1 )
+   {
+      // there is exactly one group and we have a valid girder number so take ALL_GROUPS to mean group 0... no prompting required
+      girderKey.groupIndex = 0;
+   }
+   else if ( girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS )
+   {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      // we don't have a proper girder key.... prompt the user
+      boost::shared_ptr<CReportSpecification> nullSpec;
+      CSpanGirderReportDlg dlg(m_pBroker,rptDesc,SpanGirderAndChapters,nullSpec);
+      dlg.m_Group  = girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex;
+      dlg.m_Girder = girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex;
+
+      if ( dlg.DoModal() == IDOK )
+      {
+         girderKey.groupIndex  = dlg.m_Group;
+         girderKey.girderIndex = dlg.m_Girder;
+      }
+      else
+      {
+         return boost::shared_ptr<CReportSpecification>();
+      }
    }
 
    boost::shared_ptr<CReportSpecification> pRptSpec( new CGirderReportSpecification(rptDesc.GetReportName(),m_pBroker,girderKey) );

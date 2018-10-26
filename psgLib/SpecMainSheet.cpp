@@ -685,14 +685,14 @@ void CSpecMainSheet::ExchangeCreepData(CDataExchange* pDX)
       if ( m_Entry.m_CreepDuration2Min < m_Entry.m_CreepDuration1Min )
       {
          pDX->PrepareEditCtrl(IDC_CREEP_DURATION2_MIN);
-         AfxMessageBox(_T("The time from prestress transfer to slab casting must be greater than the time from prestress transfer to temporary strand removal/diaphragm casting."));
+         AfxMessageBox(_T("The time from prestress transfer to deck casting must be greater than the time from prestress transfer to temporary strand removal/diaphragm casting."));
          pDX->Fail();
       }
 
       if ( m_Entry.m_CreepDuration2Max < m_Entry.m_CreepDuration1Max )
       {
          pDX->PrepareEditCtrl(IDC_CREEP_DURATION2_MAX);
-         AfxMessageBox(_T("The time from prestress transfer to slab casting must be greater than the time from prestress transfer to temporary strand removal/diaphragm casting."));
+         AfxMessageBox(_T("The time from prestress transfer to deck casting must be greater than the time from prestress transfer to temporary strand removal/diaphragm casting."));
          pDX->Fail();
       }
    }

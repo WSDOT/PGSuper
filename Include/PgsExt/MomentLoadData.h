@@ -55,6 +55,7 @@ public:
    // properties
    IDType                         m_ID;
    EventIndexType                 m_EventIndex;
+   EventIDType                    m_EventID;
    UserLoads::LoadCase            m_LoadCase;
 
    CSpanKey m_SpanKey;

@@ -2195,7 +2195,7 @@ void CPGSDocBase::OnProjectEnvironment()
 void CPGSDocBase::OnEffectiveFlangeWidth()
 {
    GET_IFACE(IEffectiveFlangeWidth,pEFW);
-   CString strQuestion(_T("The LRFD General Effective Flange Width provisions (4.6.2.6.1) are consider applicable for skew angles less than 75 degress, L/S greater than or equal to 2.0 and overhang widths less than or equal to 0.5S. In unusual cases where these limits are violated, a refined analysis should be used."));
+   CString strQuestion(_T("The LRFD General Effective Flange Width provisions (4.6.2.6.1) are considered applicable for skew angles less than 75 degress, L/S greater than or equal to 2.0 and overhang widths less than or equal to 0.5S. In unusual cases where these limits are violated, a refined analysis should be used."));
    CString strResponses(_T("Stop analysis if structure violates these limits\nIgnore these limits"));
 
    CEAFHelpHandler helpHandler(GetDocumentationSetName(),IDH_EFFECTIVE_FLANGE_WIDTH);
@@ -2749,16 +2749,19 @@ CSelection CPGSDocBase::GetSelection()
    return m_Selection;
 }
 
-void CPGSDocBase::SetSelection(const CSelection& selection)
+void CPGSDocBase::SetSelection(const CSelection& selection,BOOL bNotify)
 {
    if ( m_Selection != selection )
    {
       m_Selection = selection;
-      UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&m_Selection);
+      if ( bNotify )
+      {
+         UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&m_Selection);
+      }
    }
 }
 
-void CPGSDocBase::SelectPier(PierIndexType pierIdx)
+void CPGSDocBase::SelectPier(PierIndexType pierIdx,BOOL bNotify)
 {
    if ( m_Selection.Type == CSelection::Pier && m_Selection.PierIdx == pierIdx )
    {
@@ -2774,10 +2777,13 @@ void CPGSDocBase::SelectPier(PierIndexType pierIdx)
    m_Selection.tsID       = INVALID_INDEX;
 
    CSelection selection = m_Selection;
-   UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+   if ( bNotify )
+   {
+      UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+   }
 }
 
-void CPGSDocBase::SelectSpan(SpanIndexType spanIdx)
+void CPGSDocBase::SelectSpan(SpanIndexType spanIdx,BOOL bNotify)
 {
    if ( m_Selection.Type == CSelection::Span && m_Selection.SpanIdx == spanIdx )
    {
@@ -2792,10 +2798,13 @@ void CPGSDocBase::SelectSpan(SpanIndexType spanIdx)
    m_Selection.tsID       = INVALID_INDEX;
 
    CSelection selection = m_Selection;
-   UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+   if ( bNotify )
+   {
+      UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+   }
 }
 
-void CPGSDocBase::SelectGirder(const CGirderKey& girderKey)
+void CPGSDocBase::SelectGirder(const CGirderKey& girderKey,BOOL bNotify)
 {
    if ( m_Selection.Type == CSelection::Girder && m_Selection.GroupIdx == girderKey.groupIndex && m_Selection.GirderIdx == girderKey.girderIndex )
    {
@@ -2815,12 +2824,16 @@ void CPGSDocBase::SelectGirder(const CGirderKey& girderKey)
    {
       bProcessingSelectionChanged = true;
       CSelection selection = m_Selection;
-      UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+
+      if ( bNotify )
+      {
+         UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+      }
       bProcessingSelectionChanged = false;
    }
 }
 
-void CPGSDocBase::SelectSegment(const CSegmentKey& segmentKey)
+void CPGSDocBase::SelectSegment(const CSegmentKey& segmentKey,BOOL bNotify)
 {
    if ( m_Selection.Type == CSelection::Segment && m_Selection.GroupIdx == segmentKey.groupIndex && m_Selection.GirderIdx == segmentKey.girderIndex && m_Selection.SegmentIdx == segmentKey.segmentIndex )
    {
@@ -2840,12 +2853,15 @@ void CPGSDocBase::SelectSegment(const CSegmentKey& segmentKey)
    {
       bProcessingSelectionChanged = true;
       CSelection selection = m_Selection;
-      UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+      if ( bNotify )
+      {
+         UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+      }
       bProcessingSelectionChanged = false;
    }
 }
 
-void CPGSDocBase::SelectClosureJoint(const CClosureKey& closureKey)
+void CPGSDocBase::SelectClosureJoint(const CClosureKey& closureKey,BOOL bNotify)
 {
    if ( m_Selection.Type == CSelection::ClosureJoint && m_Selection.GroupIdx == closureKey.groupIndex && m_Selection.GirderIdx == closureKey.girderIndex && m_Selection.SegmentIdx == closureKey.segmentIndex )
    {
@@ -2865,12 +2881,15 @@ void CPGSDocBase::SelectClosureJoint(const CClosureKey& closureKey)
    {
       bProcessingSelectionChanged = true;
       CSelection selection = m_Selection;
-      UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+      if ( bNotify )
+      {
+         UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+      }
       bProcessingSelectionChanged = false;
    }
 }
 
-void CPGSDocBase::SelectTemporarySupport(SupportIDType tsID)
+void CPGSDocBase::SelectTemporarySupport(SupportIDType tsID,BOOL bNotify)
 {
    if ( m_Selection.Type == CSelection::TemporarySupport && m_Selection.tsID == tsID )
    {
@@ -2889,12 +2908,15 @@ void CPGSDocBase::SelectTemporarySupport(SupportIDType tsID)
    {
       bProcessingSelectionChanged = true;
       CSelection selection = m_Selection;
-      UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+      if ( bNotify )
+      {
+         UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+      }
       bProcessingSelectionChanged = false;
    }
 }
 
-void CPGSDocBase::SelectDeck()
+void CPGSDocBase::SelectDeck(BOOL bNotify)
 {
    if ( m_Selection.Type == CSelection::Deck )
    {
@@ -2910,10 +2932,13 @@ void CPGSDocBase::SelectDeck()
    m_Selection.tsID       = INVALID_INDEX;
 
    CSelection selection = m_Selection;
-   UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+   if ( bNotify )
+   {
+      UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+   }
 }
 
-void CPGSDocBase::SelectAlignment()
+void CPGSDocBase::SelectAlignment(BOOL bNotify)
 {
    if ( m_Selection.Type == CSelection::Alignment )
    {
@@ -2929,10 +2954,13 @@ void CPGSDocBase::SelectAlignment()
    m_Selection.tsID       = INVALID_INDEX;
 
    CSelection selection = m_Selection;
-   UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+   if ( bNotify )
+   {
+      UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+   }
 }
 
-void CPGSDocBase::ClearSelection()
+void CPGSDocBase::ClearSelection(BOOL bNotify)
 {
    if ( m_Selection.Type == CSelection::None )
    {
@@ -2952,7 +2980,10 @@ void CPGSDocBase::ClearSelection()
    {
       bProcessingSelectionChanged = true;
       CSelection selection = m_Selection;
-      UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+      if ( bNotify )
+      {
+         UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+      }
       bProcessingSelectionChanged = false;
    }
 }

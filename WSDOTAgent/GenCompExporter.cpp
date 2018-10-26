@@ -130,7 +130,9 @@ STDMETHODIMP CGenCompExporter::Export(IBroker* pBroker)
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       genCompXML->Units(pDisplayUnits->GetUnitMode() == eafTypes::umSI ? UnitMode::SI : UnitMode::US);
 
-      genCompXML->ModularRatio(EcDeck/EcGdr);
+      Float64 n = EcDeck/EcGdr;
+      n = ::RoundOff(n,0.001);
+      genCompXML->ModularRatio(n);
 
       CollectionIndexType nPoints;
       if ( primaryShapePoints )
@@ -142,6 +144,9 @@ STDMETHODIMP CGenCompExporter::Export(IBroker* pBroker)
             primaryShapePoints->get_Item(i,&pnt);
             Float64 x,y;
             pnt->Location(&x,&y);
+
+            x = IsZero(x) ? 0 : x;
+            y = IsZero(y) ? 0 : y;
 
             primaryShapePointsXML.push_back(PointType(x,y));
          }
@@ -156,6 +161,9 @@ STDMETHODIMP CGenCompExporter::Export(IBroker* pBroker)
             secondaryShapePoints->get_Item(i,&pnt);
             Float64 x,y;
             pnt->Location(&x,&y);
+
+            x = IsZero(x) ? 0 : x;
+            y = IsZero(y) ? 0 : y;
 
             secondaryShapePointsXML.push_back(PointType(x,y));
          }

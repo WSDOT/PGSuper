@@ -13,7 +13,7 @@ Simple Spans Made Continuous
 When the Simple Spans Made Continuous analysis option is used, the requirements of LRFD 5.14.1.4 are required to be satisfied. 
 
 ### 5.14.1.4.2 Restraint Moments ###
-Restrain moments are not computed. Restraint moments can be computed by any method deemed appropriate by the engineer and modeled in PGSuper with user defined concentrated moments.
+Restraint moments are not computed. Restraint moments can be computed by any method deemed appropriate by the engineer and modeled in PGSuper with user defined concentrated moments.
 
 ### 5.14.1.4.4 Age of Girder When Continuity is Established ###
 No assumptions are made about the age of the girder when continuity is established. You'll have to take this into account when determining restraint moments.

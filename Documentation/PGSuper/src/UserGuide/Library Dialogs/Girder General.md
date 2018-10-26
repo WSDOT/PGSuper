@@ -15,7 +15,7 @@ Solid end blocks can be added to I-Beams, U Beams, Box Beams, Decked Slab Beams,
 
 Notes for Box Girders
 ---------------------
-Shear key loads can be automatically generated for adjacently-spaced box girders. The shear key will fill the gap between girders from the specified shear key depth to the tops of the beams and will have the same unit weight as the slab concrete. The load is applied in a load case called "Shear Key" applied in Bridge Site stage 1 into the DC combination. Results will only be displayed if a shear key is present. Structural stiffness properties of the shear key are not considered in any analyses.
+Shear key loads can be automatically generated for adjacently-spaced box girders. The shear key will fill the gap between girders from the specified shear key depth to the tops of the beams and will have the same unit weight as the deck concrete. The load is applied in a load case called "Shear Key" applied in Bridge Site stage 1 into the DC combination. Results will only be displayed if a shear key is present. Structural stiffness properties of the shear key are not considered in any analyses.
 
 > NOTE: PGSuper was written for bridges composed of typical prestressed girders. A clever user might be tempted to use these dimensions to create unique section shapes like Inverted T's, parallelograms, or even triangles. **Do not do this!** The program has not been tested for these types of shapes and may generate incorrect results.
 

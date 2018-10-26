@@ -60,8 +60,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,50
- PRODUCTVERSION 3,0,0,50
+ FILEVERSION 3,0,0,51
+ PRODUCTVERSION 3,0,0,51
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -79,12 +79,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "TxDOTAgent Module"
-            VALUE "FileVersion", "3.0.0.50"
+            VALUE "FileVersion", "3.0.0.51"
             VALUE "InternalName", "TOGA"
             VALUE "LegalCopyright", "Copyright © 1999-2016, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperTxDOTAgent.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.50"
+            VALUE "ProductVersion", "3.0.0.51"
         END
     END
     BLOCK "VarFileInfo"
@@ -175,11 +175,11 @@ BEGIN
     RTEXT           "LLDF (Moment)",IDC_STATIC,279,143,62,8
     RTEXT           "LLDF (Shear)",IDC_STATIC,279,161,62,8
     GROUPBOX        "Material Properties",IDC_STATIC,7,188,410,40
-    RTEXT           "Ec, Slab",IDC_STATIC,15,207,40,8
+    RTEXT           "Ec, Deck",IDC_STATIC,15,207,40,8
     LTEXT           "ksi",IDC_EC_SLAB_UNITS,102,207,15,8
     RTEXT           "Ec, Beam",IDC_STATIC,172,208,40,8
     LTEXT           "ksi",IDC_EC_BEAM_UNITS,260,208,15,8
-    RTEXT           "f'c, Slab",IDC_STATIC,302,208,40,8
+    RTEXT           "f'c, Deck",IDC_STATIC,302,208,40,8
     LTEXT           "ksi",IDC_FC_SLAB_UNITS,390,208,15,8
     GROUPBOX        "Design Data",IDC_STATIC,7,235,410,53
     RTEXT           "* ft, Design Compressive Stress, Top CL",IDC_STATIC,18,250,136,8

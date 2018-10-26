@@ -642,7 +642,7 @@ BOOL CBridgeDescDeckPointGrid::Validate()
    UnitModeType unitMode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    std::vector<CDeckPoint> vPoints = GetEdgePoints();
-   if (vPoints.size() > 1)
+   if ( 1 < vPoints.size() )
    {
       std::vector<CDeckPoint>::iterator iter(vPoints.begin()+1);
       std::vector<CDeckPoint>::iterator end(vPoints.end());
@@ -660,8 +660,43 @@ BOOL CBridgeDescDeckPointGrid::Validate()
             AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
             return FALSE;
          }
+
+         if ( !ValidatePoint(prevPoint,pDisplayUnits) )
+         {
+            return FALSE;
+         }
+
+         if ( !ValidatePoint(thisPoint,pDisplayUnits) )
+         {
+            return FALSE;
+         }
+      }
+   }
+   else
+   {
+      if ( !ValidatePoint(vPoints.front(),pDisplayUnits) )
+      {
+         return FALSE;
       }
    }
 
+   return TRUE;
+}
+
+BOOL CBridgeDescDeckPointGrid::ValidatePoint(CDeckPoint& point,IEAFDisplayUnits* pDisplayUnits)
+{
+   Float64 left = -1*point.LeftEdge; // make left value a real offset
+   Float64 right = point.RightEdge;
+
+   if ( ::IsLE(right,left) )
+   {
+      // the right edge is equal to or left of the left edge
+      // this is not valid
+      CString strStation = FormatStation(pDisplayUnits->GetStationFormat(),point.Station);
+      CString strMsg;
+      strMsg.Format(_T("The right deck edge is to the left of the left deck edge at %s"),strStation);
+      AfxMessageBox(strMsg);
+      return FALSE;
+   }
    return TRUE;
 }
