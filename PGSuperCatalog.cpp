@@ -121,7 +121,7 @@ bool CPGSuperCatalog::DoParse()
    // buffer contains a null terminated separated list of section names
 
    LPTSTR token = buffer;
-   while ( *token != 0x00 )
+   while ( *token != _T('\0') )
    {
       CString strItem(token);
       CString strMasterLibrary;
@@ -133,12 +133,14 @@ bool CPGSuperCatalog::DoParse()
    }
 
    // cycle through publishers and build list
-   for (std::vector<CString>::iterator pubit=publishers.begin(); pubit!=publishers.end(); pubit++)
+   std::vector<CString>::iterator pubIter(publishers.begin());
+   std::vector<CString>::iterator pubIterEnd(publishers.end());
+   for ( ; pubIter != pubIterEnd; pubIter++)
    {
-      const CString publisherName(*pubit);
+      const CString publisherName(*pubIter);
 
       Publisher publisher;
-      publisher.Name = publisherName;
+      publisher.Name   = publisherName;
       publisher.Format = ctOriginal;
 
       // Determine what format we have
@@ -154,13 +156,16 @@ bool CPGSuperCatalog::DoParse()
 
       // get all the key value pairs for this publisher
       TCHAR sections[32767];
+      memset(sections,0,sizeof(sections));
       DWORD dwResult = GetPrivateProfileSection(publisherName,sections,sizeof(sections)/sizeof(TCHAR),m_strLocalCatalog);
       ASSERT( dwResult != sizeof(sections)/sizeof(TCHAR)-2 );
 
       for ( int i = 0; i < sizeof(sections)/sizeof(TCHAR); i++ )
       {
          if ( sections[i] == _T('\0') )
+         {
             sections[i] = _T('\n');
+         }
       }
 
       if (publisher.Format == ctOriginal)
@@ -239,6 +244,7 @@ bool CPGSuperCatalog::DoParse()
 
 
          TCHAR buffer1[256];
+         memset(buffer1,0,sizeof(buffer1));
          DWORD dwResult1 = GetPrivateProfileString(publisherName,master_library_key.c_str(),_T(""),buffer1,sizeof(buffer1)/sizeof(TCHAR),m_strLocalCatalog);
          CString msg1;
          if ( dwResult1 == 0 )
@@ -247,6 +253,7 @@ bool CPGSuperCatalog::DoParse()
 
 
          TCHAR buffer2[256];
+         memset(buffer2,0,sizeof(buffer2));
          DWORD dwResult2 = GetPrivateProfileString(publisherName,workgroup_template_key.c_str(),_T(""),buffer2,sizeof(buffer2)/sizeof(TCHAR),m_strLocalCatalog);
          CString msg2;
          if ( dwResult2 == 0 )
@@ -280,7 +287,8 @@ bool CPGSuperCatalog::DoParse()
             if ( pos != std::_tstring::npos )
             {
                std::_tstring::size_type eqpos = strToken.find(_T("_PgzFiles"));
-               PgzEntries.insert(strToken.substr(0,eqpos));
+               std::_tstring strPgzEntry(strToken.substr(0,eqpos));
+               PgzEntries.insert(strPgzEntry);
             }
 
             token = _tcstok_s(NULL,sep,&next_token);
@@ -295,13 +303,13 @@ bool CPGSuperCatalog::DoParse()
          std::_tstring pgz_key(_T("Version_"));
          pgz_key += m_PGSuperVersion;
 
-         std::set<std::_tstring>::const_iterator found = PgzEntries.find(pgz_key);
+         std::set<std::_tstring>::const_iterator found( PgzEntries.find(pgz_key) );
          if ( found == PgzEntries.end() )
          {
             // not in the set... add it and then go back one
-            std::pair<std::set<std::_tstring>::iterator,bool> result = PgzEntries.insert(pgz_key);
+            std::pair<std::set<std::_tstring>::iterator,bool> result( PgzEntries.insert(pgz_key) );
             ASSERT( result.second == true );
-            std::set<std::_tstring>::iterator insert_loc = result.first;
+            std::set<std::_tstring>::iterator insert_loc( result.first );
             insert_loc--;
             pgz_key = *insert_loc;
          }
@@ -309,6 +317,7 @@ bool CPGSuperCatalog::DoParse()
 
 
          TCHAR buffer1[256];
+         memset(buffer1,0,sizeof(buffer1));
          DWORD dwResult1 = GetPrivateProfileString(publisherName,pgz_key.c_str(),_T(""),buffer1,sizeof(buffer1)/sizeof(TCHAR),m_strLocalCatalog);
 
          if ( dwResult1 == 0 )

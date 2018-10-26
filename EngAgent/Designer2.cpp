@@ -1863,8 +1863,8 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
    GET_IFACE(IPointOfInterest, pIPoi);
    std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(span,gdr,stage,POI_FACEOFSUPPORT);
    ATLASSERT(vPoi.size() == 2);
-   pgsPointOfInterest leftFaceOfSupport  = vPoi[0];
-   pgsPointOfInterest rightFaceOfSupport = vPoi[1];
+   pgsPointOfInterest leftFaceOfSupport(vPoi.front());
+   pgsPointOfInterest rightFaceOfSupport(vPoi.back());
 
    if ( poi.GetDistFromStart() < leftFaceOfSupport.GetDistFromStart() || rightFaceOfSupport.GetDistFromStart() < poi.GetDistFromStart() )
    {
