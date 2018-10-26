@@ -52,7 +52,7 @@ CLASS
 LiveLoadLibraryEntry::LiveLoadLibraryEntry() :
 m_IsNotional(false),
 m_LiveLoadConfigurationType(lcTruckPlusLane),
-m_LiveLoadApplicabilityType(pgsTypes::llaEntireStructure),
+m_LiveLoadApplicabilityType(llaEntireStructure),
 m_MaxVariableAxleSpacing(0.0),
 m_VariableAxleIndex(INVALID_INDEX)
 {
@@ -266,12 +266,12 @@ LiveLoadLibraryEntry::LiveLoadConfigurationType LiveLoadLibraryEntry::GetLiveLoa
    return m_LiveLoadConfigurationType;
 }
 
-void LiveLoadLibraryEntry::SetLiveLoadApplicabilityType(pgsTypes::LiveLoadApplicabilityType applicability)
+void LiveLoadLibraryEntry::SetLiveLoadApplicabilityType(LiveLoadApplicabilityType applicability)
 {
    m_LiveLoadApplicabilityType = applicability;
 }
 
-pgsTypes::LiveLoadApplicabilityType LiveLoadLibraryEntry::GetLiveLoadApplicabilityType() const
+LiveLoadLibraryEntry::LiveLoadApplicabilityType LiveLoadLibraryEntry::GetLiveLoadApplicabilityType() const
 {
    return m_LiveLoadApplicabilityType;
 }

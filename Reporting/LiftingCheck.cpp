@@ -180,7 +180,7 @@ void CLiftingCheck::Build(rptChapter* pChapter,
 
    GET_IFACE2(pBroker,IGirderLiftingPointsOfInterest,pGirderLiftingPointsOfInterest);
    std::vector<pgsPointOfInterest> poi_vec;
-   poi_vec = pGirderLiftingPointsOfInterest->GetLiftingPointsOfInterest(span,girder,POI_FLEXURESTRESS | POI_SECTCHANGE,POIFIND_OR);
+   poi_vec = pGirderLiftingPointsOfInterest->GetLiftingPointsOfInterest(span,girder,POI_FLEXURESTRESS);
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(11,_T(""));
    *p << p_table;

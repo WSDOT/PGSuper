@@ -53,7 +53,7 @@ rptRcTable(NumColumns,0)
    scalar.SetTolerance(1.0e-6);
 }
 
-CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,const LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,IGirderData,pGirderData);
    const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
@@ -61,11 +61,7 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
    GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
-
-   int method = pSpecEntry->GetLossMethod();
-   bool bIgnoreInitialRelaxation = ( method == LOSSES_WSDOT_REFINED || method == LOSSES_WSDOT_LUMPSUM ) ? false : true;
+   bool bIgnoreInitialRelaxation = details.pLosses->IgnoreInitialRelaxation();
 
    //bool bIgnoreElasticGain = ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004 ) ? true : false;
 

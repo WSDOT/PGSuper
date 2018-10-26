@@ -29,7 +29,7 @@ public:
 	BOOL	m_IsNotional;
 	//}}AFX_DATA
 	LiveLoadLibraryEntry::LiveLoadConfigurationType m_ConfigType;
-   pgsTypes::LiveLoadApplicabilityType m_UsageType;
+   LiveLoadLibraryEntry::LiveLoadApplicabilityType m_UsageType;
 
    Float64 m_MaxVariableAxleSpacing;
    AxleIndexType m_VariableAxleIndex;

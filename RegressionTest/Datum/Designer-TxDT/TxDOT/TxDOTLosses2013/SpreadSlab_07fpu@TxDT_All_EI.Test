@@ -1,0 +1,24 @@
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   7  6.67  1     1   5SB12       46   1/2  270  2.72  2.60   6  2.50  28   6  4  2  0  0  0  0  0  0  0  0  5.300  5.300    2.928   -3.872    1252 0.558  0.657  0.20 -0.10  0.00 -0.00 -0.10 109.80 369.80   1.00   1.00   1.00
+
+
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   7  6.67  1     2   5SB12       46   1/2  270  2.72  2.60   6  2.50  28   6  4  2  0  0  0  0  0  0  0  0  5.300  5.300    2.967   -3.885    1231 0.537  0.657  0.20 -0.10  0.00 -0.00 -0.11 109.80 370.94   1.00   1.00   1.00
+
+
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   7  6.67  1     4   5SB12       44   1/2  270  2.77  2.70   4  2.50  28   4  2  2  0  0  0  0  0  0  0  0  5.200  5.400    2.957   -3.800    1193 0.537  0.657  0.20 -0.10  0.00  0.00 -0.10 101.43 347.40   1.00   1.00   1.00
+
+
+The Specification Check was Successful
+
+

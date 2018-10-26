@@ -803,10 +803,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\LoadRatingReactionsChapterBuilder.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\LoadRatingReportSpecificationBuilder.cpp"
 				>
 			</File>
@@ -1432,10 +1428,6 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\LoadRatingDetailsChapterBuilder.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\Reporting\LoadRatingReactionsChapterBuilder.h"
 				>
 			</File>
 			<File

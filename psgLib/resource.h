@@ -528,11 +528,8 @@
 #define IDC_NC_CREEP                    1207
 #define IDC_NC_CREEP_TAG                1208
 #define IDC_SPECIFICATION               1209
-#define IDC_NC_CREEP2                   1209
-#define IDC_CAMBER_VARIABILITY          1209
 #define IDC_K1                          1210
 #define IDC_EC_K1                       1210
-#define IDC_NC_CREEP_TAG2               1210
 #define IDC_MAX_DEBOND                  1211
 #define IDC_EC_K2                       1211
 #define IDC_MAX_DEBOND_PER_ROW          1212
@@ -817,7 +814,6 @@
 #define IDC_RELAXATION_LOSS_METHOD      1441
 #define IDC_WEB_STRAND_TYPE_COMBO       1441
 #define IDC_HAULING_METHOD              1441
-#define IDC_SAG_OPTIONS                 1441
 #define IDC_DIST_TRAFFIC_BARRIER_BASIS  1442
 #define IDC_NWC_NOTE                    1443
 #define IDC_CHECK1                      1444
@@ -828,7 +824,6 @@
 #define IDC_CHECK_SPLITTING             1444
 #define IDC_TOP_FLANGE_ROUGHENED        1444
 #define IDC_IS_SUPPORT_LESS_THAN        1444
-#define IDC_CHECK_STIRRUP_COMPATIBILITY 1444
 #define IDC_BRIDGE_LENGTH               1445
 #define IDC_EXTEND_DECK_BARS            1445
 #define IDC_DESIGN_SPLITTING            1445
@@ -989,8 +984,9 @@
 #define IDC_TRUCK_SUPPORT_DESIGN_ACCURACY 1554
 #define IDC_TRUCK_SUPPORT_DESIGN_ACCURACY_UNIT 1555
 #define IDC_SUPPORT_LESS_THAN_UNIT      1556
-#define IDC_CHECK2                      1557
-#define IDC_CHECK_GIRDER_SAG            1557
+#define IDC_FCPG_STATIC                 1557
+#define IDC_FCGP_COMBO                  1558
+#define IDC_FCPG_COMBO                  1558
 #define IDC_LOWER_VEHICLE_WEIGHT_UNIT   1565
 #define IDC_LOWER_VEHICLE_WEIGHT_LABEL  1566
 #define IDC_UPPER_VEHICLE_WEIGHT_LABEL  1567
@@ -1065,7 +1061,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        211
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1558
+#define _APS_NEXT_CONTROL_VALUE         1559
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

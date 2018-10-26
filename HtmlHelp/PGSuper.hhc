@@ -948,7 +948,7 @@
           <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Strand_Stresses_Tab.htm">
         </object>
         <li><object type="text/sitemap">
-          <param name="Name" value="Limits and Warnings Tab">
+          <param name="Name" value="Limits Tab">
           <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Limits_Tab.htm">
         </object>
         <li><object type="text/sitemap">
@@ -1093,6 +1093,12 @@
       <param name="Name" value="Prestress Losses">
       <param name="Local" value="Theoretical Manual\Prestress_Losses.htm">
     </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="TxDOT Losses: Research Report 0-6374-2">
+        <param name="Local" value="Theoretical Manual\txdot_research_report_0-6374-2.htm">
+      </object>
+      </ul>
     <li><object type="text/sitemap">
       <param name="Name" value="Shear Design (Determination of Beta and Theta)">
       <param name="Local" value="Theoretical Manual\Shear_Design_(Determination_of_Beta_and_Theta).htm">
@@ -1102,16 +1108,16 @@
       <param name="Local" value="Theoretical Manual\Bursting_Zone_Checks.htm">
     </object>
     <li><object type="text/sitemap">
-      <param name="Name" value="Structural Analysis Models">
-      <param name="Local" value="Theoretical Manual\AnalyticalModels.htm">
-    </object>
-    <li><object type="text/sitemap">
       <param name="Name" value="Ultimate Moment Capacity Analysis">
       <param name="Local" value="Theoretical Manual\Ultimate_Moment_Capacity_Analysis.htm">
     </object>
     <li><object type="text/sitemap">
       <param name="Name" value="Vehicular Live Loads">
       <param name="Local" value="Theoretical Manual\User-Defined_Live_Loads.htm">
+    </object>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Structural Analysis Models">
+      <param name="Local" value="Theoretical Manual\AnalyticalModels.htm">
     </object>
     </ul>
   <li><object type="text/sitemap">

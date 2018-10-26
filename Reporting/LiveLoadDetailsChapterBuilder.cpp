@@ -452,16 +452,16 @@ void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::_tstr
       ATLASSERT(false);
    }
 
-   pgsTypes::LiveLoadApplicabilityType ll_applicability = ll_entry->GetLiveLoadApplicabilityType();
-   if ( ll_applicability == pgsTypes::llaEntireStructure )
+   LiveLoadLibraryEntry::LiveLoadApplicabilityType ll_applicability = ll_entry->GetLiveLoadApplicabilityType();
+   if ( ll_applicability == LiveLoadLibraryEntry::llaEntireStructure )
    {
       *pPara << _T("Usage: Use for all actions at all locations") << rptNewLine;
    }
-   else if ( ll_applicability == pgsTypes::llaNegMomentAndInteriorPierReaction  )
+   else if ( ll_applicability == LiveLoadLibraryEntry::llaNegMomentAndInteriorPierReaction  )
    {
       *pPara << _T("Usage: Use only for negative moments and interior pier reactions") << rptNewLine;
    }
-   else if ( ll_applicability == pgsTypes::llaContraflexure  )
+   else if ( ll_applicability == LiveLoadLibraryEntry::llaContraflexure  )
    {
       *pPara << _T("Usage: Use only for negative moments between points of contraflexure and interior pier reactions") << rptNewLine;
    }

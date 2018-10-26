@@ -833,37 +833,37 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
       IndexType spn2_idx=0; // store index at mid-span;
       try
       {
-         // Mirror about location of mid-span measured from girder start
-         Float64 spn2 = (m_StartConnectionLength+m_GirderLength-m_EndConnectionLength)/2.0; 
-         mirror_avs.MirrorAboutY(spn2);
+      // Mirror about location of mid-span measured from girder start
+      Float64 spn2 = (m_StartConnectionLength+m_GirderLength-m_EndConnectionLength)/2.0; 
+      mirror_avs.MirrorAboutY(spn2);
 
          // Mirrored function needs to lie at least within the same X range as the original function
          // Force this by extending range out to support locations
          Float64 range_start = m_StartConnectionLength;
          Float64 range_end   = m_GirderLength - m_EndConnectionLength;
-         mirror_avs.ResetOuterRange(math1dRange(range_start,math1dRange::Bound,range_end,math1dRange::Bound));
+      mirror_avs.ResetOuterRange(math1dRange(range_start,math1dRange::Bound,range_end,math1dRange::Bound));
 
-         // Since we have mirrored, we aren't gauranteed to have x values in same locations as POI's.
-         // Use function2d class to get x,y locations for mirror
-         idx=0;
-         for ( i = m_DesignPois.begin(); i != m_DesignPois.end(); i++ )
+      // Since we have mirrored, we aren't gauranteed to have x values in same locations as POI's.
+      // Use function2d class to get x,y locations for mirror
+      idx=0;
+      for ( i = m_DesignPois.begin(); i != m_DesignPois.end(); i++ )
+      {
+         const pgsPointOfInterest& poi = *i;
+
+         Float64 x = poi.GetDistFromStart();
+         Float64& ry  = rDemandAtPois[idx]; // grab reference for reassignment below
+         Float64 mry = mirror_avs.Evaluate(x);
+
+         Float64 maxy = max(ry, mry);
+
+         ry = maxy;
+
+         if (spn2_idx==0 && x>spn2)
          {
-            const pgsPointOfInterest& poi = *i;
+            spn2_idx = idx;
+         }
 
-            Float64 x = poi.GetDistFromStart();
-            Float64& ry  = rDemandAtPois[idx]; // grab reference for reassignment below
-            Float64 mry = mirror_avs.Evaluate(x);
-
-            Float64 maxy = max(ry, mry);
-
-            ry = maxy;
-
-            if (spn2_idx==0 && x>spn2)
-            {
-               spn2_idx = idx;
-            }
-
-            idx++;
+         idx++;
          }
       }
       catch(...)

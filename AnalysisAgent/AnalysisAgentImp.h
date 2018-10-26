@@ -141,7 +141,6 @@ public:
    virtual void GetShearKeyLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx,std::vector<ShearKeyLoad>* pLoads);
 
    virtual std::_tstring GetLiveLoadName(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex);
-   virtual pgsTypes::LiveLoadApplicabilityType GetLiveLoadApplicability(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex);
    virtual VehicleIndexType GetVehicleCount(pgsTypes::LiveLoadType llType);
    virtual Float64 GetVehicleWeight(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex);
 
@@ -313,9 +312,6 @@ public:
    virtual void GetHarpedStrandEquivLoading(SpanIndexType span,GirderIndexType gdr,Float64* pMl,Float64* pMr,Float64* pNl,Float64* pNr,Float64* pXl,Float64* pXr);
    virtual void GetTempStrandEquivLoading(SpanIndexType span,GirderIndexType gdr,Float64* pMxferL,Float64* pMxferR,Float64* pMremoveL,Float64* pMremoveR);
    virtual void GetStraightStrandEquivLoading(SpanIndexType span,GirderIndexType gdr,std::vector< std::pair<Float64,Float64> >* loads);
-
-   virtual Float64 GetLowerBoundCamberVariabilityFactor()const;
-
 
 // IContraflexurePoints
 public:

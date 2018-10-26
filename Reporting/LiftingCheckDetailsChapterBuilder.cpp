@@ -172,7 +172,7 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
    GET_IFACE2(pBroker,IGirderLiftingPointsOfInterest,pGirderLiftingPointsOfInterest);
    std::vector<pgsPointOfInterest> poi_vec;
-   poi_vec = pGirderLiftingPointsOfInterest->GetLiftingPointsOfInterest(span,girder,POI_FLEXURESTRESS | POI_SECTCHANGE,POIFIND_OR);
+   poi_vec = pGirderLiftingPointsOfInterest->GetLiftingPointsOfInterest(span,girder,POI_FLEXURESTRESS);
 
    RowIndexType row=1;
    std::vector<pgsPointOfInterest>::const_iterator i;
@@ -356,7 +356,7 @@ void CLiftingCheckDetailsChapterBuilder::BuildRebarTable(IBroker* pBroker,rptCha
    Float64 overhang = (pLift->GetGirderLength()-pLift->GetClearSpanBetweenPickPoints())/2.0;
 
    GET_IFACE2(pBroker,IGirderLiftingPointsOfInterest,pGirderLiftingPointsOfInterest);
-   std::vector<pgsPointOfInterest> vPoi = pGirderLiftingPointsOfInterest->GetLiftingPointsOfInterest(span,girder,POI_FLEXURESTRESS | POI_SECTCHANGE,POIFIND_OR);
+   std::vector<pgsPointOfInterest> vPoi = pGirderLiftingPointsOfInterest->GetLiftingPointsOfInterest(span,girder,POI_FLEXURESTRESS);
    CHECK(vPoi.size()>0);
 
    std::_tstring tablename;

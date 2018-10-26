@@ -33,6 +33,7 @@
 #include <IFace\VersionInfo.h>
 #include <IFace\Views.h>
 #include <IFace\ViewEvents.h>
+#include <IFace\ExtendUI.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include "PGSuperStatusBar.h"
@@ -90,7 +91,8 @@ class CPGSuperDocProxyAgent :
    public IDesign,
    public IViews,
    public IVersionInfo,
-   public IRegisterViewEvents
+   public IRegisterViewEvents,
+   public IExtendUI
 {
 public:
    CPGSuperDocProxyAgent();
@@ -118,6 +120,7 @@ BEGIN_COM_MAP(CPGSuperDocProxyAgent)
    COM_INTERFACE_ENTRY(IViews)
    COM_INTERFACE_ENTRY(IVersionInfo)
    COM_INTERFACE_ENTRY(IRegisterViewEvents)
+   COM_INTERFACE_ENTRY(IExtendUI)
 END_COM_MAP()
 
 public:
@@ -263,6 +266,18 @@ public:
    virtual bool UnregisterBridgeSectionViewCallback(IDType ID);
    virtual bool UnregisterGirderElevationViewCallback(IDType ID);
    virtual bool UnregisterGirderSectionViewCallback(IDType ID);
+
+// IExtendUI
+public:
+   virtual IDType RegisterEditPierCallback(IEditPierCallback* pCallback);
+   virtual IDType RegisterEditSpanCallback(IEditSpanCallback* pCallback);
+   virtual IDType RegisterEditGirderCallback(IEditGirderCallback* pCallback);
+   virtual IDType RegisterEditBridgeCallback(IEditBridgeCallback* pCallback);
+   virtual bool UnregisterEditPierCallback(IDType ID);
+   virtual bool UnregisterEditSpanCallback(IDType ID);
+   virtual bool UnregisterEditGirderCallback(IDType ID);
+   virtual bool UnregisterEditBridgeCallback(IDType ID);
+
 
 private:
    DECLARE_AGENT_DATA;

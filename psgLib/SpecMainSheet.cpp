@@ -716,12 +716,6 @@ void CSpecMainSheet::ExchangeCreepData(CDataExchange* pDX)
    DDX_Text(pDX,IDC_CURING_TIME_FACTOR,m_Entry.m_CuringMethodTimeAdjustmentFactor);
    DDV_MinMaxDouble(pDX,m_Entry.m_CuringMethodTimeAdjustmentFactor,1,999);
 
-   DDX_Percentage(pDX,IDC_CAMBER_VARIABILITY, m_Entry.m_CamberVariability);
-   if ( pDX->m_bSaveAndValidate )
-   {
-      Float64 val = m_Entry.m_CamberVariability * 100.0;
-      DDV_Range( pDX, mfcDDV::LE,mfcDDV::GE,val,0.0,100.0);
-   }
 }
 
 void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
@@ -757,11 +751,13 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
    DDX_Percentage(pDX,IDC_EG_LIVELOAD,m_Entry.m_LiveLoadElasticGain);
 
    DDX_CBEnum(pDX,IDC_RELAXATION_LOSS_METHOD,m_Entry.m_RelaxationLossMethod);
+   DDX_CBEnum(pDX,IDC_FCPG_COMBO,m_Entry.m_FcgpComputationMethod);
 
    // have to map loss method to comb box ordering in dialog
-   int map[6]={LOSSES_AASHTO_REFINED,
+   int map[] ={LOSSES_AASHTO_REFINED,
                LOSSES_WSDOT_REFINED,
                LOSSES_TXDOT_REFINED_2004,
+               LOSSES_TXDOT_REFINED_2013,
                LOSSES_AASHTO_LUMPSUM,
                LOSSES_WSDOT_LUMPSUM,
                LOSSES_GENERAL_LUMPSUM};
@@ -776,9 +772,9 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
       CHECK(0 <= rad_ord && rad_ord < map_size);
       m_Entry.m_LossMethod = map[rad_ord];
 
-      if ( m_Entry.m_LossMethod == LOSSES_AASHTO_REFINED || m_Entry.m_LossMethod == LOSSES_WSDOT_REFINED || 
-           m_Entry.m_LossMethod == LOSSES_AASHTO_LUMPSUM || m_Entry.m_LossMethod == LOSSES_WSDOT_LUMPSUM ||
-           m_Entry.m_LossMethod == LOSSES_TXDOT_REFINED_2004)
+      if ( m_Entry.m_LossMethod == LOSSES_AASHTO_REFINED     || m_Entry.m_LossMethod == LOSSES_WSDOT_REFINED || 
+           m_Entry.m_LossMethod == LOSSES_AASHTO_LUMPSUM     || m_Entry.m_LossMethod == LOSSES_WSDOT_LUMPSUM ||
+           m_Entry.m_LossMethod == LOSSES_TXDOT_REFINED_2004 || m_Entry.m_LossMethod == LOSSES_TXDOT_REFINED_2013)
       {
          DDX_CBIndex(pDX,IDC_SHIPPING_LOSS_METHOD,rad_ord);
          if( rad_ord == 0 )
@@ -828,9 +824,9 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
       DDX_CBIndex(pDX,IDC_LOSS_METHOD,idx);
 
       Float64 dummy = 0;
-      if ( m_Entry.m_LossMethod == LOSSES_AASHTO_REFINED || m_Entry.m_LossMethod == LOSSES_WSDOT_REFINED || 
-           m_Entry.m_LossMethod == LOSSES_AASHTO_LUMPSUM || m_Entry.m_LossMethod == LOSSES_WSDOT_LUMPSUM ||
-           m_Entry.m_LossMethod == LOSSES_TXDOT_REFINED_2004)
+      if ( m_Entry.m_LossMethod == LOSSES_AASHTO_REFINED     || m_Entry.m_LossMethod == LOSSES_WSDOT_REFINED || 
+           m_Entry.m_LossMethod == LOSSES_AASHTO_LUMPSUM     || m_Entry.m_LossMethod == LOSSES_WSDOT_LUMPSUM ||
+           m_Entry.m_LossMethod == LOSSES_TXDOT_REFINED_2004 ||  m_Entry.m_LossMethod == LOSSES_TXDOT_REFINED_2013)
       {
          if ( m_Entry.m_ShippingLosses < 0 )
          {
@@ -923,10 +919,6 @@ void CSpecMainSheet::ExchangeLimitsData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_LWC_GIRDER_FC,   IDC_LWC_GIRDER_FC_UNIT,   m_Entry.m_MaxGirderFc[pgsTypes::AllLightweight],           pDisplayUnits->Stress);
    DDX_UnitValueAndTag(pDX, IDC_LWC_UNIT_WEIGHT, IDC_LWC_UNIT_WEIGHT_UNIT, m_Entry.m_MaxConcreteUnitWeight[pgsTypes::AllLightweight], pDisplayUnits->Density);
    DDX_UnitValueAndTag(pDX, IDC_LWC_AGG_SIZE,    IDC_LWC_AGG_SIZE_UNIT,    m_Entry.m_MaxConcreteAggSize[pgsTypes::AllLightweight],    pDisplayUnits->ComponentDim);
-
-   DDX_Check_Bool(pDX, IDC_CHECK_STIRRUP_COMPATIBILITY, m_Entry.m_DoCheckStirrupSpacingCompatibility);
-   DDX_Check_Bool(pDX, IDC_CHECK_GIRDER_SAG, m_Entry.m_bCheckSag);
-   DDX_CBEnum(pDX, IDC_SAG_OPTIONS, m_Entry.m_SagCamberType);
 }
  
 void CSpecMainSheet::UploadDesignData(CDataExchange* pDX)

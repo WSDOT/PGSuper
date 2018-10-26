@@ -89,8 +89,16 @@ CCreepAndShrinkageTable* CCreepAndShrinkageTable::PrepareTable(rptChapter* pChap
 
 void CCreepAndShrinkageTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   (*this)(row,1) << stress.SetValue( details.RefinedLosses.ShrinkageLosses() );
+  // Typecast to our known type (eating own doggy food)
+   boost::shared_ptr<const lrfdRefinedLosses> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses>(details.pLosses);
+   if (!ptl)
+   {
+      ATLASSERT(0); // made a bad cast? Bail...
+      return;
+   }
+
+   (*this)(row,1) << stress.SetValue( ptl->ShrinkageLosses() );
    (*this)(row,2) << stress.SetValue( details.pLosses->ElasticShortening().PermanentStrand_Fcgp() );
    (*this)(row,3) << stress.SetValue( -details.pLosses->GetDeltaFcd1() );
-   (*this)(row,4) << stress.SetValue( details.RefinedLosses.CreepLosses() );
+   (*this)(row,4) << stress.SetValue( ptl->CreepLosses() );
 }

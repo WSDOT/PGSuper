@@ -3,6 +3,16 @@
 	<folders/>
 	<topics>
 		<topic>
+			<name>PsglibLateral_Stability_of_Long_Prestr.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Shear_Design_(Determination_of_Beta_and_Theta).htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
 			<name>AnalyticalModels.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
@@ -24,11 +34,6 @@
 		</topic>
 		<topic>
 			<name>Shear_Design_Memo_August_2007.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>PsglibLateral_Stability_of_Long_Prestr.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -58,7 +63,12 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Live_Load_Distribution_Factors1.htm</name>
+			<name>User-Defined_Live_Loads.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Concrete_Material_Properties.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -88,12 +98,17 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>User-Defined_Live_Loads.htm</name>
+			<name>Long_Girder_Stability_Analysis_for_Lifting_and_Hauling.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Fabrication_Optimization.htm</name>
+			<name>CriticalSection.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Live_Load_Distribution_Factors1.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -128,17 +143,12 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Long_Girder_Stability_Analysis_for_Lifting_and_Hauling.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Concrete_Material_Properties.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
 			<name>Generalized_Resistance_Factor_for_Flexure.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Fabrication_Optimization.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -168,17 +178,12 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>CriticalSection.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Shear_Design_(Determination_of_Beta_and_Theta).htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
 			<name>hauling_of_long_prestressed_girders_kdot_method.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>txdot_research_report_0-6374-2.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>

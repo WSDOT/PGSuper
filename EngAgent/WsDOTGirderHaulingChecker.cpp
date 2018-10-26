@@ -152,7 +152,7 @@ void pgsWsdotGirderHaulingChecker::AnalyzeHauling(SpanIndexType span,GirderIndex
       concType = pMaterial->GetGdrConcreteType(span,gdr);
 
       GET_IFACE(IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
-      poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(span,gdr,POI_FLEXURESTRESS | POI_SECTCHANGE,POIFIND_OR);
+      poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(span,gdr,POI_FLEXURESTRESS);
    }
 
    PrepareHaulingAnalysisArtifact(span,gdr,Loh,Roh,Fc,Ec,concType,pArtifact);

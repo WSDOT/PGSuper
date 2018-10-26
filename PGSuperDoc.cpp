@@ -1070,6 +1070,98 @@ std::map<IDType,IGirderSectionViewEventCallback*> CPGSuperDoc::GetGirderSectionV
    return m_GirderSectionViewCallbacks;
 }
 
+IDType CPGSuperDoc::RegisterEditPierCallback(IEditPierCallback* pCallback)
+{
+   IDType key = m_ViewCallbackID++;
+   m_EditPierCallbacks.insert(std::make_pair(key,pCallback));
+   return key;
+}
+
+bool CPGSuperDoc::UnregisterEditPierCallback(IDType ID)
+{
+   std::map<IDType,IEditPierCallback*>::iterator found = m_EditPierCallbacks.find(ID);
+   if ( found == m_EditPierCallbacks.end() )
+      return false;
+
+   m_EditPierCallbacks.erase(found);
+
+   return true;
+}
+
+std::map<IDType,IEditPierCallback*> CPGSuperDoc::GetEditPierCallbacks()
+{
+   return m_EditPierCallbacks;
+}
+
+IDType CPGSuperDoc::RegisterEditSpanCallback(IEditSpanCallback* pCallback)
+{
+   IDType key = m_ViewCallbackID++;
+   m_EditSpanCallbacks.insert(std::make_pair(key,pCallback));
+   return key;
+}
+
+bool CPGSuperDoc::UnregisterEditSpanCallback(IDType ID)
+{
+   std::map<IDType,IEditSpanCallback*>::iterator found = m_EditSpanCallbacks.find(ID);
+   if ( found == m_EditSpanCallbacks.end() )
+      return false;
+
+   m_EditSpanCallbacks.erase(found);
+
+   return true;
+}
+
+std::map<IDType,IEditSpanCallback*> CPGSuperDoc::GetEditSpanCallbacks()
+{
+   return m_EditSpanCallbacks;
+}
+
+IDType CPGSuperDoc::RegisterEditGirderCallback(IEditGirderCallback* pCallback)
+{
+   IDType key = m_ViewCallbackID++;
+   m_EditGirderCallbacks.insert(std::make_pair(key,pCallback));
+   return key;
+}
+
+bool CPGSuperDoc::UnregisterEditGirderCallback(IDType ID)
+{
+   std::map<IDType,IEditGirderCallback*>::iterator found = m_EditGirderCallbacks.find(ID);
+   if ( found == m_EditGirderCallbacks.end() )
+      return false;
+
+   m_EditGirderCallbacks.erase(found);
+
+   return true;
+}
+
+std::map<IDType,IEditGirderCallback*> CPGSuperDoc::GetEditGirderCallbacks()
+{
+   return m_EditGirderCallbacks;
+}
+
+IDType CPGSuperDoc::RegisterEditBridgeCallback(IEditBridgeCallback* pCallback)
+{
+   IDType key = m_ViewCallbackID++;
+   m_EditBridgeCallbacks.insert(std::make_pair(key,pCallback));
+   return key;
+}
+
+bool CPGSuperDoc::UnregisterEditBridgeCallback(IDType ID)
+{
+   std::map<IDType,IEditBridgeCallback*>::iterator found = m_EditBridgeCallbacks.find(ID);
+   if ( found == m_EditBridgeCallbacks.end() )
+      return false;
+
+   m_EditBridgeCallbacks.erase(found);
+
+   return true;
+}
+
+std::map<IDType,IEditBridgeCallback*> CPGSuperDoc::GetEditBridgeCallbacks()
+{
+   return m_EditBridgeCallbacks;
+}
+
 BOOL CPGSuperDoc::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
 {
    if ( !CEAFDocument::OnNewDocumentFromTemplate(lpszPathName) )

@@ -1469,7 +1469,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->IncludeRebarForMoment() )
+   if ( bPositiveMoment && pSpecEntry->IncludeRebarForMoment() )
    {
       CComPtr<IRebarSection> rebar_section;
       pRebarGeom->GetRebars(poi,&rebar_section);

@@ -73,7 +73,10 @@
 #include "TimeDependentLossesTable.h"
 
 #include "CreepAndShrinkageTable.h"
+#include "TxDOT2013CreepAndShrinkageTable.h"
 #include "RelaxationAfterTransferTable.h"
+#include "TxDOT2013RelaxationAfterTransferTable.h"
+#include "TxDOT2013TimeDependentLossesTable.h"
 #include "FinalPrestressLossTable.h"
 
 #include "EffectivePrestressTable.h"
@@ -150,6 +153,10 @@ LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInt
       LossesByRefinedEstimate(beamType,poi,config,&details,laTxDOT);
       break;
 
+   case LOSSES_TXDOT_REFINED_2013:
+      LossesByRefinedEstimateTxDOT2013(beamType,poi,config,&details);
+      break;
+
    case LOSSES_AASHTO_LUMPSUM:
       LossesByApproxLumpSum(beamType,poi,config,&details,false);
       break;
@@ -213,6 +220,10 @@ void CPsLossEngineer::BuildReport(BeamType beamType,SpanIndexType span,GirderInd
 
    case LOSSES_GENERAL_LUMPSUM:
       ReportGeneralLumpSumMethod(beamType,span,gdr,pChapter,pDisplayUnits,true,level);
+      break;
+
+   case LOSSES_TXDOT_REFINED_2013:
+      ReportRefinedMethodTxDOT2013(pChapter,beamType,span,gdr,pDisplayUnits,level);
       break;
 
    default:
@@ -352,46 +363,46 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
 
    Float64 shipping_loss = pSpecEntry->GetShippingLosses();
 
-   lrfdRefinedLosses losses(poi.GetDistFromStart(),
-                                girder_length,
-                                grade,
-                                type,
-                                fpjPerm,
-                                fpjTTS,
-                                ApsPerm,
-                                ApsTTS,
-                                aps,
-                                eperm,
-                                etemp,
-                                usage,
-                                anchorSet,
-                                wobble,
-                                coeffFriction,
-                                angleChange,
-                                fc,
-                                fci,
-                                fcSlab,
-                                Ec,
-                                Eci,
-                                EcSlab,
+   boost::shared_ptr<lrfdRefinedLosses> pLoss (new lrfdRefinedLosses(poi.GetDistFromStart(),
+                                                                    girder_length,
+                                                                    grade,
+                                                                    type,
+                                                                    fpjPerm,
+                                                                    fpjTTS,
+                                                                    ApsPerm,
+                                                                    ApsTTS,
+                                                                    aps,
+                                                                    eperm,
+                                                                    etemp,
+                                                                    usage,
+                                                                    anchorSet,
+                                                                    wobble,
+                                                                    coeffFriction,
+                                                                    angleChange,
+                                                                    fc,
+                                                                    fci,
+                                                                    fcSlab,
+                                                                    Ec,
+                                                                    Eci,
+                                                                    EcSlab,
 
-                                Mdlg,
-                                Madlg,
-                                Msidl,
-                                Mllim,
+                                                                    Mdlg,
+                                                                    Madlg,
+                                                                    Msidl,
+                                                                    Mllim,
 
-                                Ag,
-                                Ig,
-                                Ybg,
-                                Ac,
-                                Ic,
-                                Ybc,
+                                                                    Ag,
+                                                                    Ig,
+                                                                    Ybg,
+                                                                    Ac,
+                                                                    Ic,
+                                                                    Ybc,
 
-                                rh,
-                                ti,
-                                shipping_loss,
-                                false
-                                );
+                                                                    rh,
+                                                                    ti,
+                                                                    shipping_loss,
+                                                                    false
+                                                                    ));
 
 
    // Any of the "get" methods on lrfdPsLosses can throw an lrfdXPsLosses exception if
@@ -399,9 +410,10 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
    // the elastic shortening losses and make sure an exception doesn't throw.
    try
    {
-      Float64 pES = losses.PermanentStrand_ElasticShorteningLosses();
-      pLosses->RefinedLosses = losses;
-      pLosses->pLosses = &pLosses->RefinedLosses;
+      Float64 pES = pLoss->PermanentStrand_ElasticShorteningLosses();
+      // store in shared pointer to base class
+      pLosses->pLosses = boost::static_pointer_cast<const lrfdLosses>(pLoss);
+      ATLASSERT(pLosses->pLosses!=NULL);
    }
    catch( const lrfdXPsLosses& e )
    {
@@ -516,57 +528,57 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
    }
 
    lrfdRefinedLosses2005::RelaxationLossMethod relaxationMethod = (lrfdRefinedLosses2005::RelaxationLossMethod)pSpecEntry->GetRelaxationLossMethod();
-   lrfdRefinedLosses2005 losses(poi.GetDistFromStart(),
-                                girder_length,
-                                grade,
-                                type,
-                                fpjPerm,
-                                fpjTTS,
-                                ApsPerm,
-                                ApsTTS,
-                                aps,
-                                eperm,
-                                etemp,
-                                usage,
-                                anchorSet,
-                                wobble,
-                                coeffFriction,
-                                angleChange,
-                                GdrCreepK1,  GdrCreepK2,  GdrShrinkageK1,  GdrShrinkageK2,
-                                DeckCreepK1, DeckCreepK2, DeckShrinkageK1, DeckShrinkageK2,
-                                fc,
-                                fci,
-                                fcSlab,
-                                Ec,
-                                Eci,
-                                EcSlab,
-                                Volume, // volume/length
-                                SurfaceArea, // surface area/length
-                                Aslab, // volume/length for slab
-                                Pslab, // surface area/length for slab
-                                Ag,
-                                Ig,
-                                Ybg,
-                                Ac,
-                                Ic,
-                                Ybc,
-                                Ad,
-                                ed,
-                                Ksh,
-                                Mdlg,
-                                Madlg,
-                                Msidl,
-                                Mllim,
-                                rh,
-                                ti,
-                                th,
-                                td,
-                                tf,
-                                pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient2005::Accelerated : lrfdCreepCoefficient2005::Normal,
-                                pSpecEntry->GetCuringMethodTimeAdjustmentFactor(),
-                                lossAgency!=laWSDOT, // ignore initial relaxation if not WSDOT
-                                false,
-                                relaxationMethod);
+   boost::shared_ptr<lrfdRefinedLosses2005> pLoss(new lrfdRefinedLosses2005(poi.GetDistFromStart(),
+                                                  girder_length,
+                                                  grade,
+                                                  type,
+                                                  fpjPerm,
+                                                  fpjTTS,
+                                                  ApsPerm,
+                                                  ApsTTS,
+                                                  aps,
+                                                  eperm,
+                                                  etemp,
+                                                  usage,
+                                                  anchorSet,
+                                                  wobble,
+                                                  coeffFriction,
+                                                  angleChange,
+                                                  GdrCreepK1,  GdrCreepK2,  GdrShrinkageK1,  GdrShrinkageK2,
+                                                  DeckCreepK1, DeckCreepK2, DeckShrinkageK1, DeckShrinkageK2,
+                                                  fc,
+                                                  fci,
+                                                  fcSlab,
+                                                  Ec,
+                                                  Eci,
+                                                  EcSlab,
+                                                  Volume, // volume/length
+                                                  SurfaceArea, // surface area/length
+                                                  Aslab, // volume/length for slab
+                                                  Pslab, // surface area/length for slab
+                                                  Ag,
+                                                  Ig,
+                                                  Ybg,
+                                                  Ac,
+                                                  Ic,
+                                                  Ybc,
+                                                  Ad,
+                                                  ed,
+                                                  Ksh,
+                                                  Mdlg,
+                                                  Madlg,
+                                                  Msidl,
+                                                  Mllim,
+                                                  rh,
+                                                  ti,
+                                                  th,
+                                                  td,
+                                                  tf,
+                                                  pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient2005::Accelerated : lrfdCreepCoefficient2005::Normal,
+                                                  pSpecEntry->GetCuringMethodTimeAdjustmentFactor(),
+                                                  lossAgency!=laWSDOT, // ignore initial relaxation if not WSDOT
+                                                  false,
+                                                  relaxationMethod));
 
 
    // Any of the _T("get") methods on lrfdPsLosses can throw an lrfdXPsLosses exception if
@@ -574,9 +586,10 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
    // the elastic shortening losses and make sure an exception doesn't throw.
    try
    {
-      Float64 pES = losses.PermanentStrand_ElasticShorteningLosses();
-      pLosses->RefinedLosses2005 = losses;
-      pLosses->pLosses = &pLosses->RefinedLosses2005;
+      Float64 pES = pLoss->PermanentStrand_ElasticShorteningLosses();
+      // store in shared pointer of base class
+      pLosses->pLosses = boost::static_pointer_cast<const lrfdLosses>(pLoss);
+      ATLASSERT(pLosses->pLosses!=NULL);
    }
    catch( const lrfdXPsLosses& e )
    {
@@ -596,6 +609,199 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
          msg = _T("The relaxation loss of 1.2 ksi can only be used with low relaxation strands (see Article 5.9.5.4.2c)\nChange the strand type or select a different method for computing losses");
+         pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,1,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
+      }
+      else if ( e.GetReasonCode() == lrfdXPsLosses::fcOutOfRange )
+      {
+         reason |= XREASON_ASSUMPTIONVIOLATED;
+         msg = _T("Concrete strength is out of range per LRFD 5.4.2.1 and 5.9.5.1");
+         pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,2,m_StatusGroupID,m_scidGirderDescriptionWarning,msg.c_str());
+      }
+      else
+      {
+         reason |= XREASON_ASSUMPTIONVIOLATED;
+         msg = _T("Prestress losses could not be computed because an unspecified error occured");
+         pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,_T(__FILE__),__LINE__,msg.c_str());
+      }
+
+      pStatusCenter->Add(pStatusItem);
+
+      msg += std::_tstring(_T("\nSee Status Center for Details"));
+      THROW_UNWIND(msg.c_str(),reason);
+   }
+}
+
+void CPsLossEngineer::LossesByRefinedEstimateTxDOT2013(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses)
+{
+   pLosses->Method = LOSSES_TXDOT_REFINED_2013;
+
+   matPsStrand::Grade grade;
+   matPsStrand::Type type;
+   Float64 fpjPerm;
+   Float64 fpjTTS;
+   Float64 perimeter;
+   Float64 Ag;
+   Float64 Ig;
+   Float64 Ybg;
+   Float64 Ac;
+   Float64 Ic;
+   Float64 Ybc;
+   Float64 Volume;
+   Float64 SurfaceArea;
+   Float64 Ad;
+   Float64 ed;
+   Float64 Ksh;
+   Float64 eperm;// eccentricity of the permanent strands on the non-composite section
+   Float64 etemp;
+   Float64 aps;  // area of one prestress strand
+   Float64 ApsPerm;
+   Float64 ApsTTS;
+   Float64 Mdlg;
+   Float64 Madlg;
+   Float64 Msidl;
+   Float64 Mllim;
+   Float64 rh;
+   Float64 ti,th,td,tf; // initial time, time of hauling,time of deck placment, final time
+
+   Float64 PjS, PjH, PjT;
+   StrandIndexType Ns, Nh, Nt;
+
+   Float64 GdrCreepK1, GdrCreepK2, GdrShrinkageK1, GdrShrinkageK2;
+   Float64 DeckCreepK1, DeckCreepK2, DeckShrinkageK1, DeckShrinkageK2;
+
+   Float64 fci,fc,fcSlab;
+   Float64 Eci,Ec,EcSlab;
+
+   Float64 girder_length, span_length, end_size;
+
+   Float64 Aslab;
+   Float64 Pslab;
+   lrfdLosses::TempStrandUsage usage;
+
+   Float64 anchorSet,wobble,coeffFriction,angleChange;
+
+   GetLossParameters(poi,config,
+                     &grade, &type, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &Volume, &SurfaceArea,&Ad, &ed, &Ksh,
+                     &eperm, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &Mllim, &rh, 
+                     &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
+                     &Ns, &Nh, &Nt,
+                     &GdrCreepK1, &GdrCreepK2, &GdrShrinkageK1, &GdrShrinkageK2,
+                     &DeckCreepK1, &DeckCreepK2, &DeckShrinkageK1, &DeckShrinkageK2,
+                     &fci,&fc,&fcSlab,
+                     &Eci,&Ec,&EcSlab,
+                     &girder_length,&span_length,&end_size,
+                     &Aslab,&Pslab,&usage,&anchorSet,&wobble,&coeffFriction,&angleChange);
+
+   SpanIndexType span  = poi.GetSpan();
+   GirderIndexType gdr = poi.GetGirder();
+
+   GET_IFACE( ISpecification,   pSpec);
+   GET_IFACE(ILibrary,pLib);
+   std::_tstring spec_name = pSpec->GetSpecification();
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
+
+   Float64 shipping_loss = pSpecEntry->GetShippingLosses();
+
+   // fcgp Computation method - Elastic shortening
+   Int16 fcgp_method = pSpecEntry->GetFcgpComputationMethod();
+
+   lrfdElasticShortening::FcgpComputationMethod method;
+   if (fcgp_method == FCGP_07FPU)
+   {
+      method = lrfdElasticShortening::fcgp07Fpu;
+   }
+   else if (fcgp_method == FCGP_ITERATIVE)
+   {
+      method = lrfdElasticShortening::fcgpIterative;
+   }
+   else
+   {
+      ATLASSERT(fcgp_method == FCGP_HYBRID);
+      // Use 0.7Fpu method to compute Fcgp if permanent strands are jacked to 0.75*Fpu and,
+      // no temp strands exist, otherwise use iterative method
+      method = lrfdElasticShortening::fcgpIterative;
+      if ( ApsPerm >= 0.0 && IsEqual(ApsTTS, 0.0) )
+      {
+         Float64 Fpu = lrfdPsStrand::GetUltimateStrength( grade );
+
+         if (ApsPerm==0.0 || IsEqual(Fpu*0.75, fpjPerm, 1000.0)) // Pa's are very small
+         {
+            method = lrfdElasticShortening::fcgp07Fpu;
+         }
+      }
+   }
+
+   boost::shared_ptr<lrfdRefinedLossesTxDOT2013> pLoss(new lrfdRefinedLossesTxDOT2013( poi.GetDistFromStart(),
+                                                  girder_length,
+                                                  grade,
+                                                  type,
+                                                  fpjPerm,
+                                                  fpjTTS,
+                                                  ApsPerm,
+                                                  ApsTTS,
+                                                  aps,
+                                                  eperm,
+                                                  etemp,
+                                                  usage,
+                                                  anchorSet,
+                                                  wobble,
+                                                  coeffFriction,
+                                                  angleChange,
+                                                  fc,
+                                                  fci,
+                                                  fcSlab,
+                                                  Ec,
+                                                  Eci,
+                                                  EcSlab,
+                                                  Mdlg,
+                                                  Madlg,
+                                                  Msidl,
+                                                  Mllim,
+                                                  Ag,
+                                                  Ig,
+                                                  Ybg,
+                                                  Ac,
+                                                  Ic,
+                                                  Ybc,
+                                                  rh,
+                                                  ti,
+                                                  shipping_loss,
+                                                  method,
+                                                  false));
+
+   // Any of the "get" methods can throw an lrfdXPsLosses exception if
+   // the input data is bad.  To make sure we have everything correct, lets request
+   // the elastic shortening losses and make sure an exception doesn't throw.
+   try
+   {
+      Float64 pES = pLoss->PermanentStrand_ElasticShorteningLosses();
+      // store in shared pointer to base class
+      pLosses->pLosses = boost::static_pointer_cast<const lrfdLosses>(pLoss);
+      ATLASSERT(pLosses->pLosses!=NULL);
+
+      if(fcgp_method == FCGP_HYBRID && 
+         pLoss->ElasticShortening().GetFcgpComputationMethod() == lrfdElasticShortening::fcgpIterative)
+      {
+         // Elastic shortening loss method switches to iterative solution if jacking stress is not
+         // equal to 0.75Fpu. Let user know if this happened.
+         GET_IFACE(IEAFStatusCenter,pStatusCenter);
+         std::_tstring msg = _T("The Jacking stress is not equal to 0.75Fpu, or temporary strands exist. Hence, for calculation of elastic shortening, an iterative solution was used to find Fcgp after release rather than assuming 0.7*Fpu.");
+         CEAFStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,1,m_StatusGroupID,m_scidGirderDescriptionWarning,msg.c_str());
+         pStatusCenter->Add(pStatusItem);
+      }
+   }
+   catch( const lrfdXPsLosses& e )
+   {
+      Int32 reason = XREASON_AGENTVALIDATIONFAILURE;
+      std::_tstring msg;
+
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      CEAFStatusItem* pStatusItem;
+
+      if ( e.GetReasonCode() == lrfdXPsLosses::fpjOutOfRange )
+      {
+         reason |= XREASON_ASSUMPTIONVIOLATED;
+         msg = _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article 5.9.5.4.4b of LRFD 3rd Edition 2004)\nAdjust the prestress jacking forces");
          pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,1,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
       }
       else if ( e.GetReasonCode() == lrfdXPsLosses::fcOutOfRange )
@@ -723,57 +929,58 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
 
          Float64 shipping_loss = pSpecEntry->GetShippingLosses();
 
-         lrfdApproximateLosses losses(
-                            (lrfdApproximateLosses::BeamType)beamType,
-                            shipping_loss,
-                            ppr,
-                            poi.GetDistFromStart(), // location along girder where losses are computed
-                            girder_length,    // girder length
-                            grade,
-                            type,
-                            fpjPerm,
-                            fpjTTS,
-                            ApsPerm,  // area of permanent strand
-                            ApsTTS,  // area of TTS 
-                            aps,      // area of one strand
-                            eperm, // eccentricty of permanent ps strands with respect to CG of girder
-                            etemp, // eccentricty of temporary strands with respect to CG of girder
-                            usage,
-                            anchorSet,
-                            wobble,
-                            coeffFriction,
-                            angleChange,
+         boost::shared_ptr<lrfdApproximateLosses> pLoss (new lrfdApproximateLosses(
+                                                       (lrfdApproximateLosses::BeamType)beamType,
+                                                       shipping_loss,
+                                                       ppr,
+                                                       poi.GetDistFromStart(), // location along girder where losses are computed
+                                                       girder_length,    // girder length
+                                                       grade,
+                                                       type,
+                                                       fpjPerm,
+                                                       fpjTTS,
+                                                       ApsPerm,  // area of permanent strand
+                                                       ApsTTS,  // area of TTS 
+                                                       aps,      // area of one strand
+                                                       eperm, // eccentricty of permanent ps strands with respect to CG of girder
+                                                       etemp, // eccentricty of temporary strands with respect to CG of girder
+                                                       usage,
+                                                       anchorSet,
+                                                       wobble,
+                                                       coeffFriction,
+                                                       angleChange,
 
-                            (lrfdConcreteUtil::DensityType)config.ConcType,
-                            fc,
-                            fci,
-                            fcSlab,
-                            Ec,   // Modulus of elasticity of girder
-                            Eci,  // Modulus of elasticity of girder at transfer
-                            EcSlab,  // Modulus of elasticity of deck
+                                                       (lrfdConcreteUtil::DensityType)config.ConcType,
+                                                       fc,
+                                                       fci,
+                                                       fcSlab,
+                                                       Ec,   // Modulus of elasticity of girder
+                                                       Eci,  // Modulus of elasticity of girder at transfer
+                                                       EcSlab,  // Modulus of elasticity of deck
 
-                            Mdlg,  // Dead load moment of girder only
-                            Madlg,  // Additional dead load on girder section
-                            Msidl, // Superimposed dead loads
-                            Mllim,
-                         
-                            Ag,
-                            Ig,
-                            Ybg,
-                            Ac,
-                            Ic,
-                            Ybc,
+                                                       Mdlg,  // Dead load moment of girder only
+                                                       Madlg,  // Additional dead load on girder section
+                                                       Msidl, // Superimposed dead loads
+                                                       Mllim,
+                                                    
+                                                       Ag,
+                                                       Ig,
+                                                       Ybg,
+                                                       Ac,
+                                                       Ic,
+                                                       Ybc,
 
-                            rh,      // relative humidity
-                            ti,   // Time until prestress transfer
-                            !isWsdot,false);
+                                                       rh,      // relative humidity
+                                                       ti,   // Time until prestress transfer
+                                                       !isWsdot,false));
 
          // Any of the "get" methods on lrfdPsLosses can throw an lrfdXPsLosses exception if
          // the input data is bad.  To make sure we have everything correct, lets request
          // the elastic shortening losses and make sure an exception doesn't throw.
-         Float64 pES = losses.PermanentStrand_ElasticShorteningLosses();
-         pLosses->ApproxLosses  = losses;
-         pLosses->pLosses = &pLosses->ApproxLosses;
+         Float64 pES = pLoss->PermanentStrand_ElasticShorteningLosses();
+         // store in shared pointer to base class
+         pLosses->pLosses = boost::static_pointer_cast<const lrfdLosses>(pLoss);
+         ATLASSERT(pLosses->pLosses!=NULL);
       }
       else
       {
@@ -793,7 +1000,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
             THROW_UNWIND(msg.c_str(),XREASON_LRFD_VERSION);
          }
 
-         lrfdApproximateLosses2005 losses(poi.GetDistFromStart(), // location along girder where losses are computed
+         boost::shared_ptr<lrfdApproximateLosses2005> pLoss (new lrfdApproximateLosses2005(poi.GetDistFromStart(), // location along girder where losses are computed
                             girder_length,    // girder length
                             grade,
                             type,
@@ -833,7 +1040,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
                             ti,   // Time until prestress transfer
                             !isWsdot,
                             false
-                            );
+                            ));
 
          if ( isWsdot )
          {
@@ -847,9 +1054,10 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
          // Any of the "get" methods on lrfdPsLosses can throw an lrfdXPsLosses exception if
          // the input data is bad.  To make sure we have everything correct, lets request
          // the elastic shortening losses and make sure an exception doesn't throw.
-         Float64 pES = losses.PermanentStrand_ElasticShorteningLosses();
-         pLosses->ApproxLosses2005  = losses;
-         pLosses->pLosses = &pLosses->ApproxLosses2005;
+         Float64 pES = pLoss->PermanentStrand_ElasticShorteningLosses();
+         // store in shared pointer to base class
+         pLosses->pLosses = boost::static_pointer_cast<const lrfdLosses>(pLoss);
+         ATLASSERT(pLosses->pLosses!=NULL);
       }
 
    } // end of try block
@@ -954,8 +1162,10 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
 
    if ( Nstrands == 0 )
    {
-      pLosses->LumpSum = lrfdLumpSumLosses(0,0,0,0,usage,0,0,0,0,0,0,0,0,0);
-      pLosses->pLosses = &(pLosses->LumpSum);
+      boost::shared_ptr<const lrfdLumpSumLosses> pLoss (new lrfdLumpSumLosses(0,0,0,0,usage,0,0,0,0,0,0,0,0,0));
+
+      pLosses->pLosses = boost::static_pointer_cast<const lrfdLosses>(pLoss);
+      ATLASSERT(pLosses->pLosses!=NULL);
    }
    else
    {
@@ -965,7 +1175,7 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
       GET_IFACE(ILibrary,pLib);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
 
-      pLosses->LumpSum = lrfdLumpSumLosses(ApsPerm,ApsTTS,fpjPerm,fpjTTS,usage,
+      boost::shared_ptr<const lrfdLumpSumLosses> pLoss (new lrfdLumpSumLosses(ApsPerm,ApsTTS,fpjPerm,fpjTTS,usage,
                                            pSpecEntry->GetBeforeXferLosses(),
                                            pSpecEntry->GetAfterXferLosses(),
                                            pSpecEntry->GetLiftingLosses(),
@@ -974,9 +1184,10 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
                                            pSpecEntry->GetAfterTempStrandRemovalLosses(),
                                            pSpecEntry->GetAfterDeckPlacementLosses(),
                                            pSpecEntry->GetAfterSIDLLosses(),
-                                           pSpecEntry->GetFinalLosses());
+                                           pSpecEntry->GetFinalLosses()));
 
-      pLosses->pLosses = &(pLosses->LumpSum);
+      pLosses->pLosses = boost::static_pointer_cast<const lrfdLosses>(pLoss);
+      ATLASSERT(pLosses->pLosses!=NULL);
    }
 }
 
@@ -1033,9 +1244,10 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
    bool bTemporaryStrands = ( 0 < Nt && pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPretensioned ? true : false);
 
    // Relaxation At Prestress Transfer
-   ReportInitialRelaxation(pChapter,bTemporaryStrands,details.pLosses,pDisplayUnits,level);
+   ReportInitialRelaxation(pChapter,bTemporaryStrands,details.pLosses.get(),pDisplayUnits,level);
 
-   CElasticShorteningTable*                     pES  = CElasticShorteningTable::PrepareTable(pChapter,m_pBroker,span,gdr,bTemporaryStrands,pDisplayUnits,level);
+   CElasticShorteningTable*                     pES  = CElasticShorteningTable::PrepareTable(pChapter,m_pBroker,span,gdr,bTemporaryStrands,
+                                                                                             details,pDisplayUnits,level);
    CFrictionLossTable*                          pFR  = NULL;
    CPostTensionInteractionTable*                pPTT = NULL;
    CEffectOfPostTensionedTemporaryStrandsTable* pPTP = NULL;
@@ -1185,12 +1397,13 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
 
    bool bTemporaryStrands = ( 0 < Nt && pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPretensioned ? true : false);
 
-   ReportInitialRelaxation(pChapter,bTemporaryStrands,details.pLosses,pDisplayUnits,level);
+   ReportInitialRelaxation(pChapter,bTemporaryStrands,details.pLosses.get(),pDisplayUnits,level);
 
    ////////////////////////////////////////////////////////////////////////////////////////
    // Create the tables for losses - order is important here... The factory methods
    // put content into the chapter and return a table that needs to be filled up
-   CElasticShorteningTable*                     pES  = CElasticShorteningTable::PrepareTable(pChapter,m_pBroker,span,gdr,bTemporaryStrands,pDisplayUnits,level);
+   CElasticShorteningTable*                     pES  = CElasticShorteningTable::PrepareTable(pChapter,m_pBroker,span,gdr,bTemporaryStrands,
+                                                                                             details,pDisplayUnits,level);
    CFrictionLossTable*                          pFR  = NULL;
    CPostTensionInteractionTable*                pPTT = NULL;
    CEffectOfPostTensionedTemporaryStrandsTable* pPTP = NULL;
@@ -1261,7 +1474,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
 
    CTimeDependentLossFinalTable* pLTdf = CTimeDependentLossFinalTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
    CTimeDependentLossesTable*    pLT   = CTimeDependentLossesTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
-   CTotalPrestressLossTable*     pT    = CTotalPrestressLossTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
+   CTotalPrestressLossTable*     pT    = CTotalPrestressLossTable::PrepareTable(pChapter,m_pBroker,span,gdr,details,pDisplayUnits,level);
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
@@ -1369,6 +1582,165 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    }
 }
 
+void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+{
+   rptParagraph* pParagraph;
+
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+
+   GET_IFACE(IGirderData,pGirderData);
+   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
+
+   GET_IFACE(IStrandGeometry,pStrandGeom);
+   StrandIndexType Nt = pStrandGeom->GetNumStrands(span,gdr,pgsTypes::Temporary);
+
+   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   *pChapter << pParagraph;
+   *pParagraph << _T("Refined Estimate of Time-Dependent Losses Per TxDOT Research Report 0-6374-2") << rptNewLine;
+
+   GET_IFACE(IPointOfInterest,pIPoi);
+   std::vector<pgsPointOfInterest> bsPoi = pIPoi->GetPointsOfInterest( span, gdr, pgsTypes::BridgeSite3, POI_TABULAR );
+   std::vector<pgsPointOfInterest> cyPoi = pIPoi->GetPointsOfInterest( span, gdr, pgsTypes::CastingYard, POI_TABULAR | POI_PICKPOINT, POIFIND_OR);
+   std::vector<pgsPointOfInterest>::iterator iter;
+
+   PoiSet sPoi;
+   PoiSet::iterator siter;
+   for ( iter = bsPoi.begin(); iter != bsPoi.end(); iter++ )
+   {
+      sPoi.insert( std::make_pair(*iter,pgsTypes::BridgeSite3) );
+   }
+
+   for ( iter = cyPoi.begin(); iter != cyPoi.end(); iter++ )
+   {
+      sPoi.insert( std::make_pair(*iter,pgsTypes::CastingYard) );
+   }
+
+   GET_IFACE(ILosses,pILosses);
+   LOSSDETAILS details = pILosses->GetLossDetails( cyPoi[0] );
+
+   GET_IFACE(IBridge,pBridge);
+   Float64 end_size = pBridge->GetGirderStartConnectionLength( span,gdr );
+
+   // Do some preliminary setup for the tables.
+   INIT_UV_PROTOTYPE( rptForceUnitValue,   force,       pDisplayUnits->GetGeneralForceUnit(),    false );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue,    area,        pDisplayUnits->GetAreaUnit(),            false );
+   INIT_UV_PROTOTYPE( rptLength4UnitValue, mom_inertia, pDisplayUnits->GetMomentOfInertiaUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,  ecc,         pDisplayUnits->GetComponentDimUnit(),    false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,  cg,          pDisplayUnits->GetComponentDimUnit(),    false );
+   INIT_UV_PROTOTYPE( rptMomentUnitValue,  moment,      pDisplayUnits->GetMomentUnit(),          false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,      pDisplayUnits->GetStressUnit(),          false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,  mod_e,       pDisplayUnits->GetModEUnit(),            false );
+
+   bool bTemporaryStrands = ( 0 < Nt && pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPretensioned ? true : false);
+
+   // NOTE: The order of everything from here to the loop is important. 
+   // It is the order in which things are put into the report
+   ReportInitialRelaxation(pChapter,bTemporaryStrands,details.pLosses.get(),pDisplayUnits,level);
+
+   CElasticShorteningTable*                     pES  = CElasticShorteningTable::PrepareTable(pChapter,m_pBroker,span,gdr,bTemporaryStrands,
+                                                                                             details,pDisplayUnits,level);
+   CFrictionLossTable*                          pFR  = NULL;
+   CPostTensionInteractionTable*                pPTT = NULL;
+   CEffectOfPostTensionedTemporaryStrandsTable* pPTP = NULL;
+   
+   if ( 0 < Nt && pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned )
+   {
+      pFR  = CFrictionLossTable::PrepareTable(pChapter,m_pBroker,span,gdr,details,pDisplayUnits,level);
+      pPTT = CPostTensionInteractionTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
+      pPTP = CEffectOfPostTensionedTemporaryStrandsTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
+   }
+
+   CTimeDependentLossesAtShippingTable*            pPSH = NULL;
+   CPostTensionTimeDependentLossesAtShippingTable* pPTH = NULL;
+
+   GET_IFACE(IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
+   if ( pGirderHaulingSpecCriteria->IsHaulingCheckEnabled() )
+   {
+      pPSH = CTimeDependentLossesAtShippingTable::PrepareTable(pChapter,m_pBroker,span,gdr,bTemporaryStrands,pDisplayUnits,level);
+
+      if ( 0 < Nt ) 
+         pPTH = CPostTensionTimeDependentLossesAtShippingTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
+   }
+
+   CTemporaryStrandRemovalTable*        pPTR = NULL;
+   if (0 < Nt )
+      pPTR = CTemporaryStrandRemovalTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
+
+   pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   *pChapter << pParagraph;
+   *pParagraph << _T("Time dependent losses") << rptNewLine;
+
+   CChangeOfConcreteStressTable*            pDeltaFcdp = CChangeOfConcreteStressTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
+   CTxDOT2013CreepAndShrinkageTable*        pCR        = CTxDOT2013CreepAndShrinkageTable::PrepareTable(pChapter,m_pBroker,span,gdr,details,pDisplayUnits,level);
+   CTxDOT2013RelaxationAfterTransferTable*  pR2        = CTxDOT2013RelaxationAfterTransferTable::PrepareTable(pChapter,m_pBroker,span,gdr,details,pDisplayUnits,level);
+   CTxDOT2013TimeDependentLossesTable*      pLT        = CTxDOT2013TimeDependentLossesTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
+   CTotalPrestressLossTable*                pT         = CTotalPrestressLossTable::PrepareTable(pChapter,m_pBroker,span,gdr,details,pDisplayUnits,level);
+
+   pgsPointOfInterest prev_poi(0,0,0);
+   bool bSkipToNextRow = false;
+   int row1 = 1;
+   int row2 = 1;
+   for ( siter = sPoi.begin(); siter != sPoi.end(); siter++ )
+   {
+      bSkipToNextRow = false;
+
+      pgsPointOfInterest& poi = (*siter).first;
+      pgsTypes::Stage stage = (*siter).second;
+
+      if ( row1 != 1 && IsEqual(prev_poi.GetDistFromStart(),poi.GetDistFromStart()) )
+      {
+         row1--;
+         bSkipToNextRow = true;
+      }
+
+      // write the location information into the tables
+      ReportLocation2(pES,  row1,stage,poi,end_size,pDisplayUnits);
+      ReportLocation2(pFR,  row1,stage,poi,end_size,pDisplayUnits);
+      ReportLocation2(pPTT, row1,stage,poi,end_size,pDisplayUnits);
+      ReportLocation2(pPTP, row1,stage,poi,end_size,pDisplayUnits);
+      ReportLocation2(pPSH, row1,stage,poi,end_size,pDisplayUnits);
+      ReportLocation2(pPTH, row1,stage,poi,end_size,pDisplayUnits);
+
+      if ( stage == pgsTypes::BridgeSite3 )
+      {
+         ReportLocation(pPTR,      row2,stage,poi,end_size,pDisplayUnits);
+         ReportLocation(pDeltaFcdp,row2,stage,poi,end_size,pDisplayUnits);
+         ReportLocation(pCR,       row2,stage,poi,end_size,pDisplayUnits);
+         ReportLocation(pR2,       row2,stage,poi,end_size,pDisplayUnits);
+         ReportLocation(pLT,       row2,stage,poi,end_size,pDisplayUnits);
+         ReportLocation(pT,        row2,stage,poi,end_size,pDisplayUnits);
+      }
+
+      // fill each row1 with data
+      if ( !bSkipToNextRow )
+      {
+         details = pILosses->GetLossDetails( poi );
+
+         ReportRow(pES, pChapter,m_pBroker,poi,row1,details,pDisplayUnits,level);
+         ReportRow(pFR, pChapter,m_pBroker,poi,row1,details,pDisplayUnits,level);
+         ReportRow(pPTT,pChapter,m_pBroker,poi,row1,details,pDisplayUnits,level);
+         ReportRow(pPTP,pChapter,m_pBroker,poi,row1,details,pDisplayUnits,level);
+         ReportRow(pPSH,pChapter,m_pBroker,poi,row1,details,pDisplayUnits,level);
+         ReportRow(pPTH,pChapter,m_pBroker,poi,row1,details,pDisplayUnits,level);
+      }
+
+      if ( stage == pgsTypes::BridgeSite3 )
+      {
+         ReportRow(pPTR,      pChapter,m_pBroker,poi,row2,details,pDisplayUnits,level);
+         ReportRow(pDeltaFcdp,pChapter,m_pBroker,poi,row2,details,pDisplayUnits,level);
+         ReportRow(pCR,       pChapter,m_pBroker,poi,row2,details,pDisplayUnits,level);
+         ReportRow(pR2,       pChapter,m_pBroker,poi,row2,details,pDisplayUnits,level);
+         ReportRow(pLT,       pChapter,m_pBroker,poi,row2,details,pDisplayUnits,level);
+         ReportRow(pT,        pChapter,m_pBroker,poi,row2,details,pDisplayUnits,level);
+
+         row2++;
+      }
+      
+      row1++;
+      prev_poi = poi;
+   }
+}
+
 void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level,bool isWsdot)
 {
    rptParagraph* pParagraph;
@@ -1415,9 +1787,10 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
    //////////////////////////////////////////////////////////
    // NOTE: The order of everything from here to the loop is important. 
    // It is the order in which things are put into the report
-   ReportInitialRelaxation(pChapter,bTemporaryStrands,details.pLosses,pDisplayUnits,level);
+   ReportInitialRelaxation(pChapter,bTemporaryStrands,details.pLosses.get(),pDisplayUnits,level);
 
-   CElasticShorteningTable*                        pES  = CElasticShorteningTable::PrepareTable(pChapter,m_pBroker,span,gdr,bTemporaryStrands,pDisplayUnits,level);
+   CElasticShorteningTable*                        pES  = CElasticShorteningTable::PrepareTable(pChapter,m_pBroker,span,gdr,bTemporaryStrands,
+                                                                                                details,pDisplayUnits,level);
 
    ReportLumpSumTimeDependentLossesAtShipping(pChapter,details,pDisplayUnits,level);
 
@@ -1444,7 +1817,7 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
 
    ReportLumpSumTimeDependentLosses(pChapter,details,pDisplayUnits,level);
 
-   CTotalPrestressLossTable* pT = CTotalPrestressLossTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
+   CTotalPrestressLossTable* pT = CTotalPrestressLossTable::PrepareTable(pChapter,m_pBroker,span,gdr,details,pDisplayUnits,level);
 
    
    PoiSet::iterator siter;
@@ -1547,9 +1920,10 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
    //////////////////////////////////////////////////////////
    // NOTE: The order of everything from here to the loop is important. 
    // It is the order in which things are put into the report
-   ReportInitialRelaxation(pChapter,bTemporaryStrands,details.pLosses,pDisplayUnits,level);
+   ReportInitialRelaxation(pChapter,bTemporaryStrands,details.pLosses.get(),pDisplayUnits,level);
 
-   CElasticShorteningTable*                        pES  = CElasticShorteningTable::PrepareTable(pChapter,m_pBroker,span,gdr,bTemporaryStrands,pDisplayUnits,level);
+   CElasticShorteningTable*                        pES  = CElasticShorteningTable::PrepareTable(pChapter,m_pBroker,span,gdr,bTemporaryStrands,
+                                                                                                details,pDisplayUnits,level);
 
    ReportLumpSumTimeDependentLossesAtShipping(pChapter,details,pDisplayUnits,level);
 
@@ -1578,7 +1952,7 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
 
    ReportLumpSumTimeDependentLosses(pChapter,details,pDisplayUnits,level);
 
-   CTotalPrestressLossTable* pT = CTotalPrestressLossTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
+   CTotalPrestressLossTable* pT = CTotalPrestressLossTable::PrepareTable(pChapter,m_pBroker,span,gdr,details,pDisplayUnits,level);
 
    CElasticGainDueToDeckPlacementTable*   pED   = CElasticGainDueToDeckPlacementTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
    CElasticGainDueToSIDLTable*            pSIDL = CElasticGainDueToSIDLTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
@@ -1685,26 +2059,34 @@ void CPsLossEngineer::ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::
    GET_IFACE(ILosses,pILosses);
    LOSSDETAILS details = pILosses->GetLossDetails( cyPoi[0] );
 
+   // Typecast to our known type (eating own doggy food)
+   boost::shared_ptr<const lrfdLumpSumLosses> ptl = boost::dynamic_pointer_cast<const lrfdLumpSumLosses>(details.pLosses);
+   if (!ptl)
+   {
+      ATLASSERT(0); // made a bad cast? Bail...
+      return;
+   }
+
    int row = 0;
 
    (*table)(row,0) << _T("Stage"); (*table)(row++,1) << COLHDR(_T("Loss"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    if ( bDesign )
    {
-      (*table)(row,0) << _T("Before prestress transfer"); (*table)(row++,1) << stress.SetValue(details.LumpSum.GetBeforeXferLosses());
-      (*table)(row,0) << _T("After prestress transfer");  (*table)(row++,1) << stress.SetValue(details.LumpSum.GetAfterXferLosses());
-      (*table)(row,0) << _T("At girder lifting");         (*table)(row++,1) << stress.SetValue(details.LumpSum.GetLiftingLosses());
-      (*table)(row,0) << _T("At girder shipping");        (*table)(row++,1) << stress.SetValue(details.LumpSum.GetShippingLosses());
+      (*table)(row,0) << _T("Before prestress transfer"); (*table)(row++,1) << stress.SetValue(ptl->GetBeforeXferLosses());
+      (*table)(row,0) << _T("After prestress transfer");  (*table)(row++,1) << stress.SetValue(ptl->GetAfterXferLosses());
+      (*table)(row,0) << _T("At girder lifting");         (*table)(row++,1) << stress.SetValue(ptl->GetLiftingLosses());
+      (*table)(row,0) << _T("At girder shipping");        (*table)(row++,1) << stress.SetValue(ptl->GetShippingLosses());
 
       if ( 0 < NtMax )
       {
-         (*table)(row,0) << _T("Before temporary strand removal"); (*table)(row++,1) << stress.SetValue(details.LumpSum.GetBeforeTempStrandRemovalLosses());
-         (*table)(row,0) << _T("After temporary strand removal");  (*table)(row++,1) << stress.SetValue(details.LumpSum.GetAfterTempStrandRemovalLosses());
+         (*table)(row,0) << _T("Before temporary strand removal"); (*table)(row++,1) << stress.SetValue(ptl->GetBeforeTempStrandRemovalLosses());
+         (*table)(row,0) << _T("After temporary strand removal");  (*table)(row++,1) << stress.SetValue(ptl->GetAfterTempStrandRemovalLosses());
       }
 
-      (*table)(row,0) << _T("After deck placement");            (*table)(row++,1) << stress.SetValue(details.LumpSum.GetAfterDeckPlacementLosses());
+      (*table)(row,0) << _T("After deck placement");            (*table)(row++,1) << stress.SetValue(ptl->GetAfterDeckPlacementLosses());
    }
 
-   (*table)(row,0) << _T("Final");  (*table)(row++,1) << stress.SetValue(details.LumpSum.GetFinalLosses());
+   (*table)(row,0) << _T("Final");  (*table)(row++,1) << stress.SetValue(ptl->GetFinalLosses());
 }
 
 
@@ -1854,14 +2236,22 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pCh
       (*table)(0,7) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(0,8) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLTH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
+      // Typecast to our known type (eating own doggy food)
+      boost::shared_ptr<const lrfdApproximateLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdApproximateLosses2005>(details.pLosses);
+      if (!ptl)
+      {
+         ATLASSERT(0); // made a bad cast? Bail...
+         return;
+      }
+
       (*table)(1,0) << stress.SetValue( details.pLosses->GetFci() );
-      (*table)(1,1) << scalar.SetValue( details.ApproxLosses2005.GetStrengthFactor() );
+      (*table)(1,1) << scalar.SetValue( ptl->GetStrengthFactor() );
       (*table)(1,2) << details.pLosses->GetRelHumidity();
-      (*table)(1,3) << scalar.SetValue( details.ApproxLosses2005.GetHumidityFactor() );
-      (*table)(1,4) << stress.SetValue( details.ApproxLosses2005.GetFpi() );
+      (*table)(1,3) << scalar.SetValue( ptl->GetHumidityFactor() );
+      (*table)(1,4) << stress.SetValue( ptl->GetFpi() );
       (*table)(1,5) << area.SetValue( details.pLosses->GetApsPermanent() );
       (*table)(1,6) << area.SetValue( details.pLosses->GetAg() );
-      (*table)(1,7) << stress.SetValue( details.ApproxLosses2005.PermanentStrand_RelaxationLossesAtXfer() );
+      (*table)(1,7) << stress.SetValue( ptl->PermanentStrand_RelaxationLossesAtXfer() );
       (*table)(1,8) << stress.SetValue( details.pLosses->PermanentStrand_TimeDependentLossesAtShipping() );
    }
 }
@@ -1925,9 +2315,17 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
       strLossEqnImage[1][lrfdApproximateLosses::SingleT][0][1]   = _T("ApproxLoss_LRFD_SingleT_LowRelax_US.png");
       strLossEqnImage[1][lrfdApproximateLosses::SingleT][1][1]   = _T("ApproxLoss_LRFD_SingleT_StressRel_US.png");
 
-
       int method = (details.Method == LOSSES_WSDOT_LUMPSUM) ? 1 : 0;
-      int beam = (int)details.ApproxLosses.GetBeamType();
+
+      // Typecast to our known type (eating own doggy food)
+      boost::shared_ptr<const lrfdApproximateLosses> ptl = boost::dynamic_pointer_cast<const lrfdApproximateLosses>(details.pLosses);
+      if (!ptl)
+      {
+         ATLASSERT(0); // made a bad cast? Bail...
+         return;
+      }
+
+      int beam = (int)ptl->GetBeamType();
       int strand = details.pLosses->GetStrandType() == matPsStrand::LowRelaxation ? 0 : 1;
       int units = IS_SI_UNITS(pDisplayUnits);
 
@@ -1938,7 +2336,7 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
 
       INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,      pDisplayUnits->GetStressUnit(),          true );
       *pParagraph << RPT_FC << _T(" = ") << stress.SetValue(details.pLosses->GetFc() ) << rptNewLine;
-      *pParagraph << _T("PPR = ") << details.ApproxLosses.GetPPR() << rptNewLine;
+      *pParagraph << _T("PPR = ") << ptl->GetPPR() << rptNewLine;
       *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLT")) << _T(" = ") << stress.SetValue( details.pLosses->TimeDependentLosses() ) << rptNewLine;
    }
    else
@@ -1969,14 +2367,22 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
       (*table)(0,7) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(0,8) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
+      // Typecast to our known type (eating own doggy food)
+      boost::shared_ptr<const lrfdApproximateLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdApproximateLosses2005>(details.pLosses);
+      if (!ptl)
+      {
+         ATLASSERT(0); // made a bad cast? Bail...
+         return;
+      }
+
       (*table)(1,0) << stress.SetValue( details.pLosses->GetFci() );
-      (*table)(1,1) << scalar.SetValue( details.ApproxLosses2005.GetStrengthFactor() );
+      (*table)(1,1) << scalar.SetValue( ptl->GetStrengthFactor() );
       (*table)(1,2) << details.pLosses->GetRelHumidity();
-      (*table)(1,3) << scalar.SetValue( details.ApproxLosses2005.GetHumidityFactor() );
-      (*table)(1,4) << stress.SetValue( details.ApproxLosses2005.GetFpi() );
+      (*table)(1,3) << scalar.SetValue( ptl->GetHumidityFactor() );
+      (*table)(1,4) << stress.SetValue( ptl->GetFpi() );
       (*table)(1,5) << area.SetValue( details.pLosses->GetApsPermanent() );
       (*table)(1,6) << area.SetValue( details.pLosses->GetAg() );
-      (*table)(1,7) << stress.SetValue( details.ApproxLosses2005.PermanentStrand_RelaxationLossesAtXfer() );
+      (*table)(1,7) << stress.SetValue( ptl->PermanentStrand_RelaxationLossesAtXfer() );
       (*table)(1,8) << stress.SetValue( details.pLosses->TimeDependentLosses() );
    }
 }
@@ -2356,8 +2762,9 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
    std::vector<pgsPointOfInterest>::iterator iter;
 
    GET_IFACE(ILosses,pILosses);
+   LOSSDETAILS details = pILosses->GetLossDetails( bsPoi[0] );
 
-   CTotalPrestressLossTable* pT = CTotalPrestressLossTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,0);
+   CTotalPrestressLossTable* pT = CTotalPrestressLossTable::PrepareTable(pChapter,m_pBroker,span,gdr,details, pDisplayUnits,0);
 
    ///////////////////////////////////////////////////////////////////////
    // Loop over all the POIs and populate the tables with loss information

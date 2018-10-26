@@ -1060,22 +1060,22 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    bool is_adjacent = std::find(sbs.begin(), sbs.end(), pgsTypes::sbsUniformAdjacent) != sbs.end();
 
    if (!is_spread && !is_adjacent)
-      {
-         TxDOTBrokerRetrieverException exc;
+   {
+      TxDOTBrokerRetrieverException exc;
       exc.Message = _T("Fatal Error - Selected girder type must support uniform spread or adjacent spacing.");
-         throw exc;
-      }
+      throw exc;
+   }
 
    // Spacing cannot be less than girder width for any case
    const Float64 Tol=0.001; // millimeter
    Float64 gdr_width = pGdrEntry->GetBeamWidth(pgsTypes::metStart);
    if (spacing < gdr_width+Tol)
-      {
+   {
       gdr_width = ::ConvertFromSysUnits(gdr_width, unitMeasure::Feet);
-         TxDOTBrokerRetrieverException exc;
+      TxDOTBrokerRetrieverException exc;
       exc.Message.Format(_T("The girder spacing must be greater than or equal to the girder width of %f feet"),gdr_width);
-         throw exc;
-      }
+      throw exc;
+   }
 
    if (is_adjacent)
    {
@@ -1110,10 +1110,10 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
       else
       {
          is_spread = false;
-      bridgeDesc.SetGirderSpacingType(pgsTypes::sbsUniformAdjacent);
-      bridgeDesc.SetGirderSpacing(spacing-minSpc); // input value is joint width
-      pDeck->DeckType = sdt;
-   }
+         bridgeDesc.SetGirderSpacingType(pgsTypes::sbsUniformAdjacent);
+         bridgeDesc.SetGirderSpacing(spacing-minSpc); // input value is joint width
+         pDeck->DeckType = sdt;
+      }
    }
 
    // Use uniform spread spacing if it is available
@@ -1123,11 +1123,11 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
       Float64 sd = m_ProjectData.GetSlabThickness();
       sd = ::ConvertFromSysUnits(sd, unitMeasure::Inch);
       if (sd < 4.0)
-   {
-      TxDOTBrokerRetrieverException exc;
+      {
+         TxDOTBrokerRetrieverException exc;
          exc.Message = _T("Slab thickness for spread beams must be 4 inches or greater.");
-      throw exc;
-   }
+         throw exc;
+      }
 
       bridgeDesc.SetGirderSpacingType(pgsTypes::sbsUniform);
       bridgeDesc.SetGirderSpacing(spacing);

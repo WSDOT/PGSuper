@@ -28,6 +28,8 @@
 #include "PierDetailsDlg.h"
 #include <PgsExt\BridgeDescription.h>
 
+#include "PGSuperDoc.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -81,7 +83,66 @@ BEGIN_MESSAGE_MAP(CPierDetailsDlg, CPropertySheet)
 	//{{AFX_MSG_MAP(CPierDetailsDlg)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 	//}}AFX_MSG_MAP
+	ON_MESSAGE(WM_KICKIDLE,OnKickIdle)
 END_MESSAGE_MAP()
+
+LRESULT CPierDetailsDlg::OnKickIdle(WPARAM wp, LPARAM lp)
+{
+   // The CPropertySheet::OnKickIdle method calls GetActivePage()
+   // which doesn't work with extension pages. Since GetActivePage
+   // is not virtual, we have to replace the implementation of
+   // OnKickIdle.
+   // The same problem exists with OnCommandHelp
+
+	ASSERT_VALID(this);
+
+	CPropertyPage* pPage = GetPage(GetActiveIndex());
+
+	/* Forward the message on to the active page of the property sheet */
+	if( pPage != NULL )
+	{
+		//ASSERT_VALID(pPage);
+		return pPage->SendMessage( WM_KICKIDLE, wp, lp );
+	}
+	else
+		return 0;
+}
+
+INT_PTR CPierDetailsDlg::DoModal()
+{
+   CEAFDocument* pEAFDoc = EAFGetDocument();
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)pEAFDoc;
+   
+   std::vector<std::pair<IEditPierCallback*,CPropertyPage*>> extensionPages;
+
+   std::map<IDType,IEditPierCallback*> callbacks = pDoc->GetEditPierCallbacks();
+   std::map<IDType,IEditPierCallback*>::iterator callbackIter(callbacks.begin());
+   std::map<IDType,IEditPierCallback*>::iterator callbackIterEnd(callbacks.end());
+   for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+   {
+      IEditPierCallback* pCallback = callbackIter->second;
+      CPropertyPage* pPage = pCallback->CreatePropertyPage(this);
+      if ( pPage )
+      {
+         extensionPages.push_back( std::make_pair(pCallback,pPage) );
+         AddPage(pPage);
+      }
+   }
+
+   INT_PTR result = CPropertySheet::DoModal();
+
+   std::vector<std::pair<IEditPierCallback*,CPropertyPage*>>::iterator pageIter(extensionPages.begin());
+   std::vector<std::pair<IEditPierCallback*,CPropertyPage*>>::iterator pageIterEnd(extensionPages.end());
+   for ( ; pageIter != pageIterEnd; pageIter++ )
+   {
+      IEditPierCallback* pCallback = pageIter->first;
+      CPropertyPage* pPage = pageIter->second;
+      pCallback->DestroyPropertyPage(result,pPage,this);
+   }
+
+   return result;
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CPierDetailsDlg message handlers
@@ -295,3 +356,4 @@ Float64 CPierDetailsDlg::GetDiaphragmLoadLocation(pgsTypes::PierFaceType pierFac
 {
    return m_PierConnectionsPage.m_DiaphragmLoadLocation[pierFace];
 }
+

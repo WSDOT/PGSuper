@@ -41,8 +41,6 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 #define CURRENT_VERSION 44.0
-// NOTE: CURRENT_VERSION CANNOT BE GREATER THAN 49.0
-// Version 3.0 branch starts at data block version 50.0
 
 
 /****************************************************************************
@@ -151,7 +149,6 @@ m_CreepDuration2Min(::ConvertToSysUnits(40,unitMeasure::Day)),
 m_CreepDuration1Max(::ConvertToSysUnits(90,unitMeasure::Day)),
 m_CreepDuration2Max(::ConvertToSysUnits(120,unitMeasure::Day)),
 m_TotalCreepDuration(::ConvertToSysUnits(2000,unitMeasure::Day)),
-m_CamberVariability(0.50),
 m_LossMethod(LOSSES_AASHTO_REFINED),
 m_BeforeXferLosses(0),
 m_AfterXferLosses(0),
@@ -208,7 +205,8 @@ m_LimitDistributionFactorsToLanesBeams(false),
 m_PrestressTransferComputationType(pgsTypes::ptUsingSpecification),
 m_bIncludeForNegMoment(true),
 m_bAllowStraightStrandExtensions(false),
-m_RelaxationLossMethod(RLM_REFINED)
+m_RelaxationLossMethod(RLM_REFINED),
+m_FcgpComputationMethod(FCGP_HYBRID)
 {
    m_bCheckStrandStress[AT_JACKING]       = false;
    m_bCheckStrandStress[BEFORE_TRANSFER]  = true;
@@ -274,10 +272,6 @@ m_RelaxationLossMethod(RLM_REFINED)
    m_MaxGirderFc[pgsTypes::SandLightweight]           = ::ConvertToSysUnits(9.0,unitMeasure::KSI);
    m_MaxConcreteUnitWeight[pgsTypes::SandLightweight] = ::ConvertToSysUnits(125.,unitMeasure::LbfPerFeet3);
    m_MaxConcreteAggSize[pgsTypes::SandLightweight]    = ::ConvertToSysUnits(1.5,unitMeasure::Inch);
-
-   m_DoCheckStirrupSpacingCompatibility = true;
-   m_bCheckSag = true;
-   m_SagCamberType = pgsTypes::LowerBoundCamber;
 }
 
 SpecLibraryEntry::SpecLibraryEntry(const SpecLibraryEntry& rOther) :
@@ -565,7 +559,6 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("CreepDuration2Max"),m_CreepDuration2Max);
    pSave->Property(_T("XferTime"),m_XferTime);
    pSave->Property(_T("TotalCreepDuration"),m_TotalCreepDuration);
-   pSave->Property(_T("CamberVariability"),m_CamberVariability); // added in version 44
 
    pSave->Property(_T("LossMethod"),(Int16)m_LossMethod);
    pSave->Property(_T("FinalLosses"),m_FinalLosses);
@@ -620,6 +613,12 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("SlabShrinkageElasticGain"),m_SlabShrinkageElasticGain);
    pSave->Property(_T("LiveLoadElasticGain"),m_LiveLoadElasticGain); // added in version 42
 
+   // added in version 44
+   if ( m_LossMethod == LOSSES_TXDOT_REFINED_2013 )
+   {
+      pSave->Property(_T("FcgpComputationMethod"),m_FcgpComputationMethod);
+   }
+
    // Added in 1.7
    pSave->Property(_T("CheckLiveLoadDeflection"),m_bDoEvaluateDeflection);
    pSave->Property(_T("LiveLoadDeflectionLimit"),m_DeflectionLimit);
@@ -652,12 +651,6 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
       pSave->EndUnit(); // SandLightweight;
    pSave->EndUnit(); // Limits
 
-   // Added in version 44
-   pSave->BeginUnit(_T("Warnings"),2.0);
-         pSave->Property(_T("DoCheckStirrupSpacingCompatibility"), m_DoCheckStirrupSpacingCompatibility);
-         pSave->Property(_T("CheckGirderSag"),m_bCheckSag); // added in version 2
-         pSave->Property(_T("SagCamberType"),m_SagCamberType); // added in version 2
-   pSave->EndUnit(); // Warnings
 
    // Added in 14.0 removed in version 41
    //std::_tstring strLimitState[] = {_T("ServiceI"),_T("ServiceIA"),_T("ServiceIII"),_T("StrengthI"),_T("StrengthII"),_T("FatigueI")};
@@ -1702,12 +1695,6 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             m_CreepDuration1Max = m_CreepDuration1Min;
          }
       }
-
-      if ( 44 <= version )
-      {
-         if ( !pLoad->Property(_T("CamberVariability"),&m_CamberVariability))
-            THROW_LOAD(InvalidFileFormat,pLoad);
-      }
  
       if ( !pLoad->Property(_T("LossMethod"),&temp) )
          THROW_LOAD(InvalidFileFormat,pLoad );
@@ -1893,6 +1880,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             if ( !pLoad->Property(_T("LiveLoadElasticGain"),&m_LiveLoadElasticGain) )
                THROW_LOAD(InvalidFileFormat,pLoad);
          }
+
+         if ( 43 < version )
+         {
+            if ( m_LossMethod == LOSSES_TXDOT_REFINED_2013 )
+            {
+               if ( !pLoad->Property(_T("FcgpComputationMethod"),&m_FcgpComputationMethod) )
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+         }
       }
 
       // added in version 1.7
@@ -2008,33 +2004,6 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                THROW_LOAD(InvalidFileFormat,pLoad);
 
          if ( !pLoad->EndUnit() ) // Limits
-            THROW_LOAD(InvalidFileFormat,pLoad);
-      }
-
-      if ( 44 <= version )
-      {
-         if ( !pLoad->BeginUnit(_T("Warnings")) )
-            THROW_LOAD(InvalidFileFormat,pLoad);
-
-         Float64 warningsVersion = pLoad->GetVersion();
-
-         if ( !pLoad->Property(_T("DoCheckStirrupSpacingCompatibility"),&m_DoCheckStirrupSpacingCompatibility) )
-            THROW_LOAD(InvalidFileFormat,pLoad);
-
-
-         if ( 2 <= warningsVersion )
-         {
-            if ( !pLoad->Property(_T("CheckGirderSag"),&m_bCheckSag) )
-               THROW_LOAD(InvalidFileFormat,pLoad);
-
-            int value;
-            if ( !pLoad->Property(_T("SagCamberType"),&value) )
-               THROW_LOAD(InvalidFileFormat,pLoad);
-
-            m_SagCamberType = (pgsTypes::SagCamberType)value;
-         }
-
-         if ( !pLoad->EndUnit() ) // Warnings
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
@@ -2422,7 +2391,6 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TESTD(m_CreepDuration1Max          , rOther.m_CreepDuration1Max          );
    TESTD(m_CreepDuration2Max          , rOther.m_CreepDuration2Max          );
    TESTD(m_TotalCreepDuration  , rOther.m_TotalCreepDuration  );
-   TESTD(m_CamberVariability   , rOther.m_CamberVariability  );
    TEST (m_LossMethod                 , rOther.m_LossMethod                 );
    TESTD(m_FinalLosses                , rOther.m_FinalLosses                );
    TESTD(m_ShippingLosses             , rOther.m_ShippingLosses             );
@@ -2485,14 +2453,6 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
       TESTD(m_MaxConcreteAggSize[i]    , rOther.m_MaxConcreteAggSize[i] );
    }
 
-   TEST (m_DoCheckStirrupSpacingCompatibility, rOther.m_DoCheckStirrupSpacingCompatibility);
-   TEST (m_bCheckSag, rOther.m_bCheckSag);
-   if ( m_bCheckSag )
-   {
-      TEST(m_SagCamberType,rOther.m_SagCamberType);
-   }
-
-
    TEST (m_EnableSlabOffsetCheck         , rOther.m_EnableSlabOffsetCheck            );
    TEST (m_EnableSlabOffsetDesign        , rOther.m_EnableSlabOffsetDesign );
 
@@ -2523,6 +2483,7 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TEST (m_PrestressTransferComputationType, rOther.m_PrestressTransferComputationType);
 
    TEST(m_RelaxationLossMethod,rOther.m_RelaxationLossMethod);
+   TEST(m_FcgpComputationMethod,rOther.m_FcgpComputationMethod);
 
    for ( int i = 0; i < 3; i++ )
    {
@@ -3470,36 +3431,6 @@ Float64 SpecLibraryEntry::GetTotalCreepDuration() const
    return m_TotalCreepDuration;
 }
 
-void SpecLibraryEntry::SetCamberVariability(Float64 var)
-{
-   m_CamberVariability = var;
-}
-
-Float64 SpecLibraryEntry::GetCamberVariability() const
-{
-   return m_CamberVariability;
-}
-
-void SpecLibraryEntry::CheckGirderSag(bool bCheck)
-{
-   m_bCheckSag = bCheck;
-}
-
-bool SpecLibraryEntry::CheckGirderSag() const
-{
-   return m_bCheckSag;
-}
-
-pgsTypes::SagCamberType SpecLibraryEntry::GetSagCamberType() const
-{
-   return m_SagCamberType;
-}
-
-void SpecLibraryEntry::SetSagCamberType(pgsTypes::SagCamberType type)
-{
-   m_SagCamberType = type;
-}
-
 int SpecLibraryEntry::GetLossMethod() const
 {
    return m_LossMethod;
@@ -3757,6 +3688,16 @@ Int16 SpecLibraryEntry::GetRelaxationLossMethod() const
    return m_RelaxationLossMethod;
 }
 
+void SpecLibraryEntry::SetFcgpComputationMethod(Int16 method)
+{
+   m_FcgpComputationMethod = method;
+}
+
+Int16 SpecLibraryEntry::GetFcgpComputationMethod() const
+{
+   return m_FcgpComputationMethod;
+}
+
 Int16 SpecLibraryEntry::GetLiveLoadDistributionMethod() const
 {
    return m_LldfMethod;
@@ -3898,16 +3839,6 @@ void SpecLibraryEntry::SetMaxConcreteAggSize(pgsTypes::ConcreteType type,Float64
 Float64 SpecLibraryEntry::GetMaxConcreteAggSize(pgsTypes::ConcreteType type) const
 {
    return m_MaxConcreteAggSize[type];
-}
-
-void SpecLibraryEntry::SetDoCheckStirrupSpacingCompatibility(bool doCheck)
-{
-   m_DoCheckStirrupSpacingCompatibility = doCheck;
-}
-
-bool SpecLibraryEntry::GetDoCheckStirrupSpacingCompatibility() const
-{
-   return m_DoCheckStirrupSpacingCompatibility;
 }
 
 void SpecLibraryEntry::EnableSlabOffsetCheck(bool enable)
@@ -4310,7 +4241,6 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_CreepDuration2Min          = rOther.m_CreepDuration2Min;
    m_CreepDuration2Max          = rOther.m_CreepDuration2Max;
    m_TotalCreepDuration  = rOther.m_TotalCreepDuration;
-   m_CamberVariability   = rOther.m_CamberVariability;
 
    m_LossMethod                 = rOther.m_LossMethod;
    m_FinalLosses                = rOther.m_FinalLosses;
@@ -4374,10 +4304,6 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
       m_MaxConcreteAggSize[i]    = rOther.m_MaxConcreteAggSize[i];
    }
 
-   m_DoCheckStirrupSpacingCompatibility = rOther.m_DoCheckStirrupSpacingCompatibility;
-   m_bCheckSag = rOther.m_bCheckSag;
-   m_SagCamberType = rOther.m_SagCamberType;
-
    m_EnableSlabOffsetCheck = rOther.m_EnableSlabOffsetCheck;
    m_EnableSlabOffsetDesign = rOther.m_EnableSlabOffsetDesign;
 
@@ -4412,6 +4338,8 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_PrestressTransferComputationType = rOther.m_PrestressTransferComputationType;
 
    m_RelaxationLossMethod = rOther.m_RelaxationLossMethod;
+
+   m_FcgpComputationMethod = rOther.m_FcgpComputationMethod;
 
    for ( int i = 0; i < 3; i++ )
    {

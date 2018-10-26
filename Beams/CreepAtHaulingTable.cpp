@@ -94,13 +94,21 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
+  // Typecast to our known type (eating own doggy food)
+   boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(details.pLosses);
+   if (!ptl)
+   {
+      ATLASSERT(0); // made a bad cast? Bail...
+      return table;
+   }
+
    table->time.ShowUnitTag(true);
-   *pParagraph << Sub2(_T("k"),_T("td")) << _T(" = ") << table->scalar.SetValue(details.RefinedLosses2005.GetCreepInitialToShipping().GetKtd()) << rptNewLine;
-   *pParagraph << Sub2(_T("t"),_T("i"))  << _T(" = ") << table->time.SetValue(details.RefinedLosses2005.GetAdjustedInitialAge())   << rptNewLine;
-   *pParagraph << Sub2(_T("t"),_T("h"))  << _T(" = ") << table->time.SetValue(details.RefinedLosses2005.GetAgeAtHauling()) << rptNewLine;
-   *pParagraph << Sub2(_T("K"),_T("1"))  << _T(" = ") << details.RefinedLosses2005.GetGdrK1Creep() << rptNewLine;
-   *pParagraph << Sub2(_T("K"),_T("2"))  << _T(" = ") << details.RefinedLosses2005.GetGdrK2Creep() << rptNewLine;
-   *pParagraph << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("h")) << _T(",") << Sub2(_T("t"),_T("i")) << _T(")") << _T(" = ") << table->scalar.SetValue(details.RefinedLosses2005.GetCreepInitialToShipping().GetCreepCoefficient()) << rptNewLine;
+   *pParagraph << Sub2(_T("k"),_T("td")) << _T(" = ") << table->scalar.SetValue(ptl->GetCreepInitialToShipping().GetKtd()) << rptNewLine;
+   *pParagraph << Sub2(_T("t"),_T("i"))  << _T(" = ") << table->time.SetValue(ptl->GetAdjustedInitialAge())   << rptNewLine;
+   *pParagraph << Sub2(_T("t"),_T("h"))  << _T(" = ") << table->time.SetValue(ptl->GetAgeAtHauling()) << rptNewLine;
+   *pParagraph << Sub2(_T("K"),_T("1"))  << _T(" = ") << ptl->GetGdrK1Creep() << rptNewLine;
+   *pParagraph << Sub2(_T("K"),_T("2"))  << _T(" = ") << ptl->GetGdrK2Creep() << rptNewLine;
+   *pParagraph << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("h")) << _T(",") << Sub2(_T("t"),_T("i")) << _T(")") << _T(" = ") << table->scalar.SetValue(ptl->GetCreepInitialToShipping().GetCreepCoefficient()) << rptNewLine;
    table->time.ShowUnitTag(false);
 
    *pParagraph << table << rptNewLine;
@@ -164,18 +172,26 @@ void CCreepAtHaulingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pg
    ColumnIndexType col = 2;
    RowIndexType rowOffset = GetNumberOfHeaderRows()-1;
 
+  // Typecast to our known type (eating own doggy food)
+   boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(details.pLosses);
+   if (!ptl)
+   {
+      ATLASSERT(0); // made a bad cast? Bail...
+      return;
+   }
+
    if ( m_pGirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPretensioned )
       (*this)(row+rowOffset,col++) << stress.SetValue(details.pLosses->ElasticShortening().PermanentStrand_Fcgp());
    else
       (*this)(row+rowOffset,col++) << stress.SetValue(details.pLosses->ElasticShortening().PermanentStrand_Fcgp() + details.pLosses->GetDeltaFpp());
 
-   (*this)(row+rowOffset,col++) << scalar.SetValue(details.RefinedLosses2005.GetPermanentStrandKih());
-   (*this)(row+rowOffset,col++) << stress.SetValue(details.RefinedLosses2005.PermanentStrand_CreepLossAtShipping());
+   (*this)(row+rowOffset,col++) << scalar.SetValue(ptl->GetPermanentStrandKih());
+   (*this)(row+rowOffset,col++) << stress.SetValue(ptl->PermanentStrand_CreepLossAtShipping());
 
    if ( m_bTemporaryStrands )
    {
       (*this)(row+rowOffset,col++) << stress.SetValue(details.pLosses->ElasticShortening().TemporaryStrand_Fcgp());
-      (*this)(row+rowOffset,col++) << scalar.SetValue(details.RefinedLosses2005.GetTemporaryStrandKih());
-      (*this)(row+rowOffset,col++) << stress.SetValue(details.RefinedLosses2005.TemporaryStrand_CreepLossAtShipping());
+      (*this)(row+rowOffset,col++) << scalar.SetValue(ptl->GetTemporaryStrandKih());
+      (*this)(row+rowOffset,col++) << stress.SetValue(ptl->TemporaryStrand_CreepLossAtShipping());
    }
 }

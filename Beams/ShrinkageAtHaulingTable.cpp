@@ -122,7 +122,15 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
    else
       *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_US.png")) << rptNewLine;
 
-   if ( details.RefinedLosses2005.AdjustShrinkageStrain() )
+  // Typecast to our known type (eating own doggy food)
+   boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(details.pLosses);
+   if (!ptl)
+   {
+      ATLASSERT(0); // made a bad cast? Bail...
+      return table; // so we don't crash
+   }
+
+   if ( ptl->AdjustShrinkageStrain() )
    {
       // LRFD 5.4.2.3.3
       // If the concrete is exposed to drying before 5 days of curing have elapsed,
@@ -141,12 +149,12 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
    (*paraTable)(0,4) << COLHDR(Sub2(_T("t"),_T("h")),rptTimeUnitTag,pDisplayUnits->GetLongTimeUnit());
    (*paraTable)(0,5) << COLHDR(Sub2(_T("t"),_T("f")),rptTimeUnitTag,pDisplayUnits->GetLongTimeUnit());
 
-   (*paraTable)(1,0) << details.RefinedLosses2005.GetRelHumidity();
-   (*paraTable)(1,1) << table->ecc.SetValue(details.RefinedLosses2005.GetVolume()/details.RefinedLosses2005.GetSurfaceArea());
-   (*paraTable)(1,2) << table->stress.SetValue(details.RefinedLosses2005.GetFci());
-   (*paraTable)(1,3) << table->time.SetValue(details.RefinedLosses2005.GetAdjustedInitialAge());
-   (*paraTable)(1,4) << table->time.SetValue(details.RefinedLosses2005.GetAgeAtHauling());
-   (*paraTable)(1,5) << table->time.SetValue(details.RefinedLosses2005.GetFinalAge());
+   (*paraTable)(1,0) << ptl->GetRelHumidity();
+   (*paraTable)(1,1) << table->ecc.SetValue(ptl->GetVolume()/ptl->GetSurfaceArea());
+   (*paraTable)(1,2) << table->stress.SetValue(ptl->GetFci());
+   (*paraTable)(1,3) << table->time.SetValue(ptl->GetAdjustedInitialAge());
+   (*paraTable)(1,4) << table->time.SetValue(ptl->GetAgeAtHauling());
+   (*paraTable)(1,5) << table->time.SetValue(ptl->GetFinalAge());
 
    paraTable = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
    *pParagraph << paraTable << rptNewLine;
@@ -172,14 +180,14 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
    (*paraTable)(1,6) << Sub2(_T("K"),_T("2"));
    (*paraTable)(1,7) << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("f")) << _T(",") << Sub2(_T("t"),_T("i")) << _T(")");
 
-   (*paraTable)(2,0) << table->mod_e.SetValue(details.RefinedLosses2005.GetEp());
-   (*paraTable)(2,1) << table->mod_e.SetValue(details.RefinedLosses2005.GetEci());
-   (*paraTable)(2,2) << details.RefinedLosses2005.GetGdrK1Shrinkage();
-   (*paraTable)(2,3) << details.RefinedLosses2005.GetGdrK2Shrinkage();
-   (*paraTable)(2,4) << table->strain.SetValue(details.RefinedLosses2005.Get_ebih() * 1000);
-   (*paraTable)(2,5) << details.RefinedLosses2005.GetGdrK1Creep();
-   (*paraTable)(2,6) << details.RefinedLosses2005.GetGdrK2Creep();
-   (*paraTable)(2,7) << table->scalar.SetValue(details.RefinedLosses2005.GetCreepInitialToFinal().GetCreepCoefficient());
+   (*paraTable)(2,0) << table->mod_e.SetValue(ptl->GetEp());
+   (*paraTable)(2,1) << table->mod_e.SetValue(ptl->GetEci());
+   (*paraTable)(2,2) << ptl->GetGdrK1Shrinkage();
+   (*paraTable)(2,3) << ptl->GetGdrK2Shrinkage();
+   (*paraTable)(2,4) << table->strain.SetValue(ptl->Get_ebih() * 1000);
+   (*paraTable)(2,5) << ptl->GetGdrK1Creep();
+   (*paraTable)(2,6) << ptl->GetGdrK2Creep();
+   (*paraTable)(2,7) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetCreepCoefficient());
 
 
    // intermediate results
@@ -196,16 +204,16 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
    (*paraTable)(0,3) << Sub2(_T("k"),_T("f"));
 
    table->time.ShowUnitTag(true);
-   (*paraTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(details.RefinedLosses2005.GetAgeAtHauling());
-   (*paraTable)(0,5) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(details.RefinedLosses2005.GetFinalAge());
+   (*paraTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetAgeAtHauling());
+   (*paraTable)(0,5) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetFinalAge());
    table->time.ShowUnitTag(false);
 
-   (*paraTable)(1,0) << table->scalar.SetValue(details.RefinedLosses2005.GetCreepInitialToFinal().GetKvs());
-   (*paraTable)(1,1) << table->scalar.SetValue(details.RefinedLosses2005.Getkhs());
-   (*paraTable)(1,2) << table->scalar.SetValue(details.RefinedLosses2005.GetCreepInitialToFinal().GetKhc());
-   (*paraTable)(1,3) << table->scalar.SetValue(details.RefinedLosses2005.GetCreepInitialToFinal().GetKf());
-   (*paraTable)(1,4) << table->scalar.SetValue(details.RefinedLosses2005.GetCreepInitialToShipping().GetKtd());
-   (*paraTable)(1,5) << table->scalar.SetValue(details.RefinedLosses2005.GetCreepInitialToFinal().GetKtd());
+   (*paraTable)(1,0) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKvs());
+   (*paraTable)(1,1) << table->scalar.SetValue(ptl->Getkhs());
+   (*paraTable)(1,2) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKhc());
+   (*paraTable)(1,3) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKf());
+   (*paraTable)(1,4) << table->scalar.SetValue(ptl->GetCreepInitialToShipping().GetKtd());
+   (*paraTable)(1,5) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKtd());
 
    // shrinkage loss   
    *pParagraph << table << rptNewLine;
@@ -283,6 +291,14 @@ void CShrinkageAtHaulingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
 {
    RowIndexType rowOffset = GetNumberOfHeaderRows()-1;
 
+   // Typecast to our known type (eating own doggy food)
+   boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(details.pLosses);
+   if (!ptl)
+   {
+      ATLASSERT(0); // made a bad cast? Bail...
+      return;
+   }
+
    Float64 Aps = details.pLosses->GetApsPermanent();
    if ( details.pLosses->GetTempStrandUsage() == lrfdLosses::tsPretensioned ||
         details.pLosses->GetTempStrandUsage() == lrfdLosses::tsPTBeforeLifting )
@@ -302,13 +318,13 @@ void CShrinkageAtHaulingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    (*this)(row+rowOffset,col++) << ecc.SetValue(details.pLosses->GetEccpg());
 
    (*this)(row+rowOffset,col++) << ecc.SetValue(details.pLosses->GetEccPermanent());
-   (*this)(row+rowOffset,col++) << scalar.SetValue(details.RefinedLosses2005.GetPermanentStrandKih());
-   (*this)(row+rowOffset,col++) << stress.SetValue( details.RefinedLosses2005.PermanentStrand_ShrinkageLossAtShipping() );
+   (*this)(row+rowOffset,col++) << scalar.SetValue(ptl->GetPermanentStrandKih());
+   (*this)(row+rowOffset,col++) << stress.SetValue( ptl->PermanentStrand_ShrinkageLossAtShipping() );
    
    if (m_bTemporaryStrands )
    {
       (*this)(row+rowOffset,col++) << ecc.SetValue(details.pLosses->GetEccTemporary());
-      (*this)(row+rowOffset,col++) << scalar.SetValue(details.RefinedLosses2005.GetTemporaryStrandKih());
-      (*this)(row+rowOffset,col++) << stress.SetValue( details.RefinedLosses2005.TemporaryStrand_ShrinkageLossAtShipping() );
+      (*this)(row+rowOffset,col++) << scalar.SetValue(ptl->GetTemporaryStrandKih());
+      (*this)(row+rowOffset,col++) << stress.SetValue( ptl->TemporaryStrand_ShrinkageLossAtShipping() );
    }
 }

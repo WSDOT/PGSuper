@@ -34,11 +34,12 @@
 #include "PierGirderSpacingPage.h"
 #include <PgsExt\BridgeDescription.h>
 #include "EditPier.h"
+#include <IFace\ExtendUI.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CPierDetailsDlg
 
-class CPierDetailsDlg : public CPropertySheet, public IPierConnectionsParent
+class CPierDetailsDlg : public CPropertySheet, public IPierConnectionsParent, public IEditPierData
 {
 	DECLARE_DYNAMIC(CPierDetailsDlg)
 
@@ -56,18 +57,22 @@ public:
    virtual const CSpanData* GetNextSpan(PierIndexType pierIdx);
    virtual const CBridgeDescription* GetBridgeDescription();
 
+// interface IEditPierData
+   virtual pgsTypes::PierConnectionType GetConnectionType();
+   virtual GirderIndexType GetGirderCount(pgsTypes::PierFaceType face);
+
    pgsTypes::MovePierOption GetMovePierOption();
    Float64 GetStation();
    LPCTSTR GetOrientation();
 
-   pgsTypes::PierConnectionType GetConnectionType();
+   //pgsTypes::PierConnectionType GetConnectionType();
    Float64 GetBearingOffset(pgsTypes::PierFaceType face);
    ConnectionLibraryEntry::BearingOffsetMeasurementType GetBearingOffsetMeasurementType(pgsTypes::PierFaceType face);
    Float64 GetEndDistance(pgsTypes::PierFaceType face);
    ConnectionLibraryEntry::EndDistanceMeasurementType GetEndDistanceMeasurementType(pgsTypes::PierFaceType face);
    Float64 GetSupportWidth(pgsTypes::PierFaceType face);
 
-   GirderIndexType GetGirderCount(pgsTypes::PierFaceType pierFace);
+   //GirderIndexType GetGirderCount(pgsTypes::PierFaceType pierFace);
    CGirderSpacing GetSpacing(pgsTypes::PierFaceType pierFace);
    pgsTypes::SupportedBeamSpacing GetSpacingType();
    bool UseSameNumberOfGirdersInAllSpans();
@@ -101,6 +106,7 @@ public:
 // Implementation
 public:
 	virtual ~CPierDetailsDlg();
+	virtual INT_PTR DoModal();
 
 	// Generated message map functions
 protected:
@@ -108,6 +114,7 @@ protected:
 		// NOTE - the ClassWizard will add and remove member functions here.
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
 
    void Init();
 

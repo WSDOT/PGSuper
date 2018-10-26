@@ -138,7 +138,7 @@ void pgsGirderLiftingChecker::AnalyzeLifting(SpanIndexType span,GirderIndexType 
       concType = pMaterial->GetGdrConcreteType(span,gdr);
 
       GET_IFACE(IGirderLiftingPointsOfInterest,pGirderLiftingPointsOfInterest);
-      poi_vec = pGirderLiftingPointsOfInterest->GetLiftingPointsOfInterest(span,gdr,POI_FLEXURESTRESS | POI_SECTCHANGE,POIFIND_OR);
+      poi_vec = pGirderLiftingPointsOfInterest->GetLiftingPointsOfInterest(span,gdr,POI_FLEXURESTRESS);
    }
    
    PrepareLiftingAnalysisArtifact(span,gdr,Loh,Roh,Fci,Eci,concType,pArtifact);

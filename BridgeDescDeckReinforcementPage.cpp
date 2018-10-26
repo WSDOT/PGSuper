@@ -103,28 +103,8 @@ void CBridgeDescDeckReinforcementPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_TOP_MAT_BAR_SPACING,    IDC_TOP_MAT_BAR_SPACING_UNIT,    m_RebarData.TopSpacing,    pDisplayUnits->GetComponentDimUnit() );
    DDX_UnitValueAndTag(pDX, IDC_BOTTOM_MAT_BAR_SPACING, IDC_BOTTOM_MAT_BAR_SPACING_UNIT, m_RebarData.BottomSpacing, pDisplayUnits->GetComponentDimUnit() );
 
-   if ( pDX->m_bSaveAndValidate )
-   {
-      if ( m_RebarData.TopRebarSize != matRebar::bsNone && IsLE(m_RebarData.TopSpacing,0.0) )
-      {
-         AfxMessageBox(_T("Spacing of top rebar must be greater than zero"));
-         pDX->PrepareEditCtrl(IDC_TOP_MAT_BAR_SPACING);
-         pDX->Fail();
-      }
-
-      if ( m_RebarData.BottomRebarSize != matRebar::bsNone && IsLE(m_RebarData.BottomSpacing,0.0) )
-      {
-         AfxMessageBox(_T("Spacing of bottom rebar must be greater than zero"));
-         pDX->PrepareEditCtrl(IDC_BOTTOM_MAT_BAR_SPACING);
-         pDX->Fail();
-      }
-   }
-
    DDX_UnitValueAndTag(pDX, IDC_TOP_MAT_LUMP_SUM,    IDC_TOP_MAT_LUMP_SUM_UNIT,    m_RebarData.TopLumpSum,    pDisplayUnits->GetAvOverSUnit() );
    DDX_UnitValueAndTag(pDX, IDC_BOTTOM_MAT_LUMP_SUM, IDC_BOTTOM_MAT_LUMP_SUM_UNIT, m_RebarData.BottomLumpSum, pDisplayUnits->GetAvOverSUnit() );
-
-   DDV_UnitValueGreaterThanZero(pDX, IDC_TOP_MAT_LUMP_SUM,    m_RebarData.TopLumpSum,    pDisplayUnits->GetAvOverSUnit() );
-   DDV_UnitValueGreaterThanZero(pDX, IDC_BOTTOM_MAT_LUMP_SUM, m_RebarData.BottomLumpSum, pDisplayUnits->GetAvOverSUnit() );
 
    DDV_GXGridWnd(pDX,&m_Grid);
    if ( pDX->m_bSaveAndValidate )

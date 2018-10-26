@@ -923,6 +923,18 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TxDOT2013CreepAndShrinkageTable.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOT2013RelaxationAftertransferTable.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOT2013TimeDependentLossesTable.h"
+				>
+			</File>
+			<File
 				RelativePath="TxDotDoubleTFactory.h"
 				>
 			</File>
@@ -3747,6 +3759,18 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\TxDOT2013CreepAndShrinkageTable.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOT2013RelaxationAftertransferTable.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOT2013TimeDependentLossesTable.cpp"
+				>
 			</File>
 			<File
 				RelativePath="TxDotDoubleTFactory.cpp"

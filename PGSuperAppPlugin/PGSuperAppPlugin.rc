@@ -95,7 +95,7 @@ IDR_PGSUPERPROJECTIMPORTERAPPPLUGIN REGISTRY                "res\\PGSuperProject
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_PGSUPER             ICON                    "..\\res\\PGSuperDoc.ico"
+IDR_PGSUPER         ICON                    "..\\res\\PGSuperDoc.ico"
 IDR_PGSUPER_TEMPLATE_ICON ICON                    "..\\res\\pgs_template.ico"
 IDR_BRIDGEMODELEDITOR   ICON                    "..\\res\\Bridge.ico"
 IDR_GIRDERMODELEDITOR   ICON                    "..\\res\\GirderView.ico"
@@ -347,7 +347,7 @@ END
 
 IDR_GIRDER_SECTION MENU 
 BEGIN
-    POPUP ""
+    POPUP "Girder Section"
     BEGIN
         MENUITEM "&Left End",                   ID_LEFTEND
         MENUITEM "Left &Harping Point",         ID_LEFT_HP
@@ -370,7 +370,7 @@ END
 
 IDR_BRIDGE_PLAN_CTX MENU 
 BEGIN
-    POPUP ""
+    POPUP "Bridge Model Plan View Context Menu"
     BEGIN
         MENUITEM "Edit &Alignment...",          ID_EDIT_ROADWAY
         MENUITEM "Edit &Bridge...",             ID_EDIT_BRIDGE
@@ -381,7 +381,7 @@ END
 
 IDR_BRIDGE_XSECTION_CTX MENU 
 BEGIN
-    POPUP ""
+    POPUP "Bridge Model XSection Context Menu"
     BEGIN
         MENUITEM "Edit &Bridge...",             ID_EDIT_BRIDGE
         MENUITEM "Edit &Deck...",               ID_EDIT_DECK
@@ -392,7 +392,7 @@ END
 
 IDR_GIRDER_CTX MENU 
 BEGIN
-    POPUP ""
+    POPUP "Girder View Context Menu"
     BEGIN
         MENUITEM "Edit &Girder...",             ID_EDIT_GIRDER
         MENUITEM "Edit &Prestressing...",       ID_EDIT_PRESTRESSING
@@ -424,7 +424,7 @@ END
 
 IDR_LOADS_CTX MENU 
 BEGIN
-    POPUP ""
+    POPUP "Load Editing Context for Girder Elevation View"
     BEGIN
         MENUITEM "&Edit Load",                  ID_EDIT_LOAD
         MENUITEM "&Delete Load",                ID_DELETE_LOAD
@@ -433,7 +433,7 @@ END
 
 IDR_SELECTED_GIRDER_CONTEXT MENU 
 BEGIN
-    POPUP ""
+    POPUP "Selected Girder Context Menu"
     BEGIN
         MENUITEM "Edit Girder...",              ID_EDIT_GIRDER
         MENUITEM SEPARATOR
@@ -450,7 +450,7 @@ END
 
 IDR_SELECTED_DECK_CONTEXT MENU 
 BEGIN
-    POPUP ""
+    POPUP "Selected Deck Context Menu"
     BEGIN
         MENUITEM "Edit &Bridge...",             ID_EDIT_BRIDGE
         MENUITEM "Edit &Deck...",               ID_EDIT_DECK
@@ -461,7 +461,7 @@ END
 
 IDR_SELECTED_PIER_CONTEXT MENU 
 BEGIN
-    POPUP ""
+    POPUP "Selected Pier Context Menu"
     BEGIN
         MENUITEM "&Edit",                       ID_EDIT_PIER
         MENUITEM "&Insert",                     ID_INSERT_PIER
@@ -471,7 +471,7 @@ END
 
 IDR_SELECTED_SPAN_CONTEXT MENU 
 BEGIN
-    POPUP ""
+    POPUP "SelectedSpanContextMenu"
     BEGIN
         MENUITEM "&Edit",                       ID_EDIT_SPAN
         MENUITEM "&Insert",                     ID_INSERT_SPAN
@@ -1524,7 +1524,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     LTEXT           "Number of Girders Note",IDC_NUMGDR_NOTE,7,7,146,8
     LTEXT           "Number of Girders",IDC_NUMGDR_LABEL,7,23,58,8
-    EDITTEXT        IDC_NUMGDR,83,23,40,14,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY | ES_NUMBER | WS_GROUP
+    EDITTEXT        IDC_NUMGDR,83,23,40,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER | WS_GROUP
     CONTROL         "Spin1",IDC_NUMGDR_SPIN,"msctls_updown32",UDS_WRAP | UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,127,23,11,14
     LTEXT           "Slab Offset Note",IDC_SLAB_OFFSET_NOTE,168,7,186,8
     LTEXT           "Start of Span",IDC_START_SLAB_OFFSET_LABEL,168,26,42,8
@@ -1653,7 +1653,7 @@ CAPTION "Girder Spacing"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     LTEXT           "Number of Girders",IDC_NUMGDR_PREV_SPAN_LABEL,17,33,58,8
-    EDITTEXT        IDC_NUMGDR_PREV_SPAN,93,33,40,14,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY | ES_NUMBER | WS_GROUP
+    EDITTEXT        IDC_NUMGDR_PREV_SPAN,93,33,40,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER | WS_GROUP
     CONTROL         "Spin1",IDC_NUMGDR_SPIN_PREV_SPAN,"msctls_updown32",UDS_WRAP | UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,130,33,11,14
     LTEXT           "Girder Spacing",IDC_PREV_SPAN_SPACING_LABEL,17,68,52,8
     LTEXT           "Girder Spacing",IDC_NEXT_SPAN_SPACING_LABEL,17,219,52,8
@@ -1662,7 +1662,7 @@ BEGIN
     CONTROL         "Custom1",IDC_PREV_SPAN_SPACING_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,17,81,333,48
     CONTROL         "Custom1",IDC_NEXT_SPAN_SPACING_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,17,234,333,47
     LTEXT           "Number of Girders",IDC_NUMGDR_NEXT_SPAN_LABEL,17,187,58,8
-    EDITTEXT        IDC_NUMGDR_NEXT_SPAN,93,187,40,14,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY | ES_NUMBER | WS_GROUP
+    EDITTEXT        IDC_NUMGDR_NEXT_SPAN,93,187,40,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER | WS_GROUP
     CONTROL         "Spin1",IDC_NUMGDR_SPIN_NEXT_SPAN,"msctls_updown32",UDS_WRAP | UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,130,187,11,14
     GROUPBOX        "Back side of Pier",IDC_BACKGROUP,7,7,353,155
     GROUPBOX        "Ahead side of Pier",IDC_AHEADGROUP,7,165,353,157
@@ -1708,7 +1708,7 @@ BEGIN
     CONTROL         "Use same type for all girders",IDC_SAME_GIRDERNAME,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,81,53,104,10
     LTEXT           "Number of Girders",IDC_STATIC,14,72,58,8
-    EDITTEXT        IDC_NUMGDR,81,69,40,14,ES_RIGHT | ES_AUTOHSCROLL | ES_READONLY | ES_NUMBER | WS_GROUP
+    EDITTEXT        IDC_NUMGDR,81,69,40,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER | WS_GROUP
     CONTROL         "Spin1",IDC_NUMGDR_SPIN,"msctls_updown32",UDS_WRAP | UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,119,69,11,14
     CONTROL         "Use same number of girders in all spans",IDC_SAME_NUM_GIRDERLINES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,81,86,140,10
@@ -2236,8 +2236,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,8,2,0
- PRODUCTVERSION 2,8,2,0
+ FILEVERSION 2,9,0,0
+ PRODUCTVERSION 2,9,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2254,12 +2254,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.8.2.0"
+            VALUE "FileVersion", "2.9.0.0"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.8.2.0"
+            VALUE "ProductVersion", "2.9.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -3279,7 +3279,7 @@ END
 STRINGTABLE 
 BEGIN
     IDS_E_BADINSTALL        "There is an error with the %1 installation.  Please re-install the program."
-    IDS_E_PROBPERSISTS      "Contact your technical support representitive if this problem persists.\n Please include your project file and the %1 file found in the program directory."
+    IDS_E_PROBPERSISTS      "If this problem persists,  contact technical support at Bridge_Support@wsdot.wa.gov.\n Please include your project file and the %1 file found in the program directory."
     IDS_E_INVALIDFORMAT     "%1 is not a valid PGSuper project file."
     IDS_E_FILENOTFOUND      "File %1 was not found"
     IDS_E_READ              "An error has occured while reading %1"

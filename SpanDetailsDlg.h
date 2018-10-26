@@ -34,11 +34,12 @@
 #include "GirderLayoutPage.h"
 #include "PierConnectionsPage.h"
 #include "EditSpan.h"
+#include <IFace\ExtendUI.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpanDetailsDlg
 
-class CSpanDetailsDlg : public CPropertySheet, public IPierConnectionsParent
+class CSpanDetailsDlg : public CPropertySheet, public IPierConnectionsParent, public IEditSpanData
 {
 	DECLARE_DYNAMIC(CSpanDetailsDlg)
 
@@ -54,6 +55,10 @@ public:
    virtual const CSpanData* GetNextSpan(PierIndexType pierIdx);
    virtual const CBridgeDescription* GetBridgeDescription();
 
+   // IEditSpanData
+   virtual pgsTypes::PierConnectionType GetConnectionType(pgsTypes::MemberEndType end);
+   virtual GirderIndexType GetGirderCount();
+
 // Attributes
 public:
 
@@ -65,7 +70,6 @@ public:
    Float64 GetSpanLength();
 
    // Connections
-   pgsTypes::PierConnectionType GetConnectionType(pgsTypes::MemberEndType end);
    Float64 GetDiaphragmHeight(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
    Float64 GetDiaphragmWidth(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
    ConnectionLibraryEntry::DiaphragmLoadType GetDiaphragmLoadType(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
@@ -83,7 +87,7 @@ public:
    //bool UseSameGirderSpacingAtEachEnd();
    CGirderSpacing GetGirderSpacing(pgsTypes::MemberEndType end);
    CGirderTypes GetGirderTypes();
-   GirderIndexType GetGirderCount();
+   //GirderIndexType GetGirderCount();
    pgsTypes::MeasurementLocation GetMeasurementLocation(pgsTypes::MemberEndType end);
    pgsTypes::MeasurementType GetMeasurementType(pgsTypes::MemberEndType end);
 
@@ -104,6 +108,7 @@ public:
 // Implementation
 public:
 	virtual ~CSpanDetailsDlg();
+	virtual INT_PTR DoModal();
 
 
    // Generated message map functions
@@ -112,6 +117,8 @@ protected:
 		// NOTE - the ClassWizard will add and remove member functions here.
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+
+	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
 
    void Init();
    bool AllowConnectionChange(pgsTypes::MemberEndType end, const CString& conectionName);

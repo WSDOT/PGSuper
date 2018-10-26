@@ -27,6 +27,8 @@
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "SpanDetailsDlg.h"
 
+#include "PGSuperDoc.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -125,7 +127,65 @@ BEGIN_MESSAGE_MAP(CSpanDetailsDlg, CPropertySheet)
 	//{{AFX_MSG_MAP(CSpanDetailsDlg)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 	//}}AFX_MSG_MAP
+	ON_MESSAGE(WM_KICKIDLE,OnKickIdle)
 END_MESSAGE_MAP()
+
+LRESULT CSpanDetailsDlg::OnKickIdle(WPARAM wp, LPARAM lp)
+{
+   // The CPropertySheet::OnKickIdle method calls GetActivePage()
+   // which doesn't work with extension pages. Since GetActivePage
+   // is not virtual, we have to replace the implementation of
+   // OnKickIdle.
+   // The same problem exists with OnCommandHelp
+
+	ASSERT_VALID(this);
+
+	CPropertyPage* pPage = GetPage(GetActiveIndex());
+
+	/* Forward the message on to the active page of the property sheet */
+	if( pPage != NULL )
+	{
+		//ASSERT_VALID(pPage);
+		return pPage->SendMessage( WM_KICKIDLE, wp, lp );
+	}
+	else
+		return 0;
+}
+
+INT_PTR CSpanDetailsDlg::DoModal()
+{
+   CEAFDocument* pEAFDoc = EAFGetDocument();
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)pEAFDoc;
+   
+   std::vector<std::pair<IEditSpanCallback*,CPropertyPage*>> extensionPages;
+
+   std::map<IDType,IEditSpanCallback*> callbacks = pDoc->GetEditSpanCallbacks();
+   std::map<IDType,IEditSpanCallback*>::iterator callbackIter(callbacks.begin());
+   std::map<IDType,IEditSpanCallback*>::iterator callbackIterEnd(callbacks.end());
+   for ( ; callbackIter != callbackIterEnd; callbackIter++ )
+   {
+      IEditSpanCallback* pCallback = callbackIter->second;
+      CPropertyPage* pPage = pCallback->CreatePropertyPage(this);
+      if ( pPage )
+      {
+         extensionPages.push_back( std::make_pair(pCallback,pPage) );
+         AddPage(pPage);
+      }
+   }
+
+   INT_PTR result = CPropertySheet::DoModal();
+
+   std::vector<std::pair<IEditSpanCallback*,CPropertyPage*>>::iterator pageIter(extensionPages.begin());
+   std::vector<std::pair<IEditSpanCallback*,CPropertyPage*>>::iterator pageIterEnd(extensionPages.end());
+   for ( ; pageIter != pageIterEnd; pageIter++ )
+   {
+      IEditSpanCallback* pCallback = pageIter->first;
+      CPropertyPage* pPage = pageIter->second;
+      pCallback->DestroyPropertyPage(result,pPage,this);
+   }
+
+   return result;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpanDetailsDlg message handlers
@@ -159,8 +219,6 @@ txnEditSpanData CSpanDetailsDlg::GetEditSpanData()
    editSpanData.bSameGirderType                    = UseSameGirderType();
    editSpanData.GirderSpacingType                  = GetGirderSpacingType();
    editSpanData.GirderMeasurementLocation          = GetMeasurementLocation();
-   editSpanData.GirderTypes                        = GetGirderTypes();
-
    // more spacing below
 
    // Connections and Spacing
@@ -169,10 +227,10 @@ txnEditSpanData CSpanDetailsDlg::GetEditSpanData()
       pgsTypes::MemberEndType end = (i == 0 ? pgsTypes::metStart : pgsTypes::metEnd);
 
       // Boundary conditions
-      editSpanData.m_ConnectionType[end] = GetConnectionType(end);
+      editSpanData.m_ConnectionType[end]        = GetConnectionType(end);
 
       // Spacing
-      editSpanData.GirderSpacing[end == pgsTypes::metStart ? pgsTypes::Ahead : pgsTypes::Back] = GetGirderSpacing(end);
+      editSpanData.GirderSpacing[end] = GetGirderSpacing(end);
 
       // Connections
       for ( int j = 0; j < 2; j++ )

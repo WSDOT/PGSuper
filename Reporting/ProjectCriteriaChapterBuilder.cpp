@@ -978,11 +978,6 @@ void write_creep(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDispl
 
    *pPara << rptNewLine << rptNewLine;
 
-   Float64 Cfactor = pSpecEntry->GetCamberVariability();
-   *pPara << _T("Variability between upper and lower bound camber : ") << 100*Cfactor << rptNewLine;
-
-   *pPara << rptNewLine << rptNewLine;
-
    *pPara << _T("1 day of steam or radiant heat curing is equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing") << rptNewLine;
 }
 
@@ -1036,6 +1031,9 @@ void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisp
       case LOSSES_TXDOT_REFINED_2004:
          *pPara<<_T("Losses calculated per Refined Estimate Method in accordance with AASHTO LRFD 5.9.5.4 and TxDOT Bridge Design")<<rptNewLine;
          break;
+      case LOSSES_TXDOT_REFINED_2013:
+         *pPara<<_T("Losses calculated per Refined Estimate Method in accordance with TxDOT Bridge Research Report 0-6374-2, June, 2013")<<rptNewLine;
+         break;
       case LOSSES_AASHTO_LUMPSUM:
          bReportElasticGainParameters = (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() ? true : false);
       case LOSSES_AASHTO_LUMPSUM_2005:
@@ -1048,7 +1046,7 @@ void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisp
          CHECK(false); // Should never get here
       }
 
-      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+      if ( method!=LOSSES_TXDOT_REFINED_2013 && lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
       {
          *pPara << _T("Assumed time at shipping = ") << time.SetValue(pSpecEntry->GetShippingTime()) << rptNewLine;
       }

@@ -40,13 +40,17 @@
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescDlg
 
-class CBridgeDescDlg : public CPropertySheet
+class CBridgeDescDlg : public CPropertySheet, public IEditBridgeData
 {
 	DECLARE_DYNAMIC(CBridgeDescDlg)
 
 // Construction
 public:
 	CBridgeDescDlg(CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+
+// IEditBridgeData
+public:
+   virtual void EBDummy() {};
 
 // Attributes
 public:
@@ -74,6 +78,7 @@ public:
 // Implementation
 public:
 	virtual ~CBridgeDescDlg();
+	virtual INT_PTR DoModal();
 
 	// Generated message map functions
 protected:
@@ -94,6 +99,7 @@ protected:
 		// NOTE - the ClassWizard will add and remove member functions here.
    virtual void DoDataExchange(CDataExchange* pDX);
 	//}}AFX_MSG
+	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
 	DECLARE_MESSAGE_MAP()
 };
 

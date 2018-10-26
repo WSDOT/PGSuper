@@ -40,6 +40,7 @@
 
 #include <IFace\ViewEvents.h> 
 #include <IFace\Selection.h> 
+#include <IFace\ExtendUI.h>
 
 #include "Hints.h"
 #include "PGSuperCommandLineInfo.h"
@@ -206,6 +207,21 @@ public:
    bool UnregisterGirderSectionViewCallback(IDType ID);
    std::map<IDType,IGirderSectionViewEventCallback*> GetGirderSectionViewCallbacks();
 
+   IDType RegisterEditPierCallback(IEditPierCallback* pCallback);
+   bool UnregisterEditPierCallback(IDType ID);
+   std::map<IDType,IEditPierCallback*> GetEditPierCallbacks();
+
+   IDType RegisterEditSpanCallback(IEditSpanCallback* pCallback);
+   bool UnregisterEditSpanCallback(IDType ID);
+   std::map<IDType,IEditSpanCallback*> GetEditSpanCallbacks();
+
+   IDType RegisterEditGirderCallback(IEditGirderCallback* pCallback);
+   bool UnregisterEditGirderCallback(IDType ID);
+   std::map<IDType,IEditGirderCallback*> GetEditGirderCallbacks();
+
+   IDType RegisterEditBridgeCallback(IEditBridgeCallback* pCallback);
+   bool UnregisterEditBridgeCallback(IDType ID);
+   std::map<IDType,IEditBridgeCallback*> GetEditBridgeCallbacks();
 
 protected:
    CPGSuperDocProxyAgent* m_pPGSuperDocProxyAgent;
@@ -215,6 +231,11 @@ protected:
    std::map<IDType,IBridgeSectionViewEventCallback*> m_BridgeSectionViewCallbacks;
    std::map<IDType,IGirderElevationViewEventCallback*> m_GirderElevationViewCallbacks;
    std::map<IDType,IGirderSectionViewEventCallback*> m_GirderSectionViewCallbacks;
+
+   std::map<IDType,IEditPierCallback*> m_EditPierCallbacks;
+   std::map<IDType,IEditSpanCallback*> m_EditSpanCallbacks;
+   std::map<IDType,IEditGirderCallback*> m_EditGirderCallbacks;
+   std::map<IDType,IEditBridgeCallback*> m_EditBridgeCallbacks;
 
    psgLibraryManager m_LibMgr;
 

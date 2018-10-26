@@ -147,7 +147,16 @@ CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pCh
 void CFinalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 1;
-   (*this)(row,col++) << stress.SetValue( details.RefinedLosses.PermanentStrand_RelaxationLossesAtXfer() );
+
+  // Typecast to our known type (eating own doggy food)
+   boost::shared_ptr<const lrfdRefinedLosses> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses>(details.pLosses);
+   if (!ptl)
+   {
+      ATLASSERT(0); // made a bad cast? Bail...
+      return;
+   }
+
+   (*this)(row,col++) << stress.SetValue( ptl->PermanentStrand_RelaxationLossesAtXfer() );
    (*this)(row,col++) << stress.SetValue( details.pLosses->PermanentStrand_ElasticShorteningLosses() );
    
    if ( 0 < m_NtMax && m_pGirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned ) 
@@ -155,9 +164,9 @@ void CFinalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
       (*this)(row,col++) << stress.SetValue(details.pLosses->GetDeltaFpp());
    }
 
-   (*this)(row,col++) << stress.SetValue( details.RefinedLosses.ShrinkageLosses() );
-   (*this)(row,col++) << stress.SetValue( details.RefinedLosses.CreepLosses() );
-   (*this)(row,col++) << stress.SetValue( details.RefinedLosses.RelaxationLossesAfterXfer() );
+   (*this)(row,col++) << stress.SetValue( ptl->ShrinkageLosses() );
+   (*this)(row,col++) << stress.SetValue( ptl->CreepLosses() );
+   (*this)(row,col++) << stress.SetValue( ptl->RelaxationLossesAfterXfer() );
 
    if ( 0 < m_NtMax ) 
    {

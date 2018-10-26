@@ -230,8 +230,6 @@ void pgsLoadRater::ShearRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingTy
    GET_IFACE(ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
-   pgsTypes::LimitState ls = GetStrengthLimitStateType(ratingType);
-
    GET_IFACE(IPointOfInterest,pPOI);
    std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(ALL_SPANS,gdrLineIdx,pgsTypes::BridgeSite3,POI_ALL, POIFIND_OR);
 
@@ -281,6 +279,8 @@ void pgsLoadRater::ShearRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingTy
 
       pCombinedForces->GetCombinedLiveLoadShear( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPOI, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, false, &vPLmin, &vPLmax );
    }
+
+   pgsTypes::LimitState ls = GetStrengthLimitStateType(ratingType);
 
    GET_IFACE(IShearCapacity,pShearCapacity);
    std::vector<SHEARCAPACITYDETAILS> vVn = pShearCapacity->GetShearCapacityDetails(ls,pgsTypes::BridgeSite3,vPOI);
@@ -578,25 +578,6 @@ void pgsLoadRater::StressRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingT
 
 void pgsLoadRater::CheckReinforcementYielding(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,bool bPositiveMoment,pgsRatingArtifact& ratingArtifact)
 {
-   pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
-
-   if ( bPositiveMoment )
-   {
-      GET_IFACE(IProductLoads,pProductLoads);
-      VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
-      VehicleIndexType startVehicleIdx = (vehicleIdx == INVALID_INDEX ? 0 : vehicleIdx);
-      VehicleIndexType endVehicleIdx   = (vehicleIdx == INVALID_INDEX ? nVehicles-1: startVehicleIdx);
-      for ( VehicleIndexType vehIdx = startVehicleIdx; vehIdx <= endVehicleIdx; vehIdx++ )
-      {
-         pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType,vehIdx);
-         if ( applicability == pgsTypes::llaNegMomentAndInteriorPierReaction )
-         {
-            // we are processing positive moments and the live load vehicle is only applicable to negative moments
-            return;
-         }
-      }
-   }
-
    ATLASSERT(ratingType == pgsTypes::lrPermit_Routine || ratingType == pgsTypes::lrPermit_Special);
    GET_IFACE(IPointOfInterest,pPOI);
    std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(ALL_SPANS,gdrLineIdx,pgsTypes::BridgeSite3,POI_ALL, POIFIND_OR);
@@ -608,6 +589,7 @@ void pgsLoadRater::CheckReinforcementYielding(GirderIndexType gdrLineIdx,pgsType
    std::vector<Float64> vPLmin,vPLmax;
    GetMoments(gdrLineIdx,bPositiveMoment,ratingType, vehicleIdx, vPOI, vDCmin, vDCmax, vDWmin, vDWmax, vLLIMmin, vMinTruckIndex, vLLIMmax, vMaxTruckIndex, vPLmin, vPLmax);
 
+   pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
    pgsTypes::LimitState ls = GetServiceLimitStateType(ratingType);
 
    GET_IFACE(IRatingSpecification,pRatingSpec);

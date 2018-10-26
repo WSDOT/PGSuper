@@ -381,7 +381,6 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
    }
    else
    {
-      ATLASSERT(fc_reqd != -99999); // -99999 means the value was never set
       *p << _T("Regardless of the concrete strength, the stress requirements will not be satisfied.") << rptNewLine;
    }
 }

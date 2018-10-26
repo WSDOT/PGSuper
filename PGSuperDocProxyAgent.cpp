@@ -478,11 +478,12 @@ STDMETHODIMP CPGSuperDocProxyAgent::RegInterfaces()
    pBrokerInit->RegInterface( IID_IDesign,             this );
    pBrokerInit->RegInterface( IID_IViews,              this );
    pBrokerInit->RegInterface( IID_ISelection,          this );
-   pBrokerInit->RegInterface( IID_ISelectionEx,         this );
+   pBrokerInit->RegInterface( IID_ISelectionEx,        this );
    pBrokerInit->RegInterface( IID_IUIEvents,           this );
    pBrokerInit->RegInterface( IID_IUpdateTemplates,    this );
    pBrokerInit->RegInterface( IID_IVersionInfo,        this );
    pBrokerInit->RegInterface( IID_IRegisterViewEvents, this );
+   pBrokerInit->RegInterface( IID_IExtendUI,           this );
    return S_OK;
 }
 
@@ -1197,4 +1198,44 @@ bool CPGSuperDocProxyAgent::UnregisterGirderElevationViewCallback(IDType ID)
 bool CPGSuperDocProxyAgent::UnregisterGirderSectionViewCallback(IDType ID)
 {
    return m_pPGSuperDoc->UnregisterGirderSectionViewCallback(ID);
+}
+
+IDType CPGSuperDocProxyAgent::RegisterEditPierCallback(IEditPierCallback* pCallback)
+{
+   return m_pPGSuperDoc->RegisterEditPierCallback(pCallback);
+}
+
+IDType CPGSuperDocProxyAgent::RegisterEditSpanCallback(IEditSpanCallback* pCallback)
+{
+   return m_pPGSuperDoc->RegisterEditSpanCallback(pCallback);
+}
+
+IDType CPGSuperDocProxyAgent::RegisterEditGirderCallback(IEditGirderCallback* pCallback)
+{
+   return m_pPGSuperDoc->RegisterEditGirderCallback(pCallback);
+}
+
+IDType CPGSuperDocProxyAgent::RegisterEditBridgeCallback(IEditBridgeCallback* pCallback)
+{
+   return m_pPGSuperDoc->RegisterEditBridgeCallback(pCallback);
+}
+
+bool CPGSuperDocProxyAgent::UnregisterEditPierCallback(IDType ID)
+{
+   return m_pPGSuperDoc->UnregisterEditPierCallback(ID);
+}
+
+bool CPGSuperDocProxyAgent::UnregisterEditSpanCallback(IDType ID)
+{
+   return m_pPGSuperDoc->UnregisterEditSpanCallback(ID);
+}
+
+bool CPGSuperDocProxyAgent::UnregisterEditGirderCallback(IDType ID)
+{
+   return m_pPGSuperDoc->UnregisterEditGirderCallback(ID);
+}
+
+bool CPGSuperDocProxyAgent::UnregisterEditBridgeCallback(IDType ID)
+{
+   return m_pPGSuperDoc->UnregisterEditBridgeCallback(ID);
 }

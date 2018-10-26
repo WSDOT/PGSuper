@@ -79,14 +79,15 @@ void CSpecLossPage::OnLossMethodChanged()
    CComboBox* pBox = (CComboBox*)GetDlgItem(IDC_LOSS_METHOD);
    int method = pBox->GetCurSel();
 
-   if ( 0 <= method && method < 5 )
+   if ( 0 <= method && method < 6 )
    {
-      EnableShippingLosses(m_SpecVersion <= lrfdVersionMgr::ThirdEdition2004 ? TRUE : FALSE);
+      EnableShippingLosses(m_SpecVersion <= lrfdVersionMgr::ThirdEdition2004 || method == 3 ? TRUE : FALSE);
       EnableRefinedShippingTime(lrfdVersionMgr::ThirdEdition2004 < m_SpecVersion && (method == 0 || method == 1 || method == 2) ? TRUE : FALSE);
-      EnableApproximateShippingTime(lrfdVersionMgr::ThirdEdition2004 < m_SpecVersion && (method == 3 || method == 4) ? TRUE : FALSE);
+      EnableApproximateShippingTime(lrfdVersionMgr::ThirdEdition2004 < m_SpecVersion && (method == 4 || method == 6) ? TRUE : FALSE);
       EnableGeneralLumpSum(FALSE);
+      EnableTxDOT2013(method==3);
       
-      EnableElasticGains(lrfdVersionMgr::ThirdEdition2004 < m_SpecVersion && (method == 0 || method == 1 || method == 3) ? TRUE : FALSE);
+      EnableElasticGains(lrfdVersionMgr::ThirdEdition2004 < m_SpecVersion && (method == 0 || method == 1 || method == 4) ? TRUE : FALSE);
    }
    else
    {
@@ -94,6 +95,7 @@ void CSpecLossPage::OnLossMethodChanged()
       EnableRefinedShippingTime(FALSE);
       EnableApproximateShippingTime(FALSE);
       EnableGeneralLumpSum(TRUE);
+      EnableTxDOT2013(FALSE);
       EnableElasticGains(FALSE);
    }
 }
@@ -165,6 +167,13 @@ void CSpecLossPage::EnableApproximateShippingTime(BOOL bEnable)
    ENABLE_WINDOW(IDC_APPROXIMATE_SHIPPING_TIME_NOTE);
 }
 
+void CSpecLossPage::EnableTxDOT2013(BOOL bEnable)
+{
+   CWnd* pWnd;
+   ENABLE_WINDOW(IDC_FCPG_STATIC);
+   ENABLE_WINDOW(IDC_FCPG_COMBO);
+}
+
 void CSpecLossPage::EnableElasticGains(BOOL bEnable)
 {
    CWnd* pWnd;
@@ -225,6 +234,7 @@ BOOL CSpecLossPage::OnInitDialog()
    pBox->AddString(_T("Refined Estimate per LRFD 5.9.5.4"));
    pBox->AddString(_T("Refined Estimate per WSDOT Bridge Design Manual"));
    pBox->AddString(_T("Refined Estimate per TxDOT Bridge Design Manual"));
+   pBox->AddString(_T("Refined Estimate per TxDOT Research Report 0-6374-2"));
    pBox->AddString(_T("Approximate Lump Sum per LRFD 5.9.5.3"));
    pBox->AddString(_T("Approximate Lump Sum per WSDOT Bridge Design Manual"));
    pBox->AddString(_T("General Lump Sum"));
@@ -239,6 +249,11 @@ BOOL CSpecLossPage::OnInitDialog()
    pBox->AddString(_T("LRFD Equation 5.9.5.4.2c-1"));  // simplified
    pBox->AddString(_T("LRFD Equation C5.9.5.4.2c-1")); // refined
    pBox->AddString(_T("1.2 KSI (LRFD 5.9.5.4.2c)"));   // lump sum
+
+   pBox = (CComboBox*)GetDlgItem(IDC_FCPG_COMBO);
+   pBox->AddString(_T("Assumption that strand stress at release is 0.7 fpu"));
+   pBox->AddString(_T("Iterative method described in LRFD C5.9.5.2.3a"));
+   pBox->AddString(_T("Assumption of 0.7 fpu unless special conditions"));
 
    CPropertyPage::OnInitDialog();
 

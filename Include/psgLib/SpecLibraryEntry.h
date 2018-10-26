@@ -802,17 +802,6 @@ public:
    Float64 GetTotalCreepDuration() const;
 
    //------------------------------------------------------------------------
-   //  Variability between upper and lower bound camber, stored in decimal percent
-   void SetCamberVariability(Float64 var);
-   Float64 GetCamberVariability() const;
-
-   void CheckGirderSag(bool bCheck);
-   bool CheckGirderSag() const;
-
-   pgsTypes::SagCamberType GetSagCamberType() const;
-   void SetSagCamberType(pgsTypes::SagCamberType type);
-
-   //------------------------------------------------------------------------
    // Returns the method for computing losses. The return value will be
    // one of the LOSSES_XXX constants
    int GetLossMethod() const;
@@ -910,6 +899,13 @@ public:
    void SetRelaxationLossMethod(Int16 method);
    Int16 GetRelaxationLossMethod() const;
 
+
+   //------------------------------------------------------------------------
+   // Get/Set a FCGP_XXXX constant to determine the method used to compute fcgp
+   // for losses. This option is only used for the TxDOT 2013 losses method
+   void SetFcgpComputationMethod(Int16 method);
+   Int16 GetFcgpComputationMethod() const;
+
    //------------------------------------------------------------------------
    // Returns a LLDF_XXXX constant for the live load distribution factor
    // calculation method
@@ -984,9 +980,6 @@ public:
    Float64 GetMaxConcreteUnitWeight(pgsTypes::ConcreteType type) const;
    void SetMaxConcreteAggSize(pgsTypes::ConcreteType type,Float64 agg);
    Float64 GetMaxConcreteAggSize(pgsTypes::ConcreteType type) const;
-
-   void SetDoCheckStirrupSpacingCompatibility(bool doCheck);
-   bool GetDoCheckStirrupSpacingCompatibility() const;
 
    //------------------------------------------------------------------------
    // Enable check and design for "A" dimension (Slab Offset
@@ -1226,10 +1219,6 @@ private:
    Float64 m_CreepDuration2Max;
    Float64 m_TotalCreepDuration;
 
-   Float64 m_CamberVariability; // Variability between upper and lower bound camber, stored in decimal percent
-   bool m_bCheckSag; // evaluate girder camber and dead load deflections and check for sag potential
-   pgsTypes::SagCamberType m_SagCamberType; // indicates the camber used to detect girder sag potential
-
    // Losses
    int    m_LossMethod;
    Float64 m_FinalLosses;
@@ -1276,15 +1265,11 @@ private:
 
    pgsTypes::AnalysisType m_AnalysisType; // this data will be in old library entries (version < 28)
 
-   // Concrete limits
    Float64 m_MaxSlabFc[3];
    Float64 m_MaxGirderFci[3];
    Float64 m_MaxGirderFc[3];
    Float64 m_MaxConcreteUnitWeight[3];
    Float64 m_MaxConcreteAggSize[3];
-
-   // Warning checks
-   bool m_DoCheckStirrupSpacingCompatibility;
    
    bool m_EnableSlabOffsetCheck;
    bool m_EnableSlabOffsetDesign;
@@ -1316,7 +1301,8 @@ private:
    Float64 m_PhiFlexureCompression[3];
    Float64 m_PhiShear[3];
 
-   Int16 m_RelaxationLossMethod; // method for computing relaxation losses for LRFD 2005 and later, refined method
+   Int16 m_RelaxationLossMethod;  // method for computing relaxation losses for LRFD 2005 and later, refined method
+   Int16 m_FcgpComputationMethod; // method for computing fcgp for losses. only used for txdot 2013
    bool m_bIncludeForNegMoment;
 
    bool m_bAllowStraightStrandExtensions;

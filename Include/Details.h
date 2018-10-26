@@ -276,49 +276,27 @@ struct CREEPCOEFFICIENTDETAILS
 
 struct LOSSDETAILS
 {
-   LOSSDETAILS() { pLosses = 0; }
+   LOSSDETAILS() {;}
+
    LOSSDETAILS(const LOSSDETAILS& other)
    { MakeCopy(other); }
+
    LOSSDETAILS& operator=(const LOSSDETAILS& other)
    { return MakeCopy(other); }
+
    LOSSDETAILS& MakeCopy(const LOSSDETAILS& other)
    {
       Method = other.Method;
-
-      RefinedLosses                     = other.RefinedLosses;
-      RefinedLosses2005                 = other.RefinedLosses2005;
-      ApproxLosses                      = other.ApproxLosses;
-      ApproxLosses2005                  = other.ApproxLosses2005;
-      LumpSum                           = other.LumpSum;
-
-      if ( other.pLosses == &other.RefinedLosses2005 )
-         pLosses = &RefinedLosses2005;
-      else if ( other.pLosses == &other.RefinedLosses )
-         pLosses = &RefinedLosses;
-      else if ( other.pLosses == &other.ApproxLosses )
-         pLosses = &ApproxLosses;
-      else if ( other.pLosses == &other.ApproxLosses2005 )
-         pLosses = &ApproxLosses2005;
-      else if ( other.pLosses == &other.LumpSum )
-         pLosses = &LumpSum;
+      pLosses = other.pLosses;
 
       return *this;
    }
 
    Uint32 Method; // Loss method (a LOSSES_xxx constant)
 
-   // LRFD Method Losses (details can be extracted from these objects)
-   const lrfdLosses* pLosses;
-
-   lrfdLumpSumLosses LumpSum;
-
-   // before LRFD 2005
-   lrfdRefinedLosses RefinedLosses;
-   lrfdApproximateLosses ApproxLosses;
-
-   // LRFD 2005 and later
-   lrfdRefinedLosses2005 RefinedLosses2005;
-   lrfdApproximateLosses2005 ApproxLosses2005;
+   // LRFD Method Losses
+   // Base class can be casted to derived class to get details. You know who you are!
+   boost::shared_ptr<const lrfdLosses> pLosses;
 };
 
 struct STRANDDEVLENGTHDETAILS

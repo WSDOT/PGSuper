@@ -68,7 +68,7 @@ public:
 
    //------------------------------------------------------------------------
    // Default constructor
-   pgsFlexuralCapacityArtifact(bool bPositiveMoment);
+   pgsFlexuralCapacityArtifact();
 
    //------------------------------------------------------------------------
    // Copy constructor
@@ -122,7 +122,6 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
-   bool m_bPositiveMoment;
    Float64 m_cde;
    Float64 m_cdeMax;
    Float64 m_MrMin;

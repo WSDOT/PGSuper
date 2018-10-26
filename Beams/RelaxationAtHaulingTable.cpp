@@ -61,20 +61,28 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
    GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
 
+  // Typecast to our known type (eating own doggy food)
+   boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(details.pLosses);
+   if (!ptl)
+   {
+      ATLASSERT(0); // made a bad cast? Bail...
+      return NULL;
+   }
+
    // Create and configure the table
    ColumnIndexType numColumns = 3;
-   if ( details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
+   if ( ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
       numColumns++;
-   else if (details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
+   else if (ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
       numColumns += 4;
 
    if ( bTemporaryStrands )
    {
       numColumns++;
 
-      if ( details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
+      if ( ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
          numColumns++;
-      else if (details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
+      else if (ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
          numColumns += 4;
    }
 
@@ -95,20 +103,20 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
    table->stress.ShowUnitTag(true);
    table->time.ShowUnitTag(true);
 
-   switch(details.RefinedLosses2005.GetRelaxationLossMethod() )
+   switch(ptl->GetRelaxationLossMethod() )
    {
    case lrfdRefinedLosses2005::Simplified:
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR1H_Simplified.png")) << rptNewLine;
-      *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(details.RefinedLosses2005.GetFpy())              << rptNewLine;
-      *pParagraph << Sub2(_T("K"),_T("L")) << _T(" = ") << details.RefinedLosses2005.GetKL()                        << rptNewLine;
+      *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(ptl->GetFpy())              << rptNewLine;
+      *pParagraph << Sub2(_T("K"),_T("L")) << _T(" = ") << ptl->GetKL()                        << rptNewLine;
       break;
 
    case lrfdRefinedLosses2005::Refined:
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpR1H.png")) << rptNewLine;
-      *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(details.RefinedLosses2005.GetFpy())                              << rptNewLine;
-      *pParagraph << Sub2(_T("K'"),_T("L")) << _T(" = ") << details.RefinedLosses2005.GetKL()                                       << rptNewLine;
-      *pParagraph << Sub2(_T("t"),_T("i"))  << _T(" = ") << table->time.SetValue(details.RefinedLosses2005.GetInitialAge())         << rptNewLine;
-      *pParagraph << Sub2(_T("t"),_T("d"))  << _T(" = ") << table->time.SetValue(details.RefinedLosses2005.GetAgeAtHauling()) << rptNewLine;
+      *pParagraph << RPT_FY << _T(" = ") << table->stress.SetValue(ptl->GetFpy())                              << rptNewLine;
+      *pParagraph << Sub2(_T("K'"),_T("L")) << _T(" = ") << ptl->GetKL()                                       << rptNewLine;
+      *pParagraph << Sub2(_T("t"),_T("i"))  << _T(" = ") << table->time.SetValue(ptl->GetInitialAge())         << rptNewLine;
+      *pParagraph << Sub2(_T("t"),_T("d"))  << _T(" = ") << table->time.SetValue(ptl->GetAgeAtHauling()) << rptNewLine;
       break;
 
    case lrfdRefinedLosses2005::LumpSum:
@@ -138,7 +146,7 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
       table->SetRowSpan(0,col,2);
       table->SetRowSpan(1,col++,SKIP_CELL);
 
-      if ( details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
+      if ( ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
       {
          table->SetColumnSpan(0,col,2);
          (*table)(0,col++) << _T("Permanent Strands");
@@ -149,7 +157,7 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
          table->SetColumnSpan(0,col++,SKIP_CELL);
          table->SetColumnSpan(0,col++,SKIP_CELL);
       }
-      else if ( details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
+      else if ( ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
       {
          table->SetColumnSpan(0,col,5);
          (*table)(0,col++) << _T("Permanent Strands");
@@ -166,7 +174,7 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
          table->SetColumnSpan(0,col++,SKIP_CELL);
          table->SetColumnSpan(0,col++,SKIP_CELL);
       }
-      else if ( details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::LumpSum )
+      else if ( ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::LumpSum )
       {
          (*table)(0,col++) << _T("Permanent Strands");
          (*table)(0,col++) << _T("Temporary Strands");
@@ -177,7 +185,7 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
       }
 
       col=2;
-      if ( details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
+      if ( ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
       {
          (*table)(1,col++) << COLHDR(RPT_STRESS(_T("pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR1H")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -185,7 +193,7 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
          (*table)(1,col++) << COLHDR(RPT_STRESS(_T("pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR1H")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
-      else if ( details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
+      else if ( ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
       {
          (*table)(1,col++) << COLHDR(RPT_STRESS(_T("pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSRH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -199,7 +207,7 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
          (*table)(1,col++) << Sub2(_T("K"),_T("ih"));
          (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR1H")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
-      else if ( details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::LumpSum )
+      else if ( ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::LumpSum )
       {
          (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR1H")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR1H")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -213,12 +221,12 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
    {
       table->m_RowOffset = 0;
       col=2;
-      if ( details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
+      if ( ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
       {
          (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR1H")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
-      else if ( details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
+      else if ( ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
       {
          (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSRH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -226,7 +234,7 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
          (*table)(0,col++) << Sub2(_T("K"),_T("ih"));
          (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR1H")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
-      else if ( details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::LumpSum )
+      else if ( ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::LumpSum )
       {
          (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR1H")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
@@ -243,22 +251,31 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
 void CRelaxationAtHaulingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 2;
-   if ( details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
+
+  // Typecast to our known type (eating own doggy food)
+   boost::shared_ptr<const lrfdRefinedLosses2005> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLosses2005>(details.pLosses);
+   if (!ptl)
    {
-      (*this)(row+m_RowOffset,col++) << stress.SetValue(details.RefinedLosses2005.GetPermanentStrandFpt());
-      (*this)(row+m_RowOffset,col++) << stress.SetValue(details.RefinedLosses2005.PermanentStrand_RelaxationLossAtShipping());
+      ATLASSERT(0); // made a bad cast? Bail...
+      return;
    }
-   else if ( details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
+
+   if ( ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
    {
-      (*this)(row+m_RowOffset,col++) << stress.SetValue(details.RefinedLosses2005.GetPermanentStrandFpt());
-      (*this)(row+m_RowOffset,col++) << stress.SetValue(details.RefinedLosses2005.PermanentStrand_ShrinkageLossAtShipping());
-      (*this)(row+m_RowOffset,col++) << stress.SetValue(details.RefinedLosses2005.PermanentStrand_CreepLossAtShipping());
-      (*this)(row+m_RowOffset,col++) << scalar.SetValue(details.RefinedLosses2005.GetPermanentStrandKih());
-      (*this)(row+m_RowOffset,col++) << stress.SetValue(details.RefinedLosses2005.PermanentStrand_RelaxationLossAtShipping());
+      (*this)(row+m_RowOffset,col++) << stress.SetValue(ptl->GetPermanentStrandFpt());
+      (*this)(row+m_RowOffset,col++) << stress.SetValue(ptl->PermanentStrand_RelaxationLossAtShipping());
    }
-   else if ( details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::LumpSum )
+   else if ( ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
    {
-      (*this)(row+m_RowOffset,col++) << stress.SetValue(details.RefinedLosses2005.PermanentStrand_RelaxationLossAtShipping());
+      (*this)(row+m_RowOffset,col++) << stress.SetValue(ptl->GetPermanentStrandFpt());
+      (*this)(row+m_RowOffset,col++) << stress.SetValue(ptl->PermanentStrand_ShrinkageLossAtShipping());
+      (*this)(row+m_RowOffset,col++) << stress.SetValue(ptl->PermanentStrand_CreepLossAtShipping());
+      (*this)(row+m_RowOffset,col++) << scalar.SetValue(ptl->GetPermanentStrandKih());
+      (*this)(row+m_RowOffset,col++) << stress.SetValue(ptl->PermanentStrand_RelaxationLossAtShipping());
+   }
+   else if ( ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::LumpSum )
+   {
+      (*this)(row+m_RowOffset,col++) << stress.SetValue(ptl->PermanentStrand_RelaxationLossAtShipping());
    }
    else
    {
@@ -267,22 +284,22 @@ void CRelaxationAtHaulingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,con
 
    if ( m_bTemporaryStrands )
    {
-      if ( details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
+      if ( ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
       {
-         (*this)(row+m_RowOffset,col++) << stress.SetValue(details.RefinedLosses2005.GetTemporaryStrandFpt());
-         (*this)(row+m_RowOffset,col++) << stress.SetValue(details.RefinedLosses2005.TemporaryStrand_RelaxationLossAtShipping());
+         (*this)(row+m_RowOffset,col++) << stress.SetValue(ptl->GetTemporaryStrandFpt());
+         (*this)(row+m_RowOffset,col++) << stress.SetValue(ptl->TemporaryStrand_RelaxationLossAtShipping());
       }
-      else if ( details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
+      else if ( ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
       {
-         (*this)(row+m_RowOffset,col++) << stress.SetValue(details.RefinedLosses2005.GetTemporaryStrandFpt());
-         (*this)(row+m_RowOffset,col++) << stress.SetValue(details.RefinedLosses2005.TemporaryStrand_ShrinkageLossAtShipping());
-         (*this)(row+m_RowOffset,col++) << stress.SetValue(details.RefinedLosses2005.TemporaryStrand_CreepLossAtShipping());
-         (*this)(row+m_RowOffset,col++) << scalar.SetValue(details.RefinedLosses2005.GetTemporaryStrandKih());
-         (*this)(row+m_RowOffset,col++) << stress.SetValue(details.RefinedLosses2005.TemporaryStrand_RelaxationLossAtShipping());
+         (*this)(row+m_RowOffset,col++) << stress.SetValue(ptl->GetTemporaryStrandFpt());
+         (*this)(row+m_RowOffset,col++) << stress.SetValue(ptl->TemporaryStrand_ShrinkageLossAtShipping());
+         (*this)(row+m_RowOffset,col++) << stress.SetValue(ptl->TemporaryStrand_CreepLossAtShipping());
+         (*this)(row+m_RowOffset,col++) << scalar.SetValue(ptl->GetTemporaryStrandKih());
+         (*this)(row+m_RowOffset,col++) << stress.SetValue(ptl->TemporaryStrand_RelaxationLossAtShipping());
       }
-      else if ( details.RefinedLosses2005.GetRelaxationLossMethod() == lrfdRefinedLosses2005::LumpSum )
+      else if ( ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::LumpSum )
       {
-         (*this)(row+m_RowOffset,col++) << stress.SetValue(details.RefinedLosses2005.TemporaryStrand_RelaxationLossAtShipping());
+         (*this)(row+m_RowOffset,col++) << stress.SetValue(ptl->TemporaryStrand_RelaxationLossAtShipping());
       }
       else
       {

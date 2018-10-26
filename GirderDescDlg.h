@@ -36,6 +36,8 @@
 #include "BridgeDescGirderMaterialsPage.h"
 #include "GirderDescRatingPage.h"
 
+#include <IFace\ExtendUI.h>
+
 // handy functions
 
 // Changes in girder fill can make debonding invalid. This algorithm gets rid of any
@@ -88,13 +90,16 @@ inline bool ReconcileExtendedStrands(const ConfigStrandFillVector& fillvec, std:
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescDlg
 
-class CGirderDescDlg : public CPropertySheet
+class CGirderDescDlg : public CPropertySheet, public IEditGirderData
 {
 	DECLARE_DYNAMIC(CGirderDescDlg)
 
 // Construction
 public:
 	CGirderDescDlg(SpanIndexType spanIdx,GirderIndexType gdrIdx,LPCTSTR strGirderName,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+
+   // IEditGirderData
+   virtual void EGDummy() {};
 
 // Attributes
 public:
@@ -125,6 +130,8 @@ public:
 // Implementation
 public:
 	virtual ~CGirderDescDlg();
+	virtual INT_PTR DoModal();
+
    void DoUpdate();
 
    void OnGirderTypeChanged(bool bAllowExtendedStrands,bool bIsDebonding);
@@ -152,6 +159,7 @@ protected:
 	//{{AFX_MSG(CGirderDescDlg)
 		// NOTE - the ClassWizard will add and remove member functions here.
 	//}}AFX_MSG
+	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
 	DECLARE_MESSAGE_MAP()
 };
 

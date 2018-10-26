@@ -274,7 +274,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories=".\;.\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;&quot;$(ProjectDir)\LibraryEditor&quot;;&quot;$(VCInstallDir)atlmfc\src\mfc&quot;"
-				PreprocessorDefinitions="NDEBUG;_GXDLL;WIN32;_WINDOWS;_ATL_NO_UUIDOF;x_BETA_VERSION"
+				PreprocessorDefinitions="NDEBUG;_GXDLL;WIN32;_WINDOWS;_ATL_NO_UUIDOF;_BETA_VERSION"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
@@ -386,7 +386,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories=".\;.\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;&quot;$(ProjectDir)\LibraryEditor&quot;;&quot;$(VCInstallDir)atlmfc\src\mfc&quot;"
-				PreprocessorDefinitions="NDEBUG;_GXDLL;WIN32;_WINDOWS;_ATL_NO_UUIDOF;x_BETA_VERSION"
+				PreprocessorDefinitions="NDEBUG;_GXDLL;WIN32;_WINDOWS;_ATL_NO_UUIDOF;_BETA_VERSION"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
@@ -1171,11 +1171,11 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\connecti.ico"
+				RelativePath="psgLib\LibraryEditor\res\connecti.ico"
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\connecti.ico"
+				RelativePath="LibraryEditor\res\connecti.ico"
 				>
 			</File>
 			<File
@@ -1183,11 +1183,11 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\diaphrag.ico"
+				RelativePath="psgLib\LibraryEditor\res\diaphrag.ico"
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\diaphrag.ico"
+				RelativePath="LibraryEditor\res\diaphrag.ico"
 				>
 			</File>
 			<File
@@ -1199,11 +1199,11 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\girder_l.ico"
+				RelativePath="psgLib\LibraryEditor\res\girder_l.ico"
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\girder_l.ico"
+				RelativePath="LibraryEditor\res\girder_l.ico"
 				>
 			</File>
 			<File
@@ -1231,15 +1231,15 @@
 				>
 			</File>
 			<File
+				RelativePath="res\ico00001.ico"
+				>
+			</File>
+			<File
 				RelativePath="psgLib\LibraryEditor\res\ico00001.ico"
 				>
 			</File>
 			<File
 				RelativePath="LibraryEditor\res\ico00001.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\ico00001.ico"
 				>
 			</File>
 			<File
@@ -1255,11 +1255,15 @@
 				>
 			</File>
 			<File
+				RelativePath="res\ico00003.ico"
+				>
+			</File>
+			<File
 				RelativePath="LibraryEditor\res\ico00003.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\ico00003.ico"
+				RelativePath="res\ico00004.ico"
 				>
 			</File>
 			<File
@@ -1268,10 +1272,6 @@
 			</File>
 			<File
 				RelativePath="LibraryEditor\res\ico00004.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\ico00004.ico"
 				>
 			</File>
 			<File
@@ -1287,6 +1287,10 @@
 				>
 			</File>
 			<File
+				RelativePath="psgLib\LibraryEditor\res\ico00006.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\res\ico00006.ico"
 				>
 			</File>
@@ -1299,10 +1303,6 @@
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\ico00006.ico"
-				>
-			</File>
-			<File
 				RelativePath="psgLib\LibraryEditor\res\ico00007.ico"
 				>
 			</File>
@@ -1311,15 +1311,11 @@
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\ico00008.ico"
-				>
-			</File>
-			<File
 				RelativePath="LibraryEditor\res\ico00008.ico"
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\ico00009.ico"
+				RelativePath="psgLib\LibraryEditor\res\ico00008.ico"
 				>
 			</File>
 			<File
@@ -1327,11 +1323,15 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\ico00010.ico"
+				RelativePath="LibraryEditor\res\ico00009.ico"
 				>
 			</File>
 			<File
 				RelativePath="psgLib\LibraryEditor\res\ico00010.ico"
+				>
+			</File>
+			<File
+				RelativePath="LibraryEditor\res\ico00010.ico"
 				>
 			</File>
 			<File
@@ -1343,11 +1343,15 @@
 				>
 			</File>
 			<File
+				RelativePath="LibraryEditor\res\ico00013.ico"
+				>
+			</File>
+			<File
 				RelativePath="psgLib\LibraryEditor\res\ico00013.ico"
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\ico00013.ico"
+				RelativePath="res\icon1.ico"
 				>
 			</File>
 			<File
@@ -1356,10 +1360,6 @@
 			</File>
 			<File
 				RelativePath="psgLib\LibraryEditor\res\icon1.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\icon1.ico"
 				>
 			</File>
 			<File
