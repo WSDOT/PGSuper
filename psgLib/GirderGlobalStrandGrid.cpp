@@ -181,7 +181,7 @@ BOOL CGirderGlobalStrandGrid::OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, U
 	    nRow, nCol, nFlags;
 
 	   CMenu menu;
-	   VERIFY(menu.LoadMenu(IDR_ADD_DELETE_POPUP));
+	   VERIFY(menu.LoadMenu(IDR_ADD_EDIT_DELETE_POPUP));
 
 	   CMenu* pPopup = menu.GetSubMenu( 0 );
 	   ASSERT( pPopup != NULL );

@@ -877,6 +877,10 @@
           <param name="Name" value="Diaphragm Layout Tab">
           <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibDiaphragm_Layout_Dialog.htm">
         </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Shear Design Tab">
+          <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Shear_Design_Tab.htm">
+        </object>
         </ul>
       <li><object type="text/sitemap">
         <param name="Name" value="Traffic Barrier Dialog">

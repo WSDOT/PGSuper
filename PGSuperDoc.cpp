@@ -158,7 +158,7 @@
 #include "EditLiveLoad.h"
 #include "EditAnalysisType.h"
 #include "EditConstructionLoad.h"
-#include <PgsExt\InsertDeleteLoad.h>
+#include "InsertDeleteLoad.h"
 #include "EditEffectiveFlangeWidth.h"
 
 // Logging
@@ -537,8 +537,8 @@ bool CPGSuperDoc::EditGirderDescription(SpanIndexType span,GirderIndexType girde
    else
       spanIdx = nspans-1;
 
-   GirderIndexType ngrds = pBridge->GetGirderCount(m_Selection.SpanIdx == INVALID_INDEX ? 0 : m_Selection.SpanIdx);
-   if ( m_Selection.GirderIdx < ngrds || m_Selection.GirderIdx == INVALID_INDEX)
+   GirderIndexType ngrds = pBridge->GetGirderCount(m_Selection.SpanIdx == ALL_SPANS ? 0 : m_Selection.SpanIdx);
+   if ( m_Selection.GirderIdx < ngrds)
       gdrIdx = girder;
    else
       gdrIdx = ngrds-1;
@@ -1902,6 +1902,7 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,bool bDesignSlabOffset,SpanIndexType
       // internally by dialog based on girder type, and other library values
       dlg.m_DesignForFlexure = (IsDesignFlexureEnabled() ? TRUE : FALSE);
       dlg.m_DesignForShear   = (IsDesignShearEnabled()   ? TRUE : FALSE);
+      dlg.m_StartWithCurrentStirrupLayout = (IsDesignStirrupsFromScratchEnabled() ? FALSE : TRUE);
 
       if ( dlg.DoModal() == IDOK )
       {
@@ -1909,6 +1910,7 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,bool bDesignSlabOffset,SpanIndexType
 
          EnableDesignFlexure(dlg.m_DesignForFlexure == TRUE ? true : false);
          EnableDesignShear(  dlg.m_DesignForShear   == TRUE ? true : false);
+         EnableDesignStirrupsFromScratch( dlg.m_StartWithCurrentStirrupLayout==TRUE ? false : true);
          m_bDesignSlabOffset = bDesignSlabOffset; // retain value for current document
 
          gdr_list = dlg.m_GirderList;
@@ -1998,6 +2000,7 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<SpanGirderHashType>& girderLi
 
          arDesignOptions des_options = pSpecification->GetDesignOptions(span,gdr);
          des_options.doDesignSlabOffset = doDesignADim;
+         des_options.doDesignStirrupLayout = IsDesignStirrupsFromScratchEnabled() ?  slLayoutStirrups : slRetainExistingLayout;
 
          if(!this->IsDesignFlexureEnabled())
          {
@@ -3042,6 +3045,13 @@ void CPGSuperDoc::LoadDocumentSettings()
    else
       m_bDesignShearEnabled = true;
 
+   CString strDefaultDesignStirrupsFromScratch = pApp->GetLocalMachineString(_T("Settings"),_T("DesignStirrupsFromScratch"),_T("On"));
+   CString strDesignStirrupsFromScratch = pApp->GetProfileString(_T("Settings"),_T("DesignStirrupsFromScratch"),strDefaultDesignStirrupsFromScratch);
+   if ( strDesignStirrupsFromScratch.CompareNoCase(_T("Off")) == 0 )
+      m_bDesignStirrupsFromScratchEnabled = false;
+   else
+      m_bDesignStirrupsFromScratchEnabled = true;
+
    CString strShowProjectProperties = pApp->GetLocalMachineString(_T("Settings"),_T("ShowProjectProperties"), _T("On"));
    CString strProjectProperties = pApp->GetProfileString(_T("Settings"),_T("ShowProjectProperties"),strShowProjectProperties);
    if ( strProjectProperties.CompareNoCase(_T("Off")) == 0 )
@@ -3075,6 +3085,7 @@ void CPGSuperDoc::SaveDocumentSettings()
    // Save the design mode settings
    VERIFY(pApp->WriteProfileString( _T("Settings"),_T("DesignFlexure"),m_bDesignFlexureEnabled ? _T("On") : _T("Off") ));
    VERIFY(pApp->WriteProfileString( _T("Settings"),_T("DesignShear"),  m_bDesignShearEnabled   ? _T("On") : _T("Off") ));
+   VERIFY(pApp->WriteProfileString( _T("Settings"),_T("DesignStirrupsFromScratch"),  m_bDesignStirrupsFromScratchEnabled   ? _T("On") : _T("Off") ));
 
    VERIFY(pApp->WriteProfileString( _T("Settings"),_T("ShowProjectProperties"),m_bShowProjectProperties ? _T("On") : _T("Off") ));
 }
@@ -3326,6 +3337,16 @@ bool CPGSuperDoc::IsDesignShearEnabled() const
 void CPGSuperDoc::EnableDesignShear( bool bEnable )
 {
    m_bDesignShearEnabled = bEnable;
+}
+
+bool CPGSuperDoc::IsDesignStirrupsFromScratchEnabled() const
+{
+   return m_bDesignStirrupsFromScratchEnabled;
+}
+
+void CPGSuperDoc::EnableDesignStirrupsFromScratch( bool bEnable )
+{
+   m_bDesignStirrupsFromScratchEnabled = bEnable;
 }
 
 bool CPGSuperDoc::ShowProjectPropertiesOnNewProject()

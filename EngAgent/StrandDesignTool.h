@@ -164,7 +164,7 @@ public:
 
    Float64 GetPrestressForceMz(pgsTypes::Stage stage,const pgsPointOfInterest& poi);
 
-   // if INVALID_INDEX, cannot handle force
+   // if Uint32_Max, cannot handle force
    StrandIndexType ComputePermanentStrandsRequiredForPrestressForce(const pgsPointOfInterest& poi,Float64 force);
 
    Float64 ComputeEccentricity(const pgsPointOfInterest& poi, pgsTypes::Stage eccStage);
@@ -250,7 +250,7 @@ public:
 
    // ACCESS
    //////////
-   GDRCONFIG GetGirderConfiguration();
+   const GDRCONFIG& GetGirderConfiguration();
 
    arFlexuralDesignType GetFlexuralDesignType() const;
 
@@ -364,6 +364,9 @@ private:
    GirderIndexType m_Girder;
    SpanIndexType m_Span;
    arDesignOptions m_DesignOptions;
+
+   GDRCONFIG m_CachedConfig;
+   bool m_bConfigDirty;
 
    arDesignStrandFillType m_StrandFillType;
    Float64                m_HarpedRatio;

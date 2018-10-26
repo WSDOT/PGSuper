@@ -29,7 +29,7 @@
 // GirderDescDlg.h : header file
 //
 #include "BridgeDescPrestressPage.h"
-#include "BridgeDescShearPage.h"
+#include "ShearSteelPage2.h"
 #include "BridgeDescLongitudinalRebar.h"
 #include "BridgeDescLiftingPage.h"
 #include "DebondDlg.h"
@@ -54,7 +54,7 @@ public:
 
    CGirderDescGeneralPage       m_General;
    CGirderDescPrestressPage     m_Prestress;
-   CGirderDescShearPage         m_Shear;
+   CShearSteelPage2             m_Shear;
    CGirderDescLongitudinalRebar m_LongRebar;
    CGirderDescLiftingPage       m_Lifting;
    CGirderDescDebondPage        m_Debond;
@@ -78,10 +78,6 @@ public:
 	virtual ~CGirderDescDlg();
    void DoUpdate();
 
-   void FillMaterialComboBox(CComboBox* pCB);
-   void GetStirrupMaterial(int idx,matRebar::Type& type,matRebar::Grade& grade);
-   int GetStirrupMaterialIndex(matRebar::Type type,matRebar::Grade grade);
-
 	// Generated message map functions
 protected:
    void Init();
@@ -90,7 +86,6 @@ protected:
    friend CGirderDescGeneralPage;
    friend CGirderDescLiftingPage;
    friend CGirderDescPrestressPage;
-   friend CGirderDescShearPage;
    friend CGirderDescDebondPage;
    friend CGirderDescLongitudinalRebar;
    friend CGirderDescRatingPage;

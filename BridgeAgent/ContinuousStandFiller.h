@@ -58,9 +58,9 @@ public:
    // NOTE: The strandFill array is for temporary use only - 
    //       do not change it - clone it if you want to hang on to it.
    //       And, it becomes invalid after subsequent calls into this class
-   HRESULT ComputeStraightStrandFill(IPrecastGirder* girder, StrandIndexType nStrands, ILongArray** strandFill);
-   HRESULT ComputeHarpedStrandFill(IPrecastGirder* girder, StrandIndexType nStrands, ILongArray** strandFill);
-   HRESULT ComputeTemporaryStrandFill(IPrecastGirder* girder, StrandIndexType nStrands, ILongArray** strandFill);
+   HRESULT ComputeStraightStrandFill(IPrecastGirder* girder, StrandIndexType nStrands, IIndexArray** strandFill);
+   HRESULT ComputeHarpedStrandFill(IPrecastGirder* girder, StrandIndexType nStrands, IIndexArray** strandFill);
+   HRESULT ComputeTemporaryStrandFill(IPrecastGirder* girder, StrandIndexType nStrands, IIndexArray** strandFill);
 
    HRESULT GetNextNumberOfStraightStrands(IPrecastGirder* girder, StrandIndexType currNum,  StrandIndexType* nextStrands);
    HRESULT GetNextNumberOfHarpedStrands(IPrecastGirder* girder, StrandIndexType currNum,  StrandIndexType* nextStrands);
@@ -78,7 +78,7 @@ public:
 private:
 
    // keep a local array handy so we don't need to allocate
-   CComPtr<ILongArray> m_TempArray;  
+   CComPtr<IIndexArray> m_TempArray;  
 
    const GirderLibraryEntry* m_pGdrEntry;
 

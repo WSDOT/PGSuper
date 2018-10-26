@@ -345,7 +345,7 @@ private:
    DWORD m_dwSpecCookie;
    DWORD m_dwRatingSpecCookie;
    DWORD m_dwLoadModifierCookie;
-   CComPtr<ILongArray> m_LBAMPoi;   // array for LBAM poi
+   CComPtr<IIDArray> m_LBAMPoi;   // array for LBAM poi
    CComPtr<ILBAMLRFDFactory3> m_LBAMUtility;
    CComPtr<IUnitServer> m_UnitServer;
 

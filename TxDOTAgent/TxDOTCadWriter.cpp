@@ -44,39 +44,51 @@
 static void write_spec_check_results(FILE *fp, IBroker* pBroker, SpanIndexType span, GirderIndexType gdr, bool designSucceeded);
 static std::_tstring MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInterest& midPoi);
 
-// Return string for strand size
+// Return fractional string for strand size
 static int txdString_ftofrac	/* <=  Completion value                   */
 (
 LPTSTR      stringP,		      /* <=  Output text string                 */
 size_t      size,             /* <= size of output string               */
-double		value,			   /*  => Value to convert                   */
-double		resolution		   /*  => Fractional resolution              */
+Float64		value 			   /*  => Value to convert                   */
 )
 {
-	double	fraction = 0.0, whole = 0.0;
-	int		index = 0;
-	TCHAR table[][4] = {_T(" "),_T("1/8"),_T("1/4"),_T("3/8"),_T("1/2"),_T("5/8"),_T("3/4"),_T("7/8")};
+    if(value>1.0 || value<0.0)
+    {
+        ATLASSERT(0); // we don't deal with more than an inch
+        _stprintf_s(stringP, 4, _T("Err "));
+        return CAD_FAIL;
+    }
 
-	/* Validate arguments */
-	if (stringP == NULL) return (ERROR);
-	stringP[0] = 0;
-	resolution = 0.125;	// temp
+    // See if we can resolve to 1/16th's
+    const Float64 stinkth = 1.0/16;
+    Float64 mod16 = fmod(value, stinkth);
+    if (mod16 > 1.0e-05)
+    {
+        // Not a 16th - Print decimal value
+        _stprintf_s(stringP, size, _T("%4.2f"),value);
+    }
+    else
+    {
+        Float64 num_16ths = Round(value/stinkth);
+        Float64 numerator(num_16ths), denominator(16.0);
+        // loop until we get an odd numerator
+        while(IsZero(fmod(numerator, 2.0)))
+        {
+            numerator /= 2.0;
+            denominator /= 2.0;
+        }
 
-	/* Break number into whole & fraction */
-	fraction = modf (value, &whole);	
-	
-	/* Create output string */
-	if (whole > 0) _stprintf_s(stringP, size, _T("%.0lf "),whole);
+        Int32 num = (Int32)Round(numerator);
+        Int32 den = (Int32)Round(denominator);
 
-	/* Apply resolution to fraction */
-	index = (int)((fraction + (resolution / 2.0)) / resolution);
+        _stprintf_s(stringP, size, _T("%d/%-d"), num, den);
 
-	/* Append fraction string */
-	_tcscat_s(stringP,size, table[index]);
+        int a = 0;
+    }
 
-	return (CAD_SUCCESS);
+	return CAD_SUCCESS;
 }
-	
+
 
 
 int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, GirderIndexType gdr, TxDOTCadExportFormatType format, bool designSucceeded)
@@ -152,11 +164,11 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 
 
 	/* 1. SPAN NUMBER */
-	TCHAR	spanNumber[5+1];
+	TCHAR	spanNumber[4+1];
 	_stprintf_s(spanNumber, sizeof(spanNumber)/sizeof(TCHAR), _T("%d"), LABEL_SPAN(span));
 
 	/* 1. GIRDER NUMBER */
-	TCHAR  beamNumber[5+1];
+	TCHAR  beamNumber[4+1];
 	_stprintf_s(beamNumber, sizeof(beamNumber)/sizeof(TCHAR), _T("%s"), LABEL_GIRDER(gdr));
 
 	/* 3. BEAM TYPE */
@@ -211,7 +223,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
    value = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
 	/* Convert value to fraction representation */
-	txdString_ftofrac (charBuffer, sizeof(charBuffer)/sizeof(TCHAR), value, 0.125); 
+	txdString_ftofrac (charBuffer, sizeof(charBuffer)/sizeof(TCHAR), value); 
 	_tcscpy_s(strandSize, sizeof(strandSize)/sizeof(TCHAR), charBuffer);
 
    /* 7. STRAND STRENGTH */
@@ -279,21 +291,25 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 
    // WRITE DATA TO OUTPUT FILE
 	//----- COL 1 ----- 
-   workerB.WriteString(spanNumber,_T("Span "),5,_T("%5s"),true);
+	workerB.WriteBlankSpaces(1);
+   workerB.WriteString(spanNumber,_T("Span"),4,_T("%-4s"),true);
 	//----- COL 2 ----- 
-   workerB.WriteString(beamNumber,_T(" Gdr "),5,_T("%5s"),true);
+	workerB.WriteBlankSpaces(1);
+   workerB.WriteString(beamNumber,_T(" Gdr"),4,_T("%-4s"), isHarpedDesign); // no trailing space for debond design
 	//----- COL 3 ----- 
-   workerB.WriteString(beamType,_T("Type "),5,_T("%5s"),true);
+   workerB.WriteString(beamType,_T("Type "),5,_T("%-5s"),true);
 	//----- COL 4 ----- 
 	workerB.WriteBlankSpaces(1);
    workerB.WriteString(strandPat,_T("N"),1,_T("%1s"),true);
 	workerB.WriteBlankSpaces(2);
 	//----- COL 5 ----- 
    workerB.WriteInt16((Int16)strandNum,_T("Ns "),3,_T("%3d"),true);
+	workerB.WriteBlankSpaces(1);
 	//----- COL 6 ----- 
-   workerB.WriteString(strandSize,_T("Size "),5,_T("%5s"),true);
+   workerB.WriteString(strandSize,_T("Size "),4,_T("%4s"),true);
+	workerB.WriteBlankSpaces(1);
 	//----- COL 7 ----- 
-   workerB.WriteInt16(strandStrength,_T("Strn"),4,_T("%4d"),true);
+   workerB.WriteInt16(strandStrength,_T("Strn"),3,_T("%3d"),true);
 	//----- COL 8 ----- 
    workerB.WriteFloat64(strandEccCL,_T("EccCL"),5,_T("%5.2f"),true);
 	//----- COL 9 ----- 
@@ -331,17 +347,24 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
    workerB.WriteFloat64(concreteRelStrength,_T(" Fci  "),6,_T("%6.3f"),true);
 	//----- COL 13 ---- 
    workerB.WriteFloat64(min28dayCompStrength,_T(" Fc   "),6,_T("%6.3f"),true);
-	workerB.WriteBlankSpaces(1);
+	workerB.WriteBlankSpaces(2);
 	//----- COL 14 ---- 
-   workerB.WriteFloat64(designLoadCompStress,_T(" fcomp "),7,_T("%7.3f"),true);
+   workerB.WriteFloat64(designLoadCompStress,_T(" fcomp"),6,_T("%6.3f"),true);
+	workerB.WriteBlankSpaces(1);
 	//----- COL 15 ---- 
-   workerB.WriteFloat64(designLoadTensileStress,_T(" ftens  "),8,_T("%8.3f"),true);
+   workerB.WriteFloat64(designLoadTensileStress,_T(" ftens "),7,_T("%7.3f"),true);
+	workerB.WriteBlankSpaces(1);
+   if (!isHarpedDesign)
+    	workerB.WriteBlankSpaces(1);
 	//----- COL 16 ---- 
-   workerB.WriteInt16(reqMinUltimateMomentCapacity,_T("ultMom"),6,_T("%6d"),true);
+   workerB.WriteInt16(reqMinUltimateMomentCapacity,_T("ultMo"),5,_T("%5d"),true);
+   if (isHarpedDesign)
+    	workerB.WriteBlankSpaces(1);
 	//----- COL 17 ---- 
-   workerB.WriteFloat64(momentDistFactor,_T("LLDFmo"),6,_T("%6.3f"),true);
+   workerB.WriteFloat64(momentDistFactor,_T("LLDFm"),5,_T("%5.3f"),true);
+	workerB.WriteBlankSpaces(1);
 	//----- COL 17aa ---- 
-   workerB.WriteFloat64(shearDistFactor,_T("LLDFsh"),6,_T("%6.3f"),true);
+   workerB.WriteFloat64(shearDistFactor,_T("LLDFs"),5,_T("%5.3f"),true);
 
    if (do_write_ns_data)
    {
@@ -680,7 +703,7 @@ void TxDOTCadWriter::WriteFinalData(FILE *fp, bool isExtended)
    // fist write out remaining rows 
    if(!m_Rows.empty())
    {
-      Int16 nLeadingSpaces = isExtended ? 70 : 54; // more leading spaces for extended output
+      Int16 nLeadingSpaces = isExtended ? 69 : 53; // more leading spaces for extended output
       Int16 nrow = 1;
       RowListIter riter = m_Rows.begin();
       riter++;

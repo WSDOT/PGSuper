@@ -38,7 +38,7 @@
 #endif
 
 #include <PgsExt\GirderMaterial.h>
-#include <PgsExt\ShearData.h>
+#include <PsgLib\ShearData.h>
 #include <PgsExt\LongitudinalRebarData.h>
 #include <PgsExt\HandlingData.h>
 
@@ -161,7 +161,9 @@ public:
                     ctStrand       = 0x0004,
                     ctLifting      = 0x0008,
                     ctShipping     = 0x0010,
-                    ctCondition    = 0x0020
+                    ctCondition    = 0x0020,
+                    ctLongRebar    = 0x0040,
+                    ctShearData    = 0x0080
    };
 
    // return or'ed enums above 

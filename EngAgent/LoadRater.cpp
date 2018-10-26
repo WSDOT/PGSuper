@@ -474,7 +474,7 @@ void pgsLoadRater::ShearRating(GirderIndexType gdrLineIdx,pgsTypes::LoadRatingTy
       pgsDesigner2 designer;
       designer.SetBroker(m_pBroker);
       pShearCapacity->GetShearCapacityDetails(ls,pgsTypes::BridgeSite3,poi,&scd);
-      designer.CheckLongReinfShear(poi,pgsTypes::BridgeSite3,ls,scd,&l_artifact);
+      designer.CheckLongReinfShear(poi,pgsTypes::BridgeSite3,ls,scd,NULL,&l_artifact);
       shearArtifact.SetLongReinfShearArtifact(l_artifact);
 
       ratingArtifact.AddArtifact(poi,shearArtifact);

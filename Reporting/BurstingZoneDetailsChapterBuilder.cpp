@@ -93,7 +93,7 @@ rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRp
 
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* gdrArtifact = pIArtifact->GetArtifact(span,girder);
-   const pgsSplittingZoneArtifact* pArtifact = gdrArtifact->GetSplittingZoneArtifact();
+   const pgsSplittingZoneArtifact* pArtifact = gdrArtifact->GetStirrupCheckArtifact()->GetSplittingZoneArtifact();
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    length, pDisplayUnits->GetSpanLengthUnit(),   true );
    INIT_UV_PROTOTYPE( rptStressUnitValue,    stress, pDisplayUnits->GetStressUnit(),       true );
@@ -123,8 +123,9 @@ rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRp
    else
    {
       (*pPara) << _T("LRFD 5.10.10.1") << rptNewLine;
-      (*pPara) << strName << _T(" Dimension: h = ") << length.SetValue(pArtifact->GetH()) << rptNewLine;
-      (*pPara) << strName << _T(" Length: h/") << scalar.SetValue(pArtifact->GetSplittingZoneLengthFactor()) << _T(" = ") << length.SetValue(pArtifact->GetSplittingZoneLength()) << rptNewLine;
+      (*pPara) << Bold(_T("Left End of Girder:")) << rptNewLine;
+      (*pPara) << strName << _T(" Dimension: h = ") << length.SetValue(pArtifact->GetStartH()) << rptNewLine;
+      (*pPara) << strName << _T(" Length: h/") << scalar.SetValue(pArtifact->GetSplittingZoneLengthFactor()) << _T(" = ") << length.SetValue(pArtifact->GetStartSplittingZoneLength()) << rptNewLine;
       (*pPara) << strName << _T(" Direction: ") << (pArtifact->GetSplittingDirection() == pgsTypes::sdVertical ? _T("Vertical") : _T("Horizontal")) << rptNewLine;
       (*pPara) << strName << _T(" Force: P = 0.04(A") << Sub(_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ") ;
       
@@ -137,14 +138,40 @@ rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRp
       }
       
       (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pES"))  << _T(") = ");
-      (*pPara) << _T("0.04(") << area.SetValue(pArtifact->GetAps()) << _T(")(") << stress.SetValue(pArtifact->GetFpj()) << _T(" - ");
-      (*pPara) << stress.SetValue(pArtifact->GetLossesAfterTransfer()) << _T(" ) ");
+      (*pPara) << _T("0.04(") << area.SetValue(pArtifact->GetStartAps()) << _T(")(") << stress.SetValue(pArtifact->GetStartFpj()) << _T(" - ");
+      (*pPara) << stress.SetValue(pArtifact->GetStartLossesAfterTransfer()) << _T(" ) ");
 
-      (*pPara) << _T(" = ") << force.SetValue(pArtifact->GetSplittingForce()) << rptNewLine;
+      (*pPara) << _T(" = ") << force.SetValue(pArtifact->GetStartSplittingForce()) << rptNewLine;
       (*pPara) << strName << _T(" Resistance: P") << Sub(_T("r")) << _T(" = ")
                << RPT_STRESS(_T("s")) << Sub2(_T("A"),_T("s")) << _T(" = ")
-               << _T("(") << stress.SetValue(pArtifact->GetFs()) << _T(")(") << area.SetValue(pArtifact->GetAvs()) << _T(") = ")
-               << force.SetValue(pArtifact->GetSplittingResistance()) << rptNewLine;
+               << _T("(") << stress.SetValue(pArtifact->GetStartFs()) << _T(")(") << area.SetValue(pArtifact->GetStartAvs()) << _T(") = ")
+               << force.SetValue(pArtifact->GetStartSplittingResistance()) << rptNewLine << rptNewLine;
+
+
+      (*pPara) << Bold(_T("Right End of Girder:")) << rptNewLine;
+      (*pPara) << strName << _T(" Dimension: h = ") << length.SetValue(pArtifact->GetEndH()) << rptNewLine;
+      (*pPara) << strName << _T(" Length: h/") << scalar.SetValue(pArtifact->GetSplittingZoneLengthFactor()) << _T(" = ") << length.SetValue(pArtifact->GetEndSplittingZoneLength()) << rptNewLine;
+      (*pPara) << strName << _T(" Direction: ") << (pArtifact->GetSplittingDirection() == pgsTypes::sdVertical ? _T("Vertical") : _T("Horizontal")) << rptNewLine;
+      (*pPara) << strName << _T(" Force: P = 0.04(A") << Sub(_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ") ;
+      
+      if ( bInitialRelaxation )
+      {
+         if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004 )
+            (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR1")) << _T(" - ");
+         else
+            (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR0")) << _T(" - ");
+      }
+      
+      (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pES"))  << _T(") = ");
+      (*pPara) << _T("0.04(") << area.SetValue(pArtifact->GetEndAps()) << _T(")(") << stress.SetValue(pArtifact->GetEndFpj()) << _T(" - ");
+      (*pPara) << stress.SetValue(pArtifact->GetEndLossesAfterTransfer()) << _T(" ) ");
+
+      (*pPara) << _T(" = ") << force.SetValue(pArtifact->GetEndSplittingForce()) << rptNewLine;
+      (*pPara) << strName << _T(" Resistance: P") << Sub(_T("r")) << _T(" = ")
+               << RPT_STRESS(_T("s")) << Sub2(_T("A"),_T("s")) << _T(" = ")
+               << _T("(") << stress.SetValue(pArtifact->GetEndFs()) << _T(")(") << area.SetValue(pArtifact->GetEndAvs()) << _T(") = ")
+               << force.SetValue(pArtifact->GetEndSplittingResistance()) << rptNewLine;
+
    }
 
    return pChapter;
@@ -154,22 +181,3 @@ CChapterBuilder* CSplittingZoneDetailsChapterBuilder::Clone() const
 {
    return new CSplittingZoneDetailsChapterBuilder;
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

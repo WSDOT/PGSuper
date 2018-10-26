@@ -765,7 +765,7 @@ void CGirderDescGeneralPage::OnChangeGirderName()
 
    // reset stirrups to library
    pParent->m_Shear.m_CurGrdName = newName;
-   pParent->m_Shear.RestoreToLibraryDefaults();
+   pParent->m_Shear.DoRestoreDefaults();
 
    pParent->m_LongRebar.m_CurGrdName = newName;
    pParent->m_LongRebar.RestoreToLibraryDefaults();

@@ -35,7 +35,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 // some usefull Free functions
-static HRESULT GetNextNumStrands(StrandIndexType currNum, ILongArray* array, StrandIndexType* nextNum)
+static HRESULT GetNextNumStrands(StrandIndexType currNum, IIndexArray* array, StrandIndexType* nextNum)
 {
    if (currNum == INVALID_INDEX)
    {
@@ -47,7 +47,7 @@ static HRESULT GetNextNumStrands(StrandIndexType currNum, ILongArray* array, Str
    array->get_Count(&size);
    for (CollectionIndexType ip = 0; ip < size && running_cnt <= currNum; ip++)
    {
-      IDType val;
+      IndexType val;
       array->get_Item(ip, &val);
 
       running_cnt += (StrandIndexType)val;
@@ -66,7 +66,7 @@ static HRESULT GetNextNumStrands(StrandIndexType currNum, ILongArray* array, Str
    return S_OK;
 }
 
-static HRESULT GetPrevNumStrands(StrandIndexType currNum, ILongArray* array, StrandIndexType* prevNum)
+static HRESULT GetPrevNumStrands(StrandIndexType currNum, IIndexArray* array, StrandIndexType* prevNum)
 {
    if (currNum <= 0 || currNum == INVALID_INDEX)
    {
@@ -87,7 +87,7 @@ static HRESULT GetPrevNumStrands(StrandIndexType currNum, ILongArray* array, Str
       {
          StrandIndexType prev_cnt = running_cnt;
 
-         IDType val;
+         IndexType val;
          array->get_Item(ip,&val);
 
          running_cnt += (StrandIndexType)val;
@@ -116,7 +116,7 @@ CContinuousStandFiller::CContinuousStandFiller():
 m_pGdrEntry(NULL),
 m_NeedToCompute(true)
 {
-   m_TempArray.CoCreateInstance(CLSID_LongArray);
+   m_TempArray.CoCreateInstance(CLSID_IndexArray);
 
    // typical girders will not have this many strands
    m_TempArray->Reserve(128);
@@ -213,7 +213,7 @@ void CContinuousStandFiller::ValidatePermanent()
 // place strands using continuous fill order
 HRESULT CContinuousStandFiller::SetStraightStrandCount(IPrecastGirder* girder, StrandIndexType nStrands)
 {
-   CComPtr<ILongArray> array;
+   CComPtr<IIndexArray> array;
    HRESULT hr = ComputeStraightStrandFill(girder,nStrands, &array);
    if (FAILED(hr))
    {
@@ -233,7 +233,7 @@ HRESULT CContinuousStandFiller::SetStraightStrandCount(IPrecastGirder* girder, S
 
 HRESULT CContinuousStandFiller::SetHarpedStrandCount(IPrecastGirder* girder,  StrandIndexType nStrands)
 {
-   CComPtr<ILongArray> array;
+   CComPtr<IIndexArray> array;
    HRESULT hr = ComputeHarpedStrandFill(girder,nStrands, &array);
    if (FAILED(hr))
    {
@@ -253,7 +253,7 @@ HRESULT CContinuousStandFiller::SetHarpedStrandCount(IPrecastGirder* girder,  St
 
 HRESULT CContinuousStandFiller::SetTemporaryStrandCount(IPrecastGirder* girder, StrandIndexType nStrands)
 {
-   CComPtr<ILongArray> array;
+   CComPtr<IIndexArray> array;
    HRESULT hr = ComputeTemporaryStrandFill(girder,nStrands, &array);
    if (FAILED(hr))
    {
@@ -273,7 +273,7 @@ HRESULT CContinuousStandFiller::SetTemporaryStrandCount(IPrecastGirder* girder, 
 
 HRESULT CContinuousStandFiller::IsValidNumStraightStrands(IPrecastGirder* girder, StrandIndexType nStrands,VARIANT_BOOL* bIsValid)
 {
-   CComPtr<ILongArray> array;
+   CComPtr<IIndexArray> array;
    HRESULT hr = ComputeStraightStrandFill(girder,nStrands,&array);
    *bIsValid = SUCCEEDED(hr) ? VARIANT_TRUE : VARIANT_FALSE;
    return S_OK;
@@ -281,7 +281,7 @@ HRESULT CContinuousStandFiller::IsValidNumStraightStrands(IPrecastGirder* girder
 
 HRESULT CContinuousStandFiller::IsValidNumHarpedStrands(IPrecastGirder* girder, StrandIndexType nStrands,VARIANT_BOOL* bIsValid)
 {
-   CComPtr<ILongArray> array;
+   CComPtr<IIndexArray> array;
    HRESULT hr = ComputeHarpedStrandFill(girder,nStrands,&array);
    *bIsValid = SUCCEEDED(hr) ? VARIANT_TRUE : VARIANT_FALSE;
    return S_OK;
@@ -289,15 +289,15 @@ HRESULT CContinuousStandFiller::IsValidNumHarpedStrands(IPrecastGirder* girder, 
 
 HRESULT CContinuousStandFiller::IsValidNumTemporaryStrands(IPrecastGirder* girder, StrandIndexType nStrands,VARIANT_BOOL* bIsValid)
 {
-   CComPtr<ILongArray> array;
+   CComPtr<IIndexArray> array;
    HRESULT hr = ComputeTemporaryStrandFill(girder,nStrands,&array);
    *bIsValid = SUCCEEDED(hr) ? VARIANT_TRUE : VARIANT_FALSE;
    return S_OK;
 }
 
-HRESULT CContinuousStandFiller::ComputeStraightStrandFill(IPrecastGirder* girder, StrandIndexType nStrands, ILongArray** strandFill)
+HRESULT CContinuousStandFiller::ComputeStraightStrandFill(IPrecastGirder* girder, StrandIndexType nStrands, IIndexArray** strandFill)
 {
-   CComPtr<ILongArray> array;
+   CComPtr<IIndexArray> array;
    HRESULT hr = girder->get_StraightMaxStrandFill(&array);
    if (FAILED(hr))
    {
@@ -314,7 +314,7 @@ HRESULT CContinuousStandFiller::ComputeStraightStrandFill(IPrecastGirder* girder
       array->get_Count(&size);
       for (CollectionIndexType ip = 0; ip < size; ip++)
       {
-         IDType val;
+         IndexType val;
          array->get_Item(ip, &val);
 
          m_TempArray->Add(val);
@@ -347,9 +347,9 @@ HRESULT CContinuousStandFiller::ComputeStraightStrandFill(IPrecastGirder* girder
    }
 }
 
-HRESULT CContinuousStandFiller::ComputeHarpedStrandFill(IPrecastGirder* girder, StrandIndexType nStrands, ILongArray** strandFill)
+HRESULT CContinuousStandFiller::ComputeHarpedStrandFill(IPrecastGirder* girder, StrandIndexType nStrands, IIndexArray** strandFill)
 {
-   CComPtr<ILongArray> array;
+   CComPtr<IIndexArray> array;
    HRESULT hr = girder->get_HarpedMaxStrandFill(&array);
    if (FAILED(hr))
    {
@@ -366,7 +366,7 @@ HRESULT CContinuousStandFiller::ComputeHarpedStrandFill(IPrecastGirder* girder, 
       array->get_Count(&size);
       for (CollectionIndexType ip = 0; ip < size; ip++)
       {
-         IDType val;
+         IndexType val;
          array->get_Item(ip, &val);
 
          m_TempArray->Add(val);
@@ -413,9 +413,9 @@ HRESULT CContinuousStandFiller::ComputeHarpedStrandFill(IPrecastGirder* girder, 
    }
 }
 
-HRESULT CContinuousStandFiller::ComputeTemporaryStrandFill(IPrecastGirder* girder, StrandIndexType nStrands, ILongArray** strandFill)
+HRESULT CContinuousStandFiller::ComputeTemporaryStrandFill(IPrecastGirder* girder, StrandIndexType nStrands, IIndexArray** strandFill)
 {
-   CComPtr<ILongArray> array;
+   CComPtr<IIndexArray> array;
    HRESULT hr = girder->get_TemporaryMaxStrandFill(&array);
    if (FAILED(hr))
    {
@@ -433,7 +433,7 @@ HRESULT CContinuousStandFiller::ComputeTemporaryStrandFill(IPrecastGirder* girde
       array->get_Count(&size);
       for (CollectionIndexType ip = 0; ip < size; ip++)
       {
-         IDType val;
+         IndexType val;
          array->get_Item(ip, &val);
 
          m_TempArray->Add(val);
@@ -468,7 +468,7 @@ HRESULT CContinuousStandFiller::ComputeTemporaryStrandFill(IPrecastGirder* girde
 
 HRESULT CContinuousStandFiller::GetNextNumberOfStraightStrands(IPrecastGirder* girder, StrandIndexType currNum,  StrandIndexType* nextStrands)
 {
-   CComPtr<ILongArray> array;
+   CComPtr<IIndexArray> array;
    HRESULT hr = girder->get_StraightMaxStrandFill(&array);
    if (FAILED(hr))
    {
@@ -481,7 +481,7 @@ HRESULT CContinuousStandFiller::GetNextNumberOfStraightStrands(IPrecastGirder* g
 
 HRESULT CContinuousStandFiller::GetNextNumberOfHarpedStrands(IPrecastGirder* girder, StrandIndexType currNum,  StrandIndexType* nextStrands)
 {
-   CComPtr<ILongArray> array;
+   CComPtr<IIndexArray> array;
    HRESULT hr = girder->get_HarpedMaxStrandFill(&array);
    if (FAILED(hr))
    {
@@ -501,7 +501,7 @@ HRESULT CContinuousStandFiller::GetNextNumberOfHarpedStrands(IPrecastGirder* gir
    girder->get_AllowOddNumberOfHarpedStrands(&allow);
    if (allow == VARIANT_TRUE)
    {
-      IDType val;
+      IndexType val;
       array->get_Item(0,&val);
       if (val == 2)
       {
@@ -535,7 +535,7 @@ HRESULT CContinuousStandFiller::GetNextNumberOfHarpedStrands(IPrecastGirder* gir
 
 HRESULT CContinuousStandFiller::GetNextNumberOfTemporaryStrands(IPrecastGirder* girder, StrandIndexType currNum,  StrandIndexType* nextStrands)
 {
-   CComPtr<ILongArray> array;
+   CComPtr<IIndexArray> array;
    HRESULT hr = girder->get_TemporaryMaxStrandFill(&array);
    if (FAILED(hr))
    {
@@ -548,7 +548,7 @@ HRESULT CContinuousStandFiller::GetNextNumberOfTemporaryStrands(IPrecastGirder* 
 
 HRESULT CContinuousStandFiller::GetPreviousNumberOfStraightStrands(IPrecastGirder* girder, StrandIndexType currNum,  StrandIndexType* prevStrands)
 {
-   CComPtr<ILongArray> array;
+   CComPtr<IIndexArray> array;
    HRESULT hr = girder->get_StraightMaxStrandFill(&array);
    if (FAILED(hr))
    {
@@ -573,7 +573,7 @@ HRESULT CContinuousStandFiller::GetPreviousNumberOfHarpedStrands(IPrecastGirder*
       return S_OK;
    }
 
-   CComPtr<ILongArray> array;
+   CComPtr<IIndexArray> array;
    HRESULT hr = girder->get_HarpedMaxStrandFill(&array);
    if (FAILED(hr))
    {
@@ -586,7 +586,7 @@ HRESULT CContinuousStandFiller::GetPreviousNumberOfHarpedStrands(IPrecastGirder*
    girder->get_AllowOddNumberOfHarpedStrands(&allow);
    if (allow == VARIANT_TRUE)
    {
-      IDType val;
+      IndexType val;
       array->get_Item(0,&val);
       if (val == 2)
       {
@@ -618,7 +618,7 @@ HRESULT CContinuousStandFiller::GetPreviousNumberOfHarpedStrands(IPrecastGirder*
 
 HRESULT CContinuousStandFiller::GetPreviousNumberOfTemporaryStrands(IPrecastGirder* girder, StrandIndexType currNum,  StrandIndexType* prevStrands)
 {
-   CComPtr<ILongArray> array;
+   CComPtr<IIndexArray> array;
    HRESULT hr = girder->get_TemporaryMaxStrandFill(&array);
    if (FAILED(hr))
    {

@@ -547,7 +547,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\$(PlatformName)\WBFL.$(ConfigurationName).manifest"
+				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest"
 				EmbedManifest="true"
 			/>
 			<Tool
@@ -660,7 +660,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\$(PlatformName)\WBFL.$(ConfigurationName).manifest"
+				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest"
 				EmbedManifest="true"
 			/>
 			<Tool

@@ -21,8 +21,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1147>
-<meta name=layout-width content=757>
+<meta name=layout-height content=1366>
+<meta name=layout-width content=618>
 
 
 <!--(Links)=========================================================-->
@@ -45,7 +45,7 @@
 <h2>Options for Compliance Checking and Automated Design</h2>
 
 <p>Use the check boxes to select whether PGSuper performs compliance checking 
- (spec-checking) and/or considers the listed categories in the automated 
+ (spec-checking), and/or considers the listed categories in the automated 
  design algorithm.</p>
 
 <h3>“A” Dimension / Slab Offset </h3>
@@ -101,10 +101,15 @@
 
 <p>Note that this option is only applicable to harped girder design.</p>
 
-<h3>Anchorage Splitting and Confinement </h3>
+<h3>Anchorage Zone Splitting</h3>
 
-<p>Use this option to enable/disable the checks for splitting/bursting 
- (5.10.10.1) and confinement (5.10.10.2) in the prestress anchorage zones.</p>
+<p>Use this option to enable/disable checks and design for splitting/bursting 
+ (5.10.10.1) in the prestress anchorage zones.</p>
+
+<h3>Confinement </h3>
+
+<p>Use this option to enable/disable checks and design for confinement 
+ (5.10.10.2) in the prestress anchorage zones.</p>
 
 <h2>Fill Order for Harped and Straight Strand Design</h2>
 
@@ -112,6 +117,10 @@
  strands using the global strand order defined in the <a HREF="Harped Strands Tab.htm">Permanent 
  Strands Tab</a> of the girder library entry (TxDOT method), or to attempt 
  to minimize the total number of harped strands (WSDOT method).</p>
+
+<p class=Tip>Note: Parameters that control shear design are located on 
+ the <!--kadov_tag{{<spaces>}}-->&nbsp;<a href="Shear_Design_Tab.htm"><!--kadov_tag{{</spaces>}}-->Shear 
+ Design Tab</a> in the girder library.</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

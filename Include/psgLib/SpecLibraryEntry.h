@@ -216,9 +216,18 @@ public:
    void SetHoldDownForce(bool doCheck, bool doDesign, Float64 force=0.0);
 
    //------------------------------------------------------------------------
-   // Enable check for anchorage splitting and confinement 5.10.10
-   void EnableAnchorageCheck(bool enable);
-   bool IsAnchorageCheckEnabled() const;
+   // Enable check and design for anchorage splitting and confinement 5.10.10
+   void EnableSplittingCheck(bool enable);
+   bool IsSplittingCheckEnabled() const;
+
+   void EnableSplittingDesign(bool enable);
+   bool IsSplittingDesignEnabled() const;
+
+   void EnableConfinementCheck(bool enable);
+   bool IsConfinementCheckEnabled() const;
+
+   void EnableConfinementDesign(bool enable);
+   bool IsConfinementDesignEnabled() const;
 
    //------------------------------------------------------------------------
    // Get Max allowable stirrup spacing for girder.
@@ -1028,7 +1037,10 @@ private:
    Float64 m_HoldDownForce;
    Float64 m_MaxStirrupSpacing;
 
-   bool    m_DoCheckAnchorage; // 5.10.10
+   bool    m_DoCheckSplitting; // 5.10.10
+   bool    m_DoCheckConfinement; // 5.10.10
+   bool    m_DoDesignSplitting; // 5.10.10
+   bool    m_DoDesignConfinement; // 5.10.10
 
    Float64 m_CyLiftingCrackFs;
    Float64 m_CyLiftingFailFs;

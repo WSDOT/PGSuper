@@ -662,6 +662,14 @@ void CGirderModelElevationView::BuildGirderDisplayObjects(CPGSuperDoc* pDoc,IBro
                   FormatDimension(span_length,pDisplayUnits->GetSpanLengthUnit())
                   );
 
+   Float64 start_conn_length = pBridge->GetGirderStartConnectionLength(span,girder);
+   Float64 end_conn_length   = pBridge->GetGirderEndConnectionLength(span,girder);
+   CString strMsgConn;
+   strMsgConn.Format(_T("\r\n\r\nLeft Overhang: %s\r\nRight Overhang: %s"),
+                     FormatDimension(start_conn_length,pDisplayUnits->GetComponentDimUnit()),
+                     FormatDimension(end_conn_length,pDisplayUnits->GetComponentDimUnit())
+                     );
+
    GET_IFACE2(pBroker,IBridgeMaterial,pBridgeMaterial);
    Float64 fc, fci;
    fc  = pBridgeMaterial->GetFcGdr(span,girder);
@@ -711,7 +719,7 @@ void CGirderModelElevationView::BuildGirderDisplayObjects(CPGSuperDoc* pDoc,IBro
       }
    }
 
-   CString strMsg = strMsg1 + strMsg2 + strMsg3;
+   CString strMsg = strMsg1 + strMsgConn + strMsg2 + strMsg3;
 
    doPnt->SetMaxTipWidth(TOOLTIP_WIDTH);
    doPnt->SetTipDisplayTime(TOOLTIP_DURATION);
@@ -1706,25 +1714,58 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSuperDoc* pDoc, IB
    Float64 slab_offset = pBridge->GetSlabOffset(span,girder,pgsTypes::metStart); // use for dummy top of stirrup if they are extended into deck
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-   bool bDoStirrupsEngageDeck = pStirrupGeom->DoStirrupsEngageDeck(span,girder);
 
-   ZoneIndexType nStirrupZones = pStirrupGeom->GetNumZones(span,girder);
+   ZoneIndexType nStirrupZones = pStirrupGeom->GetNumPrimaryZones(span,girder);
    for ( ZoneIndexType zoneIdx = 0; zoneIdx < nStirrupZones; zoneIdx++ )
    {
-      Float64 start   = pStirrupGeom->GetZoneStart(span,girder,zoneIdx);
-      Float64 end     = pStirrupGeom->GetZoneEnd(span,girder,zoneIdx);
-      Float64 spacing = pStirrupGeom->GetS(span,girder,zoneIdx);
+      Float64 start;
+      Float64 end;
+      pStirrupGeom->GetPrimaryZoneBounds(span,girder,zoneIdx,&start,&end);
 
-      matRebar::Size barSize = pStirrupGeom->GetVertStirrupBarSize(span,girder,zoneIdx);
-      CollectionIndexType nStirrups = pStirrupGeom->GetVertStirrupBarCount(span,girder,zoneIdx);
+      Float64 zone_length = end - start;
+
+      Float64 hicnt = pStirrupGeom->GetPrimaryHorizInterfaceBarCount(span,girder,zoneIdx);
+      bool bDoStirrupsEngageDeck = hicnt > 0.0;
+
+      matRebar::Size barSize;
+      Float64 spacing;
+      Float64 nStirrups;
+      pStirrupGeom->GetPrimaryVertStirrupBarInfo(span,girder,zoneIdx,&barSize,&nStirrups,&spacing);
 
       if ( barSize != matRebar::bsNone && nStirrups != 0 )
       {
-         CollectionIndexType nStirrupsInZone = CollectionIndexType(floor((end - start)/spacing));
-         spacing = (end-start)/nStirrupsInZone;
-         for ( CollectionIndexType i = 0; i <= nStirrupsInZone; i++ )
+         Uint32 nSpacesInZone = Uint32(floor((zone_length + 1.0e-07)/spacing));
+         Uint32 nStirrupsInZone = 1 + nSpacesInZone;
+
+         // Place stirrups in zone as follows:
+         Float64 left_offset;
+         if(zoneIdx == 0)
          {
-            double x = start + i*spacing;
+            // Left-most zone - shift stirrups so right-most stirrup is at right end of zone
+            Float64 slack = zone_length - nSpacesInZone*spacing; // Amount of extra space outside of stirrups
+            if (slack<0.0)
+            {
+               ATLASSERT(slack>-1.0e-6); 
+               slack = 0.0;
+            }
+
+            left_offset = slack;
+         }
+         else if (zoneIdx == nStirrupZones-1)
+         {
+            // Right-most zone - left-most stirrup is at left end of zone
+            left_offset = 0.0;
+         }
+         else
+         {
+            // Interior zones - modify spacing to fit exactly in zone
+            left_offset = 0.0;
+            spacing = zone_length/nSpacesInZone;
+         }
+
+         for ( Uint32 i = 0; i < nStirrupsInZone; i++ )
+         {
+            double x = start + left_offset + i*spacing;
 
             pgsPointOfInterest poi(span,girder,x);
 

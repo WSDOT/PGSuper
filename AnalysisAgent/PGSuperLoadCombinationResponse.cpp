@@ -72,7 +72,7 @@ void CPGSuperLoadCombinationResponse::FinalRelease()
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 // ILoadCombinationResponse
-STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeForces(/*[in]*/BSTR LoadCombination, /*[in]*/ILongArray* POIs, /*[in]*/BSTR Stage, /*[in]*/ResultsOrientation orientation, 
+STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeForces(/*[in]*/BSTR LoadCombination, /*[in]*/IIDArray* POIs, /*[in]*/BSTR Stage, /*[in]*/ResultsOrientation orientation, 
                             /*[in]*/ResultsSummationType summ, /*[in]*/ForceEffectType effect, /*[in]*/OptimizationType optimization, 
                             /*[in]*/VARIANT_BOOL includeLiveLoad, /*[in]*/VARIANT_BOOL includeImpact, /*[in]*/VARIANT_BOOL computeConfig,
                             /*[out,retval]*/ILoadCombinationSectionResults** results)
@@ -86,8 +86,8 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeForces(/*[in]*/BSTR LoadCom
 
    if ( includeLiveLoad == VARIANT_TRUE )
    {
-      CComPtr<ILongArray> singlePOI;
-      singlePOI.CoCreateInstance(CLSID_LongArray);
+      CComPtr<IIDArray> singlePOI;
+      singlePOI.CoCreateInstance(CLSID_IDArray);
 
       CComPtr<ILoadCombinations> loadCombos;
       m_Model->get_LoadCombinations(&loadCombos) ;
@@ -148,7 +148,7 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeForces(/*[in]*/BSTR LoadCom
    return hr;
 }
 
-STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeDeflections(/*[in]*/BSTR LoadCombination, /*[in]*/ILongArray* POIs, /*[in]*/BSTR Stage,
+STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeDeflections(/*[in]*/BSTR LoadCombination, /*[in]*/IIDArray* POIs, /*[in]*/BSTR Stage,
                                  /*[in]*/ResultsSummationType summ, /*[in]*/ForceEffectType effect, /*[in]*/OptimizationType optimization, 
                                  /*[in]*/VARIANT_BOOL includeLiveLoad, /*[in]*/VARIANT_BOOL includeImpact, /*[in]*/VARIANT_BOOL computeConfig,
                                  /*[out,retval]*/ILoadCombinationSectionResults** results)
@@ -162,8 +162,8 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeDeflections(/*[in]*/BSTR Lo
 
    if ( includeLiveLoad == VARIANT_TRUE )
    {
-      CComPtr<ILongArray> singlePOI;
-      singlePOI.CoCreateInstance(CLSID_LongArray);
+      CComPtr<IIDArray> singlePOI;
+      singlePOI.CoCreateInstance(CLSID_IDArray);
 
       CComPtr<ILoadCombinations> loadCombos;
       m_Model->get_LoadCombinations(&loadCombos) ;
@@ -224,7 +224,7 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeDeflections(/*[in]*/BSTR Lo
    return hr;
 }
 
-STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeReactions(/*[in]*/BSTR LoadCombination, /*[in]*/ILongArray* POIs, /*[in]*/BSTR Stage,
+STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeReactions(/*[in]*/BSTR LoadCombination, /*[in]*/IIDArray* POIs, /*[in]*/BSTR Stage,
                                /*[in]*/ResultsSummationType summ, /*[in]*/ForceEffectType effect, /*[in]*/OptimizationType optimization, 
                                /*[in]*/VARIANT_BOOL includeLiveLoad, /*[in]*/VARIANT_BOOL includeImpact, /*[in]*/VARIANT_BOOL computeConfig,
                                /*[out,retval]*/ILoadCombinationResults** results)
@@ -238,8 +238,8 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeReactions(/*[in]*/BSTR Load
 
    if ( includeLiveLoad == VARIANT_TRUE )
    {
-      CComPtr<ILongArray> singlePOI;
-      singlePOI.CoCreateInstance(CLSID_LongArray);
+      CComPtr<IIDArray> singlePOI;
+      singlePOI.CoCreateInstance(CLSID_IDArray);
 
       CComPtr<ILoadCombinations> loadCombos;
       m_Model->get_LoadCombinations(&loadCombos) ;
@@ -296,7 +296,7 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeReactions(/*[in]*/BSTR Load
    return hr;
 }
 
-STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeSupportDeflections(/*[in]*/BSTR LoadCombination, /*[in]*/ILongArray* POIs, /*[in]*/BSTR Stage,
+STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeSupportDeflections(/*[in]*/BSTR LoadCombination, /*[in]*/IIDArray* POIs, /*[in]*/BSTR Stage,
                                         /*[in]*/ResultsSummationType summ, /*[in]*/ForceEffectType effect, /*[in]*/OptimizationType optimization, 
                                         /*[in]*/VARIANT_BOOL includeLiveLoad, /*[in]*/VARIANT_BOOL includeImpact, /*[in]*/VARIANT_BOOL computeConfig,
                                         /*[out,retval]*/ILoadCombinationResults** results)
@@ -310,8 +310,8 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeSupportDeflections(/*[in]*/
 
    if ( includeLiveLoad == VARIANT_TRUE )
    {
-      CComPtr<ILongArray> singlePOI;
-      singlePOI.CoCreateInstance(CLSID_LongArray);
+      CComPtr<IIDArray> singlePOI;
+      singlePOI.CoCreateInstance(CLSID_IDArray);
 
       CComPtr<ILoadCombinations> loadCombos;
       m_Model->get_LoadCombinations(&loadCombos) ;
@@ -368,7 +368,7 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeSupportDeflections(/*[in]*/
    return hr;
 }
 
-STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeStresses(/*[in]*/BSTR LoadCombination, /*[in]*/ILongArray* POIs, /*[in]*/BSTR Stage,
+STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeStresses(/*[in]*/BSTR LoadCombination, /*[in]*/IIDArray* POIs, /*[in]*/BSTR Stage,
                               /*[in]*/ResultsSummationType summ, /*[in]*/ForceEffectType effect, /*[in]*/OptimizationType optimization, 
                               /*[in]*/VARIANT_BOOL includeLiveLoad, /*[in]*/VARIANT_BOOL includeImpact, /*[in]*/VARIANT_BOOL computeConfig,
                               /*[out,retval]*/ILoadCombinationStressResults** results)
@@ -382,8 +382,8 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeStresses(/*[in]*/BSTR LoadC
 
    if ( includeLiveLoad == VARIANT_TRUE )
    {
-      CComPtr<ILongArray> singlePOI;
-      singlePOI.CoCreateInstance(CLSID_LongArray);
+      CComPtr<IIDArray> singlePOI;
+      singlePOI.CoCreateInstance(CLSID_IDArray);
 
       CComPtr<ILoadCombinations> loadCombos;
       m_Model->get_LoadCombinations(&loadCombos) ;

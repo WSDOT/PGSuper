@@ -23,6 +23,8 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\GirderData.h>
 #include <Units\SysUnits.h>
+#include <psgLib\StructuredSave.h>
+#include <psgLib\StructuredLoad.h>
 #include <StdIo.h>
 
 #include <Lrfd\StrandPool.h>
@@ -367,6 +369,16 @@ int CGirderData::GetChangeType(const CGirderData& rOther) const
    if ( Condition != rOther.Condition || !IsEqual(ConditionFactor,rOther.ConditionFactor) )
    {
       ct |= ctCondition;
+   }
+
+   if ( ShearData != rOther.ShearData)
+   {
+      ct |= ctShearData;
+   }
+
+   if ( LongitudinalRebarData != rOther.LongitudinalRebarData)
+   {
+      ct |= ctLongRebar;
    }
 
    return ct;
@@ -761,7 +773,9 @@ HRESULT CGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,
         (bstrParentUnit == CComBSTR("GirderTypes") && 1.0 < version)
       ) // if parent version greater than 1, then load shear and long rebar data
    {
-      ShearData.Load(pStrLoad,pProgress);
+      CStructuredLoad load( pStrLoad );
+      ShearData.Load(&load);
+
       LongitudinalRebarData.Load(pStrLoad,pProgress);
       HandlingData.Load(pStrLoad,pProgress);
    }
@@ -876,7 +890,9 @@ HRESULT CGirderData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    // Moved here with version 3 of parent data block
    Material.Save(pStrSave,pProgress);
 
-   ShearData.Save(pStrSave,pProgress);
+   CStructuredSave save( pStrSave );
+   ShearData.Save(&save);
+
    LongitudinalRebarData.Save(pStrSave,pProgress);
    HandlingData.Save(pStrSave,pProgress);
 

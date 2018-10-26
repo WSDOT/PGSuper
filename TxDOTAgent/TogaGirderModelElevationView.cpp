@@ -1167,21 +1167,22 @@ void CTogaGirderModelElevationView::BuildStirrupDisplayObjects(CTxDOTOptionalDes
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
    bool bDoStirrupsEngageDeck = pStirrupGeom->DoStirrupsEngageDeck(span,girder);
 
-   ZoneIndexType nStirrupZones = pStirrupGeom->GetNumZones(span,girder);
+   ZoneIndexType nStirrupZones = pStirrupGeom->GetNumPrimaryZones(span,girder);
    for ( ZoneIndexType zoneIdx = 0; zoneIdx < nStirrupZones; zoneIdx++ )
    {
-      Float64 start   = pStirrupGeom->GetZoneStart(span,girder,zoneIdx);
-      Float64 end     = pStirrupGeom->GetZoneEnd(span,girder,zoneIdx);
-      Float64 spacing = pStirrupGeom->GetS(span,girder,zoneIdx);
+      Float64 start, end;
+      pStirrupGeom->GetPrimaryZoneBounds(span , girder, zoneIdx, &start, &end);
 
-      matRebar::Size barSize = pStirrupGeom->GetVertStirrupBarSize(span,girder,zoneIdx);
-      CollectionIndexType nStirrups = pStirrupGeom->GetVertStirrupBarCount(span,girder,zoneIdx);
+      matRebar::Size barSize;
+      Float64 spacing;
+      Float64 nStirrups;
+      pStirrupGeom->GetPrimaryVertStirrupBarInfo(span,girder,zoneIdx,&barSize,&nStirrups,&spacing);
 
       if ( barSize != matRebar::bsNone && nStirrups != 0 )
       {
-         CollectionIndexType nStirrupsInZone = Uint32(floor((end - start)/spacing));
+         ZoneIndexType nStirrupsInZone = ZoneIndexType(floor((end - start)/spacing));
          spacing = (end-start)/nStirrupsInZone;
-         for ( CollectionIndexType i = 0; i <= nStirrupsInZone; i++ )
+         for ( ZoneIndexType i = 0; i <= nStirrupsInZone; i++ )
          {
             double x = start + i*spacing;
 

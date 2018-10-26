@@ -1016,7 +1016,7 @@ void CAnalysisResultsView::VehicularLiveLoadGraph(int graphIdx,pgsTypes::Stage s
 
             AddGraphPoints(min_data_series, xVals, Mmin);
 
-            if ( vehicleIndex != INVALID_INDEX )
+            if ( vehicleIndex != Uint32_Max )
                pForces->GetVehicularLiveLoadMoment(llType, vehicleIndex, stage, vPoi, MaxSimpleContinuousEnvelope, true, false, &Mmin, &Mmax);
             else
                pForces->GetLiveLoadMoment(llType, stage, vPoi, MaxSimpleContinuousEnvelope, true, false, &Mmin, &Mmax);

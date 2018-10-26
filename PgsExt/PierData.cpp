@@ -900,7 +900,7 @@ CPierData::LLDF& CPierData::GetLLDF(GirderIndexType igs) const
    {
       // More girders than factors - move exterior to last girder and use last interior for new interiors
       LLDF exterior = m_LLDFs.back();
-      GirderIndexType inter_idx = ndfs-2>0 ? ndfs-2 : 0; // one-girder bridges could otherwise give us trouble
+      GirderIndexType inter_idx = ngdrs-2>0 ? ngdrs-2 : 0; // one-girder bridges could otherwise give us trouble
       LLDF interior = m_LLDFs[inter_idx];
 
       m_LLDFs[ndfs-1] = interior;

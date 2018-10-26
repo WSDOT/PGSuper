@@ -26,13 +26,22 @@ var machine = objNet.ComputerName;
 machine = machine.toUpperCase();
 if (machine=="RDPTHINKPAD")
    PGSuperDrive = "C:";
-else if (machine=="HQB0630025")
-   PGSuperDrive = "F:";
-else if (machine=="HQA4434036")
-   PGSuperDrive = "F:";
+else if (machine=="HQA7326026")
+   PGSuperDrive = "C:";
 
 var wsShell = new ActiveXObject("WScript.Shell");
 var FSO = new ActiveXObject("Scripting.FileSystemObject");
+
+// Create file name for timer file
+var timerFileDate = new String;
+timerFileDate = startDate.toString();
+timerFileDate = timerFileDate.replace(/ /gi, "_"); // regular expression pinta to make a reasonable file name
+timerFileDate = timerFileDate.replace(/:/gi, ";");
+var timerFileName = new String;
+timerFileName = "\\ARP\\PGSuper\\RegressionTest\\RegTimer_" + timerFileDate + ".log";
+
+var timerFile = FSO.OpenTextFile(timerFileName, 2, true); // 2 = write new file
+timerFile.WriteLine("********** Starting new regr test at: " + startDate.toString() + " elapsed times in minutes *************");
 
 // parse the command line and set options
 var st = ParseCommandLine();
@@ -110,7 +119,9 @@ DisplayMessage("Elapsed Time was: "+elapsed+" Minutes");
 var myFile = FSO.OpenTextFile("\\ARP\\PGSuper\\RegressionTest\\RegTest.log",8,true); // 8 = ForAppending (for some reason the ForAppending constant isn't defined)
 myFile.WriteLine(endDate.toString() + " : Elapsed Time was: "+elapsed+" Minutes");
 myFile.close();
-  
+
+timerFile.WriteLine(endDate.toString() + " : Total Elapsed Time was: " + elapsed + " Minutes");
+timerFile.close();  
       
 WScript.Quit(st);
 
@@ -165,9 +176,18 @@ function RunTest (currFolder, currCommand)
 
                if(ExecuteCommands)
                {
-                   DisplayMessage("Running: "+ cmd);
+                   var begDate = new Date();
+                   var begrunTime = begDate.getTime();
+                   
+                   DisplayMessage("Running: " + cmd);
                    DisplayMessage("");
-                   st = wsShell.Run(cmd,1,"TRUE");
+                   st = wsShell.Run(cmd, 1, "TRUE");
+
+                   var endrunDate = new Date();
+                   var endrunTime = endrunDate.getTime();
+                   var elapsed = (endrunTime - begrunTime) / 60000.0;
+                   timerFile.WriteLine(s + ", " + elapsed); // comma-delimited elapsed time for each file
+                   
                }
                else
                {
@@ -356,7 +376,10 @@ function ParseCommandFromFolderName(currCommand, folderName)
      {
         cmd = "TxDT";
      }
-     else if (s4=="TXDX")
+     else if (s4 == "TXDS") {
+         cmd = "TxDS";
+     }
+     else if (s4 == "TXDX")
      {
         cmd = "TxDx";
      }

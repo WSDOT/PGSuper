@@ -1,22 +1,22 @@
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Debnd                                        Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 45.50   6  7.50     1     1   U40       12   1/2  270 14.18 14.18   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.708   -0.670   1773  0.672  0.792  0.02 -0.00 -0.00 -0.00 -0.00  11.70  45.04   1.00   1.00   1.00
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 45.50   6  7.50  1     1    U40        12   1/2  270 14.18 14.18   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.708   -0.670    1773 0.672  0.792  0.02 -0.00 -0.00 -0.00 -0.00  11.70  45.04   1.00   1.00   1.00
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Debnd                                        Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 45.50   6  7.50     1     2   DIA        8   5/8  270 14.18 14.18   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.654   -0.627   1696  0.667  0.792  0.02 -0.00 -0.00 -0.00 -0.00  10.75  42.11   1.00   1.00   1.00
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 45.50   6  7.50  1     2    DIA         8  0.60  270 14.18 14.18   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.654   -0.627    1696 0.667  0.792  0.02 -0.00 -0.00 -0.00 -0.00  10.75  42.11   1.00   1.00   1.00
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Debnd                                        Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 45.50   6  7.50     1     4   U40       12   1/2  270 14.18 14.18   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.682   -0.647   1726  0.667  0.792  0.02 -0.00 -0.00 -0.00 -0.00  11.70  45.29   1.00   1.00   1.00
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 45.50   6  7.50  1     4    U40        12   1/2  270 14.18 14.18   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.682   -0.647    1726 0.667  0.792  0.02 -0.00 -0.00 -0.00 -0.00  11.70  45.29   1.00   1.00   1.00
 
 
 The Specification Check was Successful

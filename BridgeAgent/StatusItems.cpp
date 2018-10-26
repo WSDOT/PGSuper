@@ -23,14 +23,11 @@
 #include "stdafx.h"
 
 #include "StatusItems.h"
-#include <PgsExt\InsertDeleteLoad.h>
 #include "DealWithLoadDlg.h"
 
 #include <IFace\EditByUI.h>
 #include <IFace\Project.h>
 #include <IFace\StatusCenter.h>
-
-#include <EAF\EAFTransactions.h>
 
 ////////////////
 
@@ -173,13 +170,12 @@ void pgsPointLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    dlg.m_Message = pItem->GetDescription().c_str();
 
    INT_PTR result = dlg.DoModal();
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   GET_IFACE(IEAFTransactions,pTxn);
 
    if ( result == CDealWithLoadDlg::IDDELETELOAD )
    {
-      txnDeletePointLoad txn(pItem->m_LoadIndex);
-      pTxn->Execute(txn);
+      pUserDefinedLoads->DeletePointLoad(pItem->m_LoadIndex);
 
       StatusItemIDType id = pItem->GetID();
       pStatusCenter->RemoveByID(id);
@@ -241,13 +237,12 @@ void pgsDistributedLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    dlg.m_Message = pItem->GetDescription().c_str();
 
    INT_PTR result = dlg.DoModal();
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   GET_IFACE(IEAFTransactions,pTxn);
 
    if ( result == CDealWithLoadDlg::IDDELETELOAD )
    {
-      txnDeleteDistributedLoad txn(pItem->m_LoadIndex);
-      pTxn->Execute(txn);
+      pUserDefinedLoads->DeleteDistributedLoad(pItem->m_LoadIndex);
 
       StatusItemIDType id = pItem->GetID();
       pStatusCenter->RemoveByID(id);
@@ -308,13 +303,12 @@ void pgsMomentLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    dlg.m_Message = pItem->GetDescription().c_str();
 
    INT_PTR result = dlg.DoModal();
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   GET_IFACE(IEAFTransactions,pTxn);
 
    if ( result == CDealWithLoadDlg::IDDELETELOAD )
    {
-      txnDeleteMomentLoad txn(pItem->m_LoadIndex);
-      pTxn->Execute(txn);
+      pUserDefinedLoads->DeleteMomentLoad(pItem->m_LoadIndex);
 
       StatusItemIDType id = pItem->GetID();
       pStatusCenter->RemoveByID(id);

@@ -70,7 +70,7 @@ public:
 
 // Implementation
 protected:
-   CComPtr<ILongArray> m_Debondables;
+   CComPtr<IIndexArray> m_Debondables;
 
    CGirderDescDebondGrid m_Grid;
    std::vector<CDebondInfo> m_GridData;

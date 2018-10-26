@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1526>
-<meta name=layout-width content=947>
+<meta name=layout-height content=1149>
+<meta name=layout-width content=847>
 
 
 <!--(Links)=========================================================-->
@@ -49,96 +49,76 @@
  seed data for a girder. Note that transverse rebar data from the library 
  is copied to all girders when a girder type is first selected while editing 
  the bridge model. The data can be subsequently overridden in the girder 
- editor. Users can also re-copy the data from the library.</p>
+ editor</p>
 
-<h2><span>Reinforcement</span> Material</h2>
+<h2>Mild Steel Material</h2>
 
 <p>Select the appropriate mild steel for the transverse rebar</p>
 
+<h2>Roughening of Top Flange</h2>
+
+<p>Check the box to indicate the top flange is intentionally roughened 
+ to an amplitude of 0.25 inch to help resist horizontal interface shear.</p>
+
 <h2>Transverse Reinforcement Zones</h2>
 
-<p>PGSuper allows you to describe transverse reinforcement in fixed-length 
- zones along the girder. The first zone in the list starts at the end of 
- the girder, and the last zone in the list extends to the girder mid-span. 
- Each zone of transverse reinforcement is described by the following:</p>
+<p>The transverse reinforcement is described by zones, beginning at the 
+ left end of the girder. Transverse reinforcement can optionally be forced 
+ to be symmetrical about the center of the girder. Transverse reinforcement 
+ zones are described by their length, spacing and bar size.</p>
 
-<h3><span style="font-weight: bold;">Zone Length</span></h3>
+<p>If zones are made symmetrical about the girder centerline, right-most 
+ zone data is either automatically extended or truncated to mid-girder 
+ such that the zones are always symmetrical. Similarly, if zones are not 
+ symmetrical, right-most zones are either extended or truncated such that 
+ the last zone extends to the right end of the girder.</p>
 
-<p>Enter the length of the zone. This value must be greater than zero.</p>
+<p>Primary bar zones contain vertical shear reinforcement that can optionally 
+ be extended into the deck for horizontal interface shear, and also be 
+ used for confinement steel and splitting resistance. These bars typically 
+ represent the main stirrups in a girder.</p>
 
-<h3><span style="font-weight: bold;">Stirrup Spacing</span></h3>
+<p>Use the Insert Row and Delete Row buttons to add and remove rows from 
+ the grid. To enter a primary stirrup zone,</p>
 
-<p>Enter the center-to-center spacing between the stirrups in the given 
- zone.</p>
+<ol style="list-style: decimal;"
+	type=1>
+	
+	<li class=kadov-p><p>Press the Insert Row button to insert a new row 
+ immediately above the selected zone.</p></li>
+	
+	<li class=kadov-p><p>Enter the length of the stirrup zone</p></li>
+	
+	<li class=kadov-p><p>Enter the stirrup spacing</p></li>
+	
+	<li class=kadov-p><p>Enter the bar size.</p></li>
+	
+	<li class=kadov-p><p>Enter the number of bars (legs) to be used to 
+ resist vertical shear.</p></li>
+	
+	<li class=kadov-p><p>Enter the number of legs to be extended into the 
+ deck to resist horizontal interface shear.</p></li>
+	
+	<li class=kadov-p><p>Enter the bar size to resist confinement.</p></li>
+</ol>
 
-<h3><span style="font-weight: bold;">Vertical Bar Size</span></h3>
+<h2>Additional Horizontal Interface Shear Zones</h2>
 
-<p>Lists all available standard bar sizes that may be used for transverse 
- bars with a vertical orientation.</p>
+<p>The bars in these zones are used to resist horizontal interface shear 
+ and are used in addition to any primary bars that have been extended into 
+ the deck. This zone layout is independent of the primary zones.</p>
 
-<h3><span style="font-weight: bold;">Vertical Bars # </span></h3>
+<h2>Additional Splitting Reinforcement</h2>
 
-<p>Number of bars (stirrup legs) crossing a shear crack in this zone.</p>
+<p>This data allows input for two identical zones placed at both ends of 
+ the girder to provide splitting resistance. These bars are used in addition 
+ to any splitting resistance provided by primary bars.</p>
 
-<h3><span style="font-weight: bold;">Horizontal Bar Size</span></h3>
+<h2>Additional Confinement Reinforcement</h2>
 
-<p>Lists all available standard bar sizes that may be used for transverse 
- bars with a horizontal orientation.</p>
-
-<h3><span style="font-weight: bold;">Horizontal Bars # </span></h3>
-
-<p>Number of bars crossing a horizontal splitting plane in this zone.</p>
-
-<h3>Transverse Reinforcement engages deck and is adequately developed for 
- interface shear capacity</h3>
-
-<p>When checked, it is assumed the transverse reinforcement extends into 
- the deck and is adequately developed to be considered effective in the 
- horizontal interface shear capacity.</p>
-
-<h3>Top flange is intentionally roughened for interface shear capacity</h3>
-
-<p>When checked, it is assumed that the top flange of the girder is intentionally 
- roughened to an amplitude of 0.25&quot;.</p>
-
-<h2>Top Flange Horizontal Interface Shear Reinforcement</h2>
-
-<p>The top flange horizontal interface shear steel are stirrups located 
- in the top flange of the section. These bars protrude up into the slab 
- with adequate development length to contribute to the horizontal interface 
- shear capacity. They are used to add strength to the slab-girder interface 
- to resist horizontal shear forces. These stirrups are spaced evenly along 
- the entire length of the girder. Each stirrup provides two legs of reinforcement.</p>
-
-<h3><span style="font-weight: bold;">Bar Size</span></h3>
-
-<p>Lists all available standard bar sizes that may be used for top flange 
- stirrups.</p>
-
-<h3><span style="font-weight: bold;">Stirrup Spacing</span></h3>
-
-<p>Stirrups are spaced evenly along the entire length of the girder. Enter 
- the center-to-center spacing.</p>
-
-<h2><span style="font-weight: bold;">Bottom Flange Confinement Reinforcement</span></h2>
-
-<p>PGSuper assumes that the hoops of confinement steel placed in the bottom 
- flange of the girder to prevent splitting are attached to stirrups. Hence, 
- the spacing of the confinement steel is the same as the stirrup spacing. 
- The following two values are used to specify the bottom flange confinement 
- steel:</p>
-
-<h3><span style="font-weight: bold;">Bar Size</span></h3>
-
-<p>Lists all available standard bar sizes that may be used for confinement 
- rebar.</p>
-
-<h3><span style="font-weight: bold;">Last Zone Containing Confinement Reinforcement</span></h3>
-
-<p>Confinement steel will be placed from the end of the girder to the end 
- of the specified zone. A value of <span style="font-style: italic;">none</span> 
- for this field indicates that no confinement steel is present.<span style="margin-bottom: 0;">&nbsp; 
- </span></p>
+<p>This data allows input for two identical zones placed at both ends of 
+ the girder to provide confinement resistance. These bars are used in addition 
+ to any primary confinement <!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}-->bars.</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

@@ -280,7 +280,7 @@ int CAnalysisResultsChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    idx = pstg_ctrl->AddString(_T("Girder Placement"));
    pstg_ctrl->SetItemData(idx,pgsTypes::GirderPlacement);
 
-   if ( NtMax != INVALID_INDEX )
+   if ( 0 < NtMax )
    {
       idx = pstg_ctrl->AddString(_T("Temporary Strand Removal"));
       pstg_ctrl->SetItemData(idx,pgsTypes::TemporaryStrandRemoval);
@@ -854,7 +854,7 @@ void CAnalysisResultsChildFrame::CreateGraphDefinitions()
       bShearKey   |= pProductLoads->HasShearKeyLoad(spanIdx,gdrIdx);
 
       StrandIndexType NtMax = pStrandGeom->GetMaxStrands(spanIdx,gdrIdx,pgsTypes::Temporary);
-      bTempStrand |= ( NtMax != INVALID_INDEX );
+      bTempStrand |= ( 0 < NtMax );
    }
 
    // Product Load Cases

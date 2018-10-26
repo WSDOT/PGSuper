@@ -192,10 +192,10 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    else
       (*av_table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*av_table)(0,1)  << COLHDR(_T("A") << Sub(_T("vf"))<<rptNewLine<<_T("Girder") , rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*av_table)(0,2)  << COLHDR(_T("S")<<rptNewLine<<_T("Girder"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*av_table)(0,3)  << COLHDR(_T("A") << Sub(_T("vf"))<<rptNewLine<<_T("Top Flange") , rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*av_table)(0,4)  << COLHDR(_T("S")<<rptNewLine<<_T("Top Flange"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*av_table)(0,1)  << COLHDR(_T("A") << Sub(_T("vf"))<<rptNewLine<<_T("Primary") , rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*av_table)(0,2)  << COLHDR(_T("S")<<rptNewLine<<_T("Primary"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*av_table)(0,3)  << COLHDR(_T("A") << Sub(_T("vf"))<<rptNewLine<<_T("Additional") , rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*av_table)(0,4)  << COLHDR(_T("S")<<rptNewLine<<_T("Additional"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*av_table)(0,5)  << COLHDR(_T("a") << Sub(_T("vf"))<<rptNewLine<<_T("Composite") , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
 
    // general quantities
@@ -314,8 +314,8 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
       (*av_table)(av_row,0)  <<  location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
       (*av_table)(av_row,1)  <<  area.SetValue(pArtifact->GetAvfGirder());
       (*av_table)(av_row,2)  <<  dim.SetValue(pArtifact->GetSGirder());
-      (*av_table)(av_row,3)  <<  area.SetValue(pArtifact->GetAvfTopFlange());
-      (*av_table)(av_row,4)  <<  dim.SetValue(pArtifact->GetSTopFlange());
+      (*av_table)(av_row,3)  <<  area.SetValue(pArtifact->GetAvfAdditional());
+      (*av_table)(av_row,4)  <<  dim.SetValue(pArtifact->GetSAdditional());
       (*av_table)(av_row,5)  <<  AvS.SetValue(pArtifact->GetAvOverS());
 
       av_row++;

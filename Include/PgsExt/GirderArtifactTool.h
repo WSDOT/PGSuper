@@ -144,7 +144,7 @@ inline void list_stress_failures(IBroker* pBroker, FailureList& rFailures,SpanIn
       rFailures.push_back(_T("Tensile stress check failed for Service I for the Casting Yard Stage (At Release)."));
    }
 
-   if ( NtMax != INVALID_INDEX && Nt != INVALID_INDEX )
+   if ( 0 < NtMax && 0 < Nt )
    {
       if ( flexure_stress_failures(pBroker,span,girder,pgsTypes::TemporaryStrandRemoval,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact) )
       {
@@ -333,7 +333,7 @@ inline void list_debonding_failures(IBroker* pBroker,FailureList& rFailures,Span
 
 inline void list_splitting_zone_failures(IBroker* pBroker,FailureList& rFailures,SpanIndexType span,GirderIndexType girder,const pgsGirderArtifact* pArtifact)
 {
-   const pgsSplittingZoneArtifact* pBZArtifact = pArtifact->GetSplittingZoneArtifact();
+   const pgsSplittingZoneArtifact* pBZArtifact = pArtifact->GetStirrupCheckArtifact()->GetSplittingZoneArtifact();
    if ( !pBZArtifact->Passed() )
    {
       if ( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
@@ -346,18 +346,13 @@ inline void list_splitting_zone_failures(IBroker* pBroker,FailureList& rFailures
 inline void list_confinement_zone_failures(IBroker* pBroker,FailureList& rFailures,SpanIndexType span,GirderIndexType girder,const pgsGirderArtifact* pArtifact)
 {
    const pgsStirrupCheckArtifact *pStirrups = pArtifact->GetStirrupCheckArtifact();
-   GET_IFACE2(pBroker,IStirrupGeometry, pStirrupGeometry);
-   ZoneIndexType cZones = pStirrupGeometry->GetNumZones(span,girder);
-   for (ZoneIndexType zone = 0; zone < cZones; zone++ )
-   {
-      const pgsStirrupCheckAtZonesArtifact* pZoneArtifacts = pStirrups->GetStirrupCheckAtZonesArtifact( pgsStirrupCheckAtZonesArtifactKey(zone) );
-      const pgsConfinementArtifact* pShear = pZoneArtifacts->GetConfinementArtifact();
 
-      if ( !pShear->Passed() )
-      {
-         rFailures.push_back(_T("Confinement zone checks failed."));
-         return;
-      }
+   const pgsConfinementArtifact& rShear = pStirrups->GetConfinementArtifact();
+
+   if ( !rShear.Passed() )
+   {
+      rFailures.push_back(_T("Confinement zone checks failed."));
+      return;
    }
 }
 

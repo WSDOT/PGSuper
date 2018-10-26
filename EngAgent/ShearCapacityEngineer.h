@@ -142,12 +142,11 @@ private:
    
 
    bool GetGeneralInformation(pgsTypes::LimitState ls, pgsTypes::Stage stage,
-				  		            const pgsPointOfInterest& poi,SHEARCAPACITYDETAILS* pscd);
+				  		            const pgsPointOfInterest& poi,
+                              const GDRCONFIG* pConfig, SHEARCAPACITYDETAILS* pscd);
    bool GetInformation(pgsTypes::LimitState ls, pgsTypes::Stage stage,
-				  		     const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd);
-   bool GetInformation(pgsTypes::LimitState ls, pgsTypes::Stage stage,
-				  		     const pgsPointOfInterest& poi, const GDRCONFIG& config,
-						     SHEARCAPACITYDETAILS* pscd);
+				  		     const pgsPointOfInterest& poi, 
+                       const GDRCONFIG* pConfig, SHEARCAPACITYDETAILS* pscd);
 
    void ComputeShearCapacityDetails(pgsTypes::LimitState ls, pgsTypes::Stage stage,
                              const pgsPointOfInterest& poi,SHEARCAPACITYDETAILS* pmcd);

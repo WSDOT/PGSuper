@@ -32,13 +32,14 @@
 
 #include "GirderHarpedStrandPage.h"
 #include "GirderStraightStrandPage.h"
-#include "ShearSteelPage.h"
+#include <PsgLib\ShearSteelPage.h>
 #include "LongSteelPage.h"
 #include "GirderHarpPointPage.h"
 #include "GirderDiaphragmPage.h"
 #include "GirderDimensionsPage.h"
 #include "GirderDebondCriteriaPage.h"
 #include "GirderErrorDlg.h"
+#include "ShearDesignPage.h"
 
 #include <units\Measure.h>
 
@@ -68,6 +69,7 @@ public:
    CGirderHarpPointPage      m_HarpPointPage;
    CGirderDiaphragmPage      m_DiaphragmPage;
    CGirderDebondCriteriaPage m_GirderDebondCriteriaPage;
+   CShearDesignPage    m_ShearDesignPage;
 
    CGirderErrorDlg       m_GirderErrorDlg;
 
@@ -76,9 +78,6 @@ public:
    // work directly on an entry so we don't duplicate data.
    GirderLibraryEntry& m_Entry;
    CString m_Name;
-
-   // top flange bar spacing;
-   Float64 m_TfBarSpacing;
 
 // Operations
 public:
@@ -110,22 +109,17 @@ public:
    void UploadTemporaryStrandData();
    void ExchangeLongitudinalData(CDataExchange* pDX);
    void UploadLongitudinalData();
-   void ExchangeTransverseData(CDataExchange* pDX);
-   void UploadTransverseData();
    void ExchangeDiaphragmData(CDataExchange* pDX);
    void ExchangeHarpPointData(CDataExchange* pDX);
    void ExchangeDebondCriteriaData(CDataExchange* pDX);
+   void UploadShearDesignData(CDataExchange* pDX);
+   void DownloadShearDesignData(CDataExchange* pDX);
 
    void MiscOnFractional();
    void MiscOnAbsolute();
 
-   void FillMaterialComboBox(CComboBox* pCB);
-   void GetStirrupMaterial(int idx,matRebar::Type& type,matRebar::Grade& grade);
-   int GetStirrupMaterialIndex(matRebar::Type type,matRebar::Grade grade);
-
 private:
    void Init();
-
 };
 
 /////////////////////////////////////////////////////////////////////////////

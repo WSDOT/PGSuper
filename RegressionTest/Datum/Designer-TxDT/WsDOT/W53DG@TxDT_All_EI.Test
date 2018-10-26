@@ -1,6 +1,6 @@
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00     1     1 W53DG  *    12   5/8  270 31.56 18.56   4 43.0  4.000  5.000    1.142   -1.904   2671  0.625  0.625  0.08 -0.00 -0.00 -0.00 -0.01  28.77  85.96   1.75   5.00   5.00
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 28.25   5  6.00  1     1    W53DG  *    12  0.60  270 31.56 18.56   4 43.0  4.000  5.000    1.142   -1.904   2671  0.625  0.625  0.08 -0.00 -0.00 -0.00 -0.01  28.77  85.96   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -9,9 +9,9 @@ Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone checks failed.
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00     1     2 W53DG  *    12   5/8  270 31.56 18.56   4 43.0  4.000  5.000    1.081   -1.817   2659  0.554  0.667  0.08 -0.00 -0.00 -0.00 -0.01  28.77  85.41   1.75   5.00   5.00
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 28.25   5  6.00  1     2    W53DG  *    12  0.60  270 31.56 18.56   4 43.0  4.000  5.000    1.081   -1.817   2659  0.554  0.667  0.08 -0.00 -0.00 -0.00 -0.01  28.77  85.41   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -20,9 +20,9 @@ Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone checks failed.
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00     1     3 W53DG  *    12   5/8  270 31.56 18.56   4 43.0  4.000  5.000    1.081   -1.817   2659  0.554  0.667  0.08 -0.00 -0.00 -0.00 -0.01  28.77  85.41   1.75   5.00   5.00
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 28.25   5  6.00  1     3    W53DG  *    12  0.60  270 31.56 18.56   4 43.0  4.000  5.000    1.081   -1.817   2659  0.554  0.667  0.08 -0.00 -0.00 -0.00 -0.01  28.77  85.41   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful

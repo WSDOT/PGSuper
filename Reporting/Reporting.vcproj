@@ -658,10 +658,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ConfinementCheckTable.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\ConstructabilityCheckTable.cpp"
 				>
 			</File>
@@ -1632,6 +1628,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\StressChapterBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath=".\targetver.h"
 				>
 			</File>
 			<File

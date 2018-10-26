@@ -35,7 +35,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <..\htmlhelp\HelpTopics.hh>
 
-#include <PgsExt\InsertDeleteLoad.h>
+#include "InsertDeleteLoad.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

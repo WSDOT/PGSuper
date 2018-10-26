@@ -1,6 +1,6 @@
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 12.17   5  0.00     1     1 BI-36  *    19   5/8  270 11.21  5.88   6 21.0  4.400  5.000    3.077   -3.423   1818  0.217  0.505  0.28 -0.07 -0.01 -0.04 -0.12  53.93 128.12   1.75   5.00   5.00
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 12.17   5  0.00  1     1    BI-36  *    19  0.60  270 11.21  5.88   6 21.0  4.400  5.000    3.077   -3.423   1818  0.217  0.505  0.28 -0.07 -0.01 -0.04 -0.12  53.93 128.12   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -13,9 +13,9 @@ Girder Dimension Detailing check failed
 Slab Offset ("A" Dimension) check failed
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 12.17   5  0.00     1     2 BI-36  *    17   5/8  270 11.11  5.18   6 21.0  4.000  5.000    3.039   -3.342   1753  0.200  0.424  0.23 -0.07 -0.01 -0.04 -0.12  42.80 109.11   1.75   5.00   5.00
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 12.17   5  0.00  1     2    BI-36  *    17  0.60  270 11.11  5.18   6 21.0  4.000  5.000    3.039   -3.342   1753  0.200  0.424  0.23 -0.07 -0.01 -0.04 -0.12  42.80 109.11   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -27,9 +27,9 @@ Girder Dimension Detailing check failed
 Slab Offset ("A" Dimension) check failed
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 12.17   5  0.00     1     3 BI-36  *    17   5/8  270 11.11  5.18   6 21.0  4.000  5.000    3.039   -3.342   1753  0.200  0.424  0.23 -0.07 -0.01 -0.04 -0.12  42.80 109.11   1.75   5.00   5.00
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 12.17   5  0.00  1     3    BI-36  *    17  0.60  270 11.11  5.18   6 21.0  4.000  5.000    3.039   -3.342   1753  0.200  0.424  0.23 -0.07 -0.01 -0.04 -0.12  42.80 109.11   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful

@@ -234,8 +234,8 @@ public:
    virtual Float64 GetCurbToCurbWidth(const pgsPointOfInterest& poi);
    virtual Float64 GetCurbToCurbWidth(SpanIndexType span,GirderIndexType gdr,double distFromStartOfSpan);
    virtual Float64 GetCurbToCurbWidth(double distFromStartOfBridge);
-   virtual void GetSlabPerimeter(Uint32 nPoints,IPoint2dCollection** points);
-   virtual void GetSpanPerimeter(SpanIndexType spanIdx,Uint32 nPoints,IPoint2dCollection** points);
+   virtual void GetSlabPerimeter(CollectionIndexType nPoints,IPoint2dCollection** points);
+   virtual void GetSpanPerimeter(SpanIndexType spanIdx,CollectionIndexType nPoints,IPoint2dCollection** points);
    virtual void GetLeftSlabEdgePoint(Float64 station, IDirection* direction,IPoint2d** point);
    virtual void GetLeftSlabEdgePoint(Float64 station, IDirection* direction,IPoint3d** point);
    virtual void GetRightSlabEdgePoint(Float64 station, IDirection* direction,IPoint2d** point);
@@ -348,55 +348,60 @@ public:
 
 // IStirrupGeometry
 public:
-   virtual matRebar::Size GetVertStirrupBarSize(const pgsPointOfInterest& poi);
-   virtual matRebar::Size GetHorzStirrupBarSize(const pgsPointOfInterest& poi);
-   virtual Float64 GetVertStirrupBarNominalDiameter(const pgsPointOfInterest& poi);
-   virtual Float64 GetHorzStirrupBarNominalDiameter(const pgsPointOfInterest& poi);
-   virtual Float64 GetVertStirrupBarArea(const pgsPointOfInterest& poi);
-   virtual Float64 GetHorzStirrupBarArea(const pgsPointOfInterest& poi);
-   virtual CollectionIndexType GetVertStirrupBarCount(const pgsPointOfInterest& poi);
-   virtual CollectionIndexType GetHorzStirrupBarCount(const pgsPointOfInterest& poi);
-   virtual Float64 GetS(const pgsPointOfInterest& poi);
-   virtual Float64 GetAlpha(const pgsPointOfInterest& poi);
+   virtual bool AreStirrupZonesSymmetrical(SpanIndexType span,GirderIndexType gdr);
 
-   virtual matRebar::Size GetConfinementBarSize(SpanIndexType span,GirderIndexType gdr);
-   virtual Float64 GetLengthOfConfinementZone(SpanIndexType span,GirderIndexType gdr);
+   virtual ZoneIndexType GetNumPrimaryZones(SpanIndexType span,GirderIndexType gdr);
+   virtual void GetPrimaryZoneBounds(SpanIndexType span,GirderIndexType gdr, ZoneIndexType zone, Float64* start, Float64* end);
+   virtual void GetPrimaryVertStirrupBarInfo(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone, matRebar::Size* pSize, Float64* pCount, Float64* pSpacing);
+   virtual Float64 GetPrimaryHorizInterfaceBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
+   virtual matRebar::Size GetPrimaryConfinementBarSize(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
+
+   virtual ZoneIndexType GetNumHorizInterfaceZones(SpanIndexType span,GirderIndexType gdr);
+   virtual void GetHorizInterfaceZoneBounds(SpanIndexType span,GirderIndexType gdr, ZoneIndexType zone, Float64* start, Float64* end);
+   virtual void GetHorizInterfaceBarInfo(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone, matRebar::Size* pSize, Float64* pCount, Float64* pSpacing);
+
+   virtual void GetAddSplittingBarInfo(SpanIndexType span,GirderIndexType gdr, matRebar::Size* pSize, Float64* pZoneLength, Float64* pnBars, Float64* pSpacing);
+   virtual void GetAddConfinementBarInfo(SpanIndexType span,GirderIndexType gdr, matRebar::Size* pSize, Float64* pZoneLength, Float64* pSpacing);
+
+   virtual Float64 GetVertStirrupAvs(const pgsPointOfInterest& poi, matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing);
+   virtual Float64 GetVertStirrupBarNominalDiameter(const pgsPointOfInterest& poi);
+   virtual Float64 GetAlpha(const pgsPointOfInterest& poi); // stirrup angle=90 for vertical
 
    virtual bool DoStirrupsEngageDeck(SpanIndexType span,GirderIndexType gdr);
+   virtual Float64 GetPrimaryHorizInterfaceS(const pgsPointOfInterest& poi);
+   virtual Float64 GetPrimaryHorizInterfaceAvs(const pgsPointOfInterest& poi, matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing);
+   virtual Float64 GetPrimaryHorizInterfaceBarCount(const pgsPointOfInterest& poi);
+   virtual Float64 GetAdditionalHorizInterfaceS(const pgsPointOfInterest& poi);
+   virtual Float64 GetAdditionalHorizInterfaceAvs(const pgsPointOfInterest& poi, matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing);
+   virtual Float64 GetAdditionalHorizInterfaceBarCount(const pgsPointOfInterest& poi);
 
-   virtual matRebar::Size GetTopFlangeBarSize(const pgsPointOfInterest& poi);
-   virtual Float64 GetTopFlangeBarArea(const pgsPointOfInterest& poi);
-   virtual Float64 GetTopFlangeS(const pgsPointOfInterest& poi);
+   virtual Float64 GetSplittingAv(SpanIndexType span,GirderIndexType gdr,Float64 start,Float64 end);
 
-   virtual ZoneIndexType GetNumZones(SpanIndexType span,GirderIndexType gdr);
-   virtual IDType GetZoneId(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
-   virtual Float64 GetZoneStart(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone); // dist from start of girder
-   virtual Float64 GetZoneEnd(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone) ; // dist from start of girder
-
-   virtual matRebar::Size GetVertStirrupBarSize(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
-   virtual matRebar::Size GetHorzStirrupBarSize(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
-   virtual CollectionIndexType GetVertStirrupBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
-   virtual CollectionIndexType GetHorzStirrupBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
-   virtual Float64 GetS(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
-   virtual ZoneIndexType GetNumConfinementZones(SpanIndexType span,GirderIndexType gdr);
-   virtual bool IsConfinementZone(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
-
-   virtual Float64 GetVertAv(SpanIndexType span,GirderIndexType gdr,Float64 start,Float64 end);
-   virtual Float64 GetHorzAv(SpanIndexType span,GirderIndexType gdr,Float64 start,Float64 end);
-   virtual void GetAv(SpanIndexType span,GirderIndexType gdr,Float64 start,Float64 end,Float64* pAvVert,Float64* pAvHorz);
+   virtual void GetStartConfinementBarInfo(SpanIndexType span,GirderIndexType gdr, Float64 requiredZoneLength, matRebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing);
+   virtual void GetEndConfinementBarInfo(  SpanIndexType span,GirderIndexType gdr, Float64 requiredZoneLength, matRebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing);
 
 private:
-   const matRebar* GetVertStirrupRebar(const pgsPointOfInterest& poi);
-   const matRebar* GetHorzStirrupRebar(const pgsPointOfInterest& poi);
-   const matRebar* GetConfinementRebar(const pgsPointOfInterest& poi);
-   const matRebar* GetTopFlangeRebar(const pgsPointOfInterest& poi);
-   const matRebar* GetVertStirrupRebar(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
-   const matRebar* GetHorzStirrupRebar(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
-   const matRebar* GetConfinementRebar(SpanIndexType span,GirderIndexType gdr);
+   ZoneIndexType GetPrimaryShearZoneIndexAtPoi(const pgsPointOfInterest& poi, const CShearData& rShearData);
+   const CShearZoneData& GetPrimaryShearZoneDataAtPoi(const pgsPointOfInterest& poi, const CShearData& rShearData);
+   ZoneIndexType GetPrimaryZoneIndex(SpanIndexType span,GirderIndexType gdr, const CShearData& rshear_data, ZoneIndexType zone);
 
-   bool GetShearZoneAtPoi(ZoneIndexType* pzone, const pgsPointOfInterest& poi);
-   ZoneIndexType GetZoneIndex(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone);
-   void GetZoneBounds(Float64* start, Float64* end, SpanIndexType span,GirderIndexType gdr, ZoneIndexType zone);
+   ZoneIndexType GetHorizInterfaceShearZoneIndexAtPoi(const pgsPointOfInterest& poi, const CShearData& rShearData);
+   const CHorizontalInterfaceZoneData& GetHorizInterfaceShearZoneDataAtPoi(const pgsPointOfInterest& poi, const CShearData& rShearData);
+   ZoneIndexType GetHorizInterfaceZoneIndex(SpanIndexType span,GirderIndexType gdr, const CShearData& rShearData, ZoneIndexType zone);
+
+   bool IsPoiInEndRegion(const pgsPointOfInterest& poi, Float64 distFromEnds);
+
+   virtual Float64 GetPrimarySplittingAv(SpanIndexType span,GirderIndexType gdr,Float64 start,Float64 end, const CShearData& rShearData);
+
+
+   // Cache shear data - copies are expensive
+   void InvalidateStirrupData();
+   const CShearData& GetShearData(SpanIndexType span,GirderIndexType gdr);
+
+   typedef std::map<SpanGirderHashType, CShearData> ShearDataMap;
+   typedef ShearDataMap::const_iterator ShearDataIterator;
+   ShearDataMap  m_ShearData;
+
 
 // IStrandGeometry
 public:
@@ -415,10 +420,10 @@ public:
    virtual Float64 GetMaxStrandSlope(const pgsPointOfInterest& poi,StrandIndexType Nh,Float64 endShift,Float64 hpShift);
    virtual Float64 GetAvgStrandSlope(const pgsPointOfInterest& poi,StrandIndexType Nh,Float64 endShift,Float64 hpShift);
 
-   virtual Float64 GetApsBottomHalf(const pgsPointOfInterest& poi,bool bDevAdjust);
-   virtual Float64 GetApsBottomHalf(const pgsPointOfInterest& poi, const GDRCONFIG& rconfig,bool bDevAdjust);
-   virtual Float64 GetApsTopHalf(const pgsPointOfInterest& poi,bool bDevAdjust);
-   virtual Float64 GetApsTopHalf(const pgsPointOfInterest& poi, const GDRCONFIG& rconfig,bool bDevAdjust);
+   virtual Float64 GetApsBottomHalf(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust);
+   virtual Float64 GetApsBottomHalf(const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, DevelopmentAdjustmentType devAdjust);
+   virtual Float64 GetApsTopHalf(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust);
+   virtual Float64 GetApsTopHalf(const pgsPointOfInterest& poi, const GDRCONFIG& rconfig,DevelopmentAdjustmentType devAdjust);
 
    virtual StrandIndexType GetNumStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type);
    virtual StrandIndexType GetMaxStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type);
@@ -481,7 +486,7 @@ public:
 
    virtual bool CanDebondStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType); // can debond any of the strands
    // returns long array of the same length as GetStrandPositions. 0==not debondable
-   virtual void ListDebondableStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType, ILongArray** list); 
+   virtual void ListDebondableStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType, IIndexArray** list); 
    virtual Float64 GetDefaultDebondLength(SpanIndexType spanIdx,GirderIndexType gdrIdx);
 
    virtual Float64 ComputeAbsoluteHarpedOffsetEnd(SpanIndexType span,GirderIndexType gdr,StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64 offset);
@@ -830,9 +835,9 @@ private:
    REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(IRebar* rebar,double fc);
 
    Float64 GetAsTensionSideOfGirder(const pgsPointOfInterest& poi,bool bDevAdjust,bool bTensionTop);
-   Float64 GetApsTensionSide(const pgsPointOfInterest& poi, bool bDevAdjust,bool bTensionTop);
-   Float64 GetApsTensionSide(const pgsPointOfInterest& poi, const GDRCONFIG& config,bool bDevAdjust,bool bTensionTop);
-   Float64 GetApsTensionSide(const pgsPointOfInterest& poi, bool bUseConfig,const GDRCONFIG& config,bool bDevAdjust,bool bTensionTop);
+   Float64 GetApsTensionSide(const pgsPointOfInterest& poi, DevelopmentAdjustmentType devAdjust,bool bTensionTop);
+   Float64 GetApsTensionSide(const pgsPointOfInterest& poi, const GDRCONFIG& config,DevelopmentAdjustmentType devAdjust,bool bTensionTop);
+   Float64 GetApsTensionSide(const pgsPointOfInterest& poi, bool bUseConfig,const GDRCONFIG& config,DevelopmentAdjustmentType devAdjust,bool bTensionTop);
 
    Float64 GetAsDeckMats(const pgsPointOfInterest& poi,ILongRebarGeometry::DeckRebarType drt,bool bTopMat,bool bBottomMat);
 

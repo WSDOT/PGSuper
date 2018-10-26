@@ -352,9 +352,9 @@ bool CGirderDescLongRebarGrid::GetRowData(ROWCOL nRow, CLongitudinalRebarData::R
 
    CString s = GetCellValue(nRow, 1);
    if (s=="Top")
-      plsi->Face = CLongitudinalRebarData::GirderTop;
+      plsi->Face = pgsTypes::GirderTop;
    else
-      plsi->Face = CLongitudinalRebarData::GirderBottom;
+      plsi->Face = pgsTypes::GirderBottom;
 
 
    plsi->BarSize = GetBarSize(nRow);
@@ -409,8 +409,8 @@ void CGirderDescLongRebarGrid::FillGrid(const CLongitudinalRebarData& rebarData)
       for (std::vector<CLongitudinalRebarData::RebarRow>::const_iterator it = rebarData.RebarRows.begin(); it!=rebarData.RebarRows.end(); it++)
       {
          CString tmp;
-         CLongitudinalRebarData::GirderFace face = (*it).Face;
-         if (face==CLongitudinalRebarData::GirderBottom)
+         pgsTypes::GirderFace face = (*it).Face;
+         if (face==pgsTypes::GirderBottom)
             tmp = _T("Bottom");
          else
             tmp = _T("Top");

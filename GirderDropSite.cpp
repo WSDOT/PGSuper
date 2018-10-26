@@ -36,7 +36,7 @@
 #include <IFace\Bridge.h>
 #include "mfcdual.h"
 
-#include <PgsExt\InsertDeleteLoad.h>
+#include "InsertDeleteLoad.h"
 #include <WBFLDManip.h>
 
 #ifdef _DEBUG

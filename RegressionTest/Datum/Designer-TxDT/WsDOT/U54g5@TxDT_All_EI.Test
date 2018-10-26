@@ -1,15 +1,15 @@
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 46.25   4 12.00     1     1 U54G5  *    74   5/8  270 16.70  6.35  18 50.0  6.600  9.700    7.705   -5.356  13586  0.724  1.056  0.44 -0.32 -0.02 -0.02 -0.36 335.48 459.09   1.75   5.00   5.00
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 46.25   4 12.00  1     1    U54G5  *    74  0.60  270 16.70  6.35  18 50.0  6.600  9.700    7.705   -5.356  13586  0.724  1.056  0.44 -0.32 -0.02 -0.02 -0.36 335.48 459.09   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 46.25   4 12.00     1     2 U54G5  *    72   5/8  270 16.72  6.08  18 50.0  6.400  9.700    7.644   -5.321  13238  0.724  1.056  0.42 -0.31 -0.02 -0.02 -0.35 320.55 445.87   1.75   5.00   5.00
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 46.25   4 12.00  1     2    U54G5  *    72  0.60  270 16.72  6.08  18 50.0  6.400  9.700    7.644   -5.321  13238  0.724  1.056  0.42 -0.31 -0.02 -0.02 -0.35 320.55 445.87   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful

@@ -190,30 +190,54 @@ public:
    pgsSplittingZoneArtifact& operator = (const pgsSplittingZoneArtifact& rOther);
 
    // GROUP: OPERATIONS
+   // All of girder
    bool GetIsApplicable() const;
    void SetIsApplicable(bool isApp);
-   Float64 GetH() const;
-   void SetH(Float64 h);
    pgsTypes::SplittingDirection GetSplittingDirection() const;
    void SetSplittingDirection(pgsTypes::SplittingDirection sd);
-   Float64 GetSplittingZoneLength() const;
-   void SetSplittingZoneLength(Float64 bzl);
    Float64 GetSplittingZoneLengthFactor() const;
    void SetSplittingZoneLengthFactor(Float64 bzlf);
-   Float64 GetFs() const;
-   void SetFs(Float64 fs);
-   Float64 GetAvs() const;
-   void SetAvs(Float64 avs);
-   Float64 GetAps() const;
-   void SetAps(Float64 aps);
-   Float64 GetFpj() const;
-   void SetFpj(Float64 fpj);
-   Float64 GetLossesAfterTransfer() const;
-   void SetLossesAfterTransfer(double dFpT);
-   Float64 GetSplittingForce() const;
-   Float64 GetSplittingResistance() const;
-   void SetSplittingResistance(Float64 p);
    bool   Passed() const;
+
+   // Start of girder
+   Float64 GetStartH() const;
+   void SetStartH(Float64 h);
+   Float64 GetStartSplittingZoneLength() const;
+   void SetStartSplittingZoneLength(Float64 bzl);
+   Float64 GetStartFs() const;
+   void SetStartFs(Float64 fs);
+   Float64 GetStartAvs() const;
+   void SetStartAvs(Float64 avs);
+   Float64 GetStartAps() const;
+   void SetStartAps(Float64 aps);
+   Float64 GetStartFpj() const;
+   void SetStartFpj(Float64 fpj);
+   Float64 GetStartLossesAfterTransfer() const;
+   void SetStartLossesAfterTransfer(double dFpT);
+   Float64 GetStartSplittingForce() const;
+   Float64 GetStartSplittingResistance() const;
+   void SetStartSplittingResistance(Float64 p);
+   bool   StartPassed() const;
+
+   // End of girder
+   Float64 GetEndH() const;
+   void SetEndH(Float64 h);
+   Float64 GetEndSplittingZoneLength() const;
+   void SetEndSplittingZoneLength(Float64 bzl);
+   Float64 GetEndFs() const;
+   void SetEndFs(Float64 fs);
+   Float64 GetEndAvs() const;
+   void SetEndAvs(Float64 avs);
+   Float64 GetEndAps() const;
+   void SetEndAps(Float64 aps);
+   Float64 GetEndFpj() const;
+   void SetEndFpj(Float64 fpj);
+   Float64 GetEndLossesAfterTransfer() const;
+   void SetEndLossesAfterTransfer(double dFpT);
+   Float64 GetEndSplittingForce() const;
+   Float64 GetEndSplittingResistance() const;
+   void SetEndSplittingResistance(Float64 p);
+   bool   EndPassed() const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -235,16 +259,26 @@ protected:
 private:
    // GROUP: DATA MEMBERS
    bool m_IsApplicable;
-   Float64 m_SplittingZoneLength;
-   Float64 m_SplittingZoneLengthFactor;
-   Float64 m_H;
-   Float64 m_Avs;
-   Float64 m_Aps;
-   Float64 m_Fpj;
-   Float64 m_dFpT;
-   Float64 m_Fs;
-   Float64 m_Pr; // resistance
    pgsTypes::SplittingDirection m_SplittingDirection;
+   Float64 m_SplittingZoneLengthFactor;
+
+   Float64 m_StartSplittingZoneLength;
+   Float64 m_StartH;
+   Float64 m_StartAvs;
+   Float64 m_StartAps;
+   Float64 m_StartFpj;
+   Float64 m_StartdFpT;
+   Float64 m_StartFs;
+   Float64 m_StartPr; // resistance
+
+   Float64 m_EndSplittingZoneLength;
+   Float64 m_EndH;
+   Float64 m_EndAvs;
+   Float64 m_EndAps;
+   Float64 m_EndFpj;
+   Float64 m_EnddFpT;
+   Float64 m_EndFs;
+   Float64 m_EndPr; // resistance
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
@@ -258,7 +292,6 @@ private:
 
 // EXTERNAL REFERENCES
 //
-
 
 /*****************************************************************************
 CLASS 
@@ -307,18 +340,31 @@ public:
    // if not applicable, the rest of the values are undefined
    bool IsApplicable() const;
    void SetApplicability(bool isAp);
-   Float64 GetApplicableZoneLength() const;
-   void SetApplicableZoneLength(Float64 zl);
-   Float64 GetZoneEnd() const;
-   void SetZoneEnd(Float64 zl);
-   const matRebar* GetBar() const;
-   void SetBar(const matRebar* pRebar);
-   Float64 GetS() const;
-   void SetS(Float64 s);
+
    const matRebar* GetMinBar() const;
    void SetMinBar(const matRebar* pBar);
    Float64 GetSMax() const;
    void SetSMax(Float64 smax);
+
+   Float64 GetStartProvidedZoneLength() const;
+   void SetStartProvidedZoneLength(Float64 zl);
+   Float64 GetStartRequiredZoneLength() const;
+   void SetStartRequiredZoneLength(Float64 zl);
+   const matRebar* GetStartBar() const;
+   void SetStartBar(const matRebar* pRebar);
+   Float64 GetStartS() const;
+   void SetStartS(Float64 s);
+   bool   StartPassed() const;
+
+   Float64 GetEndProvidedZoneLength() const;
+   void SetEndProvidedZoneLength(Float64 zl);
+   Float64 GetEndRequiredZoneLength() const;
+   void SetEndRequiredZoneLength(Float64 zl);
+   const matRebar* GetEndBar() const;
+   void SetEndBar(const matRebar* pRebar);
+   Float64 GetEndS() const;
+   void SetEndS(Float64 s);
+   bool   EndPassed() const;
 
    bool Passed() const;
 
@@ -353,12 +399,20 @@ protected:
 private:
    // GROUP: DATA MEMBERS
    bool m_IsApplicable;
-   Float64 m_ApplicableZoneLength;
-   Float64 m_ZoneEnd;
-   const matRebar* m_pRebar;
-   Float64 m_S;
+
    const matRebar* m_pMinRebar;
    Float64 m_SMax;
+
+   Float64 m_StartProvidedZoneLength;
+   Float64 m_StartRequiredZoneLength;
+   const matRebar* m_pStartRebar;
+   Float64 m_StartS;
+
+   Float64 m_EndProvidedZoneLength;
+   Float64 m_EndRequiredZoneLength;
+   const matRebar* m_pEndRebar;
+   Float64 m_EndS;
+
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
@@ -393,14 +447,15 @@ LOG
    rab : 12.29.1997 : Created file
 *****************************************************************************/
 
+// Deleted this class on 5/4/11 - rdp
+/*
+
 class PGSEXTCLASS pgsStirrupCheckAtZonesArtifact
 {
 public:
    // GROUP: DATA MEMBERS
 
    // vertical shear check results
-   void SetConfinementArtifact(const pgsConfinementArtifact& artifact);
-   const pgsConfinementArtifact* GetConfinementArtifact() const;
 
    bool   Passed() const;
 
@@ -454,7 +509,6 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
-   pgsConfinementArtifact  m_ConfinementArtifact;
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
@@ -467,6 +521,6 @@ private:
 
 // EXTERNAL REFERENCES
 //
-
+*/
 
 #endif // 

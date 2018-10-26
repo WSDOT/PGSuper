@@ -1900,7 +1900,7 @@ STDMETHODIMP CAnalysisAgentImp::Init()
    pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
 
    // create an array for pois going into the lbam. create it here once so we don't need to make a new one every time we need it
-   m_LBAMPoi.CoCreateInstance(CLSID_LongArray);
+   m_LBAMPoi.CoCreateInstance(CLSID_IDArray);
 
    // Register status callbacks that we want to use
    m_scidInformationalError = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusError,IDH_GIRDER_CONNECTION_ERROR)); // informational with help for girder end offset error
@@ -4608,7 +4608,7 @@ bool CAnalysisAgentImp::HasShearKeyLoad(SpanIndexType spanIdx,GirderIndexType gd
    }
 
    // Next check adjacent beams if we have a continous analysis
-   GET_IFACE(ISpecification,pSpec); 
+   GET_IFACE(ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
    if ( analysisType == pgsTypes::Simple)
    {
@@ -10951,11 +10951,11 @@ void CAnalysisAgentImp::GetPrestressDeflection(const pgsPointOfInterest& poi,Cam
       else
          thePOI = poi;
 
-      ATLASSERT( thePOI.GetID() != INVALID_ID );
+      ATLASSERT( 0 <= thePOI.GetID() );
       ATLASSERT( thePOI.HasStage(pgsTypes::CastingYard) );
 
       femPoiID = modelData.PoiMap.GetModelPoi(thePOI);
-      ATLASSERT( femPoiID != INVALID_ID );
+      ATLASSERT( 0 <= femPoiID );
    }
 
    HRESULT hr = results->ComputePOIDisplacements(lcid,femPoiID,lotGlobal,&Dx,&Dy,pRz);
@@ -10966,7 +10966,7 @@ void CAnalysisAgentImp::GetPrestressDeflection(const pgsPointOfInterest& poi,Cam
    {
       Float64 start_end_size = pBridge->GetGirderStartConnectionLength( poi.GetSpan(), poi.GetGirder() );
       pgsPointOfInterest poiAtStart = pPOI->GetPointOfInterest(pgsTypes::CastingYard,poi.GetSpan(),poi.GetGirder(),start_end_size);
-      ATLASSERT( poiAtStart.GetID() != INVALID_ID );
+      ATLASSERT( 0 <= poiAtStart.GetID() );
    
       femPoiID = modelData.PoiMap.GetModelPoi(poiAtStart);
       results->ComputePOIDisplacements(lcid,femPoiID,lotGlobal,&Dx,&Dy,&Rz);
@@ -10975,7 +10975,7 @@ void CAnalysisAgentImp::GetPrestressDeflection(const pgsPointOfInterest& poi,Cam
       Float64 end_end_size = pBridge->GetGirderEndConnectionLength( poi.GetSpan(), poi.GetGirder() );
       Float64 Lg = pBridge->GetGirderLength(poi.GetSpan(),poi.GetGirder());
       pgsPointOfInterest poiAtEnd = pPOI->GetPointOfInterest(pgsTypes::CastingYard,poi.GetSpan(),poi.GetGirder(),Lg-end_end_size);
-      ATLASSERT( poiAtEnd.GetID() != INVALID_ID );
+      ATLASSERT( 0 <= poiAtEnd.GetID() );
       femPoiID = modelData.PoiMap.GetModelPoi(poiAtEnd);
       results->ComputePOIDisplacements(lcid,femPoiID,lotGlobal,&Dx,&Dy,&Rz);
       Float64 end_delta_brg = Dy;
@@ -11930,7 +11930,7 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pier,GirderInd
    for ( CollectionIndexType i = 0; i < nPOI; i++ )
    {
       pgsPointOfInterest& poi = vPOI[i];
-      ATLASSERT( poi.GetID() != INVALID_ID );
+      ATLASSERT( 0 <= poi.GetID() );
 
       BridgeAnalysisType bat = ContinuousSpan;
 
@@ -12426,7 +12426,7 @@ CAnalysisAgentImp::ModelData* CAnalysisAgentImp::UpdateLBAMPois(const std::vecto
       {
          poi_id = AddPointOfInterest( pModelData, poi );
          ATLASSERT( 0 <= poi_id && poi_id != INVALID_ID );
-         if ( poi_id != INVALID_ID )
+         if ( 0 <= poi_id )
          {
             m_LBAMPoi->Add(poi_id);
          }
@@ -12531,7 +12531,7 @@ void CAnalysisAgentImp::CreateAxleConfig(ILBAMModel* pModel,ILiveLoadConfigurati
    Float64 sign = (direction == ltdForward ? -1 : 1);
 
    // indices of inactive axles
-   CComPtr<ILongArray> lngAxleConfig;
+   CComPtr<IIndexArray> lngAxleConfig;
    pConfig->get_AxleConfig(&lngAxleConfig);
 
    Float64 variable_axle_spacing;
@@ -12567,10 +12567,10 @@ void CAnalysisAgentImp::CreateAxleConfig(ILBAMModel* pModel,ILiveLoadConfigurati
       placement.Weight = wgt;
       placement.Location = axleLocation;
 
-      CComPtr<IEnumLongArray> enum_array;
+      CComPtr<IEnumIndexArray> enum_array;
       lngAxleConfig->get__EnumElements(&enum_array);
       AxleIndexType value;
-      while ( enum_array->Next(1,(IDType*)&value,NULL) != S_FALSE )
+      while ( enum_array->Next(1,&value,NULL) != S_FALSE )
       {
          if ( axleIdx == value )
          {

@@ -29,6 +29,8 @@
 #define IDS_SPEC_LOSS                   28
 #define IDS_SPEC_ANALYSIS               29
 #define IDS_GIRDER_HARPPOINT            30
+#define IDD_SPEC_SHEAR_DESIGN           106
+#define IDD_SHEAR_DESIGN                106
 #define IDD_CONCRETE_ENTRY              129
 #define IDD_TEST                        131
 #define IDD_CONNECTION_ENTRY            132
@@ -82,6 +84,7 @@
 #define IDR_STRAIGHT_POPUP              183
 #define IDD_GIRDER_DIAPHRAGM            183
 #define IDD_INTERMEDATE_DIAPHRAGM       184
+#define IDR_ADD_EDIT_DELETE_POPUP       184
 #define IDD_SPEC_LIMITS                 186
 #define IDD_SPEC_LOADFACTORS            188
 #define IDD_SPEC_DESIGN                 189
@@ -140,12 +143,14 @@
 #define IDC_TF_SPACING                  1009
 #define IDC_N                           1009
 #define IDC_DEFLECTION_LIMIT            1009
+#define IDC_SPLITTING_SPACING           1009
 #define IDC_ACTIVEUNITCTRL23            1010
 #define IDC_T1                          1010
 #define IDC_Y1                          1010
 #define IDC_BS_COMP_STRESS_SERV         1010
 #define IDC_IMPACT_DOWNWARD_HAULING     1010
 #define IDC_LWC_PHI                     1010
+#define IDC_SPLITTING_ZL                1010
 #define IDC_D6                          1011
 #define IDC_DOWN_INC                    1011
 #define IDC_DIAPHRAGM_GRID              1011
@@ -153,12 +158,14 @@
 #define IDC_BS_COMP_STRESS_SERVICE1A    1011
 #define IDC_X5                          1011
 #define IDC_HPY                         1011
+#define IDC_CONFINE_SPACING             1011
 #define IDC_T2                          1012
 #define IDC_UP_ADJUST                   1012
 #define IDC_PICK_POINT_HEIGHT           1012
 #define IDC_DIST_UTILITY                1012
 #define IDC_Y2                          1012
 #define IDC_GEX                         1012
+#define IDC_CONFINE_ZL                  1012
 #define IDC_UP_INC                      1013
 #define IDC_D7                          1013
 #define IDC_HE_HAULING_FS_CRACK         1013
@@ -177,6 +184,7 @@
 #define IDC_HEIGHT_GIRDER_BOTTOM        1016
 #define IDC_APPEND_ROW                  1016
 #define IDC_HP_INCREMENT                1016
+#define IDC_INSERTHORIZROW              1016
 #define IDC_EDIT2                       1017
 #define IDC_ENTRY_NAME                  1017
 #define IDC_ADD_HARPED_STRAND           1017
@@ -195,6 +203,8 @@
 #define IDC_SERVICE_I_DW                1017
 #define IDC_MAX_STRANDS_PER_ROW         1017
 #define IDC_NWC_GIRDER_FCI              1017
+#define IDC_REMOVEHORIZROWS             1017
+#define IDC_MAX_SPACING_CHG             1017
 #define IDC_WEIGHT                      1018
 #define IDC_DEL_HARPED_STRAND           1018
 #define IDC_LONG_GRID                   1018
@@ -206,10 +216,13 @@
 #define IDC_CREEP_DURATION2_MIN         1018
 #define IDC_SERVICE_IA_DW               1018
 #define IDC_LWC_GIRDER_FCI              1018
+#define IDC_MAX_SHEARCAP_CHG            1018
 #define IDC_HE_ROADWAY_SUPERELEVATION   1019
 #define IDC_NORMAL_MAX_MAX2             1019
 #define IDC_APPEND_HARPED_STRAND        1019
 #define IDC_SERVICE_III_DW              1019
+#define IDC_MAX_ZONELEN_BARS            1019
+#define IDC_MIN_ZONELEN_BARS            1019
 #define IDC_DEL_STRAIGHT_STRAND         1020
 #define IDC_EXTREME_MAX_MAX2            1020
 #define IDC_MAX_HAULING_SUPPORT_LENGTH  1020
@@ -217,6 +230,8 @@
 #define IDC_EDIT_STRAND                 1020
 #define IDC_STRENGTH_I_DW_MIN           1020
 #define IDC_NORMAL_MAX_MAX3             1020
+#define IDC_MAX_ZONELEN_DIST            1020
+#define IDC_MIN_ZONELEN_DIST            1020
 #define IDC_SUPPORT_PLACEMENT_TOLERANCE 1021
 #define IDC_DEL_TEMPORARY_STRAND        1021
 #define IDC_DEL_HARPED_STRAND2          1021
@@ -279,13 +294,18 @@
 #define IDC_D3_T                        1041
 #define IDC_STIRRUP_DESIGN_OVERRIDE     1042
 #define IDC_D4_T                        1042
+#define IDC_HORIZ_GRID                  1042
 #define IDC_D5_T                        1043
 #define IDC_BAR_SIZE                    1044
 #define IDC_D6_T                        1044
+#define IDC_SPLITTING_NLEGS             1044
 #define IDC_D7_T                        1045
 #define IDC_TF_BAR_SIZE                 1045
+#define IDC_SPLITTING_BAR_SIZE          1045
 #define IDC_W1_T                        1046
 #define IDC_BOTTOM_HEIGHT_T             1046
+#define IDC_TF_BAR_SIZE2                1046
+#define IDC_CONFINE_BAR_SIZE            1046
 #define IDC_TOP_HEIGHT_T                1047
 #define IDC_UP_INC_T                    1048
 #define IDC_UP_ADJUST_T                 1049
@@ -436,9 +456,13 @@
 #define IDC_GIRDER_MF                   1149
 #define IDC_TRAFFIC_BARRIER             1150
 #define IDC_TF_SPACING_UNITS            1151
+#define IDC_SPLITTING_SPACING_UNIT      1151
 #define IDC_CHECK_MAX_MAX               1152
+#define IDC_SPLITTING_ZL_UNIT           1152
 #define IDC_MAXWGT                      1153
+#define IDC_CONFINE_SPACING_UNIT        1153
 #define IDC_MAXWGT_UNITS                1154
+#define IDC_CONFINE_ZL_UNIT             1154
 #define IDC_BEAMTYPES                   1155
 #define IDC_DIMENSIONS                  1156
 #define IDC_ODD_STRANDS                 1157
@@ -522,6 +546,7 @@
 #define IDC_DEFAULT_DEBOND              1216
 #define IDC_DEFAULT_DEBOND_UNITS        1217
 #define IDC_STIRRUPS_ENGAGE_DECK        1218
+#define IDC_SYMMETRICAL                 1218
 #define IDC_INCLUDE_REBAR_SHEAR         1219
 #define IDC_INCLUDE_REBAR_MOMENT        1220
 #define IDC_ANALYSIS                    1221
@@ -577,6 +602,7 @@
 #define IDC_BUTTON1                     1263
 #define IDC_VIEW                        1263
 #define IDC_ENDVIEW                     1263
+#define IDC_RESTORE_DEFAULTS            1263
 #define IDC_SPAN1                       1267
 #define IDC_SPAN2                       1268
 #define IDC_SPAN_UNIT                   1269
@@ -798,17 +824,27 @@
 #define IDC_STRAND_GENERATION           1441
 #define IDC_METHOD                      1441
 #define IDC_CONCRETE_TYPE               1441
+#define IDC_LONG_REINF_SHEAR_METHOD     1441
 #define IDC_DIST_TRAFFIC_BARRIER_BASIS  1442
 #define IDC_NWC_NOTE                    1443
 #define IDC_CHECK1                      1444
 #define IDC_ALWAYS_RATE                 1444
 #define IDC_IS_VARIABLE_AXLE_TRUCK      1444
 #define IDC_HAS_AGG_STRENGTH            1444
+#define IDC_CHECK_SPLITTING             1444
+#define IDC_TOP_FLANGE_ROUGHENED        1444
 #define IDC_BRIDGE_LENGTH               1445
+#define IDC_EXTEND_DECK_BARS            1445
+#define IDC_DESIGN_SPLITTING            1445
 #define IDC_BRIDGE_LENGTH_UNITS         1446
 #define IDC_USER_OVERRIDE               1446
 #define IDC_ROUGHENED                   1446
+#define IDC_BARS_PROVIDE_SPLITTING      1446
+#define IDC_CHECK_CONFINEMENT           1446
 #define IDC_LANE_LOAD_LABEL             1447
+#define IDC_BARS_PROVIDE_CONFINEMENT    1447
+#define IDC_DESIGN_SPLITTING2           1447
+#define IDC_DESIGN_CONFINEMENT          1447
 #define IDC_BRIDGE_LENGTH_LABEL         1448
 #define IDC_AXLE_LIST                   1449
 #define IDC_VARIABLE_AXLE_SPACING       1450
@@ -891,14 +927,21 @@
 #define IDC_LWC_PHI_TENSION_RC          1513
 #define IDC_CREEP_K1_LABEL              1513
 #define IDC_LWC_AGG_SIZE                1513
+#define IDC_BARS_LEGS_GRID              1513
 #define IDC_LWC_PHI_TENSION_RC_LABEL    1514
 #define IDC_CREEP_K2_LABEL              1514
+#define IDC_EDIT_BAR_SPACINGS           1514
 #define IDC_LWC_PHI_COMPRESSION         1515
 #define IDC_SHRINKAGE_K1_LABEL          1515
+#define IDC_EDIT_BAR_SPACINGS_UNIT      1515
 #define IDC_LWC_PHI_COMPRESSION_LABEL   1516
 #define IDC_SHRINKAGE_K2_LABEL          1516
+#define IDC_MAX_SPACING_CHG_UNIT        1516
 #define IDC_NWC_PHI_TENSION_PS          1517
+#define IDC_MAX_SHEARCAP_CHG_UNIT       1517
 #define IDC_NWC_PHI_TENSION_PS_LABEL    1518
+#define IDC_MAX_ZONELEN_DIST_UNIT       1518
+#define IDC_MIN_ZONELEN_DIST_UNIT       1518
 #define IDC_LWC_PHI_TENSION_PS          1519
 #define IDC_LWC_PHI_TENSION_PS_LABEL    1520
 #define IDC_INTERPOLATE                 1546
@@ -966,9 +1009,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        205
+#define _APS_NEXT_RESOURCE_VALUE        208
 #define _APS_NEXT_COMMAND_VALUE         33041
-#define _APS_NEXT_CONTROL_VALUE         1513
+#define _APS_NEXT_CONTROL_VALUE         1516
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

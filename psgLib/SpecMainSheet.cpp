@@ -180,7 +180,7 @@ void CSpecMainSheet::ExchangeCyData(CDataExchange* pDX)
    {
       m_SpecCastingYardPage.m_DoCheckHoldDown    = m_Entry.m_DoCheckHoldDown;
       m_SpecCastingYardPage.m_DoCheckStrandSlope = m_Entry.m_DoCheckStrandSlope;
-      m_SpecCastingYardPage.m_DoCheckAnchorage = m_Entry.m_DoCheckAnchorage;
+      m_SpecCastingYardPage.m_DoCheckSplitting = m_Entry.m_DoCheckSplitting;
 
       // set statics for strand slope
       CString sl05, sl06, sl07;
@@ -914,16 +914,18 @@ void CSpecMainSheet::UploadDesignData(CDataExchange* pDX)
    m_SpecDesignPage.m_CheckHoldDown = m_Entry.m_DoCheckHoldDown;
    m_SpecDesignPage.m_CheckLifting = m_Entry.m_EnableLiftingCheck;
    m_SpecDesignPage.m_CheckSlope = m_Entry.m_DoCheckStrandSlope;
-   m_SpecDesignPage.m_CheckAnchorage = m_Entry.m_DoCheckAnchorage;
+   m_SpecDesignPage.m_CheckSplitting = m_Entry.m_DoCheckSplitting;
+   m_SpecDesignPage.m_CheckConfinement = m_Entry.m_DoCheckConfinement;
 
    m_SpecDesignPage.m_DesignA = m_Entry.m_EnableSlabOffsetDesign;
    m_SpecDesignPage.m_DesignHauling = m_Entry.m_EnableHaulingDesign;
    m_SpecDesignPage.m_DesignHoldDown = m_Entry.m_DoDesignHoldDown;
    m_SpecDesignPage.m_DesignLifting = m_Entry.m_EnableLiftingDesign;
    m_SpecDesignPage.m_DesignSlope = m_Entry.m_DoDesignStrandSlope;
+   m_SpecDesignPage.m_DesignSplitting = m_Entry.m_DoDesignSplitting;
+   m_SpecDesignPage.m_DesignConfinement = m_Entry.m_DoDesignConfinement;
 
    m_SpecDesignPage.m_FillMethod = (int)m_Entry.m_DesignStrandFillType;
-
 }
 
 // mini function to convert BOOL to bool
@@ -937,17 +939,19 @@ void CSpecMainSheet::DownloadDesignData(CDataExchange* pDX)
    m_Entry.m_DoCheckHoldDown    = B2b( m_SpecDesignPage.m_CheckHoldDown);
    m_Entry.m_EnableLiftingCheck = B2b( m_SpecDesignPage.m_CheckLifting);
    m_Entry.m_DoCheckStrandSlope = B2b( m_SpecDesignPage.m_CheckSlope);
-   m_Entry.m_DoCheckAnchorage = B2b( m_SpecDesignPage.m_CheckAnchorage);
+   m_Entry.m_DoCheckSplitting = B2b( m_SpecDesignPage.m_CheckSplitting);
+   m_Entry.m_DoCheckConfinement = B2b( m_SpecDesignPage.m_CheckConfinement);
 
    m_Entry.m_EnableSlabOffsetDesign = B2b( m_SpecDesignPage.m_DesignA);
    m_Entry.m_EnableHaulingDesign = B2b( m_SpecDesignPage.m_DesignHauling);
    m_Entry.m_DoDesignHoldDown    = B2b( m_SpecDesignPage.m_DesignHoldDown);
    m_Entry.m_EnableLiftingDesign = B2b( m_SpecDesignPage.m_DesignLifting);
    m_Entry.m_DoDesignStrandSlope = B2b( m_SpecDesignPage.m_DesignSlope);
+   m_Entry.m_DoDesignSplitting = B2b( m_SpecDesignPage.m_DesignSplitting);
+   m_Entry.m_DoDesignConfinement = B2b( m_SpecDesignPage.m_DesignConfinement);
 
    m_Entry.m_DesignStrandFillType = m_SpecDesignPage.m_FillMethod==(int)ftGridOrder ?ftGridOrder : ftMinimizeHarping;
 }
-
 
 BOOL CSpecMainSheet::OnInitDialog() 
 {

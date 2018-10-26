@@ -447,13 +447,21 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
 
       // See if we need to run a design
       bool designSucceeded=true;
-      if (txInfo.m_TxRunType == CTxDOTCommandLineInfo::txrDesign)
+      if (txInfo.m_TxRunType == CTxDOTCommandLineInfo::txrDesign || txInfo.m_TxRunType == CTxDOTCommandLineInfo::txrDesignShear)
       {
-         // get design options from library entry. Do flexure only
+         // get design options from library entry. 
          GET_IFACE(ISpecification,pSpecification);
          arDesignOptions des_options = pSpecification->GetDesignOptions(span,girder);
 
-         des_options.doDesignForShear = false; // shear design is off
+         // Set up for shear design. 
+         des_options.doDesignForShear = txInfo.m_TxRunType == CTxDOTCommandLineInfo::txrDesignShear;
+         if(des_options.doDesignForShear)
+         {
+            // If stirrup zones are not symmetrical in test file, design using existing layout
+            GET_IFACE(IStirrupGeometry,pStirrupGeom);
+            bool are_symm = pStirrupGeom->AreStirrupZonesSymmetrical(span, girder);
+            des_options.doDesignStirrupLayout = are_symm ? slLayoutStirrups : slRetainExistingLayout;
+         }
 
          GET_IFACE(IArtifact,pIArtifact);
          const pgsDesignArtifact* pArtifact;
@@ -469,7 +477,7 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
             }
 
             // and copy the design to the bridge
-            SaveFlexureDesign(span,girder, des_options, pArtifact);
+            SaveDesign(span,girder, des_options, pArtifact);
          }
          catch(...)
          {
@@ -546,7 +554,7 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
 }
 
 
-void CTxDOTAgentImp::SaveFlexureDesign(SpanIndexType span,GirderIndexType gdr,const arDesignOptions& designOptions,const pgsDesignArtifact* pArtifact)
+void CTxDOTAgentImp::SaveDesign(SpanIndexType span,GirderIndexType gdr,const arDesignOptions& designOptions,const pgsDesignArtifact* pArtifact)
 {
    GET_IFACE(IGirderData,pGirderData);
    GET_IFACE(IStrandGeometry, pStrandGeometry );
@@ -658,6 +666,12 @@ void CTxDOTAgentImp::SaveFlexureDesign(SpanIndexType span,GirderIndexType gdr,co
    // concrete
    girderData.Material.Fci = pArtifact->GetReleaseStrength();
    girderData.Material.Fc  = pArtifact->GetConcreteStrength();
+
+   // Stirrup design data
+   if(designOptions.doDesignForShear)
+   {
+      girderData.ShearData = pArtifact->GetShearData();
+   }
 
    pGirderData->SetGirderData( girderData, span, gdr );
 

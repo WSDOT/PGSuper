@@ -834,12 +834,12 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122007, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pDefl->GetCapacity(), unitMeasure::Millimeter)) <<_T(", 2, ")<<gdr<<std::endl;
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122008, ")<<loc<<_T(", ")<<(int)(pDefl->Passed()?1:0)<<_T(", 15, ")<<gdr<<std::endl;
 
-   const pgsSplittingZoneArtifact* pBurst = gdrArtifact->GetSplittingZoneArtifact();
+   const pgsSplittingZoneArtifact* pBurst = gdrArtifact->GetStirrupCheckArtifact()->GetSplittingZoneArtifact();
    if (pBurst->GetIsApplicable())
    {
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122010, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pBurst->GetSplittingZoneLength(), unitMeasure::Millimeter)) <<_T(", 2, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122011, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pBurst->GetSplittingForce(), unitMeasure::Newton)) <<_T(", 2, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122012, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pBurst->GetSplittingResistance(), unitMeasure::Newton)) <<_T(", 2, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122010, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pBurst->GetStartSplittingZoneLength(), unitMeasure::Millimeter)) <<_T(", 2, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122011, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pBurst->GetStartSplittingForce(), unitMeasure::Newton)) <<_T(", 2, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122012, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pBurst->GetStartSplittingResistance(), unitMeasure::Newton)) <<_T(", 2, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122013, ")<<loc<<_T(", ")<<(int)(pBurst->Passed()?1:0)<<_T(", 15, ")<<gdr<<std::endl;
    }
 
@@ -1067,7 +1067,6 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
 
          const pgsVerticalShearArtifact* pVertical = psArtifact->GetVerticalShearArtifact();
 
-
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50069, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetAcv(), unitMeasure::Millimeter2)) <<_T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50070, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetAvOverS(), unitMeasure::Millimeter2)) <<_T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50071, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetNormalCompressionForce(), unitMeasure::Newton)) <<_T(",15, ")<<gdr<<std::endl;
@@ -1106,14 +1105,11 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       }
    }
 
-   // stirrup check at zones
-   GET_IFACE( IStirrupGeometry, pStirrupGeometry );
-   ZoneIndexType nZones = pStirrupGeometry->GetNumZones(span,gdr);
-   for (ZoneIndexType zoneIdx = 0; zoneIdx < nZones; zoneIdx++)
+   // confinement
+   const pgsConfinementArtifact& rconf = pstirrup_artifact->GetConfinementArtifact();
+   if (rconf.IsApplicable())
    {
-      const pgsStirrupCheckAtZonesArtifact* psArtifact = pstirrup_artifact->GetStirrupCheckAtZonesArtifact( zoneIdx );
-      const pgsConfinementArtifact* pconf = psArtifact->GetConfinementArtifact();
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122004, ")<<zoneIdx<<_T(", ")<<(int)(pconf->Passed()?1:0)<<_T(", 15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122004, ")<<loc<<_T(", ")<<(int)(rconf.Passed()?1:0)<<_T(", 15, ")<<gdr<<std::endl;
    }
 
    return true;
@@ -1327,6 +1323,7 @@ bool CTestAgentImp::RunDesignTest(std::_tofstream& resultsFile, std::_tofstream&
    arDesignOptions des_options = pSpecification->GetDesignOptions(span,gdr);
 
    des_options.doDesignForShear = true;
+   des_options.doDesignStirrupLayout = slLayoutStirrups; // always layout zones from scratch
 
    GET_IFACE(IArtifact,pIArtifact);
    const pgsDesignArtifact* pArtifact;
@@ -1375,16 +1372,31 @@ bool CTestAgentImp::RunDesignTest(std::_tofstream& resultsFile, std::_tofstream&
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 124013, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pArtifact->GetLeftLiftingLocation(), unitMeasure::Millimeter)) <<   _T(", 102, ")<<gdr<<std::endl;
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 124014, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pArtifact->GetLeadingOverhang(), unitMeasure::Millimeter)) <<   _T(", 102, ")<<gdr<<std::endl;
 
-   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 124015, ")<<loc<<_T(", ")<<GetBarSize(pArtifact->GetConfinementBarSize())<<   _T(", 102, ")<<gdr<<std::endl;
-   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 124016, ")<<loc<<_T(", ")<<pArtifact->GetLastConfinementZone()<<   _T(", 102, ")<<gdr<<std::endl;
+   const CShearData& sd = pArtifact->GetShearData();
+
+#pragma Reminder("Confinement design output will change")
+   int ncz = -1;
+   matRebar::Size czsize(matRebar::bsNone);
+   for (CShearData::ShearZoneConstIterator czit = sd.ShearZones.begin(); czit != sd.ShearZones.end(); czit++)
+   {
+      if (czit->ConfinementBarSize!=matRebar::bsNone)
+      {
+         czsize = czit->ConfinementBarSize;
+         ncz++;
+      }
+      else
+         break;
+   }
+
+   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 124015, ")<<loc<<_T(", ")<<GetBarSize(czsize)<<   _T(", 102, ")<<gdr<<std::endl;
+   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 124016, ")<<loc<<_T(", ")<< ncz <<   _T(", 102, ")<<gdr<<std::endl;
 
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 124017, ")<<loc<<_T(", ")<<pArtifact->GetNumberOfStirrupZonesDesigned()<<   _T(", 102, ")<<gdr<<std::endl;
 
    Int32 id = 124018;
-   ZoneIndexType nZones = min(4, pArtifact->GetNumberOfStirrupZonesDesigned());
-   for (ZoneIndexType zoneIdx = 0; zoneIdx < nZones; zoneIdx++)
+   for (CShearData::ShearZoneConstIterator czit = sd.ShearZones.begin(); czit != sd.ShearZones.end(); czit++)
    {
-      CShearZoneData zd = pArtifact->GetShearZoneData(zoneIdx);
+      const CShearZoneData& zd = *czit;
 
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<<GetBarSize(zd.VertBarSize)<<   _T(", 102, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(zd.BarSpacing, unitMeasure::Millimeter)) <<   _T(", 102, ")<<gdr<<std::endl;

@@ -38,7 +38,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define CURRENT_VERSION 38.0
+#define CURRENT_VERSION 39.0
+
 
 /****************************************************************************
 CLASS
@@ -60,7 +61,10 @@ m_MaxSlope07(10),
 m_DoCheckHoldDown(false),
 m_DoDesignHoldDown(false),
 m_HoldDownForce(ConvertToSysUnits(45,unitMeasure::Kip)),
-m_DoCheckAnchorage(true),
+m_DoCheckSplitting(true),
+m_DoCheckConfinement(true),
+m_DoDesignSplitting(true),
+m_DoDesignConfinement(true),
 m_MaxStirrupSpacing(ConvertToSysUnits(18,unitMeasure::Inch)),
 m_CyLiftingCrackFs(1.0),
 m_CyLiftingFailFs(1.5),
@@ -376,7 +380,10 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("DoCheckHoldDown"), m_DoCheckHoldDown);
    pSave->Property(_T("DoDesignHoldDown"), m_DoDesignHoldDown);
    pSave->Property(_T("HoldDownForce"), m_HoldDownForce);
-   pSave->Property(_T("DoCheckAnchorage"), m_DoCheckAnchorage);
+   pSave->Property(_T("DoCheckSplitting"), m_DoCheckSplitting);
+   pSave->Property(_T("DoDesignSplitting"), m_DoDesignSplitting);
+   pSave->Property(_T("DoCheckConfinement"), m_DoCheckConfinement);
+   pSave->Property(_T("DoDesignConfinement"), m_DoDesignConfinement);
    pSave->Property(_T("MaxStirrupSpacing"), m_MaxStirrupSpacing);
    pSave->Property(_T("CyLiftingCrackFs"), m_CyLiftingCrackFs);
    pSave->Property(_T("CyLiftingFailFs"), m_CyLiftingFailFs);
@@ -796,9 +803,29 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if(!pLoad->Property(_T("HoldDownForce"), &m_HoldDownForce))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if (version>32)
+      if (version>32 && version<39)
       {
-         if(!pLoad->Property(_T("DoCheckAnchorage"), &m_DoCheckAnchorage))
+         bool check_anchor;
+         if(!pLoad->Property(_T("DoCheckAnchorage"), &check_anchor))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         m_DoCheckSplitting = check_anchor;
+         m_DoCheckConfinement = check_anchor;
+         m_DoDesignSplitting = check_anchor;
+         m_DoDesignConfinement = check_anchor;
+      }
+      else if(version>=39)
+      {
+         if(!pLoad->Property(_T("DoCheckSplitting"), &m_DoCheckSplitting))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if(!pLoad->Property(_T("DoDesignSplitting"), &m_DoDesignSplitting))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if(!pLoad->Property(_T("DoCheckConfinement"), &m_DoCheckConfinement))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if(!pLoad->Property(_T("DoDesignConfinement"), &m_DoDesignConfinement))
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
@@ -2076,7 +2103,8 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if(!pLoad->EndUnit())
+
+      if(!pLoad->EndUnit())  // SpecificationLibraryEntry
          THROW_LOAD(InvalidFileFormat,pLoad);
    }
 
@@ -2101,7 +2129,10 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TEST (m_DoCheckHoldDown            , rOther.m_DoCheckHoldDown            );
    TEST (m_DoDesignHoldDown           , rOther.m_DoDesignHoldDown            );
    TESTD(m_HoldDownForce              , rOther.m_HoldDownForce              );
-   TEST (m_DoCheckAnchorage           , rOther.m_DoCheckAnchorage           );
+   TEST (m_DoCheckSplitting           , rOther.m_DoCheckSplitting           );
+   TEST (m_DoDesignSplitting           , rOther.m_DoDesignSplitting         );
+   TEST (m_DoCheckConfinement           , rOther.m_DoCheckConfinement       );
+   TEST (m_DoDesignConfinement           , rOther.m_DoDesignConfinement     );
    TESTD(m_MaxStirrupSpacing          , rOther.m_MaxStirrupSpacing          );
    TESTD(m_CyLiftingCrackFs          , rOther.m_CyLiftingCrackFs          );
    TESTD(m_CyLiftingFailFs           , rOther.m_CyLiftingFailFs           );
@@ -2373,15 +2404,47 @@ void SpecLibraryEntry::SetHoldDownForce(bool doCheck, bool doDesign, Float64 for
       m_HoldDownForce   = force;
 }
 
-void SpecLibraryEntry::EnableAnchorageCheck(bool enable)
+void SpecLibraryEntry::EnableSplittingCheck(bool enable)
 {
-   m_DoCheckAnchorage = enable;
+   m_DoCheckSplitting = enable;
 }
 
-bool SpecLibraryEntry::IsAnchorageCheckEnabled() const
+bool SpecLibraryEntry::IsSplittingCheckEnabled() const
 {
-   return m_DoCheckAnchorage;
+   return m_DoCheckSplitting;
 }
+
+void SpecLibraryEntry::EnableSplittingDesign(bool enable)
+{
+   m_DoDesignSplitting = enable;
+}
+
+bool SpecLibraryEntry::IsSplittingDesignEnabled() const
+{
+   return m_DoDesignSplitting;
+}
+
+
+void SpecLibraryEntry::EnableConfinementCheck(bool enable)
+{
+   m_DoCheckConfinement = enable;
+}
+
+bool SpecLibraryEntry::IsConfinementCheckEnabled() const
+{
+   return m_DoCheckConfinement;
+}
+
+void SpecLibraryEntry::EnableConfinementDesign(bool enable)
+{
+   m_DoDesignConfinement = enable;
+}
+
+bool SpecLibraryEntry::IsConfinementDesignEnabled() const
+{
+   return m_DoDesignConfinement;
+}
+
 
 Float64 SpecLibraryEntry::GetMaxStirrupSpacing() const
 {
@@ -3718,6 +3781,9 @@ Float64 SpecLibraryEntry::GetShearResistanceFactor(pgsTypes::ConcreteType type) 
    return m_PhiShear[type];
 }
 
+
+
+
 //======================== INQUIRY    =======================================
 
 ////////////////////////// PROTECTED  ///////////////////////////////////////
@@ -3740,7 +3806,10 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_DoDesignHoldDown           = rOther.m_DoDesignHoldDown;
    m_HoldDownForce              = rOther.m_HoldDownForce;
    m_MaxStirrupSpacing          = rOther.m_MaxStirrupSpacing;
-   m_DoCheckAnchorage           = rOther.m_DoCheckAnchorage;
+   m_DoCheckConfinement         = rOther.m_DoCheckConfinement;
+   m_DoDesignConfinement        = rOther.m_DoDesignConfinement;
+   m_DoCheckSplitting           = rOther.m_DoCheckSplitting;
+   m_DoDesignSplitting          = rOther.m_DoDesignSplitting;
    m_CyLiftingCrackFs           = rOther.m_CyLiftingCrackFs;
    m_CyLiftingFailFs            = rOther.m_CyLiftingFailFs;
    m_CyCompStressServ           = rOther.m_CyCompStressServ;

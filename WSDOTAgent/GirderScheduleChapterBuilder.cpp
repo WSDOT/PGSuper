@@ -333,7 +333,6 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    (*p_table)(++row,0) << Sub2(_T("F"),_T("b"));
    if (0 < nh)
    {
-      GDRCONFIG config = pBridge->GetGirderConfiguration(span,girder);
       CComPtr<IPoint2d> pnt0, pnt1;
       pStrandGeometry->GetStrandPosition(pmid[0],0,pgsTypes::Harped,&pnt0);
       pStrandGeometry->GetStrandPosition(pmid[0],nh-1,pgsTypes::Harped,&pnt1);

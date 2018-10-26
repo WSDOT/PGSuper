@@ -786,37 +786,7 @@ BEGIN
     CONTROL         "Simple/Continuous Envelope",IDC_SIMPLE3,"Button",BS_AUTORADIOBUTTON,13,285,107,10
 END
 
-IDD_GIRDERDESC_SHEAR_STEEL DIALOGEX 0, 0, 362, 292
-STYLE DS_SETFONT | WS_CHILD | WS_CAPTION
-CAPTION "Trans. Reinforcement"
-FONT 8, "MS Sans Serif", 0, 0, 0x1
-BEGIN
-    LTEXT           "Reinforcement Material",IDC_STATIC,10,10,74,8
-    COMBOBOX        IDC_MILD_STEEL_SELECTOR,98,7,147,43,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Transverse Reinforcement Zones",IDC_STATIC,7,23,348,144,0,WS_EX_TRANSPARENT
-    CONTROL         "Custom1",IDC_SHEAR_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,15,34,330,69
-    PUSHBUTTON      "Insert Row",IDC_INSERTROW,113,109,63,14
-    PUSHBUTTON      "Delete Row",IDC_REMOVEROWS,185,109,63,14
-    CONTROL         "Transverse Reinforcement engages deck and is adequately developed for interface shear capacity",IDC_STIRRUPS_ENGAGE_DECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,133,327,10
-    CONTROL         "Top flange is intentionally roughened for interface shear capacity",IDC_ROUGHENED,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,147,219,10
-    GROUPBOX        "Top Flange Horizontal Interface Shear Reinforcement",IDC_STATIC,7,174,348,43,0,WS_EX_TRANSPARENT
-    LTEXT           "Additional reinforcement engaging deck, but does not provide additional vertical shear capacity",IDC_STATIC,15,184,299,8
-    LTEXT           "Bar Size",IDC_STATIC,16,201,30,8
-    COMBOBOX        IDC_TF_BAR_SIZE,55,197,41,51,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Spacing (Uniform along entire girder):",IDC_STATIC,117,201,117,8
-    EDITTEXT        IDC_TF_SPACING,237,195,59,14,ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_TF_SPACING_UNITS,303,201,18,8
-    GROUPBOX        "Bottom Flange Confinement Reinforcement",IDC_STATIC,7,222,348,35,0,WS_EX_TRANSPARENT
-    LTEXT           "Bar Size",IDC_STATIC,13,241,31,8
-    COMBOBOX        IDC_BAR_SIZE,55,236,41,51,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Last Zone Containing Confinement Reinforcement:",IDC_STATIC,117,241,160,8
-    COMBOBOX        IDC_LAST_ZONE,279,238,48,56,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Restore to Library Defaults",IDC_RESTORE_DEFAULTS,123,271,113,14
-END
-
-IDD_DESIGN_GIRDER DIALOGEX 0, 0, 328, 235
+IDD_DESIGN_GIRDER DIALOGEX 0, 0, 328, 249
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Girder Designer"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -830,15 +800,17 @@ BEGIN
     CONTROL         "Don't Change Slab Offset (""A"" dimension)",IDC_DESIGN_A,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,169,145,10
     CONTROL         "Design For Shear",IDC_DESIGN_SHEAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,188,94,10
-    DEFPUSHBUTTON   "Run Design",IDOK,34,214,64,14
-    PUSHBUTTON      "Cancel",IDCANCEL,107,214,50,14
-    PUSHBUTTON      "Help",IDC_HELPME,235,214,50,14
+    DEFPUSHBUTTON   "Run Design",IDOK,34,228,64,14
+    PUSHBUTTON      "Cancel",IDCANCEL,107,228,50,14
+    PUSHBUTTON      "Help",IDC_HELPME,235,228,50,14
     GROUPBOX        "Select Girder(s) to be Designed",IDC_STATIC,7,40,180,93
-    GROUPBOX        "Design Options",IDC_STATIC,7,139,180,64
+    GROUPBOX        "Design Options",IDC_STATIC,7,139,180,81
     LTEXT           "The Girder Designer uses current bridge layout and project criteria information to determine an optimal design for the selected girder(s)",IDC_STATIC,8,10,179,30
     LTEXT           "Notes:\n- A successful design attempt does not guarantee compliance with all criteria.  Always run a Spec Check Report to review your final design.",IDC_STATIC,199,135,121,47
     CONTROL         309,IDC_PICTURE,"Static",SS_BITMAP | SS_NOTIFY | SS_CENTERIMAGE | SS_REALSIZEIMAGE | SS_SUNKEN | WS_BORDER,212,13,97,116
     LTEXT           "- Design of ""A"" dimension Not Available when multiple girders are selected",IDC_ADIM_STATIC,199,181,121,28
+    CONTROL         "Start with Current Stirrup Layout",IDC_START_WITH_LAYOUT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,203,115,10
 END
 
 IDD_GIRDERDESC_LIFTING_PAGE DIALOG  0, 0, 390, 234
@@ -2121,8 +2093,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,5,3,0
- PRODUCTVERSION 2,5,3,0
+ FILEVERSION 2,6,0,0
+ PRODUCTVERSION 2,6,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2139,12 +2111,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.5.3.0"
+            VALUE "FileVersion", "2.6.0.0"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2011, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.5.3.0"
+            VALUE "ProductVersion", "2.6.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -2249,21 +2221,13 @@ BEGIN
         BOTTOMMARGIN, 301
     END
 
-    IDD_GIRDERDESC_SHEAR_STEEL, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 355
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 285
-    END
-
     IDD_DESIGN_GIRDER, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 321
         VERTGUIDE, 13
         TOPMARGIN, 7
-        BOTTOMMARGIN, 228
+        BOTTOMMARGIN, 242
     END
 
     IDD_GIRDERDESC_LIFTING_PAGE, DIALOG

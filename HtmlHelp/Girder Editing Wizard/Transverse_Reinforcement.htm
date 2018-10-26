@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=840>
-<meta name=layout-width content=921>
+<meta name=layout-height content=1317>
+<meta name=layout-width content=847>
 
 
 <!--(Links)=========================================================-->
@@ -45,61 +45,94 @@
 
 <h1>Girder Description - Transverse Reinforcement</h1>
 
-<p>This tab of the Girder Editor defines transverse reinforcement..</p>
+<p>This tab of the Girder Editor defines transverse reinforcement.</p>
 
 <h2>Mild Steel Material</h2>
 
 <p>Select the appropriate mild steel for the transverse rebar</p>
 
+<h2>Roughening of Top Flange</h2>
+
+<p>Check the box to indicate the top flange is intentionally roughened 
+ to an amplitude of 0.25 inch to help resist horizontal interface shear.</p>
+
 <h2>Transverse Reinforcement Zones</h2>
 
 <p>The transverse reinforcement is described by zones, beginning at the 
- left end of the girder. PGSuper assumes that transverse reinforcement 
- is symmetrical about the center of the girder. Transverse reinforcement 
- zones are described by their length, spacing and bar size. </p>
+ left end of the girder. Transverse reinforcement can optionally be forced 
+ to be symmetrical about the center of the girder. Transverse reinforcement 
+ zones are described by their length, spacing and bar size.</p>
 
-<p>This reinforcement can, at your option, be assumed to engage the deck 
- and is adequately developed. If it is assumed to engage the deck, its 
- contribution to the horizontal interface shear resistance will be accounted 
- for.</p>
+<p>If zones are made symmetrical about the girder centerline, right-most 
+ zone data is either automatically extended or truncated to mid-girder 
+ such that the zones are always symmetrical. Similarly, if zones are not 
+ symmetrical, right-most zones are either extended or truncated such that 
+ the last zone extends to the right end of the girder.</p>
+
+<p>Primary bar zones contain vertical shear reinforcement that can optionally 
+ be extended into the deck for horizontal interface shear, and also be 
+ used for confinement steel and splitting resistance. These bars typically 
+ represent the main stirrups in a girder.</p>
 
 <p>Use the Insert Row and Delete Row buttons to add and remove rows from 
- the grid.</p>
+ the grid. To enter a primary stirrup zone,</p>
 
-<p>Transverse reinforcement can be vertical, horizontal, or both. The vertical 
- reinforcement is always considered when evaluating the vertical shear 
- capacity of a girder. Either the vertical or horizontal reinforcement 
- is considered when evaluating splitting resistance in the pretensioned 
- anchorage zone (LRFD 5.10.10.1). The vertical reinforcement is used for 
- I-girders, bulb tee girders, and stemmed girders (double tee, ribbed girders, 
- etc). The horizontal reinforcement is used for solid or voided slabs. 
- For pretensioned box or tub girders the horizontal reinforcement will 
- be used if the girder is taller than it is wide and the vertical reinforcement 
- will be used if the girder is wider than it is tall.</p>
+<ol style="list-style: decimal;"
+	type=1>
+	
+	<li class=kadov-p><p>Press the Insert Row button to insert a new row 
+ immediately above the selected zone.</p></li>
+	
+	<li class=kadov-p><p>Enter the length of the stirrup zone</p></li>
+	
+	<li class=kadov-p><p>Enter the stirrup spacing</p></li>
+	
+	<li class=kadov-p><p>Enter the bar size.</p></li>
+	
+	<li class=kadov-p><p>Enter the number of bars (legs) to be used to 
+ resist vertical shear.</p></li>
+	
+	<li class=kadov-p><p>Enter the number of legs to be extended into the 
+ deck to resist horizontal interface shear.</p></li>
+	
+	<li class=kadov-p><p>Enter the bar size to resist confinement.</p></li>
+</ol>
 
-<h2>Top Flange Horizontal Interface Shear Steel</h2>
+<h2>Additional Horizontal Interface Shear Zones</h2>
 
-<p>The top flange horizontal interface shear steel are stirrups located 
- in the top flange of the section only which protrude up into the slab. 
- They are used to add strength to the slab-girder interface to resist horizontal 
- shear forces. These stirrups are spaced evenly along the entire length 
- of the girder. Each stirrup provides two legs of reinforcement.</p>
+<p>The bars in these zones are used to resist horizontal interface shear 
+ and are used in addition to any primary bars that have been extended into 
+ the deck. This zone layout is independent of the primary zones.</p>
 
-<h2>Bottom Flange Confinement Steel</h2>
+<h2>Additional Splitting Reinforcement</h2>
 
-<p>Confinement reinforcement must be described in order to evaluate LRFD 
- 5.10.10.2 . Confinement reinforcement is described by the bar size, and 
- by its ending location. It is assumed that confinement steel begins in 
- Zone 1 and is included in every zone up to and including the last zone 
- specified.</p>
+<p>This data allows input for two identical zones placed at both ends of 
+ the girder to provide splitting resistance. These bars are used in addition 
+ to any splitting resistance provided by primary bars.</p>
+
+<h2>Additional Confinement Reinforcement</h2>
+
+<p>This data allows input for two identical zones placed at both ends of 
+ the girder to provide confinement resistance. These bars are used in addition 
+ to any primary confinement <!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}-->bars.</p>
 
 <h2>Restoring Library Defaults</h2>
 
-<p><span style="font-weight: normal;">By pressing the Restore to Library 
- Defaults button, the transverse reinforcement zones and bottom flange 
- confinement steel values are set equal to those defined in the PGSuper 
- library.</span><span style="margin-bottom: 0; font-weight: normal;">&nbsp;</span><span 
+<p>By pressing the Restore to Library Defaults button, the transverse reinforcement 
+ zones and bottom flange confinement steel values are set equal to those 
+ defined in the PGSuper library.<span style="margin-bottom: 0;">&nbsp;</span><span 
  style="margin-bottom: 0;"> All current data is overridden.</span></p>
+
+<p class=Tip><span style="margin-bottom: 0;">T</span>ip: Default values 
+ for the transverse reinforcement zones can be defined in the Girder Library 
+ entry. This helps engineering organizations define and adhere to standard 
+ transverse steel arrangements. WSDOT and TxDOT have performed parametric 
+ studies on each their standard girders and have created standard stirrup 
+ arrangements. PGSuper is used to evaluate the stirrup arrangement in a 
+ particular structure.</p>
+
+<p class=Tip>Tip: You can use the Girder Designer to automatically layout 
+ and design transverse reinforcement.</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

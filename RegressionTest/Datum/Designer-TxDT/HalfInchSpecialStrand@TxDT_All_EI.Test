@@ -1,22 +1,22 @@
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00     1     1    IV       18   1/2  270 22.08 19.42   4 16.0  4.000  5.000    1.344   -1.603   3131  0.738  0.814  0.13 -0.02 -0.00 -0.00 -0.02  37.84 112.67   0.00   0.00   0.00
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00  1     1     IV         18  0.52  270 22.08 19.42   4 16.0  4.000  5.000    1.344   -1.603   3131  0.738  0.814  0.13 -0.02 -0.00 -0.00 -0.02  37.84 112.67   0.00   0.00   0.00
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00     1     2    IV       18   1/2  270 22.08 19.42   4 16.0  4.000  5.000    1.381   -1.666   3149  0.738  0.814  0.13 -0.02 -0.00 -0.00 -0.02  37.84 111.67   0.00   0.00   0.00
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00  1     2     IV         18  0.52  270 22.08 19.42   4 16.0  4.000  5.000    1.381   -1.666   3149  0.738  0.814  0.13 -0.02 -0.00 -0.00 -0.02  37.84 111.67   0.00   0.00   0.00
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00     1     4    IV       18   1/2  270 22.08 19.42   4 16.0  4.000  5.000    1.381   -1.666   3149  0.738  0.814  0.13 -0.02 -0.00 -0.00 -0.02  37.84 111.67   0.00   0.00   0.00
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00  1     4     IV         18  0.52  270 22.08 19.42   4 16.0  4.000  5.000    1.381   -1.666   3149  0.738  0.814  0.13 -0.02 -0.00 -0.00 -0.02  37.84 111.67   0.00   0.00   0.00
 
 
 The Specification Check was Successful

@@ -30,7 +30,10 @@ public:
 	BOOL	m_DesignHoldDown;
 	BOOL	m_DesignLifting;
 	BOOL	m_DesignSlope;
-	BOOL	m_CheckAnchorage;
+	BOOL	m_CheckSplitting;
+	BOOL	m_DesignSplitting;
+	BOOL	m_CheckConfinement;
+	BOOL	m_DesignConfinement;
 	//}}AFX_DATA
 
    int m_FillMethod;
@@ -52,6 +55,8 @@ protected:
 	afx_msg void OnCheckHd();
 	afx_msg void OnCheckLifting();
 	afx_msg void OnCheckSlope();
+	afx_msg void OnCheckSplitting();
+	afx_msg void OnCheckConfinement();
 	//}}AFX_MSG
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()

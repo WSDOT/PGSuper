@@ -29,6 +29,12 @@
 #include <MathEx.h>
 #include <vector>
 
+static long g_Ncopies = 0;
+
+class dbgDumpContext;
+#include <Material\Rebar.h>
+
+
 #define TOOLTIP_WIDTH 300
 #define TOOLTIP_DURATION 10000
 
@@ -281,6 +287,9 @@ struct pgsTypes
    enum GirderLocation
    { Interior = 0, Exterior = 1 };
 
+   enum GirderFace 
+   {GirderTop, GirderBottom};
+
    // NOTE: Enum values are out of order so that they match values used in earlier
    // versions of the software
    enum PierConnectionType { Hinged = 1, 
@@ -369,6 +378,189 @@ struct pgsTypes
 };
 
 
+//-----------------------------------------------------------------------------
+// Struct for stirrup information.
+struct STIRRUPCONFIG
+{
+   // First, some needed types
+   // =========================
+   struct SHEARZONEDATA // Primary shear zone
+   {
+      Float64 ZoneLength;
+      Float64 BarSpacing;
+      matRebar::Size VertBarSize;
+      Float64 nVertBars;
+      Float64 nHorzInterfaceBars;
+      matRebar::Size ConfinementBarSize;
+
+      // pre-computed values
+      Float64 VertABar; // Area of single bar
+
+      // This struct is complex enough to need a good constructor
+      SHEARZONEDATA():
+      ZoneLength(0.0), VertBarSize(matRebar::bsNone), BarSpacing(0.0), nVertBars(0.0), 
+      nHorzInterfaceBars(0.0), ConfinementBarSize(matRebar::bsNone), VertABar(0.0)
+      {;}
+
+      bool operator==(const SHEARZONEDATA& other) const
+      {
+         if( !IsEqual(ZoneLength , other.ZoneLength) ) return false;
+         if(VertBarSize != other.VertBarSize) return false;
+         if( !IsEqual(BarSpacing , other.BarSpacing) ) return false;
+         if( !IsEqual(nVertBars , other.nVertBars) ) return false;
+         if( !IsEqual(nHorzInterfaceBars , other.nHorzInterfaceBars) ) return false;
+         if(ConfinementBarSize != other.ConfinementBarSize) return false;
+
+         return true;
+      }
+
+      bool operator!=(const SHEARZONEDATA& other) const
+      {
+         return !operator==(other);
+      }
+   };
+
+   typedef std::vector<SHEARZONEDATA> ShearZoneVec;
+   typedef ShearZoneVec::iterator ShearZoneIterator;
+   typedef ShearZoneVec::const_iterator ShearZoneConstIterator;
+   typedef ShearZoneVec::const_reverse_iterator ShearZoneConstReverseIterator;
+
+   struct HORIZONTALINTERFACEZONEDATA // Additional horizontal interface zone
+   {
+      Float64 ZoneLength;
+      Float64 BarSpacing;
+      matRebar::Size BarSize;
+      Float64 nBars;
+
+      // pre-computed values
+      Float64 ABar; // area of single bar
+
+      // default constructor
+      HORIZONTALINTERFACEZONEDATA():
+      ZoneLength(0.0), BarSize(matRebar::bsNone),BarSpacing(0.0),nBars(0.0), ABar(0.0)
+      {;}
+
+      bool operator==(const HORIZONTALINTERFACEZONEDATA& other) const
+      {
+         if( !IsEqual(ZoneLength , other.ZoneLength) ) return false;
+         if(BarSize != other.BarSize) return false;
+         if( !IsEqual(BarSpacing , other.BarSpacing) ) return false;
+         if( !IsEqual(nBars , other.nBars) ) return false;
+
+         return true;
+      }
+
+      bool operator!=(const HORIZONTALINTERFACEZONEDATA& other) const
+      {
+         return !operator==(other);
+      }
+   };
+
+   typedef std::vector<HORIZONTALINTERFACEZONEDATA> HorizontalInterfaceZoneVec;
+   typedef HorizontalInterfaceZoneVec::iterator HorizontalInterfaceZoneIterator;
+   typedef HorizontalInterfaceZoneVec::const_iterator HorizontalInterfaceZoneConstIterator;
+
+   // Our Data
+   // ========
+   ShearZoneVec ShearZones;
+   HorizontalInterfaceZoneVec HorizontalInterfaceZones;
+
+   bool bIsRoughenedSurface;
+   bool bUsePrimaryForSplitting;
+   bool bAreZonesSymmetrical;
+
+   matRebar::Size SplittingBarSize; // additional splitting bars
+   Float64 SplittingBarSpacing;
+   Float64 SplittingZoneLength;
+   Float64 nSplittingBars;
+
+   matRebar::Size ConfinementBarSize; // additional confinement bars - only used if primary not used for confinement
+   Float64 ConfinementBarSpacing;
+   Float64 ConfinementZoneLength;
+
+   STIRRUPCONFIG():
+   bIsRoughenedSurface(true), bUsePrimaryForSplitting(false), bAreZonesSymmetrical(true),
+   SplittingBarSize(matRebar::bsNone), SplittingBarSpacing(0.0), SplittingZoneLength(0.0), nSplittingBars(0.0),
+   ConfinementBarSize(matRebar::bsNone), ConfinementBarSpacing(0.0), ConfinementZoneLength(0.0)
+   {;}
+
+   bool operator==(const STIRRUPCONFIG& other) const
+   {
+      if(ShearZones != other.ShearZones) return false;
+      if(HorizontalInterfaceZones != other.HorizontalInterfaceZones) return false;
+
+      if(bIsRoughenedSurface != other.bIsRoughenedSurface) return false;
+      if(bUsePrimaryForSplitting != other.bUsePrimaryForSplitting) return false;
+      if(bAreZonesSymmetrical != other.bAreZonesSymmetrical) return false;
+      if(SplittingBarSize != other.SplittingBarSize) return false;
+
+      if ( !IsEqual(SplittingBarSpacing,  other.SplittingBarSpacing) ) return false;
+      if ( !IsEqual(SplittingZoneLength,  other.SplittingZoneLength) ) return false;
+      if ( !IsEqual(nSplittingBars,  other.nSplittingBars) ) return false;
+
+      if(ConfinementBarSize != other.ConfinementBarSize) return false;
+      if ( !IsEqual(ConfinementBarSpacing,  other.ConfinementBarSpacing) ) return false;
+      if ( !IsEqual(ConfinementZoneLength,  other.ConfinementZoneLength) ) return false;
+
+
+      return true;
+   }
+
+   bool operator!=(const STIRRUPCONFIG& other) const
+   {
+      return !operator==(other);
+   }
+};
+// NOTE: Data here is not used, but may be useful for someone in the future.
+//       This is a preliminary design for modelling longitudinal rebar.
+//       After some effort, I determined that the data is not necessessary for the 
+//       design algorithm since it is only used for longitudinal reinforcement for shear,
+//       and does not need to be iterated on. (e.g., the algoritm just picks a value
+//       and submits it directly to the final design).
+//-----------------------------------------------------------------------------
+// Struct for longitudinal rebar information.
+/*
+struct LONGITUDINALREBARCONFIG
+{
+public:
+   struct RebarRow 
+   {
+      pgsTypes::GirderFace  Face;
+      matRebar::Size BarSize;
+      Int32       NumberOfBars;
+      Float64     Cover;
+      Float64     BarSpacing;
+
+      bool operator==(const RebarRow& other) const
+      {
+         if(Face != other.Face) return false;
+         if(BarSize != other.BarSize) return false;
+         if ( !IsEqual(Cover,  other.Cover) ) return false;
+         if ( !IsEqual(BarSpacing,  other.BarSpacing) ) return false;
+         if ( !IsEqual(NumberOfBars,  other.NumberOfBars) ) return false;
+
+         return true;
+      };
+   };
+
+   matRebar::Type BarType;
+   matRebar::Grade BarGrade;
+   std::vector<RebarRow> RebarRows;
+
+   bool operator==(const LONGITUDINALREBARCONFIG& other) const
+   {
+      if(BarType != other.BarType) return false;
+      if(BarGrade != other.BarGrade) return false;
+      if(RebarRows != other.RebarRows) return false;
+   }
+
+   bool operator!=(const LONGITUDINALREBARCONFIG& other) const
+   {
+      return !operator==(other);
+   }
+
+};
+*/
 
 //-----------------------------------------------------------------------------
 // Individual strand debond information
@@ -421,7 +613,27 @@ struct GDRCONFIG
 
    Float64 SlabOffset[2]; // slab offset at start and end of the girder (use pgsTypes::MemberEndType for array index)
 
-   bool operator==(const GDRCONFIG& other) const
+   STIRRUPCONFIG StirrupConfig; // All of our transverse rebar information
+
+//   LONGITUDINALREBARCONFIG LongitudinalRebarConfig; // Girder-length rebars
+   GDRCONFIG()
+   {;}
+
+   GDRCONFIG(const GDRCONFIG& rOther)
+   {
+      MakeCopy( rOther );
+   }
+
+   GDRCONFIG& operator=(const GDRCONFIG& rOther)
+   {
+      if ( this != &rOther )
+         MakeAssignment( rOther );
+
+      return *this;
+   }
+
+   // Check equality for only flexural date (not stirrups)
+   bool IsFlexuralDataEqual(const GDRCONFIG& other) const
    {
       for ( Uint16 type = pgsTypes::Straight; type <= pgsTypes::Temporary; type++ )
       {
@@ -448,10 +660,60 @@ struct GDRCONFIG
       return true;
    }
 
+   bool operator==(const GDRCONFIG& other) const
+   {
+       if(!IsFlexuralDataEqual(other))
+           return false;
+
+      if (StirrupConfig != other.StirrupConfig) return false;
+
+      return true;
+   }
+
    bool operator!=(const GDRCONFIG& other) const
    {
       return !operator==(other);
    }
+
+private:
+void MakeCopy( const GDRCONFIG& rOther )
+{
+   g_Ncopies++;
+
+   Nstrands[0] = rOther.Nstrands[0];
+   Nstrands[1] = rOther.Nstrands[1];
+   Nstrands[2] = rOther.Nstrands[2];
+   Debond[0] = rOther.Debond[0];
+   Debond[1] = rOther.Debond[1];
+   Debond[2] = rOther.Debond[2];
+   EndOffset = rOther.EndOffset;
+   HpOffset = rOther.HpOffset;
+   Pjack[0] = rOther.Pjack[0];
+   Pjack[1] = rOther.Pjack[1];
+   Pjack[2] = rOther.Pjack[2];
+   TempStrandUsage = rOther.TempStrandUsage;
+   Fc = rOther.Fc;
+   Fci = rOther.Fci;
+   ConcType = rOther.ConcType;
+   bHasFct = rOther.bHasFct;
+   Fct = rOther.Fct;
+
+   bUserEci = rOther.bUserEci;
+   bUserEc = rOther.bUserEc;
+   Eci = rOther.Eci;
+   Ec = rOther.Ec;
+
+   SlabOffset[0] = rOther.SlabOffset[0];
+   SlabOffset[1] = rOther.SlabOffset[1];
+
+   StirrupConfig = rOther.StirrupConfig;
+}
+
+void MakeAssignment( const GDRCONFIG& rOther )
+{
+   MakeCopy( rOther );
+}
+
 };
 
 
@@ -462,9 +724,9 @@ struct HANDLINGCONFIG
    Float64 RightOverhang;  // overhang closest to cab of truck when used from hauling
 };
 
-
 enum arFlexuralDesignType { dtNoDesign, dtDesignForHarping, dtDesignForDebonding, dtDesignFullyBonded };
 enum arDesignStrandFillType { ftGridOrder, ftMinimizeHarping };
+enum arDesignStirrupLayoutType { slLayoutStirrups, slRetainExistingLayout };
 
 struct arDesignOptions
 {
@@ -479,9 +741,11 @@ struct arDesignOptions
 
    bool doDesignForShear;
 
+   arDesignStirrupLayoutType doDesignStirrupLayout;
+
    arDesignOptions(): doDesignForFlexure(dtNoDesign), doDesignSlabOffset(false), doDesignLifting(false), doDesignHauling(false),
                       doDesignSlope(false), doDesignHoldDown(false), doDesignForShear(false), 
-                      doStrandFillType(ftMinimizeHarping)
+                      doStrandFillType(ftMinimizeHarping), doDesignStirrupLayout(slLayoutStirrups)
    {;}
 };
 

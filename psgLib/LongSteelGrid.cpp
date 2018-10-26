@@ -323,9 +323,9 @@ bool CLongSteelGrid::GetRowData(ROWCOL nRow, GirderLibraryEntry::LongSteelInfo* 
 
    CString s = GetCellValue(nRow, 1);
    if (s==_T("Top"))
-      plsi->Face = GirderLibraryEntry::GirderTop;
+      plsi->Face = pgsTypes::GirderTop;
    else
-      plsi->Face = GirderLibraryEntry::GirderBottom;
+      plsi->Face = pgsTypes::GirderBottom;
 
    plsi->BarSize = GetBarSize(nRow,2);
 
@@ -372,8 +372,8 @@ void CLongSteelGrid::FillGrid(const GirderLibraryEntry::LongSteelInfoVec& rvec)
       for (GirderLibraryEntry::LongSteelInfoVec::const_iterator it = rvec.begin(); it!=rvec.end(); it++)
       {
          CString tmp;
-         GirderLibraryEntry::GirderFace face = (*it).Face;
-         if (face==GirderLibraryEntry::GirderBottom)
+         pgsTypes::GirderFace face = (*it).Face;
+         if (face==pgsTypes::GirderBottom)
             tmp = _T("Bottom");
          else
             tmp = _T("Top");

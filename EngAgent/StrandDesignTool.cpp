@@ -98,7 +98,8 @@ m_MinimumFinalMzEccentricity(Float64_Max),
 m_HarpedRatio(DefaultHarpedRatio),
 m_MinPermanentStrands(0),
 m_MinSlabOffset(0.0),
-m_ConcreteAccuracy(::ConvertToSysUnits(100,unitMeasure::PSI))
+m_ConcreteAccuracy(::ConvertToSysUnits(100,unitMeasure::PSI)),
+m_bConfigDirty(true)
 {
 }
 
@@ -109,6 +110,8 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
    // Cache a whole bunch of stuff that does not change during design
    m_pBroker = pBroker;
    m_StatusGroupID = statusGroupID;
+
+   m_bConfigDirty = true; // cache is dirty
 
    m_pArtifact = pArtif;
    m_Span = m_pArtifact->GetSpan();
@@ -225,6 +228,7 @@ void pgsStrandDesignTool::InitReleaseStrength(Float64 fci)
 {
    m_FciControl.Init(fci);
    m_pArtifact->SetReleaseStrength(fci);
+   m_bConfigDirty = true; // cache is dirty
 }
 
 void pgsStrandDesignTool::RestoreDefaults(bool retainProportioning)
@@ -271,6 +275,8 @@ arFlexuralDesignType pgsStrandDesignTool::GetFlexuralDesignType() const
 bool pgsStrandDesignTool::SetNumTempStrands(StrandIndexType num)
 {
    m_pArtifact->SetNumTempStrands(num);
+   m_bConfigDirty = true; // cache is dirty
+
    UpdateJackingForces();
    return true;
 }
@@ -290,6 +296,8 @@ bool pgsStrandDesignTool::SetNumPermanentStrands(StrandIndexType numPerm)
       m_pArtifact->SetNumHarpedStrands(0);
       m_pArtifact->SetNumStraightStrands(0);
       UpdateJackingForces();
+      m_bConfigDirty = true; // cache is dirty
+
       LOG(_T("** Set Np=0"));
       return true;
    }
@@ -328,6 +336,8 @@ bool pgsStrandDesignTool::SetNumPermanentStrands(StrandIndexType numPerm)
       }
 
       StrandIndexType nh_old = m_pArtifact->GetNumHarpedStrands();
+
+      m_bConfigDirty = true; // cache is dirty
 
       m_pArtifact->SetNumHarpedStrands(nh);
       m_pArtifact->SetNumStraightStrands(ns);
@@ -397,6 +407,8 @@ bool pgsStrandDesignTool::SetNumStraightHarped(StrandIndexType ns, StrandIndexTy
 
    LOG (_T("Setting harped ratio to ")<<m_HarpedRatio);
 
+   m_bConfigDirty = true; // cache is dirty
+
    StrandIndexType nh_old = m_pArtifact->GetNumHarpedStrands(); 
 
    m_pArtifact->SetNumHarpedStrands(nh);
@@ -459,9 +471,15 @@ Float64 pgsStrandDesignTool::GetConcreteAccuracy() const
    return m_ConcreteAccuracy;
 }
 
-GDRCONFIG pgsStrandDesignTool::GetGirderConfiguration()
+const GDRCONFIG& pgsStrandDesignTool::GetGirderConfiguration()
 {
-   return m_pArtifact->GetGirderConfiguration();
+   if (m_bConfigDirty)
+   {
+      m_CachedConfig = m_pArtifact->GetGirderConfiguration();
+      m_bConfigDirty = false;
+   }
+
+   return m_CachedConfig;
 }
 
 StrandIndexType pgsStrandDesignTool::GetNextNumPermanentStrands(StrandIndexType prevNum)
@@ -683,7 +701,7 @@ Float64 pgsStrandDesignTool::ComputeEccentricity(const pgsPointOfInterest& poi,p
    // temp strands only in casting yard
    StrandIndexType nt = eccStage <pgsTypes::BridgeSite1 ? m_pArtifact->GetNumTempStrands() : 0;
 
-   GDRCONFIG guess = GetGirderConfiguration();
+   const GDRCONFIG& guess = GetGirderConfiguration();
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
    Float64 neff;
@@ -816,6 +834,8 @@ void pgsStrandDesignTool::UpdateJackingForces()
    PjT  = pPrestressForce->GetPjackMax(m_Span,m_Girder,pgsTypes::Temporary,GetNt());
 
    // Save the initial design in the design artifact.
+   m_bConfigDirty = true; // cache is dirty
+
    m_pArtifact->SetPjackStraightStrands( PjS );
    m_pArtifact->SetUsedMaxPjackStraightStrands( true );
 
@@ -856,6 +876,7 @@ bool pgsStrandDesignTool::ResetHarpedStrandConfiguration()
    StrandIndexType nh = m_pArtifact->GetNumHarpedStrands();
    if (nh == 0)
    {
+      m_bConfigDirty = true; // cache is dirty
       m_pArtifact->SetHarpStrandOffsetEnd(0.0);
       m_pArtifact->SetHarpStrandOffsetHp(0.0);
    }
@@ -870,6 +891,7 @@ bool pgsStrandDesignTool::ResetHarpedStrandConfiguration()
       {
          pStrandGeom->GetHarpedEndOffsetBoundsEx(m_Span,m_Girder, nh, &end_lower_bound, &end_upper_bound);
          m_pArtifact->SetHarpStrandOffsetEnd(end_upper_bound);
+         m_bConfigDirty = true; // cache is dirty
       }
 
       Float64 hp_offset_inc = pStrandGeom->GetHarpedHpOffsetIncrement(m_Span,m_Girder);
@@ -880,6 +902,7 @@ bool pgsStrandDesignTool::ResetHarpedStrandConfiguration()
       {
          pStrandGeom->GetHarpedHpOffsetBoundsEx(m_Span,m_Girder, nh, &hp_lower_bound, &hp_upper_bound);
          m_pArtifact->SetHarpStrandOffsetHp(hp_lower_bound);
+         m_bConfigDirty = true; // cache is dirty
       }
 
       if (m_DoDesignForStrandSlope)
@@ -1144,12 +1167,14 @@ bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, 
          {
             LOG(_T("Entire adjustment for slope can be taken at girder end - doing so"));
             m_pArtifact->SetHarpStrandOffsetEnd(curr_adj - end_adj);
+            m_bConfigDirty = true; // cache is dirty
             adj = 0.0;
          }
          else
          {
             LOG(_T("Partial adjustment for slope can be taken at girder end. Adjusting to ")<< ::ConvertFromSysUnits(end_lower_bound,unitMeasure::Inch) << _T(" in"));
             m_pArtifact->SetHarpStrandOffsetEnd(end_lower_bound);
+            m_bConfigDirty = true; // cache is dirty
             adj -= (curr_adj-end_lower_bound);
             LOG(_T("reminder of adjustment required = ")<< ::ConvertFromSysUnits(adj,unitMeasure::Inch) << _T(" in"));
          }
@@ -1176,6 +1201,7 @@ bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, 
          {
             LOG(_T("Entire adjustment for slope can be taken at girder HP - doing so"));
             m_pArtifact->SetHarpStrandOffsetHp(curr_adj + adj);
+            m_bConfigDirty = true; // cache is dirty
             adj = 0.0;
          }
       }
@@ -1259,6 +1285,7 @@ bool pgsStrandDesignTool::AddTempStrands()
       m_pArtifact->SetNumTempStrands( nextNt );
       m_pArtifact->SetPjackTempStrands( pPrestressForce->GetPjackMax(m_Span,m_Girder,pgsTypes::Temporary,nextNt) );
       m_pArtifact->SetUsedMaxPjackTempStrands( true );
+      m_bConfigDirty = true; // cache is dirty
 
       return true;
    }
@@ -1364,6 +1391,8 @@ void pgsStrandDesignTool::FillArtifactWithFlexureValues()
    m_pArtifact->SetNumStraightStrands(pStrandGeom->GetNumStrands(m_Span,m_Girder,pgsTypes::Straight));
    m_pArtifact->SetNumHarpedStrands(pStrandGeom->GetNumStrands(m_Span,m_Girder,pgsTypes::Harped));
 
+   m_bConfigDirty = true; // cache is dirty
+
    m_pArtifact->SetPjackHarpedStrands(pStrandGeom->GetPjack(m_Span,m_Girder,pgsTypes::Harped));
    m_pArtifact->SetPjackStraightStrands(pStrandGeom->GetPjack(m_Span,m_Girder,pgsTypes::Straight));
    m_pArtifact->SetUsedMaxPjackStraightStrands( true );
@@ -1382,6 +1411,7 @@ void pgsStrandDesignTool::FillArtifactWithFlexureValues()
    GDRCONFIG config = pBridge->GetGirderConfiguration(m_Span,m_Girder);
    m_pArtifact->SetStraightStrandDebondInfo( config.Debond[pgsTypes::Straight] );
 
+   m_bConfigDirty = true; // cache is dirty
 }
 
 bool pgsStrandDesignTool::UpdateConcreteStrength(Float64 fcRequired,pgsTypes::Stage stage,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation)
@@ -1419,6 +1449,7 @@ bool pgsStrandDesignTool::UpdateConcreteStrength(Float64 fcRequired,pgsTypes::St
    if ( m_FcControl.DoUpdate(fcRequired, stage, stressType,limitState,stressLocation,&newfc) )
    {
       m_pArtifact->SetConcreteStrength(newfc);
+      m_bConfigDirty = true; // cache is dirty
       LOG(_T("** Updated Final Concrete Strength to ")<< ::ConvertFromSysUnits(newfc,unitMeasure::KSI) << _T(" KSI"));
    }
    else
@@ -1458,6 +1489,7 @@ bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrength
    {
       LOG(_T("** Setting new release strength to  = ")<< ::ConvertFromSysUnits(fci, unitMeasure::KSI) << _T(" KSI"));;
       m_pArtifact->SetReleaseStrength(fci);
+      m_bConfigDirty = true; // cache is dirty
 
       ATLASSERT(strengthResult!=ConcFailed); // this should always be blocked
 
@@ -1643,6 +1675,7 @@ void pgsStrandDesignTool::SetSlabOffset(pgsTypes::MemberEndType end,Float64 offs
 
    LOG(_T("** Set slab offset to ") <<::ConvertFromSysUnits(offset,unitMeasure::Inch) << (end == pgsTypes::metStart ? _T(" at Start of Girder") : _T(" at End of Girder")));
    m_pArtifact->SetSlabOffset(end,offset);
+   m_bConfigDirty = true; // cache is dirty
 }
 
 Float64 pgsStrandDesignTool::GetSlabOffset(pgsTypes::MemberEndType end) const
@@ -1666,6 +1699,7 @@ void pgsStrandDesignTool::SetLiftingLocations(Float64 left,Float64 right)
 {
    LOG(_T("** Lifting locations set to left = ")<<::ConvertFromSysUnits(left,unitMeasure::Feet)<<_T(", right = ")<<::ConvertFromSysUnits(right,unitMeasure::Feet)<< _T(" ft") );
    m_pArtifact->SetLiftingLocations(left, right);
+   m_bConfigDirty = true; // cache is dirty
 }
 
 Float64 pgsStrandDesignTool::GetLeftLiftingLocation() const
@@ -1682,6 +1716,7 @@ void pgsStrandDesignTool::SetTruckSupportLocations(Float64 left,Float64 right)
 {
    LOG(_T("** Hauling locations set to left = ")<<::ConvertFromSysUnits(left,unitMeasure::Feet)<<_T(", right = ")<<::ConvertFromSysUnits(right,unitMeasure::Feet)<< _T(" ft") );
    m_pArtifact->SetTruckSupportLocations(left, right);
+   m_bConfigDirty = true; // cache is dirty
 }
 
 Float64 pgsStrandDesignTool::GetLeadingOverhang() const
@@ -1747,6 +1782,7 @@ void pgsStrandDesignTool::SetHarpStrandOffsetEnd(Float64 off)
    // set offset, but make sure it stays within bounds
    LOG(_T("Attempt to offset harped strands at ends to   = ") << ::ConvertFromSysUnits(off, unitMeasure::Inch) << _T(" in"));
    m_pArtifact->SetHarpStrandOffsetEnd(off);
+   m_bConfigDirty = true; // cache is dirty
 
    bool st = KeepHarpedStrandsInBounds();
    ATLASSERT(st);
@@ -1758,6 +1794,7 @@ void pgsStrandDesignTool::SetHarpStrandOffsetHp(Float64 off)
 {
    LOG(_T("Attempt to offset harped strands at HPs to   = ") << ::ConvertFromSysUnits(off, unitMeasure::Inch) << _T(" in"));
    m_pArtifact->SetHarpStrandOffsetHp(off);
+   m_bConfigDirty = true; // cache is dirty
 
    bool st = KeepHarpedStrandsInBounds();
    ATLASSERT(st);
@@ -1791,6 +1828,8 @@ bool pgsStrandDesignTool::KeepHarpedStrandsInBounds()
          {
             m_pArtifact->SetHarpStrandOffsetEnd(end_lower_bound);
          }
+
+         m_bConfigDirty = true; // cache is dirty
       }
 
       Float64 hp_offset_inc = pStrandGeom->GetHarpedHpOffsetIncrement(m_Span,m_Girder);
@@ -1810,6 +1849,8 @@ bool pgsStrandDesignTool::KeepHarpedStrandsInBounds()
          {
             m_pArtifact->SetHarpStrandOffsetHp(hp_lower_bound);
          }
+
+         m_bConfigDirty = true; // cache is dirty
       }
 
       if (m_DoDesignForStrandSlope)
@@ -3057,6 +3098,8 @@ void pgsStrandDesignTool::ComputeMidZoneBoundaries()
 
 void pgsStrandDesignTool::InitHarpedPhysicalBounds(const matPsStrand* pstrand)
 {
+   m_bConfigDirty = true; // cache is dirty
+
    // Initialize strand offsets
    m_pArtifact->SetHarpStrandOffsetEnd(0.00);
    m_pArtifact->SetHarpStrandOffsetHp(0.00);
@@ -3155,6 +3198,8 @@ typedef TempLevelList::iterator TempLevelIterator;
 
 void pgsStrandDesignTool::InitDebondData()
 {
+   m_bConfigDirty = true; // cache is dirty
+
    m_pArtifact->ClearDebondInfo();
 
    m_DebondLevels.clear();
@@ -3212,7 +3257,7 @@ void pgsStrandDesignTool::ComputeDebondLevels(IPrestressForce* pPrestressForce)
 
    // First chore is to build a raw list of possible strands that can be debonded
    // Debondable list will be paired down by total, and row constraints in the next step
-   CComPtr<ILongArray> debondables;
+   CComPtr<IIndexArray> debondables;
    pStrandGeom->ListDebondableStrands(m_Span, m_Girder, pgsTypes::Straight, &debondables);
 
    // Build rows as we fill strands, and compute max available number of strands in any row.
@@ -3222,7 +3267,7 @@ void pgsStrandDesignTool::ComputeDebondLevels(IPrestressForce* pPrestressForce)
    std::vector<StrandPair> debondable_list;
 
    LOG(_T("Building list of debondable strands:"));
-   Uint32 num_debondable = 0;
+   IndexType num_debondable = 0;
    StrandIndexType currnum=0;
    while( currnum < max_ss )
    {
@@ -3230,7 +3275,7 @@ void pgsStrandDesignTool::ComputeDebondLevels(IPrestressForce* pPrestressForce)
 
       StrandIndexType strands_in_lift = nextnum-currnum; // number of strands in current increment
 
-      IDType is_debondable;
+      StrandIndexType is_debondable;
 
       // nextnum is a count. need to subtract 1 to get index
       debondables->get_Item(nextnum-1, &is_debondable);
@@ -3911,6 +3956,7 @@ bool pgsStrandDesignTool::LayoutDebonding(const std::vector<DebondLevelType>& rD
 
    // set to our artifact
    m_pArtifact->SetStraightStrandDebondInfo(db_info);
+   m_bConfigDirty = true; // cache is dirty
 
    LOG(_T("Exiting LayoutDebonding"));
 

@@ -75,6 +75,7 @@ interface IPrestressForce : IUnknown
    virtual Float64 GetXferLength(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType) = 0;
    virtual Float64 GetDevLength(const pgsPointOfInterest& poi,bool bDebonded) = 0;
    virtual STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded) = 0;
+   virtual STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bDebonded) = 0;
    virtual Float64 GetStrandBondFactor(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType) = 0;
    virtual Float64 GetStrandBondFactor(const pgsPointOfInterest& poi,const GDRCONFIG& config,StrandIndexType strandIdx,pgsTypes::StrandType strandType) = 0;
    virtual Float64 GetStrandBondFactor(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,Float64 fps,Float64 fpe) = 0;

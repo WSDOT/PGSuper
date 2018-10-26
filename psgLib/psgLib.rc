@@ -74,8 +74,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,5,3,0
- PRODUCTVERSION 2,5,3,0
+ FILEVERSION 2,6,0,0
+ PRODUCTVERSION 2,6,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +93,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "2.5.3.0"
+            VALUE "FileVersion", "2.6.0.0"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2011, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.5.3.0"
+            VALUE "ProductVersion", "2.6.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -325,32 +325,45 @@ BEGIN
     PUSHBUTTON      "View Section at MidSpan...",IDC_VIEWSECTION_MID,114,44,91,16
 END
 
-IDD_EDIT_SHEAR_STEEL DIALOGEX 0, 0, 362, 254
+IDD_EDIT_SHEAR_STEEL DIALOGEX 0, 0, 420, 358
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     LTEXT           "Reinforcement Material",IDC_STATIC,10,10,74,8
     COMBOBOX        IDC_MILD_STEEL_SELECTOR,95,7,147,43,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Transverse Reinforcement Zones",IDC_STATIC,7,25,348,134,0,WS_EX_TRANSPARENT
-    CONTROL         "Custom1",IDC_SHEAR_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,15,40,330,74
-    PUSHBUTTON      "Insert Row",IDC_INSERTROW,113,122,63,14
-    PUSHBUTTON      "Delete Row",IDC_REMOVEROWS,185,122,63,14
-    CONTROL         "Transverse Reinforcement engages deck and is adequately developed for interface shear capacity",IDC_STIRRUPS_ENGAGE_DECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,137,327,10
+    GROUPBOX        "Primary Bars",IDC_STATIC,7,42,406,113,0,WS_EX_TRANSPARENT
+    CONTROL         "Custom1",IDC_SHEAR_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,15,53,330,95
+    PUSHBUTTON      "Insert Row",IDC_INSERTROW,351,107,51,14
+    PUSHBUTTON      "Delete Row",IDC_REMOVEROWS,351,128,51,14
+    CONTROL         "Make Zones Symmetrical about Mid-Girder",IDC_SYMMETRICAL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,26,149,10
     CONTROL         "Top flange is intentionally roughened for interface shear capacity",IDC_ROUGHENED,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,147,219,10
-    GROUPBOX        "Horizontal Interface Shear Reinforcement",IDC_STATIC,7,167,348,39,0,WS_EX_TRANSPARENT
-    LTEXT           "Additional reinforcement engaging deck, but does not provide additional vertical shear capacity",IDC_STATIC,15,178,299,8
-    LTEXT           "Bar Size",IDC_STATIC,16,193,30,8
-    COMBOBOX        IDC_TF_BAR_SIZE,55,189,38,51,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Spacing (Uniform along entire girder):",IDC_STATIC,106,193,117,8
-    EDITTEXT        IDC_TF_SPACING,226,187,59,14,ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_TF_SPACING_UNITS,292,193,18,8
-    GROUPBOX        "Bottom Flange Confinement Reinforcement",IDC_STATIC,7,210,348,37,0,WS_EX_TRANSPARENT
-    LTEXT           "Bar Size",IDC_STATIC,13,228,30,8
-    COMBOBOX        IDC_BAR_SIZE,55,225,38,51,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Last Zone Containing Confinement Reinforcement:",IDC_STATIC,106,228,160,8
-    COMBOBOX        IDC_LAST_ZONE,273,225,48,56,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,178,27,219,10
+    GROUPBOX        "Additional Reinforcement at Girder Ends",IDC_STATIC,7,269,406,60,0,WS_EX_TRANSPARENT
+    LTEXT           "Splitting Reinforcement",IDC_STATIC,86,295,74,8
+    LTEXT           "Bar Size",IDC_STATIC,239,280,30,8
+    COMBOBOX        IDC_SPLITTING_BAR_SIZE,234,290,38,51,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Spacing",IDC_STATIC,288,279,27,8
+    EDITTEXT        IDC_SPLITTING_SPACING,280,290,46,14,ES_AUTOHSCROLL
+    LTEXT           "unit",IDC_SPLITTING_SPACING_UNIT,330,295,13,8
+    LTEXT           "# of Legs",IDC_STATIC,354,279,31,8
+    COMBOBOX        IDC_SPLITTING_NLEGS,352,290,38,87,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Restore to Library Defaults",IDC_RESTORE_DEFAULTS,134,336,122,14
+    LTEXT           "Zone Length",IDC_STATIC,171,279,42,8
+    EDITTEXT        IDC_SPLITTING_ZL,165,290,46,14,ES_AUTOHSCROLL
+    LTEXT           "unit",IDC_SPLITTING_ZL_UNIT,214,296,12,8
+    LTEXT           "Bottom Flange Confinement Reinforcement",IDC_STATIC,23,315,136,8
+    COMBOBOX        IDC_CONFINE_BAR_SIZE,234,310,38,51,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_CONFINE_SPACING,280,310,46,14,ES_AUTOHSCROLL
+    LTEXT           "unit",IDC_CONFINE_SPACING_UNIT,330,315,13,8
+    EDITTEXT        IDC_CONFINE_ZL,166,310,46,14,ES_AUTOHSCROLL
+    LTEXT           "unit",IDC_CONFINE_ZL_UNIT,215,315,12,8
+    GROUPBOX        "Additional Bars for Horizontal Interface Shear Capacity",IDC_STATIC,7,162,300,98,0,WS_EX_TRANSPARENT
+    CONTROL         "Custom1",IDC_HORIZ_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,15,174,218,79
+    PUSHBUTTON      "Insert Row",IDC_INSERTHORIZROW,247,196,51,14
+    PUSHBUTTON      "Delete Row",IDC_REMOVEHORIZROWS,247,217,51,14
+    CONTROL         "Use primary bars for splitting resistance",IDC_CHECK_SPLITTING,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,351,54,52,39
 END
 
 IDD_LONG_STEEL DIALOGEX 0, 0, 374, 214
@@ -1156,7 +1169,7 @@ BEGIN
     LTEXT           "(LL+IM)",IDC_STATIC,170,142,25,8
 END
 
-IDD_SPEC_DESIGN DIALOGEX 0, 0, 292, 270
+IDD_SPEC_DESIGN DIALOGEX 0, 0, 292, 274
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Design"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -1172,8 +1185,8 @@ BEGIN
     CONTROL         "",IDC_CHECK_SLOPE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,125,16,8
     CONTROL         "",IDC_DESIGN_SLOPE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,218,125,16,8
     CONTROL         "* Add Strands Using the Permanent Strand Grid Fill Order",IDC_RADIO_FILL_PERMANENT,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,38,196,228,10
-    CONTROL         "Minimize Number of Harped Strands",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,38,213,129,10
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,38,205,228,10
+    CONTROL         "Minimize Number of Harped Strands",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,38,222,129,10
     RTEXT           """A"" Dimension / Slab Offset",IDC_STATIC,33,61,114,8
     RTEXT           "Lifting in Casting Yard",IDC_STATIC,33,76,114,8
     RTEXT           "Hauling to Construction Site",IDC_STATIC,33,91,114,8
@@ -1181,11 +1194,15 @@ BEGIN
     RTEXT           "Harped Strand Slope",IDC_STATIC,33,125,114,8
     CTEXT           "Check Compliance to Specifications",IDC_STATIC,139,29,55,31
     CTEXT           "Consider in Automated Design",IDC_STATIC,195,29,55,31
-    GROUPBOX        "Select Options for Compliance Checking and Automated Design",IDC_STATIC,12,10,255,152
-    GROUPBOX        "Strand Fill Order to be Used for Automated Harped Pattern Design",IDC_STATIC,12,180,256,78
-    CTEXT           "* Strand Grid is defined in the Girder Library. If necessary, straight strands may be traded for harped in order to control top tension",IDC_STATIC,38,232,220,22
-    CONTROL         "",IDC_CHECK_ANCHORAGE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,141,16,8
-    RTEXT           "Anchorage Splitting and Confinement (5.10.10.1, 5.10.10.2)",IDC_STATIC,18,137,128,17
+    GROUPBOX        "Select Options for Compliance Checking and Automated Design",IDC_STATIC,12,10,255,169
+    GROUPBOX        "Strand Fill Order to be Used for Automated Harped Pattern Design",IDC_STATIC,12,189,256,78
+    CTEXT           "* Strand Grid is defined in the Girder Library. If necessary, straight strands may be traded for harped in order to control top tension",IDC_STATIC,38,241,220,22
+    CONTROL         "",IDC_CHECK_SPLITTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,141,16,8
+    RTEXT           "Anchorage Zone Splitting (5.10.10.1)",IDC_STATIC,18,141,128,11
+    CONTROL         "",IDC_DESIGN_SPLITTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,218,141,16,8
+    RTEXT           "Confinement (5.10.10.2)",IDC_STATIC,19,158,128,11
+    CONTROL         "",IDC_CHECK_CONFINEMENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,158,16,8
+    CONTROL         "",IDC_DESIGN_CONFINEMENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,218,158,16,8
 END
 
 IDD_SPEC_DEFLECTIONS DIALOG  0, 0, 351, 134
@@ -1433,6 +1450,45 @@ BEGIN
     CONTROL         "Delete",IDC_DELETE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,96,187,10
 END
 
+IDD_SHEAR_DESIGN DIALOGEX 0, 0, 365, 385
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Shear Design"
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    GROUPBOX        "Available Bar Sizes/Legs and Spacings",IDC_STATIC,7,24,351,145,0,WS_EX_TRANSPARENT
+    CONTROL         "Custom1",IDC_BARS_LEGS_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,26,53,218,79
+    PUSHBUTTON      "Insert Row",IDC_INSERTROW,252,75,51,14
+    PUSHBUTTON      "Delete Row",IDC_REMOVEROWS,252,96,51,14
+    LTEXT           "The options below allow you to control the outcome of the automated shear design algorithm",IDC_STATIC,7,7,298,8
+    LTEXT           "Bar Sizes/Legs Combinations for Shear Zones, in Order of Your Preference:",IDC_STATIC,16,40,241,8
+    LTEXT           "Bar Spacing Values Available to the Design Algorithm",IDC_STATIC,15,148,168,8
+    EDITTEXT        IDC_EDIT_BAR_SPACINGS,186,145,151,14,ES_AUTOHSCROLL
+    LTEXT           "unit",IDC_EDIT_BAR_SPACINGS_UNIT,340,149,13,8
+    LTEXT           "Maximum change in bar spacing between zones",IDC_STATIC,18,196,152,8
+    EDITTEXT        IDC_MAX_SPACING_CHG,173,191,40,14,ES_AUTOHSCROLL
+    LTEXT           "unit",IDC_MAX_SPACING_CHG_UNIT,217,197,13,8
+    LTEXT           "Maximum change in shear capacity between zones",IDC_STATIC,18,217,162,8
+    EDITTEXT        IDC_MAX_SHEARCAP_CHG,183,212,40,14,ES_AUTOHSCROLL
+    LTEXT           "%",IDC_MAX_SHEARCAP_CHG_UNIT,228,217,8,8
+    LTEXT           "Minimum zone length is",IDC_STATIC,18,236,74,8
+    EDITTEXT        IDC_MIN_ZONELEN_BARS,98,232,26,14,ES_AUTOHSCROLL
+    LTEXT           "bar spacings or",IDC_STATIC,127,236,50,8
+    EDITTEXT        IDC_MIN_ZONELEN_DIST,178,231,40,14,ES_AUTOHSCROLL
+    LTEXT           "unit",IDC_MIN_ZONELEN_DIST_UNIT,222,236,13,8
+    GROUPBOX        "Rules for Layout of Transverse Reinforcement Zones",IDC_STATIC,7,176,351,87,0,WS_EX_TRANSPARENT
+    CONTROL         "Top flange intentionally roughened for horizontal interface shear capacity",IDC_TOP_FLANGE_ROUGHENED,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,282,251,10
+    CONTROL         "Extend primary shear bars into deck for horizontal interface shear capacity",IDC_EXTEND_DECK_BARS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,295,255,10
+    CONTROL         "Primary shear bars provide splitting capacity",IDC_BARS_PROVIDE_SPLITTING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,310,157,10
+    CONTROL         "Primary shear bars act as confinement reinforcement",IDC_BARS_PROVIDE_CONFINEMENT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,325,185,10
+    LTEXT           "When designing for longitudinal reinforcement for shear, increase capacity by:",IDC_STATIC,20,342,252,8
+    COMBOBOX        IDC_LONG_REINF_SHEAR_METHOD,132,357,201,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Design Control Options",IDC_STATIC,7,269,351,110,0,WS_EX_TRANSPARENT
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1486,9 +1542,9 @@ BEGIN
     IDD_EDIT_SHEAR_STEEL, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 355
+        RIGHTMARGIN, 413
         TOPMARGIN, 7
-        BOTTOMMARGIN, 247
+        BOTTOMMARGIN, 351
     END
 
     IDD_LONG_STEEL, DIALOG
@@ -1678,7 +1734,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 285
         TOPMARGIN, 7
-        BOTTOMMARGIN, 263
+        BOTTOMMARGIN, 267
     END
 
     IDD_SPEC_DEFLECTIONS, DIALOG
@@ -1751,6 +1807,14 @@ BEGIN
         RIGHTMARGIN, 385
         TOPMARGIN, 7
         BOTTOMMARGIN, 256
+    END
+
+    IDD_SHEAR_DESIGN, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 358
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 378
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1877,6 +1941,35 @@ BEGIN
     0
 END
 
+IDD_EDIT_SHEAR_STEEL DLGINIT
+BEGIN
+    IDC_SPLITTING_NLEGS, 0x403, 2, 0
+0x0030, 
+    IDC_SPLITTING_NLEGS, 0x403, 2, 0
+0x0031, 
+    IDC_SPLITTING_NLEGS, 0x403, 2, 0
+0x0032, 
+    IDC_SPLITTING_NLEGS, 0x403, 2, 0
+0x0033, 
+    IDC_SPLITTING_NLEGS, 0x403, 2, 0
+0x0034, 
+    IDC_SPLITTING_NLEGS, 0x403, 2, 0
+0x0036, 
+    0
+END
+
+IDD_SHEAR_DESIGN DLGINIT
+BEGIN
+    IDC_LONG_REINF_SHEAR_METHOD, 0x403, 45, 0
+0x6461, 0x6964, 0x676e, 0x6c20, 0x6e6f, 0x6967, 0x7574, 0x6964, 0x616e, 
+0x206c, 0x696d, 0x646c, 0x7320, 0x6574, 0x6c65, 0x7220, 0x6965, 0x666e, 
+0x726f, 0x6563, 0x656d, 0x746e, "\000" 
+    IDC_LONG_REINF_SHEAR_METHOD, 0x403, 28, 0
+0x6461, 0x6964, 0x676e, 0x7020, 0x6572, 0x7473, 0x6572, 0x7373, 0x6e69, 
+0x2067, 0x7473, 0x6172, 0x646e, 0x0073, 
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1942,8 +2035,7 @@ BEGIN
     POPUP "Edit"
     BEGIN
         MENUITEM "&Delete",                     ID_EDIT_REMOVEROWS
-        MENUITEM "&Edit",                       ID_EDIT_ROW
-        MENUITEM "&Insert",                     ID_EDIT_PASTE
+        MENUITEM "&Insert",                     ID_EDIT_INSERTROW
     END
 END
 
@@ -1953,6 +2045,16 @@ BEGIN
     BEGIN
         MENUITEM "Insert",                      ID_STR_INSERT
         MENUITEM "Delete",                      ID_STR_DELETE
+    END
+END
+
+IDR_ADD_EDIT_DELETE_POPUP MENU 
+BEGIN
+    POPUP "Edit"
+    BEGIN
+        MENUITEM "&Delete",                     ID_EDIT_REMOVEROWS
+        MENUITEM "&Edit",                       ID_EDIT_ROW
+        MENUITEM "&Insert",                     ID_EDIT_INSERTROW
     END
 END
 
@@ -2129,7 +2231,6 @@ LANGUAGE 9, 1
 #if !defined NOGRID
 #include "grid\gxres.rc"               // Objective Grid resources
 #endif
-
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

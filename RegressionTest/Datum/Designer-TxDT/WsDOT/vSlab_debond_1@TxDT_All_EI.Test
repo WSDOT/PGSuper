@@ -1,7 +1,7 @@
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 29.98   8  0.02     1     1    1)       44   1/2  270  4.00  3.82  10  2.50  22   8  0  4  4  0  0  0  0  0  0  0  5.100  8.300    4.718   -4.169   1092  0.396  0.396  0.28  0.00 -0.02 -0.02 -0.03 123.51 385.54   1.00   1.00   1.00
-                                                                        4.50  22   2  2  0  0  0  0  0  0  0  0  0 
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 29.98   8  0.02  1     1    1)         44   1/2  270  4.00  3.82  10  2.50  22   8  0  4  4  0  0  0  0  0  0  0  5.100  8.300    4.718   -4.169    1092 0.396  0.396  0.28  0.00 -0.02 -0.02 -0.03 123.51 385.54   1.00   1.00   1.00
+                                                                       4.50  22   2  2  0  0  0  0  0  0  0  0  0 
 
 
 Girder design was Not Successful
@@ -18,9 +18,9 @@ Confinement zone checks failed.
 Live Load Deflection check failed
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 29.98   8  0.02     1     2    1)       40   1/2  270  4.10  3.87   8  2.50  22   8  4  2  2  0  0  0  0  0  0  0  5.100  9.700    4.343   -3.869    994  0.342  0.342  0.24  0.00 -0.02 -0.02 -0.03 103.00 327.03   1.00   1.00   1.00
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 29.98   8  0.02  1     2    1)         40   1/2  270  4.10  3.87   8  2.50  22   8  4  2  2  0  0  0  0  0  0  0  5.100  9.700    4.343   -3.869     994 0.342  0.342  0.24  0.00 -0.02 -0.02 -0.03 103.00 327.03   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -32,9 +32,9 @@ Confinement zone checks failed.
 Live Load Deflection check failed
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 29.98   8  0.02     1     5    1)       36   1/2  270  4.22  4.00   8  2.50  22   8  4  2  2  0  0  0  0  0  0  0  4.600  8.800    4.116   -3.642    951  0.342  0.342  0.22  0.00 -0.02  0.00 -0.02  87.63 279.78   1.00   1.00   1.00
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 29.98   8  0.02  1     5    1)         36   1/2  270  4.22  4.00   8  2.50  22   8  4  2  2  0  0  0  0  0  0  0  4.600  8.800    4.116   -3.642     951 0.342  0.342  0.22  0.00 -0.02  0.00 -0.02  87.63 279.78   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful

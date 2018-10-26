@@ -26,8 +26,9 @@
 #include <string>
 
 #define LABEL_GIRDER(_g_) pgsGirderLabel::GetGirderLabel(_g_).c_str()
-#define LABEL_SPAN(_s_) (Int16)(_s_ + 1)
-#define LABEL_PIER(_p_) (Int16)(_p_ + 1)
+#define LABEL_SPAN(_s_) (SpanIndexType)(_s_ + 1)
+#define LABEL_PIER(_p_) (PierIndexType)(_p_ + 1)
+#define LABEL_STIRRUP_ZONE(_z_) (ZoneIndexType)(_z_ + 1)
 
 class PGSEXTCLASS pgsGirderLabel
 {

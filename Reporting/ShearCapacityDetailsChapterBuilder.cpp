@@ -26,7 +26,7 @@
 #include <Reporting\InterfaceShearDetails.h>
 
 #include <PgsExt\PointOfInterest.h>
-#include <PgsExt\ShearData.h>
+#include <PsgLib\ShearData.h>
 #include <PgsExt\PointOfInterest.h>
 #include <PgsExt\BridgeDescription.h>
 
@@ -2328,7 +2328,7 @@ void write_bar_spacing_table(IBroker* pBroker,
    *pParagraph << strLabel << rptNewLine;
    *pChapter << pParagraph;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,_T("Required Stirrup Spacing"));
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(6,_T(""));
 
    if ( span == ALL_SPANS )
    {
@@ -2344,9 +2344,10 @@ void write_bar_spacing_table(IBroker* pBroker,
    else
       (*table)(0,col++)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,col++) << COLHDR( Sub2(_T("A"),_T("v")) << _T("/S"), rptLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+   (*table)(0,col++) << COLHDR( _T("Provided") << rptNewLine << Sub2(_T("A"),_T("v")) << _T("/S"), rptLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+   (*table)(0,col++) << COLHDR( _T("Required") << rptNewLine << Sub2(_T("A"),_T("v")) << _T("/S"), rptLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
 
-   CollectionIndexType nLegs = 2;
+   Float64 nLegs = 2;
 
    GET_IFACE2(pBroker,IShear,pShear);
    CShearData shearData = pShear->GetShearData(span,gdr);
@@ -2401,6 +2402,12 @@ void write_bar_spacing_table(IBroker* pBroker,
       pShearCap->GetShearCapacityDetails(ls,stage,poi,&scd);
 
       (*table)(row,col++) << location.SetValue( stage, poi, end_size );
+
+      if(scd.Av>0.0 && scd.S>0.0)
+         (*table)(row,col++) << avs.SetValue( scd.Av/scd.S);
+      else
+         (*table)(row,col++) << _T("---");
+
       (*table)(row,col++) << avs.SetValue( scd.AvOverS_Reqd );
 
       if ( !IsZero(scd.AvOverS_Reqd) )

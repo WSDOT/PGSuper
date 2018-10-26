@@ -180,7 +180,6 @@
 #define IDC_AGG_SIZE                    1016
 #define IDC_POI                         1017
 #define IDC_VALUE                       1018
-#define IDC_TF_SPACING                  1019
 #define IDC_RADIO3                      1020
 #define IDC_UPDATEDESIGN                1021
 #define IDC_PROFILE                     1022
@@ -195,7 +194,6 @@
 #define IDC_REMOVEROWS                  1031
 #define IDC_DIRECTION                   1032
 #define IDC_PIER1_STATION               1033
-#define IDC_RESTORE_DEFAULTS            1034
 #define IDC_APPEND_ROW                  1035
 #define IDC_PIER2_STATION               1036
 #define IDC_STATIONFMT                  1037
@@ -228,17 +226,13 @@
 #define IDC_ADIM                        1064
 #define IDC_SLAB_CONCRETE               1065
 #define IDC_SLAB_FC                     1066
-#define IDC_LAST_ZONE                   1067
 #define IDC_OLAY_DENSITY_LABEL          1068
 #define IDC_OLAY_DENSITY                1069
 #define IDC_SACDEPTH                    1070
-#define IDC_SHEAR_GRID                  1071
 #define IDC_OLAY_DENSITY_UNIT           1072
 #define IDC_SACDEPTH_UNIT               1073
 #define IDC_ADIM_UNIT                   1074
-#define IDC_BAR_SIZE                    1075
 #define IDC_OVERHANG_UNIT               1076
-#define IDC_TF_BAR_SIZE                 1077
 #define IDC_LEFTOVERHANG_UNIT           1078
 #define IDC_GROSS_DEPTH_UNIT            1079
 #define IDC_SLAB_FC_UNIT                1080
@@ -406,7 +400,6 @@
 #define IDC_PI_STATION_TAG              1232
 #define IDC_FWD_TANGENT_TAG             1233
 #define IDC_BK_TANGENT_TAG              1234
-#define IDC_TF_SPACING_UNITS            1235
 #define IDC_RADIUS_TAG                  1236
 #define IDC_GRADE_LABEL                 1237
 #define IDC_G1_LABEL                    1238
@@ -529,7 +522,6 @@
 #define IDC_FRACTIONAL                  1352
 #define IDC_MAGNITUDE_UNITS             1353
 #define IDC_LOADCASE                    1354
-#define IDC_STIRRUPS_ENGAGE_DECK        1355
 #define IDC_TEMPORARY                   1356
 #define IDC_MAGNITUDE_UNITS2            1357
 #define IDC_LOADTYPE                    1358
@@ -629,7 +621,7 @@
 #define IDC_CHECK1                      1446
 #define IDC_RATE_FOR_SHEAR              1446
 #define IDC_DESIGN                      1446
-#define IDC_ROUGHENED                   1446
+#define IDC_START_WITH_LAYOUT           1446
 #define IDC_SYMMETRIC_DEBOND            1447
 #define IDC_FUTURE_WS                   1448
 #define IDC_MOD_ECI                     1449

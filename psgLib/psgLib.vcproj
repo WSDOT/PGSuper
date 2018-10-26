@@ -54,7 +54,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
-				AdditionalIncludeDirectories="$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
+				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
 				PreprocessorDefinitions="BUILDPSGLIBLIB;_USRDLL;_ATL_NO_UUIDOF;_GXDLL;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
@@ -62,8 +62,6 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -156,7 +154,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)Include&quot;;&quot;$(SolutionDir)Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
+				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
 				PreprocessorDefinitions="BUILDPSGLIBLIB;_USRDLL;_ATL_NO_UUIDOF;_GXDLL;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
@@ -164,8 +162,6 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -263,15 +259,13 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
+				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;BUILDPSGLIBLIB;_ATL_NO_UUIDOF;_GXDLL"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 			/>
@@ -369,15 +363,13 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
+				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;BUILDPSGLIBLIB;_ATL_NO_UUIDOF;_GXDLL"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\vc.pdb"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 			/>
@@ -475,15 +467,13 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
+				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;BUILDPSGLIBLIB;_ATL_NO_UUIDOF;_GXDLL"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				ObjectFile=".\Profile/"
-				ProgramDataBaseFileName=".\Profile/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -523,7 +513,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\$(PlatformName)\WBFL.$(ConfigurationName).manifest"
+				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -583,15 +573,13 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
+				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;BUILDPSGLIBLIB;_ATL_NO_UUIDOF;_GXDLL"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
-				ObjectFile=".\Profile/"
-				ProgramDataBaseFileName=".\Profile/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -631,7 +619,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\$(PlatformName)\WBFL.$(ConfigurationName).manifest"
+				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -1770,6 +1758,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\HorizontalInterfaceZoneData.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\HorizShearGrid.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\LibChildFrm.cpp"
 				>
 			</File>
@@ -2522,6 +2518,18 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\ShearBarsLegsGrid.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ShearData.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ShearDesignPage.cpp"
+				>
+			</File>
+			<File
 				RelativePath="ShearSteelGrid.cpp"
 				>
 				<FileConfiguration
@@ -2636,6 +2644,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\ShearZoneData.cpp"
+				>
 			</File>
 			<File
 				RelativePath="SpecBridgeSite1Page.cpp"
@@ -3624,62 +3636,8 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="SpecShearPage.cpp"
+				RelativePath=".\SpecShearPage.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Profile|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Profile|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="StdAfx.cpp"
@@ -4247,6 +4205,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\DiaphragmDefinitionDlg.h"
+				>
+			</File>
+			<File
 				RelativePath=".\DiaphragmGrid.h"
 				>
 			</File>
@@ -4259,11 +4221,31 @@
 				>
 			</File>
 			<File
+				RelativePath=".\GirderDebondCriteriaPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderDiaphragmPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderDimensionsPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderErrorDlg.h"
+				>
+			</File>
+			<File
 				RelativePath=".\GirderGlobalStrandGrid.h"
 				>
 			</File>
 			<File
 				RelativePath=".\GirderHarpedStrandPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderHarpPointPage.h"
 				>
 			</File>
 			<File
@@ -4280,6 +4262,18 @@
 			</File>
 			<File
 				RelativePath=".\GirderStrandGrid.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderStrandGridClient.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\psgLib\HorizontalInterfaceZoneData.h"
+				>
+			</File>
+			<File
+				RelativePath=".\HorizShearGrid.h"
 				>
 			</File>
 			<File
@@ -4351,11 +4345,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PGSuperLibrary_i.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PsgLib\psgLib.h"
 				>
 			</File>
 			<File
 				RelativePath="..\Include\PsgLib\psgLibLib.h"
+				>
+			</File>
+			<File
+				RelativePath=".\RatingDescriptionPage.h"
 				>
 			</File>
 			<File
@@ -4367,6 +4369,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\psgLib\RebarUIUtils.h"
+				>
+			</File>
+			<File
 				RelativePath="RenameLibraryEntry.h"
 				>
 			</File>
@@ -4375,11 +4381,55 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SectionViewDialog.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ShearBarsLegsGrid.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\psgLib\ShearData.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ShearDesignPage.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ShearSteelGrid.h"
 				>
 			</File>
 			<File
-				RelativePath=".\ShearSteelPage.h"
+				RelativePath="..\Include\psgLib\ShearSteelPage.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\psgLib\ShearZoneData.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SpecBridgeSite1Page.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SpecBridgeSite2Page.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SpecBridgeSitePage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SpecCastingYardPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SpecCreepPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SpecDeflectionsPage.h"
 				>
 			</File>
 			<File
@@ -4387,7 +4437,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SpecDesignPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SpecHaulingErectionPage.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\psgLib\SpecLibraryEntry.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SpecLiftingPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SpecLimitsPage.h"
 				>
 			</File>
 			<File
@@ -4423,6 +4489,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\StrandGridLocation.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\psgLib\StructuredLoad.h"
 				>
 			</File>
@@ -4431,7 +4501,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TrafficBarrierDlg.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PsgLib\TrafficBarrierEntry.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TrafficBarrierGrid.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TrafficBarrierViewDialog.h"
 				>
 			</File>
 			<File

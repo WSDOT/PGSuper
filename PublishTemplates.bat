@@ -5,5 +5,5 @@ SET TARGET=\\wsdot\resources\Topics\Publish\FTP\Data\public\Bridge\Software\PGSu
 del %TARGET%\WSDOT.*
 del %TARGET%\AASHTO.*
 
-\ARP\PGSuper\RegFreeCOM\x64\Release\makepgz.exe %TARGET%\WSDOT.pgz  \ARP\PGSuper\WSDOT.lbr  \ARP\PGSuper\Templates\WSDOT
-\ARP\PGSuper\RegFreeCOM\x64\Release\makepgz.exe %TARGET%\AASHTO.pgz \ARP\PGSuper\AASHTO.lbr \ARP\PGSuper\Templates\AASHTO
+\ARP\PGSuper\RegFreeCOM\Release\makepgz.exe %TARGET%\WSDOT.pgz  \ARP\PGSuper\WSDOT.lbr  \ARP\PGSuper\Templates\WSDOT
+\ARP\PGSuper\RegFreeCOM\Release\makepgz.exe %TARGET%\AASHTO.pgz \ARP\PGSuper\AASHTO.lbr \ARP\PGSuper\Templates\AASHTO

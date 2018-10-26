@@ -2019,7 +2019,8 @@ HRESULT CProjectAgentImp::ShearDataProc2(IStructuredSave* pSave,IStructuredLoad*
          SpanGirderHashType hashval = HashSpanGirder(span, girder);
 
          CShearData pd;
-         hr = pd.Load( pLoad, pProgress );
+         CStructuredLoad load( pLoad );
+         hr = pd.Load( &load );
          if ( FAILED(hr) )
             return hr;
 

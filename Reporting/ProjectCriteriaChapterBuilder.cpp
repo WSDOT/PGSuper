@@ -388,7 +388,7 @@ void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
       } // gdrIdx
    } // spanIdx
 
-   if (pSpecEntry->IsAnchorageCheckEnabled())
+   if (pSpecEntry->IsSplittingCheckEnabled())
    {
       if ( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
          *pPara<<_T("Splitting zone length: h/") << pSpecEntry->GetSplittingZoneLengthFactor() << rptNewLine;
@@ -398,10 +398,20 @@ void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    else
    {
       if ( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
-         *pPara<<_T("Splitting and confinement checks (5.10.10) are disabled.") << rptNewLine;
+         *pPara<<_T("Splitting checks (5.10.10.1) are disabled.") << rptNewLine;
       else
-         *pPara<<_T("Bursting and confinement checks (5.10.10) are disabled.") << rptNewLine;
+         *pPara<<_T("Bursting checks (5.10.10.1) are disabled.") << rptNewLine;
    }
+
+   if (pSpecEntry->IsConfinementCheckEnabled())
+   {
+      *pPara<<_T("Confinement checks (5.10.10.2) are enabled.") << rptNewLine;
+   }
+   else
+   {
+         *pPara<<_T("Confinement checks (5.10.10.2) are disabled.") << rptNewLine;
+   }
+
 }
 
 void write_lifting(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
@@ -930,21 +940,15 @@ void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisp
    *pChapter << pPara;
 
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetLongTimeUnit(), true );
 
    int method = pSpecEntry->GetLossMethod();
 
    if ( method == LOSSES_GENERAL_LUMPSUM )
    {
       *pPara<<_T("Losses calculated per General Lump Sum")<<rptNewLine;
-      *pPara<<_T("- Before Prestress Transfer = ")<<stress.SetValue(pSpecEntry->GetBeforeXferLosses())<<rptNewLine;
-      *pPara<<_T("- After Prestress Transfer = ")<<stress.SetValue(pSpecEntry->GetAfterXferLosses())<<rptNewLine;
-      *pPara<<_T("- At Lifting Losses = ")<<stress.SetValue(pSpecEntry->GetLiftingLosses())<<rptNewLine;
-      *pPara<<_T("- At Shipping Losses = ")<<stress.SetValue(pSpecEntry->GetShippingLosses()) << _T(", but not to exceed final losses") << rptNewLine;
-      *pPara<<_T("- Before Temp. Strand Removal = ")<<stress.SetValue(pSpecEntry->GetBeforeTempStrandRemovalLosses())<<rptNewLine;
-      *pPara<<_T("- After Temp. Strand Removal = ")<<stress.SetValue(pSpecEntry->GetAfterTempStrandRemovalLosses())<<rptNewLine;
-      *pPara<<_T("- After Deck Placement = ")<<stress.SetValue(pSpecEntry->GetAfterDeckPlacementLosses())<<rptNewLine;
-      *pPara<<_T("- After After Superimposed Dead Loads = ")<<stress.SetValue(pSpecEntry->GetAfterSIDLLosses())<<rptNewLine;
+      *pPara<<_T("- Befor Transfer Losses = ")<<stress.SetValue(pSpecEntry->GetBeforeXferLosses())<<rptNewLine;
+      *pPara<<_T("- After Transfer Losses = ")<<stress.SetValue(pSpecEntry->GetAfterXferLosses())<<rptNewLine;
+      *pPara<<_T("- Shipping Losses = ")<<stress.SetValue(pSpecEntry->GetShippingLosses()) << _T(", but not to exceed final losses") << rptNewLine;
       *pPara<<_T("- Final Losses = ")<<stress.SetValue(pSpecEntry->GetFinalLosses())<<rptNewLine;
    }
    else
@@ -971,21 +975,14 @@ void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisp
          CHECK(false); // Should never get here
       }
 
-      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+      Float64 shipping = pSpecEntry->GetShippingLosses();
+      if ( shipping < 0 )
       {
-         *pPara << _T("Assumed time at shipping = ") << time.SetValue(pSpecEntry->GetShippingTime()) << rptNewLine;
+         *pPara << _T("- Shipping Losses = ") << (-100.0*shipping) << _T("% of final losses, but not less than losses immediately after prestress transfer") << rptNewLine;
       }
       else
       {
-         Float64 shipping = pSpecEntry->GetShippingLosses();
-         if ( shipping < 0 )
-         {
-            *pPara << _T("- Shipping Losses = ") << (-100.0*shipping) << _T("% of final losses, but not less than losses immediately after prestress transfer") << rptNewLine;
-         }
-         else
-         {
-            *pPara<<_T("- Shipping Losses = ")<< stress.SetValue(shipping) << _T(", but not to exceed final losses") << rptNewLine;
-         }
+         *pPara<<_T("- Shipping Losses = ")<< stress.SetValue(shipping) << _T(", but not to exceed final losses") << rptNewLine;
       }
    }
 }

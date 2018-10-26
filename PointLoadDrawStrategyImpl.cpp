@@ -26,7 +26,7 @@
 #include "mfcdual.h"
 #include <IFace\Project.h> 
 #include "EditPointLoadDlg.h"
-#include <PgsExt\InsertDeleteLoad.h>
+#include "InsertDeleteLoad.h"
 #include "PGSuperColors.h"
 
 #include <MathEx.h>

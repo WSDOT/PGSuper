@@ -205,7 +205,7 @@ std::vector<CString>  CGirderDescDebondPage::GetStrandList()
    {
       StrandIndexType nextnum = pStrandGeom->GetNextNumStrands(pParent->m_CurrentSpanIdx, pParent->m_CurrentGirderIdx, pgsTypes::Straight, currnum);
 
-      IDType is_debondable;
+      StrandIndexType is_debondable;
       // nextnum is a count. need to subtract 1 to get index
       m_Debondables->get_Item(nextnum-1, &is_debondable);
 
@@ -445,7 +445,7 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
       CComPtr<IPoint2d> point;
       points->get_Item(strIdx,&point);
 
-      IDType is_debondable;
+      StrandIndexType is_debondable;
       m_Debondables->get_Item(strIdx, &is_debondable);
 
       LONG dx,dy;
@@ -481,7 +481,7 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
    {
       CDebondInfo& debond_info = *iter;
 
-      if ( debond_info.idxStrand1 == INVALID_INDEX )
+      if ( debond_info.idxStrand1 == Uint32_Max )
          continue;
 
       CComPtr<IPoint2d> point;
@@ -494,7 +494,7 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
 
       pDC->Ellipse(&rect);
 
-      if ( debond_info.idxStrand2 != INVALID_INDEX )
+      if ( debond_info.idxStrand2 != Uint32_Max )
       {
          point.Release();
          points->get_Item(debond_info.idxStrand2,&point);
@@ -530,7 +530,7 @@ bool CGirderDescDebondPage:: CanDebondMore()
    StrandIndexType nDebondable = 0; // number of strand that can be debonded
    for (StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
    {
-      IDType is_debondable;
+      StrandIndexType is_debondable;
       m_Debondables->get_Item(strandIdx, &is_debondable);
       if (is_debondable)
       {

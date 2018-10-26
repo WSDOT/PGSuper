@@ -89,7 +89,6 @@ interface IShearCapacity : IUnknown
    virtual void GetCriticalSectionDetails(pgsTypes::LimitState limitState,SpanIndexType span,GirderIndexType gdr,CRITSECTDETAILS* pDetails) = 0;
    virtual void GetCriticalSectionDetails(pgsTypes::LimitState limitState,SpanIndexType span,GirderIndexType gdr,const GDRCONFIG& config,CRITSECTDETAILS* pDetails) = 0;
 
-
    virtual std::vector<SHEARCAPACITYDETAILS> GetShearCapacityDetails(pgsTypes::LimitState ls, pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi) = 0;
 };
 

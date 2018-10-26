@@ -44,7 +44,7 @@
 #include <PgsExt\MomentLoadData.h>
 #include <PgsExt\LoadFactors.h>
 #include <PgsExt\BridgeDescription.h>
-#include <PgsExt\ShearData.h>
+#include <PsgLib\ShearData.h>
 #include <PgsExt\LongitudinalRebarData.h>
 
 #include "LibraryEntryObserver.h"
