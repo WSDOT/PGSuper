@@ -29,6 +29,7 @@
 
 #include <EAF\EAFInterfaceCache.h>
 #include <IFace\ResistanceFactors.h>
+#include <IFace\InterfaceShearRequirements.h>
 
 class GirderLibraryEntry;
 class SpecLibraryEntry;
@@ -48,7 +49,8 @@ class ATL_NO_VTABLE CSpecAgentImp :
    public IKdotGirderHaulingSpecCriteria,
    public IGirderLiftingSpecCriteriaEx,
    public IDebondLimits,
-   public IResistanceFactors
+   public IResistanceFactors,
+   public IInterfaceShearRequirements
 {
 public:
 	CSpecAgentImp()
@@ -72,6 +74,7 @@ BEGIN_COM_MAP(CSpecAgentImp)
    COM_INTERFACE_ENTRY(IKdotGirderHaulingSpecCriteria)
    COM_INTERFACE_ENTRY(IDebondLimits)
    COM_INTERFACE_ENTRY(IResistanceFactors)
+   COM_INTERFACE_ENTRY(IInterfaceShearRequirements)
 	COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
 END_COM_MAP()
 
@@ -125,7 +128,7 @@ public:
    virtual Float64 GetMaxConfinmentBarSpacing();
    virtual Float64 GetMinConfinmentAvS();
    virtual Float64 GetAvOverSMin(Float64 fc, Float64 bv, Float64 fy); // obsolete
-   virtual void GetMaxStirrupSpacing(Float64* sUnderLimit, Float64* sOverLimit);
+   virtual void GetMaxStirrupSpacing(Float64 dv,Float64* sUnderLimit, Float64* sOverLimit);
    virtual Float64 GetMinStirrupSpacing(Float64 maxAggregateSize, Float64 barDiameter);
 
 // IPrecastIGirderDetailsSpec
@@ -238,6 +241,10 @@ public:
    virtual void GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* pecl,Float64* petl);
    virtual Float64 GetShearResistanceFactor(pgsTypes::ConcreteType type);
 
+// IInterfaceShearRequirements 
+public:
+   virtual ShearFlowMethod GetShearFlowMethod();
+   virtual Float64 GetMaxShearConnectorSpacing(const pgsPointOfInterest& poi);
 
 private:
    DECLARE_AGENT_DATA;

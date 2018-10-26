@@ -102,12 +102,7 @@ void CBoxBeamDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim2,    pDisplayUnits->GetComponentDimUnit(),    true );
    INIT_UV_PROTOTYPE( rptLength4UnitValue,   inertia,  pDisplayUnits->GetMomentOfInertiaUnit(), true );
    INIT_UV_PROTOTYPE( rptAngleUnitValue,     angle,    pDisplayUnits->GetAngleUnit(),           true );
-
-   rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Fixed );
-   scalar.SetWidth(6);
-   scalar.SetPrecision(3);
-   scalar.SetTolerance(1.0e-6);
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -416,12 +411,7 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,     pDisplayUnits->GetSpanLengthUnit(),      true );
-
-   rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Fixed );
-   scalar.SetWidth(6);
-   scalar.SetPrecision(3);
-   scalar.SetTolerance(1.0e-6);
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
@@ -530,25 +520,28 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
 
       (*pPara) << rptNewLine;
 
-      (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
-      if (lldf.Method==LLDF_TXDOT)
+      if ( gM1.ControllingMethod & MOMENT_SKEW_CORRECTION_APPLIED )
       {
-         (*pPara) << _T("For TxDOT specification, we ignore skew correction, so:") << rptNewLine;
-      }
-      else
-      {
-         Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
-         if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
-            (*pPara) << rptRcImage(strImagePath + _T("SkewCorrection_Moment_TypeC.png")) << rptNewLine;
-      }
-      (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
-      (*pPara) << rptNewLine;
-      (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg);
-      (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-      if ( lldf.Nl >= 2 )
-      {
-         (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg);
-         (gM2.mg > gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+         (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
+         if (lldf.Method==LLDF_TXDOT)
+         {
+            (*pPara) << _T("For TxDOT specification, we ignore skew correction, so:") << rptNewLine;
+         }
+         else
+         {
+            Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
+            if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
+               (*pPara) << rptRcImage(strImagePath + _T("SkewCorrection_Moment_TypeC.png")) << rptNewLine;
+         }
+         (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
+         (*pPara) << rptNewLine;
+         (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg);
+         (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+         if ( lldf.Nl >= 2 )
+         {
+            (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg);
+            (gM2.mg > gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+         }
       }
    }
    else
@@ -628,25 +621,28 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
 
       (*pPara) << rptNewLine;
 
-      (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
-      if (lldf.Method==LLDF_TXDOT)
+      if ( gM1.ControllingMethod & MOMENT_SKEW_CORRECTION_APPLIED )
       {
-         (*pPara) << _T("For TxDOT specification, we ignore skew correction, so:") << rptNewLine;
-      }
-      else
-      {
-         Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
-         if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
-            (*pPara) << rptRcImage(strImagePath + _T("SkewCorrection_Moment_TypeC.png")) << rptNewLine;
-      }
-      (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
-      (*pPara) << rptNewLine;
-      (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg);
-      (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-      if ( lldf.Nl >= 2 )
-      {
-         (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("MI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg);
-         (gM2.mg > gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+         (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
+         if (lldf.Method==LLDF_TXDOT)
+         {
+            (*pPara) << _T("For TxDOT specification, we ignore skew correction, so:") << rptNewLine;
+         }
+         else
+         {
+            Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
+            if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
+               (*pPara) << rptRcImage(strImagePath + _T("SkewCorrection_Moment_TypeC.png")) << rptNewLine;
+         }
+         (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
+         (*pPara) << rptNewLine;
+         (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg);
+         (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+         if ( lldf.Nl >= 2 )
+         {
+            (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("MI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg);
+            (gM2.mg > gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+         }
       }
    }
 }
@@ -656,11 +652,7 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
    GET_IFACE(IBridge,pBridge);
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
-   rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Fixed );
-   scalar.SetWidth(6);
-   scalar.SetPrecision(3);
-   scalar.SetTolerance(1.0e-6);
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
@@ -760,17 +752,20 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
 
       (*pPara) << rptNewLine;
 
-      (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
-      (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Shear_TypeF_SI.png") : _T("SkewCorrection_Shear_TypeF_US.png"))) << rptNewLine;
-
-      (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
-      (*pPara) << rptNewLine;
-      (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg);
-      (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-      if ( lldf.Nl >= 2 )
+      if ( gV1.ControllingMethod & SHEAR_SKEW_CORRECTION_APPLIED )
       {
-         (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg);
-         (gV2.mg > gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+         (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
+         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Shear_TypeF_SI.png") : _T("SkewCorrection_Shear_TypeF_US.png"))) << rptNewLine;
+
+         (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
+         (*pPara) << rptNewLine;
+         (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg);
+         (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+         if ( lldf.Nl >= 2 )
+         {
+            (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg);
+            (gV2.mg > gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+         }
       }
    }
    else
@@ -836,17 +831,20 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
 
       (*pPara) << rptNewLine;
 
-      (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
-      (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Shear_TypeF_SI.png") : _T("SkewCorrection_Shear_TypeF_US.png"))) << rptNewLine;
-
-      (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
-      (*pPara) << rptNewLine;
-      (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg);
-      (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-      if ( lldf.Nl >= 2 )
+      if ( gV1.ControllingMethod & SHEAR_SKEW_CORRECTION_APPLIED )
       {
-         (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg);
-         (gV2.mg > gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+         (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
+         (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Shear_TypeF_SI.png") : _T("SkewCorrection_Shear_TypeF_US.png"))) << rptNewLine;
+
+         (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
+         (*pPara) << rptNewLine;
+         (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg);
+         (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+         if ( lldf.Nl >= 2 )
+         {
+            (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg);
+            (gV2.mg > gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+         }
       }
    }
 }
@@ -1062,55 +1060,92 @@ lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameter
 
       pLLDF = pTypeF;
    }
-   else if ( plldf->connectedAsUnit)
-   {
-      lrfdLldfTypeF* pTypeF = new lrfdLldfTypeF(
-                            plldf->gdrNum, // to fix this warning, clean up the LLDF data types
-                            plldf->Savg,
-                            plldf->gdrSpacings,
-                            plldf->leftCurbOverhang,
-                            plldf->rightCurbOverhang,
-                            plldf->Nl, 
-                            plldf->wLane,
-                            plldf->L,
-                            plldf->W,
-                            plldf->I,
-                            plldf->J,
-                            plldf->b,
-                            plldf->d,
-                            plldf->leftDe,
-                            plldf->rightDe,
-                            plldf->PossionRatio,
-                            false,
-                            plldf->skew1, 
-                            plldf->skew2);
-
-      pLLDF = pTypeF;
-   }
    else
    {
-      lrfdLldfTypeG* pTypeG = new lrfdLldfTypeG(
-                            plldf->gdrNum,  // to fix this warning, clean up the LLDF data types
-                            plldf->Savg,
-                            plldf->gdrSpacings,
-                            plldf->leftCurbOverhang,
-                            plldf->rightCurbOverhang,
-                            plldf->Nl, 
-                            plldf->wLane,
-                            plldf->L,
-                            plldf->W,
-                            plldf->I,
-                            plldf->J,
-                            plldf->b,
-                            plldf->d,
-                            plldf->leftDe,
-                            plldf->rightDe,
-                            plldf->PossionRatio,
-                            false,
-                            plldf->skew1, 
-                            plldf->skew2);
+      bool bSkew = !( IsZero(plldf->skew1) && IsZero(plldf->skew2) ); 
+      bool bSkewMoment = bSkew;
+      bool bSkewShear  = bSkew;
 
-      pLLDF = pTypeG;
+      if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+      {
+         // Starting with LRFD 7th Edition, 2014, skew correction is only applied from
+         // the obtuse corner to mid-span of exterior and first interior girders.
+         // Use the IsObtuseCorner method to determine if there is an obtuse corner for
+         // this girder. If so, apply the skew correction
+         if ( dfType == dfReaction )
+         {
+            bool bObtuseLeft = false;
+            if ( prev_span != INVALID_INDEX )
+            {
+               bObtuseLeft = pBridge->IsObtuseCorner(prev_span,gdr,pgsTypes::metEnd);
+            }
+
+            bool bObtuseRight = false;
+            if ( next_span != INVALID_INDEX )
+            {
+               bObtuseRight = pBridge->IsObtuseCorner(next_span,gdr,pgsTypes::metStart);
+            }
+
+            bSkewShear = (bObtuseLeft || bObtuseRight ? true : false);
+         }
+         else
+         {
+            bool bObtuseStart = pBridge->IsObtuseCorner(span,gdr,pgsTypes::metStart);
+            bool bObtuseEnd   = pBridge->IsObtuseCorner(span,gdr,pgsTypes::metEnd);
+            bSkewShear = (bObtuseStart || bObtuseEnd ? true : false);
+         }
+      }
+
+      if ( plldf->connectedAsUnit )
+      {
+         lrfdLldfTypeF* pTypeF = new lrfdLldfTypeF(
+                               plldf->gdrNum, // to fix this warning, clean up the LLDF data types
+                               plldf->Savg,
+                               plldf->gdrSpacings,
+                               plldf->leftCurbOverhang,
+                               plldf->rightCurbOverhang,
+                               plldf->Nl, 
+                               plldf->wLane,
+                               plldf->L,
+                               plldf->W,
+                               plldf->I,
+                               plldf->J,
+                               plldf->b,
+                               plldf->d,
+                               plldf->leftDe,
+                               plldf->rightDe,
+                               plldf->PossionRatio,
+                               plldf->skew1, 
+                               plldf->skew2,
+                               bSkewMoment, bSkewShear);
+
+         pLLDF = pTypeF;
+      }
+      else
+      {
+         lrfdLldfTypeG* pTypeG = new lrfdLldfTypeG(
+                               plldf->gdrNum,  // to fix this warning, clean up the LLDF data types
+                               plldf->Savg,
+                               plldf->gdrSpacings,
+                               plldf->leftCurbOverhang,
+                               plldf->rightCurbOverhang,
+                               plldf->Nl, 
+                               plldf->wLane,
+                               plldf->L,
+                               plldf->W,
+                               plldf->I,
+                               plldf->J,
+                               plldf->b,
+                               plldf->d,
+                               plldf->leftDe,
+                               plldf->rightDe,
+                               plldf->PossionRatio,
+                               plldf->skew1, 
+                               plldf->skew2,
+                               bSkewMoment, bSkewShear);
+
+         pLLDF = pTypeG;
+      }
    }
 
    pLLDF->SetRangeOfApplicabilityAction( pLiveLoads->GetLldfRangeOfApplicabilityAction() );

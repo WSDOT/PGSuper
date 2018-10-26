@@ -81,6 +81,9 @@ interface ILiveLoadDistributionFactors : IUnknown
    virtual Float64 GetShearDistFactor(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
    virtual Float64 GetReactionDistFactor(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
 
+   virtual Float64 GetSkewCorrectionFactorForMoment(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls) = 0;
+   virtual Float64 GetSkewCorrectionFactorForShear(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls) = 0;
+
    virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,Float64* pM,Float64* nM,Float64* V) = 0;
    virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,Float64 fcgdr,Float64* pM,Float64* nM,Float64* V) = 0;
    virtual void GetNegMomentDistFactorPoints(SpanIndexType span,GirderIndexType gdr,Float64* dfPoints,Uint32* nPoints) = 0;

@@ -62,17 +62,18 @@ STDMETHODIMP CSpecAgentImp::RegInterfaces()
 {
    CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
 
-   pBrokerInit->RegInterface( IID_IAllowableStrandStress,   this );
-   pBrokerInit->RegInterface( IID_IAllowableConcreteStress, this );
-   pBrokerInit->RegInterface( IID_ITransverseReinforcementSpec, this );
-   pBrokerInit->RegInterface( IID_IPrecastIGirderDetailsSpec, this );
-   pBrokerInit->RegInterface( IID_IGirderLiftingSpecCriteria, this );
-   pBrokerInit->RegInterface( IID_IGirderLiftingSpecCriteriaEx, this );
-   pBrokerInit->RegInterface( IID_IGirderHaulingSpecCriteria, this );
-   pBrokerInit->RegInterface( IID_IGirderHaulingSpecCriteriaEx, this );
+   pBrokerInit->RegInterface( IID_IAllowableStrandStress,         this );
+   pBrokerInit->RegInterface( IID_IAllowableConcreteStress,       this );
+   pBrokerInit->RegInterface( IID_ITransverseReinforcementSpec,   this );
+   pBrokerInit->RegInterface( IID_IPrecastIGirderDetailsSpec,     this );
+   pBrokerInit->RegInterface( IID_IGirderLiftingSpecCriteria,     this );
+   pBrokerInit->RegInterface( IID_IGirderLiftingSpecCriteriaEx,   this );
+   pBrokerInit->RegInterface( IID_IGirderHaulingSpecCriteria,     this );
+   pBrokerInit->RegInterface( IID_IGirderHaulingSpecCriteriaEx,   this );
    pBrokerInit->RegInterface( IID_IKdotGirderHaulingSpecCriteria, this );
-   pBrokerInit->RegInterface( IID_IDebondLimits, this );
-   pBrokerInit->RegInterface( IID_IResistanceFactors, this );
+   pBrokerInit->RegInterface( IID_IDebondLimits,                  this );
+   pBrokerInit->RegInterface( IID_IResistanceFactors,             this );
+   pBrokerInit->RegInterface( IID_IInterfaceShearRequirements,    this );
 
     return S_OK;
 }
@@ -666,16 +667,13 @@ Float64 CSpecAgentImp::GetAvOverSMin(Float64 fc, Float64 bv, Float64 fy)
    return lrfdRebar::GetAvOverSMin(fc,bv,fy);
 }
 
-void CSpecAgentImp::GetMaxStirrupSpacing(Float64* sUnderLimit, Float64* sOverLimit)
+void CSpecAgentImp::GetMaxStirrupSpacing(Float64 dv,Float64* pSmax1, Float64* pSmax2)
 {
-   lrfdRebar::GetMaxStirrupSpacing(sUnderLimit, sOverLimit);
-
-   // check to see if this has been overridden by spec library entry.
+   Float64 k1,k2,s1,s2;
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 max_spac = pSpec->GetMaxStirrupSpacing();
-
-   *sUnderLimit = min(*sUnderLimit, max_spac);
-   *sOverLimit = min(*sOverLimit, max_spac);
+   pSpec->GetMaxStirrupSpacing(&k1,&s1,&k2,&s2);
+   *pSmax1 = min(k1*dv,s1); // LRFD equation 5.8.2.7-1
+   *pSmax2 = min(k2*dv,s2); // LRFD equation 5.8.2.7-2
 }
 
 Float64 CSpecAgentImp::GetMinStirrupSpacing(Float64 maxAggregateSize, Float64 barDiameter)
@@ -1399,4 +1397,25 @@ Float64 CSpecAgentImp::GetShearResistanceFactor(pgsTypes::ConcreteType type)
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetShearResistanceFactor(type);
+}
+
+///////////////////////////////////////////////////
+// IInterfaceShearRequirements 
+ShearFlowMethod CSpecAgentImp::GetShearFlowMethod()
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   return pSpec->GetShearFlowMethod();
+}
+
+Float64 CSpecAgentImp::GetMaxShearConnectorSpacing(const pgsPointOfInterest& poi)
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   Float64 sMax = pSpec->GetMaxInterfaceShearConnectorSpacing();
+   if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+   {
+      GET_IFACE(ISectProp2,pSectProp2);
+      Float64 Hg = pSectProp2->GetHg(pgsTypes::BridgeSite3,poi);
+      sMax = min(Hg,sMax);
+   }
+   return sMax;
 }

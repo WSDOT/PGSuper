@@ -205,11 +205,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    *p << pTable << rptNewLine;
 
 
-   rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Fixed );
-   scalar.SetWidth(7);
-   scalar.SetPrecision(4);
-   scalar.SetTolerance(1.0e-6);
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    (*pTable)(0,0) << _T("");
    (*pTable)(0,1) << _T("Rotation") << rptNewLine << _T("(rad)");

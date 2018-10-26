@@ -74,8 +74,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,9,0,5
- PRODUCTVERSION 2,9,0,5
+ FILEVERSION 2,9,0,6
+ PRODUCTVERSION 2,9,0,6
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +93,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "2.9.0.5"
+            VALUE "FileVersion", "2.9.0.6"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.9.0.5"
+            VALUE "ProductVersion", "2.9.0.6"
         END
     END
     BLOCK "VarFileInfo"
@@ -510,9 +510,6 @@ BEGIN
     GROUPBOX        "Curing Method",IDC_STATIC,15,89,138,39,WS_GROUP
     CONTROL         "Normal",IDC_CURING_METHOD,"Button",BS_AUTORADIOBUTTON | WS_GROUP,25,101,38,10
     CONTROL         "Accelerated (Steam or Rad. Heat)",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,25,113,125,10
-    LTEXT           "Max. Stirrup Spacing",IDC_STATIC,216,95,72,8
-    EDITTEXT        IDC_MAX_STIRRUP_SPACING,291,92,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Inches",IDC_MAX_STIRRUP_SPACING_UNITS,337,95,25,8
     GROUPBOX        "Allowable Concrete Stresses at Prestress Release - Service I (LRFD 5.9.4.1.1)",IDC_STATIC,7,142,362,85
     LTEXT           "Compressive Stress",IDC_STATIC,15,163,68,8
     EDITTEXT        IDC_CY_ALLOW_SERVICE_COMP,85,159,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
@@ -758,7 +755,7 @@ BEGIN
     LTEXT           "Compute the transfer length of prestressing strands using the following method:",IDC_STATIC,20,285,247,10
     COMBOBOX        IDC_COMBO_TRANSFER,18,296,230,39,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Static",IDC_AFTER_SIDL_TAG,183,165,18,8
-    GROUPBOX        "Elastic Gains",IDC_STATIC,279,7,208,211
+    GROUPBOX        "Elastic Gains",IDC_ELASTIC_GAINS_GROUP,279,7,208,211
     LTEXT           "Define the percentage of load used to compute elastic gains",IDC_EG_LABEL,288,22,189,8
     EDITTEXT        IDC_EG_SLAB,374,37,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_EG_SLAB_UNIT,401,40,8,8
@@ -1126,13 +1123,13 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,228,209,50,14
 END
 
-IDD_SPEC_LIMITS DIALOGEX 0, 0, 324, 198
+IDD_SPEC_LIMITS DIALOGEX 0, 0, 324, 228
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Limits and Warnings"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "Warnings will be posted to the Status Center if the following limits are exceeded.",IDC_STATIC,15,13,251,8
     GROUPBOX        "Concrete Limits",IDC_STATIC,7,3,310,139
+    LTEXT           "Warnings will be posted to the Status Center if the following limits are exceeded.",IDC_STATIC,15,13,251,8
     LTEXT           "Normal Weight",IDC_STATIC,85,27,48,8
     LTEXT           "Lightweight",IDC_STATIC,163,27,37,8
     LTEXT           "Slab f'c",IDC_STATIC,51,44,24,8
@@ -1160,9 +1157,13 @@ BEGIN
     LTEXT           "Static",IDC_LWC_UNIT_WEIGHT_UNIT,203,102,29,8
     EDITTEXT        IDC_LWC_AGG_SIZE,160,118,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_LWC_AGG_SIZE_UNIT,203,120,19,8
-    GROUPBOX        "General Warnings",IDC_STATIC,7,149,310,42
-    CONTROL         "Issue a Spec Check warning if stirrup zone lengths are incompatible with stirrup spacings",IDC_CHECK_STIRRUP_COMPATIBILITY,
+    GROUPBOX        "General Warnings",IDC_STATIC,7,145,310,76
+    CONTROL         "Warn if stirrup zone lengths are incompatible with stirrup spacings",IDC_CHECK_STIRRUP_COMPATIBILITY,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,167,291,10
+    CONTROL         "Warn if there is a potential for girders to sag under dead load effects",IDC_CHECK_GIRDER_SAG,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,186,229,10
+    LTEXT           "Base sag detection on",IDC_STATIC,42,201,72,8
+    COMBOBOX        IDC_SAG_OPTIONS,116,199,170,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_SPEC_DESIGN DIALOGEX 0, 0, 292, 274
@@ -1212,38 +1213,55 @@ BEGIN
     EDITTEXT        IDC_DEFLECTION_LIMIT,262,18,40,14,ES_AUTOHSCROLL
 END
 
-IDD_SPEC_SHEAR DIALOGEX 0, 0, 390, 284
+IDD_SPEC_SHEAR DIALOGEX 0, 0, 390, 330
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Shear Capacity"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Shear Capacity",IDC_STATIC,7,7,376,119
+    GROUPBOX        "Shear Capacity",IDC_STATIC,7,7,376,115
     COMBOBOX        IDC_SHEAR_CAPACITY,15,21,297,97,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Modulus of rupture for cracking moment due to externally applied loads (LRFD 5.4.2.6, 5.8.3.4.3, Eq 5.8.3.4.3-2)",IDC_FR_HEADING,17,38,151,27
     LTEXT           "Normal weight concrete",IDC_NWC_FR_LABEL,17,69,76,8
     EDITTEXT        IDC_FR,107,66,32,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'c)",IDC_FR_UNIT,143,69,57,8
+    LTEXT           "MPa",IDC_FR_LABEL,172,69,31,8,NOT WS_VISIBLE
     LTEXT           "Sand Lightweight concrete",IDC_SLWC_FR_LABEL,17,85,86,8
     EDITTEXT        IDC_SLWC_FR,107,83,32,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'c)",IDC_SLWC_FR_UNIT,143,85,57,8
+    LTEXT           "MPa",IDC_FR_LABEL_SLWC,172,81,31,8,NOT WS_VISIBLE
+    LTEXT           "MPa",IDC_FR_LABEL_ALWC,172,90,31,8,NOT WS_VISIBLE
     LTEXT           "All Lightweight concrete",IDC_ALWC_FR_LABEL,17,102,76,8
     EDITTEXT        IDC_ALWC_FR,107,100,32,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'c)",IDC_ALWC_FR_UNIT,143,101,57,8
-    LTEXT           "MPa",IDC_FR_LABEL,172,69,31,8,NOT WS_VISIBLE
-    LTEXT           "MPa",IDC_FR_LABEL_SLWC,172,81,31,8,NOT WS_VISIBLE
-    GROUPBOX        "Longitudinal Reinforcement for Shear",IDC_STATIC,7,156,376,49
-    COMBOBOX        IDC_LRSH,15,169,297,55,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Include girder longitudinal mild reinforcement in capacity calculations",IDC_INCLUDE_REBAR_SHEAR,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,188,230,10
-    GROUPBOX        "Horizontal Interface Shear",IDC_STATIC,7,208,376,36
-    LTEXT           "Compute shear stress at girder/deck interface",IDC_STATIC,17,225,144,8
-    COMBOBOX        IDC_SHEAR_FLOW_METHOD,165,223,212,80,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "MPa",IDC_FR_LABEL_ALWC,172,90,31,8,NOT WS_VISIBLE
     LTEXT           "Resistance Factors",IDC_STATIC,230,42,62,8
     LTEXT           "Normal weight concrete",IDC_STATIC,228,65,76,8
     EDITTEXT        IDC_NWC_PHI,307,61,29,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Lightweight concrete",IDC_STATIC,227,82,67,8
     EDITTEXT        IDC_LWC_PHI,307,78,29,14,ES_RIGHT | ES_AUTOHSCROLL
+    GROUPBOX        "Maximum Spacing of Transverse Reinforcement (LRFD 5.8.2.7)",IDC_STATIC,7,128,376,61
+    LTEXT           "vu < 0.125f'c  Smax = ",IDC_SPACING_LABEL_1,19,146,82,8
+    EDITTEXT        IDC_SPACING_COEFFICIENT_1,103,144,21,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "<=",IDC_STATIC,131,147,9,8
+    EDITTEXT        IDC_MAX_SPACING_1,141,144,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_MAX_SPACING_1_UNIT,187,147,19,8
+    LTEXT           "vu >= 0.125f'c  Smax = ",IDC_SPACING_LABEL_2,19,163,82,8
+    EDITTEXT        IDC_SPACING_COEFFICIENT_2,103,162,21,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "<=",IDC_STATIC,131,165,9,8
+    EDITTEXT        IDC_MAX_SPACING_2,141,162,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_MAX_SPACING_2_UNIT,187,164,19,8
+    GROUPBOX        "Longitudinal Reinforcement for Shear",IDC_STATIC,7,201,376,49
+    COMBOBOX        IDC_LRSH,15,214,297,55,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Include girder longitudinal mild reinforcement in capacity calculations",IDC_INCLUDE_REBAR_SHEAR,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,233,230,10
+    GROUPBOX        "Horizontal Interface Shear",IDC_STATIC,7,254,376,69
+    LTEXT           "Compute shear stress at girder/deck interface",IDC_STATIC,17,270,144,8
+    COMBOBOX        IDC_SHEAR_FLOW_METHOD,165,268,212,80,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "LRFD 5.8.4.2 Spacing of interface shear connectors shall not exceed",IDC_STATIC,17,291,219,8
+    EDITTEXT        IDC_SMAX,240,288,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_SMAX_UNIT,283,291,19,8
+    LTEXT           "or the depth of the member",IDC_DEPTH_OF_UNIT,17,303,86,8
+    LTEXT           "LRFD Eq 5.8.2.7-1",IDC_STATIC,215,147,60,8
+    LTEXT           "LRFD Eq 5.8.2.7-2",IDC_STATIC,215,164,60,8
 END
 
 IDD_SPEC_MOMENT DIALOGEX 0, 0, 350, 223
@@ -1824,7 +1842,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 317
         TOPMARGIN, 7
-        BOTTOMMARGIN, 191
+        BOTTOMMARGIN, 221
     END
 
     IDD_SPEC_DESIGN, DIALOG
@@ -1848,7 +1866,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 383
         TOPMARGIN, 7
-        BOTTOMMARGIN, 277
+        BOTTOMMARGIN, 323
     END
 
     IDD_SPEC_MOMENT, DIALOG

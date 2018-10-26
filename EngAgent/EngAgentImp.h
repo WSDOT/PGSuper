@@ -192,6 +192,8 @@ public:
    virtual Float64 GetNegMomentDistFactorAtPier(PierIndexType pier,GirderIndexType gd,pgsTypes::LimitState lsr,pgsTypes::PierFaceType pierFace,Float64 fcgdr);
    virtual Float64 GetShearDistFactor(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr);
    virtual Float64 GetReactionDistFactor(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr);
+   virtual Float64 GetSkewCorrectionFactorForMoment(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls);
+   virtual Float64 GetSkewCorrectionFactorForShear(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls);
    virtual void GetNegMomentDistFactorPoints(SpanIndexType span,GirderIndexType gdr,Float64* dfPoints,Uint32* nPoints);
    virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,Float64* pM,Float64* nM,Float64* V);
    virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,Float64 fcgdr,Float64* pM,Float64* nM,Float64* V);

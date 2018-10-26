@@ -236,11 +236,15 @@ public:
 
    //------------------------------------------------------------------------
    // Get Max allowable stirrup spacing for girder.
-   Float64 GetMaxStirrupSpacing() const;
+   // Stirrup spacing limitations are given in LRFD 5.8.2.7 in the form of
+   // Smax = k*dv <= s (5.8.2.7-1 Smax = 0.8dv <= 48")
+   // K1 and S1 are for equation 5.8.2.7-1
+   // K2 and S2 are for equation 5.8.2.7-2
+   void GetMaxStirrupSpacing(Float64* pK1,Float64* pS1,Float64* pK2,Float64* pS2) const;
 
    //------------------------------------------------------------------------
    // Set Max allowable stirrup spacing for girder.
-   void SetMaxStirrupSpacing(Float64 space);
+   void SetMaxStirrupSpacing(Float64 K1,Float64 S1,Float64 K2,Float64 S2);
 
    //------------------------------------------------------------------------
    // Enable check and design for lifting in casting yard
@@ -806,6 +810,12 @@ public:
    void SetCamberVariability(Float64 var);
    Float64 GetCamberVariability() const;
 
+   void CheckGirderSag(bool bCheck);
+   bool CheckGirderSag() const;
+
+   pgsTypes::SagCamberType GetSagCamberType() const;
+   void SetSagCamberType(pgsTypes::SagCamberType type);
+
    //------------------------------------------------------------------------
    // Returns the method for computing losses. The return value will be
    // one of the LOSSES_XXX constants
@@ -1006,6 +1016,9 @@ public:
    void SetShearFlowMethod(ShearFlowMethod method);
    ShearFlowMethod GetShearFlowMethod() const;
 
+   void SetMaxInterfaceShearConnectionSpacing(Float64 sMax);
+   Float64 GetMaxInterfaceShearConnectorSpacing() const;
+
    void SetShearCapacityMethod(ShearCapacityMethod method);
    ShearCapacityMethod GetShearCapacityMethod() const;
 
@@ -1098,7 +1111,6 @@ private:
    bool    m_DoCheckHoldDown;
    bool    m_DoDesignHoldDown;
    Float64 m_HoldDownForce;
-   Float64 m_MaxStirrupSpacing;
 
    bool    m_DoCheckSplitting; // 5.10.10
    bool    m_DoCheckConfinement; // 5.10.10
@@ -1228,6 +1240,8 @@ private:
    Float64 m_TotalCreepDuration;
 
    Float64 m_CamberVariability; // Variability between upper and lower bound camber, stored in decimal percent
+   bool m_bCheckSag; // evaluate girder camber and dead load deflections and check for sag potential
+   pgsTypes::SagCamberType m_SagCamberType; // indicates the camber used to detect girder sag potential
 
    // Losses
    int    m_LossMethod;
@@ -1292,6 +1306,10 @@ private:
    pgsTypes::EffectiveFlangeWidthMethod m_EffFlangeWidthMethod;
 
    ShearFlowMethod m_ShearFlowMethod;
+   Float64 m_MaxInterfaceShearConnectorSpacing;
+
+   Float64 m_StirrupSpacingCoefficient[2];
+   Float64 m_MaxStirrupSpacing[2];
 
    ShearCapacityMethod m_ShearCapacityMethod;
 

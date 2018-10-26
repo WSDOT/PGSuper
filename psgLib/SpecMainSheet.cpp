@@ -220,9 +220,6 @@ void CSpecMainSheet::ExchangeCyData(CDataExchange* pDX)
    if (m_Entry.m_DoCheckHoldDown)
       DDV_UnitValueGreaterThanZero(pDX, IDC_HOLD_DOWN_FORCE,m_Entry.m_HoldDownForce, pDisplayUnits->GeneralForce );
 
-   DDX_UnitValueAndTag(pDX, IDC_MAX_STIRRUP_SPACING, IDC_MAX_STIRRUP_SPACING_UNITS, m_Entry.m_MaxStirrupSpacing, pDisplayUnits->ComponentDim );
-   DDV_UnitValueGreaterThanZero(pDX, IDC_MAX_STIRRUP_SPACING,m_Entry.m_MaxStirrupSpacing, pDisplayUnits->ComponentDim);
-
 	DDX_Text(pDX, IDC_CY_ALLOW_SERVICE_COMP, m_Entry.m_CyCompStressServ);
    DDV_GreaterThanZero(pDX, IDC_CY_ALLOW_SERVICE_COMP, m_Entry.m_CyCompStressServ);
 
@@ -662,6 +659,16 @@ void CSpecMainSheet::ExchangeShearCapacityData(CDataExchange* pDX)
    DDX_Text(pDX,IDC_NWC_PHI,m_Entry.m_PhiShear[pgsTypes::Normal]);
    DDX_Text(pDX,IDC_LWC_PHI,m_Entry.m_PhiShear[pgsTypes::SandLightweight]);
    DDX_Text(pDX,IDC_LWC_PHI,m_Entry.m_PhiShear[pgsTypes::AllLightweight]);
+
+   DDX_UnitValueAndTag(pDX, IDC_SMAX, IDC_SMAX_UNIT, m_Entry.m_MaxInterfaceShearConnectorSpacing, pDisplayUnits->ComponentDim );
+
+   DDX_Text(pDX, IDC_SPACING_COEFFICIENT_1, m_Entry.m_StirrupSpacingCoefficient[0]);
+   DDX_UnitValueAndTag(pDX, IDC_MAX_SPACING_1, IDC_MAX_SPACING_1_UNIT, m_Entry.m_MaxStirrupSpacing[0], pDisplayUnits->ComponentDim );
+   DDX_Text(pDX, IDC_SPACING_COEFFICIENT_2, m_Entry.m_StirrupSpacingCoefficient[1]);
+   DDX_UnitValueAndTag(pDX, IDC_MAX_SPACING_2, IDC_MAX_SPACING_2_UNIT, m_Entry.m_MaxStirrupSpacing[1], pDisplayUnits->ComponentDim );
+
+   DDV_UnitValueGreaterThanZero(pDX, IDC_MAX_SPACING_1, m_Entry.m_MaxStirrupSpacing[0], pDisplayUnits->ComponentDim );
+   DDV_UnitValueGreaterThanZero(pDX, IDC_MAX_SPACING_2, m_Entry.m_MaxStirrupSpacing[1], pDisplayUnits->ComponentDim );
 }
 
 void CSpecMainSheet::ExchangeDeflectionsData(CDataExchange* pDX)
@@ -927,6 +934,8 @@ void CSpecMainSheet::ExchangeLimitsData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_LWC_AGG_SIZE,    IDC_LWC_AGG_SIZE_UNIT,    m_Entry.m_MaxConcreteAggSize[pgsTypes::AllLightweight],    pDisplayUnits->ComponentDim);
 
    DDX_Check_Bool(pDX, IDC_CHECK_STIRRUP_COMPATIBILITY, m_Entry.m_DoCheckStirrupSpacingCompatibility);
+   DDX_Check_Bool(pDX, IDC_CHECK_GIRDER_SAG, m_Entry.m_bCheckSag);
+   DDX_CBEnum(pDX, IDC_SAG_OPTIONS, m_Entry.m_SagCamberType);
 }
  
 void CSpecMainSheet::UploadDesignData(CDataExchange* pDX)

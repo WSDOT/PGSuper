@@ -289,7 +289,7 @@ HRESULT CReporterImp::InitReportBuilders()
 
    // Distribution Factors
 #if defined _DEBUG || defined _BETA_VERSION
-   pRptBuilder = new CReportBuilder(_T("Distribution Factors Report"));
+   pRptBuilder = new CReportBuilder(_T("Live Load Distribution Factors Report"));
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDistributionFactorDetailsChapterBuilder) );

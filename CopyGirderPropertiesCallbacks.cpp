@@ -364,7 +364,7 @@ bool txnCopyGirderMaterial::Execute()
 
       const CGirderMaterial& oldMaterialData = pBridgeDesc->GetSpan(toSpanIdx)->GetGirderTypes()->GetGirderData(toGirderIdx).Material;
       m_OldMaterialData.push_back(oldMaterialData);
-      pGirderData->SetGirderMaterial(toSpanIdx,toGirderIdx,oldMaterialData);
+      pGirderData->SetGirderMaterial(toSpanIdx,toGirderIdx,newMaterialData);
    }
 
    return true;
@@ -439,7 +439,7 @@ bool txnCopyGirderRebar::Execute()
 
       const CLongitudinalRebarData& oldRebarlData = pBridgeDesc->GetSpan(toSpanIdx)->GetGirderTypes()->GetGirderData(toGirderIdx).LongitudinalRebarData;
       m_OldRebarData.push_back(oldRebarlData);
-      pRebar->SetLongitudinalRebarData(oldRebarlData,toSpanIdx,toGirderIdx);
+      pRebar->SetLongitudinalRebarData(newRebarData,toSpanIdx,toGirderIdx);
    }
 
    return true;

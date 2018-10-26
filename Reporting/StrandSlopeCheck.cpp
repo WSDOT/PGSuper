@@ -85,10 +85,7 @@ void CStrandSlopeCheck::Build(rptChapter* pChapter,
       *pTitle << _T("Strand Slope");
 
    
-      rptRcScalar slope;
-      slope.SetFormat(pDisplayUnits->GetScalarFormat().Format);
-      slope.SetWidth(pDisplayUnits->GetScalarFormat().Width);
-      slope.SetPrecision(pDisplayUnits->GetScalarFormat().Precision);
+      INIT_SCALAR_PROTOTYPE(rptRcScalar, slope, pDisplayUnits->GetScalarFormat());
 
       rptParagraph* pBody = new rptParagraph;
       *pChapter << pBody;

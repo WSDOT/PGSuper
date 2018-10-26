@@ -87,10 +87,7 @@ void CLiftingCheck::Build(rptChapter* pChapter,
    *pTitle << _T("Check for Lifting In Casting Yard [5.5.4.3]")<<rptNewLine;
    *pTitle << _T("Lifting Stresses and Factor of Safety Against Cracking")<<rptNewLine;
 
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,    pDisplayUnits->GetShearUnit(),        false );

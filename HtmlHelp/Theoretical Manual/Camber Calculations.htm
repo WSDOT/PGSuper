@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1796>
-<meta name=layout-width content=1234>
+<meta name=layout-height content=1978>
+<meta name=layout-width content=801>
 
 
 <!--(Links)=========================================================-->
@@ -268,20 +268,21 @@
 
 <p><span style="margin-bottom: 0;">C</span>amber is notoriously difficult 
  to predict, so a practical approach is to use a statistical range to bound 
- upper and lower values, as is recommended in Reference 1 (cited below). 
- PGSuper™ makes two camber predictions: one for a normal (maximum timing) 
- construction scenario, and another for a fast (minimum timing) construction 
- scenario. However, both predicted cambers are upper bound values for each 
- given timing. That is; based on WSDOT experience and measurements taken 
- by local fabricators, most all measured cambers are at or below these 
- predicted values. This means that lower bound values, which can cause 
- girders to sag, should be addressed further .</p>
+ upper and lower values as recommended in Reference 1 (cited below). PGSuper™ 
+ makes two camber predictions: one for a normal (maximum timing) construction 
+ scenario, and another for a fast (minimum timing) construction scenario. 
+ However, for each case there is variability in camber due to a number 
+ of factors including curing time (girders cured over a weekend camber 
+ less then those with a 24 hour turn around). PGSuper accommodates this 
+ natural variation in camber by predicting a lower bound value. In most 
+ cases the actual camber will be somewhere between the predicted upper 
+ and lower bounds. </p>
 
-<p>To accommodate a lower bound camber value, PGSuper reduces the camber 
- prediction at minimum timing using a Camber Variability (Cv) reduction 
- factor that is input on the <a href="../User%27s Guide/Appendix B - PGSuper Library Dialogs/Creep_Tab.htm">Project 
- Criteria library – Creep tab.</a> This allows you to modify Camber variability 
- to compute a lower bound of excess camber as follows:</p>
+<p>To computer the lower bound camber, PGSuper reduces the upper bound 
+ value using a Camber Variability (Cv) reduction factor that is input on 
+ the <a href="../User%27s Guide/Appendix B - PGSuper Library Dialogs/Creep_Tab.htm">Project 
+ Criteria library – Creep tab.</a> This allows users to modify Camber variability 
+ to compute a lower bound camber as follows:</p>
 
 <p style="text-align: center;"
 	align=center><img src="CamberVariability.gif"
@@ -304,22 +305,21 @@
  the potential to sag if camber ends up at the lower estimate. Note that 
  this is not an absolute predication that sag will occur: It's just a warning 
  that a worst case scenario may end up with sag, and engineers should take 
- steps to mitigate potential problems.</p>
+ steps to mitigate problems.</p>
 
 <p>The lower bound camber is an attempt to reflect natural variations in 
  camber. When WSDOT reviewed camber data, they found most all measured 
  cambers were enveloped between the upper bound value and 50% of the upper 
- bound camber. This is consistent with the findings in Reference 1, The 
- 50% value is WSDOT’s standard practice.</p>
+ bound camber. This is consistent with the findings in Reference 1, and 
+ use of the 50% value is WSDOT’s standard practice.</p>
 
 <p>WSDOT does not allow contractors to cast the deck prior to the minimum 
- timing and makes contractors take extra measures to control unrestrained 
- camber if deck casting occurs after the maximum timing. (i.e. contractors 
- must cast the deck between 40 and 120 days). WSDOT reports to contractors 
- the cambers at time of slab casting as Upper Bound D120 and Lower Bound 
- D40 for slab casting at 120 days and 40 days. This envelopes the full 
- range of cambers that contractors can expect and provides guidance for 
- camber-sensitive issues such as bidding the amount of haunch concrete 
+ timing and takes extra measures to control unrestrained camber if deck 
+ casting occurs after the maximum timing. (i.e. they have to cast the deck 
+ between 40 and 120 days). WSDOT reports to contractors, cambers at time 
+ of slab casting as Upper Bound D120 and Lower Bound D40, for deck casting 
+ at 120 days and 40 days. This envelopes the full range of cambers contractors 
+ can expect and provides guidance when bidding the amount of haunch concrete 
  to be placed.</p>
 
 <p class=Tip>Tip: Camber range values are reported in the Camber table 

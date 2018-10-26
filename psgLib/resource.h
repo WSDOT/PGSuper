@@ -209,6 +209,7 @@
 #define IDC_NWC_GIRDER_FCI              1017
 #define IDC_REMOVEHORIZROWS             1017
 #define IDC_MAX_SPACING_CHG             1017
+#define IDC_MAX_SPACING_1               1017
 #define IDC_WEIGHT                      1018
 #define IDC_DEL_HARPED_STRAND           1018
 #define IDC_LONG_GRID                   1018
@@ -220,6 +221,7 @@
 #define IDC_CREEP_DURATION2_MIN         1018
 #define IDC_LWC_GIRDER_FCI              1018
 #define IDC_MAX_SHEARCAP_CHG            1018
+#define IDC_MAX_SPACING_2               1018
 #define IDC_HE_ROADWAY_SUPERELEVATION   1019
 #define IDC_NORMAL_MAX_MAX2             1019
 #define IDC_APPEND_HARPED_STRAND        1019
@@ -817,6 +819,7 @@
 #define IDC_RELAXATION_LOSS_METHOD      1441
 #define IDC_WEB_STRAND_TYPE_COMBO       1441
 #define IDC_HAULING_METHOD              1441
+#define IDC_SAG_OPTIONS                 1441
 #define IDC_DIST_TRAFFIC_BARRIER_BASIS  1442
 #define IDC_NWC_NOTE                    1443
 #define IDC_CHECK1                      1444
@@ -988,13 +991,25 @@
 #define IDC_TRUCK_SUPPORT_DESIGN_ACCURACY 1554
 #define IDC_TRUCK_SUPPORT_DESIGN_ACCURACY_UNIT 1555
 #define IDC_SUPPORT_LESS_THAN_UNIT      1556
+#define IDC_CHECK2                      1557
+#define IDC_CHECK_GIRDER_SAG            1557
 #define IDC_FCPG_STATIC                 1557
 #define IDC_FCGP_COMBO                  1558
 #define IDC_FCPG_COMBO                  1558
+#define IDC_ELASTIC_GAINS_GROUP         1559
+#define IDC_SMAX                        1560
+#define IDC_SMAX_UNIT                   1561
+#define IDC_DEPTH_OF_UNIT               1562
+#define IDC_SPACING_COEFFICIENT_1       1563
+#define IDC_MAX_SPACING_1_UNIT          1564
 #define IDC_LOWER_VEHICLE_WEIGHT_UNIT   1565
+#define IDC_SPACING_COEFFICIENT_2       1565
 #define IDC_LOWER_VEHICLE_WEIGHT_LABEL  1566
+#define IDC_MAX_SPACING_2_UNIT          1566
 #define IDC_UPPER_VEHICLE_WEIGHT_LABEL  1567
+#define IDC_SPACING_LABEL_1             1567
 #define IDC_UPPER_VEHICLE_WEIGHT        1568
+#define IDC_SPACING_LABEL_2             1568
 #define IDC_UPPER_VEHICLE_WEIGHT_UNIT   1569
 #define IDC_ADTT1_LABEL                 1570
 #define IDC_ADTT1                       1571
@@ -1065,7 +1080,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        211
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1559
+#define _APS_NEXT_CONTROL_VALUE         1569
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

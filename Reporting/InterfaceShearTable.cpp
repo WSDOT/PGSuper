@@ -94,7 +94,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    pPara = new rptParagraph();
    *pChapter << pPara;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(10,_T(""));
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(10);
    *pPara << table;
 
    if ( span == ALL_SPANS )
@@ -167,7 +167,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
       ColumnIndexType col = 0;
 
       (*table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
-      Float64 smax = pArtifact->GetSMax();
+      Float64 smax = pArtifact->GetSpacing();
       if (smax>0.0)
       {
          (*table)(row,col++) << dim.SetValue( smax );
@@ -177,7 +177,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
          (*table)(row,col++) << symbol(INFINITY);
       }
 
-      (*table)(row,col++) << dim.SetValue( pArtifact->GetSall() );
+      (*table)(row,col++) << dim.SetValue( pArtifact->GetSmax() );
 
       if ( pArtifact->SpacingPassed() )
          (*table)(row,col++) << RPT_PASS;
@@ -228,10 +228,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
 
    if (do_note)
    {
-       rptRcScalar scalar;
-       scalar.SetFormat(pDisplayUnits->GetScalarFormat().Format);
-       scalar.SetWidth(pDisplayUnits->GetScalarFormat().Width);
-       scalar.SetPrecision(pDisplayUnits->GetScalarFormat().Precision);
+      INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
        pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
        *pChapter << pPara;

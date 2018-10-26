@@ -431,7 +431,7 @@ public:
    // composite stirrup Av/S
    Float64 GetAvOverS() const;
    // max stirrup spacing for min spacing check
-   Float64 GetSMax() const;
+   Float64 GetSpacing() const;
 
    Float64 GetNormalCompressionForce() const {return m_NormalCompressionForce;}
    void SetNormalCompressionForce(Float64 force) {m_NormalCompressionForce = force;}
@@ -460,8 +460,8 @@ public:
    // additional data for 5.8.4.1-4
    Float64 GetBv() const;
    void SetBv(Float64 bv);
-   Float64 GetSall() const;
-   void SetSall(Float64 sall);
+   Float64 GetSmax() const;
+   void SetSmax(Float64 sMax);
    Float64 GetFy() const;
    void SetFy(Float64 fy);
    bool WasFyLimited() const;
@@ -566,7 +566,7 @@ private:
    bool m_bIsTopFlangeRoughened;
 
    Float64 m_Bv;
-   Float64 m_Sall;
+   Float64 m_Smax; // maximum allowable spacing (5.8.4.2)
    Float64 m_Fy;
    bool    m_bWasFyLimited; // true if fy is limited to 60 ksi per LRFD2013 5.8.4.1
    Float64 m_AvOverSMin_5_8_4_4_1;

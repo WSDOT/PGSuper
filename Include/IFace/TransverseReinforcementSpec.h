@@ -99,8 +99,8 @@ interface ITransverseReinforcementSpec : IUnknown
    virtual Float64 GetAvOverSMin(Float64 fc, Float64 bv, Float64 fy)=0;
 
    //------------------------------------------------------------------------
-   // Returns max barspacing for Vu over and under limits per 5.8.2.7
-   virtual void GetMaxStirrupSpacing(Float64* sUnderLimit, Float64* sOverLimit)=0;
+   // Returns max bar spacing for vu over and under limits per 5.8.2.7
+   virtual void GetMaxStirrupSpacing(Float64 dv,Float64* sUnderLimit, Float64* sOverLimit)=0;
 
    //------------------------------------------------------------------------
    // Returns min barspacing for stirrups

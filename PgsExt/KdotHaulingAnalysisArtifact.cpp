@@ -685,10 +685,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(SpanIndexType span,
 
 void  pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(SpanIndexType span,GirderIndexType girder, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const
 {
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(),    false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, loc,            pDisplayUnits->GetSpanLengthUnit(),    false );
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,          pDisplayUnits->GetShearUnit(),         false );
@@ -834,10 +831,7 @@ void  pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(SpanIndexType sp
 void pgsKdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapter* pChapter, SpanIndexType span, GirderIndexType girder) const
 {
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(), false );
    location.IncludeSpanAndGirder(span == ALL_SPANS);
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,          pDisplayUnits->GetShearUnit(),         false );

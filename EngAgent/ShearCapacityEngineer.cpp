@@ -23,7 +23,7 @@
 #include "StdAfx.h"
 #include "ShearCapacityEngineer.h"
 #include <ReinforcedConcrete\ReinforcedConcrete.h>
-#include <units\sysUnits.h>
+#include <Units\SysUnits.h>
 #include "..\PGSuperException.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
@@ -33,9 +33,9 @@
 #include <IFace\MomentCapacity.h>
 #include <IFace\StatusCenter.h>
 #include <IFace\ResistanceFactors.h>
-#include <lrfd\Rebar.h>
-#include <psglib\SpecLibraryEntry.h>
-#include <pgsext\statusitem.h>
+#include <Lrfd\Rebar.h>
+#include <PsgLib\SpecLibraryEntry.h>
+#include <PgsExt\StatusItem.h>
 #include <DesignConfigUtil.h>
 
 #ifdef _DEBUG
@@ -495,6 +495,14 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(pgsTypes::LimitState ls, pg
    GET_IFACE(IStirrupGeometry,pStirrups);
    Float64 Es, fy, fu;
    pMaterial->GetTransverseRebarProperties(span,gdr,&Es,&fy,&fu);
+
+   // added with LRFD 7th Edition 2014
+   // fy <= 100 ksi
+   // See LRFD 5.8.2.5
+   if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+   {
+      fy = min(fy,::ConvertToSysUnits(100.0,unitMeasure::KSI));
+   }
 
    Float64 s;
    matRebar::Size size;

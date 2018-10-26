@@ -107,9 +107,8 @@ pgsWsdotHaulingStressAnalysisArtifact& pgsWsdotHaulingStressAnalysisArtifact::op
 }
 
 //======================== OPERATIONS =======================================
-bool pgsWsdotHaulingStressAnalysisArtifact::TensionPassed() const
+bool pgsWsdotHaulingStressAnalysisArtifact::TensionPassedPlumbGirder() const
 {
-   // First plumb girder
    Float64 fTop, fBottom, CapacityTop, CapacityBottom;
    GetMaxPlumbTensileStress(&fTop, &fBottom, &CapacityTop, &CapacityBottom);
    if ( IsGT(CapacityTop,fTop) )
@@ -121,7 +120,11 @@ bool pgsWsdotHaulingStressAnalysisArtifact::TensionPassed() const
       return false;
    }
 
-   // Inclined girder
+   return true;
+}
+
+bool pgsWsdotHaulingStressAnalysisArtifact::TensionPassedInclinedGirder() const
+{
    Float64 ftu,ftd,fbu,fbd;
    GetInclinedGirderStresses(&ftu,&ftd,&fbu,&fbd);
    Float64 fmax = Max4(ftu,ftd,fbu,fbd);
@@ -134,10 +137,25 @@ bool pgsWsdotHaulingStressAnalysisArtifact::TensionPassed() const
    return true;
 }
 
-bool pgsWsdotHaulingStressAnalysisArtifact::CompressionPassed() const
+bool pgsWsdotHaulingStressAnalysisArtifact::TensionPassed() const
 {
-   Float64 comp_stress = _cpp_min( GetMaximumConcreteCompressiveStress(),
-                                        GetMaximumInclinedConcreteCompressiveStress() );
+   return TensionPassedPlumbGirder() && TensionPassedInclinedGirder();
+}
+
+bool pgsWsdotHaulingStressAnalysisArtifact::CompressionPassedPlumbGirder() const
+{
+   Float64 comp_stress = GetMaximumConcreteCompressiveStress();
+   Float64 max_comp_stress = GetCompressiveCapacity();
+
+   if (comp_stress < max_comp_stress)
+      return false;
+
+   return true;
+}
+
+bool pgsWsdotHaulingStressAnalysisArtifact::CompressionPassedInclinedGirder() const
+{
+   Float64 comp_stress = GetMaximumInclinedConcreteCompressiveStress();
 
    Float64 max_comp_stress = GetCompressiveCapacity();
 
@@ -145,6 +163,11 @@ bool pgsWsdotHaulingStressAnalysisArtifact::CompressionPassed() const
       return false;
 
    return true;
+}
+
+bool pgsWsdotHaulingStressAnalysisArtifact::CompressionPassed() const
+{
+   return CompressionPassedPlumbGirder() && CompressionPassedInclinedGirder();
 }
 
 bool pgsWsdotHaulingStressAnalysisArtifact::Passed() const
@@ -762,10 +785,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildHaulingCheckReport(SpanIndexType span
 
 void  pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(SpanIndexType span,GirderIndexType girder, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const
 {
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(),    false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, loc,            pDisplayUnits->GetSpanLengthUnit(),    false );
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,          pDisplayUnits->GetShearUnit(),         false );
@@ -1601,10 +1621,7 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(SpanIndexType spa
    *pTitle << _T("Check for Hauling to Bridge Site [5.5.4.3]")<<rptNewLine;
    *pTitle << _T("Hauling Stresses for Plumb Girder With Impact, and Factor of Safety Against Cracking")<<rptNewLine;
 
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,    pDisplayUnits->GetShearUnit(),        false );
@@ -1799,14 +1816,14 @@ bool pgsWsdotHaulingAnalysisArtifact::BuildImpactedStressTable(SpanIndexType spa
          capTens = tensCapacityBottom;
       }
 
-      if ( stressArtifact->TensionPassed() )
+      if ( stressArtifact->TensionPassedInclinedGirder() )
           (*p_table)(row,col++) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(capTens,fTens,true)<<_T(")");
       else
           (*p_table)(row,col++) << RPT_FAIL << rptNewLine <<_T("(")<< cap_demand.SetValue(capTens,fTens,false)<<_T(")");
 
       Float64 fComp = min(fTopMin, fBotMin);
       
-      if ( stressArtifact->CompressionPassed() )
+      if ( stressArtifact->CompressionPassedInclinedGirder() )
           (*p_table)(row,col++) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(capCompression,fComp,true)<<_T(")");
       else
           (*p_table)(row,col++) << RPT_FAIL << rptNewLine <<_T("(")<< cap_demand.SetValue(capCompression,fComp,false)<<_T(")");
@@ -1899,12 +1916,12 @@ void pgsWsdotHaulingAnalysisArtifact::BuildInclinedStressTable(SpanIndexType spa
       Float64 fTens = Max4(ftu, ftd, fbu, fbd);
       Float64 fComp = Min4(ftu, ftd, fbu, fbd);
       
-      if ( fTens <= mod_rupture )
+      if ( stressArtifact->TensionPassedInclinedGirder() )
           (*p_table)(row,5) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(mod_rupture,fTens,true)<<_T(")");
       else
           (*p_table)(row,5) << RPT_FAIL << rptNewLine <<_T("(")<< cap_demand.SetValue(mod_rupture,fTens,false)<<_T(")");
 
-      if ( fComp >= all_comp )
+      if ( stressArtifact->CompressionPassedInclinedGirder() )
           (*p_table)(row,6) << RPT_PASS << rptNewLine <<_T("(")<< cap_demand.SetValue(all_comp,fComp,true)<<_T(")");
       else
           (*p_table)(row,6) << RPT_FAIL << rptNewLine <<_T("(")<< cap_demand.SetValue(all_comp,fComp,false)<<_T(")");
@@ -1921,10 +1938,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildOtherTables(rptChapter* pChapter,
    *pChapter << pTitle;
    *pTitle << _T("Factor of Safety Against Rollover");
 
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, loc,      pDisplayUnits->GetSpanLengthUnit(), true  );
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,    pDisplayUnits->GetShearUnit(),        false );
@@ -2047,10 +2061,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapte
                                                       ImpactDir dir) const
 {
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   rptRcScalar scalar;
-   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(), false );
    location.IncludeSpanAndGirder(span == ALL_SPANS);
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,          pDisplayUnits->GetShearUnit(),         false );

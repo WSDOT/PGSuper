@@ -38,6 +38,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\ResistanceFactors.h>
+#include <IFace\InterfaceShearRequirements.h>
 
 #include "Designer2.h"
 #include "PsForceEng.h"
@@ -1762,13 +1763,11 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
    GET_IFACE(IStrandGeometry,pStrandGeom);
 
    // determine shear demand
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   GET_IFACE(IInterfaceShearRequirements,pInterfaceShear);
 
    Float64 Vuh;
 
-   if ( pSpecEntry->GetShearFlowMethod() == sfmClassical )
+   if ( pInterfaceShear->GetShearFlowMethod() == sfmClassical )
    {
       Float64 Qslab = pSectProp2->GetQSlab(poi); // Note: A possible problem here - QSlab is slightly dependent on fcGdr
       ATLASSERT(Qslab!=0);
@@ -1840,8 +1839,9 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
    pArtifact->SetK2(K2);
 
    // nominal shear capacities 5.8.4.1-2,3
-   if ( lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::SixthEditionWith2013Interims && gs_60KSI < fy)
+   if ( lrfdVersionMgr:: FourthEdition2007 <= lrfdVersionMgr::GetVersion() && gs_60KSI < fy)
    {
+      // 60 ksi limit was added in 4th Edition 2007
       fy = gs_60KSI;
       pArtifact->WasFyLimited(true);
    }
@@ -1867,8 +1867,8 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
    Float64 bv = pGdr->GetShearInterfaceWidth( poi );
    pArtifact->SetBv(bv);
 
-   Float64 sall = lrfdConcreteUtil::MaxStirrupSpacingForHoriz();
-   pArtifact->SetSall(sall);
+   Float64 sMax = pInterfaceShear->GetMaxShearConnectorSpacing(poi);
+   pArtifact->SetSmax(sMax);
 
    pArtifact->SetFy(fy);
 
@@ -2139,7 +2139,7 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
    Float64 s_max;
    Float64 s_under, s_over;
    GET_IFACE(ITransverseReinforcementSpec,pTransverseReinforcementSpec);
-   pTransverseReinforcementSpec->GetMaxStirrupSpacing(&s_under, &s_over);
+   pTransverseReinforcementSpec->GetMaxStirrupSpacing(dv,&s_under, &s_over);
 
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
@@ -2152,11 +2152,11 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
    pArtifact->SetVuLimit(vu_limit);
    if (vu < vu_limit)
    {
-      s_max = min(0.8*dv, s_under);  // 5.8.2.7-1
+      s_max = s_under;
    }
    else
    {
-      s_max = min(0.4*dv, s_over);  // 5.8.2.7-1
+      s_max = s_over;
    }
    pArtifact->SetSMax(s_max);
 

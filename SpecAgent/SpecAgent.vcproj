@@ -1060,6 +1060,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\IFace\InterfaceShearRequirements.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\IFace\PrecastIGirderDetailsSpec.h"
 				>
 			</File>

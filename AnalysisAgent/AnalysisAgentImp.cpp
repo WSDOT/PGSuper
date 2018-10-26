@@ -13258,6 +13258,11 @@ CAnalysisAgentImp::SpanType CAnalysisAgentImp::GetSpanType(SpanIndexType span,bo
 void CAnalysisAgentImp::AddDistributionFactors(IDistributionFactors* factors,Float64 length,Float64 gpM,Float64 gnM,Float64 gV,Float64 gR,
                                                Float64 gFM,Float64 gFV,Float64 gD, Float64 gPedes)
 {
+   if ( IsZero(length) )
+   {
+      return;
+   }
+
    CComPtr<IDistributionFactorSegment> dfSegment;
    dfSegment.CoCreateInstance(CLSID_DistributionFactorSegment);
    dfSegment->put_Length(length);
@@ -13277,6 +13282,51 @@ void CAnalysisAgentImp::AddDistributionFactors(IDistributionFactors* factors,Flo
             );
 
    factors->Add(dfSegment);
+}
+
+void CAnalysisAgentImp::AddDistributionFactors(IDistributionFactors* factors,Float64 length,Float64 gpM,Float64 gnM,Float64 gVStart,Float64 gVEnd,Float64 gR,
+                                               Float64 gFM,Float64 gFVStart,Float64 gFVEnd,Float64 gD, Float64 gPedes)
+{
+   if ( IsZero(length) )
+   {
+      return;
+   }
+
+   CComPtr<ILinearDistributionFactorSegment> dfSegment;
+   dfSegment.CoCreateInstance(CLSID_LinearDistributionFactorSegment);
+   dfSegment->put_Length(length);
+
+   CComPtr<IDistributionFactor> dfStart;
+   dfStart.CoCreateInstance(CLSID_DistributionFactor);
+   dfSegment->putref_DistributionFactor(dfStart);
+
+   CComPtr<IDistributionFactor> dfEnd;
+   dfEnd.CoCreateInstance(CLSID_DistributionFactor);
+   dfSegment->putref_EndDistributionFactor(dfEnd);
+
+   dfStart->SetG(gpM, gpM, // positive moment
+                 gnM, gnM, // negative moment
+                 gVStart,  gVStart,  // shear
+                 gD,  gD,  // deflections
+                 gR,  gR,  // reaction
+                 gpM, gpM, // rotation
+                 gFM, gFVStart, // fatigue
+                 gPedes    // pedestrian loading
+                 );
+
+
+   dfEnd->SetG(gpM, gpM, // positive moment
+                 gnM, gnM, // negative moment
+                 gVEnd,  gVEnd,  // shear
+                 gD,  gD,  // deflections
+                 gR,  gR,  // reaction
+                 gpM, gpM, // rotation
+                 gFM, gFVEnd, // fatigue
+                 gPedes    // pedestrian loading
+                 );
+
+   CComQIPtr<IDistributionFactorSegment> dfs(dfSegment);
+   factors->Add(dfs);
 }
 
 Uint32 CAnalysisAgentImp::GetCfPointsInRange(IDblArray* cfLocs, Float64 spanStart, Float64 spanEnd, Float64* ptsInrg)
@@ -13353,7 +13403,95 @@ void CAnalysisAgentImp::ApplyLLDF_PinPin(SpanIndexType spanIdx,GirderIndexType g
    Float64 gD  = pLLDF->GetDeflectionDistFactor(spanIdx,gdrIdx);
    Float64 gPedes = this->GetPedestrianLiveLoad(spanIdx,gdrIdx); // factor is magnitude of pedestrian live load
 
-   AddDistributionFactors(distFactors,span_length,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
+   Float64 gVStart,  gVMid,  gVEnd;
+   Float64 gFVStart, gFVMid, gFVEnd;
+   bool bUseLinearLLDF = false;
+   bool bTaperStart = false;
+   bool bTaperEnd   = false;
+
+   if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+   {
+      Float64 skewFactor = pLLDF->GetSkewCorrectionFactorForShear(spanIdx,gdrIdx,pgsTypes::StrengthI);
+      if ( !IsEqual(skewFactor,1.0) )
+      {
+         bool bObtuseStart = pBridge->IsObtuseCorner(spanIdx,gdrIdx,pgsTypes::metStart);
+         bool bObtuseEnd   = pBridge->IsObtuseCorner(spanIdx,gdrIdx,pgsTypes::metEnd);
+         
+         if ( bObtuseStart && !bObtuseEnd )
+         {
+            gVStart = gV;
+            gVMid   = gV/skewFactor;
+            gVEnd   = gV/skewFactor;
+
+            gFVStart = gFV;
+            gFVMid   = gFV/skewFactor;
+            gFVEnd   = gFV/skewFactor;
+
+            bUseLinearLLDF = true;
+            bTaperStart = true;
+         }
+         else if ( bObtuseEnd && !bObtuseStart )
+         {
+            gVStart = gV/skewFactor;
+            gVMid   = gV;
+            gVEnd   = gV;
+
+            gFVStart = gFV/skewFactor;
+            gFVMid   = gFV;
+            gFVEnd   = gFV;
+
+            bUseLinearLLDF = true;
+            bTaperEnd = true;
+         }
+         else if ( bObtuseStart && bObtuseEnd )
+         {
+            gVStart = gV;
+            gVMid   = gV/skewFactor;
+            gVEnd   = gV;
+
+            gFVStart = gFV;
+            gFVMid   = gFV/skewFactor;
+            gFVEnd   = gFV;
+
+            bUseLinearLLDF = true;
+            bTaperStart = true;
+            bTaperEnd = true;
+         }
+#if defined _DEBUG
+         else if ( !bObtuseStart && !bObtuseEnd )
+         {
+            // skew correction is not zero and yet it isn't applied
+            ATLASSERT(false); 
+            gV  /= skewFactor;
+            gFV /= skewFactor;
+         }
+#endif
+      }
+   }
+
+   if ( bUseLinearLLDF )
+   {
+      if ( bTaperStart && !bTaperEnd)
+      {
+         AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gVStart,gVEnd,gR,gFM,gFVStart,gFVEnd,gD,gPedes);
+         AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gVEnd,gR,gFM,gFVEnd,gD,gPedes);
+      }
+      else if ( bTaperEnd && !bTaperStart )
+      {
+         AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gVStart,gR,gFM,gFVStart,gD,gPedes);
+         AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gVStart,gVEnd,gR,gFM,gFVStart,gFVEnd,gD,gPedes);
+      }
+      else
+      {
+         ATLASSERT(bTaperStart && bTaperEnd);
+         AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gVStart,gVMid,gR,gFM,gFVStart,gFVMid,gD,gPedes);
+         AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gVMid,gVEnd,gR,gFM,gFVMid,gFVEnd,gD,gPedes);
+      }
+   }
+   else
+   {
+      AddDistributionFactors(distFactors,span_length,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
+   }
 }
 
 void CAnalysisAgentImp::ApplyLLDF_PinFix(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors)
@@ -13400,12 +13538,167 @@ void CAnalysisAgentImp::ApplyLLDF_PinFix(SpanIndexType spanIdx,GirderIndexType g
 
    Float64 gPedes = this->GetPedestrianLiveLoad(spanIdx,gdrIdx); // factor is magnitude of pedestrian live load
 
-   AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
+   Float64 gVStart, gVMid, gVEnd;
+   Float64 gFVStart, gFVMid, gFVEnd;
+   Float64 gVCF; // df at contra-flexure point. used when the CF point is in the LLDF transition zone
+   Float64 gFVCF;
+   bool bUseLinearLLDF = false;
+   bool bTaperStart = false;
+   bool bTaperEnd   = false;
 
-   // for the second part of the span, use the negative moment distribution factor that goes over the next pier
-   gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+   if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+   {
+      Float64 skewFactor = pLLDF->GetSkewCorrectionFactorForShear(spanIdx,gdrIdx,pgsTypes::StrengthI);
+      if ( !IsEqual(skewFactor,1.0) )
+      {
+         bool bObtuseStart = pBridge->IsObtuseCorner(spanIdx,gdrIdx,pgsTypes::metStart);
+         bool bObtuseEnd   = pBridge->IsObtuseCorner(spanIdx,gdrIdx,pgsTypes::metEnd);
+         if ( bObtuseStart && !bObtuseEnd )
+         {
+            gVStart = gV;
+            gVEnd   = gV/skewFactor;
 
-   AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
+            gFVStart = gFV;
+            gFVEnd   = gFV/skewFactor;
+
+            if ( seg_length_1 < span_length/2 )
+            {
+               Float64 k = ::LinInterp(seg_length_1,skewFactor,1.0,span_length/2);
+               gVCF = gVEnd*k;
+               gFVCF = gFVEnd*k;
+            }
+
+            bUseLinearLLDF = true;
+            bTaperStart = true;
+         }
+         else if ( bObtuseEnd && !bObtuseStart )
+         {
+            gVStart = gV/skewFactor;
+            gVEnd   = gV;
+
+            gFVStart = gFV/skewFactor;
+            gFVEnd   = gFV;
+
+            if ( span_length/2 < seg_length_1 )
+            {
+               Float64 k = ::LinInterp(seg_length_1 - span_length/2,1.0,skewFactor,span_length/2);
+               gVCF = gVStart*k;
+               gFVCF = gFVStart*k;
+            }
+
+            bUseLinearLLDF = true;
+            bTaperEnd = true;
+         }
+         else if ( bObtuseStart && bObtuseEnd )
+         {
+            gVStart = gV;
+            gVMid   = gV/skewFactor;
+            gVEnd   = gV;
+
+            gFVStart = gFV;
+            gFVMid   = gFV/skewFactor;
+            gFVEnd   = gFV;
+
+            if ( seg_length_1 < span_length/2 )
+            {
+               Float64 k = ::LinInterp(seg_length_1,skewFactor,1.0,span_length/2);
+               gVCF = gVMid*k;
+               gFVCF = gFVMid*k;
+            }
+            else if ( span_length/2 < seg_length_1 )
+            {
+               Float64 k = ::LinInterp(seg_length_1 - span_length/2,1.0,skewFactor,span_length/2);
+               gVCF = gVMid*k;
+               gFVCF = gFVMid*k;
+            }
+
+            bUseLinearLLDF = true;
+            bTaperStart = true;
+            bTaperEnd = true;
+         }
+#if defined _DEBUG
+         else if ( !bObtuseStart && !bObtuseEnd )
+         {
+            // skew correction is not zero and yet it isn't applied
+            ATLASSERT(false); 
+            gV  /= skewFactor;
+            gFV /= skewFactor;
+         }
+#endif
+      }
+   }
+
+   if ( bUseLinearLLDF )
+   {
+      if ( bTaperStart && !bTaperEnd )
+      {
+         if ( span_length/2 < seg_length_1 )
+         {
+            AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gVStart,gVEnd,gR,gFM,gFVStart,gFVEnd,gD,gPedes);
+            AddDistributionFactors(distFactors,seg_length_1 - span_length/2,gpM,gnM,gVEnd,gR,gFM,gFVEnd,gD,gPedes);
+         }
+         else
+         {
+            AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gVStart,gVCF,gR,gFM,gFVStart,gFVCF,gD,gPedes);
+            AddDistributionFactors(distFactors,span_length/2 - seg_length_1,gpM,gnM,gVCF,gVEnd,gR,gFM,gFVCF,gFVEnd,gD,gPedes);
+         }
+
+         // for the second part of the span, use the negative moment distribution factor that goes over the next pier
+         gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+
+         AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVEnd,gR,gFM,gFVEnd,gD,gPedes);
+      }
+      else if ( bTaperEnd && !bTaperStart )
+      {
+         if ( span_length/2 < seg_length_1 )
+         {
+            AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gVStart,gR,gFM,gFVStart,gD,gPedes);
+            AddDistributionFactors(distFactors,seg_length_1 - span_length/2,gpM,gnM,gVStart,gVCF,gR,gFM,gFVStart,gFVCF,gD,gPedes);
+
+            // for the second part of the span, use the negative moment distribution factor that goes over the next pier
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+
+            AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVCF,gVEnd,gR,gFM,gFVCF,gFVEnd,gD,gPedes);
+         }
+         else
+         {
+            AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gVStart,gR,gFM,gFVStart,gD,gPedes);
+
+            // for the second part of the span, use the negative moment distribution factor that goes over the next pier
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+            AddDistributionFactors(distFactors,span_length/2 - seg_length_1,gpM,gnM,gVStart,gR,gFM,gFVStart,gD,gPedes);
+
+            AddDistributionFactors(distFactors,seg_length_2 - (span_length/2 - seg_length_1),gpM,gnM,gVStart,gVEnd,gR,gFM,gFVStart,gFVEnd,gD,gPedes);
+         }
+      }
+      else
+      {
+         ATLASSERT(bTaperStart && bTaperEnd);
+         if ( span_length/2 < seg_length_1 )
+         {
+            AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gVStart,gVMid,gR,gFM,gFVStart,gFVMid,gD,gPedes);
+            AddDistributionFactors(distFactors,seg_length_1 - span_length/2,gpM,gnM,gVMid,gVCF,gR,gFM,gFVMid,gFVCF,gD,gPedes);
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+            AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVCF,gVEnd,gR,gFM,gFVCF,gFVEnd,gD,gPedes);
+         }
+         else
+         {
+            AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gVStart,gVCF,gR,gFM,gFVStart,gFVCF,gD,gPedes);
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+            AddDistributionFactors(distFactors,span_length/2 - seg_length_1,gpM,gnM,gVCF,gVMid,gR,gFM,gFVCF,gFVMid,gD,gPedes);
+            AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVMid,gVEnd,gR,gFM,gFVMid,gFVEnd,gD,gPedes);
+         }
+      }
+   }
+   else
+   {
+      AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
+
+      // for the second part of the span, use the negative moment distribution factor that goes over the next pier
+      gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+
+      AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
+   }
 }
 
 void CAnalysisAgentImp::ApplyLLDF_FixPin(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors)
@@ -13452,10 +13745,166 @@ void CAnalysisAgentImp::ApplyLLDF_FixPin(SpanIndexType spanIdx,GirderIndexType g
 
    Float64 gPedes = this->GetPedestrianLiveLoad(spanIdx,gdrIdx); // factor is magnitude of pedestrian live load
 
-   AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
 
-   gnM = pLLDF->GetNegMomentDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI); // DF in the span
-   AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
+   Float64 gVStart,  gVMid,  gVEnd;
+   Float64 gFVStart, gFVMid, gFVEnd;
+   Float64 gVCF; // df at contra-flexure point. used when the CF point is in the LLDF transition zone
+   Float64 gFVCF;
+   bool bUseLinearLLDF = false;
+   bool bTaperStart = false;
+   bool bTaperEnd = false;
+
+   if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+   {
+      Float64 skewFactor = pLLDF->GetSkewCorrectionFactorForShear(spanIdx,gdrIdx,pgsTypes::StrengthI);
+      if ( !IsEqual(skewFactor,1.0) )
+      {
+         bool bObtuseStart = pBridge->IsObtuseCorner(spanIdx,gdrIdx,pgsTypes::metStart);
+         bool bObtuseEnd   = pBridge->IsObtuseCorner(spanIdx,gdrIdx,pgsTypes::metEnd);
+         if ( bObtuseStart && !bObtuseEnd )
+         {
+            gVStart = gV;
+            gVEnd   = gV/skewFactor;
+
+            gFVStart = gFV;
+            gFVEnd   = gFV/skewFactor;
+
+            if ( seg_length_1 < span_length/2 )
+            {
+               Float64 k = ::LinInterp(seg_length_1,skewFactor,1.0,span_length/2);
+               gVCF = gVEnd*k;
+               gFVCF = gFVEnd*k;
+            }
+
+            bUseLinearLLDF = true;
+            bTaperStart = true;
+         }
+         else if ( bObtuseEnd && !bObtuseStart )
+         {
+            gVStart = gV/skewFactor;
+            gVEnd   = gV;
+
+            gFVStart = gFV/skewFactor;
+            gFVEnd   = gFV;
+
+            if ( span_length/2 < seg_length_1 )
+            {
+               Float64 k = ::LinInterp(seg_length_1 - span_length/2,1.0,skewFactor,span_length/2);
+               gVCF = gVStart*k;
+               gFVCF = gFVStart*k;
+            }
+
+            bUseLinearLLDF = true;
+            bTaperEnd = true;
+         }
+         else if ( bObtuseStart && bObtuseEnd )
+         {
+            gVStart = gV;
+            gVMid   = gV/skewFactor;
+            gVEnd   = gV;
+
+            gFVStart = gFV;
+            gFVMid   = gFV/skewFactor;
+            gFVEnd   = gFV;
+
+            if ( seg_length_1 < span_length/2 )
+            {
+               Float64 k = ::LinInterp(seg_length_1,skewFactor,1.0,span_length/2);
+               gVCF = gVMid*k;
+               gFVCF = gFVMid*k;
+            }
+            else if ( span_length/2 < seg_length_1 )
+            {
+               Float64 k = ::LinInterp(seg_length_1 - span_length/2,1.0,skewFactor,span_length/2);
+               gVCF = gVMid*k;
+               gFVCF = gFVMid*k;
+            }
+
+            bUseLinearLLDF = true;
+            bTaperStart = true;
+            bTaperEnd = true;
+         }
+#if defined _DEBUG
+         else if ( !bObtuseStart && !bObtuseEnd )
+         {
+            // skew correction is not zero and yet it isn't applied
+            ATLASSERT(false); 
+            gV  /= skewFactor;
+            gFV /= skewFactor;
+         }
+#endif
+      }
+   }
+
+   if ( bUseLinearLLDF )
+   {
+      if ( bTaperStart && !bTaperEnd )
+      {
+         if ( span_length/2 < seg_length_1 )
+         {
+            AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gVStart,gVEnd,gR,gFM,gFVStart,gFVEnd,gD,gPedes);
+            AddDistributionFactors(distFactors,seg_length_1 - span_length/2,gpM,gnM,gVEnd,gR,gFM,gFVEnd,gD,gPedes);
+         }
+         else
+         {
+            AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gVStart,gVCF,gR,gFM,gFVStart,gFVCF,gD,gPedes);
+            AddDistributionFactors(distFactors,span_length/2 - seg_length_1,gpM,gnM,gVCF,gVEnd,gR,gFM,gFVCF,gFVEnd,gD,gPedes);
+         }
+
+         // for the second part of the span, use the negative moment distribution factor that goes over the next pier
+         gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+
+         AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVEnd,gR,gFM,gFVEnd,gD,gPedes);
+      }
+      else if ( bTaperEnd & !bTaperStart )
+      {
+         if ( span_length/2 < seg_length_1 )
+         {
+            AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gVStart,gR,gFM,gFVStart,gD,gPedes);
+            AddDistributionFactors(distFactors,seg_length_1 - span_length/2,gpM,gnM,gVStart,gVCF,gR,gFM,gFVStart,gFVCF,gD,gPedes);
+
+            // for the second part of the span, use the negative moment distribution factor that goes over the next pier
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+
+            AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVCF,gVEnd,gR,gFM,gFVCF,gFVEnd,gD,gPedes);
+         }
+         else
+         {
+            AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gVStart,gR,gFM,gFVStart,gD,gPedes);
+
+            // for the second part of the span, use the negative moment distribution factor that goes over the next pier
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+            AddDistributionFactors(distFactors,span_length/2 - seg_length_1,gpM,gnM,gVStart,gR,gFM,gFVStart,gD,gPedes);
+
+            AddDistributionFactors(distFactors,seg_length_2 - (span_length/2 - seg_length_1),gpM,gnM,gVStart,gVEnd,gR,gFM,gFVStart,gFVEnd,gD,gPedes);
+         }
+      }
+      else
+      {
+         ATLASSERT(bTaperStart && bTaperEnd);
+         if ( span_length/2 < seg_length_1 )
+         {
+            AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gVStart,gVMid,gR,gFM,gFVStart,gFVMid,gD,gPedes);
+            AddDistributionFactors(distFactors,seg_length_1 - span_length/2,gpM,gnM,gVMid,gVCF,gR,gFM,gFVMid,gFVCF,gD,gPedes);
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+            AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVCF,gVEnd,gR,gFM,gFVCF,gFVEnd,gD,gPedes);
+         }
+         else
+         {
+            AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gVStart,gVCF,gR,gFM,gFVStart,gFVCF,gD,gPedes);
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+            AddDistributionFactors(distFactors,span_length/2 - seg_length_1,gpM,gnM,gVCF,gVMid,gR,gFM,gFVCF,gFVMid,gD,gPedes);
+            AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVMid,gVEnd,gR,gFM,gFVMid,gFVEnd,gD,gPedes);
+         }
+      }
+   }
+   else
+   {
+      AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
+
+      gnM = pLLDF->GetNegMomentDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI); // DF in the span
+      AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
+   }
 }
 
 void CAnalysisAgentImp::ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors)
@@ -13495,10 +13944,93 @@ void CAnalysisAgentImp::ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType g
       gV  = pLLDF->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
       gR  = 99999999; // this parameter should not be used so use a value that is obviously wrong to easily detect bugs
 
-      AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gV,gR,gFM,gFV,gD, gPedes);
-      
-      gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
-      AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
+      Float64 gVStart, gVMid, gVEnd;
+      Float64 gFVStart, gFVMid, gFVEnd;
+      bool bUseLinearLLDF = false;
+      bool bTaperStart = false;
+      bool bTaperEnd = false;
+
+      if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+      {
+         Float64 skewFactor = pLLDF->GetSkewCorrectionFactorForShear(spanIdx,gdrIdx,pgsTypes::StrengthI);
+         if ( !IsEqual(skewFactor,1.0) )
+         {
+            bool bObtuseStart = pBridge->IsObtuseCorner(spanIdx,gdrIdx,pgsTypes::metStart);
+            bool bObtuseEnd   = pBridge->IsObtuseCorner(spanIdx,gdrIdx,pgsTypes::metEnd);
+            if ( bObtuseStart && !bObtuseEnd )
+            {
+               gVStart = gV;
+               gVEnd   = gV/skewFactor;
+               gFVStart = gFV;
+               gFVEnd   = gFV/skewFactor;
+               bUseLinearLLDF = true;
+               bTaperStart = true;
+            }
+            else if ( bObtuseEnd && !bObtuseStart )
+            {
+               gVStart = gV/skewFactor;
+               gVEnd   = gV;
+               gFVStart = gFV/skewFactor;
+               gFVEnd   = gFV;
+               bUseLinearLLDF = true;
+               bTaperEnd = true;
+            }
+            else if ( bObtuseStart && bObtuseEnd )
+            {
+               gVStart = gV;
+               gVMid   = gV/skewFactor;
+               gVEnd   = gV;
+
+               gFVStart = gFV;
+               gFVMid   = gFV/skewFactor;
+               gFVEnd   = gFV;
+
+               bUseLinearLLDF = true;
+               bTaperStart = true;
+               bTaperEnd = true;
+            }
+#if defined _DEBUG
+            else if ( !bObtuseStart && !bObtuseEnd )
+            {
+               // skew correction is not zero and yet it isn't applied
+               ATLASSERT(false); 
+               gV  /= skewFactor;
+               gFV /= skewFactor;
+            }
+#endif
+         }
+      }
+
+
+      if ( bUseLinearLLDF )
+      {
+         if ( bTaperStart && !bTaperEnd )
+         {
+            AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gVStart,gVEnd,gR,gFM,gFVStart,gFVEnd,gD, gPedes);
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+            AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
+         }
+         else if ( bTaperEnd && !bTaperStart )
+         {
+            AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+            AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gVStart,gVEnd,gR,gFM,gFVStart,gFVEnd,gD, gPedes);
+         }
+         else
+         {
+            ATLASSERT(bTaperStart && bTaperEnd);
+            AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gVStart,gVMid,gR,gFM,gFVStart,gFVMid,gD, gPedes);
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+            AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gVMid,gVEnd,gR,gFM,gFVMid,gFVEnd,gD, gPedes);
+         }
+      }
+      else
+      {
+         AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gV,gR,gFM,gFV,gD, gPedes);
+         
+         gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+         AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
+      }
    }
    else if ( num_cf_points_in_span == 1 )
    {
@@ -13510,13 +14042,174 @@ void CAnalysisAgentImp::ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType g
       Float64 seg_length_1 = cf_points_in_span[0] - span_start;
       Float64 seg_length_2 = span_end - cf_points_in_span[0];
 
-      AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
-      
-      gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
-      AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
+      Float64 gVStart,  gVMid,  gVEnd;
+      Float64 gFVStart, gFVMid, gFVEnd;
+      Float64 gVCF; // df at contra-flexure point. used when the CF point is in the LLDF transition zone
+      Float64 gFVCF;
+      bool bUseLinearLLDF = false;
+      bool bTaperStart = false;
+      bool bTaperEnd = false;
+
+      if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+      {
+         Float64 skewFactor = pLLDF->GetSkewCorrectionFactorForShear(spanIdx,gdrIdx,pgsTypes::StrengthI);
+         if ( !IsEqual(skewFactor,1.0) )
+         {
+            bool bObtuseStart = pBridge->IsObtuseCorner(spanIdx,gdrIdx,pgsTypes::metStart);
+            bool bObtuseEnd   = pBridge->IsObtuseCorner(spanIdx,gdrIdx,pgsTypes::metEnd);
+            if ( bObtuseStart && !bObtuseEnd  )
+            {
+               gVStart = gV;
+               gVEnd   = gV/skewFactor;
+
+               gFVStart = gFV;
+               gFVEnd   = gFV/skewFactor;
+
+               if ( seg_length_1 < span_length/2 )
+               {
+                  Float64 k = ::LinInterp(seg_length_1,skewFactor,1.0,span_length/2);
+                  gVCF = gVEnd*k;
+                  gFVCF = gFVEnd*k;
+               }
+
+               bUseLinearLLDF = true;
+               bTaperStart = true;
+            }
+            else if ( bObtuseEnd && !bObtuseStart )
+            {
+               gVStart = gV/skewFactor;
+               gVEnd   = gV;
+
+               gFVStart = gFV/skewFactor;
+               gFVEnd   = gFV;
+
+               if ( span_length/2 < seg_length_1 )
+               {
+                  Float64 k = ::LinInterp(seg_length_1 - span_length/2,1.0,skewFactor,span_length/2);
+                  gVCF = gVStart*k;
+                  gFVCF = gFVStart*k;
+               }
+
+               bUseLinearLLDF = true;
+               bTaperEnd = true;
+            }
+            else if ( bObtuseStart && bObtuseEnd )
+            {
+               gVStart = gV;
+               gVMid   = gV/skewFactor;
+               gVEnd   = gV;
+
+               gFVStart = gFV;
+               gFVMid   = gFV/skewFactor;
+               gFVEnd   = gFV;
+
+               if ( seg_length_1 < span_length/2 )
+               {
+                  Float64 k = ::LinInterp(seg_length_1,skewFactor,1.0,span_length/2);
+                  gVCF = gVMid*k;
+                  gFVCF = gFVMid*k;
+               }
+               else if ( span_length/2 < seg_length_1 )
+               {
+                  Float64 k = ::LinInterp(seg_length_1 - span_length/2,1.0,skewFactor,span_length/2);
+                  gVCF = gVMid*k;
+                  gFVCF = gFVMid*k;
+               }
+
+               bUseLinearLLDF = true;
+               bTaperStart = true;
+               bTaperEnd = true;
+            }
+#if defined _DEBUG
+            else if ( !bObtuseStart && !bObtuseEnd )
+            {
+               // skew correction is not zero and yet it isn't applied
+               ATLASSERT(false); 
+               gV  /= skewFactor;
+               gFV /= skewFactor;
+            }
+#endif
+         }
+      }
+
+      if ( bUseLinearLLDF )
+      {
+         if ( bTaperStart && !bTaperEnd )
+         {
+            if ( span_length/2 < seg_length_1 )
+            {
+               AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gVStart,gVEnd,gR,gFM,gFVStart,gFVEnd,gD,gPedes);
+               AddDistributionFactors(distFactors,seg_length_1 - span_length/2,gpM,gnM,gVEnd,gR,gFM,gFVEnd,gD,gPedes);
+            }
+            else
+            {
+               AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gVStart,gVCF,gR,gFM,gFVStart,gFVCF,gD,gPedes);
+               AddDistributionFactors(distFactors,span_length/2 - seg_length_1,gpM,gnM,gVCF,gVEnd,gR,gFM,gFVCF,gFVEnd,gD,gPedes);
+            }
+
+            // for the second part of the span, use the negative moment distribution factor that goes over the next pier
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+
+            AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVEnd,gR,gFM,gFVEnd,gD,gPedes);
+         }
+         else if ( bTaperEnd && !bTaperStart )
+         {
+            if ( span_length/2 < seg_length_1 )
+            {
+               AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gVStart,gR,gFM,gFVStart,gD,gPedes);
+               AddDistributionFactors(distFactors,seg_length_1 - span_length/2,gpM,gnM,gVStart,gVCF,gR,gFM,gFVStart,gFVCF,gD,gPedes);
+
+               // for the second part of the span, use the negative moment distribution factor that goes over the next pier
+               gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+
+               AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVCF,gVEnd,gR,gFM,gFVCF,gFVEnd,gD,gPedes);
+            }
+            else
+            {
+               AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gVStart,gR,gFM,gFVStart,gD,gPedes);
+
+               // for the second part of the span, use the negative moment distribution factor that goes over the next pier
+               gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+               AddDistributionFactors(distFactors,span_length/2 - seg_length_1,gpM,gnM,gVStart,gR,gFM,gFVStart,gD,gPedes);
+
+               AddDistributionFactors(distFactors,seg_length_2 - (span_length/2 - seg_length_1),gpM,gnM,gVStart,gVEnd,gR,gFM,gFVStart,gFVEnd,gD,gPedes);
+            }
+         }
+         else 
+         {
+            ATLASSERT(bTaperStart && bTaperEnd);
+            if ( seg_length_1 < span_length/2 )
+            {
+               AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gVStart,gVCF,gR,gFM,gFVStart,gFVCF,gD,gPedes);
+
+               gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+               AddDistributionFactors(distFactors,span_length/2 - seg_length_1,gpM,gnM,gVCF,gVMid,gR,gFM,gFVCF,gFVMid,gD,gPedes);
+               AddDistributionFactors(distFactors,seg_length_2 - (span_length/2 - seg_length_1),gpM,gnM,gVMid,gVEnd,gR,gFM,gFVMid,gFVEnd,gD,gPedes);
+            }
+            else
+            {
+               AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gVStart,gVMid,gR,gFM,gFVStart,gFVMid,gD,gPedes);
+               AddDistributionFactors(distFactors,seg_length_1 - span_length/2,gpM,gnM,gVMid,gVCF,gR,gFM,gFVMid,gFVCF,gD,gPedes);
+
+               gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+               AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVCF,gVEnd,gR,gFM,gFVCF,gFVEnd,gD,gPedes);
+            }
+         }
+      }
+      else
+      {
+         AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
+
+         // for the second part of the span, use the negative moment distribution factor that goes over the next pier
+         gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+
+         AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
+      }
    }
    else
    {
+      ATLASSERT(num_cf_points_in_span == 2);
+
       gpM = pLLDF->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
       gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx,gdrIdx,pgsTypes::StrengthI,pgsTypes::Ahead);
       gV  = pLLDF->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
@@ -13526,13 +14219,144 @@ void CAnalysisAgentImp::ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType g
       Float64 seg_length_2 = cf_points_in_span[1] - cf_points_in_span[0];
       Float64 seg_length_3 = span_end - cf_points_in_span[1];
 
-      AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
-      
-      gnM = pLLDF->GetNegMomentDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
-      AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
-      
-      gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
-      AddDistributionFactors(distFactors,seg_length_3,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
+      // below, when distributing the skew correction for shear amongst the segments
+      // we are assuming that the CF points are on either side of mid-span
+      ATLASSERT( cf_points_in_span[0] < span_start + span_length/2 );
+      ATLASSERT( span_start + span_length/2 < cf_points_in_span[1]);
+
+      Float64 gVStart,  gVMid, gVEnd;
+      Float64 gFVStart, gFVMid, gFVEnd;
+      Float64 gVCF; // df at contra-flexure point. used when the CF point is in the LLDF transition zone
+      Float64 gFVCF;
+      Float64 gVCF1, gVCF2;
+      Float64 gFVCF1, gFVCF2;
+      bool bUseLinearLLDF = false;
+      bool bTaperStart = false;
+      bool bTaperEnd = false;
+
+      if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+      {
+         Float64 skewFactor = pLLDF->GetSkewCorrectionFactorForShear(spanIdx,gdrIdx,pgsTypes::StrengthI);
+         if ( !IsEqual(skewFactor,1.0) )
+         {
+            bool bObtuseStart = pBridge->IsObtuseCorner(spanIdx,gdrIdx,pgsTypes::metStart);
+            bool bObtuseEnd   = pBridge->IsObtuseCorner(spanIdx,gdrIdx,pgsTypes::metEnd);
+            if ( bObtuseStart && !bObtuseEnd )
+            {
+               gVStart = gV;
+               gVEnd   = gV/skewFactor;
+
+               gFVStart = gFV;
+               gFVEnd   = gFV/skewFactor;
+
+               ATLASSERT( seg_length_1 < span_length/2 );
+               Float64 k = ::LinInterp(seg_length_1,skewFactor,1.0,span_length/2);
+               gVCF = gVEnd*k;
+               gFVCF = gFVEnd*k;
+
+               bUseLinearLLDF = true;
+               bTaperStart = true;
+            }
+            else if ( bObtuseEnd && !bObtuseStart )
+            {
+               gVStart = gV/skewFactor;
+               gVEnd   = gV;
+
+               gFVStart = gFV/skewFactor;
+               gFVEnd   = gFV;
+
+               ATLASSERT( span_length/2 < seg_length_1 + seg_length_2 );
+               Float64 k = ::LinInterp(seg_length_1 + seg_length_2 - span_length/2,1.0,skewFactor,span_length/2);
+               gVCF = gVStart*k;
+               gFVCF = gFVStart*k;
+
+               bUseLinearLLDF = true;
+               bTaperEnd = true;
+            }
+            else if ( bObtuseStart && bObtuseEnd )
+            {
+               gVStart = gV;
+               gVMid   = gV/skewFactor;
+               gVEnd   = gV;
+
+               gFVStart = gFV;
+               gFVMid   = gFV/skewFactor;
+               gFVEnd   = gFV;
+
+               Float64 k = ::LinInterp(seg_length_1,skewFactor,1.0,span_length/2);
+               gVCF1 = gVMid*k;
+               gFVCF1 = gFVMid*k;
+
+               k = ::LinInterp(seg_length_1 + seg_length_2 - span_length/2,1.0,skewFactor,span_length/2);
+               gVCF2 = gVMid*k;
+               gFVCF2 = gFVMid*k;
+
+               bUseLinearLLDF = true;
+               bTaperStart = true;
+               bTaperEnd = true;
+            }
+#if defined _DEBUG
+            else if ( !bObtuseStart && !bObtuseEnd )
+            {
+               // skew correction is not zero and yet it isn't applied
+               ATLASSERT(false); 
+               gV  /= skewFactor;
+               gFV /= skewFactor;
+            }
+#endif
+         }
+      }
+
+      if ( bUseLinearLLDF )
+      {
+         if ( bTaperStart && !bTaperEnd )
+         {
+            ATLASSERT( seg_length_1 < span_length/2 );
+            AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gVStart,gVCF,gR,gFM,gFVStart,gFVCF,gD,gPedes);
+            
+            gnM = pLLDF->GetNegMomentDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
+            AddDistributionFactors(distFactors,span_length/2 - seg_length_1,gpM,gnM,gVCF,gVEnd,gR,gFM,gFVCF,gFVEnd,gD,gPedes);
+            AddDistributionFactors(distFactors,seg_length_1 + seg_length_2 - span_length/2,gpM,gnM,gVEnd,gR,gFM,gFVEnd,gD,gPedes);
+            
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+            AddDistributionFactors(distFactors,seg_length_3,gpM,gnM,gVEnd,gR,gFM,gFVEnd,gD,gPedes);
+         }
+         else if ( bTaperEnd && !bTaperStart )
+         {
+            ATLASSERT( span_length/2 < seg_length_1 + seg_length_2 );
+            AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gVStart,gR,gFM,gFVStart,gD,gPedes);
+
+            gnM = pLLDF->GetNegMomentDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
+            AddDistributionFactors(distFactors,span_length/2 - seg_length_1,gpM,gnM,gVStart,gR,gFM,gFVStart,gD,gPedes);
+            AddDistributionFactors(distFactors,seg_length_1 + seg_length_2 - span_length/2,gpM,gnM,gVStart,gVCF,gR,gFM,gFVStart,gFVCF,gD,gPedes);
+            
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+            AddDistributionFactors(distFactors,seg_length_3,gpM,gnM,gVCF,gVEnd,gR,gFM,gFVCF,gFVEnd,gD,gPedes);
+         }
+         else
+         {
+            ATLASSERT(bTaperStart && bTaperEnd);
+
+            AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gVStart,gVCF1,gR,gFM,gFVStart,gFVCF1,gD,gPedes);
+
+            gnM = pLLDF->GetNegMomentDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
+            AddDistributionFactors(distFactors,span_length/2 - seg_length_1,gpM,gnM,gVCF1,gVMid,gR,gFM,gFVCF1,gFVMid,gD,gPedes);
+            AddDistributionFactors(distFactors,seg_length_1 + seg_length_2 - span_length/2,gpM,gnM,gVMid,gVCF2,gR,gFM,gFVMid,gFVCF2,gD,gPedes);
+
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+            AddDistributionFactors(distFactors,seg_length_3,gpM,gnM,gVCF2,gVEnd,gR,gFM,gFVCF2,gFVEnd,gD,gPedes);
+         }
+      }
+      else
+      {
+         AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
+         
+         gnM = pLLDF->GetNegMomentDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
+         AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
+         
+         gnM = pLLDF->GetNegMomentDistFactorAtPier(spanIdx+1,gdrIdx,pgsTypes::StrengthI,pgsTypes::Back);
+         AddDistributionFactors(distFactors,seg_length_3,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
+      }
    }
 }
 

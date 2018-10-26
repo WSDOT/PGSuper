@@ -5143,6 +5143,207 @@ bool CBridgeAgentImp::IsExteriorGirder(SpanIndexType spanIdx,GirderIndexType gdr
    return pBridgeDesc->GetSpan(spanIdx)->IsExteriorGirder(gdrIdx);
 }
 
+bool CBridgeAgentImp::IsObtuseCorner(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::MemberEndType endType)
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CSpanData* pSpan = pBridgeDesc->GetSpan(spanIdx);
+   GirderIndexType nGirders = pSpan->GetGirderCount();
+   if ( 2 <= gdrIdx && gdrIdx <= nGirders-3 )
+   {
+      // obtuse corner is for computing the skew correction factor for shear
+      // it only applies to the exterior and first interior girder
+      // since this girder isn't one of those, we'll say it is not in an obtuse corner
+      return false;
+   }
+   else
+   {
+      PierIndexType startPierIdx = pSpan->GetPrevPier()->GetPierIndex();
+      PierIndexType endPierIdx   = pSpan->GetNextPier()->GetPierIndex();
+
+      CComPtr<IAngle> objStartSkewAngle;
+      GetPierSkew(startPierIdx,&objStartSkewAngle);
+      Float64 startSkewAngle;
+      objStartSkewAngle->get_Value(&startSkewAngle);
+
+      CComPtr<IAngle> objEndSkewAngle;
+      GetPierSkew(endPierIdx,&objEndSkewAngle);
+      Float64 endSkewAngle;
+      objEndSkewAngle->get_Value(&endSkewAngle);
+
+      if ( IsZero(startSkewAngle) && IsZero(endSkewAngle) )
+      {
+         return false;
+      }
+
+      if ( ::Sign(startSkewAngle) == ::Sign(endSkewAngle) )
+      {
+         // Both ends are skewed the same direction
+         if ( startSkewAngle < 0 )
+         {
+            // Both ends are skewed to the right
+
+            //              --------------------------------------
+            //             / -***------ gdrIdx = 0 ------------- /
+            //            / -***------ gdrIdx = 1 ------------- /
+            //           /                                     /
+            //          /                                     /
+            //         / ------ gdrIdx = nGirders-2-----***- /
+            //        / ------ gdrIdx = nGirders-1 ----***- /
+            //        --------------------------------------
+            //
+            // *** = Obtuse corner
+            //
+            if ( (endType == pgsTypes::metStart && gdrIdx < 2) ||
+                 (endType == pgsTypes::metEnd   && nGirders-2 <= gdrIdx )
+               )
+            {
+               return true;
+            }
+         }
+         else
+         {
+            // both ends are skewed to the left
+            ATLASSERT(0 < startSkewAngle);
+            ATLASSERT(0 < endSkewAngle);
+
+            //   --------------------------------------
+            //   \ ---------- gdrIdx = 0 ---------***- \
+            //    \ ---------- gdrIdx = 1 ---------***- \
+            //     \                                     \
+            //      \                                     \
+            //       \ -***-- gdrIdx = nGirders-2--------- \
+            //        \ -***-- gdrIdx = nGirders-1 -------- \
+            //         --------------------------------------
+            //
+            // *** = Obtuse corner
+            //
+            if ( (endType == pgsTypes::metStart && nGirders-2 <= gdrIdx) ||
+                 (endType == pgsTypes::metEnd   && gdrIdx < 2)
+               )
+            {
+               return true;
+            }
+         }
+      }
+      else
+      {
+         // Ends are skewed in opposite directions
+         //
+         // Obtuse corners are the diagonally opposite corners that are closest together
+         // (i.e. shortest distance)
+
+         //   --------------------------------------------------
+         //   \ ---------- gdrIdx = 0 ------------------------ /
+         //    \ ---------- gdrIdx = 1 ---------------------- /
+         //     \                                            /
+         //      \                                          /
+         //       \ ------ gdrIdx = nGirders-2------------ /
+         //        \ ------ gdrIdx = nGirders-1 --------- /
+         //         --------------------------------------
+
+         if ( IsZero(startSkewAngle) )
+         {
+            // start of span is normal to alignment
+            if ( endType == pgsTypes::metStart )
+            {
+               // can't have an obtuse corner for no skew
+               return false;
+            }
+
+            ATLASSERT( !IsZero(endSkewAngle) );
+            if ( (0 < endSkewAngle && gdrIdx < 2) ||
+                 (endSkewAngle < 0 && nGirders-2 <= gdrIdx) )
+            {
+               return true;
+            }
+            else
+            {
+               return false;
+            }
+         }
+
+         if ( IsZero(endSkewAngle) )
+         {
+            // end of span is normal to alignment
+            if ( endType == pgsTypes::metEnd )
+            {
+               // can't have an obtuse corner for no skew
+               return false;
+            }
+
+            ATLASSERT( !IsZero(startSkewAngle) );
+            if ( (0 < startSkewAngle && nGirders-2 <= gdrIdx) ||
+                 (startSkewAngle < 0 && gdrIdx < 2) )
+            {
+               return true;
+            }
+            else
+            {
+               return false;
+            }
+         }
+
+         const int Left = 0;
+         const int Right = 1;
+         CComPtr<IPoint2d> pntPier[2][2], pntEnd[2][2], pntBrg[2][2];
+         GetGirderEndPoints(spanIdx,0,         &pntPier[pgsTypes::metStart][Left ],&pntEnd[pgsTypes::metStart][Left ],&pntBrg[pgsTypes::metStart][Left ],&pntBrg[pgsTypes::metEnd][Left ],&pntEnd[pgsTypes::metEnd][Left ],&pntPier[pgsTypes::metEnd][Left ]);
+         GetGirderEndPoints(spanIdx,nGirders-1,&pntPier[pgsTypes::metStart][Right],&pntEnd[pgsTypes::metStart][Right],&pntBrg[pgsTypes::metStart][Right],&pntBrg[pgsTypes::metEnd][Right],&pntEnd[pgsTypes::metEnd][Right],&pntPier[pgsTypes::metEnd][Right]);
+
+         Float64 d1,d2;
+         pntEnd[pgsTypes::metStart][Left]->DistanceEx(pntEnd[pgsTypes::metEnd][Right],&d1);
+         pntEnd[pgsTypes::metStart][Right]->DistanceEx(pntEnd[pgsTypes::metEnd][Left],&d2);
+
+         if ( IsEqual(d1,d2) )
+         {
+            // if the diagonals are the same length... both corners on one side are obtuse
+            if ( startSkewAngle < 0 )
+            {
+               // obtuse corners are on the left side
+               ATLASSERT( 0 <= endSkewAngle );
+               if ( gdrIdx < 2 )
+               {
+                  return true;
+               }
+            }
+            else
+            {
+               // obtuse corners are on the right side
+               ATLASSERT( 0 <= startSkewAngle);
+               ATLASSERT( endSkewAngle < 0 );
+               if ( nGirders-2 <= gdrIdx )
+               {
+                  return true;
+               }
+            }
+         }
+         else if ( d1 < d2 )
+         {
+            // shortest distance is from start,left to end,right so obtuse corners are
+            // at the start,right and end,left
+            if ( (endType == pgsTypes::metStart && gdrIdx < 2) ||
+                 (endType == pgsTypes::metEnd && nGirders-2 <= gdrIdx) )
+            {
+               return true;
+            }
+         }
+         else
+         {
+            ATLASSERT(d2 < d1);
+            // shortest distance is from the start,right to end,left so the obtuse corners are
+            // at the start,left and end,right
+            if ( (endType == pgsTypes::metStart && nGirders-2 <= gdrIdx) ||
+                 (endType == pgsTypes::metEnd && gdrIdx < 2) )
+            {
+               return true;
+            }
+         }
+      }
+   }
+
+   return false;
+}
+
 void CBridgeAgentImp::GetLeftSideEndDiaphragmSize(PierIndexType pierIdx,Float64* pW,Float64* pH)
 {
    VALIDATE( BRIDGE );

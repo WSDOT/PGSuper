@@ -131,6 +131,16 @@ bool CBulbTeeDistFactorEngineer::GetDFResultsEx(SpanIndexType span, GirderIndexT
                                gV,  gV1, gV2, gR, gR1, gR2 ); 
 }
 
+Float64 CBulbTeeDistFactorEngineer::GetSkewCorrectionFactorForMoment(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls)
+{
+   return m_pImpl->GetSkewCorrectionFactorForMoment(span,gdr,ls);
+}
+
+Float64 CBulbTeeDistFactorEngineer::GetSkewCorrectionFactorForShear(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls)
+{
+   return m_pImpl->GetSkewCorrectionFactorForShear(span,gdr,ls);
+}
+
 std::_tstring CBulbTeeDistFactorEngineer::GetComputationDescription(SpanIndexType span,GirderIndexType gdr,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
 {
    GET_IFACE(ILiveLoads,pLiveLoads);

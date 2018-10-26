@@ -4984,8 +4984,13 @@ void CProjectAgentImp::SetGirderMaterial(SpanIndexType span,GirderIndexType gdr,
 {
    CSpanData* pSpan = m_BridgeDescription.GetSpan(span);
    CGirderTypes girderTypes = *pSpan->GetGirderTypes();
-   girderTypes.GetGirderData(gdr).Material = material;
-   pSpan->SetGirderTypes(girderTypes);
+
+   if (material != girderTypes.GetGirderData(gdr).Material)
+   {
+      girderTypes.GetGirderData(gdr).Material = material;
+      pSpan->SetGirderTypes(girderTypes);
+      Fire_GirderChanged(span,gdr,GCH_CONCRETE);
+   }
 }
 
 const CPrestressData* CProjectAgentImp::GetPrestressData(SpanIndexType span,GirderIndexType gdr)
@@ -5831,7 +5836,7 @@ arDesignOptions CProjectAgentImp::GetDesignOptions(SpanIndexType spanIdx,GirderI
 
    // determine flexural design from girder attributes
    StrandIndexType  nh = pGirderEntry->GetNumHarpedStrandCoordinates();
-   if (nh>0)
+   if (nh>0 && !pGirderEntry->IsForceHarpedStrandsStraight())
    {
       options.doDesignForFlexure = dtDesignForHarping;
    }

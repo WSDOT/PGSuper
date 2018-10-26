@@ -2217,6 +2217,40 @@ Float64 CEngAgentImp::GetReactionDistFactor(PierIndexType pier,GirderIndexType g
    }
 }
 
+Float64 CEngAgentImp::GetSkewCorrectionFactorForMoment(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls)
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   ValidateLiveLoadDistributionFactors(span,gdr);
+
+   if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
+   {
+      return 1.0;
+   }
+   else
+   {
+      return m_pDistFactorEngineer->GetSkewCorrectionFactorForMoment(span,gdr,ls);
+   }
+}
+
+Float64 CEngAgentImp::GetSkewCorrectionFactorForShear(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls)
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   ValidateLiveLoadDistributionFactors(span,gdr);
+
+   if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
+   {
+      return 1.0;
+   }
+   else
+   {
+      return m_pDistFactorEngineer->GetSkewCorrectionFactorForShear(span,gdr,ls);
+   }
+}
+
 void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,Float64* pM,Float64* nM,Float64* V)
 {
    GET_IFACE(IBridge,pBridge);
@@ -2235,6 +2269,66 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
    GetNegMomentDistFactorPoints(span,girder,&dfPoints[0],&nPoints);
 
    *V  = GetShearDistFactor(span,girder,ls);
+
+   if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+   {
+      // LRFD 7th Edition, 2014 added variable skew correction factor for shear
+      Float64 skewFactor = GetSkewCorrectionFactorForShear(span,girder,ls);
+      if ( !IsEqual(skewFactor,1.0) )
+      {
+#if defined _DEBUG
+         // girder must be an exterior or first interior girder
+         GirderIndexType nGirders = pBridge->GetGirderCount(span);
+         ATLASSERT( girder <= 1 || nGirders-2 <= girder );
+#endif
+
+         Float64 span_length = pBridge->GetSpanLength(span,girder);
+         Float64 L = span_length/2;
+
+         // (*V) contains the skew correct factor.... divide it out so
+         // we are working with the base LLDF
+         Float64 gV = (*V)/skewFactor;
+
+         bool bIsObtuseCorner = pBridge->IsObtuseCorner(span,girder,pgsTypes::metStart);
+         if ( bIsObtuseCorner )
+         {
+            // obtuse corner is at the start of the span...
+            if ( dist_from_start <= L )
+            {
+               // ... and this poi is in the first half of the span so 
+               // the skew factor needs to vary from its full value to 1.0 at mid-span
+               Float64 adjustedSkewFactor = skewFactor - (1.0 - skewFactor)*dist_from_start/L;
+               (*V) = gV*adjustedSkewFactor;
+            }
+            else
+            {
+               // ... and this poi is past the first half of the span so
+               // the skew correction factor isn't used
+               (*V) = gV;
+            }
+         }
+         else
+         {
+            ATLASSERT(pBridge->IsObtuseCorner(span,girder,pgsTypes::metEnd) == true);
+            // obtuse corner is at the end of the span...
+            if ( dist_from_start <= L )
+            {
+               // ... and this poi is in the first half of the span so
+               // th eskew correction factor isn't used
+               (*V) = gV;
+            }
+            else
+            {
+               // ... and this poi is past the first half of the span so
+               // the skew factor needs vary from 1.0 at mid-span to its full value
+               // at the end of the span
+               Float64 adjustedSkewFactor = (dist_from_start - L)*(skewFactor - 1.0)/(span_length - L) + 1.0;
+               (*V) = gV*adjustedSkewFactor;
+            }
+         }
+      }
+   }
+
    *pM = GetMomentDistFactor(span,girder,ls);
 
    if ( nPoints == 0 )

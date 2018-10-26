@@ -1255,15 +1255,13 @@ void CAnalysisResultsView::PrestressLoadGraph(int graphIdx,pgsTypes::Stage stage
    IndexType stress_top = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top"),   PS_STRESS_TOP,   1,c);
    IndexType stress_bot = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom"),PS_STRESS_BOTTOM,1,c);
 
+   std::vector<Float64>::const_iterator iloc = xVals.begin(); // pois and locations are in lockstep
    std::vector<pgsPointOfInterest>::const_iterator i;
    for ( i = vPoi.begin(); i != vPoi.end(); i++ )
    {
       const pgsPointOfInterest& poi = *i;
-      Float64 loc;
-      if ( stage == pgsTypes::CastingYard )
-         loc = poi.GetDistFromStart();
-      else
-         loc = pIPOI->GetDistanceFromFirstPier(poi,stage);
+      Float64 loc = *iloc;
+      iloc++;
 
       switch(action)
       {

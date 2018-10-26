@@ -256,7 +256,7 @@ function InitTest(currFolder)
 function SetPGSuperLibrary(server, publisher)
 {
    var cmd = new String;
-   cmd = Application + " /SetLib=" + server + ":" + publisher;
+   cmd = Application + " /SetLib=\"" + server + "\":\"" + publisher + "\"";
 
    if(ExecuteCommands)
    {

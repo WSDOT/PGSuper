@@ -146,6 +146,7 @@ interface IBridge : IUnknown
    virtual void GetDistFromStartOfSpan(GirderIndexType gdrIdx,Float64 distFromStartOfBridge,SpanIndexType* pSpanIdx,Float64* pDistFromStartOfSpan) = 0;
    virtual bool IsInteriorGirder(SpanIndexType span,GirderIndexType gdr) = 0;
    virtual bool IsExteriorGirder(SpanIndexType span,GirderIndexType gdr) = 0;
+   virtual bool IsObtuseCorner(SpanIndexType span,GirderIndexType gdr,pgsTypes::MemberEndType endType) = 0;
    virtual bool AreGirderTopFlangesRoughened(SpanIndexType span,GirderIndexType gdr) = 0;
    virtual bool GetSpan(Float64 station,SpanIndexType* pSpanIdx) = 0;
 
