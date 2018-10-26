@@ -196,7 +196,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2,_T("Rotation due to Camber"));
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2,_T("Rotation due to Excess Camber"));
    *p << pTable << rptNewLine;
 
 
@@ -207,7 +207,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    scalar.SetTolerance(1.0e-6);
 
    (*pTable)(0,0) << _T("");
-   (*pTable)(0,1) << _T("Camber") << rptNewLine << _T("Rotation") << rptNewLine << _T("(rad)");
+   (*pTable)(0,1) << _T("Rotation") << rptNewLine << _T("(rad)");
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
