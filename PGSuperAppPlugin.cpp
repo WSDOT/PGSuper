@@ -426,7 +426,7 @@ CString CPGSuperAppPlugin::GetCacheFolder()
 
    if ( !bResult )
    {
-      return pParentApp->GetAppLocation() + CString(_T("CacheV3\\"));
+      return pParentApp->GetAppLocation() + CString(_T("PGSuperV3\\"));
    }
    else
    {

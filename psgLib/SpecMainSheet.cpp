@@ -470,7 +470,7 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
    }
    DDV_NonNegativeDouble(pDX, IDC_WIND_LOAD, m_Entry.m_LiftingWindLoad);
 
-   DDX_CBItemData(pDX,IDC_STRESSES,m_Entry.m_LiftingStressesPlumbGirder);
+   DDX_CBItemData(pDX,IDC_STRESSES,m_Entry.m_bComputeLiftingStressesAtEquilibriumAngle);
 }
 
 bool CSpecMainSheet::IsHaulingEnabled() const
@@ -639,6 +639,8 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
 
    DDX_UnitValueAndTag(pDX,IDC_RADIUS,IDC_RADIUS_UNIT,m_Entry.m_TurningRadius,pDisplayUnits->SpanLength);
    DDV_UnitValueGreaterThanZero(pDX, IDC_RADIUS,m_Entry.m_TurningRadius, pDisplayUnits->SpanLength );
+
+   DDX_CBItemData(pDX, IDC_STRESSES, m_Entry.m_bComputeHaulingStressesAtEquilibriumAngle);
 }
 
 void CSpecMainSheet::ExchangeKdotHaulingData(CDataExchange* pDX)

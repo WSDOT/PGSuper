@@ -90,17 +90,27 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
    bool bIsCompositeDeck = pBridge->IsCompositeDeck();
 
    ColumnIndexType nCol;
-   if ( intervalIdx < compositeDeckIntervalIdx || (spType == pgsTypes::sptGrossNoncomposite || spType == pgsTypes::sptTransformedNoncomposite) )
+   if ( intervalIdx < compositeDeckIntervalIdx )
    {
       nCol = 12;
    }
    else if ( pBridge->GetDeckType() != pgsTypes::sdtNone && bIsCompositeDeck && compositeDeckIntervalIdx <= intervalIdx)
    {
-      nCol = 17;
-   }
-   else if ( intervalIdx == compositeDeckIntervalIdx )
-   {
-      nCol = 13; // BS2 and noncomposite deck
+      if (spType == pgsTypes::sptGrossNoncomposite || spType == pgsTypes::sptTransformedNoncomposite)
+      {
+         nCol = (compositeDeckIntervalIdx == intervalIdx ? 12 : 11);
+      }
+      else
+      {
+         if (lastTendonStressingIntervalIdx != INVALID_INDEX && compositeDeckIntervalIdx <= lastTendonStressingIntervalIdx)
+         {
+            nCol = 17;
+         }
+         else
+         {
+            nCol = 15;
+         }
+      }
    }
    else
    {

@@ -1742,15 +1742,15 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
       Float64 min_all_stress   = pSegmentLiftingSpecCriteria->GetLiftingAllowableCompressiveConcreteStress(segmentKey);
 
       Float64 min_stress,max_stress;
-      if ( pSegmentLiftingSpecCriteria->EvaluateLiftingStressesPlumbGirder() )
-      {
-         min_stress = liftingResults.MinDirectStress;
-         max_stress = liftingResults.MaxDirectStress;
-      }
-      else
+      if ( pSegmentLiftingSpecCriteria->EvaluateLiftingStressesAtEquilibriumAngle() )
       {
          min_stress = liftingResults.MinStress;
          max_stress = liftingResults.MaxStress;
+      }
+      else
+      {
+         min_stress = liftingResults.MinDirectStress;
+         max_stress = liftingResults.MaxDirectStress;
       }
 
       RowIndexType row = pTable->GetNumberOfHeaderRows();
@@ -1885,8 +1885,17 @@ void hauling(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
       (*pTable)(0,2) << _T("Allowable");
       (*pTable)(0,3) << _T("Status");
 
-      Float64 min_stress = haulingResults.MinStress[slope];
-      Float64 max_stress = haulingResults.MaxStress[slope];
+      Float64 min_stress, max_stress;
+      if (pSegmentHaulingSpecCriteria->EvaluateHaulingStressesAtEquilibriumAngle())
+      {
+         min_stress = haulingResults.MinStress[slope];
+         max_stress = haulingResults.MaxStress[slope];
+      }
+      else
+      {
+         min_stress = haulingResults.MinDirectStress[slope];
+         max_stress = haulingResults.MaxDirectStress[slope];
+      }
 
       Float64 max_all_stress, allow_with_rebar;
       if ( slope == pgsTypes::CrownSlope )

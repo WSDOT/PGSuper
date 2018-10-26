@@ -62,6 +62,7 @@ CGirderSegmentStrandsPage::~CGirderSegmentStrandsPage()
 void CGirderSegmentStrandsPage::Init(CPrecastSegmentData* pSegment)
 {
    m_pSegment = pSegment;
+   m_Strands = m_pSegment->Strands;
 }
 
 void CGirderSegmentStrandsPage::DoDataExchange(CDataExchange* pDX)
@@ -191,7 +192,7 @@ BOOL CGirderSegmentStrandsPage::OnInitDialog()
    m_Grid.CustomInit(m_pSegment);
 
    m_DrawStrands.SubclassDlgItem(IDC_DRAW_STRANDS,this);
-   m_DrawStrands.CustomInit(m_pSegment);
+   m_DrawStrands.CustomInit(m_pSegment,&m_Strands);
 
    // Select the strand size
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
@@ -261,7 +262,7 @@ Float64 CGirderSegmentStrandsPage::GetMaxPjack(StrandIndexType nStrands)
    Float64 PjackMax;
    try
    {
-      PjackMax = pPrestress->GetPjackMax(m_pSegment->GetSegmentKey(),*m_pSegment->Strands.GetStrandMaterial(pgsTypes::Straight), nStrands);
+      PjackMax = pPrestress->GetPjackMax(m_pSegment->GetSegmentKey(), *(m_Strands.GetStrandMaterial(pgsTypes::Straight)), nStrands);
    }
    catch (... )
    {
@@ -277,7 +278,7 @@ Float64 CGirderSegmentStrandsPage::GetMaxPjack(StrandIndexType nStrands)
 
 Float64 CGirderSegmentStrandsPage::GetUltPjack(StrandIndexType nStrands)
 {
-   const matPsStrand& strand = *(m_pSegment->Strands.GetStrandMaterial(pgsTypes::Straight));
+   const matPsStrand& strand = *(m_Strands.GetStrandMaterial(pgsTypes::Straight));
 
    // Ultimate strength of strand group
    Float64 ult = strand.GetUltimateStrength();
@@ -303,9 +304,9 @@ void CGirderSegmentStrandsPage::OnUpdateStraightStrandPjEdit()
 
 void CGirderSegmentStrandsPage::OnUpdateStrandPjEdit(UINT nCheck,UINT nForceEdit,UINT nUnit,pgsTypes::StrandType strandType)
 {
-   m_Grid.UpdateStrandData(nullptr,&(m_pSegment->Strands));
+   m_Grid.UpdateStrandData(nullptr,&m_Strands);
 
-   StrandIndexType nStrands = m_pSegment->Strands.GetStrandCount(strandType);
+   StrandIndexType nStrands = m_Strands.GetStrandCount(strandType);
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -325,7 +326,7 @@ void CGirderSegmentStrandsPage::OnUpdateStrandPjEdit(UINT nCheck,UINT nForceEdit
    if ( bEnable )
    {
       // Set the edit control value to the last user input force
-      Pjack = m_pSegment->Strands.GetLastUserPjack(strandType);
+      Pjack = m_Strands.GetLastUserPjack(strandType);
    }
    else if ( nStrands != 0 )
    {
@@ -337,7 +338,7 @@ void CGirderSegmentStrandsPage::OnUpdateStrandPjEdit(UINT nCheck,UINT nForceEdit
       Pjack = _tstof( val_as_text );
       Pjack = ::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
       
-      m_pSegment->Strands.SetLastUserPjack(strandType, Pjack);
+      m_Strands.SetLastUserPjack(strandType, Pjack);
       Pjack = GetMaxPjack(nStrands);
    }
 
@@ -464,6 +465,7 @@ void CGirderSegmentStrandsPage::OnTempStrandTypeChanged()
 
 void CGirderSegmentStrandsPage::InitPjackEdits()
 {
+   m_Grid.UpdateStrandData(nullptr, &m_Strands); // do this here so we don't have to do it 3 times and get the exact same results
    InitPjackEdits(IDC_SS_JACK,IDC_SS_JACK_FORCE,IDC_SS_JACK_FORCE_UNIT,pgsTypes::Straight);
    InitPjackEdits(IDC_HS_JACK,IDC_HS_JACK_FORCE,IDC_HS_JACK_FORCE_UNIT,pgsTypes::Harped);
    InitPjackEdits(IDC_TS_JACK,IDC_TS_JACK_FORCE,IDC_TS_JACK_FORCE_UNIT,pgsTypes::Temporary);
@@ -471,9 +473,9 @@ void CGirderSegmentStrandsPage::InitPjackEdits()
 
 void CGirderSegmentStrandsPage::InitPjackEdits(UINT nCalcPjack,UINT nPjackEdit,UINT nPjackUnit,pgsTypes::StrandType strandType)
 {
-   m_Grid.UpdateStrandData(nullptr,&(m_pSegment->Strands));
+   // call m_Grid.UpdateStrandData(nullptr,&m_Strands) before calling this method
 
-   StrandIndexType nStrands = m_pSegment->Strands.GetStrandCount(strandType);
+   StrandIndexType nStrands = m_Strands.GetStrandCount(strandType);
 
    CButton* chkbox = (CButton*)GetDlgItem(nCalcPjack);
    BOOL bEnable = FALSE; // true is user input model
@@ -496,8 +498,8 @@ void CGirderSegmentStrandsPage::InitPjackEdits(UINT nCalcPjack,UINT nPjackEdit,U
       CDataExchange dx(this,FALSE);
 
       Float64 Pjack = 0;
-      m_pSegment->Strands.SetPjack(strandType, GetMaxPjack(nStrands));
-      Pjack = m_pSegment->Strands.GetPjack(strandType);
+      m_Strands.SetPjack(strandType, GetMaxPjack(nStrands));
+      Pjack = m_Strands.GetPjack(strandType);
       DDX_UnitValueAndTag( &dx, nPjackEdit, nPjackUnit, Pjack, pDisplayUnits->GetGeneralForceUnit() );
    }
 }
@@ -506,7 +508,7 @@ BOOL CGirderSegmentStrandsPage::OnSetActive()
 {
    // make sure segment geometry is up to date with what ever has been changed during
    // this editing session
-   m_DrawStrands.CustomInit(m_pSegment);
+   m_DrawStrands.CustomInit(m_pSegment,&m_Strands);
 
    OnChange();
 
@@ -537,37 +539,37 @@ void CGirderSegmentStrandsPage::EnableRemoveButton(BOOL bEnable)
 
 void CGirderSegmentStrandsPage::OnChange()
 {
-   m_Grid.UpdateStrandData(nullptr,&(m_pSegment->Strands));
+   m_Grid.UpdateStrandData(nullptr,&m_Strands);
 
    CString strLabel;
-   strLabel.Format(_T("Straight Strands (%d)"),m_pSegment->Strands.GetStrandCount(pgsTypes::Straight));
+   strLabel.Format(_T("Straight Strands (%d)"), m_Strands.GetStrandCount(pgsTypes::Straight));
    GetDlgItem(IDC_SS_LABEL)->SetWindowText(strLabel);
 
-   strLabel.Format(_T("Harped Strands (%d)"),m_pSegment->Strands.GetStrandCount(pgsTypes::Harped));
+   strLabel.Format(_T("Harped Strands (%d)"), m_Strands.GetStrandCount(pgsTypes::Harped));
    GetDlgItem(IDC_HS_LABEL)->SetWindowText(strLabel);
 
-   strLabel.Format(_T("Temporary Strands (%d)"),m_pSegment->Strands.GetStrandCount(pgsTypes::Temporary));
+   strLabel.Format(_T("Temporary Strands (%d)"), m_Strands.GetStrandCount(pgsTypes::Temporary));
    GetDlgItem(IDC_TS_LABEL)->SetWindowText(strLabel);
 
-   IndexType nExtendedStart = m_pSegment->Strands.GetExtendedStrands(pgsTypes::Straight,pgsTypes::metStart).size();
-   nExtendedStart += m_pSegment->Strands.GetExtendedStrands(pgsTypes::Harped,pgsTypes::metStart).size();
-   nExtendedStart += m_pSegment->Strands.GetExtendedStrands(pgsTypes::Temporary,pgsTypes::metStart).size();
+   IndexType nExtendedStart = m_Strands.GetExtendedStrandCount(pgsTypes::Straight,pgsTypes::metStart);
+   nExtendedStart += m_Strands.GetExtendedStrandCount(pgsTypes::Harped,pgsTypes::metStart);
+   nExtendedStart += m_Strands.GetExtendedStrandCount(pgsTypes::Temporary,pgsTypes::metStart);
 
-   IndexType nExtendedEnd = m_pSegment->Strands.GetExtendedStrands(pgsTypes::Straight,pgsTypes::metEnd).size();
-   nExtendedEnd += m_pSegment->Strands.GetExtendedStrands(pgsTypes::Harped,pgsTypes::metEnd).size();
-   nExtendedEnd += m_pSegment->Strands.GetExtendedStrands(pgsTypes::Temporary,pgsTypes::metEnd).size();
+   IndexType nExtendedEnd = m_Strands.GetExtendedStrandCount(pgsTypes::Straight,pgsTypes::metEnd);
+   nExtendedEnd += m_Strands.GetExtendedStrandCount(pgsTypes::Harped,pgsTypes::metEnd);
+   nExtendedEnd += m_Strands.GetExtendedStrandCount(pgsTypes::Temporary,pgsTypes::metEnd);
 
    strLabel.Format(_T("Extended Strands (Left %d, Right %d)"),nExtendedStart,nExtendedEnd);
    GetDlgItem(IDC_EXTENDED_STRANDS_LABEL)->SetWindowText(strLabel);
 
 
-   IndexType nDebondingStart = m_pSegment->Strands.GetDebondCount(pgsTypes::Straight,pgsTypes::metStart,nullptr);
-   nDebondingStart += m_pSegment->Strands.GetDebondCount(pgsTypes::Harped,pgsTypes::metStart,nullptr);
-   nDebondingStart += m_pSegment->Strands.GetDebondCount(pgsTypes::Temporary,pgsTypes::metStart,nullptr);
+   IndexType nDebondingStart = m_Strands.GetDebondCount(pgsTypes::Straight,pgsTypes::metStart,nullptr);
+   nDebondingStart += m_Strands.GetDebondCount(pgsTypes::Harped,pgsTypes::metStart,nullptr);
+   nDebondingStart += m_Strands.GetDebondCount(pgsTypes::Temporary,pgsTypes::metStart,nullptr);
 
-   IndexType nDebondingEnd = m_pSegment->Strands.GetDebondCount(pgsTypes::Straight,pgsTypes::metEnd,nullptr);
-   nDebondingEnd += m_pSegment->Strands.GetDebondCount(pgsTypes::Harped,pgsTypes::metEnd,nullptr);
-   nDebondingEnd += m_pSegment->Strands.GetDebondCount(pgsTypes::Temporary,pgsTypes::metEnd,nullptr);
+   IndexType nDebondingEnd = m_Strands.GetDebondCount(pgsTypes::Straight,pgsTypes::metEnd,nullptr);
+   nDebondingEnd += m_Strands.GetDebondCount(pgsTypes::Harped,pgsTypes::metEnd,nullptr);
+   nDebondingEnd += m_Strands.GetDebondCount(pgsTypes::Temporary,pgsTypes::metEnd,nullptr);
 
    strLabel.Format(_T("Debonded Strands (Start %d, End %d)"),nDebondingStart,nDebondingEnd);
    GetDlgItem(IDC_DEBONDED_STRANDS_LABEL)->SetWindowText(strLabel);

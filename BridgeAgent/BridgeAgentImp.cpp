@@ -23185,7 +23185,7 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
    Float64 impactDown,impactUp;
    pLiftingCriteria->GetLiftingImpact(&impactDown,&impactUp);
    pProblem->SetImpact(impactUp,impactDown);
-   pProblem->EvaluateStressesForPlumbGirder(pLiftingCriteria->EvaluateLiftingStressesPlumbGirder());
+   pProblem->EvaluateStressesAtEquilibriumAngle(pLiftingCriteria->EvaluateLiftingStressesAtEquilibriumAngle());
    
    pProblem->SetYRollAxis(pLiftingCriteria->GetHeightOfPickPointAboveGirderTop());
    pProblem->SetSupportPlacementTolerance(pLiftingCriteria->GetLiftingLoopPlacementTolerance());
@@ -23405,7 +23405,9 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    pHaulingCriteria->GetHaulingImpact(&impactDown,&impactUp);
    pProblem->SetImpact(impactUp,impactDown);
    pProblem->SetImpactUsage((stbTypes::HaulingImpact)pHaulingCriteria->GetHaulingImpactUsage());
-   
+
+   pProblem->EvaluateStressesAtEquilibriumAngle(pHaulingCriteria->EvaluateHaulingStressesAtEquilibriumAngle());
+
    pgsPointOfInterest poi = GetPointOfInterest(segmentKey,0.0);
    Float64 Hg  = GetHg(intervalIdx,poi);
    Float64 Hrc, Hbg, Wcc, Ktheta;

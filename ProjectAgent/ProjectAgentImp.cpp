@@ -6426,9 +6426,12 @@ const CTimelineManager* CProjectAgentImp::GetTimelineManager()
 
 void CProjectAgentImp::SetTimelineManager(const CTimelineManager& timelineMgr)
 {
-   m_BridgeDescription.SetTimelineManager(&timelineMgr);
+   if (*m_BridgeDescription.GetTimelineManager() != timelineMgr)
+   {
+      m_BridgeDescription.SetTimelineManager(&timelineMgr);
 
-   Fire_BridgeChanged();
+      Fire_BridgeChanged();
+   }
 }
 
 EventIndexType CProjectAgentImp::AddTimelineEvent(const CTimelineEvent& timelineEvent)

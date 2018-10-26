@@ -871,11 +871,14 @@ void CStrandGrid::FillGrid(CStrandData* pStrands)
 
 void CStrandGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
 {
-   UpdateExtendedStrandProperties(nRow);
+   if (nCol != 24 && nCol != 26)
+   {
+      UpdateExtendedStrandProperties(nRow);
 
-   CGirderSegmentStrandsPage* pParent = (CGirderSegmentStrandsPage*)GetParent();
-   ASSERT(pParent);
-   pParent->OnChange();
+      CGirderSegmentStrandsPage* pParent = (CGirderSegmentStrandsPage*)GetParent();
+      ASSERT(pParent);
+      pParent->OnChange();
+   }
 }
 
 void CStrandGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)

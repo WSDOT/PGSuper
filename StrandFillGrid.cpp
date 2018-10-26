@@ -725,7 +725,7 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
 
          if (m_pParent->m_bSymmetricDebond)
          {
-            if (leftDebond <= 0.0)
+            if (leftDebond <= 0.0 && doCheckData)
             {
                AfxMessageBox( _T("Debond length must be greater than zero"), MB_ICONEXCLAMATION);
                this->SetCurrentCell(nRow,FIRST_DEBOND_COL,GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
@@ -750,7 +750,7 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
 
                rightDebond = ::ConvertToSysUnits(rightDebond, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
 
-               if (leftDebond < 0.0 || rightDebond < 0.0)
+               if ((leftDebond < 0.0 || rightDebond < 0.0) && doCheckData)
                {
                   AfxMessageBox( _T("Debond length must be zero or greater"), MB_ICONEXCLAMATION);
                   this->SetCurrentCell(nRow,FIRST_DEBOND_COL,GX_SCROLLINVIEW|GX_DISPLAYEDITWND);

@@ -817,6 +817,7 @@ Float64 pgsPoiMgr::SetTolerance(Float64 tol)
 
 Float64 pgsPoiMgr::GetTolerance() const
 {
+   ATLASSERT(m_Tolerance == pgsPointOfInterest::GetTolerance());
    return m_Tolerance;
 }
 

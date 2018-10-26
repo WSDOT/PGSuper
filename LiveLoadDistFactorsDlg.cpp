@@ -495,7 +495,7 @@ void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
          catch(...)
          {
             ATLASSERT(false); // shouldn't get here
-            ::AfxMessageBox(_T("An uknown error occurred while computing distribution factors. Grid input values will not be updated."), MB_OK);
+            ::AfxMessageBox(_T("An unknown error occurred while computing distribution factors. Grid input values will not be updated."), MB_OK);
          }
 
          // Restore original lldf computation method

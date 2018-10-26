@@ -2055,15 +2055,15 @@ bool CTestAgentImp::RunHandlingTest(std::_tofstream& resultsFile, std::_tofstrea
          if ( ::IsEqual(pAnalysisPoint->GetLocation(),loc) )
          {
             Float64 maxStress, minStress;
-            if ( pLiftArtifact->PlumbGirderStressesEvaluated() )
+            if ( pLiftArtifact->EvaluateStressesAtEquilibriumAngle() )
             {
-               maxStress = Max(sectionResult.fMaxDirect[stbTypes::Top],sectionResult.fMaxDirect[stbTypes::Bottom]);
-               minStress = Min(sectionResult.fMinDirect[stbTypes::Top],sectionResult.fMinDirect[stbTypes::Bottom]);
+               maxStress = Max(sectionResult.fMax[stbTypes::Top], sectionResult.fMax[stbTypes::Bottom]);
+               minStress = Min(sectionResult.fMin[stbTypes::Top], sectionResult.fMin[stbTypes::Bottom]);
             }
             else
             {
-               maxStress = Max(sectionResult.fMax[stbTypes::Top],sectionResult.fMax[stbTypes::Bottom]);
-               minStress = Min(sectionResult.fMin[stbTypes::Top],sectionResult.fMin[stbTypes::Bottom]);
+               maxStress = Max(sectionResult.fMaxDirect[stbTypes::Top], sectionResult.fMaxDirect[stbTypes::Bottom]);
+               minStress = Min(sectionResult.fMinDirect[stbTypes::Top], sectionResult.fMinDirect[stbTypes::Bottom]);
             }
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100001, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(maxStress, unitMeasure::MPa)) <<_T(", 50, ")<<gdrIdx<<std::endl;
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100002, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(minStress, unitMeasure::MPa)) <<_T(", 50, ")<<gdrIdx<<std::endl;

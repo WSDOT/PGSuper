@@ -213,7 +213,15 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
    {
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("MomentRatingEquation.png") ) << rptNewLine;
    }
-   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("MomentRating_K_Equation.png")) << rptNewLine;
+
+   if (lrfdVersionMgr::SixthEdition2012 <= lrfdVersionMgr::GetVersion() )
+   {
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("MomentRating_K_Equation_2012.png")) << rptNewLine;
+   }
+   else
+   {
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("MomentRating_K_Equation.png")) << rptNewLine;
+   }
 
    ColumnIndexType nColumns = 14;
    if ( bSplicedGirder )

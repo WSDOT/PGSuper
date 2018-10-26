@@ -213,6 +213,7 @@ public:
    const std::vector<GridIndexType>& GetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType) const;
    void SetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,const std::vector<GridIndexType>& extStrands);
    bool IsExtendedStrand(pgsTypes::StrandType strandType,GridIndexType gridIdx,pgsTypes::MemberEndType endType) const;
+   StrandIndexType GetExtendedStrandCount(pgsTypes::StrandType strandType, pgsTypes::MemberEndType endType) const;
 
    //------------------------------------------------------------------------
    // Resets all the prestressing input to default values.

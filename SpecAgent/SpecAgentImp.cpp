@@ -1940,10 +1940,10 @@ Float64 CSpecAgentImp::GetLiftingWindLoad()
    return pSpec->GetLiftingWindLoad();
 }
 
-bool CSpecAgentImp::EvaluateLiftingStressesPlumbGirder()
+bool CSpecAgentImp::EvaluateLiftingStressesAtEquilibriumAngle()
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->EvaluateLiftingStressesPlumbGirder();
+   return pSpec->EvaluateLiftingStressesAtEquilibriumAngle();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -2312,6 +2312,12 @@ Float64 CSpecAgentImp::GetTurningRadius()
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetTurningRadius();
+}
+
+bool CSpecAgentImp::EvaluateHaulingStressesAtEquilibriumAngle()
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   return pSpec->EvaluateHaulingStressesAtEquilibriumAngle();
 }
 
 stbHaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(const CSegmentKey& segmentKey)

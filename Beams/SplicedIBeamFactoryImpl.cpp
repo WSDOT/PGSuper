@@ -324,11 +324,17 @@ void CSplicedIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
       Float64 xLeft  = pSegment->GetVariationLength(pgsTypes::sztLeftPrismatic);
       Float64 xRight = pSegment->GetVariationLength(pgsTypes::sztRightPrismatic);
 
-      if ( !IsZero(xLeft) )
+      if (!IsZero(xLeft))
+      {
          xLeft -= start_offset;
+         xLeft = IsLE(xLeft,0.0) ? 0.0 : xLeft;
+      }
 
-      if ( !IsZero(xRight) )
+      if (!IsZero(xRight))
+      {
          xRight -= end_offset;
+         xRight = IsLE(xRight,0.0) ? 0.0 : xRight;
+      }
 
       pgsPointOfInterest poiStart( segmentKey, xLeft, POI_SECTCHANGE_TRANSITION);
       pPoiMgr->AddPointOfInterest( poiStart );
@@ -341,11 +347,17 @@ void CSplicedIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
       Float64 xLeft  = pSegment->GetVariationLength(pgsTypes::sztLeftPrismatic);  // measured from CL Pier/TS
       Float64 xRight = pSegment->GetVariationLength(pgsTypes::sztRightPrismatic); // measured from CL Pier/TS
 
-      if ( !IsZero(xLeft) )
+      if (!IsZero(xLeft))
+      {
          xLeft -= start_offset;
+         xLeft = IsLE(xLeft,0.0) ? 0.0 : xLeft;
+      }
 
-      if ( !IsZero(xRight) )
+      if (!IsZero(xRight))
+      {
          xRight -= end_offset;
+         xRight = IsLE(xRight,0.0) ? 0.0 : xRight;
+      }
 
       pgsPointOfInterest poiStart( segmentKey, xLeft, POI_SECTCHANGE_TRANSITION);
       pPoiMgr->AddPointOfInterest( poiStart );

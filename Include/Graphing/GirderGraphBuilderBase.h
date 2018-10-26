@@ -57,6 +57,9 @@ public:
    void Shift(bool bShift);
    bool Shift() const;
 
+   virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+
+
 protected:
    CGirderGraphControllerBase* m_pGraphController;
 

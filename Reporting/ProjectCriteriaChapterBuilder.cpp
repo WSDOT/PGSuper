@@ -520,13 +520,13 @@ void write_lifting(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDis
    Float64 ftcy = pSegmentLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStress(segmentKey);
    Float64 ft   = pSegmentLiftingSpecCriteria->GetLiftingWithMildRebarAllowableStress(segmentKey);
    *pPara << _T("Allowable Concrete Stresses - Lifting (5.9.4.1.1)") << rptNewLine;
-   if ( pSegmentLiftingSpecCriteria->EvaluateLiftingStressesPlumbGirder() )
+   if ( pSegmentLiftingSpecCriteria->EvaluateLiftingStressesAtEquilibriumAngle() )
    {
-      *pPara << _T("Stresses are evaluated for a plumb girder") << rptNewLine;
+      *pPara << _T("Stability equilibrium angle is included in stress calculations.") << rptNewLine;
    }
    else
    {
-      *pPara << _T("Stresses are evaluated for a tilted girder at equilibrium") << rptNewLine;
+      *pPara << _T("Stability equilibrium angle is not included in stress calculations.") << rptNewLine;
    }
    *pPara << _T("- Compressive Stress = ") << stress.SetValue(fccy) << rptNewLine;
    *pPara << _T("- Tensile Stress (w/o mild rebar) = ") << stress.SetValue(ftcy) << rptNewLine;
@@ -641,6 +641,15 @@ void write_wsdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits
    *pPara << _T("- Compressive Stress = ")<<stress.SetValue(fccy) << rptNewLine;
    *pPara << _T("- Tensile Stress (w/o mild rebar) = ") << stress.SetValue(ftcy) << rptNewLine;
    *pPara << _T("- Tensile Stress (w/  mild rebar) = ") << stress.SetValue(ft) << rptNewLine;
+
+   if (pHauling->EvaluateHaulingStressesAtEquilibriumAngle())
+   {
+      *pPara << _T("Stability equilibrium angle is included in stress calculations.") << rptNewLine;
+   }
+   else
+   {
+      *pPara << _T("Stability equilibrium angle is not included in stress calculations.") << rptNewLine;
+   }
 }
 
 void write_kdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry, const CSegmentKey& segmentKey)

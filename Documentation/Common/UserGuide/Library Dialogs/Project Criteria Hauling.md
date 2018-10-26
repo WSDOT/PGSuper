@@ -52,6 +52,8 @@ Between Cantilevers | Enter the "g" factor to be applied to girder dead load bet
 Allowable Concrete Stresses
 ------------------------------
 
+Girder stresses can be computed either with or without consideration for the stability equilibrium angle. Use the drop down list to select an option.
+
 Item | Description
 -----|----------------
 Compressive Stress | Enter the coefficient for the allowable concrete compressive stress.

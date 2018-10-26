@@ -271,20 +271,36 @@ BOOL CPierLocationPage::OnInitDialog()
 
       if ( m_InitialSlabOffsetType == pgsTypes::sotGirder )
       {
+         GetDlgItem(IDC_BACK_SLAB_OFFSET_LABEL)->EnableWindow(FALSE);
          m_ctrlBackSlabOffset.ShowDefaultWhenDisabled(FALSE);
+         GetDlgItem(IDC_BACK_SLAB_OFFSET_UNIT)->EnableWindow(FALSE);
+
+         GetDlgItem(IDC_AHEAD_SLAB_OFFSET_LABEL)->EnableWindow(FALSE);
          m_ctrlAheadSlabOffset.ShowDefaultWhenDisabled(FALSE);
+         GetDlgItem(IDC_AHEAD_SLAB_OFFSET_UNIT)->EnableWindow(FALSE);
       }
       else
       {
+         GetDlgItem(IDC_BACK_SLAB_OFFSET_LABEL)->EnableWindow(TRUE);
          m_ctrlBackSlabOffset.ShowDefaultWhenDisabled(TRUE);
+         GetDlgItem(IDC_BACK_SLAB_OFFSET_UNIT)->EnableWindow(TRUE);
+
+         GetDlgItem(IDC_AHEAD_SLAB_OFFSET_LABEL)->EnableWindow(TRUE);
          m_ctrlAheadSlabOffset.ShowDefaultWhenDisabled(TRUE);
+         GetDlgItem(IDC_AHEAD_SLAB_OFFSET_UNIT)->EnableWindow(TRUE);
       }
    }
    else
    {
       m_ctrlSlabOffsetType.EnableWindow(FALSE);
+
+      GetDlgItem(IDC_BACK_SLAB_OFFSET_LABEL)->EnableWindow(FALSE);
       m_ctrlBackSlabOffset.EnableWindow(FALSE);
+      GetDlgItem(IDC_BACK_SLAB_OFFSET_UNIT)->EnableWindow(FALSE);
+
+      GetDlgItem(IDC_AHEAD_SLAB_OFFSET_LABEL)->EnableWindow(FALSE);
       m_ctrlAheadSlabOffset.EnableWindow(FALSE);
+      GetDlgItem(IDC_AHEAD_SLAB_OFFSET_UNIT)->EnableWindow(FALSE);
    }
 
    EventIndexType eventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetPierErectionEventIndex(m_PierID);

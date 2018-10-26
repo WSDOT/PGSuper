@@ -67,6 +67,12 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,                 
    ApplyPointsOfInterest(pBroker, segmentKey, leftSupportLoc, rightSupportLoc, E, lcidGirder, bModelLeftCantilever, bModelRightCantilever, vPOI, ppModel, pPoiMap);
 }
 
+Float64 g_L;
+bool RemovePOI(const pgsPointOfInterest& poi)
+{
+   return !::InRange(0.0,poi.GetDistFromStart(),g_L);
+}
+
 void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType intervalIdx, const CSegmentKey& segmentKey,
    Float64 segmentLength, Float64 leftSupportLoc, Float64 rightSupportLoc, Float64 E,
    LoadCaseIDType lcidGirder, const std::vector<pgsPointOfInterest>& vPOI, IFem2dModel** ppModel)
@@ -87,6 +93,9 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType inter
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    std::vector<pgsPointOfInterest> xsPOI = pPoi->GetPointsOfInterest(segmentKey,POI_SECTCHANGE);
    pPoi->RemovePointsOfInterest(xsPOI,POI_ERECTED_SEGMENT,POI_CANTILEVER);
+
+   g_L = segmentLength;
+   xsPOI.erase(std::remove_if(xsPOI.begin(),xsPOI.end(),RemovePOI),xsPOI.end());// make sure no out of bound poi's sneak in
 
    // sometimes we loose the released segment POI at 0L and 1.0L in the call to RemovePointsOfInterest above
    // these are key POI so include them here so we are guarenteed to have them.

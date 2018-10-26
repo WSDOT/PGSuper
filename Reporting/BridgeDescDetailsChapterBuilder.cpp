@@ -574,7 +574,7 @@ void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDis
       }
       else
       {
-         *pParagraph << _T("Diaphragm Location: ") << rule.Location << rptNewLine;
+         *pParagraph << _T("Diaphragm Location: ") << rule.Location << Sub2(_T("L"),_T("s")) << rptNewLine;
       }
 
       *pParagraph << rptNewLine;

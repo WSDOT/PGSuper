@@ -81,6 +81,7 @@ protected:
    Int32 m_TempStrandKey;
 
    CPrecastSegmentData* m_pSegment;
+   CStrandData m_Strands;
 
 public:
    afx_msg void OnBnClickedAdd();

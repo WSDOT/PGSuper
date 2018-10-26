@@ -895,7 +895,7 @@ lrfdElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEst
          // Elastic shortening loss method switches to iterative solution if jacking stress is not
          // equal to 0.75Fpu. Let user know if this happened.
          GET_IFACE(IEAFStatusCenter,pStatusCenter);
-         std::_tstring msg = _T("The Jacking stress is not equal to 0.75Fpu, or temporary strands exist. Hence, for calculation of elastic shortening, an iterative solution was used to find Fcgp after release rather than assuming 0.7*Fpu.");
+         std::_tstring msg = _T("Either the Jacking stress is not equal to 0.75Fpu, or Debonded strands are present, or Temporary strands are present, or the girder is Not Prismatic. Therefore, for the calculation of elastic shortening; an iterative solution was used to find Fcgp after release rather than assuming 0.7*Fpu per the TxDOT design manual.");
          CEAFStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,1,m_StatusGroupID,m_scidGirderDescriptionWarning,msg.c_str());
          pStatusCenter->Add(pStatusItem);
       }

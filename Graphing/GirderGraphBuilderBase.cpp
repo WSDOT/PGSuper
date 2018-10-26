@@ -34,6 +34,8 @@
 #include <EAF\EAFAutoProgress.h>
 #include <UnitMgt\UnitValueNumericalFormatTools.h>
 
+#include <Hints.h>
+
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
@@ -210,6 +212,14 @@ void CGirderGraphBuilderBase::Shift(bool bShift)
 bool CGirderGraphBuilderBase::Shift() const
 {
    return m_bShift;
+}
+
+void CGirderGraphBuilderBase::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+{
+   if (lHint == HINT_SELECTIONCHANGED)
+      return; // none of the graphs are keyed to the selection, so if the selection changes, do nothing
+
+   CEAFAutoCalcGraphBuilder::OnUpdate(pSender, lHint, pHint);
 }
 
 bool CGirderGraphBuilderBase::UpdateNow()

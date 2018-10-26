@@ -2135,13 +2135,23 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             (*pTable)(row,1) << pGroup->GetGirder(gdrIdx)->GetGirderName();
             row++;
 
-            PierIndexType startPierIdx, endPierIdx;
-            pBridge->GetGirderGroupPiers(grpIdx,&startPierIdx,&endPierIdx);
-            for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
+            if (pBridgeDesc->GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone)
             {
-               (*pTable)(row,0) << _T("Slab Offset (\"A\" Dimension) at Pier ") << LABEL_PIER(pierIdx);
-               (*pTable)(row,1) << cmpdim.SetValue(pBridge->GetSlabOffset(thisSegmentKey.groupIndex,pierIdx,thisSegmentKey.girderIndex));
-               row++;
+               PierIndexType startPierIdx, endPierIdx;
+               pBridge->GetGirderGroupPiers(grpIdx, &startPierIdx, &endPierIdx);
+               for (PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++)
+               {
+                  if (pBridge->IsAbutment(pierIdx))
+                  {
+                     (*pTable)(row, 0) << _T("Slab Offset (\"A\" Dimension) at Abutment ") << LABEL_PIER(pierIdx);
+                  }
+                  else
+                  {
+                     (*pTable)(row, 0) << _T("Slab Offset (\"A\" Dimension) at Pier ") << LABEL_PIER(pierIdx);
+                  }
+                  (*pTable)(row, 1) << cmpdim.SetValue(pBridge->GetSlabOffset(thisSegmentKey.groupIndex, pierIdx, thisSegmentKey.girderIndex));
+                  row++;
+               }
             }
 
             CString strFillType;

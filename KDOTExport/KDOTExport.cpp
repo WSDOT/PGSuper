@@ -20,7 +20,6 @@
 #include "KDOTComponentInfo.h"
 
 #include "PGSuperInterfaces.h"
-#include "\BSDev\PGSuperExtensions\BridgeSightBearings.h"
 #include <IFace\DocumentType.h>
 
 CComModule _Module;

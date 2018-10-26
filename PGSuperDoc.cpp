@@ -272,6 +272,13 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,arSlabOffsetDesignType designSlabOff
       return;
    }
 
+   GET_IFACE(ISectionProperties, pSectProp);
+   if (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed)
+   {
+      AfxMessageBox(_T("Analysis is based on transformed sections. Girder design is not available for this analysis type. Change the Project Criteria to one using gross section properties to enable girder design."));
+      return;
+   }
+
    CGirderKey thisGirderKey = girderKey;
    thisGirderKey.groupIndex  = (girderKey.groupIndex  == INVALID_INDEX ? 0 : girderKey.groupIndex);
    thisGirderKey.girderIndex = (girderKey.girderIndex == INVALID_INDEX ? 0 : girderKey.girderIndex);

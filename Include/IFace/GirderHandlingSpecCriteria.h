@@ -118,9 +118,8 @@ interface ISegmentLiftingSpecCriteria : IUnknown
    virtual pgsTypes::WindType GetLiftingWindType() = 0;
    virtual Float64 GetLiftingWindLoad() = 0;
 
-   // returns true if lifting stresses are to be evaluated for a plumb girder,
-   // otherwise they will be evaluated for a tilted girder in its equilibrium position
-   virtual bool EvaluateLiftingStressesPlumbGirder() = 0;
+   // returns true if lifting stresses are to be evaluated a tilted girder in its equilibrium position
+   virtual bool EvaluateLiftingStressesAtEquilibriumAngle() = 0;
 
    virtual stbLiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey) = 0;
    virtual stbLiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& liftConfig) = 0;
@@ -213,6 +212,9 @@ interface ISegmentHaulingSpecCriteria : IUnknown
    virtual pgsTypes::CFType GetCentrifugalForceType() = 0;
    virtual Float64 GetHaulingSpeed() = 0;
    virtual Float64 GetTurningRadius() = 0;
+
+   // returns true if hauling stresses are to be evaluated a tilted girder in its equilibrium position
+   virtual bool EvaluateHaulingStressesAtEquilibriumAngle() = 0;
 
    virtual stbHaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey) = 0;
    virtual stbHaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& haulConfig) = 0;

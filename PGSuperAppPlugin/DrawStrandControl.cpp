@@ -42,6 +42,7 @@ IMPLEMENT_DYNAMIC(CDrawStrandControl, CWnd)
 CDrawStrandControl::CDrawStrandControl()
 {
    m_pSegment = nullptr;
+   m_pStrands = nullptr;
 }
 
 CDrawStrandControl::~CDrawStrandControl()
@@ -57,7 +58,7 @@ END_MESSAGE_MAP()
 
 
 // CDrawStrandControl message handlers
-void CDrawStrandControl::CustomInit(const CPrecastSegmentData* pSegment)
+void CDrawStrandControl::CustomInit(const CPrecastSegmentData* pSegment,const CStrandData* pStrands)
 {
    m_Shape[pgsTypes::metStart].Release();
    m_Shape[pgsTypes::metEnd].Release();
@@ -65,6 +66,7 @@ void CDrawStrandControl::CustomInit(const CPrecastSegmentData* pSegment)
    m_BottomFlange.Release();
 
    m_pSegment = pSegment;
+   m_pStrands = pStrands;
 
    m_Radius = ::ConvertToSysUnits(0.3,unitMeasure::Inch) * 1.5;
 
@@ -331,7 +333,7 @@ void CDrawStrandControl::DrawStrands(CDC* pDC,grlibPointMapper& leftMapper,grlib
    CBrush debondedBrush(DEBOND_FILL_COLOR);
 
 
-   const CStrandRowCollection& strandRows = m_pSegment->Strands.GetStrandRows();
+   const CStrandRowCollection& strandRows = m_pStrands->GetStrandRows();
    CStrandRowCollection::const_iterator iter(strandRows.begin());
    CStrandRowCollection::const_iterator iterEnd(strandRows.end());
    for ( ; iter != iterEnd; iter++ )

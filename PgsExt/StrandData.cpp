@@ -1597,6 +1597,36 @@ bool CStrandData::IsExtendedStrand(pgsTypes::StrandType strandType,GridIndexType
    return found != m_NextendedStrands[strandType][endType].end();
 }
 
+StrandIndexType CStrandData::GetExtendedStrandCount(pgsTypes::StrandType strandType, pgsTypes::MemberEndType endType) const
+{
+   if (strandType == pgsTypes::Permanent)
+   {
+      ATLASSERT(false); // should never be called
+      return 0;
+   }
+
+   StrandIndexType nExtendedStrands = 0;
+   if (m_NumPermStrandsType == sdtDirectInput)
+   {
+      CStrandRowCollection::const_iterator rowIter(m_StrandRows.begin());
+      CStrandRowCollection::const_iterator rowIterEnd(m_StrandRows.end());
+      for (; rowIter != rowIterEnd; rowIter++)
+      {
+         const CStrandRow& row = *rowIter;
+         if (row.m_StrandType == strandType && row.m_bIsExtendedStrand[endType])
+         {
+            nExtendedStrands += row.m_nStrands;
+         }
+      }
+   }
+   else
+   {
+      nExtendedStrands = m_NextendedStrands[strandType][endType].size();
+   }
+
+   return nExtendedStrands;
+}
+
 // Resets all the prestressing put to default values
 void CStrandData::ResetPrestressData()
 {

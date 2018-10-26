@@ -66,8 +66,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,1,0,0
- PRODUCTVERSION 3,1,0,0
+ FILEVERSION 3,1,1,0
+ PRODUCTVERSION 3,1,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -85,11 +85,11 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.1.0.0"
+            VALUE "FileVersion", "3.1.1.0"
             VALUE "InternalName", "psgLib"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.1.0.0"
+            VALUE "ProductVersion", "3.1.1.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -498,6 +498,7 @@ BEGIN
     LTEXT           "In areas with sufficient bonded reinforcement",IDC_STATIC_GH14,21,370,152,9,NOT WS_GROUP
     EDITTEXT        IDC_HAULING_TENSION_WITH_REBAR_SUPER,177,367,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'c (MPa))",IDC_HAULING_TENSION_WITH_REBAR_UNIT_SUPER,217,369,90,8,NOT WS_GROUP
+    COMBOBOX        IDC_STRESSES,211,270,238,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_SPEC_STRANDS DIALOGEX 0, 0, 408, 430
@@ -748,8 +749,7 @@ BEGIN
     LTEXT           "In areas with sufficient bonded reinforcement",IDC_STATIC_ACSSB,15,264,143,8
     EDITTEXT        IDC_LIFTING_TENSION_WITH_REBAR,167,262,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'ci (MPa))",IDC_LIFTING_TENSION_WITH_REBAR_UNIT,211,264,90,8
-    LTEXT           "Evaluate stresses for",IDC_STATIC,263,214,66,8
-    COMBOBOX        IDC_STRESSES,333,212,127,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_STRESSES,222,212,238,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_GIRDER_PERMANENT_STRANDS DIALOGEX 0, 0, 484, 365

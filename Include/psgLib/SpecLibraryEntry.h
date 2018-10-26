@@ -624,8 +624,8 @@ public:
    Float64 GetLiftingWindLoad() const;
    void SetLiftingWindLoad(Float64 wl);
 
-   bool EvaluateLiftingStressesPlumbGirder() const;
-   void EvaluateLiftingStressesPlumbGirder(bool bPlumb);
+   bool EvaluateLiftingStressesAtEquilibriumAngle() const;
+   void EvaluateLiftingStressesAtEquilibriumAngle(bool bComputeStressesAtEquilibriumAngle);
 
    //////////////////////////////////////
    //
@@ -741,6 +741,9 @@ public:
 
    Float64 GetTurningRadius() const;
    void SetTurningRadius(Float64 r);
+
+   bool EvaluateHaulingStressesAtEquilibriumAngle() const;
+   void EvaluateHaulingStressesAtEquilibriumAngle(bool bComputeStressesAtEquilibriumAngle);
 
    //
    // Values used for KDOT method only
@@ -1256,7 +1259,7 @@ private:
    Float64 m_LiftingCamberMultiplier; // multilplier for direct camber
    pgsTypes::WindType m_LiftingWindType;
    Float64 m_LiftingWindLoad;
-   bool m_LiftingStressesPlumbGirder;
+   bool m_bComputeLiftingStressesAtEquilibriumAngle;
    Float64 m_SplittingZoneLengthFactor;
 
    // hauling
@@ -1304,6 +1307,8 @@ private:
    pgsTypes::CFType m_CentrifugalForceType;
    Float64 m_HaulingSpeed;
    Float64 m_TurningRadius;
+
+   bool m_bComputeHaulingStressesAtEquilibriumAngle;
 
    // Used for KDOT only
    bool    m_UseMinTruckSupportLocationFactor;

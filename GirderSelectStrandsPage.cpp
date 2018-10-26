@@ -134,7 +134,12 @@ void CGirderSelectStrandsPage::DoDataExchange(CDataExchange* pDX)
       }
 
       // must call grid to exchange its data
-      if(!m_Grid.UpdateData(true))
+      if (m_Grid.UpdateData(true))
+      {
+         m_pStrands->SetExtendedStrands(pgsTypes::Straight, pgsTypes::metStart, m_ExtendedStrands[pgsTypes::metStart]);
+         m_pStrands->SetExtendedStrands(pgsTypes::Straight, pgsTypes::metEnd,   m_ExtendedStrands[pgsTypes::metEnd]);
+      }
+      else
       {
          HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_STRAND_GRID);
          pDX->Fail();

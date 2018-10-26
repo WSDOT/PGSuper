@@ -45,7 +45,7 @@ static char THIS_FILE[] = __FILE__;
 // 2.9 and 3.0 branches. It is ok for loads to fail for 44.0 <= version <= MAX_OVERLAP_VERSION.
 #define MAX_OVERLAP_VERSION 53.0 // overlap of data blocks between PGS 2.9 and 3.0 end with this version
 
-#define CURRENT_VERSION 58.0 
+#define CURRENT_VERSION 59.0 
 
 /****************************************************************************
 CLASS
@@ -240,9 +240,10 @@ m_HaunchLoadComputationType(pgsTypes::hlcZeroCamber),
 m_HaunchLoadCamberTolerance(::ConvertToSysUnits(0.5,unitMeasure::Inch)),
 m_LiftingWindType(pgsTypes::Speed),
 m_LiftingWindLoad(0),
-m_LiftingStressesPlumbGirder(true),
+m_bComputeLiftingStressesAtEquilibriumAngle(false),
 m_HaulingWindType(pgsTypes::Speed),
 m_HaulingWindLoad(0),
+m_bComputeHaulingStressesAtEquilibriumAngle(true),
 m_CentrifugalForceType(pgsTypes::Favorable),
 m_HaulingSpeed(0),
 m_TurningRadius(::ConvertToSysUnits(1000,unitMeasure::Feet)),
@@ -509,7 +510,8 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("LiftingCamberMultiplier"), m_LiftingCamberMultiplier); // added version 58
    pSave->Property(_T("LiftingWindType"),(Int32)m_LiftingWindType); // added in version 56
    pSave->Property(_T("LiftingWindLoad"),m_LiftingWindLoad); // added in version 56
-   pSave->Property(_T("LiftingStressesPlumbGirder"),m_LiftingStressesPlumbGirder); // added in version 56
+   //pSave->Property(_T("LiftingStressesPlumbGirder"), m_LiftingStressesPlumbGirder); // added in version 56, removed 59
+   pSave->Property(_T("LiftingStressesEquilibriumAngle"), m_bComputeLiftingStressesAtEquilibriumAngle); // added in version 59
    pSave->Property(_T("EnableHaulingCheck"), m_EnableHaulingCheck);
    pSave->Property(_T("EnableHaulingDesign"), m_EnableHaulingDesign);
    pSave->Property(_T("HaulingAnalysisMethod"), (Int32)m_HaulingAnalysisMethod); // added version 43
@@ -525,6 +527,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("CentrifugalForceType"),(Int32)m_CentrifugalForceType); // added in version 56
    pSave->Property(_T("HaulingSpeed"),m_HaulingSpeed); // added in version 56
    pSave->Property(_T("TurningRadius"),m_TurningRadius); // added in version 56
+   pSave->Property(_T("HaulingStressesEquilibriumAngle"), m_bComputeHaulingStressesAtEquilibriumAngle); // added in version 59
    pSave->Property(_T("CompStressHauling"), m_CompStressHauling);
 
    //pSave->Property(_T("TensStressHauling"),m_TensStressHauling); // removed in version 56
@@ -1353,9 +1356,21 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
-         if ( !pLoad->Property(_T("LiftingStressesPlumbGirder"),&m_LiftingStressesPlumbGirder) )
+         if (version < 59)
          {
-            THROW_LOAD(InvalidFileFormat,pLoad);
+            bool bPlumbGirder;
+            if (!pLoad->Property(_T("LiftingStressesPlumbGirder"), &bPlumbGirder))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+            m_bComputeLiftingStressesAtEquilibriumAngle = !bPlumbGirder;
+         }
+         else
+         {
+            if (!pLoad->Property(_T("LiftingStressesEquilibriumAngle"), &m_bComputeLiftingStressesAtEquilibriumAngle))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
          }
       }
 
@@ -1488,6 +1503,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if (!pLoad->Property(_T("TurningRadius"),&m_TurningRadius) )
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if (58 < version)
+         {
+            // added in version 59
+            if (!pLoad->Property(_T("HaulingStressesEquilibriumAngle"), &m_bComputeHaulingStressesAtEquilibriumAngle))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
          }
       }
 
@@ -4298,7 +4322,7 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
         (m_LiftingCamberMethod == pgsTypes::cmDirect && !::IsEqual(m_LiftingCamberMultiplier, rOther.m_LiftingCamberMultiplier)) ||
         m_LiftingWindType != rOther.m_LiftingWindType ||
         !::IsEqual(m_LiftingWindLoad,rOther.m_LiftingWindLoad) ||
-        m_LiftingStressesPlumbGirder != rOther.m_LiftingStressesPlumbGirder
+        m_bComputeLiftingStressesAtEquilibriumAngle != rOther.m_bComputeLiftingStressesAtEquilibriumAngle
      )
    {
       RETURN_ON_DIFFERENCE;
@@ -4360,8 +4384,9 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
             !::IsEqual(m_HaulingWindLoad,rOther.m_HaulingWindLoad) ||
             m_CentrifugalForceType != rOther.m_CentrifugalForceType ||
             !::IsEqual(m_HaulingSpeed,rOther.m_HaulingSpeed) ||
-            !::IsEqual(m_TurningRadius,rOther.m_TurningRadius)
-           )
+            !::IsEqual(m_TurningRadius,rOther.m_TurningRadius) ||
+            m_bComputeHaulingStressesAtEquilibriumAngle != rOther.m_bComputeHaulingStressesAtEquilibriumAngle
+            )
          {
             RETURN_ON_DIFFERENCE;
             vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Hauling Analysis Parameters are different"),_T(""),_T("")));
@@ -5374,6 +5399,16 @@ void SpecLibraryEntry::SetTurningRadius(Float64 r)
    m_TurningRadius = r;
 }
 
+bool SpecLibraryEntry::EvaluateHaulingStressesAtEquilibriumAngle() const
+{
+   return m_bComputeHaulingStressesAtEquilibriumAngle;
+}
+
+void SpecLibraryEntry::EvaluateHaulingStressesAtEquilibriumAngle(bool bComputeStressesAtEquilibriumAngle)
+{
+   m_bComputeHaulingStressesAtEquilibriumAngle = bComputeStressesAtEquilibriumAngle;
+}
+
 Float64 SpecLibraryEntry::GetHaulingModulusOfRuptureFactor(pgsTypes::ConcreteType type) const
 {
    return m_HaulingModulusOfRuptureCoefficient[type];
@@ -5439,14 +5474,14 @@ void SpecLibraryEntry::SetLiftingWindLoad(Float64 wl)
    m_LiftingWindLoad = wl;
 }
 
-bool SpecLibraryEntry::EvaluateLiftingStressesPlumbGirder() const
+bool SpecLibraryEntry::EvaluateLiftingStressesAtEquilibriumAngle() const
 {
-   return m_LiftingStressesPlumbGirder;
+   return m_bComputeLiftingStressesAtEquilibriumAngle;
 }
 
-void SpecLibraryEntry::EvaluateLiftingStressesPlumbGirder(bool bPlumb)
+void SpecLibraryEntry::EvaluateLiftingStressesAtEquilibriumAngle(bool bComputeStressesAtEquilibriumAngle)
 {
-   m_LiftingStressesPlumbGirder = bPlumb;
+   m_bComputeLiftingStressesAtEquilibriumAngle = bComputeStressesAtEquilibriumAngle;
 }
 
 Float64 SpecLibraryEntry::GetAtReleaseTensionStressFactorWithRebar() const
@@ -6990,12 +7025,13 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
 
    m_LiftingWindType = rOther.m_LiftingWindType;
    m_LiftingWindLoad = rOther.m_LiftingWindLoad;
-   m_LiftingStressesPlumbGirder = rOther.m_LiftingStressesPlumbGirder;
+   m_bComputeLiftingStressesAtEquilibriumAngle = rOther.m_bComputeLiftingStressesAtEquilibriumAngle;
    m_HaulingWindType = rOther.m_HaulingWindType;
    m_HaulingWindLoad = rOther.m_HaulingWindLoad;
    m_CentrifugalForceType = rOther.m_CentrifugalForceType;
    m_HaulingSpeed = rOther.m_HaulingSpeed;
    m_TurningRadius = rOther.m_TurningRadius;
+   m_bComputeHaulingStressesAtEquilibriumAngle = rOther.m_bComputeHaulingStressesAtEquilibriumAngle;
 
    m_CompStressHauling          = rOther.m_CompStressHauling;
    m_TensStressHaulingNormalCrown          = rOther.m_TensStressHaulingNormalCrown;

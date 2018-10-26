@@ -3,11 +3,14 @@ Stability {#tg_stability}
 As girders become longer, lifting and hauling them becomes more and more challenging. In fact, stresses and stability during lifting and handling often become controlling conditions. This section gives a brief overview of the methods used to analyze lifting and hauling of long girders. For a full treatment on these topics, we urge you to read the references sited below.
 
 
-In-depth analyses is performed to check criteria for lifting and hauling based on methods cited in the PCI Journal and elsewhere. Two methods are provided for the analysis of hauling (shipping) the girder to the bridge site. These are designated as the Washington State DOT and Kansas State DOT methods.
+In-depth analyses is performed to check criteria for lifting and hauling based on methods described in PCI document CB-02-16-E, "Recommended Practice for Lateral Stability of Precast, Prestressed Concrete Bridge Girders". Two methods are provided for the analysis of hauling (shipping) the girder to the bridge site. These are designated as the Washington State DOT and Kansas State DOT methods.
+
+Several options are provided to customize the stress and stability calculations including methods for computing stresses and parameters to account for wind, centrifugal forces, and impact.
 
 ### Lifting Analysis and WSDOT Method for Hauling Analysis ###
 
 Analysis of stresses and stability during lifting and hauling is described in the following papers:
+* "Recommended Practice for Lateral Stability of Precast, Prestressed Concrete Bridge Girders", PCI Document CB-02-16-E, 1st Edition.
 * ["Lateral Stability of Long Prestressed Concrete Beams - Part 1", Robert F. Mast, P.E., PCI Journal, January-February 1989 Edition](http://www.pci.org/uploadedFiles/Siteroot/Publications/PCI_Journal/1989/DOI_Articles/jl-89-january-february-3.pdf) 
 * ["Lateral Stability of Long Prestressed Concrete Beams - Part 2", Robert F. Mast, P.E., PCI Journal, January-February 1993 Edition](http://www.pci.org/uploadedFiles/Siteroot/Publications/PCI_Journal/1993/DOI_Articles/jl-93-january-february-6.pdf)
 * ["Handling and Shipping of Long Span Bridge Beams", George Laszlo, P.E. and Richard R. Imper, P.E., PCI Journal, November-December 1987 Edition](http://www.pci.org/uploadedFiles/Siteroot/Publications/PCI_Journal/1987/DOI_Articles/jl-87-november-december-6.pdf)
@@ -15,6 +18,11 @@ Analysis of stresses and stability during lifting and hauling is described in th
 In-depth examples are given in:
 * ["New Deep WSDOT Standard Sections Extend Spans of Prestressed Concrete Girders", Stephen J. Seguirant, P.E., PCI Journal, July-August 1998 Edition](http://www.pci.org/uploadedFiles/Siteroot/Publications/PCI_Journal/1998/DOI_Articles/jl-98-july-august-7.pdf)
 * ["Design optimization for fabrication of pretensioned concrete bridge girders: An example problem", Brice, Richard, B. Khaleghi, and S. J. Seguirant, 2009, . PCI Journal, V. 54, No. 4 (Fall 2009): pp. 73-111](http://www.pci.org/uploadedFiles/Siteroot/Publications/PCI_Journal/2009/DOI_Articles/JL-09-FALL-8.pdf).
+
+The WSDOT method for hauling analysis looks at the following cases:
+1) Stress limitations during normal hauling conditions
+2) Stress limitations at slow speeds in a superelevated condition
+3) Stability limitations at slow speeds in a superelevated condition.
 
 ### KDOT Method for Hauling Analysis ###
 Hauling from the casting yard to the bridge site is a critical stage in the life of a prestressed girder. Dynamic load effects and support locations can create stress conditions that control overall girder design. The Kansas DOT utilizes their own unique approach to the hauling analysis. Section 3.5.2.13 of the KDOT Bridge Design Manual describes the method as follows:

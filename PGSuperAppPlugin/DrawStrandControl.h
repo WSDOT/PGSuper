@@ -36,7 +36,7 @@ public:
 	CDrawStrandControl();
 	virtual ~CDrawStrandControl();
 
-   void CustomInit(const CPrecastSegmentData* pSegment);
+   void CustomInit(const CPrecastSegmentData* pSegment,const CStrandData* pStrands);
 
    afx_msg BOOL OnEraseBkgnd(CDC* pDC);
    afx_msg void OnPaint();
@@ -44,6 +44,7 @@ public:
 protected:
 	DECLARE_MESSAGE_MAP()
    const CPrecastSegmentData* m_pSegment; // this is the segment for which we are drawing strands
+   const CStrandData* m_pStrands; // these are the actual strand data (can be edited from UI and thus different from m_pSegment->Strands)
 
    Float64 m_Hg; // maximum height of section
 

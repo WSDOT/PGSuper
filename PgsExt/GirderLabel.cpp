@@ -306,16 +306,16 @@ LPCTSTR GetLimitStateString(pgsTypes::LimitState limitState)
       _T("Service III (Operating)"),
       _T("Strength I (Legal - Routine)"),
       _T("Strength I (Legal - Special)"),
-      _T("Strength I (Legal - Emergency)"),
       _T("Service III (Legal - Routine)"),
       _T("Service III (Legal - Special)"),
-      _T("Service III (Legal - Emergency)"),
       _T("Strength II (Routine Permit Rating)"),
       _T("Service I (Routine Permit Rating)"),
       _T("Service III (Routine Permit Rating)"),
       _T("Strength II (Special Permit Rating)"),
       _T("Service I (Special Permit Rating)"),
-      _T("Service III (Special Permit Rating)")
+      _T("Service III (Special Permit Rating)"),
+      _T("Strength I (Legal - Emergency)"),
+      _T("Service III (Legal - Emergency)"),
    };
 
    // the direct lookup in the array is faster, however if the enum changes (number of values or order of values)

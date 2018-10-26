@@ -212,7 +212,7 @@ public:
    virtual Float64 GetLiftingCamberMultiplier() override;
    virtual pgsTypes::WindType GetLiftingWindType() override;
    virtual Float64 GetLiftingWindLoad() override;
-   virtual bool EvaluateLiftingStressesPlumbGirder() override;
+   virtual bool EvaluateLiftingStressesAtEquilibriumAngle() override;
    virtual stbLiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey) override;
    virtual stbLiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& liftConfig) override;
 
@@ -263,6 +263,7 @@ public:
    virtual pgsTypes::CFType GetCentrifugalForceType() override;
    virtual Float64 GetHaulingSpeed() override;
    virtual Float64 GetTurningRadius() override;
+   virtual bool EvaluateHaulingStressesAtEquilibriumAngle() override;
    virtual stbHaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey) override;
    virtual stbHaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& haulConfig) override;
 
