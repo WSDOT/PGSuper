@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Include>
+   <?define PGSuperVersion    = 2.7.3.3?> <!-- also change this version number in the BuildPGSuperImagesFragment.js file -->
+   <?define BEToolboxVersion  = 2.0.0.2?>
+   <?define WBFLVersion       = 3.6.3.3?>
+
+   <?if $(var.Platform) = "x64"?>
+      <?define ProgramFilesDirectory = ProgramFiles64Folder?>
+      <?define ProductID = {DCD848D7-976A-4202-87FF-F2EDAB63F42C}?>
+      <?define UpgradeCode = {EC0D1EDB-895C-4596-9148-763A7B245C26}?>
+      <?define PlatformFolder=x64?>
+      <?define IsWin64=yes?>
+   <?else?>
+      <?define ProgramFilesDirectory = ProgramFilesFolder?>
+      <?define ProductID = {AF0C80B1-F24B-4F7F-AD58-E8DFD309BEFC}?>
+      <?define UpgradeCode = {95B068FF-CDFC-43B9-BD5D-09F66107E931}?>
+      <?define PlatformFolder=Win32?>
+      <?define IsWin64=no?>
+   <?endif?>
+
+   <?define ProductName=PGSuper?>
+   
+   <?define BridgeLinkAppPluginCATID={7118F295-997E-4874-9BDC-4900265FA273}?>
+   <?define BridgeLinkComponentInfoCATID={FA0DB81D-8760-4a60-B76C-8768D34FF01D}?>
+
+   <?define WBFLSourceRoot=\ARP_RELEASE\WBFL\$(var.WBFLVersion)\bin\?>
+   <?define BEToolboxSourceRoot=\ARP_RELEASE\BEToolbox\$(var.BEToolboxVersion)\bin\?>
+   <?define PGSuperSourceRoot=\ARP_RELEASE\PGSuper\$(var.PGSuperVersion)\bin\?>
+   
+   <?define GridSourceRoot=\ARP_RELEASE\Grid\?>
+</Include>
