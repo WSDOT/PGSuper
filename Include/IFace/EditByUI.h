@@ -76,7 +76,6 @@ DEFINE_GUID(IID_IEditByUI,
 0xe1cf3eaa, 0x3e85, 0x450a, 0x9a, 0x67, 0xd6, 0x8f, 0xf3, 0x21, 0xdc, 0x16);
 interface IEditByUI : IUnknown
 {
-#pragma Reminder("UPDATE: these should all return a boolean") // true = edited, false = cancelled, no change
    virtual void EditBridgeDescription(int nPage) = 0;
    virtual void EditAlignmentDescription(int nPage) = 0;
    virtual bool EditSegmentDescription(const CSegmentKey& segmentKey, int nPage) = 0;
@@ -99,14 +98,7 @@ interface IEditByUI : IUnknown
 
    // NOTE: Strand fill type must be CStrandData::sdtDirectInput before entering this dialog
    virtual bool EditDirectInputPrestressing(const CSegmentKey& segmentKey) = 0;
-};
 
-// Extends the load editing capabilities... presents user with load editing UI as needed
-// {9E1D97F8-8315-4c77-AF6F-909310E114E6}
-DEFINE_GUID(IID_IEditByUIEx, 
-0x9e1d97f8, 0x8315, 0x4c77, 0xaf, 0x6f, 0x90, 0x93, 0x10, 0xe1, 0x14, 0xe6);
-interface IEditByUIEx : IEditByUI
-{
    virtual void AddPointLoad(const CPointLoadData& loadData) = 0;
    virtual void DeletePointLoad(CollectionIndexType loadIdx) = 0;
    virtual void AddDistributedLoad(const CDistributedLoadData& loadData) = 0;

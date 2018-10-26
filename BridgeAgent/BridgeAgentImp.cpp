@@ -88,7 +88,7 @@ static char THIS_FILE[] = __FILE__;
 DECLARE_LOGFILE;
 
 #if defined _DEBUG
-#define CHECK_POI_CONVERSIONS // if this is defined the POI conversion methods are checked
+//#define CHECK_POI_CONVERSIONS // if this is defined the POI conversion methods are checked
 #endif
 
 CogoObjectID g_AlignmentID = 999;
@@ -10133,11 +10133,8 @@ const matPsStrand* CBridgeAgentImp::GetStrandMaterial(const CSegmentKey& segment
    return pSegmentData->GetStrandMaterial(segmentKey,strandType);
 }
 
-Float64 CBridgeAgentImp::GetStrandRelaxation(const CSegmentKey& segmentKey,Float64 t1,Float64 t2,Float64 fpso,pgsTypes::StrandType strandType)
+Float64 CBridgeAgentImp::GetStrandRelaxation(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 fpi,pgsTypes::StrandType strandType)
 {
-#pragma Reminder("UPDATE: using dummy method for strand relaxation")
-   // this is the method used in Tadros 1977 paper. use the relaxation model from AASHTO
-
    if ( GetStrandCount(segmentKey,strandType) == 0 )
    {
       return 0.0; // no strands, no relaxation
@@ -10145,9 +10142,19 @@ Float64 CBridgeAgentImp::GetStrandRelaxation(const CSegmentKey& segmentKey,Float
 
    const matPsStrand* pStrand = GetStrandMaterial(segmentKey,strandType);
    Float64 fpy = pStrand->GetYieldStrength();
-   Float64 K = (pStrand->GetType() == matPsStrand::LowRelaxation ? 45 : 10);
-   Float64 xr = 0.7; // reduced relaxation parameter
-   Float64 fr = (xr/K)*fpso*(fpso/fpy - 0.55)*log( (24*t1 + 1)/(24*t2 + 1) );
+
+   IntervalIndexType stressStrandIntervalIdx = m_IntervalManager.GetStressStrandInterval(segmentKey);
+   if ( intervalIdx < stressStrandIntervalIdx )
+   {
+      // strand not stressed yet, so no relaxation
+      return 0;
+   }
+
+   Float64 tStress = m_IntervalManager.GetTime(segmentKey,stressStrandIntervalIdx,pgsTypes::Start);
+   Float64 tStart = m_IntervalManager.GetTime(segmentKey,intervalIdx,pgsTypes::Start);
+   Float64 tEnd   = m_IntervalManager.GetTime(segmentKey,intervalIdx,pgsTypes::End);
+
+   Float64 fr = GetRelaxation(fpi,fpy,pStrand->GetType(),tStart,tEnd,tStress);
    return fr;
 }
 
@@ -10158,11 +10165,8 @@ const matPsStrand* CBridgeAgentImp::GetTendonMaterial(const CGirderKey& girderKe
    return pPTData->pStrand;
 }
 
-Float64 CBridgeAgentImp::GetTendonRelaxation(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64 t1,Float64 t2,Float64 fpso)
+Float64 CBridgeAgentImp::GetTendonRelaxation(const CGirderKey& girderKey,DuctIndexType ductIdx,IntervalIndexType intervalIdx,Float64 fpi)
 {
-#pragma Reminder("UPDATE: using dummy method for strand relaxation")
-   // this is the method used in Tadros 1977 paper. use the relaxation model from AASHTO
-
    if ( GetTendonStrandCount(girderKey,ductIdx) == 0 )
    {
       return 0.0; // no strand, no relaxation
@@ -10170,9 +10174,19 @@ Float64 CBridgeAgentImp::GetTendonRelaxation(const CGirderKey& girderKey,DuctInd
 
    const matPsStrand* pStrand = GetTendonMaterial(girderKey);
    Float64 fpy = pStrand->GetYieldStrength();
-   Float64 K = (pStrand->GetType() == matPsStrand::LowRelaxation ? 45 : 10);
-   Float64 xr = 0.7; // reduced relaxation parameter
-   Float64 fr = (xr/K)*fpso*(fpso/fpy - 0.55)*log( (24*t1 + 1)/(24*t2 + 1) );
+
+   IntervalIndexType stressTendonIntervalIdx = m_IntervalManager.GetStressTendonInterval(girderKey,ductIdx);
+   if ( intervalIdx < stressTendonIntervalIdx )
+   {
+      // tendon not stressed yet, so no relaxation
+      return 0;
+   }
+
+   Float64 tStress = m_IntervalManager.GetTime(girderKey,stressTendonIntervalIdx,pgsTypes::Start);
+   Float64 tStart  = m_IntervalManager.GetTime(girderKey,intervalIdx,pgsTypes::Start);
+   Float64 tEnd    = m_IntervalManager.GetTime(girderKey,intervalIdx,pgsTypes::End);
+
+   Float64 fr = GetRelaxation(fpi,fpy,pStrand->GetType(),tStart,tEnd,tStress);
    return fr;
 }
 
@@ -17196,12 +17210,21 @@ Float64 CBridgeAgentImp::GetPerimeter(const pgsPointOfInterest& poi)
    pgsTypes::SectionPropertyType sectPropType = (pgsTypes::SectionPropertyType)(pSpecEntry->GetSectionPropertyMode());
 
    // want the perimeter of the plain girder...
-   IntervalIndexType releasePrestressInterval = m_IntervalManager.GetPrestressReleaseInterval(poi.GetSegmentKey());
-   SectProp& props = GetSectionProperties(releasePrestressInterval,poi,sectPropType);
+   IntervalIndexType intervalIdx;
+   if ( poi.HasAttribute(POI_CLOSURE) )
+   {
+      intervalIdx = GetCompositeClosureJointInterval(poi.GetSegmentKey());
+   }
+   else
+   {
+      intervalIdx = GetPrestressReleaseInterval(poi.GetSegmentKey());
+   }
+
+   SectProp& props = GetSectionProperties(intervalIdx,poi,sectPropType);
    return props.Perimeter;
 }
 
-Float64 CBridgeAgentImp::GetSurfaceArea(const CSegmentKey& segmentKey)
+Float64 CBridgeAgentImp::GetSegmentSurfaceArea(const CSegmentKey& segmentKey)
 {
    const GirderLibraryEntry* pGdrEntry = GetGirderLibraryEntry(segmentKey);
 
@@ -17211,7 +17234,7 @@ Float64 CBridgeAgentImp::GetSurfaceArea(const CSegmentKey& segmentKey)
    return factory->GetSurfaceArea(m_pBroker,segmentKey,true);
 }
 
-Float64 CBridgeAgentImp::GetVolume(const CSegmentKey& segmentKey)
+Float64 CBridgeAgentImp::GetSegmentVolume(const CSegmentKey& segmentKey)
 {
    const GirderLibraryEntry* pGdrEntry = GetGirderLibraryEntry(segmentKey);
 
@@ -17219,6 +17242,114 @@ Float64 CBridgeAgentImp::GetVolume(const CSegmentKey& segmentKey)
    pGdrEntry->GetBeamFactory(&factory);
 
    return factory->GetVolume(m_pBroker,segmentKey);
+}
+
+Float64 CBridgeAgentImp::GetClosureJointSurfaceArea(const CClosureKey& closureKey)
+{
+   std::vector<pgsPointOfInterest> vPoi(GetPointsOfInterest(closureKey,POI_CLOSURE));
+   ATLASSERT(vPoi.size() == 1);
+   pgsPointOfInterest closurePoi(vPoi.back());
+   ATLASSERT(closurePoi.GetID() != INVALID_ID);
+   Float64 L = GetClosureJointLength(closureKey);
+   Float64 P = GetPerimeter(closurePoi);
+   Float64 S = P*L;
+   return S;
+}
+
+Float64 CBridgeAgentImp::GetClosureJointVolume(const CClosureKey& closureKey)
+{
+   std::vector<pgsPointOfInterest> vPoi(GetPointsOfInterest(closureKey,POI_CLOSURE));
+   ATLASSERT(vPoi.size() == 1);
+   pgsPointOfInterest closurePoi(vPoi.back());
+   ATLASSERT(closurePoi.GetID() != INVALID_ID);
+   Float64 L = GetClosureJointLength(closureKey);
+
+   IntervalIndexType compositeClosureIdx = GetCompositeClosureJointInterval(closureKey);
+   Float64 A = GetAg(compositeClosureIdx,closurePoi);
+   Float64 V = A*L;
+   return V;
+}
+
+Float64 CBridgeAgentImp::GetDeckSurfaceArea()
+{
+#pragma Reminder("UPDATE: this could be made more efficient")
+   // This could be made more efficient by adding a property to the IBridgeDeck interface
+   // that returns the surface area of the deck concrete. The value could be computed once
+   // and cached
+   CComPtr<IBridgeDeck> deck;
+   m_Bridge->get_Deck(&deck);
+   if ( deck == NULL )
+   {
+      return 0;
+   }
+
+   PierIndexType nPiers = GetPierCount();
+   Float64 startStation = GetPierStation(0);
+   Float64 endStation = GetPierStation(nPiers-1);
+   Float64 N = 10;
+   Float64 increment = (endStation - startStation)/N;
+   Float64 station = startStation;
+   CComPtr<IShape> prevDeckShape;
+   m_SectCutTool->CreateSlabShape(m_Bridge,startStation,&prevDeckShape);
+   Float64 prevPerimeter;
+   prevDeckShape->get_Perimeter(&prevPerimeter);
+   station += increment;
+   Float64 S = 0;
+   for ( int i = 1; i <= N; i++ )
+   {
+      CComPtr<IShape> deckShape;
+      m_SectCutTool->CreateSlabShape(m_Bridge,station,&deckShape);
+      Float64 perimeter;
+      deckShape->get_Perimeter(&perimeter);
+      Float64 dS = increment*(prevPerimeter + perimeter)/2;
+      S += dS;
+   }
+   return S;
+}
+
+Float64 CBridgeAgentImp::GetDeckVolume()
+{
+#pragma Reminder("UPDATE: this could be made more efficient")
+   // This could be made more efficient by adding a property to the IBridgeDeck interface
+   // that returns the volume of the deck concrete. The value could be computed once
+   // and cached
+   CComPtr<IBridgeDeck> deck;
+   m_Bridge->get_Deck(&deck);
+   if ( deck == NULL )
+   {
+      return 0;
+   }
+
+   PierIndexType nPiers = GetPierCount();
+   Float64 startStation = GetPierStation(0);
+   Float64 endStation = GetPierStation(nPiers-1);
+   Float64 N = 10;
+   Float64 increment = (endStation - startStation)/N;
+   Float64 station = startStation;
+   CComPtr<IShape> prevDeckShape;
+   m_SectCutTool->CreateSlabShape(m_Bridge,startStation,&prevDeckShape);
+
+   CComPtr<IShapeProperties> shapeProps;
+   prevDeckShape->get_ShapeProperties(&shapeProps);
+   Float64 prevArea;
+   shapeProps->get_Area(&prevArea);
+
+   station += increment;
+   Float64 V = 0;
+   for ( int i = 1; i <= N; i++ )
+   {
+      CComPtr<IShape> deckShape;
+      m_SectCutTool->CreateSlabShape(m_Bridge,station,&deckShape);
+
+      shapeProps.Release();
+      deckShape->get_ShapeProperties(&shapeProps);
+
+      Float64 area;
+      shapeProps->get_Area(&area);
+      Float64 dV = increment*(prevArea + area)/2;
+      V += dV;
+   }
+   return V;
 }
 
 Float64 CBridgeAgentImp::GetBridgeEIxx(Float64 Xb)
@@ -25101,4 +25232,55 @@ void CBridgeAgentImp::CreateStrandMover(LPCTSTR strGirderName,IStrandMover** ppS
                                   end_increment, hp_increment, ppStrandMover);
 
    ATLASSERT(*ppStrandMover != NULL);
+}
+
+Float64 CBridgeAgentImp::GetRelaxation(Float64 fpi,Float64 fpy,matPsStrand::Type strandType,Float64 tStart,Float64 tEnd,Float64 tStress)
+{
+   GET_IFACE(ILossParameters,pLossParameters);
+#if defined _DEBUG
+   ATLASSERT(pLossParameters->GetLossMethod() == pgsTypes::TIME_STEP);
+#endif
+
+   // This method computes the incremental strand relaxation during the time period tStart-tEnd
+   // with the stress in the strand fpi at the beginning of the interval
+
+   Float64 fr = 0;
+   pgsTypes::TimeDependentModel model = pLossParameters->GetTimeDependentModel();
+   if ( model == pgsTypes::tdmACI209 || model == pgsTypes::tdmAASHTO )
+   {
+      Float64 initial_stress_ratio = fpi/fpy;
+      if ( tStart-tStress < 1./24. )
+      {
+         // don't want to log10 to be less than zero (see "Recommendations for Estimating Prestress Losses",
+         // PCI Journal July-August 1975, pg 51)
+         tStart = tStress + 1./24.; 
+      }
+
+      if ( tEnd-tStress < 1./24. )
+      {
+         // don't want to log10 to be less than zero (see "Recommendations for Estimating Prestress Losses",
+         // PCI Journal July-August 1975, pg 51)
+         tEnd = tStress + 1./24.; 
+      }
+
+      if ( initial_stress_ratio <= 0.55 )
+      {
+         fr = 0;
+      }
+      else
+      {
+         Float64 K = (strandType == matPsStrand::LowRelaxation ? 45 : 10);
+         fr = (fpi/K)*(initial_stress_ratio - 0.55)*(log10(24*(tEnd-tStress)) - log10(24*(tStart-tStress))); // t is in days
+      }
+   }
+   //else if ( model == pgsTypes::tdmCEBFIP )
+   //{
+#pragma Reminder("UPDATE: Need to deal with CEB-FIP")
+   //}
+   else
+   {
+      ATLASSERT(false); // is there a new type?
+   }
+
+   return fr;
 }

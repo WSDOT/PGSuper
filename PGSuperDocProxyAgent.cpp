@@ -444,7 +444,6 @@ STDMETHODIMP CPGSuperDocProxyAgent::RegInterfaces()
 {
    CComQIPtr<IBrokerInitEx2> pBrokerInit(m_pBroker);
    pBrokerInit->RegInterface( IID_IEditByUI,           this );
-   pBrokerInit->RegInterface( IID_IEditByUIEx,         this );
    pBrokerInit->RegInterface( IID_IDesign,             this );
    pBrokerInit->RegInterface( IID_IViews,              this );
    pBrokerInit->RegInterface( IID_ISelection,          this );
@@ -1077,9 +1076,6 @@ bool CPGSuperDocProxyAgent::EditDirectInputPrestressing(const CSegmentKey& segme
    return m_pMyDocument->EditDirectInputPrestressing(segmentKey);
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////
-// IEditByUIEx
 void CPGSuperDocProxyAgent::AddPointLoad(const CPointLoadData& loadData)
 {
    m_pMyDocument->AddPointLoad(loadData);

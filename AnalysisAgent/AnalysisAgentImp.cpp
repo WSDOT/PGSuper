@@ -3295,8 +3295,8 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSeg
       {
          lrfdCreepCoefficient cc;
          cc.SetRelHumidity( pEnvironment->GetRelHumidity() );
-         cc.SetSurfaceArea( pSectProp->GetSurfaceArea(segmentKey) );
-         cc.SetVolume( pSectProp->GetVolume(segmentKey) );
+         cc.SetSurfaceArea( pSectProp->GetSegmentSurfaceArea(segmentKey) );
+         cc.SetVolume( pSectProp->GetSegmentVolume(segmentKey) );
          cc.SetFc(fc);
 
          switch( creepPeriod )
@@ -3377,8 +3377,8 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSeg
       {
          lrfdCreepCoefficient2005 cc;
          cc.SetRelHumidity( pEnvironment->GetRelHumidity() );
-         cc.SetSurfaceArea( pSectProp->GetSurfaceArea(segmentKey) );
-         cc.SetVolume( pSectProp->GetVolume(segmentKey) );
+         cc.SetSurfaceArea( pSectProp->GetSegmentSurfaceArea(segmentKey) );
+         cc.SetVolume( pSectProp->GetSegmentVolume(segmentKey) );
          cc.SetFc(fc);
 
          cc.SetCuringMethodTimeAdjustmentFactor(pSpecEntry->GetCuringMethodTimeAdjustmentFactor());

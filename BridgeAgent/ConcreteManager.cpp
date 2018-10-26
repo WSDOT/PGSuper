@@ -43,6 +43,7 @@ static char THIS_FILE[] = __FILE__;
 CConcreteManager::CConcreteManager()
 {
    m_bIsValidated = false;
+   m_bIsValidated2 = false;
 }
 
 CConcreteManager::~CConcreteManager()
@@ -71,6 +72,7 @@ void CConcreteManager::Reset()
    m_pRailingConc[pgsTypes::tboRight] = std::auto_ptr<matConcreteBase>(0);
 
    m_bIsValidated = false;
+   m_bIsValidated2 = false;
 }
 
 void CConcreteManager::ValidateConcrete()
@@ -81,9 +83,6 @@ void CConcreteManager::ValidateConcrete()
    }
 
    GET_IFACE(IIntervals,pIntervals);
-
-#pragma Reminder("UPDATE: using dummy POI to compute V/S for time-dependent properties")
-   pgsPointOfInterest poi(CSegmentKey(0,0,0),0.0); // dummy POI
 
    const CTimelineManager* pTimelineMgr = m_pBridgeDesc->GetTimelineManager();
 
@@ -125,16 +124,10 @@ void CConcreteManager::ValidateConcrete()
       Float64   time_at_casting        = pTimelineMgr->GetStart(castDeckEventIdx);
       Float64   age_at_initial_loading = pTimelineMgr->GetEventByIndex(castDeckEventIdx)->GetCastDeckActivity().GetConcreteAgeAtContinuity();
       Float64   cure_time              = age_at_initial_loading;
-#pragma Reminder("REVIEW: is this the correct V/S ratio for the deck?")
-      // can't get deck properties until the model is build... and that is what we are doing here so there is recursion
-
-      //Float64 vsDeck = pSectProp->GetTributaryDeckArea(poi)/pSectProp->GetTributaryFlangeWidth(poi);
-      Float64 vsDeck = ::ConvertToSysUnits(1.5,unitMeasure::Inch);
-      // *NOTE* Only the top portion of the Deck is exposed to drying
 
       // modulus of rupture coefficients
       Float64 time_step = time_at_casting + cure_time;
-      m_pDeckConc.reset( CreateConcreteModel(_T("Deck Concrete"),pDeck->Concrete,time_at_casting,cure_time,age_at_initial_loading,time_step,vsDeck) );
+      m_pDeckConc.reset( CreateConcreteModel(_T("Deck Concrete"),pDeck->Concrete,time_at_casting,cure_time,age_at_initial_loading,time_step) );
    }
 
    //////////////////////////////////////////////////////////////////////////////
@@ -166,7 +159,7 @@ void CConcreteManager::ValidateConcrete()
    }
 
    Float64 time_step = time_at_casting + cure_time;
-   m_pRailingConc[pgsTypes::tboLeft].reset( CreateConcreteModel(_T("Left Railing Concrete"), pLeftRailingSystem->Concrete,time_at_casting,cure_time,age_at_initial_loading,time_step,0.0) );
+   m_pRailingConc[pgsTypes::tboLeft].reset( CreateConcreteModel(_T("Left Railing Concrete"), pLeftRailingSystem->Concrete,time_at_casting,cure_time,age_at_initial_loading,time_step) );
 
    const CRailingSystem* pRightRailingSystem = m_pBridgeDesc->GetRightRailingSystem();
    if ( pRightRailingSystem->Concrete.bUserEc )
@@ -185,7 +178,7 @@ void CConcreteManager::ValidateConcrete()
       }
    }
 
-   m_pRailingConc[pgsTypes::tboRight].reset( CreateConcreteModel(_T("Right Railing Concrete"), pRightRailingSystem->Concrete,time_at_casting,cure_time,age_at_initial_loading,time_step,0.0) );
+   m_pRailingConc[pgsTypes::tboRight].reset( CreateConcreteModel(_T("Right Railing Concrete"), pRightRailingSystem->Concrete,time_at_casting,cure_time,age_at_initial_loading,time_step) );
    
    //////////////////////////////////////////////////////////////////////////////
    //
@@ -216,16 +209,12 @@ void CConcreteManager::ValidateConcrete()
 
 
             // Time dependent concrete
-            //Float64 vsSegment = pSectProp->GetVolume(segmentKey)/pSectProp->GetSurfaceArea(segmentKey);
-#pragma Reminder("UPDATE: using dummy value for segment V/S ratio")
-            Float64 vsSegment = ::ConvertToSysUnits(3.0,unitMeasure::Inch);
-
             // for the LRFD stepped f'c concrete model, assume the jump from f'ci to f'c occurs
             // at hauling interval
             IntervalIndexType intervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
             Float64 stepTime = pIntervals->GetTime(segmentKey,intervalIdx,pgsTypes::Start);
 
-            matConcreteBase* pSegmentConcrete = CreateConcreteModel(_T("Segment Concrete"),pSegment->Material.Concrete,segment_casting_time,segment_cure_time,segment_age_at_release,stepTime,vsSegment);
+            matConcreteBase* pSegmentConcrete = CreateConcreteModel(_T("Segment Concrete"),pSegment->Material.Concrete,segment_casting_time,segment_cure_time,segment_age_at_release,stepTime);
             m_pSegmentConcrete.insert( std::make_pair(segmentKey,boost::shared_ptr<matConcreteBase>(pSegmentConcrete)) );
 
             if ( segIdx < nSegments-1 )
@@ -246,8 +235,7 @@ void CConcreteManager::ValidateConcrete()
                // that age at continuity is the duration of time from casting to continuity.
                Float64 closure_step_time = closure_casting_time + closure_age_at_continuity;
 
-#pragma Reminder("UPDATE: using segment V/S ratio for closure - should compute for closure")
-               matConcreteBase* pClosureConcrete = CreateConcreteModel(_T("Closure Concrete"),pClosure->GetConcrete(),closure_casting_time,closure_cure_time,closure_age_at_continuity,closure_step_time,vsSegment);
+               matConcreteBase* pClosureConcrete = CreateConcreteModel(_T("Closure Concrete"),pClosure->GetConcrete(),closure_casting_time,closure_cure_time,closure_age_at_continuity,closure_step_time);
                m_pClosureConcrete.insert( std::make_pair(segmentKey,boost::shared_ptr<matConcreteBase>(pClosureConcrete)) );
             }
          }
@@ -423,13 +411,13 @@ void CConcreteManager::ValidateConcrete()
 
             std::_tostringstream osLabel;
             osLabel << _T("Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Segment ") << LABEL_SEGMENT(segIdx);
-            ValidateConcrete(m_pSegmentConcrete[segmentKey],pgsConcreteStrengthStatusItem::GirderSegment,osLabel.str().c_str(),segmentKey);
+            ValidateConcreteParameters(m_pSegmentConcrete[segmentKey],pgsConcreteStrengthStatusItem::GirderSegment,osLabel.str().c_str(),segmentKey);
 
             if ( segIdx < nSegments-1 )
             {
                std::_tostringstream osLabel2;
                osLabel2 << _T("Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Closure ") << LABEL_SEGMENT(segIdx);
-               ValidateConcrete(m_pClosureConcrete[segmentKey],pgsConcreteStrengthStatusItem::ClosureJoint,osLabel2.str().c_str(),segmentKey);
+               ValidateConcreteParameters(m_pClosureConcrete[segmentKey],pgsConcreteStrengthStatusItem::ClosureJoint,osLabel2.str().c_str(),segmentKey);
             }
          }
       }
@@ -438,7 +426,82 @@ void CConcreteManager::ValidateConcrete()
    m_bIsValidated = true;
 }
 
-void CConcreteManager::ValidateConcrete(boost::shared_ptr<matConcreteBase> pConcrete,pgsConcreteStrengthStatusItem::ConcreteType elementType,LPCTSTR strLabel,const CSegmentKey& segmentKey)
+void CConcreteManager::ValidateConcrete2()
+{
+   if ( m_bIsValidated2 )
+   {
+      return;
+   }
+
+   GET_IFACE(ISectionProperties,pSectProp);
+
+
+   //////////////////////////////////////////////////////////////////////////////
+   //
+   // Create Deck concrete
+   //
+   //////////////////////////////////////////////////////////////////////////////
+   if ( m_pDeckConc.get() != NULL )
+   {
+      Float64 S = pSectProp->GetDeckSurfaceArea();
+      Float64 V = pSectProp->GetDeckVolume();
+      Float64 vsDeck = IsZero(S) ? DBL_MAX : V/S;
+
+      m_pDeckConc->SetVSRatio(vsDeck);
+   }
+
+   //////////////////////////////////////////////////////////////////////////////
+   //
+   // Create railing concrete
+   //
+   //////////////////////////////////////////////////////////////////////////////
+   // Railing system creep/shrinkage not considered to V/S of zero is fine
+   m_pRailingConc[pgsTypes::tboLeft]->SetVSRatio(0.0);
+   m_pRailingConc[pgsTypes::tboRight]->SetVSRatio(0.0);
+   
+   //////////////////////////////////////////////////////////////////////////////
+   //
+   // Precast Segment and Closure Joint Concrete
+   //
+   //////////////////////////////////////////////////////////////////////////////
+   GroupIndexType nGroups = m_pBridgeDesc->GetGirderGroupCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   {
+      const CGirderGroupData* pGroup = m_pBridgeDesc->GetGirderGroup(grpIdx);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+      {
+         const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+         SegmentIndexType nSegments = pGirder->GetSegmentCount();
+         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         {
+            CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
+            Float64 S = pSectProp->GetSegmentSurfaceArea(segmentKey);
+            Float64 V = pSectProp->GetSegmentVolume(segmentKey);
+
+            Float64 vsSegment = IsZero(S) ? DBL_MAX : V/S;
+
+            m_pSegmentConcrete[segmentKey]->SetVSRatio(vsSegment);
+
+            if ( segIdx < nSegments-1 )
+            {
+               CClosureKey closureKey(segmentKey);
+               Float64 S = pSectProp->GetClosureJointSurfaceArea(closureKey);
+               Float64 V = pSectProp->GetClosureJointVolume(closureKey);
+
+               Float64 vsClosure = IsZero(S) ? DBL_MAX : V/S;
+
+               m_pClosureConcrete[closureKey]->SetVSRatio(vsClosure);
+            }
+         } // next segment
+      } // next girder
+   } // next group
+
+   m_bIsValidated2 = true;
+}
+
+
+void CConcreteManager::ValidateConcreteParameters(boost::shared_ptr<matConcreteBase> pConcrete,pgsConcreteStrengthStatusItem::ConcreteType elementType,LPCTSTR strLabel,const CSegmentKey& segmentKey)
 {
    ATLASSERT(elementType == pgsConcreteStrengthStatusItem::GirderSegment || elementType == pgsConcreteStrengthStatusItem::ClosureJoint);
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
@@ -593,7 +656,7 @@ bool CConcreteManager::IsConcreteDensityInRange(Float64 density,pgsTypes::Concre
    }
 }
 
-matConcreteBase* CConcreteManager::CreateConcreteModel(LPCTSTR strName,const CConcreteMaterial& concrete,Float64 timeAtCasting,Float64 cureTime,Float64 ageAtInitialLoading,Float64 stepTime,Float64 vs)
+matConcreteBase* CConcreteManager::CreateConcreteModel(LPCTSTR strName,const CConcreteMaterial& concrete,Float64 timeAtCasting,Float64 cureTime,Float64 ageAtInitialLoading,Float64 stepTime)
 {
    GET_IFACE(ILossParameters,pLossParameters);
    pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
@@ -633,10 +696,15 @@ matConcreteBase* CConcreteManager::CreateConcreteModel(LPCTSTR strName,const CCo
    pConcrete->SetAggSplittingStrength(concrete.Fct);
    pConcrete->SetMaxAggregateSize(concrete.MaxAggregateSize);
    pConcrete->SetRelativeHumidity(rh);
-   pConcrete->SetVSRatio(vs);
    pConcrete->SetTimeAtCasting(timeAtCasting);
    pConcrete->SetCureTime(cureTime);
    pConcrete->SetCureMethod((matConcreteBase::CureMethod)concrete.CureMethod);
+   //pConcrete->SetVSRatio(vs); NOTE: volume to surface ratio is set during the level 2 validation 
+   // of the concrete model. To get V/S we need to get section properties and section properties
+   // need valid concrete models. This creates a circular dependency. However, the only part
+   // of the concrete model that needs V/S is creep and shrinkage. Let V/S be invalid
+   // on the concrete model until a creep of shrinkage parameter is requested... then, make
+   // V/S correct
 
 
    return pConcrete;
@@ -1103,12 +1171,14 @@ Float64 CConcreteManager::GetRailingSystemEc(pgsTypes::TrafficBarrierOrientation
 Float64 CConcreteManager::GetRailingSystemFreeShrinkageStrain(pgsTypes::TrafficBarrierOrientation orientation,Float64 t)
 {
    ValidateConcrete();
+   ValidateConcrete2();
    return m_pRailingConc[orientation]->GetFreeShrinkageStrain(t);
 }
 
 Float64 CConcreteManager::GetRailingSystemCreepCoefficient(pgsTypes::TrafficBarrierOrientation orientation,Float64 t,Float64 tla)
 {
    ValidateConcrete();
+   ValidateConcrete2();
    return m_pRailingConc[orientation]->GetCreepCoefficient(t,tla);
 }
 
@@ -1261,6 +1331,7 @@ Float64 CConcreteManager::GetDeckShearFr(Float64 t)
 Float64 CConcreteManager::GetDeckFreeShrinkageStrain(Float64 t)
 {
    ValidateConcrete();
+   ValidateConcrete2();
    if ( m_pDeckConc.get() != NULL )
    {
       return m_pDeckConc->GetFreeShrinkageStrain(t);
@@ -1274,6 +1345,7 @@ Float64 CConcreteManager::GetDeckFreeShrinkageStrain(Float64 t)
 Float64 CConcreteManager::GetDeckCreepCoefficient(Float64 t,Float64 tla)
 {
    ValidateConcrete();
+   ValidateConcrete2();
    if ( m_pDeckConc.get() != NULL )
    {
       return m_pDeckConc->GetCreepCoefficient(t,tla);
@@ -1323,12 +1395,14 @@ Float64 CConcreteManager::GetSegmentShearFr(const CSegmentKey& segmentKey,Float6
 Float64 CConcreteManager::GetSegmentFreeShrinkageStrain(const CSegmentKey& segmentKey,Float64 t)
 {
    ValidateConcrete();
+   ValidateConcrete2();
    return m_pSegmentConcrete[segmentKey]->GetFreeShrinkageStrain(t);
 }
 
 Float64 CConcreteManager::GetSegmentCreepCoefficient(const CSegmentKey& segmentKey,Float64 t,Float64 tla)
 {
    ValidateConcrete();
+   ValidateConcrete2();
    return m_pSegmentConcrete[segmentKey]->GetCreepCoefficient(t,tla);
 }
 
@@ -1371,12 +1445,14 @@ Float64 CConcreteManager::GetClosureJointEc(const CClosureKey& closureKey,Float6
 Float64 CConcreteManager::GetClosureJointFreeShrinkageStrain(const CClosureKey& closureKey,Float64 t)
 {
    ValidateConcrete();
+   ValidateConcrete2();
    return m_pClosureConcrete[closureKey]->GetFreeShrinkageStrain(t);
 }
 
 Float64 CConcreteManager::GetClosureJointCreepCoefficient(const CClosureKey& closureKey,Float64 t,Float64 tla)
 {
    ValidateConcrete();
+   ValidateConcrete2();
    return m_pClosureConcrete[closureKey]->GetCreepCoefficient(t,tla);
 }
 

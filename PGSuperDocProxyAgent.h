@@ -91,7 +91,7 @@ class CPGSuperDocProxyAgent :
    public IUIEvents,
    public IUpdateTemplates,
    public ISelection,
-   public IEditByUIEx,
+   public IEditByUI,
    public IDesign,
    public IViews,
    public IVersionInfo,
@@ -122,7 +122,6 @@ BEGIN_COM_MAP(CPGSuperDocProxyAgent)
    COM_INTERFACE_ENTRY(IUpdateTemplates)
    COM_INTERFACE_ENTRY(ISelection)
    COM_INTERFACE_ENTRY(IEditByUI)
-   COM_INTERFACE_ENTRY(IEditByUIEx)
    COM_INTERFACE_ENTRY(IDesign)
    COM_INTERFACE_ENTRY(IViews)
    COM_INTERFACE_ENTRY(IVersionInfo)
@@ -259,9 +258,6 @@ public:
    virtual UINT GetHelpToolBarID();
    virtual bool EditDirectSelectionPrestressing(const CSegmentKey& segmentKey);
    virtual bool EditDirectInputPrestressing(const CSegmentKey& segmentKey);
-
-// IEditByUIEx
-public:
    virtual void AddPointLoad(const CPointLoadData& loadData);
    virtual void DeletePointLoad(CollectionIndexType loadIdx);
    virtual void AddDistributedLoad(const CDistributedLoadData& loadData);

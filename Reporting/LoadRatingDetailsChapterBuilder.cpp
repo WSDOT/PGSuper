@@ -439,10 +439,10 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
       Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
-      Float64 pM, nM, V;
+      Float64 gpM, gnM, gV;
       pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
       pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special ? pgsTypes::FatigueI : pgsTypes::StrengthI);
-      pDistFact->GetDistributionFactors(poi,limit_state,&pM,&nM,&V);
+      pDistFact->GetDistributionFactors(poi,limit_state,&gpM,&gnM,&gV);
 
       (*table)(row,col++) << location.SetValue( POI_SPAN, poi, end_size );
       (*table)(row,col++) << scalar.SetValue(artifact.GetConditionFactor());
@@ -465,7 +465,7 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
          (*table)(row,col++) << shear.SetValue(artifact.GetSecondaryEffectsShear());
       }
       (*table)(row,col++) << scalar.SetValue(artifact.GetLiveLoadFactor());
-      (*table)(row,col++) << scalar.SetValue(V);
+      (*table)(row,col++) << scalar.SetValue(gV);
       (*table)(row,col++) << shear.SetValue(artifact.GetLiveLoadShear());
 
       Float64 RF = artifact.GetRatingFactor();

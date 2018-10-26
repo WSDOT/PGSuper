@@ -437,9 +437,9 @@ public:
    virtual Float64 GetDeckShrinkageK2();
    virtual const matConcreteBase* GetDeckConcrete();
    virtual const matPsStrand* GetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType);
-   virtual Float64 GetStrandRelaxation(const CSegmentKey& segmentKey,Float64 t1,Float64 t2,Float64 fpso,pgsTypes::StrandType strandType);
+   virtual Float64 GetStrandRelaxation(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 fpso,pgsTypes::StrandType strandType);
    virtual const matPsStrand* GetTendonMaterial(const CGirderKey& girderKey);
-   virtual Float64 GetTendonRelaxation(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64 t1,Float64 t2,Float64 fpso);
+   virtual Float64 GetTendonRelaxation(const CGirderKey& girderKey,DuctIndexType ductIdx,IntervalIndexType intervalIdx,Float64 fpso);
    virtual void GetSegmentLongitudinalRebarProperties(const CSegmentKey& segmentKey,Float64* pE,Float64 *pFy,Float64* pFu);
    virtual std::_tstring GetSegmentLongitudinalRebarName(const CSegmentKey& segmentKey);
    virtual void GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type* pType,matRebar::Grade* pGrade);
@@ -791,8 +791,12 @@ public:
    virtual Float64 GetDistTopSlabToTopGirder(const pgsPointOfInterest& poi);
    virtual void ReportEffectiveFlangeWidth(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
    virtual Float64 GetPerimeter(const pgsPointOfInterest& poi);
-   virtual Float64 GetSurfaceArea(const CSegmentKey& segmentKey);
-   virtual Float64 GetVolume(const CSegmentKey& segmentKey);
+   virtual Float64 GetSegmentSurfaceArea(const CSegmentKey& segmentKey);
+   virtual Float64 GetSegmentVolume(const CSegmentKey& segmentKey);
+   virtual Float64 GetClosureJointSurfaceArea(const CClosureKey& closureKey);
+   virtual Float64 GetClosureJointVolume(const CClosureKey& closureKey);
+   virtual Float64 GetDeckSurfaceArea();
+   virtual Float64 GetDeckVolume();
    virtual Float64 GetBridgeEIxx(Float64 Xb);
    virtual Float64 GetBridgeEIyy(Float64 Xb);
    virtual Float64 GetSegmentWeightPerLength(const CSegmentKey& segmentKey);
@@ -1280,6 +1284,8 @@ private:
    void CreateOffsetTendon(const CGirderKey& girderKey,ISuperstructureMember* pSSMbr,const COffsetDuctGeometry& ductGeometry,ITendonCollection* tendons,ITendonCollection** ppTendons);
 
    void CreateStrandMover(LPCTSTR strGirderName,IStrandMover** ppStrandMover);
+
+   Float64 GetRelaxation(Float64 fpi,Float64 fpy,matPsStrand::Type strandType,Float64 tStart,Float64 tEnd,Float64 tStress);
 };
 
 #endif //__BRIDGEAGENT_H_

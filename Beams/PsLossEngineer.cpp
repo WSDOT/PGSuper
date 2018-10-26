@@ -2645,8 +2645,8 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    *pIc  = pSectProp->GetIx( spType, liveLoadIntervalIdx, poi, config.Fc );
    *pYbc = pSectProp->GetY(  spType, liveLoadIntervalIdx, poi, pgsTypes::BottomGirder, config.Fc );
 
-   *pVolume = pSectProp->GetVolume(segmentKey);
-   *pSurfaceArea = pSectProp->GetSurfaceArea(segmentKey);
+   *pVolume = pSectProp->GetSegmentVolume(segmentKey);
+   *pSurfaceArea = pSectProp->GetSegmentSurfaceArea(segmentKey);
 
    if ( spType == pgsTypes::sptTransformed )
    {

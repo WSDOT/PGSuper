@@ -343,7 +343,7 @@ void pgsProjectCriteriaStatusCallback::Execute(CEAFStatusItem* pStatusItem)
       msg += _T("\r\n\r\nWould you like to select a different Project Criteria?");
       if ( AfxMessageBox(msg.c_str(),MB_YESNO | MB_ICONQUESTION) == IDYES )
       {
-         GET_IFACE(IEditByUIEx,pEdit);
+         GET_IFACE(IEditByUI,pEdit);
          pEdit->SelectProjectCriteria();
       }
    }
@@ -633,6 +633,6 @@ void pgsEffectiveFlangeWidthStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    ATLASSERT(pItem!=NULL);
 
    // Just go straight to main editing dialog
-   GET_IFACE(IEditByUIEx,pEdit);
+   GET_IFACE(IEditByUI,pEdit);
    pEdit->EditEffectiveFlangeWidth();
 }

@@ -164,47 +164,45 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
    }
    IntervalIndexType continunityIntervalIdx = pIntervals->GetInterval(girderKey,continuityEventIndex);
 
-   ColumnIndexType col  = 0;
-   ColumnIndexType col1 = 0;
-   ColumnIndexType col2 = 0;
-
    // Set up table headings
-   ColumnIndexType nCols = (bTimeStepMethod ? 14 : 6);
+   ColumnIndexType nCols = (bTimeStepMethod ? 13 : 5);
    if ( bRating )
    {
       nCols += 2;
    }
+
    std::_tstring strTitle(bGirderStresses ? _T("Girder Stresses") : _T("Deck Stresses"));
    pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,strTitle);
 
-   (*pTable)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*pTable)(0,col1++) << COLHDR(_T("DC"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*pTable)(0,col1++) << COLHDR(_T("DW"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   ColumnIndexType col  = 0;
+
+   (*pTable)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*pTable)(0,col++) << COLHDR(_T("DC"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(0,col++) << COLHDR(_T("DW"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
    if ( bRating )
    {
-      (*pTable)(0,col1++) << COLHDR(_T("DW") << rptNewLine << _T("Rating"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable)(0,col++) << COLHDR(_T("DW") << rptNewLine << _T("Rating"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
    }
    if ( bTimeStepMethod )
    {
-      (*pTable)(0,col1++) << COLHDR(_T("CR"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
-      (*pTable)(0,col1++) << COLHDR(_T("SH"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
-      (*pTable)(0,col1++) << COLHDR(_T("RE"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
-      (*pTable)(0,col1++) << COLHDR(_T("PS"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable)(0,col++) << COLHDR(_T("CR"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable)(0,col++) << COLHDR(_T("SH"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable)(0,col++) << COLHDR(_T("RE"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable)(0,col++) << COLHDR(_T("PS"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
    }
-   (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DC"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DW"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,col++) << COLHDR(symbol(SUM) << _T("DC"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,col++) << COLHDR(symbol(SUM) << _T("DW"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    if ( bRating )
    {
-      (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DW") << rptNewLine << _T("Rating"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*pTable)(0,col++) << COLHDR(symbol(SUM) << _T("DW") << rptNewLine << _T("Rating"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    if ( bTimeStepMethod )
    {
-      (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("CR"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("SH"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("RE"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("PS"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*pTable)(0,col++) << COLHDR(symbol(SUM) << _T("CR"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*pTable)(0,col++) << COLHDR(symbol(SUM) << _T("SH"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*pTable)(0,col++) << COLHDR(symbol(SUM) << _T("RE"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*pTable)(0,col++) << COLHDR(symbol(SUM) << _T("PS"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
-   (*pTable)(0,col1++) << COLHDR(_T("Service I"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
@@ -215,9 +213,7 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
    *p << pTable << rptNewLine;
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    GET_IFACE2(pBroker,ICombinedForces2,pForces2);
-   GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
 
@@ -237,8 +233,6 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
       std::vector<Float64> fTopSHcum, fBotSHcum;
       std::vector<Float64> fTopREcum, fBotREcum;
       std::vector<Float64> fTopPScum, fBotPScum;
-      std::vector<Float64> fTopMinServiceI, fBotMinServiceI;
-      std::vector<Float64> fTopMaxServiceI, fBotMaxServiceI;
 
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
 
@@ -273,9 +267,6 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
          pForces2->GetStress( intervalIdx, lcPS, vPoi, bat, rtIncremental, topLocation, botLocation, &fTopPSinc, &fBotPSinc);
          pForces2->GetStress( intervalIdx, lcPS, vPoi, bat, rtCumulative,  topLocation, botLocation, &fTopPScum, &fBotPScum);
       }
-
-      pLsForces2->GetStress( intervalIdx, pgsTypes::ServiceI, vPoi, bat, false, topLocation, &fTopMinServiceI,&fTopMaxServiceI);
-      pLsForces2->GetStress( intervalIdx, pgsTypes::ServiceI, vPoi, bat, false, botLocation, &fBotMinServiceI,&fBotMaxServiceI);
 
       // Fill up the table
       RowIndexType row = pTable->GetNumberOfHeaderRows();
@@ -353,9 +344,6 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
             (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotPScum[index]);
          }
 
-         (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinServiceI[index]) << rptNewLine;
-         (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxServiceI[index]);
-
          row++;
       }
    } // next group
@@ -421,7 +409,6 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
    *pNote << LIVELOAD_PER_GIRDER << rptNewLine;
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    GET_IFACE2(pBroker,ICombinedForces2,pForces2);
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
@@ -549,7 +536,7 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
                (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinLegalRoutineLL[index]);
             }
 
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
             {
                (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxLegalSpecialLL[index]) << rptNewLine;
                (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxLegalSpecialLL[index]);
@@ -892,7 +879,9 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
 
          Float64 end_size = 0;
          if ( intervalIdx != releaseIntervalIdx )
+         {
             end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
+         }
 
          (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi, end_size );
 

@@ -840,7 +840,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
             }
             else
             {
-               tsDetails.Strands[strandType].fr = m_pMaterials->GetStrandRelaxation(segmentKey,tsDetails.Strands[strandType].tEnd,0.0,tsDetails.Strands[strandType].fpj,strandType);
+               tsDetails.Strands[strandType].fr = m_pMaterials->GetStrandRelaxation(segmentKey,intervalIdx,tsDetails.Strands[strandType].fpj,strandType);
             }
          }
          else
@@ -875,7 +875,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
             }
             else
             {
-               tsDetails.Strands[strandType].fr = m_pMaterials->GetStrandRelaxation(segmentKey,tsDetails.Strands[strandType].tEnd,prevTimeStepDetails.Strands[strandType].tEnd,prevTimeStepDetails.Strands[strandType].fpe,strandType);
+               tsDetails.Strands[strandType].fr = m_pMaterials->GetStrandRelaxation(segmentKey,intervalIdx,prevTimeStepDetails.Strands[strandType].fpe,strandType);
             }
          }
 
@@ -924,7 +924,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
                   }
                   else
                   {
-                     strand.fr = m_pMaterials->GetStrandRelaxation(segmentKey,strand.tEnd,0.0,strand.fpj,strandType);
+                     strand.fr = m_pMaterials->GetStrandRelaxation(segmentKey,intervalIdx,strand.fpj,strandType);
                   }
                }
                else
@@ -958,7 +958,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
                   }
                   else
                   {
-                     strand.fr = m_pMaterials->GetStrandRelaxation(segmentKey,strand.tEnd,prevTimeStepDetails.Strands[strandType][strandIdx].tEnd,prevTimeStepDetails.Strands[strandType][strandIdx].fpe,strandType);
+                     strand.fr = m_pMaterials->GetStrandRelaxation(segmentKey,intervalIdx,prevTimeStepDetails.Strands[strandType][strandIdx].fpe,strandType);
                   }
                }
 
@@ -1058,7 +1058,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          }
          else
          {
-            tsTendon.fr = m_pMaterials->GetTendonRelaxation(girderKey,ductIdx,tsTendon.tEnd,0.0,tsTendon.fpj);
+            tsTendon.fr = m_pMaterials->GetTendonRelaxation(girderKey,ductIdx,intervalIdx,tsTendon.fpj);
          }
       }
       else
@@ -1073,7 +1073,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          }
          else
          {
-            tsTendon.fr = m_pMaterials->GetTendonRelaxation(girderKey,ductIdx,tsTendon.tEnd,prevTimeStepDetails.Tendons[ductIdx].tEnd,prevTimeStepDetails.Tendons[ductIdx].fpe);
+            tsTendon.fr = m_pMaterials->GetTendonRelaxation(girderKey,ductIdx,intervalIdx,prevTimeStepDetails.Tendons[ductIdx].fpe);
          }
       }
 

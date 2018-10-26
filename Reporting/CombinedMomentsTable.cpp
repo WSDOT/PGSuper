@@ -171,7 +171,6 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
    RowIndexType row2 = 1;
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,  pIPoi);
    GET_IFACE2(pBroker,ICombinedForces2,  pForces2);
    GET_IFACE2_NOCHECK(pBroker,ILimitStateForces2,pLsForces2); // only used if interval is after live load interval
 
@@ -427,7 +426,6 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
    *pNote << LIVELOAD_PER_GIRDER << rptNewLine;
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,  pIPoi);
    GET_IFACE2(pBroker,ICombinedForces2,  pForces2);
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
@@ -437,7 +435,10 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS),POI_ERECTED_SEGMENT);
+
+      PoiAttributeType poiRefAttribute;
+      std::vector<pgsPointOfInterest> vPoi;
+      GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
 
       std::vector<Float64> dummy;
       std::vector<Float64> minPedestrianLL, maxPedestrianLL;
@@ -525,7 +526,7 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
 
          Float64 end_size = pBridge->GetSegmentStartEndDistance(poi.GetSegmentKey());
          
-         (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+         (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi, end_size );
 
          if ( bDesign )
          {
@@ -713,7 +714,6 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
    }
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,  pIPoi);
    GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
@@ -723,7 +723,10 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS),POI_ERECTED_SEGMENT);
+
+      PoiAttributeType poiRefAttribute;
+      std::vector<pgsPointOfInterest> vPoi;
+      GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
 
       std::vector<Float64> dummy;
       std::vector<Float64> minServiceI,   maxServiceI;
@@ -928,7 +931,7 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
          if ( intervalIdx != releaseIntervalIdx )
             end_size = pBridge->GetSegmentStartEndDistance(poi.GetSegmentKey());
 
-         (*p_table2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
+         (*p_table2)(row2,col++) << location.SetValue( poiRefAttribute, poi, end_size );
 
          if ( analysisType == pgsTypes::Envelope )
          {

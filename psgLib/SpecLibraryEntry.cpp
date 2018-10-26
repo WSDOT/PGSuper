@@ -1150,6 +1150,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
 
          m_MaxStirrupSpacing[0] = maxStirrupSpacing;
+
+         if ( m_SpecificationUnits == lrfdVersionMgr::SI )
+         {
+            // default value in SI units is 300mm
+            // default value is US units is 12"
+            // 12" = 305mm
+            m_MaxStirrupSpacing[1] = ::ConvertToSysUnits(300.0,unitMeasure::Millimeter);
+         }
+
       }
       else
       {

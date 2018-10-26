@@ -409,7 +409,7 @@ void pgsKdotGirderHaulingChecker::PrepareHaulingAnalysisArtifact(const CSegmentK
    pArtifact->SetGirderLength(girder_length);
 
    GET_IFACE(ISectionProperties,pSectProp);
-   Float64 volume = pSectProp->GetVolume(segmentKey);
+   Float64 volume = pSectProp->GetSegmentVolume(segmentKey);
 
    GET_IFACE(IMaterials,pMaterial);
    Float64 density = pMaterial->GetSegmentWeightDensity(segmentKey,haulSegmentIntervalIdx);

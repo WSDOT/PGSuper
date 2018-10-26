@@ -671,11 +671,11 @@ interface IMaterials : IUnknown
 
    // Prestressing Strand
    virtual const matPsStrand* GetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) = 0;
-   virtual Float64 GetStrandRelaxation(const CSegmentKey& segmentKey,Float64 t1,Float64 t2,Float64 fpso,pgsTypes::StrandType strandType) = 0;
+   virtual Float64 GetStrandRelaxation(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 fpso,pgsTypes::StrandType strandType) = 0;
 
    // PT Tendon
    virtual const matPsStrand* GetTendonMaterial(const CGirderKey& girderKey) = 0;
-   virtual Float64 GetTendonRelaxation(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64 t1,Float64 t2,Float64 fpso) = 0;
+   virtual Float64 GetTendonRelaxation(const CGirderKey& girderKey,DuctIndexType ductIdx,IntervalIndexType intervalIdx,Float64 fpso) = 0;
 
    // Properties of Precast Segment Longitudinal Rebar
    virtual void GetSegmentLongitudinalRebarProperties(const CSegmentKey& segmentKey,Float64* pE,Float64 *pFy,Float64* pFu) = 0;
@@ -1110,8 +1110,12 @@ interface ISectionProperties : IUnknown
 
    // Volume and surface area
    virtual Float64 GetPerimeter(const pgsPointOfInterest& poi) = 0;
-   virtual Float64 GetSurfaceArea(const CSegmentKey& segmentKey) = 0;
-   virtual Float64 GetVolume(const CSegmentKey& segmentKey) = 0;
+   virtual Float64 GetSegmentSurfaceArea(const CSegmentKey& segmentKey) = 0;
+   virtual Float64 GetSegmentVolume(const CSegmentKey& segmentKey) = 0;
+   virtual Float64 GetClosureJointSurfaceArea(const CClosureKey& closureKey) = 0;
+   virtual Float64 GetClosureJointVolume(const CClosureKey& closureKey) = 0;
+   virtual Float64 GetDeckSurfaceArea() = 0;
+   virtual Float64 GetDeckVolume() = 0;
 
    // Bending stiffness of entire bridge section - for deflection calculation
    // Crowns, slopes, and slab haunches are ignored.

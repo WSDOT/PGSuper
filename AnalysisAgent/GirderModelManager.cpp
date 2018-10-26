@@ -2020,7 +2020,6 @@ void CGirderModelManager::GetLiveLoadStress(IntervalIndexType intervalIdx,pgsTyp
 {
    USES_CONVERSION;
 
-   GET_IFACE(IBridge,pBridge);
    GET_IFACE(IPointOfInterest,pPoi);
 
    pfTopMin->clear();
@@ -2210,87 +2209,6 @@ void CGirderModelManager::GetLiveLoadStress(IntervalIndexType intervalIdx,pgsTyp
       pfBotMin->push_back(fBotMin);
       pfTopMax->push_back(fTopMax);
       pfTopMin->push_back(fTopMin);
-/*
-      Float64 dist_from_start = poi.GetDistFromStart();
-      Float64 start_offset = pBridge->GetSegmentStartEndDistance(segmentKey);
-      if ( IsZero(dist_from_start - start_offset) )
-      {
-         fRightMax->GetResult(bot_stress_point_index,&fBotMax);
-         fRightMin->GetResult(bot_stress_point_index,&fBotMin);
-
-         fRightMax->GetResult(top_stress_point_index,&fTopMin);
-         fRightMin->GetResult(top_stress_point_index,&fTopMax);
-
-         if ( pTopMinIndex )
-         {
-            VehicleIndexType vehIdx;
-            fRightMaxConfig->get_VehicleIndex(&vehIdx);
-            pTopMinIndex->push_back(vehIdx);
-         }
-
-         if ( pTopMaxIndex )
-         {
-            VehicleIndexType vehIdx;
-            fRightMinConfig->get_VehicleIndex(&vehIdx);
-            pTopMaxIndex->push_back(vehIdx);
-         }
-
-         if ( pBotMinIndex )
-         {
-            VehicleIndexType vehIdx;
-            fRightMinConfig->get_VehicleIndex(&vehIdx);
-            pBotMinIndex->push_back(vehIdx);
-         }
-
-         if ( pBotMaxIndex )
-         {
-            VehicleIndexType vehIdx;
-            fRightMaxConfig->get_VehicleIndex(&vehIdx);
-            pBotMaxIndex->push_back(vehIdx);
-         }
-      }
-      else
-      {
-         fLeftMax->GetResult(bot_stress_point_index,&fBotMax);
-         fLeftMin->GetResult(bot_stress_point_index,&fBotMin);
-
-         fLeftMax->GetResult(top_stress_point_index,&fTopMin);
-         fLeftMin->GetResult(top_stress_point_index,&fTopMax);
-
-         if ( pTopMinIndex )
-         {
-            VehicleIndexType vehIdx;
-            fLeftMaxConfig->get_VehicleIndex(&vehIdx);
-            pTopMinIndex->push_back(vehIdx);
-         }
-
-         if ( pTopMaxIndex )
-         {
-            VehicleIndexType vehIdx;
-            fLeftMinConfig->get_VehicleIndex(&vehIdx);
-            pTopMaxIndex->push_back(vehIdx);
-         }
-
-         if ( pBotMinIndex )
-         {
-            VehicleIndexType vehIdx;
-            fLeftMinConfig->get_VehicleIndex(&vehIdx);
-            pBotMinIndex->push_back(vehIdx);
-         }
-
-         if ( pBotMaxIndex )
-         {
-            VehicleIndexType vehIdx;
-            fLeftMaxConfig->get_VehicleIndex(&vehIdx);
-            pBotMaxIndex->push_back(vehIdx);
-         }
-      }
-
-      pfBotMax->push_back(fBotMax);
-      pfBotMin->push_back(fBotMin);
-      pfTopMax->push_back(fTopMax);
-      pfTopMin->push_back(fTopMin);
-*/
    }
 }
 

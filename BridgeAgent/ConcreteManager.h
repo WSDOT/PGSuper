@@ -139,18 +139,20 @@ public:
 private:
    IBroker* m_pBroker; // weak reference
    StatusGroupIDType m_StatusGroupID;
-   bool m_bIsValidated;
+   bool m_bIsValidated; // Level 1 concrete defintion is valid
+   bool m_bIsValidated2; // Level 2 concrete defination is valid
    const CBridgeDescription2* m_pBridgeDesc;
 
    void ValidateConcrete();
-   void ValidateConcrete(boost::shared_ptr<matConcreteBase> pConcrete,pgsConcreteStrengthStatusItem::ConcreteType elementType,LPCTSTR strLabel,const CSegmentKey& segmentKey);
+   void ValidateConcrete2();
+   void ValidateConcreteParameters(boost::shared_ptr<matConcreteBase> pConcrete,pgsConcreteStrengthStatusItem::ConcreteType elementType,LPCTSTR strLabel,const CSegmentKey& segmentKey);
    bool IsConcreteDensityInRange(Float64 density,pgsTypes::ConcreteType type);
 
    // create new concrete material objects given the basic concrete input information
    void CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR strName,matConcreteEx* pReleaseConc,matConcreteEx* pConcrete);
 
    // Factory method for creating time-dependent material models
-   matConcreteBase* CreateConcreteModel(LPCTSTR strName,const CConcreteMaterial& concrete,Float64 timeAtCasting,Float64 cureTime,Float64 ageAtInitialLoading,Float64 stepTime,Float64 vs);
+   matConcreteBase* CreateConcreteModel(LPCTSTR strName,const CConcreteMaterial& concrete,Float64 timeAtCasting,Float64 cureTime,Float64 ageAtInitialLoading,Float64 stepTime);
 
    // factory method for LRFD concrete (non time-dependent version)
    lrfdLRFDConcrete* CreateLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 startTime,Float64 stepTime);
