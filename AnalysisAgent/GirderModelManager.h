@@ -88,13 +88,15 @@ public:
 
    void GetCantileverSlabLoad(const CSegmentKey& segmentKey, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2);
    void GetCantileverSlabPadLoad(const CSegmentKey& segmentKey, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2);
-   void GetIntermediateDiaphragmLoads(pgsTypes::DiaphragmType diaphragmType, const CSegmentKey& segmentKey, std::vector<DiaphragmLoad>* pLoads);
-   void GetPierDiaphragmLoads( const pgsPointOfInterest& poi, PierIndexType pierIdx, Float64* pPback, Float64 *pMback, Float64* pPahead, Float64* pMahead);
+   void GetPrecastDiaphragmLoads(const CSegmentKey& segmentKey, std::vector<DiaphragmLoad>* pLoads);
+   void GetIntermediateDiaphragmLoads(const CSpanKey& spanKey, std::vector<DiaphragmLoad>* pLoads);
+   void GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIndexType gdrIdx,Float64* pPback, Float64 *pMback, Float64* pPahead, Float64* pMahead);
 
    bool HasShearKeyLoad(const CGirderKey& girderKey); // checks for load in adjacent continuous beams as well as current beam
    void GetShearKeyLoad(const CSegmentKey& segmentKey,std::vector<ShearKeyLoad>* pLoads);
 
    std::_tstring GetLiveLoadName(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex);
+   pgsTypes::LiveLoadApplicabilityType GetLiveLoadApplicability(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex);
    VehicleIndexType GetVehicleCount(pgsTypes::LiveLoadType llType);
    Float64 GetVehicleWeight(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex);
 
@@ -212,7 +214,7 @@ public:
    std::vector<Float64> GetRotation(IntervalIndexType intervalIdx,LPCTSTR strLoadGroupName,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType);
 
    // IContraflexurePoints
-   void GetContraflexurePoints(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* cfPoints,IndexType* nPoints);
+   void GetContraflexurePoints(const CSpanKey& spanKey,Float64* cfPoints,IndexType* nPoints);
 
    // IReactions
    std::vector<Float64> GetReaction(const CGirderKey& girderKey,const std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>>& vSupports,IntervalIndexType intervalIdx,ProductForceType pfType,pgsTypes::BridgeAnalysisType bat, ResultsType resultsType);
@@ -333,7 +335,7 @@ private:
    void ApplyIntermediateDiaphragmLoads(ILBAMModel* pModel, pgsTypes::AnalysisType analysisType,GirderIndexType gdrLineIdx);
 
 
-   Float64 GetPedestrianLiveLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   Float64 GetPedestrianLiveLoad(const CSpanKey& spanKey);
    void AddHL93LiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane);
    void AddFatigueLiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane);
    void AddDeflectionLiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,Float64 IMtruck,Float64 IMlane);
@@ -349,15 +351,15 @@ private:
 
    // LLDF Support Methods
    enum SpanType { PinPin, PinFix, FixPin, FixFix };
-   SpanType GetSpanType(SpanIndexType spanIdx,GirderIndexType gdrIdx,bool bContinuous);
+   SpanType GetSpanType(const CSpanKey& spanKey,bool bContinuous);
    void AddDistributionFactors(IDistributionFactors* factors,Float64 length,Float64 gpM,Float64 gnM,Float64 gV,Float64 gR,
                                Float64 gFM,Float64 gFV,Float64 gD, Float64 gPedes);
    IndexType GetCfPointsInRange(IDblArray* cfLocs, Float64 spanStart, Float64 spanEnd, Float64* ptsInrg);
-   void ApplyLLDF_PinPin(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors);
-   void ApplyLLDF_PinFix(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors);
-   void ApplyLLDF_FixPin(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors);
-   void ApplyLLDF_FixFix(SpanIndexType spanIdx,GirderIndexType gdrIdx,IDblArray* cf_locs,IDistributionFactors* distFactors);
-   void ApplyLLDF_Support(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::MemberEndType endType,ISupports* supports);
+   void ApplyLLDF_PinPin(const CSpanKey& spanKey,IDblArray* cf_locs,IDistributionFactors* distFactors);
+   void ApplyLLDF_PinFix(const CSpanKey& spanKey,IDblArray* cf_locs,IDistributionFactors* distFactors);
+   void ApplyLLDF_FixPin(const CSpanKey& spanKey,IDblArray* cf_locs,IDistributionFactors* distFactors);
+   void ApplyLLDF_FixFix(const CSpanKey& spanKey,IDblArray* cf_locs,IDistributionFactors* distFactors);
+   void ApplyLLDF_Support(const CSpanKey& spanKey,pgsTypes::MemberEndType endType,ISupports* supports);
 
    CComBSTR GetLoadGroupName(pgsTypes::StrandType strandType);
 

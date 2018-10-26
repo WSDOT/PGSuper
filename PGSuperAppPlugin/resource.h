@@ -575,6 +575,7 @@
 #define IDC_ANCHORSET_PT                1259
 #define IDC_ADJUSTMENT                  1259
 #define IDC_START_CANTILEVER_LENGTH     1259
+#define IDC_HEIGHT                      1259
 #define IDC_CONDITION_FACTOR            1260
 #define IDC_LOCATION                    1260
 #define IDC_SERVICE_III_DC              1260
@@ -641,6 +642,7 @@
 #define IDC_STATIC_BOX                  1313
 #define IDC_ERECTION_LABEL              1313
 #define IDC_END_BLOCK_LENGTH_LABEL      1313
+#define IDC_EVENT_NOTE                  1313
 #define IDC_LEFT_DENSITY_LABEL          1314
 #define IDC_RIGHT_DENSITY_LABEL         1316
 #define IDC_STATIC_TEXT                 1317
@@ -1381,6 +1383,7 @@
 #define IDC_LEFT_FC_UNIT                1747
 #define IDC_EDIT2                       1747
 #define IDC_AGE                         1747
+#define IDC_WIDTH                       1747
 #define IDC_AGE_UNIT                    1748
 #define IDC_LEFT_MOD_E                  1749
 #define IDC_FC1                         1749
@@ -1473,6 +1476,13 @@
 #define IDC_AHEAD_DIAPHRAGM_HEIGHT_LABEL 1796
 #define IDC_AHEAD_DIAPHRAGM_WIDTH_LABEL 1797
 #define IDC_HP_NOTE                     1798
+#define IDC_HEIGHT_UNIT                 1799
+#define IDC_HEIGHT_LABEL                1800
+#define IDC_WIDTH_LABEL                 1801
+#define IDC_WIDTH_UNIT                  1802
+#define IDC_DIAPHRAGM_GROUP             1803
+#define IDC_CONFIGURATION_GROUP         1804
+#define IDC_TITLE                       1805
 #define IDC_STRENGTH_I_SH               1843
 #define IDC_STRENGTH_I_PS               1844
 #define IDC_SERVICE_I_CR                1859
@@ -1650,7 +1660,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        364
 #define _APS_NEXT_COMMAND_VALUE         36991
-#define _APS_NEXT_CONTROL_VALUE         1799
+#define _APS_NEXT_CONTROL_VALUE         1806
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

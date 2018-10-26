@@ -48,10 +48,10 @@ CSegmentKey GetSegmentKey(GirderIDType gdrID);
 LineIDType GetGirderSegmentLineID(GroupIndexType grpIdx,GirderIndexType gdrIdx,SegmentIndexType segIdx);
 
 // Returns the ID of a girder layout line in the Bridge Geometry model given a span/girder index pair
-LineIDType GetGirderLineID(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+LineIDType GetGirderLineID(const CSpanKey& spanKey);
 
 // Gets the superstructure member ID for precast girder and for the girder to the left and right of it
-void GetSuperstructureMemberIDs(SpanIndexType spanIdx,GirderIndexType gdrIdx,GirderIDType* pLeftID,GirderIDType* pThisID,GirderIDType* pRightID);
+void GetSuperstructureMemberIDs(GroupIndexType grpIdx,GirderIndexType gdrIdx,GirderIDType* pLeftID,GirderIDType* pThisID,GirderIDType* pRightID);
 
 // Gets the superstructure member ID for precast girder and for the girder to the left and right of it
 void GetAdjacentSuperstructureMemberIDs(const CSegmentKey& segmentKey,GirderIDType* pLeftID,GirderIDType* pThisID,GirderIDType* pRightID);

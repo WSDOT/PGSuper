@@ -164,7 +164,9 @@ m_MaxDebondLengthByHardDistance(-1.0)
    CComPtr<IBeamFamily> beamFamily;
    HRESULT hr = CBeamFamilyManager::GetBeamFamily(familyNames.front(),&beamFamily);
    if ( FAILED(hr) )
+   {
       return;
+   }
 
    CComPtr<IBeamFactory> beam_factory;
    std::vector<CString> factoryNames = beamFamily->GetFactoryNames();
@@ -221,6 +223,8 @@ void GirderLibraryEntry::InitCLSIDMap()
 {
    // Maps the old PGSuper CLSID for the beam factories to the new CLSIDs
    // This allows us to open old files
+
+                                      // Old CLSID (Before Version 3.0)                New CLSID (Version 3.0 and later)
    m_CLSIDMap.insert(std::make_pair(_T("{30962206-2412-4001-AA20-CF359BC60142}"),_T("{EF144A97-4C75-4234-AF3C-71DC89B1C8F8}")));
    m_CLSIDMap.insert(std::make_pair(_T("{64E8DD89-EC9E-48DD-B4E9-A457F6BFB9B1}"),_T("{9EDBDD8D-ABBB-413A-9B2D-9EB2712BE914}")));
    m_CLSIDMap.insert(std::make_pair(_T("{F1504E79-8810-4B5C-9797-BCE6C1022C4C}"),_T("{DA3C413D-6413-4485-BD29-E8A419E981AF}")));

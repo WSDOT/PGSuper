@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1317>
-<meta name=layout-width content=847>
+<meta name=layout-height content=1338>
+<meta name=layout-width content=1234>
 
 
 <!--(Links)=========================================================-->
@@ -98,6 +98,16 @@
 	<li class=kadov-p><p>Enter the bar size to resist confinement.</p></li>
 </ol>
 
+<p class=Tip>Theoretical Note: Stirrup zones in PGSuper are not meant to 
+ define the exact placement of individual physical stirrups, such as in 
+ a bridge plan set. PGSuper's stirrup zones define a region with a given 
+ bar size / legs / spacing for analytical purposes (e.g., a &quot;smeared&quot; 
+ stirrup model). This means that if an analysis location lies within a 
+ stirrup zone, Av/S information is taken directly from that zone. It is 
+ the responsibility of the engineer to determine precisely how this information 
+ maps into a detailed plan stirrup layout. Hence, zone lengths do not have 
+ to be an exact multiple of bar spacing.</p>
+
 <h2>Additional Horizontal Interface Shear Zones</h2>
 
 <p>The bars in these zones are used to resist horizontal interface shear 
@@ -133,6 +143,11 @@
 
 <p class=Tip>Tip: You can use the Girder Designer to automatically layout 
  and design transverse reinforcement.</p>
+
+<p class=Tip>Tip: PGSuper can check if stirrup zone lengths are compatible 
+ with stirrup spacing and issue a warning if they are not. See the Project 
+ Criteria <a href="../User%27s Guide/Appendix B - PGSuper Library Dialogs/Limits_Tab.htm">Limits 
+ and Warnings Tab</a> for more information.</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

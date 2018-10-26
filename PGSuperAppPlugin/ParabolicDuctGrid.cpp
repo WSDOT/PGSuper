@@ -283,11 +283,17 @@ void CParabolicDuctGrid::InsertFirstPoint(SpanIndexType spanIdx,Float64 distance
 
    distance = ::ConvertFromSysUnits(distance,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    SetStyleRange(CGXRange(row,2), CGXStyle()
-      .SetValue(distance)
+      .SetValue(0.0) // always starts at 0.0 (until duct model is upgraded)
+      .SetEnabled(FALSE)
+      .SetInterior(::GetSysColor(COLOR_BTNFACE))
+      .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
       );
 
    SetStyleRange(CGXRange(row,3), CGXStyle()
       .SetValue(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str())
+      .SetEnabled(FALSE)
+      .SetInterior(::GetSysColor(COLOR_BTNFACE))
+      .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
       );
 
    offset = ::ConvertFromSysUnits(offset,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
@@ -523,11 +529,17 @@ void CParabolicDuctGrid::InsertLastPoint(SpanIndexType spanIdx,Float64 distance,
 
    distance = ::ConvertFromSysUnits(distance,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    SetStyleRange(CGXRange(row,2), CGXStyle()
-      .SetValue(distance)
+      .SetValue(0.0) // always at 0.0 until duct model is upgraded
+      .SetEnabled(FALSE)
+      .SetInterior(::GetSysColor(COLOR_BTNFACE))
+      .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
       );
 
    SetStyleRange(CGXRange(row,3), CGXStyle()
       .SetValue(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str())
+      .SetEnabled(FALSE)
+      .SetInterior(::GetSysColor(COLOR_BTNFACE))
+      .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
       );
 
    offset = ::ConvertFromSysUnits(offset,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);

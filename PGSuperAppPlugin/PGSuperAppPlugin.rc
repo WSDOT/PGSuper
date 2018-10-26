@@ -1528,8 +1528,8 @@ CAPTION "Configure PGSuper"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "Use generic libraries and templates installed with PGSuper",IDC_GENERIC,
-                    "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE | WS_GROUP | WS_TABSTOP,20,76,172,21
-    CONTROL         "Use libraries and templates published on the local file system, network, or the Internet",IDC_DOWNLOAD,
+                    "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE | WS_GROUP | WS_TABSTOP,20,76,195,14
+    CONTROL         "Use a configuration published on the local file system, network, or the Internet",IDC_DOWNLOAD,
                     "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE,20,98,172,20
     COMBOBOX        IDC_SERVERS,32,138,148,95,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Add/Edit",IDC_ADD,183,138,37,12
@@ -1542,7 +1542,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,356,285,50,14
     PUSHBUTTON      "Help",ID_HELP,411,285,50,14
     LTEXT           "This is the first time you've run PGSuper since it was installed. Before you can use PGSuper, it must be configured.",IDC_FIRST_RUN,7,7,454,16
-    GROUPBOX        "Libraries and Templates",IDC_STATIC,8,24,225,275
+    GROUPBOX        "Libraries and Templates",IDC_CONFIGURATION_GROUP,8,24,225,275
     EDITTEXT        IDC_EDIT,20,42,172,33,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
     LTEXT           "Select a server that contains PGSuper libraries and templates, or use the Add/Edit button to manage the servers",IDC_SERVERS_STATIC,33,121,194,16
     LTEXT           "Select a PGSuper library and templates package:",IDC_SERVERS_STATIC2,32,153,172,8
@@ -1550,8 +1550,8 @@ BEGIN
     LTEXT           "Enter your user information. This information will be used in report titles and other output.",IDC_STATIC,258,38,190,19
     LTEXT           "Engineer",IDC_STATIC,258,60,65,8
     LTEXT           "Company",IDC_STATIC,258,90,69,8
-    LTEXT           "Check for library and template updates:",IDC_UPDATES_STATIC,33,233,174,8
-    PUSHBUTTON      "More about this library and templates package...",IDC_PUBLISHER_HYPERLINK,48,216,155,14
+    LTEXT           "Check for configuration updates:",IDC_UPDATES_STATIC,33,233,174,8
+    PUSHBUTTON      "More about this configuration package...",IDC_PUBLISHER_HYPERLINK,48,216,155,14
     ICON            IDI_EARTH,IDC_STATIC_EARTH,27,214,20,20
 END
 
@@ -1645,12 +1645,12 @@ END
 
 IDD_CATALOGSERVER DIALOGEX 0, 0, 265, 145
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "PGSuper Catalog Servers"
+CAPTION "PGSuper Configuration Servers"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,149,124,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,208,124,50,14
-    LTEXT           "A PGSuper catalog server maintains a list of Publishers of Master Library Files and Project Templates",IDC_STATIC,7,7,211,26
+    LTEXT           "A PGSuper configuration server maintains a list of Publishers of Master Library Files and Project Templates",IDC_TITLE,7,7,211,26
     LISTBOX         IDC_SERVERS,7,38,195,76,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Add",IDC_ADD,208,38,50,14
     PUSHBUTTON      "Edit",IDC_EDIT,208,55,50,14
@@ -1659,7 +1659,7 @@ END
 
 IDD_SERVERDATA DIALOGEX 0, 0, 294, 206
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "PGSuper Catalog Server"
+CAPTION "PGSuper Configuration Server"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     EDITTEXT        IDC_NAME,7,20,170,14,ES_AUTOHSCROLL
@@ -2680,7 +2680,7 @@ BEGIN
     COMBOBOX        IDC_CONNECTION_TYPE,7,49,150,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Installation Event",IDC_EVENT_LABEL,167,37,57,8
     COMBOBOX        IDC_EVENT,167,49,141,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "NOTE: Changes to the Installation Event apply to all closure joints at this temporary support.",IDC_STATIC,7,67,299,8
+    LTEXT           "NOTE: Changes to the Installation Event apply to all closure joints at this temporary support.",IDC_EVENT_NOTE,7,67,299,8
     GROUPBOX        "Support Geometry",IDC_STATIC,7,84,183,112,0,WS_EX_TRANSPARENT
     LTEXT           "Bearing Offset",IDC_BEARING_OFFSET_LABEL,14,99,71,8
     EDITTEXT        IDC_BEARING_OFFSET,87,96,34,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
@@ -2689,11 +2689,18 @@ BEGIN
     LTEXT           "End Distance",IDC_END_DISTANCE_LABEL,14,133,69,8
     EDITTEXT        IDC_END_DISTANCE,87,130,34,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
     LTEXT           "Static",IDC_END_DISTANCE_T,126,132,27,8
-    COMBOBOX        IDC_END_DISTANCE_MEASURE,13,148,167,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_END_DISTANCE_MEASURE,13,147,167,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Support Width",IDC_STATIC,13,175,46,8
     EDITTEXT        IDC_SUPPORT_WIDTH,87,172,34,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_SUPPORT_WIDTH_T,126,174,27,8
     CONTROL         "",IDC_CONNECTION_MF,"Static",SS_ENHMETAFILE | WS_BORDER,198,87,197,109
+    GROUPBOX        "Diaphragm",IDC_DIAPHRAGM_GROUP,7,201,388,57
+    LTEXT           "Height",IDC_HEIGHT_LABEL,13,221,22,8
+    EDITTEXT        IDC_HEIGHT,39,218,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_HEIGHT_UNIT,83,221,19,8
+    LTEXT           "Width",IDC_WIDTH_LABEL,13,237,20,8
+    EDITTEXT        IDC_WIDTH,39,234,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_WIDTH_UNIT,83,236,19,8
 END
 
 IDD_PIERCONNECTIONS2 DIALOGEX 0, 0, 402, 265
@@ -3008,9 +3015,9 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,205,159,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,259,159,50,14
     LTEXT           "Piers to be erected",IDC_STATIC,7,6,122,8
-    LISTBOX         IDC_SOURCE_LIST,7,18,123,129,LBS_SORT | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_SOURCE_LIST,7,18,123,129,LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Piers erected during this activity",IDC_STATIC,187,6,122,8
-    LISTBOX         IDC_TARGET_LIST,186,17,123,129,LBS_SORT | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_TARGET_LIST,186,17,123,129,LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      ">",IDC_MOVE_RIGHT,145,38,27,14
     PUSHBUTTON      "<",IDC_MOVE_LEFT,145,61,27,14
 END
@@ -3023,9 +3030,9 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,205,164,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,259,164,50,14
     LTEXT           "Temporary Supports to be removed",IDC_STATIC,7,6,115,8
-    LISTBOX         IDC_SOURCE_LIST,7,29,123,129,LBS_SORT | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_SOURCE_LIST,7,29,123,129,LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Temporary Supports removed during this activity",IDC_STATIC,190,6,119,18
-    LISTBOX         IDC_TARGET_LIST,186,28,123,129,LBS_SORT | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_TARGET_LIST,186,28,123,129,LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      ">",IDC_MOVE_RIGHT,145,49,27,14
     PUSHBUTTON      "<",IDC_MOVE_LEFT,145,72,27,14
 END
@@ -3072,11 +3079,11 @@ CAPTION "Construct Segments"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Segments to be constructed",IDC_STATIC,7,6,91,8
-    LISTBOX         IDC_SOURCE_LIST,7,18,123,129,LBS_SORT | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_SOURCE_LIST,7,18,123,129,LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      ">",IDC_MOVE_RIGHT,145,38,27,14
     PUSHBUTTON      "<",IDC_MOVE_LEFT,145,61,27,14
     LTEXT           "Segments constructed during this activity",IDC_STATIC,171,6,138,8
-    LISTBOX         IDC_TARGET_LIST,186,17,123,129,LBS_SORT | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_TARGET_LIST,186,17,123,129,LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Time from strand stressing to release",IDC_STATIC,7,160,120,8
     EDITTEXT        IDC_RELAXATION_TIME,135,158,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Days",IDC_RELAXATION_TIME_UNIT,180,162,17,8
@@ -3111,9 +3118,9 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,205,177,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,259,177,50,14
     LTEXT           "Segments to be erected",IDC_STATIC,7,6,78,8
-    LISTBOX         IDC_SOURCE_LIST,7,18,123,129,LBS_SORT | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_SOURCE_LIST,7,18,123,129,LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Segments erected during this activity",IDC_STATIC,186,6,123,8
-    LISTBOX         IDC_TARGET_LIST,186,17,123,129,LBS_SORT | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_TARGET_LIST,186,17,123,129,LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      ">",IDC_MOVE_RIGHT,145,38,27,14
     PUSHBUTTON      "<",IDC_MOVE_LEFT,145,61,27,14
     LTEXT           "This activity includes hauling the precast girder segments from the storage site to the bridge site and the removal of temporary strands, if present.",IDC_STATIC,7,154,302,16
@@ -3302,8 +3309,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,14
- PRODUCTVERSION 3,0,0,14
+ FILEVERSION 3,0,0,15
+ PRODUCTVERSION 3,0,0,15
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3320,12 +3327,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.14"
+            VALUE "FileVersion", "3.0.0.15"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.14"
+            VALUE "ProductVersion", "3.0.0.15"
         END
     END
     BLOCK "VarFileInfo"
@@ -4695,7 +4702,7 @@ END
 STRINGTABLE 
 BEGIN
     IDS_E_BADINSTALL        "There is an error with the %1 installation.  Please re-install the program."
-    IDS_E_PROBPERSISTS      "If this problem persists,  contact technical support at Bridge_Support@wsdot.wa.gov.\n Please include your project file and the %1 file found in the program directory."
+    IDS_E_PROBPERSISTS      "Contact your technical support representitive if this problem persists.\n Please include your project file and the %1 file found in the program directory."
     IDS_E_INVALIDFORMAT     "%1 is not a valid PGSuper project file."
     IDS_E_FILENOTFOUND      "File %1 was not found"
     IDS_E_READ              "An error has occured while reading %1"

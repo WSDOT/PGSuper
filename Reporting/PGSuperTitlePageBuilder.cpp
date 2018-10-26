@@ -272,7 +272,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
       *p << rptNewLine << rptNewLine;
    }
 
-   *p << _T("Library Usage") << rptNewLine;
+   *p << _T("Configuration") << rptNewLine;
    p = CLibraryUsageParagraph().Build(m_pBroker);
    *pTitlePage << p;
 

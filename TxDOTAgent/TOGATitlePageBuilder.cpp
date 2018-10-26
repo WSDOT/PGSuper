@@ -145,7 +145,7 @@ rptChapter* CTOGATitlePageBuilder::Build(boost::shared_ptr<CReportSpecification>
    rptParagraph* p = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pTitlePage << p;
 
-   *p << _T("Library Usage") << rptNewLine;
+   *p << _T("Configuration") << rptNewLine;
    p = CLibraryUsageParagraph().Build(m_pBroker, false);
    *pTitlePage << p;
 

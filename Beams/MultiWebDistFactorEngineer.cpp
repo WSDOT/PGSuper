@@ -86,8 +86,10 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
 
    for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
    {
+      CSpanKey spanKey(spanIdx,gdrIdx);
+
       SPANDETAILS span_lldf;
-      GetSpanDF(spanIdx,gdrIdx,pgsTypes::StrengthI,USE_CURRENT_FC,&span_lldf);
+      GetSpanDF(spanKey,pgsTypes::StrengthI,USE_CURRENT_FC,&span_lldf);
 
       PierIndexType pier1 = spanIdx;
       PierIndexType pier2 = spanIdx+1;
@@ -434,11 +436,12 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
 
 lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,MULTIWEB_LLDFDETAILS* plldf)
 {
-   GET_IFACE(ISectionProperties,        pSectProp);
-   GET_IFACE(IGirder,           pGirder);
-   GET_IFACE(IBridge,           pBridge);
-   GET_IFACE(IBarriers,         pBarriers);
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(ISectionProperties, pSectProp);
+   GET_IFACE(IGirder,            pGirder);
+   GET_IFACE(IBridge,            pBridge);
+   GET_IFACE(IBarriers,          pBarriers);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   GET_IFACE(IPointOfInterest,   pPoi);
 
    // Determine span/pier index... This is the index of a pier and the next span.
    // If this is the last pier, span index is for the last span
@@ -464,13 +467,15 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
       gdrIdx = nGirders-1;
    }
 
+   CSpanKey spanKey(span,gdrIdx);
+
    // determine overhang and spacing base data
-   GetGirderSpacingAndOverhang(span,gdrIdx,dfType, plldf);
+   GetGirderSpacingAndOverhang(spanKey,dfType, plldf);
 
    // put a poi at controlling location from spacing comp
    CSegmentKey segmentKey;
    Float64 Xs;
-   pBridge->GetSegmentLocation(span,gdrIdx,plldf->ControllingLocation,&segmentKey,&Xs);
+   pPoi->ConvertSpanPointToSegmentCoordiante(spanKey,plldf->ControllingLocation,&segmentKey,&Xs);
    pgsPointOfInterest poi(segmentKey,Xs);
 
    // Throws exception if fails requirement (no need to catch it)

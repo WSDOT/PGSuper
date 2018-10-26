@@ -72,8 +72,8 @@ interface IDistFactorEngineer : IUnknown
 
    //---------------------------------------------------------------------
    // Returns the distribution factor for moment
-   virtual Float64 GetMomentDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls) = 0;
-   virtual Float64 GetMomentDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
+   virtual Float64 GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls) = 0;
+   virtual Float64 GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
 
    //---------------------------------------------------------------------
    // Returns the distribution factor for negative moment over a pier
@@ -82,8 +82,8 @@ interface IDistFactorEngineer : IUnknown
 
    //---------------------------------------------------------------------
    // Returns the distribution factor for shear
-   virtual Float64 GetShearDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls) = 0;
-   virtual Float64 GetShearDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
+   virtual Float64 GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls) = 0;
+   virtual Float64 GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
 
    //---------------------------------------------------------------------
    // Returns the distribution factor for reaction
@@ -100,11 +100,11 @@ interface IDistFactorEngineer : IUnknown
 
    //---------------------------------------------------------------------
    // Runs NCHRP 12-50 Tests for live load distrubtion factors
-   virtual bool Run1250Tests(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile) = 0;
+   virtual bool Run1250Tests(const CSpanKey& spanKey,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile) = 0;
 
    //---------------------------------------------------------------------
    // Get all types of factors
-   virtual bool GetDFResultsEx(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,
+   virtual bool GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState ls,
                                Float64* gpM, Float64* gpM1, Float64* gpM2,     // pos moment
                                Float64* gnM, Float64* gnM1, Float64* gnM2,     // neg moment
                                Float64* gV,  Float64* gV1,  Float64* gV2,      // shear

@@ -71,6 +71,7 @@ protected:
 
 public:
    CDiaphragmGrid m_Grid;
+   pgsTypes::SupportedDiaphragmTypes m_DiaphragmTypes;
 
    afx_msg void OnEdit();
 };

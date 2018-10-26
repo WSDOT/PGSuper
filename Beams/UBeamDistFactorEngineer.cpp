@@ -100,8 +100,10 @@ void CUBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
 
    for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
    {
+      CSpanKey spanKey(spanIdx,gdrIdx);
+
       SPANDETAILS span_lldf;
-      GetSpanDF(spanIdx,gdrIdx,pgsTypes::StrengthI,USE_CURRENT_FC,&span_lldf);
+      GetSpanDF(spanKey,pgsTypes::StrengthI,USE_CURRENT_FC,&span_lldf);
 
       PierIndexType pier1 = spanIdx;
       PierIndexType pier2 = spanIdx+1;
@@ -436,12 +438,14 @@ lrfdLiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFParameters(
       gdrIdx = nGirders-1;
    }
 
+   CSpanKey spanKey(span,gdrIdx);
+
    ///////////////////////////////////////////////////////////////////////////
    // Determine overhang and spacing information
-   GetGirderSpacingAndOverhang(span,gdrIdx,dfType, plldf);
+   GetGirderSpacingAndOverhang(spanKey,dfType, plldf);
 
    // get poi at controlling location
-   pgsPointOfInterest poi = pPoi->ConvertSpanPointToPoi(span,gdrIdx,plldf->ControllingLocation);
+   pgsPointOfInterest poi = pPoi->ConvertSpanPointToPoi(spanKey,plldf->ControllingLocation);
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    // Throws exception if fails requirement (no need to catch it)

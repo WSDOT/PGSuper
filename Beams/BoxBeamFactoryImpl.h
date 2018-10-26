@@ -58,6 +58,8 @@ public:
    virtual HINSTANCE GetResourceInstance();
    virtual pgsTypes::SupportedDeckTypes GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs);
    virtual pgsTypes::SupportedBeamSpacings GetSupportedBeamSpacings();
+   virtual pgsTypes::SupportedDiaphragmTypes GetSupportedDiaphragms();
+   virtual pgsTypes::SupportedDiaphragmLocationTypes GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type);
    virtual WebIndexType GetWebCount(const IBeamFactory::Dimensions& dimensions);
    virtual Float64 GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType);
    virtual std::_tstring GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType);

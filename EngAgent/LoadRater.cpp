@@ -66,7 +66,7 @@ pgsRatingArtifact pgsLoadRater::Rate(const CGirderKey& girderKey,pgsTypes::LoadR
    GET_IFACE(IRatingSpecification,pRatingSpec);
 
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPoi( pPOI->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_ERECTED_SEGMENT) );
+   std::vector<pgsPointOfInterest> vPoi(  pPOI->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)) );
 
    pgsRatingArtifact ratingArtifact;
 
@@ -624,6 +624,25 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
 
 void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,bool bPositiveMoment,pgsRatingArtifact& ratingArtifact)
 {
+   pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
+
+   if ( bPositiveMoment )
+   {
+      GET_IFACE(IProductLoads,pProductLoads);
+      VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
+      VehicleIndexType startVehicleIdx = (vehicleIdx == INVALID_INDEX ? 0 : vehicleIdx);
+      VehicleIndexType endVehicleIdx   = (vehicleIdx == INVALID_INDEX ? nVehicles-1: startVehicleIdx);
+      for ( VehicleIndexType vehIdx = startVehicleIdx; vehIdx <= endVehicleIdx; vehIdx++ )
+      {
+         pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType,vehIdx);
+         if ( applicability == pgsTypes::llaNegMomentAndInteriorPierReaction )
+         {
+            // we are processing positive moments and the live load vehicle is only applicable to negative moments
+            return;
+         }
+      }
+   }
+
    CGirderKey thisGirderKey(girderKey);
    if ( thisGirderKey.groupIndex == ALL_GROUPS )
    {
@@ -642,7 +661,6 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
    std::vector<Float64> vPLmin,vPLmax;
    GetMoments(girderKey,bPositiveMoment,ratingType, vehicleIdx, vPoi, vDCmin, vDCmax, vDWmin, vDWmax, vLLIMmin, vMinTruckIndex, vLLIMmax, vMaxTruckIndex, vPLmin, vPLmax);
 
-   pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
    pgsTypes::LimitState ls = GetServiceLimitStateType(ratingType);
 
    GET_IFACE(IRatingSpecification,pRatingSpec);
@@ -1175,12 +1193,12 @@ void special_transform(IBridge* pBridge,IPointOfInterest* pPoi,IIntervals* pInte
    {
       const pgsPointOfInterest& poi = *poiIter;
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
-      SpanIndexType spanIdx;
+      CSpanKey spanKey;
       Float64 Xspan;
-      pPoi->ConvertPoiToSpanPoint(poi,&spanIdx,&Xspan);
+      pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
 
       EventIndexType start,end,dummy;
-      PierIndexType prevPierIdx = spanIdx;
+      PierIndexType prevPierIdx = spanKey.spanIndex;
       PierIndexType nextPierIdx = prevPierIdx + 1;
 
       pBridge->GetContinuityEventIndex(prevPierIdx,&dummy,&start);

@@ -126,10 +126,10 @@ void CPointOfInterestChapterBuilder::ReportPoi(LPCTSTR strName,PoiAttributeType 
       (*pTable)(row,col++) << coordinate.SetValue( pPoi->ConvertPoiToGirderCoordinate(poi) );
       (*pTable)(row,col++) << coordinate.SetValue( pPoi->ConvertPoiToGirderPathCoordinate(poi) );
 
-      SpanIndexType spanIdx;
+      CSpanKey spanKey;
       Float64 Xspan;
-      pPoi->ConvertPoiToSpanPoint(poi,&spanIdx,&Xspan);
-      (*pTable)(row,col++) << LABEL_SPAN(spanIdx);
+      pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
+      (*pTable)(row,col++) << LABEL_SPAN(spanKey.spanIndex);
       (*pTable)(row,col++) << coordinate.SetValue(Xspan);
 
       (*pTable)(row,col++) << poi.GetAttributes(attribute,false);

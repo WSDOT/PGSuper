@@ -444,6 +444,26 @@ matRebar::Size CBridgeDescDeckRebarGrid::GetBarSize(ROWCOL row,ROWCOL col)
    return matRebar::bsNone;
 }
 
+void CBridgeDescDeckRebarGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
+{
+   if ( nCol == 1 )
+   {
+      // Pier Changed
+      CString strPier = GetCellValue(nRow,1);
+      PierIndexType pierIdx = _tstoi(strPier) - 1;
+
+      CBridgeDescDeckReinforcementPage* pParent = (CBridgeDescDeckReinforcementPage*)GetParent();
+      CBridgeDescDlg* pGrandParent = (CBridgeDescDlg*)(pParent->GetParent());
+      ASSERT( pGrandParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
+      const CPierData2* pPier = pGrandParent->m_BridgeDesc.GetPier(pierIdx);
+      UpdateCutoff(nRow,pPier);
+   }
+   else
+   {
+      CGXGridWnd::OnModifyCell(nRow,nCol);
+   }
+}
+
 void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::NegMomentRebarData& rebarData)
 {
    CComPtr<IBroker> pBroker;
@@ -495,47 +515,72 @@ void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::Neg
    Float64 cutoff = rebarData.LeftCutoff;
    cutoff = ::ConvertFromSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,6),cutoff);
-   if ( !pPier->HasCantilever() &&
-        (pPier->GetPierConnectionType() == pgsTypes::Hinge || 
-        pPier->GetPierConnectionType() == pgsTypes::Roller ||
-        pPier->GetPierConnectionType() == pgsTypes::IntegralAfterDeckHingeBack || 
-        pPier->GetPierConnectionType() == pgsTypes::IntegralBeforeDeckHingeBack )
-      )
-   {
-      SetStyleRange(CGXRange(nRow,6), CGXStyle()
-         .SetEnabled(FALSE)
-         .SetFormat(GX_FMT_HIDDEN)
-         .SetInterior(::GetSysColor(COLOR_BTNFACE))
-         );
-   }
-   else
-   {
-      SetStyleRange(CGXRange(nRow,6), CGXStyle()
-         .SetEnabled(TRUE)
-         .SetFormat(GX_FMT_GEN)
-         .SetReadOnly(FALSE)
-         .SetInterior(::GetSysColor(COLOR_WINDOW))
-         );
-   }
 
    // right cutoff
    cutoff = rebarData.RightCutoff;
    cutoff = ::ConvertFromSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,7),cutoff);
-   if ( !pPier->HasCantilever() &&
-        (pPier->GetPierConnectionType() == pgsTypes::Hinge || 
-        pPier->GetPierConnectionType() == pgsTypes::Roller ||
-        pPier->GetPierConnectionType() == pgsTypes::IntegralAfterDeckHingeAhead || 
-        pPier->GetPierConnectionType() == pgsTypes::IntegralBeforeDeckHingeAhead) 
-      )
+
+   UpdateCutoff(nRow,pPier);
+
+   GetParam()->SetLockReadOnly(TRUE);
+	GetParam()->EnableUndo(TRUE);
+}
+
+void CBridgeDescDeckRebarGrid::UpdateCutoff(ROWCOL nRow,const CPierData2* pPier)
+{
+   bool bHasLeftCutoff = true;
+   bool bHasRightCutoff = true;
+
+   pgsTypes::PierConnectionType pierConnectionType = pPier->GetPierConnectionType();
+   if ( pPier->IsBoundaryPier() && !pPier->HasCantilever() )
    {
-      SetStyleRange(CGXRange(nRow,7), CGXStyle()
+      if ( pierConnectionType == pgsTypes::Hinge || pierConnectionType == pgsTypes::Roller )
+      {
+         bHasLeftCutoff = false;
+         bHasRightCutoff = false;
+      }
+      else
+      {
+         if ( pierConnectionType == pgsTypes::IntegralAfterDeckHingeBack || 
+              pierConnectionType == pgsTypes::IntegralBeforeDeckHingeBack ||
+              (pierConnectionType == pgsTypes::IntegralAfterDeck && pPier->GetPrevSpan() == NULL) ||
+              (pierConnectionType == pgsTypes::IntegralBeforeDeck && pPier->GetPrevSpan() == NULL) 
+            )
+         {
+            bHasLeftCutoff = false;
+         }
+
+         if ( pierConnectionType == pgsTypes::IntegralAfterDeckHingeAhead || 
+              pierConnectionType == pgsTypes::IntegralBeforeDeckHingeAhead ||
+             (pierConnectionType == pgsTypes::IntegralAfterDeck && pPier->GetNextSpan() == NULL) ||
+             (pierConnectionType == pgsTypes::IntegralBeforeDeck && pPier->GetNextSpan() == NULL) 
+            ) 
+         {
+            bHasRightCutoff = false;
+         }
+      }
+   }
+
+   if ( bHasLeftCutoff )
+   {
+      SetStyleRange(CGXRange(nRow,6), CGXStyle()
+         .SetEnabled(TRUE)
+         .SetFormat(GX_FMT_GEN)
+         .SetReadOnly(FALSE)
+         .SetInterior(::GetSysColor(COLOR_WINDOW))
+         );
+   }
+   else
+   {
+      SetStyleRange(CGXRange(nRow,6), CGXStyle()
          .SetEnabled(FALSE)
          .SetFormat(GX_FMT_HIDDEN)
          .SetInterior(::GetSysColor(COLOR_BTNFACE))
          );
    }
-   else
+
+   if ( bHasRightCutoff )
    {
       SetStyleRange(CGXRange(nRow,7), CGXStyle()
          .SetEnabled(TRUE)
@@ -544,9 +589,14 @@ void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::Neg
          .SetInterior(::GetSysColor(COLOR_WINDOW))
          );
    }
-
-   GetParam()->SetLockReadOnly(TRUE);
-	GetParam()->EnableUndo(TRUE);
+   else
+   {
+      SetStyleRange(CGXRange(nRow,7), CGXStyle()
+         .SetEnabled(FALSE)
+         .SetFormat(GX_FMT_HIDDEN)
+         .SetInterior(::GetSysColor(COLOR_BTNFACE))
+         );
+   }
 }
 
 void CBridgeDescDeckRebarGrid::FillGrid(const std::vector<CDeckRebarData::NegMomentRebarData>& vRebarData)
@@ -637,14 +687,19 @@ BOOL CBridgeDescDeckRebarGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       CBridgeDescDlg* pGrandParent = (CBridgeDescDlg*)(pParent->GetParent());
       ASSERT( pGrandParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
       const CPierData2* pPier = pGrandParent->m_BridgeDesc.GetPier(pierIdx);
-      ATLASSERT( pPier->IsBoundaryPier() );
 
-      if ( pPier->GetPierConnectionType() == pgsTypes::Hinge || pPier->GetPierConnectionType() == pgsTypes::Roller )
+      if ( pPier->IsBoundaryPier() )
       {
-         CString strMsg;
-         strMsg.Format(_T("Pier %d has a hinge/roller type connection. It cannot have supplimental reinforcement. Remove this row from the Supplemental Reinforcement Grid"),LABEL_PIER(pierIdx));
-         SetWarningText(strMsg);
-         return FALSE;
+         // can't have reinforcement running over a boundary pier if there is a hinge or roller connection.
+         // Boundary piers are between groups and hinge/roller connection means there is a hinge point in
+         // the superstructure. If bars go over the pier, there wouldn't be a hinge
+         if ( pPier->GetPierConnectionType() == pgsTypes::Hinge || pPier->GetPierConnectionType() == pgsTypes::Roller )
+         {
+            CString strMsg;
+            strMsg.Format(_T("Pier %d has a hinge/roller type connection. It cannot have supplimental reinforcement. Remove this row from the Supplemental Reinforcement Grid"),LABEL_PIER(pierIdx));
+            SetWarningText(strMsg);
+            return FALSE;
+         }
       }
    }
 

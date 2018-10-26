@@ -266,9 +266,9 @@ void CLLDFFillDlg::ComputeMaxNumGirders()
    }
 }
 
-SpanGirderList CLLDFFillDlg::GetSpanGirders()
+SpanKeyList CLLDFFillDlg::GetSpanKeys()
 {
-   SpanGirderList theList;
+   SpanKeyList theList;
 
    int spansel = m_GIRDER_SPAN_INT;
    if (spansel>0)
@@ -289,14 +289,14 @@ SpanGirderList CLLDFFillDlg::GetSpanGirders()
 
                for (GirderIndexType igdr=0; igdr<ngdrs; igdr++)
                {
-                  theList.push_back( SpanGirderType(ispan, igdr) );
+                  theList.push_back( CSpanKey(ispan, igdr) );
                }
             }
             else
             {
                // single girder
                GirderIndexType gdr = gdrsel-1;
-               theList.push_back( SpanGirderType(ispan, gdr) );
+               theList.push_back( CSpanKey(ispan, gdr) );
             }
          }
       }
@@ -314,14 +314,14 @@ SpanGirderList CLLDFFillDlg::GetSpanGirders()
 
             for (GirderIndexType igdr=0; igdr<ngdrs; igdr++)
             {
-               theList.push_back( SpanGirderType(span, igdr) );
+               theList.push_back( CSpanKey(span, igdr) );
             }
          }
          else
          {
             // single girder
             GirderIndexType gdr = gdrsel-1;
-            theList.push_back( SpanGirderType(span, gdr) );
+            theList.push_back( CSpanKey(span, gdr) );
          }
       }
    }

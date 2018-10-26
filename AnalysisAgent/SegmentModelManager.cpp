@@ -109,6 +109,10 @@ std::vector<EquivPretensionLoad> CSegmentModelManager::GetEquivPretensionLoads(c
 
    if ( strandType == pgsTypes::Harped && 0 < pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped) )
    {
+#pragma Reminder("STRAND SLOPE/CANTILEVER: need to account for left/right harp point and strands are not symmetrical")
+      // the slope of the strand between harp points is, in general, not straight... the pci equations for getting N
+      // aren't going to work here in general. need to get upward force the same way as we do for linear tendons
+
       hp1 = 0;
       hp2 = 0;
       Nl  = 0;
@@ -1224,6 +1228,7 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,Produ
 void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadCaseIDType lcid,const std::vector<pgsPointOfInterest>& vPoi,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz)
 {
    GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IBridge,pBridge);
 
    CSegmentModelData* pModelData = NULL;
    CSegmentKey lastSegmentKey;
@@ -1234,6 +1239,8 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
       const pgsPointOfInterest& poi(*poiIter);
 
       const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+      Float64 segmentLength = pBridge->GetSegmentLength(segmentKey);
 
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
@@ -1249,10 +1256,9 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
       }
 
       GET_IFACE_NOCHECK(IPointOfInterest,pPoi);
-      if ( intervalIdx < releaseIntervalIdx || pPoi->IsInClosureJoint(poi) || poi.HasAttribute(POI_BOUNDARY_PIER) )
+      if ( intervalIdx < releaseIntervalIdx || pPoi->IsOffSegment(poi) )
       {
-         // interval is before release or the POI is at a closure joint... closures have not been installed yet so
-         // use 0 for the results
+         // interval is before release or the POI is off the segment
          sysSectionValue fx(0,0), fy(0,0), mz(0,0);
          Float64 dx(0), dy(0), rz(0);
 
@@ -1297,7 +1303,7 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
          pvFy->push_back(fy);
          pvMz->push_back(mz);
 
-         Float64 dx,dy,rz;
+         Float64 dx(0),dy(0),rz(0);
          hr = results->ComputePOIDeflections(lcid,poi_id,lotGlobal,&dx,&dy,&rz);
          ATLASSERT(SUCCEEDED(hr));
 
@@ -1326,7 +1332,7 @@ void CSegmentModelManager::GetSectionStresses(IntervalIndexType intervalIdx,Prod
       const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
       Float64 fTop,fBot;
-      if ( pPoi->IsInClosureJoint(poi) || poi.HasAttribute(POI_BOUNDARY_PIER) )
+      if ( pPoi->IsInClosureJoint(poi) || poi.HasAttribute(POI_BOUNDARY_PIER) || (poi.GetDistFromStart() < 0 && poi.IsTenthPoint(POI_SPAN) == 1) )
       {
          // the POI is at a closure joint... closures have not been installed yet so
          // use 0 for the results
@@ -1482,7 +1488,7 @@ void CSegmentModelManager::BuildReleaseModel(const CSegmentKey& segmentKey)
       os << "Building prestress release model" << std::ends;
       pProgress->UpdateMessage( os.str().c_str() );
 
-      CSegmentModelData segmentModel = BuildSegmentModel(segmentKey,releaseIntervalIdx,0.0,0.0);
+      CSegmentModelData segmentModel = BuildSegmentModel(segmentKey,releaseIntervalIdx,0.0,0.0,POI_RELEASED_SEGMENT);
       std::pair<SegmentModels::iterator,bool> result = m_ReleaseModels.insert( std::make_pair(segmentKey,segmentModel) );
       ATLASSERT( result.second == true );
    }
@@ -1522,7 +1528,7 @@ void CSegmentModelManager::BuildStorageModel(const CSegmentKey& segmentKey)
       Float64 right = pSegment->HandlingData.RightStoragePoint;
 
 
-      CSegmentModelData segmentModel = BuildSegmentModel(segmentKey,storageIntervalIdx,left,right);
+      CSegmentModelData segmentModel = BuildSegmentModel(segmentKey,storageIntervalIdx,left,right,POI_STORAGE_SEGMENT);
       std::pair<SegmentModels::iterator,bool> result = m_StorageModels.insert( std::make_pair(segmentKey,segmentModel) );
       ATLASSERT( result.second == true );
    }
@@ -1571,10 +1577,10 @@ CSegmentModelData* CSegmentModelManager::GetModelData(SegmentModels& models,cons
 Float64 g_L;
 bool RemovePOI(const pgsPointOfInterest& poi)
 {
-   return g_L < poi.GetDistFromStart();
+   return !::InRange(0.0,poi.GetDistFromStart(),g_L);
 }
 
-CSegmentModelData CSegmentModelManager::BuildSegmentModel(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 leftSupportDistance,Float64 rightSupportDistance)
+CSegmentModelData CSegmentModelManager::BuildSegmentModel(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 leftSupportDistance,Float64 rightSupportDistance,PoiAttributeType refAttribute)
 {
    // Get the interface pointers we are going to use
    GET_IFACE(IBridge,            pBridge );
@@ -1592,9 +1598,7 @@ CSegmentModelData CSegmentModelManager::BuildSegmentModel(const CSegmentKey& seg
 
    // Get points of interest
    GET_IFACE(IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPOI( pIPoi->GetPointsOfInterest(segmentKey) );
-   pIPoi->RemovePointsOfInterest(vPOI,POI_CLOSURE);
-   pIPoi->RemovePointsOfInterest(vPOI,POI_BOUNDARY_PIER);
+   std::vector<pgsPointOfInterest> vPOI( pIPoi->GetPointsOfInterest(segmentKey) ); // we want all POI
    g_L = Ls;
    vPOI.erase(std::remove_if(vPOI.begin(),vPOI.end(),RemovePOI),vPOI.end());
 

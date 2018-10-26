@@ -197,6 +197,7 @@ public:
    //------------------------------------------------------------------------
    // Returns true if this poi is less than rOther, based on location
    bool operator<(const pgsPointOfInterest& rOther) const;
+   bool operator<=(const pgsPointOfInterest& rOther) const;
 
    //------------------------------------------------------------------------
    // Returns true if this poi is less than rOther, based on location

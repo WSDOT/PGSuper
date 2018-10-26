@@ -725,6 +725,7 @@ Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,Stra
 
 Float64 pgsPsForceEng::GetHoldDownForce(const CSegmentKey& segmentKey)
 {
+#pragma Reminder("STRAND SLOPE/CANTILEVER: need to account for left/right harp point and strands are not symmetrical")
    GET_IFACE(IStrandGeometry,pStrandGeom);
 
    StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
@@ -851,7 +852,7 @@ Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTy
 Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig)
 {
    GET_IFACE(IPointOfInterest,pPoi);
-   if ( pPoi->IsInClosureJoint(poi) || poi.HasAttribute(POI_BOUNDARY_PIER) )
+   if ( pPoi->IsOffSegment(poi) )
    {
       return 0;
    }
@@ -947,7 +948,7 @@ Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTy
 Float64 pgsPsForceEng::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig)
 {
    GET_IFACE(IPointOfInterest,pPoi);
-   if ( pPoi->IsInClosureJoint(poi) || poi.HasAttribute(POI_BOUNDARY_PIER) )
+   if ( pPoi->IsOffSegment(poi) )
    {
       return 0;
    }

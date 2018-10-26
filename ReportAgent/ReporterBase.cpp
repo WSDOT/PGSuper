@@ -61,6 +61,7 @@
 
 #include <Reporting\LoadRatingChapterBuilder.h>
 #include <Reporting\LoadRatingDetailsChapterBuilder.h>
+#include <Reporting\LoadRatingReactionsChapterBuilder.h>
 #include <Reporting\CrackedSectionDetailsChapterBuilder.h>
 #include <Reporting\FinalLossesChapterBuilder.h>
 #include <Reporting\LongitudinalReinforcementForShearLoadRatingChapterBuilder.h>
@@ -105,7 +106,6 @@ HRESULT CReporterBase::InitCommonReportBuilders()
    CreateBridgeAnalysisReport();
    CreateHaulingReport();
    CreateLiftingReport();
-   CreateMultiGirderSpecCheckReport();
    CreateSpecChecReport();
    CreateDistributionFactorSummaryReport();
 
@@ -190,6 +190,7 @@ void CReporterBase::CreateLoadRatingReport()
    pRptBuilder->SetReportSpecificationBuilder( pLoadRatingRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLoadRatingChapterBuilder(true)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLoadRatingDetailsChapterBuilder(true)) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLoadRatingReactionsChapterBuilder(true)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CAlignmentChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CBridgeDescChapterBuilder(true)) );
    //pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpanDataChapterBuilder(false)) );
@@ -319,7 +320,7 @@ void CReporterBase::CreateDistributionFactorsReport()
 
    boost::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder(new CMultiViewSpanGirderReportSpecificationBuilder(m_pBroker) );
 
-   CReportBuilder* pRptBuilder = new CReportBuilder(_T("Distribution Factors Report"));
+   CReportBuilder* pRptBuilder = new CReportBuilder(_T("Live Load Distribution Factors Report"));
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDistributionFactorDetailsChapterBuilder) );

@@ -1815,7 +1815,7 @@ void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSuperDocBase* pDoc, 
 
             endLoc = startLoc + layoutLength;
 
-            if ( segment_length <= startLoc )
+            if ( running_segment_length+segment_length <= startLoc )
             {
                // rebar is beyond the end of the segment which means it is in the closure joint
                // only draw rebar in the closure joint if it has been cast
@@ -1854,9 +1854,9 @@ void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSuperDocBase* pDoc, 
                   endBarLocation->get_Y(&yEnd);
 
                   // Move points along girder
-                  startBarLocation->put_X(group_offset + running_segment_length + startLoc);
+                  startBarLocation->put_X(startLoc);
                   startBarLocation->put_Y(yStart);
-                  endBarLocation->put_X(group_offset + running_segment_length + endLoc);
+                  endBarLocation->put_X(endLoc);
                   endBarLocation->put_Y(yEnd);
                   
                   BuildLine(pDL, startBarLocation, endBarLocation, REBAR_COLOR);

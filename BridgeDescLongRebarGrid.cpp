@@ -579,12 +579,20 @@ void CGirderDescLongRebarGrid::FillGrid(const CLongitudinalRebarData& rebarData)
 	      Insertrow();
       }
 
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
       // fill grid
       ROWCOL nRow=1;
-      for (std::vector<CLongitudinalRebarData::RebarRow>::const_iterator it = rebarData.RebarRows.begin(); it!=rebarData.RebarRows.end(); it++)
+      std::vector<CLongitudinalRebarData::RebarRow>::const_iterator iter(rebarData.RebarRows.begin());
+      std::vector<CLongitudinalRebarData::RebarRow>::const_iterator end(rebarData.RebarRows.end());
+      for ( ; iter != end; iter++ )
       {
+         const CLongitudinalRebarData::RebarRow& rebar = (*iter);
+
          CString tmp;
-         pgsTypes::RebarLayoutType layout = (*it).BarLayout;
+         pgsTypes::RebarLayoutType layout = rebar.BarLayout;
          if (layout == pgsTypes::blFullLength)
          {
             tmp = _T("Full-Length");
@@ -613,28 +621,24 @@ void CGirderDescLongRebarGrid::FillGrid(const CLongitudinalRebarData& rebarData)
 
          VERIFY(SetValueRange(CGXRange(nRow, 1), tmp));
 
-         VERIFY(SetValueRange(CGXRange(nRow, 2), (*it).DistFromEnd));
-         VERIFY(SetValueRange(CGXRange(nRow, 3), (*it).BarLength));
+         Float64 distFromEnd = ::ConvertFromSysUnits(rebar.DistFromEnd,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+         VERIFY(SetValueRange(CGXRange(nRow, 2), distFromEnd));
 
-         pgsTypes::FaceType face = (*it).Face;
-         if (face==pgsTypes::BottomFace)
-         {
-            tmp = _T("Bottom");
-         }
-         else
-         {
-            tmp = _T("Top");
-         }
-            
-         VERIFY(SetValueRange(CGXRange(nRow, 4), tmp));
+         Float64 barLength = ::ConvertFromSysUnits(rebar.BarLength,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+         VERIFY(SetValueRange(CGXRange(nRow, 3), barLength));
 
-         VERIFY(SetValueRange(CGXRange(nRow, 5), (*it).Cover));
+         VERIFY(SetValueRange(CGXRange(nRow, 4), rebar.Face == pgsTypes::BottomFace ? _T("Bottom") : _T("Top")));
 
-         tmp.Format(_T("%s"), lrfdRebarPool::GetBarSize((*it).BarSize).c_str());
+         Float64 cover = ::ConvertFromSysUnits(rebar.Cover, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+         VERIFY(SetValueRange(CGXRange(nRow, 5), cover));
+
+         tmp.Format(_T("%s"), lrfdRebarPool::GetBarSize(rebar.BarSize).c_str());
          VERIFY(SetValueRange(CGXRange(nRow, 6), tmp));
 
-         VERIFY(SetValueRange(CGXRange(nRow, 7), (LONG)(*it).NumberOfBars));
-         VERIFY(SetValueRange(CGXRange(nRow, 8), (*it).BarSpacing));
+         VERIFY(SetValueRange(CGXRange(nRow, 7), (LONG)rebar.NumberOfBars));
+
+         Float64 barSpacing = ::ConvertFromSysUnits(rebar.BarSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+         VERIFY(SetValueRange(CGXRange(nRow, 8), barSpacing));
 
          OnLayoutTypeChanged(nRow);
 
@@ -643,6 +647,29 @@ void CGirderDescLongRebarGrid::FillGrid(const CLongitudinalRebarData& rebarData)
    }
 
    GetParam()->SetLockReadOnly(TRUE);
+}
+
+void CGirderDescLongRebarGrid::GetRebarData(std::vector<CLongitudinalRebarData::RebarRow>& rebarRows)
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits); // not used if grid is empty
+
+   rebarRows.clear();
+   ROWCOL nRows = GetRowCount();
+   for (ROWCOL row = 1; row <= nRows; row++)
+   {
+      CLongitudinalRebarData::RebarRow rebarRow;
+      if (GetRowData(row,&rebarRow))
+      {
+         // values are in display units - must convert to system
+         rebarRow.DistFromEnd = ::ConvertToSysUnits(rebarRow.DistFromEnd, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+         rebarRow.BarLength   = ::ConvertToSysUnits(rebarRow.BarLength,   pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+         rebarRow.Cover       = ::ConvertToSysUnits(rebarRow.Cover,       pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+         rebarRow.BarSpacing  = ::ConvertToSysUnits(rebarRow.BarSpacing,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+         rebarRows.push_back(rebarRow);
+      }
+   }
 }
 
 // validate input

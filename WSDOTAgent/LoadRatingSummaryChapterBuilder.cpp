@@ -535,7 +535,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
 
       if ( 0 < pYieldStressNegativeMoment->GetCrackingStressIncrement() )
       {
-         (*pRemarks) << pYieldStressPositiveMoment->GetVehicleName() << _T(": Section is cracked for Service I limit state") << rptNewLine;
+         (*pRemarks) << pYieldStressNegativeMoment->GetVehicleName() << _T(": Section is cracked for Service I limit state") << rptNewLine;
       }
    }
 }

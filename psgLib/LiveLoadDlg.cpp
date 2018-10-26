@@ -55,7 +55,7 @@ CLiveLoadDlg::CLiveLoadDlg(bool allowEditing, CWnd* pParent /*=NULL*/)
 
    m_VariableAxleIndex = FIXED_AXLE_TRUCK;
 
-   m_UsageType = LiveLoadLibraryEntry::llaEntireStructure;
+   m_UsageType = pgsTypes::llaEntireStructure;
 }
 
 void CLiveLoadDlg::DoDataExchange(CDataExchange* pDX)
@@ -154,13 +154,13 @@ BOOL CLiveLoadDlg::OnInitDialog()
    // Fill Usage combo box
    pCB = (CComboBox*)GetDlgItem(IDC_USAGE);
    idx = pCB->AddString(_T("Use for all actions at all locations"));
-   pCB->SetItemData(idx,LiveLoadLibraryEntry::llaEntireStructure);
+   pCB->SetItemData(idx,pgsTypes::llaEntireStructure);
 
    idx = pCB->AddString(_T("Use only for negative moments between points of contraflexure and interior pier reactions"));
-   pCB->SetItemData(idx,LiveLoadLibraryEntry::llaContraflexure);
+   pCB->SetItemData(idx,pgsTypes::llaContraflexure);
 
    idx = pCB->AddString(_T("Use only for negative moments and interior pier reactions"));
-   pCB->SetItemData(idx,LiveLoadLibraryEntry::llaNegMomentAndInteriorPierReaction);
+   pCB->SetItemData(idx,pgsTypes::llaNegMomentAndInteriorPierReaction);
 
 
 	CDialog::OnInitDialog();

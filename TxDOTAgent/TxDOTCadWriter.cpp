@@ -93,6 +93,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    CSegmentKey segmentKey(girderKey,0);
    SpanIndexType spanIdx = girderKey.groupIndex;
    GirderIndexType gdrIdx = girderKey.girderIndex;
+   CSpanKey spanKey(spanIdx,gdrIdx);
 
 // Get data first and convert to correct units. then write it all at end of function
 // Note that Units are hard-coded into this routine. TxDOT has no use for SI units
@@ -285,10 +286,10 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 	int reqMinUltimateMomentCapacity = (int)Round(::ConvertFromSysUnits( value, unitMeasure::KipFeet ));
 
 	/* 17. LIVE LOAD DISTRIBUTION FACTOR */
-   Float64 momentDistFactor = pDistFact->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
+   Float64 momentDistFactor = pDistFact->GetMomentDistFactor(spanKey,pgsTypes::StrengthI);
 
 	/* 17aa. LIVE LOAD DISTRIBUTION FACTOR */
-   Float64 shearDistFactor = pDistFact->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI);
+   Float64 shearDistFactor = pDistFact->GetShearDistFactor(spanKey,pgsTypes::StrengthI);
 
    /* 17a - Non-Standard Design Data */
    std::_tstring ns_strand_str;
@@ -857,6 +858,7 @@ int TxDOT_WriteDistributionFactorsToFile (FILE *fp, IBroker* pBroker, const CGir
 
    SpanIndexType spanIdx = girderKey.groupIndex;
    GirderIndexType gdrIdx = girderKey.girderIndex;
+   CSpanKey spanKey(spanIdx,gdrIdx);
 
    GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pDfEng);
 
@@ -865,7 +867,7 @@ int TxDOT_WriteDistributionFactorsToFile (FILE *fp, IBroker* pBroker, const CGir
    Float64 gV,  gV1,  gV2;   // shear
    Float64 gR,  gR1,  gR2;   // reaction
 
-   pDfEng->GetDFResultsEx(spanIdx,gdrIdx,pgsTypes::StrengthI,
+   pDfEng->GetDFResultsEx(spanKey,pgsTypes::StrengthI,
                           &gpM, &gpM1, &gpM2,
                           &gnM, &gnM1, &gnM2,
                           &gV,  &gV1,  &gV2,

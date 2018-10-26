@@ -188,7 +188,7 @@ BOOL CConfigurePGSuperDlg::OnInitDialog()
 
    CWnd* pWnd = GetDlgItem(IDC_EDIT);
    CString strMsg;
-   strMsg.Format(_T("%s doesn't have any default girders, design criteria, or other settings. All of the \"default\" information is stored in the Master Library and User and Workgroup Templates.\r\n\r\nPGSuper must be configured to use a specific Master Library and Templates. Use the Help button to get more information."),m_AppName);
+   strMsg.Format(_T("%s doesn't have any default girders, design criteria, or other settings. All of the \"default\" information is stored in configuration files. Select a configuration option."),m_AppName);
    pWnd->SetWindowText(strMsg);
 
    pWnd = GetDlgItem(IDC_FIRST_RUN);
@@ -199,17 +199,33 @@ BOOL CConfigurePGSuperDlg::OnInitDialog()
    }
    else
    {
-      pWnd->SetWindowText(_T("Set the User, Library, and Template Configuration information."));
+      pWnd->SetWindowText(_T(""));
    }
 
    if ( m_bFirstRun )
+   {
       HideOkAndCancelButtons();
+   }
 
    OnMethod();
    OnServerChanged();
 
    strMsg.Format(_T("Configure %s"),m_AppName);
    SetWindowText(strMsg);
+
+   GetDlgItem(IDC_CONFIGURATION_GROUP)->SetWindowText(strMsg);
+
+   strMsg.Format(_T("Use the default configuration installed with %s"),m_AppName);
+   GetDlgItem(IDC_GENERIC)->SetWindowText(strMsg);
+
+   strMsg.Format(_T("Select a server that contains %s configurations, or use the Add/Edit button to manage the servers"),m_AppName);
+   GetDlgItem(IDC_SERVERS_STATIC)->SetWindowText(strMsg);
+
+   strMsg.Format(_T("Select a %s configuration package:"),m_AppName);
+   GetDlgItem(IDC_SERVERS_STATIC2)->SetWindowText(strMsg);
+
+   strMsg.Format(_T("Update %s configuration now"),m_AppName);
+   GetDlgItem(IDC_UPDATENOW)->SetWindowText(strMsg);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -253,7 +269,9 @@ void CConfigurePGSuperDlg::ServerList()
    CString strCurrAddress;
 
    if ( idx != CB_ERR )
+   {
       pCB->GetLBText(idx,strCurrAddress);
+   }
 
    pCB->ResetContent();
 
@@ -369,7 +387,9 @@ void CConfigurePGSuperDlg::PublisherList()
                // try to set current publisher
                int sst = pLB->SelectString(-1,m_Publisher);
                if (sst==LB_ERR)
+               {
                   pLB->SetCurSel(0);
+               }
             }
 
             pLB->EnableWindow(TRUE);
@@ -391,18 +411,20 @@ void CConfigurePGSuperDlg::PublisherList()
          CListBox* pLB = (CListBox*)GetDlgItem(IDC_PUBLISHERS);
          pLB->ResetContent();
 
-		 pLB->AddString(_T("An error occured while accessing the list"));
-		 pLB->AddString(_T("of publishers."));
-         if (!m_bFirstRun )
-		 {
-			 pLB->AddString(_T(""));
-			 pLB->AddString(_T("The most recently downloaded settings"));
-			 pLB->AddString(_T("will be used"));
-			 pLB->EnableWindow(FALSE);
-		 }
+		    pLB->AddString(_T("An error occured while accessing the list"));
+		    pLB->AddString(_T("of publishers."));
+          if (!m_bFirstRun )
+		    {
+			    pLB->AddString(_T(""));
+			    pLB->AddString(_T("The most recently downloaded settings"));
+			    pLB->AddString(_T("will be used"));
+			    pLB->EnableWindow(FALSE);
+		    }
 
          if ( m_Method == 1 )
+         {
             GetDlgItem(IDC_UPDATENOW)->EnableWindow(FALSE);
+         }
       }
    }
 }
@@ -460,10 +482,10 @@ void CConfigurePGSuperDlg::ConfigureWebLink()
    CWnd* pWeb = (CWnd*)GetDlgItem(IDC_PUBLISHER_HYPERLINK);
 
    CButton* pGen = (CButton*)GetDlgItem(IDC_GENERIC);
-   if (BST_CHECKED!=pGen->GetCheck())
+   if (BST_CHECKED != pGen->GetCheck())
    {
-      const CPGSuperCatalogServer* pserver = m_Servers.GetServer(m_CurrentServer);
-      if(pserver!=NULL)
+      const CPGSuperCatalogServer* pServer = m_Servers.GetServer(m_CurrentServer);
+      if(pServer != NULL)
       {
          CListBox* pCB = (CListBox*)GetDlgItem(IDC_PUBLISHERS);
          int idx = pCB->GetCurSel();
@@ -476,7 +498,7 @@ void CConfigurePGSuperDlg::ConfigureWebLink()
             
             try
             {
-               url = pserver->GetWebLink(strName);
+               url = pServer->GetWebLink(strName);
             }
             catch(CCatalogServerException exp)
             {
@@ -484,15 +506,13 @@ void CConfigurePGSuperDlg::ConfigureWebLink()
                CString msg = exp.GetErrorMessage();
             }
 
-            if (!url.IsEmpty())
-            {
-               pWeb->EnableWindow(TRUE);
-               m_PublisherHyperLink.SetURL(url);
-            }
-            else
+            m_PublisherHyperLink.SetWindowText(_T("More about this configuration package..."));
+            m_PublisherHyperLink.SetURL(url);
+            pWeb->EnableWindow(TRUE);
+            if (url.IsEmpty())
             {
                pWeb->EnableWindow(FALSE);
-               m_PublisherHyperLink.SetURL(CString(_T("No web link defined for this publisher.")));
+               m_PublisherHyperLink.SetWindowText(CString(_T("No web link defined for this publisher.")));
             }
          }
       }
@@ -500,6 +520,8 @@ void CConfigurePGSuperDlg::ConfigureWebLink()
    else
    {
       pWeb->EnableWindow(FALSE);
-      m_PublisherHyperLink.SetURL(CString(_T("No web link defined for this publisher.")));
+      m_PublisherHyperLink.SetWindowText(CString(_T("No web link defined for this publisher.")));
    }
+
+   m_PublisherHyperLink.SizeToContent();
 }

@@ -9,6 +9,7 @@
 
 #include "resource.h"
 #include <psgLib\GirderLibraryEntry.h>
+#include <IFace\BeamFactory.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CDiaphragmDefinitionDlg dialog
@@ -17,7 +18,7 @@ class CDiaphragmDefinitionDlg : public CDialog
 {
 // Construction
 public:
-	CDiaphragmDefinitionDlg(CWnd* pParent = NULL);   // standard constructor
+	CDiaphragmDefinitionDlg(const GirderLibraryEntry& entry,const GirderLibraryEntry::DiaphragmLayoutRule& rule,CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CDiaphragmDefinitionDlg)
@@ -25,6 +26,9 @@ public:
 		// NOTE: the ClassWizard will add data members here
 	//}}AFX_DATA
 
+   const GirderLibraryEntry& m_Entry;
+   CComPtr<IBeamFactory> m_pBeamFactory;
+   bool m_bSplicedGirder;
    GirderLibraryEntry::DiaphragmLayoutRule m_Rule;
 
 // Overrides
@@ -36,15 +40,20 @@ public:
 
 // Implementation
 protected:
+   pgsTypes::DiaphragmType ConstructionTypeToDiaphragmType(GirderLibraryEntry::ConstructionType constructionType);
+   void FillMeasurementTypeComboBox();
+   void FillMeasurementDatumComboBox();
 
 	// Generated message map functions
 	//{{AFX_MSG(CDiaphragmDefinitionDlg)
-	afx_msg void OnDiaphragmTypeChanged();
-   afx_msg void OnMeasurementTypeChanged();
-   afx_msg void OnMethodChanged();
 	virtual BOOL OnInitDialog();
+   afx_msg void OnMeasurementTypeChanged();
+   afx_msg void OnConstructionTypeChanged();
+   afx_msg void OnMethodChanged();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+public:
+   afx_msg void OnBnClickedHelp();
 };
 
 //{{AFX_INSERT_LOCATION}}

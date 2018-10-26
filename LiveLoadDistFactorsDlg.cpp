@@ -321,18 +321,18 @@ void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
    if ( dlg.DoModal() == IDOK )
    {
       // dialog returns list of girders to be modified
-      SpanGirderList spans = dlg.GetSpanGirders();
+      SpanKeyList spans = dlg.GetSpanKeys();
       PierGirderList piers = dlg.GetPierGirders();
 
       pgsTypes::DistributionFactorMethod method = dlg.GetDistributionFactorMethod();
       if (method==pgsTypes::DirectlyInput)
       {
          // Direct input - girders first
-         for (SpanGirderIterator sit=spans.begin(); sit!=spans.end(); sit++)
+         for (SpanKeyIterator sit=spans.begin(); sit!=spans.end(); sit++)
          {
-            const SpanGirderType& sg = *sit;
-            CLLDFGrid* pGrid = m_GirderGrids[sg.Span].get();
-            pGrid->SetGirderLLDF( sg.Girder, dlg.m_UserInputValue );
+            const CSpanKey& spanKey = *sit;
+            CLLDFGrid* pGrid = m_GirderGrids[spanKey.spanIndex].get();
+            pGrid->SetGirderLLDF( spanKey.girderIndex, dlg.m_UserInputValue );
          }
 
          // Piers
@@ -378,21 +378,21 @@ void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
             std::vector<SpanLLDF> span_lldfs;
 
             // Girders first
-            for (SpanGirderIterator sit=spans.begin(); sit!=spans.end(); sit++)
+            for (SpanKeyIterator sit=spans.begin(); sit!=spans.end(); sit++)
             {
-               const SpanGirderType& sg = *sit;
-               const CSpanData2* pSpan = m_BridgeDesc.GetSpan(sg.Span);
+               const CSpanKey& spanKey = *sit;
+               const CSpanData2* pSpan = m_BridgeDesc.GetSpan(spanKey.spanIndex);
                const CGirderGroupData* pGroup = m_BridgeDesc.GetGirderGroup(pSpan);
                GirderIndexType nGirders = pGroup->GetGirderCount();
-               if(sg.Girder < nGirders)
+               if(spanKey.girderIndex < nGirders)
                {
                   SpanLLDF lldf;
-                  lldf.sgNMService= pLLDF->GetNegMomentDistFactor(sg.Span, sg.Girder, pgsTypes::ServiceI );
-                  lldf.sgPMService= pLLDF->GetMomentDistFactor(sg.Span, sg.Girder, pgsTypes::ServiceI );
-                  lldf.sgVService = pLLDF->GetShearDistFactor(sg.Span, sg.Girder, pgsTypes::ServiceI );
-                  lldf.sgNMFatigue= pLLDF->GetNegMomentDistFactor(sg.Span, sg.Girder, pgsTypes::FatigueI );
-                  lldf.sgPMFatigue= pLLDF->GetMomentDistFactor(sg.Span, sg.Girder, pgsTypes::FatigueI );
-                  lldf.sgVFatigue = pLLDF->GetShearDistFactor(sg.Span, sg.Girder, pgsTypes::FatigueI );
+                  lldf.sgNMService= pLLDF->GetNegMomentDistFactor(spanKey, pgsTypes::ServiceI );
+                  lldf.sgPMService= pLLDF->GetMomentDistFactor(spanKey, pgsTypes::ServiceI );
+                  lldf.sgVService = pLLDF->GetShearDistFactor(spanKey, pgsTypes::ServiceI );
+                  lldf.sgNMFatigue= pLLDF->GetNegMomentDistFactor(spanKey, pgsTypes::FatigueI );
+                  lldf.sgPMFatigue= pLLDF->GetMomentDistFactor(spanKey, pgsTypes::FatigueI );
+                  lldf.sgVFatigue = pLLDF->GetShearDistFactor(spanKey, pgsTypes::FatigueI );
 
                   span_lldfs.push_back(lldf);
                }
@@ -458,11 +458,11 @@ void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
             // Now that we've safely computed values, put them into the grids.
             int icnt=0;
             // Girders
-            for (SpanGirderIterator sit=spans.begin(); sit!=spans.end(); sit++)
+            for (SpanKeyIterator sit=spans.begin(); sit!=spans.end(); sit++)
             {
-               const SpanGirderType& sg = *sit;
-               CLLDFGrid* pGrid = m_GirderGrids[sg.Span].get();
-               pGrid->SetGirderLLDF( sg.Girder, span_lldfs[icnt] );
+               const CSpanKey& spanKey = *sit;
+               CLLDFGrid* pGrid = m_GirderGrids[spanKey.spanIndex].get();
+               pGrid->SetGirderLLDF( spanKey.girderIndex, span_lldfs[icnt] );
 
                icnt++;
             }

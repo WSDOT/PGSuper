@@ -107,4 +107,4 @@ public:
 #define ASSERT_GIRDER_KEY(_g_) ATLASSERT(_g_.groupIndex != ALL_GROUPS && _g_.girderIndex != ALL_GIRDERS)
 #define ASSERT_SEGMENT_KEY(_s_) ATLASSERT(_s_.groupIndex != ALL_GROUPS && _s_.girderIndex != ALL_GIRDERS && _s_.segmentIndex != ALL_SEGMENTS)
 #define ASSERT_CLOSURE_KEY(_c_) ASSERT_SEGMENT_KEY(_c_)
-#define ASSERT_SPAN_GIRDER_KEY(_k_) ATLASSERT(_k_.spanIndex != ALL_SPANS && _k_.girderIndex != ALL_GIRDERS)
+#define ASSERT_SPAN_KEY(_sg_) ATLASSERT(_sg_.spanIndex != ALL_SPANS && _sg_.girderIndex != ALL_GIRDERS)

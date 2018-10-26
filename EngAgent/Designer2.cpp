@@ -692,7 +692,7 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey)
       std::vector<pgsPointOfInterest> releasePois( pPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT) );
       std::vector<pgsPointOfInterest> erectedPois( pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
 
-      std::vector<pgsPointOfInterest> vOtherPoi(pPoi->GetPointsOfInterest(segmentKey,POI_PSXFER | POI_HARPINGPOINT));
+      std::vector<pgsPointOfInterest> vOtherPoi(pPoi->GetPointsOfInterest(segmentKey,POI_PSXFER | POI_H | POI_HARPINGPOINT));
       releasePois.insert(releasePois.end(),vOtherPoi.begin(),vOtherPoi.end());
       erectedPois.insert(erectedPois.end(),vOtherPoi.begin(),vOtherPoi.end());
 
@@ -2005,7 +2005,7 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
    pgsAlternativeTensileStressCalculator altCalc(segmentKey, releaseIntervalIdx, pBridge, pGirder, pShapes, pSectProps, pRebarGeom, pMaterials, pPoi, true/*limit bar stress*/, bSISpec, true /*girder stresses*/);
 
    // Don't check closure joint POI at release
-   std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest(segmentKey) );
+   std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT) );
    pPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
 
 
@@ -2298,14 +2298,13 @@ void pgsDesigner2::CreateStirrupCheckAtPoisArtifact(const pgsPointOfInterest& po
    if (IsDeepSection( poi ))
    {
       GET_IFACE(IPointOfInterest,pPoi);
-      SpanIndexType spanIdx;
+      CSpanKey spanKey;
       Float64 Xspan;
-      pPoi->ConvertPoiToSpanPoint(poi,&spanIdx,&Xspan);
-      GirderIndexType gdrIdx = segmentKey.girderIndex;
+      pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
 
       Int32 reason = XREASON_AGENTVALIDATIONFAILURE;
       std::_tostringstream os;
-      os << _T("Cannot perform shear check - Span-to-Depth ratio is less than ")<< MIN_SPAN_DEPTH_RATIO <<_T(" for Span ")<< LABEL_SPAN(spanIdx) << _T(" Girder ")<< LABEL_GIRDER(gdrIdx) << _T(" (See LRFD 5.8.1.1");
+      os << _T("Cannot perform shear check - Span-to-Depth ratio is less than ")<< MIN_SPAN_DEPTH_RATIO <<_T(" for Span ")<< LABEL_SPAN(spanKey.spanIndex) << _T(" Girder ")<< LABEL_GIRDER(spanKey.girderIndex) << _T(" (See LRFD 5.8.1.1");
 
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
       pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,pgsBridgeDescriptionStatusItem::General,os.str().c_str());
@@ -2370,14 +2369,12 @@ bool pgsDesigner2::IsDeepSection( const pgsPointOfInterest& poi)
    // L/d < 4
 
    GET_IFACE(IPointOfInterest,pPoi);
-   SpanIndexType spanIdx;
+   CSpanKey spanKey;
    Float64 Xspan;
-   pPoi->ConvertPoiToSpanPoint(poi,&spanIdx,&Xspan);
-
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+   pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
 
    GET_IFACE(IBridge,pBridge);
-   Float64 span_length = pBridge->GetSpanLength(spanIdx,segmentKey.girderIndex);
+   Float64 span_length = pBridge->GetSpanLength(spanKey);
 
    GET_IFACE(IGirder,pGdr);
    Float64 beam_depth = pGdr->GetHeight(poi);
@@ -3711,7 +3708,7 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
    else
    {
       GET_IFACE(IPointOfInterest, pPoi);
-      std::vector<pgsPointOfInterest> pois( pPoi->GetPointsOfInterest(segmentKey) );
+      std::vector<pgsPointOfInterest> pois( pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
 
       // remove all POI from the container that are outside of the CL Bearings...
       // PoiIsOusideOfBearings does the filtering and it keeps POIs that are at the closure joint (and this is what we want)
@@ -4007,7 +4004,7 @@ void pgsDesigner2::CheckSegmentDetailing(const CSegmentKey& segmentKey,pgsSegmen
 
    // get dimensions from bridge model
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPoi( pPOI->GetPointsOfInterest(segmentKey) );
+   std::vector<pgsPointOfInterest> vPoi( pPOI->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
 
    Float64 minTopFlange = DBL_MAX;
    Float64 minBotFlange = DBL_MAX;
@@ -4094,6 +4091,7 @@ void pgsDesigner2::CheckStrandSlope(const CSegmentKey& segmentKey,pgsStrandSlope
       capacity = s50;
    }
 
+#pragma Reminder("STRAND SLOPE/CANTILEVER: need to account for left/right harp point and strands are not symmetrical")
    demand = pStrGeom->GetMaxStrandSlope( pgsPointOfInterest(segmentKey,0.00) ); // +/- value
    demand = fabs(demand); // capacity is always positive so use absolute value of demand
 
@@ -4118,6 +4116,7 @@ void pgsDesigner2::CheckHoldDownForce(const CSegmentKey& segmentKey,pgsHoldDownF
    pSpecEntry->GetHoldDownForce(&bCheck,&bDesign,&maxHoldDownForce);
    pArtifact->IsApplicable( bCheck );
 
+#pragma Reminder("STRAND SLOPE/CANTILEVER: need to account for left/right harp point and strands are not symmetrical")
    Float64 demand = pPrestressForce->GetHoldDownForce(segmentKey);
 
    pArtifact->SetCapacity( maxHoldDownForce );
@@ -4193,10 +4192,10 @@ void pgsDesigner2::CheckLiveLoadDeflection(const CGirderKey& girderKey,pgsGirder
 
             // Determine if this POI is in the span that is currently being evaluated
 #pragma Reminder("UPDATE: this is not every efficient") // see note above
-            SpanIndexType thisSpanIdx;
+            CSpanKey thisSpanKey;
             Float64 Xspan;
-            pPoi->ConvertPoiToSpanPoint(poi,&thisSpanIdx,&Xspan);
-            if ( thisSpanIdx != spanIdx )
+            pPoi->ConvertPoiToSpanPoint(poi,&thisSpanKey,&Xspan);
+            if ( thisSpanKey.spanIndex != spanIdx )
             {
                continue;
             }

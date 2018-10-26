@@ -59,8 +59,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,14
- PRODUCTVERSION 3,0,0,14
+ FILEVERSION 3,0,0,15
+ PRODUCTVERSION 3,0,0,15
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -78,12 +78,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "TxDOTAgent Module"
-            VALUE "FileVersion", "3.0.0.14"
+            VALUE "FileVersion", "3.0.0.15"
             VALUE "InternalName", "TOGA"
             VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperTxDOTAgent.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.14"
+            VALUE "ProductVersion", "3.0.0.15"
         END
     END
     BLOCK "VarFileInfo"
@@ -643,7 +643,7 @@ END
 STRINGTABLE 
 BEGIN
     IDS_E_BADINSTALL        "There is an error with the %1 installation.  Please re-install the program."
-    IDS_E_PROBPERSISTS      "If this problem persists,  contact technical support at Bridge_Support@wsdot.wa.gov.\n Please include your project file and the %1 file found in the program directory."
+    IDS_E_PROBPERSISTS      "Contact your technical support representitive if this problem persists.\n Please include your project file and the %1 file found in the program directory."
     IDS_PROJCRIT_ERROR      "\nThe Project Criteria library entry with the name ""%s"" that was originally selected and saved in this TOGA project file does not exist in the current PGSuper Master Library.\n\nPlease select a valid Project Criteria entry from the list below, or close this project and configure PGSuper to use another Master Library (i.e., TxDOT's)."
     IDS_E_INVALIDFORMAT     "%1 is not a valid PGSuper project file."
     IDS_E_FILENOTFOUND      "File %1 was not found"

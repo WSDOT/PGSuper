@@ -130,7 +130,7 @@ void CDoubleTeeFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType s
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       ATLASSERT(pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsConstantAdjacent);
-      Float64 spacing = pBridgeDesc->GetGirderSpacing();;
+      Float64 spacing = pBridgeDesc->GetGirderSpacing();
 
       // if this is a fixed width section, then set the spacing equal to the width
       if ( IsEqual(wmin,wmax) )
@@ -761,6 +761,34 @@ pgsTypes::SupportedBeamSpacings CDoubleTeeFactory::GetSupportedBeamSpacings()
    pgsTypes::SupportedBeamSpacings sbs;
    sbs.push_back(pgsTypes::sbsConstantAdjacent);
    return sbs;
+}
+
+pgsTypes::SupportedDiaphragmTypes CDoubleTeeFactory::GetSupportedDiaphragms()
+{
+   pgsTypes::SupportedDiaphragmTypes diaphragmTypes;
+   diaphragmTypes.push_back(pgsTypes::dtPrecast);
+   diaphragmTypes.push_back(pgsTypes::dtCastInPlace);
+   return diaphragmTypes;
+}
+
+pgsTypes::SupportedDiaphragmLocationTypes CDoubleTeeFactory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type)
+{
+   pgsTypes::SupportedDiaphragmLocationTypes locations;
+   switch(type)
+   {
+   case pgsTypes::dtPrecast :
+      locations.push_back(pgsTypes::dltInternal);
+      break;
+
+   case pgsTypes::dtCastInPlace :
+      locations.push_back(pgsTypes::dltExternal);
+      break;
+
+   default:
+      ATLASSERT(false);
+   }
+
+   return locations;
 }
 
 void CDoubleTeeFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, 

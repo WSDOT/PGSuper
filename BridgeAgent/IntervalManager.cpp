@@ -32,6 +32,12 @@
 #include <PgsExt\MomentLoadData.h>
 
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 #if defined ASSERT_VALID
 #undef ASSERT_VALID
 #endif

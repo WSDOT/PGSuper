@@ -1274,8 +1274,7 @@ void CBridgePlanView::UpdateDisplayObjects()
    BuildSectionCutDisplayObjects();
    BuildNorthArrowDisplayObjects();
 
-#pragma Reminder("Fix problem drawing diaphragms for spliced girder bridges")
-   //BuildDiaphragmDisplayObjects();
+   BuildDiaphragmDisplayObjects();
    
    UpdateSegmentTooltips();
    UpdateClosureJointTooltips();
@@ -1800,10 +1799,8 @@ void CBridgePlanView::BuildGirderDisplayObjects()
             segment_display_list->FindDisplayObject(ID,&doSegment);
             ASSERT(doSegment);
 
-            if ( settings & IDB_PV_LABEL_GIRDERS && segIdx == 0 )
+            if ( settings & IDB_PV_LABEL_GIRDERS )
             {
-               // Put girder label on first segment
-
                // direction to output text
                CComPtr<IDirection> direction;
                pBridge->GetSegmentBearing(segmentKey,&direction);
@@ -3145,6 +3142,10 @@ void CBridgePlanView::BuildNorthArrowDisplayObjects()
 
 void CBridgePlanView::BuildDiaphragmDisplayObjects()
 {
+   // This method draws the CIP diaphragms. Precast diaphragms are not drawn
+#pragma Reminder("UPDATE: this method assumes diaphragms are between girders")
+   // CIP diaphragms can be cast between girders or within a girder (eg, in a U-beam)
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
@@ -3158,20 +3159,21 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IRoadway,pAlignment);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    SpanIndexType nSpans = pBridge->GetSpanCount();
    SpanIndexType firstSpanIdx = (m_StartSpanIdx == ALL_SPANS ? 0 : m_StartSpanIdx);
    SpanIndexType lastSpanIdx  = (m_EndSpanIdx  == ALL_SPANS ? nSpans-1 : m_EndSpanIdx);
    for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx <= lastSpanIdx; spanIdx++ )
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
+      GirderIndexType nGirders = pBridge->GetGirderCountBySpan(spanIdx);
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders-1; gdrIdx++ )
       {
-         CSegmentKey segmentKey1(spanIdx,gdrIdx,  0);
-         CSegmentKey segmentKey2(spanIdx,gdrIdx+1,0);
+         CSpanKey spanKey1(spanIdx,gdrIdx);
+         CSpanKey spanKey2(spanIdx,gdrIdx+1);
 
-         std::vector<IntermedateDiaphragm> left_diaphragms  = pBridge->GetIntermediateDiaphragms(pgsTypes::dtCastInPlace,segmentKey1);
-         std::vector<IntermedateDiaphragm> right_diaphragms = pBridge->GetIntermediateDiaphragms(pgsTypes::dtCastInPlace,segmentKey2);
+         std::vector<IntermedateDiaphragm> left_diaphragms  = pBridge->GetCastInPlaceDiaphragms(spanKey1);
+         std::vector<IntermedateDiaphragm> right_diaphragms = pBridge->GetCastInPlaceDiaphragms(spanKey2);
 
          std::vector<IntermedateDiaphragm>::iterator left_iter, right_iter;
          for ( left_iter = left_diaphragms.begin(), right_iter = right_diaphragms.begin(); 
@@ -3184,15 +3186,18 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
             // Only add the diaphragm if it has width
             if ( !IsZero(left_diaphragm.W) && !IsZero(right_diaphragm.W) )
             {
+               pgsPointOfInterest poi = pPoi->ConvertSpanPointToPoi(spanKey1,left_diaphragm.Location);
+
 	            Float64 station, offset;
-	            pBridge->GetStationAndOffset(pgsPointOfInterest(segmentKey1,left_diaphragm.Location),&station,&offset);
+	            pBridge->GetStationAndOffset(poi,&station,&offset);
 	
 	            CComPtr<IDirection> normal;
 	            pAlignment->GetBearingNormal(station,&normal);
 	            CComPtr<IPoint2d> pntLeft;
 	            pAlignment->GetPoint(station,offset,normal,&pntLeft);
 	
-	            pBridge->GetStationAndOffset(pgsPointOfInterest(segmentKey2,right_diaphragm.Location),&station,&offset);
+               poi = pPoi->ConvertSpanPointToPoi(spanKey2,right_diaphragm.Location);
+	            pBridge->GetStationAndOffset(poi,&station,&offset);
 	            normal.Release();
 	            pAlignment->GetBearingNormal(station,&normal);
 	            CComPtr<IPoint2d> pntRight;

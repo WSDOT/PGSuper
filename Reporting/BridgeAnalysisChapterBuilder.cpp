@@ -450,7 +450,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
          *p << rptNewLine;
 
-         *p << CVehicularLoadReactionTable().Build(pBroker,girderKey,llType,strLLName,index,m_AnalysisType,true,pDisplayUnits) << rptNewLine;
+         *p << CVehicularLoadReactionTable().Build(pBroker,girderKey,llType,strLLName,index,m_AnalysisType,true,true,pDisplayUnits) << rptNewLine;
          *p << LIVELOAD_PER_LANE << rptNewLine;
       }
    }

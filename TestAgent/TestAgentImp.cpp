@@ -666,6 +666,8 @@ bool CTestAgentImp::RunDistFactorTest(std::_tofstream& resultsFile, std::_tofstr
    SpanIndexType spanIdx = (SpanIndexType)(pSegment->GetGirder()->GetGirderGroup()->GetPierIndex(pgsTypes::metStart));
    GirderIndexType gdrIdx = segmentKey.girderIndex;
 
+   CSpanKey spanKey(spanIdx,gdrIdx);
+
    GET_IFACE( ILiveLoadDistributionFactors, pDf );
 
    std::_tstring pid      = GetProcessID();
@@ -674,11 +676,11 @@ bool CTestAgentImp::RunDistFactorTest(std::_tofstream& resultsFile, std::_tofstr
    // write to poi file
    poiFile<<_T(" 1, ")<< bridgeId<< _T(", 3, 1, 0.0000, 2, -1, -1, -1,  0,  0,  0, -1,  0,  0,  0,  0,  0,  0,  0")<<std::endl;
 
-   bool bResult1 = pDf->Run1250Tests(spanIdx,gdrIdx,pgsTypes::StrengthI,pid.c_str(),bridgeId.c_str(),resultsFile,poiFile);
+   bool bResult1 = pDf->Run1250Tests(spanKey,pgsTypes::StrengthI,pid.c_str(),bridgeId.c_str(),resultsFile,poiFile);
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
-      bResult1 = pDf->Run1250Tests(spanIdx,gdrIdx,pgsTypes::FatigueI,pid.c_str(),bridgeId.c_str(),resultsFile,poiFile);
+      bResult1 = pDf->Run1250Tests(spanKey,pgsTypes::FatigueI,pid.c_str(),bridgeId.c_str(),resultsFile,poiFile);
    }
 
    return bResult1;
@@ -866,10 +868,10 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
    for (IndexType i=0; i<npoi; i++)
    {
       pgsPointOfInterest& poi = vPoi[i];
-      SpanIndexType spanIdx;
+      CSpanKey spanKey;
       Float64 Xspan;
-      pIPoi->ConvertPoiToSpanPoint(poi,&spanIdx,&Xspan);
-      PierIndexType pierIdx(spanIdx);
+      pIPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
+      PierIndexType pierIdx(spanKey.spanIndex);
 
       IndexType locn = i+1;
       Float64 loc = ::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter);
@@ -2023,20 +2025,20 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
 
    GirderIndexType gdrIdx = segmentKey.girderIndex;
-   SpanIndexType spanIdx;
+   CSpanKey spanKey;
    Float64 Xspan;
-   pPointOfInterest->ConvertPoiToSpanPoint(pmid[0],&spanIdx,&Xspan);
+   pPointOfInterest->ConvertPoiToSpanPoint(pmid[0],&spanKey,&Xspan);
 
    GET_IFACE(IBridge, pBridge );
    CComPtr<IAngle> as1;
-   pBridge->GetPierSkew(spanIdx,&as1);
+   pBridge->GetPierSkew(spanKey.spanIndex,&as1);
    Float64 s1;
    as1->get_Value(&s1);
    Float64 t1 = s1 + M_PI/2.0;
    resultsFile<<bridgeId<<", "<<pid<<", 123001, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(t1 , unitMeasure::Degree)) <<", 101, "<<gdrIdx<<std::endl;
 
    CComPtr<IAngle> as2;
-   pBridge->GetPierSkew(spanIdx+1,&as2);
+   pBridge->GetPierSkew(spanKey.spanIndex+1,&as2);
    Float64 s2;
    as2->get_Value(&s2);
    Float64 t2 = s2 + M_PI/2.0;
@@ -2047,13 +2049,13 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
 
    Float64 endDist;
    ConnectionLibraryEntry::EndDistanceMeasurementType mtEndDist;
-   pIBridgeDesc->GetPier(spanIdx)->GetGirderEndDistance(pgsTypes::Ahead,&endDist,&mtEndDist);
+   pIBridgeDesc->GetPier(spanKey.spanIndex)->GetGirderEndDistance(pgsTypes::Ahead,&endDist,&mtEndDist);
 
    Float64 N1 = endDist;
 
    resultsFile<<bridgeId<<", "<<pid<<", 123003, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(N1, unitMeasure::Millimeter)) <<   ", 101, "<<gdrIdx<<std::endl;
 
-   pIBridgeDesc->GetPier(spanIdx+1)->GetGirderEndDistance(pgsTypes::Back,&endDist,&mtEndDist);
+   pIBridgeDesc->GetPier(spanKey.spanIndex+1)->GetGirderEndDistance(pgsTypes::Back,&endDist,&mtEndDist);
    Float64 N2 = endDist;
 
    resultsFile<<bridgeId<<", "<<pid<<", 123004, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(N2, unitMeasure::Millimeter)) <<   ", 101, "<<gdrIdx<<std::endl;

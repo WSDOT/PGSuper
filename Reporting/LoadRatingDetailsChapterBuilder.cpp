@@ -98,14 +98,15 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
 {
    USES_CONVERSION;
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
    if ( !pRatingSpec->IsRatingEnabled(ratingType) )
    {
       return;
    }
+
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
 
@@ -130,8 +131,8 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
 
    VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
    VehicleIndexType firstVehicleIdx = 0;
-   VehicleIndexType lastVehicleIdx  = (ratingType == pgsTypes::lrDesign_Inventory || ratingType == pgsTypes::lrDesign_Operating ? 1 : nVehicles);
-   for ( VehicleIndexType vehIdx = firstVehicleIdx; vehIdx < lastVehicleIdx; vehIdx++ )
+   VehicleIndexType lastVehicleIdx  = (ratingType == pgsTypes::lrDesign_Inventory || ratingType == pgsTypes::lrDesign_Operating ? 0 : nVehicles-1);
+   for ( VehicleIndexType vehIdx = firstVehicleIdx; vehIdx <= lastVehicleIdx; vehIdx++ )
    {
       const pgsRatingArtifact* pRatingArtifact = pArtifact->GetRatingArtifact(girderKey,ratingType,
          (ratingType == pgsTypes::lrDesign_Inventory || ratingType == pgsTypes::lrDesign_Operating) ? INVALID_INDEX : vehIdx);
@@ -495,6 +496,12 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
 
 void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,bool bPositiveMoment,const pgsRatingArtifact* pRatingArtifact) const
 {
+   pgsRatingArtifact::YieldStressRatios artifacts = pRatingArtifact->GetYieldStressRatios(bPositiveMoment);
+   if ( artifacts.size() == 0 )
+   {
+      return;
+   }
+
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
    if ( bPositiveMoment )
@@ -555,8 +562,6 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    const pgsYieldStressRatioArtifact* pControllingRating;
    pRatingArtifact->GetYieldStressRatioEx(bPositiveMoment,&pControllingRating);
    pgsPointOfInterest controllingPoi = pControllingRating->GetPointOfInterest();
-
-   pgsRatingArtifact::YieldStressRatios artifacts = pRatingArtifact->GetYieldStressRatios(bPositiveMoment);
 
    pPara = new rptParagraph;
    *pChapter << pPara;

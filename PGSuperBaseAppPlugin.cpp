@@ -48,7 +48,9 @@ CPGSuperBaseAppPlugin::~CPGSuperBaseAppPlugin()
 HRESULT CPGSuperBaseAppPlugin::OnFinalConstruct()
 {
    if ( !CreateAppUnitSystem(&m_AppUnitSystem) )
+   {
       return E_FAIL;
+   }
 
    return S_OK;
 }
@@ -118,6 +120,8 @@ void CPGSuperBaseAppPlugin::LoadSettings()
 
 void CPGSuperBaseAppPlugin::LoadOptions()
 {
+   CEAFApp* pParentApp = EAFGetApp();
+
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
 
@@ -129,18 +133,18 @@ void CPGSuperBaseAppPlugin::LoadOptions()
    CString strDefaultLocalMasterLibraryFile = pApp->GetLocalMachineString(_T("Options"),_T("MasterLibraryLocal"),     GetDefaultMasterLibraryFile());
    CString strLocalWorkgroupTemplateFolder  = pApp->GetLocalMachineString(_T("Options"),_T("WorkgroupTemplatesLocal"),GetDefaultWorkgroupTemplateFolder());
 
-   CString strDefaultCompany                = pApp->GetLocalMachineString(_T("Options"),_T("CompanyName"), _T("Your Company"));
-   CString strDefaultEngineer               = pApp->GetLocalMachineString(_T("Options"),_T("EngineerName"),_T("Your Name"));
+   CString strDefaultCompany                = pParentApp->GetLocalMachineString(_T("Options"),_T("CompanyName"), _T("Your Company"));
+   CString strDefaultEngineer               = pParentApp->GetLocalMachineString(_T("Options"),_T("EngineerName"),_T("Your Name"));
 
    /////////////////////////////////
    // User Information Settings
    /////////////////////////////////
 
    // company name
-   m_CompanyName = pApp->GetProfileString(_T("Options"),_T("CompanyName"), strDefaultCompany);
+   m_CompanyName = pParentApp->GetProfileString(_T("Options"),_T("CompanyName"), strDefaultCompany);
 
    // engineer name
-   m_EngineerName = pApp->GetProfileString(_T("Options"),_T("EngineerName"), strDefaultEngineer);
+   m_EngineerName = pParentApp->GetProfileString(_T("Options"),_T("EngineerName"), strDefaultEngineer);
 
    // Internet resources
    m_CatalogServers.LoadFromRegistry(pApp);
@@ -211,16 +215,18 @@ void CPGSuperBaseAppPlugin::SaveSettings()
 
 void CPGSuperBaseAppPlugin::SaveOptions()
 {
+   CEAFApp* pParentApp = EAFGetApp();
+
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
 
    CAutoRegistry autoReg(GetAppName());
 
    // Options settings
-   VERIFY(pApp->WriteProfileString(_T("Options"), _T("CompanyName"), m_CompanyName));
+   VERIFY(pParentApp->WriteProfileString(_T("Options"), _T("CompanyName"), m_CompanyName));
 
    // engineer name
-   VERIFY(pApp->WriteProfileString(_T("Options"), _T("EngineerName"), m_EngineerName));
+   VERIFY(pParentApp->WriteProfileString(_T("Options"), _T("EngineerName"), m_EngineerName));
 
    // Internet resources
    m_CatalogServers.SaveToRegistry(pApp);
@@ -540,11 +546,13 @@ void CPGSuperBaseAppPlugin::UpdateCache()
             // this is not the first time, it is time to check for updates,
             // and sure enough there are updates pending.... do the update
             CString strMsg;
-            strMsg.Format(_T("There are updates to Master Library and Workgroup Templates pending.\n\nWould you like to update %s now?"),AfxGetApp()->m_pszProfileName);
+            strMsg.Format(_T("There are updates pending updates to your %s configuration.\n\nWould you like to update now?"),AfxGetApp()->m_pszProfileName);
             int result = ::MessageBox(EAFGetMainFrame()->GetSafeHwnd(),strMsg,_T("Pending Updates"),MB_YESNO | MB_ICONINFORMATION);
 
             if ( result == IDYES )
+            {
                was_error = !DoCacheUpdate();
+            }
          }
          else
          {
@@ -606,7 +614,9 @@ void CPGSuperBaseAppPlugin::RecursiveDelete(LPCTSTR pstr)
       bWorking = finder.FindNextFile();
 
       if ( finder.IsDots() )
+      {
          continue;
+      }
 
       CString str = finder.GetFilePath();
       if ( finder.IsDirectory() )
@@ -703,7 +713,7 @@ bool CPGSuperBaseAppPlugin::AreUpdatesPending()
       wndProgress->put_HasGauge(VARIANT_FALSE);
       wndProgress->put_HasCancel(VARIANT_FALSE);
       CEAFMainFrame* pWnd = EAFGetMainFrame();
-      wndProgress->Show(CComBSTR(_T("Checking the Internet for Library updates")),pWnd->GetSafeHwnd());
+      wndProgress->Show(CComBSTR(_T("Checking the configuration updates")),pWnd->GetSafeHwnd());
 
       try
       {
@@ -716,7 +726,7 @@ bool CPGSuperBaseAppPlugin::AreUpdatesPending()
          else
          {
             CString msg;
-            msg.Format(_T("Error - currently selected catalog server not found. Name was: %s"),m_CurrentCatalogServer);
+            msg.Format(_T("Error - currently selected configuration server not found. Name was: %s"),m_CurrentCatalogServer);
             CCatalogServerException exc(CCatalogServerException::ceServerNotFound, msg);
             throw exc;
          }
@@ -798,7 +808,9 @@ bool CPGSuperBaseAppPlugin::DoCacheUpdate()
          m_MasterLibraryFileURL = pserver->GetMasterLibraryURL(m_Publisher);
 
          if ( m_MasterLibraryFileURL == _T("") )
+         {
             m_MasterLibraryFileCache = _T("");
+         }
       }
       catch(CCatalogServerException exp)
       {
@@ -833,7 +845,9 @@ bool CPGSuperBaseAppPlugin::DoCacheUpdate()
    }
 
    if (bSuccessful)
-      progress->put_Message(0,CComBSTR("The Master Library and Templates have been updated"));
+   {
+      progress->put_Message(0,CComBSTR("The configuration have been updated"));
+   }
    else
       progress->put_Message(0,CComBSTR("Update failed. Previous settings restored."));
 
@@ -912,9 +926,13 @@ CString CPGSuperBaseAppPlugin::GetCacheFolder()
    BOOL bResult = ::SHGetSpecialFolderPath(NULL,buffer,CSIDL_APPDATA,FALSE);
 
    if ( !bResult )
+   {
       return pParentApp->GetAppLocation() + CString(_T("Cache\\"));
+   }
    else
+   {
       return CString(buffer) + CString(_T("\\")) + CString(pMyApp->m_pszProfileName) + CString(_T("\\"));
+   }
 }
 
 CString CPGSuperBaseAppPlugin::GetSaveCacheFolder()
@@ -925,9 +943,13 @@ CString CPGSuperBaseAppPlugin::GetSaveCacheFolder()
    BOOL bResult = ::SHGetSpecialFolderPath(NULL,buffer,CSIDL_APPDATA,FALSE);
 
    if ( !bResult )
+   {
       return pApp->GetAppLocation() + CString(_T("SaveCache\\"));
+   }
    else
+   {
       return CString(buffer) + CString(_T("\\PGSuper_Save\\"));
+   }
 }
 
 const CPGSuperCatalogServers* CPGSuperBaseAppPlugin::GetCatalogServers() const

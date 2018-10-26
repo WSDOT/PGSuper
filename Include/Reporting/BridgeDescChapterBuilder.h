@@ -20,8 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_BRIDGEDESCCHAPTERBUILDER_H_
-#define INCLUDED_BRIDGEDESCCHAPTERBUILDER_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
@@ -52,65 +51,17 @@ LOG
 class REPORTINGCLASS CBridgeDescChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CBridgeDescChapterBuilder(bool bSelect = true);
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
-
-   //------------------------------------------------------------------------
    virtual CChapterBuilder* Clone() const;
 
    static void WriteAlignmentData(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rptChapter* pChapter,Uint16 level);
    static void WriteProfileData(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rptChapter* pChapter,Uint16 level);
    static void WriteCrownData(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rptChapter* pChapter,Uint16 level);
 
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-
    // Prevent accidental copying and assignment
    CBridgeDescChapterBuilder(const CBridgeDescChapterBuilder&);
    CBridgeDescChapterBuilder& operator=(const CBridgeDescChapterBuilder&);
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-
-class REPORTINGCLASS CSplicedGirderBridgeDescChapterBuilder : public CPGSuperChapterBuilder
-{
-public:
-   CSplicedGirderBridgeDescChapterBuilder(bool bSelect = true);
-   virtual LPCTSTR GetName() const;
-   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
-   virtual CChapterBuilder* Clone() const;
-
-private:
-   // Prevent accidental copying and assignment
-   CSplicedGirderBridgeDescChapterBuilder(const CSplicedGirderBridgeDescChapterBuilder&);
-   CSplicedGirderBridgeDescChapterBuilder& operator=(const CSplicedGirderBridgeDescChapterBuilder&);
-};
-
-#endif // INCLUDED_BRIDGEDESCCHAPTERBUILDER_H_

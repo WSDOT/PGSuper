@@ -31,6 +31,8 @@
 
 #include "DiaphragmDefinitionDlg.h"
 
+#include <IFace\BeamFactory.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -70,7 +72,24 @@ BOOL CGirderDiaphragmPage::OnInitDialog()
    m_Grid.CustomInit();
 
    if ( !CPropertyPage::OnInitDialog() )
+   {
       return FALSE;
+   }
+
+   CGirderMainSheet* pParent = (CGirderMainSheet*)GetParent();
+   CComPtr<IBeamFactory> beamFactory;
+   pParent->m_Entry.GetBeamFactory(&beamFactory);
+
+   pgsTypes::SupportedDiaphragmTypes diaphragmTypes = beamFactory->GetSupportedDiaphragms();
+   if ( diaphragmTypes.size() == 0 )
+   {
+      // diaphragm rules are not supported by this girder
+      GetDlgItem(IDC_ADD)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_EDIT1)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_DELETE)->ShowWindow(SW_HIDE);
+      m_Grid.ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_NO_DIAPHRAGMS)->ShowWindow(SW_SHOW);
+   }
 
    return TRUE;
 }
@@ -102,9 +121,9 @@ void CGirderDiaphragmPage::OnAdd()
 
    GirderLibraryEntry::DiaphragmLayoutRule rule; // new rule
 
-   CDiaphragmDefinitionDlg dlg;
+   CGirderMainSheet* pParent = (CGirderMainSheet*)GetParent();
+   CDiaphragmDefinitionDlg dlg(pParent->m_Entry,rule);
 
-   dlg.m_Rule = rule;
    if ( dlg.DoModal() == IDOK )
    {
       m_Grid.AddRow(); // only add if editing is OK
@@ -123,16 +142,17 @@ void CGirderDiaphragmPage::OnEdit()
    ROWCOL nSelected = m_Grid.GetSelectedRows(rows);
 
    if ( nSelected == 0 )
+   {
       m_Grid.SelectRange(CGXRange(1,0));
+   }
 
    nSelected = m_Grid.GetSelectedRows(rows);
    ASSERT(nSelected != 0);
 
-   CDiaphragmDefinitionDlg dlg;
-
+   CGirderMainSheet* pParent = (CGirderMainSheet*)GetParent();
    GirderLibraryEntry::DiaphragmLayoutRule* pRule = m_Grid.GetRule(rows[0]);
+   CDiaphragmDefinitionDlg dlg(pParent->m_Entry,*pRule);
 
-   dlg.m_Rule = *pRule;
    if ( dlg.DoModal() == IDOK )
    {
       m_Grid.SetRule(rows[0],dlg.m_Rule);

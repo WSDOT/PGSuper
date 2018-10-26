@@ -94,10 +94,10 @@ LineIDType GetGirderSegmentLineID(GroupIndexType grpIdx,GirderIndexType gdrIdx,S
    return ::make_Int32((Int16)grpIdx,(Int16)id);
 }
 
-LineIDType GetGirderLineID(SpanIndexType spanIdx,GirderIndexType gdrIdx)
+LineIDType GetGirderLineID(const CSpanKey& spanKey)
 {
-   ATLASSERT( spanIdx < Int16_Max && gdrIdx < Int16_Max );
-   return ::make_Int32((Int16)gdrIdx,(Int16)spanIdx);
+   ATLASSERT( spanKey.spanIndex < Int16_Max && spanKey.girderIndex < Int16_Max );
+   return ::make_Int32((Int16)spanKey.girderIndex,(Int16)spanKey.spanIndex);
 }
 
 GirderIDType GetSuperstructureMemberID(GroupIndexType grpIdx,GirderIndexType gdrIdx)
@@ -105,7 +105,7 @@ GirderIDType GetSuperstructureMemberID(GroupIndexType grpIdx,GirderIndexType gdr
    ATLASSERT(grpIdx != INVALID_INDEX);
    ATLASSERT(gdrIdx != INVALID_INDEX);
 
-   return ::GetGirderLineID(grpIdx,gdrIdx);
+   return ::GetGirderLineID(CSpanKey(grpIdx,gdrIdx));
 }
 
 CSegmentKey GetSegmentKey(GirderIDType gdrID)
@@ -117,17 +117,17 @@ CSegmentKey GetSegmentKey(GirderIDType gdrID)
    return segmentKey;
 }
 
-void GetSuperstructureMemberIDs(SpanIndexType spanIdx,GirderIndexType gdrIdx,GirderIDType* pLeftID,GirderIDType* pThisID,GirderIDType* pRightID)
+void GetSuperstructureMemberIDs(GroupIndexType grpIdx,GirderIndexType gdrIdx,GirderIDType* pLeftID,GirderIDType* pThisID,GirderIDType* pRightID)
 {
-   *pLeftID = (gdrIdx == 0 ? INVALID_ID : GetSuperstructureMemberID(spanIdx,gdrIdx-1));
-   *pThisID = GetSuperstructureMemberID(spanIdx,gdrIdx);
+   *pLeftID = (gdrIdx == 0 ? INVALID_ID : GetSuperstructureMemberID(grpIdx,gdrIdx-1));
+   *pThisID = GetSuperstructureMemberID(grpIdx,gdrIdx);
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-   *pRightID = (gdrIdx == nGirders-1 ? INVALID_ID : GetSuperstructureMemberID(spanIdx,gdrIdx+1));
+   GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+   *pRightID = (gdrIdx == nGirders-1 ? INVALID_ID : GetSuperstructureMemberID(grpIdx,gdrIdx+1));
 }
 
 void GetAdjacentSuperstructureMemberIDs(const CSegmentKey& segmentKey,GirderIDType* pLeftID,GirderIDType* pThisID,GirderIDType* pRightID)

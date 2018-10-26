@@ -133,6 +133,7 @@
 #include "RatingOptionsDlg.h"
 #include "ConstructionLoadDlg.h"
 #include "GirderSelectStrandsDlg.h"
+#include "PGSuperAppPlugin\GirderSegmentStrandsPage.h"
 #include "PGSuperAppPlugin\InsertSpanDlg.h"
 #include "PGSuperAppPlugin\LoadFactorsDlg.h"
 #include "PGSuperAppPlugin\LossParametersDlg.h"
@@ -525,13 +526,12 @@ bool CPGSuperDocBase::EditSpanDescription(SpanIndexType spanIdx, int nPage)
    return true;
 }
 
-bool CPGSuperDocBase::EditDirectInputPrestressing(const CSegmentKey& segmentKey)
+bool CPGSuperDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segmentKey)
 {
 #pragma Reminder("UPDATE: move this to the CPGSuperDoc class... it doesn't belong in the common base class")
    // it doesn't apply to PGSplice
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
@@ -549,7 +549,7 @@ bool CPGSuperDocBase::EditDirectInputPrestressing(const CSegmentKey& segmentKey)
    if (pSegment->Strands.GetStrandDefinitionType() != CStrandData::sdtDirectSelection )
    {
       // We can go no further
-      ::AfxMessageBox(_T("Programmer Error: EditDirectInputPrestressing - can only be called for Direct Select strand fill"),MB_OK | MB_ICONWARNING);
+      ::AfxMessageBox(_T("Programmer Error: EditDirectSelectionPrestressing - can only be called for Direct Select strand fill"),MB_OK | MB_ICONWARNING);
       return false;
    }
 
@@ -606,6 +606,68 @@ bool CPGSuperDocBase::EditDirectInputPrestressing(const CSegmentKey& segmentKey)
    }
 }
 
+
+bool CPGSuperDocBase::EditDirectInputPrestressing(const CSegmentKey& segmentKey)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+
+   const CBridgeDescription2* pBridgeDesc  = pIBridgeDesc->GetBridgeDescription();
+   const CTimelineManager*    pTimelineMgr = pBridgeDesc->GetTimelineManager();
+
+   SegmentIDType segmentID = pIBridgeDesc->GetSegmentID(segmentKey);
+
+
+   CSplicedGirderData girder = *pIBridgeDesc->GetGirder(segmentKey);
+   girder.SetIndex(segmentKey.girderIndex);
+   CPrecastSegmentData* pSegment = girder.GetSegment(segmentKey.segmentIndex);
+
+   txnEditPrecastSegmentData oldSegmentData;
+   oldSegmentData.m_SegmentKey           = segmentKey;
+   oldSegmentData.m_SegmentData          = *pSegment;
+   oldSegmentData.m_ConstructionEventIdx = pTimelineMgr->GetSegmentConstructionEventIndex(segmentID);
+   oldSegmentData.m_ErectionEventIdx     = pTimelineMgr->GetSegmentErectionEventIndex(segmentID);
+
+   if (pSegment->Strands.GetStrandDefinitionType() != CStrandData::sdtDirectInput )
+   {
+      // We can go no further
+      ::AfxMessageBox(_T("Programmer Error: EditDirectInputPrestressing - can only be called for Direct Input strand definition"),MB_OK | MB_ICONWARNING);
+      return false;
+   }
+
+   // Fire up dialog
+   txnEditPrecastSegmentData newSegmentData = oldSegmentData;
+
+   CPropertySheet dlg(_T("Define Strands"));
+   CGirderSegmentStrandsPage page;
+   page.Init(pSegment);
+   dlg.AddPage(&page);
+   if ( dlg.DoModal() == IDOK )
+   {
+      newSegmentData.m_SegmentData = *pSegment;
+
+      // The dialog does not deal with Pjack. Update pjack here
+#pragma Reminder("UPDATE: dialog should deal with Pjack")
+      GET_IFACE(IPretensionForce, pPrestress );
+
+      UpdatePrestressForce(pgsTypes::Straight,  segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+      UpdatePrestressForce(pgsTypes::Harped,    segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+      UpdatePrestressForce(pgsTypes::Temporary, segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+
+      // Fire our transaction
+      txnEditPrecastSegment* pTxn = new txnEditPrecastSegment(segmentKey,newSegmentData);
+
+      GET_IFACE(IEAFTransactions,pTransactions);
+      pTransactions->Execute(pTxn);
+
+      return true;
+   }
+   else
+   {
+     return true;
+   }
+}
    
 void CPGSuperDocBase::AddPointLoad(const CPointLoadData& loadData)
 {

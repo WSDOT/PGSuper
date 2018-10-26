@@ -39,52 +39,18 @@ void CClosureJointLongitudinalReinforcementPage::DoDataExchange(CDataExchange* p
    // longitudinal steel information from grid and store it
    if (pDX->m_bSaveAndValidate)
    {
-      CLongitudinalRebarData rebarData;
-
-      ROWCOL nrows = m_Grid.GetRowCount();
-      for (ROWCOL i=1; i<=nrows; i++)
-      {
-         CLongitudinalRebarData::RebarRow row;
-         if (m_Grid.GetRowData(i,&row))
-         {
-            // values are in display units - must convert to system
-            CComPtr<IBroker> pBroker;
-            EAFGetBroker(&pBroker);
-            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
-            row.Cover      = ::ConvertToSysUnits(row.Cover,      pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-            row.BarSpacing = ::ConvertToSysUnits(row.BarSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-            rebarData.RebarRows.push_back(row);
-         }
-      }
-
+      CLongitudinalRebarData& rebarData(pParent->m_ClosureJoint.GetRebar());
 
       int idx;
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
       GetStirrupMaterial(idx,rebarData.BarType,rebarData.BarGrade);
-
-      pParent->m_ClosureJoint.GetRebar() = rebarData;
+      m_Grid.GetRebarData(rebarData.RebarRows);
    }
    else
    {
       int idx = GetStirrupMaterialIndex(pParent->m_ClosureJoint.GetStirrups().ShearBarType,pParent->m_ClosureJoint.GetStirrups().ShearBarGrade);
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
-
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits); // only used if there are rebar rows
-
-      CLongitudinalRebarData rebardata;
-      std::vector<CLongitudinalRebarData::RebarRow>::iterator iter;
-      for ( iter = pParent->m_ClosureJoint.GetRebar().RebarRows.begin(); iter != pParent->m_ClosureJoint.GetRebar().RebarRows.end(); iter++ )
-      {
-         CLongitudinalRebarData::RebarRow row = *iter;
-         row.BarSpacing = ::ConvertFromSysUnits(row.BarSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-         row.Cover      = ::ConvertFromSysUnits(row.Cover,      pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-
-         rebardata.RebarRows.push_back(row);
-      }
-      m_Grid.FillGrid(rebardata);
+      m_Grid.FillGrid(pParent->m_ClosureJoint.GetRebar());
    }
 }
 

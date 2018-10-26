@@ -66,6 +66,7 @@ protected:
    int GetColWidth(ROWCOL nCol);
    void OnChangedSelection(const CGXRange* pChangedRect,BOOL bIsDragging, BOOL bKey);
 
+   virtual void OnModifyCell(ROWCOL nRow,ROWCOL nCol);
    virtual BOOL OnValidateCell(ROWCOL nRow, ROWCOL nCol);
 
 public:
@@ -94,6 +95,8 @@ private:
    // set up styles for interior rows
    void SetRowStyle(ROWCOL nRow);
    matRebar::Size GetBarSize(ROWCOL row,ROWCOL col);
+
+   void UpdateCutoff(ROWCOL nRow,const CPierData2* pPier);
 
    BOOL m_bEnableTopMat;
    BOOL m_bEnableBottomMat;

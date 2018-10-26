@@ -837,6 +837,16 @@ void CSplicedGirderData::SetGirderLibraryEntry(const GirderLibraryEntry* pEntry)
                   // the current setting fot the segment variation is no longer a valid
                   // value, so change it to the first available value
                   pSegment->SetVariationType(variations.front());
+
+                  // the girder is a new type and it's height can vary. set the default height of the segment
+                  // to match the height in the library entry.
+                  if ( variations.front() != pgsTypes::svtNone )
+                  {
+                     Float64 startHeight = m_pGirderLibraryEntry->GetBeamHeight(pgsTypes::metStart);
+                     Float64 endHeight   = m_pGirderLibraryEntry->GetBeamHeight(pgsTypes::metEnd);
+                     pSegment->SetVariationParameters(pgsTypes::sztLeftPrismatic, 0.0,startHeight,pSegment->GetVariationBottomFlangeDepth(pgsTypes::sztLeftPrismatic));
+                     pSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,0.0,endHeight,  pSegment->GetVariationBottomFlangeDepth(pgsTypes::sztRightPrismatic));
+                  }
                } // end if
             } // next segment
          } // if spliced girder

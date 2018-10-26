@@ -99,7 +99,9 @@ void CCatalogServerDlg::OnDelete()
    CListBox* pLB = (CListBox*)GetDlgItem(IDC_SERVERS);
    int idx = pLB->GetCurSel();
    if ( idx == LB_ERR )
+   {
       return;
+   }
 
    CString strName;
    pLB->GetText(idx,strName);
@@ -116,7 +118,9 @@ void CCatalogServerDlg::OnEdit()
    CListBox* pLB = (CListBox*)GetDlgItem(IDC_SERVERS);
    int idx = pLB->GetCurSel();
    if ( idx == LB_ERR )
+   {
       idx = 0;
+   }
 
    CString strName;
    pLB->GetText(idx,strName);
@@ -135,6 +139,13 @@ void CCatalogServerDlg::OnEdit()
 
 BOOL CCatalogServerDlg::OnInitDialog() 
 {
+   CString strText;
+   strText.Format(_T("%s Configuration Servers"),AfxGetApp()->m_pszProfileName);
+   SetWindowText(strText);
+
+   strText.Format(_T("A %s configuration server provides configuration settings for the software"),AfxGetApp()->m_pszProfileName);
+   GetDlgItem(IDC_TITLE)->SetWindowText(strText);
+
 	CDialog::OnInitDialog();
 
    UpdateServerList();
@@ -160,9 +171,13 @@ void CCatalogServerDlg::UpdateServerList()
    }
 
    if ( curSel != LB_ERR )
+   {
       pLB->SetCurSel(curSel);
+   }
    else
+   {
       pLB->SetCurSel(0);
+   }
 }
 
 void CCatalogServerDlg::UpdateButtonState()

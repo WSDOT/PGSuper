@@ -257,8 +257,9 @@ void CConstructabilityCheckTable::BuildCamberCheck(rptChapter* pChapter,IBroker*
       }
       else
       {
-         D = 0.5*pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME);
-         (*pTable)(row,0) << _T("Lower bound camber at ")<< min_days<<_T(" days, 50% of D") <<Sub(min_days);
+         Float64 Cfactor = pCamber->GetLowerBoundCamberVariabilityFactor();
+         D = Cfactor*pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME);
+         (*pTable)(row,0) << _T("Lower bound camber at ")<< min_days<<_T(" days, ")<<Cfactor*100<<_T("% of D") <<Sub(min_days);
          if ( D < 0 )
          {
             (*pTable)(row++,1) << color(Red) << dim.SetValue(D) << color(Black);

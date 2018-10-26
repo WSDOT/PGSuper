@@ -86,8 +86,10 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
 
    for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
    {
+      CSpanKey spanKey(spanIdx,gdrIdx);
+
       SPANDETAILS span_lldf;
-      GetSpanDF(spanIdx,gdrIdx,pgsTypes::StrengthI,USE_CURRENT_FC, &span_lldf);
+      GetSpanDF(spanKey,pgsTypes::StrengthI,USE_CURRENT_FC, &span_lldf);
 
       PierIndexType pier1 = spanIdx;
       PierIndexType pier2 = spanIdx+1;
@@ -160,7 +162,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
       (*pChapter) << pPara;
 
       // get poi at controlling location
-      pgsPointOfInterest poi = pPoi->ConvertSpanPointToPoi(spanIdx,girderKey.girderIndex,span_lldf.ControllingLocation);
+      pgsPointOfInterest poi = pPoi->ConvertSpanPointToPoi(CSpanKey(spanIdx,girderKey.girderIndex),span_lldf.ControllingLocation);
       const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
       Float64 station,offset;
@@ -440,11 +442,13 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
       gdrIdx = nGirders-1;
    }
 
+   CSpanKey spanKey(span,gdrIdx);
+
    // determine overhang and spacing base data
-   GetGirderSpacingAndOverhang(span,gdrIdx,dfType, plldf);
+   GetGirderSpacingAndOverhang(spanKey,dfType, plldf);
 
    // get poi at controlling location
-   pgsPointOfInterest poi = pPoi->ConvertSpanPointToPoi(span,gdrIdx,plldf->ControllingLocation);
+   pgsPointOfInterest poi = pPoi->ConvertSpanPointToPoi(spanKey,plldf->ControllingLocation);
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    // Throws exception if fails requirement (no need to catch it)
@@ -505,7 +509,7 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
    plldf->leftSlabOverhang  = RoundOff(plldf->leftSlabOverhang,0.0001);
    plldf->rightSlabOverhang = RoundOff(plldf->rightSlabOverhang,0.0001);
 
-   std::vector<IntermedateDiaphragm> diaphragms = pBridge->GetIntermediateDiaphragms(pgsTypes::dtCastInPlace,segmentKey);
+   std::vector<IntermedateDiaphragm> diaphragms = pBridge->GetCastInPlaceDiaphragms(CSpanKey(span,gdrIdx));
    std::vector<IntermedateDiaphragm>::size_type nDiaphragms = diaphragms.size();
 
    bool bSkew = !( IsZero(plldf->skew1) && IsZero(plldf->skew2) ); 
@@ -526,7 +530,7 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
                                   plldf->I, 
                                   plldf->A, 
                                   plldf->eg,
-                                  (nDiaphragms > 0 ? true : false),
+                                  (0 < nDiaphragms ? true : false),
                                   plldf->skew1,
                                   plldf->skew2,
                                   bSkew,bSkew);

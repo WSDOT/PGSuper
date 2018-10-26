@@ -180,9 +180,9 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
             }
 
             (*table)(row,4) << rptNewLine << _T("(") << cap_demand.SetValue(C,D,bPassed) << _T(")");
-         }
 
-         row++;
+            row++;
+         }
       }  // next artifact
    } // next segment
 

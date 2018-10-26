@@ -167,7 +167,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
             *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KcEqn-SI.png") : _T("KcEqn-US.png")) ) << rptNewLine;
 
             *pPara << Bold(_T("where:")) << rptNewLine;
-            *pPara << _T("H = ") << details.H << _T("%") << rptNewLine;
+            *pPara << _T("H = ") << details.H << _T("%") << _T(", ");
             *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << rptNewLine;
             *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
                    << _T(", one day of accelerated curing may be taken as equal to seven days of normal curing.") << rptNewLine;
@@ -177,27 +177,37 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
          else
          {
             if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+            {
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2007.png")) << rptNewLine;
+            }
             else
+            {
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2005.png")) << rptNewLine;
+            }
 
             *pPara << Bold(_T("for which:")) << rptNewLine;
             
             if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
+            {
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
+            }
             else if ( lrfdVersionMgr::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationType())
+            {
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
+            }
             else
+            {
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2007-SI.png") : _T("KvsEqn2007-US.png")) ) << rptNewLine;
+            }
 
             *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("KhcEqn.png") ) << rptNewLine;
             *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
             *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
 
             *pPara << Bold(_T("where:")) << rptNewLine;
-            *pPara << _T("H = ") << details.H << _T("%") << rptNewLine;
-            *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << rptNewLine;
-            *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << details.K1 << rptNewLine;
+            *pPara << _T("H = ") << details.H << _T("%") << _T(", ");
+            *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << _T(", ");
+            *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << details.K1 << _T(", ");
             *pPara << Sub2(_T("K"),_T("2")) << _T(" = ") << details.K2 << rptNewLine;
             if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
             {
@@ -217,10 +227,10 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
       {
          *pPara << rptNewLine;
          *pPara << Bold(_T("Prestress release until temporary strand removal and diaphragm casting")) <<rptNewLine;
-         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
-         *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << rptNewLine;
-         *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
-         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
+         *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << _T(", ");
+         *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
+         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("c")) << _T(" = ") << details.kc << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue( details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
@@ -229,10 +239,10 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
 
          details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDeck,i);
          *pPara << Bold(_T("Prestress release until deck casting")) << rptNewLine;
-         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
-         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
-         *pPara << _T("t = ")<< time.SetValue( details.t ) << rptNewLine;
-         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
+         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
+         *pPara << _T("t = ")<< time.SetValue( details.t ) << _T(", ");
+         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("c")) << _T(" = ") << details.kc << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue( details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
@@ -241,10 +251,10 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
 
          details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToDeck,i);
          *pPara << Bold(_T("Temporary strand removal and diaphragm casting to deck casting and application of superimposed dead loads")) << rptNewLine;
-         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
-         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
-         *pPara << _T("t = ")<< time.SetValue( details.t ) << rptNewLine;
-         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
+         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
+         *pPara << _T("t = ")<< time.SetValue( details.t ) << _T(", ");
+         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("c")) << _T(" = ") << details.kc << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue( details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
@@ -254,17 +264,21 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
          // 2005 and later
          *pPara << rptNewLine;
          *pPara << Bold(_T("Prestress release until temporary strand removal and diaphragm casting")) <<rptNewLine;
-         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
-         *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << rptNewLine;
-         *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
+         *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << _T(", ");
+         *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-            *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
+         {
+            *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
+         }
          else
-            *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
+         {
+            *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << _T(", ");
+         }
 
-         *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
-         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
+         *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
+         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
@@ -273,17 +287,21 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
 
          details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDeck,i);
          *pPara << Bold(_T("Prestress release until deck casting")) << rptNewLine;
-         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
-         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
-         *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
+         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
+         *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-            *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
+         {
+            *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
+         }
          else
-            *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
+         {
+            *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << _T(", ");
+         }
 
-         *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
-         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
+         *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
+         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
@@ -292,17 +310,21 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
 
          details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToDeck,i);
          *pPara << Bold(_T("Temporary strand removal and diaphragm casting to deck casting and application of superimposed dead loads")) << rptNewLine;
-         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
-         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
-         *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
+         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
+         *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-            *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
+         {
+            *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
+         }
          else
-            *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
+         {
+            *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << _T(", ");
+         }
 
-         *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
-         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
+         *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
+         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
@@ -354,7 +376,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
             *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KcEqn-SI.png") : _T("KcEqn-US.png")) ) << rptNewLine;
 
             *pPara << Bold(_T("where:")) << rptNewLine;
-            *pPara << _T("H = ") << details.H << _T("%") << rptNewLine;
+            *pPara << _T("H = ") << details.H << _T("%") << _T(", ");
             *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << rptNewLine;
             *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
                    << _T(", one day of accelerated curing may be taken as equal to seven days of normal curing.") << rptNewLine;
@@ -364,33 +386,43 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
          else
          {
             if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+            {
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2007.png")) << rptNewLine;
+            }
             else
+            {
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2005.png")) << rptNewLine;
+            }
             *pPara << Bold(_T("for which:")) << rptNewLine;
 
             if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
+            {
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
+            }
             else if ( lrfdVersionMgr::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationType())
+            {
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
+            }
             else
+            {
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2007-SI.png") : _T("KvsEqn2007-US.png")) ) << rptNewLine;
+            }
 
             *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("KhcEqn.png") ) << rptNewLine;
             *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
             *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
 
             *pPara << Bold(_T("where:")) << rptNewLine;
-            *pPara << _T("H = ") << details.H << _T("%") << rptNewLine;
-            *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << rptNewLine;
-            *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << details.K1 << rptNewLine;
+            *pPara << _T("H = ") << details.H << _T("%") << _T(", ");
+            *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << _T(", ");
+            *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << details.K1 << _T(", ");
             *pPara << Sub2(_T("K"),_T("2")) << _T(" = ") << details.K2 << rptNewLine;
 
             if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
-           {
+            {
               *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
                      << _T(", one day of accelerated curing may be taken as equal to seven days of normal curing.") << rptNewLine;
-           }
+            }
             *pPara << _T("Curing Method = ") << (details.CuringMethod == CURING_ACCELERATED ? _T("Accelerated") : _T("Normal")) << rptNewLine;
             *pPara << rptNewLine;
          } // spec
@@ -402,10 +434,10 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
       {
          *pPara << rptNewLine;
          *pPara << Bold(_T("Prestress release until deck casting")) <<rptNewLine;
-         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
-         *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << rptNewLine;
-         *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
-         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
+         *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << _T(", ");
+         *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
+         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("c")) << _T(" = ") << details.kc << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue( details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
@@ -415,17 +447,21 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
          // 2005 and later
          *pPara << rptNewLine;
          *pPara << Bold(_T("Prestress release until deck casting")) <<rptNewLine;
-         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
-         *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << rptNewLine;
-         *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
+         *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << _T(", ");
+         *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-            *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
+         {
+            *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
+         }
          else
-            *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
+         {
+            *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << _T(", ");
+         }
 
-         *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
-         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
+         *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
+         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
@@ -491,7 +527,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KcEqn-SI.png") : _T("KcEqn-US.png")) ) << rptNewLine;
 
            *pPara << Bold(_T("where:")) << rptNewLine;
-           *pPara << _T("H = ") << details.H << _T("%") << rptNewLine;
+           *pPara << _T("H = ") << details.H << _T("%") << _T(", ");
            *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << rptNewLine;
            *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
                   << _T(", one day of accelerated curing may be taken as equal to seven days of normal curing.") << rptNewLine;
@@ -501,26 +537,36 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
         else
         {
             if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+            {
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2007.png")) << rptNewLine;
+            }
             else
+            {
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LRFDCreepEqn2005.png")) << rptNewLine;
+            }
             *pPara << Bold(_T("for which:")) << rptNewLine;
             
             if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
+            {
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
+            }
             else if ( lrfdVersionMgr::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationType())
+            {
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
+            }
             else
+            {
                *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KvsEqn2007-SI.png") : _T("KvsEqn2007-US.png")) ) << rptNewLine;
+            }
 
            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("KhcEqn.png") ) << rptNewLine;
            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
            *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
 
            *pPara << Bold(_T("where:")) << rptNewLine;
-           *pPara << _T("H = ") << details.H << _T("%") << rptNewLine;
-           *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << rptNewLine;
-            *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << details.K1 << rptNewLine;
+           *pPara << _T("H = ") << details.H << _T("%") << _T(", ");
+           *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << _T(", ");
+            *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << details.K1 << _T(", ");
             *pPara << Sub2(_T("K"),_T("2")) << _T(" = ") << details.K2 << rptNewLine;
 
            if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
@@ -540,10 +586,10 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
       {
          *pPara << rptNewLine;
          *pPara << Bold(_T("Prestress release until temporary strand removal and diaphragm casting")) <<rptNewLine;
-         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
-         *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << rptNewLine;
-         *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
-         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
+         *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << _T(", ");
+         *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
+         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("c")) << _T(" = ") << details.kc << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue( details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
@@ -552,10 +598,10 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
 
          details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDeck,i);
          *pPara << Bold(_T("Prestress release until application of superimposed dead loads")) << rptNewLine;
-         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
-         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
-         *pPara << _T("t = ")<< time.SetValue( details.t ) << rptNewLine;
-         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
+         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
+         *pPara << _T("t = ")<< time.SetValue( details.t ) << _T(", ");
+         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("c")) << _T(" = ") << details.kc << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue( details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
@@ -564,10 +610,10 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
 
          details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToFinal,i);
          *pPara << Bold(_T("Prestress release to final")) << rptNewLine;
-         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
-         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
-         *pPara << _T("t = ")<< time.SetValue( details.t ) << rptNewLine;
-         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
+         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
+         *pPara << _T("t = ")<< time.SetValue( details.t ) << _T(", ");
+         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("c")) << _T(" = ") << details.kc << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue( details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
@@ -576,10 +622,10 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
 
          details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToDeck,i);
          *pPara << Bold(_T("Temporary strand removal and diaphragm casting to application of superimposed dead loads")) << rptNewLine;
-         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
-         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
-         *pPara << _T("t = ")<< time.SetValue( details.t ) << rptNewLine;
-         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
+         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
+         *pPara << _T("t = ")<< time.SetValue( details.t ) << _T(", ");
+         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("c")) << _T(" = ") << details.kc << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue( details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
@@ -588,10 +634,10 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
 
          details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDeckToFinal,i);
          *pPara << Bold(_T("Application of superimposed dead loads to final")) << rptNewLine;
-         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
-         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
-         *pPara << _T("t = ")<< time.SetValue( details.t ) << rptNewLine;
-         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
+         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
+         *pPara << _T("t = ")<< time.SetValue( details.t ) << _T(", ");
+         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("c")) << _T(" = ") << details.kc << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue( details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
@@ -601,17 +647,21 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
          // 2005 and later
          *pPara << rptNewLine;
          *pPara << Bold(_T("Prestress release until temporary strand removal and diaphragm casting")) <<rptNewLine;
-         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
-         *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << rptNewLine;
-         *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
+         *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << _T(", ");
+         *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-            *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
+         {
+            *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
+         }
          else
-            *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
+         {
+            *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << _T(", ");
+         }
 
-         *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
-         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
+         *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
+         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
@@ -620,17 +670,21 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
 
          details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDeck,i);
          *pPara << Bold(_T("Prestress release until application of superimposed dead loads")) << rptNewLine;
-         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
-         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
-         *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
+         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
+         *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-            *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
+         {
+            *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
+         }
          else
-            *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
+         {
+            *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << _T(", ");
+         }
 
-         *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
-         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
+         *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
+         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
@@ -639,17 +693,21 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
 
          details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToFinal,i);
          *pPara << Bold(_T("Prestress release to final")) << rptNewLine;
-         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
-         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
-         *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
+         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
+         *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-            *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
+         {
+            *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
+         }
          else
-            *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
+         {
+            *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << _T(", ");
+         }
 
-         *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
-         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
+         *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
+         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
@@ -658,17 +716,21 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
 
          details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToDeck,i);
          *pPara << Bold(_T("Temporary strand removal and diaphragm casting to application of superimposed dead loads")) << rptNewLine;
-         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
-         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
-         *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
+         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
+         *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-            *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
+         {
+            *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
+         }
          else
-            *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
+         {
+            *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << _T(", ");
+         }
 
-         *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
-         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
+         *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
+         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
@@ -677,17 +739,21 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
 
          details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToFinal,i);
          *pPara << Bold(_T("Temporary strand removal and diaphragm casting to final")) << rptNewLine;
-         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
-         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
-         *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
+         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
+         *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-            *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
+         {
+            *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
+         }
          else
-            *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
+         {
+            *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << _T(", ");
+         }
 
-         *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
-         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
+         *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
+         *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
@@ -696,16 +762,20 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
 
          details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDeckToFinal,i);
          *pPara << Bold(_T("Application of superimposed dead loads to final")) << rptNewLine;
-         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
-         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
-         *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
+         *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
+         *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-            *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << rptNewLine;
+         {
+            *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
+         }
          else
-            *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << rptNewLine;
+         {
+            *pPara << _T("k") << Sub(_T("vs")) << _T(" = ") << details.kvs << _T(", ");
+         }
 
-         *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << rptNewLine;
+         *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);

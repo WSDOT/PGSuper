@@ -187,8 +187,10 @@ void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,
    GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanIdx);
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
+      CSpanKey spanKey(spanIdx,gdrIdx);
+
       // get the length of segments within a span
-      std::vector<std::pair<SegmentIndexType,Float64>> vSegments = pBridge->GetSegmentLengths(spanIdx,gdrIdx);
+      std::vector<std::pair<SegmentIndexType,Float64>> vSegments = pBridge->GetSegmentLengths(spanKey);
 
       // create POI at start and end of span
       SegmentIndexType segIdx = vSegments.front().first;

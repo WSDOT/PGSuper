@@ -31,6 +31,7 @@
 #include <IFace\Intervals.h>
 
 #include <WBFLSTL.h>
+#include <MathEx.h>
 
 #include <PgsExt\LoadFactors.h>
 #include <PgsExt\DebondUtil.h>
@@ -168,6 +169,12 @@ CAnalysisAgentImp::CamberModelData CAnalysisAgentImp::GetPrestressDeflectionMode
    return (*found).second;
 }
 
+Float64 g_Ls;
+bool RemoveOffSegmentPOI(const pgsPointOfInterest& poi)
+{
+   return !::InRange(0.0,poi.GetDistFromStart(),g_Ls);
+}
+
 void CAnalysisAgentImp::BuildCamberModel(const CSegmentKey& segmentKey,bool bUseConfig,const GDRCONFIG& config,CamberModelData* pModelData)
 {
 #pragma Reminder("UPDATE: IS THIS CODE NEEDED? THIS DUPLICATES SEGMENT MODEL MANAGER")
@@ -224,10 +231,8 @@ void CAnalysisAgentImp::BuildCamberModel(const CSegmentKey& segmentKey,bool bUse
    Lg = pBridge->GetSegmentLength(segmentKey);
 
    std::vector<pgsPointOfInterest> vPOI( pIPoi->GetPointsOfInterest(segmentKey) );
-
-   // Remove closure joint POI as they are off the segment
-   pIPoi->RemovePointsOfInterest(vPOI,POI_CLOSURE);
-   pIPoi->RemovePointsOfInterest(vPOI,POI_BOUNDARY_PIER);
+   g_Ls = Lg;
+   vPOI.erase(std::remove_if(vPOI.begin(),vPOI.end(),RemoveOffSegmentPOI),vPOI.end());
 
    GET_IFACE(ISegmentLiftingPointsOfInterest,pLiftPOI);
    std::vector<pgsPointOfInterest> liftingPOI( pLiftPOI->GetLiftingPointsOfInterest(segmentKey,0) );
@@ -1163,14 +1168,19 @@ void CAnalysisAgentImp::GetCantileverSlabPadLoad(const CSegmentKey& segmentKey, 
    m_pGirderModelManager->GetCantileverSlabPadLoad(segmentKey,pP1,pM1,pP2,pM2);
 }
 
-void CAnalysisAgentImp::GetIntermediateDiaphragmLoads(pgsTypes::DiaphragmType diaphragmType,const CSegmentKey& segmentKey, std::vector<DiaphragmLoad>* pLoads)
+void CAnalysisAgentImp::GetPrecastDiaphragmLoads(const CSegmentKey& segmentKey, std::vector<DiaphragmLoad>* pLoads)
 {
-   m_pGirderModelManager->GetIntermediateDiaphragmLoads(diaphragmType,segmentKey,pLoads);
+   m_pGirderModelManager->GetPrecastDiaphragmLoads(segmentKey,pLoads);
 }
 
-void CAnalysisAgentImp::GetPierDiaphragmLoads( const pgsPointOfInterest& poi, PierIndexType pierIdx, Float64* pPback, Float64 *pMback, Float64* pPahead, Float64* pMahead)
+void CAnalysisAgentImp::GetIntermediateDiaphragmLoads(const CSpanKey& spanKey, std::vector<DiaphragmLoad>* pLoads)
 {
-   m_pGirderModelManager->GetPierDiaphragmLoads(poi,pierIdx,pPback,pMback,pPahead,pMahead);
+   m_pGirderModelManager->GetIntermediateDiaphragmLoads(spanKey,pLoads);
+}
+
+void CAnalysisAgentImp::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIndexType gdrIdx, Float64* pPback, Float64 *pMback, Float64* pPahead, Float64* pMahead)
+{
+   m_pGirderModelManager->GetPierDiaphragmLoads(pierIdx,gdrIdx,pPback,pMback,pPahead,pMahead);
 }
 
 void CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& poi,Float64* pDy,Float64* pRz)
@@ -1598,6 +1608,11 @@ void CAnalysisAgentImp::ApplyRotationAdjustment(IntervalIndexType intervalIdx,co
 std::_tstring CAnalysisAgentImp::GetLiveLoadName(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex)
 {
    return m_pGirderModelManager->GetLiveLoadName(llType,vehicleIndex);
+}
+
+pgsTypes::LiveLoadApplicabilityType CAnalysisAgentImp::GetLiveLoadApplicability(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex)
+{
+   return m_pGirderModelManager->GetLiveLoadApplicability(llType,vehicleIndex);
 }
 
 VehicleIndexType CAnalysisAgentImp::GetVehicleCount(pgsTypes::LiveLoadType llType)
@@ -4131,6 +4146,19 @@ void CAnalysisAgentImp::GetSlabBarrierOverlayDeflection(const pgsPointOfInterest
    *pRz = Rslab + Rslab_pad + Rtrafficbarrier + Rsidewalk + Roverlay;
 }
 
+
+Float64 CAnalysisAgentImp::GetLowerBoundCamberVariabilityFactor()const
+{
+   GET_IFACE(ILibrary,pLibrary);
+   GET_IFACE(ISpecification,pSpec);
+
+   const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry( pSpec->GetSpecification().c_str() );
+
+   Float64 fac = pSpecEntry->GetCamberVariability();
+
+   fac = 1.0-fac;
+   return fac;
+}
 /////////////////////////////////////////////////////////////////////////////
 // IPretensionStresses
 //
@@ -4369,7 +4397,7 @@ void CAnalysisAgentImp::GetReleaseTempPrestressDeflection(const pgsPointOfIntere
 void CAnalysisAgentImp::GetPrestressDeflection(const pgsPointOfInterest& poi,CamberModelData& modelData,LoadCaseIDType lcid,bool bRelativeToBearings,Float64* pDy,Float64* pRz)
 {
    GET_IFACE(IPointOfInterest,pPoi);
-   if ( pPoi->IsInClosureJoint(poi) || poi.HasAttribute(POI_BOUNDARY_PIER) )
+   if ( pPoi->IsOffSegment(poi) )
    {
       *pDy = 0;
       *pRz = 0;
@@ -4447,14 +4475,12 @@ void CAnalysisAgentImp::GetInitialTempPrestressDeflection(const pgsPointOfIntere
 void CAnalysisAgentImp::GetReleaseTempPrestressDeflection(const pgsPointOfInterest& poi,CamberModelData& modelData,Float64* pDy,Float64* pRz)
 {
    GET_IFACE(IPointOfInterest,pPoi);
-   if ( pPoi->IsInClosureJoint(poi) || poi.HasAttribute(POI_BOUNDARY_PIER)  )
+   if ( pPoi->IsOffSegment(poi) )
    {
       *pDy = 0;
       *pRz = 0;
       return;
    }
-
-   GET_IFACE(IBridge,pBridge);
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -4470,6 +4496,7 @@ void CAnalysisAgentImp::GetReleaseTempPrestressDeflection(const pgsPointOfIntere
    Float64 delta_poi = Dy;
 
    // Get deflection at start bearing
+   GET_IFACE(IBridge,pBridge);
    Float64 start_end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
    pgsPointOfInterest poi2( pPoi->GetPointOfInterest(segmentKey,start_end_size) );
    femPoiID = modelData.PoiMap.GetModelPoi(poi2);
@@ -5282,9 +5309,9 @@ ICamber::LoadingEvent CAnalysisAgentImp::GetLoadingEvent(CreepPeriod creepPeriod
 
 /////////////////////////////////////////////////////////////////////////
 // IContraflexurePoints
-void CAnalysisAgentImp::GetContraflexurePoints(SpanIndexType span,GirderIndexType gdr,Float64* cfPoints,IndexType* nPoints)
+void CAnalysisAgentImp::GetContraflexurePoints(const CSpanKey& spanKey,Float64* cfPoints,IndexType* nPoints)
 {
-   m_pGirderModelManager->GetContraflexurePoints(span,gdr,cfPoints,nPoints);
+   m_pGirderModelManager->GetContraflexurePoints(spanKey,cfPoints,nPoints);
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -6224,10 +6251,10 @@ bool CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
       pBridge->GetSpansForSegment(segmentKey,&startSpanIdx,&endSpanIdx);
 
       GET_IFACE(IPointOfInterest,pIPoi);
-      SpanIndexType spanIdx;
+      CSpanKey spanKey;
       Float64 Xspan;
-      pIPoi->ConvertPoiToSpanPoint(poi,&spanIdx,&Xspan);
-      PierIndexType startPierIdx = (PierIndexType)spanIdx;
+      pIPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
+      PierIndexType startPierIdx = (PierIndexType)spanKey.spanIndex;
       PierIndexType endPierIdx = startPierIdx+1;
 
       // some segments are not supported by piers at all. segments can be supported by

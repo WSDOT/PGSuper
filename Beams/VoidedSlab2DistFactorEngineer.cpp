@@ -84,8 +84,10 @@ void CVoidedSlab2DistFactorEngineer::BuildReport(const CGirderKey& girderKey,rpt
 
    for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
    {
+      CSpanKey spanKey(spanIdx,gdrIdx);
+
       SPANDETAILS span_lldf;
-      GetSpanDF(spanIdx,gdrIdx,pgsTypes::StrengthI,USE_CURRENT_FC,&span_lldf);
+      GetSpanDF(spanKey,pgsTypes::StrengthI,USE_CURRENT_FC,&span_lldf);
 
       PierIndexType pier1 = spanIdx;
       PierIndexType pier2 = spanIdx+1;
@@ -467,6 +469,7 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlab2DistFactorEngineer::GetLLDFParam
       gdrIdx = nGirders-1;
    }
 
+   CSpanKey spanKey(span,gdrIdx);
    CSegmentKey segmentKey(pGroup->GetIndex(),gdrIdx,0);
 
    const GirderLibraryEntry* pGirderEntry = pGroup->GetGirder(gdrIdx)->GetGirderLibraryEntry();
@@ -476,7 +479,7 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlab2DistFactorEngineer::GetLLDFParam
 
    ///////////////////////////////////////////////////////////////////////////
    // Determine overhang and spacing information
-   GetGirderSpacingAndOverhang(span,gdrIdx,dfType, plldf);
+   GetGirderSpacingAndOverhang(spanKey,dfType, plldf);
 
    // put a poi at controlling location from spacing comp
    pgsPointOfInterest poi(segmentKey,plldf->ControllingLocation);

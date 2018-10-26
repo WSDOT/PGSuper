@@ -88,7 +88,7 @@ struct IntermedateDiaphragm
    Float64 H; // height
    Float64 T; // thickness
    Float64 W; // width
-   Float64 Location; // measured from left end of girder
+   Float64 Location; // measured from left end of segment if precast or left end of span if cast-in-place
 };
 
 struct SpaceBetweenGirder
@@ -188,7 +188,7 @@ interface IBridge : IUnknown
    // measured along the CL girder. The span length is measured between the CL Piers except
    // at the first and last pier in the bridge, in which case the span length is measured
    // from/to the CL-Bearing.
-   virtual Float64 GetFullSpanLength(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
+   virtual Float64 GetFullSpanLength(const CSpanKey& spanKey) = 0;
 
    // returns the length of a spliced girder measured along the centerline of its segments between backs of pavement seats
    virtual Float64 GetGirderLayoutLength(const CGirderKey& girderKey) = 0;
@@ -209,13 +209,7 @@ interface IBridge : IUnknown
    // within the given span. Segment lengths are measured between CL-Piers and CL-Temporary Supports except for the
    // first segment in the first group and and last segment in the last group where the start and end of the segments 
    // are measured from the CL-Bearing.
-   virtual std::vector<std::pair<SegmentIndexType,Float64>> GetSegmentLengths(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
-
-   // Determines a segment location for a span point
-   virtual void GetSegmentLocation(SpanIndexType spanIdx,GirderIndexType girderIdx,Float64 Xspan,CSegmentKey* pSegmentKey,Float64* pXs) = 0;
-
-   // Determines a segment path location for a span point
-   virtual void GetSegmentPathLocation(SpanIndexType spanIdx,GirderIndexType girderIdx,Float64 Xspan,CSegmentKey* pSegmentKey,Float64* pXsp) = 0;
+   virtual std::vector<std::pair<SegmentIndexType,Float64>> GetSegmentLengths(const CSpanKey& spanKey) = 0;
 
    // Returns the number of segments in a girder
    virtual SegmentIndexType GetSegmentCount(const CGirderKey& girderKey) = 0;
@@ -318,15 +312,17 @@ interface IBridge : IUnknown
    // be zero
    virtual void GetDistanceBetweenGirders(const pgsPointOfInterest& poi,Float64 *pLeft,Float64* pRight) = 0;
 
-   // used to get girder spacing for the bridge model section view
-   virtual std::vector<SpaceBetweenGirder> GetGirderSpacing(SpanIndexType spanIdx,Float64 distFromStartOfSpan) = 0;
+   // returns the spacing between girders. adjacent spaces that are the same are grouped together
+   // the returned vector is empty if the spacings could not be determined (e.g. station is off the bridge)
+   virtual std::vector<SpaceBetweenGirder> GetGirderSpacing(Float64 station) = 0;
 
    // returns girder spacing at a pier. The vector will contain nGirders-1 spaces
    virtual std::vector<Float64> GetGirderSpacing(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::MeasurementLocation measureLocation,pgsTypes::MeasurementType measureType) = 0;
 
    // Returns the left and right girder spacing for a point along a girder. If the girder is an exterior girder
    // the slab overhang is returned on the exterior side of the girder.
-   virtual void GetSpacingAlongGirder(const CSegmentKey& girderKey,Float64 distFromStartOfGirder,Float64* leftSpacing,Float64* rightSpacing) = 0;
+   virtual void GetSpacingAlongGirder(const CGirderKey& girderKey,Float64 Xg,Float64* leftSpacing,Float64* rightSpacing) = 0;
+   virtual void GetSpacingAlongGirder(const pgsPointOfInterest& poi,Float64* leftSpacing,Float64* rightSpacing) = 0;
 
    // Returns the configuration data for a segment (material properties, strands, etc)
    virtual GDRCONFIG GetSegmentConfiguration(const CSegmentKey& segmentKey) = 0;
@@ -361,7 +357,13 @@ interface IBridge : IUnknown
    // Only applicable if DoesEndDiaphragmLoadGirder returns true
    virtual Float64 GetEndDiaphragmLoadLocationAtStart(const CSegmentKey& segmentKey)=0;
    virtual Float64 GetEndDiaphragmLoadLocationAtEnd(const CSegmentKey& segmentKey)=0;
-   virtual std::vector<IntermedateDiaphragm> GetIntermediateDiaphragms(pgsTypes::DiaphragmType diaphragmType,const CSegmentKey& segmentKey) = 0;
+   
+   // Returns a vector of intermediate diaphragm loads for diaphragms that are precast with the
+   // girder.
+   virtual std::vector<IntermedateDiaphragm> GetPrecastDiaphragms(const CSegmentKey& segmentKey) = 0;
+
+   // Returns a vector of interemdiate diaphragm loads for diaphragms that are cast at the bridge site.
+   virtual std::vector<IntermedateDiaphragm> GetCastInPlaceDiaphragms(const CSpanKey& spanKey) = 0;
 
    ///////////////////////////////////////////////////
    // Slab data
@@ -507,10 +509,10 @@ interface IBridge : IUnknown
    virtual bool ProcessNegativeMoments(SpanIndexType spanIdx) = 0;
 
    // returns the location of a temporary support within a span, measured along a girder line
-   virtual void GetTemporarySupportLocation(SupportIndexType tsIdx,GirderIndexType gdrIdx,SpanIndexType* pSpanIdx,Float64* pDistFromStartOfSpan) = 0;
+   virtual void GetTemporarySupportLocation(SupportIndexType tsIdx,GirderIndexType gdrIdx,SpanIndexType* pSpanIdx,Float64* pXspan) = 0;
 
    // computes the distance from the start of the segment to the temporary support. returns false if the temporary support is not located on the segment
-   virtual bool GetTemporarySupportLocation(SupportIndexType tsIdx,const CSegmentKey& segmentKey,Float64* pDistFromStartOfSegment) = 0;
+   virtual bool GetTemporarySupportLocation(SupportIndexType tsIdx,const CSegmentKey& segmentKey,Float64* pXs) = 0;
 
    // returns the location of the temporary support measured along the CL girder, measured from the CL of the first pier
    virtual Float64 GetTemporarySupportLocation(SupportIndexType tsIdx,GirderIndexType gdrIdx) = 0;

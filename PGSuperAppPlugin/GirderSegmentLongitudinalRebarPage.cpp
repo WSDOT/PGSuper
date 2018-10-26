@@ -67,50 +67,18 @@ void CGirderSegmentLongitudinalRebarPage::DoDataExchange(CDataExchange* pDX)
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
 
    // longitudinal steel information from grid and store it
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits); // only used in certain cases... don't want to get the interface in a loop
-
    if (pDX->m_bSaveAndValidate)
    {
-      CLongitudinalRebarData rebarData;
-
-      ROWCOL nrows = m_Grid.GetRowCount();
-      for (ROWCOL i=1; i<=nrows; i++)
-      {
-         CLongitudinalRebarData::RebarRow row;
-         if (m_Grid.GetRowData(i,&row))
-         {
-            // values are in display units - must convert to system
-            row.Cover      = ::ConvertToSysUnits(row.Cover,      pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-            row.BarSpacing = ::ConvertToSysUnits(row.BarSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-            rebarData.RebarRows.push_back(row);
-         }
-      }
-
       int idx;
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
-      GetStirrupMaterial(idx,rebarData.BarType,rebarData.BarGrade);
-
-      pSegment->LongitudinalRebarData = rebarData;
+      GetStirrupMaterial(idx,pSegment->LongitudinalRebarData.BarType,pSegment->LongitudinalRebarData.BarGrade);
+      m_Grid.GetRebarData(pSegment->LongitudinalRebarData.RebarRows);
    }
    else
    {
       int idx = GetStirrupMaterialIndex(pSegment->LongitudinalRebarData.BarType,pSegment->LongitudinalRebarData.BarGrade);
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
-
-      CLongitudinalRebarData rebarData;
-      std::vector<CLongitudinalRebarData::RebarRow>::iterator iter(pSegment->LongitudinalRebarData.RebarRows.begin());
-      std::vector<CLongitudinalRebarData::RebarRow>::iterator iterEnd(pSegment->LongitudinalRebarData.RebarRows.end());
-      for ( ; iter != iterEnd; iter++ )
-      {
-         CLongitudinalRebarData::RebarRow row = *iter;
-         row.BarSpacing = ::ConvertFromSysUnits(row.BarSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-         row.Cover      = ::ConvertFromSysUnits(row.Cover,      pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-
-         rebarData.RebarRows.push_back(row);
-      }
-      m_Grid.FillGrid(rebarData);
+      m_Grid.FillGrid(pSegment->LongitudinalRebarData);
    }
 }
 

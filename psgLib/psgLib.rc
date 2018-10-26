@@ -74,8 +74,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,14
- PRODUCTVERSION 3,0,0,14
+ FILEVERSION 3,0,0,15
+ PRODUCTVERSION 3,0,0,15
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +93,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.0.0.14"
+            VALUE "FileVersion", "3.0.0.15"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.14"
+            VALUE "ProductVersion", "3.0.0.15"
         END
     END
     BLOCK "VarFileInfo"
@@ -590,12 +590,12 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,284,117,10
 END
 
-IDD_SPEC_CREEP DIALOGEX 0, 0, 275, 242
+IDD_SPEC_CREEP DIALOGEX 0, 0, 275, 256
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Creep and Camber"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "General Creep and Camber Parameters",IDC_STATIC,8,6,260,229
+    GROUPBOX        "General Creep and Camber Parameters",IDC_STATIC,8,6,260,243
     LTEXT           "Time from stressing to prestress transfer",IDC_STATIC,17,27,158,17
     EDITTEXT        IDC_XFER_TIME,209,27,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "hrs",IDC_XFER_TIME_TAG,240,27,18,8
@@ -611,16 +611,19 @@ BEGIN
     EDITTEXT        IDC_CREEP_DURATION2_MIN,179,84,24,14,ES_RIGHT | ES_AUTOHSCROLL
     EDITTEXT        IDC_CREEP_DURATION2_MAX,209,84,24,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_CREEP_DURATION2_TAG,240,84,18,8
-    LTEXT           "Total Creep Duration",IDC_STATIC,19,122,170,9
-    EDITTEXT        IDC_NC_CREEP,198,119,35,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_NC_CREEP_TAG,240,119,19,8
-    GROUPBOX        "Curing of Precast Concrete",IDC_STATIC,15,146,253,61,WS_GROUP
-    CONTROL         "Normal",IDC_CURING_METHOD,"Button",BS_AUTORADIOBUTTON | WS_GROUP,23,161,38,10
-    CONTROL         "Accelerated (Steam or Rad. Heat)",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,23,173,125,10
-    LTEXT           "1 day of steam or radiant heat curing is equal to ",IDC_STATIC,19,188,152,8
-    EDITTEXT        IDC_CURING_TIME_FACTOR,172,186,18,14,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "days of normal curing",IDC_STATIC,194,189,68,8
-    LTEXT           "NOTE: These parameters do not apply to Time-Step analysis",IDC_STATIC,15,216,191,8
+    LTEXT           "Variability between upper and lower bound camber",IDC_STATIC,19,118,166,9
+    EDITTEXT        IDC_CAMBER_VARIABILITY,198,116,35,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_NC_CREEP_TAG2,240,118,8,8
+    LTEXT           "Total Creep Duration",IDC_STATIC,19,141,170,9
+    EDITTEXT        IDC_NC_CREEP,198,138,35,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_NC_CREEP_TAG,240,141,19,8
+    GROUPBOX        "Curing of Precast Concrete",IDC_STATIC,15,160,253,61,WS_GROUP
+    CONTROL         "Normal",IDC_CURING_METHOD,"Button",BS_AUTORADIOBUTTON | WS_GROUP,23,175,38,10
+    CONTROL         "Accelerated (Steam or Rad. Heat)",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,23,187,125,10
+    LTEXT           "1 day of steam or radiant heat curing is equal to ",IDC_STATIC,19,202,152,8
+    EDITTEXT        IDC_CURING_TIME_FACTOR,172,200,18,14,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "days of normal curing",IDC_STATIC,194,203,68,8
+    LTEXT           "NOTE: These parameters do not apply to Time-Step analysis",IDC_STATIC,15,230,191,8
 END
 
 IDD_SPEC_LOSSES DIALOGEX 0, 0, 494, 224
@@ -896,60 +899,62 @@ BEGIN
     LTEXT           "Static",IDC_MIN_HP_UNIT,197,58,19,8
 END
 
-IDD_GIRDER_DIAPHRAGM DIALOG  0, 0, 282, 147
+IDD_GIRDER_DIAPHRAGM DIALOGEX 0, 0, 282, 147
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "Custom1",IDC_DIAPHRAGM_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,7,268,109
     PUSHBUTTON      "Add",IDC_ADD,51,126,50,14
     PUSHBUTTON      "Edit",IDC_EDIT1,115,126,50,14
     PUSHBUTTON      "Delete",IDC_DELETE,177,126,50,14,WS_DISABLED
+    CTEXT           "Intermediate Diaphragm Layout Rules are not supported by this girder type",IDC_NO_DIAPHRAGMS,7,60,268,8,NOT WS_VISIBLE
 END
 
-IDD_INTERMEDATE_DIAPHRAGM DIALOGEX 0, 0, 285, 230
+IDD_INTERMEDATE_DIAPHRAGM DIALOGEX 0, 0, 285, 246
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Intermediate Diaphragm Definition"
+CAPTION "Intermediate Diaphragm Layout Rules"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     LTEXT           "Description",IDC_STATIC,7,7,36,8
     EDITTEXT        IDC_DESCRIPTION,7,18,271,14,ES_AUTOHSCROLL
-    LTEXT           "Use this rule when the span length is between",IDC_STATIC,7,40,146,8
-    EDITTEXT        IDC_SPAN1,154,40,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "and",IDC_STATIC,196,40,13,8
-    EDITTEXT        IDC_SPAN2,211,40,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_SPAN_UNIT,255,40,19,8
-    LTEXT           "Diaphragm Type",IDC_STATIC,7,58,53,8
-    COMBOBOX        IDC_TYPE,7,68,129,65,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Construction",IDC_STATIC,149,58,40,8
-    COMBOBOX        IDC_CONSTRUCTION,149,68,129,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_METHOD,7,87,271,97,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Height",IDC_HEIGHT_LABEL,7,105,22,8
-    EDITTEXT        IDC_H,45,105,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_H_UNIT,90,105,19,8
-    LTEXT           "Thickness",IDC_THICKNESS_LABEL,7,125,34,8
-    EDITTEXT        IDC_THICKNESS,45,124,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_THICKNESS_UNIT,89,124,19,8
-    LTEXT           "Weight",IDC_WEIGHT_LABEL,134,106,24,8
-    EDITTEXT        IDC_WEIGHT,164,104,40,14,ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_WEIGHT_UNIT,209,106,19,8
-    LTEXT           "Diaphragm location is measured as a ",IDC_STATIC,7,143,118,8
-    COMBOBOX        IDC_MEASUREMENT_TYPE,129,140,149,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Diaphragm location is measured from",IDC_STATIC,7,159,116,8
-    COMBOBOX        IDC_MEASURED_FROM,129,159,149,63,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Diaphragm location",IDC_STATIC,7,183,62,8
-    EDITTEXT        IDC_LOCATION,73,183,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_LOCATION_UNIT,121,183,49,8
-    DEFPUSHBUTTON   "OK",IDOK,173,209,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,228,209,50,14
+    LTEXT           "Create a diaphragm when the (span/element) length is between",IDC_RANGE_LABEL,7,74,140,8
+    EDITTEXT        IDC_SPAN1,151,72,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "and",IDC_STATIC,193,74,13,8
+    EDITTEXT        IDC_SPAN2,208,72,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_SPAN_UNIT,252,74,19,8
+    LTEXT           "Location",IDC_STATIC,143,39,28,8
+    COMBOBOX        IDC_TYPE,143,49,129,65,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Construction",IDC_STATIC,7,39,40,8
+    COMBOBOX        IDC_CONSTRUCTION,7,49,129,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_METHOD,7,101,271,97,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Height",IDC_HEIGHT_LABEL,7,119,22,8
+    EDITTEXT        IDC_H,45,119,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_H_UNIT,90,119,19,8
+    LTEXT           "Thickness",IDC_THICKNESS_LABEL,7,139,34,8
+    EDITTEXT        IDC_THICKNESS,45,138,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_THICKNESS_UNIT,89,138,19,8
+    LTEXT           "Weight",IDC_WEIGHT_LABEL,134,120,24,8
+    EDITTEXT        IDC_WEIGHT,164,118,40,14,ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_WEIGHT_UNIT,209,120,19,8
+    LTEXT           "Diaphragm location is measured as a ",IDC_STATIC,7,157,118,8
+    COMBOBOX        IDC_MEASUREMENT_TYPE,129,154,149,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Diaphragm location is measured from",IDC_STATIC,7,175,116,8
+    COMBOBOX        IDC_MEASURED_FROM,129,173,149,63,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Diaphragm location",IDC_STATIC,7,200,62,8
+    EDITTEXT        IDC_LOCATION,73,197,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_LOCATION_UNIT,121,200,49,8
+    DEFPUSHBUTTON   "OK",IDOK,119,225,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,174,225,50,14
+    PUSHBUTTON      "Help",IDHELP,228,225,50,14
 END
 
-IDD_SPEC_LIMITS DIALOGEX 0, 0, 296, 214
+IDD_SPEC_LIMITS DIALOGEX 0, 0, 324, 243
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Limits"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     LTEXT           "Warnings will be posted to the Status Center if the following limits are exceeded.",IDC_STATIC,7,7,251,8
-    GROUPBOX        "Concrete Limits",IDC_STATIC,7,22,282,164
+    GROUPBOX        "Concrete Limits",IDC_STATIC,7,22,310,164
     LTEXT           "Normal Weight",IDC_STATIC,85,30,48,8
     LTEXT           "Lightweight",IDC_STATIC,163,30,37,8
     LTEXT           "Slab f'c",IDC_STATIC,51,47,24,8
@@ -987,6 +992,9 @@ BEGIN
     LTEXT           "Static",IDC_NWC_AGG_SIZE_UNIT,132,168,29,8
     EDITTEXT        IDC_LWC_AGG_SIZE,160,166,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_LWC_AGG_SIZE_UNIT,203,168,29,8
+    GROUPBOX        "General Warnings",IDC_STATIC,7,194,310,42
+    CONTROL         "Issue a Spec Check warning if stirrup zone lengths are incompatible with stirrup spacings",IDC_CHECK_STIRRUP_COMPATIBILITY,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,212,291,10
 END
 
 IDD_SPEC_DESIGN DIALOGEX 0, 0, 481, 363
@@ -1739,7 +1747,7 @@ BEGIN
         RIGHTMARGIN, 268
         VERTGUIDE, 15
         TOPMARGIN, 6
-        BOTTOMMARGIN, 235
+        BOTTOMMARGIN, 249
     END
 
     IDD_SPEC_LOSSES, DIALOG
@@ -1813,15 +1821,15 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 278
         TOPMARGIN, 7
-        BOTTOMMARGIN, 223
+        BOTTOMMARGIN, 239
     END
 
     IDD_SPEC_LIMITS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 289
+        RIGHTMARGIN, 317
         TOPMARGIN, 7
-        BOTTOMMARGIN, 207
+        BOTTOMMARGIN, 236
     END
 
     IDD_SPEC_DESIGN, DIALOG
@@ -2299,7 +2307,7 @@ END
 STRINGTABLE 
 BEGIN
     IDS_E_BADINSTALL        "There is an error with the %1 installation.  Please re-install the program."
-    IDS_E_PROBPERSISTS      "If this problem persists,  contact technical support at Bridge_Support@wsdot.wa.gov.\n Please include your project file and the %1 file found in the program directory."
+    IDS_E_PROBPERSISTS      "Contact your technical support representitive if this problem persists.\n Please include your project file and the %1 file found in the program directory."
     IDS_E_INVALIDFORMAT     "%1 is not a valid PGSuper project file."
     IDS_E_FILENOTFOUND      "File %1 was not found"
     IDS_E_READ              "An error has occured while reading %1"

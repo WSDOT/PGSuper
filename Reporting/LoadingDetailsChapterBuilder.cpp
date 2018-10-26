@@ -145,6 +145,8 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    rptRcTable* p_table;
 
    bool one_girder_has_shear_key = false;
+            
+   GET_IFACE2(pBroker,IProductLoads,pProdLoads);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -185,8 +187,6 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
             (*p_table)(0,0) << _T("Load Type");
             (*p_table)(0,1) << COLHDR(_T("w"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-
-            GET_IFACE2(pBroker,IProductLoads,pProdLoads);
 
             RowIndexType row = p_table->GetNumberOfHeaderRows();
 
@@ -253,12 +253,18 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             ReportOverlayLoad(     pChapter,pBridge,pProdLoads,pDisplayUnits,bRating,thisSegmentKey);
             ReportConstructionLoad(pChapter,pBridge,pProdLoads,pDisplayUnits,thisSegmentKey);
             ReportShearKeyLoad(    pChapter,pBridge,pProdLoads,pDisplayUnits,thisSegmentKey,one_girder_has_shear_key);
-            ReportEndDiaphragmLoad(pChapter,pBridge,pProdLoads,pDisplayUnits,thisSegmentKey);
+            ReportPrecastDiaphragmLoad(pChapter,pBridge,pProdLoads,pDisplayUnits,thisSegmentKey);
          } // segIdx
       } // gdrIdx
    } // grpIdx
 
    // User defined loads.... these loads are span/girder based
+   GET_IFACE2(pBroker,IUserDefinedLoadData,pUserDefinedLoads);
+   IndexType nPointLoads  = pUserDefinedLoads->GetPointLoadCount();
+   IndexType nDistLoads   = pUserDefinedLoads->GetDistributedLoadCount();
+   IndexType nMomentLoads = pUserDefinedLoads->GetMomentLoadCount();
+   bool bHasUserLoads = (0 < nPointLoads + nDistLoads + nMomentLoads ? true : false);
+
    SpanIndexType startSpanIdx, endSpanIdx;
    pBridge->GetGirderGroupSpans(girderKey.groupIndex,&startSpanIdx,&endSpanIdx);
    for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
@@ -271,16 +277,21 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
       {
          CSpanKey spanKey(spanIdx,gdrIdx);
 
+         ReportCastInPlaceDiaphragmLoad(pChapter,pBridge,pProdLoads,pDisplayUnits,spanKey);
+
          // User Defined Loads
-         pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-         *pChapter << pPara;
-         *pPara<< _T("User Defined Loads")<<rptNewLine;
-         pPara = CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(pBroker, spanKey, pDisplayUnits, level, m_bSimplifiedVersion);
-         *pChapter << pPara;
-         pPara = CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(pBroker, spanKey, pDisplayUnits, level, m_bSimplifiedVersion);
-         *pChapter << pPara;
-         pPara = CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(pBroker, spanKey, pDisplayUnits, level, m_bSimplifiedVersion);
-         *pChapter << pPara;
+         if ( bHasUserLoads )
+         {
+            pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+            *pChapter << pPara;
+            *pPara<< _T("User Defined Loads")<<rptNewLine;
+            pPara = CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(pBroker, spanKey, pDisplayUnits, level, m_bSimplifiedVersion);
+            *pChapter << pPara;
+            pPara = CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(pBroker, spanKey, pDisplayUnits, level, m_bSimplifiedVersion);
+            *pChapter << pPara;
+            pPara = CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(pBroker, spanKey, pDisplayUnits, level, m_bSimplifiedVersion);
+            *pChapter << pPara;
+         }
       }
    }
 
@@ -920,7 +931,7 @@ void CLoadingDetailsChapterBuilder::ReportShearKeyLoad(rptChapter* pChapter,IBri
    }
 }
 
-void CLoadingDetailsChapterBuilder::ReportEndDiaphragmLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& thisSegmentKey) const
+void CLoadingDetailsChapterBuilder::ReportPrecastDiaphragmLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& thisSegmentKey) const
 {
    if ( m_bSimplifiedVersion )
    {
@@ -929,69 +940,27 @@ void CLoadingDetailsChapterBuilder::ReportEndDiaphragmLoad(rptChapter* pChapter,
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         loc,    pDisplayUnits->GetSpanLengthUnit(),     false );
    INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl,    pDisplayUnits->GetForcePerLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptMomentUnitValue,         moment, pDisplayUnits->GetMomentUnit(),         false );
    INIT_UV_PROTOTYPE( rptForceUnitValue,          force,  pDisplayUnits->GetGeneralForceUnit(),   false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         dim,    pDisplayUnits->GetComponentDimUnit(),   false );
 
    Float64 end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
 
-   rptParagraph* pPara = NULL;
+   std::vector<DiaphragmLoad> diaphragm_loads;
+   pProdLoads->GetPrecastDiaphragmLoads(thisSegmentKey,&diaphragm_loads);
 
-   // end diaphragm loads
-   pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-   *pChapter << pPara;
-   *pPara<< _T("End Diaphragm Loads")<<rptNewLine;
-
-   pPara = new rptParagraph;
-   *pChapter << pPara;
-
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
-   *pPara << p_table;
-
-   (*p_table)(0,0) << _T("Location");
-   (*p_table)(0,1) << COLHDR(_T("Point Load"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-   (*p_table)(0,2) << COLHDR(_T("Point Moment"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-
-#pragma Reminder("UPDATE: need to add pier diaphragm loads")
-   // Diaphragm loads aren't just at the ends of segments any more.... a segment can have a pier or temporary support
-   // at one or both ends... only report at end of segmetn with pier... also, there could be zero or more piers
-   // between the ends of a segment, report these loads as well.
-   //
-
-   //Float64 P1, P2, M1, M2;
-   //pProdLoads->GetEndDiaphragmLoads(thisSegmentKey, &P1, &M1, &P2, &M2);
-   //(*p_table)(1,0) << _T("Left Bearing");
-   //(*p_table)(1,1) << force.SetValue(-P1);
-   //(*p_table)(1,2) << moment.SetValue(M1);
-
-   //(*p_table)(2,0) << _T("Right Bearing");
-   //(*p_table)(2,1) << force.SetValue(-P2);
-   //(*p_table)(2,2) << moment.SetValue(M2);
-
-   p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-
-   // diaphragm loads between supports
-   pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-   *pChapter << pPara;
-   *pPara<< _T("Intermediate Diaphragm Loads Constructed in Casting Yard")<<rptNewLine;
-
-   pPara = new rptParagraph;
-   *pChapter << pPara;
-
-   std::vector<DiaphragmLoad> diap_loads;
-   pProdLoads->GetIntermediateDiaphragmLoads(pgsTypes::dtPrecast, thisSegmentKey, &diap_loads);
-   std::sort(diap_loads.begin(),diap_loads.end());
-
-   if (diap_loads.size() == 0)
+   if ( 0 < diaphragm_loads.size() )
    {
-      *pPara<<_T("No Intermediate Diaphragms Present")<<rptNewLine;
-   }
-   else
-   {
-      p_table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
+      rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      *pChapter << pPara;
+      *pPara<< _T("Precast Diaphragms Constructed as part of the Girder")<<rptNewLine;
+
+      pPara = new rptParagraph;
+      *pChapter << pPara;
+
+      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
       *pPara << p_table;
 
+#pragma Reminder("UPDATE: girder/segment label") // should be segment for spliced girders
       (*p_table)(0,0) << COLHDR(_T("Load Location,")<<rptNewLine<<_T("From Left End of Girder"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       (*p_table)(0,1) << COLHDR(_T("H"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
       (*p_table)(0,2) << COLHDR(_T("W"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
@@ -1000,15 +969,17 @@ void CLoadingDetailsChapterBuilder::ReportEndDiaphragmLoad(rptChapter* pChapter,
 
       RowIndexType row = p_table->GetNumberOfHeaderRows();
 
-      std::vector<IntermedateDiaphragm> diaphragms   = pBridge->GetIntermediateDiaphragms(pgsTypes::dtPrecast,thisSegmentKey);
-      std::vector<IntermedateDiaphragm>::iterator iter = diaphragms.begin();
-
-      for (std::vector<DiaphragmLoad>::iterator id = diap_loads.begin(); id!=diap_loads.end(); id++, iter++)
+      std::vector<IntermedateDiaphragm> diaphragms(pBridge->GetPrecastDiaphragms(thisSegmentKey));
+      ATLASSERT(diaphragms.size() == diaphragm_loads.size());
+      std::vector<IntermedateDiaphragm>::iterator iter( diaphragms.begin() );
+      std::vector<IntermedateDiaphragm>::iterator end( diaphragms.end() );
+      std::vector<DiaphragmLoad>::iterator dia_load_iter(diaphragm_loads.begin());
+      for ( ; iter != end; iter++,dia_load_iter++ )
       {
-         DiaphragmLoad& rload = *id;
+         DiaphragmLoad& rLoad = *dia_load_iter;
          IntermedateDiaphragm& dia = *iter;
 
-         (*p_table)(row,0) << loc.SetValue(rload.Loc);
+         (*p_table)(row,0) << loc.SetValue(rLoad.Loc);
          if ( dia.m_bCompute )
          {
             (*p_table)(row,1) << dim.SetValue(dia.H);
@@ -1021,38 +992,41 @@ void CLoadingDetailsChapterBuilder::ReportEndDiaphragmLoad(rptChapter* pChapter,
             (*p_table)(row,2) << _T("");
             (*p_table)(row,3) << _T("");
          }
-         (*p_table)(row,4) << force.SetValue(-rload.Load);
+         (*p_table)(row,4) << force.SetValue(-rLoad.Load);
          row++;
       }
    }
+}
 
-   pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-   *pChapter << pPara;
-   *pPara<< _T("Intermediate Diaphragm Loads Constructed at Bridge Site")<<rptNewLine;
+void CLoadingDetailsChapterBuilder::ReportCastInPlaceDiaphragmLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,const CSpanKey& spanKey) const
+{
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,  loc,    pDisplayUnits->GetSpanLengthUnit(),   false );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,   force,  pDisplayUnits->GetGeneralForceUnit(), false );
+   INIT_UV_PROTOTYPE( rptMomentUnitValue,  moment, pDisplayUnits->GetMomentUnit(),       false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,  dim,    pDisplayUnits->GetComponentDimUnit(), false );
 
-   pPara = new rptParagraph;
-   *pChapter << pPara;
+   std::vector<DiaphragmLoad> diap_loads;
+   pProdLoads->GetIntermediateDiaphragmLoads(spanKey, &diap_loads);
 
-   diap_loads.clear();
-   pProdLoads->GetIntermediateDiaphragmLoads(pgsTypes::dtCastInPlace, thisSegmentKey, &diap_loads);
-   std::sort(diap_loads.begin(),diap_loads.end());
-
-   if (diap_loads.size() == 0)
+   if (0 < diap_loads.size() )
    {
-      *pPara<<_T("No Intermediate Diaphragms Present")<<rptNewLine;
-   }
-   else
-   {
-      p_table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
+      rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      *pChapter << pPara;
+      *pPara<< _T("Intermediate Diaphragms Constructed at Bridge Site")<<rptNewLine;
+
+      pPara = new rptParagraph;
+      *pChapter << pPara;
+
+      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
       *pPara << p_table;
 
-      (*p_table)(0,0) << COLHDR(_T("Load Location,")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*p_table)(0,0) << COLHDR(_T("Load Location,")<<rptNewLine<<_T("from Start of Span"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       (*p_table)(0,1) << COLHDR(_T("H"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
       (*p_table)(0,2) << COLHDR(_T("W"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
       (*p_table)(0,3) << COLHDR(_T("T"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
       (*p_table)(0,4) << COLHDR(_T("Load"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
 
-      std::vector<IntermedateDiaphragm> diaphragms   = pBridge->GetIntermediateDiaphragms(pgsTypes::dtCastInPlace,thisSegmentKey);
+      std::vector<IntermedateDiaphragm> diaphragms   = pBridge->GetCastInPlaceDiaphragms(spanKey);
       std::vector<IntermedateDiaphragm>::iterator iter = diaphragms.begin();
 
       RowIndexType row = p_table->GetNumberOfHeaderRows();
@@ -1080,8 +1054,55 @@ void CLoadingDetailsChapterBuilder::ReportEndDiaphragmLoad(rptChapter* pChapter,
          row++;
       }
    }
-}
 
+   // pier diaphragm loads
+   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   *pChapter << pPara;
+   *pPara<< _T("Pier Diaphragm Loads")<<rptNewLine;
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(4,_T(""));
+   *pPara << p_table;
+
+   p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+   (*p_table)(0,0) << _T("Pier");
+   (*p_table)(0,1) << _T("Location");
+   (*p_table)(0,2) << COLHDR(_T("P"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+   (*p_table)(0,3) << COLHDR(_T("M"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+
+   RowIndexType row = p_table->GetNumberOfHeaderRows();
+
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+   SpanIndexType startSpanIdx = (spanKey.spanIndex == ALL_SPANS ? 0 : spanKey.spanIndex);
+   SpanIndexType endSpanIdx   = (spanKey.spanIndex == ALL_SPANS ? nSpans-1 : startSpanIdx);
+   PierIndexType startPierIdx = (PierIndexType)startSpanIdx;
+   PierIndexType endPierIdx   = (PierIndexType)(endSpanIdx+1);
+   for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
+   {
+      Float64 Pback, Mback, Pahead, Mahead;
+      pProdLoads->GetPierDiaphragmLoads( pierIdx, spanKey.girderIndex, &Pback, &Mback, &Pahead, &Mahead);
+
+      p_table->SetRowSpan(row,0,2);
+      (*p_table)(row,0) << LABEL_PIER(pierIdx);
+
+      (*p_table)(row,1) << _T("Left Bearing");
+      (*p_table)(row,2) << force.SetValue(-Pback);
+      (*p_table)(row,3) << moment.SetValue(Mback);
+
+      row++;
+
+      p_table->SetRowSpan(row,0,SKIP_CELL);
+      (*p_table)(row,1) << _T("Right Bearing");
+      (*p_table)(row,2) << force.SetValue(-Pahead);
+      (*p_table)(row,3) << moment.SetValue(Mahead);
+
+      row++;
+   }
+}
 
 void CLoadingDetailsChapterBuilder::ReportEquivPostTensionLoads(rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const CGirderKey& girderKey) const
 {

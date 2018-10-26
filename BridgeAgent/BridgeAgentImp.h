@@ -206,11 +206,10 @@ public:
    virtual void GetGirderGroupIndex(PierIndexType pierIdx,GroupIndexType* pBackGroupIdx,GroupIndexType* pAheadGroupIdx);
    virtual void GetDistanceBetweenGirders(const pgsPointOfInterest& poi,Float64 *pLeft,Float64* pRight);
    virtual std::vector<Float64> GetGirderSpacing(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::MeasurementLocation measureLocation,pgsTypes::MeasurementType measureType);
-   virtual std::vector<SpaceBetweenGirder> GetGirderSpacing(SpanIndexType spanIdx,Float64 distFromStartOfSpan);
-   virtual void GetSpacingAlongGirder(const CSegmentKey& segmentKey,Float64 distFromStartOfGirder,Float64* leftSpacing,Float64* rightSpacing);
-   virtual std::vector<std::pair<SegmentIndexType,Float64>> GetSegmentLengths(SpanIndexType spanIdx,GirderIndexType gdrIdx);
-   virtual void GetSegmentLocation(SpanIndexType spanIdx,GirderIndexType girderIdx,Float64 Xspan,CSegmentKey* pSegmentKey,Float64* pXs);
-   virtual void GetSegmentPathLocation(SpanIndexType spanIdx,GirderIndexType girderIdx,Float64 Xspan,CSegmentKey* pSegmentKey,Float64* pXsp);
+   virtual std::vector<SpaceBetweenGirder> GetGirderSpacing(Float64 station);
+   virtual void GetSpacingAlongGirder(const CGirderKey& girderKey,Float64 Xg,Float64* leftSpacing,Float64* rightSpacing);
+   virtual void GetSpacingAlongGirder(const pgsPointOfInterest& poi,Float64* leftSpacing,Float64* rightSpacing);
+   virtual std::vector<std::pair<SegmentIndexType,Float64>> GetSegmentLengths(const CSpanKey& spanKey);
    virtual Float64 GetSegmentLength(const CSegmentKey& segmentKey);
    virtual Float64 GetSegmentSpanLength(const CSegmentKey& segmentKey);
    virtual Float64 GetSegmentLayoutLength(const CSegmentKey& segmentKey);
@@ -223,7 +222,7 @@ public:
    virtual Float64 GetRotationAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
    virtual Float64 GetSpanLength(SpanIndexType spanIdx,GirderIndexType gdrIdx);
    virtual Float64 GetSpanLength(const CSpanKey& spanKey);
-   virtual Float64 GetFullSpanLength(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual Float64 GetFullSpanLength(const CSpanKey& spanKey);
    virtual Float64 GetSegmentStartEndDistance(const CSegmentKey& segmentKey);
    virtual Float64 GetSegmentEndEndDistance(const CSegmentKey& segmentKey);
    virtual Float64 GetSegmentStartBearingOffset(const CSegmentKey& segmentKey);
@@ -261,7 +260,8 @@ public:
    virtual bool DoesRightSideEndDiaphragmLoadGirder(PierIndexType pier);
    virtual Float64 GetEndDiaphragmLoadLocationAtStart(const CSegmentKey& segmentKey);
    virtual Float64 GetEndDiaphragmLoadLocationAtEnd(const CSegmentKey& segmentKey);
-   virtual std::vector<IntermedateDiaphragm> GetIntermediateDiaphragms(pgsTypes::DiaphragmType diaphragmType,const CSegmentKey& segmentKey);
+   virtual std::vector<IntermedateDiaphragm> GetPrecastDiaphragms(const CSegmentKey& segmentKey);
+   virtual std::vector<IntermedateDiaphragm> GetCastInPlaceDiaphragms(const CSpanKey& spanKey);
    virtual pgsTypes::SupportedDeckType GetDeckType();
    virtual bool IsCompositeDeck();
    virtual bool HasOverlay();
@@ -325,8 +325,8 @@ public:
    virtual bool IsPier(PierIndexType pierIdx);
    virtual bool IsInteriorPier(PierIndexType pierIdx);
    virtual bool IsBoundaryPier(PierIndexType pierIdx);
-   virtual void GetTemporarySupportLocation(SupportIndexType tsIdx,GirderIndexType gdrIdx,SpanIndexType* pSpanIdx,Float64* pDistFromStartOfSpan);
-   virtual bool GetTemporarySupportLocation(SupportIndexType tsIdx,const CSegmentKey& segmentKey,Float64* pDistFromStartOfSegment);
+   virtual void GetTemporarySupportLocation(SupportIndexType tsIdx,GirderIndexType gdrIdx,SpanIndexType* pSpanIdx,Float64* pXspan);
+   virtual bool GetTemporarySupportLocation(SupportIndexType tsIdx,const CSegmentKey& segmentKey,Float64* pXs);
    virtual Float64 GetTemporarySupportLocation(SupportIndexType tsIdx,GirderIndexType gdrIdx);
    virtual pgsTypes::TemporarySupportType GetTemporarySupportType(SupportIndexType tsIdx);
    virtual pgsTypes::SegmentConnectionType GetSegmentConnectionTypeAtTemporarySupport(SupportIndexType tsIdx);
@@ -700,8 +700,14 @@ public:
    virtual pgsPointOfInterest GetPointOfInterest(const CGirderKey& girderKey,PierIndexType pierIdx);
    virtual void RemovePointsOfInterest(std::vector<pgsPointOfInterest>& vPoi,PoiAttributeType targetAttribute,PoiAttributeType exceptionAttribute);
    virtual bool IsInClosureJoint(const pgsPointOfInterest& poi);
-   virtual pgsPointOfInterest ConvertSpanPointToPoi(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 Xspan);
-   virtual void ConvertPoiToSpanPoint(const pgsPointOfInterest& poi,SpanIndexType* pSpanIdx,Float64* pXspan);
+   virtual bool IsOnSegment(const pgsPointOfInterest& poi);
+   virtual bool IsOffSegment(const pgsPointOfInterest& poi);
+   virtual pgsPointOfInterest ConvertSpanPointToPoi(const CSpanKey& spanKey,Float64 Xspan);
+   virtual void ConvertPoiToSpanPoint(const pgsPointOfInterest& poi,CSpanKey* pSpanKey,Float64* pXspan);
+   virtual void ConvertSpanPointToSegmentCoordiante(const CSpanKey& spanKey,Float64 Xspan,CSegmentKey* pSegmentKey,Float64* pXs);
+   virtual void ConvertSegmentCoordinateToSpanPoint(const CSegmentKey& segmentKey,Float64 Xs,CSpanKey* pSpanKey,Float64* pXspan);
+   virtual void ConvertSpanPointToSegmentPathCoordiante(const CSpanKey& spanKey,Float64 Xspan,CSegmentKey* pSegmentKey,Float64* pXsp);
+   virtual void ConvertSegmentPathCoordinateToSpanPoint(const CSegmentKey& sSegmentKey,Float64 Xsp,CSpanKey* pSpanKey,Float64* pXspan);
    virtual std::vector<pgsPointOfInterest> GetPointsOfInterestInRange(Float64 xLeft,const pgsPointOfInterest& poi,Float64 xRight);
    virtual std::list<std::vector<pgsPointOfInterest>> GroupBySegment(const std::vector<pgsPointOfInterest>& vPoi);
    virtual std::list<std::vector<pgsPointOfInterest>> GroupByGirder(const std::vector<pgsPointOfInterest>& vPoi);
@@ -1133,7 +1139,8 @@ private:
    void LayoutEndSizePoi(const CSegmentKey& segmentKey,Float64 segmentOffset);
    void LayoutHarpingPointPoi(const CSegmentKey& segmentKey,Float64 segmentOffset);
    void LayoutPrestressTransferAndDebondPoi(const CSegmentKey& segmentKey,Float64 segmentOffset);
-   void LayoutPoiForDiaphragmLoads(const CSegmentKey& segmentKey,Float64 segmentOffset);
+   void LayoutPoiForPrecastDiaphragmLoads(const CSegmentKey& segmentKey,Float64 segmentOffset);
+   void LayoutPoiForIntermediateDiaphragmLoads(const CSpanKey& spanKey);
    void LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 segmentOffset);
    void LayoutPoiForSlabBarCutoffs(const CSegmentKey& segmentKey);
    void LayoutPoiForSegmentBarCutoffs(const CSegmentKey& segmentKey,Float64 segmentOffset);
@@ -1246,6 +1253,7 @@ private:
    mathCompositeFunction2d CreateDuctCenterline(const CGirderKey& girderKey,const CParabolicDuctGeometry& geometry);
 
    SegmentIndexType GetSegmentIndex(const CSplicedGirderData* pGirder,Float64 distFromStartOfBridge);
+   SegmentIndexType GetSegmentIndex(const CGirderKey& girderKey,ILine2d* pLine,IPoint2d** ppIntersection);
 
    SpanIndexType GetSpanIndex(Float64 distFromStartOfBridge);
    PierIndexType GetGenericBridgePierIndex(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType);

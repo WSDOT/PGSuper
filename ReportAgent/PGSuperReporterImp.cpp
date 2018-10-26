@@ -92,6 +92,8 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
    pRptMgr->AddReportBuilder(pTestRptBuilder);
 #endif
 
+   CreateMultiGirderSpecCheckReport();
+
    // Design Outcome
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("Design Outcome Report"),true); // hidden report
    //pRptBuilder->AddTitlePageBuilder(NULL); // no title page for this report

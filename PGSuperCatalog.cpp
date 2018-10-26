@@ -270,7 +270,9 @@ bool CPGSuperCatalog::DoParse()
          DWORD dwResult1 = GetPrivateProfileString(publisherName,master_library_key.c_str(),_T(""),buffer1,sizeof(buffer1)/sizeof(TCHAR),m_strLocalCatalog);
          CString msg1;
          if ( dwResult1 == 0 )
+         {
             msg1.Format(_T("Could not find Master Library Key: %s"),master_library_key.c_str());
+         }
 
 
 
@@ -279,13 +281,15 @@ bool CPGSuperCatalog::DoParse()
          DWORD dwResult2 = GetPrivateProfileString(publisherName,workgroup_template_key.c_str(),_T(""),buffer2,sizeof(buffer2)/sizeof(TCHAR),m_strLocalCatalog);
          CString msg2;
          if ( dwResult2 == 0 )
+         {
             msg2.Format(_T("Could not find Workgroup Template Key: %s"),workgroup_template_key.c_str());
+         }
 
 
          if ( (dwResult1 == 0 || dwResult2 == 0) )
          {
             CString msg;
-            msg.Format(_T("The Master Library and Workgroup Templates could not be updated because PGSuper:\n\n%s\n%s\n\nPlease contact the server owner."),msg1,msg2);
+            msg.Format(_T("The %s configuration could not be updated because:\n\n%s\n%s\n\nPlease contact the server owner."),AfxGetApp()->m_pszProfileName,msg1,msg2);
             AfxMessageBox(msg,MB_ICONEXCLAMATION | MB_OK);
             break;
          }
@@ -341,7 +345,7 @@ bool CPGSuperCatalog::DoParse()
          if ( dwResult1 == 0 )
          {
             CString msg;
-            msg.Format(_T("The Master Library and Workgroup Templates could not be updated because PGSuper could not find the Pgz File Key:\n%s\nin the server's ini file.\n\n\nPlease contact the server owner."),pgz_key.c_str());
+            msg.Format(_T("The %s configuration could not be updated because the Pgz File Key (%s) was not be found in the server's ini file.\n\n\nPlease contact the server owner."),AfxGetApp()->m_pszProfileName,pgz_key.c_str());
             AfxMessageBox(msg,MB_ICONEXCLAMATION | MB_OK);
 
             return false;

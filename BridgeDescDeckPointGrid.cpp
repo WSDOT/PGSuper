@@ -74,10 +74,6 @@ int CBridgeDescDeckPointGrid::GetColWidth(ROWCOL nCol)
    return CGXGridWnd::GetColWidth(nCol);
 }
 
-void CBridgeDescDeckPointGrid::OnChangedSelection(const CGXRange* pChangedRect,BOOL bIsDragging, BOOL bKey)
-{
-}
-
 void CBridgeDescDeckPointGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
 {
    if ( (nCol == 3 || nCol == 4) && nRow%2 == 0)
@@ -133,6 +129,60 @@ void CBridgeDescDeckPointGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
    }
 
    CGXGridWnd::OnEndEditing(nRow,nCol);
+}
+
+BOOL CBridgeDescDeckPointGrid::OnValidateCell(ROWCOL nRow,ROWCOL nCol)
+{
+   CGXControl* pControl = GetControl(nRow,nCol);
+   CWnd* pWnd = (CWnd*)pControl;
+
+   CString strText;
+   if ( pControl->IsInit() )
+   {
+      pControl->GetCurrentText(strText);
+   }
+   else
+   {
+      strText = GetValueRowCol(nRow,nCol);
+   }
+
+   if ( nCol == 1 )
+   {
+      // Validation station... 
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+      UnitModeType unitMode = (UnitModeType)(pDisplayUnits->GetUnitMode());
+      m_objStation->FromString(CComBSTR(strText),unitMode);
+
+      Float64 station;
+      m_objStation->get_Value(&station);
+      station = ::ConvertToSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+
+      CDeckPoint prevPoint, nextPoint;
+      prevPoint.Station = station - 100;
+      nextPoint.Station = station + 100;
+
+      if ( nRow != 1 )
+      {
+         GetPointRowData(nRow-2,&prevPoint);
+      }
+
+      ROWCOL nRows = GetRowCount();
+      if ( nRow != nRows )
+      {
+         GetPointRowData(nRow+2,&nextPoint);
+      }
+
+      if ( station <= prevPoint.Station || nextPoint.Station <= station )
+      {
+         SetWarningText(_T("Invalid station"));
+         return FALSE;
+      }
+   }
+
+	return CGXGridWnd::OnValidateCell(nRow, nCol);
 }
 
 ROWCOL CBridgeDescDeckPointGrid::AddRow()

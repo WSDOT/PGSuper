@@ -35,7 +35,7 @@ You can create your own live load trucks. Do it in the Vehicular Live Load Libra
 PGSuper supports Box Beams, Double Tee, Triple Tee, Nebraska/CalTrans/New England girders, U-Beams, I-Beams, Deck Bulb Tees, and Precast Slabs.
 You can double click on the status indicator to open the status center window
 In the Girder View, you can select a cross section by moving the cross section selection tool.
-WSDOT and TxDOT publish their Master Library and Workgroup Templates on the Internet. Use File | Program Settings to configure PGSuper to use these resources. If they are updated, PGSuper will keep you informed.
+WSDOT and TxDOT publish their PGSuper configuration in the cloud. Use File | Program Settings to configure PGSuper to use these resources. If they are updated, PGSuper will keep you informed.
 Eugene Freyssinet, a French engineer, is often referred to as the "father of prestressed concrete"
 You can find out what a PGSuper toolbar button does by letting your cursor rest over it for a few seconds.
 You can quickly change boundary conditions at a pier. Right clicking on the pier object and select the boundary condition you want.

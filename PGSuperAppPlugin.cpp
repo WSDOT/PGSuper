@@ -385,7 +385,7 @@ void CPGSuperAppPlugin::ProcessLibrarySetUp(const CPGSuperCommandLineInfo& rCmdI
    else
    {
       CString msg;
-      msg.Format(_T("Error - The catalog server \"%s\" was not found. Could not update catalog"), rCmdInfo.m_CatalogServerName);
+      msg.Format(_T("Error - The configuration server \"%s\" was not found. Could not update configuration."), rCmdInfo.m_CatalogServerName);
       AfxMessageBox(msg);
    }
 }

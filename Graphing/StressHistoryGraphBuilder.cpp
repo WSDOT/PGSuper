@@ -267,9 +267,9 @@ void CStressHistoryGraphBuilder::UpdateGraphTitle(const pgsPointOfInterest& poi)
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE(IPointOfInterest,pPoi);
 
-   SpanIndexType spanIdx;
+   CSpanKey spanKey;
    Float64 Xspan;
-   pPoi->ConvertPoiToSpanPoint(poi,&spanIdx,&Xspan);
+   pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
 
    CString strSubtitle;
    std::_tstring strAttributes = poi.GetAttributes(POI_SPAN,false);
@@ -278,7 +278,7 @@ void CStressHistoryGraphBuilder::UpdateGraphTitle(const pgsPointOfInterest& poi)
       strSubtitle.Format(_T("Group %d Girder %s Span %d (%s)"),
          LABEL_GROUP(segmentKey.groupIndex),
          LABEL_GIRDER(segmentKey.girderIndex),
-         LABEL_SPAN(spanIdx),
+         LABEL_SPAN(spanKey.spanIndex),
          FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit()));
    }
    else
@@ -286,7 +286,7 @@ void CStressHistoryGraphBuilder::UpdateGraphTitle(const pgsPointOfInterest& poi)
       strSubtitle.Format(_T("Group %d Girder %s Span %d, (%s (%s))"),
          LABEL_GROUP(segmentKey.groupIndex),
          LABEL_GIRDER(segmentKey.girderIndex),
-         LABEL_SPAN(spanIdx),
+         LABEL_SPAN(spanKey.spanIndex),
          FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit()),
          strAttributes.c_str());
    }

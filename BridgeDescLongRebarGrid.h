@@ -85,6 +85,7 @@ public:
    bool GetRowData(ROWCOL nRow, CLongitudinalRebarData::RebarRow* plsi);
    // fill grid with data
    void FillGrid(const CLongitudinalRebarData& rebarData);
+   void GetRebarData(std::vector<CLongitudinalRebarData::RebarRow>& rebarRows);
 
 private:
    // changes formating of cell when measurement type changes

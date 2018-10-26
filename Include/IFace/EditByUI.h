@@ -94,6 +94,9 @@ interface IEditByUI : IUnknown
    virtual UINT GetHelpToolBarID() = 0;
 
    // NOTE: Strand fill type must be CStrandData::sdtDirectSelection before entering this dialog
+   virtual bool EditDirectSelectionPrestressing(const CSegmentKey& segmentKey) = 0;
+
+   // NOTE: Strand fill type must be CStrandData::sdtDirectInput before entering this dialog
    virtual bool EditDirectInputPrestressing(const CSegmentKey& segmentKey) = 0;
 };
 

@@ -80,6 +80,12 @@ HRESULT RegisterAgent(bool bRegister)
       return hr;
    }
 
+   hr = sysComCatMgr::RegWithCategory(CLSID_WSDOTAgent,CATID_PGSpliceExtensionAgent,bRegister);
+   if ( FAILED(hr) )
+   {
+      return hr;
+   }
+
    hr = sysComCatMgr::RegWithCategory(CLSID_PGSuperComponentInfo,CATID_PGSuperComponentInfo,bRegister);
    if ( FAILED(hr) )
    {

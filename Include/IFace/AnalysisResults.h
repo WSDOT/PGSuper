@@ -114,7 +114,7 @@ typedef struct LinearLoad
 
 typedef struct DiaphragmLoad
 {
-   Float64 Loc;  // measured from left end of girder
+   Float64 Loc;  // measured from left end of segment if precast or left end of span if cast-in-place
    Float64 Load;
    bool operator<(const DiaphragmLoad& other) const { return Loc < other.Loc; }
 } DiaphragmLoad;
@@ -241,8 +241,9 @@ interface IProductLoads : IUnknown
 
    // diaphragm loads
    // + force is up, + moment is ccw.
-   virtual void GetIntermediateDiaphragmLoads(pgsTypes::DiaphragmType diaphragmType, const CSegmentKey& girderKey, std::vector<DiaphragmLoad>* pLoads)=0;
-   virtual void GetPierDiaphragmLoads( const pgsPointOfInterest& poi, PierIndexType pierIdx, Float64* pPback, Float64 *pMback, Float64* pPahead, Float64* pMahead) = 0;
+   virtual void GetPrecastDiaphragmLoads(const CSegmentKey& segmentKey, std::vector<DiaphragmLoad>* pLoads) = 0;
+   virtual void GetIntermediateDiaphragmLoads(const CSpanKey& spanKey, std::vector<DiaphragmLoad>* pLoads) = 0;
+   virtual void GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIndexType gdrIdx, Float64* pPback, Float64 *pMback, Float64* pPahead, Float64* pMahead) = 0;
 
    virtual std::vector<std::_tstring> GetVehicleNames(pgsTypes::LiveLoadType llType,const CGirderKey& girderKey) = 0;
 
@@ -251,6 +252,7 @@ interface IProductLoads : IUnknown
    virtual void GetShearKeyLoad(const CSegmentKey& segmentKey,std::vector<ShearKeyLoad>* pLoads)=0;
 
    virtual std::_tstring GetLiveLoadName(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex) = 0;
+   virtual pgsTypes::LiveLoadApplicabilityType GetLiveLoadApplicability(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex) = 0;
    virtual VehicleIndexType GetVehicleCount(pgsTypes::LiveLoadType llType) = 0;
    virtual Float64 GetVehicleWeight(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex) = 0;
 
@@ -695,6 +697,9 @@ interface ICamber : IUnknown
    // It is equal to the Total camber less the slab deflection.
    virtual Float64 GetDCamberForGirderSchedule(const pgsPointOfInterest& poi,Int16 time) = 0;
    virtual Float64 GetDCamberForGirderSchedule(const pgsPointOfInterest& poi,const GDRCONFIG& config,Int16 time) = 0; 
+
+   // This is the factor that the min timing camber is multiplied by the compute the lower bound camber
+   virtual Float64 GetLowerBoundCamberVariabilityFactor()const = 0;
 };
 
 
@@ -712,7 +717,7 @@ DEFINE_GUID(IID_IContraflexurePoints,
 0xa07dc9a0, 0x1dfa, 0x4a7c, 0xb8, 0x52, 0xab, 0xca, 0xf7, 0x19, 0x73, 0x6d);
 interface IContraflexurePoints : IUnknown
 {
-   virtual void GetContraflexurePoints(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* cfPoints,IndexType* nPoints) = 0;
+   virtual void GetContraflexurePoints(const CSpanKey& spanKey,Float64* cfPoints,IndexType* nPoints) = 0;
 };
 
 

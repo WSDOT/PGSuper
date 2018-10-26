@@ -409,9 +409,11 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
    bool bIsExteriorGirder = locationType != ltInteriorGirder ? true : false;
 
    GET_IFACE(IPointOfInterest,pPoi);
-   SpanIndexType spanIdx;
+   pgsPointOfInterest poi(pPoi->GetPointOfInterest(segmentKey,Xs));
+
+   CSpanKey spanKey;
    Float64 Xspan;
-   pPoi->ConvertPoiToSpanPoint(pgsPointOfInterest(segmentKey,Xs),&spanIdx,&Xspan);
+   pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
 
    // Computes effective flange width, retaining details of calculation per LRFD 4.6.2.6.1
    if ( m_bUseTribWidth == VARIANT_TRUE || lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
@@ -439,9 +441,9 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
       // (See C4.6.2.6.1, last paragraph on page 4-52... since provisions were developed for overhangs
       // < S/2, we will limit the overhang to S/2 for purposes for this calculation).
 
-      PierIndexType startPierIdx = spanIdx;
+      PierIndexType startPierIdx = spanKey.spanIndex;
       PierIndexType endPierIdx   = startPierIdx + 1;
-      GirderIndexType nGirders = pBridge->GetGirderCountBySpan(spanIdx);
+      GirderIndexType nGirders = pBridge->GetGirderCountBySpan(spanKey.spanIndex);
 
       bool bOverhangCheckFailed = false;
 
@@ -452,7 +454,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
       if ( 1 < nGirders )
       {
          // get span length
-         Float64 L = pBridge->GetSpanLength(spanIdx,segmentKey.girderIndex);
+         Float64 L = pBridge->GetSpanLength(spanKey);
 
          CSegmentKey startSegmentKey = pBridge->GetSegmentAtPier(startPierIdx,segmentKey);
          CSegmentKey endSegmentKey   = pBridge->GetSegmentAtPier(endPierIdx,  segmentKey);
@@ -488,8 +490,13 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
             leftSegmentKey.girderIndex = 0;
             rightSegmentKey.girderIndex = nGirders-1;
 
-            pgsPointOfInterest leftPoi(leftSegmentKey,Xs);
-            pgsPointOfInterest rightPoi(rightSegmentKey,Xs);
+            // get the corrosponding POI in the girder to the left and right of this girder
+            // making sure that we don't go off the end of the segment
+            Float64 left_segment_length  = pBridge->GetSegmentLength(leftSegmentKey);
+            Float64 right_segment_length = pBridge->GetSegmentLength(rightSegmentKey);
+
+            pgsPointOfInterest leftPoi = pPoi->GetPointOfInterest(leftSegmentKey,Min(Xs,left_segment_length));
+            pgsPointOfInterest rightPoi= pPoi->GetPointOfInterest(rightSegmentKey,Min(Xs,right_segment_length));
 
             GET_IFACE(IGirder,pGirder);
 

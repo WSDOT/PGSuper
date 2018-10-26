@@ -65,9 +65,10 @@ protected:
 
    // virtual overrides for grid
    int GetColWidth(ROWCOL nCol);
-   void OnChangedSelection(const CGXRange* pChangedRect,BOOL bIsDragging, BOOL bKey);
    BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
    void OnModifyCell(ROWCOL nRow,ROWCOL nCol);
+
+   BOOL OnValidateCell(ROWCOL nRow,ROWCOL nCol);
 
 public:
    // custom stuff for grid

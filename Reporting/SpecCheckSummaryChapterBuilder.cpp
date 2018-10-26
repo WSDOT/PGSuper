@@ -236,8 +236,14 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
       *pPara << color(Red) << Bold(_T("WARNING: The length of stirrups that engage the bridge deck may need special attention. Refer to the Specification Check Details for more information.")) << color(Black) << rptNewLine;
    }
 
+   // Only report stirrup length/zone incompatibility if user requests it
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   std::_tstring strSpecName = pSpec->GetSpecification();
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
+
    GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeom);
-   if ( !pStirrupGeom->AreStirrupZoneLengthsCombatible(girderKey) )
+   if ( pSpecEntry->GetDoCheckStirrupSpacingCompatibility() && !pStirrupGeom->AreStirrupZoneLengthsCombatible(girderKey) )
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
@@ -272,7 +278,8 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
       }
       else
       {
-         D = 0.5*pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME);
+         Float64 Cfactor = pCamber->GetLowerBoundCamberVariabilityFactor();
+         D = Cfactor*pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME);
       }
 
       if ( D < C )

@@ -19,15 +19,15 @@
 <meta name=topic-time-estimate content=0>
 <meta name=topic-comment content>
 <meta name=topic-id content>
-<meta name="topic-check-list" content="Ran Smart Index">
+<meta name=topic-check-list content="Ran Smart Index">
 <meta name=generator content="RoboHELP by eHelp Corporation - www.ehelp.com">
 <meta name=generator-major-version content=0.1>
 <meta name=generator-minor-version content=1>
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1336>
-<meta name=layout-width content=673>
+<meta name=layout-height content=1796>
+<meta name=layout-width content=1234>
 
 
 <!--(Links)=========================================================-->
@@ -263,6 +263,72 @@
 													height=22
 													border=0></span>.<span 
  style="margin-bottom: 0;">&nbsp; </span></p>
+
+<h3><a name=CamberVariability>Camber Variability</a></h3>
+
+<p><span style="margin-bottom: 0;">C</span>amber is notoriously difficult 
+ to predict, so a practical approach is to use a statistical range to bound 
+ upper and lower values as recommended in Reference 1 (cited below). PGSuper™ 
+ makes two camber predictions: one for a normal (maximum timing) construction 
+ scenario, and another for a fast (minimum timing) construction scenario. 
+ However, the predicted cambers in both cases are upper bound values for 
+ each given timing. That is; based on WSDOT experience and measurements 
+ taken by local fabricators, most all measured cambers are at or below 
+ these predicted values. This means that lower bound values, which can 
+ cause girders to sag, should be addressed further .</p>
+
+<p>To accommodate a lower bound camber value, PGSuper reduces the minimum 
+ timing camber using a Camber Variability (Cv) reduction factor that is 
+ input on the <a href="../User%27s Guide/Appendix B - PGSuper Library Dialogs/Creep_Tab.htm">Project 
+ Criteria library – Creep tab.</a> This allows users to modify Camber variability 
+ to compute a lower bound of excess camber as follows:</p>
+
+<p style="text-align: center;"
+	align=center><img src="CamberVariability.gif"
+						x-maintain-ratio=TRUE
+						style="border: none;
+								width: 328px;
+								height: 50px;
+								float: none;
+								border-style: none;"
+						width=328
+						height=50
+						border=0></p>
+
+<p>C<span style="vertical-align: Sub;">v</span> is entered in percent, 
+ and is valid from 0-100%</p>
+
+<p class=Tip>Tip: PGSuper will issue a warning if the computed lower bound 
+ camber is less than the screed camber to alarm users that the girder has 
+ the potential to sag if camber ends up at the lower estimate. Note that 
+ this is not an absolute predication that sag will occur: It's just a warning 
+ that a worst case scenario may end up with sag, and engineers should take 
+ steps to mitigate problems.</p>
+
+<p>The lower bound camber is an attempt to reflect natural variations in 
+ camber. When WSDOT reviewed camber data, they found most all measured 
+ cambers were enveloped between the upper bound value and 50% of the upper 
+ bound camber. This is consistent with the findings in Reference 1, and 
+ use of the 50% value is WSDOT’s standard practice.</p>
+
+<p>WSDOT does not allow contractors to cast the deck prior to the minimum 
+ timing and takes extra measures to control unrestrained camber if deck 
+ casting occurs after the maximum timing. (i.e. they have to cast the deck 
+ between 40 and 120 days). WSDOT reports to contractors, cambers at time 
+ of slab casting as Upper Bound D120 and Lower Bound D40, for deck casting 
+ at 120 days and 40 days. This envelopes the full range of cambers contractors 
+ can expect and provides guidance when bidding the amount of haunch concrete 
+ to be placed.</p>
+
+<p class=Tip>Tip: Camber range values are reported in the Camber table 
+ near the end of the Spec Check report.</p>
+
+<p style="font-weight: bold;">References</p>
+
+<p>1. A Probabilistic Comparison of Prestress Loss Methods in Prestressed 
+ Concrete Beams, PCI Journal, September-October, 2004, Volume: 49, Issue: 
+ 5 Page number: 52-69 Author(s): Christopher G. Gilbertson, Theresa M. 
+ (Tess) Ahiborn</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

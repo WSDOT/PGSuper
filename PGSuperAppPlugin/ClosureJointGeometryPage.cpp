@@ -92,6 +92,9 @@ void CClosureJointGeometryPage::Init(const CPierData2* pPierData)
    pPierData->GetBearingOffset(pgsTypes::Ahead,&m_BearingOffset,&m_BearingOffsetMeasurementType);
    m_SupportWidth = pPierData->GetSupportWidth(pgsTypes::Ahead) + pPierData->GetSupportWidth(pgsTypes::Back);
 
+   m_DiaphragmWidth = pPierData->GetDiaphragmWidth(pgsTypes::Back) + pPierData->GetDiaphragmWidth(pgsTypes::Ahead);
+   m_DiaphragmHeight = pPierData->GetDiaphragmHeight(pgsTypes::Back);
+
    m_SegmentConnectionType = pPierData->GetSegmentConnectionType();
    m_PierConnectionType = pPierData->GetPierConnectionType();
 
@@ -147,6 +150,12 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
    DDX_CBItemData(pDX,IDC_BEARING_OFFSET_MEASURE,m_BearingOffsetMeasurementType);
    DDX_CBItemData(pDX,IDC_END_DISTANCE_MEASURE,m_EndDistanceMeasurementType);
 
+   DDX_UnitValueAndTag(pDX, IDC_WIDTH, IDC_WIDTH_UNIT, m_DiaphragmWidth, pDisplayUnits->GetComponentDimUnit() );
+   DDV_UnitValueZeroOrMore(pDX, IDC_WIDTH, m_DiaphragmWidth, pDisplayUnits->GetComponentDimUnit() );
+
+   DDX_UnitValueAndTag(pDX, IDC_HEIGHT, IDC_HEIGHT_UNIT, m_DiaphragmHeight, pDisplayUnits->GetComponentDimUnit() );
+   DDV_UnitValueZeroOrMore(pDX, IDC_HEIGHT, m_DiaphragmHeight, pDisplayUnits->GetComponentDimUnit() );
+
    if ( m_bIsPier )
    {
       // Boundary Conditions
@@ -195,6 +204,13 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
          pParent->m_pPier->SetSupportWidth(pgsTypes::Back,m_SupportWidth/2);
          pParent->m_pPier->SetSegmentConnectionType(m_SegmentConnectionType,m_ClosureJointEventIndex);
          pParent->m_pPier->SetPierConnectionType(m_PierConnectionType);
+
+         pParent->m_pPier->SetDiaphragmHeight(pgsTypes::Back,m_DiaphragmHeight);
+         pParent->m_pPier->SetDiaphragmHeight(pgsTypes::Ahead,m_DiaphragmHeight);
+         pParent->m_pPier->SetDiaphragmWidth(pgsTypes::Back,m_DiaphragmWidth/2);
+         pParent->m_pPier->SetDiaphragmWidth(pgsTypes::Ahead,m_DiaphragmWidth/2);
+         pParent->m_pPier->SetDiaphragmLoadType(pgsTypes::Back,ConnectionLibraryEntry::ApplyAtBearingCenterline);
+         pParent->m_pPier->SetDiaphragmLoadType(pgsTypes::Ahead,ConnectionLibraryEntry::ApplyAtBearingCenterline);
       }
       else
       {
@@ -243,6 +259,14 @@ BOOL CClosureJointGeometryPage::OnInitDialog()
    {
       GetDlgItem(IDC_BOUNDARY_CONDITION_LABEL)->ShowWindow(SW_HIDE);
       m_cbBoundaryCondition.ShowWindow(SW_HIDE);
+
+      GetDlgItem(IDC_DIAPHRAGM_GROUP)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_HEIGHT_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_HEIGHT)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_HEIGHT_UNIT)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_WIDTH_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_WIDTH)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_WIDTH_UNIT)->ShowWindow(SW_HIDE);
    }
 
    return TRUE;  // return TRUE unless you set the focus to a control
@@ -290,6 +314,7 @@ void CClosureJointGeometryPage::OnConnectionTypeChanged()
 
    GetDlgItem(IDC_EVENT)->ShowWindow(showWindow);
    GetDlgItem(IDC_EVENT_LABEL)->ShowWindow(showWindow);
+   GetDlgItem(IDC_EVENT_NOTE)->ShowWindow(showWindow);
 }
 
 void CClosureJointGeometryPage::UpdateConnectionPicture()

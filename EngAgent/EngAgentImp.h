@@ -186,29 +186,29 @@ public:
 // ILiveLoadDistributionFactors
 public:
    virtual void VerifyDistributionFactorRequirements(const pgsPointOfInterest& poi);
-   virtual Float64 GetMomentDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState);
-   virtual Float64 GetNegMomentDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState);
+   virtual Float64 GetMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState);
+   virtual Float64 GetNegMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState);
    virtual Float64 GetNegMomentDistFactorAtPier(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,pgsTypes::PierFaceType pierFace);
-   virtual Float64 GetShearDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState);
+   virtual Float64 GetShearDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState);
    virtual Float64 GetReactionDistFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState);
-   virtual Float64 GetMomentDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,Float64 fcgdr);
-   virtual Float64 GetNegMomentDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,Float64 fcgdr);
+   virtual Float64 GetMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState,Float64 fcgdr);
+   virtual Float64 GetNegMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState,Float64 fcgdr);
    virtual Float64 GetNegMomentDistFactorAtPier(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState lsr,pgsTypes::PierFaceType pierFace,Float64 fcgdr);
-   virtual Float64 GetShearDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,Float64 fcgdr);
+   virtual Float64 GetShearDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState,Float64 fcgdr);
    virtual Float64 GetReactionDistFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,Float64 fcgdr);
-   virtual void GetNegMomentDistFactorPoints(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* dfPoints,IndexType* nPoints);
+   virtual void GetNegMomentDistFactorPoints(const CSpanKey& spanKey,Float64* dfPoints,IndexType* nPoints);
    virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,Float64* pM,Float64* nM,Float64* V);
    virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,Float64 fcgdr,Float64* pM,Float64* nM,Float64* V);
    virtual void ReportDistributionFactors(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   virtual bool Run1250Tests(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile);
+   virtual bool Run1250Tests(const CSpanKey& spanKey,pgsTypes::LimitState limitState,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile);
    virtual Uint32 GetNumberOfDesignLanes(SpanIndexType spanIdx);
    virtual Uint32 GetNumberOfDesignLanesEx(SpanIndexType spanIdx,Float64* pDistToSection,Float64* pCurbToCurb);
-   virtual bool GetDFResultsEx(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,
+   virtual bool GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState limitState,
                        Float64* gpM, Float64* gpM1, Float64* gpM2,  // pos moment
                        Float64* gnM, Float64* gnM1, Float64* gnM2,  // neg moment, ahead face
                        Float64* gV,  Float64* gV1,  Float64* gV2,   // shear
                        Float64* gR,  Float64* gR1,  Float64* gR2 ); // reaction
-   virtual Float64 GetDeflectionDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual Float64 GetDeflectionDistFactor(const CSpanKey& spanKey);
 
 // IMomentCapacity
 public:

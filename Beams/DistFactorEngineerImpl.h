@@ -70,16 +70,16 @@ class CDistFactorEngineerImpl : public IDistFactorEngineer, public IInitialize
 {
 public:
    virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID);
-   virtual Float64 GetMomentDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls);
+   virtual Float64 GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls);
    virtual Float64 GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace);
-   virtual Float64 GetShearDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls);
+   virtual Float64 GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls);
    virtual Float64 GetReactionDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls);
-   virtual Float64 GetMomentDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr);
+   virtual Float64 GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr);
    virtual Float64 GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr);
-   virtual Float64 GetShearDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr);
+   virtual Float64 GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr);
    virtual Float64 GetReactionDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr);
-   virtual bool Run1250Tests(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile);
-   virtual bool GetDFResultsEx(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,
+   virtual bool Run1250Tests(const CSpanKey& spanKey,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile);
+   virtual bool GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState ls,
                                Float64* gpM, Float64* gpM1, Float64* gpM2,  // pos moment
                                Float64* gnM, Float64* gnM1, Float64* gnM2,  // neg moment, ahead face
                                Float64* gV,  Float64* gV1,  Float64* gV2,   // shear
@@ -130,10 +130,10 @@ protected:
    void GetPierReactionDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr,REACTIONDETAILS* plldf);
 
    std::map<SpanGirderHashType,SPANDETAILS> m_SpanLLDF[2]; // index is limit state type
-   void GetSpanDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr,SPANDETAILS* plldf);
+   void GetSpanDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr,SPANDETAILS* plldf);
 
    Float64 GetEffectiveSpanLength(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType);
-   void GetGirderSpacingAndOverhang(SpanIndexType spanIdx,GirderIndexType gdrIdx,DFParam dfType,BASE_LLDFDETAILS* pDetails);
+   void GetGirderSpacingAndOverhang(const CSpanKey& spanKey,DFParam dfType,BASE_LLDFDETAILS* pDetails);
 
    virtual lrfdLiveLoadDistributionFactorBase* GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,T* plldf) = 0;
 
@@ -157,18 +157,18 @@ void CDistFactorEngineerImpl<T>::SetBroker(IBroker* pBroker,StatusGroupIDType st
 }
 
 template <class T>
-Float64 CDistFactorEngineerImpl<T>::GetMomentDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls)
+Float64 CDistFactorEngineerImpl<T>::GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls)
 {
    SPANDETAILS lldf;
-   GetSpanDF(spanIdx,gdrIdx,ls,USE_CURRENT_FC,&lldf);
+   GetSpanDF(spanKey,ls,USE_CURRENT_FC,&lldf);
    return lldf.gM;
 }
 
 template <class T>
-Float64 CDistFactorEngineerImpl<T>::GetMomentDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr)
+Float64 CDistFactorEngineerImpl<T>::GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr)
 {
    SPANDETAILS lldf;
-   GetSpanDF(spanIdx,gdrIdx,ls,fcgdr,&lldf);
+   GetSpanDF(spanKey,ls,fcgdr,&lldf);
    return lldf.gM;
 }
 
@@ -176,7 +176,7 @@ template <class T>
 Float64 CDistFactorEngineerImpl<T>::GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace)
 {
    PIERDETAILS lldf;
-   GetPierDF(pierIdx,gdrIdx,ls,pierFace,-1,&lldf);
+   GetPierDF(pierIdx,gdrIdx,ls,pierFace,USE_CURRENT_FC,&lldf);
    return lldf.gM;
 }
 
@@ -189,18 +189,18 @@ Float64 CDistFactorEngineerImpl<T>::GetNegMomentDF(PierIndexType pierIdx,GirderI
 }
 
 template <class T>
-Float64 CDistFactorEngineerImpl<T>::GetShearDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls)
+Float64 CDistFactorEngineerImpl<T>::GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls)
 {
    SPANDETAILS lldf;
-   GetSpanDF(spanIdx,gdrIdx,ls,USE_CURRENT_FC,&lldf);
+   GetSpanDF(spanKey,ls,USE_CURRENT_FC,&lldf);
    return lldf.gV;
 }
 
 template <class T>
-Float64 CDistFactorEngineerImpl<T>::GetShearDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr)
+Float64 CDistFactorEngineerImpl<T>::GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr)
 {
    SPANDETAILS lldf;
-   GetSpanDF(spanIdx,gdrIdx,ls,fcgdr,&lldf);
+   GetSpanDF(spanKey,ls,fcgdr,&lldf);
    return lldf.gV;
 }
 
@@ -438,10 +438,10 @@ void CDistFactorEngineerImpl<T>::GetPierDF(PierIndexType pierIdx,GirderIndexType
 
 
 template <class T>
-void CDistFactorEngineerImpl<T>::GetSpanDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr,SPANDETAILS* plldf)
+void CDistFactorEngineerImpl<T>::GetSpanDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr,SPANDETAILS* plldf)
 {
    std::map<SpanGirderHashType,SPANDETAILS>::iterator found;
-   found = m_SpanLLDF[LimitStateType(ls)].find(::HashSpanGirder(spanIdx,gdrIdx));
+   found = m_SpanLLDF[LimitStateType(ls)].find(::HashSpanGirder(spanKey.spanIndex,spanKey.girderIndex));
    if ( found != m_SpanLLDF[LimitStateType(ls)].end() && fcgdr == USE_CURRENT_FC )
    {
       *plldf = (*found).second;
@@ -452,7 +452,7 @@ void CDistFactorEngineerImpl<T>::GetSpanDF(SpanIndexType spanIdx,GirderIndexType
    GET_IFACE(IBridgeDescription,pBridgeDesc);
    pgsTypes::DistributionFactorMethod df_method = pBridgeDesc->GetBridgeDescription()->GetDistributionFactorMethod();
 
-   std::auto_ptr<lrfdLiveLoadDistributionFactorBase> pLLDF( GetLLDFParameters(spanIdx,gdrIdx,dfSpan,fcgdr,plldf) );
+   std::auto_ptr<lrfdLiveLoadDistributionFactorBase> pLLDF( GetLLDFParameters(spanKey.spanIndex,spanKey.girderIndex,dfSpan,fcgdr,plldf) );
 
    lrfdILiveLoadDistributionFactor::Location loc;
    loc =  plldf->bExteriorGirder ? lrfdILiveLoadDistributionFactor::ExtGirder : lrfdILiveLoadDistributionFactor::IntGirder;
@@ -587,7 +587,7 @@ void CDistFactorEngineerImpl<T>::GetSpanDF(SpanIndexType spanIdx,GirderIndexType
       HandleRangeOfApplicabilityError(e);
    }
 
-   m_SpanLLDF[LimitStateType(ls)].insert( std::make_pair(::HashSpanGirder(spanIdx,gdrIdx),*plldf) );
+   m_SpanLLDF[LimitStateType(ls)].insert( std::make_pair(::HashSpanGirder(spanKey.spanIndex,spanKey.girderIndex),*plldf) );
 }
 
 template <class T>
@@ -673,48 +673,53 @@ void CDistFactorEngineerImpl<T>::GetIndicies(IndexType spanOrPierIdx,DFParam dfT
 }
 
 template <class T>
-void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(SpanIndexType spanIdx,GirderIndexType gdrIdx,DFParam dfType,BASE_LLDFDETAILS* pDetails)
+void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(const CSpanKey& spanKey,DFParam dfType,BASE_LLDFDETAILS* pDetails)
 {
-   GET_IFACE(IBridge,pBridge);
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
-   GET_IFACE(IBarriers, pBarriers);
-   GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
+   GET_IFACE(IBridge,                      pBridge);
+   GET_IFACE(ILibrary,                     pLib);
+   GET_IFACE(ISpecification,               pSpec);
+   GET_IFACE(IBarriers,                    pBarriers);
+   GET_IFACE(ILiveLoadDistributionFactors, pLLDF);
+   GET_IFACE(IPointOfInterest,             pPoi);
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
+   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
    pDetails->Nb = pGroup->GetGirderCount();
 
-   pDetails->gdrNum = gdrIdx;
-   pDetails->bExteriorGirder = pGroup->IsExteriorGirder(gdrIdx);
-   pDetails->Side = (gdrIdx <= pDetails->Nb/2) ? dfLeft : dfRight; // center goes left
+   pDetails->gdrNum = spanKey.girderIndex;
+   pDetails->bExteriorGirder = pGroup->IsExteriorGirder(spanKey.girderIndex);
+   pDetails->Side = (spanKey.girderIndex <= pDetails->Nb/2) ? dfLeft : dfRight; // center goes left
 
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    pDetails->Method = pSpecEntry->GetLiveLoadDistributionMethod();
 
    Float64 dist_to_section_along_cl_span, curb_to_curb;
-   Uint32 Nl = pLLDF->GetNumberOfDesignLanesEx(spanIdx,&dist_to_section_along_cl_span,&curb_to_curb);
+   Uint32 Nl = pLLDF->GetNumberOfDesignLanesEx(spanKey.spanIndex,&dist_to_section_along_cl_span,&curb_to_curb);
    pDetails->wCurbToCurb = curb_to_curb;
    pDetails->Nl = Nl;
 
    // Get sampling locations for values.
-   Float64 span_length = pBridge->GetSpanLength(spanIdx,gdrIdx);
+   Float64 span_length = pBridge->GetSpanLength(spanKey);
 
    Float64 span_fraction_for_girder_spacing = pSpecEntry->GetLLDFGirderSpacingLocation();
    Float64 loc1 = span_fraction_for_girder_spacing*span_length;
    Float64 loc2 = (1-span_fraction_for_girder_spacing)*span_length;
 
    Float64 ctrl_loc_from_gdr;
-   if ( dist_to_section_along_cl_span <= pBridge->GetSpanLength(spanIdx)/2 )
+   if ( dist_to_section_along_cl_span <= pBridge->GetSpanLength(spanKey.spanIndex)/2 )
+   {
       ctrl_loc_from_gdr = Min(loc1,loc2);
+   }
    else
+   {
       ctrl_loc_from_gdr = Max(loc1,loc2);
+   }
 
    CSegmentKey segmentKey;
    Float64 Xs;
-   pBridge->GetSegmentLocation(spanIdx,gdrIdx,ctrl_loc_from_gdr,&segmentKey,&Xs);
+   pPoi->ConvertSpanPointToSegmentCoordiante(spanKey,ctrl_loc_from_gdr,&segmentKey,&Xs);
 
    pgsPointOfInterest ctrl_poi(segmentKey,Xs);
 
@@ -723,7 +728,7 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(SpanIndexType spanI
    pBridge->GetStationAndOffset(ctrl_poi,&ctrl_station, &ctrl_offset);
 
    // IBridge functions need span distance measured from CL pier to our girder station
-   PierIndexType pierIdx = spanIdx;
+   PierIndexType pierIdx = spanKey.spanIndex;
    Float64 pier_station = pBridge->GetPierStation(pierIdx); // station of start pier
 
    Float64 ctrl_pier_span_loc = ctrl_station - pier_station;
@@ -741,8 +746,8 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(SpanIndexType spanI
    }
    else
    {
-      pDetails->leftSlabOverhang  = pBridge->GetLeftSlabOverhang(spanIdx,ctrl_pier_span_loc);
-      pDetails->rightSlabOverhang = pBridge->GetRightSlabOverhang(spanIdx,ctrl_pier_span_loc);
+      pDetails->leftSlabOverhang  = pBridge->GetLeftSlabOverhang(spanKey.spanIndex,ctrl_pier_span_loc);
+      pDetails->rightSlabOverhang = pBridge->GetRightSlabOverhang(spanKey.spanIndex,ctrl_pier_span_loc);
    }
 
    pDetails->leftCurbOverhang  = pDetails->leftSlabOverhang  - pBarriers->GetInterfaceWidth(pgsTypes::tboLeft);
@@ -759,7 +764,7 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(SpanIndexType spanI
    else
    {
       // Spacings normal to alignment
-      std::vector<SpaceBetweenGirder> vSpacing = pBridge->GetGirderSpacing(spanIdx, ctrl_pier_span_loc);
+      std::vector<SpaceBetweenGirder> vSpacing = pBridge->GetGirderSpacing(ctrl_station);
       for (std::vector<SpaceBetweenGirder>::iterator itsg=vSpacing.begin(); itsg!=vSpacing.end(); itsg++)
       {
          const SpaceBetweenGirder& rspace = *itsg;
@@ -807,7 +812,7 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(SpanIndexType spanI
    SpanIndexType next_span = INVALID_INDEX;
    PierIndexType prev_pier = INVALID_INDEX;
    PierIndexType next_pier = INVALID_INDEX;
-   GetIndicies(spanIdx,dfType,curr_span,curr_pier,prev_span,next_span,prev_pier,next_pier);
+   GetIndicies(spanKey.spanIndex,dfType,curr_span,curr_pier,prev_span,next_span,prev_pier,next_pier);
 
    CComPtr<IAngle> skew1, skew2;
    if ( dfType == dfSpan )
@@ -930,44 +935,44 @@ Float64 CDistFactorEngineerImpl<T>::GetEffectiveSpanLength(IndexType spanOrPierI
 }
 
 template <class T>
-bool CDistFactorEngineerImpl<T>::Run1250Tests(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile)
+bool CDistFactorEngineerImpl<T>::Run1250Tests(const CSpanKey& spanKey,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
-      const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
+      const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
 
-      if ( pGroup->IsInteriorGirder(gdrIdx) )
+      if ( pGroup->IsInteriorGirder(spanKey.girderIndex) )
       {
          Float64 M,V;
-         M = pSpan->GetLLDFPosMoment(gdrIdx,ls);
-         V = pSpan->GetLLDFShear(gdrIdx,ls);
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12054, 0.0, ")<<M<<_T(", 2, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12055, 0.0, ")<<M<<_T(", 2, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12056, 0.0, ")<<V<<_T(", 2, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12057, 0.0, ")<<V<<_T(", 2, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12058, 0.0, ")<<M<<_T(", 2, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12059, 0.0, ")<<M<<_T(", 2, ")<<gdrIdx<<std::endl;
+         M = pSpan->GetLLDFPosMoment(spanKey.girderIndex,ls);
+         V = pSpan->GetLLDFShear(spanKey.girderIndex,ls);
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12054, 0.0, ")<<M<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12055, 0.0, ")<<M<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12056, 0.0, ")<<V<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12057, 0.0, ")<<V<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12058, 0.0, ")<<M<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12059, 0.0, ")<<M<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
       }
       else
       {
          Float64 M,V;
-         M = pSpan->GetLLDFPosMoment(gdrIdx,ls);
-         V = pSpan->GetLLDFShear(gdrIdx,ls);
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12024, 0.0, ")<<M<<_T(", 2, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12025, 0.0, ")<<M<<_T(", 2, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12026, 0.0, ")<<V<<_T(", 2, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12027, 0.0, ")<<V<<_T(", 2, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12028, 0.0, ")<<M<<_T(", 2, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12029, 0.0, ")<<M<<_T(", 2, ")<<gdrIdx<<std::endl;
+         M = pSpan->GetLLDFPosMoment(spanKey.girderIndex,ls);
+         V = pSpan->GetLLDFShear(spanKey.girderIndex,ls);
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12024, 0.0, ")<<M<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12025, 0.0, ")<<M<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12026, 0.0, ")<<V<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12027, 0.0, ")<<V<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12028, 0.0, ")<<M<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12029, 0.0, ")<<M<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
       }
    }
    else
    {
       SPANDETAILS gdet;
-      GetSpanDF(spanIdx,gdrIdx,ls,USE_CURRENT_FC,&gdet);
+      GetSpanDF(spanKey,ls,USE_CURRENT_FC,&gdet);
 
       if ( gdet.bExteriorGirder )
       {
@@ -979,12 +984,12 @@ bool CDistFactorEngineerImpl<T>::Run1250Tests(SpanIndexType spanIdx,GirderIndexT
          lrfdILiveLoadDistributionFactor::DFResult dde1 = mde1;  // deflection same as moment
          lrfdILiveLoadDistributionFactor::DFResult dde2 = mde2;
 
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12024, 0.0, ")<<mde1.mg<<_T(", 2, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12025, 0.0, ")<<mde2.mg<<_T(", 2, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12026, 0.0, ")<<sde1.mg<<_T(", 2, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12027, 0.0, ")<<sde2.mg<<_T(", 2, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12028, 0.0, ")<<dde1.mg<<_T(", 2, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12029, 0.0, ")<<dde2.mg<<_T(", 2, ")<<gdrIdx<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12024, 0.0, ")<<mde1.mg<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12025, 0.0, ")<<mde2.mg<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12026, 0.0, ")<<sde1.mg<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12027, 0.0, ")<<sde2.mg<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12028, 0.0, ")<<dde1.mg<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12029, 0.0, ")<<dde2.mg<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
       }
       else
       {
@@ -996,38 +1001,38 @@ bool CDistFactorEngineerImpl<T>::Run1250Tests(SpanIndexType spanIdx,GirderIndexT
          lrfdILiveLoadDistributionFactor::DFResult ddi1 = mdi1;
          lrfdILiveLoadDistributionFactor::DFResult ddi2 = mdi2;
 
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12054, 0.0, ")<<mdi1.mg<<_T(", 2, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12055, 0.0, ")<<mdi2.mg<<_T(", 2, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12056, 0.0, ")<<sdi1.mg<<_T(", 2, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12057, 0.0, ")<<sdi2.mg<<_T(", 2, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12058, 0.0, ")<<ddi1.mg<<_T(", 2, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12059, 0.0, ")<<ddi2.mg<<_T(", 2, ")<<gdrIdx<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12054, 0.0, ")<<mdi1.mg<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12055, 0.0, ")<<mdi2.mg<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12056, 0.0, ")<<sdi1.mg<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12057, 0.0, ")<<sdi2.mg<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12058, 0.0, ")<<ddi1.mg<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12059, 0.0, ")<<ddi2.mg<<_T(", 2, ")<<spanKey.girderIndex<<std::endl;
       }
    }
 
    return true;
 }
 template <class T>
-bool CDistFactorEngineerImpl<T>::GetDFResultsEx(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,
+bool CDistFactorEngineerImpl<T>::GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState ls,
                                                 Float64* gpM, Float64* gpM1, Float64* gpM2,  // pos moment
                                                 Float64* gnM, Float64* gnM1, Float64* gnM2,  // neg moment, ahead face
                                                 Float64* gV,  Float64* gV1,  Float64* gV2,   // shear
                                                 Float64* gR,  Float64* gR1,  Float64* gR2 )  // reaction
 {
-   PierIndexType pierIdx = spanIdx;
+   PierIndexType pierIdx = spanKey.spanIndex;
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
-      const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
+      const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
-      pgsTypes::GirderLocation gloc = pGroup->IsInteriorGirder(gdrIdx) ? pgsTypes::Interior : pgsTypes::Exterior;
+      pgsTypes::GirderLocation gloc = pGroup->IsInteriorGirder(spanKey.girderIndex) ? pgsTypes::Interior : pgsTypes::Exterior;
 
       Float64 pM, nM, V;
-      pM = pSpan->GetLLDFPosMoment(gdrIdx,ls);
-      nM = pSpan->GetLLDFNegMoment(gdrIdx,ls);
-      V  = pSpan->GetLLDFShear(gdrIdx,ls);
+      pM = pSpan->GetLLDFPosMoment(spanKey.girderIndex,ls);
+      nM = pSpan->GetLLDFNegMoment(spanKey.girderIndex,ls);
+      V  = pSpan->GetLLDFShear(spanKey.girderIndex,ls);
    
       *gpM  = pM;
       *gpM1 = pM;
@@ -1045,7 +1050,7 @@ bool CDistFactorEngineerImpl<T>::GetDFResultsEx(SpanIndexType spanIdx,GirderInde
    else
    {
       SPANDETAILS gdet;
-      GetSpanDF(spanIdx,gdrIdx,ls,USE_CURRENT_FC,&gdet);
+      GetSpanDF(spanKey,ls,USE_CURRENT_FC,&gdet);
 
       *gpM  = gdet.gM;
       *gpM1 = gdet.gM1.mg;
@@ -1055,14 +1060,14 @@ bool CDistFactorEngineerImpl<T>::GetDFResultsEx(SpanIndexType spanIdx,GirderInde
       *gV2  = gdet.gV2.mg;
 
       PIERDETAILS pdet;
-      GetPierDF(pierIdx,gdrIdx,ls,pgsTypes::Ahead,-1,&pdet);
+      GetPierDF(pierIdx,spanKey.girderIndex,ls,pgsTypes::Ahead,USE_CURRENT_FC,&pdet);
 
       *gnM  = pdet.gM;
       *gnM1 = pdet.gM1.mg;
       *gnM2 = pdet.gM2.mg;
 
       REACTIONDETAILS rdet;
-      GetPierReactionDF(pierIdx,gdrIdx,ls,-1,&rdet);
+      GetPierReactionDF(pierIdx,spanKey.girderIndex,ls,USE_CURRENT_FC,&rdet);
 
       *gR   = rdet.gR;
       *gR1  = rdet.gR1.mg;

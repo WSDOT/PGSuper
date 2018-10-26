@@ -787,6 +787,34 @@ pgsTypes::SupportedBeamSpacings CDeckedSlabBeamFactory::GetSupportedBeamSpacings
    return sbs;
 }
 
+pgsTypes::SupportedDiaphragmTypes CDeckedSlabBeamFactory::GetSupportedDiaphragms()
+{
+   // only supports adjacent spacing so there can only be precast diaphragms
+   pgsTypes::SupportedDiaphragmTypes diaphragmTypes;
+   diaphragmTypes.push_back(pgsTypes::dtPrecast);
+   return diaphragmTypes;
+}
+
+pgsTypes::SupportedDiaphragmLocationTypes CDeckedSlabBeamFactory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type)
+{
+   pgsTypes::SupportedDiaphragmLocationTypes locations;
+   switch(type)
+   {
+   case pgsTypes::dtPrecast :
+      locations.push_back(pgsTypes::dltInternal);
+      break;
+
+   case pgsTypes::dtCastInPlace :
+      locations.push_back(pgsTypes::dltExternal);
+      break;
+
+   default:
+      ATLASSERT(false);
+   }
+
+   return locations;
+}
+
 void CDeckedSlabBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, 
                                                pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing)
 {

@@ -208,6 +208,11 @@ pgsPointOfInterest& pgsPointOfInterest::operator= (const pgsPointOfInterest& rOt
    return *this;
 }
 
+bool pgsPointOfInterest::operator<=(const pgsPointOfInterest& rOther) const
+{
+   return *this < rOther || *this == rOther;
+}
+
 bool pgsPointOfInterest::operator<(const pgsPointOfInterest& rOther) const
 {
    if ( AtSamePlace(rOther) && IsTenthPoint(POI_SPAN) == 11 && rOther.IsTenthPoint(POI_SPAN) == 1 )
@@ -248,7 +253,7 @@ bool pgsPointOfInterest::operator<(const pgsPointOfInterest& rOther) const
 
 bool pgsPointOfInterest::operator==(const pgsPointOfInterest& rOther) const
 {
-   if ( m_ID == rOther.m_ID && AtSamePlace(rOther) )
+   if ( AtSamePlace(rOther) )
    {
       return true;
    }
@@ -496,6 +501,12 @@ bool pgsPointOfInterest::IsReferenceAttribute(PoiAttributeType attrib)
 
 bool pgsPointOfInterest::MergeAttributes(const pgsPointOfInterest& rOther)
 {
+   if ( (rOther.HasAttribute(POI_SECTCHANGE_LEFTFACE) || rOther.HasAttribute(POI_SECTCHANGE_RIGHTFACE)) && m_Xpoi != rOther.m_Xpoi )
+   {
+      // can only merge a poi with section change attribute into this poi if they are at the exact same location
+      return false;
+   }
+
    m_Attributes |= rOther.m_Attributes;
    for ( int i = 0; i < 6; i++ )
    {

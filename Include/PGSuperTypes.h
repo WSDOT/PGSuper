@@ -137,9 +137,17 @@ struct pgsTypes
 
    typedef enum DiaphragmType
    {
-      dtPrecast, // cast with the girder (like U beams or Box Beams)
-      dtCastInPlace // cast with the deck
+      dtPrecast,    // cast with the girder (like U beams or Box Beams)
+      dtCastInPlace // cast at the time of deck casting
    } DiaphragmType;
+   typedef std::vector<DiaphragmType> SupportedDiaphragmTypes;
+
+   typedef enum DiaphragmLocationType
+   {
+      dltInternal, // cast between webs (like U beams or inside of Box Beams
+      dltExternal  // cast between girders, with the deck
+   } DiaphragmLocationType;
+   typedef std::vector<DiaphragmLocationType> SupportedDiaphragmLocationTypes;
 
    typedef enum OptimizationType
    {
@@ -239,6 +247,8 @@ struct pgsTypes
       lltPermitRating_Routine = 6,  // for routine permit load ratings
       lltPermitRating_Special = 7   // for special permit load ratings
    } LiveLoadType;
+
+   typedef enum LiveLoadApplicabilityType { llaEntireStructure, llaContraflexure, llaNegMomentAndInteriorPierReaction } LiveLoadApplicabilityType;
 
    typedef enum DebondLengthControl   // which criteria controlled for max debond length
    {mdbDefault, mbdFractional, mdbHardLength} DebondLengthControl;

@@ -241,6 +241,9 @@ BOOL CSpanGirderLayoutPage::OnInitDialog()
    FillRefGirderComboBox(pgsTypes::metStart);
    FillRefGirderComboBox(pgsTypes::metEnd);
 
+   FillRefGirderOffsetTypeComboBox(pgsTypes::metStart);
+   FillRefGirderOffsetTypeComboBox(pgsTypes::metEnd);
+
    CPropertyPage::OnInitDialog();
 
    // Initialize the spinner control for # of girder lines

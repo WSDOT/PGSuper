@@ -102,6 +102,11 @@ interface IPointOfInterest : public IUnknown
    // the closure joint or exactly on the end faces of the segment.
    virtual bool IsInClosureJoint(const pgsPointOfInterest& poi) = 0;
 
+   // returns true if the poi is on/off the segment. This determination is made based soley on
+   // the location of the poi and the length of the segment
+   virtual bool IsOnSegment(const pgsPointOfInterest& poi) = 0;
+   virtual bool IsOffSegment(const pgsPointOfInterest& poi) = 0;
+
 
    //////////////////////////////
    // Conversion Methods
@@ -152,8 +157,16 @@ interface IPointOfInterest : public IUnknown
    //virtual Float64 ConvertGirderlineCoordinateToGirderPathCoordinate(const CGirderKey& girderKey,Float46 Xgl) = 0;
 
    // Converts between Span Point and Poi
-   virtual pgsPointOfInterest ConvertSpanPointToPoi(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64 Xspan) = 0;
-   virtual void ConvertPoiToSpanPoint(const pgsPointOfInterest& poi,SpanIndexType* pSpanIdx,Float64* pXspan) = 0;
+   virtual pgsPointOfInterest ConvertSpanPointToPoi(const CSpanKey& spanKey,Float64 Xspan) = 0;
+   virtual void ConvertPoiToSpanPoint(const pgsPointOfInterest& poi,CSpanKey* pSpanKey,Float64* pXspan) = 0;
+
+   // Converts Span Point to Segment Coordiante
+   virtual void ConvertSpanPointToSegmentCoordiante(const CSpanKey& spanKey,Float64 Xspan,CSegmentKey* pSegmentKey,Float64* pXs) = 0;
+   virtual void ConvertSegmentCoordinateToSpanPoint(const CSegmentKey& segmentKey,Float64 Xs,CSpanKey* pSpanKey,Float64* pXspan) = 0;
+
+   // Converts Span Point to Segment Path Coordiante
+   virtual void ConvertSpanPointToSegmentPathCoordiante(const CSpanKey& spanKey,Float64 Xspan,CSegmentKey* pSegmentKey,Float64* pXsp) = 0;
+   virtual void ConvertSegmentPathCoordinateToSpanPoint(const CSegmentKey& segmentKey,Float64 Xsp,CSpanKey* pSpanKey,Float64* pXspan) = 0;
 };
 
 /*****************************************************************************

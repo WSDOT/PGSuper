@@ -89,32 +89,7 @@ void CServerDefinitionDlg::DoDataExchange(CDataExchange* pDX)
 {
    CDialog::DoDataExchange(pDX);
 
-   //// map dialog data to server type
-   //int server_type;
-   //if ( !pDX->m_bSaveAndValidate)
-   //{
-   //   if (m_ServerType==InternetFtp)
-   //      server_type=0;
-   //   else if (m_ServerType==InternetHttp)
-   //      server_type=1;
-   //   else if (m_ServerType==Local)
-   //      server_type=2;
-   //   else
-   //      ATLASSERT(false);
-   //}
-   //DDX_CBItemData
    DDX_CBItemData(pDX, IDC_SERVER_TYPE, m_ServerType);
-   //if ( pDX->m_bSaveAndValidate)
-   //{
-   //   if (server_type==0)
-   //      m_ServerType=InternetFtp; 
-   //   else if (server_type==1)
-   //      m_ServerType=InternetHttp;
-   //   else if (server_type==2)
-   //      m_ServerType=Local;
-   //   else
-   //      ATLASSERT(false);
-   //}
 
    //{{AFX_DATA_MAP(CServerDefinitionDlg)
    DDX_Text(pDX, IDC_NAME, m_ServerName);
@@ -126,13 +101,17 @@ void CServerDefinitionDlg::DoDataExchange(CDataExchange* pDX)
    DDX_FilenameValue(pDX, m_ctrlLibraryFile, m_LocalMasterLibraryFile);
 
    if ( pDX->m_bSaveAndValidate && m_ServerType==srtLocal )
+   {
       DDV_FilenameControl(pDX, m_ctrlLibraryFile);
+   }
 
    DDX_FolderControl(pDX, IDC_WORKGROUP_TEMPLATE_LOCATION, IDC_WORKGROUP_TEMPLATE_BROWSE, m_ctrlWorkgroupFolder, 0, "Please specify a folder");
    DDX_FolderValue(pDX, m_ctrlWorkgroupFolder, m_LocalWorkgroupTemplateFolder);
 
    if ( pDX->m_bSaveAndValidate && m_ServerType==srtLocal )
+   {
       DDV_FolderControl(pDX, m_ctrlWorkgroupFolder, GFLDR_FOLDER_MUST_EXIST);
+   }
 
    if ( pDX->m_bSaveAndValidate )
    {
@@ -173,6 +152,10 @@ END_MESSAGE_MAP()
 
 BOOL CServerDefinitionDlg::OnInitDialog() 
 {
+   CString strText;
+   strText.Format(_T("%s Configuration Server Definition"),AfxGetApp()->m_pszProfileName);
+   SetWindowText(strText);
+
    CComboBox* ptype_ctrl = (CComboBox*)GetDlgItem(IDC_SERVER_TYPE);
    ASSERT(ptype_ctrl!=0);
    int idx = ptype_ctrl->AddString(_T("Internet FTP Server"));

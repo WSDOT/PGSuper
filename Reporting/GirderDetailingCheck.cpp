@@ -109,7 +109,17 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
    // Stirrup Layout Check
    if ( !m_BasicVersion )
    {
-      BuildStirrupLayoutCheck(pChapter, pBroker, pGirderArtifact, pDisplayUnits);
+      // Only report stirrup length/zone incompatibility if user requests it
+      GET_IFACE2(pBroker,ISpecification,pSpec);
+      GET_IFACE2(pBroker,ILibrary,pLib);
+      std::_tstring strSpecName = pSpec->GetSpecification();
+      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
+
+      if ( pSpecEntry->GetDoCheckStirrupSpacingCompatibility() )
+      {
+         // Stirrup Layout Check
+         BuildStirrupLayoutCheck(pChapter, pBroker, pGirderArtifact, pDisplayUnits);
+      }
    }
 }
 

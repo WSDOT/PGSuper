@@ -40,7 +40,6 @@ public:
  	CPsLossEngineer()
 	{
       m_bComputingLossesForDesign = false;
-      m_bCachedLossesForTxDOT2013 = false;
 	}
 
    void Init(IBroker* pBroker,StatusGroupIDType statusGroupID);
@@ -173,10 +172,6 @@ private:
    std::vector<pgsPointOfInterest> GetPointsOfInterest(const CGirderKey& girderKey);
 
    bool m_bComputingLossesForDesign; 
-
-   // For TxDOT 2013 we can cache losses for many conditions because all losses are computed at mid-span
-   bool m_bCachedLossesForTxDOT2013; 
-   LOSSDETAILS m_CachedTxDOT2013LossDetails;
 };
 
 #endif //__PSLOSSENGINEER_H_

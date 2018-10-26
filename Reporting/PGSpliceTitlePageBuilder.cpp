@@ -220,7 +220,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificat
       *p << rptNewLine << rptNewLine;
    }
 
-   *p << _T("Library Usage") << rptNewLine;
+   *p << _T("Configuration") << rptNewLine;
    p = CLibraryUsageParagraph().Build(m_pBroker);
    *pTitlePage << p;
 

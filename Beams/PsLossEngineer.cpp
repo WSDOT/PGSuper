@@ -664,33 +664,22 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
 
 void CPsLossEngineer::LossesByRefinedEstimateTxDOT2013(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses)
 {
-   if (m_bCachedLossesForTxDOT2013)
-   {
-      // Simplified - we can use cached values from mid-girder
-      *pLosses = m_CachedTxDOT2013LossDetails;
-   }
-   else
-   {
-      // Compute details - This is a bit tricky: We practically need to compute losses in order to determine which method to use
-      //                   for elastic shortening. So might as well save on code and compute them - then figure out if we can cache
-      //                   This may be first time through, so we'll check on the back side and; if we are using the 
-      //                   simplified method, we need to recompute at mid-girder and then cache the value
-      lrfdElasticShortening::FcgpComputationMethod method = LossesByRefinedEstimateTxDOT2013_Compute(beamType,poi,config,pLosses);
+   // Compute details - This is a bit tricky: We practically need to compute losses in order to determine which method to use
+   //                   for elastic shortening. So might as well save on code and compute them - then figure out if we can cache
+   //                   This may be first time through, so we'll check on the back side and; if we are using the 
+   //                   simplified method, we need to recompute at mid-girder
+   lrfdElasticShortening::FcgpComputationMethod method = LossesByRefinedEstimateTxDOT2013_Compute(beamType,poi,config,pLosses);
 
-      if(method == lrfdElasticShortening::fcgp07Fpu)
-      {
-         // Elastic shortening uses the 0.7Fpu method. We only need to compute at mid-girder and then cache results for other locations
+   if(method == lrfdElasticShortening::fcgp07Fpu)
+   {
+      // Elastic shortening uses the 0.7Fpu method. We only need to compute at mid-girder and then cache results for other locations
          GET_IFACE( IPointOfInterest, pPoi);
          std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest( poi.GetSegmentKey(), POI_RELEASED_SEGMENT | POI_5L) );
-         pgsPointOfInterest midpoi = vPoi[0];
+         ATLASSERT(vPoi.size() == 1);
+         pgsPointOfInterest midpoi = vPoi.front();
 
-         lrfdElasticShortening::FcgpComputationMethod newmethod = LossesByRefinedEstimateTxDOT2013_Compute(beamType, midpoi, config, &m_CachedTxDOT2013LossDetails);
-         ATLASSERT(newmethod == lrfdElasticShortening::fcgp07Fpu);
-
-         *pLosses = m_CachedTxDOT2013LossDetails;
-
-         m_bCachedLossesForTxDOT2013 = true;
-      }
+      lrfdElasticShortening::FcgpComputationMethod newmethod = LossesByRefinedEstimateTxDOT2013_Compute(beamType, midpoi, config, pLosses);
+      ATLASSERT(newmethod == lrfdElasticShortening::fcgp07Fpu);
    }
 }
 

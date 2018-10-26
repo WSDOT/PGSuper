@@ -1045,6 +1045,11 @@ UINT CPGSuperDocProxyAgent::GetHelpToolBarID()
    return m_HelpToolBarID;
 }
 
+bool CPGSuperDocProxyAgent::EditDirectSelectionPrestressing(const CSegmentKey& segmentKey)
+{
+   return m_pMyDocument->EditDirectSelectionPrestressing(segmentKey);
+}
+
 bool CPGSuperDocProxyAgent::EditDirectInputPrestressing(const CSegmentKey& segmentKey)
 {
    return m_pMyDocument->EditDirectInputPrestressing(segmentKey);

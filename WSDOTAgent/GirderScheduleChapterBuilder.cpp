@@ -571,8 +571,10 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    }
    else
    {
-      D = 0.5*pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME);
-      (*p_table)(++row,0) << _T("Lower bound camber at ")<< min_days<<_T(" days, 50% of D") <<Sub(min_days);
+      Float64 Cfactor = pCamber->GetLowerBoundCamberVariabilityFactor();
+      D = Cfactor*pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME);
+      (*p_table)(++row,0) << _T("Lower bound camber at ")<< min_days<<_T(" days, ")<<Cfactor*100<<_T("% of D") <<Sub(min_days);
+
       if ( D < 0 )
       {
          (*p_table)(row  ,1) << color(Red) << gdim.SetValue(D) << color(Black);

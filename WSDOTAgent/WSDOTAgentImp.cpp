@@ -30,6 +30,7 @@
 #include <Reporting\SpecCheckSummaryChapterBuilder.h>
 
 #include <IFace\StatusCenter.h>
+#include <IFace\DocumentType.h>
 #include <IReportManager.h>
 
 #include "GirderScheduleChapterBuilder.h"
@@ -83,27 +84,31 @@ STDMETHODIMP CWSDOTAgentImp::Init2()
    // Create report spec builders
    //
    boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder( new CGirderReportSpecificationBuilder(m_pBroker,CGirderKey(0,0)) );
-   boost::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder( new CMultiViewSpanGirderReportSpecificationBuilder(m_pBroker) );
 
-   // WSDOT Girder Schedule
-   CReportBuilder* pRptBuilder = new CReportBuilder(_T("WSDOT Girder Schedule"));
-   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
-   pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CGirderScheduleChapterBuilder) );
-   pRptMgr->AddReportBuilder( pRptBuilder );
+   GET_IFACE(IDocumentType,pDocType);
+   if ( pDocType->IsPGSuperDocument() )
+   {
+      boost::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder( new CMultiViewSpanGirderReportSpecificationBuilder(m_pBroker) );
 
-   // WSDOT Summary Report
-   pRptBuilder = new CReportBuilder(_T("WSDOT Summary Report"));
-   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
-   pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(true)) ); // may have to move this chapter to a common DLL
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CInputSummaryChapter) );
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new COutputSummaryChapter) );
-   pRptMgr->AddReportBuilder( pRptBuilder );
+      // WSDOT Girder Schedule
+      CReportBuilder* pRptBuilder = new CReportBuilder(_T("WSDOT Girder Schedule"));
+      pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
+      pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
+      pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CGirderScheduleChapterBuilder) );
+      pRptMgr->AddReportBuilder( pRptBuilder );
+
+      // WSDOT Summary Report
+      pRptBuilder = new CReportBuilder(_T("WSDOT Summary Report"));
+      pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
+      pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
+      pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(true)) ); // may have to move this chapter to a common DLL
+      pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CInputSummaryChapter) );
+      pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new COutputSummaryChapter) );
+      pRptMgr->AddReportBuilder( pRptBuilder );
+   }
 
    // WSDOT Load Rating Summary
-   pRptBuilder = new CReportBuilder(_T("WSDOT Load Rating Summary"));
-//   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false)) );
+   CReportBuilder* pRptBuilder = new CReportBuilder(_T("WSDOT Load Rating Summary"));
    pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLoadRatingSummaryChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder );

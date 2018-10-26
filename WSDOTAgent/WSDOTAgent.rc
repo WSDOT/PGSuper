@@ -59,8 +59,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,14
- PRODUCTVERSION 3,0,0,14
+ FILEVERSION 3,0,0,15
+ PRODUCTVERSION 3,0,0,15
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -78,12 +78,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "WSDOTAgent Module"
-            VALUE "FileVersion", "3.0.0.14"
+            VALUE "FileVersion", "3.0.0.15"
             VALUE "InternalName", "WSDOTAgent"
             VALUE "OriginalFilename", "PGSuperWSDOTAgent.DLL"
             VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.14"
+            VALUE "ProductVersion", "3.0.0.15"
         END
     END
     BLOCK "VarFileInfo"

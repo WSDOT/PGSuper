@@ -88,8 +88,10 @@ void CBoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChap
 
    for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
    {
+      CSpanKey spanKey(spanIdx,gdrIdx);
+
       SPANDETAILS span_lldf;
-      GetSpanDF(spanIdx,gdrIdx,pgsTypes::StrengthI,USE_CURRENT_FC,&span_lldf);
+      GetSpanDF(spanKey,pgsTypes::StrengthI,USE_CURRENT_FC,&span_lldf);
 
       PierIndexType pier1 = spanIdx;
       PierIndexType pier2 = spanIdx+1;
@@ -886,6 +888,8 @@ lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameter
    PierIndexType prev_pier = INVALID_INDEX;
    PierIndexType next_pier = INVALID_INDEX;
    GetIndicies(spanOrPierIdx,dfType,span,pier,prev_span,next_span,prev_pier,next_pier);
+
+   CSpanKey spanKey(span,gdrIdx);
    
    const CSpanData2* pSpan = pBridgeDesc->GetSpan(span);
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
@@ -899,10 +903,10 @@ lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameter
 
    ///////////////////////////////////////////////////////////////////////////
    // Determine overhang and spacing information
-   GetGirderSpacingAndOverhang(span,gdrIdx,dfType, plldf);
+   GetGirderSpacingAndOverhang(spanKey,dfType, plldf);
 
    // get poi at controlling location
-   pgsPointOfInterest poi = pPoi->ConvertSpanPointToPoi(span,gdrIdx,plldf->ControllingLocation);
+   pgsPointOfInterest poi = pPoi->ConvertSpanPointToPoi(spanKey,plldf->ControllingLocation);
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    // Throws exception if fails requirement (no need to catch it)

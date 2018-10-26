@@ -127,7 +127,7 @@ private:
    CSegmentModelData* GetReleaseModel(const CSegmentKey& segmentKey);
    CSegmentModelData* GetStorageModel(const CSegmentKey& segmentKey);
 
-   CSegmentModelData BuildSegmentModel(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 leftSupportDistance,Float64 rightSupportDistance);
+   CSegmentModelData BuildSegmentModel(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 leftSupportDistance,Float64 rightSupportDistance,PoiAttributeType refAttribute);
    PoiIDType AddPointOfInterest(SegmentModels& models,const pgsPointOfInterest& poi);
 
    void ApplyPretensionLoad(CSegmentModelData* pModelData,const CSegmentKey& segmentKey);

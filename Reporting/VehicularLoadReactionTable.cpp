@@ -79,6 +79,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
                                                VehicleIndexType vehicleIndex, 
                                                pgsTypes::AnalysisType analysisType,
                                                bool bReportTruckConfig,
+                                               bool bIncludeRotations,
                                                IEAFDisplayUnits* pDisplayUnits) const
 
 {
@@ -90,8 +91,6 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
-   IntervalIndexType intervalIdx = (IsRatingLiveLoad(llType) ? pIntervals->GetLoadRatingInterval(girderKey) : pIntervals->GetLiveLoadInterval(girderKey) );
-
    bool bPermit = false;
 
    PierIndexType nPiers = pBridge->GetPierCount();
@@ -101,15 +100,31 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
    PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(startGroupIdx);
    PierIndexType endPierIdx   = pBridge->GetGirderGroupEndPier(  endGroupIdx);
 
-   ColumnIndexType nCols = 5;
+   ColumnIndexType nCols = 3;
 
    if ( bReportTruckConfig )
    {
       nCols += 4;
    }
 
-   std::_tstring title(_T("Live Load Reactions and Rotations for ") + strLLName);
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,title.c_str());
+
+   if ( bIncludeRotations )
+   {
+      nCols += 2;
+   }
+
+   std::_tstring strTitle;
+   if ( bIncludeRotations )
+   {
+      strTitle = _T("Live Load Reactions and Rotations for ") + strLLName;
+   }
+   else
+   {
+      strTitle = _T("Live Load Reactions for ") + strLLName;
+   }
+
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,strTitle);
+
 
    // Set up table headings
    ColumnIndexType col = 0;
@@ -128,19 +143,25 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
       (*p_table)(0,col++) << _T("Reaction") << rptNewLine << _T("Min") << rptNewLine << _T("Config");
    }
 
-   (*p_table)(0,col++) << COLHDR(_T("Rotation") << rptNewLine << _T("Max"),   rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit() );
-
-   if ( bReportTruckConfig )
+   if ( bIncludeRotations )
    {
-      (*p_table)(0,col++) << _T("Rotation") << rptNewLine << _T("Max") << rptNewLine << _T("Config");
-   }
-
-   (*p_table)(0,col++) << COLHDR(_T("Rotation") << rptNewLine << _T("Min"),   rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit() );
-
-
-   if ( bReportTruckConfig )
-   {
-      (*p_table)(0,col++) << _T("Rotation") << rptNewLine << _T("Min") << rptNewLine << _T("Config");
+      (*p_table)(0,col++) << COLHDR(_T("Rotation") << rptNewLine << _T("Max"),   rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit() );
+   
+   
+   
+      if ( bReportTruckConfig )
+      {
+         (*p_table)(0,col++) << _T("Rotation") << rptNewLine << _T("Max") << rptNewLine << _T("Config");
+      }
+   
+      (*p_table)(0,col++) << COLHDR(_T("Rotation") << rptNewLine << _T("Min"),   rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit() );
+   
+   
+      if ( bReportTruckConfig )
+      {
+         (*p_table)(0,col++) << _T("Rotation") << rptNewLine << _T("Min") << rptNewLine << _T("Config");
+   
+      }
    }
 
    // Get POI at start and end of the span
@@ -161,7 +182,6 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
       }
    }
 
-   GET_IFACE2(pBroker,IProductForces,pForces);
    GET_IFACE2(pBroker,IReactions,pReactions);
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
@@ -181,6 +201,8 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
             thisGirderKey.groupIndex = pPier->GetPrevGirderGroup()->GetIndex();
          }
       }
+
+      IntervalIndexType intervalIdx = (IsRatingLiveLoad(llType) ? pIntervals->GetLoadRatingInterval(thisGirderKey) : pIntervals->GetLiveLoadInterval(thisGirderKey) );
 
       col = 0;
       pgsPointOfInterest& poi = vPoi[pier-startPierIdx];
@@ -207,20 +229,25 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
             CVehicularLoadResultsTable::ReportTruckConfiguration(minConfig,p_table,row,col++,pDisplayUnits);
          }
 
-         pForces->GetVehicularLiveLoadRotation( intervalIdx, llType, vehicleIndex, poi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
-         (*p_table)(row,col++) << rotation.SetValue( Rmax );
-
-         if ( bReportTruckConfig )
+         if ( bIncludeRotations )
          {
-            CVehicularLoadResultsTable::ReportTruckConfiguration(maxConfig,p_table,row,col++,pDisplayUnits);
-         }
-
-         pForces->GetVehicularLiveLoadRotation( intervalIdx, llType, vehicleIndex, poi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
-         (*p_table)(row,col++) << rotation.SetValue( Rmin );
-
-         if ( bReportTruckConfig )
-         {
-            CVehicularLoadResultsTable::ReportTruckConfiguration(minConfig,p_table,row,col++,pDisplayUnits);
+            GET_IFACE2(pBroker,IProductForces,pForces);
+   
+            pForces->GetVehicularLiveLoadRotation( intervalIdx, llType, vehicleIndex, poi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
+            (*p_table)(row,col++) << rotation.SetValue( Rmax );
+   
+            if ( bReportTruckConfig )
+            {
+               CVehicularLoadResultsTable::ReportTruckConfiguration(maxConfig,p_table,row,col++,pDisplayUnits);
+            }
+   
+            pForces->GetVehicularLiveLoadRotation( intervalIdx, llType, vehicleIndex, poi, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
+            (*p_table)(row,col++) << rotation.SetValue( Rmin );
+   
+            if ( bReportTruckConfig )
+            {
+               CVehicularLoadResultsTable::ReportTruckConfiguration(minConfig,p_table,row,col++,pDisplayUnits);
+            }
          }
       }
       else
@@ -242,19 +269,25 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
             CVehicularLoadResultsTable::ReportTruckConfiguration(minConfig,p_table,row,col++,pDisplayUnits);
          }
 
-         pForces->GetVehicularLiveLoadRotation( intervalIdx, llType, vehicleIndex, poi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
-         (*p_table)(row,col++) << rotation.SetValue( Rmax );
-
-         if ( bReportTruckConfig )
+         if ( bIncludeRotations )
          {
-            CVehicularLoadResultsTable::ReportTruckConfiguration(maxConfig,p_table,row,col++,pDisplayUnits);
-         }
+            GET_IFACE2(pBroker,IProductForces,pForces);
 
-         (*p_table)(row,col++) << rotation.SetValue( Rmin );
-
-         if ( bReportTruckConfig )
-         {
-            CVehicularLoadResultsTable::ReportTruckConfiguration(minConfig,p_table,row,col++,pDisplayUnits);
+            pForces->GetVehicularLiveLoadRotation( intervalIdx, llType, vehicleIndex, poi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
+            (*p_table)(row,col++) << rotation.SetValue( Rmax );
+   
+            if ( bReportTruckConfig )
+            {
+               CVehicularLoadResultsTable::ReportTruckConfiguration(maxConfig,p_table,row,col++,pDisplayUnits);
+            }
+   
+            (*p_table)(row,col++) << rotation.SetValue( Rmin );
+   
+            if ( bReportTruckConfig )
+            {
+               CVehicularLoadResultsTable::ReportTruckConfiguration(minConfig,p_table,row,col++,pDisplayUnits);
+   
+            }
          }
       }
 

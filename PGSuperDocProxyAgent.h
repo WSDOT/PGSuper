@@ -251,6 +251,7 @@ public:
    virtual UINT GetStdToolBarID();
    virtual UINT GetLibToolBarID();
    virtual UINT GetHelpToolBarID();
+   virtual bool EditDirectSelectionPrestressing(const CSegmentKey& segmentKey);
    virtual bool EditDirectInputPrestressing(const CSegmentKey& segmentKey);
 
 // IEditByUIEx

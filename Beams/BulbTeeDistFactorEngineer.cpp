@@ -70,14 +70,14 @@ void CBulbTeeDistFactorEngineer::SetBroker(IBroker* pBroker,StatusGroupIDType st
 }
 
 
-Float64 CBulbTeeDistFactorEngineer::GetMomentDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls)
+Float64 CBulbTeeDistFactorEngineer::GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls)
 {
-   return m_pImpl->GetMomentDF(spanIdx,gdrIdx,ls);
+   return m_pImpl->GetMomentDF(spanKey,ls);
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetMomentDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr)
+Float64 CBulbTeeDistFactorEngineer::GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr)
 {
-   return m_pImpl->GetMomentDF(spanIdx, gdrIdx, ls, fcgdr);
+   return m_pImpl->GetMomentDF(spanKey, ls, fcgdr);
 }
 
 Float64 CBulbTeeDistFactorEngineer::GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace)
@@ -90,14 +90,14 @@ Float64 CBulbTeeDistFactorEngineer::GetNegMomentDF(PierIndexType pierIdx,GirderI
    return m_pImpl->GetNegMomentDF(pierIdx,gdrIdx,ls,pierFace,fcgdr);
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetShearDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls)
+Float64 CBulbTeeDistFactorEngineer::GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls)
 {
-   return m_pImpl->GetShearDF(spanIdx,gdrIdx,ls);
+   return m_pImpl->GetShearDF(spanKey,ls);
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetShearDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr)
+Float64 CBulbTeeDistFactorEngineer::GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr)
 {
-   return m_pImpl->GetShearDF(spanIdx,gdrIdx,ls,fcgdr);
+   return m_pImpl->GetShearDF(spanKey,ls,fcgdr);
 }
 
 Float64 CBulbTeeDistFactorEngineer::GetReactionDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls)
@@ -115,18 +115,18 @@ void CBulbTeeDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChap
    m_pImpl->BuildReport(girderKey,pChapter,pDisplayUnits);
 }
 
-bool CBulbTeeDistFactorEngineer::Run1250Tests(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile)
+bool CBulbTeeDistFactorEngineer::Run1250Tests(const CSpanKey& spanKey,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile)
 {
-   return m_pImpl->Run1250Tests(spanIdx,gdrIdx,ls,pid,bridgeId,resultsFile,poiFile);
+   return m_pImpl->Run1250Tests(spanKey,ls,pid,bridgeId,resultsFile,poiFile);
 }
 
-bool CBulbTeeDistFactorEngineer::GetDFResultsEx(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,
+bool CBulbTeeDistFactorEngineer::GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState ls,
                                Float64* gpM, Float64* gpM1, Float64* gpM2,
                                Float64* gnM, Float64* gnM1, Float64* gnM2,
                                Float64* gV,  Float64* gV1,  Float64* gV2,
                                Float64* gR,  Float64* gR1,  Float64* gR2 ) 
 {
-   return m_pImpl->GetDFResultsEx(spanIdx,gdrIdx, ls,
+   return m_pImpl->GetDFResultsEx(spanKey, ls,
                                gpM, gpM1, gpM2, gnM, gnM1, gnM2,
                                gV,  gV1, gV2, gR, gR1, gR2 ); 
 }

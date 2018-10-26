@@ -1999,9 +1999,9 @@ void CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi)
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IPointOfInterest,pIPoi);
 
-   SpanIndexType spanIdx;
+   CSpanKey spanKey;
    Float64 Xspan;
-   pIPoi->ConvertPoiToSpanPoint(poi,&spanIdx,&Xspan);
+   pIPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
 
    SpanIndexType nSpans = pBridge->GetSpanCount();
 
@@ -2027,7 +2027,7 @@ void CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi)
    // Ok, there are curves in the alignment
    // The angle subtended by a span is equal to the change in tangent bearings between the
    // start and end of the span.
-   PierIndexType start_pier = PierIndexType(spanIdx); // start pier has same id as span
+   PierIndexType start_pier = PierIndexType(spanKey.spanIndex); // start pier has same id as span
    PierIndexType end_pier = start_pier+1;
    Float64 start_station = pBridge->GetPierStation(start_pier); 
    Float64 end_station   = pBridge->GetPierStation(end_pier);
@@ -2236,83 +2236,83 @@ void CEngAgentImp::CheckParallelGirderRequirements(const pgsPointOfInterest& poi
    } // next segment
 }
 
-Float64 CEngAgentImp::GetMomentDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState)
+Float64 CEngAgentImp::GetMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
+   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
    if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
-      return pSpan->GetLLDFPosMoment(gdrIdx,limitState);
+      return pSpan->GetLLDFPosMoment(spanKey.girderIndex,limitState);
    }
    else
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
-      CGirderKey girderKey(pGroup->GetIndex(),gdrIdx);
+      CGirderKey girderKey(pGroup->GetIndex(),spanKey.girderIndex);
       ValidateLiveLoadDistributionFactors(girderKey);
 
-      return m_pDistFactorEngineer->GetMomentDF(spanIdx,gdrIdx,limitState);
+      return m_pDistFactorEngineer->GetMomentDF(spanKey,limitState);
    }
 }
 
-Float64 CEngAgentImp::GetMomentDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,Float64 fcgdr)
+Float64 CEngAgentImp::GetMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState,Float64 fcgdr)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
+   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
    if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
-      return pSpan->GetLLDFPosMoment(gdrIdx,limitState);
+      return pSpan->GetLLDFPosMoment(spanKey.girderIndex,limitState);
    }
    else
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
-      CGirderKey girderKey(pGroup->GetIndex(),gdrIdx);
+      CGirderKey girderKey(pGroup->GetIndex(),spanKey.girderIndex);
       ValidateLiveLoadDistributionFactors(girderKey);
 
-      return m_pDistFactorEngineer->GetMomentDF(spanIdx,gdrIdx,limitState,fcgdr);
-   }
-}
-   
-Float64 CEngAgentImp::GetNegMomentDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState)
-{
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-
-   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
-   if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
-   {
-      return pSpan->GetLLDFNegMoment(gdrIdx,limitState);
-   }
-   else
-   {
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
-      CGirderKey girderKey(pGroup->GetIndex(),gdrIdx);
-      ValidateLiveLoadDistributionFactors(girderKey);
-
-      return m_pDistFactorEngineer->GetMomentDF(spanIdx,gdrIdx,limitState);
+      return m_pDistFactorEngineer->GetMomentDF(spanKey,limitState,fcgdr);
    }
 }
    
-Float64 CEngAgentImp::GetNegMomentDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,Float64 fcgdr)
+Float64 CEngAgentImp::GetNegMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
+   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
    if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
-      return pSpan->GetLLDFNegMoment(gdrIdx,limitState);
+      return pSpan->GetLLDFNegMoment(spanKey.girderIndex,limitState);
    }
    else
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
-      CGirderKey girderKey(pGroup->GetIndex(),gdrIdx);
+      CGirderKey girderKey(pGroup->GetIndex(),spanKey.girderIndex);
       ValidateLiveLoadDistributionFactors(girderKey);
 
-      return m_pDistFactorEngineer->GetMomentDF(spanIdx,gdrIdx,limitState,fcgdr);
+      return m_pDistFactorEngineer->GetMomentDF(spanKey,limitState);
+   }
+}
+   
+Float64 CEngAgentImp::GetNegMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState,Float64 fcgdr)
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
+   if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
+   {
+      return pSpan->GetLLDFNegMoment(spanKey.girderIndex,limitState);
+   }
+   else
+   {
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
+      CGirderKey girderKey(pGroup->GetIndex(),spanKey.girderIndex);
+      ValidateLiveLoadDistributionFactors(girderKey);
+
+      return m_pDistFactorEngineer->GetMomentDF(spanKey,limitState,fcgdr);
    }
 }
    
@@ -2358,45 +2358,45 @@ Float64 CEngAgentImp::GetNegMomentDistFactorAtPier(PierIndexType pierIdx,GirderI
    }
 }
 
-Float64 CEngAgentImp::GetShearDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState)
+Float64 CEngAgentImp::GetShearDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
+   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
 
    if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
-      pgsTypes::GirderLocation gl = pGroup->IsExteriorGirder(gdrIdx) ? pgsTypes::Exterior : pgsTypes::Interior;
-      return pSpan->GetLLDFShear(gdrIdx,limitState);
+      pgsTypes::GirderLocation gl = pGroup->IsExteriorGirder(spanKey.girderIndex) ? pgsTypes::Exterior : pgsTypes::Interior;
+      return pSpan->GetLLDFShear(spanKey.girderIndex,limitState);
    }
    else
    {
-      CGirderKey girderKey(pGroup->GetIndex(),gdrIdx);
+      CGirderKey girderKey(pGroup->GetIndex(),spanKey.girderIndex);
       ValidateLiveLoadDistributionFactors(girderKey);
 
-      return m_pDistFactorEngineer->GetShearDF(spanIdx,gdrIdx,limitState);
+      return m_pDistFactorEngineer->GetShearDF(spanKey,limitState);
    }
 }
 
-Float64 CEngAgentImp::GetShearDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,Float64 fcgdr)
+Float64 CEngAgentImp::GetShearDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState,Float64 fcgdr)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
+   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
 
    if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
-      pgsTypes::GirderLocation gl = pGroup->IsExteriorGirder(gdrIdx) ? pgsTypes::Exterior : pgsTypes::Interior;
-      return pSpan->GetLLDFShear(gdrIdx,limitState);
+      pgsTypes::GirderLocation gl = pGroup->IsExteriorGirder(spanKey.girderIndex) ? pgsTypes::Exterior : pgsTypes::Interior;
+      return pSpan->GetLLDFShear(spanKey.girderIndex,limitState);
    }
    else
    {
-      CGirderKey girderKey(pGroup->GetIndex(),gdrIdx);
+      CGirderKey girderKey(pGroup->GetIndex(),spanKey.girderIndex);
       ValidateLiveLoadDistributionFactors(girderKey);
 
-      return m_pDistFactorEngineer->GetShearDF(spanIdx,gdrIdx,limitState,fcgdr);
+      return m_pDistFactorEngineer->GetShearDF(spanKey,limitState,fcgdr);
    }
 }
 
@@ -2448,13 +2448,11 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE(IPointOfInterest,pPOI);
-   SpanIndexType spanIdx;
+   CSpanKey spanKey;
    Float64 Xspan;
-   pPOI->ConvertPoiToSpanPoint(poi,&spanIdx,&Xspan);
+   pPOI->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
 
-   GirderIndexType gdrIdx = segmentKey.girderIndex;
-
-   PierIndexType prev_pier = PierIndexType(spanIdx);
+   PierIndexType prev_pier = PierIndexType(spanKey.spanIndex);
    PierIndexType next_pier = prev_pier + 1;
 
    SpanIndexType nSpans = pBridge->GetSpanCount();
@@ -2464,14 +2462,14 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
 
    Float64 dfPoints[2];
    IndexType nPoints;
-   GetNegMomentDistFactorPoints(spanIdx,gdrIdx,&dfPoints[0],&nPoints);
+   GetNegMomentDistFactorPoints(spanKey,&dfPoints[0],&nPoints);
 
-   *V  = GetShearDistFactor(spanIdx,gdrIdx,limitState);
-   *pM = GetMomentDistFactor(spanIdx,gdrIdx,limitState);
+   *V  = GetShearDistFactor(spanKey,limitState);
+   *pM = GetMomentDistFactor(spanKey,limitState);
 
    if ( nPoints == 0 )
    {
-      *nM = GetNegMomentDistFactor(spanIdx,gdrIdx,limitState);
+      *nM = GetNegMomentDistFactor(spanKey,limitState);
    }
    else if ( nPoints == 1 )
    {
@@ -2487,12 +2485,12 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
          if ( bContinuousOnLeft || bContinuousOnRight || bIntegralOnRight )
          {
             //Integral to the left of this point... use DF at prev pier
-            *nM = GetNegMomentDistFactorAtPier(prev_pier,gdrIdx,limitState,pgsTypes::Ahead);
+            *nM = GetNegMomentDistFactorAtPier(prev_pier,spanKey.girderIndex,limitState,pgsTypes::Ahead);
          }
          else
          {
             // hinged to the left of this point... use DF for the span
-            *nM = GetNegMomentDistFactor(spanIdx,gdrIdx,limitState);
+            *nM = GetNegMomentDistFactor(spanKey,limitState);
          }
       }
       else
@@ -2507,12 +2505,12 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
          if ( bContinuousOnLeft || bContinuousOnRight || bIntegralOnLeft )
          {
             // hinged to the left of this point... use DF at the next pier
-            *nM = GetNegMomentDistFactorAtPier(next_pier,gdrIdx,limitState,pgsTypes::Back);
+            *nM = GetNegMomentDistFactorAtPier(next_pier,spanKey.girderIndex,limitState,pgsTypes::Back);
          }
          else
          {
             // Integral to the left of this point... use DF for the span
-            *nM = GetNegMomentDistFactor(spanIdx,gdrIdx,limitState);
+            *nM = GetNegMomentDistFactor(spanKey,limitState);
          }
       }
    }
@@ -2520,15 +2518,15 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
    {
       if ( dist_from_start < dfPoints[0] )
       {
-         *nM = GetNegMomentDistFactorAtPier(prev_pier,gdrIdx,limitState,pgsTypes::Ahead);
+         *nM = GetNegMomentDistFactorAtPier(prev_pier,spanKey.girderIndex,limitState,pgsTypes::Ahead);
       }
       else if ( dfPoints[0] <= dist_from_start && dist_from_start <= dfPoints[1] )
       {
-         *nM = GetNegMomentDistFactor(spanIdx,gdrIdx,limitState);
+         *nM = GetNegMomentDistFactor(spanKey,limitState);
       }
       else
       {
-         *nM = GetNegMomentDistFactorAtPier(next_pier,gdrIdx,limitState,pgsTypes::Back);
+         *nM = GetNegMomentDistFactorAtPier(next_pier,spanKey.girderIndex,limitState,pgsTypes::Back);
       }
    }
 }
@@ -2539,13 +2537,11 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE(IPointOfInterest,pPOI);
-   SpanIndexType spanIdx;
+   CSpanKey spanKey;
    Float64 Xspan;
-   pPOI->ConvertPoiToSpanPoint(poi,&spanIdx,&Xspan);
+   pPOI->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
 
-   GirderIndexType gdrIdx = segmentKey.girderIndex;
-
-   PierIndexType prev_pier = PierIndexType(spanIdx);
+   PierIndexType prev_pier = PierIndexType(spanKey.spanIndex);
    PierIndexType next_pier = prev_pier + 1;
 
    SpanIndexType nSpans = pBridge->GetSpanCount();
@@ -2555,14 +2551,14 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
 
    Float64 dfPoints[2];
    IndexType nPoints;
-   GetNegMomentDistFactorPoints(spanIdx,gdrIdx,&dfPoints[0],&nPoints);
+   GetNegMomentDistFactorPoints(spanKey,&dfPoints[0],&nPoints);
 
-   *V  = GetShearDistFactor(spanIdx,gdrIdx,limitState,fcgdr);
-   *pM = GetMomentDistFactor(spanIdx,gdrIdx,limitState,fcgdr);
+   *V  = GetShearDistFactor(spanKey,limitState,fcgdr);
+   *pM = GetMomentDistFactor(spanKey,limitState,fcgdr);
 
    if ( nPoints == 0 )
    {
-      *nM = GetNegMomentDistFactor(spanIdx,gdrIdx,limitState,fcgdr);
+      *nM = GetNegMomentDistFactor(spanKey,limitState,fcgdr);
    }
    else if ( nPoints == 1 )
    {
@@ -2578,12 +2574,12 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
          if ( bContinuousOnLeft || bContinuousOnRight || bIntegralOnLeft || bIntegralOnRight )
          {
             //Integral to the left of this point... use DF at prev pier
-            *nM = GetNegMomentDistFactorAtPier(prev_pier,gdrIdx,limitState,pgsTypes::Ahead,fcgdr);
+            *nM = GetNegMomentDistFactorAtPier(prev_pier,spanKey.girderIndex,limitState,pgsTypes::Ahead,fcgdr);
          }
          else
          {
             // hinged to the left of this point... use DF for the span
-            *nM = GetNegMomentDistFactor(spanIdx,gdrIdx,limitState,fcgdr);
+            *nM = GetNegMomentDistFactor(spanKey,limitState,fcgdr);
          }
       }
       else
@@ -2598,12 +2594,12 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
          if ( bContinuousOnLeft || bContinuousOnRight || bIntegralOnLeft || bIntegralOnRight )
          {
             // Integral to the left of this point... use DF for the span
-            *nM = GetNegMomentDistFactor(spanIdx,gdrIdx,limitState,fcgdr);
+            *nM = GetNegMomentDistFactor(spanKey,limitState,fcgdr);
          }
          else
          {
             // hinged to the left of this point... use DF at the next pier
-            *nM = GetNegMomentDistFactorAtPier(next_pier,gdrIdx,limitState,pgsTypes::Back,fcgdr);
+            *nM = GetNegMomentDistFactorAtPier(next_pier,spanKey.girderIndex,limitState,pgsTypes::Back,fcgdr);
          }
       }
    }
@@ -2611,23 +2607,23 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
    {
       if ( dist_from_start < dfPoints[0] )
       {
-         *nM = GetNegMomentDistFactorAtPier(prev_pier,gdrIdx,limitState,pgsTypes::Ahead,fcgdr);
+         *nM = GetNegMomentDistFactorAtPier(prev_pier,spanKey.girderIndex,limitState,pgsTypes::Ahead,fcgdr);
       }
       else if ( dfPoints[0] <= dist_from_start && dist_from_start <= dfPoints[1] )
       {
-         *nM = GetNegMomentDistFactor(spanIdx,gdrIdx,limitState,fcgdr);
+         *nM = GetNegMomentDistFactor(spanKey,limitState,fcgdr);
       }
       else
       {
-         *nM = GetNegMomentDistFactorAtPier(next_pier,gdrIdx,limitState,pgsTypes::Back,fcgdr);
+         *nM = GetNegMomentDistFactorAtPier(next_pier,spanKey.girderIndex,limitState,pgsTypes::Back,fcgdr);
       }
    }
 }
 
-void CEngAgentImp::GetNegMomentDistFactorPoints(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* dfPoints,IndexType* nPoints)
+void CEngAgentImp::GetNegMomentDistFactorPoints(const CSpanKey& spanKey,Float64* dfPoints,IndexType* nPoints)
 {
    GET_IFACE(IContraflexurePoints,pCP);
-   pCP->GetContraflexurePoints(spanIdx,gdrIdx,dfPoints,nPoints);
+   pCP->GetContraflexurePoints(spanKey,dfPoints,nPoints);
 }
 
 void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
@@ -2808,20 +2804,20 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
    }
 }
 
-bool CEngAgentImp::Run1250Tests(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile)
+bool CEngAgentImp::Run1250Tests(const CSpanKey& spanKey,pgsTypes::LimitState limitState,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
+   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
 
-   CGirderKey girderKey(pGroup->GetIndex(),gdrIdx);
+   CGirderKey girderKey(pGroup->GetIndex(),spanKey.girderIndex);
    ValidateLiveLoadDistributionFactors(girderKey);
 
-   return m_pDistFactorEngineer->Run1250Tests(spanIdx,gdrIdx,limitState,pid,bridgeId,resultsFile,poiFile);
+   return m_pDistFactorEngineer->Run1250Tests(spanKey,limitState,pid,bridgeId,resultsFile,poiFile);
 }
 
-bool CEngAgentImp::GetDFResultsEx(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,
+bool CEngAgentImp::GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState limitState,
                                Float64* gpM, Float64* gpM1, Float64* gpM2,
                                Float64* gnM, Float64* gnM1, Float64* gnM2,
                                Float64* gV,  Float64* gV1,  Float64* gV2,
@@ -2829,26 +2825,26 @@ bool CEngAgentImp::GetDFResultsEx(SpanIndexType spanIdx,GirderIndexType gdrIdx,p
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
+   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
 
-   CGirderKey girderKey(pGroup->GetIndex(),gdrIdx);
+   CGirderKey girderKey(pGroup->GetIndex(),spanKey.girderIndex);
    ValidateLiveLoadDistributionFactors(girderKey);
 
-   return m_pDistFactorEngineer->GetDFResultsEx(spanIdx,gdrIdx, limitState,
+   return m_pDistFactorEngineer->GetDFResultsEx(spanKey, limitState,
                                gpM, gpM1, gpM2, gnM, gnM1, gnM2,
                                gV,  gV1, gV2, gR, gR1, gR2 ); 
 }
 
-Float64 CEngAgentImp::GetDeflectionDistFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx)
+Float64 CEngAgentImp::GetDeflectionDistFactor(const CSpanKey& spanKey)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
+   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
 
    GirderIndexType nGirders = pGroup->GetGirderCount();
-   Uint32 nLanes = GetNumberOfDesignLanes(spanIdx);
+   Uint32 nLanes = GetNumberOfDesignLanes(spanKey.spanIndex);
    Float64 mpf = lrfdUtility::GetMultiplePresenceFactor(nLanes);
    Float64 gD = mpf*nLanes/nGirders;
 
@@ -3997,15 +3993,10 @@ const pgsHaulingAnalysisArtifact* CEngAgentImp::CreateHaulingAnalysisArtifact(co
    {
       HANDLINGCONFIG config;
       GET_IFACE(ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest);
-      std::vector<pgsPointOfInterest> vPOI( pSegmentHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,POI_5L | POI_HAUL_SEGMENT) );
-      pgsPointOfInterest poi( vPOI[0] );
 
-      GET_IFACE(IBridge,pBridge);
-      config.GdrConfig = pBridge->GetSegmentConfiguration(segmentKey);
+      config.bIgnoreGirderConfig = true;
       config.LeftOverhang  = leftSupportLoc;
       config.RightOverhang = rightSupportLoc;
-
-      Float64 slabOffset = pBridge->GetSlabOffset(poi);
 
       // Use factory to create appropriate hauling checker
       pgsGirderHandlingChecker checker_factory(m_pBroker,m_StatusGroupID);

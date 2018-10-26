@@ -176,7 +176,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex,spanKey.girderIndex);
 
-   ASSERT_SPAN_GIRDER_KEY(spanKey);
+   ASSERT_SPAN_KEY(spanKey);
    GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanKey.spanIndex);
    CGirderKey girderKey(grpIdx,spanKey.girderIndex);
    ASSERT_GIRDER_KEY(girderKey);
@@ -279,7 +279,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex,spanKey.girderIndex);
 
-   ASSERT_SPAN_GIRDER_KEY(spanKey);
+   ASSERT_SPAN_KEY(spanKey);
    GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanKey.spanIndex);
    CGirderKey girderKey(grpIdx,spanKey.girderIndex);
    ASSERT_GIRDER_KEY(girderKey);
@@ -383,7 +383,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pB
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex,spanKey.girderIndex);
 
-   ASSERT_SPAN_GIRDER_KEY(spanKey);
+   ASSERT_SPAN_KEY(spanKey);
    GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanKey.spanIndex);
    CGirderKey girderKey(grpIdx,spanKey.girderIndex);
    ASSERT_GIRDER_KEY(girderKey);

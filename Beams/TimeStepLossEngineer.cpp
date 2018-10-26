@@ -133,7 +133,7 @@ const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& po
       {
          const pgsPointOfInterest& poi1(iter1->first);
          const pgsPointOfInterest& poi2(iter2->first);
-         if ( poi1 < poi && poi < poi2 )
+         if ( poi1 <= poi && poi < poi2 )
          {
             if ( poi.GetDistFromStart() - poi1.GetDistFromStart() < poi2.GetDistFromStart() - poi.GetDistFromStart() )
             {

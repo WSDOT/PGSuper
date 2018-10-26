@@ -371,16 +371,16 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    pPrevPier->GetBearingOffset(pgsTypes::Ahead,&brgOffset,&brgOffsetMeasure);
    pPrevPier->GetGirderEndDistance(pgsTypes::Ahead,&endDistance,&endDistanceMeasure);
    (*pTable)(row,0) << _T("Connection Geometry at ") << strPierLabel.c_str() << _T(" ") << LABEL_PIER(pPrevPier->GetIndex());
-   (*pTable)(row,1) << _T("Bearing Offset: ") << length.SetValue(brgOffset) << _T(" ") << GetBearingOffsetMeasureString(brgOffsetMeasure,pPrevPier->IsAbutment()) << rptNewLine;
-   (*pTable)(row,1) << _T("End Distance: ") << length.SetValue(endDistance) << _T(" ") << GetEndDistanceMeasureString(endDistanceMeasure,pPrevPier->IsAbutment());
+   (*pTable)(row,1) << _T("Bearing Offset: ") << length.SetValue(brgOffset) << _T(" ") << GetBearingOffsetMeasureString(brgOffsetMeasure,pPrevPier->IsAbutment(),false) << rptNewLine;
+   (*pTable)(row,1) << _T("End Distance: ") << length.SetValue(endDistance) << _T(" ") << GetEndDistanceMeasureString(endDistanceMeasure,pPrevPier->IsAbutment(),false);
    row++;
 
    strPierLabel = (pNextPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
    pNextPier->GetBearingOffset(pgsTypes::Back,&brgOffset,&brgOffsetMeasure);
    pNextPier->GetGirderEndDistance(pgsTypes::Back,&endDistance,&endDistanceMeasure);
    (*pTable)(row,0) << _T("Connection Geometry at ") << strPierLabel.c_str() << _T(" ") << LABEL_PIER(pNextPier->GetIndex());
-   (*pTable)(row,1) << _T("Bearing Offset: ") << length.SetValue(brgOffset) << _T(" ") << GetBearingOffsetMeasureString(brgOffsetMeasure,pNextPier->IsAbutment()) << rptNewLine;
-   (*pTable)(row,1) << _T("End Distance: ") << length.SetValue(endDistance) << _T(" ") << GetEndDistanceMeasureString(endDistanceMeasure,pNextPier->IsAbutment());
+   (*pTable)(row,1) << _T("Bearing Offset: ") << length.SetValue(brgOffset) << _T(" ") << GetBearingOffsetMeasureString(brgOffsetMeasure,pNextPier->IsAbutment(),false) << rptNewLine;
+   (*pTable)(row,1) << _T("End Distance: ") << length.SetValue(endDistance) << _T(" ") << GetEndDistanceMeasureString(endDistanceMeasure,pNextPier->IsAbutment(),false);
    row++;
 
 }

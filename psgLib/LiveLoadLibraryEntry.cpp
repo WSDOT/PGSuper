@@ -52,9 +52,9 @@ CLASS
 LiveLoadLibraryEntry::LiveLoadLibraryEntry() :
 m_IsNotional(false),
 m_LiveLoadConfigurationType(lcTruckPlusLane),
-m_LiveLoadApplicabilityType(llaEntireStructure),
+m_LiveLoadApplicabilityType(pgsTypes::llaEntireStructure),
 m_MaxVariableAxleSpacing(0.0),
-m_VariableAxleIndex(-1)
+m_VariableAxleIndex(INVALID_INDEX)
 {
    m_LaneLoadSpanLength = 0; // always use lane load if it is defined
 
@@ -165,6 +165,8 @@ bool LiveLoadLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if(!pLoad->Property(_T("MaxVariableAxleSpacing"), &m_MaxVariableAxleSpacing))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
+
+
       if(!pLoad->Property(_T("VariableAxleIndex"), &m_VariableAxleIndex))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -264,12 +266,12 @@ LiveLoadLibraryEntry::LiveLoadConfigurationType LiveLoadLibraryEntry::GetLiveLoa
    return m_LiveLoadConfigurationType;
 }
 
-void LiveLoadLibraryEntry::SetLiveLoadApplicabilityType(LiveLoadApplicabilityType applicability)
+void LiveLoadLibraryEntry::SetLiveLoadApplicabilityType(pgsTypes::LiveLoadApplicabilityType applicability)
 {
    m_LiveLoadApplicabilityType = applicability;
 }
 
-LiveLoadLibraryEntry::LiveLoadApplicabilityType LiveLoadLibraryEntry::GetLiveLoadApplicabilityType() const
+pgsTypes::LiveLoadApplicabilityType LiveLoadLibraryEntry::GetLiveLoadApplicabilityType() const
 {
    return m_LiveLoadApplicabilityType;
 }

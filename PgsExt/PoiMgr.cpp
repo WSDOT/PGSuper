@@ -355,17 +355,46 @@ void pgsPoiMgr::RemoveAll()
    ASSERTVALID;
 }
 
-pgsPointOfInterest pgsPoiMgr::GetPointOfInterest(const CSegmentKey& segmentKey,Float64 distFromStart) 
+pgsPointOfInterest pgsPoiMgr::GetPointOfInterest(const CSegmentKey& segmentKey,Float64 Xpoi) 
 {
-   pgsPointOfInterest poi(segmentKey,distFromStart);
+   pgsPointOfInterest poi(segmentKey,Xpoi);
    std::vector<pgsPointOfInterest>::const_iterator begin(m_Poi.begin());
    std::vector<pgsPointOfInterest>::const_iterator end(m_Poi.end());
-   std::vector<pgsPointOfInterest>::const_iterator found( std::find_if(begin, end, SamePlace(poi,m_Tolerance) ) );
-   if ( found != end )
+
+   // find all poi that are within m_Tolerance of Xpoi
+   std::vector<pgsPointOfInterest>::const_iterator found = begin;
+   std::vector<pgsPointOfInterest> vPoi;
+   while ( found != end )
    {
-      return (*found);
+      found = std::find_if(begin,end,SamePlace(poi,m_Tolerance));
+      if ( found != end )
+      {
+         vPoi.push_back(*found);
+         begin = found+1;
+      }
    }
 
+   // no poi within m_Tolerance of Xpoi, just return the poi created on the fly above
+   if ( vPoi.size() == 0 )
+   {
+      return poi;
+   }
+
+   // figure out which poi is closest to Xpoi
+   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
+   end   = vPoi.end();
+   poi = (*iter);
+   Float64 minDist = fabs(Xpoi - poi.GetDistFromStart());
+   iter++;
+   for ( ; iter != end; iter++ )
+   {
+      Float64 dist = fabs(Xpoi - iter->GetDistFromStart());
+      if ( dist < minDist )
+      {
+         minDist = dist;
+         poi = (*iter);
+      }
+   }
    return poi;
 }
 

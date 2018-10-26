@@ -160,7 +160,7 @@ void CMultiWeb2Factory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType s
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       ATLASSERT(pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsConstantAdjacent);
-      Float64 spacing = pBridgeDesc->GetGirderSpacing();;
+      Float64 spacing = pBridgeDesc->GetGirderSpacing();
 
       Float64 top_flange_max = 2*(wmax + t1+t2+t3) + w2;
       Float64 top_flange_min = 2*(wmin + t1+t2+t3) + w2;
@@ -907,6 +907,34 @@ pgsTypes::SupportedBeamSpacings CMultiWeb2Factory::GetSupportedBeamSpacings()
    pgsTypes::SupportedBeamSpacings sbs;
    sbs.push_back(pgsTypes::sbsConstantAdjacent);
    return sbs;
+}
+
+pgsTypes::SupportedDiaphragmTypes CMultiWeb2Factory::GetSupportedDiaphragms()
+{
+   pgsTypes::SupportedDiaphragmTypes diaphragmTypes;
+   diaphragmTypes.push_back(pgsTypes::dtPrecast);
+   diaphragmTypes.push_back(pgsTypes::dtCastInPlace);
+   return diaphragmTypes;
+}
+
+pgsTypes::SupportedDiaphragmLocationTypes CMultiWeb2Factory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type)
+{
+   pgsTypes::SupportedDiaphragmLocationTypes locations;
+   switch(type)
+   {
+   case pgsTypes::dtPrecast :
+      locations.push_back(pgsTypes::dltInternal);
+      break;
+
+   case pgsTypes::dtCastInPlace :
+      locations.push_back(pgsTypes::dltExternal);
+      break;
+
+   default:
+      ATLASSERT(false);
+   }
+
+   return locations;
 }
 
 void CMultiWeb2Factory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, 

@@ -1109,6 +1109,7 @@ bool pgsStrandDesignTool::AdjustForStrandSlope()
 
 bool pgsStrandDesignTool::AdjustForHoldDownForce()
 {
+#pragma Reminder("STRAND SLOPE/CANTILEVER: need to account for left/right harp point and strands are not symmetrical")
    LOG(_T("Design for Maximum Hold Down Force"));
 
    ATLASSERT(m_DoDesignForHoldDownForce); // should not be calling this
@@ -1188,6 +1189,8 @@ bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, 
    Float64 X1, X2, X3, X4;
    pStrandGeom->GetHarpingPointLocations(m_SegmentKey, &X1, &X2, &X3, &X4);
    Float64 adj = (X2-X1) * (1/slope - 1/sl_reqd);
+
+#pragma Reminder("STRAND SLOPE/CANTILEVER: need to account for left/right harp point and strands are not symmetrical")
 
    LOG(_T("Vertical adjustment required to acheive slope = ")<< ::ConvertFromSysUnits(adj,unitMeasure::Inch) << _T(" in"));
 

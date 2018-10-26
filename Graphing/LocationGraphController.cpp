@@ -201,23 +201,23 @@ void CLocationGraphController::FillLocationCtrl()
    {
       pgsPointOfInterest& poi(*iter);
 
-      SpanIndexType spanIdx;
+      CSpanKey spanKey;
       Float64 Xspan;
-      pPoi->ConvertPoiToSpanPoint(poi,&spanIdx,&Xspan);
+      pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
 
       CString strItem;
       std::_tstring strAttributes = poi.GetAttributes(POI_SPAN,false);
       if ( strAttributes.size() == 0 )
       {
          strItem.Format(_T("Span %d, %s"),
-            LABEL_SPAN(spanIdx),
+            LABEL_SPAN(spanKey.spanIndex),
             FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit())
             );
       }
       else
       {
          strItem.Format(_T("Span %d, %s (%s)"),
-            LABEL_SPAN(spanIdx),
+            LABEL_SPAN(spanKey.spanIndex),
             FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit()),
             poi.GetAttributes(POI_SPAN,false).c_str()
             );

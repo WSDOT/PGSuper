@@ -282,7 +282,7 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
 
          bool bPermit = pLimitStateForces->IsStrengthIIApplicable(thisGirderKey);
 
-         std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS)) );
+         std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS),POI_ERECTED_SEGMENT) );
          pIPOI->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
 
          std::vector<pgsTypes::LimitState> vLimitStates;

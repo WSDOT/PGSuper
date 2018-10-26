@@ -117,6 +117,7 @@ void CBridgeSectionView::DoPrint(CDC* pDC, CPrintInfo* pInfo,CRect rcDraw)
    OnDraw(pDC);
    OnEndPrinting(pDC, pInfo);
 }
+
 bool CBridgeSectionView::IsDeckSelected()
 {
    CComPtr<iDisplayMgr> dispMgr;
@@ -1336,9 +1337,8 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
    CComPtr<iDisplayList> girder_list;
    dispMgr->FindDisplayList(GIRDER_DISPLAY_LIST,&girder_list);
 
-   Float64 cut_location = m_pFrame->GetCurrentCutLocation();
-   Float64 distFromStartOfBridge = pBridge->GetDistanceFromStartOfBridge(cut_location);
-   Float64 distFromStartOfSpan   = cut_location - pGroup->GetPier(pgsTypes::metStart)->GetStation();
+   Float64 cut_station = m_pFrame->GetCurrentCutLocation();
+   Float64 distFromStartOfBridge = pBridge->GetDistanceFromStartOfBridge(cut_station);
 
    // get length unit so section can be labelled
    GET_IFACE2(pBroker,IEAFDisplayUnits,pdisp_units);
@@ -1427,7 +1427,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
    }
    else
    {
-      std::vector<SpaceBetweenGirder> vSpacing( pBridge->GetGirderSpacing(grpIdx, distFromStartOfSpan) );
+      std::vector<SpaceBetweenGirder> vSpacing( pBridge->GetGirderSpacing(cut_station) );
       std::vector<SpaceBetweenGirder>::iterator iter(vSpacing.begin());
       std::vector<SpaceBetweenGirder>::iterator iterEnd(vSpacing.end());
       for ( ; iter != iterEnd; iter++ )

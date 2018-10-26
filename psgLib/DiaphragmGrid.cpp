@@ -123,7 +123,7 @@ void CDiaphragmGrid::CustomInit()
    // set text along top row
 	this->SetStyleRange(CGXRange(0,0), CGXStyle()
 			.SetEnabled(FALSE)          // disables usage as current cell
-			.SetValue(_T("Intermediate Diaphragm Definition"))
+			.SetValue(_T("Intermediate Diaphragm Layout Rules"))
 		);
 
    

@@ -919,6 +919,35 @@ pgsTypes::SupportedBeamSpacings CUBeam2Factory::GetSupportedBeamSpacings()
    return sbs;
 }
 
+pgsTypes::SupportedDiaphragmTypes CUBeam2Factory::GetSupportedDiaphragms()
+{
+   pgsTypes::SupportedDiaphragmTypes diaphragmTypes;
+   diaphragmTypes.push_back(pgsTypes::dtPrecast);
+   diaphragmTypes.push_back(pgsTypes::dtCastInPlace);
+   return diaphragmTypes;
+}
+
+pgsTypes::SupportedDiaphragmLocationTypes CUBeam2Factory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type)
+{
+   pgsTypes::SupportedDiaphragmLocationTypes locations;
+   switch(type)
+   {
+   case pgsTypes::dtPrecast :
+      locations.push_back(pgsTypes::dltInternal);
+      break;
+
+   case pgsTypes::dtCastInPlace :
+      locations.push_back(pgsTypes::dltInternal);
+      locations.push_back(pgsTypes::dltExternal);
+      break;
+
+   default:
+      ATLASSERT(false);
+   }
+
+   return locations;
+}
+
 void CUBeam2Factory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, 
                                                pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing)
 {

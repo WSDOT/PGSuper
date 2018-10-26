@@ -144,13 +144,15 @@ public:
 
    virtual void GetCantileverSlabLoad(const CSegmentKey& segmentKey, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2);
    virtual void GetCantileverSlabPadLoad(const CSegmentKey& segmentKey, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2);
-   virtual void GetIntermediateDiaphragmLoads(pgsTypes::DiaphragmType diaphragmType, const CSegmentKey& segmentKey, std::vector<DiaphragmLoad>* pLoads);
-   virtual void GetPierDiaphragmLoads( const pgsPointOfInterest& poi, PierIndexType pierIdx, Float64* pPback, Float64 *pMback, Float64* pPahead, Float64* pMahead);
+   virtual void GetPrecastDiaphragmLoads(const CSegmentKey& segmentKey, std::vector<DiaphragmLoad>* pLoads);
+   virtual void GetIntermediateDiaphragmLoads(const CSpanKey& spanKey, std::vector<DiaphragmLoad>* pLoads);
+   virtual void GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIndexType gdrIdx, Float64* pPback, Float64 *pMback, Float64* pPahead, Float64* pMahead);
 
    virtual bool HasShearKeyLoad(const CGirderKey& girderKey); // checks for load in adjacent continuous beams as well as current beam
    virtual void GetShearKeyLoad(const CSegmentKey& segmentKey,std::vector<ShearKeyLoad>* pLoads);
 
    virtual std::_tstring GetLiveLoadName(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex);
+   virtual pgsTypes::LiveLoadApplicabilityType GetLiveLoadApplicability(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex);
    virtual VehicleIndexType GetVehicleCount(pgsTypes::LiveLoadType llType);
    virtual Float64 GetVehicleWeight(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex);
 
@@ -341,9 +343,11 @@ public:
    virtual Float64 GetDCamberForGirderSchedule(const pgsPointOfInterest& poi,Int16 time);
    virtual Float64 GetDCamberForGirderSchedule(const pgsPointOfInterest& poi,const GDRCONFIG& config,Int16 time);
 
+
+   virtual Float64 GetLowerBoundCamberVariabilityFactor()const;
 // IContraflexurePoints
 public:
-   virtual void GetContraflexurePoints(SpanIndexType spanIdx,GirderIndexType gdrIdx,Float64* cfPoints,IndexType* nPoints);
+   virtual void GetContraflexurePoints(const CSpanKey& spanKey,Float64* cfPoints,IndexType* nPoints);
 
 // IBearingDesign
 public:

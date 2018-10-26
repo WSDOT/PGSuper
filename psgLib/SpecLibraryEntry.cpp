@@ -42,6 +42,11 @@ static char THIS_FILE[] = __FILE__;
 
 #define CURRENT_VERSION 50.0 // jumped to version 50 for PGSplice development... this leaves a gap
 // between version 44 (PGSuper head branch, version 2.9) and PGSplice 
+// when loading data that was added after version 44 it is ok for the load to fail for now.
+// once this is merged to the head branch, data added from the then CURRENT_VERSION and later can't fail
+// MAX_OVERLAP_VERSION is the maximum version number where there is overlap between 2.9 and 3.0 data
+// once PGSplice is release, replace CURRENT_VERSION with the action version number at release
+#define MAX_OVERLAP_VERSION CURRENT_VERSION
 
 
 /****************************************************************************
@@ -151,6 +156,7 @@ m_CreepDuration2Min(::ConvertToSysUnits(40,unitMeasure::Day)),
 m_CreepDuration1Max(::ConvertToSysUnits(90,unitMeasure::Day)),
 m_CreepDuration2Max(::ConvertToSysUnits(120,unitMeasure::Day)),
 m_TotalCreepDuration(::ConvertToSysUnits(2000,unitMeasure::Day)),
+m_CamberVariability(0.50),
 m_LossMethod(LOSSES_AASHTO_REFINED),
 m_TimeDependentModel(TDM_ACI209),
 m_ShippingLosses(::ConvertToSysUnits(20,unitMeasure::KSI)),
@@ -307,6 +313,8 @@ m_ClosureCompStressFatigue(0.40)
    m_MaxClosureFc[pgsTypes::SandLightweight]          = ::ConvertToSysUnits(8.0,unitMeasure::KSI);
    m_MaxConcreteUnitWeight[pgsTypes::SandLightweight] = ::ConvertToSysUnits(125.,unitMeasure::LbfPerFeet3);
    m_MaxConcreteAggSize[pgsTypes::SandLightweight]    = ::ConvertToSysUnits(1.5,unitMeasure::Inch);
+
+   m_DoCheckStirrupSpacingCompatibility = true;
 }
 
 SpecLibraryEntry::SpecLibraryEntry(const SpecLibraryEntry& rOther) :
@@ -364,50 +372,94 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("Description"),this->GetDescription().c_str());
 
    if (m_SpecificationType==lrfdVersionMgr::FirstEdition1994)
+   {
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd1994"));
+   }
    else if (m_SpecificationType==lrfdVersionMgr::FirstEditionWith1996Interims)
+   {
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd1996"));
+   }
    else if (m_SpecificationType==lrfdVersionMgr::FirstEditionWith1997Interims)
+   {
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd1997"));
+   }
    else if (m_SpecificationType==lrfdVersionMgr::SecondEdition1998)
+   {
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd1998"));
+   }
    else if (m_SpecificationType==lrfdVersionMgr::SecondEditionWith1999Interims)
+   {
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd1999"));
+   }
    else if (m_SpecificationType==lrfdVersionMgr::SecondEditionWith2000Interims)
+   {
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2000"));
+   }
    else if (m_SpecificationType==lrfdVersionMgr::SecondEditionWith2001Interims)
+   {
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2001"));
+   }
    else if (m_SpecificationType==lrfdVersionMgr::SecondEditionWith2002Interims)
+   {
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2002"));
+   }
    else if (m_SpecificationType==lrfdVersionMgr::SecondEditionWith2003Interims)
+   {
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2003"));
+   }
    else if (m_SpecificationType==lrfdVersionMgr::ThirdEdition2004)
+   {
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2004"));
+   }
    else if (m_SpecificationType==lrfdVersionMgr::ThirdEditionWith2005Interims)
+   {
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2005"));
+   }
    else if (m_SpecificationType==lrfdVersionMgr::ThirdEditionWith2006Interims)
+   {
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2006"));
+   }
    else if (m_SpecificationType==lrfdVersionMgr::FourthEdition2007)
+   {
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2007"));
+   }
    else if (m_SpecificationType==lrfdVersionMgr::FourthEditionWith2008Interims)
+   {
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2008"));
+   }
    else if (m_SpecificationType==lrfdVersionMgr::FourthEditionWith2009Interims)
+   {
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2009"));
+   }
    else if (m_SpecificationType==lrfdVersionMgr::FifthEdition2010)
+   {
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2010"));
+   }
    else if (m_SpecificationType==lrfdVersionMgr::SixthEdition2012)
+   {
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2012"));
+   }
    else if (m_SpecificationType==lrfdVersionMgr::SixthEditionWith2013Interims)
+   {
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2013"));
+   }
    else
+   {
       ASSERT(false); // is there a new version?
+   }
 
    if (m_SpecificationUnits==lrfdVersionMgr::SI)
+   {
       pSave->Property(_T("SpecificationUnits"), _T("SiUnitsSpec"));
+   }
    else if (m_SpecificationUnits==lrfdVersionMgr::US)
+   {
       pSave->Property(_T("SpecificationUnits"), _T("UsUnitsSpec"));
+   }
    else
+   {
       ASSERT(0);
+   }
 
    pSave->Property(_T("SectionPropertyType"),m_SectionPropertyMode); // added version 50
 
@@ -612,6 +664,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("CreepDuration2Max"),m_CreepDuration2Max);
    pSave->Property(_T("XferTime"),m_XferTime);
    pSave->Property(_T("TotalCreepDuration"),m_TotalCreepDuration);
+   pSave->Property(_T("CamberVariability"),m_CamberVariability);
 
    pSave->Property(_T("LossMethod"),(Int16)m_LossMethod);
    pSave->Property(_T("TimeDependentModel"),(Int16)m_TimeDependentModel); // added in version 50
@@ -682,7 +735,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("SlabShrinkageElasticGain"),m_SlabShrinkageElasticGain);
    pSave->Property(_T("LiveLoadElasticGain"),m_LiveLoadElasticGain); // added in version 42
 
-   // added in version 44
+   // added in version 45
    if ( m_LossMethod == LOSSES_TXDOT_REFINED_2013 )
    {
       pSave->Property(_T("FcgpComputationMethod"),m_FcgpComputationMethod);
@@ -726,6 +779,10 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
       pSave->EndUnit(); // SandLightweight;
    pSave->EndUnit(); // Limits
 
+   // Added in version 44
+   pSave->BeginUnit(_T("Warnings"),1.0);
+         pSave->Property(_T("DoCheckStirrupSpacingCompatibility"), m_DoCheckStirrupSpacingCompatibility);
+   pSave->EndUnit(); // Warnings
 
    // Added in 14.0 removed in version 41
    //std::_tstring strLimitState[] = {_T("ServiceI"),_T("ServiceIA"),_T("ServiceIII"),_T("StrengthI"),_T("StrengthII"),_T("FatigueI")};
@@ -827,73 +884,129 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
    {
       Float64 version = pLoad->GetVersion();
       if (version < 1.0 || CURRENT_VERSION < version)
+      {
          THROW_LOAD(BadVersion,pLoad);
+      }
 
       std::_tstring name;
       if(pLoad->Property(_T("Name"),&name))
+      {
          this->SetName(name.c_str());
+      }
       else
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(pLoad->Property(_T("Description"),&name))
+      {
          this->SetDescription(name.c_str());
+      }
       else
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       std::_tstring tmp;
       if(pLoad->Property(_T("SpecificationType"),&tmp))
       {
          if(tmp==_T("AashtoLrfd2013"))
+         {
             m_SpecificationType = lrfdVersionMgr::SixthEditionWith2013Interims;
+         }
          else if(tmp==_T("AashtoLrfd2012"))
+         {
             m_SpecificationType = lrfdVersionMgr::SixthEdition2012;
+         }
          else if(tmp==_T("AashtoLrfd2010"))
+         {
             m_SpecificationType = lrfdVersionMgr::FifthEdition2010;
+         }
          else if(tmp==_T("AashtoLrfd2009"))
+         {
             m_SpecificationType = lrfdVersionMgr::FourthEditionWith2009Interims;
+         }
          else if(tmp==_T("AashtoLrfd2008"))
+         {
             m_SpecificationType = lrfdVersionMgr::FourthEditionWith2008Interims;
+         }
          else if(tmp==_T("AashtoLrfd2007"))
+         {
             m_SpecificationType = lrfdVersionMgr::FourthEdition2007;
+         }
          else if(tmp==_T("AashtoLrfd2006"))
+         {
             m_SpecificationType = lrfdVersionMgr::ThirdEditionWith2006Interims;
+         }
          else if(tmp==_T("AashtoLrfd2005"))
+         {
             m_SpecificationType = lrfdVersionMgr::ThirdEditionWith2005Interims;
+         }
          else if(tmp==_T("AashtoLrfd2004"))
+         {
             m_SpecificationType = lrfdVersionMgr::ThirdEdition2004;
+         }
          else if(tmp==_T("AashtoLrfd2003"))
+         {
             m_SpecificationType = lrfdVersionMgr::SecondEditionWith2003Interims;
+         }
          else if(tmp==_T("AashtoLrfd2002"))
+         {
             m_SpecificationType = lrfdVersionMgr::SecondEditionWith2002Interims;
+         }
          else if(tmp==_T("AashtoLrfd2001"))
+         {
             m_SpecificationType = lrfdVersionMgr::SecondEditionWith2001Interims;
+         }
          else if(tmp==_T("AashtoLrfd2000"))
+         {
             m_SpecificationType = lrfdVersionMgr::SecondEditionWith2000Interims;
+         }
          else if(tmp==_T("AashtoLrfd1999"))
+         {
             m_SpecificationType = lrfdVersionMgr::SecondEditionWith1999Interims;
+         }
          else if(tmp==_T("AashtoLrfd1998"))
+         {
             m_SpecificationType = lrfdVersionMgr::SecondEdition1998;
+         }
          else if(tmp==_T("AashtoLrfd1997"))
+         {
             m_SpecificationType = lrfdVersionMgr::FirstEditionWith1997Interims;
+         }
          else if(tmp==_T("AashtoLrfd1996"))
+         {
             m_SpecificationType = lrfdVersionMgr::FirstEditionWith1996Interims;
+         }
          else if (tmp==_T("AashtoLrfd1994"))
+         {
             m_SpecificationType = lrfdVersionMgr::FirstEdition1994;
+         }
          else
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
       else
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
 
       if(pLoad->Property(_T("SpecificationUnits"),&tmp))
       {
          if (tmp==_T("SiUnitsSpec"))
+         {
             m_SpecificationUnits = lrfdVersionMgr::SI;
+         }
          else if(tmp==_T("UsUnitsSpec"))
+         {
             m_SpecificationUnits = lrfdVersionMgr::US;
+         }
          else
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
       else
       {
@@ -923,23 +1036,33 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       else
       {
          if(!pLoad->Property(_T("DoDesignStrandSlope"), &m_DoDesignStrandSlope))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if(!pLoad->Property(_T("MaxSlope05"), &m_MaxSlope05))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("MaxSlope06"), &m_MaxSlope06))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( 35 <= version )
       {
          if(!pLoad->Property(_T("MaxSlope07"), &m_MaxSlope07))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if(!pLoad->Property(_T("DoCheckHoldDown"), &m_DoCheckHoldDown))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if (version<15)
       {
@@ -948,18 +1071,24 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       else
       {
          if(!pLoad->Property(_T("DoDesignHoldDown"), &m_DoDesignHoldDown))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if(!pLoad->Property(_T("HoldDownForce"), &m_HoldDownForce))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if (32 < version && version < 39)
       {
          // added in version 33 and removed in version 38
          bool check_anchor;
          if(!pLoad->Property(_T("DoCheckAnchorage"), &check_anchor))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_DoCheckSplitting = check_anchor;
          m_DoCheckConfinement = check_anchor;
@@ -969,91 +1098,143 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       else if (39 <= version)
       {
          if(!pLoad->Property(_T("DoCheckSplitting"), &m_DoCheckSplitting))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("DoDesignSplitting"), &m_DoDesignSplitting))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("DoCheckConfinement"), &m_DoCheckConfinement))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("DoDesignConfinement"), &m_DoDesignConfinement))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if(!pLoad->Property(_T("MaxStirrupSpacing"), &m_MaxStirrupSpacing))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("CyLiftingCrackFs"), &m_CyLiftingCrackFs))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("CyLiftingFailFs"), &m_CyLiftingFailFs))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("CyCompStressServ"), &m_CyCompStressServ))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("CyCompStressLifting"), &m_CyCompStressLifting))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("CyTensStressServ"), &m_CyTensStressServ))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("CyDoTensStressServMax"), &m_CyDoTensStressServMax))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("CyTensStressServMax"), &m_CyTensStressServMax))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("CyTensStressLifting"), &m_CyTensStressLifting))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("CyDoTensStressLiftingMax"),&m_CyDoTensStressLiftingMax))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("CyTensStressLiftingMax"),&m_CyTensStressLiftingMax))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
      // at version 27 we moved debonding to the girder library. Data here is ignored
 	  if ( 6.0 <= version && version < 27)
 	  {
         Float64 debond_junk;
 		  if (!pLoad->Property(_T("MaxDebondStrands"),&debond_junk))
+        {
 			 THROW_LOAD(InvalidFileFormat,pLoad);
+        }
 
 		  if (!pLoad->Property(_T("MaxDebondStrandsPerRow"),&debond_junk))
+        {
 			 THROW_LOAD(InvalidFileFormat,pLoad);
+        }
 
         if ( !pLoad->Property(_T("MaxNumDebondedStrandsPerSection"),&debond_junk))
+        {
            THROW_LOAD(InvalidFileFormat,pLoad);
+        }
 
         if ( !pLoad->Property(_T("MaxDebondedStrandsPerSection"),&debond_junk))
+        {
            THROW_LOAD(InvalidFileFormat,pLoad);
+        }
 
         if ( !pLoad->Property(_T("DefaultDebondLength"),&debond_junk))
+        {
            THROW_LOAD(InvalidFileFormat,pLoad);
+        }
 	  }
 
       if ( 1.4 <= version )
       {
          if (!pLoad->Property(_T("BurstingZoneLengthFactor"), &m_SplittingZoneLengthFactor))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if(!pLoad->Property(_T("LiftingUpwardImpact"),&m_LiftingUpwardImpact))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("LiftingDownwardImpact"),&m_LiftingDownwardImpact))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("HaulingUpwardImpact"),&m_HaulingUpwardImpact))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("HaulingDownwardImpact"),&m_HaulingDownwardImpact))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( !pLoad->Property(_T("CuringMethod"), &temp ) )
+      {
          THROW_LOAD(InvalidFileFormat, pLoad );
+      }
       m_CuringMethod = temp;
 
       if (version<11)
@@ -1064,7 +1245,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       else
       {
          if(!pLoad->Property(_T("EnableLiftingCheck"), &m_EnableLiftingCheck))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if (version<15)
          {
@@ -1073,21 +1256,31 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          else
          {
             if(!pLoad->Property(_T("EnableLiftingDesign"), &m_EnableLiftingDesign))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
       }
 
       if(!pLoad->Property(_T("PickPointHeight"), &m_PickPointHeight))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("LiftingLoopTolerance"), &m_LiftingLoopTolerance))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("MinCableInclination"), &m_MinCableInclination))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("MaxGirderSweepLifting"), &m_MaxGirderSweepLifting))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if (version<11)
       {
@@ -1097,7 +1290,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       else
       {
          if(!pLoad->Property(_T("EnableHaulingCheck"), &m_EnableHaulingCheck))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if (version<15)
          {
@@ -1118,21 +1313,29 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          Int32 tmp;
          if(!pLoad->Property(_T("HaulingAnalysisMethod"), &tmp))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_HaulingAnalysisMethod = (pgsTypes::HaulingAnalysisMethod)tmp;
       }
 
       if(!pLoad->Property(_T("MaxGirderSweepHauling"), &m_MaxGirderSweepHauling))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("HaulingSupportDistance"), &m_HaulingSupportDistance))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( 2.0 <= version )
       {
          if(!pLoad->Property(_T("MaxHaulingOverhang"), &m_MaxHaulingOverhang))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
       else
       {
@@ -1140,36 +1343,56 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
 
       if(!pLoad->Property(_T("HaulingSupportPlacementTolerance"), &m_HaulingSupportPlacementTolerance))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("HaulingCamberPercentEstimate"), &m_HaulingCamberPercentEstimate))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("CompStressHauling"), &m_CompStressHauling))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("TensStressHauling"), &m_TensStressHauling))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("DoTensStressHaulingMax"),&m_DoTensStressHaulingMax))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("TensStressHaulingMax"), &m_TensStressHaulingMax))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("HeHaulingCrackFs"), &m_HeHaulingCrackFs))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("HeHaulingFailFs"), &m_HeHaulingRollFs))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("RoadwaySuperelevation"), &m_RoadwaySuperelevation))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( version < 1.9 )
       {
          if(!pLoad->Property(_T("TruckRollStiffness"), &m_TruckRollStiffness))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_TruckRollStiffnessMethod = 0;
       }
@@ -1177,42 +1400,64 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          long method;
          if(!pLoad->Property(_T("TruckRollStiffnessMethod"), &method))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_TruckRollStiffnessMethod = (int)method;
 
          if(!pLoad->Property(_T("TruckRollStiffness"), &m_TruckRollStiffness))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("AxleWeightLimit"), &m_AxleWeightLimit))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("AxleStiffness"), &m_AxleStiffness))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if (!pLoad->Property(_T("MinRollStiffness"),&m_MinRollStiffness))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if(!pLoad->Property(_T("TruckGirderHeight"), &m_TruckGirderHeight))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("TruckRollCenterHeight"), &m_TruckRollCenterHeight))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("TruckAxleWidth"), &m_TruckAxleWidth))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("HeErectionCrackFs"), &m_HeErectionCrackFs))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("HeErectionFailFs"), &m_HeErectionFailFs))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
-      if ( version >= 1.3 )
+      if ( 1.3 <= version )
       {
          if (!pLoad->Property(_T("MaxGirderWgt"), &m_MaxGirderWgt))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if ( version < 37 )
@@ -1221,13 +1466,17 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( 12 <= version )
          {
             if ( !pLoad->Property(_T("HaulingModulusOfRuptureCoefficient"),&m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal]) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
 
          if ( 20 <= version )
          {
             if ( !pLoad->Property(_T("LiftingModulusOfRuptureCoefficient"),&m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal]) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
       }
 
@@ -1235,44 +1484,66 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          // Added at version 25
          if ( !pLoad->Property(_T("MinLiftingPointLocation"),&m_MinLiftPoint) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("LiftingPointLocationAccuracy"),&m_LiftPointAccuracy) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("MinHaulingSupportLocation"),&m_MinHaulPoint) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("HaulingSupportLocationAccuracy"),&m_HaulPointAccuracy) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if ( 43 <= version )
       {
          // KDOT values
          if ( !pLoad->Property(_T("UseMinTruckSupportLocationFactor"),&m_UseMinTruckSupportLocationFactor) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("MinTruckSupportLocationFactor"),&m_MinTruckSupportLocationFactor) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("OverhangGFactor"),&m_OverhangGFactor) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("InteriorGFactor"),&m_InteriorGFactor) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if ( 3.2 < version )
       {
          if (!pLoad->Property(_T("CastingYardTensileStressLimitWithMildRebar"),&m_CyTensStressServWithRebar) )
+         {
              THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if (!pLoad->Property(_T("LiftingTensileStressLimitWithMildRebar"),&m_TensStressLiftingWithRebar) )
+         {
              THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if (!pLoad->Property(_T("HaulingTensileStressLimitWithMildRebar"),&m_TensStressHaulingWithRebar) )
+         {
              THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
       else
       {
@@ -1284,51 +1555,73 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       // deal with verson 1.1
       // in this version we added compressive and tensile stress limits for BSS 1 & 2
       // in version 1.0, limits were for all BS stages.
-      if (version==1.0)
+      if (version == 1.0)
       {
          if(!pLoad->Property(_T("BsCompStressServ"), &m_Bs3CompStressServ))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("BsCompStressService1A"), &m_Bs3CompStressService1A))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          Float64 tmp;
          if(!pLoad->Property(_T("BsCompStressService1B"), &tmp))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          // stage 1 and 2 are permanent loads only
          m_Bs2CompStress = tmp;
          m_Bs1CompStress = tmp;
 
          if(!pLoad->Property(_T("BsTensStressServNc"), &m_Bs3TensStressServNc))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_Bs1TensStress = m_Bs3TensStressServNc;
 
          if(!pLoad->Property(_T("BsDoTensStressServNcMax"), &m_Bs3DoTensStressServNcMax))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_Bs1DoTensStressMax = m_Bs3DoTensStressServNcMax;
 
          if(!pLoad->Property(_T("BsTensStressServNcMax"), &m_Bs3TensStressServNcMax))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_Bs1TensStressMax = m_Bs3TensStressServNcMax;
 
          if(!pLoad->Property(_T("BsTensStressServSc"),    &m_Bs3TensStressServSc))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
    
          if(!pLoad->Property(_T("BsDoTensStressServScMax"), &m_Bs3DoTensStressServScMax))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("BsTensStressServScMax"), &m_Bs3TensStressServScMax))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("BsMaxGirdersTrafficBarrier"), &m_Bs2MaxGirdersTrafficBarrier))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("BsMaxGirdersUtility"), &m_Bs2MaxGirdersUtility))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_TempStrandRemovalCompStress      = m_Bs1CompStress;
          m_TempStrandRemovalTensStress      = m_Bs1TensStress;
@@ -1341,49 +1634,77 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          {
             // added in version 30
             if(!pLoad->Property(_T("TempStrandRemovalCompStress") ,     &m_TempStrandRemovalCompStress))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("TempStrandRemovalTensStress") ,     &m_TempStrandRemovalTensStress))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("TempStrandRemovalDoTensStressMax"),  &m_TempStrandRemovalDoTensStressMax))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("TempStrandRemovalTensStressMax") ,  &m_TempStrandRemovalTensStressMax))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             // for the following 5 items, the m_ was removed from the keyword in version 30
             if(!pLoad->Property(_T("Bs1CompStress") ,     &m_Bs1CompStress))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("Bs1TensStress") ,     &m_Bs1TensStress))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("Bs1DoTensStressMax"),  &m_Bs1DoTensStressMax))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("Bs1TensStressMax") ,  &m_Bs1TensStressMax))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("Bs2CompStress") ,     &m_Bs2CompStress))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
          else
          {
             if(!pLoad->Property(_T("m_Bs1CompStress") ,     &m_Bs1CompStress))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("m_Bs1TensStress") ,     &m_Bs1TensStress))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("m_Bs1DoTensStressMax"),  &m_Bs1DoTensStressMax))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("m_Bs1TensStressMax") ,  &m_Bs1TensStressMax))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if(!pLoad->Property(_T("m_Bs2CompStress") ,     &m_Bs2CompStress))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             m_TempStrandRemovalCompStress      = m_Bs1CompStress;
             m_TempStrandRemovalTensStress      = m_Bs1TensStress;
@@ -1396,13 +1717,19 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
              // this parameters were removed.... just gobble them up if this is an older file
              Float64 dummy;
              if(!pLoad->Property(_T("m_Bs2TensStress") ,     &dummy))
-            THROW_LOAD(InvalidFileFormat,pLoad);
+             {
+                THROW_LOAD(InvalidFileFormat,pLoad);
+             }
 
              if(!pLoad->Property(_T("m_Bs2DoTensStressMax"),  &dummy))
-            THROW_LOAD(InvalidFileFormat,pLoad);
+             {
+                THROW_LOAD(InvalidFileFormat,pLoad);
+             }
 
              if(!pLoad->Property(_T("m_Bs2TensStressMax") ,  &dummy))
-            THROW_LOAD(InvalidFileFormat,pLoad);
+             {
+                THROW_LOAD(InvalidFileFormat,pLoad);
+             }
          }
 
          if ( 36 <= version )
@@ -1416,44 +1743,66 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
 
          if(!pLoad->Property(_T("Bs2MaxGirdersTrafficBarrier"), &m_Bs2MaxGirdersTrafficBarrier))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("Bs2MaxGirdersUtility"), &m_Bs2MaxGirdersUtility))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( 33.0 < version )
          {
             long oldt;
             if(!pLoad->Property(_T("OverlayLoadDistribution"), &oldt))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             m_OverlayLoadDistribution = (pgsTypes::OverlayLoadDistributionType)oldt==pgsTypes::olDistributeTributaryWidth ? 
                                         pgsTypes::olDistributeTributaryWidth : pgsTypes::olDistributeEvenly;
          }
 
          if(!pLoad->Property(_T("Bs3CompStressServ"), &m_Bs3CompStressServ))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("Bs3CompStressService1A"), &m_Bs3CompStressService1A))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("Bs3TensStressServNc"), &m_Bs3TensStressServNc))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("Bs3DoTensStressServNcMax"), &m_Bs3DoTensStressServNcMax))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("Bs3TensStressServNcMax"), &m_Bs3TensStressServNcMax))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("Bs3TensStressServSc"),    &m_Bs3TensStressServSc))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("Bs3DoTensStressServScMax"), &m_Bs3DoTensStressServScMax))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("Bs3TensStressServScMax"), &m_Bs3TensStressServScMax))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if ( 1.4 <= version )
@@ -1462,14 +1811,18 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          {
             // removed in version 29
             if (!pLoad->Property(_T("Bs3IgnoreRangeOfApplicability"), &m_Bs3IgnoreRangeOfApplicability))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
 
          // this parameter removed in version 18
          if ( version < 18 )
          {
             if (!pLoad->Property(_T("Bs3LRFDShear"),&temp))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             switch(temp)
             {
@@ -1500,14 +1853,18 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( 1.8 <= version )
          {
             if (!pLoad->Property(_T("Bs3LRFDOverreinforcedMomentCapacity"),&temp))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
             m_Bs3LRFDOverReinforcedMomentCapacity = temp;
          }
       
          if ( 7.0 <= version )
          {
             if (!pLoad->Property(_T("IncludeRebar_MomentCapacity"),&temp))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             m_bIncludeRebar_Moment = (temp == 0 ? false : true);
          }
@@ -1515,149 +1872,223 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       else
       {
          if ( !pLoad->BeginUnit(_T("MomentCapacity")) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
-            Float64 mc_version = pLoad->GetVersion();
+         Float64 mc_version = pLoad->GetVersion();
 
-            if ( !pLoad->Property(_T("Bs3LRFDOverreinforcedMomentCapacity"),&temp) )
-               THROW_LOAD(InvalidFileFormat,pLoad);
+         if ( !pLoad->Property(_T("Bs3LRFDOverreinforcedMomentCapacity"),&temp) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
-            m_Bs3LRFDOverReinforcedMomentCapacity = temp;
+         m_Bs3LRFDOverReinforcedMomentCapacity = temp;
 
-            if ( !pLoad->Property(_T("IncludeRebarForCapacity"),&temp) )
-               THROW_LOAD(InvalidFileFormat,pLoad);
+         if ( !pLoad->Property(_T("IncludeRebarForCapacity"),&temp) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
-            m_bIncludeRebar_Moment = (temp == 0 ? false : true);
+         m_bIncludeRebar_Moment = (temp == 0 ? false : true);
 
-            if ( 2 <= mc_version )
+         if ( 2 <= mc_version )
+         {
+            if ( !pLoad->Property(_T("IncludeNoncompositeMomentForNegMomentDesign"),&temp) ) // added version 2 of this data block
             {
-               if ( !pLoad->Property(_T("IncludeNoncompositeMomentForNegMomentDesign"),&temp) ) // added version 2 of this data block
-                  THROW_LOAD(InvalidFileFormat,pLoad);
-
-               m_bIncludeForNegMoment = (temp == 0 ? false : true);
+               THROW_LOAD(InvalidFileFormat,pLoad);
             }
 
-            if ( mc_version < 3 )
+            m_bIncludeForNegMoment = (temp == 0 ? false : true);
+         }
+
+         if ( mc_version < 3 )
+         {
+            if ( !pLoad->BeginUnit(_T("ReductionFactor")) )
             {
-               if ( !pLoad->BeginUnit(_T("ReductionFactor")) )
-                  THROW_LOAD(InvalidFileFormat,pLoad);
+               THROW_LOAD(InvalidFileFormat,pLoad);
             }
-            else
+         }
+         else
+         {
+            // fixed spelling error in version 3 of MomentCapacity data block
+            if ( !pLoad->BeginUnit(_T("ResistanceFactor")) )
             {
-               // fixed spelling error in version 3 of MomentCapacity data block
-               if ( !pLoad->BeginUnit(_T("ResistanceFactor")) )
-                  THROW_LOAD(InvalidFileFormat,pLoad);
+               THROW_LOAD(InvalidFileFormat,pLoad);
             }
+         }
 
-            if ( !pLoad->BeginUnit(_T("NormalWeight")) )
-               THROW_LOAD(InvalidFileFormat,pLoad);
+         if ( !pLoad->BeginUnit(_T("NormalWeight")) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
-            if ( !pLoad->Property(_T("TensionControlled_RC"),&m_PhiFlexureTensionRC[pgsTypes::Normal]) )
-               THROW_LOAD(InvalidFileFormat,pLoad);
+         if ( !pLoad->Property(_T("TensionControlled_RC"),&m_PhiFlexureTensionRC[pgsTypes::Normal]) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
-            if ( !pLoad->Property(_T("TensionControlled_PS"),&m_PhiFlexureTensionPS[pgsTypes::Normal]) )
-               THROW_LOAD(InvalidFileFormat,pLoad);
+         if ( !pLoad->Property(_T("TensionControlled_PS"),&m_PhiFlexureTensionPS[pgsTypes::Normal]) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
-            Float64 nwc_version = pLoad->GetVersion();
-            if ( 1.0 < nwc_version )
+         Float64 nwc_version = pLoad->GetVersion();
+         if ( 1.0 < nwc_version )
+         {
+            if ( !pLoad->Property(_T("TensionControlled_Spliced"),&m_PhiFlexureTensionSpliced[pgsTypes::Normal]) )
             {
-               if ( !pLoad->Property(_T("TensionControlled_Spliced"),&m_PhiFlexureTensionSpliced[pgsTypes::Normal]) )
-                  THROW_LOAD(InvalidFileFormat,pLoad);
+               THROW_LOAD(InvalidFileFormat,pLoad);
             }
+         }
 
-            if ( !pLoad->Property(_T("CompressionControlled"),&m_PhiFlexureCompression[pgsTypes::Normal]) )
-               THROW_LOAD(InvalidFileFormat,pLoad);
+         if ( !pLoad->Property(_T("CompressionControlled"),&m_PhiFlexureCompression[pgsTypes::Normal]) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
-             if ( !pLoad->EndUnit() ) // NormalWeight
-               THROW_LOAD(InvalidFileFormat,pLoad);
+          if ( !pLoad->EndUnit() ) // NormalWeight
+          {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+          }
 
-            if ( !pLoad->BeginUnit(_T("AllLightweight")) )
-               THROW_LOAD(InvalidFileFormat,pLoad);
+         if ( !pLoad->BeginUnit(_T("AllLightweight")) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
-            if ( !pLoad->Property(_T("TensionControlled_RC"),&m_PhiFlexureTensionRC[pgsTypes::AllLightweight]) )
-               THROW_LOAD(InvalidFileFormat,pLoad);
+         if ( !pLoad->Property(_T("TensionControlled_RC"),&m_PhiFlexureTensionRC[pgsTypes::AllLightweight]) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
-            if ( !pLoad->Property(_T("TensionControlled_PS"),&m_PhiFlexureTensionPS[pgsTypes::AllLightweight]) )
-               THROW_LOAD(InvalidFileFormat,pLoad);
+         if ( !pLoad->Property(_T("TensionControlled_PS"),&m_PhiFlexureTensionPS[pgsTypes::AllLightweight]) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
-            Float64 alc_version = pLoad->GetVersion();
-            if ( 1.0 < alc_version )
+         Float64 alc_version = pLoad->GetVersion();
+         if ( 1.0 < alc_version )
+         {
+            if ( !pLoad->Property(_T("TensionControlled_Spliced"),&m_PhiFlexureTensionSpliced[pgsTypes::AllLightweight]) )
             {
-               if ( !pLoad->Property(_T("TensionControlled_Spliced"),&m_PhiFlexureTensionSpliced[pgsTypes::AllLightweight]) )
-                  THROW_LOAD(InvalidFileFormat,pLoad);
+               THROW_LOAD(InvalidFileFormat,pLoad);
             }
+         }
 
-            if ( !pLoad->Property(_T("CompressionControlled"),&m_PhiFlexureCompression[pgsTypes::AllLightweight]) )
-               THROW_LOAD(InvalidFileFormat,pLoad);
+         if ( !pLoad->Property(_T("CompressionControlled"),&m_PhiFlexureCompression[pgsTypes::AllLightweight]) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
-             if ( !pLoad->EndUnit() ) // AllLightweight
-               THROW_LOAD(InvalidFileFormat,pLoad);
+          if ( !pLoad->EndUnit() ) // AllLightweight
+          {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+          }
 
 
-            if ( !pLoad->BeginUnit(_T("SandLightweight")) )
-               THROW_LOAD(InvalidFileFormat,pLoad);
+         if ( !pLoad->BeginUnit(_T("SandLightweight")) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
-            if ( !pLoad->Property(_T("TensionControlled_RC"),&m_PhiFlexureTensionRC[pgsTypes::SandLightweight]) )
-               THROW_LOAD(InvalidFileFormat,pLoad);
+         if ( !pLoad->Property(_T("TensionControlled_RC"),&m_PhiFlexureTensionRC[pgsTypes::SandLightweight]) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
-            if ( !pLoad->Property(_T("TensionControlled_PS"),&m_PhiFlexureTensionPS[pgsTypes::SandLightweight]) )
-               THROW_LOAD(InvalidFileFormat,pLoad);
+         if ( !pLoad->Property(_T("TensionControlled_PS"),&m_PhiFlexureTensionPS[pgsTypes::SandLightweight]) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
-            Float64 slc_version = pLoad->GetVersion();
-            if ( 1.0 < slc_version )
+         Float64 slc_version = pLoad->GetVersion();
+         if ( 1.0 < slc_version )
+         {
+            if ( !pLoad->Property(_T("TensionControlled_Spliced"),&m_PhiFlexureTensionSpliced[pgsTypes::SandLightweight]) )
             {
-               if ( !pLoad->Property(_T("TensionControlled_Spliced"),&m_PhiFlexureTensionSpliced[pgsTypes::SandLightweight]) )
-                  THROW_LOAD(InvalidFileFormat,pLoad);
+               THROW_LOAD(InvalidFileFormat,pLoad);
             }
+         }
 
-            if ( !pLoad->Property(_T("CompressionControlled"),&m_PhiFlexureCompression[pgsTypes::SandLightweight]) )
-               THROW_LOAD(InvalidFileFormat,pLoad);
-            
-             if ( !pLoad->EndUnit() ) // SandLightweight
-               THROW_LOAD(InvalidFileFormat,pLoad);
+         if ( !pLoad->Property(_T("CompressionControlled"),&m_PhiFlexureCompression[pgsTypes::SandLightweight]) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+         
+          if ( !pLoad->EndUnit() ) // SandLightweight
+          {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+          }
 
-             if ( !pLoad->EndUnit() ) // ResistanceFactor
-               THROW_LOAD(InvalidFileFormat,pLoad);
+          if ( !pLoad->EndUnit() ) // ResistanceFactor
+          {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+          }
 
-             if ( 2 < mc_version )
+          if ( 2 < mc_version )
+          {
+             // added ClosureJointResistanceFactor in version 3 of the MomentCapacity data block
+             if ( !pLoad->BeginUnit(_T("ClosureJointResistanceFactor")) )
              {
-                // added ClosureJointResistanceFactor in version 3 of the MomentCapacity data block
-                if ( !pLoad->BeginUnit(_T("ClosureJointResistanceFactor")) )
-                   THROW_LOAD(InvalidFileFormat,pLoad);
-
-                if ( !pLoad->BeginUnit(_T("NormalWeight")) )
-                   THROW_LOAD(InvalidFileFormat,pLoad);
-
-                if ( !pLoad->Property(_T("FullyBondedTendons"),&m_PhiClosureJointFlexure[pgsTypes::Normal]) )
-                   THROW_LOAD(InvalidFileFormat,pLoad);
-
-                if ( !pLoad->EndUnit() ) // NormalWeight
-                   THROW_LOAD(InvalidFileFormat,pLoad);
-
-                if ( !pLoad->BeginUnit(_T("AllLightweight")) )
-                   THROW_LOAD(InvalidFileFormat,pLoad);
-
-                if ( !pLoad->Property(_T("FullyBondedTendons"),&m_PhiClosureJointFlexure[pgsTypes::AllLightweight]) )
-                   THROW_LOAD(InvalidFileFormat,pLoad);
-
-                if ( !pLoad->EndUnit() ) // AllLightweight
-                   THROW_LOAD(InvalidFileFormat,pLoad);
-
-                if ( !pLoad->BeginUnit(_T("SandLightweight")) )
-                   THROW_LOAD(InvalidFileFormat,pLoad);
-
-                if ( !pLoad->Property(_T("FullyBondedTendons"),&m_PhiClosureJointFlexure[pgsTypes::SandLightweight]) )
-                   THROW_LOAD(InvalidFileFormat,pLoad);
-
-                if ( !pLoad->EndUnit() ) // SandLightweight
-                   THROW_LOAD(InvalidFileFormat,pLoad);
-
-                if ( !pLoad->EndUnit() ) // ClosureJointResistanceFactor
-                   THROW_LOAD(InvalidFileFormat,pLoad);
+                THROW_LOAD(InvalidFileFormat,pLoad);
              }
 
+             if ( !pLoad->BeginUnit(_T("NormalWeight")) )
+             {
+                THROW_LOAD(InvalidFileFormat,pLoad);
+             }
+
+             if ( !pLoad->Property(_T("FullyBondedTendons"),&m_PhiClosureJointFlexure[pgsTypes::Normal]) )
+             {
+                THROW_LOAD(InvalidFileFormat,pLoad);
+             }
+
+             if ( !pLoad->EndUnit() ) // NormalWeight
+             {
+                THROW_LOAD(InvalidFileFormat,pLoad);
+             }
+
+             if ( !pLoad->BeginUnit(_T("AllLightweight")) )
+             {
+                THROW_LOAD(InvalidFileFormat,pLoad);
+             }
+
+             if ( !pLoad->Property(_T("FullyBondedTendons"),&m_PhiClosureJointFlexure[pgsTypes::AllLightweight]) )
+             {
+                THROW_LOAD(InvalidFileFormat,pLoad);
+             }
+
+             if ( !pLoad->EndUnit() ) // AllLightweight
+             {
+                THROW_LOAD(InvalidFileFormat,pLoad);
+             }
+
+             if ( !pLoad->BeginUnit(_T("SandLightweight")) )
+             {
+                THROW_LOAD(InvalidFileFormat,pLoad);
+             }
+
+             if ( !pLoad->Property(_T("FullyBondedTendons"),&m_PhiClosureJointFlexure[pgsTypes::SandLightweight]) )
+             {
+                THROW_LOAD(InvalidFileFormat,pLoad);
+             }
+
+             if ( !pLoad->EndUnit() ) // SandLightweight
+             {
+                THROW_LOAD(InvalidFileFormat,pLoad);
+             }
+
+             if ( !pLoad->EndUnit() ) // ClosureJointResistanceFactor
+             {
+                THROW_LOAD(InvalidFileFormat,pLoad);
+             }
+          }
+
         if ( !pLoad->EndUnit() ) // MomentCapacity
+        {
             THROW_LOAD(InvalidFileFormat,pLoad);
+        }
       }
 
 
@@ -1666,107 +2097,165 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( 9.0 <= version )
          {
             if (!pLoad->Property(_T("ModulusOfRuptureCoefficient"),&m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal]))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
 
          if ( 18 <= version )
          {
             // added in version 18
             if ( !pLoad->Property(_T("ShearModulusOfRuptureCoefficient"),&m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal])) 
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
       }
       else 
       {
          if ( !pLoad->BeginUnit(_T("ModulusOfRuptureCoefficient")) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->BeginUnit(_T("Moment")) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("Normal"),&m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("AllLightweight"),&m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("SandLightweight"),&m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->EndUnit() ) // Moment
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->BeginUnit(_T("Shear")) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("Normal"),&m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("AllLightweight"),&m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("SandLightweight"),&m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->EndUnit() ) // Shear
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->BeginUnit(_T("Lifting")) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("Normal"),&m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("AllLightweight"),&m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("SandLightweight"),&m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->EndUnit() ) // Lifting
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
 
          if ( !pLoad->BeginUnit(_T("Shipping")) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("Normal"),&m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("AllLightweight"),&m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("SandLightweight"),&m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->EndUnit() ) // Shipping
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->EndUnit() ) // ModulusOfRuptureCoefficient
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if ( !pLoad->Property(_T("BsLldfMethod"), &temp ) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
       m_LldfMethod = temp;
 
       if ( 28 < version )
       {
          // added in version 29
          if ( !pLoad->Property(_T("MaxAngularDeviationBetweenGirders"),&m_MaxAngularDeviationBetweenGirders) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
    
          if ( !pLoad->Property(_T("MinGirderStiffnessRatio"),&m_MinGirderStiffnessRatio) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("LLDFGirderSpacingLocation"),&m_LLDFGirderSpacingLocation) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if ( 30 < version )
       {
          if ( !pLoad->Property(_T("LimitDistributionFactorsToLanesBeams"),&m_LimitDistributionFactorsToLanesBeams) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if ( version < 37 )
@@ -1777,7 +2266,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( 1.2 <= version )
          {
             if ( !pLoad->Property(_T("LongReinfShearMethod"), &temp ) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
             m_LongReinfShearMethod = temp;
 
             // WSDOT method has been recinded
@@ -1792,18 +2283,24 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( 7.0 <= version )
          {
             if (!pLoad->Property(_T("IncludeRebar_Shear"),&temp))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             m_bIncludeRebar_Shear = (temp == 0 ? false : true);
          }
       }
 
       if ( !pLoad->Property(_T("CreepMethod"),&temp) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
       m_CreepMethod = temp;
 
       if (!pLoad->Property(_T("CreepFactor"),&m_CreepFactor))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       // WSDOT has abandonded it's creep method and use the LRFD calculations
       // 2006
@@ -1812,56 +2309,80 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if ( 3.0 <= version )
       {
          if (!pLoad->Property(_T("CreepDuration1Min"),&m_CreepDuration1Min))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if (!pLoad->Property(_T("CreepDuration1Max"),&m_CreepDuration1Max))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if (!pLoad->Property(_T("CreepDuration2Min"),&m_CreepDuration2Min))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if (!pLoad->Property(_T("CreepDuration2Max"),&m_CreepDuration2Max))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("XferTime"),&m_XferTime))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( 3.1 <= version && version < 3.2 )
          {
             if ( !pLoad->Property(_T("NoncompositeCreepDuration"),&m_TotalCreepDuration))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
          if ( 3.2 <= version )
          {
             if ( !pLoad->Property(_T("TotalCreepDuration"),&m_TotalCreepDuration))
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
       }
       else if (1.6 <= version && version < 3.0)
       {
          if (!pLoad->Property(_T("CreepDuration1"),&m_CreepDuration1Min))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_CreepDuration1Max = m_CreepDuration1Min;
 
          if (!pLoad->Property(_T("CreepDuration2"),&m_CreepDuration2Min))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_CreepDuration2Max = m_CreepDuration2Min;
 
          if ( !pLoad->Property(_T("XferTime"),&m_XferTime))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
       else
       {
          // only one creep duration was entered - need to make some assumptions here
          if (!pLoad->Property(_T("CreepDuration"),&m_CreepDuration2Min))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_CreepDuration2Max = m_CreepDuration2Min;
 
          if ( !pLoad->Property(_T("XferTime"),&m_XferTime))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          Float64 duration_days = ::ConvertFromSysUnits(m_CreepDuration2Min,unitMeasure::Day);
          Float64 xfer_days     = ::ConvertFromSysUnits(m_XferTime,unitMeasure::Day);
@@ -1876,9 +2397,25 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             m_CreepDuration1Max = m_CreepDuration1Min;
          }
       }
+
+      if ( 44 <= version )
+      {
+         if ( !pLoad->Property(_T("CamberVariability"),&m_CamberVariability))
+         {
+            m_CamberVariability = 0.50; // the call failed, make sure the variable is set to its default value (it gets changed in the call)
+
+            // it is ok to fail it version is 50 or less
+            if ( version < 50 )
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+         }
+      }
  
       if ( !pLoad->Property(_T("LossMethod"),&temp) )
+      {
          THROW_LOAD(InvalidFileFormat,pLoad );
+      }
 
       m_LossMethod = temp;
 
@@ -1886,7 +2423,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          // added in version 50
          if ( !pLoad->Property(_T("TimeDependentModel"),&temp) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_TimeDependentModel = temp;
       }
@@ -1903,52 +2442,76 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if ( 50 <= version )
       {
          if ( !pLoad->Property(_T("ShippingLosses"),&m_ShippingLosses) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad );
+         }
 
          if ( !pLoad->Property(_T("ShippingTime"),&m_ShippingTime) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad );
+         }
       }
       else
       {
          if ( !pLoad->Property(_T("FinalLosses"),&FinalLosses) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad );
+         }
 
          if ( !pLoad->Property(_T("ShippingLosses"),&ShippingLosses) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad );
+         }
 
          m_ShippingLosses = ShippingLosses;
 
          if ( !pLoad->Property(_T("BeforeXferLosses"),&BeforeXferLosses) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad );
+         }
 
          if ( !pLoad->Property(_T("AfterXferLosses"),&AfterXferLosses) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad );
+         }
 
          Float64 ShippingTime = m_ShippingTime;
          if ( 13.0 <= version )
          {
             if ( !pLoad->Property(_T("ShippingTime"),&ShippingTime) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad );
+            }
          }
 
          if ( 22 <= version )
          {
             if ( !pLoad->Property(_T("LiftingLosses"),&LiftingLosses) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if ( !pLoad->Property(_T("BeforeTempStrandRemovalLosses"),&BeforeTempStrandRemovalLosses) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if ( !pLoad->Property(_T("AfterTempStrandRemovalLosses"),&AfterTempStrandRemovalLosses) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if ( !pLoad->Property(_T("AfterDeckPlacementLosses"),&AfterDeckPlacementLosses) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if ( 38 <= version )
             {
                if ( !pLoad->Property(_T("AfterSIDLLosses"),&AfterSIDLLosses) )
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
             }
             else
             {
@@ -1991,50 +2554,76 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if ( 19 <= version )
       {
          if ( !pLoad->Property(_T("CuringMethodFactor"),&m_CuringMethodTimeAdjustmentFactor) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       // added in version 1.6
       if ( 1.5 <= version )
       {
          if (!pLoad->Property(_T("CheckStrandStressAtJacking"),&m_bCheckStrandStress[CSS_AT_JACKING]))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if (!pLoad->Property(_T("Coeff_AtJacking_StressRel"),&m_StrandStressCoeff[CSS_AT_JACKING][STRESS_REL]))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if (!pLoad->Property(_T("Coeff_AtJacking_LowRelax"),&m_StrandStressCoeff[CSS_AT_JACKING][LOW_RELAX]))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
 
          if (!pLoad->Property(_T("CheckStrandStressBeforeTransfer"),&m_bCheckStrandStress[CSS_BEFORE_TRANSFER]))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if (!pLoad->Property(_T("Coeff_BeforeTransfer_StressRel"),&m_StrandStressCoeff[CSS_BEFORE_TRANSFER][STRESS_REL]))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if (!pLoad->Property(_T("Coeff_BeforeTransfer_LowRelax"),&m_StrandStressCoeff[CSS_BEFORE_TRANSFER][LOW_RELAX]))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
 
          if (!pLoad->Property(_T("CheckStrandStressAfterTransfer"),&m_bCheckStrandStress[CSS_AFTER_TRANSFER]))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if (!pLoad->Property(_T("Coeff_AfterTransfer_StressRel"),&m_StrandStressCoeff[CSS_AFTER_TRANSFER][STRESS_REL]))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if (!pLoad->Property(_T("Coeff_AfterTransfer_LowRelax"),&m_StrandStressCoeff[CSS_AFTER_TRANSFER][LOW_RELAX]))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
 
          if (!pLoad->Property(_T("CheckStrandStressAfterAllLosses"),&m_bCheckStrandStress[CSS_AFTER_ALL_LOSSES]))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if (!pLoad->Property(_T("Coeff_AfterAllLosses_StressRel"),&m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL]))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if (!pLoad->Property(_T("Coeff_AfterAllLosses_LowRelax"),&m_StrandStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
       }
       else
@@ -2062,44 +2651,68 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
-      if ( 44 < version )
+      if ( 50 <= version )
       {
-         // added in version 45
+         // added in version 50
          if ( !pLoad->Property(_T("CheckTendonStressAtJacking"),&m_bCheckTendonStressAtJacking) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("CheckTendonStressPriorToSeating"),&m_bCheckTendonStressPriorToSeating) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("Coeff_AtJacking_StressRel"),&m_TendonStressCoeff[CSS_AT_JACKING][STRESS_REL]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("Coeff_AtJacking_LowRelax"),&m_TendonStressCoeff[CSS_AT_JACKING][LOW_RELAX]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("Coeff_PriorToSeating_StressRel"),&m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][STRESS_REL]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("Coeff_PriorToSeating_LowRelax"),&m_TendonStressCoeff[CSS_PRIOR_TO_SEATING][LOW_RELAX]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("Coeff_AtAnchoragesAfterSeating_StressRel"),&m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][STRESS_REL]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("Coeff_AtAnchoragesAfterSeating_LowRelax"),&m_TendonStressCoeff[CSS_ANCHORAGES_AFTER_SEATING][LOW_RELAX]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("Coeff_ElsewhereAfterSeating_StressRel"),&m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][STRESS_REL]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("Coeff_ElsewhereAfterSeating_LowRelax"),&m_TendonStressCoeff[CSS_ELSEWHERE_AFTER_SEATING][LOW_RELAX]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("Coeff_AfterAllLosses_StressRel"),&m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][STRESS_REL]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("Coeff_AfterAllLosses_LowRelax"),&m_TendonStressCoeff[CSS_AFTER_ALL_LOSSES][LOW_RELAX]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if ( 22 < version && version < 50)
@@ -2107,13 +2720,19 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          // added in version 23 and removed in version 50
          Float64 Dset, WobbleFriction, FrictionCoefficient;
          if ( !pLoad->Property(_T("AnchorSet"),&Dset) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("WobbleFriction"),&WobbleFriction) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("CoefficientOfFriction"),&FrictionCoefficient) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
 
          const libILibrary* pLib = GetLibrary();
@@ -2132,51 +2751,84 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          // added in version 40
          if ( !pLoad->Property(_T("RelaxationLossMethod"),&m_RelaxationLossMethod) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("SlabElasticGain"),&m_SlabElasticGain) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("HaunchElasticGain"),&m_SlabPadElasticGain) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("DiaphragmElasticGain"),&m_DiaphragmElasticGain) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("UserDCElasticGainBS1"),&m_UserDCElasticGainBS1) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("UserDWElasticGainBS1"),&m_UserDWElasticGainBS1) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("UserDCElasticGainBS2"),&m_UserDCElasticGainBS2) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("UserDWElasticGainBS2"),&m_UserDWElasticGainBS2) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("RailingSystemElasticGain"),&m_RailingSystemElasticGain) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("OverlayElasticGain"),&m_OverlayElasticGain) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("SlabShrinkageElasticGain"),&m_SlabShrinkageElasticGain) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( 41 < version )
          {
             // added version 42
             if ( !pLoad->Property(_T("LiveLoadElasticGain"),&m_LiveLoadElasticGain) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
 
-         if ( 43 < version )
+         if ( 44 < version )
          {
             if( m_LossMethod == LOSSES_TXDOT_REFINED_2013 )
             {
                if ( !pLoad->Property(_T("FcgpComputationMethod"),&m_FcgpComputationMethod) )
-                  THROW_LOAD(InvalidFileFormat,pLoad);
+               {
+                  if ( MAX_OVERLAP_VERSION < version )
+                  {
+                     // This was added in version 45 for PGSuper version 2.9.
+                     // At the same time, PGSuper 3.0 was being built. The data block version was
+                     // MAX_OVERLAP_VERSION. It is ok to fail for 44 <= version <= MAX_OVERLAP_VERSION. If version is more than MAX_OVERLAP_VERSION
+                     // then the data file format is invalid.
+                     THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
+               }
             }
          }
       }
@@ -2185,10 +2837,14 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if ( 1.6 < version )
       {
          if (!pLoad->Property(_T("CheckLiveLoadDeflection"),&m_bDoEvaluateDeflection))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if (!pLoad->Property(_T("LiveLoadDeflectionLimit"),&m_DeflectionLimit))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
       }
       else
@@ -2202,7 +2858,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          long value;
          if ( !pLoad->Property(_T("AnalysisType"),&value) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_AnalysisType = (pgsTypes::AnalysisType)(value);
       }
@@ -2210,124 +2868,225 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if ( 10.0 <= version && version < 37 )
       {
          if ( !pLoad->Property(_T("MaxSlabFc"),&m_MaxSlabFc[pgsTypes::Normal]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("MaxGirderFci"),&m_MaxSegmentFci[pgsTypes::Normal]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("MaxGirderFc"),&m_MaxSegmentFc[pgsTypes::Normal]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("MaxConcreteUnitWeight"),&m_MaxConcreteUnitWeight[pgsTypes::Normal]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("MaxConcreteAggSize"),&m_MaxConcreteAggSize[pgsTypes::Normal]) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
       else if ( 37 <= version )
       {
          if ( !pLoad->BeginUnit(_T("Limits")) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
             if ( !pLoad->BeginUnit(_T("Normal")) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
                Float64 normal_version = pLoad->GetVersion();
 
                if ( !pLoad->Property(_T("MaxSlabFc"),&m_MaxSlabFc[pgsTypes::Normal]) )
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if ( !pLoad->Property(_T("MaxGirderFci"),&m_MaxSegmentFci[pgsTypes::Normal]) )
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if ( !pLoad->Property(_T("MaxGirderFc"),&m_MaxSegmentFc[pgsTypes::Normal]) )
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if ( 1.0 < normal_version ) // added in version 2.0
                {
                   if ( !pLoad->Property(_T("MaxClosureFci"),&m_MaxClosureFci[pgsTypes::Normal]) )
+                  {
                      THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
 
                   if ( !pLoad->Property(_T("MaxClosureFc"),&m_MaxClosureFc[pgsTypes::Normal]) )
+                  {
                      THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
                }
 
                if ( !pLoad->Property(_T("MaxConcreteUnitWeight"),&m_MaxConcreteUnitWeight[pgsTypes::Normal]) )
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if ( !pLoad->Property(_T("MaxConcreteAggSize"),&m_MaxConcreteAggSize[pgsTypes::Normal]) )
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
             if ( !pLoad->EndUnit() ) // Normal
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
 
             if ( !pLoad->BeginUnit(_T("AllLightweight")) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
                Float64 alw_version = pLoad->GetVersion();
 
                if ( !pLoad->Property(_T("MaxSlabFc"),&m_MaxSlabFc[pgsTypes::AllLightweight]) )
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if ( !pLoad->Property(_T("MaxGirderFci"),&m_MaxSegmentFci[pgsTypes::AllLightweight]) )
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if ( !pLoad->Property(_T("MaxGirderFc"),&m_MaxSegmentFc[pgsTypes::AllLightweight]) )
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if ( 1.0 < alw_version ) // added in version 2.0
                {
                   if ( !pLoad->Property(_T("MaxClosureFci"),&m_MaxClosureFci[pgsTypes::AllLightweight]) )
+                  {
                      THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
 
                   if ( !pLoad->Property(_T("MaxClosureFc"),&m_MaxClosureFc[pgsTypes::AllLightweight]) )
+                  {
                      THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
                }
 
                if ( !pLoad->Property(_T("MaxConcreteUnitWeight"),&m_MaxConcreteUnitWeight[pgsTypes::AllLightweight]) )
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if ( !pLoad->Property(_T("MaxConcreteAggSize"),&m_MaxConcreteAggSize[pgsTypes::AllLightweight]) )
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
             if ( !pLoad->EndUnit() ) // AllLightweight
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if ( !pLoad->BeginUnit(_T("SandLightweight")) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
                Float64 slw_version = pLoad->GetVersion();
 
                if ( !pLoad->Property(_T("MaxSlabFc"),&m_MaxSlabFc[pgsTypes::SandLightweight]) )
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if ( !pLoad->Property(_T("MaxGirderFci"),&m_MaxSegmentFci[pgsTypes::SandLightweight]) )
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if ( !pLoad->Property(_T("MaxGirderFc"),&m_MaxSegmentFc[pgsTypes::SandLightweight]) )
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if ( 1.0 < slw_version ) // added in version 2.0
                {
                   if ( !pLoad->Property(_T("MaxClosureFci"),&m_MaxClosureFci[pgsTypes::SandLightweight]) )
+                  {
                      THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
 
                   if ( !pLoad->Property(_T("MaxClosureFc"),&m_MaxClosureFc[pgsTypes::SandLightweight]) )
+                  {
                      THROW_LOAD(InvalidFileFormat,pLoad);
+                  }
                }
 
                if ( !pLoad->Property(_T("MaxConcreteUnitWeight"),&m_MaxConcreteUnitWeight[pgsTypes::SandLightweight]) )
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
                if ( !pLoad->Property(_T("MaxConcreteAggSize"),&m_MaxConcreteAggSize[pgsTypes::SandLightweight]) )
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
 
             if ( !pLoad->EndUnit() ) // SandLightweight
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
          if ( !pLoad->EndUnit() ) // Limits
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+      }
+
+      if ( 44 <= version )
+      {
+         bool bOKToFail = false;
+         if ( version <= MAX_OVERLAP_VERSION )
+         {
+            // This was added in version 45 for PGSuper version 2.9.
+            // At the same time, PGSuper 3.0 was being built. The data block version was
+            // MAX_OVERLAP_VERSION. It is ok to fail for 44 <= version <= MAX_OVERLAP_VERSION. If version is more than MAX_OVERLAP_VERSION
+            // then the data file format is invalid.
+            bOKToFail = true;
+         }
+
+         bool bBeginUnit = pLoad->BeginUnit(_T("Warnings"));
+         if ( !bBeginUnit && !bOKToFail)
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if ( bBeginUnit )
+         {
+            // reading the unit start successfully... keep going
+            if ( !pLoad->Property(_T("DoCheckStirrupSpacingCompatibility"),&m_DoCheckStirrupSpacingCompatibility) )
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+
+            if ( !pLoad->EndUnit() ) // Warnings
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+         }
       }
 
       // Added in 14.0, removed in version 41
@@ -2339,10 +3098,14 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          Float64 lf_version = pLoad->GetVersion();
          int nLimitStates = 4;
          if ( 2 <= lf_version  )
+         {
             nLimitStates += 1; // added Strength II
+         }
 
          if ( 3 <= lf_version )
+         {
             nLimitStates += 1; // added Fatigue I
+         }
 
          for ( int i = 0; i < nLimitStates; i++ )
          {
@@ -2376,7 +3139,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
 
       // added in version 15
-      if (version<15)
+      if (version < 15)
       {
          m_EnableSlabOffsetCheck = true;
          m_EnableSlabOffsetDesign = true;
@@ -2384,13 +3147,17 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       else
       {
          if(!pLoad->Property(_T("EnableSlabOffsetCheck"), &m_EnableSlabOffsetCheck))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property(_T("EnableSlabOffsetDesign"), &m_EnableSlabOffsetDesign))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
-      if (version<15)
+      if (version < 15)
       {
          m_DesignStrandFillType = ftMinimizeHarping;
       }
@@ -2398,7 +3165,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          long ftype;
          if(!pLoad->Property(_T("DesignStrandFillType"), &ftype))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_DesignStrandFillType = ftype==(long)ftGridOrder ? ftGridOrder : ftMinimizeHarping;
       }
@@ -2407,7 +3176,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          long value;
          if ( !pLoad->Property(_T("EffectiveFlangeWidthMethod"),&value) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_EffFlangeWidthMethod = (pgsTypes::EffectiveFlangeWidthMethod)(value);
       }
@@ -2417,19 +3188,25 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          long value;
          if ( !pLoad->Property(_T("SlabOffsetMethod"),&value) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if ( 18 <= version && version < 37 )
       {
          long value;
          if ( !pLoad->Property(_T("ShearFlowMethod"),&value) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_ShearFlowMethod = (ShearFlowMethod)(value);
 
          if ( !pLoad->Property(_T("ShearCapacityMethod"),&value) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          switch(value)
          {
@@ -2454,11 +3231,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          // The general method from the 2007 spec becomes the tables method in the 2008 spec
          // make that adjustment here
          if ( m_SpecificationType < lrfdVersionMgr::FourthEditionWith2008Interims && m_ShearCapacityMethod == scmBTEquations )
+         {
             m_ShearCapacityMethod = scmBTTables;
+         }
 
          // if this is the 2008 spec, or later and if the shear method is WSDOT 2007, change it to Beta-Theta equations
          if ( lrfdVersionMgr::FourthEditionWith2008Interims <= m_SpecificationType && m_ShearCapacityMethod == scmWSDOT2007 )
+         {
             m_ShearCapacityMethod = scmBTEquations;
+         }
       }
       else if ( version < 18 )
       {
@@ -2470,30 +3251,40 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          ATLASSERT( 37 <= version );
          if ( !pLoad->BeginUnit(_T("Shear")) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          Float64 shear_version = pLoad->GetVersion();
 
          if ( !pLoad->Property(_T("LongReinfShearMethod"), &temp ) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
          m_LongReinfShearMethod = temp;
 
          // WSDOT method has been recinded
          m_LongReinfShearMethod = LRFD_METHOD;
 
          if (!pLoad->Property(_T("IncludeRebarForCapacity"),&temp))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_bIncludeRebar_Shear = (temp == 0 ? false : true);
 
          long value;
          if ( !pLoad->Property(_T("ShearFlowMethod"),&value) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_ShearFlowMethod = (ShearFlowMethod)(value);
 
          if ( !pLoad->Property(_T("ShearCapacityMethod"),&value) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          switch(value)
          {
@@ -2518,57 +3309,85 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          // The general method from the 2007 spec becomes the tables method in the 2008 spec
          // make that adjustment here
          if ( m_SpecificationType < lrfdVersionMgr::FourthEditionWith2008Interims && m_ShearCapacityMethod == scmBTEquations )
+         {
             m_ShearCapacityMethod = scmBTTables;
+         }
 
          // if this is the 2008 spec, or later and if the shear method is WSDOT 2007, change it to Beta-Theta equations
          if ( lrfdVersionMgr::FourthEditionWith2008Interims <= m_SpecificationType && m_ShearCapacityMethod == scmWSDOT2007 )
+         {
             m_ShearCapacityMethod = scmBTEquations;
+         }
 
          // Fixed misspelling in version 2 of the Shear data block
          if ( shear_version < 2 )
          {
             if ( !pLoad->BeginUnit(_T("ReductionFactor")) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
          else
          {
             if ( !pLoad->BeginUnit(_T("ResistanceFactor")) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
 
             if ( !pLoad->Property(_T("Normal"),&m_PhiShear[pgsTypes::Normal]) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if ( !pLoad->Property(_T("AllLightweight"),&m_PhiShear[pgsTypes::AllLightweight]) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if ( !pLoad->Property(_T("SandLightweight"),&m_PhiShear[pgsTypes::SandLightweight]) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
          if ( !pLoad->EndUnit() ) // ResistanceFactor
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          // Added ClosureJointResistanceFactor in version 2 of the Shear data block
          if ( 1 < shear_version )
          {
             if ( !pLoad->BeginUnit(_T("ClosureJointResistanceFactor")) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad );
+            }
 
             if ( !pLoad->Property(_T("Normal"),&m_PhiClosureJointShear[pgsTypes::Normal]) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad );
+            }
 
             if ( !pLoad->Property(_T("AllLightweight"),&m_PhiClosureJointShear[pgsTypes::AllLightweight]) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad );
+            }
 
             if ( !pLoad->Property(_T("SandLightweight"),&m_PhiClosureJointShear[pgsTypes::SandLightweight]) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad );
+            }
 
             if ( !pLoad->EndUnit() ) // ClosureJointResistanceFactor
+            {
                THROW_LOAD(InvalidFileFormat,pLoad );
+            }
          }
 
          if ( !pLoad->EndUnit() ) // Shear
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if ( version < 26 )
@@ -2588,17 +3407,23 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          // added in version 26
          if ( !pLoad->Property(_T("PedestrianLoad"),&m_PedestrianLoad) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("MinSidewalkWidth"),&m_MinSidewalkWidth) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
 
       if (32 <= version)
       {
          if ( !pLoad->Property(_T("PrestressTransferComputationType"),(long*)&m_PrestressTransferComputationType) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
 
@@ -2609,7 +3434,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( bBeginUnit )
          {
             if ( !pLoad->Property(_T("AllowStraightStrandExtensions"),&m_bAllowStraightStrandExtensions) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             pLoad->EndUnit();
          }
@@ -2621,47 +3448,73 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          // added version 50
          pLoad->BeginUnit(_T("ClosureJoint"));
          if ( !pLoad->Property(_T("ClosureCompStressAtStressing"),             &m_ClosureCompStressAtStressing) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("ClosureTensStressPTZAtStressing"),          &m_ClosureTensStressPTZAtStressing) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("ClosureTensStressPTZWithRebarAtStressing"), &m_ClosureTensStressPTZWithRebarAtStressing) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("ClosureTensStressAtStressing"),             &m_ClosureTensStressAtStressing) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("ClosureTensStressWithRebarAtStressing"),    &m_ClosureTensStressWithRebarAtStressing) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("ClosureCompStressAtService"),               &m_ClosureCompStressAtService) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("ClosureCompStressWithLiveLoadAtService"),   &m_ClosureCompStressWithLiveLoadAtService) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("ClosureTensStressPTZAtService"),            &m_ClosureTensStressPTZAtService) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("ClosureTensStressPTZWithRebarAtService"),   &m_ClosureTensStressPTZWithRebarAtService) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("ClosureTensStressAtService"),               &m_ClosureTensStressAtService) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("ClosureTensStressWithRebarAtService"),      &m_ClosureTensStressWithRebarAtService) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("ClosureCompStressFatigue"),                 &m_ClosureCompStressFatigue) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          pLoad->EndUnit(); // Closure Joint
       }
 
 
       if(!pLoad->EndUnit())
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
    }
 
 
@@ -2790,6 +3643,7 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TESTD(m_CreepDuration1Max          , rOther.m_CreepDuration1Max          );
    TESTD(m_CreepDuration2Max          , rOther.m_CreepDuration2Max          );
    TESTD(m_TotalCreepDuration  , rOther.m_TotalCreepDuration  );
+   TESTD(m_CamberVariability   , rOther.m_CamberVariability  );
    TEST (m_LossMethod                 , rOther.m_LossMethod                 );
    TEST (m_TimeDependentModel         , rOther.m_TimeDependentModel         );
    TESTD(m_ShippingLosses             , rOther.m_ShippingLosses             );
@@ -2851,6 +3705,8 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
       TESTD(m_MaxConcreteUnitWeight[i] , rOther.m_MaxConcreteUnitWeight[i] );
       TESTD(m_MaxConcreteAggSize[i]    , rOther.m_MaxConcreteAggSize[i] );
    }
+
+   TEST (m_DoCheckStirrupSpacingCompatibility, rOther.m_DoCheckStirrupSpacingCompatibility);
 
    TEST (m_EnableSlabOffsetCheck         , rOther.m_EnableSlabOffsetCheck            );
    TEST (m_EnableSlabOffsetDesign        , rOther.m_EnableSlabOffsetDesign );
@@ -2916,7 +3772,9 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    if (considerName)
    {
       if ( GetName() != rOther.GetName() )
+      {
          return false;
+      }
    }
 
    return true;
@@ -3000,7 +3858,9 @@ void SpecLibraryEntry::SetHoldDownForce(bool doCheck, bool doDesign, Float64 for
    m_DoDesignHoldDown = doCheck ? doDesign : false; // don't allow design without checking
 
    if (m_DoCheckHoldDown)
+   {
       m_HoldDownForce   = force;
+   }
 }
 
 void SpecLibraryEntry::EnableSplittingCheck(bool enable)
@@ -3684,9 +4544,13 @@ Float64 SpecLibraryEntry::GetFinalTensionStressFactor(int exposureCondition) con
 void SpecLibraryEntry::SetFinalTensionStressFactor(int exposureCondition,Float64 stress)
 {
    if ( exposureCondition == EXPOSURE_NORMAL )
+   {
       m_Bs3TensStressServNc = stress;
+   }
    else
+   {
       m_Bs3TensStressServSc = stress;
+   }
 }
 
 void SpecLibraryEntry::GetFinalTensionStressFactor(int exposureCondition,bool* doCheck, Float64* stress) const
@@ -3873,6 +4737,16 @@ void SpecLibraryEntry::SetTotalCreepDuration(Float64 duration)
 Float64 SpecLibraryEntry::GetTotalCreepDuration() const
 {
    return m_TotalCreepDuration;
+}
+
+void SpecLibraryEntry::SetCamberVariability(Float64 var)
+{
+   m_CamberVariability = var;
+}
+
+Float64 SpecLibraryEntry::GetCamberVariability() const
+{
+   return m_CamberVariability;
 }
 
 int SpecLibraryEntry::GetLossMethod() const
@@ -4207,6 +5081,16 @@ void SpecLibraryEntry::SetMaxConcreteAggSize(pgsTypes::ConcreteType type,Float64
 Float64 SpecLibraryEntry::GetMaxConcreteAggSize(pgsTypes::ConcreteType type) const
 {
    return m_MaxConcreteAggSize[type];
+}
+
+void SpecLibraryEntry::SetDoCheckStirrupSpacingCompatibility(bool doCheck)
+{
+   m_DoCheckStirrupSpacingCompatibility = doCheck;
+}
+
+bool SpecLibraryEntry::GetDoCheckStirrupSpacingCompatibility() const
+{
+   return m_DoCheckStirrupSpacingCompatibility;
 }
 
 void SpecLibraryEntry::EnableSlabOffsetCheck(bool enable)
@@ -4752,6 +5636,7 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_CreepDuration2Min          = rOther.m_CreepDuration2Min;
    m_CreepDuration2Max          = rOther.m_CreepDuration2Max;
    m_TotalCreepDuration  = rOther.m_TotalCreepDuration;
+   m_CamberVariability   = rOther.m_CamberVariability;
 
    m_LossMethod                 = rOther.m_LossMethod;
    m_TimeDependentModel         = rOther.m_TimeDependentModel;
@@ -4816,6 +5701,8 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
       m_MaxConcreteUnitWeight[i] = rOther.m_MaxConcreteUnitWeight[i];
       m_MaxConcreteAggSize[i]    = rOther.m_MaxConcreteAggSize[i];
    }
+
+   m_DoCheckStirrupSpacingCompatibility = rOther.m_DoCheckStirrupSpacingCompatibility;
 
    m_EnableSlabOffsetCheck = rOther.m_EnableSlabOffsetCheck;
    m_EnableSlabOffsetDesign = rOther.m_EnableSlabOffsetDesign;

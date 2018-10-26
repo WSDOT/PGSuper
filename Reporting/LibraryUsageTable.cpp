@@ -73,9 +73,13 @@ rptRcTable* CLibraryUsageTable::Build(IBroker* pBroker) const
       (*table)(row,1) << record.EntryName;
       
       if ( record.bEditable )
+      {
          (*table)(row,2) << _T("Project Library");
+      }
       else
+      {
          (*table)(row,2) << _T("Master Library");
+      }
 
       row++;
    }

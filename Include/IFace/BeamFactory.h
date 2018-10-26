@@ -224,6 +224,16 @@ interface IBeamFactory : IUnknown
    //---------------------------------------------------------------------------------
    // Returns all of methods of beam spacing measurement, supported by this beam
    virtual pgsTypes::SupportedBeamSpacings GetSupportedBeamSpacings() = 0;
+   
+   //---------------------------------------------------------------------------------
+   // Returns all of methods of intermediate diaphragms, supported by this beam
+   // if the vector is empty, the beam doesn't support diaphragms
+   virtual pgsTypes::SupportedDiaphragmTypes GetSupportedDiaphragms() = 0;
+
+   //---------------------------------------------------------------------------------
+   // Returns all the types of intermediate diaphragm locations for a specified diaphragm type
+   // supported by this beam
+   virtual pgsTypes::SupportedDiaphragmLocationTypes GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) = 0;
 
    //---------------------------------------------------------------------------------
    // Returns allowable spacing distances for the given deck and spacing type.

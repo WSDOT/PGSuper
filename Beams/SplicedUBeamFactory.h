@@ -90,6 +90,8 @@ public:
    virtual HICON GetIcon();
    virtual pgsTypes::SupportedDeckTypes GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs);
    virtual pgsTypes::SupportedBeamSpacings GetSupportedBeamSpacings();
+   virtual pgsTypes::SupportedDiaphragmTypes GetSupportedDiaphragms();
+   virtual pgsTypes::SupportedDiaphragmLocationTypes GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type);
    virtual void GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing);
    virtual WebIndexType GetWebCount(const IBeamFactory::Dimensions& dimensions);
    virtual Float64 GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType);

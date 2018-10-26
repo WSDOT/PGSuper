@@ -31,18 +31,8 @@
 #include <LRFD\LRFD.h>
 #include "afxwin.h"
 
-struct SpanGirderType
-{
-   SpanIndexType Span;
-   GirderIndexType Girder;
-
-   SpanGirderType(SpanIndexType span, GirderIndexType girder):
-      Span(span), Girder(girder)
-   {;}
-};
-
-typedef std::vector<SpanGirderType> SpanGirderList;
-typedef SpanGirderList::iterator SpanGirderIterator;
+typedef std::vector<CSpanKey> SpanKeyList;
+typedef SpanKeyList::iterator SpanKeyIterator;
 
 struct PierGirderType
 {
@@ -69,7 +59,7 @@ public:
 	virtual ~CLLDFFillDlg();
 
 // Functions to get data after dialog closes
-   SpanGirderList GetSpanGirders();
+   SpanKeyList GetSpanKeys();
    PierGirderList GetPierGirders();
 
    pgsTypes::DistributionFactorMethod GetDistributionFactorMethod();

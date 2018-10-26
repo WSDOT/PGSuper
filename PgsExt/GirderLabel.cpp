@@ -84,21 +84,49 @@ pgsGirderLabel::~pgsGirderLabel(void)
 }
 
 
-std::_tstring GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType type,bool bAbutment)
+LPCTSTR GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType type,bool bAbutment,bool bAbbreviation)
 {
    switch( type )
    {
    case ConnectionLibraryEntry::FromBearingAlongGirder:
-      return _T("Measured From CL Bearing along Girder Centerline");
+      if (bAbbreviation)
+      {
+         return _T("FCLB-AG");
+      }
+      else
+      {
+         return _T("Measured From CL Bearing along Girder Centerline");
+      }
 
    case ConnectionLibraryEntry::FromBearingNormalToPier:
-      return bAbutment ? _T("Measured From CL Bearing and Normal to Abutment Line") : _T("Measured From CL Bearing and Normal to Pier Line");
+      if ( bAbbreviation )
+      {
+         return bAbutment ? _T("FCLB-NA") : _T("FCLB-NP");
+      }
+      else
+      {
+         return bAbutment ? _T("Measured From CL Bearing and Normal to Abutment Line") : _T("Measured From CL Bearing and Normal to Pier Line");
+      }
 
    case ConnectionLibraryEntry::FromPierAlongGirder:
-      return bAbutment ? _T("Measured From Abutment Line and Along Girder Centerline") : _T("Measured From Pier Line and Along Girder Centerline");
+      if ( bAbbreviation )
+      {
+         return bAbutment ? _T("FA-AG") : _T("FP-AG");
+      }
+      else
+      {
+         return bAbutment ? _T("Measured From Abutment Line and Along Girder Centerline") : _T("Measured From Pier Line and Along Girder Centerline");
+      }
 
    case ConnectionLibraryEntry::FromPierNormalToPier:
-      return bAbutment ? _T("Measured From and Normal to Abutment Line") : _T("Measured From and Normal to Pier Line");
+      if ( bAbbreviation )
+      {
+         return bAbutment ? _T("FA-NA") : _T("FP-NP");
+      }
+      else
+      {
+         return bAbutment ? _T("Measured From and Normal to Abutment Line") : _T("Measured From and Normal to Pier Line");
+      }
 
    default:
       ATLASSERT(false);
@@ -106,15 +134,29 @@ std::_tstring GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMea
    }
 }
 
-std::_tstring GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType type,bool bAbutment)
+LPCTSTR GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType type,bool bAbutment,bool bAbbreviation)
 {
    switch( type )
    {
    case ConnectionLibraryEntry::AlongGirder:
-      return bAbutment ? _T("Measured From Abutment Line and Along Girder Centerline") :  _T("Measured From Pier Line and Along Girder Centerline");
+      if ( bAbbreviation )
+      {
+         return bAbutment ? _T("FA-AG") : _T("FP-AG");
+      }
+      else
+      {
+         return bAbutment ? _T("Measured From Abutment Line and Along Girder Centerline") :  _T("Measured From Pier Line and Along Girder Centerline");
+      }
 
    case ConnectionLibraryEntry::NormalToPier:
-      return bAbutment ? _T("Measured From and Normal to Abutment Line") : _T("Measured From and Normal to Pier Line");
+      if ( bAbbreviation )
+      {
+         return bAbutment ? _T("FA-NA") : _T("FP-NP");
+      }
+      else
+      {
+         return bAbutment ? _T("Measured From and Normal to Abutment Line") : _T("Measured From and Normal to Pier Line");
+      }
 
    default:
       ATLASSERT(false);

@@ -534,6 +534,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
 
       SpanIndexType spanIdx = segmentKey.groupIndex;
       GirderIndexType gdrIdx = segmentKey.girderIndex;
+      CSpanKey spanKey(spanIdx,gdrIdx);
 
       RowIndexType row = 0;
       if(bFirst)
@@ -735,29 +736,29 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
          if (bFirst)
             (*p_table)(row,0) << _T("Live Load Distribution Factor for Moment");
 
-         (*p_table)(row++,col) << df.SetValue(pDistFact->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI));
+         (*p_table)(row++,col) << df.SetValue(pDistFact->GetMomentDistFactor(spanKey,pgsTypes::StrengthI));
 
          if (bFirst)
             (*p_table)(row,0) << _T("Live Load Distribution Factor for Shear");
 
-         (*p_table)(row++,col) << df.SetValue(pDistFact->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI));
+         (*p_table)(row++,col) << df.SetValue(pDistFact->GetShearDistFactor(spanKey,pgsTypes::StrengthI));
       }
       else
       {
          if (bFirst)
             (*p_table)(row,0) << _T("Live Load Distribution Factor for Moment (Strength and Service Limit States)");
 
-         (*p_table)(row++,col) << df.SetValue(pDistFact->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI));
+         (*p_table)(row++,col) << df.SetValue(pDistFact->GetMomentDistFactor(spanKey,pgsTypes::StrengthI));
 
          if (bFirst)
             (*p_table)(row,0) << _T("Live Load Distribution Factor for Shear (Strength and Service Limit States)");
 
-         (*p_table)(row++,col) << df.SetValue(pDistFact->GetShearDistFactor(spanIdx,gdrIdx,pgsTypes::StrengthI));
+         (*p_table)(row++,col) << df.SetValue(pDistFact->GetShearDistFactor(spanKey,pgsTypes::StrengthI));
 
          if (bFirst)
             (*p_table)(row,0) << _T("Live Load Distribution Factor for Moment (Fatigue Limit States)");
 
-         (*p_table)(row++,col) << df.SetValue(pDistFact->GetMomentDistFactor(spanIdx,gdrIdx,pgsTypes::FatigueI));
+         (*p_table)(row++,col) << df.SetValue(pDistFact->GetMomentDistFactor(spanKey,pgsTypes::FatigueI));
       }
 
       bFirst = false;

@@ -552,8 +552,11 @@
 #define IDC_NC_CREEP                    1207
 #define IDC_NC_CREEP_TAG                1208
 #define IDC_SPECIFICATION               1209
+#define IDC_NC_CREEP2                   1209
+#define IDC_CAMBER_VARIABILITY          1209
 #define IDC_K1                          1210
 #define IDC_EC_K1                       1210
+#define IDC_NC_CREEP_TAG2               1210
 #define IDC_EC_K2                       1211
 #define IDC_CREEP_K1                    1212
 #define IDC_CREEP_K2                    1213
@@ -850,6 +853,7 @@
 #define IDC_TOP_FLANGE_ROUGHENED        1444
 #define IDC_USER                        1444
 #define IDC_VARIABLE_DEPTH_CHECK        1444
+#define IDC_CHECK_STIRRUP_COMPATIBILITY 1444
 #define IDC_BRIDGE_LENGTH               1445
 #define IDC_EXTEND_DECK_BARS            1445
 #define IDC_DESIGN_SPLITTING            1445
@@ -1069,8 +1073,10 @@
 #define IDC_VARIABLE_DEPTH_GROUP        1575
 #define IDC_ADTT2_LABEL                 1576
 #define IDC_SERVICE_TENSION_WITH_REBAR  1576
+#define IDC_NO_DIAPHRAGMS               1576
 #define IDC_ADTT2                       1577
 #define IDC_SERVICE_TENSION_WITH_REBAR_UNIT 1577
+#define IDC_RANGE_LABEL                 1577
 #define IDC_LF_LOWER2_LABEL             1578
 #define IDC_LF_LOWER2                   1579
 #define IDC_LF_UPPER2_LABEL             1580
@@ -1132,7 +1138,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        217
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1576
+#define _APS_NEXT_CONTROL_VALUE         1578
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

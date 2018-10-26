@@ -3085,59 +3085,85 @@ const CPrecastSegmentData* CBridgeDescription2::GetSegment(const CSegmentKey& se
 
 bool CBridgeDescription2::IsStable() const
 {
-   // Number of Equations, Ne = 3j+c
+   // Check the stability of each segment. The structure is stable if all segments are stable.
+   // The structure is unstable if the stability of two adjacent segments could not be determined.
+   // The stability of suspended segments cannot be determined without knowing the stability of the adjacent segments.
+   //
+   // Suspended Segment - Type 1 - End Span supported by strongback at one end
+   //
+   //   =============================o====================/
+   //   ^                                      ^
+   //
+   // Suspended Segment - Type 2 - Drop-in supported by strongbacks at both ends
+   //
+   //     /=========================o================================o===========================/
+   //                          ^                                         ^
+
+   // Determine the stability of a segment by looking at the number of equations and number of unknowns
+   // Number of Equations, Ne = 3j
    // Number of Unknowns,  Nu = 3m+r
+   // j = # of joints (number of permanent piers + temporary supports)
+   // m = # of members (number of joints-1)
+   // r = # of reactions (number of permanent piers + erection towers)
+   //
    // Ne < Nu : statically indeterminant and stable
    // Ne = Nu : statically determinant and stable
    // Ne > Nu : unstable
    //
-   // m = number of members (number of supports - 1)
-   // j = number of joints (number of permanent piers and temporary supports)
-   // r = number of reactions (number of permanent piers and erection towers + 1... assume all vertical reactions and only a single horizontal reaction) 
-   // c = number of internal hinges (number of strongback connections)
-
-   // NOTE: number of reactions isn't exactly correct. We are discounting moment reactions at integral supports and horizontal reactions at all but
-   //       on hinge reaction. If there are multiple horizontal reactions, the system could be indeterminate in the X direction. However, we don't have
-   //       horizontal loads so that is irrelivent. What we really want to know is if spliced girders are in a configuration that form a mechanism
-   //       or a linkage that permits rigid body movement. Conventional precast girder bridges (PGSuper) are always stable
-
-   PierIndexType nPiers = GetPierCount();
-   SupportIndexType nTS = GetTemporarySupportCount();
-
-   IndexType nReactions = nPiers; // all piers provide a reaction in the Y direction. We will add number of erection towers in the loop below
-   nReactions++; // assume there is at least on pier that provides a reaction in the X direction.
-
-   IndexType nHinges    = 0; // will add number of strong backs in the loop below
-
-   for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
+   GroupIndexType nGroups = GetGirderGroupCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
-      const CTemporarySupportData* pTS = GetTemporarySupport(tsIdx);
-      if ( pTS->GetSupportType() == pgsTypes::ErectionTower )
-      {
-         nReactions++; // erection tower provide a reaction in the Y direction
+      GirderIndexType gdrIdx = 0;
 
-         if ( pTS->GetConnectionType() == pgsTypes::sctClosureJoint )
+      bool bIsLastSegmentStable = true;
+
+      const CGirderGroupData* pGroup = GetGirderGroup(grpIdx);
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+      SegmentIndexType nSegments = pGirder->GetSegmentCount();
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+         std::vector<const CPierData2*> vPiers = pSegment->GetPiers();
+         std::vector<const CTemporarySupportData*> vTS = pSegment->GetTemporarySupports();
+
+         IndexType nJoints = vPiers.size() + vTS.size();
+         IndexType nMembers = nJoints-1;
+
+         IndexType nReactions = vPiers.size();
+         std::vector<const CTemporarySupportData*>::iterator tsIter(vTS.begin());
+         std::vector<const CTemporarySupportData*>::iterator tsIterEnd(vTS.end());
+         for ( ; tsIter != tsIterEnd; tsIter++ )
          {
-            nHinges++; // closure joints are internal hinges prior to becoming composite
+            const CTemporarySupportData* pTS = *tsIter;
+            if ( pTS->GetSupportType() == pgsTypes::ErectionTower )
+            {
+               nReactions++; // erection tower provide a reaction in the Y direction
+            }
          }
-      }
-      else if ( pTS->GetSupportType() == pgsTypes::StrongBack )
-      {
-         nHinges++; // closure joints are internal hinges prior to becoming composite
-      }
-      else
-      {
-         ATLASSERT(false);
-      }
-   }
 
-   IndexType nJoints = nPiers + nTS;
-   IndexType nMembers = nJoints - 1;
+         IndexType Ne = 3*nJoints;
+         IndexType Nu = 3*nMembers+nReactions+1;
+         bool bIsThisSegmentStable = Nu < Ne ? false : true;
 
-   IndexType Ne = 3*nJoints+nHinges;
-   IndexType Nu = 3*nMembers+nReactions;
+         if ( segIdx == 0 )
+         {
+            bIsLastSegmentStable = bIsThisSegmentStable;
+         }
+         else
+         {
+            if ( !bIsLastSegmentStable && !bIsThisSegmentStable )
+            {
+               return false;
+            }
+            else
+            {
+               bIsLastSegmentStable = bIsThisSegmentStable;
+            }
+         }
+      } // next segment
+   } // next group
 
-   return (Nu < Ne ? false : true);
+   return true;
 }
 
 bool CBridgeDescription2::IsSegmentOverconstrained(const CSegmentKey& segmentKey) const

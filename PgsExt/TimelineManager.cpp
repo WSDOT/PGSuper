@@ -1201,6 +1201,7 @@ void CTimelineManager::GetTempSupportEvents(SupportIDType tsID,EventIndexType* p
 
 EventIndexType CTimelineManager::GetSegmentConstructionEventIndex(SegmentIDType segmentID) const
 {
+   ATLASSERT(segmentID != INVALID_ID);
    ASSERT_VALID;
 
    EventIndexType idx = 0;
@@ -1223,6 +1224,7 @@ EventIndexType CTimelineManager::GetSegmentConstructionEventIndex(SegmentIDType 
 
 EventIDType CTimelineManager::GetSegmentConstructionEventID(SegmentIDType segmentID) const
 {
+   ATLASSERT(segmentID != INVALID_ID);
    ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
@@ -1241,6 +1243,7 @@ EventIDType CTimelineManager::GetSegmentConstructionEventID(SegmentIDType segmen
 
 void CTimelineManager::SetSegmentConstructionEventByIndex(SegmentIDType segmentID,EventIndexType eventIdx)
 {
+   ATLASSERT(segmentID != INVALID_ID);
    std::vector<CTimelineEvent*>::iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::iterator end(m_TimelineEvents.end());
    for ( ; iter != end; iter++ )
@@ -1264,6 +1267,7 @@ void CTimelineManager::SetSegmentConstructionEventByIndex(SegmentIDType segmentI
 
 void CTimelineManager::SetSegmentConstructionEventByID(SegmentIDType segmentID,EventIDType ID)
 {
+   ATLASSERT(segmentID != INVALID_ID);
    std::vector<CTimelineEvent*>::iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::iterator end(m_TimelineEvents.end());
    for ( ; iter != end; iter++ )
@@ -1281,6 +1285,7 @@ void CTimelineManager::SetSegmentConstructionEventByID(SegmentIDType segmentID,E
 
 EventIndexType CTimelineManager::GetSegmentErectionEventIndex(SegmentIDType segmentID) const
 {
+   ATLASSERT(segmentID != INVALID_ID);
    ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
@@ -1299,6 +1304,7 @@ EventIndexType CTimelineManager::GetSegmentErectionEventIndex(SegmentIDType segm
 
 EventIDType CTimelineManager::GetSegmentErectionEventID(SegmentIDType segmentID) const
 {
+   ATLASSERT(segmentID != INVALID_ID);
    ASSERT_VALID;
 
    std::vector<CTimelineEvent*>::const_iterator iter(m_TimelineEvents.begin());
@@ -1317,6 +1323,7 @@ EventIDType CTimelineManager::GetSegmentErectionEventID(SegmentIDType segmentID)
 
 void CTimelineManager::SetSegmentErectionEventByIndex(SegmentIDType segmentID,EventIndexType eventIdx)
 {
+   ATLASSERT(segmentID != INVALID_ID);
    std::vector<CTimelineEvent*>::iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::iterator end(m_TimelineEvents.end());
    for ( ; iter != end; iter++ )
@@ -1340,6 +1347,7 @@ void CTimelineManager::SetSegmentErectionEventByIndex(SegmentIDType segmentID,Ev
 
 void CTimelineManager::SetSegmentErectionEventByID(SegmentIDType segmentID,EventIDType ID)
 {
+   ATLASSERT(segmentID != INVALID_ID);
    std::vector<CTimelineEvent*>::iterator iter(m_TimelineEvents.begin());
    std::vector<CTimelineEvent*>::iterator end(m_TimelineEvents.end());
    for ( ; iter != end; iter++ )

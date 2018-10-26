@@ -852,6 +852,11 @@ public:
    void SetTotalCreepDuration(Float64 duration);
    Float64 GetTotalCreepDuration() const;
 
+   //------------------------------------------------------------------------
+   //  Variability between upper and lower bound camber, stored in decimal percent
+   void SetCamberVariability(Float64 var);
+   Float64 GetCamberVariability() const;
+
    // Set/Get the curing method time adjustment factor
    // Form LRFD, 1 day of steam curing = 7 days of moist curing
    void SetCuringMethodTimeAdjustmentFactor(Float64 f);
@@ -983,6 +988,9 @@ public:
    // that it is excessive. A warning will be issued for any value greater than the threshold.
    void SetMaxConcreteAggSize(pgsTypes::ConcreteType type,Float64 agg);
    Float64 GetMaxConcreteAggSize(pgsTypes::ConcreteType type) const;
+
+   void SetDoCheckStirrupSpacingCompatibility(bool doCheck);
+   bool GetDoCheckStirrupSpacingCompatibility() const;
 
 
    ////////////////////////////////////////
@@ -1179,6 +1187,8 @@ private:
    Float64 m_CreepDuration2Max;
    Float64 m_TotalCreepDuration;
 
+   Float64 m_CamberVariability; // Variability between upper and lower bound camber, stored in decimal percent
+
    // Losses
    int     m_LossMethod;
    int     m_TimeDependentModel;
@@ -1219,6 +1229,7 @@ private:
 
    pgsTypes::AnalysisType m_AnalysisType; // this data will be in old library entries (version < 28)
 
+   // Concrete limits
    Float64 m_MaxSlabFc[3];
    Float64 m_MaxSegmentFci[3];
    Float64 m_MaxSegmentFc[3];
@@ -1226,6 +1237,9 @@ private:
    Float64 m_MaxClosureFc[3];
    Float64 m_MaxConcreteUnitWeight[3];
    Float64 m_MaxConcreteAggSize[3];
+
+   // Warning checks
+   bool m_DoCheckStirrupSpacingCompatibility;
    
    bool m_EnableSlabOffsetCheck;
    bool m_EnableSlabOffsetDesign;

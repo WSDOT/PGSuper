@@ -83,9 +83,13 @@ ZoneIndexType GetZoneIndexAtLocation(Float64 location, Float64 girderLength, Flo
 
       Float64 end_dist;
       if (on_left)
+      {
          end_dist = startSupportLoc;
+      }
       else
+      {
          end_dist = girderLength-endSupportLoc;
+      }
 
       // find zone
       Float64 ezloc=0.0;
