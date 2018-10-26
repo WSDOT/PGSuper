@@ -33,6 +33,8 @@
 #include <IFace\EditByUI.h>
 #include <IReportManager.h>
 
+#include "BridgePlanView.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -91,7 +93,7 @@ void CBridgePlanViewGirderDisplayObjectEvents::SelectPrevGirder()
       if ( m_SpanIdx == 0 ) // and this is the first span
       {
          // select the alignment
-         m_pFrame->SelectAlignment();
+         m_pFrame->GetBridgePlanView()->SelectAlignment(true);
       }
       else
       {
@@ -111,7 +113,7 @@ void CBridgePlanViewGirderDisplayObjectEvents::SelectNextGirder()
    {
       // if this is the last girder in the span
       if ( m_SpanIdx == m_nSpans-1 ) // and this is the last span
-         m_pFrame->SelectAlignment(); // select the alignment
+         m_pFrame->GetBridgePlanView()->SelectAlignment(true); // select the alignment
       else
          m_pFrame->SelectGirder(m_SpanIdx+1,0); // otherwise select the first girder in the next span
    }
@@ -227,11 +229,11 @@ STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnContext
       pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT,NULL);
       pPGSuperDoc->BuildReportMenu(pMenu,true);
 
-      std::vector<IBridgePlanViewEventCallback*> callbacks = pPGSuperDoc->GetBridgePlanViewCallbacks();
-      std::vector<IBridgePlanViewEventCallback*>::iterator iter;
+      std::map<Uint32,IBridgePlanViewEventCallback*> callbacks = pPGSuperDoc->GetBridgePlanViewCallbacks();
+      std::map<Uint32,IBridgePlanViewEventCallback*>::iterator iter;
       for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
       {
-         IBridgePlanViewEventCallback* callback = *iter;
+         IBridgePlanViewEventCallback* callback = iter->second;
          callback->OnGirderContextMenu(pThis->m_SpanIdx,pThis->m_GirderIdx,pMenu);
       }
 
@@ -449,11 +451,11 @@ STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnCont
       pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT,NULL);
       pPGSuperDoc->BuildReportMenu(pMenu,true);
 
-      std::vector<IBridgePlanViewEventCallback*> callbacks = pPGSuperDoc->GetBridgePlanViewCallbacks();
-      std::vector<IBridgePlanViewEventCallback*>::iterator iter;
+      std::map<Uint32,IBridgeSectionViewEventCallback*> callbacks = pPGSuperDoc->GetBridgeSectionViewCallbacks();
+      std::map<Uint32,IBridgeSectionViewEventCallback*>::iterator iter;
       for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
       {
-         IBridgePlanViewEventCallback* callback = *iter;
+         IBridgeSectionViewEventCallback* callback = iter->second;
          callback->OnGirderContextMenu(pThis->m_SpanIdx,pThis->m_GirderIdx,pMenu);
       }
 

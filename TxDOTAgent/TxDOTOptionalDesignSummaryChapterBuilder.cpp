@@ -56,7 +56,8 @@ static void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOpti
                           GirderIndexType gdr, IEAFDisplayUnits* pDisplayUnits);
 static void non_standard_table(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits, const std::string& tableName, 
                                const CTxDOTOptionalDesignGirderData::StrandRowContainer& strandRows );
-static void results_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignData* pProjectData,IEAFDisplayUnits* pDisplayUnits);
+static void original_results_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignData* pProjectData,IEAFDisplayUnits* pDisplayUnits);
+static void optional_results_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignData* pProjectData,IEAFDisplayUnits* pDisplayUnits);
 static void camber_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignData* pProjectData,IEAFDisplayUnits* pDisplayUnits);
 
 /****************************************************************************
@@ -116,8 +117,9 @@ rptChapter* CTxDOTOptionalDesignSummaryChapterBuilder::Build(CReportSpecificatio
    girder_design(pChapter, pBroker, pProjectData->GetOriginalDesignGirderData(),  TOGA_ORIG_GDR, pDisplayUnits);
    girder_design(pChapter, pBroker, pProjectData->GetPrecasterDesignGirderData(), TOGA_FABR_GDR, pDisplayUnits);
 
-   results_summary( pChapter, pBroker, pProjectData, pDisplayUnits );
-   camber_summary( pChapter, pBroker, pProjectData, pDisplayUnits );
+   original_results_summary( pChapter, pBroker, pProjectData, pDisplayUnits );
+   optional_results_summary( pChapter, pBroker, pProjectData, pDisplayUnits );
+   camber_summary(pChapter, pBroker, pProjectData, pDisplayUnits);
 
    return pChapter;
 }
@@ -299,33 +301,36 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
 
    (*p_table)(row++,1) << pStrandGeometry->GetNumStrands(TOGA_SPAN,gdr,pgsTypes::Permanent) << note;
 
-   if (pGirderData->GetStandardStrandFill())
+   if( pStrandGeometry->GetNumStrands(TOGA_SPAN,gdr,pgsTypes::Permanent) > 0) // no use reporting strand data if there are none
    {
-      (*p_table)(row,0) << "Yb of Topmost Depressed Strand(s) @ End";
-      (*p_table)(row++,1) << component.SetValue( pGirderData->GetStrandTo() );
-   }
-
-   Float64 span2 = pBridge->GetSpanLength(TOGA_SPAN,gdr)/2.0;
-   pgsPointOfInterest midpoi(TOGA_SPAN,gdr,span2);
-
-   (*p_table)(row,0) << "e"<<Sub("CL");
-   Float64 neff;
-   (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(midpoi,false,&neff) );
-
-   pgsPointOfInterest zeropoi(TOGA_SPAN,gdr,0.0);
-   (*p_table)(row,0) << "e"<<Sub("girder ends");
-   (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(zeropoi,false,&neff) );
-
-   // non standard fill row tables
-   if (!pGirderData->GetStandardStrandFill())
-   {
-      non_standard_table(pChapter, pDisplayUnits, "Non-Standard Strand Pattern at Girder Centerline",
-                         pGirderData->GetStrandsAtCL());
-
-      if (pGirderData->GetUseDepressedStrands())
+      if (pGirderData->GetStandardStrandFill())
       {
-         non_standard_table(pChapter, pDisplayUnits, "Non-Standard Strand Pattern at Girder Ends",
-                            pGirderData->GetStrandsAtEnds());
+         (*p_table)(row,0) << "Yb of Topmost Depressed Strand(s) @ End";
+         (*p_table)(row++,1) << component.SetValue( pGirderData->GetStrandTo() );
+      }
+
+      Float64 span2 = pBridge->GetSpanLength(TOGA_SPAN,gdr)/2.0;
+      pgsPointOfInterest midpoi(TOGA_SPAN,gdr,span2);
+
+      (*p_table)(row,0) << "e"<<Sub("CL");
+      Float64 neff;
+      (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(midpoi,false,&neff) );
+
+      pgsPointOfInterest zeropoi(TOGA_SPAN,gdr,0.0);
+      (*p_table)(row,0) << "e"<<Sub("girder ends");
+      (*p_table)(row++,1) << component.SetValue( pStrandGeometry->GetEccentricity(zeropoi,false,&neff) );
+
+      // non standard fill row tables
+      if (!pGirderData->GetStandardStrandFill())
+      {
+         non_standard_table(pChapter, pDisplayUnits, "Non-Standard Strand Pattern at Girder Centerline",
+                            pGirderData->GetStrandsAtCL());
+
+         if (pGirderData->GetUseDepressedStrands())
+         {
+            non_standard_table(pChapter, pDisplayUnits, "Non-Standard Strand Pattern at Girder Ends",
+                               pGirderData->GetStrandsAtEnds());
+         }
       }
    }
 }
@@ -357,7 +362,7 @@ void non_standard_table(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits, c
    }
 }
 
-static void results_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignData* pProjectData,IEAFDisplayUnits* pDisplayUnits)
+static void original_results_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignData* pProjectData,IEAFDisplayUnits* pDisplayUnits)
 {
    // Setup up some unit value prototypes
    INIT_UV_PROTOTYPE( rptPressureUnitValue, stress,      pDisplayUnits->GetStressUnit(), false );
@@ -369,14 +374,26 @@ static void results_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOp
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(4,"Input Design Data vs. Analysis of Original Girder");
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(5,"Input Design Data Vs. Analysis of Original Design");
    *p << p_table;
 
    int row = 0;
    (*p_table)(row,0) << "Value";
    (*p_table)(row,1) << "Input"<<rptNewLine<<"Design Data";
-   (*p_table)(row,2) << "Analysis of"<<rptNewLine<<"Original Girder";
+   (*p_table)(row,2) << "Analysis of"<<rptNewLine<<"Original Design";
    (*p_table)(row,3) << "Input/Analysis"<<rptNewLine<<"Ratio";
+   (*p_table)(row,4) << "Status";
+
+   row++;
+   (*p_table)(row,0) << "Required Ultimate Moment  ("<<moment.GetUnitTag()<<")";
+   (*p_table)(row,1) << moment.SetValue( pProjectData->GetMu() );
+   (*p_table)(row,2) << moment.SetValue( pGetTogaResults->GetRequiredUltimateMoment() );
+   (*p_table)(row,3) << pProjectData->GetMu() / pGetTogaResults->GetRequiredUltimateMoment();
+
+   if(pProjectData->GetMu() >= pGetTogaResults->GetRequiredUltimateMoment())
+      (*p_table)(row,4) << color(Green) << "Ok" << color(Black);
+   else
+      (*p_table)(row,4) << color(Red) << "Design Deficiency" << color(Black);
 
    Float64 stress_val, stress_fac, stress_loc;
    pGetTogaResults->GetControllingCompressiveStress(&stress_val, &stress_fac, &stress_loc);
@@ -387,6 +404,11 @@ static void results_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOp
    (*p_table)(row,2) << stress.SetValue( -1.0 * stress_val );
    (*p_table)(row,3) << stress_fac;
 
+   if(stress_fac >= 1.0)
+      (*p_table)(row,4) << color(Green) << "Ok" << color(Black);
+   else
+      (*p_table)(row,4) << color(Red) << "Design Deficiency" << color(Black);
+
    pGetTogaResults->GetControllingTensileStress(&stress_val, &stress_fac, &stress_loc);
 
    row++;
@@ -395,16 +417,66 @@ static void results_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOp
    (*p_table)(row,2) << stress.SetValue( -1.0 * stress_val );
    (*p_table)(row,3) << stress_fac;
 
-   row++;
-   (*p_table)(row,0) << "Ultimate Moment Capacity  ("<<moment.GetUnitTag()<<")";
-   (*p_table)(row,1) << moment.SetValue( pProjectData->GetMu() );
-   (*p_table)(row,2) << moment.SetValue( pGetTogaResults->GetRequiredUltimateMoment() );
-   (*p_table)(row,3) << pProjectData->GetMu() / pGetTogaResults->GetRequiredUltimateMoment();
+   if(stress_fac >= 1.0)
+      (*p_table)(row,4) << color(Green) << "Ok" << color(Black);
+   else
+      (*p_table)(row,4) << color(Red) << "Design Deficiency" << color(Black);
 
    *p<<"NOTES: Values in the above table reflect the following sign convention:"<<rptNewLine;
    *p<<"Compressive stress is positive. Tensile stress is negative.";
 
 }
+
+static void optional_results_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignData* pProjectData,IEAFDisplayUnits* pDisplayUnits)
+{
+   // Setup up some unit value prototypes
+   INIT_UV_PROTOTYPE( rptPressureUnitValue, stress,      pDisplayUnits->GetStressUnit(), false );
+   INIT_UV_PROTOTYPE( rptMomentUnitValue,   moment,      pDisplayUnits->GetMomentUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,   length, pDisplayUnits->GetSpanLengthUnit(), false );
+
+   GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
+
+   rptParagraph* p = new rptParagraph;
+   *pChapter << p;
+
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(5,"Analysis of Fabricator Optional Design");
+   *p << p_table;
+
+   int row = 0;
+   (*p_table)(row,0) << "Value";
+   (*p_table)(row,1) << "Input"<<rptNewLine<<"Design Data";
+   (*p_table)(row,2) << "Analysis of"<<rptNewLine<<"Fabricator"<<rptNewLine<<"Optional Design";
+   (*p_table)(row,3) << "Input/Analysis"<<rptNewLine<<"Ratio";
+   (*p_table)(row,4) << "Status";
+
+   Float64 input_fc = pProjectData->GetPrecasterDesignGirderData()->GetFc();
+   Float64 reqd_fc = pGetTogaResults->GetRequiredFc();
+
+   row++;
+   (*p_table)(row,0) << "Required Concrete Strength  ("<<stress.GetUnitTag()<<")";
+   (*p_table)(row,1) << stress.SetValue( input_fc );
+   (*p_table)(row,2) << stress.SetValue(  reqd_fc );
+   (*p_table)(row,3) << input_fc / reqd_fc;
+
+   if(input_fc >= reqd_fc)
+      (*p_table)(row,4) << color(Green) << "Ok" << color(Black);
+   else
+      (*p_table)(row,4) << color(Red) << bold(ON) << "Beam Does not Satisfy Design Requirements" << bold(OFF) << color(Black);
+
+   row++;
+   (*p_table)(row,0) << "Ultimate Moment Capacity  ("<<moment.GetUnitTag()<<")";
+   (*p_table)(row,1) << moment.SetValue( pProjectData->GetMu() );
+   (*p_table)(row,2) << moment.SetValue( pGetTogaResults->GetUltimateMomentCapacity() );
+   (*p_table)(row,3) << pProjectData->GetMu() / pGetTogaResults->GetUltimateMomentCapacity();
+
+   if(pProjectData->GetMu() <= pGetTogaResults->GetUltimateMomentCapacity())
+      (*p_table)(row,4) << color(Green) << "Ok" << color(Black);
+   else
+      (*p_table)(row,4) << color(Red) << bold(ON) << "Beam Does not Satisfy Design Requirements" << bold(OFF) << color(Black);
+}
+
+
 
 static void camber_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignData* pProjectData,IEAFDisplayUnits* pDisplayUnits)
 {
@@ -416,18 +488,26 @@ static void camber_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOpt
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,"Camber Analysis");
+   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(5,"Camber Analysis");
    *p << p_table;
 
    int row = 0;
    (*p_table)(row,0) << "Value";
-   (*p_table)(row,1) << "Original Girder";
-   (*p_table)(row,2) << "Fabricator"<<rptNewLine<<"Optional Design";
+   (*p_table)(row,1) << "Analysis of"<<rptNewLine<<"Original Design";
+   (*p_table)(row,2) << "Analysis of"<<rptNewLine<<"Fabricator"<<rptNewLine<<"Optional Design";
+   (*p_table)(row,3) << "Original/"<<rptNewLine<<"Fabricator"<<rptNewLine<<"Ratio";
+   (*p_table)(row,4) << "Status";
 
    row++;
    (*p_table)(row,0) << "Maximum Camber  ("<<length.GetUnitTag()<<")";
    (*p_table)(row,1) << length.SetValue( pGetTogaResults->GetMaximumCamber() );
    (*p_table)(row,2) << length.SetValue( pGetTogaResults->GetFabricatorMaximumCamber() );
+   (*p_table)(row,3) << pGetTogaResults->GetMaximumCamber()/pGetTogaResults->GetFabricatorMaximumCamber();
+
+   if(pGetTogaResults->GetMaximumCamber() >= pGetTogaResults->GetFabricatorMaximumCamber())
+      (*p_table)(row,4) << color(Green) << "Ok" << color(Black);
+   else
+      (*p_table)(row,4) << color(Red) << "Design Deficiency" << color(Black);
 
    *p<<"NOTE: Upward Camber is positive";
 }

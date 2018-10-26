@@ -261,7 +261,7 @@ void write_moment_data_table(IBroker* pBroker,
    *pChapter << pPara;
 
    std::ostringstream os;
-   os << strStageName << std::endl;
+   os << "Moment Capacity [5.7.3.2.4] - " << strStageName << std::endl;
    ColumnIndexType nColumns = (bPositiveMoment ? 14 : 10);
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns,os.str());
 
@@ -388,7 +388,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
 
    ColumnIndexType nColumns = bAfter2002 ? 8 : 7;
    std::ostringstream os;
-   os << (bPositiveMoment ? "Positive" : "Negative") << " Cracking Moment Details - " << strStageName << std::endl;
+   os << (bPositiveMoment ? "Positive" : "Negative") << " Cracking Moment Details [5.7.3.3.2] - " << strStageName << std::endl;
 
 
    *pParagraph << rptNewLine;
@@ -493,7 +493,7 @@ void write_min_moment_data_table(IBroker* pBroker,
    *pChapter << pParagraph;
 
    std::ostringstream os;
-   os << (bPositiveMoment ? "Positive" : "Negative") << " Minimum Moment Capacity - " << strStageName << std::endl;
+   os << "Minimum Reinforcement [5.7.3.3.2] - " << strStageName << std::endl;
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(7,os.str());
 
    if ( span == ALL_SPANS )

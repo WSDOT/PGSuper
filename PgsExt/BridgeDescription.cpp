@@ -589,6 +589,12 @@ void CBridgeDescription::MakeCopy(const CBridgeDescription& rOther)
       }
    }
 
+   // Make sure connection data at ends of bridge are cleared
+   CPierData* pPier = m_Piers.front();
+   pPier->SetConnectionLibraryEntry(pgsTypes::Back, NULL);
+   pPier = m_Piers.back();
+   pPier->SetConnectionLibraryEntry(pgsTypes::Ahead, NULL);
+
    m_LLDFMethod = rOther.m_LLDFMethod;
 
    AssertValid();
@@ -1484,12 +1490,6 @@ void CBridgeDescription::RenumberSpans()
    // last pier
    CPierData* pLastPier = m_Piers.back();
    pLastPier->SetSpans(pPrevSpan,NULL);
-
-   // Make sure connection data at ends of bridge are cleared
-   CPierData* pPier = m_Piers.front();
-   pPier->SetConnectionLibraryEntry(pgsTypes::Back, NULL);
-   pPier = m_Piers.back();
-   pPier->SetConnectionLibraryEntry(pgsTypes::Ahead, NULL);
 }
 
 void CBridgeDescription::AssertValid()

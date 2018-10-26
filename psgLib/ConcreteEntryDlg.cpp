@@ -60,56 +60,65 @@ CConcreteEntryDlg::CConcreteEntryDlg(bool allowEditing, CWnd* pParent /*=NULL*/)
 
 void CConcreteEntryDlg::DoDataExchange(CDataExchange* pDX)
 {
-   CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
-
-   CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CConcreteEntryDlg)
-	DDX_Text(pDX, IDC_ENTRY_NAME, m_EntryName);
-	//}}AFX_DATA_MAP
-
-   if (pDX->m_bSaveAndValidate)
+   m_bErrorInDDX = false;
+   try
    {
-      if (m_EntryName.IsEmpty())
+      CEAFApp* pApp = EAFGetApp();
+      const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
+      CDialog::DoDataExchange(pDX);
+	   //{{AFX_DATA_MAP(CConcreteEntryDlg)
+	   DDX_Text(pDX, IDC_ENTRY_NAME, m_EntryName);
+	   //}}AFX_DATA_MAP
+
+      if (pDX->m_bSaveAndValidate)
       {
-         AfxMessageBox("Concrete Name cannot be blank");
-         pDX->Fail();
+         if (m_EntryName.IsEmpty())
+         {
+            AfxMessageBox("Concrete Name cannot be blank");
+            pDX->Fail();
+         }
+      }
+
+      DDX_UnitValueAndTag(pDX, IDC_FC, IDC_FC_T, m_Fc, pDisplayUnits->Stress );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_FC, m_Fc, pDisplayUnits->Stress );
+
+      DDX_Check_Bool(pDX, IDC_MOD_E, m_bUserEc);
+      if (m_bUserEc || !pDX->m_bSaveAndValidate)
+      {
+         DDX_UnitValueAndTag(pDX, IDC_EC, IDC_EC_T, m_Ec, pDisplayUnits->Stress );
+         DDV_UnitValueGreaterThanZero(pDX, IDC_EC, m_Ec, pDisplayUnits->Stress );
+
+         if (!pDX->m_bSaveAndValidate)
+         {
+            CWnd* pwnd = (CWnd*)GetDlgItem(IDC_EC);
+            pwnd->GetWindowText(m_InitialEc);
+         }
+      }
+
+      DDX_UnitValueAndTag(pDX, IDC_DS, IDC_DS_T, m_Ds, pDisplayUnits->Density);
+      DDV_UnitValueGreaterThanZero(pDX, IDC_DS, m_Ds, pDisplayUnits->Density );
+      DDX_UnitValueAndTag(pDX, IDC_DW, IDC_DW_T, m_Dw, pDisplayUnits->Density );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_DW, m_Dw, pDisplayUnits->Density );
+      DDX_UnitValueAndTag(pDX, IDC_AGG_SIZE, IDC_AGG_SIZE_T, m_AggSize, pDisplayUnits->ComponentDim );
+      DDV_UnitValueGreaterThanZero(pDX, IDC_AGG_SIZE, m_AggSize, pDisplayUnits->ComponentDim );
+      DDX_Text(pDX, IDC_K1, m_K1 );
+      DDV_GreaterThanZero(pDX,IDC_K1,m_K1);
+
+      if ( m_Ds < m_MinNWCDensity )
+      {
+         m_bIsStrengthNWC = false;
+      }
+
+      if ( m_Dw < m_MinNWCDensity )
+      {
+         m_bIsDensityNWC = false;
       }
    }
-
-   DDX_UnitValueAndTag(pDX, IDC_FC, IDC_FC_T, m_Fc, pDisplayUnits->Stress );
-   DDV_UnitValueGreaterThanZero(pDX, IDC_FC, m_Fc, pDisplayUnits->Stress );
-
-   DDX_Check_Bool(pDX, IDC_MOD_E, m_bUserEc);
-   if (m_bUserEc || !pDX->m_bSaveAndValidate)
+   catch(...)
    {
-      DDX_UnitValueAndTag(pDX, IDC_EC, IDC_EC_T, m_Ec, pDisplayUnits->Stress );
-      DDV_UnitValueGreaterThanZero(pDX, IDC_EC, m_Ec, pDisplayUnits->Stress );
-
-      if (!pDX->m_bSaveAndValidate)
-      {
-         CWnd* pwnd = (CWnd*)GetDlgItem(IDC_EC);
-         pwnd->GetWindowText(m_InitialEc);
-      }
-   }
-
-   DDX_UnitValueAndTag(pDX, IDC_DS, IDC_DS_T, m_Ds, pDisplayUnits->Density);
-   DDV_UnitValueGreaterThanZero(pDX, IDC_DS, m_Ds, pDisplayUnits->Density );
-   DDX_UnitValueAndTag(pDX, IDC_DW, IDC_DW_T, m_Dw, pDisplayUnits->Density );
-   DDV_UnitValueGreaterThanZero(pDX, IDC_DW, m_Dw, pDisplayUnits->Density );
-   DDX_UnitValueAndTag(pDX, IDC_AGG_SIZE, IDC_AGG_SIZE_T, m_AggSize, pDisplayUnits->ComponentDim );
-   DDV_UnitValueGreaterThanZero(pDX, IDC_AGG_SIZE, m_AggSize, pDisplayUnits->ComponentDim );
-   DDX_Text(pDX, IDC_K1, m_K1 );
-   DDV_GreaterThanZero(pDX,IDC_K1,m_K1);
-
-   if ( m_Ds < m_MinNWCDensity )
-   {
-      m_bIsStrengthNWC = false;
-   }
-
-   if ( m_Dw < m_MinNWCDensity )
-   {
-      m_bIsDensityNWC = false;
+      m_bErrorInDDX = true;
+      throw;
    }
 }
 
@@ -202,19 +211,39 @@ HBRUSH CConcreteEntryDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
    {
       try
       {
-         CDataExchange dx(this,TRUE);
-
-         Float64 value;
-         DDX_UnitValue(&dx, IDC_DS, value, pDisplayUnits->Density );
-
-         if (value < m_MinNWCDensity )
+         // if the user enters a number like .125, the first keystroke is ".". DDX_UnitValue calls
+         // into MFC DDX_Text which calls AfxTextFloatFormat. This "." does not evaluate to a number
+         // so an error message is displayed... this gets the user caught in an infinte loop of
+         // pressing the OK button. The only way out is to crash the program.
+         //
+         // To work around this issue, we need to determine if the value in the field evaluates to
+         // a number. If not, assume the density is not consistent with NWC and color the text red
+         // otherwise, go on to normal processing.
+	      const int TEXT_BUFFER_SIZE = 400;
+	      TCHAR szBuffer[TEXT_BUFFER_SIZE];
+         ::GetWindowText(GetDlgItem(IDC_DS)->GetSafeHwnd(), szBuffer, _countof(szBuffer));
+		   Float64 d;
+   		if (_sntscanf_s(szBuffer, _countof(szBuffer), _T("%lf"), &d) != 1)
          {
             m_bIsStrengthNWC = false;
             pDC->SetTextColor( RED );
          }
          else
          {
-            m_bIsStrengthNWC = true;
+            CDataExchange dx(this,TRUE);
+
+            Float64 value;
+            DDX_UnitValue(&dx, IDC_DS, value, pDisplayUnits->Density );
+
+            if (value < m_MinNWCDensity )
+            {
+               m_bIsStrengthNWC = false;
+               pDC->SetTextColor( RED );
+            }
+            else
+            {
+               m_bIsStrengthNWC = true;
+            }
          }
       }
       catch(...)
@@ -225,19 +254,31 @@ HBRUSH CConcreteEntryDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
    {
       try
       {
-         CDataExchange dx(this,TRUE);
-
-         Float64 value;
-         DDX_UnitValue(&dx, IDC_DW, value, pDisplayUnits->Density);
-
-         if (value < m_MinNWCDensity )
+	      const int TEXT_BUFFER_SIZE = 400;
+	      TCHAR szBuffer[TEXT_BUFFER_SIZE];
+         ::GetWindowText(GetDlgItem(IDC_DW)->GetSafeHwnd(), szBuffer, _countof(szBuffer));
+		   Float64 d;
+   		if (_sntscanf_s(szBuffer, _countof(szBuffer), _T("%lf"), &d) != 1)
          {
             m_bIsDensityNWC = false;
             pDC->SetTextColor( RED );
          }
          else
          {
-            m_bIsDensityNWC = true;
+            CDataExchange dx(this,TRUE);
+
+            Float64 value;
+            DDX_UnitValue(&dx, IDC_DW, value, pDisplayUnits->Density);
+
+            if (value < m_MinNWCDensity )
+            {
+               m_bIsDensityNWC = false;
+               pDC->SetTextColor( RED );
+            }
+            else
+            {
+               m_bIsDensityNWC = true;
+            }
          }
       }
       catch(...)
@@ -257,6 +298,6 @@ void CConcreteEntryDlg::OnOK()
 {
    CDialog::OnOK();
 
-   if ( !(m_bIsStrengthNWC && m_bIsDensityNWC) )
+   if ( !m_bErrorInDDX && !(m_bIsStrengthNWC && m_bIsDensityNWC) )
       AfxMessageBox(IDS_NWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
 }

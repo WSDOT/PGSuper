@@ -12496,7 +12496,7 @@ DistributionFactorType CAnalysisAgentImp::GetLiveLoadDistributionFactorType(pgsT
       break;
 
    case pgsTypes::lltPermit:
-      dfType = dftFatigue;
+      dfType = dftEnvelope;
       break;
 
    case pgsTypes::lltLegalRating_Routine:
@@ -12512,7 +12512,7 @@ DistributionFactorType CAnalysisAgentImp::GetLiveLoadDistributionFactorType(pgsT
      break;
 
    case pgsTypes::lltPermitRating_Special:
-     dfType = dftFatigue;
+     dfType = dftFatigue; // single lane with muliple presense divided out
      break;
 
    default:

@@ -158,7 +158,7 @@ void CGirderModelSectionView::OnInitialUpdate()
    dispMgr->AddDisplayObjectFactory((iDisplayObjectFactory*)unk);
 
    // set up default event handler for canvas
-   CGMDisplayMgrEventsImpl* events = new CGMDisplayMgrEventsImpl(pDoc, m_pFrame, this);
+   CGMDisplayMgrEventsImpl* events = new CGMDisplayMgrEventsImpl(pDoc, m_pFrame, this, false);
    unk = events->GetInterface(&IID_iDisplayMgrEvents);
    dispMgr->RegisterEventSink((iDisplayMgrEvents*)unk);
 }
@@ -220,8 +220,9 @@ void CGirderModelSectionView::UpdateDisplayObjects()
    GirderIndexType girder;
    if ( m_pFrame->SyncWithBridgeModelView() )
    {
-      span      = pDoc->GetSpanIdx();
-      girder    = pDoc->GetGirderIdx();
+      CSelection selection = pDoc->GetSelection();
+      span      = selection.SpanIdx;
+      girder    = selection.GirderIdx;
    }
    else
    {
@@ -732,18 +733,29 @@ void CGirderModelSectionView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pH
       m_bUpdateError = true;
       Invalidate();
    }
-   else if ( lHint == HINT_GIRDERSELECTIONCHANGED )
+   else if ( lHint == HINT_SELECTIONCHANGED )
    {
-      CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
-      int spanIdx = pDoc->GetSpanIdx();
-      int gdrIdx  = pDoc->GetGirderIdx();
-      
-      if ( m_pFrame->SyncWithBridgeModelView() )
-         m_pFrame->SelectSpanAndGirder(spanIdx,gdrIdx);
-   }
-   else if ( lHint == HINT_DECKSELECTED )
-   {
-      m_pFrame->SelectSpanAndGirder(-1,-1);
+      CSelection* pSelection = (CSelection*)pHint;
+      switch(pSelection->Type)
+      {
+      case CSelection::Girder:
+         if ( m_pFrame->SyncWithBridgeModelView() )
+            m_pFrame->SelectSpanAndGirder( pSelection->SpanIdx, pSelection->GirderIdx );
+         break;
+
+      case CSelection::None:
+      case CSelection::Span:
+      case CSelection::Pier:
+      case CSelection::Deck:
+      case CSelection::Alignment:
+         m_pFrame->SelectSpanAndGirder(-1,-1);
+         break;
+
+      default:
+         m_pFrame->SelectSpanAndGirder(-1,-1);
+         ATLASSERT(false); // is there another selection type???
+         break;
+      }
    }
 }
 
@@ -852,8 +864,9 @@ void CGirderModelSectionView::OnDraw(CDC* pDC)
    if ( m_pFrame->SyncWithBridgeModelView() )
    {
       CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
-      spanIdx = pDoc->GetSpanIdx();
-      gdrIdx  = pDoc->GetGirderIdx();
+      CSelection selection = pDoc->GetSelection();
+      spanIdx = selection.SpanIdx;
+      gdrIdx  = selection.GirderIdx;
    }
    else
    {
@@ -867,6 +880,14 @@ void CGirderModelSectionView::OnDraw(CDC* pDC)
    else
    {
       CString msg("Select a girder to display");
+      CFont font;
+      CFont* pOldFont = NULL;
+      if ( font.CreatePointFont(100,"Arial",pDC) )
+         pOldFont = pDC->SelectObject(&font);
+
       MultiLineTextOut(pDC,0,0,msg);
+
+      if ( pOldFont )
+         pDC->SelectObject(pOldFont);
    }
 }

@@ -42,11 +42,12 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CGMDisplayMgrEventsImpl
-CGMDisplayMgrEventsImpl::CGMDisplayMgrEventsImpl(CPGSuperDoc* pDoc,CGirderModelChildFrame* pFrame, CWnd* pParent)
+CGMDisplayMgrEventsImpl::CGMDisplayMgrEventsImpl(CPGSuperDoc* pDoc,CGirderModelChildFrame* pFrame, CWnd* pParent,bool bGirderElevation)
 {
    m_pDoc    = pDoc;
    m_pFrame  = pFrame;
    m_pParent = pParent;
+   m_bGirderElevation = bGirderElevation;
 }
 
 CGMDisplayMgrEventsImpl::~CGMDisplayMgrEventsImpl()
@@ -60,7 +61,7 @@ END_INTERFACE_MAP()
 DELEGATE_CUSTOM_INTERFACE(CGMDisplayMgrEventsImpl,Events);
 
 
-STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnLButtonDblClk(iDisplayMgr* pDO,UINT nFlags,CPoint point)
+STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnLButtonDblClk(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point)
 {
    METHOD_PROLOGUE(CGMDisplayMgrEventsImpl,Events);
 
@@ -77,66 +78,67 @@ STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnLButtonDblClk(iDisplayMg
    return true;
 }
 
-STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnLButtonDown(iDisplayMgr* pDO,UINT nFlags,CPoint point)
+STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnLButtonDown(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point)
 {
    METHOD_PROLOGUE(CGMDisplayMgrEventsImpl,Events);
 
    return false;
 }
 
-STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnRButtonDblClk(iDisplayMgr* pDO,UINT nFlags,CPoint point)
+STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnRButtonDblClk(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point)
 {
    METHOD_PROLOGUE(CGMDisplayMgrEventsImpl,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnRButtonDown(iDisplayMgr* pDO,UINT nFlags,CPoint point)
+STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnRButtonDown(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point)
 {
    METHOD_PROLOGUE(CGMDisplayMgrEventsImpl,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnRButtonUp(iDisplayMgr* pDO,UINT nFlags,CPoint point)
+STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnRButtonUp(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point)
 {
    METHOD_PROLOGUE(CGMDisplayMgrEventsImpl,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnLButtonUp(iDisplayMgr* pDO,UINT nFlags,CPoint point)
+STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnLButtonUp(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point)
 {
    METHOD_PROLOGUE(CGMDisplayMgrEventsImpl,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnMouseMove(iDisplayMgr* pDO,UINT nFlags,CPoint point)
+STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnMouseMove(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point)
 {
    METHOD_PROLOGUE(CGMDisplayMgrEventsImpl,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnMouseWheel(iDisplayMgr* pDO,UINT nFlags,short zDelta,CPoint point)
+STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnMouseWheel(iDisplayMgr* pDisplayMgr,UINT nFlags,short zDelta,CPoint point)
 {
    METHOD_PROLOGUE(CGMDisplayMgrEventsImpl,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnKeyDown(iDisplayMgr* pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
+STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnKeyDown(iDisplayMgr* pDisplayMgr,UINT nChar, UINT nRepCnt, UINT nFlags)
 {
    METHOD_PROLOGUE(CGMDisplayMgrEventsImpl,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr* pDO,CWnd* pWnd,CPoint point)
+STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr* pDisplayMgr,CWnd* pWnd,CPoint point)
 {
    METHOD_PROLOGUE_(CGMDisplayMgrEventsImpl,Events);
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CMenu menu;
-   menu.LoadMenu(IDR_GIRDER_CTX);
-   CEAFMenu contextMenu(menu.Detach(),pThis->m_pDoc->GetPluginCommandManager());
+   CDisplayView* pView = pDisplayMgr->GetView();
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
 
-   CEAFMenu* pmnuReport = contextMenu.GetSubMenu(0);
-   pThis->m_pDoc->BuildReportMenu(pmnuReport,true);
+   CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+   pMenu->LoadMenu(IDR_GIRDER_CTX,NULL);
+
+   pDoc->BuildReportMenu(pMenu,true);
 
    if ( point.x < 0 || point.y < 0 )
    {
@@ -149,7 +151,27 @@ STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr*
       point = center;
    }
 
+   if ( pThis->m_bGirderElevation )
+   {
+      std::map<Uint32,IGirderElevationViewEventCallback*> callbacks = pDoc->GetGirderElevationViewCallbacks();
+      std::map<Uint32,IGirderElevationViewEventCallback*>::iterator iter;
+      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+      {
+         IGirderElevationViewEventCallback* callback = iter->second;
+         callback->OnBackgroundContextMenu(pMenu);
+      }
+   }
+   else
+   {
+      std::map<Uint32,IGirderSectionViewEventCallback*> callbacks = pDoc->GetGirderSectionViewCallbacks();
+      std::map<Uint32,IGirderSectionViewEventCallback*>::iterator iter;
+      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+      {
+         IGirderSectionViewEventCallback* callback = iter->second;
+         callback->OnBackgroundContextMenu(pMenu);
+      }
+   }
 
-   pmnuReport->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x,point.y, pThis->m_pFrame );
+   pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x,point.y, pThis->m_pFrame );
    return true;
 }

@@ -42,13 +42,11 @@
 #define HINT_BRIDGEVIEWSETTINGSCHANGED    2
 #define HINT_GIRDERVIEWSECTIONCUTCHANGED  3
 #define HINT_BRIDGEVIEWSECTIONCUTCHANGED  4
-#define HINT_GIRDERSELECTIONCHANGED       5
-#define HINT_DECKSELECTED                 6
-#define HINT_ALIGNMENTSELECTED            7
+#define HINT_SELECTIONCHANGED             5
 #define HINT_GIRDERLABELFORMATCHANGED     8
 
 // the above hints should not cause results to be updated
-#define MAX_DISPLAY_HINT                 HINT_ALIGNMENTSELECTED
+#define MAX_DISPLAY_HINT                 HINT_GIRDERLABELFORMATCHANGED
 
 // Hints that are results of Agent events
 #define MIN_RESULTS_HINT              100
@@ -73,7 +71,9 @@
 class CGirderHint : public CObject
 {
 public:
-   Uint32 lHint;
+   Uint32 lHint; // one of the GCH_xxx hints in IFace\Project.h
+   SpanIndexType spanIdx;
+   GirderIndexType gdrIdx;
 };
 
 

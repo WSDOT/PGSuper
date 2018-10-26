@@ -55,7 +55,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(ConfigurationName)&quot;"
-				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;_ATL_NO_UUIDOF;x_HAS_ITERATOR_DEBUGGING=0;x_SECURE_SCL=0"
+				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;_ATL_NO_UUIDOF;"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -1766,10 +1766,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\Include\IFace\EditByUI.h"
-					>
-				</File>
-				<File
 					RelativePath="..\EditConstructionLoad.h"
 					>
 				</File>
@@ -1907,6 +1903,18 @@
 			Name="IFace"
 			>
 			<File
+				RelativePath="..\Include\IFace\Design.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\IFace\DrawBridgeSettings.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\IFace\EditByUI.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\IFace\Selection.h"
 				>
 			</File>
@@ -1920,6 +1928,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\IFace\ViewEvents.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\IFace\Views.h"
 				>
 			</File>
 		</Filter>

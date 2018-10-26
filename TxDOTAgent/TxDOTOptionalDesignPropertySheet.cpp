@@ -13,14 +13,12 @@ CTxDOTOptionalDesignPropertySheet::CTxDOTOptionalDesignPropertySheet(UINT nIDCap
 	:CPropertySheet(nIDCaption, pParentWnd, iSelectPage),
    m_TabHeight(0)
 {
-
 }
 
 CTxDOTOptionalDesignPropertySheet::CTxDOTOptionalDesignPropertySheet(LPCTSTR pszCaption, CWnd* pParentWnd, UINT iSelectPage)
 	:CPropertySheet(pszCaption, pParentWnd, iSelectPage),
    m_TabHeight(0)
 {
-
 }
 
 CTxDOTOptionalDesignPropertySheet::~CTxDOTOptionalDesignPropertySheet()
@@ -38,7 +36,7 @@ END_MESSAGE_MAP()
 
 void CTxDOTOptionalDesignPropertySheet::OnSize(UINT nType, int cx, int cy)
 {
-   CPropertySheet::OnSize(nType, cx, cy);
+//   CPropertySheet::OnSize(nType, cx, cy);
 
    // resize the CTabCtrl
    CTabCtrl* pTab = GetTabControl ();
@@ -54,7 +52,7 @@ void CTxDOTOptionalDesignPropertySheet::OnSize(UINT nType, int cx, int cy)
       pTab->GetWindowRect (&rc);
       ScreenToClient (&rc);
 
- 	   pPage->MoveWindow(0, m_TabHeight, cx, cy);
+ 	   pPage->MoveWindow(0, m_TabHeight*pTab->GetRowCount(), cx, cy);
    }
 }
 
@@ -67,7 +65,7 @@ BOOL CTxDOTOptionalDesignPropertySheet::OnInitDialog()
    ASSERT (pTab);
    CRect rc;
    pTab->GetItemRect(0,&rc); // height of a tab
-   m_TabHeight = rc.Height() + 10; // add a few pixels to make some space
+   m_TabHeight = rc.Height() + 6; // add a few pixels to make some space
 
    return bResult;
 }

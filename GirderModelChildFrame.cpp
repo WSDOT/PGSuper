@@ -171,6 +171,27 @@ double CGirderModelChildFrame::GetTopFrameFraction() const
    return 0.4;
 }
 
+BOOL CGirderModelChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext) 
+{
+   if ( !__super::OnCreateClient(lpcs,pContext) )
+      return FALSE;
+
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetActiveDocument();
+   CDocTemplate* pDocTemplate = pDoc->GetDocTemplate();
+   ASSERT( pDocTemplate->IsKindOf(RUNTIME_CLASS(CEAFDocTemplate)) );
+
+   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)pDocTemplate;
+   SpanGirderHashType* pHash = (SpanGirderHashType*)pTemplate->GetViewCreationData();
+   SpanIndexType spanIdx;
+   GirderIndexType gdrIdx;
+   UnhashSpanGirder(*pHash,&spanIdx,&gdrIdx);
+
+   m_CurrentSpanIdx   = spanIdx;
+   m_CurrentGirderIdx = gdrIdx;
+
+   return TRUE;
+}
+
 int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
 	if (CSplitChildFrame::OnCreate(lpCreateStruct) == -1)
@@ -222,6 +243,7 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
    m_SettingsBar.AddTool(moment_load_tool);
 
+   // sets the check state of the sync button
    CPGSuperDoc* pDoc = (CPGSuperDoc*)GetActiveDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
    CButton* pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_SYNC);
@@ -229,8 +251,9 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
    if ( SyncWithBridgeModelView() ) 
    {
-      m_CurrentSpanIdx   = pDoc->GetSpanIdx();
-      m_CurrentGirderIdx = pDoc->GetGirderIdx();
+      CSelection selection = pDoc->GetSelection();
+      m_CurrentSpanIdx     = selection.SpanIdx;
+      m_CurrentGirderIdx   = selection.GirderIdx;
    }
 
    UpdateBar();
@@ -260,12 +283,6 @@ void CGirderModelChildFrame::UpdateViews()
 {
    GetGirderModelSectionView()->OnUpdate(NULL,0,NULL);
    GetGirderModelElevationView()->OnUpdate(NULL,0,NULL);
-}
-
-void CGirderModelChildFrame::Update()
-{
-   UpdateBar();
-   UpdateViews();
 }
 
 void CGirderModelChildFrame::UpdateCutLocation(CutLocation cutLoc,Float64 cut)
@@ -312,7 +329,7 @@ void CGirderModelChildFrame::UpdateBar()
       CString csv;
       for (SpanIndexType i=0; i<num_spans; i++)
       {
-         csv.Format("Span %i", i+1);
+         csv.Format("Span %i", LABEL_SPAN(i));
          pspan_ctrl->AddString(csv);
       }
    }
@@ -330,6 +347,10 @@ void CGirderModelChildFrame::UpdateBar()
          pgirder_ctrl->AddString(csv);
       }
       pgirder_ctrl->SetCurSel(gdrIdx);
+   }
+   else
+   {
+      pgirder_ctrl->SetCurSel(-1);
    }
 
    if ( spanIdx != ALL_SPANS && gdrIdx != ALL_GIRDERS )
@@ -418,9 +439,11 @@ void CGirderModelChildFrame::OnGirderChanged()
       CPGSuperDoc* pdoc = (CPGSuperDoc*) GetActiveDocument();
       pdoc->SelectGirder(m_CurrentSpanIdx,m_CurrentGirderIdx);
    }
-
-   UpdateBar();
-   UpdateViews();
+   else
+   {
+      UpdateBar();
+      UpdateViews();
+   }
 }
 
 void CGirderModelChildFrame::OnSpanChanged()
@@ -714,10 +737,16 @@ void CGirderModelChildFrame::OnSync()
    {
       settings |= IDG_SV_SYNC_GIRDER;
 
-      SpanIndexType spanIdx, gdrIdx;
-      GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
-
-      pDoc->SelectGirder(spanIdx,gdrIdx);
+      CSelection selection = pDoc->GetSelection();
+      if ( selection.Type == CSelection::Girder )
+      {
+         SelectSpanAndGirder(selection.SpanIdx,selection.GirderIdx);
+      }
+      else
+      {
+         GetGirderModelElevationView()->Invalidate();
+         GetGirderModelSectionView()->Invalidate();
+      }
    }
    else
    {
@@ -755,11 +784,11 @@ void CGirderModelChildFrame::OnProjectDesignGirderDirect()
    bool bDesignSlabOffset = pSpecification->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
 
    CPGSuperDoc* pDoc = (CPGSuperDoc*)EAFGetDocument();
-   pDoc->DesignGirderDirect(bDesignSlabOffset);
+   pDoc->DesignGirder(false,bDesignSlabOffset,m_CurrentSpanIdx,m_CurrentGirderIdx);
 }
 
 void CGirderModelChildFrame::OnProjectDesignGirderDirectHoldSlabOffset()
 {
    CPGSuperDoc* pDoc = (CPGSuperDoc*)EAFGetDocument();
-   pDoc->DesignGirderDirect(false);
+   pDoc->DesignGirder(false,false,m_CurrentSpanIdx,m_CurrentGirderIdx);
 }

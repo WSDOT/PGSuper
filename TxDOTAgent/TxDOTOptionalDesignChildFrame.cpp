@@ -24,6 +24,8 @@
 //
 
 #include "stdafx.h"
+#include "resource.h"
+#include "HtmlHelp\TogaHelp.hh"
 
 #include "TxDOTOptionalDesignChildFrame.h"
 
@@ -44,6 +46,10 @@ BEGIN_MESSAGE_MAP(CTxDOTOptionalDesignChildFrame, CMDIChildWnd)
 		//    DO NOT EDIT what you see in these blocks of generated code !
 	//}}AFX_MSG_MAP
    ON_WM_CREATE()
+   ON_COMMAND(ID_LICENSE_AGREEMENT, &CTxDOTOptionalDesignChildFrame::OnLicenseAgreement)
+   ON_WM_HELPINFO()
+   ON_COMMAND(ID_HELP_FINDER, &CTxDOTOptionalDesignChildFrame::OnHelpFinder)
+   ON_COMMAND(ID_HELP, &CTxDOTOptionalDesignChildFrame::OnHelpFinder)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -60,10 +66,7 @@ CTxDOTOptionalDesignChildFrame::~CTxDOTOptionalDesignChildFrame()
 BOOL CTxDOTOptionalDesignChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
    // get rid of system menu and resizable frame
-   cs.style &= ~WS_MAXIMIZEBOX;
-   cs.style &= ~WS_MINIMIZEBOX;
-   cs.style &= ~WS_SYSMENU;
-   cs.style |= WS_MAXIMIZE;
+   cs.style = WS_CHILD;
 
 	if( !CMDIChildWnd::PreCreateWindow(cs) )
 		return FALSE;
@@ -108,4 +111,28 @@ void CTxDOTOptionalDesignChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
       // set our title
 		AfxSetWindowText(m_hWnd, msg);
    }
+}
+
+void CTxDOTOptionalDesignChildFrame::OnLicenseAgreement()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   CWinApp* papp = AfxGetApp();
+   ::HtmlHelp( *this, papp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_LICENSE );
+}
+
+BOOL CTxDOTOptionalDesignChildFrame::OnHelpInfo(HELPINFO* pHelpInfo)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pApp = AfxGetApp();
+   ::HtmlHelp( *this, pApp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GIRDER_INPUT );
+
+   return TRUE;
+}
+
+void CTxDOTOptionalDesignChildFrame::OnHelpFinder()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pApp = AfxGetApp();
+   ::HtmlHelp( *this, pApp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_WELCOME );
 }

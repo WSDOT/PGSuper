@@ -39,6 +39,7 @@
 #include <IReportManager.h>
 
 #include <IFace\ViewEvents.h> 
+#include <IFace\Selection.h> 
 
 #include "Hints.h"
 #include "PGSuperCommandLineInfo.h"
@@ -85,14 +86,13 @@ public:
 
 // Operations
 public:
-
-   // index of selected object
-   PierIndexType GetPierIdx();
-   SpanIndexType GetSpanIdx();
-   GirderIndexType GetGirderIdx();
+   CSelection GetSelection();
    void SelectPier(PierIndexType pierIdx);
    void SelectSpan(SpanIndexType spanIdx);
    void SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   void SelectDeck();
+   void SelectAlignment();
+   void ClearSelection();
 
    void OnLibMgrChanged(psgLibraryManager* pNewLibMgr);
 
@@ -133,16 +133,24 @@ public:
    bool EditGirderDescription(SpanIndexType span,GirderIndexType girder, int nPage);
    bool EditSpanDescription(SpanIndexType spanIdx, int nPage);
    bool EditPierDescription(PierIndexType pierIdx, int nPage);
+
+   void AddPointLoad(const CPointLoadData& loadData);
    bool EditPointLoad(CollectionIndexType loadIdx);
+   void DeletePointLoad(CollectionIndexType loadIdx);
+
+   void AddDistributedLoad(const CDistributedLoadData& loadData);
    bool EditDistributedLoad(CollectionIndexType loadIdx);
+   void DeleteDistributedLoad(CollectionIndexType loadIdx);
+
+   void AddMomentLoad(const CMomentLoadData& loadData);
    bool EditMomentLoad(CollectionIndexType loadIdx);
+   void DeleteMomentLoad(CollectionIndexType loadIdx);
 
 
    void EditGirderViewSettings(int nPage);
    void EditBridgeViewSettings(int nPage);
 
-   void DesignGirderDirect(bool bDesignSlabOffset);
-   void DoDesignGirder(SpanIndexType span,GirderIndexType gdr,const arDesignOptions& designOptions);
+   void DesignGirder(bool bPrompt,bool bDesignSlabOffset,SpanIndexType spanIdx,GirderIndexType gdrIdx);
 
 
    void GetDocUnitSystem(IDocUnitSystem** ppDocUnitSystem);
@@ -179,25 +187,30 @@ public:
    BOOL UpdateTemplates();
 
    Uint32 RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback);
-   std::vector<IBridgePlanViewEventCallback*> GetBridgePlanViewCallbacks();
+   bool UnregisterBridgePlanViewCallback(Uint32 ID);
+   std::map<Uint32,IBridgePlanViewEventCallback*> GetBridgePlanViewCallbacks();
 
    Uint32 RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback);
-   std::vector<IBridgeSectionViewEventCallback*> GetBridgeSectionViewCallbacks();
+   bool UnregisterBridgeSectionViewCallback(Uint32 ID);
+   std::map<Uint32,IBridgeSectionViewEventCallback*> GetBridgeSectionViewCallbacks();
 
    Uint32 RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback);
-   std::vector<IGirderElevationViewEventCallback*> GetGirderElevationViewCallbacks();
+   bool UnregisterGirderElevationViewCallback(Uint32 ID);
+   std::map<Uint32,IGirderElevationViewEventCallback*> GetGirderElevationViewCallbacks();
 
    Uint32 RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback);
-   std::vector<IGirderSectionViewEventCallback*> GetGirderSectionViewCallbacks();
+   bool UnregisterGirderSectionViewCallback(Uint32 ID);
+   std::map<Uint32,IGirderSectionViewEventCallback*> GetGirderSectionViewCallbacks();
 
 
 protected:
    CPGSuperDocProxyAgent* m_pPGSuperDocProxyAgent;
 
-   std::vector<IBridgePlanViewEventCallback*> m_BridgePlanViewCallbacks;
-   std::vector<IBridgeSectionViewEventCallback*> m_BridgeSectionViewCallbacks;
-   std::vector<IGirderElevationViewEventCallback*> m_GirderElevationViewCallbacks;
-   std::vector<IGirderSectionViewEventCallback*> m_GirderSectionViewCallbacks;
+   Uint32 m_ViewCallbackID;
+   std::map<Uint32,IBridgePlanViewEventCallback*> m_BridgePlanViewCallbacks;
+   std::map<Uint32,IBridgeSectionViewEventCallback*> m_BridgeSectionViewCallbacks;
+   std::map<Uint32,IGirderElevationViewEventCallback*> m_GirderElevationViewCallbacks;
+   std::map<Uint32,IGirderSectionViewEventCallback*> m_GirderSectionViewCallbacks;
 
    psgLibraryManager m_LibMgr;
 
@@ -213,11 +226,9 @@ protected:
    
    CPGSuperPluginMgr m_PluginMgr; // manages data importer and exporter plugins
 
-   PierIndexType   m_CurrentPierIdx;
-   SpanIndexType   m_CurrentSpanIdx;
-   GirderIndexType m_CurrentGirderIdx;
+   CSelection m_Selection;
 
-   bool m_DesignSlabOffset;
+   bool m_bDesignSlabOffset;
 
    friend CCopyGirderDlg;
    void OnApplyCopyGirder(SpanGirderHashType fromHash,std::vector<SpanGirderHashType> toHash,BOOL bGirder,BOOL bTransverse,BOOL bLongitudinalRebar,BOOL bPrestress,BOOL bHandling, BOOL bMaterial, BOOL bSlabOffset);
@@ -254,6 +265,7 @@ protected:
    virtual CString GetToolbarSectionName();
 
    virtual void CreateReportView(CollectionIndexType rptIdx,bool bPrompt);
+   void DoDesignGirder(SpanIndexType span,GirderIndexType gdr,const arDesignOptions& designOptions);
 
 // Generated message map functions
 protected:

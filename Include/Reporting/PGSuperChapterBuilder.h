@@ -61,6 +61,8 @@ public:
 
    virtual bool Select() const;
 
+   virtual bool NeedsUpdate(CReportHint* pHint,CReportSpecification* pRptSpec,Uint16 level) const;
+
 protected:
    bool m_bSelect;
 };

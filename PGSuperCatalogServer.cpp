@@ -1600,26 +1600,29 @@ bool CFileSystemPGSuperCatalogServer::PopulateCatalog(const CString& publisher, 
    // copy the network file to the cache
    CString localMasterLibraryFile = GetLibraryFileName();
 
-   if(pProgress!=NULL)
-   pProgress->put_Message(0,CComBSTR("Copying the Master Library"));
-
-   BOOL bSuccess = ::CopyFile(localMasterLibraryFile,cachedMasterLibFile,FALSE);
-   if ( !bSuccess )
+   if ( localMasterLibraryFile != "" )
    {
-      if(pProgress!=NULL)
-         pProgress->put_Message(0,CComBSTR("Error copying the Master Library"));
+      if(pProgress != NULL)
+         pProgress->put_Message(0,CComBSTR("Copying the Master Library"));
 
-      CString strMessage;
-      strMessage.Format("Error opening Master library file from %s",localMasterLibraryFile);
+      BOOL bSuccess = ::CopyFile(localMasterLibraryFile,cachedMasterLibFile,FALSE);
+      if ( !bSuccess )
+      {
+         if(pProgress!=NULL)
+            pProgress->put_Message(0,CComBSTR("Error copying the Master Library"));
 
-      AfxMessageBox(strMessage,MB_ICONEXCLAMATION | MB_OK);
+         CString strMessage;
+         strMessage.Format("Error opening Master library file from %s",localMasterLibraryFile);
 
-      return false;
-   }
-   else
-   {
-      if(pProgress!=NULL)
-         pProgress->put_Message(0,CComBSTR("Master Library copied successfully"));
+         AfxMessageBox(strMessage,MB_ICONEXCLAMATION | MB_OK);
+
+         return false;
+      }
+      else
+      {
+         if(pProgress!=NULL)
+            pProgress->put_Message(0,CComBSTR("Master Library copied successfully"));
+      }
    }
 
    // Next deal with templates
@@ -1660,11 +1663,15 @@ bool CFileSystemPGSuperCatalogServer::TestServer(CString& errorMessage) const
       return false;
 
    CFileFind libfinder;
-   BOOL bFound = libfinder.FindFile(GetLibraryFileName());
-   if (!bFound)
+   CString strLibraryFileName = GetLibraryFileName();
+   if ( strLibraryFileName != "" )
    {
-      errorMessage.Format("Error finding master library file at: %s",GetLibraryFileName());
-      return false;
+      BOOL bFound = libfinder.FindFile(GetLibraryFileName());
+      if (!bFound)
+      {
+         errorMessage.Format("Error finding master library file at: %s",GetLibraryFileName());
+         return false;
+      }
    }
 
    // strip trailing back slash if present
@@ -1672,7 +1679,7 @@ bool CFileSystemPGSuperCatalogServer::TestServer(CString& errorMessage) const
    templpath.TrimRight(_T("\\"));
 
    CFileFind tempfinder;
-   bFound = tempfinder.FindFile(templpath);
+   BOOL bFound = tempfinder.FindFile(templpath);
    if (!bFound)
    {
       errorMessage.Format("Error finding template folder at: %s",GetTemplateFolderPath());

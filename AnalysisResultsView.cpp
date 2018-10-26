@@ -497,6 +497,10 @@ void CAnalysisResultsView::DoUpdateNow()
          break;
 
       case graphPrestress:
+         // always use casting yard POI when plotting prestress deflection
+         if ( action == actionDisplacement )
+            vPoi = pIPoi->GetPointsOfInterest( span, girder, pgsTypes::CastingYard, POI_GRAPHICAL );
+
          PrestressLoadGraph(graphIdx,stage,action,vPoi);
          break;
 
@@ -540,14 +544,14 @@ void CAnalysisResultsView::LimitStateLoadGraph(int graphIdx,pgsTypes::Stage stag
    int pen_size = (graph_type == graphAllowable || graph_type == graphCapacity ? 3 : 1);
 
    // data series for moment, shears and deflections
-   Uint32 min_data_series = m_Graph.CreateDataSeries(strDataLabel+" - Min",PS_SOLID,pen_size,c);
-   Uint32 max_data_series = m_Graph.CreateDataSeries(strDataLabel+" - Max",PS_SOLID,pen_size,c);
+   Uint32 max_data_series = m_Graph.CreateDataSeries(strDataLabel,PS_SOLID,pen_size,c);
+   Uint32 min_data_series = m_Graph.CreateDataSeries("",          PS_SOLID,pen_size,c);
 
    // data series for stresses
-   Uint32 stress_top_max = m_Graph.CreateDataSeries(strDataLabel+" - Max Top",PS_STRESS_TOP,1,c);
-   Uint32 stress_top_min = m_Graph.CreateDataSeries(strDataLabel+" - Min Top",PS_STRESS_TOP,1,c);
-   Uint32 stress_bot_max = m_Graph.CreateDataSeries(strDataLabel+" - Max Bottom",PS_STRESS_BOTTOM,1,c);
-   Uint32 stress_bot_min = m_Graph.CreateDataSeries(strDataLabel+" - Min Bottom",PS_STRESS_BOTTOM,1,c);
+   Uint32 stress_top_max = m_Graph.CreateDataSeries(strDataLabel+" - Top",    PS_STRESS_TOP,   1,c);
+   Uint32 stress_top_min = m_Graph.CreateDataSeries("",                       PS_STRESS_TOP,   1,c);
+   Uint32 stress_bot_max = m_Graph.CreateDataSeries(strDataLabel+" -  Bottom",PS_STRESS_BOTTOM,1,c);
+   Uint32 stress_bot_min = m_Graph.CreateDataSeries("",                       PS_STRESS_BOTTOM,1,c);
 
    std::vector<Float64> xVals;
    std::vector<pgsPointOfInterest>::const_iterator i;
@@ -559,6 +563,7 @@ void CAnalysisResultsView::LimitStateLoadGraph(int graphIdx,pgsTypes::Stage stag
          loc = poi.GetDistFromStart();
       else
          loc = pIPOI->GetDistanceFromFirstPier(poi,stage);
+
       xVals.push_back(loc);
    }
 
@@ -587,6 +592,7 @@ void CAnalysisResultsView::LimitStateLoadGraph(int graphIdx,pgsTypes::Stage stag
                   mmin = pForces->GetSlabDesignMoment(limit_state,vPoi, MinSimpleContinuousEnvelope );
                else
                   pForces->GetMoment( limit_state, stage, vPoi, MinSimpleContinuousEnvelope, &mmin, &mmax );
+
                AddGraphPoints(min_data_series, xVals, mmin);
             }
             else
@@ -738,6 +744,9 @@ void CAnalysisResultsView::LimitStateLoadGraph(int graphIdx,pgsTypes::Stage stag
                {
                   AddGraphPoints(stress_top_min, xVals, fTopMin);
                   AddGraphPoints(stress_bot_min, xVals, fBotMin);
+
+                  m_Graph.SetDataLabel(stress_top_min,strDataLabel+" - Top");
+                  m_Graph.SetDataLabel(stress_bot_min,strDataLabel+" - Bottom");
                }
                else
                {
@@ -839,14 +848,14 @@ void CAnalysisResultsView::LiveLoadGraph(int graphIdx,pgsTypes::Stage stage,Acti
    ATLASSERT(vehicleIndex == INVALID_INDEX);
 
    // data series for moment, shears and deflections
-   Uint32 min_data_series = m_Graph.CreateDataSeries(strDataLabel+" - Min",PS_SOLID,1,c);
-   Uint32 max_data_series = m_Graph.CreateDataSeries(strDataLabel+" - Max",PS_SOLID,1,c);
+   Uint32 min_data_series = m_Graph.CreateDataSeries(strDataLabel,PS_SOLID,1,c);
+   Uint32 max_data_series = m_Graph.CreateDataSeries("",PS_SOLID,1,c);
 
    // data series for stresses
-   Uint32 stress_top_max = m_Graph.CreateDataSeries(strDataLabel+" - Max Top",   PS_STRESS_TOP,   1,c);
-   Uint32 stress_top_min = m_Graph.CreateDataSeries(strDataLabel+" - Min Top",   PS_STRESS_TOP,   1,c);
-   Uint32 stress_bot_max = m_Graph.CreateDataSeries(strDataLabel+" - Max Bottom",PS_STRESS_BOTTOM,1,c);
-   Uint32 stress_bot_min = m_Graph.CreateDataSeries(strDataLabel+" - Min Bottom",PS_STRESS_BOTTOM,1,c);
+   Uint32 stress_top_max = m_Graph.CreateDataSeries(strDataLabel+" - Top",   PS_STRESS_TOP,   1,c);
+   Uint32 stress_top_min = m_Graph.CreateDataSeries("",                      PS_STRESS_TOP,   1,c);
+   Uint32 stress_bot_max = m_Graph.CreateDataSeries(strDataLabel+" - Bottom",PS_STRESS_BOTTOM,1,c);
+   Uint32 stress_bot_min = m_Graph.CreateDataSeries("",                      PS_STRESS_BOTTOM,1,c);
 
    std::vector<Float64> xVals;
    std::vector<pgsPointOfInterest>::const_iterator i;
@@ -1308,6 +1317,18 @@ void CAnalysisResultsView::OnInitialUpdate()
 {
    CView::OnInitialUpdate();
    CEAFAutoCalcViewMixin::Initialize();
+
+   CDocument* pDoc = GetDocument();
+   CDocTemplate* pDocTemplate = pDoc->GetDocTemplate();
+   ASSERT( pDocTemplate->IsKindOf(RUNTIME_CLASS(CEAFDocTemplate)) );
+
+   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)pDocTemplate;
+   SpanGirderHashType* pHash = (SpanGirderHashType*)pTemplate->GetViewCreationData();
+   SpanIndexType spanIdx;
+   GirderIndexType gdrIdx;
+   UnhashSpanGirder(*pHash,&spanIdx,&gdrIdx);
+
+   m_pFrame->SelectSpan(spanIdx,gdrIdx);
 }
 
 void CAnalysisResultsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
@@ -1447,8 +1468,8 @@ void CAnalysisResultsView::InitializeGraph(int graphIdx,ActionType action,Uint32
       if ( analysis_type == pgsTypes::Envelope )
       {
          *pAnalysisTypeCount = 2;
-         pDataSeriesID[0] = m_Graph.CreateDataSeries(strDataLabel + " - Min", PS_SOLID, 1, c);
-         pDataSeriesID[1] = m_Graph.CreateDataSeries(strDataLabel + " - Max", PS_SOLID, 1, c);
+         pDataSeriesID[0] = m_Graph.CreateDataSeries(strDataLabel, PS_SOLID, 1, c);
+         pDataSeriesID[1] = m_Graph.CreateDataSeries("", PS_SOLID, 1, c);
 
          pBAT[0] = MinSimpleContinuousEnvelope;
          pBAT[1] = MaxSimpleContinuousEnvelope;

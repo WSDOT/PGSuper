@@ -65,15 +65,16 @@ public:
    Float64 m_MinNWCDensity;
    bool m_bIsStrengthNWC;
    bool m_bIsDensityNWC;
+   bool m_bErrorInDDX;
 
 public:
-   double m_Fc;
+   Float64 m_Fc;
    bool m_bUserEc;
-   double m_Ec;
-   double m_Ds;
-   double m_Dw;
-   double m_AggSize;
-   double m_K1;
+   Float64 m_Ec;
+   Float64 m_Ds;
+   Float64 m_Dw;
+   Float64 m_AggSize;
+   Float64 m_K1;
 
    CString m_strUserEc;
 

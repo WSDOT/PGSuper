@@ -40,28 +40,29 @@ class CPGSuperDoc;
 class CGMDisplayMgrEventsImpl : public CCmdTarget
 {
 public:
-   CGMDisplayMgrEventsImpl(CPGSuperDoc* pDoc, CGirderModelChildFrame* pFrame, CWnd* pParent);
+   CGMDisplayMgrEventsImpl(CPGSuperDoc* pDoc, CGirderModelChildFrame* pFrame, CWnd* pParent,bool bGirderElevation);
    ~CGMDisplayMgrEventsImpl();
 
    DECLARE_INTERFACE_MAP()
 
    BEGIN_INTERFACE_PART(Events,iDisplayMgrEvents)
-      STDMETHOD_(bool,OnLButtonDblClk)(iDisplayMgr* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnLButtonDown)(iDisplayMgr* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnRButtonDblClk)(iDisplayMgr* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnRButtonDown)(iDisplayMgr* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnLButtonUp)(iDisplayMgr* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnRButtonUp)(iDisplayMgr* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnMouseMove)(iDisplayMgr* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnMouseWheel)(iDisplayMgr* pDO,UINT nFlags,short zDelta,CPoint point);
-      STDMETHOD_(bool,OnKeyDown)(iDisplayMgr* pDO,UINT nChar, UINT nRepCnt, UINT nFlags);
-      STDMETHOD_(bool,OnContextMenu)(iDisplayMgr* pDO,CWnd* pWnd,CPoint point);
+      STDMETHOD_(bool,OnLButtonDblClk)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point);
+      STDMETHOD_(bool,OnLButtonDown)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point);
+      STDMETHOD_(bool,OnRButtonDblClk)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point);
+      STDMETHOD_(bool,OnRButtonDown)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point);
+      STDMETHOD_(bool,OnLButtonUp)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point);
+      STDMETHOD_(bool,OnRButtonUp)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point);
+      STDMETHOD_(bool,OnMouseMove)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point);
+      STDMETHOD_(bool,OnMouseWheel)(iDisplayMgr* pDisplayMgr,UINT nFlags,short zDelta,CPoint point);
+      STDMETHOD_(bool,OnKeyDown)(iDisplayMgr* pDisplayMgr,UINT nChar, UINT nRepCnt, UINT nFlags);
+      STDMETHOD_(bool,OnContextMenu)(iDisplayMgr* pDisplayMgr,CWnd* pWnd,CPoint point);
    END_INTERFACE_PART(Events)
 
 public:
    CPGSuperDoc*            m_pDoc;
    CGirderModelChildFrame* m_pFrame;
    CWnd*                   m_pParent;
+   bool                    m_bGirderElevation;
 };
 
 /////////////////////////////////////////////////////////////////////////////

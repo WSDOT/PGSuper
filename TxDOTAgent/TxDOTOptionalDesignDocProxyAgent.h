@@ -127,10 +127,11 @@ public:
    virtual void GetControllingTensileStress(Float64* pStress, Float64* pStressFactor, Float64* pDistFromStart);
    virtual void GetControllingCompressiveStress(Float64* pStress, Float64* pStressFactor, Float64* pDistFromStart);
 
-   virtual Float64 GetRequiredUltimateMoment();
 
+   virtual Float64 GetUltimateMomentCapacity();
    virtual Float64 GetMaximumCamber();
 
+   virtual Float64 GetRequiredUltimateMoment();
    virtual Float64 GetRequiredFc();
    virtual Float64 GetRequiredFci();
 
@@ -146,7 +147,7 @@ private:
 
    CTxDOTOptionalDesignDoc* m_pTxDOTOptionalDesignDoc;
 
-   // cached response data
+   // Cached response data
    bool m_NeedValidate;
 
    pgsGirderArtifact m_GirderArtifact;
@@ -160,6 +161,7 @@ private:
    Float64 m_CtrlCompressiveStressFactor;
 
    Float64 m_RequiredUltimateMoment;
+   Float64 m_UltimateMomentCapacity;
 
    Float64 m_MaximumCamber;
    Float64 m_FabricatorMaximumCamber;

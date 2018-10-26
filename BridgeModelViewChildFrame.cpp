@@ -307,101 +307,38 @@ void CBridgeModelViewChildFrame::OnEditPier()
 
 void CBridgeModelViewChildFrame::SelectSpan(SpanIndexType spanIdx)
 {
-   static bool bSelecting = false;
-
-   if ( !bSelecting )
-   {
-      bSelecting = true;
-      
-      CPGSuperDoc* pDoc = (CPGSuperDoc*)(GetBridgePlanView()->GetDocument());
-      pDoc->SelectSpan(spanIdx);
-
-      GetBridgePlanView()->SelectSpan(spanIdx,TRUE);
-      GetBridgeSectionView()->SelectSpan(spanIdx,TRUE);
-
-      bSelecting = false;
-   }
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)(GetBridgePlanView()->GetDocument());
+   pDoc->SelectSpan(spanIdx);
 }
 
 void CBridgeModelViewChildFrame::SelectPier(PierIndexType pierIdx)
 {
-   static bool bSelecting = false;
-
-   if ( !bSelecting )
-   {
-      bSelecting = true;
-      
-      CPGSuperDoc* pDoc = (CPGSuperDoc*)(GetBridgePlanView()->GetDocument());
-      pDoc->SelectPier(pierIdx);
-
-      GetBridgePlanView()->SelectPier(pierIdx,TRUE);
-      GetBridgeSectionView()->SelectPier(pierIdx,TRUE);
-
-      bSelecting = false;
-   }
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)(GetBridgePlanView()->GetDocument());
+   pDoc->SelectPier(pierIdx);
 }
 
 void CBridgeModelViewChildFrame::SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx)
 {
-   static bool bSelecting = false;
-
-   if ( !bSelecting )
-   {
-      bSelecting = true;
-
-      CPGSuperDoc* pDoc = (CPGSuperDoc*)(GetBridgePlanView()->GetDocument());
-      pDoc->SelectGirder(spanIdx,gdrIdx);
-
-      bSelecting = false;
-   }
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)(GetBridgePlanView()->GetDocument());
+   pDoc->SelectGirder(spanIdx,gdrIdx);
 }
 
 void CBridgeModelViewChildFrame::SelectDeck()
 {
-   static bool bSelecting = false;
-
-   if ( !bSelecting )
-   {
-      bSelecting = true;
-
-      CPGSuperDoc* pDoc = (CPGSuperDoc*)(GetBridgePlanView()->GetDocument());
-//      pDoc->SelectPier(-1);
-//      pDoc->SelectSpan(-1);
-      pDoc->SelectGirder(-1,-1);
-
-      GetBridgePlanView()->SelectDeck(true,true);
-      GetBridgeSectionView()->SelectDeck(true,false);
-
-
-      bSelecting = false;
-   }
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)(GetBridgePlanView()->GetDocument());
+   pDoc->SelectDeck();
 }
 
 void CBridgeModelViewChildFrame::SelectAlignment()
 {
-   static bool bSelecting = false;
-
-   if ( !bSelecting )
-   {
-      bSelecting = true;
-
-      CPGSuperDoc* pDoc = (CPGSuperDoc*)(GetBridgePlanView()->GetDocument());
-      pDoc->SelectGirder(-1,-1);
-
-      GetBridgePlanView()->SelectAlignment(true,true);
-      GetBridgeSectionView()->SelectAlignment(true,false);
-
-
-      bSelecting = false;
-   }
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)(GetBridgePlanView()->GetDocument());
+   pDoc->SelectAlignment();
 }
 
 void CBridgeModelViewChildFrame::ClearSelection()
 {
-   GetBridgePlanView()->ClearSelection();
-   GetBridgeSectionView()->ClearSelection();
    CPGSuperDoc* pDoc = (CPGSuperDoc*)(GetBridgePlanView()->GetDocument());
-   pDoc->SelectGirder(-1,-1);
+   pDoc->ClearSelection();
 }
 
 LRESULT CBridgeModelViewChildFrame::OnCommandHelp(WPARAM, LPARAM lParam)

@@ -118,15 +118,35 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CAnalysisResultsChildFrame message handlers
-
-GirderIndexType CAnalysisResultsChildFrame::GetGirderIdx() const 
+void CAnalysisResultsChildFrame::SelectSpan(SpanIndexType spanIdx,GirderIndexType gdrIdx)
 {
-   return m_GirderIdx;
+   CComboBox* pcbSpans = (CComboBox*)m_SettingsBar.GetDlgItem(IDC_SPAN);
+   ASSERT(pcbSpans);
+
+   int nItems = pcbSpans->GetCount();
+   for ( int i = 0; i < nItems; i++ )
+   {
+      if ( (SpanIndexType)pcbSpans->GetItemData(i) == spanIdx )
+      {
+         pcbSpans->SetCurSel(i);
+         OnSpanChanged();
+         break;
+      }
+   }
+
+   CComboBox* pcbGirders = (CComboBox*)m_SettingsBar.GetDlgItem(IDC_GIRDER);
+   pcbGirders->SetCurSel(gdrIdx);
+   OnGirderChanged();
 }
 
 SpanIndexType CAnalysisResultsChildFrame::GetSpanIdx() const             
 {
    return m_SpanIdx;
+}
+
+GirderIndexType CAnalysisResultsChildFrame::GetGirderIdx() const 
+{
+   return m_GirderIdx;
 }
 
 pgsTypes::Stage  CAnalysisResultsChildFrame::GetStage() const     
@@ -400,9 +420,10 @@ void CAnalysisResultsChildFrame::UpdateBar()
 
    ASSERT(num_girders!=0);
    int sel = pgirder_ctrl->GetCurSel();
-   if (sel==CB_ERR) 
+   if (sel == CB_ERR) 
    {
-      sel = pDoc->GetGirderIdx();
+      CSelection selection = pDoc->GetSelection();
+      sel = selection.GirderIdx;
       if ( sel == ALL_GIRDERS )
          sel = 0;
 
@@ -699,7 +720,8 @@ void CAnalysisResultsChildFrame::FillSpanCtrl()
    int sel = pspan_ctrl->GetCurSel();
    if (sel == CB_ERR)
    {
-      sel = pDoc->GetSpanIdx();
+      CSelection selection = pDoc->GetSelection();
+      sel = selection.SpanIdx;
       if ( sel == ALL_SPANS )
          sel = 0;
 
@@ -1033,7 +1055,7 @@ void CAnalysisResultsChildFrame::CreateGraphDefinitions()
    m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength I Capacity (Design)",  pgsTypes::StrengthI, graphCapacity, false, false, false, false, false, true,  ACTIONS_SHEAR_ONLY,   CADETBLUE) );
    
    if (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Fatigue I",           pgsTypes::FatigueI,                false, false, false, false, false, true,  ACTIONS_STRESS_ONLY,  WHEAT) );
+      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Fatigue I",           pgsTypes::FatigueI,                false, false, false, false, false, true,  ACTIONS_STRESS_ONLY,  CHOCOLATE) );
 
    if ( bPermit )
    {

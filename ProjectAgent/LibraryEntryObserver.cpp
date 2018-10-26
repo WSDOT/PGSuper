@@ -177,7 +177,7 @@ void pgsLibraryEntryObserver::Update(RatingLibraryEntry* pSubject, Int32 hint)
 {
    m_pAgent->HoldEvents();
    if (hint & LibraryHints::EntryRenamed)
-      m_pAgent->m_Spec = pSubject->GetName();
+      m_pAgent->m_RatingSpec = pSubject->GetName();
 
    if (hint & LibraryHints::EntryEdited)
    {

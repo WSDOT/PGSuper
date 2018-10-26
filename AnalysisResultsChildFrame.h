@@ -50,6 +50,7 @@ public:
    void Update(LPARAM lHint);
 
    // status of the current view settings
+   void SelectSpan(SpanIndexType spanIdx,GirderIndexType gdrIdx);
    SpanIndexType GetSpanIdx() const;
    GirderIndexType GetGirderIdx() const;
    pgsTypes::Stage  GetStage() const;

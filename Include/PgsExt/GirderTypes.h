@@ -116,6 +116,9 @@ private:
    typedef std::pair<GirderIndexType,GirderIndexType> GirderGroup; // index of first and last girder in the group
    std::vector<GirderGroup> m_GirderGroups; // defines how girder lines are grouped
 
+#if defined _DEBUG
+   void AssertValid() const;
+#endif
 
    friend CSpanData;
    const CSpanData* m_pSpan;

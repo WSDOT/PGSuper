@@ -667,6 +667,13 @@ void TrafficBarrierEntry::CreatePolyShape(pgsTypes::TrafficBarrierOrientation or
       point.Release();
    }
 
+   CollectionIndexType nPoints;
+   polyshape->get_NumPoints(&nPoints);
+   if ( nPoints == 0 )
+   {
+      polyshape->AddPoint(0,0);
+   }
+
    (*polyShape) = polyshape;
    (*polyShape)->AddRef();
 }

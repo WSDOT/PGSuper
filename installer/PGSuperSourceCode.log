@@ -1,5 +1,5 @@
-Build started at  April 30, 2010  11:38:07
-Output Package: C:\ARP_INSTALLER\Install_PGSuper_Source_2.3.0.6.exe
+Build started at  June 07, 2010  08:35:16
+Output Package: C:\ARP_INSTALLER\Install_PGSuper_Source_2.3.1.0.exe
 Creating Package
      File 'AASHTO.lbr' in package.
      File 'AlignmentDescriptionDlg.cpp' in package.
@@ -1694,6 +1694,7 @@ Creating Package
      File 'Bridge.h' in package.
      File 'Constructability.h' in package.
      File 'CrackedSection.h' in package.
+     File 'Design.h' in package.
      File 'DistFactorEngineer.h' in package.
      File 'DistributionFactors.h' in package.
      File 'DrawBridgeSettings.h' in package.
@@ -1719,6 +1720,7 @@ Creating Package
      File 'UpdateTemplates.h' in package.
      File 'VersionInfo.h' in package.
      File 'ViewEvents.h' in package.
+     File 'Views.h' in package.
      File 'AutoLib.h' in package.
      File 'BridgeDescription.h' in package.
      File 'CapacityToDemand.h' in package.
@@ -3773,6 +3775,7 @@ Creating Package
      File 'Package Model.vsd' in package.
      File 'CubicSplines.pdf' in package.
      File 'PGSuper Architecture.doc' in package.
+     File 'PGSuper Coordinate Systems.docx' in package.
      File 'PGSuper Version 3 - Requirements.doc' in package.
      File 'PGSuper_DesignFlowChart.pdf' in package.
      File 'PlotMomentCapacityModel.xls' in package.
@@ -3879,6 +3882,7 @@ Creating Package
      File 'WBT-Girders.ico' in package.
      File 'WF-Girders.ico' in package.
      File 'WF100G.pgt' in package.
+     File 'WF36G.pgt' in package.
      File 'WF42G.pgt' in package.
      File 'WF50G.pgt' in package.
      File 'WF58G.pgt' in package.
@@ -3908,6 +3912,83 @@ Creating Package
      File 'EccentricityDlg.h' in package.
      File 'exportCADData.cpp' in package.
      File 'exportCADData.h' in package.
+     File 'Administrator_Guide.htm' in package.
+     File 'AnalysisFlowChart.gif' in package.
+     File 'Analysis_Report_Tab.htm' in package.
+     File 'Bridge_Description_Tab.htm' in package.
+     File 'BSSCDefault.h' in package.
+     File 'default.css' in package.
+     File 'eHelp.xml' in package.
+     File 'eHlpDhtm.js' in package.
+     File 'EquivalentPGSuper.gif' in package.
+     File 'FileMenu.png' in package.
+     File 'FileNew.gif' in package.
+     File 'Generation_of_the_PGSuper_Model.htm' in package.
+     File 'Getting_Started.htm' in package.
+     File 'Girder_Description_Tab.htm' in package.
+     File 'Girder_Models_Used_In_Analysis.htm' in package.
+     File 'Girder_View_Tab.htm' in package.
+     File 'HelpMenu.png' in package.
+     File 'HelpTopics.bmp' in package.
+     File 'HtmlHelp.css' in package.
+     File 'Installation.htm' in package.
+     File 'Installer.gif' in package.
+     File 'License_Agreement.htm' in package.
+     File 'Main_Menu.htm' in package.
+     File 'Microsoft HTML Help.ssl' in package.
+     File 'MS_Help.css' in package.
+     File 'New.bmp' in package.
+     File 'Open.bmp' in package.
+     File 'OptionalDesignFlowChart.gif' in package.
+     File 'OptionalDesignFlowCharts.vsd' in package.
+     File 'Optional_Design_Analysis.htm' in package.
+     File 'OriginalPlan.gif' in package.
+     File 'PGSuper_Template_Bridge.htm' in package.
+     File 'Print.bmp' in package.
+     File 'ResponsibilityDiagram.gif' in package.
+     File 'ResponsibilityDiagram.vsd' in package.
+     File 'rhakeyword.apj' in package.
+     File 'rhbag.apj' in package.
+     File 'rhbuildtag.apj' in package.
+     File 'rhcolor.apj' in package.
+     File 'rhfontset.apj' in package.
+     File 'rhinfotype.apj' in package.
+     File 'rhkkeyword.apj' in package.
+     File 'rhlayout.apj' in package.
+     File 'rhmapfile.apj' in package.
+     File 'rhpopup.apj' in package.
+     File 'rhskins.apj' in package.
+     File 'rhtemplate.apj' in package.
+     File 'rhwnd.apj' in package.
+     File 'RoboHHRE.lng' in package.
+     File 'root.fpj' in package.
+     File 'Row-Based_Strand_Fill.htm' in package.
+     File 'Save.bmp' in package.
+     File 'StrandFillFlowChart.gif' in package.
+     File 'Support.htm' in package.
+     File 'Theoretical_Manual.htm' in package.
+     File 'The_Templates_Text_File.htm' in package.
+     File 'tmbackground.htm' in package.
+     File 'TOGA.ali' in package.
+     File 'TOGA.BRS' in package.
+     File 'TOGA.glo' in package.
+     File 'TOGA.hhc' in package.
+     File 'TOGA.hhk' in package.
+     File 'TOGA.ign' in package.
+     File 'TOGA.phr' in package.
+     File 'TOGA.stp' in package.
+     File 'TOGA.syn' in package.
+     File 'TOGA.xpj' in package.
+     File 'TogaHelp.hh' in package.
+     File 'TxDOTIcon.png' in package.
+     File 'TxDOTTopicTemplate.htt' in package.
+     File 'User_Guide.htm' in package.
+     File 'User_Interface.htm' in package.
+     File 'ViewMenu.png' in package.
+     File 'w95help.css' in package.
+     File 'WebHelp Pro.ssl' in package.
+     File 'WebHelp.ssl' in package.
+     File 'Welcome.htm' in package.
      File 'mfcdual.cpp' in package.
      File 'mfcdual.h' in package.
      File 'ReadMe.txt' in package.
@@ -3937,18 +4018,45 @@ Creating Package
      File 'TexasStressChecksChapterBuilder.h' in package.
      File 'TogaDisplayObjectFactory.cpp' in package.
      File 'TogaDisplayObjectFactory.h' in package.
+     File 'TogaGirderEditorElevationSettingsPage.cpp' in package.
+     File 'TogaGirderEditorElevationSettingsPage.h' in package.
+     File 'TogaGirderEditorSectionSettingsPage.cpp' in package.
+     File 'TogaGirderEditorSectionSettingsPage.h' in package.
+     File 'TogaGirderEditorSettingsSheet.cpp' in package.
+     File 'TogaGirderEditorSettingsSheet.h' in package.
      File 'TogaGirderModelElevationView.cpp' in package.
      File 'TogaGirderModelElevationView.h' in package.
+     File 'TogaGirderModelSectionView.cpp' in package.
+     File 'TogaGirderModelSectionView.h' in package.
+     File 'TogaGMDisplayMgrEventsImpl.cpp' in package.
+     File 'TogaGMDisplayMgrEventsImpl.h' in package.
      File 'TogaSectionCutDisplayImpl.cpp' in package.
      File 'TogaSectionCutDisplayImpl.h' in package.
+     File 'TogaSectionCutDlgEx.cpp' in package.
+     File 'TogaSectionCutDlgEx.h' in package.
      File 'TogaSectionCutDrawStrategy.h' in package.
      File 'TogaSpecCheckSummaryChapterBuilder.cpp' in package.
      File 'TogaSpecCheckSummaryChapterBuilder.h' in package.
+     File 'TOGAStatusBar.cpp' in package.
+     File 'TOGAStatusBar.h' in package.
      File 'TogaStressChecksChapterBuilder.cpp' in package.
      File 'TogaStressChecksChapterBuilder.h' in package.
      File 'TogaSupportDrawStrategy.h' in package.
      File 'TogaSupportDrawStrategyImpl.cpp' in package.
      File 'TogaSupportDrawStrategyImpl.h' in package.
+     File 'TogaTemplate.pgs' in package.
+     File 'Tx28.togt' in package.
+     File 'Tx34.togt' in package.
+     File 'Tx40.togt' in package.
+     File 'Tx46.togt' in package.
+     File 'Tx54.togt' in package.
+     File 'Tx62.togt' in package.
+     File 'Tx70.togt' in package.
+     File 'TYPE A.togt' in package.
+     File 'TYPE B.togt' in package.
+     File 'TYPE C.togt' in package.
+     File 'TYPE IV.togt' in package.
+     File 'Type VI.togt' in package.
      File 'TxDOTAgent.cpp' in package.
      File 'TxDOTAgent.def' in package.
      File 'TxDOTAgent.idl' in package.
@@ -4096,4 +4204,4 @@ Creating EXE
      Creating data section...
      Appending Data Section
      Appending File Groups
-Build completed at  April 30, 2010  11:38:55
+Build completed at  June 07, 2010  08:36:16

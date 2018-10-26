@@ -23,7 +23,7 @@
 #include <afxdisp.h>        // MFC Automation classes
 #endif // _AFX_NO_OLE_SUPPORT
 
-#include "resource.h"
+#include "PGSuperAppPlugin\resource.h"
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlctl.h>

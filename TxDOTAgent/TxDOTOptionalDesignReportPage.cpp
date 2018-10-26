@@ -2,6 +2,7 @@
 //
 
 #include "stdafx.h"
+#include "HtmlHelp\TogaHelp.hh"
 #include "TxDOTOptionalDesignReportPage.h"
 #include "TxDOTOptionalDesignUtilities.h"
 
@@ -47,6 +48,8 @@ BEGIN_MESSAGE_MAP(CTxDOTOptionalDesignReportPage, CPropertyPage)
    ON_COMMAND_RANGE(CCS_CMENU_BASE, CCS_CMENU_MAX, OnCmenuSelected)
    ON_CBN_SELCHANGE(IDC_REPORT_COMBO, &CTxDOTOptionalDesignReportPage::OnCbnSelchangeReportCombo)
    ON_WM_CTLCOLOR()
+   ON_COMMAND(ID_HELP, &CTxDOTOptionalDesignReportPage::OnHelpFinder)
+   ON_COMMAND(ID_HELP_FINDER, &CTxDOTOptionalDesignReportPage::OnHelpFinder)
 END_MESSAGE_MAP()
 
 
@@ -346,4 +349,12 @@ void CTxDOTOptionalDesignReportPage::AssertValid() const
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    __super::AssertValid();
+}
+
+
+void CTxDOTOptionalDesignReportPage::OnHelpFinder()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pApp = AfxGetApp();
+   ::HtmlHelp( *this, pApp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_REPORT_TAB );
 }

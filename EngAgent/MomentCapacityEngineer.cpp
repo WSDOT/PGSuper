@@ -577,15 +577,30 @@ void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(pgsTypes::Stage stage,c
    else
       Mcr = cmd.Mcr;
 
-   Float64 MuMin_StrengthI, MuMax_StrengthI;
-   pLimitStateForces->GetMoment(pgsTypes::StrengthI,stage,poi,bat,&MuMin_StrengthI,&MuMax_StrengthI);
-   Mu_StrengthI = (bPositiveMoment ? MuMax_StrengthI : MuMin_StrengthI);
 
+   if ( bPositiveMoment )
+   {
+      Float64 MuMin_StrengthI, MuMax_StrengthI;
+      pLimitStateForces->GetMoment(pgsTypes::StrengthI,stage,poi,bat,&MuMin_StrengthI,&MuMax_StrengthI);
+      Mu_StrengthI = MuMax_StrengthI;
+   }
+   else
+   {
+      Mu_StrengthI = pLimitStateForces->GetSlabDesignMoment(pgsTypes::StrengthI,poi,bat);
+   }
+      
    if ( bPermit )
    {
-      Float64 MuMin_StrengthII, MuMax_StrengthII;
-      pLimitStateForces->GetMoment(pgsTypes::StrengthII,stage,poi,bat,&MuMin_StrengthII,&MuMax_StrengthII);
-      Mu_StrengthII = (bPositiveMoment ? MuMax_StrengthII : MuMin_StrengthII);
+      if ( bPositiveMoment )
+      {
+         Float64 MuMin_StrengthII, MuMax_StrengthII;
+         pLimitStateForces->GetMoment(pgsTypes::StrengthII,stage,poi,bat,&MuMin_StrengthII,&MuMax_StrengthII);
+         Mu_StrengthII = MuMax_StrengthII;
+      }
+      else
+      {
+         Mu_StrengthII = pLimitStateForces->GetSlabDesignMoment(pgsTypes::StrengthII,poi,bat);
+      }
    }
    else
    {
@@ -877,12 +892,16 @@ void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& 
    Float64 dt; // depth from top of section to extreme layer of tensile reinforcement
    BuildCapacityProblem(pgsTypes::BridgeSite3,poi,config,0,bondTool,bPositiveMoment,&beam_section,&pntCompression,&szOffset,&dt,bond_factors);
 
+   // determine neutral axis angle
+   // compression is on the left side of the neutral axis
+   Float64 na_angle = (bPositiveMoment ? 0.00 : M_PI);
+
    CComPtr<ICrackedSectionSolution> solution;
    m_CrackedSectionSolver->putref_Section(beam_section);
    m_CrackedSectionSolver->put_Slices(20);
    m_CrackedSectionSolver->put_SliceGrowthFactor(2);
    m_CrackedSectionSolver->put_CGTolerance(0.001);
-   HRESULT hr = m_CrackedSectionSolver->Solve(&solution);
+   HRESULT hr = m_CrackedSectionSolver->Solve(na_angle,&solution);
    ATLASSERT(SUCCEEDED(hr));
 
    pCSD->CrackedSectionSolution = solution;

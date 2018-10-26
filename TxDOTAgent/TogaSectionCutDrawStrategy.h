@@ -20,8 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_SECTIONCUTDRAWSTRATEGY_H_
-#define INCLUDED_SECTIONCUTDRAWSTRATEGY_H_
+#ifndef INCLUDED_TOGASECTIONCUTDRAWSTRATEGY_H_
+#define INCLUDED_TOGASECTIONCUTDRAWSTRATEGY_H_
 
 interface iPointDisplayObject;
 
@@ -36,14 +36,14 @@ public:
    virtual void ShowCutDlg()=0;
 };
 
-// {C56878AE-5504-4f1a-A060-F2C56991663D}
-DEFINE_GUID(IID_iSectionCutDrawStrategy, 
-0xc56878ae, 0x5504, 0x4f1a, 0xa0, 0x60, 0xf2, 0xc5, 0x69, 0x91, 0x66, 0x3d);
+// {8F1327F9-3055-4e44-9E23-71FCDB3B9AA5}
+DEFINE_GUID(IID_iTogaSectionCutDrawStrategy, 
+0x8f1327f9, 0x3055, 0x4e44, 0x9e, 0x23, 0x71, 0xfc, 0xdb, 0x3b, 0x9a, 0xa5);
 
-interface iSectionCutDrawStrategy : public IUnknown
+interface iTogaSectionCutDrawStrategy : public IUnknown
 {
    STDMETHOD_(void,SetColor)(COLORREF color) PURE;
 	STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx, iCutLocation* pCutLoc) PURE;
 };
 
-#endif // INCLUDED_SECTIONCUTDRAWSTRATEGY_H_
+#endif // INCLUDED_TOGASECTIONCUTDRAWSTRATEGY_H_
