@@ -253,7 +253,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
    pMomentCapacity->GetMinMomentCapacityDetails(pgsTypes::BridgeSite3,pmid[0],true,&mmcd);
    value = max(mmcd.Mu,mmcd.MrMin);
 
-	int reqMinUltimateMomentCapacity = (int)::ConvertFromSysUnits( value, unitMeasure::KipFeet );
+	int reqMinUltimateMomentCapacity = (int)Round(::ConvertFromSysUnits( value, unitMeasure::KipFeet ));
 
 	/* 18. LIVE LOAD DISTRIBUTION FACTOR */
    Float64 liveLoadDistFactor = pDistFact->GetMomentDistFactor(span, gdr, pgsTypes::StrengthI);

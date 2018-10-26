@@ -193,7 +193,7 @@ void write_alignment_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* 
       HorzCurveData& hc_data = *iter;
 
       CComPtr<IHorzCurve> hc;
-      pRoadway->GetCurve(col,&hc);
+      pRoadway->GetCurve(col-1,&hc);
 
       row = 0;
 
@@ -377,7 +377,7 @@ void write_profile_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pC
       VertCurveData& vcd = *iter;
 
       CComPtr<IVertCurve> vc;
-      pRoadway->GetVertCurve(col,&vc);
+      pRoadway->GetVertCurve(col-1,&vc);
 
       CComPtr<IProfilePoint> bvc;
       vc->get_BVC(&bvc);

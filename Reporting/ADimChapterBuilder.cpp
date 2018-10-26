@@ -119,9 +119,9 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    (*pTable2)(0,3)<< COLHDR("Top" << rptNewLine << "Width",rptLengthUnitTag, pDispUnit->GetComponentDimUnit());
    (*pTable2)(0,4)<< COLHDR("Profile" << rptNewLine << "Effect",rptLengthUnitTag, pDispUnit->GetComponentDimUnit());
    (*pTable2)(0,5)<< COLHDR("Girder" << rptNewLine << "Orientation" << rptNewLine << "Effect",rptLengthUnitTag, pDispUnit->GetComponentDimUnit());
-   (*pTable2)(0,6)<< COLHDR("Required" << rptNewLine << "Haunch" << rptNewLine << "Depth" << ("*"),rptLengthUnitTag, pDispUnit->GetComponentDimUnit());
+   (*pTable2)(0,6)<< COLHDR("Required" << rptNewLine << "Slab" << rptNewLine << "Offset" << ("*"),rptLengthUnitTag, pDispUnit->GetComponentDimUnit());
    (*pTable2)(0,7)<< COLHDR("Top" << rptNewLine << "Girder" << rptNewLine << "Elevation" << Super("**"),rptLengthUnitTag,pDispUnit->GetSpanLengthUnit());
-   (*pTable2)(0,8)<< COLHDR("Actual" << rptNewLine << "Haunch" << rptNewLine << "Depth" << Super("***"),rptLengthUnitTag, pDispUnit->GetComponentDimUnit());
+   (*pTable2)(0,8)<< COLHDR("Actual" << rptNewLine << "Depth" << Super("***"),rptLengthUnitTag, pDispUnit->GetComponentDimUnit());
 
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,gdr);
 
@@ -171,7 +171,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
 
    pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
    *pChapter << pPara;
-   *pPara << Super("*") << " required haunch depth from top of girder to top of slab at centerline bearing for geometric effects at this point. (Slab Thickness + Fillet + Camber Effect + Profile Effect + Girder Orientation Effect)" << rptNewLine;
+   *pPara << Super("*") << " required slab offset from top of girder to top of slab at centerline bearing for geometric effects at this point. (Slab Thickness + Fillet + Camber Effect + Profile Effect + Girder Orientation Effect)" << rptNewLine;
 
    if ( slabOffsetType == pgsTypes::sotBridge )
    {
@@ -189,8 +189,8 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       *pPara << Super("**") << " includes the effects of camber and based on Slab Offset at the start of the girder of " << comp.SetValue(Astart);
       *pPara << " and a Slab Offset at the end of the girder of " << comp.SetValue(Aend) << "." << rptNewLine;
 
-      *pPara << Super("***") << " top of girder to top of slab based on Slab Offset at the start of the girder of " << comp.SetValue(Astart);
-      *pPara << " and a Slab Offset at the end of the girder of " << comp.SetValue(Aend) << ". (Deck Elevation - Top Girder Elevation)" << rptNewLine;
+      *pPara << Super("***") << " actual depth from top of girder to top of slab based on Slab Offset at the start of the girder of " << comp.SetValue(Astart);
+      *pPara << " and a Slab Offset at the end of the girder of " << comp.SetValue(Aend) << ". (Top Slab Elevation - Top Girder Elevation)" << rptNewLine;
    }
 
    pPara = new rptParagraph;
@@ -203,7 +203,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    *pPara << rptNewLine << rptNewLine;
 
    *pPara << "Top Slab Elevation = Elevation of the roadway surface directly above the centerline of the girder." << rptNewLine;
-   *pPara << "Girder Chord Elevation = Elevation of an imaginary chord paralleling the top of the undeformed girder that intersects the roadway surface at the points of bearing." << rptNewLine;
+   *pPara << "Girder Chord Elevation = Elevation of an imaginary chord paralleling the top of the undeformed girder that intersects the roadway surface above the point of bearing at the left end of the girder." << rptNewLine;
 
    *pPara << "Profile Effect = Deck Elevation - Girder Chord Elevation" << rptNewLine;
    *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ProfileEffect.gif");
