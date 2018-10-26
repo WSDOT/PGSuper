@@ -90,4 +90,5 @@ public:
    afx_msg BOOL OnEraseBkgnd(CDC* pDC);
    afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
    afx_msg void OnHelpFinder();
+   afx_msg void OnCbnSelchangeProjectCriteria();
 };

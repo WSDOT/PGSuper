@@ -119,9 +119,9 @@ CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChap
 #endif // IGNORE_2007_CHANGES
    *pParagraph << rptRcImage(strImagePath + _T("HumidityFactor.png")) << rptNewLine;
    if ( IS_SI_UNITS(pDisplayUnits) )
-      *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_SI.png")) << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_Deck_SI.png")) << rptNewLine;
    else
-      *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_US.png")) << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_Deck_US.png")) << rptNewLine;
 
    rptRcTable* pParamTable = pgsReportStyleHolder::CreateDefaultTable(9,_T(""));
    *pParagraph << pParamTable << rptNewLine;
@@ -136,7 +136,11 @@ CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChap
    (*pParamTable)(0,7) << Sub2(_T("K"),_T("2"));
    (*pParamTable)(0,8) << Sub2(symbol(epsilon),_T("ddf")) << _T("x 1000");
 
-   (*pParamTable)(1,0) << table->ecc.SetValue(details.RefinedLosses2005.GetVolumeSlab()/details.RefinedLosses2005.GetSurfaceAreaSlab());
+   if ( IsZero(details.RefinedLosses2005.GetVolumeSlab()) || IsZero(details.RefinedLosses2005.GetSurfaceAreaSlab()) )
+      (*pParamTable)(1,0) << table->ecc.SetValue(0.0);
+   else
+      (*pParamTable)(1,0) << table->ecc.SetValue(details.RefinedLosses2005.GetVolumeSlab()/details.RefinedLosses2005.GetSurfaceAreaSlab());
+
    (*pParamTable)(1,1) << table->scalar.SetValue(details.RefinedLosses2005.GetCreepDeck().GetKvs());
    (*pParamTable)(1,2) << table->scalar.SetValue(details.RefinedLosses2005.Getkhs());
    (*pParamTable)(1,3) << table->stress.SetValue(details.RefinedLosses2005.GetFcSlab() );

@@ -157,7 +157,7 @@ void CTxDOTOptionalDesignDoc::OnTxDotDataChanged(int change)
    if ( (change & ITxDataObserver::ctTemplateFile) == ITxDataObserver::ctTemplateFile)
    {
       // Need to reparse our template file
-      BOOL st = ParseTemplateFile();
+      BOOL st = ParseTemplateFile(false);
       ASSERT(st);
 
       // strand input data is now no good - reset number of strands to zero
@@ -459,10 +459,10 @@ BOOL CTxDOTOptionalDesignDoc::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
    m_ProjectData.SetCompany(cmpyName);
 
    // parse template and set project data
-   return ParseTemplateFile(lpszPathName);
+   return ParseTemplateFile(lpszPathName, true);
 }
 
-BOOL CTxDOTOptionalDesignDoc::ParseTemplateFile()
+BOOL CTxDOTOptionalDesignDoc::ParseTemplateFile(bool isNewFileFromTemplate)
 {
    // Get file name for template file (template file name is always beam type)
    CString beam_type = m_ProjectData.GetBeamType();
@@ -476,15 +476,15 @@ BOOL CTxDOTOptionalDesignDoc::ParseTemplateFile()
    CString template_name = GetTOGAFolder() + CString(_T("\\")) + beam_type + _T(".") + suffix;
 
    // Read template file and update project data
-   return ParseTemplateFile(template_name);
+   return ParseTemplateFile(template_name, isNewFileFromTemplate);
 }
 
 
-BOOL CTxDOTOptionalDesignDoc::ParseTemplateFile(LPCTSTR lpszPathName)
+BOOL CTxDOTOptionalDesignDoc::ParseTemplateFile(LPCTSTR lpszPathName, bool isNewFileFromTemplate)
 {
    // Read girder type, connection types, and pgsuper template file name
-   CString girderEntry, leftConnEntry, rightConnEntry;
-   if(!::ParseTemplateFile(lpszPathName, girderEntry, leftConnEntry, rightConnEntry))
+   CString girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry;
+   if(!::ParseTemplateFile(lpszPathName, girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry))
    {
       ASSERT(0);
       return FALSE;
@@ -495,9 +495,16 @@ BOOL CTxDOTOptionalDesignDoc::ParseTemplateFile(LPCTSTR lpszPathName)
    m_ProjectData.SetLeftConnectionEntryName( leftConnEntry );
    m_ProjectData.SetRightConnectionEntryName( rightConnEntry );
 
-   // At one time, the template file also contained the name of the pgsuper seed data file
-   // this is no more
-   m_ProjectData.SetPGSuperFileName( g_DefaultPGSuperFileName );
+   if (isNewFileFromTemplate)
+   {
+      // Only set project criteria and template file name on initial load from template
+
+      m_ProjectData.SetSelectedProjectCriteriaLibrary(projectCriteriaEntry);
+
+      // At one time, the template file also contained the name of the pgsuper seed data file
+      // this is no more
+      m_ProjectData.SetPGSuperFileName( g_DefaultPGSuperFileName );
+   }
 
    return TRUE;
 }
@@ -694,7 +701,7 @@ IBroker* CTxDOTOptionalDesignDoc::GetUpdatedBroker()
             old_pgsuper_file = m_ProjectData.GetPGSuperFileName();
 
             // Read template file and update project data
-            ParseTemplateFile();
+            ParseTemplateFile(false);
 
             new_pgsuper_file = m_ProjectData.GetPGSuperFileName();
          }
@@ -961,12 +968,6 @@ void CTxDOTOptionalDesignDoc::PreprocessTemplateData()
    // Make sure our pgsuper template is what we expect
    CBridgeDescription bridgeDesc = *(pBridgeDesc->GetBridgeDescription());
    VerifyPgsuperTemplateData(bridgeDesc);
-
-   // Save name of selected spec entry and blank out 0.65f'ci entry name out
-   GET_IFACE(ISpecification,pSpec);
-   m_OriginalSpecEntryName = pSpec->GetSpecification();
-   m_065SpecEntryName.clear();
-
 }
 
 void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
@@ -1507,35 +1508,6 @@ void CTxDOTOptionalDesignDoc::VerifyPgsuperTemplateData(CBridgeDescription& brid
       TxDOTBrokerRetrieverException exc;
       exc.Message.Format(_T("The PGSuper template model must contain a single deck edge point. The model loaded has %d. Cannot continue"),ndp);
       throw exc;
-   }
-}
-
-void CTxDOTOptionalDesignDoc::DealWith065SpecEntry()
-{
-   // Make sure that 0.65 f'ci entry has been created
-   if (m_065SpecEntryName.empty())
-   {
-      // Make copy of original entry, change factor to 0.65, and add it to library
-      GET_IFACE(ILibrary, pLib );
-      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( m_OriginalSpecEntryName.c_str() );
-      ASSERT(pSpecEntry!=NULL);
-
-      SpecLibraryEntry clone_entry(*pSpecEntry); // copy
-
-      clone_entry.SetCyCompStressService(0.65);
-
-      std::_tstring clone_name = m_OriginalSpecEntryName + std::_tstring(_T("_WithHigherComprAtRelease"));
- 
-      SpecLibrary* pLibrary =  pLib->GetSpecLibrary();
-      while(!pLibrary->AddEntry(clone_entry, clone_name.c_str()))
-      {
-         ATLASSERT(0);
-         // Name taken - create a new one (not pretty)
-         clone_name += _T("x");
-      }
-
-      // Save name so we can refer to it
-      m_065SpecEntryName = clone_name;
    }
 }
 

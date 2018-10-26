@@ -124,7 +124,9 @@ inline CString get_strand_size( matPsStrand::Size size )
    return sz;
 }
 
-inline BOOL ParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry, CString& leftConnEntry, CString& rightConnEntry)
+inline BOOL ParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry, 
+                              CString& leftConnEntry, CString& rightConnEntry,
+                              CString& projectCriteriaEntry)
 {
    // Read girder type, connection types, and pgsuper template file name
    std::_tifstream ifile(lpszPathName);
@@ -141,12 +143,12 @@ inline BOOL ParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry, 
    ifile.getline(line,1024);
 
    // comma delimited file in format of:
-   // GirderEntryName, EndConnection, StartConnection, TemplateFile
+   // GirderEntryName, EndConnection, StartConnection, ProjectCriteria
    sysTokenizer tokenizer(_T(","));
    tokenizer.push_back(line);
 
    int nitems = tokenizer.size();
-   if (nitems!=4 && nitems!=3)
+   if (nitems<4) // Don't limit to allow new items to be added
    {
       CString msg;
       msg.Format(_T("Error reading template file: %s - Invalid Format"),lpszPathName);
@@ -158,6 +160,7 @@ inline BOOL ParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry, 
    girderEntry = tokenizer[0].c_str();
    leftConnEntry = tokenizer[1].c_str();
    rightConnEntry = tokenizer[2].c_str();
+   projectCriteriaEntry = tokenizer[3].c_str();
 
    return TRUE;
 }

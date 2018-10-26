@@ -112,6 +112,7 @@
 #define IDC_HIGHER_COMPRESSION          264
 #define IDC_PROJECT_CRITERIA            265
 #define IDC_WARNING_MSG                 266
+#define IDC_CY_STRESS_FACTOR            267
 #define IDC_VALUE                       1018
 #define IDC_VALUE_UNITS                 1026
 #define ID_SELECTED_GIRDER              1086
@@ -174,7 +175,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        217
 #define _APS_NEXT_COMMAND_VALUE         33316
-#define _APS_NEXT_CONTROL_VALUE         267
+#define _APS_NEXT_CONTROL_VALUE         268
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

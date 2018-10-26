@@ -176,10 +176,6 @@ private:
 
    UINT m_GirderModelEditorSettings;
 
-   // Names of original spec entry from template and spec entry with 0.65f'ci modification
-   std::_tstring m_OriginalSpecEntryName;
-   std::_tstring m_065SpecEntryName;
-
 private:
    // Implementation
    void InitializeLibraryManager();
@@ -191,12 +187,10 @@ private:
                       LPCTSTR gdrName, const GirderLibraryEntry* pGdrEntry, Float64 EcBeam,
                       CGirderTypes* pGirderTypes);
 
-   void DealWith065SpecEntry();
-
    void RecreateBroker();
 
-   BOOL ParseTemplateFile();
-   BOOL ParseTemplateFile(LPCTSTR lpszPathName);
+   BOOL ParseTemplateFile(bool isNewFileFromTemplate);
+   BOOL ParseTemplateFile(LPCTSTR lpszPathName, bool isNewFileFromTemplate);
 
    HRESULT LoadThePGSuperDocument(IStructuredLoad* pStrLoad);
    void HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName );

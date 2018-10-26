@@ -234,7 +234,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
       {
          *pPara << rptNewLine;
          *pPara << Bold(_T("Prestress release until temporary strand removal and diaphragm casting")) <<rptNewLine;
-         *pPara << RPT_FC << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
@@ -246,7 +246,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
 
          details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToDeck,i);
          *pPara << Bold(_T("Prestress release until deck casting")) << rptNewLine;
-         *pPara << RPT_FC << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue( details.t ) << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
@@ -258,7 +258,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
 
          details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDiaphragmToDeck,i);
          *pPara << Bold(_T("Temporary strand removal and diaphragm casting to deck casting and application of superimposed dead loads")) << rptNewLine;
-         *pPara << RPT_FC << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue( details.t ) << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
@@ -271,7 +271,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
          // 2005 and later
          *pPara << rptNewLine;
          *pPara << Bold(_T("Prestress release until temporary strand removal and diaphragm casting")) <<rptNewLine;
-         *pPara << RPT_FC << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
 #if defined IGNORE_2007_CHANGES
@@ -292,7 +292,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
 
          details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToDeck,i);
          *pPara << Bold(_T("Prestress release until deck casting")) << rptNewLine;
-         *pPara << RPT_FC << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
 #if defined IGNORE_2007_CHANGES
@@ -313,7 +313,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
 
          details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDiaphragmToDeck,i);
          *pPara << Bold(_T("Temporary strand removal and diaphragm casting to deck casting and application of superimposed dead loads")) << rptNewLine;
-         *pPara << RPT_FC << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
 #if defined IGNORE_2007_CHANGES
@@ -449,7 +449,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRp
       {
          *pPara << rptNewLine;
          *pPara << Bold(_T("Prestress release until deck casting")) <<rptNewLine;
-         *pPara << RPT_FC << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
@@ -462,7 +462,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRp
          // 2005 and later
          *pPara << rptNewLine;
          *pPara << Bold(_T("Prestress release until deck casting")) <<rptNewLine;
-         *pPara << RPT_FC << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
 #if defined IGNORE_2007_CHANGES
@@ -612,7 +612,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
       {
          *pPara << rptNewLine;
          *pPara << Bold(_T("Prestress release until temporary strand removal and diaphragm casting")) <<rptNewLine;
-         *pPara << RPT_FC << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
@@ -624,7 +624,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
 
          details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToDeck,i);
          *pPara << Bold(_T("Prestress release until application of superimposed dead loads")) << rptNewLine;
-         *pPara << RPT_FC << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue( details.t ) << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
@@ -636,7 +636,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
 
          details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToFinal,i);
          *pPara << Bold(_T("Prestress release to final")) << rptNewLine;
-         *pPara << RPT_FC << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue( details.t ) << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
@@ -648,7 +648,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
 
          details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDiaphragmToDeck,i);
          *pPara << Bold(_T("Temporary strand removal and diaphragm casting to application of superimposed dead loads")) << rptNewLine;
-         *pPara << RPT_FC << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue( details.t ) << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
@@ -660,7 +660,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
 
          details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDeckToFinal,i);
          *pPara << Bold(_T("Application of superimposed dead loads to final")) << rptNewLine;
-         *pPara << RPT_FC << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue( details.t ) << rptNewLine;
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
@@ -673,7 +673,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
          // 2005 and later
          *pPara << rptNewLine;
          *pPara << Bold(_T("Prestress release until temporary strand removal and diaphragm casting")) <<rptNewLine;
-         *pPara << RPT_FC << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
 #if defined IGNORE_2007_CHANGES
@@ -694,7 +694,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
 
          details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToDeck,i);
          *pPara << Bold(_T("Prestress release until application of superimposed dead loads")) << rptNewLine;
-         *pPara << RPT_FC << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
 #if defined IGNORE_2007_CHANGES
@@ -715,7 +715,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
 
          details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpReleaseToFinal,i);
          *pPara << Bold(_T("Prestress release to final")) << rptNewLine;
-         *pPara << RPT_FC << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
 #if defined IGNORE_2007_CHANGES
@@ -736,7 +736,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
 
          details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDiaphragmToDeck,i);
          *pPara << Bold(_T("Temporary strand removal and diaphragm casting to application of superimposed dead loads")) << rptNewLine;
-         *pPara << RPT_FC << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
 #if defined IGNORE_2007_CHANGES
@@ -757,7 +757,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
 
          details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDiaphragmToFinal,i);
          *pPara << Bold(_T("Temporary strand removal and diaphragm casting to final")) << rptNewLine;
-         *pPara << RPT_FC << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
 #if defined IGNORE_2007_CHANGES
@@ -778,7 +778,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
 
          details = pCamber->GetCreepCoefficientDetails(span,gdr,ICamber::cpDeckToFinal,i);
          *pPara << Bold(_T("Application of superimposed dead loads to final")) << rptNewLine;
-         *pPara << RPT_FC << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
+         *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << rptNewLine;
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << rptNewLine;
          *pPara << _T("t = ")<< time.SetValue(details.t) << rptNewLine;
 #if defined IGNORE_2007_CHANGES

@@ -1,6 +1,6 @@
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 46.25   4 12.00     1     1 U54G6  *    68   5/8  270 15.22  4.87  16 50.0  5.000  8.600    6.520   -3.965  12678  0.740  1.064  0.29 -0.21 -0.01 -0.01 -0.24 270.64 497.29   1.75   5.00   5.00
+ 46.25   4 12.00     1     1 U54G6  *    68   5/8  270 15.22  4.87  16 50.0  5.000  8.600    6.520   -3.965  12867  0.740  1.064  0.29 -0.21 -0.01 -0.01 -0.24 270.64 461.89   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -9,7 +9,7 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 46.25   4 12.00     1     2 U54G6  *    68   5/8  270 15.22  4.87  16 50.0  5.000  8.700    6.541   -3.975  12677  0.740  1.064  0.29 -0.21 -0.01 -0.01 -0.24 270.64 497.99   1.75   5.00   5.00
+ 46.25   4 12.00     1     2 U54G6  *    68   5/8  270 15.22  4.87  16 50.0  5.000  8.700    6.541   -3.975  12868  0.740  1.064  0.29 -0.21 -0.01 -0.01 -0.24 270.64 462.12   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful

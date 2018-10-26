@@ -54,6 +54,7 @@ BEGIN_MESSAGE_MAP(CTxDOTOptionalDesignBridgeInputPage, CPropertyPage)
    ON_WM_CTLCOLOR()
    ON_COMMAND(ID_HELP, &CTxDOTOptionalDesignBridgeInputPage::OnHelpFinder)
    ON_COMMAND(ID_HELP_FINDER, &CTxDOTOptionalDesignBridgeInputPage::OnHelpFinder)
+   ON_CBN_SELCHANGE(IDC_PROJECT_CRITERIA, &CTxDOTOptionalDesignBridgeInputPage::OnCbnSelchangeProjectCriteria)
 END_MESSAGE_MAP()
 
 
@@ -165,6 +166,9 @@ BOOL CTxDOTOptionalDesignBridgeInputPage::OnInitDialog()
    LoadDialogData();
 
    CPropertyPage::OnInitDialog();
+
+   // set cy stress factor text
+   OnCbnSelchangeProjectCriteria();
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
@@ -309,8 +313,8 @@ bool CTxDOTOptionalDesignBridgeInputPage::CheckLibraryData()
 
    CString template_name = GetTOGAFolder() + CString(_T("\\")) + m_BeamType + _T(".") + suffix;
 
-   CString girderEntry, leftConnEntry, rightConnEntry;
-   if(!::ParseTemplateFile(template_name, girderEntry, leftConnEntry, rightConnEntry))
+   CString girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry;
+   if(!::ParseTemplateFile(template_name, girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry))
    {
       return false;
    }
@@ -421,4 +425,28 @@ void CTxDOTOptionalDesignBridgeInputPage::LoadProjectCriteriaLibraryNames()
       m_SelectedProjectCriteriaLibrary = dlg.m_SelectedProjectCriteriaLibrary;
    }
 
+}
+
+void CTxDOTOptionalDesignBridgeInputPage::OnCbnSelchangeProjectCriteria()
+{
+   CComboBox* ppcl_ctrl = (CComboBox*)GetDlgItem(IDC_PROJECT_CRITERIA);
+   int idx = ppcl_ctrl->GetCurSel();
+   if (idx!=CB_ERR)
+   {
+      CString libname;
+      ppcl_ctrl->GetLBText(idx, libname);
+
+      SpecLibrary* pLib = m_pBrokerRetriever->GetSpecLibrary();
+      const SpecLibraryEntry* pEntry = (const SpecLibraryEntry*)pLib->GetEntry(libname);
+      if (pEntry!=NULL)
+      {
+         Float64 factor = pEntry->GetCyCompStressService();
+         CString msg;
+         msg.Format(_T("(Allowable compression stress factor at release = %.2f)"),factor);
+
+         CWnd* pWnd = GetDlgItem(IDC_CY_STRESS_FACTOR);
+         pWnd->SetWindowText(msg);
+      }
+   }
+   
 }

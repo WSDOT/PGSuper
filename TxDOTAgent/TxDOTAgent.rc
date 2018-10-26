@@ -59,8 +59,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,5,0,6
- PRODUCTVERSION 2,5,0,6
+ FILEVERSION 2,5,0,7
+ PRODUCTVERSION 2,5,0,7
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -78,12 +78,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "TxDOTAgent Module"
-            VALUE "FileVersion", "2.5.0.6"
+            VALUE "FileVersion", "2.5.0.7"
             VALUE "InternalName", "TOGA"
             VALUE "LegalCopyright", "Copyright © 1999-2011, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperTxDOTAgent.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.5.0.6"
+            VALUE "ProductVersion", "2.5.0.7"
         END
     END
     BLOCK "VarFileInfo"
@@ -123,7 +123,7 @@ BEGIN
     PUSHBUTTON      "Clear All",IDC_CLEAR_ALL,273,130,50,14
 END
 
-IDD_BRIDGE_INPUT_PAGE DIALOGEX 0, 0, 424, 382
+IDD_BRIDGE_INPUT_PAGE DIALOGEX 0, 0, 424, 390
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Bridge Input"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
@@ -195,9 +195,10 @@ BEGIN
     RTEXT           "W Overlay",IDC_STATIC,289,313,51,8
     LTEXT           "kip/ft",IDC_W_COMP_DW_UNITS,390,313,21,8
     RTEXT           "* Note: Tension is negative",IDC_STATIC,232,268,135,8
-    GROUPBOX        "Project Criteria",IDC_STATIC,7,343,410,30
-    LTEXT           "Select Project Criteria Library Entry that Check is to be Based On",IDC_STATIC,13,358,215,8
+    GROUPBOX        "Project Criteria",IDC_STATIC,7,343,410,39
+    LTEXT           "Select Project Criteria Library Entry that Check is to be Based On",IDC_STATIC,16,358,209,8
     COMBOBOX        IDC_PROJECT_CRITERIA,225,353,182,93,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CTEXT           "(Release compression stress factor = ??.??)",IDC_CY_STRESS_FACTOR,225,370,182,8
 END
 
 IDD_GIRDER_INPUT_PAGE DIALOGEX 0, 0, 468, 390
@@ -441,7 +442,7 @@ BEGIN
         VERTGUIDE, 202
         VERTGUIDE, 347
         TOPMARGIN, 7
-        BOTTOMMARGIN, 375
+        BOTTOMMARGIN, 383
         HORZGUIDE, 134
         HORZGUIDE, 140
     END

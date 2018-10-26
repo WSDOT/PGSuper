@@ -5073,7 +5073,6 @@ void CAnalysisAgentImp::GetMainConstructionLoad(SpanIndexType span,GirderIndexTy
 
       if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
       {
-         ATLASSERT( ::IsJointSpacing(pBridgeDesc->GetGirderSpacingType()) );
          Float64 left,right;
          pBridge->GetDistanceBetweenGirders(prevPoi,&left,&right);
 
@@ -11627,12 +11626,9 @@ Float64 CAnalysisAgentImp::GetConcreteStrengthAtTimeOfLoading(const GDRCONFIG& c
    switch( le )
    {
    case ICamber::leRelease:
-      Fc = config.Fci;
-      break;
-
    case ICamber::leDiaphragm:
    case ICamber::leDeck:
-      Fc = config.Fc;
+      Fc = config.Fci;
       break;
 
    default:

@@ -1,6 +1,6 @@
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 107.29  12  9.33     1     1 FDiap  *    34   5/8  270 32.60 21.30   6 70.0  4.500  5.600    2.899   -3.416  10111  0.760  0.760  0.27 -0.11 -0.01 -0.01 -0.12 132.81 244.98   3.00   6.17   6.17
+ 107.29  12  9.33     1     1 FDiap  *    34   5/8  270 32.60 17.77   8 70.0  4.300  5.200    2.882   -3.411  10111  0.760  0.760  0.27 -0.11 -0.01 -0.01 -0.13 135.25 239.66   3.00   6.17   6.17
 
 
 The Specification Check was Not Successful
@@ -9,7 +9,7 @@ Tensile stress check failed for Service III for the Final with Live Load Stage (
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 107.29  12  9.33     1     2 FDiap  *    37   5/8  270 32.52 20.52   7 70.0  4.800  6.000    3.007   -3.638  11186  0.944  0.944  0.28 -0.11 -0.01 -0.01 -0.12 154.01 277.62   3.00   6.17   6.17
+ 107.29  12  9.33     1     2 FDiap  *    37   5/8  270 32.52 20.52   7 70.0  4.800  6.000    3.007   -3.638  11186  0.944  0.944  0.28 -0.11 -0.01 -0.01 -0.12 154.01 266.65   3.00   6.17   6.17
 
 
 The Specification Check was Not Successful
@@ -18,7 +18,7 @@ Tensile stress check failed for Service III for the Final with Live Load Stage (
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 107.29  12  9.33     1     7 FDiap  *    35   5/8  270 32.57 19.89   7 70.0  4.600  5.600    2.931   -3.459  10698  0.944  0.944  0.27 -0.11 -0.01  0.00 -0.12 139.58 265.58   3.00   6.17   6.17
+ 107.29  12  9.33     1     7 FDiap  *    35   5/8  270 32.57 19.89   7 70.0  4.500  5.600    2.931   -3.459  10698  0.944  0.944  0.27 -0.11 -0.01  0.00 -0.12 140.81 260.98   3.00   6.17   6.17
 
 
 The Specification Check was Not Successful

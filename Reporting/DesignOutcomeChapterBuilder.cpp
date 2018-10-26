@@ -180,27 +180,31 @@ rptChapter* CDesignOutcomeChapterBuilder::Build(CReportSpecification* pRptSpec,U
    GET_IFACE2( pBroker, IEAFDisplayUnits, pDisplayUnits );
    GET_IFACE2( pBroker, IArtifact, pIArtifact );
 
-   // Write multiple girder table if we have more than one girder
-   // Break into multiple tables if necessary
+   // Write multiple girder table only if we have more than one girder
    std::list<int> table_cols = ComputeTableCols(list);
-   bool first = true;
-   int start_idx, end_idx;
-   for (std::list<int>::iterator itcol = table_cols.begin(); itcol!=table_cols.end(); itcol++)
-   {
-      if (first)
-      {
-         start_idx = 0;
-         end_idx = *itcol-1;
-         first = false;
-      }
-      else
-      {
-         start_idx = end_idx+1;
-         end_idx += *itcol;
-         ATLASSERT(end_idx<list.size());
-      }
 
-      multiple_girder_table(start_idx, end_idx, pBroker, list, pChapter, pDisplayUnits, pIArtifact);
+   if (!table_cols.empty() && !(table_cols.size()==1 && table_cols.front()==1) )
+   {
+      // List contains number of columns in each table
+      bool first = true;
+      int start_idx, end_idx;
+      for (std::list<int>::iterator itcol = table_cols.begin(); itcol!=table_cols.end(); itcol++)
+      {
+         if (first)
+         {
+            start_idx = 0;
+            end_idx = *itcol-1;
+            first = false;
+         }
+         else
+         {
+            start_idx = end_idx+1;
+            end_idx += *itcol;
+            ATLASSERT(end_idx<(int)list.size());
+         }
+
+         multiple_girder_table(start_idx, end_idx, pBroker, list, pChapter, pDisplayUnits, pIArtifact);
+      }
    }
 
    if (!list.empty())
