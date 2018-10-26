@@ -547,7 +547,6 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize); // only doing stress rating for tension so we want to maximize results
 
    GET_IFACE(IPretensionStresses,pPrestress);
-   GET_IFACE(IPosttensionStresses,pPostTension); // this is the primary, direct post-tensioning stress (P*e)
    GET_IFACE(IRatingSpecification,pRatingSpec);
    GET_IFACE(IAllowableConcreteStress,pAllowables);
 
@@ -620,7 +619,9 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
          }
 
          Float64 fps = pPrestress->GetStress(loadRatingIntervalIdx,poi,stressLocation);
-         Float64 fpt = pPostTension->GetStress(loadRatingIntervalIdx,poi,stressLocation,ALL_DUCTS);
+
+         Float64 fpt;
+         pProductForces->GetStress(loadRatingIntervalIdx,pftPostTensioning,poi,bat,rtCumulative,stressLocation,stressLocation,&fpt,&fDummy);
 
          // do this in the loop because the vector of POI can be for multiple segments
          Float64 condition_factor = pRatingSpec->GetGirderConditionFactor(poi.GetSegmentKey());

@@ -202,13 +202,13 @@ void CIBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statu
 
 void CIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMember* ssmbr)
 {
-   CComPtr<ISegment> segment;
+   CComPtr<ISuperstructureMemberSegment> segment;
 
    bool bPrismatic = IsPrismatic(pBroker,segmentKey);
    if ( bPrismatic )
    {
       // prismatic
-      segment.CoCreateInstance(CLSID_PrismaticSegment);
+      segment.CoCreateInstance(CLSID_PrismaticSuperstructureMemberSegment);
    }
    else
    {
@@ -255,7 +255,7 @@ void CIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroup
 
    if ( bPrismatic )
    {
-      CComQIPtr<IPrismaticSegment> prisSegment(segment);
+      CComQIPtr<IPrismaticSuperstructureMemberSegment> prisSegment(segment);
       ATLASSERT(prisSegment);
 
       CComQIPtr<IShape> shape(gdrSection);
@@ -823,6 +823,11 @@ std::_tstring CIBeamFactory::GetGirderFamilyName()
 std::_tstring CIBeamFactory::GetPublisher()
 {
    return std::_tstring(_T("WSDOT"));
+}
+
+std::_tstring CIBeamFactory::GetPublisherContactInformation()
+{
+   return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
 HINSTANCE CIBeamFactory::GetResourceInstance()

@@ -26,7 +26,7 @@
 #include <PgsExt\Keys.h>
 
 HRESULT GetSuperstructureMember(IGenericBridge* pBridge,const CGirderKey& girderKey,ISuperstructureMember* *ssmbr);
-HRESULT GetSegment(IGenericBridge* pBridge,const CSegmentKey& segmentKey,ISegment** segment);
+HRESULT GetSegment(IGenericBridge* pBridge,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** segment);
 HRESULT GetGirder(IGenericBridge* pBridge,const CSegmentKey& segmentKey,IPrecastGirder** girder);
 
 // Returns the ID of a pier layout line in the Bridge Geometry model given a pier index

@@ -3439,8 +3439,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,30
- PRODUCTVERSION 3,0,0,30
+ FILEVERSION 3,0,0,31
+ PRODUCTVERSION 3,0,0,31
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3457,12 +3457,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.30"
+            VALUE "FileVersion", "3.0.0.31"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.30"
+            VALUE "ProductVersion", "3.0.0.31"
         END
     END
     BLOCK "VarFileInfo"
@@ -4842,7 +4842,7 @@ BEGIN
     IDS_CANT_FIND_LIBRARY_FILE 
                             "There is a problem with the software configuration. The master library file could not be found. Please use the next window to update the Libraries and Templates configuration."
     IDS_CORRUPTED_LIBRARY_FILE 
-                            "Error loading Master Library: %1.\nWould you like to re-configure PGSuper for a different Library and Templates Package?\nYes = Update PGSuper Library and Template Configuration\nNo = Proceed without Master Library"
+                            "Error loading configuration: %1.\nWould you like to use a different configuration?\nYes = Select a configuration\nNo = Proceed without a valid configuration"
     IDS_E_EXCESSIVE_SKEW    "Pier %1 is skewed %2 or more.\nPlease adjust the orientation of Pier %1."
     IDS_E_EXCESSIVE_DELTA_SKEW 
                             "The difference in skew angles between Pier %u and Pier %u is more than %s.\nPlease adjust the orientation of the piers."

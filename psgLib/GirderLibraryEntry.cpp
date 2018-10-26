@@ -41,6 +41,7 @@
 #include "PGSuperCatCom.h"
 #include "PGSpliceCatCom.h"
 #include <Plugins\BeamFactoryCATID.h>
+#include <Plugins\Beams.h>
 
 #include <MathEx.h>
 
@@ -145,35 +146,52 @@ m_MaxDebondLengthByHardDistance(-1.0)
    // is defined by the beam factory this object holds. Therefore we need to create a
    // beam factory. Since we don't what kind of beam the user wants, use the first 
    // one registered as a default
-   std::vector<CString> familyNames;
-   if ( createType == DEFAULT )
+   CComPtr<IBeamFactory> beam_factory;
+   if ( createType == DEFAULT || createType == PRECAST )
    {
-      familyNames = CBeamFamilyManager::GetBeamFamilyNames();
-   }
-   else if ( createType == PRECAST )
-   {
-      familyNames = CBeamFamilyManager::GetBeamFamilyNames(CATID_PGSuperBeamFamily);
+      beam_factory.CoCreateInstance(CLSID_WFBeamFactory);
    }
    else if ( createType == SPLICED )
    {
-      familyNames = CBeamFamilyManager::GetBeamFamilyNames(CATID_PGSpliceBeamFamily);
+      beam_factory.CoCreateInstance(CLSID_SplicedIBeamFactory);
    }
    else
    {
       ATLASSERT(false); // is there a new create type?
    }
-   ATLASSERT(0 < familyNames.size());
-   CComPtr<IBeamFamily> beamFamily;
-   HRESULT hr = CBeamFamilyManager::GetBeamFamily(familyNames.front(),&beamFamily);
-   if ( FAILED(hr) )
-   {
-      return;
-   }
 
-   CComPtr<IBeamFactory> beam_factory;
-   std::vector<CString> factoryNames = beamFamily->GetFactoryNames();
-   ATLASSERT(0 < factoryNames.size());
-   beamFamily->CreateFactory(factoryNames.front(),&beam_factory);
+   if ( beam_factory == NULL )
+   {
+	   std::vector<CString> familyNames;
+	   if ( createType == DEFAULT )
+	
+	   {
+	      familyNames = CBeamFamilyManager::GetBeamFamilyNames();
+	   }
+	   else if ( createType == PRECAST )
+	   {
+	      familyNames = CBeamFamilyManager::GetBeamFamilyNames(CATID_PGSuperBeamFamily);
+	   }
+	   else if ( createType == SPLICED )
+	   {
+	      familyNames = CBeamFamilyManager::GetBeamFamilyNames(CATID_PGSpliceBeamFamily);
+	   }
+	   else
+	   {
+	      ATLASSERT(false); // is there a new create type?
+	   }
+	   ATLASSERT(0 < familyNames.size());
+	   CComPtr<IBeamFamily> beamFamily;
+	   HRESULT hr = CBeamFamilyManager::GetBeamFamily(familyNames.front(),&beamFamily);
+	   if ( FAILED(hr) )
+	   {
+	      return;
+	   }
+	
+	   std::vector<CString> factoryNames = beamFamily->GetFactoryNames();
+	   ATLASSERT(0 < factoryNames.size());
+	   beamFamily->CreateFactory(factoryNames.front(),&beam_factory);
+   }
 
    SetBeamFactory(beam_factory);
    // m_pBeamFactory is NULL if we were unable to create a beam factory
@@ -309,6 +327,8 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    ::CoTaskMemFree((void*)pszCLSID);
 
    pSave->Property(_T("Publisher"),m_pBeamFactory->GetPublisher().c_str());
+   pSave->Property(_T("ContactInfo"),m_pBeamFactory->GetPublisherContactInformation().c_str()); // added in version 25
+
    LPOLESTR pszUserType;
    OleRegGetUserType(m_pBeamFactory->GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
    pSave->Property(_T("SectionName"),CString(pszUserType));
@@ -675,6 +695,18 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( !pLoad->Property(_T("Publisher"),&strPublisher) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
+         std::_tstring strPublisherContactInfo;
+         if ( 24 < version )
+         {
+#pragma Reminder("UPDATE: this is ok to fail on v25 only")
+            if ( !pLoad->Property(_T("ContactInfo"),&strPublisherContactInfo) )
+               THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+         else
+         {
+            strPublisherContactInfo = _T("");
+         }
+
          std::_tstring strSectionName;
          if ( !pLoad->Property(_T("SectionName"),&strSectionName) )
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -685,7 +717,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( FAILED(hr) )
          {
             CString strMsg;
-            strMsg.Format(_T("Unable to create the \"%s\" section, published by %s\n\nThe \"%s\" section is not available on this computer.\n\nPlease contact the publisher for assistance."),strSectionName.c_str(),strPublisher.c_str(),strSectionName.c_str());
+            strMsg.Format(_T("Unable to create the \"%s\" section, published by %s\n\nThe \"%s\" section is not available on this computer.\n\nPlease contact the publisher for assistance.\n%s"),strSectionName.c_str(),strPublisher.c_str(),strSectionName.c_str(),strPublisherContactInfo.c_str());
             sysXStructuredLoad e(sysXStructuredLoad::UserDefined,_T(__FILE__),__LINE__);
             e.SetExtendedMessage(strMsg);
 
@@ -2944,6 +2976,11 @@ void GirderLibraryEntry::SetAdjustableStrandType(pgsTypes::AdjustableStrandType 
 //======================== ACCESS     =======================================
 void GirderLibraryEntry::SetBeamFactory(IBeamFactory* pFactory)
 {
+   if ( pFactory == NULL )
+   {
+      return;
+   }
+
    m_pBeamFactory = pFactory;
 
    // Clear out old dimensions

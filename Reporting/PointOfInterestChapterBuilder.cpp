@@ -95,7 +95,7 @@ void CPointOfInterestChapterBuilder::ReportPoi(LPCTSTR strName,PoiAttributeType 
 
    ColumnIndexType col = 0;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(11,strName);
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(14,strName);
    (*pPara) << pTable << rptNewLine;
    (*pTable)(0,col++) << _T("POI ID");
    (*pTable)(0,col++) << _T("Group");
@@ -107,6 +107,9 @@ void CPointOfInterestChapterBuilder::ReportPoi(LPCTSTR strName,PoiAttributeType 
    (*pTable)(0,col++) << COLHDR(_T("Xgp"),rptLengthUnitTag,pDisplayUnits->GetAlignmentLengthUnit());
    (*pTable)(0,col++) << _T("Span");
    (*pTable)(0,col++) << COLHDR(_T("Xspan"),rptLengthUnitTag,pDisplayUnits->GetAlignmentLengthUnit());
+   (*pTable)(0,col++) << _T("On Girder");
+   (*pTable)(0,col++) << _T("On Segment");
+   (*pTable)(0,col++) << _T("On Closure");
    (*pTable)(0,col++) << _T("Attribute");
 
    RowIndexType row = 1;
@@ -133,6 +136,15 @@ void CPointOfInterestChapterBuilder::ReportPoi(LPCTSTR strName,PoiAttributeType 
       pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
       (*pTable)(row,col++) << LABEL_SPAN(spanKey.spanIndex);
       (*pTable)(row,col++) << coordinate.SetValue(Xspan);
+
+      bool bIsOnGirder = pPoi->IsOnGirder(poi);
+      bool bIsOnSegment = pPoi->IsOnSegment(poi);
+      CClosureKey closureKey;
+      bool bIsOnClosure = pPoi->IsInClosureJoint(poi,&closureKey);
+      std::_tstring strBoolean[2] = { _T("true"), _T("false") };
+      (*pTable)(row,col++) << strBoolean[bIsOnGirder ? 0 : 1].c_str();
+      (*pTable)(row,col++) << strBoolean[bIsOnSegment ? 0 : 1].c_str();
+      (*pTable)(row,col++) << strBoolean[bIsOnClosure ? 0 : 1].c_str();
 
       (*pTable)(row,col++) << poi.GetAttributes(attribute,false);
    }

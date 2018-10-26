@@ -1028,7 +1028,7 @@ void CGirderSelectStrandsPage::UpdateStrandAdjustments()
                m_HpOffsetAtEnd = high;
             }
 
-            FillComboWithUnitFloatRange(m_HpOffsetAtEnd, low, high, end_incr,
+            FillComboWithUnitFloatRange(m_HpOffsetAtEnd, low, high, end_incr, true,
                                         pctrl, 2, measUnit.UnitOfMeasure);
          }
          else
@@ -1069,7 +1069,7 @@ void CGirderSelectStrandsPage::UpdateStrandAdjustments()
             else if (m_HpOffsetAtHp>high)
                m_HpOffsetAtHp = high;
 
-            FillComboWithUnitFloatRange(m_HpOffsetAtHp, low, high, hpt_incr,
+            FillComboWithUnitFloatRange(m_HpOffsetAtHp, low, high, hpt_incr, true,
                                         pctrl, 2, measUnit.UnitOfMeasure);
          }
          else

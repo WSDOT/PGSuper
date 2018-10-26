@@ -29,11 +29,11 @@ template <class T>
 class TPoiKey
 {
 public:
-   TPoiKey(T subkey,const CSegmentKey& segmentKey,Float64 Xpoi) :
+   TPoiKey(const CSegmentKey& segmentKey,Float64 Xpoi,T subkey) :
       m_Subkey(subkey), m_Poi(segmentKey,Xpoi) 
       {}
 
-   TPoiKey(T subkey,const pgsPointOfInterest& poi) : 
+   TPoiKey(const pgsPointOfInterest& poi,T subkey) : 
       m_Subkey(subkey),m_Poi(poi)
       {}
 
@@ -54,11 +54,11 @@ public:
    {
       // this operator is just for container sorting. It has nothing to do with
       // temporal order or geometric order of POIs
-      if (m_Subkey         < rOther.m_Subkey         ) return true;
-      if (rOther.m_Subkey  < m_Subkey                ) return false;
-
       if ( m_Poi < rOther.m_Poi ) return true;
       if ( rOther.m_Poi < m_Poi ) return false;
+
+      if (m_Subkey         < rOther.m_Subkey         ) return true;
+      if (rOther.m_Subkey  < m_Subkey                ) return false;
 
       return false;
    }

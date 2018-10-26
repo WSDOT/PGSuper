@@ -36,7 +36,7 @@
 class ATL_NO_VTABLE CBoxBeamFactory2 : 
    public CBoxBeamFactoryImpl,
    public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CBoxBeamFactory2, &CLSID_BoxBeamFactory2>
+   public CComCoClass<CBoxBeamFactory2, &CLSID_BoxBeam2Factory>
 {
 public:
 	CBoxBeamFactory2()

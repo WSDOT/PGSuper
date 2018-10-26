@@ -145,7 +145,7 @@ STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthBySSMbrEx(IGenericBr
 
    Float64 Xs;
    SegmentIndexType segIdx;
-   CComPtr<ISegment> segment;
+   CComPtr<ISuperstructureMemberSegment> segment;
    ssMbr->GetDistanceFromStartOfSegment(Xg,&Xs,&segIdx,&segment);
    return TributaryFlangeWidthBySegmentEx(bridge,gdrID,segIdx,Xs,leftGdrID,rightGdrID,twLeft,twRight,tribFlangeWidth);
 }
@@ -309,7 +309,7 @@ STDMETHODIMP CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySSMbr(IGenericBrid
 
    Float64 Xs;
    SegmentIndexType segIdx;
-   CComPtr<ISegment> segment;
+   CComPtr<ISuperstructureMemberSegment> segment;
    ssMbr->GetDistanceFromStartOfSegment(Xg,&Xs,&segIdx,&segment);
 
    EffFlangeWidth efw;
@@ -331,7 +331,7 @@ STDMETHODIMP CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySSMbrEx(IGenericBr
 
    Float64 Xs;
    SegmentIndexType segIdx;
-   CComPtr<ISegment> segment;
+   CComPtr<ISuperstructureMemberSegment> segment;
    ssMbr->GetDistanceFromStartOfSegment(Xg,&Xs,&segIdx,&segment);
 
    EffFlangeWidth efw;

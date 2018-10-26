@@ -238,7 +238,7 @@ Float64 CTimeStepLossEngineer::GetElongation(const CGirderKey& girderKey,DuctInd
 
    CTendonKey tendonKey(girderKey,ductIdx);
 
-#if defined _DEBUG || defined _BETA_VERSION
+#if defined _DEBUG
    // Elongation calculations are kind of tricky... they are computed with friction losses
    // Re-compute them here using a more direct method and compare to what was computed before.
    GET_IFACE(IBridgeDescription,pBridgeDesc);
@@ -250,8 +250,8 @@ Float64 CTimeStepLossEngineer::GetElongation(const CGirderKey& girderKey,DuctInd
 
    Float64 elongation = 0;
 
-   if ( (pDuct->JackingEnd == pgsTypes::jeLeft  && endType == pgsTypes::metStart) ||
-        (pDuct->JackingEnd == pgsTypes::jeRight && endType == pgsTypes::metEnd) ||
+   if ( (pDuct->JackingEnd == pgsTypes::jeStart  && endType == pgsTypes::metStart) ||
+        (pDuct->JackingEnd == pgsTypes::jeEnd && endType == pgsTypes::metEnd) ||
         pDuct->JackingEnd == pgsTypes::jeBoth 
       )
    {
@@ -316,17 +316,17 @@ Float64 CTimeStepLossEngineer::GetElongation(const CGirderKey& girderKey,DuctInd
       }
    }
 
-#if defined _BETA_VERSION
    Float64 e = (endType == pgsTypes::metStart ? m_Elongation[tendonKey].first : m_Elongation[tendonKey].second);
-   if ( !IsEqual(elongation,e) )
-   {
-      CString strMsg;
-      strMsg.Format(_T("Elongation 1 = %s, Elongation 2 = %s"),
-         ::FormatDimension(elongation,m_pDisplayUnits->GetComponentDimUnit()),
-         ::FormatDimension(e,m_pDisplayUnits->GetComponentDimUnit()));
-      AfxMessageBox(strMsg);
-   }
-#endif // _BETA_RELEASE
+//#if defined _BETA_VERSION
+//   if ( !IsEqual(elongation,e) )
+//   {
+//      CString strMsg;
+//      strMsg.Format(_T("Elongation 1 = %s, Elongation 2 = %s"),
+//         ::FormatDimension(elongation,m_pDisplayUnits->GetComponentDimUnit()),
+//         ::FormatDimension(e,m_pDisplayUnits->GetComponentDimUnit()));
+//      AfxMessageBox(strMsg);
+//   }
+//#endif // _BETA_RELEASE
 
    ATLASSERT(IsEqual(elongation,e));
 #endif // _DEBUG
@@ -525,11 +525,11 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
             
             // determine from which end of the girder to measure the angular change of the tendon path
             pgsTypes::MemberEndType endType;
-            if ( pDuct->JackingEnd == pgsTypes::jeLeft )
+            if ( pDuct->JackingEnd == pgsTypes::jeStart )
             {
                endType = pgsTypes::metStart;
             }
-            else if ( pDuct->JackingEnd == pgsTypes::jeRight )
+            else if ( pDuct->JackingEnd == pgsTypes::jeEnd )
             {
                endType = pgsTypes::metEnd;
             }
@@ -599,12 +599,12 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
       CTendonKey tendonKey(girderKey,ductIdx);
       m_Elongation[tendonKey].first /= Ept;
       const CDuctData* pDuct = pPTData->GetDuct(ductIdx/nWebs);
-      if ( pDuct->JackingEnd == pgsTypes::jeLeft )
+      if ( pDuct->JackingEnd == pgsTypes::jeStart )
       {
          // jacking from left end, no elongation at end
          m_Elongation[tendonKey].second = 0;
       }
-      else if ( pDuct->JackingEnd == pgsTypes::jeRight )
+      else if ( pDuct->JackingEnd == pgsTypes::jeEnd )
       {
          // jacking from right end, no elongation at start
          m_Elongation[tendonKey].second = m_Elongation[tendonKey].first;
@@ -649,13 +649,13 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CGirderKey& girderKey,L
 
       // find location of minimum friction loss. this is the location of no movement in the strand
       SectionLossContainer::iterator frMinIter;
-      if ( pDuct->JackingEnd == pgsTypes::jeLeft )
+      if ( pDuct->JackingEnd == pgsTypes::jeStart )
       {
          // jack at left end, no movement occurs at right end
          frMinIter = pLosses->SectionLosses.end();
          frMinIter--;
       }
-      else if ( pDuct->JackingEnd == pgsTypes::jeRight )
+      else if ( pDuct->JackingEnd == pgsTypes::jeEnd )
       {
          // jack at right end, no movement occurs at left end
          frMinIter = pLosses->SectionLosses.begin();
@@ -696,7 +696,7 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CGirderKey& girderKey,L
 
       if ( 0 < frMinIter->second.FrictionLossDetails.size() )
       {
-         if ( pDuct->JackingEnd == pgsTypes::jeLeft || pDuct->JackingEnd == pgsTypes::jeBoth )
+         if ( pDuct->JackingEnd == pgsTypes::jeStart || pDuct->JackingEnd == pgsTypes::jeBoth )
          {
             Float64 dfpAT, dfpS, Xset;
             ComputeAnchorSetLosses(pPTData,pDuct,ductIdx,pgsTypes::metStart,pLosses,girder_length,frMinIter,&dfpAT,&dfpS,&Xset);
@@ -705,7 +705,7 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CGirderKey& girderKey,L
             anchor_set.dfpS[pgsTypes::metStart]  = dfpS;
          }
 
-         if ( pDuct->JackingEnd == pgsTypes::jeRight || pDuct->JackingEnd == pgsTypes::jeBoth  )
+         if ( pDuct->JackingEnd == pgsTypes::jeEnd || pDuct->JackingEnd == pgsTypes::jeBoth  )
          {
             Float64 dfpAT, dfpS, Xset;
             ComputeAnchorSetLosses(pPTData,pDuct,ductIdx,pgsTypes::metEnd,pLosses,girder_length,frMinIter,&dfpAT,&dfpS,&Xset);

@@ -120,7 +120,7 @@ const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi,
 {
    ATLASSERT(poi.GetID() != INVALID_ID);
    std::map<PoiIDKey,LOSSDETAILS>::const_iterator found;
-   PoiIDKey key(poi.GetID(),poi);
+   PoiIDKey key(poi,poi.GetID());
    found = m_PsLosses.find( key );
    if ( found == m_PsLosses.end() )
    {

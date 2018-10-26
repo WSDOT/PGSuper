@@ -55,6 +55,7 @@ public:
    virtual CLSID GetFamilyCLSID();
    virtual std::_tstring GetGirderFamilyName();
    virtual std::_tstring GetPublisher();
+   virtual std::_tstring GetPublisherContactInformation();
    virtual HINSTANCE GetResourceInstance();
    virtual pgsTypes::SupportedDeckTypes GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs);
    virtual pgsTypes::SupportedBeamSpacings GetSupportedBeamSpacings();

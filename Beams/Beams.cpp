@@ -121,7 +121,7 @@ BEGIN_OBJECT_MAP(ObjectMap)
    OBJECT_ENTRY(CLSID_VoidedSlabFactory, CVoidedSlabFactory)
    OBJECT_ENTRY(CLSID_VoidedSlab2Factory, CVoidedSlab2Factory)
    OBJECT_ENTRY(CLSID_BoxBeamFactory,    CBoxBeamFactory)
-   OBJECT_ENTRY(CLSID_BoxBeamFactory2,    CBoxBeamFactory2)
+   OBJECT_ENTRY(CLSID_BoxBeam2Factory,    CBoxBeamFactory2)
    OBJECT_ENTRY(CLSID_TxDotDoubleTFactory, CTxDotDoubleTFactory)
 	OBJECT_ENTRY(CLSID_TaperedIBeamFactory, CTaperedIBeamFactory)
 	OBJECT_ENTRY(CLSID_DeckedSlabBeamFactory,CDeckedSlabBeamFactory)
@@ -302,7 +302,7 @@ void Register(bool bRegister)
 
    // box beam factories
    sysComCatMgr::RegWithCategory(CLSID_BoxBeamFactory,       CATID_BoxBeamFactory, bRegister);
-   sysComCatMgr::RegWithCategory(CLSID_BoxBeamFactory2,      CATID_BoxBeamFactory, bRegister);
+   sysComCatMgr::RegWithCategory(CLSID_BoxBeam2Factory,      CATID_BoxBeamFactory, bRegister);
 
    // decked slab beam factories
    sysComCatMgr::RegWithCategory(CLSID_DeckedSlabBeamFactory,      CATID_DeckedSlabBeamFactory, bRegister);

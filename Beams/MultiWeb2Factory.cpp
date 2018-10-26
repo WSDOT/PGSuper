@@ -206,8 +206,8 @@ void CMultiWeb2Factory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType s
 
 void CMultiWeb2Factory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMember* ssmbr)
 {
-   CComPtr<IPrismaticSegment> segment;
-   segment.CoCreateInstance(CLSID_PrismaticSegment);
+   CComPtr<IPrismaticSuperstructureMemberSegment> segment;
+   segment.CoCreateInstance(CLSID_PrismaticSuperstructureMemberSegment);
 
    // Build up the beam shape
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -750,6 +750,11 @@ std::_tstring CMultiWeb2Factory::GetGirderFamilyName()
 std::_tstring CMultiWeb2Factory::GetPublisher()
 {
    return std::_tstring(_T("WSDOT"));
+}
+
+std::_tstring CMultiWeb2Factory::GetPublisherContactInformation()
+{
+   return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
 HINSTANCE CMultiWeb2Factory::GetResourceInstance()

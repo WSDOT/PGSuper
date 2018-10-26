@@ -756,6 +756,11 @@ std::_tstring CUBeam2Factory::GetPublisher()
    return std::_tstring(_T("WSDOT"));
 }
 
+std::_tstring CUBeam2Factory::GetPublisherContactInformation()
+{
+   return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
+}
+
 HINSTANCE CUBeam2Factory::GetResourceInstance()
 {
    return _Module.GetResourceInstance();

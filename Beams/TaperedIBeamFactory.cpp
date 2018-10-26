@@ -190,13 +190,13 @@ void CTaperedIBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDTyp
 
 void CTaperedIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMember* ssmbr)
 {
-   CComPtr<ISegment> segment;
+   CComPtr<ISuperstructureMemberSegment> segment;
 
    bool bPrismatic = IsPrismatic(pBroker,segmentKey);
    if ( bPrismatic )
    {
       // prismatic
-      segment.CoCreateInstance(CLSID_PrismaticSegment);
+      segment.CoCreateInstance(CLSID_PrismaticSuperstructureMemberSegment);
    }
    else
    {
@@ -239,7 +239,7 @@ void CTaperedIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
       CComPtr<IGirderSection> gdrSection;
       CreateGirderSection(pBroker,statusGroupID,dimensions,-1,-1,&gdrSection);
 
-      CComQIPtr<IPrismaticSegment> prisSegment(segment);
+      CComQIPtr<IPrismaticSuperstructureMemberSegment> prisSegment(segment);
       ATLASSERT(prisSegment);
 
       CComQIPtr<IShape> shape(gdrSection);
@@ -787,6 +787,11 @@ std::_tstring CTaperedIBeamFactory::GetGirderFamilyName()
 std::_tstring CTaperedIBeamFactory::GetPublisher()
 {
    return std::_tstring(_T("WSDOT"));
+}
+
+std::_tstring CTaperedIBeamFactory::GetPublisherContactInformation()
+{
+   return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
 HINSTANCE CTaperedIBeamFactory::GetResourceInstance()

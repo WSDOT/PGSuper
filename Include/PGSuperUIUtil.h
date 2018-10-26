@@ -53,8 +53,9 @@ inline float GetFloatFromCb(CComboBox* pcb, int idx)
 
 
 // Handy function for putting a range of floats into a combo box with a given increment
+// set doBracketRange==false if you want values on even increments, true if you want minVal to start the increment
 template <class TUnit>
-void FillComboWithUnitFloatRange(Float64 selectedVal, Float64 minVal, Float64 maxVal, Float64 incrVal,
+void FillComboWithUnitFloatRange(Float64 selectedVal, Float64 minVal, Float64 maxVal, Float64 incrVal, bool doBracketRange,
                                         CComboBox* pfcCtrl, Uint16 precision, const TUnit& tunit )
 {
    pfcCtrl->ResetContent();
@@ -92,17 +93,28 @@ void FillComboWithUnitFloatRange(Float64 selectedVal, Float64 minVal, Float64 ma
 
    int  idx_sel = CB_ERR; // did we put selected number in yet
 
-   // Next, our min and max values may not fit exactly to our increment. If not, put them on the head or tail 
-   Float64 startVal = CeilOff(minVal, incrVal);
+   Float64 startVal;
+   Float64 endVal;
 
-   if (!IsEqual(startVal,minVal,toler))
+   if (doBracketRange)
    {
-      int idx = PutFloatInCB(minVal, pfcCtrl , tool);
-      if(IsEqual(selectedVal,minVal,toler))
-         idx_sel = idx;
+      startVal = min(minVal, selectedVal);
+      endVal   = max(maxVal, selectedVal);
    }
+   else
+   {
+      // Our min and max values may not fit exactly to our increment. If not, put them on the head or tail 
+      startVal = CeilOff(minVal, incrVal);
 
-   Float64 endVal = FloorOff(maxVal, incrVal);
+      if (!IsEqual(startVal,minVal,toler))
+      {
+         int idx = PutFloatInCB(minVal, pfcCtrl , tool);
+         if(IsEqual(selectedVal,minVal,toler))
+            idx_sel = idx;
+      }
+
+      endVal = FloorOff(maxVal, incrVal);
+   }
 
    Float64 curr = startVal;
    while(curr<=endVal)

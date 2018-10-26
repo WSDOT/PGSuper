@@ -1059,7 +1059,6 @@ private:
    CComPtr<IEffectiveFlangeWidthTool> m_EffFlangeWidthTool;
    typedef struct SectProp
    {
-      CComPtr<ISection> Section;
       CComPtr<IElasticProperties> ElasticProps;
       CComPtr<IShapeProperties> ShapeProps;
 
@@ -1079,6 +1078,7 @@ private:
    static UINT DeleteSectionProperties(LPVOID pParam);
    pgsTypes::SectionPropertyType GetSectionPropertiesType(); // returns the section properties types for the current section properties mode
    SectProp GetSectionProperties(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::SectionPropertyType sectPropType);
+   HRESULT GetSection(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::SectionPropertyType sectPropType,ISection** ppSection);
    Float64 ComputeY(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,IShapeProperties* sprops);
    Float64 ComputeYtopGirder(IShapeProperties* compositeProps,IShapeProperties* beamProps);
 
@@ -1211,7 +1211,7 @@ private:
    Float64 GetDistanceFromStartOfBridge(const CSegmentKey& segmentKey,Float64 distFromStartOfSegment);
    HRESULT GetGirderSection(const pgsPointOfInterest& poi,pgsTypes::SectionCoordinateType csType,IGirderSection** gdrSection);
    HRESULT GetSuperstructureMember(const CGirderKey& girderKey,ISuperstructureMember* *ssmbr);
-   HRESULT GetSegment(const CSegmentKey& segmentKey,ISegment** segment);
+   HRESULT GetSegment(const CSegmentKey& segmentKey,ISuperstructureMemberSegment** segment);
    HRESULT GetGirder(const CSegmentKey& segmentKey,IPrecastGirder** girder);
    HRESULT GetGirder(const pgsPointOfInterest& poi,IPrecastGirder** girder);
    Float64 GetGrossSlabDepth();
@@ -1289,7 +1289,7 @@ private:
    SpanIndexType GetSpanIndex(Float64 distFromStartOfBridge);
    PierIndexType GetGenericBridgePierIndex(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType);
    void GetGirderLine(const CSegmentKey& segmentKey,IGirderLine** ppGirderLine);
-   void GetSegmentAtPier(PierIndexType pierIdx,const CGirderKey& girderKey,ISegment** ppSegment);
+   void GetSegmentAtPier(PierIndexType pierIdx,const CGirderKey& girderKey,ISuperstructureMemberSegment** ppSegment);
    void GetPierLine(PierIndexType pierIdx,IPierLine** ppPierLine);
    void GetTemporarySupportLine(SupportIndexType tsIdx,IPierLine** ppPierLine);
 

@@ -1863,8 +1863,6 @@ void CAnalysisResultsGraphBuilder::LiveLoadGraph(IndexType graphIdx,const CAnaly
    }
 
    // Live Load
-   GET_IFACE(ICombinedForces2,pForces);
-
    pgsTypes::LiveLoadType llType( graphDef.m_LoadType.LiveLoadType );
 
    COLORREF c(GetGraphColor(graphIdx,intervalIdx));
@@ -1881,6 +1879,8 @@ void CAnalysisResultsGraphBuilder::LiveLoadGraph(IndexType graphIdx,const CAnaly
    {
       return;
    }
+
+   GET_IFACE(ICombinedForces2,pForces);
 
    CString strDataLabel(GetDataLabel(graphIdx,graphDef,intervalIdx));
    if ( ((CAnalysisResultsGraphController*)m_pGraphController)->GetGraphMode() == GRAPH_MODE_LOADING )

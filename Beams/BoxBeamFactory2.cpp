@@ -511,7 +511,7 @@ std::_tstring CBoxBeamFactory2::GetImage()
 
 CLSID CBoxBeamFactory2::GetCLSID()
 {
-   return CLSID_BoxBeamFactory2;
+   return CLSID_BoxBeam2Factory;
 }
 
 LPCTSTR CBoxBeamFactory2::GetImageResourceName()

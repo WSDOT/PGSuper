@@ -25,14 +25,19 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include <psgLib\psgLib.h>
-#include <psgLib\StructuredLoad.h>
 
-#include "LibraryEntryConflict.h"
+#include <Plugins\Beams.h>
 
 #include <initguid.h>
+
+#include <psgLib\psgLib.h>
+#include <psgLib\StructuredLoad.h>
+#include "LibraryEntryConflict.h"
+
 #include <WBFLGeometry_i.c>
 #include <WBFLCore_i.c>
+#include <Plugins\Beams_i.c>
+
 #include <IFace\BeamFamily.h>
 #include <IFace\BeamFactory.h>
 #include <IFace\Project.h>

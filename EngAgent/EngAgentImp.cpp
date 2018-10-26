@@ -373,7 +373,7 @@ const MINMOMENTCAPDETAILS* CEngAgentImp::ValidateMinMomentCapacity(IntervalIndex
       pMap = ( intervalIdx < compositeDeckIntervalIdx ) ? &m_NonCompositeMinMomentCapacity[bPositiveMoment]
                                                         : &m_CompositeMinMomentCapacity[bPositiveMoment];
 
-      PoiIDKey key(poi.GetID(),poi);
+      PoiIDKey key(poi,poi.GetID());
       found = pMap->find( key );
       if ( found != pMap->end() )
       {
@@ -384,7 +384,7 @@ const MINMOMENTCAPDETAILS* CEngAgentImp::ValidateMinMomentCapacity(IntervalIndex
    MINMOMENTCAPDETAILS mmcd;
    m_MomentCapEngineer.ComputeMinMomentCapacity(intervalIdx,poi,bPositiveMoment,&mmcd);
 
-   PoiIDKey key(poi.GetID(),poi);
+   PoiIDKey key(poi,poi.GetID());
    std::pair<std::map<PoiIDKey,MINMOMENTCAPDETAILS>::iterator,bool> retval;
    retval = pMap->insert( std::make_pair(key,mmcd) );
    return &((*(retval.first)).second);
@@ -408,7 +408,7 @@ const CRACKINGMOMENTDETAILS* CEngAgentImp::ValidateCrackingMoments(IntervalIndex
       pMap = ( intervalIdx < compositeDeckIntervalIdx ) ? &m_NonCompositeCrackingMoment[bPositiveMoment] 
                                                         : &m_CompositeCrackingMoment[bPositiveMoment];
 
-      PoiIDKey key(poi.GetID(),poi);
+      PoiIDKey key(poi,poi.GetID());
       found = pMap->find( key );
       if ( found != pMap->end() )
       {
@@ -419,7 +419,7 @@ const CRACKINGMOMENTDETAILS* CEngAgentImp::ValidateCrackingMoments(IntervalIndex
    CRACKINGMOMENTDETAILS cmd;
    m_MomentCapEngineer.ComputeCrackingMoment(intervalIdx,poi,bPositiveMoment,&cmd);
 
-   PoiIDKey key(poi.GetID(),poi);
+   PoiIDKey key(poi,poi.GetID());
    std::pair<std::map<PoiIDKey,CRACKINGMOMENTDETAILS>::iterator,bool> retval;
    retval = pMap->insert( std::make_pair(key,cmd) );
    return &((*(retval.first)).second);
@@ -544,7 +544,7 @@ const MOMENTCAPACITYDETAILS* CEngAgentImp::GetCachedMomentCapacity(IntervalIndex
    // if this is a real POI, then see if we've already computed results
    if ( search_poi.GetID() != INVALID_ID )
    {
-      PoiIDKey key(search_poi.GetID(),search_poi);
+      PoiIDKey key(search_poi,search_poi.GetID());
       found = container.find( key );
       if ( found != container.end() )
       {
@@ -581,7 +581,7 @@ const MOMENTCAPACITYDETAILS* CEngAgentImp::StoreMomentCapacityDetails(IntervalIn
 
    pgsPointOfInterest search_poi( (bPositiveMoment ? GetEquivalentPointOfInterest(intervalIdx,poi) : poi) );
 
-   PoiIDKey key(search_poi.GetID(),search_poi);
+   PoiIDKey key(search_poi,search_poi.GetID());
    std::pair<MomentCapacityDetailsContainer::iterator,bool> retval;
    retval = container.insert( std::make_pair(key,mcd) );
 
@@ -650,7 +650,7 @@ const SHEARCAPACITYDETAILS* CEngAgentImp::ValidateShearCapacity(pgsTypes::LimitS
 
    if ( poi.GetID() != INVALID_ID )
    {
-      PoiIDKey key(poi.GetID(),poi);
+      PoiIDKey key(poi,poi.GetID());
       found = m_ShearCapacity[idx].find( key );
 
       if ( found != m_ShearCapacity[idx].end() )
@@ -662,7 +662,7 @@ const SHEARCAPACITYDETAILS* CEngAgentImp::ValidateShearCapacity(pgsTypes::LimitS
    SHEARCAPACITYDETAILS scd;
    m_ShearCapEngineer.ComputeShearCapacity(intervalIdx,limitState,poi,&scd);
 
-   PoiIDKey key(poi.GetID(),poi);
+   PoiIDKey key(poi,poi.GetID());
    std::pair<std::map<PoiIDKey,SHEARCAPACITYDETAILS>::iterator,bool> retval;
    retval = m_ShearCapacity[idx].insert( std::make_pair(key,scd) );
    return &((*(retval.first)).second);
@@ -675,7 +675,7 @@ const FPCDETAILS* CEngAgentImp::ValidateFpc(const pgsPointOfInterest& poi)
 
    if ( poi.GetID() != INVALID_ID )
    {
-      PoiIDKey key(poi.GetID(),poi);
+      PoiIDKey key(poi,poi.GetID());
       found = m_Fpc.find( key );
       if ( found != m_Fpc.end() )
       {
@@ -691,7 +691,7 @@ const FPCDETAILS* CEngAgentImp::ValidateFpc(const pgsPointOfInterest& poi)
    FPCDETAILS mcd;
    m_ShearCapEngineer.ComputeFpc(poi,NULL,&mcd);
 
-   PoiIDKey key(poi.GetID(),poi);
+   PoiIDKey key(poi,poi.GetID());
    std::pair<std::map<PoiIDKey,FPCDETAILS>::iterator,bool> retval;
    retval = m_Fpc.insert( std::make_pair(key,mcd) );
    return &((*(retval.first)).second);
@@ -1159,7 +1159,7 @@ const CRACKEDSECTIONDETAILS* CEngAgentImp::ValidateCrackedSectionDetails(const p
    int idx = (bPositiveMoment ? 0 : 1);
    if ( poi.GetID() != INVALID_ID )
    {
-      PoiIDKey key(poi.GetID(),poi);
+      PoiIDKey key(poi,poi.GetID());
       found = m_CrackedSectionDetails[idx].find( key );
 
       if ( found != m_CrackedSectionDetails[idx].end() )
@@ -1196,7 +1196,7 @@ const CRACKEDSECTIONDETAILS* CEngAgentImp::ValidateCrackedSectionDetails(const p
    CRACKEDSECTIONDETAILS csd;
    m_MomentCapEngineer.AnalyzeCrackedSection(poi,bPositiveMoment,&csd);
 
-   PoiIDKey key(poi.GetID(),poi);
+   PoiIDKey key(poi,poi.GetID());
    std::pair<std::map<PoiIDKey,CRACKEDSECTIONDETAILS>::iterator,bool> retval;
    retval = m_CrackedSectionDetails[idx].insert( std::make_pair(key,csd) );
    return &((*(retval.first)).second);
@@ -1907,7 +1907,7 @@ Float64 CEngAgentImp::GetAverageInitialTendonForce(const CGirderKey& girderKey,D
    GET_IFACE(ITendonGeometry,pTendonGeom);
    Float64 Apt = pTendonGeom->GetTendonArea(girderKey,stressTendonIntervalIdx,ductIdx);
 
-   Float64 fpe = GetAverageInitialTendonForce(girderKey,ductIdx);
+   Float64 fpe = GetAverageInitialTendonStress(girderKey,ductIdx);
 
    Float64 Fpe = Apt*fpe;
    return Fpe;

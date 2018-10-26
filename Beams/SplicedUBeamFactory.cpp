@@ -683,6 +683,11 @@ std::_tstring CSplicedUBeamFactory::GetPublisher()
    return std::_tstring(_T("WSDOT"));
 }
 
+std::_tstring CSplicedUBeamFactory::GetPublisherContactInformation()
+{
+   return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
+}
+
 HINSTANCE CSplicedUBeamFactory::GetResourceInstance()
 {
    return _Module.GetResourceInstance();

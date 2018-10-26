@@ -586,8 +586,8 @@ typedef struct pgsTypes
 
    typedef enum JackingEndType
    {
-      jeLeft,
-      jeRight,
+      jeStart,
+      jeEnd,
       jeBoth
    } JackingEndType;
 

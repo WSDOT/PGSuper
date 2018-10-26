@@ -3295,8 +3295,6 @@ void CGirderModelManager::GetCombinedLiveLoadMoment(IntervalIndexType intervalId
    pMmax->reserve(vPoi.size());
    pMmin->reserve(vPoi.size());
 
-   const CSegmentKey& segmentKey(vPoi.front().GetSegmentKey());
-
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    if ( intervalIdx < liveLoadIntervalIdx )
@@ -14930,6 +14928,7 @@ Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPo
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType releaseIntervalIdx   = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    IntervalIndexType liveLoadIntervalIdx  = pIntervals->GetLiveLoadInterval();
 
@@ -14968,25 +14967,22 @@ Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPo
    }
 
    Float64 nSEffective;
-   pgsTypes::SectionPropertyType spType = (spMode == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptTransformedNoncomposite);
-   Float64 e = pStrandGeom->GetEccentricity( spType, intervalIdx, poi, bIncTempStrands, &nSEffective );
-
-   return GetStress(intervalIdx,poi,stressLocation,P,e);
+   Float64 e = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, bIncTempStrands, &nSEffective );
+   return GetStress(releaseIntervalIdx,poi,stressLocation,P,e);
 }
 
 Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,Float64 P,Float64 e)
 {
-   if ( stressLocation == pgsTypes::TopDeck || stressLocation == pgsTypes::BottomDeck )
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   if ( ::IsDeckStressLocation(stressLocation) && intervalIdx < compositeDeckIntervalIdx )
    {
-      return 0.0; // pretensioning does not cause stress in deck
+      return 0.0; // asking for stress in the deck but the deck is not composite yet. there can't be stress
    }
 
    GET_IFACE(ISectionProperties,pSectProp);
-   pgsTypes::SectionPropertyType spType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptTransformedNoncomposite);
-
-   // using release interval because we are computing stress on the girder due to prestress which happens in this stage
-   Float64 A = pSectProp->GetAg(spType, intervalIdx, poi);
-   Float64 S = pSectProp->GetS( spType, intervalIdx, poi, stressLocation);
+   Float64 A = pSectProp->GetAg(intervalIdx, poi);
+   Float64 S = pSectProp->GetS( intervalIdx, poi, stressLocation);
 
    Float64 f = (IsZero(A) || IsZero(S) ? 0 : -P/A - P*e/S);
 
@@ -15016,21 +15012,39 @@ Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPo
    {
       IntervalIndexType ptIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,idx);
 
-      Float64 e = pTendonGeometry->GetEccentricity(ptIntervalIdx,poi,idx);
-      Float64 P = pPTForce->GetTendonForce(poi,intervalIdx,pgsTypes::End,idx);
-
-      Float64 f = 0;
-      if ( intervalIdx < ptIntervalIdx || (::IsDeckStressLocation(stressLocation) && ptIntervalIdx < compositeDeckIntervalIdx) )
+      // stress in girder or deck due to PT is computed based on the post-tension force and
+      // the eccentricity when the force is applied plus all the incremental change in PT force
+      // times the eccentricty when the change occured.
+      Float64 Pprev = 0; // total PT force at the end of the previous interval... start with 0
+      // so that the first "change" is the full PT force
+      for ( IntervalIndexType intIdx = ptIntervalIdx; intIdx <= intervalIdx; intIdx++ )
       {
-         f = 0;
-      }
-      else
-      {
-         f = GetStress(ptIntervalIdx,poi,stressLocation,P,e);
-      }
+         // PT force at the end of this interval
+         Float64 P = pPTForce->GetTendonForce(poi,intIdx,pgsTypes::End,idx);
 
-      stress += f;
-   }
+         // change in PT force during this interval
+         Float64 dP = P - Pprev;
+
+         // eccentricity this interval
+         Float64 e = pTendonGeometry->GetEccentricity(intIdx,poi,idx);
+
+         // change in stress during this interval
+         Float64 f = 0;
+         if ( ::IsDeckStressLocation(stressLocation) && intIdx < compositeDeckIntervalIdx )
+         {
+            f = 0;
+         }
+         else
+         {
+            f = GetStress(intIdx,poi,stressLocation,dP,e);
+         }
+
+         stress += f;
+
+         // update for next loop
+         Pprev = P;
+      } // next interval
+   } // next duct
 
    return stress;
 }

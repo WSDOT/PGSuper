@@ -1104,8 +1104,6 @@ void pgsStrandDesignTool::ComputeMinStrands()
    // It's possible for users to enter strands at the beginning of the fill sequence that have
    // negative eccentricity. This is typically for hanging stirrups. If this occurs then design will crap out
 
-   GET_IFACE(IStrandGeometry,pStrandGeom);
-
    LOG(_T("Compute m_MinPermanentStrands so next num strands give positive ecc"));
 
    m_MinPermanentStrands = GetNextNumPermanentStrands(0);
@@ -1124,6 +1122,8 @@ void pgsStrandDesignTool::ComputeMinStrands()
    }
    else
    {
+      GET_IFACE(IStrandGeometry,pStrandGeom);
+
       GDRCONFIG config = m_pArtifact->GetSegmentConfiguration();
 
       StrandIndexType ns_prev = 1;

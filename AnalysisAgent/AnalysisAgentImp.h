@@ -52,7 +52,6 @@ class ATL_NO_VTABLE CAnalysisAgentImp :
    public ILimitStateForces2,
    public IExternalLoading,
    public IPretensionStresses,
-   public IPosttensionStresses,
    public ICamber,
    public IContraflexurePoints,
    public IContinuity,
@@ -85,7 +84,6 @@ BEGIN_COM_MAP(CAnalysisAgentImp)
    COM_INTERFACE_ENTRY(ILimitStateForces2)
    COM_INTERFACE_ENTRY(IExternalLoading)
    COM_INTERFACE_ENTRY(IPretensionStresses)
-   COM_INTERFACE_ENTRY(IPosttensionStresses)
    COM_INTERFACE_ENTRY(ICamber)
    COM_INTERFACE_ENTRY(IContraflexurePoints)
    COM_INTERFACE_ENTRY(IContinuity)
@@ -313,11 +311,6 @@ public:
    virtual Float64 GetStressPerStrand(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::StressLocation loc);
    virtual Float64 GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,const GDRCONFIG& config);
    virtual std::vector<Float64> GetStress(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation loc);
-
-// IPosttensionStresses
-public:
-   virtual Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,DuctIndexType ductIdx);
-   virtual std::vector<Float64> GetStress(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation loc,DuctIndexType ductIdx);
 
 // ICamber
 public:

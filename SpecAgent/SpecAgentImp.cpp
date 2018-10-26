@@ -996,7 +996,7 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
    else if ( intervalIdx == tempStrandRemovalIdx )
    {
       ATLASSERT( ls == pgsTypes::ServiceI );
-      ATLASSERT( CheckFinalDeadLoadTensionStress() ); // if this fires, why are you asking for this if they aren't being used?
+      ATLASSERT( CheckTemporaryStresses() ); // if this fires, why are you asking for this if they aren't being used?
       x = pSpec->GetTempStrandRemovalTensionStressFactor();
       pSpec->GetTempStrandRemovalMaximumTensionStress(&bCheckMax,&fmax);
    }

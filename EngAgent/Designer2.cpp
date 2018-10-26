@@ -1700,11 +1700,11 @@ void pgsDesigner2::CheckTendonStresses(const CGirderKey& girderKey,pgsGirderArti
          fpeMax = Max(fpeMax,fpe);
       }
 
-      if ( jackingEnd == pgsTypes::jeLeft )
+      if ( jackingEnd == pgsTypes::jeStart )
       {
          fanchorMax = pPTForce->GetTendonStress(vPoi.front(),stressTendonIntervalIdx,pgsTypes::End,ductIdx);
       }
-      else if ( jackingEnd == pgsTypes::jeRight )
+      else if ( jackingEnd == pgsTypes::jeEnd )
       {
          fanchorMax = pPTForce->GetTendonStress(vPoi.back(),stressTendonIntervalIdx,pgsTypes::End,ductIdx);
       }
@@ -1833,7 +1833,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std:
    bool bSISpec = lrfdVersionMgr::GetVersion() == lrfdVersionMgr::SI ? true : false;
 
    GET_IFACE(IPretensionStresses,       pPretensionStresses);
-   GET_IFACE(IPosttensionStresses,      pPosttensionStresses);
+   GET_IFACE(IProductForces,            pProductForces);
    GET_IFACE(ILimitStateForces,         pLimitStateForces);
    GET_IFACE(IAllowableConcreteStress,  pAllowable );
    GET_IFACE(IPrecompressedTensileZone, pPrecompressedTensileZone);
@@ -1978,8 +1978,8 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std:
          fPretension = pPretensionStresses->GetStress(task.intervalIdx,poi,stressLocation);
 
          // get segment stress due to post-tensioning
-         Float64 fPosttension;
-         fPosttension = pPosttensionStresses->GetStress(task.intervalIdx,poi,stressLocation,ALL_DUCTS);
+         Float64 fPosttension,fDummy;
+         pProductForces->GetStress(task.intervalIdx,pftPostTensioning,poi,bat,rtCumulative,stressLocation,stressLocation,&fPosttension,&fDummy);
 
          // get segment stress due to external loads
          Float64 fLimitStateMin, fLimitStateMax;
@@ -2233,7 +2233,7 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
    GET_IFACE(IBridge,                  pBridge);
    GET_IFACE(IPointOfInterest,         pPoi);
    GET_IFACE(IPretensionStresses,      pPretensionStresses);
-   GET_IFACE(IPosttensionStresses,     pPosttensionStresses);
+   GET_IFACE(IProductForces,           pProductForces);
    GET_IFACE(ILimitStateForces,        pLimitStateForces);
    GET_IFACE(IAllowableConcreteStress, pAllowable );
    GET_IFACE(IGirder,                  pGirder);
@@ -2335,9 +2335,9 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
       }
 
       // get segment stress due to post-tensioning
-      Float64 fTopPosttension, fBotPosttension;
-      fTopPosttension = pPosttensionStresses->GetStress(task.intervalIdx,poi,pgsTypes::TopGirder,   ALL_DUCTS);
-      fBotPosttension = pPosttensionStresses->GetStress(task.intervalIdx,poi,pgsTypes::BottomGirder,ALL_DUCTS);
+      Float64 fTopPosttension, fBotPosttension, fDummy;
+      pProductForces->GetStress(task.intervalIdx,pftPostTensioning,poi,batTop,   rtCumulative,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fTopPosttension,&fDummy);
+      pProductForces->GetStress(task.intervalIdx,pftPostTensioning,poi,batBottom,rtCumulative,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fDummy,         &fBotPosttension);
 
       // get girder stress due to external loads (top)
       Float64 fTopLimitStateMin, fTopLimitStateMax;
@@ -5446,10 +5446,15 @@ void pgsDesigner2::DesignMidZoneFinalConcrete(IProgress* pProgress)
    vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI,lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? _T("Service IA") : _T("Fatigue I"),liveLoadIntervalIdx,pgsTypes::Compression,pgsTypes::BottomGirder,POI_HARPINGPOINT|POI_PSXFER));
    vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceIII,_T("Service III"),liveLoadIntervalIdx,pgsTypes::Tension,pgsTypes::BottomGirder,POI_HARPINGPOINT|(POI_SPAN | POI_5L)));
    vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceI,_T("Service I (BSS2)"),railingSystemIntervalIdx,pgsTypes::Compression,pgsTypes::TopGirder,POI_HARPINGPOINT|POI_PSXFER));
-   vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceI,_T("Service I (BSS1)"),castDeckIntervalIdx,pgsTypes::Compression,pgsTypes::TopGirder,(POI_SPAN | POI_5L)));
-   vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceI,_T("Service I (BSS2)"),railingSystemIntervalIdx,pgsTypes::Compression,pgsTypes::BottomGirder,(POI_SPAN | POI_5L)));
 
    GET_IFACE(IAllowableConcreteStress,pAllowable);
+   if ( pAllowable->CheckTemporaryStresses() )
+   {
+      vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceI,_T("Service I (BSS1)"),castDeckIntervalIdx,pgsTypes::Compression,pgsTypes::TopGirder,(POI_SPAN | POI_5L)));
+   }
+
+   vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceI,_T("Service I (BSS2)"),railingSystemIntervalIdx,pgsTypes::Compression,pgsTypes::BottomGirder,(POI_SPAN | POI_5L)));
+
    if ( pAllowable->CheckFinalDeadLoadTensionStress() )
    {
       vConcreteStrengthParameters.push_back(ConcreteStrengthParameters(pgsTypes::ServiceI,_T("Service I (BSS2)"),railingSystemIntervalIdx,pgsTypes::Tension,pgsTypes::BottomGirder,POI_HARPINGPOINT|(POI_SPAN | POI_5L)));
@@ -5568,7 +5573,11 @@ void pgsDesigner2::DesignMidZoneAtRelease(const arDesignOptions& options, IProgr
    GDRCONFIG config = m_StrandDesignTool.GetSegmentConfiguration();
 
    // Get Points of Interest in mid-zone
-   std::vector<pgsPointOfInterest> vPOI( m_StrandDesignTool.GetDesignPoi(releaseIntervalIdx,POI_5L|POI_HARPINGPOINT) );
+   std::vector<pgsPointOfInterest> vPOI( m_StrandDesignTool.GetDesignPoi(releaseIntervalIdx,POI_5L|POI_RELEASED_SEGMENT) );
+   std::vector<pgsPointOfInterest> vPOI1( m_StrandDesignTool.GetDesignPoi(releaseIntervalIdx,POI_HARPINGPOINT) );
+   vPOI.insert(vPOI.end(),vPOI1.begin(),vPOI1.end());
+   std::sort(vPOI.begin(),vPOI.end());
+   vPOI.erase(std::unique(vPOI.begin(),vPOI.end()),vPOI.end());
    ATLASSERT( !vPOI.empty() );
 
    // let's look at bottom compression first. 

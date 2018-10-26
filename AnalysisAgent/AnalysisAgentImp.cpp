@@ -683,7 +683,6 @@ STDMETHODIMP CAnalysisAgentImp::RegInterfaces()
    pBrokerInit->RegInterface( IID_ILimitStateForces2,        this );
    pBrokerInit->RegInterface( IID_IExternalLoading,          this );
    pBrokerInit->RegInterface( IID_IPretensionStresses,       this );
-   pBrokerInit->RegInterface( IID_IPosttensionStresses,      this );
    pBrokerInit->RegInterface( IID_ICamber,                   this );
    pBrokerInit->RegInterface( IID_IContraflexurePoints,      this );
    pBrokerInit->RegInterface( IID_IContinuity,               this );
@@ -3757,30 +3756,6 @@ std::vector<Float64> CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,
 }
 
 //////////////////////////////////////////////////////////////////////
-// IPosttensionStresses
-//
-Float64 CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,DuctIndexType ductIdx)
-{
-   return m_pGirderModelManager->GetStress(intervalIdx,poi,stressLocation,ductIdx);
-}
-
-std::vector<Float64> CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation stressLocation,DuctIndexType ductIdx)
-{
-   std::vector<Float64> stresses;
-   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-   for ( ; iter != end; iter++ )
-   {
-      const pgsPointOfInterest& poi = *iter;
-
-      Float64 stress = GetStress(intervalIdx,poi,stressLocation,ductIdx);
-      stresses.push_back(stress);
-   }
-
-   return stresses;
-}
-
-//////////////////////////////////////////////////////////////////////
 void CAnalysisAgentImp::GetConcurrentShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,sysSectionValue* pMin,sysSectionValue* pMax)
 {
    try
@@ -6769,7 +6744,8 @@ bool CAnalysisAgentImp::IsDeckInPrecompressedTensileZone(const pgsPointOfInteres
 
    // The section is in tension, does the prestress cause compression?
    Float64 fPreTension  = GetStress(serviceLoadIntervalIdx,poi,stressLocation);
-   Float64 fPostTension = GetStress(serviceLoadIntervalIdx,poi,stressLocation,ALL_DUCTS);
+   Float64 fPostTension,fDummy;
+   GetStress(serviceLoadIntervalIdx,pftPostTensioning,poi,bat,rtCumulative,stressLocation,stressLocation,&fPostTension,&fDummy);
    Float64 fPS = fPreTension + fPostTension;
 
    if ( 0 <= fPS )
@@ -6982,7 +6958,9 @@ bool CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
    else
    {
       fPreTension  = GetStress(serviceLoadIntervalIdx,poi,stressLocation);
-      fPostTension = GetStress(serviceLoadIntervalIdx,poi,stressLocation,ALL_DUCTS);
+
+      Float64 fDummy;
+      GetStress(serviceLoadIntervalIdx,pftPostTensioning,poi,bat,rtCumulative,stressLocation,stressLocation,&fPostTension,&fDummy);
    }
    
    Float64 fPS = fPreTension + fPostTension;
@@ -7022,11 +7000,11 @@ void CAnalysisAgentImp::GetTimeStepStress(IntervalIndexType intervalIdx,ProductF
       if ( pfType == pftTotalPostTensioning )
       {
          // total post-tensioning is primary (P*e) + secondary
-         fTop = pTopConcreteElement->f[topFace][pftPostTensioning][resultsType]
-              + pTopConcreteElement->f[topFace][pftSecondaryEffects     ][resultsType];
+         fTop = pTopConcreteElement->f[topFace][pftPostTensioning  ][resultsType]
+              + pTopConcreteElement->f[topFace][pftSecondaryEffects][resultsType];
 
-         fBot = pBotConcreteElement->f[botFace][pftPostTensioning][resultsType]
-              + pBotConcreteElement->f[botFace][pftSecondaryEffects     ][resultsType];
+         fBot = pBotConcreteElement->f[botFace][pftPostTensioning  ][resultsType]
+              + pBotConcreteElement->f[botFace][pftSecondaryEffects][resultsType];
       }
       else
       {

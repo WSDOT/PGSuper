@@ -77,7 +77,14 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
    }
    else if ( spType == pgsTypes::sptTransformed )
    {
-      os << _T(" - Transformed composite properties");
+      if ( intervalIdx < compositeDeckIntervalIdx )
+      {
+         os << _T(" - Transformed non-composite properties");
+      }
+      else
+      {
+         os << _T(" - Transformed composite properties");
+      }
    }
 
    bool bIsCompositeDeck = pBridge->IsCompositeDeck();
@@ -184,7 +191,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
    // Get all the tabular poi's for flexure and shear
    // Merge the two vectors to form one vector to report on.
    PoiAttributeType poiRefAttribute = (intervalIdx < erectionIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey/*,poiRefAttribute*/) );
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,poiRefAttribute) );
 
    RowIndexType row = xs_table->GetNumberOfHeaderRows();
 

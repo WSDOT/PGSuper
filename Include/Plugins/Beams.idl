@@ -183,7 +183,7 @@ library PGSuperBeamFactory
 	[
 		uuid(B1F474E4-15F7-4ac8-AD2D-7FBD12E3B0EB)
 	]
-	coclass BoxBeamFactory2
+	coclass BoxBeam2Factory
 	{
 		[default] interface IDummyInterface;
 	};

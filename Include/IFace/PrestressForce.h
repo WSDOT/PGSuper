@@ -169,9 +169,9 @@ DEFINE_GUID(IID_ILosses,
 0x3d91150, 0x6dbb, 0x11d2, 0x8e, 0xe9, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
 interface ILosses : IUnknown
 {
-   // Returns the details of the prestress loss calculation for losses computed upto and including
+   // Returns the details of the prestress loss calculation for losses computed up to and including
    // intervalIdx. Loses may be computed beyond this interval as well, however they are only
-   // guarenteed to be computed upto and including the specified interval. An intervalIdx of
+   // guarenteed to be computed up to and including the specified interval. An intervalIdx of
    // INVALID_INDEX means that losses are computed through all intervals
    virtual const LOSSDETAILS* GetLossDetails(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx = INVALID_INDEX) = 0;
 

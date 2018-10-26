@@ -43,7 +43,7 @@ HRESULT GetSuperstructureMember(IGenericBridge* pBridge,const CGirderKey& girder
    return pBridge->get_SuperstructureMember(gdrID,ssmbr);
 }
 
-HRESULT GetSegment(IGenericBridge* pBridge,const CSegmentKey& segmentKey,ISegment** segment)
+HRESULT GetSegment(IGenericBridge* pBridge,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** segment)
 {
    CComPtr<ISuperstructureMember> ssmbr;
    GetSuperstructureMember(pBridge,segmentKey,&ssmbr);
@@ -53,7 +53,7 @@ HRESULT GetSegment(IGenericBridge* pBridge,const CSegmentKey& segmentKey,ISegmen
 
 HRESULT GetGirder(IGenericBridge* pBridge,const CSegmentKey& segmentKey,IPrecastGirder** girder)
 {
-   CComPtr<ISegment> segment;
+   CComPtr<ISuperstructureMemberSegment> segment;
    ::GetSegment(pBridge,segmentKey,&segment);
 
    CComQIPtr<IItemData> itemdata(segment);

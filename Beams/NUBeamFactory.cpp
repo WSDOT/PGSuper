@@ -175,8 +175,8 @@ void CNUBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType stat
 
 void CNUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMember* ssmbr)
 {
-   CComPtr<IPrismaticSegment> segment;
-   segment.CoCreateInstance(CLSID_PrismaticSegment);
+   CComPtr<IPrismaticSuperstructureMemberSegment> segment;
+   segment.CoCreateInstance(CLSID_PrismaticSuperstructureMemberSegment);
 
    // Build up the beam shape
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -676,6 +676,11 @@ std::_tstring CNUBeamFactory::GetGirderFamilyName()
 std::_tstring CNUBeamFactory::GetPublisher()
 {
    return std::_tstring(_T("WSDOT"));
+}
+
+std::_tstring CNUBeamFactory::GetPublisherContactInformation()
+{
+   return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
 HINSTANCE CNUBeamFactory::GetResourceInstance()

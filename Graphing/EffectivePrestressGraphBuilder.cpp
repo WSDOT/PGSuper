@@ -231,7 +231,7 @@ void CEffectivePrestressGraphBuilder::UpdatePosttensionGraphData(GroupIndexType 
          strLabel3.Format(_T("Avg. %s after anchor set"),bStresses ? _T("fpe") : _T("Fpe"));
          dataSeries1 = m_Graph.CreateDataSeries(strLabel1,PS_SOLID,penWeight,ORANGE);
          dataSeries2 = m_Graph.CreateDataSeries(strLabel2,PS_SOLID,penWeight,GREEN);
-         dataSeries3 = m_Graph.CreateDataSeries(strLabel3,PS_SOLID,penWeight,BLUE);
+         dataSeries3 = m_Graph.CreateDataSeries(strLabel3,PS_DOT,  penWeight,BLUE);
       }
       else
       {

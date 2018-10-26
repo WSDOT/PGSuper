@@ -182,8 +182,8 @@ void CDoubleTeeFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType s
 
 void CDoubleTeeFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMember* ssmbr)
 {
-   CComPtr<IPrismaticSegment> segment;
-   segment.CoCreateInstance(CLSID_PrismaticSegment);
+   CComPtr<IPrismaticSuperstructureMemberSegment> segment;
+   segment.CoCreateInstance(CLSID_PrismaticSuperstructureMemberSegment);
 
    // Build up the beam shape
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -608,6 +608,11 @@ std::_tstring CDoubleTeeFactory::GetGirderFamilyName()
 std::_tstring CDoubleTeeFactory::GetPublisher()
 {
    return std::_tstring(_T("WSDOT"));
+}
+
+std::_tstring CDoubleTeeFactory::GetPublisherContactInformation()
+{
+   return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
 HINSTANCE CDoubleTeeFactory::GetResourceInstance()

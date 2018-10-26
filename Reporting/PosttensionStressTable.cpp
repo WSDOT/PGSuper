@@ -157,7 +157,8 @@ rptRcTable* CPosttensionStressTable::Build(IBroker* pBroker,const CGirderKey& gi
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( CSegmentKey(girderKey,ALL_SEGMENTS), POI_SPAN ) );
 
-   GET_IFACE2(pBroker,IPosttensionStresses,pPrestress);
+   GET_IFACE2(pBroker,IProductForces,pProductForces);
+   pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
 
    // Fill up the table
    RowIndexType row = p_table->GetNumberOfHeaderRows();
@@ -181,8 +182,8 @@ rptRcTable* CPosttensionStressTable::Build(IBroker* pBroker,const CGirderKey& gi
          {
             IntervalIndexType intervalIdx = *iter;
 
-            fTop = pPrestress->GetStress(intervalIdx,poi,topLocation,ALL_DUCTS);
-            fBot = pPrestress->GetStress(intervalIdx,poi,botLocation,ALL_DUCTS);
+            pProductForces->GetStress(intervalIdx,pftPostTensioning,poi,bat,rtCumulative,topLocation,botLocation,&fTop,&fBot);
+
             (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
             (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
             col++;
@@ -191,8 +192,7 @@ rptRcTable* CPosttensionStressTable::Build(IBroker* pBroker,const CGirderKey& gi
       else
       {
          // Rating
-         fTop = pPrestress->GetStress(loadRatingIntervalIdx,poi,topLocation,ALL_DUCTS);
-         fBot = pPrestress->GetStress(loadRatingIntervalIdx,poi,botLocation,ALL_DUCTS);
+         pProductForces->GetStress(loadRatingIntervalIdx,pftPostTensioning,poi,bat,rtCumulative,topLocation,botLocation,&fTop,&fBot);
          (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
          (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
          col++;

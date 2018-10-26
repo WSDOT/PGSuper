@@ -1506,7 +1506,7 @@ void CBridgeAgentImp::ValidateSegmentOrientation(const CSegmentKey& segmentKey)
    CComPtr<ISuperstructureMember> ssmbr;
    GetSuperstructureMember(segmentKey,&ssmbr);
 
-   CComPtr<ISegment> segment;
+   CComPtr<ISuperstructureMemberSegment> segment;
    ssmbr->get_Segment(segmentKey.segmentIndex,&segment);
 
    segment->put_Orientation(orientation);
@@ -2277,7 +2277,7 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription2* pBridgeDesc)
             CComPtr<IGirderLine> girderLine;
             geometry->FindGirderLine(girderLineID,&girderLine);
 
-            CComPtr<ISegment> segment;
+            CComPtr<ISuperstructureMemberSegment> segment;
             ssmbr->get_Segment(segIdx,&segment);
             segment->putref_GirderLine(girderLine);
          }
@@ -2287,7 +2287,7 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription2* pBridgeDesc)
          // That is what the loop above does when the beam factory creates the girder line layout.
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
-            CComPtr<ISegment> segment;
+            CComPtr<ISuperstructureMemberSegment> segment;
             ssmbr->get_Segment(segIdx,&segment);
 
             CComPtr<IGirderLine> girderLine;
@@ -2800,7 +2800,7 @@ void CBridgeAgentImp::NoDeckEdgePoint(GroupIndexType grpIdx,SegmentIndexType seg
    HRESULT hr = m_Bridge->get_SuperstructureMember(::GetSuperstructureMemberID(grpIdx,gdrIdx),&ssmbr);
    ATLASSERT(SUCCEEDED(hr));
 
-   CComPtr<ISegment> segment;
+   CComPtr<ISuperstructureMemberSegment> segment;
    hr = ssmbr->get_Segment(segmentKey.segmentIndex,&segment);
    ATLASSERT(SUCCEEDED(hr));
 
@@ -6470,7 +6470,7 @@ std::vector<std::pair<SegmentIndexType,Float64>> CBridgeAgentImp::GetSegmentLeng
             //                     |
             //                     +- CL Pier
 
-            CComPtr<ISegment> segment;
+            CComPtr<ISuperstructureMemberSegment> segment;
             GetSegment(segmentKey,&segment);
             CComPtr<IGirderLine> girderLine;
             segment->get_GirderLine(&girderLine);
@@ -6521,7 +6521,7 @@ std::vector<std::pair<SegmentIndexType,Float64>> CBridgeAgentImp::GetSegmentLeng
             //                     |
             //                     +-- CL Pier
 
-            CComPtr<ISegment> segment;
+            CComPtr<ISuperstructureMemberSegment> segment;
             GetSegment(segmentKey,&segment);
             CComPtr<IGirderLine> girderLine;
             segment->get_GirderLine(&girderLine);
@@ -6571,7 +6571,7 @@ std::vector<std::pair<SegmentIndexType,Float64>> CBridgeAgentImp::GetSegmentLeng
             //                     |                 +--- CL Pier
             //                     +--- CL Pier
 
-            CComPtr<ISegment> segment;
+            CComPtr<ISuperstructureMemberSegment> segment;
             GetSegment(segmentKey,&segment);
             CComPtr<IGirderLine> girderLine;
             segment->get_GirderLine(&girderLine);
@@ -9001,7 +9001,7 @@ Float64 CBridgeAgentImp::GetAheadBearingStation(PierIndexType pierIdx,const CGir
    VALIDATE( BRIDGE );
 
    // Get the segment that intersects this pier
-   CComPtr<ISegment> segment;
+   CComPtr<ISuperstructureMemberSegment> segment;
    GetSegmentAtPier(pierIdx,girderKey,&segment);
 
    // Get the girder line for that segment
@@ -9058,7 +9058,7 @@ Float64 CBridgeAgentImp::GetBackBearingStation(PierIndexType pierIdx,const CGird
    VALIDATE( BRIDGE );
 
    // Get the segment that intersects this pier
-   CComPtr<ISegment> segment;
+   CComPtr<ISuperstructureMemberSegment> segment;
    GetSegmentAtPier(pierIdx,girderKey,&segment);
 
    // Get the girder line for that segment
@@ -20081,7 +20081,7 @@ Float64 CBridgeAgentImp::GetOrientation(const CSegmentKey& segmentKey)
 {
    ValidateSegmentOrientation(segmentKey);
 
-   CComPtr<ISegment> segment;
+   CComPtr<ISuperstructureMemberSegment> segment;
    GetSegment(segmentKey,&segment);
 
    Float64 orientation;
@@ -20204,7 +20204,7 @@ void CBridgeAgentImp::GetSegment(const CGirderKey& girderKey,Float64 Xg,SegmentI
    CComPtr<ISuperstructureMember> ssMbr;
    GetSuperstructureMember(girderKey,&ssMbr);
 
-   CComPtr<ISegment> segment;
+   CComPtr<ISuperstructureMemberSegment> segment;
    ssMbr->GetDistanceFromStartOfSegment(Xg,pXs,pSegIdx,&segment);
 }
 
@@ -20276,7 +20276,7 @@ Float64 CBridgeAgentImp::GetSegmentSlope(const CSegmentKey& segmentKey)
 
 void CBridgeAgentImp::GetSegmentProfile(const CSegmentKey& segmentKey,bool bIncludeClosure,IShape** ppShape)
 {
-   CComPtr<ISegment> segment;
+   CComPtr<ISuperstructureMemberSegment> segment;
    GetSegment(segmentKey,&segment);
 
    segment->get_Profile(bIncludeClosure ? VARIANT_TRUE : VARIANT_FALSE,ppShape);
@@ -22657,7 +22657,7 @@ CBridgeAgentImp::SectProp CBridgeAgentImp::GetSectionProperties(IntervalIndexTyp
    USES_CONVERSION;
 
    // Find properties and return... if not found, compute them now
-   PoiIntervalKey poiKey(intervalIdx,poi);
+   PoiIntervalKey poiKey(poi,intervalIdx);
    SectPropContainer::iterator found( m_pSectProps[sectPropType]->find(poiKey) );
    if ( found != m_pSectProps[sectPropType]->end() )
    {
@@ -22678,8 +22678,8 @@ CBridgeAgentImp::SectProp CBridgeAgentImp::GetSectionProperties(IntervalIndexTyp
 
    // figure out where the poi is located and if the concrete is cured enought to make the section act as a structural member
    CClosureKey closureKey;
-   bool bIsInClosureJoint = IsInClosureJoint(poi,&closureKey);
-   bool bIsOnSegment = IsOnSegment(poi);
+   bool bIsInClosureJoint          = IsInClosureJoint(poi,&closureKey);
+   bool bIsOnSegment               = IsOnSegment(poi);
    bool bIsInIntermediateDiaphragm = IsInIntermediateDiaphragm(poi);
 
    bool bIsSection = true;
@@ -22725,9 +22725,8 @@ CBridgeAgentImp::SectProp CBridgeAgentImp::GetSectionProperties(IntervalIndexTyp
            sectPropType == pgsTypes::sptTransformed             || 
            sectPropType == pgsTypes::sptNetGirder )
       {
-         // use tool to create section
          CComPtr<ISection> section;
-         HRESULT hr = m_SectCutTool->CreateGirderSectionBySegment(m_Bridge,gdrID,segmentKey.segmentIndex,Xs,leftGdrID,rightGdrID,intervalIdx,(SectionPropertyMethod)sectPropType,&section);
+         HRESULT hr = GetSection(intervalIdx,poi,sectPropType,&section);
          ATLASSERT(SUCCEEDED(hr));
 
          // get elastic properties of section
@@ -22738,41 +22737,26 @@ CBridgeAgentImp::SectProp CBridgeAgentImp::GetSectionProperties(IntervalIndexTyp
          // this transforms all materials into equivalent girder concrete
          // we always do this because the deck must be transformed, even for net properties
          Float64 Egdr;
-         if ( bIsTimeStepAnalysis )
+         // NOTE: we are checking if this is a time-step analysis and calling the age adjusted ec method
+         // We don't actually have to do this, the age adjusted ec returns the same as the regular ec
+         // methods for non-time-step methods. It is just more clear that what ec we want by calling
+         // each method explicitly
+         if ( bIsOnSegment )
          {
-            if ( bIsOnSegment )
-            {
-               Egdr = GetSegmentAgeAdjustedEc(segmentKey,intervalIdx);
-            }
-            else if ( bIsInClosureJoint )
-            {
-               Egdr = GetClosureJointAgeAdjustedEc(closureKey,intervalIdx);
-            }
-            else if ( bIsInIntermediateDiaphragm )
-            {
-               Egdr = GetDeckAgeAdjustedEc(intervalIdx);
-            }
+            Egdr = (bIsTimeStepAnalysis ? GetSegmentAgeAdjustedEc(segmentKey,intervalIdx) : GetSegmentEc(segmentKey,intervalIdx));
          }
-         else
+         else if ( bIsInClosureJoint )
          {
-            if ( bIsOnSegment )
-            {
-               Egdr = GetSegmentEc(segmentKey,intervalIdx);
-            }
-            else if ( bIsInClosureJoint )
-            {
-               Egdr = GetClosureJointEc(closureKey,intervalIdx);
-            }
-            else if ( bIsInIntermediateDiaphragm )
-            {
-               Egdr = GetDeckEc(intervalIdx);
-            }
+            Egdr = (bIsTimeStepAnalysis ? GetClosureJointAgeAdjustedEc(closureKey,intervalIdx) : GetClosureJointEc(closureKey,intervalIdx));
+         }
+         else if ( bIsInIntermediateDiaphragm )
+         {
+            Egdr = (bIsTimeStepAnalysis ? GetDeckAgeAdjustedEc(intervalIdx) : GetDeckEc(intervalIdx));
          }
 
          CComPtr<IShapeProperties> shapeprops;
          eprop->TransformProperties(Egdr,&shapeprops);
 
-         props.Section      = section;
          props.ElasticProps = eprop;
          props.ShapeProps   = shapeprops;
 
@@ -22856,7 +22840,7 @@ CBridgeAgentImp::SectProp CBridgeAgentImp::GetSectionProperties(IntervalIndexTyp
          line->ThroughPoints(p1,p2);
 
          CComPtr<ISection> clipped_section;
-         props.Section->ClipWithLine(line,&clipped_section);
+         section->ClipWithLine(line,&clipped_section);
 
          CComPtr<IElasticProperties> bottomHalfElasticProperties;
          clipped_section->get_ElasticProperties(&bottomHalfElasticProperties);
@@ -22877,7 +22861,7 @@ CBridgeAgentImp::SectProp CBridgeAgentImp::GetSectionProperties(IntervalIndexTyp
       else if ( sectPropType == pgsTypes::sptNetDeck )
       {
          CComPtr<ISection> deckSection;
-         HRESULT hr = m_SectCutTool->CreateNetDeckSection(m_Bridge,gdrID,segmentKey.segmentIndex,Xs,leftGdrID,rightGdrID,intervalIdx,&deckSection);
+         HRESULT hr = GetSection(intervalIdx,poi,sectPropType,&deckSection);
          ATLASSERT(SUCCEEDED(hr));
 
          // get elastic properties of section
@@ -22899,7 +22883,6 @@ CBridgeAgentImp::SectProp CBridgeAgentImp::GetSectionProperties(IntervalIndexTyp
          CComPtr<IShapeProperties> shapeprops;
          eprop->TransformProperties(Edeck,&shapeprops);
 
-         props.Section      = deckSection;
          props.ElasticProps = eprop;
          props.ShapeProps   = shapeprops;
       }
@@ -22914,8 +22897,7 @@ CBridgeAgentImp::SectProp CBridgeAgentImp::GetSectionProperties(IntervalIndexTyp
       // -OR-
       // we are at a closure joint and it hasn't reached strength enough to be effective
       // create default properties (all zero values)
-      props.Section.CoCreateInstance(CLSID_CompositeSectionEx);
-      props.Section->get_ElasticProperties(&props.ElasticProps);
+      props.ElasticProps.CoCreateInstance(CLSID_ElasticProperties);
       props.ElasticProps->TransformProperties(1.0,&props.ShapeProps);
    }
 
@@ -22935,11 +22917,46 @@ CBridgeAgentImp::SectProp CBridgeAgentImp::GetSectionProperties(IntervalIndexTyp
    return (*found).second;
 }
 
+HRESULT CBridgeAgentImp::GetSection(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::SectionPropertyType sectPropType,ISection** ppSection)
+{
+   VALIDATE(BRIDGE);
+
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+   Float64 Xs = poi.GetDistFromStart();
+   GirderIDType leftGdrID,gdrID,rightGdrID;
+   GetAdjacentSuperstructureMemberIDs(segmentKey,&leftGdrID,&gdrID,&rightGdrID);
+   if ( sectPropType == pgsTypes::sptGrossNoncomposite       || 
+        sectPropType == pgsTypes::sptGross                   || 
+        sectPropType == pgsTypes::sptTransformedNoncomposite || 
+        sectPropType == pgsTypes::sptTransformed             || 
+        sectPropType == pgsTypes::sptNetGirder )
+   {
+      // use tool to create section
+      CComPtr<ISection> section;
+      HRESULT hr = m_SectCutTool->CreateGirderSectionBySegment(m_Bridge,gdrID,segmentKey.segmentIndex,Xs,leftGdrID,rightGdrID,intervalIdx,(SectionPropertyMethod)sectPropType,&section);
+      ATLASSERT(SUCCEEDED(hr));
+
+      return section.CopyTo(ppSection);
+   }
+   else if ( sectPropType == pgsTypes::sptNetDeck )
+   {
+      CComPtr<ISection> deckSection;
+      HRESULT hr = m_SectCutTool->CreateNetDeckSection(m_Bridge,gdrID,segmentKey.segmentIndex,Xs,leftGdrID,rightGdrID,intervalIdx,&deckSection);
+      ATLASSERT(SUCCEEDED(hr));
+
+      return deckSection.CopyTo(ppSection);
+   }
+
+   ATLASSERT(false); // should never get here
+   return E_FAIL;
+}
+
 Float64 CBridgeAgentImp::ComputeY(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,IShapeProperties* sprops)
 {
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
    Float64 Xpoi = poi.GetDistFromStart();
-   CComPtr<ISegment> segment;
+   CComPtr<ISuperstructureMemberSegment> segment;
    GetSegment(segmentKey,&segment);
    CComPtr<IShape> shape;
    segment->get_PrimaryShape(Xpoi,&shape);
@@ -23043,7 +23060,7 @@ HRESULT CBridgeAgentImp::GetGirderSection(const pgsPointOfInterest& poi,pgsTypes
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   CComPtr<ISegment> segment;
+   CComPtr<ISuperstructureMemberSegment> segment;
    GetSegment(segmentKey,&segment);
 
    CComPtr<IShape> girder_shape;
@@ -23083,7 +23100,7 @@ HRESULT CBridgeAgentImp::GetSuperstructureMember(const CGirderKey& girderKey,ISu
    return ::GetSuperstructureMember(m_Bridge,girderKey,ssmbr);
 }
 
-HRESULT CBridgeAgentImp::GetSegment(const CSegmentKey& segmentKey,ISegment** segment)
+HRESULT CBridgeAgentImp::GetSegment(const CSegmentKey& segmentKey,ISuperstructureMemberSegment** segment)
 {
    VALIDATE(BRIDGE);
    return ::GetSegment(m_Bridge,segmentKey,segment);
@@ -24648,7 +24665,7 @@ void CBridgeAgentImp::GetSegmentShapeDirect(const pgsPointOfInterest& poi,IShape
    CComPtr<ISection> section;
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
-   CComPtr<ISegment> segment;
+   CComPtr<ISuperstructureMemberSegment> segment;
    GetSegment(segmentKey,&segment);
 
    Float64 Xs = poi.GetDistFromStart();
@@ -25227,11 +25244,8 @@ void CBridgeAgentImp::GetShapeProperties(IntervalIndexType intervalIdx,const pgs
 
 void CBridgeAgentImp::GetShapeProperties(pgsTypes::SectionPropertyType sectPropType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 Ecgdr,IShapeProperties** ppShapeProps)
 {
-   // We are going to be messing with the secant modulus... create a clone
-   // that we can throw away when we are done with it
-   SectProp& props = GetSectionProperties(intervalIdx,poi,sectPropType);
    CComPtr<ISection> s;
-   props.Section->Clone(&s);
+   GetSection(intervalIdx,poi,sectPropType,&s);
 
    // Assuming section is a Composite section and beam is exactly the first piece
    CComQIPtr<ICompositeSectionEx> cmpsection(s);
@@ -25382,12 +25396,12 @@ SpanIndexType CBridgeAgentImp::GetSpanIndex(Float64 distFromStartOfBridge)
 void CBridgeAgentImp::GetGirderLine(const CSegmentKey& segmentKey,IGirderLine** ppGirderLine)
 {
    VALIDATE(BRIDGE);
-   CComPtr<ISegment> segment;
+   CComPtr<ISuperstructureMemberSegment> segment;
    GetSegment(segmentKey,&segment);
    segment->get_GirderLine(ppGirderLine);
 }
 
-void CBridgeAgentImp::GetSegmentAtPier(PierIndexType pierIdx,const CGirderKey& girderKey,ISegment** ppSegment)
+void CBridgeAgentImp::GetSegmentAtPier(PierIndexType pierIdx,const CGirderKey& girderKey,ISuperstructureMemberSegment** ppSegment)
 {
    CSegmentKey segmentKey( GetSegmentAtPier(pierIdx,girderKey) );
    ATLASSERT(segmentKey.groupIndex != INVALID_INDEX && segmentKey.girderIndex != INVALID_INDEX && segmentKey.segmentIndex != INVALID_INDEX);
@@ -25583,7 +25597,7 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
    SegmentIndexType nSegments;
    pSSMbr->get_SegmentCount(&nSegments);
 
-   CComPtr<ISegment> segment;
+   CComPtr<ISuperstructureMemberSegment> segment;
    pSSMbr->get_Segment(0,&segment);
 
    pgsPointOfInterest poi = GetPointOfInterest(CSegmentKey(girderKey,0),0.0);
@@ -25890,7 +25904,7 @@ void CBridgeAgentImp::CreateLinearTendon(const CGirderKey& girderKey,ISuperstruc
    CComPtr<ITendonCollection> tendons;
    tendons.CoCreateInstance(CLSID_TendonCollection);
 
-   CComPtr<ISegment> segment;
+   CComPtr<ISuperstructureMemberSegment> segment;
    pSSMbr->get_Segment(0,&segment);
 
    CComPtr<IShape> shape;
@@ -26002,7 +26016,7 @@ void CBridgeAgentImp::CreateOffsetTendon(const CGirderKey& girderKey,ISuperstruc
    const CSplicedGirderData*  pGirder     = pGroup->GetGirder(girderKey.girderIndex);
    const CPTData*             pPTData     = pGirder->GetPostTensioning();
 
-   CComPtr<ISegment> segment;
+   CComPtr<ISuperstructureMemberSegment> segment;
    pSSMbr->get_Segment(0,&segment);
 
    CComPtr<IShape> shape;

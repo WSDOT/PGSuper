@@ -1056,8 +1056,6 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
    GET_IFACE(IStrandGeometry,pStrandGeom);
    GET_IFACE(IPretensionStresses,pPrestress);
 
-   GET_IFACE(IPosttensionStresses,pPosttension);
-
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    Float64 fcpe = 0; // compressive stress in concrete due to effective prestress forces only
@@ -1081,7 +1079,10 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
    }
 
    // Compute stress due to tendons
-   dfcpe = pPosttension->GetStress(intervalIdx,poi,stressLocation,ALL_DUCTS);
+   GET_IFACE(IProductForces,pProductForces);
+   pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(bPositiveMoment ? pgsTypes::Maximize : pgsTypes::Minimize);
+   Float64 fDummy;
+   pProductForces->GetStress(intervalIdx,pftPostTensioning,poi,bat,rtCumulative,stressLocation,stressLocation,&dfcpe,&fDummy);
    if ( dfcpe < 0 )
    {
       fcpe += dfcpe;

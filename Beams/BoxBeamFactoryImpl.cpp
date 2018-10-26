@@ -278,6 +278,11 @@ std::_tstring CBoxBeamFactoryImpl::GetPublisher()
    return std::_tstring(_T("WSDOT"));
 }
 
+std::_tstring CBoxBeamFactoryImpl::GetPublisherContactInformation()
+{
+   return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
+}
+
 HINSTANCE CBoxBeamFactoryImpl::GetResourceInstance()
 {
    return _Module.GetResourceInstance();

@@ -554,25 +554,6 @@ interface IPretensionStresses : IUnknown
 
 /*****************************************************************************
 INTERFACE
-   IPosttensionStresses
-
-   Interface to get the stresses in the girder caused by post-tension tendons.
-
-DESCRIPTION
-   Interface to get the stresses in the girder caused by post-tension tendons.
-   Stresses can be computed for a single tendon, or all tendons computed if ductIdx is ALL_DUCTS
-*****************************************************************************/
-// {2F080018-46BF-45e0-B626-82D7870F53A4}
-DEFINE_GUID(IID_IPosttensionStresses, 
-0x2f080018, 0x46bf, 0x45e0, 0xb6, 0x26, 0x82, 0xd7, 0x87, 0xf, 0x53, 0xa4);
-interface IPosttensionStresses : IUnknown
-{
-   virtual Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,DuctIndexType ductIdx) = 0;
-   virtual std::vector<Float64> GetStress(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation loc,DuctIndexType ductIdx) = 0;
-};
-
-/*****************************************************************************
-INTERFACE
    ICamber
 
    Interface to get camber information.

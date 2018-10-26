@@ -919,6 +919,11 @@ std::_tstring CVoidedSlab2Factory::GetPublisher()
    return std::_tstring(_T("WSDOT"));
 }
 
+std::_tstring CVoidedSlab2Factory::GetPublisherContactInformation()
+{
+   return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
+}
+
 HINSTANCE CVoidedSlab2Factory::GetResourceInstance()
 {
    return _Module.GetResourceInstance();

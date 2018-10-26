@@ -802,17 +802,6 @@ struct ANCHORSETDETAILS
    Float64 dfpAT[2]; // Loss of effective stress at anchorage due to seating
    Float64 dfpS[2];  // Loss of effective stress at end of anchor set zone length due to seating
                      // This is typically zero except when the anchor set zone is longer than the tendon
-
-   bool operator<(const ANCHORSETDETAILS& other) const
-   {
-      if ( girderKey < other.girderKey )
-         return true;
-
-      if ( other.girderKey < girderKey )
-         return false;
-
-      return ductIdx < other.ductIdx;
-   }
 };
 
 // This struct holds the computation details for friction and anchor set
