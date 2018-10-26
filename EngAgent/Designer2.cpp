@@ -338,7 +338,7 @@ void pgsDesigner2::GetHaunchDetails(SpanIndexType span,GirderIndexType gdr,bool 
       double top_width = pGdr->GetTopWidth(poi);
 
       // top of girder elevation, including camber effects
-      double elev_top_girder = (bUseConfig ? pGdr->GetTopGirderElevation(poi,config,-1) : pGdr->GetTopGirderElevation(poi,-1) );
+      double elev_top_girder = (bUseConfig ? pGdr->GetTopGirderElevation(poi,config,INVALID_INDEX) : pGdr->GetTopGirderElevation(poi,INVALID_INDEX) );
 
       // get station and normal offset for this poi
       double x,z;

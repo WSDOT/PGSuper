@@ -86,6 +86,17 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SLAB_FC, m_ctrlFc);
 	//}}AFX_DATA_MAP
 
+   // make sure unit tags are always displayed (even if disabled)
+   DDX_Tag( pDX, IDC_GROSS_DEPTH_UNIT,    pDispUnits->GetComponentDimUnit() );
+   DDX_Tag( pDX, IDC_FILLET_UNIT,         pDispUnits->GetComponentDimUnit() );
+   DDX_Tag( pDX, IDC_ADIM_UNIT,           pDispUnits->GetComponentDimUnit() );
+   DDX_Tag( pDX, IDC_OVERHANG_DEPTH_UNIT, pDispUnits->GetComponentDimUnit() );
+   DDX_Tag( pDX, IDC_PANEL_DEPTH_UNIT,    pDispUnits->GetComponentDimUnit() );
+   DDX_Tag( pDX, IDC_PANEL_SUPPORT_UNIT,  pDispUnits->GetComponentDimUnit() );
+   DDX_Tag( pDX, IDC_SACDEPTH_UNIT,       pDispUnits->GetComponentDimUnit() );
+   DDX_Tag( pDX, IDC_SLAB_FC_UNIT,        pDispUnits->GetStressUnit() );
+   DDX_Tag( pDX, IDC_EC_UNIT,             pDispUnits->GetModEUnit() );
+
    if ( deckType != pgsTypes::sdtNone )
    {
       // gross or cast depth
@@ -575,17 +586,21 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
 
    int iOption = GetCheckedRadioButton(IDC_OLAY_WEIGHT_LABEL,IDC_OLAY_DEPTH_LABEL);
 
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+   ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
+   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->DeckType;
+
    pgsTypes::WearingSurfaceType ws = (pgsTypes::WearingSurfaceType)(pCB->GetItemData(idx));
    if ( ws == pgsTypes::wstSacrificialDepth )
    {
-      bSacDepth               = TRUE;
+      bSacDepth               = deckType == pgsTypes::sdtNone ? FALSE : TRUE;
       bOverlayLabel           = FALSE;
       bOverlayWeight          = FALSE;
       bOverlayDepthAndDensity = FALSE;
    }
    else if ( ws == pgsTypes::wstFutureOverlay )
    {
-      bSacDepth               = TRUE;
+      bSacDepth               = deckType == pgsTypes::sdtNone ? FALSE : TRUE;
       bOverlayLabel           = TRUE;
       bOverlayWeight          = (iOption == IDC_OLAY_WEIGHT_LABEL ? TRUE : FALSE);
       bOverlayDepthAndDensity = (iOption == IDC_OLAY_DEPTH_LABEL  ? TRUE : FALSE);

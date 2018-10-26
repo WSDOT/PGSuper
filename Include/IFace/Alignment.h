@@ -74,11 +74,11 @@ interface IRoadway : IUnknown
    virtual void GetBearing(Float64 station,IDirection** ppBearing) = 0;
    virtual void GetBearingNormal(Float64 station,IDirection** ppNormal) = 0;
    virtual void GetPoint(Float64 station,Float64 offset,IDirection* pBearing,IPoint2d** ppPoint) = 0;
-   virtual void GetStationAndOffset(IPoint2d* point,double* pStation,double* pOffset) = 0;
+   virtual void GetStationAndOffset(IPoint2d* point,Float64* pStation,Float64* pOffset) = 0;
    virtual long GetCurveCount() = 0;
-   virtual void GetCurve(long idx,IHorzCurve** ppCurve) = 0;
+   virtual void GetCurve(CollectionIndexType idx,IHorzCurve** ppCurve) = 0;
    virtual long GetVertCurveCount() = 0;
-   virtual void GetVertCurve(long idx,IVertCurve** ppCurve) = 0;
+   virtual void GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve) = 0;
 };
 
 #endif // INCLUDED_IFACE_ALIGNMENT_H_

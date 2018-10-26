@@ -16,7 +16,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Ndb Debnd                                        Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 30.12   8  0.04     1     5 4SB12        8   1/2  270  3.50  3.50   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.937   -1.197    302  0.345  0.03 -0.00  0.00  0.00 -0.00   7.91  32.34   0.00   0.00   0.00
+ 30.12   8  0.04     1     5 4SB12        8   1/2  270  3.50  3.50   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.937   -1.197    303  0.345  0.03 -0.00  0.00  0.00 -0.00   7.91  32.34   0.00   0.00   0.00
 
 
 The Specification Check was Successful

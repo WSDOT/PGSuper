@@ -1389,7 +1389,7 @@ bool CBridgeAgentImp::BuildCogoModel()
       HorzCurveData& first_curve_data = *(alignment_data.HorzCurves.begin());
       prev_curve_ST_station = first_curve_data.PIStation - 2*(first_curve_data.Radius + first_curve_data.EntrySpiral);
 
-      long curveID = 1;
+      CogoElementKey curveID = 1;
 
       std::vector<HorzCurveData>::iterator iter;
       for ( iter = alignment_data.HorzCurves.begin(); iter != alignment_data.HorzCurves.end(); iter++ )
@@ -1539,7 +1539,7 @@ bool CBridgeAgentImp::BuildCogoModel()
       CComPtr<IVertCurveCollection> vcurves;
       cogomodel->get_VertCurves(&vcurves);
 
-      long curveID = 1;
+      CogoElementKey curveID = 1;
 
       std::vector<VertCurveData>::iterator iter;
       for ( iter = profile_data.VertCurves.begin(); iter != profile_data.VertCurves.end(); iter++ )
@@ -2754,15 +2754,21 @@ void CBridgeAgentImp::LayoutRegularPoiCastingYard(SpanIndexType span,GirderIndex
    Float64 gdr_length = GetGirderLength(span,gdr);
    const Float64 toler = +1.0e-6;
 
-   pgsTypes::Stage stage = pgsTypes::CastingYard;
+   std::set<pgsTypes::Stage> stages;
+   stages.insert(pgsTypes::CastingYard); // need positional overlap of bridge site and casting yard POI
+   stages.insert(pgsTypes::GirderPlacement);
+   stages.insert(pgsTypes::TemporaryStrandRemoval);
+   stages.insert(pgsTypes::BridgeSite1);
+   stages.insert(pgsTypes::BridgeSite2);
+   stages.insert(pgsTypes::BridgeSite3);
 
    Float64 span_length = GetGirderLength(span,gdr);
-   Float64 end_size = 0;
+   Float64 left_end_size = GetGirderStartConnectionLength(span,gdr);
+   Float64 right_end_size = GetGirderEndConnectionLength(span,gdr);
 
    for ( Uint16 i = 0; i < nPnts+1; i++ )
    {
       Float64 dist = span_length * ((Float64)i / (Float64)nPnts);
-      dist += end_size;
 
       PoiAttributeType attribute = attrib;
 
@@ -2807,7 +2813,12 @@ void CBridgeAgentImp::LayoutRegularPoiCastingYard(SpanIndexType span,GirderIndex
          }
       }
 
-      pgsPointOfInterest poi(stage,span,gdr,dist,attribute);
+      pgsPointOfInterest poi(span,gdr,dist,attribute);
+      if ( dist < left_end_size || gdr_length-right_end_size < dist )
+         poi.AddStage(pgsTypes::CastingYard);
+      else
+         poi.AddStages(stages);
+
       poi.MakeTenthPoint(POI_GIRDER_POINT,tenthPoint);
       pPoiMgr->AddPointOfInterest( poi );
    }
@@ -3180,7 +3191,7 @@ void CBridgeAgentImp::LayoutPoiForShear(SpanIndexType span,GirderIndexType gdr)
    Float64 right_support_width  = GetGirderEndSupportWidth(span,gdr);
 
    //
-   // Poi's at h from ends
+   // Poi's at h from ends of girder
    //
    std::set<pgsTypes::Stage> stages;
    stages.insert(pgsTypes::CastingYard);
@@ -3191,48 +3202,50 @@ void CBridgeAgentImp::LayoutPoiForShear(SpanIndexType span,GirderIndexType gdr)
    stages.insert(pgsTypes::BridgeSite3);
 
    PoiAttributeType attribute = POI_FLEXURESTRESS | POI_SHEAR | POI_ALLOUTPUT | POI_H;
-   pgsPointOfInterest poi_hl( stages, span, gdr, hgLeft,         attribute | POI_GIRDER_POINT);
-   pgsPointOfInterest poi_hr( stages, span, gdr, length-hgRight, attribute | POI_GIRDER_POINT);
-   m_PoiMgr.AddPointOfInterest(poi_hl);
-   m_PoiMgr.AddPointOfInterest(poi_hr);
+   pgsPointOfInterest poi_hl_gdr( pgsTypes::CastingYard, span, gdr, hgLeft,         attribute | POI_GIRDER_POINT);
+   pgsPointOfInterest poi_hr_gdr( pgsTypes::CastingYard, span, gdr, length-hgRight, attribute | POI_GIRDER_POINT);
+
+   if ( left_end_size <= hgLeft )
+      poi_hl_gdr.AddStages(stages);
+
+   if ( right_end_size <= hgRight )
+      poi_hr_gdr.AddStages(stages);
+
+   m_PoiMgr.AddPointOfInterest(poi_hl_gdr);
+   m_PoiMgr.AddPointOfInterest(poi_hr_gdr);
 
    // h is from face of support in bridge site stages.
+   if ( left_end_size + left_support_width/2 <= hgLeft )
+   {
+      pgsPointOfInterest poi_hl_brg( stages, span, gdr, left_end_size + left_support_width/2 + hgLeft,         attribute | POI_SPAN_POINT);
+      m_PoiMgr.AddPointOfInterest(poi_hl_brg);
+   }
 
-   poi_hl.SetAttributes( attribute | POI_SPAN_POINT );
-   poi_hr.SetAttributes( attribute | POI_SPAN_POINT );
-
-   poi_hl.SetDistFromStart(left_end_size + left_support_width/2 + hgLeft);
-   poi_hr.SetDistFromStart(length - right_end_size - right_support_width/2 - hgRight);
-
-   poi_hl.AddStages(stages);
-   poi_hr.AddStages(stages);
-
-   m_PoiMgr.AddPointOfInterest(poi_hl);
-   m_PoiMgr.AddPointOfInterest(poi_hr);
+   if ( right_end_size + right_support_width/2 <= hgRight )
+   {
+      pgsPointOfInterest poi_hr_brg( stages, span, gdr, length - right_end_size - right_support_width/2 - hgRight, attribute | POI_SPAN_POINT);
+      m_PoiMgr.AddPointOfInterest(poi_hr_brg);
+   }
 
    //
    // poi at face of support. For shear only.
    //
-   poi_hl.SetAttributes( POI_SHEAR | POI_ALLOUTPUT | POI_FACEOFSUPPORT);
-   poi_hl.SetDistFromStart(left_end_size + left_support_width/2);
+   pgsPointOfInterest poi_left_fos(stages,span,gdr,left_end_size + left_support_width/2, POI_SHEAR | POI_ALLOUTPUT | POI_FACEOFSUPPORT);
+   pgsPointOfInterest poi_right_fos(stages,span,gdr,length - right_end_size - right_support_width/2, POI_SHEAR | POI_ALLOUTPUT | POI_FACEOFSUPPORT);
    
-   poi_hr.SetAttributes( POI_SHEAR | POI_ALLOUTPUT | POI_FACEOFSUPPORT );
-   poi_hr.SetDistFromStart(length - right_end_size - right_support_width/2);
-   
-   m_PoiMgr.AddPointOfInterest(poi_hl);
-   m_PoiMgr.AddPointOfInterest(poi_hr);
+   m_PoiMgr.AddPointOfInterest(poi_left_fos);
+   m_PoiMgr.AddPointOfInterest(poi_right_fos);
 
    //
    // poi at 1.5h from face of support. For shear only.
    //
-   poi_hl.SetAttributes( POI_SHEAR | POI_ALLOUTPUT | POI_15H);
-   poi_hl.SetDistFromStart(left_end_size + left_support_width/2 + 1.5*hgLeft);
+   poi_left_fos.SetAttributes( POI_SHEAR | POI_ALLOUTPUT | POI_15H);
+   poi_left_fos.SetDistFromStart(left_end_size + left_support_width/2 + 1.5*hgLeft);
+   m_PoiMgr.AddPointOfInterest(poi_left_fos);
 
-   poi_hr.SetAttributes( POI_SHEAR | POI_ALLOUTPUT | POI_15H );
-   poi_hr.SetDistFromStart(length - right_end_size - right_support_width/2 - 1.5*hgRight);
-
-   m_PoiMgr.AddPointOfInterest(poi_hl);
-   m_PoiMgr.AddPointOfInterest(poi_hr);
+   poi_right_fos.SetAttributes( POI_SHEAR | POI_ALLOUTPUT | POI_15H );
+   poi_right_fos.SetDistFromStart(length - right_end_size - right_support_width/2 - 1.5*hgRight);
+   m_PoiMgr.AddPointOfInterest(poi_right_fos);
 
 
    //
@@ -3754,7 +3767,7 @@ long CBridgeAgentImp::GetCurveCount()
    return nCurves;
 }
 
-void CBridgeAgentImp::GetCurve(long idx,IHorzCurve** ppCurve)
+void CBridgeAgentImp::GetCurve(CollectionIndexType idx,IHorzCurve** ppCurve)
 {
    VALIDATE( COGO_MODEL );
 
@@ -3764,7 +3777,10 @@ void CBridgeAgentImp::GetCurve(long idx,IHorzCurve** ppCurve)
    CComPtr<IHorzCurveCollection> curves;
    cogomodel->get_HorzCurves(&curves);
 
-   HRESULT hr = curves->get_Item(idx,ppCurve);
+   CogoElementKey key;
+   curves->Key(idx,&key);
+
+   HRESULT hr = curves->get_Item(key,ppCurve);
    ATLASSERT(SUCCEEDED(hr));
 }
 
@@ -3783,7 +3799,7 @@ long CBridgeAgentImp::GetVertCurveCount()
    return nCurves;
 }
 
-void CBridgeAgentImp::GetVertCurve(long idx,IVertCurve** ppCurve)
+void CBridgeAgentImp::GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve)
 {
    VALIDATE( COGO_MODEL );
 
@@ -3793,7 +3809,10 @@ void CBridgeAgentImp::GetVertCurve(long idx,IVertCurve** ppCurve)
    CComPtr<IVertCurveCollection> curves;
    cogomodel->get_VertCurves(&curves);
 
-   HRESULT hr = curves->get_Item(idx,ppCurve);
+   CogoElementKey key;
+   curves->Key(idx,&key);
+
+   HRESULT hr = curves->get_Item(key,ppCurve);
    ATLASSERT(SUCCEEDED(hr));
 }
 
@@ -11022,47 +11041,35 @@ Float64 CBridgeAgentImp::GetTopGirderElevation(const pgsPointOfInterest& poi,con
    return GetTopGirderElevation(poi,true,config,matingSurfaceIdx);
 }
 
-Float64 CBridgeAgentImp::GetTopGirderElevation(const pgsPointOfInterest& poi,bool bUseConfig,const GDRCONFIG& config,Uint32 matingSurfaceIdx)
+Float64 CBridgeAgentImp::GetTopGirderElevation(const pgsPointOfInterest& poi,bool bUseConfig,const GDRCONFIG& config,MatingSurfaceIndexType matingSurfaceIdx)
 {
    VALIDATE(GIRDER);
 
    SpanIndexType span = poi.GetSpan();
    GirderIndexType gdr  = poi.GetGirder();
+   Float64 end_size = GetGirderStartConnectionLength(span,gdr);
 
-   // girder offset at start and end of girder
+   // girder offset at start bearing
    Float64 station, zs;
-   GetStationAndOffset(pgsPointOfInterest(span,gdr,0.0),&station,&zs);
+   GetStationAndOffset(pgsPointOfInterest(span,gdr,end_size),&station,&zs);
 
-   Float64 webOffset = (matingSurfaceIdx == Uint32_Max ? 0 : GetMatingSurfaceLocation(poi,matingSurfaceIdx));
+   Float64 webOffset = (matingSurfaceIdx == INVALID_INDEX ? 0 : GetMatingSurfaceLocation(poi,matingSurfaceIdx));
 
-   // roadway surface elevation at start of girder, directly above web centerline
-   Float64 Yas = GetElevation(station,zs + webOffset);
+   // roadway surface elevation at start bearing, directly above web centerline
+   Float64 Ysb = GetElevation(station,zs + webOffset);
 
-   // station and offset for point of interest
-   Float64 offset;
-   GetStationAndOffset(poi,&station,&offset);
+   Float64 girder_slope = GetGirderSlope(span,gdr);
 
-   // top of girder elevation (ignoring camber effects)
-   Float64 yc = GetTopGirderReferenceChordElevation(poi);
+   Float64 dist_from_start_bearing = poi.GetDistFromStart() - end_size;
 
-   Float64 total_offset = offset + webOffset;
-
-   // get elevation of roadway surface over web, related to poi
-   Float64 elev;
-   elev = GetElevation(station,total_offset);
-
-   total_offset = fabs(total_offset);
+   Float64 slab_offset_at_start = GetSlabOffset(span,gdr,pgsTypes::metStart);
 
    // get the camber
    GET_IFACE(ICamber,pCamber);
    Float64 excess_camber = (bUseConfig ? pCamber->GetExcessCamber(poi,config,CREEP_MAXTIME)
                                        : pCamber->GetExcessCamber(poi,CREEP_MAXTIME) );
 
-   Float64 slab_offset = (bUseConfig ? GetSlabOffset(poi,config) : GetSlabOffset(poi));
-
-
-   Float64 top_gdr_elev = Yas - slab_offset + excess_camber - (Yas-yc);
-
+   Float64 top_gdr_elev = Ysb - slab_offset_at_start + girder_slope*dist_from_start_bearing + excess_camber;
    return top_gdr_elev;
 }
 

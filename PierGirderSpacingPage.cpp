@@ -146,8 +146,16 @@ void CPierGirderSpacingPage::DoDataExchange(CDataExchange* pDX)
    DDX_CBItemData(pDX, IDC_PREV_REF_GIRDER_OFFSET_TYPE, m_RefGirderOffsetType[pgsTypes::Back]);
    DDX_CBItemData(pDX, IDC_NEXT_REF_GIRDER_OFFSET_TYPE, m_RefGirderOffsetType[pgsTypes::Ahead]);
 
-   DDX_UnitValueAndTag(pDX, IDC_BACK_SLAB_OFFSET,  IDC_BACK_SLAB_OFFSET_UNIT,  m_SlabOffset[pgsTypes::Back], pDispUnits->GetComponentDimUnit() );
-   DDX_UnitValueAndTag(pDX, IDC_AHEAD_SLAB_OFFSET, IDC_AHEAD_SLAB_OFFSET_UNIT, m_SlabOffset[pgsTypes::Ahead], pDispUnits->GetComponentDimUnit() );
+   DDX_Tag(pDX, IDC_BACK_SLAB_OFFSET_UNIT,  pDispUnits->GetComponentDimUnit() );
+   DDX_Tag(pDX, IDC_AHEAD_SLAB_OFFSET_UNIT, pDispUnits->GetComponentDimUnit() );
+   if ( pParent->m_pBridge->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
+   {
+      if ( !pDX->m_bSaveAndValidate || (pDX->m_bSaveAndValidate && m_SlabOffsetType == pgsTypes::sotSpan) )
+      {
+         DDX_UnitValueAndTag(pDX, IDC_BACK_SLAB_OFFSET,  IDC_BACK_SLAB_OFFSET_UNIT,  m_SlabOffset[pgsTypes::Back], pDispUnits->GetComponentDimUnit() );
+         DDX_UnitValueAndTag(pDX, IDC_AHEAD_SLAB_OFFSET, IDC_AHEAD_SLAB_OFFSET_UNIT, m_SlabOffset[pgsTypes::Ahead], pDispUnits->GetComponentDimUnit() );
+      }
+   }
 }
 
 
@@ -500,14 +508,6 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
       GetDlgItem(IDC_AHEAD_PIER_SPACING_LABEL)->SetWindowText("Joint Spacing");
    }
 
-   GetDlgItem(IDC_AHEAD_SLAB_OFFSET)->GetWindowText(m_strSlabOffsetCache[pgsTypes::Ahead]);
-   GetDlgItem(IDC_BACK_SLAB_OFFSET)->GetWindowText(m_strSlabOffsetCache[pgsTypes::Back]);
-   if ( m_SlabOffsetType == pgsTypes::sotGirder )
-   {
-      GetDlgItem(IDC_AHEAD_SLAB_OFFSET)->SetWindowText(_T(""));
-      GetDlgItem(IDC_BACK_SLAB_OFFSET)->SetWindowText(_T(""));
-   }
-
    return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -653,7 +653,17 @@ HBRUSH CPierGirderSpacingPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 BOOL CPierGirderSpacingPage::OnSetActive() 
 {
    UpdateChildWindowState();
-	return CPropertyPage::OnSetActive();
+	BOOL bResult = CPropertyPage::OnSetActive();
+
+   GetDlgItem(IDC_AHEAD_SLAB_OFFSET)->GetWindowText(m_strSlabOffsetCache[pgsTypes::Ahead]);
+   GetDlgItem(IDC_BACK_SLAB_OFFSET)->GetWindowText(m_strSlabOffsetCache[pgsTypes::Back]);
+   if ( m_SlabOffsetType == pgsTypes::sotGirder )
+   {
+      GetDlgItem(IDC_AHEAD_SLAB_OFFSET)->SetWindowText(_T(""));
+      GetDlgItem(IDC_BACK_SLAB_OFFSET)->SetWindowText(_T(""));
+   }
+
+   return bResult;
 }
 
 
@@ -1280,6 +1290,9 @@ void CPierGirderSpacingPage::UpdateSlabOffsetHyperLinkText()
    m_SlabOffsetHyperLink[pgsTypes::Back].SetURL(strSlabOffsetURL);
 
    // enable/disable and cache slab offsets as needed
+   CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
+   m_SlabOffsetHyperLink[pgsTypes::Back].EnableWindow(  pParent->m_pBridge->GetDeckDescription()->DeckType == pgsTypes::sdtNone ? FALSE : TRUE );
+   m_SlabOffsetHyperLink[pgsTypes::Ahead].EnableWindow( pParent->m_pBridge->GetDeckDescription()->DeckType == pgsTypes::sdtNone ? FALSE : TRUE );
 }
 
 void CPierGirderSpacingPage::OnHelp() 

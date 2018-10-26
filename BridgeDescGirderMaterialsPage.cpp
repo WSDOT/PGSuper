@@ -105,14 +105,17 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    DDV_UnitValueLimitOrLess( pDX, pParent->m_GirderData.Material.Fci,  pParent->m_GirderData.Material.Fc, pDispUnits->GetStressUnit() );
 
    // Slab Offset
-   DDX_UnitValueAndTag( pDX, IDC_ADIM_START, IDC_ADIM_START_UNIT, m_SlabOffset[pgsTypes::metStart], pDispUnits->GetComponentDimUnit() );
-   DDX_UnitValueAndTag( pDX, IDC_ADIM_END,   IDC_ADIM_END_UNIT,   m_SlabOffset[pgsTypes::metEnd],   pDispUnits->GetComponentDimUnit() );
+   DDX_Tag(pDX, IDC_ADIM_START_UNIT, pDispUnits->GetComponentDimUnit() );
+   DDX_Tag(pDX, IDC_ADIM_END_UNIT,   pDispUnits->GetComponentDimUnit() );
 
-   // validate slab offset... (must be greater or equal gross deck thickess)
-   if ( pDX->m_bSaveAndValidate )
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
    {
-      GET_IFACE2(pBroker,IBridge,pBridge);
-      if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
+      DDX_UnitValueAndTag( pDX, IDC_ADIM_START, IDC_ADIM_START_UNIT, m_SlabOffset[pgsTypes::metStart], pDispUnits->GetComponentDimUnit() );
+      DDX_UnitValueAndTag( pDX, IDC_ADIM_END,   IDC_ADIM_END_UNIT,   m_SlabOffset[pgsTypes::metEnd],   pDispUnits->GetComponentDimUnit() );
+
+      // validate slab offset... (must be greater or equal gross deck thickess)
+      if ( pDX->m_bSaveAndValidate )
       {
          Float64 Lg = pBridge->GetGirderLength(pParent->m_CurrentSpanIdx,pParent->m_CurrentGirderIdx);
          pgsPointOfInterest poiStart(pParent->m_CurrentSpanIdx,pParent->m_CurrentGirderIdx,0.0);

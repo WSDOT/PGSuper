@@ -795,7 +795,7 @@ void CEngAgentImp::CalculateShearCritSection(pgsTypes::LimitState limitState,
       pgsPointOfInterest& poi = *iter;
 
       double loc = poi.GetDistFromStart();
-      if ( InRange(0.0,loc,start) || InRange(end,loc,gdr_length) )
+      if ( InRange(left_end_size,loc,start) || InRange(end,loc,gdr_length-right_end_size) )
          vPoi.push_back(poi);
    }
 

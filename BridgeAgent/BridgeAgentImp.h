@@ -133,11 +133,11 @@ public:
    virtual void GetBearing(Float64 station,IDirection** ppBearing);
    virtual void GetBearingNormal(Float64 station,IDirection** ppNormal);
    virtual void GetPoint(Float64 station,Float64 offset,IDirection* pBearing,IPoint2d** ppPoint);
-   virtual void GetStationAndOffset(IPoint2d* point,double* pStation,double* pOffset);
+   virtual void GetStationAndOffset(IPoint2d* point,Float64* pStation,Float64* pOffset);
    virtual long GetCurveCount();
-   virtual void GetCurve(long idx,IHorzCurve** ppCurve);
+   virtual void GetCurve(CollectionIndexType idx,IHorzCurve** ppCurve);
    virtual long GetVertCurveCount();
-   virtual void GetVertCurve(long idx,IVertCurve** ppCurve);
+   virtual void GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve);
 
 // IBridge
 public:
@@ -708,7 +708,7 @@ private:
    void LayoutHandlingPoi(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr, Uint16 nPnts, PoiAttributeType attrib,pgsPoiMgr* pPoiMgr);
    void LayoutHandlingPoi(pgsTypes::Stage stage,SpanIndexType span,GirderIndexType gdr, Uint16 nPnts, Float64 leftOverhang, Float64 rightOverhang, PoiAttributeType attrib, PoiAttributeType supportAttribute,pgsPoiMgr* pPoiMgr);
 
-   Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,bool bUseConfig,const GDRCONFIG& config,Uint32 matingSurfaceIdx);
+   Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,bool bUseConfig,const GDRCONFIG& config,MatingSurfaceIndexType matingSurfaceIdx);
 
    void CheckBridge();
 

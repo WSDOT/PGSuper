@@ -1,6 +1,6 @@
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.00   5  8.50     1     1  Tx54       10   1/2  270 21.01 21.01   2  2.5  4.000  5.000    0.496   -0.590   1932  0.896  0.02 -0.00  0.00 -0.00 -0.00  11.00  40.97   1.00   1.00   1.00
+ 38.00   5  8.50     1     1  Tx54       10   1/2  270 21.01 21.01   2  2.5  4.000  5.000    0.496   -0.590   1933  0.896  0.02 -0.00  0.00 -0.00 -0.00  11.00  40.97   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful

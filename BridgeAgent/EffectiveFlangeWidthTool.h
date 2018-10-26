@@ -33,6 +33,7 @@
 #include <map>
 
 interface IBeamFactory;
+class CBridgeDescription;
 
 // {5D8E135F-F568-4287-87E4-E92538AC2C7F}
 DEFINE_GUID(IID_IReportEffectiveFlangeWidth, 
@@ -127,6 +128,7 @@ private:
    void ReportEffectiveFlangeWidth_ExteriorGirder_MultiTopFlange_Nonprismatic(IBroker* pBroker,IGenericBridge* bridge,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDispUnits);
 
    void GetBeamFactory(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,IBeamFactory** factory);
+   bool DoUseTributaryWidth(const CBridgeDescription* pBridgeDesc);
 
 // ISupportsErrorInfo
 public:

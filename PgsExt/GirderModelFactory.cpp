@@ -28,8 +28,6 @@
 struct SectionData
 {
    Float64 Location;
-   Float64 EA;
-   Float64 EI;
 
    bool operator<(const SectionData& other) const { return Location < other.Location && !IsEqual(Location,other.Location); }
 };
@@ -73,8 +71,6 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,SpanIndexType spa
       pgsPointOfInterest poi = *iter;
       SectionData sd;
       sd.Location = poi.GetDistFromStart();
-      sd.EA = E*pSectProp2->GetAg(pgsTypes::CastingYard,poi);
-      sd.EI = E*pSectProp2->GetIx(pgsTypes::CastingYard,poi);
 
       section_data.insert(sd);
    }
@@ -82,13 +78,9 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,SpanIndexType spa
    // add section data for the support locations
    SectionData sd;
    sd.Location = leftSupportLoc;
-   sd.EA = E*pSectProp2->GetAg(pgsTypes::CastingYard, pgsPointOfInterest(spanIdx,gdrIdx,sd.Location));
-   sd.EI = E*pSectProp2->GetIx(pgsTypes::CastingYard, pgsPointOfInterest(spanIdx,gdrIdx,sd.Location));
    section_data.insert(sd);
 
    sd.Location = rightSupportLoc;
-   sd.EA = E*pSectProp2->GetAg(pgsTypes::CastingYard, pgsPointOfInterest(spanIdx,gdrIdx,sd.Location));
-   sd.EI = E*pSectProp2->GetIx(pgsTypes::CastingYard, pgsPointOfInterest(spanIdx,gdrIdx,sd.Location));
    section_data.insert(sd);
 
    // layout the joints
@@ -145,9 +137,10 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,SpanIndexType spa
          continue;
       }
 
-      // use average properties for a segment
-      Float64 EI = (prevSD.EI + sd.EI)/2;
-      Float64 EA = (prevSD.EA + sd.EA)/2;
+      // use properties at mid-point between section changes
+      pgsPointOfInterest between_sections_poi(spanIdx,gdrIdx,(prevSD.Location + sd.Location)/2);
+      Float64 EI = E*pSectProp2->GetIx(pgsTypes::CastingYard, between_sections_poi);
+      Float64 EA = E*pSectProp2->GetAg(pgsTypes::CastingYard, between_sections_poi);
 
       CComPtr<IFem2dMember> member;
       members->Create(mbrID++,prevJntID,jntID,EA,EI,&member);
