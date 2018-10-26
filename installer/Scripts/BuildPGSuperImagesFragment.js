@@ -1,6 +1,6 @@
 // JScript source code
 var FSO = new ActiveXObject("Scripting.FileSystemObject");
-var ImagesFolder = FSO.GetFolder("\\ARP_RELEASE\\PGSuper\\2.9.0.2\\bin\\images");
+var ImagesFolder = FSO.GetFolder("\\ARP_RELEASE\\PGSuper\\2.9.0.3\\bin\\images");
 var fc = new Enumerator(ImagesFolder.Files);
 
 WScript.Echo("<?xml version='1.0' encoding='windows-1252'?>");

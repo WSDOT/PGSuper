@@ -44,38 +44,73 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CTxDOT2013ChangeOfConcreteStressTable* CTxDOT2013ChangeOfConcreteStressTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CTxDOT2013ChangeOfConcreteStressTable* CTxDOT2013ChangeOfConcreteStressTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,const LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   // Create and configure the table
-   ColumnIndexType numColumns = 5;
-
-   CTxDOT2013ChangeOfConcreteStressTable* table = new CTxDOT2013ChangeOfConcreteStressTable( numColumns, pDisplayUnits );
-   pgsReportStyleHolder::ConfigureTable(table);
+   // If the 0.7fpu method is used for elastic shortening, we only need to compute mid-span values so no table is needed.
+   lrfdElasticShortening::FcgpComputationMethod fcgpMethod = details.pLosses->ElasticShortening().GetFcgpComputationMethod();
 
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Change in concrete stress at centroid of prestressing strands due to deck weight and superimposed loads") << rptNewLine;
+   *pParagraph << _T("Change in concrete stress at centroid of prestressing strands due to deck weight and superimposed loads [TxDOT Research Report 0-6374-2]") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   *pParagraph << rptRcImage(strImagePath + _T("TxDOT_Delta_Fcd.png")) << rptNewLine;
+   if (lrfdElasticShortening::fcgp07Fpu==fcgpMethod)
+   {
+      *pParagraph << rptRcImage(strImagePath + _T("TxDOT_Delta_Fcd_07.png")) << rptNewLine;
+      *pParagraph << _T("Note: Elastic values are considered constant along girder length. All parameters taken at mid-span of girder.") << rptNewLine << rptNewLine;
 
-   *pParagraph << table << rptNewLine;
+       boost::shared_ptr<const lrfdRefinedLossesTxDOT2013> ptl = boost::dynamic_pointer_cast<const lrfdRefinedLossesTxDOT2013>(details.pLosses);
+      if (!ptl)
+      {
+         ATLASSERT(0); // made a bad cast? Bail...
+         return NULL;
+      }
 
-   (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,1) << COLHDR(Sub2(_T("M"),_T("sd")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,2) << COLHDR(Sub2(_T("e"),_T("p")),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,3) << COLHDR(Sub2(_T("I"),_T("g")),    rptLength4UnitTag,pDisplayUnits->GetMomentOfInertiaUnit() );
-   (*table)(0,4) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("cdp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      INIT_UV_PROTOTYPE( rptMomentUnitValue, moment,       pDisplayUnits->GetMomentUnit(),          true );
+      INIT_UV_PROTOTYPE( rptStressUnitValue, stress,       pDisplayUnits->GetStressUnit(),          true );
+      INIT_UV_PROTOTYPE( rptLength4UnitValue,mom_inertia,  pDisplayUnits->GetMomentOfInertiaUnit(), true );
+      INIT_UV_PROTOTYPE( rptLengthUnitValue,  ecc,         pDisplayUnits->GetComponentDimUnit(),    true );
 
-   pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
-   *pChapter << pParagraph;
-   *pParagraph << Sub2(_T("M"),_T("sd")) << _T(" = Moments due to deck weight and other superimposed dead loads") << rptNewLine;
+      *pParagraph << Sub2(_T("M"),_T("sd")) << _T(" = ") << moment.SetValue( ptl->GetSdMoment())<< _T(" = Moment at mid-girder due to deck weight and other superimposed dead loads")  << rptNewLine;
+      *pParagraph << Sub2(_T("e"),_T("m")) << _T(" = ") <<ecc.SetValue( details.pLosses->GetEccPermanent()) << rptNewLine;
+      *pParagraph << Sub2(_T("I"),_T("g")) << _T(" = ") << mom_inertia.SetValue(details.pLosses->GetIg()) << rptNewLine << rptNewLine;
+      *pParagraph << Sub2(_T("f"),_T("cdp")) << _T(" = ") << stress.SetValue( details.pLosses->GetDeltaFcd1() ) << rptNewLine << rptNewLine;
 
-   return table;
+      return NULL; // no table needed for 0.7fpu case
+   }
+   else if (lrfdElasticShortening::fcgpIterative==fcgpMethod)
+   {
+      *pParagraph << rptRcImage(strImagePath + _T("TxDOT_Delta_Fcd.png")) << rptNewLine;
+
+      // Create and configure the table
+      ColumnIndexType numColumns = 5;
+
+      CTxDOT2013ChangeOfConcreteStressTable* table = new CTxDOT2013ChangeOfConcreteStressTable( numColumns, pDisplayUnits );
+      pgsReportStyleHolder::ConfigureTable(table);
+
+      *pParagraph << table << rptNewLine;
+
+      (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+      (*table)(0,1) << COLHDR(Sub2(_T("M"),_T("sd")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+      (*table)(0,2) << COLHDR(Sub2(_T("e"),_T("p")),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*table)(0,3) << COLHDR(Sub2(_T("I"),_T("g")),    rptLength4UnitTag,pDisplayUnits->GetMomentOfInertiaUnit() );
+      (*table)(0,4) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("cdp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+
+      pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+      *pChapter << pParagraph;
+      *pParagraph << Sub2(_T("M"),_T("sd")) << _T(" = Moments due to deck weight and other superimposed dead loads") << rptNewLine;
+
+      return table;
+   }
+   else
+   {
+      ATLASSERT(0);
+      return NULL;
+   }
 }
 
 void CTxDOT2013ChangeOfConcreteStressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)

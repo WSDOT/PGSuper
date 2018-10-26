@@ -20,7 +20,7 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=2090>
+<meta name=layout-height content=2427>
 <meta name=layout-width content=1234>
 
 
@@ -54,8 +54,10 @@
  Gallardo, Dean Deschenes, David Dunkman, and Oguzhan Bayrak; Report No. 
  FHWA/TX-12/0-6374-2; October 2012, Rev. June 2013, Published August 2013</p>
 
-<p>The table below is a summary of the loss equations recommended in the 
- report. Refer to the report for more details.</p>
+<p>This method has been implemented in PGSuper and can be selected via 
+ the Project Criteria library Losses tab. The table below is a summary 
+ of the loss equations recommended in the report. Refer to the report and 
+ the rest of this document for more details.</p>
 
 <p style="text-align: center;"
 	align=center><img src="TxDOT_Research_Report_0-6374-2_Equations.gif"
@@ -64,6 +66,7 @@
 								width: 461px;
 								height: 506px;
 								float: none;
+								border-style: none;
 								border-style: none;"
 						width=461
 						height=506
@@ -83,10 +86,13 @@
 								width: 525px;
 								height: 436px;
 								float: none;
+								border-style: none;
 								border-style: none;"
 						width=525
 						height=436
 						border=0></p>
+
+<h3>&nbsp;</h3>
 
 <h3>Elastic Shortening and Computation of <span style="font-style: italic; font-weight: normal;">f</span><span 
  style="vertical-align: Sub;
@@ -94,13 +100,16 @@
 		font-weight: normal;">cgp</span></h3>
 
 <p>For elastic shortening at release, the TxDOT 0-6374-2 method assumes 
- a strand stress at release of 0.70 fpu. This simplifies evaluation since 
- iteration is not required and has been shown to generate more accurate 
- results.</p>
+ a strand stress at release of 0.70 fpu. The method also assumes that the 
+ elastic shortening loss can be computed at mid-girder and is constant 
+ along the length of the girder. These assumptions drastically simplify 
+ evaluation since iteration is not required, and the losses must only be 
+ computed at one location along the girder. The research claims that this 
+ method is not only easier to implement, but generates more accurate results 
+ than other refined methods.</p>
 
-<p>Elastic shortening loss values are computed separately for permanent 
- and temporary strands. Hence, the equations for elastic shortening are 
- as follows:</p>
+<p>The equations for elastic shortening along the entire girder are as 
+ follows:</p>
 
 <p><img src="TxDOT_Research_Report_0-6374-2_ElasticShortening.gif"
 		x-maintain-ratio=TRUE
@@ -108,38 +117,70 @@
 				width: 398px;
 				height: 146px;
 				float: none;
+				border-style: none;
 				border-style: none;"
 		width=398
 		height=146
 		border=0></p>
 
-<p>where: <span style="font-style: italic;">f</span><span style="font-style: italic; vertical-align: Sub;">cgp</span><span 
- style="vertical-align: Sub;"> </span><!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}-->is 
- the concrete stress at the center of gravity of prestressing tendons just 
- after transfer.</p>
+<p>Where: </p>
 
-<p>This assumption is sensible for low-relaxation strands at normal (e.g., 
- 0.75 fpu) jacking stresses. However, PGSuper allows stress-relieved strands 
- and user-input jacking forces; which means that virtually any jacking 
- stress is possible. Also, the research database appears only to consider 
- beams with common prestressing configurations: beams with temporary strands, 
- or arrangements with strands above the beam neutral axis were not considered. 
- In these cases, the 0.7 fpu assumption could result in incorrect or even 
- negative losses. In order to accommodate for this possibility, and to 
- allow TxDOT engineers to experiment with different methods for computing 
- <span style="font-style: italic;">f</span><span style="vertical-align: Sub; font-style: italic;">cgp</span>, 
- three different options are provided in PGSuper:</p>
+<ul style="list-style: disc;"
+	type=disc>
+	
+	<li class=kadov-p><p><span style="font-style: italic;">f</span><span 
+ style="font-style: italic; vertical-align: Sub;">cgp</span><span style="vertical-align: Sub;"> 
+ </span><!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}-->is 
+ the concrete stress at the center of gravity of prestressing tendons just 
+ after transfer</p></li>
+	
+	<li class=kadov-p><p><span style="font-style: italic;">e</span><span 
+ style="font-style: italic; vertical-align: Sub;">m</span><span style="vertical-align: Sub;"> 
+ </span><!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}-->is 
+ the eccentricity of prestressing at mid-girder</p></li>
+	
+	<li class=kadov-p><p><span style="font-style: italic;">M</span><span 
+ style="font-style: italic; vertical-align: Sub;">gm</span><span style="vertical-align: Sub;"> 
+ </span><!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}-->is 
+ the moment at mid-girder due to girder self weight assuming the span length 
+ equal to the girder length</p></li>
+	
+	<li class=kadov-p><p>A<span style="vertical-align: Sub;">g </span>and 
+ I<span style="vertical-align: Sub;">g</span> are non-composite properties 
+ computed at mid-girder</p></li>
+</ul>
+
+<p>Note that <span style="font-family: Symbol, serif;">D</span>f<span style="vertical-align: Sub;">cdp</span> 
+ is computed in a similar manner for use in creep loss evaluation.</p>
+
+<h4>Assumptions and Limitations of Elastic Shortening Computations - Range 
+ of Applicability</h4>
+
+<p>The 0.70 f<span style="vertical-align: Sub;">pu</span> assumption described 
+ above is sensible for low-relaxation strands at normal (e.g., 0.75 f<span 
+ style="vertical-align: Sub;">pu</span>) jacking stresses. However, PGSuper 
+ allows stress-relieved strands and user-input jacking forces; which means 
+ that virtually any jacking stress is possible. Also, the research database 
+ appears only to consider prismatic precast I-beams with common prestressing 
+ configurations: beams with temporary strands, debonding, or arrangements 
+ with strands above the beam neutral axis were not considered. In these 
+ cases, the 0.7 fpu assumption could result in incorrect or even negative 
+ losses. In order to accommodate for this possibility, and to allow TxDOT 
+ engineers to experiment with different methods for computing <span style="font-style: italic;">f</span><span 
+ style="vertical-align: Sub; font-style: italic;">cgp</span>, three different 
+ options are provided in PGSuper:</p>
 
 <ol style="list-style: decimal;"
 	type=1>
 	
 	<li class=kadov-p><p>Assume that strand stress at release is 0.70 fpu 
  when computing <span style="font-style: italic;">f</span><span style="vertical-align: Sub; font-style: italic;">cgp</span>. 
- However, if the jacking stress is not equal to 0.75 f<span style="vertical-align: Sub;">pu</span> 
- or, if temporary strands exist: use the iterative approach, as defined 
- in the post-2004 AASHTO specifications, to compute elastic shortening 
- losses. When this occurs, a warning message will be posted to the PGSuper 
- Status Center.</p></li>
+ However, if the jacking stress is not equal to 0.75 f<span style="vertical-align: Sub;">pu,</span> 
+ or the section is non-prismatic (e.g., has end blocks), or if debonded 
+ strands are present, or if temporary strands exist: Then use the iterative 
+ approach to compute elastic shortening losses as defined in the post-2004 
+ AASHTO specifications. When this occurs, a warning message will be posted 
+ to the PGSuper Status Center.</p></li>
 	
 	<li class=kadov-p><p>Always assume that strand stress at release is 
  0.70 fpu when computing <span style="font-style: italic;">f</span><span 
@@ -156,8 +197,8 @@
 <h3>Time Dependent Loss at Shipping</h3>
 
 <p class=Tip>Note: It is TxDOT policy not to consider shipping during design, 
- however this loss method may be used by other agencies where shipping 
- is a consideration. </p>
+ however this loss method may be used by other agencies or consultants 
+ where shipping is a consideration. </p>
 
 <p>Shipping occurs at an unknown time between release and deck placement 
  and there is no way to compute time-dependent losses for the new method, 

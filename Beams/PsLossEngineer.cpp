@@ -634,6 +634,38 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
 
 void CPsLossEngineer::LossesByRefinedEstimateTxDOT2013(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses)
 {
+   if (m_bCachedLossesForTxDOT2013)
+   {
+      // Simplified - we can use cached values from mid-girder
+      *pLosses = m_CachedTxDOT2013LossDetails;
+   }
+   else
+   {
+      // Compute details - This is a bit tricky: We practically need to compute losses in order to determine which method to use
+      //                   for elastic shortening. So might as well save on code and compute them - then figure out if we can cache
+      //                   This may be first time through, so we'll check on the back side and; if we are using the 
+      //                   simplified method, we need to recompute at mid-girder and then cache the value
+      lrfdElasticShortening::FcgpComputationMethod method = LossesByRefinedEstimateTxDOT2013_Compute(beamType,poi,config,pLosses);
+
+      if(method == lrfdElasticShortening::fcgp07Fpu)
+      {
+         // Elastic shortening uses the 0.7Fpu method. We only need to compute at mid-girder and then cache results for other locations
+         GET_IFACE( IPointOfInterest,   pPOI);
+         std::vector<pgsPointOfInterest> vPoi = pPOI->GetPointsOfInterest( poi.GetSpan(), poi.GetGirder(), pgsTypes::CastingYard, POI_MIDSPAN);
+         pgsPointOfInterest midpoi = vPoi[0];
+
+         lrfdElasticShortening::FcgpComputationMethod newmethod = LossesByRefinedEstimateTxDOT2013_Compute(beamType, midpoi, config, &m_CachedTxDOT2013LossDetails);
+         ATLASSERT(newmethod == lrfdElasticShortening::fcgp07Fpu);
+
+         *pLosses = m_CachedTxDOT2013LossDetails;
+
+         m_bCachedLossesForTxDOT2013 = true;
+      }
+   }
+}
+
+lrfdElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEstimateTxDOT2013_Compute(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses)
+{
    pLosses->Method = LOSSES_TXDOT_REFINED_2013;
 
    matPsStrand::Grade grade;
@@ -718,8 +750,10 @@ void CPsLossEngineer::LossesByRefinedEstimateTxDOT2013(BeamType beamType,const p
    else
    {
       ATLASSERT(fcgp_method == FCGP_HYBRID);
-      // Use 0.7Fpu method to compute Fcgp if permanent strands are jacked to 0.75*Fpu and,
-      // no temp strands exist, otherwise use iterative method
+
+      // Use 0.7Fpu method to compute Fcgp if: permanent strands are jacked to 0.75*Fpu and,
+      // no temp strands exist and, beam is prismatic, and no debonding exists.
+      // Otherwise, use iterative method
       method = lrfdElasticShortening::fcgpIterative;
       if ( ApsPerm >= 0.0 && IsEqual(ApsTTS, 0.0) )
       {
@@ -727,7 +761,14 @@ void CPsLossEngineer::LossesByRefinedEstimateTxDOT2013(BeamType beamType,const p
 
          if (ApsPerm==0.0 || IsEqual(Fpu*0.75, fpjPerm, 1000.0)) // Pa's are very small
          {
-            method = lrfdElasticShortening::fcgp07Fpu;
+            GET_IFACE(IGirder,pGirder);
+            if ( pGirder->IsPrismatic(pgsTypes::CastingYard,span,gdr) )
+            {
+               if( config.PrestressConfig.Debond[pgsTypes::Straight].empty() && config.PrestressConfig.Debond[pgsTypes::Harped].empty() )
+               {
+                  method = lrfdElasticShortening::fcgp07Fpu;
+               }
+            }
          }
       }
    }
@@ -823,6 +864,8 @@ void CPsLossEngineer::LossesByRefinedEstimateTxDOT2013(BeamType beamType,const p
       msg += std::_tstring(_T("\nSee Status Center for Details"));
       THROW_UNWIND(msg.c_str(),reason);
    }
+
+   return method;
 }
 
 void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses,bool isWsdot)
@@ -1643,7 +1686,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    CFrictionLossTable*                          pFR  = NULL;
    CPostTensionInteractionTable*                pPTT = NULL;
    CEffectOfPostTensionedTemporaryStrandsTable* pPTP = NULL;
-   
+
    if ( 0 < Nt && pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned )
    {
       pFR  = CFrictionLossTable::PrepareTable(pChapter,m_pBroker,span,gdr,details,pDisplayUnits,level);
@@ -1671,7 +1714,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    *pChapter << pParagraph;
    *pParagraph << _T("Time dependent losses") << rptNewLine;
 
-   CTxDOT2013ChangeOfConcreteStressTable*   pDeltaFcdp = CTxDOT2013ChangeOfConcreteStressTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
+   CTxDOT2013ChangeOfConcreteStressTable*   pDeltaFcdp = CTxDOT2013ChangeOfConcreteStressTable::PrepareTable(pChapter,m_pBroker,span,gdr,details,pDisplayUnits,level);
    CTxDOT2013CreepAndShrinkageTable*        pCR        = CTxDOT2013CreepAndShrinkageTable::PrepareTable(pChapter,m_pBroker,span,gdr,details,pDisplayUnits,level);
    CTxDOT2013RelaxationAfterTransferTable*  pR2        = CTxDOT2013RelaxationAfterTransferTable::PrepareTable(pChapter,m_pBroker,span,gdr,details,pDisplayUnits,level);
    CTxDOT2013TimeDependentLossesTable*      pLT        = CTxDOT2013TimeDependentLossesTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
@@ -2699,6 +2742,7 @@ void CPsLossEngineer::ReportFinalLosses(BeamType beamType,SpanIndexType span,Gir
    {
    case LOSSES_AASHTO_REFINED:
    case LOSSES_AASHTO_LUMPSUM:
+   case LOSSES_TXDOT_REFINED_2013:
       ReportFinalLossesRefinedMethod(pChapter,beamType,span,gdr,pDisplayUnits,laAASHTO);
       break;
 

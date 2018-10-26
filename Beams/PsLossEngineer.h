@@ -40,6 +40,7 @@ public:
  	CPsLossEngineer()
 	{
       m_bComputingLossesForDesign = false;
+      m_bCachedLossesForTxDOT2013 = false;
 	}
 
    void Init(IBroker* pBroker,StatusGroupIDType statusGroupID);
@@ -70,6 +71,7 @@ private:
    void LossesByApproxLumpSum(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses,bool isWsdot);
    void LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses);
    void LossesByRefinedEstimateTxDOT2013(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses);
+   lrfdElasticShortening::FcgpComputationMethod LossesByRefinedEstimateTxDOT2013_Compute(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses);
 
    void ReportRefinedMethod(BeamType beamType,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,Uint16 level,LossAgency lossAgency);
    void ReportApproxLumpSumMethod(BeamType beamType,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,Uint16 level,bool isWsdot);
@@ -165,6 +167,10 @@ private:
    void ReportFinalLossesRefinedMethodBefore2005(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits);
 
    bool m_bComputingLossesForDesign; 
+
+   // For TxDOT 2013 we can cache losses for many conditions because all losses are computed at mid-span
+   bool m_bCachedLossesForTxDOT2013; 
+   LOSSDETAILS m_CachedTxDOT2013LossDetails;
 };
 
 #endif //__PSLOSSENGINEER_H_

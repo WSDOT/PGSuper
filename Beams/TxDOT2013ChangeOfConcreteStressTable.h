@@ -37,7 +37,7 @@ class lrfdLosses;
 class CTxDOT2013ChangeOfConcreteStressTable : public rptRcTable
 {
 public:
-	static CTxDOT2013ChangeOfConcreteStressTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+	static CTxDOT2013ChangeOfConcreteStressTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,const LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
    void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
 
 private:
