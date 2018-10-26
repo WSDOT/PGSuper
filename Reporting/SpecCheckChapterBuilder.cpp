@@ -104,11 +104,10 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
+   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(span, girder);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-
    GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -355,7 +354,11 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    }
 
    // _T("A") Dimension check
-   rptRcTable* atable = CConstructabilityCheckTable().BuildSlabOffsetTable(pBroker,span,girder,pDisplayUnits);
+   std::vector<SpanGirderHashType> girder_list;
+   SpanGirderHashType sgh = HashSpanGirder(span, girder);
+   girder_list.push_back(sgh);
+
+   rptRcTable* atable = CConstructabilityCheckTable().BuildSlabOffsetTable(pBroker,girder_list,pDisplayUnits);
    if (atable!=NULL)
    { 
       rptParagraph* p = new rptParagraph;

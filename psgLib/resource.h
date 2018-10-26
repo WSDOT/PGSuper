@@ -1011,23 +1011,23 @@
 #define IDS_E_USERDEFINED               1752
 #define IDC_ALWC_FR                     2017
 #define IDR_LIBEDITORTOOLBAR            12132
-#define IDM_ADD_ENTRY                   33024
-#define IDM_EDIT_ENTRY                  33025
-#define IDM_DELETE_ENTRY                33026
-#define IDM_DUPLICATE_ENTRY             33027
-#define IDM_LARGE_ICONS                 33028
-#define IDM_SMALL_ICONS                 33029
-#define IDM_LIST_ICONS                  33030
-#define IDM_ARRANGE_ICONS               33031
-#define IDM_RENAME_ENTRY                33032
-#define ID_FILE_IMPORT                  33033
-#define ID_EDIT_INSERTROW               33034
-#define ID_EDIT_DELETEROW               33035
-#define ID_EDIT_REMOVEROWS              33036
-#define ID_EDIT_ROW                     33037
-#define ID_STR_INSERT                   33038
-#define ID_STR_DELETE                   33039
-#define ID_MANAGE_PLUGINS               33040
+#define IDM_ADD_ENTRY                   36864
+#define IDM_EDIT_ENTRY                  36865
+#define IDM_DELETE_ENTRY                36866
+#define IDM_DUPLICATE_ENTRY             36867
+#define IDM_LARGE_ICONS                 36868
+#define IDM_SMALL_ICONS                 36869
+#define IDM_LIST_ICONS                  36870
+#define IDM_ARRANGE_ICONS               36871
+#define IDM_RENAME_ENTRY                36872
+#define ID_FILE_IMPORT                  36873
+#define ID_EDIT_INSERTROW               36874
+#define ID_EDIT_DELETEROW               36875
+#define ID_EDIT_REMOVEROWS              36876
+#define ID_EDIT_ROW                     36877
+#define ID_STR_INSERT                   36878
+#define ID_STR_DELETE                   36879
+#define ID_MANAGE_PLUGINS               36880
 
 // Next default values for new objects
 // 
@@ -1035,7 +1035,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        208
-#define _APS_NEXT_COMMAND_VALUE         33041
+#define _APS_NEXT_COMMAND_VALUE         36881
 #define _APS_NEXT_CONTROL_VALUE         1548
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

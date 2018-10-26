@@ -1,6 +1,6 @@
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd          Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  7.60  1     1   4XB20       44   1/2  270  6.03  5.65  12  0.00   0   0  5.500  5.500    2.994   -3.806    2236 0.573  0.716  0.25 -0.11 -0.01 -0.00 -0.12 127.67 358.70   1.00   1.00   1.00
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- ---                               ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  7.60  1     1   4XB20       44   1/2  270  6.03  5.65  12  0.00   0   0                                5.500  5.500    2.994   -3.806    2236 0.573  0.716  0.25 -0.11 -0.01 -0.00 -0.12 127.67 358.70   1.00   1.00   1.00
 Warning: Irregular, Non-standard debonding increments used for beam 1 in span  1. Cannot write debonding information to TxDOT CAD format.
 
 

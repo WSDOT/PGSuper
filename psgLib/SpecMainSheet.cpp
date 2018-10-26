@@ -527,6 +527,13 @@ void CSpecMainSheet::CheckShearCapacityMethod()
          m_Entry.m_ShearCapacityMethod = scmBTEquations;
    }
 
+   // The general method from the 2007 spec becomes the tables method in the 2008 spec
+   // make that adjustment here
+   if ( GetSpecVersion() < lrfdVersionMgr::FourthEditionWith2008Interims && m_Entry.m_ShearCapacityMethod == scmBTEquations )
+   {
+      m_Entry.m_ShearCapacityMethod = scmBTTables;
+   }
+
    if ( GetSpecVersion() < lrfdVersionMgr::SecondEditionWith2000Interims &&  // if we are before 2nd Edition + 2000
         m_Entry.m_ShearCapacityMethod == scmWSDOT2001 ) // WSDOT 2001 is not a valid option
    {

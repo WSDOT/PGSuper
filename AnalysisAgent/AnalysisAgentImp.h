@@ -226,7 +226,7 @@ public:
    virtual void GetStress(LoadingCombination combo,pgsTypes::Stage stage,const pgsPointOfInterest& poi,CombinationType type,BridgeAnalysisType bat,Float64* pfTop,Float64* pfBot);
 
    virtual void GetCombinedLiveLoadMoment(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const pgsPointOfInterest& poi,BridgeAnalysisType bat,Float64* pMmin,Float64* pMmax);
-   virtual void GetCombinedLiveLoadShear(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const pgsPointOfInterest& poi,BridgeAnalysisType bat,sysSectionValue* pVmin,sysSectionValue* pVmax);
+   virtual void GetCombinedLiveLoadShear(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const pgsPointOfInterest& poi,BridgeAnalysisType bat,bool bIncludeImpact,sysSectionValue* pVmin,sysSectionValue* pVmax);
    virtual void GetCombinedLiveLoadDisplacement(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const pgsPointOfInterest& poi,BridgeAnalysisType bat,Float64* pDmin,Float64* pDmax);
    virtual void GetCombinedLiveLoadReaction(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,PierIndexType pier,GirderIndexType gdr,BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax);
    virtual void GetCombinedLiveLoadStress(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const pgsPointOfInterest& poi,BridgeAnalysisType bat,Float64* pfTopMin,Float64* pfTopMax,Float64* pfBotMin,Float64* pfBotMax);
@@ -239,7 +239,7 @@ public:
    virtual void GetStress(LoadingCombination combo,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,CombinationType type,BridgeAnalysisType bat,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot);
 
    virtual void GetCombinedLiveLoadMoment(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax);
-   virtual void GetCombinedLiveLoadShear(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax);
+   virtual void GetCombinedLiveLoadShear(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax);
    virtual void GetCombinedLiveLoadDisplacement(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,std::vector<Float64>* pDmin,std::vector<Float64>* pDmax);
    virtual void GetCombinedLiveLoadStress(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax);
 
@@ -254,6 +254,7 @@ public:
    virtual void GetConcurrentShear(pgsTypes::LimitState ls,pgsTypes::Stage stage,const pgsPointOfInterest& poi,BridgeAnalysisType bat,sysSectionValue* pMin,sysSectionValue* pMax);
    virtual void GetViMmax(pgsTypes::LimitState ls,pgsTypes::Stage stage,const pgsPointOfInterest& poi,BridgeAnalysisType bat,Float64* pVi,Float64* pMmax);
    virtual Float64 GetSlabDesignMoment(pgsTypes::LimitState ls,const pgsPointOfInterest& poi,BridgeAnalysisType bat);
+   virtual bool IsStrengthIIApplicable(SpanIndexType span, GirderIndexType girder);
 
 // ILimitStateForces2
 public:
@@ -548,6 +549,8 @@ private:
 
    Float64 GetPedestrianLiveLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx);
    void AddHL93LiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane);
+   void AddFatigueLiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane);
+   void AddDeflectionLiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,Float64 IMtruck,Float64 IMlane);
    void AddLegalLiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane);
    void AddNotionalRatingLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane);
    void AddSHVLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane);

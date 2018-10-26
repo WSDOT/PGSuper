@@ -35,6 +35,12 @@ CReportSpecification(strReportName)
    SetBroker(pBroker);
 }
 
+CBrokerReportSpecification::CBrokerReportSpecification(const CBrokerReportSpecification& other) :
+CReportSpecification(other)
+{
+   SetBroker(other.m_Broker);
+}
+
 CBrokerReportSpecification::~CBrokerReportSpecification(void)
 {
 }

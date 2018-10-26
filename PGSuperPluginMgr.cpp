@@ -68,6 +68,12 @@ bool CPGSuperPluginMgr::LoadPlugins()
    UINT cmdImporter = FIRST_DATA_IMPORTER_PLUGIN;
    while ( SUCCEEDED(pIEnumCLSID->Next(nPlugins,clsid,&nFetched)) && 0 < nFetched)
    {
+      if ( LAST_DATA_IMPORTER_PLUGIN <= cmdImporter )
+      {
+         AfxMessageBox(_T("The maximum number of data importers has been exceeded."));
+         break; // get out of while loop
+      }
+
       for ( ULONG i = 0; i < nFetched; i++ )
       {
          LPOLESTR pszCLSID;
@@ -116,6 +122,12 @@ bool CPGSuperPluginMgr::LoadPlugins()
    UINT cmdExporter = FIRST_DATA_EXPORTER_PLUGIN;
    while ( SUCCEEDED(pIEnumCLSID->Next(nPlugins,clsid,&nFetched)) && 0 < nFetched)
    {
+      if ( LAST_DATA_EXPORTER_PLUGIN <= cmdExporter )
+      {
+         AfxMessageBox(_T("The maximum number of data exporters has been exceeded."));
+         break; // get out of the while loop
+      }
+
       for ( ULONG i = 0; i < nFetched; i++ )
       {
          LPOLESTR pszCLSID;

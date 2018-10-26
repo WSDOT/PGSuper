@@ -820,7 +820,7 @@ DEFINE_GUID(IID_ILiveLoads,
 0xd286fe13, 0x3818, 0x4805, 0xb4, 0xb2, 0xc, 0xf4, 0xe0, 0x56, 0xb3, 0x7e);
 interface ILiveLoads : IUnknown
 {
-   enum PedestrianLoadApplicationType {PedDontApply, PedConcurrentWithVehiculuar, PedEnvelopeWithVehicular};
+   enum PedestrianLoadApplicationType {PedDontApply, PedConcurrentWithVehicular, PedEnvelopeWithVehicular};
 
    virtual bool IsLiveLoadDefined(pgsTypes::LiveLoadType llType) = 0;
    virtual PedestrianLoadApplicationType GetPedestrianLoadApplication(pgsTypes::LiveLoadType llType) = 0;

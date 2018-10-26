@@ -107,6 +107,10 @@ protected:
       Float64 m_XLoc;
       Int16   m_NumDebonds;
 
+      SectionData():
+      m_XLoc(0.0), m_NumDebonds(0)
+      {;}
+
       bool operator==(const SectionData& rOther) const 
       { 
          return ::IsEqual(m_XLoc,rOther.m_XLoc); 
@@ -125,7 +129,12 @@ protected:
    struct RowData
    {
       Float64 m_Elevation;
+      StrandIndexType m_NumTotalStrands;
       SectionList m_Sections;
+
+      RowData():
+      m_Elevation(0.0), m_NumTotalStrands(0)
+      {;}
 
       bool operator==(const RowData& rOther) const
       { 
@@ -134,7 +143,7 @@ protected:
 
       bool operator<(const RowData& rOther) const 
       { 
-         return m_Elevation < rOther.m_Elevation; 
+         return ::IsLT(m_Elevation, rOther.m_Elevation); 
       }
    };
 
@@ -154,94 +163,84 @@ inline void TxDOTDebondTool::Compute()
    // standard debond increment
    Float64 three_feet = ::ConvertToSysUnits( 3.0,unitMeasure::Feet);
 
-   // no debonds, make a single row with no debond sections
-   if (m_NumDebonded<=0)
+   StrandIndexType nss = m_pStrandGeometry->GetNumStrands(m_Span,m_Girder,pgsTypes::Straight);
+
+   pgsPointOfInterest poi(m_Span,m_Girder, m_GirderLength/2.0);
+   CComPtr<IPoint2dCollection> coords;
+   m_pStrandGeometry->GetStrandPositions(poi, pgsTypes::Straight, &coords);
+
+   // We also want to see if there is a common debond increment, and if by chance, it is 3 feet
+   FloatSet section_spacings;
+
+   CollectionIndexType size;
+   coords->get_Count(&size);
+   ATLASSERT(nss==size);
+   // loop over all strands and put debond strands in rows and sections
+   for (CollectionIndexType idx = 0; idx < size; idx++)
    {
-      m_OutCome = AllStandard;
-      m_SectionSpacing = three_feet;
-      return;
-   }
-   else
-   {
-      StrandIndexType nss = m_pStrandGeometry->GetNumStrands(m_Span,m_Girder,pgsTypes::Straight);
-
-      pgsPointOfInterest poi(m_Span,m_Girder, m_GirderLength/2.0);
-      CComPtr<IPoint2dCollection> coords;
-      m_pStrandGeometry->GetStrandPositions(poi, pgsTypes::Straight, &coords);
-
-      // We also want to see if there is a common debond increment, and if by chance, it is 3 feet
-      FloatSet section_spacings;
-
-      CollectionIndexType size;
-      coords->get_Count(&size);
-      ATLASSERT(nss==size);
-      // loop over all strands and put debond strands in rows and sections
-      for (CollectionIndexType idx = 0; idx < size; idx++)
+      // get elevation of strand
+      CComPtr<IPoint2d> point;
+      coords->get_Item(idx,&point);
+      Float64 curr_x, curr_y;
+      point->get_X(&curr_x);
+      point->get_Y(&curr_y);
+   
+      // create or find row with current strand elevation
+      RowData bogus_row;
+      bogus_row.m_Elevation = curr_y;
+      RowListIter curr_row_it = m_Rows.find( bogus_row );
+      if (curr_row_it == m_Rows.end())
       {
-         Float64 startLoc, endLoc;
-         if( m_pStrandGeometry->IsStrandDebonded(m_Span,m_Girder,idx, pgsTypes::Straight, &startLoc, &endLoc) )
+         // Create row because it doesn't exist
+         RowData row;
+         row.m_Elevation = curr_y;
+         std::pair<RowListIter,bool> new_iter = m_Rows.insert(row);
+         ATLASSERT(new_iter.second);
+
+         curr_row_it = new_iter.first;
+      }
+
+      curr_row_it->m_NumTotalStrands++; // add our strand to row
+
+      Float64 startLoc, endLoc;
+      if( m_pStrandGeometry->IsStrandDebonded(m_Span,m_Girder,idx, pgsTypes::Straight, &startLoc, &endLoc) )
+      {
+         if (!IsEqual(startLoc,m_GirderLength-endLoc))
          {
-            if (!IsEqual(startLoc,m_GirderLength-endLoc))
+            // TxDOT expects even debonding all around
+            m_OutCome = SectionsNotSymmetrical;
+            return;
+         }
+         else
+         {
+            // fill row's debond information
+            // try to find section in row
+            SectionData bogus_section;
+            bogus_section.m_XLoc = startLoc;
+            RowData& row = *curr_row_it;
+            SectionListIter sit = row.m_Sections.find(bogus_section);
+            if (sit==row.m_Sections.end())
             {
-               // TxDOT expects even debonding all around
-               m_OutCome = SectionsNotSymmetrical;
-               return;
+               SectionData section;
+               section.m_XLoc = startLoc;
+               section.m_NumDebonds = 1;
+
+               row.m_Sections.insert(section);
+
+               section_spacings.insert(startLoc);
             }
             else
             {
-               // get elevation of strand
-               CComPtr<IPoint2d> point;
-               coords->get_Item(idx,&point);
-               Float64 curr_y;
-               point->get_Y(&curr_y);
-            
-               // fill row with current strands
-               RowData bogus_row;
-               bogus_row.m_Elevation = curr_y;
-               RowListIter curr_row_it = m_Rows.find( bogus_row );
-               if (curr_row_it == m_Rows.end())
-               {
-                  // not found, make a new row
-                  SectionData section;
-                  section.m_XLoc = startLoc;
-                  section.m_NumDebonds = 1;
-
-                  RowData row;
-                  row.m_Elevation = curr_y;
-                  row.m_Sections.insert(section);
-
-                  m_Rows.insert(row);
-
-                  section_spacings.insert(startLoc);
-               }
-               else
-               {
-                  // found a row, try to find sectio in row
-                  SectionData bogus_section;
-                  bogus_section.m_XLoc = startLoc;
-                  RowData& row = *curr_row_it;
-                  SectionListIter sit = row.m_Sections.find(bogus_section);
-                  if (sit==row.m_Sections.end())
-                  {
-                     SectionData section;
-                     section.m_XLoc = startLoc;
-                     section.m_NumDebonds = 1;
-
-                     row.m_Sections.insert(section);
-
-                     section_spacings.insert(startLoc);
-                  }
-                  else
-                  {
-                     SectionData& rsect = *sit;
-                     rsect.m_NumDebonds++;
-                  }
-               }
+               SectionData& rsect = *sit;
+               rsect.m_NumDebonds++;
             }
          }
       }
+   }
 
-      // now we have our data structures set up. See if our increment is 3'
+   // now we have our data structures set up. See if our increment is 3'
+   if (m_NumDebonded>0)
+   {
       if ( IsDivisible(section_spacings.begin(), section_spacings.end(), three_feet) )
       {
          m_OutCome = AllStandard;
@@ -320,7 +319,6 @@ inline Int16 TxDOTDebondTool::CountDebondsInRow(const RowData& row) const
       cnt += rdata.m_NumDebonds;
    }
 
-   ATLASSERT(cnt>0);
    return cnt;
 }
 

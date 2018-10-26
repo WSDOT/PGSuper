@@ -282,7 +282,8 @@ BOOL CGirderSelectStrandsDlg::OnInitDialog()
 }
 
 void CGirderSelectStrandsDlg::InitializeData(SpanIndexType span, GirderIndexType girder, const CPrestressData& rPrestressData, 
-                    const SpecLibraryEntry* pSpecEntry,const GirderLibraryEntry* pGdrEntry, bool allowEndAdjustment, bool allowHpAdjustment,
+                    const SpecLibraryEntry* pSpecEntry,const GirderLibraryEntry* pGdrEntry, 
+                    bool allowEndAdjustment, bool allowHpAdjustment, HarpedStrandOffsetType endMeasureType, HarpedStrandOffsetType hpMeasureType,
                     Float64 hpOffsetAtEnd, Float64 hpOffsetAtHp, Float64 maxDebondLength)
 {
    CComPtr<IBroker> pBroker;
@@ -301,8 +302,8 @@ void CGirderSelectStrandsDlg::InitializeData(SpanIndexType span, GirderIndexType
 
    // Get current offset input values - we will force in bounds if needed
    // Make sure legacy values can't sneak in
-   m_HsoEndMeasurement = rPrestressData.HsoEndMeasurement==hsoLEGACY ? hsoCGFROMTOP    : rPrestressData.HsoEndMeasurement;
-   m_HsoHpMeasurement =  rPrestressData.HsoHpMeasurement==hsoLEGACY  ? hsoCGFROMBOTTOM : rPrestressData.HsoHpMeasurement;
+   m_HsoEndMeasurement = endMeasureType==hsoLEGACY ? hsoCGFROMTOP    : endMeasureType;
+   m_HsoHpMeasurement =  hpMeasureType==hsoLEGACY  ? hsoCGFROMBOTTOM : hpMeasureType;
 
    m_HpOffsetAtEnd = hpOffsetAtEnd;
    m_HpOffsetAtHp  = hpOffsetAtHp;

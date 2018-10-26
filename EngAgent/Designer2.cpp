@@ -525,7 +525,8 @@ pgsGirderArtifact pgsDesigner2::Check(SpanIndexType span,GirderIndexType gdr)
    CheckShear(span,gdr,shear_pois,pgsTypes::StrengthI,NULL, pstirrup_artifact);
 
    // check for strength II only if permit vehicle is defined
-   if (pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit))
+   GET_IFACE(ILimitStateForces,pLimitStateForces);
+   if(pLimitStateForces->IsStrengthIIApplicable(span, gdr))
    {
       CheckMomentCapacity(span,gdr,pgsTypes::BridgeSite3,pgsTypes::StrengthII,&gdr_artifact);
       CheckShear(span,gdr,shear_pois,pgsTypes::StrengthII,NULL,pstirrup_artifact);
@@ -585,8 +586,8 @@ pgsDesignArtifact pgsDesigner2::Design(SpanIndexType span,GirderIndexType gdr,ar
    sysTime startTime;
 #endif
 
-   GET_IFACE(ILiveLoads,pLiveLoads);
-   bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
+   GET_IFACE(ILimitStateForces,pLimitStateForces);
+   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(span, gdr);
 
    GET_IFACE(IProgress,pProgress);
    CEAFAutoProgress ap(pProgress,0,PW_ALL | PW_NOGAUGE); // progress window has a cancel button
@@ -6642,8 +6643,8 @@ void pgsDesigner2::DesignShear(pgsDesignArtifact* pArtifact, bool bDoStartFromSc
    // Do the Check
    CheckShear(span, gdr, shear_pois, pgsTypes::StrengthI, &config, pstirrup_check_artif);
 
-   GET_IFACE(ILiveLoads,pLiveLoads);
-   if (pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit))
+   GET_IFACE(ILimitStateForces,pLimitStateForces);
+   if(pLimitStateForces->IsStrengthIIApplicable(span, gdr))
    {
       CheckShear(span, gdr, shear_pois, pgsTypes::StrengthII, &config, pstirrup_check_artif);
    }

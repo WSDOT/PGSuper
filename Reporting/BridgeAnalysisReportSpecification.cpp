@@ -36,6 +36,13 @@ CGirderReportSpecification(strReportName,pBroker,gdrIdx)
    SetOptions(bDesign,bRating);
 }
 
+CBridgeAnalysisReportSpecification::CBridgeAnalysisReportSpecification(const CBridgeAnalysisReportSpecification& other) :
+CGirderReportSpecification(other)
+{
+   m_bDesign = other.m_bDesign;
+   m_bRating = other.m_bRating;
+}
+
 CBridgeAnalysisReportSpecification::~CBridgeAnalysisReportSpecification(void)
 {
 }

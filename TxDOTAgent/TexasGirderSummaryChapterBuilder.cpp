@@ -105,8 +105,11 @@ rptChapter* CTexasGirderSummaryChapterBuilder::Build(CReportSpecification* pRptS
 #endif
 
    // let the paragraph builder to all the work here...
+   std::vector<SpanGirderHashType> spanGirders;
+   spanGirders.push_back( HashSpanGirder(span, girder) );
+
    CTexasIBNSParagraphBuilder parabuilder;
-   rptParagraph* pcontent = parabuilder.Build(pBroker,span,girder,pDisplayUnits,level);
+   rptParagraph* pcontent = parabuilder.Build(pBroker,spanGirders,pDisplayUnits,level);
 
    *pChapter << pcontent;
 

@@ -1,24 +1,24 @@
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  7.60  1     1   4XB40       12   1/2  270 15.68 15.68   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.609   -0.693    1758 0.695  0.801  0.03 -0.00 -0.00 -0.00 -0.00  12.14  46.34   1.00   1.00   1.00
+ 44.00   6  7.60  1     1   4XB40       12   1/2  270 15.68 15.68   0  2.50  12   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.609   -0.693    1758 0.695  0.801  0.03 -0.00 -0.00 -0.00 -0.00  12.14  46.34   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  7.60  1     2   4XB40       12   1/2  270 15.68 15.68   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.605   -0.686    1730 0.675  0.801  0.03 -0.00 -0.00 -0.00 -0.00  12.14  46.39   1.00   1.00   1.00
+ 44.00   6  7.60  1     2   4XB40       12   1/2  270 15.68 15.68   0  2.50  12   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.605   -0.686    1730 0.675  0.801  0.03 -0.00 -0.00 -0.00 -0.00  12.14  46.39   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  7.60  1     4   4XB40       12   1/2  270 15.68 15.68   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.605   -0.686    1730 0.675  0.801  0.03 -0.00 -0.00 -0.00 -0.00  12.14  46.39   1.00   1.00   1.00
+ 44.00   6  7.60  1     4   4XB40       12   1/2  270 15.68 15.68   0  2.50  12   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.605   -0.686    1730 0.675  0.801  0.03 -0.00 -0.00 -0.00 -0.00  12.14  46.39   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful

@@ -653,15 +653,14 @@ void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(pgsTypes::Stage stage,c
    Float64 Mu;     // Limit State Moment
    Float64 Mcr;    // Cracking moment
 
-   GET_IFACE(ILiveLoads,pLiveLoads);
-   bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
-
    GET_IFACE(ILimitStateForces,pLimitStateForces);
+   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(poi.GetSpan(), poi.GetGirder());
 
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter2002 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SecondEditionWith2003Interims ? true : false );
+   bool bAfter2002  = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SecondEditionWith2003Interims ? true : false );
+   bool bBefore2012 = ( pSpecEntry->GetSpecificationType() <  lrfdVersionMgr::SixthEdition2012 ? true : false );
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
    BridgeAnalysisType bat;
@@ -684,8 +683,8 @@ void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(pgsTypes::Stage stage,c
 
    Mr = mcd.Phi * mcd.Mn;
 
-   if ( bAfter2002 )
-      Mcr = max(cmd.Mcr,cmd.McrLimit);
+   if ( bAfter2002 && bBefore2012 )
+      Mcr = (bPositiveMoment ? max(cmd.Mcr,cmd.McrLimit) : min(cmd.Mcr,cmd.McrLimit));
    else
       Mcr = cmd.Mcr;
 
@@ -719,19 +718,27 @@ void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(pgsTypes::Stage stage,c
       Mu_StrengthII = (bPositiveMoment ? DBL_MAX : -DBL_MAX);
    }
 
-   pgsTypes::LimitState ls; // limit state of controlling Mu (least magnitude)
-   if ( fabs(Mu_StrengthI) < fabs(Mu_StrengthII) )
+   pgsTypes::LimitState ls; // limit state of controlling Mu (greatest magnitude)
+   if ( bPermit )
+   {
+      if ( fabs(Mu_StrengthII) < fabs(Mu_StrengthI) )
+      {
+         Mu = Mu_StrengthI;
+         ls = pgsTypes::StrengthI;
+      }
+      else
+      {
+         Mu = Mu_StrengthII;
+         ls = pgsTypes::StrengthII;
+      }
+   }
+   else
    {
       Mu = Mu_StrengthI;
       ls = pgsTypes::StrengthI;
    }
-   else
-   {
-      Mu = Mu_StrengthII;
-      ls = pgsTypes::StrengthII;
-   }
 
-   if ( lrfdVersionMgr::SixthEdition2012 <= lrfdVersionMgr::GetVersion() )
+   if ( lrfdVersionMgr::SixthEdition2012 <= pSpecEntry->GetSpecificationType() )
       MrMin1 = Mcr;
    else
       MrMin1 = 1.20*Mcr;

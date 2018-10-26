@@ -2180,15 +2180,24 @@ void CGirderDescPrestressPage::OnBnClickedEditStrandFill()
 
    // Get current offset input values - dialog will force in bounds if needed
    Float64 hpOffsetAtEnd(0.0), hpOffsetAtHp(0.0);
+   HarpedStrandOffsetType endMeasureType(hsoLEGACY), hpMeasureType(hsoLEGACY);
    CDataExchange DXf(this, TRUE);
    if (m_AllowEndAdjustment)
    {
       DDX_UnitValueAndTag( &DXf, IDC_HPOFFSET_END, IDC_HPOFFSET_END_UNIT, hpOffsetAtEnd, pDisplayUnits->GetComponentDimUnit() );
+
+      CComboBox* box = (CComboBox*)GetDlgItem(IDC_HP_COMBO_END);
+      int cursel = box->GetCurSel();
+      endMeasureType = (HarpedStrandOffsetType)box->GetItemData(cursel);
    }
 
    if (m_AllowHpAdjustment)
    {
       DDX_UnitValueAndTag( &DXf, IDC_HPOFFSET_HP, IDC_HPOFFSET_HP_UNIT, hpOffsetAtHp, pDisplayUnits->GetComponentDimUnit() );
+
+      CComboBox* box = (CComboBox*)GetDlgItem(IDC_HP_COMBO_HP);
+      int cursel = box->GetCurSel();
+      hpMeasureType = (HarpedStrandOffsetType)box->GetItemData(cursel);
    }
 
    // Max debond length is 1/2 girder length
@@ -2196,7 +2205,7 @@ void CGirderDescPrestressPage::OnBnClickedEditStrandFill()
 
    CGirderSelectStrandsDlg dlg;
    dlg.InitializeData(pParent->m_CurrentSpanIdx, pParent->m_CurrentGirderIdx, pParent->m_GirderData.PrestressData, pSpecEntry,pGdrEntry,
-                      m_AllowEndAdjustment, m_AllowHpAdjustment, hpOffsetAtEnd, hpOffsetAtHp, maxDebondLength);
+                      m_AllowEndAdjustment, m_AllowHpAdjustment, endMeasureType, hpMeasureType, hpOffsetAtEnd, hpOffsetAtHp, maxDebondLength);
 
    if ( dlg.DoModal() == IDOK )
    {

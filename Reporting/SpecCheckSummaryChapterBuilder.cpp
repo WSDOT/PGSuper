@@ -164,8 +164,8 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
    {
       *pPara << color(Red) << _T("The Specification Check Was Not Successful") << color(Black) << rptNewLine;
      
-      GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-      bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
+      GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+      bool bPermit = pLimitStateForces->IsStrengthIIApplicable(span, gdr);
 
       // Build a list of our failures
       FailureList failures;

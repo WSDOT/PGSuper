@@ -56,7 +56,7 @@ public:
 
 
    //------------------------------------------------------------------------
-   rptParagraph* Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+   rptParagraph* Build(IBroker* pBroker,const std::vector<SpanGirderHashType>& spanGirders,
                        IEAFDisplayUnits* pDisplayUnits,
                        Uint16 level) const;
 

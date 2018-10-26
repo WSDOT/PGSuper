@@ -303,6 +303,107 @@ inline OptionalDesignHarpedFillUtil::StrandRowSet OptionalDesignHarpedFillUtil::
    return strandrows;
 }
 
+// Function to compute columns in table that attempts to group all girders in a span per table
+// Returns a list of number of columns per table. Size of list is number of tables to be created
+static const int MIN_TBL_COLS=3; // Minimum columns in multi-girder table
+static const int MAX_TBL_COLS=8; // Maximum columns in multi-girder table
+
+inline std::list<ColumnIndexType> ComputeTableCols(const std::vector<SpanGirderHashType>& spanGirders)
+{
+   // Idea here is to break tables at spans, but also try to group if all girders are from different spans
+   // First build list of sizes of contiguous blocks of spans
+   std::list<ColumnIndexType> contiguous_blocks1;
+   SpanIndexType curr_span(-1);
+   bool first=false;
+   for(std::vector<SpanGirderHashType>::const_iterator it=spanGirders.begin(); it!=spanGirders.end(); it++)
+   {
+      SpanIndexType new_span;
+      GirderIndexType new_gdr;
+      UnhashSpanGirder(*it, &new_span, &new_gdr);
+
+      if (first || curr_span!=new_span)
+      {
+         first = false;
+         curr_span = new_span;
+         contiguous_blocks1.push_back(1);
+      }
+      else
+      {
+         contiguous_blocks1.back()++;
+      }
+   }
+
+   // Next break blocks into list of table-sized chunks 
+   std::list<ColumnIndexType> contiguous_blocks2;
+   for(std::list<ColumnIndexType>::const_iterator it=contiguous_blocks1.begin(); it!=contiguous_blocks1.end(); it++)
+   {
+      ColumnIndexType ncols = *it;
+      if (ncols > MAX_TBL_COLS)
+      {
+         ColumnIndexType num_big_chunks = ncols / MAX_TBL_COLS;
+         ColumnIndexType rmdr = ncols % MAX_TBL_COLS;
+
+         for (ColumnIndexType ich=0; ich<num_big_chunks; ich++)
+         {
+            contiguous_blocks2.push_back(MAX_TBL_COLS);
+         }
+
+         if(rmdr != 0)
+         {
+            contiguous_blocks2.push_back(rmdr);
+         }
+      }
+      else
+      {
+         contiguous_blocks2.push_back(ncols);
+      }
+   }
+
+   // Now we have a "right-sized" columns, but we could have a list of one-column tables, which
+   // would be ugly. If all num colums are LE than min, combine into a wider, but not pretty table
+   bool is_ugly = true;
+   for(std::list<ColumnIndexType>::const_iterator it=contiguous_blocks2.begin(); it!=contiguous_blocks2.end(); it++)
+   {
+      ColumnIndexType ncols = *it;
+      if (ncols > MIN_TBL_COLS)
+      {
+         is_ugly = false; // we have at least one table of minimum width - we're not ugly.
+         break;
+      }
+   }
+
+   std::list<ColumnIndexType> final_blocks;
+   if (!is_ugly)
+   {
+      final_blocks = contiguous_blocks2;
+   }
+   else
+   {
+      // work to combine blocks
+      std::list<ColumnIndexType>::const_iterator it=contiguous_blocks2.begin();
+      while(it!=contiguous_blocks2.end())
+      {
+         ColumnIndexType ncols = *it;
+         while (ncols<=MAX_TBL_COLS)
+         {
+            it++;
+            if (it==contiguous_blocks2.end() || ncols+(*it) > MAX_TBL_COLS)
+            {
+               final_blocks.push_back(ncols);
+               break;
+            }
+            else
+            {
+               ncols+= (*it);
+            }
+         }
+      }
+   }
+
+   return final_blocks;
+}
+
+
 
 
 #endif // INCLUDED_PGSEXT_TXDOTOPTIONALDESIGNUTILILITIES_H_

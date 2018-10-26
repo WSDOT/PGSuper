@@ -32,6 +32,7 @@
 #include <IFace\Project.h>
 #include <IFace\Artifact.h>
 #include <IFace\TransverseReinforcementSpec.h>
+#include <IFace\AnalysisResults.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -81,8 +82,8 @@ rptChapter* CStirrupDetailingCheckChapterBuilder::Build(CReportSpecification* pR
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    pgsTypes::Stage stage = pgsTypes::BridgeSite3;
 
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
+   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(span, girder);
 
    *pChapter << build_min_avs_paragraph(pBroker,span,girder,stage,pDisplayUnits);
 

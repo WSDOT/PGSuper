@@ -27,6 +27,7 @@
 
 #include "TexasCamberAndDeflectionChapterBuilder.h"
 #include "TexasIBNSParagraphBuilder.h"
+#include "TxDOTOptionalDesignUtilities.h"
 
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
@@ -55,7 +56,8 @@ CLASS
 ****************************************************************************/
 
 
-static void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IEAFDisplayUnits* pDisplayUnits);
+static void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vector<SpanGirderHashType>& girderList,
+                                  ColumnIndexType startIdx, ColumnIndexType endIdx, bool isSingleGirder, IEAFDisplayUnits* pDisplayUnits);
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -74,22 +76,63 @@ LPCTSTR CTexasCamberAndDeflectionChapterBuilder::GetName() const
 
 rptChapter* CTexasCamberAndDeflectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
+
+   // This can be called for multi or single girders
+   std::vector<SpanGirderHashType> girder_list;
+
    CComPtr<IBroker> pBroker;
-   pSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSpec->GetSpan();
-   GirderIndexType girder = pSpec->GetGirder();
+
+   CSpanGirderReportSpecification* pSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   if (pSpec!=NULL)
+   {
+      pSpec->GetBroker(&pBroker);
+      SpanIndexType span = pSpec->GetSpan();
+      GirderIndexType girder = pSpec->GetGirder();
+
+      SpanGirderHashType sgh = HashSpanGirder(span, girder);
+      girder_list.push_back(sgh);
+   }
+   else
+   {
+      CMultiGirderReportSpecification* pReportSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
+      pReportSpec->GetBroker(&pBroker);
+
+      girder_list = pReportSpec->GetGirderList();
+   }
+   ATLASSERT(!girder_list.empty());
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
+   bool isSingleGirder = girder_list.size()==1;
 
-   deflection_and_camber( pChapter, pBroker, span, girder, pDisplayUnits );
+   // Compute a list of tables to be created. Each item in the list is the number of columns for
+   // a table
+   std::list<ColumnIndexType> table_list = ComputeTableCols(girder_list);
+
+   // Cycle over tables
+   bool tbfirst = true;
+   ColumnIndexType start_idx, end_idx;
+   for (std::list<ColumnIndexType>::iterator itcol = table_list.begin(); itcol!=table_list.end(); itcol++)
+   {
+      if (tbfirst)
+      {
+         start_idx = 0;
+         end_idx = *itcol-1;
+         tbfirst = false;
+      }
+      else
+      {
+         start_idx = end_idx+1;
+         end_idx += *itcol;
+         ATLASSERT(end_idx < table_list.size());
+      }
+
+      deflection_and_camber( pChapter, pBroker, girder_list, start_idx, end_idx, isSingleGirder, pDisplayUnits );
+   }
 
    // Constructability check
-   GET_IFACE2(pBroker,IBridge,pBridge);
-
-   rptRcTable* hdtable = CConstructabilityCheckTable().BuildSlabOffsetTable(pBroker,span,girder,pDisplayUnits);
+   rptRcTable* hdtable = CConstructabilityCheckTable().BuildSlabOffsetTable(pBroker,girder_list,pDisplayUnits);
    if (hdtable!=NULL)
    {
       rptParagraph* p = new rptParagraph;
@@ -117,19 +160,35 @@ CChapterBuilder* CTexasCamberAndDeflectionChapterBuilder::Clone() const
 //======================== INQUIRY    =======================================
 
 ////////////////////////// PRIVATE    ///////////////////////////////////////
-void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IEAFDisplayUnits* pDisplayUnits)
+void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vector<SpanGirderHashType>& girderList,
+                           ColumnIndexType startIdx, ColumnIndexType endIdx, bool isSingleGirder, 
+                           IEAFDisplayUnits* pDisplayUnits)
 {
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(3,_T("Camber and Deflection"));
+   ColumnIndexType numCols = isSingleGirder ? 3 : endIdx-startIdx+2; // single girder report has inch and ft units
+
+   std::_tostringstream osTN;
+   osTN << _T("Camber and Deflection");
+   if (isSingleGirder)
+   {
+      SpanIndexType span;
+      GirderIndexType girder;
+      UnhashSpanGirder(girderList[0],&span,&girder);
+
+      osTN << _T(" for Span ")<<LABEL_SPAN(span)<<_T(" Girder ")<<LABEL_GIRDER(girder);
+   }
+
+   rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(numCols,osTN.str());
    *p << pTable << rptNewLine;
 
    // Right justify columns with numbers
-   pTable->SetColumnStyle( 1, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT) );
-   pTable->SetColumnStyle( 2, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT) );
-   pTable->SetStripeRowColumnStyle( 1, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT) );
-   pTable->SetStripeRowColumnStyle( 2, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT) );
+   for (ColumnIndexType ic=1; ic<numCols; ic++)
+   {
+      pTable->SetColumnStyle( ic, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT) );
+      pTable->SetStripeRowColumnStyle( ic, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT) );
+   }
 
    // Setup up some unit value prototypes
    INIT_UV_PROTOTYPE( rptLengthUnitValue, disp,   pDisplayUnits->GetDisplacementUnit(), true );
@@ -144,7 +203,6 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
    GET_IFACE2( pBroker, ILibrary, pLib );
    GET_IFACE2( pBroker, ISpecification, pSpec );
    GET_IFACE2(pBroker,IGirderData,pGirderData);
-   const CGirderData* pgirderData = pGirderData->GetGirderData(span,girder);
 
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
@@ -152,188 +210,316 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
    bool do_defl = pSpecEntry->GetDoEvaluateLLDeflection();
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
-   // Get Midspan std::vector<pgsPointOfInterest>
-   std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(span,girder,pgsTypes::BridgeSite3,POI_MIDSPAN);
-   CHECK(vPoi.size()==1);
-   pgsPointOfInterest poi = *vPoi.begin();
-
-   // Compute mid span deflections
-   Float64 delta_gdr;  // due to girder self weight
-   Float64 delta_dl;   // due to dead loads on girder
-   Float64 delta_sk;   // due to shear key
-   Float64 delta_ol;   // due to overlay
-   Float64 delta_tb;   // due to traffic barrier
-   Float64 delta_sw;   // due to sidewalk
-   Float64 delta_ll;   // due to live load
-   Float64 delta_oll;  // due to optional live load
-   Float64 temp;
-
-   delta_gdr = pProductForces->GetGirderDeflectionForCamber( poi );
-
-   BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
-
-   delta_dl = pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftSlab, poi, bat )
-            + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftSlabPad, poi, bat )
-            + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftDiaphragm, poi, bat );
-
-   delta_sk = pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftShearKey, poi, bat );
-
-   pgsTypes::Stage overlay_stage = pBridge->IsFutureOverlay() ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2;
-   
-   delta_ol = pProductForces->GetDisplacement(overlay_stage, pftOverlay, poi, bat );
-
-   delta_tb = pProductForces->GetDisplacement(pgsTypes::BridgeSite2, pftTrafficBarrier, poi, bat );
-   delta_sw = pProductForces->GetDisplacement(pgsTypes::BridgeSite2, pftTrafficBarrier, poi, bat );
-
-   Float64 delta_dcu = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC, poi, bat);
-   delta_dcu        += pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftUserDC, poi, bat);
-
-   Float64 delta_dwu = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW, poi, bat);
-   delta_dwu        += pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftUserDW, poi, bat);
-
-   pProductForces->GetLiveLoadDisplacement(pgsTypes::lltDesign, pgsTypes::BridgeSite3, poi, bat, true, false, &delta_ll, &temp );
-
-   pProductForces->GetDeflLiveLoadDisplacement(IProductForces::DeflectionLiveLoadEnvelope, poi, &delta_oll, &temp );
-
-   // get # of days for creep
-   Float64 min_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), unitMeasure::Day);
-   Float64 max_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
-
-   // Populate the table
-   bool is_negative_camber = false;
-   Uint16 row = 0;
-   (*pTable)(row,0) << _T("Estimated camber at ")<< min_days<<_T(" days, D");
-   double D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MINTIME);
-   if ( D < 0 )
+   // See if any girders in our list have a sidewalk load
+   bool is_any_sidewalk(false), is_any_shearkey(false);
+   for (ColumnIndexType gdr_idx=startIdx; gdr_idx<=endIdx; gdr_idx++)
    {
-      (*pTable)(row,1) << color(Red) << disp.SetValue( D ) << color(Black);
-      (*pTable)(row,2) << color(Red) << dispft.SetValue( D ) << color(Black);
+      SpanIndexType span;
+      GirderIndexType girder;
+      SpanGirderHashType hash = girderList[gdr_idx];
+      UnhashSpanGirder(hash,&span,&girder);
+
+      is_any_sidewalk |= pProductLoads->HasSidewalkLoad(span,girder);
+      is_any_shearkey |= pProductLoads->HasShearKeyLoad(span,girder);
    }
-   else
-   {
-      (*pTable)(row,1) << disp.SetValue( D );
-      (*pTable)(row,2) << dispft.SetValue( D );
-   }
-   row++;
 
-   (*pTable)(row,0) << _T("Estimated camber at ")<< max_days<<_T(" days, D");
-   D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MAXTIME);
-   if ( D < 0 )
+   // Build table column by column
+   std::vector<SpanGirderHashType> BeamsWithExcessCamber;
+   bool bFirst(true);
+   ColumnIndexType col = isSingleGirder ? 2 : 1; 
+   for (ColumnIndexType gdr_idx=startIdx; gdr_idx<=endIdx; gdr_idx++)
    {
-      (*pTable)(row,1) << color(Red) << disp.SetValue( D ) << color(Black);
-      (*pTable)(row,2) << color(Red) << dispft.SetValue( D ) << color(Black);
-   }
-   else
-   {
-      (*pTable)(row,1) << disp.SetValue( D );
-      (*pTable)(row,2) << dispft.SetValue( D );
-   }
-   row++;
+      SpanIndexType span;
+      GirderIndexType girder;
 
-   if ( 0 < pgirderData->PrestressData.GetNstrands(pgsTypes::Temporary) && pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPTBeforeShipping )
-   {
-      (*pTable)(row,0) << _T("Deflection (Prestressing including temp strands)");
-      (*pTable)(row,1) << disp.SetValue( pCamber->GetPrestressDeflection(poi,true) );
-      (*pTable)(row,2) << dispft.SetValue( pCamber->GetPrestressDeflection(poi,true) );
-   }
-   else
-   {
-      (*pTable)(row,0) << _T("Deflection (Prestressing)");
-      (*pTable)(row,1) << disp.SetValue( pCamber->GetPrestressDeflection(poi,false) );
-      (*pTable)(row,2) << dispft.SetValue( pCamber->GetPrestressDeflection(poi,false) );
-   }
-   row++;
+      SpanGirderHashType hash = girderList[gdr_idx];
+      UnhashSpanGirder(hash,&span,&girder);
 
-   if ( 0 < pgirderData->PrestressData.GetNstrands(pgsTypes::Temporary) && pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPTBeforeShipping )
-   {
-      (*pTable)(row,0) << _T("Deflection (Temporary Strand Removal)");
-      (*pTable)(row,1) << disp.SetValue( pCamber->GetReleaseTempPrestressDeflection(poi) );
-      (*pTable)(row,2) << dispft.SetValue( pCamber->GetReleaseTempPrestressDeflection(poi) );
+      const CGirderData* pgirderData = pGirderData->GetGirderData(span,girder);
+
+      // Get Midspan std::vector<pgsPointOfInterest>
+      std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(span,girder,pgsTypes::BridgeSite3,POI_MIDSPAN);
+      CHECK(vPoi.size()==1);
+      pgsPointOfInterest poi = *vPoi.begin();
+
+      // Compute mid span deflections
+      Float64 delta_gdr;  // due to girder self weight
+      Float64 delta_dl;   // due to dead loads on girder
+      Float64 delta_sk;   // due to shear key
+      Float64 delta_ol;   // due to overlay
+      Float64 delta_tb;   // due to traffic barrier
+      Float64 delta_sw;   // due to sidewalk
+      Float64 delta_ll;   // due to live load
+      Float64 delta_oll;  // due to optional live load
+      Float64 temp;
+
+      delta_gdr = pProductForces->GetGirderDeflectionForCamber( poi );
+
+      BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
+
+      delta_dl = pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftSlab, poi, bat )
+               + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftSlabPad, poi, bat )
+               + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftDiaphragm, poi, bat );
+
+      delta_sk = pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftShearKey, poi, bat );
+
+      pgsTypes::Stage overlay_stage = pBridge->IsFutureOverlay() ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2;
+      
+      delta_ol = pProductForces->GetDisplacement(overlay_stage, pftOverlay, poi, bat );
+
+      delta_tb = pProductForces->GetDisplacement(pgsTypes::BridgeSite2, pftTrafficBarrier, poi, bat );
+      delta_sw = pProductForces->GetDisplacement(pgsTypes::BridgeSite2, pftTrafficBarrier, poi, bat );
+
+      Float64 delta_dcu = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC, poi, bat);
+      delta_dcu        += pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftUserDC, poi, bat);
+
+      Float64 delta_dwu = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW, poi, bat);
+      delta_dwu        += pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftUserDW, poi, bat);
+
+      pProductForces->GetLiveLoadDisplacement(pgsTypes::lltDesign, pgsTypes::BridgeSite3, poi, bat, true, false, &delta_ll, &temp );
+
+      pProductForces->GetDeflLiveLoadDisplacement(IProductForces::DeflectionLiveLoadEnvelope, poi, &delta_oll, &temp );
+
+      // get # of days for creep
+      Float64 min_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), unitMeasure::Day);
+      Float64 max_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+
+      // Populate the table
+      RowIndexType row = 0;
+      if (!isSingleGirder)
+      {
+         if (bFirst)
+            (*pTable)(row,0) << Bold(_T("Span"));
+
+         (*pTable)(row,col) <<  Bold(LABEL_SPAN(span));
+         row++;
+         
+         if (bFirst)
+            (*pTable)(row,0) << Bold( _T(" Girder "));
+         
+         (*pTable)(row,col) <<  Bold(LABEL_GIRDER(girder));
+         row++;
+      }
+
+      if (bFirst)
+         (*pTable)(row,0) << _T("Estimated camber at ")<< min_days<<_T(" days, D");
+
+      double D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MINTIME);
+      if ( D < 0 )
+      {
+         if (isSingleGirder)
+            (*pTable)(row,1) << color(Red) << disp.SetValue( D ) << color(Black);
+
+         (*pTable)(row,col) << color(Red) << dispft.SetValue( D ) << color(Black);
+      }
+      else
+      {
+         if (isSingleGirder)
+            (*pTable)(row,1) << disp.SetValue( D );
+
+         (*pTable)(row,col) << dispft.SetValue( D );
+      }
       row++;
-   }
 
-   (*pTable)(row,0) << _T("Deflection (Girder)");
-   (*pTable)(row,1) << disp.SetValue( delta_gdr );
-   (*pTable)(row,2) << dispft.SetValue( delta_gdr );
-   row++;
+      if (bFirst)
+         (*pTable)(row,0) << _T("Estimated camber at ")<< max_days<<_T(" days, D");
 
-   (*pTable)(row,0) << _T("Deflection (Slab and Diaphragms)");
-   (*pTable)(row,1) << disp.SetValue( delta_dl );
-   (*pTable)(row,2) << dispft.SetValue( delta_dl );
-   row++;
+      D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MAXTIME);
+      if ( D < 0 )
+      {
+         if (isSingleGirder)
+            (*pTable)(row,1) << color(Red) << disp.SetValue( D ) << color(Black);
 
-   if ( pProductLoads->HasShearKeyLoad(span,girder) )
-   {
-      (*pTable)(row,0) << _T("Deflection (Shear Key)");
-      (*pTable)(row,1) << disp.SetValue( delta_sk );
-      (*pTable)(row,2) << dispft.SetValue( delta_sk );
+         (*pTable)(row,col) << color(Red) << dispft.SetValue( D ) << color(Black);
+      }
+      else
+      {
+         if (isSingleGirder)
+            (*pTable)(row,1) << disp.SetValue( D );
+
+         (*pTable)(row,col) << dispft.SetValue( D );
+      }
       row++;
-   }
 
-   if ( pProductLoads->HasSidewalkLoad(span,girder) )
-   {
-      (*pTable)(row,0) << _T("Deflection (Sidewalk)");
-      (*pTable)(row,1) << disp.SetValue( delta_sw );
-      (*pTable)(row,2) << dispft.SetValue( delta_sw );
+      if ( 0 < pgirderData->PrestressData.GetNstrands(pgsTypes::Temporary) && pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPTBeforeShipping )
+      {
+         if (bFirst)
+            (*pTable)(row,0) << _T("Deflection (Prestressing including temp strands)");
+
+         if (isSingleGirder)
+            (*pTable)(row,1) << disp.SetValue( pCamber->GetPrestressDeflection(poi,true) );
+
+         (*pTable)(row,col) << dispft.SetValue( pCamber->GetPrestressDeflection(poi,true) );
+      }
+      else
+      {
+         if (bFirst)
+            (*pTable)(row,0) << _T("Deflection (Prestressing)");
+
+         if (isSingleGirder)
+            (*pTable)(row,1) << disp.SetValue( pCamber->GetPrestressDeflection(poi,false) );
+
+         (*pTable)(row,col) << dispft.SetValue( pCamber->GetPrestressDeflection(poi,false) );
+      }
       row++;
-   }
 
-   (*pTable)(row,0) << _T("Deflection (Traffic Barrier)");
-   (*pTable)(row,1) << disp.SetValue( delta_tb );
-   (*pTable)(row,2) << dispft.SetValue( delta_tb );
-   row++;
+      if ( 0 < pgirderData->PrestressData.GetNstrands(pgsTypes::Temporary) && pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPTBeforeShipping )
+      {
+         if (bFirst)
+            (*pTable)(row,0) << _T("Deflection (Temporary Strand Removal)");
 
-   (*pTable)(row,0) << _T("Deflection (Overlay)");
-   (*pTable)(row,1) << disp.SetValue( delta_ol );
-   (*pTable)(row,2) << dispft.SetValue( delta_ol );
-   row++;
+         if (isSingleGirder)
+            (*pTable)(row,1) << disp.SetValue( pCamber->GetReleaseTempPrestressDeflection(poi) );
 
-   (*pTable)(row,0) << _T("Deflection (User Defined DC)");
-   (*pTable)(row,1) << disp.SetValue( delta_dcu );
-   (*pTable)(row,2) << dispft.SetValue( delta_dcu );
-   row++;
+         (*pTable)(row,col) << dispft.SetValue( pCamber->GetReleaseTempPrestressDeflection(poi) );
+         row++;
+      }
 
-   (*pTable)(row,0) << _T("Deflection (User Defined DW)");
-   (*pTable)(row,1) << disp.SetValue( delta_dwu );
-   (*pTable)(row,2) << dispft.SetValue( delta_dwu );
-   row++;
+      if (bFirst)
+         (*pTable)(row,0) << _T("Deflection (Girder)");
 
-   (*pTable)(row,0) << _T("Screed Camber, C");
-   (*pTable)(row,1) << disp.SetValue( pCamber->GetScreedCamber(poi) );
-   (*pTable)(row,2) << dispft.SetValue( pCamber->GetScreedCamber(poi) );
-   row++;
+      if (isSingleGirder)
+         (*pTable)(row,1) << disp.SetValue( delta_gdr );
 
-   (*pTable)(row,0) << _T("Excess Camber") << rptNewLine << _T("(based on D at ") << max_days << _T(" days)");
-   double excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME);
-   if ( excess_camber < 0 )
-   {
-      (*pTable)(row,1) << color(Red) << disp.SetValue( excess_camber ) << color(Black);
-      (*pTable)(row,2) << color(Red) << dispft.SetValue( excess_camber ) << color(Black);
-      is_negative_camber = true;
-   }
-   else
-   {
-      (*pTable)(row,1) << disp.SetValue( excess_camber );
-      (*pTable)(row,2) << dispft.SetValue( excess_camber );
-   }
-   row++;
-
-   (*pTable)(row,0) << _T("Live Load Deflection (HL93 - Per Lane)");
-   (*pTable)(row,1) << disp.SetValue( delta_ll );
-   (*pTable)(row,2) << dispft.SetValue( delta_ll );
-   row++;
-
-   if (do_defl)
-   {
-      (*pTable)(row,0) << _T("Optional Live Load Deflection (LRFD 3.6.1.3.2)");
-      (*pTable)(row,1) << disp.SetValue( delta_oll );
-      (*pTable)(row,2) << dispft.SetValue( delta_oll );
+      (*pTable)(row,col) << dispft.SetValue( delta_gdr );
       row++;
+
+      if (bFirst)
+         (*pTable)(row,0) << _T("Deflection (Slab and Diaphragms)");
+
+      if (isSingleGirder)
+         (*pTable)(row,1) << disp.SetValue( delta_dl );
+
+      (*pTable)(row,col) << dispft.SetValue( delta_dl );
+      row++;
+
+      if ( is_any_shearkey )
+      {
+         if (bFirst)
+            (*pTable)(row,0) << _T("Deflection (Shear Key)");
+
+         if (isSingleGirder)
+            (*pTable)(row,1) << disp.SetValue( delta_sk );
+
+         (*pTable)(row,col) << dispft.SetValue( delta_sk );
+         row++;
+      }
+
+      if( is_any_sidewalk) // Need row in table if any sidewalks exist in our girder list
+      {
+         if (bFirst)
+            (*pTable)(row,0) << _T("Deflection (Sidewalk)");
+
+         if (isSingleGirder)
+            (*pTable)(row,1) << disp.SetValue( delta_sw );
+
+         (*pTable)(row,col) << dispft.SetValue( delta_sw );
+         row++;
+      }
+
+      if (bFirst)
+         (*pTable)(row,0) << _T("Deflection (Traffic Barrier)");
+
+      if (isSingleGirder)
+         (*pTable)(row,1) << disp.SetValue( delta_tb );
+
+      (*pTable)(row,col) << dispft.SetValue( delta_tb );
+      row++;
+
+      if (bFirst)
+         (*pTable)(row,0) << _T("Deflection (Overlay)");
+
+      if (isSingleGirder)
+         (*pTable)(row,1) << disp.SetValue( delta_ol );
+
+      (*pTable)(row,col) << dispft.SetValue( delta_ol );
+      row++;
+
+      if (bFirst)
+         (*pTable)(row,0) << _T("Deflection (User Defined DC)");
+
+      if (isSingleGirder)
+         (*pTable)(row,1) << disp.SetValue( delta_dcu );
+
+      (*pTable)(row,col) << dispft.SetValue( delta_dcu );
+      row++;
+
+      if (bFirst)
+         (*pTable)(row,0) << _T("Deflection (User Defined DW)");
+
+      if (isSingleGirder)
+         (*pTable)(row,1) << disp.SetValue( delta_dwu );
+
+      (*pTable)(row,col) << dispft.SetValue( delta_dwu );
+      row++;
+
+      if (bFirst)
+         (*pTable)(row,0) << _T("Screed Camber, C");
+
+      if (isSingleGirder)
+         (*pTable)(row,1) << disp.SetValue( pCamber->GetScreedCamber(poi) );
+
+      (*pTable)(row,col) << dispft.SetValue( pCamber->GetScreedCamber(poi) );
+      row++;
+
+      if (bFirst)
+         (*pTable)(row,0) << _T("Excess Camber") << rptNewLine << _T("(based on D at ") << max_days << _T(" days)");
+
+      double excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME);
+      if ( excess_camber < 0 )
+      {
+         if (isSingleGirder)
+            (*pTable)(row,1) << color(Red) << disp.SetValue( excess_camber ) << color(Black);
+
+         (*pTable)(row,col) << color(Red) << dispft.SetValue( excess_camber ) << color(Black);
+         BeamsWithExcessCamber.push_back(hash);
+      }
+      else
+      {
+         if (isSingleGirder)
+            (*pTable)(row,1) << disp.SetValue( excess_camber );
+
+         (*pTable)(row,col) << dispft.SetValue( excess_camber );
+      }
+      row++;
+
+      if (bFirst)
+         (*pTable)(row,0) << _T("Live Load Deflection (HL93 - Per Lane)");
+
+      if (isSingleGirder)
+         (*pTable)(row,1) << disp.SetValue( delta_ll );
+
+      (*pTable)(row,col) << dispft.SetValue( delta_ll );
+      row++;
+
+      if (do_defl)
+      {
+         if (bFirst)
+            (*pTable)(row,0) << _T("Optional Live Load Deflection (LRFD 3.6.1.3.2)");
+
+         if (isSingleGirder)
+            (*pTable)(row,1) << disp.SetValue( delta_oll );
+
+         (*pTable)(row,col) << dispft.SetValue( delta_oll );
+         row++;
+      }
+
+      bFirst = false;
+      col++;
    }
 
-   if (is_negative_camber)
+   for (std::vector<SpanGirderHashType>::const_iterator ite=BeamsWithExcessCamber.begin(); ite!=BeamsWithExcessCamber.end(); ite++)
    {
-      *p<<color(Red) << _T("Warning:  Excess camber is negative indicating a potential sag in the beam.") << color(Black) << rptNewLine;
+      SpanIndexType span;
+      GirderIndexType girder;
+      UnhashSpanGirder(*ite,&span,&girder);
+
+      *p<<color(Red) << _T("Warning: Excess camber is negative");
+
+      if (!isSingleGirder)
+         *p<< _T(" for Span ")<<LABEL_SPAN(span)<<_T(" Girder ")<<LABEL_GIRDER(girder);
+
+      *p<< _T(" indicating a potential sag in the beam.") << color(Black) << rptNewLine;
    }
 }
 

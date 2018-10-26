@@ -88,6 +88,24 @@ protected:
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
+
+   void BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
+                      SpanIndexType span,GirderIndexType girder,
+                      IEAFDisplayUnits* pDisplayUnits,
+                      pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType,
+                      bool bDesign=true,bool bRating=true) const;
+
+   void BuildCombinedLiveTable(IBroker* pBroker, rptChapter* pChapter,
+                      SpanIndexType span,GirderIndexType girder,
+                      IEAFDisplayUnits* pDisplayUnits,
+                      pgsTypes::AnalysisType analysisType,
+                      bool bDesign=true,bool bRating=true) const;
+
+   void BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
+                      SpanIndexType span,GirderIndexType girder,
+                      IEAFDisplayUnits* pDisplayUnits,
+                      pgsTypes::AnalysisType analysisType,
+                      bool bDesign=true,bool bRating=true) const;
    //------------------------------------------------------------------------
    void MakeCopy(const CCombinedShearTable& rOther);
 

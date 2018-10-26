@@ -108,12 +108,14 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
    //
 
    boost::shared_ptr<CReportSpecificationBuilder> pSpanGirderRptSpecBuilder( new CSpanGirderReportSpecificationBuilder(m_pBroker) );
+   boost::shared_ptr<CReportSpecificationBuilder> pMultiGirderRptSpecBuilder( new CMultiGirderReportSpecificationBuilder(m_pBroker) );
+   boost::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder( new CMultiViewSpanGirderReportSpecificationBuilder(m_pBroker) );
 
 
    // Texas Girder Schedule - use compacted title page
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("TxDOT Girder Schedule Report"));
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false)) );
-   pRptBuilder->SetReportSpecificationBuilder( pSpanGirderRptSpecBuilder );
+   pRptBuilder->SetReportSpecificationBuilder( pMultiGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasIBNSChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasCamberAndDeflectionChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder );
@@ -121,7 +123,7 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
    // Texas Summary report
    pRptBuilder = new CReportBuilder(_T("TxDOT Summary Report"));
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
-   pRptBuilder->SetReportSpecificationBuilder( pSpanGirderRptSpecBuilder );
+   pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(true)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasGirderSummaryChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLoadingDetailsChapterBuilder(true,true,false,true)) );

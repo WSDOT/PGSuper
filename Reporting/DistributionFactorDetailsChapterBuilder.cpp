@@ -25,6 +25,7 @@
 #include <Reporting\LiveLoadDistributionFactorTable.h>
 
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF\EAFUtilities.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\Bridge.h>
 
@@ -82,6 +83,8 @@ rptChapter* CDistributionFactorDetailsChapterBuilder::Build(CReportSpecification
    }
    else
    {
+      ATLASSERT(0);
+      EAFGetBroker(&pBroker);
       span = ALL_SPANS;
       gdr  = ALL_GIRDERS;
    }

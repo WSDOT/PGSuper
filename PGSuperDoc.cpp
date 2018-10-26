@@ -188,10 +188,7 @@ static char THIS_FILE[] = __FILE__;
 
 #include "resource.h"       // main symbols 
 
-#define PGSUPER_PLUGIN_COMMAND_BASE 0xC000 // 49152 (this gives us about 8100 plug commands)
-#if PGSUPER_PLUGIN_COMMAND_BASE < _APS_NEXT_COMMAND_VALUE
-#error "PGSuper Document Plugins and Extension Agents: Command IDs interfere with plug-in commands, change the plugin command base ID"
-#endif
+#define PGSUPER_PLUGIN_COMMAND_COUNT 256
 
 static const Float64 FILE_VERSION=2.0;
 
@@ -322,9 +319,9 @@ m_bAutoCalcEnabled(true)
 
    m_ViewCallbackID = 0;
 
-   // Set the base command ID for EAFDocumentPlugin objects (not currently supported)
-   // and extension agents (supported)
-   GetPluginCommandManager()->SetBaseCommandID(PGSUPER_PLUGIN_COMMAND_BASE);
+   // Reserve a range of command IDs for extension agent commands (which are current supported)
+   // and EAFDocumentPlugin objects (which are not currently supported in PGSuper)
+   GetPluginCommandManager()->ReserveCommandIDRange(PGSUPER_PLUGIN_COMMAND_COUNT);
 }
 
 CPGSuperDoc::~CPGSuperDoc()
@@ -571,8 +568,12 @@ bool CPGSuperDoc::EditGirderDescription(SpanIndexType span,GirderIndexType girde
 
    const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry( strGirderName.c_str() );
 
+   GET_IFACE(ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+
    // resequence page if no debonding
-   if (EGD_DEBONDING <= nPage  && !pGirderEntry->CanDebondStraightStrands()) 
+   bool extra_page = pGirderEntry->CanDebondStraightStrands() || pSpecEntry->AllowStraightStrandExtensions();
+   if (EGD_DEBONDING <= nPage  && !extra_page) 
       nPage--;
 
    dlg.SetActivePage(nPage);
@@ -646,6 +647,9 @@ bool CPGSuperDoc::EditDirectInputPrestressing(SpanIndexType span,GirderIndexType
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    // Get current offset input values - dialog will force in bounds if needed
+   HarpedStrandOffsetType endMeasureType = girderData.PrestressData.HsoEndMeasurement;
+   HarpedStrandOffsetType hpMeasureType = girderData.PrestressData.HsoHpMeasurement;
+
    Float64 hpOffsetAtEnd = girderData.PrestressData.HpOffsetAtEnd;
    Float64 hpOffsetAtHp  = girderData.PrestressData.HpOffsetAtHp;
 
@@ -658,7 +662,7 @@ bool CPGSuperDoc::EditDirectInputPrestressing(SpanIndexType span,GirderIndexType
    // Fire up dialog
    CGirderSelectStrandsDlg dlg;
    dlg.InitializeData(span, gdr, girderData.PrestressData, pSpecEntry, pGdrEntry,
-                      allowEndAdjustment, allowHpAdjustment, hpOffsetAtEnd, hpOffsetAtHp, maxDebondLength);
+                      allowEndAdjustment, allowHpAdjustment, endMeasureType, hpMeasureType, hpOffsetAtEnd, hpOffsetAtHp, maxDebondLength);
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -1099,6 +1103,11 @@ void CPGSuperDoc::InitProjectProperties()
       OnFileProjectProperties();
 }
 
+long CPGSuperDoc::GetReportViewKey()
+{
+   return m_pPGSuperDocProxyAgent->GetReportViewKey();
+}
+
 void CPGSuperDoc::OnCreateInitialize()
 {
    // called before any data is loaded/created in the document
@@ -1114,6 +1123,7 @@ void CPGSuperDoc::OnCreateFinalize()
    CEAFBrokerDocument::OnCreateFinalize();
 
    PopulateReportMenu();
+/* This option works if Outlook and PGSuper are running at the same UAC level
 
    // if user is on Windows Vista or Windows 7, the Send Email feature doesn't work
    // so we will remove it from the menu
@@ -1154,7 +1164,7 @@ void CPGSuperDoc::OnCreateFinalize()
          pFileMenu->RemoveMenu(emailPos,MF_BYPOSITION,NULL);
       }
    }
-
+*/
    // Set the autocalc state on the status bar
    CPGSuperStatusBar* pStatusBar = ((CPGSuperStatusBar*)EAFGetMainFrame()->GetStatusBar());
    pStatusBar->AutoCalcEnabled( IsAutoCalcEnabled() );

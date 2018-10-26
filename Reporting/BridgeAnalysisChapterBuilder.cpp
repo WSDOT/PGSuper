@@ -47,8 +47,7 @@
 
 #include <Reporting\VehicularLoadResultsTable.h>
 #include <Reporting\VehicularLoadReactionTable.h>
-
-#include <Reporting\LiveLoadReactionTable.h>
+#include <Reporting\CombinedReactionTable.h>
 
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -100,8 +99,8 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* p = 0;
 
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
+   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(span, girder);
 
    bool bDesign = pBridgeAnalysisRptSpec->ReportDesignResults();
    bool bRating = pBridgeAnalysisRptSpec->ReportRatingResults();
@@ -166,7 +165,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
    bool bDoBearingReaction, bDummy;
    bDoBearingReaction = pBearingDesign->AreBearingReactionsAvailable(span,girder,&bDummy,&bDummy);
-   if(bDoBearingReaction)
+   if(bDoBearingReaction && span!=ALL_SPANS)
    {
       *p << CProductReactionTable().Build(pBroker,span,girder,m_AnalysisType,CProductReactionTable::BearingReactionsTable,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
 
@@ -360,7 +359,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::GirderPlacement, m_AnalysisType);
    CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::GirderPlacement, m_AnalysisType);
    CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::GirderPlacement, m_AnalysisType,CCombinedReactionTable::PierReactionsTable);
-   if(bDoBearingReaction)
+   if(bDoBearingReaction && span!=ALL_SPANS)
    {
       CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::GirderPlacement, m_AnalysisType,CCombinedReactionTable::BearingReactionsTable);
    }
@@ -392,7 +391,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
       CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval, m_AnalysisType);
       CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval, m_AnalysisType);
       CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval, m_AnalysisType,CCombinedReactionTable::PierReactionsTable);
-      if(bDoBearingReaction)
+      if(bDoBearingReaction && span!=ALL_SPANS)
       {
          CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval, m_AnalysisType,CCombinedReactionTable::BearingReactionsTable);
       }
@@ -405,7 +404,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite1,m_AnalysisType);
    CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite1,m_AnalysisType);
    CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite1,m_AnalysisType,CCombinedReactionTable::PierReactionsTable);
-   if(bDoBearingReaction)
+   if(bDoBearingReaction && span!=ALL_SPANS)
    {
       CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite1,m_AnalysisType,CCombinedReactionTable::BearingReactionsTable);
    }
@@ -417,7 +416,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2,m_AnalysisType);
    CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2,m_AnalysisType);
    CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2,m_AnalysisType,CCombinedReactionTable::PierReactionsTable);
-   if(bDoBearingReaction)
+   if(bDoBearingReaction && span!=ALL_SPANS)
    {
       CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2,m_AnalysisType,CCombinedReactionTable::BearingReactionsTable);
    }
@@ -430,7 +429,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,m_AnalysisType,bDesign,bRating);
    CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,m_AnalysisType,bDesign,bRating);
    CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,m_AnalysisType,CCombinedReactionTable::PierReactionsTable,bDesign,bRating);
-   if(bDoBearingReaction)
+   if(bDoBearingReaction && span!=ALL_SPANS)
    {
       CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,m_AnalysisType,CCombinedReactionTable::BearingReactionsTable,bDesign,bRating);
    }
@@ -439,11 +438,13 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    *pChapter << p;
    *p << _T("Live Load Reactions without Impact") << rptNewLine;
    p->SetName(_T("Live Load Reactions without Impact"));
-   CLiveLoadReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,CLiveLoadReactionTable::PierReactionsTable, pgsTypes::BridgeSite3, m_AnalysisType);
+   CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter,span,girder,pDisplayUnits, m_AnalysisType,CCombinedReactionTable::PierReactionsTable, false, true, false  );
+   CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter,span,girder,pDisplayUnits, m_AnalysisType,CCombinedReactionTable::PierReactionsTable, false, false, true  );
 
-   if(bDoBearingReaction)
+   if(bDoBearingReaction && span!=ALL_SPANS)
    {
-      CLiveLoadReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,CLiveLoadReactionTable::BearingReactionsTable, pgsTypes::BridgeSite3, m_AnalysisType);
+      CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter,span,girder,pDisplayUnits, m_AnalysisType,CCombinedReactionTable::BearingReactionsTable, false, true, false  );
+      CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter,span,girder,pDisplayUnits, m_AnalysisType,CCombinedReactionTable::BearingReactionsTable, false, false, true  );
    }
    return pChapter;
 }

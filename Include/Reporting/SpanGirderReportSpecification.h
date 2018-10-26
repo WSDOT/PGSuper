@@ -82,6 +82,8 @@ class REPORTINGCLASS CSpanReportSpecification :
 {
 public:
    CSpanReportSpecification(LPCTSTR strReportName,IBroker* pBroker,SpanIndexType spanIdx);
+   CSpanReportSpecification(const CBrokerReportSpecification& other,SpanIndexType spanIdx);
+   CSpanReportSpecification(const CSpanReportSpecification& other);
    ~CSpanReportSpecification(void);
 
    virtual std::_tstring GetReportTitle() const;
@@ -101,6 +103,7 @@ class REPORTINGCLASS CGirderReportSpecification :
 {
 public:
    CGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker,GirderIndexType gdrIdx);
+   CGirderReportSpecification(const CGirderReportSpecification& other);
    ~CGirderReportSpecification(void);
 
    virtual std::_tstring GetReportTitle() const;
@@ -114,14 +117,15 @@ protected:
    GirderIndexType m_Girder;
 };
 
-
 class REPORTINGCLASS CSpanGirderReportSpecification :
    public CSpanReportSpecification
 {
 public:
    CSpanGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   CSpanGirderReportSpecification(const CSpanGirderReportSpecification& other);
+   CSpanGirderReportSpecification(const CBrokerReportSpecification& other,SpanIndexType spanIdx,GirderIndexType gdrIdx);
    ~CSpanGirderReportSpecification(void);
-   
+
    virtual std::_tstring GetReportTitle() const;
 
    void SetGirder(GirderIndexType gdrIdx);
@@ -139,6 +143,8 @@ class REPORTINGCLASS CMultiGirderReportSpecification :
 public:
 
    CMultiGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const std::vector<SpanGirderHashType>& girderlist);
+   CMultiGirderReportSpecification(const CMultiGirderReportSpecification& other);
+
    ~CMultiGirderReportSpecification(void);
 
    virtual std::_tstring GetReportTitle() const;
@@ -153,3 +159,29 @@ public:
 protected:
    std::vector<SpanGirderHashType> m_GirderList;
 };
+
+//////////////////////////////////////////////////////////
+// CMultiViewSpanGirderReportSpecification - open a new window for each girder specified
+//////////////////////////////////////////////////////////
+class REPORTINGCLASS CMultiViewSpanGirderReportSpecification :
+   public CBrokerReportSpecification
+{
+public:
+
+   CMultiViewSpanGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const std::vector<SpanGirderHashType>& girderlist);
+   CMultiViewSpanGirderReportSpecification(const CMultiViewSpanGirderReportSpecification& other);
+   ~CMultiViewSpanGirderReportSpecification(void);
+
+   virtual std::_tstring GetReportTitle() const;
+
+   void SetGirderList(const std::vector<SpanGirderHashType>& girderlist);
+   std::vector<SpanGirderHashType> GetGirderList() const;
+
+   int IsMyGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx) const;
+
+   virtual HRESULT Validate() const;
+
+protected:
+   std::vector<SpanGirderHashType> m_GirderList;
+};
+

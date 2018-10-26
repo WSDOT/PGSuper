@@ -46,4 +46,5 @@
 #include <IFace\Tools.h>
 
 #include <PgsExt\GirderLabel.h>
+#include <afxwin.h>
 

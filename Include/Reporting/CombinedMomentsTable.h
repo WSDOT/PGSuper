@@ -25,11 +25,13 @@
 
 #include <Reporting\ReportingExp.h>
 #include <Reporting\ReportNotes.h>
+#include <IFace\Project.h>
 
 interface IBroker;
 interface IStageMap;
 interface IEAFDisplayUnits;
 interface IRatingSpecification;
+interface ILiveLoads;
 
 /*****************************************************************************
 CLASS 
@@ -83,10 +85,31 @@ public:
                       IEAFDisplayUnits* pDisplayUnits,
                       pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType,
                       bool bDesign=true,bool bRating=true) const;
+
+
+
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
 protected:
+   void BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
+                      SpanIndexType span,GirderIndexType girder,
+                      IEAFDisplayUnits* pDisplayUnits,
+                      pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType,
+                      bool bDesign,bool bRating) const;
+
+   void BuildCombinedLiveTable(IBroker* pBroker, rptChapter* pChapter,
+                      SpanIndexType span,GirderIndexType girder,
+                      IEAFDisplayUnits* pDisplayUnits,
+                      pgsTypes::AnalysisType analysisType,
+                      bool bDesign,bool bRating) const;
+
+   void BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
+                      SpanIndexType span,GirderIndexType girder,
+                      IEAFDisplayUnits* pDisplayUnits,
+                      pgsTypes::AnalysisType analysisType,
+                      bool bDesign,bool bRating) const;
+
    // GROUP: DATA MEMBERS
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
@@ -131,9 +154,48 @@ public:
 // INLINE METHODS
 //
 template <class M,class T>
-RowIndexType ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bDesign,bool bPermit,bool bRating,bool bMoment,pgsTypes::AnalysisType analysisType,IStageMap* pStageMap,IRatingSpecification* pRatingSpec,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
+RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,bool bPierTable,bool bDesign,bool bPermit,bool bRating,bool bMoment,pgsTypes::AnalysisType analysisType,IStageMap* pStageMap,IRatingSpecification* pRatingSpec,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
 {
    USES_CONVERSION;
+
+   // number of columns
+   ColumnIndexType nDesignCols = 0;
+   if ( bDesign )
+   {
+      nDesignCols += (bMoment ? 6 : 5); // Service I, Service IA or Fatigue I, Strength I min/max
+
+      if ( analysisType == pgsTypes::Envelope )
+         nDesignCols += 3; // min/max for Service I, Service III, ServiceIA/FatigueI
+
+      if ( bPermit )
+         nDesignCols += (bMoment ? 3 : 2); // Strength II min/max
+   }
+
+   ColumnIndexType nRatingCols = 0;
+   if ( bRating )
+   {
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
+         nRatingCols += (bMoment ? 3 : 2);
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
+         nRatingCols += (bMoment ? 3 : 2);
+   
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+         nRatingCols += (bMoment ? 3 : 2);
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+         nRatingCols += (bMoment ? 3 : 2);
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+         nRatingCols += (bMoment ? 5 : 4);
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+         nRatingCols += (bMoment ? 5 : 4);
+   }
+
+   ColumnIndexType nCols = nDesignCols + nRatingCols + 1;
+
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,strLabel);
 
    pTable->SetNumberOfHeaderRows(3);
 
@@ -159,14 +221,10 @@ RowIndexType ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,
    {
       if ( bDesign )
       {
-         ColumnIndexType nCols = (bMoment ? 9 : 8);
-         if ( bPermit )
-            nCols += (bMoment ? 3 : 2);
-
-         pTable->SetColumnSpan(ll_title_row,ll_title_col,nCols);
+         pTable->SetColumnSpan(ll_title_row,ll_title_col,nCols-1);
          (*pTable)(ll_title_row,ll_title_col++) << _T("Design");
 
-         for ( ColumnIndexType i = 0; i < nCols-1; i++ )
+         for ( ColumnIndexType i = 0; i < nDesignCols-1; i++ )
          {
             pTable->SetColumnSpan(ll_title_row,ll_title_col++,SKIP_CELL);
          }
@@ -236,25 +294,6 @@ RowIndexType ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,
 
       if ( bRating )
       {
-         ColumnIndexType nRatingCols = 0;
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
-            nRatingCols += (bMoment ? 3 : 2);
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
-            nRatingCols += (bMoment ? 3 : 2);
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-            nRatingCols += (bMoment ? 3 : 2);
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-            nRatingCols += (bMoment ? 3 : 2);
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-            nRatingCols += (bMoment ? 5 : 4);
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-            nRatingCols += (bMoment ? 5 : 4);
-
          pTable->SetColumnSpan(ll_title_row,ll_title_col,nRatingCols);
          (*pTable)(ll_title_row,ll_title_col++) << _T("Rating");
 
@@ -383,7 +422,7 @@ RowIndexType ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,
          pTable->SetColumnSpan(ll_title_row,ll_title_col,nCol);
          (*pTable)(ll_title_row,ll_title_col++) << _T("Design");
 
-         for ( ColumnIndexType i = 0; i < nCol-1; i++ )
+         for ( ColumnIndexType i = 0; i < nDesignCols-1; i++ )
          {
             pTable->SetColumnSpan(ll_title_row,ll_title_col++,SKIP_CELL);
          }
@@ -442,25 +481,6 @@ RowIndexType ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,
 
       if ( bRating )
       {
-         ColumnIndexType nRatingCols = 0;
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
-            nRatingCols += (bMoment ? 3 : 2);
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
-            nRatingCols += (bMoment ? 3 : 2);
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-            nRatingCols += (bMoment ? 3 : 2);
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-            nRatingCols += (bMoment ? 3 : 2);
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-            nRatingCols += (bMoment ? 5 : 4);
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-            nRatingCols += (bMoment ? 5 : 4);
-
          pTable->SetColumnSpan(ll_title_row,ll_title_col,nRatingCols);
          (*pTable)(ll_title_row,ll_title_col++) << _T("Rating");
 
@@ -579,13 +599,15 @@ RowIndexType ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,
       }
    }
 
+   *ppTable = pTable;
+
    return pTable->GetNumberOfHeaderRows();
 }
 
-///////////////////////////////////////////////////////////////////
-
 template <class M,class T>
-RowIndexType CreateCombinedLoadingTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,bool bPierTable,bool bDesign,bool bPermit,bool bPedLoading,bool bRating,pgsTypes::Stage stage,pgsTypes::Stage continuityStage,pgsTypes::AnalysisType analysisType,IRatingSpecification* pRatingSpec,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
+RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,bool bPierTable, bool bRating,pgsTypes::Stage stage,
+                                               pgsTypes::Stage continuityStage,pgsTypes::AnalysisType analysisType,
+                                               IEAFDisplayUnits* pDisplayUnits,const T& unitT)
 {
    int nRows = 0;
 
@@ -740,38 +762,6 @@ RowIndexType CreateCombinedLoadingTableHeading(rptRcTable** ppTable,LPCTSTR strL
       if ( analysisType == pgsTypes::Envelope )
          nCols += 4; // DC, DW, sum DC, sum DW min/max
 
-      if ( bDesign )
-      {
-         nCols += 2; // Design LL+IM
-
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-            nCols += 2; // fatigue
-
-         if ( bPedLoading )
-            nCols += 2;
-
-         if ( bPermit )
-            nCols += 2;
-      }
-
-      if ( bRating )
-      {
-         if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
-            nCols += 2;
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-            nCols += 2;
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-            nCols += 2;
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-            nCols += 2;
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-            nCols += 2;
-      }
-
       col1 = 0;
       col2 = 0;
       
@@ -826,81 +816,6 @@ RowIndexType CreateCombinedLoadingTableHeading(rptRcTable** ppTable,LPCTSTR strL
          (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DW"),          M, unitT );
       }
 
-      if ( bDesign )
-      {
-         if ( bPedLoading )
-         {
-            pTable->SetColumnSpan(0,col1,2);
-            (*pTable)(0,col1++) << _T("* PL");
-            (*pTable)(1,col2++) << COLHDR(_T("Max"),       M, unitT );
-            (*pTable)(1,col2++) << COLHDR(_T("Min"),       M, unitT );
-         }
-
-         pTable->SetColumnSpan(0,col1,2);
-         (*pTable)(0,col1++) << _T("* LL+IM Design");
-         (*pTable)(1,col2++) << COLHDR(_T("Max"),       M, unitT );
-         (*pTable)(1,col2++) << COLHDR(_T("Min"),       M, unitT );
-
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-         {
-            pTable->SetColumnSpan(0,col1,2);
-            (*pTable)(0,col1++) << _T("* LL+IM Fatigue");
-            (*pTable)(1,col2++) << COLHDR(_T("Max"),       M, unitT );
-            (*pTable)(1,col2++) << COLHDR(_T("Min"),       M, unitT );
-         }
-
-         if ( bPermit )
-         {
-            pTable->SetColumnSpan(0,col1,2);
-            (*pTable)(0,col1++) << _T("* LL+IM Permit");
-            (*pTable)(1,col2++) << COLHDR(_T("Max"),       M, unitT );
-            (*pTable)(1,col2++) << COLHDR(_T("Min"),       M, unitT );
-         }
-      }
-
-      if ( bRating )
-      {
-         if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
-         {
-            pTable->SetColumnSpan(0,col1,2);
-            (*pTable)(0,col1++) << _T("* LL+IM Design");
-            (*pTable)(1,col2++) << COLHDR(_T("Max"),       M, unitT );
-            (*pTable)(1,col2++) << COLHDR(_T("Min"),       M, unitT );
-         }
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-         {
-            pTable->SetColumnSpan(0,col1,2);
-            (*pTable)(0,col1++) << _T("* LL+IM Legal Routine");
-            (*pTable)(1,col2++) << COLHDR(_T("Max"),       M, unitT );
-            (*pTable)(1,col2++) << COLHDR(_T("Min"),       M, unitT );
-         }
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-         {
-            pTable->SetColumnSpan(0,col1,2);
-            (*pTable)(0,col1++) << _T("* LL+IM Legal Special");
-            (*pTable)(1,col2++) << COLHDR(_T("Max"),       M, unitT );
-            (*pTable)(1,col2++) << COLHDR(_T("Min"),       M, unitT );
-         }
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-         {
-            pTable->SetColumnSpan(0,col1,2);
-            (*pTable)(0,col1++) << _T("* LL+IM Permit Routine");
-            (*pTable)(1,col2++) << COLHDR(_T("Max"),       M, unitT );
-            (*pTable)(1,col2++) << COLHDR(_T("Min"),       M, unitT );
-         }
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-         {
-            pTable->SetColumnSpan(0,col1,2);
-            (*pTable)(0,col1++) << _T("* LL+IM Permit Special");
-            (*pTable)(1,col2++) << COLHDR(_T("Max"),       M, unitT );
-            (*pTable)(1,col2++) << COLHDR(_T("Min"),       M, unitT );
-         }
-      }
-
       nRows = 2;
    }
    else
@@ -916,6 +831,392 @@ RowIndexType CreateCombinedLoadingTableHeading(rptRcTable** ppTable,LPCTSTR strL
    *ppTable = pTable;
    return pTable->GetNumberOfHeaderRows();
 }
+
+template <class M,class T>
+RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,bool bPierTable,bool bDesign,bool bPermit,
+                                                   bool bPedLoading,bool bRating,bool is4Stress, pgsTypes::Stage stage,
+                                                   pgsTypes::AnalysisType analysisType,IRatingSpecification* pRatingSpec,
+                                                   IEAFDisplayUnits* pDisplayUnits,const T& unitT)
+{
+   ATLASSERT ( stage == pgsTypes::BridgeSite3 );
+   ATLASSERT( !(bPedLoading && bRating) ); // These are different tables - must create separately
+
+   rptRcTable* pTable;
+
+   int nCols = 1; // location
+   int nVhls = 0; // number of vehicles for design
+
+   if ( bDesign )
+   {
+      nCols += 2; // Design LL+IM
+      nVhls++;
+
+      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      {
+         nCols += 2; // fatigue
+         nVhls++;
+      }
+
+      if ( bPermit && !is4Stress )
+      {
+         nCols += 2;
+         nVhls++;
+      }
+
+      if ( bPedLoading )
+      {
+         nCols += 2;
+
+         // we have a double-width table (except for location and ped)
+         nCols += nCols-3;
+      }
+   }
+
+   if ( bRating )
+   {
+      if (pRatingSpec->IncludePedestrianLiveLoad())
+         nCols += 2;
+
+      if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+         nCols += 2;
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+         nCols += 2;
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+         nCols += 2;
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine)  && !is4Stress )
+         nCols += 2;
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) && !is4Stress )
+         nCols += 2;
+   }
+
+   int col1 = 0;
+   int col2 = 0;
+   
+   pTable = pgsReportStyleHolder::CreateDefaultTable(nCols, strLabel);
+
+   pTable->SetRowSpan(0,0,3);
+   pTable->SetRowSpan(1,0,SKIP_CELL);
+
+   if ( !bPierTable )
+      (*pTable)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   else
+      (*pTable)(0,col1++) << _T("");
+
+   col2++;
+
+   int nRows;
+   if ( bDesign )
+   {
+      nRows = 3;
+      int col3 = col2;
+
+      pTable->SetRowSpan(2,0,SKIP_CELL);
+
+      pTable->SetNumberOfHeaderRows(nRows);
+
+      if ( bPedLoading )
+      {
+         pTable->SetColumnSpan(0,col2++,2);
+         pTable->SetRowSpan(0,col1,2);
+         pTable->SetRowSpan(1,col1,SKIP_CELL);
+         (*pTable)(0,col1++) << _T("* PL");
+         (*pTable)(2,col3++) << COLHDR(_T("Max"),       M, unitT );
+         (*pTable)(2,col3++) << COLHDR(_T("Min"),       M, unitT );
+
+         pTable->SetColumnSpan(0,col1,nVhls*2);
+         (*pTable)(0,col1++) << _T("Vehicles (LL+IM)");
+         pTable->SetColumnSpan(1,col2,2);
+         (*pTable)(1,col2++) << _T("* Design");
+         (*pTable)(2,col3++) << COLHDR(_T("Max"),       M, unitT );
+         (*pTable)(2,col3++) << COLHDR(_T("Min"),       M, unitT );
+
+         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         {
+            pTable->SetColumnSpan(1,col2,2);
+            (*pTable)(1,col2++) << _T("* Fatigue");
+            (*pTable)(2,col3++) << COLHDR(_T("Max"),       M, unitT );
+            (*pTable)(2,col3++) << COLHDR(_T("Min"),       M, unitT );
+         }
+
+         if ( bPermit  && !is4Stress)
+         {
+            pTable->SetColumnSpan(1,col2,2);
+            (*pTable)(1,col2++) << _T("* Permit");
+            (*pTable)(2,col3++) << COLHDR(_T("Max"),       M, unitT );
+            (*pTable)(2,col3++) << COLHDR(_T("Min"),       M, unitT );
+         }
+
+         // Total Live Load
+         int lcnt=1;
+         pTable->SetColumnSpan(0,col1,nVhls*2);
+         (*pTable)(0,col1++) << _T("Total Live Load (PL and LL+IM)");
+         pTable->SetColumnSpan(1,col2,2);
+         (*pTable)(1,col2++) << _T("* Design")<<Super(lcnt++);
+         (*pTable)(2,col3++) << COLHDR(_T("Max"),       M, unitT );
+         (*pTable)(2,col3++) << COLHDR(_T("Min"),       M, unitT );
+
+         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         {
+            pTable->SetColumnSpan(1,col2,2);
+            (*pTable)(1,col2++) << _T("* Fatigue")<<Super(lcnt++);
+            (*pTable)(2,col3++) << COLHDR(_T("Max"),       M, unitT );
+            (*pTable)(2,col3++) << COLHDR(_T("Min"),       M, unitT );
+         }
+
+         if ( bPermit  && !is4Stress)
+         {
+            pTable->SetColumnSpan(1,col2,2);
+            (*pTable)(1,col2++) << _T("* Permit")<<Super(lcnt++);
+            (*pTable)(2,col3++) << COLHDR(_T("Max"),       M, unitT );
+            (*pTable)(2,col3++) << COLHDR(_T("Min"),       M, unitT );
+         }
+      }
+      else
+      {
+         pTable->SetColumnSpan(0,col1,nVhls*2);
+         (*pTable)(0,col1++) << _T("Total Live Load");
+         pTable->SetColumnSpan(1,col2,2);
+         (*pTable)(1,col2++) << _T("* LL+IM Design");
+         (*pTable)(2,col3++) << COLHDR(_T("Max"),       M, unitT );
+         (*pTable)(2,col3++) << COLHDR(_T("Min"),       M, unitT );
+
+         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         {
+            pTable->SetColumnSpan(1,col2,2);
+            (*pTable)(1,col2++) << _T("* LL+IM Fatigue");
+            (*pTable)(2,col3++) << COLHDR(_T("Max"),       M, unitT );
+            (*pTable)(2,col3++) << COLHDR(_T("Min"),       M, unitT );
+         }
+
+         if ( bPermit  && !is4Stress)
+         {
+            pTable->SetColumnSpan(1,col2,2);
+            (*pTable)(1,col2++) << _T("* LL+IM Permit");
+            (*pTable)(2,col3++) << COLHDR(_T("Max"),       M, unitT );
+            (*pTable)(2,col3++) << COLHDR(_T("Min"),       M, unitT );
+         }
+      }
+
+      // skip unused columns
+      for (int ic=col1; ic<nCols; ic++)
+      {
+         pTable->SetColumnSpan(0,ic,SKIP_CELL);
+      }
+
+      for (int ic=col2; ic<nCols; ic++)
+      {
+         pTable->SetColumnSpan(1,ic,SKIP_CELL);
+      }
+   }
+
+   if ( bRating )
+   {
+      nRows = 2;
+      pTable->SetNumberOfHeaderRows(nRows);
+
+      if (pRatingSpec->IncludePedestrianLiveLoad())
+      {
+         pTable->SetColumnSpan(0,col1,2);
+         (*pTable)(0,col1++) << _T("*$ PED");
+         (*pTable)(1,col2++) << COLHDR(_T("Max"),       M, unitT );
+         (*pTable)(1,col2++) << COLHDR(_T("Min"),       M, unitT );
+      }
+
+      if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+      {
+         pTable->SetColumnSpan(0,col1,2);
+         (*pTable)(0,col1++) << _T("* LL+IM Design");
+         (*pTable)(1,col2++) << COLHDR(_T("Max"),       M, unitT );
+         (*pTable)(1,col2++) << COLHDR(_T("Min"),       M, unitT );
+      }
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+      {
+         pTable->SetColumnSpan(0,col1,2);
+         (*pTable)(0,col1++) << _T("* LL+IM Legal Routine");
+         (*pTable)(1,col2++) << COLHDR(_T("Max"),       M, unitT );
+         (*pTable)(1,col2++) << COLHDR(_T("Min"),       M, unitT );
+      }
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+      {
+         pTable->SetColumnSpan(0,col1,2);
+         (*pTable)(0,col1++) << _T("* LL+IM Legal Special");
+         (*pTable)(1,col2++) << COLHDR(_T("Max"),       M, unitT );
+         (*pTable)(1,col2++) << COLHDR(_T("Min"),       M, unitT );
+      }
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) && !is4Stress )
+      {
+         pTable->SetColumnSpan(0,col1,2);
+         (*pTable)(0,col1++) << _T("* LL+IM Permit Routine");
+         (*pTable)(1,col2++) << COLHDR(_T("Max"),       M, unitT );
+         (*pTable)(1,col2++) << COLHDR(_T("Min"),       M, unitT );
+      }
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) && !is4Stress )
+      {
+         pTable->SetColumnSpan(0,col1,2);
+         (*pTable)(0,col1++) << _T("* LL+IM Permit Special");
+         (*pTable)(1,col2++) << COLHDR(_T("Max"),       M, unitT );
+         (*pTable)(1,col2++) << COLHDR(_T("Min"),       M, unitT );
+      }
+
+      // skip unused columns
+      for (int ic=col1; ic<nCols; ic++)
+      {
+         pTable->SetColumnSpan(0,ic,SKIP_CELL);
+      }
+   }
+
+   *ppTable = pTable;
+   return nRows;
+}
+
+inline std::_tstring PedestrianFootnote(ILiveLoads::PedestrianLoadApplicationType appType)
+{
+   if (appType==ILiveLoads::PedDontApply)
+   {
+      return _T(" - Pedestrian live load NOT applied with vehicular loads");
+   }
+   else if (appType==ILiveLoads::PedConcurrentWithVehicular)
+   {
+      return _T(" - Pedestrian live load applied concurrently with vehicular loads");
+   }
+   else if (appType==ILiveLoads::PedEnvelopeWithVehicular)
+   {
+      return _T(" - Pedestrian live load enveloped with vehicular loads");
+   }
+   else
+   {
+      ATLASSERT(0);
+      return _T(" - Unknown pedestrian live load application");
+   }
+ }
+
+inline void SumPedAndLiveLoad(ILiveLoads::PedestrianLoadApplicationType appType, std::vector<Float64>& minLL, std::vector<Float64>& maxLL,
+                              const std::vector<Float64>& minPed, const std::vector<Float64>& maxPed)
+{
+   ATLASSERT(minLL.size()==minPed.size());
+   ATLASSERT(maxLL.size()==maxPed.size());
+
+   if (appType==ILiveLoads::PedDontApply)
+   {
+      return; // nothing to do here
+   }
+   else if (appType==ILiveLoads::PedConcurrentWithVehicular)
+   {
+      // summ values
+      std::vector<Float64>::iterator minIt = minLL.begin();
+      std::vector<Float64>::iterator minEnd = minLL.end();
+      std::vector<Float64>::const_iterator minPedIt = minPed.begin();
+      while(minIt != minEnd)
+      {
+         *minIt += *minPedIt;
+         minIt++;
+         minPedIt++;
+      }
+
+      std::vector<Float64>::iterator maxIt = maxLL.begin();
+      std::vector<Float64>::iterator maxEnd = maxLL.end();
+      std::vector<Float64>::const_iterator maxPedIt = maxPed.begin();
+      while(maxIt != maxEnd)
+      {
+         *maxIt += *maxPedIt;
+         maxIt++;
+         maxPedIt++;
+      }
+   }
+   else if (appType==ILiveLoads::PedEnvelopeWithVehicular)
+   {
+      // envelope values
+      std::vector<Float64>::iterator minIt = minLL.begin();
+      std::vector<Float64>::iterator minEnd = minLL.end();
+      std::vector<Float64>::const_iterator minPedIt = minPed.begin();
+      while(minIt != minEnd)
+      {
+         *minIt = min(*minIt, *minPedIt);
+         minIt++;
+         minPedIt++;
+      }
+
+      std::vector<Float64>::iterator maxIt = maxLL.begin();
+      std::vector<Float64>::iterator maxEnd = maxLL.end();
+      std::vector<Float64>::const_iterator maxPedIt = maxPed.begin();
+      while(maxIt != maxEnd)
+      {
+         *maxIt = max(*maxIt, *maxPedIt);
+         maxIt++;
+         maxPedIt++;
+      }
+   }
+}
+
+inline void SumPedAndLiveLoad(ILiveLoads::PedestrianLoadApplicationType appType, std::vector<sysSectionValue>& minLL, std::vector<sysSectionValue>& maxLL,
+                              const std::vector<sysSectionValue>& minPed, const std::vector<sysSectionValue>& maxPed)
+{
+   ATLASSERT(minLL.size()==minPed.size());
+   ATLASSERT(maxLL.size()==maxPed.size());
+
+   if (appType==ILiveLoads::PedDontApply)
+   {
+      return; // nothing to do here
+   }
+   else if (appType==ILiveLoads::PedConcurrentWithVehicular)
+   {
+      // summ values
+      std::vector<sysSectionValue>::iterator minIt = minLL.begin();
+      std::vector<sysSectionValue>::iterator minEnd = minLL.end();
+      std::vector<sysSectionValue>::const_iterator minPedIt = minPed.begin();
+      while(minIt != minEnd)
+      {
+         *minIt += *minPedIt;
+         minIt++;
+         minPedIt++;
+      }
+
+      std::vector<sysSectionValue>::iterator maxIt = maxLL.begin();
+      std::vector<sysSectionValue>::iterator maxEnd = maxLL.end();
+      std::vector<sysSectionValue>::const_iterator maxPedIt = maxPed.begin();
+      while(maxIt != maxEnd)
+      {
+         *maxIt += *maxPedIt;
+         maxIt++;
+         maxPedIt++;
+      }
+   }
+   else if (appType==ILiveLoads::PedEnvelopeWithVehicular)
+   {
+      // envelope values
+      std::vector<sysSectionValue>::iterator minIt = minLL.begin();
+      std::vector<sysSectionValue>::iterator minEnd = minLL.end();
+      std::vector<sysSectionValue>::const_iterator minPedIt = minPed.begin();
+      while(minIt != minEnd)
+      {
+         minIt->Left()  = min(minIt->Left(), minPedIt->Left());
+         minIt->Right() = min(minIt->Right(), minPedIt->Right());
+         minIt++;
+         minPedIt++;
+      }
+
+      std::vector<sysSectionValue>::iterator maxIt = maxLL.begin();
+      std::vector<sysSectionValue>::iterator maxEnd = maxLL.end();
+      std::vector<sysSectionValue>::const_iterator maxPedIt = maxPed.begin();
+      while(maxIt != maxEnd)
+      {
+         maxIt->Left()  = max(maxIt->Left(), maxPedIt->Left());
+         maxIt->Right() = max(maxIt->Right(), maxPedIt->Right());
+         maxIt++;
+         maxPedIt++;
+      }
+   }
+}
+
+
 // EXTERNAL REFERENCES
 //
 

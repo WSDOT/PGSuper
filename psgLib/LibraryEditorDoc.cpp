@@ -57,10 +57,7 @@ static char THIS_FILE[] = __FILE__;
 
 #include "resource.h"       // main symbols 
 
-#define LIBRARY_PLUGIN_COMMAND_BASE 0xC000 // 49152 (this gives us about 8100 plug commands)
-#if LIBRARY_PLUGIN_COMMAND_BASE < _APS_NEXT_COMMAND_VALUE
-#error "Library Manager Plugins: Command IDs interfere with plug-in commands, change the plugin command base ID"
-#endif
+#define LIBRARY_PLUGIN_COMMAND_COUNT 256
 
 static const Float64 FILE_VERSION=1.00;
 
@@ -91,9 +88,8 @@ CLibraryEditorDoc::CLibraryEditorDoc()
    CEAFStatusCenter& status_center = GetStatusCenter();
    status_center.Enable(false);
 
-
-   // Set the base command ID for EAFDocumentPlugin objects
-   GetPluginCommandManager()->SetBaseCommandID(LIBRARY_PLUGIN_COMMAND_BASE);
+   // Reserve command IDs for document plug ins
+   GetPluginCommandManager()->ReserveCommandIDRange(LIBRARY_PLUGIN_COMMAND_COUNT);
 }
 
 CLibraryEditorDoc::~CLibraryEditorDoc()

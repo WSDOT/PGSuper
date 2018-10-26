@@ -40,7 +40,7 @@ public:
    // intialize and retreive data before/after domodal
    void InitializeData(SpanIndexType span, GirderIndexType girder, const CPrestressData& rPrestress, 
                        const SpecLibraryEntry* pSpecEntry,const GirderLibraryEntry* pGdrEntry, bool allowEndAdjustment, bool allowHpAdjustment,
-                       Float64 hpOffsetAtEnd, Float64 hpOffsetAtHp, 
+                       HarpedStrandOffsetType endMeasureType, HarpedStrandOffsetType hpMeasureType, Float64 hpOffsetAtEnd, Float64 hpOffsetAtHp, 
                        Float64 maxDebondLength);
 
    bool GetData(CPrestressData& rPrestress); // return true if data changed

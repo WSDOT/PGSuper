@@ -94,10 +94,15 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    GET_IFACE2(pBroker,IProductForces,pForces);
    GET_IFACE2(pBroker,IProductForces2,pForces2);
    pgsTypes::Stage girderLoadStage = pLoads->GetGirderDeadLoadStage(span,gdr);
-   bool bPedLoading = pLoads->HasPedestrianLoad(startSpan,gdr);
-   bool bSidewalk = pLoads->HasSidewalkLoad(startSpan,gdr);
-   bool bShearKey = pLoads->HasShearKeyLoad(startSpan,gdr);
+   bool bPedLoading;
+   bool bSidewalk;
+   bool bShearKey;
+   bool bConstruction;
+   bool bPermit;
+   pgsTypes::Stage continuity_stage;
 
+
+   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,span,gdr,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuity_stage,&startSpan,&nSpans);
 
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -110,116 +115,9 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    bool bSlabShrinkage = ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() && 
                          (loss_method == LOSSES_AASHTO_REFINED || loss_method == LOSSES_WSDOT_REFINED) ? true : false);
 
-   GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoads);
-   bool bConstruction = !IsZero(pUserLoads->GetConstructionLoad());
-
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
-
-   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
-
-   pgsTypes::Stage continuity_stage = pgsTypes::BridgeSite2;
-   SpanIndexType spanIdx;
-   for ( spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
+   if ( bSlabShrinkage )
    {
-      pgsTypes::Stage left_stage, right_stage;
-      pBridge->GetContinuityStage(spanIdx,&left_stage,&right_stage);
-      continuity_stage = _cpp_min(continuity_stage,left_stage);
-      continuity_stage = _cpp_min(continuity_stage,right_stage);
-   }
-   // last pier
-   pgsTypes::Stage left_stage, right_stage;
-   pBridge->GetContinuityStage(spanIdx,&left_stage,&right_stage);
-   continuity_stage = _cpp_min(continuity_stage,left_stage);
-   continuity_stage = _cpp_min(continuity_stage,right_stage);
-
-   ColumnIndexType nCols = 7;
-
-   if ( bDeckPanels )
-   {
-      if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1)
-         nCols += 2;
-      else
-         nCols++;
-   }
-
-   if ( bConstruction )
-   {
-      if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1)
-         nCols += 2;
-      else
-         nCols++;
-   }
-
-   if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
-      nCols += 2; // add one more each for min/max slab and slab pad
-
-   if ( analysisType == pgsTypes::Envelope )
-      nCols += 2; // add one more each for min/max overlay and min/max traffic barrier
-
-   if ( bDesign )
-   {
-      if ( bPedLoading )
-         nCols += 2;
-
-
-      nCols += 2;
-
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-         nCols += 2; // fatigue
-
-      if ( bSlabShrinkage )
-      {
-         nCols++; // slab shrikage
-      }
-
-      if ( bPermit )
-         nCols += 2;
-   }
-
-
-   if ( bSidewalk )
-   {
-      if (analysisType == pgsTypes::Envelope )
-      {
-         nCols += 2;
-      }
-      else
-      {
-         nCols++;
-      }
-   }
-
-   if ( bShearKey )
-   {
-      if (analysisType == pgsTypes::Envelope )
-      {
-         nCols += 2;
-      }
-      else
-      {
-         nCols++;
-      }
-   }
-
-   if ( bRating )
-   {
-      if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
-      {
-         nCols += 2;
-      }
-
-      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-         nCols += 2;
-
-      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-         nCols += 2;
-
-      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-         nCols += 2;
-
-      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-         nCols += 2;
+      nCols++; // slab shrinkage
    }
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Bridge Site Stress"));
@@ -229,6 +127,8 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
+
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
    RowIndexType row = ConfigureProductLoadTableHeading<rptStressUnitTag,unitmgtStressData>(p_table,false,bSlabShrinkage,bConstruction,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,bPermit,bRating,analysisType,continuity_stage,pRatingSpec,pDisplayUnits,pDisplayUnits->GetStressUnit());
 

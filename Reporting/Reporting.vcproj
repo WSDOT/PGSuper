@@ -891,6 +891,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\MultiViewReportDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\MVRChapterBuilder.cpp"
 				>
 			</File>
@@ -968,6 +972,10 @@
 			</File>
 			<File
 				RelativePath=".\ReportStyleHolder.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\RMultiGirderSelectDlg.cpp"
 				>
 			</File>
 			<File
@@ -1463,6 +1471,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\MultiViewReportDlg.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\Reporting\MVRChapterBuilder.h"
 				>
 			</File>
@@ -1548,6 +1560,10 @@
 			</File>
 			<File
 				RelativePath=".\Resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\RMultiGirderSelectDlg.h"
 				>
 			</File>
 			<File

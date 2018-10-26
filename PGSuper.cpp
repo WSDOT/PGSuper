@@ -32,10 +32,12 @@
 
 #include "resource.h"       // main symbols 
 
-#define BRIDGELINK_PLUGIN_COMMAND_BASE 0xC000 // 49152 (this gives us about 8100 plug commands)
-#if BRIDGELINK_PLUGIN_COMMAND_BASE < _APS_NEXT_COMMAND_VALUE
-#error "BridgeLink Application Plugins: Command IDs interfere with plug-in commands, change the plugin command base ID"
-#endif
+// This is the range of command IDs for all plug-in commands... all means all commands added
+// to the menus of the main executable, the appplugin document and view menus, and plugin supplied menus,
+// toolbars, and accelerator tables
+#define FIRST_BRIDGELINK_PLUGIN_COMMAND 0x8200
+#define LAST_BRIDGELINK_PLUGIN_COMMAND  0x9000
+#define BRIDGELINK_PLUGIN_COMMAND_COUNT 256
 
 #include "MainFrm.h"
 #include "PGSuperDocManager.h"
@@ -199,9 +201,17 @@ BOOL CPGSuperApp::InitInstance()
 #endif
    EnableTipOfTheDay(strTipFile); // must be enabled before InitInstance
 
-   // Do this before InitInstace...
-   // Set the first command ID for plugins that add commands to the interface
-   GetPluginCommandManager()->SetBaseCommandID(BRIDGELINK_PLUGIN_COMMAND_BASE);
+   // Do this before InitInstance on base class
+   
+   // Reserve the total range of command IDs that can be used for ALL plugins.
+   // ALL means all commands added to the menus of the main executable, the 
+   // EAFAppPlugin document and view menus, and plugin supplied menus,
+   // toolbars, and accelerator tables
+   CEAFPluginCommandManager::ReserveTotalCommandIDRange(FIRST_BRIDGELINK_PLUGIN_COMMAND,LAST_BRIDGELINK_PLUGIN_COMMAND);
+
+   // Reserve BRIDGELINK_PLUGIN_COMMAND_COUNT command IDs for commands that get added
+   // to the main application
+   GetPluginCommandManager()->ReserveCommandIDRange(BRIDGELINK_PLUGIN_COMMAND_COUNT);
 
    // user can double click on a file to open
    EnableShellOpen();

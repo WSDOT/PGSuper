@@ -92,9 +92,6 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
       return;
 
    pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
-   std::_tstring strName = pProductLoads->GetLiveLoadName(llType,0);
-   if ( strName == _T("No Live Load Defined") )
-      return;
 
    bool bNegMoments = pBridge->ProcessNegativeMoments(ALL_SPANS);
 
@@ -103,6 +100,15 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
    *pChapter << pPara;
    pPara->SetName(OLE2T(bstrLiveLoadType));
    *pPara << pPara->GetName() << rptNewLine;
+
+   std::_tstring strName = pProductLoads->GetLiveLoadName(llType,0);
+   if ( strName == _T("No Live Load Defined") )
+   {
+      pPara = new rptParagraph;
+      *pChapter << pPara;
+      *pPara << strName << rptNewLine;
+      return;
+   }
 
    VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
    VehicleIndexType firstVehicleIdx = 0;

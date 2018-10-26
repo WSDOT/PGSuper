@@ -1950,7 +1950,7 @@ bool pgsShearDesignTool::DetailAdditionalConfinement()
 
                   if (sz_item.leftEnd <= right_zoneloc)
                   {
-                     bdone = true; // out of splitting zone - time to quit
+                     bdone = true; // out of confinement zone - time to quit
                   }
                }
             }

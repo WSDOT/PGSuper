@@ -12082,7 +12082,8 @@ std::vector<pgsPointOfInterest> CBridgeAgentImp::GetPointsOfInterest(SpanIndexTy
    }
 
    GET_IFACE(ILiveLoads,pLiveLoads);
-   bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
+   GET_IFACE(ILimitStateForces,pLimitStateForces);
+   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(span, gdr);
 
    // collect the desired POI into a vector
    std::vector<pgsPointOfInterest> poi;
@@ -12158,8 +12159,8 @@ std::vector<pgsPointOfInterest> CBridgeAgentImp::GetPointsOfInterest(SpanIndexTy
 
    Uint32 mgrMode = (mode == POIFIND_AND ? POIMGR_AND : POIMGR_OR);
 
-   GET_IFACE(ILiveLoads,pLiveLoads);
-   bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
+   GET_IFACE(ILimitStateForces,pLimitStateForces);
+   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(span, gdr);
 
    // collect the desired POI into a vector
    std::vector<pgsPointOfInterest> poi;
@@ -12232,8 +12233,8 @@ std::vector<pgsPointOfInterest> CBridgeAgentImp::GetPointsOfInterest(SpanIndexTy
 
    Uint32 mgrMode = (mode == POIFIND_AND ? POIMGR_AND : POIMGR_OR);
 
-   GET_IFACE(ILiveLoads,pLiveLoads);
-   bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
+   GET_IFACE(ILimitStateForces,pLimitStateForces);
+   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(span, gdr);
 
    // collect the desired POI into a vector
    std::vector<pgsPointOfInterest> poi;

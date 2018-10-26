@@ -36,6 +36,7 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\RatingSpecification.h>
+#include <IFace\AnalysisResults.h>
 
 #include <Reporter\ReportingUtils.h>
 
@@ -257,7 +258,8 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
+   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(span, gdr);
 
    bool bDesign = m_bDesign;
    bool bRating;

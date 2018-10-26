@@ -87,6 +87,27 @@ protected:
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
    //------------------------------------------------------------------------
+   virtual void BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
+                      SpanIndexType span,GirderIndexType girder,
+                      IEAFDisplayUnits* pDisplayUnits,
+                      pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType,
+                      bool bDesign = true,bool bRating = true) const;
+
+   //------------------------------------------------------------------------
+   virtual void BuildCombinedLiveTable(IBroker* pBroker, rptChapter* pChapter,
+                      SpanIndexType span,GirderIndexType girder,
+                      IEAFDisplayUnits* pDisplayUnits,
+                      pgsTypes::AnalysisType analysisType,
+                      bool bDesign = true,bool bRating = true) const;
+
+   //------------------------------------------------------------------------
+   virtual void BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
+                      SpanIndexType span,GirderIndexType girder,
+                      IEAFDisplayUnits* pDisplayUnits,
+                      pgsTypes::AnalysisType analysisType,
+                      bool bDesign = true,bool bRating = true) const;
+
+   //------------------------------------------------------------------------
    void MakeCopy(const CCombinedStressTable& rOther);
 
    //------------------------------------------------------------------------

@@ -226,7 +226,7 @@ void CLiveLoadSelectDlg::SetPedestrianComboText(int iCombo, int iStatic)
    pCombo->SetItemData(idx,(DWORD_PTR)ILiveLoads::PedDontApply);
 
    idx = pCombo->AddString(_T("Concurrently with vehicular live load"));
-   pCombo->SetItemData(idx,(DWORD_PTR)ILiveLoads::PedConcurrentWithVehiculuar);
+   pCombo->SetItemData(idx,(DWORD_PTR)ILiveLoads::PedConcurrentWithVehicular);
 
    idx = pCombo->AddString(_T("Enveloped with vehicular live load"));
    pCombo->SetItemData(idx,(DWORD_PTR)ILiveLoads::PedEnvelopeWithVehicular);

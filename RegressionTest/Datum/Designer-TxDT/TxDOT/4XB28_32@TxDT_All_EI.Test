@@ -1,15 +1,15 @@
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   4  8.67  1     1   4XB28       12   1/2  270 10.64 10.64   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.892   -1.222    1329 0.731  0.858  0.05 -0.01 -0.00 -0.00 -0.01  14.20  49.35   1.00   1.00   1.00
+ 32.00   4  8.67  1     1   4XB28       12   1/2  270 10.64 10.64   0  2.50  12   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.892   -1.222    1329 0.731  0.858  0.05 -0.01 -0.00 -0.00 -0.01  14.20  49.35   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   4  8.67  1     2   4XB28       12   1/2  270 10.64 10.64   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.897   -1.227    1323 0.710  0.858  0.05 -0.01 -0.00 -0.00 -0.01  14.20  49.22   1.00   1.00   1.00
+ 32.00   4  8.67  1     2   4XB28       12   1/2  270 10.64 10.64   0  2.50  12   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.897   -1.227    1323 0.710  0.858  0.05 -0.01 -0.00 -0.00 -0.01  14.20  49.22   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful

@@ -42,7 +42,7 @@
 #include <Reporting\LiveLoadDistributionFactorTable.h>
 #include <Reporting\VehicularLoadResultsTable.h>
 #include <Reporting\VehicularLoadReactionTable.h>
-#include <Reporting\LiveLoadReactionTable.h>
+#include <Reporting\CombinedReactionTable.h>
 
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -115,9 +115,6 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
-
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
 
    bool bDesign = m_bDesign;
    bool bRating;
@@ -217,7 +214,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
    GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
    bool bDoBearingReaction, bDummy;
    bDoBearingReaction = pBearingDesign->AreBearingReactionsAvailable(span,girder,&bDummy,&bDummy);
-   if(bDoBearingReaction)
+   if(bDoBearingReaction && span!=ALL_SPANS)
    {
       *p << CProductReactionTable().Build(pBroker,span,girder,analysisType,CProductReactionTable::BearingReactionsTable,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
 
@@ -396,12 +393,13 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
    {
       p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << p;
-      *p << _T("Live Load Reactions without Impact") << rptNewLine;
-      p->SetName(_T("Live Load Reactions without Impact"));
-      CLiveLoadReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,CLiveLoadReactionTable::PierReactionsTable, pgsTypes::BridgeSite3, analysisType);
+      *p << _T("Live Load Reactions Without Impact") << rptNewLine;
+      p->SetName(_T("Live Load Reactions Without Impact"));
+      CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter,span,girder,pDisplayUnits, analysisType,CCombinedReactionTable::PierReactionsTable, false, true, false );
+
       if(bDoBearingReaction)
       {
-         CLiveLoadReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,CLiveLoadReactionTable::BearingReactionsTable, pgsTypes::BridgeSite3, analysisType);
+         CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter,span,girder,pDisplayUnits, analysisType,CCombinedReactionTable::BearingReactionsTable, false, true, false );
       }
    }
 

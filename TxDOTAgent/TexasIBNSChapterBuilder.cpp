@@ -71,11 +71,11 @@ LPCTSTR CTexasIBNSChapterBuilder::GetName() const
 /*--------------------------------------------------------------------*/
 rptChapter* CTexasIBNSChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   CMultiGirderReportSpecification* pReportSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pSGRptSpec->GetBroker(&pBroker);
-   SpanIndexType span = pSGRptSpec->GetSpan();
-   GirderIndexType girder = pSGRptSpec->GetGirder();
+   pReportSpec->GetBroker(&pBroker);
+
+   std::vector<SpanGirderHashType> list = pReportSpec->GetGirderList();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
@@ -83,21 +83,33 @@ rptChapter* CTexasIBNSChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
-	/* For broker passed in, get interface information */
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,girder);
 
-   if( pGdrArtifact->Passed() )
+   // Loop over all requested girders and report spec check results
+   for (std::vector<SpanGirderHashType>::iterator it=list.begin(); it!=list.end(); it++)
    {
-      rptParagraph* pPara = new rptParagraph;
-      *pChapter << pPara;
-      *pPara << color(Green) << _T("The Specification Check was Successful") << color(Black) << rptNewLine;
-   }
-   else
-   {
-      rptParagraph* pPara = new rptParagraph;
-      *pChapter << pPara;
-      *pPara << color(Red) << _T("The Specification Check Was Not Successful") << color(Black);
+      SpanIndexType span;
+      GirderIndexType gdr;
+      UnhashSpanGirder(*it,&span,&gdr);
+
+      const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,gdr);
+
+      if( pGdrArtifact->Passed() )
+      {
+         rptParagraph* pPara = new rptParagraph;
+         *pChapter << pPara;
+         *pPara << color(Green) << _T("The Specification Check for Span ")
+                << LABEL_SPAN(span)<<_T(", Girder ")<<LABEL_GIRDER(gdr) 
+                << _T(" was Successful") << color(Black) << rptNewLine;
+      }
+      else
+      {
+         rptParagraph* pPara = new rptParagraph;
+         *pChapter << pPara;
+         *pPara << color(Red) << _T("The Specification Check for Span ")
+                << LABEL_SPAN(span)<<_T(", Girder ")<<LABEL_GIRDER(gdr) 
+                << _T(" was Not Successful") << color(Black);
+      }
    }
 
 #if defined IGNORE_2007_CHANGES
@@ -116,7 +128,7 @@ rptChapter* CTexasIBNSChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    // let the paragraph builder to all the work here...
    CTexasIBNSParagraphBuilder parabuilder;
-   rptParagraph* pcontent = parabuilder.Build(pBroker,span,girder,pDisplayUnits,level);
+   rptParagraph* pcontent = parabuilder.Build(pBroker, list, pDisplayUnits, level);
 
    *pChapter << pcontent;
 

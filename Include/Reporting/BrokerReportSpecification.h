@@ -30,6 +30,7 @@ class REPORTINGCLASS CBrokerReportSpecification :
 {
 public:
    CBrokerReportSpecification(LPCTSTR strReportName,IBroker* pBroker);
+   CBrokerReportSpecification(const CBrokerReportSpecification& other);
    ~CBrokerReportSpecification(void);
 
    void SetBroker(IBroker* pBroker);

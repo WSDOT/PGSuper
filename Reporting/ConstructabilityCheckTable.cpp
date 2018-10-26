@@ -73,66 +73,106 @@ CConstructabilityCheckTable& CConstructabilityCheckTable::operator= (const CCons
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,const std::vector<SpanGirderHashType>& girderList,IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,girder);
-   const pgsConstructabilityArtifact* pArtifact = pGdrArtifact->GetConstructabilityArtifact();
-   
-   if (pArtifact->SlabOffsetStatus() != pgsConstructabilityArtifact::NA)
+
+   // Create table - delete it later if we don't need it
+   bool IsSingleGirder = girderList.size()==1;
+
+   ColumnIndexType ncols = IsSingleGirder ? 4 : 6; // put span/girder in table if multi girder
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(ncols,_T("Slab Offset (\"A\" Dimension)"));
+
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim2, pDisplayUnits->GetComponentDimUnit(), true );
+
+   pTable->SetColumnStyle(ncols-1,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(ncols-1,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+   ColumnIndexType col = 0;
+   if (!IsSingleGirder)
    {
-      INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
-      INIT_UV_PROTOTYPE( rptLengthUnitValue, dim2, pDisplayUnits->GetComponentDimUnit(), true );
+      (*pTable)(0,col++) << _T("Span");
+      (*pTable)(0,col++) << _T("Girder");
+   }
 
-      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(4,_T("Slab Offset (\"A\" Dimension)"));
+   (*pTable)(0,col++) << COLHDR(_T("Minimum") << rptNewLine << _T("Provided"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(0,col++) << COLHDR(_T("Required"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(0,col++) << _T("Status");
+   (*pTable)(0,col++) << _T("Notes");
 
-      pTable->SetColumnStyle(3,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      pTable->SetStripeRowColumnStyle(3,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   // First thing - check if we can generate the girder schedule table at all.
+   bool areAnyRows(false);
+   std::vector<SpanGirderHashType>::const_iterator itsg_end(girderList.end());
+   std::vector<SpanGirderHashType>::const_iterator itsg(girderList.begin());
+   RowIndexType row=0;
+   while(itsg != itsg_end)
+   {
+      SpanIndexType span;
+      GirderIndexType girder;
+      UnhashSpanGirder(*itsg,&span,&girder);
 
-      (*pTable)(0,0) << COLHDR(_T("Minimum") << rptNewLine << _T("Provided"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*pTable)(0,1) << COLHDR(_T("Required"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*pTable)(0,2) << _T("Status");
-      (*pTable)(0,3) << _T("Notes");
-
-      (*pTable)(1,0) << dim.SetValue(pArtifact->GetProvidedSlabOffset());
-      (*pTable)(1,1) << dim.SetValue(pArtifact->GetRequiredSlabOffset());
-
-      switch( pArtifact->SlabOffsetStatus() )
+      const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,girder);
+      const pgsConstructabilityArtifact* pArtifact = pGdrArtifact->GetConstructabilityArtifact();
+      
+      if (pArtifact->SlabOffsetStatus() != pgsConstructabilityArtifact::NA)
       {
-         case pgsConstructabilityArtifact::Passed:
-            (*pTable)(1,2) << RPT_PASS;
-            break;
+         row++;
+         col = 0;
 
-         case pgsConstructabilityArtifact::Failed:
-            (*pTable)(1,2) << RPT_FAIL;
-            break;
+         if (!IsSingleGirder)
+         {
+            (*pTable)(row, col++) << LABEL_SPAN(span);
+            (*pTable)(row, col++) << LABEL_GIRDER(girder);
+         }
 
-         case pgsConstructabilityArtifact::Excessive:
-            (*pTable)(1,2) << color(Blue) << _T("Excessive") << color(Black);
-            break;
+         (*pTable)(row, col++) << dim.SetValue(pArtifact->GetProvidedSlabOffset());
+         (*pTable)(row, col++) << dim.SetValue(pArtifact->GetRequiredSlabOffset());
 
-         default:
-            ATLASSERT(0);
-            break;
+         switch( pArtifact->SlabOffsetStatus() )
+         {
+            case pgsConstructabilityArtifact::Passed:
+               (*pTable)(row, col++) << RPT_PASS;
+               break;
+
+            case pgsConstructabilityArtifact::Failed:
+               (*pTable)(row, col++) << RPT_FAIL;
+               break;
+
+            case pgsConstructabilityArtifact::Excessive:
+               (*pTable)(row, col++) << color(Blue) << _T("Excessive") << color(Black);
+               break;
+
+            default:
+               ATLASSERT(0);
+               break;
+         }
+
+         if ( pArtifact->CheckStirrupLength() )
+         {
+            GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
+            HAUNCHDETAILS haunch_details;
+            pGdrHaunch->GetHaunchDetails(span,girder,&haunch_details);
+
+            (*pTable)(row, col++) << color(Red) << _T("There is a large variation in the slab haunch thickness (") << dim2.SetValue(haunch_details.HaunchDiff) << _T("). Check stirrup length to ensure they engage the deck at all locations.") << color(Black) << rptNewLine;
+         }
+         else
+         {
+            (*pTable)(row, col++) << _T("");
+         }
       }
 
-      if ( pArtifact->CheckStirrupLength() )
-      {
-         GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
-         HAUNCHDETAILS haunch_details;
-         pGdrHaunch->GetHaunchDetails(span,girder,&haunch_details);
+      itsg++;
+   }
 
-         (*pTable)(1,3) << color(Red) << _T("There is a large variation in the slab haunch thickness (") << dim2.SetValue(haunch_details.HaunchDiff) << _T("). Check stirrup length to ensure they engage the deck at all locations.") << color(Black) << rptNewLine;
-      }
-      else
-      {
-         (*pTable)(1,3) << _T("");
-      }
-
+   // Only return a table if it has content
+   if (row>0)
+   {
       return pTable;
    }
    else
    {
+      delete pTable;
       return NULL;
    }
 }

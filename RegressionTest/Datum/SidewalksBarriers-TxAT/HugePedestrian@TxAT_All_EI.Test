@@ -13,10 +13,16 @@ Tensile stress check failed for Service III for the Final with Live Load Stage (
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
+Stirrup detailing checks failed for the Strength II Limit State.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -33,10 +39,16 @@ Tensile stress check failed for Service III for the Final with Live Load Stage (
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
+Stirrup detailing checks failed for the Strength II Limit State.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -53,10 +65,16 @@ Tensile stress check failed for Service III for the Final with Live Load Stage (
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
+Stirrup detailing checks failed for the Strength II Limit State.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -73,10 +91,16 @@ Tensile stress check failed for Service III for the Final with Live Load Stage (
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
+Stirrup detailing checks failed for the Strength II Limit State.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -93,10 +117,16 @@ Tensile stress check failed for Service III for the Final with Live Load Stage (
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
+Stirrup detailing checks failed for the Strength II Limit State.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -113,10 +143,16 @@ Tensile stress check failed for Service III for the Final with Live Load Stage (
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
+Stirrup detailing checks failed for the Strength II Limit State.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -133,10 +169,16 @@ Tensile stress check failed for Service III for the Final with Live Load Stage (
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
+Stirrup detailing checks failed for the Strength II Limit State.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -153,10 +195,16 @@ Tensile stress check failed for Service III for the Final with Live Load Stage (
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
+Stirrup detailing checks failed for the Strength II Limit State.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -173,10 +221,16 @@ Tensile stress check failed for Service III for the Final with Live Load Stage (
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
+Stirrup detailing checks failed for the Strength II Limit State.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -193,10 +247,16 @@ Tensile stress check failed for Service III for the Final with Live Load Stage (
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
+Stirrup detailing checks failed for the Strength II Limit State.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -213,10 +273,16 @@ Tensile stress check failed for Service III for the Final with Live Load Stage (
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
+Stirrup detailing checks failed for the Strength II Limit State.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -233,9 +299,15 @@ Tensile stress check failed for Service III for the Final with Live Load Stage (
 Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State for the Bridge Site Stage 3.
+Ultimate vertical shear capacity check failed for Strength II Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
+Stirrup detailing checks failed for the Strength II Limit State.
 
 

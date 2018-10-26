@@ -70,3 +70,15 @@ public:
    virtual boost::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec);
    virtual boost::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
 };
+
+// Allow opening of multiple view windows from a single dialog
+class REPORTINGCLASS CMultiViewSpanGirderReportSpecificationBuilder :
+   public CSpanReportSpecificationBuilder
+{
+public:
+   CMultiViewSpanGirderReportSpecificationBuilder(IBroker* pBroker);
+   ~CMultiViewSpanGirderReportSpecificationBuilder(void);
+
+   virtual boost::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec);
+   virtual boost::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
+};

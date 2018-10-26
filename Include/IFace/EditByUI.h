@@ -38,12 +38,13 @@
 #define EBD_ENVIRONMENT    5
 
 #define EGD_GENERAL        0
+#define EGD_CONCRETE       EGD_GENERAL
 #define EGD_PRESTRESSING   1
 #define EGD_DEBONDING      2
-#define EGD_CONCRETE       EGD_GENERAL
-#define EGD_STIRRUPS       3
-#define EGD_TRANSPORTATION 4
-#define EGD_CONDITION      5
+#define EGD_LONG_REINF     3
+#define EGD_STIRRUPS       4
+#define EGD_TRANSPORTATION 5
+#define EGD_CONDITION      6
 
 /*****************************************************************************
 INTERFACE

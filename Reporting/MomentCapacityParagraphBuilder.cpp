@@ -107,8 +107,9 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
    // strength II if permit truck is defined
    bool str2_passed(true);
 
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   if (pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit))
+   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(span, girder);
+   if (bPermit)
    {
       const pgsFlexuralCapacityArtifact* pStr2CompositeCap = pArtifact->GetPositiveMomentFlexuralCapacityArtifact(pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthII,poi.GetDistFromStart()));
 

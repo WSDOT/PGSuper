@@ -30,7 +30,7 @@ interface IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
-   CTexasGirderSummaryChapterBuilder
+   CTexasShearChapterBuilder
 
    Texas Shear Chapter Builder.
 

@@ -509,23 +509,46 @@ IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(sysIStructuredLo
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
          }
-         else
-         {
-            if( dimVersion < 4 )
-            {
-               // A bug in the WBFL had F1 and F2 swapped. Version 4 fixes this
-               if( name == _T("F1") )
-               {
-                  name = _T("F2");
-               }
-               else if ( name == _T("F2") )
-               {
-                  name = _T("F1");
-               }
-            }
-         }
 
          dimensions.push_back( Dimension(name,value) );
+      }
+
+      if( dimVersion < 4 )
+      {
+         // A bug in the WBFL had F1 and F2 swapped. Version 4 fixes this
+         IBeamFactory::Dimensions::iterator itdF1(dimensions.end()), itdF2(dimensions.end());
+         IBeamFactory::Dimensions::iterator itd(dimensions.begin());
+         IBeamFactory::Dimensions::iterator itdend(dimensions.end());
+         while(itd!=itdend)
+         {
+            IBeamFactory::Dimension& dims = *itd;
+            std::_tstring name = dims.first;
+
+            if( name == _T("F1") )
+            {
+               itdF1 = itd;
+            }
+            else if ( name == _T("F2") )
+            {
+               itdF2 = itd;
+            }
+
+            itd++;
+         }
+
+         if (itdF1==dimensions.end() || itdF2==dimensions.end())
+         {
+            ATLASSERT(0); // should never happen F1 and F2 must be in list
+         }
+         else
+         {
+            // swap values
+            Float64 F1val = itdF1->second;
+            Float64 F2val = itdF2->second;
+
+            itdF1->second = F2val;
+            itdF2->second = F1val;
+         }
       }
 
       if ( 14 <= parent_version && !pLoad->EndUnit() )

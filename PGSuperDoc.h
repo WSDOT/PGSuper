@@ -335,6 +335,8 @@ public:
 
    void InitProjectProperties();
 
+   long GetReportViewKey();
+
 	DECLARE_MESSAGE_MAP()
 };
 

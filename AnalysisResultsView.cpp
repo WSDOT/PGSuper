@@ -504,7 +504,7 @@ void CAnalysisResultsView::DoUpdateNow()
             }
             else if ( loc>rightCSLoc)
             {
-               vec2.push_back(leftCS);
+               vec2.push_back(rightCS);
             }
             else
             {
@@ -949,15 +949,15 @@ void CAnalysisResultsView::LiveLoadGraph(int graphIdx,pgsTypes::Stage stage,Acti
          std::vector<sysSectionValue> Vmin, Vmax;
          if ( analysis_type == pgsTypes::Envelope )
          {
-            pForces->GetCombinedLiveLoadShear(llType, stage, vPoi, MinSimpleContinuousEnvelope, &Vmin, &Vmax);
+            pForces->GetCombinedLiveLoadShear(llType, stage, vPoi, MinSimpleContinuousEnvelope, true, &Vmin, &Vmax);
             AddGraphPoints(min_data_series, xVals, Vmin);
 
-            pForces->GetCombinedLiveLoadShear(llType, stage, vPoi, MaxSimpleContinuousEnvelope, &Vmin, &Vmax);
+            pForces->GetCombinedLiveLoadShear(llType, stage, vPoi, MaxSimpleContinuousEnvelope, true, &Vmin, &Vmax);
             AddGraphPoints(max_data_series, xVals, Vmax);
          }
          else
          {
-            pForces->GetCombinedLiveLoadShear(llType, stage, vPoi, analysis_type == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &Vmin, &Vmax);
+            pForces->GetCombinedLiveLoadShear(llType, stage, vPoi, analysis_type == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, &Vmin, &Vmax);
             AddGraphPoints(min_data_series, xVals, Vmin);
             AddGraphPoints(max_data_series, xVals, Vmax);
          }

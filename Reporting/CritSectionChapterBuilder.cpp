@@ -31,6 +31,7 @@
 #include <IFace\ShearCapacity.h>
 #include <IFace\Bridge.h>
 #include <IFace\RatingSpecification.h>
+#include <IFace\AnalysisResults.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -131,6 +132,7 @@ rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    bool bAfterThirdEdition = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::ThirdEdition2004 ? true : false );
 
+   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    GET_IFACE2(pBroker,IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
    SpanIndexType firstSpanIdx = (span == ALL_SPANS ? 0 : span);
@@ -157,7 +159,7 @@ rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
          {
             Build(pChapter,pgsTypes::StrengthI,pBroker,spanIdx,gdrIdx,pDisplayUnits,level);
 
-            if ( pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit) && !bAfterThirdEdition )
+            if ( pLimitStateForces->IsStrengthIIApplicable(span, gdr) && !bAfterThirdEdition )
                Build(pChapter,pgsTypes::StrengthII,pBroker,spanIdx,gdrIdx,pDisplayUnits,level);
          }
 

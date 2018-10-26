@@ -25,6 +25,7 @@
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\SpanGirderReportDlg.h>
 #include <Reporting\MultiGirderReportDlg.h>
+#include "MultiViewReportDlg.h"
 
 #include <IFace\Selection.h>
 
@@ -265,3 +266,71 @@ boost::shared_ptr<CReportSpecification> CMultiGirderReportSpecificationBuilder::
 
    return pRptSpec;
 }
+
+////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+
+CMultiViewSpanGirderReportSpecificationBuilder::CMultiViewSpanGirderReportSpecificationBuilder(IBroker* pBroker) :
+CSpanReportSpecificationBuilder(pBroker)
+{
+}
+
+CMultiViewSpanGirderReportSpecificationBuilder::~CMultiViewSpanGirderReportSpecificationBuilder(void)
+{
+}
+
+boost::shared_ptr<CReportSpecification> CMultiViewSpanGirderReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec)
+{
+   // First check if we are getting a CSpanGirderReportSpecification. If so, use our bro to take care of this
+   boost::shared_ptr<CSpanGirderReportSpecification> pSpanGirderRptSpec = boost::dynamic_pointer_cast<CSpanGirderReportSpecification,CReportSpecification>(pRptSpec);
+   if ( pSpanGirderRptSpec != NULL )
+   {
+      boost::shared_ptr<CReportSpecificationBuilder> pSpanGirderRptSpecBuilder( new CSpanGirderReportSpecificationBuilder(m_pBroker) );
+      return pSpanGirderRptSpecBuilder->CreateReportSpec(rptDesc, pRptSpec);
+   }
+   else
+   {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      // Prompt for span, girder, and chapter list
+      GET_IFACE(ISelection,pSelection);
+      SpanIndexType spanIdx = pSelection->GetSpanIdx();
+      GirderIndexType gdrIdx = pSelection->GetGirderIdx();
+
+      spanIdx = (spanIdx == INVALID_INDEX ? 0 : spanIdx );
+      gdrIdx  = (gdrIdx  == INVALID_INDEX ? 0 : gdrIdx  );
+
+      CMultiViewReportDlg dlg(m_pBroker,rptDesc,pRptSpec,spanIdx,gdrIdx);
+
+      if ( dlg.DoModal() == IDOK )
+      {
+         std::vector<SpanGirderHashType> girderList = dlg.GetGirderList();
+
+         boost::shared_ptr<CReportSpecification> pRptSpec( new CMultiViewSpanGirderReportSpecification(rptDesc.GetReportName(),m_pBroker,girderList) );
+
+         std::vector<std::_tstring> chList = dlg.m_ChapterList;
+         AddChapters(rptDesc,chList,pRptSpec);
+
+         return pRptSpec;
+      }
+
+      return boost::shared_ptr<CReportSpecification>();
+   }
+}
+
+boost::shared_ptr<CReportSpecification> CMultiViewSpanGirderReportSpecificationBuilder::CreateDefaultReportSpec(const CReportDescription& rptDesc)
+{
+   // Get the selected span and girder
+   GET_IFACE(ISelection,pSelection);
+   SpanIndexType spanIdx = pSelection->GetSpanIdx();
+   GirderIndexType gdrIdx = pSelection->GetGirderIdx();
+
+   spanIdx = (spanIdx == INVALID_INDEX ? 0 : spanIdx );
+   gdrIdx  = (gdrIdx  == INVALID_INDEX ? 0 : gdrIdx  );
+   boost::shared_ptr<CReportSpecification> pRptSpec( new CSpanGirderReportSpecification(rptDesc.GetReportName(),m_pBroker,spanIdx,gdrIdx) );
+
+   AddChapters(rptDesc,pRptSpec);
+
+   return pRptSpec;
+}
+

@@ -128,19 +128,11 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
          rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrPermit_Routine);
          if ( pTable )
             (*pPara) << pTable << rptNewLine;
-
-		 pTable = CRatingSummaryTable().BuildByVehicleStressTable(pBroker,gdrLineIdx,pgsTypes::lrPermit_Routine);
-         if ( pTable )
-            (*pPara) << pTable << rptNewLine;
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
       {
          rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrPermit_Special);
-         if ( pTable )
-            (*pPara) << pTable << rptNewLine;
-
-		 pTable = CRatingSummaryTable().BuildByVehicleStressTable(pBroker,gdrLineIdx,pgsTypes::lrPermit_Special);
          if ( pTable )
             (*pPara) << pTable << rptNewLine;
       }

@@ -38,6 +38,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
 /****************************************************************************
 CLASS
    CCombinedMomentsTable
@@ -73,6 +74,30 @@ CCombinedMomentsTable& CCombinedMomentsTable::operator= (const CCombinedMomentsT
 
 //======================== OPERATIONS =======================================
 void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
+                                         SpanIndexType span,GirderIndexType girder,
+                                         IEAFDisplayUnits* pDisplayUnits,
+                                         pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType,
+                                         bool bDesign,bool bRating) const
+{
+
+   BuildCombinedDeadTable(pBroker, pChapter, span, girder, pDisplayUnits, stage, analysisType, bDesign, bRating);
+
+   if (stage==pgsTypes::BridgeSite3)
+   {
+      if (bDesign)
+         BuildCombinedLiveTable(pBroker, pChapter, span, girder, pDisplayUnits, analysisType, true, false);
+      if (bRating)
+         BuildCombinedLiveTable(pBroker, pChapter, span, girder, pDisplayUnits, analysisType, false, true);
+
+      if (bDesign)
+         BuildLimitStateTable(pBroker, pChapter, span, girder, pDisplayUnits, analysisType, true, false);
+      if (bRating)
+         BuildLimitStateTable(pBroker, pChapter, span, girder, pDisplayUnits, analysisType, false, true);
+   }
+}
+
+
+void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
                                          SpanIndexType span,GirderIndexType girder,
                                          IEAFDisplayUnits* pDisplayUnits,
                                          pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType,
@@ -115,18 +140,11 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
    continuity_stage = _cpp_min(continuity_stage,left_stage);
    continuity_stage = _cpp_min(continuity_stage,right_stage);
 
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
-
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   bool bPedLoading = pProductLoads->HasPedestrianLoad(startSpan,girder);
-
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
-   RowIndexType row = CreateCombinedLoadingTableHeading<rptMomentUnitTag,unitmgtMomentData>(&p_table,_T("Moment"),false,bDesign,bPermit,bPedLoading,bRating,stage,continuity_stage,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
-
+   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptMomentUnitTag,unitmgtMomentData>(&p_table,_T("Moment"),false,bRating,stage,continuity_stage,
+                                                                                    analysisType,pDisplayUnits,pDisplayUnits->GetMomentUnit());
    *p << p_table;
-
 
    if ( span == ALL_SPANS )
    {
@@ -135,72 +153,11 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
    }
 
    RowIndexType row2 = 1;
-   rptRcTable* p_table2 = 0;
-   if ( stage == pgsTypes::BridgeSite3 )
-   {
-      p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
-      *pChapter << p;
-      *p << LIVELOAD_PER_GIRDER << rptNewLine;
-
-      p = new rptParagraph;
-      *pChapter << p;
-
-      p = new rptParagraph;
-      *pChapter << p;
-
-      ColumnIndexType nCols = 1;
-
-      if ( bDesign )
-      {
-         nCols += 6; // Service I, Service IA or Fatigue I, Strength I min/max/slab
-
-         if ( analysisType == pgsTypes::Envelope )
-            nCols += 3; // min/max for Service I, Service III, ServiceIA/FatigueI
-
-         if ( bPermit )
-            nCols += 3; // Strength II min/max/slab
-      }
-
-      if ( bRating )
-      {
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
-            nCols += 3;
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
-            nCols += 3;
-      
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-            nCols += 3;
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-            nCols += 3;
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-            nCols += 5;
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-            nCols += 5;
-      }
-
-
-      GET_IFACE2(pBroker,IStageMap,pStageMap);
-      p_table2 = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Moment"));
-
-      if ( span == ALL_SPANS )
-      {
-         p_table2->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-         p_table2->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-      }
-
-      row2 = ConfigureLimitStateTableHeading<rptMomentUnitTag,unitmgtMomentData>(p_table2,false,bDesign,bPermit,bRating,true,analysisType,pStageMap,pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
-      *p << p_table2;
-   }
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,  pIPoi);
    GET_IFACE2(pBroker,ICombinedForces,   pForces);
    GET_IFACE2(pBroker,ICombinedForces2,  pForces2);
-   GET_IFACE2(pBroker,ILimitStateForces, pLsForces);
    GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
 
    // Fill up the table
@@ -214,14 +171,6 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
       std::vector<Float64> minDCcum, maxDCcum;
       std::vector<Float64> minDWinc, maxDWinc;
       std::vector<Float64> minDWcum, maxDWcum;
-      std::vector<Float64> minPedestrianLL, maxPedestrianLL;
-      std::vector<Float64> minDesignLL, maxDesignLL;
-      std::vector<Float64> minFatigueLL, maxFatigueLL;
-      std::vector<Float64> minPermitLL, maxPermitLL;
-      std::vector<Float64> minLegalRoutineLL, maxLegalRoutineLL;
-      std::vector<Float64> minLegalSpecialLL, maxLegalSpecialLL;
-      std::vector<Float64> minPermitRoutineLL, maxPermitRoutineLL;
-      std::vector<Float64> minPermitSpecialLL, maxPermitSpecialLL;
 
       if ( stage == pgsTypes::CastingYard || stage == pgsTypes::GirderPlacement || stage == pgsTypes::TemporaryStrandRemoval )
       {
@@ -293,63 +242,6 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
             minDCcum = pForces2->GetMoment( lcDC, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
             maxDWcum = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
             minDWcum = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
-
-            if ( bDesign )
-            {
-               if ( bPedLoading )
-               {
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxPedestrianLL );
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minPedestrianLL, &dummy );
-               }
-
-               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxDesignLL );
-               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minDesignLL, &dummy );
-
-               if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-               {
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxFatigueLL );
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minFatigueLL, &dummy );
-               }
-
-               if ( bPermit )
-               {
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxPermitLL );
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minPermitLL, &dummy );
-               }
-            }
-
-            if ( bRating )
-            {
-               if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
-               {
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxDesignLL );
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minDesignLL, &dummy );
-               }
-
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-               {
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxLegalRoutineLL );
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minLegalRoutineLL, &dummy );
-               }
-
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-               {
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxLegalSpecialLL );
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minLegalSpecialLL, &dummy );
-               }
-
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-               {
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxPermitRoutineLL );
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minPermitRoutineLL, &dummy );
-               }
-
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-               {
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxPermitSpecialLL );
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minPermitSpecialLL, &dummy );
-               }
-            }
          }
          else
          {
@@ -358,57 +250,8 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
             maxDWinc = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, bat );
             maxDCcum = pForces2->GetMoment( lcDC, stage, vPoi, ctCummulative, bat );
             maxDWcum = pForces2->GetMoment( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, bat );
-
-            if ( bDesign )
-            {
-               if ( bPedLoading )
-               {
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, bat, &minPedestrianLL, &maxPedestrianLL );
-               }
-
-               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, bat, &minDesignLL, &maxDesignLL );
-
-               if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-               {
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, bat, &minFatigueLL, &maxFatigueLL );
-               }
-
-               if ( bPermit )
-               {
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, bat, &minPermitLL, &maxPermitLL );
-               }
-            }
-
-            if ( bRating )
-            {
-               if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)))
-               {
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, bat, &minDesignLL, &maxDesignLL );
-               }
-
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-               {
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, bat, &minLegalRoutineLL, &maxLegalRoutineLL );
-               }
-
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-               {
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, bat, &minLegalSpecialLL, &maxLegalSpecialLL );
-               }
-
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-               {
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, bat, &minPermitRoutineLL, &maxPermitRoutineLL );
-               }
-
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-               {
-                  pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, bat, &minPermitSpecialLL, &maxPermitSpecialLL );
-               }
-            }
          }
       }
-
 
 
       std::vector<pgsPointOfInterest>::const_iterator i;
@@ -417,7 +260,7 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
       {
          const pgsPointOfInterest& poi = *i;
 
-         int col = 0;
+         ColumnIndexType col = 0;
 
          Float64 end_size = 0 ;
          if ( stage != pgsTypes::CastingYard )
@@ -503,206 +346,722 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
                (*p_table)(row,col++) << moment.SetValue( maxDCcum[index] );
                (*p_table)(row,col++) << moment.SetValue( maxDWcum[index] );
             }
+         }
 
-            if ( bDesign )
+         row++;
+      }
+   }
+}
+
+void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* pChapter,
+                                         SpanIndexType span,GirderIndexType girder,
+                                         IEAFDisplayUnits* pDisplayUnits,
+                                         pgsTypes::AnalysisType analysisType,
+                                         bool bDesign,bool bRating) const
+{
+   ATLASSERT(!(bDesign&&bRating)); // these are separate tables, can't do both
+
+   pgsTypes::Stage stage = pgsTypes::BridgeSite3; // always
+
+   // Build table
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
+
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
+
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   bool bExcludeNoncompositeMoments = !pSpecEntry->IncludeNoncompositeMomentsForNegMomentDesign();
+
+   SpanIndexType startSpan = (span == ALL_SPANS ? 0 : span);
+   SpanIndexType nSpans    = (span == ALL_SPANS ? pBridge->GetSpanCount() : startSpan+1 );
+ 
+   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(span, girder);
+
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   bool bPedLoading = pProductLoads->HasPedestrianLoad(startSpan,girder);
+
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+
+   LPCTSTR strLabel = bDesign ? _T("Moment - Design Vehicles") : _T("Moment - Rating Vehicles");
+
+   rptParagraph* p = new rptParagraph;
+   *pChapter << p;
+
+   rptRcTable* p_table;
+   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptMomentUnitTag,unitmgtMomentData>(&p_table,strLabel,false,bDesign,bPermit,bPedLoading,bRating,false,
+                           stage,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
+   *p << p_table;
+
+   if ( span == ALL_SPANS )
+   {
+      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
+
+   rptParagraph* pNote = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   *pChapter << pNote;
+   *pNote << LIVELOAD_PER_GIRDER << rptNewLine;
+
+   // Get the interface pointers we need
+   GET_IFACE2(pBroker,IPointOfInterest,  pIPoi);
+   GET_IFACE2(pBroker,ICombinedForces,   pForces);
+   GET_IFACE2(pBroker,ICombinedForces2,  pForces2);
+   GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
+
+   // Fill up the table
+   for ( SpanIndexType spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
+   {
+      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( spanIdx, girder, stage, POI_ALL, POIFIND_OR);
+
+      std::vector<Float64> dummy;
+      std::vector<Float64> minPedestrianLL, maxPedestrianLL;
+      std::vector<Float64> minDesignLL, maxDesignLL;
+      std::vector<Float64> minFatigueLL, maxFatigueLL;
+      std::vector<Float64> minPermitLL, maxPermitLL;
+      std::vector<Float64> minLegalRoutineLL, maxLegalRoutineLL;
+      std::vector<Float64> minLegalSpecialLL, maxLegalSpecialLL;
+      std::vector<Float64> minPermitRoutineLL, maxPermitRoutineLL;
+      std::vector<Float64> minPermitSpecialLL, maxPermitSpecialLL;
+
+      // stage == pgsTypes::BridgeSite3
+      if ( analysisType == pgsTypes::Envelope )
+      {
+         if ( bDesign )
+         {
+            if ( bPedLoading )
             {
-               if ( bPedLoading )
-               {
-                  (*p_table)(row,col++) << moment.SetValue( maxPedestrianLL[index] );
-                  (*p_table)(row,col++) << moment.SetValue( minPedestrianLL[index] );
-               }
-
-               (*p_table)(row,col++) << moment.SetValue( maxDesignLL[index] );
-               (*p_table)(row,col++) << moment.SetValue( minDesignLL[index] );
-
-               if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-               {
-                  (*p_table)(row,col++) << moment.SetValue( maxFatigueLL[index] );
-                  (*p_table)(row,col++) << moment.SetValue( minFatigueLL[index] );
-               }
-
-               if ( bPermit )
-               {
-                  (*p_table)(row,col++) << moment.SetValue( maxPermitLL[index] );
-                  (*p_table)(row,col++) << moment.SetValue( minPermitLL[index] );
-               }
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxPedestrianLL );
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minPedestrianLL, &dummy );
             }
 
-            if ( bRating )
+            pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxDesignLL );
+            pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minDesignLL, &dummy );
+
+            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
             {
-               if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)))
-               {
-                  (*p_table)(row,col++) << moment.SetValue( maxDesignLL[index] );
-                  (*p_table)(row,col++) << moment.SetValue( minDesignLL[index] );
-               }
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxFatigueLL );
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minFatigueLL, &dummy );
+            }
 
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-               {
-                  (*p_table)(row,col++) << moment.SetValue( maxLegalRoutineLL[index] );
-                  (*p_table)(row,col++) << moment.SetValue( minLegalRoutineLL[index] );
-               }
+            if ( bPermit )
+            {
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxPermitLL );
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minPermitLL, &dummy );
+            }
+         }
 
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-               {
-                  (*p_table)(row,col++) << moment.SetValue( maxLegalSpecialLL[index] );
-                  (*p_table)(row,col++) << moment.SetValue( minLegalSpecialLL[index] );
-               }
+         if ( bRating )
+         {
+            if(pRatingSpec->IncludePedestrianLiveLoad())
+            {
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxPedestrianLL );
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minPedestrianLL, &dummy );
+            }
 
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-               {
-                  (*p_table)(row,col++) << moment.SetValue( maxPermitRoutineLL[index] );
-                  (*p_table)(row,col++) << moment.SetValue( minPermitRoutineLL[index] );
-               }
+            if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+            {
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxDesignLL );
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minDesignLL, &dummy );
+            }
 
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-               {
-                  (*p_table)(row,col++) << moment.SetValue( maxPermitSpecialLL[index] );
-                  (*p_table)(row,col++) << moment.SetValue( minPermitSpecialLL[index] );
-               }
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxLegalRoutineLL );
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minLegalRoutineLL, &dummy );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxLegalSpecialLL );
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minLegalSpecialLL, &dummy );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            {
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxPermitRoutineLL );
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minPermitRoutineLL, &dummy );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            {
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxPermitSpecialLL );
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minPermitSpecialLL, &dummy );
+            }
+         }
+      }
+      else
+      {
+         BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
+
+         if ( bDesign )
+         {
+            if ( bPedLoading )
+            {
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, bat, &minPedestrianLL, &maxPedestrianLL );
+            }
+
+            pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, bat, &minDesignLL, &maxDesignLL );
+
+            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            {
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, bat, &minFatigueLL, &maxFatigueLL );
+            }
+
+            if ( bPermit )
+            {
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, bat, &minPermitLL, &maxPermitLL );
+            }
+         }
+
+         if ( bRating )
+         {
+            if(pRatingSpec->IncludePedestrianLiveLoad())
+            {
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, bat, &minPedestrianLL, &maxPedestrianLL );
+            }
+
+            if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)))
+            {
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, bat, &minDesignLL, &maxDesignLL );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, bat, &minLegalRoutineLL, &maxLegalRoutineLL );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, bat, &minLegalSpecialLL, &maxLegalSpecialLL );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            {
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, bat, &minPermitRoutineLL, &maxPermitRoutineLL );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            {
+               pForces2->GetCombinedLiveLoadMoment( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, bat, &minPermitSpecialLL, &maxPermitSpecialLL );
+            }
+         }
+      }
+
+      // fill table (first half if design/ped load)
+      std::vector<pgsPointOfInterest>::const_iterator i;
+      long index = 0;
+      ColumnIndexType col = 0;
+      RowIndexType    row = Nhrows;
+      for ( i = vPoi.begin(); i != vPoi.end(); i++, index++ )
+      {
+         const pgsPointOfInterest& poi = *i;
+         col = 0;
+
+         Float64 end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+         
+         (*p_table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
+
+         if ( bDesign )
+         {
+            if ( bPedLoading )
+            {
+               (*p_table)(row,col++) << moment.SetValue( maxPedestrianLL[index] );
+               (*p_table)(row,col++) << moment.SetValue( minPedestrianLL[index] );
+            }
+
+            (*p_table)(row,col++) << moment.SetValue( maxDesignLL[index] );
+            (*p_table)(row,col++) << moment.SetValue( minDesignLL[index] );
+
+            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            {
+               (*p_table)(row,col++) << moment.SetValue( maxFatigueLL[index] );
+               (*p_table)(row,col++) << moment.SetValue( minFatigueLL[index] );
+            }
+
+            if ( bPermit )
+            {
+               (*p_table)(row,col++) << moment.SetValue( maxPermitLL[index] );
+               (*p_table)(row,col++) << moment.SetValue( minPermitLL[index] );
+            }
+         }
+
+         if ( bRating )
+         {
+            if(pRatingSpec->IncludePedestrianLiveLoad())
+            {
+               (*p_table)(row,col++) << moment.SetValue( maxPedestrianLL[index] );
+               (*p_table)(row,col++) << moment.SetValue( minPedestrianLL[index] );
+            }
+
+            if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)))
+            {
+               (*p_table)(row,col++) << moment.SetValue( maxDesignLL[index] );
+               (*p_table)(row,col++) << moment.SetValue( minDesignLL[index] );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               (*p_table)(row,col++) << moment.SetValue( maxLegalRoutineLL[index] );
+               (*p_table)(row,col++) << moment.SetValue( minLegalRoutineLL[index] );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               (*p_table)(row,col++) << moment.SetValue( maxLegalSpecialLL[index] );
+               (*p_table)(row,col++) << moment.SetValue( minLegalSpecialLL[index] );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            {
+               (*p_table)(row,col++) << moment.SetValue( maxPermitRoutineLL[index] );
+               (*p_table)(row,col++) << moment.SetValue( minPermitRoutineLL[index] );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            {
+               (*p_table)(row,col++) << moment.SetValue( maxPermitSpecialLL[index] );
+               (*p_table)(row,col++) << moment.SetValue( minPermitSpecialLL[index] );
             }
          }
 
          row++;
       }
 
-      // create second table for BSS3 Limit states
-      if ( stage == pgsTypes::BridgeSite3 )
-      {
-         std::vector<Float64> dummy;
-         std::vector<Float64> minServiceI,   maxServiceI;
-         std::vector<Float64> minServiceIA,  maxServiceIA;
-         std::vector<Float64> minServiceIII, maxServiceIII;
-         std::vector<Float64> minFatigueI,   maxFatigueI;
-         std::vector<Float64> minStrengthI,  maxStrengthI;
-         std::vector<Float64> minStrengthII, maxStrengthII;
-         std::vector<Float64> minStrengthI_Inventory, maxStrengthI_Inventory;
-         std::vector<Float64> minStrengthI_Operating, maxStrengthI_Operating;
-         std::vector<Float64> minStrengthI_Legal_Routine, maxStrengthI_Legal_Routine;
-         std::vector<Float64> minStrengthI_Legal_Special, maxStrengthI_Legal_Special;
-         std::vector<Float64> minStrengthII_Permit_Routine, maxStrengthII_Permit_Routine;
-         std::vector<Float64> minStrengthII_Permit_Special, maxStrengthII_Permit_Special;
-         std::vector<Float64> minServiceI_Permit_Routine, maxServiceI_Permit_Routine;
-         std::vector<Float64> minServiceI_Permit_Special, maxServiceI_Permit_Special;
-         std::vector<Float64> slabStrengthI;
-         std::vector<Float64> slabStrengthII;
-         std::vector<Float64> slabStrengthI_Inventory;
-         std::vector<Float64> slabStrengthI_Operating;
-         std::vector<Float64> slabStrengthI_Legal_Routine;
-         std::vector<Float64> slabStrengthI_Legal_Special;
-         std::vector<Float64> slabStrengthII_Permit_Routine;
-         std::vector<Float64> slabStrengthII_Permit_Special;
 
-         // NOTE: need slab moments for other strength limit states
+      // fill second half of table if design & ped load
+      if ( bDesign && bPedLoading )
+      {
+         // Sum or envelope pedestrian values with live loads to give final LL
+
+         GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+         ILiveLoads::PedestrianLoadApplicationType DesignPedLoad = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltDesign);
+         ILiveLoads::PedestrianLoadApplicationType FatiguePedLoad = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltFatigue);
+         ILiveLoads::PedestrianLoadApplicationType PermitPedLoad = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltPermit);
+
+         SumPedAndLiveLoad(DesignPedLoad, minDesignLL, maxDesignLL, minPedestrianLL, maxPedestrianLL);
+
+         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         {
+            SumPedAndLiveLoad(FatiguePedLoad, minFatigueLL, maxFatigueLL, minPedestrianLL, maxPedestrianLL);
+         }
+
+         if ( bPermit )
+         {
+            SumPedAndLiveLoad(PermitPedLoad, minPermitLL, maxPermitLL, minPedestrianLL, maxPedestrianLL);
+         }
+
+         // Now we can fill table
+         RowIndexType    row = Nhrows;
+         ColumnIndexType recCol = col;
+         int psiz = (int)vPoi.size();
+         for ( index=0; index<psiz; index++ )
+         {
+            col = recCol;
+
+            (*p_table)(row,col++) << moment.SetValue( maxDesignLL[index] );
+            (*p_table)(row,col++) << moment.SetValue( minDesignLL[index] );
+
+            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            {
+               (*p_table)(row,col++) << moment.SetValue( maxFatigueLL[index] );
+               (*p_table)(row,col++) << moment.SetValue( minFatigueLL[index] );
+            }
+
+            if ( bPermit )
+            {
+               (*p_table)(row,col++) << moment.SetValue( maxPermitLL[index] );
+               (*p_table)(row,col++) << moment.SetValue( minPermitLL[index] );
+            }
+
+            row++;
+         }
+
+         // footnotes for pedestrian loads
+         int lnum=1;
+         *pNote<< lnum++ << PedestrianFootnote(DesignPedLoad) << rptNewLine;
+
+         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         {
+            *pNote << lnum++ << PedestrianFootnote(FatiguePedLoad) << rptNewLine;
+         }
+
+         if ( bPermit )
+         {
+            *pNote << lnum++ << PedestrianFootnote(PermitPedLoad) << rptNewLine;
+         }
+      }
+
+      if ( bRating && pRatingSpec->IncludePedestrianLiveLoad())
+      {
+         // Note for rating and pedestrian load
+         *pNote << _T("$ Pedestrian load results will be summed with vehicular load results at time of load combination.");
+      }
+   }
+}
+
+void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
+                                               SpanIndexType span,GirderIndexType girder,
+                                               IEAFDisplayUnits* pDisplayUnits,
+                                               pgsTypes::AnalysisType analysisType,
+                                               bool bDesign,bool bRating) const
+{
+   ATLASSERT(!(bDesign&&bRating)); // these are separate tables, can't do both
+
+   pgsTypes::Stage stage = pgsTypes::BridgeSite3; // always
+
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
+
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
+
+   rptParagraph* p = new rptParagraph;
+   *pChapter << p;
+
+   GET_IFACE2(pBroker,IBridge,pBridge);
+
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   bool bExcludeNoncompositeMoments = !pSpecEntry->IncludeNoncompositeMomentsForNegMomentDesign();
+
+   SpanIndexType startSpan = (span == ALL_SPANS ? 0 : span);
+   SpanIndexType nSpans    = (span == ALL_SPANS ? pBridge->GetSpanCount() : startSpan+1 );
+ 
+   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(span, girder);
+
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
+
+   bool bPedLoading = pProductLoads->HasPedestrianLoad(startSpan,girder);
+
+   rptRcTable * p_table2;
+   RowIndexType row2 = CreateLimitStateTableHeading<rptMomentUnitTag,unitmgtMomentData>(&p_table2,_T("Moment"),false,bDesign,bPermit,bRating,true,analysisType,pStageMap,pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
+   *p << p_table2;
+
+   if ( span == ALL_SPANS )
+   {
+      p_table2->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table2->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
+
+   // Get the interface pointers we need
+   GET_IFACE2(pBroker,IPointOfInterest,  pIPoi);
+   GET_IFACE2(pBroker,ICombinedForces,   pForces);
+   GET_IFACE2(pBroker,ICombinedForces2,  pForces2);
+   GET_IFACE2(pBroker,ILimitStateForces, pLsForces);
+   GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
+
+   // Fill up the table
+   for ( SpanIndexType spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
+   {
+      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( spanIdx, girder, stage, POI_ALL, POIFIND_OR);
+
+      std::vector<Float64> dummy;
+      std::vector<Float64> minServiceI,   maxServiceI;
+      std::vector<Float64> minServiceIA,  maxServiceIA;
+      std::vector<Float64> minServiceIII, maxServiceIII;
+      std::vector<Float64> minFatigueI,   maxFatigueI;
+      std::vector<Float64> minStrengthI,  maxStrengthI;
+      std::vector<Float64> minStrengthII, maxStrengthII;
+      std::vector<Float64> minStrengthI_Inventory, maxStrengthI_Inventory;
+      std::vector<Float64> minStrengthI_Operating, maxStrengthI_Operating;
+      std::vector<Float64> minStrengthI_Legal_Routine, maxStrengthI_Legal_Routine;
+      std::vector<Float64> minStrengthI_Legal_Special, maxStrengthI_Legal_Special;
+      std::vector<Float64> minStrengthII_Permit_Routine, maxStrengthII_Permit_Routine;
+      std::vector<Float64> minStrengthII_Permit_Special, maxStrengthII_Permit_Special;
+      std::vector<Float64> minServiceI_Permit_Routine, maxServiceI_Permit_Routine;
+      std::vector<Float64> minServiceI_Permit_Special, maxServiceI_Permit_Special;
+      std::vector<Float64> slabStrengthI;
+      std::vector<Float64> slabStrengthII;
+      std::vector<Float64> slabStrengthI_Inventory;
+      std::vector<Float64> slabStrengthI_Operating;
+      std::vector<Float64> slabStrengthI_Legal_Routine;
+      std::vector<Float64> slabStrengthI_Legal_Special;
+      std::vector<Float64> slabStrengthII_Permit_Routine;
+      std::vector<Float64> slabStrengthII_Permit_Special;
+
+      // NOTE: need slab moments for other strength limit states
+
+      if ( analysisType == pgsTypes::Envelope )
+      {
+         if ( bDesign )
+         {
+            pLsForces2->GetMoment( pgsTypes::ServiceI, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceI );
+            pLsForces2->GetMoment( pgsTypes::ServiceI, stage, vPoi, MinSimpleContinuousEnvelope, &minServiceI, &dummy );
+
+            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+            {
+               pLsForces2->GetMoment( pgsTypes::ServiceIA, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceIA );
+               pLsForces2->GetMoment( pgsTypes::ServiceIA, stage, vPoi, MinSimpleContinuousEnvelope, &minServiceIA, &dummy );
+            }
+            else
+            {
+               pLsForces2->GetMoment( pgsTypes::FatigueI, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxFatigueI );
+               pLsForces2->GetMoment( pgsTypes::FatigueI, stage, vPoi, MinSimpleContinuousEnvelope, &minFatigueI, &dummy );
+            }
+
+            pLsForces2->GetMoment( pgsTypes::ServiceIII, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceIII );
+            pLsForces2->GetMoment( pgsTypes::ServiceIII, stage, vPoi, MinSimpleContinuousEnvelope, &minServiceIII, &dummy );
+
+            pLsForces2->GetMoment( pgsTypes::StrengthI, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthI );
+            pLsForces2->GetMoment( pgsTypes::StrengthI, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthI, &dummy );
+            slabStrengthI = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI,vPoi,MinSimpleContinuousEnvelope);
+
+            if ( bPermit )
+            {
+               pLsForces2->GetMoment( pgsTypes::StrengthII, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthII );
+               pLsForces2->GetMoment( pgsTypes::StrengthII, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthII, &dummy );
+              slabStrengthII = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthII,vPoi,MinSimpleContinuousEnvelope);
+            }
+         }
+
+         if ( bRating )
+         {
+            // Design - Inventory
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
+            {
+               pLsForces2->GetMoment( pgsTypes::StrengthI_Inventory, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthI_Inventory );
+               pLsForces2->GetMoment( pgsTypes::StrengthI_Inventory, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthI_Inventory, &dummy );
+               slabStrengthI_Inventory = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_Inventory,vPoi,MinSimpleContinuousEnvelope);
+            }
+
+            // Design - Operating
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
+            {
+               pLsForces2->GetMoment( pgsTypes::StrengthI_Operating, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthI_Operating );
+               pLsForces2->GetMoment( pgsTypes::StrengthI_Operating, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthI_Operating, &dummy );
+               slabStrengthI_Operating = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_Operating,vPoi,MinSimpleContinuousEnvelope);
+            }
+
+            // Legal - Routine
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               pLsForces2->GetMoment( pgsTypes::StrengthI_LegalRoutine, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthI_Legal_Routine );
+               pLsForces2->GetMoment( pgsTypes::StrengthI_LegalRoutine, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthI_Legal_Routine, &dummy );
+               slabStrengthI_Legal_Routine = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_LegalRoutine,vPoi,MinSimpleContinuousEnvelope);
+            }
+
+            // Legal - Special
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               pLsForces2->GetMoment( pgsTypes::StrengthI_LegalSpecial, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthI_Legal_Special );
+               pLsForces2->GetMoment( pgsTypes::StrengthI_LegalSpecial, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthI_Legal_Special, &dummy );
+               slabStrengthI_Legal_Special = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_LegalSpecial,vPoi,MinSimpleContinuousEnvelope);
+            }
+
+            // Permit Rating - Routine
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            {
+               pLsForces2->GetMoment( pgsTypes::ServiceI_PermitRoutine, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceI_Permit_Routine );
+               pLsForces2->GetMoment( pgsTypes::ServiceI_PermitRoutine, stage, vPoi, MinSimpleContinuousEnvelope, &minServiceI_Permit_Routine, &dummy );
+               pLsForces2->GetMoment( pgsTypes::StrengthII_PermitRoutine, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthII_Permit_Routine );
+               pLsForces2->GetMoment( pgsTypes::StrengthII_PermitRoutine, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthII_Permit_Routine, &dummy );
+               slabStrengthII_Permit_Routine = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthII_PermitRoutine,vPoi,MinSimpleContinuousEnvelope);
+            }
+
+            // Permit Rating - Special
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            {
+               pLsForces2->GetMoment( pgsTypes::ServiceI_PermitSpecial, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceI_Permit_Special );
+               pLsForces2->GetMoment( pgsTypes::ServiceI_PermitSpecial, stage, vPoi, MinSimpleContinuousEnvelope, &minServiceI_Permit_Special, &dummy );
+               pLsForces2->GetMoment( pgsTypes::StrengthII_PermitSpecial, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthII_Permit_Special );
+               pLsForces2->GetMoment( pgsTypes::StrengthII_PermitSpecial, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthII_Permit_Special, &dummy );
+               slabStrengthII_Permit_Special = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthII_PermitSpecial,vPoi,MinSimpleContinuousEnvelope);
+            }
+         }
+      }
+      else
+      {
+         BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
+
+         if ( bDesign )
+         {
+            pLsForces2->GetMoment( pgsTypes::ServiceI, stage, vPoi, bat, &minServiceI, &maxServiceI );
+
+            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+               pLsForces2->GetMoment( pgsTypes::ServiceIA, stage, vPoi, bat, &minServiceIA, &maxServiceIA );
+            else
+               pLsForces2->GetMoment( pgsTypes::FatigueI, stage, vPoi, bat, &minFatigueI, &maxFatigueI );
+
+            pLsForces2->GetMoment( pgsTypes::ServiceIII, stage, vPoi, bat, &minServiceIII, &maxServiceIII );
+            pLsForces2->GetMoment( pgsTypes::StrengthI,  stage, vPoi, bat, &minStrengthI, &maxStrengthI );
+            slabStrengthI = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI,vPoi,bat);
+
+            if ( bPermit )
+            {
+               pLsForces2->GetMoment( pgsTypes::StrengthII, stage, vPoi, bat, &minStrengthII, &maxStrengthII );
+               slabStrengthII = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthII,vPoi,bat);
+            }
+         }
+
+         if ( bRating )
+         {
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
+            {
+               pLsForces2->GetMoment( pgsTypes::StrengthI_Inventory,  stage, vPoi, bat, &minStrengthI_Inventory, &maxStrengthI_Inventory );
+               slabStrengthI_Inventory = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_Inventory,vPoi,bat);
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
+            {
+               pLsForces2->GetMoment( pgsTypes::StrengthI_Operating,  stage, vPoi, bat, &minStrengthI_Operating, &maxStrengthI_Operating );
+               slabStrengthI_Operating = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_Operating,vPoi,bat);
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               pLsForces2->GetMoment( pgsTypes::StrengthI_LegalRoutine,  stage, vPoi, bat, &minStrengthI_Legal_Routine,  &maxStrengthI_Legal_Routine );
+               slabStrengthI_Legal_Routine = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_LegalRoutine,vPoi,bat);
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               pLsForces2->GetMoment( pgsTypes::StrengthI_LegalSpecial,  stage, vPoi, bat, &minStrengthI_Legal_Special,  &maxStrengthI_Legal_Special );
+               slabStrengthI_Legal_Special = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_LegalSpecial,vPoi,bat);
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            {
+               pLsForces2->GetMoment( pgsTypes::ServiceI_PermitRoutine,   stage, vPoi, bat, &minServiceI_Permit_Routine,   &maxServiceI_Permit_Routine );
+               pLsForces2->GetMoment( pgsTypes::StrengthII_PermitRoutine, stage, vPoi, bat, &minStrengthII_Permit_Routine, &maxStrengthII_Permit_Routine );
+               slabStrengthII_Permit_Routine = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthII_PermitRoutine,vPoi,bat);
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            {
+               pLsForces2->GetMoment( pgsTypes::ServiceI_PermitSpecial,   stage, vPoi, bat, &minServiceI_Permit_Special,   &maxServiceI_Permit_Special );
+               pLsForces2->GetMoment( pgsTypes::StrengthII_PermitSpecial, stage, vPoi, bat, &minStrengthII_Permit_Special, &maxStrengthII_Permit_Special );
+               slabStrengthII_Permit_Special = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthII_PermitSpecial,vPoi,bat);
+            }
+         }
+      }
+
+      std::vector<pgsPointOfInterest>::const_iterator i;
+      long index = 0;
+      for ( i = vPoi.begin(); i != vPoi.end(); i++, index++ )
+      {
+         ColumnIndexType col = 0;
+
+         const pgsPointOfInterest& poi = *i;
+
+         Float64 end_size = 0 ;
+         if ( stage != pgsTypes::CastingYard )
+            end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+
+         (*p_table2)(row2,col++) << location.SetValue( stage, poi, end_size );
 
          if ( analysisType == pgsTypes::Envelope )
          {
             if ( bDesign )
             {
-               pLsForces2->GetMoment( pgsTypes::ServiceI, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceI );
-               pLsForces2->GetMoment( pgsTypes::ServiceI, stage, vPoi, MinSimpleContinuousEnvelope, &minServiceI, &dummy );
+               (*p_table2)(row2,col++) << moment.SetValue( maxServiceI[index] );
+               (*p_table2)(row2,col++) << moment.SetValue( minServiceI[index] );
 
                if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
                {
-                  pLsForces2->GetMoment( pgsTypes::ServiceIA, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceIA );
-                  pLsForces2->GetMoment( pgsTypes::ServiceIA, stage, vPoi, MinSimpleContinuousEnvelope, &minServiceIA, &dummy );
+                  (*p_table2)(row2,col++) << moment.SetValue( maxServiceIA[index] );
+                  (*p_table2)(row2,col++) << moment.SetValue( minServiceIA[index] );
                }
-               else
+
+               (*p_table2)(row2,col++) << moment.SetValue( maxServiceIII[index] );
+               (*p_table2)(row2,col++) << moment.SetValue( minServiceIII[index] );
+
+               if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
                {
-                  pLsForces2->GetMoment( pgsTypes::FatigueI, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxFatigueI );
-                  pLsForces2->GetMoment( pgsTypes::FatigueI, stage, vPoi, MinSimpleContinuousEnvelope, &minFatigueI, &dummy );
+                  (*p_table2)(row2,col++) << moment.SetValue( maxFatigueI[index] );
+                  (*p_table2)(row2,col++) << moment.SetValue( minFatigueI[index] );
                }
 
-               pLsForces2->GetMoment( pgsTypes::ServiceIII, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceIII );
-               pLsForces2->GetMoment( pgsTypes::ServiceIII, stage, vPoi, MinSimpleContinuousEnvelope, &minServiceIII, &dummy );
-
-               pLsForces2->GetMoment( pgsTypes::StrengthI, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthI );
-               pLsForces2->GetMoment( pgsTypes::StrengthI, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthI, &dummy );
-               slabStrengthI = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI,vPoi,MinSimpleContinuousEnvelope);
+               (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI[index] );
+               (*p_table2)(row2,col++) << moment.SetValue( minStrengthI[index] );
+               (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI[index] );
 
                if ( bPermit )
                {
-                  pLsForces2->GetMoment( pgsTypes::StrengthII, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthII );
-                  pLsForces2->GetMoment( pgsTypes::StrengthII, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthII, &dummy );
-	              slabStrengthII = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthII,vPoi,MinSimpleContinuousEnvelope);
+                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthII[index] );
+                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthII[index] );
+                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthII[index] );
                }
             }
 
             if ( bRating )
             {
-               // Design - Inventory
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
                {
-                  pLsForces2->GetMoment( pgsTypes::StrengthI_Inventory, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthI_Inventory );
-                  pLsForces2->GetMoment( pgsTypes::StrengthI_Inventory, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthI_Inventory, &dummy );
-	               slabStrengthI_Inventory = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_Inventory,vPoi,MinSimpleContinuousEnvelope);
+                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Inventory[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Inventory[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Inventory[index]);
                }
 
-               // Design - Operating
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
                {
-                  pLsForces2->GetMoment( pgsTypes::StrengthI_Operating, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthI_Operating );
-                  pLsForces2->GetMoment( pgsTypes::StrengthI_Operating, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthI_Operating, &dummy );
-	               slabStrengthI_Operating = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_Operating,vPoi,MinSimpleContinuousEnvelope);
+                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Operating[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Operating[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Operating[index]);
                }
 
-               // Legal - Routine
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
                {
-                  pLsForces2->GetMoment( pgsTypes::StrengthI_LegalRoutine, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthI_Legal_Routine );
-                  pLsForces2->GetMoment( pgsTypes::StrengthI_LegalRoutine, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthI_Legal_Routine, &dummy );
-	               slabStrengthI_Legal_Routine = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_LegalRoutine,vPoi,MinSimpleContinuousEnvelope);
+                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Legal_Routine[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Legal_Routine[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Legal_Routine[index]);
                }
 
-               // Legal - Special
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
                {
-                  pLsForces2->GetMoment( pgsTypes::StrengthI_LegalSpecial, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthI_Legal_Special );
-                  pLsForces2->GetMoment( pgsTypes::StrengthI_LegalSpecial, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthI_Legal_Special, &dummy );
-	               slabStrengthI_Legal_Special = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_LegalSpecial,vPoi,MinSimpleContinuousEnvelope);
+                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Legal_Special[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Legal_Special[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Legal_Special[index]);
                }
 
-               // Permit Rating - Routine
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
                {
-                  pLsForces2->GetMoment( pgsTypes::ServiceI_PermitRoutine, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceI_Permit_Routine );
-                  pLsForces2->GetMoment( pgsTypes::ServiceI_PermitRoutine, stage, vPoi, MinSimpleContinuousEnvelope, &minServiceI_Permit_Routine, &dummy );
-                  pLsForces2->GetMoment( pgsTypes::StrengthII_PermitRoutine, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthII_Permit_Routine );
-                  pLsForces2->GetMoment( pgsTypes::StrengthII_PermitRoutine, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthII_Permit_Routine, &dummy );
-	               slabStrengthII_Permit_Routine = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthII_PermitRoutine,vPoi,MinSimpleContinuousEnvelope);
+                  (*p_table2)(row2,col++) << moment.SetValue( maxServiceI_Permit_Routine[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue( minServiceI_Permit_Routine[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthII_Permit_Routine[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthII_Permit_Routine[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthII_Permit_Routine[index]);
                }
 
-               // Permit Rating - Special
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
                {
-                  pLsForces2->GetMoment( pgsTypes::ServiceI_PermitSpecial, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceI_Permit_Special );
-                  pLsForces2->GetMoment( pgsTypes::ServiceI_PermitSpecial, stage, vPoi, MinSimpleContinuousEnvelope, &minServiceI_Permit_Special, &dummy );
-                  pLsForces2->GetMoment( pgsTypes::StrengthII_PermitSpecial, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthII_Permit_Special );
-                  pLsForces2->GetMoment( pgsTypes::StrengthII_PermitSpecial, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthII_Permit_Special, &dummy );
-	               slabStrengthII_Permit_Special = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthII_PermitSpecial,vPoi,MinSimpleContinuousEnvelope);
+                  (*p_table2)(row2,col++) << moment.SetValue( maxServiceI_Permit_Special[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue( minServiceI_Permit_Special[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthII_Permit_Special[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthII_Permit_Special[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthII_Permit_Special[index]);
                }
             }
          }
          else
          {
-            BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
-
             if ( bDesign )
             {
-               pLsForces2->GetMoment( pgsTypes::ServiceI, stage, vPoi, bat, &minServiceI, &maxServiceI );
+               (*p_table2)(row2,col++) << moment.SetValue( maxServiceI[index] );
 
                if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
-                  pLsForces2->GetMoment( pgsTypes::ServiceIA, stage, vPoi, bat, &minServiceIA, &maxServiceIA );
-               else
-                  pLsForces2->GetMoment( pgsTypes::FatigueI, stage, vPoi, bat, &minFatigueI, &maxFatigueI );
+                  (*p_table2)(row2,col++) << moment.SetValue( maxServiceIA[index] );
+               
+               (*p_table2)(row2,col++) << moment.SetValue( maxServiceIII[index] );
 
-               pLsForces2->GetMoment( pgsTypes::ServiceIII, stage, vPoi, bat, &minServiceIII, &maxServiceIII );
-               pLsForces2->GetMoment( pgsTypes::StrengthI,  stage, vPoi, bat, &minStrengthI, &maxStrengthI );
-               slabStrengthI = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI,vPoi,bat);
+               if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+                  (*p_table2)(row2,col++) << moment.SetValue( maxFatigueI[index] );
+
+               (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI[index] );
+               (*p_table2)(row2,col++) << moment.SetValue( minStrengthI[index] );
+               (*p_table2)(row2,col++) << moment.SetValue( slabStrengthI[index] );
 
                if ( bPermit )
                {
-                  pLsForces2->GetMoment( pgsTypes::StrengthII, stage, vPoi, bat, &minStrengthII, &maxStrengthII );
-                  slabStrengthII = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthII,vPoi,bat);
+                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthII[index] );
+                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthII[index] );
+                  (*p_table2)(row2,col++) << moment.SetValue( slabStrengthII[index] );
                }
             }
 
@@ -710,229 +1069,68 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
             {
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
                {
-                  pLsForces2->GetMoment( pgsTypes::StrengthI_Inventory,  stage, vPoi, bat, &minStrengthI_Inventory, &maxStrengthI_Inventory );
-                  slabStrengthI_Inventory = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_Inventory,vPoi,bat);
+                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Inventory[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Inventory[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Inventory[index]);
                }
 
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
                {
-                  pLsForces2->GetMoment( pgsTypes::StrengthI_Operating,  stage, vPoi, bat, &minStrengthI_Operating, &maxStrengthI_Operating );
-                  slabStrengthI_Operating = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_Operating,vPoi,bat);
+                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Operating[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Operating[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Operating[index]);
                }
 
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
                {
-                  pLsForces2->GetMoment( pgsTypes::StrengthI_LegalRoutine,  stage, vPoi, bat, &minStrengthI_Legal_Routine,  &maxStrengthI_Legal_Routine );
-                  slabStrengthI_Legal_Routine = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_LegalRoutine,vPoi,bat);
+                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Legal_Routine[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Legal_Routine[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Legal_Routine[index]);
                }
- 
+
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
                {
-                  pLsForces2->GetMoment( pgsTypes::StrengthI_LegalSpecial,  stage, vPoi, bat, &minStrengthI_Legal_Special,  &maxStrengthI_Legal_Special );
-                  slabStrengthI_Legal_Special = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthI_LegalSpecial,vPoi,bat);
+                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Legal_Special[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Legal_Special[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Legal_Special[index]);
                }
 
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
                {
-                  pLsForces2->GetMoment( pgsTypes::ServiceI_PermitRoutine,   stage, vPoi, bat, &minServiceI_Permit_Routine,   &maxServiceI_Permit_Routine );
-                  pLsForces2->GetMoment( pgsTypes::StrengthII_PermitRoutine, stage, vPoi, bat, &minStrengthII_Permit_Routine, &maxStrengthII_Permit_Routine );
-                  slabStrengthII_Permit_Routine = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthII_PermitRoutine,vPoi,bat);
+                  (*p_table2)(row2,col++) << moment.SetValue(maxServiceI_Permit_Routine[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue(minServiceI_Permit_Routine[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue(maxStrengthII_Permit_Routine[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue(minStrengthII_Permit_Routine[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthII_Permit_Routine[index]);
                }
 
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
                {
-                  pLsForces2->GetMoment( pgsTypes::ServiceI_PermitSpecial,   stage, vPoi, bat, &minServiceI_Permit_Special,   &maxServiceI_Permit_Special );
-                  pLsForces2->GetMoment( pgsTypes::StrengthII_PermitSpecial, stage, vPoi, bat, &minStrengthII_Permit_Special, &maxStrengthII_Permit_Special );
-                  slabStrengthII_Permit_Special = pLsForces2->GetSlabDesignMoment(pgsTypes::StrengthII_PermitSpecial,vPoi,bat);
+                  (*p_table2)(row2,col++) << moment.SetValue(maxServiceI_Permit_Special[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue(minServiceI_Permit_Special[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue(maxStrengthII_Permit_Special[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue(minStrengthII_Permit_Special[index]);
+                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthII_Permit_Special[index]);
                }
             }
          }
 
-         std::vector<pgsPointOfInterest>::const_iterator i;
-         long index = 0;
-         for ( i = vPoi.begin(); i != vPoi.end(); i++, index++ )
-         {
-            int col = 0;
-
-            const pgsPointOfInterest& poi = *i;
-
-            Float64 end_size = 0 ;
-            if ( stage != pgsTypes::CastingYard )
-               end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-
-            (*p_table2)(row2,col++) << location.SetValue( stage, poi, end_size );
-
-            if ( analysisType == pgsTypes::Envelope )
-            {
-               if ( bDesign )
-               {
-                  (*p_table2)(row2,col++) << moment.SetValue( maxServiceI[index] );
-                  (*p_table2)(row2,col++) << moment.SetValue( minServiceI[index] );
-
-                  if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
-                  {
-                     (*p_table2)(row2,col++) << moment.SetValue( maxServiceIA[index] );
-                     (*p_table2)(row2,col++) << moment.SetValue( minServiceIA[index] );
-                  }
-
-                  (*p_table2)(row2,col++) << moment.SetValue( maxServiceIII[index] );
-                  (*p_table2)(row2,col++) << moment.SetValue( minServiceIII[index] );
-
-                  if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-                  {
-                     (*p_table2)(row2,col++) << moment.SetValue( maxFatigueI[index] );
-                     (*p_table2)(row2,col++) << moment.SetValue( minFatigueI[index] );
-                  }
-
-                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI[index] );
-                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthI[index] );
-                  (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI[index] );
-
-                  if ( bPermit )
-                  {
-                     (*p_table2)(row2,col++) << moment.SetValue( maxStrengthII[index] );
-                     (*p_table2)(row2,col++) << moment.SetValue( minStrengthII[index] );
-                     (*p_table2)(row2,col++) << moment.SetValue(slabStrengthII[index] );
-                  }
-               }
-
-               if ( bRating )
-               {
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
-                  {
-                     (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Inventory[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Inventory[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Inventory[index]);
-                  }
-
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
-                  {
-                     (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Operating[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Operating[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Operating[index]);
-                  }
-
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-                  {
-                     (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Legal_Routine[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Legal_Routine[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Legal_Routine[index]);
-                  }
-
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-                  {
-                     (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Legal_Special[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Legal_Special[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Legal_Special[index]);
-                  }
-
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-                  {
-                     (*p_table2)(row2,col++) << moment.SetValue( maxServiceI_Permit_Routine[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue( minServiceI_Permit_Routine[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue( maxStrengthII_Permit_Routine[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue( minStrengthII_Permit_Routine[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue(slabStrengthII_Permit_Routine[index]);
-                  }
-
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-                  {
-                     (*p_table2)(row2,col++) << moment.SetValue( maxServiceI_Permit_Special[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue( minServiceI_Permit_Special[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue( maxStrengthII_Permit_Special[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue( minStrengthII_Permit_Special[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue(slabStrengthII_Permit_Special[index]);
-                  }
-               }
-            }
-            else
-            {
-               if ( bDesign )
-               {
-                  (*p_table2)(row2,col++) << moment.SetValue( maxServiceI[index] );
-
-                  if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
-                     (*p_table2)(row2,col++) << moment.SetValue( maxServiceIA[index] );
-                  
-                  (*p_table2)(row2,col++) << moment.SetValue( maxServiceIII[index] );
-
-                  if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-                     (*p_table2)(row2,col++) << moment.SetValue( maxFatigueI[index] );
-
-                  (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI[index] );
-                  (*p_table2)(row2,col++) << moment.SetValue( minStrengthI[index] );
-                  (*p_table2)(row2,col++) << moment.SetValue( slabStrengthI[index] );
-
-                  if ( bPermit )
-                  {
-                     (*p_table2)(row2,col++) << moment.SetValue( maxStrengthII[index] );
-                     (*p_table2)(row2,col++) << moment.SetValue( minStrengthII[index] );
-                     (*p_table2)(row2,col++) << moment.SetValue( slabStrengthII[index] );
-                  }
-               }
-
-               if ( bRating )
-               {
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
-                  {
-                     (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Inventory[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Inventory[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Inventory[index]);
-                  }
-
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
-                  {
-                     (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Operating[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Operating[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Operating[index]);
-                  }
-
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-                  {
-                     (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Legal_Routine[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Legal_Routine[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Legal_Routine[index]);
-                  }
-
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-                  {
-                     (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI_Legal_Special[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue( minStrengthI_Legal_Special[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue(slabStrengthI_Legal_Special[index]);
-                  }
-
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-                  {
-                     (*p_table2)(row2,col++) << moment.SetValue(maxServiceI_Permit_Routine[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue(minServiceI_Permit_Routine[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue(maxStrengthII_Permit_Routine[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue(minStrengthII_Permit_Routine[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue(slabStrengthII_Permit_Routine[index]);
-                  }
-
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-                  {
-                     (*p_table2)(row2,col++) << moment.SetValue(maxServiceI_Permit_Special[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue(minServiceI_Permit_Special[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue(maxStrengthII_Permit_Special[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue(minStrengthII_Permit_Special[index]);
-                     (*p_table2)(row2,col++) << moment.SetValue(slabStrengthII_Permit_Special[index]);
-                  }
-               }
-            }
-
-            row2++;
-         }
+         row2++;
       }
    }
 
-   if ( stage == pgsTypes::BridgeSite3 && bExcludeNoncompositeMoments)
+   p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   *pChapter << p;
+   if (bExcludeNoncompositeMoments)
    {
-      p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
-      *pChapter << p;
-      (*p) << _T("* Deck moment is from superimposed dead load and live load only.") << rptNewLine;
+      (*p) << _T("* Deck moment (Mu) is for negative moment deck design, and is from superimposed dead load and live load only.") << rptNewLine;
+   }
+   else
+   {
+      (*p) << _T("* Deck moment (Mu) is for negative moment deck design.") << rptNewLine;
    }
 }
+
 
 //======================== ACCESS     =======================================
 //======================== INQUIRY    =======================================

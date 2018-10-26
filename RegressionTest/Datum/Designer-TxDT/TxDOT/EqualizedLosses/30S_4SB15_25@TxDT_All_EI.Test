@@ -1,22 +1,22 @@
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 30.12   8  0.04  1     1   4SB15        6   1/2  270  5.00  5.00   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.749   -0.908     325 0.345  0.345  0.01 -0.00  0.00 -0.00 -0.00   4.27  20.50   1.00   1.00   1.00
+ 30.12   8  0.04  1     1   4SB15        6   1/2  270  5.00  5.00   0  2.50   6   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.749   -0.908     325 0.345  0.345  0.01 -0.00  0.00 -0.00 -0.00   4.27  20.50   1.00   1.00   1.00
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 30.12   8  0.04  1     2   4SB15        6   1/2  270  5.00  5.00   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.748   -0.908     325 0.345  0.345  0.01 -0.00  0.00 -0.00 -0.00   4.27  20.49   1.00   1.00   1.00
+ 30.12   8  0.04  1     2   4SB15        6   1/2  270  5.00  5.00   0  2.50   6   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.748   -0.908     325 0.345  0.345  0.01 -0.00  0.00 -0.00 -0.00   4.27  20.49   1.00   1.00   1.00
 
 
 The Specification Check was Successful
 
 
- RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 30.12   8  0.04  1     5   4SB15        6   1/2  270  5.00  5.00   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.734   -0.879     323 0.345  0.345  0.01 -0.00  0.00  0.00 -0.00   4.27  20.62   0.00   0.00   0.00
+ 30.12   8  0.04  1     5   4SB15        6   1/2  270  5.00  5.00   0  2.50   6   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.734   -0.879     323 0.345  0.345  0.01 -0.00  0.00  0.00 -0.00   4.27  20.62   0.00   0.00   0.00
 
 
 The Specification Check was Successful

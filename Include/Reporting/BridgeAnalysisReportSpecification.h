@@ -32,6 +32,7 @@ class REPORTINGCLASS CBridgeAnalysisReportSpecification :
 {
 public:
    CBridgeAnalysisReportSpecification(LPCTSTR strReportName,IBroker* pBroker,GirderIndexType gdrIdx,bool bDesign,bool bRating);
+   CBridgeAnalysisReportSpecification(const CBridgeAnalysisReportSpecification& other);
    ~CBridgeAnalysisReportSpecification(void);
 
    void SetOptions(bool bDesign,bool bRating);

@@ -45,12 +45,10 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNAMIC(CSpanGirderReportDlg, CDialog)
 
 CSpanGirderReportDlg::CSpanGirderReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,RptDialogMode mode,boost::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate,CWnd* pParent)
-	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec)
+	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec), m_Mode(mode)
 {
    m_Span   = INVALID_INDEX;
    m_Girder = INVALID_INDEX;
-
-   m_Mode = mode;
 
    m_pBroker = pBroker;
 }

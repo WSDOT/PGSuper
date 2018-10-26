@@ -38,18 +38,18 @@
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
 #define IDC_APPLIST                     3333
-#define ID_APP_LEGAL                    32893
-#define ID_TIPOFTHEDAY                  32897
-#define ID_MANAGE_APP_PLUGINS           32898
-#define ID_PROJECT_AUTOCALC             33165
-#define ID_HELP_POST                    33187
-#define ID_HELP_JOINARPLIST             33188
-#define ID_HELP_INET_ARP                33189
-#define ID_SCREEN_SIZE                  33219
-#define ID_MANAGE_PLUGINS               33226
-#define ID_PROJECT_ANALYSIS             33228
-#define ID_HELP_INET_WSDOT              33229
-#define ID_HELP_INET_PGSUPER            33230
+#define ID_APP_LEGAL                    33024
+#define ID_TIPOFTHEDAY                  33025
+#define ID_MANAGE_APP_PLUGINS           33026
+#define ID_PROJECT_AUTOCALC             33027
+#define ID_HELP_POST                    33028
+#define ID_HELP_JOINARPLIST             33029
+#define ID_HELP_INET_ARP                33030
+#define ID_SCREEN_SIZE                  33031
+#define ID_MANAGE_PLUGINS               33032
+#define ID_PROJECT_ANALYSIS             33033
+#define ID_HELP_INET_WSDOT              33034
+#define ID_HELP_INET_PGSUPER            33035
 
 // Next default values for new objects
 // 
@@ -57,8 +57,8 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        310
-#define _APS_NEXT_COMMAND_VALUE         33235
-#define _APS_NEXT_CONTROL_VALUE         1602
+#define _APS_NEXT_COMMAND_VALUE         33036
+#define _APS_NEXT_CONTROL_VALUE         1601
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif

@@ -36,6 +36,7 @@
 #include <IFace\Project.h>
 #include <IFace\Artifact.h>
 #include <IFace\RatingSpecification.h>
+#include <IFace\AnalysisResults.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -165,8 +166,8 @@ void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,CRe
    GirderIndexType girder = pSGRptSpec->GetGirder();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
+   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(span, girder);
    
    pgsTypes::Stage stage = pgsTypes::BridgeSite3;
    pgsTypes::LimitState ls = pgsTypes::StrengthI;

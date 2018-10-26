@@ -235,10 +235,10 @@ bool CPrestressData::operator == (const CPrestressData& rOther) const
          if ( Debond[i] != rOther.Debond[i] )
             return false;
 
-         if ( NextendedStrands[i][pgsTypes::metStart] == rOther.NextendedStrands[i][pgsTypes::metStart] )
+         if ( NextendedStrands[i][pgsTypes::metStart] != rOther.NextendedStrands[i][pgsTypes::metStart] )
             return false;
 
-         if ( NextendedStrands[i][pgsTypes::metEnd] == rOther.NextendedStrands[i][pgsTypes::metEnd] )
+         if ( NextendedStrands[i][pgsTypes::metEnd] != rOther.NextendedStrands[i][pgsTypes::metEnd] )
             return false;
       }
    }

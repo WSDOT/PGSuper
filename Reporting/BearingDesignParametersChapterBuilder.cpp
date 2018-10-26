@@ -76,8 +76,8 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
+   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(span, girder);
 
    GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
    bool are_user_loads = pUDL->DoUserLoadsExist(span,girder);

@@ -215,18 +215,23 @@ Float64 pgsRatingArtifact::GetRatingFactor() const
    const pgsMomentRatingArtifact* pNegativeMoment;
    const pgsShearRatingArtifact* pShear;
    const pgsStressRatingArtifact* pStress;
+   const pgsYieldStressRatioArtifact* pYieldStressPositiveMoment;
+   const pgsYieldStressRatioArtifact* pYieldStressNegativeMoment;
 
-   return GetRatingFactorEx(&pPositiveMoment,&pNegativeMoment,&pShear,&pStress);
+   return GetRatingFactorEx(&pPositiveMoment,&pNegativeMoment,&pShear,&pStress,&pYieldStressPositiveMoment,&pYieldStressNegativeMoment);
 }
 
 Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppPositiveMoment,const pgsMomentRatingArtifact** ppNegativeMoment,
                                              const pgsShearRatingArtifact** ppShear,
-                                             const pgsStressRatingArtifact** ppStress) const
+                                             const pgsStressRatingArtifact** ppStress,
+                                             const pgsYieldStressRatioArtifact** ppYieldStressPositiveMoment,const pgsYieldStressRatioArtifact** ppYieldStressNegativeMoment) const
 {
    Float64 RF_pM = GetMomentRatingFactorEx(true,ppPositiveMoment);
    Float64 RF_nM = GetMomentRatingFactorEx(false,ppNegativeMoment);
    Float64 RF_V  = GetShearRatingFactorEx(ppShear);
    Float64 RF_f  = GetStressRatingFactorEx(ppStress);
+   Float64 RF_ys_pM = GetYieldStressRatioEx(true,ppYieldStressPositiveMoment);
+   Float64 RF_ys_nM = GetYieldStressRatioEx(false,ppYieldStressNegativeMoment);
 
    Float64 RF = DBL_MAX;
    int i;
@@ -254,6 +259,18 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
       i = 3;
    }
 
+   if ( RF_ys_pM < RF )
+   {
+      RF = RF_ys_pM;
+      i = 4;
+   }
+
+   if ( RF_ys_nM < RF )
+   {
+      RF = RF_ys_nM;
+      i = 5;
+   }
+
    // NULL out all but the controlling rating
    if ( i == 0 )
    {
@@ -261,6 +278,8 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
       (*ppNegativeMoment)            = NULL;
       (*ppShear)                     = NULL;
       (*ppStress)                    = NULL;
+      (*ppYieldStressPositiveMoment) = NULL;
+      (*ppYieldStressNegativeMoment) = NULL;
    }
    else if ( i == 1 )
    {
@@ -268,6 +287,8 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
       //(*ppNegativeMoment)            = NULL;
       (*ppShear)                     = NULL;
       (*ppStress)                    = NULL;
+      (*ppYieldStressPositiveMoment) = NULL;
+      (*ppYieldStressNegativeMoment) = NULL;
    }
    else if ( i == 2 )
    {
@@ -275,6 +296,8 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
       (*ppNegativeMoment)            = NULL;
       //(*ppShear)                     = NULL;
       (*ppStress)                    = NULL;
+      (*ppYieldStressPositiveMoment) = NULL;
+      (*ppYieldStressNegativeMoment) = NULL;
    }
    else if ( i == 3 )
    {
@@ -282,6 +305,26 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
       (*ppNegativeMoment)            = NULL;
       (*ppShear)                     = NULL;
       //(*ppStress)                    = NULL;
+      (*ppYieldStressPositiveMoment) = NULL;
+      (*ppYieldStressNegativeMoment) = NULL;
+   }
+   else if ( i == 4 )
+   {
+      (*ppPositiveMoment)            = NULL;
+      (*ppNegativeMoment)            = NULL;
+      (*ppShear)                     = NULL;
+      (*ppStress)                    = NULL;
+      //(*ppYieldStressPositiveMoment) = NULL;
+      (*ppYieldStressNegativeMoment) = NULL;
+   }
+   else if ( i == 5 )
+   {
+      (*ppPositiveMoment)            = NULL;
+      (*ppNegativeMoment)            = NULL;
+      (*ppShear)                     = NULL;
+      (*ppStress)                    = NULL;
+      (*ppYieldStressPositiveMoment) = NULL;
+      //(*ppYieldStressNegativeMoment) = NULL;
    }
    else
    {
@@ -291,6 +334,8 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
       (*ppNegativeMoment)            = NULL;
       (*ppShear)                     = NULL;
       (*ppStress)                    = NULL;
+      (*ppYieldStressPositiveMoment) = NULL;
+      (*ppYieldStressNegativeMoment) = NULL;
    }
 
    return RF;

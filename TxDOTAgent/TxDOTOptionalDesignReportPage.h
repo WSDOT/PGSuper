@@ -28,7 +28,7 @@ public:
    // here we can get our broker
    ITxDOTBrokerRetriever* m_pBrokerRetriever;
 
-   // Oour reporting guts
+   // Our reporting guts
    boost::shared_ptr<CReportSpecification> m_pRptSpec;
    boost::shared_ptr<CReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
 

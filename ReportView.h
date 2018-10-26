@@ -57,6 +57,7 @@ public:
 
 // Implementation
 public:
+   virtual bool CreateReport(CollectionIndexType rptIdx,bool bPromptForSpec);
 
 protected:
 	virtual ~CPGSuperReportView();

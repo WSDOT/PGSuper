@@ -106,6 +106,12 @@ int CGirderReportHint::IsMyGirder(CReportHint* pHint,CReportSpecification* pRptS
       {
          return pMGdrRptSpec->IsMyGirder(0 ,pGirderRptHint->m_GdrIdx); // only look at span 0
       }
+
+      CMultiViewSpanGirderReportSpecification* pMVGdrRptSpec = dynamic_cast<CMultiViewSpanGirderReportSpecification*>(pRptSpec);
+      if ( pMVGdrRptSpec != NULL )
+      {
+         return pMVGdrRptSpec->IsMyGirder(0 ,pGirderRptHint->m_GdrIdx); // only look at span 0
+      }
    }
 
    return -1;
@@ -197,6 +203,18 @@ CBrokerReportSpecification(strReportName,pBroker)
    SetSpan(spanIdx);
 }
 
+CSpanReportSpecification::CSpanReportSpecification(const CSpanReportSpecification& other) :
+CBrokerReportSpecification(other)
+{
+   SetSpan(other.m_Span);
+}
+
+CSpanReportSpecification::CSpanReportSpecification(const CBrokerReportSpecification& other,SpanIndexType spanIdx):
+CBrokerReportSpecification(other)
+{
+   SetSpan(spanIdx);
+}
+
 CSpanReportSpecification::~CSpanReportSpecification(void)
 {
 }
@@ -236,6 +254,12 @@ CGirderReportSpecification::CGirderReportSpecification(LPCTSTR strReportName,IBr
 CBrokerReportSpecification(strReportName,pBroker)
 {
    SetGirder(gdrIdx);
+}
+
+CGirderReportSpecification::CGirderReportSpecification(const CGirderReportSpecification& other) :
+CBrokerReportSpecification(other)
+{
+   SetGirder(other.m_Girder);
 }
 
 CGirderReportSpecification::~CGirderReportSpecification(void)
@@ -281,6 +305,18 @@ HRESULT CGirderReportSpecification::Validate() const
 //////////////////////////////////////////////////////////////////
 CSpanGirderReportSpecification::CSpanGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx) :
 CSpanReportSpecification(strReportName,pBroker,spanIdx)
+{
+   SetGirder(gdrIdx);
+}
+
+CSpanGirderReportSpecification::CSpanGirderReportSpecification(const CSpanGirderReportSpecification& other) :
+CSpanReportSpecification(other)
+{
+   SetGirder(other.m_Girder);
+}
+
+CSpanGirderReportSpecification::CSpanGirderReportSpecification(const CBrokerReportSpecification& other,SpanIndexType spanIdx,GirderIndexType gdrIdx):
+CSpanReportSpecification(other,spanIdx)
 {
    SetGirder(gdrIdx);
 }
@@ -344,6 +380,12 @@ CBrokerReportSpecification(strReportName,pBroker)
    SetGirderList(girderlist);
 }
 
+CMultiGirderReportSpecification::CMultiGirderReportSpecification(const CMultiGirderReportSpecification& other) :
+CBrokerReportSpecification(other)
+{
+   SetGirderList(other.m_GirderList);
+}
+
 CMultiGirderReportSpecification::~CMultiGirderReportSpecification(void)
 {
 }
@@ -373,6 +415,72 @@ int CMultiGirderReportSpecification::IsMyGirder(SpanIndexType spanIdx,GirderInde
 }
 
 HRESULT CMultiGirderReportSpecification::Validate() const
+{
+   GET_IFACE2(m_Broker,IBridge,pBridge);
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+
+   for (std::vector<SpanGirderHashType>::const_iterator it=m_GirderList.begin(); it!=m_GirderList.end(); it++)
+   {
+      SpanIndexType spanIdx;
+      GirderIndexType gdrIdx;
+      UnhashSpanGirder(*it,&spanIdx,&gdrIdx);
+
+      if ( nSpans <= spanIdx )
+         return RPT_E_INVALIDSPAN;
+
+      GirderIndexType nGdrs = pBridge->GetGirderCount(spanIdx);
+
+      if ( nGdrs <= gdrIdx )
+         return RPT_E_INVALIDGIRDER;
+   }
+
+   return CBrokerReportSpecification::Validate();
+}
+
+//////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+
+CMultiViewSpanGirderReportSpecification::CMultiViewSpanGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker, const std::vector<SpanGirderHashType>& girderlist) :
+CBrokerReportSpecification(strReportName,pBroker)
+{
+   SetGirderList(girderlist);
+}
+
+CMultiViewSpanGirderReportSpecification::CMultiViewSpanGirderReportSpecification(const CMultiViewSpanGirderReportSpecification& other) :
+CBrokerReportSpecification(other)
+{
+   SetGirderList(other.m_GirderList);
+}
+
+CMultiViewSpanGirderReportSpecification::~CMultiViewSpanGirderReportSpecification(void)
+{
+}
+
+std::_tstring CMultiViewSpanGirderReportSpecification::GetReportTitle() const
+{
+   return GetReportName();
+}
+
+void CMultiViewSpanGirderReportSpecification::SetGirderList(const std::vector<SpanGirderHashType>& girderlist)
+{
+   m_GirderList = girderlist;
+}
+
+std::vector<SpanGirderHashType> CMultiViewSpanGirderReportSpecification::GetGirderList() const
+{
+   return m_GirderList;
+}
+
+int CMultiViewSpanGirderReportSpecification::IsMyGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx) const
+{
+   SpanGirderHashType hash = HashSpanGirder(spanIdx, gdrIdx);
+
+   std::vector<SpanGirderHashType>::const_iterator it = std::find(m_GirderList.begin(), m_GirderList.end(), hash);
+
+   return (it != m_GirderList.end()) ? 1 : 0;
+}
+
+HRESULT CMultiViewSpanGirderReportSpecification::Validate() const
 {
    GET_IFACE2(m_Broker,IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();

@@ -84,6 +84,15 @@ public:
                       pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType, TableType tableType,
                       bool bDesign=true,bool bRating=true) const;
 
+   //------------------------------------------------------------------------
+   // Builds the live load results table
+   // bDesign and bRating are only considered from stage = pgsTypes::BridgeSite3
+   virtual void BuildLiveLoad(IBroker* pBroker, rptChapter* pChapter,
+                      SpanIndexType span,GirderIndexType girder, 
+                      IEAFDisplayUnits* pDisplayUnits,
+                      pgsTypes::AnalysisType analysisType, TableType tableType,
+                      bool includeImpact, bool bDesign=true,bool bRating=true) const;
+
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
@@ -92,6 +101,18 @@ protected:
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
+   virtual void BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
+                      SpanIndexType span,GirderIndexType girder, 
+                      IEAFDisplayUnits* pDisplayUnits,
+                      pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType, TableType tableType,
+                      bool bDesign=true,bool bRating=true) const;
+
+   virtual void BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
+                      SpanIndexType span,GirderIndexType girder, 
+                      IEAFDisplayUnits* pDisplayUnits,
+                      pgsTypes::AnalysisType analysisType, TableType tableType,
+                      bool bDesign=true,bool bRating=true) const;
+
    //------------------------------------------------------------------------
    void MakeCopy(const CCombinedReactionTable& rOther);
 

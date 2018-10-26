@@ -39,6 +39,6 @@ private:
    CLoadRatingSummaryChapterBuilder(const CLoadRatingSummaryChapterBuilder&);
    CLoadRatingSummaryChapterBuilder& operator=(const CLoadRatingSummaryChapterBuilder&);
 
-   void ReportRatingFactor(IBroker* pBroker,rptRcTable* pTable,RowIndexType row,const pgsRatingArtifact* pRatingArtifact,IEAFDisplayUnits* pDisplayUnits) const;
-   void ReportRatingFactor2(IBroker* pBroker,rptRcTable* pTable,RowIndexType row,LPCTSTR strTruck,const pgsRatingArtifact* pRatingArtifact,IEAFDisplayUnits* pDisplayUnits) const;
+   void ReportRatingFactor(IBroker* pBroker,rptRcTable* pTable,RowIndexType row,const pgsRatingArtifact* pRatingArtifact,IEAFDisplayUnits* pDisplayUnits,rptParagraph* pRemarks) const;
+   void ReportRatingFactor2(IBroker* pBroker,rptRcTable* pTable,RowIndexType row,LPCTSTR strTruck,const pgsRatingArtifact* pRatingArtifact,IEAFDisplayUnits* pDisplayUnits,rptParagraph* pRemarks) const;
 };

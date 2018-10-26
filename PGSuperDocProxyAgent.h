@@ -123,6 +123,7 @@ END_COM_MAP()
 public:
    void SetDocument(CPGSuperDoc* pDoc);
    void OnStatusChanged();
+   long GetReportViewKey();
 
 // IAgentEx
 public:

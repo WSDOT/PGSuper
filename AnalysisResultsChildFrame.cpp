@@ -1077,7 +1077,10 @@ void CAnalysisResultsChildFrame::CreateGraphDefinitions()
    if (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Fatigue I"),           pgsTypes::FatigueI,                false, false, false, false, false, true,  ACTIONS_STRESS_ONLY,  CHOCOLATE) );
 
-   if ( bPermit )
+   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   bool bStrII = pLimitStateForces->IsStrengthIIApplicable(span, gdr);
+
+   if ( bStrII )
    {
       m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength II (Permit)"),          pgsTypes::StrengthII,               false, false, false, false, false, true,  ACTIONS_MOMENT_SHEAR, BROWN) );
       m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength II Capacity (Permit)"), pgsTypes::StrengthII,graphCapacity, false, false, false, false, false, true,  ACTIONS_SHEAR_ONLY,   BROWN) );

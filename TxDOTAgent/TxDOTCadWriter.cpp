@@ -677,20 +677,14 @@ void TxDOTCadWriter::WriteInitialData(CadWriterWorkerBee& workerB)
 	//----- COL 10 ---- 
    workerB.WriteInt16((Int16)m_NumDebonded,_T("Ndb"),3,_T("%3d"),true);
 
-   if (m_NumDebonded==0 || m_OutCome==SectionMismatch || m_OutCome==TooManySections || m_OutCome==SectionsNotSymmetrical)
+   if (m_Rows.empty() || m_OutCome==SectionMismatch || m_OutCome==TooManySections || m_OutCome==SectionsNotSymmetrical)
    {
       // row height, srands in row, and debonds in row are zero
 	   workerB.WriteFloat64(0.0,_T("Debnd"),5,_T("%5.2f"),true);
       workerB.WriteInt16(0,_T("   "),3,_T("%3d"),true);
       workerB.WriteInt16(0,_T("   "),3,_T("%3d"),true);
 
-      if (m_OutCome==SectionMismatch || m_OutCome==TooManySections )
-      {
-         // this is an error condition, just right out blanks to fill space
-   	   //----- COL 11-23 ---- 
-         workerB.WriteBlankSpaces(30);
-      }
-      else if (m_NumDebonded==0)
+      if (m_Rows.empty())
       {
          // no use searching for nothing
    	   //----- COL 11-23 ---- 
@@ -699,26 +693,22 @@ void TxDOTCadWriter::WriteInitialData(CadWriterWorkerBee& workerB)
             workerB.WriteInt16(0,_T("  "),2,_T("%2d"),true);
          }
       }
+      else
+      {
+         // this is an error condition, just right out blanks to fill space
+	      //----- COL 11-23 ---- 
+         workerB.WriteBlankSpaces(30);
+      }
    }
    else
    {
       // A little checking
       RowIndexType nrs = m_pStrandGeometry->GetNumRowsWithStrand(m_Span,m_Girder,pgsTypes::Straight);
-      ATLASSERT((RowIndexType)m_Rows.size() <= nrs); // could have more rows than rows with debonded strands
+      ATLASSERT((RowIndexType)m_Rows.size() == nrs); // could have more rows than rows with debonded strands
 
-      // where the rubber hits the road
-      if(!m_Rows.empty())
-      {
-         // write our first row
-         StrandIndexType nsrow = m_pStrandGeometry->GetNumStrandInRow(m_Span,m_Girder,0,pgsTypes::Straight);
-
-         const RowData& row = *(m_Rows.begin());
-         WriteRowData(workerB, row, (Int16)nsrow);
-      }
-      else
-      {
-         ATLASSERT(0); // this should be caught
-      }
+      // Where the rubber hits the road - Write first row
+      const RowData& row = *(m_Rows.begin());
+      WriteRowData(workerB, row);
    }
 }
 
@@ -733,22 +723,23 @@ void TxDOTCadWriter::WriteFinalData(FILE *fp, bool isExtended)
       riter++;
       while(riter != m_Rows.end())
       {
-         CadWriterWorkerBee workerB(false); // no title lines for last lines
-
-         // leading blank spaces
-         workerB.WriteBlankSpaces(nLeadingSpaces);
-
-         // write our first row
-         StrandIndexType nsrow = m_pStrandGeometry->GetNumStrandInRow(m_Span,m_Girder,nrow,pgsTypes::Straight);
-
          const RowData& row = *riter;
-         WriteRowData(workerB, row, (Int16)nsrow);
+         // Only write rows that contain debonding
+         if (!row.m_Sections.empty())
+         {
+            CadWriterWorkerBee workerB(false); // no title lines for last lines
 
-	      // ------ END OF RECORD ----- 
-         workerB.WriteToFile(fp);
+            // leading blank spaces
+            workerB.WriteBlankSpaces(nLeadingSpaces);
+
+            WriteRowData(workerB, row);
+
+	         // ------ END OF RECORD ----- 
+            workerB.WriteToFile(fp);
+            nrow++;
+         }
 
          riter++;
-         nrow++;
       }
    }
 
@@ -768,7 +759,7 @@ void TxDOTCadWriter::WriteFinalData(FILE *fp, bool isExtended)
    }
 }
 
-void TxDOTCadWriter::WriteRowData(CadWriterWorkerBee& workerB, const RowData& row, Int16 strandsInRow) const
+void TxDOTCadWriter::WriteRowData(CadWriterWorkerBee& workerB, const RowData& row) const
 {
 	//----- COL 11 ----- 
    // elevation of row
@@ -778,7 +769,7 @@ void TxDOTCadWriter::WriteRowData(CadWriterWorkerBee& workerB, const RowData& ro
 
 	//----- COL 12 ---- 
    // total strands in row
-   workerB.WriteInt16(strandsInRow,_T("Nsr"),3,_T("%3d"),true);
+   workerB.WriteInt16((Int16)row.m_NumTotalStrands,_T("Nsr"),3,_T("%3d"),true);
 
 	//----- COL 13 ---- 
    // num debonded strands in row
@@ -835,8 +826,8 @@ void write_spec_check_results(FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
    {
       _ftprintf(fp, _T("%s\n"), _T("The Specification Check was Not Successful"));
      
-      GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-      bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
+      GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+      bool bPermit = pLimitStateForces->IsStrengthIIApplicable(span, gdr);
 
       // Build a list of our failures
       FailureList failures;

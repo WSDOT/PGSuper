@@ -648,6 +648,9 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
 {
    // Strand fill information is kept up to date in OnClickedButtonRowCol
    // However, debonding and extended strand information must be taken care of here
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // clear out old debond data
    m_pParent->m_StraightDebond.clear();
@@ -686,6 +689,8 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
                this->SetCurrentCell(nRow,FIRST_DEBOND_COL,GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
                return false;
             }
+
+            leftDebond  = ::ConvertToSysUnits(leftDebond,  pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
          }
 
          if (m_pParent->m_bSymmetricDebond)
@@ -705,6 +710,8 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
                   this->SetCurrentCell(nRow,LAST_DEBOND_COL,GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
                   return false;
                }
+
+               rightDebond = ::ConvertToSysUnits(rightDebond, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
             }
          }
 
@@ -722,8 +729,6 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
             }
          }
 
-         leftDebond  = ::ConvertToSysUnits(leftDebond,  unitMeasure::Feet);
-         rightDebond = ::ConvertToSysUnits(rightDebond, unitMeasure::Feet);
 
          if (pUserData->strandTypeGridIdx != INVALID_INDEX)
          {

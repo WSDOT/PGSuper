@@ -193,7 +193,8 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
 
    GET_IFACE2(pBroker,IReportManager,pRptMgr);
    boost::shared_ptr<CReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CReportSpecification,CMultiGirderReportSpecification>(m_pRptSpec);
-   m_pBrowser = pRptMgr->CreateReportBrowser(GetSafeHwnd(),pRptSpec);
+   boost::shared_ptr<CReportSpecificationBuilder> nullSpecBuilder;
+   m_pBrowser = pRptMgr->CreateReportBrowser(GetSafeHwnd(),pRptSpec,nullSpecBuilder);
 
    // restore the size of the window
    {

@@ -214,8 +214,8 @@ CProjectAgentImp::CProjectAgentImp()
    m_LaneImpact[pgsTypes::lltPermitRating_Special]  = 0.00;
 
    // Default for versions of PGSuper before this was an option was to sum pedestrian with vehicular
-   m_PedestrianLoadApplicationType[pgsTypes::lltDesign] = ILiveLoads::PedConcurrentWithVehiculuar;
-   m_PedestrianLoadApplicationType[pgsTypes::lltPermit] = ILiveLoads::PedConcurrentWithVehiculuar;
+   m_PedestrianLoadApplicationType[pgsTypes::lltDesign] = ILiveLoads::PedConcurrentWithVehicular;
+   m_PedestrianLoadApplicationType[pgsTypes::lltPermit] = ILiveLoads::PedConcurrentWithVehicular;
    m_PedestrianLoadApplicationType[pgsTypes::lltFatigue] = ILiveLoads::PedDontApply;
 
    m_bExcludeLegalLoadLaneLoading = false;
@@ -2976,7 +2976,7 @@ HRESULT CProjectAgentImp::LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgre
       {
          if(!(llType<pgsTypes::lltDesign || llType>pgsTypes::lltFatigue))
          {
-            pObj->m_PedestrianLoadApplicationType[llType] = was_pedestrian ? ILiveLoads::PedConcurrentWithVehiculuar : ILiveLoads::PedDontApply;
+            pObj->m_PedestrianLoadApplicationType[llType] = was_pedestrian ? ILiveLoads::PedConcurrentWithVehicular : ILiveLoads::PedDontApply;
          }
       }
    }
@@ -6739,7 +6739,7 @@ ILiveLoads::PedestrianLoadApplicationType CProjectAgentImp::GetPedestrianLoadApp
    if (llType<pgsTypes::lltDesign || llType>pgsTypes::lltFatigue)
    {
       // Rating Live Loads
-      return m_bIncludePedestrianLiveLoad ? ILiveLoads::PedConcurrentWithVehiculuar : ILiveLoads::PedDontApply;
+      return m_bIncludePedestrianLiveLoad ? ILiveLoads::PedConcurrentWithVehicular : ILiveLoads::PedDontApply;
    }
    else
    {

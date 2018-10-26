@@ -101,7 +101,13 @@ BOOL CTxDOTOptionalDesignReportPage::OnSetActive()
             // Create spec for currently selected report
             m_pRptSpec = CreateSelectedReportSpec(pReportMgr);
 
-            // Already have a browser, just need to re-marry report
+            // Already have a browser, just need to update headers and footers and re-marry report
+            boost::shared_ptr<CReportSpecification> brRptSpec = m_pBrowser->GetReportSpecification();
+            brRptSpec->SetLeftHeader(m_pRptSpec->GetLeftHeader().c_str());
+            brRptSpec->SetCenterHeader(m_pRptSpec->GetCenterHeader().c_str());
+            brRptSpec->SetLeftFooter(m_pRptSpec->GetLeftFooter().c_str());
+            brRptSpec->SetCenterFooter(m_pRptSpec->GetCenterFooter().c_str());
+
             boost::shared_ptr<CReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
             boost::shared_ptr<rptReport> pReport = pBuilder->CreateReport( m_pRptSpec );
             m_pBrowser->UpdateReport( pReport, true );
@@ -143,6 +149,8 @@ void CTxDOTOptionalDesignReportPage::DisplayErrorMode(TxDOTBrokerRetrieverExcept
 
 void CTxDOTOptionalDesignReportPage::CreateNewBrowser(IBroker* pBroker)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState())
+
    // Make sure we're out of error mode
    m_BrowserPlaceholder.ShowWindow(SW_SHOW);
    m_ErrorStatic.ShowWindow(SW_HIDE);
@@ -159,7 +167,8 @@ void CTxDOTOptionalDesignReportPage::CreateNewBrowser(IBroker* pBroker)
    GET_IFACE2(pBroker,IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   m_pBrowser = pReportMgr->CreateReportBrowser(m_BrowserPlaceholder.GetSafeHwnd(),m_pRptSpec);
+   boost::shared_ptr<CReportSpecificationBuilder> nullSpecBuilder;
+   m_pBrowser = pReportMgr->CreateReportBrowser(m_BrowserPlaceholder.GetSafeHwnd(),m_pRptSpec,nullSpecBuilder);
    m_pBrowser->Size(rect.Size());
 
    // resize browser window
@@ -181,6 +190,19 @@ boost::shared_ptr<CReportSpecification> CTxDOTOptionalDesignReportPage::CreateSe
    boost::shared_ptr<CSpanGirderReportSpecification> pSGRptSpec = boost::dynamic_pointer_cast<CSpanGirderReportSpecification,CReportSpecification>(pDefRptSpec);
    pSGRptSpec->SetSpan(TOGA_SPAN);
    pSGRptSpec->SetGirder(TOGA_FABR_GDR);
+
+   // Set report header and footer for printing
+   CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetUpdatedBroker();
+   GET_IFACE2(pBroker,IGetTogaData,pGetTogaData);
+   const CTxDOTOptionalDesignData* pProjectData = pGetTogaData->GetTogaData();
+
+   CString bridgeName = CString(_T("Bridge: ")) + pProjectData->GetBridge();
+   CString bridgeID   = CString(_T("BID: ")) + pProjectData->GetBridgeID();
+   CString bridgeCmnt = CString(_T("Cmts: ")) +pProjectData->GetComments();
+
+   pDefRptSpec->SetLeftHeader(bridgeName);
+   pDefRptSpec->SetCenterHeader(bridgeID);
+   pDefRptSpec->SetLeftFooter(bridgeCmnt);
 
    return pDefRptSpec;
 }

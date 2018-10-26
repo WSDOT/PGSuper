@@ -80,6 +80,30 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
                                        pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType,
                                        bool bDesign,bool bRating) const
 {
+
+   BuildCombinedDeadTable(pBroker, pChapter, span, girder, pDisplayUnits, stage, analysisType, bDesign, bRating);
+
+   if (stage==pgsTypes::BridgeSite3)
+   {
+      if (bDesign)
+         BuildCombinedLiveTable(pBroker, pChapter, span, girder, pDisplayUnits, analysisType, true, false);
+      if (bRating)
+         BuildCombinedLiveTable(pBroker, pChapter, span, girder, pDisplayUnits, analysisType, false, true);
+
+      if (bDesign)
+         BuildLimitStateTable(pBroker, pChapter, span, girder, pDisplayUnits, analysisType, true, false);
+      if (bRating)
+         BuildLimitStateTable(pBroker, pChapter, span, girder, pDisplayUnits, analysisType, false, true);
+   }
+}
+
+
+void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
+                                         SpanIndexType span,GirderIndexType girder,
+                                         IEAFDisplayUnits* pDisplayUnits,
+                                         pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType,
+                                         bool bDesign,bool bRating) const
+{
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
@@ -111,16 +135,11 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
    continuity_stage = _cpp_min(continuity_stage,left_stage);
    continuity_stage = _cpp_min(continuity_stage,right_stage);
 
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
-
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   bool bPedLoading = pProductLoads->HasPedestrianLoad(startSpan,girder);
-
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
-   ColumnIndexType col = 0;
-   RowIndexType row = CreateCombinedLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,_T("Shear"),false,bDesign,bPermit,bPedLoading,bRating,stage,continuity_stage,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,_T("Shear"),false,bRating,stage,continuity_stage,
+                                 analysisType,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   *p << p_table;
 
    if ( span == ALL_SPANS )
    {
@@ -128,68 +147,13 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   *p << p_table;
-
    RowIndexType row2 = 1;
-   rptRcTable* p_table2 = 0;
-   if ( stage == pgsTypes::BridgeSite3 )
-   {
-      p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
-      *pChapter << p;
-      *p << LIVELOAD_PER_GIRDER << rptNewLine;
-
-      p = new rptParagraph;
-      *pChapter << p;
-
-      p = new rptParagraph;
-      *pChapter << p;
-
-      ColumnIndexType nCols = 1;
-
-      if ( bDesign )
-      {
-         nCols += 5; // Service I, Service IA or Fatigue I, Strength I min/max
-
-         if ( analysisType == pgsTypes::Envelope )
-            nCols += 3; // min/max for Service I, Service III, ServiceIA/FatigueI
-
-         if ( bPermit )
-            nCols += 2; // Strength II min/max
-      }
-
-      if ( bRating )
-      {
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
-            nCols += 2;
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
-            nCols += 2;
-      
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-            nCols += 2;
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-            nCols += 2;
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-            nCols += 4;
-
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-            nCols += 4;
-      }
-
-      GET_IFACE2(pBroker,IStageMap,pStageMap);
-      p_table2 = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Shear"));
-      row2 = ConfigureLimitStateTableHeading<rptForceUnitTag,unitmgtForceData>(p_table2,false,bDesign,bPermit,bRating,false,analysisType,pStageMap,pRatingSpec,pDisplayUnits,pDisplayUnits->GetGeneralForceUnit());
-      *p << p_table2;
-   }
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
    GET_IFACE2(pBroker,ICombinedForces,pForces);
    GET_IFACE2(pBroker,ICombinedForces2,pForces2);
-   GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
    GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
 
    // Fill up the table
@@ -203,14 +167,6 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
       std::vector<sysSectionValue> minDCcum, maxDCcum;
       std::vector<sysSectionValue> minDWinc, maxDWinc;
       std::vector<sysSectionValue> minDWcum, maxDWcum;
-      std::vector<sysSectionValue> minPedestrianLL, maxPedestrianLL;
-      std::vector<sysSectionValue> minDesignLL, maxDesignLL;
-      std::vector<sysSectionValue> minFatigueLL, maxFatigueLL;
-      std::vector<sysSectionValue> minPermitLL, maxPermitLL;
-      std::vector<sysSectionValue> minLegalRoutineLL, maxLegalRoutineLL;
-      std::vector<sysSectionValue> minLegalSpecialLL, maxLegalSpecialLL;
-      std::vector<sysSectionValue> minPermitRoutineLL, maxPermitRoutineLL;
-      std::vector<sysSectionValue> minPermitSpecialLL, maxPermitSpecialLL;
 
       if ( stage == pgsTypes::CastingYard || stage == pgsTypes::GirderPlacement || stage == pgsTypes::TemporaryStrandRemoval )
       {
@@ -282,63 +238,6 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
             minDCcum = pForces2->GetShear( lcDC, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
             maxDWcum = pForces2->GetShear( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, MaxSimpleContinuousEnvelope );
             minDWcum = pForces2->GetShear( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, MinSimpleContinuousEnvelope );
-
-            if ( bDesign )
-            {
-               if ( bPedLoading )
-               {
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxPedestrianLL );
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minPedestrianLL, &dummy );
-               }
-
-               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxDesignLL );
-               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minDesignLL, &dummy );
-
-               if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-               {
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxFatigueLL );
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minFatigueLL, &dummy );
-               }
-
-               if ( bPermit )
-               {
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxPermitLL );
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minPermitLL, &dummy );
-               }
-            }
-
-            if ( bRating )
-            {
-               if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory)) )
-               {
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxDesignLL );
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minDesignLL, &dummy );
-               }
-
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-               {
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxLegalRoutineLL );
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minLegalRoutineLL, &dummy );
-               }
-
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-               {
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxLegalSpecialLL );
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minLegalSpecialLL, &dummy );
-               }
-
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-               {
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxPermitRoutineLL );
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minPermitRoutineLL, &dummy );
-               }
-
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-               {
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxPermitSpecialLL );
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, &minPermitSpecialLL, &dummy );
-               }
-            }
          }
          else
          {
@@ -347,58 +246,8 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
             maxDWinc = pForces2->GetShear( bRating ? lcDWRating : lcDW, stage, vPoi, ctIncremental, bat );
             maxDCcum = pForces2->GetShear( lcDC, stage, vPoi, ctCummulative, bat );
             maxDWcum = pForces2->GetShear( bRating ? lcDWRating : lcDW, stage, vPoi, ctCummulative, bat );
-
-            if ( bDesign )
-            {
-               if ( bPedLoading )
-               {
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, bat, &minPedestrianLL, &maxPedestrianLL );
-               }
-
-               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, bat, &minDesignLL, &maxDesignLL );
-
-               if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-               {
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, bat, &minFatigueLL, &maxFatigueLL );
-               }
-
-               if ( bPermit )
-               {
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, bat, &minPermitLL, &maxPermitLL );
-               }
-            }
-
-            if ( bRating )
-            {
-               if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
-               {
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, bat, &minDesignLL, &maxDesignLL );
-               }
-
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-               {
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, bat, &minLegalRoutineLL, &maxLegalRoutineLL );
-               }
-
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-               {
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, bat, &minLegalSpecialLL, &maxLegalSpecialLL );
-               }
-
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-               {
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, bat, &minPermitRoutineLL, &maxPermitRoutineLL );
-               }
-
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-               {
-                  pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, bat, &minPermitSpecialLL, &maxPermitSpecialLL );
-               }
-            }
          }
       }
-
-
 
       std::vector<pgsPointOfInterest>::const_iterator i;
       long index = 0;
@@ -406,7 +255,7 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
       {
          const pgsPointOfInterest& poi = *i;
 
-         col = 0;
+         ColumnIndexType col = 0;
 
          Float64 end_size = 0 ;
          if ( stage != pgsTypes::CastingYard )
@@ -493,187 +342,666 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
                (*p_table)(row,col++) << shear.SetValue( maxDCcum[index] );
                (*p_table)(row,col++) << shear.SetValue( maxDWcum[index] );
             }
+         }
 
-            if ( bDesign )
+         row++;
+      }
+   }
+}
+
+void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* pChapter,
+                                         SpanIndexType span,GirderIndexType girder,
+                                         IEAFDisplayUnits* pDisplayUnits,
+                                         pgsTypes::AnalysisType analysisType,
+                                         bool bDesign,bool bRating) const
+{
+   ATLASSERT(!(bDesign&&bRating)); // these are separate tables, can't do both
+
+   pgsTypes::Stage stage = pgsTypes::BridgeSite3; // always
+
+   // Build table
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
+
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
+
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+
+   SpanIndexType startSpan = (span == ALL_SPANS ? 0 : span);
+   SpanIndexType nSpans    = (span == ALL_SPANS ? pBridge->GetSpanCount() : startSpan+1 );
+ 
+   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(span, girder);
+
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   bool bPedLoading = pProductLoads->HasPedestrianLoad(startSpan,girder);
+
+   LPCTSTR strLabel = bDesign ? _T("Shear - Design Vehicles") : _T("Shear - Rating Vehicles");
+
+   rptParagraph* p = new rptParagraph;
+   *pChapter << p;
+
+   rptRcTable* p_table;
+   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,strLabel,false,bDesign,bPermit,bPedLoading,bRating,false,stage,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   *p << p_table;
+
+   if ( span == ALL_SPANS )
+   {
+      p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
+
+   rptParagraph* pNote = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   *pChapter << pNote;
+   *pNote << LIVELOAD_PER_GIRDER << rptNewLine;
+
+   // Get the interface pointers we need
+   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   GET_IFACE2(pBroker,ICombinedForces,pForces);
+   GET_IFACE2(pBroker,ICombinedForces2,pForces2);
+   GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
+
+   // Fill up the table
+   for ( SpanIndexType spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
+   {
+      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( spanIdx, girder, stage, POI_ALL, POIFIND_OR);
+
+      std::vector<sysSectionValue> dummy;
+      std::vector<sysSectionValue> minPedestrianLL, maxPedestrianLL;
+      std::vector<sysSectionValue> minDesignLL, maxDesignLL;
+      std::vector<sysSectionValue> minFatigueLL, maxFatigueLL;
+      std::vector<sysSectionValue> minPermitLL, maxPermitLL;
+      std::vector<sysSectionValue> minLegalRoutineLL, maxLegalRoutineLL;
+      std::vector<sysSectionValue> minLegalSpecialLL, maxLegalSpecialLL;
+      std::vector<sysSectionValue> minPermitRoutineLL, maxPermitRoutineLL;
+      std::vector<sysSectionValue> minPermitSpecialLL, maxPermitSpecialLL;
+
+      // stage == pgsTypes::BridgeSite3
+      if ( analysisType == pgsTypes::Envelope )
+      {
+         if ( bPedLoading )
+         {
+            pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, &dummy, &maxPedestrianLL );
+            pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, &minPedestrianLL, &dummy );
+         }
+
+         if ( bDesign )
+         {
+            pForces2->GetCombinedLiveLoadShear( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, &dummy, &maxDesignLL );
+            pForces2->GetCombinedLiveLoadShear( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, &minDesignLL, &dummy );
+
+            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
             {
-               if ( bPedLoading )
-               {
-                  (*p_table)(row,col++) << shear.SetValue( maxPedestrianLL[index] );
-                  (*p_table)(row,col++) << shear.SetValue( minPedestrianLL[index] );
-               }
-
-               (*p_table)(row,col++) << shear.SetValue( maxDesignLL[index] );
-               (*p_table)(row,col++) << shear.SetValue( minDesignLL[index] );
-            
-               if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-               {
-                  (*p_table)(row,col++) << shear.SetValue( maxFatigueLL[index] );
-                  (*p_table)(row,col++) << shear.SetValue( minFatigueLL[index] );
-               }
-
-               if ( bPermit )
-               {
-                  (*p_table)(row,col++) << shear.SetValue( maxPermitLL[index] );
-                  (*p_table)(row,col++) << shear.SetValue( minPermitLL[index] );
-               }
+               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, &dummy, &maxFatigueLL );
+               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, &minFatigueLL, &dummy );
             }
 
-            if ( bRating )
+            if ( bPermit )
             {
-               if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
-               {
-                  (*p_table)(row,col++) << shear.SetValue( maxDesignLL[index] );
-                  (*p_table)(row,col++) << shear.SetValue( minDesignLL[index] );
-               }
+               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, &dummy, &maxPermitLL );
+               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, &minPermitLL, &dummy );
+            }
+         }
 
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-               {
-                  (*p_table)(row,col++) << shear.SetValue( maxLegalRoutineLL[index] );
-                  (*p_table)(row,col++) << shear.SetValue( minLegalRoutineLL[index] );
-               }
+         if ( bRating )
+         {
+            if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory)) )
+            {
+               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, &dummy, &maxDesignLL );
+               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, &minDesignLL, &dummy );
+            }
 
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, &dummy, &maxLegalRoutineLL );
+               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, &minLegalRoutineLL, &dummy );
+            }
 
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-               {
-                  (*p_table)(row,col++) << shear.SetValue( maxLegalSpecialLL[index] );
-                  (*p_table)(row,col++) << shear.SetValue( minLegalSpecialLL[index] );
-               }
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, &dummy, &maxLegalSpecialLL );
+               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, &minLegalSpecialLL, &dummy );
+            }
 
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-               {
-                  (*p_table)(row,col++) << shear.SetValue( maxPermitRoutineLL[index] );
-                  (*p_table)(row,col++) << shear.SetValue( minPermitRoutineLL[index] );
-               }
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            {
+               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, &dummy, &maxPermitRoutineLL );
+               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, &minPermitRoutineLL, &dummy );
+            }
 
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-               {
-                  (*p_table)(row,col++) << shear.SetValue( maxPermitSpecialLL[index] );
-                  (*p_table)(row,col++) << shear.SetValue( minPermitSpecialLL[index] );
-               }
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            {
+               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, &dummy, &maxPermitSpecialLL );
+               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, &minPermitSpecialLL, &dummy );
+            }
+         }
+      }
+      else
+      {
+         BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
+
+         if ( bPedLoading )
+         {
+            pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, bat, true, &minPedestrianLL, &maxPedestrianLL );
+         }
+
+         if ( bDesign )
+         {
+            pForces2->GetCombinedLiveLoadShear( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, bat, true, &minDesignLL, &maxDesignLL );
+
+            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            {
+               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, bat, true, &minFatigueLL, &maxFatigueLL );
+            }
+
+            if ( bPermit )
+            {
+               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, bat, true, &minPermitLL, &maxPermitLL );
+            }
+         }
+
+         if ( bRating )
+         {
+            if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+            {
+               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, bat, true, &minDesignLL, &maxDesignLL );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, bat, true, &minLegalRoutineLL, &maxLegalRoutineLL );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, bat, true, &minLegalSpecialLL, &maxLegalSpecialLL );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            {
+               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, bat, true, &minPermitRoutineLL, &maxPermitRoutineLL );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            {
+               pForces2->GetCombinedLiveLoadShear( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, bat, true, &minPermitSpecialLL, &maxPermitSpecialLL );
+            }
+         }
+      }
+
+      // fill table (first half if design/ped load)
+      std::vector<pgsPointOfInterest>::const_iterator i;
+      long index = 0;
+      ColumnIndexType col = 0;
+      RowIndexType    row = Nhrows;
+
+      for ( i = vPoi.begin(); i != vPoi.end(); i++, index++ )
+      {
+         const pgsPointOfInterest& poi = *i;
+         col = 0;
+
+         Float64 end_size =  pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+
+         (*p_table)(row,col++) << location.SetValue( stage, poi, end_size );
+
+         if ( bDesign )
+         {
+            if ( bPedLoading )
+            {
+               (*p_table)(row,col++) << shear.SetValue( maxPedestrianLL[index] );
+               (*p_table)(row,col++) << shear.SetValue( minPedestrianLL[index] );
+            }
+
+            (*p_table)(row,col++) << shear.SetValue( maxDesignLL[index] );
+            (*p_table)(row,col++) << shear.SetValue( minDesignLL[index] );
+         
+            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            {
+               (*p_table)(row,col++) << shear.SetValue( maxFatigueLL[index] );
+               (*p_table)(row,col++) << shear.SetValue( minFatigueLL[index] );
+            }
+
+            if ( bPermit )
+            {
+               (*p_table)(row,col++) << shear.SetValue( maxPermitLL[index] );
+               (*p_table)(row,col++) << shear.SetValue( minPermitLL[index] );
+            }
+         }
+
+         if ( bRating )
+         {
+            if ( pRatingSpec->IncludePedestrianLiveLoad() )
+            {
+               (*p_table)(row,col++) << shear.SetValue( maxPedestrianLL[index] );
+               (*p_table)(row,col++) << shear.SetValue( minPedestrianLL[index] );
+            }
+
+            if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+            {
+               (*p_table)(row,col++) << shear.SetValue( maxDesignLL[index] );
+               (*p_table)(row,col++) << shear.SetValue( minDesignLL[index] );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               (*p_table)(row,col++) << shear.SetValue( maxLegalRoutineLL[index] );
+               (*p_table)(row,col++) << shear.SetValue( minLegalRoutineLL[index] );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               (*p_table)(row,col++) << shear.SetValue( maxLegalSpecialLL[index] );
+               (*p_table)(row,col++) << shear.SetValue( minLegalSpecialLL[index] );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            {
+               (*p_table)(row,col++) << shear.SetValue( maxPermitRoutineLL[index] );
+               (*p_table)(row,col++) << shear.SetValue( minPermitRoutineLL[index] );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            {
+               (*p_table)(row,col++) << shear.SetValue( maxPermitSpecialLL[index] );
+               (*p_table)(row,col++) << shear.SetValue( minPermitSpecialLL[index] );
             }
          }
 
          row++;
       }
 
-      // create second table for BSS3 Limit states
-      if ( stage == pgsTypes::BridgeSite3 )
+      // fill second half of table if design/ped load
+      if ( bDesign && bPedLoading )
       {
-         std::vector<sysSectionValue> dummy;
-         std::vector<sysSectionValue> minServiceI,   maxServiceI;
-         std::vector<sysSectionValue> minServiceIA,  maxServiceIA;
-         std::vector<sysSectionValue> minServiceIII, maxServiceIII;
-         std::vector<sysSectionValue> minFatigueI,   maxFatigueI;
-         std::vector<sysSectionValue> minStrengthI,  maxStrengthI;
-         std::vector<sysSectionValue> minStrengthII, maxStrengthII;
-         std::vector<sysSectionValue> minStrengthI_Inventory, maxStrengthI_Inventory;
-         std::vector<sysSectionValue> minStrengthI_Operating, maxStrengthI_Operating;
-         std::vector<sysSectionValue> minStrengthI_Legal_Routine, maxStrengthI_Legal_Routine;
-         std::vector<sysSectionValue> minStrengthI_Legal_Special, maxStrengthI_Legal_Special;
-         std::vector<sysSectionValue> minStrengthII_Permit_Routine, maxStrengthII_Permit_Routine;
-         std::vector<sysSectionValue> minServiceI_Permit_Routine, maxServiceI_Permit_Routine;
-         std::vector<sysSectionValue> minStrengthII_Permit_Special, maxStrengthII_Permit_Special;
-         std::vector<sysSectionValue> minServiceI_Permit_Special, maxServiceI_Permit_Special;
+         // Sum or envelope pedestrian values with live loads to give final LL
+
+         GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+         ILiveLoads::PedestrianLoadApplicationType DesignPedLoad = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltDesign);
+         ILiveLoads::PedestrianLoadApplicationType FatiguePedLoad = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltFatigue);
+         ILiveLoads::PedestrianLoadApplicationType PermitPedLoad = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltPermit);
+
+         SumPedAndLiveLoad(DesignPedLoad, minDesignLL, maxDesignLL, minPedestrianLL, maxPedestrianLL);
+
+         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         {
+            SumPedAndLiveLoad(FatiguePedLoad, minFatigueLL, maxFatigueLL, minPedestrianLL, maxPedestrianLL);
+         }
+
+         if ( bPermit )
+         {
+            SumPedAndLiveLoad(PermitPedLoad, minPermitLL, maxPermitLL, minPedestrianLL, maxPedestrianLL);
+         }
+
+         // Now we can fill table
+         RowIndexType    row = Nhrows;
+         ColumnIndexType recCol = col;
+         int psiz = (int)vPoi.size();
+         for ( index=0; index<psiz; index++ )
+         {
+            col = recCol;
+
+            (*p_table)(row,col++) << shear.SetValue( maxDesignLL[index] );
+            (*p_table)(row,col++) << shear.SetValue( minDesignLL[index] );
+
+            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            {
+               (*p_table)(row,col++) << shear.SetValue( maxFatigueLL[index] );
+               (*p_table)(row,col++) << shear.SetValue( minFatigueLL[index] );
+            }
+
+            if ( bPermit )
+            {
+               (*p_table)(row,col++) << shear.SetValue( maxPermitLL[index] );
+               (*p_table)(row,col++) << shear.SetValue( minPermitLL[index] );
+            }
+
+            row++;
+         }
+
+         // footnotes for pedestrian loads
+         int lnum=1;
+         *pNote<< lnum++ << PedestrianFootnote(DesignPedLoad) << rptNewLine;
+
+         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         {
+            *pNote << lnum++ << PedestrianFootnote(FatiguePedLoad) << rptNewLine;
+         }
+
+         if ( bPermit )
+         {
+            *pNote << lnum++ << PedestrianFootnote(PermitPedLoad) << rptNewLine;
+         }
+      }
+
+      if ( bRating && pRatingSpec->IncludePedestrianLiveLoad())
+      {
+         // Note for rating and pedestrian load
+         *pNote << _T("$ Pedestrian load results will be summed with vehicular load results at time of load combination.");
+      }
+   }
+}
+
+void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
+                                         SpanIndexType span,GirderIndexType girder,
+                                         IEAFDisplayUnits* pDisplayUnits,
+                                         pgsTypes::AnalysisType analysisType,
+                                         bool bDesign,bool bRating) const
+{
+   ATLASSERT(!(bDesign&&bRating)); // these are separate tables, can't do both
+
+   pgsTypes::Stage stage = pgsTypes::BridgeSite3; // always
+
+   // Build table
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
+
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
+
+   GET_IFACE2(pBroker,IBridge,pBridge);
+
+   rptParagraph* p = new rptParagraph;
+   *pChapter << p;
+
+   SpanIndexType startSpan = (span == ALL_SPANS ? 0 : span);
+   SpanIndexType nSpans    = (span == ALL_SPANS ? pBridge->GetSpanCount() : startSpan+1 );
+ 
+   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
+
+   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(span, girder);
+   bool bPedLoading = pProductLoads->HasPedestrianLoad(startSpan,girder);
+
+   rptRcTable* p_table2;
+   RowIndexType row2 = CreateLimitStateTableHeading<rptMomentUnitTag,unitmgtMomentData>(&p_table2,_T("Shear"),false,bDesign,bPermit,bRating,false,analysisType,pStageMap,pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
+   *p << p_table2;
+
+   if ( span == ALL_SPANS )
+   {
+      p_table2->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table2->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   }
+
+   // Get the interface pointers we need
+   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   GET_IFACE2(pBroker,ICombinedForces,pForces);
+   GET_IFACE2(pBroker,ICombinedForces2,pForces2);
+   GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
+   GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
+
+   // Get data and fill up the table
+   for ( SpanIndexType spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
+   {
+      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( spanIdx, girder, stage, POI_ALL, POIFIND_OR);
+
+      // create second table for BSS3 Limit states
+      std::vector<sysSectionValue> dummy;
+      std::vector<sysSectionValue> minServiceI,   maxServiceI;
+      std::vector<sysSectionValue> minServiceIA,  maxServiceIA;
+      std::vector<sysSectionValue> minServiceIII, maxServiceIII;
+      std::vector<sysSectionValue> minFatigueI,   maxFatigueI;
+      std::vector<sysSectionValue> minStrengthI,  maxStrengthI;
+      std::vector<sysSectionValue> minStrengthII, maxStrengthII;
+      std::vector<sysSectionValue> minStrengthI_Inventory, maxStrengthI_Inventory;
+      std::vector<sysSectionValue> minStrengthI_Operating, maxStrengthI_Operating;
+      std::vector<sysSectionValue> minStrengthI_Legal_Routine, maxStrengthI_Legal_Routine;
+      std::vector<sysSectionValue> minStrengthI_Legal_Special, maxStrengthI_Legal_Special;
+      std::vector<sysSectionValue> minStrengthII_Permit_Routine, maxStrengthII_Permit_Routine;
+      std::vector<sysSectionValue> minServiceI_Permit_Routine, maxServiceI_Permit_Routine;
+      std::vector<sysSectionValue> minStrengthII_Permit_Special, maxStrengthII_Permit_Special;
+      std::vector<sysSectionValue> minServiceI_Permit_Special, maxServiceI_Permit_Special;
+
+      if ( analysisType == pgsTypes::Envelope )
+      {
+         if ( bDesign )
+         {
+            pLsForces2->GetShear( pgsTypes::ServiceI, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceI );
+            pLsForces2->GetShear( pgsTypes::ServiceI, stage, vPoi, MinSimpleContinuousEnvelope, &minServiceI, &dummy );
+
+            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+            {
+               pLsForces2->GetShear( pgsTypes::ServiceIA, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceIA );
+               pLsForces2->GetShear( pgsTypes::ServiceIA, stage, vPoi, MinSimpleContinuousEnvelope, &minServiceIA, &dummy );
+            }
+            else
+            {
+               pLsForces2->GetShear( pgsTypes::FatigueI, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxFatigueI );
+               pLsForces2->GetShear( pgsTypes::FatigueI, stage, vPoi, MinSimpleContinuousEnvelope, &minFatigueI, &dummy );
+            }
+
+            pLsForces2->GetShear( pgsTypes::ServiceIII, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceIII );
+            pLsForces2->GetShear( pgsTypes::ServiceIII, stage, vPoi, MinSimpleContinuousEnvelope, &minServiceIII, &dummy );
+
+            pLsForces2->GetShear( pgsTypes::StrengthI, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthI );
+            pLsForces2->GetShear( pgsTypes::StrengthI, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthI, &dummy );
+
+            if ( bPermit )
+            {
+               pLsForces2->GetShear( pgsTypes::StrengthII, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthII );
+               pLsForces2->GetShear( pgsTypes::StrengthII, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthII, &dummy );
+            }
+         }
+
+         if ( bRating )
+         {
+            // Design - Inventory
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
+            {
+               pLsForces2->GetShear( pgsTypes::StrengthI_Inventory, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthI_Inventory );
+               pLsForces2->GetShear( pgsTypes::StrengthI_Inventory, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthI_Inventory, &dummy );
+            }
+
+            // Design - Operating
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
+            {
+               pLsForces2->GetShear( pgsTypes::StrengthI_Operating, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthI_Operating );
+               pLsForces2->GetShear( pgsTypes::StrengthI_Operating, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthI_Operating, &dummy );
+            }
+
+            // Legal - Routine
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               pLsForces2->GetShear( pgsTypes::StrengthI_LegalRoutine, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthI_Legal_Routine );
+               pLsForces2->GetShear( pgsTypes::StrengthI_LegalRoutine, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthI_Legal_Routine, &dummy );
+            }
+
+            // Legal - Special
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               pLsForces2->GetShear( pgsTypes::StrengthI_LegalSpecial, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthI_Legal_Special );
+               pLsForces2->GetShear( pgsTypes::StrengthI_LegalSpecial, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthI_Legal_Special, &dummy );
+            }
+
+            // Permit Rating - Routine
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            {
+               pLsForces2->GetShear( pgsTypes::StrengthII_PermitRoutine, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthII_Permit_Routine );
+               pLsForces2->GetShear( pgsTypes::StrengthII_PermitRoutine, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthII_Permit_Routine, &dummy );
+               pLsForces2->GetShear( pgsTypes::ServiceI_PermitRoutine,   stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceI_Permit_Routine );
+               pLsForces2->GetShear( pgsTypes::ServiceI_PermitRoutine,   stage, vPoi, MinSimpleContinuousEnvelope, &minServiceI_Permit_Routine, &dummy );
+            }
+
+            // Permit Rating - Special
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            {
+               pLsForces2->GetShear( pgsTypes::StrengthII_PermitSpecial, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthII_Permit_Special );
+               pLsForces2->GetShear( pgsTypes::StrengthII_PermitSpecial, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthII_Permit_Special, &dummy );
+               pLsForces2->GetShear( pgsTypes::ServiceI_PermitSpecial,   stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceI_Permit_Special );
+               pLsForces2->GetShear( pgsTypes::ServiceI_PermitSpecial,   stage, vPoi, MinSimpleContinuousEnvelope, &minServiceI_Permit_Special, &dummy );
+            }
+         }
+      }
+      else
+      {
+         BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
+
+         if ( bDesign )
+         {
+            pLsForces2->GetShear( pgsTypes::ServiceI, stage, vPoi, bat, &minServiceI, &maxServiceI );
+
+            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+               pLsForces2->GetShear( pgsTypes::ServiceIA, stage, vPoi, bat, &minServiceIA, &maxServiceIA );
+            else
+               pLsForces2->GetShear( pgsTypes::FatigueI, stage, vPoi, bat, &minFatigueI, &maxFatigueI );
+
+            pLsForces2->GetShear( pgsTypes::ServiceIII, stage, vPoi, bat, &minServiceIII, &maxServiceIII );
+            pLsForces2->GetShear( pgsTypes::StrengthI, stage, vPoi, bat, &minStrengthI, &maxStrengthI );
+
+            if ( bPermit )
+            {
+               pLsForces2->GetShear( pgsTypes::StrengthII, stage, vPoi, bat, &minStrengthII, &maxStrengthII );
+            }
+         }
+
+         if ( bRating )
+         {
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
+            {
+               pLsForces2->GetShear( pgsTypes::StrengthI_Inventory,  stage, vPoi, bat, &minStrengthI_Inventory, &maxStrengthI_Inventory );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
+            {
+               pLsForces2->GetShear( pgsTypes::StrengthI_Operating,  stage, vPoi, bat, &minStrengthI_Operating, &maxStrengthI_Operating );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               pLsForces2->GetShear( pgsTypes::StrengthI_LegalRoutine,  stage, vPoi, bat, &minStrengthI_Legal_Routine,  &maxStrengthI_Legal_Routine );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               pLsForces2->GetShear( pgsTypes::StrengthI_LegalSpecial,  stage, vPoi, bat, &minStrengthI_Legal_Special,  &maxStrengthI_Legal_Special );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            {
+               pLsForces2->GetShear( pgsTypes::ServiceI_PermitRoutine,   stage, vPoi, bat, &minServiceI_Permit_Routine,   &maxServiceI_Permit_Routine );
+               pLsForces2->GetShear( pgsTypes::StrengthII_PermitRoutine, stage, vPoi, bat, &minStrengthII_Permit_Routine, &maxStrengthII_Permit_Routine );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            {
+               pLsForces2->GetShear( pgsTypes::ServiceI_PermitSpecial,   stage, vPoi, bat, &minServiceI_Permit_Special,   &maxServiceI_Permit_Special );
+               pLsForces2->GetShear( pgsTypes::StrengthII_PermitSpecial, stage, vPoi, bat, &minStrengthII_Permit_Special, &maxStrengthII_Permit_Special );
+            }
+         }
+      }
+
+      // Fill table
+      std::vector<pgsPointOfInterest>::const_iterator i;
+      long index = 0;
+      for ( i = vPoi.begin(); i != vPoi.end(); i++, index++ )
+      {
+         ColumnIndexType col = 0;
+
+         const pgsPointOfInterest& poi = *i;
+
+         Float64 end_size = 0 ;
+         if ( stage != pgsTypes::CastingYard )
+            end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
+
+         (*p_table2)(row2,col++) << location.SetValue( stage, poi, end_size );
 
          if ( analysisType == pgsTypes::Envelope )
          {
             if ( bDesign )
             {
-               pLsForces2->GetShear( pgsTypes::ServiceI, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceI );
-               pLsForces2->GetShear( pgsTypes::ServiceI, stage, vPoi, MinSimpleContinuousEnvelope, &minServiceI, &dummy );
+               (*p_table2)(row2,col++) << shear.SetValue( maxServiceI[index] );
+               (*p_table2)(row2,col++) << shear.SetValue( minServiceI[index] );
 
                if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
                {
-                  pLsForces2->GetShear( pgsTypes::ServiceIA, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceIA );
-                  pLsForces2->GetShear( pgsTypes::ServiceIA, stage, vPoi, MinSimpleContinuousEnvelope, &minServiceIA, &dummy );
+                  (*p_table2)(row2,col++) << shear.SetValue( maxServiceIA[index] );
+                  (*p_table2)(row2,col++) << shear.SetValue( minServiceIA[index] );
                }
-               else
+
+               (*p_table2)(row2,col++) << shear.SetValue( maxServiceIII[index] );
+               (*p_table2)(row2,col++) << shear.SetValue( minServiceIII[index] );
+
+               if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
                {
-                  pLsForces2->GetShear( pgsTypes::FatigueI, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxFatigueI );
-                  pLsForces2->GetShear( pgsTypes::FatigueI, stage, vPoi, MinSimpleContinuousEnvelope, &minFatigueI, &dummy );
+                  (*p_table2)(row2,col++) << shear.SetValue( maxFatigueI[index] );
+                  (*p_table2)(row2,col++) << shear.SetValue( minFatigueI[index] );
                }
 
-               pLsForces2->GetShear( pgsTypes::ServiceIII, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceIII );
-               pLsForces2->GetShear( pgsTypes::ServiceIII, stage, vPoi, MinSimpleContinuousEnvelope, &minServiceIII, &dummy );
-
-               pLsForces2->GetShear( pgsTypes::StrengthI, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthI );
-               pLsForces2->GetShear( pgsTypes::StrengthI, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthI, &dummy );
+               (*p_table2)(row2,col++) << shear.SetValue( maxStrengthI[index] );
+               (*p_table2)(row2,col++) << shear.SetValue( minStrengthI[index] );
 
                if ( bPermit )
                {
-                  pLsForces2->GetShear( pgsTypes::StrengthII, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthII );
-                  pLsForces2->GetShear( pgsTypes::StrengthII, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthII, &dummy );
+                  (*p_table2)(row2,col++) << shear.SetValue( maxStrengthII[index] );
+                  (*p_table2)(row2,col++) << shear.SetValue( minStrengthII[index] );
                }
             }
 
             if ( bRating )
             {
-               // Design - Inventory
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
                {
-                  pLsForces2->GetShear( pgsTypes::StrengthI_Inventory, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthI_Inventory );
-                  pLsForces2->GetShear( pgsTypes::StrengthI_Inventory, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthI_Inventory, &dummy );
+                  (*p_table2)(row2,col++) << shear.SetValue(maxStrengthI_Inventory[index]);
+                  (*p_table2)(row2,col++) << shear.SetValue(minStrengthI_Inventory[index]);
                }
 
-               // Design - Operating
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
                {
-                  pLsForces2->GetShear( pgsTypes::StrengthI_Operating, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthI_Operating );
-                  pLsForces2->GetShear( pgsTypes::StrengthI_Operating, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthI_Operating, &dummy );
+                  (*p_table2)(row2,col++) << shear.SetValue(maxStrengthI_Operating[index]);
+                  (*p_table2)(row2,col++) << shear.SetValue(minStrengthI_Operating[index]);
                }
 
-               // Legal - Routine
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
                {
-                  pLsForces2->GetShear( pgsTypes::StrengthI_LegalRoutine, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthI_Legal_Routine );
-                  pLsForces2->GetShear( pgsTypes::StrengthI_LegalRoutine, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthI_Legal_Routine, &dummy );
+                  (*p_table2)(row2,col++) << shear.SetValue(maxStrengthI_Legal_Routine[index]);
+                  (*p_table2)(row2,col++) << shear.SetValue(minStrengthI_Legal_Routine[index]);
                }
 
-               // Legal - Special
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
                {
-                  pLsForces2->GetShear( pgsTypes::StrengthI_LegalSpecial, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthI_Legal_Special );
-                  pLsForces2->GetShear( pgsTypes::StrengthI_LegalSpecial, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthI_Legal_Special, &dummy );
+                  (*p_table2)(row2,col++) << shear.SetValue(maxStrengthI_Legal_Special[index]);
+                  (*p_table2)(row2,col++) << shear.SetValue(minStrengthI_Legal_Special[index]);
                }
 
-               // Permit Rating - Routine
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
                {
-                  pLsForces2->GetShear( pgsTypes::StrengthII_PermitRoutine, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthII_Permit_Routine );
-                  pLsForces2->GetShear( pgsTypes::StrengthII_PermitRoutine, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthII_Permit_Routine, &dummy );
-                  pLsForces2->GetShear( pgsTypes::ServiceI_PermitRoutine,   stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceI_Permit_Routine );
-                  pLsForces2->GetShear( pgsTypes::ServiceI_PermitRoutine,   stage, vPoi, MinSimpleContinuousEnvelope, &minServiceI_Permit_Routine, &dummy );
+                  (*p_table2)(row2,col++) << shear.SetValue(maxStrengthII_Permit_Routine[index]);
+                  (*p_table2)(row2,col++) << shear.SetValue(minStrengthII_Permit_Routine[index]);
+                  (*p_table2)(row2,col++) << shear.SetValue(maxServiceI_Permit_Routine[index]);
+                  (*p_table2)(row2,col++) << shear.SetValue(minServiceI_Permit_Routine[index]);
                }
 
-               // Permit Rating - Special
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
                {
-                  pLsForces2->GetShear( pgsTypes::StrengthII_PermitSpecial, stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxStrengthII_Permit_Special );
-                  pLsForces2->GetShear( pgsTypes::StrengthII_PermitSpecial, stage, vPoi, MinSimpleContinuousEnvelope, &minStrengthII_Permit_Special, &dummy );
-                  pLsForces2->GetShear( pgsTypes::ServiceI_PermitSpecial,   stage, vPoi, MaxSimpleContinuousEnvelope, &dummy, &maxServiceI_Permit_Special );
-                  pLsForces2->GetShear( pgsTypes::ServiceI_PermitSpecial,   stage, vPoi, MinSimpleContinuousEnvelope, &minServiceI_Permit_Special, &dummy );
+                  (*p_table2)(row2,col++) << shear.SetValue(maxStrengthII_Permit_Special[index]);
+                  (*p_table2)(row2,col++) << shear.SetValue(minStrengthII_Permit_Special[index]);
+                  (*p_table2)(row2,col++) << shear.SetValue(maxServiceI_Permit_Special[index]);
+                  (*p_table2)(row2,col++) << shear.SetValue(minServiceI_Permit_Special[index]);
                }
             }
          }
          else
          {
-            BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
-
             if ( bDesign )
             {
-               pLsForces2->GetShear( pgsTypes::ServiceI, stage, vPoi, bat, &minServiceI, &maxServiceI );
+               (*p_table2)(row2,col++) << shear.SetValue( maxServiceI[index] );
 
                if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
-                  pLsForces2->GetShear( pgsTypes::ServiceIA, stage, vPoi, bat, &minServiceIA, &maxServiceIA );
-               else
-                  pLsForces2->GetShear( pgsTypes::FatigueI, stage, vPoi, bat, &minFatigueI, &maxFatigueI );
+                  (*p_table2)(row2,col++) << shear.SetValue( maxServiceIA[index] );
 
-               pLsForces2->GetShear( pgsTypes::ServiceIII, stage, vPoi, bat, &minServiceIII, &maxServiceIII );
-               pLsForces2->GetShear( pgsTypes::StrengthI, stage, vPoi, bat, &minStrengthI, &maxStrengthI );
+               (*p_table2)(row2,col++) << shear.SetValue( maxServiceIII[index] );
+
+               if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+                  (*p_table2)(row2,col++) << shear.SetValue( maxFatigueI[index] );
+
+               (*p_table2)(row2,col++) << shear.SetValue( maxStrengthI[index] );
+               (*p_table2)(row2,col++) << shear.SetValue( minStrengthI[index] );
 
                if ( bPermit )
                {
-                  pLsForces2->GetShear( pgsTypes::StrengthII, stage, vPoi, bat, &minStrengthII, &maxStrengthII );
+                  (*p_table2)(row2,col++) << shear.SetValue( maxStrengthII[index] );
+                  (*p_table2)(row2,col++) << shear.SetValue( minStrengthII[index] );
                }
             }
 
@@ -681,197 +1009,47 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
             {
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
                {
-                  pLsForces2->GetShear( pgsTypes::StrengthI_Inventory,  stage, vPoi, bat, &minStrengthI_Inventory, &maxStrengthI_Inventory );
+                  (*p_table2)(row2,col++) << shear.SetValue(maxStrengthI_Inventory[index]);
+                  (*p_table2)(row2,col++) << shear.SetValue(minStrengthI_Inventory[index]);
                }
- 
+
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
                {
-                  pLsForces2->GetShear( pgsTypes::StrengthI_Operating,  stage, vPoi, bat, &minStrengthI_Operating, &maxStrengthI_Operating );
+                  (*p_table2)(row2,col++) << shear.SetValue(maxStrengthI_Operating[index]);
+                  (*p_table2)(row2,col++) << shear.SetValue(minStrengthI_Operating[index]);
                }
 
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
                {
-                  pLsForces2->GetShear( pgsTypes::StrengthI_LegalRoutine,  stage, vPoi, bat, &minStrengthI_Legal_Routine,  &maxStrengthI_Legal_Routine );
+                  (*p_table2)(row2,col++) << shear.SetValue(maxStrengthI_Legal_Routine[index]);
+                  (*p_table2)(row2,col++) << shear.SetValue(minStrengthI_Legal_Routine[index]);
                }
- 
+
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
                {
-                  pLsForces2->GetShear( pgsTypes::StrengthI_LegalSpecial,  stage, vPoi, bat, &minStrengthI_Legal_Special,  &maxStrengthI_Legal_Special );
+                  (*p_table2)(row2,col++) << shear.SetValue(maxStrengthI_Legal_Special[index]);
+                  (*p_table2)(row2,col++) << shear.SetValue(minStrengthI_Legal_Special[index]);
                }
 
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
                {
-                  pLsForces2->GetShear( pgsTypes::ServiceI_PermitRoutine,   stage, vPoi, bat, &minServiceI_Permit_Routine,   &maxServiceI_Permit_Routine );
-                  pLsForces2->GetShear( pgsTypes::StrengthII_PermitRoutine, stage, vPoi, bat, &minStrengthII_Permit_Routine, &maxStrengthII_Permit_Routine );
+                  (*p_table2)(row2,col++) << shear.SetValue(maxStrengthII_Permit_Routine[index]);
+                  (*p_table2)(row2,col++) << shear.SetValue(minStrengthII_Permit_Routine[index]);
+                  (*p_table2)(row2,col++) << shear.SetValue(maxServiceI_Permit_Routine[index]);
+                  (*p_table2)(row2,col++) << shear.SetValue(minServiceI_Permit_Routine[index]);
                }
 
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
                {
-                  pLsForces2->GetShear( pgsTypes::ServiceI_PermitSpecial,   stage, vPoi, bat, &minServiceI_Permit_Special,   &maxServiceI_Permit_Special );
-                  pLsForces2->GetShear( pgsTypes::StrengthII_PermitSpecial, stage, vPoi, bat, &minStrengthII_Permit_Special, &maxStrengthII_Permit_Special );
+                  (*p_table2)(row2,col++) << shear.SetValue(maxStrengthII_Permit_Special[index]);
+                  (*p_table2)(row2,col++) << shear.SetValue(minStrengthII_Permit_Special[index]);
+                  (*p_table2)(row2,col++) << shear.SetValue(maxServiceI_Permit_Special[index]);
+                  (*p_table2)(row2,col++) << shear.SetValue(minServiceI_Permit_Special[index]);
                }
             }
          }
 
-         std::vector<pgsPointOfInterest>::const_iterator i;
-         long index = 0;
-         for ( i = vPoi.begin(); i != vPoi.end(); i++, index++ )
-         {
-            col = 0;
-
-            const pgsPointOfInterest& poi = *i;
-
-            Float64 end_size = 0 ;
-            if ( stage != pgsTypes::CastingYard )
-               end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-
-            (*p_table2)(row2,col++) << location.SetValue( stage, poi, end_size );
-
-            if ( analysisType == pgsTypes::Envelope )
-            {
-               if ( bDesign )
-               {
-                  (*p_table2)(row2,col++) << shear.SetValue( maxServiceI[index] );
-                  (*p_table2)(row2,col++) << shear.SetValue( minServiceI[index] );
-
-                  if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
-                  {
-                     (*p_table2)(row2,col++) << shear.SetValue( maxServiceIA[index] );
-                     (*p_table2)(row2,col++) << shear.SetValue( minServiceIA[index] );
-                  }
-
-                  (*p_table2)(row2,col++) << shear.SetValue( maxServiceIII[index] );
-                  (*p_table2)(row2,col++) << shear.SetValue( minServiceIII[index] );
-
-                  if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-                  {
-                     (*p_table2)(row2,col++) << shear.SetValue( maxFatigueI[index] );
-                     (*p_table2)(row2,col++) << shear.SetValue( minFatigueI[index] );
-                  }
-
-                  (*p_table2)(row2,col++) << shear.SetValue( maxStrengthI[index] );
-                  (*p_table2)(row2,col++) << shear.SetValue( minStrengthI[index] );
-
-                  if ( bPermit )
-                  {
-                     (*p_table2)(row2,col++) << shear.SetValue( maxStrengthII[index] );
-                     (*p_table2)(row2,col++) << shear.SetValue( minStrengthII[index] );
-                  }
-               }
-
-               if ( bRating )
-               {
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
-                  {
-                     (*p_table2)(row2,col++) << shear.SetValue(maxStrengthI_Inventory[index]);
-                     (*p_table2)(row2,col++) << shear.SetValue(minStrengthI_Inventory[index]);
-                  }
-
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
-                  {
-                     (*p_table2)(row2,col++) << shear.SetValue(maxStrengthI_Operating[index]);
-                     (*p_table2)(row2,col++) << shear.SetValue(minStrengthI_Operating[index]);
-                  }
-
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-                  {
-                     (*p_table2)(row2,col++) << shear.SetValue(maxStrengthI_Legal_Routine[index]);
-                     (*p_table2)(row2,col++) << shear.SetValue(minStrengthI_Legal_Routine[index]);
-                  }
-
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-                  {
-                     (*p_table2)(row2,col++) << shear.SetValue(maxStrengthI_Legal_Special[index]);
-                     (*p_table2)(row2,col++) << shear.SetValue(minStrengthI_Legal_Special[index]);
-                  }
-
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-                  {
-                     (*p_table2)(row2,col++) << shear.SetValue(maxStrengthII_Permit_Routine[index]);
-                     (*p_table2)(row2,col++) << shear.SetValue(minStrengthII_Permit_Routine[index]);
-                     (*p_table2)(row2,col++) << shear.SetValue(maxServiceI_Permit_Routine[index]);
-                     (*p_table2)(row2,col++) << shear.SetValue(minServiceI_Permit_Routine[index]);
-                  }
-
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-                  {
-                     (*p_table2)(row2,col++) << shear.SetValue(maxStrengthII_Permit_Special[index]);
-                     (*p_table2)(row2,col++) << shear.SetValue(minStrengthII_Permit_Special[index]);
-                     (*p_table2)(row2,col++) << shear.SetValue(maxServiceI_Permit_Special[index]);
-                     (*p_table2)(row2,col++) << shear.SetValue(minServiceI_Permit_Special[index]);
-                  }
-               }
-            }
-            else
-            {
-               if ( bDesign )
-               {
-                  (*p_table2)(row2,col++) << shear.SetValue( maxServiceI[index] );
-
-                  if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
-                     (*p_table2)(row2,col++) << shear.SetValue( maxServiceIA[index] );
-
-                  (*p_table2)(row2,col++) << shear.SetValue( maxServiceIII[index] );
-
-                  if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-                     (*p_table2)(row2,col++) << shear.SetValue( maxFatigueI[index] );
-
-                  (*p_table2)(row2,col++) << shear.SetValue( maxStrengthI[index] );
-                  (*p_table2)(row2,col++) << shear.SetValue( minStrengthI[index] );
-
-                  if ( bPermit )
-                  {
-                     (*p_table2)(row2,col++) << shear.SetValue( maxStrengthII[index] );
-                     (*p_table2)(row2,col++) << shear.SetValue( minStrengthII[index] );
-                  }
-               }
-
-               if ( bRating )
-               {
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
-                  {
-                     (*p_table2)(row2,col++) << shear.SetValue(maxStrengthI_Inventory[index]);
-                     (*p_table2)(row2,col++) << shear.SetValue(minStrengthI_Inventory[index]);
-                  }
-
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
-                  {
-                     (*p_table2)(row2,col++) << shear.SetValue(maxStrengthI_Operating[index]);
-                     (*p_table2)(row2,col++) << shear.SetValue(minStrengthI_Operating[index]);
-                  }
-
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-                  {
-                     (*p_table2)(row2,col++) << shear.SetValue(maxStrengthI_Legal_Routine[index]);
-                     (*p_table2)(row2,col++) << shear.SetValue(minStrengthI_Legal_Routine[index]);
-                  }
-
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-                  {
-                     (*p_table2)(row2,col++) << shear.SetValue(maxStrengthI_Legal_Special[index]);
-                     (*p_table2)(row2,col++) << shear.SetValue(minStrengthI_Legal_Special[index]);
-                  }
-
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-                  {
-                     (*p_table2)(row2,col++) << shear.SetValue(maxStrengthII_Permit_Routine[index]);
-                     (*p_table2)(row2,col++) << shear.SetValue(minStrengthII_Permit_Routine[index]);
-                     (*p_table2)(row2,col++) << shear.SetValue(maxServiceI_Permit_Routine[index]);
-                     (*p_table2)(row2,col++) << shear.SetValue(minServiceI_Permit_Routine[index]);
-                  }
-
-                  if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-                  {
-                     (*p_table2)(row2,col++) << shear.SetValue(maxStrengthII_Permit_Special[index]);
-                     (*p_table2)(row2,col++) << shear.SetValue(minStrengthII_Permit_Special[index]);
-                     (*p_table2)(row2,col++) << shear.SetValue(maxServiceI_Permit_Special[index]);
-                     (*p_table2)(row2,col++) << shear.SetValue(minServiceI_Permit_Special[index]);
-                  }
-               }
-            }
-
-            row2++;
-         }
+         row2++;
       }
    }
 }

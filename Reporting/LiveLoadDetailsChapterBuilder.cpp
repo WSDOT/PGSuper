@@ -41,7 +41,7 @@ static char THIS_FILE[] = __FILE__;
 
 void ReportPedestrian(ILiveLoads::PedestrianLoadApplicationType pedType, rptParagraph* pPara)
 {
-   if (pedType==ILiveLoads::PedConcurrentWithVehiculuar)
+   if (pedType==ILiveLoads::PedConcurrentWithVehicular)
    {
       (*pPara) << _T("Pedestrian live load was applied concurrently with vehicular live loads.")<<rptNewLine;
    }
@@ -259,7 +259,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
          if (bPedestrian)
          {
-            ReportPedestrian(rate_pedestrian ? ILiveLoads::PedConcurrentWithVehiculuar : ILiveLoads::PedDontApply, pPara);
+            ReportPedestrian(rate_pedestrian ? ILiveLoads::PedConcurrentWithVehicular : ILiveLoads::PedDontApply, pPara);
          }
       }
 
@@ -286,7 +286,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
          if (bPedestrian)
          {
-            ReportPedestrian(rate_pedestrian ? ILiveLoads::PedConcurrentWithVehiculuar : ILiveLoads::PedDontApply, pPara);
+            ReportPedestrian(rate_pedestrian ? ILiveLoads::PedConcurrentWithVehicular : ILiveLoads::PedDontApply, pPara);
          }
       }
 
@@ -314,7 +314,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
          if (bPedestrian)
          {
-            ReportPedestrian(rate_pedestrian ? ILiveLoads::PedConcurrentWithVehiculuar : ILiveLoads::PedDontApply, pPara);
+            ReportPedestrian(rate_pedestrian ? ILiveLoads::PedConcurrentWithVehicular : ILiveLoads::PedDontApply, pPara);
          }
       }
 
@@ -342,7 +342,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
          if (bPedestrian)
          {
-            ReportPedestrian(rate_pedestrian ? ILiveLoads::PedConcurrentWithVehiculuar : ILiveLoads::PedDontApply, pPara);
+            ReportPedestrian(rate_pedestrian ? ILiveLoads::PedConcurrentWithVehicular : ILiveLoads::PedDontApply, pPara);
          }
       }
 
@@ -369,7 +369,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
          if (bPedestrian)
          {
-            ReportPedestrian(rate_pedestrian ? ILiveLoads::PedConcurrentWithVehiculuar : ILiveLoads::PedDontApply, pPara);
+            ReportPedestrian(rate_pedestrian ? ILiveLoads::PedConcurrentWithVehicular : ILiveLoads::PedDontApply, pPara);
          }
       }
    }

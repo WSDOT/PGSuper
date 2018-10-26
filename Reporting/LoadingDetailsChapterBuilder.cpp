@@ -290,6 +290,18 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             (*p_table)(row++,3) <<  fpl.SetValue(swwt*fraSwLeft);
          }
 
+         if ( pProdLoads->HasPedestrianLoad() )
+         {
+            swwt = pProdLoads->GetPedestrianLoadPerSidewalk(pgsTypes::tboLeft);
+            if (swwt>0.0)
+            {
+               (*p_table)(row,0) << _T("Left Pedestrian Live");
+               (*p_table)(row,1) <<  fpl.SetValue(swwt);
+               (*p_table)(row,2) << scalar.SetValue(fraSwLeft);
+               (*p_table)(row++,3) <<  fpl.SetValue(swwt*fraSwLeft);
+            }
+         }
+
          barwt = pBarriers->GetInteriorBarrierWeight(pgsTypes::tboLeft);
          if (barwt>0.0)
          {
@@ -308,6 +320,18 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             (*p_table)(row++,3) <<  fpl.SetValue(barwt*fraIntRight);
          }
 
+         if ( pProdLoads->HasPedestrianLoad() )
+         {
+            swwt = pProdLoads->GetPedestrianLoadPerSidewalk(pgsTypes::tboRight);
+            if (swwt>0.0)
+            {
+               (*p_table)(row,0) << _T("Right Pedestrian Live");
+               (*p_table)(row,1) <<  fpl.SetValue(swwt);
+               (*p_table)(row,2) << scalar.SetValue(fraSwRight);
+               (*p_table)(row++,3) <<  fpl.SetValue(swwt*fraSwRight);
+            }
+         }
+
          swwt = pBarriers->GetSidewalkWeight(pgsTypes::tboRight);
          if (swwt>0.0)
          {
@@ -322,27 +346,6 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          (*p_table)(row,1) <<  fpl.SetValue(barwt);
          (*p_table)(row,2) << scalar.SetValue(fraExtRight);
          (*p_table)(row++,3) <<  fpl.SetValue(barwt*fraExtRight);
-
-         if ( pProdLoads->HasPedestrianLoad() )
-         {
-            swwt = pProdLoads->GetPedestrianLoadPerSidewalk(pgsTypes::tboLeft);
-            if (swwt>0.0)
-            {
-               (*p_table)(row,0) << _T("Left Pedestrian Live");
-               (*p_table)(row,1) <<  fpl.SetValue(swwt);
-               (*p_table)(row,2) << scalar.SetValue(fraSwLeft);
-               (*p_table)(row++,3) <<  fpl.SetValue(swwt*fraSwLeft);
-            }
-
-            swwt = pProdLoads->GetPedestrianLoadPerSidewalk(pgsTypes::tboRight);
-            if (swwt>0.0)
-            {
-               (*p_table)(row,0) << _T("Right Pedestrian Live");
-               (*p_table)(row,1) <<  fpl.SetValue(swwt);
-               (*p_table)(row,2) << scalar.SetValue(fraSwRight);
-               (*p_table)(row++,3) <<  fpl.SetValue(swwt*fraSwRight);
-            }
-         }
 
          // slab loads between supports
 

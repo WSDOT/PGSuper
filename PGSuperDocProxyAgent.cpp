@@ -457,6 +457,11 @@ void CPGSuperDocProxyAgent::OnStatusChanged()
    }
 }
 
+long CPGSuperDocProxyAgent::GetReportViewKey()
+{
+   return m_ReportViewKey;
+}
+
 //////////////////////////////////////////////////////////
 // IAgentEx
 STDMETHODIMP CPGSuperDocProxyAgent::SetBroker(IBroker* pBroker)

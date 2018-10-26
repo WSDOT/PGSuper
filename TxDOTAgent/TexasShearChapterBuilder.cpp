@@ -83,8 +83,8 @@ rptChapter* CTexasShearChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
+   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   bool bPermit = pLimitStateForces->IsStrengthIIApplicable(span, girder);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IArtifact,pArtifacts);
