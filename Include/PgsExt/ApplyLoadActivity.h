@@ -47,6 +47,9 @@ public:
 
    void Clear();
 
+   void ApplyIntermediateDiaphragmLoad(bool bApplyLoad = true);
+   bool IsIntermediateDiaphragmLoadApplied() const;
+
    void ApplyRailingSystemLoad(bool bApplyLoad = true);
    bool IsRailingSystemLoadApplied() const;
 
@@ -77,6 +80,7 @@ protected:
 
    bool m_bEnabled;
 
+   bool m_bApplyIntermediateDiaphragmLoad;
    bool m_bApplyRailingSystemLoad;
    bool m_bApplyOverlayLoad;
    bool m_bApplyLiveLoad;

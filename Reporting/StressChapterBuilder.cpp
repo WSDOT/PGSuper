@@ -113,7 +113,8 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) ||
          //pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) || // operating does not apply
            pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) ||
-           pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) 
+           pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) ||
+           pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency) 
          )
       {
          bRating = true;
@@ -131,14 +132,10 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
       bRating = pRatingSpec->AlwaysLoadRate();
 
       // if none of the rating types are enabled, skip the rating
-      if ( !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) 
-         )
+      if (!pRatingSpec->IsRatingEnabled())
+      {
          bRating = false;
+      }
    }
 
    GET_IFACE2(pBroker,IBridge,pBridge);

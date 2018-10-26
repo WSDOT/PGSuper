@@ -122,14 +122,10 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
 
       // if none of the rating types are enabled, skip the rating
-      if ( !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) 
-         )
+      if (!pRatingSpec->IsRatingEnabled())
+      {
          bRating = false;
+      }
    }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -1308,6 +1304,27 @@ void CLoadingDetailsChapterBuilder::ReportLiveLoad(rptChapter* pChapter,bool bDe
 
             std::vector<std::_tstring>::iterator iter;
             for (iter = legalSpecialLiveLoads.begin(); iter != legalSpecialLiveLoads.end(); iter++)
+            {
+               std::_tstring& load_name = *iter;
+               *pPara << load_name << rptNewLine;
+            }
+         }
+         *pPara << rptNewLine;
+      }
+
+      if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+      {
+         std::vector<std::_tstring> legalEmergencyLiveLoads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Emergency);
+         if (legalEmergencyLiveLoads.empty())
+         {
+            *pPara << _T("No live loads were applied to the legal load rating, emergency vehicles (Service III and Strength I) limit states") << rptNewLine;
+         }
+         else
+         {
+            *pPara << _T("The following live loads were applied to the legal load rating, emergency vehicles (Service III and Strength I) limit states:") << rptNewLine;
+
+            std::vector<std::_tstring>::iterator iter;
+            for (iter = legalEmergencyLiveLoads.begin(); iter != legalEmergencyLiveLoads.end(); iter++)
             {
                std::_tstring& load_name = *iter;
                *pPara << load_name << rptNewLine;

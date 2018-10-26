@@ -94,14 +94,10 @@ rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
       bRating = pRatingSpec->AlwaysLoadRate();
 
       // if none of the rating types are enabled, skip the rating
-      if ( !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) 
-         )
+      if (!pRatingSpec->IsRatingEnabled())
+      {
          bRating = false;
+      }
    }
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -174,6 +170,11 @@ rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
                   Build(pChapter,pgsTypes::StrengthI_LegalSpecial,pBroker,thisGirderKey,pDisplayUnits,level);
                }
 
+               if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+               {
+                  Build(pChapter, pgsTypes::StrengthI_LegalEmergency, pBroker, thisGirderKey, pDisplayUnits, level);
+               }
+
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
                {
                   Build(pChapter,pgsTypes::StrengthII_PermitRoutine,pBroker,thisGirderKey,pDisplayUnits,level);
@@ -212,6 +213,8 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
+
+   *pPara << _T("Limit State: ") << GetLimitStateString(limitState) << rptNewLine;
 
    ColumnIndexType nColumns;
    if ( bAfterThirdEdition )

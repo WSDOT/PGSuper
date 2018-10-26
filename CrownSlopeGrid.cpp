@@ -337,10 +337,14 @@ Float64 CCrownSlopeGrid::GetCrownPointOffset(const CString& strAlignmentOffset)
 
    Float64 sign = 1;
    TCHAR cDir = strAlignmentOffset.GetAt(strAlignmentOffset.GetLength()-1);
-   if ( cDir == _T('L') )
+   if ( cDir == _T('L') || cDir == _T('l'))
+   {
       sign = -1;
-   else if ( cDir == _T('R') )
+   }
+   else if ( cDir == _T('R') || cDir == _T('r'))
+   {
       sign = 1;
+   }
 
    Float64 value = _tstof(strAlignmentOffset);
    value *= sign;

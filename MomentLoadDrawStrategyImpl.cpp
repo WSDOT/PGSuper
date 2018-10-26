@@ -245,8 +245,16 @@ STDMETHODIMP_(void) CMomentLoadDrawStrategyImpl::XDisplayObjectEvents::OnCopied(
 STDMETHODIMP_(bool) CMomentLoadDrawStrategyImpl::XDisplayObjectEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
 {
    METHOD_PROLOGUE(CMomentLoadDrawStrategyImpl,DisplayObjectEvents);
-   pThis->EditLoad();
-   return true;
+
+   if (pDO->IsSelected())
+   {
+      pThis->EditLoad();
+      return true;
+   }
+   else
+   {
+      return false;
+   }
 }
 
 STDMETHODIMP_(bool) CMomentLoadDrawStrategyImpl::XDisplayObjectEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)

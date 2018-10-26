@@ -180,9 +180,9 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
          (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false) );
       }
 
-      if ( reactionDecider.DoReport(castDeckIntervalIdx) )
+      if ( reactionDecider.DoReport(lastIntervalIdx) )
       {
-         (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation(castDeckIntervalIdx, pgsTypes::pftDiaphragm, poi, maxBAT, rtCumulative, false) );
+         (*p_table)(row,col++) << rotation.SetValue( pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftDiaphragm, poi, maxBAT, rtCumulative, false) );
       }
       else
       {

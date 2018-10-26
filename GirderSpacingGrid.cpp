@@ -577,7 +577,7 @@ BOOL CGirderSpacingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       spacing = ::ConvertToSysUnits(spacing,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
       Float64 minGirderSpacing = m_MinGirderSpacing[nCol-1];
       Float64 maxGirderSpacing = m_MaxGirderSpacing[nCol-1];
-      if ( IsLT(spacing,minGirderSpacing) || IsLT(maxGirderSpacing,spacing) )
+      if ( IsLT(spacing,minGirderSpacing,0.001) || IsLT(maxGirderSpacing,spacing,0.001) )
       {
          SetWarningText(_T("Girder spacing is out of range"));
          return FALSE;

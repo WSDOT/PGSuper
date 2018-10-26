@@ -106,31 +106,6 @@ void CStrandGrid::CustomInit(const CPrecastSegmentData* pSegment)
 
    const int num_rows = 1;
    const int num_cols = 26;
-   
-   // determine if there are cantilevers being modeled
-   // NOTE: Tricky code... the pSegment that is passed in here is the one
-   // that is being manipulated. It isn't attached to an actual bridge model
-   // so we can't get real pier objects. Since this segment is not being
-   // modeled in the context of bridge editing, we can go back to the original
-   // bridge to get the piers for this segment.
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CPrecastSegmentData* pRealSegment = pIBridgeDesc->GetPrecastSegmentData(pSegment->GetSegmentKey());
-
-   bool bLeftCantilever = false;
-   bool bRightCantilever = false;
-   std::vector<const CPierData2*> vPiers = pRealSegment->GetPiers();
-   if ( 2 == vPiers.size() )
-   {
-      if ( vPiers.front()->HasCantilever() )
-      {
-         bLeftCantilever = true;
-      }
-
-      if ( vPiers.back()->HasCantilever() )
-      {
-         bRightCantilever = true;
-      }
-   }
 
 	SetRowCount(num_rows);
 	SetColCount(num_cols);
@@ -372,18 +347,6 @@ void CStrandGrid::CustomInit(const CPrecastSegmentData* pSegment)
          .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
 		);
    col += 2;
-
-   // if we don't have cantilevers, hide the columns that relate
-   // to cantilevered strand dimensions
-   if ( !bLeftCantilever )
-   {
-      HideCols(7,8);
-   }
-
-   if ( !bRightCantilever )
-   {
-      HideCols(15,16);
-   }
 
    // make text fit correctly in header row
 	ResizeRowHeightsToFit(CGXRange(0,0,0,num_cols));

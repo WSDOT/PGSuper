@@ -942,6 +942,118 @@ void CPGSDocBase::DeleteMomentLoad(CollectionIndexType loadIdx)
    pTransactions->Execute(pTxn);
 }
 
+bool CPGSDocBase::EditTimeline()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   CEditTimelineDlg dlg;
+   dlg.m_TimelineManager = *pBridgeDesc->GetTimelineManager();
+
+   if (dlg.DoModal() == IDOK)
+   {
+      txnEditTimeline* pTxn = new txnEditTimeline(*pBridgeDesc->GetTimelineManager(), dlg.m_TimelineManager);
+      GET_IFACE(IEAFTransactions, pTransactions);
+      pTransactions->Execute(pTxn);
+      return true;
+   }
+
+   return false;
+}
+
+bool CPGSDocBase::EditEffectiveFlangeWidth()
+{
+   GET_IFACE(IEffectiveFlangeWidth, pEFW);
+   CString strQuestion(_T("The LRFD General Effective Flange Width provisions (4.6.2.6.1) are considered applicable for skew angles less than 75 degress, L/S greater than or equal to 2.0 and overhang widths less than or equal to 0.5S. In unusual cases where these limits are violated, a refined analysis should be used."));
+   CString strResponses(_T("Stop analysis if structure violates these limits\nIgnore these limits"));
+
+   CEAFHelpHandler helpHandler(GetDocumentationSetName(), IDH_EFFECTIVE_FLANGE_WIDTH);
+   int choice = pEFW->IgnoreEffectiveFlangeWidthLimits() ? 1 : 0;
+   int new_choice = AfxChoose(_T("Effective Flange Width"), strQuestion, strResponses, choice, TRUE, &helpHandler);
+   if (choice != new_choice && 0 <= new_choice)
+   {
+      txnEditEffectiveFlangeWidth* pTxn = new txnEditEffectiveFlangeWidth(pEFW->IgnoreEffectiveFlangeWidthLimits(), new_choice == 0 ? false : true);
+      GET_IFACE(IEAFTransactions, pTransactions);
+      pTransactions->Execute(pTxn);
+      return true;
+   }
+
+   return false;
+}
+
+bool CPGSDocBase::SelectProjectCriteria()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   CSpecDlg dlg;
+
+   GET_IFACE(ISpecification, pSpec);
+   std::_tstring cur_spec = pSpec->GetSpecification();
+   dlg.m_Spec = cur_spec;
+   GET_IFACE(ILibrary, pLib);
+   const SpecLibraryEntry* pCurrentSpecEntry = pLib->GetSpecEntry(cur_spec.c_str());
+   if (dlg.DoModal())
+   {
+      if (dlg.m_Spec != cur_spec)
+      {
+         GET_IFACE(IBridge, pBridge);
+         const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(dlg.m_Spec.c_str());
+
+         pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
+         pgsTypes::AnalysisType newAnalysisType = analysisType;
+         pgsTypes::WearingSurfaceType wearingSurfaceType = pBridge->GetWearingSurfaceType();
+         pgsTypes::WearingSurfaceType newWearingSurfaceType = wearingSurfaceType;
+         if (pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP)
+         {
+            if (analysisType != pgsTypes::Continuous)
+            {
+               newAnalysisType = pgsTypes::Continuous;
+               CString strMsg;
+               strMsg.Format(_T("The \"%s\" Project Criteria uses the time-step method for computing losses. The Structural Analysis Method must be set to Continuous for the time-step loss method.\n\nWould you like to change the Structural Analysis Method and continue?"), dlg.m_Spec.c_str());
+               if (AfxMessageBox(strMsg, MB_YESNO | MB_ICONQUESTION) == IDNO)
+               {
+                  return false;
+               }
+            }
+
+            if (wearingSurfaceType == pgsTypes::wstFutureOverlay)
+            {
+               newWearingSurfaceType = pgsTypes::wstOverlay;
+               CString strMsg(_T("The bridge is modeled with a future overlay wearing surface. This is not a valid wearing surface type for time-step analysis.\n\nWould you like to change the wearing surface type to Overlay and continue?"));
+               if (AfxMessageBox(strMsg, MB_YESNO | MB_ICONQUESTION) == IDNO)
+               {
+                  return false;
+               }
+            }
+         }
+
+
+         if (pCurrentSpecEntry->GetLossMethod() == LOSSES_TIME_STEP && pSpecEntry->GetLossMethod() != LOSSES_TIME_STEP)
+         {
+            // switching from time-step to regular loss method... the timeline will be reset
+#if defined _DEBUG
+            GET_IFACE(IDocumentType, pDocType);
+            ATLASSERT(pDocType->IsPGSuperDocument()); // this will only happen in a PGSuper project
+#endif
+            CString strMsg(_T("The Construction Sequence Timeline will be reset. Would you like to continue?"));
+            if (AfxMessageBox(strMsg, MB_YESNO | MB_ICONQUESTION) == IDNO)
+            {
+               return false;
+            }
+         }
+
+         txnEditProjectCriteria* pTxn = new txnEditProjectCriteria(cur_spec.c_str(), dlg.m_Spec.c_str(), analysisType, newAnalysisType, wearingSurfaceType, newWearingSurfaceType);
+         GET_IFACE(IEAFTransactions, pTransactions);
+         pTransactions->Execute(pTxn);
+         return true;
+      }
+   }
+
+   return false;
+}
+
 void CPGSDocBase::EditGirderViewSettings(int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -995,6 +1107,49 @@ void CPGSDocBase::EditBridgeViewSettings(int nPage)
    }
 }
 
+void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
+{
+   // called during UpdateTemplates
+   // add code here, or override in a parent class to
+   // add code to modify the template
+   // For example, if you want to ensure that overlay depth in all templates
+   // is a specific value, you can code that here.
+
+   //GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   //CDeckDescription2 deck = *(pIBridgeDesc->GetDeckDescription());
+   //deck.bInputAsDepthAndDensity = true;
+   //deck.OverlayDepth = ::ConvertToSysUnits(3.0, unitMeasure::Inch);
+   //pIBridgeDesc->SetDeckDescription(deck);
+
+   //// Update seed values to match library
+   //GET_IFACE(IDocumentType, pDocType);
+   //if (pDocType->IsPGSuperDocument())
+   //{
+   //   // only PGSuper documents have seed values
+   //   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   //   CBridgeDescription2 bridgeDesc = *(pIBridgeDesc->GetBridgeDescription());
+   //   GroupIndexType nGroups = bridgeDesc.GetGirderGroupCount();
+   //   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
+   //   {
+   //      CGirderGroupData* pGroup = bridgeDesc.GetGirderGroup(grpIdx);
+   //      GirderIndexType nGirders = pGroup->GetGirderCount();
+   //      for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+   //      {
+   //         CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+
+   //         SegmentIndexType nSegments = pGirder->GetSegmentCount();
+   //         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+   //         {
+   //            CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+   //            pSegment->LongitudinalRebarData.CopyGirderEntryData(*(pGirder->GetGirderLibraryEntry()));
+   //            pSegment->ShearData.CopyGirderEntryData(*(pGirder->GetGirderLibraryEntry()));
+   //         }
+   //      }
+   //   }
+   //   pIBridgeDesc->SetBridgeDescription(bridgeDesc);
+   //}
+}
+
 BOOL CPGSDocBase::UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir)
 {
    CFileFind dir_finder;
@@ -1031,6 +1186,8 @@ BOOL CPGSDocBase::UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir)
       {
          return FALSE;
       }
+
+      ModifyTemplate(strTemplate);
 
       CEAFBrokerDocument::SaveTheDocument(strTemplate);
 
@@ -2208,89 +2365,13 @@ void CPGSDocBase::OnProjectEnvironment()
 
 void CPGSDocBase::OnEffectiveFlangeWidth()
 {
-   GET_IFACE(IEffectiveFlangeWidth,pEFW);
-   CString strQuestion(_T("The LRFD General Effective Flange Width provisions (4.6.2.6.1) are considered applicable for skew angles less than 75 degress, L/S greater than or equal to 2.0 and overhang widths less than or equal to 0.5S. In unusual cases where these limits are violated, a refined analysis should be used."));
-   CString strResponses(_T("Stop analysis if structure violates these limits\nIgnore these limits"));
-
-   CEAFHelpHandler helpHandler(GetDocumentationSetName(),IDH_EFFECTIVE_FLANGE_WIDTH);
-   int choice = pEFW->IgnoreEffectiveFlangeWidthLimits() ? 1 : 0;
-   int new_choice = AfxChoose(_T("Effective Flange Width"),strQuestion,strResponses,choice,TRUE,&helpHandler);
-   if ( choice != new_choice && 0 <= new_choice )
-   {
-      txnEditEffectiveFlangeWidth* pTxn = new txnEditEffectiveFlangeWidth(pEFW->IgnoreEffectiveFlangeWidthLimits(),new_choice == 0 ? false : true);
-      GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
-   }
+   EditEffectiveFlangeWidth();
 }
 
 /*--------------------------------------------------------------------*/
 void CPGSDocBase::OnProjectSpec() 
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-	CSpecDlg dlg;
-
-
-   GET_IFACE( ISpecification, pSpec );
-   std::_tstring cur_spec = pSpec->GetSpecification();
-   dlg.m_Spec = cur_spec;
-   GET_IFACE(ILibrary,pLib);
-   const SpecLibraryEntry* pCurrentSpecEntry = pLib->GetSpecEntry( cur_spec.c_str() );
-   if ( dlg.DoModal() )
-   {
-      if ( dlg.m_Spec != cur_spec )
-      {
-         GET_IFACE(IBridge,pBridge);
-         const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( dlg.m_Spec.c_str() );
-
-         pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
-         pgsTypes::AnalysisType newAnalysisType = analysisType;
-         pgsTypes::WearingSurfaceType wearingSurfaceType = pBridge->GetWearingSurfaceType();
-         pgsTypes::WearingSurfaceType newWearingSurfaceType = wearingSurfaceType;
-         if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
-         {
-            if (  analysisType != pgsTypes::Continuous )
-            {
-               newAnalysisType = pgsTypes::Continuous;
-               CString strMsg;
-               strMsg.Format(_T("The \"%s\" Project Criteria uses the time-step method for computing losses. The Structural Analysis Method must be set to Continuous for the time-step loss method.\n\nWould you like to change the Structural Analysis Method and continue?"),dlg.m_Spec.c_str());
-               if ( AfxMessageBox(strMsg,MB_YESNO | MB_ICONQUESTION) == IDNO )
-               {
-                  return;
-               }
-            }
-
-            if ( wearingSurfaceType == pgsTypes::wstFutureOverlay )
-            {
-               newWearingSurfaceType = pgsTypes::wstOverlay;
-               CString strMsg(_T("The bridge is modeled with a future overlay wearing surface. This is not a valid wearing surface type for time-step analysis.\n\nWould you like to change the wearing surface type to Overlay and continue?"));
-               if ( AfxMessageBox(strMsg,MB_YESNO | MB_ICONQUESTION) == IDNO )
-               {
-                  return;
-               }
-            }
-         }
-
-
-         if ( pCurrentSpecEntry->GetLossMethod() == LOSSES_TIME_STEP && pSpecEntry->GetLossMethod() != LOSSES_TIME_STEP )
-         {
-            // switching from time-step to regular loss method... the timeline will be reset
-#if defined _DEBUG
-            GET_IFACE(IDocumentType,pDocType);
-            ATLASSERT(pDocType->IsPGSuperDocument()); // this will only happen in a PGSuper project
-#endif
-            CString strMsg(_T("The Construction Sequence Timeline will be reset. Would you like to continue?"));
-            if ( AfxMessageBox(strMsg,MB_YESNO | MB_ICONQUESTION) == IDNO )
-            {
-               return;
-            }
-         }
-
-         txnEditProjectCriteria* pTxn = new txnEditProjectCriteria(cur_spec.c_str(),dlg.m_Spec.c_str(),analysisType,newAnalysisType,wearingSurfaceType,newWearingSurfaceType);
-         GET_IFACE(IEAFTransactions,pTransactions);
-         pTransactions->Execute(pTxn);
-      }
-   }
+   SelectProjectCriteria();
 }
 
 void CPGSDocBase::OnRatingSpec()
@@ -3824,20 +3905,7 @@ void CPGSDocBase::OnLosses()
 
 void CPGSDocBase::OnEditTimeline()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-
-   CEditTimelineDlg dlg;
-   dlg.m_TimelineManager = *pBridgeDesc->GetTimelineManager();
-
-   if ( dlg.DoModal() == IDOK )
-   {
-      txnEditTimeline* pTxn = new txnEditTimeline(*pBridgeDesc->GetTimelineManager(),dlg.m_TimelineManager);
-      GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
-   }
+   EditTimeline();
 }
 
 BOOL CPGSDocBase::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) 

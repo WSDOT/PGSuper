@@ -545,12 +545,12 @@ void CEditLoadsView::EditLoad(POSITION pos)
    WORD load_idx = HIWORD(data);
 
    GET_IFACE(IEditByUI,pEditByUI);
-   GET_IFACE(IUserDefinedLoadData, pUDL);
 
    if (load_type == W_POINT_LOAD)
    {
       if (pEditByUI->EditPointLoad(load_idx))
       {
+         GET_IFACE(IUserDefinedLoadData, pUDL);
          auto load = pUDL->GetPointLoad(load_idx);
          UpdatePointLoadItem(nItem, *load);
       }
@@ -559,6 +559,7 @@ void CEditLoadsView::EditLoad(POSITION pos)
    {
       if (pEditByUI->EditMomentLoad(load_idx))
       {
+         GET_IFACE(IUserDefinedLoadData, pUDL);
          auto load = pUDL->GetMomentLoad(load_idx);
          UpdateMomentLoadItem(nItem, *load);
       }
@@ -567,6 +568,7 @@ void CEditLoadsView::EditLoad(POSITION pos)
    {
       if (pEditByUI->EditDistributedLoad(load_idx))
       {
+         GET_IFACE(IUserDefinedLoadData, pUDL);
          auto load = pUDL->GetDistributedLoad(load_idx);
          UpdateDistributedLoadItem(nItem, *load);
       }

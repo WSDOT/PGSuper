@@ -131,7 +131,6 @@ private:
                            Float64* pMdlg,
                            Float64* pMadlg,
                            Float64* pMsidl,
-                           Float64* pMllim,
                            Float64* prh,
                            Float64* pti,
                            Float64* pth,

@@ -372,6 +372,11 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
          live_load_types.push_back(pgsTypes::lltLegalRating_Special);
       }
 
+      if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+      {
+         live_load_types.push_back(pgsTypes::lltLegalRating_Emergency);
+      }
+
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
       {
          live_load_types.push_back(pgsTypes::lltPermitRating_Routine);
@@ -434,6 +439,11 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
       else if ( llType == pgsTypes::lltLegalRating_Special )
       {
          p->SetName(_T("AASHTO Legal Rating Specialized Hauling Vehicle Individual Vehicle Live Load Response"));
+         *p << p->GetName() << rptNewLine;
+      }
+      else if (llType == pgsTypes::lltLegalRating_Emergency)
+      {
+         p->SetName(_T("Emergency Vehicle Rating Individual Vehicle Live Load Response"));
          *p << p->GetName() << rptNewLine;
       }
       else if ( llType == pgsTypes::lltPermitRating_Routine )

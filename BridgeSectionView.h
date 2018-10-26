@@ -111,6 +111,8 @@ protected:
 
    void CreateLineDisplayObject(IPoint2d* pntStart,IPoint2d* pntEnd,iLineDisplayObject** ppLineDO);
 
+   void SkewGirderShape(Float64 skew, Float64 shear, IShape* pShape, IShape** ppSkewedShape);
+
    typedef std::map<CGirderKey,IDType> GirderIDCollection;
    GirderIDCollection m_GirderIDs; // maps girder keys into DMANIP display object IDs
    IDType m_NextGirderID;

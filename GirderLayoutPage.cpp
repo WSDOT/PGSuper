@@ -132,6 +132,27 @@ void CSpanGirderLayoutPage::DoDataExchange(CDataExchange* pDX)
          pSpacing->SetMeasurementType(mt);
          pSpacing->SetMeasurementLocation(ml);
       }
+
+      pgsTypes::SupportedBeamSpacing spacingType = pParent->m_BridgeDesc.GetGirderSpacingType();
+      if (spacingType == pgsTypes::sbsConstantAdjacent && !pParent->m_BridgeDesc.UseSameGirderForEntireBridge())
+      {
+         // all girders must have compatible spacing, that is, all selected girder types
+         // must be able to be made to have the same width
+         std::vector<std::_tstring> vGirderNames;
+         GirderIndexType nGirders = pParent->m_pGirderGroup->GetGirderCount();
+         for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+         {
+            const CSplicedGirderData* pGirder = pParent->m_pGirderGroup->GetGirder(gdrIdx);
+            vGirderNames.push_back(pGirder->GetGirderName());
+         }
+
+         GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+         if ( !pIBridgeDesc->AreGirdersCompatible(pParent->m_BridgeDesc,vGirderNames))
+         {
+            AfxMessageBox(_T("Girders do not have compatible dimensions."));
+            pDX->Fail();
+         }
+      }
    }
 }
 

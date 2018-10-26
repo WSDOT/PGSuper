@@ -428,6 +428,9 @@ HRESULT CTimelineEvent::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    {
       hr = pStrLoad->BeginUnit(_T("TimelineEvent"));
 
+      Float64 version;
+      pStrLoad->get_Version(&version);
+
       CComVariant var;
       var.vt = VT_ID;
       hr = pStrLoad->get_Property(_T("ID"),&var);

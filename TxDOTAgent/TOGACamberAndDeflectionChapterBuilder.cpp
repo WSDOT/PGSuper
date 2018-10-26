@@ -138,6 +138,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
@@ -173,10 +174,12 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    delta_dl_orig = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_orig, bat, rtCumulative, false )
-                 + pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftDiaphragm, poi_orig, bat, rtCumulative, false );
+                 + pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlabPanel, poi_orig, bat, rtCumulative, false ) 
+                 + pProductForces->GetDeflection(castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm, poi_orig, bat, rtCumulative, false );
 
    delta_dl_fabr = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_fabr, bat, rtCumulative, false )
-                 + pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftDiaphragm, poi_fabr, bat, rtCumulative, false );
+                 + pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlabPanel, poi_fabr, bat, rtCumulative, false ) 
+                 + pProductForces->GetDeflection(castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm, poi_fabr, bat, rtCumulative, false );
 
    if ( overlayIntervalIdx == INVALID_INDEX )
    {
@@ -290,7 +293,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
 
    row++;
 
-   (*pTable)(row,0) << _T("Deflection (Deck and Diaphragms)");
+   (*pTable)(row,0) << _T("Deflection (Deck and Diaphragms) *");
    (*pTable)(row,1) << disp.SetValue( delta_dl_orig );
    (*pTable)(row,2) << dispft.SetValue( delta_dl_orig );
 
@@ -373,6 +376,8 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
 
       row++;
    }
+
+   *p<<_T("* Deflection due to haunch weight is not included in this value") << rptNewLine;
 
    if (is_negative_camber)
    {

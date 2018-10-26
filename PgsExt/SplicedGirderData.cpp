@@ -375,7 +375,7 @@ void CSplicedGirderData::MakeCopy(const CSplicedGirderData& rOther,bool bCopyDat
             }
          }
 
-         if ( pMyTimelineMgr && pOtherTimelineMgr )
+         if (!bCopyDataOnly && (pMyTimelineMgr && pOtherTimelineMgr) )
          {
             ATLASSERT(closureID == m_Closures[segIdx]->GetID());
             EventIndexType castClosureEventIdx = pOtherTimelineMgr->GetCastClosureJointEventIndex(closureID);
@@ -1132,11 +1132,19 @@ void CSplicedGirderData::SplitSegmentsAtTemporarySupport(SupportIndexType tsIdx)
          {
             pNewClosure->SetConcrete(pStartClosure->GetConcrete());
          }
-         else
+         else if ( pEndClosure )
          {
             pNewClosure->SetConcrete(pEndClosure->GetConcrete());
          }
+
+         // use the same material for the new segment
          pNewSegment->Material = pSegment->Material;
+         
+         // use the same handling data for the new segment
+         pNewSegment->HandlingData = pSegment->HandlingData;
+
+         // don't copy strands, shear data, or longitudinal rebar data to
+         // the new segment. It may not be compatable with its geometry.
 
          m_Segments.insert(segIter+1,pNewSegment);
          m_Closures.insert(closureIter,pNewClosure);
@@ -1165,7 +1173,7 @@ void CSplicedGirderData::SplitSegmentsAtTemporarySupport(SupportIndexType tsIdx)
          {
             // event wasn't found so just use the segment erection event
             EventIndexType erectionEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(pSegment->GetID());
-            pTimelineMgr->SetCastClosureJointEventByIndex(pNewSegment->GetID(),erectionEventIdx);
+            pTimelineMgr->SetCastClosureJointEventByIndex(pNewClosure->GetID(),erectionEventIdx);
          }
 
          break;
@@ -1311,6 +1319,12 @@ void CSplicedGirderData::SplitSegmentsAtPier(PierIndexType pierIdx)
          pNewClosure->SetRightSegment(pNewSegment);
 
          pNewClosure->SetPier(pPier);
+
+         // use the same material for the new segment
+         pNewSegment->Material = pSegment->Material;
+
+         // use the same handling data for the new segment
+         pNewSegment->HandlingData = pSegment->HandlingData;
 
          m_Segments.insert(segIter+1,pNewSegment);
          m_Closures.insert(closureIter,pNewClosure);

@@ -98,9 +98,6 @@ protected:
    CPierData2* m_pNextPier;
    CGirderGroupData* m_pGirderGroup;
 
-   pgsTypes::BoundaryConditionType m_BoundaryConditionType[2];
-   pgsTypes::PierSegmentConnectionType m_SegmentConnectionType[2];
-
    void FillRefGirderOffsetTypeComboBox(pgsTypes::MemberEndType end);
    void FillRefGirderComboBox(pgsTypes::MemberEndType end);
 

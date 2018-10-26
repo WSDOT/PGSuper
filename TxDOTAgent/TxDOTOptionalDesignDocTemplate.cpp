@@ -167,15 +167,18 @@ void CTxDOTOptionalDesignDocTemplate::FindTemplateFiles(LPCTSTR strPath,CEAFTemp
       CString girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry, folderName;
       if(::DoParseTemplateFile(templateFile, girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry, folderName))
       {
+         // Attempt to insert folder. Doesn't matter if insterted or not, we want an iterator to build our folder from
          TemplateFolder tfolder;
          tfolder.Title = folderName;
+         std::pair<TemplateFolderIterator, bool> itfolder = Folders.insert(tfolder);
 
          TemplateFile file;
          file.FilePath = templateFile;
          file.FileTitle = finder.GetFileTitle();
-         tfolder.Files.push_back(file);
 
-         std::pair<TemplateFolderIterator, bool> itfolder = Folders.insert(tfolder);
+         // Have to play games with const casting here. Note that if "file" affected sorting in container, this could cause a bug, but it does not.
+         std::vector<TemplateFile>& rfiles( const_cast<std::vector<TemplateFile>&>(itfolder.first->Files));
+         rfiles.push_back(file);
       }
       else
       {

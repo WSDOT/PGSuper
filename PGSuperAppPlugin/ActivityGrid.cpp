@@ -48,7 +48,7 @@ static char THIS_FILE[] = __FILE__;
 
 #define CONSTRUCT_SEGMENTS    0
 #define ERECT_PIERS           1
-#define CAST_CLOSURE_JOINTS    2
+#define CAST_CLOSURE_JOINTS   2
 #define ERECT_SEGMENTS        3
 #define STRESS_TENDONS        4
 #define REMOVE_TS             5
@@ -215,7 +215,7 @@ void CActivityGrid::Refresh()
    ResizeColWidthsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
 }
 
-void CActivityGrid::AddActivity(LPCTSTR strName,int activityKey)
+void CActivityGrid::AddActivity(LPCTSTR strName, ActivityKeyType activityKey)
 {
    ROWCOL row = GetRowCount()+1;
 
@@ -259,7 +259,7 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
 
    CGXStyle style;
    GetStyleRowCol(nRow,nCol,style);
-   if ( (int)style.GetItemDataPtr() == CONSTRUCT_SEGMENTS )
+   if ( (ActivityKeyType)style.GetItemDataPtr() == CONSTRUCT_SEGMENTS )
    {
       CConstructSegmentsDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex,m_bReadOnly);
       if ( dlg.DoModal() == IDOK )
@@ -267,7 +267,7 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
          pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
       }
    }
-   else if ( (int)style.GetItemDataPtr() == ERECT_PIERS )
+   else if ( (ActivityKeyType)style.GetItemDataPtr() == ERECT_PIERS )
    {
       CErectPiersDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex,m_bReadOnly);
       if ( dlg.DoModal() == IDOK )
@@ -275,7 +275,7 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
          pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
       }
    }
-   else if ( (int)style.GetItemDataPtr() == ERECT_SEGMENTS )
+   else if ( (ActivityKeyType)style.GetItemDataPtr() == ERECT_SEGMENTS )
    {
       CErectSegmentsDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex,m_bReadOnly);
       if ( dlg.DoModal() == IDOK )
@@ -283,7 +283,7 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
          pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
       }
    }
-   else if ( (int)style.GetItemDataPtr() == STRESS_TENDONS )
+   else if ( (ActivityKeyType)style.GetItemDataPtr() == STRESS_TENDONS )
    {
       CStressTendonDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex,m_bReadOnly);
       if ( dlg.DoModal() == IDOK )
@@ -291,7 +291,7 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
          pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
       }
    }
-   else if ( (int)style.GetItemDataPtr() == REMOVE_TS )
+   else if ( (ActivityKeyType)style.GetItemDataPtr() == REMOVE_TS )
    {
       CRemoveTempSupportsDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex,m_bReadOnly);
       if ( dlg.DoModal() == IDOK )
@@ -299,7 +299,7 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
          pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
       }
    }
-   else if ( (int)style.GetItemDataPtr() == CAST_CLOSURE_JOINTS )
+   else if ( (ActivityKeyType)style.GetItemDataPtr() == CAST_CLOSURE_JOINTS )
    {
       CCastClosureJointDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex,m_bReadOnly);
       if ( dlg.DoModal() == IDOK )
@@ -307,7 +307,7 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
          pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
       }
    }
-   else if ( (int)style.GetItemDataPtr() == CAST_DECK )
+   else if ( (ActivityKeyType)style.GetItemDataPtr() == CAST_DECK )
    {
       CCastDeckDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex,m_bReadOnly);
       if ( dlg.DoModal() == IDOK )
@@ -315,7 +315,7 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
          pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
       }
    }
-   else if ( (int)style.GetItemDataPtr() == APPLY_LOADS )
+   else if ( (ActivityKeyType)style.GetItemDataPtr() == APPLY_LOADS )
    {
       CApplyLoadsDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex,m_bReadOnly);
       if ( dlg.DoModal() == IDOK )
@@ -348,7 +348,7 @@ void CActivityGrid::RemoveActivity()
 
       CGXStyle style;
       GetStyleRowCol(row,2,style);
-      int activityType = (int)style.GetItemDataPtr();
+      ActivityKeyType activityType = (ActivityKeyType)style.GetItemDataPtr();
 
       if ( activityType == CONSTRUCT_SEGMENTS )
       {

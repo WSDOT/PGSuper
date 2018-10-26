@@ -186,10 +186,6 @@ void CVoidedSlab2Factory::CreateSegment(IBroker* pBroker,StatusGroupIDType statu
    const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
    const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
 
-   Float64 endBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
-   segment->put_EndBlockLength(etStart,endBlockLength);
-   segment->put_EndBlockLength(etEnd,endBlockLength);
-
    CComPtr<IGirderSection> gdrSection;
    CreateGirderSection(pBroker,statusGroupID,dimensions,-1,-1,&gdrSection);
    CComQIPtr<IVoidedSlabSection2> section(gdrSection);
@@ -205,6 +201,16 @@ void CVoidedSlab2Factory::CreateSegment(IBroker* pBroker,StatusGroupIDType statu
    if ( segmentKey.girderIndex == pGroup->GetGirderCount()-1 )
    {
       voidedSlabShape->put_RightBlockOut(VARIANT_FALSE);
+   }
+
+   IndexType nVoids;
+   voidedSlabShape->get_VoidCount(&nVoids);
+   if (0 < nVoids)
+   {
+      // only model end blocks if there are voids
+      Float64 endBlockLength = GetDimension(dimensions, _T("EndBlockLength"));
+      segment->put_EndBlockLength(etStart, endBlockLength);
+      segment->put_EndBlockLength(etEnd, endBlockLength);
    }
 
    // Beam materials
@@ -256,9 +262,12 @@ void CVoidedSlab2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,c
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
+
+   IndexType nVoids = (IndexType)pGdrEntry->GetDimension(_T("Number_of_Voids"));
+
    Float64 endBlockLength = pGdrEntry->GetDimension(_T("EndBlockLength"));
 
-   if ( !IsZero(endBlockLength) )
+   if ( 0 < nVoids && !IsZero(endBlockLength) )
    {
       Float64 delta = 1.5*pPoiMgr->GetTolerance();
 
@@ -324,7 +333,7 @@ void CVoidedSlab2Factory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDTyp
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
       const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(girderKey.girderIndex)->GetGirderLibraryEntry();
 
-      Float64 nVoids = pGdrEntry->GetDimension(_T("Number_of_Voids"));
+      IndexType nVoids = (IndexType)pGdrEntry->GetDimension(_T("Number_of_Voids"));
 
       if ( nVoids == 0 )
       {

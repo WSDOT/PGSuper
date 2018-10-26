@@ -45,6 +45,7 @@ class ATL_NO_VTABLE CTestAgentImp :
 public:
 	CTestAgentImp()
 	{
+      m_bIsTesting = false;
 	}
 
 DECLARE_REGISTRY_RESOURCEID(IDR_TESTAGENT)
@@ -81,8 +82,12 @@ public:
                           const std::_tstring& outputFileName,
                           const std::_tstring& poiFileName) override;
 
+   virtual bool IsTesting() const override;
+
 private:
    DECLARE_EAF_AGENT_DATA;
+
+   bool m_bIsTesting;
 
    std::_tstring GetBridgeID();
    std::_tstring GetProcessID();

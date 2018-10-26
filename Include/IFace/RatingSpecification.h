@@ -45,6 +45,10 @@ interface IRatingSpecification : IUnknown
    // returns true if a load rating is to be performed along with the analysis
    virtual bool AlwaysLoadRate() = 0;
 
+   // returns true if any one of the rating types is enabled
+   virtual bool IsRatingEnabled() = 0;
+
+   // returns true if a specific rating type is enabled
    virtual bool IsRatingEnabled(pgsTypes::LoadRatingType ratingType) = 0;
    virtual void EnableRating(pgsTypes::LoadRatingType ratingType,bool bEnable) = 0;
 

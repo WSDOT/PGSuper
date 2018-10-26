@@ -1,0 +1,26 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 33.00    4   9.00                     1     1    Strai    *     48  0.6  270  21.23  11.73  12.38  12.38                                              12  60.0 22.0  6.300 14.600   5.576    -4.909    11540   0.933  0.933   5.389 -2.080  0.000 -0.136 -2.216 197.27  395.73    1.00   31.50   31.50 
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Splitting zone check failed.
+Confinement zone check failed.
+Hauling checks failed
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 33.00    4   9.00                     1     2    Strai    *     44  0.6  270  21.13  10.77  11.88  11.88                                              12  60.0 22.0  5.600 14.900   5.400    -4.598    10644   0.735  0.884   4.896 -2.115  0.000 -0.133 -2.248 168.53  359.47    1.00   32.50   32.50 
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Splitting zone check failed.
+Confinement zone check failed.
+Hauling checks failed
+Slab Offset ("A" Dimension) check failed
+
+

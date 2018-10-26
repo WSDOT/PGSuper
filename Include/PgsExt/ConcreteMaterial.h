@@ -111,6 +111,10 @@ public:
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
 
+#if defined _DEBUG
+   void AssertValid();
+#endif
+
 protected:
    //------------------------------------------------------------------------
    void MakeCopy(const CConcreteMaterial& rOther);

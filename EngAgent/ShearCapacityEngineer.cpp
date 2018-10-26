@@ -321,22 +321,6 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
    Pps = pPsForce->GetHorizHarpedStrandForce(poi, finalIntervalIdx, pgsTypes::End, pConfig)
       + pPsForce->GetPrestressForce(poi, pgsTypes::Straight, finalIntervalIdx, pgsTypes::End, pConfig);
 
-   //if ( pConfig )
-   //{
-   //   eps = pStrandGeometry->GetEccentricity( releaseIntervalIdx, poi, pConfig, pgsTypes::Permanent, &neff);
-
-   //   Pps = pPsForce->GetHorizHarpedStrandForce(poi, finalIntervalIdx,pgsTypes::End, pConfig)
-   //      + pPsForce->GetPrestressForce(poi,pgsTypes::Straight, finalIntervalIdx,pgsTypes::End, pConfig);
-   //}
-   //else
-   //{
-   //   eps = pStrandGeometry->GetEccentricity( releaseIntervalIdx, poi, pgsTypes::Permanent, &neff);
-
-   //   Pps = pPsForce->GetHorizHarpedStrandForce(poi, finalIntervalIdx,pgsTypes::End)
-   //       + pPsForce->GetPrestressForce(poi,pgsTypes::Straight, finalIntervalIdx,pgsTypes::End);
-   //}
-
-
    GET_IFACE_NOCHECK(IPosttensionForce,pPTForce); // only used if there are tendons
    GET_IFACE_NOCHECK(ITendonGeometry,pTendonGeometry); // only used if there are tendons
    Float64 Pe  = 0;

@@ -49,6 +49,7 @@
 #include <IFace\ResistanceFactors.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
+#include <IFace\EditByUI.h>
 
 
 #ifdef _DEBUG

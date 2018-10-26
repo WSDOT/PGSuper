@@ -351,34 +351,35 @@ Float64 pgsMomentRatingArtifact::GetRatingFactor() const
    }
 
 
-   if ( IsZero(m_Mllim) || IsZero(m_gLL) )
+   Float64 p = Max(m_SystemFactor*m_ConditionFactor,0.85); // MBE 6A.4.2.1-3
+
+   Float64 C = p * m_CapacityRedutionFactor * m_MinimumReinforcementFactor * m_Mn;
+   Float64 RFtop = C - m_gDC*m_Mdc - m_gDW*m_Mdw - m_gCR*m_Mcr - m_gSH*m_Msh - m_gRE*m_Mre - m_gPS*m_Mps;
+   Float64 RFbot = m_gLL*m_Mllim;
+
+   if (IsZero(C) && IsZero(RFtop) && IsZero(RFbot))
+   {
+      m_RF = DBL_MAX;
+   }
+   else if ( IsZero(C) || (0 < C && RFtop < 0) || (C < 0 && 0 < RFtop) )
+   {
+      // There isn't any capacity remaining for live load
+      m_RF = 0;
+   }
+   else if ( ::BinarySign(RFtop) != ::BinarySign(RFbot) && !IsZero(RFtop) )
+   {
+      // (C - DL) and LL have opposite signs
+      // this case probably shouldn't happen, but if does,
+      // the rating is great
+      m_RF = DBL_MAX;
+   }
+   else if (IsZero(m_Mllim) || IsZero(m_gLL))
    {
       m_RF = DBL_MAX;
    }
    else
    {
-      Float64 p = Max(m_SystemFactor*m_ConditionFactor,0.85); // MBE 6A.4.2.1-3
-
-      Float64 C = p * m_CapacityRedutionFactor * m_MinimumReinforcementFactor * m_Mn;
-      Float64 RFtop = C - m_gDC*m_Mdc - m_gDW*m_Mdw - m_gCR*m_Mcr - m_gSH*m_Msh - m_gRE*m_Mre - m_gPS*m_Mps;
-      Float64 RFbot = m_gLL*m_Mllim;
-
-      if ( IsZero(C) || (0 < C && RFtop < 0) || (C < 0 && 0 < RFtop) )
-      {
-         // There isn't any capacity remaining for live load
-         m_RF = 0;
-      }
-      else if ( ::BinarySign(RFtop) != ::BinarySign(RFbot) && !IsZero(RFtop) )
-      {
-         // (C - DL) and LL have opposite signs
-         // this case probably shouldn't happen, but if does,
-         // the rating is great
-         m_RF = DBL_MAX;
-      }
-      else
-      {
-         m_RF = RFtop/RFbot;
-      }
+      m_RF = RFtop/RFbot;
    }
 
    m_bRFComputed = true;

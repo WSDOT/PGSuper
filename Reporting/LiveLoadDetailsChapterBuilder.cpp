@@ -103,14 +103,10 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
 
       // if none of the rating types are enabled, skip the rating
-      if ( !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) 
-         )
+      if (!pRatingSpec->IsRatingEnabled())
+      {
          bRating = false;
+      }
    }
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
@@ -327,6 +323,37 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          }
       }
 
+      if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+      {
+         pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+         *pChapter << pPara;
+         *pPara << _T("Live Loads used for Legal Load Rating for Emergency Vehicles") << rptNewLine;
+
+         pPara = new rptParagraph;
+         *pChapter << pPara;
+
+         user_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Emergency);
+
+         if (user_loads.empty())
+         {
+            *pPara << _T("No live loads were defined for this load rating") << rptNewLine;
+         }
+
+         for (it = user_loads.begin(); it != user_loads.end(); it++)
+         {
+            std::_tstring& load_name = *it;
+
+            pPara = new rptParagraph;
+            *pChapter << pPara;
+
+            ReportLiveLoad(pBroker, load_name, pPara, pDisplayUnits);
+         }
+
+         if (bPedestrian)
+         {
+            ReportPedestrian(rate_pedestrian ? ILiveLoads::PedConcurrentWithVehicular : ILiveLoads::PedDontApply, pPara);
+         }
+      }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
       {

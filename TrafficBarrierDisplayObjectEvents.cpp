@@ -98,13 +98,19 @@ void CTrafficBarrierDisplayObjectEvents::SelectNext()
 
 /////////////////////////////////////////////////////////////////////////////
 // CTrafficBarrierDisplayObjectEvents message handlers
-STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO, UINT nFlags, CPoint point)
 {
-   METHOD_PROLOGUE(CTrafficBarrierDisplayObjectEvents,Events);
+   METHOD_PROLOGUE(CTrafficBarrierDisplayObjectEvents, Events);
 
-   pThis->EditBarrier();
-
-   return true;
+   if (pDO->IsSelected())
+   {
+      pThis->EditBarrier();
+      return true;
+   }
+   else
+   {
+      return false;
+   }
 }
 
 STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)

@@ -14,7 +14,7 @@ Lifting checks failed
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 13 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Splitting zone check failed.
 Lifting checks failed
 
@@ -26,7 +26,7 @@ Lifting checks failed
 
 The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
-Tensile stress check failed for Service III Limit State in Interval 13 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Splitting zone check failed.
 Lifting checks failed
 Hauling checks failed

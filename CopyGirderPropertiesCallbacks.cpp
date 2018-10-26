@@ -635,8 +635,11 @@ bool txnCopyGirderSlabOffset::Execute()
          // than the source group, use the slab offset for the last pier in the source group for all remaining
          // piers in this group
          PierIndexType relativePierIdx = pierIdx - startPierIdxThisGroup; // pier index relative to the start of this group
-         PierIndexType pierIndexForSlabOffset = (relativePierIdx <= endPierIdx ? relativePierIdx - startPierIdx : endPierIdx);
-         pIBridgeDesc->SetSlabOffset(toGirderKey.groupIndex,pierIdx,toGirderKey.girderIndex,newSlabOffsets[pierIndexForSlabOffset]);
+         if (newSlabOffsets.size() <= relativePierIdx)
+         {
+            relativePierIdx = newSlabOffsets.size() - 1;
+         }
+         pIBridgeDesc->SetSlabOffset(toGirderKey.groupIndex,pierIdx,toGirderKey.girderIndex,newSlabOffsets[relativePierIdx]);
       }
       m_OldSlabOffsetData.push_back(oldSlabOffsets);
    }

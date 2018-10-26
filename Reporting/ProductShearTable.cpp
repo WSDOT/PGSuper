@@ -146,7 +146,7 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
       {
          girder = pForces2->GetShear(erectSegmentIntervalIdx, pgsTypes::pftGirder,   vPoi,maxBAT, rtCumulative);
       }
-      std::vector<sysSectionValue> diaphragm = pForces2->GetShear(castDeckIntervalIdx,     pgsTypes::pftDiaphragm,vPoi,maxBAT, rtCumulative);
+      std::vector<sysSectionValue> diaphragm = pForces2->GetShear(lastIntervalIdx,     pgsTypes::pftDiaphragm,vPoi,maxBAT, rtCumulative);
 
       std::vector<sysSectionValue> minSlab, maxSlab;
       std::vector<sysSectionValue> minSlabPad, maxSlabPad;

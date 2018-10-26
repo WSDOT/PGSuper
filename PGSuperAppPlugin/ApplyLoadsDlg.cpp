@@ -79,6 +79,16 @@ void CApplyLoadsDlg::DoDataExchange(CDataExchange* pDX)
    if ( pDX->m_bSaveAndValidate )
    {
       int value;
+      DDX_Check(pDX, IDC_INTERMEDIATE_DIAPHRAGMS, value);
+      if (value == BST_CHECKED)
+      {
+         m_TimelineMgr.SetIntermediateDiaphragmsLoadEventByIndex(m_EventIndex);
+      }
+      else if (value == BST_UNCHECKED)
+      {
+         m_TimelineMgr.SetIntermediateDiaphragmsLoadEventByIndex(INVALID_INDEX);
+      }
+
       DDX_Check(pDX,IDC_RAILING_SYSTEM,value);
       if ( value == BST_CHECKED )
       {
@@ -144,6 +154,9 @@ void CApplyLoadsDlg::DoDataExchange(CDataExchange* pDX)
    }
    else
    {
+      EventIndexType intermediateDiaphragmsEventIdx = m_TimelineMgr.GetIntermediateDiaphragmsLoadEventIndex();
+      InitalizeCheckBox(pDX, intermediateDiaphragmsEventIdx, IDC_INTERMEDIATE_DIAPHRAGMS);
+
       EventIndexType railingSystemEventIdx = m_TimelineMgr.GetRailingSystemLoadEventIndex();
       InitalizeCheckBox(pDX,railingSystemEventIdx,IDC_RAILING_SYSTEM);
 
@@ -191,6 +204,7 @@ BOOL CApplyLoadsDlg::OnInitDialog()
 
    if ( m_bReadOnly )
    {
+      GetDlgItem(IDC_INTERMEDIATE_DIAPHRAGMS)->EnableWindow(FALSE);
       GetDlgItem(IDC_RAILING_SYSTEM)->EnableWindow(FALSE);
       GetDlgItem(IDC_OVERLAY)->EnableWindow(FALSE);
       GetDlgItem(IDC_OVERLAY_NOTE)->EnableWindow(FALSE);

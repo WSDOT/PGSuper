@@ -113,6 +113,8 @@ private:
 
    bool IsDiaphragmConfined(const pgsPointOfInterest& poi) const;
 
+   void ModelShape(IGeneralSection* pSection, IShape* pShape, Float64 dx, Float64 dy, IStressStrain* pMaterial, VARIANT_BOOL bIsVoid) const;
+
    // GROUP: ACCESS
    // GROUP: INQUIRY
 

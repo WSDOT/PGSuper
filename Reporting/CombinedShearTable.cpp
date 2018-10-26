@@ -496,7 +496,8 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
       std::vector<sysSectionValue> minFatigueLL,       maxFatigueLL;
       std::vector<sysSectionValue> minPermitLL,        maxPermitLL;
       std::vector<sysSectionValue> minLegalRoutineLL,  maxLegalRoutineLL;
-      std::vector<sysSectionValue> minLegalSpecialLL,  maxLegalSpecialLL;
+      std::vector<sysSectionValue> minLegalSpecialLL, maxLegalSpecialLL;
+      std::vector<sysSectionValue> minLegalEmergencyLL, maxLegalEmergencyLL;
       std::vector<sysSectionValue> minPermitRoutineLL, maxPermitRoutineLL;
       std::vector<sysSectionValue> minPermitSpecialLL, maxPermitSpecialLL;
 
@@ -540,10 +541,16 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
             pForces2->GetCombinedLiveLoadShear( ratingIntervalIdx, pgsTypes::lltLegalRating_Routine, vPoi, minBAT, true, &minLegalRoutineLL, &dummy );
          }
 
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+         if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
          {
-            pForces2->GetCombinedLiveLoadShear( ratingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, maxBAT, true, &dummy, &maxLegalSpecialLL );
-            pForces2->GetCombinedLiveLoadShear( ratingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, minBAT, true, &minLegalSpecialLL, &dummy );
+            pForces2->GetCombinedLiveLoadShear(ratingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, maxBAT, true, &dummy, &maxLegalSpecialLL);
+            pForces2->GetCombinedLiveLoadShear(ratingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, minBAT, true, &minLegalSpecialLL, &dummy);
+         }
+
+         if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+         {
+            pForces2->GetCombinedLiveLoadShear(ratingIntervalIdx, pgsTypes::lltLegalRating_Emergency, vPoi, maxBAT, true, &dummy, &maxLegalEmergencyLL);
+            pForces2->GetCombinedLiveLoadShear(ratingIntervalIdx, pgsTypes::lltLegalRating_Emergency, vPoi, minBAT, true, &minLegalEmergencyLL, &dummy);
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
@@ -616,10 +623,16 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
                (*p_table)(row,col++) << shear.SetValue( minLegalRoutineLL[index] );
             }
 
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
             {
-               (*p_table)(row,col++) << shear.SetValue( maxLegalSpecialLL[index] );
-               (*p_table)(row,col++) << shear.SetValue( minLegalSpecialLL[index] );
+               (*p_table)(row, col++) << shear.SetValue(maxLegalSpecialLL[index]);
+               (*p_table)(row, col++) << shear.SetValue(minLegalSpecialLL[index]);
+            }
+
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+            {
+               (*p_table)(row, col++) << shear.SetValue(maxLegalEmergencyLL[index]);
+               (*p_table)(row, col++) << shear.SetValue(minLegalEmergencyLL[index]);
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
@@ -782,6 +795,7 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
       std::vector<sysSectionValue> minStrengthI_Operating, maxStrengthI_Operating;
       std::vector<sysSectionValue> minStrengthI_Legal_Routine, maxStrengthI_Legal_Routine;
       std::vector<sysSectionValue> minStrengthI_Legal_Special, maxStrengthI_Legal_Special;
+      std::vector<sysSectionValue> minStrengthI_Legal_Emergency, maxStrengthI_Legal_Emergency;
       std::vector<sysSectionValue> minStrengthII_Permit_Routine, maxStrengthII_Permit_Routine;
       std::vector<sysSectionValue> minServiceI_Permit_Routine, maxServiceI_Permit_Routine;
       std::vector<sysSectionValue> minStrengthII_Permit_Special, maxStrengthII_Permit_Special;
@@ -840,10 +854,17 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
          }
 
          // Legal - Special
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+         if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
          {
-            pLsForces2->GetShear( intervalIdx, pgsTypes::StrengthI_LegalSpecial, vPoi, maxBAT, &dummy, &maxStrengthI_Legal_Special );
-            pLsForces2->GetShear( intervalIdx, pgsTypes::StrengthI_LegalSpecial, vPoi, minBAT, &minStrengthI_Legal_Special, &dummy );
+            pLsForces2->GetShear(intervalIdx, pgsTypes::StrengthI_LegalSpecial, vPoi, maxBAT, &dummy, &maxStrengthI_Legal_Special);
+            pLsForces2->GetShear(intervalIdx, pgsTypes::StrengthI_LegalSpecial, vPoi, minBAT, &minStrengthI_Legal_Special, &dummy);
+         }
+
+         // Legal - Emergency
+         if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+         {
+            pLsForces2->GetShear(intervalIdx, pgsTypes::StrengthI_LegalEmergency, vPoi, maxBAT, &dummy, &maxStrengthI_Legal_Emergency);
+            pLsForces2->GetShear(intervalIdx, pgsTypes::StrengthI_LegalEmergency, vPoi, minBAT, &minStrengthI_Legal_Emergency, &dummy);
          }
 
          // Permit Rating - Routine
@@ -931,10 +952,16 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
                   (*p_table2)(row2,col++) << shear.SetValue(minStrengthI_Legal_Routine[index]);
                }
 
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+               if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
                {
-                  (*p_table2)(row2,col++) << shear.SetValue(maxStrengthI_Legal_Special[index]);
-                  (*p_table2)(row2,col++) << shear.SetValue(minStrengthI_Legal_Special[index]);
+                  (*p_table2)(row2, col++) << shear.SetValue(maxStrengthI_Legal_Special[index]);
+                  (*p_table2)(row2, col++) << shear.SetValue(minStrengthI_Legal_Special[index]);
+               }
+
+               if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+               {
+                  (*p_table2)(row2, col++) << shear.SetValue(maxStrengthI_Legal_Emergency[index]);
+                  (*p_table2)(row2, col++) << shear.SetValue(minStrengthI_Legal_Emergency[index]);
                }
 
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
@@ -998,10 +1025,16 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
                   (*p_table2)(row2,col++) << shear.SetValue(minStrengthI_Legal_Routine[index]);
                }
 
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+               if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
                {
-                  (*p_table2)(row2,col++) << shear.SetValue(maxStrengthI_Legal_Special[index]);
-                  (*p_table2)(row2,col++) << shear.SetValue(minStrengthI_Legal_Special[index]);
+                  (*p_table2)(row2, col++) << shear.SetValue(maxStrengthI_Legal_Special[index]);
+                  (*p_table2)(row2, col++) << shear.SetValue(minStrengthI_Legal_Special[index]);
+               }
+
+               if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
+               {
+                  (*p_table2)(row2, col++) << shear.SetValue(maxStrengthI_Legal_Special[index]);
+                  (*p_table2)(row2, col++) << shear.SetValue(minStrengthI_Legal_Special[index]);
                }
 
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )

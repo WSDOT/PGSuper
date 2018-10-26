@@ -5,18 +5,14 @@ SET REGFREECOM=\ARP\BridgeLink\RegFreeCOM
 
 
 REM - COM DLLs
-xcopy /Y /d Convert\Convert.dll				%BINTARGET%\AutomationDLLs\Win32\
 xcopy /Y /d Convert\Convert.dll				%BINTARGET%\AutomationDLLs\x64\
-xcopy /Y /d %REGFREECOM%\Win32\Release\PGSuper*.dll		%BINTARGET%\AutomationDLLs\Win32\
 xcopy /Y /d %REGFREECOM%\x64\Release\PGSuper*.dll		%BINTARGET%\AutomationDLLs\x64\
 
 REM - Extension Agents
 REM - WSDOT
-xcopy /Y /d %REGFREECOM%\Win32\Release\WSDOTAgent.dll	%BINTARGET%\Extensions\WSDOT\Win32\
 xcopy /Y /d %REGFREECOM%\x64\Release\WSDOTAgent.dll	%BINTARGET%\Extensions\WSDOT\x64\
 
 REM - TXDOT
-xcopy /Y /d %REGFREECOM%\Win32\Release\TxDOTAgent.dll	%BINTARGET%\Extensions\TxDOT\Win32\
 xcopy /Y /d %REGFREECOM%\x64\Release\TxDOTAgent.dll	%BINTARGET%\Extensions\TxDOT\x64\
 xcopy /Y /d TxDOTAgent\TogaTemplates\*.pgs		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
 xcopy /Y /d TxDOTAgent\TogaTemplates\*.togt		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
@@ -24,7 +20,6 @@ xcopy /Y /d TxDOTAgent\TogaTemplates\*.ico		%BINTARGET%\Extensions\TxDOT\TogaTem
 xcopy /Y /d TxDOTAgent\TogaTemplates\*.lbr		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
 
 REM - KDOT
-xcopy /Y /d %REGFREECOM%\Win32\Release\KDOTExport.dll   %BINTARGET%\Extensions\KDOT\Win32\
 xcopy /Y /d %REGFREECOM%\x64\Release\KDOTExport.dll	%BINTARGET%\Extensions\KDOT\x64\
 
 REM - Image files
@@ -34,7 +29,6 @@ xcopy /Y /d images\*.png				%BINTARGET%\images\
 
 REM - Application files
 xcopy /Y /d md5deep.exe			  	%BINTARGET%\App\
-xcopy /Y /d %REGFREECOM%\Win32\Release\MakePgz.exe 	%BINTARGET%\App\Win32\
 xcopy /Y /d %REGFREECOM%\x64\Release\MakePgz.exe  	%BINTARGET%\App\x64\
 xcopy /Y /d PGSuper.tip				%BINTARGET%\App\
 xcopy /Y /d License.txt				%BINTARGET%\App\

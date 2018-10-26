@@ -27,12 +27,12 @@ Slab Offset ("A" Dimension) check failed
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 9 Cast Deck (Bridge Site 1)
-Tensile stress check failed for Service I Limit State in Interval 9 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 11 Composite Deck, Install Railing System
-Compression stress check failed for Service I Limit State in Interval 11 Install Overlay (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
+Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 12 Install Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State

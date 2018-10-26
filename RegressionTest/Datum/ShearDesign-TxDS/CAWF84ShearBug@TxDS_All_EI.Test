@@ -6,8 +6,8 @@
 Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 11 Composite Deck, Install Railing System
-Compression stress check failed for Service I Limit State in Interval 11 Install Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 12 Install Overlay (Bridge Site 2)
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength II Limit State
@@ -26,7 +26,7 @@ Confinement zone check failed.
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 11 Install Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 12 Install Overlay (Bridge Site 2)
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -35,6 +35,6 @@ Compression stress check failed for Service I Limit State in Interval 11 Install
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 11 Install Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 12 Install Overlay (Bridge Site 2)
 
 

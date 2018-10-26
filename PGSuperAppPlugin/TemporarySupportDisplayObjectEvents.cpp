@@ -123,8 +123,15 @@ void CTemporarySupportDisplayObjectEvents::SelectNext(iDisplayObject* pDO)
 STDMETHODIMP_(bool) CTemporarySupportDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
 {
    METHOD_PROLOGUE(CTemporarySupportDisplayObjectEvents,Events);
-   pThis->EditTemporarySupport(pDO);
-   return true;
+   if (pDO->IsSelected())
+   {
+      pThis->EditTemporarySupport(pDO);
+      return true;
+   }
+   else
+   {
+      return false;
+   }
 }
 
 STDMETHODIMP_(bool) CTemporarySupportDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)

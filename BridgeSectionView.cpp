@@ -764,6 +764,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IRoadway,pAlignment);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IShapes,pShapes);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
@@ -832,6 +833,12 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       }
    }
 
+   CComPtr<IDirection> objDirAlignmentAtCut;
+   pAlignment->GetBearing(cut_station, &objDirAlignmentAtCut);
+
+   Float64 dirAlignmentAtCut;
+   objDirAlignmentAtCut->get_Value(&dirAlignmentAtCut);
+
    for (const auto& poi : vPoi)
    {
       const CSegmentKey& thisSegmentKey(poi.GetSegmentKey());
@@ -860,7 +867,38 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       CComPtr<IShape> shape;
       pShapes->GetSegmentShape(intervalIdx,poi,true,pgsTypes::scBridge,&shape);
 
+      CComPtr<IPoint2d> point;
+      pBridge->GetPoint(poi, pgsTypes::pcGlobal, &point);
+      Float64 station, offset;
+      pAlignment->GetStationAndOffset(pgsTypes::pcGlobal, point, &station, &offset);
+      if (!IsEqual(station, cut_station))
+      {
+         GET_IFACE2(pBroker, IGirder, pGirder);
+         CComPtr<IDirection> segDirection;
+         pGirder->GetSegmentDirection(poi.GetSegmentKey(), &segDirection);
+
+         Float64 dirSegment;
+         segDirection->get_Value(&dirSegment);
+
+         Float64 skew = dirSegment - dirAlignmentAtCut;
+
+         Float64 cutOffset = offset - (offset / cos(skew));
+
+         if (!IsZero(cutOffset))
+         {
+            CComQIPtr<IXYPosition> position(shape);
+            position->Offset(cutOffset, 0);
+         }
+
+         Float64 shear = 0;
+         CComPtr<IShape> skewedShape;
+         SkewGirderShape(-skew, shear, shape, &skewedShape);
+
+         shape = skewedShape;
+      }
+
       CComQIPtr<IXYPosition> position(shape);
+
       CComPtr<IPoint2d> topCenter;
       position->get_LocatorPoint(lpTopCenter,&topCenter);
       dispObj->SetPosition(topCenter,FALSE,FALSE);
@@ -2328,4 +2366,52 @@ void CBridgeSectionView::TrimSurface(IPoint2dCollection* pPoints,Float64 Xleft,F
          return; // leave now, the point container has been changed
       }
    }
+}
+
+void CBridgeSectionView::SkewGirderShape(Float64 skew, Float64 shear, IShape* pShape, IShape** ppSkewedShape)
+{
+   if (IsZero(skew))
+   {
+      // Not skewed... nothing to do
+      (*ppSkewedShape) = pShape;
+      (*ppSkewedShape)->AddRef();
+      return;
+   }
+
+   CComPtr<IRect2d> bbox;
+   pShape->get_BoundingBox(&bbox);
+   CComPtr<IPoint2d> pntTC;
+   bbox->get_TopCenter(&pntTC);
+   Float64 xcl,ycl;
+   pntTC->Location(&xcl, &ycl);
+
+   CComPtr<IPoint2dCollection> points;
+   pShape->get_PolyPoints(&points);
+   CComPtr<IPoint2d> pnt;
+   CComPtr<IEnumPoint2d> enumPoints;
+   points->get__Enum(&enumPoints);
+   while (enumPoints->Next(1, &pnt, nullptr) != S_FALSE)
+   {
+      Float64 x, y;
+      pnt->Location(&x, &y);
+
+      y -= ycl; // translate
+      y += shear*(x - xcl); // shear
+      y += ycl; // translate
+
+      x -= xcl; // translate
+      x /= cos(skew); // skew
+      x += xcl; // translate
+
+      pnt->Move(x, y);
+
+      pnt.Release();
+   }
+
+   CComPtr<IPolyShape> polyShape;
+   polyShape.CoCreateInstance(CLSID_PolyShape);
+   polyShape->AddPoints(points);
+
+   CComQIPtr<IShape> s(polyShape);
+   s.CopyTo(ppSkewedShape);
 }

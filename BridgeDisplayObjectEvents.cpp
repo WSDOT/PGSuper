@@ -91,9 +91,15 @@ STDMETHODIMP_(bool) CBridgeDisplayObjectEvents::XEvents::OnLButtonDblClk(iDispla
 {
    METHOD_PROLOGUE(CBridgeDisplayObjectEvents,Events);
 
-   pThis->EditBridge();
-
-   return true;
+   if (pDO->IsSelected())
+   {
+      pThis->EditBridge();
+      return true;
+   }
+   else
+   {
+      return false;
+   }
 }
 
 STDMETHODIMP_(bool) CBridgeDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)

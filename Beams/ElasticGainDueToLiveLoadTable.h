@@ -44,6 +44,9 @@ private:
    CElasticGainDueToLiveLoadTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);
 
    pgsTypes::BridgeAnalysisType m_BAT;
+   Float64 m_Kliveload;
+   IntervalIndexType m_LiveLoadIntervalIdx;
+
    rptRcScalar scalar;
 
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  spanloc );

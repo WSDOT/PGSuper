@@ -61,6 +61,7 @@ private:
    bool m_bPTTempStrand;
    bool m_bTempStrands;
    bool m_bIgnoreInitialRelaxation;
+   Float64 m_gLL_Fatigue;
    Float64 m_gLL_ServiceI;
    Float64 m_gLL_ServiceIII;
 };

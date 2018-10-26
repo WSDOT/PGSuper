@@ -129,14 +129,10 @@ rptChapter* CLongReinfShearCheckChapterBuilder::Build(CReportSpecification* pRpt
       bRating = pRatingSpec->AlwaysLoadRate();
 
       // if none of the rating types are enabled, skip the rating
-      if ( !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) &&
-           !pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) 
-         )
+      if (!pRatingSpec->IsRatingEnabled())
+      {
          bRating = false;
+      }
    }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -310,6 +306,11 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter,CRe
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) && pRatingSpec->RateForShear(pgsTypes::lrLegal_Special) )
    {
       limitStates.push_back(pgsTypes::StrengthI_LegalSpecial);
+   }
+
+   if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency) && pRatingSpec->RateForShear(pgsTypes::lrLegal_Emergency))
+   {
+      limitStates.push_back(pgsTypes::StrengthI_LegalEmergency);
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) && pRatingSpec->RateForShear(pgsTypes::lrPermit_Routine) )

@@ -136,6 +136,10 @@ public:
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
+#if defined _DEBUG
+   void AssertValid();
+#endif
+
 protected:
    // GROUP: DATA MEMBERS
    // GROUP: LIFECYCLE

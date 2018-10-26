@@ -623,16 +623,33 @@ template <class T>
 lrfdTypes::LimitState CDistFactorEngineerImpl<T>::MapLimitState(pgsTypes::LimitState ls)
 {
    lrfdTypes::LimitState lrfdLimitState;
-   switch(ls)
+   if (IsStrengthILimitState(ls))
    {
-   case pgsTypes::ServiceI:      lrfdLimitState = lrfdTypes::ServiceI;     break;
-   case pgsTypes::ServiceIA:     lrfdLimitState = lrfdTypes::ServiceIA;    break;
-   case pgsTypes::ServiceIII:    lrfdLimitState = lrfdTypes::ServiceIII;   break;
-   case pgsTypes::StrengthI:     lrfdLimitState = lrfdTypes::StrengthI;    break;
-   case pgsTypes::StrengthII:    lrfdLimitState = lrfdTypes::StrengthII;   break;
-   case pgsTypes::FatigueI:      lrfdLimitState = lrfdTypes::FatigueI;     break;
-   default:
-      ATLASSERT(false); // should never get here
+      lrfdLimitState = lrfdTypes::StrengthI;
+   }
+   else if (IsStrengthIILimitState(ls))
+   {
+      lrfdLimitState = lrfdTypes::StrengthII;
+   }
+   else if (IsServiceILimitState(ls))
+   {
+      lrfdLimitState = lrfdTypes::ServiceI;
+   }
+   else if (IsServiceIIILimitState(ls))
+   {
+      lrfdLimitState = lrfdTypes::ServiceIII;
+   }
+   else if (ls == pgsTypes::ServiceIA)
+   {
+      lrfdLimitState = lrfdTypes::ServiceIA;
+   }
+   else if (ls == pgsTypes::FatigueI)
+   {
+      lrfdLimitState = lrfdTypes::FatigueI;
+   }
+   else
+   {
+      ATLASSERT(false);
    }
 
    return lrfdLimitState;

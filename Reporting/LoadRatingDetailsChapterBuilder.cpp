@@ -39,6 +39,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+inline pgsTypes::LimitState GetLimitState(pgsTypes::LoadRatingType ratingType) { return (ratingType == pgsTypes::lrPermit_Special ? pgsTypes::FatigueI : pgsTypes::StrengthI); }
+
 
 /****************************************************************************
 CLASS
@@ -302,7 +304,7 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
 
       Float64 pM, nM, V;
       pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
-      pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special || ratingType == pgsTypes::lrLegal_Emergency ? pgsTypes::FatigueI : pgsTypes::StrengthI);
+      pgsTypes::LimitState limit_state = GetLimitState(ratingType);
       pDistFact->GetDistributionFactors(poi,limit_state,&pM,&nM,&V);
 
       (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
@@ -436,7 +438,7 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
 
       Float64 gpM, gnM, gV;
       pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
-      pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special || ratingType == pgsTypes::lrLegal_Emergency ? pgsTypes::FatigueI : pgsTypes::StrengthI);
+      pgsTypes::LimitState limit_state = GetLimitState(ratingType);
       pDistFact->GetDistributionFactors(poi,limit_state,&gpM,&gnM,&gV);
 
       (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
@@ -579,7 +581,7 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
 
       Float64 pM, nM, V;
       pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
-      pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special || ratingType == pgsTypes::lrLegal_Emergency ? pgsTypes::FatigueI : pgsTypes::StrengthI);
+      pgsTypes::LimitState limit_state = GetLimitState(ratingType);
       pDistFact->GetDistributionFactors(poi,limit_state,&pM,&nM,&V);
 
       (*table)(row,col++) << location.SetValue( POI_SPAN,  poi );

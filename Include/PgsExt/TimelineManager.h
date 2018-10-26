@@ -34,22 +34,23 @@
 
 #define TLM_CAST_DECK_ACTIVITY_REQUIRED                  0x00000008 // deck casting is required if bridge has a deck
 #define TLM_OVERLAY_ACTIVITY_REQUIRED                    0x00000010 // could not remove event because it has the overlay load activity and the bridge has an overlay
-#define TLM_RAILING_SYSTEM_ACTIVITY_REQUIRED             0x00000020 // railing system loading activity is required
-#define TLM_LIVELOAD_ACTIVITY_REQUIRED                   0x00000040 // live load loading activity is required
-#define TLM_USER_LOAD_ACTIVITY_REQUIRED                  0x00000080 // user defined loads must be in an event
-#define TLM_CONSTRUCT_SEGMENTS_ACTIVITY_REQUIRED         0x00000100 // segment construction activity is required
-#define TLM_ERECT_PIERS_ACTIVITY_REQUIRED                0x00000200
-#define TLM_ERECT_SEGMENTS_ACTIVITY_REQUIRED             0x00000400
-#define TLM_REMOVE_TEMPORARY_SUPPORTS_ACTIVITY_REQUIRED  0x00000800
-#define TLM_CAST_CLOSURE_JOINT_ACTIVITY_REQUIRED         0x00001000
-#define TLM_STRESS_TENDONS_ACTIVITY_REQUIRED             0x00002000
+#define TLM_INTERMEDIATE_DIAPHRAGM_ACTIVITY_REQUIRED     0x00000020 // intermediate diaphragm loading activity is required
+#define TLM_RAILING_SYSTEM_ACTIVITY_REQUIRED             0x00000040 // railing system loading activity is required
+#define TLM_LIVELOAD_ACTIVITY_REQUIRED                   0x00000080 // live load loading activity is required
+#define TLM_USER_LOAD_ACTIVITY_REQUIRED                  0x00000100 // user defined loads must be in an event
+#define TLM_CONSTRUCT_SEGMENTS_ACTIVITY_REQUIRED         0x00000200 // segment construction activity is required
+#define TLM_ERECT_PIERS_ACTIVITY_REQUIRED                0x00000400 // an activity for pier erection is required
+#define TLM_ERECT_SEGMENTS_ACTIVITY_REQUIRED             0x00000800 // an activity for segment erection is required
+#define TLM_REMOVE_TEMPORARY_SUPPORTS_ACTIVITY_REQUIRED  0x00001000 // an activity for temporary supports is required
+#define TLM_CAST_CLOSURE_JOINT_ACTIVITY_REQUIRED         0x00002000 // an activity for casting closure joints is required
+#define TLM_STRESS_TENDONS_ACTIVITY_REQUIRED             0x00004000 // an activity for stressing tendons is required
 
-#define TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR              0x00004000 // temporary support was removed before it was erected or before the segments were lifted off by PT
-#define TLM_SEGMENT_ERECTION_ERROR                       0x00008000 // segment erected before its supports are erected
-#define TLM_CLOSURE_JOINT_ERROR                          0x00010000 // closure joint is cast before the segment is erected or PT is applied before it is cased and cured
-#define TLM_RAILING_SYSTEM_ERROR                         0x00020000 // railing system is installed before deck is cast
-#define TLM_STRESS_TENDON_ERROR                          0x00040000 // tendon stressed before closure joints are cast or segments are erected
-#define TLM_LOAD_RATING_ERROR                            0x00080000 // load rating occurs before bridge is open to traffic
+#define TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR              0x00008000 // temporary support was removed before it was erected or before the segments were lifted off by PT
+#define TLM_SEGMENT_ERECTION_ERROR                       0x00010000 // segment erected before its supports are erected
+#define TLM_CLOSURE_JOINT_ERROR                          0x00020000 // closure joint is cast before the segment is erected or PT is applied before it is cased and cured
+#define TLM_RAILING_SYSTEM_ERROR                         0x00040000 // railing system is installed before deck is cast
+#define TLM_STRESS_TENDON_ERROR                          0x00080000 // tendon stressed before closure joints are cast or segments are erected
+#define TLM_LOAD_RATING_ERROR                            0x00100000 // load rating occurs before bridge is open to traffic
 
 #define TLM_SUCCESS                                      0xffffffff // event was successfully added
 
@@ -146,6 +147,7 @@ public:
 
    bool IsDeckCast() const;
    bool IsOverlayInstalled() const;
+   bool IsIntermediateDiaphragmInstalled() const;
    bool IsRailingSystemInstalled() const;
    bool IsUserDefinedLoadApplied(LoadIDType loadID) const;
    bool IsSegmentConstructed(SegmentIDType segmentID) const;
@@ -197,6 +199,9 @@ public:
    EventIndexType GetFirstSegmentErectionEventIndex() const;
    EventIDType GetFirstSegmentErectionEventID() const;
 
+   EventIndexType GetLastSegmentErectionEventIndex() const;
+   EventIDType GetLastSegmentErectionEventID() const;
+
    EventIndexType GetCastClosureJointEventIndex(const CClosureJointData* pClosure) const;
    EventIDType GetCastClosureJointEventID(const CClosureJointData* pClosure) const;
    EventIndexType GetCastClosureJointEventIndex(ClosureIDType closureID) const;
@@ -216,6 +221,11 @@ public:
    EventIDType GetCastDeckEventID() const;
    int SetCastDeckEventByIndex(EventIndexType eventIdx,bool bAdjustTimeline);
    int SetCastDeckEventByID(EventIDType ID,bool bAdjustTimeline);
+
+   EventIndexType GetIntermediateDiaphragmsLoadEventIndex() const;
+   EventIDType GetIntermediateDiaphragmsLoadEventID() const;
+   void SetIntermediateDiaphragmsLoadEventByIndex(EventIndexType eventIdx);
+   void SetIntermediateDiaphragmsLoadEventByID(EventIDType eventID);
 
    EventIndexType GetRailingSystemLoadEventIndex() const;
    EventIDType GetRailingSystemLoadEventID() const;

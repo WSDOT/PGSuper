@@ -327,7 +327,7 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
    Float64 Mdlg;
    Float64 Madlg;
    Float64 Msidl;
-   Float64 Mllim;
+
    Float64 rh;
    Float64 ti,th,td,tf; // initial time, time of hauling,time of deck placment, final time
 
@@ -351,7 +351,7 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
    GetLossParameters(poi,config,
                      &spType,
                      &gradePerm, &typePerm, &coatingPerm, &gradeTemp, &typeTemp, &coatingTemp, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &An, &In, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
-                     &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &Mllim, &rh, 
+                     &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &rh, 
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
                      &Ns, &Nh, &Nt,
                      &GdrCreepK1, &GdrCreepK2, &GdrShrinkageK1, &GdrShrinkageK2,
@@ -403,7 +403,6 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
                                 Mdlg,
                                 Madlg,
                                 Msidl,
-                                Mllim,
 
                                 Ag,
                                 Ig,
@@ -515,7 +514,6 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
    Float64 Mdlg;
    Float64 Madlg;
    Float64 Msidl;
-   Float64 Mllim;
    Float64 rh;
    Float64 ti,th,td,tf; // initial time, time of hauling,time of deck placment, final time
 
@@ -538,7 +536,7 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
 
    GetLossParameters(poi,config,&spType,
                      &gradePerm, &typePerm, &coatingPerm, &gradeTemp, &typeTemp, &coatingTemp, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &An, &In, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
-                     &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &Mllim, &rh, 
+                     &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &rh, 
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
                      &Ns, &Nh, &Nt,
                      &GdrCreepK1, &GdrCreepK2, &GdrShrinkageK1, &GdrShrinkageK2,
@@ -618,7 +616,6 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
                                 Mdlg,
                                 Madlg,
                                 Msidl,
-                                Mllim,
                                 rh,
                                 ti,
                                 th,
@@ -747,7 +744,7 @@ lrfdElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEst
    Float64 Mdlg;
    Float64 Madlg;
    Float64 Msidl;
-   Float64 Mllim;
+
    Float64 rh;
    Float64 ti,th,td,tf; // initial time, time of hauling,time of deck placment, final time
 
@@ -770,7 +767,7 @@ lrfdElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEst
 
    GetLossParameters(poi,config,&spType,
                      &gradePerm, &typePerm, &coatingPerm, &gradeTemp, &typeTemp, &coatingTemp, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &An, &In, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
-                     &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &Mllim, &rh, 
+                     &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &rh, 
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
                      &Ns, &Nh, &Nt,
                      &GdrCreepK1, &GdrCreepK2, &GdrShrinkageK1, &GdrShrinkageK2,
@@ -860,7 +857,6 @@ lrfdElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEst
                                                   Mdlg,
                                                   Madlg,
                                                   Msidl,
-                                                  Mllim,
                                                   Ag,
                                                   Ig,
                                                   Ybg,
@@ -981,7 +977,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
    Float64 Mdlg;
    Float64 Madlg;
    Float64 Msidl;
-   Float64 Mllim;
+
    Float64 rh;
    Float64 ti,th,td,tf; // initial time, time of hauling,time of deck placment, final time
 
@@ -1019,7 +1015,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
 
    GetLossParameters(poi,config,&spType,
                      &gradePerm, &typePerm, &coatingPerm, &gradeTemp, &typeTemp, &coatingTemp, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &An, &In, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
-                     &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &Mllim, &rh, 
+                     &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &rh, 
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
                      &Ns, &Nh, &Nt,
                      &GdrCreepK1, &GdrCreepK2, &GdrShrinkageK1, &GdrShrinkageK2,
@@ -1096,8 +1092,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
                             Mdlg,  // Dead load moment of girder only
                             Madlg,  // Additional dead load on girder section
                             Msidl, // Superimposed dead loads
-                            Mllim,
-                         
+
                             Ag,
                             Ig,
                             Ybg,
@@ -1175,8 +1170,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
                             Mdlg,  // Dead load moment of girder only
                             Madlg,  // Additional dead load on girder section
                             Msidl, // Superimposed dead loads
-                            Mllim,
-                         
+
                             Ag,
                             Ig,
                             Ybg,
@@ -1297,7 +1291,7 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
    Float64 Mdlg;
    Float64 Madlg;
    Float64 Msidl;
-   Float64 Mllim;
+
    Float64 rh;
    Float64 ti,th,td,tf; // initial time, time of hauling,time of deck placment, final time
 
@@ -1321,7 +1315,7 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
    GetLossParameters(poi,config,
                      &spType,
                      &gradePerm, &typePerm, &coatingPerm, &gradeTemp, &typeTemp, &coatingTemp, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &An, &In, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
-                     &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &Mllim, &rh, 
+                     &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &rh, 
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
                      &Ns, &Nh, &Nt,
                      &GdrCreepK1, &GdrCreepK2, &GdrShrinkageK1, &GdrShrinkageK2,
@@ -2594,7 +2588,6 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    Float64* pMdlg,
    Float64* pMadlg,
    Float64* pMsidl,
-   Float64* pMllim,
    Float64* prh,
    Float64* pti,
    Float64* pth,
@@ -2689,6 +2682,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
 
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType erectIntervalIdx         = pIntervals->GetErectSegmentInterval(segmentKey);
+   IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
@@ -2859,7 +2853,6 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    Float64 K_userdc2 = pSpecEntry->GetUserLoadAfterDeckDCElasticGain();
    Float64 K_userdw2 = pSpecEntry->GetUserLoadAfterDeckDWElasticGain();
    Float64 K_overlay = pSpecEntry->GetOverlayElasticGain();
-   Float64 K_liveload = pSpecEntry->GetLiveLoadElasticGain();
 
    if ( spType == pgsTypes::sptTransformed )
    {
@@ -2875,7 +2868,6 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
       K_userdc2 = 1.0;
       K_userdw2 = 1.0;
       K_overlay = 1.0;
-      K_liveload = 1.0;
    }
 
    if ( poi.GetDistFromStart() < end_size || end_size + *pSpanLength < poi.GetDistFromStart() )
@@ -2886,7 +2878,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    {
       *pMadlg = K_slab    * pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftSlab,      poi, bat, rtCumulative ) +
                 K_slabpad * pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftSlabPad,   poi, bat, rtCumulative ) + 
-                K_dia     *(pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftDiaphragm, poi, bat, rtCumulative ) + 
+                K_dia     *(pProdForces->GetMoment( castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm, poi, bat, rtCumulative ) + 
                             pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftShearKey,  poi, bat, rtCumulative ));
 
       GET_IFACE(IPointOfInterest,pPoi);
@@ -2954,20 +2946,6 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
       *pMsidl += K_overlay*pProdForces->GetMoment( overlayIntervalIdx, pgsTypes::pftOverlay, poi, bat, rtCumulative );
    }
    
-   if ( IsZero(K_liveload) )
-   {
-      // don't do the work if we don't have elastic gains from live load
-      *pMllim = 0;
-   }
-   else
-   {
-      Float64 Mmin, Mmax;
-      pProdForces->GetLiveLoadMoment(liveLoadIntervalIdx,pgsTypes::lltDesign,poi,bat,true,true,&Mmin,&Mmax);
-      Float64 gMaxI   = pILoadFactors->GetLoadFactors()->LLIMmax[pgsTypes::ServiceI];
-      Float64 gMaxIII = pILoadFactors->GetLoadFactors()->LLIMmax[pgsTypes::ServiceIII];
-      *pMllim = K_liveload*Max(gMaxI,gMaxIII)*Mmax;
-   }
-
    *prh = pEnv->GetRelHumidity();
 
    // get time to prestress transfer

@@ -1052,6 +1052,11 @@ interface IBridgeDescription : IUnknown
    virtual int SetCastDeckEventByIndex(EventIndexType eventIdx,bool bAdjustTimeline) = 0;
    virtual int SetCastDeckEventByID(EventIDType eventID,bool bAdjustTimeline) = 0;
 
+   virtual EventIndexType GetIntermediateDiaphragmsLoadEventIndex() = 0;
+   virtual EventIDType GetIntermediateDiaphragmsLoadEventID() = 0;
+   virtual void SetIntermediateDiaphragmsLoadEventByIndex(EventIndexType eventIdx) = 0;
+   virtual void SetIntermediateDiaphragmsLoadEventByID(EventIDType eventID) = 0;
+
    virtual EventIndexType GetRailingSystemLoadEventIndex() = 0;
    virtual EventIDType GetRailingSystemLoadEventID() = 0;
    virtual void SetRailingSystemLoadEventByIndex(EventIndexType eventIdx) = 0;
@@ -1070,6 +1075,11 @@ interface IBridgeDescription : IUnknown
    virtual GroupIDType GetGroupID(GroupIndexType groupIdx) = 0;
    virtual GirderIDType GetGirderID(const CGirderKey& girderKey) = 0;
    virtual SegmentIDType GetSegmentID(const CSegmentKey& segmentKey) = 0;
+
+   virtual bool IsCompatibleGirder(const CGirderKey& girderKey, LPCTSTR lpszGirderName) const = 0;
+   virtual bool AreGirdersCompatible(GroupIndexType groupIdx) const = 0;
+   virtual bool AreGirdersCompatible(const std::vector<std::_tstring>& vGirderNames) const = 0;
+   virtual bool AreGirdersCompatible(const CBridgeDescription2& bridgeDescription, const std::vector<std::_tstring>& vGirderNames) const = 0;
 };
 
 /*****************************************************************************

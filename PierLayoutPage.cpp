@@ -180,10 +180,82 @@ void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
 
          m_pPier->SetColumnFixity(m_ColumnFixity);
 
-#pragma Reminder("WOKRING HERE - need to validate overall pier geometry")
-         // maybe do this on the parent property page...
-         // XBeam needs to be long enough to support all girders
-         // XBeam needs to be as wide as columns(? not necessarily)
+         // XBeam width, W, must be greater than zeo
+         DDV_UnitValueGreaterThanZero(pDX, IDC_W, m_XBeamWidth, pDisplayUnits->GetSpanLengthUnit());
+
+         // H1 and H3 must be > 0
+         DDV_UnitValueGreaterThanZero(pDX, IDC_H1, m_XBeamHeight[pgsTypes::pstLeft], pDisplayUnits->GetSpanLengthUnit());
+         DDV_UnitValueGreaterThanZero(pDX, IDC_H3, m_XBeamHeight[pgsTypes::pstRight], pDisplayUnits->GetSpanLengthUnit());
+
+         // X2 and X4 must be >= 0
+         DDV_UnitValueZeroOrMore(pDX, IDC_X2, m_XBeamEndSlopeOffset[pgsTypes::pstLeft], pDisplayUnits->GetSpanLengthUnit());
+         DDV_UnitValueZeroOrMore(pDX, IDC_X4, m_XBeamEndSlopeOffset[pgsTypes::pstRight], pDisplayUnits->GetSpanLengthUnit());
+
+         if (0 < m_XBeamTaperHeight[pgsTypes::pstLeft])
+         {
+            // if H2 > 0, then X1 must be > 0
+            DDV_UnitValueGreaterThanZero(pDX, IDC_X1, m_XBeamTaperLength[pgsTypes::pstLeft], pDisplayUnits->GetSpanLengthUnit());
+         }
+         else if (IsZero(m_XBeamTaperHeight[pgsTypes::pstLeft]) && !IsZero(m_XBeamTaperLength[pgsTypes::pstLeft]))
+         {
+            // if H2 is zero, then X1 must also be zero
+            pDX->PrepareCtrl(IDC_X1);
+            AfxMessageBox(_T("X1 must be 0 when H2 is 0."));
+            pDX->Fail();
+         }
+
+         if (0 < m_XBeamTaperHeight[pgsTypes::pstRight])
+         {
+            // if H4 > 0, then X3 must be > 0
+            DDV_UnitValueGreaterThanZero(pDX, IDC_X3, m_XBeamTaperLength[pgsTypes::pstRight], pDisplayUnits->GetSpanLengthUnit());
+         }
+         else if (IsZero(m_XBeamTaperHeight[pgsTypes::pstRight]) && !IsZero(m_XBeamTaperLength[pgsTypes::pstRight]))
+         {
+            // if H4 is zero, then X3 must also be zero
+            pDX->PrepareCtrl(IDC_X3);
+            AfxMessageBox(_T("X3 must be 0 when H4 is 0."));
+            pDX->Fail();
+         }
+
+         if (m_XBeamTaperLength[pgsTypes::pstLeft] < m_XBeamEndSlopeOffset[pgsTypes::pstLeft])
+         {
+            pDX->PrepareCtrl(IDC_X2);
+            AfxMessageBox(_T("X2 must be less than X1"));
+            pDX->Fail();
+         }
+
+         if (m_XBeamTaperLength[pgsTypes::pstRight] < m_XBeamEndSlopeOffset[pgsTypes::pstRight])
+         {
+            pDX->PrepareCtrl(IDC_X4);
+            AfxMessageBox(_T("X4 must be less than X3"));
+            pDX->Fail();
+         }
+
+         Float64 D1, D2;
+         // X5 must be >= diameter of first column
+         m_pPier->GetColumnData(0).GetColumnDimensions(&D1, &D2);
+         DDV_UnitValueLimitOrMore(pDX, IDC_X5, m_XBeamOverhang[pgsTypes::pstLeft], D1 / 2, pDisplayUnits->GetSpanLengthUnit());
+
+         // X6 must be >= diameter of first column
+         ColumnIndexType nColumns = m_pPier->GetColumnCount();
+         m_pPier->GetColumnData(nColumns - 1).GetColumnDimensions(&D1, &D2);
+         DDV_UnitValueLimitOrMore(pDX, IDC_X6, m_XBeamOverhang[pgsTypes::pstRight], D1 / 2, pDisplayUnits->GetSpanLengthUnit());
+
+         // X1 + X3 must be less than X5 + X6 + Sum(S)
+         ATLASSERT(1 <= nColumns);
+         Float64 S = 0;
+         for (SpacingIndexType spaIdx = 0; spaIdx < nColumns - 1; spaIdx++)
+         {
+            S += m_pPier->GetColumnSpacing(spaIdx);
+         }
+         Float64 pierWidth = m_XBeamOverhang[pgsTypes::pstLeft] + m_XBeamOverhang[pgsTypes::pstRight] + S;
+         Float64 sumOverhangs = m_XBeamTaperLength[pgsTypes::pstLeft] + m_XBeamTaperLength[pgsTypes::pstRight];
+         if (pierWidth < sumOverhangs)
+         {
+            pDX->PrepareCtrl(IDC_X5);
+            AfxMessageBox(_T("X1 + X3 cannot exceed the overall pier width (X5 + X6 + summation of S)"));
+            pDX->Fail();
+         }
       }
    }
 }

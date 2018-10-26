@@ -140,8 +140,15 @@ void CBridgePlanViewGirderDisplayObjectEvents::SelectSpan()
 STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
 {
    METHOD_PROLOGUE(CBridgePlanViewGirderDisplayObjectEvents,Events);
-   pThis->EditGirder(pDO);
-   return true;
+   if (pDO->IsSelected())
+   {
+      pThis->EditGirder(pDO);
+      return true;
+   }
+   else
+   {
+      return false;
+   }
 }
 
 STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
@@ -437,8 +444,24 @@ void CBridgePlanViewSegmentDisplayObjectEvents::SelectAdjacentNextSegment()
 STDMETHODIMP_(bool) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
 {
    METHOD_PROLOGUE(CBridgePlanViewSegmentDisplayObjectEvents,Events);
-   pThis->EditSegment(pDO);
-   return true;
+   CComPtr<iDisplayObject> pParent;
+   pDO->GetParent(&pParent);
+   if (pParent && pParent->IsSelected())
+   {
+      // we are part of a composite display object and the parent is selected
+      // defer dbl-click handling to the parent
+      return false;
+   }
+
+   if (pDO->IsSelected())
+   {
+      pThis->EditSegment(pDO);
+      return true;
+   }
+   else
+   {
+      return false;
+   }
 }
 
 STDMETHODIMP_(bool) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
@@ -676,8 +699,15 @@ void CBridgeSectionViewGirderDisplayObjectEvents::SelectSpan()
 STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
 {
    METHOD_PROLOGUE(CBridgeSectionViewGirderDisplayObjectEvents,Events);
-   pThis->EditGirder(pDO);
-   return true;
+   if (pDO->IsSelected())
+   {
+      pThis->EditGirder(pDO);
+      return true;
+   }
+   else
+   {
+      return false;
+   }
 }
 
 STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)

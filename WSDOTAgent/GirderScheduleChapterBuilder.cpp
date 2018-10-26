@@ -224,8 +224,13 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    if ( familyCLSID == CLSID_SlabBeamFamily )
    {
       Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,poiMidSpan);
-      (*pTable)(++row,0) << _T("Girder Height");
+      (*pTable)(++row,0) << _T("Girder Height, H");
       (*pTable)(row,1) << gdim.SetValue(Hg);
+
+      GET_IFACE2(pBroker, IGirder, pGdr);
+      Float64 W = pGdr->GetTopWidth(poiMidSpan);
+      (*pTable)(++row, 0) << _T("Girder Width, W");
+      (*pTable)(row, 1) << gdim.SetValue(W);
    }
    else
    {
@@ -266,35 +271,40 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    (*pTable)(row  ,1) << angle.SetValue(t2);
 
 
-   PierIndexType prevPierIdx = (PierIndexType)span;
-   PierIndexType nextPierIdx = prevPierIdx+1;
-   bool bContinuousLeft, bContinuousRight, bIntegralLeft, bIntegralRight;
+   if (familyCLSID != CLSID_SlabBeamFamily)
+   {
+      // P1 & P2...
+      // does not apply to slabs
+      PierIndexType prevPierIdx = (PierIndexType)span;
+      PierIndexType nextPierIdx = prevPierIdx+1;
+      bool bContinuousLeft, bContinuousRight, bIntegralLeft, bIntegralRight;
+	
+      pBridge->IsContinuousAtPier(prevPierIdx,&bContinuousLeft,&bContinuousRight);
+      pBridge->IsIntegralAtPier(prevPierIdx,&bIntegralLeft,&bIntegralRight);
 
-   pBridge->IsContinuousAtPier(prevPierIdx,&bContinuousLeft,&bContinuousRight);
-   pBridge->IsIntegralAtPier(prevPierIdx,&bIntegralLeft,&bIntegralRight);
-
-   (*pTable)(++row,0) << Sub2(_T("P"),_T("1"));
-   if ( bContinuousLeft || bIntegralLeft )
-   {
-      (*pTable)(row,1) << _T("-");
-   }
-   else
-   {
-      Float64 P1 = pBridge->GetSegmentStartEndDistance(segmentKey);
-      (*pTable)(row  ,1) << gdim.SetValue(P1);
-   }
-
-   pBridge->IsContinuousAtPier(nextPierIdx,&bContinuousLeft,&bContinuousRight);
-   pBridge->IsIntegralAtPier(nextPierIdx,&bIntegralLeft,&bIntegralRight);
-   (*pTable)(++row,0) << Sub2(_T("P"),_T("2"));
-   if ( bContinuousRight || bIntegralRight )
-   {
-      (*pTable)(row,1) << _T("-");
-   }
-   else
-   {
-      Float64 P2 = pBridge->GetSegmentEndEndDistance(segmentKey);
-      (*pTable)(row  ,1) << gdim.SetValue(P2);
+      (*pTable)(++row,0) << Sub2(_T("P"),_T("1"));
+      if ( bContinuousLeft || bIntegralLeft )
+      {
+	      (*pTable)(row,1) << _T("-");
+      }
+      else
+      {
+	      Float64 P1 = pBridge->GetSegmentStartEndDistance(segmentKey);
+	      (*pTable)(row  ,1) << gdim.SetValue(P1);
+      }
+	
+      pBridge->IsContinuousAtPier(nextPierIdx,&bContinuousLeft,&bContinuousRight);
+      pBridge->IsIntegralAtPier(nextPierIdx,&bIntegralLeft,&bIntegralRight);
+      (*pTable)(++row,0) << Sub2(_T("P"),_T("2"));
+      if ( bContinuousRight || bIntegralRight )
+      {
+	      (*pTable)(row,1) << _T("-");
+      }
+      else
+      {
+	      Float64 P2 = pBridge->GetSegmentEndEndDistance(segmentKey);
+	      (*pTable)(row  ,1) << gdim.SetValue(P2);
+      }
    }
 
    GET_IFACE2(pBroker, IMaterials, pMaterial);
@@ -773,7 +783,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    {
       if ( familyCLSID == CLSID_SlabBeamFamily )
       {
-         *p << _T("### Reinforcement details could not be listed because spacing in the last zone is not 9\" per the standard WSDOT details.") << rptNewLine;
+         *p << _T("### Reinforcement details could not be listed because spacing in the last zone is not equal to the smaller of H-3\" or 1'-6\" per the standard WSDOT details.") << rptNewLine;
       }
       else
       {
@@ -975,6 +985,20 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
    if ( familyCLSID == CLSID_WFBeamFamily || familyCLSID == CLSID_UBeamFamily )
    {
       if ( !IsEqual(spacing,::ConvertToSysUnits(18.0,unitMeasure::Inch)) )
+      {
+         return STIRRUP_ERROR_LASTZONE;
+      }
+   }
+   else if (familyCLSID == CLSID_SlabBeamFamily)
+   {
+      GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+      pgsPointOfInterest poi = pPoi->GetPointOfInterest(segmentKey, 0.0);
+
+      GET_IFACE2(pBroker,IGirder, pGirder);
+      Float64 H = pGirder->GetHeight(poi);
+
+      Float64 lastZoneSpacing = Min(H - ::ConvertToSysUnits(3.0, unitMeasure::Inch), ::ConvertToSysUnits(18.0, unitMeasure::Inch));
+      if (!IsEqual(spacing, lastZoneSpacing))
       {
          return STIRRUP_ERROR_LASTZONE;
       }

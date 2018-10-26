@@ -25,6 +25,7 @@
 #include "SpecAgent.h"
 #include "SpecAgent_i.h"
 #include "SpecAgentImp.h"
+#include "StatusItems.h"
 
 #include <PgsExt\BridgeDescription2.h>
 #include <PsgLib\SpecLibraryEntry.h>
@@ -39,6 +40,9 @@
 #include <IFace\DocumentType.h>
 
 #include <Units\SysUnits.h>
+
+#include <PgsExt\GirderLabel.h>
+#include <MfcTools\Exceptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -87,11 +91,24 @@ STDMETHODIMP CSpecAgentImp::Init()
 {
    CREATE_LOGFILE("SpecAgent");
    EAF_AGENT_INIT;
-   return S_OK;
+   m_scidHaulTruckError = pStatusCenter->RegisterCallback(new pgsHaulTruckStatusCallback(m_pBroker, eafTypes::statusError));
+   return AGENT_S_SECONDPASSINIT;
 }
 
 STDMETHODIMP CSpecAgentImp::Init2()
 {
+   // Attach to connection points
+   CComQIPtr<IBrokerInitEx2, &IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
+   CComPtr<IConnectionPoint> pCP;
+   HRESULT hr = S_OK;
+
+   // Connection point for the bridge description
+   hr = pBrokerInit->FindConnectionPoint(IID_IBridgeDescriptionEventSink, &pCP);
+   ATLASSERT(SUCCEEDED(hr));
+   hr = pCP->Advise(GetUnknown(), &m_dwBridgeDescCookie);
+   ATLASSERT(SUCCEEDED(hr));
+   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
+
    return S_OK;
 }
 
@@ -108,8 +125,64 @@ STDMETHODIMP CSpecAgentImp::Reset()
 
 STDMETHODIMP CSpecAgentImp::ShutDown()
 {
+   //
+   // Detach to connection points
+   //
+   CComQIPtr<IBrokerInitEx2, &IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
+   CComPtr<IConnectionPoint> pCP;
+   HRESULT hr = S_OK;
+
+   hr = pBrokerInit->FindConnectionPoint(IID_IBridgeDescriptionEventSink, &pCP);
+   ATLASSERT(SUCCEEDED(hr));
+   hr = pCP->Unadvise(m_dwBridgeDescCookie);
+   ATLASSERT(SUCCEEDED(hr));
+   pCP.Release(); // Recycle the connection point
+
    EAF_AGENT_CLEAR_INTERFACE_CACHE;
    CLOSE_LOGFILE;
+   return S_OK;
+}
+
+////////////////////////////////////////////////////////////////////////
+// IBridgeDescriptionEventSink
+//
+HRESULT CSpecAgentImp::OnBridgeChanged(CBridgeChangedHint* pHint)
+{
+   //   LOG(_T("OnBridgeChanged Event Received"));
+   Invalidate();
+   return S_OK;
+}
+
+HRESULT CSpecAgentImp::OnGirderFamilyChanged()
+{
+   //   LOG(_T("OnGirderFamilyChanged Event Received"));
+   Invalidate();
+   return S_OK;
+}
+
+HRESULT CSpecAgentImp::OnGirderChanged(const CGirderKey& girderKey, Uint32 lHint)
+{
+   Invalidate();
+   return S_OK;
+}
+
+HRESULT CSpecAgentImp::OnLiveLoadChanged()
+{
+   // No changes necessary to bridge model
+   LOG(_T("OnLiveLoadChanged Event Received"));
+   return S_OK;
+}
+
+HRESULT CSpecAgentImp::OnLiveLoadNameChanged(LPCTSTR strOldName, LPCTSTR strNewName)
+{
+   // No changes necessary to bridge model
+   LOG(_T("OnLiveLoadNameChanged Event Received"));
+   return S_OK;
+}
+
+HRESULT CSpecAgentImp::OnConstructionLoadChanged()
+{
+   LOG(_T("OnConstructionLoadChanged Event Received"));
    return S_OK;
 }
 
@@ -1384,6 +1457,7 @@ bool CSpecAgentImp::IsStressCheckApplicable(const CGirderKey& girderKey,Interval
       case pgsTypes::ServiceIII_Operating:
       case pgsTypes::ServiceIII_LegalRoutine:
       case pgsTypes::ServiceIII_LegalSpecial:
+      case pgsTypes::ServiceIII_LegalEmergency:
          return (liveLoadIntervalIdx <= intervalIdx ? true : false);
 
       default:
@@ -1426,6 +1500,7 @@ bool CSpecAgentImp::IsStressCheckApplicable(const CGirderKey& girderKey,Interval
       case pgsTypes::ServiceIII_Operating:
       case pgsTypes::ServiceIII_LegalRoutine:
       case pgsTypes::ServiceIII_LegalSpecial:
+      case pgsTypes::ServiceIII_LegalEmergency:
          return false;
 
       default:
@@ -2199,6 +2274,7 @@ Float64 CSpecAgentImp::GetRollStiffness(const CSegmentKey& segmentKey)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+   ValidateHaulTruck(pSegment);
    return pSegment->HandlingData.pHaulTruckLibraryEntry->GetRollStiffness();
 }
 
@@ -2206,6 +2282,7 @@ Float64 CSpecAgentImp::GetHeightOfGirderBottomAboveRoadway(const CSegmentKey& se
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+   ValidateHaulTruck(pSegment);
    return pSegment->HandlingData.pHaulTruckLibraryEntry->GetBottomOfGirderHeight();
 }
 
@@ -2213,6 +2290,7 @@ Float64 CSpecAgentImp::GetHeightOfTruckRollCenterAboveRoadway(const CSegmentKey&
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+   ValidateHaulTruck(pSegment);
    return pSegment->HandlingData.pHaulTruckLibraryEntry->GetRollCenterHeight();
 }
 
@@ -2220,6 +2298,7 @@ Float64 CSpecAgentImp::GetAxleWidth(const CSegmentKey& segmentKey)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+   ValidateHaulTruck(pSegment);
    return pSegment->HandlingData.pHaulTruckLibraryEntry->GetAxleWidth();
 }
 
@@ -2227,6 +2306,7 @@ Float64 CSpecAgentImp::GetAllowableDistanceBetweenSupports(const CSegmentKey& se
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+   ValidateHaulTruck(pSegment);
    return pSegment->HandlingData.pHaulTruckLibraryEntry->GetMaxDistanceBetweenBunkPoints();
 }
 
@@ -2234,6 +2314,7 @@ Float64 CSpecAgentImp::GetAllowableLeadingOverhang(const CSegmentKey& segmentKey
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+   ValidateHaulTruck(pSegment);
    return pSegment->HandlingData.pHaulTruckLibraryEntry->GetMaximumLeadingOverhang();
 }
 
@@ -2241,6 +2322,7 @@ Float64 CSpecAgentImp::GetMaxGirderWgt(const CSegmentKey& segmentKey)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+   ValidateHaulTruck(pSegment);
    return pSegment->HandlingData.pHaulTruckLibraryEntry->GetMaxGirderWeight();
 }
 
@@ -2732,5 +2814,41 @@ bool CSpecAgentImp::IsLoadRatingServiceIIILimitState(pgsTypes::LimitState ls)
    return ( ls == pgsTypes::ServiceIII_Inventory ||
             ls == pgsTypes::ServiceIII_Operating ||
             ls == pgsTypes::ServiceIII_LegalRoutine ||
-            ls == pgsTypes::ServiceIII_LegalSpecial ) ? true : false;
+            ls == pgsTypes::ServiceIII_LegalSpecial ||
+            ls == pgsTypes::ServiceIII_LegalEmergency) ? true : false;
+}
+
+void CSpecAgentImp::ValidateHaulTruck(const CPrecastSegmentData* pSegment)
+{
+   if (pSegment->HandlingData.pHaulTruckLibraryEntry == nullptr)
+   {
+      const CSegmentKey& segmentKey = pSegment->GetSegmentKey();
+
+      CString strMsg;
+      GET_IFACE(IDocumentType, pDocType);
+      if (pDocType->IsPGSpliceDocument())
+      {
+         strMsg.Format(_T("The haul truck is not defined for Group %d Girder %s Segment %d"), LABEL_GROUP(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex), LABEL_SEGMENT(segmentKey.segmentIndex));
+      }
+      else
+      {
+         strMsg.Format(_T("The haul truck is not defined for Span %d Girder %s"), LABEL_SPAN(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex));
+      }
+
+      pgsSegmentRelatedStatusItem* pStatusItem = new pgsHaulTruckStatusItem(m_StatusGroupID, m_scidHaulTruckError, strMsg, segmentKey);
+
+      GET_IFACE(IEAFStatusCenter, pStatusCenter);
+      pStatusCenter->Add(pStatusItem);
+
+      strMsg += "\r\nSee the Status Center for Details";
+
+      THROW_UNWIND(strMsg, -1);
+   }
+}
+
+void CSpecAgentImp::Invalidate()
+{
+   // remove our items from the status center
+   GET_IFACE(IEAFStatusCenter, pStatusCenter);
+   pStatusCenter->RemoveByStatusGroupID(m_StatusGroupID);
 }

@@ -230,7 +230,8 @@ void CEditPointLoadDlg::DoDataExchange(CDataExchange* pDX)
          ::AfxMessageBox(strMsg);
       }
 
-      DDX_CBIndex(pDX,IDC_GIRDERS,m_Load.m_SpanKey.girderIndex);
+      IndexType idx = (m_Load.m_SpanKey.girderIndex == ALL_GIRDERS ? m_GirderCB.GetCount() - 1 : m_Load.m_SpanKey.girderIndex);
+      DDX_CBIndex(pDX,IDC_GIRDERS,idx);
    }
 }
 

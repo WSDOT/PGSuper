@@ -146,6 +146,8 @@ protected:
    virtual void UpdateDrawingScale();
    virtual void UpdateDisplayObjects();
 
+   void SetModelToWorldSpacingMapping();
+
    void BuildTitleDisplayObjects();
    void BuildAlignmentDisplayObjects();
    void BuildPierDisplayObjects();

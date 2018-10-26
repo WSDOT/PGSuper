@@ -133,9 +133,6 @@ void CSpanDetailsDlg::Init(const CBridgeDescription2* pBridgeDesc,SpanIndexType 
    m_pPrevPier = m_pSpanData->GetPrevPier();
    m_pNextPier = m_pSpanData->GetNextPier();
 
-   m_BoundaryConditionType[pgsTypes::metStart] = m_pPrevPier->GetBoundaryConditionType();
-   m_BoundaryConditionType[pgsTypes::metEnd  ] = m_pNextPier->GetBoundaryConditionType();
-
    m_pGirderGroup = m_BridgeDesc.GetGirderGroup(m_pSpanData);
 
    m_SpanLayoutPage.Init(this);

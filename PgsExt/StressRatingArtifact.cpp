@@ -345,32 +345,33 @@ Float64 pgsStressRatingArtifact::GetRatingFactor() const
    }
 
 
-   if ( IsZero(m_fLLIM) || IsZero(m_gLL) )
+   Float64 fr = GetResistance();
+   Float64 RFtop = fr - m_gDC*m_fDC - m_gDW*m_fDW - m_gCR*m_fCR - m_gSH*m_fSH - m_gRE*m_fRE - m_gPS*m_fPS;
+   Float64 RFbot = m_gLL*m_fLLIM;
+
+   if (IsZero(fr) && IsZero(RFtop) && IsZero(RFbot))
+   {
+      m_RF = DBL_MAX;
+   }
+   else if ( RFtop < 0 )
+   {
+      // There isn't any capacity remaining for live load
+      m_RF = 0;
+   }
+   else if ( ::BinarySign(RFtop) != ::BinarySign(RFbot) && !IsZero(RFtop) )
+   {
+      // (fr - DL) and LL have opposite signs
+      // this case probably shouldn't happen, but if does,
+      // the rating is great
+      m_RF = DBL_MAX;
+   }
+   else if (IsZero(m_fLLIM) || IsZero(m_gLL))
    {
       m_RF = DBL_MAX;
    }
    else
    {
-      Float64 fr = GetResistance();
-      Float64 RFtop = fr - m_gDC*m_fDC - m_gDW*m_fDW - m_gCR*m_fCR - m_gSH*m_fSH - m_gRE*m_fRE - m_gPS*m_fPS;
-      Float64 RFbot = m_gLL*m_fLLIM;
-
-      if ( RFtop < 0 )
-      {
-         // There isn't any capacity remaining for live load
-         m_RF = 0;
-      }
-      else if ( ::BinarySign(RFtop) != ::BinarySign(RFbot) && !IsZero(RFtop) )
-      {
-         // (fr - DL) and LL have opposite signs
-         // this case probably shouldn't happen, but if does,
-         // the rating is great
-         m_RF = DBL_MAX;
-      }
-      else
-      {
-         m_RF = RFtop/RFbot;
-      }
+      m_RF = RFtop/RFbot;
    }
 
    m_bRFComputed = true;

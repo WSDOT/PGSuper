@@ -98,8 +98,10 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    DDX_Tag(pDX, IDC_ADIM_END_UNIT,   pDisplayUnits->GetComponentDimUnit() );
    DDX_Tag(pDX, IDC_FILLET_UNIT,   pDisplayUnits->GetComponentDimUnit() );
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridge);
+   const CBridgeDescription2* pBridgeDesc = pIBridge->GetBridgeDescription();
+   pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
+   if ( deckType != pgsTypes::sdtNone )
    {
       DDX_UnitValueAndTag( pDX, IDC_ADIM_START, IDC_ADIM_START_UNIT, m_SlabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit() );
       DDX_UnitValueAndTag( pDX, IDC_ADIM_END,   IDC_ADIM_END_UNIT,   m_SlabOffset[pgsTypes::metEnd],   pDisplayUnits->GetComponentDimUnit() );
@@ -108,6 +110,7 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
       // validate slab offset... (must be greater or equal gross deck thickess)
       if ( pDX->m_bSaveAndValidate )
       {
+         GET_IFACE2(pBroker, IBridge, pBridge);
          Float64 Lg = pBridge->GetSegmentLength(pParent->m_SegmentKey);
          pgsPointOfInterest poiStart(pParent->m_SegmentKey,0.0);
          pgsPointOfInterest poiEnd(pParent->m_SegmentKey,Lg);
@@ -139,6 +142,18 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_CBEnum(pDX, IDC_CONDITION_FACTOR_TYPE, pParent->m_ConditionFactorType);
    DDX_Text(pDX,   IDC_CONDITION_FACTOR,      pParent->m_ConditionFactor);
+
+   if (pDX->m_bSaveAndValidate && pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsConstantAdjacent && !pBridgeDesc->UseSameGirderForEntireBridge())
+   {
+      // the width of this girder must be compatible with other girders in this span
+      if ( !pIBridge->IsCompatibleGirder(pParent->m_SegmentKey,pParent->m_strGirderName.c_str()))
+      {
+         CString strMsg;
+         strMsg.Format(_T("%s does not have compatible dimensions with the other girders in this span."), pParent->m_strGirderName.c_str());
+         AfxMessageBox(strMsg);
+         pDX->Fail();
+      }
+   }
 }
 
 void CGirderDescGeneralPage::ExchangeConcreteData(CDataExchange* pDX)

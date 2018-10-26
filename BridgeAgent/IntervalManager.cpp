@@ -24,6 +24,7 @@
 #include "IntervalManager.h"
 
 #include <EAF\EAFUtilities.h>
+#include <EAF\EAFStatusCenter.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
@@ -33,6 +34,9 @@
 #include <PgsExt\DistributedLoadData.h>
 #include <PgsExt\MomentLoadData.h>
 #include <PgsExt\ClosureJointData.h>
+#include <PgsExt\StatusItem.h>
+
+#include <MfcTools\Exceptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -50,11 +54,9 @@ static char THIS_FILE[] = __FILE__;
 #define ASSERT_VALID
 #endif
 
-inline CGirderKey GetSafeGirderKey(const CGirderKey& oldKey)
+inline CGirderKey GetSafeGirderKey(IBroker* pBroker,const CGirderKey& oldKey)
 {
    // called if there is an unequal number of girders per group, and this one has less. use the right-most girder
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    GirderIndexType gdrIdx = pBridge->GetGirderCount(oldKey.groupIndex)-1;
@@ -62,28 +64,51 @@ inline CGirderKey GetSafeGirderKey(const CGirderKey& oldKey)
    return CGirderKey(oldKey.groupIndex, gdrIdx);
 }
 
-inline CSegmentKey GetSafeSegmentKey(const CSegmentKey& key)
+inline CSegmentKey GetSafeSegmentKey(IBroker* pBroker,const CSegmentKey& key)
 {
-   return CSegmentKey(GetSafeGirderKey(key), key.segmentIndex);
+   return CSegmentKey(GetSafeGirderKey(pBroker,key), key.segmentIndex);
 }
 
 CIntervalManager::CIntervalManager()
 {
    m_bIsPGSuper = false;
+   m_pBroker = nullptr;
+   m_StatusGroupID = INVALID_ID;
+}
+
+void CIntervalManager::Init(IBroker* pBroker, StatusGroupIDType statusGroupID)
+{
+   m_pBroker = pBroker;
+   m_StatusGroupID = statusGroupID;
+
+   GET_IFACE(IEAFStatusCenter, pStatusCenter);
+   m_scidTimelineError = pStatusCenter->RegisterCallback(new pgsTimelineStatusCallback(m_pBroker,eafTypes::statusError));
 }
 
 void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr)
 {
    // this method builds the analysis interval sequence as well as defines the stage model
    // for the generic bridge model.
+   int result = pTimelineMgr->Validate();
+   if (result != TLM_SUCCESS)
+   {
+      CString strError = pTimelineMgr->GetErrorMessage(result);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+      strError += _T("\nUse the timeline manager to correct the error.");
+      GET_IFACE(IEAFStatusCenter, pStatusCenter);
 
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
+      pgsTimelineStatusItem* pStatusItem = new pgsTimelineStatusItem(m_StatusGroupID, m_scidTimelineError, strError);
+      pStatusCenter->Add(pStatusItem);
+
+      strError += _T("\n\nSee the Status Center for details");
+      THROW_UNWIND(strError, -1);
+   }
+
+   GET_IFACE(IDocumentType,pDocType);
    m_bIsPGSuper = pDocType->IsPGSuperDocument();
 
    // reset everything
+   m_CastIntermediateDiaphragmsIntervalIdx = INVALID_INDEX;
    m_CastDeckIntervalIdx      = INVALID_INDEX;
    m_CompositeDeckIntervalIdx = INVALID_INDEX;
    m_LiveLoadIntervalIdx      = INVALID_INDEX;
@@ -168,6 +193,11 @@ EventIndexType CIntervalManager::GetEndEvent(IntervalIndexType idx) const
 
 Float64 CIntervalManager::GetTime(IntervalIndexType idx,pgsTypes::IntervalTimeType timeType) const
 {
+   if (idx == INVALID_INDEX)
+   {
+      return 0;
+   }
+
    Float64 time;
    switch(timeType)
    {
@@ -235,6 +265,17 @@ IntervalIndexType CIntervalManager::GetErectPierInterval(PierIndexType pierIdx) 
    return found->second;
 }
 
+IntervalIndexType CIntervalManager::GetCastIntermediateDiaphragmsInterval() const
+{
+   return m_CastIntermediateDiaphragmsIntervalIdx;
+}
+
+IntervalIndexType CIntervalManager::GetCompositeIntermediateDiaphragmsInterval() const
+{
+   // intermediate diaphragms become composite immediately... these are just loads, like railing system
+   return m_CastIntermediateDiaphragmsIntervalIdx;
+}
+
 IntervalIndexType CIntervalManager::GetCastDeckInterval() const
 {
    return m_CastDeckIntervalIdx;
@@ -274,7 +315,7 @@ IntervalIndexType CIntervalManager::GetFirstStressStrandInterval(const CGirderKe
       else
       {
          // probably an unequal number of girders per group, and this one has less.
-         CGirderKey newKey = GetSafeGirderKey(girderKey);
+         CGirderKey newKey = GetSafeGirderKey(m_pBroker,girderKey);
 
          found = m_StrandStressingSequenceIntervalLimits.find(newKey);
          return found->second.second; // this will crash if not found, so no bother with assert
@@ -315,7 +356,7 @@ IntervalIndexType CIntervalManager::GetLastStressStrandInterval(const CGirderKey
       else
       {
          // probably an unequal number of girders per group, and this one has less.
-         CGirderKey newKey = GetSafeGirderKey(girderKey);
+         CGirderKey newKey = GetSafeGirderKey(m_pBroker,girderKey);
 
          found = m_StrandStressingSequenceIntervalLimits.find(newKey);
          return found->second.second; // this will crash if not found, so no bother with assert
@@ -334,7 +375,7 @@ IntervalIndexType CIntervalManager::GetStressStrandInterval(const CSegmentKey& s
    else
    {
       // there is an unequal number of girders per group, and this one has less. use the right-most girder
-      CSegmentKey newkey(GetSafeSegmentKey(segmentKey));
+      CSegmentKey newkey(GetSafeSegmentKey(m_pBroker,segmentKey));
 
       found = m_StressStrandIntervals.find(newkey);
       return found->second; // this will crash if not found, so no bother with assert
@@ -370,7 +411,7 @@ IntervalIndexType CIntervalManager::GetFirstPrestressReleaseInterval(const CGird
       else
       {
          // probably an unequal number of girders per group, and this one has less.
-         CGirderKey newKey = GetSafeGirderKey(girderKey);
+         CGirderKey newKey = GetSafeGirderKey(m_pBroker,girderKey);
 
          found = m_ReleaseSequenceIntervalLimits.find(newKey);
          return found->second.second; // this will crash if not found, so no bother with assert
@@ -411,7 +452,7 @@ IntervalIndexType CIntervalManager::GetLastPrestressReleaseInterval(const CGirde
       else
       {
          // probably an unequal number of girders per group, and this one has less.
-         CGirderKey newKey = GetSafeGirderKey(girderKey);
+         CGirderKey newKey = GetSafeGirderKey(m_pBroker,girderKey);
 
          found = m_ReleaseSequenceIntervalLimits.find(newKey);
          return found->second.second; // this will crash if not found, so no bother with assert
@@ -430,7 +471,7 @@ IntervalIndexType CIntervalManager::GetPrestressReleaseInterval(const CSegmentKe
    else
    {
       // probably an unequal number of girders per group, and this one has less.
-      CSegmentKey newKey = GetSafeSegmentKey(segmentKey);
+      CSegmentKey newKey = GetSafeSegmentKey(m_pBroker,segmentKey);
 
       found = m_ReleaseIntervals.find(newKey);
       return found->second; // this will crash if not found, so no bother with assert
@@ -479,7 +520,7 @@ IntervalIndexType CIntervalManager::GetHaulingInterval(const CSegmentKey& segmen
    else
    {
       // probably an unequal number of girders per group, and this one has less.
-      CSegmentKey newKey = GetSafeSegmentKey(segmentKey);
+      CSegmentKey newKey = GetSafeSegmentKey(m_pBroker,segmentKey);
 
       found = m_SegmentHaulingIntervals.find(newKey);
       return found->second; // this will crash if not found, so no bother with assert
@@ -497,7 +538,7 @@ IntervalIndexType CIntervalManager::GetErectSegmentInterval(const CSegmentKey& s
    else
    {
       // probably an unequal number of girders per group, and this one has less.
-      CSegmentKey newKey = GetSafeSegmentKey(segmentKey);
+      CSegmentKey newKey = GetSafeSegmentKey(m_pBroker,segmentKey);
 
       found = m_SegmentErectionIntervals.find(newKey);
       return found->second; // this will crash if not found, so no bother with assert
@@ -568,7 +609,7 @@ IntervalIndexType CIntervalManager::GetCastClosureInterval(const CClosureKey& cl
    else
    {
       // probably an unequal number of girders per group, and this one has less.
-      CClosureKey newKey = GetSafeSegmentKey(clousreKey);
+      CClosureKey newKey = GetSafeSegmentKey(m_pBroker,clousreKey);
 
       found = m_CastClosureIntervals.find(newKey);
       return found->second; // this will crash if not found, so no bother with assert
@@ -645,7 +686,7 @@ IntervalIndexType CIntervalManager::GetFirstSegmentErectionInterval(const CGirde
       else
       {
          // probably an unequal number of girders per group, and this one has less.
-         CGirderKey newKey = GetSafeGirderKey(girderKey);
+         CGirderKey newKey = GetSafeGirderKey(m_pBroker,girderKey);
 
          found = m_SegmentErectionSequenceIntervalLimits.find(newKey);
          return found->second.second; // this will crash if not found, so no bother with assert
@@ -686,7 +727,7 @@ IntervalIndexType CIntervalManager::GetLastSegmentErectionInterval(const CGirder
       else
       {
          // probably an unequal number of girders per group, and this one has less.
-         CGirderKey newKey = GetSafeGirderKey(girderKey);
+         CGirderKey newKey = GetSafeGirderKey(m_pBroker,girderKey);
 
          found = m_SegmentErectionSequenceIntervalLimits.find(newKey);
          return found->second.second; // this will crash if not found, so no bother with assert
@@ -1081,8 +1122,9 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
 }
 
 #define SEGMENT 1
-#define DECK 2
-#define CLOSURE 3
+#define CLOSURE 2
+#define DECK 3
+
 void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent)
 {
    // Step 3: Create curing duration intervals
@@ -1312,20 +1354,28 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent
    {
       IntervalIndexType loadingIntervalIdx = intervalIdx;
 
+      bool bDiaphragms = applyLoadActivity.IsIntermediateDiaphragmLoadApplied();
       bool bRailing    = applyLoadActivity.IsRailingSystemLoadApplied();
       bool bOverlay    = applyLoadActivity.IsOverlayLoadApplied();
       bool bLiveLoad   = applyLoadActivity.IsLiveLoadApplied();
       bool bLoadRating = applyLoadActivity.IsRatingLiveLoadApplied();
       bool bUserLoad   = applyLoadActivity.IsUserLoadApplied();
 
+      bool bHasDiaphragmBeenApplied = false;
       bool bHasRailingBeenApplied    = false;
       bool bHasOverlayBeenApplied    = false;
       bool bHasLiveLoadBeenApplied   = false;
       bool bHasLoadRatingBeenApplied = false;
 
-      if ( bUserLoad && !bRailing && !bOverlay && !bLiveLoad && !bLoadRating )
+      if ( bUserLoad && !bDiaphragms && !bRailing && !bOverlay && !bLiveLoad && !bLoadRating )
       {
          strDescriptions.push_back(CString(_T("User Defined Loading Applied")));
+      }
+
+      if (bDiaphragms && !bHasDiaphragmBeenApplied)
+      {
+         strDescriptions.push_back(CString(_T("Install Intermediate Diaphragms")));
+         bHasDiaphragmBeenApplied = true;
       }
 
       if ( bRailing && !bHasRailingBeenApplied )
@@ -1398,6 +1448,10 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent
          bHasLoadRatingBeenApplied = true;
       }
 
+      if (bHasDiaphragmBeenApplied)
+      {
+         m_CastIntermediateDiaphragmsIntervalIdx = loadingIntervalIdx;
+      }
 
       if ( bHasLiveLoadBeenApplied )
       {
@@ -1416,9 +1470,7 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent
 
       if ( bUserLoad )
       {
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IUserDefinedLoadData,pUserDefinedLoadData);
+         GET_IFACE(IUserDefinedLoadData,pUserDefinedLoadData);
 
          IndexType nUserLoads = applyLoadActivity.GetUserLoadCount();
          for ( IndexType userLoadIdx = 0; userLoadIdx < nUserLoads; userLoadIdx++ )
@@ -1512,7 +1564,12 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent
    }
    else
    {
-      m_Intervals.back().Description += _T(", ") + strDescription;
+      if (m_Intervals.back().Description.length() != 0)
+      {
+         m_Intervals.back().Description += _T(", ");
+      }
+
+      m_Intervals.back().Description += strDescription;
    }
 }
 

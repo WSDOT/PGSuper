@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "StatusItems.h"
 #include <IFace\EditByUI.h>
+#include <IFace\Views.h>
 
 ////////////////
 
@@ -97,14 +98,14 @@ void pgsLiftingSupportLocationStatusCallback::Execute(CEAFStatusItem* pStatusIte
 
 ////////////////
 
-pgsTruckStiffnessStatusItem::pgsTruckStiffnessStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
+pgsHaulTruckStatusItem::pgsHaulTruckStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription)
 {
 }
 
-bool pgsTruckStiffnessStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsHaulTruckStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
-   pgsTruckStiffnessStatusItem* other = dynamic_cast<pgsTruckStiffnessStatusItem*>(pOther);
+   pgsHaulTruckStatusItem* other = dynamic_cast<pgsHaulTruckStatusItem*>(pOther);
    if ( !other )
       return false;
 
@@ -112,26 +113,23 @@ bool pgsTruckStiffnessStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsTruckStiffnessStatusCallback::pgsTruckStiffnessStatusCallback(IBroker* pBroker):
+pgsHaulTruckStatusCallback::pgsHaulTruckStatusCallback(IBroker* pBroker):
 m_pBroker(pBroker)
 {
 }
 
-eafTypes::StatusSeverityType pgsTruckStiffnessStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsHaulTruckStatusCallback::GetSeverity()
 {
    return eafTypes::statusError;
 }
 
-void pgsTruckStiffnessStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsHaulTruckStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   //pgsHaulTruckStatusItem* pItem = dynamic_cast<pgsHaulTruckStatusItem*>(pStatusItem);
+   //ATLASSERT(pItem!=nullptr);
 
-   pgsTruckStiffnessStatusItem* pItem = dynamic_cast<pgsTruckStiffnessStatusItem*>(pStatusItem);
-   ATLASSERT(pItem!=nullptr);
-
-   CString msg;
-   msg.Format(_T("%s\n\nThe truck roll stiffness is specified in the Hauling Parameters of the Design Criteria\nDesign Criteria may be viewed in the Library Editor"),pStatusItem->GetDescription());
-   AfxMessageBox(msg);
+   GET_IFACE(IViews, pViews);
+   pViews->CreateLibraryEditorView();
 }
 
 ////////////////

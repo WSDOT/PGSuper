@@ -482,6 +482,7 @@
   <ItemGroup>
     <ClCompile Include="SpecAgent.cpp" />
     <ClCompile Include="SpecAgentImp.cpp" />
+    <ClCompile Include="StatusItems.cpp" />
     <ClCompile Include="StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -548,6 +549,7 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SpecAgent.h" />
     <ClInclude Include="SpecAgentImp.h" />
+    <ClInclude Include="StatusItems.h" />
     <ClInclude Include="StdAfx.h" />
   </ItemGroup>
   <ItemGroup>

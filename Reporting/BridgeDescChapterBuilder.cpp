@@ -238,6 +238,7 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
    length.ShowUnitTag(true);
 
    ColumnIndexType col = 1;
+   IndexType curveIdx = 0;
    std::vector<HorzCurveData>::iterator iter;
    for ( iter = alignment.HorzCurves.begin(); iter != alignment.HorzCurves.end(); iter++, col++ )
    {
@@ -268,31 +269,38 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
          (*pTable)(row++,col) << RPT_BEARING(OLE2T(bstrBkTangent));
          (*pTable)(row++,col) << RPT_BEARING(OLE2T(bstrFwdTangent));
 
-         (*pTable)(row++,col) << _T("");
-         (*pTable)(row++,col) << _T("");
-         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T(""); // TS Station
+         (*pTable)(row++,col) << _T(""); // SC Station
+         (*pTable)(row++,col) << _T(""); // PC Station
 
          (*pTable)(row++,col) << rptRcStation(hc_data.PIStation, &pDisplayUnits->GetStationFormat());
 
-         (*pTable)(row++,col) << _T("");
-         (*pTable)(row++,col) << _T("");
-         (*pTable)(row++,col) << _T("");
-         (*pTable)(row++,col) << _T("");
-         (*pTable)(row++,col) << _T("");
-         (*pTable)(row++,col) << _T("");
-         (*pTable)(row++,col) << _T("");
-         (*pTable)(row++,col) << _T("");
-         (*pTable)(row++,col) << _T("");
-         (*pTable)(row++,col) << _T("");
-         (*pTable)(row++,col) << _T("");
-         (*pTable)(row++,col) << _T("");
-         (*pTable)(row++,col) << _T("");
-         (*pTable)(row++,col) << _T("");
+         (*pTable)(row++,col) << _T(""); // PT Station
+         (*pTable)(row++,col) << _T(""); // CS Station
+         (*pTable)(row++,col) << _T(""); // ST Station
+         (*pTable)(row++,col) << _T(""); // Total Delta
+         (*pTable)(row++,col) << _T(""); // Entry Spiral Length
+         (*pTable)(row++,col) << _T(""); // Exit Spiral Length
+         (*pTable)(row++,col) << _T(""); // Delta 
+         (*pTable)(row++,col) << _T(""); // Degree curvature
+         (*pTable)(row++,col) << _T(""); // Radius
+         (*pTable)(row++,col) << _T(""); // Tangent
+         (*pTable)(row++,col) << _T(""); // Length
+         (*pTable)(row++,col) << _T(""); // Chord
+         (*pTable)(row++,col) << _T(""); // External
+         (*pTable)(row++,col) << _T(""); // Mid Ordinate
+
+         (*pTable)(row++, col) << _T(""); // TS
+         (*pTable)(row++, col) << _T(""); // SC
+         (*pTable)(row++, col) << _T(""); // PI
+         (*pTable)(row++, col) << _T(""); // CS
+         (*pTable)(row++, col) << _T(""); // ST
+         (*pTable)(row++, col) << _T(""); // CC
       }
       else
       {
          CComPtr<IHorzCurve> hc;
-         IndexType hcIdx = col-1;
+         IndexType hcIdx = curveIdx++;
          pRoadway->GetCurve(hcIdx,&hc);
 
          CComPtr<IDirection> bkTangent;

@@ -1085,6 +1085,8 @@ public:
    virtual IntervalIndexType GetFirstCompositeClosureJointInterval(const CGirderKey& girderKey) override;
    virtual IntervalIndexType GetLastCompositeClosureJointInterval(const CGirderKey& girderKey) override;
    virtual void GetContinuityInterval(PierIndexType pierIdx,IntervalIndexType* pBack,IntervalIndexType* pAhead) override;
+   virtual IntervalIndexType GetCastIntermediateDiaphragmsInterval() override;
+   virtual IntervalIndexType GetCompositeIntermediateDiaphragmsInterval() override;
    virtual IntervalIndexType GetCastDeckInterval() override;
    virtual IntervalIndexType GetCompositeDeckInterval() override;
    virtual IntervalIndexType GetLiveLoadInterval() override;
@@ -1225,7 +1227,7 @@ private:
    std::set<CGirderKey> m_ValidatedPoi;
 
    // keeps track of which girders have had critical sections locations determined
-   std::set<CGirderKey> m_CriticalSectionState[2]; // index 0 = Strength I, index 1 = Strength II
+   std::set<CGirderKey> m_CriticalSectionState[9]; // use the LimitStateToShearIndex method to map limit state to array index
 
    // Adapter for working with strand fills
    // DON'T ACCESS THIS COLLECTION DIRECTLY - USE ACCESS FUNCTIONS BELOW
@@ -1269,6 +1271,8 @@ private:
 
    std::map<Float64,Float64> m_LeftSlabEdgeOffset;
    std::map<Float64,Float64> m_RightSlabEdgeOffset;
+   Float64 GetSlabEdgeOffset(std::map<Float64, Float64>& slabEdgeOffset, DirectionType side, Float64 Xb);
+   Float64 GetCurbOffset(DirectionType side, Float64 Xb);
 
    // Stability Modeling
    std::map<CSegmentKey,stbGirder> m_StabilityModels;

@@ -36,6 +36,8 @@ class CIntervalManager
 public:
    CIntervalManager();
 
+   void Init(IBroker* pBroker, StatusGroupIDType statusGroupID);
+
    // creates the time step intervals from the event model
    void BuildIntervals(const CTimelineManager* pTimelineMgr);
 
@@ -117,6 +119,14 @@ public:
    // returns the index of the interval when the last closure joint is cast for the specified girder
    IntervalIndexType GetLastCastClosureJointInterval(const CGirderKey& girderKey) const;
 
+   // returns the index of the interval when intermediate diaphragms are cast
+   IntervalIndexType GetCastIntermediateDiaphragmsInterval() const;
+
+   // returns the index of the interval when intermediate diaphragms have finished curing
+   // curing takes place of the duration of an interval and cannot take load.
+   // this method returns the index of the first interval when the intermediate diaphragms can take load
+   IntervalIndexType GetCompositeIntermediateDiaphragmsInterval() const;
+
    // returns the index of the interval when the deck and diaphragms are cast
    IntervalIndexType GetCastDeckInterval() const;
 
@@ -156,6 +166,10 @@ public:
    IntervalIndexType GetLastTendonStressingInterval(const CGirderKey& girderKey) const;
 
 protected:
+   IBroker* m_pBroker;
+   StatusGroupIDType m_StatusGroupID;
+   StatusCallbackIDType m_scidTimelineError;
+
    bool m_bIsPGSuper; // used to customize labels
 
    struct CInterval
@@ -199,6 +213,7 @@ protected:
    std::map<CClosureKey,IntervalIndexType> m_CastClosureIntervals;
    
    // keeps track of the intervals for other key activities
+   IntervalIndexType m_CastIntermediateDiaphragmsIntervalIdx;
    IntervalIndexType m_CastDeckIntervalIdx;
    IntervalIndexType m_CompositeDeckIntervalIdx;
    IntervalIndexType m_LiveLoadIntervalIdx;

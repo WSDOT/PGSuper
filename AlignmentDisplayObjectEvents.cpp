@@ -93,9 +93,15 @@ STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnLButtonDblClk(iDis
 {
    METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,Events);
 
-   pThis->EditAlignment();
-
-   return true;
+   if (pDO->IsSelected())
+   {
+      pThis->EditAlignment();
+      return true;
+   }
+   else
+   {
+      return false;
+   }
 }
 
 STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)

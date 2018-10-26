@@ -585,3 +585,8 @@ LPCTSTR CPGSuperDoc::GetTemplateExtension()
 {
    return _T(".pgt");
 }
+
+void CPGSuperDoc::ModifyTemplate(LPCTSTR strTemplate)
+{
+   CPGSDocBase::ModifyTemplate(strTemplate);
+}

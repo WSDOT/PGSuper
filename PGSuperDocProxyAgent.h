@@ -251,6 +251,7 @@ public:
    virtual bool EditPointLoad(CollectionIndexType loadIdx) override;
    virtual bool EditDistributedLoad(CollectionIndexType loadIdx) override;
    virtual bool EditMomentLoad(CollectionIndexType loadIdx) override;
+   virtual bool EditTimeline() override;
    virtual UINT GetStdToolBarID() override;
    virtual UINT GetLibToolBarID() override;
    virtual UINT GetHelpToolBarID() override;
@@ -262,8 +263,8 @@ public:
    virtual void DeleteDistributedLoad(CollectionIndexType loadIdx) override;
    virtual void AddMomentLoad(const CMomentLoadData& loadData) override;
    virtual void DeleteMomentLoad(CollectionIndexType loadIdx) override;
-   virtual void EditEffectiveFlangeWidth() override;
-   virtual void SelectProjectCriteria() override;
+   virtual bool EditEffectiveFlangeWidth() override;
+   virtual bool SelectProjectCriteria() override;
 
 // IDesign
 public:

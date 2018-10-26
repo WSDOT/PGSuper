@@ -687,3 +687,8 @@ BOOL CPGSpliceDoc::InitMainMenu()
 
    return TRUE;
 }
+
+void CPGSpliceDoc::ModifyTemplate(LPCTSTR strTemplate)
+{
+   CPGSDocBase::ModifyTemplate(strTemplate);
+}

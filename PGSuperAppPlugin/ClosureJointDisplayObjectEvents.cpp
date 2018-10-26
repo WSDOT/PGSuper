@@ -128,8 +128,15 @@ void CClosureJointDisplayObjectEvents::SelectNextAdjacent(iDisplayObject* pDO)
 STDMETHODIMP_(bool) CClosureJointDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
 {
    METHOD_PROLOGUE(CClosureJointDisplayObjectEvents,Events);
-   pThis->EditClosureJoint(pDO);
-   return true;
+   if (pDO->IsSelected())
+   {
+      pThis->EditClosureJoint(pDO);
+      return true;
+   }
+   else
+   {
+      return false;
+   }
 }
 
 STDMETHODIMP_(bool) CClosureJointDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)

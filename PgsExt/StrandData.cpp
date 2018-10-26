@@ -2047,3 +2047,8 @@ void CStrandData::ProcessStrandRowData()
    m_Nstrands[pgsTypes::Permanent] = 0;
 }
 
+#if defined _DEBUG
+void CStrandData::AssertValid()
+{
+}
+#endif

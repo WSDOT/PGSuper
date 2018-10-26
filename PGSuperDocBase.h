@@ -162,6 +162,9 @@ public:
    bool EditMomentLoad(CollectionIndexType loadIdx);
    void DeleteMomentLoad(CollectionIndexType loadIdx);
 
+   bool EditTimeline();
+   bool EditEffectiveFlangeWidth();
+   bool SelectProjectCriteria();
 
    void EditGirderViewSettings(int nPage);
    void EditBridgeViewSettings(int nPage);
@@ -368,6 +371,7 @@ protected:
    virtual HINSTANCE GetResourceInstance() override;
 
    BOOL UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir);
+   virtual void ModifyTemplate(LPCTSTR strTemplate); 
 
    virtual CString GetToolbarSectionName() override;
 
@@ -409,7 +413,6 @@ protected:
    afx_msg void OnUpdateNow();
 	afx_msg void OnUpdateUpdateNow(CCmdUI* pCmdUI);
    afx_msg void OnLosses();
-   afx_msg void OnEditTimeline();
    //}}AFX_MSG
    afx_msg void OnViewStatusCenter(UINT nID);
    afx_msg void OnUpdateViewGraphs(CCmdUI* pCmdUI);
@@ -422,6 +425,7 @@ protected:
    afx_msg void OnExportMenu(CCmdUI* pCmdUI);
    afx_msg void OnAutoCalc();
    afx_msg void OnUpdateAutoCalc(CCmdUI* pCmdUI);
+   afx_msg void OnEditTimeline();
 
    afx_msg void OnHelpFinder();
    afx_msg void OnAbout();

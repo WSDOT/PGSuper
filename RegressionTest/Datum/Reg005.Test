@@ -1,12 +1,12 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 37.25    5   7.75                     1     1     W74G    *     34  0.6  270  34.59  22.95  12.75  12.75                                               8  55.5  3.0  7.000  7.000   2.424    -3.239     8703   0.788  0.797   3.167 -0.785  0.000 -0.067 -0.852 162.31  403.92    5.00    3.00    3.00 
+ 37.25    5   7.75                     1     1     W74G    *     34  0.6  270  34.59  22.95  12.75  12.75                                               8  55.5  3.0  7.000  7.000   2.424    -3.239     8703   0.788  0.797   3.150 -0.785  0.000 -0.067 -0.852 162.31  403.92    5.00    3.00    3.00 
 
 
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
-Compression stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 11 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 13 Composite Deck, Install Railing System (Bridge Site 2)
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Confinement zone check failed.
 Lifting checks failed
@@ -18,7 +18,7 @@ Lifting checks failed
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Confinement zone check failed.
 

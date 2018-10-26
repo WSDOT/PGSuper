@@ -124,9 +124,9 @@ Float64 pgsRatingArtifact::GetMomentRatingFactorEx(bool bPositiveMoment,const pg
    MomentRatings::const_iterator iter;
    const MomentRatings* pRatings = (bPositiveMoment ? &m_PositiveMomentRatings : &m_NegativeMomentRatings);
 
-   for ( iter = pRatings->begin(); iter != pRatings->end(); iter++ )
+   for ( const auto& item : *pRatings)
    {
-      const pgsMomentRatingArtifact& artifact = iter->second;
+      const auto& artifact(item.second);
       Float64 rating_factor = artifact.GetRatingFactor();
       if ( rating_factor < RF )
       {
@@ -155,10 +155,9 @@ Float64 pgsRatingArtifact::GetShearRatingFactorEx(const pgsShearRatingArtifact**
    Float64 RF = DBL_MAX;
    (*ppArtifact) = nullptr;
 
-   ShearRatings::const_iterator iter;
-   for ( iter = m_ShearRatings.begin(); iter != m_ShearRatings.end(); iter++ )
+   for ( const auto& item : m_ShearRatings)
    {
-      const pgsShearRatingArtifact& artifact = iter->second;
+      const auto& artifact(item.second);
       Float64 rating_factor = artifact.GetRatingFactor();
       if ( rating_factor < RF )
       {
@@ -187,10 +186,9 @@ Float64 pgsRatingArtifact::GetStressRatingFactorEx(const pgsStressRatingArtifact
    Float64 RF = DBL_MAX;
    (*ppArtifact) = nullptr;
 
-   StressRatings::const_iterator iter;
-   for ( iter = m_StressRatings.begin(); iter != m_StressRatings.end(); iter++ )
+   for ( const auto& item : m_StressRatings)
    {
-      const pgsStressRatingArtifact& artifact = iter->second;
+      const auto& artifact(item.second);
       Float64 rating_factor = artifact.GetRatingFactor();
       if ( rating_factor < RF )
       {
@@ -220,10 +218,9 @@ Float64 pgsRatingArtifact::GetYieldStressRatioEx(bool bPositiveMoment,const pgsY
    (*ppArtifact) = nullptr;
 
    const YieldStressRatios* pRatios = (bPositiveMoment ? &m_PositiveMomentYieldStressRatios : &m_NegativeMomentYieldStressRatios);
-   YieldStressRatios::const_iterator iter;
-   for ( iter = pRatios->begin(); iter != pRatios->end(); iter++ )
+   for( const auto& item : *pRatios)
    {
-      const pgsYieldStressRatioArtifact& artifact = iter->second;
+      const auto& artifact(item.second);
       Float64 ratio = artifact.GetStressRatio();
       if ( ratio < RF )
       {
@@ -391,10 +388,9 @@ bool pgsRatingArtifact::IsLoadPostingRequired() const
 void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeight,Float64* pRF,std::_tstring* pVehicle) const
 {
    Float64 posting_load = DBL_MAX;
-   MomentRatings::const_iterator moment_iter;
-   for ( moment_iter = m_PositiveMomentRatings.begin(); moment_iter != m_PositiveMomentRatings.end(); moment_iter++ )
+   for (const auto& item : m_PositiveMomentRatings)
    {
-      const pgsMomentRatingArtifact& artifact = moment_iter->second;
+      const auto& artifact(item.second);
 
       std::_tstring strVehicle = artifact.GetVehicleName();
       Float64 W = artifact.GetVehicleWeight();
@@ -414,9 +410,9 @@ void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeigh
       }
    }
 
-   for ( moment_iter = m_NegativeMomentRatings.begin(); moment_iter != m_NegativeMomentRatings.end(); moment_iter++ )
+   for (const auto& item : m_NegativeMomentRatings)
    {
-      const pgsMomentRatingArtifact& artifact = moment_iter->second;
+      const auto& artifact(item.second);
 
       std::_tstring strVehicle = artifact.GetVehicleName();
       Float64 W = artifact.GetVehicleWeight();
@@ -436,10 +432,9 @@ void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeigh
       }
    }
 
-   ShearRatings::const_iterator shear_iter;
-   for ( shear_iter = m_ShearRatings.begin(); shear_iter != m_ShearRatings.end(); shear_iter++ )
+   for ( const auto& item : m_ShearRatings)
    {
-      const pgsShearRatingArtifact& artifact = shear_iter->second;
+      const auto& artifact(item.second);
 
       std::_tstring strVehicle = artifact.GetVehicleName();
       Float64 W = artifact.GetVehicleWeight();
@@ -459,10 +454,9 @@ void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeigh
       }
    }
 
-   StressRatings::const_iterator stress_iter;
-   for ( stress_iter = m_StressRatings.begin(); stress_iter != m_StressRatings.end(); stress_iter++ )
+   for(const auto& item : m_StressRatings)
    {
-      const pgsStressRatingArtifact& artifact = stress_iter->second;
+      const auto& artifact(item.second);
 
       std::_tstring strVehicle = artifact.GetVehicleName();
       Float64 W = artifact.GetVehicleWeight();
@@ -482,10 +476,9 @@ void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeigh
       }
    }
 
-   YieldStressRatios::const_iterator yield_stress_iter;
-   for ( yield_stress_iter = m_PositiveMomentYieldStressRatios.begin(); yield_stress_iter != m_PositiveMomentYieldStressRatios.end(); yield_stress_iter++ )
+   for ( const auto& item : m_PositiveMomentYieldStressRatios)
    {
-      const pgsYieldStressRatioArtifact& artifact = yield_stress_iter->second;
+      const auto& artifact(item.second);
 
       std::_tstring strVehicle = artifact.GetVehicleName();
       Float64 W = artifact.GetVehicleWeight();
@@ -505,9 +498,9 @@ void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeigh
       }
    }
 
-   for ( yield_stress_iter = m_NegativeMomentYieldStressRatios.begin(); yield_stress_iter != m_NegativeMomentYieldStressRatios.end(); yield_stress_iter++ )
+   for (const auto& item : m_NegativeMomentYieldStressRatios)
    {
-      const pgsYieldStressRatioArtifact& artifact = yield_stress_iter->second;
+      const auto& artifact(item.second);
 
       std::_tstring strVehicle = artifact.GetVehicleName();
       Float64 W = artifact.GetVehicleWeight();

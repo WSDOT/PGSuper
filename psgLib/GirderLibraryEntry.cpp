@@ -2919,7 +2919,7 @@ bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther,bool bConsider
    return Compare(rOther,vDifferences,true,bConsiderName);
 }
 
-bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool bReturnOnFirstDifference, bool considerName) const
+bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool bReturnOnFirstDifference, bool considerName,bool bCompareSeedValues) const
 {
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
@@ -3079,7 +3079,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
    //
    // Long. Reinforcement Tab
    //
-   if ( !bSplicedGirder )
+   if ( !bSplicedGirder && bCompareSeedValues )
    {
       if ( m_LongitudinalBarType != rOther.m_LongitudinalBarType ||
            m_LongitudinalBarGrade != rOther.m_LongitudinalBarGrade ||
@@ -3093,7 +3093,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
    //
    // Trans. Reinforcement Tab
    //
-   if ( !bSplicedGirder )
+   if ( !bSplicedGirder && bCompareSeedValues)
    {
       if (m_ShearData != rOther.m_ShearData)
       {

@@ -933,6 +933,14 @@ void CBridgePlanView::UpdateClosureJointTooltips()
 
             CString strMsg = strMsg1 + strMsg2;
 
+
+#if defined _DEBUG
+            CString strClosureID;
+            strClosureID.Format(_T("\r\n\rID: %d"), pClosureJoint->GetID());
+
+            strMsg += strClosureID;
+#endif // _DEBUG
+
             pDO->SetMaxTipWidth(TOOLTIP_WIDTH);
             pDO->SetTipDisplayTime(TOOLTIP_DURATION);
             pDO->SetToolTipText(strMsg);
@@ -1147,6 +1155,63 @@ BOOL CBridgePlanView::OnMouseWheel(UINT nFlags,short zDelta,CPoint pt)
    return TRUE;
 }
 
+void CBridgePlanView::SetModelToWorldSpacingMapping()
+{
+   CComPtr<iDisplayMgr> dispMgr;
+   GetDisplayMgr(&dispMgr);
+
+   CComPtr<iCoordinateMap> map;
+   dispMgr->GetCoordinateMap(&map);
+   CComQIPtr<iMapping> mapping(map);
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IRoadway, pAlignment);
+
+   PierIndexType nPiers = pBridge->GetPierCount();
+
+   // get point on alignment at first pier
+   CComPtr<IDirection> dir;
+   Float64 station = pBridge->GetPierStation(0);
+   pBridge->GetPierDirection(0, &dir);
+   CComPtr<IPoint2d> rotation_center;
+   pAlignment->GetPoint(station, 0.00, dir, pgsTypes::pcGlobal, &rotation_center);
+
+   // get point on alignment at last pier
+   CComPtr<IPoint2d> end_point;
+   dir.Release();
+   station = pBridge->GetPierStation(nPiers - 1);
+   pBridge->GetPierDirection(nPiers - 1, &dir);
+   pAlignment->GetPoint(station, 0.00, dir, pgsTypes::pcGlobal, &end_point);
+
+   // get the direction of the line from the start of the bridge to the end
+   // this represents the amount we want to rotate the display
+
+   Float64 x1, y1, x2, y2;
+   rotation_center->get_X(&x1);
+   rotation_center->get_Y(&y1);
+   end_point->get_X(&x2);
+   end_point->get_Y(&y2);
+
+   Float64 dx = x2 - x1;
+   Float64 dy = y2 - y1;
+
+   Float64 angle = atan2(dy, dx);
+
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
+   UINT settings = pDoc->GetBridgeEditorSettings();
+   if (settings & IDB_PV_NORTH_UP)
+   {
+      mapping->SetRotation((x1 + x2) / 2, (y1 + y2) / 2, 0);
+   }
+   else
+   {
+      // rotation by negative of the angle
+      mapping->SetRotation((x1 + x2) / 2, (y1 + y2) / 2, -angle);
+   }
+}
+
 void CBridgePlanView::UpdateDisplayObjects()
 {
    CWaitCursor wait;
@@ -1162,13 +1227,20 @@ void CBridgePlanView::UpdateDisplayObjects()
 
    dispMgr->ClearDisplayObjects();
 
+   CComPtr<iDisplayList> label_display_list;
+   dispMgr->FindDisplayList(LABEL_DISPLAY_LIST, &label_display_list);
+   label_display_list->Clear();
+
+   SetModelToWorldSpacingMapping(); // must do this before building display objects
+
    BuildTitleDisplayObjects();
    BuildAlignmentDisplayObjects();
+
+   BuildPierDisplayObjects();
 
    BuildSegmentDisplayObjects();
    BuildGirderDisplayObjects();
 
-   BuildPierDisplayObjects();
    BuildTemporarySupportDisplayObjects();
    BuildClosureJointDisplayObjects();
 
@@ -1300,10 +1372,24 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
    // model the alignment as a series of individual points
    CComPtr<IDirection> bearing;
    bearing.CoCreateInstance(CLSID_Direction);
-   long nPoints = 50;
-   Float64 station_inc = (end_station - start_station)/(nPoints-1);
+   IndexType nPoints = 50;
+   Float64 station_inc = (end_station - start_station) / (nPoints - 1);
+   std::vector<Float64> vStations;
+   vStations.reserve(nPoints + nPiers);
    Float64 station = start_station;
-   for ( long i = 0; i < nPoints; i++, station += station_inc)
+   for (long i = 0; i < nPoints; i++, station += station_inc)
+   {
+      vStations.push_back(station);
+   }
+   for (PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++)
+   {
+      Float64 pierStation = pBridge->GetPierStation(pierIdx);
+      vStations.push_back(pierStation);
+   }
+   std::sort(vStations.begin(), vStations.end());
+   vStations.erase(std::unique(vStations.begin(), vStations.end(), [](const auto& v1, const auto& v2) {return IsEqual(v1, v2);}), vStations.end());
+
+   for ( const auto& station : vStations)
    {
       CComPtr<IPoint2d> p;
       pRoadway->GetPoint(station,0.00,bearing,pgsTypes::pcGlobal,&p);
@@ -1368,7 +1454,6 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
 
    CComPtr<iDisplayList> label_display_list;
    dispMgr->FindDisplayList(LABEL_DISPLAY_LIST,&label_display_list);
-   label_display_list->Clear();
 
    //
    // set up some drawing strategies
@@ -1645,7 +1730,6 @@ void CBridgePlanView::BuildGirderDisplayObjects()
 
    CComPtr<iDisplayList> label_display_list;
    dispMgr->FindDisplayList(LABEL_DISPLAY_LIST,&label_display_list);
-   //label_display_list->Clear(); // don't clear... BuildGirderSegments puts things in this list that we don't want to erase
 
 
    m_NextGirderID = 0;
@@ -1776,7 +1860,6 @@ void CBridgePlanView::BuildPierDisplayObjects()
 
    CComPtr<iDisplayList> label_display_list;
    dispMgr->FindDisplayList(LABEL_DISPLAY_LIST,&label_display_list);
-   //label_display_list->Clear(); // Don't clear it...BuildGirderDisplayObjects put some stuff in here
 
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    UINT settings = pDoc->GetBridgeEditorSettings();
@@ -2325,7 +2408,6 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
 
    CComPtr<iDisplayList> label_display_list;
    dispMgr->FindDisplayList(LABEL_DISPLAY_LIST,&label_display_list);
-   //label_display_list->Clear(); // Don't clear it...BuildGirderDisplayObjects put some stuff in here
 
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    UINT settings = pDoc->GetBridgeEditorSettings();

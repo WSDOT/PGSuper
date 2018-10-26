@@ -66,8 +66,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,1,2,0
- PRODUCTVERSION 3,1,2,0
+ FILEVERSION 3,1,3,0
+ PRODUCTVERSION 3,1,3,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -85,11 +85,11 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.1.2.0"
+            VALUE "FileVersion", "3.1.3.0"
             VALUE "InternalName", "psgLib"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.1.2.0"
+            VALUE "ProductVersion", "3.1.3.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -205,7 +205,7 @@ BEGIN
     GROUPBOX        "Strength Limit States",IDC_STATIC,156,49,180,116
 END
 
-IDD_CONCRETE_GENERAL DIALOGEX 0, 0, 224, 122
+IDD_CONCRETE_GENERAL DIALOGEX 0, 0, 229, 139
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "General"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
@@ -213,20 +213,21 @@ BEGIN
     COMBOBOX        IDC_CONCRETE_TYPE,90,8,85,92,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Strength, f'c",IDC_STATIC,17,29,39,8
     EDITTEXT        IDC_FC,123,24,53,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_FC_T,182,29,35,8
+    LTEXT           "Static",IDC_FC_T,180,29,35,8
     LTEXT           "Unit Weight",IDC_STATIC,17,46,38,8
     EDITTEXT        IDC_DS,123,41,53,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_DS_T,182,46,35,8
+    LTEXT           "Static",IDC_DS_T,180,46,35,8
     LTEXT           "Unit Weight with Reinforcement",IDC_STATIC,17,61,101,8
     EDITTEXT        IDC_DW,123,59,53,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_DW_T,182,61,35,8
+    LTEXT           "Static",IDC_DW_T,180,61,35,8
     CONTROL         "Mod. Elasticity, Ec",IDC_MOD_E,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,80,74,10
     EDITTEXT        IDC_EC,123,76,53,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_EC_T,182,80,35,8
+    LTEXT           "Static",IDC_EC_T,180,80,35,8
     LTEXT           "Max. Aggregate Size",IDC_STATIC,17,98,66,8
     EDITTEXT        IDC_AGG_SIZE,123,95,53,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_AGG_SIZE_T,182,98,35,8
+    LTEXT           "Static",IDC_AGG_SIZE_T,180,98,35,8
     LTEXT           "Type",IDC_STATIC,18,10,28,8
+    LTEXT           "NOTE: This is a seed library. Values must be copied into your project",IDC_STATIC,7,124,216,8
 END
 
 IDD_CONNECTION_ENTRY DIALOGEX 0, 0, 402, 285
@@ -266,10 +267,11 @@ BEGIN
     LTEXT           "Static",IDC_DIAPHRAGM_OFFSET_UNITS,321,218,48,8
     CONTROL         "Do Not Use Weight of Diaphragm in Analysis",IDC_DONT_APPLY,
                     "Button",BS_AUTORADIOBUTTON,210,234,178,10
-    PUSHBUTTON      "OK",IDOK,116,264,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,176,264,50,14
-    PUSHBUTTON      "Help",ID_HELP,236,264,50,14
+    PUSHBUTTON      "OK",IDOK,239,264,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,292,264,50,14
+    PUSHBUTTON      "Help",ID_HELP,345,264,50,14
     LTEXT           "NOTE: Enter the actual dimensions of the diaphragm or enter the keyword ""Compute"" to have the diaphragm dimensions computed based on the connection geometry",IDC_DIAPHRAGM_NOTE,15,211,169,37
+    LTEXT           "NOTE: These are seed values and must be copied into your project",IDC_STATIC,7,270,213,8
 END
 
 IDD_GIRDER_DIMENSIONS DIALOGEX 0, 0, 491, 379
@@ -315,7 +317,7 @@ BEGIN
     EDITTEXT        IDC_SPLITTING_SPACING,280,290,46,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "unit",IDC_SPLITTING_SPACING_UNIT,330,295,13,8
     LTEXT           "# of Legs",IDC_NLEGS_LABEL,354,279,31,8
-    PUSHBUTTON      "Restore to Library Defaults",IDC_RESTORE_DEFAULTS,134,336,122,14
+    PUSHBUTTON      "Copy from Library",IDC_RESTORE_DEFAULTS,134,336,122,14
     LTEXT           "Zone Length",IDC_ZL_LABEL,171,279,42,8
     EDITTEXT        IDC_SPLITTING_ZL,165,290,46,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "unit",IDC_SPLITTING_ZL_UNIT,214,296,12,8
@@ -332,19 +334,21 @@ BEGIN
     CONTROL         "Use primary bars for splitting resistance",IDC_CHECK_SPLITTING,
                     "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,351,54,52,39
     EDITTEXT        IDC_SPLITTING_NLEGS,354,290,38,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "NOTE: These are seed values. The must be copied into your project.",IDC_SEED_VALUE_NOTE,7,342,218,8
 END
 
-IDD_LONG_STEEL DIALOGEX 0, 0, 448, 216
+IDD_LONG_STEEL DIALOGEX 0, 0, 449, 227
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     COMBOBOX        IDC_MILD_STEEL_SELECTOR,98,7,147,43,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Select Mild Steel Material",IDC_STATIC,10,10,84,8
-    GROUPBOX        "Rows of Longitudinal Mild Reinforcement",IDC_STATIC,7,33,434,176,0,WS_EX_TRANSPARENT
+    GROUPBOX        "Rows of Longitudinal Mild Reinforcement",IDC_STATIC,7,31,435,176,0,WS_EX_TRANSPARENT
     CONTROL         "Custom1",IDC_LONG_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,15,45,418,135
     PUSHBUTTON      "Insert Row",IDC_INSERTROW,122,185,63,14
     PUSHBUTTON      "Delete Row",IDC_REMOVEROWS,192,185,63,14
     PUSHBUTTON      "Append Row",IDC_APPEND_ROW,262,185,63,14
+    LTEXT           "NOTE: These are seed values. They must be copied into your project.",IDC_STATIC,7,212,221,8
 END
 
 IDD_TRAFFIC_BARRIER DIALOGEX 0, 0, 426, 233
@@ -1873,9 +1877,9 @@ BEGIN
     IDD_CONCRETE_GENERAL, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 217
+        RIGHTMARGIN, 222
         TOPMARGIN, 7
-        BOTTOMMARGIN, 115
+        BOTTOMMARGIN, 132
     END
 
     IDD_CONNECTION_ENTRY, DIALOG
@@ -1906,9 +1910,9 @@ BEGIN
     IDD_LONG_STEEL, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 441
+        RIGHTMARGIN, 442
         TOPMARGIN, 7
-        BOTTOMMARGIN, 209
+        BOTTOMMARGIN, 220
     END
 
     IDD_TRAFFIC_BARRIER, DIALOG
@@ -2529,6 +2533,26 @@ BEGIN
 END
 
 IDD_SPEC_LIFTING AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_CONNECTION_ENTRY AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_CONCRETE_GENERAL AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_EDIT_SHEAR_STEEL AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_LONG_STEEL AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

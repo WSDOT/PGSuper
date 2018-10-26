@@ -103,3 +103,10 @@ HRESULT CGirderMaterial::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 {
    return Concrete.Load(pStrLoad,pProgress);
 }
+
+#if defined _DEBUG
+void CGirderMaterial::AssertValid()
+{
+   Concrete.AssertValid();
+}
+#endif

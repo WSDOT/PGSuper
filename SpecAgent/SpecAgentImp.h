@@ -41,6 +41,7 @@ class ATL_NO_VTABLE CSpecAgentImp :
 	public CComCoClass<CSpecAgentImp, &CLSID_SpecAgent>,
 	public IConnectionPointContainerImpl<CSpecAgentImp>,
 	public IAgentEx,
+   public IBridgeDescriptionEventSink,
    public IAllowableStrandStress,
    public IAllowableTendonStress,
    public IAllowableConcreteStress,
@@ -65,6 +66,7 @@ DECLARE_NOT_AGGREGATABLE(CSpecAgentImp)
 BEGIN_COM_MAP(CSpecAgentImp)
 	COM_INTERFACE_ENTRY(IAgent)
    COM_INTERFACE_ENTRY(IAgentEx)
+   COM_INTERFACE_ENTRY(IBridgeDescriptionEventSink)
    COM_INTERFACE_ENTRY(IAllowableStrandStress)
    COM_INTERFACE_ENTRY(IAllowableTendonStress)
    COM_INTERFACE_ENTRY(IAllowableConcreteStress)
@@ -93,6 +95,15 @@ public:
 	STDMETHOD(ShutDown)() override;
    STDMETHOD(Init2)() override;
    STDMETHOD(GetClassID)(CLSID* pCLSID) override;
+
+// IBridgeDescriptionEventSink
+public:
+   virtual HRESULT OnBridgeChanged(CBridgeChangedHint* pHint) override;
+   virtual HRESULT OnGirderFamilyChanged() override;
+   virtual HRESULT OnGirderChanged(const CGirderKey& girderKey, Uint32 lHint) override;
+   virtual HRESULT OnLiveLoadChanged() override;
+   virtual HRESULT OnLiveLoadNameChanged(LPCTSTR strOldName, LPCTSTR strNewName) override;
+   virtual HRESULT OnConstructionLoadChanged() override;
 
 // IAllowableStrandStress
 public:
@@ -315,10 +326,16 @@ public:
 private:
    DECLARE_EAF_AGENT_DATA;
 
+   DWORD m_dwBridgeDescCookie;
+
+   StatusCallbackIDType m_scidHaulTruckError;
+
    const GirderLibraryEntry* GetGirderEntry(const CSegmentKey& segmentKey);
    const SpecLibraryEntry* GetSpec();
 
    bool IsLoadRatingServiceIIILimitState(pgsTypes::LimitState ls);
+   void ValidateHaulTruck(const CPrecastSegmentData* pSegment);
+   void Invalidate();
 };
 
 #endif //__SPECAGENT_H_

@@ -4,8 +4,8 @@
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service I Limit State in Interval 11 Cast Deck (Bridge Site 1)
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
@@ -18,12 +18,12 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 41.33    6   7.17      E Camas        1     2    W74MG    *     42  0.6  270  34.50  14.31  12.75  12.75                                              16  63.6  5.9  7.500  9.000   4.178    -5.254    10547   0.620  0.755   5.038 -2.272  0.000 -0.195 -2.467 218.74  455.70    5.00    5.00    5.00 
+ 41.33    6   7.17      E Camas        1     2    W74MG    *     42  0.6  270  34.50  14.31  12.75  12.75                                              16  63.6  5.9  7.500  9.000   4.178    -5.254    10547   0.620  0.755   4.974 -2.272  0.000 -0.195 -2.467 218.74  455.70    5.00    5.00    5.00 
 
 
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Bursting zone check failed.
 

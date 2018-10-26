@@ -26,7 +26,6 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
-#include <PsgLib\SpecLibraryEntry.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -53,6 +52,10 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
 {
    // Create and configure the table
    ColumnIndexType numColumns = 8;
+   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion())
+   {
+      numColumns += 3;
+   }
 
    CElasticGainDueToLiveLoadTable* table = new CElasticGainDueToLiveLoadTable( numColumns, pDisplayUnits);
    rptStyleManager::ConfigureTable(table);
@@ -64,13 +67,13 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   table->m_LiveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
    GET_IFACE2(pBroker,IMaterials,pMaterials);
-   Float64 Ec = pMaterials->GetSegmentEc(segmentKey,liveLoadIntervalIdx);
+   Float64 Ec = pMaterials->GetSegmentEc(segmentKey, table->m_LiveLoadIntervalIdx);
    Float64 Ep = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Permanent)->GetE();
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -82,10 +85,14 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
 
    *pParagraph << _T("Change in strand stress due to live load applied to the composite girder") << rptNewLine;
    *pParagraph << rptNewLine;
-   if ( spMode == pgsTypes::spmGross )
+   if (spMode == pgsTypes::spmGross)
+   {
       *pParagraph << rptRcImage(strImagePath + _T("DeltaFcdLL_Gross.png")) << rptNewLine;
+   }
    else
+   {
       *pParagraph << rptRcImage(strImagePath + _T("DeltaFcdLL_Transformed.png")) << rptNewLine;
+   }
 
    *pParagraph << rptRcImage(strImagePath + _T("Delta_FpLL.png")) << rptNewLine;
 
@@ -98,17 +105,29 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
    GET_IFACE2(pBroker,ILibrary,pLibrary);
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
 
-   pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
+   table->m_Kliveload = pSpecEntry->GetLiveLoadElasticGain();
+   if (spMode == pgsTypes::spmGross)
+   {
+      *pParagraph << Sub2(_T("K"), _T("llim")) << _T(" = ") << table->scalar.SetValue(table->m_Kliveload) << rptNewLine;
+   }
 
-   table->m_BAT = (analysisType == pgsTypes::Simple     ? pgsTypes::SimpleSpan : 
-                   analysisType == pgsTypes::Continuous ? pgsTypes::ContinuousSpan : pgsTypes::MaxSimpleContinuousEnvelope);
-
+   GET_IFACE2(pBroker, IProductForces, pProductForces);
+   table->m_BAT = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
 
    *pParagraph << table << rptNewLine;
 
    ColumnIndexType col = 0;
    (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("llim")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
+   {
+      (*table)(0, col++) << COLHDR(Sub2(_T("M"), _T("llim")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
+   }
+   else
+   {
+      (*table)(0, col++) << COLHDR(Sub2(_T("M"), _T("llim")) << rptNewLine << _T("Design"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
+      (*table)(0, col++) << COLHDR(Sub2(_T("M"), _T("llim")) << rptNewLine << _T("Fatigue"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
+   }
+
    if ( spMode == pgsTypes::spmGross )
    {
       (*table)(0,col++) << COLHDR(Sub2(_T("e"),_T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
@@ -123,21 +142,75 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
       (*table)(0,col++) << COLHDR(Sub2(_T("Y"),_T("bct")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
       (*table)(0,col++) << COLHDR(Sub2(_T("Y"),_T("bgt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    }
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << italic(ON) << Sub2(_T("f'''"),_T("cd")) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLL")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   
+
+   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
+   {
+      (*table)(0, col++) << COLHDR(symbol(DELTA) << italic(ON) << Sub2(_T("f'''"), _T("cd")) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*table)(0, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLL")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   }
+   else
+   {
+      (*table)(0, col++) << COLHDR(symbol(DELTA) << italic(ON) << Sub2(_T("f'''"), _T("cd")) << italic(OFF) << rptNewLine << _T("Design"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*table)(0, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLL")) << rptNewLine << _T("Design"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+
+      (*table)(0, col++) << COLHDR(symbol(DELTA) << italic(ON) << Sub2(_T("f'''"), _T("cd")) << italic(OFF) << rptNewLine << _T("Fatigue"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*table)(0, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLL")) << rptNewLine << _T("Fatigue"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   }
+
    return table;
 }
 
-void CElasticGainDueToLiveLoadTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CElasticGainDueToLiveLoadTable::AddRow(rptChapter* pChapter, IBroker* pBroker, const pgsPointOfInterest& poi, RowIndexType row, const LOSSDETAILS* pDetails, IEAFDisplayUnits* pDisplayUnits, Uint16 level)
 {
    ColumnIndexType col = 1;
 
-   (*this)(row,col++) << moment.SetValue( pDetails->pLosses->GetLiveLoadMoment() );
+   Float64 MmaxDesign(0), MmaxFatigue(0);
+   if (!IsZero(m_Kliveload))
+   {
+      GET_IFACE2(pBroker, IProductForces, pProductForces);
+      Float64 Mmin;
+      pProductForces->GetLiveLoadMoment(m_LiveLoadIntervalIdx, pgsTypes::lltDesign, poi, m_BAT, true/*include impact*/, true/*include LLDF*/, &Mmin, &MmaxDesign);
+
+      if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
+      {
+         MmaxFatigue = MmaxDesign;
+      }
+      else
+      {
+         pProductForces->GetLiveLoadMoment(m_LiveLoadIntervalIdx, pgsTypes::lltFatigue, poi, m_BAT, true/*include impact*/, true/*include LLDF*/, &Mmin, &MmaxFatigue);
+      }
+   }
+
+
+   Float64 M_Design  = m_Kliveload*MmaxDesign;
+   Float64 M_Fatigue = m_Kliveload*MmaxFatigue;
+
+   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
+   {
+      (*this)(row, col++) << moment.SetValue(M_Design);
+   }
+   else
+   {
+      (*this)(row, col++) << moment.SetValue(M_Design);
+      (*this)(row, col++) << moment.SetValue(M_Fatigue);
+   }
+
    (*this)(row,col++) << ecc.SetValue( pDetails->pLosses->GetEccPermanentFinal() );
    (*this)(row,col++) << mom_inertia.SetValue( pDetails->pLosses->GetIc() );
    (*this)(row,col++) << cg.SetValue( pDetails->pLosses->GetYbc() );
    (*this)(row,col++) << cg.SetValue( pDetails->pLosses->GetYbg() );
-   (*this)(row,col++) << stress.SetValue( pDetails->pLosses->GetDeltaFcdLL() );
-   (*this)(row,col++) << stress.SetValue( pDetails->pLosses->ElasticGainDueToLiveLoad() );
+
+   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
+   {
+      (*this)(row, col++) << stress.SetValue(pDetails->pLosses->GetDeltaFcdLL(M_Design));
+      (*this)(row, col++) << stress.SetValue(pDetails->pLosses->ElasticGainDueToLiveLoad(M_Design));
+   }
+   else
+   {
+      (*this)(row, col++) << stress.SetValue(pDetails->pLosses->GetDeltaFcdLL(M_Design));
+      (*this)(row, col++) << stress.SetValue(pDetails->pLosses->ElasticGainDueToLiveLoad(M_Design));
+
+      (*this)(row, col++) << stress.SetValue(pDetails->pLosses->GetDeltaFcdLL(M_Fatigue));
+      (*this)(row, col++) << stress.SetValue(pDetails->pLosses->ElasticGainDueToLiveLoad(M_Fatigue));
+   }
 }

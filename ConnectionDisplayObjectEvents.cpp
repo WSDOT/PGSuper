@@ -68,8 +68,15 @@ void CConnectionDisplayObjectEvents::EditPier(iDisplayObject* pDO)
 STDMETHODIMP_(bool) CConnectionDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
 {
    METHOD_PROLOGUE(CConnectionDisplayObjectEvents,Events);
-   pThis->EditPier(pDO);
-   return true;
+   if (pDO->IsSelected())
+   {
+      pThis->EditPier(pDO);
+      return true;
+   }
+   else
+   {
+      return false;
+   }
 }
 
 STDMETHODIMP_(bool) CConnectionDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)

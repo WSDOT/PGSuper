@@ -1610,38 +1610,20 @@ void CSegmentModelManager::GetSectionStresses(IntervalIndexType intervalIdx,Load
             // the end of this interval.
             GET_IFACE(IIntervals,pIntervals);
             IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-            IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
             if ( intervalIdx == releaseIntervalIdx )
             {
                GetSectionStress(intervalIdx,lcid,poi,topLocation,botLocation,&fTop,&fBot);
             }
-            else if ( releaseIntervalIdx < intervalIdx && intervalIdx < storageIntervalIdx )
+            else
             {
-               // there is no change in loading during this time. incremental results are all zero
-               fTop = 0;
-               fBot = 0;
-            }
-            else if ( intervalIdx == storageIntervalIdx )
-            {
-               // the change in results when the segment is placed into storage is the final results
-               // in storage minus the final results after release
-
                Float64 fTopRelease, fBotRelease;
-               GetSectionStress(releaseIntervalIdx,lcid,poi,topLocation,botLocation,&fTopRelease,&fBotRelease);
+               GetSectionStress(intervalIdx-1,lcid,poi,topLocation,botLocation,&fTopRelease,&fBotRelease);
 
                Float64 fTopStorage, fBotStorage;
-               GetSectionStress(storageIntervalIdx,lcid,poi,topLocation,botLocation,&fTopStorage,&fBotStorage);
+               GetSectionStress(intervalIdx,lcid,poi,topLocation,botLocation,&fTopStorage,&fBotStorage);
 
                fTop = fTopStorage - fTopRelease;
                fBot = fBotStorage - fBotRelease;
-            }
-            else
-            {
-               // there is no change in loading after storage. well, there is, but it is modeled
-               // in the LBAM girder models. there is no new loading between storage and erection
-               // incremental results are all zero
-               fTop = 0;
-               fBot = 0;
             }
          }
          else

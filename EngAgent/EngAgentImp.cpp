@@ -106,6 +106,7 @@ Float64 GetVertPsComponent(IBroker* pBroker, const pgsPointOfInterest& poi, cons
 //-----------------------------------------------------------------------------
 CollectionIndexType LimitStateToShearIndex(pgsTypes::LimitState limitState)
 {
+   ATLASSERT(IsStrengthLimitState(limitState));
    CollectionIndexType idx;
 
    switch (limitState)
@@ -547,7 +548,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
 
    std::vector<CRITSECTDETAILS> vcsDetails;
 
-   PoiAttributeType attributes = (limitState == pgsTypes::StrengthI ? POI_CRITSECTSHEAR1 : POI_CRITSECTSHEAR2);
+   PoiAttributeType attributes = (IsStrengthILimitState(limitState) ? POI_CRITSECTSHEAR1 : POI_CRITSECTSHEAR2);
 
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
@@ -3454,8 +3455,8 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       Float64 fBotLimitStateMin,fBotLimitStateMax;
       pLS->GetStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,bat,false,pgsTypes::BottomGirder,&fBotLimitStateMin,&fBotLimitStateMax);
 
-      Float64 fTopPre_WithoutTTS = pPS->GetDesignStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,pgsTypes::TopGirder,config_WithoutTTS,false);
-      Float64 fBotPre_WithoutTTS = pPS->GetDesignStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,pgsTypes::BottomGirder,config_WithoutTTS,false);
+      Float64 fTopPre_WithoutTTS = pPS->GetDesignStress(releaseIntervalIdx,poi,pgsTypes::TopGirder,config_WithoutTTS,false, pgsTypes::ServiceI);
+      Float64 fBotPre_WithoutTTS = pPS->GetDesignStress(releaseIntervalIdx,poi,pgsTypes::BottomGirder,config_WithoutTTS,false, pgsTypes::ServiceI);
 
       Float64 fTopMin_WithoutTTS = fTopLimitStateMin + fTopPre_WithoutTTS;
       Float64 fTopMax_WithoutTTS = fTopLimitStateMax + fTopPre_WithoutTTS;
@@ -3953,20 +3954,17 @@ HRESULT CEngAgentImp::OnRatingSpecificationChanged()
    LOG(_T("OnRatingSpecificationChanged Event Received"));
    InvalidateRatingArtifacts();
 
-   // invalidate shear capacities associated with rating limit states
-   m_ShearCapacity[LimitStateToShearIndex(pgsTypes::StrengthI_Inventory)].clear();
-   m_ShearCapacity[LimitStateToShearIndex(pgsTypes::StrengthI_Operating)].clear();
-   m_ShearCapacity[LimitStateToShearIndex(pgsTypes::StrengthI_LegalRoutine)].clear();
-   m_ShearCapacity[LimitStateToShearIndex(pgsTypes::StrengthI_LegalSpecial)].clear();
-   m_ShearCapacity[LimitStateToShearIndex(pgsTypes::StrengthII_PermitRoutine)].clear();
-   m_ShearCapacity[LimitStateToShearIndex(pgsTypes::StrengthII_PermitSpecial)].clear();
-
-   m_CritSectionDetails[LimitStateToShearIndex(pgsTypes::StrengthI_Inventory)].clear();
-   m_CritSectionDetails[LimitStateToShearIndex(pgsTypes::StrengthI_Operating)].clear();
-   m_CritSectionDetails[LimitStateToShearIndex(pgsTypes::StrengthI_LegalRoutine)].clear();
-   m_CritSectionDetails[LimitStateToShearIndex(pgsTypes::StrengthI_LegalSpecial)].clear();
-   m_CritSectionDetails[LimitStateToShearIndex(pgsTypes::StrengthII_PermitRoutine)].clear();
-   m_CritSectionDetails[LimitStateToShearIndex(pgsTypes::StrengthII_PermitSpecial)].clear();
+   // invalidate shear capacities and critical sections associated with rating limit states
+   for (int i = 0; i < (int)pgsTypes::LimitStateCount; i++)
+   {
+      pgsTypes::LimitState limitState = (pgsTypes::LimitState)i;
+      if (IsRatingLimitState(limitState) && IsStrengthLimitState(limitState) )
+      {
+         IndexType idx = LimitStateToShearIndex(limitState);
+         m_ShearCapacity[idx].clear();
+         m_CritSectionDetails[idx].clear();
+      }
+   }
 
    return S_OK;
 }

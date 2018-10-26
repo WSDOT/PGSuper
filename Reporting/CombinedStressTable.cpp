@@ -431,6 +431,8 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
       std::vector<Float64> fTopMaxLegalRoutineLL, fBotMaxLegalRoutineLL;
       std::vector<Float64> fTopMinLegalSpecialLL, fBotMinLegalSpecialLL;
       std::vector<Float64> fTopMaxLegalSpecialLL, fBotMaxLegalSpecialLL;
+      std::vector<Float64> fTopMinLegalEmergencyLL, fBotMinLegalEmergencyLL;
+      std::vector<Float64> fTopMaxLegalEmergencyLL, fBotMaxLegalEmergencyLL;
 
       // Bridge site 3
       if ( bPedLoading )
@@ -460,9 +462,14 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
             pForces2->GetCombinedLiveLoadStress( ratingIntervalIdx, pgsTypes::lltLegalRating_Routine, vPoi, bat, topLocation, botLocation, &fTopMinLegalRoutineLL, &fTopMaxLegalRoutineLL, &fBotMinLegalRoutineLL, &fBotMaxLegalRoutineLL );
          }
 
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+         if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
          {
-            pForces2->GetCombinedLiveLoadStress( ratingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, bat, topLocation, botLocation, &fTopMinLegalSpecialLL, &fTopMaxLegalSpecialLL, &fBotMinLegalSpecialLL, &fBotMaxLegalSpecialLL );
+            pForces2->GetCombinedLiveLoadStress(ratingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, bat, topLocation, botLocation, &fTopMinLegalSpecialLL, &fTopMaxLegalSpecialLL, &fBotMinLegalSpecialLL, &fBotMaxLegalSpecialLL);
+         }
+
+         if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+         {
+            pForces2->GetCombinedLiveLoadStress(ratingIntervalIdx, pgsTypes::lltLegalRating_Emergency, vPoi, bat, topLocation, botLocation, &fTopMinLegalEmergencyLL, &fTopMaxLegalEmergencyLL, &fBotMinLegalEmergencyLL, &fBotMaxLegalEmergencyLL);
          }
       }
 
@@ -530,15 +537,24 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
                (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinLegalRoutineLL[index]);
             }
 
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
             {
-               (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxLegalSpecialLL[index]) << rptNewLine;
-               (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxLegalSpecialLL[index]);
+               (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxLegalSpecialLL[index]) << rptNewLine;
+               (*p_table)(row, col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxLegalSpecialLL[index]);
 
-               (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinLegalSpecialLL[index]) << rptNewLine;
-               (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinLegalSpecialLL[index]);
+               (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinLegalSpecialLL[index]) << rptNewLine;
+               (*p_table)(row, col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinLegalSpecialLL[index]);
             }
-          }
+
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+            {
+               (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxLegalEmergencyLL[index]) << rptNewLine;
+               (*p_table)(row, col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxLegalEmergencyLL[index]);
+
+               (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinLegalEmergencyLL[index]) << rptNewLine;
+               (*p_table)(row, col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinLegalEmergencyLL[index]);
+            }
+         }
 
          row++;
       }
@@ -669,7 +685,12 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
          nCols += 2;
       }
 
-      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+      if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
+      {
+         nCols += 2;
+      }
+
+      if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
       {
          nCols += 2;
       }
@@ -749,7 +770,12 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
          colSpan += 2;
       }
 
-      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+      if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
+      {
+         colSpan += 2;
+      }
+
+      if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
       {
          colSpan += 2;
       }
@@ -782,14 +808,24 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
             (*p_table)(2,col3++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          }
 
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+         if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
          {
-            p_table->SetColumnSpan(1,col2,2);
-            (*p_table)(1,col2++) << _T("Service III") << rptNewLine << _T("Legal Special");
-            p_table->SetColumnSpan(1,col2++,SKIP_CELL);
+            p_table->SetColumnSpan(1, col2, 2);
+            (*p_table)(1, col2++) << _T("Service III") << rptNewLine << _T("Legal Special");
+            p_table->SetColumnSpan(1, col2++, SKIP_CELL);
 
-            (*p_table)(2,col3++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-            (*p_table)(2,col3++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+            (*p_table)(2, col3++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+            (*p_table)(2, col3++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+         }
+
+         if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+         {
+            p_table->SetColumnSpan(1, col2, 2);
+            (*p_table)(1, col2++) << _T("Service III") << rptNewLine << _T("Legal Emergency");
+            p_table->SetColumnSpan(1, col2++, SKIP_CELL);
+
+            (*p_table)(2, col3++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+            (*p_table)(2, col3++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
          }
       }
    }
@@ -810,6 +846,8 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
       std::vector<Float64> fTopMaxServiceIII_Routine,   fBotMaxServiceIII_Routine;
       std::vector<Float64> fTopMinServiceIII_Special,   fBotMinServiceIII_Special;
       std::vector<Float64> fTopMaxServiceIII_Special,   fBotMaxServiceIII_Special;
+      std::vector<Float64> fTopMinServiceIII_Emergency, fBotMinServiceIII_Emergency;
+      std::vector<Float64> fTopMaxServiceIII_Emergency, fBotMaxServiceIII_Emergency;
 
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
 
@@ -852,10 +890,16 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
             pLsForces2->GetStress( intervalIdx, pgsTypes::ServiceIII_LegalRoutine, vPoi, bat, false, botLocation, &fBotMinServiceIII_Routine, &fBotMaxServiceIII_Routine);
          }
 
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+         if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
          {
-            pLsForces2->GetStress( intervalIdx, pgsTypes::ServiceIII_LegalSpecial, vPoi, bat, false, topLocation, &fTopMinServiceIII_Special, &fTopMaxServiceIII_Special);
-            pLsForces2->GetStress( intervalIdx, pgsTypes::ServiceIII_LegalSpecial, vPoi, bat, false, botLocation, &fBotMinServiceIII_Special, &fBotMaxServiceIII_Special);
+            pLsForces2->GetStress(intervalIdx, pgsTypes::ServiceIII_LegalSpecial, vPoi, bat, false, topLocation, &fTopMinServiceIII_Special, &fTopMaxServiceIII_Special);
+            pLsForces2->GetStress(intervalIdx, pgsTypes::ServiceIII_LegalSpecial, vPoi, bat, false, botLocation, &fBotMinServiceIII_Special, &fBotMaxServiceIII_Special);
+         }
+
+         if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+         {
+            pLsForces2->GetStress(intervalIdx, pgsTypes::ServiceIII_LegalEmergency, vPoi, bat, false, topLocation, &fTopMinServiceIII_Emergency, &fTopMaxServiceIII_Emergency);
+            pLsForces2->GetStress(intervalIdx, pgsTypes::ServiceIII_LegalEmergency, vPoi, bat, false, botLocation, &fBotMinServiceIII_Emergency, &fBotMaxServiceIII_Emergency);
          }
       }
 
@@ -927,13 +971,22 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
                (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinServiceIII_Routine[index]);
             }
 
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
             {
-               (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxServiceIII_Special[index]) << rptNewLine;
-               (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxServiceIII_Special[index]);
+               (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxServiceIII_Special[index]) << rptNewLine;
+               (*p_table)(row, col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxServiceIII_Special[index]);
 
-               (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinServiceIII_Special[index]) << rptNewLine;
-               (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinServiceIII_Special[index]);
+               (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinServiceIII_Special[index]) << rptNewLine;
+               (*p_table)(row, col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinServiceIII_Special[index]);
+            }
+
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+            {
+               (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxServiceIII_Emergency[index]) << rptNewLine;
+               (*p_table)(row, col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxServiceIII_Emergency[index]);
+
+               (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinServiceIII_Emergency[index]) << rptNewLine;
+               (*p_table)(row, col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinServiceIII_Emergency[index]);
             }
          }
 

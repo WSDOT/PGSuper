@@ -92,27 +92,30 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_UnitValueAndTag(pDX,IDC_FILLET,  IDC_FILLET_UNIT,  fillet,  pDisplayUnits->GetComponentDimUnit());
 
-   bool bHasCantilever[2];
-   Float64 cantileverLength[2];
-   for ( int i = 0; i < 2; i++ )
+   bool bHasCantilever[2] = { false,false };
+   Float64 cantileverLength[2] = { 0.0,0.0 };
+   if (m_bHasCantilevers)
    {
-      pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)i;
-      bHasCantilever[end] = pParent->m_pSpanData->GetPier(end)->HasCantilever();
-      cantileverLength[end] = pParent->m_pSpanData->GetPier(end)->GetCantileverLength();
-   }
+      for (int i = 0; i < 2; i++)
+      {
+         pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)i;
+         bHasCantilever[end] = pParent->m_pSpanData->GetPier(end)->HasCantilever();
+         cantileverLength[end] = pParent->m_pSpanData->GetPier(end)->GetCantileverLength();
+      }
 
-   DDX_Check_Bool(pDX,IDC_START_CANTILEVER,bHasCantilever[pgsTypes::metStart]);
-   DDX_UnitValueAndTag(pDX,IDC_START_CANTILEVER_LENGTH,IDC_START_CANTILEVER_UNIT,cantileverLength[pgsTypes::metStart],pDisplayUnits->GetSpanLengthUnit());
-   if ( bHasCantilever[pgsTypes::metStart] )
-   {
-      DDV_UnitValueGreaterThanZero(pDX,IDC_START_CANTILEVER_LENGTH,cantileverLength[pgsTypes::metStart],pDisplayUnits->GetSpanLengthUnit());
-   }
+      DDX_Check_Bool(pDX, IDC_START_CANTILEVER, bHasCantilever[pgsTypes::metStart]);
+      DDX_UnitValueAndTag(pDX, IDC_START_CANTILEVER_LENGTH, IDC_START_CANTILEVER_UNIT, cantileverLength[pgsTypes::metStart], pDisplayUnits->GetSpanLengthUnit());
+      if (bHasCantilever[pgsTypes::metStart])
+      {
+         DDV_UnitValueGreaterThanZero(pDX, IDC_START_CANTILEVER_LENGTH, cantileverLength[pgsTypes::metStart], pDisplayUnits->GetSpanLengthUnit());
+      }
 
-   DDX_Check_Bool(pDX,IDC_END_CANTILEVER,bHasCantilever[pgsTypes::metEnd]);
-   DDX_UnitValueAndTag(pDX,IDC_END_CANTILEVER_LENGTH,IDC_END_CANTILEVER_UNIT,cantileverLength[pgsTypes::metEnd],pDisplayUnits->GetSpanLengthUnit());
-   if ( bHasCantilever[pgsTypes::metEnd] )
-   {
-      DDV_UnitValueGreaterThanZero(pDX,IDC_END_CANTILEVER_LENGTH,cantileverLength[pgsTypes::metEnd],pDisplayUnits->GetSpanLengthUnit());
+      DDX_Check_Bool(pDX, IDC_END_CANTILEVER, bHasCantilever[pgsTypes::metEnd]);
+      DDX_UnitValueAndTag(pDX, IDC_END_CANTILEVER_LENGTH, IDC_END_CANTILEVER_UNIT, cantileverLength[pgsTypes::metEnd], pDisplayUnits->GetSpanLengthUnit());
+      if (bHasCantilever[pgsTypes::metEnd])
+      {
+         DDV_UnitValueGreaterThanZero(pDX, IDC_END_CANTILEVER_LENGTH, cantileverLength[pgsTypes::metEnd], pDisplayUnits->GetSpanLengthUnit());
+      }
    }
 
    if ( pDX->m_bSaveAndValidate )
@@ -194,11 +197,14 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
             }
          }
 
-         for ( int i = 0; i < 2; i++ )
+         if (m_bHasCantilevers)
          {
-            pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)i;
-            pParent->m_pSpanData->GetPier(end)->HasCantilever(bHasCantilever[end]);
-            pParent->m_pSpanData->GetPier(end)->SetCantileverLength(cantileverLength[end]);
+            for (int i = 0; i < 2; i++)
+            {
+               pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)i;
+               pParent->m_pSpanData->GetPier(end)->HasCantilever(bHasCantilever[end]);
+               pParent->m_pSpanData->GetPier(end)->SetCantileverLength(cantileverLength[end]);
+            }
          }
       }
    }
@@ -542,6 +548,8 @@ void CSpanLayoutPage::ShowCantilevers(BOOL bShowStart,BOOL bShowEnd)
    {
       GetDlgItem(IDC_CANTILEVER_GROUP)->ShowWindow(SW_HIDE);
    }
+
+   m_bHasCantilevers = (bShowStart == TRUE || bShowEnd == TRUE) ? true : false;
 }
 
 void CSpanLayoutPage::OnBnClickedStartCantilever()

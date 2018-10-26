@@ -213,8 +213,11 @@ private:
 
 bool MergeDuplicatePoi(pgsPointOfInterest& poi1,pgsPointOfInterest& poi2)
 {
-   if (poi1.AtExactSamePlace(poi2))
+   // merges poi2 into poi1 if possible
+   if (poi2.CanMerge() && poi1.AtExactSamePlace(poi2))
    {
+      // poi2 is mergable and poi1 and poi2 are at the exact same place... there is a chance we can merge them
+
       bool doMerge = true;
       if (poi1.GetID() == poi2.GetID())
       {

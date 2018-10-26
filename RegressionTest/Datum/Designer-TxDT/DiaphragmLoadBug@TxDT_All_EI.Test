@@ -3,8 +3,8 @@
  38.33    5   8.50     Hanna Rd.       1     1     6             24  1/2  270  22.25   9.58  10.50  10.50                                               8  46.0  8.0  4.000  5.000   2.645    -2.775     3970   0.776  0.797   2.268 -0.454 -0.059 -0.019 -0.531  54.67  135.61    1.00    5.00    5.00 
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
@@ -17,8 +17,8 @@ Minimum fillet value exceeded for bridge check failed
  38.33    5   8.50     Hanna Rd.       1     2     6             24  1/2  270  22.25   9.58  10.50  10.50                                               8  46.0  8.0  4.000  5.000   2.703    -2.819     3964   0.748  0.872   2.266 -0.439 -0.057 -0.018 -0.514  54.67  132.06    1.00    5.00    5.00 
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
@@ -33,7 +33,6 @@ Minimum fillet value exceeded for bridge check failed
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.

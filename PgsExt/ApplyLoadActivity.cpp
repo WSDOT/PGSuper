@@ -32,6 +32,7 @@ static char THIS_FILE[] = __FILE__;
 CApplyLoadActivity::CApplyLoadActivity()
 {
    m_bEnabled = false;
+   m_bApplyIntermediateDiaphragmLoad = false;
    m_bApplyRailingSystemLoad = false;
    m_bApplyOverlayLoad = false;
    m_bApplyLiveLoad = false;
@@ -60,6 +61,11 @@ CApplyLoadActivity& CApplyLoadActivity::operator= (const CApplyLoadActivity& rOt
 bool CApplyLoadActivity::operator==(const CApplyLoadActivity& rOther) const
 {
    if ( m_bEnabled != rOther.m_bEnabled )
+   {
+      return false;
+   }
+
+   if (m_bApplyIntermediateDiaphragmLoad != rOther.m_bApplyIntermediateDiaphragmLoad)
    {
       return false;
    }
@@ -110,11 +116,23 @@ bool CApplyLoadActivity::IsEnabled() const
 void CApplyLoadActivity::Clear()
 {
    m_bApplyRailingSystemLoad = false;
+   m_bApplyIntermediateDiaphragmLoad = false;
    m_bApplyOverlayLoad       = false;
    m_bApplyLiveLoad          = false;
    m_bApplyRatingLiveLoad    = false;
    m_UserLoads.clear();
    m_bEnabled                = false;
+}
+
+void CApplyLoadActivity::ApplyIntermediateDiaphragmLoad(bool bApplyLoad)
+{
+   m_bApplyIntermediateDiaphragmLoad = bApplyLoad;
+   Update();
+}
+
+bool CApplyLoadActivity::IsIntermediateDiaphragmLoadApplied() const
+{
+   return m_bApplyIntermediateDiaphragmLoad;
 }
 
 void CApplyLoadActivity::ApplyRailingSystemLoad(bool bApplyLoad)
@@ -191,8 +209,10 @@ IndexType CApplyLoadActivity::GetUserLoadCount() const
 LoadIDType CApplyLoadActivity::GetUserLoadID(IndexType idx) const
 {
    std::set<LoadIDType>::const_iterator iter(m_UserLoads.begin());
-   for ( IndexType i = 0; i < idx; i++ )
+   for (IndexType i = 0; i < idx; i++)
+   {
       iter++;
+   }
 
    LoadIDType id = *iter;
    return id;
@@ -221,6 +241,13 @@ HRESULT CApplyLoadActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       if ( m_bEnabled )
       {
+         if (2 < version )
+         {
+            // added in version 3
+            hr = pStrLoad->get_Property(_T("ApplyIntermediateDiaphragmLoad"), &var);
+            m_bApplyIntermediateDiaphragmLoad = (var.boolVal == VARIANT_TRUE ? true : false);
+         }
+
          hr = pStrLoad->get_Property(_T("ApplyRailingSystemLoad"),&var);
          m_bApplyRailingSystemLoad = (var.boolVal == VARIANT_TRUE ? true : false);
 
@@ -262,11 +289,12 @@ HRESULT CApplyLoadActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
 HRESULT CApplyLoadActivity::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("ApplyLoad"),2.0);
+   pStrSave->BeginUnit(_T("ApplyLoad"),3.0);
    pStrSave->put_Property(_T("Enabled"),CComVariant(m_bEnabled));
 
    if ( m_bEnabled )
    {
+      pStrSave->put_Property(_T("ApplyIntermediateDiaphragmLoad"), CComVariant(m_bApplyIntermediateDiaphragmLoad)); // added in verion 3
       pStrSave->put_Property(_T("ApplyRailingSystemLoad"),CComVariant(m_bApplyRailingSystemLoad));
       pStrSave->put_Property(_T("ApplyOverlayLoad"),CComVariant(m_bApplyOverlayLoad));
       pStrSave->put_Property(_T("ApplyLiveLoad"),CComVariant(m_bApplyLiveLoad));
@@ -291,6 +319,7 @@ HRESULT CApplyLoadActivity::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 void CApplyLoadActivity::MakeCopy(const CApplyLoadActivity& rOther)
 {
    m_bEnabled                = rOther.m_bEnabled;
+   m_bApplyIntermediateDiaphragmLoad = rOther.m_bApplyIntermediateDiaphragmLoad;
    m_bApplyRailingSystemLoad = rOther.m_bApplyRailingSystemLoad;
    m_bApplyOverlayLoad       = rOther.m_bApplyOverlayLoad;
    m_bApplyLiveLoad          = rOther.m_bApplyLiveLoad;
@@ -306,7 +335,7 @@ void CApplyLoadActivity::MakeAssignment(const CApplyLoadActivity& rOther)
 void CApplyLoadActivity::Update()
 {
    // if none of the loads are applied... disable this activity
-   if ( !m_bApplyRailingSystemLoad && !m_bApplyOverlayLoad && !m_bApplyLiveLoad && !m_bApplyRatingLiveLoad && m_UserLoads.size() == 0 )
+   if ( !m_bApplyIntermediateDiaphragmLoad && !m_bApplyRailingSystemLoad && !m_bApplyOverlayLoad && !m_bApplyLiveLoad && !m_bApplyRatingLiveLoad && m_UserLoads.size() == 0 )
    {
       m_bEnabled = false;
    }

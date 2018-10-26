@@ -143,6 +143,17 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
          pParent->m_pTS = pBridgeDesc->GetTemporarySupport(tsIdx);
          ATLASSERT(pParent->m_pTS != nullptr);
       }
+
+      CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
+      int result = pTimelineMgr->Validate();
+      if (result != TLM_SUCCESS)
+      {
+         pDX->PrepareCtrl(IDC_REMOVAL_EVENT);
+         CString strMsg = pTimelineMgr->GetErrorMessage(result);
+         strMsg += _T("\r\n\r\nPlease correct the temporary support removal event.");
+         AfxMessageBox(strMsg, MB_ICONEXCLAMATION);
+         pDX->Fail();
+      }
    }
 }
 

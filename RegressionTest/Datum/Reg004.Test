@@ -1,11 +1,11 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.40    9   4.50                     1     1    W58MG    *     31  0.6  270  24.68  15.47  19.09  19.09                                               7  46.3  3.0  6.000  8.992   4.834    -5.166     6856   0.470  0.565   5.093 -2.469  0.000 -0.228 -2.696 141.17  350.38    1.97    3.94    3.94 
+ 39.40    9   4.50                     1     1    W58MG    *     31  0.6  270  24.68  15.47  19.09  19.09                                               7  46.3  3.0  6.000  8.992   4.834    -5.166     6856   0.470  0.565   5.082 -2.469  0.000 -0.228 -2.696 141.17  350.38    1.97    3.94    3.94 
 
 
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Bursting zone check failed.
 Lifting checks failed
 
@@ -16,7 +16,7 @@ Lifting checks failed
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone check failed.
 Lifting checks failed

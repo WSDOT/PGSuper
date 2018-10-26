@@ -1180,6 +1180,11 @@ bool CPGSuperDocProxyAgent::EditMomentLoad(CollectionIndexType loadIdx)
    return m_pMyDocument->EditMomentLoad(loadIdx);
 }
 
+bool CPGSuperDocProxyAgent::EditTimeline()
+{
+   return m_pMyDocument->EditTimeline();
+}
+
 UINT CPGSuperDocProxyAgent::GetStdToolBarID()
 {
    return m_StdToolBarID;
@@ -1235,14 +1240,14 @@ void CPGSuperDocProxyAgent::DeleteMomentLoad(CollectionIndexType loadIdx)
    m_pMyDocument->DeleteMomentLoad(loadIdx);
 }
 
-void CPGSuperDocProxyAgent::EditEffectiveFlangeWidth()
+bool CPGSuperDocProxyAgent::EditEffectiveFlangeWidth()
 {
-   m_pMyDocument->OnEffectiveFlangeWidth();
+   return m_pMyDocument->EditEffectiveFlangeWidth();
 }
 
-void CPGSuperDocProxyAgent::SelectProjectCriteria()
+bool CPGSuperDocProxyAgent::SelectProjectCriteria()
 {
-   m_pMyDocument->OnProjectSpec();
+   return m_pMyDocument->SelectProjectCriteria();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////

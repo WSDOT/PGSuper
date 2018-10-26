@@ -191,6 +191,11 @@ RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,
          nRatingCols += (bMoment ? 3 : 2);
       }
 
+      if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+      {
+         nRatingCols += (bMoment ? 3 : 2);
+      }
+
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
       {
          nRatingCols += (bMoment ? 5 : 4);
@@ -376,6 +381,22 @@ RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,
             {
                (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("* Deck"), M, unitT );
                pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
+            }
+         }
+
+         if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+         {
+            pTable->SetColumnSpan(ls_title_row, ls_title_col, bMoment ? 3 : 2);
+            (*pTable)(ls_title_row, ls_title_col++) << GetLimitStateString(pgsTypes::StrengthI_LegalEmergency);
+            pTable->SetColumnSpan(ls_title_row, ls_title_col++, SKIP_CELL);
+
+            (*pTable)(min_max_row, min_max_col++) << COLHDR(_T("Max"), M, unitT);
+            (*pTable)(min_max_row, min_max_col++) << COLHDR(_T("Min"), M, unitT);
+
+            if (bMoment)
+            {
+               (*pTable)(min_max_row, min_max_col++) << COLHDR(_T("* Deck"), M, unitT);
+               pTable->SetColumnSpan(ls_title_row, ls_title_col++, SKIP_CELL);
             }
          }
 
@@ -567,6 +588,22 @@ RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,
             {
                (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("* Deck"), M, unitT );
                pTable->SetColumnSpan(ls_title_row,ls_title_col++,SKIP_CELL);
+            }
+         }
+
+         if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+         {
+            pTable->SetColumnSpan(ls_title_row, ls_title_col, bMoment ? 3 : 2);
+            (*pTable)(ls_title_row, ls_title_col++) << GetLimitStateString(pgsTypes::StrengthI_LegalEmergency);
+            pTable->SetColumnSpan(ls_title_row, ls_title_col++, SKIP_CELL);
+
+            (*pTable)(min_max_row, min_max_col++) << COLHDR(_T("Max"), M, unitT);
+            (*pTable)(min_max_row, min_max_col++) << COLHDR(_T("Min"), M, unitT);
+
+            if (bMoment)
+            {
+               (*pTable)(min_max_row, min_max_col++) << COLHDR(_T("* Deck"), M, unitT);
+               pTable->SetColumnSpan(ls_title_row, ls_title_col++, SKIP_CELL);
             }
          }
 
@@ -878,7 +915,12 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
          nCols += 2;
       }
 
-      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+      if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
+      {
+         nCols += 2;
+      }
+
+      if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
       {
          nCols += 2;
       }
@@ -1053,6 +1095,14 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
          (*pTable)(0,col1++) << (includeImpact ? _T("* LL+IM Legal Special") :  _T("* LL Legal Special"));
          (*pTable)(1,col2++) << COLHDR(_T("Max"),       M, unitT );
          (*pTable)(1,col2++) << COLHDR(_T("Min"),       M, unitT );
+      }
+
+      if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+      {
+         pTable->SetColumnSpan(0, col1, 2);
+         (*pTable)(0, col1++) << (includeImpact ? _T("* LL+IM Legal Emergency") : _T("* LL Legal Emergency"));
+         (*pTable)(1, col2++) << COLHDR(_T("Max"), M, unitT);
+         (*pTable)(1, col2++) << COLHDR(_T("Min"), M, unitT);
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) && !is4Stress )

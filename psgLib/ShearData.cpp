@@ -452,6 +452,12 @@ void CShearData2::CopyGirderEntryData(const GirderLibraryEntry& rGird)
    *this = rGird.GetShearData();
 }
 
+#if defined _DEBUG
+void CShearData2::AssertValid()
+{
+}
+#endif
+
 //======================== ACCESS     =======================================
 //======================== INQUIRY    =======================================
 

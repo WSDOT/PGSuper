@@ -66,6 +66,10 @@ public:
    const HaulTruckLibraryEntry* pHaulTruckLibraryEntry;
 
 
+#if defined _DEBUG
+   void AssertValid();
+#endif
+
 protected:
    void MakeCopy(const CHandlingData& rOther);
    void MakeAssignment(const CHandlingData& rOther);

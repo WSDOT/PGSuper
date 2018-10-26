@@ -120,8 +120,8 @@ pgsWsdotGirderHaulingChecker::pgsWsdotGirderHaulingChecker(IBroker* pBroker,Stat
    m_StatusGroupID = statusGroupID;
 
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   m_scidBunkPointLocation             = pStatusCenter->RegisterCallback( new pgsBunkPointLocationStatusCallback(m_pBroker) );
-   m_scidTruckStiffness                = pStatusCenter->RegisterCallback( new pgsTruckStiffnessStatusCallback(m_pBroker) );
+   m_scidBunkPointLocation = pStatusCenter->RegisterCallback( new pgsBunkPointLocationStatusCallback(m_pBroker) );
+   m_scidHaulTruck         = pStatusCenter->RegisterCallback( new pgsHaulTruckStatusCallback(m_pBroker) );
 }
 
 pgsWsdotGirderHaulingChecker::~pgsWsdotGirderHaulingChecker()
@@ -203,6 +203,18 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
    GET_IFACE(ILibraryNames,pLibNames);
    std::vector<std::_tstring> names;
    pLibNames->EnumHaulTruckNames( &names );
+   if (names.size() == 0)
+   {
+      // the haul truck library is empty... this is a problem.
+      GET_IFACE(IEAFStatusCenter, pStatusCenter);
+
+      CString strMsg = _T("The haul truck library is empty. Please define haul trucks in the Haul Truck library.");
+      pgsHaulTruckStatusItem* pStatusItem = new pgsHaulTruckStatusItem(m_StatusGroupID, m_scidHaulTruck, strMsg);
+      pStatusCenter->Add(pStatusItem);
+
+      strMsg += _T("\nSee Status Center for details");
+      THROW_UNWIND(strMsg, -1);
+   }
    std::vector<const HaulTruckLibraryEntry*> vHaulTrucks;
    GET_IFACE(ILibrary,pLib);
    const HaulTruckLibraryEntry* pMaxCapacityTruck = pLib->GetHaulTruckEntry(names.front().c_str()); // keep track of the truck with the max capacity

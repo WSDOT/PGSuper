@@ -146,7 +146,7 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
       {
          girder = pForces2->GetDeflection(erectSegmentIntervalIdx,pgsTypes::pftGirder,vPoi,maxBAT, rtCumulative, false);
       }
-      std::vector<Float64> diaphragm = pForces2->GetDeflection(castDeckIntervalIdx,pgsTypes::pftDiaphragm,vPoi,maxBAT, rtCumulative, false);
+      std::vector<Float64> diaphragm = pForces2->GetDeflection(lastIntervalIdx,pgsTypes::pftDiaphragm,vPoi,maxBAT, rtCumulative, false);
 
       std::vector<Float64> minSlab, maxSlab;
       std::vector<Float64> minSlabPad, maxSlabPad;

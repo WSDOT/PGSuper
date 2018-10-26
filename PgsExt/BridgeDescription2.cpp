@@ -78,6 +78,9 @@ CBridgeDescription2::CBridgeDescription2()
    m_GirderID      = 0;
    m_GirderGroupID = 0;
 
+   m_MeasurementLocation = pgsTypes::AtPierLine;
+   m_MeasurementType = pgsTypes::NormalToItem;
+
    m_RefGirderIdx = INVALID_INDEX;
    m_RefGirderOffset = 0;
    m_RefGirderOffsetType = pgsTypes::omtBridge;
@@ -107,6 +110,9 @@ CBridgeDescription2::CBridgeDescription2(const CBridgeDescription2& rOther)
    m_PierID        = 0;
    m_GirderID      = 0;
    m_GirderGroupID = 0;
+
+   m_MeasurementLocation = pgsTypes::AtPierLine;
+   m_MeasurementType = pgsTypes::NormalToItem;
 
    m_RefGirderIdx = INVALID_INDEX;
    m_RefGirderOffset = 0;
@@ -584,6 +590,15 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
          }
       }
 
+      if (version < 9)
+      {
+         // this applies to spliced girder because in the project agent, the timeline gets blasted and re-built for prestressed girder bridges
+         // prior to version 9, we didn't explicitly have an event for diapraghs. we assumed diaphragms were installed when segments were erected.
+         // set the diaphragm load event for the event when the last segment is erected
+         EventIndexType erectSegmentEventIdx = m_TimelineManager.GetLastSegmentErectionEventIndex();
+         m_TimelineManager.GetEventByIndex(erectSegmentEventIdx)->GetApplyLoadActivity().ApplyIntermediateDiaphragmLoad();
+      }
+
       // Copy values down to the individual element level for parameters defined at the bridge level
       CopyDown(m_bSameNumberOfGirders, 
                m_bSameGirderName, 
@@ -603,7 +618,9 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
 HRESULT CBridgeDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
-   pStrSave->BeginUnit(_T("BridgeDescription"),8.0);
+   pStrSave->BeginUnit(_T("BridgeDescription"),9.0);
+   // No new data was added in version 9.0. The version number was changed so we can tell the difference between files
+   // that have an explicity construction event (9.0 <= version) for diaphragms and those that do not (version <= 8.0)
 
    pStrSave->put_Property(_T("GirderFamilyName"),CComVariant(CComBSTR(m_strGirderFamilyName.c_str())));
    pStrSave->put_Property(_T("GirderOrientation"),CComVariant(m_GirderOrientation));

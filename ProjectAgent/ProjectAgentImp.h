@@ -319,6 +319,10 @@ public:
    virtual EventIDType GetCastDeckEventID() override;
    virtual int SetCastDeckEventByIndex(EventIndexType eventIdx,bool bAdjustTimeline) override;
    virtual int SetCastDeckEventByID(EventIDType eventID,bool bAdjustTimeline) override;
+   virtual EventIndexType GetIntermediateDiaphragmsLoadEventIndex() override;
+   virtual EventIDType GetIntermediateDiaphragmsLoadEventID() override;
+   virtual void SetIntermediateDiaphragmsLoadEventByIndex(EventIndexType eventIdx) override;
+   virtual void SetIntermediateDiaphragmsLoadEventByID(EventIDType eventID) override;
    virtual EventIndexType GetRailingSystemLoadEventIndex() override;
    virtual EventIDType GetRailingSystemLoadEventID() override;
    virtual void SetRailingSystemLoadEventByIndex(EventIndexType eventIdx) override;
@@ -334,6 +338,10 @@ public:
    virtual GroupIDType GetGroupID(GroupIndexType groupIdx) override;
    virtual GirderIDType GetGirderID(const CGirderKey& girderKey) override;
    virtual SegmentIDType GetSegmentID(const CSegmentKey& segmentKey) override;
+   virtual bool IsCompatibleGirder(const CGirderKey& girderKey, LPCTSTR lpszGirderName) const override;
+   virtual bool AreGirdersCompatible(GroupIndexType groupIdx) const override;
+   virtual bool AreGirdersCompatible(const std::vector<std::_tstring>& vGirderNames) const override;
+   virtual bool AreGirdersCompatible(const CBridgeDescription2& bridgeDescription,const std::vector<std::_tstring>& vGirderNames) const override;
 
 // ISegmentData 
 public:
@@ -393,6 +401,7 @@ public:
 // IRatingSpecification
 public:
    virtual bool AlwaysLoadRate() override;
+   virtual bool IsRatingEnabled() override;
    virtual bool IsRatingEnabled(pgsTypes::LoadRatingType ratingType) override;
    virtual void EnableRating(pgsTypes::LoadRatingType ratingType,bool bEnable) override;
    virtual std::_tstring GetRatingSpecification() override;

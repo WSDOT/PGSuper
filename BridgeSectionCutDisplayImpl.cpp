@@ -391,9 +391,15 @@ STDMETHODIMP_(bool) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnLButto
 {
    METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DisplayObjectEvents);
 
-   pThis->m_pCutLocation->ShowCutDlg();
-
-   return true;
+   if (pDO->IsSelected())
+   {
+      pThis->m_pCutLocation->ShowCutDlg();
+      return true;
+   }
+   else
+   {
+      return false;
+   }
 }
 
 STDMETHODIMP_(bool) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)

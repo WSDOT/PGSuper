@@ -1521,6 +1521,9 @@ void CPierData2::SetSegmentConnectionType(pgsTypes::PierSegmentConnectionType ne
          CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
          pGirder->JoinSegmentsAtPier(m_PierIdx);
       }
+
+      // now that the segments are jointed, change the connection type at this pier
+      m_SegmentConnectionType = newType;
    }
    else if ( oldType == pgsTypes::psctContinuousSegment || oldType == pgsTypes::psctIntegralSegment )
    {
@@ -1534,20 +1537,20 @@ void CPierData2::SetSegmentConnectionType(pgsTypes::PierSegmentConnectionType ne
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
          CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
-         pGirder->SplitSegmentsAtPier(m_PierIdx);
+         pGirder->SplitSegmentsAtPier(m_PierIdx); // a closure joint is modeled in a "default" event... usually the same event as other closure joints are installed
       }
+
+      // now that the segments are split, change the connection type at this pier
+      m_SegmentConnectionType = newType;
 
       // add the closure joint casting events to the timeline manager.
       CTimelineManager* pTimelineMgr = m_pBridgeDesc->GetTimelineManager();
-      CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(castClosureJointEvent);
-      ATLASSERT(pTimelineEvent != nullptr);
-      pTimelineEvent->GetCastClosureJointActivity().AddPier(GetID());
+      CClosureJointData* pClosureJoint = GetClosureJoint(0);
+      pTimelineMgr->SetCastClosureJointEventByIndex(pClosureJoint, castClosureJointEvent);
 
       m_GirderSpacing[pgsTypes::Back].SetGirderCount(nGirders);
       m_GirderSpacing[pgsTypes::Ahead].SetGirderCount(nGirders);
    }
-
-   m_SegmentConnectionType = newType;
 }
 
 void CPierData2::SetGirderEndDistance(pgsTypes::PierFaceType face,Float64 endDist,ConnectionLibraryEntry::EndDistanceMeasurementType measure)

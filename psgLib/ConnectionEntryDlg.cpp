@@ -67,9 +67,9 @@ void CConnectionEntryDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_MetaFileStatic(pDX, IDC_CONNECTION_MF, m_ConnectionPicture,image_name, _T("Metafile"), EMF_FIT );
 
    DDX_UnitValueAndTag(pDX, IDC_END_DISTANCE, IDC_END_DISTANCE_T, m_GirderEndDistance, pDisplayUnits->ComponentDim );
-   DDV_UnitValueZeroOrMore(pDX, IDC_END_DISTANCE, m_GirderEndDistance, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_END_DISTANCE, m_GirderEndDistance, pDisplayUnits->ComponentDim);
+
    DDX_UnitValueAndTag(pDX, IDC_BEARING_OFFSET, IDC_BEARING_OFFSET_T, m_GirderBearingOffset, pDisplayUnits->ComponentDim );
-   DDV_UnitValueZeroOrMore(pDX, IDC_BEARING_OFFSET, m_GirderBearingOffset, pDisplayUnits->ComponentDim );
 
    DDX_UnitValueAndTag(pDX, IDC_SUPPORT_WIDTH, IDC_SUPPORT_WIDTH_T, m_SupportWidth, pDisplayUnits->ComponentDim );
    DDV_UnitValueZeroOrMore(pDX, IDC_SUPPORT_WIDTH, m_SupportWidth, pDisplayUnits->ComponentDim );
@@ -90,27 +90,6 @@ void CConnectionEntryDlg::DoDataExchange(CDataExchange* pDX)
       if (m_Name.IsEmpty())
       {
          AfxMessageBox(_T("Connection Name cannot be blank"));
-         pDX->Fail();
-      }
-      // check end distance
-      Float64 end_distance, bearing_end_offset;
-      DDX_UnitValueAndTag(pDX, IDC_END_DISTANCE, IDC_END_DISTANCE_T, end_distance, pDisplayUnits->ComponentDim );
-      DDX_UnitValueAndTag(pDX, IDC_BEARING_OFFSET, IDC_BEARING_OFFSET_T, bearing_end_offset, pDisplayUnits->ComponentDim );
-
-      // RAB 8/16/2007
-      // NOTE: At one time this code block was commented out with the following comment
-      //
-      // "why??? this isn't needed.... who cares if the girder hangs past the bearing"
-      //
-      // Consider an interior pier... If the distance from the point of bearing to the end
-      // of the girder exceeds the distance from the CL pier to the point of bearing the
-      // girders on either side of the pier will interfere with one another.
-      //
-      // ... AND PGSuper will crash if this criteria is not enforced!
-
-      if ( bearing_end_offset < end_distance )
-      {
-         AfxMessageBox(_T("End Distance cannot be greater than Bearing Offset"));
          pDX->Fail();
       }
    }

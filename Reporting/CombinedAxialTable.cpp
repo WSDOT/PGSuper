@@ -428,6 +428,7 @@ void CCombinedAxialTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
       std::vector<Float64> minPermitLL,        maxPermitLL;
       std::vector<Float64> minLegalRoutineLL,  maxLegalRoutineLL;
       std::vector<Float64> minLegalSpecialLL,  maxLegalSpecialLL;
+      std::vector<Float64> minLegalEmergencyLL, maxLegalEmergencyLL;
       std::vector<Float64> minPermitRoutineLL, maxPermitRoutineLL;
       std::vector<Float64> minPermitSpecialLL, maxPermitSpecialLL;
 
@@ -476,10 +477,16 @@ void CCombinedAxialTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
             pForces2->GetCombinedLiveLoadAxial( ratingIntervalIdx, pgsTypes::lltLegalRating_Routine, vPoi, minBAT, &minLegalRoutineLL, &dummy );
          }
 
-         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+         if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
          {
-            pForces2->GetCombinedLiveLoadAxial( ratingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, maxBAT, &dummy, &maxLegalSpecialLL );
-            pForces2->GetCombinedLiveLoadAxial( ratingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, minBAT, &minLegalSpecialLL, &dummy );
+            pForces2->GetCombinedLiveLoadAxial(ratingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, maxBAT, &dummy, &maxLegalSpecialLL);
+            pForces2->GetCombinedLiveLoadAxial(ratingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, minBAT, &minLegalSpecialLL, &dummy);
+         }
+
+         if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+         {
+            pForces2->GetCombinedLiveLoadAxial(ratingIntervalIdx, pgsTypes::lltLegalRating_Emergency, vPoi, maxBAT, &dummy, &maxLegalEmergencyLL);
+            pForces2->GetCombinedLiveLoadAxial(ratingIntervalIdx, pgsTypes::lltLegalRating_Emergency, vPoi, minBAT, &minLegalEmergencyLL, &dummy);
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
@@ -552,10 +559,16 @@ void CCombinedAxialTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
                (*p_table)(row,col++) << axial.SetValue( minLegalRoutineLL[index] );
             }
 
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
             {
-               (*p_table)(row,col++) << axial.SetValue( maxLegalSpecialLL[index] );
-               (*p_table)(row,col++) << axial.SetValue( minLegalSpecialLL[index] );
+               (*p_table)(row, col++) << axial.SetValue(maxLegalSpecialLL[index]);
+               (*p_table)(row, col++) << axial.SetValue(minLegalSpecialLL[index]);
+            }
+
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+            {
+               (*p_table)(row, col++) << axial.SetValue(maxLegalEmergencyLL[index]);
+               (*p_table)(row, col++) << axial.SetValue(minLegalEmergencyLL[index]);
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
@@ -724,6 +737,7 @@ void CCombinedAxialTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
       std::vector<Float64> minStrengthI_Operating, maxStrengthI_Operating;
       std::vector<Float64> minStrengthI_Legal_Routine, maxStrengthI_Legal_Routine;
       std::vector<Float64> minStrengthI_Legal_Special, maxStrengthI_Legal_Special;
+      std::vector<Float64> minStrengthI_Legal_Emergency, maxStrengthI_Legal_Emergency;
       std::vector<Float64> minStrengthII_Permit_Routine, maxStrengthII_Permit_Routine;
       std::vector<Float64> minStrengthII_Permit_Special, maxStrengthII_Permit_Special;
       std::vector<Float64> minServiceI_Permit_Routine, maxServiceI_Permit_Routine;
@@ -775,9 +789,15 @@ void CCombinedAxialTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
             }
 
             // Legal - Special
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
             {
-               pLsForces2->GetAxial( intervalIdx, pgsTypes::StrengthI_LegalSpecial, vPoi, maxBAT, &minStrengthI_Legal_Special, &maxStrengthI_Legal_Special );
+               pLsForces2->GetAxial(intervalIdx, pgsTypes::StrengthI_LegalSpecial, vPoi, maxBAT, &minStrengthI_Legal_Special, &maxStrengthI_Legal_Special);
+            }
+
+            // Legal - Emergency
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+            {
+               pLsForces2->GetAxial(intervalIdx, pgsTypes::StrengthI_LegalEmergency, vPoi, maxBAT, &minStrengthI_Legal_Emergency, &maxStrengthI_Legal_Emergency);
             }
 
             // Permit Rating - Routine
@@ -850,10 +870,17 @@ void CCombinedAxialTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
             }
 
             // Legal - Special
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
             {
-               pLsForces2->GetAxial( intervalIdx, pgsTypes::StrengthI_LegalSpecial, vPoi, maxBAT, &dummy, &maxStrengthI_Legal_Special );
-               pLsForces2->GetAxial( intervalIdx, pgsTypes::StrengthI_LegalSpecial, vPoi, minBAT, &minStrengthI_Legal_Special, &dummy );
+               pLsForces2->GetAxial(intervalIdx, pgsTypes::StrengthI_LegalSpecial, vPoi, maxBAT, &dummy, &maxStrengthI_Legal_Special);
+               pLsForces2->GetAxial(intervalIdx, pgsTypes::StrengthI_LegalSpecial, vPoi, minBAT, &minStrengthI_Legal_Special, &dummy);
+            }
+
+            // Legal - Emergency
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+            {
+               pLsForces2->GetAxial(intervalIdx, pgsTypes::StrengthI_LegalEmergency, vPoi, maxBAT, &dummy, &maxStrengthI_Legal_Emergency);
+               pLsForces2->GetAxial(intervalIdx, pgsTypes::StrengthI_LegalEmergency, vPoi, minBAT, &minStrengthI_Legal_Emergency, &dummy);
             }
 
             // Permit Rating - Routine
@@ -941,10 +968,16 @@ void CCombinedAxialTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
                   (*p_table2)(row2,col++) << axial.SetValue( minStrengthI_Legal_Routine[index]);
                }
 
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+               if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
                {
-                  (*p_table2)(row2,col++) << axial.SetValue( maxStrengthI_Legal_Special[index]);
-                  (*p_table2)(row2,col++) << axial.SetValue( minStrengthI_Legal_Special[index]);
+                  (*p_table2)(row2, col++) << axial.SetValue(maxStrengthI_Legal_Special[index]);
+                  (*p_table2)(row2, col++) << axial.SetValue(minStrengthI_Legal_Special[index]);
+               }
+
+               if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+               {
+                  (*p_table2)(row2, col++) << axial.SetValue(maxStrengthI_Legal_Emergency[index]);
+                  (*p_table2)(row2, col++) << axial.SetValue(minStrengthI_Legal_Emergency[index]);
                }
 
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
@@ -1008,10 +1041,16 @@ void CCombinedAxialTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
                   (*p_table2)(row2,col++) << axial.SetValue( minStrengthI_Legal_Routine[index]);
                }
 
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+               if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
                {
-                  (*p_table2)(row2,col++) << axial.SetValue( maxStrengthI_Legal_Special[index]);
-                  (*p_table2)(row2,col++) << axial.SetValue( minStrengthI_Legal_Special[index]);
+                  (*p_table2)(row2, col++) << axial.SetValue(maxStrengthI_Legal_Special[index]);
+                  (*p_table2)(row2, col++) << axial.SetValue(minStrengthI_Legal_Special[index]);
+               }
+
+               if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+               {
+                  (*p_table2)(row2, col++) << axial.SetValue(maxStrengthI_Legal_Emergency[index]);
+                  (*p_table2)(row2, col++) << axial.SetValue(minStrengthI_Legal_Emergency[index]);
                }
 
                if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )

@@ -116,8 +116,15 @@ void CBridgePlanViewSpanDisplayObjectEvents::SelectNext(iDisplayObject* pDO)
 STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
 {
    METHOD_PROLOGUE(CBridgePlanViewSpanDisplayObjectEvents,Events);
-   pThis->EditSpan(pDO);
-   return true;
+   if (pDO->IsSelected())
+   {
+      pThis->EditSpan(pDO);
+      return true;
+   }
+   else
+   {
+      return false;
+   }
 }
 
 STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
@@ -316,11 +323,18 @@ void CBridgeSectionViewSpanDisplayObjectEvents::SelectNext(iDisplayObject* pDO)
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeSectionViewSpanDisplayObjectEvents message handlers
-STDMETHODIMP_(bool) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+STDMETHODIMP_(bool) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO, UINT nFlags, CPoint point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSpanDisplayObjectEvents,Events);
-   pThis->EditSpan(pDO);
-   return true;
+   METHOD_PROLOGUE(CBridgeSectionViewSpanDisplayObjectEvents, Events);
+   if (pDO->IsSelected())
+   {
+      pThis->EditSpan(pDO);
+      return true;
+   }
+   else
+   {
+      return false;
+   }
 }
 
 STDMETHODIMP_(bool) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)

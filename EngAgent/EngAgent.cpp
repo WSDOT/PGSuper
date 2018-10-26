@@ -52,6 +52,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
+#include <IFace\Views.h>
 
 #include <WBFLCore_i.c>
 #include <WBFLGeometry_i.c>

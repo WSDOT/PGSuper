@@ -190,6 +190,7 @@ void CElasticGainDueToDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* p
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
 
    GET_IFACE2(pBroker,IProductForces,pProdForces);
@@ -200,7 +201,7 @@ void CElasticGainDueToDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* p
       (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftSlabPanel,      poi, m_BAT, rtIncremental ) );
    }
    (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftSlabPad,   poi, m_BAT, rtIncremental ) );
-   (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftDiaphragm, poi, m_BAT, rtIncremental ) + 
+   (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment(castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm, poi, m_BAT, rtIncremental ) +
                                           pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftShearKey,  poi, m_BAT, rtIncremental ));
    if ( m_bHasUserLoads )
    {

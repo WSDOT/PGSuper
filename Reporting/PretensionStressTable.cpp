@@ -32,6 +32,7 @@
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\PrestressForce.h>
+#include <IFace\RatingSpecification.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -96,6 +97,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(segmentKey));
    IntervalIndexType nIntervals = vIntervals.size();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
@@ -197,28 +199,95 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                intervalIdx = releaseIntervalIdx;
             }
 
-            Float64 Fp = pForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,intervalTime);
-            Float64 Ft = pForce->GetPrestressForce(poi,pgsTypes::Temporary,intervalIdx,intervalTime);
-            (*p_table)(row,col) << _T("P (permanent) = ") << force.SetValue(Fp) << rptNewLine;
-            (*p_table)(row,col) << _T("P (temporary) = ") << force.SetValue(Ft) << rptNewLine;
+            if (intervalIdx < liveLoadIntervalIdx)
+            {
+               Float64 Fp = pForce->GetPrestressForce(poi, pgsTypes::Permanent, intervalIdx, intervalTime);
+               Float64 Ft = pForce->GetPrestressForce(poi, pgsTypes::Temporary, intervalIdx, intervalTime);
+               (*p_table)(row, col) << _T("P (permanent) = ") << force.SetValue(Fp) << rptNewLine;
+               (*p_table)(row, col) << _T("P (temporary) = ") << force.SetValue(Ft) << rptNewLine;
 
-            Float64 fTop = pPrestress->GetStress(intervalIdx,poi,pgsTypes::TopGirder,true/*include live load if applicable*/);
-            Float64 fBot = pPrestress->GetStress(intervalIdx,poi,pgsTypes::BottomGirder,true/*include live load if applicable*/);
-            (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
-            (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
+               Float64 fTop = pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, true/*include live load if applicable*/, pgsTypes::ServiceI);
+               Float64 fBot = pPrestress->GetStress(intervalIdx, poi, pgsTypes::BottomGirder, true/*include live load if applicable*/, pgsTypes::ServiceI);
+               (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
+               (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBot);
+            }
+            else
+            {
+               Float64 Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceI);
+               Float64 Ft = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Temporary, pgsTypes::ServiceI);
+               (*p_table)(row, col) << _T("P (permanent) = ") << force.SetValue(Fp) << _T(" (Service I)") << rptNewLine;
+               (*p_table)(row, col) << _T("P (temporary) = ") << force.SetValue(Ft) << _T(" (Service I)") << rptNewLine;
+
+               Float64 fTop = pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, true/*include live load if applicable*/, pgsTypes::ServiceI);
+               Float64 fBot = pPrestress->GetStress(intervalIdx, poi, pgsTypes::BottomGirder, true/*include live load if applicable*/, pgsTypes::ServiceI);
+               (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
+               (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBot) << rptNewLine;
+
+               (*p_table)(row, col) << rptNewLine;
+
+               Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceIII);
+               Ft = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Temporary, pgsTypes::ServiceIII);
+               (*p_table)(row, col) << _T("P (permanent) = ") << force.SetValue(Fp) << _T(" (Service III)") << rptNewLine;
+               (*p_table)(row, col) << _T("P (temporary) = ") << force.SetValue(Ft) << _T(" (Service III)") << rptNewLine;
+
+               fTop = pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, true/*include live load if applicable*/, pgsTypes::ServiceIII);
+               fBot = pPrestress->GetStress(intervalIdx, poi, pgsTypes::BottomGirder, true/*include live load if applicable*/, pgsTypes::ServiceIII);
+               (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
+               (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBot) << rptNewLine;
+
+               (*p_table)(row, col) << rptNewLine;
+
+               pgsTypes::LimitState ls = (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI);
+               std::_tstring strLS(ls == pgsTypes::ServiceIA ? _T(" (Service IA)") : _T(" (Fatigue I)"));
+
+               Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, ls);
+               Ft = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Temporary, ls);
+               (*p_table)(row, col) << _T("P (permanent) = ") << force.SetValue(Fp) << strLS << rptNewLine;
+               (*p_table)(row, col) << _T("P (temporary) = ") << force.SetValue(Ft) << strLS << rptNewLine;
+
+               fTop = pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, true/*include live load if applicable*/, ls);
+               fBot = pPrestress->GetStress(intervalIdx, poi, pgsTypes::BottomGirder, true/*include live load if applicable*/, ls);
+               (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
+               (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBot) << rptNewLine;
+            }
+
             col++;
          }
       }
       else
       {
          // Rating
-         Float64 Fp = pForce->GetPrestressForce(poi,pgsTypes::Permanent,loadRatingIntervalIdx,intervalTime);
-         (*p_table)(row,col) << _T("P (permanent) = ") << force.SetValue(Fp) << rptNewLine;
+         GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
+         int nReported = 0;
+         int nRatingTypes = (int)pgsTypes::lrLoadRatingTypeCount;
+         for (int i = 0; i < nRatingTypes; i++)
+         {
+            pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)i;
+            if (pRatingSpec->RateForStress(ratingType))
+            {
+               pgsTypes::LimitState limitState = ::GetServiceLimitStateType(ratingType);
+               ATLASSERT(IsServiceIIILimitState(limitState)); // must be one of the Service III limit states
+               Float64 Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, limitState);
+               (*p_table)(row, col) << _T("P (permanent) = ") << force.SetValue(Fp) << GetLimitStateString(limitState) << rptNewLine;
 
-         Float64 fTop = pPrestress->GetStress(loadRatingIntervalIdx,poi,pgsTypes::TopGirder,true/*include live load if applicable*/);
-         Float64 fBot = pPrestress->GetStress(loadRatingIntervalIdx,poi,pgsTypes::BottomGirder,true/*include live load if applicable*/);
-         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue( fBot );
+               Float64 fTop = pPrestress->GetStress(loadRatingIntervalIdx, poi, pgsTypes::TopGirder, true/*include live load if applicable*/,limitState);
+               Float64 fBot = pPrestress->GetStress(loadRatingIntervalIdx, poi, pgsTypes::BottomGirder, true/*include live load if applicable*/,limitState);
+               (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
+               (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBot);
+
+               if (i != nRatingTypes - 1)
+               {
+                  (*p_table)(row, col) << rptNewLine;
+               }
+
+               nReported++;
+            }
+         }
+
+         if (nReported == 0)
+         {
+            (*p_table)(row, col) << _T("");
+         }
          col++;
       }
 

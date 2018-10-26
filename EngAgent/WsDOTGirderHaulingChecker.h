@@ -93,7 +93,7 @@ private:
    IBroker* m_pBroker;
    StatusGroupIDType m_StatusGroupID;
    StatusCallbackIDType m_scidBunkPointLocation;
-   StatusCallbackIDType m_scidTruckStiffness;
+   StatusCallbackIDType m_scidHaulTruck;
 
    // GROUP: LIFECYCLE
    // can't construct without a broker

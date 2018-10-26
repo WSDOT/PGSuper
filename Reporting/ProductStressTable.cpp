@@ -222,7 +222,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
       {
          pForces2->GetStress( erectSegmentIntervalIdx, pgsTypes::pftGirder, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopGirder, &fBotGirder);
       }
-      pForces2->GetStress( castDeckIntervalIdx, pgsTypes::pftDiaphragm, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopDiaphragm, &fBotDiaphragm);
+      pForces2->GetStress(lastIntervalIdx, pgsTypes::pftDiaphragm, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopDiaphragm, &fBotDiaphragm);
 
       pForces2->GetStress( castDeckIntervalIdx, pgsTypes::pftSlab, vPoi, maxBAT, rtCumulative, topLocation, botLocation, &fTopMaxSlab, &fBotMaxSlab );
       pForces2->GetStress( castDeckIntervalIdx, pgsTypes::pftSlab, vPoi, minBAT, rtCumulative, topLocation, botLocation, &fTopMinSlab, &fBotMinSlab );

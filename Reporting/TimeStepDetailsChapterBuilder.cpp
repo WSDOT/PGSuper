@@ -104,6 +104,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
    {
       GET_IFACE2(pBroker,IPointOfInterest,pPoi);
       vPoi = pPoi->GetPointsOfInterest(CSegmentKey(ALL_GROUPS,girderKey.girderIndex,ALL_SEGMENTS));
+      vPoi.erase(std::unique(vPoi.begin(), vPoi.end(), [](const auto& poi1, const auto& poi2) {return IsEqual(poi1.GetDistFromStart(), poi2.GetDistFromStart());}), vPoi.end());
    }
    else
    {

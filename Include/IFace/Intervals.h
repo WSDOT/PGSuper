@@ -143,6 +143,13 @@ interface IIntervals : IUnknown
    // returns the interval when continuity occurs at a pier
    virtual void GetContinuityInterval(PierIndexType pierIdx,IntervalIndexType* pBack,IntervalIndexType* pAhead) = 0;
 
+   // returns the index of the interval when intermediate diaphragms are cast
+   virtual IntervalIndexType GetCastIntermediateDiaphragmsInterval() = 0;
+
+   // returns the index of the interval when intermediate diaphragms become composite
+   virtual IntervalIndexType GetCompositeIntermediateDiaphragmsInterval() = 0;
+
+
    // returns the index of the interval when the deck and diaphragms are cast
    // this is the replacement for pgsTypes::BridgeSite1
    virtual IntervalIndexType GetCastDeckInterval() = 0;

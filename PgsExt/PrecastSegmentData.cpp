@@ -1289,5 +1289,12 @@ void CPrecastSegmentData::AssertValid()
    Float64 startStation, endStation;
    GetStations(&startStation,&endStation);
    ATLASSERT( startStation < endStation );
+
+
+   Strands.AssertValid();
+   Material.AssertValid();
+   ShearData.AssertValid();
+   LongitudinalRebarData.AssertValid();
+   HandlingData.AssertValid();
 }
 #endif

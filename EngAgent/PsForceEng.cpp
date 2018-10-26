@@ -29,6 +29,7 @@
 #include <IFace\MomentCapacity.h>
 #include <IFace\Intervals.h>
 #include <IFace\BeamFactory.h>
+#include <IFace\RatingSpecification.h>
 
 #include "..\PGSuperException.h"
 
@@ -1395,85 +1396,31 @@ Float64 pgsPsForceEng::GetInstantaneousEffectsWithLiveLoad(const pgsPointOfInter
 
 Float64 pgsPsForceEng::GetInstantaneousEffectsWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState,const GDRCONFIG* pConfig,const LOSSDETAILS* pDetails)
 {
+   ATLASSERT(!IsStrengthLimitState(limitState)); // limit state must be servie or fatigue
+
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx;
+   Float64 gLL;
    if ( IsRatingLimitState(limitState) )
    {
       liveLoadIntervalIdx = pIntervals->GetLoadRatingInterval();
+
+      GET_IFACE(IRatingSpecification, pRatingSpec);
+      gLL = pRatingSpec->GetLiveLoadFactor(limitState, true);
    }
    else
    {
       liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+
+      GET_IFACE(ILoadFactors, pLoadFactors);
+      const CLoadFactors* pLF = pLoadFactors->GetLoadFactors();
+      gLL = pLF->LLIMmax[limitState];
    }
    pgsTypes::IntervalTimeType intervalTime = pgsTypes::End;
 
    Float64 gain = GetInstantaneousEffects(poi,strandType,liveLoadIntervalIdx,intervalTime,pConfig,pDetails);
-
-   GET_IFACE(ILoadFactors,pLoadFactors);
-   const CLoadFactors* pLF = pLoadFactors->GetLoadFactors();
-   Float64 gLL = pLF->LLIMmax[limitState];
-
-   if ( pDetails->LossMethod == pgsTypes::TIME_STEP )
-   {
-#if defined LUMP_STRANDS
-      if ( strandType == pgsTypes::Permanent )
-      {
-         StrandIndexType Ns, Nh;
-         if ( pConfig )
-         {
-            Ns = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Straight);
-            Nh =  pConfig->PrestressConfig.GetStrandCount(pgsTypes::Harped);
-         }
-         else
-         {
-            const CSegmentKey& segmentKey(poi.GetSegmentKey());
-            GET_IFACE(IStrandGeometry,pStrandGeom);
-            Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
-            Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
-         }
-
-         if ( Ns + Nh == 0 )
-         {
-            return 0;
-         }
-
-         Float64 fllStraight = pDetails->TimeStepDetails[liveLoadIntervalIdx].Strands[pgsTypes::Straight].dFllMax;
-         Float64 fllHarped   = pDetails->TimeStepDetails[liveLoadIntervalIdx].Strands[pgsTypes::Harped].dFllMax;
-         gain += gLL*(Ns*fllStraight + Nh*fllHarped)/(Ns + Nh);
-      }
-      else
-      {
-         gain += gLL*pDetails->TimeStepDetails[liveLoadIntervalIdx].Strands[strandType].dFllMax;
-      }
-#else
-      GET_IFACE(IStrandGeometry,pStrandGeom);
-         for ( int i = 0; i < 2; i++ ) // straight and harped only, temp strands have been removed
-         {
-            pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-            StrandIndexType nStrands = pStrandGeom->GetStrandCount(segmentKey,strandType);
-            for ( StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++ )
-            {
-               const TIME_STEP_STRAND& strand(pDetails->TimeStepDetails[liveLoadIntervalIdx].Strands[strandType][strandIdx]);
-               gain += gLL*strand.dFllMax;
-            }
-         }
-#endif // LUMP_STRANDS
-      return gain;
-   }
-   else
-   {
-      Float64 llGain;
-      if ( pDetails->LossMethod == pgsTypes::GENERAL_LUMPSUM )
-      {
-         llGain = 0.0;
-      }
-      else
-      {
-         llGain = pDetails->pLosses->ElasticGainDueToLiveLoad();
-      }
-      gain += gLL*llGain;
-      return gain;
-   }
+   gain += GetElasticGainDueToLiveLoad(poi, strandType, limitState, pConfig, pDetails);
+   return gain;
 }
 
 Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig,bool bIncludeElasticEffects)
@@ -1537,6 +1484,41 @@ Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTy
    else
    {
       loss = GetTimeDependentLosses(poi,strandType,intervalIdx,intervalTime,pConfig);
+
+      GET_IFACE(ILosses, pLosses);
+      const LOSSDETAILS* pDetails;
+#pragma Reminder("REVIEW = why does one version of GetLossDetails use the intervalIdx and the other doesnt?")
+      if (pConfig)
+      {
+         pDetails = pLosses->GetLossDetails(poi, *pConfig);
+      }
+      else
+      {
+         pDetails = pLosses->GetLossDetails(poi, intervalIdx);
+      }
+
+      if (pDetails->LossMethod != pgsTypes::TIME_STEP)
+      {
+         // we still must account for elastic shortening losses
+         if (releaseIntervalIdx <= intervalIdx)
+         {
+            if (intervalIdx == releaseIntervalIdx && intervalTime == pgsTypes::Start)
+            {
+               // no adjustment for this case... prestress has not yet been released
+            }
+            else
+            {
+               if (strandType == pgsTypes::Temporary)
+               {
+                  loss += pDetails->pLosses->TemporaryStrand_ElasticShorteningLosses();
+               }
+               else
+               {
+                  loss += pDetails->pLosses->PermanentStrand_ElasticShorteningLosses();
+               }
+            }
+         }
+      }
    }
    Float64 fps = fpj - loss;
 
@@ -1627,6 +1609,35 @@ Float64 pgsPsForceEng::GetEffectivePrestressWithLiveLoad(const pgsPointOfInteres
    else
    {
       loss = GetTimeDependentLosses(poi,strandType,liveLoadIntervalIdx,pgsTypes::Start,pConfig);
+
+      GET_IFACE(ILosses, pLosses);
+      const LOSSDETAILS* pDetails;
+#pragma Reminder("REVIEW = why does one version of GetLossDetails use the intervalIdx and the other doesnt?")
+      if (pConfig)
+      {
+         pDetails = pLosses->GetLossDetails(poi, *pConfig);
+      }
+      else
+      {
+         pDetails = pLosses->GetLossDetails(poi, liveLoadIntervalIdx);
+      }
+
+      if (pDetails->LossMethod != pgsTypes::TIME_STEP)
+      {
+         // we still must account for elastic shortening losses
+         if (strandType == pgsTypes::Temporary)
+         {
+            loss += pDetails->pLosses->TemporaryStrand_ElasticShorteningLosses();
+         }
+         else
+         {
+            loss += pDetails->pLosses->PermanentStrand_ElasticShorteningLosses();
+         }
+
+         // we are asking for "with live load" so include the elastic gain due to live load
+         Float64 gain = GetElasticGainDueToLiveLoad(poi, strandType, limitState, pConfig, pDetails);
+         loss -= gain;
+      }
    }
 
    Float64 fps = fpj - loss;
@@ -1647,4 +1658,103 @@ Float64 pgsPsForceEng::GetEffectivePrestressWithLiveLoad(const pgsPointOfInteres
    fps *= adjust;
 
    return fps;
+}
+
+Float64 pgsPsForceEng::GetElasticGainDueToLiveLoad(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, pgsTypes::LimitState limitState, const GDRCONFIG* pConfig, const LOSSDETAILS* pDetails)
+{
+   ATLASSERT(!IsStrengthLimitState(limitState)); // limit state must be service or fatigue
+
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType liveLoadIntervalIdx;
+   Float64 gLL;
+   if (IsRatingLimitState(limitState))
+   {
+      liveLoadIntervalIdx = pIntervals->GetLoadRatingInterval();
+
+      GET_IFACE(IRatingSpecification, pRatingSpec);
+      gLL = pRatingSpec->GetLiveLoadFactor(limitState, true);
+   }
+   else
+   {
+      liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+
+      GET_IFACE(ILoadFactors, pLoadFactors);
+      const CLoadFactors* pLF = pLoadFactors->GetLoadFactors();
+      gLL = pLF->LLIMmax[limitState];
+   }
+   pgsTypes::IntervalTimeType intervalTime = pgsTypes::End;
+
+   Float64 gain = 0;
+   if (pDetails->LossMethod == pgsTypes::TIME_STEP)
+   {
+#if defined LUMP_STRANDS
+      if (strandType == pgsTypes::Permanent)
+      {
+         StrandIndexType Ns, Nh;
+         if (pConfig)
+         {
+            Ns = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Straight);
+            Nh = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Harped);
+         }
+         else
+         {
+            const CSegmentKey& segmentKey(poi.GetSegmentKey());
+            GET_IFACE(IStrandGeometry, pStrandGeom);
+            Ns = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Straight);
+            Nh = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Harped);
+         }
+
+         if (Ns + Nh == 0)
+         {
+            return 0;
+         }
+
+         Float64 fllStraight = pDetails->TimeStepDetails[liveLoadIntervalIdx].Strands[pgsTypes::Straight].dFllMax;
+         Float64 fllHarped = pDetails->TimeStepDetails[liveLoadIntervalIdx].Strands[pgsTypes::Harped].dFllMax;
+         gain += gLL*(Ns*fllStraight + Nh*fllHarped) / (Ns + Nh);
+      }
+      else
+      {
+         gain += gLL*pDetails->TimeStepDetails[liveLoadIntervalIdx].Strands[strandType].dFllMax;
+      }
+#else
+      GET_IFACE(IStrandGeometry, pStrandGeom);
+      for (int i = 0; i < 2; i++) // straight and harped only, temp strands have been removed
+      {
+         pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+         StrandIndexType nStrands = pStrandGeom->GetStrandCount(segmentKey, strandType);
+         for (StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
+         {
+            const TIME_STEP_STRAND& strand(pDetails->TimeStepDetails[liveLoadIntervalIdx].Strands[strandType][strandIdx]);
+            gain += gLL*strand.dFllMax;
+         }
+      }
+#endif // LUMP_STRANDS
+      return gain;
+   }
+   else
+   {
+      Float64 llGain;
+      if (pDetails->LossMethod == pgsTypes::GENERAL_LUMPSUM)
+      {
+         llGain = 0.0;
+      }
+      else
+      {
+         GET_IFACE(ISpecification, pSpec);
+         GET_IFACE(ILibrary, pLibrary);
+         const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
+         Float64 K_liveload = pSpecEntry->GetLiveLoadElasticGain();
+
+         GET_IFACE(IProductForces, pProductForces);
+         pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+         pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
+         Float64 Mmin, Mmax;
+         pProductForces->GetLiveLoadMoment(liveLoadIntervalIdx, llType, poi, bat, true/*include impact*/, true/*include LLDF*/, &Mmin, &Mmax);
+         llGain = pDetails->pLosses->ElasticGainDueToLiveLoad(Mmax);
+         llGain *= K_liveload;
+      }
+      gain += gLL*llGain;
+      return gain;
+   }
 }

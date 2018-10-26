@@ -127,14 +127,12 @@ const pgsFlexuralCapacityArtifact* pgsGirderArtifact::FindPositiveMomentFlexural
    }
 
    const std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>& vArtifacts(found->second);
-   std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>::const_iterator iter(vArtifacts.begin());
-   std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>::const_iterator iterEnd(vArtifacts.end());
-   for ( ; iter != iterEnd; iter++ )
+   for (const auto& item : vArtifacts)
    {
-      const pgsFlexuralCapacityArtifact* pArtifact = &(iter->first);
-      if ( pArtifact->GetPointOfInterest().GetID() == poi.GetID() )
+      const auto& artifact(item.first);
+      if (artifact.GetPointOfInterest().GetID() == poi.GetID())
       {
-         return pArtifact;
+         return &artifact;
       }
    }
 
@@ -151,14 +149,12 @@ const pgsFlexuralCapacityArtifact* pgsGirderArtifact::FindNegativeMomentFlexural
    }
 
    const std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>& vArtifacts(found->second);
-   std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>::const_iterator iter(vArtifacts.begin());
-   std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>::const_iterator iterEnd(vArtifacts.end());
-   for ( ; iter != iterEnd; iter++ )
+   for (const auto& item : vArtifacts)
    {
-      const pgsFlexuralCapacityArtifact* pArtifact = &(iter->second);
-      if ( pArtifact->GetPointOfInterest().GetID() == poi.GetID() )
+      const auto& artifact(item.second);
+      if (artifact.GetPointOfInterest().GetID() == poi.GetID())
       {
-         return pArtifact;
+         return &artifact;
       }
    }
 
@@ -274,14 +270,12 @@ const pgsDeflectionCheckArtifact* pgsGirderArtifact::GetDeflectionCheckArtifact(
 
 bool pgsGirderArtifact::WasWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const
 {
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
-   for ( ; iter != end; iter++ )
+   for (const auto& item : m_SegmentArtifacts)
    {
-      const pgsSegmentArtifact& artifact = iter->second;
-      ATLASSERT(iter->first == artifact.GetSegmentKey());
-      if ( artifact.WasWithRebarAllowableStressUsed(intervalIdx,ls,stressLocation,0) ||
-           artifact.WasWithRebarAllowableStressUsed(intervalIdx,ls,stressLocation,POI_CLOSURE) )
+      const auto& artifact(item.second);
+      ATLASSERT(item.first == artifact.GetSegmentKey());
+      if (artifact.WasWithRebarAllowableStressUsed(intervalIdx, ls, stressLocation, 0) ||
+         artifact.WasWithRebarAllowableStressUsed(intervalIdx, ls, stressLocation, POI_CLOSURE))
       {
          return true;
       }
@@ -291,12 +285,10 @@ bool pgsGirderArtifact::WasWithRebarAllowableStressUsed(IntervalIndexType interv
 
 bool pgsGirderArtifact::WasGirderWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
-   for ( ; iter != end; iter++ )
+   for ( const auto& item : m_SegmentArtifacts)
    {
-      const pgsSegmentArtifact& artifact = iter->second;
-      ATLASSERT(iter->first == artifact.GetSegmentKey());
+      const auto& artifact(item.second);
+      ATLASSERT(item.first == artifact.GetSegmentKey());
       if ( artifact.WasSegmentWithRebarAllowableStressUsed(intervalIdx,ls) ||
            artifact.WasClosureJointWithRebarAllowableStressUsed(intervalIdx,ls,true /*in PTZ*/) ||
            artifact.WasClosureJointWithRebarAllowableStressUsed(intervalIdx,ls,false /*not in PTZ*/))
@@ -309,12 +301,10 @@ bool pgsGirderArtifact::WasGirderWithRebarAllowableStressUsed(IntervalIndexType 
 
 bool pgsGirderArtifact::WasDeckWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
-   for ( ; iter != end; iter++ )
+   for (const auto& item : m_SegmentArtifacts)
    {
-      const pgsSegmentArtifact& artifact = iter->second;
-      ATLASSERT(iter->first == artifact.GetSegmentKey());
+      const auto& artifact(item.second);
+      ATLASSERT(item.first == artifact.GetSegmentKey());
       if ( artifact.WasDeckWithRebarAllowableStressUsed(intervalIdx,ls) )
       {
          return true;
@@ -325,12 +315,10 @@ bool pgsGirderArtifact::WasDeckWithRebarAllowableStressUsed(IntervalIndexType in
 
 bool pgsGirderArtifact::IsWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const
 {
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
-   for ( ; iter != end; iter++ )
+   for (const auto& item : m_SegmentArtifacts)
    {
-      const pgsSegmentArtifact& artifact = iter->second;
-      ATLASSERT(iter->first == artifact.GetSegmentKey());
+      const auto& artifact(item.second);
+      ATLASSERT(item.first == artifact.GetSegmentKey());
       if ( artifact.IsWithRebarAllowableStressApplicable(intervalIdx,ls,stressLocation,0) ||
            artifact.IsWithRebarAllowableStressApplicable(intervalIdx,ls,stressLocation,POI_CLOSURE) )
       {
@@ -342,12 +330,10 @@ bool pgsGirderArtifact::IsWithRebarAllowableStressApplicable(IntervalIndexType i
 
 bool pgsGirderArtifact::IsGirderWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const
 {
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
-   for ( ; iter != end; iter++ )
+   for (const auto& item : m_SegmentArtifacts)
    {
-      const pgsSegmentArtifact& artifact = iter->second;
-      ATLASSERT(iter->first == artifact.GetSegmentKey());
+      const auto& artifact(item.second);
+      ATLASSERT(item.first == artifact.GetSegmentKey());
       if ( artifact.IsSegmentWithRebarAllowableStressApplicable(intervalIdx,ls) ||
            artifact.IsClosureJointWithRebarAllowableStressApplicable(intervalIdx,ls,true /*in PTZ*/) ||
            artifact.IsClosureJointWithRebarAllowableStressApplicable(intervalIdx,ls,false /*not in PTZ*/))
@@ -360,12 +346,10 @@ bool pgsGirderArtifact::IsGirderWithRebarAllowableStressApplicable(IntervalIndex
 
 bool pgsGirderArtifact::IsDeckWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const
 {
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
-   for ( ; iter != end; iter++ )
+   for (const auto& item : m_SegmentArtifacts)
    {
-      const pgsSegmentArtifact& artifact = iter->second;
-      ATLASSERT(iter->first == artifact.GetSegmentKey());
+      const auto& artifact(item.second);
+      ATLASSERT(item.first == artifact.GetSegmentKey());
       if ( artifact.IsDeckWithRebarAllowableStressApplicable(intervalIdx,ls) )
       {
          return true;
@@ -376,12 +360,10 @@ bool pgsGirderArtifact::IsDeckWithRebarAllowableStressApplicable(IntervalIndexTy
 
 bool pgsGirderArtifact::IsFlexuralStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation) const
 {
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
-   for ( ; iter != end; iter++ )
+   for (const auto& item : m_SegmentArtifacts)
    {
-      const pgsSegmentArtifact& artifact = iter->second;
-      ATLASSERT(iter->first == artifact.GetSegmentKey());
+      const auto& artifact(item.second);
+      ATLASSERT(item.first == artifact.GetSegmentKey());
       if ( artifact.IsFlexuralStressCheckApplicable(intervalIdx,ls,stressType,stressLocation) )
       {
          return true;
@@ -393,12 +375,10 @@ bool pgsGirderArtifact::IsFlexuralStressCheckApplicable(IntervalIndexType interv
 Float64 pgsGirderArtifact::GetRequiredGirderConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState) const
 {
    Float64 f = 0;
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
-   for ( ; iter != end; iter++ )
+   for (const auto& item : m_SegmentArtifacts)
    {
-      const pgsSegmentArtifact& artifact = iter->second;
-      ATLASSERT(iter->first == artifact.GetSegmentKey());
+      const auto& artifact(item.second);
+      ATLASSERT(item.first == artifact.GetSegmentKey());
       Float64 required = artifact.GetRequiredSegmentConcreteStrength(intervalIdx,limitState);
       if ( required < 0 )
       {
@@ -414,12 +394,10 @@ Float64 pgsGirderArtifact::GetRequiredGirderConcreteStrength(IntervalIndexType i
 Float64 pgsGirderArtifact::GetRequiredGirderConcreteStrength() const
 {
    Float64 f = 0;
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
-   for ( ; iter != end; iter++ )
+   for (const auto& item : m_SegmentArtifacts)
    {
-      const pgsSegmentArtifact& artifact = iter->second;
-      ATLASSERT(iter->first == artifact.GetSegmentKey());
+      const auto& artifact(item.second);
+      ATLASSERT(item.first == artifact.GetSegmentKey());
       Float64 required = artifact.GetRequiredSegmentConcreteStrength();
       if ( required < 0 )
       {
@@ -435,12 +413,10 @@ Float64 pgsGirderArtifact::GetRequiredGirderConcreteStrength() const
 Float64 pgsGirderArtifact::GetRequiredDeckConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState) const
 {
    Float64 f = 0;
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
-   for ( ; iter != end; iter++ )
+   for (const auto& item : m_SegmentArtifacts)
    {
-      const pgsSegmentArtifact& artifact = iter->second;
-      ATLASSERT(iter->first == artifact.GetSegmentKey());
+      const auto& artifact(item.second);
+      ATLASSERT(item.first == artifact.GetSegmentKey());
       Float64 required = artifact.GetRequiredDeckConcreteStrength(intervalIdx,limitState);
       if ( required < 0 )
       {
@@ -456,12 +432,10 @@ Float64 pgsGirderArtifact::GetRequiredDeckConcreteStrength(IntervalIndexType int
 Float64 pgsGirderArtifact::GetRequiredDeckConcreteStrength() const
 {
    Float64 f = 0;
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
-   for ( ; iter != end; iter++ )
+   for (const auto& item : m_SegmentArtifacts)
    {
-      const pgsSegmentArtifact& artifact = iter->second;
-      ATLASSERT(iter->first == artifact.GetSegmentKey());
+      const auto& artifact(item.second);
+      ATLASSERT(item.first == artifact.GetSegmentKey());
       Float64 required = artifact.GetRequiredDeckConcreteStrength();
       if ( required < 0 )
       {
@@ -477,12 +451,10 @@ Float64 pgsGirderArtifact::GetRequiredDeckConcreteStrength() const
 Float64 pgsGirderArtifact::GetRequiredReleaseStrength() const
 {
    Float64 f = 0;
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator iter(m_SegmentArtifacts.begin());
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator end(m_SegmentArtifacts.end());
-   for ( ; iter != end; iter++ )
+   for (const auto& item : m_SegmentArtifacts)
    {
-      const pgsSegmentArtifact& artifact = iter->second;
-      ATLASSERT(iter->first == artifact.GetSegmentKey());
+      const auto& artifact(item.second);
+      ATLASSERT(item.first == artifact.GetSegmentKey());
       Float64 required = artifact.GetRequiredReleaseStrength();
       if ( required < 0 )
       {
@@ -497,22 +469,18 @@ Float64 pgsGirderArtifact::GetRequiredReleaseStrength() const
 
 bool pgsGirderArtifact::Passed() const
 {
-   std::map<DuctIndexType,pgsTendonStressArtifact>::const_iterator tendonStressIter(m_TendonStressArtifacts.begin());
-   std::map<DuctIndexType,pgsTendonStressArtifact>::const_iterator tendonStressIterEnd(m_TendonStressArtifacts.end());
-   for ( ; tendonStressIter != tendonStressIterEnd; tendonStressIter++ )
+   for ( const auto& item : m_TendonStressArtifacts)
    {
-      const pgsTendonStressArtifact& artifact = tendonStressIter->second;
+      const auto& artifact(item.second);
       if ( !artifact.Passed() )
       {
          return false;
       }
    }
 
-   std::map<DuctIndexType,pgsDuctSizeArtifact>::const_iterator ductSizeIter(m_DuctSizeArtifacts.begin());
-   std::map<DuctIndexType,pgsDuctSizeArtifact>::const_iterator ductSizeIterEnd(m_DuctSizeArtifacts.end());
-   for ( ; ductSizeIter != ductSizeIter; ductSizeIterEnd++ )
+   for (const auto& item : m_DuctSizeArtifacts)
    {
-      const pgsDuctSizeArtifact& artifact = ductSizeIter->second;
+      const auto& artifact(item.second);
       if ( !artifact.Passed() )
       {
          return false;
@@ -521,17 +489,13 @@ bool pgsGirderArtifact::Passed() const
 
    for ( IndexType lsIdx = 0; lsIdx < (IndexType)(pgsTypes::LimitStateCount); lsIdx++ )
    {
-      std::map<IntervalIndexType,std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>>::const_iterator mcIter(m_FlexuralCapacityArtifacts[lsIdx].begin());
-      std::map<IntervalIndexType,std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>>::const_iterator mcIterEnd(m_FlexuralCapacityArtifacts[lsIdx].end());
-      for ( ; mcIter != mcIterEnd; mcIter++ )
+      for ( const auto& item : m_FlexuralCapacityArtifacts[lsIdx])
       {
-         const std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>& vArtifacts(mcIter->second);
-         std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>::const_iterator artifactIter(vArtifacts.begin());
-         std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>::const_iterator artifactIterEnd(vArtifacts.end());
-         for ( ; artifactIter != artifactIterEnd; artifactIter++ )
+         const auto& vArtifacts(item.second);
+         for ( const auto& artifactItem : vArtifacts)
          {
-            const pgsFlexuralCapacityArtifact& pmArtifact(artifactIter->first);
-            const pgsFlexuralCapacityArtifact& nmArtifact(artifactIter->second);
+            const auto& pmArtifact(artifactItem.first);
+            const auto& nmArtifact(artifactItem.second);
 
             if ( !pmArtifact.Passed() )
             {
@@ -551,23 +515,18 @@ bool pgsGirderArtifact::Passed() const
       return false;
    }
 
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator segIter(m_SegmentArtifacts.begin());
-   std::map<CSegmentKey,pgsSegmentArtifact>::const_iterator segEnd(m_SegmentArtifacts.end());
-   for ( ; segIter != segEnd; segIter++ )
+   for ( const auto& item : m_SegmentArtifacts)
    {
-      const pgsSegmentArtifact& artifact = segIter->second;
-      ATLASSERT(segIter->first == artifact.GetSegmentKey());
+      const auto& artifact(item.second);
+      ATLASSERT(item.first == artifact.GetSegmentKey());
       if ( !artifact.Passed() )
       {
          return false;
       }
    }
 
-   std::vector<pgsDeflectionCheckArtifact>::const_iterator deflIter(m_DeflectionCheckArtifact.begin());
-   std::vector<pgsDeflectionCheckArtifact>::const_iterator deflIterEnd(m_DeflectionCheckArtifact.end());
-   for ( ; deflIter != deflIterEnd; deflIter++ )
+   for ( const auto& artifact : m_DeflectionCheckArtifact)
    {
-      const pgsDeflectionCheckArtifact& artifact = *deflIter;
       if ( !artifact.Passed() )
       {
          return false;

@@ -386,3 +386,9 @@ void CLongitudinalRebarData::MakeAssignment(const CLongitudinalRebarData& rOther
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
+
+#if defined _DEBUG
+void CLongitudinalRebarData::AssertValid()
+{
+}
+#endif

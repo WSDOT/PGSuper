@@ -362,6 +362,7 @@ BOOL CShearSteelPage::OnInitDialog()
    FillBarComboBox((CComboBox*)GetDlgItem(IDC_CONFINE_BAR_SIZE));
 
    GetDlgItem(IDC_RESTORE_DEFAULTS)->ShowWindow(m_bAllowRestoreDefaults ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_SEED_VALUE_NOTE)->ShowWindow(m_bAllowRestoreDefaults ? SW_HIDE : SW_SHOW);
 
 	CPropertyPage::OnInitDialog();
 

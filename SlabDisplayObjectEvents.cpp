@@ -81,9 +81,15 @@ STDMETHODIMP_(bool) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnLButtonDb
 {
    METHOD_PROLOGUE(CBridgePlanViewSlabDisplayObjectEvents,Events);
 
-   pThis->EditSlab();
-   
-   return true;
+   if (pDO->IsSelected())
+   {
+      pThis->EditSlab();
+      return true;
+   }
+   else
+   {
+      return false;
+   }
 }
 
 STDMETHODIMP_(bool) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
@@ -295,9 +301,15 @@ STDMETHODIMP_(bool) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnLButto
 {
    METHOD_PROLOGUE(CBridgeSectionViewSlabDisplayObjectEvents,Events);
 
-   pThis->EditSlab();
-   
-   return true;
+   if (pDO->IsSelected())
+   {
+      pThis->EditSlab();
+      return true;
+   }
+   else
+   {
+      return false;
+   }
 }
 
 STDMETHODIMP_(bool) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)

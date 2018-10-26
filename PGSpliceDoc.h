@@ -49,9 +49,9 @@ protected: // create from serialization only
 
    bool EditTemporarySupportDescription(SupportIDType tsID,int nPage);
    
-   virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage);
-   virtual bool EditClosureJointDescription(const CClosureKey& closureKey,int nPage);
-   virtual bool EditGirderDescription(const CGirderKey& girderKey,int nPage);
+   virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage) override;
+   virtual bool EditClosureJointDescription(const CClosureKey& closureKey,int nPage) override;
+   virtual bool EditGirderDescription(const CGirderKey& girderKey,int nPage) override;
    
 
    void DeleteTemporarySupport(SupportIDType tsID);
@@ -89,20 +89,22 @@ protected:
    afx_msg void OnDeleteTemporarySupport();
    //}}AFX_MSG
    afx_msg BOOL OnEditGirderDropDown(NMHDR* pnmhdr,LRESULT* plr);
-   virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
+   virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) override;
 
-   virtual void DoIntegrateWithUI(BOOL bIntegrate);
+   virtual void DoIntegrateWithUI(BOOL bIntegrate) override;
 
-   virtual CPGSuperPluginMgrBase* CreatePluginManager() { return new CPGSplicePluginMgr(); }
+   virtual CPGSuperPluginMgrBase* CreatePluginManager() override { return new CPGSplicePluginMgr(); }
 
-   virtual CATID GetAgentCategoryID() { return CATID_PGSpliceAgent; }
-   virtual CATID GetExtensionAgentCategoryID() { return CATID_PGSpliceExtensionAgent; }
-   virtual CATID GetBeamFamilyCategoryID() { return CATID_PGSpliceBeamFamily; }
-   virtual CATID GetComponentInfoCategoryID() { return CATID_PGSpliceComponentInfo; }
+   virtual CATID GetAgentCategoryID() override { return CATID_PGSpliceAgent; }
+   virtual CATID GetExtensionAgentCategoryID() override { return CATID_PGSpliceExtensionAgent; }
+   virtual CATID GetBeamFamilyCategoryID() override { return CATID_PGSpliceBeamFamily; }
+   virtual CATID GetComponentInfoCategoryID() override { return CATID_PGSpliceComponentInfo; }
 
-   virtual LPCTSTR GetTemplateExtension();
+   virtual LPCTSTR GetTemplateExtension() override;
 
-   virtual BOOL InitMainMenu();
+   virtual BOOL InitMainMenu() override;
+
+   virtual void ModifyTemplate(LPCTSTR strTemplate) override;
 
    DECLARE_MESSAGE_MAP()
 };

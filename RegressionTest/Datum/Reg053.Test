@@ -1,20 +1,20 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.00 SCHLOMAN ROAD -     1     1    WF83G    *     59  0.6  270  36.03  16.66  10.00  10.00                                              17  78.6  6.0  7.200  8.900   6.032    -5.712    21167   0.643  0.743   5.730 -3.612  0.000 -0.350 -3.962 261.95  399.56   10.50   23.00   23.00 
+ 40.00    6   7.00 SCHLOMAN ROAD -     1     1    WF83G    *     59  0.6  270  36.03  16.66  10.00  10.00                                              17  78.6  6.0  7.200  8.900   6.032    -5.712    21167   0.643  0.743   5.673 -3.612  0.000 -0.350 -3.962 261.95  399.56   10.50   23.00   23.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Hauling checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.00 SCHLOMAN ROAD -     1     2    WF83G    *     59  0.6  270  36.03  16.66  10.00  10.00                                              17  78.6  6.0  7.200  8.900   6.054    -5.707    20694   0.601  0.743   5.556 -3.767  0.000 -0.348 -4.115 261.95  392.86   10.50   23.00   23.00 
+ 40.00    6   7.00 SCHLOMAN ROAD -     1     2    WF83G    *     59  0.6  270  36.03  16.66  10.00  10.00                                              17  78.6  6.0  7.200  8.900   6.054    -5.707    20694   0.601  0.743   5.443 -3.767  0.000 -0.348 -4.115 261.95  392.86   10.50   23.00   23.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Hauling checks failed
 
 

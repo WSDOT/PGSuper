@@ -20,8 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_STATUSITEM_H_
-#define INCLUDED_STATUSITEM_H_
+#pragma once
 
 // SYSTEM INCLUDES
 //
@@ -235,4 +234,25 @@ private:
    eafTypes::StatusSeverityType m_Severity;
 };
 
-#endif // INCLUDED_STATUSITEM_H_
+
+// status for timeline input
+class PGSEXTCLASS pgsTimelineStatusItem : public CEAFStatusItem
+{
+public:
+   pgsTimelineStatusItem(StatusGroupIDType statusGroupID, StatusCallbackIDType callbackID, LPCTSTR strDescription);
+   bool IsEqual(CEAFStatusItem* pOther);
+};
+
+
+///////////////////////////
+class PGSEXTCLASS pgsTimelineStatusCallback : public iStatusCallback
+{
+public:
+   pgsTimelineStatusCallback(IBroker* pBroker, eafTypes::StatusSeverityType severity);
+   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual void Execute(CEAFStatusItem* pStatusItem) override;
+
+private:
+   IBroker* m_pBroker;
+   eafTypes::StatusSeverityType m_Severity;
+};

@@ -87,11 +87,13 @@ interface ITest1250 : IUnknown
 {
    virtual bool RunTest(long  type,
                         const std::_tstring& outputFileName,
-                        const std::_tstring& poiFileName)=0;
+                        const std::_tstring& poiFileName) = 0;
 
    virtual bool RunTestEx(long  type, const std::vector<SpanGirderHashType>& girderList,
                           const std::_tstring& outputFileName,
-                          const std::_tstring& poiFileName)=0;
+                          const std::_tstring& poiFileName) = 0;
+
+   virtual bool IsTesting() const = 0;
 };
 
 #endif // INCLUDED_IFACE_TEST1250_H_

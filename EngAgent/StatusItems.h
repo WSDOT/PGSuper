@@ -69,18 +69,18 @@ private:
 };
 
 // status for truck stiffness
-class pgsTruckStiffnessStatusItem : public CEAFStatusItem
+class pgsHaulTruckStatusItem : public CEAFStatusItem
 {
 public:
-   pgsTruckStiffnessStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
+   pgsHaulTruckStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 };
 
 ///////////////////////////
-class pgsTruckStiffnessStatusCallback : public iStatusCallback
+class pgsHaulTruckStatusCallback : public iStatusCallback
 {
 public:
-   pgsTruckStiffnessStatusCallback(IBroker* pBroker);
+   pgsHaulTruckStatusCallback(IBroker* pBroker);
    virtual eafTypes::StatusSeverityType GetSeverity();
    virtual void Execute(CEAFStatusItem* pStatusItem);
 

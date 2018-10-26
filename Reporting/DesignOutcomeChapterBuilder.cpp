@@ -827,20 +827,6 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
          *pNotesParagraph << _T("Concrete release strength was controlled by ") << pArtifact->GetReleaseDesignState().AsString() << rptNewLine;
          *pNotesParagraph << _T("Concrete final strength was controlled by ") << pArtifact->GetFinalDesignState().AsString() << rptNewLine;
          *pNotesParagraph << rptNewLine;
-
-         GET_IFACE2(pBroker,IBridge,pBridge);
-         if ( (pBridge->GetDeckType()!=pgsTypes::sdtNone) && (options.doDesignSlabOffset!=sodNoADesign) )
-         {
-            GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-            if ( pIBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge )
-            {
-               *pNotesParagraph << _T("Slab Offset will be applied to the bridge") << rptNewLine;
-            }
-            else
-            {
-               *pNotesParagraph << _T("Slab Offset will be applied to this girder") << rptNewLine;
-            }
-         }
       }
    }
 }

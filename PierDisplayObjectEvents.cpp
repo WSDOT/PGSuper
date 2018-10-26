@@ -112,8 +112,15 @@ void CPierDisplayObjectEvents::SelectNext(iDisplayObject* pDO)
 STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
 {
    METHOD_PROLOGUE(CPierDisplayObjectEvents,Events);
-   pThis->EditPier(pDO);
-   return true;
+   if (pDO->IsSelected())
+   {
+      pThis->EditPier(pDO);
+      return true;
+   }
+   else
+   {
+      return false;
+   }
 }
 
 STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)

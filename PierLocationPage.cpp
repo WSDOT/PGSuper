@@ -111,8 +111,10 @@ void CPierLocationPage::DoDataExchange(CDataExchange* pDX)
          pDX->Fail();
       }
 
-      pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
+      pParent->m_BridgeDesc.MovePier(pParent->m_pPier->GetIndex(), m_Station, m_MovePierOption);
+      pParent->m_pPier->SetOrientation(m_strOrientation.c_str());
 
+      pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
       if (pgsTypes::sdtNone != deckType)
       {
          Float64 tslab  = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
@@ -140,9 +142,6 @@ void CPierLocationPage::DoDataExchange(CDataExchange* pDX)
          }
 
          // Copy the temporary data from this dialog in to actual bridge model
-         pParent->m_BridgeDesc.MovePier(pParent->m_pPier->GetIndex(),m_Station,m_MovePierOption);
-         pParent->m_pPier->SetOrientation(m_strOrientation.c_str());
-
          if ( pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotBridge )
          {
             if ( pParent->m_pPier->GetGirderGroup(pgsTypes::Back) )

@@ -318,6 +318,82 @@ void pgsLoadRater::MomentRating(const CGirderKey& girderKey,const std::vector<pg
    }
 }
 
+void pgsLoadRater::InitCriticalSectionZones(const CGirderKey& girderKey,pgsTypes::LimitState limitState)
+{
+   m_CriticalSections.clear();
+
+   GET_IFACE(IPointOfInterest, pPoi);
+   GET_IFACE(IShearCapacity, pShearCapacity);
+   GET_IFACE(IBridge, pBridge);
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+
+   GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType endGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? nGroups - 1 : girderKey.groupIndex);
+
+   for (GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++)
+   {
+      CGirderKey thisGirderKey(girderKey);
+      thisGirderKey.groupIndex = grpIdx;
+      ASSERT_GIRDER_KEY(thisGirderKey);
+
+      std::vector<pgsPointOfInterest> vCSPoi = pPoi->GetCriticalSections(limitState, thisGirderKey);
+      std::vector<CRITSECTDETAILS> vCS = pShearCapacity->GetCriticalSectionDetails(limitState, thisGirderKey);
+      ATLASSERT(vCSPoi.size() == vCS.size());
+      std::vector<CRITSECTDETAILS>::iterator iter(vCS.begin());
+      std::vector<CRITSECTDETAILS>::iterator end(vCS.end());
+      std::vector<pgsPointOfInterest>::iterator poiIter(vCSPoi.begin());
+      for (; iter != end; iter++, poiIter++)
+      {
+         CRITSECTDETAILS& csDetails(*iter);
+         if (csDetails.bAtFaceOfSupport)
+         {
+            csDetails.poiFaceOfSupport = *poiIter;
+         }
+         else
+         {
+            csDetails.pCriticalSection->Poi = *poiIter;
+         }
+#if defined _DEBUG
+         const pgsPointOfInterest& csPoi = csDetails.GetPointOfInterest();
+         ATLASSERT(csPoi.GetID() != INVALID_ID);
+         ATLASSERT(csPoi.GetSegmentKey() == poiIter->GetSegmentKey());
+         ATLASSERT(IsEqual(csPoi.GetDistFromStart(), poiIter->GetDistFromStart()));
+#endif
+         m_CriticalSections.push_back(csDetails);
+      }
+   }
+}
+
+ZoneIndexType pgsLoadRater::GetCriticalSectionZone(const pgsPointOfInterest& poi, bool bIncludeCS)
+{
+   Float64 Xpoi = poi.GetDistFromStart();
+
+   auto& iter(m_CriticalSections.cbegin());
+   const auto& end(m_CriticalSections.cend());
+   for (; iter != end; iter++)
+   {
+      const CRITSECTDETAILS& csDetails(*iter);
+      const pgsPointOfInterest& csPoi = csDetails.GetPointOfInterest();
+      const CSegmentKey& csSegmentKey = csPoi.GetSegmentKey();
+
+      if (csSegmentKey == poi.GetSegmentKey() && ::InRange(csDetails.Start, Xpoi, csDetails.End, pgsPointOfInterest::GetTolerance()))
+      {
+         // poi is in the critical section zone
+         if (!bIncludeCS && csPoi.AtSamePlace(poi))
+         {
+            // we want to exclude the actual critical section and the poi is at the same place as the critical section
+            // return now with INVALID_INDEX since there is no reason to keep going through the loop
+            return INVALID_INDEX;
+         }
+
+         // we found the critical section zone that contains our poi
+         return (ZoneIndexType)(std::distance(m_CriticalSections.cbegin(),iter));
+      }
+   }
+
+   return INVALID_INDEX;
+}
+
 void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact)
 {
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
@@ -335,7 +411,31 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const std::vector<pgs
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
 
-   pgsTypes::LimitState ls = ::GetStrengthLimitStateType(ratingType);
+   pgsTypes::LimitState limitState = ::GetStrengthLimitStateType(ratingType);
+   InitCriticalSectionZones(girderKey, limitState);
+
+   GET_IFACE(IPointOfInterest, pPoi);
+   std::vector<pgsPointOfInterest> vMyPoi(vPoi);
+
+   GET_IFACE(IBridge, pBridge);
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+
+   GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType endGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? nGroups - 1 : girderKey.groupIndex);
+   std::vector<pgsPointOfInterest> vCSPoi;
+   for (GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++)
+   {
+      CGirderKey thisGirderKey(girderKey);
+      thisGirderKey.groupIndex = grpIdx;
+      ASSERT_GIRDER_KEY(thisGirderKey);
+      std::vector<pgsPointOfInterest> csPoi(pPoi->GetCriticalSections(limitState, thisGirderKey));
+      vCSPoi.insert(vCSPoi.end(), csPoi.cbegin(), csPoi.cend());
+   }
+   vMyPoi.insert(vMyPoi.end(), vCSPoi.cbegin(), vCSPoi.cend());
+   std::sort(vMyPoi.begin(), vMyPoi.end());
+
+   // remove all POIs that are in a critical section zone
+   vMyPoi.erase(std::remove_if(vMyPoi.begin(), vMyPoi.end(), [&](auto& poi) {return GetCriticalSectionZone(poi) != INVALID_INDEX;}), vMyPoi.end());
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
@@ -362,48 +462,48 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const std::vector<pgs
 
    GET_IFACE(ICombinedForces2,pCombinedForces);
    GET_IFACE(IProductForces2,pProductForces);
-   vDCmin = pCombinedForces->GetShear(loadRatingIntervalIdx,lcDC,vPoi,batMin,rtCumulative);
-   vDCmax = pCombinedForces->GetShear(loadRatingIntervalIdx,lcDC,vPoi,batMax,rtCumulative);
+   vDCmin = pCombinedForces->GetShear(loadRatingIntervalIdx,lcDC,vMyPoi,batMin,rtCumulative);
+   vDCmax = pCombinedForces->GetShear(loadRatingIntervalIdx,lcDC,vMyPoi,batMax,rtCumulative);
 
-   vDWmin = pCombinedForces->GetShear(loadRatingIntervalIdx,lcDWRating,vPoi,batMin,rtCumulative);
-   vDWmax = pCombinedForces->GetShear(loadRatingIntervalIdx,lcDWRating,vPoi,batMax,rtCumulative);
+   vDWmin = pCombinedForces->GetShear(loadRatingIntervalIdx,lcDWRating,vMyPoi,batMin,rtCumulative);
+   vDWmax = pCombinedForces->GetShear(loadRatingIntervalIdx,lcDWRating,vMyPoi,batMax,rtCumulative);
 
    if ( bTimeStep )
    {
-      vCRmin = pCombinedForces->GetShear(loadRatingIntervalIdx,lcCR,vPoi,batMin,rtCumulative);
-      vCRmax = pCombinedForces->GetShear(loadRatingIntervalIdx,lcCR,vPoi,batMax,rtCumulative);
+      vCRmin = pCombinedForces->GetShear(loadRatingIntervalIdx,lcCR,vMyPoi,batMin,rtCumulative);
+      vCRmax = pCombinedForces->GetShear(loadRatingIntervalIdx,lcCR,vMyPoi,batMax,rtCumulative);
 
-      vSHmin = pCombinedForces->GetShear(loadRatingIntervalIdx,lcSH,vPoi,batMin,rtCumulative);
-      vSHmax = pCombinedForces->GetShear(loadRatingIntervalIdx,lcSH,vPoi,batMax,rtCumulative);
+      vSHmin = pCombinedForces->GetShear(loadRatingIntervalIdx,lcSH,vMyPoi,batMin,rtCumulative);
+      vSHmax = pCombinedForces->GetShear(loadRatingIntervalIdx,lcSH,vMyPoi,batMax,rtCumulative);
 
-      vREmin = pCombinedForces->GetShear(loadRatingIntervalIdx,lcRE,vPoi,batMin,rtCumulative);
-      vREmax = pCombinedForces->GetShear(loadRatingIntervalIdx,lcRE,vPoi,batMax,rtCumulative);
+      vREmin = pCombinedForces->GetShear(loadRatingIntervalIdx,lcRE,vMyPoi,batMin,rtCumulative);
+      vREmax = pCombinedForces->GetShear(loadRatingIntervalIdx,lcRE,vMyPoi,batMax,rtCumulative);
 
-      vPSmin = pCombinedForces->GetShear(loadRatingIntervalIdx,lcPS,vPoi,batMin,rtCumulative);
-      vPSmax = pCombinedForces->GetShear(loadRatingIntervalIdx,lcPS,vPoi,batMax,rtCumulative);
+      vPSmin = pCombinedForces->GetShear(loadRatingIntervalIdx,lcPS,vMyPoi,batMin,rtCumulative);
+      vPSmax = pCombinedForces->GetShear(loadRatingIntervalIdx,lcPS,vMyPoi,batMax,rtCumulative);
    }
 
    if ( vehicleIdx == INVALID_INDEX )
    {
-      pProductForces->GetLiveLoadShear( loadRatingIntervalIdx, llType, vPoi, batMin, true, true, &vLLIMmin, &vUnused, &vMinTruckIndex, &vUnusedIndex );
-      pProductForces->GetLiveLoadShear( loadRatingIntervalIdx, llType, vPoi, batMax, true, true, &vUnused, &vLLIMmax, &vUnusedIndex, &vMaxTruckIndex );
+      pProductForces->GetLiveLoadShear( loadRatingIntervalIdx, llType, vMyPoi, batMin, true, true, &vLLIMmin, &vUnused, &vMinTruckIndex, &vUnusedIndex );
+      pProductForces->GetLiveLoadShear( loadRatingIntervalIdx, llType, vMyPoi, batMax, true, true, &vUnused, &vLLIMmax, &vUnusedIndex, &vMaxTruckIndex );
    }
    else
    {
-      pProductForces->GetVehicularLiveLoadShear( loadRatingIntervalIdx, llType, vehicleIdx, vPoi, batMin, true, true, &vLLIMmin, &vUnused, nullptr,nullptr,nullptr,nullptr);
-      pProductForces->GetVehicularLiveLoadShear( loadRatingIntervalIdx, llType, vehicleIdx, vPoi, batMax, true, true, &vUnused, &vLLIMmax, nullptr,nullptr,nullptr,nullptr);
+      pProductForces->GetVehicularLiveLoadShear( loadRatingIntervalIdx, llType, vehicleIdx, vMyPoi, batMin, true, true, &vLLIMmin, &vUnused, nullptr,nullptr,nullptr,nullptr);
+      pProductForces->GetVehicularLiveLoadShear( loadRatingIntervalIdx, llType, vehicleIdx, vMyPoi, batMax, true, true, &vUnused, &vLLIMmax, nullptr,nullptr,nullptr,nullptr);
    }
 
-   pCombinedForces->GetCombinedLiveLoadShear( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vPoi, batMax, false, &vUnused, &vPLmax );
-   pCombinedForces->GetCombinedLiveLoadShear( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vPoi, batMin, false, &vPLmin, &vUnused );
+   pCombinedForces->GetCombinedLiveLoadShear( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vMyPoi, batMax, false, &vUnused, &vPLmax );
+   pCombinedForces->GetCombinedLiveLoadShear( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vMyPoi, batMin, false, &vPLmin, &vUnused );
 
    GET_IFACE(IShearCapacity,pShearCapacity);
-   std::vector<SHEARCAPACITYDETAILS> vVn = pShearCapacity->GetShearCapacityDetails(ls,loadRatingIntervalIdx,vPoi);
+   std::vector<SHEARCAPACITYDETAILS> vVn = pShearCapacity->GetShearCapacityDetails(limitState,loadRatingIntervalIdx,vMyPoi);
 
-   ATLASSERT(vPoi.size()     == vDCmax.size());
-   ATLASSERT(vPoi.size()     == vDWmax.size());
-   ATLASSERT(vPoi.size()     == vLLIMmax.size());
-   ATLASSERT(vPoi.size()     == vVn.size());
+   ATLASSERT(vMyPoi.size()     == vDCmax.size());
+   ATLASSERT(vMyPoi.size()     == vDWmax.size());
+   ATLASSERT(vMyPoi.size()     == vLLIMmax.size());
+   ATLASSERT(vMyPoi.size()     == vVn.size());
    ATLASSERT(vDCmin.size()   == vDCmax.size());
    ATLASSERT(vDWmin.size()   == vDWmax.size());
    ATLASSERT(vCRmin.size()   == vCRmax.size());
@@ -417,20 +517,20 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const std::vector<pgs
    Float64 system_factor    = pRatingSpec->GetSystemFactorShear();
    bool bIncludePL = pRatingSpec->IncludePedestrianLiveLoad();
 
-   Float64 gDC = pRatingSpec->GetDeadLoadFactor(ls);
-   Float64 gDW = pRatingSpec->GetWearingSurfaceFactor(ls);
-   Float64 gCR = pRatingSpec->GetCreepFactor(ls);
-   Float64 gSH = pRatingSpec->GetShrinkageFactor(ls);
-   Float64 gRE = pRatingSpec->GetRelaxationFactor(ls);
-   Float64 gPS = pRatingSpec->GetSecondaryEffectsFactor(ls);
+   Float64 gDC = pRatingSpec->GetDeadLoadFactor(limitState);
+   Float64 gDW = pRatingSpec->GetWearingSurfaceFactor(limitState);
+   Float64 gCR = pRatingSpec->GetCreepFactor(limitState);
+   Float64 gSH = pRatingSpec->GetShrinkageFactor(limitState);
+   Float64 gRE = pRatingSpec->GetRelaxationFactor(limitState);
+   Float64 gPS = pRatingSpec->GetSecondaryEffectsFactor(limitState);
 
    GET_IFACE(IProductLoads,pProductLoads);
    std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(llType,girderKey);
 
-   CollectionIndexType nPOI = vPoi.size();
+   CollectionIndexType nPOI = vMyPoi.size();
    for ( CollectionIndexType i = 0; i < nPOI; i++ )
    {
-      const pgsPointOfInterest& poi = vPoi[i];
+      const pgsPointOfInterest& poi = vMyPoi[i];
 
       Float64 condition_factor = pRatingSpec->GetGirderConditionFactor(poi.GetSegmentKey());
 
@@ -496,11 +596,11 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const std::vector<pgs
       }
       pProgress->UpdateMessage(strProgress);
 
-      Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,true);
+      Float64 gLL = pRatingSpec->GetLiveLoadFactor(limitState,true);
       if ( gLL < 0 )
       {
          // need to compute gLL based on axle weights
-         if ( ::IsStrengthLimitState(ls) )
+         if ( ::IsStrengthLimitState(limitState) )
          {
             GET_IFACE(IProductForces,pProductForce);
             pgsTypes::BridgeAnalysisType batMin = pProductForce->GetBridgeAnalysisType(pgsTypes::Minimize);
@@ -575,9 +675,9 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const std::vector<pgs
       SHEARCAPACITYDETAILS scd;
       pgsDesigner2 designer;
       designer.SetBroker(m_pBroker);
-      pShearCapacity->GetShearCapacityDetails(ls,loadRatingIntervalIdx,poi,&scd);
-      designer.InitShearCheck(poi.GetSegmentKey(),loadRatingIntervalIdx,ls,nullptr);
-      designer.CheckLongReinfShear(poi,loadRatingIntervalIdx,ls,scd,nullptr,&l_artifact);
+      pShearCapacity->GetShearCapacityDetails(limitState,loadRatingIntervalIdx,poi,&scd);
+      designer.InitShearCheck(poi.GetSegmentKey(),loadRatingIntervalIdx, limitState,nullptr);
+      designer.CheckLongReinfShear(poi,loadRatingIntervalIdx, limitState,scd,nullptr,&l_artifact);
       shearArtifact.SetLongReinfShearArtifact(l_artifact);
 
       ratingArtifact.AddArtifact(poi,shearArtifact);
@@ -714,7 +814,7 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
             fPL = 0;
          }
 
-         Float64 fps = pPrestress->GetStress(loadRatingIntervalIdx,poi,stressLocation,true/*include live load if applicable*/);
+         Float64 fps = pPrestress->GetStress(loadRatingIntervalIdx,poi,stressLocation,true/*include live load if applicable*/,limitState);
 
          Float64 fpt = 0;
          if ( bTimeStep )
@@ -1321,6 +1421,7 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey,bool bPositiveMoment,p
    }
 
    GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
@@ -1418,8 +1519,8 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey,bool bPositiveMoment,p
       vSlabPanelMin = pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftSlabPanel,vPoi,batMin, rtIncremental);
       vSlabPanelMax = pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftSlabPanel,vPoi,batMax, rtIncremental);
 
-      vDiaphragmMin = pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftDiaphragm,vPoi,batMin, rtIncremental);
-      vDiaphragmMax = pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftDiaphragm,vPoi,batMax, rtIncremental);
+      vDiaphragmMin = pProductForces->GetMoment(castDiaphragmIntervalIdx,pgsTypes::pftDiaphragm,vPoi,batMin, rtIncremental);
+      vDiaphragmMax = pProductForces->GetMoment(castDiaphragmIntervalIdx,pgsTypes::pftDiaphragm,vPoi,batMax, rtIncremental);
 
       vShearKeyMin = pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftShearKey,vPoi,batMin, rtIncremental);
       vShearKeyMax = pProductForces->GetMoment(castDeckIntervalIdx,pgsTypes::pftShearKey,vPoi,batMax, rtIncremental);

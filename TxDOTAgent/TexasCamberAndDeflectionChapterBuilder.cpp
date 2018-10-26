@@ -208,6 +208,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
@@ -243,7 +244,8 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
 
       delta_dl = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi, bat, rtCumulative, false )
-               + pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftDiaphragm, poi, bat, rtCumulative, false );
+               + pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlabPanel, poi, bat, rtCumulative, false )
+               + pProductForces->GetDeflection(castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm, poi, bat, rtCumulative, false );
 
       delta_sk = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftShearKey, poi, bat, rtCumulative, false );
       
@@ -404,7 +406,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       row++;
 
       if (bFirst)
-         (*pTable)(row,0) << _T("Deflection (Deck and Diaphragms)");
+         (*pTable)(row,0) << _T("Deflection (Deck and Diaphragms)*");
 
       if (isSingleGirder)
          (*pTable)(row,1) << disp.SetValue( delta_dl );
@@ -526,6 +528,9 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       bFirst = false;
       col++;
    }
+
+   *p<<_T("* Deflection due to haunch weight is not included in this value") << rptNewLine;
+
 
    for (std::vector<CSegmentKey>::const_iterator ite=BeamsWithExcessCamber.begin(); ite!=BeamsWithExcessCamber.end(); ite++)
    {

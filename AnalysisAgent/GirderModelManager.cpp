@@ -1711,11 +1711,43 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
          }
       }
 
+      CSegmentKey lastSegmentKey;
       std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
       std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
       IndexType idx = 0;
       for ( ; iter != end; iter++, idx++ )
       {
+         const pgsPointOfInterest& poi(*iter);
+         const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+         Float64 tsrAdjustment = 1.0; // temporary strand removal adjustment factor
+         if (lastSegmentKey != segmentKey)
+         {
+            lastSegmentKey = segmentKey;
+
+            // ALSO SEE: AnalysisAgentImp.cpp CAnalysisAgentImp::BuildTempCamberModel()... a similar adjustment is made there
+            // for the individual prestress deflection models
+            IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
+            if (pfType == pgsTypes::pftPretension && strandType == pgsTypes::Temporary && tsRemovalIntervalIdx <= intervalIdx)
+            {
+               // deflections based on the full prestressing force at installation being removed... since
+               // we are reducing prestress deflections through time due to losses, we have to make an adjustment here.
+               // we need the deflection due to removal of the prestress force at the removal time.
+               std::vector<pgsPointOfInterest> vPoi = pPoi->GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT | POI_5L);
+               ATLASSERT(vPoi.size() == 1);
+               pgsPointOfInterest poiMS(vPoi.front());
+               ATLASSERT(poiMS.IsMidSpan(POI_RELEASED_SEGMENT));
+
+               IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
+
+               GET_IFACE(IPretensionForce, pPrestressForce);
+               Float64 Pinstallation = pPrestressForce->GetPrestressForce(poiMS, pgsTypes::Temporary, tsInstallationIntervalIdx, pgsTypes::End, nullptr);
+               Float64 Premoval = pPrestressForce->GetPrestressForce(poiMS, pgsTypes::Temporary, tsRemovalIntervalIdx, pgsTypes::Start, nullptr);
+
+               tsrAdjustment = Premoval / Pinstallation;
+            }
+         }
+
          CComPtr<ISectionResult3D> result;
          section_results->get_Item(idx,&result);
 
@@ -1727,8 +1759,6 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
 
          if ( pfType == pgsTypes::pftPretension || (pfType == pgsTypes::pftGirder && resultsType == rtCumulative) )
          {
-            const pgsPointOfInterest& poi(*iter);
-            const CSegmentKey& segmentKey(poi.GetSegmentKey());
             IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
             IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
             Float64 Eci = pMaterials->GetSegmentEc(segmentKey,releaseIntervalIdx);
@@ -1751,7 +1781,7 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
                // we have the deflection due to pretension using the pretension force at release and the section stiffness
                // at this interval. Since we are assuming that pretension deflection doesn't change through time, we need
                // to scale the deflection from the LBAM with the EI(thisInterval)/EI(releaseInterval) to get the correct deflection
-               Dy *= (IEc/IEci);
+               Dy *= tsrAdjustment*(IEc/IEci);
             }
             else
             {
@@ -1881,11 +1911,43 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
          }
       }
 
+      CSegmentKey lastSegmentKey;
       std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
       std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
       IndexType idx = 0;
       for ( ; iter != end; iter++, idx++ )
       {
+         const pgsPointOfInterest& poi(*iter);
+         const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+         Float64 tsrAdjustment = 1.0; // temporary strand removal adjustment factor
+         if (lastSegmentKey != segmentKey)
+         {
+            lastSegmentKey = segmentKey;
+
+            // ALSO SEE: AnalysisAgentImp.cpp CAnalysisAgentImp::BuildTempCamberModel()... a similar adjustment is made there
+            // for the individual prestress deflection models
+            IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
+            if (pfType == pgsTypes::pftPretension && strandType == pgsTypes::Temporary && tsRemovalIntervalIdx <= intervalIdx)
+            {
+               // deflections based on the full prestressing force at installation being removed... since
+               // we are reducing prestress deflections through time due to losses, we have to make an adjustment here.
+               // we need the deflection due to removal of the prestress force at the removal time.
+               std::vector<pgsPointOfInterest> vPoi = pPoi->GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT | POI_5L);
+               ATLASSERT(vPoi.size() == 1);
+               pgsPointOfInterest poiMS(vPoi.front());
+               ATLASSERT(poiMS.IsMidSpan(POI_RELEASED_SEGMENT));
+
+               IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
+
+               GET_IFACE(IPretensionForce, pPrestressForce);
+               Float64 Pinstallation = pPrestressForce->GetPrestressForce(poiMS, pgsTypes::Temporary, tsInstallationIntervalIdx, pgsTypes::End, nullptr);
+               Float64 Premoval = pPrestressForce->GetPrestressForce(poiMS, pgsTypes::Temporary, tsRemovalIntervalIdx, pgsTypes::Start, nullptr);
+
+               tsrAdjustment = Premoval / Pinstallation;
+            }
+         }
+
          CComPtr<ISectionResult3D> result;
          section_results->get_Item(idx,&result);
 
@@ -1897,8 +1959,6 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
 
          if ( pfType == pgsTypes::pftPretension || (pfType == pgsTypes::pftGirder && resultsType == rtCumulative) )
          {
-            const pgsPointOfInterest& poi(*iter);
-            const CSegmentKey& segmentKey(poi.GetSegmentKey());
             IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
             IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
             Float64 Eci = pMaterials->GetSegmentEc(segmentKey,releaseIntervalIdx);
@@ -1921,7 +1981,7 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
 
                I = pSectProps->GetIx(intervalIdx,spPoi);
                Float64 IEc = I*Ec;
-               Rz *= (IEc/IEci);
+               Rz *= tsrAdjustment*(IEc/IEci);
             }
             else
             {
@@ -3666,9 +3726,23 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
       ar = pModelData->pLoadCaseResponse[bat]->ComputeDeflections(bstrLoadCase,m_LBAMPoi,bstrStage,rsType,&results);
    }
 
+   GET_IFACE(IIntervals, pIntervals);
+   GET_IFACE(IPointOfInterest, pPoi);
+   std::vector<CSegmentKey> vSegments = pPoi->GetSegmentKeys(vPoi);
+   IntervalIndexType erectionIntervalIdx;
+   if (vSegments.size() == 1)
+   {
+      erectionIntervalIdx = pIntervals->GetErectSegmentInterval(vSegments.front());
+   }
+   else
+   {
+      CGirderKey girderKey(vPoi.front().GetSegmentKey());
+      erectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
+   }
+
    std::vector<Float64> badGirderDeflection;
    std::vector<Float64> goodGirderDeflection;
-   if ( combo == lcDC )
+   if (combo == lcDC && (resultsType == rtCumulative || (resultsType == rtIncremental && intervalIdx == erectionIntervalIdx)))
    {
       // the DC combination contains girder deflections based on the full weight of the girder being applied at erection.
       // this is not the correct deflection... the correct deflection is the deflection at storage plus the incremental
@@ -3695,7 +3769,7 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
 
       ATLASSERT(IsEqual(Dy,Dyr));
 
-      if ( combo == lcDC )
+      if (combo == lcDC && (resultsType == rtCumulative || (resultsType == rtIncremental && intervalIdx == erectionIntervalIdx)))
       {
          Float64 badDy  = badGirderDeflection[idx];
          Float64 goodDy = goodGirderDeflection[idx];
@@ -3739,9 +3813,23 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
       ar = pModelData->pLoadCaseResponse[bat]->ComputeDeflections(bstrLoadCase,m_LBAMPoi,bstrStage,rsType,&results);
    }
 
+   GET_IFACE(IIntervals, pIntervals);
+   GET_IFACE(IPointOfInterest, pPoi);
+   std::vector<CSegmentKey> vSegments = pPoi->GetSegmentKeys(vPoi);
+   IntervalIndexType erectionIntervalIdx;
+   if (vSegments.size() == 1)
+   {
+      erectionIntervalIdx = pIntervals->GetErectSegmentInterval(vSegments.front());
+   }
+   else
+   {
+      CGirderKey girderKey(vPoi.front().GetSegmentKey());
+      erectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
+   }
+
    std::vector<Float64> badGirderRotation;
    std::vector<Float64> goodGirderRotation;
-   if ( combo == lcDC )
+   if (combo == lcDC && (resultsType == rtCumulative || (resultsType == rtIncremental && intervalIdx == erectionIntervalIdx)))
    {
       // the DC combination contains girder rotations based on the full weight of the girder being applied at erection.
       // this is not the correct rotation... the correct rotation is the rotation at storage plus the incremental
@@ -3767,7 +3855,7 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
 
       ATLASSERT(IsEqual(Rz,Rzr));
 
-      if ( combo == lcDC )
+      if (combo == lcDC && (resultsType == rtCumulative || (resultsType == rtIncremental && intervalIdx == erectionIntervalIdx)))
       {
          Float64 badRz  = badGirderRotation[idx];
          Float64 goodRz = goodGirderRotation[idx];
@@ -4862,7 +4950,7 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::Limi
 
       if ( bIncludePrestress )
       {
-         Float64 ps = GetStress(intervalIdx,poi,stressLocation,bIncludeLiveLoad==VARIANT_TRUE);
+         Float64 ps = GetStress(intervalIdx,poi,stressLocation,bIncludeLiveLoad==VARIANT_TRUE,limitState);
          fMin += k*ps;
          fMax += k*ps;
 
@@ -4911,6 +4999,7 @@ std::vector<Float64> CGirderModelManager::GetSlabDesignMoment(pgsTypes::LimitSta
    bool bExcludeNoncompositeMoments = !pSpecEntry->IncludeNoncompositeMomentsForNegMomentDesign();
 
    GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
@@ -4989,7 +5078,7 @@ std::vector<Float64> CGirderModelManager::GetSlabDesignMoment(pgsTypes::LimitSta
             Float64 Mslab         = GetMoment(castDeckIntervalIdx, pgsTypes::pftSlab,         poi, bat, rtCumulative);
             Float64 Mslab_pad     = GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPad,      poi, bat, rtCumulative);
             Float64 Mslab_panel   = GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPanel,    poi, bat, rtCumulative);
-            Float64 Mdiaphragm    = GetMoment(castDeckIntervalIdx, pgsTypes::pftDiaphragm,    poi, bat, rtCumulative);
+            Float64 Mdiaphragm    = GetMoment(castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm,    poi, bat, rtCumulative);
             Float64 Mshear_key    = GetMoment(castDeckIntervalIdx, pgsTypes::pftShearKey,     poi, bat, rtCumulative);
 
             MzMin -= gDC*(Mconstruction + Mslab + Mslab_pad + Mslab_panel + Mdiaphragm + Mshear_key);
@@ -8157,72 +8246,115 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
                CComPtr<ISpan> objSpan;
                spans->get_Item(spanIdx,&objSpan);
 
-               CComPtr<ITemporarySupports> objTemporarySupports;
-               objSpan->get_TemporarySupports(&objTemporarySupports);
-
                Float64 span_length;
                objSpan->get_Length(&span_length);
 
-               CComPtr<ITemporarySupport> objLeftTS;
-               objLeftTS.CoCreateInstance(CLSID_TemporarySupport);
-               objLeftTS->put_OmitReaction(VARIANT_TRUE); // don't apply the temporary support reaction back into the structure
-
-               objLeftTS->put_ID(backID);
-               objLeftTS->put_Location(span_length - left_brg_offset );
-
-               objLeftTS->SetLoadModifier(lctStrength,loadModifier.LoadModifier(lrfdTypes::StrengthI,lrfdTypes::Min),loadModifier.LoadModifier(lrfdTypes::StrengthI,lrfdTypes::Max));
-
-               objLeftTS->put_BoundaryCondition(bcRoller);
-
-               // If there is a continuous connection at the pier, remove the temporary support when the 
-               // connection becomes continuous, otherwise keep it to preserve the stability of the LBAM
-               if ( bContinuousConnection )
-               {
-                  objLeftTS->put_StageRemoved( GetLBAMStageName(leftContinuityIntervalIdx) );
-               }
-               else
-               {
-                  objLeftTS->put_StageRemoved(CComBSTR(""));
-                  objPrimarySupport->AddAssociatedSupport(backID);
-               }
-
-               objTemporarySupports->Add(objLeftTS);
-            }
-
-            // Temporary support CL Bearing on right side of pier
-            if ( !IsZero(right_end_dist+right_end_offset) )
-            {
-               CComPtr<ISpan> objSpan;
-               spans->get_Item(spanIdx+1,&objSpan);
+               Float64 location = span_length - left_brg_offset;
 
                CComPtr<ITemporarySupports> objTemporarySupports;
                objSpan->get_TemporarySupports(&objTemporarySupports);
 
-               CComPtr<ITemporarySupport> objRightTS;
-               objRightTS.CoCreateInstance(CLSID_TemporarySupport);
-               objRightTS->put_OmitReaction(VARIANT_TRUE); // don't apply the temporary support reaction back into the structure
-
-
-               objRightTS->put_ID(aheadID);
-               objRightTS->put_Location(right_brg_offset);
-
-               objRightTS->SetLoadModifier(lctStrength,loadModifier.LoadModifier(lrfdTypes::StrengthI,lrfdTypes::Min),loadModifier.LoadModifier(lrfdTypes::StrengthI,lrfdTypes::Max));
-
-               objRightTS->put_BoundaryCondition(bcRoller);
-
-               // If there is a continuous connection at the pier, remove the temporary support when the 
-               // connection becomes continuous, otherwise keep it to preserve the stability of the LBAM
-               if ( bContinuousConnection )
+               bool bExistingTS = false;
+               CComPtr<IEnumTemporarySupport> enumTS;
+               objTemporarySupports->get__EnumElements(&enumTS);
+               CComPtr<ITemporarySupport> ts;
+               while (enumTS->Next(1,&ts,nullptr) != S_FALSE)
                {
-                  objRightTS->put_StageRemoved( GetLBAMStageName(rightContinuityIntervalIdx) );
-               }
-               else
-               {
-                  objRightTS->put_StageRemoved(CComBSTR(""));
-                  objPrimarySupport->AddAssociatedSupport(aheadID);
+                  Float64 tsLocation;
+                  ts->get_Location(&tsLocation);
+                  if (IsEqual(location, tsLocation))
+                  {
+                     // there is already a temporary support at this location (this can happen if the user builds the model this way)
+                     bExistingTS = true;
+                     break;
+                  }
+                  ts.Release();
                }
 
-               objTemporarySupports->Add(objRightTS);
+               if (!bExistingTS)
+               {
+                  CComPtr<ITemporarySupport> objLeftTS;
+                  objLeftTS.CoCreateInstance(CLSID_TemporarySupport);
+                  objLeftTS->put_OmitReaction(VARIANT_TRUE); // don't apply the temporary support reaction back into the structure
+
+                  objLeftTS->put_ID(backID);
+                  objLeftTS->put_Location(location);
+
+                  objLeftTS->SetLoadModifier(lctStrength, loadModifier.LoadModifier(lrfdTypes::StrengthI, lrfdTypes::Min), loadModifier.LoadModifier(lrfdTypes::StrengthI, lrfdTypes::Max));
+
+                  objLeftTS->put_BoundaryCondition(bcRoller);
+
+                  // If there is a continuous connection at the pier, remove the temporary support when the 
+                  // connection becomes continuous, otherwise keep it to preserve the stability of the LBAM
+                  if (bContinuousConnection)
+                  {
+                     objLeftTS->put_StageRemoved(GetLBAMStageName(leftContinuityIntervalIdx));
+                  }
+                  else
+                  {
+                     objLeftTS->put_StageRemoved(CComBSTR(""));
+                     objPrimarySupport->AddAssociatedSupport(backID);
+                  }
+
+                  objTemporarySupports->Add(objLeftTS);
+               }
+            }
+
+            // Temporary support CL Bearing on right side of pier
+            if (!IsZero(right_end_dist + right_end_offset))
+            {
+               CComPtr<ISpan> objSpan;
+               spans->get_Item(spanIdx + 1, &objSpan);
+
+               CComPtr<ITemporarySupports> objTemporarySupports;
+               objSpan->get_TemporarySupports(&objTemporarySupports);
+
+               bool bExistingTS = false;
+               Float64 location = right_brg_offset;
+               CComPtr<IEnumTemporarySupport> enumTS;
+               objTemporarySupports->get__EnumElements(&enumTS);
+               CComPtr<ITemporarySupport> ts;
+               while (enumTS->Next(1, &ts, nullptr) != S_FALSE)
+               {
+                  Float64 tsLocation;
+                  ts->get_Location(&tsLocation);
+                  if (IsEqual(location, tsLocation))
+                  {
+                     // there is already a temporary support at this location (this can happen if the user builds the model this way)
+                     bExistingTS = true;
+                     break;
+                  }
+                  ts.Release();
+               }
+
+               if (!bExistingTS)
+               {
+                  CComPtr<ITemporarySupport> objRightTS;
+                  objRightTS.CoCreateInstance(CLSID_TemporarySupport);
+                  objRightTS->put_OmitReaction(VARIANT_TRUE); // don't apply the temporary support reaction back into the structure
+
+
+                  objRightTS->put_ID(aheadID);
+                  objRightTS->put_Location(location);
+
+                  objRightTS->SetLoadModifier(lctStrength, loadModifier.LoadModifier(lrfdTypes::StrengthI, lrfdTypes::Min), loadModifier.LoadModifier(lrfdTypes::StrengthI, lrfdTypes::Max));
+
+                  objRightTS->put_BoundaryCondition(bcRoller);
+
+                  // If there is a continuous connection at the pier, remove the temporary support when the 
+                  // connection becomes continuous, otherwise keep it to preserve the stability of the LBAM
+                  if (bContinuousConnection)
+                  {
+                     objRightTS->put_StageRemoved(GetLBAMStageName(rightContinuityIntervalIdx));
+                  }
+                  else
+                  {
+                     objRightTS->put_StageRemoved(CComBSTR(""));
+                     objPrimarySupport->AddAssociatedSupport(aheadID);
+                  }
+
+                  objTemporarySupports->Add(objRightTS);
+               }
             }
          }
       } // next segment
@@ -9835,7 +9967,7 @@ void CGirderModelManager::AddHL93LiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,
    GET_IFACE(IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
    VARIANT_BOOL bUseDualTruckTrains = (1 < nSpans ? VARIANT_TRUE : VARIANT_FALSE); // always use dual truck trains if more than one span (needed for reactions at intermediate piers)
-   m_LBAMUtility->ConfigureDesignLiveLoad(pModel,llmt,IMtruck,IMlane,bUseDualTruckTrains,bUseDualTruckTrains,units,m_UnitServer);
+   m_LBAMUtility->ConfigureDesignLiveLoad(pModel,llmt,IMtruck,IMlane,bUseDualTruckTrains, bUseDualTruckTrains,units,m_UnitServer);
 }
 
 void CGirderModelManager::AddFatigueLiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane)
@@ -10442,6 +10574,38 @@ void CGirderModelManager::ApplyEquivalentPretensionForce(ILBAMModel* pModel,Gird
 
                CComPtr<IPointLoadItem> ptLoadItem;
                pointLoads->Add(bstrStage,bstrLoadGroup,ptLoad,&ptLoadItem);
+            }
+         }
+
+         IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
+         if (tsRemovalIntervalIdx != INVALID_INDEX)
+         {
+            CComBSTR bstrStage(GetLBAMStageName(tsRemovalIntervalIdx));
+            CComBSTR bstrLoadGroup(GetLoadGroupName(pgsTypes::Temporary));
+
+            std::vector<EquivPretensionLoad> vEquivLoads = pProductLoads->GetEquivPretensionLoads(segmentKey, pgsTypes::Temporary, false, tsRemovalIntervalIdx);
+            std::vector<EquivPretensionLoad>::iterator loadIter(vEquivLoads.begin());
+            std::vector<EquivPretensionLoad>::iterator loadIterEnd(vEquivLoads.end());
+            for (; loadIter != loadIterEnd; loadIter++)
+            {
+               EquivPretensionLoad& equivLoad = *loadIter;
+
+               MemberType mbrType;
+               MemberIDType mbrID;
+               Float64 X;
+               GetPosition(pModel, segmentKey, equivLoad.Xs, &mbrType, &mbrID, &X);
+
+               CComPtr<IPointLoad> ptLoad;
+               ptLoad.CoCreateInstance(CLSID_PointLoad);
+               ptLoad->put_MemberType(mbrType);
+               ptLoad->put_MemberID(mbrID);
+               ptLoad->put_Location(X);
+               ptLoad->put_Fx(equivLoad.P);
+               ptLoad->put_Fy(equivLoad.N);
+               ptLoad->put_Mz(equivLoad.M);
+
+               CComPtr<IPointLoadItem> ptLoadItem;
+               pointLoads->Add(bstrStage, bstrLoadGroup, ptLoad, &ptLoadItem);
             }
          }
       }
@@ -11689,8 +11853,11 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
 
       const CGirderKey& girderKey(pGirder->GetGirderKey());
 
-      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(); // diaphragms are cast with the deck
-      CComBSTR bstrStage( GetLBAMStageName(castDeckIntervalIdx) );
+      IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
+      CComBSTR bstrDiaphragmStage(GetLBAMStageName(castDiaphragmIntervalIdx));
+
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+      CComBSTR bstrDeckStage(GetLBAMStageName(castDeckIntervalIdx));
 
       // iterate over all the piers in the group
       const CPierData2* pStartPier = pGroup->GetPier(pgsTypes::metStart);
@@ -11728,6 +11895,22 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
             load->put_Fy(Pahead);
             load->put_Mz(Mahead);
 
+            CComBSTR bstrStage;
+            pgsTypes::BoundaryConditionType bcType = pPier->GetBoundaryConditionType();
+            if (bcType == pgsTypes::bctContinuousAfterDeck || 
+                bcType == pgsTypes::bctIntegralAfterDeck ||
+                bcType == pgsTypes::bctIntegralAfterDeckHingeBack )
+            {
+               // if the boundary conditions are continuous/integral after deck,
+               // then assume the diaphragm is cast with the deck....
+               bstrStage = bstrDeckStage;
+            }
+            else
+            {
+               // ... otherwise assume the diaphragm is cast with the interior diaphragms
+               bstrStage = bstrDiaphragmStage;
+            }
+
             CComPtr<IPointLoadItem> ptLoadItem;
             pointLoads->Add(bstrStage,bstrLoadGroup,load,&ptLoadItem);
 
@@ -11760,6 +11943,23 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
             load->put_Location(poi.GetDistFromStart() - start_end_dist);
             load->put_Fy(Pback);
             load->put_Mz(Mback);
+
+
+            CComBSTR bstrStage;
+            pgsTypes::BoundaryConditionType bcType = pPier->GetBoundaryConditionType();
+            if (bcType == pgsTypes::bctContinuousAfterDeck ||
+               bcType == pgsTypes::bctIntegralAfterDeck ||
+               bcType == pgsTypes::bctIntegralAfterDeckHingeAhead)
+            {
+               // if the boundary conditions are continuous/integral after deck,
+               // then assume the diaphragm is cast with the deck....
+               bstrStage = bstrDeckStage;
+            }
+            else
+            {
+               // ... otherwise assume the diaphragm is cast with the interior diaphragms
+               bstrStage = bstrDiaphragmStage;
+            }
 
             CComPtr<IPointLoadItem> ptLoadItem;
             pointLoads->Add(bstrStage,bstrLoadGroup,load,&ptLoadItem);
@@ -11831,8 +12031,10 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
                load->put_Location(dist_along_segment - start_end_dist);
                load->put_Fy(Pback + Pahead);
 
+               // apply this load along with the deck
                CComPtr<IPointLoadItem> ptLoadItem;
-               pointLoads->Add(bstrStage,bstrLoadGroup,load,&ptLoadItem);
+               pointLoads->Add(bstrDeckStage,bstrLoadGroup,load,&ptLoadItem);
+               SaveOverhangPointLoads(CSegmentKey(girderKey, 0), analysisType, bstrDeckStage, bstrLoadGroup, Pahead, Pback);
             }
             else
             {
@@ -11859,6 +12061,13 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
                   mbrID++;
                }
 
+
+               // This is an interior pier and the segment connection type is one of the "closure joint" types
+               // The closure joint is assumed to be cast with the diaphragm
+               ATLASSERT(pPier->GetSegmentConnectionType() == pgsTypes::psctContinousClosureJoint || pPier->GetSegmentConnectionType() == pgsTypes::psctIntegralClosureJoint);
+               CComBSTR bstrStageBack = bstrDiaphragmStage;
+
+
                CComPtr<IPointLoad> backLoad;
                backLoad.CoCreateInstance(CLSID_PointLoad);
                backLoad->put_MemberType(mtSuperstructureMember);
@@ -11868,13 +12077,19 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
                backLoad->put_Mz(Mback);
 
                CComPtr<IPointLoadItem> ptLoadItem;
-               pointLoads->Add(bstrStage,bstrLoadGroup,backLoad,&ptLoadItem);
+               pointLoads->Add(bstrStageBack,bstrLoadGroup,backLoad,&ptLoadItem);
+               SaveOverhangPointLoads(CSegmentKey(girderKey, 0), analysisType, bstrStageBack, bstrLoadGroup, 0, Pback);
 
                mbrID = GetFirstSuperstructureMemberID(nextSegmentKey);
                if ( !IsZero(next_start_end_dist) )
                {
                   mbrID++;
                }
+
+
+               // This is an interior pier and the segment connection type is one of the "closure joint" types
+               // The closure joint is assumed to be cast with the diaphragm
+               CComBSTR bstrStageAhead = bstrDiaphragmStage;
 
                CComPtr<IPointLoad> aheadLoad;
                aheadLoad.CoCreateInstance(CLSID_PointLoad);
@@ -11885,10 +12100,9 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
                aheadLoad->put_Mz(Mahead);
 
                ptLoadItem.Release();
-               pointLoads->Add(bstrStage,bstrLoadGroup,aheadLoad,&ptLoadItem);
+               pointLoads->Add(bstrStageAhead,bstrLoadGroup,aheadLoad,&ptLoadItem);
+               SaveOverhangPointLoads(CSegmentKey(girderKey, 0), analysisType, bstrStageAhead, bstrLoadGroup, Pahead, 0);
             }
-
-            SaveOverhangPointLoads(CSegmentKey(girderKey,0),analysisType,bstrStage,bstrLoadGroup,Pahead,Pback);
          }
       } // next pier
    } // next group
@@ -11903,6 +12117,8 @@ void CGirderModelManager::ApplyIntermediateDiaphragmLoads( ILBAMModel* pLBAMMode
 
    GET_IFACE(IIntervals,pIntervals);
    GET_IFACE_NOCHECK(IPointOfInterest,pPoi);
+
+   IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
 
    CComPtr<IPointLoads> pointLoads;
    pLBAMModel->get_PointLoads(&pointLoads);
@@ -11977,8 +12193,7 @@ void CGirderModelManager::ApplyIntermediateDiaphragmLoads( ILBAMModel* pLBAMMode
 
             pgsPointOfInterest poi = pPoi->ConvertSpanPointToPoi(spanKey,loc);
 
-            IntervalIndexType intervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
-            CComBSTR bstrStage = GetLBAMStageName(intervalIdx);
+            CComBSTR bstrStage = GetLBAMStageName(castDiaphragmIntervalIdx);
 
             CComPtr<IPointLoad> load;
             load.CoCreateInstance(CLSID_PointLoad);
@@ -13257,7 +13472,9 @@ void CGirderModelManager::ApplyLLDF_PinFix(const CSpanKey& spanKey,IDblArray* cf
       }
    }
 
-   pgsTypes::PierFaceType pierFace(spanKey.spanIndex == 0 ? pgsTypes::Ahead : pgsTypes::Back);
+   PierIndexType nPiers = pBridge->GetPierCount();
+   PierIndexType pierIdx = (PierIndexType)(spanKey.spanIndex + 1);
+   pgsTypes::PierFaceType pierFace(spanKey.spanIndex == 0 && pierIdx != nPiers-1 ? pgsTypes::Ahead : pgsTypes::Back);
    if ( bUseLinearLLDF )
    {
       if ( bTaperStart && !bTaperEnd )
@@ -13274,7 +13491,7 @@ void CGirderModelManager::ApplyLLDF_PinFix(const CSpanKey& spanKey,IDblArray* cf
          }
 
          // for the second part of the span, use the negative moment distribution factor that goes over the next pier
-         gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex+1,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
+         gnM = pLLDF->GetNegMomentDistFactorAtPier(pierIdx,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
 
          AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVEnd,gR,gFM,gFVEnd,gD,gPedes);
       }
@@ -13286,7 +13503,7 @@ void CGirderModelManager::ApplyLLDF_PinFix(const CSpanKey& spanKey,IDblArray* cf
             AddDistributionFactors(distFactors,seg_length_1 - span_length/2,gpM,gnM,gVStart,gVCF,gR,gFM,gFVStart,gFVCF,gD,gPedes);
 
             // for the second part of the span, use the negative moment distribution factor that goes over the next pier
-            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex+1,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(pierIdx,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
 
             AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVCF,gVEnd,gR,gFM,gFVCF,gFVEnd,gD,gPedes);
          }
@@ -13295,7 +13512,7 @@ void CGirderModelManager::ApplyLLDF_PinFix(const CSpanKey& spanKey,IDblArray* cf
             AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gVStart,gR,gFM,gFVStart,gD,gPedes);
 
             // for the second part of the span, use the negative moment distribution factor that goes over the next pier
-            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex+1,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(pierIdx,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
             AddDistributionFactors(distFactors,span_length/2 - seg_length_1,gpM,gnM,gVStart,gR,gFM,gFVStart,gD,gPedes);
 
             AddDistributionFactors(distFactors,seg_length_2 - (span_length/2 - seg_length_1),gpM,gnM,gVStart,gVEnd,gR,gFM,gFVStart,gFVEnd,gD,gPedes);
@@ -13308,13 +13525,13 @@ void CGirderModelManager::ApplyLLDF_PinFix(const CSpanKey& spanKey,IDblArray* cf
          {
             AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gVStart,gVMid,gR,gFM,gFVStart,gFVMid,gD,gPedes);
             AddDistributionFactors(distFactors,seg_length_1 - span_length/2,gpM,gnM,gVMid,gVCF,gR,gFM,gFVMid,gFVCF,gD,gPedes);
-            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex+1,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(pierIdx,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
             AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVCF,gVEnd,gR,gFM,gFVCF,gFVEnd,gD,gPedes);
          }
          else
          {
             AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gVStart,gVCF,gR,gFM,gFVStart,gFVCF,gD,gPedes);
-            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex+1,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(pierIdx,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
             AddDistributionFactors(distFactors,span_length/2 - seg_length_1,gpM,gnM,gVCF,gVMid,gR,gFM,gFVCF,gFVMid,gD,gPedes);
             AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVMid,gVEnd,gR,gFM,gFVMid,gFVEnd,gD,gPedes);
          }
@@ -13325,7 +13542,7 @@ void CGirderModelManager::ApplyLLDF_PinFix(const CSpanKey& spanKey,IDblArray* cf
       AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
 
       // for the second part of the span, use the negative moment distribution factor that goes over the next pier
-      gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex+1,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
+      gnM = pLLDF->GetNegMomentDistFactorAtPier(pierIdx,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
 
       AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
    }
@@ -13506,7 +13723,7 @@ void CGirderModelManager::ApplyLLDF_FixPin(const CSpanKey& spanKey,IDblArray* cf
       }
    }
 
-   pgsTypes::PierFaceType pierFace(spanKey.spanIndex == 0 ? pgsTypes::Ahead : pgsTypes::Back);
+   pgsTypes::PierFaceType pierFace(pierIdx == 0 ? pgsTypes::Ahead : pgsTypes::Back);
    if ( bUseLinearLLDF )
    {
       if ( bTaperStart && !bTaperEnd )
@@ -13523,7 +13740,7 @@ void CGirderModelManager::ApplyLLDF_FixPin(const CSpanKey& spanKey,IDblArray* cf
          }
 
          // for the second part of the span, use the negative moment distribution factor that goes over the next pier
-         gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex,spanKey.girderIndex,pgsTypes::StrengthI,pierFace);
+         gnM = pLLDF->GetNegMomentDistFactorAtPier(pierIdx,spanKey.girderIndex,pgsTypes::StrengthI,pierFace);
 
          AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVEnd,gR,gFM,gFVEnd,gD,gPedes);
       }
@@ -13535,7 +13752,7 @@ void CGirderModelManager::ApplyLLDF_FixPin(const CSpanKey& spanKey,IDblArray* cf
             AddDistributionFactors(distFactors,seg_length_1 - span_length/2,gpM,gnM,gVStart,gVCF,gR,gFM,gFVStart,gFVCF,gD,gPedes);
 
             // for the second part of the span, use the negative moment distribution factor that goes over the next pier
-            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(pierIdx,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
 
             AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVCF,gVEnd,gR,gFM,gFVCF,gFVEnd,gD,gPedes);
          }
@@ -13544,7 +13761,7 @@ void CGirderModelManager::ApplyLLDF_FixPin(const CSpanKey& spanKey,IDblArray* cf
             AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gVStart,gR,gFM,gFVStart,gD,gPedes);
 
             // for the second part of the span, use the negative moment distribution factor that goes over the next pier
-            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(pierIdx,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
             AddDistributionFactors(distFactors,span_length/2 - seg_length_1,gpM,gnM,gVStart,gR,gFM,gFVStart,gD,gPedes);
 
             AddDistributionFactors(distFactors,seg_length_2 - (span_length/2 - seg_length_1),gpM,gnM,gVStart,gVEnd,gR,gFM,gFVStart,gFVEnd,gD,gPedes);
@@ -13557,13 +13774,13 @@ void CGirderModelManager::ApplyLLDF_FixPin(const CSpanKey& spanKey,IDblArray* cf
          {
             AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gVStart,gVMid,gR,gFM,gFVStart,gFVMid,gD,gPedes);
             AddDistributionFactors(distFactors,seg_length_1 - span_length/2,gpM,gnM,gVMid,gVCF,gR,gFM,gFVMid,gFVCF,gD,gPedes);
-            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(pierIdx,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
             AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVCF,gVEnd,gR,gFM,gFVCF,gFVEnd,gD,gPedes);
          }
          else
          {
             AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gVStart,gVCF,gR,gFM,gFVStart,gFVCF,gD,gPedes);
-            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(pierIdx,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
             AddDistributionFactors(distFactors,span_length/2 - seg_length_1,gpM,gnM,gVCF,gVMid,gR,gFM,gFVCF,gFVMid,gD,gPedes);
             AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVMid,gVEnd,gR,gFM,gFVMid,gFVEnd,gD,gPedes);
          }
@@ -14481,8 +14698,8 @@ void CGirderModelManager::GetIntermediateDiaphragmLoads(const CSpanKey& spanKey,
    GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanKey.spanIndex);
    CGirderKey girderKey(grpIdx,spanKey.girderIndex);
 
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-   Float64 density = pMaterial->GetDeckWeightDensity(castDeckIntervalIdx);
+   IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
+   Float64 density = pMaterial->GetDeckWeightDensity(castDiaphragmIntervalIdx);
 
    Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
 
@@ -14554,9 +14771,9 @@ void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIn
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
 
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType castDiaphragmsIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
 
-   Float64 density = (pBridge->GetDeckType() == pgsTypes::sdtNone ? pMaterial->GetSegmentWeightDensity(segmentKey,castDeckIntervalIdx) : pMaterial->GetDeckWeightDensity(castDeckIntervalIdx));
+   Float64 density = (pBridge->GetDeckType() == pgsTypes::sdtNone ? pMaterial->GetSegmentWeightDensity(segmentKey, castDiaphragmsIntervalIdx) : pMaterial->GetDeckWeightDensity(castDiaphragmsIntervalIdx));
    Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
 
    bool bApplyLoadToBackSide  = pBridge->DoesPierDiaphragmLoadGirder(pierIdx,pgsTypes::Back);
@@ -14822,7 +15039,7 @@ MemberIDType CGirderModelManager::ApplyDistributedLoadsToSegment(IntervalIndexTy
             )
             )
          {
-            start[0]  = 0;
+            start[0]  = start_loc;
             wStart[0] = load.wStart;
             end[0]    = end_loc;
             wEnd[0]   = end_load;
@@ -17158,7 +17375,7 @@ void CGirderModelManager::ConfigureLBAMPoisForReactions(const CGirderKey& girder
          // The support element of the pier is what we want
          vIDs.push_back(GetPierID(pierIdx));
       }
-
+      
       if ( !pBridge->IsAbutment(pierIdx) && // This is a boundary pier and not and abutnment (don't use IsBoundaryPier because and abutment is also a boundary pier)
           ( 
             (resultsType == rtCumulative || intervalIdx < backContinuityIntervalIdx || intervalIdx < aheadContinuityIntervalIdx) // We want cumulative results and we are before continunity is achieved
@@ -17357,17 +17574,18 @@ bool CGirderModelManager::GetLoadCaseTypeFromName(const CComBSTR& name, LoadingC
    return false;
 }
 
-Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,bool bIncludeLiveLoad)
+Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,bool bIncludeLiveLoad, pgsTypes::LimitState limitState)
 {
    Float64 fTop, fBot;
-   GetStress(intervalIdx,poi,stressLocation,stressLocation,bIncludeLiveLoad,&fTop,&fBot);
+   GetStress(intervalIdx,poi,stressLocation,stressLocation,bIncludeLiveLoad,limitState,&fTop,&fBot);
    ATLASSERT(IsEqual(fTop,fBot));
    return fTop;
 }
 
-void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation topLoc,pgsTypes::StressLocation botLoc,bool bIncludeLiveLoad,Float64* pfTop,Float64* pfBot)
+void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation topLoc,pgsTypes::StressLocation botLoc,bool bIncludeLiveLoad, pgsTypes::LimitState limitState,Float64* pfTop,Float64* pfBot)
 {
    // Stress in the girder due to prestressing
+   ATLASSERT(!IsStrengthLimitState(limitState));
 
    if ( ::IsDeckStressLocation(topLoc) && ::IsDeckStressLocation(botLoc) )
    {
@@ -17384,7 +17602,7 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPoint
    IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    IntervalIndexType liveLoadIntervalIdx  = pIntervals->GetLiveLoadInterval();
 
-   pgsTypes::LimitState limitState = (intervalIdx < liveLoadIntervalIdx ? pgsTypes::ServiceI : pgsTypes::ServiceIII);
+   pgsTypes::LimitState myLimitState = (intervalIdx < liveLoadIntervalIdx ? pgsTypes::ServiceI : limitState);
 
    // This method can be optimized by caching the results.
    GET_IFACE(IPretensionForce,pPsForce);
@@ -17414,7 +17632,7 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPoint
    {
       if ( bIncludeLiveLoad )
       {
-         P = pPsForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent,limitState);
+         P = pPsForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent, myLimitState);
       }
       else
       {
@@ -17423,7 +17641,7 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPoint
 
       if ( bIncTempStrands )
       {
-         P += pPsForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Temporary,limitState);
+         P += pPsForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Temporary, myLimitState);
       }
    }
 

@@ -4,11 +4,11 @@
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 9 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 11 Composite Deck, Install Railing System (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 13 Open to Traffic (Bridge Site 3)
-Compression stress check failed for Service IA Limit State in Interval 13 Open to Traffic (Bridge Site 3)
-Tensile stress check failed for Service III Limit State in Interval 13 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service IA Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Slab Offset ("A" Dimension) check failed
 
@@ -19,7 +19,7 @@ Slab Offset ("A" Dimension) check failed
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 11 Composite Deck, Install Railing System (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System (Bridge Site 2)
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Slab Offset ("A" Dimension) check failed
 

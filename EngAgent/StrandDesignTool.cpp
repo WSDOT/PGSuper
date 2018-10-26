@@ -865,9 +865,9 @@ Float64 pgsStrandDesignTool::ComputeEccentricity(const pgsPointOfInterest& poi,I
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-   ATLASSERT(castDeckIntervalIdx != INVALID_INDEX);
-   bool bIncTempStrands = (intervalIdx < castDeckIntervalIdx ? true : false);
+   IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
+   ATLASSERT(castDiaphragmIntervalIdx != INVALID_INDEX);
+   bool bIncTempStrands = (intervalIdx < castDiaphragmIntervalIdx ? true : false); // temporary strands are assumed to be removed just prior to casting intermediate diaphragms
    // NOTE: Can't use the following code block. If the original input (before design) does not have
    // temporary strands then the install and remove intervals will be INVALID_INDEX. If the interval
    // in question is before the deck is cast, then include temporary strands. Otherwise, the deck

@@ -561,3 +561,9 @@ HRESULT CConcreteMaterial::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
    return S_OK;
 }
+
+#if defined _DEBUG
+void CConcreteMaterial::AssertValid()
+{
+}
+#endif

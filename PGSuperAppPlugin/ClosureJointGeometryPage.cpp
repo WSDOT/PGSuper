@@ -578,13 +578,18 @@ BOOL CClosureJointGeometryPage::OnSetActive()
       CComboBox* pcbEvent = (CComboBox*)GetDlgItem(IDC_EVENT);
       if ( connectionType == pgsTypes::tsctClosureJoint )
       {
+         const CClosureJointData* pClosureJoint = pParent->m_pTS->GetClosureJoint(0);
+         m_ClosureKey = pClosureJoint->GetClosureKey();
+         m_ClosureID = pClosureJoint->GetID();
+
          ATLASSERT(m_ClosureID != INVALID_ID);
          EventIndexType eventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetCastClosureJointEventIndex(m_ClosureID);
          pcbEvent->SetCurSel((int)eventIdx);
       }
       else
       {
-         ATLASSERT(m_ClosureID == INVALID_ID);
+         m_ClosureKey = CClosureKey();
+         m_ClosureID = INVALID_ID;
          pcbEvent->SetCurSel(0);
       }
 

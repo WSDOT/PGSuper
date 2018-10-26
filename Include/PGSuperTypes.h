@@ -1473,11 +1473,13 @@ inline pgsTypes::LiveLoadType LiveLoadTypeFromLimitState(pgsTypes::LimitState ls
 
    case pgsTypes::StrengthII_PermitRoutine:
    case pgsTypes::ServiceI_PermitRoutine:
+   case pgsTypes::ServiceIII_PermitRoutine:
       llType = pgsTypes::lltPermitRating_Routine;
       break;
 
    case pgsTypes::StrengthII_PermitSpecial:
    case pgsTypes::ServiceI_PermitSpecial:
+   case pgsTypes::ServiceIII_PermitSpecial:
       llType = pgsTypes::lltPermitRating_Special;
       break;
 
@@ -1502,8 +1504,10 @@ inline bool IsRatingLimitState(pgsTypes::LimitState ls)
         ls == pgsTypes::ServiceIII_LegalEmergency ||
         ls == pgsTypes::StrengthII_PermitRoutine ||
         ls == pgsTypes::ServiceI_PermitRoutine ||
+        ls == pgsTypes::ServiceIII_PermitRoutine ||
         ls == pgsTypes::StrengthII_PermitSpecial ||
-        ls == pgsTypes::ServiceI_PermitSpecial 
+        ls == pgsTypes::ServiceI_PermitSpecial ||
+        ls == pgsTypes::ServiceIII_PermitSpecial
      )
    {
       return true;
@@ -1512,6 +1516,21 @@ inline bool IsRatingLimitState(pgsTypes::LimitState ls)
    {
       return false;
    }
+}
+
+inline bool IsDesignLimitState(pgsTypes::LimitState ls)
+{
+   if (ls == pgsTypes::ServiceI ||
+      ls == pgsTypes::ServiceIA ||
+      ls == pgsTypes::ServiceIII ||
+      ls == pgsTypes::StrengthI ||
+      ls == pgsTypes::StrengthII ||
+      ls == pgsTypes::FatigueI)
+   {
+      ATLASSERT(!IsRatingLimitState(ls));
+      return true;
+   }
+   return false;
 }
 
 inline bool IsStrengthILimitState(pgsTypes::LimitState ls)
@@ -1576,6 +1595,13 @@ inline bool IsFatigueLimitState(pgsTypes::LimitState ls)
 inline bool IsServiceLimitState(pgsTypes::LimitState ls)
 {
    return !IsStrengthLimitState(ls) && !IsFatigueLimitState(ls);
+}
+
+inline bool IsServiceILimitState(pgsTypes::LimitState ls)
+{
+   return (ls == pgsTypes::ServiceI ||
+      ls == pgsTypes::ServiceI_PermitRoutine ||
+      ls == pgsTypes::ServiceI_PermitSpecial ) ? true : false;
 }
 
 inline bool IsServiceIIILimitState(pgsTypes::LimitState ls)

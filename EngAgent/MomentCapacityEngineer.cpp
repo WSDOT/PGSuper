@@ -1888,47 +1888,11 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    *szOffset = size;
    (*szOffset)->AddRef();
 
-   // start building up the capacity model
-   CComQIPtr<IXYPosition> posBeam(shapeBeam);
-   if ( compBeam )
-   {
-      CollectionIndexType shapeCount;
-      compBeam->get_Count(&shapeCount);
-
-      for ( CollectionIndexType idx = 0; idx < shapeCount; idx++ )
-      {
-         CComPtr<ICompositeShapeItem> csItem;
-         compBeam->get_Item(idx,&csItem);
-
-         CComPtr<IShape> shape;
-         csItem->get_Shape(&shape);
-
-         CComQIPtr<IXYPosition> position(shape);
-         position->Offset(-dx,-dy);
-
-         VARIANT_BOOL bVoid;
-         csItem->get_Void(&bVoid);
-
-         if ( bVoid == VARIANT_FALSE )
-         {
-            AddShape2Section(section,shape,ssGirder,nullptr,0.00);
-         }
-         else
-         {
-            // void shape... use only a background material (backgrounds are subtracted)
-            AddShape2Section(section,shape,nullptr,ssGirder,0.00);
-         }
-      } // next shape
-   }
-   else
-   {
-      // beam shape isn't composite so just add it
-      posBeam->Offset(-dx,-dy);
-      AddShape2Section(section,shapeBeam,ssGirder,nullptr,0.00);
-   }
+   ModelShape(section, shapeBeam, -dx, -dy, ssGirder, VARIANT_FALSE);
 
    // so far there is no deck in the model.... 
    // if this is for positive moment the compression point is top center, otherwise bottom center
+   CComQIPtr<IXYPosition> posBeam(shapeBeam);
    if ( bPositiveMoment )
    {
       posBeam->get_LocatorPoint(lpTopCenter,pntCompression);
@@ -2368,6 +2332,11 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
             AddShape2Section(section,shapeBottom,ssSlabRebar,ssSlab,0.00);
          }
       }
+   }
+   else
+   {
+      // no deck, or deck is not composite or installed yet
+      *pHaunch = 0.0;
    }
 
 
@@ -2889,3 +2858,41 @@ bool pgsMomentCapacityEngineer::pgsBondTool::IsDebonded(StrandIndexType strandId
    return bDebonded;
 }
 
+void pgsMomentCapacityEngineer::ModelShape(IGeneralSection* pSection, IShape* pShape, Float64 dx, Float64 dy, IStressStrain* pMaterial, VARIANT_BOOL bIsVoid) const
+{
+   CComQIPtr<ICompositeShape> compShape(pShape);
+   if (compShape)
+   {
+      CollectionIndexType shapeCount;
+      compShape->get_Count(&shapeCount);
+
+      for (CollectionIndexType idx = 0; idx < shapeCount; idx++)
+      {
+         CComPtr<ICompositeShapeItem> csItem;
+         compShape->get_Item(idx, &csItem);
+
+         CComPtr<IShape> shape;
+         csItem->get_Shape(&shape);
+
+         VARIANT_BOOL bVoid;
+         csItem->get_Void(&bVoid);
+
+         ModelShape(pSection, shape, dx, dy, pMaterial, bVoid);
+      } // next shape
+   }
+   else
+   {
+      // beam shape isn't composite so just add it
+      CComQIPtr<IXYPosition> position(pShape);
+      position->Offset(dx, dy);
+      if (bIsVoid == VARIANT_TRUE)
+      {
+         // void shape... use only a background material (backgrounds are subtracted)
+         AddShape2Section(pSection, pShape, nullptr, pMaterial, 0.00);
+      }
+      else
+      {
+         AddShape2Section(pSection, pShape, pMaterial, nullptr, 0.00);
+      }
+   }
+}

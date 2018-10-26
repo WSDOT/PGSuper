@@ -161,7 +161,12 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
       bIsWSDOTRating = false;
    }
 
-   if ( !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+   if (!pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
+   {
+      bIsWSDOTRating = false;
+   }
+
+   if (!pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
    {
       bIsWSDOTRating = false;
    }
@@ -172,14 +177,14 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
    }
 
    if ( !pRatingSpec->RateForShear(pgsTypes::lrDesign_Inventory) || !pRatingSpec->RateForShear(pgsTypes::lrDesign_Operating) ||
-        !pRatingSpec->RateForShear(pgsTypes::lrLegal_Routine)    || !pRatingSpec->RateForShear(pgsTypes::lrLegal_Special)    ||
+        !pRatingSpec->RateForShear(pgsTypes::lrLegal_Routine)    || !pRatingSpec->RateForShear(pgsTypes::lrLegal_Special)    || !pRatingSpec->RateForShear(pgsTypes::lrLegal_Emergency) ||
         !pRatingSpec->RateForShear(pgsTypes::lrPermit_Routine)   || !pRatingSpec->RateForShear(pgsTypes::lrPermit_Special)
       )
    {
       bIsWSDOTRating = false;
    }
 
-   if ( !pRatingSpec->RateForStress(pgsTypes::lrLegal_Routine)  || !pRatingSpec->RateForStress(pgsTypes::lrLegal_Special) ||
+   if ( !pRatingSpec->RateForStress(pgsTypes::lrLegal_Routine)  || !pRatingSpec->RateForStress(pgsTypes::lrLegal_Special) || !pRatingSpec->RateForStress(pgsTypes::lrLegal_Emergency) ||
         !pRatingSpec->RateForStress(pgsTypes::lrPermit_Routine) || !pRatingSpec->RateForStress(pgsTypes::lrPermit_Special)
       )
    {
@@ -305,12 +310,12 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
       row++;
 
       (*pTable)(row,0) << _T("Rate for Service III Stress");
-      (*pTable)(row,1) << ((!pRatingSpec->RateForStress(pgsTypes::lrLegal_Routine) || !pRatingSpec->RateForStress(pgsTypes::lrLegal_Special) ) ? _T("Unselected (unchecked)") : _T("Selected (checked)"));
+      (*pTable)(row,1) << ((!pRatingSpec->RateForStress(pgsTypes::lrLegal_Routine) || !pRatingSpec->RateForStress(pgsTypes::lrLegal_Special) || !pRatingSpec->RateForStress(pgsTypes::lrLegal_Emergency) ) ? _T("Unselected (unchecked)") : _T("Selected (checked)"));
       (*pTable)(row,2) << _T("Selected (checked)");
       row++;
 
       (*pTable)(row,0) << _T("Rate for Shear");
-      (*pTable)(row,1) << ((!pRatingSpec->RateForShear(pgsTypes::lrLegal_Routine) || !pRatingSpec->RateForShear(pgsTypes::lrLegal_Special) ) ? _T("Unselected (unchecked)") : _T("Selected (checked)"));
+      (*pTable)(row,1) << ((!pRatingSpec->RateForShear(pgsTypes::lrLegal_Routine) || !pRatingSpec->RateForShear(pgsTypes::lrLegal_Special) || !pRatingSpec->RateForShear(pgsTypes::lrLegal_Emergency)) ? _T("Unselected (unchecked)") : _T("Selected (checked)"));
       (*pTable)(row,2) << _T("Selected (checked)");
       row++;
 

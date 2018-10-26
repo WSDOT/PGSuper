@@ -113,6 +113,8 @@ protected:
 
    virtual LPCTSTR GetTemplateExtension() override;
 
+   virtual void ModifyTemplate(LPCTSTR strTemplate) override;
+
 	DECLARE_MESSAGE_MAP()
 };
 

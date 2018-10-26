@@ -90,9 +90,15 @@ STDMETHODIMP_(bool) CProfileDisplayObjectEvents::XEvents::OnLButtonDblClk(iDispl
 {
    METHOD_PROLOGUE(CProfileDisplayObjectEvents,Events);
 
-   pThis->EditProfile();
-
-   return true;
+   if (pDO->IsSelected())
+   {
+      pThis->EditProfile();
+      return true;
+   }
+   else
+   {
+      return false;
+   }
 }
 
 STDMETHODIMP_(bool) CProfileDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)

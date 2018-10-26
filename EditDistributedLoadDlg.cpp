@@ -497,7 +497,9 @@ void CEditDistributedLoadDlg::UpdateLoadType()
    pst->ShowWindow(cmdshw);
    pst = this->GetDlgItem(IDC_FRACTIONAL);
    pst->ShowWindow(cmdshw);
-   
+   pst = this->GetDlgItem(IDC_LOAD_LOCATION_NOTE);
+   pst->ShowWindow(cmdshw);
+
    // units for uniform
    int cmdswt = cmdshw==SW_HIDE? SW_SHOW:SW_HIDE;
    pst = this->GetDlgItem(IDC_MAGNITUDE_UNITS2);

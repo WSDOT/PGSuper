@@ -167,8 +167,8 @@
 #define IDD_SELECT_CLOSURE_JOINT        353
 #define IDD_LOAD_FACTORS                356
 #define IDD_CAST_DECK                   357
-#define IDD_POSTTENSION_PARAMETERS      358
-#define IDD_PRETENSION_PARAMETERS       359
+#define IDD_POSTTENSION_PARAMETERS      359
+#define IDD_PRETENSION_PARAMETERS       360
 #define IDD_TIMESTEP_PARAMETERS         363
 #define IDD_EDIT_HAUNCH                 367
 #define IDD_HAUNCHSAME4_BRIDGE          369
@@ -1195,6 +1195,8 @@
 #define IDC_STRENGTH_II_PLUS2           1903
 #define IDC_BUTTON1                     1904
 #define IDC_BUTTON2                     1905
+#define IDC_LOAD_LOCATION_NOTE          1906
+#define IDC_INTERMEDIATE_DIAPHRAGMS     1923
 #define IDC_RATE_FOR_STRESS             1962
 #define IDC_APPLIST                     3333
 #define IDR_PGSUPER_STDTOOLBAR          12129
@@ -1345,9 +1347,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        374
+#define _APS_NEXT_RESOURCE_VALUE        375
 #define _APS_NEXT_COMMAND_VALUE         37001
-#define _APS_NEXT_CONTROL_VALUE         1906
+#define _APS_NEXT_CONTROL_VALUE         1907
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

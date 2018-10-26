@@ -27,6 +27,8 @@
 #include <PgsExt\ClosureJointData.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
+#include <IFace\Project.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -449,25 +451,48 @@ bool CBridgeGeometryModelBuilder::LayoutGirderLines(const CBridgeDescription2* p
 
 bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry)
 {
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IRoadwayData, pIAlignment);
+   bool bAnglePointInAlignment = false;
+   AlignmentData2 alignment_data = pIAlignment->GetAlignmentData2();
+   for (const auto& hc : alignment_data.HorzCurves)
+   {
+      if (IsZero(hc.Radius))
+      {
+         bAnglePointInAlignment = true;
+         break;
+      }
+   }
+
    pgsTypes::MeasurementLocation measureLocation = pBridgeDesc->GetMeasurementLocation();
    pgsTypes::MeasurementType measureType = pBridgeDesc->GetMeasurementType();
 
    if ( !pBridgeDesc->UseSameNumberOfGirdersInAllGroups() ||
         !pBridgeDesc->UseSameGirderForEntireBridge()      || 
-        measureType == pgsTypes::AlongItem )
+        measureType == pgsTypes::AlongItem                ||
+        bAnglePointInAlignment
+      )
    {
       // if there is a different number of girders in each group, but the spacing is uniform, this is the
       // same as general spacing... use the general spacing function and return
 
-      // or
+      // OR
       
       // if a different girder types are used, the girders aren't necessarily the same width so
       // this is the same as general spacing
 
-      // or
+      // OR
       
       // the girder spacing is measured along the CL pier or CL bearing. if the piers are skewed or
       // if the alignment is curved, the girder spacing along the alignment normal will not be uniform
+
+      // OR
+      
+      // this is an angle point in the alignment. the simple layout doesn't work because of how parallel
+      // alignment paths get created. use the more general layout. Note, we only really need to do this
+      // if there is an angle point within the limits of the bridge, but it is just easier to do the more
+      // general layout if any angle points exist
       return LayoutGeneralGirderLines(pBridgeDesc,pBridgeGeometry);
    }
 

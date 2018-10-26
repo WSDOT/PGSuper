@@ -611,3 +611,53 @@ void pgsEffectiveFlangeWidthStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    GET_IFACE(IEditByUI,pEdit);
    pEdit->EditEffectiveFlangeWidth();
 }
+
+
+pgsTimelineStatusItem::pgsTimelineStatusItem(StatusGroupIDType statusGroupID, StatusCallbackIDType callbackID, LPCTSTR strDescription) :
+   CEAFStatusItem(statusGroupID, callbackID, strDescription)
+{
+}
+
+bool pgsTimelineStatusItem::IsEqual(CEAFStatusItem* pOther)
+{
+   pgsTimelineStatusItem* other = dynamic_cast<pgsTimelineStatusItem*>(pOther);
+   if (!other)
+   {
+      return false;
+   }
+
+   if (CString(this->GetDescription()) != CString(other->GetDescription()))
+   {
+      return false;
+   }
+
+   return true;
+}
+
+//////////////////////////////////////////////////////////
+pgsTimelineStatusCallback::pgsTimelineStatusCallback(IBroker* pBroker, eafTypes::StatusSeverityType severity) :
+   m_pBroker(pBroker), m_Severity(severity)
+{
+}
+
+eafTypes::StatusSeverityType pgsTimelineStatusCallback::GetSeverity()
+{
+   return m_Severity;
+}
+
+void pgsTimelineStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   pgsTimelineStatusItem* pItem = dynamic_cast<pgsTimelineStatusItem*>(pStatusItem);
+   ATLASSERT(pItem != nullptr);
+
+   GET_IFACE(IEditByUI, pEdit);
+
+   if (pEdit->EditTimeline())
+   {
+      // assume that edit took care of status
+      StatusItemIDType id = pItem->GetID();
+      GET_IFACE(IEAFStatusCenter, pStatusCenter);
+      pStatusCenter->RemoveByID(id);
+   }
+}

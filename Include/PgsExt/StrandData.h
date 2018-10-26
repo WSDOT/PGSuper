@@ -261,6 +261,10 @@ public:
    HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64* pVersion);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
 
+#if defined _DEBUG
+   void AssertValid();
+#endif
+
 protected:
    void MakeCopy(const CStrandData& rOther);
    void MakeAssignment(const CStrandData& rOther);

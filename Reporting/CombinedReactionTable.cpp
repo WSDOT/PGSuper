@@ -521,13 +521,22 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
             {
-               pForces->GetCombinedLiveLoadReaction( ratingIntervalIdx, pgsTypes::lltLegalRating_Special, reactionLocation, maxBAT, includeImpact, &min, &max );
-               (*p_table)(row,col++) << reaction.SetValue( max );
+               pForces->GetCombinedLiveLoadReaction(ratingIntervalIdx, pgsTypes::lltLegalRating_Special, reactionLocation, maxBAT, includeImpact, &min, &max);
+               (*p_table)(row, col++) << reaction.SetValue(max);
 
-               pForces->GetCombinedLiveLoadReaction( ratingIntervalIdx, pgsTypes::lltLegalRating_Special, reactionLocation, minBAT, includeImpact, &min, &max );
-               (*p_table)(row,col++) << reaction.SetValue( min );
+               pForces->GetCombinedLiveLoadReaction(ratingIntervalIdx, pgsTypes::lltLegalRating_Special, reactionLocation, minBAT, includeImpact, &min, &max);
+               (*p_table)(row, col++) << reaction.SetValue(min);
+            }
+
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+            {
+               pForces->GetCombinedLiveLoadReaction(ratingIntervalIdx, pgsTypes::lltLegalRating_Emergency, reactionLocation, maxBAT, includeImpact, &min, &max);
+               (*p_table)(row, col++) << reaction.SetValue(max);
+
+               pForces->GetCombinedLiveLoadReaction(ratingIntervalIdx, pgsTypes::lltLegalRating_Emergency, reactionLocation, minBAT, includeImpact, &min, &max);
+               (*p_table)(row, col++) << reaction.SetValue(min);
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
@@ -624,11 +633,18 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
             {
-               pForces->GetCombinedLiveLoadReaction( ratingIntervalIdx, pgsTypes::lltLegalRating_Special, reactionLocation, maxBAT, includeImpact, &min, &max );
-               (*p_table)(row,col++) << reaction.SetValue( max );
-               (*p_table)(row,col++) << reaction.SetValue( min );
+               pForces->GetCombinedLiveLoadReaction(ratingIntervalIdx, pgsTypes::lltLegalRating_Special, reactionLocation, maxBAT, includeImpact, &min, &max);
+               (*p_table)(row, col++) << reaction.SetValue(max);
+               (*p_table)(row, col++) << reaction.SetValue(min);
+            }
+
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+            {
+               pForces->GetCombinedLiveLoadReaction(ratingIntervalIdx, pgsTypes::lltLegalRating_Emergency, reactionLocation, maxBAT, includeImpact, &min, &max);
+               (*p_table)(row, col++) << reaction.SetValue(max);
+               (*p_table)(row, col++) << reaction.SetValue(min);
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
@@ -820,13 +836,22 @@ void CCombinedReactionTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* 
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
             {
-               pForces->GetReaction( intervalIdx, pgsTypes::StrengthI_LegalSpecial, reactionLocation, maxBAT, includeImpact, &min, &max );
-               (*p_table)(row,col++) << reaction.SetValue( max );
+               pForces->GetReaction(intervalIdx, pgsTypes::StrengthI_LegalSpecial, reactionLocation, maxBAT, includeImpact, &min, &max);
+               (*p_table)(row, col++) << reaction.SetValue(max);
 
-               pForces->GetReaction( intervalIdx, pgsTypes::StrengthI_LegalSpecial, reactionLocation, minBAT, includeImpact, &min, &max );
-               (*p_table)(row,col++) << reaction.SetValue( min );
+               pForces->GetReaction(intervalIdx, pgsTypes::StrengthI_LegalSpecial, reactionLocation, minBAT, includeImpact, &min, &max);
+               (*p_table)(row, col++) << reaction.SetValue(min);
+            }
+
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+            {
+               pForces->GetReaction(intervalIdx, pgsTypes::StrengthI_LegalEmergency, reactionLocation, maxBAT, includeImpact, &min, &max);
+               (*p_table)(row, col++) << reaction.SetValue(max);
+
+               pForces->GetReaction(intervalIdx, pgsTypes::StrengthI_LegalEmergency, reactionLocation, minBAT, includeImpact, &min, &max);
+               (*p_table)(row, col++) << reaction.SetValue(min);
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
@@ -917,11 +942,18 @@ void CCombinedReactionTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* 
                (*p_table)(row,col++) << reaction.SetValue( min );
             }
 
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
             {
-               pForces->GetReaction( intervalIdx, pgsTypes::StrengthI_LegalSpecial, reactionLocation, maxBAT, includeImpact, &min, &max );
-               (*p_table)(row,col++) << reaction.SetValue( max );
-               (*p_table)(row,col++) << reaction.SetValue( min );
+               pForces->GetReaction(intervalIdx, pgsTypes::StrengthI_LegalSpecial, reactionLocation, maxBAT, includeImpact, &min, &max);
+               (*p_table)(row, col++) << reaction.SetValue(max);
+               (*p_table)(row, col++) << reaction.SetValue(min);
+            }
+
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+            {
+               pForces->GetReaction(intervalIdx, pgsTypes::StrengthI_LegalEmergency, reactionLocation, maxBAT, includeImpact, &min, &max);
+               (*p_table)(row, col++) << reaction.SetValue(max);
+               (*p_table)(row, col++) << reaction.SetValue(min);
             }
 
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )

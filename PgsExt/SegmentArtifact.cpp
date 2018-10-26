@@ -114,20 +114,20 @@ void pgsSegmentArtifact::AddFlexuralStressArtifact(IntervalIndexType intervalIdx
    // Need to be using a valid ID in the artifact
    ATLASSERT(artifact.GetPointOfInterest().GetID() != INVALID_ID);
 
-   std::vector<pgsFlexuralStressArtifact>& artifacts( GetFlexuralStressArtifacts(intervalIdx,ls,stress) );
+   auto& artifacts( GetFlexuralStressArtifacts(intervalIdx,ls,stress) );
    artifacts.push_back(artifact);
    std::sort(artifacts.begin(),artifacts.end());
 }
 
 CollectionIndexType pgsSegmentArtifact::GetFlexuralStressArtifactCount(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress) const
 {
-   const std::vector<pgsFlexuralStressArtifact>& artifacts( GetFlexuralStressArtifacts(intervalIdx,ls,stress) );
+   const auto& artifacts( GetFlexuralStressArtifacts(intervalIdx,ls,stress) );
    return artifacts.size();
 }
 
 const pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,CollectionIndexType idx) const
 {
-   const std::vector<pgsFlexuralStressArtifact>& artifacts( GetFlexuralStressArtifacts(intervalIdx,ls,stress) );
+   const auto& artifacts( GetFlexuralStressArtifacts(intervalIdx,ls,stress) );
    if ( idx < artifacts.size() )
    {
       return &artifacts[idx];
@@ -140,7 +140,7 @@ const pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(I
 
 pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,CollectionIndexType idx)
 {
-   std::vector<pgsFlexuralStressArtifact>& artifacts( GetFlexuralStressArtifacts(intervalIdx,ls,stress) );
+   auto& artifacts( GetFlexuralStressArtifacts(intervalIdx,ls,stress) );
    if ( idx < artifacts.size() )
    {
       return &artifacts[idx];
@@ -153,12 +153,9 @@ pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(Interva
 
 const pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifactAtPoi(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,PoiIDType poiID) const
 {
-   const std::vector<pgsFlexuralStressArtifact>& artifacts( GetFlexuralStressArtifacts(intervalIdx,ls,stress) );
-   std::vector<pgsFlexuralStressArtifact>::const_iterator iter(artifacts.begin());
-   std::vector<pgsFlexuralStressArtifact>::const_iterator end(artifacts.end());
-   for ( ; iter != end; iter++ )
+   const auto& vArtifacts( GetFlexuralStressArtifacts(intervalIdx,ls,stress) );
+   for ( const auto& artifact : vArtifacts)
    {
-      const pgsFlexuralStressArtifact& artifact(*iter);
       if ( artifact.GetPointOfInterest().GetID() == poiID )
       {
          return &artifact;
@@ -225,12 +222,9 @@ const pgsHaulingAnalysisArtifact* pgsSegmentArtifact::GetHaulingAnalysisArtifact
 
 bool pgsSegmentArtifact::IsFlexuralStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation) const
 {
-   std::vector<pgsFlexuralStressArtifact>& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,stressType));
-   std::vector<pgsFlexuralStressArtifact>::iterator iter(vArtifacts.begin());
-   std::vector<pgsFlexuralStressArtifact>::iterator iterEnd(vArtifacts.end());
-   for ( ; iter != iterEnd; iter++ )
+   const auto& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,stressType));
+   for ( const auto& artifact : vArtifacts)
    {
-      pgsFlexuralStressArtifact& artifact(*iter);
       if ( artifact.IsApplicable(stressLocation) )
       {
          return true;
@@ -247,12 +241,9 @@ bool pgsSegmentArtifact::WasWithRebarAllowableStressUsed(IntervalIndexType inter
    EAFGetBroker(&pBroker);
    GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi); // sometimes there aren't any artifacts so this doesn't get used
 
-   std::vector<pgsFlexuralStressArtifact>& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
-   std::vector<pgsFlexuralStressArtifact>::iterator iter(vArtifacts.begin());
-   std::vector<pgsFlexuralStressArtifact>::iterator iterEnd(vArtifacts.end());
-   for ( ; iter != iterEnd; iter++ )
+   const auto& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
+   for ( const auto& artifact : vArtifacts)
    {
-      pgsFlexuralStressArtifact& artifact(*iter);
       const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
       CClosureKey closureKey;
       bool bIsClosure = pPoi->IsInClosureJoint(poi,&closureKey);
@@ -276,12 +267,9 @@ bool pgsSegmentArtifact::WasSegmentWithRebarAllowableStressUsed(IntervalIndexTyp
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
-   std::vector<pgsFlexuralStressArtifact>& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
-   std::vector<pgsFlexuralStressArtifact>::iterator iter(vArtifacts.begin());
-   std::vector<pgsFlexuralStressArtifact>::iterator iterEnd(vArtifacts.end());
-   for ( ; iter != iterEnd; iter++ )
+   const auto& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
+   for ( const auto& artifact : vArtifacts)
    {
-      pgsFlexuralStressArtifact& artifact(*iter);
       const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
       CClosureKey closureKey;
       bool bIsClosure = pPoi->IsInClosureJoint(poi,&closureKey);
@@ -304,12 +292,9 @@ bool pgsSegmentArtifact::WasClosureJointWithRebarAllowableStressUsed(IntervalInd
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
-   std::vector<pgsFlexuralStressArtifact>& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
-   std::vector<pgsFlexuralStressArtifact>::iterator iter(vArtifacts.begin());
-   std::vector<pgsFlexuralStressArtifact>::iterator iterEnd(vArtifacts.end());
-   for ( ; iter != iterEnd; iter++ )
+   const auto& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
+   for ( const auto& artifact : vArtifacts)
    {
-      pgsFlexuralStressArtifact& artifact(*iter);
       const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
       CClosureKey closureKey;
       bool bIsClosure = pPoi->IsInClosureJoint(poi,&closureKey);
@@ -332,12 +317,9 @@ bool pgsSegmentArtifact::WasClosureJointWithRebarAllowableStressUsed(IntervalInd
 
 bool pgsSegmentArtifact::WasDeckWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
-   std::vector<pgsFlexuralStressArtifact>& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
-   std::vector<pgsFlexuralStressArtifact>::iterator iter(vArtifacts.begin());
-   std::vector<pgsFlexuralStressArtifact>::iterator iterEnd(vArtifacts.end());
-   for ( ; iter != iterEnd; iter++ )
+   const auto& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
+   for ( const auto& artifact : vArtifacts)
    {
-      pgsFlexuralStressArtifact& artifact(*iter);
       const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
       if ( artifact.WasWithRebarAllowableStressUsed(pgsTypes::TopDeck) || 
            artifact.WasWithRebarAllowableStressUsed(pgsTypes::BottomDeck) )
@@ -356,12 +338,9 @@ bool pgsSegmentArtifact::IsWithRebarAllowableStressApplicable(IntervalIndexType 
    EAFGetBroker(&pBroker);
    GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi); // sometimes there aren't any artifacts so this doesn't get used
 
-   std::vector<pgsFlexuralStressArtifact>& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
-   std::vector<pgsFlexuralStressArtifact>::iterator iter(vArtifacts.begin());
-   std::vector<pgsFlexuralStressArtifact>::iterator iterEnd(vArtifacts.end());
-   for ( ; iter != iterEnd; iter++ )
+   const auto& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
+   for( const auto& artifact : vArtifacts)
    {
-      pgsFlexuralStressArtifact& artifact(*iter);
       const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
       CClosureKey closureKey;
       bool bIsClosure = pPoi->IsInClosureJoint(poi,&closureKey);
@@ -385,12 +364,9 @@ bool pgsSegmentArtifact::IsSegmentWithRebarAllowableStressApplicable(IntervalInd
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
-   std::vector<pgsFlexuralStressArtifact>& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
-   std::vector<pgsFlexuralStressArtifact>::iterator iter(vArtifacts.begin());
-   std::vector<pgsFlexuralStressArtifact>::iterator iterEnd(vArtifacts.end());
-   for ( ; iter != iterEnd; iter++ )
+   const auto& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
+   for( const auto& artifact : vArtifacts)
    {
-      pgsFlexuralStressArtifact& artifact(*iter);
       const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
       CClosureKey closureKey;
       bool bIsClosure = pPoi->IsInClosureJoint(poi,&closureKey);
@@ -413,12 +389,9 @@ bool pgsSegmentArtifact::IsClosureJointWithRebarAllowableStressApplicable(Interv
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
-   std::vector<pgsFlexuralStressArtifact>& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
-   std::vector<pgsFlexuralStressArtifact>::iterator iter(vArtifacts.begin());
-   std::vector<pgsFlexuralStressArtifact>::iterator iterEnd(vArtifacts.end());
-   for ( ; iter != iterEnd; iter++ )
+   const auto& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
+   for( const auto& artifact : vArtifacts)
    {
-      pgsFlexuralStressArtifact& artifact(*iter);
       const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
       CClosureKey closureKey;
       bool bIsClosure = pPoi->IsInClosureJoint(poi,&closureKey);
@@ -441,12 +414,9 @@ bool pgsSegmentArtifact::IsClosureJointWithRebarAllowableStressApplicable(Interv
 
 bool pgsSegmentArtifact::IsDeckWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
-   std::vector<pgsFlexuralStressArtifact>& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
-   std::vector<pgsFlexuralStressArtifact>::iterator iter(vArtifacts.begin());
-   std::vector<pgsFlexuralStressArtifact>::iterator iterEnd(vArtifacts.end());
-   for ( ; iter != iterEnd; iter++ )
+   const auto& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
+   for( const auto& artifact : vArtifacts)
    {
-      pgsFlexuralStressArtifact& artifact(*iter);
       const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
       if ( artifact.IsWithRebarAllowableStressApplicable(pgsTypes::TopDeck) || 
            artifact.IsWithRebarAllowableStressApplicable(pgsTypes::BottomDeck) )
@@ -480,75 +450,114 @@ const pgsDebondArtifact* pgsSegmentArtifact::GetDebondArtifact(pgsTypes::StrandT
 
 bool pgsSegmentArtifact::Passed() const
 {
-   bool bPassed = true;
-
-   bPassed &= m_StabilityArtifact.Passed();
-   bPassed &= m_HoldDownForceArtifact.Passed();
-   bPassed &= m_StrandSlopeArtifact.Passed();
-   bPassed &= m_StrandStressArtifact.Passed();
-   bPassed &= DidSegmentFlexuralStressesPass();
-   bPassed &= DidDeckFlexuralStressesPass();
-
-   bPassed &= m_StirrupCheckArtifact.Passed();
-
-   bPassed &= m_PrecastIGirderDetailingArtifact.Passed();
-
-   if ( m_pLiftingCheckArtifact != nullptr )
+   // if any one fails, then the whole things fails. Return false on first failure or true if we get to the end
+   if (!m_StabilityArtifact.Passed())
    {
-      bPassed &= m_pLiftingCheckArtifact->Passed();
+      return false;
    }
+
+   if (!m_HoldDownForceArtifact.Passed())
+   {
+      return false;
+   }
+
+   if (!m_StrandSlopeArtifact.Passed())
+   {
+      return false;
+   }
+
+   if (!m_StrandStressArtifact.Passed())
+   {
+      return false;
+   }
+
+   if (!DidFlexuralStressPass())
+   {
+      return false;
+   }
+
+   if (!m_StirrupCheckArtifact.Passed())
+   {
+      return false;
+   }
+
+   if (!m_PrecastIGirderDetailingArtifact.Passed())
+   {
+      return false;
+   }
+
+   if (m_pLiftingCheckArtifact != nullptr && !m_pLiftingCheckArtifact->Passed())
+   {
+      return false;
+   }
+
    if (m_pHaulingAnalysisArtifact != nullptr)
    {
-      bPassed &= m_pHaulingAnalysisArtifact->Passed(pgsTypes::CrownSlope);
-      bPassed &= m_pHaulingAnalysisArtifact->Passed(pgsTypes::Superelevation);
+      if (!m_pHaulingAnalysisArtifact->Passed(pgsTypes::CrownSlope))
+      {
+         return false;
+      }
+
+      if (!m_pHaulingAnalysisArtifact->Passed(pgsTypes::Superelevation))
+      {
+         return false;
+      }
    }
 
    for ( Uint16 i = 0; i < 3; i++ )
    {
-      bPassed &= m_DebondArtifact[i].Passed();
+      if (!m_DebondArtifact[i].Passed())
+      {
+         return false;
+      }
    }
 
-   return bPassed;
+   return true;
+}
+
+bool pgsSegmentArtifact::DidFlexuralStressPass() const
+{
+   for (const auto& item : m_FlexuralStressArtifacts)
+   {
+      for (const auto& artifact : item.second)
+      {
+         if (!artifact.BeamPassed() || !artifact.DeckPassed())
+         {
+            return false; // the whole thing doesn't pass when a single artifact doesn't pass... no need to keep going
+         }
+      }
+   }
+   return true;
 }
 
 bool pgsSegmentArtifact::DidSegmentFlexuralStressesPass() const
 {
-   bool bPassed = true;
-
-   std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator  i2;
-   for ( i2 = m_FlexuralStressArtifacts.begin(); i2 != m_FlexuralStressArtifacts.end(); i2++ )
+   for (const auto& item : m_FlexuralStressArtifacts)
    {
-      const std::pair<StressKey,std::vector<pgsFlexuralStressArtifact>>& item = *i2;
-      std::vector<pgsFlexuralStressArtifact>::const_iterator iter(item.second.begin());
-      std::vector<pgsFlexuralStressArtifact>::const_iterator end(item.second.end());
-      for ( ; iter != end; iter++ )
+      for (const auto& artifact : item.second)
       {
-         const pgsFlexuralStressArtifact& artifact(*iter);
-         bPassed &= artifact.BeamPassed();
+         if (!artifact.BeamPassed())
+         {
+            return false; // the whole thing doesn't pass when a single artifact doesn't pass... no need to keep going
+         }
       }
    }
-
-   return bPassed;
+   return true;
 }
 
 bool pgsSegmentArtifact::DidDeckFlexuralStressesPass() const
 {
-   bool bPassed = true;
-
-   std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator  i2;
-   for ( i2 = m_FlexuralStressArtifacts.begin(); i2 != m_FlexuralStressArtifacts.end(); i2++ )
+   for (const auto& item : m_FlexuralStressArtifacts)
    {
-      const std::pair<StressKey,std::vector<pgsFlexuralStressArtifact>>& item = *i2;
-      std::vector<pgsFlexuralStressArtifact>::const_iterator iter(item.second.begin());
-      std::vector<pgsFlexuralStressArtifact>::const_iterator end(item.second.end());
-      for ( ; iter != end; iter++ )
+      for (const auto& artifact : item.second)
       {
-         const pgsFlexuralStressArtifact& artifact(*iter);
-         bPassed &= artifact.DeckPassed();
+         if (!artifact.DeckPassed())
+         {
+            return false; // the whole thing doesn't pass when a single artifact doesn't pass... no need to keep going
+         }
       }
    }
-
-   return bPassed;
+   return true;
 }
 
 Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
@@ -559,20 +568,14 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(IntervalIndexType
 
    Float64 fc_reqd = 0;
 
-   std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator iter(m_FlexuralStressArtifacts.begin());
-   std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator end(m_FlexuralStressArtifacts.end());
-   for ( ; iter != end; iter++ )
+   for( const auto& item : m_FlexuralStressArtifacts)
    {
-      const std::pair<StressKey,std::vector<pgsFlexuralStressArtifact>>& item = *iter;
-      const StressKey& key = item.first;
+      const StressKey& key(item.first);
 
       if ( key.intervalIdx == intervalIdx && key.ls == ls )
       {
-         std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIter(item.second.begin());
-         std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIterEnd(item.second.end());
-         for ( ; artifactIter != artifactIterEnd; artifactIter++ )
+         for( const auto& artifact : item.second)
          {
-            const pgsFlexuralStressArtifact& artifact(*artifactIter);
             const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
             CClosureKey closureKey;
             if ( pPoi->IsInClosureJoint(poi,&closureKey) )
@@ -613,20 +616,14 @@ Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength(IntervalInde
 
    Float64 fc_reqd = 0;
 
-   std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator iter(m_FlexuralStressArtifacts.begin());
-   std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator end(m_FlexuralStressArtifacts.end());
-   for ( ; iter != end; iter++ )
+   for (const auto& item : m_FlexuralStressArtifacts)
    {
-      const std::pair<StressKey,std::vector<pgsFlexuralStressArtifact>>& item = *iter;
-      const StressKey& key = item.first;
+      const StressKey& key(item.first);
 
-      if ( key.intervalIdx == intervalIdx && key.ls == ls )
+      if (key.intervalIdx == intervalIdx && key.ls == ls)
       {
-         std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIter(item.second.begin());
-         std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIterEnd(item.second.end());
-         for ( ; artifactIter != artifactIterEnd; artifactIter++ )
+         for (const auto& artifact : item.second)
          {
-            const pgsFlexuralStressArtifact& artifact(*artifactIter);
             const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
             CClosureKey closureKey;
             if ( !pPoi->IsInClosureJoint(poi,&closureKey) )
@@ -663,20 +660,14 @@ Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength(IntervalIndexType in
 {
    Float64 fc_reqd = 0;
 
-   std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator iter(m_FlexuralStressArtifacts.begin());
-   std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator end(m_FlexuralStressArtifacts.end());
-   for ( ; iter != end; iter++ )
+   for (const auto& item : m_FlexuralStressArtifacts)
    {
-      const std::pair<StressKey,std::vector<pgsFlexuralStressArtifact>>& item = *iter;
-      const StressKey& key = item.first;
+      const StressKey& key(item.first);
 
-      if ( key.intervalIdx == intervalIdx && key.ls == ls )
+      if (key.intervalIdx == intervalIdx && key.ls == ls)
       {
-         std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIter(item.second.begin());
-         std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIterEnd(item.second.end());
-         for ( ; artifactIter != artifactIterEnd; artifactIter++ )
+         for (const auto& artifact : item.second)
          {
-            const pgsFlexuralStressArtifact& artifact(*artifactIter);
             for ( int i = 0; i < 2; i++ )
             {
                pgsTypes::StressLocation stressLocation = (i == 0 ? pgsTypes::TopDeck : pgsTypes::BottomDeck);
@@ -713,11 +704,8 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength() const
 
    IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(m_SegmentKey);
 
-   std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator iter(m_FlexuralStressArtifacts.begin());
-   std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator end(m_FlexuralStressArtifacts.end());
-   for ( ; iter != end; iter++ )
+   for(const auto& item : m_FlexuralStressArtifacts)
    {
-      const std::pair<StressKey,std::vector<pgsFlexuralStressArtifact>>& item = *iter;
       const StressKey& key = item.first;
 
       if ( key.intervalIdx < haulingIntervalIdx )
@@ -725,11 +713,8 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength() const
          continue; // don't check if this is before hauling (basically we want final concrete strength cases)
       }
 
-      std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIter(item.second.begin());
-      std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIterEnd(item.second.end());
-      for ( ; artifactIter != artifactIterEnd; artifactIter++ )
+      for( const auto& artifact : item.second)
       {
-         const pgsFlexuralStressArtifact& artifact(*artifactIter);
          const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
          CClosureKey closureKey;
          if ( pPoi->IsInClosureJoint(poi,&closureKey) )
@@ -790,11 +775,8 @@ Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength() const
 
    IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(m_SegmentKey);
 
-   std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator iter(m_FlexuralStressArtifacts.begin());
-   std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator end(m_FlexuralStressArtifacts.end());
-   for ( ; iter != end; iter++ )
+   for ( const auto& item : m_FlexuralStressArtifacts)
    {
-      const std::pair<StressKey,std::vector<pgsFlexuralStressArtifact>>& item = *iter;
       const StressKey& key = item.first;
 
       if ( key.intervalIdx < haulingIntervalIdx )
@@ -802,11 +784,8 @@ Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength() const
          continue; // don't check if this is before hauling (basically we want final concrete strength cases)
       }
 
-      std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIter(item.second.begin());
-      std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIterEnd(item.second.end());
-      for ( ; artifactIter != artifactIterEnd; artifactIter++ )
+      for( const auto& artifact : item.second)
       {
-         const pgsFlexuralStressArtifact& artifact(*artifactIter);
          const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
          CClosureKey closureKey;
          if ( pPoi->IsInClosureJoint(poi,&closureKey) )
@@ -845,11 +824,8 @@ Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength() const
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
-   std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator iter(m_FlexuralStressArtifacts.begin());
-   std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator end(m_FlexuralStressArtifacts.end());
-   for ( ; iter != end; iter++ )
+   for ( const auto& item : m_FlexuralStressArtifacts)
    {
-      const std::pair<StressKey,std::vector<pgsFlexuralStressArtifact>>& item = *iter;
       const StressKey& key = item.first;
 
       if ( key.intervalIdx < compositeDeckIntervalIdx )
@@ -857,12 +833,8 @@ Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength() const
          continue; // don't check if this is before the deck is composite.
       }
 
-      std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIter(item.second.begin());
-      std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIterEnd(item.second.end());
-      for ( ; artifactIter != artifactIterEnd; artifactIter++ )
+      for ( const auto& artifact : item.second)
       {
-         const pgsFlexuralStressArtifact& artifact(*artifactIter);
-
          for ( int i = 0; i < 2; i++ )
          {
             pgsTypes::StressLocation stressLocation = (i == 0 ? pgsTypes::TopDeck : pgsTypes::BottomDeck);
@@ -896,11 +868,8 @@ Float64 pgsSegmentArtifact::GetRequiredReleaseStrength() const
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(m_SegmentKey);
 
-   std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator iter(m_FlexuralStressArtifacts.begin());
-   std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator end(m_FlexuralStressArtifacts.end());
-   for ( ; iter != end; iter++ )
+   for ( const auto& item : m_FlexuralStressArtifacts)
    {
-      const std::pair<StressKey,std::vector<pgsFlexuralStressArtifact>>& item = *iter;
       const StressKey& key = item.first;
 
       if ( haulingIntervalIdx <= key.intervalIdx )
@@ -908,11 +877,8 @@ Float64 pgsSegmentArtifact::GetRequiredReleaseStrength() const
          continue; // don't check if this is after hauling (basically we want release concrete strength cases)
       }
 
-      std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIter(item.second.begin());
-      std::vector<pgsFlexuralStressArtifact>::const_iterator artifactIterEnd(item.second.end());
-      for ( ; artifactIter != artifactIterEnd; artifactIter++ )
+      for ( const auto& artifact : item.second)
       {
-         const pgsFlexuralStressArtifact& artifact(*artifactIter);
          Float64 fc = artifact.GetRequiredBeamConcreteStrength();
 
          if ( fc < 0 ) 
@@ -966,8 +932,10 @@ void pgsSegmentArtifact::MakeCopy(const pgsSegmentArtifact& rOther)
       m_AllowableWithRebar[i] = rOther.m_AllowableWithRebar[i];
    }
 
-   for ( Uint16 i = 0; i < 3; i++ )
+   for (Uint16 i = 0; i < 3; i++)
+   {
       m_DebondArtifact[i] = rOther.m_DebondArtifact[i];
+   }
 }
 
 void pgsSegmentArtifact::MakeAssignment(const pgsSegmentArtifact& rOther)
@@ -982,10 +950,10 @@ std::vector<pgsFlexuralStressArtifact>& pgsSegmentArtifact::GetFlexuralStressArt
    key.ls = ls;
    key.stress = stress;
 
-   std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::iterator found(m_FlexuralStressArtifacts.find(key));
+   auto found(m_FlexuralStressArtifacts.find(key));
    if ( found == m_FlexuralStressArtifacts.end() )
    {
-      std::pair<std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::iterator,bool> result(m_FlexuralStressArtifacts.insert(std::make_pair(key,std::vector<pgsFlexuralStressArtifact>())));
+      auto result(m_FlexuralStressArtifacts.insert(std::make_pair(key,std::vector<pgsFlexuralStressArtifact>())));
       found = result.first;
    }
 
@@ -998,10 +966,10 @@ Float64& pgsSegmentArtifact::GetAllowableWithRebar(IntervalIndexType intervalIdx
    key.intervalIdx = intervalIdx;
    key.ls = ls;
    key.stress = pgsTypes::Tension;
-   std::map<StressKey,Float64>::iterator found(m_AllowableWithRebar[stressLocation].find(key));
+   auto found(m_AllowableWithRebar[stressLocation].find(key));
    if ( found == m_AllowableWithRebar[stressLocation].end() )
    {
-      std::pair<std::map<StressKey,Float64>::iterator,bool> result(m_AllowableWithRebar[stressLocation].insert(std::make_pair(key,-1.0)));
+      auto result(m_AllowableWithRebar[stressLocation].insert(std::make_pair(key,-1.0)));
       found = result.first;
    }
 

@@ -89,6 +89,7 @@ interface IEditByUI : IUnknown
    virtual bool EditPointLoad(CollectionIndexType loadIdx) = 0;
    virtual bool EditDistributedLoad(CollectionIndexType loadIdx) = 0;
    virtual bool EditMomentLoad(CollectionIndexType loadIdx) = 0;
+   virtual bool EditTimeline() = 0;
 
    virtual UINT GetStdToolBarID() = 0;
    virtual UINT GetLibToolBarID() = 0;
@@ -107,8 +108,8 @@ interface IEditByUI : IUnknown
    virtual void AddMomentLoad(const CMomentLoadData& loadData) = 0;
    virtual void DeleteMomentLoad(CollectionIndexType loadIdx) = 0;
 
-   virtual void EditEffectiveFlangeWidth() = 0;
+   virtual bool EditEffectiveFlangeWidth() = 0;
 
    // Displays the project criteria selection dialog
-   virtual void SelectProjectCriteria() = 0;
+   virtual bool SelectProjectCriteria() = 0;
 };

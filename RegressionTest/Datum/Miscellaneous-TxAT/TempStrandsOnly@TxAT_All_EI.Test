@@ -1,15 +1,15 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     1    WF74G           0  0.6  270   0.00   0.00  10.75  10.75                                               0   0.0  0.0  5.000  6.000   4.227    -4.306    11776   0.550  0.671  -7.229 -2.165 -0.216 -0.308 -2.689   0.00    0.00    1.75    5.00    5.00 
+ 28.25    5   6.00                     1     1    WF74G           0  0.6  270   0.00   0.00  10.75  10.75                                               0   0.0  0.0  5.000  6.000   4.227    -4.306    11776   0.550  0.671  -7.259 -2.165 -0.216 -0.308 -2.689   0.00    0.00    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System
-Compression stress check failed for Service I Limit State in Interval 12 Install Overlay (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic (Bridge Site 3)
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service I Limit State in Interval 11 Cast Deck (Bridge Site 1)
+Tensile stress check failed for Service I Limit State in Interval 11 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 13 Composite Deck, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 13 Install Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
@@ -20,16 +20,16 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     2    WF74G           0  0.6  270   0.00   0.00  10.75  10.75                                               0   0.0  0.0  5.000  6.000   4.245    -4.321    11801   0.548  0.671  -7.622 -2.195 -0.216 -0.308 -2.718   0.00    0.00    1.75    5.00    5.00 
+ 28.25    5   6.00                     1     2    WF74G           0  0.6  270   0.00   0.00  10.75  10.75                                               0   0.0  0.0  5.000  6.000   4.245    -4.321    11801   0.548  0.671  -7.681 -2.195 -0.216 -0.308 -2.718   0.00    0.00    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System
-Compression stress check failed for Service I Limit State in Interval 12 Install Overlay (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic (Bridge Site 3)
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service I Limit State in Interval 11 Cast Deck (Bridge Site 1)
+Tensile stress check failed for Service I Limit State in Interval 11 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 13 Composite Deck, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 13 Install Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
@@ -40,11 +40,11 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     3    WF74G    *     43  0.6  270  32.36  14.12  10.75  10.75                                              13  70.0  6.0  4.800  6.000   4.245    -4.321    11801   0.548  0.671   4.930 -2.195 -0.216 -0.308 -2.718 182.42  330.50    3.25    9.17    9.17 
+ 28.25    5   6.00                     1     3    WF74G    *     43  0.6  270  32.36  14.12  10.75  10.75                                              13  70.0  6.0  4.800  6.000   4.245    -4.321    11801   0.548  0.671   4.869 -2.195 -0.216 -0.308 -2.718 182.42  330.50    3.25    9.17    9.17 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic (Bridge Site 3)
 Hauling checks failed
 Slab Offset ("A" Dimension) check failed
 

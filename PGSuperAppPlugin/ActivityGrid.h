@@ -27,6 +27,8 @@
 
 #include <PgsExt\TimelineEvent.h>
 
+typedef long long ActivityKeyType;
+
 /////////////////////////////////////////////////////////////////////////////
 // CActivityGrid window
 
@@ -65,7 +67,7 @@ protected:
 	//}}AFX_MSG
    BOOL m_bReadOnly;
 
-   void AddActivity(LPCTSTR strName,int activityKey);
+   void AddActivity(LPCTSTR strName, ActivityKeyType activityKey);
    
    virtual void OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol);
 

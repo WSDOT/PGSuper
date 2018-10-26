@@ -221,6 +221,7 @@ private:
    };
    mutable std::map<StressKey,std::vector<pgsFlexuralStressArtifact>> m_FlexuralStressArtifacts;
    std::vector<pgsFlexuralStressArtifact>& GetFlexuralStressArtifacts(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress) const;
+   bool DidFlexuralStressPass() const;
 
    pgsStirrupCheckArtifact m_StirrupCheckArtifact;
 

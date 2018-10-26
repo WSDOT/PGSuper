@@ -225,3 +225,10 @@ void CHandlingData::MakeAssignment(const CHandlingData& rOther)
 {
    MakeCopy( rOther );
 }
+
+#if defined _DEBUG
+void CHandlingData::AssertValid()
+{
+   //ATLASSERT(!HaulTruckName.empty());
+}
+#endif

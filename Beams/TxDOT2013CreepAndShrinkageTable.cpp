@@ -70,12 +70,13 @@ CTxDOT2013CreepAndShrinkageTable* CTxDOT2013CreepAndShrinkageTable::PrepareTable
    *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCR_TxDOT_2013.png")) << rptNewLine;
 
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress, pDisplayUnits->GetStressUnit(), true );
+   INIT_UV_PROTOTYPE(rptStressUnitValue, mod_e, pDisplayUnits->GetModEUnit(), true);
 
    GET_IFACE2(pBroker,IEnvironment,pEnv);
    *pParagraph << _T("H = ") << pEnv->GetRelHumidity() << _T("%") << rptNewLine;
    *pParagraph << RPT_FCI << _T(" = ") << stress.SetValue( pDetails->pLosses->GetFci() ) << rptNewLine;
-   *pParagraph << RPT_ECI << _T(" = ") << stress.SetValue( pDetails->pLosses->GetEci() ) << rptNewLine;
-   *pParagraph << RPT_EP  << _T(" = ") << stress.SetValue( pDetails->pLosses->GetEp() )   << rptNewLine;
+   *pParagraph << RPT_ECI << _T(" = ") << mod_e.SetValue( pDetails->pLosses->GetEci() ) << rptNewLine;
+   *pParagraph << RPT_EP  << _T(" = ") << mod_e.SetValue( pDetails->pLosses->GetEp() )   << rptNewLine;
 
    *pParagraph << table << rptNewLine;
 

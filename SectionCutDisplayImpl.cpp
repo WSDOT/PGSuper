@@ -367,9 +367,15 @@ STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnLButtonDblCl
 {
    METHOD_PROLOGUE(CSectionCutDisplayImpl,DisplayObjectEvents);
 
-   pThis->m_pCutLocation->ShowCutDlg();
-
-   return true;
+   if (pDO->IsSelected())
+   {
+      pThis->m_pCutLocation->ShowCutDlg();
+      return true;
+   }
+   else
+   {
+      return false;
+   }
 }
 
 STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)

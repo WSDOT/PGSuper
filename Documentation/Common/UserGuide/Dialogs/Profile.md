@@ -34,4 +34,4 @@ L2 | Distance from the PVI to the end of the vertical curve.
 
 > NOTE: Leave L1 and L2 blank to define a point of vertical intersection (PVI) for a grade break.
 
-> NOTE: While grade breaks do occur, they are not common. When a grade break is modeled, a will put a warning in the Status Center telling you that a zero-length vertical curve has been modeled. If you intended to model a grade break then no action is necessary. If you meant to model a vertical curve, then this status item will alert you to the input error.
+> NOTE: While grade breaks do occur, they are not common. When a grade break is modeled, a warning will be put in the Status Center telling you that a zero-length vertical curve has been modeled. If you intended to model a grade break then no action is necessary. If you meant to model a vertical curve, then this status item will alert you to the input error.
