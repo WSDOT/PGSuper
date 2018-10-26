@@ -182,9 +182,6 @@ public:
    const pgsConstructabilityArtifact* GetConstructabilityArtifact() const;
    pgsConstructabilityArtifact* GetConstructabilityArtifact();
 
-   pgsSplittingZoneArtifact* GetSplittingZoneArtifact();
-   const pgsSplittingZoneArtifact* GetSplittingZoneArtifact() const;
-
    void SetLiftingCheckArtifact(pgsLiftingCheckArtifact* artifact);
    const pgsLiftingCheckArtifact* GetLiftingCheckArtifact() const;
    
@@ -242,8 +239,6 @@ private:
    pgsStirrupCheckArtifact m_StirrupCheckArtifact;
 
    pgsPrecastIGirderDetailingArtifact m_PrecastIGirderDetailingArtifact;
-
-   pgsSplittingZoneArtifact m_SplittingZoneArtifact;
 
    std::auto_ptr<pgsLiftingCheckArtifact> m_pLiftingCheckArtifact;
    std::auto_ptr<pgsHaulingCheckArtifact> m_pHaulingCheckArtifact;

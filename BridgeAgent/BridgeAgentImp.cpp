@@ -44,7 +44,7 @@
 
 #include <PgsExt\GirderData.h>
 #include <PgsExt\PointOfInterest.h>
-#include <PgsExt\ShearData.h>
+#include <PsgLib\ShearData.h>
 #include <PgsExt\LongitudinalRebarData.h>
 #include <PgsExt\PointLoadData.h>
 #include <PgsExt\DistributedLoadData.h>
@@ -73,11 +73,10 @@
 #include <BridgeModeling\LrFlexiZone.h>
 #include <BridgeModeling\LrRowPattern.h>
 
+#include <DesignConfigUtil.h>
 
 #include <algorithm>
 #include <cctype>
-
-#include <afxext.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -125,6 +124,38 @@ IUserDefinedLoads::UserDefinedLoadCase Project2BridgeLoads(UserLoads::LoadCase p
       return  IUserDefinedLoads::userDC;
    }
 }
+
+// function for computing debond factor from development length
+inline Float64 GetDevLengthAdjustment(Float64 bonded_length, Float64 dev_length, Float64 xfer_length, Float64 fps, Float64 fpe)
+{
+   if (bonded_length <= 0.0)
+   {
+      // strand is unbonded at location, no more to do
+      return 0.0;
+   }
+   else
+   {
+      Float64 adjust = -999; // dummy value, helps with debugging
+
+      if ( bonded_length <= xfer_length)
+      {
+         adjust = (fpe < fps ? (bonded_length*fpe) / (xfer_length*fps) : 1.0);
+      }
+      else if ( bonded_length < dev_length )
+      {
+         adjust = (fpe + (bonded_length - xfer_length)*(fps-fpe)/(dev_length - xfer_length))/fps;
+      }
+      else
+      {
+         adjust = 1.0;
+      }
+
+      adjust = IsZero(adjust) ? 0 : adjust;
+      adjust = ::ForceIntoRange(0.0,adjust,1.0);
+      return adjust;
+   }
+}
+
 
 
 // an arbitrary large length
@@ -190,6 +221,224 @@ inline Float64 GetGirderEc(IGirderData* pGirderData,SpanIndexType span,GirderInd
    return modE;
 }
 
+// Function to choose confinement bars from primary and additional
+static void ChooseConfinementBars(Float64 requiredZoneLength, 
+                                  Float64 primSpc, Float64 primZonL, matRebar::Size primSize,
+                                  Float64 addlSpc, Float64 addlZonL, matRebar::Size addlSize,
+                                  matRebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing)
+{
+   // Start assuming the worst
+   *pSize = matRebar::bsNone;
+   *pProvidedZoneLength = 0.0;
+   *pSpacing = 0.0;
+
+   // methods must have bars and non-zero spacing just to be in the running
+   bool is_prim = primSize!=matRebar::bsNone && primSpc>0.0;
+   bool is_addl = addlSize!=matRebar::bsNone && addlSpc>0.0;
+
+   // Both must meet required zone length to qualify for a run-off
+   if (is_prim && is_addl && primZonL+TOL > requiredZoneLength && addlZonL+TOL > requiredZoneLength)
+   {
+      // both meet zone length req. choose smallest spacing
+      if (primSpc < addlSpc)
+      {
+         *pSize = primSize;
+         *pProvidedZoneLength = primZonL;
+         *pSpacing = primSpc;
+      }
+      else
+      {
+         *pSize = addlSize;
+         *pProvidedZoneLength = addlZonL;
+         *pSpacing = addlSpc;
+      }
+   }
+   else if (is_prim && primZonL+TOL > requiredZoneLength)
+   {
+      *pSize = primSize;
+      *pProvidedZoneLength = primZonL;
+      *pSpacing = primSpc;
+   }
+   else if (is_addl && addlZonL+TOL > requiredZoneLength)
+   {
+      *pSize = addlSize;
+      *pProvidedZoneLength = addlZonL;
+      *pSpacing = addlSpc;
+   }
+   else if (is_addl)
+   {
+      *pSize = addlSize;
+      *pProvidedZoneLength = addlZonL;
+      *pSpacing = addlSpc;
+   }
+   else if (is_prim)
+   {
+      *pSize = primSize;
+      *pProvidedZoneLength = primZonL;
+      *pSpacing = primSpc;
+   }
+}
+
+/////////////////////////////////////////////////////////
+// Utilities for Dealing with strand array conversions
+inline void IndexArray2ConfigStrandFillVec(IIndexArray* pArray, ConfigStrandFillVector& rVec)
+{
+   rVec.clear();
+   if (pArray!=NULL)
+   {
+      CollectionIndexType cnt;
+      pArray->get_Count(&cnt);
+      rVec.reserve(cnt);
+
+      CComPtr<IEnumIndexArray> enum_array;
+      pArray->get__EnumElements(&enum_array);
+      StrandIndexType value;
+      while ( enum_array->Next(1,&value,NULL) != S_FALSE )
+      {
+         rVec.push_back(value);
+      }
+   }
+}
+
+bool AreStrandsInConfigFillVec(const ConfigStrandFillVector& rHarpedFillArray)
+{
+   ConfigStrandFillConstIterator it =    rHarpedFillArray.begin();
+   ConfigStrandFillConstIterator itend = rHarpedFillArray.end();
+   while(it!=itend)
+   {
+      if(*it>0)
+         return true;
+
+      it++;
+   }
+
+   return false;
+}
+
+StrandIndexType CountStrandsInConfigFillVec(const ConfigStrandFillVector& rHarpedFillArray)
+{
+   StrandIndexType cnt(0);
+
+   ConfigStrandFillConstIterator it =    rHarpedFillArray.begin();
+   ConfigStrandFillConstIterator itend = rHarpedFillArray.end();
+   while(it!=itend)
+   {
+      cnt += *it;
+      it++;
+   }
+
+   return cnt;
+}
+
+
+// Wrapper class to turn a ConfigStrandFillVector into a IIndexArray
+// THIS IS A VERY MINIMAL WRAPPER USED TO PASS STRAND DATA INTO THE WBFL
+//   -Read only
+//   -Does not reference count
+//   -Does not clone
+//   -Does not support many functions of IIndexArray
+class CIndexArrayWrapper : public IIndexArray
+{
+   // we are wrapping this container
+   const ConfigStrandFillVector& m_Values;
+
+   CIndexArrayWrapper(); // no default constuct
+public:
+   CIndexArrayWrapper(const ConfigStrandFillVector& vec):
+      m_Values(vec)
+   {;}
+
+   // IUnknown
+   virtual HRESULT STDMETHODCALLTYPE QueryInterface( REFIID riid, __RPC__deref_out void __RPC_FAR *__RPC_FAR *ppvObject)
+   { ATLASSERT(0); return E_FAIL;}
+   virtual ULONG STDMETHODCALLTYPE AddRef( void)
+   { return 1;}
+   virtual ULONG STDMETHODCALLTYPE Release( void)
+   {return 1;}
+
+   // IIndexArray
+	STDMETHOD(Find)(/*[in]*/CollectionIndexType value, /*[out,retval]*/CollectionIndexType* fndIndex)
+   {
+      ATLASSERT(0);
+      return E_FAIL;
+   }
+	STDMETHOD(ReDim)(/*[in]*/CollectionIndexType size)
+   {
+      ATLASSERT(0);
+      return E_FAIL;
+   }
+
+	STDMETHOD(Clone)(/*[out,retval]*/IIndexArray* *clone)
+   {
+      ATLASSERT(0);
+      return E_FAIL;
+   }
+	STDMETHOD(get_Count)(/*[out, retval]*/ CollectionIndexType *pVal)
+   {
+	   *pVal = m_Values.size();
+	   return S_OK;
+   }
+	STDMETHOD(Clear)()
+   {
+      ATLASSERT(0);
+      return E_FAIL;
+   }
+	STDMETHOD(Reserve)(/*[in]*/CollectionIndexType count)
+   {
+      ATLASSERT(0);
+      return E_FAIL;
+   }
+	STDMETHOD(Insert)(/*[in]*/CollectionIndexType relPosition, /*[in]*/CollectionIndexType item)
+   {
+      ATLASSERT(0);
+      return E_FAIL;
+   }
+	STDMETHOD(Remove)(/*[in]*/CollectionIndexType relPosition)
+   {
+      ATLASSERT(0);
+      return E_FAIL;
+   }
+	STDMETHOD(Add)(/*[in]*/CollectionIndexType item)
+   {
+      ATLASSERT(0);
+      return E_FAIL;
+   }
+	STDMETHOD(get_Item)(/*[in]*/CollectionIndexType relPosition, /*[out, retval]*/ CollectionIndexType *pVal)
+   {
+      try
+      {
+         *pVal = m_Values[relPosition];
+      }
+      catch(...)
+      {
+         ATLASSERT(0);
+         return E_INVALIDARG;
+      }
+	   return S_OK;
+   }
+	STDMETHOD(put_Item)(/*[in]*/CollectionIndexType relPosition, /*[in]*/ CollectionIndexType newVal)
+   {
+      ATLASSERT(0);
+      return E_FAIL;
+   }
+	STDMETHOD(get__NewEnum)(struct IUnknown ** )
+   {
+      ATLASSERT(0);
+      return E_FAIL;
+   }
+	STDMETHOD(get__EnumElements)(struct IEnumIndexArray ** )
+   {
+      ATLASSERT(0);
+      return E_FAIL;
+   }
+   STDMETHOD(Assign)(/*[in]*/CollectionIndexType numElements, /*[in]*/CollectionIndexType value)
+   {
+      ATLASSERT(0);
+      return E_FAIL;
+   }
+};
+
+///////////////////////////////////////////////////////////
 // Exception-safe class for blocking infinite recursion
 class SimpleMutex
 {
@@ -275,6 +524,9 @@ void CBridgeAgentImp::Invalidate( Uint16 level )
 
       m_LeftSlabEdgeOffset.clear();
       m_RightSlabEdgeOffset.clear();
+
+      // cached sheardata
+      InvalidateStirrupData();
 
       // remove our items from the status center
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
@@ -2027,19 +2279,19 @@ void CBridgeAgentImp::CreateStrandMover(LPCTSTR strGirderName,IStrandMover** ppS
    const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry(strGirderName);
 
    // get harped strand adjustment limits
-   GirderLibraryEntry::GirderFace endTopFace, endBottomFace;
+   pgsTypes::GirderFace endTopFace, endBottomFace;
    Float64 endTopLimit, endBottomLimit;
    pGirderEntry->GetEndAdjustmentLimits(&endTopFace, &endTopLimit, &endBottomFace, &endBottomLimit);
 
-   IBeamFactory::BeamFace etf = endTopFace    == GirderLibraryEntry::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
-   IBeamFactory::BeamFace ebf = endBottomFace == GirderLibraryEntry::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+   IBeamFactory::BeamFace etf = endTopFace    == pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+   IBeamFactory::BeamFace ebf = endBottomFace == pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
 
-   GirderLibraryEntry::GirderFace hpTopFace, hpBottomFace;
+   pgsTypes::GirderFace hpTopFace, hpBottomFace;
    Float64 hpTopLimit, hpBottomLimit;
    pGirderEntry->GetHPAdjustmentLimits(&hpTopFace, &hpTopLimit, &hpBottomFace, &hpBottomLimit);
 
-   IBeamFactory::BeamFace htf = hpTopFace    == GirderLibraryEntry::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
-   IBeamFactory::BeamFace hbf = hpBottomFace == GirderLibraryEntry::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+   IBeamFactory::BeamFace htf = hpTopFace    == pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+   IBeamFactory::BeamFace hbf = hpBottomFace == pgsTypes::GirderBottom ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
 
    // only allow end adjustents if increment is non-negative
    Float64 end_increment = pGirderEntry->IsVerticalAdjustmentAllowedEnd() ?  pGirderEntry->GetEndStrandIncrement() : -1.0;
@@ -2201,7 +2453,6 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription* pBridgeDesc)
          // create the strand mover
          CComPtr<IStrandMover> strand_mover;
          CreateStrandMover(strGirderName.c_str(),&strand_mover);
-
          ATLASSERT(strand_mover != NULL);
          
          // assign a precast girder model to the superstructure member
@@ -2213,7 +2464,7 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription* pBridgeDesc)
          girder->Initialize(m_Bridge,strand_mover, spanIdx,gdrIdx);
          item_data->AddItemData(CComBSTR(_T("Precast Girder")),girder);
 
-         // Fill up strand patterns
+         // Create strand grid template. Doesn't fill strands, just makes holes
          CComPtr<IStrandGrid> strGrd[2], harpGrdEnd[2], harpGrdHP[2], tempGrd[2];
          girder->get_StraightStrandGrid(etStart,&strGrd[etStart]);
          girder->get_HarpedStrandGridEnd(etStart,&harpGrdEnd[etStart]);
@@ -2726,125 +2977,147 @@ bool CBridgeAgentImp::LayoutTrafficBarriers(const CBridgeDescription* pBridgeDes
    return true;
 }
 
+void ComputeBarrierShapeToeLocations(IShape* pShape, Float64* leftToe, Float64* rightToe)
+{
+   // barrier toe is at X=0.0 of shape. Clip a very shallow rect at this elevation and use the width
+   // of the clipped shape as the toe bounds.
+   CComPtr<IRect2d> rect;
+   rect.CoCreateInstance(CLSID_Rect2d);
+   rect->SetBounds(-1.0e06, 1.0e06, 0.0, 1.0e-04);
+
+   CComPtr<IShape> clip_shape;
+   pShape->ClipIn(rect, &clip_shape);
+   if (clip_shape)
+   {
+      CComPtr<IRect2d> bbox;
+      clip_shape->get_BoundingBox(&bbox);
+      bbox->get_Left(leftToe);
+      bbox->get_Right(rightToe);
+   }
+   else
+   {
+      *leftToe = 0.0;
+      *rightToe = 0.0;
+   }
+}
+
+void CBridgeAgentImp::CreateBarrierObject(IBarrier** pBarrier, const TrafficBarrierEntry*  pBarrierEntry, pgsTypes::TrafficBarrierOrientation orientation)
+{
+   CComPtr<IPolyShape> polyshape;
+   pBarrierEntry->CreatePolyShape(orientation,&polyshape);
+
+   CComQIPtr<IShape> pShape(polyshape);
+
+   // box containing barrier
+   CComPtr<IRect2d> bbox;
+   pShape->get_BoundingBox(&bbox);
+
+   Float64 rightEdge, leftEdge;
+   bbox->get_Right(&rightEdge);
+   bbox->get_Left(&leftEdge);
+
+   // Distance from the barrier curb to the exterior face of barrier for purposes of determining
+   // roadway width
+   Float64 curbOffset = pBarrierEntry->GetCurbOffset();
+
+   // Toe locations of barrier
+   Float64 leftToe, rightToe;
+   ComputeBarrierShapeToeLocations(pShape, &leftToe, &rightToe);
+
+   // Dimensions of barrier depend on orientation
+   Float64 extToeWid, intToeWid;
+   if (orientation == pgsTypes::tboLeft )
+   {
+      intToeWid = rightEdge - rightToe;
+      extToeWid = -(leftEdge - leftToe);
+   }
+   else
+   {
+      extToeWid = rightEdge - rightToe;
+      intToeWid = -(leftEdge - leftToe);
+   }
+
+   // We have all data. Create barrier and initialize
+   CComPtr<IGenericBarrier> barrier;
+   barrier.CoCreateInstance(CLSID_GenericBarrier);
+
+   barrier->Init(pShape, curbOffset, intToeWid, extToeWid);
+
+   barrier.QueryInterface(pBarrier);
+
+   // set up material
+   Float64 E, density;
+   E = GetEcRailing(orientation);
+   density = GetDensityRailing(orientation);
+
+   CComPtr<IMaterial> material;
+   (*pBarrier)->get_Material(&material);
+   material->put_E(E);
+   material->put_Density(density);
+}
+
 bool CBridgeAgentImp::LayoutTrafficBarrier(const CBridgeDescription* pBridgeDesc,const CRailingSystem* pRailingSystem,pgsTypes::TrafficBarrierOrientation orientation,ISidewalkBarrier** ppBarrier)
 {
-   CComPtr<ISidewalkBarrier> sidewalk_barrier;
-   sidewalk_barrier.CoCreateInstance(CLSID_SidewalkBarrier);
+   // Railing system object
+   CComPtr<ISidewalkBarrier> railing_system;
+   railing_system.CoCreateInstance(CLSID_SidewalkBarrier);
 
    GET_IFACE(ILibrary,pLib);
    const TrafficBarrierEntry*  pExtRailingEntry = pLib->GetTrafficBarrierEntry( pRailingSystem->strExteriorRailing.c_str() );
 
-   // distance from the toe of barrier to the "nominal" face of barrier for purposes of determining
-   // roadway width
-   Float64 curbOffset = pExtRailingEntry->GetCurbOffset();
+   // Exterior Barrier
+   CComPtr<IBarrier> extBarrier;
+   CreateBarrierObject(&extBarrier, pExtRailingEntry, orientation);
 
-   CComPtr<IPolyShape> polyshape;
-   pExtRailingEntry->CreatePolyShape(orientation,&polyshape);
-
-   CComQIPtr<IShape> extShape(polyshape);
-
-   // determine connection width... For the exterior barrier this will be the distance
-   // from the origin to the right or left edge of the bounding box
-   Float64 connectionWidth;
-   CComPtr<IRect2d> bbox;
-   extShape->get_BoundingBox(&bbox);
-   if (orientation == pgsTypes::tboLeft )
-      bbox->get_Right(&connectionWidth);
-   else
-      bbox->get_Left(&connectionWidth);
-
-   connectionWidth = fabs(connectionWidth);
-
-   CComQIPtr<IBarrier> barrier(sidewalk_barrier);
-   sidewalk_barrier->put_IsExteriorStructurallyContinuous(pExtRailingEntry->IsBarrierStructurallyContinuous() ? VARIANT_TRUE : VARIANT_FALSE);
+   railing_system->put_IsExteriorStructurallyContinuous(pExtRailingEntry->IsBarrierStructurallyContinuous() ? VARIANT_TRUE : VARIANT_FALSE);
 
    SidewalkPositionType swPosition = pRailingSystem->bBarriersOnTopOfSidewalk ? swpBeneathBarriers : swpBetweenBarriers;
 
    int barrierType = 1;
    Float64 h1,h2,w;
-   CComPtr<IShape> intShape;
+   CComPtr<IBarrier> intBarrier;
    if ( pRailingSystem->bUseSidewalk )
    {
-      // get the sidewalk dimensinos
+      // get the sidewalk dimensions
       barrierType = 2;
       h1 = pRailingSystem->LeftDepth;
       h2 = pRailingSystem->RightDepth;
       w  = pRailingSystem->Width;
+
+      railing_system->put_IsSidewalkStructurallyContinuous(pRailingSystem->bSidewalkStructurallyContinuous ? VARIANT_TRUE : VARIANT_FALSE);
 
       if ( pRailingSystem->bUseInteriorRailing )
       {
          // there is an interior railing as well
          barrierType = 3;
          const TrafficBarrierEntry* pIntRailingEntry = pLib->GetTrafficBarrierEntry( pRailingSystem->strInteriorRailing.c_str() );
-         polyshape.Release();
-         pIntRailingEntry->CreatePolyShape(orientation,&polyshape);
 
-         polyshape.QueryInterface(&intShape);
+         CreateBarrierObject(&intBarrier, pIntRailingEntry, orientation);
 
-         sidewalk_barrier->put_IsSidewalkStructurallyContinuous(pRailingSystem->bSidewalkStructurallyContinuous ? VARIANT_TRUE : VARIANT_FALSE);
-         sidewalk_barrier->put_IsInteriorStructurallyContinuous(pIntRailingEntry->IsBarrierStructurallyContinuous() ? VARIANT_TRUE : VARIANT_FALSE);
-
-         // RAB: 10/28/2009
-         // Changed how de is determined... de is always from the centerline of the exterior
-         // web to the face of the exterior barrior less the curb offset
-
-         //// the connetion width is equal to the width of the bounding box
-         //bbox.Release();
-         //intShape->get_BoundingBox(&bbox);
-         //Float64 intConnectionWidth;
-         //bbox->get_Width(&intConnectionWidth);
-         //connectionWidth += fabs(intConnectionWidth);
-
-         //// increase the connection width to include the sidewalk 
-         //connectionWidth += w; // don't do this for barrierType = 2 even though there is a sidewalk
-         //                      // if there is not an interior barrier, it is assumed the traffic
-         //                      // can mount the sidewalk in which case connectionWidth is the same as if
-         //                      // we had a barrierType = 1
-
-         //// if the sidewalk is beneath the barriers and there are interior and exterior railings
-         //// the the conneciton width is simply the sidewalk width!
-         //if ( swPosition == swpBeneathBarriers )
-         //   connectionWidth = w;
-
-         //// if there is an interior barrier, ignore the curb offset from the exterior barrier
-         //// and use the interior barrier's value
-         //curbOffset = pIntRailingEntry->GetCurbOffset();
+         railing_system->put_IsInteriorStructurallyContinuous(pIntRailingEntry->IsBarrierStructurallyContinuous() ? VARIANT_TRUE : VARIANT_FALSE);
       }
    }
-
-   // reduce the connection width by the curb offset
-   connectionWidth -= curbOffset;
 
    switch(barrierType)
    {
    case 1:
-      sidewalk_barrier->put_Barrier1(extShape,connectionWidth);
+      railing_system->put_Barrier1(extBarrier,(TrafficBarrierOrientation)orientation);
       break;
 
    case 2:
-      sidewalk_barrier->put_Barrier2(extShape,h1,h2,w,(TrafficBarrierOrientation)orientation, swPosition, connectionWidth);
+      railing_system->put_Barrier2(extBarrier,h1,h2,w,(TrafficBarrierOrientation)orientation, swPosition);
       break;
 
    case 3:
-      sidewalk_barrier->put_Barrier3(extShape,h1,h2,w,intShape,(TrafficBarrierOrientation)orientation, swPosition, connectionWidth);
+      railing_system->put_Barrier3(extBarrier,h1,h2,w,(TrafficBarrierOrientation)orientation, swPosition, intBarrier);
       break;
 
    default:
       ATLASSERT(FALSE); // should never get here
    }
 
-   // set up the material... object is by reference so we just have to change the values
 
-   Float64 E, density;
-   E = GetEcRailing(orientation);
-   density = GetDensityRailing(orientation);
-
-   CComPtr<IMaterial> material;
-   barrier->get_Material(&material);
-   material->put_E(E);
-   material->put_Density(density);
-
-   (*ppBarrier) = sidewalk_barrier;
+   (*ppBarrier) = railing_system;
    (*ppBarrier)->AddRef();
 
    return true;
@@ -2903,71 +3176,84 @@ void CBridgeAgentImp::UpdatePrestressing(SpanIndexType spanIdx,GirderIndexType g
 
          const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry( strGirderName.c_str() );
 
-         // need a strand filler for each girder
-         CContinuousStandFiller* pfiller;;
-         SpanGirderHashType hash = HashSpanGirder(span, gdr);
-         StrandFillerCollection::iterator its = m_StrandFillers.find(hash);
-         if (its != m_StrandFillers.end())
-         {
-            its->second.Init(pGirderEntry);
-            pfiller = &(its->second);
-         }
-         else
-         {
-            CContinuousStandFiller filler;
-            filler.Init(pGirderEntry);
-            std::pair<StrandFillerCollection::iterator, bool>  sit = m_StrandFillers.insert(std::make_pair(hash,filler));
-            ATLASSERT(sit.second);
-            pfiller = &(sit.first->second);
-         }
+         // Inititalize a strand filler for each girder
+         this->InitializeStrandFiller(pGirderEntry, span, gdr);
 
          CComPtr<IPrecastGirder> girder;
          GetGirder(span,gdr,&girder);
 
-         CGirderData girderData = pGirderData->GetGirderData(span,gdr);
+         const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
 
          girder->ClearStraightStrandDebonding();
 
-         HRESULT hr;
-         hr = pfiller->SetStraightStrandCount(girder, girderData.Nstrands[pgsTypes::Straight]);
-         ATLASSERT( SUCCEEDED(hr));
-         hr = pfiller->SetHarpedStrandCount(girder, girderData.Nstrands[pgsTypes::Harped]);
-         ATLASSERT( SUCCEEDED(hr));
-         hr = pfiller->SetTemporaryStrandCount(girder, girderData.Nstrands[pgsTypes::Temporary]);
-         ATLASSERT( SUCCEEDED(hr));
+         // Fill strands
+         int permFillType = pgirderData->PrestressData.GetNumPermStrandsType();
+         if (permFillType==NPS_TOTAL_NUMBER || permFillType==NPS_STRAIGHT_HARPED)
+         {
+            // Continuous fill
+            CContinuousStrandFiller* pfiller = this->GetContinuousStrandFiller(span, gdr);
 
-         // Apply the harped strand pattern offsets.
+            HRESULT hr;
+            hr = pfiller->SetStraightContinuousFill(girder, pgirderData->PrestressData.GetNstrands(pgsTypes::Straight));
+            ATLASSERT( SUCCEEDED(hr));
+            hr = pfiller->SetHarpedContinuousFill(girder, pgirderData->PrestressData.GetNstrands(pgsTypes::Harped));
+            ATLASSERT( SUCCEEDED(hr));
+            hr = pfiller->SetTemporaryContinuousFill(girder, pgirderData->PrestressData.GetNstrands(pgsTypes::Temporary));
+            ATLASSERT( SUCCEEDED(hr));
+         }
+         else if (permFillType==NPS_DIRECT_SELECTION)
+         {
+            // Direct fill
+            CDirectStrandFiller* pfiller = this->GetDirectStrandFiller(span, gdr);
+
+            HRESULT hr;
+            hr = pfiller->SetStraightDirectStrandFill(girder, pgirderData->PrestressData.GetDirectStrandFillStraight());
+            ATLASSERT( SUCCEEDED(hr));
+            hr = pfiller->SetHarpedDirectStrandFill(girder, pgirderData->PrestressData.GetDirectStrandFillHarped());
+            ATLASSERT( SUCCEEDED(hr));
+            hr = pfiller->SetTemporaryDirectStrandFill(girder, pgirderData->PrestressData.GetDirectStrandFillTemporary());
+            ATLASSERT( SUCCEEDED(hr));
+         }
+
+         // Apply harped strand pattern offsets.
+         // Get fill array for harped and convert to ConfigStrandFillVector
+         CComPtr<IIndexArray> hFillArray;
+         girder->get_HarpedStrandFill(&hFillArray);
+         ConfigStrandFillVector hFillVec;
+         IndexArray2ConfigStrandFillVec(hFillArray, hFillVec);
+
+         bool force_straight = pGirderEntry->IsForceHarpedStrandsStraight();
          Float64 adjustment(0.0);
          if ( pGirderEntry->IsVerticalAdjustmentAllowedEnd() )
          {
-            adjustment = this->ComputeAbsoluteHarpedOffsetEnd(span, gdr, girderData.Nstrands[pgsTypes::Harped], girderData.HsoEndMeasurement, girderData.HpOffsetAtEnd);
+            adjustment = this->ComputeAbsoluteHarpedOffsetEnd(span, gdr, hFillVec, pgirderData->PrestressData.HsoEndMeasurement, pgirderData->PrestressData.HpOffsetAtEnd);
             girder->put_HarpedStrandAdjustmentEnd(adjustment);
+
+            // use same adjustment at harping points if harped strands are forced to straight
+            if (force_straight)
+            {
+               girder->put_HarpedStrandAdjustmentHP(adjustment);
+            }
          }
 
-         if ( pGirderEntry->IsVerticalAdjustmentAllowedHP() )
+         if ( pGirderEntry->IsVerticalAdjustmentAllowedHP() && !force_straight )
          {
-            adjustment = this->ComputeAbsoluteHarpedOffsetHp(span, gdr, girderData.Nstrands[pgsTypes::Harped], girderData.HsoHpMeasurement, girderData.HpOffsetAtHp);
+            adjustment = this->ComputeAbsoluteHarpedOffsetHp(span, gdr, hFillVec, 
+                                                             pgirderData->PrestressData.HsoHpMeasurement, pgirderData->PrestressData.HpOffsetAtHp);
             girder->put_HarpedStrandAdjustmentHP(adjustment);
+
+            ATLASSERT(!pGirderEntry->IsForceHarpedStrandsStraight()); // should not happen
          }
 
          // Apply debonding
          std::vector<CDebondInfo>::const_iterator iter;
-         for ( iter = girderData.Debond[pgsTypes::Straight].begin(); iter != girderData.Debond[pgsTypes::Straight].end(); iter++ )
+         for ( iter = pgirderData->PrestressData.Debond[pgsTypes::Straight].begin(); 
+               iter != pgirderData->PrestressData.Debond[pgsTypes::Straight].end(); iter++ )
          {
             const CDebondInfo& debond_info = *iter;
-            GridIndexType db_idx;
-            girder->StraightStrandIndexToGridIndex(debond_info.idxStrand1,&db_idx);
-            girder->DebondStraightStrandByGridIndex(db_idx,debond_info.Length1,debond_info.Length2);
 
-#if defined _DEBUG
-            if ( debond_info.idxStrand2 != INVALID_INDEX )
-            {
-               // idxStrand2 is a legacy value ... confirm that everything was converted correctly
-               GridIndexType db_idx2;
-               girder->StraightStrandIndexToGridIndex(debond_info.idxStrand2,&db_idx2);
-               ATLASSERT(db_idx2==db_idx);
-            }
-#endif // _DEBUG
+            // debond data index is in same order as grid fill
+            girder->DebondStraightStrandByGridIndex(debond_info.strandTypeGridIdx,debond_info.Length1,debond_info.Length2);
          }
       
          // lay out POIs based on this prestressing
@@ -3392,12 +3678,12 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(SpanIndexType span,Gir
    ////////////////////////////////////////////////////////////////
 
    GET_IFACE(IGirderData,pGirderData);
-   CGirderData girderData = pGirderData->GetGirderData(span,gdr);
+   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
 
    for ( Uint16 i = 0; i < 3; i++ )
    {
       std::vector<CDebondInfo>::const_iterator iter;
-      for ( iter = girderData.Debond[i].begin(); iter != girderData.Debond[i].end(); iter++ )
+      for ( iter = pgirderData->PrestressData.Debond[i].begin(); iter != pgirderData->PrestressData.Debond[i].end(); iter++ )
       {
          const CDebondInfo& debond_info = *iter;
 
@@ -4890,56 +5176,98 @@ GDRCONFIG CBridgeAgentImp::GetGirderConfiguration(SpanIndexType span,GirderIndex
    CComPtr<IPrecastGirder> girder;
    GetGirder(span,gdr,&girder);
 
-   // Get number of strands
-   girder->GetStraightStrandCount( &config.Nstrands[pgsTypes::Straight] );
-   girder->GetHarpedStrandCount(   &config.Nstrands[pgsTypes::Harped]   );
-   girder->GetTemporaryStrandCount(&config.Nstrands[pgsTypes::Temporary]);
+   // Strand fills
+   CComPtr<IIndexArray> fill[3];
+   ConfigStrandFillVector fillVec[3];
 
+   girder->get_StraightStrandFill(&fill[pgsTypes::Straight]);
+   IndexArray2ConfigStrandFillVec(fill[pgsTypes::Straight], fillVec[pgsTypes::Straight]);
+   config.PrestressConfig.SetStrandFill(pgsTypes::Straight, fillVec[pgsTypes::Straight]);
 
+   girder->get_HarpedStrandFill(&fill[pgsTypes::Harped]);
+   IndexArray2ConfigStrandFillVec(fill[pgsTypes::Harped], fillVec[pgsTypes::Harped]);
+   config.PrestressConfig.SetStrandFill(pgsTypes::Harped, fillVec[pgsTypes::Harped]);
+
+   girder->get_TemporaryStrandFill(&fill[pgsTypes::Temporary]);
+   IndexArray2ConfigStrandFillVec(fill[pgsTypes::Temporary], fillVec[pgsTypes::Temporary]);
+   config.PrestressConfig.SetStrandFill(pgsTypes::Temporary, fillVec[pgsTypes::Temporary]);
 
    // Get harping point offsets
-   girder->get_HarpedStrandAdjustmentEnd(&config.EndOffset);
-   girder->get_HarpedStrandAdjustmentHP(&config.HpOffset);
+   girder->get_HarpedStrandAdjustmentEnd(&config.PrestressConfig.EndOffset);
+   girder->get_HarpedStrandAdjustmentHP(&config.PrestressConfig.HpOffset);
 
-   // Get jacking force
+   // Get jacking force and debonding
    GET_IFACE(IGirderData,pGirderData);   
-   CGirderData girderData = pGirderData->GetGirderData(span,gdr);
+   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
    for ( Uint16 i = 0; i < 3; i++ )
    {
-      config.Pjack[i] = girderData.Pjack[i];
+      pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
 
-      std::vector<CDebondInfo>::const_iterator iter;
-      for ( iter = girderData.Debond[i].begin(); iter != girderData.Debond[i].end(); iter++ )
+      config.PrestressConfig.Pjack[strandType] = pgirderData->PrestressData.Pjack[strandType];
+
+      // Convert debond data
+      // Use tool to compute strand position index from grid index used by CDebondInfo
+      ConfigStrandFillTool fillTool( fillVec[strandType] );
+
+      std::vector<CDebondInfo>::const_iterator iter = pgirderData->PrestressData.Debond[strandType].begin();
+      std::vector<CDebondInfo>::const_iterator iterend = pgirderData->PrestressData.Debond[strandType].end();
+      while(iter != iterend)
       {
          const CDebondInfo& debond_info = *iter;
 
-         DEBONDINFO di;
-         di.strandIdx         = debond_info.idxStrand1;
+         // convert grid index to strands index
+         StrandIndexType index1, index2;
+         fillTool.GridIndexToStrandPositionIndex(debond_info.strandTypeGridIdx, &index1, &index2);
+
+         DEBONDCONFIG di;
+         ATLASSERT(index1 != INVALID_INDEX);
+         di.strandIdx         = index1;
          di.LeftDebondLength  = debond_info.Length1;
          di.RightDebondLength = debond_info.Length2;
 
-         config.Debond[i].push_back(di);
+         config.PrestressConfig.Debond[i].push_back(di);
 
-         if ( debond_info.idxStrand2 != INVALID_INDEX )
+         if ( index2 != INVALID_INDEX )
          {
-            di.strandIdx         = debond_info.idxStrand2;
+            di.strandIdx         = index2;
             di.LeftDebondLength  = debond_info.Length1;
             di.RightDebondLength = debond_info.Length2;
 
-            config.Debond[i].push_back(di);
+            config.PrestressConfig.Debond[i].push_back(di);
          }
+
+         iter++;
       }
 
       // sorts based on strand index
-      std::sort(config.Debond[i].begin(),config.Debond[i].end());
+      std::sort(config.PrestressConfig.Debond[strandType].begin(),config.PrestressConfig.Debond[strandType].end());
 
       for ( Uint16 j = 0; j < 2; j++ )
       {
-         config.NextendedStrands[i][j] = girderData.NextendedStrands[i][j];
+         pgsTypes::MemberEndType endType = pgsTypes::MemberEndType(j);
+         const std::vector<GridIndexType>& gridIndicies(pgirderData->PrestressData.GetExtendedStrands(strandType,endType));
+         std::vector<StrandIndexType> strandIndicies;
+         std::vector<GridIndexType>::const_iterator iter(gridIndicies.begin());
+         std::vector<GridIndexType>::const_iterator end(gridIndicies.end());
+         for ( ; iter != end; iter++ )
+         {
+            // convert grid index to strands index
+            GridIndexType gridIdx = *iter;
+            StrandIndexType index1, index2;
+            fillTool.GridIndexToStrandPositionIndex(gridIdx, &index1, &index2);
+            ATLASSERT(index1 != INVALID_INDEX);
+            strandIndicies.push_back(index1);
+            if ( index2 != INVALID_INDEX )
+            {
+               strandIndicies.push_back(index2);
+            }
+         }
+         std::sort(strandIndicies.begin(),strandIndicies.end());
+         config.PrestressConfig.SetExtendedStrands(strandType,endType,strandIndicies);
       }
    }
 
-   config.TempStrandUsage = girderData.TempStrandUsage;
+   config.PrestressConfig.TempStrandUsage = pgirderData->PrestressData.TempStrandUsage;
 
    // Get concrete properties
    config.Fc       = GetFcGdr(span,gdr);
@@ -4951,11 +5279,17 @@ GDRCONFIG CBridgeAgentImp::GetGirderConfiguration(SpanIndexType span,GirderIndex
 
    config.Ec  = GetEcGdr(span,gdr);
    config.Eci = GetEciGdr(span,gdr);
-   config.bUserEci = girderData.Material.bUserEci;
-   config.bUserEc  = girderData.Material.bUserEc;
+   config.bUserEci = pgirderData->Material.bUserEci;
+   config.bUserEc  = pgirderData->Material.bUserEc;
 
+   // Slab offset
    config.SlabOffset[pgsTypes::metStart] = GetSlabOffset(span,gdr,pgsTypes::metStart);
    config.SlabOffset[pgsTypes::metEnd]   = GetSlabOffset(span,gdr,pgsTypes::metEnd);
+
+   // Stirrup data
+	const CShearData& rsheardata = GetShearData(span,gdr);
+
+   WriteShearDataToStirrupConfig(rsheardata, config.StirrupConfig);
 
    return config;
 }
@@ -5795,7 +6129,65 @@ Float64 CBridgeAgentImp::GetCurbToCurbWidth(Float64 distFromStartOfBridge)
    return right_offset - left_offset;
 }
 
-void CBridgeAgentImp::GetSlabPerimeter(Uint32 nPoints,IPoint2dCollection** points)
+Float64 CBridgeAgentImp::GetLeftInteriorCurbOffset(double distFromStartOfBridge)
+{
+   VALIDATE( BRIDGE );
+   Float64 station = GetPierStation(0);
+   station += distFromStartOfBridge;
+   Float64 offset;
+   m_BridgeGeometryTool->InteriorCurbOffset(m_Bridge,station,NULL,qcbLeft,&offset);
+   return offset;
+}
+
+Float64 CBridgeAgentImp::GetRightInteriorCurbOffset(double distFromStartOfBridge)
+{
+   VALIDATE( BRIDGE );
+   Float64 station = GetPierStation(0);
+   station += distFromStartOfBridge;
+   Float64 offset;
+   m_BridgeGeometryTool->InteriorCurbOffset(m_Bridge,station,NULL,qcbRight,&offset);
+   return offset;
+}
+
+Float64 CBridgeAgentImp::GetLeftOverlayToeOffset(double distFromStartOfBridge)
+{
+   Float64 slab_edge = GetLeftSlabEdgeOffset(distFromStartOfBridge);
+
+   CComPtr<ISidewalkBarrier> pSwBarrier;
+   m_Bridge->get_LeftBarrier(&pSwBarrier);
+
+   Float64 toe_width;
+   pSwBarrier->get_OverlayToeWidth(&toe_width);
+
+   return slab_edge + toe_width;
+}
+
+Float64 CBridgeAgentImp::GetRightOverlayToeOffset(double distFromStartOfBridge)
+{
+   Float64 slab_edge = GetRightSlabEdgeOffset(distFromStartOfBridge);
+
+   CComPtr<ISidewalkBarrier> pSwBarrier;
+   m_Bridge->get_RightBarrier(&pSwBarrier);
+
+   Float64 toe_width;
+   pSwBarrier->get_OverlayToeWidth(&toe_width);
+
+   return slab_edge - toe_width;
+}
+
+Float64 CBridgeAgentImp::GetLeftOverlayToeOffset(const pgsPointOfInterest& poi)
+{
+   Float64 distFromStartOfBridge = GetDistanceFromStartOfBridge(poi);
+   return GetLeftOverlayToeOffset(distFromStartOfBridge);
+}
+
+Float64 CBridgeAgentImp::GetRightOverlayToeOffset(const pgsPointOfInterest& poi)
+{
+   Float64 distFromStartOfBridge = GetDistanceFromStartOfBridge(poi);
+   return GetRightOverlayToeOffset(distFromStartOfBridge);
+}
+
+void CBridgeAgentImp::GetSlabPerimeter(CollectionIndexType nPoints,IPoint2dCollection** points)
 {
    VALIDATE( BRIDGE );
 
@@ -5824,7 +6216,107 @@ void CBridgeAgentImp::GetSlabPerimeter(Uint32 nPoints,IPoint2dCollection** point
    (*points)->AddRef();
 }
 
-void CBridgeAgentImp::GetSpanPerimeter(SpanIndexType spanIdx,Uint32 nPoints,IPoint2dCollection** points)
+void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx,CollectionIndexType nPoints,IPoint2dCollection** points)
+{
+   VALIDATE( BRIDGE );
+
+   CComPtr<IAlignment> alignment;
+   GetAlignment(&alignment);
+
+   ASSERT( 3 <= nPoints );
+
+   CComPtr<IPoint2dCollection> thePoints;
+   thePoints.CoCreateInstance(CLSID_Point2dCollection);
+
+   PierIndexType startPierIdx = startSpanIdx;
+   PierIndexType endPierIdx   = endSpanIdx+1;
+
+   Float64 startStation = GetPierStation(startPierIdx);
+   Float64 endStation   = GetPierStation(endPierIdx);
+   Float64 stationInc   = (endStation - startStation)/(nPoints-1);
+
+   CComPtr<IDirection> startDirection, endDirection;
+   GetPierDirection(startPierIdx,&startDirection);
+   GetPierDirection(endPierIdx,  &endDirection);
+   Float64 dirStart, dirEnd;
+   startDirection->get_Value(&dirStart);
+   endDirection->get_Value(&dirEnd);
+
+   Float64 station   = startStation;
+
+   // Locate points along right side of deck
+   // Get station of deck points at first and last piers, projected normal to aligment
+   CComPtr<IPoint2d> objStartPointRight, objEndPointRight;
+   m_BridgeGeometryTool->DeckEdgePoint(m_Bridge,startStation,startDirection,qcbRight,&objStartPointRight);
+   m_BridgeGeometryTool->DeckEdgePoint(m_Bridge,endStation,  endDirection,  qcbRight,&objEndPointRight);
+
+   Float64 start_normal_station_right, end_normal_station_right;
+   Float64 offset;
+
+   GetStationAndOffset(objStartPointRight,&start_normal_station_right,&offset);
+   GetStationAndOffset(objEndPointRight,  &end_normal_station_right,  &offset);
+
+   // If there is a skew, the first deck edge can be before the pier station, or after it. 
+   // Same for the last deck edge. We must deal with this
+   thePoints->Add(objStartPointRight);
+
+   CollectionIndexType pntIdx;
+   for (pntIdx = 0; pntIdx < nPoints; pntIdx++ )
+   {
+      if (station > start_normal_station_right && station < end_normal_station_right)
+      {
+         CComPtr<IDirection> objDirection;
+         alignment->Normal(CComVariant(station), &objDirection);
+
+         CComPtr<IPoint2d> point;
+         HRESULT hr = m_BridgeGeometryTool->DeckEdgePoint(m_Bridge,station,objDirection,qcbRight,&point);
+         ATLASSERT( SUCCEEDED(hr) );
+
+         thePoints->Add(point);
+      }
+
+      station   += stationInc;
+   }
+
+   thePoints->Add(objEndPointRight);
+
+   // Locate points along left side of deck (working backwards)
+   CComPtr<IPoint2d> objStartPointLeft, objEndPointLeft;
+   m_BridgeGeometryTool->DeckEdgePoint(m_Bridge,startStation,startDirection,qcbLeft,&objStartPointLeft);
+   m_BridgeGeometryTool->DeckEdgePoint(m_Bridge,endStation,  endDirection,  qcbLeft,&objEndPointLeft);
+
+   Float64 start_normal_station_left, end_normal_station_left;
+
+   GetStationAndOffset(objStartPointLeft,&start_normal_station_left,&offset);
+   GetStationAndOffset(objEndPointLeft,  &end_normal_station_left,  &offset);
+
+   thePoints->Add(objEndPointLeft);
+
+   station   = endStation;
+   for ( pntIdx = 0; pntIdx < nPoints; pntIdx++ )
+   {
+      if (station > start_normal_station_left && station < end_normal_station_left)
+      {
+         CComPtr<IDirection> objDirection;
+         alignment->Normal(CComVariant(station), &objDirection);
+
+         CComPtr<IPoint2d> point;
+         HRESULT hr = m_BridgeGeometryTool->DeckEdgePoint(m_Bridge,station,objDirection,qcbLeft,&point);
+         ATLASSERT( SUCCEEDED(hr) );
+
+         thePoints->Add(point);
+      }
+
+      station   -= stationInc;
+   }
+
+   thePoints->Add(objStartPointLeft);
+
+   (*points) = thePoints;
+   (*points)->AddRef();
+}
+
+void CBridgeAgentImp::GetSpanPerimeter(SpanIndexType spanIdx,CollectionIndexType nPoints,IPoint2dCollection** points)
 {
    VALIDATE( BRIDGE );
 
@@ -5868,7 +6360,7 @@ void CBridgeAgentImp::GetSpanPerimeter(SpanIndexType spanIdx,Uint32 nPoints,IPoi
    // Same for the last deck edge. We must deal with this
    thePoints->Add(objStartPointRight);
 
-   Uint32 pntIdx;
+   CollectionIndexType pntIdx;
    for (pntIdx = 0; pntIdx < nPoints; pntIdx++ )
    {
       if (station > start_normal_station_right && station < end_normal_station_right)
@@ -7018,7 +7510,7 @@ Float64 CBridgeAgentImp::GetPPRTopHalf(const pgsPointOfInterest& poi)
    if ( pSpecEntry->IncludeRebarForMoment() )
       As += GetAsGirderTopHalf(poi,false);
 
-   Float64 Aps = GetApsTopHalf(poi,false);
+   Float64 Aps = GetApsTopHalf(poi,dlaNone);
 
    const matPsStrand* pstrand = GetStrand(span,gdr,pgsTypes::Permanent);
    CHECK(pstrand!=0);
@@ -7052,7 +7544,7 @@ Float64 CBridgeAgentImp::GetPPRTopHalf(const pgsPointOfInterest& poi,const GDRCO
    if ( pSpecEntry->IncludeRebarForMoment() )
       As += GetAsGirderTopHalf(poi,false);
 
-   Float64 Aps = GetApsTopHalf(poi,config,false);
+   Float64 Aps = GetApsTopHalf(poi,config,dlaNone);
 
    const matPsStrand* pstrand = GetStrand(span,gdr,pgsTypes::Permanent);
    CHECK(pstrand!=0);
@@ -7085,7 +7577,7 @@ Float64 CBridgeAgentImp::GetPPRBottomHalf(const pgsPointOfInterest& poi)
    if ( pSpecEntry->IncludeRebarForMoment() )
       As = GetAsBottomHalf(poi,false);
 
-   Float64 Aps = GetApsBottomHalf(poi,false);
+   Float64 Aps = GetApsBottomHalf(poi,dlaNone);
 
    const matPsStrand* pstrand = GetStrand(span,gdr,pgsTypes::Permanent);
    CHECK(pstrand!=0);
@@ -7118,7 +7610,7 @@ Float64 CBridgeAgentImp::GetPPRBottomHalf(const pgsPointOfInterest& poi,const GD
    if ( pSpecEntry->IncludeRebarForMoment() )
       As = GetAsBottomHalf(poi,false);
 
-   Float64 Aps = GetApsBottomHalf(poi,config,false);
+   Float64 Aps = GetApsBottomHalf(poi,config,dlaNone);
 
    const matPsStrand* pstrand = GetStrand(span,gdr,pgsTypes::Permanent);
    CHECK(pstrand!=0);
@@ -7216,53 +7708,350 @@ Float64 CBridgeAgentImp::GetAsBottomMat(const pgsPointOfInterest& poi,ILongRebar
 
 /////////////////////////////////////////////////////////////////////////
 // IStirrupGeometry
-matRebar::Size CBridgeAgentImp::GetVertStirrupBarSize(const pgsPointOfInterest& poi)
+bool CBridgeAgentImp::AreStirrupZonesSymmetrical(SpanIndexType span,GirderIndexType gdr)
 {
-   const matRebar* pRebar = GetVertStirrupRebar(poi);
-   if ( !pRebar )
-      return matRebar::bsNone;
-
-   return pRebar->GetSize();
+   const CShearData& shear_data = GetShearData(span, gdr);
+   return shear_data.bAreZonesSymmetrical;
 }
 
-matRebar::Size CBridgeAgentImp::GetHorzStirrupBarSize(const pgsPointOfInterest& poi)
+ZoneIndexType CBridgeAgentImp::GetNumPrimaryZones(SpanIndexType span,GirderIndexType gdr)
 {
-   const matRebar* pRebar = GetHorzStirrupRebar(poi);
-   if ( !pRebar )
-      return matRebar::bsNone;
+   const CShearData& shear_data = GetShearData(span, gdr);
+   ZoneIndexType nZones = shear_data.ShearZones.size();
 
-   return pRebar->GetSize();
+   if (nZones == 0)
+      return 0;
+   else
+   {
+      // determine the actual number of zones within the girder
+	   GET_IFACE(IBridge,pBridge);
+      if (shear_data.bAreZonesSymmetrical)
+      {
+         Float64 half_girder_length = pBridge->GetGirderLength(span, gdr)/2.0;
+
+         Float64 end_of_zone = 0.0;
+         for (ZoneIndexType zoneIdx = 0; zoneIdx < nZones; zoneIdx++)
+         {
+            end_of_zone += shear_data.ShearZones[zoneIdx].ZoneLength;
+            if (half_girder_length < end_of_zone)
+               return 2*(zoneIdx+1)-1;
+         }
+         return nZones*2-1;
+      }
+      else
+      {
+         Float64 girder_length = pBridge->GetGirderLength(span, gdr);
+
+         Float64 end_of_zone = 0.0;
+         for (ZoneIndexType zoneIdx = 0; zoneIdx < nZones; zoneIdx++)
+         {
+            end_of_zone += shear_data.ShearZones[zoneIdx].ZoneLength;
+            if (girder_length < end_of_zone)
+               return (zoneIdx+1);
+         }
+
+         return nZones;
+      }
+   }
 }
+
+void CBridgeAgentImp::GetPrimaryZoneBounds(SpanIndexType span,GirderIndexType gdr, ZoneIndexType zone, Float64* start, Float64* end)
+{
+   const CShearData& shear_data = GetShearData(span, gdr);
+   Float64 gird_len = GetGirderLength(span,gdr);
+
+   if(shear_data.bAreZonesSymmetrical)
+   {
+      ZoneIndexType nz = GetNumPrimaryZones(span, gdr);
+      CHECK(nz>zone);
+
+      ZoneIndexType idx = GetPrimaryZoneIndex(span, gdr, shear_data,zone);
+
+      // determine which side of girder zone is on
+      enum side {OnLeft, OverCenter, OnRight} zside;
+      if (zone == (nz-1)/2)
+         zside = OverCenter;
+      else if (idx==zone)
+         zside = OnLeft;
+      else
+         zside = OnRight;
+
+      ZoneIndexType zsiz = shear_data.ShearZones.size();
+      Float64 l_end=0.0;
+      Float64 l_start=0.0;
+      for (ZoneIndexType i=0; i<=idx; i++)
+      {
+         if (i==zsiz-1)
+            l_end+= BIG_LENGTH; // last zone in infinitely long
+         else
+            l_end+= shear_data.ShearZones[i].ZoneLength;
+
+         if (l_end>=gird_len/2.0)
+            CHECK(i==idx);  // better be last one or too many zones
+
+         if (i!=idx)
+            l_start = l_end;
+      }
+
+      if (zside==OnLeft)
+      {
+         *start = l_start;
+         *end =   l_end;
+      }
+      else if (zside==OverCenter)
+      {
+         *start = l_start;
+         *end =   gird_len - l_start;
+      }
+      else if (zside==OnRight)
+      {
+         *start = gird_len - l_end;
+         *end =   gird_len - l_start;
+      }
+   }
+   else
+   {
+      // Non-symmetrical zones
+      ZoneIndexType idx = GetPrimaryZoneIndex(span, gdr, shear_data,zone);
+      ZoneIndexType zsiz = shear_data.ShearZones.size();
+
+      Float64 l_end=0.0;
+      Float64 l_start=0.0;
+      for (ZoneIndexType i=0; i<=idx; i++)
+      {
+         if (i==zsiz-1)
+            l_end = gird_len; // last zone goes to end of girder
+         else
+            l_end+= shear_data.ShearZones[i].ZoneLength;
+
+         if (l_end>=gird_len)
+         {
+            l_end = gird_len;
+            break;
+         }
+
+         if (i!=idx)
+            l_start = l_end;
+      }
+
+      *start = l_start;
+      *end =   l_end;
+   }
+}
+
+void CBridgeAgentImp::GetPrimaryVertStirrupBarInfo(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone, matRebar::Size* pSize, Float64* pCount, Float64* pSpacing)
+{
+   const CShearData& shear_data = GetShearData(span, gdr);
+   ZoneIndexType idx = GetPrimaryZoneIndex(span, gdr, shear_data, zone);
+   const CShearZoneData& rzone = shear_data.ShearZones[idx];
+
+   *pSize    = rzone.VertBarSize;
+   *pCount   = rzone.nVertBars;
+   *pSpacing = rzone.BarSpacing;
+}
+
+Float64 CBridgeAgentImp::GetPrimaryHorizInterfaceBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)
+{
+   const CShearData& shear_data = GetShearData(span, gdr);
+   ZoneIndexType idx = GetPrimaryZoneIndex(span, gdr, shear_data,zone);
+   const CShearZoneData& rzone = shear_data.ShearZones[idx];
+
+   return rzone.nHorzInterfaceBars;
+}
+
+matRebar::Size CBridgeAgentImp::GetPrimaryConfinementBarSize(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)
+{
+   const CShearData& shear_data = GetShearData(span, gdr);
+   ZoneIndexType idx = GetPrimaryZoneIndex(span, gdr, shear_data,zone);
+   const CShearZoneData& rzone = shear_data.ShearZones[idx];
+
+   return rzone.ConfinementBarSize;
+}
+
+ZoneIndexType CBridgeAgentImp::GetNumHorizInterfaceZones(SpanIndexType span,GirderIndexType gdr)
+{
+   const CShearData& shear_data = GetShearData(span, gdr);
+   ZoneIndexType nZones = shear_data.HorizontalInterfaceZones.size();
+   if (nZones == 0)
+      return 0;
+   else
+   {
+      // determine the actual number of zones within the girder
+	   GET_IFACE(IBridge,pBridge);
+      if (shear_data.bAreZonesSymmetrical)
+      {
+         Float64 half_girder_length = pBridge->GetGirderLength(span, gdr)/2.0;
+
+         Float64 end_of_zone = 0.0;
+         for (ZoneIndexType zoneIdx = 0; zoneIdx < nZones; zoneIdx++)
+         {
+            end_of_zone += shear_data.HorizontalInterfaceZones[zoneIdx].ZoneLength;
+            if (half_girder_length < end_of_zone)
+               return 2*(zoneIdx+1)-1;
+         }
+         return nZones*2-1;
+      }
+      else
+      {
+         Float64 girder_length = pBridge->GetGirderLength(span, gdr);
+
+         Float64 end_of_zone = 0.0;
+         for (ZoneIndexType zoneIdx = 0; zoneIdx < nZones; zoneIdx++)
+         {
+            end_of_zone += shear_data.HorizontalInterfaceZones[zoneIdx].ZoneLength;
+            if (girder_length < end_of_zone)
+               return (zoneIdx+1);
+         }
+
+         return nZones;
+      }
+   }
+}
+
+void CBridgeAgentImp::GetHorizInterfaceZoneBounds(SpanIndexType span,GirderIndexType gdr, ZoneIndexType zone, Float64* start, Float64* end)
+{
+   const CShearData& shear_data = GetShearData(span, gdr);
+   Float64 gird_len = GetGirderLength(span,gdr);
+
+   if(shear_data.bAreZonesSymmetrical)
+   {
+      ZoneIndexType nz = GetNumHorizInterfaceZones(span,gdr);
+      CHECK(nz>zone);
+
+      ZoneIndexType idx = GetHorizInterfaceZoneIndex(span,gdr,shear_data,zone);
+
+      // determine which side of girder zone is on
+      enum side {OnLeft, OverCenter, OnRight} zside;
+      if (zone == (nz-1)/2)
+         zside = OverCenter;
+      else if (idx==zone)
+         zside = OnLeft;
+      else
+         zside = OnRight;
+
+      ZoneIndexType zsiz = shear_data.HorizontalInterfaceZones.size();
+      Float64 l_end=0.0;
+      Float64 l_start=0.0;
+      for (ZoneIndexType i=0; i<=idx; i++)
+      {
+         if (i==zsiz-1)
+            l_end+= BIG_LENGTH; // last zone in infinitely long
+         else
+            l_end+= shear_data.HorizontalInterfaceZones[i].ZoneLength;
+
+         if (l_end>=gird_len/2.0)
+            CHECK(i==idx);  // better be last one or too many zones
+
+         if (i!=idx)
+            l_start = l_end;
+      }
+
+      if (zside==OnLeft)
+      {
+         *start = l_start;
+         *end =   l_end;
+      }
+      else if (zside==OverCenter)
+      {
+         *start = l_start;
+         *end =   gird_len - l_start;
+      }
+      else if (zside==OnRight)
+      {
+         *start = gird_len - l_end;
+         *end =   gird_len - l_start;
+      }
+   }
+   else
+   {
+      // Non-symmetrical zones
+      ZoneIndexType idx = GetHorizInterfaceZoneIndex(span,gdr,shear_data,zone);
+      ZoneIndexType zsiz = shear_data.HorizontalInterfaceZones.size();
+
+      Float64 l_end=0.0;
+      Float64 l_start=0.0;
+      for (ZoneIndexType i=0; i<=idx; i++)
+      {
+         if (i==zsiz-1)
+            l_end = gird_len; // last zone goes to end of girder
+         else
+            l_end+= shear_data.HorizontalInterfaceZones[i].ZoneLength;
+
+         if (l_end>=gird_len)
+         {
+            l_end = gird_len;
+            break;
+         }
+
+         if (i!=idx)
+            l_start = l_end;
+      }
+
+      *start = l_start;
+      *end =   l_end;
+   }
+}
+
+void CBridgeAgentImp::GetHorizInterfaceBarInfo(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone, matRebar::Size* pSize, Float64* pCount, Float64* pSpacing)
+{
+   const CShearData& shear_data = GetShearData(span, gdr);
+   ZoneIndexType idx = GetHorizInterfaceZoneIndex(span,gdr,shear_data,zone);
+
+   const CHorizontalInterfaceZoneData& rdata = shear_data.HorizontalInterfaceZones[idx];
+   *pSize = rdata.BarSize;
+   *pCount = rdata.nBars;
+   *pSpacing = rdata.BarSpacing;
+}
+
+void CBridgeAgentImp::GetAddSplittingBarInfo(SpanIndexType span,GirderIndexType gdr, matRebar::Size* pSize, Float64* pZoneLength, Float64* pnBars, Float64* pSpacing)
+{
+   const CShearData& shear_data = GetShearData(span, gdr);
+   *pSize = shear_data.SplittingBarSize;
+   if (*pSize!=matRebar::bsNone)
+   {
+      *pZoneLength = shear_data.SplittingZoneLength;
+      *pnBars = shear_data.nSplittingBars;
+      *pSpacing = shear_data.SplittingBarSpacing;
+   }
+   else
+   {
+      *pZoneLength = 0.0;
+      *pnBars = 0.0;
+      *pSpacing = 0.0;
+   }
+}
+
+void CBridgeAgentImp::GetAddConfinementBarInfo(SpanIndexType span,GirderIndexType gdr, matRebar::Size* pSize, Float64* pZoneLength, Float64* pSpacing)
+{
+   const CShearData& shear_data = GetShearData(span, gdr);
+   *pSize = shear_data.ConfinementBarSize;
+   if (*pSize!=matRebar::bsNone)
+   {
+      *pZoneLength = shear_data.ConfinementZoneLength;
+      *pSpacing = shear_data.ConfinementBarSpacing;
+   }
+   else
+   {
+      *pZoneLength = 0.0;
+      *pSpacing = 0.0;
+   }
+}
+
 
 Float64 CBridgeAgentImp::GetVertStirrupBarNominalDiameter(const pgsPointOfInterest& poi)
 {
-   const matRebar* pRebar = GetVertStirrupRebar(poi);
-   return (pRebar ? pRebar->GetNominalDimension() : 0);
-}
+   const CShearData& rsheardata = GetShearData(poi.GetSpan(), poi.GetGirder());
+   
+   const CShearZoneData& rzonedata = GetPrimaryShearZoneDataAtPoi(poi, rsheardata);
 
-Float64 CBridgeAgentImp::GetHorzStirrupBarNominalDiameter(const pgsPointOfInterest& poi)
-{
-   const matRebar* pRebar = GetHorzStirrupRebar(poi);
-   return (pRebar ? pRebar->GetNominalDimension() : 0);
-}
+   matRebar::Size barSize = rzonedata.VertBarSize;
+   if ( barSize!=matRebar::bsNone && !IsZero(rzonedata.BarSpacing) )
+   {
+      lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
+      const matRebar* pRebar = prp->GetRebar(rsheardata.ShearBarType,rsheardata.ShearBarGrade,barSize);
 
-Float64 CBridgeAgentImp::GetVertStirrupBarArea(const pgsPointOfInterest& poi)
-{
-   const matRebar* pRebar = GetVertStirrupRebar(poi);
-   return (pRebar ? pRebar->GetNominalArea() : 0);
-}
-
-Float64 CBridgeAgentImp::GetHorzStirrupBarArea(const pgsPointOfInterest& poi)
-{
-   const matRebar* pRebar = GetHorzStirrupRebar(poi);
-   return (pRebar ? pRebar->GetNominalArea() : 0);
-}
-
-Float64 CBridgeAgentImp::GetS(const pgsPointOfInterest& poi)
-{
-   ZoneIndexType zone;
-   if (GetShearZoneAtPoi(&zone, poi))
-      return GetS(poi.GetSpan(),poi.GetGirder(),zone);
+      return (pRebar ? pRebar->GetNominalDimension() : 0.0);
+   }
    else
       return 0.0;
 }
@@ -7272,105 +8061,293 @@ Float64 CBridgeAgentImp::GetAlpha(const pgsPointOfInterest& poi)
    return ::ConvertToSysUnits(90.,unitMeasure::Degree);
 }
 
+Float64 CBridgeAgentImp::GetVertStirrupAvs(const pgsPointOfInterest& poi, matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing)
+{
+   Float64 avs(0.0);
+   Float64 Abar(0.0);
+   Float64 nBars(0.0);
+   Float64 spacing(0.0);
+
+   SpanIndexType span = poi.GetSpan();
+   GirderIndexType gdr = poi.GetGirder();
+
+   const CShearData& rsheardata = GetShearData(span, gdr);
+   
+   const CShearZoneData& rzonedata = GetPrimaryShearZoneDataAtPoi(poi, rsheardata);
+
+   matRebar::Size barSize = rzonedata.VertBarSize;
+   if ( barSize!=matRebar::bsNone && !IsZero(rzonedata.BarSpacing) )
+   {
+      lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
+      const matRebar* pbar = prp->GetRebar(rsheardata.ShearBarType,rsheardata.ShearBarGrade,barSize);
+
+      Abar   = pbar->GetNominalArea();
+      nBars = rzonedata.nVertBars;
+      spacing = rzonedata.BarSpacing;
+
+      // area of stirrups per unit length for this zone
+      // (assume stirrups are smeared out along zone)
+      if (spacing > 0.0)
+         avs = nBars * Abar / spacing;
+   }
+
+   *pSize          = barSize;
+   *pSingleBarArea = Abar;
+   *pCount         = nBars;
+   *pSpacing       = spacing;
+
+   return avs;
+}
+
 bool CBridgeAgentImp::DoStirrupsEngageDeck(SpanIndexType span,GirderIndexType gdr)
 {
-	GET_IFACE2(m_pBroker,IShear,pShear);
-	CShearData shear_data = pShear->GetShearData(span,gdr);
+   // Just check if any stirrups engage deck
+   const CShearData& rShearData = GetShearData(span, gdr);
 
-   return shear_data.bDoStirrupsEngageDeck;
-}
-
-matRebar::Size CBridgeAgentImp::GetTopFlangeBarSize(const pgsPointOfInterest& poi)
-{
-   const matRebar* pRebar = GetTopFlangeRebar(poi);
-   if ( !pRebar )
-      return matRebar::bsNone;
-
-   return pRebar->GetSize();
-}
-
-Float64 CBridgeAgentImp::GetTopFlangeBarArea(const pgsPointOfInterest& poi)
-{
-   const matRebar* pRebar = GetTopFlangeRebar(poi);
-   Float64 as = ( pRebar ? pRebar->GetNominalArea() : 0 );
-   return as;
-}
-
-Float64 CBridgeAgentImp::GetTopFlangeS(const pgsPointOfInterest& poi)
-{
-	GET_IFACE2(m_pBroker,IShear,pShear);
-	CShearData shear_data = pShear->GetShearData(poi.GetSpan(),poi.GetGirder());
-   
-   return shear_data.TopFlangeBarSpacing;
-}
-
-ZoneIndexType CBridgeAgentImp::GetNumZones(SpanIndexType span,GirderIndexType gdr)
-{
-	GET_IFACE(IShear,pShear);
-	CShearData shear_data = pShear->GetShearData(span,gdr);
-   ZoneIndexType nZones = shear_data.ShearZones.size();
-   if (nZones == 0)
-      return 0;
-   else
+   for (CShearData::ShearZoneConstIterator its = rShearData.ShearZones.begin(); its != rShearData.ShearZones.end(); its++)
    {
-      // determine the actual number of zones within the girder
-	   GET_IFACE(IBridge,pBridge);
-      Float64 half_girder_length = pBridge->GetGirderLength(span, gdr)/2.0;
-
-      Float64 end_of_zone = 0.0;
-      for (ZoneIndexType zoneIdx = 0; zoneIdx < nZones; zoneIdx++)
-      {
-         end_of_zone += shear_data.ShearZones[zoneIdx].ZoneLength;
-         if (half_girder_length < end_of_zone)
-            return 2*(zoneIdx+1)-1;
-      }
-      return nZones*2-1;
+      if (its->VertBarSize != matRebar::bsNone && its->nHorzInterfaceBars > 0)
+         return true;
    }
+
+   for (CShearData::HorizontalInterfaceZoneConstIterator it = rShearData.HorizontalInterfaceZones.begin(); it != rShearData.HorizontalInterfaceZones.end(); it++)
+   {
+      if (it->BarSize != matRebar::bsNone)
+         return true;
+   }
+
+   return false;
 }
 
-
-IDType CBridgeAgentImp::GetZoneId(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)
+Float64 CBridgeAgentImp::GetPrimaryHorizInterfaceS(const pgsPointOfInterest& poi)
 {
-   return (IDType)(GetZoneIndex(span,gdr,zone)+1);
+   Float64 spacing = 0.0;
+
+   SpanIndexType span = poi.GetSpan();
+   GirderIndexType gdr = poi.GetGirder();
+
+   const CShearData& rShearData = GetShearData(span, gdr);
+
+   // Horizontal legs in primary zones
+   const CShearZoneData& rzonedata = GetPrimaryShearZoneDataAtPoi(poi, rShearData);
+   if (rzonedata.VertBarSize!=matRebar::bsNone && rzonedata.nHorzInterfaceBars>0.0)
+   {
+      spacing = rzonedata.BarSpacing;
+   }
+
+   return spacing;
 }
 
-ZoneIndexType CBridgeAgentImp::GetZoneIndex(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)
+Float64 CBridgeAgentImp::GetPrimaryHorizInterfaceBarCount(const pgsPointOfInterest& poi)
 {
-   // mapping so that we only need to store half of the zones
-   ZoneIndexType nZones = GetNumZones(span,gdr);
-   ATLASSERT(zone < nZones);
-   ZoneIndexType nz2 = (nZones+1)/2;
-   if (zone < nz2)
-      return zone;
-   else
-      return nZones-zone-1;
+   Float64 cnt = 0.0;
+
+   SpanIndexType span = poi.GetSpan();
+   GirderIndexType gdr = poi.GetGirder();
+
+   const CShearData& rShearData = GetShearData(span, gdr);
+
+   // Horizontal legs in primary zones
+   const CShearZoneData& rzonedata = GetPrimaryShearZoneDataAtPoi(poi, rShearData);
+   if (rzonedata.VertBarSize!=matRebar::bsNone)
+   {
+      cnt =  rzonedata.nHorzInterfaceBars;
+   }
+
+   return cnt;
 }
 
-Float64 CBridgeAgentImp::GetVertAv(SpanIndexType span,GirderIndexType gdr,Float64 start,Float64 end)
+Float64 CBridgeAgentImp::GetAdditionalHorizInterfaceS(const pgsPointOfInterest& poi)
 {
-   Float64 AvVert, AvHorz;
-   GetAv(span,gdr,start,end,&AvVert,&AvHorz);
-   return AvVert;
+   Float64 spacing = 0.0;
+
+   SpanIndexType span = poi.GetSpan();
+   GirderIndexType gdr = poi.GetGirder();
+
+   const CShearData& rShearData = GetShearData(span, gdr);
+
+   // Additional horizontal bars
+   const CHorizontalInterfaceZoneData& rhdata = GetHorizInterfaceShearZoneDataAtPoi( poi,  rShearData);
+   if ( rhdata.BarSize!=matRebar::bsNone )
+   {
+      spacing = rhdata.BarSpacing;
+   }
+
+   return spacing;
 }
 
-Float64 CBridgeAgentImp::GetHorzAv(SpanIndexType span,GirderIndexType gdr,Float64 start,Float64 end)
+Float64 CBridgeAgentImp::GetAdditionalHorizInterfaceBarCount(const pgsPointOfInterest& poi)
 {
-   Float64 AvVert, AvHorz;
-   GetAv(span,gdr,start,end,&AvVert,&AvHorz);
-   return AvHorz;
+   Float64 cnt = 0.0;
+
+   SpanIndexType span = poi.GetSpan();
+   GirderIndexType gdr = poi.GetGirder();
+
+   const CShearData& rShearData = GetShearData(span, gdr);
+
+   // Additional horizontal bars
+   const CHorizontalInterfaceZoneData& rhdata = GetHorizInterfaceShearZoneDataAtPoi( poi,  rShearData);
+   if ( rhdata.BarSize!=matRebar::bsNone )
+   {
+      cnt = rhdata.nBars;
+   }
+
+   return cnt;
 }
 
-void CBridgeAgentImp::GetAv(SpanIndexType span,GirderIndexType gdr,Float64 start,Float64 end,Float64* pAvVert,Float64* pAvHorz)
+Float64 CBridgeAgentImp::GetPrimaryHorizInterfaceAvs(const pgsPointOfInterest& poi, matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing)
 {
-   // Get the total amout of shear steel between start and end
-   *pAvVert = 0;
-   *pAvHorz = 0;
-   ZoneIndexType nbrZones = GetNumZones(span,gdr);
+   Float64 avs(0.0);
+   Float64 Abar(0.0);
+   Float64 nBars(0.0);
+   Float64 spacing(0.0);
+
+   SpanIndexType span = poi.GetSpan();
+   GirderIndexType gdr = poi.GetGirder();
+
+   const CShearData& rsheardata = GetShearData(span, gdr);
+   
+   // First get avs from primary bar zone
+   const CShearZoneData& rzonedata = GetPrimaryShearZoneDataAtPoi(poi, rsheardata);
+
+   matRebar::Size barSize = rzonedata.VertBarSize;
+
+   if ( barSize!=matRebar::bsNone && !IsZero(rzonedata.BarSpacing) && rzonedata.nHorzInterfaceBars>0.0 )
+   {
+      lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
+      const matRebar* pbar = prp->GetRebar(rsheardata.ShearBarType,rsheardata.ShearBarGrade,barSize);
+
+      Abar = pbar->GetNominalArea();
+      nBars = rzonedata.nHorzInterfaceBars;
+      spacing = rzonedata.BarSpacing;
+
+      if (spacing > 0.0)
+         avs =   nBars * Abar / spacing;
+   }
+
+   *pSize          = barSize;
+   *pSingleBarArea = Abar;
+   *pCount         = nBars;
+   *pSpacing       = spacing;
+
+   return avs;
+}
+
+Float64 CBridgeAgentImp::GetAdditionalHorizInterfaceAvs(const pgsPointOfInterest& poi, matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing)
+{
+   Float64 avs(0.0);
+   Float64 Abar(0.0);
+   Float64 nBars(0.0);
+   Float64 spacing(0.0);
+
+   SpanIndexType span = poi.GetSpan();
+   GirderIndexType gdr = poi.GetGirder();
+
+   const CShearData& rsheardata = GetShearData(span, gdr);
+   
+   const CHorizontalInterfaceZoneData& rhdata = GetHorizInterfaceShearZoneDataAtPoi( poi,  rsheardata);
+
+   matRebar::Size barSize = rhdata.BarSize;
+
+   if ( barSize!=matRebar::bsNone && !IsZero(rhdata.BarSpacing) && rhdata.nBars>0.0 )
+   {
+      lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
+      const matRebar* pbar = prp->GetRebar(rsheardata.ShearBarType,rsheardata.ShearBarGrade,barSize);
+
+      Abar   = pbar->GetNominalArea();
+      nBars = rhdata.nBars;
+      spacing = rhdata.BarSpacing;
+
+      if (spacing > 0.0)
+         avs =  nBars * Abar / spacing;
+   }
+
+   *pSize          = barSize;
+   *pSingleBarArea = Abar;
+   *pCount         = nBars;
+   *pSpacing       = spacing;
+
+   return avs;
+}
+
+Float64 CBridgeAgentImp::GetSplittingAv(SpanIndexType span,GirderIndexType gdr,Float64 start,Float64 end)
+{
+   ATLASSERT(end>start);
+
+   Float64 Av = 0.0;
+
+   const CShearData& rsheardata = GetShearData(span, gdr);
+
+   // Get component from primary bars
+   if (rsheardata.bUsePrimaryForSplitting)
+   {
+      Av += GetPrimarySplittingAv( span, gdr, start, end, rsheardata);
+   }
+
+   // Component from additional splitting bars
+   if (rsheardata.SplittingBarSize!=matRebar::bsNone && rsheardata.nSplittingBars)
+   {
+      Float64 spacing = rsheardata.SplittingBarSpacing;
+      Float64 length = 0.0;
+      if (spacing <=0.0)
+      {
+         ATLASSERT(0); // UI should block this
+      }
+      else
+      {
+         // determine how much additional bars is in our start/end region
+         Float64 zone_length = rsheardata.SplittingZoneLength;
+         // left end first
+         if (start<zone_length)
+         {
+            Float64 zend = min(end, zone_length);
+            length = zend-start;
+         }
+         else
+         {
+            // try right end
+            Float64 gird_len = GetGirderLength(span,gdr);
+            if (end>=gird_len)
+            {
+               Float64 zstart = max(gird_len-zone_length, start);
+               length = end-zstart;
+            }
+         }
+
+         if (length > 0.0)
+         {
+            // We have bars in region. multiply av/s * length
+            lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
+            const matRebar* pbar = prp->GetRebar(rsheardata.ShearBarType, rsheardata.ShearBarGrade, rsheardata.SplittingBarSize);
+
+            Float64 Abar   = pbar->GetNominalArea();
+
+            Float64 avs = rsheardata.nSplittingBars * Abar / spacing;
+
+            Av += avs * length;
+         }
+      }
+   }
+
+   return Av;
+}
+
+Float64 CBridgeAgentImp::GetPrimarySplittingAv(SpanIndexType span,GirderIndexType gdr,Float64 start,Float64 end, const CShearData& rShearData)
+{
+   if (!rShearData.bUsePrimaryForSplitting)
+   {
+      ATLASSERT(0); // shouldn't be called for this case
+      return 0.0;
+   }
+
+   // Get total amount of splitting steel between start and end
+   Float64 Av = 0;
+
+   ZoneIndexType nbrZones = GetNumPrimaryZones(span,gdr);
    for ( ZoneIndexType zone = 0; zone < nbrZones; zone++ )
    {
       Float64 zoneStart, zoneEnd;
-      zoneStart = GetZoneStart(span,gdr,zone);
-      zoneEnd = GetZoneEnd(span,gdr,zone);
+      GetPrimaryZoneBounds(span , gdr, zone, &zoneStart, &zoneEnd);
 
       Float64 length; // length of zone which falls within the range
 
@@ -7387,7 +8364,6 @@ void CBridgeAgentImp::GetAv(SpanIndexType span,GirderIndexType gdr,Float64 start
       //        |-------------------------------------------------------------|
       //                       (4) zone is larger than range 
 
-         
       if ( start <= zoneStart && zoneEnd <= end )
       {
          // Case 2 - entire zone is in the range
@@ -7413,406 +8389,281 @@ void CBridgeAgentImp::GetAv(SpanIndexType span,GirderIndexType gdr,Float64 start
          continue; // This zone doesn't touch the range at all... go back to the start of the loop
       }
 
-      Float64 barSpacing = GetS(span,gdr,zone);
-      const matRebar* pVertBar = GetVertStirrupRebar(span,gdr,zone);
-      const matRebar* pHorzBar = GetHorzStirrupRebar(span,gdr,zone);
-      if ( pVertBar )
+      // We are in a zone - determine Av/S and multiply by length
+      ZoneIndexType idx = GetPrimaryZoneIndex(span, gdr, rShearData, zone);
+
+      const CShearZoneData& rzonedata = rShearData.ShearZones[idx];
+
+      matRebar::Size barSize = rzonedata.VertBarSize; // splitting is same as vert bars
+      if ( barSize!=matRebar::bsNone && !IsZero(rzonedata.BarSpacing) )
       {
-         Float64 Abar   = pVertBar->GetNominalArea();
-         CollectionIndexType nbars   = GetVertStirrupBarCount(span,gdr,zone);
+         lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
+         const matRebar* pbar = prp->GetRebar(rShearData.ShearBarType,rShearData.ShearBarGrade,barSize);
+
+         Float64 Abar   = pbar->GetNominalArea();
 
          // area of stirrups per unit length for this zone
          // (assume stirrups are smeared out along zone)
-         Float64 Avs = nbars*Abar/barSpacing;
+         Float64 avs = rzonedata.nVertBars * Abar / rzonedata.BarSpacing;
 
-         (*pAvVert) += Avs*length; // add area of steel over the length
+         Av += avs * length;
       }
+   }
 
-      if ( pHorzBar )
+   return Av;
+}
+
+void CBridgeAgentImp::GetStartConfinementBarInfo(SpanIndexType span,GirderIndexType gdr, Float64 requiredZoneLength, matRebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing)
+{
+   const CShearData& shear_data = GetShearData(span, gdr);
+
+   ZoneIndexType nbrZones = GetNumPrimaryZones(span,gdr);
+
+   // First get data from primary zones - use min bar size and max spacing from zones in required region
+   Float64 primSpc(-1), primZonL(-1);
+   matRebar::Size primSize(matRebar::bsNone);
+
+   Float64 ezloc;
+
+   // walk from left to right on girder
+   for ( ZoneIndexType zone = 0; zone < nbrZones; zone++ )
+   {
+      Float64 zoneStart;
+      GetPrimaryZoneBounds(span , gdr, zone, &zoneStart, &ezloc);
+
+      ZoneIndexType idx = GetPrimaryZoneIndex(span, gdr, shear_data,zone);
+
+      const CShearZoneData& rzone = shear_data.ShearZones[idx];
+
+      if (rzone.ConfinementBarSize!=matRebar::bsNone)
       {
-         Float64 Abar   = pHorzBar->GetNominalArea();
-         CollectionIndexType nbars   = GetHorzStirrupBarCount(span,gdr,zone);
+         primSize = min(primSize, rzone.ConfinementBarSize);
+         primSpc = max(primSpc, rzone.BarSpacing);
 
-         // area of stirrups per unit length for this zone
-         // (assume stirrups are smeared out along zone)
-         Float64 Avs = nbars*Abar/barSpacing;
+         primZonL = ezloc;
+      }
 
-         (*pAvHorz) += Avs*length; // add area of steel over the length
+      if (ezloc + TOL > requiredZoneLength)
+      {
+         break; // actual zone length exceeds required - we are done
       }
    }
+
+   // Next get additional confinement bar info
+   Float64 addlSpc, addlZonL;
+   matRebar::Size addlSize;
+   GetAddConfinementBarInfo(span,gdr, &addlSize, &addlZonL, &addlSpc);
+
+   // Use either primary bars or additional bars. Choose by which has addequate zone length, smallest spacing, largest bars
+   ChooseConfinementBars(requiredZoneLength, primSpc, primZonL, primSize, addlSpc, addlZonL, addlSize,
+                         pSize, pProvidedZoneLength, pSpacing);
 }
 
-bool CBridgeAgentImp::IsConfinementZone(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)
-{
-   ZoneIndexType zi = GetZoneIndex(span,gdr,zone)+1;
-   ZoneIndexType zn = GetNumConfinementZones(span,gdr);
-   if (zn==0)
-      return false;
-   else
-      return zi<=zn;
-}
 
-matRebar::Size CBridgeAgentImp::GetConfinementBarSize(SpanIndexType span,GirderIndexType gdr)
+void CBridgeAgentImp::GetEndConfinementBarInfo(  SpanIndexType span,GirderIndexType gdr, Float64 requiredZoneLength, matRebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing)
 {
-   const matRebar* pRebar = GetConfinementRebar(span,gdr);
-   if ( !pRebar )
-      return matRebar::bsNone;
+   const CShearData& shear_data = GetShearData(span, gdr);
 
-   return pRebar->GetSize();
-}
+   Float64 glen = GetGirderLength(span, gdr);
 
-Float64 CBridgeAgentImp::GetLengthOfConfinementZone(SpanIndexType span,GirderIndexType gdr)
-{
-   ZoneIndexType zn = GetNumConfinementZones(span,gdr);
-   if (zn!=0)
+   ZoneIndexType nbrZones = GetNumPrimaryZones(span,gdr);
+
+   // First get data from primary zones - use min bar size and max spacing from zones in required region
+   Float64 primSpc(-1), primZonL(-1);
+   matRebar::Size primSize(matRebar::bsNone);
+
+   Float64 ezloc;
+   // walk from right to left on girder
+   for ( ZoneIndexType zone = nbrZones-1; zone>=0; zone-- )
    {
-      GET_IFACE2(m_pBroker,IBridge,pBridge);
-      Float64 ze = GetZoneEnd(span,gdr,zn-1);
-      return ze;
-   }
-   else
-      return 0.0;
-}
+      Float64 zoneStart, zoneEnd;
+      GetPrimaryZoneBounds(span , gdr, zone, &zoneStart, &zoneEnd);
 
-Float64 CBridgeAgentImp::GetZoneStart(SpanIndexType span,GirderIndexType gdr, ZoneIndexType zone)
-{
-   Float64 start, end;
-   GetZoneBounds(&start, &end, span, gdr, zone);
-   return start;
-}
+      ezloc = glen - zoneStart;
 
-Float64 CBridgeAgentImp::GetZoneEnd(SpanIndexType span,GirderIndexType gdr, ZoneIndexType zone)
-{
-   Float64 start, end;
-   GetZoneBounds(&start, &end, span, gdr, zone);
-   return end;
-}
+      ZoneIndexType idx = GetPrimaryZoneIndex(span, gdr, shear_data, zone);
 
-void CBridgeAgentImp::GetZoneBounds(Float64* start, Float64* end, SpanIndexType span,GirderIndexType gdr, ZoneIndexType zone)
-{
-   ZoneIndexType nz = GetNumZones(span,gdr);
-   CHECK(nz>zone);
+      const CShearZoneData& rzone = shear_data.ShearZones[idx];
 
-   Float64 gird_len = GetGirderLength(span,gdr);
+      if (rzone.ConfinementBarSize!=matRebar::bsNone)
+      {
+         primSize = min(primSize, rzone.ConfinementBarSize);
+         primSpc = max(primSpc, rzone.BarSpacing);
 
-	GET_IFACE2(m_pBroker,IShear,pShear);
-	CShearData shear_data = pShear->GetShearData(span,gdr);
+         primZonL = ezloc;
+      }
 
-   ZoneIndexType idx = GetZoneIndex(span,gdr,zone);
-
-   // determine which side of girder zone is on
-   enum side {OnLeft, OverCenter, OnRight} zside;
-   if (zone == (nz-1)/2)
-      zside = OverCenter;
-   else if (idx==zone)
-      zside = OnLeft;
-   else
-      zside = OnRight;
-
-   ZoneIndexType zsiz = shear_data.ShearZones.size();
-   Float64 l_end=0.0;
-   Float64 l_start=0.0;
-   for (ZoneIndexType i=0; i<=idx; i++)
-   {
-      if (i==zsiz-1)
-         l_end+= BIG_LENGTH; // last zone in infinitely long
-      else
-         l_end+= shear_data.ShearZones[i].ZoneLength;
-
-      if (l_end>=gird_len/2.0)
-         CHECK(i==idx);  // better be last one or too many zones
-
-      if (i!=idx)
-         l_start = l_end;
+      if (ezloc + TOL > requiredZoneLength)
+      {
+         break; // actual zone length exceeds required - we are done
+      }
    }
 
-   if (zside==OnLeft)
-   {
-      *start = l_start;
-      *end =   l_end;
-   }
-   else if (zside==OverCenter)
-   {
-      *start = l_start;
-      *end =   gird_len - l_start;
-   }
-   else if (zside==OnRight)
-   {
-      *start = gird_len - l_end;
-      *end =   gird_len - l_start;
-   }
-}
+   // Next get additional confinement bar info
+   Float64 addlSpc, addlZonL;
+   matRebar::Size addlSize;
+   GetAddConfinementBarInfo(span,gdr, &addlSize, &addlZonL, &addlSpc);
 
-matRebar::Size CBridgeAgentImp::GetVertStirrupBarSize(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)
-{
-   const matRebar* pRebar = GetVertStirrupRebar(span,gdr,zone);
-   if ( !pRebar )
-      return matRebar::bsNone;
-
-   return pRebar->GetSize();
-}
-
-matRebar::Size CBridgeAgentImp::GetHorzStirrupBarSize(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)
-{
-   const matRebar* pRebar = GetHorzStirrupRebar(span,gdr,zone);
-   if ( !pRebar )
-      return matRebar::bsNone;
-
-   return pRebar->GetSize();
-}
-
-CollectionIndexType CBridgeAgentImp::GetVertStirrupBarCount(const pgsPointOfInterest& poi)
-{
-   ZoneIndexType zone;
-   if (GetShearZoneAtPoi(&zone, poi))
-      return GetVertStirrupBarCount(poi.GetSpan(),poi.GetGirder(),zone);
-   else
-      return 0;
-}
-
-CollectionIndexType CBridgeAgentImp::GetHorzStirrupBarCount(const pgsPointOfInterest& poi)
-{
-   ZoneIndexType zone;
-   if (GetShearZoneAtPoi(&zone, poi))
-      return GetHorzStirrupBarCount(poi.GetSpan(),poi.GetGirder(),zone);
-   else
-      return 0;
-}
-
-CollectionIndexType CBridgeAgentImp::GetVertStirrupBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)
-{
-   if (GetVertStirrupRebar(span,gdr,zone)!=0)
-   {
-   	GET_IFACE2(m_pBroker,IShear,pShear);
-	   CShearData shear_data = pShear->GetShearData(span,gdr);
-
-      return shear_data.ShearZones[GetZoneIndex(span,gdr,zone)].nVertBars;
-   }
-   else
-      return 0;
-}
-
-CollectionIndexType CBridgeAgentImp::GetHorzStirrupBarCount(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)
-{
-   if (GetHorzStirrupRebar(span,gdr,zone)!=0)
-   {
-   	GET_IFACE2(m_pBroker,IShear,pShear);
-	   CShearData shear_data = pShear->GetShearData(span,gdr);
-
-      return shear_data.ShearZones[GetZoneIndex(span,gdr,zone)].nHorzBars;
-   }
-   else
-      return 0;
-}
-
-
-Float64 CBridgeAgentImp::GetS(SpanIndexType span,GirderIndexType gdr, ZoneIndexType zone)
-{
-	GET_IFACE2(m_pBroker,IShear,pShear);
-	CShearData shear_data = pShear->GetShearData(span,gdr);
-
-   ZoneIndexType idx = GetZoneIndex(span,gdr,zone);
-   return shear_data.ShearZones[idx].BarSpacing;
-}
-
-ZoneIndexType CBridgeAgentImp::GetNumConfinementZones(SpanIndexType span,GirderIndexType gdr)
-{
-	GET_IFACE2(m_pBroker,IShear,pShear);
-	CShearData shear_data = pShear->GetShearData(span,gdr);
-
-   return shear_data.NumConfinementZones;
+   // Use either primary bars or additional bars. Choose by which has addequate zone length, smallest spacing, largest bars
+   ChooseConfinementBars(requiredZoneLength, primSpc, primZonL, primSize, addlSpc, addlZonL, addlSize,
+                         pSize, pProvidedZoneLength, pSpacing);
 }
 
 // private:
-const matRebar* CBridgeAgentImp::GetVertStirrupRebar(const pgsPointOfInterest& poi)
+
+void CBridgeAgentImp::InvalidateStirrupData()
 {
-   ZoneIndexType zone;
-   if (GetShearZoneAtPoi(&zone, poi))
+   m_ShearData.clear();
+}
+
+const CShearData& CBridgeAgentImp::GetShearData(SpanIndexType span,GirderIndexType gdr)
+{
+   SpanGirderHashType hash = HashSpanGirder(span,gdr);
+   ShearDataIterator found;
+   found = m_ShearData.find( hash );
+   if ( found == m_ShearData.end() )
    {
-      return GetVertStirrupRebar(poi.GetSpan(),poi.GetGirder(),zone);
+	   GET_IFACE2(m_pBroker,IShear,pShear);
+	   CShearData shear_data = pShear->GetShearData(span,gdr);
+      std::pair<ShearDataIterator,bool> insit = m_ShearData.insert( std::make_pair(hash, pShear->GetShearData(span,gdr) ) );
+      ATLASSERT( insit.second );
+      return (*insit.first).second;
    }
    else
    {
-      return 0;
+      ATLASSERT( found != m_ShearData.end() );
+      return (*found).second;
    }
 }
 
-const matRebar* CBridgeAgentImp::GetHorzStirrupRebar(const pgsPointOfInterest& poi)
+ZoneIndexType CBridgeAgentImp::GetPrimaryZoneIndex(SpanIndexType span, GirderIndexType gdr, const CShearData& rShearData, ZoneIndexType zone)
 {
-   ZoneIndexType zone;
-   if (GetShearZoneAtPoi(&zone, poi))
+   // mapping so that we only need to store half of the zones
+   ZoneIndexType nZones = GetNumPrimaryZones(span, gdr); 
+   ATLASSERT(zone < nZones);
+   if (rShearData.bAreZonesSymmetrical)
    {
-      return GetHorzStirrupRebar(poi.GetSpan(),poi.GetGirder(),zone);
+      ZoneIndexType nz2 = (nZones+1)/2;
+      if (zone < nz2)
+         return zone;
+      else
+         return nZones-zone-1;
    }
    else
    {
-      return 0;
+      // mapping is 1:1 for non-sym
+      return zone;
    }
 }
 
-const matRebar* CBridgeAgentImp::GetTopFlangeRebar(const pgsPointOfInterest& poi)
+ZoneIndexType CBridgeAgentImp::GetHorizInterfaceZoneIndex(SpanIndexType span, GirderIndexType gdr, const CShearData& rShearData, ZoneIndexType zone)
 {
-	GET_IFACE2(m_pBroker,IShear,pShear);
-	CShearData shear_data = pShear->GetShearData(poi.GetSpan(),poi.GetGirder());
-   
-   matRebar::Size barSize = shear_data.TopFlangeBarSize;
-   if (barSize != matRebar::bsNone)
+   // mapping so that we only need to store half of the zones
+   ZoneIndexType nZones = GetNumHorizInterfaceZones(span, gdr); 
+   ATLASSERT(zone < nZones);
+   if (rShearData.bAreZonesSymmetrical)
    {
-      lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
-      return prp->GetRebar(shear_data.ShearBarType,shear_data.ShearBarGrade,barSize);
+      ZoneIndexType nz2 = (nZones+1)/2;
+      if (zone < nz2)
+         return zone;
+      else
+         return nZones-zone-1;
    }
    else
    {
-      return 0;
+      // mapping is 1:1 for non-sym
+      return zone;
    }
 }
 
-const matRebar* CBridgeAgentImp::GetConfinementRebar(const pgsPointOfInterest& poi)
+bool CBridgeAgentImp::IsPoiInEndRegion(const pgsPointOfInterest& poi, Float64 distFromEnds)
 {
-   ZoneIndexType zone;
-   if (GetShearZoneAtPoi(&zone, poi))
-      return GetConfinementRebar(poi.GetSpan(),poi.GetGirder());
-   else
+   Float64 dist = poi.GetDistFromStart();
+
+   // look at left end first
+   if (dist <= distFromEnds)
    {
-      return 0;
+      return true;
    }
+
+   // right end
+   Float64 glen = GetGirderLength(poi.GetSpan(),poi.GetGirder());
+
+   if (dist >= glen-distFromEnds)
+   {
+      return true;
+   }
+
+   return false;
 }
 
-const matRebar* CBridgeAgentImp::GetVertStirrupRebar(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)
+ZoneIndexType CBridgeAgentImp::GetPrimaryShearZoneIndexAtPoi(const pgsPointOfInterest& poi, const CShearData& rShearData)
 {
-	GET_IFACE2(m_pBroker,IShear,pShear);
-	CShearData shear_data = pShear->GetShearData(span,gdr);
-   
-   ZoneIndexType idx = GetZoneIndex(span,gdr,zone);
-
-   matRebar::Size barSize = shear_data.ShearZones[idx].VertBarSize;
-   if (barSize != matRebar::bsNone)
-   {
-      lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
-      return prp->GetRebar(shear_data.ShearBarType,shear_data.ShearBarGrade,barSize);
-   }
-   else
-   {
-      return 0;
-   }
-}
-
-const matRebar* CBridgeAgentImp::GetHorzStirrupRebar(SpanIndexType span,GirderIndexType gdr,ZoneIndexType zone)
-{
-	GET_IFACE2(m_pBroker,IShear,pShear);
-	CShearData shear_data = pShear->GetShearData(span,gdr);
-   
-   ZoneIndexType idx = GetZoneIndex(span,gdr,zone);
-
-   matRebar::Size barSize = shear_data.ShearZones[idx].HorzBarSize;
-   if (barSize != matRebar::bsNone)
-   {
-      lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
-      return prp->GetRebar(shear_data.ShearBarType,shear_data.ShearBarGrade,barSize);
-   }
-   else
-   {
-      return 0;
-   }
-}
-
-const matRebar* CBridgeAgentImp::GetConfinementRebar(SpanIndexType span,GirderIndexType gdr)
-{
-	GET_IFACE2(m_pBroker,IShear,pShear);
-	CShearData shear_data = pShear->GetShearData(span,gdr);
-
-   matRebar::Size barSize = shear_data.ConfinementBarSize;
-   if (barSize != matRebar::bsNone)
-   {
-      lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
-      return prp->GetRebar(shear_data.ShearBarType,shear_data.ShearBarGrade,barSize);
-   }
-   else
-   {
-      return 0;
-   }
-}
-
-bool CBridgeAgentImp::GetShearZoneAtPoi(ZoneIndexType* pzone, const pgsPointOfInterest& poi)
-{
-   ZoneIndexType nz = GetNumZones(poi.GetSpan(),poi.GetGirder());
-   if (nz==0)
-      return false;
+   // NOTE: The logic here is identical to GetHorizInterfaceShearZoneIndexAtPoi
+   //       If you fix a bug here, you need to fix it there also
 
    SpanIndexType span  = poi.GetSpan();
    GirderIndexType gdr = poi.GetGirder();
 
-	GET_IFACE2(m_pBroker,IShear,pShear);
-	CShearData shear_data = pShear->GetShearData(span,gdr);
+   ZoneIndexType nz = GetNumPrimaryZones(span, gdr);
+   if (nz==0)
+      return -1;
 
    Float64 glen = GetGirderLength(span,gdr);
-   Float64 dist = poi.GetDistFromStart();
-   bool on_left=true;
+   Float64 location = poi.GetDistFromStart();
 
-   if (dist>glen/2.)  // shear zones are symmetric about mid-span
-   {
-      dist = glen-dist;
-      on_left=false;
-   }
-   CHECK(dist>=0);
+   Float64 lft_brg_loc = GetGirderStartConnectionLength(span,gdr);
+   Float64 rgt_brg_loc = glen - GetGirderEndConnectionLength(span,gdr);
 
-   Float64 end_dist;
-   if (on_left)
-      end_dist = GetGirderStartConnectionLength(span,gdr);
-   else
-      end_dist = GetGirderEndConnectionLength(span,gdr);
+   // use template function to do heavy work
+   ZoneIndexType zone =  GetZoneIndexAtLocation(location, glen, lft_brg_loc, rgt_brg_loc, rShearData.bAreZonesSymmetrical, 
+                                                rShearData.ShearZones.begin(), rShearData.ShearZones.end(), 
+                                                rShearData.ShearZones.size());
 
-   // find zone
-   Float64 ezloc=0.0;
-   ZoneIndexType znum=0;
-   bool found=false;
-   // need to give value a little 'shove' so that pois inboard from the support
-   // are assigned the zone to the left, and pois outboard from the support
-   // are assigned the zone to the right.
-   const Float64 tol = 1.0e-6;
-   for (CShearData::ShearZoneConstIterator it = shear_data.ShearZones.begin(); it != shear_data.ShearZones.end(); it++)
-   {
-      ezloc += it->ZoneLength;
-      if (dist<end_dist+tol)
-      {
-         if (dist+tol<ezloc)
-         {
-            found = true;
-            break;
-         }
-      }
-      else
-      {
-         if (dist<ezloc+tol)
-         {
-            found = true;
-            break;
-         }
-      }
-      znum++;
-   }
-
-   if (found)
-   {
-      if (on_left)
-      {
-         *pzone = znum;
-      }
-      else
-      {
-         ZoneIndexType nz1 = nz-1;
-         *pzone = nz1-znum;
-      }
-      return true;
-   }
-   else
-   {
-      // not found - must be in middle
-      *pzone = ZoneIndexType(shear_data.ShearZones.size()-1);
-      return true;
-   }
+   return zone;
 }
 
+const CShearZoneData& CBridgeAgentImp::GetPrimaryShearZoneDataAtPoi(const pgsPointOfInterest& poi, const CShearData& rShearData)
+{
+   ZoneIndexType idx = GetPrimaryShearZoneIndexAtPoi(poi,rShearData);
+   const CShearZoneData& rzonedata = rShearData.ShearZones[idx];
+
+   return rzonedata;
+}
+
+ZoneIndexType CBridgeAgentImp::GetHorizInterfaceShearZoneIndexAtPoi(const pgsPointOfInterest& poi, const CShearData& rShearData)
+{
+   // NOTE: The logic here is identical to GetPrimaryShearZoneAtPoi
+   //       If you fix a bug here, you need to fix it there also
+
+   SpanIndexType span  = poi.GetSpan();
+   GirderIndexType gdr = poi.GetGirder();
+
+   ZoneIndexType nz = GetNumHorizInterfaceZones(span, gdr);
+   if (nz==0)
+      return -1;
+
+   Float64 glen = GetGirderLength(span,gdr);
+   Float64 location = poi.GetDistFromStart();
+
+   Float64 lft_brg_loc = GetGirderStartConnectionLength(span,gdr);
+   Float64 rgt_brg_loc = glen - GetGirderEndConnectionLength(span,gdr);
+
+   // use template function to do heavy work
+   ZoneIndexType zone =  GetZoneIndexAtLocation(location, glen, lft_brg_loc, rgt_brg_loc, rShearData.bAreZonesSymmetrical, 
+                                                rShearData.HorizontalInterfaceZones.begin(), rShearData.HorizontalInterfaceZones.end(), 
+                                                rShearData.HorizontalInterfaceZones.size());
+
+      return zone;
+}
+
+const CHorizontalInterfaceZoneData& CBridgeAgentImp::GetHorizInterfaceShearZoneDataAtPoi(const pgsPointOfInterest& poi, const CShearData& rShearData)
+{
+   ZoneIndexType idx = GetHorizInterfaceShearZoneIndexAtPoi(poi,rShearData);
+   const CHorizontalInterfaceZoneData& rzonedata = rShearData.HorizontalInterfaceZones[idx];
+
+   return rzonedata;
+}
 
 /////////////////////////////////////////////////////////////////////////
 // IStrandGeometry
@@ -8163,17 +9014,17 @@ Float64 CBridgeAgentImp::GetAvgStrandSlope(const pgsPointOfInterest& poi)
    return slope;
 }
 
-Float64 CBridgeAgentImp::GetHsEccentricity(const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, Float64* nEffectiveStrands)
+Float64 CBridgeAgentImp::GetHsEccentricity(const pgsPointOfInterest& poi, const PRESTRESSCONFIG& rconfig, Float64* nEffectiveStrands)
 {
    SpanIndexType span  = poi.GetSpan();
    GirderIndexType gdr = poi.GetGirder();
-   StrandIndexType Nh = rconfig.Nstrands[pgsTypes::Harped];
+   StrandIndexType Nhs = rconfig.GetNStrands(pgsTypes::Harped);
 
    ATLASSERT(rconfig.Debond[pgsTypes::Harped].empty()); // we don't deal with debonding of harped strands for design. WBFL needs to be updated
 
    VALIDATE( GIRDER );
 
-   if (Nh==0)
+   if (Nhs==0)
    {
       *nEffectiveStrands = 0.0;
       return 0.0;
@@ -8205,10 +9056,8 @@ Float64 CBridgeAgentImp::GetHsEccentricity(const pgsPointOfInterest& poi, const 
          }
       }
 
-      // use continuous interface to set strands
-      CComPtr<ILongArray> strand_fill;
-      SpanGirderHashType hash = HashSpanGirder(span, gdr);
-      m_StrandFillers[hash].ComputeHarpedStrandFill(girder, Nh, &strand_fill);
+      // Use wrapper to convert strand fill to IIndexArray
+      CIndexArrayWrapper strand_fill(rconfig.GetStrandFill(pgsTypes::Harped));
 
       // save and restore precast girders shift values, before/after geting point locations
       Float64 t_end_shift, t_hp_shift;
@@ -8219,7 +9068,7 @@ Float64 CBridgeAgentImp::GetHsEccentricity(const pgsPointOfInterest& poi, const 
       girder->put_HarpedStrandAdjustmentHP(rconfig.HpOffset);
 
       CComPtr<IPoint2dCollection> points;
-      girder->get_HarpedStrandPositionsEx(poi.GetDistFromStart(), strand_fill, &points);
+      girder->get_HarpedStrandPositionsEx(poi.GetDistFromStart(), &strand_fill, &points);
 
       girder->put_HarpedStrandAdjustmentEnd(t_end_shift);
       girder->put_HarpedStrandAdjustmentHP(t_hp_shift);
@@ -8232,7 +9081,7 @@ Float64 CBridgeAgentImp::GetHsEccentricity(const pgsPointOfInterest& poi, const 
 
       *nEffectiveStrands = bond_factor*num_strand_positions;
 
-      ATLASSERT( Nh == StrandIndexType(num_strand_positions));
+      ATLASSERT( Nhs == StrandIndexType(num_strand_positions));
       if (0 < num_strand_positions)
       {
          Float64 cg=0.0;
@@ -8256,15 +9105,15 @@ Float64 CBridgeAgentImp::GetHsEccentricity(const pgsPointOfInterest& poi, const 
    }
 }
 
-Float64 CBridgeAgentImp::GetSsEccentricity(const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, Float64* nEffectiveStrands)
+Float64 CBridgeAgentImp::GetSsEccentricity(const pgsPointOfInterest& poi, const PRESTRESSCONFIG& rconfig, Float64* nEffectiveStrands)
 {
    SpanIndexType span  = poi.GetSpan();
    GirderIndexType gdr = poi.GetGirder();
-   StrandIndexType Ns = rconfig.Nstrands[pgsTypes::Straight];
+   StrandIndexType Nss = rconfig.GetNStrands(pgsTypes::Straight);
 
    VALIDATE( GIRDER );
 
-   if (Ns == 0)
+   if (Nss == 0)
    {
       *nEffectiveStrands = 0;
       return 0.0;
@@ -8282,15 +9131,15 @@ Float64 CBridgeAgentImp::GetSsEccentricity(const pgsPointOfInterest& poi, const 
       Float64 xfer_length = pPrestress->GetXferLength(span,gdr,pgsTypes::Straight);
 
       // debonding - Let's set up a mapping data structure to make dealing with debonding easier (eliminate searching)
-      const DebondInfoCollection& rdebonds = rconfig.Debond[pgsTypes::Straight];
+      const DebondConfigCollection& rdebonds = rconfig.Debond[pgsTypes::Straight];
 
       std::vector<Int16> debond_map;
-      debond_map.assign(Ns, -1); // strands not debonded have and index of -1
+      debond_map.assign(Nss, -1); // strands not debonded have and index of -1
       Int16 dbinc=0;
-      for (DebondInfoConstIterator idb=rdebonds.begin(); idb!=rdebonds.end(); idb++)
+      for (DebondConfigConstIterator idb=rdebonds.begin(); idb!=rdebonds.end(); idb++)
       {
-         const DEBONDINFO& dbinfo = *idb;
-         if ( dbinfo.strandIdx < Ns)
+         const DEBONDCONFIG& dbinfo = *idb;
+         if ( dbinfo.strandIdx < Nss)
          {
             debond_map[dbinfo.strandIdx] = dbinc; 
          }
@@ -8303,16 +9152,15 @@ Float64 CBridgeAgentImp::GetSsEccentricity(const pgsPointOfInterest& poi, const 
       }
 
       // get all current straight strand locations
-      CComPtr<ILongArray> strand_fill;
-      SpanGirderHashType hash = HashSpanGirder(span, gdr);
-      m_StrandFillers[hash].ComputeStraightStrandFill(girder, Ns, &strand_fill);
+      const ConfigStrandFillVector& rfillvect = rconfig.GetStrandFill(pgsTypes::Straight);
+      CIndexArrayWrapper strand_fill(rfillvect);
 
       CComPtr<IPoint2dCollection> points;
-      girder->get_StraightStrandPositionsEx(poi.GetDistFromStart(), strand_fill, &points);
+      girder->get_StraightStrandPositionsEx(poi.GetDistFromStart(), &strand_fill, &points);
 
       CollectionIndexType num_strand_positions;
       points->get_Count(&num_strand_positions);
-      ATLASSERT( Ns == num_strand_positions);
+      ATLASSERT( Nss == num_strand_positions);
 
       // loop over all strands, compute bonded length, and weighted cg of strands
       Float64 cg = 0.0;
@@ -8333,7 +9181,7 @@ Float64 CBridgeAgentImp::GetSsEccentricity(const pgsPointOfInterest& poi, const 
             if ( dbidx != -1)
             {
                // strand is debonded
-               const DEBONDINFO& dbinfo = rdebonds[dbidx];
+               const DEBONDCONFIG& dbinfo = rdebonds[dbidx];
  
                if (dbinfo.LeftDebondLength==0.0)
                {
@@ -8364,7 +9212,7 @@ Float64 CBridgeAgentImp::GetSsEccentricity(const pgsPointOfInterest& poi, const 
             if ( dbidx != -1)
             {
                // strand is debonded
-               const DEBONDINFO& dbinfo = rdebonds[dbidx];
+               const DEBONDCONFIG& dbinfo = rdebonds[dbidx];
  
                if (dbinfo.RightDebondLength==0.0)
                {
@@ -8396,7 +9244,7 @@ Float64 CBridgeAgentImp::GetSsEccentricity(const pgsPointOfInterest& poi, const 
             Int16 dbidx = debond_map[strandPositionIdx];
             if ( dbidx != -1)
             {
-               const DEBONDINFO& dbinfo = rdebonds[dbidx];
+               const DEBONDCONFIG& dbinfo = rdebonds[dbidx];
  
                // strand is debonded
                lft_bond = poi_loc - dbinfo.LeftDebondLength;
@@ -8447,18 +9295,18 @@ Float64 CBridgeAgentImp::GetSsEccentricity(const pgsPointOfInterest& poi, const 
    }
 }
 
-Float64 CBridgeAgentImp::GetTempEccentricity(const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, Float64* nEffectiveStrands)
+Float64 CBridgeAgentImp::GetTempEccentricity(const pgsPointOfInterest& poi, const PRESTRESSCONFIG& rconfig, Float64* nEffectiveStrands)
 {
    SpanIndexType span  = poi.GetSpan();
    GirderIndexType gdr = poi.GetGirder();
 
-   StrandIndexType Nt = rconfig.Nstrands[pgsTypes::Temporary];
+   StrandIndexType Nts = rconfig.GetNStrands(pgsTypes::Temporary);
 
    ATLASSERT(rconfig.Debond[pgsTypes::Temporary].empty()); // we don't deal with debonding of temp strands for design. WBFL needs to be updated
 
    VALIDATE( GIRDER );
 
-   if (Nt==0)
+   if (Nts==0)
    {
       *nEffectiveStrands = 0.0;
       return 0.0;
@@ -8491,12 +9339,11 @@ Float64 CBridgeAgentImp::GetTempEccentricity(const pgsPointOfInterest& poi, cons
       }
 
       // use continuous interface to set strands
-      CComPtr<ILongArray> strand_fill;
-      SpanGirderHashType hash = HashSpanGirder(span, gdr);
-      m_StrandFillers[hash].ComputeTemporaryStrandFill(girder, Nt, &strand_fill);
+      // Use wrapper to convert strand fill to IIndexArray
+      CIndexArrayWrapper strand_fill(rconfig.GetStrandFill(pgsTypes::Temporary));
 
       CComPtr<IPoint2dCollection> points;
-      girder->get_TempStrandPositionsEx(poi.GetDistFromStart(), strand_fill, &points);
+      girder->get_TempStrandPositionsEx(poi.GetDistFromStart(), &strand_fill, &points);
 
       Float64 ecc=0.0;
 
@@ -8506,7 +9353,7 @@ Float64 CBridgeAgentImp::GetTempEccentricity(const pgsPointOfInterest& poi, cons
 
       *nEffectiveStrands = bond_factor * num_strands_positions;
 
-      ATLASSERT(Nt == StrandIndexType(num_strands_positions));
+      ATLASSERT(Nts == StrandIndexType(num_strands_positions));
       Float64 cg=0.0;
       for (CollectionIndexType strandPositionIdx = 0; strandPositionIdx < num_strands_positions; strandPositionIdx++)
       {
@@ -8527,7 +9374,7 @@ Float64 CBridgeAgentImp::GetTempEccentricity(const pgsPointOfInterest& poi, cons
    }
 }
 
-Float64 CBridgeAgentImp::GetEccentricity(const pgsPointOfInterest& poi, const GDRCONFIG& rconfig, bool bIncTemp, Float64* nEffectiveStrands)
+Float64 CBridgeAgentImp::GetEccentricity(const pgsPointOfInterest& poi, const PRESTRESSCONFIG& rconfig, bool bIncTemp, Float64* nEffectiveStrands)
 {
    VALIDATE( GIRDER );
    SpanIndexType spanIdx = poi.GetSpan();
@@ -8565,72 +9412,321 @@ Float64 CBridgeAgentImp::GetEccentricity(const pgsPointOfInterest& poi, const GD
    return ecc;
 }
 
-Float64 CBridgeAgentImp::GetMaxStrandSlope(const pgsPointOfInterest& poi,StrandIndexType Nh,Float64 endShift,Float64 hpShift)
+Float64 CBridgeAgentImp::GetMaxStrandSlope(const pgsPointOfInterest& poi,const PRESTRESSCONFIG& rconfig)
+{
+   VALIDATE( GIRDER );
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(poi.GetSpan(),poi.GetGirder(),&girder);
+
+   // Use wrapper to convert strand fill to IIndexArray
+   CIndexArrayWrapper strand_fill(rconfig.GetStrandFill(pgsTypes::Harped));
+
+   Float64 endShift = rconfig.EndOffset;
+   Float64 hpShift  = rconfig.HpOffset;
+
+   Float64 slope;
+   girder->ComputeMaxHarpedStrandSlopeEx(poi.GetDistFromStart(),&strand_fill,endShift,hpShift,&slope);
+
+   return slope;
+}
+
+Float64 CBridgeAgentImp::GetAvgStrandSlope(const pgsPointOfInterest& poi,const PRESTRESSCONFIG& rconfig)
 {
    VALIDATE( GIRDER );
    CComPtr<IPrecastGirder> girder;
    GetGirder(poi.GetSpan(),poi.GetGirder(),&girder);
 
    // use continuous interface to compute
-   CComPtr<ILongArray> fill;
-   SpanGirderHashType hash = HashSpanGirder(poi.GetSpan(),poi.GetGirder());
-   m_StrandFillers[hash].ComputeHarpedStrandFill(girder, Nh, &fill);
+   // Use wrapper to convert strand fill to IIndexArray
+   CIndexArrayWrapper strand_fill(rconfig.GetStrandFill(pgsTypes::Harped));
 
    Float64 slope;
-   girder->ComputeMaxHarpedStrandSlopeEx(poi.GetDistFromStart(),fill,endShift,hpShift,&slope);
+   girder->ComputeAvgHarpedStrandSlopeEx(poi.GetDistFromStart(),&strand_fill,rconfig.EndOffset,rconfig.HpOffset,&slope);
 
    return slope;
 }
 
-Float64 CBridgeAgentImp::GetAvgStrandSlope(const pgsPointOfInterest& poi,StrandIndexType Nh,Float64 endShift,Float64 hpShift)
+Float64 CBridgeAgentImp::GetApsBottomHalf(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust)
+{
+   return GetApsTensionSide(poi, devAdjust, false );
+}
+
+Float64 CBridgeAgentImp::GetApsBottomHalf(const pgsPointOfInterest& poi, const GDRCONFIG& config,DevelopmentAdjustmentType devAdjust)
+{
+   return GetApsTensionSide(poi, config, devAdjust, false );
+}
+
+Float64 CBridgeAgentImp::GetApsTopHalf(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust)
+{
+   return GetApsTensionSide(poi, devAdjust, true );
+}
+
+Float64 CBridgeAgentImp::GetApsTopHalf(const pgsPointOfInterest& poi, const GDRCONFIG& config,DevelopmentAdjustmentType devAdjust)
+{
+   return GetApsTensionSide(poi, config, devAdjust, true );
+}
+
+ConfigStrandFillVector CBridgeAgentImp::ComputeStrandFill(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type,StrandIndexType Ns)
 {
    VALIDATE( GIRDER );
    CComPtr<IPrecastGirder> girder;
-   GetGirder(poi.GetSpan(),poi.GetGirder(),&girder);
+   GetGirder(span, gdr,&girder);
 
-   // use continuous interface to compute
-   CComPtr<ILongArray> fill;
-   SpanGirderHashType hash = HashSpanGirder(poi.GetSpan(),poi.GetGirder());
-   m_StrandFillers[hash].ComputeHarpedStrandFill(girder, Nh, &fill);
+   CContinuousStrandFiller* pFiller = GetContinuousStrandFiller(span, gdr);
 
-   Float64 slope;
-   girder->ComputeAvgHarpedStrandSlopeEx(poi.GetDistFromStart(),fill,endShift,hpShift,&slope);
+   // Get fill in COM format
+   CComPtr<IIndexArray> indexarr;
+   switch( type )
+   {
+   case pgsTypes::Straight:
+      pFiller->ComputeStraightStrandFill(girder, Ns, &indexarr);
+      break;
 
-   return slope;
+   case pgsTypes::Harped:
+      pFiller->ComputeHarpedStrandFill(girder, Ns, &indexarr);
+      break;
+
+   case pgsTypes::Temporary:
+      pFiller->ComputeTemporaryStrandFill(girder, Ns, &indexarr);
+      break;
+
+   default:
+      ATLASSERT(false); // should never get here
+   }
+
+   // Convert to ConfigStrandFillVector
+   ConfigStrandFillVector Vec;
+   IndexArray2ConfigStrandFillVec(indexarr, Vec);
+
+   return Vec;
 }
 
-Float64 CBridgeAgentImp::GetApsBottomHalf(const pgsPointOfInterest& poi,bool bDevAdjust)
+ConfigStrandFillVector CBridgeAgentImp::ComputeStrandFill(LPCTSTR strGirderName,pgsTypes::StrandType type,StrandIndexType Ns)
 {
-   return GetApsTensionSide(poi, bDevAdjust, false );
+   GET_IFACE(ILibrary,pLib);
+   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName);
+
+   CStrandFiller filler;
+   filler.Init(pGdrEntry);
+
+   // Get fill in COM format
+   CComPtr<IIndexArray> indexarr;
+   switch( type )
+   {
+   case pgsTypes::Straight:
+      {
+         CComPtr<IStrandGrid> startGrid, endGrid;
+         startGrid.CoCreateInstance(CLSID_StrandGrid);
+         endGrid.CoCreateInstance(CLSID_StrandGrid);
+         pGdrEntry->ConfigureStraightStrandGrid(startGrid,endGrid);
+
+         CComQIPtr<IStrandGridFiller> gridFiller(startGrid);
+         filler.ComputeStraightStrandFill(gridFiller, Ns, &indexarr);
+      }
+      break;
+
+   case pgsTypes::Harped:
+      {
+         CComPtr<IStrandGrid> startGrid, startHPGrid, endHPGrid, endGrid;
+         startGrid.CoCreateInstance(CLSID_StrandGrid);
+         startHPGrid.CoCreateInstance(CLSID_StrandGrid);
+         endHPGrid.CoCreateInstance(CLSID_StrandGrid);
+         endGrid.CoCreateInstance(CLSID_StrandGrid);
+         pGdrEntry->ConfigureHarpedStrandGrids(startGrid,startHPGrid,endHPGrid,endGrid);
+
+         CComQIPtr<IStrandGridFiller> endGridFiller(startGrid), hpGridFiller(startHPGrid);
+         filler.ComputeHarpedStrandFill(pGdrEntry->OddNumberOfHarpedStrands(),endGridFiller, hpGridFiller, Ns, &indexarr);
+      }
+      break;
+
+   case pgsTypes::Temporary:
+      {
+         CComPtr<IStrandGrid> startGrid, endGrid;
+         startGrid.CoCreateInstance(CLSID_StrandGrid);
+         endGrid.CoCreateInstance(CLSID_StrandGrid);
+         pGdrEntry->ConfigureTemporaryStrandGrid(startGrid,endGrid);
+
+         CComQIPtr<IStrandGridFiller> gridFiller(startGrid);
+         filler.ComputeTemporaryStrandFill(gridFiller, Ns, &indexarr);
+      }
+      break;
+
+   default:
+      ATLASSERT(false); // should never get here
+   }
+
+   // Convert IIndexArray to ConfigStrandFillVector
+   ConfigStrandFillVector Vec;
+   IndexArray2ConfigStrandFillVec(indexarr, Vec);
+
+   return Vec;
 }
 
-Float64 CBridgeAgentImp::GetApsBottomHalf(const pgsPointOfInterest& poi, const GDRCONFIG& config,bool bDevAdjust)
+GridIndexType CBridgeAgentImp::SequentialFillToGridFill(LPCTSTR strGirderName,pgsTypes::StrandType type,StrandIndexType StrandNo)
 {
-   return GetApsTensionSide(poi, config, bDevAdjust, false );
+   GET_IFACE(ILibrary,pLib);
+   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName);
+
+   // Get fill in COM format
+   StrandIndexType gridIdx(INVALID_INDEX);
+   switch( type )
+   {
+   case pgsTypes::Straight:
+      {
+         CComPtr<IStrandGrid> startGrid, endGrid;
+         startGrid.CoCreateInstance(CLSID_StrandGrid);
+         endGrid.CoCreateInstance(CLSID_StrandGrid);
+         pGdrEntry->ConfigureStraightStrandGrid(startGrid,endGrid);
+
+         CComQIPtr<IStrandGridFiller> gridFiller(startGrid);
+
+         CComPtr<IIndexArray> maxFill;
+         gridFiller->GetMaxStrandFill(&maxFill); // sequential fill fills max from start
+
+         gridFiller->StrandIndexToGridIndexEx(maxFill, StrandNo, &gridIdx);
+      }
+      break;
+
+   case pgsTypes::Harped:
+      {
+         CComPtr<IStrandGrid> startGrid, startHPGrid, endHPGrid, endGrid;
+         startGrid.CoCreateInstance(CLSID_StrandGrid);
+         startHPGrid.CoCreateInstance(CLSID_StrandGrid);
+         endHPGrid.CoCreateInstance(CLSID_StrandGrid);
+         endGrid.CoCreateInstance(CLSID_StrandGrid);
+         pGdrEntry->ConfigureHarpedStrandGrids(startGrid,startHPGrid,endHPGrid,endGrid);
+
+         CComQIPtr<IStrandGridFiller> endGridFiller(startGrid);
+
+         CComPtr<IIndexArray> maxFill;
+         endGridFiller->GetMaxStrandFill(&maxFill); // sequential fill fills max from start
+
+         endGridFiller->StrandIndexToGridIndexEx(maxFill, StrandNo, &gridIdx);
+      }
+      break;
+
+   case pgsTypes::Temporary:
+      {
+         CComPtr<IStrandGrid> startGrid, endGrid;
+         startGrid.CoCreateInstance(CLSID_StrandGrid);
+         endGrid.CoCreateInstance(CLSID_StrandGrid);
+         pGdrEntry->ConfigureTemporaryStrandGrid(startGrid,endGrid);
+
+         CComQIPtr<IStrandGridFiller> gridFiller(startGrid);
+
+         CComPtr<IIndexArray> maxFill;
+         gridFiller->GetMaxStrandFill(&maxFill); // sequential fill fills max from start
+
+         gridFiller->StrandIndexToGridIndexEx(maxFill, StrandNo, &gridIdx);
+      }
+      break;
+
+   default:
+      ATLASSERT(false); // should never get here
+   }
+
+   return gridIdx;
 }
 
-Float64 CBridgeAgentImp::GetApsTopHalf(const pgsPointOfInterest& poi,bool bDevAdjust)
+void CBridgeAgentImp::GridFillToSequentialFill(LPCTSTR strGirderName,pgsTypes::StrandType type,GridIndexType gridIdx, StrandIndexType* pStrandNo1, StrandIndexType* pStrandNo2)
 {
-   return GetApsTensionSide(poi, bDevAdjust, true );
-}
+   GET_IFACE(ILibrary,pLib);
+   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName);
 
-Float64 CBridgeAgentImp::GetApsTopHalf(const pgsPointOfInterest& poi, const GDRCONFIG& config,bool bDevAdjust)
-{
-   return GetApsTensionSide(poi, config, bDevAdjust, true );
+   // Get fill in COM format
+   HRESULT hr;
+   switch( type )
+   {
+   case pgsTypes::Straight:
+      {
+         CComPtr<IStrandGrid> startGrid, endGrid;
+         startGrid.CoCreateInstance(CLSID_StrandGrid);
+         endGrid.CoCreateInstance(CLSID_StrandGrid);
+         pGdrEntry->ConfigureStraightStrandGrid(startGrid,endGrid);
+
+         CComQIPtr<IStrandGridFiller> gridFiller(startGrid);
+         hr = gridFiller->GridIndexToStrandIndex(gridIdx, pStrandNo1, pStrandNo2);
+         ATLASSERT(SUCCEEDED(hr));
+      }
+      break;
+
+   case pgsTypes::Harped:
+      {
+         CComPtr<IStrandGrid> startGrid, startHPGrid, endHPGrid, endGrid;
+         startGrid.CoCreateInstance(CLSID_StrandGrid);
+         startHPGrid.CoCreateInstance(CLSID_StrandGrid);
+         endHPGrid.CoCreateInstance(CLSID_StrandGrid);
+         endGrid.CoCreateInstance(CLSID_StrandGrid);
+         pGdrEntry->ConfigureHarpedStrandGrids(startGrid,startHPGrid,endHPGrid,endGrid);
+
+         CComQIPtr<IStrandGridFiller> endGridFiller(startGrid);
+         hr = endGridFiller->GridIndexToStrandIndex(gridIdx, pStrandNo1, pStrandNo2);
+         ATLASSERT(SUCCEEDED(hr));
+      }
+      break;
+
+   case pgsTypes::Temporary:
+      {
+         CComPtr<IStrandGrid> startGrid, endGrid;
+         startGrid.CoCreateInstance(CLSID_StrandGrid);
+         endGrid.CoCreateInstance(CLSID_StrandGrid);
+         pGdrEntry->ConfigureTemporaryStrandGrid(startGrid,endGrid);
+
+         CComQIPtr<IStrandGridFiller> gridFiller(startGrid);
+         hr = gridFiller->GridIndexToStrandIndex(gridIdx, pStrandNo1, pStrandNo2);
+         ATLASSERT(SUCCEEDED(hr));
+      }
+      break;
+
+   default:
+      ATLASSERT(false); // should never get here
+   }
 }
 
 StrandIndexType CBridgeAgentImp::GetNumStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type)
 {
+   VALIDATE( GIRDER );
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(span, gdr,&girder);
+
+   StrandIndexType nStrands(0);
+   if ( type == pgsTypes::Straight )
+   {
+      girder->GetStraightStrandCount(&nStrands);
+   }
+   else if ( type == pgsTypes::Harped )
+   {
+      girder->GetHarpedStrandCount(&nStrands);
+   }
+   else if ( type == pgsTypes::Temporary )
+   {
+      girder->GetTemporaryStrandCount(&nStrands);
+   }
+   else if ( type == pgsTypes::Permanent )
+   {
+      StrandIndexType nh, ns;
+      girder->GetStraightStrandCount(&ns);
+      girder->GetHarpedStrandCount(&nh);
+      nStrands = ns + nh;
+   }
+   else
+      ATLASSERT(0);
+
+   return nStrands;
+
+#pragma Reminder ("Remove this code after testing")
+/*
+   ATLASSERT(0); // Does this really need to get from bridgedesc?
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderData& girderData = pBridgeDesc->GetSpan(span)->GetGirderTypes()->GetGirderData(gdr);
 
    StrandIndexType nStrands;
    if ( type == pgsTypes::Permanent )
-      nStrands = girderData.Nstrands[pgsTypes::Straight] + girderData.Nstrands[pgsTypes::Harped];
+      nStrands = girderData.PrestressData.GetNstrands(pgsTypes::Straight) + girderData.PrestressData.GetNstrands(pgsTypes::Harped);
    else
-      nStrands = girderData.Nstrands[type];
-
+      nStrands = girderData.PrestressData.GetNstrands(type);
+*/
    return nStrands;
 }
 
@@ -8728,12 +9824,12 @@ Float64 CBridgeAgentImp::GetAreaPrestressStrands(SpanIndexType span,GirderIndexT
 Float64 CBridgeAgentImp::GetPjack(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type)
 {
    GET_IFACE(IGirderData,pGirderData);
-   CGirderData girderData = pGirderData->GetGirderData(span,gdr);
+   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
 
    if ( type == pgsTypes::Permanent )
-      return girderData.Pjack[pgsTypes::Straight] + girderData.Pjack[pgsTypes::Harped];
+      return pgirderData->PrestressData.Pjack[pgsTypes::Straight] + pgirderData->PrestressData.Pjack[pgsTypes::Harped];
    else
-      return girderData.Pjack[type];
+      return pgirderData->PrestressData.Pjack[type];
 }
 
 Float64 CBridgeAgentImp::GetPjack(SpanIndexType span,GirderIndexType gdr,bool bIncTemp)
@@ -8744,6 +9840,23 @@ Float64 CBridgeAgentImp::GetPjack(SpanIndexType span,GirderIndexType gdr,bool bI
 
    return Pj;
 }
+
+bool CBridgeAgentImp::GetAreHarpedStrandsForcedStraight(SpanIndexType span,GirderIndexType gdr)
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
+
+   return GetAreHarpedStrandsForcedStraightEx( pSpan->GetGirderTypes()->GetGirderName(gdr) );
+}
+
+bool CBridgeAgentImp::GetAreHarpedStrandsForcedStraightEx(LPCTSTR strGirderName)
+{
+   GET_IFACE(ILibrary,pLib);
+   const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry( strGirderName );
+   return pGirderEntry->IsForceHarpedStrandsStraight();
+}
+
 
 Float64 CBridgeAgentImp::GetGirderTopElevation(SpanIndexType span,GirderIndexType gdr)
 {
@@ -8801,11 +9914,11 @@ void CBridgeAgentImp::GetHarpedEndOffsetBounds(SpanIndexType span,GirderIndexTyp
    ATLASSERT(SUCCEEDED(hr));
 }
 
-void CBridgeAgentImp::GetHarpedEndOffsetBoundsEx(SpanIndexType span,GirderIndexType gdr,StrandIndexType Nh, Float64* DownwardOffset, Float64* UpwardOffset)
+void CBridgeAgentImp::GetHarpedEndOffsetBoundsEx(SpanIndexType span,GirderIndexType gdr,const ConfigStrandFillVector& rHarpedFillArray, Float64* DownwardOffset, Float64* UpwardOffset)
 {
    VALIDATE( GIRDER );
 
-   if (Nh==0)
+   if ( !AreStrandsInConfigFillVec(rHarpedFillArray) )
    {
       *DownwardOffset = 0.0;
       *UpwardOffset = 0.0;
@@ -8815,25 +9928,25 @@ void CBridgeAgentImp::GetHarpedEndOffsetBoundsEx(SpanIndexType span,GirderIndexT
       CComPtr<IPrecastGirder> girder;
       GetGirder(span,gdr,&girder);
 
-      // use continuous interface to compute
-      CComPtr<ILongArray> fill;
-      SpanGirderHashType hash = HashSpanGirder(span, gdr);
-      m_StrandFillers[hash].ComputeHarpedStrandFill(girder, Nh, &fill);
+      // Use wrapper to convert strand fill to IIndexArray
+      CIndexArrayWrapper strand_fill( rHarpedFillArray );
 
-      HRESULT hr = girder->GetHarpedEndAdjustmentBoundsEx(fill,DownwardOffset, UpwardOffset);
+      HRESULT hr = girder->GetHarpedEndAdjustmentBoundsEx(&strand_fill,DownwardOffset, UpwardOffset);
       ATLASSERT(SUCCEEDED(hr));
    }
 }
 
-void CBridgeAgentImp::GetHarpedEndOffsetBoundsEx(LPCTSTR strGirderName,StrandIndexType Nh, Float64* DownwardOffset, Float64* UpwardOffset)
+void CBridgeAgentImp::GetHarpedEndOffsetBoundsEx(LPCTSTR strGirderName, const ConfigStrandFillVector& rHarpedFillArray, Float64* DownwardOffset, Float64* UpwardOffset)
 {
-   if (Nh == 0)
+   if ( !AreStrandsInConfigFillVec(rHarpedFillArray) )
    {
+      // no strands, just return
       *DownwardOffset = 0.0;
       *UpwardOffset = 0.0;
       return;
    }
 
+   // Set up strand grid filler
    GET_IFACE(ILibrary,pLib);
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName);
 
@@ -8844,20 +9957,14 @@ void CBridgeAgentImp::GetHarpedEndOffsetBoundsEx(LPCTSTR strGirderName,StrandInd
    endGrid.CoCreateInstance(CLSID_StrandGrid);
    pGdrEntry->ConfigureHarpedStrandGrids(startGrid,startHPGrid,endHPGrid,endGrid);
 
-   CContinuousStandFiller strandFiller;
-   strandFiller.Init(pGdrEntry);
-
    CComQIPtr<IStrandGridFiller> startGridFiller(startGrid);
-   CComQIPtr<IStrandGridFiller> hpGridFiller(startHPGrid);
 
-   CComPtr<ILongArray> fill;
-   HRESULT hr = strandFiller.ComputeHarpedStrandFill(pGdrEntry->OddNumberOfHarpedStrands(),startGridFiller,hpGridFiller,Nh,&fill);
-   ATLASSERT(SUCCEEDED(hr));
-
+   // Use wrapper to convert strand fill to IIndexArray
+   CIndexArrayWrapper fill(rHarpedFillArray);
 
    // get adjusted top and bottom bounds
    Float64 top, bottom;
-   hr = startGridFiller->get_FilledGridBoundsEx(fill,&bottom,&top);
+   HRESULT hr = startGridFiller->get_FilledGridBoundsEx(&fill,&bottom,&top);
    ATLASSERT(SUCCEEDED(hr));
 
    Float64 adjust;
@@ -8904,34 +10011,31 @@ void CBridgeAgentImp::GetHarpedHpOffsetBounds(SpanIndexType span,GirderIndexType
    ATLASSERT(SUCCEEDED(hr));
 }
 
-void CBridgeAgentImp::GetHarpedHpOffsetBoundsEx(SpanIndexType span,GirderIndexType gdr,StrandIndexType Nh, Float64* DownwardOffset, Float64* UpwardOffset)
+void CBridgeAgentImp::GetHarpedHpOffsetBoundsEx(SpanIndexType span,GirderIndexType gdr,const ConfigStrandFillVector& rHarpedFillArray, Float64* DownwardOffset, Float64* UpwardOffset)
 {
    VALIDATE( GIRDER );
 
-   if (Nh==0)
+   if ( !AreStrandsInConfigFillVec(rHarpedFillArray) )
    {
       *DownwardOffset = 0.0;
       *UpwardOffset = 0.0;
    }
    else
    {
-
       CComPtr<IPrecastGirder> girder;
       GetGirder(span,gdr,&girder);
 
-      // use continuous interface to compute
-      CComPtr<ILongArray> fill;
-      SpanGirderHashType hash = HashSpanGirder(span, gdr);
-      m_StrandFillers[hash].ComputeHarpedStrandFill(girder, Nh, &fill);
+      // Use wrapper to convert strand fill to IIndexArray
+      CIndexArrayWrapper strand_fill( rHarpedFillArray );
 
-      HRESULT hr = girder->GetHarpedHpAdjustmentBoundsEx(fill,DownwardOffset, UpwardOffset);
+      HRESULT hr = girder->GetHarpedHpAdjustmentBoundsEx(&strand_fill,DownwardOffset, UpwardOffset);
       ATLASSERT(SUCCEEDED(hr));
    }
 }
 
-void CBridgeAgentImp::GetHarpedHpOffsetBoundsEx(LPCTSTR strGirderName,StrandIndexType Nh, Float64* DownwardOffset, Float64* UpwardOffset)
+void CBridgeAgentImp::GetHarpedHpOffsetBoundsEx(LPCTSTR strGirderName, const ConfigStrandFillVector& rHarpedFillArray, Float64* DownwardOffset, Float64* UpwardOffset)
 {
-   if (Nh == 0)
+   if ( !AreStrandsInConfigFillVec(rHarpedFillArray) )
    {
       *DownwardOffset = 0.0;
       *UpwardOffset = 0.0;
@@ -8948,20 +10052,15 @@ void CBridgeAgentImp::GetHarpedHpOffsetBoundsEx(LPCTSTR strGirderName,StrandInde
    endGrid.CoCreateInstance(CLSID_StrandGrid);
    pGdrEntry->ConfigureHarpedStrandGrids(startGrid,startHPGrid,endHPGrid,endGrid);
 
-   CContinuousStandFiller strandFiller;
-   strandFiller.Init(pGdrEntry);
-
    CComQIPtr<IStrandGridFiller> startGridFiller(startGrid);
    CComQIPtr<IStrandGridFiller> hpGridFiller(startHPGrid);
 
-   CComPtr<ILongArray> fill;
-   HRESULT hr = strandFiller.ComputeHarpedStrandFill(pGdrEntry->OddNumberOfHarpedStrands(),startGridFiller,hpGridFiller,Nh,&fill);
-   ATLASSERT(SUCCEEDED(hr));
-
+   // Use wrapper to convert strand fill to IIndexArray
+   CIndexArrayWrapper fill(rHarpedFillArray);
 
    // get adjusted top and bottom bounds
    Float64 top, bottom;
-   hr = hpGridFiller->get_FilledGridBoundsEx(fill,&bottom,&top);
+   HRESULT hr = hpGridFiller->get_FilledGridBoundsEx(&fill,&bottom,&top);
    ATLASSERT(SUCCEEDED(hr));
 
    Float64 adjust;
@@ -9209,7 +10308,7 @@ StrandIndexType CBridgeAgentImp::GetPrevNumStrands(LPCTSTR strGirderName,pgsType
 StrandIndexType CBridgeAgentImp::GetNumExtendedStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::MemberEndType endType,pgsTypes::StrandType strandType)
 {
    GDRCONFIG config = GetGirderConfiguration(span,gdr);
-   return config.NextendedStrands[strandType][endType].size();
+   return config.PrestressConfig.GetExtendedStrands(strandType,endType).size();
 }
 
 bool CBridgeAgentImp::IsExtendedStrand(SpanIndexType span,GirderIndexType gdr,pgsTypes::MemberEndType end,StrandIndexType strandIdx,pgsTypes::StrandType strandType)
@@ -9218,13 +10317,14 @@ bool CBridgeAgentImp::IsExtendedStrand(SpanIndexType span,GirderIndexType gdr,pg
    return IsExtendedStrand(span,gdr,end,strandIdx,strandType,config);
 }
 
-bool CBridgeAgentImp::IsExtendedStrand(SpanIndexType span,GirderIndexType gdr,pgsTypes::MemberEndType end,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const GDRCONFIG& config)
+bool CBridgeAgentImp::IsExtendedStrand(SpanIndexType span,GirderIndexType gdr,pgsTypes::MemberEndType endType,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const GDRCONFIG& config)
 {
-   if ( config.NextendedStrands[strandType][end].size() == 0 )
+   if ( config.PrestressConfig.GetExtendedStrands(strandType,endType).size() == 0 )
       return false;
 
-   std::vector<StrandIndexType>::const_iterator iter(config.NextendedStrands[strandType][end].begin());
-   std::vector<StrandIndexType>::const_iterator endIter(config.NextendedStrands[strandType][end].end());
+   const std::vector<StrandIndexType>& extStrands = config.PrestressConfig.GetExtendedStrands(strandType,endType);
+   std::vector<StrandIndexType>::const_iterator iter(extStrands.begin());
+   std::vector<StrandIndexType>::const_iterator endIter(extStrands.end());
    for ( ; iter != endIter; iter++ )
    {
       if (*iter == strandIdx)
@@ -9248,13 +10348,15 @@ bool CBridgeAgentImp::IsExtendedStrand(const pgsPointOfInterest& poi,StrandIndex
    return IsExtendedStrand(poi.GetSpan(),poi.GetGirder(),end,strandIdx,strandType,config);
 }
 
-bool CBridgeAgentImp::IsStrandDebonded(SpanIndexType span,GirderIndexType gdr,StrandIndexType strandIdx,pgsTypes::StrandType strandType,Float64* pStart,Float64* pEnd)
+bool CBridgeAgentImp::IsStrandDebonded(SpanIndexType span,GirderIndexType gdr,StrandIndexType strandIdx,
+                                       pgsTypes::StrandType strandType,Float64* pStart,Float64* pEnd)
 {
    GDRCONFIG config = GetGirderConfiguration(span,gdr);
-   return IsStrandDebonded(span,gdr,strandIdx,strandType,config,pStart,pEnd);
+   return IsStrandDebonded(span,gdr,strandIdx,strandType,config.PrestressConfig,pStart,pEnd);
 }
 
-bool CBridgeAgentImp::IsStrandDebonded(SpanIndexType span,GirderIndexType gdr,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const GDRCONFIG& config,Float64* pStart,Float64* pEnd)
+bool CBridgeAgentImp::IsStrandDebonded(SpanIndexType span,GirderIndexType gdr,StrandIndexType strandIdx,
+                                       pgsTypes::StrandType strandType,const PRESTRESSCONFIG& config,Float64* pStart,Float64* pEnd)
 {
    VALIDATE( GIRDER );
 
@@ -9267,10 +10369,10 @@ bool CBridgeAgentImp::IsStrandDebonded(SpanIndexType span,GirderIndexType gdr,St
    *pStart = 0.0;
    *pEnd   = 0.0;
 
-   std::vector<DEBONDINFO>::const_iterator iter;
+   DebondConfigConstIterator iter;
    for ( iter = config.Debond[strandType].begin(); iter != config.Debond[strandType].end(); iter++ )
    {
-      const DEBONDINFO& di = *iter;
+      const DEBONDCONFIG& di = *iter;
       if ( strandIdx == di.strandIdx )
       {
          *pStart = di.LeftDebondLength;
@@ -9357,8 +10459,34 @@ RowIndexType CBridgeAgentImp::GetNumRowsWithStrand(SpanIndexType span,
                                              GirderIndexType gdr,
                                              pgsTypes::StrandType strandType )
 {
-   StrandIndexType nStrands = GetNumStrands(span,gdr,strandType);
-   return GetNumRowsWithStrand(span,gdr,nStrands,strandType);
+   VALIDATE( GIRDER );
+
+   RowIndexType nRows = 0;
+
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(span,gdr,&girder);
+
+   HRESULT hr;
+   switch( strandType )
+   {
+   case pgsTypes::Straight:
+      hr = girder->get_StraightStrandRowsWithStrand(&nRows);
+      break;
+
+   case pgsTypes::Harped:
+      hr = girder->get_HarpedStrandRowsWithStrand(&nRows);
+      break;
+
+   case pgsTypes::Temporary:
+      hr = S_FALSE; // Assumed only bonded for the end 10'... PS force is constant through the debonded section
+                    // this is different than strands debonded at the ends and bonded in the middle
+      break;        // Treat this strand as bonded
+
+   default:
+      ATLASSERT(false); // should never get here
+   }
+
+   return nRows;
 }
 
 //-----------------------------------------------------------------------------
@@ -9367,14 +10495,71 @@ StrandIndexType CBridgeAgentImp::GetNumStrandInRow(SpanIndexType span,
                                                    RowIndexType rowIdx,
                                                    pgsTypes::StrandType strandType )
 {
-   StrandIndexType nStrands = GetNumStrands(span,gdr,strandType);
-   return GetNumStrandInRow(span,gdr,nStrands,rowIdx,strandType);
+   VALIDATE( GIRDER );
+
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(span,gdr,&girder);
+
+   StrandIndexType cStrands = 0;
+   HRESULT hr;
+   switch( strandType )
+   {
+   case pgsTypes::Straight:
+      hr = girder->get_NumStraightStrandsInRow(rowIdx,&cStrands);
+      break;
+
+   case pgsTypes::Harped:
+      hr = girder->get_NumHarpedStrandsInRow(rowIdx,&cStrands);
+      break;
+
+   case pgsTypes::Temporary:
+      hr = S_FALSE; // Assumed only bonded for the end 10'... PS force is constant through the debonded section
+                    // this is different than strands debonded at the ends and bonded in the middle
+                    // Treat this strand as bonded
+      break;
+
+   default:
+      ATLASSERT(false); // should never get here
+   }
+
+   return cStrands;
 }
 
 std::vector<StrandIndexType> CBridgeAgentImp::GetStrandsInRow(SpanIndexType span,GirderIndexType gdr, RowIndexType rowIdx, pgsTypes::StrandType strandType )
 {
-   StrandIndexType nStrands = GetNumStrands(span,gdr,strandType);
-   return GetStrandsInRow(span,gdr,nStrands,rowIdx,strandType);
+   std::vector<StrandIndexType> strandIdxs;
+   if ( strandType == pgsTypes::Temporary )
+   {
+      ATLASSERT(false); // shouldn't get here
+      return strandIdxs;
+   }
+
+   VALIDATE( GIRDER );
+
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(span,gdr,&girder);
+
+   CComPtr<IIndexArray> array;
+   if ( strandType == pgsTypes::Straight )
+   {
+      girder->get_StraightStrandsInRow(rowIdx,&array);
+   }
+   else
+   {
+      girder->get_HarpedStrandsInRow(rowIdx,&array);
+   }
+
+   CollectionIndexType nItems;
+
+   array->get_Count(&nItems);
+   for ( CollectionIndexType i = 0; i < nItems; i++ )
+   {
+      StrandIndexType strandIdx;
+      array->get_Item(i,&strandIdx);
+      strandIdxs.push_back(strandIdx);
+   }
+
+   return strandIdxs;
 }
 
 //-----------------------------------------------------------------------------
@@ -9566,14 +10751,14 @@ StrandIndexType CBridgeAgentImp::GetNumDebondedStrandsAtSection(SpanIndexType sp
    if (end == IStrandGeometry::geLeftEnd)
    {
       // left
-      CComPtr<ILongArray> strands;
+      CComPtr<IIndexArray> strands;
       hr = girder->GetStraightStrandDebondAtLeftSection(sectionIdx,&strands);
       ATLASSERT(SUCCEEDED(hr));
       strands->get_Count(&nStrands);
    }
    else
    {
-      CComPtr<ILongArray> strands;
+      CComPtr<IIndexArray> strands;
       hr = girder->GetStraightStrandDebondAtRightSection(sectionIdx,&strands);
       ATLASSERT(SUCCEEDED(hr));
       strands->get_Count(&nStrands);
@@ -9625,7 +10810,7 @@ StrandIndexType CBridgeAgentImp::GetNumBondedStrandsAtSection(SpanIndexType span
       // how many strands are debonded at this section and all the ones after it?
       for ( CollectionIndexType idx = sectionIdx; idx < nSections; idx++)
       {
-         CComPtr<ILongArray> strands;
+         CComPtr<IIndexArray> strands;
          hr = girder->GetStraightStrandDebondAtLeftSection(idx,&strands);
          ATLASSERT(SUCCEEDED(hr));
          CollectionIndexType nDebondedStrandsAtSection;
@@ -9643,7 +10828,7 @@ StrandIndexType CBridgeAgentImp::GetNumBondedStrandsAtSection(SpanIndexType span
 
       for ( CollectionIndexType idx = sectionIdx; idx < nSections; idx++ )
       {
-         CComPtr<ILongArray> strands;
+         CComPtr<IIndexArray> strands;
          hr = girder->GetStraightStrandDebondAtRightSection(idx,&strands);
          ATLASSERT(SUCCEEDED(hr));
          CollectionIndexType nDebondedStrandsAtSection;
@@ -9690,7 +10875,7 @@ bool CBridgeAgentImp::CanDebondStrands(LPCTSTR strGirderName,pgsTypes::StrandTyp
 }
 
 //-----------------------------------------------------------------------------
-void CBridgeAgentImp::ListDebondableStrands(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType, ILongArray** list)
+void CBridgeAgentImp::ListDebondableStrands(SpanIndexType span,GirderIndexType gdr,const ConfigStrandFillVector& rFillArray,pgsTypes::StrandType strandType, IIndexArray** list)
 {
    GET_IFACE(ILibrary,pLib);
 
@@ -9699,69 +10884,51 @@ void CBridgeAgentImp::ListDebondableStrands(SpanIndexType span,GirderIndexType g
    const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
    std::_tstring strGirderName = pSpan->GetGirderTypes()->GetGirderName(gdr);
 
-   ListDebondableStrands(strGirderName.c_str(),strandType,list);
+   ListDebondableStrands(strGirderName.c_str(),rFillArray,strandType,list);
 }
 
-void CBridgeAgentImp::ListDebondableStrands(LPCTSTR strGirderName,pgsTypes::StrandType strandType, ILongArray** list)
+void CBridgeAgentImp::ListDebondableStrands(LPCTSTR strGirderName,const ConfigStrandFillVector& rFillArray,pgsTypes::StrandType strandType, IIndexArray** list)
 {
-   CComPtr<ILongArray> debondableStrands;  // array index = strand index, value = {0 means can't debond, 1 means can debond}
-   debondableStrands.CoCreateInstance(CLSID_LongArray);
+   CComPtr<IIndexArray> debondableStrands;  // array index = strand index, value = {0 means can't debond, 1 means can debond}
+   debondableStrands.CoCreateInstance(CLSID_IndexArray);
    ATLASSERT(debondableStrands);
 
    GET_IFACE(ILibrary,pLib);
    const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry( strGirderName );
 
-   StrandIndexType nStrands;
    if ( strandType == pgsTypes::Straight)
    {
-      nStrands = pGirderEntry->GetMaxStraightStrands();
-   }
-   else if ( strandType == pgsTypes::Harped)
-   {
-      nStrands = pGirderEntry->GetMaxHarpedStrands();
-   }
-   else if (strandType == pgsTypes::Temporary )
-   {
-      nStrands = pGirderEntry->GetMaxTemporaryStrands();
-   }
-   else
-   {
-      ATLASSERT(false); // is there a new strand type????
-   }
+      ConfigStrandFillConstIterator it = rFillArray.begin();
+      ConfigStrandFillConstIterator itend = rFillArray.end();
 
-   if ( strandType == pgsTypes::Straight)
-   {
-      debondableStrands->Reserve(nStrands);
-
-      StrandIndexType idx = 0;
-      StrandIndexType ns = 0;
-
-      if (nStrands != 0)
+      GridIndexType gridIdx = 0;
+      while(it != itend)
       {
-         while(ns < nStrands)
+         StrandIndexType nfill = *it;
+         if (0 < nfill)
          {
             Float64 start_x, start_y, end_x, end_y;
             bool can_debond;
-            pGirderEntry->GetStraightStrandCoordinates(idx++, &start_x, &start_y, &end_x, &end_y, &can_debond);
+            pGirderEntry->GetStraightStrandCoordinates(gridIdx, &start_x, &start_y, &end_x, &end_y, &can_debond);
 
-            debondableStrands->Add(can_debond);
-            ns++;
+            debondableStrands->Add(can_debond?1:0);
 
-            // have two strands if x>0.0
-            if (0.0 < start_x)
+            // have two strands?
+            if (nfill==2)
             {
-               debondableStrands->Add(can_debond);
-               ns++;
+               ATLASSERT(0 < start_x && 0 < end_x);
+               debondableStrands->Add(can_debond?1:0);
             }
          }
 
-         ATLASSERT(ns==nStrands);
+         gridIdx++;
+         it++;
       }
    }
    else
    {
       // temp and harped. Redim zeros array
-      debondableStrands->ReDim(nStrands);
+      debondableStrands->ReDim( PRESTRESSCONFIG::CountStrandsInFill(rFillArray) );
    }
 
    debondableStrands.CopyTo(list);
@@ -9817,35 +10984,37 @@ bool CBridgeAgentImp::IsDebondingSymmetric(SpanIndexType span,GirderIndexType gd
    return true;
 }
 
-RowIndexType CBridgeAgentImp::GetNumRowsWithStrand(SpanIndexType span,GirderIndexType gdr,StrandIndexType nStrands,pgsTypes::StrandType strandType )
+RowIndexType CBridgeAgentImp::GetNumRowsWithStrand(SpanIndexType span,GirderIndexType gdr, const PRESTRESSCONFIG& rconfig,pgsTypes::StrandType strandType )
 {
    VALIDATE( GIRDER );
 
    CComPtr<IPrecastGirder> girder;
    GetGirder(span,gdr,&girder);
 
-   CComPtr<ILongArray> oldFill;
-   CComPtr<ILongArray> fill;
+   CComPtr<IIndexArray> oldFill;
 
-   SpanGirderHashType hash = HashSpanGirder(span, gdr);
    RowIndexType nRows = 0;
    HRESULT hr;
    switch( strandType )
    {
    case pgsTypes::Straight:
-      m_StrandFillers[hash].ComputeStraightStrandFill(girder, nStrands, &fill);
-      girder->get_StraightStrandFill(&oldFill);
-      girder->put_StraightStrandFill(fill);
-      hr = girder->get_StraightStrandRowsWithStrand(&nRows);
-      girder->put_StraightStrandFill(oldFill);
+      {
+         CIndexArrayWrapper fill(rconfig.GetStrandFill(pgsTypes::Straight));
+         girder->get_StraightStrandFill(&oldFill);
+         girder->put_StraightStrandFill(&fill);
+         hr = girder->get_StraightStrandRowsWithStrand(&nRows);
+         girder->put_StraightStrandFill(oldFill);
+      }
       break;
 
    case pgsTypes::Harped:
-      m_StrandFillers[hash].ComputeHarpedStrandFill(girder, nStrands, &fill);
-      girder->get_HarpedStrandFill(&oldFill);
-      girder->put_HarpedStrandFill(fill);
-      hr = girder->get_HarpedStrandRowsWithStrand(&nRows);
-      girder->put_HarpedStrandFill(oldFill);
+      {
+         CIndexArrayWrapper fill(rconfig.GetStrandFill(pgsTypes::Harped));
+         girder->get_HarpedStrandFill(&oldFill);
+         girder->put_HarpedStrandFill(&fill);
+         hr = girder->get_HarpedStrandRowsWithStrand(&nRows);
+         girder->put_HarpedStrandFill(oldFill);
+      }
       break;
 
    case pgsTypes::Temporary:
@@ -9861,35 +11030,37 @@ RowIndexType CBridgeAgentImp::GetNumRowsWithStrand(SpanIndexType span,GirderInde
    return nRows;
 }
 
-StrandIndexType CBridgeAgentImp::GetNumStrandInRow(SpanIndexType span,GirderIndexType gdr,StrandIndexType nStrands,RowIndexType rowIdx,pgsTypes::StrandType strandType )
+StrandIndexType CBridgeAgentImp::GetNumStrandInRow(SpanIndexType span,GirderIndexType gdr, const PRESTRESSCONFIG& rconfig,RowIndexType rowIdx,pgsTypes::StrandType strandType )
 {
    VALIDATE( GIRDER );
 
    CComPtr<IPrecastGirder> girder;
    GetGirder(span,gdr,&girder);
 
-   CComPtr<ILongArray> oldFill;
-   CComPtr<ILongArray> fill;
+   CComPtr<IIndexArray> oldFill;
 
-   SpanGirderHashType hash = HashSpanGirder(span, gdr);
    StrandIndexType cStrands = 0;
    HRESULT hr;
    switch( strandType )
    {
    case pgsTypes::Straight:
-      m_StrandFillers[hash].ComputeStraightStrandFill(girder, nStrands, &fill);
-      girder->get_StraightStrandFill(&oldFill);
-      girder->put_StraightStrandFill(fill);
-      hr = girder->get_NumStraightStrandsInRow(rowIdx,&cStrands);
-      girder->put_StraightStrandFill(oldFill);
+      {
+         CIndexArrayWrapper fill(rconfig.GetStrandFill(pgsTypes::Straight));
+         girder->get_StraightStrandFill(&oldFill);
+         girder->put_StraightStrandFill(&fill);
+         hr = girder->get_NumStraightStrandsInRow(rowIdx,&cStrands);
+         girder->put_StraightStrandFill(oldFill);
+      }
       break;
 
    case pgsTypes::Harped:
-      m_StrandFillers[hash].ComputeHarpedStrandFill(girder, nStrands, &fill);
-      girder->get_HarpedStrandFill(&oldFill);
-      girder->put_HarpedStrandFill(fill);
-      hr = girder->get_NumHarpedStrandsInRow(rowIdx,&cStrands);
-      girder->put_HarpedStrandFill(oldFill);
+      {
+         CIndexArrayWrapper fill(rconfig.GetStrandFill(pgsTypes::Harped));
+         girder->get_HarpedStrandFill(&oldFill);
+         girder->put_HarpedStrandFill(&fill);
+         hr = girder->get_NumHarpedStrandsInRow(rowIdx,&cStrands);
+         girder->put_HarpedStrandFill(oldFill);
+      }
       break;
 
    case pgsTypes::Temporary:
@@ -9905,7 +11076,7 @@ StrandIndexType CBridgeAgentImp::GetNumStrandInRow(SpanIndexType span,GirderInde
    return cStrands;
 }
 
-std::vector<StrandIndexType> CBridgeAgentImp::GetStrandsInRow(SpanIndexType span,GirderIndexType gdr,StrandIndexType nStrands,RowIndexType rowIdx, pgsTypes::StrandType strandType )
+std::vector<StrandIndexType> CBridgeAgentImp::GetStrandsInRow(SpanIndexType span,GirderIndexType gdr, const PRESTRESSCONFIG& rconfig,RowIndexType rowIdx, pgsTypes::StrandType strandType )
 {
    std::vector<StrandIndexType> strandIdxs;
    if ( strandType == pgsTypes::Temporary )
@@ -9919,25 +11090,22 @@ std::vector<StrandIndexType> CBridgeAgentImp::GetStrandsInRow(SpanIndexType span
    CComPtr<IPrecastGirder> girder;
    GetGirder(span,gdr,&girder);
 
-   CComPtr<ILongArray> oldFill;
-   CComPtr<ILongArray> fill;
-   CComPtr<ILongArray> array;
+   CComPtr<IIndexArray> oldFill;
+   CComPtr<IIndexArray> array;
 
    if ( strandType == pgsTypes::Straight )
    {
-      SpanGirderHashType hash = HashSpanGirder(span, gdr);
-      m_StrandFillers[hash].ComputeStraightStrandFill(girder, nStrands, &fill);
+      CIndexArrayWrapper fill(rconfig.GetStrandFill(pgsTypes::Straight));
       girder->get_StraightStrandFill(&oldFill);
-      girder->put_StraightStrandFill(fill);
+      girder->put_StraightStrandFill(&fill);
       girder->get_StraightStrandsInRow(rowIdx,&array);
       girder->put_StraightStrandFill(oldFill);
    }
    else
    {
-      SpanGirderHashType hash = HashSpanGirder(span, gdr);
-      m_StrandFillers[hash].ComputeHarpedStrandFill(girder, nStrands, &fill);
+      CIndexArrayWrapper fill(rconfig.GetStrandFill(pgsTypes::Harped));
       girder->get_HarpedStrandFill(&oldFill);
-      girder->put_HarpedStrandFill(fill);
+      girder->put_HarpedStrandFill(&fill);
       girder->get_HarpedStrandsInRow(rowIdx,&array);
       girder->put_HarpedStrandFill(oldFill);
    }
@@ -9947,22 +11115,15 @@ std::vector<StrandIndexType> CBridgeAgentImp::GetStrandsInRow(SpanIndexType span
    array->get_Count(&nItems);
    for ( CollectionIndexType i = 0; i < nItems; i++ )
    {
-      IDType strandIdx;
+      StrandIndexType strandIdx;
       array->get_Item(i,&strandIdx);
-      strandIdxs.push_back((StrandIndexType)strandIdx);
+      strandIdxs.push_back(strandIdx);
    }
 
    return strandIdxs;
 }
 
 //-----------------------------------------------------------------------------
-void CBridgeAgentImp::GetStrandPosition(const pgsPointOfInterest& poi, StrandIndexType strandIdx,pgsTypes::StrandType type, IPoint2d** ppPoint)
-{
-   CComPtr<IPoint2dCollection> points;
-   GetStrandPositions(poi,type,&points);
-   points->get_Item(strandIdx,ppPoint);
-}
-
 void CBridgeAgentImp::GetStrandPositions(const pgsPointOfInterest& poi, pgsTypes::StrandType type, IPoint2dCollection** ppPoints)
 {
    VALIDATE( GIRDER );
@@ -9992,47 +11153,48 @@ void CBridgeAgentImp::GetStrandPositions(const pgsPointOfInterest& poi, pgsTypes
 }
 
 
-void CBridgeAgentImp::GetStrandPositionsEx(const pgsPointOfInterest& poi,StrandIndexType Ns, pgsTypes::StrandType type, IPoint2dCollection** ppPoints)
+void CBridgeAgentImp::GetStrandPositionsEx(const pgsPointOfInterest& poi,const PRESTRESSCONFIG& rconfig, pgsTypes::StrandType type, IPoint2dCollection** ppPoints)
 {
    VALIDATE( GIRDER );
    CComPtr<IPrecastGirder> girder;
    GetGirder(poi.GetSpan(),poi.GetGirder(),&girder);
 
-   CComPtr<ILongArray> fill;
+   CIndexArrayWrapper fill(rconfig.GetStrandFill(type));
 
-
-   SpanGirderHashType hash = HashSpanGirder(poi.GetSpan(),poi.GetGirder());
    HRESULT hr = S_OK;
    switch( type )
    {
    case pgsTypes::Straight:
-      m_StrandFillers[hash].ComputeStraightStrandFill(girder, Ns, &fill);
-      hr = girder->get_StraightStrandPositionsEx(poi.GetDistFromStart(),fill,ppPoints);
+      hr = girder->get_StraightStrandPositionsEx(poi.GetDistFromStart(),&fill,ppPoints);
       break;
 
    case pgsTypes::Harped:
-      m_StrandFillers[hash].ComputeHarpedStrandFill(girder, Ns, &fill);
-      hr = girder->get_HarpedStrandPositionsEx(poi.GetDistFromStart(),fill,ppPoints);
+      hr = girder->get_HarpedStrandPositionsEx(poi.GetDistFromStart(),&fill,ppPoints);
       break;
 
    case pgsTypes::Temporary:
-      m_StrandFillers[hash].ComputeTemporaryStrandFill(girder, Ns, &fill);
-      hr = girder->get_TempStrandPositionsEx(poi.GetDistFromStart(),fill,ppPoints);
+      hr = girder->get_TempStrandPositionsEx(poi.GetDistFromStart(),&fill,ppPoints);
       break;
 
    default:
       ATLASSERT(false); // shouldn't get here
    }
 
+#ifdef _DEBUG
+   CollectionIndexType np;
+   (*ppPoints)->get_Count(&np);
+   ATLASSERT(np==rconfig.GetNStrands(type));
+#endif
+
    ATLASSERT(SUCCEEDED(hr));
 }
 
-void CBridgeAgentImp::GetStrandPositionsEx(LPCTSTR strGirderName,StrandIndexType Ns,pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,IPoint2dCollection** ppPoints)
+void CBridgeAgentImp::GetStrandPositionsEx(LPCTSTR strGirderName,const PRESTRESSCONFIG& rconfig,
+                                           pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,
+                                           IPoint2dCollection** ppPoints)
 {
    GET_IFACE(ILibrary,pLib);
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName);
-   CContinuousStandFiller strandFiller;
-   strandFiller.Init(pGdrEntry);
 
    CComPtr<IStrandGrid> startGrid, endGrid;
    startGrid.CoCreateInstance(CLSID_StrandGrid);
@@ -10040,14 +11202,14 @@ void CBridgeAgentImp::GetStrandPositionsEx(LPCTSTR strGirderName,StrandIndexType
 
    CComQIPtr<IStrandGridFiller> gridFiller(startGrid);
 
+   CIndexArrayWrapper fill(rconfig.GetStrandFill(strandType));
+
    HRESULT hr = S_OK;
-   CComPtr<ILongArray> fill;
    switch(strandType)
    {
    case pgsTypes::Straight:
       pGdrEntry->ConfigureStraightStrandGrid(startGrid,endGrid);
-      hr = strandFiller.ComputeStraightStrandFill(gridFiller,Ns,&fill);
-      gridFiller->GetStrandPositionsEx(fill,ppPoints);
+      gridFiller->GetStrandPositionsEx(&fill,ppPoints);
       break;
 
    case pgsTypes::Harped:
@@ -10057,15 +11219,13 @@ void CBridgeAgentImp::GetStrandPositionsEx(LPCTSTR strGirderName,StrandIndexType
       endHPGrid.CoCreateInstance(CLSID_StrandGrid);
       pGdrEntry->ConfigureHarpedStrandGrids(startGrid,startHPGrid,endHPGrid,endGrid);
       CComQIPtr<IStrandGridFiller> hpGridFiller(startHPGrid);
-      hr = strandFiller.ComputeHarpedStrandFill(pGdrEntry->OddNumberOfHarpedStrands(),gridFiller,hpGridFiller,Ns,&fill);
-      gridFiller->GetStrandPositionsEx(fill,ppPoints);
+      gridFiller->GetStrandPositionsEx(&fill,ppPoints);
       }
       break;
 
    case pgsTypes::Temporary:
       pGdrEntry->ConfigureTemporaryStrandGrid(startGrid,endGrid);
-      hr = strandFiller.ComputeTemporaryStrandFill(gridFiller,Ns,&fill);
-      gridFiller->GetStrandPositionsEx(fill,ppPoints);
+      gridFiller->GetStrandPositionsEx(&fill,ppPoints);
       break;
 
    default:
@@ -10075,7 +11235,7 @@ void CBridgeAgentImp::GetStrandPositionsEx(LPCTSTR strGirderName,StrandIndexType
    ATLASSERT(SUCCEEDED(hr));
 }
 
-Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(SpanIndexType span,GirderIndexType gdr, StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64 offset)
+Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(SpanIndexType span,GirderIndexType gdr, const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 offset)
 {
    // returns the offset value measured from the original strand locations defined in the girder library
    // Up is positive
@@ -10084,7 +11244,7 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(SpanIndexType span,Girde
    const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
    const CGirderTypes* pGirderTypes = pSpan->GetGirderTypes();
    const CGirderData& girderData = pGirderTypes->GetGirderData(gdr);
-   Float64 absOffset = ComputeAbsoluteHarpedOffsetEnd(pGirderTypes->GetGirderName(gdr),Nh,measurementType,offset);
+   Float64 absOffset = ComputeAbsoluteHarpedOffsetEnd(pGirderTypes->GetGirderName(gdr),rHarpedFillArray,measurementType,offset);
 
 #if defined _DEBUG
 
@@ -10092,8 +11252,11 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(SpanIndexType span,Girde
    CComPtr<IPrecastGirder> girder;
    GetGirder(span, gdr, &girder);
 
+   Float64 increment; // if less than zero, strands cannot be adjusted
+   girder->get_HarpedEndAdjustmentIncrement(&increment);
+
    Float64 result = 0;
-   if (0 < Nh)
+   if (increment>=0.0 && AreStrandsInConfigFillVec(rHarpedFillArray))
    {
       if (measurementType==hsoLEGACY)
       {
@@ -10108,12 +11271,10 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(SpanIndexType span,Girde
          grid_box->get_Bottom(&grid_bottom);
          grid_box->get_Top(&grid_top);
 
-         CComPtr<ILongArray> fill;
-         SpanGirderHashType hash = HashSpanGirder(span, gdr);
-         m_StrandFillers[hash].ComputeHarpedStrandFill(girder, Nh, &fill);
+         CIndexArrayWrapper fill(rHarpedFillArray);
 
          Float64 fill_top, fill_bottom;
-         girder->GetHarpedEndFilledGridBoundsEx(fill, &fill_bottom, &fill_top);
+         girder->GetHarpedEndFilledGridBoundsEx(&fill, &fill_bottom, &fill_top);
 
          Float64 vert_adjust;
          girder->get_HarpedStrandAdjustmentEnd(&vert_adjust);
@@ -10123,18 +11284,16 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(SpanIndexType span,Girde
       else if (measurementType==hsoCGFROMTOP || measurementType==hsoCGFROMBOTTOM || measurementType==hsoECCENTRICITY)
       {
          // compute adjusted cg location
-         CComPtr<ILongArray> fill;
-         SpanGirderHashType hash = HashSpanGirder(span, gdr);
-         m_StrandFillers[hash].ComputeHarpedStrandFill(girder, Nh, &fill);
+         CIndexArrayWrapper fill(rHarpedFillArray);
 
          CComPtr<IPoint2dCollection> points;
-         girder->get_HarpedStrandPositionsEx(0.0, fill, &points);
+         girder->get_HarpedStrandPositionsEx(0.0, &fill, &points);
 
          Float64 cg=0.0;
 
          CollectionIndexType nStrands;
          points->get_Count(&nStrands);
-         ATLASSERT(Nh == nStrands);
+         ATLASSERT(CountStrandsInConfigFillVec(rHarpedFillArray) == nStrands);
          for (CollectionIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
          {
             CComPtr<IPoint2d> point;
@@ -10178,14 +11337,12 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(SpanIndexType span,Girde
       else if (measurementType==hsoTOP2TOP || measurementType==hsoTOP2BOTTOM)
       {
          // get strand grid positions that are filled by Nh strands
-         CComPtr<ILongArray> fill;
-         SpanGirderHashType hash = HashSpanGirder(span, gdr);
-         m_StrandFillers[hash].ComputeHarpedStrandFill(girder, Nh, &fill);
+         CIndexArrayWrapper fill(rHarpedFillArray);
 
          // fill_top is the top of the strand positions that are actually filled
          // adjusted by the harped strand adjustment
          Float64 fill_top, fill_bottom;
-         girder->GetHarpedEndFilledGridBoundsEx(fill, &fill_bottom, &fill_top);
+         girder->GetHarpedEndFilledGridBoundsEx(&fill, &fill_bottom, &fill_top);
 
          // get the harped strand adjustment so its effect can be removed
          Float64 vert_adjust;
@@ -10212,12 +11369,10 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(SpanIndexType span,Girde
       }
       else if (measurementType==hsoBOTTOM2BOTTOM)
       {
-         CComPtr<ILongArray> fill;
-         SpanGirderHashType hash = HashSpanGirder(span, gdr);
-         m_StrandFillers[hash].ComputeHarpedStrandFill(girder, Nh, &fill);
+         CIndexArrayWrapper fill(rHarpedFillArray);
 
          Float64 fill_top, fill_bottom;
-         girder->GetHarpedEndFilledGridBoundsEx(fill, &fill_bottom, &fill_top);
+         girder->GetHarpedEndFilledGridBoundsEx(&fill, &fill_bottom, &fill_top);
 
          Float64 vert_adjust;
          girder->get_HarpedStrandAdjustmentEnd(&vert_adjust);
@@ -10237,15 +11392,20 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(SpanIndexType span,Girde
    return absOffset;
 }
 
-Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(LPCTSTR strGirderName,StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64 offset)
+Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 offset)
 {
    // returns the offset value measured from the original strand locations defined in the girder library
    // Up is positive
-   if ( Nh == 0 )
+   if ( !AreStrandsInConfigFillVec(rHarpedFillArray) )
       return 0.0;
 
    GET_IFACE(ILibrary,pLib);
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName);
+
+   if (!pGdrEntry->IsVerticalAdjustmentAllowedEnd())
+   {
+      return 0.0; // No offset allowed
+   }
 
    CComPtr<IStrandMover> pStrandMover;
    CreateStrandMover(strGirderName,&pStrandMover);
@@ -10257,8 +11417,7 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(LPCTSTR strGirderName,St
    endGrid.CoCreateInstance(CLSID_StrandGrid);
    pGdrEntry->ConfigureHarpedStrandGrids(startGrid,startHPGrid,endHPGrid,endGrid);
 
-   CContinuousStandFiller strandFiller;
-   strandFiller.Init(pGdrEntry);
+   CIndexArrayWrapper fill(rHarpedFillArray);
 
    Float64 absOffset = 0;
    if (measurementType==hsoLEGACY)
@@ -10274,12 +11433,8 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(LPCTSTR strGirderName,St
       CComQIPtr<IStrandGridFiller> startGridFiller(startGrid);
       CComQIPtr<IStrandGridFiller> hpGridFiller(startHPGrid);
 
-      CComPtr<ILongArray> fill;
-      HRESULT hr = strandFiller.ComputeHarpedStrandFill(pGdrEntry->OddNumberOfHarpedStrands(),startGridFiller,hpGridFiller,Nh,&fill);
-      ATLASSERT(SUCCEEDED(hr));
-
       Float64 fill_top, fill_bottom;
-      startGridFiller->get_FilledGridBoundsEx(fill,&fill_bottom,&fill_top);
+      startGridFiller->get_FilledGridBoundsEx(&fill, &fill_bottom, &fill_top);
 
       Float64 vert_adjust;
       startGridFiller->get_VerticalStrandAdjustment(&vert_adjust);
@@ -10292,18 +11447,14 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(LPCTSTR strGirderName,St
       CComQIPtr<IStrandGridFiller> startGridFiller(startGrid);
       CComQIPtr<IStrandGridFiller> hpGridFiller(startHPGrid);
 
-      CComPtr<ILongArray> fill;
-      HRESULT hr = strandFiller.ComputeHarpedStrandFill(pGdrEntry->OddNumberOfHarpedStrands(),startGridFiller,hpGridFiller,Nh,&fill);
-      ATLASSERT(SUCCEEDED(hr));
-
       CComPtr<IPoint2dCollection> points;
-      startGridFiller->GetStrandPositionsEx(fill,&points);
+      startGridFiller->GetStrandPositionsEx(&fill,&points);
 
       Float64 cg=0.0;
 
       CollectionIndexType nStrands;
       points->get_Count(&nStrands);
-      ATLASSERT(Nh == nStrands);
+      ATLASSERT(CountStrandsInConfigFillVec(rHarpedFillArray) == nStrands);
       for (CollectionIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
       {
          CComPtr<IPoint2d> point;
@@ -10361,14 +11512,10 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(LPCTSTR strGirderName,St
       CComQIPtr<IStrandGridFiller> startGridFiller(startGrid);
       CComQIPtr<IStrandGridFiller> hpGridFiller(startHPGrid);
 
-      CComPtr<ILongArray> fill;
-      HRESULT hr = strandFiller.ComputeHarpedStrandFill(pGdrEntry->OddNumberOfHarpedStrands(),startGridFiller,hpGridFiller,Nh,&fill);
-      ATLASSERT(SUCCEEDED(hr));
-
       // fill_top is the top of the strand positions that are actually filled
       // adjusted by the harped strand adjustment
       Float64 fill_top, fill_bottom;
-      startGridFiller->get_FilledGridBoundsEx(fill,&fill_bottom,&fill_top);
+      startGridFiller->get_FilledGridBoundsEx(&fill, &fill_bottom, &fill_top);
 
       // get the harped strand adjustment so its effect can be removed
       Float64 vert_adjust;
@@ -10398,12 +11545,8 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(LPCTSTR strGirderName,St
       CComQIPtr<IStrandGridFiller> startGridFiller(startGrid);
       CComQIPtr<IStrandGridFiller> hpGridFiller(startHPGrid);
 
-      CComPtr<ILongArray> fill;
-      HRESULT hr = strandFiller.ComputeHarpedStrandFill(pGdrEntry->OddNumberOfHarpedStrands(),startGridFiller,hpGridFiller,Nh,&fill);
-      ATLASSERT(SUCCEEDED(hr));
-
       Float64 fill_top, fill_bottom;
-      startGridFiller->get_FilledGridBoundsEx(fill,&fill_bottom,&fill_top);
+      startGridFiller->get_FilledGridBoundsEx(&fill,&fill_bottom,&fill_top);
 
       Float64 vert_adjust;
       startGridFiller->get_VerticalStrandAdjustment(&vert_adjust);
@@ -10420,7 +11563,7 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(LPCTSTR strGirderName,St
    return absOffset;
 }
 
-Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(SpanIndexType span,GirderIndexType gdr, StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64 offset)
+Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(SpanIndexType span,GirderIndexType gdr, const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 offset)
 {
    // returns the offset value measured from the original strand locations defined in the girder library
    // Up is positive
@@ -10429,7 +11572,7 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(SpanIndexType span,Girder
    const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
    const CGirderTypes* pGirderTypes = pSpan->GetGirderTypes();
    const CGirderData& girderData = pGirderTypes->GetGirderData(gdr);
-   Float64 absOffset = ComputeAbsoluteHarpedOffsetHp(pGirderTypes->GetGirderName(gdr),Nh,measurementType,offset);
+   Float64 absOffset = ComputeAbsoluteHarpedOffsetHp(pGirderTypes->GetGirderName(gdr),rHarpedFillArray,measurementType,offset);
 
 #if defined _DEBUG
 
@@ -10437,8 +11580,11 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(SpanIndexType span,Girder
    CComPtr<IPrecastGirder> girder;
    GetGirder(span, gdr, &girder);
 
+   Float64 increment; // if less than zero, strands cannot be adjusted
+   girder->get_HarpedHpAdjustmentIncrement(&increment);
+
    Float64 result = 0;
-   if (Nh>0)
+   if ( increment>=0.0 && AreStrandsInConfigFillVec(rHarpedFillArray) )
    {
       if (measurementType==hsoLEGACY)
       {
@@ -10447,20 +11593,18 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(SpanIndexType span,Girder
       else if (measurementType==hsoCGFROMTOP || measurementType==hsoCGFROMBOTTOM || measurementType==hsoECCENTRICITY)
       {
          // compute adjusted cg location
-         CComPtr<ILongArray> fill;
-         SpanGirderHashType hash = HashSpanGirder(span, gdr);
-         m_StrandFillers[hash].ComputeHarpedStrandFill(girder, Nh, &fill);
+         CIndexArrayWrapper fill(rHarpedFillArray);
 
          Float64 L = GetGirderLength(span,gdr); 
 
          CComPtr<IPoint2dCollection> points;
-         girder->get_HarpedStrandPositionsEx(L/2.0, fill, &points);
+         girder->get_HarpedStrandPositionsEx(L/2.0, &fill, &points);
 
          Float64 cg=0.0;
 
          CollectionIndexType nStrands;
          points->get_Count(&nStrands);
-         ATLASSERT(Nh == nStrands);
+         ATLASSERT(CountStrandsInConfigFillVec(rHarpedFillArray) == nStrands);
          for (CollectionIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
          {
             CComPtr<IPoint2d> point;
@@ -10504,12 +11648,10 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(SpanIndexType span,Girder
       else if (measurementType==hsoTOP2TOP || measurementType==hsoTOP2BOTTOM)
       {
          // get location of highest strand at zero offset
-         CComPtr<ILongArray> fill;
-         SpanGirderHashType hash = HashSpanGirder(span, gdr);
-         m_StrandFillers[hash].ComputeHarpedStrandFill(girder, Nh, &fill);
+         CIndexArrayWrapper fill(rHarpedFillArray);
 
          Float64 fill_top, fill_bottom;
-         girder->GetHarpedHpFilledGridBoundsEx(fill, &fill_bottom, &fill_top);
+         girder->GetHarpedHpFilledGridBoundsEx(&fill, &fill_bottom, &fill_top);
 
          Float64 vert_adjust;
          girder->get_HarpedStrandAdjustmentHP(&vert_adjust);
@@ -10531,12 +11673,10 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(SpanIndexType span,Girder
       }
       else if (measurementType==hsoBOTTOM2BOTTOM)
       {
-         CComPtr<ILongArray> fill;
-         SpanGirderHashType hash = HashSpanGirder(span, gdr);
-         m_StrandFillers[hash].ComputeHarpedStrandFill(girder, Nh, &fill);
+         CIndexArrayWrapper fill(rHarpedFillArray);
 
          Float64 fill_top, fill_bottom;
-         girder->GetHarpedHpFilledGridBoundsEx(fill, &fill_bottom, &fill_top);
+         girder->GetHarpedHpFilledGridBoundsEx(&fill, &fill_bottom, &fill_top);
 
          Float64 vert_adjust;
          girder->get_HarpedStrandAdjustmentHP(&vert_adjust);
@@ -10557,15 +11697,20 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(SpanIndexType span,Girder
    return absOffset;
 }
 
-Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(LPCTSTR strGirderName,StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64 offset)
+Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 offset)
 {
    // returns the offset value measured from the original strand locations defined in the girder library
    // Up is positive
-   if ( Nh == 0 )
+   if ( !AreStrandsInConfigFillVec(rHarpedFillArray) )
       return 0;
 
    GET_IFACE(ILibrary,pLib);
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName);
+
+   if (!pGdrEntry->IsVerticalAdjustmentAllowedHP())
+   {
+      return 0.0; // No offset allowed
+   }
 
    CComPtr<IStrandMover> pStrandMover;
    CreateStrandMover(strGirderName,&pStrandMover);
@@ -10577,9 +11722,6 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(LPCTSTR strGirderName,Str
    endGrid.CoCreateInstance(CLSID_StrandGrid);
    pGdrEntry->ConfigureHarpedStrandGrids(startGrid,startHPGrid,endHPGrid,endGrid);
 
-   CContinuousStandFiller strandFiller;
-   strandFiller.Init(pGdrEntry);
-
    Float64 absOffset = 0;
    if (measurementType==hsoLEGACY)
    {
@@ -10588,21 +11730,18 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(LPCTSTR strGirderName,Str
    else if (measurementType==hsoCGFROMTOP || measurementType==hsoCGFROMBOTTOM || measurementType==hsoECCENTRICITY)
    {
       // compute adjusted cg location
-      CComQIPtr<IStrandGridFiller> startGridFiller(startGrid);
       CComQIPtr<IStrandGridFiller> hpGridFiller(startHPGrid);
 
-      CComPtr<ILongArray> fill;
-      HRESULT hr = strandFiller.ComputeHarpedStrandFill(pGdrEntry->OddNumberOfHarpedStrands(),startGridFiller,hpGridFiller,Nh,&fill);
-      ATLASSERT(SUCCEEDED(hr));
+      CIndexArrayWrapper fill(rHarpedFillArray);
 
       CComPtr<IPoint2dCollection> points;
-      hpGridFiller->GetStrandPositionsEx(fill,&points);
+      hpGridFiller->GetStrandPositionsEx(&fill,&points);
 
       Float64 cg=0.0;
 
       CollectionIndexType nStrands;
       points->get_Count(&nStrands);
-      ATLASSERT(Nh == nStrands);
+      ATLASSERT(CountStrandsInConfigFillVec(rHarpedFillArray) == nStrands);
       for (CollectionIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
       {
          CComPtr<IPoint2d> point;
@@ -10657,15 +11796,12 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(LPCTSTR strGirderName,Str
    else if (measurementType==hsoTOP2TOP || measurementType==hsoTOP2BOTTOM)
    {
       // get location of highest strand at zero offset
-      CComQIPtr<IStrandGridFiller> startGridFiller(startGrid);
       CComQIPtr<IStrandGridFiller> hpGridFiller(startHPGrid);
 
-      CComPtr<ILongArray> fill;
-      HRESULT hr = strandFiller.ComputeHarpedStrandFill(pGdrEntry->OddNumberOfHarpedStrands(),startGridFiller,hpGridFiller,Nh,&fill);
-      ATLASSERT(SUCCEEDED(hr));
+      CIndexArrayWrapper fill(rHarpedFillArray);
 
       Float64 fill_top, fill_bottom;
-      hpGridFiller->get_FilledGridBoundsEx(fill,&fill_bottom,&fill_top);
+      hpGridFiller->get_FilledGridBoundsEx(&fill,&fill_bottom,&fill_top);
 
       Float64 vert_adjust;
       hpGridFiller->get_VerticalStrandAdjustment(&vert_adjust);
@@ -10687,15 +11823,12 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(LPCTSTR strGirderName,Str
    }
    else if (measurementType==hsoBOTTOM2BOTTOM)
    {
-      CComQIPtr<IStrandGridFiller> startGridFiller(startGrid);
       CComQIPtr<IStrandGridFiller> hpGridFiller(startHPGrid);
 
-      CComPtr<ILongArray> fill;
-      HRESULT hr = strandFiller.ComputeHarpedStrandFill(pGdrEntry->OddNumberOfHarpedStrands(),startGridFiller,hpGridFiller,Nh,&fill);
-      ATLASSERT(SUCCEEDED(hr));
+      CIndexArrayWrapper fill(rHarpedFillArray);
 
       Float64 fill_top, fill_bottom;
-      hpGridFiller->get_FilledGridBoundsEx(fill,&fill_bottom,&fill_top);
+      hpGridFiller->get_FilledGridBoundsEx(&fill,&fill_bottom,&fill_top);
 
       Float64 vert_adjust;
       hpGridFiller->get_VerticalStrandAdjustment(&vert_adjust);
@@ -10712,11 +11845,11 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(LPCTSTR strGirderName,Str
    return absOffset;
 }
 
-Float64 CBridgeAgentImp::ComputeHarpedOffsetFromAbsoluteEnd(SpanIndexType span,GirderIndexType gdr, StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64 absoluteOffset)
+Float64 CBridgeAgentImp::ComputeHarpedOffsetFromAbsoluteEnd(SpanIndexType span,GirderIndexType gdr, const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 absoluteOffset)
 {
    // all we really need to know is the distance and direction between the coords, compute absolute
    // from zero
-   Float64 absol = ComputeAbsoluteHarpedOffsetEnd(span, gdr, Nh, measurementType, 0.0);
+   Float64 absol = ComputeAbsoluteHarpedOffsetEnd(span, gdr, rHarpedFillArray, measurementType, 0.0);
 
    Float64 off = 0.0;
    // direction depends if meassured from bottom up or top down
@@ -10736,11 +11869,11 @@ Float64 CBridgeAgentImp::ComputeHarpedOffsetFromAbsoluteEnd(SpanIndexType span,G
    return off;
 }
 
-Float64 CBridgeAgentImp::ComputeHarpedOffsetFromAbsoluteEnd(LPCTSTR strGirderName,StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64 absoluteOffset)
+Float64 CBridgeAgentImp::ComputeHarpedOffsetFromAbsoluteEnd(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 absoluteOffset)
 {
    // all we really need to know is the distance and direction between the coords, compute absolute
    // from zero
-   Float64 absol = ComputeAbsoluteHarpedOffsetEnd(strGirderName, Nh, measurementType, 0.0);
+   Float64 absol = ComputeAbsoluteHarpedOffsetEnd(strGirderName, rHarpedFillArray, measurementType, 0.0);
 
    Float64 off = 0.0;
    // direction depends if meassured from bottom up or top down
@@ -10760,9 +11893,9 @@ Float64 CBridgeAgentImp::ComputeHarpedOffsetFromAbsoluteEnd(LPCTSTR strGirderNam
    return off;
 }
 
-Float64 CBridgeAgentImp::ComputeHarpedOffsetFromAbsoluteHp(SpanIndexType span,GirderIndexType gdr, StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64 absoluteOffset)
+Float64 CBridgeAgentImp::ComputeHarpedOffsetFromAbsoluteHp(SpanIndexType span,GirderIndexType gdr, const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 absoluteOffset)
 {
-   Float64 absol = ComputeAbsoluteHarpedOffsetHp(span, gdr, Nh, measurementType, 0.0);
+   Float64 absol = ComputeAbsoluteHarpedOffsetHp(span, gdr, rHarpedFillArray, measurementType, 0.0);
 
    Float64 off = 0.0;
    // direction depends if meassured from bottom up or top down
@@ -10781,9 +11914,9 @@ Float64 CBridgeAgentImp::ComputeHarpedOffsetFromAbsoluteHp(SpanIndexType span,Gi
    return off;
 }
 
-Float64 CBridgeAgentImp::ComputeHarpedOffsetFromAbsoluteHp(LPCTSTR strGirderName,StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64 absoluteOffset)
+Float64 CBridgeAgentImp::ComputeHarpedOffsetFromAbsoluteHp(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 absoluteOffset)
 {
-   Float64 absol = ComputeAbsoluteHarpedOffsetHp(strGirderName, Nh, measurementType, 0.0);
+   Float64 absol = ComputeAbsoluteHarpedOffsetHp(strGirderName, rHarpedFillArray, measurementType, 0.0);
 
    Float64 off = 0.0;
    // direction depends if meassured from bottom up or top down
@@ -10802,135 +11935,91 @@ Float64 CBridgeAgentImp::ComputeHarpedOffsetFromAbsoluteHp(LPCTSTR strGirderName
    return off;
 }
 
-void CBridgeAgentImp::ComputeValidHarpedOffsetForMeasurementTypeEnd(SpanIndexType span,GirderIndexType gdr,StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64* lowRange, Float64* highRange)
+void CBridgeAgentImp::ComputeValidHarpedOffsetForMeasurementTypeEnd(SpanIndexType span,GirderIndexType gdr, const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64* lowRange, Float64* highRange)
 {
    CComPtr<IPrecastGirder> girder;
    GetGirder(span, gdr, &girder);
 
-   CComPtr<ILongArray> fill;
-   SpanGirderHashType hash = HashSpanGirder(span, gdr);
-   m_StrandFillers[hash].ComputeHarpedStrandFill(girder, Nh, &fill);
+   CIndexArrayWrapper fill(rHarpedFillArray);
 
    Float64 absDown, absUp;
-   HRESULT hr = girder->GetHarpedEndAdjustmentBoundsEx(fill, &absDown, &absUp);
+   HRESULT hr = girder->GetHarpedEndAdjustmentBoundsEx(&fill, &absDown, &absUp);
    ATLASSERT(SUCCEEDED(hr));
 
-   Float64 offDown = ComputeHarpedOffsetFromAbsoluteEnd(span, gdr,  Nh, measurementType, absDown);
-   Float64 offUp =   ComputeHarpedOffsetFromAbsoluteEnd(span, gdr,  Nh, measurementType, absUp);
+   Float64 offDown = ComputeHarpedOffsetFromAbsoluteEnd(span, gdr,  rHarpedFillArray, measurementType, absDown);
+   Float64 offUp =   ComputeHarpedOffsetFromAbsoluteEnd(span, gdr,  rHarpedFillArray, measurementType, absUp);
 
    *lowRange = offDown;
    *highRange = offUp;
 }
 
-void CBridgeAgentImp::ComputeValidHarpedOffsetForMeasurementTypeEnd(LPCTSTR strGirderName,StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64* lowRange, Float64* highRange)
+void CBridgeAgentImp::ComputeValidHarpedOffsetForMeasurementTypeEnd(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray,HarpedStrandOffsetType measurementType, Float64* lowRange, Float64* highRange)
 {
-   GET_IFACE(ILibrary,pLib);
-   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName);
-
-   CComPtr<IStrandGrid> startGrid, startHPGrid, endHPGrid, endGrid;
-   startGrid.CoCreateInstance(CLSID_StrandGrid);
-   startHPGrid.CoCreateInstance(CLSID_StrandGrid);
-   endHPGrid.CoCreateInstance(CLSID_StrandGrid);
-   endGrid.CoCreateInstance(CLSID_StrandGrid);
-   pGdrEntry->ConfigureHarpedStrandGrids(startGrid,startHPGrid,endHPGrid,endGrid);
-
-   CContinuousStandFiller strandFiller;
-   strandFiller.Init(pGdrEntry);
-
-   CComQIPtr<IStrandGridFiller> startGridFiller(startGrid);
-   CComQIPtr<IStrandGridFiller> hpGridFiller(startHPGrid);
-
-   CComPtr<ILongArray> fill;
-   HRESULT hr = strandFiller.ComputeHarpedStrandFill(pGdrEntry->OddNumberOfHarpedStrands(),startGridFiller,hpGridFiller,Nh,&fill);
-   ATLASSERT(SUCCEEDED(hr));
-
    Float64 absDown, absUp;
-   GetHarpedEndOffsetBoundsEx(strGirderName,Nh, &absDown,&absUp);
+   GetHarpedEndOffsetBoundsEx(strGirderName,rHarpedFillArray, &absDown,&absUp);
 
-   Float64 offDown = ComputeHarpedOffsetFromAbsoluteEnd(strGirderName,  Nh, measurementType, absDown);
-   Float64 offUp =   ComputeHarpedOffsetFromAbsoluteEnd(strGirderName,  Nh, measurementType, absUp);
+   Float64 offDown = ComputeHarpedOffsetFromAbsoluteEnd(strGirderName,  rHarpedFillArray, measurementType, absDown);
+   Float64 offUp =   ComputeHarpedOffsetFromAbsoluteEnd(strGirderName,  rHarpedFillArray, measurementType, absUp);
 
    *lowRange = offDown;
    *highRange = offUp;
 }
 
-void CBridgeAgentImp::ComputeValidHarpedOffsetForMeasurementTypeHp(SpanIndexType span,GirderIndexType gdr,StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64* lowRange, Float64* highRange)
+void CBridgeAgentImp::ComputeValidHarpedOffsetForMeasurementTypeHp(SpanIndexType span,GirderIndexType gdr,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64* lowRange, Float64* highRange)
 {
    CComPtr<IPrecastGirder> girder;
    GetGirder(span, gdr, &girder);
 
-   CComPtr<ILongArray> fill;
-   SpanGirderHashType hash = HashSpanGirder(span, gdr);
-   m_StrandFillers[hash].ComputeHarpedStrandFill(girder, Nh, &fill);
+   CIndexArrayWrapper fill(rHarpedFillArray);
 
    Float64 absDown, absUp;
-   HRESULT hr = girder->GetHarpedHpAdjustmentBoundsEx(fill, &absDown, &absUp);
+   HRESULT hr = girder->GetHarpedHpAdjustmentBoundsEx(&fill, &absDown, &absUp);
    ATLASSERT(SUCCEEDED(hr));
 
-   Float64 offDown = ComputeHarpedOffsetFromAbsoluteHp(span, gdr,  Nh, measurementType, absDown);
-   Float64 offUp   = ComputeHarpedOffsetFromAbsoluteHp(span, gdr,  Nh, measurementType, absUp);
+   Float64 offDown = ComputeHarpedOffsetFromAbsoluteHp(span, gdr,  rHarpedFillArray, measurementType, absDown);
+   Float64 offUp   = ComputeHarpedOffsetFromAbsoluteHp(span, gdr,  rHarpedFillArray, measurementType, absUp);
 
    *lowRange = offDown;
    *highRange = offUp;
 }
 
-void CBridgeAgentImp::ComputeValidHarpedOffsetForMeasurementTypeHp(LPCTSTR strGirderName,StrandIndexType Nh, HarpedStrandOffsetType measurementType, Float64* lowRange, Float64* highRange)
+void CBridgeAgentImp::ComputeValidHarpedOffsetForMeasurementTypeHp(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64* lowRange, Float64* highRange)
 {
-   GET_IFACE(ILibrary,pLib);
-   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName);
-
-   CComPtr<IStrandGrid> startGrid, startHPGrid, endHPGrid, endGrid;
-   startGrid.CoCreateInstance(CLSID_StrandGrid);
-   startHPGrid.CoCreateInstance(CLSID_StrandGrid);
-   endHPGrid.CoCreateInstance(CLSID_StrandGrid);
-   endGrid.CoCreateInstance(CLSID_StrandGrid);
-   pGdrEntry->ConfigureHarpedStrandGrids(startGrid,startHPGrid,endHPGrid,endGrid);
-
-   CContinuousStandFiller strandFiller;
-   strandFiller.Init(pGdrEntry);
-
-   CComQIPtr<IStrandGridFiller> startGridFiller(startGrid);
-   CComQIPtr<IStrandGridFiller> hpGridFiller(startHPGrid);
-
-   CComPtr<ILongArray> fill;
-   HRESULT hr = strandFiller.ComputeHarpedStrandFill(pGdrEntry->OddNumberOfHarpedStrands(),startGridFiller,hpGridFiller,Nh,&fill);
-   ATLASSERT(SUCCEEDED(hr));
-
    Float64 absDown, absUp;
-   GetHarpedHpOffsetBoundsEx(strGirderName,Nh, &absDown,&absUp);
+   GetHarpedHpOffsetBoundsEx(strGirderName,rHarpedFillArray, &absDown,&absUp);
 
-   Float64 offDown = ComputeHarpedOffsetFromAbsoluteHp(strGirderName,  Nh, measurementType, absDown);
-   Float64 offUp =   ComputeHarpedOffsetFromAbsoluteHp(strGirderName,  Nh, measurementType, absUp);
+   Float64 offDown = ComputeHarpedOffsetFromAbsoluteHp(strGirderName,  rHarpedFillArray, measurementType, absDown);
+   Float64 offUp =   ComputeHarpedOffsetFromAbsoluteHp(strGirderName,  rHarpedFillArray, measurementType, absUp);
 
    *lowRange = offDown;
    *highRange = offUp;
 }
 
-Float64 CBridgeAgentImp::ConvertHarpedOffsetEnd(SpanIndexType span,GirderIndexType gdr,StrandIndexType Nh, HarpedStrandOffsetType fromMeasurementType, Float64 offset, HarpedStrandOffsetType toMeasurementType)
+Float64 CBridgeAgentImp::ConvertHarpedOffsetEnd(SpanIndexType span,GirderIndexType gdr,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType fromMeasurementType, Float64 offset, HarpedStrandOffsetType toMeasurementType)
 {
-   Float64 abs_offset = ComputeAbsoluteHarpedOffsetEnd(span,gdr,Nh,fromMeasurementType,offset);
-   Float64 result = ComputeHarpedOffsetFromAbsoluteEnd(span,gdr,Nh,toMeasurementType,abs_offset);
+   Float64 abs_offset = ComputeAbsoluteHarpedOffsetEnd(span,gdr,rHarpedFillArray,fromMeasurementType,offset);
+   Float64 result = ComputeHarpedOffsetFromAbsoluteEnd(span,gdr,rHarpedFillArray,toMeasurementType,abs_offset);
    return result;
 }
 
-Float64 CBridgeAgentImp::ConvertHarpedOffsetEnd(LPCTSTR strGirderName,StrandIndexType Nh, HarpedStrandOffsetType fromMeasurementType, Float64 offset, HarpedStrandOffsetType toMeasurementType)
+Float64 CBridgeAgentImp::ConvertHarpedOffsetEnd(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType fromMeasurementType, Float64 offset, HarpedStrandOffsetType toMeasurementType)
 {
-   Float64 abs_offset = ComputeAbsoluteHarpedOffsetEnd(strGirderName,Nh,fromMeasurementType,offset);
-   Float64 result = ComputeHarpedOffsetFromAbsoluteEnd(strGirderName,Nh,toMeasurementType,abs_offset);
+   Float64 abs_offset = ComputeAbsoluteHarpedOffsetEnd(strGirderName,rHarpedFillArray,fromMeasurementType,offset);
+   Float64 result = ComputeHarpedOffsetFromAbsoluteEnd(strGirderName,rHarpedFillArray,toMeasurementType,abs_offset);
    return result;
 }
 
-Float64 CBridgeAgentImp::ConvertHarpedOffsetHp(SpanIndexType span,GirderIndexType gdr,StrandIndexType Nh, HarpedStrandOffsetType fromMeasurementType, Float64 offset, HarpedStrandOffsetType toMeasurementType)
+Float64 CBridgeAgentImp::ConvertHarpedOffsetHp(SpanIndexType span,GirderIndexType gdr,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType fromMeasurementType, Float64 offset, HarpedStrandOffsetType toMeasurementType)
 {
-   Float64 abs_offset = ComputeAbsoluteHarpedOffsetHp(span,gdr,Nh,fromMeasurementType,offset);
-   Float64 result = ComputeHarpedOffsetFromAbsoluteHp(span,gdr,Nh,toMeasurementType,abs_offset);
+   Float64 abs_offset = ComputeAbsoluteHarpedOffsetHp(span,gdr,rHarpedFillArray,fromMeasurementType,offset);
+   Float64 result = ComputeHarpedOffsetFromAbsoluteHp(span,gdr,rHarpedFillArray,toMeasurementType,abs_offset);
    return result;
 }
 
-Float64 CBridgeAgentImp::ConvertHarpedOffsetHp(LPCTSTR strGirderName,StrandIndexType Nh, HarpedStrandOffsetType fromMeasurementType, Float64 offset, HarpedStrandOffsetType toMeasurementType)
+Float64 CBridgeAgentImp::ConvertHarpedOffsetHp(LPCTSTR strGirderName,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType fromMeasurementType, Float64 offset, HarpedStrandOffsetType toMeasurementType)
 {
-   Float64 abs_offset = ComputeAbsoluteHarpedOffsetHp(strGirderName,Nh,fromMeasurementType,offset);
-   Float64 result = ComputeHarpedOffsetFromAbsoluteHp(strGirderName,Nh,toMeasurementType,abs_offset);
+   Float64 abs_offset = ComputeAbsoluteHarpedOffsetHp(strGirderName,rHarpedFillArray,fromMeasurementType,offset);
+   Float64 result = ComputeHarpedOffsetFromAbsoluteHp(strGirderName,rHarpedFillArray,toMeasurementType,abs_offset);
    return result;
 }
 
@@ -11690,6 +12779,24 @@ Float64 CBridgeAgentImp::GetTributaryFlangeWidth(const pgsPointOfInterest& poi)
    return tfw;
 }
 
+Float64 CBridgeAgentImp::GetTributaryFlangeWidthEx(const pgsPointOfInterest& poi, Float64* pLftFw, Float64* pRgtFw)
+{
+   Float64 tfw = 0;
+   *pLftFw = 0;
+   *pRgtFw = 0;
+
+   if ( IsCompositeDeck() )
+   {
+      SpanIndexType spanIdx = poi.GetSpan();
+      GirderIndexType gdrIdx = poi.GetGirder();
+      Float64 dist_from_start_of_girder = poi.GetDistFromStart();
+      HRESULT hr = m_EffFlangeWidthTool->TributaryFlangeWidthEx(m_Bridge,spanIdx,gdrIdx,dist_from_start_of_girder,pLftFw,pRgtFw,&tfw);
+      ATLASSERT(SUCCEEDED(hr));
+   }
+
+   return tfw;
+}
+
 Float64 CBridgeAgentImp::GetEffectiveFlangeWidth(const pgsPointOfInterest& poi)
 {
    Float64 efw = 0;
@@ -12007,6 +13114,7 @@ Float64 CBridgeAgentImp::GetYbtb(pgsTypes::TrafficBarrierOrientation orientation
 
 Float64 CBridgeAgentImp::GetSidewalkWeight(pgsTypes::TrafficBarrierOrientation orientation)
 {
+   VALIDATE(BRIDGE);
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -12019,7 +13127,13 @@ Float64 CBridgeAgentImp::GetSidewalkWeight(pgsTypes::TrafficBarrierOrientation o
    Float64 Wsw = 0;
    if ( pRailingSystem->bUseSidewalk )
    {
-      Float64 w = pRailingSystem->Width;
+      GET_IFACE(IBarriers,pBarriers);
+
+      // real dl width of sidwalk
+      Float64 intEdge, extEdge;
+      pBarriers->GetSidewalkDeadLoadEdges(orientation, &intEdge, &extEdge);
+
+      Float64 w = fabs(intEdge-extEdge);
       Float64 tl = pRailingSystem->LeftDepth;
       Float64 tr = pRailingSystem->RightDepth;
       Float64 area = w*(tl + tr)/2;
@@ -12046,7 +13160,7 @@ bool CBridgeAgentImp::HasSidewalk(pgsTypes::TrafficBarrierOrientation orientatio
    return pRailingSystem->bUseSidewalk;
 }
 
-Float64 CBridgeAgentImp::GetBarrierWeight(pgsTypes::TrafficBarrierOrientation orientation)
+Float64 CBridgeAgentImp::GetExteriorBarrierWeight(pgsTypes::TrafficBarrierOrientation orientation)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -12079,7 +13193,21 @@ Float64 CBridgeAgentImp::GetBarrierWeight(pgsTypes::TrafficBarrierOrientation or
       Wext = pRailingSystem->GetExteriorRailing()->GetWeight();
    }
 
-   Float64 Wint = 0; // weight of interior barrier
+   return Wext;
+}
+
+Float64 CBridgeAgentImp::GetInteriorBarrierWeight(pgsTypes::TrafficBarrierOrientation orientation)
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   const CRailingSystem* pRailingSystem = NULL;
+   if ( orientation == pgsTypes::tboLeft )
+      pRailingSystem = pBridgeDesc->GetLeftRailingSystem();
+   else
+      pRailingSystem = pBridgeDesc->GetRightRailingSystem();
+
+   Float64 Wint = 0.0; // weight of interior barrier
    if ( pRailingSystem->bUseInteriorRailing )
    {
       if ( pRailingSystem->GetInteriorRailing()->GetWeightMethod() == TrafficBarrierEntry::Compute )
@@ -12104,45 +13232,210 @@ Float64 CBridgeAgentImp::GetBarrierWeight(pgsTypes::TrafficBarrierOrientation or
       }
    }
 
-   Float64 W = Wext + Wint;
-   return W;
+   return Wint;
 }
+
+bool CBridgeAgentImp::HasInteriorBarrier(pgsTypes::TrafficBarrierOrientation orientation)
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   const CRailingSystem* pRailingSystem = NULL;
+   if ( orientation == pgsTypes::tboLeft )
+      pRailingSystem = pBridgeDesc->GetLeftRailingSystem();
+   else
+      pRailingSystem = pBridgeDesc->GetRightRailingSystem();
+
+   return  pRailingSystem->bUseInteriorRailing;
+}
+
+Float64 CBridgeAgentImp::GetExteriorBarrierCgToDeckEdge(pgsTypes::TrafficBarrierOrientation orientation)
+{
+   // Use generic bridge - barriers have been placed properly
+   CComPtr<ISidewalkBarrier> pSwBarrier;
+   Float64 sign;
+   if ( orientation == pgsTypes::tboLeft )
+   {
+      m_Bridge->get_LeftBarrier(&pSwBarrier);
+      sign = 1.0;
+   }
+   else
+   {
+      m_Bridge->get_RightBarrier(&pSwBarrier);
+      sign = -1.0;
+   }
+
+   CComPtr<IBarrier> pBarrier;
+   pSwBarrier->get_ExteriorBarrier(&pBarrier);
+
+   CComQIPtr<IShape> shape;
+   pBarrier->get_Shape(&shape);
+
+   CComPtr<IShapeProperties> props;
+   shape->get_ShapeProperties(&props);
+
+   CComPtr<IPoint2d> cgpoint;
+   props->get_Centroid(&cgpoint);
+
+   Float64 xcg;
+   cgpoint->get_X(&xcg);
+
+   return xcg*sign;
+}
+
+Float64 CBridgeAgentImp::GetInteriorBarrierCgToDeckEdge(pgsTypes::TrafficBarrierOrientation orientation)
+{
+   // Use generic bridge - barriers have been placed properly
+   CComPtr<ISidewalkBarrier> pSwBarrier;
+   Float64 sign;
+   if ( orientation == pgsTypes::tboLeft )
+   {
+      m_Bridge->get_LeftBarrier(&pSwBarrier);
+      sign = 1.0;
+   }
+   else
+   {
+      m_Bridge->get_RightBarrier(&pSwBarrier);
+      sign = -1.0;
+   }
+
+   CComPtr<IBarrier> pBarrier;
+   pSwBarrier->get_InteriorBarrier(&pBarrier);
+
+   CComQIPtr<IShape> shape;
+   pBarrier->get_Shape(&shape);
+
+   if (shape)
+   {
+      CComPtr<IShapeProperties> props;
+      shape->get_ShapeProperties(&props);
+
+      CComPtr<IPoint2d> cgpoint;
+      props->get_Centroid(&cgpoint);
+
+      Float64 xcg;
+      cgpoint->get_X(&xcg);
+
+      return xcg*sign;
+   }
+   else
+   {
+      ATLASSERT(0); // client should be checking this
+      return 0.0;
+   }
+}
+
 
 Float64 CBridgeAgentImp::GetInterfaceWidth(pgsTypes::TrafficBarrierOrientation orientation)
 {
    // This is the offset from the edge of deck to the curb line (basically the connection 
    // width of the barrier)
-   CComPtr<IBarrier> lb;
+   CComPtr<ISidewalkBarrier> barrier;
 
    if ( orientation == pgsTypes::tboLeft )
-      m_Bridge->get_LeftBarrier(&lb);
+      m_Bridge->get_LeftBarrier(&barrier);
    else
-      m_Bridge->get_RightBarrier(&lb);
-
-   CComQIPtr<ISidewalkBarrier> barrier(lb);
+      m_Bridge->get_RightBarrier(&barrier);
 
    Float64 offset;
-   barrier->get_ConnectionWidth(0.00,&offset);
+   barrier->get_ExteriorCurbWidth(&offset);
    return offset;
 }
 
-Float64 CBridgeAgentImp::GetSidewalkWidth(pgsTypes::TrafficBarrierOrientation orientation)
+
+void CBridgeAgentImp::GetSidewalkDeadLoadEdges(pgsTypes::TrafficBarrierOrientation orientation, Float64* pintEdge, Float64* pextEdge)
 {
-   CComPtr<IBarrier> lb;
+   VALIDATE(BRIDGE);
 
+   CComPtr<ISidewalkBarrier> barrier;
    if ( orientation == pgsTypes::tboLeft )
-      m_Bridge->get_LeftBarrier(&lb);
-   else
-      m_Bridge->get_RightBarrier(&lb);
-
-   CComQIPtr<ISidewalkBarrier> barrier(lb);
-   Float64 width = 0;
-   if ( barrier )
    {
-      barrier->get_SidewalkWidth(&width);
+      m_Bridge->get_LeftBarrier(&barrier);
+   }
+   else
+   {
+      m_Bridge->get_RightBarrier(&barrier);
    }
 
-   return width;
+   VARIANT_BOOL has_sw;
+   barrier->get_HasSidewalk(&has_sw);
+
+   Float64 width = 0;
+   if ( has_sw!=VARIANT_FALSE )
+   {
+      CComPtr<IShape> swShape;
+      barrier->get_SidewalkShape(&swShape);
+
+      // slab extends to int side of int box if it exists
+      CComPtr<IRect2d> bbox;
+      swShape->get_BoundingBox(&bbox);
+
+      if ( orientation == pgsTypes::tboLeft )
+      {
+         bbox->get_Left(pextEdge);
+         bbox->get_Right(pintEdge);
+      }
+      else
+      {
+         bbox->get_Left(pintEdge);
+         bbox->get_Right(pextEdge);
+      }
+   }
+   else
+   {
+      ATLASSERT(0); // client should not call this if no sidewalk
+   }
+}
+
+void CBridgeAgentImp::GetSidewalkPedLoadEdges(pgsTypes::TrafficBarrierOrientation orientation, Float64* pintEdge, Float64* pextEdge)
+{
+   VALIDATE(BRIDGE);
+
+   CComPtr<ISidewalkBarrier> swbarrier;
+   if ( orientation == pgsTypes::tboLeft )
+   {
+      m_Bridge->get_LeftBarrier(&swbarrier);
+   }
+   else
+   {
+      m_Bridge->get_RightBarrier(&swbarrier);
+   }
+
+   VARIANT_BOOL has_sw;
+   swbarrier->get_HasSidewalk(&has_sw);
+   if(has_sw!=VARIANT_FALSE)
+   {
+      CComPtr<IBarrier> extbarrier;
+      swbarrier->get_ExteriorBarrier(&extbarrier);
+
+      // Sidewalk width for ped - sidewalk goes from interior edge of exterior barrier to sw width
+      CComPtr<IShape> pextbarshape;
+      extbarrier->get_Shape(&pextbarshape);
+      CComPtr<IRect2d> bbox;
+      pextbarshape->get_BoundingBox(&bbox);
+
+      // exterior edge
+      if ( orientation == pgsTypes::tboLeft )
+      {
+         bbox->get_Right(pextEdge);
+      }
+      else
+      {
+         bbox->get_Left(pextEdge);
+         *pextEdge *= -1.0;
+      }
+
+      Float64 width;
+      swbarrier->get_SidewalkWidth(&width);
+
+      *pintEdge = *pextEdge + width;
+   }
+   else
+   {
+      ATLASSERT(0); // client should not call this if no sidewalk
+      *pintEdge = 0.0;
+      *pextEdge = 0.0;
+   }
 }
 
 pgsTypes::TrafficBarrierOrientation CBridgeAgentImp::GetNearestBarrier(SpanIndexType span,GirderIndexType gdr)
@@ -13197,7 +14490,7 @@ void CBridgeAgentImp::GetProfile(IProfile** ppProfile)
 
 void CBridgeAgentImp::GetBarrierProperties(pgsTypes::TrafficBarrierOrientation orientation,IShapeProperties** props)
 {
-   CComPtr<IBarrier> barrier;
+   CComPtr<ISidewalkBarrier> barrier;
    if ( orientation == pgsTypes::tboLeft )
       m_Bridge->get_LeftBarrier(&barrier);
    else
@@ -13722,7 +15015,7 @@ void CBridgeAgentImp::LayoutGirderRebar(SpanIndexType span,GirderIndexType gdr)
 
       CComQIPtr<IRebarLayoutItem> rebar_layout_item(flex_layout_item);
 
-      for ( Uint32 idx = 0; idx < rebar_rows.size(); idx++ )
+      for ( RowIndexType idx = 0; idx < rebar_rows.size(); idx++ )
       {
          const CLongitudinalRebarData::RebarRow& info = rebar_rows[idx];
 
@@ -13739,7 +15032,7 @@ void CBridgeAgentImp::LayoutGirderRebar(SpanIndexType span,GirderIndexType gdr)
             row_pattern.CoCreateInstance(CLSID_RebarRowPattern);
 
             Float64 yStart, yEnd;
-            if (info.Face == CLongitudinalRebarData::GirderBottom)
+            if (info.Face == pgsTypes::GirderBottom)
             {
                yStart = info.Cover + db/2;
                yEnd   = yStart;
@@ -13870,8 +15163,9 @@ bool CBridgeAgentImp::ComputeNumPermanentStrands(StrandIndexType totalPermanent,
    CComPtr<IPrecastGirder> girder;
    GetGirder(span,gdr,&girder);
 
-   SpanGirderHashType hash = HashSpanGirder(span, gdr);
-   HRESULT hr = m_StrandFillers[hash].ComputeNumPermanentStrands(girder, totalPermanent, numStraight, numHarped);
+   CContinuousStrandFiller* pFiller = GetContinuousStrandFiller(span,gdr);
+
+   HRESULT hr = pFiller->ComputeNumPermanentStrands(girder, totalPermanent, numStraight, numHarped);
    ATLASSERT(SUCCEEDED(hr));
 
    return hr==S_OK;
@@ -13881,7 +15175,7 @@ bool CBridgeAgentImp::ComputeNumPermanentStrands(StrandIndexType totalPermanent,
 {
    GET_IFACE(ILibrary,pLib);
    const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry( strGirderName );
-   return pGirderEntry->ComputeGlobalStrands(totalPermanent, numStraight, numHarped);
+   return pGirderEntry->GetPermStrandDistribution(totalPermanent, numStraight, numHarped);
 }
 
 StrandIndexType CBridgeAgentImp::GetMaxNumPermanentStrands(SpanIndexType span,GirderIndexType gdr)
@@ -13891,9 +15185,10 @@ StrandIndexType CBridgeAgentImp::GetMaxNumPermanentStrands(SpanIndexType span,Gi
    CComPtr<IPrecastGirder> girder;
    GetGirder(span,gdr,&girder);
 
-   SpanGirderHashType hash = HashSpanGirder(span, gdr);
+   CContinuousStrandFiller* pFiller = GetContinuousStrandFiller(span,gdr);
+
    StrandIndexType maxNum;
-   HRESULT hr = m_StrandFillers[hash].GetMaxNumPermanentStrands(girder, &maxNum);
+   HRESULT hr = pFiller->GetMaxNumPermanentStrands(girder, &maxNum);
    ATLASSERT(SUCCEEDED(hr));
 
    return maxNum;
@@ -13914,9 +15209,10 @@ StrandIndexType CBridgeAgentImp::GetPreviousNumPermanentStrands(SpanIndexType sp
    CComPtr<IPrecastGirder> girder;
    GetGirder(span,gdr,&girder);
 
-   SpanGirderHashType hash = HashSpanGirder(span, gdr);
+   CContinuousStrandFiller* pFiller = GetContinuousStrandFiller(span,gdr);
+
    StrandIndexType nextNum;
-   HRESULT hr = m_StrandFillers[hash].GetPreviousNumberOfPermanentStrands(girder, curNum, &nextNum);
+   HRESULT hr = pFiller->GetPreviousNumberOfPermanentStrands(girder, curNum, &nextNum);
    ATLASSERT(SUCCEEDED(hr));
 
    return nextNum;
@@ -13927,7 +15223,7 @@ StrandIndexType CBridgeAgentImp::GetPreviousNumPermanentStrands(LPCTSTR strGirde
    GET_IFACE(ILibrary,pLib);
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName);
 
-   CContinuousStandFiller strandFiller;
+   CStrandFiller strandFiller;
    strandFiller.Init(pGdrEntry);
 
    StrandIndexType prevNum;
@@ -13943,9 +15239,10 @@ StrandIndexType CBridgeAgentImp::GetNextNumPermanentStrands(SpanIndexType span,G
    CComPtr<IPrecastGirder> girder;
    GetGirder(span,gdr,&girder);
 
-   SpanGirderHashType hash = HashSpanGirder(span, gdr);
+   CContinuousStrandFiller* pFiller = GetContinuousStrandFiller(span,gdr);
+
    StrandIndexType nextNum;
-   HRESULT hr = m_StrandFillers[hash].GetNextNumberOfPermanentStrands(girder, curNum, &nextNum);
+   HRESULT hr = pFiller->GetNextNumberOfPermanentStrands(girder, curNum, &nextNum);
    ATLASSERT(SUCCEEDED(hr));
 
    return nextNum;
@@ -13956,7 +15253,7 @@ StrandIndexType CBridgeAgentImp::GetNextNumPermanentStrands(LPCTSTR strGirderNam
    GET_IFACE(ILibrary,pLib);
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName);
 
-   CContinuousStandFiller strandFiller;
+   CStrandFiller strandFiller;
    strandFiller.Init(pGdrEntry);
 
    StrandIndexType nextNum;
@@ -13972,26 +15269,86 @@ bool CBridgeAgentImp::IsValidNumStrands(SpanIndexType span,GirderIndexType gdr,p
    CComPtr<IPrecastGirder> girder;
    GetGirder(span,gdr,&girder);
 
-   SpanGirderHashType hash = HashSpanGirder(span, gdr);
+   CContinuousStrandFiller* pFiller = GetContinuousStrandFiller(span,gdr);
+
    VARIANT_BOOL bIsValid;
    HRESULT hr = E_FAIL;
    switch( type )
    {
    case pgsTypes::Straight:
-      hr = m_StrandFillers[hash].IsValidNumStraightStrands(girder, curNum, &bIsValid);
+      hr = pFiller->IsValidNumStraightStrands(girder, curNum, &bIsValid);
       break;
 
    case pgsTypes::Harped:
-      hr = m_StrandFillers[hash].IsValidNumHarpedStrands(girder, curNum, &bIsValid);
+      hr = pFiller->IsValidNumHarpedStrands(girder, curNum, &bIsValid);
       break;
 
    case pgsTypes::Temporary:
-      hr = m_StrandFillers[hash].IsValidNumTemporaryStrands(girder, curNum, &bIsValid);
+      hr = pFiller->IsValidNumTemporaryStrands(girder, curNum, &bIsValid);
       break;
    }
    ATLASSERT(SUCCEEDED(hr));
 
    return bIsValid == VARIANT_TRUE ? true : false;
+}
+
+bool CBridgeAgentImp::IsValidNumStrands(LPCTSTR strGirderName,pgsTypes::StrandType type,StrandIndexType curNum)
+{
+   GET_IFACE(ILibrary,pLib);
+   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName);
+
+   CStrandFiller strandFiller;
+   strandFiller.Init(pGdrEntry);
+
+   VARIANT_BOOL isvalid(VARIANT_FALSE);
+   HRESULT hr(E_FAIL);
+   switch( type )
+   {
+   case pgsTypes::Straight:
+      {
+         CComPtr<IStrandGrid> startGrid, endGrid;
+         startGrid.CoCreateInstance(CLSID_StrandGrid);
+         endGrid.CoCreateInstance(CLSID_StrandGrid);
+         pGdrEntry->ConfigureStraightStrandGrid(startGrid,endGrid);
+
+         CComQIPtr<IStrandGridFiller> gridFiller(startGrid);
+
+         hr = strandFiller.IsValidNumStraightStrands(gridFiller,curNum,&isvalid);
+      }
+      break;
+
+   case pgsTypes::Harped:
+      {
+         CComPtr<IStrandGrid> startGrid, startHPGrid, endHPGrid, endGrid;
+         startGrid.CoCreateInstance(CLSID_StrandGrid);
+         startHPGrid.CoCreateInstance(CLSID_StrandGrid);
+         endHPGrid.CoCreateInstance(CLSID_StrandGrid);
+         endGrid.CoCreateInstance(CLSID_StrandGrid);
+         pGdrEntry->ConfigureHarpedStrandGrids(startGrid,startHPGrid,endHPGrid,endGrid);
+
+         CComQIPtr<IStrandGridFiller> startFiller(startGrid);
+         CComQIPtr<IStrandGridFiller> endFiller(endGrid);
+
+         hr = strandFiller.IsValidNumHarpedStrands(pGdrEntry->OddNumberOfHarpedStrands(),startFiller,endFiller,curNum,&isvalid);
+      }
+      break;
+
+   case pgsTypes::Temporary:
+      {
+         CComPtr<IStrandGrid> startGrid, endGrid;
+         startGrid.CoCreateInstance(CLSID_StrandGrid);
+         endGrid.CoCreateInstance(CLSID_StrandGrid);
+         pGdrEntry->ConfigureTemporaryStrandGrid(startGrid,endGrid);
+
+         CComQIPtr<IStrandGridFiller> gridFiller(startGrid);
+
+         hr = strandFiller.IsValidNumTemporaryStrands(gridFiller,curNum,&isvalid);
+      }
+      break;
+   }
+   ATLASSERT(SUCCEEDED(hr));
+
+   return isvalid==VARIANT_TRUE;
 }
 
 StrandIndexType CBridgeAgentImp::GetNextNumStraightStrands(SpanIndexType span,GirderIndexType gdr,StrandIndexType curNum)
@@ -14001,9 +15358,10 @@ StrandIndexType CBridgeAgentImp::GetNextNumStraightStrands(SpanIndexType span,Gi
    CComPtr<IPrecastGirder> girder;
    GetGirder(span,gdr,&girder);
 
-   SpanGirderHashType hash = HashSpanGirder(span, gdr);
+   CContinuousStrandFiller* pFiller = GetContinuousStrandFiller(span,gdr);
+
    StrandIndexType nextNum;
-   HRESULT hr = m_StrandFillers[hash].GetNextNumberOfStraightStrands(girder, curNum, &nextNum);
+   HRESULT hr = pFiller->GetNextNumberOfStraightStrands(girder, curNum, &nextNum);
    ATLASSERT(SUCCEEDED(hr));
 
    return nextNum;
@@ -14014,9 +15372,8 @@ StrandIndexType CBridgeAgentImp::GetNextNumStraightStrands(LPCTSTR strGirderName
    GET_IFACE(ILibrary,pLib);
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName);
 
-   CContinuousStandFiller strandFiller;
+   CStrandFiller strandFiller;
    strandFiller.Init(pGdrEntry);
-
 
    CComPtr<IStrandGrid> startGrid, endGrid;
    startGrid.CoCreateInstance(CLSID_StrandGrid);
@@ -14038,9 +15395,10 @@ StrandIndexType CBridgeAgentImp::GetNextNumHarpedStrands(SpanIndexType span,Gird
    CComPtr<IPrecastGirder> girder;
    GetGirder(span,gdr,&girder);
 
-   SpanGirderHashType hash = HashSpanGirder(span, gdr);
+   CContinuousStrandFiller* pFiller = GetContinuousStrandFiller(span,gdr);
+
    StrandIndexType nextNum;
-   HRESULT hr = m_StrandFillers[hash].GetNextNumberOfHarpedStrands(girder, curNum, &nextNum);
+   HRESULT hr = pFiller->GetNextNumberOfHarpedStrands(girder, curNum, &nextNum);
    ATLASSERT(SUCCEEDED(hr));
 
    return nextNum;
@@ -14051,7 +15409,7 @@ StrandIndexType CBridgeAgentImp::GetNextNumHarpedStrands(LPCTSTR strGirderName,S
    GET_IFACE(ILibrary,pLib);
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName);
 
-   CContinuousStandFiller strandFiller;
+   CStrandFiller strandFiller;
    strandFiller.Init(pGdrEntry);
 
 
@@ -14077,9 +15435,10 @@ StrandIndexType CBridgeAgentImp::GetNextNumTempStrands(SpanIndexType span,Girder
    CComPtr<IPrecastGirder> girder;
    GetGirder(span,gdr,&girder);
    
-   SpanGirderHashType hash = HashSpanGirder(span, gdr);
+   CContinuousStrandFiller* pFiller = GetContinuousStrandFiller(span,gdr);
+
    StrandIndexType nextNum;
-   HRESULT hr = m_StrandFillers[hash].GetNextNumberOfTemporaryStrands(girder, curNum, &nextNum);
+   HRESULT hr = pFiller->GetNextNumberOfTemporaryStrands(girder, curNum, &nextNum);
    ATLASSERT(SUCCEEDED(hr));
 
    return nextNum;
@@ -14090,9 +15449,8 @@ StrandIndexType CBridgeAgentImp::GetNextNumTempStrands(LPCTSTR strGirderName,Str
    GET_IFACE(ILibrary,pLib);
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName);
 
-   CContinuousStandFiller strandFiller;
+   CStrandFiller strandFiller;
    strandFiller.Init(pGdrEntry);
-
 
    CComPtr<IStrandGrid> startGrid, endGrid;
    startGrid.CoCreateInstance(CLSID_StrandGrid);
@@ -14114,9 +15472,10 @@ StrandIndexType CBridgeAgentImp::GetPrevNumStraightStrands(SpanIndexType span,Gi
    CComPtr<IPrecastGirder> girder;
    GetGirder(span,gdr,&girder);
 
-   SpanGirderHashType hash = HashSpanGirder(span, gdr);
+   CContinuousStrandFiller* pFiller = GetContinuousStrandFiller(span,gdr);
+
    StrandIndexType nextNum;
-   HRESULT hr = m_StrandFillers[hash].GetPreviousNumberOfStraightStrands(girder, curNum, &nextNum);
+   HRESULT hr = pFiller->GetPreviousNumberOfStraightStrands(girder, curNum, &nextNum);
    ATLASSERT(SUCCEEDED(hr));
 
    return nextNum;
@@ -14127,9 +15486,8 @@ StrandIndexType CBridgeAgentImp::GetPrevNumStraightStrands(LPCTSTR strGirderName
    GET_IFACE(ILibrary,pLib);
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName);
 
-   CContinuousStandFiller strandFiller;
+   CStrandFiller strandFiller;
    strandFiller.Init(pGdrEntry);
-
 
    CComPtr<IStrandGrid> startGrid, endGrid;
    startGrid.CoCreateInstance(CLSID_StrandGrid);
@@ -14151,9 +15509,10 @@ StrandIndexType CBridgeAgentImp::GetPrevNumHarpedStrands(SpanIndexType span,Gird
    CComPtr<IPrecastGirder> girder;
    GetGirder(span,gdr,&girder);
    
-   SpanGirderHashType hash = HashSpanGirder(span, gdr);
+   CContinuousStrandFiller* pFiller = GetContinuousStrandFiller(span,gdr);
+
    StrandIndexType nextNum;
-   HRESULT hr = m_StrandFillers[hash].GetPreviousNumberOfHarpedStrands(girder, curNum, &nextNum);
+   HRESULT hr = pFiller->GetPreviousNumberOfHarpedStrands(girder, curNum, &nextNum);
    ATLASSERT(SUCCEEDED(hr));
 
    return nextNum;
@@ -14164,9 +15523,8 @@ StrandIndexType CBridgeAgentImp::GetPrevNumHarpedStrands(LPCTSTR strGirderName,S
    GET_IFACE(ILibrary,pLib);
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName);
 
-   CContinuousStandFiller strandFiller;
+   CStrandFiller strandFiller;
    strandFiller.Init(pGdrEntry);
-
 
    CComPtr<IStrandGrid> startGrid, startHPGrid, endHPGrid, endGrid;
    startGrid.CoCreateInstance(CLSID_StrandGrid);
@@ -14190,9 +15548,10 @@ StrandIndexType CBridgeAgentImp::GetPrevNumTempStrands(SpanIndexType span,Girder
    CComPtr<IPrecastGirder> girder;
    GetGirder(span,gdr,&girder);
    
-   SpanGirderHashType hash = HashSpanGirder(span, gdr);
+   CContinuousStrandFiller* pFiller = GetContinuousStrandFiller(span,gdr);
+
    StrandIndexType nextNum;
-   HRESULT hr = m_StrandFillers[hash].GetPreviousNumberOfTemporaryStrands(girder, curNum, &nextNum);
+   HRESULT hr = pFiller->GetPreviousNumberOfTemporaryStrands(girder, curNum, &nextNum);
    ATLASSERT(SUCCEEDED(hr));
 
    return nextNum;
@@ -14203,9 +15562,8 @@ StrandIndexType CBridgeAgentImp::GetPrevNumTempStrands(LPCTSTR strGirderName,Str
    GET_IFACE(ILibrary,pLib);
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName);
 
-   CContinuousStandFiller strandFiller;
+   CStrandFiller strandFiller;
    strandFiller.Init(pGdrEntry);
-
 
    CComPtr<IStrandGrid> startGrid, endGrid;
    startGrid.CoCreateInstance(CLSID_StrandGrid);
@@ -14323,18 +15681,18 @@ Float64 CBridgeAgentImp::GetAsTensionSideOfGirder(const pgsPointOfInterest& poi,
    return As;
 }
 
-Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,bool bDevAdjust,bool bTensionTop)
+Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust,bool bTensionTop)
 {
    GDRCONFIG dummy_config;
-   return GetApsTensionSide(poi,false,dummy_config,bDevAdjust,bTensionTop);
+   return GetApsTensionSide(poi,false,dummy_config,devAdjust,bTensionTop);
 }
 
-Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi, const GDRCONFIG& config,bool bDevAdjust,bool bTensionTop)
+Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi, const GDRCONFIG& config,DevelopmentAdjustmentType devAdjust,bool bTensionTop)
 {
-   return GetApsTensionSide(poi,true,config,bDevAdjust,bTensionTop);
+   return GetApsTensionSide(poi,true,config,devAdjust,bTensionTop);
 }
 
-Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,bool bUseConfig,const GDRCONFIG& config,bool bDevAdjust,bool bTensionTop)
+Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,bool bUseConfig,const GDRCONFIG& config,DevelopmentAdjustmentType devAdjust,bool bTensionTop)
 {
    VALIDATE( GIRDER );
 
@@ -14354,15 +15712,38 @@ Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,bool bU
    Float64 aps = pStrand->GetNominalArea();
 
    Float64 dist_from_start = poi.GetDistFromStart();
+   Float64 gdr_length = GetGirderLength(span,gdr);
 
-   StrandIndexType Ns = (bUseConfig ? config.Nstrands[pgsTypes::Straight] : pStrandGeom->GetNumStrands(span,gdr,pgsTypes::Straight));
+   // For approximate development length adjustment, take development length information at mid span and use for entire girder
+   // adjusted for distance to ends of strands
+   STRANDDEVLENGTHDETAILS dla_det;
+   if(devAdjust==dlaApproximate)
+   {
+      std::vector<pgsPointOfInterest> vPoi;
+      vPoi = GetPointsOfInterest(span,gdr,pgsTypes::BridgeSite3,POI_MIDSPAN);
+      const pgsPointOfInterest& rpoi = vPoi.front();
 
-   SpanGirderHashType hash = HashSpanGirder(span, gdr);
-   CComPtr<ILongArray> strand_fill;
-   m_StrandFillers[hash].ComputeStraightStrandFill(girder, Ns, &strand_fill);
+      if ( bUseConfig )
+         dla_det = pPSForce->GetDevLengthDetails(rpoi, config, false);
+      else
+         dla_det = pPSForce->GetDevLengthDetails(rpoi, false);
+   }
 
+
+   // Get straight strand locations
    CComPtr<IPoint2dCollection> strand_points;
-   girder->get_StraightStrandPositionsEx(dist_from_start,strand_fill,&strand_points);
+   if( bUseConfig )
+   {
+      CIndexArrayWrapper strand_fill(config.PrestressConfig.GetStrandFill(pgsTypes::Straight));
+      girder->get_StraightStrandPositionsEx(dist_from_start,&strand_fill,&strand_points);
+   }
+   else
+   {
+      girder->get_StraightStrandPositions(dist_from_start,&strand_points);
+   }
+
+   StrandIndexType Ns;
+   strand_points->get_Count(&Ns);
 
    StrandIndexType strandIdx;
    for(strandIdx = 0; strandIdx < Ns; strandIdx++)
@@ -14379,11 +15760,48 @@ Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,bool bU
 
       if ( bIncludeBar )
       {
-         Float64 debond_factor = 1.;
-         if ( bUseConfig )
-            debond_factor = (bDevAdjust ? pPSForce->GetStrandBondFactor(poi,config,strandIdx,pgsTypes::Straight) : 1.0);
+         Float64 debond_factor;
+         if(devAdjust==dlaNone)
+         {
+            debond_factor = 1.0;
+         }
+         else if(devAdjust==dlaApproximate)
+         {
+            // Use mid-span development length details to approximate debond factor
+            // determine minimum bonded length from poi
+            Float64 bond_start, bond_end;
+            bool bDebonded;
+            if (bUseConfig)
+               bDebonded = pStrandGeom->IsStrandDebonded(span,gdr,strandIdx,pgsTypes::Straight,config.PrestressConfig,&bond_start,&bond_end);
+            else
+               bDebonded = pStrandGeom->IsStrandDebonded(span,gdr,strandIdx,pgsTypes::Straight,&bond_start,&bond_end);
+
+            Float64 left_bonded_length, right_bonded_length;
+            if ( bDebonded )
+            {
+               // measure bonded length
+               left_bonded_length = dist_from_start - bond_start;
+               right_bonded_length = bond_end - dist_from_start;
+            }
+            else
+            {
+               // no debonding, bond length is to ends of girder
+               left_bonded_length  = dist_from_start;
+               right_bonded_length = gdr_length - dist_from_start;
+            }
+
+            Float64 bonded_length = min(left_bonded_length, right_bonded_length);
+
+            debond_factor = GetDevLengthAdjustment(bonded_length, dla_det.ld, dla_det.lt, dla_det.fps, dla_det.fpe);
+         }
          else
-            debond_factor = (bDevAdjust ? pPSForce->GetStrandBondFactor(poi,strandIdx,pgsTypes::Straight) : 1.0);
+         {
+            // Full adjustment for development
+            if ( bUseConfig )
+               debond_factor = pPSForce->GetStrandBondFactor(poi,config,strandIdx,pgsTypes::Straight);
+            else
+               debond_factor = pPSForce->GetStrandBondFactor(poi,strandIdx,pgsTypes::Straight);
+         }
 
          Aps += debond_factor*aps;
       }
@@ -14393,13 +15811,34 @@ Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,bool bU
    pStrand = GetStrand(span,gdr,pgsTypes::Harped);
    aps = pStrand->GetNominalArea();
 
-   StrandIndexType Nh = (bUseConfig ? config.Nstrands[pgsTypes::Harped] : pStrandGeom->GetNumStrands(span,gdr,pgsTypes::Harped));
-
-   strand_fill.Release();
-   m_StrandFillers[hash].ComputeHarpedStrandFill(girder, Nh, &strand_fill);
+   StrandIndexType Nh = (bUseConfig ? config.PrestressConfig.GetNStrands(pgsTypes::Harped) : pStrandGeom->GetNumStrands(span,gdr,pgsTypes::Harped));
 
    strand_points.Release();
-   girder->get_HarpedStrandPositionsEx(dist_from_start,strand_fill,&strand_points);
+   if(bUseConfig)
+   {
+      CIndexArrayWrapper strand_fill(config.PrestressConfig.GetStrandFill(pgsTypes::Harped));
+
+      // save and restore precast girders shift values, before/after geting point locations
+      Float64 t_end_shift, t_hp_shift;
+      girder->get_HarpedStrandAdjustmentEnd(&t_end_shift);
+      girder->get_HarpedStrandAdjustmentHP(&t_hp_shift);
+
+      girder->put_HarpedStrandAdjustmentEnd(config.PrestressConfig.EndOffset);
+      girder->put_HarpedStrandAdjustmentHP(config.PrestressConfig.HpOffset);
+
+      girder->get_HarpedStrandPositionsEx(dist_from_start, &strand_fill, &strand_points);
+
+      girder->put_HarpedStrandAdjustmentEnd(t_end_shift);
+      girder->put_HarpedStrandAdjustmentHP(t_hp_shift);
+   }
+   else
+   {
+      girder->get_HarpedStrandPositions(dist_from_start,&strand_points);
+   }
+
+   StrandIndexType nstst; // reality test
+   strand_points->get_Count(&nstst);
+   ATLASSERT(nstst==Nh);
 
    for(strandIdx = 0; strandIdx < Nh; strandIdx++)
    {
@@ -14417,9 +15856,9 @@ Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,bool bU
       {
          Float64 debond_factor = 1.;
          if ( bUseConfig )
-            debond_factor = (bDevAdjust ? pPSForce->GetStrandBondFactor(poi,config,strandIdx,pgsTypes::Harped) : 1.0);
+            debond_factor = (devAdjust==dlaAccurate ? pPSForce->GetStrandBondFactor(poi,config,strandIdx,pgsTypes::Harped) : 1.0);
          else
-            debond_factor = (bDevAdjust ? pPSForce->GetStrandBondFactor(poi,strandIdx,pgsTypes::Harped) : 1.0);
+            debond_factor = (devAdjust==dlaAccurate ? pPSForce->GetStrandBondFactor(poi,strandIdx,pgsTypes::Harped) : 1.0);
 
          Aps += debond_factor*aps;
       }
@@ -14574,4 +16013,56 @@ void CBridgeAgentImp::GetSlabEdgePoint(Float64 station, IDirection* direction,Di
 
    (*point) = pnt3d;
    (*point)->AddRef();
+}
+
+/// Strand filler-related functions
+CContinuousStrandFiller* CBridgeAgentImp::GetContinuousStrandFiller(SpanIndexType span,GirderIndexType gdr)
+{
+   SpanGirderHashType hash = HashSpanGirder(span, gdr);
+   StrandFillerCollection::iterator its = m_StrandFillerColl.find(hash);
+   if (its != m_StrandFillerColl.end())
+   {
+      CStrandFiller& pcfill = its->second;
+      CContinuousStrandFiller* pfiller = dynamic_cast<CContinuousStrandFiller*>(&(pcfill));
+      return pfiller;
+   }
+   else
+   {
+      ATLASSERT(0); // This will go badly. Filler should have been created already
+      return NULL;
+   }
+}
+
+CDirectStrandFiller* CBridgeAgentImp::GetDirectStrandFiller(SpanIndexType span,GirderIndexType gdr)
+{
+   SpanGirderHashType hash = HashSpanGirder(span, gdr);
+   StrandFillerCollection::iterator its = m_StrandFillerColl.find(hash);
+   if (its != m_StrandFillerColl.end())
+   {
+      CStrandFiller& pcfill = its->second;
+      CDirectStrandFiller* pfiller = dynamic_cast<CDirectStrandFiller*>(&(pcfill));
+      return pfiller;
+   }
+   else
+   {
+      ATLASSERT(0); // This will go badly. Filler should have been created already
+      return NULL;
+   }
+}
+
+void CBridgeAgentImp::InitializeStrandFiller(const GirderLibraryEntry* pGirderEntry, SpanIndexType span, GirderIndexType gdr)
+{
+   SpanGirderHashType hash = HashSpanGirder(span, gdr);
+   StrandFillerCollection::iterator its = m_StrandFillerColl.find(hash);
+   if (its != m_StrandFillerColl.end())
+   {
+      its->second.Init(pGirderEntry);
+   }
+   else
+   {
+      CStrandFiller filler;
+      filler.Init(pGirderEntry);
+      std::pair<StrandFillerCollection::iterator, bool>  sit = m_StrandFillerColl.insert(std::make_pair(hash,filler));
+      ATLASSERT(sit.second);
+   }
 }

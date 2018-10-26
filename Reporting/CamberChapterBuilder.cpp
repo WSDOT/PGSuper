@@ -75,8 +75,8 @@ rptChapter* CCamberChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IGirderData,pGirderData);
-   CGirderData girderData = pGirderData->GetGirderData(span,gdr);
-   bool bTempStrands = ( 0 < girderData.Nstrands[pgsTypes::Temporary] && girderData.TempStrandUsage != pgsTypes::ttsPTBeforeShipping );
+   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
+   bool bTempStrands = ( 0 < pgirderData->PrestressData.GetNstrands(pgsTypes::Temporary) && pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPTBeforeShipping );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();

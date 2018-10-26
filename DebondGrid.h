@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright c 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -83,7 +83,7 @@ public:
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
 
    StrandIndexType GetNumDebondedStrands();
-   StrandIndexType GetNumExtendedStrands();
+   StrandIndexType GetNumExtendedStrands(pgsTypes::MemberEndType endType);
 
    void SymmetricDebond(bool bSymmetricDebond);
    void CanDebond(bool bCanDebond);
@@ -96,7 +96,7 @@ private:
    Float64 GetRightDebondLength(ROWCOL row);
    Float64 GetDebondLength(ROWCOL row,ROWCOL col);
 
-   ROWCOL GetRow(StrandIndexType strandIdx);
+   ROWCOL GetRow(GridIndexType gridIdx);
 
    bool m_bSymmetricDebond;
 };

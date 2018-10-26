@@ -273,7 +273,7 @@ void write_moment_data_table(IBroker* pBroker,
    {
       rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
       *pChapter << pPara;
-      (*pPara) << _T("* Used to compute ") << Sub2(_T("d"),_T("v")) << _T(" for shear. Depth to resultant tension for strands on the flexural tension side. See LRFD 5.8.3.4.2 and PCI BDM 8.4.1.2") << rptNewLine;
+      (*pPara) << _T("* Used to compute ") << Sub2(_T("d"),_T("v")) << _T(" for shear. Depth to resultant tension force for strands in tension. See PCI BDM 8.4.1.2") << rptNewLine;
    }
 
    if ( span == ALL_SPANS )

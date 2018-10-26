@@ -26,7 +26,6 @@
 #include <Reporting\ReportNotes.h>
 #include <Reporting\ShearCheckTable.h>
 #include <Reporting\InterfaceShearTable.h>
-#include <Reporting\ConfinementCheckTable.h>
 #include <Reporting\OptionalDeflectionCheck.h>
 #include <Reporting\LongReinfShearCheck.h>
 #include <Reporting\GirderDetailingCheck.h>

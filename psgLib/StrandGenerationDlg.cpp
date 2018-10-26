@@ -28,6 +28,10 @@
 #include <EAF\EAFApp.h>
 #include "..\htmlhelp\HelpTopics.hh"
 
+static const int ENDBOX_CTRLS[] = {IDC_GROUP2, IDC_HEADING2, IDC_X_LABEL2, IDC_Y_LABEL2, IDC_START_LABEL2, IDC_START_X2, 
+                                   IDC_START_X_UNIT2, IDC_START_Y2, IDC_START_Y_UNIT2, IDC_END_LABEL2, IDC_END_X2, IDC_END_X_UNIT2,
+                                   IDC_END_Y2, IDC_END_Y_UNIT2, -1};
+
 // CStrandGenerationDlg dialog
 
 IMPLEMENT_DYNAMIC(CStrandGenerationDlg, CDialog)
@@ -90,7 +94,15 @@ BOOL CStrandGenerationDlg::OnInitDialog()
 {
    CComboBox* pcbStrandType = (CComboBox*)GetDlgItem(IDC_STRAND_TYPE);
    int idx = pcbStrandType->AddString(_T("Straight"));
-   idx = pcbStrandType->AddString(_T("Harped"));
+   if (m_DoUseHarpedWebStrands)
+   {
+      idx = pcbStrandType->AddString(_T("Harped"));
+   }
+   else
+   {
+      idx = pcbStrandType->AddString(_T("Straight-Web"));
+   }
+
    pcbStrandType->SetCurSel(0);
 
    CComboBox* pcbGenerationTypes = (CComboBox*)GetDlgItem(IDC_STRAND_GENERATION);
@@ -109,6 +121,20 @@ BOOL CStrandGenerationDlg::OnInitDialog()
 
    OnStrandTypeChanged();
    OnLayoutTypeChanged();
+
+   // hide harped end group if not needed
+   if(!m_DoUseHarpedGrid)
+   {
+      int idx=0;
+      while (ENDBOX_CTRLS[idx] != -1)
+      {
+         CWnd* pdel = GetDlgItem(ENDBOX_CTRLS[idx]);
+         ASSERT(pdel);
+         pdel->ShowWindow(SW_HIDE);
+
+         idx++;
+      }
+   }
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
@@ -156,25 +182,31 @@ void CStrandGenerationDlg::OnStrandTypeChanged()
    {
       // Harped
       bEnableHarped = TRUE;
-      GetDlgItem(IDC_GROUP1)->SetWindowText(_T("Harped Strands at Harping Point"));
-      GetDlgItem(IDC_GROUP2)->SetWindowText(_T("Harped Strands at End"));
-      GetDlgItem(IDC_DELETE)->SetWindowText(_T("Delete previously defined harped strands"));
+
+      if(m_DoUseHarpedWebStrands)
+      {
+         GetDlgItem(IDC_GROUP1)->SetWindowText(_T("Harped Strands at Harping Point"));
+         GetDlgItem(IDC_GROUP2)->SetWindowText(_T("Harped Strands at End"));
+         GetDlgItem(IDC_DELETE)->SetWindowText(_T("Delete previously defined harped strands"));
+      }
+      else
+      {
+         GetDlgItem(IDC_GROUP1)->SetWindowText(_T("Straight-Web Strands"));
+         GetDlgItem(IDC_GROUP2)->SetWindowText(_T(""));
+         GetDlgItem(IDC_DELETE)->SetWindowText(_T("Delete previously defined Straight-Web strands"));
+      }
    }
 
-   GetDlgItem(IDC_GROUP2)->EnableWindow(bEnableHarped);
-   GetDlgItem(IDC_HEADING2)->EnableWindow(bEnableHarped);
-   GetDlgItem(IDC_X_LABEL2)->EnableWindow(bEnableHarped);
-   GetDlgItem(IDC_Y_LABEL2)->EnableWindow(bEnableHarped);
-   GetDlgItem(IDC_START_LABEL2)->EnableWindow(bEnableHarped);
-   GetDlgItem(IDC_START_X2)->EnableWindow(bEnableHarped);
-   GetDlgItem(IDC_START_X_UNIT2)->EnableWindow(bEnableHarped);
-   GetDlgItem(IDC_START_Y2)->EnableWindow(bEnableHarped);
-   GetDlgItem(IDC_START_Y_UNIT2)->EnableWindow(bEnableHarped);
-   GetDlgItem(IDC_END_LABEL2)->EnableWindow(bEnableHarped);
-   GetDlgItem(IDC_END_X2)->EnableWindow(bEnableHarped);
-   GetDlgItem(IDC_END_X_UNIT2)->EnableWindow(bEnableHarped);
-   GetDlgItem(IDC_END_Y2)->EnableWindow(bEnableHarped);
-   GetDlgItem(IDC_END_Y_UNIT2)->EnableWindow(bEnableHarped);
+   // Enable or disable all controls in end harped group
+   int idx=0;
+   while (ENDBOX_CTRLS[idx] != -1)
+   {
+      CWnd* pdel = GetDlgItem(ENDBOX_CTRLS[idx]);
+      ASSERT(pdel);
+      pdel->EnableWindow(bEnableHarped);
+
+      idx++;
+   }
 }
 
 CString CStrandGenerationDlg::GetImageName(LayoutType layoutType,StrandGenerationType generationType)

@@ -56,7 +56,10 @@ CSpecDesignPage::CSpecDesignPage(CWnd* pParent /*=NULL*/)
 	m_DesignHoldDown = FALSE;
 	m_DesignLifting = FALSE;
 	m_DesignSlope = FALSE;
-	m_CheckAnchorage = FALSE;
+	m_CheckSplitting = FALSE;
+	m_DesignSplitting = FALSE;
+	m_CheckConfinement = FALSE;
+	m_DesignConfinement = FALSE;
 	//}}AFX_DATA_INIT
 }
 
@@ -85,7 +88,10 @@ void CSpecDesignPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_DESIGN_HD, m_DesignHoldDown);
 	DDX_Check(pDX, IDC_DESIGN_LIFTING, m_DesignLifting);
 	DDX_Check(pDX, IDC_DESIGN_SLOPE, m_DesignSlope);
-	DDX_Check(pDX, IDC_CHECK_ANCHORAGE, m_CheckAnchorage);
+	DDX_Check(pDX, IDC_CHECK_SPLITTING, m_CheckSplitting);
+	DDX_Check(pDX, IDC_DESIGN_SPLITTING, m_DesignSplitting);
+	DDX_Check(pDX, IDC_CHECK_CONFINEMENT, m_CheckConfinement);
+	DDX_Check(pDX, IDC_DESIGN_CONFINEMENT, m_DesignConfinement);
 	//}}AFX_DATA_MAP
 
    DDX_Radio(pDX,IDC_RADIO_FILL_PERMANENT,m_FillMethod);
@@ -102,6 +108,8 @@ void CSpecDesignPage::DoDataExchange(CDataExchange* pDX)
       OnCheckHd();
       OnCheckLifting();
       OnCheckSlope();
+      OnCheckSplitting();
+      OnCheckConfinement();
    }
 }
 
@@ -113,6 +121,8 @@ BEGIN_MESSAGE_MAP(CSpecDesignPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_HD, OnCheckHd)
 	ON_BN_CLICKED(IDC_CHECK_LIFTING, OnCheckLifting)
 	ON_BN_CLICKED(IDC_CHECK_SLOPE, OnCheckSlope)
+	ON_BN_CLICKED(IDC_CHECK_SPLITTING, OnCheckSplitting)
+	ON_BN_CLICKED(IDC_CHECK_CONFINEMENT, OnCheckConfinement)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
 END_MESSAGE_MAP()
@@ -162,6 +172,17 @@ void CSpecDesignPage::OnCheckSlope()
 {
    CheckDesignCtrl(IDC_CHECK_SLOPE, IDC_DESIGN_SLOPE, this);
 }
+
+void CSpecDesignPage::OnCheckSplitting() 
+{
+   CheckDesignCtrl(IDC_CHECK_SPLITTING, IDC_DESIGN_SPLITTING, this);
+}
+
+void CSpecDesignPage::OnCheckConfinement() 
+{
+   CheckDesignCtrl(IDC_CHECK_CONFINEMENT, IDC_DESIGN_CONFINEMENT, this);
+}
+
 
 LRESULT CSpecDesignPage::OnCommandHelp(WPARAM, LPARAM lParam)
 {

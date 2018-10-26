@@ -29,6 +29,7 @@
 // LiveLoadSelectDlg.h : header file
 //
 #include "resource.h"
+#include <IFace\Project.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CLiveLoadSelectDlg dialog
@@ -67,6 +68,8 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
+   void SetPedestrianComboText(int iCombo, int iStatic);
+
 public:
    std::vector< std::_tstring>& m_AllNames;
    std::vector< std::_tstring>& m_DesignNames;
@@ -78,6 +81,12 @@ public:
    double m_FatigueLaneImpact;
    double m_PermitTruckImpact;
    double m_PermitLaneImpact;
+
+   ILiveLoads::PedestrianLoadApplicationType m_DesignPedesType;
+   ILiveLoads::PedestrianLoadApplicationType m_FatiguePedesType;
+   ILiveLoads::PedestrianLoadApplicationType m_PermitPedesType;
+
+   bool m_bHasPedestrianLoad;
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -32,6 +32,7 @@ struct txnEditLiveLoadData
    std::vector<std::_tstring> m_VehicleNames;
    double m_TruckImpact;
    double m_LaneImpact;
+   ILiveLoads::PedestrianLoadApplicationType m_PedestrianLoadApplicationType;
 };
 
 class txnEditLiveLoad : public txnTransaction

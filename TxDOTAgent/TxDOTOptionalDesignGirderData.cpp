@@ -466,7 +466,7 @@ std::vector<StrandIndexType> CTxDOTOptionalDesignGirderData::ComputeAvailableNum
       for(StrandIndexType currNum=1; currNum<=maxNum; currNum++)
       {
          StrandIndexType numStraight, numHarped;
-         if( pGdrEntry->ComputeGlobalStrands(currNum, &numStraight, &numHarped))
+         if( pGdrEntry->GetPermStrandDistribution(currNum, &numStraight, &numHarped))
          {
             strands.push_back(currNum);
          }
@@ -492,7 +492,7 @@ bool CTxDOTOptionalDesignGirderData::ComputeToRange(GirderLibrary* pLib, StrandI
    else
    {
       StrandIndexType numStraight, numHarped;
-      if( pGdrEntry->ComputeGlobalStrands(ns, &numStraight, &numHarped))
+      if( pGdrEntry->GetPermStrandDistribution(ns, &numStraight, &numHarped))
       {
          if (numHarped==0)
          {
@@ -502,12 +502,12 @@ bool CTxDOTOptionalDesignGirderData::ComputeToRange(GirderLibrary* pLib, StrandI
          Float64 height = pGdrEntry->GetBeamHeight(pgsTypes::metStart);
 
          // Adjustment limits for strand locations at ends
-         GirderLibraryEntry::GirderFace  topFace, bottomFace;
+         pgsTypes::GirderFace  topFace, bottomFace;
          Float64  topLimit, bottomLimit;
          pGdrEntry->GetEndAdjustmentLimits(&topFace, &topLimit, &bottomFace, &bottomLimit);
 
          // To max is easy
-         *pToUpper = topFace==GirderLibraryEntry::GirderBottom ? topLimit : height-topLimit;
+         *pToUpper = topFace==pgsTypes::GirderBottom ? topLimit : height-topLimit;
 
          // To-min must take height of strand bundle into consideration
          // compute lower and upper bounds of numHarped strands at girder end
@@ -533,7 +533,7 @@ bool CTxDOTOptionalDesignGirderData::ComputeToRange(GirderLibrary* pLib, StrandI
 
          Float64 h_bundle = ymax-ymin;
 
-         Float64 bot_loc = bottomFace==GirderLibraryEntry::GirderTop ? height-bottomLimit : bottomLimit;
+         Float64 bot_loc = bottomFace==pgsTypes::GirderTop ? height-bottomLimit : bottomLimit;
 
          *pToLower = h_bundle + bot_loc;
       }
@@ -592,7 +592,7 @@ bool CTxDOTOptionalDesignGirderData::ComputeEccentricities(GirderLibrary* pLib, 
 
       // Strands...
       StrandIndexType numStraight, numHarped;
-      bool st = pGdrEntry->ComputeGlobalStrands(ns, &numStraight, &numHarped);
+      bool st = pGdrEntry->GetPermStrandDistribution(ns, &numStraight, &numHarped);
       ASSERT(st);
       ASSERT(ns == numStraight+numHarped);
 
@@ -730,13 +730,13 @@ CTxDOTOptionalDesignGirderData::AvailableStrandsInRowContainer CTxDOTOptionalDes
    CTxDOTOptionalDesignGirderData::AvailableStrandsInRowContainer available_rows;
 
    // Cycle through strands in global order and add to our row collection as we go
-   StrandIndexType num_global = pGdrEntry->GetMaxGlobalStrands();
+   StrandIndexType num_global = pGdrEntry->GetPermanentStrandGridSize();
 
    for (StrandIndexType i_global=0; i_global<num_global; i_global++)
    {
       GirderLibraryEntry::psStrandType strand_type;
       StrandIndexType i_local;
-      pGdrEntry->GetGlobalStrandAtFill(i_global, &strand_type, &i_local);
+      pGdrEntry->GetGridPositionFromPermStrandGrid(i_global, &strand_type, &i_local);
 
       // Representative x, y, and num strands
       Float64 x_strand, y_strand;
@@ -1011,7 +1011,7 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
                   // Create strand location and add it to global fill in clone
                   StrandIndexType nhnew = pCloneGdrEntry->AddHarpedStrandCoordinates(end_x, end_y, cl_x, cl_y, end_x, end_y);
 
-                  pCloneGdrEntry->AddGlobalStrandAtFill(GirderLibraryEntry::stHarped, nhnew-1);
+                  pCloneGdrEntry->AddStrandToPermStrandGrid(GirderLibraryEntry::stHarped, nhnew-1);
 
                   incr_cl.WasFilled = true;  // unavailable after this point
                   incr_end.WasFilled = true;
@@ -1046,7 +1046,7 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
                   // Create strand location and add it to global fill in clone
                   StrandIndexType nsnew = pCloneGdrEntry->AddStraightStrandCoordinates(cl_x, cl_y, cl_x, cl_y, false);
 
-                  pCloneGdrEntry->AddGlobalStrandAtFill(GirderLibraryEntry::stStraight, nsnew-1);
+                  pCloneGdrEntry->AddStrandToPermStrandGrid(GirderLibraryEntry::stStraight, nsnew-1);
 
                   incr_cl.WasFilled = true;  // unavailable after this point
 
@@ -1076,7 +1076,7 @@ void CTxDOTOptionalDesignGirderData::GetGlobalStrandCoordinate(const GirderLibra
 {
    GirderLibraryEntry::psStrandType type;
    StrandIndexType local_idx;
-   pGdrEntry->GetGlobalStrandAtFill(globalIdx, &type, &local_idx);
+   pGdrEntry->GetGridPositionFromPermStrandGrid(globalIdx, &type, &local_idx);
 
    // ASSUME: prismatic xsection, harped strands defined straight
    if (type==GirderLibraryEntry::stStraight)

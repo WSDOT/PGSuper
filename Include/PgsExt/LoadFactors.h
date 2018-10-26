@@ -45,12 +45,12 @@
 class PGSEXTCLASS CLoadFactors
 {
 public:
-   double DCmin[6];   // index is one of pgsTypes::LimitState constants (except for CLLIM)
-   double DWmin[6];
-   double LLIMmin[6];
-   double DCmax[6];
-   double DWmax[6];
-   double LLIMmax[6];
+   Float64 DCmin[6];   // index is one of pgsTypes::LimitState constants (except for CLLIM)
+   Float64 DWmin[6];
+   Float64 LLIMmin[6];
+   Float64 DCmax[6];
+   Float64 DWmax[6];
+   Float64 LLIMmax[6];
 
    CLoadFactors();
    CLoadFactors(const CLoadFactors& rOther);
@@ -58,6 +58,9 @@ public:
 
    bool operator==(const CLoadFactors& rOther) const; 
    bool operator!=(const CLoadFactors& rOther) const;
+
+   HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
+   HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 
 protected:
    void MakeCopy(const CLoadFactors& rOther);

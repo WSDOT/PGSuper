@@ -44,7 +44,7 @@
 #include <PgsExt\MomentLoadData.h>
 #include <PgsExt\LoadFactors.h>
 #include <PgsExt\BridgeDescription.h>
-#include <PgsExt\ShearData.h>
+#include <PsgLib\ShearData.h>
 #include <PgsExt\LongitudinalRebarData.h>
 
 #include "LibraryEntryObserver.h"
@@ -240,7 +240,7 @@ public:
 public:
    virtual const matPsStrand* GetStrandMaterial(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type) const;
    virtual void SetStrandMaterial(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type,const matPsStrand* pmat);
-   virtual CGirderData GetGirderData(SpanIndexType span,GirderIndexType gdr) const;
+   virtual const CGirderData* GetGirderData(SpanIndexType span,GirderIndexType gdr) const;
    virtual bool SetGirderData(const CGirderData& data,SpanIndexType span,GirderIndexType gdr);
    virtual const CGirderMaterial* GetGirderMaterial(SpanIndexType span,GirderIndexType gdr) const;
    virtual void SetGirderMaterial(SpanIndexType span,GirderIndexType gdr,const CGirderMaterial& material);
@@ -419,8 +419,8 @@ public:
 // ILiveLoads
 public:
    virtual bool IsLiveLoadDefined(pgsTypes::LiveLoadType llType);
-   virtual bool IsPedestianLoadEnabled(pgsTypes::LiveLoadType llType);
-   virtual void EnablePedestianLoad(pgsTypes::LiveLoadType llType,bool bEnable);
+   virtual PedestrianLoadApplicationType GetPedestrianLoadApplication(pgsTypes::LiveLoadType llType);
+   virtual void SetPedestrianLoadApplication(pgsTypes::LiveLoadType llType, PedestrianLoadApplicationType PedLoad);
    virtual std::vector<std::_tstring> GetLiveLoadNames(pgsTypes::LiveLoadType llType);
    virtual void SetLiveLoadNames(pgsTypes::LiveLoadType llType,const std::vector<std::_tstring>& names);
    virtual double GetTruckImpact(pgsTypes::LiveLoadType llType);
@@ -562,6 +562,7 @@ private:
    LiveLoadSelectionContainer m_SelectedLiveLoads[8];
    double m_TruckImpact[8];
    double m_LaneImpact[8];
+   PedestrianLoadApplicationType m_PedestrianLoadApplicationType[3]; // lltDesign, lltPermit, lltFatigue only
 
    std::vector<std::_tstring> m_ReservedLiveLoads; // reserved live load names (names not found in library)
    bool IsReservedLiveLoad(const std::_tstring& strName);
@@ -623,6 +624,7 @@ private:
    static HRESULT ShearDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
    static HRESULT LongitudinalRebarDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
    static HRESULT LongitudinalRebarDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
+   static HRESULT LoadFactorsProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
    static HRESULT LiftingAndHaulingDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
    static HRESULT LiftingAndHaulingLoadDataProc(IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
    static HRESULT DistFactorMethodDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
@@ -635,6 +637,8 @@ private:
 
    HRESULT BuildDummyBridge();
    void ValidateStrands(SpanIndexType span,GirderIndexType girder,CGirderData& girder_data,bool fromLibrary);
+   void ConvertLegacyDebondData(CGirderData& gdrData, const GirderLibraryEntry* pGdrEntry);
+   void ConvertLegacyExtendedStrandData(CGirderData& gdrData, const GirderLibraryEntry* pGdrEntry);
 
    Float64 GetMaxPjack(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type,StrandIndexType nStrands) const;
    Float64 GetMaxPjack(SpanIndexType span,GirderIndexType gdr,StrandIndexType nStrands,const matPsStrand* pStrand) const;
@@ -643,8 +647,6 @@ private:
    void DealWithGirderLibraryChanges(bool fromLibrary);  // behavior is different if problem is caused by a library change
    void DealWithConnectionLibraryChanges(bool fromLibrary);
    
-   bool CanHavePedestrianLoad() const;
-
    void MoveBridge(PierIndexType pierIdx,double newStation);
    void MoveBridgeAdjustPrevSpan(PierIndexType pierIdx,double newStation);
    void MoveBridgeAdjustNextSpan(PierIndexType pierIdx,double newStation);

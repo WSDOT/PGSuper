@@ -82,6 +82,31 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
+   GET_IFACE2( pBroker, IStrandGeometry, pStrandGeometry );
+
+   // WsDOT reports don't support Straight-Web strand option
+   if (pStrandGeometry->GetAreHarpedStrandsForcedStraight(span, girder))
+   {
+      rptParagraph* p;
+      
+      p = new rptParagraph;
+      *pChapter << p;
+      *p << color(Red) << Bold(_T("A WSDOT Girder Schedule could not be generated because this girder utilizes straight web strands. WSDOT Standard Girders utilize harped strands.")) << color(Black) << rptNewLine;
+      return pChapter;
+   }
+
+   GET_IFACE2(pBroker,IGirderData,pGirderData);
+   const CGirderData* pgirderData = pGirderData->GetGirderData(span,girder);
+   if (pgirderData->PrestressData.GetNumPermStrandsType() == NPS_DIRECT_SELECTION)
+   {
+      rptParagraph* p;
+      
+      p = new rptParagraph;
+      *pChapter << p;
+      *p << color(Red) << Bold(_T("A WSDOT Girder Schedule could not be generated because this girder utilizes Direct Strand Fill. WSDOT Standard Girders utilize sequentially filled strands.")) << color(Black) << rptNewLine;
+      return pChapter;
+   }
+
    if( pArtifact->Passed() )
    {
       rptParagraph* pPara = new rptParagraph;
@@ -121,8 +146,6 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    const pgsConstructabilityArtifact* pConstArtifact = pGdrArtifact->GetConstructabilityArtifact();
 
    GET_IFACE2(pBroker,ICamber,pCamber);
-   GET_IFACE2(pBroker,IGirderData,pGirderData);
-   CGirderData girderData = pGirderData->GetGirderData(span,girder);
 
    // create pois at the start of girder and mid-span
    pgsPointOfInterest pois(span,girder,0.0);
@@ -268,8 +291,6 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    (*p_table)(++row,0) << RPT_FCI << _T(" (at Release)");
    (*p_table)(row  ,1) << stress.SetValue(pMaterial->GetFciGdr(span,girder));
 
-   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
-   
    StrandIndexType nh = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Harped);
    (*p_table)(++row,0) << _T("Number of Harped Strands");
    (*p_table)(row  ,1) << nh;
@@ -294,7 +315,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       StrandIndexType nt = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Temporary);
       (*p_table)(++row,0) << _T("Number of Temporary Strands");
 
-      switch ( girderData.TempStrandUsage )
+      switch ( pgirderData->PrestressData.TempStrandUsage )
       {
       case pgsTypes::ttsPTAfterLifting:
          (*p_table)(row,0) << rptNewLine << _T("Temporary strands post-tensioned immediately after lifting");
@@ -333,10 +354,11 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    (*p_table)(++row,0) << Sub2(_T("F"),_T("b"));
    if (0 < nh)
    {
-      GDRCONFIG config = pBridge->GetGirderConfiguration(span,girder);
+      CComPtr<IPoint2dCollection> p2dcol;
+      pStrandGeometry->GetStrandPositions(pmid[0],pgsTypes::Harped,&p2dcol);
       CComPtr<IPoint2d> pnt0, pnt1;
-      pStrandGeometry->GetStrandPosition(pmid[0],0,pgsTypes::Harped,&pnt0);
-      pStrandGeometry->GetStrandPosition(pmid[0],nh-1,pgsTypes::Harped,&pnt1);
+      p2dcol->get_Item(0,&pnt0);
+      p2dcol->get_Item(nh-1,&pnt1);
       Float64 x,Fb0,Fb1;
       pnt0->Location(&x,&Fb0);
       pnt1->Location(&x,&Fb1);

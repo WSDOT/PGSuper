@@ -25,9 +25,16 @@
 #pragma once
 
 #include <WBFLTypes.h>
+#include <WBFLTools.h>
 #include <EAF\EAFTypes.h>
 #include <MathEx.h>
 #include <vector>
+
+static long g_Ncopies = 0;
+
+class dbgDumpContext;
+#include <Material\Rebar.h>
+
 
 #define TOOLTIP_WIDTH 300
 #define TOOLTIP_DURATION 10000
@@ -124,7 +131,7 @@ struct pgsTypes
    enum StressLocation { BottomGirder, TopGirder, TopSlab };
    // Note that Permanent was added below when input for total permanent strands was added in 12/06
    enum StrandType { Straight, Harped, Temporary, Permanent };
-   enum LossStage { Jacking, BeforeXfer, AfterXfer, AtLifting, AtShipping, BeforeTemporaryStrandRemoval, AfterTemporaryStrandRemoval, AfterDeckPlacement, AfterSIDL, AfterLosses, AfterTemporaryStrandInstallation };
+   enum LossStage { Jacking, BeforeXfer, AfterXfer, AtLifting, AtShipping, BeforeTemporaryStrandRemoval, AfterTemporaryStrandRemoval, AfterDeckPlacement, AfterSIDL, AfterLosses, AfterLossesWithLiveLoad, AfterTemporaryStrandInstallation };
    enum AnalysisType { Simple, Continuous, Envelope };
 
    // temporary top strand usage
@@ -281,6 +288,9 @@ struct pgsTypes
    enum GirderLocation
    { Interior = 0, Exterior = 1 };
 
+   enum GirderFace 
+   {GirderTop, GirderBottom};
+
    // NOTE: Enum values are out of order so that they match values used in earlier
    // versions of the software
    enum PierConnectionType { Hinged = 1, 
@@ -369,21 +379,204 @@ struct pgsTypes
 };
 
 
+//-----------------------------------------------------------------------------
+// Struct for stirrup information.
+struct STIRRUPCONFIG
+{
+   // First, some needed types
+   // =========================
+   struct SHEARZONEDATA // Primary shear zone
+   {
+      Float64 ZoneLength;
+      Float64 BarSpacing;
+      matRebar::Size VertBarSize;
+      Float64 nVertBars;
+      Float64 nHorzInterfaceBars;
+      matRebar::Size ConfinementBarSize;
+
+      // pre-computed values
+      Float64 VertABar; // Area of single bar
+
+      // This struct is complex enough to need a good constructor
+      SHEARZONEDATA():
+      ZoneLength(0.0), VertBarSize(matRebar::bsNone), BarSpacing(0.0), nVertBars(0.0), 
+      nHorzInterfaceBars(0.0), ConfinementBarSize(matRebar::bsNone), VertABar(0.0)
+      {;}
+
+      bool operator==(const SHEARZONEDATA& other) const
+      {
+         if( !IsEqual(ZoneLength , other.ZoneLength) ) return false;
+         if(VertBarSize != other.VertBarSize) return false;
+         if( !IsEqual(BarSpacing , other.BarSpacing) ) return false;
+         if( !IsEqual(nVertBars , other.nVertBars) ) return false;
+         if( !IsEqual(nHorzInterfaceBars , other.nHorzInterfaceBars) ) return false;
+         if(ConfinementBarSize != other.ConfinementBarSize) return false;
+
+         return true;
+      }
+
+      bool operator!=(const SHEARZONEDATA& other) const
+      {
+         return !operator==(other);
+      }
+   };
+
+   typedef std::vector<SHEARZONEDATA> ShearZoneVec;
+   typedef ShearZoneVec::iterator ShearZoneIterator;
+   typedef ShearZoneVec::const_iterator ShearZoneConstIterator;
+   typedef ShearZoneVec::const_reverse_iterator ShearZoneConstReverseIterator;
+
+   struct HORIZONTALINTERFACEZONEDATA // Additional horizontal interface zone
+   {
+      Float64 ZoneLength;
+      Float64 BarSpacing;
+      matRebar::Size BarSize;
+      Float64 nBars;
+
+      // pre-computed values
+      Float64 ABar; // area of single bar
+
+      // default constructor
+      HORIZONTALINTERFACEZONEDATA():
+      ZoneLength(0.0), BarSize(matRebar::bsNone),BarSpacing(0.0),nBars(0.0), ABar(0.0)
+      {;}
+
+      bool operator==(const HORIZONTALINTERFACEZONEDATA& other) const
+      {
+         if( !IsEqual(ZoneLength , other.ZoneLength) ) return false;
+         if(BarSize != other.BarSize) return false;
+         if( !IsEqual(BarSpacing , other.BarSpacing) ) return false;
+         if( !IsEqual(nBars , other.nBars) ) return false;
+
+         return true;
+      }
+
+      bool operator!=(const HORIZONTALINTERFACEZONEDATA& other) const
+      {
+         return !operator==(other);
+      }
+   };
+
+   typedef std::vector<HORIZONTALINTERFACEZONEDATA> HorizontalInterfaceZoneVec;
+   typedef HorizontalInterfaceZoneVec::iterator HorizontalInterfaceZoneIterator;
+   typedef HorizontalInterfaceZoneVec::const_iterator HorizontalInterfaceZoneConstIterator;
+
+   // Our Data
+   // ========
+   ShearZoneVec ShearZones;
+   HorizontalInterfaceZoneVec HorizontalInterfaceZones;
+
+   bool bIsRoughenedSurface;
+   bool bUsePrimaryForSplitting;
+   bool bAreZonesSymmetrical;
+
+   matRebar::Size SplittingBarSize; // additional splitting bars
+   Float64 SplittingBarSpacing;
+   Float64 SplittingZoneLength;
+   Float64 nSplittingBars;
+
+   matRebar::Size ConfinementBarSize; // additional confinement bars - only used if primary not used for confinement
+   Float64 ConfinementBarSpacing;
+   Float64 ConfinementZoneLength;
+
+   STIRRUPCONFIG():
+   bIsRoughenedSurface(true), bUsePrimaryForSplitting(false), bAreZonesSymmetrical(true),
+   SplittingBarSize(matRebar::bsNone), SplittingBarSpacing(0.0), SplittingZoneLength(0.0), nSplittingBars(0.0),
+   ConfinementBarSize(matRebar::bsNone), ConfinementBarSpacing(0.0), ConfinementZoneLength(0.0)
+   {;}
+
+   bool operator==(const STIRRUPCONFIG& other) const
+   {
+      if(ShearZones != other.ShearZones) return false;
+      if(HorizontalInterfaceZones != other.HorizontalInterfaceZones) return false;
+
+      if(bIsRoughenedSurface != other.bIsRoughenedSurface) return false;
+      if(bUsePrimaryForSplitting != other.bUsePrimaryForSplitting) return false;
+      if(bAreZonesSymmetrical != other.bAreZonesSymmetrical) return false;
+      if(SplittingBarSize != other.SplittingBarSize) return false;
+
+      if ( !IsEqual(SplittingBarSpacing,  other.SplittingBarSpacing) ) return false;
+      if ( !IsEqual(SplittingZoneLength,  other.SplittingZoneLength) ) return false;
+      if ( !IsEqual(nSplittingBars,  other.nSplittingBars) ) return false;
+
+      if(ConfinementBarSize != other.ConfinementBarSize) return false;
+      if ( !IsEqual(ConfinementBarSpacing,  other.ConfinementBarSpacing) ) return false;
+      if ( !IsEqual(ConfinementZoneLength,  other.ConfinementZoneLength) ) return false;
+
+
+      return true;
+   }
+
+   bool operator!=(const STIRRUPCONFIG& other) const
+   {
+      return !operator==(other);
+   }
+};
+// NOTE: Data here is not used, but may be useful for someone in the future.
+//       This is a preliminary design for modelling longitudinal rebar.
+//       After some effort, I determined that the data is not necessessary for the 
+//       design algorithm since it is only used for longitudinal reinforcement for shear,
+//       and does not need to be iterated on. (e.g., the algoritm just picks a value
+//       and submits it directly to the final design).
+//-----------------------------------------------------------------------------
+// Struct for longitudinal rebar information.
+/*
+struct LONGITUDINALREBARCONFIG
+{
+public:
+   struct RebarRow 
+   {
+      pgsTypes::GirderFace  Face;
+      matRebar::Size BarSize;
+      Int32       NumberOfBars;
+      Float64     Cover;
+      Float64     BarSpacing;
+
+      bool operator==(const RebarRow& other) const
+      {
+         if(Face != other.Face) return false;
+         if(BarSize != other.BarSize) return false;
+         if ( !IsEqual(Cover,  other.Cover) ) return false;
+         if ( !IsEqual(BarSpacing,  other.BarSpacing) ) return false;
+         if ( !IsEqual(NumberOfBars,  other.NumberOfBars) ) return false;
+
+         return true;
+      };
+   };
+
+   matRebar::Type BarType;
+   matRebar::Grade BarGrade;
+   std::vector<RebarRow> RebarRows;
+
+   bool operator==(const LONGITUDINALREBARCONFIG& other) const
+   {
+      if(BarType != other.BarType) return false;
+      if(BarGrade != other.BarGrade) return false;
+      if(RebarRows != other.RebarRows) return false;
+   }
+
+   bool operator!=(const LONGITUDINALREBARCONFIG& other) const
+   {
+      return !operator==(other);
+   }
+
+};
+*/
 
 //-----------------------------------------------------------------------------
 // Individual strand debond information
-struct DEBONDINFO
+struct DEBONDCONFIG
 {
-   StrandIndexType strandIdx; // index of strand that is debonded
+   StrandIndexType strandIdx; // index of strand that is debonded (indexed by total # of filled strand locations)
    double LeftDebondLength;   // length of debond at left end of the girder
    double RightDebondLength;  // length of debond at right end of the girder
 
-   bool operator<(const DEBONDINFO& other) const
+   bool operator<(const DEBONDCONFIG& other) const
    {
       return strandIdx < other.strandIdx;
    }
 
-   bool operator==(const DEBONDINFO& other) const
+   bool operator==(const DEBONDCONFIG& other) const
    {
       bool bEqual = true;
       bEqual &= (strandIdx == other.strandIdx);
@@ -393,22 +586,205 @@ struct DEBONDINFO
    }
 };
 // handy typedefs for storing debond info
-typedef std::vector<DEBONDINFO>               DebondInfoCollection;
-typedef DebondInfoCollection::iterator        DebondInfoIterator;
-typedef DebondInfoCollection::const_iterator  DebondInfoConstIterator;
+typedef std::vector<DEBONDCONFIG>               DebondConfigCollection;
+typedef DebondConfigCollection::iterator        DebondConfigIterator;
+typedef DebondConfigCollection::const_iterator  DebondConfigConstIterator;
+
+// fill array
+typedef std::vector<StrandIndexType>            ConfigStrandFillVector;
+typedef ConfigStrandFillVector::iterator        ConfigStrandFillIterator;
+typedef ConfigStrandFillVector::const_iterator  ConfigStrandFillConstIterator;
+
+struct PRESTRESSCONFIG
+{
+   // Set/Get strand fill. This array is the same length as the number strand coordinate locations in GirderLibraryEntry
+   // Each collection entry defines the number of strands filled at that location. 
+   // Valid values are 0, 1, or 2 strands filled. 2 strands cannot be filled if X=0.0 at location.
+   void SetStrandFill(pgsTypes::StrandType type, const ConfigStrandFillVector& fillArray); 
+   // Zero out all fill data
+   void ClearStrandFill(pgsTypes::StrandType type); 
+   const ConfigStrandFillVector& GetStrandFill(pgsTypes::StrandType type) const; 
+
+   StrandIndexType GetNStrands(pgsTypes::StrandType type) const; // Number of strands in current strand fill
+
+   static StrandIndexType CountStrandsInFill(const ConfigStrandFillVector& fillArray); 
+
+   const std::vector<StrandIndexType>& GetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType) const;
+   void SetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,const std::vector<StrandIndexType>& extStrands);
+
+   // use one of the pgsTypes::StrandType constants to for array index
+   std::vector<DEBONDCONFIG> Debond[3]; // Information about debonded strands (key is strand index into total number of filled strands)
+   Float64 Pjack[3];  // Jacking force
+   Float64 EndOffset; // Offset of harped strands at end of girder
+   Float64 HpOffset;  // Offset of harped strands at the harping point
+   pgsTypes::TTSUsage TempStrandUsage;
+
+   PRESTRESSCONFIG():
+   EndOffset(0.0), HpOffset(0.0), TempStrandUsage(pgsTypes::ttsPretensioned)
+   {
+      for (int i=0; i<3; i++)
+      {
+         Pjack[i] = 0.0;
+         NstrandsCached[i] = 0;
+      }
+   }
+
+   bool operator==(const PRESTRESSCONFIG& other) const;
+   bool operator!=(const PRESTRESSCONFIG& other) const
+   {
+      return !operator==(other);
+   }
+
+   PRESTRESSCONFIG(const PRESTRESSCONFIG& rOther)
+   {
+      MakeCopy( rOther );
+   }
+
+   PRESTRESSCONFIG& operator=(const PRESTRESSCONFIG& rOther)
+   {
+      if ( this != &rOther )
+         MakeAssignment( rOther );
+
+      return *this;
+   }
+
+private:
+   StrandIndexType NstrandsCached[3];  // Number of strands
+   ConfigStrandFillVector StrandFill[3];
+   std::vector<StrandIndexType> NextendedStrands[3][2]; // Holds index of extended strands (array index [pgsTypes::StrandType][pgsTypes::MemberEndType])
+
+   void MakeAssignment( const PRESTRESSCONFIG& rOther )
+   {
+      MakeCopy( rOther );
+   }
+
+   void MakeCopy( const PRESTRESSCONFIG& rOther );
+
+};
+
+inline void PRESTRESSCONFIG::SetStrandFill(pgsTypes::StrandType type, const ConfigStrandFillVector& fillArray)
+{
+   ATLASSERT(type==pgsTypes::Straight || type==pgsTypes::Harped || type==pgsTypes::Temporary);
+
+   StrandFill[type] = fillArray;
+
+   // count strands and cache value
+   StrandIndexType ns = CountStrandsInFill(StrandFill[type]);
+
+   NstrandsCached[type] = ns;
+}
+
+inline StrandIndexType PRESTRESSCONFIG::CountStrandsInFill(const ConfigStrandFillVector& fillArray)
+{
+   StrandIndexType ns(0);
+   ConfigStrandFillConstIterator it = fillArray.begin();
+   ConfigStrandFillConstIterator itend = fillArray.end();
+   while ( it != itend )
+   {
+      ATLASSERT(*it==0 || *it==1 || *it==2);
+      ns += *it;
+      it++;     
+   }
+
+   return ns;
+}
+
+inline void PRESTRESSCONFIG::ClearStrandFill(pgsTypes::StrandType type)
+{
+   // Set all fills to zero
+   if (!StrandFill[type].empty())
+   {
+      StrandFill[type].assign( StrandFill[type].size(), 0);
+   }
+
+   NstrandsCached[type] = 0;
+}
+
+inline const ConfigStrandFillVector&  PRESTRESSCONFIG::GetStrandFill(pgsTypes::StrandType type) const
+{
+   ATLASSERT(type==pgsTypes::Straight || type==pgsTypes::Harped || type==pgsTypes::Temporary);
+   return StrandFill[type];
+}
+
+inline StrandIndexType PRESTRESSCONFIG::GetNStrands(pgsTypes::StrandType type) const
+{
+   ATLASSERT(type==pgsTypes::Straight || type==pgsTypes::Harped || type==pgsTypes::Temporary);
+
+   return NstrandsCached[type];
+}
+
+inline const std::vector<StrandIndexType>& PRESTRESSCONFIG::GetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType) const
+{
+   return NextendedStrands[strandType][endType];
+}
+
+inline void PRESTRESSCONFIG::SetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,const std::vector<StrandIndexType>& extStrands)
+{
+   NextendedStrands[strandType][endType] = extStrands;
+}
+
+inline bool PRESTRESSCONFIG::operator==(const PRESTRESSCONFIG& other) const
+{
+   for (int i=0; i<3; i++)
+   {
+      if (Debond[i] != other.Debond[i])
+         return false;
+
+      if( !IsEqual(Pjack[i], other.Pjack[i]) )
+         return false;
+
+      if ( StrandFill[i] != other.StrandFill[i] )
+         return false;
+
+      if ( NextendedStrands[i][pgsTypes::metStart] != other.NextendedStrands[i][pgsTypes::metStart] )
+         return false;
+
+      if ( NextendedStrands[i][pgsTypes::metEnd] != other.NextendedStrands[i][pgsTypes::metEnd] )
+         return false;
+
+      ATLASSERT(NstrandsCached[i] == other.NstrandsCached[i]); // this should be impossible
+   }
+
+   if( !IsEqual(EndOffset, other.EndOffset) )
+      return false;
+
+   if( !IsEqual(HpOffset, other.HpOffset) )
+      return false;
+
+   if (TempStrandUsage != other.TempStrandUsage)
+      return false;
+
+   return true;
+}
+
+inline void PRESTRESSCONFIG::MakeCopy( const PRESTRESSCONFIG& other )
+{
+   for (int i=0; i<3; i++)
+   {
+      Debond[i] = other.Debond[i];
+
+      Pjack[i] = other.Pjack[i];
+
+      StrandFill[i] = other.StrandFill[i];
+
+      NstrandsCached[i] = other.NstrandsCached[i];
+   
+      NextendedStrands[i][pgsTypes::metStart] = other.NextendedStrands[i][pgsTypes::metStart];
+      NextendedStrands[i][pgsTypes::metEnd]   = other.NextendedStrands[i][pgsTypes::metEnd];
+   }
+
+   EndOffset = other.EndOffset;
+   HpOffset  = other.HpOffset;
+
+   TempStrandUsage = other.TempStrandUsage;
+}
 
 //-----------------------------------------------------------------------------
 // Girder configuration
 struct GDRCONFIG
 {
-   // use on of the pgsTypes::StrandType constants to for array index
-   StrandIndexType Nstrands[3];  // Number of strands
-   std::vector<StrandIndexType> NextendedStrands[3][2]; // Holds index of extended strands (array index [pgsTypes::StrandType][pgsTypes::MemberEndType])
-   std::vector<DEBONDINFO> Debond[3]; // Information about debonded strands (key is strand index)
-   Float64 EndOffset; // Offset of harped strands at end of girder
-   Float64 HpOffset;  // Offset of harped strands at the harping point
-   Float64 Pjack[3];  // Jacking force
-   pgsTypes::TTSUsage TempStrandUsage;
+   PRESTRESSCONFIG PrestressConfig; // all prestressing information
+
    Float64 Fc;        // 28 day concrete strength
    Float64 Fci;       // Concrete release strength
    pgsTypes::ConcreteType ConcType;
@@ -422,19 +798,30 @@ struct GDRCONFIG
 
    Float64 SlabOffset[2]; // slab offset at start and end of the girder (use pgsTypes::MemberEndType for array index)
 
-   bool operator==(const GDRCONFIG& other) const
+   STIRRUPCONFIG StirrupConfig; // All of our transverse rebar information
+
+//   LONGITUDINALREBARCONFIG LongitudinalRebarConfig; // Girder-length rebars
+   GDRCONFIG()
+   {;}
+
+   GDRCONFIG(const GDRCONFIG& rOther)
    {
-      for ( Uint16 type = pgsTypes::Straight; type <= pgsTypes::Temporary; type++ )
-      {
-         if (Nstrands[type] != other.Nstrands[type]) return false;
-         if (Debond[type]   != other.Debond[type])   return false;
-         if (!IsEqual(Pjack[type], other.Pjack[type])) return false;
-      }
+      MakeCopy( rOther );
+   }
 
-      if (TempStrandUsage != other.TempStrandUsage) return false;
+   GDRCONFIG& operator=(const GDRCONFIG& rOther)
+   {
+      if ( this != &rOther )
+         MakeAssignment( rOther );
 
-      if ( !IsEqual(EndOffset, other.EndOffset) ) return false;
-      if ( !IsEqual(HpOffset,  other.HpOffset) ) return false;
+      return *this;
+   }
+
+   // Check equality for only flexural date (not stirrups)
+   bool IsFlexuralDataEqual(const GDRCONFIG& other) const
+   {
+      if (PrestressConfig != other.PrestressConfig) return false;
+
       if ( !IsEqual(Fci, other.Fci) ) return false;
       if ( !IsEqual(Fc,  other.Fc) ) return false;
 
@@ -449,10 +836,50 @@ struct GDRCONFIG
       return true;
    }
 
+   bool operator==(const GDRCONFIG& other) const
+   {
+       if(!IsFlexuralDataEqual(other))
+           return false;
+
+      if (StirrupConfig != other.StirrupConfig) return false;
+
+      return true;
+   }
+
    bool operator!=(const GDRCONFIG& other) const
    {
       return !operator==(other);
    }
+
+private:
+void MakeCopy( const GDRCONFIG& rOther )
+{
+   g_Ncopies++;
+
+   PrestressConfig = rOther.PrestressConfig;
+
+   Fc = rOther.Fc;
+   Fci = rOther.Fci;
+   ConcType = rOther.ConcType;
+   bHasFct = rOther.bHasFct;
+   Fct = rOther.Fct;
+
+   bUserEci = rOther.bUserEci;
+   bUserEc = rOther.bUserEc;
+   Eci = rOther.Eci;
+   Ec = rOther.Ec;
+
+   SlabOffset[0] = rOther.SlabOffset[0];
+   SlabOffset[1] = rOther.SlabOffset[1];
+
+   StirrupConfig = rOther.StirrupConfig;
+}
+
+void MakeAssignment( const GDRCONFIG& rOther )
+{
+   MakeCopy( rOther );
+}
+
 };
 
 
@@ -463,9 +890,9 @@ struct HANDLINGCONFIG
    Float64 RightOverhang;  // overhang closest to cab of truck when used from hauling
 };
 
-
 enum arFlexuralDesignType { dtNoDesign, dtDesignForHarping, dtDesignForDebonding, dtDesignFullyBonded };
 enum arDesignStrandFillType { ftGridOrder, ftMinimizeHarping };
+enum arDesignStirrupLayoutType { slLayoutStirrups, slRetainExistingLayout };
 
 struct arDesignOptions
 {
@@ -477,12 +904,16 @@ struct arDesignOptions
    bool doDesignHoldDown;
 
    arDesignStrandFillType doStrandFillType;
+   bool doForceHarpedStrandsStraight;
 
    bool doDesignForShear;
 
+   arDesignStirrupLayoutType doDesignStirrupLayout;
+
    arDesignOptions(): doDesignForFlexure(dtNoDesign), doDesignSlabOffset(false), doDesignLifting(false), doDesignHauling(false),
                       doDesignSlope(false), doDesignHoldDown(false), doDesignForShear(false), 
-                      doStrandFillType(ftMinimizeHarping)
+                      doStrandFillType(ftMinimizeHarping), doDesignStirrupLayout(slLayoutStirrups),
+                      doForceHarpedStrandsStraight(false)
    {;}
 };
 

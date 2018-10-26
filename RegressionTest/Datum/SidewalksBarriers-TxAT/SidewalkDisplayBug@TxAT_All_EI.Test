@@ -1,0 +1,38 @@
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 46.13   8  6.00  1     1     III        36  0.60  270 17.41 10.30   8 40.0  8.000  9.300    6.080   -7.484   8354  0.897  0.897  0.43 -0.16  0.00 -0.05 -0.21 153.10 205.95   2.25   5.00   5.00
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 46.13   8  6.00  1     2     III        36  0.60  270 17.41 10.30   8 40.0  8.000  9.300    5.135   -6.098   6333  0.523  0.671  0.43 -0.13  0.00 -0.05 -0.18 153.10 221.43   2.25   5.00   5.00
+
+
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 46.13   8  6.00  1     5     III        36  0.60  270 17.41 10.30   8 40.0  8.000  9.300   112.950  -304.047  -15290  0.523  0.671  0.43 -0.13 -16.64 -0.02 -16.79 153.10 -12769.77   2.25   5.00   5.00
+
+
+The Specification Check was Not Successful
+Stresses in the prestressing strands are too high.
+Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Compressive stress check failed for Fatigue I for the Final with Live Load Stage (Bridge Site 3).
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Stirrup detailing checks failed for the Strength I Limit State.
+
+

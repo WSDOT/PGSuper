@@ -109,6 +109,7 @@ private:
                            Float64* pYbc,
                            Float64* pAd,
                            Float64* ped,
+                           Float64* pKsh,
                            Float64* peperm,// eccentricity of the permanent strands on the non-composite section
                            Float64* petemp,
                            Float64* paps,  // area of one prestress strand
@@ -117,6 +118,7 @@ private:
                            Float64* pMdlg,
                            Float64* pMadlg,
                            Float64* pMsidl,
+                           Float64* pMllim,
                            Float64* prh,
                            Float64* pti,
                            Float64* pth,

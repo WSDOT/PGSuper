@@ -1,17 +1,18 @@
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   4  8.00     1     1 U54G5  *    60   5/8  270 16.84  6.67  14 50.0  5.600  8.200    5.892   -4.282  11528  1.016  1.016  0.35 -0.18 -0.01 -0.01 -0.20 250.96 412.82   1.75   5.00   5.00
-
-
-The Specification Check was Successful
-
-
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   4  8.00     1     2 U54G5  *    48   5/8  270 17.06  5.81  12 50.0  4.300  6.000    5.024   -3.462   9149  0.557  0.773  0.26 -0.16 -0.01 -0.01 -0.19 173.24 321.13   1.75   5.00   5.00
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 34.25   4  8.00  1     1    U54G5  *    66  0.60  270 16.74  7.50  14 50.0  6.300 14.300    7.371   -4.708  12977  1.016  1.016  0.39 -0.14 -0.01 -0.01 -0.15 291.39 497.84   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 34.25   4  8.00  1     2    U54G5  *    52  0.60  270 16.96  6.57  12 50.0  4.800  6.900    5.939   -3.731   9961  0.557  0.773  0.30 -0.15 -0.01 -0.01 -0.18 197.10 358.81   1.75   5.00   5.00
+
+
+The Specification Check was Successful
 
 

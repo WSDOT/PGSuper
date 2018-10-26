@@ -158,7 +158,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm600 "
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)Include&quot;;&quot;$(SolutionDir)Include\$(PlatformName)&quot;;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;"
+				AdditionalIncludeDirectories="$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
 				PreprocessorDefinitions="_USRDLL;_ATL_NO_UUIDOF;xIGNORE_2007_CHANGES;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -445,7 +445,7 @@
 		</Configuration>
 		<Configuration
 			Name="Profile|Win32"
-			OutputDirectory="\ARP\PGSuper\RegFreeCOM\$(ConfigurationName)"
+			OutputDirectory="\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -532,7 +532,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\$(PlatformName)\WBFL.$(ConfigurationName).manifest"
+				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -554,7 +554,7 @@
 		</Configuration>
 		<Configuration
 			Name="Profile|x64"
-			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\PGSuper\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -642,7 +642,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\$(PlatformName)\WBFL.$(ConfigurationName).manifest"
+				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -755,11 +755,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\EffectivePrestressTable.h"
+				>
+			</File>
+			<File
 				RelativePath="EffectOfPostTensionedTemporaryStrandsTable.h"
 				>
 			</File>
 			<File
 				RelativePath="ElasticGainDueToDeckPlacementTable.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ElasticGainDueToLiveLoadTable.h"
 				>
 			</File>
 			<File
@@ -1897,6 +1905,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\EffectivePrestressTable.cpp"
+				>
+			</File>
+			<File
 				RelativePath="EffectOfPostTensionedTemporaryStrandsTable.cpp"
 				>
 				<FileConfiguration
@@ -2011,6 +2023,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\ElasticGainDueToLiveLoadTable.cpp"
+				>
 			</File>
 			<File
 				RelativePath=".\ElasticGainDueToSIDLTable.cpp"

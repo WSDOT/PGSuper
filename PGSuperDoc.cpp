@@ -118,6 +118,7 @@
 #include "CopyGirderDlg.h"
 #include "LiveLoadDistFactorsDlg.h"
 #include "LiveLoadSelectDlg.h"
+#include "PGSuperAppPlugin\LoadFactorsDlg.h"
 #include "EditPointLoadDlg.h"
 #include "EditDistributedLoadDlg.h"
 #include "EditMomentLoadDlg.h"
@@ -130,6 +131,7 @@
 #include "GirderLabelFormatDlg.h"
 #include "RatingOptionsDlg.h"
 #include "ConstructionLoadDlg.h"
+#include "GirderSelectStrandsDlg.h"
 
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
@@ -160,6 +162,8 @@
 #include "EditConstructionLoad.h"
 #include <PgsExt\InsertDeleteLoad.h>
 #include "EditEffectiveFlangeWidth.h"
+#include "EditLoadFactors.h"
+#include "EditLoadModifiers.h"
 
 // Logging
 #include <iostream>
@@ -194,6 +198,23 @@ static const Float64 FILE_VERSION=2.0;
 static bool DoesFolderExist(const CString& dirname);
 static bool DoesFileExist(const CString& filname);
 
+// Function to update prestress force after editing strands
+static void UpdatePrestressForce(pgsTypes::StrandType type, SpanIndexType span, GirderIndexType gdr,
+                                 CGirderData& rnewGirderData, const CGirderData& roldGirderData, 
+                                 IPrestressForce* pPrestress)
+{
+
+      // If going from no strands - always compute pjack automatically
+      if(rnewGirderData.PrestressData.bPjackCalculated[type] ||
+         (0 == roldGirderData.PrestressData.GetNstrands(type) &&
+          0 < rnewGirderData.PrestressData.GetNstrands(type)))
+      {
+         rnewGirderData.PrestressData.bPjackCalculated[type]=true;
+         rnewGirderData.PrestressData.Pjack[type]  = pPrestress->GetPjackMax(span, gdr, 
+                                                                 *(rnewGirderData.Material.pStrandMaterial[type]),
+                                                                 rnewGirderData.PrestressData.GetNstrands(type));
+      }
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperDoc
@@ -213,6 +234,7 @@ BEGIN_MESSAGE_MAP(CPGSuperDoc, CEAFBrokerDocument)
 	ON_COMMAND(IDM_EXPORT_TEMPLATE, OnExportToTemplateFile)
 	ON_COMMAND(ID_VIEWSETTINGS_BRIDGEMODELEDITOR, OnViewsettingsBridgemodelEditor)
 	ON_COMMAND(ID_LOADS_LOADMODIFIERS, OnLoadsLoadModifiers)
+   ON_COMMAND(ID_LOADS_LOADFACTORS, OnLoadsLoadFactors)
 	ON_COMMAND(ID_VIEWSETTINGS_GIRDEREDITOR, OnViewsettingsGirderEditor)
 	ON_COMMAND(ID_PROJECT_DESIGNGIRDER, OnProjectDesignGirder)
    ON_COMMAND(ID_PROJECT_DESIGNGIRDERDIRECT, OnProjectDesignGirderDirect)
@@ -265,6 +287,11 @@ BEGIN_MESSAGE_MAP(CPGSuperDoc, CEAFBrokerDocument)
 
    // this doesn't work for documents... see OnCmdMsg for handling of WM_NOTIFY
    //ON_NOTIFY(TBN_DROPDOWN,ID_STDTOOLBAR,OnViewReports)
+
+#if defined _EAF_USING_MFC_FEATURE_PACK
+   ON_COMMAND(ID_INDICATOR_ANALYSIS, OnProjectAnalysis) // from status bar
+   ON_COMMAND(ID_INDICATOR_AUTOCALC_ON, OnProjectAutoCalc) // from status bar
+#endif
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -434,33 +461,10 @@ void CPGSuperDoc::EditBridgeDescription(int nPage)
 
    if ( dlg.DoModal() == IDOK )
    {
-      bool bOldBridgeHasSidewalks = (pOldBridgeDesc->GetLeftRailingSystem()->bUseSidewalk || pOldBridgeDesc->GetRightRailingSystem()->bUseSidewalk);
-      bool bOldEnablePedLL = pLiveLoads->IsPedestianLoadEnabled(pgsTypes::lltDesign);
-
-      const CBridgeDescription& newBridge = dlg.GetBridgeDescription();
-      bool bNewEnablePedLL = false;
-      bool bNewBridgeHasSidewalks = (newBridge.GetLeftRailingSystem()->bUseSidewalk || newBridge.GetRightRailingSystem()->bUseSidewalk);
-
-      if ( !bOldBridgeHasSidewalks && bNewBridgeHasSidewalks )
-      {
-         // sidewalks were added, enable pedestrian live load
-         bNewEnablePedLL = true;
-      }
-      else if ( bOldBridgeHasSidewalks && !bNewBridgeHasSidewalks )
-      {
-         // sidewalks were removed, disable pedestrian live load
-         bNewEnablePedLL = false;
-      }
-      else
-      {
-         // sidewalks stayed the same to don't change anything
-         bNewEnablePedLL = bOldEnablePedLL;
-      }
 
       txnEditBridge* pTxn = new txnEditBridge(*pOldBridgeDesc,      dlg.GetBridgeDescription(),
                                               oldExposureCondition, dlg.m_EnvironmentalPage.m_Exposure == 0 ? expNormal : expSevere,
-                                              oldRelHumidity,       dlg.m_EnvironmentalPage.m_RelHumidity,
-                                              bOldEnablePedLL,      bNewEnablePedLL);
+                                              oldRelHumidity,       dlg.m_EnvironmentalPage.m_RelHumidity);
 
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
@@ -527,6 +531,8 @@ bool CPGSuperDoc::EditGirderDescription(SpanIndexType span,GirderIndexType girde
    GET_IFACE(IGirderLifting,pGirderLifting);
    GET_IFACE(IGirderHauling,pGirderHauling);
    GET_IFACE(IBridge,pBridge);
+   GET_IFACE(ILibrary,pLib);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
 
    SpanIndexType spanIdx;
    GirderIndexType gdrIdx;
@@ -544,19 +550,17 @@ bool CPGSuperDoc::EditGirderDescription(SpanIndexType span,GirderIndexType girde
       gdrIdx = ngrds-1;
 
    // collect current values for later undo
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    bool bUseSameGirder              = pBridgeDesc->UseSameGirderForEntireBridge();
-   std::_tstring strGirderName        = pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderName(gdrIdx);
-   CGirderData girderData           = pGirderData->GetGirderData(spanIdx,gdrIdx);
+   std::_tstring strGirderName      = pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderName(gdrIdx);
+   CGirderData girderData           = *(pGirderData->GetGirderData(spanIdx,gdrIdx));
    CShearData  shearData            = pShear->GetShearData(spanIdx,gdrIdx);
    CLongitudinalRebarData rebarData = pLongitudinalRebar->GetLongitudinalRebarData( spanIdx, gdrIdx );
-   double liftingLocation           = pGirderLifting->GetLeftLiftingLoopLocation( spanIdx, gdrIdx );
-   double trailingOverhang          = pGirderHauling->GetTrailingOverhang( spanIdx, gdrIdx );
-   double leadingOverhang           = pGirderHauling->GetLeadingOverhang( spanIdx, gdrIdx );
+   Float64 liftingLocation           = pGirderLifting->GetLeftLiftingLoopLocation( spanIdx, gdrIdx );
+   Float64 trailingOverhang          = pGirderHauling->GetTrailingOverhang( spanIdx, gdrIdx );
+   Float64 leadingOverhang           = pGirderHauling->GetLeadingOverhang( spanIdx, gdrIdx );
 
    CGirderDescDlg dlg(spanIdx,gdrIdx,strGirderName.c_str());
-   dlg.m_GirderData    = girderData;
 
    pgsTypes::SlabOffsetType slabOffsetType = pBridgeDesc->GetSlabOffsetType();
    Float64 slabOffset[2];
@@ -565,11 +569,10 @@ bool CPGSuperDoc::EditGirderDescription(SpanIndexType span,GirderIndexType girde
    dlg.m_General.m_SlabOffset[pgsTypes::metStart] = slabOffset[pgsTypes::metStart];
    dlg.m_General.m_SlabOffset[pgsTypes::metEnd]   = slabOffset[pgsTypes::metEnd];
 
-
+   const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry( strGirderName.c_str() );
 
    // resequence page if no debonding
-   CGirderData girderDatad = pGirderData->GetGirderData(dlg.m_CurrentSpanIdx,dlg.m_CurrentGirderIdx);
-   if (EGD_DEBONDING <= nPage  && !girderData.bSymmetricDebond)
+   if (EGD_DEBONDING <= nPage  && !pGirderEntry->CanDebondStraightStrands()) 
       nPage--;
 
    dlg.SetActivePage(nPage);
@@ -614,6 +617,102 @@ bool CPGSuperDoc::EditGirderDescription(SpanIndexType span,GirderIndexType girde
       return false;
    }
 }
+
+bool CPGSuperDoc::EditDirectInputPrestressing(SpanIndexType span,GirderIndexType gdr)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IBridge,pBridge);
+   GET_IFACE(ILibrary, pLib);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
+
+   CGirderData girderData = pSpan->GetGirderTypes()->GetGirderData(gdr);
+   if (girderData.PrestressData.GetNumPermStrandsType() != NPS_DIRECT_SELECTION)
+   {
+      // We can go no further
+      ::AfxMessageBox(_T("Programmer Error: EditDirectInputPrestressing - can only be called for Direct Select strand fill"),MB_OK | MB_ICONWARNING);
+      return false;
+   }
+
+   std::_tstring strGirderName = pSpan->GetGirderTypes()->GetGirderName(gdr);
+   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName.c_str());
+
+
+   GET_IFACE(ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+
+   // Get current offset input values - dialog will force in bounds if needed
+   Float64 hpOffsetAtEnd = girderData.PrestressData.HpOffsetAtEnd;
+   Float64 hpOffsetAtHp  = girderData.PrestressData.HpOffsetAtHp;
+
+   bool allowEndAdjustment = pGdrEntry->IsVerticalAdjustmentAllowedEnd();
+   bool allowHpAdjustment  = pGdrEntry->IsVerticalAdjustmentAllowedHP();
+
+   // Max debond length is 1/2 girder length
+   Float64 maxDebondLength = pBridge->GetGirderLength(span, gdr)/2.0;
+
+   // Fire up dialog
+   CGirderSelectStrandsDlg dlg;
+   dlg.InitializeData(span, gdr, girderData.PrestressData, pSpecEntry, pGdrEntry,
+                      allowEndAdjustment, allowHpAdjustment, hpOffsetAtEnd, hpOffsetAtHp, maxDebondLength);
+
+   if ( dlg.DoModal() == IDOK )
+   {
+      // Make copy of girder data before we modify
+      CGirderData oldGirderData = girderData;
+
+      // Get new girder data from dialog
+      dlg.GetData( girderData.PrestressData );
+
+      // The dialog does not deal with Pjack. Update pjack here
+      GET_IFACE(IPrestressForce, pPrestress );
+
+      UpdatePrestressForce(pgsTypes::Straight, span, gdr, girderData, oldGirderData, pPrestress);
+      UpdatePrestressForce(pgsTypes::Harped, span, gdr, girderData, oldGirderData, pPrestress);
+      UpdatePrestressForce(pgsTypes::Temporary, span, gdr, girderData, oldGirderData, pPrestress);
+
+      // Grab data not changed by this 
+      GET_IFACE(IGirderLifting,pGirderLifting);
+      GET_IFACE(IGirderHauling,pGirderHauling);
+      bool bUseSameGirder              = pBridgeDesc->UseSameGirderForEntireBridge();
+      double liftingLocation           = pGirderLifting->GetLeftLiftingLoopLocation( span, gdr );
+      double trailingOverhang          = pGirderHauling->GetTrailingOverhang( span, gdr );
+      double leadingOverhang           = pGirderHauling->GetLeadingOverhang( span, gdr );
+
+      pgsTypes::SlabOffsetType slabOffsetType = pBridgeDesc->GetSlabOffsetType();
+      Float64 slabOffset[2];
+      pIBridgeDesc->GetSlabOffset(span,gdr,&slabOffset[pgsTypes::metStart],&slabOffset[pgsTypes::metEnd]);
+
+      // Fire our transaction
+      txnEditGirder* pTxn = new txnEditGirder(span,gdr,
+                                              bUseSameGirder,   bUseSameGirder,
+                                              strGirderName,    strGirderName,
+                                              oldGirderData,    girderData,
+                                              oldGirderData.ShearData, girderData.ShearData,
+                                              oldGirderData.LongitudinalRebarData ,  girderData.LongitudinalRebarData,
+                                              liftingLocation,  liftingLocation,
+                                              trailingOverhang, trailingOverhang,
+                                              leadingOverhang,  leadingOverhang,
+                                              slabOffsetType,   slabOffsetType,
+                                              slabOffset[pgsTypes::metStart], slabOffset[pgsTypes::metStart],
+                                              slabOffset[pgsTypes::metEnd],   slabOffset[pgsTypes::metEnd]
+                                              );
+
+      GET_IFACE(IEAFTransactions,pTransactions);
+      pTransactions->Execute(pTxn);
+
+      return true;
+   }
+   else
+   {
+     return true;
+   }
+}
+
    
 void CPGSuperDoc::AddPointLoad(const CPointLoadData& loadData)
 {
@@ -1039,6 +1138,9 @@ void CPGSuperDoc::OnCreateFinalize()
 
       // get the file menu
       CEAFMenu* pFileMenu = pMainMenu->GetSubMenu(filePos);
+      ASSERT(pFileMenu != NULL);
+      if ( pFileMenu == NULL )
+         return;
 
       // get the text string from the email command
       CString strEmail;
@@ -1825,34 +1927,62 @@ void CPGSuperDoc::OnViewsettingsGirderEditor()
    EditGirderViewSettings(0);
 }
 
-
 void CPGSuperDoc::OnLoadsLoadModifiers() 
 {
    GET_IFACE(ILoadModifiers,pLoadModifiers);
 
-   ILoadModifiers::Level ductility_level  = pLoadModifiers->GetDuctilityLevel();
-   ILoadModifiers::Level importance_level = pLoadModifiers->GetImportanceLevel();
-   ILoadModifiers::Level redundancy_level = pLoadModifiers->GetRedundancyLevel();
+   txnEditLoadModifiers::LoadModifiers loadModifiers;
+   loadModifiers.DuctilityLevel    = pLoadModifiers->GetDuctilityLevel();
+   loadModifiers.DuctilityFactor   = pLoadModifiers->GetDuctilityFactor();
+   loadModifiers.ImportanceLevel   = pLoadModifiers->GetImportanceLevel();
+   loadModifiers.ImportanceFactor  = pLoadModifiers->GetImportanceFactor();
+   loadModifiers.RedundancyLevel   = pLoadModifiers->GetRedundancyLevel();
+   loadModifiers.RedundancyFactor  = pLoadModifiers->GetRedundancyFactor();
 
    CLoadModifiersDlg dlg;
    dlg.SetHelpData( AfxGetApp()->m_pszHelpFilePath, IDH_DIALOG_LOADMODIFIERS, IDH_DIALOG_LOADMODIFIERS, IDH_DIALOG_LOADMODIFIERS);
 
-   dlg.SetLoadModifiers( pLoadModifiers->GetDuctilityFactor(),
-                         ((ductility_level == ILoadModifiers::High)  ? 0 : (ductility_level  == ILoadModifiers::Normal ? 1 : 2)),
-                         pLoadModifiers->GetRedundancyFactor(),
-                         ((redundancy_level == ILoadModifiers::High) ? 0 : (redundancy_level == ILoadModifiers::Normal ? 1 : 2)),
-                         pLoadModifiers->GetImportanceFactor(),
-                         ((importance_level == ILoadModifiers::High) ? 0 : (importance_level == ILoadModifiers::Normal ? 1 : 2))
+   dlg.SetLoadModifiers( loadModifiers.DuctilityFactor,
+                         ((loadModifiers.DuctilityLevel == ILoadModifiers::High)  ? 0 : (loadModifiers.DuctilityLevel  == ILoadModifiers::Normal ? 1 : 2)),
+                         loadModifiers.RedundancyFactor,
+                         ((loadModifiers.RedundancyLevel == ILoadModifiers::High) ? 0 : (loadModifiers.RedundancyLevel == ILoadModifiers::Normal ? 1 : 2)),
+                         loadModifiers.ImportanceFactor,
+                         ((loadModifiers.ImportanceLevel == ILoadModifiers::High) ? 0 : (loadModifiers.ImportanceLevel == ILoadModifiers::Normal ? 1 : 2))
                         );
 
    if ( dlg.DoModal() == IDOK )
    {
-      Float64 d,r,i;
-      Int16 dl, il, rl;
-      dlg.GetLoadModifiers(&d,&dl,&r,&rl,&i,&il);
-      pLoadModifiers->SetDuctilityFactor(  dl == 0 ? ILoadModifiers::High : dl == 1 ? ILoadModifiers::Normal : ILoadModifiers::Low, d );
-      pLoadModifiers->SetRedundancyFactor( rl == 0 ? ILoadModifiers::High : rl == 1 ? ILoadModifiers::Normal : ILoadModifiers::Low, r );
-      pLoadModifiers->SetImportanceFactor( il == 0 ? ILoadModifiers::High : il == 1 ? ILoadModifiers::Normal : ILoadModifiers::Low, i );
+      txnEditLoadModifiers::LoadModifiers newLoadModifiers;
+
+      Int16 d,r,i;
+      dlg.GetLoadModifiers(&newLoadModifiers.DuctilityFactor, &d,
+                           &newLoadModifiers.RedundancyFactor,&r,
+                           &newLoadModifiers.ImportanceFactor,&i);
+
+      newLoadModifiers.DuctilityLevel  = (d == 0 ? ILoadModifiers::High : (d == 1 ? ILoadModifiers::Normal : ILoadModifiers::Low));
+      newLoadModifiers.RedundancyLevel = (d == 0 ? ILoadModifiers::High : (d == 1 ? ILoadModifiers::Normal : ILoadModifiers::Low));
+      newLoadModifiers.ImportanceLevel = (d == 0 ? ILoadModifiers::High : (d == 1 ? ILoadModifiers::Normal : ILoadModifiers::Low));
+
+      txnEditLoadModifiers* pTxn = new txnEditLoadModifiers(loadModifiers,newLoadModifiers);
+      GET_IFACE(IEAFTransactions,pTransactions);
+      pTransactions->Execute(pTxn);
+   }
+}
+
+void CPGSuperDoc::OnLoadsLoadFactors()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   GET_IFACE(ILoadFactors,pLoadFactors);
+
+   CLoadFactors loadFactors = *pLoadFactors->GetLoadFactors();
+   CLoadFactorsDlg dlg;
+   dlg.m_LoadFactors = loadFactors;
+   if ( dlg.DoModal() == IDOK )
+   {
+      txnEditLoadFactors* pTxn = new txnEditLoadFactors(loadFactors,dlg.m_LoadFactors);
+      GET_IFACE(IEAFTransactions,pTransactions);
+      pTransactions->Execute(pTxn);
    }
 }
 
@@ -1901,6 +2031,7 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,bool bDesignSlabOffset,SpanIndexType
       // internally by dialog based on girder type, and other library values
       dlg.m_DesignForFlexure = (IsDesignFlexureEnabled() ? TRUE : FALSE);
       dlg.m_DesignForShear   = (IsDesignShearEnabled()   ? TRUE : FALSE);
+      dlg.m_StartWithCurrentStirrupLayout = (IsDesignStirrupsFromScratchEnabled() ? FALSE : TRUE);
 
       if ( dlg.DoModal() == IDOK )
       {
@@ -1908,6 +2039,7 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,bool bDesignSlabOffset,SpanIndexType
 
          EnableDesignFlexure(dlg.m_DesignForFlexure == TRUE ? true : false);
          EnableDesignShear(  dlg.m_DesignForShear   == TRUE ? true : false);
+         EnableDesignStirrupsFromScratch( dlg.m_StartWithCurrentStirrupLayout==TRUE ? false : true);
          m_bDesignSlabOffset = bDesignSlabOffset; // retain value for current document
 
          gdr_list = dlg.m_GirderList;
@@ -1997,6 +2129,7 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<SpanGirderHashType>& girderLi
 
          arDesignOptions des_options = pSpecification->GetDesignOptions(span,gdr);
          des_options.doDesignSlabOffset = doDesignADim;
+         des_options.doDesignStirrupLayout = IsDesignStirrupsFromScratchEnabled() ?  slLayoutStirrups : slRetainExistingLayout;
 
          if(!this->IsDesignFlexureEnabled())
          {
@@ -2446,6 +2579,7 @@ void CPGSuperDoc::OnLiveLoads()
 
    GET_IFACE( ILibraryNames, pLibNames );
    GET_IFACE( ILiveLoads, pLiveLoad );
+   GET_IFACE(IProductLoads,pProductLoads);
 
    std::vector<std::_tstring> all_names;
    pLibNames->EnumLiveLoadNames( &all_names );
@@ -2456,42 +2590,54 @@ void CPGSuperDoc::OnLiveLoads()
 
    CLiveLoadSelectDlg dlg(all_names, design_names, fatigue_names, permit_names);
 
+   dlg.m_bHasPedestrianLoad = (pProductLoads->GetPedestrianLoadPerSidewalk(pgsTypes::tboLeft)>0.0 ||
+                               pProductLoads->GetPedestrianLoadPerSidewalk(pgsTypes::tboRight)>0.0);
+
    dlg.m_DesignTruckImpact = pLiveLoad->GetTruckImpact(pgsTypes::lltDesign);
    dlg.m_DesignLaneImpact = pLiveLoad->GetLaneImpact(pgsTypes::lltDesign);
+   dlg.m_DesignPedesType = pLiveLoad->GetPedestrianLoadApplication(pgsTypes::lltDesign);
 
    dlg.m_FatigueTruckImpact = pLiveLoad->GetTruckImpact(pgsTypes::lltFatigue);
    dlg.m_FatigueLaneImpact = pLiveLoad->GetLaneImpact(pgsTypes::lltFatigue);
+   dlg.m_FatiguePedesType = pLiveLoad->GetPedestrianLoadApplication(pgsTypes::lltFatigue);
 
    dlg.m_PermitLaneImpact = pLiveLoad->GetLaneImpact(pgsTypes::lltPermit);
    dlg.m_PermitTruckImpact = pLiveLoad->GetTruckImpact(pgsTypes::lltPermit);
+   dlg.m_PermitPedesType = pLiveLoad->GetPedestrianLoadApplication(pgsTypes::lltPermit);
 
    txnEditLiveLoadData oldDesign, oldFatigue, oldPermit;
    oldDesign.m_VehicleNames = dlg.m_DesignNames;
    oldDesign.m_TruckImpact  = dlg.m_DesignTruckImpact;
    oldDesign.m_LaneImpact   = dlg.m_DesignLaneImpact;
+   oldDesign.m_PedestrianLoadApplicationType = dlg.m_DesignPedesType;
 
    oldFatigue.m_VehicleNames = dlg.m_FatigueNames;
    oldFatigue.m_TruckImpact  = dlg.m_FatigueTruckImpact;
    oldFatigue.m_LaneImpact   = dlg.m_FatigueLaneImpact;
+   oldFatigue.m_PedestrianLoadApplicationType = dlg.m_FatiguePedesType;
 
    oldPermit.m_VehicleNames = dlg.m_PermitNames;
    oldPermit.m_TruckImpact  = dlg.m_PermitTruckImpact;
    oldPermit.m_LaneImpact   = dlg.m_PermitLaneImpact;
+   oldPermit.m_PedestrianLoadApplicationType = dlg.m_PermitPedesType;
 
    if ( dlg.DoModal() == IDOK)
    {
       txnEditLiveLoadData newDesign, newFatigue, newPermit;
-      newDesign.m_VehicleNames = dlg.m_DesignNames;
-      newDesign.m_TruckImpact  = dlg.m_DesignTruckImpact;
-      newDesign.m_LaneImpact   = dlg.m_DesignLaneImpact;
+      newDesign.m_VehicleNames                  = dlg.m_DesignNames;
+      newDesign.m_TruckImpact                   = dlg.m_DesignTruckImpact;
+      newDesign.m_LaneImpact                    = dlg.m_DesignLaneImpact;
+      newDesign.m_PedestrianLoadApplicationType = dlg.m_DesignPedesType;
 
-      newFatigue.m_VehicleNames = dlg.m_FatigueNames;
-      newFatigue.m_TruckImpact  = dlg.m_FatigueTruckImpact;
-      newFatigue.m_LaneImpact   = dlg.m_FatigueLaneImpact;
+      newFatigue.m_VehicleNames                  = dlg.m_FatigueNames;
+      newFatigue.m_TruckImpact                   = dlg.m_FatigueTruckImpact;
+      newFatigue.m_LaneImpact                    = dlg.m_FatigueLaneImpact;
+      newFatigue.m_PedestrianLoadApplicationType = dlg.m_FatiguePedesType;
 
-      newPermit.m_VehicleNames = dlg.m_PermitNames;
-      newPermit.m_TruckImpact  = dlg.m_PermitTruckImpact;
-      newPermit.m_LaneImpact   = dlg.m_PermitLaneImpact;
+      newPermit.m_VehicleNames                  = dlg.m_PermitNames;
+      newPermit.m_TruckImpact                   = dlg.m_PermitTruckImpact;
+      newPermit.m_LaneImpact                    = dlg.m_PermitLaneImpact;
+      newPermit.m_PedestrianLoadApplicationType = dlg.m_PermitPedesType;
 
       txnEditLiveLoad* pTxn = new txnEditLiveLoad(oldDesign,newDesign,oldFatigue,newFatigue,oldPermit,newPermit);
       GET_IFACE(IEAFTransactions,pTransactions);
@@ -2672,7 +2818,7 @@ void CPGSuperDoc::OnEditPier()
    dlg.m_strTitle = _T("Select pier to edit");
    dlg.m_strItems = strItems;
    dlg.m_strLabel = _T("Select pier to edit");
-   dlg.m_ItemIdx = m_Selection.PierIdx;
+   dlg.m_ItemIdx  = m_Selection.PierIdx;
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -2701,7 +2847,7 @@ void CPGSuperDoc::OnEditSpan()
    dlg.m_strTitle = _T("Select span to edit");
    dlg.m_strItems = strItems;
    dlg.m_strLabel = _T("Select span to edit");
-   dlg.m_ItemIdx = m_Selection.SpanIdx;
+   dlg.m_ItemIdx  = m_Selection.SpanIdx;
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -2967,6 +3113,7 @@ BOOL CPGSuperDoc::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO
 
 void CPGSuperDoc::PopulateReportMenu()
 {
+   // Populate the report menu tht is on the regular menu bar (View | Reports)
    CEAFMenu* pMainMenu = GetMainMenu();
 
    UINT viewPos = pMainMenu->FindMenuItem(_T("&View"));
@@ -2974,6 +3121,8 @@ void CPGSuperDoc::PopulateReportMenu()
 
    CEAFMenu* pViewMenu = pMainMenu->GetSubMenu(viewPos);
    ASSERT( pViewMenu != NULL );
+   if ( pViewMenu == NULL )
+      return;
 
    UINT reportsPos = pViewMenu->FindMenuItem(_T("&Reports"));
    ASSERT( 0 <= reportsPos );
@@ -2983,6 +3132,23 @@ void CPGSuperDoc::PopulateReportMenu()
    ASSERT(pReportsMenu != NULL);
 
    CEAFBrokerDocument::PopulateReportMenu(pReportsMenu);
+
+#if defined _EAF_USING_MFC_FEATURE_PACK
+   // Create the drop down menu button on the standard PGSuper toolbar
+   UINT nID = m_pPGSuperDocProxyAgent->GetStdToolBarID();
+   CEAFToolBar* pToolBar = GetToolBarByID(nID);
+
+   // Add a drop-down arrow to the Report buttons
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CMenu menu;
+   VERIFY( menu.LoadMenu(IDR_REPORTS) );
+   CMenu* pMenu = menu.GetSubMenu(0);
+   pMenu->RemoveMenu(0,MF_BYPOSITION); // remove the placeholder
+
+   CEAFMenu contextMenu(pMenu->Detach(),GetPluginCommandManager());
+   BuildReportMenu(&contextMenu,false);
+   pToolBar->CreateDropDownButton(ID_VIEW_REPORTS,-1,NULL,contextMenu);
+#endif
 }
 
 void CPGSuperDoc::LoadDocumentSettings()
@@ -3041,6 +3207,13 @@ void CPGSuperDoc::LoadDocumentSettings()
    else
       m_bDesignShearEnabled = true;
 
+   CString strDefaultDesignStirrupsFromScratch = pApp->GetLocalMachineString(_T("Settings"),_T("DesignStirrupsFromScratch"),_T("On"));
+   CString strDesignStirrupsFromScratch = pApp->GetProfileString(_T("Settings"),_T("DesignStirrupsFromScratch"),strDefaultDesignStirrupsFromScratch);
+   if ( strDesignStirrupsFromScratch.CompareNoCase(_T("Off")) == 0 )
+      m_bDesignStirrupsFromScratchEnabled = false;
+   else
+      m_bDesignStirrupsFromScratchEnabled = true;
+
    CString strShowProjectProperties = pApp->GetLocalMachineString(_T("Settings"),_T("ShowProjectProperties"), _T("On"));
    CString strProjectProperties = pApp->GetProfileString(_T("Settings"),_T("ShowProjectProperties"),strShowProjectProperties);
    if ( strProjectProperties.CompareNoCase(_T("Off")) == 0 )
@@ -3074,6 +3247,7 @@ void CPGSuperDoc::SaveDocumentSettings()
    // Save the design mode settings
    VERIFY(pApp->WriteProfileString( _T("Settings"),_T("DesignFlexure"),m_bDesignFlexureEnabled ? _T("On") : _T("Off") ));
    VERIFY(pApp->WriteProfileString( _T("Settings"),_T("DesignShear"),  m_bDesignShearEnabled   ? _T("On") : _T("Off") ));
+   VERIFY(pApp->WriteProfileString( _T("Settings"),_T("DesignStirrupsFromScratch"),  m_bDesignStirrupsFromScratchEnabled   ? _T("On") : _T("Off") ));
 
    VERIFY(pApp->WriteProfileString( _T("Settings"),_T("ShowProjectProperties"),m_bShowProjectProperties ? _T("On") : _T("Off") ));
 }
@@ -3133,7 +3307,11 @@ BOOL CPGSuperDoc::OnViewReports(NMHDR* pnmhdr,LRESULT* plr)
    BuildReportMenu(&contextMenu,false);
 
    GET_IFACE(IEAFToolbars,pToolBars);
+#if defined _EAF_USING_MFC_FEATURE_PACK
+   CEAFToolBar* pToolBar = pToolBars->GetToolBarByID( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
+#else
    CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
+#endif
    int idx = pToolBar->CommandToIndex(ID_VIEW_REPORTS,NULL);
    CRect rect;
    pToolBar->GetItemRect(idx,&rect);
@@ -3325,6 +3503,16 @@ bool CPGSuperDoc::IsDesignShearEnabled() const
 void CPGSuperDoc::EnableDesignShear( bool bEnable )
 {
    m_bDesignShearEnabled = bEnable;
+}
+
+bool CPGSuperDoc::IsDesignStirrupsFromScratchEnabled() const
+{
+   return m_bDesignStirrupsFromScratchEnabled;
+}
+
+void CPGSuperDoc::EnableDesignStirrupsFromScratch( bool bEnable )
+{
+   m_bDesignStirrupsFromScratchEnabled = bEnable;
 }
 
 bool CPGSuperDoc::ShowProjectPropertiesOnNewProject()

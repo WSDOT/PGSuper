@@ -20,18 +20,23 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// ShearSteelPage.cpp : implementation file
+// BridgeDescShearPage.cpp : implementation file
 //
-
 #include "stdafx.h"
-#include <psgLib\psglib.h>
-#include "ShearSteelPage.h"
-#include "GirderMainSheet.h"
-#include "..\htmlhelp\HelpTopics.hh"
+#include <PsgLib\ShearData.h>
+#include <PsgLib\ShearSteelPage.h>
+#include <PsgLib\RebarUIUtils.h>
+
+#include <EAF\EAFApp.h>
+#include <EAF\EAFUtilities.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <MfcTools\CustomDDX.h>
 
-#include <Material\Rebar.h>
-#include <LRFD\RebarPool.h>
+#include <Lrfd\RebarPool.h>
+#include "ShearSteelGrid.h"
+#include "HorizShearGrid.h"
+
+#include "..\htmlhelp\HelpTopics.hh"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -39,13 +44,23 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+const DWORD CShearSteelPage::IDD = IDD_EDIT_SHEAR_STEEL;
+
 /////////////////////////////////////////////////////////////////////////////
 // CShearSteelPage property page
 
 IMPLEMENT_DYNCREATE(CShearSteelPage, CPropertyPage)
 
-CShearSteelPage::CShearSteelPage() : CPropertyPage(CShearSteelPage::IDD,IDS_GIRDER_SHEAR)
+CShearSteelPage::CShearSteelPage():
+m_AllowRestoreDefaults(false)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   CPropertyPage::Construct(CShearSteelPage::IDD,IDS_GIRDER_SHEAR);
+
+   m_pGrid = std::auto_ptr<CShearSteelGrid>(new CShearSteelGrid());
+   m_pHorizGrid = std::auto_ptr<CHorizShearGrid>(new CHorizShearGrid());
+
 	//{{AFX_DATA_INIT(CShearSteelPage)
 	//}}AFX_DATA_INIT
 }
@@ -58,50 +73,234 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CShearSteelPage)
-	DDX_Control(pDX, IDC_TF_BAR_SIZE, m_TfBarSize);
-	DDX_Control(pDX, IDC_BAR_SIZE, m_BarSize);
-	DDX_Control(pDX, IDC_LAST_ZONE, m_LastZone);
-   DDX_Control(pDX,IDC_MILD_STEEL_SELECTOR,m_MaterialName);
 	//}}AFX_DATA_MAP
 
-   CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
+   CEAFApp* pApp = EAFGetApp();
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-   if ( pDX->m_bSaveAndValidate )
+   DDX_Check_Bool(pDX,IDC_SYMMETRICAL,m_ShearData.bAreZonesSymmetrical);
+   DDX_Check_Bool(pDX,IDC_ROUGHENED,           m_ShearData.bIsRoughenedSurface);
+   DDX_Check_Bool(pDX,IDC_CHECK_SPLITTING,     m_ShearData.bUsePrimaryForSplitting);
+
+   // Splitting
+   DDX_UnitValueAndTag(pDX, IDC_SPLITTING_ZL, IDC_SPLITTING_ZL_UNIT, m_ShearData.SplittingZoneLength, pDisplayUnits->XSectionDim);
+   DDV_UnitValueZeroOrMore(pDX, IDC_SPLITTING_ZL, m_ShearData.SplittingZoneLength, pDisplayUnits->XSectionDim );
+
+   DDX_UnitValueAndTag(pDX, IDC_SPLITTING_SPACING, IDC_SPLITTING_SPACING_UNIT, m_ShearData.SplittingBarSpacing, pDisplayUnits->ComponentDim);
+   DDV_UnitValueZeroOrMore(pDX, IDC_SPLITTING_SPACING, m_ShearData.SplittingBarSpacing, pDisplayUnits->ComponentDim );
+
+   DDX_CBItemData(pDX,IDC_SPLITTING_BAR_SIZE,m_ShearData.SplittingBarSize);
+
+   DDX_Text(pDX,IDC_SPLITTING_NLEGS,m_ShearData.nSplittingBars);
+   DDV_NonNegativeDouble(pDX,IDC_SPLITTING_NLEGS,m_ShearData.nSplittingBars);
+
+   if (pDX->m_bSaveAndValidate)
+   {
+      if (matRebar::bsNone != m_ShearData.SplittingBarSize)
+      {
+         if (m_ShearData.SplittingZoneLength<=0.00001)
+         {
+            AfxMessageBox(_T("Splitting Zone length must be greater than zero if bars are specified"));
+            pDX->PrepareCtrl(IDC_SPLITTING_ZL);
+            pDX->Fail();
+         }
+
+         if (m_ShearData.SplittingZoneLength<m_ShearData.SplittingBarSpacing)
+         {
+            AfxMessageBox(_T("Splitting Zone bar spacing must be less than zone length."));
+            pDX->PrepareCtrl(IDC_SPLITTING_SPACING);
+            pDX->Fail();
+         }
+      }
+   }
+
+   // Confinement
+   DDX_UnitValueAndTag(pDX, IDC_CONFINE_ZL, IDC_CONFINE_ZL_UNIT, m_ShearData.ConfinementZoneLength, pDisplayUnits->XSectionDim);
+   DDV_UnitValueZeroOrMore(pDX, IDC_CONFINE_ZL, m_ShearData.ConfinementZoneLength, pDisplayUnits->XSectionDim );
+
+   DDX_UnitValueAndTag(pDX, IDC_CONFINE_SPACING, IDC_CONFINE_SPACING_UNIT, m_ShearData.ConfinementBarSpacing, pDisplayUnits->ComponentDim);
+   DDV_UnitValueZeroOrMore(pDX, IDC_CONFINE_SPACING, m_ShearData.ConfinementBarSpacing, pDisplayUnits->ComponentDim );
+
+   DDX_CBItemData(pDX,IDC_CONFINE_BAR_SIZE,m_ShearData.ConfinementBarSize);
+
+   if (pDX->m_bSaveAndValidate)
+   {
+      if (matRebar::bsNone != m_ShearData.ConfinementBarSize)
+      {
+         if (m_ShearData.ConfinementZoneLength<=0.00001)
+         {
+            AfxMessageBox(_T("Confinement Zone length must be greater than zero if bars are specified"));
+            pDX->PrepareCtrl(IDC_CONFINE_ZL);
+            pDX->Fail();
+         }
+
+         if (m_ShearData.ConfinementZoneLength<m_ShearData.ConfinementBarSpacing)
+         {
+            AfxMessageBox(_T("Confinement Zone bar spacing must be less than zone length."));
+            pDX->PrepareCtrl(IDC_CONFINE_SPACING);
+            pDX->Fail();
+         }
+      }
+   }
+
+   // Primary Grid
+	DDV_GXGridWnd(pDX, m_pGrid.get());
+
+   if (pDX->m_bSaveAndValidate)
    {
       int idx;
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
-      matRebar::Type type;
-      matRebar::Grade grade;
-      pDad->GetStirrupMaterial(idx,type,grade);
-      pDad->m_Entry.SetShearSteelMaterial(type,grade);
+      GetStirrupMaterial(idx,m_ShearData.ShearBarType,m_ShearData.ShearBarGrade);
 
-      matRebar::Size size;
-      DDX_CBItemData(pDX,IDC_TF_BAR_SIZE,size);
-      pDad->m_Entry.SetTopFlangeShearBarSize(size);
+      // zone info from grid
+      m_ShearData.ShearZones.clear();
 
-      DDX_CBItemData(pDX,IDC_BAR_SIZE,size);
-      pDad->m_Entry.SetConfinementBarSize(size);
-   }
+      CShearZoneData lsi;
+      ROWCOL nrows = m_pGrid->GetRowCount();
+      Uint32 zn = 1;
+      for (ROWCOL i=1; i<=nrows; i++)
+      {
+         if (m_pGrid->GetRowData(i,&lsi))
+         {
+            lsi.ZoneNum = zn;
+            lsi.ZoneLength = ::ConvertToSysUnits(lsi.ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
+            lsi.BarSpacing = ::ConvertToSysUnits(lsi.BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure);
+
+            // make sure stirrup spacing is greater than zone length
+            if (zn < nrows)
+            {
+               if (lsi.ZoneLength<=0.00001)
+               {
+                  CString msg;
+                  msg.Format(_T("Zone length must be greater than zero in Shear Zone %d"),zn);
+                  AfxMessageBox(msg);
+                  pDX->Fail();
+               }
+            }
+
+            if ((matRebar::bsNone != lsi.VertBarSize || matRebar::bsNone != lsi.ConfinementBarSize) && zn < nrows)
+            {
+               if (lsi.ZoneLength<lsi.BarSpacing)
+               {
+                  CString msg;
+                  msg.Format(_T("Bar spacing must be less than zone length in Shear Zone %d"),zn);
+                  AfxMessageBox(msg);
+                  pDX->Fail();
+               }
+            }
+
+            // make sure stirrup spacing is >0 if stirrups or confinement bars exist
+            if ( (matRebar::bsNone != lsi.VertBarSize || matRebar::bsNone != lsi.ConfinementBarSize) && lsi.BarSpacing<=0.0)
+            {
+               CString msg;
+               msg.Format(_T("Bar spacing must be greater than zero if stirrups exist in Shear Zone %d"),zn);
+               AfxMessageBox(msg);
+               pDX->Fail();
+            }
+            
+            m_ShearData.ShearZones.push_back(lsi);
+            zn++;
+         }
+      }
+  }
    else
    {
-      matRebar::Type type;
-      matRebar::Grade grade;
-      pDad->m_Entry.GetShearSteelMaterial(type,grade);
-      int idx = pDad->GetStirrupMaterialIndex(type,grade);
+      // fill er up
+      int idx = GetStirrupMaterialIndex(m_ShearData.ShearBarType,m_ShearData.ShearBarGrade);
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
 
+      // grid
+      CShearData::ShearZoneVec vec;
+      for (CShearData::ShearZoneConstIterator it = m_ShearData.ShearZones.begin(); it!=m_ShearData.ShearZones.end(); it++)
+      {
+         // Copy all data then convert length values
+         CShearZoneData inf(*it);
+         inf.ZoneLength     = ::ConvertFromSysUnits((*it).ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
+         inf.BarSpacing     = ::ConvertFromSysUnits((*it).BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure);
+         vec.push_back(inf);
+      }
+      m_pGrid->FillGrid(vec, m_ShearData.bAreZonesSymmetrical);
 
-      matRebar::Size size = pDad->m_Entry.GetTopFlangeShearBarSize();
-      DDX_CBItemData(pDX,IDC_TF_BAR_SIZE,size);
-      
-      size = pDad->m_Entry.GetConfinementBarSize();
-      DDX_CBItemData(pDX,IDC_BAR_SIZE,size);
+      // can't delete strands at start
+      CWnd* pdel = GetDlgItem(IDC_REMOVEROWS);
+      ASSERT(pdel);
+      pdel->EnableWindow(FALSE);
+
    }
 
-	DDV_GXGridWnd(pDX, &m_Grid);
+   // Horiz shear Grid
+	DDV_GXGridWnd(pDX, m_pHorizGrid.get());
 
-   // dad is a friend of the entry. use him to transfer data.
-   pDad->ExchangeTransverseData(pDX);
+   if (pDX->m_bSaveAndValidate)
+   {
+      // zone info from grid
+      m_ShearData.HorizontalInterfaceZones.clear();
+
+      CHorizontalInterfaceZoneData lsi;
+      ROWCOL nrows = m_pHorizGrid->GetRowCount();
+      Uint32 zn = 1;
+      for (ROWCOL i=1; i<=nrows; i++)
+      {
+         if (m_pHorizGrid->GetRowData(i,&lsi))
+         {
+            lsi.ZoneLength = ::ConvertToSysUnits(lsi.ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
+            lsi.BarSpacing = ::ConvertToSysUnits(lsi.BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure);
+
+            // make sure stirrup spacing is greater than zone length
+            if (zn < nrows)
+            {
+               if (lsi.ZoneLength<=0.00001)
+               {
+                  CString msg;
+                  msg.Format(_T("Zone length must be greater than zero in Horiz Interface Shear Zone %d"),zn);
+                  AfxMessageBox(msg);
+                  pDX->Fail();
+               }
+            }
+
+            if (matRebar::bsNone != lsi.BarSize && zn < nrows)
+            {
+               if (lsi.ZoneLength<lsi.BarSpacing)
+               {
+                  CString msg;
+                  msg.Format(_T("Bar spacing must be less than zone length in Horiz Interface Shear Zone %d"),zn);
+                  AfxMessageBox(msg);
+                  pDX->Fail();
+               }
+            }
+
+            // make sure stirrup spacing is >0 if stirrups or confinement bars exist
+            if ( (matRebar::bsNone != lsi.BarSize) && lsi.BarSpacing<=0.0)
+            {
+               CString msg;
+               msg.Format(_T("Bar spacing must be greater than zero if stirrups exist in Horiz Interface Shear Zone %d"),zn);
+               AfxMessageBox(msg);
+               pDX->Fail();
+            }
+            
+            m_ShearData.HorizontalInterfaceZones.push_back(lsi);
+            zn++;
+         }
+      }
+  }
+   else
+   {
+      CShearData::HorizontalInterfaceZoneVec vec;
+      for (CShearData::HorizontalInterfaceZoneConstIterator it = m_ShearData.HorizontalInterfaceZones.begin(); it!=m_ShearData.HorizontalInterfaceZones.end(); it++)
+      {
+         // Copy all data then convert length values
+         CHorizontalInterfaceZoneData inf(*it);
+         inf.ZoneLength     = ::ConvertFromSysUnits((*it).ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
+         inf.BarSpacing     = ::ConvertFromSysUnits((*it).BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure);
+         vec.push_back(inf);
+      }
+      m_pHorizGrid->FillGrid(vec, m_ShearData.bAreZonesSymmetrical);
+
+      // can't delete strands at start
+      CWnd* pdel = GetDlgItem(IDC_REMOVEHORIZROWS);
+      ASSERT(pdel);
+      pdel->EnableWindow(FALSE);
+   }
 }
 
 
@@ -109,7 +308,11 @@ BEGIN_MESSAGE_MAP(CShearSteelPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CShearSteelPage)
 	ON_BN_CLICKED(IDC_REMOVEROWS, OnRemoveRows)
 	ON_BN_CLICKED(IDC_INSERTROW, OnInsertRow)
-	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+	ON_BN_CLICKED(IDC_REMOVEHORIZROWS, OnRemoveHorizRows)
+	ON_BN_CLICKED(IDC_INSERTHORIZROW, OnInsertHorizRow)
+	ON_BN_CLICKED(IDC_SYMMETRICAL, OnClickedSymmetrical)
+   ON_BN_CLICKED(IDC_RESTORE_DEFAULTS, OnRestoreDefaults)
+	ON_COMMAND(ID_HELP, OnHelp)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -123,31 +326,32 @@ void CShearSteelPage::OnEnableDelete(bool canDelete)
    pdel->EnableWindow(canDelete);
 }
 
+void CShearSteelPage::OnEnableHorizDelete(bool canDelete)
+{
+   CWnd* pdel = GetDlgItem(IDC_REMOVEHORIZROWS);
+   ASSERT(pdel);
+   pdel->EnableWindow(canDelete);
+}
+
 BOOL CShearSteelPage::OnInitDialog() 
 {
-   CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
-   ASSERT(pDad);
+	m_pGrid->SubclassDlgItem(IDC_SHEAR_GRID, this);
+   m_pGrid->CustomInit();
 
-   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   pDad->FillMaterialComboBox(pCB);
+	m_pHorizGrid->SubclassDlgItem(IDC_HORIZ_GRID, this);
+   m_pHorizGrid->CustomInit();
 
-   FillBarComboBox((CComboBox*)GetDlgItem(IDC_TF_BAR_SIZE));
-   FillBarComboBox((CComboBox*)GetDlgItem(IDC_BAR_SIZE));
+   CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
+   FillMaterialComboBox(pc);
 
+   FillBarComboBox((CComboBox*)GetDlgItem(IDC_SPLITTING_BAR_SIZE));
+   FillBarComboBox((CComboBox*)GetDlgItem(IDC_CONFINE_BAR_SIZE));
+
+   // 
+   CWnd* pw = (CWnd*)GetDlgItem(IDC_RESTORE_DEFAULTS);
+   pw->ShowWindow(m_AllowRestoreDefaults ? SW_SHOW:SW_HIDE);
 
 	CPropertyPage::OnInitDialog();
-	
-	m_Grid.SubclassDlgItem(IDC_SHEAR_GRID, this);
-   m_Grid.CustomInit();
-
-   // can't delete strands at start
-   CWnd* pdel = GetDlgItem(IDC_REMOVEROWS);
-   ASSERT(pdel);
-   pdel->EnableWindow(FALSE);
-
-   // set data in grids - would be nice to be able to do this in DoDataExchange,
-   // but mfc sucks.
-   pDad->UploadTransverseData();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -158,25 +362,14 @@ void CShearSteelPage::OnRemoveRows()
    DoRemoveRows();
 }
 
-void CShearSteelPage::DoRemoveRows() 
+void CShearSteelPage::DoRemoveRows()
 {
-	m_Grid.DoRemoveRows();
+	m_pGrid->DoRemoveRows();
 
    // selection is gone after row is deleted
    CWnd* pdel = GetDlgItem(IDC_REMOVEROWS);
    ASSERT(pdel);
    pdel->EnableWindow(FALSE);
-
-   // update list control
-   int lz = m_LastZone.GetCurSel();
-   ROWCOL nrows = m_Grid.GetRowCount();
-   FillLastZone(nrows);
-   if (lz==CB_ERR)
-      m_LastZone.SetCurSel(0);
-   else if ((ROWCOL)lz>nrows)
-      m_LastZone.SetCurSel(nrows);
-   else
-      m_LastZone.SetCurSel(lz);
 }
 
 void CShearSteelPage::OnInsertRow() 
@@ -186,35 +379,61 @@ void CShearSteelPage::OnInsertRow()
 
 void CShearSteelPage::DoInsertRow() 
 {
-	m_Grid.DoInsertRow();
-
-   // update list control
-   int lz = m_LastZone.GetCurSel();
-   ROWCOL nrows = m_Grid.GetRowCount();
-   FillLastZone(nrows);
-   if (lz==CB_ERR)
-      m_LastZone.SetCurSel(0);
-   else
-      m_LastZone.SetCurSel(lz);
-
+	m_pGrid->InsertRow(false); // insert at top if no selection
 }
 
-void CShearSteelPage::FillLastZone(ZoneIndexType siz)
+void CShearSteelPage::OnRemoveHorizRows() 
 {
-   CString tmp;
-   m_LastZone.ResetContent();
-   m_LastZone.AddString(_T("None"));
-   for (ZoneIndexType i=1; i<=siz; i++)
-   {
-      tmp.Format(_T("Zone %d"),i);
-      m_LastZone.AddString(tmp);
-   }
+   DoRemoveHorizRows();
 }
 
-LRESULT CShearSteelPage::OnCommandHelp(WPARAM, LPARAM lParam)
+void CShearSteelPage::DoRemoveHorizRows()
 {
-   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_TRANSVERSE_REINFORCEMENT_TAB );
-   return TRUE;
+	m_pHorizGrid->DoRemoveRows();
+
+   // selection is gone after row is deleted
+   CWnd* pdel = GetDlgItem(IDC_REMOVEHORIZROWS);
+   ASSERT(pdel);
+   pdel->EnableWindow(FALSE);
+}
+
+void CShearSteelPage::OnInsertHorizRow() 
+{
+   DoInsertHorizRow();
+}
+
+void CShearSteelPage::DoInsertHorizRow() 
+{
+	m_pHorizGrid->InsertRow(false); // insert at top if no selection
+}
+
+
+void CShearSteelPage::OnClickedSymmetrical()
+{
+   CButton* pdel = (CButton*)GetDlgItem(IDC_SYMMETRICAL);
+   ASSERT(pdel);
+   bool is_sym = pdel->GetCheck()!=BST_UNCHECKED;
+
+   m_pGrid->SetSymmetry(is_sym);
+   m_pHorizGrid->SetSymmetry(is_sym);
+}
+
+
+BOOL CShearSteelPage::OnSetActive() 
+{
+	BOOL val = CPropertyPage::OnSetActive();
+
+   m_pGrid->SelectRange(CGXRange().SetTable(), FALSE);
+   m_pHorizGrid->SelectRange(CGXRange().SetTable(), FALSE);
+
+   return val;
+}
+
+void CShearSteelPage::OnHelp() 
+{
+   UINT helpID = IDH_TRANSVERSE_REINFORCEMENT_TAB;
+
+   ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, helpID );
 }
 
 void CShearSteelPage::FillBarComboBox(CComboBox* pCB)
@@ -233,4 +452,27 @@ void CShearSteelPage::FillBarComboBox(CComboBox* pCB)
 
    idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bs6).c_str());
    pCB->SetItemData(idx,(DWORD_PTR)matRebar::bs6);
+
+   idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bs7).c_str());
+   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bs7);
+
+   idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bs8).c_str());
+   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bs8);
+
+   idx = pCB->AddString(lrfdRebarPool::GetBarSize(matRebar::bs9).c_str());
+   pCB->SetItemData(idx,(DWORD_PTR)matRebar::bs9);
+}
+
+
+void CShearSteelPage::OnRestoreDefaults()
+{
+    DoRestoreDefaults();
+
+   // update data in page and redraw
+   VERIFY(UpdateData(FALSE));
+}
+
+void CShearSteelPage::DoRestoreDefaults()
+{
+    ATLASSERT(0); // library should never want to do this
 }

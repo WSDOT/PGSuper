@@ -33,6 +33,7 @@
 #include <IFace\GirderHandling.h>
 
 #include <PgsExt\BridgeDescription.h>
+#include <DesignConfigUtil.h>
 
 #include <EAF\EAFAutoProgress.h>
 #include <EAF\EAFApp.h>
@@ -447,13 +448,21 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
 
       // See if we need to run a design
       bool designSucceeded=true;
-      if (txInfo.m_TxRunType == CTxDOTCommandLineInfo::txrDesign)
+      if (txInfo.m_TxRunType == CTxDOTCommandLineInfo::txrDesign || txInfo.m_TxRunType == CTxDOTCommandLineInfo::txrDesignShear)
       {
-         // get design options from library entry. Do flexure only
+         // get design options from library entry. 
          GET_IFACE(ISpecification,pSpecification);
          arDesignOptions des_options = pSpecification->GetDesignOptions(span,girder);
 
-         des_options.doDesignForShear = false; // shear design is off
+         // Set up for shear design. 
+         des_options.doDesignForShear = txInfo.m_TxRunType == CTxDOTCommandLineInfo::txrDesignShear;
+         if(des_options.doDesignForShear)
+         {
+            // If stirrup zones are not symmetrical in test file, design using existing layout
+            GET_IFACE(IStirrupGeometry,pStirrupGeom);
+            bool are_symm = pStirrupGeom->AreStirrupZonesSymmetrical(span, girder);
+            des_options.doDesignStirrupLayout = are_symm ? slLayoutStirrups : slRetainExistingLayout;
+         }
 
          GET_IFACE(IArtifact,pIArtifact);
          const pgsDesignArtifact* pArtifact;
@@ -469,7 +478,7 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
             }
 
             // and copy the design to the bridge
-            SaveFlexureDesign(span,girder, des_options, pArtifact);
+            SaveDesign(span,girder, des_options, pArtifact);
          }
          catch(...)
          {
@@ -546,24 +555,24 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
 }
 
 
-void CTxDOTAgentImp::SaveFlexureDesign(SpanIndexType span,GirderIndexType gdr,const arDesignOptions& designOptions,const pgsDesignArtifact* pArtifact)
+void CTxDOTAgentImp::SaveDesign(SpanIndexType span,GirderIndexType gdr,const arDesignOptions& designOptions,const pgsDesignArtifact* pArtifact)
 {
    GET_IFACE(IGirderData,pGirderData);
    GET_IFACE(IStrandGeometry, pStrandGeometry );
 
-   CGirderData girderData = pGirderData->GetGirderData(span, gdr);
+   CGirderData girderData = *(pGirderData->GetGirderData(span, gdr));
 
    // Convert Harp offset data
    // offsets are absolute measure in the design artifact
    // convert them to the measurement basis that the CGirderData object is using
-   girderData.HpOffsetAtEnd = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(span, gdr, 
-                                                                                  pArtifact->GetNumHarpedStrands(), 
-                                                                                  girderData.HsoEndMeasurement, 
+   ConfigStrandFillVector fillvec = pStrandGeometry->ComputeStrandFill(span, gdr, pgsTypes::Harped, pArtifact->GetNumHarpedStrands());
+
+   girderData.PrestressData.HpOffsetAtEnd = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(span, gdr, fillvec,
+                                                                                  girderData.PrestressData.HsoEndMeasurement, 
                                                                                   pArtifact->GetHarpStrandOffsetEnd());
 
-   girderData.HpOffsetAtHp = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(span, gdr, 
-                                                                                pArtifact->GetNumHarpedStrands(), 
-                                                                                girderData.HsoHpMeasurement, 
+   girderData.PrestressData.HpOffsetAtHp = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(span, gdr, fillvec,
+                                                                                girderData.PrestressData.HsoHpMeasurement, 
                                                                                 pArtifact->GetHarpStrandOffsetHp());
 
 
@@ -572,10 +581,10 @@ void CTxDOTAgentImp::SaveFlexureDesign(SpanIndexType span,GirderIndexType gdr,co
    // see if strand design data fits in grid
    bool fills_grid=false;
    StrandIndexType num_permanent = pArtifact->GetNumHarpedStrands() + pArtifact->GetNumStraightStrands();
+   StrandIndexType ns(0), nh(0);
    if (designOptions.doStrandFillType==ftGridOrder)
    {
       // we asked design to fill using grid, but this may be a non-standard design - let's check
-      StrandIndexType ns, nh;
       if (pStrandGeometry->ComputeNumPermanentStrands(num_permanent, span, gdr, &ns, &nh))
       {
          if (ns==pArtifact->GetNumStraightStrands() && nh==pArtifact->GetNumHarpedStrands() )
@@ -587,77 +596,88 @@ void CTxDOTAgentImp::SaveFlexureDesign(SpanIndexType span,GirderIndexType gdr,co
 
    if (fills_grid)
    {
-      girderData.NumPermStrandsType = NPS_TOTAL_NUMBER;
+      // NPS_TOTAL_NUMBER
+      ATLASSERT(num_permanent==ns+nh);
 
-      girderData.Nstrands[pgsTypes::Permanent]            = num_permanent;
-      girderData.Pjack[pgsTypes::Permanent]               = pArtifact->GetPjackStraightStrands() + pArtifact->GetPjackHarpedStrands();
-      girderData.bPjackCalculated[pgsTypes::Permanent]    = pArtifact->GetUsedMaxPjackStraightStrands();
+      girderData.PrestressData.SetTotalPermanentNstrands(num_permanent, ns, nh);
+
+      girderData.PrestressData.Pjack[pgsTypes::Permanent]               = pArtifact->GetPjackStraightStrands() + pArtifact->GetPjackHarpedStrands();
+      girderData.PrestressData.bPjackCalculated[pgsTypes::Permanent]    = pArtifact->GetUsedMaxPjackStraightStrands();
    }
    else
    {
-      girderData.NumPermStrandsType = NPS_STRAIGHT_HARPED;
+      // NPS_STRAIGHT_HARPED;
+      girderData.PrestressData.SetHarpedStraightNstrands(pArtifact->GetNumStraightStrands(), pArtifact->GetNumHarpedStrands());
    }
 
-   girderData.Nstrands[pgsTypes::Harped]            = pArtifact->GetNumHarpedStrands();
-   girderData.Nstrands[pgsTypes::Straight]          = pArtifact->GetNumStraightStrands();
-   girderData.Nstrands[pgsTypes::Temporary]         = pArtifact->GetNumTempStrands();
-   girderData.Pjack[pgsTypes::Harped]               = pArtifact->GetPjackHarpedStrands();
-   girderData.Pjack[pgsTypes::Straight]             = pArtifact->GetPjackStraightStrands();
-   girderData.Pjack[pgsTypes::Temporary]            = pArtifact->GetPjackTempStrands();
-   girderData.bPjackCalculated[pgsTypes::Harped]    = pArtifact->GetUsedMaxPjackHarpedStrands();
-   girderData.bPjackCalculated[pgsTypes::Straight]  = pArtifact->GetUsedMaxPjackStraightStrands();
-   girderData.bPjackCalculated[pgsTypes::Temporary] = pArtifact->GetUsedMaxPjackTempStrands();
-   girderData.LastUserPjack[pgsTypes::Harped]       = pArtifact->GetPjackHarpedStrands();
-   girderData.LastUserPjack[pgsTypes::Straight]     = pArtifact->GetPjackStraightStrands();
-   girderData.LastUserPjack[pgsTypes::Temporary]    = pArtifact->GetPjackTempStrands();
+   girderData.PrestressData.SetTemporaryNstrands(pArtifact->GetNumTempStrands());
 
-   girderData.TempStrandUsage = pArtifact->GetTemporaryStrandUsage();
+   girderData.PrestressData.Pjack[pgsTypes::Harped]               = pArtifact->GetPjackHarpedStrands();
+   girderData.PrestressData.Pjack[pgsTypes::Straight]             = pArtifact->GetPjackStraightStrands();
+   girderData.PrestressData.Pjack[pgsTypes::Temporary]            = pArtifact->GetPjackTempStrands();
+   girderData.PrestressData.bPjackCalculated[pgsTypes::Harped]    = pArtifact->GetUsedMaxPjackHarpedStrands();
+   girderData.PrestressData.bPjackCalculated[pgsTypes::Straight]  = pArtifact->GetUsedMaxPjackStraightStrands();
+   girderData.PrestressData.bPjackCalculated[pgsTypes::Temporary] = pArtifact->GetUsedMaxPjackTempStrands();
+   girderData.PrestressData.LastUserPjack[pgsTypes::Harped]       = pArtifact->GetPjackHarpedStrands();
+   girderData.PrestressData.LastUserPjack[pgsTypes::Straight]     = pArtifact->GetPjackStraightStrands();
+   girderData.PrestressData.LastUserPjack[pgsTypes::Temporary]    = pArtifact->GetPjackTempStrands();
+
+   girderData.PrestressData.TempStrandUsage = pArtifact->GetTemporaryStrandUsage();
 
    // Get debond information from design artifact
-   girderData.ClearDebondData();
-   girderData.bSymmetricDebond = true;  // design is always symmetric
+   girderData.PrestressData.ClearDebondData();
+   girderData.PrestressData.bSymmetricDebond = true;  // design is always symmetric
 
-   DebondInfoCollection dbcoll = pArtifact->GetStraightStrandDebondInfo();
-   // TRICKY: Mapping from DEBONDINFO to CDebondInfo is tricky because
+   // TRICKY: Mapping from DEBONDCONFIG to CDebondInfo is tricky because
    //         former designates individual strands and latter stores symmetric strands
    //         in pairs.
+   // Use utility tool to make the strand indexing conversion
+   ConfigStrandFillVector strtfillvec = pStrandGeometry->ComputeStrandFill(span, gdr, pgsTypes::Straight, pArtifact->GetNumStraightStrands());
+   ConfigStrandFillTool fillTool( strtfillvec );
+
+   DebondConfigCollection dbcoll = pArtifact->GetStraightStrandDebondInfo();
    // sort this collection by strand idices to ensure we get it right
    std::sort( dbcoll.begin(), dbcoll.end() ); // default < operator is by index
 
-   for (DebondInfoIterator dbit = dbcoll.begin(); dbit!=dbcoll.end(); dbit++)
+   for (DebondConfigConstIterator dbit = dbcoll.begin(); dbit!=dbcoll.end(); dbit++)
    {
-      const DEBONDINFO& rdbrinfo = *dbit;
+      const DEBONDCONFIG& rdbrinfo = *dbit;
 
       CDebondInfo cdbi;
-      cdbi.idxStrand1 = rdbrinfo.strandIdx;
 
-      // if the difference between the current and next number of strands is 2, this is a pair
-      StrandIndexType currnum = rdbrinfo.strandIdx;
-      StrandIndexType nextnum = pStrandGeometry->GetNextNumStrands(span, gdr, pgsTypes::Straight, currnum);
-      if (nextnum-currnum == 2)
-      {
-         dbit++; // increment counter to account for a pair
-         cdbi.idxStrand2 = dbit->strandIdx;
+      StrandIndexType gridIndex, otherPos;
+      fillTool.StrandPositionIndexToGridIndex(rdbrinfo.strandIdx, &gridIndex, &otherPos);
 
-         // some asserts to ensure we got things right
-         ATLASSERT(cdbi.idxStrand1+1 == cdbi.idxStrand2);
-         ATLASSERT(rdbrinfo.LeftDebondLength == dbit->LeftDebondLength);
-         ATLASSERT(rdbrinfo.RightDebondLength == dbit->RightDebondLength);
-      }
-      else
+      cdbi.strandTypeGridIdx = gridIndex;
+
+      // If there is another position, this is a pair. Increment to next position
+      if (otherPos != INVALID_INDEX)
       {
-         // not a pair
-         cdbi.idxStrand2 = INVALID_INDEX;
+         dbit++;
+
+#ifdef _DEBUG
+         const DEBONDCONFIG& ainfo = *dbit;
+         StrandIndexType agrid;
+         fillTool.StrandPositionIndexToGridIndex(ainfo.strandIdx, &agrid, &otherPos);
+         ATLASSERT(agrid==gridIndex); // must have the same grid index
+#endif
       }
+
       cdbi.Length1    = rdbrinfo.LeftDebondLength;
       cdbi.Length2    = rdbrinfo.RightDebondLength;
 
-      girderData.Debond[pgsTypes::Straight].push_back(cdbi);
+      girderData.PrestressData.Debond[pgsTypes::Straight].push_back(cdbi);
    }
    
    // concrete
    girderData.Material.Fci = pArtifact->GetReleaseStrength();
    girderData.Material.Fc  = pArtifact->GetConcreteStrength();
+
+   // Stirrup design data
+   if(designOptions.doDesignForShear)
+   {
+      girderData.ShearData = pArtifact->GetShearData();
+   }
 
    pGirderData->SetGirderData( girderData, span, gdr );
 

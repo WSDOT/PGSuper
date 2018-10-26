@@ -387,7 +387,7 @@ interface IGirderData : IUnknown
 {
    virtual const matPsStrand* GetStrandMaterial(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type) const = 0;
    virtual void SetStrandMaterial(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType type,const matPsStrand* pmat)=0;
-   virtual CGirderData GetGirderData(SpanIndexType span,GirderIndexType gdr) const = 0;
+   virtual const CGirderData* GetGirderData(SpanIndexType span,GirderIndexType gdr) const = 0;
    virtual bool SetGirderData(const CGirderData& data,SpanIndexType span,GirderIndexType gdr) = 0;
    virtual const CGirderMaterial* GetGirderMaterial(SpanIndexType span,GirderIndexType gdr) const = 0;
    virtual void SetGirderMaterial(SpanIndexType span,GirderIndexType gdr,const CGirderMaterial& material) = 0;
@@ -820,9 +820,12 @@ DEFINE_GUID(IID_ILiveLoads,
 0xd286fe13, 0x3818, 0x4805, 0xb4, 0xb2, 0xc, 0xf4, 0xe0, 0x56, 0xb3, 0x7e);
 interface ILiveLoads : IUnknown
 {
+   enum PedestrianLoadApplicationType {PedDontApply, PedConcurrentWithVehiculuar, PedEnvelopeWithVehicular};
+
    virtual bool IsLiveLoadDefined(pgsTypes::LiveLoadType llType) = 0;
-   virtual bool IsPedestianLoadEnabled(pgsTypes::LiveLoadType llType) = 0;
-   virtual void EnablePedestianLoad(pgsTypes::LiveLoadType llType,bool bEnable) = 0;
+   virtual PedestrianLoadApplicationType GetPedestrianLoadApplication(pgsTypes::LiveLoadType llType) = 0;
+   // SetPedestrianLoadApplication function only applicable to lltDesign, lltPermit, lltFatigue
+   virtual void SetPedestrianLoadApplication(pgsTypes::LiveLoadType llType, PedestrianLoadApplicationType PedLoad) = 0;
    virtual std::vector<std::_tstring> GetLiveLoadNames(pgsTypes::LiveLoadType llType) = 0;
    virtual void SetLiveLoadNames(pgsTypes::LiveLoadType llType,const std::vector<std::_tstring>& names) = 0;
    virtual double GetTruckImpact(pgsTypes::LiveLoadType llType) = 0;

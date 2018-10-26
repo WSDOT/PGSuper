@@ -264,7 +264,7 @@ Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi,pgs
 
    // Determine effectiveness of the debonded strands
    Float64 nDebondedEffective = 0; // number of effective debonded strands
-   std::vector<DEBONDINFO>::const_iterator iter;
+   DebondConfigConstIterator iter;
 
    pgsTypes::StrandType st1, st2;
    if ( strandType == pgsTypes::Permanent )
@@ -283,9 +283,9 @@ Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi,pgs
    {
       pgsTypes::StrandType st = (pgsTypes::StrandType)i;
 
-      for ( iter = config.Debond[st].begin(); iter != config.Debond[st].end(); iter++ )
+      for ( iter = config.PrestressConfig.Debond[st].begin(); iter != config.PrestressConfig.Debond[st].end(); iter++ )
       {
-         const DEBONDINFO& debond_info = *iter;
+         const DEBONDCONFIG& debond_info = *iter;
 
          Float64 right_db_from_left = gdr_length - debond_info.RightDebondLength;
 
@@ -368,8 +368,10 @@ Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi,
    dist_from_left_end  = poi.GetDistFromStart();
    dist_from_right_end = gdr_length - dist_from_left_end;
 
-   StrandIndexType Ns = (strandType == pgsTypes::Permanent ? config.Nstrands[pgsTypes::Straight] + config.Nstrands[pgsTypes::Harped] : config.Nstrands[strandType]);
-   StrandIndexType nDebond = (strandType == pgsTypes::Permanent ? config.Debond[pgsTypes::Straight].size() + config.Debond[pgsTypes::Harped].size() : config.Debond[strandType].size());
+   const PRESTRESSCONFIG& psconf = config.PrestressConfig; // make a shortcut for readability
+
+   StrandIndexType Ns = (strandType == pgsTypes::Permanent ? psconf.GetNStrands(pgsTypes::Straight) + psconf.GetNStrands(pgsTypes::Harped) : psconf.GetNStrands(strandType));
+   StrandIndexType nDebond = (strandType == pgsTypes::Permanent ? psconf.Debond[pgsTypes::Straight].size() + psconf.Debond[pgsTypes::Harped].size() : psconf.Debond[strandType].size());
    ATLASSERT(nDebond <= Ns); // must be true!
 
    // Quick check to make sure there is even an adjustment to be made
@@ -379,7 +381,7 @@ Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi,
 
    // Determine effectiveness of the debonded strands
    Float64 nDebondedEffective = 0; // number of effective debonded strands
-   std::vector<DEBONDINFO>::const_iterator iter;
+   DebondConfigConstIterator iter;
 
    pgsTypes::StrandType st1, st2;
    if ( strandType == pgsTypes::Permanent )
@@ -397,9 +399,9 @@ Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi,
    {
       pgsTypes::StrandType st = (pgsTypes::StrandType)i;
 
-      for ( iter = config.Debond[st].begin(); iter != config.Debond[st].end(); iter++ )
+      for ( iter = psconf.Debond[st].begin(); iter != psconf.Debond[st].end(); iter++ )
       {
-         const DEBONDINFO& debond_info = *iter;
+         const DEBONDCONFIG& debond_info = *iter;
 
          Float64 right_db_from_left = gdr_length - debond_info.RightDebondLength;
 
@@ -597,8 +599,7 @@ Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,Stra
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
    Float64 bond_start, bond_end;
-   bool bDebonded = pStrandGeom->IsStrandDebonded(span,gdr,strandIdx,strandType,config,&bond_start,&bond_end);
-
+   bool bDebonded = pStrandGeom->IsStrandDebonded(span,gdr,strandIdx,strandType,config.PrestressConfig,&bond_start,&bond_end);
    bool bExtendedStrand = pStrandGeom->IsExtendedStrand(poi,strandIdx,strandType,config);
 
    // determine minimum bonded length from poi
@@ -695,7 +696,7 @@ Float64 pgsPsForceEng::GetHoldDownForce(SpanIndexType span,GirderIndexType gdr)
 
 Float64 pgsPsForceEng::GetHoldDownForce(SpanIndexType span,GirderIndexType gdr,const GDRCONFIG& config)
 {
-   if (config.Nstrands[pgsTypes::Harped] > 0)
+   if (config.PrestressConfig.GetNStrands(pgsTypes::Harped))
    {
       GET_IFACE(IPointOfInterest,pPOI);
       std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(span,gdr,pgsTypes::BridgeSite3,POI_HARPINGPOINT);
@@ -714,7 +715,7 @@ Float64 pgsPsForceEng::GetHoldDownForce(SpanIndexType span,GirderIndexType gdr,c
 
       // Adjust for slope
       GET_IFACE(IStrandGeometry,pStrandGeom);
-      Float64 slope = pStrandGeom->GetAvgStrandSlope( poi,config.Nstrands[pgsTypes::Harped],config.EndOffset,config.HpOffset );
+      Float64 slope = pStrandGeom->GetAvgStrandSlope( poi,config.PrestressConfig);
 
       Float64 F;
       F = harped / sqrt( 1*1 + slope*slope );
@@ -760,14 +761,14 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,
 
 
    GET_IFACE(IGirderData,pGirderData);
-   CGirderData girderData = pGirderData->GetGirderData(span,gdr);
-   const matPsStrand* pstrand = girderData.Material.pStrandMaterial[strandType == pgsTypes::Permanent ? pgsTypes::Straight : strandType];
+   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
+   const matPsStrand* pstrand = pgirderData->Material.pStrandMaterial[strandType == pgsTypes::Permanent ? pgsTypes::Straight : strandType];
    CHECK(pstrand!=0);
    
    // Get the strand stress
    Float64 fps = GetStrandStress(poi,strandType,stage); // ( accounts for losses and adjusts for lack of development length)
 
-   pgsTypes::TTSUsage tempStrandUsage = girderData.TempStrandUsage;
+   pgsTypes::TTSUsage tempStrandUsage = pgirderData->PrestressData.TempStrandUsage;
 
    if ( strandType == pgsTypes::Temporary )
    {
@@ -815,7 +816,8 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,
    // NOTE: This method is almost identical to the other GetPrestressForce method.
    // Any changes done here will likely need to be done there as well
    //******************************************************************************
-   StrandIndexType Ns = (strandType == pgsTypes::Permanent ? config.Nstrands[pgsTypes::Straight] + config.Nstrands[pgsTypes::Harped] : config.Nstrands[strandType]);
+   const PRESTRESSCONFIG& rpsconf = config.PrestressConfig;
+   StrandIndexType Ns = (strandType == pgsTypes::Permanent ? rpsconf.GetNStrands(pgsTypes::Straight) + rpsconf.GetNStrands(pgsTypes::Harped) : rpsconf.GetNStrands(strandType));
 
    if ( Ns == 0 )
       return 0;
@@ -832,7 +834,7 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,
 
    if ( strandType == pgsTypes::Temporary )
    {
-      switch( config.TempStrandUsage )
+      switch( config.PrestressConfig.TempStrandUsage )
       {
       case pgsTypes::ttsPretensioned:
          if ( pgsTypes::AfterTemporaryStrandRemoval <= stage && stage != pgsTypes::AfterTemporaryStrandInstallation )
@@ -888,20 +890,20 @@ Float64 pgsPsForceEng::GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::S
 
    if ( strandType == pgsTypes::Permanent )
    {
-      Pj = config.Pjack[pgsTypes::Straight]    + config.Pjack[pgsTypes::Harped];
-      N  = config.Nstrands[pgsTypes::Straight] + config.Nstrands[pgsTypes::Harped];
+      Pj = config.PrestressConfig.Pjack[pgsTypes::Straight] + config.PrestressConfig.Pjack[pgsTypes::Harped];
+      N  = config.PrestressConfig.GetNStrands(pgsTypes::Straight) + config.PrestressConfig.GetNStrands(pgsTypes::Harped);
    }
    else
    {
-      Pj = config.Pjack[strandType];
-      N  = config.Nstrands[strandType];
+      Pj = config.PrestressConfig.Pjack[strandType];
+      N  = config.PrestressConfig.GetNStrands(strandType);
    }
 
    if ( strandType == pgsTypes::Temporary )
    {
       if ( 
-           ( (stage == pgsTypes::Jacking || stage == pgsTypes::BeforeXfer || stage == pgsTypes::AfterXfer) && config.TempStrandUsage != pgsTypes::ttsPretensioned ) ||
-           (  stage == pgsTypes::AtLifting && (config.TempStrandUsage == pgsTypes::ttsPTAfterLifting || config.TempStrandUsage == pgsTypes::ttsPTBeforeShipping) )   ||
+           ( (stage == pgsTypes::Jacking || stage == pgsTypes::BeforeXfer || stage == pgsTypes::AfterXfer) && config.PrestressConfig.TempStrandUsage != pgsTypes::ttsPretensioned ) ||
+           (  stage == pgsTypes::AtLifting && (config.PrestressConfig.TempStrandUsage == pgsTypes::ttsPTAfterLifting || config.PrestressConfig.TempStrandUsage == pgsTypes::ttsPTBeforeShipping) )   ||
            (  stage == pgsTypes::AfterTemporaryStrandRemoval || stage == pgsTypes::AfterDeckPlacement || stage == pgsTypes::AfterSIDL || stage == pgsTypes::AfterLosses )
          )
       {
@@ -975,6 +977,11 @@ Float64 pgsPsForceEng::GetStrandStress(const pgsPointOfInterest& poi,pgsTypes::S
 
    case pgsTypes::AfterLosses:
       loss = pLosses->GetFinal(poi,strandType,config);
+      // Final losses are relative to stress immedately before transfer (LRFD 5.9.5.1)
+      break;
+
+   case pgsTypes::AfterLossesWithLiveLoad:
+      loss = pLosses->GetFinalWithLiveLoad(poi,strandType,config);
       // Final losses are relative to stress immedately before transfer (LRFD 5.9.5.1)
       break;
 

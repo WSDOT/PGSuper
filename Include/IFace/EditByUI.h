@@ -81,6 +81,9 @@ interface IEditByUI : IUnknown
    virtual UINT GetStdToolBarID() = 0;
    virtual UINT GetLibToolBarID() = 0;
    virtual UINT GetHelpToolBarID() = 0;
+
+   // NOTE: Strand fill type must be NPS_DIRECT_SELECTION before entering this dialog
+   virtual bool EditDirectInputPrestressing(SpanIndexType span,GirderIndexType girder) = 0;
 };
 
 // Extends the load editing capabilities... presents user with load editing UI as needed

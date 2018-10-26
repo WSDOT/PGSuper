@@ -24,7 +24,7 @@
 #define INCLUDED_EDITGIRDER_H_
 
 #include <System\Transaction.h>
-#include <PgsExt\ShearData.h>
+#include <PsgLib\ShearData.h>
 #include <PgsExt\GirderData.h>
 #include <PgsExt\LongitudinalRebarData.h>
 #include <IFace\Project.h>

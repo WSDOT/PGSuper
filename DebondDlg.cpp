@@ -28,6 +28,7 @@
 #include "DebondDlg.h"
 #include "GirderDescDlg.h"
 #include "PGSuperColors.h"
+#include <DesignConfigUtil.h>
 #include <IFace\Bridge.h>
 #include "HtmlHelp\HelpTopics.hh"
 
@@ -61,7 +62,7 @@ void CGirderDescDebondPage::DoDataExchange(CDataExchange* pDX)
    //{{AFX_DATA_MAP(CGirderDescDebondPage)
 	//}}AFX_DATA_MAP
 
-	DDX_Check_Bool(pDX, IDC_SYMMETRIC_DEBOND, pParent->m_GirderData.bSymmetricDebond);
+	DDX_Check_Bool(pDX, IDC_SYMMETRIC_DEBOND, pParent->m_GirderData.PrestressData.bSymmetricDebond);
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -73,8 +74,8 @@ void CGirderDescDebondPage::DoDataExchange(CDataExchange* pDX)
 
       m_Grid.GetData(pParent->m_GirderData);
 
-      for (std::vector<CDebondInfo>::iterator iter = pParent->m_GirderData.Debond[pgsTypes::Straight].begin(); 
-           iter != pParent->m_GirderData.Debond[pgsTypes::Straight].end(); iter++ )
+      for (std::vector<CDebondInfo>::iterator iter = pParent->m_GirderData.PrestressData.Debond[pgsTypes::Straight].begin(); 
+           iter != pParent->m_GirderData.PrestressData.Debond[pgsTypes::Straight].end(); iter++ )
       {
          CDebondInfo& debond_info = *iter;
          if (gdr_length2 <= debond_info.Length1 || gdr_length2 <= debond_info.Length2)
@@ -91,9 +92,9 @@ void CGirderDescDebondPage::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CGirderDescDebondPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CGirderDescDebondPage)
 	ON_WM_PAINT()
-	ON_WM_SIZE()
 	ON_BN_CLICKED(IDC_SYMMETRIC_DEBOND, OnSymmetricDebond)
 	ON_COMMAND(ID_HELP, OnHelp)
+   ON_WM_CTLCOLOR()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -106,7 +107,7 @@ BOOL CGirderDescDebondPage::OnInitDialog()
 	m_Grid.SubclassDlgItem(IDC_DEBOND_GRID, this);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   m_Grid.CustomInit(pParent->m_GirderData.bSymmetricDebond ? TRUE : FALSE);
+   m_Grid.CustomInit(pParent->m_GirderData.PrestressData.bSymmetricDebond ? TRUE : FALSE);
 
    return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -116,7 +117,6 @@ BOOL CGirderDescDebondPage::OnSetActive()
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
@@ -124,47 +124,25 @@ BOOL CGirderDescDebondPage::OnSetActive()
    m_Grid.CanDebond(bCanDebond);
    GetDlgItem(IDC_SYMMETRIC_DEBOND)->ShowWindow(bCanDebond ? SW_SHOW : SW_HIDE);
    GetDlgItem(IDC_NUM_DEBONDED)->ShowWindow(bCanDebond ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_PERCENT_DEBONDED)->ShowWindow(bCanDebond ? SW_SHOW : SW_HIDE);
    GetDlgItem(IDC_NOTE)->ShowWindow(bCanDebond ? SW_SHOW : SW_HIDE);
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
    GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-   GetDlgItem(IDC_NUM_EXTENDED)->ShowWindow( pSpecEntry->AllowStraightStrandExtensions() ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_NUM_EXTENDED_LEFT)->ShowWindow(pSpecEntry->AllowStraightStrandExtensions() ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_NUM_EXTENDED_RIGHT)->ShowWindow(pSpecEntry->AllowStraightStrandExtensions() ? SW_SHOW : SW_HIDE);
 
-   m_Debondables.Release();
-   pStrandGeometry->ListDebondableStrands(pParent->m_strGirderName.c_str(), pgsTypes::Straight, &m_Debondables);
-
-   // make sure we don't have more debonded strands than total strands
    StrandIndexType nStrands = pParent->GetStraightStrandCount();
-   std::vector<CDebondInfo>::iterator debond_iter( pParent->m_GirderData.Debond[pgsTypes::Straight].begin() );
-   while ( debond_iter != pParent->m_GirderData.Debond[pgsTypes::Straight].end() )
-   {
-      if ( (nStrands <= debond_iter->idxStrand1 && debond_iter->idxStrand1 != INVALID_INDEX) || (nStrands <= debond_iter->idxStrand2 && debond_iter->idxStrand2 != INVALID_INDEX) )
-      {
-         debond_iter = pParent->m_GirderData.Debond[pgsTypes::Straight].erase(debond_iter);
-      }
-      else
-      {
-         debond_iter++;
-      }
-   }
+   ConfigStrandFillVector strtvec = pParent->ComputeStrandFillVector(pgsTypes::Straight);
+   ReconcileDebonding(strtvec, pParent->m_GirderData.PrestressData.Debond[pgsTypes::Straight]); 
 
-   // make sure we don't have more extended strands than total strands
    for ( int i = 0; i < 2; i++ )
    {
-      std::vector<StrandIndexType>::iterator strand_iter(pParent->m_GirderData.NextendedStrands[pgsTypes::Straight][i].begin());
-      while ( strand_iter != pParent->m_GirderData.NextendedStrands[pgsTypes::Straight][i].end() )
-      {
-         if ( nStrands <= *strand_iter )
-         {
-            strand_iter = pParent->m_GirderData.NextendedStrands[pgsTypes::Straight][i].erase(strand_iter);
-         }
-         else
-         {
-            strand_iter++;
-         }
-      }
+      std::vector<GridIndexType> extStrands = pParent->m_GirderData.PrestressData.GetExtendedStrands(pgsTypes::Straight,(pgsTypes::MemberEndType)i);
+      bool bChanged = ReconcileExtendedStrands(strtvec, extStrands);
+
+      if ( bChanged )
+         pParent->m_GirderData.PrestressData.SetExtendedStrands(pgsTypes::Straight,(pgsTypes::MemberEndType)i,extStrands);
    }
 
    // fill up the grid
@@ -178,7 +156,6 @@ BOOL CGirderDescDebondPage::OnSetActive()
    OnChange();
 
    return CPropertyPage::OnSetActive();
-	
 }
 
 BOOL CGirderDescDebondPage::OnKillActive()
@@ -188,53 +165,10 @@ BOOL CGirderDescDebondPage::OnKillActive()
    return CPropertyPage::OnKillActive();
 }
 
-std::vector<CString>  CGirderDescDebondPage::GetStrandList()
-{
-   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-
-   std::vector<CString>  strList;
-   StrandIndexType nStrands = GetNumStrands();
-
-   // need to omit strands already selected
-   StrandIndexType currnum=0;
-   while( currnum < nStrands )
-   {
-      StrandIndexType nextnum = pStrandGeom->GetNextNumStrands(pParent->m_strGirderName.c_str(), pgsTypes::Straight, currnum);
-
-      IDType is_debondable;
-      // nextnum is a count. need to subtract 1 to get index
-      m_Debondables->get_Item(nextnum-1, &is_debondable);
-
-      // only add debondable strands to the list
-      if (is_debondable)
-      {
-         CString str;
-         if ( nextnum-currnum == 1 )
-         {
-            str.Format(_T("%d"),nextnum);
-         }
-         else
-         {
-            str.Format(_T("%d & %d"), nextnum-1, nextnum );
-         }
-
-         strList.push_back(str);
-      }
-
-      currnum = nextnum;
-   }
-   
-   return strList;
-}
-
 std::vector<CDebondInfo> CGirderDescDebondPage::GetDebondInfo() const
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   return pParent->m_GirderData.Debond[pgsTypes::Straight];
+   return pParent->m_GirderData.PrestressData.Debond[pgsTypes::Straight];
 }
 
 
@@ -289,8 +223,13 @@ void CGirderDescDebondPage::OnPaint()
    Float64 y_min =  DBL_MAX;
    Float64 y_max = -DBL_MAX;
    StrandIndexType nStrands = GetNumStrands();
+
+   ConfigStrandFillVector  fillvec = pParent->ComputeStrandFillVector(pgsTypes::Straight);
+   PRESTRESSCONFIG config;
+   config.SetStrandFill(pgsTypes::Straight, fillvec);
+
    CComPtr<IPoint2dCollection> points;
-   pStrandGeometry->GetStrandPositionsEx(pParent->m_strGirderName.c_str(),nStrands,pgsTypes::Straight,pgsTypes::metStart,&points);
+   pStrandGeometry->GetStrandPositionsEx(pParent->m_strGirderName.c_str(),config,pgsTypes::Straight,pgsTypes::metStart,&points);
    for ( StrandIndexType strIdx = 0; strIdx < nStrands; strIdx++ )
    {
       CComPtr<IPoint2d> point;
@@ -329,8 +268,9 @@ void CGirderDescDebondPage::OnPaint()
    mapper.SetMappingMode(grlibPointMapper::Isotropic);
    mapper.SetWorldExt(size);
    mapper.SetWorldOrg(org);
-   mapper.SetDeviceExt(csize.cx-10,csize.cy);
+   mapper.SetDeviceExt(csize.cx-10,csize.cy-10);
    mapper.SetDeviceOrg(csize.cx/2,csize.cy-5);
+
 
    CPen solid_pen(PS_SOLID,1,GIRDER_BORDER_COLOR);
    CBrush solid_brush(GIRDER_FILL_COLOR);
@@ -443,8 +383,16 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
 
    // Draw all the strands bonded
    StrandIndexType nStrands = GetNumStrands();
+
+   ConfigStrandFillVector  straightStrandFill = pParent->ComputeStrandFillVector(pgsTypes::Straight);
+   PRESTRESSCONFIG config;
+   config.SetStrandFill(pgsTypes::Straight, straightStrandFill);
+
    CComPtr<IPoint2dCollection> points;
-   pStrandGeometry->GetStrandPositionsEx(pParent->m_strGirderName.c_str(),nStrands,pgsTypes::Straight,pgsTypes::metStart,&points);
+   pStrandGeometry->GetStrandPositionsEx(pParent->m_strGirderName.c_str(),config,pgsTypes::Straight,pgsTypes::metStart,&points);
+
+   CComPtr<IIndexArray> debondables;
+   pStrandGeometry->ListDebondableStrands(pParent->m_strGirderName.c_str(), straightStrandFill,pgsTypes::Straight, &debondables); 
 
    const int strand_size = 2;
    for ( StrandIndexType strIdx = 0; strIdx <nStrands; strIdx++ )
@@ -452,8 +400,8 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
       CComPtr<IPoint2d> point;
       points->get_Item(strIdx,&point);
 
-      IDType is_debondable;
-      m_Debondables->get_Item(strIdx, &is_debondable);
+      StrandIndexType is_debondable = 0;
+      debondables->get_Item(strIdx, &is_debondable);
 
       LONG dx,dy;
       mapper.WPtoDP(point,&dx,&dy);
@@ -482,33 +430,37 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
    pDC->SelectObject(&debond_pen);
    pDC->SelectObject(&debond_brush);
 
+   GET_IFACE2( pBroker, ILibrary, pLib );
+   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(pParent->m_strGirderName.c_str());
+
    std::vector<CDebondInfo>::iterator debond_iter;
-   CGirderData girderData;
+   CGirderData girderData = pParent->m_GirderData;
    m_Grid.GetData(girderData);
-   for ( debond_iter = girderData.Debond[pgsTypes::Straight].begin(); debond_iter != girderData.Debond[pgsTypes::Straight].end(); debond_iter++ )
+   for ( debond_iter = girderData.PrestressData.Debond[pgsTypes::Straight].begin(); debond_iter != girderData.PrestressData.Debond[pgsTypes::Straight].end(); debond_iter++ )
    {
       CDebondInfo& debond_info = *debond_iter;
 
-      if ( debond_info.idxStrand1 == INVALID_INDEX )
+      if ( debond_info.strandTypeGridIdx == INVALID_INDEX )
+      {
+         ATLASSERT(0); // we should be protecting against this
          continue;
+      }
 
-      CComPtr<IPoint2d> point;
-      points->get_Item(debond_info.idxStrand1,&point);
+      // Library entry uses grid indexing (same as debonding)
+      Float64 xs, xe, ys, ye;
+      bool candb;
+      pGdrEntry->GetStraightStrandCoordinates( debond_info.strandTypeGridIdx, &xs, &ys, &xe, &ye, &candb);
 
       long dx,dy;
-      mapper.WPtoDP(point,&dx,&dy);
+      mapper.WPtoDP(xs, ys, &dx,&dy);
 
       CRect rect(dx-strand_size,dy-strand_size,dx+strand_size,dy+strand_size);
 
       pDC->Ellipse(&rect);
 
-      if ( debond_info.idxStrand2 != INVALID_INDEX )
+      if ( xs > 0.0 )
       {
-         point.Release();
-         points->get_Item(debond_info.idxStrand2,&point);
-
-         long dx,dy;
-         mapper.WPtoDP(point,&dx,&dy);
+         mapper.WPtoDP(-xs, ys, &dx,&dy);
 
          CRect rect(dx-strand_size,dy-strand_size,dx+strand_size,dy+strand_size);
 
@@ -521,39 +473,37 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
    pDC->SelectObject(&extended_pen);
    pDC->SelectObject(&extended_brush);
 
-   std::vector<StrandIndexType>::iterator ext_iter(girderData.NextendedStrands[pgsTypes::Straight][pgsTypes::metStart].begin());
-   std::vector<StrandIndexType>::iterator ext_iter_end(girderData.NextendedStrands[pgsTypes::Straight][pgsTypes::metStart].end());
-   for ( ; ext_iter != ext_iter_end; ext_iter++ )
+   for ( int i = 0; i < 2; i++ )
    {
-      StrandIndexType strandIdx = *ext_iter;
+      pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+      const std::vector<GridIndexType>& extStrandsStart(girderData.PrestressData.GetExtendedStrands(pgsTypes::Straight,endType));
+      std::vector<GridIndexType>::const_iterator ext_iter(extStrandsStart.begin());
+      std::vector<GridIndexType>::const_iterator ext_iter_end(extStrandsStart.end());
+      for ( ; ext_iter != ext_iter_end; ext_iter++ )
+      {
+         GridIndexType gridIdx = *ext_iter;
 
-      CComPtr<IPoint2d> point;
-      points->get_Item(strandIdx,&point);
+         // Library entry uses grid indexing (same as debonding)
+         Float64 xs, xe, ys, ye;
+         bool candb;
+         pGdrEntry->GetStraightStrandCoordinates( gridIdx, &xs, &ys, &xe, &ye, &candb);
 
-      long dx,dy;
-      mapper.WPtoDP(point,&dx,&dy);
+         long dx,dy;
+         mapper.WPtoDP(xs, ys, &dx,&dy);
 
-      CRect rect(dx-strand_size,dy-strand_size,dx+strand_size,dy+strand_size);
+         CRect rect(dx-strand_size,dy-strand_size,dx+strand_size,dy+strand_size);
 
-      pDC->Ellipse(&rect);
-   }
+         pDC->Ellipse(&rect);
 
+         if ( xs > 0.0 )
+         {
+            mapper.WPtoDP(-xs, ys, &dx,&dy);
 
-   ext_iter = girderData.NextendedStrands[pgsTypes::Straight][pgsTypes::metEnd].begin();
-   ext_iter_end = girderData.NextendedStrands[pgsTypes::Straight][pgsTypes::metEnd].end();
-   for ( ; ext_iter != ext_iter_end; ext_iter++ )
-   {
-      StrandIndexType strandIdx = *ext_iter;
+            CRect rect(dx-strand_size,dy-strand_size,dx+strand_size,dy+strand_size);
 
-      CComPtr<IPoint2d> point;
-      points->get_Item(strandIdx,&point);
-
-      long dx,dy;
-      mapper.WPtoDP(point,&dx,&dy);
-
-      CRect rect(dx-strand_size,dy-strand_size,dx+strand_size,dy+strand_size);
-
-      pDC->Ellipse(&rect);
+            pDC->Ellipse(&rect);
+         }
+      }
    }
 
    pDC->SelectObject(old_pen);
@@ -571,16 +521,6 @@ StrandIndexType CGirderDescDebondPage::GetNumStrands()
    return nStrands;
 }
 
-StrandIndexType CGirderDescDebondPage::GetNumPermanentStrands()
-{
-   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-
-   StrandIndexType nStrands =  pParent->GetStraightStrandCount();
-   nStrands += pParent->GetHarpedStrandCount();
-
-   return nStrands;
-}
-
 bool CGirderDescDebondPage:: CanDebondMore()
 {
    // how many can be debonded?
@@ -588,7 +528,7 @@ bool CGirderDescDebondPage:: CanDebondMore()
    StrandIndexType nDebondable = 0; // number of strand that can be debonded
    for (StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
    {
-      IDType is_debondable;
+      StrandIndexType is_debondable;
       m_Debondables->get_Item(strandIdx, &is_debondable);
       if (is_debondable)
       {
@@ -599,63 +539,6 @@ bool CGirderDescDebondPage:: CanDebondMore()
    StrandIndexType nDebonded =  m_Grid.GetNumDebondedStrands(); // number of strands that are debonded
 
    return nDebonded < nDebondable; // can debond more if the number of debondable exceed number of debonded
-}
-
-void CGirderDescDebondPage::OnSize(UINT nType, int cx, int cy) 
-{
-	CPropertyPage::OnSize(nType, cx, cy);
-	
-   CRect cRect;
-   GetClientRect(&cRect);
-
-   CWnd* pOK = GetDlgItem(IDOK);
-   CWnd* pCancel = GetDlgItem(IDCANCEL);
-   CWnd* pAdd = GetDlgItem(IDC_ADD);
-   CWnd* pDelete = GetDlgItem(IDC_DELETE);
-   CWnd* pGrid = GetDlgItem(IDC_DEBOND_GRID);
-   CWnd* pPicture = GetDlgItem(IDC_PICTURE);
-
-   if ( pOK == NULL )
-      return; // child controls have not yet been created
-
-   // Move the cancel button to the bottom right corner
-   CRect btnRect;
-   pDelete->GetClientRect(&btnRect);
-   CSize btnSize = btnRect.Size();
-
-   btnRect.BottomRight() = cRect.BottomRight();
-   btnRect.BottomRight() -= CSize(5,5);
-   btnRect.TopLeft() = btnRect.BottomRight() - btnSize;
-
-   pCancel->MoveWindow(btnRect);
-
-   // Move the ok button to the left of the cancel button
-   btnRect -= CSize(btnSize.cx + 5,0);
-   pOK->MoveWindow(btnRect);
-
-   // Move the add button above the ok button
-   btnRect -= CSize(0,btnSize.cy + 5);
-   pAdd->MoveWindow(btnRect);
-
-   // Move delete bottom to the right of the add button
-   btnRect += CSize(btnSize.cx + 5,0);
-   pDelete->MoveWindow(btnRect);
-
-   // Compute remaining client rect (above the buttons)
-   cRect.BottomRight() = CPoint(btnRect.right,btnRect.top-5);
-   CSize cSize = cRect.Size();
-
-   CRect rPic(cRect);
-   rPic.TopLeft() += CSize(5,5);
-   rPic.BottomRight() = CPoint( cRect.right, cRect.bottom/2 - 3);
-   pPicture->MoveWindow(rPic);
-
-   CRect rGrid(cRect);
-   rGrid.TopLeft() = CPoint( cRect.left+5, cRect.bottom/2 + 2);
-   pGrid->MoveWindow(rGrid);
-
-   Invalidate();
-   UpdateWindow();
 }
 
 void CGirderDescDebondPage::OnSymmetricDebond() 
@@ -671,29 +554,29 @@ void CGirderDescDebondPage::OnHelp()
 
 void CGirderDescDebondPage::OnChange() 
 {
-   StrandIndexType ns = GetNumPermanentStrands(); 
+   StrandIndexType ns = GetNumStrands(); 
    StrandIndexType ndbs =  m_Grid.GetNumDebondedStrands();
    Float64 percent = 0.0;
    if (0 < ns && ns != INVALID_INDEX)
       percent = 100.0 * (Float64)ndbs/(Float64)ns;
 
    CString str;
-   str.Format(_T("Number of straight strands = %d  Number of harped strands = %d"), GetNumStrands(),ns-GetNumStrands());
+   str.Format(_T("Straight=%d"), ns);
    CWnd* pNs = GetDlgItem(IDC_NUMSTRAIGHT);
    pNs->SetWindowText(str);
 
-   str.Format(_T("Number of debonded strands = %d"), ndbs);
+   str.Format(_T("Debonded=%d (%.1f%%)"), ndbs, percent);
    CWnd* pNdb = GetDlgItem(IDC_NUM_DEBONDED);
    pNdb->SetWindowText(str);
 
-   str.Format(_T("Percentage of straight strands debonded = %.1f%%"), percent);
-   CWnd* pPcnt = GetDlgItem(IDC_PERCENT_DEBONDED);
-   pPcnt->SetWindowText(str);
+   StrandIndexType nExtStrands = m_Grid.GetNumExtendedStrands(pgsTypes::metStart);
+   str.Format(_T("Extended Left=%d"),nExtStrands);
+   CWnd* pNExt = GetDlgItem(IDC_NUM_EXTENDED_LEFT);
+   pNExt->SetWindowText(str);
 
-
-   StrandIndexType nExtStrands = m_Grid.GetNumExtendedStrands();
-   str.Format(_T("Number of extended strands = %d"),nExtStrands);
-   CWnd* pNExt = GetDlgItem(IDC_NUM_EXTENDED);
+   nExtStrands = m_Grid.GetNumExtendedStrands(pgsTypes::metEnd);
+   str.Format(_T("Extended Right=%d"),nExtStrands);
+   pNExt = GetDlgItem(IDC_NUM_EXTENDED_RIGHT);
    pNExt->SetWindowText(str);
 
    CWnd* pPicture = GetDlgItem(IDC_PICTURE);
@@ -702,4 +585,27 @@ void CGirderDescDebondPage::OnChange()
    ScreenToClient(&rect);
    InvalidateRect(rect);
    UpdateWindow();
+}
+
+HBRUSH CGirderDescDebondPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+   HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
+   int ID = pWnd->GetDlgCtrlID();
+   switch( ID )
+   {
+   case IDC_NUMSTRAIGHT:
+      pDC->SetTextColor(STRAIGHT_FILL_COLOR);
+      break;
+
+   case IDC_NUM_DEBONDED:
+      pDC->SetTextColor(DEBOND_FILL_COLOR);
+      break;
+
+   case IDC_NUM_EXTENDED_LEFT:
+   case IDC_NUM_EXTENDED_RIGHT:
+      pDC->SetTextColor(EXTENDED_FILL_COLOR);
+      break;
+   }
+
+   return hbr;
 }

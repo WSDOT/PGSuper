@@ -56,7 +56,7 @@ rptRcTable(NumColumns,0)
 CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,IGirderData,pGirderData);
-   CGirderData girderData = pGirderData->GetGirderData(span,gdr);
+   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
@@ -72,7 +72,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
 
    if ( 0 < NtMax )
    {
-      if ( girderData.TempStrandUsage == pgsTypes::ttsPretensioned )
+      if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPretensioned )
          numColumns++;
       else
          numColumns+=2;
@@ -82,7 +82,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    pgsReportStyleHolder::ConfigureTable(table);
 
    
-   table->m_GirderData = girderData;
+   table->m_pGirderData = pgirderData;
    table->m_NtMax = NtMax;
 
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
@@ -98,7 +98,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
 
    if ( 0 < NtMax )
    {
-      if ( girderData.TempStrandUsage != pgsTypes::ttsPretensioned )
+      if ( pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned )
       {
          if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
             *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PT.png")) << rptNewLine;
@@ -179,7 +179,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    (*table)(0,col++) << Sub2(_T("K"),_T("df"));
 
   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   if ( 0 < NtMax &&  girderData.TempStrandUsage != pgsTypes::ttsPretensioned )
+   if ( 0 < NtMax &&  pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned )
    {
       (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
@@ -195,13 +195,13 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    return table;
 }
 
-void CCreepAtFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CCreepAtFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 1;
    (*this)(row,col++) << scalar.SetValue(details.RefinedLosses2005.GetKdf());
    (*this)(row,col++) << stress.SetValue( details.pLosses->ElasticShortening().PermanentStrand_Fcgp() );
 
-   if ( 0 < m_NtMax && m_GirderData.TempStrandUsage != pgsTypes::ttsPretensioned )
+   if ( 0 < m_NtMax && m_pGirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned )
       (*this)(row,col++) << stress.SetValue( details.RefinedLosses2005.GetDeltaFpp() );
 
    if ( 0 < m_NtMax )

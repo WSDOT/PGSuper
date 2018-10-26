@@ -120,13 +120,13 @@
 #define IDH_DISTRIBUTION_FACTORS                                  3730
 #define IDH_SPEC_DESIGN                                           3732
 #define IDH_SPEC_LIMITS                                           3733
-#define IDH_SPEC_LOADFACTORS                                      3734
 #define IDH_SHEAR_TAB                                             3735
 #define IDH_MOMENT_TAB                                            3736
 #define IDH_DEFLECTIONS_TAB                                       3737
 #define IDH_DEBONDING_TAB                                         3738
 #define IDH_EDIT_MOMENT_LOADS                                     3739
 #define IDH_GIRDER_DEBOND_CRITERIA                                3740
+#define IDH_SPEC_SHEAR_DESIGN                                     3741
 
 #define IDH_BRIDGE_VIEW                                           3750
 #define IDH_GIRDER_VIEW                                           3751
@@ -155,5 +155,6 @@
 
 #define IDH_CONSTRUCTION_LOADS                                    3920
 #define IDH_FILL_DISTRIBUTION_FACTORS                             3921
+#define IDH_GIRDER_DIRECT_STRAND_FILL                             3922
 
 #endif // INCLUDED_HELPTOPICS_HH_

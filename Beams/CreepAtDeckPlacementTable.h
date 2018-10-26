@@ -39,7 +39,7 @@ class CCreepAtDeckPlacementTable : public rptRcTable
 {
 public:
 	static CCreepAtDeckPlacementTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-   void AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+   void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
 
 private:
    CCreepAtDeckPlacementTable(ColumnIndexType numColumns, IEAFDisplayUnits* pDisplayUnits);
@@ -57,7 +57,7 @@ private:
    DECLARE_UV_PROTOTYPE( rptTimeUnitValue,    time);
    rptRcScalar scalar;
 
-   CGirderData m_GirderData;
+   const CGirderData* m_pGirderData;
 };
 
 #endif //__CREEPATDECKPLACEMENTTABLE_H_

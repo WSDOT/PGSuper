@@ -51,6 +51,7 @@ CDesignGirderDlg::CDesignGirderDlg(SpanIndexType span,GirderIndexType girder, bo
    m_EnableA(enableA),
    m_DesignA(designA)
    , m_DesignRadioNum(0)
+   , m_StartWithCurrentStirrupLayout(FALSE)
 {
    m_pBroker = pBroker;
 
@@ -74,6 +75,7 @@ void CDesignGirderDlg::DoDataExchange(CDataExchange* pDX)
    DDX_Check(pDX, IDC_DESIGN_FLEXURE, m_DesignForFlexure);
    DDX_Check(pDX, IDC_DESIGN_SHEAR, m_DesignForShear);
    DDX_Radio(pDX, IDC_RADIO_SINGLE, m_DesignRadioNum);
+   DDX_Check(pDX, IDC_START_WITH_LAYOUT, m_StartWithCurrentStirrupLayout);
    //}}AFX_DATA_MAP
 
    if (m_EnableA)
@@ -140,6 +142,7 @@ BEGIN_MESSAGE_MAP(CDesignGirderDlg, CDialog)
    ON_BN_CLICKED(IDC_SELECT_GIRDERS, &CDesignGirderDlg::OnBnClickedSelectGirders)
    ON_BN_CLICKED(IDC_RADIO_SINGLE, &CDesignGirderDlg::OnBnClickedRadio)
    ON_BN_CLICKED(IDC_RADIO_MULTIPLE, &CDesignGirderDlg::OnBnClickedRadio)
+   ON_BN_CLICKED(IDC_DESIGN_SHEAR, &CDesignGirderDlg::OnBnClickedDesignShear)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -303,4 +306,11 @@ void CDesignGirderDlg::UpdateADimCtrl()
       CButton* pA= (CButton*)GetDlgItem( IDC_DESIGN_A );
       pA->EnableWindow(benable);
    }
+}
+
+void CDesignGirderDlg::OnBnClickedDesignShear()
+{
+   BOOL bEnable = IsDlgButtonChecked(IDC_DESIGN_SHEAR) == BST_CHECKED;
+
+   GetDlgItem( IDC_START_WITH_LAYOUT )->EnableWindow(bEnable);
 }

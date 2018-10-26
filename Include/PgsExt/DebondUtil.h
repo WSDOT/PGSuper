@@ -58,7 +58,7 @@ LOG
    rdp : 06.20.2008 : Created file
 *****************************************************************************/
 
-// free function for checking if a set of numbers is divisible by a number
+// free function for checking if a set of numbers is evenly divisible by a number
 typedef std::set<Float64> FloatSet;
 typedef FloatSet::iterator FloatSetIterator;
 
@@ -98,8 +98,8 @@ protected:
    enum OutComeType {AllStandard, NonStandardSection, SectionMismatch, SectionsNotSymmetrical, TooManySections};
    OutComeType m_OutCome;
 
-   Float64   m_SectionSpacing;
-   AxleIndexType   m_NumDebonded;
+   Float64           m_SectionSpacing;
+   StrandIndexType   m_NumDebonded;
 
    // need strands in rows with sections in row
    struct SectionData
@@ -167,7 +167,7 @@ inline void TxDOTDebondTool::Compute()
 
       pgsPointOfInterest poi(m_Span,m_Girder, m_GirderLength/2.0);
       CComPtr<IPoint2dCollection> coords;
-      m_pStrandGeometry->GetStrandPositionsEx(poi, nss, pgsTypes::Straight, &coords);
+      m_pStrandGeometry->GetStrandPositions(poi, pgsTypes::Straight, &coords);
 
       // We also want to see if there is a common debond increment, and if by chance, it is 3 feet
       FloatSet section_spacings;
@@ -330,7 +330,7 @@ inline Int16 TxDOTDebondTool::CountDebondsInRow(const RowData& row) const
 class DebondSectionComputer
 {
 public:
-   DebondSectionComputer(const std::vector<DEBONDINFO>& rDebondInfo, Float64 girderLength);
+   DebondSectionComputer(const std::vector<DEBONDCONFIG>& rDebondInfo, Float64 girderLength);
 
    CollectionIndexType GetNumLeftSections();
    void GetLeftSectionInfo(CollectionIndexType idx, Float64* location, StrandIndexType* numStrandsDebonded);
@@ -359,12 +359,12 @@ private:
    std::set<DbSection> m_RightSections;
 };
 
-inline DebondSectionComputer::DebondSectionComputer(const std::vector<DEBONDINFO>& rDebondInfo, Float64 girderLength)
+inline DebondSectionComputer::DebondSectionComputer(const std::vector<DEBONDCONFIG>& rDebondInfo, Float64 girderLength)
 {
    // set up section locations
-   for (std::vector<DEBONDINFO>::const_iterator it=rDebondInfo.begin(); it!=rDebondInfo.end(); it++)
+   for (DebondConfigConstIterator it=rDebondInfo.begin(); it!=rDebondInfo.end(); it++)
    {
-      const DEBONDINFO& rinfo = *it;
+      const DEBONDCONFIG& rinfo = *it;
 
       // Left side
       if(rinfo.LeftDebondLength > 0.0)

@@ -31,6 +31,8 @@
 
 // PROJECT INCLUDES
 //
+#include <PGSuperTypes.h>
+
 #include "psgLibLib.h"
 
 #include <psgLib\ISupportIcon.h>
@@ -46,6 +48,7 @@
 
 #include <Material\Rebar.h>
 
+#include <psgLib\ShearData.h>
 // LOCAL INCLUDES
 //
 
@@ -163,7 +166,6 @@ public:
    friend CGirderMainSheet;
 
    enum psStrandType { stStraight, stHarped };
-   enum GirderFace {GirderTop, GirderBottom};
 
    // describes from where something is location is measured
    enum MeasurementLocation { mlEndOfGirder        = 0, 
@@ -181,30 +183,10 @@ public:
    typedef std::vector<Dimension> Dimensions;
 
    //------------------------------------------------------------------------
-   // information about shear zones
-   struct ShearZoneInfo
-   {
-      Float64     ZoneLength;
-      matRebar::Size VertBarSize, HorzBarSize;
-      Float64     StirrupSpacing;
-      CollectionIndexType      nVertBars, nHorzBars;
-      bool operator==(const ShearZoneInfo& rOther) const
-      {return ZoneLength     == rOther.ZoneLength     &&
-              VertBarSize    == rOther.VertBarSize    &&
-              HorzBarSize    == rOther.HorzBarSize    &&
-              StirrupSpacing == rOther.StirrupSpacing &&
-              nVertBars      == rOther.nVertBars      &&
-              nHorzBars      == rOther.nHorzBars;
-      } 
-   };
-
-   typedef std::vector<ShearZoneInfo> ShearZoneInfoVec;
-
-   //------------------------------------------------------------------------
    // information about rows of longitudinal steel
    struct LongSteelInfo
    {
-      GirderFace  Face;
+      pgsTypes::GirderFace  Face;
       matRebar::Size BarSize;
       CollectionIndexType NumberOfBars;
       Float64     Cover;
@@ -405,6 +387,7 @@ public:
    // Remove all strands
    void ClearAllStrands();
 
+   //------------------------------------------------------------------------
    enum PermanentStrandType {ptNone, ptHarped, ptStraight};
    std::vector<PermanentStrandType> GetPermanentStrands() const;
 
@@ -419,8 +402,13 @@ public:
    // two strands are located at +/- X. 
    // If X is zero at both locations, only one strand is located.
    // Y is measured from the bottom of the girder
-   void GetStraightStrandCoordinates(StrandIndexType ssIndex, Float64* Xstart, Float64* Ystart, Float64* Xend, Float64* Yend, bool* canDebond) const;
-   StrandIndexType AddStraightStrandCoordinates(Float64 Xstart, Float64 Ystart, Float64 Xend, Float64 Yend, bool canDebond);
+   void GetStraightStrandCoordinates(GridIndexType ssGridIdx, Float64* Xstart, Float64* Ystart, Float64* Xend, Float64* Yend, bool* canDebond) const;
+
+   //------------------------------------------------------------------------
+   // Adds a strand position. Note that if the X location is greater than zero then two
+   // strands at +/- X are created. Y is measured from the bottom of the girder
+   // Returns the strand grid index for the new strand position
+   GridIndexType AddStraightStrandCoordinates(Float64 Xstart, Float64 Ystart, Float64 Xend, Float64 Yend, bool canDebond);
 
    //------------------------------------------------------------------------
    // Returns the maximum number of straight strands that can be used
@@ -444,8 +432,13 @@ public:
    // two strands are located at +/- X. 
    // If X is zero at both locations, only one strand is located.
    // Y is measured from the bottom of the girder
-   void GetHarpedStrandCoordinates(StrandIndexType hsIndex, Float64* Xstart,Float64* Ystart, Float64* Xhp, Float64* Yhp,Float64* Xend, Float64* Yend) const;
-   StrandIndexType AddHarpedStrandCoordinates(Float64 Xstart,Float64 Ystart, Float64 Xhp, Float64 Yhp,Float64 Xend, Float64 Yend);
+   void GetHarpedStrandCoordinates(GridIndexType hsGridIdx, Float64* Xstart,Float64* Ystart, Float64* Xhp, Float64* Yhp,Float64* Xend, Float64* Yend) const;
+
+   //------------------------------------------------------------------------
+   // Adds a strand position. Note that if the X location is greater than zero then two
+   // strands at +/- X are created. Y is measured from the bottom of the girder
+   // Returns the strand grid index for the new strand position
+   GridIndexType AddHarpedStrandCoordinates(Float64 Xstart,Float64 Ystart, Float64 Xhp, Float64 Yhp,Float64 Xend, Float64 Yend);
 
    //------------------------------------------------------------------------
    // Returns the maximum number of harped strands that can be used
@@ -454,13 +447,23 @@ public:
    StrandIndexType GetMaxHarpedStrands() const;
 
    //------------------------------------------------------------------------
+   // Get number of Coordinates for Temporary strands 
+   // This sets the upper bound for GetTemporaryStrandCoordinates
+   StrandIndexType GetNumTemporaryStrandCoordinates() const;
+
+   //------------------------------------------------------------------------
    // Get locations for Temporary strands
    // Note that if the X location is greater than zero at either location,
    // two strands are located at +/- X. 
    // If X is zero at both locations, only one strand is located.
    // Y is measured from the bottom of the girder
-   void GetTemporaryStrandCoordinates(StrandIndexType ssIndex, Float64* Xstart, Float64* Ystart, Float64* Xend, Float64* Yend) const;
-   StrandIndexType AddTemporaryStrandCoordinates(Float64 Xstart, Float64 Ystart, Float64 Xend, Float64 Yend);
+   void GetTemporaryStrandCoordinates(GridIndexType tsGridIdx, Float64* Xstart, Float64* Ystart, Float64* Xend, Float64* Yend) const;
+
+   //------------------------------------------------------------------------
+   // Adds a strand position. Note that if the X location is greater than zero then two
+   // strands at +/- X are created. Y is measured from the bottom of the girder
+   // Returns the strand grid index for the new strand position
+   GridIndexType AddTemporaryStrandCoordinates(Float64 Xstart, Float64 Ystart, Float64 Xend, Float64 Yend);
 
    //------------------------------------------------------------------------
    // Returns the maximum number of Temporary strands that can be used
@@ -468,24 +471,29 @@ public:
    StrandIndexType GetMaxTemporaryStrands() const;
 
    //------------------------------------------------------------------------
-   // Permanent straight strands and harped strands are lumped together into
-   // the "Global" strand collection. This collection
-   // defines a global fill order so users can input "total number of strands"
-   // This is the total number of strand grid locations (indexes into below)
-   // that can be filled
-   StrandIndexType GetMaxGlobalStrands() const;
+   // Permanent straight strands and harped strands can be considered to be
+   // in a single permanent strand grid. This grid defines the permanent
+   // strand fill order so users can input "total number of strands".
+   // This method returns the size of the permanent strand grid.
+   GridIndexType GetPermanentStrandGridSize() const;
 
    //------------------------------------------------------------------------
-   // This is the strand type and the local index in the appropriate collection where
-   // the strand can be found
-   void GetGlobalStrandAtFill(StrandIndexType index, psStrandType* type, StrandIndexType* localIndex) const;
-   StrandIndexType AddGlobalStrandAtFill(psStrandType type,  StrandIndexType localIndex);
+   // Given a position in the permanent strand grid, returns the equivalent
+   // strand type (straight/harped) and position in the local strand grid.
+   void GetGridPositionFromPermStrandGrid(GridIndexType permStrandGridIdx, psStrandType* type, GridIndexType* gridIdx) const;
 
    //------------------------------------------------------------------------
-   // Compute the number of straight and number of harped strands required for 
-   // a given total number of permanent strands. 
-   // Returns true if the number of strands can be met, false if not.
-   bool ComputeGlobalStrands(StrandIndexType totalNumStrands, StrandIndexType* numStraight, StrandIndexType* numHarped) const;
+   // Adds a strand to the permanent strand grid. The strand is defined by its type and position
+   // in a straight or hapred strand grid. The position in the permanent strand grid is returned.
+   // Use this method when you are programatically creating a strand grid (See TxDOT TOGA for example)
+   GridIndexType AddStrandToPermStrandGrid(psStrandType type,  GridIndexType gridIdx);
+
+   //------------------------------------------------------------------------
+   // Given a total number of permanent strands, the number of straight and harped strands 
+   // is determined. Returns true if the total number of strands can be distributed into
+   // straight and harped strans based on the definition of the straight and harped strand
+   // grids, otherwise returns false.
+   bool GetPermStrandDistribution(StrandIndexType totalNumStrands, StrandIndexType* numStraight, StrandIndexType* numHarped) const;
 
    //------------------------------------------------------------------------
    // Check if the number of strands for each type are valid
@@ -505,11 +513,11 @@ public:
 
    //------------------------------------------------------------------------
    // Set/get the harped strand adjustment limits at ends and harping points
-   void SetHPAdjustmentLimits(GirderFace  topFace, Float64  topLimit, GirderFace  bottomFace, Float64  bottomLimit);
-   void GetHPAdjustmentLimits(GirderFace* topFace, Float64* topLimit, GirderFace* bottomFace, Float64* bottomLimit) const;
+   void SetHPAdjustmentLimits(pgsTypes::GirderFace  topFace, Float64  topLimit, pgsTypes::GirderFace  bottomFace, Float64  bottomLimit);
+   void GetHPAdjustmentLimits(pgsTypes::GirderFace* topFace, Float64* topLimit, pgsTypes::GirderFace* bottomFace, Float64* bottomLimit) const;
 
-   void SetEndAdjustmentLimits(GirderFace  topFace, Float64  topLimit, GirderFace  bottomFace, Float64  bottomLimit);
-   void GetEndAdjustmentLimits(GirderFace* topFace, Float64* topLimit, GirderFace* bottomFace, Float64* bottomLimit) const;
+   void SetEndAdjustmentLimits(pgsTypes::GirderFace  topFace, Float64  topLimit, pgsTypes::GirderFace  bottomFace, Float64  bottomLimit);
+   void GetEndAdjustmentLimits(pgsTypes::GirderFace* topFace, Float64* topLimit, pgsTypes::GirderFace* bottomFace, Float64* bottomLimit) const;
 
    //------------------------------------------------------------------------
    // Set the max downward strand increment for design at girder end
@@ -528,38 +536,9 @@ public:
    Float64 GetHPStrandIncrement() const;
 
    //------------------------------------------------------------------------
-   // Set material for shear steel, top flange, and confinement bars
-   void SetShearSteelMaterial(matRebar::Type type,matRebar::Grade grade);
-
-   //------------------------------------------------------------------------
-   // Get material name for shear steel
-   void GetShearSteelMaterial(matRebar::Type& type,matRebar::Grade& grade) const;
-
-   //------------------------------------------------------------------------
-   // Set vector of shear zone information. Note that zones are stored in
-   // order from end of girder toward center.
-   void SetShearZoneInfo(const ShearZoneInfoVec& vec);
-
-   //------------------------------------------------------------------------
-   // Get vector of shear zone information. Note that zones are stored in
-   // order from end of girder toward center.
-   ShearZoneInfoVec GetShearZoneInfo() const;
-
-   //------------------------------------------------------------------------
-   // Set bar size for confinement bars
-   void SetConfinementBarSize(matRebar::Size size);
-
-   //------------------------------------------------------------------------
-   // Get bar size for shear stirrups
-   matRebar::Size GetConfinementBarSize() const;
-
-   //------------------------------------------------------------------------
-   // Set last zone containing confinement steel
-   void SetLastConfinementZone(ZoneIndexType zone);
-   
-   //------------------------------------------------------------------------
-   // Get last zone containing confinement steel
-   ZoneIndexType GetNumConfinementZones() const;
+   // Set/Get shear data struct
+   void SetShearData(const CShearData& cdata);
+   const CShearData& GetShearData() const;
 
    //------------------------------------------------------------------------
    // Set vector of longitidinal steel information.
@@ -598,33 +577,11 @@ public:
    Float64 GetBeamHeight(pgsTypes::MemberEndType endType) const;
    Float64 GetBeamWidth(pgsTypes::MemberEndType endType) const;
 
-   //------------------------------------------------------------------------
-   // If stirrups engage deck, assume they contribute to interface shear capacity
-   void DoStirrupsEngageDeck(bool bEngage);
-   bool DoStirrupsEngageDeck() const;
-
-   void IsRoughenedSurface(bool bIsRoughened);
-   bool IsRoughenedSurface() const;
-
-   //------------------------------------------------------------------------
-   // Set bar size for top flange interface shear stirrups
-   // zero means no bars
-   void SetTopFlangeShearBarSize(matRebar::Size size);
-
-   //------------------------------------------------------------------------
-   // Get size for top flange interface shear stirrups
-   matRebar::Size GetTopFlangeShearBarSize() const;
-
-   //------------------------------------------------------------------------
-   // Set bar Spacing for top flange interface shear stirrups
-   void SetTopFlangeShearBarSpacing(Float64 Spacing);
-
-   //------------------------------------------------------------------------
-   // Get Spacing for top flange interface shear stirrups
-   Float64 GetTopFlangeShearBarSpacing() const;
-
    bool OddNumberOfHarpedStrands() const;
    void EnableOddNumberOfHarpedStrands(bool bEnable);
+
+   bool IsForceHarpedStrandsStraight() const;
+   void ForceHarpedStrandsStraight(bool bEnable);
 
    void ConfigureStraightStrandGrid(IStrandGrid* pStartGrid,IStrandGrid* pEndGrid) const;
    void ConfigureHarpedStrandGrids(IStrandGrid* pEndGridAtStart, IStrandGrid* pHPGridAtStart, IStrandGrid* pHPGridAtEnd, IStrandGrid* pEndGridAtEnd) const;
@@ -669,19 +626,54 @@ public:
    // Returns true if this girder can be post-tensioned
    bool CanPostTension() const;
 
-   // GROUP: INQUIRY
+   //------------------------------------------------------------------------
+   // Data for Shear Design Algorithm
+   //------------------------------------------------------------------------
+   // Available bars for design
+   IndexType GetNumStirrupSizeBarCombos() const;
+   void ClearStirrupSizeBarCombos();
+   void GetStirrupSizeBarCombo(IndexType index, matRebar::Size* pSize, Float64* pNLegs) const;
+   void AddStirrupSizeBarCombo(matRebar::Size Size, Float64 NLegs);
+
+   // Available bar spacings for design
+   IndexType GetNumAvailableBarSpacings() const;
+   void ClearAvailableBarSpacings();
+   Float64 GetAvailableBarSpacing(IndexType index) const;
+   void AddAvailableBarSpacing(Float64 Spacing);
+
+   // Max change in spacing between zones
+   Float64 GetMaxSpacingChangeInZone() const;
+   void SetMaxSpacingChangeInZone(Float64 Change);
+
+   // Max change in shear capacity between zones (% fraction)
+   Float64 GetMaxShearCapacityChangeInZone() const;
+   void SetMaxShearCapacityChangeInZone(Float64 Change);
+
+   void GetMinZoneLength(Uint32* pSpacings, Float64* pLength) const;
+   void SetMinZoneLength(Uint32 Spacings, Float64 Length);
+
+   bool GetIsTopFlangeRoughened() const;
+   void SetIsTopFlangeRoughened(bool isRough);
+
+   bool GetExtendBarsIntoDeck() const;
+   void SetExtendBarsIntoDeck(bool isTrue);
+
+   bool GetBarsProvideSplittingCapacity() const;
+   void SetBarsProvideSplittingCapacity(bool isTrue);
+
+   bool GetBarsActAsConfinement() const;
+   void SetBarsActAsConfinement(bool isTrue);
+
+   enum LongShearCapacityIncreaseMethod { isAddingRebar, isAddingStrands };
+
+   LongShearCapacityIncreaseMethod GetLongShearCapacityIncreaseMethod() const;
+   void SetLongShearCapacityIncreaseMethod(LongShearCapacityIncreaseMethod method);
 
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
    void MakeCopy(const GirderLibraryEntry& rOther);
 
    //------------------------------------------------------------------------
    void MakeAssignment(const GirderLibraryEntry& rOther);
-  // GROUP: ACCESS
-  // GROUP: INQUIRY
 
 private:
    // GROUP: DATA MEMBERS
@@ -690,23 +682,16 @@ private:
 
    bool m_bUseDifferentHarpedGridAtEnds;
 
-   // grade and type for all stirrups, confinement, and extra top flange bars
-   matRebar::Type m_StirrupBarType;
-   matRebar::Grade m_StirrupBarGrade;
-   matRebar::Size m_ConfinementBarSize; 
-   matRebar::Size m_TopFlangeShearBarSize;
-   ZoneIndexType m_LastConfinementZone;
-   bool m_bStirrupsEngageDeck;
-   bool m_bIsRoughenedSurface;
+   // grade and type for extra top flange bars
    matRebar::Type m_LongitudinalBarType;
    matRebar::Grade m_LongitudinalBarGrade;
-   Float64 m_TopFlangeShearBarSpacing;
    Float64 m_HarpingPointLocation;
    Float64 m_MinHarpingPointLocation;
    bool m_bMinHarpingPointLocation;
    MeasurementLocation m_HarpPointReference;
    MeasurementType   m_HarpPointMeasure;
    bool m_bOddNumberOfHarpedStrands;
+   bool m_bForceHarpedStrandsStraight;
 
    // version 13
    // debond limits
@@ -751,7 +736,6 @@ private:
    StraightStrandCollection m_StraightStrands;
    StraightStrandCollection m_TemporaryStrands;
 
-   ShearZoneInfoVec m_ShearZoneInfo;
    LongSteelInfoVec m_LongSteelInfo;
 
    // version 4.0 
@@ -790,25 +774,22 @@ private:
 
    HarpedStrandCollection m_HarpedStrands;
 
-   // Added global strand ordering in Vers 4.0 for TxDOT
-   struct GlobalStrand
+   // Added permanent strand ordering in Vers 4.0 for TxDOT
+   struct PermanentStrand
    {
-      GlobalStrand(): m_StrandType(stStraight), m_LocalSortOrder(-1)
+      PermanentStrand(): m_StrandType(stStraight), m_GridIdx(INVALID_INDEX)
       {;}
-      GlobalStrand( psStrandType type, StrandIndexType localIndex): m_StrandType(type), m_LocalSortOrder(localIndex)
+      PermanentStrand( psStrandType type, GridIndexType gridIdx): m_StrandType(type), m_GridIdx(gridIdx)
       {;}
-      bool operator==(const GlobalStrand& rOther) const
-      {return m_LocalSortOrder==rOther.m_LocalSortOrder && m_StrandType==rOther.m_StrandType;} 
+      bool operator==(const PermanentStrand& rOther) const
+      {return m_GridIdx==rOther.m_GridIdx && m_StrandType==rOther.m_StrandType;} 
 
-      StrandIndexType m_LocalSortOrder;
-      psStrandType m_StrandType;
+      GridIndexType m_GridIdx; // index in the straight or hapred strand grid
+      psStrandType m_StrandType; // defines the strand grid type (straight or harped)
    };
 
-   typedef std::vector<GlobalStrand> GlobalStrandOrderCollection;
-   typedef GlobalStrandOrderCollection::iterator GlobalStrandOrderIterator;
-   typedef GlobalStrandOrderCollection::const_iterator ConstGlobalStrandOrderIterator;
-
-   GlobalStrandOrderCollection m_GlobalStrandOrder;
+   typedef std::vector<PermanentStrand> PermanentStrandCollection;
+   PermanentStrandCollection m_PermanentStrands;
 
    // Diaphragms
    DiaphragmLayoutRules m_DiaphragmLayoutRules;
@@ -818,14 +799,14 @@ private:
    {
       bool       m_AllowVertAdjustment;
       Float64    m_StrandIncrement;
-      GirderFace m_TopFace;
+      pgsTypes::GirderFace m_TopFace;
       Float64    m_TopLimit;
-      GirderFace m_BottomFace;
+      pgsTypes::GirderFace m_BottomFace;
       Float64    m_BottomLimit;
 
       HarpedStrandAdjustment() : m_AllowVertAdjustment(false), m_StrandIncrement(TwoInches),
-		                          m_TopFace(GirderTop), m_TopLimit(TwoInches),
-		                          m_BottomFace(GirderBottom), m_BottomLimit(TwoInches)
+		                          m_TopFace(pgsTypes::GirderTop), m_TopLimit(TwoInches),
+		                          m_BottomFace(pgsTypes::GirderBottom), m_BottomLimit(TwoInches)
       {;}
 
       bool operator==(const HarpedStrandAdjustment& rOther) const
@@ -853,6 +834,94 @@ private:
 
 	HarpedStrandAdjustment m_HPAdjustment;
 	HarpedStrandAdjustment m_EndAdjustment;
+
+   //------------------------------------------------------------------------
+   // Our main shear reinforcement data
+   CShearData m_ShearData;
+
+   //------------------------------------------------------------------------
+   // LegacyShearData
+   // This class contains shear data from prior to version 19.0
+   // CShearData is now used for all shear information and is used both in the 
+   // library classes and in PGSuper's GirderData struct.
+   class LegacyShearData
+   {
+   public:
+      LegacyShearData():
+         m_StirrupBarType(matRebar::A615),
+         m_StirrupBarGrade(matRebar::Grade60),
+         m_ConfinementBarSize(matRebar::bsNone),
+         m_LastConfinementZone(0),
+         m_TopFlangeShearBarSize(matRebar::bsNone),
+         m_TopFlangeShearBarSpacing(0.0),
+         m_bStirrupsEngageDeck(true),
+         m_bIsRoughenedSurface(true)
+         {;}
+
+      // Conversion function to ShearData
+      CShearData ConvertToShearData() const;
+
+      // grade and type for all stirrups, confinement, and extra top flange bars
+      matRebar::Type  m_StirrupBarType;
+      matRebar::Grade m_StirrupBarGrade;
+      matRebar::Size  m_ConfinementBarSize; 
+      matRebar::Size  m_TopFlangeShearBarSize;
+      Uint16          m_LastConfinementZone;
+      bool            m_bStirrupsEngageDeck;
+      bool            m_bIsRoughenedSurface;
+      Float64         m_TopFlangeShearBarSpacing;
+
+      // information about shear zones
+      struct ShearZoneInfo
+      {
+         Float64     ZoneLength;
+         matRebar::Size VertBarSize, HorzBarSize;
+         Float64     StirrupSpacing;
+         Uint32      nVertBars, nHorzBars;
+         bool operator==(const ShearZoneInfo& rOther) const
+         {return ZoneLength     == rOther.ZoneLength     &&
+                 VertBarSize    == rOther.VertBarSize    &&
+                 HorzBarSize    == rOther.HorzBarSize    &&
+                 StirrupSpacing == rOther.StirrupSpacing &&
+                 nVertBars      == rOther.nVertBars      &&
+                 nHorzBars      == rOther.nHorzBars;
+         } 
+      };
+
+      typedef std::vector<ShearZoneInfo> ShearZoneInfoVec;
+      ShearZoneInfoVec m_ShearZoneInfo;
+   };
+
+   // Data Members for Shear Design Algorithm
+   struct StirrupSizeBarCombo
+   {
+      matRebar::Size Size;
+      Float64 NLegs;
+
+      bool operator==(const StirrupSizeBarCombo& rOther) const
+      {
+         if (!::IsEqual(NLegs, rOther.NLegs))
+            return false;
+
+         return Size==rOther.Size;
+      }
+   };
+
+   typedef std::vector<StirrupSizeBarCombo> StirrupSizeBarComboColl;
+   typedef StirrupSizeBarComboColl::iterator StirrupSizeBarComboIter;
+
+   StirrupSizeBarComboColl m_StirrupSizeBarComboColl;
+   std::vector<Float64> m_AvailableBarSpacings;
+   Float64 m_MaxSpacingChangeInZone;
+   Float64 m_MaxShearCapacityChangeInZone;
+   Uint32 m_MinZoneLengthSpacings;
+   Float64 m_MinZoneLengthLength;
+   bool m_IsTopFlangeRoughened;
+   bool m_DoExtendBarsIntoDeck;
+   bool m_DoBarsProvideSplittingCapacity;
+   bool m_DoBarsActAsConfinement;
+   LongShearCapacityIncreaseMethod m_LongShearCapacityIncreaseMethod;
+
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

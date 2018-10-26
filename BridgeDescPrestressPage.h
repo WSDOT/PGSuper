@@ -44,6 +44,7 @@
 
 class CGirderDescDlg;
 struct IStrandGeometry;
+struct IEAFDisplayUnits;
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescPrestressPage dialog
@@ -100,17 +101,18 @@ protected:
 	afx_msg void OnDropdownHpComboEnd();
    afx_msg void OnStrandTypeChanged();
    afx_msg void OnTempStrandTypeChanged();
+   afx_msg void OnBnClickedEditStrandFill();
 	//}}AFX_MSG
    afx_msg BOOL OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	DECLARE_MESSAGE_MAP()
 
-   void InitPjackEdits();
-   void InitPjackEditEx( UINT nCheckBox );
+   void UpdatePjackEdits();
    void UpdatePjackEdit( UINT nCheckBox  );
-   Float64 GetMaxPjackStraight();
-   Float64 GetMaxPjackHarped();
-   Float64 GetMaxPjackTemp();
+   void UpdatePjackEditEx(StrandIndexType nStrands, UINT nCheckBox  );
+   void ConvertPJackFromNumPerm(StrandIndexType numStraight, StrandIndexType numHarped, IEAFDisplayUnits* pDisplayUnits);
+   void ConvertPJackToNumPerm(StrandIndexType numStraight, StrandIndexType numHarped, IEAFDisplayUnits* pDisplayUnits);
+
    void UpdateEndRangeLength(HarpedStrandOffsetType measureType, StrandIndexType Nh);
    void UpdateHpRangeLength(HarpedStrandOffsetType measureType, StrandIndexType Nh);
    void UpdateStraightHarped(StrandIndexType Ns, StrandIndexType Nh);
@@ -118,11 +120,13 @@ protected:
 
    void InitHarpStrandOffsetMeasureComboBox(CComboBox* pCB);
 
-   void HideControls(int key);
+   void HideControls(int key, int numPermStrandsType);
    void HideEndOffsetControls(BOOL hide);
    void HideHpOffsetControls(BOOL hide);
+   void DisappearHpOffsetControls();
    void ShowHideNumStrandControls(int numPermStrandsType);
    void UpdateStrandControls();
+
 
    StrandIndexType StrandSpinnerInc(IStrandGeometry* pStrands, pgsTypes::StrandType type,StrandIndexType currNum, bool bAdd );
    StrandIndexType PermStrandSpinnerInc(IStrandGeometry* pStrands, StrandIndexType currNum, bool bAdd );
@@ -133,12 +137,16 @@ protected:
    bool m_AllowHpAdjustment;
    bool m_AllowEndAdjustment;
 
-   int m_CurrStrandAdjustmentType; // use this to determine if value has changed
-
+   bool m_bAreHarpedStrandsForcedStraight;
+   int m_CurrNumPermStrandsType; 
 
    void UpdateStrandList(UINT nIDC);
 
    CString m_strTip;
+public:
+
+   ConfigStrandFillVector ComputeStraightStrandFillVector(StrandIndexType Ns);
+   ConfigStrandFillVector ComputeHarpedStrandFillVector();
 };
 
 //{{AFX_INSERT_LOCATION}}

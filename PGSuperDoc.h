@@ -133,6 +133,7 @@ public:
    bool EditGirderDescription(SpanIndexType span,GirderIndexType girder, int nPage);
    bool EditSpanDescription(SpanIndexType spanIdx, int nPage);
    bool EditPierDescription(PierIndexType pierIdx, int nPage);
+   bool EditDirectInputPrestressing(SpanIndexType span,GirderIndexType girder);
 
    void AddPointLoad(const CPointLoadData& loadData);
    bool EditPointLoad(CollectionIndexType loadIdx);
@@ -181,6 +182,9 @@ public:
    bool IsDesignShearEnabled() const;
    void EnableDesignShear( bool bEnable );
 
+   bool IsDesignStirrupsFromScratchEnabled() const;
+   void EnableDesignStirrupsFromScratch( bool bEnable );
+
    bool ShowProjectPropertiesOnNewProject();
    void ShowProjectPropertiesOnNewProject(bool bShow);
 
@@ -220,6 +224,7 @@ protected:
    UINT m_UIHintSettings;
    bool m_bDesignFlexureEnabled;
    bool m_bDesignShearEnabled;
+   bool m_bDesignStirrupsFromScratchEnabled;
    bool m_bShowProjectProperties;
 
    CComPtr<IDocUnitSystem> m_DocUnitSystem;
@@ -282,6 +287,7 @@ protected:
 	afx_msg void OnExportToTemplateFile();
 	afx_msg void OnViewsettingsBridgemodelEditor();
 	afx_msg void OnLoadsLoadModifiers();
+   afx_msg void OnLoadsLoadFactors();
 	afx_msg void OnViewsettingsGirderEditor();
 	afx_msg void OnProjectDesignGirder();
 	afx_msg void OnProjectDesignGirderDirect();

@@ -658,10 +658,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ConfinementCheckTable.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\ConstructabilityCheckTable.cpp"
 				>
 			</File>

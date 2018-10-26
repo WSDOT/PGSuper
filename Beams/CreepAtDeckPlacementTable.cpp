@@ -56,7 +56,7 @@ rptRcTable(NumColumns,0)
 CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,IGirderData,pGirderData);
-   CGirderData girderData = pGirderData->GetGirderData(span,gdr);
+   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
 
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
@@ -65,14 +65,13 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
    CCreepAtDeckPlacementTable* table = new CCreepAtDeckPlacementTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
 
-
-   table->m_GirderData = girderData;
+   table->m_pGirderData = pgirderData;
 
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("[5.9.5.4.2b] Creep of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pCR")) << rptNewLine;
 
-   if ( girderData.TempStrandUsage != pgsTypes::ttsPretensioned )
+   if ( pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned )
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCR_PT.png")) << rptNewLine;
    else
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCR.png")) << rptNewLine;
@@ -81,7 +80,7 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
    *pParagraph << table << rptNewLine;
    (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
 
-   if ( girderData.TempStrandUsage == pgsTypes::ttsPretensioned )
+   if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPretensioned )
       (*table)(0,1) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    else
       (*table)(0,1) << COLHDR(RPT_STRESS(_T("cgp")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -96,9 +95,9 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
    return table;
 }
 
-void CCreepAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CCreepAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   if ( m_GirderData.TempStrandUsage == pgsTypes::ttsPretensioned )
+   if ( m_pGirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPretensioned )
       (*this)(row,1) << stress.SetValue(details.pLosses->ElasticShortening().PermanentStrand_Fcgp());
    else
       (*this)(row,1) << stress.SetValue(details.pLosses->ElasticShortening().PermanentStrand_Fcgp() + details.RefinedLosses2005.GetDeltaFpp());

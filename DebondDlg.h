@@ -61,19 +61,17 @@ public:
 	//}}AFX_VIRTUAL
 
 public:
-   std::vector<CString> GetStrandList();
    void OnChange();
 
    std::vector<CDebondInfo> GetDebondInfo() const;
 
 // Implementation
 protected:
-   CComPtr<ILongArray> m_Debondables;
+   CComPtr<IIndexArray> m_Debondables;
 
    CGirderDescDebondGrid m_Grid;
 
    StrandIndexType GetNumStrands();
-   StrandIndexType GetNumPermanentStrands();
    bool CanDebondMore();
    void DrawShape(CDC* pDC,IShape* shape,grlibPointMapper& mapper);
    void DrawStrands(CDC* pDC,grlibPointMapper& mapper);
@@ -85,10 +83,10 @@ protected:
 	virtual BOOL OnSetActive();
 	virtual BOOL OnKillActive();
 	afx_msg void OnPaint();
-	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnSymmetricDebond();
 	afx_msg void OnHelp();
-	//}}AFX_MSG
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+   //}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
 

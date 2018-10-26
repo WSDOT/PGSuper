@@ -41,6 +41,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+inline bool B2b(BOOL val) { return val!=0; }
+
 /////////////////////////////////////////////////////////////////////////////
 // CGirderMainSheet
 
@@ -91,6 +93,7 @@ void CGirderMainSheet::Init()
    m_HarpPointPage.m_psp.dwFlags            |= PSP_HASHELP;
    m_DiaphragmPage.m_psp.dwFlags            |= PSP_HASHELP;
    m_GirderDebondCriteriaPage.m_psp.dwFlags |= PSP_HASHELP;
+   m_ShearDesignPage.m_psp.dwFlags     |= PSP_HASHELP;
 
    AddPage(&m_GirderDimensionsPage);
    AddPage(&m_GirderHarpedStrandPage);   // straight and harped strands
@@ -100,6 +103,7 @@ void CGirderMainSheet::Init()
    AddPage(&m_LongSteelPage);
    AddPage(&m_ShearSteelPage);
    AddPage(&m_DiaphragmPage);
+   AddPage(&m_ShearDesignPage);
 }
 
 void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
@@ -301,6 +305,26 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
    DDX_Check_Bool(pDX,IDC_ODD_STRANDS, m_Entry.m_bOddNumberOfHarpedStrands );
    DDX_Check_Bool(pDX,IDC_USE_DIFF_GRID, m_Entry.m_bUseDifferentHarpedGridAtEnds);
 
+   int idx;
+   if (!pDX->m_bSaveAndValidate)
+   {
+      idx = m_Entry.IsForceHarpedStrandsStraight() ? 1 : 0;
+   }
+
+   DDX_CBIndex(pDX,IDC_WEB_STRAND_TYPE_COMBO, idx);
+
+   if (pDX->m_bSaveAndValidate)
+   {
+      bool do_force_straight = idx!=0;
+      m_Entry.ForceHarpedStrandsStraight(do_force_straight);
+
+      if(do_force_straight)
+      {
+         // set adjustment limits for end same as hp
+         m_Entry.m_EndAdjustment = m_Entry.m_HPAdjustment;
+      }
+   }
+
    // get strand locations from grid and put them in library entry
    if (pDX->m_bSaveAndValidate)
    {
@@ -315,7 +339,7 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
     
       m_Entry.m_StraightStrands.clear();
       m_Entry.m_HarpedStrands.clear();
-      m_Entry.m_GlobalStrandOrder.clear();
+      m_Entry.m_PermanentStrands.clear();
 
       // grab a reference to grid's internal data to save typing
       CGirderGlobalStrandGrid::EntryCollectionType& grid_collection =  m_GirderHarpedStrandPage.m_MainGrid.m_Entries;
@@ -335,7 +359,7 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
 
             m_Entry.m_StraightStrands.push_back(GirderLibraryEntry::StraightStrandLocation(x,y,entry.m_CanDebond));
 
-            m_Entry.m_GlobalStrandOrder.push_back(GirderLibraryEntry::GlobalStrand(GirderLibraryEntry::stStraight, num_straight++));
+            m_Entry.m_PermanentStrands.push_back(GirderLibraryEntry::PermanentStrand(GirderLibraryEntry::stStraight, num_straight++));
          }
          else if (entry.m_Type == GirderLibraryEntry::stHarped)
          {
@@ -360,7 +384,7 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
             
             m_Entry.m_HarpedStrands.push_back(GirderLibraryEntry::HarpedStrandLocation(start_x,start_y,x,y,end_x,end_y));
 
-            m_Entry.m_GlobalStrandOrder.push_back(GirderLibraryEntry::GlobalStrand(GirderLibraryEntry::stHarped, num_harped++));
+            m_Entry.m_PermanentStrands.push_back(GirderLibraryEntry::PermanentStrand(GirderLibraryEntry::stHarped, num_harped++));
          }
          else
             ATLASSERT(0);
@@ -379,12 +403,12 @@ void CGirderMainSheet::UploadStrandData()
    Float64 heightStart = m_Entry.GetBeamHeight(pgsTypes::metStart);
    CGirderGlobalStrandGrid::EntryCollectionType grid_collection;
 
-   StrandIndexType num_global = m_Entry.GetMaxGlobalStrands();
+   StrandIndexType num_global = m_Entry.GetPermanentStrandGridSize();
    for (StrandIndexType idx=0; idx<num_global; idx++)
    {
       StrandIndexType strand_idx;
       GirderLibraryEntry::psStrandType strand_type;
-      m_Entry.GetGlobalStrandAtFill(idx, &strand_type, &strand_idx);
+      m_Entry.GetGridPositionFromPermStrandGrid(idx, &strand_type, &strand_idx);
 
       Float64 start_x,start_y,x,y,end_x,end_y;
       bool can_debond(false);
@@ -456,89 +480,6 @@ void CGirderMainSheet::ExchangeLongitudinalData(CDataExchange* pDX)
          }
       }
       m_Entry.SetLongSteelInfo(vec);
-   }
-}
-
-
-void CGirderMainSheet::ExchangeTransverseData(CDataExchange* pDX)
-{
-   CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
-
-   if (!pDX->m_bSaveAndValidate)
-   {
-      // bar spacing in top flange
-      m_TfBarSpacing= m_Entry.GetTopFlangeShearBarSpacing();
-   }
-
-   DDX_UnitValueAndTag(pDX, IDC_TF_SPACING, IDC_TF_SPACING_UNITS, m_TfBarSpacing, pDisplayUnits->ComponentDim);
-   DDV_UnitValueZeroOrMore(pDX, IDC_TF_SPACING,m_TfBarSpacing, pDisplayUnits->ComponentDim);
-
-   // get shear steel information from grid and store it
-   if (pDX->m_bSaveAndValidate)
-   {
-      GirderLibraryEntry::ShearZoneInfoVec vec;
-      GirderLibraryEntry::ShearZoneInfo lsi;
-      ROWCOL nrows = m_ShearSteelPage.m_Grid.GetRowCount();
-      for (ROWCOL i=1; i<=nrows; i++)
-      {
-         if (m_ShearSteelPage.m_Grid.GetRowData(i,&lsi))
-         {
-            // values are in display units - must convert to system
-            lsi.ZoneLength     = ::ConvertToSysUnits(lsi.ZoneLength, pDisplayUnits->SpanLength.UnitOfMeasure);
-            lsi.StirrupSpacing = ::ConvertToSysUnits(lsi.StirrupSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure);
-            vec.push_back(lsi);
-         }
-      }
-      m_Entry.SetShearZoneInfo(vec);
-
-      // last confinement zone
-      ZoneIndexType siz = vec.size();
-      ZoneIndexType iz = (ZoneIndexType)m_ShearSteelPage.m_LastZone.GetCurSel();
-      if (iz==CB_ERR)
-      {
-         m_Entry.SetLastConfinementZone(iz);
-      }
-      else
-      {
-         ASSERT(iz<=siz);
-         m_Entry.SetLastConfinementZone(iz);
-      }
-
-      // top flange bar spacing
-      m_Entry.SetTopFlangeShearBarSpacing(m_TfBarSpacing);
-   }
-
-   DDX_Check_Bool(pDX,IDC_STIRRUPS_ENGAGE_DECK,m_Entry.m_bStirrupsEngageDeck);
-   DDX_Check_Bool(pDX,IDC_ROUGHENED,           m_Entry.m_bIsRoughenedSurface);
-}
-
-void CGirderMainSheet::UploadTransverseData()
-{
-   CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
-
-   // fill grid
-   GirderLibraryEntry::ShearZoneInfoVec vec = m_Entry.GetShearZoneInfo();
-   // convert units
-   for (GirderLibraryEntry::ShearZoneInfoVec::iterator it = vec.begin(); it!=vec.end(); it++)
-   {
-      (*it).ZoneLength = ::ConvertFromSysUnits((*it).ZoneLength, pDisplayUnits->SpanLength.UnitOfMeasure);
-      (*it).StirrupSpacing = ::ConvertFromSysUnits((*it).StirrupSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure);
-   }
-   m_ShearSteelPage.m_Grid.FillGrid(vec);
-
-   // last confinement zone
-   m_ShearSteelPage.FillLastZone(vec.size());
-   ZoneIndexType sel = m_Entry.GetNumConfinementZones();
-   if (sel <= vec.size())
-   {
-      m_ShearSteelPage.m_LastZone.SetCurSel((int)sel);
-   }
-   else
-   {
-      ASSERT(0); // Shear zone from data file out of range
-      m_ShearSteelPage.m_LastZone.SetCurSel(0);
    }
 }
 
@@ -661,6 +602,78 @@ void CGirderMainSheet::ExchangeDebondCriteriaData(CDataExchange* pDX)
    }
 }
 
+void CGirderMainSheet::UploadShearDesignData(CDataExchange* pDX)
+{
+   m_ShearDesignPage.m_StirrupSizeBarComboColl.clear();
+
+   IndexType siz = m_Entry.GetNumStirrupSizeBarCombos();
+   for(IndexType is=0; is<siz; is++)
+   {
+      CShearDesignPage::StirrupSizeBarCombo cbo;
+
+      m_Entry.GetStirrupSizeBarCombo(is, &cbo.Size, &cbo.NLegs);
+
+      m_ShearDesignPage.m_StirrupSizeBarComboColl.push_back(cbo);
+   }
+
+   m_ShearDesignPage.m_BarSpacings.clear();
+
+   siz = m_Entry.GetNumAvailableBarSpacings();
+   for(IndexType is=0; is<siz; is++)
+   {
+      m_ShearDesignPage.m_BarSpacings.push_back( m_Entry.GetAvailableBarSpacing(is) );
+   }
+
+   m_ShearDesignPage.m_MaxStirrupSpacingChange = m_Entry.GetMaxSpacingChangeInZone();
+   m_ShearDesignPage.m_MaxShearCapChange = m_Entry.GetMaxShearCapacityChangeInZone();
+
+   Uint32 u32;
+   Float64 f64;
+   m_Entry.GetMinZoneLength(&u32, &f64);
+
+   m_ShearDesignPage.m_MinZoneLengthBars = u32;
+   m_ShearDesignPage.m_MinZoneLengthDist = f64;
+
+   m_ShearDesignPage.m_bTopFlangeRoughened = m_Entry.GetIsTopFlangeRoughened();
+   m_ShearDesignPage.m_bExtendDeckBars = m_Entry.GetExtendBarsIntoDeck();
+   m_ShearDesignPage.m_bBarsProvideSplitting = m_Entry.GetBarsProvideSplittingCapacity();
+   m_ShearDesignPage.m_bBarsProvideConfinement = m_Entry.GetBarsActAsConfinement();
+
+   m_ShearDesignPage.m_LongReinfShearMethod = m_Entry.GetLongShearCapacityIncreaseMethod();
+}
+
+void CGirderMainSheet::DownloadShearDesignData(CDataExchange* pDX)
+{
+   m_Entry.ClearStirrupSizeBarCombos();
+   for(CShearDesignPage::StirrupSizeBarComboIter it=m_ShearDesignPage.m_StirrupSizeBarComboColl.begin();
+       it!=m_ShearDesignPage.m_StirrupSizeBarComboColl.end(); it++)
+   {
+      m_Entry.AddStirrupSizeBarCombo(it->Size, it->NLegs);
+   }
+
+   m_Entry.ClearAvailableBarSpacings();
+
+   for(std::vector<Float64>::iterator its=m_ShearDesignPage.m_BarSpacings.begin(); its!=m_ShearDesignPage.m_BarSpacings.end(); its++)
+   {
+      // page has already sorted and removed duplicates from list
+      Float64 val = *its;
+      m_Entry.AddAvailableBarSpacing(val);
+   }
+
+   m_Entry.SetMaxSpacingChangeInZone( m_ShearDesignPage.m_MaxStirrupSpacingChange );
+   m_Entry.SetMaxShearCapacityChangeInZone( m_ShearDesignPage.m_MaxShearCapChange );
+
+   m_Entry.SetMinZoneLength(m_ShearDesignPage.m_MinZoneLengthBars, m_ShearDesignPage.m_MinZoneLengthDist);
+
+   m_Entry.SetIsTopFlangeRoughened( B2b(m_ShearDesignPage.m_bTopFlangeRoughened) );
+   m_Entry.SetExtendBarsIntoDeck( B2b(m_ShearDesignPage.m_bExtendDeckBars) );
+   m_Entry.SetBarsProvideSplittingCapacity( B2b(m_ShearDesignPage.m_bBarsProvideSplitting) );
+   m_Entry.SetBarsActAsConfinement( B2b(m_ShearDesignPage.m_bBarsProvideConfinement) );
+
+   m_Entry.SetLongShearCapacityIncreaseMethod( (GirderLibraryEntry::LongShearCapacityIncreaseMethod)(m_ShearDesignPage.m_LongReinfShearMethod) );
+}
+
+
 
 void CGirderMainSheet::OnApply( NMHDR * pNotifyStruct, LRESULT * result )
 {
@@ -708,7 +721,10 @@ void CGirderMainSheet::OnApply( NMHDR * pNotifyStruct, LRESULT * result )
 BOOL CGirderMainSheet::OnInitDialog() 
 {
 	BOOL bResult = CPropertySheet::OnInitDialog();
-	
+
+   // Shear page takes care of its own data
+   m_ShearSteelPage.m_ShearData = m_Entry.GetShearData();
+
    // disable OK button if editing not allowed
    CString head;
    GetWindowText(head);
@@ -740,54 +756,4 @@ void CGirderMainSheet::MiscOnAbsolute()
 
    CDataExchange dx(&m_HarpPointPage,FALSE);
    DDX_Tag(&dx, IDC_HARP_LOCATION_TAG, pDisplayUnits->SpanLength );
-}
-
-void CGirderMainSheet::FillMaterialComboBox(CComboBox* pCB)
-{
-   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade40).c_str() );
-   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str() );
-   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade75).c_str() );
-   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade80).c_str() );
-   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A706,matRebar::Grade60).c_str() );
-   pCB->AddString( lrfdRebarPool::GetMaterialName(matRebar::A706,matRebar::Grade80).c_str() );
-}
-
-void CGirderMainSheet::GetStirrupMaterial(int idx,matRebar::Type& type,matRebar::Grade& grade)
-{
-   switch(idx)
-   {
-   case 0:  type = matRebar::A615; grade = matRebar::Grade40; break;
-   case 1:  type = matRebar::A615; grade = matRebar::Grade60; break;
-   case 2:  type = matRebar::A615; grade = matRebar::Grade75; break;
-   case 3:  type = matRebar::A615; grade = matRebar::Grade80; break;
-   case 4:  type = matRebar::A706; grade = matRebar::Grade60; break;
-   case 5:  type = matRebar::A706; grade = matRebar::Grade80; break;
-   default:
-      ATLASSERT(false); // should never get here
-   }
-}
-
-int CGirderMainSheet::GetStirrupMaterialIndex(matRebar::Type type,matRebar::Grade grade)
-{
-   if ( type == matRebar::A615 )
-   {
-      if ( grade == matRebar::Grade40 )
-         return 0;
-      else if ( grade == matRebar::Grade60 )
-         return 1;
-      else if ( grade == matRebar::Grade75 )
-         return 2;
-      else if ( grade == matRebar::Grade80 )
-         return 3;
-   }
-   else
-   {
-      if ( grade == matRebar::Grade60 )
-         return 4;
-      else if ( grade == matRebar::Grade80 )
-         return 5;
-   }
-
-   ATLASSERT(false); // should never get here
-   return -1;
 }

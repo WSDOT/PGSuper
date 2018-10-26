@@ -75,6 +75,7 @@ interface IPrestressForce : IUnknown
    virtual Float64 GetXferLength(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType) = 0;
    virtual Float64 GetDevLength(const pgsPointOfInterest& poi,bool bDebonded) = 0;
    virtual STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded) = 0;
+   virtual STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bDebonded) = 0;
    virtual Float64 GetStrandBondFactor(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType) = 0;
    virtual Float64 GetStrandBondFactor(const pgsPointOfInterest& poi,const GDRCONFIG& config,StrandIndexType strandIdx,pgsTypes::StrandType strandType) = 0;
    virtual Float64 GetStrandBondFactor(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,Float64 fps,Float64 fpe) = 0;
@@ -109,7 +110,10 @@ INTERFACE
    Interface to get losses.
 
 DESCRIPTION
-   Interface to get losses.
+   Interface to get losses. The losses returned by this interface
+   are the effective prestress losses. That is, they are the actual losses
+   plus any elastic gain/losses that compensate for the fact that we
+   are using gross section analysis
 *****************************************************************************/
 // {03D91150-6DBB-11d2-8EE9-006097DF3C68}
 DEFINE_GUID(IID_ILosses, 
@@ -128,6 +132,7 @@ interface ILosses : IUnknown
    virtual Float64 GetDeckPlacementLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
    virtual Float64 GetSIDLLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
    virtual Float64 GetFinal(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
+   virtual Float64 GetFinalWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) = 0;
    virtual LOSSDETAILS GetLossDetails(const pgsPointOfInterest& poi) = 0;
 
    // losses based on a girder configuration and slab offset
@@ -142,6 +147,7 @@ interface ILosses : IUnknown
    virtual Float64 GetDeckPlacementLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config) = 0;
    virtual Float64 GetSIDLLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config) = 0;
    virtual Float64 GetFinal(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config) = 0;
+   virtual Float64 GetFinalWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config) = 0;
    virtual LOSSDETAILS GetLossDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config) = 0;
    virtual void ClearDesignLosses() = 0;
 

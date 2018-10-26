@@ -155,7 +155,7 @@ void CTxDOTOptionalDesignStandardFillDlg::UpdateControls()
    CWnd* pout = (CWnd*)GetDlgItem(IDC_OPT_NO_DEPRESSED);
 
    StrandIndexType numStraight(0), numHarped(0);
-   if (!pGdrEntry->ComputeGlobalStrands(m_NumStrands, &numStraight, &numHarped))
+   if (!pGdrEntry->GetPermStrandDistribution(m_NumStrands, &numStraight, &numHarped))
    {
       ASSERT(0);
       pout->SetWindowText(_T("Error computing harped strands"));

@@ -65,10 +65,10 @@ CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pCh
    StrandIndexType NtMax = pStrandGeom->GetMaxStrands(span,gdr,pgsTypes::Temporary);
 
    GET_IFACE2(pBroker,IGirderData,pGirderData);
-   CGirderData girderData = pGirderData->GetGirderData(span,gdr);
+   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
    if ( 0 < NtMax )
    {
-      if ( girderData.TempStrandUsage == pgsTypes::ttsPretensioned ) 
+      if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPretensioned ) 
       {
          numColumns++;
       }
@@ -92,7 +92,7 @@ CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pCh
    std::_tstring strYear = (bIgnoreElasticGain ? _T("") : _T("_2005"));
    if ( 0 < NtMax )
    {
-      if ( girderData.TempStrandUsage == pgsTypes::ttsPretensioned ) 
+      if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPretensioned ) 
       {
          *pParagraph << _T("Total Prestress Loss ") << rptNewLine << rptRcImage(strImagePath + _T("DeltaFpt_PS_TTS") + strYear + _T(".png")) << rptNewLine;
       }
@@ -114,7 +114,7 @@ CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pCh
    (*table)(0,col++) << COLHDR(symbol(DELTA) << _T("f") << Sub(_T("pR1")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(symbol(DELTA) << _T("f") << Sub(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    
-   if ( 0 < NtMax && girderData.TempStrandUsage != pgsTypes::ttsPretensioned ) 
+   if ( 0 < NtMax && pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned ) 
    {
       (*table)(0,col++) << COLHDR(symbol(DELTA) << _T("f") << Sub(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
@@ -137,20 +137,20 @@ CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pCh
 
    (*table)(0,col++) << COLHDR(symbol(DELTA) << _T("f") << Sub(_T("pT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-   table->m_GirderData = girderData;
+   table->m_pGirderData = pgirderData;
    table->m_NtMax = NtMax;
    table->m_bIgnoreElasticGain = bIgnoreElasticGain;
    
    return table;
 }
 
-void CFinalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CFinalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 1;
    (*this)(row,col++) << stress.SetValue( details.RefinedLosses.PermanentStrand_RelaxationLossesAtXfer() );
    (*this)(row,col++) << stress.SetValue( details.pLosses->PermanentStrand_ElasticShorteningLosses() );
    
-   if ( 0 < m_NtMax && m_GirderData.TempStrandUsage != pgsTypes::ttsPretensioned ) 
+   if ( 0 < m_NtMax && m_pGirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned ) 
    {
       (*this)(row,col++) << stress.SetValue(details.pLosses->GetDeltaFpp());
    }

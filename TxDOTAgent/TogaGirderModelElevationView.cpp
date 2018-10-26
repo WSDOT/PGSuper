@@ -71,7 +71,6 @@ static char THIS_FILE[] = __FILE__;
 #define SECTION_CUT_ID   100
 
 
-
 // simple, exception-safe class for blocking events
 class SimpleMutex
 {
@@ -558,31 +557,33 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
    Nt = pStrandGeom->GetNumStrands(span,girder,pgsTypes::Temporary);
    Nsd= pStrandGeom->GetNumDebondedStrands(span,girder,pgsTypes::Straight);
 
+   std::_tstring harp_type(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(span,girder)));
+
    CString strMsg3;
    if ( pStrandGeom->GetMaxStrands(span,girder,pgsTypes::Temporary) != 0 )
    {
       if ( Nsd == 0 )
       {
-         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
-                         pStrand->GetName().c_str(),Ns,Nh,pTempStrand->GetName().c_str(),Nt);
+         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# %s: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
+                         pStrand->GetName().c_str(),Ns,harp_type.c_str(),Nh,pTempStrand->GetName().c_str(),Nt);
       }
       else
       {
-         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
-                         pStrand->GetName().c_str(),Ns,Nsd,Nh,pTempStrand->GetName().c_str(),Nt);
+         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# %s: %2d\r\n\r\n%s\r\n# Temporary: %2d"),
+                         pStrand->GetName().c_str(),Ns,Nsd,harp_type.c_str(),Nh,pTempStrand->GetName().c_str(),Nt);
       }
    }
    else
    {
       if ( Nsd == 0 )
       {
-         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# Harped: %2d"),
-                         pStrand->GetName().c_str(),Ns,Nh);
+         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d\r\n# %s: %2d"),
+                         pStrand->GetName().c_str(),Ns,harp_type.c_str(),Nh);
       }
       else
       {
-         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# Harped: %2d"),
-                         pStrand->GetName().c_str(),Ns,Nsd,Nh);
+         strMsg3.Format(_T("\r\n\r\nStrand: %s\r\n# Straight: %2d (%2d Debonded)\r\n# %s: %2d"),
+                         pStrand->GetName().c_str(),Ns,Nsd,harp_type.c_str(),Nh);
       }
    }
 
@@ -1167,21 +1168,22 @@ void CTogaGirderModelElevationView::BuildStirrupDisplayObjects(CTxDOTOptionalDes
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
    bool bDoStirrupsEngageDeck = pStirrupGeom->DoStirrupsEngageDeck(span,girder);
 
-   ZoneIndexType nStirrupZones = pStirrupGeom->GetNumZones(span,girder);
+   ZoneIndexType nStirrupZones = pStirrupGeom->GetNumPrimaryZones(span,girder);
    for ( ZoneIndexType zoneIdx = 0; zoneIdx < nStirrupZones; zoneIdx++ )
    {
-      Float64 start   = pStirrupGeom->GetZoneStart(span,girder,zoneIdx);
-      Float64 end     = pStirrupGeom->GetZoneEnd(span,girder,zoneIdx);
-      Float64 spacing = pStirrupGeom->GetS(span,girder,zoneIdx);
+      Float64 start, end;
+      pStirrupGeom->GetPrimaryZoneBounds(span , girder, zoneIdx, &start, &end);
 
-      matRebar::Size barSize = pStirrupGeom->GetVertStirrupBarSize(span,girder,zoneIdx);
-      CollectionIndexType nStirrups = pStirrupGeom->GetVertStirrupBarCount(span,girder,zoneIdx);
+      matRebar::Size barSize;
+      Float64 spacing;
+      Float64 nStirrups;
+      pStirrupGeom->GetPrimaryVertStirrupBarInfo(span,girder,zoneIdx,&barSize,&nStirrups,&spacing);
 
       if ( barSize != matRebar::bsNone && nStirrups != 0 )
       {
-         CollectionIndexType nStirrupsInZone = Uint32(floor((end - start)/spacing));
+         ZoneIndexType nStirrupsInZone = ZoneIndexType(floor((end - start)/spacing));
          spacing = (end-start)/nStirrupsInZone;
-         for ( CollectionIndexType i = 0; i <= nStirrupsInZone; i++ )
+         for ( ZoneIndexType i = 0; i <= nStirrupsInZone; i++ )
          {
             double x = start + i*spacing;
 

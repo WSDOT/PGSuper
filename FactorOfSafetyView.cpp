@@ -232,7 +232,7 @@ void CFactorOfSafetyView::OnDraw(CDC* pDC)
       MultiLineTextOut(pDC,0,0,msg);
 
       // give child frame a reasonable default
-      this->SetWindowText(_T("Analysis Results"));
+      this->SetWindowText(_T("Girder Stability"));
    }
 
    pDC->RestoreDC(save);
@@ -415,6 +415,7 @@ void CFactorOfSafetyView::Update()
 
    // time to redraw
    Invalidate();
+   UpdateWindow();
 }
 
 void CFactorOfSafetyView::UpdateNow()
@@ -559,6 +560,7 @@ void CFactorOfSafetyView::DoUpdateNow()
 
    // time to redraw
    Invalidate();
+   UpdateWindow();
 }
 
 void CFactorOfSafetyView::AddGraphPoint(IndexType series, Float64 xval, Float64 yval)

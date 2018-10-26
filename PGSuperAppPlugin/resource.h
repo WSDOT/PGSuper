@@ -3,6 +3,7 @@
 // Used by PGSuperAppPlugin.rc
 //
 #define ID_INDICATOR_ANALYSIS           3
+#define IDCANCEL2                       3
 #define ID_INDICATOR_AUTOCALC_ON        4
 #define ID_INDICATOR_AUTOCALC_OFF       5
 #define IDS_LWC_MESSAGE                 6
@@ -163,6 +164,9 @@
 #define IDD_MULTI_GIRDER_SELECT         317
 #define IDR_COPY_PASTE                  318
 #define IDD_LLDF_FILL                   319
+#define IDD_BRIDGEVIEW_SETTINGS         322
+#define IDD_LOAD_FACTORS                323
+#define IDD_GIRDER_SELECT_STRANDS       324
 #define IDR_PGSUPER_TEMPLATE_ICON       500
 #define IDC_BRIDGE                      1000
 #define IDC_BULB                        1001
@@ -180,12 +184,17 @@
 #define IDC_AGG_SIZE                    1016
 #define IDC_POI                         1017
 #define IDC_VALUE                       1018
-#define IDC_TF_SPACING                  1019
+#define IDC_SERVICE_IA_DW               1018
 #define IDC_RADIO3                      1020
+#define IDC_STRENGTH_I_DW_MIN           1020
 #define IDC_UPDATEDESIGN                1021
+#define IDC_STRENGTH_I_DW_MAX           1021
 #define IDC_PROFILE                     1022
+#define IDC_STRENGTH_II_DW_MIN          1022
 #define IDC_RADIO_IGNORE_LEVER          1023
+#define IDC_STRENGTH_II_DW_MAX          1023
 #define IDC_NUMERIC                     1024
+#define IDC_FATIGUE_I_DW                1024
 #define IDC_LIST                        1025
 #define IDC_VALUE_UNITS                 1026
 #define IDC_EXPOSURE                    1027
@@ -195,7 +204,6 @@
 #define IDC_REMOVEROWS                  1031
 #define IDC_DIRECTION                   1032
 #define IDC_PIER1_STATION               1033
-#define IDC_RESTORE_DEFAULTS            1034
 #define IDC_APPEND_ROW                  1035
 #define IDC_PIER2_STATION               1036
 #define IDC_STATIONFMT                  1037
@@ -228,17 +236,13 @@
 #define IDC_ADIM                        1064
 #define IDC_SLAB_CONCRETE               1065
 #define IDC_SLAB_FC                     1066
-#define IDC_LAST_ZONE                   1067
 #define IDC_OLAY_DENSITY_LABEL          1068
 #define IDC_OLAY_DENSITY                1069
 #define IDC_SACDEPTH                    1070
-#define IDC_SHEAR_GRID                  1071
 #define IDC_OLAY_DENSITY_UNIT           1072
 #define IDC_SACDEPTH_UNIT               1073
 #define IDC_ADIM_UNIT                   1074
-#define IDC_BAR_SIZE                    1075
 #define IDC_OVERHANG_UNIT               1076
-#define IDC_TF_BAR_SIZE                 1077
 #define IDC_LEFTOVERHANG_UNIT           1078
 #define IDC_GROSS_DEPTH_UNIT            1079
 #define IDC_SLAB_FC_UNIT                1080
@@ -331,6 +335,7 @@
 #define IDC_SELECT_GIRDERS              1163
 #define IDC_LLDF_FILL2                  1163
 #define IDC_SELECT_ALL                  1163
+#define IDC_EDIT_STRAND_FILL            1163
 #define IDC_PRINT                       1164
 #define IDC_SELECT_ALL2                 1164
 #define IDC_CLEAR_ALL                   1164
@@ -406,7 +411,6 @@
 #define IDC_PI_STATION_TAG              1232
 #define IDC_FWD_TANGENT_TAG             1233
 #define IDC_BK_TANGENT_TAG              1234
-#define IDC_TF_SPACING_UNITS            1235
 #define IDC_RADIUS_TAG                  1236
 #define IDC_GRADE_LABEL                 1237
 #define IDC_G1_LABEL                    1238
@@ -433,6 +437,7 @@
 #define IDC_STRENGTH_I_DC               1259
 #define IDC_FY_COEFFICIENT              1259
 #define IDC_LOAD                        1259
+#define IDC_START_SPAN_EDIT             1259
 #define IDC_LOCATION                    1260
 #define IDC_SERVICE_III_DC              1260
 #define IDC_K1                          1261
@@ -516,20 +521,31 @@
 #define IDC_CONC_ENTRIES                1339
 #define IDC_WARNING                     1340
 #define IDC_WARNOTE                     1341
+#define IDC_SERVICE_I_LLIM              1341
 #define IDC_STATUSLIST                  1342
 #define IDC_DESIGN_LL_LIST              1343
+#define IDC_SERVICE_IA_DC               1343
 #define IDC_SPANS                       1344
+#define IDC_SERVICE_IA_LLIM             1344
 #define IDC_DESIGN_HL93                 1345
 #define IDC_GIRDERS                     1346
+#define IDC_SERVICE_III_LLIM            1346
 #define IDC_FATIGUE_LL_LIST             1347
+#define IDC_STRENGTH_I_DC_MIN           1347
 #define IDC_STRENGTH_LL_LIST            1348
+#define IDC_STRENGTH_I_LLIM             1348
 #define IDC_MEASURED_FROM               1349
+#define IDC_STRENGTH_I_DC_MAX           1349
 #define IDC_STRENGTH_HL93               1350
+#define IDC_STRENGTH_II_DC_MIN          1350
 #define IDC_LOCATION_UNITS              1351
+#define IDC_STRENGTH_II_DC_MAX          1351
 #define IDC_FRACTIONAL                  1352
+#define IDC_STRENGTH_II_LLIM            1352
 #define IDC_MAGNITUDE_UNITS             1353
+#define IDC_FATIGUE_I_DC                1353
 #define IDC_LOADCASE                    1354
-#define IDC_STIRRUPS_ENGAGE_DECK        1355
+#define IDC_FATIGUE_I_LLIM              1354
 #define IDC_TEMPORARY                   1356
 #define IDC_MAGNITUDE_UNITS2            1357
 #define IDC_LOADTYPE                    1358
@@ -582,11 +598,16 @@
 #define IDC_CONDITION_FACTOR_TYPE       1407
 #define IDC_CONCRETE_TYPE               1407
 #define IDC_GIRDER_SPAN                 1407
+#define IDC_DESIGN_PEDES_COMBO          1407
+#define IDC_COMBO_VIEWLOC               1407
 #define IDC_GIRDER_ORIENTATION          1408
 #define IDC_GIRDER_GIRDER               1408
 #define IDC_PIER                        1409
+#define IDC_FATIGUE_PEDES_COMBO         1409
 #define IDC_HP_COMBO_END                1410
 #define IDC_PIER_GIRDER                 1410
+#define IDC_DESIGN_PEDES_COMBO4         1410
+#define IDC_PERMIT_PEDES_COMBO          1410
 #define IDC_TOP_MAT_BAR                 1411
 #define IDC_UPDATE_FREQUENCY            1412
 #define IDC_OVERHANG_TAPER              1413
@@ -601,7 +622,9 @@
 #define IDC_FROM_SPAN                   1422
 #define IDC_COMBO2                      1423
 #define IDC_CONDITION_FACTOR_LIST       1423
+#define IDC_HARP_END_CB                 1423
 #define IDC_HP_COMBO_HP                 1424
+#define IDC_HARP_HP_CB                  1424
 #define IDC_BOTTOM_MAT_BAR              1425
 #define IDC_LEFT_CONNECTION             1426
 #define IDC_GIRDER_SPACING_MEASURE      1427
@@ -629,7 +652,8 @@
 #define IDC_CHECK1                      1446
 #define IDC_RATE_FOR_SHEAR              1446
 #define IDC_DESIGN                      1446
-#define IDC_ROUGHENED                   1446
+#define IDC_START_WITH_LAYOUT           1446
+#define IDC_CHECK_SYMM                  1446
 #define IDC_SYMMETRIC_DEBOND            1447
 #define IDC_FUTURE_WS                   1448
 #define IDC_MOD_ECI                     1449
@@ -718,7 +742,12 @@
 #define IDC_MORE                        1527
 #define IDC_PERCENT_DEBONDED2           1527
 #define IDC_NUM_EXTENDED                1527
+#define IDC_EXTENDED_LEFT               1527
+#define IDC_NUM_EXTENDED_LEFT           1527
 #define IDC_GIRDERGRID                  1528
+#define IDC_EXTENDED_RIGHT              1528
+#define IDC_NUM_EXTENDED_LEFT2          1528
+#define IDC_NUM_EXTENDED_RIGHT          1528
 #define IDC_PREV_PIER_SPACING_LABEL     1529
 #define IDC_PREV_SPAN_SPACING_LABEL     1529
 #define IDC_NEXT_PIER_SPACING_LABEL     1530
@@ -798,6 +827,7 @@
 #define IDC_CHECK_YIELDING              1562
 #define IDC_RATE_FOR_STRESS             1562
 #define IDC_PEDESTRIAN                  1562
+#define IDC_SHOW_NUMBERS                1562
 #define IDC_ADD_SPAN                    1563
 #define IDC_FY_LABEL                    1563
 #define IDC_REMOVE_SPAN                 1564
@@ -873,31 +903,59 @@
 #define IDC_TEXT                        1614
 #define IDC_NOTE                        1614
 #define IDC_RIGHT_SIDEWALK_RIGHT_DEPTH_LABEL 1615
+#define IDC_START_SPAN_SPIN             1615
 #define IDC_RIGHT_SIDEWALK_LEFT_DEPTH_UNIT 1616
+#define IDC_END_SPAN_EDIT               1616
 #define IDC_ALIGNMENT_OFFSET            1617
+#define IDC_END_SPAN_SPIN               1617
 #define IDC_RIGHT_SIDEWALK_RIGHT_DEPTH  1618
+#define IDC_DESIGN_PEDES_STATIC         1618
 #define IDC_ALIGNMENT_OFFSET_UNIT       1619
+#define IDC_FATIGUE_PEDES_STATIC        1619
 #define IDC_RIGHT_SIDEWALK_RIGHT_DEPTH_UNIT 1620
+#define IDC_PERMIT_PEDES_STATIC         1620
 #define IDC_ALIGNMENT_OFFSET_FORMAT     1621
+#define IDC_VERT_GROUP                  1621
 #define IDC_ALIGNMENT_OFFSET_LABEL      1622
+#define IDC_STRAND_GRID                 1622
+#define IDC_SERVICE_IA_LABEL            1622
 #define IDC_DECK_EDGE_LABEL             1623
+#define IDC_SERVICE_IA_DC_LABEL         1623
 #define IDC_GIRDER_SPACING_TYPE         1624
+#define IDC_SERVICE_IA_DW_LABEL         1624
 #define IDC_GIRDER_SPACING_LABEL        1625
+#define IDC_SERVICE_IA_LLIM_LABEL       1625
 #define IDC_PREV_PIER_GIRDER_SPACING_LABEL 1626
+#define IDC_FATIGUE_I_DC_LABEL          1626
 #define IDC_NEXT_PIER_GIRDER_SPACING_LABEL 1627
+#define IDC_FATIGUE_I_LABEL             1627
 #define IDC_ROA_STATIC                  1628
+#define IDC_FATIGUE_I_DW_LABEL          1628
 #define IDC_ROA_STATIC2                 1629
+#define IDC_FATIGUE_I_LLIM_LABEL        1629
 #define IDC_PREV_SPAN_CONSTANT_SPACING_NOTE 1630
+#define IDC_GRID_STATIC                 1630
 #define IDC_NEXT_SPAN_CONSTANT_SPACING_NOTE 1631
+#define IDC_HARP_END_STATIC2            1631
 #define IDC_RADIO_INPUT                 1632
+#define IDC_HARP_HP_STATIC2             1632
 #define IDC_RADIO_IGNORE                1633
+#define IDC_HARP_END_UNIT               1633
 #define IDC_DS_TITLE                    1634
+#define IDC_HARP_END_UNIT2              1634
+#define IDC_HARP_HP_UNIT                1634
 #define IDS_E_CLASSNOTREG               1635
+#define IDC_HARP_GROUP                  1635
 #define IDS_E_BADINSTALL                1636
+#define IDC_HARP_END_STATIC1            1636
 #define IDC_SERVERS_STATIC              1637
+#define IDC_HARP_HP_STATIC1             1637
 #define IDS_E_PROBPERSISTS              1638
+#define IDC_DEBONDED                    1638
 #define IDC_SERVERS_STATIC2             1639
+#define IDC_STRAIGHT                    1639
 #define IDS_E_INVALIDFORMAT             1640
+#define IDC_HARPED                      1640
 #define IDC_LOCAL_STATIC                1641
 #define IDS_E_FILENOTFOUND              1642
 #define IDC_LOCALS_STATIC2              1643
@@ -1156,14 +1214,15 @@
 #define ID_CONSTRUCTION_LOADS           33232
 #define ID_FILE_MANAGE                  33234
 #define ID_PROJECT_EFFECTIVEFLANGEWIDTH 33235
+#define ID_LOADS_LOADFACTORS            33236
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        322
-#define _APS_NEXT_COMMAND_VALUE         33236
-#define _APS_NEXT_CONTROL_VALUE         1615
+#define _APS_NEXT_RESOURCE_VALUE        325
+#define _APS_NEXT_COMMAND_VALUE         33237
+#define _APS_NEXT_CONTROL_VALUE         1640
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif

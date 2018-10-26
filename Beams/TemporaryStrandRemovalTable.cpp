@@ -67,7 +67,7 @@ CTemporaryStrandRemovalTable* CTemporaryStrandRemovalTable::PrepareTable(rptChap
 
 
    GET_IFACE2(pBroker,IGirderData,pGirderData);
-   CGirderData girderData = pGirderData->GetGirderData(span,gdr);
+   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
 
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
@@ -89,14 +89,14 @@ CTemporaryStrandRemovalTable* CTemporaryStrandRemovalTable::PrepareTable(rptChap
    int method = pSpecEntry->GetLossMethod();
    bool bIgnoreInitialRelaxation = ( method == LOSSES_WSDOT_REFINED || method == LOSSES_WSDOT_LUMPSUM ) ? false : true;
    
-   if ( girderData.TempStrandUsage == pgsTypes::ttsPretensioned ) 
+   if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPretensioned ) 
    {
       if ( bIgnoreInitialRelaxation )
          *pParagraph << rptRcImage(strImagePath + _T("Ptr_LRFD.png")) << rptNewLine;
       else
          *pParagraph << rptRcImage(strImagePath + _T("Ptr_WSDOT.png")) << rptNewLine;
    }
-   else if (girderData.TempStrandUsage == pgsTypes::ttsPTBeforeShipping )
+   else if (pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPTBeforeShipping )
    {
       *pParagraph << rptRcImage(strImagePath + _T("Ptr_PTBeforeShipping.png")) << rptNewLine;
    }
@@ -136,7 +136,7 @@ CTemporaryStrandRemovalTable* CTemporaryStrandRemovalTable::PrepareTable(rptChap
    return table;
 }
 
-void CTemporaryStrandRemovalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CTemporaryStrandRemovalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
 //   (*this)(row,0) << spanloc.SetValue(poi,end_size);
    (*this)(row,1) << stress.SetValue(details.pLosses->GetFpjTemporary());

@@ -103,16 +103,22 @@ public:
 
    const pgsStirrupCheckAtPoisArtifact* GetStirrupCheckAtPoisArtifact(const pgsStirrupCheckAtPoisArtifactKey& key) const;
 
-   void AddStirrupCheckAtZonesArtifact(const pgsStirrupCheckAtZonesArtifactKey& key,
-                                    const pgsStirrupCheckAtZonesArtifact& artifact);
+   // confinement check
+   void SetConfinementArtifact(const pgsConfinementArtifact& artifact);
+   const pgsConfinementArtifact& GetConfinementArtifact() const;
 
-   const pgsStirrupCheckAtZonesArtifact* GetStirrupCheckAtZonesArtifact(const pgsStirrupCheckAtZonesArtifactKey& key) const;
-   
+   // splitting check
+   pgsSplittingZoneArtifact* GetSplittingZoneArtifact();
+   const pgsSplittingZoneArtifact* GetSplittingZoneArtifact() const;
+
 
    Float64 GetFy() const {return m_Fy;}
    void SetFy(Float64 fy) {m_Fy=fy;}
    Float64 GetFc() const {return m_Fc;}
    void SetFc(Float64 Fc) {m_Fc=Fc;}
+
+   // Clear out all data
+   void Clear();
 
    bool Passed() const;
 
@@ -138,7 +144,11 @@ private:
    Float64 m_Fc;
 
    std::map<pgsStirrupCheckAtPoisArtifactKey,pgsStirrupCheckAtPoisArtifact> m_StirrupCheckAtPoisArtifacts;
-   std::map<pgsStirrupCheckAtZonesArtifactKey,pgsStirrupCheckAtZonesArtifact> m_StirrupCheckAtZonesArtifacts;
+
+   pgsConfinementArtifact m_ConfinementArtifact;
+
+   pgsSplittingZoneArtifact m_SplittingZoneArtifact;
+
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

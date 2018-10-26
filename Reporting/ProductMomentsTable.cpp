@@ -186,7 +186,7 @@ void LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,GirderIndexType gi
 ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,SpanIndexType span,GirderIndexType gdrIdx,pgsTypes::AnalysisType analysisType,bool bDesign,bool bRating,
                                                bool *pbConstruction,bool* pbDeckPanels,bool* pbSidewalk,bool* pbShearKey,bool* pbPedLoading,bool* pbPermit,pgsTypes::Stage* pContinuityStage,SpanIndexType* pStartSpan,SpanIndexType* pNSpans)
 {
-   ColumnIndexType nCols = 6; // location, girder, diaphragm, slab, overlay, traffic barrier
+   ColumnIndexType nCols = 7; // location, girder, diaphragm, slab, slab pad, overlay, traffic barrier
    GET_IFACE2(pBroker,IProductLoads,pLoads);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
@@ -237,7 +237,7 @@ ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,SpanIndexType sp
    }
 
    if ( analysisType == pgsTypes::Envelope && *pContinuityStage == pgsTypes::BridgeSite1 )
-      nCols++; // add on more column for min/max slab
+      nCols += 2; // add one more each for min/max slab and min/max slab pad
 
    if ( analysisType == pgsTypes::Envelope )
       nCols += 2; // add one more each for min/max overlay and min/max traffic barrier
@@ -363,7 +363,7 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   RowIndexType row = ConfigureProductLoadTableHeading<rptMomentUnitTag,unitmgtMomentData>(p_table,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,
+   RowIndexType row = ConfigureProductLoadTableHeading<rptMomentUnitTag,unitmgtMomentData>(p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,
                                                                                            bPermit,bRating,analysisType,continuity_stage,
                                                                                            pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
    // Get the results
@@ -383,14 +383,20 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
       std::vector<Float64> diaphragm = pForces2->GetMoment(pgsTypes::BridgeSite1,pftDiaphragm,vPoi,SimpleSpan);
 
       std::vector<Float64> minSlab, maxSlab;
+      std::vector<Float64> minSlabPad, maxSlabPad;
       if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
       {
          maxSlab = pForces2->GetMoment( pgsTypes::BridgeSite1, pftSlab, vPoi, MaxSimpleContinuousEnvelope );
          minSlab = pForces2->GetMoment( pgsTypes::BridgeSite1, pftSlab, vPoi, MinSimpleContinuousEnvelope );
+
+         maxSlabPad = pForces2->GetMoment( pgsTypes::BridgeSite1, pftSlabPad, vPoi, MaxSimpleContinuousEnvelope );
+         minSlabPad = pForces2->GetMoment( pgsTypes::BridgeSite1, pftSlabPad, vPoi, MinSimpleContinuousEnvelope );
       }
       else
       {
          maxSlab = pForces2->GetMoment( pgsTypes::BridgeSite1, pftSlab, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
+
+         maxSlabPad = pForces2->GetMoment( pgsTypes::BridgeSite1, pftSlabPad, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
       }
 
       std::vector<Float64> minDeckPanel, maxDeckPanel;
@@ -474,8 +480,8 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
          {
             if ( bPedLoading )
             {
-               pForces2->GetLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxPedestrian );
-               pForces2->GetLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minPedestrian, &dummy );
+               pForces2->GetLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, true, &dummy, &maxPedestrian );
+               pForces2->GetLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, true, &minPedestrian, &dummy );
             }
 
             pForces2->GetLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
@@ -546,7 +552,7 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
          {
             if ( bPedLoading )
             {
-               pForces2->GetLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minPedestrian, &maxPedestrian );
+               pForces2->GetLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, true, &minPedestrian, &maxPedestrian );
             }
 
             pForces2->GetLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minDesignLL, &maxDesignLL, &minDesignLLtruck, &maxDesignLLtruck );
@@ -637,10 +643,15 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
          {
             (*p_table)(row,col++) << moment.SetValue( maxSlab[index] );
             (*p_table)(row,col++) << moment.SetValue( minSlab[index] );
+
+            (*p_table)(row,col++) << moment.SetValue( maxSlabPad[index] );
+            (*p_table)(row,col++) << moment.SetValue( minSlabPad[index] );
          }
          else
          {
             (*p_table)(row,col++) << moment.SetValue( maxSlab[index] );
+
+            (*p_table)(row,col++) << moment.SetValue( maxSlabPad[index] );
          }
 
          if ( bDeckPanels )

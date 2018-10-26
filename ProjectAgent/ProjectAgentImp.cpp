@@ -39,6 +39,7 @@
 #include <psgLib\StructuredLoad.h>
 #include <psgLib\StructuredSave.h>
 #include <psgLib\BeamFamilyManager.h>
+#include <psgLib\ProjectLibraryManager.h>
 
 #include <Lrfd\StrandPool.h>
 #include <BridgeModeling\GirderProfile.h>
@@ -63,6 +64,8 @@
 
 #include "PGSuperCatCom.h"
 #include "XSectionData.h"
+
+#include "DesignConfigUtil.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -112,6 +115,11 @@ void release_library_entry( pgsLibraryEntryObserver* pObserver, EntryType* pEntr
    pEntry->Release();
    pEntry = 0;
 }
+
+// pre-declare some needed functions
+static bool IsValidStraightStrandFill(const DirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry);
+static bool IsValidHarpedStrandFill(const DirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry);
+static bool IsValidTemporaryStrandFill(const DirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry);
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -204,6 +212,11 @@ CProjectAgentImp::CProjectAgentImp()
    m_LaneImpact[pgsTypes::lltLegalRating_Special]  = 0.00;
    m_LaneImpact[pgsTypes::lltPermitRating_Routine]  = 0.00;
    m_LaneImpact[pgsTypes::lltPermitRating_Special]  = 0.00;
+
+   // Default for versions of PGSuper before this was an option was to sum pedestrian with vehicular
+   m_PedestrianLoadApplicationType[pgsTypes::lltDesign] = ILiveLoads::PedConcurrentWithVehiculuar;
+   m_PedestrianLoadApplicationType[pgsTypes::lltPermit] = ILiveLoads::PedConcurrentWithVehiculuar;
+   m_PedestrianLoadApplicationType[pgsTypes::lltFatigue] = ILiveLoads::PedDontApply;
 
    m_bExcludeLegalLoadLaneLoading = false;
    m_bIncludePedestrianLiveLoad = false;
@@ -298,7 +311,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_bEnableRating[pgsTypes::lrPermit_Routine]   = false;
    m_bEnableRating[pgsTypes::lrPermit_Special]   = false;
 
-   m_ReservedLiveLoads.push_back(_T("Pedestrian on Sidewalk"));
+   m_ReservedLiveLoads.reserve(5);
    m_ReservedLiveLoads.push_back(_T("HL-93"));
    m_ReservedLiveLoads.push_back(_T("Fatigue"));
    m_ReservedLiveLoads.push_back(_T("AASHTO Legal Loads"));
@@ -2019,7 +2032,8 @@ HRESULT CProjectAgentImp::ShearDataProc2(IStructuredSave* pSave,IStructuredLoad*
          SpanGirderHashType hashval = HashSpanGirder(span, girder);
 
          CShearData pd;
-         hr = pd.Load( pLoad, pProgress );
+         CStructuredLoad load( pLoad );
+         hr = pd.Load( &load );
          if ( FAILED(hr) )
             return hr;
 
@@ -2192,6 +2206,27 @@ HRESULT CProjectAgentImp::LongitudinalRebarDataProc2(IStructuredSave* pSave,IStr
          hr = pLoad->EndUnit();// LongitudinalRebarData
          if ( FAILED(hr) )
             return hr;
+      }
+   }
+
+   return S_OK;
+}
+
+HRESULT CProjectAgentImp::LoadFactorsProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+{
+   HRESULT hr = S_OK;
+   if ( pSave )
+   {
+      return pObj->m_LoadFactors.Save(pSave,pProgress);
+   }
+   else
+   {
+      double version;
+      pLoad->get_Version(&version);
+      if ( 3 < version )
+      {
+         // added in version 4
+         return pObj->m_LoadFactors.Load(pLoad,pProgress);
       }
    }
 
@@ -2809,7 +2844,8 @@ HRESULT CProjectAgentImp::LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLo
 
 HRESULT CProjectAgentImp::SaveLiveLoad(IStructuredSave* pSave,IProgress* pProgress,CProjectAgentImp* pObj,LPTSTR lpszUnitName,pgsTypes::LiveLoadType llType)
 {
-   pSave->BeginUnit(lpszUnitName,1.0);
+   // version 2 added m_PedestrianLoadApplicationType
+   pSave->BeginUnit(lpszUnitName,2.0);
 
    pSave->put_Property(_T("TruckImpact"),CComVariant(pObj->m_TruckImpact[llType]));
    pSave->put_Property(_T("LaneImpact"), CComVariant(pObj->m_LaneImpact[llType]));
@@ -2829,6 +2865,12 @@ HRESULT CProjectAgentImp::SaveLiveLoad(IStructuredSave* pSave,IProgress* pProgre
       pSave->EndUnit(); // Vehicles
    }
 
+   // m_PedestrianLoadApplicationType
+   // Save valid values only for non-rating llTypes
+   LONG app_type = (llType<pgsTypes::lltDesign || llType>pgsTypes::lltFatigue) ? INVALID_INDEX : pObj->m_PedestrianLoadApplicationType[llType];
+   pSave->put_Property(_T("PedestrianLoadApplicationType"), CComVariant(app_type));
+
+
    pSave->EndUnit();
 
    return S_OK;
@@ -2841,6 +2883,9 @@ HRESULT CProjectAgentImp::LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgre
    HRESULT hr = pLoad->BeginUnit(lpszUnitName);
    if ( FAILED(hr) )
       return hr;
+
+   Float64 vers;
+   pLoad->get_Version(&vers);
 
    CComVariant var;
    var.vt = VT_R8;
@@ -2858,7 +2903,6 @@ HRESULT CProjectAgentImp::LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgre
 
    pObj->m_LaneImpact[llType] = var.dblVal;
 
-
    var.Clear();
    var.vt = VT_I4;
    hr = pLoad->get_Property(_T("VehicleCount"), &var);
@@ -2874,6 +2918,7 @@ HRESULT CProjectAgentImp::LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgre
 
       pObj->m_SelectedLiveLoads[llType].clear();
 
+      bool was_pedestrian=false; // pedestrian loads used to be saved as vehicles
       for (long itrk=0; itrk<cnt; itrk++)
       {
          var.Clear();
@@ -2884,24 +2929,59 @@ HRESULT CProjectAgentImp::LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgre
 
          _bstr_t vnam(var.bstrVal);
 
-         LiveLoadSelection sel;
-         sel.EntryName = vnam;
-
-         if ( !pObj->IsReservedLiveLoad(sel.EntryName) )
+         if (vnam == _bstr_t(_T("Pedestrian on Sidewalk")))
          {
-            use_library_entry( &pObj->m_LibObserver,
-                               sel.EntryName, 
-                               &sel.pEntry, 
-                               *pLiveLoadLibrary);
+            ATLASSERT(vers<2.0); // should not been saving this in new versions
+            was_pedestrian = true; 
          }
-         
-         pObj->m_SelectedLiveLoads[llType].push_back(sel);
+         else
+         {
+
+            LiveLoadSelection sel;
+            sel.EntryName = vnam;
+
+            if ( !pObj->IsReservedLiveLoad(sel.EntryName) )
+            {
+               use_library_entry( &pObj->m_LibObserver,
+                                  sel.EntryName, 
+                                  &sel.pEntry, 
+                                  *pLiveLoadLibrary);
+            }
+            
+            pObj->m_SelectedLiveLoads[llType].push_back(sel);
+         }
       }
 
       hr = pLoad->EndUnit(); // Vehicles
       if ( FAILED(hr) )
          return hr;
+
+      // m_PedestrianLoadApplicationType
+      if (vers>1.0)
+      {
+         var.Clear();
+         var.vt = VT_I4;
+         hr = pLoad->get_Property(_T("PedestrianLoadApplicationType"),&var);
+         if ( FAILED(hr) )
+            return hr;
+
+         // Save valid values only for non-rating llTypes
+         if(!(llType<pgsTypes::lltDesign || llType>pgsTypes::lltFatigue))
+         {
+            ATLASSERT(var.lVal!=INVALID_INDEX);
+            pObj->m_PedestrianLoadApplicationType[llType] = (PedestrianLoadApplicationType)var.lVal;
+         }
+      }
+      else
+      {
+         if(!(llType<pgsTypes::lltDesign || llType>pgsTypes::lltFatigue))
+         {
+            pObj->m_PedestrianLoadApplicationType[llType] = was_pedestrian ? ILiveLoads::PedConcurrentWithVehiculuar : ILiveLoads::PedDontApply;
+         }
+      }
    }
+
+
 
    hr = pLoad->EndUnit();
    if ( FAILED(hr) )
@@ -2941,7 +3021,7 @@ bool CProjectAgentImp::AssertValid() const
 }
 #endif // _DEBUG
 
-BEGIN_STRSTORAGEMAP(CProjectAgentImp,_T("ProjectData"),3.0)
+BEGIN_STRSTORAGEMAP(CProjectAgentImp,_T("ProjectData"),4.0)
    BEGIN_UNIT(_T("ProjectProperties"),_T("Project Properties"),1.0)
       PROPERTY(_T("BridgeName"),SDT_STDSTRING, m_BridgeName )
       PROPERTY(_T("BridgeId"),  SDT_STDSTRING, m_BridgeId )
@@ -2989,6 +3069,8 @@ BEGIN_STRSTORAGEMAP(CProjectAgentImp,_T("ProjectData"),3.0)
       PROPERTY(_T("RedundancyLevel"),  SDT_I4, m_RedundancyLevel )
       PROPERTY(_T("RedundancyFactor"), SDT_R8, m_RedundancyFactor )
    END_UNIT // Load Modifiers
+
+   PROP_CALLBACK(CProjectAgentImp::LoadFactorsProc)
 
    PROP_CALLBACK(CProjectAgentImp::LiftingAndHaulingDataProc )
    PROP_CALLBACK(CProjectAgentImp::DistFactorMethodDataProc )
@@ -3384,13 +3466,26 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 
    // Load the library data first into a temporary library. Then deal with entry
    // conflict resolution.
-   psgLibraryManager temp_manager;
+   // This library manager contains data that has been removed from some library entries
+   psgProjectLibraryManager temp_manager;
    try
    {
 //      pProgress->UpdateMessage( _T(_T("Loading the Project Libraries")) );
       CStructuredLoad load( pStrLoad );
       if ( !temp_manager.LoadMe( &load ) )
          return E_FAIL;
+
+      // recover parameters that are no longer part of the spec library entry
+      for ( int i = 0; i < 6; i++ )
+      {
+         m_LoadFactors.DCmin[i]   = temp_manager.m_DCmin[i];
+         m_LoadFactors.DWmin[i]   = temp_manager.m_DWmin[i];
+         m_LoadFactors.LLIMmin[i] = temp_manager.m_LLIMmin[i];
+
+         m_LoadFactors.DCmax[i]   = temp_manager.m_DCmax[i];
+         m_LoadFactors.DWmax[i]   = temp_manager.m_DWmax[i];
+         m_LoadFactors.LLIMmax[i] = temp_manager.m_LLIMmax[i];
+      }
    }
    catch( sysXStructuredLoad& e )
    {
@@ -3706,19 +3801,20 @@ void CProjectAgentImp::ValidateStrands(SpanIndexType span,GirderIndexType girder
    const CSpanData* pSpan = m_BridgeDescription.GetSpan(span);
    const GirderLibraryEntry* pGirderEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(girder);
 
-   if (!pGirderEntry->IsVerticalAdjustmentAllowedEnd() && girder_data.HpOffsetAtEnd!=0.0 && girder_data.HsoEndMeasurement!=hsoLEGACY)
+   if (!pGirderEntry->IsVerticalAdjustmentAllowedEnd() && girder_data.PrestressData.HpOffsetAtEnd!=0.0 
+                                                       && girder_data.PrestressData.HsoEndMeasurement!=hsoLEGACY)
    {
-      girder_data.HpOffsetAtEnd = 0.0;
-      girder_data.HsoEndMeasurement = hsoLEGACY;
+      girder_data.PrestressData.HpOffsetAtEnd = 0.0;
+      girder_data.PrestressData.HsoEndMeasurement = hsoLEGACY;
 
       std::_tstring msg(_T("Vertical adjustment of harped strands at girder end reset to zero. Library entry forbids offset"));
       AddGirderStatusItem(span, girder, msg);
    }
 
-   if (!pGirderEntry->IsVerticalAdjustmentAllowedHP() && girder_data.HpOffsetAtHp!=0.0 && girder_data.HsoHpMeasurement!=hsoLEGACY)
+   if (!pGirderEntry->IsVerticalAdjustmentAllowedHP() && girder_data.PrestressData.HpOffsetAtHp!=0.0 && girder_data.PrestressData.HsoHpMeasurement!=hsoLEGACY)
    {
-      girder_data.HpOffsetAtHp = 0.0;
-      girder_data.HsoHpMeasurement = hsoLEGACY;
+      girder_data.PrestressData.HpOffsetAtHp = 0.0;
+      girder_data.PrestressData.HsoHpMeasurement = hsoLEGACY;
 
       std::_tstring msg(_T("Vertical adjustment of harped strands at harping points reset to zero. Library entry forbids offset"));
       AddGirderStatusItem(span, girder, msg);
@@ -3727,128 +3823,68 @@ void CProjectAgentImp::ValidateStrands(SpanIndexType span,GirderIndexType girder
    // There are many, many ways that strand data can get hosed if a library entry is changed for an existing project. 
    // If strands no longer fit as original, zero them out and inform user.
    bool clean = true;
-   if (girder_data.NumPermStrandsType == NPS_TOTAL_NUMBER)
+   if (girder_data.PrestressData.GetNumPermStrandsType() == NPS_DIRECT_SELECTION)
    {
-      // make sure number of strands fits library
-      StrandIndexType ns, nh;
-      bool st = pGirderEntry->ComputeGlobalStrands(girder_data.Nstrands[pgsTypes::Permanent], &ns, &nh);
+      // Direct Fill
+      bool vst = IsValidStraightStrandFill(girder_data.PrestressData.GetDirectStrandFillStraight(), pGirderEntry);
+      bool vhp = IsValidHarpedStrandFill(girder_data.PrestressData.GetDirectStrandFillHarped(), pGirderEntry);
+      bool vtp = IsValidTemporaryStrandFill(girder_data.PrestressData.GetDirectStrandFillTemporary(), pGirderEntry);
 
-      if (!st || girder_data.Nstrands[pgsTypes::Straight] !=ns || girder_data.Nstrands[pgsTypes::Harped] != nh)
+      if ( !(vst&&vhp&&vtp) )
       {
-         std::_tostringstream msg;
-         msg<< girder_data.Nstrands[pgsTypes::Permanent]<<_T(" permanent strands no longer fit in girder ")<<LABEL_GIRDER(girder)<<_T(", span ")<<LABEL_SPAN(span)<<_T(" because library entry changed. All strands were removed.");
-         AddGirderStatusItem(span, girder, msg.str());
+         std::_tstring msg(_T("Direct filled strands no longer fit in girder because library entry changed. All strands were removed."));
+         AddGirderStatusItem(span, girder, msg);
 
          clean = false;
-         girder_data.ResetPrestressData();
+         girder_data.PrestressData.ResetPrestressData();
       }
-   }
-   else  // input is by straight/harped
-   {
-      bool vst = pGirderEntry->IsValidNumberOfStraightStrands(girder_data.Nstrands[pgsTypes::Straight]);
-      bool vhp = pGirderEntry->IsValidNumberOfHarpedStrands(girder_data.Nstrands[pgsTypes::Harped]);
 
-      if ( !(vst&&vhp) )
-      {
-         std::_tostringstream msg;
-         msg<< girder_data.Nstrands[pgsTypes::Straight]<<_T(" straight, ")<<girder_data.Nstrands[pgsTypes::Harped]<<_T(" harped strands no longer fit in girder ")<<LABEL_GIRDER(girder)<<_T(", span ")<<LABEL_SPAN(span)<<_T(" because library entry changed. All strands were removed.");
-         AddGirderStatusItem(span, girder, msg.str());
-
-         clean = false;
-         girder_data.ResetPrestressData();
-      }
-   }
-
-   // Temporary Strands
-   bool vhp = pGirderEntry->IsValidNumberOfTemporaryStrands(girder_data.Nstrands[pgsTypes::Temporary]);
-   if ( !vhp )
-   {
-      std::_tostringstream msg;
-      msg<< girder_data.Nstrands[pgsTypes::Temporary]<<_T(" temporary strands no longer fit in girder ")<<LABEL_GIRDER(girder)<<_T(", span ")<<LABEL_SPAN(span)<<_T(" because library entry changed. All temporary strands were removed.");
-      AddGirderStatusItem(span, girder, msg.str());
-
-      clean = false;
-      girder_data.ResetPrestressData();
-   }
-
-   // Debond information
-   if (clean)
-   {
-      // check validity of debond data - this can come from library, or project changes
-      if (! girder_data.Debond[pgsTypes::Straight].empty())
+      // Check validity of debond data for direct filled strands
+      bool debond_changed(false);
+      if (! girder_data.PrestressData.Debond[pgsTypes::Straight].empty())
       {
          StrandIndexType nStrandCoordinates = pGirderEntry->GetNumStraightStrandCoordinates();
 
-         StrandIndexType Ns = girder_data.Nstrands[pgsTypes::Straight];
-
-         // first build list of debondable strands
-         std::vector<bool> debonds;
-         debonds.reserve(Ns);
-
-         StrandIndexType cnt=0;
-         StrandIndexType strandIndex = 0;
-         while (cnt < Ns)
+         // Make sure selected strands are filled and debondable
+         std::vector<CDebondInfo>::iterator it    = girder_data.PrestressData.Debond[pgsTypes::Straight].begin();
+         std::vector<CDebondInfo>::iterator itend = girder_data.PrestressData.Debond[pgsTypes::Straight].end();
+         while(it!=itend)
          {
-            Float64 start_x,start_y,end_x,end_y;
-            bool can_db;
-            pGirderEntry->GetStraightStrandCoordinates(strandIndex, &start_x, &start_y, &end_x, &end_y, &can_db);
+            bool can_db = true;
 
-            cnt++;
-            debonds.push_back(can_db);
-
-            if (0.0 < start_x)
+            // Get strand index and check if debonded strand is actually filled
+            if( ! girder_data.PrestressData.GetDirectStrandFillStraight()->IsStrandFilled( it->strandTypeGridIdx ) )
             {
-               cnt++;
-               debonds.push_back(can_db);
+               can_db = false;
             }
 
-            if (nStrandCoordinates <= strandIndex)
+            // Make sure strand fits in grid
+            if (nStrandCoordinates <= it->strandTypeGridIdx)
             {
-               ATLASSERT(0); // count out of control
-               break;
+               can_db = false;
             }
 
-            strandIndex++;
-         }
-         
-         // now walk list to see if we have only debonded valid strands
-         bool debond_changed = false;
-         std::vector<CDebondInfo>::iterator iter;
-         for ( iter = girder_data.Debond[pgsTypes::Straight].begin(); iter != girder_data.Debond[pgsTypes::Straight].end(); )
-         {
-            bool good=true;
-            CDebondInfo& debond_info = *iter;
-
-            if (debond_info.idxStrand1 < Ns)
+            if (can_db)
             {
-               good &= debonds.at(debond_info.idxStrand1);
+               // Check if strand can be debonded
+               Float64 start_x,start_y,end_x,end_y;
+               pGirderEntry->GetStraightStrandCoordinates(it->strandTypeGridIdx, &start_x, &start_y, &end_x, &end_y, &can_db);
+            }
+
+            if(!can_db)
+            {
+               // Erase invalid debond
+               girder_data.PrestressData.Debond[pgsTypes::Straight].erase(it);
+
+               debond_changed = true;
+
+               // restart loop
+               it    = girder_data.PrestressData.Debond[pgsTypes::Straight].begin();
+               itend = girder_data.PrestressData.Debond[pgsTypes::Straight].end();
             }
             else
             {
-               good = false; // strand out of range
-            }
-
-            if ( debond_info.idxStrand2 != INVALID_INDEX )
-            {
-               if (debond_info.idxStrand1 < Ns)
-               {
-                  good &= debonds.at(debond_info.idxStrand2);
-               }
-               else
-               {
-                  good = false;
-               }
-            }
-
-            if (!good)
-            {
-               // remove invalid debonding
-               debond_changed=true;
-               iter = girder_data.Debond[pgsTypes::Straight].erase(iter);
-            }
-            else
-            {
-               iter++;
+               it++;
             }
          }
 
@@ -3859,6 +3895,117 @@ void CProjectAgentImp::ValidateStrands(SpanIndexType span,GirderIndexType girder
             std::_tostringstream msg;
             msg<< _T(" Girder ")<<LABEL_GIRDER(girder)<<_T(", span ")<<LABEL_SPAN(span)<<_T(" specified debonding that is not allowed by the library entry. The invalid debond regions were removed.");
             AddGirderStatusItem(span, girder, msg.str());
+         }
+      }
+   }
+   else
+   {
+      if (girder_data.PrestressData.GetNumPermStrandsType() == NPS_TOTAL_NUMBER)
+      {
+         // make sure number of strands fits library
+         StrandIndexType ns, nh;
+         bool st = pGirderEntry->GetPermStrandDistribution(girder_data.PrestressData.GetNstrands(pgsTypes::Permanent), &ns, &nh);
+
+         if (!st || girder_data.PrestressData.GetNstrands(pgsTypes::Straight) !=ns || girder_data.PrestressData.GetNstrands(pgsTypes::Harped) != nh)
+         {
+            std::_tostringstream msg;
+            msg<< girder_data.PrestressData.GetNstrands(pgsTypes::Permanent)<<_T(" permanent strands no longer fit in girder ")<<LABEL_GIRDER(girder)<<_T(", span ")<<LABEL_SPAN(span)<<_T(" because library entry changed. All strands were removed.");
+            AddGirderStatusItem(span, girder, msg.str());
+
+            clean = false;
+            girder_data.PrestressData.ResetPrestressData();
+         }
+      }
+      else if (girder_data.PrestressData.GetNumPermStrandsType() == NPS_STRAIGHT_HARPED) // input is by straight/harped
+      {
+         bool vst = pGirderEntry->IsValidNumberOfStraightStrands(girder_data.PrestressData.GetNstrands(pgsTypes::Straight));
+         bool vhp = pGirderEntry->IsValidNumberOfHarpedStrands(girder_data.PrestressData.GetNstrands(pgsTypes::Harped));
+
+         if ( !(vst&&vhp) )
+         {
+            std::_tostringstream msg;
+            msg<< girder_data.PrestressData.GetNstrands(pgsTypes::Straight)<<_T(" straight, ")<<girder_data.PrestressData.GetNstrands(pgsTypes::Harped)<<_T(" harped strands no longer fit in girder ")<<LABEL_GIRDER(girder)<<_T(", span ")<<LABEL_SPAN(span)<<_T(" because library entry changed. All strands were removed.");
+            AddGirderStatusItem(span, girder, msg.str());
+
+            clean = false;
+            girder_data.PrestressData.ResetPrestressData();
+         }
+      }
+      else
+         ATLASSERT(0);
+
+      // Temporary Strands
+      bool vhp = pGirderEntry->IsValidNumberOfTemporaryStrands(girder_data.PrestressData.GetNstrands(pgsTypes::Temporary));
+      if ( !vhp )
+      {
+         std::_tostringstream msg;
+         msg<< girder_data.PrestressData.GetNstrands(pgsTypes::Temporary)<<_T(" temporary strands no longer fit in girder ")<<LABEL_GIRDER(girder)<<_T(", span ")<<LABEL_SPAN(span)<<_T(" because library entry changed. All temporary strands were removed.");
+         AddGirderStatusItem(span, girder, msg.str());
+
+         clean = false;
+         girder_data.PrestressData.ResetPrestressData();
+      }
+
+      // Debond information for sequentially filled strands
+      if (clean)
+      {
+         // check validity of debond data - this can come from library, or project changes
+         if (! girder_data.PrestressData.Debond[pgsTypes::Straight].empty())
+         {
+            StrandIndexType nStrandCoordinates = pGirderEntry->GetNumStraightStrandCoordinates();
+
+            // first build list of debondable strand grid indices
+            std::vector<bool> debonds;
+            debonds.reserve(nStrandCoordinates);
+
+            StrandIndexType gridIndex = 0;
+            while (gridIndex < nStrandCoordinates)
+            {
+               Float64 start_x,start_y,end_x,end_y;
+               bool can_db;
+               pGirderEntry->GetStraightStrandCoordinates(gridIndex, &start_x, &start_y, &end_x, &end_y, &can_db);
+
+               debonds.push_back(can_db);
+               gridIndex++;
+            }
+            
+            // now walk list to see if we have only debonded valid strands
+            bool debond_changed = false;
+            std::vector<CDebondInfo>::iterator iter;
+            for ( iter = girder_data.PrestressData.Debond[pgsTypes::Straight].begin(); iter != girder_data.PrestressData.Debond[pgsTypes::Straight].end(); )
+            {
+               bool good=true;
+               CDebondInfo& debond_info = *iter;
+
+               if (debond_info.strandTypeGridIdx < nStrandCoordinates)
+               {
+                  good = debonds.at(debond_info.strandTypeGridIdx);
+               }
+               else
+               {
+                  good = false; // strand out of range
+               }
+
+               if (!good)
+               {
+                  // remove invalid debonding
+                  debond_changed=true;
+                  iter = girder_data.PrestressData.Debond[pgsTypes::Straight].erase(iter);
+               }
+               else
+               {
+                  iter++;
+               }
+            }
+
+            clean &= !debond_changed;
+
+            if (fromLibrary && debond_changed) // no message if strands where trimmed in project due to a strand reduction
+            {
+               std::_tostringstream msg;
+               msg<< _T(" Girder ")<<LABEL_GIRDER(girder)<<_T(", span ")<<LABEL_SPAN(span)<<_T(" specified debonding that is not allowed by the library entry. The invalid debond regions were removed.");
+               AddGirderStatusItem(span, girder, msg.str());
+            }
          }
       }
    }
@@ -4770,13 +4917,14 @@ Float64 CProjectAgentImp::GetMaxPjack(SpanIndexType span,GirderIndexType gdr,Str
    return pPrestress->GetPjackMax(span,gdr,*pStrand,nStrands);
 }
 
-CGirderData CProjectAgentImp::GetGirderData(SpanIndexType span,GirderIndexType gdr) const
+const CGirderData* CProjectAgentImp::GetGirderData(SpanIndexType span,GirderIndexType gdr) const
 {
    if ( m_bUpdateJackingForce )
       UpdateJackingForce();
 
-   CGirderTypes girderTypes = *m_BridgeDescription.GetSpan(span)->GetGirderTypes();
-   return girderTypes.GetGirderData(gdr);
+   const CGirderTypes* pgirderTypes = m_BridgeDescription.GetSpan(span)->GetGirderTypes();
+   const CGirderData& rgd = pgirderTypes->GetGirderData(gdr);
+   return &rgd;
 }
 
 const CGirderMaterial* CProjectAgentImp::GetGirderMaterial(SpanIndexType span,GirderIndexType gdr) const
@@ -4812,17 +4960,6 @@ bool CProjectAgentImp::SetGirderData(const CGirderData& data,SpanIndexType span,
    {
       lHint |= GCH_STRAND_MATERIAL;
    }
-
-   if ( change_type & CGirderData::ctStirrups )
-   {
-      lHint |= GCH_STIRRUPS;
-   }
-
-   if ( change_type & CGirderData::ctLongitRebar )
-   {
-      lHint |= GCH_LONGITUDINAL_REBAR;
-   }
-
    Fire_GirderChanged(span,gdr,lHint);
 
    return true;
@@ -4833,35 +4970,36 @@ int CProjectAgentImp::DoSetGirderData(const CGirderData& const_data,SpanIndexTyp
 
    CGirderData data = const_data;
 
+   const CSpanData* pSpan = m_BridgeDescription.GetSpan(span);
+   const GirderLibraryEntry* pGdrEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdr);
+
    // This code is here to handle legacy data from back when only one method was used to input strands
    // Convert total number of permanent strands to num straight - num harped data
-   if (data.NumPermStrandsType==NPS_TOTAL_NUMBER)
+   if (data.PrestressData.GetNumPermStrandsType()==NPS_TOTAL_NUMBER)
    {
-      const CSpanData* pSpan = m_BridgeDescription.GetSpan(span);
-      const GirderLibraryEntry* pGdrEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdr);
 
-      StrandIndexType ns, nh;
-      if (pGdrEntry->ComputeGlobalStrands(data.Nstrands[pgsTypes::Permanent], &ns, &nh))
+      StrandIndexType ns, nh, np;
+      if (pGdrEntry->GetPermStrandDistribution(data.PrestressData.GetNstrands(pgsTypes::Permanent), &ns, &nh))
       {
-         data.Nstrands[pgsTypes::Straight] = ns;
-         data.Nstrands[pgsTypes::Harped]   = nh;
+         np = ns + nh;
+         data.PrestressData.SetTotalPermanentNstrands(np, ns, nh);
 
-         if (data.Nstrands[pgsTypes::Permanent] > 0)
+         if (np > 0)
          {
-            data.Pjack[pgsTypes::Straight] = data.Pjack[pgsTypes::Permanent] * (Float64)ns/data.Nstrands[pgsTypes::Permanent];
-            data.Pjack[pgsTypes::Harped]   = data.Pjack[pgsTypes::Permanent] * (Float64)nh/data.Nstrands[pgsTypes::Permanent];
+            data.PrestressData.Pjack[pgsTypes::Straight] = data.PrestressData.Pjack[pgsTypes::Permanent] * (Float64)ns/np;
+            data.PrestressData.Pjack[pgsTypes::Harped]   = data.PrestressData.Pjack[pgsTypes::Permanent] * (Float64)nh/np;
          }
          else
          {
-            data.Pjack[pgsTypes::Straight] = 0.0;
-            data.Pjack[pgsTypes::Harped]   = 0.0;
+            data.PrestressData.Pjack[pgsTypes::Straight] = 0.0;
+            data.PrestressData.Pjack[pgsTypes::Harped]   = 0.0;
          }
 
-         data.bPjackCalculated[pgsTypes::Straight] = data.bPjackCalculated[pgsTypes::Permanent];
-         data.bPjackCalculated[pgsTypes::Harped]   = data.bPjackCalculated[pgsTypes::Permanent];
+         data.PrestressData.bPjackCalculated[pgsTypes::Straight] = data.PrestressData.bPjackCalculated[pgsTypes::Permanent];
+         data.PrestressData.bPjackCalculated[pgsTypes::Harped]   = data.PrestressData.bPjackCalculated[pgsTypes::Permanent];
 
-         if ( !data.bPjackCalculated[pgsTypes::Permanent] )
-            data.LastUserPjack[pgsTypes::Permanent] = data.Pjack[pgsTypes::Permanent];
+         if ( !data.PrestressData.bPjackCalculated[pgsTypes::Permanent] )
+            data.PrestressData.LastUserPjack[pgsTypes::Permanent] = data.PrestressData.Pjack[pgsTypes::Permanent];
 
       }
       else
@@ -4873,8 +5011,8 @@ int CProjectAgentImp::DoSetGirderData(const CGirderData& const_data,SpanIndexTyp
    {
       for ( Uint16 is = 0; is < 3; is++ )
       {
-         if ( !data.bPjackCalculated[is] )
-            data.LastUserPjack[is] = data.Pjack[is];
+         if ( !data.PrestressData.bPjackCalculated[is] )
+            data.PrestressData.LastUserPjack[is] = data.PrestressData.Pjack[is];
       }
    }
 
@@ -4882,8 +5020,8 @@ int CProjectAgentImp::DoSetGirderData(const CGirderData& const_data,SpanIndexTyp
    ValidateStrands(span,gdr,data,false);
 
    // store data
-   CGirderData originalGirderData = GetGirderData(span,gdr);
-   int change_type = data.GetChangeType(originalGirderData);
+   const CGirderData* pOriginalGirderData = GetGirderData(span,gdr);
+   int change_type = data.GetChangeType(*pOriginalGirderData);
 
    if ( change_type != CGirderData::ctNone )
    {
@@ -4899,6 +5037,112 @@ int CProjectAgentImp::DoSetGirderData(const CGirderData& const_data,SpanIndexTyp
    }
 
    return change_type;
+}
+
+void CProjectAgentImp::ConvertLegacyDebondData(CGirderData& gdrData, const GirderLibraryEntry* pGdrEntry)
+{
+   // legacy versions only had straight debonding
+   std::vector<CDebondInfo>& rdebonds = gdrData.PrestressData.Debond[pgsTypes::Straight];
+
+   std::vector<CDebondInfo>::iterator it = rdebonds.begin();
+   std::vector<CDebondInfo>::iterator itend = rdebonds.end();
+   while(it != itend)
+   {
+      bool found = true;
+      if (it->needsConversion)
+      {
+         // debond data comes from old version where strand id's (of total straight strands) were used
+         found = false;
+         StrandIndexType strandIdx = (StrandIndexType)(it->strandTypeGridIdx);
+         ATLASSERT(strandIdx == INVALID_INDEX);
+         // Determine grid index from the strand index
+         StrandIndexType nStrands = 0;
+         GridIndexType nGridSize = pGdrEntry->GetNumStraightStrandCoordinates();
+         for (GridIndexType gridIdx = 0; gridIdx < nGridSize; gridIdx++)
+         {
+            Float64 xs, ys, xe, ye;
+            bool bIsDebondable;
+            pGdrEntry->GetStraightStrandCoordinates(gridIdx, &xs, &ys, &xe, &ye, &bIsDebondable);
+            nStrands += (0.0 < xs || 0.0 < xe) ? 2 : 1; // number of strands at location
+            if (strandIdx < nStrands)
+            {
+               // found our strand - make conversion if it's debondable
+               if (bIsDebondable)
+               {
+                  it->strandTypeGridIdx = gridIdx;
+                  found = true;
+               }
+
+               break;
+            }
+         }
+      }
+
+      if (!found)
+      {
+         // debonded strand not found - could be due to a library change, but assert for testing purposes
+         ATLASSERT(0);
+         rdebonds.erase(it);
+         it = rdebonds.begin();  // restart loop
+         itend = rdebonds.end();
+      }
+      else
+      {
+         it++;
+      }
+   }
+}
+
+void CProjectAgentImp::ConvertLegacyExtendedStrandData(CGirderData& gdrData, const GirderLibraryEntry* pGdrEntry)
+{
+   if ( gdrData.PrestressData.bConvertExtendedStrands == false )
+      return; // no conversion needed
+
+   for ( int i = 0; i < 2; i++ )
+   {
+      pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+
+      // legacy versions only had straight extended strands
+      const std::vector<GridIndexType>& oldExtendStrands( gdrData.PrestressData.GetExtendedStrands(pgsTypes::Straight,endType) );
+      std::vector<GridIndexType> newExtendedStrands;
+
+      std::vector<GridIndexType>::const_iterator it(oldExtendStrands.begin());
+      std::vector<GridIndexType>::const_iterator itend(oldExtendStrands.end());
+      while(it != itend)
+      {
+         // extended strand data comes from old version where strand index (of total straight strands) were used
+         StrandIndexType strandIdx = (StrandIndexType)(*it);
+         ATLASSERT(strandIdx != INVALID_INDEX);
+
+         // Determine grid index from the strand index
+         StrandIndexType nStrands = 0;
+         GridIndexType nGridSize = pGdrEntry->GetNumStraightStrandCoordinates();
+         for (GridIndexType gridIdx = 0; gridIdx < nGridSize; gridIdx++)
+         {
+            Float64 xs, ys, xe, ye;
+            bool bIsDebondable;
+            pGdrEntry->GetStraightStrandCoordinates(gridIdx, &xs, &ys, &xe, &ye, &bIsDebondable);
+
+            StrandIndexType nStrandsAtGridPosition = (0.0 < xs || 0.0 < xe) ? 2 : 1;
+            nStrands += nStrandsAtGridPosition;
+            if (strandIdx < nStrands)
+            {
+               newExtendedStrands.push_back(gridIdx);
+               if ( 1 < nStrandsAtGridPosition )
+               {
+                  // if there are 2 strands for this grid position, skip the next
+                  // extended strand (it is the companion to the one we just dealt with)
+                  it++;
+               }
+               break;
+            }
+         }
+
+         it++;
+      }
+      std::sort(newExtendedStrands.begin(),newExtendedStrands.end());
+      gdrData.PrestressData.SetExtendedStrands(pgsTypes::Straight,endType,newExtendedStrands);
+   }
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -4933,8 +5177,8 @@ void CProjectAgentImp::SetStirrupMaterial(SpanIndexType span,GirderIndexType gdr
 
 CShearData CProjectAgentImp::GetShearData(SpanIndexType span,GirderIndexType gdr) const
 {
-   CGirderTypes girderTypes = *m_BridgeDescription.GetSpan(span)->GetGirderTypes();
-   return girderTypes.GetGirderData(gdr).ShearData;
+   const CGirderTypes* pgirderTypes = m_BridgeDescription.GetSpan(span)->GetGirderTypes();
+   return pgirderTypes->GetGirderData(gdr).ShearData;
 }
 
 bool CProjectAgentImp::SetShearData(const CShearData& data,SpanIndexType span,GirderIndexType gdr)
@@ -4986,9 +5230,9 @@ void CProjectAgentImp::SetLongitudinalRebarMaterial(SpanIndexType span,GirderInd
 CLongitudinalRebarData CProjectAgentImp::GetLongitudinalRebarData(SpanIndexType span,GirderIndexType gdr) const
 {
    CSpanData* pSpan = m_BridgeDescription.GetSpan(span);
-   CGirderTypes girderTypes = *pSpan->GetGirderTypes();
+   const CGirderTypes* pgirderTypes = pSpan->GetGirderTypes();
 
-   CLongitudinalRebarData lrd = girderTypes.GetGirderData(gdr).LongitudinalRebarData;
+   CLongitudinalRebarData lrd = pgirderTypes->GetGirderData(gdr).LongitudinalRebarData;
    return lrd;
 }
 
@@ -5016,14 +5260,14 @@ bool CProjectAgentImp::DoSetLongitudinalRebarData(const CLongitudinalRebarData& 
 //
 Float64 CProjectAgentImp::GetLeftLiftingLoopLocation(SpanIndexType span,GirderIndexType gdr)
 {
-   CGirderData girderData = GetGirderData(span,gdr);
-   return girderData.HandlingData.LeftLiftPoint;
+   const CGirderData* pgirderData = GetGirderData(span,gdr);
+   return pgirderData->HandlingData.LeftLiftPoint;
 }
 
 Float64 CProjectAgentImp::GetRightLiftingLoopLocation(SpanIndexType span,GirderIndexType gdr)
 {
-   CGirderData girderData = GetGirderData(span,gdr);
-   return girderData.HandlingData.RightLiftPoint;
+   const CGirderData* pgirderData = GetGirderData(span,gdr);
+   return pgirderData->HandlingData.RightLiftPoint;
 }
 
 bool CProjectAgentImp::SetLiftingLoopLocations(SpanIndexType span,GirderIndexType gdr,Float64 left,Float64 right)
@@ -5039,7 +5283,7 @@ bool CProjectAgentImp::SetLiftingLoopLocations(SpanIndexType span,GirderIndexTyp
 
 bool CProjectAgentImp::DoSetLiftingLoopLocations(SpanIndexType span,GirderIndexType gdr,Float64 left,Float64 right)
 {
-   CGirderData girderData = GetGirderData(span,gdr);
+   CGirderData girderData = *GetGirderData(span,gdr);
 
    if ( !IsEqual(girderData.HandlingData.LeftLiftPoint,left) ||
         !IsEqual(girderData.HandlingData.RightLiftPoint,right) )
@@ -5061,14 +5305,14 @@ bool CProjectAgentImp::DoSetLiftingLoopLocations(SpanIndexType span,GirderIndexT
 
 Float64 CProjectAgentImp::GetTrailingOverhang(SpanIndexType span,GirderIndexType gdr)
 {
-   CGirderData girderData = GetGirderData(span,gdr);
-   return girderData.HandlingData.TrailingSupportPoint;
+   const CGirderData* pgirderData = GetGirderData(span,gdr);
+   return pgirderData->HandlingData.TrailingSupportPoint;
 }
 
 Float64 CProjectAgentImp::GetLeadingOverhang(SpanIndexType span,GirderIndexType gdr)
 {
-   CGirderData girderData = GetGirderData(span,gdr);
-   return girderData.HandlingData.LeadingSupportPoint;
+   const CGirderData* pgirderData = GetGirderData(span,gdr);
+   return pgirderData->HandlingData.LeadingSupportPoint;
 }
 
 bool CProjectAgentImp::SetTruckSupportLocations(SpanIndexType span,GirderIndexType gdr,Float64 trailing,Float64 leading)
@@ -5084,7 +5328,7 @@ bool CProjectAgentImp::SetTruckSupportLocations(SpanIndexType span,GirderIndexTy
 
 bool CProjectAgentImp::DoSetTruckSupportLocations(SpanIndexType span,GirderIndexType gdr,Float64 trailing,Float64 leading)
 {
-   CGirderData girderData = GetGirderData(span,gdr);
+   CGirderData girderData = *(GetGirderData(span,gdr));
 
    if ( !IsEqual(girderData.HandlingData.TrailingSupportPoint,trailing) ||
         !IsEqual(girderData.HandlingData.LeadingSupportPoint,leading) )
@@ -5167,7 +5411,7 @@ Int16 CProjectAgentImp::GetADTT() const
 
 void CProjectAgentImp::SetGirderConditionFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::ConditionFactorType conditionFactorType,Float64 conditionFactor)
 {
-   CGirderData girderData = GetGirderData(spanIdx,gdrIdx);
+   CGirderData girderData = *(GetGirderData(spanIdx,gdrIdx));
    if ( girderData.Condition != conditionFactorType || !IsEqual(girderData.ConditionFactor,conditionFactor) )
    {
       girderData.Condition = conditionFactorType;
@@ -5178,15 +5422,15 @@ void CProjectAgentImp::SetGirderConditionFactor(SpanIndexType spanIdx,GirderInde
 
 void CProjectAgentImp::GetGirderConditionFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::ConditionFactorType* pConditionFactorType,Float64 *pConditionFactor) const
 {
-   CGirderData girderData = GetGirderData(spanIdx,gdrIdx);
-   *pConditionFactorType = girderData.Condition;
-   *pConditionFactor = girderData.ConditionFactor;
+   const CGirderData* pgirderData = GetGirderData(spanIdx,gdrIdx);
+   *pConditionFactorType = pgirderData->Condition;
+   *pConditionFactor = pgirderData->ConditionFactor;
 }
 
 Float64 CProjectAgentImp::GetGirderConditionFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx) const
 {
-   CGirderData girderData = GetGirderData(spanIdx,gdrIdx);
-   return girderData.ConditionFactor;
+   const CGirderData* pgirderData = GetGirderData(spanIdx,gdrIdx);
+   return pgirderData->ConditionFactor;
 }
 
 void CProjectAgentImp::SetDeckConditionFactor(pgsTypes::ConditionFactorType conditionFactorType,Float64 conditionFactor)
@@ -5511,7 +5755,17 @@ arDesignOptions CProjectAgentImp::GetDesignOptions(SpanIndexType spanIdx,GirderI
       options.doDesignSlope    = false;
    }
 
-   options.doStrandFillType = pSpecEntry->GetDesignStrandFillType();
+   options.doForceHarpedStrandsStraight = pGirderEntry->IsForceHarpedStrandsStraight();
+
+   if (!options.doForceHarpedStrandsStraight)
+   {
+      options.doStrandFillType = pSpecEntry->GetDesignStrandFillType();
+   }
+   else
+   {
+      // For straight-web designs we always fill using grid order (until design algorithm is changed to work for other option)
+      options.doStrandFillType = ftGridOrder;
+   }
 
    return options;
 }
@@ -5588,11 +5842,7 @@ void CProjectAgentImp::EnumLiveLoadNames( std::vector<std::_tstring>* pNames) co
    const LiveLoadLibrary& prj_lib = *(m_pLibMgr->GetLiveLoadLibrary());
    psglibCreateLibNameEnum( pNames, prj_lib);
 
-   std::vector<std::_tstring>::const_iterator iter = m_ReservedLiveLoads.begin();
-   ATLASSERT( *iter == _T("Pedestrian on Sidewalk") ); // Pedestrian on Sidewalk is first reserved name... 
-   if ( !CanHavePedestrianLoad() )
-      iter++; // ... skip if we can't have pedestrain loads
-
+   std::vector<std::_tstring>::const_iterator iter(m_ReservedLiveLoads.begin());
    for ( ; iter != m_ReservedLiveLoads.end(); iter++ )
    {
       pNames->insert(pNames->begin(),*iter);
@@ -5957,14 +6207,6 @@ void CProjectAgentImp::SpecificationChanged(bool bFireEvent)
       }
 
       pSpan->SetGirderTypes(girderTypes);
-   }
-
-
-   for ( int i = 0; i < 5; i++ )
-   {
-      m_pSpecEntry->GetDCLoadFactors(  (pgsTypes::LimitState)i, &m_LoadFactors.DCmin[i],   &m_LoadFactors.DCmax[i]  );
-      m_pSpecEntry->GetDWLoadFactors(  (pgsTypes::LimitState)i, &m_LoadFactors.DWmin[i],   &m_LoadFactors.DWmax[i]  );
-      m_pSpecEntry->GetLLIMLoadFactors((pgsTypes::LimitState)i, &m_LoadFactors.LLIMmin[i], &m_LoadFactors.LLIMmax[i]);
    }
 
    m_bUpdateJackingForce = true;
@@ -6481,45 +6723,32 @@ bool CProjectAgentImp::IsLiveLoadDefined(pgsTypes::LiveLoadType llType)
    return true;
 }
 
-bool CProjectAgentImp::IsPedestianLoadEnabled(pgsTypes::LiveLoadType llType)
+ILiveLoads::PedestrianLoadApplicationType CProjectAgentImp::GetPedestrianLoadApplication(pgsTypes::LiveLoadType llType)
 {
-   ATLASSERT(llType != pgsTypes::lltPedestrian);
-
-   std::vector<LiveLoadSelection>::iterator iter;
-   for ( iter = m_SelectedLiveLoads[llType].begin(); iter != m_SelectedLiveLoads[llType].end(); iter++ )
+   if (llType<pgsTypes::lltDesign || llType>pgsTypes::lltFatigue)
    {
-      LiveLoadSelection& llselection = *iter;
-      if ( llselection.EntryName == _T("Pedestrian on Sidewalk") )
-         return true;
-   }
-
-   return false;
-}
-
-void CProjectAgentImp::EnablePedestianLoad(pgsTypes::LiveLoadType llType,bool bEnable)
-{
-   ATLASSERT(llType != pgsTypes::lltPedestrian);
-   if ( bEnable )
-   {
-      if ( !IsPedestianLoadEnabled(llType) )
-      {
-         LiveLoadSelection llselection;
-         llselection.EntryName = _T("Pedestrian on Sidewalk");
-         llselection.pEntry = NULL;
-         m_SelectedLiveLoads[llType].push_back(llselection);
-      }
+      // Rating Live Loads
+      return m_bIncludePedestrianLiveLoad ? ILiveLoads::PedConcurrentWithVehiculuar : ILiveLoads::PedDontApply;
    }
    else
    {
-      std::vector<LiveLoadSelection>::iterator iter;
-      for ( iter = m_SelectedLiveLoads[llType].begin(); iter != m_SelectedLiveLoads[llType].end(); iter++ )
+      return m_PedestrianLoadApplicationType[llType];
+   }
+}
+
+void CProjectAgentImp::SetPedestrianLoadApplication(pgsTypes::LiveLoadType llType, PedestrianLoadApplicationType PedLoad)
+{
+   if (llType<pgsTypes::lltDesign || llType>pgsTypes::lltFatigue)
+   {
+      // This function is not applicable for Rating Live Loads
+      ATLASSERT(0);
+   }
+   else
+   {
+      if (m_PedestrianLoadApplicationType[llType] != PedLoad)
       {
-         LiveLoadSelection& llselection = *iter;
-         if ( llselection.EntryName == _T("Pedestrian on Sidewalk") )
-         {
-            m_SelectedLiveLoads[llType].erase(iter);
-            return;
-         }
+         m_PedestrianLoadApplicationType[llType] = PedLoad;
+         Fire_LiveLoadChanged();
       }
    }
 }
@@ -6529,14 +6758,9 @@ std::vector<std::_tstring> CProjectAgentImp::GetLiveLoadNames(pgsTypes::LiveLoad
    std::vector<std::_tstring> strNames;
    strNames.reserve(m_SelectedLiveLoads[llType].size());
 
-   bool bCanHavePedLoad = CanHavePedestrianLoad();
-
    for (LiveLoadSelectionIterator it = m_SelectedLiveLoads[llType].begin(); it != m_SelectedLiveLoads[llType].end(); it++)
    {
       const LiveLoadSelection& lls = *it;
-
-      if ( lls.EntryName == _T("Pedestrian on Sidewalk") && !bCanHavePedLoad )
-         continue; // if pedestrian is in the list, and can't have ped load, then skip it.
 
       strNames.push_back(lls.EntryName);
    }
@@ -6638,10 +6862,12 @@ void CProjectAgentImp::SetLaneImpact(pgsTypes::LiveLoadType llType,double impact
 
 bool CProjectAgentImp::IsReservedLiveLoad(const std::_tstring& strName)
 {
-   std::vector<std::_tstring>::iterator iter;
-   for ( iter = m_ReservedLiveLoads.begin(); iter != m_ReservedLiveLoads.end(); iter++ )
+   std::vector<std::_tstring>::const_iterator iter(m_ReservedLiveLoads.begin());
+   std::vector<std::_tstring>::const_iterator iter_end(m_ReservedLiveLoads.end());
+   for ( ; iter != iter_end; iter++ )
    {
-      if ( (*iter) == strName )
+      const std::_tstring& rname = *iter;
+      if ( rname == strName )
          return true;
    }
 
@@ -6923,8 +7149,8 @@ void CProjectAgentImp::UpdateJackingForce() const
 
          for ( Uint16 i = 0; i < 4; i++ )
          {
-            if ( girderData.bPjackCalculated[i] )
-               girderData.Pjack[i] = GetMaxPjack( spanIdx, gdrIdx, pgsTypes::StrandType(i), girderData.Nstrands[i] );
+            if ( girderData.PrestressData.bPjackCalculated[i] )
+               girderData.PrestressData.Pjack[i] = GetMaxPjack( spanIdx, gdrIdx, pgsTypes::StrandType(i), girderData.PrestressData.GetNstrands(pgsTypes::StrandType(i)) );
          }
       }
 
@@ -6938,12 +7164,12 @@ void CProjectAgentImp::UpdateJackingForce() const
 
 void CProjectAgentImp::UpdateJackingForce(SpanIndexType span,GirderIndexType gdr)
 {
-   CGirderData girderData = GetGirderData(span,gdr);
+   CGirderData girderData = *(GetGirderData(span,gdr));
 
    for ( Uint16 i = 0; i < 4; i++ )
    {
-      if ( girderData.bPjackCalculated[i] )
-         girderData.Pjack[i] = GetMaxPjack(span,gdr,pgsTypes::StrandType(i),girderData.Nstrands[i]);
+      if ( girderData.PrestressData.bPjackCalculated[i] )
+         girderData.PrestressData.Pjack[i] = GetMaxPjack(span,gdr,pgsTypes::StrandType(i),girderData.PrestressData.GetNstrands(pgsTypes::StrandType(i)));
    }
 
    DoSetGirderData(girderData,span,gdr);
@@ -6972,10 +7198,13 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
          CGirderData& girder_data = girderTypes.GetGirderData(gdrIdx);
+         const GirderLibraryEntry* pGdrEntry = girderTypes.GetGirderLibraryEntry(gdrIdx);
+
+         // Convert legacy data as needed
+         ConvertLegacyDebondData(girder_data, pGdrEntry);
+         ConvertLegacyExtendedStrandData(girder_data,pGdrEntry);
 
          ValidateStrands(spanIdx,gdrIdx,girder_data,fromLibrary);
-
-         const GirderLibraryEntry* pGdrEntry = girderTypes.GetGirderLibraryEntry(gdrIdx);
 
          Float64 xfer_length = pPrestress->GetXferLength(spanIdx,gdrIdx,pgsTypes::Permanent);
          Float64 min_xfer = pGdrEntry->GetMinDebondSectionLength(); 
@@ -7086,22 +7315,6 @@ void CProjectAgentImp::DealWithConnectionLibraryChanges(bool fromLibrary)
    }
 
 }
-
-bool CProjectAgentImp::CanHavePedestrianLoad() const
-{
-   GET_IFACE(IBarriers,pBarriers);
-   double wLeft  = pBarriers->GetSidewalkWidth(pgsTypes::tboLeft);
-   double wRight = pBarriers->GetSidewalkWidth(pgsTypes::tboRight);
-
-   GET_IFACE(ISpecification,pSpec);
-   GET_IFACE(ILibrary,pLib);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   double wMin = pSpecEntry->GetMinSidewalkWidth();
-
-   // pedestrian load is only available if sidewalk is wide enough
-   return ( wMin < wLeft || wMin < wRight ) ? true : false;
-}
-
 
 void CProjectAgentImp::AddGirderStatusItem(SpanIndexType span,GirderIndexType girder, std::_tstring& message)
 {
@@ -7271,3 +7484,105 @@ HRESULT CProjectAgentImp::FireContinuityRelatedGirderChange(SpanIndexType span,G
 
    return Fire_GirderChanged(span, gdr, lHint);
 }
+
+// Static functions for checking direct strand fills
+bool IsValidStraightStrandFill(const DirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry)
+{
+    StrandIndexType ns =  pGirderEntry->GetNumStraightStrandCoordinates();
+
+    DirectStrandFillCollection::const_iterator it    = pFill->begin();
+    DirectStrandFillCollection::const_iterator itend = pFill->end();
+
+    while(it != itend)
+    {
+       const CDirectStrandFillInfo& rInfo = *it;
+       if (rInfo.permStrandGridIdx < ns)
+       {
+          Float64 xs, xe, ys, ye;
+          bool candb;
+          pGirderEntry->GetStraightStrandCoordinates(rInfo.permStrandGridIdx, &xs, &ys, &xe, &ye, &candb);
+          ATLASSERT(rInfo.numFilled ==1 || rInfo.numFilled ==2);
+          if (rInfo.numFilled ==2)
+          {
+             if (xs==0.0 && xe==0.0)
+                return false;
+          }
+       }
+       else
+       {
+          // fill doesn't fit into grid
+          return false;
+       }
+
+       it++;
+    }
+
+    return true;
+}
+
+bool IsValidHarpedStrandFill(const DirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry)
+{
+    StrandIndexType ns =  pGirderEntry->GetNumHarpedStrandCoordinates();
+
+    DirectStrandFillCollection::const_iterator it    = pFill->begin();
+    DirectStrandFillCollection::const_iterator itend = pFill->end();
+
+    while(it != itend)
+    {
+       const CDirectStrandFillInfo& rInfo = *it;
+       if (rInfo.permStrandGridIdx < ns)
+       {
+          Float64 xs, xe, xh, ys, ye, yh;
+          pGirderEntry->GetHarpedStrandCoordinates(rInfo.permStrandGridIdx, &xs, &ys, &xh, &yh, &xe, &ye);
+          ATLASSERT(rInfo.numFilled ==1 || rInfo.numFilled ==2);
+          if (rInfo.numFilled ==2)
+          {
+             if (xs==0.0 && xh==0.0 && xe==0.0)
+                return false; // can only fill 1
+          }
+       }
+       else
+       {
+          // fill doesn't fit into grid
+          return false;
+       }
+
+       it++;
+    }
+
+    return true;
+}
+
+bool IsValidTemporaryStrandFill(const DirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry)
+{
+    StrandIndexType ns =  pGirderEntry->GetNumTemporaryStrandCoordinates();
+
+    DirectStrandFillCollection::const_iterator it    = pFill->begin();
+    DirectStrandFillCollection::const_iterator itend = pFill->end();
+
+    while(it != itend)
+    {
+       const CDirectStrandFillInfo& rInfo = *it;
+       if (rInfo.permStrandGridIdx < ns)
+       {
+          Float64 xs, xe, ys, ye;
+          pGirderEntry->GetTemporaryStrandCoordinates(rInfo.permStrandGridIdx, &xs, &ys, &xe, &ye);
+          ATLASSERT(rInfo.numFilled ==1 || rInfo.numFilled ==2);
+          if (rInfo.numFilled ==2)
+          {
+             if (xs==0.0 && xe==0.0)
+                return false;
+          }
+       }
+       else
+       {
+          // fill doesn't fit into grid
+          return false;
+       }
+
+       it++;
+    }
+
+    return true;
+}
+

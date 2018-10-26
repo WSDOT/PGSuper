@@ -26,7 +26,6 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <PsgLib\SpecLibraryEntry.h>
-#include <PgsExt\GirderData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -56,9 +55,6 @@ rptRcTable(NumColumns,0)
 
 CTimeDependentLossesTable* CTimeDependentLossesTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   GET_IFACE2(pBroker,IGirderData,pGirderData);
-   CGirderData girderData = pGirderData->GetGirderData(span,gdr);
-
    GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
 
@@ -90,7 +86,7 @@ CTimeDependentLossesTable* CTimeDependentLossesTable::PrepareTable(rptChapter* p
    return table;
 }
 
-void CTimeDependentLossesTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CTimeDependentLossesTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    (*this)(row,1) << stress.SetValue(details.pLosses->TimeDependentLossesBeforeDeck());
    (*this)(row,2) << stress.SetValue(details.pLosses->TimeDependentLossesAfterDeck());

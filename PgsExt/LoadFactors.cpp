@@ -121,3 +121,65 @@ void CLoadFactors::MakeAssignment(const CLoadFactors& rOther)
 {
    MakeCopy(rOther);
 }
+
+HRESULT CLoadFactors::Save(IStructuredSave* pStrSave,IProgress* pProgress)
+{
+   std::_tstring strLimitState[] = {_T("ServiceI"),_T("ServiceIA"),_T("ServiceIII"),_T("StrengthI"),_T("StrengthII"),_T("FatigueI")};
+
+   pStrSave->BeginUnit(_T("LoadFactors"),1.0);
+   int nLimitStates = sizeof(strLimitState)/sizeof(std::_tstring);
+   for ( int i = 0; i < nLimitStates; i++ )
+   {
+      pStrSave->BeginUnit(strLimitState[i].c_str(),1.0);
+      
+      pStrSave->put_Property(_T("DCmin"),  CComVariant(DCmin[i]));
+      pStrSave->put_Property(_T("DCmax"),  CComVariant(DCmax[i]));
+      pStrSave->put_Property(_T("DWmin"),  CComVariant(DWmin[i]));
+      pStrSave->put_Property(_T("DWmax"),  CComVariant(DWmax[i]));
+      pStrSave->put_Property(_T("LLIMmin"),CComVariant(LLIMmin[i]));
+      pStrSave->put_Property(_T("LLIMmax"),CComVariant(LLIMmax[i]));
+
+      pStrSave->EndUnit();
+   }
+   pStrSave->EndUnit();
+
+   return S_OK;
+}
+
+HRESULT CLoadFactors::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
+{
+   std::_tstring strLimitState[] = {_T("ServiceI"),_T("ServiceIA"),_T("ServiceIII"),_T("StrengthI"),_T("StrengthII"),_T("FatigueI")};
+   int nLimitStates = sizeof(strLimitState)/sizeof(std::_tstring);
+
+   pStrLoad->BeginUnit(_T("LoadFactors"));
+
+   for ( int i = 0; i < nLimitStates; i++ )
+   {
+      pStrLoad->BeginUnit(strLimitState[i].c_str());
+
+      CComVariant var;
+      var.vt = VT_R8;
+      pStrLoad->get_Property(_T("DCmin"),  &var);
+      DCmin[i]   = var.dblVal;
+
+      pStrLoad->get_Property(_T("DCmax"),  &var);
+      DCmax[i]   = var.dblVal;
+
+      pStrLoad->get_Property(_T("DWmin"),  &var);
+      DWmin[i]   = var.dblVal;
+
+      pStrLoad->get_Property(_T("DWmax"),  &var);
+      DWmax[i]   = var.dblVal;
+
+      pStrLoad->get_Property(_T("LLIMmin"),&var);
+      LLIMmin[i] = var.dblVal;
+
+      pStrLoad->get_Property(_T("LLIMmax"),&var);
+      LLIMmax[i] = var.dblVal;
+
+      pStrLoad->EndUnit();
+   }
+   pStrLoad->EndUnit();
+
+   return S_OK;
+}

@@ -1,6 +1,6 @@
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.00   4  8.00     1     1     A       20   1/2  270  7.81  4.81  10 16.0  6.500  6.500    2.517   -3.873   1614  0.652  0.814  0.23 -0.06 -0.00 -0.00 -0.07  65.05 188.07   0.00   0.00   0.00
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 28.00   4  8.00  1     1     A          20   1/2  270  7.81  4.81  10 16.0  6.500  6.500    2.517   -3.868   1612  0.652  0.814  0.23 -0.06 -0.00 -0.00 -0.07  65.05 188.07   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
@@ -8,9 +8,9 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 Bursting zone checks failed.
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.00   4  8.00     1     2     A       22   1/2  270  7.16  4.98  12 16.0  6.800  6.800    2.709   -4.045   1651  0.652  0.814  0.23 -0.07 -0.00 -0.00 -0.08  72.38 211.10   0.00   0.00   0.00
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 28.00   4  8.00  1     2     A          22   1/2  270  7.16  4.98  12 16.0  6.800  6.800    2.709   -4.041   1649  0.652  0.814  0.23 -0.07 -0.00 -0.00 -0.08  72.38 211.10   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful

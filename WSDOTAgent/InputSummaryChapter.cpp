@@ -87,6 +87,22 @@ rptChapter* CInputSummaryChapter::Build(CReportSpecification* pRptSpec,Uint16 le
    *pChapter << p;
    *p << color(Red) << _T("NOTE: Several details have been omitted from this report") << color(Black) << rptNewLine;
 
+   GET_IFACE2( pBroker, IStrandGeometry, pStrandGeometry );
+   if (pStrandGeometry->GetAreHarpedStrandsForcedStraight(spanIdx, gdrIdx))
+   {
+      *p << color(Red) << Bold(_T("Warning: This is a non-standard girder because it utilizes straight web strands. WSDOT Standard Girders utilize harped strands.")) << color(Black) << rptNewLine;
+   }
+
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CSpanData* pSpan = pBridgeDesc->GetSpan(spanIdx);
+
+   const CGirderData& girderData = pSpan->GetGirderTypes()->GetGirderData(gdrIdx);
+   if (girderData.PrestressData.GetNumPermStrandsType() == NPS_DIRECT_SELECTION)
+   {
+      *p << color(Red) << Bold(_T("Warning: This is a non-standard girder because it utilizes Direct Strand Fill. WSDOT Standard Girders utilize sequentially filled strands.")) << color(Black) << rptNewLine;
+   }
+
    girder_line_geometry( pChapter, pBroker, spanIdx, gdrIdx, pDisplayUnits );
    concrete( pChapter, pBroker, spanIdx, gdrIdx, pDisplayUnits );
    prestressing( pChapter, pBroker, spanIdx, gdrIdx, pDisplayUnits );
@@ -435,7 +451,7 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Girde
    const GirderLibraryEntry* pGdrEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(girder);
 
    GET_IFACE2(pBroker,IGirderData,pGirderData);
-   CGirderData girderData = pGirderData->GetGirderData(span,girder);
+   const CGirderData* pgirderData = pGirderData->GetGirderData(span,girder);
 
    GET_IFACE2(pBroker,IPointOfInterest, pIPOI);
    std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(span,girder,pgsTypes::BridgeSite3,POI_MIDSPAN);
@@ -460,10 +476,13 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Girde
       GET_IFACE2(pBroker,IBridge, pBridge);
       GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
 
-      GDRCONFIG config = pBridge->GetGirderConfiguration(span,girder);
-      config.Nstrands[pgsTypes::Harped] = pStrandGeometry->GetNextNumStrands(span, girder, pgsTypes::Harped, 0);
+      StrandIndexType ns1 = pStrandGeometry->GetNextNumStrands(span, girder, pgsTypes::Harped, 0);
+      ConfigStrandFillVector hfill = pStrandGeom->ComputeStrandFill(span, girder, pgsTypes::Harped, ns1);
 
-      eh2 = pStrandGeom->GetHsEccentricity( poi, config, &nEff ); //** See Note Below
+      GDRCONFIG config = pBridge->GetGirderConfiguration(span,girder);
+      config.PrestressConfig.SetStrandFill(pgsTypes::Harped, hfill);
+
+      eh2 = pStrandGeom->GetHsEccentricity( poi, config.PrestressConfig, &nEff ); //** See Note Below
    }
    else
    {
@@ -486,6 +505,7 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Girde
    // Populate the table
    Int16 row = 0;
    (*pTable)(row,0) << _T("Permanent Strands");
+   (*pTable)(row,1) << _T("");
    row++;
 
    (*pTable)(row,0) << _T("Nominal Strand Diameter");
@@ -522,11 +542,13 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Girde
    }
    row++;
 
-   (*pTable)(row,0) << _T("Number of Harped Strands");
+   bool are_harped_straight = pStrandGeom->GetAreHarpedStrandsForcedStraight(span,girder);
+
+   (*pTable)(row,0) << _T("Number of ") << LABEL_HARP_TYPE(are_harped_straight)<< _T(" Strands");
    (*pTable)(row,1) << pStrandGeom->GetNumStrands( span, girder, pgsTypes::Harped );
    row++;
 
-   (*pTable)(row,0) << _T("Harped Strand ") << Sub2(_T("P"),_T("jack"));
+   (*pTable)(row,0) << LABEL_HARP_TYPE(are_harped_straight)<<_T(" Strand ") << Sub2(_T("P"),_T("jack"));
    (*pTable)(row,1) << force.SetValue( pStrandGeom->GetPjack(span,girder,pgsTypes::Harped) );
    row++;
 
@@ -544,6 +566,7 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Girde
    if (0 <  pStrandGeom->GetMaxStrands(span,girder,pgsTypes::Temporary) )
    {
       (*pTable)(row,0) << _T("Temporary Strands");
+      (*pTable)(row,1) << _T("");
       row++;
 
       (*pTable)(row,0) << _T("Nominal Strand Diameter");
@@ -555,7 +578,7 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Girde
       row++;
 
       (*pTable)(row,0) << _T("Number of Temporary Strands");
-      switch ( girderData.TempStrandUsage )
+      switch ( pgirderData->PrestressData.TempStrandUsage )
       {
       case pgsTypes::ttsPTAfterLifting:
          (*pTable)(row,0) << rptNewLine << _T("Temporary strands post-tensioned immediately after lifting");
@@ -574,17 +597,26 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Girde
       row++;
    }
 
-   (*pTable)(row,0) << _T("C.G. of Harped Strands at end, ") << Sub2(_T("F"),_T("o"));
-   (*pTable)(row,1) << component.SetValue( Fo );
-   row++;
+   if (are_harped_straight)
+   {
+      (*pTable)(row,0) << _T("C.G. of ") << LABEL_HARP_TYPE(are_harped_straight)<< _T(" Strands from top");
+      (*pTable)(row,1) << component.SetValue( Fo );
+      row++;
+   }
+   else
+   {
+      (*pTable)(row,0) << _T("C.G. of Harped Strands at end, ") << Sub2(_T("F"),_T("o"));
+      (*pTable)(row,1) << component.SetValue( Fo );
+      row++;
 
-   (*pTable)(row,0) << _T("C.G. of Harped Strands at centerline, ") << Sub2(_T("F"),_T("cl"));
-   (*pTable)(row,1) << component.SetValue( Fcl );
-   row++;
+      (*pTable)(row,0) << _T("C.G. of Harped Strands at centerline, ") << Sub2(_T("F"),_T("cl"));
+      (*pTable)(row,1) << component.SetValue( Fcl );
+      row++;
 
-   (*pTable)(row,0) << _T("C.G. of Lower Harped Strand Bundle, ") << Sub2(_T("F"),_T("b"));
-   (*pTable)(row,1) << component.SetValue( Fb );
-   row++;
+      (*pTable)(row,0) << _T("C.G. of Lower Harped Strand Bundle, ") << Sub2(_T("F"),_T("b"));
+      (*pTable)(row,1) << component.SetValue( Fb );
+      row++;
+   }
    
    (*pTable)(row,0) << _T("C.G. of Straight Strands, E");
    (*pTable)(row,1) << component.SetValue( E );

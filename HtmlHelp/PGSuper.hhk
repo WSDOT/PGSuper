@@ -3526,8 +3526,6 @@
     <param name="Local" value="Theoretical Manual\Long_Girder_Stability_Analysis_for_Lifting_and_Hauling.htm">
     <param name="Name" value="Designing Long Girders for Stability">
     <param name="Local" value="User's Guide\Design\Designing_Long_Girders_for_Stability.htm">
-    <param name="Name" value="Load Factors Tab">
-    <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Load_Factors_Tab.htm">
     <param name="Name" value="Longitudinal Reinforcement For Shear">
     <param name="Local" value="Theoretical Manual\Longitudinal_Reinforcement_For_Shear.htm">
     <param name="Name" value="Environment">
@@ -5347,8 +5345,6 @@
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="Limit States">
-    <param name="Name" value="Load Factors Tab">
-    <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Load_Factors_Tab.htm">
     <param name="Name" value="Casting Yard Tab">
     <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibCasting_Yard_Tab.htm">
     <param name="Name" value="Bridge Site 2 Tab">
@@ -5398,8 +5394,6 @@
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="Load Factors">
-    <param name="Name" value="Load Factors Tab">
-    <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Load_Factors_Tab.htm">
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="Loads Menu">
@@ -5646,8 +5640,6 @@
     <param name="Local" value="Theoretical Manual\Interface_Shear_Transfer.htm">
     <param name="Name" value="Status Center">
     <param name="Local" value="User's Guide\StatusCenter\Status_Center.htm">
-    <param name="Name" value="Load Factors Tab">
-    <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Load_Factors_Tab.htm">
     <param name="Name" value="Edit Moment Load">
     <param name="Local" value="Dialogs\Edit_Moment_Load.htm">
     <param name="Name" value="Losses Tab">
@@ -9565,8 +9557,6 @@
     <param name="Local" value="Tutorial\GeneralFeatures\Reviewing_Results.htm">
     <param name="Name" value="Configure PGSuper">
     <param name="Local" value="Dialogs\Configure_PGSuper.htm">
-    <param name="Name" value="Load Factors Tab">
-    <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Load_Factors_Tab.htm">
     <param name="Name" value="Horizontal Alignment">
     <param name="Local" value="Bridge Description\Alignment.htm">
     <param name="Name" value="Defining the Roadway">
@@ -13297,8 +13287,6 @@
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="Load Factors Tab">
-    <param name="Name" value="Load Factors Tab">
-    <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Load_Factors_Tab.htm">
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="Select Project">

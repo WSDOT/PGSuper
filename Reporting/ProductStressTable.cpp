@@ -29,6 +29,7 @@
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
+#include <IFace\PrestressForce.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
@@ -90,11 +91,24 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    SpanIndexType nSpans    = (span == ALL_SPANS ? pBridge->GetSpanCount() : startSpan+1 );
 
    GET_IFACE2(pBroker,IProductLoads,pLoads);
+   GET_IFACE2(pBroker,IProductForces,pForces);
    GET_IFACE2(pBroker,IProductForces2,pForces2);
    pgsTypes::Stage girderLoadStage = pLoads->GetGirderDeadLoadStage(span,gdr);
    bool bPedLoading = pLoads->HasPedestrianLoad(startSpan,gdr);
    bool bSidewalk = pLoads->HasSidewalkLoad(startSpan,gdr);
    bool bShearKey = pLoads->HasShearKeyLoad(startSpan,gdr);
+
+
+
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   std::_tstring strSpecName = pSpec->GetSpecification();
+
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
+
+   int loss_method = pSpecEntry->GetLossMethod();
+   bool bSlabShrinkage = ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() && 
+                         (loss_method == LOSSES_AASHTO_REFINED || loss_method == LOSSES_WSDOT_REFINED) ? true : false);
 
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoads);
    bool bConstruction = !IsZero(pUserLoads->GetConstructionLoad());
@@ -119,7 +133,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    continuity_stage = _cpp_min(continuity_stage,left_stage);
    continuity_stage = _cpp_min(continuity_stage,right_stage);
 
-   ColumnIndexType nCols = 6;
+   ColumnIndexType nCols = 7;
 
    if ( bDeckPanels )
    {
@@ -138,7 +152,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    }
 
    if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
-      nCols++; // add on more column for min/max slab
+      nCols += 2; // add one more each for min/max slab and slab pad
 
    if ( analysisType == pgsTypes::Envelope )
       nCols += 2; // add one more each for min/max overlay and min/max traffic barrier
@@ -152,7 +166,12 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       nCols += 2;
 
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-         nCols += 2;
+         nCols += 2; // fatigue
+
+      if ( bSlabShrinkage )
+      {
+         nCols++; // slab shrikage
+      }
 
       if ( bPermit )
          nCols += 2;
@@ -211,7 +230,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   RowIndexType row = ConfigureProductLoadTableHeading<rptStressUnitTag,unitmgtStressData>(p_table,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,bPermit,bRating,analysisType,continuity_stage,pRatingSpec,pDisplayUnits,pDisplayUnits->GetStressUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptStressUnitTag,unitmgtStressData>(p_table,false,bSlabShrinkage,bConstruction,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,bPermit,bRating,analysisType,continuity_stage,pRatingSpec,pDisplayUnits,pDisplayUnits->GetStressUnit());
 
 
    // Get the interface pointers we need
@@ -225,6 +244,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    std::vector<Float64> fTopDiaphragm, fBotDiaphragm;
    std::vector<Float64> fTopMaxConstruction, fTopMinConstruction, fBotMaxConstruction, fBotMinConstruction;
    std::vector<Float64> fTopMaxSlab, fTopMinSlab, fBotMaxSlab, fBotMinSlab;
+   std::vector<Float64> fTopMaxSlabPad, fTopMinSlabPad, fBotMaxSlabPad, fBotMinSlabPad;
    std::vector<Float64> fTopMaxSlabPanel, fTopMinSlabPanel, fBotMaxSlabPanel, fBotMinSlabPanel;
    std::vector<Float64> fTopMaxOverlay, fTopMinOverlay, fBotMaxOverlay, fBotMinOverlay;
    std::vector<Float64> fTopMaxSidewalk, fTopMinSidewalk, fBotMaxSidewalk, fBotMinSidewalk;
@@ -255,10 +275,15 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    {
       pForces2->GetStress( pgsTypes::BridgeSite1, pftSlab, vPoi, MaxSimpleContinuousEnvelope, &fTopMaxSlab, &fBotMaxSlab );
       pForces2->GetStress( pgsTypes::BridgeSite1, pftSlab, vPoi, MinSimpleContinuousEnvelope, &fTopMinSlab, &fBotMinSlab );
+
+      pForces2->GetStress( pgsTypes::BridgeSite1, pftSlabPad, vPoi, MaxSimpleContinuousEnvelope, &fTopMaxSlabPad, &fBotMaxSlabPad );
+      pForces2->GetStress( pgsTypes::BridgeSite1, pftSlabPad, vPoi, MinSimpleContinuousEnvelope, &fTopMinSlabPad, &fBotMinSlabPad );
    }
    else
    {
       pForces2->GetStress( pgsTypes::BridgeSite1, pftSlab, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxSlab, &fBotMaxSlab );
+
+      pForces2->GetStress( pgsTypes::BridgeSite1, pftSlabPad, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxSlabPad, &fBotMaxSlabPad );
    }
 
    if ( bConstruction )
@@ -311,8 +336,8 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       {
          if ( bPedLoading )
          {
-            pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy1, &fTopMaxPedestrianLL, &dummy2, &fBotMaxPedestrianLL);
-            pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &fTopMinPedestrianLL, &dummy1, &fBotMinPedestrianLL, &dummy2);
+            pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, true, &dummy1, &fTopMaxPedestrianLL, &dummy2, &fBotMaxPedestrianLL);
+            pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, true, &fTopMinPedestrianLL, &dummy1, &fBotMinPedestrianLL, &dummy2);
          }
 
          pForces2->GetLiveLoadStress(pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy1, &fTopMaxDesignLL, &dummy2, &fBotMaxDesignLL);
@@ -379,7 +404,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       {
          if ( bPedLoading )
          {
-            pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &fTopMinPedestrianLL, &fTopMaxPedestrianLL, &fBotMinPedestrianLL, &fBotMaxPedestrianLL);
+            pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, true, &fTopMinPedestrianLL, &fTopMaxPedestrianLL, &fBotMinPedestrianLL, &fBotMaxPedestrianLL);
          }
 
          pForces2->GetLiveLoadStress(pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &fTopMinDesignLL, &fTopMaxDesignLL, &fBotMinDesignLL, &fBotMaxDesignLL);
@@ -500,11 +525,33 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
          (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinSlab[index]) << rptNewLine;
          (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinSlab[index]);
          col++;
+
+         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSlabPad[index]) << rptNewLine;
+         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSlabPad[index]);
+         col++;
+
+         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinSlabPad[index]) << rptNewLine;
+         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinSlabPad[index]);
+         col++;
       }
       else
       {
          (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSlab[index]) << rptNewLine;
          (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSlab[index]);
+         col++;
+
+         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxSlabPad[index]) << rptNewLine;
+         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxSlabPad[index]);
+         col++;
+      }
+
+      if ( bSlabShrinkage )
+      {
+         Float64 ft_ss, fb_ss;
+         pForces->GetDeckShrinkageStresses(poi,&ft_ss,&fb_ss);
+
+         (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(ft_ss) << rptNewLine;
+         (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fb_ss);
          col++;
       }
 

@@ -37,7 +37,6 @@
 #include <IFace\GirderHandlingPointOfInterest.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\StatusCenter.h>
-#include <IFace\RatingSpecification.h>
 #include <EAF\EAFUIIntegration.h>
 
 #include <psgLib\ConnectionLibraryEntry.h>
@@ -48,7 +47,6 @@
 #include <PgsExt\DesignArtifact.h>
 #include <PgsExt\LiftingCheckArtifact.h>
 #include <PgsExt\HaulingCheckArtifact.h>
-#include <PgsExt\RatingArtifact.h>
 #include <EAF\EAFAutoProgress.h>
 #include <PgsExt\GirderLabel.h>
 
@@ -209,13 +207,6 @@ bool CTestAgentImp::RunTest(long type,
          if ( RunFabOptimizationTest(resf, poif, span, 0) )
             return RunFabOptimizationTest(resf, poif, span, 1);
          break;
-      case 501:
-         if ( span == 0 )
-         {
-            if ( RunLoadRatingTest(resf, poif, 0) )
-               return RunLoadRatingTest(resf, poif, 1);
-            break;
-         }
       case 777:
          if ( RunDesignTest(resf, poif, span, 0) )
             return RunDesignTest(resf, poif, span, 1);
@@ -250,12 +241,6 @@ bool CTestAgentImp::RunTest(long type,
 
          VERIFY( RunFabOptimizationTest(resf, poif, span, 0) );
          VERIFY( RunFabOptimizationTest(resf, poif, span, 1) );
-
-         if ( span == 0 )
-         {
-            VERIFY( RunLoadRatingTest(resf, poif, 0) );
-            VERIFY( RunLoadRatingTest(resf, poif, 1) );
-         }
 
          return true;
          break;
@@ -336,10 +321,6 @@ bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& 
          if ( !RunFabOptimizationTest(resf, poif, span, girder) )
             return false;
          break;
-      case 501:
-         if ( !RunLoadRatingTest(resf, poif, girder) )
-            return false;
-         break;
       case 777:
          if ( !RunDesignTest(resf, poif, span, girder) )
             return false;
@@ -374,9 +355,6 @@ bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& 
          if (!RunCamberTest(resf,poif,span, girder) )
             return false;
          if (!RunFabOptimizationTest(resf, poif, span, girder) )
-            return false;
-
-         if (!RunLoadRatingTest(resf, poif, girder) )
             return false;
       }
    }
@@ -570,6 +548,8 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
    std::_tstring pid      = GetProcessID();
    std::_tstring bridgeId = GetBridgeID();
 
+   pgsTypes::Stage girderLoadStage = pLoads->GetGirderDeadLoadStage(span, gdr);
+
    PoiAttributeType attrib = POI_TABULAR | POI_FLEXURESTRESS;
    std::vector<pgsPointOfInterest> vPoi;
 
@@ -586,8 +566,6 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
       poiFile<<locn<<_T(", ")<< bridgeId<< _T(", 7, 1, ")<<loc<<_T(", 2, -1, -1, -1,  0,  0,  0, -1,  0,  0,  0,  0,  0,  0,  0")<<std::endl;
 
       // girder 
-      pgsTypes::Stage girderLoadStage = pLoads->GetGirderDeadLoadStage(poi.GetSpan(),poi.GetGirder());
-
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30000, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( girderLoadStage, pftGirder, poi, bat ), unitMeasure::NewtonMillimeter)) <<_T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30001, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( girderLoadStage, pftGirder, poi, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30002, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( girderLoadStage, pftGirder, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
@@ -606,10 +584,10 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30270, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( pgsTypes::BridgeSite1, pftShearKey, span, gdr, bat), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
        
       // slab
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30012, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( pgsTypes::BridgeSite1, pftSlab,poi, bat ), unitMeasure::NewtonMillimeter)) << _T(", 1, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30013, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( pgsTypes::BridgeSite1, pftSlab, poi, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30014, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite1, pftSlab, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30013, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( pgsTypes::BridgeSite1, pftSlab, span, gdr, bat), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30012, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( pgsTypes::BridgeSite1, pftSlab,poi, bat )         + pForce->GetMoment( pgsTypes::BridgeSite1, pftSlabPad,poi, bat ),         unitMeasure::NewtonMillimeter)) << _T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30013, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( pgsTypes::BridgeSite1, pftSlab, poi, bat ).Left()  + pForce->GetShear( pgsTypes::BridgeSite1, pftSlabPad, poi, bat ).Left(),  unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30014, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite1, pftSlab, poi, bat )  + pForce->GetDisplacement( pgsTypes::BridgeSite1, pftSlabPad, poi, bat ),  unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30013, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( pgsTypes::BridgeSite1, pftSlab, span, gdr, bat) + pForce->GetReaction( pgsTypes::BridgeSite1, pftSlabPad, span, gdr, bat), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
 
       // DC - BSS1
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30036, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetMoment( lcDC, pgsTypes::BridgeSite1, poi, ctCummulative, bat ), unitMeasure::NewtonMillimeter)) <<_T(", 1, ")<<gdr<<std::endl;
@@ -685,6 +663,81 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122119, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( pgsTypes::BridgeSite1, pftUserLLIM, span, gdr, bat ), unitMeasure::Newton)) <<_T(", 1, ")<<gdr<<std::endl;
 
    }
+
+   // Girder bearing reactions
+   GET_IFACE(IBearingDesign,pBearingDesign);
+   bool bleft, bright;
+   if(pBearingDesign->AreBearingReactionsAvailable(span,gdr,&bleft,&bright))
+   {
+      Float64 lftReact, rgtReact;
+      // girder
+      pBearingDesign->GetBearingProductReaction(girderLoadStage, pftGirder, span, gdr, ctCummulative, bat, &lftReact, &rgtReact);
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165000, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165001,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+
+      // diaphragm
+      pBearingDesign->GetBearingProductReaction(pgsTypes::BridgeSite1, pftDiaphragm, span, gdr, ctCummulative, bat, &lftReact, &rgtReact);
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165002, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165003,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+
+      // ShearKey
+      pBearingDesign->GetBearingProductReaction(pgsTypes::BridgeSite1, pftShearKey, span, gdr, ctCummulative, bat, &lftReact, &rgtReact);
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165004, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165005,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+
+      // slab
+      pBearingDesign->GetBearingProductReaction(pgsTypes::BridgeSite1, pftSlab, span, gdr, ctCummulative, bat, &lftReact, &rgtReact);
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165006, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165007,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+
+      // DC - BSS1
+      pBearingDesign->GetBearingCombinedReaction(lcDC, pgsTypes::BridgeSite1, span, gdr, ctCummulative, bat, &lftReact, &rgtReact); 
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165008, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165009,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+
+      // DW - BSS1
+      pBearingDesign->GetBearingCombinedReaction(lcDW, pgsTypes::BridgeSite1, span, gdr, ctCummulative, bat, &lftReact, &rgtReact); 
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165010, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165011,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+
+      // overlay
+      pgsTypes::Stage overlay_stage = pBridge->IsFutureOverlay() ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2;
+
+      pBearingDesign->GetBearingProductReaction(overlay_stage, pftOverlay, span, gdr, ctCummulative, bat, &lftReact, &rgtReact);
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165012, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165013,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+
+      // barrier
+      pBearingDesign->GetBearingProductReaction(pgsTypes::BridgeSite2, pftTrafficBarrier, span, gdr, ctCummulative, bat, &lftReact, &rgtReact);
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165014, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165015,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+
+      // sidewalk
+      pBearingDesign->GetBearingProductReaction(pgsTypes::BridgeSite3, pftSidewalk, span, gdr, ctCummulative, bat, &lftReact, &rgtReact);
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165016, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165017,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+
+      // DC - BSS3
+      pBearingDesign->GetBearingCombinedReaction(lcDC, pgsTypes::BridgeSite3, span, gdr, ctCummulative, bat, &lftReact, &rgtReact); 
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165018, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165019,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+
+      // DW - BSS3
+      pBearingDesign->GetBearingCombinedReaction(lcDW, pgsTypes::BridgeSite3, span, gdr, ctCummulative, bat, &lftReact, &rgtReact); 
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165020, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165021,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+
+      // user loads
+      pBearingDesign->GetBearingProductReaction(pgsTypes::BridgeSite3, pftUserDW, span, gdr, ctCummulative, bat, &lftReact, &rgtReact);
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165022, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165023,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+
+      // user live load
+      pBearingDesign->GetBearingProductReaction(pgsTypes::BridgeSite3, pftUserLLIM, span, gdr, ctCummulative, bat, &lftReact, &rgtReact);
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165024, 0.000, ")<< QUITE(::ConvertFromSysUnits( lftReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 165025,-1.000, ")<< QUITE(::ConvertFromSysUnits( rgtReact, unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
+   }
+
    return true;
 }
 
@@ -856,12 +909,12 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122007, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pDefl->GetCapacity(), unitMeasure::Millimeter)) <<_T(", 2, ")<<gdr<<std::endl;
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122008, ")<<loc<<_T(", ")<<(int)(pDefl->Passed()?1:0)<<_T(", 15, ")<<gdr<<std::endl;
 
-   const pgsSplittingZoneArtifact* pBurst = gdrArtifact->GetSplittingZoneArtifact();
+   const pgsSplittingZoneArtifact* pBurst = gdrArtifact->GetStirrupCheckArtifact()->GetSplittingZoneArtifact();
    if (pBurst->GetIsApplicable())
    {
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122010, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pBurst->GetSplittingZoneLength(), unitMeasure::Millimeter)) <<_T(", 2, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122011, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pBurst->GetSplittingForce(), unitMeasure::Newton)) <<_T(", 2, ")<<gdr<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122012, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pBurst->GetSplittingResistance(), unitMeasure::Newton)) <<_T(", 2, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122010, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pBurst->GetStartSplittingZoneLength(), unitMeasure::Millimeter)) <<_T(", 2, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122011, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pBurst->GetStartSplittingForce(), unitMeasure::Newton)) <<_T(", 2, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122012, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pBurst->GetStartSplittingResistance(), unitMeasure::Newton)) <<_T(", 2, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122013, ")<<loc<<_T(", ")<<(int)(pBurst->Passed()?1:0)<<_T(", 15, ")<<gdr<<std::endl;
    }
 
@@ -1021,12 +1074,9 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
 
          const pgsFlexuralCapacityArtifact* pCompositeCap;
          pCompositeCap = gdrArtifact->GetPositiveMomentFlexuralCapacityArtifact(pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,poi.GetDistFromStart()));
-         if ( pCompositeCap )
-         {
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122016, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pCompositeCap->GetDemand() , unitMeasure::NewtonMillimeter)) <<_T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122017, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pCompositeCap->GetCapacity() , unitMeasure::NewtonMillimeter)) <<_T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122018, ")<<loc<<_T(", ")<<(int)(pCompositeCap->Passed()?1:0)<<_T(", 15, ")<<gdr<<std::endl;
-         }
 
          // negative moment capacity
          pMomentCapacity->GetCrackingMomentDetails(pgsTypes::BridgeSite3,poi,false,&cmd);
@@ -1044,12 +1094,9 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50141, ")<<loc<<_T(", ")<<QUITE(IsZero(mmcd.Mu) ? 0 : mmcd.Mr/mmcd.Mu)<< _T(",15, ")<<gdr<<std::endl;
 
          pCompositeCap = gdrArtifact->GetNegativeMomentFlexuralCapacityArtifact(pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,poi.GetDistFromStart()));
-         if ( pCompositeCap )
-         {
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122116, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pCompositeCap->GetDemand() , unitMeasure::NewtonMillimeter)) <<_T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122117, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pCompositeCap->GetCapacity() , unitMeasure::NewtonMillimeter)) <<_T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122118, ")<<loc<<_T(", ")<<(int)(pCompositeCap->Passed()?1:0)<<_T(", 15, ")<<gdr<<std::endl;
-         }
 
 
          // shear capacity
@@ -1078,8 +1125,6 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
 
          psArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact( pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3, pgsTypes::StrengthI,poi.GetDistFromStart()) );
          ATLASSERT(psArtifact != NULL);
-         if ( psArtifact )
-         {
          pArtifact = psArtifact->GetLongReinfShearArtifact();
 
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50061, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pArtifact->GetDemandForce(), unitMeasure::Newton)) <<  _T(",15, ")<<gdr<<std::endl;
@@ -1089,25 +1134,27 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50063, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSDArtifact->GetSMax(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50064, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSDArtifact->GetAvsMin(), unitMeasure::Millimeter2)) <<_T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50065, ")<<loc<<_T(", ")<< QUITE(scd.Vn/scd.Vu) <<_T(", 15 ")<<gdr<<std::endl;
-         }
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100205, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSDArtifact->GetS(), unitMeasure::Millimeter)) <<_T(",15, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100206, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSDArtifact->GetVuLimit(), unitMeasure::Newton)) <<_T(",15, ")<<gdr<<std::endl;
 
          const pgsStirrupCheckAtPoisArtifact* pspArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact( pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3, pgsTypes::StrengthI,poi.GetDistFromStart()) );
-         if ( pspArtifact )
-         {
          pAHsrtifact = pspArtifact->GetHorizontalShearArtifact();
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50067, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetCapacity()*pAHsrtifact->GetPhi(), unitMeasure::Newton)) <<_T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50068, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetCapacity(), unitMeasure::Newton)) <<_T(",15, ")<<gdr<<std::endl;
-         }
-
-         if ( psArtifact )
-         {
-         const pgsVerticalShearArtifact* pVertical = psArtifact->GetVerticalShearArtifact();
-
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100207, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetDemand(), unitMeasure::Newton)) <<_T(",15, ")<<gdr<<std::endl;
 
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50069, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetAcv(), unitMeasure::Millimeter2)) <<_T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50070, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetAvOverS(), unitMeasure::Millimeter2)) <<_T(",15, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 50071, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetNormalCompressionForce(), unitMeasure::Newton)) <<_T(",15, ")<<gdr<<std::endl;
-         }
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100208, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetSMax(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100209, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetAvOverSReqd(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdr<<std::endl;
+
+         const pgsVerticalShearArtifact* pVertical = psArtifact->GetVerticalShearArtifact();
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100210, ")<<loc<<_T(", ")<<(int)(pVertical->IsStrutAndTieRequired(pgsTypes::metStart)?1:0)<<_T(", 15, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100211, ")<<loc<<_T(", ")<<(int)(pVertical->IsStrutAndTieRequired(pgsTypes::metEnd)?1:0)<<_T(", 15, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100212, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pVertical->GetAvOverSReqd(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100213, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pVertical->GetDemand(), unitMeasure::Newton)) <<  _T(",15, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100214, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pVertical->GetCapacity(), unitMeasure::Newton)) <<  _T(",15, ")<<gdr<<std::endl;
       }
 
       // pass/fail cases
@@ -1143,14 +1190,45 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       }
    }
 
-   // stirrup check at zones
-   GET_IFACE( IStirrupGeometry, pStirrupGeometry );
-   ZoneIndexType nZones = pStirrupGeometry->GetNumZones(span,gdr);
-   for (ZoneIndexType zoneIdx = 0; zoneIdx < nZones; zoneIdx++)
+   // confinement
+   const pgsConfinementArtifact& rconf = pstirrup_artifact->GetConfinementArtifact();
+   if (rconf.IsApplicable())
    {
-      const pgsStirrupCheckAtZonesArtifact* psArtifact = pstirrup_artifact->GetStirrupCheckAtZonesArtifact( zoneIdx );
-      const pgsConfinementArtifact* pconf = psArtifact->GetConfinementArtifact();
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122004, ")<<zoneIdx<<_T(", ")<<(int)(pconf->Passed()?1:0)<<_T(", 15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100220, ")<<loc<<_T(", ")<<(int)(rconf.Passed()?1:0)<<_T(", 15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100221, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(rconf.GetSMax(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100222, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(rconf.GetStartProvidedZoneLength(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100223, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(rconf.GetStartRequiredZoneLength(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100224, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(rconf.GetStartS(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100225, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(rconf.GetEndProvidedZoneLength(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100226, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(rconf.GetEndRequiredZoneLength(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100227, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(rconf.GetEndS(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdr<<std::endl;
+   }
+
+   // splitting / bursting
+   const pgsSplittingZoneArtifact* pSplit = pstirrup_artifact->GetSplittingZoneArtifact();
+   if(pSplit->GetIsApplicable())
+   {
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100230, ")<<loc<<_T(", ")<<(int)(pSplit->Passed()?1:0)<<_T(", 15, ")<<gdr<<std::endl;
+
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100231, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSplit->GetStartAps(), unitMeasure::Millimeter2)) <<   _T(",15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100232, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSplit->GetStartAvs(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100233, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSplit->GetStartFpj(), unitMeasure::Newton)) <<   _T(",15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100234, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSplit->GetStartFs(), unitMeasure::MPa)) <<   _T(",15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100235, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSplit->GetStartH(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100236, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSplit->GetStartLossesAfterTransfer(), unitMeasure::MPa)) <<   _T(",15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100237, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSplit->GetStartSplittingForce(), unitMeasure::Newton)) <<   _T(",15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100238, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSplit->GetStartSplittingResistance(), unitMeasure::Newton)) <<   _T(",15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100239, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSplit->GetStartSplittingZoneLength(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdr<<std::endl;
+
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100241, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSplit->GetEndAps(), unitMeasure::Millimeter2)) <<   _T(",15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100242, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSplit->GetEndAvs(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100243, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSplit->GetEndFpj(), unitMeasure::Newton)) <<   _T(",15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100244, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSplit->GetEndFs(), unitMeasure::MPa)) <<   _T(",15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100245, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSplit->GetEndH(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100246, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSplit->GetEndLossesAfterTransfer(), unitMeasure::MPa)) <<   _T(",15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100247, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSplit->GetEndSplittingForce(), unitMeasure::Newton)) <<   _T(",15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100248, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSplit->GetEndSplittingResistance(), unitMeasure::Newton)) <<   _T(",15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100249, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pSplit->GetEndSplittingZoneLength(), unitMeasure::Millimeter)) <<   _T(",15, ")<<gdr<<std::endl;
    }
 
    return true;
@@ -1324,9 +1402,10 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
    if (0 < nh)
    {
       StrandIndexType nns = pStrandGeometry->GetNextNumStrands(span,gdr,pgsTypes::Harped,0);
+      ConfigStrandFillVector fillvec = pStrandGeometry->ComputeStrandFill(span, gdr, pgsTypes::Harped, nns);
       GDRCONFIG config = pBridge->GetGirderConfiguration(span,gdr);
-      config.Nstrands[pgsTypes::Harped] = nns;
-      Float64 eh2 = pStrandGeometry->GetHsEccentricity( pmid[0], config, &nEff );
+      config.PrestressConfig.SetStrandFill(pgsTypes::Harped, fillvec);
+      Float64 eh2 = pStrandGeometry->GetHsEccentricity( pmid[0], config.PrestressConfig, &nEff );
       Float64 Fb  = pSectProp2->GetYb(pgsTypes::CastingYard,pois) - eh2;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 123018, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(Fb, unitMeasure::Millimeter)) <<   _T(", 101, ")<<gdr<<std::endl;
    }
@@ -1364,6 +1443,7 @@ bool CTestAgentImp::RunDesignTest(std::_tofstream& resultsFile, std::_tofstream&
    arDesignOptions des_options = pSpecification->GetDesignOptions(span,gdr);
 
    des_options.doDesignForShear = true;
+   des_options.doDesignStirrupLayout = slLayoutStirrups; // always layout zones from scratch
 
    GET_IFACE(IArtifact,pIArtifact);
    const pgsDesignArtifact* pArtifact;
@@ -1412,16 +1492,30 @@ bool CTestAgentImp::RunDesignTest(std::_tofstream& resultsFile, std::_tofstream&
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 124013, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pArtifact->GetLeftLiftingLocation(), unitMeasure::Millimeter)) <<   _T(", 102, ")<<gdr<<std::endl;
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 124014, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pArtifact->GetLeadingOverhang(), unitMeasure::Millimeter)) <<   _T(", 102, ")<<gdr<<std::endl;
 
-   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 124015, ")<<loc<<_T(", ")<<GetBarSize(pArtifact->GetConfinementBarSize())<<   _T(", 102, ")<<gdr<<std::endl;
-   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 124016, ")<<loc<<_T(", ")<<pArtifact->GetLastConfinementZone()<<   _T(", 102, ")<<gdr<<std::endl;
+   const CShearData& sd = pArtifact->GetShearData();
+
+   int ncz = -1;
+   matRebar::Size czsize(matRebar::bsNone);
+   for (CShearData::ShearZoneConstIterator czit = sd.ShearZones.begin(); czit != sd.ShearZones.end(); czit++)
+   {
+      if (czit->ConfinementBarSize!=matRebar::bsNone)
+      {
+         czsize = czit->ConfinementBarSize;
+         ncz++;
+      }
+      else
+         break;
+   }
+
+   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 124015, ")<<loc<<_T(", ")<<GetBarSize(czsize)<<   _T(", 102, ")<<gdr<<std::endl;
+   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 124016, ")<<loc<<_T(", ")<< ncz <<   _T(", 102, ")<<gdr<<std::endl;
 
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 124017, ")<<loc<<_T(", ")<<pArtifact->GetNumberOfStirrupZonesDesigned()<<   _T(", 102, ")<<gdr<<std::endl;
 
    Int32 id = 124018;
-   ZoneIndexType nZones = min(4, pArtifact->GetNumberOfStirrupZonesDesigned());
-   for (ZoneIndexType zoneIdx = 0; zoneIdx < nZones; zoneIdx++)
+   for (CShearData::ShearZoneConstIterator czit = sd.ShearZones.begin(); czit != sd.ShearZones.end(); czit++)
    {
-      CShearZoneData zd = pArtifact->GetShearZoneData(zoneIdx);
+      const CShearZoneData& zd = *czit;
 
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<<GetBarSize(zd.VertBarSize)<<   _T(", 102, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", ")<<id++<<_T(", ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(zd.BarSpacing, unitMeasure::Millimeter)) <<   _T(", 102, ")<<gdr<<std::endl;
@@ -1444,8 +1538,8 @@ bool CTestAgentImp::RunCamberTest(std::_tofstream& resultsFile, std::_tofstream&
    pgsPointOfInterest& poi_midspan = poi_vec[0];
 
    GET_IFACE( ICamber, pCamber );
-   double D40  = pCamber->GetDCamberForGirderSchedule(poi_midspan,CREEP_MINTIME);;
-   double D120 = pCamber->GetDCamberForGirderSchedule(poi_midspan,CREEP_MINTIME);;
+   double D40  = pCamber->GetDCamberForGirderSchedule(poi_midspan,CREEP_MINTIME);
+   double D120 = pCamber->GetDCamberForGirderSchedule(poi_midspan,CREEP_MAXTIME);
 
    resultsFile << bridgeId << _T(", ") << pid << _T(", 125000, ") << QUITE(::ConvertFromSysUnits(D40,  unitMeasure::Millimeter)) << _T(", ") << gdr << std::endl;
    resultsFile << bridgeId << _T(", ") << pid << _T(", 125001, ") << QUITE(::ConvertFromSysUnits(D120, unitMeasure::Millimeter)) << _T(", ") << gdr << std::endl;
@@ -1492,79 +1586,6 @@ bool CTestAgentImp::RunFabOptimizationTest(std::_tofstream& resultsFile, std::_t
 	   resultsFile << bridgeId << _T(", ") << pid << _T(", 155011, ") << ::ConvertFromSysUnits(details.LUmin,unitMeasure::Millimeter) << _T(", ") << gdr << std::endl;
 	   resultsFile << bridgeId << _T(", ") << pid << _T(", 155012, ") << ::ConvertFromSysUnits(details.LUmax,unitMeasure::Millimeter) << _T(", ") << gdr << std::endl;
 	   resultsFile << bridgeId << _T(", ") << pid << _T(", 155013, ") << ::ConvertFromSysUnits(details.LUsum,unitMeasure::Millimeter) << _T(", ") << gdr << std::endl;
-   }
-
-   return true;
-}
-
-bool CTestAgentImp::RunLoadRatingTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, GirderIndexType gdr)
-{
-   std::_tstring pid      = GetProcessID();
-   std::_tstring bridgeId = GetBridgeID();
-
-   GET_IFACE(IProductLoads,pProductLoads);
-   GET_IFACE(IArtifact,pArtifacts);
-
-   GET_IFACE(IBridge,pBridge);
-   bool bNegMoments = pBridge->ProcessNegativeMoments(ALL_SPANS);
-   
-   GET_IFACE(IRatingSpecification,pRatingSpec);
-
-
-   for ( int i = 0; i < 6; i++ )
-   {
-      pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)i;
-      if ( !pRatingSpec->IsRatingEnabled(ratingType) )
-         continue;
-
-      pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
-      VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
-      for ( VehicleIndexType vehIdx = 0; vehIdx < nVehicles; vehIdx++ )
-      {
-         const pgsRatingArtifact* pArtifact = pArtifacts->GetRatingArtifact(gdr,ratingType,vehIdx);
-         if ( pArtifact == NULL )
-            continue;
-
-         Float64 RF = pArtifact->GetMomentRatingFactor(true);
-	      resultsFile << bridgeId << _T(", ") << pid << _T(", 881001, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
-
-         if ( bNegMoments )
-         {
-            RF = pArtifact->GetMomentRatingFactor(false);
-	         resultsFile << bridgeId << _T(", ") << pid << _T(", 881002, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
-         }
-         
-         if ( pRatingSpec->RateForShear(ratingType) )
-         {
-            RF = pArtifact->GetShearRatingFactor();
-	         resultsFile << bridgeId << _T(", ") << pid << _T(", 881003, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
-         }
-
-         if ( pRatingSpec->RateForStress(ratingType) )
-         {
-            if ( ratingType == pgsTypes::lrPermit_Routine || ratingType == pgsTypes::lrPermit_Special )
-            {
-               // Service I reinforcement yield check if permit rating
-               RF = pArtifact->GetYieldStressRatio(true);
-	            resultsFile << bridgeId << _T(", ") << pid << _T(", 881004, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
-
-               if ( bNegMoments )
-               {
-                  RF = pArtifact->GetYieldStressRatio(false);
-	               resultsFile << bridgeId << _T(", ") << pid << _T(", 881005, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
-               }
-            }
-            else
-            {
-               // Service III flexure if other rating type
-               RF = pArtifact->GetStressRatingFactor();
-	            resultsFile << bridgeId << _T(", ") << pid << _T(", 881006, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
-            }
-         }
-
-         RF = pArtifact->GetRatingFactor();
-	      resultsFile << bridgeId << _T(", ") << pid << _T(", 881007, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
-      }
    }
 
    return true;

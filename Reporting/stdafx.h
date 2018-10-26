@@ -30,43 +30,14 @@
 #define VC_EXTRALEAN            // Exclude rarely-used stuff from Windows headers
 #endif
 
-#include <PGSuperVersion.h>
-
-#define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS      // some CString constructors will be explicit
-
-#include <afxwin.h>         // MFC core and standard components
-#include <afxext.h>         // MFC extensions
-
-#ifndef _AFX_NO_OLE_SUPPORT
-#include <afxole.h>         // MFC OLE classes
-#include <afxodlgs.h>       // MFC OLE dialog classes
-#include <afxdisp.h>        // MFC Automation classes
-#endif // _AFX_NO_OLE_SUPPORT
-
-#ifndef _AFX_NO_DB_SUPPORT
-#include <afxdb.h>                      // MFC ODBC database classes
-#endif // _AFX_NO_DB_SUPPORT
-
-#ifndef _AFX_NO_DAO_SUPPORT
-#include <afxdao.h>                     // MFC DAO database classes
-#endif // _AFX_NO_DAO_SUPPORT
-
-#ifndef _AFX_NO_OLE_SUPPORT
-#include <afxdtctl.h>           // MFC support for Internet Explorer 4 Common Controls
-#endif
-#ifndef _AFX_NO_AFXCMN_SUPPORT
-#include <afxcmn.h>                     // MFC support for Windows Common Controls
-#endif // _AFX_NO_AFXCMN_SUPPORT
+#include <PGSuperAll.h>
+#include <PGSuperUnits.h>
 
 #if defined NOGRID
 #include "nogrid.h"
 #else
 #include <grid\gxall.h>
 #endif // NOGRID
-
-#include <PGSuperDebug.h>
-#include <PGSuperTypes.h>
-#include <PGSuperUnits.h>
 
 #include <Reporting\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>

@@ -334,7 +334,7 @@ HRESULT CGirderTypes::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    GirderIndexType nGirders = m_pSpan->GetGirderCount();
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
-      pStrSave->BeginUnit(_T("GirderData"),3.0);
+      pStrSave->BeginUnit(_T("GirderData"),4.0);
 
       CGirderData& girderData = m_GirderData[gdrIdx];
       girderData.Save(pStrSave,pProgress);
@@ -414,19 +414,12 @@ GroupIndexType CGirderTypes::CreateGroup(GirderIndexType firstGdrIdx,GirderIndex
       GirderGroup gdrGroup = *iter;
       if ( gdrGroup.first == firstGdrIdx && gdrGroup.second == lastGdrIdx )
       {
-         // no need to create a new group (we already have it)
+         // no need to create a new group
          newGroupIdx = iter - m_GirderGroups.begin();
          return newGroupIdx;
       }
 
-      if ( lastGdrIdx < gdrGroup.first || gdrGroup.second < firstGdrIdx )
-      {
-         // the new group ends before the start of this group -OR-
-         // the new group starts after the end of this group
-         // just save the group
-         gdrGroups.push_back(gdrGroup);
-      }
-      else if ( gdrGroup.first < firstGdrIdx && firstGdrIdx <= gdrGroup.second )
+      if ( gdrGroup.first < firstGdrIdx && firstGdrIdx <= gdrGroup.second )
       {
          // the new group starts in the middle of this group
          gdrGroup.second = firstGdrIdx-1; // set the end of this group one girder before the 
@@ -435,13 +428,9 @@ GroupIndexType CGirderTypes::CreateGroup(GirderIndexType firstGdrIdx,GirderIndex
       }
       else if ( lastGdrIdx <= gdrGroup.second )
       {
-         // new group ends in the middle of this group
-
+         // the new group is totally within this group
          if ( gdrGroup.first == firstGdrIdx )
          {
-            // new group starts at start of this group
-            // (n,m) ->  (n,k) (k+1,m)
-            // k=2 (0,4) ->  (0,2) (3,4)
             GirderGroup newGrp;
             newGrp.first  = firstGdrIdx;
             newGrp.second = lastGdrIdx;
@@ -454,9 +443,6 @@ GroupIndexType CGirderTypes::CreateGroup(GirderIndexType firstGdrIdx,GirderIndex
          }
          else if ( gdrGroup.second == lastGdrIdx )
          {
-            // new group ends at end of this group
-            // (n,m) -> (n,k-1)(k,m)
-            // k=2 (0,4) -> (0,1)(2,4)
             GirderGroup newGrp;
             newGrp.first  = gdrGroup.first;
             newGrp.second = firstGdrIdx-1;
@@ -469,9 +455,6 @@ GroupIndexType CGirderTypes::CreateGroup(GirderIndexType firstGdrIdx,GirderIndex
          }
          else
          {
-            // new group is completely within this group
-            // (n,m) -> (n,k-1)(k,l)(l+1,m)
-            // k=2,l=2  (0,4) -> (0,1)(2,2)(3,4)
             GirderGroup newGrp;
             newGrp.first  = gdrGroup.first;
             newGrp.second = firstGdrIdx-1;
@@ -486,6 +469,10 @@ GroupIndexType CGirderTypes::CreateGroup(GirderIndexType firstGdrIdx,GirderIndex
             newGrp.second = gdrGroup.second;
             gdrGroups.push_back(newGrp);
          }
+      }
+      else
+      {
+         gdrGroups.push_back(gdrGroup);
       }
    }
 
@@ -808,7 +795,7 @@ void CGirderTypes::SetGirderName(GroupIndexType grpIdx,LPCTSTR strName)
       m_GirderNames[gdrIdx] = strName;
 
       if ( bNewName )
-         m_GirderData[gdrIdx].ResetPrestressData();
+         m_GirderData[gdrIdx].PrestressData.ResetPrestressData();
    }
 }
 

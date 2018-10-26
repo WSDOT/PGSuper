@@ -1,6 +1,6 @@
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   6  5.00     1     1  W42G  *    17   5/8  270 16.01  6.19   5 38.0  4.000 15.000    3.270   -3.593   2732  0.511  0.596  0.33 -0.05 -0.00 -0.01 -0.05  88.71 190.41   1.75   5.00   5.00
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 28.25   6  5.00  1     1     W42G  *    20  0.60  270 15.89  5.99   6 38.0  4.000 14.900    4.472   -4.026   3005  0.510  0.596  0.39 -0.05 -0.00 -0.01 -0.05 120.99 251.46   1.75  13.00  13.00
 
 
 Girder design was Not Successful
@@ -12,9 +12,9 @@ Lifting checks failed
 Hauling checks failed
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   6  5.00     1     2  W42G  *    16   5/8  270 16.02  7.52   4 38.0  4.000 15.000    3.219   -3.551   2638  0.511  0.596  0.31 -0.04 -0.00 -0.01 -0.05  78.73 171.98   1.75   5.00   5.00
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 28.25   6  5.00  1     2     W42G  *    18  0.60  270 16.00  5.00   6 38.0  4.000 14.600    4.404   -3.977   2828  0.510  0.596  0.34 -0.04 -0.00 -0.01 -0.05  99.20 210.76   1.75  13.00  13.00
 
 
 Girder design was Not Successful
@@ -27,9 +27,9 @@ Lifting checks failed
 Hauling checks failed
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   6  5.00     1     4  W42G  *    17   5/8  270 16.01  6.19   5 38.0  4.000 15.000    3.219   -3.551   2737  0.511  0.596  0.33 -0.04 -0.00 -0.01 -0.05  88.71 191.25   1.75   5.00   5.00
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 28.25   6  5.00  1     4     W42G  *    19  0.60  270 15.89  7.10   5 38.0  4.000 14.900    4.421   -3.984   2919  0.510  0.596  0.38 -0.04 -0.00 -0.01 -0.05 109.54 231.09   1.75  13.00  13.00
 
 
 Girder design was Not Successful

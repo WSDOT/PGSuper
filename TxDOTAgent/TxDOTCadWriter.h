@@ -60,7 +60,7 @@ COPYRIGHT
 LOG
    rdp : 04.09.2009 : Created file
 *****************************************************************************/
-static const int BF_SIZ=256; // buffer size
+static const int BF_SIZ=1024; // buffer size
 
 // Main External functions that write the file
 int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, GirderIndexType gdr, TxDOTCadExportFormatType format, bool designSucceeded);

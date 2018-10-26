@@ -203,7 +203,7 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("DW")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++) << Sub2(symbol(gamma),_T("LL"));
    (*table)(0,col++) << _T("gM");
-   (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("LL+IM")) << _T(" (*)"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("LL+IM")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++) << _T("RF");
 
    pgsRatingArtifact::MomentRatings artifacts = pRatingArtifact->GetMomentRatings(bPositiveMoment);
@@ -297,7 +297,7 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
    (*table)(0,col++) << COLHDR(Sub2(_T("V"),_T("DW")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0,col++) << Sub2(symbol(gamma),_T("LL"));
    (*table)(0,col++) << _T("gV");
-   (*table)(0,col++) << COLHDR(Sub2(_T("V"),_T("LL+IM")) << _T(" (*)"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,col++) << COLHDR(Sub2(_T("V"),_T("LL+IM")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0,col++) << _T("RF");
 
    pgsRatingArtifact::ShearRatings artifacts = pRatingArtifact->GetShearRatings();
@@ -388,7 +388,7 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
    (*table)(0,col++) << COLHDR(RPT_STRESS(_T("DW")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << Sub2(symbol(gamma),_T("LL"));
    (*table)(0,col++) << _T("gM");
-   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("LL+IM")) << _T(" (*)"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("LL+IM")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << _T("RF");
 
    pgsRatingArtifact::StressRatings artifacts = pRatingArtifact->GetStressRatings();
@@ -476,7 +476,7 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("DC")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("DW")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++) << _T("gM");
-   (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("LL+IM")) << _T(" (*)"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("LL+IM")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("cr")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("bcr")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++) << COLHDR(Sub2(_T("d"),_T("ps")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );

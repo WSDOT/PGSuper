@@ -101,7 +101,7 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(p_table,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,bPermit,bRating,analysisType,continuity_stage,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(p_table,false,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,bPermit,bRating,analysisType,continuity_stage,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
@@ -123,14 +123,20 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
       std::vector<sysSectionValue> diaphragm = pForces2->GetShear(pgsTypes::BridgeSite1,pftDiaphragm,vPoi,SimpleSpan);
 
       std::vector<sysSectionValue> minSlab, maxSlab;
+      std::vector<sysSectionValue> minSlabPad, maxSlabPad;
       if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
       {
          maxSlab = pForces2->GetShear( pgsTypes::BridgeSite1, pftSlab, vPoi, MaxSimpleContinuousEnvelope );
          minSlab = pForces2->GetShear( pgsTypes::BridgeSite1, pftSlab, vPoi, MinSimpleContinuousEnvelope );
+
+         maxSlabPad = pForces2->GetShear( pgsTypes::BridgeSite1, pftSlabPad, vPoi, MaxSimpleContinuousEnvelope );
+         minSlabPad = pForces2->GetShear( pgsTypes::BridgeSite1, pftSlabPad, vPoi, MinSimpleContinuousEnvelope );
       }
       else
       {
          maxSlab = pForces2->GetShear( pgsTypes::BridgeSite1, pftSlab, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
+
+         maxSlabPad = pForces2->GetShear( pgsTypes::BridgeSite1, pftSlabPad, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
       }
 
       std::vector<sysSectionValue> minConstruction, maxConstruction;
@@ -212,8 +218,8 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
 
          if ( bPedLoading )
          {
-            pForces2->GetLiveLoadShear( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxPedestrian );
-            pForces2->GetLiveLoadShear( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minPedestrian, &dummy );
+            pForces2->GetLiveLoadShear( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, true, &dummy, &maxPedestrian );
+            pForces2->GetLiveLoadShear( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, true, &minPedestrian, &dummy );
          }
 
          pForces2->GetLiveLoadShear( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
@@ -281,7 +287,7 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
 
          if ( bPedLoading )
          {
-            pForces2->GetLiveLoadShear( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minPedestrian, &maxPedestrian );
+            pForces2->GetLiveLoadShear( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, true, &minPedestrian, &maxPedestrian );
          }
 
          pForces2->GetLiveLoadShear( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minDesignLL, &maxDesignLL, &minDesignLLtruck, &maxDesignLLtruck );
@@ -368,10 +374,15 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
          {
             (*p_table)(row,col++) << shear.SetValue( maxSlab[index] );
             (*p_table)(row,col++) << shear.SetValue( minSlab[index] );
+
+            (*p_table)(row,col++) << shear.SetValue( maxSlabPad[index] );
+            (*p_table)(row,col++) << shear.SetValue( minSlabPad[index] );
          }
          else
          {
             (*p_table)(row,col++) << shear.SetValue( maxSlab[index] );
+
+            (*p_table)(row,col++) << shear.SetValue( maxSlabPad[index] );
          }
 
          if ( bDeckPanels )

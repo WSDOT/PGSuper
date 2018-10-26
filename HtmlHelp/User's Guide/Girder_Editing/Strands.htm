@@ -21,8 +21,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1881>
-<meta name=layout-width content=963>
+<meta name=layout-height content=2441>
+<meta name=layout-width content=993>
 
 
 <!--(Links)=========================================================-->
@@ -40,43 +40,100 @@
 
 <h1>Strands</h1>
 
-<p>On the Strands tab, describe the number and location of the prestressing 
- strands.</p>
+<p>Use the Strands tab on the Girder Details dialog to describe the filling 
+ of strands, jacking forces, type of strands, and vertical adjustment of 
+ harped prestressing strand locations.</p>
 
 <p><img src="Strands.bmp"
 		x-maintain-ratio=TRUE
 		style="float: none;
+				width: 666px;
+				height: 689px;
 				border-style: none;
-				width: 635px;
-				height: 540px;
 				border-style: none;"
-		width=635
-		height=540
+		width=666
+		height=689
 		border=0></p>
 
-<h2>Strand Details</h2>
+<h2>Describing Prestressing Strands in a Girder</h2>
 
-<p>The prestressing is described by the number of harped, straight, and 
- temporary prestressing strands, and the jacking force imparted onto the 
- strands. Locations of harped strands can be further described by adjusting 
+<p>Allowable locations for strands in a given girder are defined in the 
+ strand grids in the <a href="../Appendix B - PGSuper Library Dialogs/PsglibGirder_Template_Editing_Dialog.htm">Girder 
+ Library</a>.</p>
+
+<p>Pretensioned prestressing is described by filling allowable locations 
+ of straight, harped (or straight-web), and temporary prestressing strands, 
+ and the jacking force imparted onto the strands. Locations of harped (or 
+ straight-web) strands can be further defined by vertical adjustment of 
  the strand pattern at the end of the girder or at the harping point.</p>
 
-<h3>Entering Number of Strands</h3>
+<h3>Basic Types of Strands</h3>
+
+<p><!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}-->PGSuper 
+ provides input for three basic types of strands:</p>
+
+<ol style="list-style: decimal;"
+	type=1>
+	
+	<li class=kadov-p><p><span style="font-style: italic;">Straight Permanent 
+ Strands</span> can be placed anywhere within a girder section and are 
+ straight along the entire girder. &quot;Permanent&quot; means that these 
+ strands are jacked in the casting yard with the prestressing remaining 
+ for the life of the girder.</p></li>
+	
+	<li class=kadov-p><p><span style="font-style: italic;">Web Strands</span> 
+ are permanent strands that can only be placed within the thinnest portion 
+ of a girder section's web(s). Web Strands have the unique capability to 
+ be vertically adjusted within the web region. There are two possible types 
+ of Web Strands: <span style="font-style: italic;">Harped Strands</span> 
+ and <span style="font-style: italic;">Straight-Web</span> strands. Harped 
+ strands are draped at the girders harping points, and Straight-Web strands 
+ are straight along the entire length of the girder.</p></li>
+	
+	<li class=kadov-p><p>Temporary Strands are straight strands that can 
+ be placed anywhere within a girder. Temporary strands can be pretensioned 
+ or post-tensioned. Pretensioned strands are tensioned prior to casting. 
+ Post-tensioned temporary strands can be applied to the girder either immediately 
+ before lifting, immediately after lifting, or immediately before shipping. 
+ All Temporary Strands are removed after shipping (before Bridge Site Stage 
+ 1). Temporary strands post-tensioned immediately before shipping are assumed 
+ to have no impact on camber and losses.</p></li>
+</ol>
+
+<h3>Filling of Prestressing Strands</h3>
+
+<p>There are two basic methods for filling prestressing strand locations: 
+ 1) Enter a number strands - Strands are filled sequentially using the 
+ order defined by the pertinent girder library entry. 2) Direct selection 
+ of available strand locations using the &quot;Select Strands&quot; dialog. 
+ This allows strands to be filled out of order.</p>
+
+<h4>Entering Number of Strands (Sequential Strand Fill)</h4>
+
+<p>For this method, Strands are filled sequentially in the order defined 
+ by the permanent strand fill order in the girder's library entry. Strand 
+ 1 goes in position 1, strand 2 goes in position 2, and so on.</p>
 
 <p>To enter the number of strands, simply use the Up/Down arrow buttons 
- to dial-in the desired number of strands. The number of strands are limited 
- to the number of potential strand locations defined for the Girder Library 
- Entry you are using. The number of strands may be specified as the Number 
- of Straight and Number of Harped (WSDOT method) or as the Total Number 
- of Strands (TxDOT method). </p>
+ on the dialog to dial-in the desired number of strands. The number of 
+ strands is limited to the potential strand locations defined by the Girder 
+ Library Entry assigned to the girder in question. The number of strands 
+ may be specified as the Number of Straight and Number of Harped (or Straight-Web) 
+ or as the Total Number of Strands. </p>
 
-<p>Strands are filled in the order prescribed by the permanent strand fill 
- order in the library entry.</p>
+<h4>Direct Selection of Strand Locations</h4>
 
-<h3>Entering Jacking Force</h3>
+<p>This method allows filling of strands by selecting individual strand 
+ locations in the &quot;<a href="../../Dialogs/Direct_Selection_of_Strand_Fill.htm">Select 
+ Strands</a>&quot; dialog. </p>
 
-<p>You can explicitly enter a jacking force for each group (straight, harped, 
- temporary) of the prestressing strands, or you can let PGSuper compute 
+<p class=Tip>Note: The automated design algorithm always fills strands 
+ using sequential strand fill.</p>
+
+<h3>Entering Jacking Forces</h3>
+
+<p>You can explicitly enter a jacking force for each group (straight, web, 
+ or temporary) of prestressing strands, or you can let PGSuper compute 
  the maximum allowable jacking force based on LRFD 5.9.3. Explicitly entering 
  the jacking force is useful when evaluating a design or existing structure.</p>
 
@@ -101,53 +158,43 @@
  use the average jacking stress for all strands in the section when performing 
  calculations.</p>
 
-<h3>Temporary Strands</h3>
+<h3>Vertical Location of Web (Harped or Straight-Web) Strands</h3>
 
-<p>Temporary strands can be pretensioned or post-tensioned. Pretensioned 
- strands are built into the girder and are effective during lifting and 
- shipping. Post-tensioned temporary strands can be applied to the girder 
- either immediately before lifting, immediately after lifting, or immediately 
- before shipping. Temporary strands are assumed to be removed after shipping. 
- Temporary strands post-tensioned immediately before shipping are assumed 
- to have no impact on camber and losses.</p>
-
-<p>Use the drop down list to describe how temporary strands are used.</p>
-
-<h3>Vertical Location of Harped Strands</h3>
-
-<p>If allowed by the library entry, you can adjust the vertical location 
- of the harped strands at the end of the girder and at the harping point 
- to control stresses. For example: In the casting yard stage, if there 
- is excessive compressive stress at the top of the girder, near the ends, 
- the harped strands could be lowered to relieve the stress. Likewise, if 
- there is excessive compressive stress at the bottom of the girder, between 
- harping points, the harping points can be raised to relieve the stress. 
- The location of the harped strands can be described by:</p>
+<p>If allowed by the library entry; you can adjust the vertical location 
+ of harped strands at the end of the girder or at the harping point, or 
+ straight-web strands along the girder to control stresses. For example: 
+ In the casting yard stage, if there is excessive compressive stress at 
+ the top of the girder, near the ends, the web strands could be lowered 
+ to relieve the stress. Likewise, if there is excessive compressive stress 
+ at the bottom of the girder, between harping points, the harping points 
+ can be raised to relieve the stress. The basis location of the web strands 
+ can be described by:</p>
 
 <ul style="list-style: disc;"
 	type=disc>
 	
-	<li class=kadov-p><p>Distance between the CG of the Harped Strand Force 
+	<li class=kadov-p><p>Distance between the CG of the Web Strand Force 
  and the Top of the Girder</p></li>
 	
-	<li class=kadov-p><p>Distance between the CG of the Harped Strand Force 
+	<li class=kadov-p><p>Distance between the CG of the Web Strand Force 
  and the Bottom of the Girder</p></li>
 	
-	<li class=kadov-p><p>Distance between the Top-Most Harped Strand and 
- the Top of the Girder</p></li>
+	<li class=kadov-p><p>Distance between the Top-Most Web Strand and the 
+ Top of the Girder</p></li>
 	
-	<li class=kadov-p><p>Distance between the Top-Most Harped Strand and 
+	<li class=kadov-p><p>Distance between the Top-Most Web Strand and the 
+ Bottom of the Girder</p></li>
+	
+	<li class=kadov-p><p>Distance between the Bottom-Most Web Strand and 
  the Bottom of the Girder</p></li>
 	
-	<li class=kadov-p><p>Distance between the Bottom-Most Harped Strand 
- and the Bottom of the Girder</p></li>
-	
-	<li class=kadov-p><p>Eccentricity of the Harped Strand Group measured 
+	<li class=kadov-p><p>Eccentricity of the Web Strand Group as measured 
  on the non-composite section</p></li>
 </ul>
 
-<p class=Tip><span style="font-weight: bold;">Note</span>: Harped strands 
- must lie within the vertical bounds defined by the girder.</p>
+<p class=Tip><span style="font-weight: bold;">Note</span>: Web strands 
+ must lie within the vertical bounds defined by the adjustment bounds defined 
+ in the girder library entry.</p>
 
 <p class=Tip><span style="font-weight: bold;">Note:</span><span> Hold the 
  CTRL key down while changing the basis of measurement and the input value 

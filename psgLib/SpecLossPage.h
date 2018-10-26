@@ -72,6 +72,7 @@ protected:
    void EnableRefinedShippingTime(BOOL bEnable);
    void EnableApproximateShippingTime(BOOL bEnable);
    void EnableGeneralLumpSum(BOOL bEnable);
+   void EnableElasticGains(BOOL bEnable);
    BOOL IsFractionalShippingLoss();
 };
 

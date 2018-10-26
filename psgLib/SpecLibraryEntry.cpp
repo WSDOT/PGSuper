@@ -32,12 +32,16 @@
 
 #include <MathEx.h>
 
+#include <psgLib\ProjectLibraryManager.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
-#define CURRENT_VERSION 38.0
+
+#define CURRENT_VERSION 41.0
+
 
 /****************************************************************************
 CLASS
@@ -59,7 +63,10 @@ m_MaxSlope07(10),
 m_DoCheckHoldDown(false),
 m_DoDesignHoldDown(false),
 m_HoldDownForce(ConvertToSysUnits(45,unitMeasure::Kip)),
-m_DoCheckAnchorage(true),
+m_DoCheckSplitting(true),
+m_DoCheckConfinement(true),
+m_DoDesignSplitting(true),
+m_DoDesignConfinement(true),
 m_MaxStirrupSpacing(ConvertToSysUnits(18,unitMeasure::Inch)),
 m_CyLiftingCrackFs(1.0),
 m_CyLiftingFailFs(1.5),
@@ -156,6 +163,16 @@ m_AfterSIDLLosses(0),
 m_Dset(::ConvertToSysUnits(0.375,unitMeasure::Inch)),
 m_WobbleFriction(::ConvertToSysUnits(0.0002,unitMeasure::PerFeet)),
 m_FrictionCoefficient(0.25),
+m_SlabElasticGain(1.0),
+m_SlabPadElasticGain(1.0),
+m_DiaphragmElasticGain(1.0),
+m_UserDCElasticGainBS1(1.0),
+m_UserDWElasticGainBS1(1.0),
+m_UserDCElasticGainBS2(1.0),
+m_UserDWElasticGainBS2(1.0),
+m_RailingSystemElasticGain(1.0),
+m_OverlayElasticGain(1.0),
+m_SlabShrinkageElasticGain(1.0),
 m_LongReinfShearMethod(LRFD_METHOD),
 m_bDoEvaluateDeflection(true),
 m_DeflectionLimit(800.0),
@@ -181,7 +198,8 @@ m_LLDFGirderSpacingLocation(0.75),
 m_LimitDistributionFactorsToLanesBeams(false),
 m_PrestressTransferComputationType(pgsTypes::ptUsingSpecification),
 m_bIncludeForNegMoment(true),
-m_bAllowStraightStrandExtensions(false)
+m_bAllowStraightStrandExtensions(false),
+m_RelaxationLossMethod(RLM_REFINED)
 {
    m_bCheckStrandStress[AT_JACKING]       = false;
    m_bCheckStrandStress[BEFORE_TRANSFER]  = true;
@@ -197,30 +215,6 @@ m_bAllowStraightStrandExtensions(false)
    m_StrandStressCoeff[AFTER_ALL_LOSSES][STRESS_REL] = 0.80;
    m_StrandStressCoeff[AFTER_ALL_LOSSES][LOW_RELAX]  = 0.80;
 
-
-   m_DCmin[pgsTypes::ServiceI]   = 1.0;         m_DCmax[pgsTypes::ServiceI]   = 1.0;
-   m_DWmin[pgsTypes::ServiceI]   = 1.0;         m_DWmax[pgsTypes::ServiceI]   = 1.0;
-   m_LLIMmin[pgsTypes::ServiceI] = 1.0;         m_LLIMmax[pgsTypes::ServiceI] = 1.0;
-
-   m_DCmin[pgsTypes::ServiceIA]   = 0.5;        m_DCmax[pgsTypes::ServiceIA]   = 0.5;
-   m_DWmin[pgsTypes::ServiceIA]   = 0.5;        m_DWmax[pgsTypes::ServiceIA]   = 0.5;
-   m_LLIMmin[pgsTypes::ServiceIA] = 1.0;        m_LLIMmax[pgsTypes::ServiceIA] = 1.0;
-
-   m_DCmin[pgsTypes::ServiceIII]   = 1.0;       m_DCmax[pgsTypes::ServiceIII]   = 1.0;
-   m_DWmin[pgsTypes::ServiceIII]   = 1.0;       m_DWmax[pgsTypes::ServiceIII]   = 1.0;
-   m_LLIMmin[pgsTypes::ServiceIII] = 0.8;       m_LLIMmax[pgsTypes::ServiceIII] = 0.8;
-
-   m_DCmin[pgsTypes::StrengthI]   = 0.90;       m_DCmax[pgsTypes::StrengthI]   = 1.25;
-   m_DWmin[pgsTypes::StrengthI]   = 0.65;       m_DWmax[pgsTypes::StrengthI]   = 1.50;
-   m_LLIMmin[pgsTypes::StrengthI] = 1.75;       m_LLIMmax[pgsTypes::StrengthI] = 1.75;
-
-   m_DCmin[pgsTypes::StrengthII]   = 0.90;      m_DCmax[pgsTypes::StrengthII]   = 1.25;
-   m_DWmin[pgsTypes::StrengthII]   = 0.65;      m_DWmax[pgsTypes::StrengthII]   = 1.50;
-   m_LLIMmin[pgsTypes::StrengthII] = 1.35;      m_LLIMmax[pgsTypes::StrengthII] = 1.35;
-
-   m_DCmin[pgsTypes::FatigueI]   = 0.5;        m_DCmax[pgsTypes::FatigueI]   = 0.5;
-   m_DWmin[pgsTypes::FatigueI]   = 0.5;        m_DWmax[pgsTypes::FatigueI]   = 0.5;
-   m_LLIMmin[pgsTypes::FatigueI] = 1.5;        m_LLIMmax[pgsTypes::FatigueI] = 1.5;
 
    m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal]          = ::ConvertToSysUnits(0.37,unitMeasure::SqrtKSI);
    m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight] = ::ConvertToSysUnits(0.20,unitMeasure::SqrtKSI);
@@ -379,7 +373,10 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("DoCheckHoldDown"), m_DoCheckHoldDown);
    pSave->Property(_T("DoDesignHoldDown"), m_DoDesignHoldDown);
    pSave->Property(_T("HoldDownForce"), m_HoldDownForce);
-   pSave->Property(_T("DoCheckAnchorage"), m_DoCheckAnchorage);
+   pSave->Property(_T("DoCheckSplitting"), m_DoCheckSplitting);
+   pSave->Property(_T("DoDesignSplitting"), m_DoDesignSplitting);
+   pSave->Property(_T("DoCheckConfinement"), m_DoCheckConfinement);
+   pSave->Property(_T("DoDesignConfinement"), m_DoDesignConfinement);
    pSave->Property(_T("MaxStirrupSpacing"), m_MaxStirrupSpacing);
    pSave->Property(_T("CyLiftingCrackFs"), m_CyLiftingCrackFs);
    pSave->Property(_T("CyLiftingFailFs"), m_CyLiftingFailFs);
@@ -586,6 +583,19 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("WobbleFriction"),m_WobbleFriction);
    pSave->Property(_T("CoefficientOfFriction"),m_FrictionCoefficient);
 
+   // added in version 40
+   pSave->Property(_T("RelaxationLossMethod"),m_RelaxationLossMethod);
+   pSave->Property(_T("SlabElasticGain"),m_SlabElasticGain);
+   pSave->Property(_T("HaunchElasticGain"),m_SlabPadElasticGain);
+   pSave->Property(_T("DiaphragmElasticGain"),m_DiaphragmElasticGain);
+   pSave->Property(_T("UserDCElasticGainBS1"),m_UserDCElasticGainBS1);
+   pSave->Property(_T("UserDWElasticGainBS1"),m_UserDWElasticGainBS1);
+   pSave->Property(_T("UserDCElasticGainBS2"),m_UserDCElasticGainBS2);
+   pSave->Property(_T("UserDWElasticGainBS2"),m_UserDWElasticGainBS2);
+   pSave->Property(_T("RailingSystemElasticGain"),m_RailingSystemElasticGain);
+   pSave->Property(_T("OverlayElasticGain"),m_OverlayElasticGain);
+   pSave->Property(_T("SlabShrinkageElasticGain"),m_SlabShrinkageElasticGain);
+
    // Added in 1.7
    pSave->Property(_T("CheckLiveLoadDeflection"),m_bDoEvaluateDeflection);
    pSave->Property(_T("LiveLoadDeflectionLimit"),m_DeflectionLimit);
@@ -619,25 +629,25 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->EndUnit(); // Limits
 
 
-   // Added in 14.0
-   std::_tstring strLimitState[] = {_T("ServiceI"),_T("ServiceIA"),_T("ServiceIII"),_T("StrengthI"),_T("StrengthII"),_T("FatigueI")};
+   // Added in 14.0 removed in version 41
+   //std::_tstring strLimitState[] = {_T("ServiceI"),_T("ServiceIA"),_T("ServiceIII"),_T("StrengthI"),_T("StrengthII"),_T("FatigueI")};
 
-   pSave->BeginUnit(_T("LoadFactors"),3.0);
-   int nLimitStates = sizeof(strLimitState)/sizeof(std::_tstring); // Added StrengthII in version 26
-   for ( int i = 0; i < nLimitStates; i++ )
-   {
-      pSave->BeginUnit(strLimitState[i].c_str(),1.0);
-      
-      pSave->Property(_T("DCmin"),  m_DCmin[i]);
-      pSave->Property(_T("DCmax"),  m_DCmax[i]);
-      pSave->Property(_T("DWmin"),  m_DWmin[i]);
-      pSave->Property(_T("DWmax"),  m_DWmax[i]);
-      pSave->Property(_T("LLIMmin"),m_LLIMmin[i]);
-      pSave->Property(_T("LLIMmax"),m_LLIMmax[i]);
+   //pSave->BeginUnit(_T("LoadFactors"),3.0);
+   //int nLimitStates = sizeof(strLimitState)/sizeof(std::_tstring); // Added StrengthII in version 26
+   //for ( int i = 0; i < nLimitStates; i++ )
+   //{
+   //   pSave->BeginUnit(strLimitState[i].c_str(),1.0);
+   //   
+   //   pSave->Property(_T("DCmin"),  m_DCmin[i]);
+   //   pSave->Property(_T("DCmax"),  m_DCmax[i]);
+   //   pSave->Property(_T("DWmin"),  m_DWmin[i]);
+   //   pSave->Property(_T("DWmax"),  m_DWmax[i]);
+   //   pSave->Property(_T("LLIMmin"),m_LLIMmin[i]);
+   //   pSave->Property(_T("LLIMmax"),m_LLIMmax[i]);
 
-      pSave->EndUnit();
-   }
-   pSave->EndUnit();
+   //   pSave->EndUnit();
+   //}
+   //pSave->EndUnit();
 
    // added in version 15
    pSave->Property(_T("EnableSlabOffsetCheck"), m_EnableSlabOffsetCheck);
@@ -806,9 +816,29 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if(!pLoad->Property(_T("HoldDownForce"), &m_HoldDownForce))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
-      if (version>32)
+      if (version>32 && version<39)
       {
-         if(!pLoad->Property(_T("DoCheckAnchorage"), &m_DoCheckAnchorage))
+         bool check_anchor;
+         if(!pLoad->Property(_T("DoCheckAnchorage"), &check_anchor))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         m_DoCheckSplitting = check_anchor;
+         m_DoCheckConfinement = check_anchor;
+         m_DoDesignSplitting = check_anchor;
+         m_DoDesignConfinement = check_anchor;
+      }
+      else if(version>=39)
+      {
+         if(!pLoad->Property(_T("DoCheckSplitting"), &m_DoCheckSplitting))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if(!pLoad->Property(_T("DoDesignSplitting"), &m_DoDesignSplitting))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if(!pLoad->Property(_T("DoCheckConfinement"), &m_DoCheckConfinement))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if(!pLoad->Property(_T("DoDesignConfinement"), &m_DoDesignConfinement))
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
@@ -1303,7 +1333,6 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          {
             if (!pLoad->Property(_T("Bs3LRFDOverreinforcedMomentCapacity"),&temp))
                THROW_LOAD(InvalidFileFormat,pLoad);
-
             m_Bs3LRFDOverReinforcedMomentCapacity = temp;
          }
       
@@ -1755,6 +1784,43 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
+      if ( 39 < version )
+      {
+         // added in version 40
+         if ( !pLoad->Property(_T("RelaxationLossMethod"),&m_RelaxationLossMethod) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("SlabElasticGain"),&m_SlabElasticGain) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("HaunchElasticGain"),&m_SlabPadElasticGain) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("DiaphragmElasticGain"),&m_DiaphragmElasticGain) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("UserDCElasticGainBS1"),&m_UserDCElasticGainBS1) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("UserDWElasticGainBS1"),&m_UserDWElasticGainBS1) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("UserDCElasticGainBS2"),&m_UserDCElasticGainBS2) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("UserDWElasticGainBS2"),&m_UserDWElasticGainBS2) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("RailingSystemElasticGain"),&m_RailingSystemElasticGain) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("OverlayElasticGain"),&m_OverlayElasticGain) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+
+         if ( !pLoad->Property(_T("SlabShrinkageElasticGain"),&m_SlabShrinkageElasticGain) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+      }
+
       // added in version 1.7
       if ( 1.6 < version )
       {
@@ -1871,8 +1937,8 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      // Added in 14.0
-      if ( 14.0 <= version )
+      // Added in 14.0, removed in version 41
+      if ( 14.0 <= version && version < 41)
       {
          std::_tstring strLimitState[] = {_T("ServiceI"),_T("ServiceIA"),_T("ServiceIII"),_T("StrengthI"),_T("StrengthII"),_T("FatigueI")};
 
@@ -1889,12 +1955,27 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          {
             pLoad->BeginUnit(strLimitState[i].c_str());
 
-            pLoad->Property(_T("DCmin"),  &m_DCmin[i]);
-            pLoad->Property(_T("DCmax"),  &m_DCmax[i]);
-            pLoad->Property(_T("DWmin"),  &m_DWmin[i]);
-            pLoad->Property(_T("DWmax"),  &m_DWmax[i]);
-            pLoad->Property(_T("LLIMmin"),&m_LLIMmin[i]);
-            pLoad->Property(_T("LLIMmax"),&m_LLIMmax[i]);
+            Float64 dcMin, dcMax, dwMin, dwMax, llimMin, llimMax;
+            pLoad->Property(_T("DCmin"),  &dcMin);
+            pLoad->Property(_T("DCmax"),  &dcMax);
+            pLoad->Property(_T("DWmin"),  &dwMin);
+            pLoad->Property(_T("DWmax"),  &dwMax);
+            pLoad->Property(_T("LLIMmin"),&llimMin);
+            pLoad->Property(_T("LLIMmax"),&llimMax);
+
+            const libILibrary* pLib = GetLibrary();
+            psgProjectLibraryManager* pLibMgr = dynamic_cast<psgProjectLibraryManager*>(pLib->GetLibraryManager());
+            if ( pLibMgr )
+            {
+               // the cast above is successful if we are loading the library entry that is in use.... capture
+               // the data so that we don't change the user's actual data.
+               pLibMgr->m_DCmin[i]   = dcMin;
+               pLibMgr->m_DWmin[i]   = dwMin;
+               pLibMgr->m_LLIMmin[i] = llimMin;
+               pLibMgr->m_DCmax[i]   = dcMax;
+               pLibMgr->m_DWmax[i]   = dwMax;
+               pLibMgr->m_LLIMmax[i] = llimMax;
+            }
 
             pLoad->EndUnit();
          }
@@ -2136,7 +2217,10 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TEST (m_DoCheckHoldDown            , rOther.m_DoCheckHoldDown            );
    TEST (m_DoDesignHoldDown           , rOther.m_DoDesignHoldDown            );
    TESTD(m_HoldDownForce              , rOther.m_HoldDownForce              );
-   TEST (m_DoCheckAnchorage           , rOther.m_DoCheckAnchorage           );
+   TEST (m_DoCheckSplitting           , rOther.m_DoCheckSplitting           );
+   TEST (m_DoDesignSplitting           , rOther.m_DoDesignSplitting         );
+   TEST (m_DoCheckConfinement           , rOther.m_DoCheckConfinement       );
+   TEST (m_DoDesignConfinement           , rOther.m_DoDesignConfinement     );
    TESTD(m_MaxStirrupSpacing          , rOther.m_MaxStirrupSpacing          );
    TESTD(m_CyLiftingCrackFs          , rOther.m_CyLiftingCrackFs          );
    TESTD(m_CyLiftingFailFs           , rOther.m_CyLiftingFailFs           );
@@ -2252,6 +2336,17 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TESTD(m_WobbleFriction,rOther.m_WobbleFriction);
    TESTD(m_FrictionCoefficient,rOther.m_FrictionCoefficient);
 
+   TESTD(m_SlabElasticGain          , rOther.m_SlabElasticGain);
+   TESTD(m_SlabPadElasticGain       , rOther.m_SlabPadElasticGain);
+   TESTD(m_DiaphragmElasticGain     , rOther.m_DiaphragmElasticGain);
+   TESTD(m_UserDCElasticGainBS1     , rOther.m_UserDCElasticGainBS1);
+   TESTD(m_UserDWElasticGainBS1     , rOther.m_UserDWElasticGainBS1);
+   TESTD(m_UserDCElasticGainBS2     , rOther.m_UserDCElasticGainBS2);
+   TESTD(m_UserDWElasticGainBS2     , rOther.m_UserDWElasticGainBS2);
+   TESTD(m_RailingSystemElasticGain , rOther.m_RailingSystemElasticGain);
+   TESTD(m_OverlayElasticGain       , rOther.m_OverlayElasticGain);
+   TESTD(m_SlabShrinkageElasticGain , rOther.m_SlabShrinkageElasticGain);
+
    TEST (m_LldfMethod                 , rOther.m_LldfMethod                 );
    TEST (m_LongReinfShearMethod       , rOther.m_LongReinfShearMethod       );
 
@@ -2300,16 +2395,6 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
    TESTD(m_MinHaulPoint      , rOther.m_MinHaulPoint );
    TESTD(m_HaulPointAccuracy , rOther.m_HaulPointAccuracy);
 
-   for ( int i = 0; i < 6; i++ )
-   {
-      TESTD( m_DCmin[i], rOther.m_DCmin[i] );
-      TESTD( m_DWmin[i], rOther.m_DWmin[i] );
-      TESTD( m_LLIMmin[i], rOther.m_LLIMmin[i] );
-      TESTD( m_DCmax[i], rOther.m_DCmax[i] );
-      TESTD( m_DWmax[i], rOther.m_DWmax[i] );
-      TESTD( m_LLIMmax[i], rOther.m_LLIMmax[i] );
-   }
-
    TESTD(m_PedestrianLoad,   rOther.m_PedestrianLoad);
    TESTD(m_MinSidewalkWidth, rOther.m_MinSidewalkWidth);
 
@@ -2319,6 +2404,8 @@ bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther, bool considerName
 
    TEST (m_LimitDistributionFactorsToLanesBeams             , rOther.m_LimitDistributionFactorsToLanesBeams );
    TEST (m_PrestressTransferComputationType, rOther.m_PrestressTransferComputationType);
+
+   TEST(m_RelaxationLossMethod,rOther.m_RelaxationLossMethod);
 
    for ( int i = 0; i < 3; i++ )
    {
@@ -2411,15 +2498,47 @@ void SpecLibraryEntry::SetHoldDownForce(bool doCheck, bool doDesign, Float64 for
       m_HoldDownForce   = force;
 }
 
-void SpecLibraryEntry::EnableAnchorageCheck(bool enable)
+void SpecLibraryEntry::EnableSplittingCheck(bool enable)
 {
-   m_DoCheckAnchorage = enable;
+   m_DoCheckSplitting = enable;
 }
 
-bool SpecLibraryEntry::IsAnchorageCheckEnabled() const
+bool SpecLibraryEntry::IsSplittingCheckEnabled() const
 {
-   return m_DoCheckAnchorage;
+   return m_DoCheckSplitting;
 }
+
+void SpecLibraryEntry::EnableSplittingDesign(bool enable)
+{
+   m_DoDesignSplitting = enable;
+}
+
+bool SpecLibraryEntry::IsSplittingDesignEnabled() const
+{
+   return m_DoDesignSplitting;
+}
+
+
+void SpecLibraryEntry::EnableConfinementCheck(bool enable)
+{
+   m_DoCheckConfinement = enable;
+}
+
+bool SpecLibraryEntry::IsConfinementCheckEnabled() const
+{
+   return m_DoCheckConfinement;
+}
+
+void SpecLibraryEntry::EnableConfinementDesign(bool enable)
+{
+   m_DoDesignConfinement = enable;
+}
+
+bool SpecLibraryEntry::IsConfinementDesignEnabled() const
+{
+   return m_DoDesignConfinement;
+}
+
 
 Float64 SpecLibraryEntry::GetMaxStirrupSpacing() const
 {
@@ -3365,6 +3484,112 @@ void SpecLibraryEntry::SetFrictionCoefficient(Float64 u)
    m_FrictionCoefficient = u;
 }
 
+Float64 SpecLibraryEntry::GetSlabElasticGain() const
+{
+   return m_SlabElasticGain;
+}
+
+void SpecLibraryEntry::SetSlabElasticGain(Float64 f)
+{
+   m_SlabElasticGain = f;
+}
+
+Float64 SpecLibraryEntry::GetSlabPadElasticGain() const
+{
+   return m_SlabPadElasticGain;
+}
+
+void SpecLibraryEntry::SetSlabPadElasticGain(Float64 f)
+{
+   m_SlabPadElasticGain = f;
+}
+
+Float64 SpecLibraryEntry::GetDiaphragmElasticGain() const
+{
+   return m_DiaphragmElasticGain;
+}
+
+void SpecLibraryEntry::SetDiaphragmElasticGain(Float64 f)
+{
+   m_DiaphragmElasticGain = f;
+}
+
+Float64 SpecLibraryEntry::GetUserDCElasticGain(pgsTypes::Stage stage) const
+{
+   ATLASSERT(stage == pgsTypes::BridgeSite1 || stage == pgsTypes::BridgeSite2);
+   if ( stage == pgsTypes::BridgeSite1 )
+      return m_UserDCElasticGainBS1;
+   else
+      return m_UserDCElasticGainBS2;
+}
+
+void SpecLibraryEntry::SetUserDCElasticGain(pgsTypes::Stage stage,Float64 f)
+{
+   ATLASSERT(stage == pgsTypes::BridgeSite1 || stage == pgsTypes::BridgeSite2);
+   if ( stage == pgsTypes::BridgeSite1 )
+      m_UserDCElasticGainBS1 = f;
+   else
+      m_UserDCElasticGainBS2 = f;
+}
+
+Float64 SpecLibraryEntry::GetUserDWElasticGain(pgsTypes::Stage stage) const
+{
+   ATLASSERT(stage == pgsTypes::BridgeSite1 || stage == pgsTypes::BridgeSite2);
+   if ( stage == pgsTypes::BridgeSite1 )
+      return m_UserDWElasticGainBS1;
+   else
+      return m_UserDWElasticGainBS2;
+}
+
+void SpecLibraryEntry::SetUserDWElasticGain(pgsTypes::Stage stage,Float64 f)
+{
+   ATLASSERT(stage == pgsTypes::BridgeSite1 || stage == pgsTypes::BridgeSite2);
+   if ( stage == pgsTypes::BridgeSite1 )
+      m_UserDWElasticGainBS1 = f;
+   else
+      m_UserDWElasticGainBS2 = f;
+}
+
+Float64 SpecLibraryEntry::GetRailingSystemElasticGain() const
+{
+   return m_RailingSystemElasticGain;
+}
+
+void SpecLibraryEntry::SetRailingSystemElasticGain(Float64 f)
+{
+   m_RailingSystemElasticGain = f;
+}
+
+Float64 SpecLibraryEntry::GetOverlayElasticGain() const
+{
+   return m_OverlayElasticGain;
+}
+
+void SpecLibraryEntry::SetOverlayElasticGain(Float64 f)
+{
+   m_OverlayElasticGain = f;
+}
+
+Float64 SpecLibraryEntry::GetDeckShrinkageElasticGain() const
+{
+   return m_SlabShrinkageElasticGain;
+}
+
+void SpecLibraryEntry::SetDeckShrinkageElasticGain(Float64 f)
+{
+   m_SlabShrinkageElasticGain = f;
+}
+
+void SpecLibraryEntry::SetRelaxationLossMethod(Int16 method)
+{
+   m_RelaxationLossMethod = method;
+}
+
+Int16 SpecLibraryEntry::GetRelaxationLossMethod() const
+{
+   return m_RelaxationLossMethod;
+}
+
 Int16 SpecLibraryEntry::GetLiveLoadDistributionMethod() const
 {
    return m_LldfMethod;
@@ -3506,42 +3731,6 @@ void SpecLibraryEntry::SetMaxConcreteAggSize(pgsTypes::ConcreteType type,Float64
 Float64 SpecLibraryEntry::GetMaxConcreteAggSize(pgsTypes::ConcreteType type) const
 {
    return m_MaxConcreteAggSize[type];
-}
-
-void SpecLibraryEntry::GetDCLoadFactors(pgsTypes::LimitState ls,Float64* pDCmin,Float64* pDCmax) const
-{
-   *pDCmin = m_DCmin[ls];
-   *pDCmax = m_DCmax[ls];
-}
-
-void SpecLibraryEntry::GetDWLoadFactors(pgsTypes::LimitState ls,Float64* pDWmin,Float64* pDWmax) const
-{
-   *pDWmin = m_DWmin[ls];
-   *pDWmax = m_DWmax[ls];
-}
-
-void SpecLibraryEntry::GetLLIMLoadFactors(pgsTypes::LimitState ls,Float64* pLLIMmin,Float64* pLLIMmax) const
-{
-   *pLLIMmin = m_LLIMmin[ls];
-   *pLLIMmax = m_LLIMmax[ls];
-}
-
-void SpecLibraryEntry::SetDCLoadFactors(pgsTypes::LimitState ls,Float64 DCmin,Float64 DCmax)
-{
-   m_DCmin[ls] = DCmin;
-   m_DCmax[ls] = DCmax;
-}
-
-void SpecLibraryEntry::SetDWLoadFactors(pgsTypes::LimitState ls,Float64 DWmin,Float64 DWmax)
-{
-   m_DWmin[ls] = DWmin;
-   m_DWmax[ls] = DWmax;
-}
-
-void SpecLibraryEntry::SetLLIMLoadFactors(pgsTypes::LimitState ls,Float64 LLIMmin,Float64 LLIMmax)
-{
-   m_LLIMmin[ls] = LLIMmin;
-   m_LLIMmax[ls] = LLIMmax;
 }
 
 void SpecLibraryEntry::EnableSlabOffsetCheck(bool enable)
@@ -3798,7 +3987,10 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_DoDesignHoldDown           = rOther.m_DoDesignHoldDown;
    m_HoldDownForce              = rOther.m_HoldDownForce;
    m_MaxStirrupSpacing          = rOther.m_MaxStirrupSpacing;
-   m_DoCheckAnchorage           = rOther.m_DoCheckAnchorage;
+   m_DoCheckConfinement         = rOther.m_DoCheckConfinement;
+   m_DoDesignConfinement        = rOther.m_DoDesignConfinement;
+   m_DoCheckSplitting           = rOther.m_DoCheckSplitting;
+   m_DoDesignSplitting          = rOther.m_DoDesignSplitting;
    m_CyLiftingCrackFs           = rOther.m_CyLiftingCrackFs;
    m_CyLiftingFailFs            = rOther.m_CyLiftingFailFs;
    m_CyCompStressServ           = rOther.m_CyCompStressServ;
@@ -3917,6 +4109,17 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_WobbleFriction = rOther.m_WobbleFriction;
    m_FrictionCoefficient = rOther.m_FrictionCoefficient;
 
+   m_SlabElasticGain          = rOther.m_SlabElasticGain;
+   m_SlabPadElasticGain       = rOther.m_SlabPadElasticGain;
+   m_DiaphragmElasticGain     = rOther.m_DiaphragmElasticGain;
+   m_UserDCElasticGainBS1     = rOther.m_UserDCElasticGainBS1;
+   m_UserDWElasticGainBS1     = rOther.m_UserDWElasticGainBS1;
+   m_UserDCElasticGainBS2     = rOther.m_UserDCElasticGainBS2;
+   m_UserDWElasticGainBS2     = rOther.m_UserDWElasticGainBS2;
+   m_RailingSystemElasticGain = rOther.m_RailingSystemElasticGain;
+   m_OverlayElasticGain       = rOther.m_OverlayElasticGain;
+   m_SlabShrinkageElasticGain = rOther.m_SlabShrinkageElasticGain;
+
    m_LldfMethod                 = rOther.m_LldfMethod;
    m_LongReinfShearMethod       = rOther.m_LongReinfShearMethod;
 
@@ -3951,16 +4154,6 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
       m_MaxConcreteAggSize[i]    = rOther.m_MaxConcreteAggSize[i];
    }
 
-   for ( int i = 0; i < 6; i++ )
-   {
-      m_DCmin[i]   = rOther.m_DCmin[i];
-      m_DWmin[i]   = rOther.m_DWmin[i];
-      m_LLIMmin[i] = rOther.m_LLIMmin[i];
-      m_DCmax[i]   = rOther.m_DCmax[i];
-      m_DWmax[i]   = rOther.m_DWmax[i];
-      m_LLIMmax[i] = rOther.m_LLIMmax[i];
-   }
-
    m_EnableSlabOffsetCheck = rOther.m_EnableSlabOffsetCheck;
    m_EnableSlabOffsetDesign = rOther.m_EnableSlabOffsetDesign;
 
@@ -3988,6 +4181,8 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_LimitDistributionFactorsToLanesBeams = rOther.m_LimitDistributionFactorsToLanesBeams;
 
    m_PrestressTransferComputationType = rOther.m_PrestressTransferComputationType;
+
+   m_RelaxationLossMethod = rOther.m_RelaxationLossMethod;
 
    for ( int i = 0; i < 3; i++ )
    {

@@ -38,9 +38,9 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CLibraryEditorChildFrame
 
-IMPLEMENT_DYNCREATE(CLibraryEditorChildFrame, CMDIChildWnd)
+IMPLEMENT_DYNCREATE(CLibraryEditorChildFrame, CEAFChildFrame)
 
-BEGIN_MESSAGE_MAP(CLibraryEditorChildFrame, CMDIChildWnd)
+BEGIN_MESSAGE_MAP(CLibraryEditorChildFrame, CEAFChildFrame)
 	//{{AFX_MSG_MAP(CLibraryEditorChildFrame)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -58,10 +58,13 @@ CLibraryEditorChildFrame::~CLibraryEditorChildFrame()
 
 BOOL CLibraryEditorChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
-	// TODO: Modify the Window class or styles here by modifying
-	//  the CREATESTRUCT cs
+#if defined _EAF_USING_MFC_FEATURE_PACK
+   // If MFC Feature pack is used, we are using tabbed MDI windows so we don't want
+   // the system menu or the minimize and maximize boxes
+   cs.style &= ~(WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
+#endif
 
-	return CMDIChildWnd::PreCreateWindow(cs);
+	return CEAFChildFrame::PreCreateWindow(cs);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -70,19 +73,18 @@ BOOL CLibraryEditorChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 #ifdef _DEBUG
 void CLibraryEditorChildFrame::AssertValid() const
 {
-	CMDIChildWnd::AssertValid();
+	CEAFChildFrame::AssertValid();
 }
 
 void CLibraryEditorChildFrame::Dump(CDumpContext& dc) const
 {
-	CMDIChildWnd::Dump(dc);
+	CEAFChildFrame::Dump(dc);
 }
 
 #endif //_DEBUG
 
 /////////////////////////////////////////////////////////////////////////////
 // CLibraryEditorChildFrame message handlers
-
 BOOL CLibraryEditorChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext) 
 {
 	// TODO: Add your specialized code here and/or call the base class
@@ -120,7 +122,7 @@ BOOL CLibraryEditorChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContex
    // I don't know why you don't call the parent but it makes the difference between
    // the splitter working and not.  See the ViewEx example. They don't call the
    // parent method either.
-	//return CMDIChildWnd::OnCreateClient(lpcs, pContext);
+	//return CEAFChildFrame::OnCreateClient(lpcs, pContext);
    return TRUE;
  }
 

@@ -199,8 +199,8 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
    SpanIndexType span  = poi.GetSpan();
    GirderIndexType gdr = poi.GetGirder();
 
-   StrandIndexType Ns = config.Nstrands[pgsTypes::Straight];
-   StrandIndexType Nh = config.Nstrands[pgsTypes::Harped];
+   StrandIndexType Ns = config.PrestressConfig.GetNStrands(pgsTypes::Straight);
+   StrandIndexType Nh = config.PrestressConfig.GetNStrands(pgsTypes::Harped);
 
    // create a problem to solve
    CComPtr<IGeneralSection> section;
@@ -417,7 +417,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
          {
             pgsTypes::StrandType strandType = (i == 0 ? pgsTypes::Straight : pgsTypes::Harped);
             CComPtr<IPoint2dCollection> points;
-            pStrandGeom->GetStrandPositionsEx(poi, (i == 0 ? Ns : Nh), strandType, &points);
+            pStrandGeom->GetStrandPositionsEx(poi, config.PrestressConfig, strandType, &points);
 
             long strandPos = 0;
             CComPtr<IEnumPoint2d> enum_points;
@@ -799,7 +799,7 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(pgsTypes::Stage stage,cons
       // precompression
       Float64 P = pPrestressForce->GetStrandForce(poi,pgsTypes::Permanent,config,pgsTypes::AfterLosses);
       Float64 ns_eff;
-      Float64 e = pStrandGeom->GetEccentricity( poi, config, false, &ns_eff);
+      Float64 e = pStrandGeom->GetEccentricity( poi, config.PrestressConfig, false, &ns_eff);
 
       fcpe = -pPrestress->GetStress(poi,pgsTypes::BottomGirder,P,e);
    }
@@ -908,6 +908,9 @@ Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(pgsTypes::Stage
 
       // Slab moment
       Mdnc += pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlab,poi, SimpleSpan);
+
+      // Slab pad moment
+      Mdnc += pProductForces->GetMoment(pgsTypes::BridgeSite1,pftSlabPad,poi, SimpleSpan);
 
       // Diaphragm moment
       Mdnc += pProductForces->GetMoment(pgsTypes::BridgeSite1,pftDiaphragm,poi, SimpleSpan);
@@ -1190,8 +1193,8 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
 
    Float64 dt = 0; // depth from compression face to extreme layer of tensile reinforcement
 
-   StrandIndexType Ns = config.Nstrands[pgsTypes::Straight];
-   StrandIndexType Nh = config.Nstrands[pgsTypes::Harped];
+   StrandIndexType Ns = config.PrestressConfig.GetNStrands(pgsTypes::Straight);
+   StrandIndexType Nh = config.PrestressConfig.GetNStrands(pgsTypes::Harped);
 
    //
    // Create Materials
@@ -1344,22 +1347,23 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
       {
          StrandIndexType nStrands = (i == 0 ? Ns : Nh);
          pgsTypes::StrandType strandType = (pgsTypes::StrandType)(i);
+
          CComPtr<IPoint2dCollection> points;
-         pStrandGeom->GetStrandPositionsEx(poi, nStrands, strandType, &points);
+         pStrandGeom->GetStrandPositionsEx(poi, config.PrestressConfig, strandType, &points);
 
          /////////////////////////////////////////////
          // We know that we have symmetric section and that strands are generally in rows.
          // Create a single "lump of strand" for each row instead of modeling each strand 
          // individually. This will spead up the solver by quite a bit
 
-         RowIndexType nStrandRows = pStrandGeom->GetNumRowsWithStrand(span,gdr,nStrands,strandType);
+         RowIndexType nStrandRows = pStrandGeom->GetNumRowsWithStrand(span,gdr,config.PrestressConfig,strandType);
          for ( RowIndexType rowIdx = 0; rowIdx < nStrandRows; rowIdx++ )
          {
             Float64 rowArea = 0;
-            std::vector<StrandIndexType> strandIdxs = pStrandGeom->GetStrandsInRow(span,gdr,nStrands,rowIdx,strandType);
+            std::vector<StrandIndexType> strandIdxs = pStrandGeom->GetStrandsInRow(span,gdr,config.PrestressConfig,rowIdx,strandType);
 
 #if defined _DEBUG
-            StrandIndexType nStrandsInRow = pStrandGeom->GetNumStrandInRow(span,gdr,nStrands,rowIdx,strandType);
+            StrandIndexType nStrandsInRow = pStrandGeom->GetNumStrandInRow(span,gdr,config.PrestressConfig,rowIdx,strandType);
             ATLASSERT( nStrandsInRow == strandIdxs.size() );
 #endif
 
@@ -1800,7 +1804,7 @@ Float64 pgsMomentCapacityEngineer::pgsBondTool::GetBondFactor(StrandIndexType st
       {
          GET_IFACE(IStrandGeometry,pStrandGeom);
          Float64 bond_start, bond_end;
-         bool bDebonded = pStrandGeom->IsStrandDebonded(m_Poi.GetSpan(),m_Poi.GetGirder(),strandIdx,strandType,m_Config,&bond_start,&bond_end);
+         bool bDebonded = pStrandGeom->IsStrandDebonded(m_Poi.GetSpan(),m_Poi.GetGirder(),strandIdx,strandType,m_Config.PrestressConfig,&bond_start,&bond_end);
          STRANDDEVLENGTHDETAILS dev_length = m_pPrestressForce->GetDevLengthDetails(m_PoiMidSpan,bDebonded);
 
          bond_factor = m_pPrestressForce->GetStrandBondFactor(m_Poi,m_Config,strandIdx,strandType,dev_length.fps,dev_length.fpe);
@@ -1825,10 +1829,10 @@ bool pgsMomentCapacityEngineer::pgsBondTool::IsDebonded(StrandIndexType strandId
 
    GDRCONFIG& config = (m_bUseConfig ? m_Config : m_CurrentConfig);
 
-   std::vector<DEBONDINFO>::const_iterator iter;
-   for ( iter = config.Debond[strandType].begin(); iter != config.Debond[strandType].end(); iter++ )
+   DebondConfigConstIterator iter;
+   for ( iter = config.PrestressConfig.Debond[strandType].begin(); iter != config.PrestressConfig.Debond[strandType].end(); iter++ )
    {
-      const DEBONDINFO& di = *iter;
+      const DEBONDCONFIG& di = *iter;
 
       if ( di.strandIdx == strandIdx &&
           ((m_DistFromStart < di.LeftDebondLength) || ((m_GirderLength - di.RightDebondLength) < m_DistFromStart)) )

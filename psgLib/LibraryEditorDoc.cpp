@@ -135,18 +135,33 @@ void CLibraryEditorDoc::DoIntegrateWithUI(BOOL bIntegrate)
    CEAFMainFrame* pFrame = EAFGetMainFrame();
    if ( bIntegrate )
    {
-      // set up the toolbar here
+#if defined _EAF_USING_MFC_FEATURE_PACK
+      // We want to use tabbed views
+      pFrame->EnableMDITabs(TRUE,TRUE,CMFCTabCtrl::LOCATION_TOP,TRUE,CMFCTabCtrl::STYLE_3D_ROUNDED_SCROLL,FALSE,TRUE);
+      CMFCTabCtrl& tabs = pFrame->GetMDITabs();
+      tabs.SetActiveTabBoldFont();
+
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      UINT tbID = pFrame->CreateToolBar(_T("Library"),GetPluginCommandManager());
+      m_pMyToolBar = pFrame->GetToolBarByID(tbID);
+      m_pMyToolBar->LoadToolBar(IDR_LIBEDITORTOOLBAR,NULL);
+#else
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
       UINT tbID = pFrame->CreateToolBar(_T("Library"),GetPluginCommandManager());
       m_pMyToolBar = pFrame->GetToolBar(tbID);
       m_pMyToolBar->LoadToolBar(IDR_LIBEDITORTOOLBAR,NULL);
       m_pMyToolBar->CreateDropDownButton(ID_FILE_OPEN,NULL,BTNS_DROPDOWN);
+#endif
    }
    else
    {
       // remove toolbar here
       pFrame->DestroyToolBar(m_pMyToolBar);
       m_pMyToolBar = NULL;
+
+#if defined _EAF_USING_MFC_FEATURE_PACK
+      pFrame->EnableMDITabs(FALSE);
+#endif
    }
 
    // then call base class, which handles UI integration for

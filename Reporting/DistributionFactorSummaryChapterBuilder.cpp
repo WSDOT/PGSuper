@@ -228,7 +228,6 @@ void WriteGirderTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanId
             (*pTable)(row,5) << dfM.SetValue(nM);
          }
          else
-
          {
             (*pTable)(row,5) << _T("------");
          }

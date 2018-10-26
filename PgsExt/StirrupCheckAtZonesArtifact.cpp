@@ -140,7 +140,8 @@ CLASS
 pgsSplittingZoneArtifact::pgsSplittingZoneArtifact()
 {
    m_IsApplicable=false;
-   m_Avs = 0;
+   m_StartAvs = 0;
+   m_EndAvs = 0;
    m_SplittingDirection = pgsTypes::sdVertical;
 }
 
@@ -174,28 +175,14 @@ void pgsSplittingZoneArtifact::SetIsApplicable(bool isApp)
    m_IsApplicable = isApp;
 }
 
-Float64 pgsSplittingZoneArtifact::GetH() const
+pgsTypes::SplittingDirection pgsSplittingZoneArtifact::GetSplittingDirection() const
 {
-   ATLASSERT(m_IsApplicable);
-   return m_H;
+   return m_SplittingDirection;
 }
 
-void pgsSplittingZoneArtifact::SetH(Float64 h)
+void pgsSplittingZoneArtifact::SetSplittingDirection(pgsTypes::SplittingDirection sd)
 {
-   ATLASSERT(m_IsApplicable);
-   m_H = h;
-}
-
-Float64 pgsSplittingZoneArtifact::GetSplittingZoneLength() const
-{
-   ATLASSERT(m_IsApplicable);
-   return m_SplittingZoneLength;
-}
-
-void pgsSplittingZoneArtifact::SetSplittingZoneLength(Float64 bzl)
-{
-   ATLASSERT(m_IsApplicable);
-   m_SplittingZoneLength = bzl;
+   m_SplittingDirection = sd;
 }
 
 Float64 pgsSplittingZoneArtifact::GetSplittingZoneLengthFactor() const
@@ -210,107 +197,245 @@ void pgsSplittingZoneArtifact::SetSplittingZoneLengthFactor(Float64 bzlf)
    m_SplittingZoneLengthFactor = bzlf;
 }
 
-Float64 pgsSplittingZoneArtifact::GetFs() const
+bool pgsSplittingZoneArtifact::Passed() const
+{
+   return StartPassed() && EndPassed();
+}
+
+// Start
+Float64 pgsSplittingZoneArtifact::GetStartH() const
 {
    ATLASSERT(m_IsApplicable);
-   return m_Fs;
+   return m_StartH;
 }
 
-void pgsSplittingZoneArtifact::SetFs(Float64 fs)
+void pgsSplittingZoneArtifact::SetStartH(Float64 h)
 {
    ATLASSERT(m_IsApplicable);
-   m_Fs = fs;
+   m_StartH = h;
 }
 
-pgsTypes::SplittingDirection pgsSplittingZoneArtifact::GetSplittingDirection() const
-{
-   return m_SplittingDirection;
-}
-
-void pgsSplittingZoneArtifact::SetSplittingDirection(pgsTypes::SplittingDirection sd)
-{
-   m_SplittingDirection = sd;
-}
-
-void pgsSplittingZoneArtifact::SetAvs(Float64 avs)
+Float64 pgsSplittingZoneArtifact::GetStartSplittingZoneLength() const
 {
    ATLASSERT(m_IsApplicable);
-   m_Avs = avs;
+   return m_StartSplittingZoneLength;
 }
 
-Float64 pgsSplittingZoneArtifact::GetAvs() const
+void pgsSplittingZoneArtifact::SetStartSplittingZoneLength(Float64 bzl)
 {
    ATLASSERT(m_IsApplicable);
-   return m_Avs;
+   m_StartSplittingZoneLength = bzl;
 }
 
-Float64 pgsSplittingZoneArtifact::GetAps() const
+Float64 pgsSplittingZoneArtifact::GetStartFs() const
 {
    ATLASSERT(m_IsApplicable);
-   return m_Aps;
+   return m_StartFs;
 }
 
-void pgsSplittingZoneArtifact::SetAps(Float64 aps)
+void pgsSplittingZoneArtifact::SetStartFs(Float64 fs)
 {
    ATLASSERT(m_IsApplicable);
-   m_Aps = aps;
+   m_StartFs = fs;
 }
 
-Float64 pgsSplittingZoneArtifact::GetFpj() const
+void pgsSplittingZoneArtifact::SetStartAvs(Float64 avs)
 {
    ATLASSERT(m_IsApplicable);
-   return m_Fpj;
+   m_StartAvs = avs;
 }
 
-void pgsSplittingZoneArtifact::SetFpj(Float64 fpj)
+Float64 pgsSplittingZoneArtifact::GetStartAvs() const
 {
    ATLASSERT(m_IsApplicable);
-   m_Fpj = fpj;
+   return m_StartAvs;
 }
 
-Float64 pgsSplittingZoneArtifact::GetLossesAfterTransfer() const
+Float64 pgsSplittingZoneArtifact::GetStartAps() const
 {
    ATLASSERT(m_IsApplicable);
-   return m_dFpT;
+   return m_StartAps;
 }
 
-void pgsSplittingZoneArtifact::SetLossesAfterTransfer(double dFpT)
-{
-   m_dFpT = dFpT;
-}
-
-Float64 pgsSplittingZoneArtifact::GetSplittingForce() const
+void pgsSplittingZoneArtifact::SetStartAps(Float64 aps)
 {
    ATLASSERT(m_IsApplicable);
-   double P = 0.04*m_Aps*(m_Fpj - m_dFpT);
+   m_StartAps = aps;
+}
+
+Float64 pgsSplittingZoneArtifact::GetStartFpj() const
+{
+   ATLASSERT(m_IsApplicable);
+   return m_StartFpj;
+}
+
+void pgsSplittingZoneArtifact::SetStartFpj(Float64 fpj)
+{
+   ATLASSERT(m_IsApplicable);
+   m_StartFpj = fpj;
+}
+
+Float64 pgsSplittingZoneArtifact::GetStartLossesAfterTransfer() const
+{
+   ATLASSERT(m_IsApplicable);
+   return m_StartdFpT;
+}
+
+void pgsSplittingZoneArtifact::SetStartLossesAfterTransfer(double dFpT)
+{
+   m_StartdFpT = dFpT;
+}
+
+Float64 pgsSplittingZoneArtifact::GetStartSplittingForce() const
+{
+   ATLASSERT(m_IsApplicable);
+   double P = 0.04*m_StartAps*(m_StartFpj - m_StartdFpT);
    return P;
 }
 
 
-Float64 pgsSplittingZoneArtifact::GetSplittingResistance() const
+Float64 pgsSplittingZoneArtifact::GetStartSplittingResistance() const
 {
    ATLASSERT(m_IsApplicable);
-   return m_Pr;
+   return m_StartPr;
 }
 
-void pgsSplittingZoneArtifact::SetSplittingResistance(Float64 p)
+void pgsSplittingZoneArtifact::SetStartSplittingResistance(Float64 p)
 {
    ATLASSERT(m_IsApplicable);
-   m_Pr = p;
+   m_StartPr = p;
 }
 
 
-bool pgsSplittingZoneArtifact::Passed() const
+bool pgsSplittingZoneArtifact::StartPassed() const
 {
    if (m_IsApplicable)
    {
-      return m_Pr >= GetSplittingForce();
+      return m_StartPr >= GetStartSplittingForce();
    }
    else
    {
       return true;
    }
 }
+
+// End
+Float64 pgsSplittingZoneArtifact::GetEndH() const
+{
+   ATLASSERT(m_IsApplicable);
+   return m_EndH;
+}
+
+void pgsSplittingZoneArtifact::SetEndH(Float64 h)
+{
+   ATLASSERT(m_IsApplicable);
+   m_EndH = h;
+}
+
+Float64 pgsSplittingZoneArtifact::GetEndSplittingZoneLength() const
+{
+   ATLASSERT(m_IsApplicable);
+   return m_EndSplittingZoneLength;
+}
+
+void pgsSplittingZoneArtifact::SetEndSplittingZoneLength(Float64 bzl)
+{
+   ATLASSERT(m_IsApplicable);
+   m_EndSplittingZoneLength = bzl;
+}
+
+Float64 pgsSplittingZoneArtifact::GetEndFs() const
+{
+   ATLASSERT(m_IsApplicable);
+   return m_EndFs;
+}
+
+void pgsSplittingZoneArtifact::SetEndFs(Float64 fs)
+{
+   ATLASSERT(m_IsApplicable);
+   m_EndFs = fs;
+}
+
+void pgsSplittingZoneArtifact::SetEndAvs(Float64 avs)
+{
+   ATLASSERT(m_IsApplicable);
+   m_EndAvs = avs;
+}
+
+Float64 pgsSplittingZoneArtifact::GetEndAvs() const
+{
+   ATLASSERT(m_IsApplicable);
+   return m_EndAvs;
+}
+
+Float64 pgsSplittingZoneArtifact::GetEndAps() const
+{
+   ATLASSERT(m_IsApplicable);
+   return m_EndAps;
+}
+
+void pgsSplittingZoneArtifact::SetEndAps(Float64 aps)
+{
+   ATLASSERT(m_IsApplicable);
+   m_EndAps = aps;
+}
+
+Float64 pgsSplittingZoneArtifact::GetEndFpj() const
+{
+   ATLASSERT(m_IsApplicable);
+   return m_EndFpj;
+}
+
+void pgsSplittingZoneArtifact::SetEndFpj(Float64 fpj)
+{
+   ATLASSERT(m_IsApplicable);
+   m_EndFpj = fpj;
+}
+
+Float64 pgsSplittingZoneArtifact::GetEndLossesAfterTransfer() const
+{
+   ATLASSERT(m_IsApplicable);
+   return m_EnddFpT;
+}
+
+void pgsSplittingZoneArtifact::SetEndLossesAfterTransfer(double dFpT)
+{
+   m_EnddFpT = dFpT;
+}
+
+Float64 pgsSplittingZoneArtifact::GetEndSplittingForce() const
+{
+   ATLASSERT(m_IsApplicable);
+   double P = 0.04*m_EndAps*(m_EndFpj - m_EnddFpT);
+   return P;
+}
+
+
+Float64 pgsSplittingZoneArtifact::GetEndSplittingResistance() const
+{
+   ATLASSERT(m_IsApplicable);
+   return m_EndPr;
+}
+
+void pgsSplittingZoneArtifact::SetEndSplittingResistance(Float64 p)
+{
+   ATLASSERT(m_IsApplicable);
+   m_EndPr = p;
+}
+
+
+bool pgsSplittingZoneArtifact::EndPassed() const
+{
+   if (m_IsApplicable)
+   {
+      return m_EndPr >= GetEndSplittingForce();
+   }
+   else
+   {
+      return true;
+   }
+}
+
 
 //======================== ACCESS     =======================================
 
@@ -322,16 +447,26 @@ bool pgsSplittingZoneArtifact::Passed() const
 void pgsSplittingZoneArtifact::MakeCopy(const pgsSplittingZoneArtifact& rOther)
 {
    m_IsApplicable = rOther.m_IsApplicable;
-   m_SplittingZoneLength = rOther.m_SplittingZoneLength;
    m_SplittingZoneLengthFactor = rOther.m_SplittingZoneLengthFactor;
-   m_H                  = rOther.m_H;
-   m_Aps                = rOther.m_Aps;
-   m_Fpj                = rOther.m_Fpj;
-   m_dFpT               = rOther.m_dFpT;
-   m_Avs                = rOther.m_Avs;
-   m_Fs                 = rOther.m_Fs;
-   m_Pr                 = rOther.m_Pr;
    m_SplittingDirection = rOther.m_SplittingDirection;
+
+   m_StartSplittingZoneLength = rOther.m_StartSplittingZoneLength;
+   m_StartH                  = rOther.m_StartH;
+   m_StartAps                = rOther.m_StartAps;
+   m_StartFpj                = rOther.m_StartFpj;
+   m_StartdFpT               = rOther.m_StartdFpT;
+   m_StartAvs                = rOther.m_StartAvs;
+   m_StartFs                 = rOther.m_StartFs;
+   m_StartPr                 = rOther.m_StartPr;
+
+   m_EndSplittingZoneLength = rOther.m_EndSplittingZoneLength;
+   m_EndH                  = rOther.m_EndH;
+   m_EndAps                = rOther.m_EndAps;
+   m_EndFpj                = rOther.m_EndFpj;
+   m_EnddFpT               = rOther.m_EnddFpT;
+   m_EndAvs                = rOther.m_EndAvs;
+   m_EndFs                 = rOther.m_EndFs;
+   m_EndPr                 = rOther.m_EndPr;
 }
 
 void pgsSplittingZoneArtifact::MakeAssignment(const pgsSplittingZoneArtifact& rOther)
@@ -362,7 +497,7 @@ CLASS
 pgsConfinementArtifact::pgsConfinementArtifact():
 m_IsApplicable(false)
 {
-   m_pRebar = NULL;
+   m_pStartRebar = NULL;
    m_pMinRebar = NULL;
 }
 
@@ -396,46 +531,6 @@ void pgsConfinementArtifact::SetApplicability(bool isAp)
    m_IsApplicable = isAp;
 }
 
-Float64 pgsConfinementArtifact::GetApplicableZoneLength() const 
-{
-   return m_ApplicableZoneLength;
-}
-
-void pgsConfinementArtifact::SetApplicableZoneLength(Float64 zl)
-{
-   m_ApplicableZoneLength = zl;
-}
-
-Float64 pgsConfinementArtifact::GetZoneEnd() const 
-{
-   return m_ZoneEnd;
-}
-
-void pgsConfinementArtifact::SetZoneEnd(Float64 zl)
-{
-   m_ZoneEnd=zl;
-}
-
-const matRebar* pgsConfinementArtifact::GetBar() const 
-{
-   return m_pRebar;
-}
-
-void pgsConfinementArtifact::SetBar(const matRebar* pRebar)
-{ 
-   m_pRebar = pRebar;
-}
-
-Float64 pgsConfinementArtifact::GetS() const 
-{
-   return m_S;
-}
-
-void pgsConfinementArtifact::SetS(Float64 s) 
-{
-   m_S = s;
-}
-
 const matRebar* pgsConfinementArtifact::GetMinBar() const 
 {
    return m_pMinRebar;
@@ -456,27 +551,145 @@ void pgsConfinementArtifact::SetSMax(Float64 smax)
    m_SMax = smax;
 }
 
-bool pgsConfinementArtifact::Passed() const
+Float64 pgsConfinementArtifact::GetStartProvidedZoneLength() const 
+{
+   return m_StartProvidedZoneLength;
+}
+
+void pgsConfinementArtifact::SetStartProvidedZoneLength(Float64 zl)
+{
+   m_StartProvidedZoneLength = zl;
+}
+
+Float64 pgsConfinementArtifact::GetStartRequiredZoneLength() const 
+{
+   return m_StartRequiredZoneLength;
+}
+
+void pgsConfinementArtifact::SetStartRequiredZoneLength(Float64 zl)
+{
+   m_StartRequiredZoneLength=zl;
+}
+
+const matRebar* pgsConfinementArtifact::GetStartBar() const 
+{
+   return m_pStartRebar;
+}
+
+void pgsConfinementArtifact::SetStartBar(const matRebar* pRebar)
+{ 
+   m_pStartRebar = pRebar;
+}
+
+Float64 pgsConfinementArtifact::GetStartS() const 
+{
+   return m_StartS;
+}
+
+void pgsConfinementArtifact::SetStartS(Float64 s) 
+{
+   m_StartS = s;
+}
+
+Float64 pgsConfinementArtifact::GetEndProvidedZoneLength() const 
+{
+   return m_EndProvidedZoneLength;
+}
+
+void pgsConfinementArtifact::SetEndProvidedZoneLength(Float64 zl)
+{
+   m_EndProvidedZoneLength = zl;
+}
+
+Float64 pgsConfinementArtifact::GetEndRequiredZoneLength() const 
+{
+   return m_EndRequiredZoneLength;
+}
+
+void pgsConfinementArtifact::SetEndRequiredZoneLength(Float64 zl)
+{
+   m_EndRequiredZoneLength=zl;
+}
+
+const matRebar* pgsConfinementArtifact::GetEndBar() const 
+{
+   return m_pEndRebar;
+}
+
+void pgsConfinementArtifact::SetEndBar(const matRebar* pRebar)
+{ 
+   m_pEndRebar = pRebar;
+}
+
+Float64 pgsConfinementArtifact::GetEndS() const 
+{
+   return m_EndS;
+}
+
+void pgsConfinementArtifact::SetEndS(Float64 s) 
+{
+   m_EndS = s;
+}
+
+bool pgsConfinementArtifact::StartPassed() const
 {
    if ( !m_IsApplicable )
       return true;
 
+   const Float64 tol = 1.0e-6;
+
+   // Zone length
+   if (m_StartProvidedZoneLength+tol < m_StartRequiredZoneLength)
+      return false;
+
    // min bar size
    if (m_pMinRebar != NULL)
    {
-      if (m_pRebar == NULL)
+      if (m_pStartRebar == NULL)
          return false;
 
-      if (m_pRebar->GetNominalDimension() < m_pMinRebar->GetNominalDimension())
+      if (m_pStartRebar->GetNominalDimension() < m_pMinRebar->GetNominalDimension())
          return false;
    }
       
    // spacing
-   const Float64 tol = 1.0e-6;
-   if (GetS() > GetSMax()+tol)
+   if (GetStartS() > GetSMax()+tol)
       return false;
 
    return true;
+}
+
+bool pgsConfinementArtifact::EndPassed() const
+{
+   if ( !m_IsApplicable )
+      return true;
+
+   const Float64 tol = 1.0e-6;
+
+   // Zone length
+   if (m_EndProvidedZoneLength+tol < m_EndRequiredZoneLength)
+      return false;
+
+   // min bar size
+   if (m_pMinRebar != NULL)
+   {
+      if (m_pEndRebar == NULL)
+         return false;
+
+      if (m_pEndRebar->GetNominalDimension() < m_pMinRebar->GetNominalDimension())
+         return false;
+   }
+      
+   // spacing
+   if (GetEndS() > GetSMax()+tol)
+      return false;
+
+   return true;
+}
+
+bool pgsConfinementArtifact::Passed() const
+{
+   return StartPassed() && EndPassed();
 }
 
 //======================== ACCESS     =======================================
@@ -503,13 +716,18 @@ void pgsConfinementArtifact::Dump(dbgDumpContext& os) const
 void pgsConfinementArtifact::MakeCopy(const pgsConfinementArtifact& rOther)
 {
    m_IsApplicable = rOther.m_IsApplicable;
-   m_ApplicableZoneLength = rOther.m_ApplicableZoneLength;
-   m_ZoneEnd = rOther.m_ZoneEnd;
-   m_S = rOther.m_S;
+   m_pMinRebar = rOther.m_pMinRebar;
    m_SMax = rOther.m_SMax;
 
-   m_pRebar = rOther.m_pRebar;
-   m_pMinRebar = rOther.m_pMinRebar;
+   m_pStartRebar = rOther.m_pStartRebar;
+   m_StartProvidedZoneLength = rOther.m_StartProvidedZoneLength;
+   m_StartRequiredZoneLength = rOther.m_StartRequiredZoneLength;
+   m_StartS = rOther.m_StartS;
+
+   m_pEndRebar = rOther.m_pEndRebar;
+   m_EndProvidedZoneLength = rOther.m_EndProvidedZoneLength;
+   m_EndRequiredZoneLength = rOther.m_EndRequiredZoneLength;
+   m_EndS = rOther.m_EndS;
 }
 
 void pgsConfinementArtifact::MakeAssignment(const pgsConfinementArtifact& rOther)
@@ -538,6 +756,7 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
+/*
 pgsStirrupCheckAtZonesArtifact::pgsStirrupCheckAtZonesArtifact()
 {
 }
@@ -564,23 +783,7 @@ pgsStirrupCheckAtZonesArtifact& pgsStirrupCheckAtZonesArtifact::operator= (const
 
 //======================== OPERATIONS =======================================
 
-void pgsStirrupCheckAtZonesArtifact::SetConfinementArtifact(const pgsConfinementArtifact& artifact)
-{
-   m_ConfinementArtifact = artifact;
-}
 
-const pgsConfinementArtifact* pgsStirrupCheckAtZonesArtifact::GetConfinementArtifact() const
-{
-   return &m_ConfinementArtifact;
-}
-
-bool pgsStirrupCheckAtZonesArtifact::Passed() const
-{
-   if (!m_ConfinementArtifact.Passed())
-      return false;
-
-   return true;
-}
 
 //======================== ACCESS     =======================================
 
@@ -605,7 +808,6 @@ void pgsStirrupCheckAtZonesArtifact::Dump(dbgDumpContext& os) const
 //======================== OPERATIONS =======================================
 void pgsStirrupCheckAtZonesArtifact::MakeCopy(const pgsStirrupCheckAtZonesArtifact& rOther)
 {
-   m_ConfinementArtifact =  rOther.m_ConfinementArtifact;
 }
 
 void pgsStirrupCheckAtZonesArtifact::MakeAssignment(const pgsStirrupCheckAtZonesArtifact& rOther)
@@ -623,3 +825,4 @@ void pgsStirrupCheckAtZonesArtifact::MakeAssignment(const pgsStirrupCheckAtZones
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
+*/

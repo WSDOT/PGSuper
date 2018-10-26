@@ -1,6 +1,6 @@
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 21.98   4  0.02     1     1 6HT28       34   1/2  270 12.13  6.83  18 20.0  4.600  5.100    1.984   -3.756   2354  0.527  0.527  0.25 -0.03  0.00 -0.01 -0.04  83.12 238.79   1.00   1.00   1.00
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 21.98   4  0.02  1     1    6HT28       34   1/2  270 12.13  6.83  18 20.0  4.600  5.100    1.984   -3.756   2354  0.527  0.527  0.25 -0.03  0.00 -0.01 -0.04  83.12 238.79   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -9,9 +9,9 @@ Bursting zone checks failed.
 Confinement zone checks failed.
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 21.98   4  0.02     1     2 6HT28       34   1/2  270 12.09  6.80  18 20.0  4.600  5.100    1.992   -3.756   2352  0.527  0.527  0.25 -0.03  0.00 -0.01 -0.04  83.25 239.06   1.00   1.00   1.00
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 21.98   4  0.02  1     2    6HT28       34   1/2  270 12.09  6.80  18 20.0  4.600  5.100    1.992   -3.756   2352  0.527  0.527  0.25 -0.03  0.00 -0.01 -0.04  83.25 239.06   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful

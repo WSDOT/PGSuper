@@ -38,9 +38,10 @@
 #endif
 
 #include <PgsExt\GirderMaterial.h>
-#include <PgsExt\ShearData.h>
+#include <PsgLib\ShearData.h>
 #include <PgsExt\LongitudinalRebarData.h>
 #include <PgsExt\HandlingData.h>
+#include <pgsExt\PrestressData.h>
 
 // LOCAL INCLUDES
 //
@@ -53,21 +54,6 @@ class ConcreteLibraryEntry;
 // MISCELLANEOUS
 //
 
-// Class to store debonding input
-class PGSEXTCLASS CDebondInfo
-{
-public:
-   StrandIndexType idxStrand1;
-   StrandIndexType idxStrand2; // INVALID_INDEX if not used
-   Float64 Length1; // debond length at left end of girder
-   Float64 Length2; // debond length at right end of girder
-
-	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
-	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
-
-   bool operator==(const CDebondInfo& rOther) const; 
-   bool operator!=(const CDebondInfo& rOther) const;
-};
 
 
 /*****************************************************************************
@@ -90,34 +76,11 @@ COPYRIGHT
 LOG
    rab : 09.30.1998 : Created file
 *****************************************************************************/
-// Method for describing number of permanent strands
-#define NPS_TOTAL_NUMBER    0    // use total number and order as defined by library entry
-#define NPS_STRAIGHT_HARPED 1    // use number of straight and number of harped.
 
 class PGSEXTCLASS CGirderData
 {
 public:
-   int     NumPermStrandsType; // one of NPS_ above
-   // Note that the arrays with size 3 and4 below are indexed using pgsTypes::StrandType.
-   // The pgsTypes::Permanent position is used when NumPermStrandsType==NPS_TOTAL_NUMBER.
-   // When this is the case, values must be divided proportionally to straight and harped strands into 
-   // the pgsTypes::Harped and pgsTypes::Straight strand locations because these are the values
-   // used internally by the analysis and engineering agents
-   StrandIndexType Nstrands[4];
-   std::vector<StrandIndexType> NextendedStrands[3][2];
-   Float64 Pjack[4];
-   HarpedStrandOffsetType HsoEndMeasurement; // one of HarpedStrandOffsetType enums
-   Float64 HpOffsetAtEnd;
-   HarpedStrandOffsetType HsoHpMeasurement;  // one of HarpedStrandOffsetType enums
-   Float64 HpOffsetAtHp;
-
-   std::vector<CDebondInfo> Debond[3];
-   bool bSymmetricDebond; // if true, left and right debond are the same (Only use Length1 of CDebondInfo struct)
-
-   bool bPjackCalculated[4]; // true if Pjack was calculated
-   Float64 LastUserPjack[4]; // Last Pjack entered by user
-
-   pgsTypes::TTSUsage TempStrandUsage; // One of the tts constants above.
+   CPrestressData PrestressData;
 
    CGirderMaterial Material; // concrete and strand data
    CShearData ShearData;
@@ -147,10 +110,6 @@ public:
    // Assignment operator
    CGirderData& operator = (const CGirderData& rOther);
 
-   //------------------------------------------------------------------------
-   // Resets all the prestressing input to default values.
-   // Useful when changing girder types
-   void ResetPrestressData();
 
    //------------------------------------------------------------------------
    // An == operator is not enough. We must know the type of change that was
@@ -163,8 +122,8 @@ public:
                     ctLifting      = 0x0008,
                     ctShipping     = 0x0010,
                     ctCondition    = 0x0020,
-                    ctStirrups     = 0x0040,
-                    ctLongitRebar  = 0x0080
+                    ctLongRebar    = 0x0040,
+                    ctShearData    = 0x0080
    };
 
    // return or'ed enums above 
@@ -179,8 +138,6 @@ public:
    void CopyLongitudinalRebarFrom(const CGirderData& rOther);
    void CopyHandlingDataFrom(const CGirderData& rOther);
 
-   long GetDebondCount(pgsTypes::StrandType strandType) const;
-   void ClearDebondData();
 
    //------------------------------------------------------------------------
    bool operator==(const CGirderData& rOther) const;

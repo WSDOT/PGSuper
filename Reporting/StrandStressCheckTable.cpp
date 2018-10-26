@@ -79,10 +79,10 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
    pgsPointOfInterest poi = pArtifact->GetPointOfInterest();
 
    GET_IFACE2(pBroker,IGirderData,pGirderData);
-   CGirderData girderData = pGirderData->GetGirderData(poi.GetSpan(),poi.GetGirder());
+   const CGirderData* pgirderData = pGirderData->GetGirderData(poi.GetSpan(),poi.GetGirder());
 
    std::vector<pgsTypes::StrandType> strandTypes;
-   if ( girderData.NumPermStrandsType == NPS_TOTAL_NUMBER )
+   if ( pgirderData->PrestressData.GetNumPermStrandsType() == NPS_TOTAL_NUMBER )
    {
       strandTypes.push_back(pgsTypes::Permanent);
    }
@@ -135,7 +135,7 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
          break;
 
       case pgsTypes::Harped:
-         (*p_table)(0,col1++) << _T("Harped");
+         (*p_table)(0,col1++) << LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(poi.GetSpan(),poi.GetGirder()));
          break;
 
       case pgsTypes::Permanent:
@@ -236,7 +236,7 @@ rptRcTable* CStrandStressCheckTable::Build(IBroker* pBroker,const pgsStrandStres
 	      pArtifact->GetCheckAfterLosses( strandType, &demand, &capacity, &bPassed );
          if ( strandType == strandTypes.front() )
          {
-   	      (*p_table)(row,col++) << _T("After All Losses");
+   	      (*p_table)(row,col++) << _T("After All Losses and Elastic Gains") << rptNewLine << _T("including Live Load");
 	         (*p_table)(row,col++) << stress.SetValue( capacity );
          }
 	      (*p_table)(row,col++) << stress.SetValue( demand );

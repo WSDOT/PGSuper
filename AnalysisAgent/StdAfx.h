@@ -44,6 +44,7 @@ extern CComModule _Module;
 
 #include <WBFLTools.h>
 #include <WBFLGeometry.h>
+#include <WBFLCogo.h>
 #include <WBFLUnitServer.h>
 
 #include <WBFLLBAM.h>

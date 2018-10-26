@@ -416,7 +416,7 @@ pgsDesignCodes::OutcomeType pgsGirderHandlingChecker::DesignLifting(SpanIndexTyp
 
    Float64 maxLoc = 0.4*girder_length;
 
-   if (config.Nstrands[pgsTypes::Harped] > 0) // only look at harping point if we have harped strands
+   if (config.PrestressConfig.GetNStrands(pgsTypes::Harped) > 0) // only look at harping point if we have harped strands
    {
       Float64 lhp,rhp;
       GET_IFACE(IStrandGeometry,pStrandGeom);
@@ -763,11 +763,11 @@ void pgsGirderHandlingChecker::ComputeLiftingStresses(SpanIndexType span,GirderI
       if ( bUseConfig )
       {
          hps_force = pPrestressForce->GetPrestressForce(poi,liftConfig.GdrConfig,pgsTypes::Harped,pgsTypes::AtLifting);
-         he        = pStrandGeometry->GetHsEccentricity(poi,liftConfig.GdrConfig, &nfh);
+         he        = pStrandGeometry->GetHsEccentricity(poi,liftConfig.GdrConfig.PrestressConfig, &nfh);
          sps_force = pPrestressForce->GetPrestressForce(poi,liftConfig.GdrConfig,pgsTypes::Straight,pgsTypes::AtLifting);
-         se        = pStrandGeometry->GetSsEccentricity(poi,liftConfig.GdrConfig, &nfs);
+         se        = pStrandGeometry->GetSsEccentricity(poi,liftConfig.GdrConfig.PrestressConfig, &nfs);
          tps_force = pPrestressForce->GetPrestressForce(poi,liftConfig.GdrConfig,pgsTypes::Temporary,pgsTypes::AtLifting);
-         te        = pStrandGeometry->GetTempEccentricity(poi,liftConfig.GdrConfig, &nft);
+         te        = pStrandGeometry->GetTempEccentricity(poi,liftConfig.GdrConfig.PrestressConfig, &nft);
       }
       else
       {
@@ -1235,11 +1235,11 @@ void pgsGirderHandlingChecker::ComputeHaulingStresses(SpanIndexType span,GirderI
       if ( bUseConfig )
       {
          hps_force = pPrestressForce->GetPrestressForce(poi,haulConfig.GdrConfig,pgsTypes::Harped,pgsTypes::AtShipping);
-         he = pStrandGeometry->GetHsEccentricity(poi,haulConfig.GdrConfig, &nfh);
+         he = pStrandGeometry->GetHsEccentricity(poi,haulConfig.GdrConfig.PrestressConfig, &nfh);
          sps_force = pPrestressForce->GetPrestressForce(poi,haulConfig.GdrConfig,pgsTypes::Straight,pgsTypes::AtShipping);
-         se = pStrandGeometry->GetSsEccentricity(poi,haulConfig.GdrConfig,&nfs);
+         se = pStrandGeometry->GetSsEccentricity(poi,haulConfig.GdrConfig.PrestressConfig,&nfs);
          tps_force = pPrestressForce->GetPrestressForce(poi,haulConfig.GdrConfig,pgsTypes::Temporary,pgsTypes::AtShipping);
-         te = pStrandGeometry->GetTempEccentricity(poi,haulConfig.GdrConfig,&nft);
+         te = pStrandGeometry->GetTempEccentricity(poi,haulConfig.GdrConfig.PrestressConfig,&nft);
       }
       else
       {

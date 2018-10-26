@@ -1,0 +1,34 @@
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd          Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  7.60  1     1   4XB20       44   1/2  270  6.03  5.65  12  0.00   0   0  5.500  5.500    2.994   -3.806    2236 0.573  0.716  0.25 -0.11 -0.01 -0.00 -0.12 127.67 358.70   1.00   1.00   1.00
+Warning: Irregular, Non-standard debonding increments used for beam 1 in span  1. Cannot write debonding information to TxDOT CAD format.
+
+
+The Specification Check was Not Successful
+Debond arrangement checks failed.
+
+
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  7.60  1     2   4XB20       42   1/2  270  6.08  5.78  10  2.50  22  10  6  2  2  0  0  0  0  0  0  0  5.300  5.300    2.967   -3.770    2208 0.557  0.716  0.25 -0.11 -0.01 -0.01 -0.12 118.44 330.91   1.00   1.00   1.00
+
+
+The Specification Check was Not Successful
+Stirrup detailing checks failed for the Strength I Limit State.
+
+
+ RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Debnd                                        Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  7.60  1     4   4XB20        0   1/2  270  0.00  0.00   0  0.00   0   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    2.967   -3.770    2208 0.557  0.716 -0.24 -0.11 -0.01 -0.01 -0.12   0.00   0.00   1.00   1.00   1.00
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service I for the Casting Yard Stage (At Release).
+Tensile stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
+Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
+Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+
+

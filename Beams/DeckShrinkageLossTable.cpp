@@ -20,11 +20,12 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// DeckShrinkageLossTable.cpp : Implementation of CDeckShrinkageLossTable
+// ElasticGainDueToDeckShrinkageTable.cpp : Implementation of CElasticGainDueToDeckShrinkageTable
 #include "stdafx.h"
 #include "DeckShrinkageLossTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
+#include <IFace\AnalysisResults.h>
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PgsExt\GirderData.h>
 
@@ -34,7 +35,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CDeckShrinkageLossTable::CDeckShrinkageLossTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
+CElasticGainDueToDeckShrinkageTable::CElasticGainDueToDeckShrinkageTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
@@ -58,7 +59,7 @@ rptRcTable(NumColumns,0)
    strain.SetPrecision(3);
 }
 
-CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
@@ -67,8 +68,8 @@ CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChap
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
 
    // Create and configure the table
-   ColumnIndexType numColumns = 8;
-   CDeckShrinkageLossTable* table = new CDeckShrinkageLossTable( numColumns, pDisplayUnits );
+   ColumnIndexType numColumns = 10;
+   CElasticGainDueToDeckShrinkageTable* table = new CElasticGainDueToDeckShrinkageTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
 
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
@@ -80,6 +81,9 @@ CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChap
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
+
+   *pParagraph << _T("Change in strand stress due to shrinkage of the deck concrete") << rptNewLine;
+   *pParagraph << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -118,10 +122,15 @@ CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChap
    }
 #endif // IGNORE_2007_CHANGES
    *pParagraph << rptRcImage(strImagePath + _T("HumidityFactor.png")) << rptNewLine;
+
    if ( IS_SI_UNITS(pDisplayUnits) )
       *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_Deck_SI.png")) << rptNewLine;
    else
       *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_Deck_US.png")) << rptNewLine;
+
+   *pParagraph << _T("Girder stresses due to slab shrinkage") << rptNewLine;
+   *pParagraph << rptRcImage(strImagePath + _T("SlabShrinkageStress_Ftop.png")) << rptNewLine;
+   *pParagraph << rptRcImage(strImagePath + _T("SlabShrinkageStress_Fbot.png")) << rptNewLine;
 
    rptRcTable* pParamTable = pgsReportStyleHolder::CreateDefaultTable(9,_T(""));
    *pParagraph << pParamTable << rptNewLine;
@@ -150,23 +159,25 @@ CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChap
    (*pParamTable)(1,7) << details.RefinedLosses2005.GetDeckK2Shrinkage();
    (*pParamTable)(1,8) << table->strain.SetValue(details.RefinedLosses2005.Get_eddf() * 1000);
 
-   pParamTable = pgsReportStyleHolder::CreateDefaultTable(7,_T(""));
+   pParamTable = pgsReportStyleHolder::CreateDefaultTable(8,_T(""));
    *pParagraph << pParamTable << rptNewLine;
    (*pParamTable)(0,0) << COLHDR( Sub2(_T("E"),_T("p")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pParamTable)(0,1) << COLHDR( Sub2(_T("E"),_T("c")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pParamTable)(0,2) << COLHDR( Sub2(_T("E"),_T("cd")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pParamTable)(0,3) << Sub2(_T("K"),_T("1"));
-   (*pParamTable)(0,4) << Sub2(_T("K"),_T("2"));
-   (*pParamTable)(0,5) << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("f")) << _T(",") << Sub2(_T("t"),_T("d")) << _T(")");
-   (*pParamTable)(0,6) << Sub2(symbol(psi),_T("bd")) << _T("(") << Sub2(_T("t"),_T("f")) << _T(",") << Sub2(_T("t"),_T("d")) << _T(")");
+   (*pParamTable)(0,3) << Sub2(_T("K"),_T("sh"));
+   (*pParamTable)(0,4) << Sub2(_T("K"),_T("1"));
+   (*pParamTable)(0,5) << Sub2(_T("K"),_T("2"));
+   (*pParamTable)(0,6) << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("f")) << _T(",") << Sub2(_T("t"),_T("d")) << _T(")");
+   (*pParamTable)(0,7) << Sub2(symbol(psi),_T("bd")) << _T("(") << Sub2(_T("t"),_T("f")) << _T(",") << Sub2(_T("t"),_T("d")) << _T(")");
 
    (*pParamTable)(1,0) << table->mod_e.SetValue( details.RefinedLosses2005.GetEp() );
    (*pParamTable)(1,1) << table->mod_e.SetValue( details.RefinedLosses2005.GetEc() );
    (*pParamTable)(1,2) << table->mod_e.SetValue( details.RefinedLosses2005.GetEcd() );
-   (*pParamTable)(1,3) << details.RefinedLosses2005.GetDeckK1Creep();
-   (*pParamTable)(1,4) << details.RefinedLosses2005.GetDeckK2Creep();
-   (*pParamTable)(1,5) << table->scalar.SetValue(details.RefinedLosses2005.GetCreepDeckToFinal().GetCreepCoefficient());
-   (*pParamTable)(1,6) << table->scalar.SetValue(details.RefinedLosses2005.GetCreepDeck().GetCreepCoefficient());
+   (*pParamTable)(1,3) << pSpecEntry->GetDeckShrinkageElasticGain();
+   (*pParamTable)(1,4) << details.RefinedLosses2005.GetDeckK1Creep();
+   (*pParamTable)(1,5) << details.RefinedLosses2005.GetDeckK2Creep();
+   (*pParamTable)(1,6) << table->scalar.SetValue(details.RefinedLosses2005.GetCreepDeckToFinal().GetCreepCoefficient());
+   (*pParamTable)(1,7) << table->scalar.SetValue(details.RefinedLosses2005.GetCreepDeck().GetCreepCoefficient());
 
    *pParagraph << table << rptNewLine;
    (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
@@ -177,7 +188,9 @@ CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChap
    (*table)(0,5) << COLHDR( Sub2(_T("I"),_T("c")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
    (*table)(0,6) << COLHDR( symbol(DELTA) << RPT_STRESS(_T("cdf")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,7) << COLHDR( symbol(DELTA) << RPT_STRESS(_T("pSS")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   
+   (*table)(0,8) << COLHDR(RPT_FTOP << rptNewLine << _T("Girder"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
+   (*table)(0,9) << COLHDR(RPT_FBOT << rptNewLine << _T("Girder"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
+
 #if defined IGNORE_2007_CHANGES
    table->m_Sign = -1;
 #else
@@ -187,13 +200,19 @@ CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChap
    return table;
 }
 
-void CDeckShrinkageLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CElasticGainDueToDeckShrinkageTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
+   GET_IFACE2(pBroker,IProductForces,pProductForces);
+   Float64 fTop,fBot;
+   pProductForces->GetDeckShrinkageStresses(poi,&fTop,&fBot);
+
    (*this)(row,1) << area.SetValue( details.RefinedLosses2005.GetAd() );
    (*this)(row,2) << ecc.SetValue( details.RefinedLosses2005.GetEccpc() );
    (*this)(row,3) << ecc.SetValue( m_Sign*details.RefinedLosses2005.GetDeckEccentricity() );
    (*this)(row,4) << area.SetValue( details.pLosses->GetAc() );
    (*this)(row,5) << mom_inertia.SetValue( details.pLosses->GetIc() );
    (*this)(row,6) << stress.SetValue( details.RefinedLosses2005.GetDeltaFcdf() );
-   (*this)(row,7) << stress.SetValue( details.RefinedLosses2005.DeckShrinkageLoss() );
+   (*this)(row,7) << stress.SetValue( details.RefinedLosses2005.ElasticGainDueToDeckShrinkage() );
+   (*this)(row,8) << stress.SetValue( fTop );
+   (*this)(row,9) << stress.SetValue( fBot );
 }

@@ -197,6 +197,7 @@ void CTxDOTOptionalDesignDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszP
 {
    // Skipping the default functionality and replacing it with something better
    //CEAFBrokerDocument::HandleOpenDocumentError(hr,lpszPathName);
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    GET_IFACE( IEAFProjectLog, pLog );
 
@@ -375,9 +376,14 @@ void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
 
          // set up the toolbar here
          UINT tbID = pFrame->CreateToolBar(_T("TxDOT Optional Girder Analysis"),GetPluginCommandManager());
+#if defined _EAF_USING_MFC_FEATURE_PACK
+         m_pMyToolBar = pFrame->GetToolBarByID(tbID);
+         m_pMyToolBar->LoadToolBar(IDR_TXDOTOPTIONALDESIGNTOOLBAR,NULL);
+#else
          m_pMyToolBar = pFrame->GetToolBar(tbID);
          m_pMyToolBar->LoadToolBar(IDR_TXDOTOPTIONALDESIGNTOOLBAR,NULL);
          m_pMyToolBar->CreateDropDownButton(ID_FILE_OPEN,   NULL,BTNS_DROPDOWN);
+#endif
       }
 
       // use our status bar
@@ -392,7 +398,7 @@ void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
       m_pMyToolBar = NULL;
 
       // put the status bar back the way it was
-      EAFGetMainFrame()->SetStatusBar(NULL);
+      //EAFGetMainFrame()->ResetStatusBar();
    }
 
    // then call base class, which handles UI integration for
@@ -1298,21 +1304,18 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
    // See if standard or nonstandard fill
    if (pOdGirderData->GetStandardStrandFill())
    {
-      rGirderData.NumPermStrandsType = NPS_TOTAL_NUMBER;
-
       StrandIndexType ntot = pOdGirderData->GetNumStrands();
 
       // We still must compute num straight/harped to appease pgsuper
       StrandIndexType ns, nh;
-      bool st = pGdrEntry->ComputeGlobalStrands(ntot, &ns, &nh);
+      bool st = pGdrEntry->GetPermStrandDistribution(ntot, &ns, &nh);
       ASSERT(st);
 
-      rGirderData.Nstrands[pgsTypes::Permanent] = ntot;
-      rGirderData.Nstrands[pgsTypes::Straight ] = ns;
-      rGirderData.Nstrands[pgsTypes::Harped]    = nh;
 
-      rGirderData.HsoEndMeasurement = hsoTOP2BOTTOM;
-      rGirderData.HpOffsetAtEnd = pOdGirderData->GetStrandTo();
+      rGirderData.PrestressData.SetTotalPermanentNstrands(ntot, ns, nh);
+
+      rGirderData.PrestressData.HsoEndMeasurement = hsoTOP2BOTTOM;
+      rGirderData.PrestressData.HpOffsetAtEnd = pOdGirderData->GetStrandTo();
    }
    else
    {
@@ -1410,7 +1413,7 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
                      // Add straight strand to clone and update global index
                      StrandIndexType stridx = clone_entry.AddStraightStrandCoordinates(xStrand,yStrand,xStrand,yStrand,false);
 
-                     clone_entry.AddGlobalStrandAtFill(GirderLibraryEntry::stStraight, stridx-1);
+                     clone_entry.AddStrandToPermStrandGrid(GirderLibraryEntry::stStraight, stridx-1);
 
                      num_filled += xStrand>0.0 ? 2 : 1;
                   }
@@ -1463,23 +1466,19 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
       pGirderTypes->SetGirderLibraryEntry(gdr, pclone);
 
       // Must set strands after library entry, otherwise data is reset
-      rGirderData.NumPermStrandsType = NPS_TOTAL_NUMBER;
-
-      rGirderData.Nstrands[pgsTypes::Permanent] = straight_strands_to_fill + harped_strands_to_fill;
-      rGirderData.Nstrands[pgsTypes::Straight ] = straight_strands_to_fill;
-      rGirderData.Nstrands[pgsTypes::Harped]    = harped_strands_to_fill;
+      rGirderData.PrestressData.SetTotalPermanentNstrands(straight_strands_to_fill + harped_strands_to_fill, straight_strands_to_fill, harped_strands_to_fill);
    }
 
    // Get Jacking 
    GET_IFACE(IPrestressForce, pPrestress );
 
-   rGirderData.bPjackCalculated[pgsTypes::Permanent] = true;
-   rGirderData.bPjackCalculated[pgsTypes::Straight] = true;
-   rGirderData.bPjackCalculated[pgsTypes::Harped] = true;
+   rGirderData.PrestressData.bPjackCalculated[pgsTypes::Permanent] = true;
+   rGirderData.PrestressData.bPjackCalculated[pgsTypes::Straight] = true;
+   rGirderData.PrestressData.bPjackCalculated[pgsTypes::Harped] = true;
 
-   rGirderData.Pjack[pgsTypes::Permanent] = pPrestress->GetPjackMax(TOGA_SPAN, gdr, *(rGirderData.Material.pStrandMaterial[pgsTypes::Straight]), rGirderData.Nstrands[pgsTypes::Permanent]);
-   rGirderData.Pjack[pgsTypes::Straight]  = pPrestress->GetPjackMax(TOGA_SPAN, gdr, *(rGirderData.Material.pStrandMaterial[pgsTypes::Straight]), rGirderData.Nstrands[pgsTypes::Straight]);
-   rGirderData.Pjack[pgsTypes::Harped]    = pPrestress->GetPjackMax(TOGA_SPAN, gdr, *(rGirderData.Material.pStrandMaterial[pgsTypes::Harped]), rGirderData.Nstrands[pgsTypes::Harped]);
+   rGirderData.PrestressData.Pjack[pgsTypes::Permanent] = pPrestress->GetPjackMax(TOGA_SPAN, gdr, *(rGirderData.Material.pStrandMaterial[pgsTypes::Straight]), rGirderData.PrestressData.GetNstrands(pgsTypes::Permanent));
+   rGirderData.PrestressData.Pjack[pgsTypes::Straight]  = pPrestress->GetPjackMax(TOGA_SPAN, gdr, *(rGirderData.Material.pStrandMaterial[pgsTypes::Straight]), rGirderData.PrestressData.GetNstrands(pgsTypes::Straight));
+   rGirderData.PrestressData.Pjack[pgsTypes::Harped]    = pPrestress->GetPjackMax(TOGA_SPAN, gdr, *(rGirderData.Material.pStrandMaterial[pgsTypes::Harped]),   rGirderData.PrestressData.GetNstrands(pgsTypes::Harped));
 }
 
 void CTxDOTOptionalDesignDoc::VerifyPgsuperTemplateData(CBridgeDescription& bridgeDesc)

@@ -53,6 +53,7 @@ static char THIS_FILE[] = __FILE__;
 static void write_connection_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level);
 static void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level);
+static void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level);
 static void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const TrafficBarrierEntry* pBarrierEntry);
 static void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType);
 static void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr);
@@ -174,6 +175,7 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
          *pChapter<<pHead;
          *pHead << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
 
+         write_deck_width_details(pBroker, pDisplayUnits, pChapter, spanIdx, gdrIdx, level);
          write_intermedate_diaphragm_details(pBroker, pDisplayUnits, pChapter, spanIdx, gdrIdx, level);
          write_girder_details( pBroker, pDisplayUnits, pChapter, spanIdx, gdrIdx, level);
 
@@ -217,6 +219,23 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
 
    if ( pBridgeDesc->GetRightRailingSystem()->GetExteriorRailing() != pBridgeDesc->GetLeftRailingSystem()->GetExteriorRailing() )
       write_traffic_barrier_details( pBroker, pDisplayUnits, pChapter, level, pBridgeDesc->GetRightRailingSystem()->GetExteriorRailing());
+
+   const TrafficBarrierEntry* pLftInt = pBridgeDesc->GetLeftRailingSystem()->GetInteriorRailing();
+   const TrafficBarrierEntry* pRgtInt = pBridgeDesc->GetRightRailingSystem()->GetInteriorRailing();
+   if (NULL != pLftInt)
+   {
+      if ( pLftInt != pBridgeDesc->GetLeftRailingSystem()->GetExteriorRailing()  &&
+           pLftInt != pBridgeDesc->GetRightRailingSystem()->GetExteriorRailing()  )
+         write_traffic_barrier_details( pBroker, pDisplayUnits, pChapter, level, pBridgeDesc->GetLeftRailingSystem()->GetInteriorRailing());
+   }
+
+   if (NULL != pRgtInt)
+   {
+      if ( pRgtInt != pBridgeDesc->GetLeftRailingSystem()->GetExteriorRailing()  &&
+           pRgtInt != pBridgeDesc->GetRightRailingSystem()->GetExteriorRailing() &&
+           pRgtInt != pLftInt  )
+         write_traffic_barrier_details( pBroker, pDisplayUnits, pChapter, level, pBridgeDesc->GetRightRailingSystem()->GetInteriorRailing());
+   }
 
    return pChapter;
 }
@@ -448,6 +467,84 @@ void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pD
    }
 }
 
+static void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level)
+{
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBarriers,pBarriers);
+   GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
+
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
+
+   rptParagraph* pPara = new rptParagraph;
+   *pChapter << pPara;
+
+   bool has_sw = pBarriers->HasSidewalk(pgsTypes::tboLeft) || pBarriers->HasSidewalk(pgsTypes::tboRight);
+   bool has_overlay = pBridge->HasOverlay();
+
+   ColumnIndexType ncols = 4;
+   if (has_sw)
+      ncols++;
+
+   if(has_overlay)
+      ncols++;
+   
+   rptRcTable* pTable1 = pgsReportStyleHolder::CreateDefaultTable(ncols,_T("Deck and Roadway Widths"));
+   *pPara << pTable1;
+
+   ColumnIndexType col=0;
+   (*pTable1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*pTable1)(0,col++) << _T("Station");
+   (*pTable1)(0,col++) << COLHDR(_T("Deck")<<rptNewLine<<_T("Width"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*pTable1)(0,col++) << COLHDR(_T("Exterior")<<rptNewLine<<_T("Curb-Curb")<<rptNewLine<<_T("Width"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   if (has_sw)
+      (*pTable1)(0,col++) << COLHDR(_T("Interior")<<rptNewLine<<_T("Curb-Curb")<<rptNewLine<<_T("Width"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+
+   if (has_overlay)
+      (*pTable1)(0,col++) << COLHDR(_T("Overlay")<<rptNewLine<<_T("Toe-Toe")<<rptNewLine<<_T("Width"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+
+   Float64 end_size = pBridge->GetGirderStartConnectionLength(span,gdr);
+
+   std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(span,gdr,pgsTypes::BridgeSite3,POI_TENTH_POINTS,POIFIND_OR) );
+   std::vector<pgsPointOfInterest>::iterator iter( vPoi.begin() );
+   std::vector<pgsPointOfInterest>::iterator iterEnd( vPoi.end() );
+   RowIndexType row(1);
+   for ( ; iter != iterEnd; iter++ )
+   {
+      col = 0;
+      pgsPointOfInterest& poi = *iter;
+      Float64 station, offset;
+      pBridge->GetStationAndOffset(poi,&station,&offset);
+      Float64 dist_from_start = pBridge->GetDistanceFromStartOfBridge(station);
+
+      (*pTable1)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
+      (*pTable1)(row,col++) << rptRcStation(station, &pDisplayUnits->GetStationFormat() );
+
+       Float64 lft_off = pBridge->GetLeftSlabEdgeOffset(dist_from_start);
+       Float64 rgt_off = pBridge->GetRightSlabEdgeOffset(dist_from_start);
+      (*pTable1)(row,col++) << dim.SetValue(rgt_off-lft_off);
+
+       Float64 width = pBridge->GetCurbToCurbWidth(dist_from_start);
+      (*pTable1)(row,col++) << dim.SetValue(width);
+
+      if (has_sw)
+      {
+         lft_off = pBridge->GetLeftInteriorCurbOffset(dist_from_start);
+         rgt_off = pBridge->GetRightInteriorCurbOffset(dist_from_start);
+         (*pTable1)(row,col++) << dim.SetValue(rgt_off-lft_off);
+      }
+
+      if (has_overlay)
+      {
+         lft_off = pBridge->GetLeftOverlayToeOffset(dist_from_start);
+         rgt_off = pBridge->GetRightOverlayToeOffset(dist_from_start);
+         (*pTable1)(row,col++) << dim.SetValue(rgt_off-lft_off);
+      }
+
+      row++;
+   }
+}
+
 
 void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level)
 {
@@ -565,6 +662,7 @@ void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    }
 
    (*pTable)(0,0) << rptNewLine << rptNewLine;
+   (*pTable)(0,0) << _T("Curb Offset = ") << xdim.SetValue( pBarrierEntry->GetCurbOffset() ) << rptNewLine;
 
    if ( pBarrierEntry->GetWeightMethod() == TrafficBarrierEntry::Compute )
    {

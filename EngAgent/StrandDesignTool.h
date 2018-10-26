@@ -187,8 +187,8 @@ public:
    void SetHarpStrandOffsetEnd(Float64 off);
    void SetHarpStrandOffsetHp(Float64 off);
 
-   void GetEndOffsetBounds(Float64* pLower, Float64* pUpper) const;
-   void GetHpOffsetBounds(Float64* pLower, Float64* pUpper) const;
+   void GetEndOffsetBounds(Float64* pLower, Float64* pUpper);
+   void GetHpOffsetBounds(Float64* pLower, Float64* pUpper);
 
    Float64 ComputeEndOffsetForEccentricity(const pgsPointOfInterest& poi, Float64 ecc);
    bool ComputeMinHarpedForEzEccentricity(const pgsPointOfInterest& poi, Float64 ecc, pgsTypes::Stage eccStage, StrandIndexType* pNs, StrandIndexType* pNh);
@@ -250,7 +250,7 @@ public:
 
    // ACCESS
    //////////
-   GDRCONFIG GetGirderConfiguration();
+   const GDRCONFIG& GetGirderConfiguration();
 
    arFlexuralDesignType GetFlexuralDesignType() const;
 
@@ -364,6 +364,9 @@ private:
    GirderIndexType m_Girder;
    SpanIndexType m_Span;
    arDesignOptions m_DesignOptions;
+
+   GDRCONFIG m_CachedConfig;
+   bool m_bConfigDirty;
 
    arDesignStrandFillType m_StrandFillType;
    Float64                m_HarpedRatio;
@@ -617,7 +620,7 @@ private:
 
    StrandIndexType ComputeNextNumProportionalStrands(StrandIndexType prevNum, StrandIndexType* ns, StrandIndexType* nh);
 
-   bool AdjustStrandsForSlope(Float64 targetSlope, Float64 currentSlope, StrandIndexType nh, IStrandGeometry* pStrandGeom);
+   bool AdjustStrandsForSlope(Float64 targetSlope, Float64 currentSlope, const PRESTRESSCONFIG& rconfig, IStrandGeometry* pStrandGeom);
 
    // Private functions called from Initialize
    ///////////////////////////////////////////

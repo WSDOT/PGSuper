@@ -54,6 +54,10 @@ LOG
 class REPORTINGCLASS CLiveLoadReactionTable
 {
 public:
+   // This class serves double duty. It can report pier reactions or girder bearing reactions.
+   // The two are identical except for the title and the interfaces they use to get responses
+   enum TableType { PierReactionsTable, BearingReactionsTable};
+
    // GROUP: LIFECYCLE
 
    //------------------------------------------------------------------------
@@ -79,7 +83,7 @@ public:
    // Builds the strand eccentricity table.
    virtual void Build(IBroker* pBroker, rptChapter* pChapter,
                       SpanIndexType span,GirderIndexType girder,
-                      IEAFDisplayUnits* pDisplayUnits,
+                      IEAFDisplayUnits* pDisplayUnits, TableType tableType,
                       pgsTypes::Stage stage, pgsTypes::AnalysisType analysisType) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY

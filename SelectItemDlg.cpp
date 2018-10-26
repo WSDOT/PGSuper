@@ -53,7 +53,18 @@ void CSelectItemDlg::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CSelectItemDlg)
 	DDX_Control(pDX, IDC_LIST, m_cbList);
 	DDX_Control(pDX, IDC_LABEL, m_Label);
-	DDX_CBIndex(pDX, IDC_LIST, (int&)m_ItemIdx);
+
+   if ( pDX->m_bSaveAndValidate )
+   {
+      int idx;
+   	DDX_CBIndex(pDX, IDC_LIST, idx);
+      m_ItemIdx = idx;
+   }
+   else
+   {
+      int idx = (int)m_ItemIdx;
+   	DDX_CBIndex(pDX, IDC_LIST, idx);
+   }
 	//}}AFX_DATA_MAP
 }
 

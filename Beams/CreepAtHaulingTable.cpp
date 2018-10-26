@@ -60,7 +60,7 @@ rptRcTable(NumColumns,0)
 CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,bool bTemporaryStrands,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,IGirderData,pGirderData);
-   CGirderData girderData = pGirderData->GetGirderData(span,gdr);
+   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
@@ -77,7 +77,7 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
    pgsReportStyleHolder::ConfigureTable(table);
 
    table->m_bTemporaryStrands = bTemporaryStrands;
-   table->m_GirderData = girderData;
+   table->m_pGirderData = pgirderData;
 
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
    
@@ -86,7 +86,7 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
    
    *pParagraph << _T("[5.9.5.4.2b] Creep of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pCRH")) << rptNewLine;
 
-   if ( girderData.TempStrandUsage != pgsTypes::ttsPretensioned )
+   if ( pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPretensioned )
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCRH_PT.png")) << rptNewLine;
    else
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCRH.png")) << rptNewLine;
@@ -129,7 +129,7 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
 
 
       col = 2;
-      if ( girderData.TempStrandUsage == pgsTypes::ttsPretensioned )
+      if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPretensioned )
          (*table)(1,col++) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       else
          (*table)(1,col++) << COLHDR(RPT_STRESS(_T("cgp")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -147,7 +147,7 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
    }
    else
    {
-      if ( girderData.TempStrandUsage == pgsTypes::ttsPretensioned )
+      if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPretensioned )
          (*table)(0,col++) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       else
          (*table)(0,col++) << COLHDR(RPT_STRESS(_T("cgp")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -159,12 +159,12 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
    return table;
 }
 
-void CCreepAtHaulingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CCreepAtHaulingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 2;
    RowIndexType rowOffset = GetNumberOfHeaderRows()-1;
 
-   if ( m_GirderData.TempStrandUsage == pgsTypes::ttsPretensioned )
+   if ( m_pGirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPretensioned )
       (*this)(row+rowOffset,col++) << stress.SetValue(details.pLosses->ElasticShortening().PermanentStrand_Fcgp());
    else
       (*this)(row+rowOffset,col++) << stress.SetValue(details.pLosses->ElasticShortening().PermanentStrand_Fcgp() + details.pLosses->GetDeltaFpp());

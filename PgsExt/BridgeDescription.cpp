@@ -1021,7 +1021,7 @@ void CBridgeDescription::SetGirderName(LPCTSTR strName)
          for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
          {
             CGirderData& girderData = girderTypes.GetGirderData(gdrIdx);
-            girderData.ResetPrestressData();
+            girderData.PrestressData.ResetPrestressData();
             pSpan->SetGirderTypes(girderTypes);
          }
 

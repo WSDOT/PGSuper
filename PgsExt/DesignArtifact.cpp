@@ -24,7 +24,10 @@
 #include <WBFLCore.h>
 #include <IFace\Tools.h>
 #include <IFace\Project.h>
+#include <IFace\Bridge.h>
 #include <PgsExt\DesignArtifact.h>
+#include <DesignConfigUtil.h>
+#include <EAF\EAFUtilities.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -84,6 +87,21 @@ void pgsDesignArtifact::SetOutcome(pgsDesignArtifact::Outcome outcome)
 pgsDesignArtifact::Outcome pgsDesignArtifact::GetOutcome() const
 {
    return m_Outcome;
+}
+
+void pgsDesignArtifact::AddDesignNote(pgsDesignArtifact::DesignNote note)
+{
+   m_DesignNotes.push_back(note);
+}
+
+bool pgsDesignArtifact::DoDesignNotesExist() const
+{
+   return !m_DesignNotes.empty();
+}
+
+std::vector<pgsDesignArtifact::DesignNote> pgsDesignArtifact::GetDesignNotes() const
+{
+   return m_DesignNotes;
 }
 
 SpanIndexType pgsDesignArtifact::GetSpan() const
@@ -226,12 +244,12 @@ Float64 pgsDesignArtifact::GetHarpStrandOffsetHp() const
    return m_HarpStrandOffsetHp;
 }
 
-DebondInfoCollection pgsDesignArtifact::GetStraightStrandDebondInfo() const
+DebondConfigCollection pgsDesignArtifact::GetStraightStrandDebondInfo() const
 {
    return m_SsDebondInfo;
 }
 
-void pgsDesignArtifact::SetStraightStrandDebondInfo(const DebondInfoCollection& dbinfo)
+void pgsDesignArtifact::SetStraightStrandDebondInfo(const DebondConfigCollection& dbinfo)
 {
    m_SsDebondInfo = dbinfo;
 }
@@ -323,19 +341,25 @@ pgsTypes::TTSUsage pgsDesignArtifact::GetTemporaryStrandUsage() const
 
 GDRCONFIG pgsDesignArtifact::GetGirderConfiguration() const
 {
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+
    GDRCONFIG config;
-   config.Nstrands[pgsTypes::Straight]  = GetNumStraightStrands();
-   config.Nstrands[pgsTypes::Harped]    = GetNumHarpedStrands();
-   config.Nstrands[pgsTypes::Temporary] = GetNumTempStrands();
+   PRESTRESSCONFIG& rpsconfig(config.PrestressConfig); // use reference as a shortcut
 
-   config.Pjack[pgsTypes::Straight]  = GetPjackStraightStrands();
-   config.Pjack[pgsTypes::Harped]    = GetPjackHarpedStrands();
-   config.Pjack[pgsTypes::Temporary] = GetPjackTempStrands();
+   rpsconfig.SetStrandFill(pgsTypes::Straight,  pStrandGeometry->ComputeStrandFill(GetSpan(), GetGirder(),pgsTypes::Straight,  GetNumStraightStrands()));
+   rpsconfig.SetStrandFill(pgsTypes::Harped,    pStrandGeometry->ComputeStrandFill(GetSpan(), GetGirder(),pgsTypes::Harped,    GetNumHarpedStrands()));
+   rpsconfig.SetStrandFill(pgsTypes::Temporary, pStrandGeometry->ComputeStrandFill(GetSpan(), GetGirder(),pgsTypes::Temporary, GetNumTempStrands()));
 
-   config.EndOffset = GetHarpStrandOffsetEnd();
-   config.HpOffset  = GetHarpStrandOffsetHp();
+   rpsconfig.Pjack[pgsTypes::Straight]  = GetPjackStraightStrands();
+   rpsconfig.Pjack[pgsTypes::Harped]    = GetPjackHarpedStrands();
+   rpsconfig.Pjack[pgsTypes::Temporary] = GetPjackTempStrands();
+
+   rpsconfig.EndOffset = GetHarpStrandOffsetEnd();
+   rpsconfig.HpOffset  = GetHarpStrandOffsetHp();
    
-   config.Debond[pgsTypes::Straight] = m_SsDebondInfo; // we only design debond for straight strands
+   rpsconfig.Debond[pgsTypes::Straight] = m_SsDebondInfo; // we only design debond for straight strands
 
    config.Fci       = GetReleaseStrength();
    config.Fc        = GetConcreteStrength();
@@ -343,7 +367,7 @@ GDRCONFIG pgsDesignArtifact::GetGirderConfiguration() const
    config.bHasFct   = m_Concrete.HasAggSplittingStrength();
    config.Fct       = m_Concrete.GetAggSplittingStrength();
 
-   config.TempStrandUsage = GetTemporaryStrandUsage();
+   rpsconfig.TempStrandUsage = GetTemporaryStrandUsage();
 
    // allow moduli to be computed
    config.bUserEci = m_IsUserEci;
@@ -354,6 +378,10 @@ GDRCONFIG pgsDesignArtifact::GetGirderConfiguration() const
    config.SlabOffset[pgsTypes::metStart] = GetSlabOffset(pgsTypes::metStart);
    config.SlabOffset[pgsTypes::metEnd]   = GetSlabOffset(pgsTypes::metEnd);
 
+   WriteShearDataToStirrupConfig(m_ShearData, config.StirrupConfig);
+
+//   WriteLongitudinalRebarDataToConfig(m_LongitudinalRebarData, config.LongitudinalRebarConfig);
+
    return config;
 }
 
@@ -362,44 +390,46 @@ ZoneIndexType pgsDesignArtifact::GetNumberOfStirrupZonesDesigned() const
    return m_NumShearZones;
 }
 
-CShearZoneData pgsDesignArtifact::GetShearZoneData(ZoneIndexType zoneNum) const
+const CShearData& pgsDesignArtifact::GetShearData() const
 {
-   PRECONDITION(zoneNum<m_NumShearZones);
-   return m_ShearZoneData[zoneNum];
+   return m_ShearData;
 }
 
 void pgsDesignArtifact::SetNumberOfStirrupZonesDesigned(ZoneIndexType num)
 {
-   PRECONDITION(num<=MAXSHEARZONES);
    m_NumShearZones = num;
 }
 
-void pgsDesignArtifact::SetShearZoneData(ZoneIndexType zoneNum, const CShearZoneData& rdata)
+void pgsDesignArtifact::SetShearData(const CShearData& rdata)
 {
-   PRECONDITION(zoneNum<=m_NumShearZones);
-   m_ShearZoneData[zoneNum] = rdata;
+   m_ShearData = rdata;
 }
 
-matRebar::Size pgsDesignArtifact::GetConfinementBarSize() const
+void pgsDesignArtifact::SetWasLongitudinalRebarForShearDesigned(bool isTrue)
 {
-   return m_ConfinementBarSize;
+   m_bWasLongitudinalRebarForShearDesigned = isTrue;
 }
 
-void pgsDesignArtifact::SetConfinementBarSize(matRebar::Size barSize)
+bool pgsDesignArtifact::GetWasLongitudinalRebarForShearDesigned() const
 {
-   m_ConfinementBarSize = barSize;
+   return m_bWasLongitudinalRebarForShearDesigned;
 }
 
-ZoneIndexType pgsDesignArtifact::GetLastConfinementZone() const
+
+CLongitudinalRebarData& pgsDesignArtifact::GetLongitudinalRebarData() 
 {
-   return m_LastConfinementZone;
+   return m_LongitudinalRebarData;
 }
 
-void pgsDesignArtifact::SetLastConfinementZone(ZoneIndexType zone)
+const CLongitudinalRebarData& pgsDesignArtifact::GetLongitudinalRebarData() const
 {
-   m_LastConfinementZone = zone;
+   return m_LongitudinalRebarData;
 }
 
+void pgsDesignArtifact::SetLongitudinalRebarData(const CLongitudinalRebarData& rdata)
+{
+   m_LongitudinalRebarData = rdata;
+}
 
 void pgsDesignArtifact::SetUserEc(Float64 Ec)
 {
@@ -614,6 +644,8 @@ void pgsDesignArtifact::MakeCopy(const pgsDesignArtifact& rOther)
 {
    m_Outcome = rOther.m_Outcome;
 
+   m_DesignNotes = rOther.m_DesignNotes;
+
    m_Span = rOther.m_Span;
    m_Gdr = rOther.m_Gdr;
 
@@ -643,13 +675,10 @@ void pgsDesignArtifact::MakeCopy(const pgsDesignArtifact& rOther)
    m_SlabOffset[pgsTypes::metEnd]   = rOther.m_SlabOffset[pgsTypes::metEnd];
 
    m_NumShearZones       = rOther.m_NumShearZones;
-   m_ShearZoneData[0]    = rOther.m_ShearZoneData[0];
-   m_ShearZoneData[1]    = rOther.m_ShearZoneData[1];
-   m_ShearZoneData[2]    = rOther.m_ShearZoneData[2];
-   m_ShearZoneData[3]    = rOther.m_ShearZoneData[3];
+   m_ShearData           = rOther.m_ShearData;
 
-   m_LastConfinementZone = rOther.m_LastConfinementZone;
-   m_ConfinementBarSize  = rOther.m_ConfinementBarSize;
+   m_bWasLongitudinalRebarForShearDesigned = rOther.m_bWasLongitudinalRebarForShearDesigned;
+   m_LongitudinalRebarData = rOther.m_LongitudinalRebarData;
 
    m_IsUserEc            = rOther.m_IsUserEc;
    m_UserEc              = rOther.m_UserEc;
@@ -677,6 +706,8 @@ void pgsDesignArtifact::Init()
 {
    m_Outcome = Success;
 
+   m_DesignNotes.clear();
+
    m_Span = 0;
    m_Gdr  = 0;
 
@@ -699,8 +730,7 @@ void pgsDesignArtifact::Init()
    m_SlabOffset[pgsTypes::metStart] = 0;
    m_SlabOffset[pgsTypes::metEnd] = 0;
    m_NumShearZones       = 0;
-   m_LastConfinementZone = 0;
-   m_ConfinementBarSize  = matRebar::bsNone;
+   m_bWasLongitudinalRebarForShearDesigned = false;
    m_LiftLocLeft         = 0.0;
    m_LiftLocRight        = 0.0;
    m_ShipLocLeft         = 0.0;

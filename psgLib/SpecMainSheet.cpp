@@ -94,7 +94,6 @@ void CSpecMainSheet::Init()
    m_SpecLossPage.m_psp.dwFlags            |= PSP_HASHELP;
    m_SpecPSLimitPage.m_psp.dwFlags         |= PSP_HASHELP;
    m_SpecLimitsPage.m_psp.dwFlags          |= PSP_HASHELP;
-   m_SpecLoadFactorsPage.m_psp.dwFlags     |= PSP_HASHELP;
    m_SpecDesignPage.m_psp.dwFlags          |= PSP_HASHELP;
    m_SpecDeflectionsPage.m_psp.dwFlags     |= PSP_HASHELP;
 
@@ -111,7 +110,6 @@ void CSpecMainSheet::Init()
    AddPage(&m_SpecLossPage);
    AddPage(&m_SpecPSLimitPage);
    AddPage(&m_SpecLimitsPage);
-   AddPage(&m_SpecLoadFactorsPage);
    AddPage(&m_SpecDesignPage);
    AddPage(&m_SpecDeflectionsPage);
 }
@@ -182,7 +180,7 @@ void CSpecMainSheet::ExchangeCyData(CDataExchange* pDX)
    {
       m_SpecCastingYardPage.m_DoCheckHoldDown    = m_Entry.m_DoCheckHoldDown;
       m_SpecCastingYardPage.m_DoCheckStrandSlope = m_Entry.m_DoCheckStrandSlope;
-      m_SpecCastingYardPage.m_DoCheckAnchorage = m_Entry.m_DoCheckAnchorage;
+      m_SpecCastingYardPage.m_DoCheckSplitting = m_Entry.m_DoCheckSplitting;
 
       // set statics for strand slope
       CString sl05, sl06, sl07;
@@ -469,6 +467,11 @@ void CSpecMainSheet::ExchangeBsData(CDataExchange* pDX)
    DDV_MinMaxDouble(pDX,m_Entry.m_LLDFGirderSpacingLocation,0.0,1.0);
 
    DDX_Check_Bool(pDX, IDC_LANESBEAMS, m_Entry.m_LimitDistributionFactorsToLanesBeams);
+
+   DDX_UnitValueAndTag(pDX, IDC_PED_LIVE_LOAD, IDC_PED_LIVE_LOAD_UNIT, m_Entry.m_PedestrianLoad, pDisplayUnits->SmallStress );
+   DDV_UnitValueZeroOrMore(pDX, IDC_PED_LIVE_LOAD,m_Entry.m_PedestrianLoad, pDisplayUnits->SpanLength );
+   DDX_UnitValueAndTag(pDX, IDC_MIN_SIDEWALK_WIDTH, IDC_MIN_SIDEWALK_WIDTH_UNIT, m_Entry.m_MinSidewalkWidth, pDisplayUnits->SpanLength );
+   DDV_UnitValueZeroOrMore(pDX, IDC_MIN_SIDEWALK_WIDTH,m_Entry.m_MinSidewalkWidth, pDisplayUnits->SpanLength );
 }
 
 void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
@@ -633,7 +636,20 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_ANCHORSET,  IDC_ANCHORSET_TAG,  m_Entry.m_Dset, pDisplayUnits->ComponentDim);
    DDX_UnitValueAndTag(pDX, IDC_WOBBLE, IDC_WOBBLE_TAG,m_Entry.m_WobbleFriction, pDisplayUnits->PerLength);
    DDX_Text(pDX,IDC_FRICTION,m_Entry.m_FrictionCoefficient);
-   
+
+   DDX_Percentage(pDX,IDC_EG_SLAB,m_Entry.m_SlabElasticGain);
+   DDX_Percentage(pDX,IDC_EG_SLABPAD,m_Entry.m_SlabPadElasticGain);
+   DDX_Percentage(pDX,IDC_EG_DIAPHRAGM,m_Entry.m_DiaphragmElasticGain);
+   DDX_Percentage(pDX,IDC_EG_DC_BS2,m_Entry.m_UserDCElasticGainBS1);
+   DDX_Percentage(pDX,IDC_EG_DW_BS2,m_Entry.m_UserDWElasticGainBS1);
+   DDX_Percentage(pDX,IDC_EG_DC_BS3,m_Entry.m_UserDCElasticGainBS2);
+   DDX_Percentage(pDX,IDC_EG_DW_BS3,m_Entry.m_UserDWElasticGainBS2);
+   DDX_Percentage(pDX,IDC_EG_RAILING,m_Entry.m_RailingSystemElasticGain);
+   DDX_Percentage(pDX,IDC_EG_OVERLAY,m_Entry.m_OverlayElasticGain);
+   DDX_Percentage(pDX,IDC_EG_SHRINKAGE,m_Entry.m_SlabShrinkageElasticGain);
+
+   DDX_CBEnum(pDX,IDC_RELAXATION_LOSS_METHOD,m_Entry.m_RelaxationLossMethod);
+
    // have to map loss method to comb box ordering in dialog
    int map[6]={LOSSES_AASHTO_REFINED,
                LOSSES_WSDOT_REFINED,
@@ -714,6 +730,8 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
             Float64 value = m_Entry.m_ShippingLosses * -100.0;
             DDX_Text(pDX,IDC_SHIPPING,value);
 
+            DDX_UnitValueAndTag(pDX, IDC_SHIPPING2, IDC_SHIPPING2_TAG, m_Entry.m_LiftingLosses, pDisplayUnits->Stress);
+
             CString strTag(_T("%"));
             DDX_Text(pDX,IDC_SHIPPING_TAG,strTag);
 
@@ -723,12 +741,12 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
          else
          {
       	   DDX_UnitValueAndTag(pDX, IDC_SHIPPING,  IDC_SHIPPING_TAG,  m_Entry.m_ShippingLosses, pDisplayUnits->Stress);
+            DDX_UnitValueAndTag(pDX, IDC_SHIPPING2, IDC_SHIPPING2_TAG, m_Entry.m_ShippingLosses, pDisplayUnits->Stress);
 
             idx = 0;
             DDX_CBIndex(pDX,IDC_SHIPPING_LOSS_METHOD,idx);
          }
 
-   	   DDX_UnitValueAndTag(pDX, IDC_SHIPPING2, IDC_SHIPPING2_TAG, dummy, pDisplayUnits->Stress);
       }
       else if ( m_Entry.m_LossMethod == LOSSES_GENERAL_LUMPSUM )
       {
@@ -798,117 +816,6 @@ void CSpecMainSheet::ExchangeLimitsData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_LWC_UNIT_WEIGHT, IDC_LWC_UNIT_WEIGHT_UNIT, m_Entry.m_MaxConcreteUnitWeight[pgsTypes::AllLightweight], pDisplayUnits->Density);
    DDX_UnitValueAndTag(pDX, IDC_LWC_AGG_SIZE,    IDC_LWC_AGG_SIZE_UNIT,    m_Entry.m_MaxConcreteAggSize[pgsTypes::AllLightweight],    pDisplayUnits->ComponentDim);
 }
-
-void CSpecMainSheet::ExchangeLoadFactorData(CDataExchange* pDX)
-{
-   const int nLimitStates = 6;
-   double DCmin[nLimitStates], DCmax[nLimitStates];
-   double DWmin[nLimitStates], DWmax[nLimitStates];
-   double LLIMmin[nLimitStates], LLIMmax[nLimitStates];
-
-   if ( pDX->m_bSaveAndValidate )
-   {
-      DDX_Text(pDX,IDC_SERVICE_I_DC,DCmin[pgsTypes::ServiceI]);
-      DDX_Text(pDX,IDC_SERVICE_I_DC,DCmax[pgsTypes::ServiceI]);
-      DDX_Text(pDX,IDC_SERVICE_I_DW,DWmin[pgsTypes::ServiceI]);
-      DDX_Text(pDX,IDC_SERVICE_I_DW,DWmax[pgsTypes::ServiceI]);
-      DDX_Text(pDX,IDC_SERVICE_I_LLIM,LLIMmin[pgsTypes::ServiceI]);
-      DDX_Text(pDX,IDC_SERVICE_I_LLIM,LLIMmax[pgsTypes::ServiceI]);
-
-      DDX_Text(pDX,IDC_SERVICE_IA_DC,DCmin[pgsTypes::ServiceIA]);
-      DDX_Text(pDX,IDC_SERVICE_IA_DC,DCmax[pgsTypes::ServiceIA]);
-      DDX_Text(pDX,IDC_SERVICE_IA_DW,DWmin[pgsTypes::ServiceIA]);
-      DDX_Text(pDX,IDC_SERVICE_IA_DW,DWmax[pgsTypes::ServiceIA]);
-      DDX_Text(pDX,IDC_SERVICE_IA_LLIM,LLIMmin[pgsTypes::ServiceIA]);
-      DDX_Text(pDX,IDC_SERVICE_IA_LLIM,LLIMmax[pgsTypes::ServiceIA]);
-
-      DDX_Text(pDX,IDC_SERVICE_III_DC,DCmin[pgsTypes::ServiceIII]);
-      DDX_Text(pDX,IDC_SERVICE_III_DC,DCmax[pgsTypes::ServiceIII]);
-      DDX_Text(pDX,IDC_SERVICE_III_DW,DWmin[pgsTypes::ServiceIII]);
-      DDX_Text(pDX,IDC_SERVICE_III_DW,DWmax[pgsTypes::ServiceIII]);
-      DDX_Text(pDX,IDC_SERVICE_III_LLIM,LLIMmin[pgsTypes::ServiceIII]);
-      DDX_Text(pDX,IDC_SERVICE_III_LLIM,LLIMmax[pgsTypes::ServiceIII]);
-
-      DDX_Text(pDX,IDC_STRENGTH_I_DC_MIN,DCmin[pgsTypes::StrengthI]);
-      DDX_Text(pDX,IDC_STRENGTH_I_DC_MAX,DCmax[pgsTypes::StrengthI]);
-      DDX_Text(pDX,IDC_STRENGTH_I_DW_MIN,DWmin[pgsTypes::StrengthI]);
-      DDX_Text(pDX,IDC_STRENGTH_I_DW_MAX,DWmax[pgsTypes::StrengthI]);
-      DDX_Text(pDX,IDC_STRENGTH_I_LLIM,LLIMmin[pgsTypes::StrengthI]);
-      DDX_Text(pDX,IDC_STRENGTH_I_LLIM,LLIMmax[pgsTypes::StrengthI]);
-
-      DDX_Text(pDX,IDC_STRENGTH_II_DC_MIN,DCmin[pgsTypes::StrengthII]);
-      DDX_Text(pDX,IDC_STRENGTH_II_DC_MAX,DCmax[pgsTypes::StrengthII]);
-      DDX_Text(pDX,IDC_STRENGTH_II_DW_MIN,DWmin[pgsTypes::StrengthII]);
-      DDX_Text(pDX,IDC_STRENGTH_II_DW_MAX,DWmax[pgsTypes::StrengthII]);
-      DDX_Text(pDX,IDC_STRENGTH_II_LLIM,LLIMmin[pgsTypes::StrengthII]);
-      DDX_Text(pDX,IDC_STRENGTH_II_LLIM,LLIMmax[pgsTypes::StrengthII]);
-
-      DDX_Text(pDX,IDC_FATIGUE_I_DC,DCmin[pgsTypes::FatigueI]);
-      DDX_Text(pDX,IDC_FATIGUE_I_DC,DCmax[pgsTypes::FatigueI]);
-      DDX_Text(pDX,IDC_FATIGUE_I_DW,DWmin[pgsTypes::FatigueI]);
-      DDX_Text(pDX,IDC_FATIGUE_I_DW,DWmax[pgsTypes::FatigueI]);
-      DDX_Text(pDX,IDC_FATIGUE_I_LLIM,LLIMmin[pgsTypes::FatigueI]);
-      DDX_Text(pDX,IDC_FATIGUE_I_LLIM,LLIMmax[pgsTypes::FatigueI]);
-
-      for ( int i = 0; i < nLimitStates; i++ )
-      {
-         m_Entry.SetDCLoadFactors(  (pgsTypes::LimitState)i, DCmin[i],   DCmax[i]);
-         m_Entry.SetDWLoadFactors(  (pgsTypes::LimitState)i, DWmin[i],   DWmax[i]);
-         m_Entry.SetLLIMLoadFactors((pgsTypes::LimitState)i, LLIMmin[i], LLIMmax[i]);
-      }
-   }
-   else
-   {
-      for ( int i = 0; i < nLimitStates; i++ )
-      {
-         m_Entry.GetDCLoadFactors(  (pgsTypes::LimitState)i, &DCmin[i],   &DCmax[i]);
-         m_Entry.GetDWLoadFactors(  (pgsTypes::LimitState)i, &DWmin[i],   &DWmax[i]);
-         m_Entry.GetLLIMLoadFactors((pgsTypes::LimitState)i, &LLIMmin[i], &LLIMmax[i]);
-      }
-
-      DDX_Text(pDX,IDC_SERVICE_I_DC,DCmin[pgsTypes::ServiceI]);
-      DDX_Text(pDX,IDC_SERVICE_I_DC,DCmax[pgsTypes::ServiceI]);
-      DDX_Text(pDX,IDC_SERVICE_I_DW,DWmin[pgsTypes::ServiceI]);
-      DDX_Text(pDX,IDC_SERVICE_I_DW,DWmax[pgsTypes::ServiceI]);
-      DDX_Text(pDX,IDC_SERVICE_I_LLIM,LLIMmin[pgsTypes::ServiceI]);
-      DDX_Text(pDX,IDC_SERVICE_I_LLIM,LLIMmax[pgsTypes::ServiceI]);
-
-      DDX_Text(pDX,IDC_SERVICE_IA_DC,DCmin[pgsTypes::ServiceIA]);
-      DDX_Text(pDX,IDC_SERVICE_IA_DC,DCmax[pgsTypes::ServiceIA]);
-      DDX_Text(pDX,IDC_SERVICE_IA_DW,DWmin[pgsTypes::ServiceIA]);
-      DDX_Text(pDX,IDC_SERVICE_IA_DW,DWmax[pgsTypes::ServiceIA]);
-      DDX_Text(pDX,IDC_SERVICE_IA_LLIM,LLIMmin[pgsTypes::ServiceIA]);
-      DDX_Text(pDX,IDC_SERVICE_IA_LLIM,LLIMmax[pgsTypes::ServiceIA]);
-
-      DDX_Text(pDX,IDC_SERVICE_III_DC,DCmin[pgsTypes::ServiceIII]);
-      DDX_Text(pDX,IDC_SERVICE_III_DC,DCmax[pgsTypes::ServiceIII]);
-      DDX_Text(pDX,IDC_SERVICE_III_DW,DWmin[pgsTypes::ServiceIII]);
-      DDX_Text(pDX,IDC_SERVICE_III_DW,DWmax[pgsTypes::ServiceIII]);
-      DDX_Text(pDX,IDC_SERVICE_III_LLIM,LLIMmin[pgsTypes::ServiceIII]);
-      DDX_Text(pDX,IDC_SERVICE_III_LLIM,LLIMmax[pgsTypes::ServiceIII]);
-
-      DDX_Text(pDX,IDC_STRENGTH_I_DC_MIN,DCmin[pgsTypes::StrengthI]);
-      DDX_Text(pDX,IDC_STRENGTH_I_DC_MAX,DCmax[pgsTypes::StrengthI]);
-      DDX_Text(pDX,IDC_STRENGTH_I_DW_MIN,DWmin[pgsTypes::StrengthI]);
-      DDX_Text(pDX,IDC_STRENGTH_I_DW_MAX,DWmax[pgsTypes::StrengthI]);
-      DDX_Text(pDX,IDC_STRENGTH_I_LLIM,LLIMmin[pgsTypes::StrengthI]);
-      DDX_Text(pDX,IDC_STRENGTH_I_LLIM,LLIMmax[pgsTypes::StrengthI]);
-
-      DDX_Text(pDX,IDC_STRENGTH_II_DC_MIN,DCmin[pgsTypes::StrengthII]);
-      DDX_Text(pDX,IDC_STRENGTH_II_DC_MAX,DCmax[pgsTypes::StrengthII]);
-      DDX_Text(pDX,IDC_STRENGTH_II_DW_MIN,DWmin[pgsTypes::StrengthII]);
-      DDX_Text(pDX,IDC_STRENGTH_II_DW_MAX,DWmax[pgsTypes::StrengthII]);
-      DDX_Text(pDX,IDC_STRENGTH_II_LLIM,LLIMmin[pgsTypes::StrengthII]);
-      DDX_Text(pDX,IDC_STRENGTH_II_LLIM,LLIMmax[pgsTypes::StrengthII]);
-
-      DDX_Text(pDX,IDC_FATIGUE_I_DC,DCmin[pgsTypes::FatigueI]);
-      DDX_Text(pDX,IDC_FATIGUE_I_DC,DCmax[pgsTypes::FatigueI]);
-      DDX_Text(pDX,IDC_FATIGUE_I_DW,DWmin[pgsTypes::FatigueI]);
-      DDX_Text(pDX,IDC_FATIGUE_I_DW,DWmax[pgsTypes::FatigueI]);
-      DDX_Text(pDX,IDC_FATIGUE_I_LLIM,LLIMmin[pgsTypes::FatigueI]);
-      DDX_Text(pDX,IDC_FATIGUE_I_LLIM,LLIMmax[pgsTypes::FatigueI]);
-   }
-}
  
 void CSpecMainSheet::UploadDesignData(CDataExchange* pDX)
 {
@@ -917,16 +824,18 @@ void CSpecMainSheet::UploadDesignData(CDataExchange* pDX)
    m_SpecDesignPage.m_CheckHoldDown = m_Entry.m_DoCheckHoldDown;
    m_SpecDesignPage.m_CheckLifting = m_Entry.m_EnableLiftingCheck;
    m_SpecDesignPage.m_CheckSlope = m_Entry.m_DoCheckStrandSlope;
-   m_SpecDesignPage.m_CheckAnchorage = m_Entry.m_DoCheckAnchorage;
+   m_SpecDesignPage.m_CheckSplitting = m_Entry.m_DoCheckSplitting;
+   m_SpecDesignPage.m_CheckConfinement = m_Entry.m_DoCheckConfinement;
 
    m_SpecDesignPage.m_DesignA = m_Entry.m_EnableSlabOffsetDesign;
    m_SpecDesignPage.m_DesignHauling = m_Entry.m_EnableHaulingDesign;
    m_SpecDesignPage.m_DesignHoldDown = m_Entry.m_DoDesignHoldDown;
    m_SpecDesignPage.m_DesignLifting = m_Entry.m_EnableLiftingDesign;
    m_SpecDesignPage.m_DesignSlope = m_Entry.m_DoDesignStrandSlope;
+   m_SpecDesignPage.m_DesignSplitting = m_Entry.m_DoDesignSplitting;
+   m_SpecDesignPage.m_DesignConfinement = m_Entry.m_DoDesignConfinement;
 
    m_SpecDesignPage.m_FillMethod = (int)m_Entry.m_DesignStrandFillType;
-
 }
 
 // mini function to convert BOOL to bool
@@ -940,17 +849,19 @@ void CSpecMainSheet::DownloadDesignData(CDataExchange* pDX)
    m_Entry.m_DoCheckHoldDown    = B2b( m_SpecDesignPage.m_CheckHoldDown);
    m_Entry.m_EnableLiftingCheck = B2b( m_SpecDesignPage.m_CheckLifting);
    m_Entry.m_DoCheckStrandSlope = B2b( m_SpecDesignPage.m_CheckSlope);
-   m_Entry.m_DoCheckAnchorage = B2b( m_SpecDesignPage.m_CheckAnchorage);
+   m_Entry.m_DoCheckSplitting = B2b( m_SpecDesignPage.m_CheckSplitting);
+   m_Entry.m_DoCheckConfinement = B2b( m_SpecDesignPage.m_CheckConfinement);
 
    m_Entry.m_EnableSlabOffsetDesign = B2b( m_SpecDesignPage.m_DesignA);
    m_Entry.m_EnableHaulingDesign = B2b( m_SpecDesignPage.m_DesignHauling);
    m_Entry.m_DoDesignHoldDown    = B2b( m_SpecDesignPage.m_DesignHoldDown);
    m_Entry.m_EnableLiftingDesign = B2b( m_SpecDesignPage.m_DesignLifting);
    m_Entry.m_DoDesignStrandSlope = B2b( m_SpecDesignPage.m_DesignSlope);
+   m_Entry.m_DoDesignSplitting = B2b( m_SpecDesignPage.m_DesignSplitting);
+   m_Entry.m_DoDesignConfinement = B2b( m_SpecDesignPage.m_DesignConfinement);
 
    m_Entry.m_DesignStrandFillType = m_SpecDesignPage.m_FillMethod==(int)ftGridOrder ?ftGridOrder : ftMinimizeHarping;
 }
-
 
 BOOL CSpecMainSheet::OnInitDialog() 
 {

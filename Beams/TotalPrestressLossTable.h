@@ -39,7 +39,7 @@ class CTotalPrestressLossTable : public rptRcTable
 {
 public:
 	static CTotalPrestressLossTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-   void AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+   void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
 
 private:
    CTotalPrestressLossTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);
@@ -57,9 +57,8 @@ private:
 
    rptRcScalar scalar;
 
-   CGirderData m_GirderData;
+   const CGirderData* m_pGirderData;
    StrandIndexType m_NtMax;
-   bool m_bIgnoreElasticGain;
 };
 
 #endif //__TOTALPRESTRESSLOSSTABLE_H_

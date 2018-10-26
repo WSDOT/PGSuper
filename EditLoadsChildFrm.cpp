@@ -38,9 +38,9 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CEditLoadsChildFrame
 
-IMPLEMENT_DYNCREATE(CEditLoadsChildFrame, CMDIChildWnd)
+IMPLEMENT_DYNCREATE(CEditLoadsChildFrame, CEAFChildFrame)
 
-BEGIN_MESSAGE_MAP(CEditLoadsChildFrame, CMDIChildWnd)
+BEGIN_MESSAGE_MAP(CEditLoadsChildFrame, CEAFChildFrame)
 	//{{AFX_MSG_MAP(CEditLoadsChildFrame)
 	ON_WM_CREATE()
 	ON_WM_SHOWWINDOW()
@@ -65,7 +65,7 @@ BOOL CEditLoadsChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 	// TODO: Modify the Window class or styles here by modifying
 	//  the CREATESTRUCT cs
 
-	if( !CMDIChildWnd::PreCreateWindow(cs) )
+	if( !CEAFChildFrame::PreCreateWindow(cs) )
 		return FALSE;
 
 	return TRUE;
@@ -79,7 +79,13 @@ BOOL CEditLoadsChildFrame::Create(LPCTSTR lpszClassName,
 				CMDIFrameWnd* pParentWnd,
 				CCreateContext* pContext)
 {
-   BOOL bResult = CMDIChildWnd::Create(lpszClassName,lpszWindowName,dwStyle,rect,pParentWnd,pContext);
+#if defined _EAF_USING_MFC_FEATURE_PACK
+   // If MFC Feature pack is used, we are using tabbed MDI windows so we don't want
+   // the system menu or the minimize and maximize boxes
+   dwStyle &= ~(WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
+#endif
+
+   BOOL bResult = CEAFChildFrame::Create(lpszClassName,lpszWindowName,dwStyle,rect,pParentWnd,pContext);
    if ( bResult )
    {
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -98,12 +104,12 @@ BOOL CEditLoadsChildFrame::Create(LPCTSTR lpszClassName,
 void CEditLoadsChildFrame::AssertValid() const
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-	CMDIChildWnd::AssertValid();
+	CEAFChildFrame::AssertValid();
 }
 
 void CEditLoadsChildFrame::Dump(CDumpContext& dc) const
 {
-	CMDIChildWnd::Dump(dc);
+	CEAFChildFrame::Dump(dc);
 }
 
 #endif //_DEBUG

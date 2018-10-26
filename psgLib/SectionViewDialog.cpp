@@ -27,6 +27,8 @@
 #include <psgLib\psgLib.h>
 #include "SectionViewDialog.h"
 #include <GraphicsLib\PointMapper.h>
+#include <PgsExt\GirderLabel.h>
+#include "PGSuperColors.h"
 
 #include <GeomModel\IShape.h>
 #include <GeomModel\Circle.h>
@@ -52,6 +54,11 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 #define BORDER 7
+
+#define SHAPE_COLOR       RGB(160,160,160)
+#define VOID_COLOR        RGB(255,255,255)
+#define BACKGROUND_COLOR  RGB(255,255,255)
+
 
 #define DUMMY_AGENT_ID INVALID_ID
 
@@ -108,7 +115,6 @@ CSectionViewDialog::CSectionViewDialog(const GirderLibraryEntry* pEntry,bool isE
 	//}}AFX_DATA_INIT
 }
 
-
 void CSectionViewDialog::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
@@ -123,6 +129,7 @@ BEGIN_MESSAGE_MAP(CSectionViewDialog, CDialog)
 	ON_WM_PAINT()
 	ON_WM_SIZE()
 	ON_WM_CTLCOLOR()
+//   ON_WM_ERASEBKGND()
 	//}}AFX_MSG_MAP
 
    ON_BN_CLICKED(IDC_SHOWS,OnClickNumbers)
@@ -289,17 +296,17 @@ void CSectionViewDialog::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, bool is
    CFont* pOldFont = pDC->SelectObject(&font);
    pDC->SetBkMode(TRANSPARENT);
 
-   CBrush straight_strand_brush(STRAIGHT_COLOR);
-   CPen   straight_strand_pen(1,PS_SOLID,STRAIGHT_COLOR);
+   CBrush straight_strand_brush(STRAIGHT_FILL_COLOR);
+   CPen   straight_strand_pen(1,PS_SOLID,STRAIGHT_FILL_COLOR);
 
-   CBrush straight_db_strand_brush(STRAIGHT_DB_COLOR); // debondable
-   CPen   straight_db_strand_pen(1,PS_SOLID,STRAIGHT_DB_COLOR);
+   CBrush straight_db_strand_brush(DEBOND_FILL_COLOR); // debondable
+   CPen   straight_db_strand_pen(1,PS_SOLID,DEBOND_FILL_COLOR);
 
-   CBrush harped_strand_brush(HARPED_COLOR);
-   CPen   harped_strand_pen(1,PS_SOLID,HARPED_COLOR);
+   CBrush harped_strand_brush(HARPED_FILL_COLOR);
+   CPen   harped_strand_pen(1,PS_SOLID,HARPED_FILL_COLOR);
 
-   CBrush temp_strand_brush(TEMP_COLOR);
-   CPen   temp_strand_pen(1,PS_SOLID,TEMP_COLOR);
+   CBrush temp_strand_brush(TEMPORARY_FILL_COLOR);
+   CPen   temp_strand_pen(1,PS_SOLID,TEMPORARY_FILL_COLOR);
 
    CBrush* pOldBrush = pDC->SelectObject(&straight_strand_brush);
    CPen*   pOldPen   = pDC->SelectObject(&straight_strand_pen);
@@ -308,12 +315,12 @@ void CSectionViewDialog::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, bool is
    bool use_diff_hg = m_pGirderEntry->IsDifferentHarpedGridAtEndsUsed();
 
    StrandIndexType total_strand_cnt=0;
-   StrandIndexType num_global = m_pGirderEntry->GetMaxGlobalStrands();
+   StrandIndexType num_global = m_pGirderEntry->GetPermanentStrandGridSize();
    for (StrandIndexType idx=0; idx<num_global; idx++)
    {
       StrandIndexType strand_idx;
       GirderLibraryEntry::psStrandType strand_type;
-      m_pGirderEntry->GetGlobalStrandAtFill(idx, &strand_type, &strand_idx);
+      m_pGirderEntry->GetGridPositionFromPermStrandGrid(idx, &strand_type, &strand_idx);
 
       if (strand_type==GirderLibraryEntry::stStraight)
       {
@@ -351,13 +358,14 @@ void CSectionViewDialog::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, bool is
    // temporary strands
    pDC->SelectObject(&temp_strand_brush);
    pDC->SelectObject(&temp_strand_pen);
-   StrandIndexType nTemp = m_pGirderEntry->GetMaxTemporaryStrands();
-   for ( StrandIndexType idx = 0; idx < nTemp;  )
+   StrandIndexType nTemp = m_pGirderEntry->GetNumTemporaryStrandCoordinates();
+   StrandIndexType tid=0;
+   for ( StrandIndexType idx = 0; idx < nTemp; idx++  )
    {
       Float64 x_start,y_start,x_end,y_end;
       m_pGirderEntry->GetTemporaryStrandCoordinates(idx,&x_start,&y_start,&x_end,&y_end);
 
-      idx = DrawStrand(pDC, Mapper, x_start, y_start, idx);
+      tid = DrawStrand(pDC, Mapper, x_start, y_start, tid);
    }
 
    pDC->SelectObject(pOldFont);
@@ -481,23 +489,24 @@ HBRUSH CSectionViewDialog::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
 	
     
-     if (pWnd->GetDlgCtrlID() == IDC_SS)
-     {
-          pDC->SetTextColor(STRAIGHT_COLOR);
-     }
-     else if (pWnd->GetDlgCtrlID() == IDC_DB)
-     {
-          pDC->SetTextColor(STRAIGHT_DB_COLOR);
-     }
-     else if (pWnd->GetDlgCtrlID() == IDC_HS)
-     {
-          pDC->SetTextColor(HARPED_COLOR);
-     }
-     else if (pWnd->GetDlgCtrlID() == IDC_TS)
-     {
-          pDC->SetTextColor(TEMP_COLOR);
-     }
-	
+   COLORREF col(0);
+   if (pWnd->GetDlgCtrlID() == IDC_SS)
+   {
+       pDC->SetTextColor(STRAIGHT_FILL_COLOR);
+   }
+   else if (pWnd->GetDlgCtrlID() == IDC_DB)
+   {
+       pDC->SetTextColor(DEBOND_FILL_COLOR);
+   }
+   else if (pWnd->GetDlgCtrlID() == IDC_HS)
+   {
+       pDC->SetTextColor(HARPED_FILL_COLOR);
+   }
+   else if (pWnd->GetDlgCtrlID() == IDC_TS)
+   {
+       pDC->SetTextColor(TEMPORARY_FILL_COLOR);
+   }
+
 	return hbr;
 }
 
@@ -510,6 +519,12 @@ BOOL CSectionViewDialog::OnInitDialog()
 	
    CButton* pBtn = (CButton*)GetDlgItem(IDC_SHOWS);
    pBtn->SetCheck(TRUE);
+
+   // label for harped or straight-web
+   CString hlbl;
+   hlbl.Format(_T("%s Strands"), LABEL_HARP_TYPE(m_pGirderEntry->IsForceHarpedStrandsStraight()));
+   CWnd* pWnd = GetDlgItem(IDC_HS);
+   pWnd->SetWindowTextW(hlbl);
 
    CStatic* pShapeProps = (CStatic*)GetDlgItem(IDC_SECTION_PROPERTIES);
    CString strProps;
@@ -544,7 +559,7 @@ BOOL CSectionViewDialog::OnInitDialog()
    Kb = ::ConvertFromSysUnits(Kb,pDisplayUnits->ComponentDim.UnitOfMeasure);
    strYUnit = pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str();
 
-   strProps.Format(_T("Area = %.0f %s\t\tYt = %0.f %s\t\tYb = %0.f %s\nIx = %0.f %s\t\tSt = %0.f %s\t\tSb = %0.f %s\nH = %0.f %s\t\tKt = %0.f %s\t\tKb = %0.f %s"),Area,strAreaUnit,Ytop,strYUnit,Ybot,strYUnit,Ix,strIxUnit,Stop,strSUnit,Sbot,strSUnit,(Ytop+Ybot),strYUnit,Kt,strYUnit,Kb,strYUnit);
+   strProps.Format(_T("Area = %.0f %s\t\t\tYt = %0.f %s\t\t\tYb = %0.f %s\nIx = %0.f %s\t\t\tSt = %0.f %s\t\t\tSb = %0.f %s\nH = %0.f %s\t\t\tKt = %0.f %s\t\t\tKb = %0.f %s"),Area,strAreaUnit,Ytop,strYUnit,Ybot,strYUnit,Ix,strIxUnit,Stop,strSUnit,Sbot,strSUnit,(Ytop+Ybot),strYUnit,Kt,strYUnit,Kb,strYUnit);
    pShapeProps->SetWindowText(strProps);
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -555,4 +570,15 @@ void CSectionViewDialog::OnClickNumbers()
 {
    m_DrawNumbers = !m_DrawNumbers;
    Invalidate();
+}
+
+BOOL CSectionViewDialog::OnEraseBkgnd(CDC* pDC)
+{
+    CRect rect;
+    GetClientRect(&rect);
+    CBrush myBrush(BACKGROUND_COLOR);    // dialog background color
+    CBrush *pOld = pDC->SelectObject(&myBrush);
+    BOOL bRes  = pDC->PatBlt(0, 0, rect.Width(), rect.Height(), PATCOPY);
+    pDC->SelectObject(pOld);    // restore old brush
+    return bRes;                       // CDialog::OnEraseBkgnd(pDC);
 }

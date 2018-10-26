@@ -123,6 +123,7 @@ public:
    virtual Float64 GetDeckPlacementLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType);
    virtual Float64 GetSIDLLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType);
    virtual Float64 GetFinal(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType);
+   virtual Float64 GetFinalWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType);
    virtual LOSSDETAILS GetLossDetails(const pgsPointOfInterest& poi);
    virtual void ReportLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
    virtual void ReportFinalLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
@@ -138,6 +139,7 @@ public:
    virtual Float64 GetDeckPlacementLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config);
    virtual Float64 GetSIDLLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config);
    virtual Float64 GetFinal(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config);
+   virtual Float64 GetFinalWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config);
    virtual LOSSDETAILS GetLossDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config);
    virtual void ClearDesignLosses();
 
@@ -149,6 +151,7 @@ public:
    virtual Float64 GetXferLength(SpanIndexType span,GirderIndexType gdr,pgsTypes::StrandType strandType);
    virtual Float64 GetDevLength(const pgsPointOfInterest& poi,bool bDebonded);
    virtual STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded);
+   virtual STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bDebonded);
    virtual Float64 GetStrandBondFactor(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType);
    virtual Float64 GetStrandBondFactor(const pgsPointOfInterest& poi,const GDRCONFIG& config,StrandIndexType strandIdx,pgsTypes::StrandType strandType);
    virtual Float64 GetStrandBondFactor(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,Float64 fps,Float64 fpe);
@@ -229,11 +232,13 @@ public:
    virtual void GetRawShearCapacityDetails(pgsTypes::LimitState ls, pgsTypes::Stage stage,const pgsPointOfInterest& poi,SHEARCAPACITYDETAILS* pmcd);
    virtual Float64 GetFpc(const pgsPointOfInterest& poi);
    virtual void GetFpcDetails(const pgsPointOfInterest& poi, FPCDETAILS* pmcd);
+
    virtual Float64 GetShearCapacity(pgsTypes::LimitState ls, pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config);
    virtual void GetShearCapacityDetails(pgsTypes::LimitState ls, pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,SHEARCAPACITYDETAILS* pmcd);
    virtual void GetRawShearCapacityDetails(pgsTypes::LimitState ls, pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,SHEARCAPACITYDETAILS* pmcd);
    virtual Float64 GetFpc(const pgsPointOfInterest& poi,const GDRCONFIG& config);
    virtual void GetFpcDetails(const pgsPointOfInterest& poi, const GDRCONFIG& config,FPCDETAILS* pmcd);
+
    virtual void GetCriticalSection(pgsTypes::LimitState limitState,SpanIndexType span,GirderIndexType gdr,Float64* pLeft,Float64* pRight);
    virtual void GetCriticalSection(pgsTypes::LimitState limitState,SpanIndexType span,GirderIndexType gdr,const GDRCONFIG& config,Float64* pLeft,Float64* pRight);
    virtual void GetCriticalSectionDetails(pgsTypes::LimitState limitState,SpanIndexType span,GirderIndexType gdr,CRITSECTDETAILS* pDetails);
@@ -333,7 +338,8 @@ private:
     
          Losses& losses = (*found).second;
 
-         if ( config == losses.m_Config )
+         // Losses don't change if we have the same flexural data
+         if ( config.IsFlexuralDataEqual(losses.m_Config) )
          {
             *pLosses = losses.m_Details;
             return true;

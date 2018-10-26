@@ -50,6 +50,9 @@ public:
       ltStartEndPoint
    };
 
+   bool m_DoUseHarpedGrid;
+   bool m_DoUseHarpedWebStrands;
+
    int m_StrandType; // 0 = straight, 1 = harped
    Float64 m_Xstart, m_Ystart;
    Float64 m_Xend,   m_Yend; // end point is spacing if m_LayoutType is ltSpacing

@@ -775,16 +775,28 @@ void CGirderDescGeneralPage::OnChangeGirderName()
    pCB->GetWindowText(newName);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   pParent->m_GirderData.ResetPrestressData();
-
    pParent->m_strGirderName = newName;
+
+   // reset prestress data
+   pParent->m_GirderData.PrestressData.ResetPrestressData();
 
    // reset stirrups to library
    pParent->m_Shear.m_CurGrdName = newName;
-   pParent->m_Shear.RestoreToLibraryDefaults();
+   pParent->m_Shear.DoRestoreDefaults();
 
    pParent->m_LongRebar.m_CurGrdName = newName;
    pParent->m_LongRebar.RestoreToLibraryDefaults();
 
-   pParent->SetDebondTabName();
+   // add/remove property pages if needed
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2( pBroker, ILibrary, pLib );
+   GET_IFACE2( pBroker, ISpecification, pSpec);
+   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(newName);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+
+   bool bCanExtendStrands = pSpecEntry->AllowStraightStrandExtensions();
+   bool bCanDebond = pGdrEntry->CanDebondStraightStrands();
+
+   pParent->OnGirderTypeChanged(bCanExtendStrands,bCanDebond);
 }

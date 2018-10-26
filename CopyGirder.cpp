@@ -118,7 +118,7 @@ bool txnCopyGirder::Execute()
             CString msg;
             msg.Format(_T("- Longitudinal rebar data was copied to Span %d Girder %s because girder type was changed.\n"),LABEL_SPAN(to_span),LABEL_GIRDER(to_gdr));
             strWarningMsg = strWarningMsg + msg;
-      }
+         }
 
          gd.CopyShearDataFrom(m_SourceGirderData.m_GirderData);
       }
@@ -132,7 +132,7 @@ bool txnCopyGirder::Execute()
             strWarningMsg = strWarningMsg + msg;
          }
 
-          gd.CopyPrestressingFrom(m_SourceGirderData.m_GirderData);
+         gd.CopyPrestressingFrom(m_SourceGirderData.m_GirderData);
       }
 
       if (m_bMaterial)
@@ -257,7 +257,7 @@ void txnCopyGirder::GetGirderData(SpanIndexType spanIdx,GirderIndexType gdrIdx,t
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    ptxnGirderData->m_strGirderName = pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderName(gdrIdx);
    
-   ptxnGirderData->m_GirderData            = pGirderData->GetGirderData(spanIdx,gdrIdx);
+   ptxnGirderData->m_GirderData            = *(pGirderData->GetGirderData(spanIdx,gdrIdx));
    ptxnGirderData->m_LongitudinalRebarData = pLongRebar->GetLongitudinalRebarData(spanIdx,gdrIdx);
    ptxnGirderData->m_ShearData             = pShear->GetShearData(spanIdx,gdrIdx);
 

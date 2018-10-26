@@ -65,11 +65,7 @@ Float64 GetHorizPsComponent(IBroker* pBroker,
                             const GDRCONFIG& config)
 {
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   Float64 ss = pStrandGeometry->GetAvgStrandSlope( poi,
-                                                 config.Nstrands[pgsTypes::Harped],
-                                                 config.EndOffset,
-                                                 config.HpOffset
-                                               );
+   Float64 ss = pStrandGeometry->GetAvgStrandSlope( poi, config.PrestressConfig);
    Float64 hz = 1.0;
 
    if (ss < Float64_Max)
@@ -488,7 +484,7 @@ const MOMENTCAPACITYDETAILS* CEngAgentImp::GetCachedMomentCapacity(pgsTypes::Sta
 const MOMENTCAPACITYDETAILS* CEngAgentImp::GetCachedMomentCapacity(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment)
 {
    // if the stored config is not equal to the requesting config, flush all the cached results
-   if ( config != m_TempGirderConfig )
+   if ( !config.IsFlexuralDataEqual(m_TempGirderConfig) )
    {
       m_TempNonCompositeMomentCapacity[0].clear();
       m_TempNonCompositeMomentCapacity[1].clear();
@@ -1346,6 +1342,20 @@ Float64 CEngAgentImp::GetFinal(const pgsPointOfInterest& poi,pgsTypes::StrandTyp
    return val;
 }
 
+Float64 CEngAgentImp::GetFinalWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType)
+{
+   LOSSDETAILS* pLossDetails = FindLosses(poi);
+   ATLASSERT(pLossDetails != 0);
+
+   Float64 val;
+   if ( strandType == pgsTypes::Temporary )
+      val = pLossDetails->pLosses->TemporaryStrand_Final();
+   else
+      val = pLossDetails->pLosses->PermanentStrand_FinalWithLiveLoad();
+
+   return val;
+}
+
 LOSSDETAILS CEngAgentImp::GetLossDetails(const pgsPointOfInterest& poi)
 {
    LOSSDETAILS* pLosses = FindLosses(poi);
@@ -1507,6 +1517,19 @@ Float64 CEngAgentImp::GetFinal(const pgsPointOfInterest& poi,pgsTypes::StrandTyp
    return loss;
 }
 
+Float64 CEngAgentImp::GetFinalWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config)
+{
+   LOSSDETAILS details = GetLossDetails(poi,config);
+
+   Float64 loss;
+   if ( strandType == pgsTypes::Temporary )
+      loss = details.pLosses->TemporaryStrand_Final();
+   else
+      loss = details.pLosses->PermanentStrand_FinalWithLiveLoad();
+   
+   return loss;
+}
+
 LOSSDETAILS CEngAgentImp::GetLossDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config)
 {
    // first see if we have cached our losses
@@ -1564,6 +1587,11 @@ Float64 CEngAgentImp::GetDevLength(const pgsPointOfInterest& poi,bool bDebonded)
 STRANDDEVLENGTHDETAILS CEngAgentImp::GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded)
 {
     return m_PsForceEngineer.GetDevLengthDetails(poi,bDebonded);
+}
+
+STRANDDEVLENGTHDETAILS CEngAgentImp::GetDevLengthDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bDebonded)
+{
+    return m_PsForceEngineer.GetDevLengthDetails(poi,bDebonded,config);
 }
 
 //-----------------------------------------------------------------------------
@@ -1663,20 +1691,23 @@ Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,
                                                  pgsTypes::LossStage lossStage)
 {
    Float64 Ps = GetPrestressForce(poi,config,strandType,lossStage);
-   StrandIndexType nStrands = config.Nstrands[strandType];
+   StrandIndexType nStrands = config.PrestressConfig.GetNStrands(strandType);
 
    GET_IFACE(IBridge,pBridge);
    Float64 gdr_length = pBridge->GetGirderLength(poi.GetSpan(),poi.GetGirder());
 
-   std::vector<DEBONDINFO>::const_iterator iter;
-   for ( iter = config.Debond[strandType].begin(); iter != config.Debond[strandType].end(); iter++ )
+   DebondConfigConstIterator iter    = config.PrestressConfig.Debond[strandType].begin();
+   DebondConfigConstIterator iterend = config.PrestressConfig.Debond[strandType].end();
+   while(iter != iterend)
    {
-      const DEBONDINFO& debond_info = *iter;
+      const DEBONDCONFIG& debond_info = *iter;
       if ( InRange(0.0,poi.GetDistFromStart(),debond_info.LeftDebondLength) ||
            InRange(gdr_length - debond_info.RightDebondLength, poi.GetDistFromStart(), gdr_length) )
       {
          nStrands--;
       }
+
+      iter++;
    }
 
    return Ps/nStrands;
@@ -2592,6 +2623,8 @@ std::vector<Float64> CEngAgentImp::GetMomentCapacity(pgsTypes::Stage stage,const
 
 void CEngAgentImp::GetMomentCapacityDetails(pgsTypes::Stage stage,const pgsPointOfInterest& poi,bool bPositiveMoment,MOMENTCAPACITYDETAILS* pmcd)
 {
+   ATLASSERT(poi.GetID()!=INVALID_INDEX); // shouldn't be asking for temporary pois for no design case
+
    // Capacity is only computed in these stages
    ATLASSERT( stage == pgsTypes::BridgeSite1 || stage == pgsTypes::BridgeSite3 );
 
@@ -2607,30 +2640,38 @@ void CEngAgentImp::GetMomentCapacityDetails(pgsTypes::Stage stage,const pgsPoint
 
 void CEngAgentImp::GetMomentCapacityDetails(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment,MOMENTCAPACITYDETAILS* pmcd)
 {
-   // Get the current configuration and compare it to the provided one
-   // If same, call GetMomentCapacityDetails w/o config.
-   GET_IFACE(IBridge,pBridge);
-   GDRCONFIG curr_config = pBridge->GetGirderConfiguration(poi.GetSpan(),poi.GetGirder());
+    if (poi.GetID()==INVALID_INDEX)
+    {
+        // Never store temporary pois
+       *pmcd = ComputeMomentCapacity(stage,poi,config,bPositiveMoment);
+    }
+    else
+    {
+       // Get the current configuration and compare it to the provided one
+       // If same, call GetMomentCapacityDetails w/o config.
+       GET_IFACE(IBridge,pBridge);
+       GDRCONFIG curr_config = pBridge->GetGirderConfiguration(poi.GetSpan(),poi.GetGirder());
 
-   if ( curr_config == config )
-   {
-      GetMomentCapacityDetails(stage,poi,bPositiveMoment,pmcd);
-   }
-   else
-   {
-      // the capacity details for the requested girder configuration is not the same as for the
-      // current input... see if it is cached
-      const MOMENTCAPACITYDETAILS* pMCD = GetCachedMomentCapacity(stage,poi,config,bPositiveMoment);
-      if ( pMCD == NULL )
-      {
-         // the capacity has not yet been computed for this config, moment type, stage, and poi
-         pMCD = ValidateMomentCapacity(stage,poi,config,bPositiveMoment); // compute it
-      }
+       if ( curr_config.IsFlexuralDataEqual(config) )
+       {
+          GetMomentCapacityDetails(stage,poi,bPositiveMoment,pmcd);
+       }
+       else
+       {
+          // the capacity details for the requested girder configuration is not the same as for the
+          // current input... see if it is cached
+          const MOMENTCAPACITYDETAILS* pMCD = GetCachedMomentCapacity(stage,poi,config,bPositiveMoment);
+          if ( pMCD == NULL )
+          {
+             // the capacity has not yet been computed for this config, moment type, stage, and poi
+             pMCD = ValidateMomentCapacity(stage,poi,config,bPositiveMoment); // compute it
+          }
 
-      ATLASSERT( pMCD != NULL );
+          ATLASSERT( pMCD != NULL );
 
-      *pmcd = *pMCD;
-   }
+          *pmcd = *pMCD;
+       }
+    }
 }
 
 std::vector<Float64> CEngAgentImp::GetCrackingMoment(pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment)
@@ -2686,7 +2727,7 @@ void CEngAgentImp::GetCrackingMomentDetails(pgsTypes::Stage stage,const pgsPoint
    // If same, call GetMomentCapacityDetails w/o config.
    GET_IFACE(IBridge,pBridge);
    GDRCONFIG curr_config = pBridge->GetGirderConfiguration(poi.GetSpan(),poi.GetGirder());
-   if ( curr_config == config )
+   if ( curr_config.IsFlexuralDataEqual(config) )
       GetCrackingMomentDetails(stage,poi,bPositiveMoment,pcmd);
    else
       m_MomentCapEngineer.ComputeCrackingMoment(stage,poi,config,bPositiveMoment,pcmd);
@@ -2726,7 +2767,7 @@ void CEngAgentImp::GetMinMomentCapacityDetails(pgsTypes::Stage stage,const pgsPo
    // If same, call GetMomentCapacityDetails w/o config.
    GET_IFACE(IBridge,pBridge);
    GDRCONFIG curr_config = pBridge->GetGirderConfiguration(poi.GetSpan(),poi.GetGirder());
-   if ( curr_config == config )
+   if ( curr_config.IsFlexuralDataEqual(config) )
       GetMinMomentCapacityDetails(stage,poi,bPositiveMoment,pmmcd);
    else
       m_MomentCapEngineer.ComputeMinMomentCapacity(stage,poi,config,bPositiveMoment,pmmcd);
@@ -3037,15 +3078,15 @@ void CEngAgentImp::GetFabricationOptimizationDetails(SpanIndexType span,GirderIn
    GDRCONFIG config = pBridge->GetGirderConfiguration(span,gdr);
 
    // there is nothing to do if there aren't any strands
-   if ( config.Nstrands[pgsTypes::Straight] == 0 && config.Nstrands[pgsTypes::Harped] == 0 )
+   if ( config.PrestressConfig.GetNStrands(pgsTypes::Straight) == 0 && config.PrestressConfig.GetNStrands(pgsTypes::Harped) == 0 )
       return;
 
-   pDetails->Nt = config.Nstrands[pgsTypes::Temporary];
-   pDetails->Pjack = config.Pjack[pgsTypes::Temporary];
+   pDetails->Nt = config.PrestressConfig.GetNStrands(pgsTypes::Temporary);
+   pDetails->Pjack = config.PrestressConfig.Pjack[pgsTypes::Temporary];
 
    GET_IFACE(IGirderData,pGirderData);
-   CGirderData girderData = pGirderData->GetGirderData(span,gdr);
-   pDetails->TempStrandUsage = girderData.TempStrandUsage;
+   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
+   pDetails->TempStrandUsage = pgirderData->PrestressData.TempStrandUsage;
 
    pgsGirderHandlingChecker checker(m_pBroker,m_StatusGroupID);
 
@@ -3059,7 +3100,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(SpanIndexType span,GirderIn
       /////////////////////////////////////////////////////////////
 
       // pretensioned TTS
-      config.TempStrandUsage = pgsTypes::ttsPretensioned;
+      config.PrestressConfig.TempStrandUsage = pgsTypes::ttsPretensioned;
 
       pgsLiftingAnalysisArtifact artifact1;
       GET_IFACE(IGirderLiftingPointsOfInterest,pGirderLiftingPointsOfInterest);
@@ -3074,12 +3115,12 @@ void CEngAgentImp::GetFabricationOptimizationDetails(SpanIndexType span,GirderIn
       pDetails->Fci[PS_TTS] = fci;
 
       // without TTS
-      config.TempStrandUsage = pgsTypes::ttsPretensioned;
-      StrandIndexType Nt = config.Nstrands[pgsTypes::Temporary];
-      Float64 Pjt = config.Pjack[pgsTypes::Temporary];
+      config.PrestressConfig.TempStrandUsage = pgsTypes::ttsPretensioned;
+      StrandIndexType Nt = config.PrestressConfig.GetNStrands(pgsTypes::Temporary);
+      Float64 Pjt = config.PrestressConfig.Pjack[pgsTypes::Temporary];
 
-      config.Nstrands[pgsTypes::Temporary] = 0;
-      config.Pjack[pgsTypes::Temporary] = 0;
+      config.PrestressConfig.ClearStrandFill(pgsTypes::Temporary);
+      config.PrestressConfig.Pjack[pgsTypes::Temporary] = 0;
 
       pgsLiftingAnalysisArtifact artifact2;
       checker.DesignLifting(span,gdr,config,pGirderLiftingPointsOfInterest,&artifact2,LOGGER);
@@ -3093,9 +3134,11 @@ void CEngAgentImp::GetFabricationOptimizationDetails(SpanIndexType span,GirderIn
       // post-tensioned TTS
 
       // lifting at location for NO_TTS (optional TTS)
-      config.TempStrandUsage = pgsTypes::ttsPTBeforeLifting;
-      config.Pjack[pgsTypes::Temporary] = Pjt;
-      config.Nstrands[pgsTypes::Temporary] = Nt;
+      config.PrestressConfig.TempStrandUsage = pgsTypes::ttsPTBeforeLifting;
+      config.PrestressConfig.Pjack[pgsTypes::Temporary] = Pjt;
+
+      ConfigStrandFillVector rfillvec = pStrandGeom->ComputeStrandFill(span, gdr, pgsTypes::Temporary, Nt);
+      config.PrestressConfig.SetStrandFill(pgsTypes::Temporary, rfillvec);
 
       HANDLINGCONFIG lift_config;
       lift_config.GdrConfig = config;
@@ -3110,9 +3153,9 @@ void CEngAgentImp::GetFabricationOptimizationDetails(SpanIndexType span,GirderIn
       pDetails->Fci[PT_TTS_OPTIONAL] = fci;
 
       // lifting at location for PS_TTS (required TTS)
-      config.TempStrandUsage = pgsTypes::ttsPTBeforeLifting;
-      config.Pjack[pgsTypes::Temporary] = Pjt;
-      config.Nstrands[pgsTypes::Temporary] = Nt;
+      config.PrestressConfig.TempStrandUsage = pgsTypes::ttsPTBeforeLifting;
+      config.PrestressConfig.Pjack[pgsTypes::Temporary] = Pjt;
+      config.PrestressConfig.SetStrandFill(pgsTypes::Temporary, rfillvec);
 
       lift_config.GdrConfig = config;
       lift_config.LeftOverhang = pDetails->L[PS_TTS];
@@ -3137,8 +3180,8 @@ void CEngAgentImp::GetFabricationOptimizationDetails(SpanIndexType span,GirderIn
    std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(span,gdr,pgsTypes::CastingYard,POI_FLEXURESTRESS | POI_TABULAR);
    GDRCONFIG config_WithoutTTS;
    config_WithoutTTS = config;
-   config_WithoutTTS.Pjack[pgsTypes::Temporary] = 0;
-   config_WithoutTTS.Nstrands[pgsTypes::Temporary] = 0;
+   config_WithoutTTS.PrestressConfig.Pjack[pgsTypes::Temporary] = 0;
+   config_WithoutTTS.PrestressConfig.ClearStrandFill(pgsTypes::Temporary);
 
    double min_stress_WithoutTTS = DBL_MAX;
    double max_stress_WithoutTTS = -DBL_MAX;
@@ -3204,7 +3247,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(SpanIndexType span,GirderIn
    GET_IFACE(IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
    pgsHaulingAnalysisArtifact hauling_artifact;
    config = pBridge->GetGirderConfiguration(span,gdr);
-   config.TempStrandUsage = pgsTypes::ttsPretensioned;
+   config.PrestressConfig.TempStrandUsage = pgsTypes::ttsPretensioned;
    bool bResult = checker.DesignShipping(span,gdr,config,true,true,pGirderHaulingPointsOfInterest,&hauling_artifact,LOGGER);
    if ( !bResult )
    {

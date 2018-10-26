@@ -1,6 +1,6 @@
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00     1     1 Girde  *    27   5/8  270 10.72 -3.61  27 25.0  6.800  7.500    2.879   -4.930   2051  0.625  0.625  0.14  0.00 -0.01 -0.01 -0.03  96.63 202.32   1.75   5.00   5.00
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 28.25   5  6.00  1     1    Girde  *    27  0.60  270 10.72 -3.61  27 25.0  6.800  7.500    2.879   -4.930   2051  0.625  0.625  0.14  0.00 -0.01 -0.01 -0.03  96.63 202.32   1.75   5.00   5.00
 
 
 Girder design was Not Successful
@@ -13,9 +13,9 @@ Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone checks failed.
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00     1     2 Girde  *    25   5/8  270 11.01 -3.33  25 25.0  6.300  7.000    2.586   -4.474   1817  0.518  0.667  0.14  0.00 -0.01 -0.01 -0.03  87.42 188.09   1.75   5.00   5.00
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 28.25   5  6.00  1     2    Girde  *    25  0.60  270 11.01 -3.33  25 25.0  6.300  7.000    2.586   -4.474   1817  0.518  0.667  0.14  0.00 -0.01 -0.01 -0.03  87.42 188.09   1.75   5.00   5.00
 
 
 Girder design was Not Successful
@@ -28,9 +28,9 @@ Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone checks failed.
 
 
- RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00     1     3 Girde  *    25   5/8  270 11.01 -3.33  25 25.0  6.300  7.000    2.586   -4.474   1817  0.518  0.667  0.14  0.00 -0.01 -0.01 -0.03  87.42 188.09   1.75   5.00   5.00
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 28.25   5  6.00  1     3    Girde  *    25  0.60  270 11.01 -3.33  25 25.0  6.300  7.000    2.586   -4.474   1817  0.518  0.667  0.14  0.00 -0.01 -0.01 -0.03  87.42 188.09   1.75   5.00   5.00
 
 
 Girder design was Not Successful

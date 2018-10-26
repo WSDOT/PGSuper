@@ -451,7 +451,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* b
          // yes!!!
 
          // left or right exterior girder... get the barrier
-         CComPtr<IBarrier> barrier;
+         CComPtr<ISidewalkBarrier> barrier;
          if ( gdrIdx == 0 )
          {
             // if this is an exterior girder then we need to add the effect of the barriers if they are continuous

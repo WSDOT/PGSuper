@@ -395,9 +395,6 @@ void txnEditRatingCriteria::Execute(int i)
    pRatingSpec->SetLiveLoadFactor(      pgsTypes::ServiceIII_LegalSpecial,m_Data[i].m_Legal.ServiceIII_LL_Special);
 
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   pLiveLoads->EnablePedestianLoad(pgsTypes::lltLegalRating_Routine,false);
-   pLiveLoads->EnablePedestianLoad(pgsTypes::lltLegalRating_Special,false);
-   
    pLiveLoads->SetLiveLoadNames(pgsTypes::lltLegalRating_Routine,m_Data[i].m_Legal.RoutineNames);
    pLiveLoads->SetLiveLoadNames(pgsTypes::lltLegalRating_Special,m_Data[i].m_Legal.SpecialNames);
    
@@ -435,9 +432,6 @@ void txnEditRatingCriteria::Execute(int i)
    pRatingSpec->SetDeadLoadFactor(      pgsTypes::ServiceI_PermitSpecial,m_Data[i].m_Permit.ServiceI_DC);
    pRatingSpec->SetWearingSurfaceFactor(pgsTypes::ServiceI_PermitSpecial,m_Data[i].m_Permit.ServiceI_DW);
    pRatingSpec->SetLiveLoadFactor(      pgsTypes::ServiceI_PermitSpecial,m_Data[i].m_Permit.ServiceI_LL_Special);
-
-   pLiveLoads->EnablePedestianLoad(pgsTypes::lltPermitRating_Routine,false);
-   pLiveLoads->EnablePedestianLoad(pgsTypes::lltPermitRating_Special,false);
 
    pLiveLoads->SetLiveLoadNames(pgsTypes::lltPermitRating_Routine,m_Data[i].m_Permit.RoutinePermitNames);
    pLiveLoads->SetTruckImpact(  pgsTypes::lltPermitRating_Routine,m_Data[i].m_Permit.IM_Truck_Routine);

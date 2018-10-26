@@ -20,8 +20,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1020>
-<meta name=layout-width content=947>
+<meta name=layout-height content=3211>
+<meta name=layout-width content=1234>
 
 
 <!--(Links)=========================================================-->
@@ -53,9 +53,9 @@
 		style="border: none;
 				float: none;
 				border-style: none;
-				border-style: none;
 				width: 685px;
-				height: 527px;"
+				height: 527px;
+				border-style: none;"
 		width=685
 		height=527
 		border=0></p>
@@ -67,11 +67,6 @@
  at the face of curb when an interior barrier is not used or the depth 
  at the interior barrier when used. </p>
 
-<p class=Tip>NOTE: Sidewalk pedestrian live load is automatically enabled. 
- See <a HREF="../UserDefinedLoads/Chapter_5.htm">Chapter 5</a> and the 
- <a HREF="../../Tutorial/BridgeWithSidewalk/Introduction.htm">Bridge with 
- Sidewalks</a> tutorial.</p>
-
 <p>Barriers may be placed on top of sidewalks if the option is selected. 
  Otherwise the sidewalk is placed between barriers.</p>
 
@@ -82,6 +77,147 @@
 
 <p>If a sidewalk is used, or if either the exterior or interior barrier 
  require Concrete Parameters, they are entered in this dialog.</p>
+
+<h2>Definition of Railing System Geometry</h2>
+
+<p>This section provides precise detailed definitions for the geometry.</p>
+
+<h3>Barrier Geometry</h3>
+
+<p>Barriers are defined in the <a href="../Appendix B - PGSuper Library Dialogs/PsglibTraffic_Barrier_Dialog.htm">Barrier 
+ Library</a>. A barrier shape is a polygon consisting of X,Y points that 
+ define its exterior boundary. Barrier geometry is defined as on the left 
+ side of the bridge looking ahead station (right barriers are simply mirrored). 
+ The figure below shows a polygon that might define a complex barrier shape:</p>
+
+<p><img src="BarrierGeometry.gif"
+		x-maintain-ratio=TRUE
+		style="border: none;
+				width: 405px;
+				height: 208px;
+				float: none;"
+		width=405
+		height=208
+		border=0></p>
+
+<ul style="list-style: disc;"
+	type=disc>
+	
+	<li class=kadov-p><p><!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}-->The 
+ origin (X=0.0, Y=0.0) serves to locate barriers vertically and horizontally. 
+ </p></li>
+	
+	<ul style="list-style: disc;"
+		type=disc>
+		
+		<li class=kadov-p><p>For all barriers, the Y origin is placed vertically 
+ at the top of deck, or optionally at the top of sidewalk if the barrier 
+ is placed on top of the sidewalk.</p></li>
+		
+		<li class=kadov-p><p>For exterior barriers, the X origin is placed 
+ horizontally at the left edge of deck, or left edge of exterior girder 
+ if no deck is present. </p></li>
+	</ul>
+	
+	<li class=kadov-p><p>The Exterior Edge is the minimum X location on 
+ the polygon</p></li>
+	
+	<li class=kadov-p><p>The Interior Edge is the maximum X location on 
+ the polygon</p></li>
+</ul>
+
+<h4>Curb Line</h4>
+
+<p>The Curb Line locates the edge of roadway and is located by the Curb 
+ Offset distance from the Interior Edge of the barrier polygon. A positive 
+ Curb Offset locates the Curb Line to the left of the Interior Edge of 
+ the barrier as shown in the previous figure.</p>
+
+<h4>Toe of Barrier</h4>
+
+<p>The toe of barrier is the width of the barrier measured along a horizontal 
+ line at Y=0.0. This value is computed based on the barrier shape geometry. 
+ Adjacent sidewalks and overlays extend to the toe of barrier for dead 
+ load calculation purposes.</p>
+
+<h3>Rules for Layout of Barriers, Sidewalks, and Roadway Dimensions</h3>
+
+<h4>Layout of Exterior Barriers</h4>
+
+<p>The Barrier origin point is used to locate exterior barriers. </p>
+
+<ul style="list-style: disc;"
+	type=disc>
+	
+	<li class=kadov-p><p>The barrier X origin is placed horizontally at 
+ the left edge of deck, or left edge of top of exterior girder if no deck 
+ is present.</p></li>
+	
+	<li class=kadov-p><p>The barrier Y origin is placed vertically at the 
+ top of deck (or girder), or at the top of sidewalk if the barrier is placed 
+ on top of the sidewalk.</p></li>
+	
+	<li class=kadov-p><p>The edge of roadway cannot be outboard of the 
+ edge of deck. The Barrier library dialog will issue an error if this occurs.</p></li>
+</ul>
+
+<p>The figures below demonstrate exterior barrier placement options</p>
+
+<p><!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}--><img 
+ src="BarrierPlacement.gif"
+	x-maintain-ratio=TRUE
+	style="border: none;
+			width: 625px;
+			height: 303px;
+			float: none;"
+	width=625
+	height=303
+	border=0></p>
+
+<h4>Layout of Sidewalk</h4>
+
+<p>As shown in the figures below, the input sidewalk width defines the 
+ distance between the interior edge of the exterior barrier and the exterior 
+ edge of the interior barrier, or the face of sidewalk if no interior barrier. 
+ Back Depth and Face Depth are measured at the toes of the adjacent barriers, 
+ or at the edge of sidewalk if no interior barrier exists.</p>
+
+<p><!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}--><img 
+ src="BarrierOnTopOfSidewalk.gif"
+	x-maintain-ratio=TRUE
+	style="border: none;
+			width: 563px;
+			height: 308px;
+			float: none;"
+	width=563
+	height=308
+	border=0></p>
+
+<p><img src="BarrierOnTopOfDeck.gif"
+		x-maintain-ratio=TRUE
+		style="border: none;
+				width: 625px;
+				height: 305px;
+				float: none;"
+		width=625
+		height=305
+		border=0></p>
+
+<p><!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}--></p>
+
+<h4>Layout of Interior Barriers</h4>
+
+<p>If an interior barrier exists, its exterior edge is always located at 
+ the interior edge of the input sidewalk width as shown in the previous 
+ figures. The Y origin of the interior barrier is placed at top of the 
+ deck, or at the top of sidewalk if the barrier is placed on top of the 
+ sidewalk.</p>
+
+<p class=Tip>NOTE: Sidewalk pedestrian live load is automatically computed 
+ if a sidewalk is present, but must be enabled on the Edit Live Loads dialog. 
+ See <a href="../UserDefinedLoads/Chapter_5.htm">Chapter 5</a> and the 
+ <a href="../../Tutorial/BridgeWithSidewalk/Introduction.htm">Bridge with 
+ Sidewalks</a> tutorial.</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

@@ -26,7 +26,7 @@
 #include <Reporting\InterfaceShearDetails.h>
 
 #include <PgsExt\PointOfInterest.h>
-#include <PgsExt\ShearData.h>
+#include <PsgLib\ShearData.h>
 #include <PgsExt\PointOfInterest.h>
 #include <PgsExt\BridgeDescription.h>
 
@@ -1349,24 +1349,43 @@ void write_btsummary_table(IBroker* pBroker,
    ATLASSERT( bAfter2007 ? shear_capacity_method != scmWSDOT2007 : true );
 
    rptParagraph* pParagraph;
-
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
-
-
-   if ( shear_capacity_method == scmBTEquations || shear_capacity_method == scmWSDOT2007 )
-   {
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("BetaEquation.png")) << rptNewLine;
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ThetaEquation.png")) << rptNewLine;
-   }
-
-
-   ColumnIndexType nCol = 6;
 
    GET_IFACE2(pBroker,IStageMap,pStageMap);
    CString strTitle;
    strTitle.Format(_T("Shear Parameters Summary - %s"),OLE2T(pStageMap->GetLimitStateName(ls)));
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nCol,std::_tstring(strTitle));
+   *pParagraph << strTitle << rptNewLine;
+
+   pParagraph = new rptParagraph();
+   *pChapter << pParagraph;
+
+   ColumnIndexType nCol = 5;
+
+   bool print_sxe = shear_capacity_method == scmBTEquations || shear_capacity_method == scmWSDOT2007 || shear_capacity_method == scmBTTables;
+
+
+   if (print_sxe)
+   {
+      nCol = 9; // need room for sx/sxe
+
+      if (shear_capacity_method == scmBTEquations || shear_capacity_method == scmWSDOT2007)
+      {
+         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("BetaEquation.png")) << rptNewLine;
+         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ThetaEquation.png")) << rptNewLine;
+      }
+      else
+      {
+         *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("SxeEqn.png")) << rptNewLine;
+      }
+
+      INIT_UV_PROTOTYPE( rptLengthUnitValue,  xdimu,    pDisplayUnits->GetComponentDimUnit(),    true );
+      GET_IFACE2(pBroker,IBridgeMaterial,pMat);
+      Float64 ag = pMat->GetMaxAggrSizeGdr(span, gdr);
+      *pParagraph << _T("a")<<Sub(_T("g"))<<_T(" = ")<<xdimu.SetValue(ag) << rptNewLine;
+   }
+
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nCol,std::_tstring());
 
    if ( span == ALL_SPANS )
    {
@@ -1376,21 +1395,38 @@ void write_btsummary_table(IBroker* pBroker,
 
    *pParagraph << table << rptNewLine;
 
-   if ( stage == pgsTypes::CastingYard )
-      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   else
-      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   ColumnIndexType col = 0;
 
-   (*table)(0,1) << COLHDR( RPT_FC, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,2) << _T("v") << _T("/") << RPT_FC;
-   (*table)(0,3) << symbol(epsilon) << Sub(_T("x")) << _T(" x 1000");
-   (*table)(0,4) << symbol(beta);
-   (*table)(0,5) << COLHDR( symbol(theta), rptAngleUnitTag, pDisplayUnits->GetAngleUnit() );
+   if ( stage == pgsTypes::CastingYard )
+      (*table)(0,col++)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   else
+      (*table)(0,col++)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+
+   if (print_sxe)
+   {
+      (*table)(0,col++) << _T("Min. Reinf.") << rptNewLine << _T("per 5.8.2.5") ;
+
+      if(shear_capacity_method == scmBTTables)
+      {
+         (*table)(0,col++) << _T("Table") << rptNewLine << _T("5.8.3.4.2-");
+      }
+      else
+      {
+         (*table)(0,col++) << _T("Eqn") << rptNewLine << _T("5.8.3.4.2-");
+      }
+      (*table)(0,col++) << COLHDR( _T("s")<< Sub(_T("x"))<<_T("*"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*table)(0,col++) << COLHDR( _T("s")<< Sub(_T("xe")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   }
+
+   (*table)(0,col++) << _T("v") << _T("/") << RPT_FC;
+   (*table)(0,col++) << symbol(epsilon) << Sub(_T("x")) << _T(" x 1000");
+   (*table)(0,col++) << symbol(beta);
+   (*table)(0,col++) << COLHDR( symbol(theta), rptAngleUnitTag, pDisplayUnits->GetAngleUnit() );
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceUnitValue, shear, pDisplayUnits->GetShearUnit(), false );
    INIT_UV_PROTOTYPE( rptAngleUnitValue, angle, pDisplayUnits->GetAngleUnit(), false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,   pDisplayUnits->GetStressUnit(),          false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,  xdim,    pDisplayUnits->GetComponentDimUnit(),    false );
 
    location.IncludeSpanAndGirder(span == ALL_SPANS);
 
@@ -1410,21 +1446,52 @@ void write_btsummary_table(IBroker* pBroker,
    std::vector<pgsPointOfInterest>::const_iterator i;
    for ( i = pois.begin(); i != pois.end(); i++ )
    {
+      col = 0;
+
       const pgsPointOfInterest& poi = *i;
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,stage,poi,&scd);
 
-      int col = 0;
-
       (*table)(row,col++) << location.SetValue( stage, poi, end_size );
 
-      (*table)(row,col++) << stress.SetValue( scd.fc );
+      if (print_sxe)
+      {
+         bool do_mtr = (shear_capacity_method == scmBTTables) ? scd.BetaThetaTable == 1 : scd.BetaEqn==1;
 
+         (*table)(row,col++) << (do_mtr  ? _T("Yes") : _T("No"));
+         (*table)(row,col++) << (do_mtr  ? _T("1")   : _T("2") );
+         if(do_mtr)
+         {
+            (*table)(row,col++) << _T("---");
+            (*table)(row,col++) << _T("---");
+         }
+         else
+         {
+            (*table)(row,col++) << xdim.SetValue(scd.sx);
+            (*table)(row,col) << xdim.SetValue(scd.sxe);
+            if(shear_capacity_method == scmBTTables)
+            {
+               (*table)(row,col) << _T(" ") << symbol(LTE) << _T(" ") << xdim.SetValue(scd.sxe_tbl);
+            }
+
+            col++;
+         }
+      }
 
       if ( bAfter1999 && (shear_capacity_method == scmBTTables || shear_capacity_method == scmWSDOT2001) )
       {
-         (*table)(row,col) << scalar.SetValue( scd.vfc );
-         (*table)(row,col++) << _T(" ") << symbol(LTE) << _T(" ") << scalar.SetValue(scd.vfc_tbl);
+         // Don't print vfc if sxe method was used
+         bool do_vfc = (shear_capacity_method == scmBTTables) ? scd.BetaThetaTable == 1 : scd.BetaEqn==1;
+
+         if (do_vfc)
+         {
+            (*table)(row,col) << scalar.SetValue( scd.vfc );
+            (*table)(row,col++) << _T(" ") << symbol(LTE) << _T(" ") << scalar.SetValue(scd.vfc_tbl);
+         }
+         else
+         {
+            (*table)(row,col++) << _T("---");
+         }
       }
       else if ( shear_capacity_method != scmBTEquations && shear_capacity_method != scmWSDOT2007 )
       {
@@ -1453,20 +1520,26 @@ void write_btsummary_table(IBroker* pBroker,
       else
       {
          print_footnote=true;
-         (*table)(row,col++) << _T("*");
-         (*table)(row,col++) << _T("*");
-         (*table)(row,col++) << _T("*");
+         (*table)(row,col++) << _T("**");
+         (*table)(row,col++) << _T("**");
+         (*table)(row,col++) << _T("**");
       }
 
       row++;
    }
 
+   pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   *pChapter << pParagraph;
+
+   if (print_sxe)
+   {
+      *pParagraph << _T("* Value of s")<<Sub(_T("x"))<<_T(" taken equal to d")<<Sub(_T("v"))<< rptNewLine<<rptNewLine;
+   }
+
    // print footnote if any values could not be calculated
    if (print_footnote)
    {
-      pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
-      *pChapter << pParagraph;
-      *pParagraph << _T("* - Value could not be calculated. Shear crushing capacity of section exceeded")<< rptNewLine<<rptNewLine;
+      *pParagraph << _T("** Value could not be calculated. Shear crushing capacity of section exceeded")<< rptNewLine<<rptNewLine;
    }
 }
 
@@ -2346,7 +2419,7 @@ void write_bar_spacing_table(IBroker* pBroker,
    *pParagraph << strLabel << rptNewLine;
    *pChapter << pParagraph;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(5,_T("Required Stirrup Spacing"));
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(6,_T(""));
 
    if ( span == ALL_SPANS )
    {
@@ -2362,9 +2435,10 @@ void write_bar_spacing_table(IBroker* pBroker,
    else
       (*table)(0,col++)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,col++) << COLHDR( Sub2(_T("A"),_T("v")) << _T("/S"), rptLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+   (*table)(0,col++) << COLHDR( _T("Provided") << rptNewLine << Sub2(_T("A"),_T("v")) << _T("/S"), rptLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+   (*table)(0,col++) << COLHDR( _T("Required") << rptNewLine << Sub2(_T("A"),_T("v")) << _T("/S"), rptLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
 
-   CollectionIndexType nLegs = 2;
+   Float64 nLegs = 2;
 
    GET_IFACE2(pBroker,IShear,pShear);
    CShearData shearData = pShear->GetShearData(span,gdr);
@@ -2419,6 +2493,12 @@ void write_bar_spacing_table(IBroker* pBroker,
       pShearCap->GetShearCapacityDetails(ls,stage,poi,&scd);
 
       (*table)(row,col++) << location.SetValue( stage, poi, end_size );
+
+      if(scd.Av>0.0 && scd.S>0.0)
+         (*table)(row,col++) << avs.SetValue( scd.Av/scd.S);
+      else
+         (*table)(row,col++) << _T("---");
+
       (*table)(row,col++) << avs.SetValue( scd.AvOverS_Reqd );
 
       if ( !IsZero(scd.AvOverS_Reqd) )

@@ -40,7 +40,6 @@
 #include "SpecLossPage.h"
 #include "SpecPSLimitPage.h"
 #include "SpecLimitsPage.h"
-#include "SpecLoadFactors.h"
 #include "SpecDesignPage.h"
 #include "SpecDeflectionsPage.h"
 #include "SpecShearPage.h"
@@ -77,7 +76,6 @@ public:
    CSpecLossPage            m_SpecLossPage;
    CSpecPSLimitPage         m_SpecPSLimitPage;
    CSpecLimitsPage         m_SpecLimitsPage;
-   CSpecLoadFactors        m_SpecLoadFactorsPage;
    CSpecDesignPage         m_SpecDesignPage;
    CSpecDeflectionsPage    m_SpecDeflectionsPage;
    CSpecShearPage          m_SpecShearPage;
@@ -127,7 +125,6 @@ public:
    void ExchangeLossData(CDataExchange* pDX);
    void ExchangePSLimitData(CDataExchange* pDX);
    void ExchangeLimitsData(CDataExchange* pDX);
-   void ExchangeLoadFactorData(CDataExchange* pDX);
    void UploadDesignData(CDataExchange* pDX);
    void DownloadDesignData(CDataExchange* pDX);
 

@@ -46,6 +46,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeModelViewChildFrame
 
@@ -59,6 +60,20 @@ CBridgeModelViewChildFrame::CBridgeModelViewChildFrame()
 
 CBridgeModelViewChildFrame::~CBridgeModelViewChildFrame()
 {
+}
+
+BOOL CBridgeModelViewChildFrame::PreCreateWindow(CREATESTRUCT& cs)
+{
+   // force this window to be maximized (not sure why WS_VISIBLE is required)
+   cs.style |= WS_MAXIMIZE | WS_VISIBLE;
+
+#if defined _EAF_USING_MFC_FEATURE_PACK
+   // If MFC Feature pack is used, we are using tabbed MDI windows so we don't want
+   // the system menu or the minimize and maximize boxes
+   cs.style &= ~(WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
+#endif
+
+   return __super::PreCreateWindow(cs);
 }
 
 BOOL CBridgeModelViewChildFrame::Create(LPCTSTR lpszClassName,
@@ -98,6 +113,8 @@ BEGIN_MESSAGE_MAP(CBridgeModelViewChildFrame, CSplitChildFrame)
    ON_COMMAND_RANGE(IDM_HINGED,IDM_INTEGRAL_BEFOREDECK_HINGEAHEAD,OnBoundaryCondition)
    ON_UPDATE_COMMAND_UI_RANGE(IDM_HINGED,IDM_INTEGRAL_BEFOREDECK_HINGEAHEAD,OnUpdateBoundaryCondition)
 	ON_MESSAGE(WM_HELP, OnCommandHelp)
+   ON_NOTIFY(UDN_DELTAPOS, IDC_START_SPAN_SPIN, &CBridgeModelViewChildFrame::OnStartSpanChanged)
+   ON_NOTIFY(UDN_DELTAPOS, IDC_END_SPAN_SPIN, &CBridgeModelViewChildFrame::OnEndSpanChanged)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -107,7 +124,7 @@ CRuntimeClass* CBridgeModelViewChildFrame::GetLowerPaneClass() const
    return RUNTIME_CLASS(CBridgeSectionView);
 }
 
-double CBridgeModelViewChildFrame::GetTopFrameFraction() const
+Float64 CBridgeModelViewChildFrame::GetTopFrameFraction() const
 {
    return 0.5;
 }
@@ -156,6 +173,33 @@ CBridgeSectionView* CBridgeModelViewChildFrame::GetBridgeSectionView()
    return pvw;
 }
 
+void CBridgeModelViewChildFrame::InitSpanRange()
+{
+   // Can't get to the broker, and thus the bridge information in OnCreate, so we need a method
+   // that can be called later to initalize the span range for viewing
+   CSpinButtonCtrl* pStartSpinner = (CSpinButtonCtrl*)m_SettingsBar.GetDlgItem(IDC_START_SPAN_SPIN);
+   CSpinButtonCtrl* pEndSpinner   = (CSpinButtonCtrl*)m_SettingsBar.GetDlgItem(IDC_END_SPAN_SPIN);
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+
+   CBridgePlanView* pPlanView = GetBridgePlanView();
+
+   SpanIndexType startSpanIdx, endSpanIdx;
+   pPlanView->GetSpanRange(&startSpanIdx,&endSpanIdx);
+
+   startSpanIdx = (startSpanIdx == ALL_SPANS ? 0        : startSpanIdx);
+   endSpanIdx   = (endSpanIdx   == ALL_SPANS ? nSpans-1 : endSpanIdx  );
+
+   pStartSpinner->SetRange32(1,(int)nSpans);
+   pEndSpinner->SetRange32((int)startSpanIdx+1,(int)nSpans);
+
+   pStartSpinner->SetPos32((int)startSpanIdx+1);
+   pEndSpinner->SetPos32((int)endSpanIdx+1);
+}
+
 #if defined _DEBUG
 void CBridgeModelViewChildFrame::AssertValid() const
 {
@@ -176,7 +220,26 @@ int CBridgeModelViewChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	
 	this->SetWindowText(_T("Bridge Model View"));
 
-	return 0;
+   {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+#if defined _EAF_USING_MFC_FEATURE_PACK
+	if ( !m_SettingsBar.Create( _T("Title"), this, FALSE, IDD_BRIDGEVIEW_SETTINGS, CBRS_TOP, IDD_BRIDGEVIEW_SETTINGS) )
+#else
+	if ( !m_SettingsBar.Create( this, IDD_BRIDGEVIEW_SETTINGS, CBRS_TOP, IDD_BRIDGEVIEW_SETTINGS) )
+#endif
+	{
+		TRACE0("Failed to create control bar\n");
+		return -1;      // fail to create
+	}
+   }
+
+#if defined _EAF_USING_MFC_FEATURE_PACK
+   EnableDocking(CBRS_ALIGN_TOP);
+   m_SettingsBar.EnableDocking(CBRS_ALIGN_TOP);
+   m_SettingsBar.DockToFrameWindow(CBRS_ALIGN_TOP);
+#endif
+
+   return 0;
 }
 
 void CBridgeModelViewChildFrame::CutAt(Float64 cut)
@@ -215,8 +278,8 @@ void CBridgeModelViewChildFrame::ShowCutDlg()
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    PierIndexType nPiers = pBridge->GetPierCount();
-   double start = pBridge->GetPierStation(0);
-   double end   = pBridge->GetPierStation(nPiers-1);
+   Float64 start = pBridge->GetPierStation(0);
+   Float64 end   = pBridge->GetPierStation(nPiers-1);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
@@ -236,8 +299,14 @@ void CBridgeModelViewChildFrame::UpdateCutLocation(Float64 cut)
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   double start = pBridge->GetPierStation(0);
-   double end   = pBridge->GetPierStation(pBridge->GetPierCount()-1);
+   SpanIndexType startSpanIdx, endSpanIdx;
+   GetBridgePlanView()->GetSpanRange(&startSpanIdx,&endSpanIdx);
+
+   PierIndexType startPierIdx = (PierIndexType)startSpanIdx;
+   PierIndexType endPierIdx   = (PierIndexType)(endSpanIdx + 1);
+
+   Float64 start = pBridge->GetPierStation(startPierIdx);
+   Float64 end   = pBridge->GetPierStation(endPierIdx);
 
    m_CurrentCutLocation = ForceIntoRange(start,m_CurrentCutLocation,end);
 
@@ -253,9 +322,15 @@ Float64 CBridgeModelViewChildFrame::GetCurrentCutLocation()
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
 
+      SpanIndexType startSpanIdx, endSpanIdx;
+      CBridgePlanView* pPlanView = GetBridgePlanView();
+      pPlanView->GetSpanRange(&startSpanIdx,&endSpanIdx);
+      PierIndexType startPierIdx = (PierIndexType)startSpanIdx;
+      PierIndexType endPierIdx   = (PierIndexType)(endSpanIdx+1);
+
       GET_IFACE2(pBroker,IBridge,pBridge);
-      double start = pBridge->GetPierStation(0);
-      double end   = pBridge->GetPierStation(pBridge->GetPierCount()-1);
+      Float64 start = pBridge->GetPierStation(startPierIdx);
+      Float64 end   = pBridge->GetPierStation(endPierIdx);
       m_CurrentCutLocation = 0.5*(end-start) + start;
       m_bCutLocationInitialized = true;
    }
@@ -579,4 +654,78 @@ void CBridgeModelViewChildFrame::OnUpdateBoundaryCondition(CCmdUI* pCmdUI)
          default: ATLASSERT(0); // is there a new connection type?
       }
    }
+}
+void CBridgeModelViewChildFrame::OnStartSpanChanged(NMHDR *pNMHDR, LRESULT *pResult)
+{
+   LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
+   // TODO: Add your control notification handler code here
+   *pResult = 0;
+
+
+   CSpinButtonCtrl* pStartSpinner = (CSpinButtonCtrl*)m_SettingsBar.GetDlgItem(IDC_START_SPAN_SPIN);
+   int start, end;
+   pStartSpinner->GetRange32(start,end);
+   int newPos = pNMUpDown->iPos + pNMUpDown->iDelta;
+
+   if ( newPos < start || end < newPos )
+   {
+      *pResult = 1;
+      return;
+   }
+
+   SpanIndexType newStartSpanIdx = newPos - 1;
+
+   CBridgePlanView* pPlanView = GetBridgePlanView();
+
+   SpanIndexType startSpanIdx, endSpanIdx;
+   pPlanView->GetSpanRange(&startSpanIdx,&endSpanIdx);
+
+   CSpinButtonCtrl* pEndSpinner = (CSpinButtonCtrl*)m_SettingsBar.GetDlgItem(IDC_END_SPAN_SPIN);
+   if ( endSpanIdx <= newStartSpanIdx )
+   {
+      // new start span is greater than end span
+      // force position to be the same
+      endSpanIdx = newStartSpanIdx;
+
+      pEndSpinner->SetPos32((int)endSpanIdx+1);
+   }
+
+   pPlanView->SetSpanRange(newStartSpanIdx,endSpanIdx);
+}
+
+void CBridgeModelViewChildFrame::OnEndSpanChanged(NMHDR *pNMHDR, LRESULT *pResult)
+{
+   LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
+   // TODO: Add your control notification handler code here
+   *pResult = 0;
+
+   CSpinButtonCtrl* pEndSpinner = (CSpinButtonCtrl*)m_SettingsBar.GetDlgItem(IDC_END_SPAN_SPIN);
+   int start, end;
+   pEndSpinner->GetRange32(start,end);
+   int newPos = pNMUpDown->iPos + pNMUpDown->iDelta;
+
+   if ( newPos < start || end < newPos )
+   {
+      *pResult = 1;
+      return;
+   }
+
+   SpanIndexType newEndSpanIdx = newPos - 1;
+
+   CBridgePlanView* pPlanView = GetBridgePlanView();
+
+   SpanIndexType startSpanIdx, endSpanIdx;
+   pPlanView->GetSpanRange(&startSpanIdx,&endSpanIdx);
+   
+   CSpinButtonCtrl* pStartSpinner = (CSpinButtonCtrl*)m_SettingsBar.GetDlgItem(IDC_START_SPAN_SPIN);
+   if ( newEndSpanIdx <= startSpanIdx )
+   {
+      // new end span is less than start span
+      // force position to be the same
+      startSpanIdx = newEndSpanIdx;
+
+      pStartSpinner->SetPos32((int)startSpanIdx+1);
+   }
+
+   pPlanView->SetSpanRange(startSpanIdx,newEndSpanIdx);
 }

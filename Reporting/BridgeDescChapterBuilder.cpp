@@ -783,9 +783,9 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
          (*pTable)(row,col++) << modE.SetValue( pMaterial->GetEcGdr(spanIdx,gdrIdx) );
          (*pTable)(row,col++) << density.SetValue( pMaterial->GetWgtDensityGdr(spanIdx,gdrIdx) );
 
-         CGirderData girderData = pGirderData->GetGirderData(spanIdx, gdrIdx);
+         const CGirderData* pgirderData = pGirderData->GetGirderData(spanIdx, gdrIdx);
 
-         if (girderData.Material.bUserEc )
+         if (pgirderData->Material.bUserEc )
          {
             (*pTable)(row,col++) << _T("n/a");
          }
@@ -1179,7 +1179,8 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
          RowIndexType row = 0;
 
-         CGirderData girderData = pGirderData->GetGirderData(spanIdx,gdrIdx);
+         const CGirderData* pgirderData = pGirderData->GetGirderData(spanIdx,gdrIdx);
+         bool harpedAreStraight = pStrand->GetAreHarpedStrandsForcedStraight(spanIdx,gdrIdx);
 
          (*pTable)(row,0) << _T("Girder Type");
          (*pTable)(row,1) << pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderName(gdrIdx);
@@ -1191,6 +1192,33 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
          (*pTable)(row,0) << _T("Slab Offset at End (\"A\" Dimension)");
          (*pTable)(row,1) << cmpdim.SetValue(pBridge->GetSlabOffset(spanIdx,gdrIdx,pgsTypes::metEnd));
+         row++;
+
+         CString strFillType;
+         int fill = pgirderData->PrestressData.GetNumPermStrandsType();
+         if (fill == NPS_TOTAL_NUMBER)
+         {
+            strFillType = "Sequence of Permanent Strands";
+         }
+         else if (fill == NPS_STRAIGHT_HARPED)
+         {
+            strFillType = "Sequence of Straight/Harped Strands";
+         }
+         else if (fill == NPS_DIRECT_SELECTION)
+         {
+            strFillType = "Non-Sequential, Direct Fill";
+         }
+         else
+         {
+            ATLASSERT(0);
+         }
+
+         (*pTable)(row,0) << _T("Strand Fill Type");
+         (*pTable)(row,1) << strFillType;
+         row++;
+
+         (*pTable)(row,0) << _T("Type of Web Strands");
+         (*pTable)(row,1) << LABEL_HARP_TYPE(harpedAreStraight);
          row++;
 
          (*pTable)(row,0) << _T("Number of Straight Strands");
@@ -1209,18 +1237,22 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          row++;
 
          (*pTable)(row,0) << _T("Straight Strand P") << Sub(_T("jack"));
-         (*pTable)(row,1) << force.SetValue(girderData.Pjack[pgsTypes::Straight]);
+         (*pTable)(row,1) << force.SetValue(pgirderData->PrestressData.Pjack[pgsTypes::Straight]);
          row++;
 
-         (*pTable)(row,0) << _T("Number of Harped Strands");
+         (*pTable)(row,0) << _T("Number of ")<< LABEL_HARP_TYPE(harpedAreStraight) <<_T(" Strands");
          (*pTable)(row,1) << pStrand->GetNumStrands(spanIdx,gdrIdx,pgsTypes::Harped);
          nDebonded = pStrand->GetNumDebondedStrands(spanIdx,gdrIdx,pgsTypes::Harped);
          if ( nDebonded != 0 )
             (*pTable)(row,1) << _T(" (") << nDebonded << _T(" debonded)");
          row++;
 
-         (*pTable)(row,0) << _T("Harped Strand P") << Sub(_T("jack"));
-         (*pTable)(row,1) << force.SetValue(girderData.Pjack[pgsTypes::Harped]);
+         (*pTable)(row,0) << LABEL_HARP_TYPE(harpedAreStraight) << _T(" Strand P") << Sub(_T("jack"));
+         (*pTable)(row,1) << force.SetValue(pgirderData->PrestressData.Pjack[pgsTypes::Harped]);
+         row++;
+
+         (*pTable)(row,0) << _T("Total Number of Permanent Strands");
+         (*pTable)(row,1) << pStrand->GetNumStrands(spanIdx,gdrIdx,pgsTypes::Straight) + pStrand->GetNumStrands(spanIdx,gdrIdx,pgsTypes::Harped);
          row++;
 
          if ( 0 < pStrand->GetMaxStrands(spanIdx,gdrIdx,pgsTypes::Temporary) )
@@ -1233,90 +1265,128 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             row++;
 
             (*pTable)(row,0) << _T("Temporary Strand P") << Sub(_T("jack"));
-            (*pTable)(row,1) << force.SetValue(girderData.Pjack[pgsTypes::Temporary]);
+            (*pTable)(row,1) << force.SetValue(pgirderData->PrestressData.Pjack[pgsTypes::Temporary]);
             row++;
          }
 
          std::_tstring endoff;
-         if( girderData.HsoEndMeasurement==hsoLEGACY)
-         {    // Method used pre-version 6.0
-            endoff = _T("Distance from top-most location in harped strand grid to top-most harped strand at girder ends");
-         }
-         else if( girderData.HsoEndMeasurement==hsoCGFROMTOP)
+         if(harpedAreStraight)
          {
-            endoff = _T("Distance from top of girder to CG of harped strands at girder ends");
-         }
-         else if( girderData.HsoEndMeasurement==hsoCGFROMBOTTOM)
-         {
-            endoff = _T("Distance from bottom of girder to CG of harped strands at girder ends");
-         }
-         else if( girderData.HsoEndMeasurement==hsoTOP2TOP)
-         {
-            endoff = _T("Distance from top of girder to top-most harped strand at girder ends");
-         }
-         else if( girderData.HsoEndMeasurement==hsoTOP2BOTTOM)
-         {
-            endoff = _T("Distance from bottom of girder to top-most harped strand at girder ends");
-         }
-         else if( girderData.HsoEndMeasurement==hsoBOTTOM2BOTTOM)
-         {
-            endoff = _T("Distance from bottom of girder to lowest harped strand at girder ends");
-         }
-         else if( girderData.HsoEndMeasurement==hsoECCENTRICITY)
-         {
-            endoff = _T("Eccentricity of harped strand group at girder ends");
+            if( pgirderData->PrestressData.HsoEndMeasurement==hsoLEGACY)
+            {    // Method used pre-version 6.0
+               endoff = _T("Distance from top-most location in Straight-Web strand grid to top-most Straight-Web strand");
+            }
+            else if( pgirderData->PrestressData.HsoEndMeasurement==hsoCGFROMTOP)
+            {
+               endoff = _T("Distance from top of girder to CG of Straight-Web strands");
+            }
+            else if( pgirderData->PrestressData.HsoEndMeasurement==hsoCGFROMBOTTOM)
+            {
+               endoff = _T("Distance from bottom of girder to CG of Straight-Web strands");
+            }
+            else if( pgirderData->PrestressData.HsoEndMeasurement==hsoTOP2TOP)
+            {
+               endoff = _T("Distance from top of girder to top-most Straight-Web strand");
+            }
+            else if( pgirderData->PrestressData.HsoEndMeasurement==hsoTOP2BOTTOM)
+            {
+               endoff = _T("Distance from bottom of girder to top-most Straight-Web strand");
+            }
+            else if( pgirderData->PrestressData.HsoEndMeasurement==hsoBOTTOM2BOTTOM)
+            {
+               endoff = _T("Distance from bottom of girder to lowest Straight-Web strand");
+            }
+            else if( pgirderData->PrestressData.HsoEndMeasurement==hsoECCENTRICITY)
+            {
+               endoff = _T("Eccentricity of Straight-Web strand group");
+            }
+            else
+               ATLASSERT(0);
          }
          else
-            ATLASSERT(0);
-
+         {
+            if( pgirderData->PrestressData.HsoEndMeasurement==hsoLEGACY)
+            {    // Method used pre-version 6.0
+               endoff = _T("Distance from top-most location in harped strand grid to top-most harped strand at girder ends");
+            }
+            else if( pgirderData->PrestressData.HsoEndMeasurement==hsoCGFROMTOP)
+            {
+               endoff = _T("Distance from top of girder to CG of harped strands at girder ends");
+            }
+            else if( pgirderData->PrestressData.HsoEndMeasurement==hsoCGFROMBOTTOM)
+            {
+               endoff = _T("Distance from bottom of girder to CG of harped strands at girder ends");
+            }
+            else if( pgirderData->PrestressData.HsoEndMeasurement==hsoTOP2TOP)
+            {
+               endoff = _T("Distance from top of girder to top-most harped strand at girder ends");
+            }
+            else if( pgirderData->PrestressData.HsoEndMeasurement==hsoTOP2BOTTOM)
+            {
+               endoff = _T("Distance from bottom of girder to top-most harped strand at girder ends");
+            }
+            else if( pgirderData->PrestressData.HsoEndMeasurement==hsoBOTTOM2BOTTOM)
+            {
+               endoff = _T("Distance from bottom of girder to lowest harped strand at girder ends");
+            }
+            else if( pgirderData->PrestressData.HsoEndMeasurement==hsoECCENTRICITY)
+            {
+               endoff = _T("Eccentricity of harped strand group at girder ends");
+            }
+            else
+               ATLASSERT(0);
+         }
 
          (*pTable)(row,0) << endoff;
-         (*pTable)(row,1) << cmpdim.SetValue(girderData.HpOffsetAtEnd);
+         (*pTable)(row,1) << cmpdim.SetValue(pgirderData->PrestressData.HpOffsetAtEnd);
          row++;
 
-         std::_tstring hpoff;
-         if( girderData.HsoHpMeasurement==hsoLEGACY)
-         {    // Method used pre-version 6.0
-            hpoff = _T("Distance from lowest location in harped strand grid to lowest harped strand at harping points");
-         }
-         else if( girderData.HsoHpMeasurement==hsoCGFROMTOP)
+         if(!harpedAreStraight)
          {
-            hpoff = _T("Distance from top of girder to CG of harped strands at harping points");
-         }
-         else if( girderData.HsoHpMeasurement==hsoCGFROMBOTTOM)
-         {
-            hpoff = _T("Distance from bottom of girder to CG of harped strands at harping points");
-         }
-         else if( girderData.HsoHpMeasurement==hsoTOP2TOP)
-         {
-            hpoff = _T("Distance from top of girder to top-most harped strand at harping points");
-         }
-         else if( girderData.HsoHpMeasurement==hsoTOP2BOTTOM)
-         {
-            hpoff = _T("Distance from bottom of girder to top-most harped strand at harping points");
-         }
-         else if( girderData.HsoHpMeasurement==hsoBOTTOM2BOTTOM)
-         {
-            hpoff = _T("Distance from bottom of girder to lowest harped strand at harping points");
-         }
-         else if( girderData.HsoHpMeasurement==hsoECCENTRICITY)
-         {
-            hpoff = _T("Eccentricity of harped strand group at harping points");
-         }
-         else
-            ATLASSERT(0);
+            std::_tstring hpoff;
+            if( pgirderData->PrestressData.HsoHpMeasurement==hsoLEGACY)
+            {    // Method used pre-version 6.0
+               hpoff = _T("Distance from lowest location in harped strand grid to lowest harped strand at harping points");
+            }
+            else if( pgirderData->PrestressData.HsoHpMeasurement==hsoCGFROMTOP)
+            {
+               hpoff = _T("Distance from top of girder to CG of harped strands at harping points");
+            }
+            else if( pgirderData->PrestressData.HsoHpMeasurement==hsoCGFROMBOTTOM)
+            {
+               hpoff = _T("Distance from bottom of girder to CG of harped strands at harping points");
+            }
+            else if( pgirderData->PrestressData.HsoHpMeasurement==hsoTOP2TOP)
+            {
+               hpoff = _T("Distance from top of girder to top-most harped strand at harping points");
+            }
+            else if( pgirderData->PrestressData.HsoHpMeasurement==hsoTOP2BOTTOM)
+            {
+               hpoff = _T("Distance from bottom of girder to top-most harped strand at harping points");
+            }
+            else if( pgirderData->PrestressData.HsoHpMeasurement==hsoBOTTOM2BOTTOM)
+            {
+               hpoff = _T("Distance from bottom of girder to lowest harped strand at harping points");
+            }
+            else if( pgirderData->PrestressData.HsoHpMeasurement==hsoECCENTRICITY)
+            {
+               hpoff = _T("Eccentricity of harped strand group at harping points");
+            }
+            else
+               ATLASSERT(0);
 
 
-         (*pTable)(row,0) << hpoff;
-         (*pTable)(row,1) << cmpdim.SetValue(girderData.HpOffsetAtHp);
-         row++;
+            (*pTable)(row,0) << hpoff;
+            (*pTable)(row,1) << cmpdim.SetValue(pgirderData->PrestressData.HpOffsetAtHp);
+            row++;
+         }
 
          (*pTable)(row,0) << _T("Release Strength ") << RPT_FCI;
-         (*pTable)(row,1) << stress.SetValue( girderData.Material.Fci );
+         (*pTable)(row,1) << stress.SetValue( pgirderData->Material.Fci );
          row++;
 
          (*pTable)(row,0) << _T("Final Strength ") << RPT_FC;
-         (*pTable)(row,1) << stress.SetValue( girderData.Material.Fc );
+         (*pTable)(row,1) << stress.SetValue( pgirderData->Material.Fc );
          row++;
 
          const matPsStrand* pstrand = pGirderData->GetStrandMaterial(spanIdx,gdrIdx,pgsTypes::Straight);
@@ -1395,7 +1465,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             row++;
          }
 
-         switch ( girderData.TempStrandUsage )
+         switch ( pgirderData->PrestressData.TempStrandUsage )
          {
          case pgsTypes::ttsPTBeforeLifting:
             *pPara << _T("NOTE: Temporary strands post-tensioned immediately before lifting") << rptNewLine;

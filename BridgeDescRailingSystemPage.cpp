@@ -107,12 +107,18 @@ void CBridgeDescRailingSystemPage::DoDataExchange(CDataExchange* pDX)
    }
 
    DDX_UnitValueAndTag(pDX,IDC_LEFT_SIDEWALK_WIDTH,       IDC_LEFT_SIDEWALK_WIDTH_UNIT,       m_LeftRailingSystem.Width,      pDisplayUnits->GetXSectionDimUnit());
+   DDV_UnitValueGreaterThanZero( pDX, IDC_LEFT_SIDEWALK_WIDTH, m_LeftRailingSystem.Width, pDisplayUnits->GetXSectionDimUnit() );
    DDX_UnitValueAndTag(pDX,IDC_LEFT_SIDEWALK_LEFT_DEPTH,  IDC_LEFT_SIDEWALK_LEFT_DEPTH_UNIT,  m_LeftRailingSystem.LeftDepth,  pDisplayUnits->GetComponentDimUnit());
+   DDV_UnitValueGreaterThanZero( pDX, IDC_LEFT_SIDEWALK_LEFT_DEPTH, m_LeftRailingSystem.LeftDepth, pDisplayUnits->GetXSectionDimUnit() );
    DDX_UnitValueAndTag(pDX,IDC_LEFT_SIDEWALK_RIGHT_DEPTH, IDC_LEFT_SIDEWALK_RIGHT_DEPTH_UNIT, m_LeftRailingSystem.RightDepth, pDisplayUnits->GetComponentDimUnit());
+   DDV_UnitValueGreaterThanZero( pDX, IDC_LEFT_SIDEWALK_RIGHT_DEPTH, m_LeftRailingSystem.RightDepth, pDisplayUnits->GetXSectionDimUnit() );
 
    DDX_UnitValueAndTag(pDX,IDC_RIGHT_SIDEWALK_WIDTH,       IDC_RIGHT_SIDEWALK_WIDTH_UNIT,       m_RightRailingSystem.Width,      pDisplayUnits->GetXSectionDimUnit());
+   DDV_UnitValueGreaterThanZero( pDX, IDC_RIGHT_SIDEWALK_WIDTH, m_RightRailingSystem.Width, pDisplayUnits->GetXSectionDimUnit() );
    DDX_UnitValueAndTag(pDX,IDC_RIGHT_SIDEWALK_RIGHT_DEPTH, IDC_RIGHT_SIDEWALK_RIGHT_DEPTH_UNIT, m_RightRailingSystem.RightDepth, pDisplayUnits->GetComponentDimUnit());
+   DDV_UnitValueGreaterThanZero( pDX, IDC_RIGHT_SIDEWALK_RIGHT_DEPTH, m_RightRailingSystem.RightDepth, pDisplayUnits->GetXSectionDimUnit() );
    DDX_UnitValueAndTag(pDX,IDC_RIGHT_SIDEWALK_LEFT_DEPTH,  IDC_RIGHT_SIDEWALK_LEFT_DEPTH_UNIT,  m_RightRailingSystem.LeftDepth,  pDisplayUnits->GetComponentDimUnit());
+   DDV_UnitValueGreaterThanZero( pDX, IDC_RIGHT_SIDEWALK_LEFT_DEPTH, m_RightRailingSystem.LeftDepth, pDisplayUnits->GetXSectionDimUnit() );
 
    DDX_UnitValueAndTag(pDX,IDC_LEFT_FC, IDC_LEFT_FC_UNIT, m_LeftRailingSystem.fc, pDisplayUnits->GetStressUnit() );
    DDX_Check_Bool(pDX,IDC_LEFT_MOD_E, m_LeftRailingSystem.bUserEc);

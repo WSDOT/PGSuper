@@ -3,11 +3,6 @@ REM - Script to prepare for Release
 SET BINTARGET=bin
 
 
-
-REM - Library Editor
-copy /Y RegFreeCOM\Win32\Release\LibraryEditor.exe	%BINTARGET%\LibraryEditor\Win32\
-copy /Y RegFreeCOM\x64\Release\LibraryEditor.exe	%BINTARGET%\LibraryEditor\x64\
-
 REM - COM DLLs
 copy /Y Convert\Convert.dll				%BINTARGET%\AutomationDLLs\Win32\
 copy /Y Convert\Convert.dll				%BINTARGET%\AutomationDLLs\x64\

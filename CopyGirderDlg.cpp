@@ -280,7 +280,7 @@ void CCopyGirderDlg::OnToGirderChanged()
 void CCopyGirderDlg::CopyToSelectionChanged() 
 {
    // if the source and any of the destination girders are not the same type
-   // the prestressing and longitudinal reinforcement data can't be copied
+   // the prestressing and longitudinal reinforcement data must be copied
    SpanGirderHashType copyFrom = GetFromSpanGirder();
    std::vector<SpanGirderHashType> copyTo = GetToSpanGirders();
 

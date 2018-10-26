@@ -136,8 +136,8 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    GET_IFACE2( pBroker, ISpecification, pSpec );
    GET_IFACE2(pBroker,IGirderData,pGirderData);
 
-   CGirderData girderData_orig = pGirderData->GetGirderData(TOGA_SPAN, TOGA_ORIG_GDR);
-   CGirderData girderData_fabr = pGirderData->GetGirderData(TOGA_SPAN, TOGA_FABR_GDR);
+//   const CGirderData* pgirderData_orig = pGirderData->GetGirderData(TOGA_SPAN, TOGA_ORIG_GDR);
+//   const CGirderData* pgirderData_fabr = pGirderData->GetGirderData(TOGA_SPAN, TOGA_FABR_GDR);
 
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
@@ -169,9 +169,11 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
 
    delta_dl_orig = pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftSlab, poi_orig, bat )
+                 + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftSlabPad, poi_orig, bat )
                  + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftDiaphragm, poi_orig, bat );
 
    delta_dl_fabr = pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftSlab, poi_fabr, bat )
+                 + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftSlabPad, poi_fabr, bat )
                  + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftDiaphragm, poi_fabr, bat );
 
    pgsTypes::Stage overlay_stage = pBridge->IsFutureOverlay() ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2;

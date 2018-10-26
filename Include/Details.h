@@ -160,6 +160,8 @@ struct SHEARCAPACITYDETAILS
    Float64 Alpha;
    Float64 de;
    Float64 h;
+   Float64 ag; // max aggregate size
+   Float64 sx; // spacing between layers of longitudinal cracking steel
    Float64 MomentArm;
    CRACKINGMOMENTDETAILS McrDetails;
    bool    bTensionBottom; // true if the flexural tension side is on the bottom of the girder
@@ -173,6 +175,10 @@ struct SHEARCAPACITYDETAILS
    Float64 ex;
    Float64 Fe;  // -1 if not applicable
    Float64 Beta;
+   Int16   BetaEqn; // Equation used to compute Beta (only applicable since LRFD 2009)
+   Int16   BetaThetaTable; // Table used to compute Beta and Theta
+   Float64 sxe; // [E5.8.3.4.2-5]
+   Float64 sxe_tbl;
    Float64 Theta;
    Float64 Vc;
    Float64 Vs;

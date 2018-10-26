@@ -117,10 +117,10 @@ HRESULT CLongitudinalRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgr
    var.Clear();
    var.vt = VT_I4;
    pStrLoad->get_Property(_T("RebarRowCount"), &var );
-   long count = var.lVal;
+   IndexType count = var.lVal;
 
    RebarRows.clear();
-   for ( long row = 0; row < count; row++ )
+   for ( IndexType row = 0; row < count; row++ )
    {
       pStrLoad->BeginUnit(_T("RebarRow"));
 
@@ -131,7 +131,7 @@ HRESULT CLongitudinalRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgr
 
       var.vt = VT_I4;
       pStrLoad->get_Property(_T("Face"),         &var);
-      rebar_row.Face = (GirderFace)(var.lVal);
+      rebar_row.Face = (pgsTypes::GirderFace)(var.lVal);
 
       var.vt = VT_R8;
       pStrLoad->get_Property(_T("Cover"),        &var);
@@ -216,7 +216,7 @@ void CLongitudinalRebarData::CopyGirderEntryData(const GirderLibraryEntry& rGird
       GirderLibraryEntry::LongSteelInfo& lsi = *iter;
 
       RebarRow rebar_row;
-      rebar_row.Face       = (CLongitudinalRebarData::GirderFace)lsi.Face;
+      rebar_row.Face       = (pgsTypes::GirderFace)lsi.Face;
       rebar_row.NumberOfBars = lsi.NumberOfBars;
       rebar_row.Cover      = lsi.Cover;
       rebar_row.BarSize    = lsi.BarSize;

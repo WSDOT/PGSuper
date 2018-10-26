@@ -55,17 +55,15 @@ CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesA
    CPostTensionTimeDependentLossesAtShippingTable* table = NULL;
 
    GET_IFACE2(pBroker,IGirderData,pGirderData);
-   CGirderData girderData = pGirderData->GetGirderData(span,gdr);
+   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
 
-   if ( girderData.TempStrandUsage == pgsTypes::ttsPTBeforeLifting ||
-        girderData.TempStrandUsage == pgsTypes::ttsPTAfterLifting 
+   if ( pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPTBeforeLifting ||
+        pgirderData->PrestressData.TempStrandUsage == pgsTypes::ttsPTAfterLifting 
       ) 
    {
       ColumnIndexType numColumns = 7;
       table = new CPostTensionTimeDependentLossesAtShippingTable( numColumns, pDisplayUnits );
       pgsReportStyleHolder::ConfigureTable(table);
-
-      table->m_GirderData = girderData;
 
       rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << pParagraph;
@@ -91,7 +89,7 @@ CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesA
    return table;
 }
 
-void CPostTensionTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CPostTensionTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    (*this)(row,2) << stress.SetValue(details.pLosses->FrictionLoss());
    (*this)(row,3) << stress.SetValue(details.pLosses->AnchorSetLoss());

@@ -70,8 +70,8 @@ rptChapter* CCreepCoefficientChapterBuilder::Build(CReportSpecification* pRptSpe
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
    GET_IFACE2(pBroker,IGirderData,pGirderData);
-   CGirderData girderData = pGirderData->GetGirderData(span,gdr);
-   bool bTempStrands = (0 < girderData.Nstrands[pgsTypes::Temporary] && girderData.TempStrandUsage != pgsTypes::ttsPTBeforeShipping) ? true : false;
+   const CGirderData* pgirderData = pGirderData->GetGirderData(span,gdr);
+   bool bTempStrands = (0 < pgirderData->PrestressData.GetNstrands(pgsTypes::Temporary) && pgirderData->PrestressData.TempStrandUsage != pgsTypes::ttsPTBeforeShipping) ? true : false;
 
    rptChapter* pChapter;
    switch( deckType )

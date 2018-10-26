@@ -29,12 +29,61 @@
 // GirderDescDlg.h : header file
 //
 #include "BridgeDescPrestressPage.h"
-#include "BridgeDescShearPage.h"
+#include "ShearSteelPage2.h"
 #include "BridgeDescLongitudinalRebar.h"
 #include "BridgeDescLiftingPage.h"
 #include "DebondDlg.h"
 #include "BridgeDescGirderMaterialsPage.h"
 #include "GirderDescRatingPage.h"
+
+// handy functions
+
+// Changes in girder fill can make debonding invalid. This algorithm gets rid of any
+// debonding of strands that don't exist
+inline bool ReconcileDebonding(const ConfigStrandFillVector& fillvec, std::vector<CDebondInfo>& rDebond)
+{
+   bool didErase = false;
+   StrandIndexType strsize = fillvec.size();
+
+   std::vector<CDebondInfo>::iterator it=rDebond.begin();
+   while ( it!=rDebond.end() )
+   {
+      if (it->strandTypeGridIdx > strsize || fillvec[it->strandTypeGridIdx]==0)
+      {
+         it = rDebond.erase(it);
+         didErase = true;
+      }
+      else
+      {
+         it++;
+      }
+   }
+
+   return didErase;
+}
+
+inline bool ReconcileExtendedStrands(const ConfigStrandFillVector& fillvec, std::vector<GridIndexType>& extendedStrands)
+{
+   bool didErase = false;
+   StrandIndexType strsize = fillvec.size();
+
+   std::vector<GridIndexType>::iterator it(extendedStrands.begin());
+   while ( it != extendedStrands.end() )
+   {
+      GridIndexType gridIdx = *it;
+      if (strsize < gridIdx || fillvec[gridIdx]==0)
+      {
+         it = extendedStrands.erase(it);
+         didErase = true;
+      }
+      else
+      {
+         it++;
+      }
+   }
+
+   return didErase;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescDlg
@@ -54,7 +103,7 @@ public:
 
    CGirderDescGeneralPage       m_General;
    CGirderDescPrestressPage     m_Prestress;
-   CGirderDescShearPage         m_Shear;
+   CShearSteelPage2             m_Shear;
    CGirderDescLongitudinalRebar m_LongRebar;
    CGirderDescLiftingPage       m_Lifting;
    CGirderDescDebondPage        m_Debond;
@@ -78,25 +127,27 @@ public:
 	virtual ~CGirderDescDlg();
    void DoUpdate();
 
-   void FillMaterialComboBox(CComboBox* pCB);
-   void GetStirrupMaterial(int idx,matRebar::Type& type,matRebar::Grade& grade);
-   int GetStirrupMaterialIndex(matRebar::Type type,matRebar::Grade grade);
+   void OnGirderTypeChanged(bool bAllowExtendedStrands,bool bIsDebonding);
 
-	// Generated message map functions
+
 protected:
    void Init();
    StrandIndexType GetStraightStrandCount();
-   StrandIndexType GetHarpedStrandCount();
    void SetDebondTabName();
+   ConfigStrandFillVector ComputeStrandFillVector(pgsTypes::StrandType type);
+
+   void AddAdditionalPropertyPages(bool bAllowExtendedStrands,bool bIsDebonding);
+
 
    friend CGirderDescGeneralPage;
    friend CGirderDescLiftingPage;
    friend CGirderDescPrestressPage;
-   friend CGirderDescShearPage;
    friend CGirderDescDebondPage;
+   friend CGirderDescDebondGrid;
    friend CGirderDescLongitudinalRebar;
    friend CGirderDescRatingPage;
 
+	// Generated message map functions
 	//{{AFX_MSG(CGirderDescDlg)
 		// NOTE - the ClassWizard will add and remove member functions here.
 	//}}AFX_MSG

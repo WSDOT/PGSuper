@@ -90,33 +90,8 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
       bIsWSDOTRating = false;
    }
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   bool bNegMoments = pBridge->ProcessNegativeMoments(ALL_SPANS);
-   bool bOL1 = false;
-   bool bOL2 = false;
-   bool bOL1NegMoment = (bNegMoments ? false : true);
-   bool bOL2NegMoment = (bNegMoments ? false : true);
    std::vector<std::_tstring> special_permit_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltPermitRating_Special);
-   std::vector<std::_tstring>::iterator iter(special_permit_loads.begin());
-   std::vector<std::_tstring>::iterator end(special_permit_loads.end());
-   for ( ; iter != end; iter++ )
-   {
-      std::_tstring load(*iter);
-      if ( load.compare(_T("OL1")) == 0 )
-         bOL1 = true;
-
-      if ( load.compare(_T("OL2")) == 0 )
-         bOL2 = true;
-
-      // check for neg moment version of the OL trucks... if found and neg moment analysis is required
-      // set the value to true.... if found and neg moment analysis is not required, set the value to vale
-      if ( load.compare(_T("OL1 (Neg Moment)")) == 0 )
-         bOL1NegMoment = (bNegMoments ? true : false);
-
-      if ( load.compare(_T("OL2 (Neg Moment)")) == 0 )
-         bOL2NegMoment = (bNegMoments ? true : false);
-   }
-   if ( bOL1 == false || bOL2 == false || bOL1NegMoment == false || bOL2NegMoment == false )
+   if ( special_permit_loads.size() != 2 || (special_permit_loads.size() == 2 && special_permit_loads[0] != _T("OL1")  && special_permit_loads[1] != _T("OL2")) )
    {
       bIsWSDOTRating = false;
    }
@@ -148,7 +123,7 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
 
    if ( !bIsWSDOTRating )
    {
-      (*pPara) << _T("The load rating settings do not conform to the requirements specified in Chapter 13 of the WSDOT Bridge Design Manual.") << rptNewLine;
+      (*pPara) << _T("The loading settings do not conform to the requirements specified in Chapter 13 of the WSDOT Bridge Design Manual.") << rptNewLine;
       (*pPara) << _T("Select Project | Load Rating Options to change the load rating settings to the required settings shown below.") << rptNewLine;
 
 	   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3,_T("Load Rating Criteria"));
@@ -240,16 +215,7 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
          (*pTable)(row,1) << (*nameIter) << rptNewLine;
       }
       (*pTable)(row,1) << _T("");
-      (*pTable)(row,2) << _T("OL1") << rptNewLine;
-      if ( bNegMoments )
-      {
-         (*pTable)(row,2) << _T("OL1 (Neg Moment)") << rptNewLine;
-      }
-      (*pTable)(row,2) << _T("OL2") << rptNewLine;
-      if ( bNegMoments )
-      {
-         (*pTable)(row,2) << _T("OL2 (Neg Moment)") << rptNewLine;
-      }
+      (*pTable)(row,2) << _T("OL1") << rptNewLine << _T("OL2") << rptNewLine;
       row;
 
       return pChapter;
@@ -260,6 +226,7 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
 
    sysDate date;
    GET_IFACE2(pBroker,IProjectProperties,pProjectProperties);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    (*pPara) << _T("Bridge Name: ") << pProjectProperties->GetBridgeName() << rptNewLine;
    (*pPara) << _T("Bridge Number: ") << pProjectProperties->GetBridgeId() << rptNewLine;

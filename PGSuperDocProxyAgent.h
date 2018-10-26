@@ -225,6 +225,7 @@ public:
    virtual UINT GetStdToolBarID();
    virtual UINT GetLibToolBarID();
    virtual UINT GetHelpToolBarID();
+   virtual bool EditDirectInputPrestressing(SpanIndexType span,GirderIndexType girder);
 
 // IEditByUIEx
 public:
@@ -313,5 +314,10 @@ private:
 
    void CreateStatusBar();
    void ResetStatusBar();
+
+#if defined _EAF_USING_MFC_FEATURE_PACK
+   CMFCTasksPane m_wndTasks;
+   CDockablePaneAdapter m_wndLoadsViewAdapter;
+#endif
 };
 

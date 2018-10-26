@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=2036>
-<meta name=layout-width content=873>
+<meta name=layout-height content=2177>
+<meta name=layout-width content=1234>
 
 
 <!--(Links)=========================================================-->
@@ -61,21 +61,41 @@
  the <a HREF="../../Girder Editing Wizard/Prestressing.htm">Strands Tab 
  of the Girder Editing</a> dialog.</p></li>
 	
-	<li class=kadov-p><p>Permanent straight and harped strands are placed 
- and tensioned at casting time and remain in the girder for its lifetime. 
+	<li class=kadov-p><p>There are two basic types of permanent strands. 
  </p></li>
 	
-	<li class=kadov-p><p>Harped strands are bonded along the entire length 
- of the girder. </p></li>
+	<ol style="list-style: decimal;"
+		type=1>
+		
+		<li class=kadov-p><p><span style="font-style: italic;">Straight 
+ Permanent Strands</span> can be placed anywhere within a girder section 
+ and are straight along the entire girder.</p></li>
+		
+		<li class=kadov-p><p><span style="font-style: italic;">Web Strands</span> 
+ are permanent strands that can only be placed within the thinnest portion 
+ of a girder section's web(s). Web Strand templates have the unique capability 
+ to be vertically adjusted within the web region. There are two types of 
+ Web Strands: <span style="font-style: italic;">Harped Strands</span> and 
+ <span style="font-style: italic;">Straight-Web</span> strands. Harped 
+ strands are draped at the girders harping points, and Straight-Web strands 
+ are straight along the entire length of the girder.</p></li>
+	</ol>
+	
+	<li class=kadov-p><p>Permanent strands are placed and tensioned at 
+ casting time and remain in the girder for its lifetime. </p></li>
+	
+	<li class=kadov-p><p>Harped and Straight-Web strands are bonded along 
+ the entire length of the girder. </p></li>
 	
 	<li class=kadov-p><p>Individual straight strands can be debonded if 
- allowed.</p></li>
+ the allow debonding option is selected.</p></li>
 </ul>
 
 <h2 style="margin-left: 0px;"><span style="font-weight: bold;">Strand Grid</span></h2>
 
-<p>Use the strand grid control to define the possible locations and fill 
- order of permanent straight and harped strands in the girder. </p>
+<p>Use the strand grid control to define a template of possible strand 
+ locations and fill order of permanent straight and web strands in the 
+ girder. </p>
 
 <p><img src="GIRDEROR.gif"
 		ALT=GIRDEROR.gif
@@ -139,10 +159,14 @@
  on the &quot;<a HREF="GenerateStrands.htm">Generate Strand Positions</a>&quot; 
  button.</p></li>
 	
-	<li class=kadov-p><p>Strands must be located inside of the girder.</p></li>
+	<li class=kadov-p><p>Straight Permanent strands must be located inside 
+ of the girder.</p></li>
 	
-	<li class=kadov-p><p>Vertical locations of harped strands must be within 
- the prescribed adjustment limits.</p></li>
+	<li class=kadov-p><p>Web strands must lie within the thinnest portion 
+ of the girder's web(s), and within the specified allowable vertical offsets.</p></li>
+	
+	<li class=kadov-p><p>Allowable vertical locations of web strands can 
+ be controlled by the prescribed adjustment limits.</p></li>
 </ul>
 
 <h3>Use Different Harped Locations at Girder Ends</h3>
@@ -159,48 +183,52 @@
 
 <h3>Debonding of Straight Strands</h3>
 
-<p>You can select whether individual straight strands are allowed to be 
- debonded or not. Strands of type &quot;Straight&quot; may not be debonded. 
- Strands of type &quot;Straight-DB&quot; can be debonded by the design 
- algorithm or in the girder editor dialog.</p>
+<p>The Edit Strand Location Dialog allows selection of whether individual 
+ permanent straight strands are allowed to be debonded or not.</p>
+
+<p>When shown in the permanent strand grid, strands of type &quot;Straight&quot; 
+ may not be debonded. Strands of type &quot;Straight-DB&quot; can be debonded 
+ by the design algorithm or in the girder editor dialog.</p>
 
 <h2>Strand Options</h2>
 
-<h3>Coerce Odd Number of Harped Strands</h3>
+<h3>Coerce Odd Number of Web Strands</h3>
 
 <p>When selected, PGSuper will force (coerce) the lowest (first in the 
- fill order) pair of harped strands to alternate between a single strand 
- at X=0.0, and two strands at the prescribed +/- X values. This allows 
- a strand grid that contains only pairs of coordinates to place strands 
- one at a time.</p>
+ fill order) pair of web strands to alternate between a single strand at 
+ X=0.0, and two strands at the prescribed +/- X values. This allows a strand 
+ grid that contains only pairs of coordinates to place strands one at a 
+ time.</p>
 
-<p>Note that all end strands in the harped grid must have positive X values 
- (i.e., filled in pairs) when this feature is enabled.</p>
+<p>Note that all end strands in the web strand grid must have positive 
+ X values (i.e., filled in pairs) when this feature is enabled.</p>
 
 <p>This feature is used on some WSDOT I-Beams or Ribbed Girders with an 
  odd number of webs. </p>
 
-<p>This feature was formally called &quot;Allow Odd Number of Harped Strands&quot; 
- </p>
+<h2><span>Vertical Adjustment of Web Strand Grid</span></h2>
 
-<h2><span>Vertical Adjustment of Harped Grid</span></h2>
-
-<p>If enabled, this option allows you to vertically offset the location 
- of harped strands at the girder ends or at harping points. </p>
+<p>If enabled, this option allows harped and straight-web strand templates 
+ to be vertically offset. Harped strands can be offset differently at the 
+ girder ends or at harping points, thus forming the harped drape. Straight 
+ web strands use a single offset along the entire girder length.</p>
 
 <h3>Design Increment</h3>
 
-<p>The increment defines the step size to be used by the automated design 
- algorithm when adjusting strand offsets. The increment must be less than 
- or equal to the maximum adjustment value.</p>
+<p>In general, web strands can be adjusted continuously up and down within 
+ their adjustment limits through user-input adjustment values.</p>
+
+<p>The design increment defines the step size to be used by the automated 
+ design algorithm when adjusting strand offsets. The increment must be 
+ less than or equal to the maximum adjustment value.</p>
 
 <p>If this value is zero, the design algorithm will make continuous adjustments 
  within the offset limits.</p>
 
 <h3>Adjustment Limits</h3>
 
-<p>These values define the range of possible uppermost and lowermost harped 
- strand Y locations. Harped strands may not lie above or below these limits. 
+<p>These values define the range of possible uppermost and lowermost web 
+ strand Y locations. Web strands may not lie above or below these limits. 
  Limits can be measured downward from the top of the girder or upward from 
  the bottom.</p>
 

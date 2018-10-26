@@ -88,6 +88,12 @@ BOOL CAnalysisResultsChildFrame::Create(LPCTSTR lpszClassName,
 				CMDIFrameWnd* pParentWnd,
 				CCreateContext* pContext)
 {
+#if defined _EAF_USING_MFC_FEATURE_PACK
+   // If MFC Feature pack is used, we are using tabbed MDI windows so we don't want
+   // the system menu or the minimize and maximize boxes
+   dwStyle &= ~(WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
+#endif
+
    BOOL bResult = CEAFOutputChildFrame::Create(lpszClassName,lpszWindowName,dwStyle,rect,pParentWnd,pContext);
    if ( bResult )
    {
@@ -258,12 +264,24 @@ int CAnalysisResultsChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CEAFOutputChildFrame::OnCreate(lpCreateStruct) == -1)
 		return -1;
 	
+   {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+#if defined _EAF_USING_MFC_FEATURE_PACK
+	if ( !m_SettingsBar.Create( _T("Title"), this, FALSE, IDD_ANALYSIS_RESULTS_BAR, CBRS_LEFT, IDD_ANALYSIS_RESULTS_BAR) )
+#else
 	if ( !m_SettingsBar.Create( this, IDD_ANALYSIS_RESULTS_BAR, CBRS_LEFT, IDD_ANALYSIS_RESULTS_BAR) )
+#endif
 	{
 		TRACE0("Failed to create control bar\n");
 		return -1;      // fail to create
 	}
+   }
+
+#if defined _EAF_USING_MFC_FEATURE_PACK
+   EnableDocking(CBRS_ALIGN_LEFT);
+   m_SettingsBar.EnableDocking(CBRS_ALIGN_LEFT);
+   m_SettingsBar.DockToFrameWindow(CBRS_ALIGN_LEFT);
+#endif
 	
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -280,7 +298,7 @@ int CAnalysisResultsChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    idx = pstg_ctrl->AddString(_T("Girder Placement"));
    pstg_ctrl->SetItemData(idx,pgsTypes::GirderPlacement);
 
-   if ( NtMax != INVALID_INDEX )
+   if ( 0 < NtMax )
    {
       idx = pstg_ctrl->AddString(_T("Temporary Strand Removal"));
       pstg_ctrl->SetItemData(idx,pgsTypes::TemporaryStrandRemoval);
@@ -854,7 +872,7 @@ void CAnalysisResultsChildFrame::CreateGraphDefinitions()
       bShearKey   |= pProductLoads->HasShearKeyLoad(spanIdx,gdrIdx);
 
       StrandIndexType NtMax = pStrandGeom->GetMaxStrands(spanIdx,gdrIdx,pgsTypes::Temporary);
-      bTempStrand |= ( NtMax != INVALID_INDEX );
+      bTempStrand |= ( 0 < NtMax );
    }
 
    // Product Load Cases
@@ -867,6 +885,7 @@ void CAnalysisResultsChildFrame::CreateGraphDefinitions()
    }
 
    m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Slab"),           pftSlab,          false, false, false, true,  false, false, ACTIONS_ALL,SALMON) );
+   m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Haunch"),       pftSlabPad,       false, false, false, true,  false, false, ACTIONS_ALL,SALMON) );
 
    if ( pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP )
    {
