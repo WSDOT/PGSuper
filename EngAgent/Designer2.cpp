@@ -1919,7 +1919,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std:
                   ATLASSERT(task.stressType == pgsTypes::Tension);
                   if ( task.intervalIdx == releaseIntervalIdx || bIsTendonStressingInterval )
                   {
-                     // During a stressing activity, stress checks are only performed in areas
+                     // During a stressing activity, tension stress checks are only performed in areas
                      // other that the precompressed tensile zone
                      artifact.IsApplicable( stressLocation, !bIsInPTZ );
                   }
@@ -1933,7 +1933,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std:
                   }
                   else
                   {
-                     // This is a non-stressing interval so stress checks are only performed
+                     // This is a non-stressing interval so tension stress checks are only performed
                      // in the precompressed tensile zone
                      artifact.IsApplicable( stressLocation, bIsInPTZ );
                   }
