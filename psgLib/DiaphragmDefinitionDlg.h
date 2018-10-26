@@ -41,6 +41,7 @@ protected:
 	//{{AFX_MSG(CDiaphragmDefinitionDlg)
 	afx_msg void OnDiaphragmTypeChanged();
    afx_msg void OnMeasurementTypeChanged();
+   afx_msg void OnMethodChanged();
 	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()

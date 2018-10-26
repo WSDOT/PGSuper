@@ -78,6 +78,8 @@ END_MESSAGE_MAP()
 
 void CLibraryEntryConflict::OnRenameEntry() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CRenameLibraryEntry dlg;
    bool done=false;
    while (!done)

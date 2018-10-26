@@ -50,7 +50,7 @@ class REPORTINGCLASS CPierGeometryChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    // GROUP: LIFECYCLE
-   CPierGeometryChapterBuilder();
+   CPierGeometryChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

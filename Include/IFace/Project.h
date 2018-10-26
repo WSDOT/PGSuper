@@ -570,8 +570,10 @@ DESCRIPTION
 #define GCH_LONGITUDINAL_REBAR         0x0008
 #define GCH_LIFTING_CONFIGURATION      0x0010
 #define GCH_SHIPPING_CONFIGURATION     0x0020
-#define GCH_LOADING                    0x0040
-#define GCH_CONCRETE                   0x0080
+#define GCH_LOADING_ADDED              0x0040
+#define GCH_LOADING_REMOVED            0x0080
+#define GCH_LOADING_CHANGED            0x0100
+#define GCH_CONCRETE                   0x0200
 
 // {6132E890-719D-11d2-8EF1-006097DF3C68}
 DEFINE_GUID(IID_IBridgeDescriptionEventSink, 

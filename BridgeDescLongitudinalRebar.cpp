@@ -23,7 +23,7 @@
 // BridgeDescLongitudinalRebar.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperDoc.h"
 #include "BridgeDescLongitudinalRebar.h"
 #include "GirderDescDlg.h"

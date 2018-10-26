@@ -66,7 +66,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CTexasStressChecksChapterBuilder::CTexasStressChecksChapterBuilder()
+CTexasStressChecksChapterBuilder::CTexasStressChecksChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

@@ -49,7 +49,7 @@ class CTexasIBNSChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    // GROUP: LIFECYCLE
-   CTexasIBNSChapterBuilder();
+   CTexasIBNSChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

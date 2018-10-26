@@ -23,7 +23,7 @@
 // BridgeDescLongRebarGrid.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperDoc.h"
 #include <EAF\EAFDisplayUnits.h>
 #include "BridgeDescLongRebarGrid.h"

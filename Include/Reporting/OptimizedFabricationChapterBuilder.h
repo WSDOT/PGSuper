@@ -52,7 +52,7 @@ class REPORTINGCLASS COptimizedFabricationChapterBuilder : public CPGSuperChapte
 {
 public:
    // GROUP: LIFECYCLE
-   COptimizedFabricationChapterBuilder();
+   COptimizedFabricationChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

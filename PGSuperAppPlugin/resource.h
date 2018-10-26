@@ -152,6 +152,13 @@
 #define IDD_MANAGE_PLUGINS              307
 #define IDD_CONSTRUCTION_LOADS          308
 #define IDB_GIRDERDESIGNER              309
+#define IDI_EDIT_BRIDGE                 311
+#define IDM_NEWLOADS                    312
+#define IDR_NEWLOADS                    312
+#define IDI_EDIT_GIRDER                 313
+#define IDI_LIVELOAD                    314
+#define IDI_RF                          315
+#define IDI_COPY_PROPERTIES             316
 #define IDR_PGSUPER_TEMPLATE_ICON       500
 #define IDC_BRIDGE                      1000
 #define IDC_BULB                        1001
@@ -1009,8 +1016,6 @@
 #define IDM_INTEGRAL_BEFOREDECK_HINGEBACK 33146
 #define IDM_INTEGRAL_AFTERDECK_HINGEAHEAD 33147
 #define IDM_INTEGRAL_BEFOREDECK_HINGEAHEAD 33148
-#define ID_DELETE_LOAD                  33149
-#define ID_EDIT_LOAD                    33150
 #define ID_UPDATE_TEMPLATE              33151
 #define ID_FILE_PROJECT_PROPERTIES      33152
 #define ID_EDIT_INSERTROW               33153
@@ -1053,13 +1058,11 @@
 #define ID_VIEW_FACTOROFSAFETY          33190
 #define ID_VIEW_STABILITY               33191
 #define ID_LOADS_LLDF                   33192
-#define ID_ADD_POINTLOAD                33193
+#define ID_ADD_POINT_LOAD               33193
 #define ID_EDIT_USERLOADS               33194
 #define ID_ADD_DISTRIBUTED_LOAD         33195
-#define ID_GV_ADD_POINTLOAD             33196
-#define ID_ADD_GV_DISTRIBUTED_LOAD      33197
-#define ID_GEV_CTX_EDIT_LOAD            33198
-#define ID_GEV_CTX_DELETE_LOAD          33199
+#define ID_EDIT_LOAD                    33198
+#define ID_DELETE_LOAD                  33199
 #define ID_PROJECT_ALIGNMENT            33200
 #define ID_EDIT_GIRDER                  33201
 #define ID_VIEW_GIRDER                  33202
@@ -1090,7 +1093,6 @@
 #define ID_PROJECT_ANALYSIS             33228
 #define ID_HELP_INET_WSDOT              33229
 #define ID_HELP_INET_PGSUPER            33230
-#define ID_GV_ADD_MOMENT                33231
 #define ID_CONSTRUCTION_LOADS           33232
 #define ID_FILE_MANAGE                  33234
 
@@ -1098,7 +1100,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        309
+#define _APS_NEXT_RESOURCE_VALUE        317
 #define _APS_NEXT_COMMAND_VALUE         33235
 #define _APS_NEXT_CONTROL_VALUE         1603
 #define _APS_NEXT_SYMED_VALUE           111

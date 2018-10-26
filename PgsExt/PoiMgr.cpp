@@ -246,13 +246,14 @@ pgsPointOfInterest pgsPoiMgr::GetPointOfInterest(pgsTypes::Stage stage,SpanIndex
    ATLASSERT( span != ALL_SPANS );
    ATLASSERT( gdr  != ALL_GIRDERS );
 
-   pgsPointOfInterest poi(span,gdr,distFromStart);
+   pgsPointOfInterest poi(stage,span,gdr,distFromStart);
+
    std::vector<pgsPointOfInterest>::const_iterator found;
    found = std::find_if(m_Poi.begin(), m_Poi.end(), SamePlace(poi,m_Tolerance) );
    if ( found != m_Poi.end() && found->HasStage(stage) )
       return (*found);
 
-   return pgsPointOfInterest();
+   return poi;
 }
 
 pgsPointOfInterest pgsPoiMgr::GetNearestPointOfInterest(SpanIndexType span,GirderIndexType gdr,Float64 distFromStart) 
@@ -564,7 +565,9 @@ bool pgsPoiMgr::AndFind(const pgsPointOfInterest& poi,SpanIndexType span,GirderI
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_H)               ? poi.IsAtH(stage)                     : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_15H)             ? poi.IsAt15H(stage)                   : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PSXFER)          ? poi.HasAttribute(stage,POI_PSXFER) : true) &&
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE)      ? poi.HasAttribute(stage,POI_SECTCHANGE) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_RIGHTFACE) ? poi.HasAttribute(stage,POI_SECTCHANGE_RIGHTFACE) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_LEFTFACE) ? poi.HasAttribute(stage,POI_SECTCHANGE_LEFTFACE) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_TRANSITION) ? poi.HasAttribute(stage,POI_SECTCHANGE_TRANSITION) : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_FACEOFSUPPORT)   ? poi.HasAttribute(stage,POI_FACEOFSUPPORT) : true)
       )
    {
@@ -644,7 +647,9 @@ bool pgsPoiMgr::OrFind(const pgsPointOfInterest& poi,SpanIndexType span,GirderIn
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_15H)             ? poi.IsAt15H(stage)                   : false) ||
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_DEBOND)          ? poi.HasAttribute(stage,POI_DEBOND) : false) ||
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PSXFER)          ? poi.HasAttribute(stage,POI_PSXFER) : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE)      ? poi.HasAttribute(stage,POI_SECTCHANGE) : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_RIGHTFACE)      ? poi.HasAttribute(stage,POI_SECTCHANGE_RIGHTFACE) : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_LEFTFACE)      ? poi.HasAttribute(stage,POI_SECTCHANGE_LEFTFACE) : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_TRANSITION)      ? poi.HasAttribute(stage,POI_SECTCHANGE_TRANSITION) : false) ||
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_FACEOFSUPPORT)   ? poi.HasAttribute(stage,POI_FACEOFSUPPORT) : false)
       )
 

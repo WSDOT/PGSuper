@@ -9,9 +9,9 @@
 #endif
 
 
-#include <PGSuperAll.h>
-
 #include "targetver.h"
+
+#include <PGSuperAll.h>
 
 #define _ATL_APARTMENT_THREADED
 #define _ATL_NO_AUTOMATIC_NAMESPACE

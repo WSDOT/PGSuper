@@ -159,6 +159,8 @@ eafTypes::StatusSeverityType pgsPointLoadStatusCallback::GetSeverity()
 
 void pgsPointLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    pgsPointLoadStatusItem* pItem = dynamic_cast<pgsPointLoadStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=NULL);
 
@@ -222,6 +224,8 @@ eafTypes::StatusSeverityType pgsDistributedLoadStatusCallback::GetSeverity()
 
 void pgsDistributedLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    pgsDistributedLoadStatusItem* pItem = dynamic_cast<pgsDistributedLoadStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=NULL);
 
@@ -284,6 +288,8 @@ eafTypes::StatusSeverityType pgsMomentLoadStatusCallback::GetSeverity()
 
 void pgsMomentLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    pgsMomentLoadStatusItem* pItem = dynamic_cast<pgsMomentLoadStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=NULL);
 

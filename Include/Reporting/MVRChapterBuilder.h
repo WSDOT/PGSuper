@@ -50,7 +50,7 @@ LOG
 class REPORTINGCLASS CMVRChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   CMVRChapterBuilder(bool bDesign,bool bRating);
+   CMVRChapterBuilder(bool bDesign,bool bRating,bool bSelect = true);
 
    //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const;

@@ -57,6 +57,15 @@ library TxDOTAgentLib
       [default] interface IPGSuperDataExporter;
    };
 
+	[
+		uuid(FB446ED8-EBFA-46a0-9D84-8E5DC53A371F),
+		helpstring("TxDOTAppPlugin Class")
+	]
+	coclass TxDOTAppPlugin
+	{
+		interface IUnknown;
+   };
+
    [
       uuid(539E5AB9-4302-45f9-9FAD-B8E2DB6867F1)
    ]

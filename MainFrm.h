@@ -53,8 +53,8 @@ public:
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CMainFrame)
-   virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	//}}AFX_VIRTUAL
+   //void OnSysCommand(UINT nID, LPARAM lParam);
 
 // Implementation
 public:

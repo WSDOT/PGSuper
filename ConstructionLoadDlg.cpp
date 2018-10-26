@@ -23,7 +23,7 @@
 // ConstructionLoadDlg.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "ConstructionLoadDlg.h"
 #include <EAF\EAFDisplayUnits.h>

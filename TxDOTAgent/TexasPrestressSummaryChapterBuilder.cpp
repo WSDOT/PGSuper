@@ -43,7 +43,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CTexasPrestressSummaryChapterBuilder::CTexasPrestressSummaryChapterBuilder()
+CTexasPrestressSummaryChapterBuilder::CTexasPrestressSummaryChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

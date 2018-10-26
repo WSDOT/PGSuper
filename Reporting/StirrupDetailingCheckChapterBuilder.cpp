@@ -56,7 +56,8 @@ rptParagraph* build_max_spacing_paragraph(IBroker* pBroker,SpanIndexType span,Gi
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CStirrupDetailingCheckChapterBuilder::CStirrupDetailingCheckChapterBuilder()
+CStirrupDetailingCheckChapterBuilder::CStirrupDetailingCheckChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

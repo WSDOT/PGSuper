@@ -24,7 +24,7 @@
 CLASS
    CPGSuperCommandLineInfo
 ****************************************************************************/
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PgsuperCommandLineInfo.h"
 #include <Iface\Test1250.h>
 

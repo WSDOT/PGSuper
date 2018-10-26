@@ -516,7 +516,7 @@ void CGirderSpacingData::RemoveGirders(GirderIndexType nGirdersToRemove)
    if ( nGirders == 1 )
    {
       // if there is only one girder left, then there is no spacing
-      m_DefaultSpacing = m_GirderSpacing.front();
+      //m_DefaultSpacing = m_GirderSpacing.front();
       m_GirderSpacing.clear();
       m_SpacingGroups.clear();
    }

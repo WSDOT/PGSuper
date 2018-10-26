@@ -58,7 +58,8 @@ void handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CGirderComparisonChapterBuilder::CGirderComparisonChapterBuilder()
+CGirderComparisonChapterBuilder::CGirderComparisonChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

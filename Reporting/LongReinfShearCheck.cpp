@@ -165,7 +165,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
             (*table)(row,4) << RPT_FAIL;
 
          double ratio = IsZero(D) ? DBL_MAX : C/D;
-         if ( pArtifact->Passed() && fabs(pArtifact->GetMu()) <= fabs(pArtifact->GetMr()) && ratio < 1.0 )
+         if ( bPassed && fabs(pArtifact->GetMu()) <= fabs(pArtifact->GetMr()) && ratio < 1.0 )
          {
             bAddFootnote = true;
             (*table)(row,4) << "*";

@@ -52,7 +52,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CAlignmentChapterBuilder::CAlignmentChapterBuilder()
+CAlignmentChapterBuilder::CAlignmentChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

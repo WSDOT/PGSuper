@@ -76,7 +76,8 @@ void CBrokerReportSpecificationBuilder::AddChapters(const CReportDescription& rp
    for ( iter = vChInfo.begin(); iter != vChInfo.end(); iter++ )
    {
       CChapterInfo chInfo = *iter;
-      pRptSpec->AddChapter(chInfo.Name.c_str(),chInfo.Key.c_str(),chInfo.MaxLevel);
+      if (chInfo.Select)
+         pRptSpec->AddChapter(chInfo.Name.c_str(),chInfo.Key.c_str(),chInfo.MaxLevel);
    }
 }
 

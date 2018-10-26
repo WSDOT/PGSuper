@@ -181,6 +181,8 @@ void CGirderDimensionsPage::OnViewSectionMid()
 
 void CGirderDimensionsPage::ViewSection(bool isEnd)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    // Validate data before proceeding
    if ( !UpdateData(TRUE) )
       return;

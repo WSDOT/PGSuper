@@ -1276,7 +1276,7 @@ Float64 CAnalysisAgentImp::GetSectionStress(cyGirderModels& model,pgsTypes::Stre
    return stress;
 }
 
-void CAnalysisAgentImp::GetSectionResults(cyGirderModels& model,const pgsPointOfInterest& poi,Float64* pFx,Float64* pFy,Float64* pMz,Float64* pDx,Float64* pDy,Float64* pRz)
+void CAnalysisAgentImp::GetSectionResults(cyGirderModels& model,const pgsPointOfInterest& poi,sysSectionValue* pFx,sysSectionValue* pFy,sysSectionValue* pMz,Float64* pDx,Float64* pDy,Float64* pRz)
 {
    GET_IFACE(IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
@@ -1299,39 +1299,28 @@ void CAnalysisAgentImp::GetSectionResults(cyGirderModels& model,const pgsPointOf
 
    Fem2dMbrFaceType face = IsZero( poi.GetDistFromStart() ) ? mftRight : mftLeft;
 
-   HRESULT hr = results->ComputePOIForces(g_lcidGirder,poi_id,face,lotGlobal,pFx,pFy,pMz);
+   Float64 FxLeft, FyLeft, MzLeft;
+   HRESULT hr = results->ComputePOIForces(g_lcidGirder,poi_id,mftLeft,lotGlobal,&FxLeft,&FyLeft,&MzLeft);
    ATLASSERT(SUCCEEDED(hr));
 
-   if ( face == mftLeft )
-   {
-      *pFy *= -1;
-   }
+   FyLeft *= -1;
+
+   Float64 FxRight, FyRight, MzRight;
+   hr = results->ComputePOIForces(g_lcidGirder,poi_id,mftRight,lotGlobal,&FxRight,&FyRight,&MzRight);
+   ATLASSERT(SUCCEEDED(hr));
+
+   pFx->Left()  = FxLeft;
+   pFx->Right() = FxRight;
+
+   pFy->Left()  = FyLeft;
+   pFy->Right() = FyRight;
+
+   pMz->Left()  = MzLeft;
+   pMz->Right() = MzRight;
 
    hr = results->ComputePOIDisplacements(g_lcidGirder,poi_id,lotGlobal,pDx,pDy,pRz);
+
    ATLASSERT(SUCCEEDED(hr));
-
-   //// Smooth out the discontinuity at the ends of a span.
-   //const bamPointOfInterest* pPoi = pModelData->pModel->GetPointOfInterest(poi_id);
-   //if ( IsZero(pPoi->m_Offset) )
-   //{
-   //   sr.Fx().Left() = sr.Fx().Right();
-   //   //sr.Fy().Left() = sr.Fy().Right();
-   //   sr.Mz().Left() = sr.Mz().Right();
-   //   sr.Dx().Left() = sr.Dx().Right();
-   //   sr.Fy().Left() = sr.Fy().Right();
-   //   sr.Rz().Left() = sr.Rz().Right();
-   //}
-   //if ( IsEqual(pPoi->m_Offset, pModelData->pModel->GetBridgeLength()) )
-   //{
-   //   sr.Fx().Right() = sr.Fx().Left();
-   //   //sr.Fy().Right() = sr.Fy().Left();
-   //   sr.Mz().Right() = sr.Mz().Left();
-   //   sr.Dx().Right() = sr.Dx().Left();
-   //   sr.Fy().Right() = sr.Fy().Left();
-   //   sr.Rz().Right() = sr.Rz().Left();
-   //}
-
-   //return sr;
 }
 
 void CAnalysisAgentImp::ValidateCamberModels(SpanIndexType span,GirderIndexType gdr)
@@ -2575,7 +2564,7 @@ void CAnalysisAgentImp::ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel, G
       // in the deep beam case, just apply the reaction load and not the moment
       // otherwise apply the reaction and moment
       GET_IFACE(IPointOfInterest,pPOI);
-      std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::BridgeSite3,POI_SECTCHANGE);
+      std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::BridgeSite3,POI_SECTCHANGE,POIFIND_OR);
       ATLASSERT( 2 <= vPOI.size() );
       Float64 gdrHeightStart = pGdr->GetHeight( vPOI.front() );
       Float64 gdrHeightEnd   = pGdr->GetHeight( vPOI.back() );
@@ -5051,8 +5040,13 @@ void CAnalysisAgentImp::GetIntermediateDiaphragmLoads(pgsTypes::Stage stage, Spa
    {
       IntermedateDiaphragm& diaphragm = *iter;
 
-      double P = diaphragm.H * diaphragm.T * diaphragm.W * density * g;
-      double Loc = diaphragm.Location;
+      Float64 P;
+      if ( diaphragm.m_bCompute )
+         P = diaphragm.H * diaphragm.T * diaphragm.W * density * g;
+      else
+         P = diaphragm.P;
+
+      Float64 Loc = diaphragm.Location;
 
       DiaphragmLoad load;
       load.Loc = Loc;
@@ -6217,7 +6211,8 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(pgsTypes::Stage stage,P
          {
             const pgsPointOfInterest& poi = *iter;
             ValidateAnalysisModels(poi.GetSpan(),poi.GetGirder());
-            Float64 fx,fy,mz,dx,dy,rz;
+            sysSectionValue fx,fy,mz;
+            Float64 dx,dy,rz;
             GetSectionResults( m_CastingYardModels, poi, &fx, &fy, &mz, &dx, &dy, &rz );
             results.push_back(fy);
          }
@@ -6288,9 +6283,11 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(pgsTypes::Stage stage,ProductF
             const pgsPointOfInterest& poi = *iter;
 
             ValidateAnalysisModels( poi.GetSpan(), poi.GetGirder() );
-            Float64 fx,fy,mz,dx,dy,rz;
+            sysSectionValue fx,fy,mz;
+            Float64 dx,dy,rz;
             GetSectionResults( m_CastingYardModels, poi, &fx, &fy, &mz, &dx, &dy, &rz );
-            results.push_back( mz );
+            ATLASSERT(IsEqual(mz.Left(),-mz.Right()));
+            results.push_back( mz.Left() );
          }
          return results;
       }
@@ -6399,7 +6396,8 @@ std::vector<Float64> CAnalysisAgentImp::GetDisplacement(pgsTypes::Stage stage,Pr
             const pgsPointOfInterest& poi = *iter;
 
             ValidateAnalysisModels(poi.GetSpan(),poi.GetGirder());
-            Float64 fx,fy,mz,dx,dy,rz;
+            sysSectionValue fx,fy,mz;
+            Float64 dx,dy,rz;
             GetSectionResults( m_CastingYardModels, poi, &fx, &fy, &mz, &dx, &dy, &rz );
             results.push_back( dy );
          }
@@ -6495,7 +6493,8 @@ std::vector<Float64> CAnalysisAgentImp::GetRotation(pgsTypes::Stage stage,Produc
             const pgsPointOfInterest& poi = *iter;
 
             ValidateAnalysisModels(poi.GetSpan(),poi.GetGirder());
-            Float64 fx,fy,mz,dx,dy,rz;
+            sysSectionValue fx,fy,mz;
+            Float64 dx,dy,rz;
             GetSectionResults( m_CastingYardModels, poi, &fx, &fy, &mz, &dx, &dy, &rz );
             results.push_back( rz );
          }
@@ -7900,7 +7899,8 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(LoadingCombination comb
 
             ValidateAnalysisModels(poi.GetSpan(),poi.GetGirder());
             
-            Float64 fx,fy,mz,dx,dy,rz;
+            sysSectionValue fx,fy,mz;
+            Float64 dx,dy,rz;
             GetSectionResults( m_CastingYardModels, poi, &fx, &fy, &mz, &dx, &dy, &rz );
 
             results.push_back(fy);
@@ -7972,10 +7972,11 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(LoadingCombination combo,pgsTy
          {
             const pgsPointOfInterest& poi = *iter;
             ValidateAnalysisModels( poi.GetSpan(), poi.GetGirder() );
-            Float64 fx,fy,mz,dx,dy,rz;
+            sysSectionValue fx,fy,mz;
+            Float64 dx,dy,rz;
             GetSectionResults( m_CastingYardModels, poi, &fx, &fy, &mz, &dx, &dy, &rz );
-
-            results.push_back(mz);
+            ATLASSERT(IsEqual(mz.Left(),-mz.Right()));
+            results.push_back(mz.Left());
          }
          return results;
       }
@@ -8054,7 +8055,8 @@ std::vector<Float64> CAnalysisAgentImp::GetDisplacement(LoadingCombination combo
          {
             const pgsPointOfInterest& poi = *iter;
             ValidateAnalysisModels(poi.GetSpan(),poi.GetGirder());
-            Float64 fx,fy,mz,dx,dy,rz;
+            sysSectionValue fx,fy,mz;
+            Float64 dx,dy,rz;
             GetSectionResults( m_CastingYardModels, poi, &fx, &fy, &mz, &dx, &dy, &rz );
             results.push_back(dy);
          }
@@ -8561,11 +8563,14 @@ void CAnalysisAgentImp::GetMoment(pgsTypes::LimitState ls,pgsTypes::Stage stage,
 
             ValidateAnalysisModels( poi.GetSpan(), poi.GetGirder() );
 
-            Float64 fx,fy,mz,dx,dy,rz;
+            sysSectionValue fx,fy,mz;
+            Float64 dx,dy,rz;
             GetSectionResults( m_CastingYardModels, poi, &fx, &fy, &mz, &dx, &dy, &rz );
 
-            pMin->push_back( mz );
-            pMax->push_back( mz );
+            ATLASSERT(IsEqual(mz.Left(),-mz.Right()));
+
+            pMin->push_back( mz.Left() );
+            pMax->push_back( mz.Left() );
          }
       }
       else
@@ -8648,7 +8653,8 @@ void CAnalysisAgentImp::GetShear(pgsTypes::LimitState ls,pgsTypes::Stage stage,c
             const pgsPointOfInterest& poi = *iter;
             ValidateAnalysisModels( poi.GetSpan(), poi.GetGirder() );
 
-            Float64 fx,fy,mz,dx,dy,rz;
+            sysSectionValue fx,fy,mz;
+            Float64 dx,dy,rz;
             GetSectionResults( m_CastingYardModels, poi, &fx, &fy, &mz, &dx, &dy, &rz );
 
             pMin->push_back( fy );
@@ -8848,7 +8854,8 @@ void CAnalysisAgentImp::GetDisplacement(pgsTypes::LimitState ls,pgsTypes::Stage 
 
             ValidateAnalysisModels(poi.GetSpan(),poi.GetGirder());
 
-            Float64 fx,fy,mz,dx,dy,rz;
+            sysSectionValue fx,fy,mz;
+            Float64 dx,dy,rz;
             GetSectionResults( m_CastingYardModels, poi, &fx, &fy, &mz, &dx, &dy, &rz );
 
             pMin->push_back( dy );

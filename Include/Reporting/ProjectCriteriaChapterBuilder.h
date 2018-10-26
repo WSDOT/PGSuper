@@ -51,7 +51,7 @@ class REPORTINGCLASS CProjectCriteriaChapterBuilder : public CPGSuperChapterBuil
 {
 public:
    // GROUP: LIFECYCLE
-   CProjectCriteriaChapterBuilder(bool bRating);
+   CProjectCriteriaChapterBuilder(bool bRating,bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

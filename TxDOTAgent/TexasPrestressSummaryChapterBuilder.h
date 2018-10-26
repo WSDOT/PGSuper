@@ -48,7 +48,7 @@ class CTexasPrestressSummaryChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    // GROUP: LIFECYCLE
-   CTexasPrestressSummaryChapterBuilder();
+   CTexasPrestressSummaryChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

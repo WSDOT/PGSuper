@@ -73,6 +73,9 @@ protected:
    std::vector<const unitLength*> m_DimUnits[2];
 
    double GetDimension(const IBeamFactory::Dimensions& dimensions,const std::string& name);
+
+   virtual bool ExcludeExteriorBeamShearKeys() = 0;
+   virtual bool UseOverallWidth() = 0;
 };
 
 #endif //__BOXBEAMFACTORYIMPL_H_

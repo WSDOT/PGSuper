@@ -23,7 +23,7 @@
 // BridgeDescShearPage.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperDoc.h"
 #include "BridgeDescShearPage.h"
 #include "GirderDescDlg.h"

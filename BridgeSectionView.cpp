@@ -23,7 +23,7 @@
 // BridgeSectionView.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "resource.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperDoc.h"
@@ -407,6 +407,10 @@ void CBridgeSectionView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
+   CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+   pMenu->LoadMenu(IDR_BRIDGE_XSECTION_CTX,NULL);
+
    if ( logPoint.x < 0 || logPoint.y < 0 )
    {
       // the context menu key or Shift+F10 was pressed
@@ -418,9 +422,17 @@ void CBridgeSectionView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
       logPoint = center;
    }
 
-   CMenu menu;
-   VERIFY( menu.LoadMenu(IDR_BRIDGE_XSECTION_CTX) );
-   menu.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, logPoint.x, logPoint.y, this);
+   std::vector<IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
+   std::vector<IBridgePlanViewEventCallback*>::iterator iter;
+   for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+   {
+      IBridgePlanViewEventCallback* callback = *iter;
+      callback->OnBackgroundContextMenu(pMenu);
+   }
+
+
+   pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, logPoint.x, logPoint.y, this);
+   delete pMenu;
 }
 
 void CBridgeSectionView::OnEditBridge() 
@@ -1565,73 +1577,79 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
    GET_IFACE2(pBroker,IBarriers,pBarriers);
    if ( doLeftTB )
    {
-      CComPtr<iDimensionLine> tbDimLine;
-      tbDimLine.CoCreateInstance(CLSID_DimensionLineDisplayObject);
-      CComPtr<iConnector> connector;
-      tbDimLine.QueryInterface(&connector);
-
-      CComQIPtr<iConnectable> tbConnectable(doLeftTB);
-      CComPtr<iSocket> left_socket, right_socket;
-      tbConnectable->GetSocket(LEFT_SLAB_EDGE_SOCKET, atByID,&left_socket);
-      tbConnectable->GetSocket(LEFT_CURB_SOCKET,      atByID,&right_socket);
-
-      if ( left_socket && right_socket )
+      Float64 width = pBarriers->GetInterfaceWidth(pgsTypes::tboLeft);
+      if ( 0 < width )
       {
-         CComQIPtr<iConnector> tbConnector(tbDimLine);
-         CComPtr<iPlug> startPlug, endPlug;
-         tbConnector->GetStartPlug(&startPlug);
-         tbConnector->GetEndPlug(&endPlug);
+         CComPtr<iDimensionLine> tbDimLine;
+         tbDimLine.CoCreateInstance(CLSID_DimensionLineDisplayObject);
+         CComPtr<iConnector> connector;
+         tbDimLine.QueryInterface(&connector);
 
-         DWORD dwCookie;
-         left_socket->Connect(startPlug,&dwCookie);
-         right_socket->Connect(endPlug,&dwCookie);
+         CComQIPtr<iConnectable> tbConnectable(doLeftTB);
+         CComPtr<iSocket> left_socket, right_socket;
+         tbConnectable->GetSocket(LEFT_SLAB_EDGE_SOCKET, atByID,&left_socket);
+         tbConnectable->GetSocket(LEFT_CURB_SOCKET,      atByID,&right_socket);
 
-         CComPtr<iTextBlock> ccText;
-         ccText.CoCreateInstance(CLSID_TextBlock);
-         ccText->SetBkMode(TRANSPARENT);
-         double width = pBarriers->GetInterfaceWidth(pgsTypes::tboLeft);
-         CString strCurb = FormatDimension(width,rlen);
-         ccText->SetText(strCurb);
+         if ( left_socket && right_socket )
+         {
+            CComQIPtr<iConnector> tbConnector(tbDimLine);
+            CComPtr<iPlug> startPlug, endPlug;
+            tbConnector->GetStartPlug(&startPlug);
+            tbConnector->GetEndPlug(&endPlug);
 
-         tbDimLine->SetTextBlock(ccText);
+            DWORD dwCookie;
+            left_socket->Connect(startPlug,&dwCookie);
+            right_socket->Connect(endPlug,&dwCookie);
 
-         display_list->AddDisplayObject(tbDimLine);
+            CComPtr<iTextBlock> ccText;
+            ccText.CoCreateInstance(CLSID_TextBlock);
+            ccText->SetBkMode(TRANSPARENT);
+            CString strCurb = FormatDimension(width,rlen);
+            ccText->SetText(strCurb);
+
+            tbDimLine->SetTextBlock(ccText);
+
+            display_list->AddDisplayObject(tbDimLine);
+         }
       }
    }
 
    if ( doRightTB )
    {
-      CComPtr<iDimensionLine> tbDimLine;
-      tbDimLine.CoCreateInstance(CLSID_DimensionLineDisplayObject);
-      CComPtr<iConnector> connector;
-      tbDimLine.QueryInterface(&connector);
-
-      CComQIPtr<iConnectable> tbConnectable(doRightTB);
-      CComPtr<iSocket> left_socket, right_socket;
-      tbConnectable->GetSocket(RIGHT_CURB_SOCKET,      atByID,&left_socket);
-      tbConnectable->GetSocket(RIGHT_SLAB_EDGE_SOCKET, atByID,&right_socket);
-
-      if ( left_socket && right_socket )
+      Float64 width = pBarriers->GetInterfaceWidth(pgsTypes::tboRight);
+      if ( 0 < width )
       {
-         CComQIPtr<iConnector> tbConnector(tbDimLine);
-         CComPtr<iPlug> startPlug, endPlug;
-         tbConnector->GetStartPlug(&startPlug);
-         tbConnector->GetEndPlug(&endPlug);
+         CComPtr<iDimensionLine> tbDimLine;
+         tbDimLine.CoCreateInstance(CLSID_DimensionLineDisplayObject);
+         CComPtr<iConnector> connector;
+         tbDimLine.QueryInterface(&connector);
 
-         DWORD dwCookie;
-         left_socket->Connect(startPlug,&dwCookie);
-         right_socket->Connect(endPlug,&dwCookie);
+         CComQIPtr<iConnectable> tbConnectable(doRightTB);
+         CComPtr<iSocket> left_socket, right_socket;
+         tbConnectable->GetSocket(RIGHT_CURB_SOCKET,      atByID,&left_socket);
+         tbConnectable->GetSocket(RIGHT_SLAB_EDGE_SOCKET, atByID,&right_socket);
 
-         CComPtr<iTextBlock> ccText;
-         ccText.CoCreateInstance(CLSID_TextBlock);
-         ccText->SetBkMode(TRANSPARENT);
-         double width = pBarriers->GetInterfaceWidth(pgsTypes::tboRight);
-         CString strCurb = FormatDimension(width,rlen);
-         ccText->SetText(strCurb);
+         if ( left_socket && right_socket )
+         {
+            CComQIPtr<iConnector> tbConnector(tbDimLine);
+            CComPtr<iPlug> startPlug, endPlug;
+            tbConnector->GetStartPlug(&startPlug);
+            tbConnector->GetEndPlug(&endPlug);
 
-         tbDimLine->SetTextBlock(ccText);
+            DWORD dwCookie;
+            left_socket->Connect(startPlug,&dwCookie);
+            right_socket->Connect(endPlug,&dwCookie);
 
-         display_list->AddDisplayObject(tbDimLine);
+            CComPtr<iTextBlock> ccText;
+            ccText.CoCreateInstance(CLSID_TextBlock);
+            ccText->SetBkMode(TRANSPARENT);
+            CString strCurb = FormatDimension(width,rlen);
+            ccText->SetText(strCurb);
+
+            tbDimLine->SetTextBlock(ccText);
+
+            display_list->AddDisplayObject(tbDimLine);
+         }
       }
    }
 }

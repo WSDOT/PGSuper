@@ -169,7 +169,7 @@ void CSpanGirderReportDlg::UpdateChapterList()
       int idx = m_ChList.AddString( chInfo.Name.c_str() );
       if ( idx != LB_ERR ) // no error
       {
-         m_ChList.SetCheck( idx, 1 ); // turn the check on
+         m_ChList.SetCheck( idx, chInfo.Select ? 1 : 0 ); // turn the check on
          m_ChList.SetItemData( idx, chInfo.MaxLevel );
       }
    }

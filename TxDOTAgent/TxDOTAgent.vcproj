@@ -238,6 +238,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\EccentricityDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\exportCADData.cpp"
 				>
 			</File>
@@ -260,6 +264,10 @@
 						UsePrecompiledHeader="1"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\StrandRowGrid.cpp"
+				>
 			</File>
 			<File
 				RelativePath=".\TexasCamberAndDeflectionChapterBuilder.cpp"
@@ -294,6 +302,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TogaSpecCheckSummaryChapterBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TogaStressChecksChapterBuilder.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\TxDOTAgent.cpp"
 				>
 			</File>
@@ -307,6 +323,10 @@
 			</File>
 			<File
 				RelativePath=".\TxDOTAgentImp.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTAppPlugin.cpp"
 				>
 			</File>
 			<File
@@ -325,6 +345,66 @@
 				RelativePath=".\TxDOTComponentInfo.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignBridgeInputPage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignChildFrame.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignData.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignDoc.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignDocProxyAgent.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignDocTemplate.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignGirderData.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignGirderInputPage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignGirderViewPage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignNonStandardFillDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignPropertySheet.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignReportPage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignStandardFillDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignSummaryChapterBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignView.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -333,6 +413,10 @@
 			>
 			<File
 				RelativePath=".\dllmain.h"
+				>
+			</File>
+			<File
+				RelativePath=".\EccentricityDlg.h"
 				>
 			</File>
 			<File
@@ -345,6 +429,10 @@
 			</File>
 			<File
 				RelativePath=".\stdafx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\StrandRowGrid.h"
 				>
 			</File>
 			<File
@@ -384,7 +472,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TogaSpecCheckSummaryChapterBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TogaStressChecksChapterBuilder.h"
+				>
+			</File>
+			<File
 				RelativePath=".\TxDOTAgentImp.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTAppPlugin.h"
 				>
 			</File>
 			<File
@@ -407,12 +507,84 @@
 				RelativePath=".\TxDOTComponentInfo.h"
 				>
 			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignBridgeInputPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignBrokerRetreiver.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignChildFrame.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignData.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignDoc.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignDocProxyAgent.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignDocTemplate.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignGirderData.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignGirderInputPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignGirderViewPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignNonStandardFillDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignPropertySheet.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignReportPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignStandardFillDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignSummaryChapterBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignUtilities.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTOptionalDesignView.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+			<File
+				RelativePath=".\res\toolbar1.bmp"
+				>
+			</File>
 			<File
 				RelativePath=".\res\txdot.ico"
 				>
@@ -427,6 +599,10 @@
 			</File>
 			<File
 				RelativePath=".\TxDOTAgentImp.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTAppPlugin.rgs"
 				>
 			</File>
 			<File
@@ -483,5 +659,9 @@
 		</File>
 	</Files>
 	<Globals>
+		<Global
+			Name="RESOURCE_FILE"
+			Value="TxDOTAgent.rc"
+		/>
 	</Globals>
 </VisualStudioProject>

@@ -46,7 +46,8 @@ CLASS
    CLoadRatingSummaryChapterBuilder
 ****************************************************************************/
 
-CLoadRatingSummaryChapterBuilder::CLoadRatingSummaryChapterBuilder()
+CLoadRatingSummaryChapterBuilder::CLoadRatingSummaryChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

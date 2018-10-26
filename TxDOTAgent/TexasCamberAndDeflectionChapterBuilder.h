@@ -48,7 +48,7 @@ class CTexasCamberAndDeflectionChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    // GROUP: LIFECYCLE
-   CTexasCamberAndDeflectionChapterBuilder();
+   CTexasCamberAndDeflectionChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

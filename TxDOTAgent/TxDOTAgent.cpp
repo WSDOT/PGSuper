@@ -30,6 +30,8 @@
 #include "TxDOTAgent_i.h"
 #include "dllmain.h"
 
+#include <EAF\EAFAppPlugin.h>
+
 #include "BridgeLinkCatCom.h"
 #include "PGSuperCatCom.h"
 #include <System\ComCatMgr.h>
@@ -52,9 +54,10 @@
 #include <IFace\DistributionFactors.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\PrestressForce.h>
+#include <IFace\UpdateTemplates.h>
 #include <IFace\Test1250.h>
 #include <IFace\GirderHandling.h>
-
+#include "TxDOTOptionalDesignData.h"
 
 
 // Used to determine whether the DLL can be unloaded by OLE
@@ -71,6 +74,36 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
     return _AtlModule.DllGetClassObject(rclsid, riid, ppv);
 }
 
+HRESULT Register(bool bRegister)
+{
+   HRESULT hr = S_OK;
+/*
+   // The TxDOTAppPlugin plugs into the BridgeLink application executable and brings the
+   // TxDOT Optional Design Document functionality
+   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
+   if ( FAILED(hr) )
+      return hr;
+*/
+   // The TxDOT Agent extends the functionality of PGSuper by adding custom reporting and
+   // other features
+   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTAgent,CATID_PGSuperExtensionAgent,bRegister);
+   if ( FAILED(hr) )
+      return hr;
+
+   // The TxDOT Cad Exporter provides custom export functionatlity
+   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTCadExporter,CATID_PGSuperDataExporter,bRegister);
+   if ( FAILED(hr) )
+      return hr;
+
+   // The TxDOT component info objects provides information about this entire plug-in component
+   // This information is used in the "About" dialog
+   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTComponentInfo,CATID_BridgeLinkComponents,bRegister);
+   if ( FAILED(hr) )
+      return hr;
+
+   return S_OK;
+}
+
 // DllRegisterServer - Adds entries to the system registry
 STDAPI DllRegisterServer(void)
 {
@@ -79,15 +112,7 @@ STDAPI DllRegisterServer(void)
    if ( FAILED(hr) )
       return hr;
 
-   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTAgent,CATID_PGSuperExtensionAgent,true);
-   if ( FAILED(hr) )
-      return hr;
-
-   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTCadExporter,CATID_PGSuperDataExporter,true);
-   if ( FAILED(hr) )
-      return hr;
-
-   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTComponentInfo,CATID_BridgeLinkComponents,true);
+   hr = Register(true);
    if ( FAILED(hr) )
       return hr;
 
@@ -102,15 +127,7 @@ STDAPI DllUnregisterServer(void)
    if ( FAILED(hr) )
       return hr;
 
-   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTAgent,CATID_PGSuperExtensionAgent,false);
-   if ( FAILED(hr) )
-      return hr;
-
-   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTCadExporter,CATID_PGSuperDataExporter,false);
-   if ( FAILED(hr) )
-      return hr;
-
-   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTComponentInfo,CATID_BridgeLinkComponents,false);
+   hr = Register(false);
    if ( FAILED(hr) )
       return hr;
 

@@ -23,8 +23,9 @@
 // GirderModelChildFrame.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
+#include "PGSuperAppPlugin\Resource.h"
 #include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
 #include "GirderModelChildFrame.h"
@@ -118,15 +119,19 @@ BEGIN_MESSAGE_MAP(CGirderModelChildFrame, CSplitChildFrame)
 	ON_COMMAND(ID_FILE_PRINT, OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, OnFilePrintDirect)
 	ON_CBN_SELCHANGE(IDC_SELSTAGE, OnSelectLoadingStage)
-	ON_COMMAND(ID_GV_ADD_POINTLOAD, OnAddPointload)
-	ON_COMMAND(ID_ADD_GV_DISTRIBUTED_LOAD, OnAddDistributedLoad)
-	ON_COMMAND(ID_GV_ADD_MOMENT, OnAddMoment)
+	ON_COMMAND(ID_ADD_POINT_LOAD, OnAddPointload)
+	ON_COMMAND(ID_ADD_DISTRIBUTED_LOAD, OnAddDistributedLoad)
+	ON_COMMAND(ID_ADD_MOMENT_LOAD, OnAddMoment)
    ON_CBN_SELCHANGE( IDC_GIRDER, OnGirderChanged )
    ON_CBN_SELCHANGE( IDC_SPAN, OnSpanChanged )
    ON_COMMAND(IDC_SECTION_CUT, OnSectionCut )
 	ON_BN_CLICKED(IDC_SYNC, OnSync)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_HELP, OnCommandHelp)
+   ON_COMMAND(ID_PROJECT_DESIGNGIRDERDIRECT, OnProjectDesignGirderDirect)
+   ON_UPDATE_COMMAND_UI(ID_PROJECT_DESIGNGIRDERDIRECT, OnUpdateProjectDesignGirderDirect)
+   ON_COMMAND(ID_PROJECT_DESIGNGIRDERDIRECTHOLDSLABOFFSET, OnProjectDesignGirderDirectHoldSlabOffset)
+   ON_UPDATE_COMMAND_UI(ID_PROJECT_DESIGNGIRDERDIRECTHOLDSLABOFFSET, OnUpdateProjectDesignGirderDirectHoldSlabOffset)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -603,6 +608,8 @@ void CGirderModelChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 
 void CGirderModelChildFrame::OnAddPointload()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CPGSuperDoc* pDoc = (CPGSuperDoc*) GetActiveDocument();
    CComPtr<IBroker> pBroker;
    pDoc->GetBroker(&pBroker);
@@ -632,6 +639,8 @@ void CGirderModelChildFrame::OnAddPointload()
 
 void CGirderModelChildFrame::OnAddDistributedLoad() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CPGSuperDoc* pDoc = (CPGSuperDoc*) GetActiveDocument();
    CComPtr<IBroker> pBroker;
    pDoc->GetBroker(&pBroker);
@@ -661,6 +670,8 @@ void CGirderModelChildFrame::OnAddDistributedLoad()
 
 void CGirderModelChildFrame::OnAddMoment() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CPGSuperDoc* pDoc = (CPGSuperDoc*) GetActiveDocument();
    CComPtr<IBroker> pBroker;
    pDoc->GetBroker(&pBroker);
@@ -717,4 +728,38 @@ void CGirderModelChildFrame::OnSync()
    }
 
    pDoc->SetGirderEditorSettings(settings);
+}
+
+
+void CGirderModelChildFrame::OnUpdateProjectDesignGirderDirect(CCmdUI* pCmdUI)
+{
+   pCmdUI->Enable( m_CurrentSpanIdx != ALL_SPANS && m_CurrentGirderIdx != ALL_GIRDERS );
+}
+
+void CGirderModelChildFrame::OnUpdateProjectDesignGirderDirectHoldSlabOffset(CCmdUI* pCmdUI)
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,ISpecification,pSpecification);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   bool bDesignSlabOffset = pSpecification->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
+   pCmdUI->Enable( m_CurrentSpanIdx != ALL_SPANS && m_CurrentGirderIdx != ALL_GIRDERS && bDesignSlabOffset );
+}
+
+void CGirderModelChildFrame::OnProjectDesignGirderDirect()
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,ISpecification,pSpecification);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   bool bDesignSlabOffset = pSpecification->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
+
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)EAFGetDocument();
+   pDoc->DesignGirderDirect(bDesignSlabOffset);
+}
+
+void CGirderModelChildFrame::OnProjectDesignGirderDirectHoldSlabOffset()
+{
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)EAFGetDocument();
+   pDoc->DesignGirderDirect(false);
 }

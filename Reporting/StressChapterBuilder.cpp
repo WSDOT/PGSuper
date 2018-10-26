@@ -53,7 +53,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CStressChapterBuilder::CStressChapterBuilder(bool bDesign,bool bRating)
+CStressChapterBuilder::CStressChapterBuilder(bool bDesign,bool bRating,bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
    m_bDesign = bDesign;
    m_bRating = bRating;

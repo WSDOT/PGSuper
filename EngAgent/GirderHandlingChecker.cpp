@@ -701,6 +701,14 @@ void pgsGirderHandlingChecker::ComputeLiftingStresses(SpanIndexType span,GirderI
    Float64 leftOH  = pArtifact->GetLeftOverhang();
    Float64 rightOH = pArtifact->GetRightOverhang();
 
+#if defined _DEBUG
+   if ( bUseConfig )
+   {
+      ATLASSERT(IsEqual(leftOH,liftConfig.LeftOverhang));
+      ATLASSERT(IsEqual(rightOH,liftConfig.RightOverhang));
+   }
+#endif
+
    Float64 AsMax = 0;
    Float64 As = 0;
 

@@ -51,7 +51,7 @@ class REPORTINGCLASS CUserDefinedLoadsChapterBuilder : public CPGSuperChapterBui
 {
 public:
    // GROUP: LIFECYCLE
-   CUserDefinedLoadsChapterBuilder();
+   CUserDefinedLoadsChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

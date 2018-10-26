@@ -2,8 +2,8 @@
 
 <project>
    <paths>
-      <left>c:\ARP\PGSuper\RegressionTest\Datum\</left>
-      <right>c:\ARP\PGSuper\RegressionTest\Current\</right>
+      <left>c:\ARP\PGSuper\RegressionTest\Current\</left>
+      <right>c:\ARP\PGSuper\RegressionTest\Datum\</right>
       <filter>*.dbr;*.test</filter>
       <subfolders>1</subfolders>
       <left-readonly>0</left-readonly>

@@ -22,7 +22,7 @@
 // EditDistributedLoadDlg.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "EditDistributedLoadDlg.h"
 
@@ -313,7 +313,11 @@ BOOL CEditDistributedLoadDlg::OnInitDialog()
    UpdateLocationUnit();
    UpdateLoadType();
    UpdateSpanLength();
-	
+
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   HICON hIcon = (HICON)LoadImage(AfxGetResourceHandle(),MAKEINTRESOURCE(IDI_DISTRIBUTED_LOAD),IMAGE_ICON,0,0,LR_DEFAULTSIZE);
+   SetIcon(hIcon,FALSE);
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }

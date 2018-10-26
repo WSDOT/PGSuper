@@ -1903,7 +1903,7 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
 
 
    // flexure demand
-   Float64 mu = scd.Mu;
+   Float64 mu = scd.RealMu;
    Float64 dv = scd.dv;
    ATLASSERT(dv!=0.0);
    Float64 phi_flexure = scd.PhiMu;
@@ -4983,12 +4983,17 @@ void pgsDesigner2::DesignForLiftingHarping(bool bProportioningStrands,IProgress*
                m_DesignerOutcome.SetOutcome(pgsDesignCodes::PermanentStrandsChanged);
                m_DesignerOutcome.SetOutcome(pgsDesignCodes::RetainStrandProportioning);
             }
+            else
+            {
+               // Can't adjust strands so adjust concrete strength - this is what phase 2 does
+               bProportioningStrands = false; // causes phase 2 design below
+            }
          }
          else
          {
             // See if we can lower end pattern
             Float64 offset_inc = pStrandGeom->GetHarpedEndOffsetIncrement(span,gdr);
-            if (offset_inc>=0.0 )
+            if ( 0.0 <= offset_inc )
             {
                LOG("Try to raise end eccentricity by lowering harped strands at ends");
                Float64 off_reqd = m_StrandDesignTool.ComputeEndOffsetForEccentricity(poi_control, required_eccentricity);
@@ -5005,11 +5010,17 @@ void pgsDesigner2::DesignForLiftingHarping(bool bProportioningStrands,IProgress*
                m_DesignerOutcome.SetOutcome(pgsDesignCodes::PermanentStrandsChanged);
                LOG("New Eccentricity  = " << ::ConvertFromSysUnits(m_StrandDesignTool.ComputeEccentricity(poi_control,pgsTypes::CastingYard), unitMeasure::Inch) << " in");
             }
+            else
+            {
+               // Can't adjust strands so adjust concrete strength - this is what phase 2 does
+               bProportioningStrands = false; // causes phase 2 design below
+            }
          }
       } // end if - eccentricity
 
    } // end if - phase 1 design
-   else
+
+   if ( !bProportioningStrands )
    {
       // This is phase 2 design - the goal is to determine the lifting location and the required release strength.
       // This is done in phase 2 because the shipping analysis will set the number of required temporary
@@ -5497,11 +5508,11 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress)
    if ( pProgress->Continue() != S_OK )
       return;
 
-//#if defined _DEBUG
-//   LOG("-- Dump of Hauling Artifact After Design --");
-//   artifact.Dump(LOGGER);
-//   LOG("-- End Dump of Hauling Artifact --");
-//#endif
+#if defined _DEBUG
+   LOG("-- Dump of Hauling Artifact After Design --");
+   artifact.Dump(LOGGER);
+   LOG("-- End Dump of Hauling Artifact --");
+#endif
 
    // We now have bunk point locations to ensure stability
    m_DesignerOutcome.SetOutcome(pgsDesignCodes::HaulingConfigChanged);

@@ -48,7 +48,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CLiveLoadDetailsChapterBuilder::CLiveLoadDetailsChapterBuilder(bool bDesign,bool bRating)
+CLiveLoadDetailsChapterBuilder::CLiveLoadDetailsChapterBuilder(bool bDesign,bool bRating,bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
    m_bDesign = bDesign;
    m_bRating = bRating;

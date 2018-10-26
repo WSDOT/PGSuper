@@ -60,6 +60,7 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="PGSuperAppPlugin\StdAfx.h"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 			/>
@@ -151,8 +152,9 @@
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;_BETA_VERSION"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="PGSuperAppPlugin\StdAfx.h"
 				WarningLevel="3"
-				DebugInformationFormat="3"
+				DebugInformationFormat="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -174,7 +176,7 @@
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(ConfigurationName)&quot;;&quot;\ARP\PGSuper\RegFreeCOM\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\PGSuperAppPlugin.def"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="false"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -439,6 +441,10 @@
 			</File>
 			<File
 				RelativePath="..\EditDistributedLoadDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\EditLoadsView.cpp"
 				>
 			</File>
 			<File
@@ -1522,62 +1528,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\bitmap1.bmp"
-				>
-			</File>
-			<File
-				RelativePath="..\res\bitmap2.bmp"
-				>
-			</File>
-			<File
-				RelativePath="..\res\bmp00001.bmp"
-				>
-			</File>
-			<File
-				RelativePath="..\res\bmp00002.bmp"
-				>
-			</File>
-			<File
-				RelativePath="..\res\bmp00003.bmp"
-				>
-			</File>
-			<File
-				RelativePath="..\res\bmp00004.bmp"
-				>
-			</File>
-			<File
-				RelativePath="..\res\bmp00005.bmp"
-				>
-			</File>
-			<File
-				RelativePath="..\res\bmp00006.bmp"
-				>
-			</File>
-			<File
-				RelativePath="..\res\bmp00007.bmp"
-				>
-			</File>
-			<File
-				RelativePath="..\res\bmp00008.bmp"
-				>
-			</File>
-			<File
-				RelativePath="..\res\bmp00009.bmp"
-				>
-			</File>
-			<File
-				RelativePath="..\res\bmp00010.bmp"
-				>
-			</File>
-			<File
-				RelativePath="..\res\bmp00011.bmp"
-				>
-			</File>
-			<File
-				RelativePath="..\res\bmp00012.bmp"
-				>
-			</File>
-			<File
 				RelativePath="..\res\Bridge.ico"
 				>
 			</File>
@@ -1586,7 +1536,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\res\bss.ico"
+				>
+			</File>
+			<File
+				RelativePath="..\res\colhdr.bmp"
+				>
+			</File>
+			<File
 				RelativePath="..\res\Continuous.bmp"
+				>
+			</File>
+			<File
+				RelativePath="..\res\CopyProperties.ico"
 				>
 			</File>
 			<File
@@ -1602,6 +1564,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\res\EditBridge.ico"
+				>
+			</File>
+			<File
+				RelativePath="..\res\EditGirder.ico"
+				>
+			</File>
+			<File
 				RelativePath="..\res\folder_closed.ico"
 				>
 			</File>
@@ -1610,11 +1580,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\GirderDesigner.bmp"
+				RelativePath=".\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\res\GirderDesigner.bmp"
+				RelativePath="..\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
@@ -1631,30 +1601,6 @@
 			</File>
 			<File
 				RelativePath="..\res\Hinges.bmp"
-				>
-			</File>
-			<File
-				RelativePath="..\res\ico00001.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\res\ico00002.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\res\ico00003.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\res\ico00004.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\res\ico00005.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\res\icon1.ico"
 				>
 			</File>
 			<File
@@ -1678,6 +1624,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\res\LiveLoad.ico"
+				>
+			</File>
+			<File
 				RelativePath="..\res\moment.ico"
 				>
 			</File>
@@ -1695,6 +1645,10 @@
 			</File>
 			<File
 				RelativePath=".\res\PGSuper.ico"
+				>
+			</File>
+			<File
+				RelativePath="..\res\PGSuper.ico"
 				>
 			</File>
 			<File
@@ -1722,11 +1676,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\point_lo.bmp"
+				RelativePath="..\res\point_load.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\res\point_load.ico"
+				RelativePath="..\res\RatingFactor.ico"
 				>
 			</File>
 			<File
@@ -1746,7 +1700,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\res\txdot.ico"
+				>
+			</File>
+			<File
 				RelativePath="..\res\warning2.ico"
+				>
+			</File>
+			<File
+				RelativePath="..\res\Wsdot.ico"
 				>
 			</File>
 		</Filter>
@@ -1908,10 +1870,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\EditLoadsView.cpp"
-					>
-				</File>
-				<File
 					RelativePath="..\EditPier.cpp"
 					>
 				</File>
@@ -1960,6 +1918,10 @@
 				RelativePath="..\Include\IFace\VersionInfo.h"
 				>
 			</File>
+			<File
+				RelativePath="..\Include\IFace\ViewEvents.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="MakePgz"
@@ -1986,14 +1948,62 @@
 				<File
 					RelativePath="..\MakePgz\unzip.cpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="StdAfx.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="StdAfx.h"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\MakePgz\UnzipPgz.cpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="StdAfx.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="StdAfx.h"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\MakePgz\zip.cpp"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="StdAfx.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="StdAfx.h"
+						/>
+					</FileConfiguration>
 				</File>
 			</Filter>
 		</Filter>

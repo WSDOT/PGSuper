@@ -65,7 +65,7 @@
 #define HINT_ANALYSISTYPECHANGED      MIN_RESULTS_HINT + 10
 #define HINT_RATINGSPECCHANGED        MIN_RESULTS_HINT + 11
 
-#define MAX_RESULTS_HINT              HINT_ANALYSISTYPECHANGED
+#define MAX_RESULTS_HINT              HINT_RATINGSPECCHANGED
 
 #define HINT_LIBRARYCHANGED           201 // Changes made to non-referenced entries only
 

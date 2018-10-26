@@ -69,6 +69,8 @@ interface IRebarSectionItem;
 
 struct IntermedateDiaphragm
 {
+   bool m_bCompute; // if true, compuated based on H, T, and W, other use P
+   Float64 P; // weight
    Float64 H; // height
    Float64 T; // thickness
    Float64 W; // width
@@ -124,6 +126,9 @@ interface IBridge : IUnknown
    virtual Float64 GetCLPierToGirderEndDistance(SpanIndexType span,GirderIndexType gdr,pgsTypes::PierFaceType pierFace,pgsTypes::MeasurementType measure) = 0;
 
    virtual Float64 GetGirderOffset(SpanIndexType span,GirderIndexType gdr,Float64 station) = 0;
+
+   virtual void GetPoint(SpanIndexType span,GirderIndexType gdr,Float64 distFromStartOfSpan,IPoint2d** ppPoint) = 0;
+   virtual void GetPoint(const pgsPointOfInterest& poi,IPoint2d** ppPoint) = 0;
    virtual void GetStationAndOffset(SpanIndexType span,GirderIndexType gdr,Float64 distFromStartOfBridge,Float64* pStation,Float64* pOffset) = 0;
    virtual void GetStationAndOffset(const pgsPointOfInterest& poi,Float64* pStation,Float64* pOffset) = 0;
    virtual void GetGirderBearing(SpanIndexType span,GirderIndexType gdr,IDirection** ppBearing) = 0;
@@ -198,6 +203,11 @@ interface IBridge : IUnknown
    virtual Float64 GetRightCurbOffset(PierIndexType pier) = 0;
    virtual void GetSlabPerimeter(Uint32 nPoints,IPoint2dCollection** points) = 0;
    virtual void GetSpanPerimeter(SpanIndexType spanIdx,Uint32 nPoints,IPoint2dCollection** points) = 0;
+
+   virtual void GetLeftSlabEdgePoint(Float64 station, IDirection* direction,IPoint2d** point) = 0;
+   virtual void GetLeftSlabEdgePoint(Float64 station, IDirection* direction,IPoint3d** point) = 0;
+   virtual void GetRightSlabEdgePoint(Float64 station, IDirection* direction,IPoint2d** point) = 0;
+   virtual void GetRightSlabEdgePoint(Float64 station, IDirection* direction,IPoint3d** point) = 0;
 
    // Pier data
    virtual Float64 GetPierStation(PierIndexType pier) = 0;

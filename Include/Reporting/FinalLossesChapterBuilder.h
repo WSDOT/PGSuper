@@ -50,7 +50,7 @@ LOG
 class REPORTINGCLASS CFinalLossesChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   CFinalLossesChapterBuilder();
+   CFinalLossesChapterBuilder(bool bSelect = true);
 
    //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const;

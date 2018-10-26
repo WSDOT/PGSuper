@@ -51,7 +51,7 @@ class REPORTINGCLASS CDevLengthDetailsChapterBuilder : public CPGSuperChapterBui
 {
 public:
    // GROUP: LIFECYCLE
-   CDevLengthDetailsChapterBuilder();
+   CDevLengthDetailsChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

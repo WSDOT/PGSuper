@@ -34,6 +34,10 @@ static char THIS_FILE[] = __FILE__;
 CLASS
    CPGSuperChapterBuilder
 ****************************************************************************/
+CPGSuperChapterBuilder::CPGSuperChapterBuilder(bool bSelect)
+{
+   m_bSelect = bSelect;
+}
 
 Uint16 CPGSuperChapterBuilder::GetMaxLevel() const
 {
@@ -52,3 +56,7 @@ rptChapter* CPGSuperChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 
    return pChapter;
 }
 
+bool CPGSuperChapterBuilder::Select() const
+{
+   return m_bSelect;
+}

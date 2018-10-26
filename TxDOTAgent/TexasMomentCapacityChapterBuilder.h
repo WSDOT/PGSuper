@@ -48,7 +48,7 @@ class CTexasMomentCapacityChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    // GROUP: LIFECYCLE
-   CTexasMomentCapacityChapterBuilder();
+   CTexasMomentCapacityChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

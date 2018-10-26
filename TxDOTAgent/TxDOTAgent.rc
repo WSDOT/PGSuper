@@ -59,8 +59,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,3,0,4
- PRODUCTVERSION 2,3,0,4
+ FILEVERSION 2,3,0,5
+ PRODUCTVERSION 2,3,0,5
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -78,12 +78,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "TxDOTAgent Module"
-            VALUE "FileVersion", "2.3.0.4"
+            VALUE "FileVersion", "2.3.0.5"
             VALUE "InternalName", "TxDOTAgent"
             VALUE "LegalCopyright", "Copyright © 1999-2010, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperTxDOTAgent.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.3.0.4"
+            VALUE "ProductVersion", "2.3.0.5"
         END
     END
     BLOCK "VarFileInfo"
@@ -101,6 +101,7 @@ END
 IDR_TXDOTAGENT          REGISTRY                "TxDOTAgent.rgs"
 IDR_TXDOTAGENTIMP       REGISTRY                "TxDOTAgentImp.rgs"
 IDR_TXDOTCADEXPORTER    REGISTRY                "TxDOTCadExporter.rgs"
+IDR_TXDOTAPPPLUGIN      REGISTRY                "TxDOTAppPlugin.rgs"
 IDR_TXDOTCOMPONENTINFO  REGISTRY                "TxDOTComponentInfo.rgs"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -122,6 +123,171 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,53,151,10
 END
 
+IDD_BRIDGE_INPUT_PAGE DIALOGEX 0, 0, 427, 342
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Bridge Input"
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    GROUPBOX        "General Information",IDC_STATIC,7,7,413,95
+    EDITTEXT        IDC_BRIDGE,54,24,132,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_BRIDGE_ID,54,44,132,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_JOB_NUMBER,54,64,132,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ENGINEER,253,24,132,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_COMPANY,253,44,132,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_COMMENTS,253,64,132,26,ES_MULTILINE | ES_AUTOHSCROLL
+    EDITTEXT        IDC_SPAN_NO,60,120,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_BEAM_NO,60,140,40,14,ES_AUTOHSCROLL
+    COMBOBOX        IDC_BEAM_TYPE,60,160,66,98,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_BEAM_SPACING,202,120,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_SPAN_LENGTH,202,140,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_SLAB_THICKNESS,202,159,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_RELATIVE_HUMIDITY,347,120,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_LLDF_MOMENT,347,140,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_LLDF_SHEAR,347,159,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EC_SLAB,66,204,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EC_BEAM,202,205,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FC_SLAB,347,205,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FT,149,246,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FB,357,247,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_MU,149,265,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_W_NONCOMP_DC,73,310,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_W_COMP_DC,202,310,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_W_COMP_DW,345,310,40,14,ES_AUTOHSCROLL
+    RTEXT           "Bridge",IDC_STATIC,24,27,24,8
+    RTEXT           "Job Number",IDC_STATIC,11,67,38,8
+    RTEXT           "Bridge ID",IDC_STATIC,8,48,40,8
+    RTEXT           "Engineer",IDC_STATIC,204,27,43,8
+    RTEXT           "Comments",IDC_STATIC,209,67,38,8
+    RTEXT           "Company",IDC_STATIC,207,47,40,8
+    GROUPBOX        "Design Information",IDC_STATIC,7,108,413,72
+    RTEXT           "Beam Type",IDC_STATIC,15,161,38,8
+    RTEXT           "Beam No.",IDC_STATIC,12,142,40,8
+    RTEXT           "Span No.",IDC_STATIC,12,123,40,8
+    RTEXT           "Beam Spacing",IDC_STATIC,147,123,51,8
+    RTEXT           "Slab Thickness",IDC_STATIC,145,161,53,8
+    RTEXT           "Span Length",IDC_STATIC,147,142,51,8
+    LTEXT           "ft",IDC_BEAM_SPACING_UNITS,246,123,8,8
+    LTEXT           "ft",IDC_SPAN_LENGTH_UNITS,246,144,8,8
+    LTEXT           "in",IDC_SLAB_THICKNESS_UNITS,246,162,8,8
+    RTEXT           "Relative Humidity",IDC_STATIC,281,123,62,8
+    LTEXT           "%",IDC_STATIC,389,123,8,8
+    RTEXT           "LLDF (Moment)",IDC_STATIC,279,143,62,8
+    RTEXT           "LLDF (Shear)",IDC_STATIC,279,161,62,8
+    GROUPBOX        "Material Properties",IDC_STATIC,7,188,413,40
+    RTEXT           "Ec, Slab",IDC_STATIC,21,207,40,8
+    LTEXT           "ksi",IDC_EC_SLAB_UNITS,108,207,15,8
+    RTEXT           "Ec, Beam",IDC_STATIC,156,208,40,8
+    LTEXT           "ksi",IDC_EC_BEAM_UNITS,244,208,15,8
+    RTEXT           "f'c, Slab",IDC_STATIC,302,208,40,8
+    LTEXT           "ksi",IDC_FC_SLAB_UNITS,390,208,15,8
+    GROUPBOX        "Design Data",IDC_STATIC,7,235,413,53
+    RTEXT           "*ft, Design Compressive Stress, Top CL",IDC_STATIC,9,250,136,8
+    LTEXT           "ksi",IDC_FT_UNITS,191,249,15,8
+    RTEXT           "*fb, Design Tensile Stress, Bottom CL",IDC_STATIC,226,250,126,8
+    LTEXT           "ksi",IDC_FB_UNITS,399,250,15,8
+    RTEXT           "Mu, Required Ultimate Moment",IDC_STATIC,17,268,126,8
+    LTEXT           "kip-ft",IDC_MU_UNITS,191,268,25,8
+    GROUPBOX        "Optional Uniform Design Loads",IDC_STATIC,7,294,413,40
+    RTEXT           "w non-comp, dc",IDC_STATIC,12,313,60,8
+    LTEXT           "kip/ft",IDC_W_NONCOMP_DC_UNITS,115,313,23,8
+    RTEXT           "w comp, dc",IDC_STATIC,156,313,40,8
+    LTEXT           "kip/ft",IDC_W_COMP_DC_UNITS,244,313,26,8
+    RTEXT           "w comp, dw",IDC_STATIC,288,313,51,8
+    LTEXT           "kip/ft",IDC_W_COMP_DW_UNITS,387,313,21,8
+    RTEXT           "*Note: Tension is negative",IDC_STATIC,232,268,135,8
+END
+
+IDD_GIRDER_INPUT_PAGE DIALOGEX 0, 0, 468, 390
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Girder Input"
+FONT 8, "Microsoft Sans Serif", 400, 0, 0x0
+BEGIN
+    CONTROL         "Standard Strand Fill",IDC_ORIG_STANDARD_FILL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,26,23,79,10
+    CONTROL         "Use Depressed Strands",IDC_ORIG_USE_DEPRESSED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,83,37,91,10
+    COMBOBOX        IDC_ORIG_STRAND_SIZE,62,54,48,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_ORIG_STRAND_TYPE,62,73,114,380,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_ORIG_FCI,62,93,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ORIG_FC,62,114,40,14,ES_AUTOHSCROLL
+    GROUPBOX        "Static",IDC_ORIG_BOX,196,8,250,175
+    CONTROL         "Standard Strand Fill",IDC_OPT_STANDARD_FILL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,218,79,10
+    CONTROL         "Use Depressed Strands",IDC_OPT_USE_DEPRESSED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,82,232,91,10
+    COMBOBOX        IDC_OPT_STRAND_SIZE,61,249,48,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_OPT_STRAND_TYPE,61,268,114,380,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_OPT_FCI,61,288,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_OPT_FC,61,309,40,14,ES_AUTOHSCROLL
+    GROUPBOX        "Static",IDC_OPT_BOX,195,203,250,175
+    RTEXT           "Strand Size",IDC_STATIC,17,251,39,8,0,WS_EX_TRANSPARENT
+    RTEXT           "f'ci",IDC_STATIC,33,291,22,8
+    LTEXT           "ksi",IDC_OPT_FCI_UNITS,103,291,15,8
+    RTEXT           "f'c",IDC_STATIC,33,312,22,8
+    LTEXT           "ksi",IDC_OPT_FC_UNITS,103,312,15,8
+    GROUPBOX        "Fabricator Optional Girder Design",IDC_STATIC,7,198,454,185
+    RTEXT           "Strand Type",IDC_STATIC,15,270,39,8,0,WS_EX_TRANSPARENT
+    RTEXT           "Strand Size",IDC_STATIC,18,56,39,8,0,WS_EX_TRANSPARENT
+    RTEXT           "f'ci",IDC_STATIC,34,96,22,8
+    LTEXT           "ksi",IDC_ORIG_FCI_UNITS,104,96,15,8
+    RTEXT           "f'c",IDC_STATIC,34,117,22,8
+    LTEXT           "ksi",IDC_ORIG_FC_UNITS,104,117,15,8
+    GROUPBOX        "Original Girder Design",IDC_STATIC,8,3,454,185
+    RTEXT           "Strand Type",IDC_STATIC,16,75,39,8,0,WS_EX_TRANSPARENT
+END
+
+IDD_GIRDER_VIEW_PAGE DIALOGEX 0, 0, 294, 163
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Girder View"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "I'm the girder view",IDC_STATIC,73,74,90,8
+END
+
+IDD_REPORT_PAGE DIALOGEX 0, 0, 395, 271
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+EXSTYLE WS_EX_CONTROLPARENT
+CAPTION "Analysis Report"
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    LTEXT           "Show:",IDC_STATIC,23,6,24,8,0,WS_EX_TRANSPARENT
+    GROUPBOX        "Browser Placeholder",IDC_BROWSER,5,25,383,239,0,WS_EX_CLIENTEDGE
+    COMBOBOX        IDC_REPORT_COMBO,49,3,102,18,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "An Unknown Error Occurred.",IDC_ERROR_STATIC,71,63,240,92
+END
+
+IDD_STANDARD_FILL_DLG DIALOGEX 0, 0, 249, 174
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    COMBOBOX        IDC_OPT_NUM_STRANDS,104,34,48,424,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_OPT_TO,104,66,40,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Compute Eccentricity",IDC_OPT_COMPUTE,79,113,81,14
+    RTEXT           "Total No. Strands",IDC_STATIC,42,36,57,8
+    LTEXT           "No. Depressed Strands  ??",IDC_OPT_NO_DEPRESSED,104,52,123,11
+    RTEXT           "Girder Bottom to Topmost Strand (To)",IDC_OPT_TO_TAG,27,64,72,19
+    LTEXT           "in",IDC_OPT_TO_UNITS,146,69,15,8
+    LTEXT           "(Valid Range: ??? to ???)",IDC_OPT_TO_VALID_RANGE,104,88,136,11
+    GROUPBOX        "Standard Strand Layout",IDC_STATIC,25,14,205,135
+END
+
+IDD_ECC_DLG DIALOGEX 0, 0, 136, 76
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Prestress Eccentricity"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,43,55,50,14
+    RTEXT           "Undefined",IDC_ECC_TEXT,7,18,103,26
+END
+
+IDD_NONSTANDARD_FILL_DLG DIALOGEX 0, 0, 250, 175
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_SYSMENU
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "Custom1",IDC_CL_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,14,18,96,132
+    GROUPBOX        "Strand Rows - Girder Centerline",IDC_STATIC,7,7,113,161
+    LTEXT           "No. Strands = ??",IDC_CL_NO_STRANDS,18,153,85,8
+    CONTROL         "Custom1",IDC_END_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,137,18,96,132
+    GROUPBOX        "Strand Rows - Girder Ends",IDC_ENDS_GROUP,129,7,113,161
+    LTEXT           "No. Strands = ??",IDC_END_NO_STRANDS,141,153,85,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -134,12 +300,197 @@ IDI_TXDOT               ICON                    "res\\txdot.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Menu
+//
+
+IDR_TXDOTOPTIONALDESIGN MENU 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
+        MENUITEM "Save &As",                    ID_FILE_SAVEAS
+        MENUITEM "&Close",                      ID_FILE_CLOSE
+        MENUITEM SEPARATOR
+        MENUITEM "&Print",                      ID_FILE_PRINT
+        MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP
+        MENUITEM SEPARATOR
+        MENUITEM "Export PGSuper &Model...",    ID_FILE_EXPORTPGSUPERMODEL
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Toolbars...",                ID_VIEW_TOOLBAR
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&Help Topics",                ID_HELP_FINDER
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_BRIDGE_INPUT_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 420
+        VERTGUIDE, 202
+        VERTGUIDE, 347
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 335
+    END
+
+    IDD_GIRDER_INPUT_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 461
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 383
+    END
+
+    IDD_GIRDER_VIEW_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 287
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 156
+    END
+
+    IDD_REPORT_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 388
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 264
+    END
+
+    IDD_STANDARD_FILL_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 242
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 167
+    END
+
+    IDD_ECC_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 129
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 69
+    END
+
+    IDD_NONSTANDARD_FILL_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 243
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 168
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_TXDOTOPTIONALDESIGNTOOLBAR TOOLBAR  16, 15
+BEGIN
+    BUTTON      ID_FILE_NEW
+    BUTTON      ID_FILE_OPEN
+    BUTTON      ID_FILE_SAVE
+    BUTTON      ID_FILE_PRINT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDR_TXDOTOPTIONALDESIGNTOOLBAR BITMAP                  "res\\toolbar1.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_REPORT_PAGE DLGINIT
+BEGIN
+    IDC_REPORT_COMBO, 0x403, 13, 0
+0x6853, 0x726f, 0x2074, 0x6552, 0x6f70, 0x7472, "\000" 
+    IDC_REPORT_COMBO, 0x403, 12, 0
+0x6f4c, 0x676e, 0x5220, 0x7065, 0x726f, 0x0074, 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // String Table
 //
 
 STRINGTABLE 
 BEGIN
     IDS_PROJNAME            "TxDOTAgent"
+    IDS_TEMPLATE_SUFFIX     "togt"
+    IDS_SHEETNAME           "TOGA"
+    IDR_TXDOTOPTIONALDESIGN "\n\nTxDOT Optional Girder Analysis\nTxDOT Optional Girder Analysis File (*.toga)\n.toga\nTxDOTOptionalDesign.Document\nTxDOT Optional Girder Analysis File"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_E_BADINSTALL        "There is an error with the %1 installation.  Please re-install the program."
+    IDS_E_PROBPERSISTS      "If this problem persists,  contact technical support at Bridge_Support@wsdot.wa.gov.\n Please include your project file and the %1 file found in the program directory."
+    IDS_E_INVALIDFORMAT     "%1 is not a valid PGSuper project file."
+    IDS_E_FILENOTFOUND      "File %1 was not found"
+    IDS_E_READ              "An error has occured while reading %1"
+    IDS_E_FORMAT            "%1\n\n %2"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_E_INVALIDVERSION    "The file %1 came from a newer version of PGSuper. You must upgrade in order to read it."
+    IDS_E_USERDEFINED       "An unknown error occured while reading %1"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_PRINT           "Print current page"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_MRU_FILE1       "Open this project"
+    ID_FILE_MRU_FILE2       "Open this document"
+    ID_FILE_MRU_FILE3       "Open this document"
+    ID_FILE_MRU_FILE4       "Open this document"
+    ID_FILE_MRU_FILE5       "Open this document"
+    ID_FILE_MRU_FILE6       "Open this document"
+    ID_FILE_MRU_FILE7       "Open this document"
+    ID_FILE_MRU_FILE8       "Open this document"
+    ID_FILE_MRU_FILE9       "Open this document"
+    ID_FILE_MRU_FILE10      "Open this document"
+    ID_FILE_MRU_FILE11      "Open this document"
+    ID_FILE_MRU_FILE12      "Open this document"
+    ID_FILE_MRU_FILE13      "Open this document"
+    ID_FILE_MRU_FILE14      "Open this document"
+    ID_FILE_MRU_FILE15      "Open this document"
+    ID_FILE_MRU_FILE16      "Open this document"
 END
 
 #endif    // English (U.S.) resources

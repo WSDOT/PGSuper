@@ -62,11 +62,16 @@ void CDiaphragmDefinitionDlg::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX,IDC_SPAN2,IDC_SPAN_UNIT, m_Rule.MaxSpan, pDisplayUnits->SpanLength);
    DDX_UnitValueAndTag(pDX,IDC_H,IDC_H_UNIT, m_Rule.Height, pDisplayUnits->ComponentDim );
    DDX_UnitValueAndTag(pDX,IDC_THICKNESS,IDC_THICKNESS_UNIT, m_Rule.Thickness, pDisplayUnits->ComponentDim );
+   DDX_CBItemData(pDX,IDC_METHOD,m_Rule.Method);
    DDX_CBItemData(pDX,IDC_TYPE,m_Rule.Type);
    DDX_CBItemData(pDX,IDC_CONSTRUCTION,m_Rule.Construction);
    DDX_CBItemData(pDX,IDC_MEASUREMENT_TYPE,m_Rule.MeasureType);
    DDX_CBItemData(pDX,IDC_MEASURED_FROM,m_Rule.MeasureLocation);
-   
+
+   if ( m_Rule.Type == GirderLibraryEntry::dtInternal )
+      DDX_UnitValueAndTag(pDX,IDC_WEIGHT,IDC_WEIGHT_UNIT, m_Rule.Weight, pDisplayUnits->GeneralForce );
+   else
+      DDX_UnitValueAndTag(pDX,IDC_WEIGHT,IDC_WEIGHT_UNIT, m_Rule.Weight, pDisplayUnits->ForcePerLength );
 
    if ( m_Rule.MeasureType == GirderLibraryEntry::mtFractionOfSpanLength || m_Rule.MeasureType == GirderLibraryEntry::mtFractionOfGirderLength)
    {
@@ -85,6 +90,7 @@ BEGIN_MESSAGE_MAP(CDiaphragmDefinitionDlg, CDialog)
 	//{{AFX_MSG_MAP(CDiaphragmDefinitionDlg)
 	ON_CBN_SELCHANGE(IDC_TYPE, OnDiaphragmTypeChanged)
 	ON_CBN_SELCHANGE(IDC_MEASUREMENT_TYPE, OnMeasurementTypeChanged)
+	ON_CBN_SELCHANGE(IDC_METHOD, OnMethodChanged)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -93,7 +99,9 @@ END_MESSAGE_MAP()
 
 void CDiaphragmDefinitionDlg::OnDiaphragmTypeChanged() 
 {
-	// TODO: Add your control notification handler code here
+   CEAFApp* pApp = EAFGetApp();
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
    CComboBox* pcbType = (CComboBox*)GetDlgItem(IDC_TYPE);	
    CComboBox* pcbConstruction = (CComboBox*)GetDlgItem(IDC_CONSTRUCTION);	
 
@@ -121,6 +129,9 @@ void CDiaphragmDefinitionDlg::OnDiaphragmTypeChanged()
          int idx = pcbConstruction->AddString("Bridge Site");
          pcbConstruction->SetItemData(idx,(DWORD)GirderLibraryEntry::ctBridgeSite);
          pcbConstruction->SetCurSel(idx);
+
+         // user input weight is weight per foot for external diaphragms
+         GetDlgItem(IDC_WEIGHT_UNIT)->SetWindowTextA(pDisplayUnits->ForcePerLength.UnitOfMeasure.UnitTag().c_str() );
       }
       else
       {
@@ -136,6 +147,9 @@ void CDiaphragmDefinitionDlg::OnDiaphragmTypeChanged()
 
          if ( constructionType == GirderLibraryEntry::ctBridgeSite )
             pcbConstruction->SetCurSel(idx);
+
+         // user input weight is just weight for internal diaphragms
+         GetDlgItem(IDC_WEIGHT_UNIT)->SetWindowTextA(pDisplayUnits->GeneralForce.UnitOfMeasure.UnitTag().c_str() );
       }
    }
 }
@@ -160,45 +174,72 @@ void CDiaphragmDefinitionDlg::OnMeasurementTypeChanged()
    }
 }
 
+void CDiaphragmDefinitionDlg::OnMethodChanged()
+{
+   CComboBox* pcbMethod = (CComboBox*)GetDlgItem(IDC_METHOD);
+   int curSel = pcbMethod->GetCurSel();
+   BOOL bEnableDimensions = (curSel == 0);
+   BOOL bEnableWeight     = (curSel != 0);
+
+   GetDlgItem(IDC_HEIGHT_LABEL)->EnableWindow(bEnableDimensions);
+   GetDlgItem(IDC_H)->EnableWindow(bEnableDimensions);
+   GetDlgItem(IDC_H_UNIT)->EnableWindow(bEnableDimensions);
+
+   GetDlgItem(IDC_THICKNESS_LABEL)->EnableWindow(bEnableDimensions);
+   GetDlgItem(IDC_THICKNESS)->EnableWindow(bEnableDimensions);
+   GetDlgItem(IDC_THICKNESS_UNIT)->EnableWindow(bEnableDimensions);
+
+   GetDlgItem(IDC_WEIGHT_LABEL)->EnableWindow(bEnableWeight);
+   GetDlgItem(IDC_WEIGHT)->EnableWindow(bEnableWeight);
+   GetDlgItem(IDC_WEIGHT_UNIT)->EnableWindow(bEnableWeight);
+}
+
 BOOL CDiaphragmDefinitionDlg::OnInitDialog() 
 {
+   // Mehthod combo box
+   CComboBox* pcbMethod = (CComboBox*)GetDlgItem(IDC_METHOD);
+   int idx = pcbMethod->AddString("Compute weight of diaphragm based on Width, Height, and Girder Spacing");
+   pcbMethod->SetItemData(idx,(DWORD_PTR)GirderLibraryEntry::dwmCompute);
+   idx = pcbMethod->AddString("Input diaphragm weight");
+   pcbMethod->SetItemData(idx,(DWORD_PTR)GirderLibraryEntry::dwmInput);
+
    // Diaphragm type combo box
    CComboBox* pcbDiaphragmType = (CComboBox*)GetDlgItem(IDC_TYPE);
    pcbDiaphragmType->ResetContent();
-   int idx = pcbDiaphragmType->AddString("External (between girders)");
-   pcbDiaphragmType->SetItemData(idx,(DWORD)GirderLibraryEntry::dtExternal);
+   idx = pcbDiaphragmType->AddString("External (between girders)");
+   pcbDiaphragmType->SetItemData(idx,(DWORD_PTR)GirderLibraryEntry::dtExternal);
 
    idx = pcbDiaphragmType->AddString("Internal (between interior webs)");
-   pcbDiaphragmType->SetItemData(idx,(DWORD)GirderLibraryEntry::dtInternal);
+   pcbDiaphragmType->SetItemData(idx,(DWORD_PTR)GirderLibraryEntry::dtInternal);
 
    // put some dummy stuff here
    CComboBox* pcbConstruction = (CComboBox*)GetDlgItem(IDC_CONSTRUCTION);
    pcbConstruction->AddString("1");
-   pcbConstruction->SetItemData(0,(DWORD)GirderLibraryEntry::ctCastingYard);
+   pcbConstruction->SetItemData(0,(DWORD_PTR)GirderLibraryEntry::ctCastingYard);
    pcbConstruction->AddString("2");
-   pcbConstruction->SetItemData(1,(DWORD)GirderLibraryEntry::ctBridgeSite);
+   pcbConstruction->SetItemData(1,(DWORD_PTR)GirderLibraryEntry::ctBridgeSite);
 
    // Measurement type combo box
    CComboBox* pcbMeasurementType = (CComboBox*)GetDlgItem(IDC_MEASUREMENT_TYPE);
    idx = pcbMeasurementType->AddString("fraction of the span length");
-   pcbMeasurementType->SetItemData(idx,(DWORD)GirderLibraryEntry::mtFractionOfSpanLength);
+   pcbMeasurementType->SetItemData(idx,(DWORD_PTR)GirderLibraryEntry::mtFractionOfSpanLength);
 
    idx = pcbMeasurementType->AddString("fraction of the girder length");
-   pcbMeasurementType->SetItemData(idx,(DWORD)GirderLibraryEntry::mtFractionOfGirderLength);
+   pcbMeasurementType->SetItemData(idx,(DWORD_PTR)GirderLibraryEntry::mtFractionOfGirderLength);
 
    idx = pcbMeasurementType->AddString("fixed distance");
-   pcbMeasurementType->SetItemData(idx,(DWORD)GirderLibraryEntry::mtAbsoluteDistance);
+   pcbMeasurementType->SetItemData(idx,(DWORD_PTR)GirderLibraryEntry::mtAbsoluteDistance);
 
    // Measured from combo box
    CComboBox* pcbMeasuredFrom = (CComboBox*)GetDlgItem(IDC_MEASURED_FROM);
    idx = pcbMeasuredFrom->AddString("centerline of bearing");
-   pcbMeasuredFrom->SetItemData(idx,(DWORD)GirderLibraryEntry::mlBearing);
+   pcbMeasuredFrom->SetItemData(idx,(DWORD_PTR)GirderLibraryEntry::mlBearing);
 
    idx = pcbMeasuredFrom->AddString("end of girder");
-   pcbMeasuredFrom->SetItemData(idx,(DWORD)GirderLibraryEntry::mlEndOfGirder);
+   pcbMeasuredFrom->SetItemData(idx,(DWORD_PTR)GirderLibraryEntry::mlEndOfGirder);
 
    idx = pcbMeasuredFrom->AddString("centerline of girder");
-   pcbMeasuredFrom->SetItemData(idx,(DWORD)GirderLibraryEntry::mlCenterlineOfGirder);
+   pcbMeasuredFrom->SetItemData(idx,(DWORD_PTR)GirderLibraryEntry::mlCenterlineOfGirder);
    
 
    CDialog::OnInitDialog();
@@ -207,6 +248,7 @@ BOOL CDiaphragmDefinitionDlg::OnInitDialog()
 
    OnDiaphragmTypeChanged();
 	OnMeasurementTypeChanged();
+   OnMethodChanged();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE

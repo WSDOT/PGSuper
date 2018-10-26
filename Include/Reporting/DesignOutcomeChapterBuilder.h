@@ -51,7 +51,7 @@ class REPORTINGCLASS CDesignOutcomeChapterBuilder : public CPGSuperChapterBuilde
 {
 public:
    // GROUP: LIFECYCLE
-   CDesignOutcomeChapterBuilder();
+   CDesignOutcomeChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

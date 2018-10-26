@@ -23,7 +23,7 @@
 // ChildFrm.cpp : implementation of the CEditLoadsChildFrame class
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 
 #include "EditLoadsChildFrm.h"
@@ -115,7 +115,7 @@ void CEditLoadsChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
 	if (bAddToTitle)
    {
-      CString msg("Edit User-Defined Loads");
+      CString msg("Loads");
 
       // set our title
 		AfxSetWindowText(m_hWnd, msg);

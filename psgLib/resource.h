@@ -3,8 +3,8 @@
 // Used by psgLib.rc
 //
 #define ID_INDICATOR_MODIFIED           1
-#define ID_INDICATOR_STATUS             2
 #define IDS_GIRDER_SHEET                1
+#define ID_INDICATOR_STATUS             2
 #define IDS_GIRDER_DIMENSIONS           2
 #define IDS_GIRDER_MISC                 3
 #define IDS_GIRDER_DIAPHRAGM            3
@@ -39,7 +39,7 @@
 #define IDD_SPEC_DESCR                  139
 #define IDD_GIRDER_MAIN                 140
 #define IDD_SPEC_BRIDGE_SITE            143
-#define IDR_LIBRARYTYPE                  143
+#define IDR_LIBRARYTYPE                 143
 #define IDD_EDIT_SHEAR_STEEL            144
 #define IDD_SPEC_CASTING_YARD           145
 #define IDD_LONG_STEEL                  146
@@ -61,6 +61,9 @@
 #define IDD_SPEC_BRIDGE_SITE1           157
 #define IDB_CONNECTION                  158
 #define IDD_HARP_STRAND                 164
+#define IDB_IN_USE                      164
+#define IDB_IN_USE_AND_READ_ONLY        165
+#define IDB_READ_ONLY                   166
 #define IDI_CONCRETE_ENTRY              167
 #define IDI_CONNECTION_ENTRY            168
 #define IDI_GIRDER_ENTRY                169
@@ -89,9 +92,11 @@
 #define IDD_GIRDER_DEBOND_CRITERIA      198
 #define IDI_DEFAULT_ENTRY               198
 #define IDD_RATING_DESCR                199
+#define IDI_FOLDER                      199
+#define IDI_OPEN_FOLDER                 200
+#define IDI_LIBRARY_MANAGER             201
 #define IDI_RATING_ENTRY                202
 #define IDI_ICON1                       203
-#define IDI_LIBRARY_MANAGER             201
 #define IDD_STRAND_GENERATION           204
 #define IDD_LIVE_LOAD_FACTORS           306
 #define IDC_D1                          1001
@@ -186,8 +191,8 @@
 #define IDC_H                           1017
 #define IDC_GIRDER_FCI                  1017
 #define IDC_SERVICE_I_DW                1017
-#define IDC_WEIGHT                      1017
 #define IDC_MAX_STRANDS_PER_ROW         1017
+#define IDC_WEIGHT                      1018
 #define IDC_DEL_HARPED_STRAND           1018
 #define IDC_LONG_GRID                   1018
 #define IDC_EXTREME_MAX_MAX             1018
@@ -437,11 +442,11 @@
 #define IDC_SHIPPING                    1168
 #define IDC_BEFORE_XFER_LABEL           1169
 #define IDC_AFTER_XFER_LABEL            1170
-#define IDC_RENAME_ENTRY                 1170
+#define IDC_RENAME_ENTRY                1170
 #define IDC_SHIPPING2_LABEL             1171
 #define IDC_ENTRY_TEXT                  1171
 #define IDC_FINAL_LABEL                 1172
-#define IDC_OVERWRITE                    1172
+#define IDC_OVERWRITE                   1172
 #define IDC_SHIPPING_TAG                1173
 #define IDC_HARP_LOCATION_TAG           1174
 #define IDC_LIFTING_LABEL               1174
@@ -561,6 +566,7 @@
 #define IDC_SPAN2                       1268
 #define IDC_SPAN_UNIT                   1269
 #define IDC_FC_SLAB                     1270
+#define IDC_SPAN3                       1270
 #define IDC_FC_SLAB_UNIT                1271
 #define IDC_GIRDER_FCI_UNIT             1272
 #define IDC_GIRDER_FC                   1273
@@ -755,6 +761,7 @@
 #define IDC_COMBO1                      1441
 #define IDC_USAGE                       1441
 #define IDC_STRAND_GENERATION           1441
+#define IDC_METHOD                      1441
 #define IDC_DIST_TRAFFIC_BARRIER_BASIS  1442
 #define IDC_NWC_NOTE                    1443
 #define IDC_CHECK1                      1444
@@ -815,6 +822,8 @@
 #define IDC_X_LABEL2                    1487
 #define IDC_Y_LABEL2                    1488
 #define IDC_BUTTON2                     1489
+#define IDC_HEIGHT_LABEL                1491
+#define IDC_THICKNESS_LABEL             1492
 #define IDS_CONFLICT_BOTTOM_MASTER      1498
 #define IDS_CONFLICT_BOTTOM_IMPORT      1499
 #define IDC_INTERPOLATE                 1546
@@ -858,12 +867,6 @@
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
 #define IDR_LIBEDITORTOOLBAR            12132
-#define IDI_FOLDER                      199
-#define IDI_OPEN_FOLDER                 200
-#define IDB_IN_USE                      164
-#define IDB_IN_USE_AND_READ_ONLY        165
-#define IDB_READ_ONLY                   166
-
 #define IDM_ADD_ENTRY                   33024
 #define IDM_EDIT_ENTRY                  33025
 #define IDM_DELETE_ENTRY                33026
@@ -889,7 +892,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        205
 #define _APS_NEXT_COMMAND_VALUE         33041
-#define _APS_NEXT_CONTROL_VALUE         1490
+#define _APS_NEXT_CONTROL_VALUE         1493
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

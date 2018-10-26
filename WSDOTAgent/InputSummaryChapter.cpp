@@ -57,7 +57,8 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Girde
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CInputSummaryChapter::CInputSummaryChapter()
+CInputSummaryChapter::CInputSummaryChapter(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

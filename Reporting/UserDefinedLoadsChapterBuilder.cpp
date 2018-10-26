@@ -43,7 +43,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CUserDefinedLoadsChapterBuilder::CUserDefinedLoadsChapterBuilder()
+CUserDefinedLoadsChapterBuilder::CUserDefinedLoadsChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

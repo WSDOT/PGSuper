@@ -51,7 +51,7 @@ class REPORTINGCLASS CShearCapacityDetailsChapterBuilder : public CPGSuperChapte
 {
 public:
    // GROUP: LIFECYCLE
-   CShearCapacityDetailsChapterBuilder(bool bDesign,bool bRating);
+   CShearCapacityDetailsChapterBuilder(bool bDesign,bool bRating,bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

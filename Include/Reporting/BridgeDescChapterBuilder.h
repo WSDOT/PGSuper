@@ -54,7 +54,7 @@ class REPORTINGCLASS CBridgeDescChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    // GROUP: LIFECYCLE
-   CBridgeDescChapterBuilder();
+   CBridgeDescChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

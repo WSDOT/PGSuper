@@ -53,7 +53,8 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
 void failed_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact);
 void successful_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact);
 
-CDesignOutcomeChapterBuilder::CDesignOutcomeChapterBuilder()
+CDesignOutcomeChapterBuilder::CDesignOutcomeChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

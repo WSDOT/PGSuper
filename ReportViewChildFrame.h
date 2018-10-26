@@ -49,7 +49,8 @@ public:
 				const RECT& rect = rectDefault,
 				CMDIFrameWnd* pParentWnd = NULL,
 				CCreateContext* pContext = NULL);
-	//}}AFX_VIRTUAL
+   //}}AFX_VIRTUAL
+
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;

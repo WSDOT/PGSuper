@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperProjectImporterAppPlugin.h"
 #include "PGSuperImportPluginDocTemplate.h"
 #include "resource.h"
@@ -148,7 +148,7 @@ CEAFDocTemplate* CPGSuperProjectImporterAppPlugin::CreateDocTemplate()
 
    CPGSuperImportPluginDocTemplate* pDocTemplate = new CPGSuperImportPluginDocTemplate(
 		IDR_BRIDGEMODELEDITOR,
-      NULL,
+      this,
 		RUNTIME_CLASS(CPGSuperDoc),
 		RUNTIME_CLASS(CBridgeModelViewChildFrame),
 		RUNTIME_CLASS(CBridgePlanView),
@@ -189,7 +189,7 @@ BOOL CPGSuperProjectImporterAppPlugin::OnCommandMessage(UINT nID,int nCode,void*
    return m_MyCmdTarget.OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);
 }
 
-void CPGSuperProjectImporterAppPlugin::GetStatusBarMessageString(UINT nID, CString& rMessage) const
+BOOL CPGSuperProjectImporterAppPlugin::GetStatusBarMessageString(UINT nID, CString& rMessage) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -202,11 +202,13 @@ void CPGSuperProjectImporterAppPlugin::GetStatusBarMessageString(UINT nID, CStri
 	else
 	{
 		// not found
-		TRACE1("Warning: no message line prompt for ID %d.\n", nID);
+		TRACE1("Warning (CPGSuperProjectImporterAppPlugin): no message line prompt for ID %d.\n", nID);
 	}
+
+   return TRUE;
 }
 
-void CPGSuperProjectImporterAppPlugin::GetToolTipMessageString(UINT nID, CString& rMessage) const
+BOOL CPGSuperProjectImporterAppPlugin::GetToolTipMessageString(UINT nID, CString& rMessage) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CString string;
@@ -221,6 +223,8 @@ void CPGSuperProjectImporterAppPlugin::GetToolTipMessageString(UINT nID, CString
 	else
 	{
 		// not found
-		TRACE1("Warning: no tool tip for ID %d.\n", nID);
+		TRACE1("Warning (CPGSuperProjectImporterAppPlugin): no tool tip for ID %d.\n", nID);
 	}
+
+   return TRUE;
 }

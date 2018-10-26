@@ -38,6 +38,8 @@
 #include <PsgLib\LibraryManager.h>
 #include <IReportManager.h>
 
+#include <IFace\ViewEvents.h> 
+
 #include "Hints.h"
 #include "PGSuperCommandLineInfo.h"
 #include "PGSuperPluginMgr.h"
@@ -110,6 +112,7 @@ public:
    void OnLoadsLldf(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction);
    void OnLiveLoads();
 
+
 // Implementation
 public:
 	virtual ~CPGSuperDoc();
@@ -173,8 +176,26 @@ public:
 
    BOOL UpdateTemplates();
 
+   Uint32 RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback);
+   std::vector<IBridgePlanViewEventCallback*> GetBridgePlanViewCallbacks();
+
+   Uint32 RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback);
+   std::vector<IBridgeSectionViewEventCallback*> GetBridgeSectionViewCallbacks();
+
+   Uint32 RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback);
+   std::vector<IGirderElevationViewEventCallback*> GetGirderElevationViewCallbacks();
+
+   Uint32 RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback);
+   std::vector<IGirderSectionViewEventCallback*> GetGirderSectionViewCallbacks();
+
+
 protected:
    CPGSuperDocProxyAgent* m_pPGSuperDocProxyAgent;
+
+   std::vector<IBridgePlanViewEventCallback*> m_BridgePlanViewCallbacks;
+   std::vector<IBridgeSectionViewEventCallback*> m_BridgeSectionViewCallbacks;
+   std::vector<IGirderElevationViewEventCallback*> m_GirderElevationViewCallbacks;
+   std::vector<IGirderSectionViewEventCallback*> m_GirderSectionViewCallbacks;
 
    psgLibraryManager m_LibMgr;
 
@@ -211,14 +232,11 @@ protected:
    virtual long ConvertTheDocument(LPCTSTR lpszPathName, CString* realFileName);
    virtual void HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathName );
 
-   virtual HRESULT WriteTheDocument(IStructuredSave* pStrSave);
-   virtual HRESULT LoadTheDocument(IStructuredLoad* pStrLoad);
+   virtual CString GetRootNodeName();
+   virtual Float64 GetRootNodeVersion();
 
    virtual HRESULT OpenDocumentRootNode(IStructuredSave* pStrSave);
-   virtual HRESULT CloseDocumentRootNode(IStructuredSave* pStrSave);
-
    virtual HRESULT OpenDocumentRootNode(IStructuredLoad* pStrLoad);
-   virtual HRESULT CloseDocumentRootNode(IStructuredLoad* pStrLoad);
 
    virtual void OnErrorDeletingBadSave(LPCTSTR lpszPathName,LPCTSTR lpszBackup);
    virtual void OnErrorRemaningSaveBackup(LPCTSTR lpszPathName,LPCTSTR lpszBackup);
@@ -275,7 +293,7 @@ protected:
    //}}AFX_MSG
    afx_msg void OnViewStatusCenter(UINT nID);
    afx_msg void OnUpdateViewReports(CCmdUI* pCmdUI);
-   afx_msg void OnViewReports(NMHDR* pnmtb,LRESULT* plr);
+   afx_msg BOOL OnViewReports(NMHDR* pnmtb,LRESULT* plr);
    afx_msg void OnImport(UINT nID);
    afx_msg void OnExport(UINT nID);
    afx_msg void OnImportMenu(CCmdUI* pCmdUI);

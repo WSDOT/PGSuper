@@ -129,6 +129,7 @@ struct SHEARCAPACITYDETAILS
    ShearCapacityMethod Method; // General or Simplfied per LRFD 5.8.3.4.3 (Vci/Vcw - added to LRFD in 2007)
    Float64 Nu;
    Float64 Mu;
+   Float64 RealMu; // Actual Mu computed from structural analysis. Same as Mu is MuLimitUsed is false
    Float64 PhiMu; // capacity reduction factor for moment
    bool    MuLimitUsed; // true if Mu set equal to Vu*dv per 2000 version of LRFD
    Float64 Vi; // Vu that goes with Mu

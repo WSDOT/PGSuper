@@ -51,7 +51,7 @@ class REPORTINGCLASS CBearingDesignParametersChapterBuilder : public CPGSuperCha
 {
 public:
    // GROUP: LIFECYCLE
-   CBearingDesignParametersChapterBuilder();
+   CBearingDesignParametersChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

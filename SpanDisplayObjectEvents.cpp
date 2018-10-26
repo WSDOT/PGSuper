@@ -23,7 +23,7 @@
 // SpanDisplayObjectEvents.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "resource.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "SpanDisplayObjectEvents.h"
@@ -169,12 +169,31 @@ STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnContextMe
 
    if ( pDO->IsSelected() )
    {
-      CMenu menu;
-      menu.LoadMenu(IDR_SELECTED_SPAN_CONTEXT);
-      menu.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
+      CComPtr<iDisplayList> pList;
+      pDO->GetDisplayList(&pList);
+
+      CComPtr<iDisplayMgr> pDispMgr;
+      pList->GetDisplayMgr(&pDispMgr);
+
+      CDisplayView* pView = pDispMgr->GetView();
+      CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
+
+      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+      pMenu->LoadMenu(IDR_SELECTED_SPAN_CONTEXT,NULL);
+
+      std::vector<IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
+      std::vector<IBridgePlanViewEventCallback*>::iterator iter;
+      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+      {
+         IBridgePlanViewEventCallback* callback = *iter;
+         callback->OnSpanContextMenu(pThis->m_SpanIdx,pMenu);
+      }
+
+      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
 
       return true;
    }
+
 
    return false;
 }

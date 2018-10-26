@@ -51,7 +51,7 @@ class REPORTINGCLASS CStirrupDetailingCheckChapterBuilder : public CPGSuperChapt
 {
 public:
    // GROUP: LIFECYCLE
-   CStirrupDetailingCheckChapterBuilder();
+   CStirrupDetailingCheckChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

@@ -83,16 +83,32 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,Span
                                            pgsTypes::LimitState limitState,
                                            pgsTypes::StressType stressType) const
 {
+   GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   const pgsGirderArtifact* gdrArtifact = pIArtifact->GetArtifact(span,girder);
+
+   // Write notes, then table
+   BuildNotes(pChapter, gdrArtifact, pBroker, span, girder, pDisplayUnits,
+              stage, limitState, stressType);
+
+   BuildTable(pChapter, gdrArtifact, pBroker, span, girder, pDisplayUnits,
+              stage, limitState, stressType);
+}
+
+ 
+void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirderArtifact* gdrArtifact,
+                IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+                IEAFDisplayUnits* pDisplayUnits,
+                pgsTypes::Stage stage,
+                pgsTypes::LimitState limitState,
+                pgsTypes::StressType stressType) const
+{
+   USES_CONVERSION;
+
    // Build table
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptPressureSectionValue, stress, pDisplayUnits->GetStressUnit(), false );
    INIT_UV_PROTOTYPE( rptPressureSectionValue, stress_u, pDisplayUnits->GetStressUnit(), true );
    INIT_UV_PROTOTYPE( rptSqrtPressureValue, tension_coeff, pDisplayUnits->GetTensionCoefficientUnit(), false);
    INIT_UV_PROTOTYPE( rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), true);
-
-   rptCapacityToDemand cap_demand;
-
-   location.IncludeSpanAndGirder(span == ALL_SPANS);
 
    std::string strStage;
    std::string aux_msg1;
@@ -132,12 +148,13 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,Span
       ATLASSERT(false);
    }
 
-   std::string strLimitState;
+   GET_IFACE2(pBroker, IStageMap, pStageMap );
+   std::string strLimitState = OLE2A(pStageMap->GetLimitStateName(limitState));
+
    std::string aux_msg2;
    switch(limitState)
    {
    case pgsTypes::ServiceI:
-      strLimitState = "Service I";
       if (stage==pgsTypes::CastingYard)
       {
          if (stressType == pgsTypes::Compression)
@@ -165,8 +182,6 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,Span
       break;
 
    case pgsTypes::ServiceIA:
-      strLimitState = "Service IA";
-
       if (stage==pgsTypes::BridgeSite3)
       {
          if (stressType == pgsTypes::Compression)
@@ -180,8 +195,6 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,Span
       break;
 
    case pgsTypes::ServiceIII:
-      strLimitState = "Service III";
-
       if (stage==pgsTypes::BridgeSite3)
       {
          if (stressType == pgsTypes::Tension)
@@ -195,8 +208,6 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,Span
       break;
 
    case pgsTypes::FatigueI:
-      strLimitState = "Fatigue I";
-
       if (stage==pgsTypes::BridgeSite3)
       {
          if (stressType == pgsTypes::Compression)
@@ -305,8 +316,6 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,Span
 
    // get allowable stresses
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   const pgsGirderArtifact* gdrArtifact = pIArtifact->GetArtifact(span,girder);
    std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_FLEXURESTRESS | POI_TABULAR );
    CHECK(vPoi.size()>0);
 
@@ -378,6 +387,26 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,Span
    {
       *p << "Regardless of the concrete strength, the stress requirements will not be satisfied." << rptNewLine;
    }
+}
+
+void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirderArtifact* gdrArtifact,
+                IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+                IEAFDisplayUnits* pDisplayUnits,
+                pgsTypes::Stage stage,
+                pgsTypes::LimitState limitState,
+                pgsTypes::StressType stressType) const
+{
+   USES_CONVERSION;
+
+   // Build table
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptPressureSectionValue, stress, pDisplayUnits->GetStressUnit(), false );
+
+   location.IncludeSpanAndGirder(span == ALL_SPANS);
+   rptCapacityToDemand cap_demand;
+
+   rptParagraph* p = new rptParagraph;
+   *pChapter << p;
 
    // create and set up table
    rptRcTable* p_table;
@@ -408,6 +437,9 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,Span
       (*p_table)(0,col1++) << COLHDR(RPT_GDR_END_LOCATION,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    else
       (*p_table)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+
+   GET_IFACE2(pBroker, IStageMap, pStageMap );
+   std::string strLimitState = OLE2A(pStageMap->GetLimitStateName(limitState));
 
    if ( limitState == pgsTypes::ServiceIII )
    {
@@ -450,6 +482,31 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,Span
       (*p_table)(1,col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*p_table)(1,col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
+
+   // get allowable stresses
+   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( span, girder, stage, POI_FLEXURESTRESS | POI_TABULAR );
+   CHECK(vPoi.size()>0);
+
+   const pgsFlexuralStressArtifact* pArtifact;
+
+   Float64 allowable_tension;
+   Float64 allowable_tension_with_rebar;
+   Float64 allowable_compression;
+
+   if (stressType==pgsTypes::Tension && (stage != pgsTypes::BridgeSite2))
+   {
+      pArtifact = gdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(stage,limitState,pgsTypes::Tension,vPoi.begin()->GetDistFromStart()) );
+      allowable_tension = pArtifact->GetCapacity();
+      allowable_tension_with_rebar = gdrArtifact->GetCastingYardCapacityWithMildRebar();
+   }
+
+   if (stressType==pgsTypes::Compression || stage != pgsTypes::BridgeSite3)
+   {
+      pArtifact = gdrArtifact->GetFlexuralStressArtifact( pgsFlexuralStressArtifactKey(stage,limitState,pgsTypes::Compression,vPoi.begin()->GetDistFromStart()) );
+      allowable_compression = pArtifact->GetCapacity();
+   }
+
 
    if (stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3 )
    {

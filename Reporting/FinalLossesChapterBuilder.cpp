@@ -33,7 +33,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CFinalLossesChapterBuilder::CFinalLossesChapterBuilder()
+CFinalLossesChapterBuilder::CFinalLossesChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

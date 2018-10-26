@@ -48,7 +48,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CSectPropChapterBuilder::CSectPropChapterBuilder()
+CSectPropChapterBuilder::CSectPropChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

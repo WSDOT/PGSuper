@@ -46,7 +46,7 @@ LOG
 class REPORTINGCLASS CCrackedSectionDetailsChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   CCrackedSectionDetailsChapterBuilder();
+   CCrackedSectionDetailsChapterBuilder(bool bSelect = true);
 
    //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const;

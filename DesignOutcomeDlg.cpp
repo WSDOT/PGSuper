@@ -23,7 +23,7 @@
 // DesignOutcomeDlg.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "DesignOutcomeDlg.h"
 #include "HtmlHelp\HelpTopics.hh"
@@ -58,7 +58,6 @@ void CDesignOutcomeDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDOK, m_Ok);
 	DDX_Control(pDX, IDCANCEL, m_Cancel);
 	DDX_Control(pDX, IDC_PRINT, m_Print);
-	DDX_Control(pDX, IDC_BROWSER, m_BrowserPlaceholder);
 	DDX_Control(pDX, ID_HELP, m_Help);
 	//}}AFX_DATA_MAP
 }
@@ -142,11 +141,8 @@ void CDesignOutcomeDlg::OnSize(UINT nType, int cx, int cy)
    m_Static.MoveWindow( staticRect, FALSE );
 
 
-   m_BrowserPlaceholder.MoveWindow( browserRect );
-
-   CSize size = browserRect.Size();
-   size -= CSize(4,4);
-   m_pBrowser->Size( size );
+   m_pBrowser->Move(browserRect.TopLeft());
+   m_pBrowser->Size( browserRect.Size() );
 
    Invalidate();
 }
@@ -199,11 +195,7 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
 
    GET_IFACE2(pBroker,IReportManager,pRptMgr);
    boost::shared_ptr<CReportSpecification> pRptSpec = boost::dynamic_pointer_cast<CReportSpecification,CSpanGirderReportSpecification>(m_pRptSpec);
-   m_pBrowser = pRptMgr->CreateReportBrowser(m_BrowserPlaceholder.GetSafeHwnd(),pRptSpec);
-
-   CRect rect;
-   m_BrowserPlaceholder.GetClientRect(&rect);
-   m_pBrowser->Size(rect.Size());
+   m_pBrowser = pRptMgr->CreateReportBrowser(GetSafeHwnd(),pRptSpec);
 
    // restore the size of the window
    {

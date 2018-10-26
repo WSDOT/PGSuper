@@ -53,7 +53,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CCamberChapterBuilder::CCamberChapterBuilder()
+CCamberChapterBuilder::CCamberChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

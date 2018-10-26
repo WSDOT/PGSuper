@@ -161,6 +161,7 @@ public:
                                   const pgsFlexuralStressArtifact& artifact);
 
    const pgsFlexuralStressArtifact* GetFlexuralStressArtifact(const pgsFlexuralStressArtifactKey& key) const;
+   pgsFlexuralStressArtifact* GetFlexuralStressArtifact(const pgsFlexuralStressArtifactKey& key);
 
    void AddFlexuralCapacityArtifact(const pgsFlexuralCapacityArtifactKey& key,
                                     const pgsFlexuralCapacityArtifact& pmartifact,

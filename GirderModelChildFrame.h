@@ -106,6 +106,10 @@ protected:
 	afx_msg void OnAddDistributedLoad();
 	afx_msg void OnAddMoment();
    afx_msg void OnSync();
+   afx_msg void OnUpdateProjectDesignGirderDirect(CCmdUI* pCmdUI);
+   afx_msg void OnUpdateProjectDesignGirderDirectHoldSlabOffset(CCmdUI* pCmdUI);
+   afx_msg void OnProjectDesignGirderDirect();
+   afx_msg void OnProjectDesignGirderDirectHoldSlabOffset();
 	//}}AFX_MSG
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()

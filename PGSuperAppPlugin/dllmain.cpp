@@ -1,6 +1,6 @@
 // dllmain.cpp : Implementation of DllMain.
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "resource.h"
 #include "PGSuperAppPlugin_i.h"
 #include "dllmain.h"
@@ -23,6 +23,7 @@ CPGSuperAppPluginModule _AtlModule;
 CPGSuperAppPluginApp theApp;
 
 BEGIN_MESSAGE_MAP(CPGSuperAppPluginApp, CWinApp)
+   ON_COMMAND(ID_HELP,OnHelp)
 END_MESSAGE_MAP()
 
 
@@ -47,6 +48,8 @@ BOOL CPGSuperAppPluginApp::InitInstance()
       m_pszHelpFilePath = _tcsdup(EAFGetApp()->m_pszHelpFilePath);
    }
 
+   EnableHtmlHelp();
+
 	return CWinApp::InitInstance();
 }
 
@@ -54,6 +57,11 @@ int CPGSuperAppPluginApp::ExitInstance()
 {
    ::GXTerminate();
 	return CWinApp::ExitInstance();
+}
+
+void CPGSuperAppPluginApp::OnHelp()
+{
+   ::HtmlHelp( *EAFGetMainFrame(), EAFGetApp()->m_pszHelpFilePath, HH_DISPLAY_TOPIC, 0 );
 }
 
 CString CPGSuperAppPluginApp::GetVersion(bool bIncludeBuildNumber) const

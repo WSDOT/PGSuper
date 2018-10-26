@@ -51,7 +51,7 @@ class REPORTINGCLASS CAlignmentChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    // GROUP: LIFECYCLE
-   CAlignmentChapterBuilder();
+   CAlignmentChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

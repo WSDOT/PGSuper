@@ -42,7 +42,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CHaulingCheckChapterBuilder::CHaulingCheckChapterBuilder()
+CHaulingCheckChapterBuilder::CHaulingCheckChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

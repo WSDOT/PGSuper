@@ -50,7 +50,7 @@ class REPORTINGCLASS CStressChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    // GROUP: LIFECYCLE
-   CStressChapterBuilder(bool bDesign,bool bRating);
+   CStressChapterBuilder(bool bDesign,bool bRating,bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

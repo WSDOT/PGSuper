@@ -47,7 +47,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CTexasMomentCapacityChapterBuilder::CTexasMomentCapacityChapterBuilder()
+CTexasMomentCapacityChapterBuilder::CTexasMomentCapacityChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

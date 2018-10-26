@@ -52,7 +52,7 @@ class REPORTINGCLASS CLongReinfShearCheckChapterBuilder : public CPGSuperChapter
 {
 public:
    // GROUP: LIFECYCLE
-   CLongReinfShearCheckChapterBuilder(bool bDesign,bool bRating);
+   CLongReinfShearCheckChapterBuilder(bool bDesign,bool bRating,bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

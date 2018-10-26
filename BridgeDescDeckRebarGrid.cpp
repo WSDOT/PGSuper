@@ -23,7 +23,7 @@
 // BridgeDescDeckRebarGrid.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "BridgeDescDeckRebarGrid.h"
 #include "PGSuperDoc.h"
 #include "BridgeDescDlg.h"

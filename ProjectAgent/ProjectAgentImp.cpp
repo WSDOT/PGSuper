@@ -5829,7 +5829,7 @@ CollectionIndexType CProjectAgentImp::AddPointLoad(const CPointLoadData& pld)
 {
    m_PointLoads.push_back(pld);
 
-   Fire_GirderChanged(pld.m_Span,pld.m_Girder,GCH_LOADING);
+   Fire_GirderChanged(pld.m_Span,pld.m_Girder,GCH_LOADING_ADDED);
 
    return GetPointLoadCount()-1;
 }
@@ -5847,7 +5847,7 @@ void CProjectAgentImp::UpdatePointLoad(CollectionIndexType idx, const CPointLoad
 
    m_PointLoads[idx] = pld;
 
-   Fire_GirderChanged(pld.m_Span,pld.m_Girder,GCH_LOADING);
+   Fire_GirderChanged(pld.m_Span,pld.m_Girder,GCH_LOADING_CHANGED);
 }
 
 void CProjectAgentImp::DeletePointLoad(CollectionIndexType idx)
@@ -5862,7 +5862,7 @@ void CProjectAgentImp::DeletePointLoad(CollectionIndexType idx)
 
    m_PointLoads.erase(it);
 
-   Fire_GirderChanged(span,gdr,GCH_LOADING);
+   Fire_GirderChanged(span,gdr,GCH_LOADING_REMOVED);
 }
 
 CollectionIndexType CProjectAgentImp::GetDistributedLoadCount() const
@@ -5875,7 +5875,7 @@ CollectionIndexType CProjectAgentImp::AddDistributedLoad(const CDistributedLoadD
 {
    m_DistributedLoads.push_back(pld);
 
-   Fire_GirderChanged(pld.m_Span,pld.m_Girder,GCH_LOADING);
+   Fire_GirderChanged(pld.m_Span,pld.m_Girder,GCH_LOADING_ADDED);
 
    return GetDistributedLoadCount()-1;
 }
@@ -5893,7 +5893,7 @@ void CProjectAgentImp::UpdateDistributedLoad(CollectionIndexType idx, const CDis
 
    m_DistributedLoads[idx] = pld;
 
-   Fire_GirderChanged(pld.m_Span,pld.m_Girder,GCH_LOADING);
+   Fire_GirderChanged(pld.m_Span,pld.m_Girder,GCH_LOADING_CHANGED);
 }
 
 void CProjectAgentImp::DeleteDistributedLoad(CollectionIndexType idx)
@@ -5908,7 +5908,7 @@ void CProjectAgentImp::DeleteDistributedLoad(CollectionIndexType idx)
 
    m_DistributedLoads.erase(it);
 
-   Fire_GirderChanged(span,gdr,GCH_LOADING);
+   Fire_GirderChanged(span,gdr,GCH_LOADING_REMOVED);
 }
 
 CollectionIndexType CProjectAgentImp::GetMomentLoadCount() const
@@ -5920,7 +5920,7 @@ CollectionIndexType CProjectAgentImp::AddMomentLoad(const CMomentLoadData& pld)
 {
    m_MomentLoads.push_back(pld);
 
-   Fire_GirderChanged(pld.m_Span,pld.m_Girder,GCH_LOADING);
+   Fire_GirderChanged(pld.m_Span,pld.m_Girder,GCH_LOADING_ADDED);
 
    return GetMomentLoadCount()-1;
 }
@@ -5938,7 +5938,7 @@ void CProjectAgentImp::UpdateMomentLoad(CollectionIndexType idx, const CMomentLo
 
    m_MomentLoads[idx] = pld;
 
-   Fire_GirderChanged(pld.m_Span,pld.m_Girder,GCH_LOADING);
+   Fire_GirderChanged(pld.m_Span,pld.m_Girder,GCH_LOADING_CHANGED);
 }
 
 void CProjectAgentImp::DeleteMomentLoad(CollectionIndexType idx)
@@ -5953,7 +5953,7 @@ void CProjectAgentImp::DeleteMomentLoad(CollectionIndexType idx)
 
    m_MomentLoads.erase(it);
 
-   Fire_GirderChanged(span,gdr,GCH_LOADING);
+   Fire_GirderChanged(span,gdr,GCH_LOADING_REMOVED);
 }
 
 void CProjectAgentImp::SetConstructionLoad(Float64 load)

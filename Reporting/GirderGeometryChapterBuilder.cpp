@@ -53,7 +53,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CGirderGeometryChapterBuilder::CGirderGeometryChapterBuilder()
+CGirderGeometryChapterBuilder::CGirderGeometryChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

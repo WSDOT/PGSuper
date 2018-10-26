@@ -52,7 +52,7 @@ class REPORTINGCLASS CADimChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    // GROUP: LIFECYCLE
-   CADimChapterBuilder();
+   CADimChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

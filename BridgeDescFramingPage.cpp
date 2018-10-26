@@ -23,7 +23,7 @@
 // BridgeDescFramingPage.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperDoc.h"
 #include "BridgeDescFramingPage.h"
 #include <MFCTools\CogoDDX.h>
@@ -178,6 +178,8 @@ void CBridgeDescFramingPage::OnAddSpan()
 
 void CBridgeDescFramingPage::OnLayoutBySpanLengths()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    std::vector<double> spanLengths = m_Grid.GetSpanLengths();
    CSpanLengthDlg dlg;
    dlg.m_SpanLengths = spanLengths;

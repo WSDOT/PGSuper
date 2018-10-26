@@ -23,7 +23,7 @@
 // MovePierDlg.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "MovePierDlg.h"
 #include <MFCTools\CustomDDX.h>

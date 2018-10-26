@@ -53,7 +53,7 @@ class REPORTINGCLASS CCastingYardRebarRequirementChapterBuilder : public CPGSupe
 {
 public:
    // GROUP: LIFECYCLE
-   CCastingYardRebarRequirementChapterBuilder();
+   CCastingYardRebarRequirementChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

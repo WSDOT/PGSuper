@@ -53,7 +53,7 @@ class REPORTINGCLASS CPrestressForceChapterBuilder : public CPGSuperChapterBuild
 {
 public:
    // GROUP: LIFECYCLE
-   CPrestressForceChapterBuilder();
+   CPrestressForceChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

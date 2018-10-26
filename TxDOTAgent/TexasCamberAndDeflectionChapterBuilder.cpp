@@ -60,7 +60,8 @@ static void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanInde
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CTexasCamberAndDeflectionChapterBuilder::CTexasCamberAndDeflectionChapterBuilder()
+CTexasCamberAndDeflectionChapterBuilder::CTexasCamberAndDeflectionChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

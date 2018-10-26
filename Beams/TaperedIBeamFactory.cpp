@@ -269,7 +269,7 @@ void CTaperedIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 gdrLength = pBridge->GetGirderLength(span,gdr);
 
-   PoiAttributeType attrib = POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL;
+   PoiAttributeType attrib = POI_SECTCHANGE_TRANSITION | POI_TABULAR | POI_GRAPHICAL;
    Float64 start_length = pBridge->GetGirderStartConnectionLength(span,gdr);
    Float64 end_length   = pBridge->GetGirderEndConnectionLength(span,gdr);
 
@@ -626,7 +626,7 @@ Float64 CTaperedIBeamFactory::GetVolume(IBroker* pBroker,SpanIndexType spanIdx,G
    GET_IFACE2(pBroker,ISectProp2,pSectProp2);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
 
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_SECTCHANGE);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_SECTCHANGE,POIFIND_OR);
    ATLASSERT( 2 <= vPOI.size() );
    Float64 V = 0;
    std::vector<pgsPointOfInterest>::iterator iter = vPOI.begin();
@@ -654,7 +654,7 @@ Float64 CTaperedIBeamFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType span
    GET_IFACE2(pBroker,ISectProp2,pSectProp2);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
 
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_SECTCHANGE);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_SECTCHANGE,POIFIND_OR);
    ATLASSERT( 2 <= vPOI.size() );
    Float64 S = 0;
    std::vector<pgsPointOfInterest>::iterator iter = vPOI.begin();

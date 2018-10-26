@@ -52,7 +52,7 @@ class REPORTINGCLASS CLossesChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    // GROUP: LIFECYCLE
-   CLossesChapterBuilder();
+   CLossesChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

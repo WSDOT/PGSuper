@@ -23,7 +23,7 @@
 // ChildFrm.cpp : implementation of the CChildFrame class
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 
 #include "ChildFrm.h"

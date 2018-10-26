@@ -23,7 +23,7 @@
 // SpanGirderLayoutPage.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "resource.h"
 #include "PGSuperDoc.h"
 #include "GirderLayoutPage.h"
@@ -773,6 +773,8 @@ LRESULT CSpanGirderLayoutPage::OnChangeSameNumberOfGirders(WPARAM wParam,LPARAM 
 
 LRESULT CSpanGirderLayoutPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM lParam)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    if ( m_GirderSpacingType == pgsTypes::sbsConstantAdjacent )
       return 0;
 
@@ -918,6 +920,8 @@ LRESULT CSpanGirderLayoutPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM lP
 
 LRESULT CSpanGirderLayoutPage::OnChangeSameGirderType(WPARAM wParam,LPARAM lParam)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    m_bUseSameGirderType = !m_bUseSameGirderType;
    
    if ( m_bUseSameGirderType )
@@ -1012,6 +1016,8 @@ LRESULT CSpanGirderLayoutPage::OnChangeSameGirderType(WPARAM wParam,LPARAM lPara
 
 LRESULT CSpanGirderLayoutPage::OnChangeSlabOffset(WPARAM wParam,LPARAM lParam)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);

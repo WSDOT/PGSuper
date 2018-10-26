@@ -69,7 +69,8 @@ void write_load_factors(rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,con
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CProjectCriteriaChapterBuilder::CProjectCriteriaChapterBuilder(bool bRating)
+CProjectCriteriaChapterBuilder::CProjectCriteriaChapterBuilder(bool bRating,bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
    m_bRating = bRating;
 }

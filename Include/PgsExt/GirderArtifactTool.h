@@ -336,7 +336,7 @@ inline void list_splitting_zone_failures(IBroker* pBroker,FailureList& rFailures
    }
 }
 
-void list_confinement_zone_failures(IBroker* pBroker,FailureList& rFailures,SpanIndexType span,GirderIndexType girder,const pgsGirderArtifact* pArtifact)
+inline void list_confinement_zone_failures(IBroker* pBroker,FailureList& rFailures,SpanIndexType span,GirderIndexType girder,const pgsGirderArtifact* pArtifact)
 {
    const pgsStirrupCheckArtifact *pStirrups = pArtifact->GetStirrupCheckArtifact();
    GET_IFACE2(pBroker,IStirrupGeometry, pStirrupGeometry);
@@ -355,7 +355,7 @@ void list_confinement_zone_failures(IBroker* pBroker,FailureList& rFailures,Span
 }
 
 
-void list_various_failures(IBroker* pBroker,FailureList& rFailures,SpanIndexType span,GirderIndexType girder,const pgsGirderArtifact* pArtifact,bool referToDetails)
+inline void list_various_failures(IBroker* pBroker,FailureList& rFailures,SpanIndexType span,GirderIndexType girder,const pgsGirderArtifact* pArtifact,bool referToDetails)
 {
    // Girder Detailing
    const pgsPrecastIGirderDetailingArtifact* pBeamDetails = pArtifact->GetPrecastIGirderDetailingArtifact();

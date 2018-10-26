@@ -1,6 +1,6 @@
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 25.98   4  0.02     1     1 7HT22       36   1/2  270  8.59  6.37  20 14.0  6.200  6.700    2.592   -4.088   1565  0.629  0.24 -0.00 -0.01 -0.01 -0.02  93.07 294.90   1.00   1.00   1.00
+ 25.98   4  0.02     1     1 7HT22       36   1/2  270  8.59  6.37  20 14.0  6.200  6.700    2.591   -4.087   1564  0.629  0.24 -0.00 -0.01 -0.01 -0.02  93.07 294.90   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -12,7 +12,7 @@ Live Load Deflection check failed
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 25.98   4  0.02     1     2 7HT22       36   1/2  270  8.56  6.34  20 14.0  6.200  6.700    2.606   -4.091   1563  0.629  0.24 -0.00 -0.01 -0.01 -0.02  93.18 295.17   1.00   1.00   1.00
+ 25.98   4  0.02     1     2 7HT22       36   1/2  270  8.56  6.34  20 14.0  6.200  6.700    2.606   -4.090   1563  0.629  0.24 -0.00 -0.01 -0.01 -0.02  93.18 295.17   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful

@@ -23,7 +23,7 @@
 // AlignmentDisplayObjectEvents.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "resource.h"
 #include "AlignmentDisplayObjectEvents.h"
 #include "BridgeSectionCutDisplayImpl.h"
@@ -152,6 +152,40 @@ STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnKeyDown(iDisplayOb
 STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
 {
    METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,Events);
+   if ( pDO->IsSelected() )
+   {
+      CComPtr<iDisplayList> pList;
+      pDO->GetDisplayList(&pList);
+
+      CComPtr<iDisplayMgr> pDispMgr;
+      pList->GetDisplayMgr(&pDispMgr);
+
+      CDisplayView* pView = pDispMgr->GetView();
+      CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
+
+      std::vector<IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
+      if ( callbacks.size() == 0 )
+         return false;
+
+      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+      std::vector<IBridgePlanViewEventCallback*>::iterator iter;
+      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+      {
+         IBridgePlanViewEventCallback* callback = *iter;
+         callback->OnAlignmentContextMenu(pMenu);
+      }
+
+      bool bResult = false;
+      if ( 0 < pMenu->GetMenuItemCount() )
+      {
+         pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
+         bResult = true;
+      }
+
+      delete pMenu;
+
+      return bResult;
+   }
 
    return false;
 }

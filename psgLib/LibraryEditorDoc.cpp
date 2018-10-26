@@ -140,6 +140,7 @@ void CLibraryEditorDoc::DoIntegrateWithUI(BOOL bIntegrate)
       UINT tbID = pFrame->CreateToolBar("Library",GetPluginCommandManager());
       m_pMyToolBar = pFrame->GetToolBar(tbID);
       m_pMyToolBar->LoadToolBar(IDR_LIBEDITORTOOLBAR,NULL);
+      m_pMyToolBar->CreateDropDownButton(ID_FILE_OPEN,NULL,BTNS_DROPDOWN);
    }
    else
    {
@@ -248,6 +249,8 @@ CString CLibraryEditorDoc::GetRootNodeName()
 
 void CLibraryEditorDoc::OnImport()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	// ask user for file name
    CFileDialog  fildlg(TRUE,"pgs",NULL,OFN_FILEMUSTEXIST|OFN_HIDEREADONLY,
                    "PGSuper Project File (*.pgs)|*.pgs||");

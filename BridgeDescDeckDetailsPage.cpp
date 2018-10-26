@@ -23,7 +23,7 @@
 // BridgeDescDeckDetailsPagePage.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperDoc.h"
 #include "BridgeDescDeckDetailsPage.h"
@@ -617,6 +617,8 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
 
 void CBridgeDescDeckDetailsPage::OnMoreConcreteProperties() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
 

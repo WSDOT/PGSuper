@@ -949,12 +949,19 @@ void pgsHaulingAnalysisArtifact::GetRequiredConcreteStrength(double *pfcComp,dou
    {
       fc_compression = min_stress/m_C;
    }
+   else
+   {
+      fc_compression = 0; // compression isn't an issue
+   }
 
    *pMinRebarReqd = false;
    double fc_tension = -1;
    if ( bDesign )
    {
-      fc_tension = pow(max_stress/m_Talt,2);
+      if ( 0 < max_stress )
+         fc_tension = pow(max_stress/m_Talt,2);
+      else
+         fc_tension = 0; // tension isn't an issue
    }
    else
    {
@@ -975,6 +982,10 @@ void pgsHaulingAnalysisArtifact::GetRequiredConcreteStrength(double *pfcComp,dou
             *pMinRebarReqd = true;
          }
       }
+      else
+      {
+         fc_tension = 0;
+      }
    }
 
    // required concrete strength based on inclined girder
@@ -992,11 +1003,19 @@ void pgsHaulingAnalysisArtifact::GetRequiredConcreteStrength(double *pfcComp,dou
    {
       fc_compression_inclined = fmin/m_C;
    }
+   else
+   {
+      fc_compression_inclined = 0;
+   }
 
    double fc_tension_inclined = -1;
    if ( 0 < fmax )
    {
       fc_tension_inclined = pow(fmax/GetModRuptureCoefficient(),2);
+   }
+   else
+   {
+      fc_tension_inclined = 0;
    }
 
    // get max f'c for plumb and inclined conditions
@@ -1126,8 +1145,8 @@ void pgsHaulingAnalysisArtifact::Dump(dbgDumpContext& os) const
       found->second.GetBottomFiberStress(&fps, &fup, &fno, &fdown);
       os<<"BotStress fps="<<::ConvertFromSysUnits(fps,unitMeasure::KSI)<<"ksi, fup="<<::ConvertFromSysUnits(fup,unitMeasure::KSI)<<"ksi, fno="<<::ConvertFromSysUnits(fno,unitMeasure::KSI)<<"ksi, fdown="<<::ConvertFromSysUnits(fdown,unitMeasure::KSI)<<"ksi"<<endl;
 
-      Float64 max_stress = found->second.GetMaximumConcreteCompressiveStress();
-      Float64 min_stress = found->second.GetMaximumConcreteTensileStress();
+      Float64 min_stress = found->second.GetMaximumConcreteCompressiveStress();
+      Float64 max_stress = found->second.GetMaximumConcreteTensileStress();
       os<<"Total Stress: Min ="<<::ConvertFromSysUnits(min_stress,unitMeasure::KSI)<<"ksi, Max="<<::ConvertFromSysUnits(max_stress,unitMeasure::KSI)<<"ksi"<<endl;
    }
 
@@ -1142,8 +1161,8 @@ void pgsHaulingAnalysisArtifact::Dump(dbgDumpContext& os) const
       found = m_HaulingStressAnalysisArtifacts.find( loc );
 
       os<<endl;
-      Float64 max_stress = found->second.GetMaximumInclinedConcreteCompressiveStress();
-      Float64 min_stress = found->second.GetMaximumInclinedConcreteTensileStress();
+      Float64 min_stress = found->second.GetMaximumInclinedConcreteCompressiveStress();
+      Float64 max_stress = found->second.GetMaximumInclinedConcreteTensileStress();
       os<<"Stress: Tensile ="<<::ConvertFromSysUnits(min_stress,unitMeasure::KSI)<<"ksi, Compressive ="<<::ConvertFromSysUnits(max_stress,unitMeasure::KSI)<<"ksi"<<endl;
    }
    os <<" Dump Complete"<<endl;

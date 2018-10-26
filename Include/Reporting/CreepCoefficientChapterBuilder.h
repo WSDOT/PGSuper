@@ -54,7 +54,7 @@ class REPORTINGCLASS CCreepCoefficientChapterBuilder : public CPGSuperChapterBui
 {
 public:
    // GROUP: LIFECYCLE
-   CCreepCoefficientChapterBuilder();
+   CCreepCoefficientChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

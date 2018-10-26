@@ -86,7 +86,10 @@ interface IBeamFactory : IUnknown
 
    //---------------------------------------------------------------------------------
    // Adds Points of interest at all cross section changes.
-   // Note to implementer: use the POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL attribute. Add other attributes as needed (such as POI_ALLACTIONS)
+   // Note to implementer: use the <section change type> | POI_TABULAR | POI_GRAPHICAL attribute. Add other attributes as needed (such as POI_ALLACTIONS).
+   // Section change type attributes are POI_SECTCHANGE_LEFTFACE, POI_SECTCHANGE_RIGHTFACE, and POI_SECTCHANGE_TRANSITION.
+   // Use POI_SECTCHANGE_RIGHTFACE at start of member and POI_SECTCHANGE_LEFT face at end of member. Also,
+   // use when there is an abrupt change in the section. Use POI_SECTCHANGE_TRANSITION wherever there is a smooth transition point.
    // For the casting yard POIs, put at least one poi at the start and end of the girder. 
    // For the bridge site POIs, put at least one poi at the stand and end bearings. DO NOT put bridge site POIs
    // before or after the girder bearings

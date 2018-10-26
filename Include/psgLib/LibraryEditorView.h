@@ -78,6 +78,7 @@ protected:
 	//{{AFX_MSG(CLibraryEditorView)
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult);
+   afx_msg void OnDestroy();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

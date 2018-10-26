@@ -24,7 +24,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "BridgeViewPrintJob.h"
 #include "PGSuperCalculationSheet.h"
 #include "PGSuperUnits.h"

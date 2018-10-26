@@ -48,7 +48,7 @@ LOG
 class REPORTINGCLASS CLoadRatingChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   CLoadRatingChapterBuilder();
+   CLoadRatingChapterBuilder(bool bSelect = true);
 
    //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const;

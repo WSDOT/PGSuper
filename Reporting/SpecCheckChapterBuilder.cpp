@@ -74,7 +74,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CSpecCheckChapterBuilder::CSpecCheckChapterBuilder()
+CSpecCheckChapterBuilder::CSpecCheckChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

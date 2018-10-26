@@ -53,6 +53,7 @@ IMPLEMENT_DYNCREATE(CLibraryEditorView, CTreeView)
 BEGIN_MESSAGE_MAP(CLibraryEditorView, CTreeView)
 	//{{AFX_MSG_MAP(CLibraryEditorView)
 	ON_WM_CREATE()
+   ON_WM_DESTROY()
 	ON_NOTIFY_REFLECT(TVN_SELCHANGED, OnSelchanged)
 	//}}AFX_MSG_MAP
 	// Standard printing commands
@@ -116,6 +117,7 @@ void CLibraryEditorView::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
 #ifdef _DEBUG
 void CLibraryEditorView::AssertValid() const
 {
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
 	CTreeView::AssertValid();
 }
 
@@ -282,3 +284,9 @@ void CLibraryEditorView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
    ctrl.Expand(ctrl.GetRootItem(),TVE_EXPAND);
 }
 
+void CLibraryEditorView::OnDestroy()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   CTreeView::OnDestroy();
+}

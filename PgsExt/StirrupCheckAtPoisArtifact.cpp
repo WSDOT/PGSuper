@@ -265,7 +265,7 @@ bool pgsLongReinfShearArtifact::Passed() const
    if ( !m_IsApplicable ) 
       return true;
 
-   if ( m_Equation == 1 && fabs(m_Mu) <= fabs(m_Mr) )
+   if ( m_Equation == 1 && fabs(m_Mu) <= fabs(m_Mr) && !IsZero(m_Mr) )
       return true;
 
    return m_DemandForce <= m_CapacityForce;

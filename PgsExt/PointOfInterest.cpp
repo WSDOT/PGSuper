@@ -396,6 +396,7 @@ Uint16 pgsPointOfInterest::GetAttributeTenthPoint(PoiAttributeType attribute)
 {
    Uint32 low32 = low_Uint32(attribute);
    Uint16 tenth_point = low_Uint16(low32);
+   sysFlags<Uint16>::Clear(&tenth_point,POI_SECTCHANGE); // sect change use the upper 3 bits of the lower 16
    ATLASSERT(tenth_point <= 11);
    return tenth_point;
 }
@@ -591,15 +592,6 @@ std::string rptPointOfInterest::AsString() const
       strAttrib += "FoS";
       nAttributes++;
    }
-
-   //if ( m_POI.HasAttribute(m_Stage,POI_SECTCHANGE) )
-   //{
-   //   if ( 0 < nAttributes )
-   //      strAttrib += ", ";
-
-   //   strAttrib += "XS";
-   //   nAttributes++;
-   //}
 
    Uint16 tenpt = m_POI.IsATenthPoint(m_Stage);
    if (0 < tenpt)

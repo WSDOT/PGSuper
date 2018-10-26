@@ -25,7 +25,7 @@ CLASS
    PGSuperCalculationSheet
 ****************************************************************************/
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperCalculationSheet.h"
 #include <IFace\Project.h>
 

@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 
 #include <afxpriv.h> 
 

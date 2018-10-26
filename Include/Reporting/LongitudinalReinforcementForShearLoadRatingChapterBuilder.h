@@ -48,7 +48,7 @@ LOG
 class REPORTINGCLASS CLongitudinalReinforcementForShearLoadRatingChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   CLongitudinalReinforcementForShearLoadRatingChapterBuilder();
+   CLongitudinalReinforcementForShearLoadRatingChapterBuilder(bool bSelect = true);
 
    //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const;

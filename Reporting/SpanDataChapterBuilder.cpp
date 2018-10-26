@@ -42,7 +42,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CSpanDataChapterBuilder::CSpanDataChapterBuilder()
+CSpanDataChapterBuilder::CSpanDataChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

@@ -122,11 +122,8 @@ END_CONNECTION_POINT_MAP()
    StatusCallbackIDType m_scidConcreteStrengthWarning;
    StatusCallbackIDType m_scidConcreteStrengthError;
    StatusCallbackIDType m_scidPointLoadWarning;
-   StatusCallbackIDType m_scidPointLoadError;
    StatusCallbackIDType m_scidDistributedLoadWarning;
-   StatusCallbackIDType m_scidDistributedLoadError;
    StatusCallbackIDType m_scidMomentLoadWarning;
-   StatusCallbackIDType m_scidMomentLoadError;
 
 // IAgent
 public:
@@ -185,6 +182,8 @@ public:
    virtual void GetGirderBearing(SpanIndexType span,GirderIndexType gdr,IDirection** ppBearing);
    virtual GDRCONFIG GetGirderConfiguration(SpanIndexType span,GirderIndexType gdr);
    virtual bool GetSpan(double station,SpanIndexType* pSpanIdx);
+   virtual void GetPoint(SpanIndexType span,GirderIndexType gdr,Float64 distFromStartOfSpan,IPoint2d** ppPoint);
+   virtual void GetPoint(const pgsPointOfInterest& poi,IPoint2d** ppPoint);
    virtual void GetStationAndOffset(SpanIndexType span,GirderIndexType gdr,Float64 distFromStartOfBridge,Float64* pStation,Float64* pOffset);
    virtual void GetStationAndOffset(const pgsPointOfInterest& poi,Float64* pStation,Float64* pOffset);
    virtual void GetDistFromStartOfSpan(GirderIndexType gdrIdx,double distFromStartOfBridge,SpanIndexType* pSpanIdx,double* pDistFromStartOfSpan);
@@ -235,6 +234,10 @@ public:
    virtual Float64 GetCurbToCurbWidth(double distFromStartOfBridge);
    virtual void GetSlabPerimeter(Uint32 nPoints,IPoint2dCollection** points);
    virtual void GetSpanPerimeter(SpanIndexType spanIdx,Uint32 nPoints,IPoint2dCollection** points);
+   virtual void GetLeftSlabEdgePoint(Float64 station, IDirection* direction,IPoint2d** point);
+   virtual void GetLeftSlabEdgePoint(Float64 station, IDirection* direction,IPoint3d** point);
+   virtual void GetRightSlabEdgePoint(Float64 station, IDirection* direction,IPoint2d** point);
+   virtual void GetRightSlabEdgePoint(Float64 station, IDirection* direction,IPoint3d** point);
    virtual Float64 GetPierStation(PierIndexType pier);
    virtual Float64 GetAheadBearingStation(PierIndexType pier,GirderIndexType gdr);
    virtual Float64 GetBackBearingStation(PierIndexType pier,GirderIndexType gdr);
@@ -665,10 +668,6 @@ private:
 
    pgsPoiMgr m_PoiMgr;
    std::set<SpanGirderHashType> m_PoiValidated; // If the span/gdr key is in the set, then the POI's have been validated
-   //std::set<SpanGirderHashType> m_LiftingPoiValidated;
-   //std::set<SpanGirderHashType> m_HaulingPoiValidated;
-   //pgsPoiMgr m_LiftingPoiMgr;     // Manages POI's for lifting
-   //pgsPoiMgr m_HaulingPoiMgr;     // Manages POI's for hauling
 
    std::set<SpanGirderHashType> m_CriticalSectionState[2];
 
@@ -685,6 +684,9 @@ private:
    MomentLoadCollection        m_MomentLoads[3];
    bool                        m_bUserLoadsValidated;
 
+   std::map<Float64,Float64> m_LeftSlabEdgeOffset;
+   std::map<Float64,Float64> m_RightSlabEdgeOffset;
+
    void Invalidate( Uint16 level );
    Uint16 Validate( Uint16 level );
    bool BuildCogoModel();
@@ -694,6 +696,7 @@ private:
 
    bool LayoutPiersAndSpans(const CBridgeDescription* pBridgeDesc);
    bool LayoutGirders(const CBridgeDescription* pBridgeDesc);
+   bool LayoutSuperstructureMembers(const CBridgeDescription* pBridgeDesc);
    bool LayoutDeck(const CBridgeDescription* pBridgeDesc);
    bool LayoutNoDeck(const CBridgeDescription* pBridgeDesc,IBridgeDeck** ppDeck);
    bool LayoutSimpleDeck(const CBridgeDescription* pBridgeDesc,IBridgeDeck** ppDeck);
@@ -799,6 +802,9 @@ private:
    Float64 GetCutLocation(const pgsPointOfInterest& poi);
 
    void NoDeckEdgePoint(SpanIndexType spanIdx,PierIndexType pierIdx,DirectionType side,IPoint2d** ppPoint);
+
+   void GetSlabEdgePoint(Float64 station, IDirection* direction,DirectionType side,IPoint2d** point);
+   void GetSlabEdgePoint(Float64 station, IDirection* direction,DirectionType side,IPoint3d** point);
 };
 
 #endif //__BRIDGEAGENT_H_

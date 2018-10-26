@@ -23,7 +23,7 @@
 // LiveLoadDistFactorsDlg.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "LiveLoadDistFactorsDlg.h"
 #include <MFCTools\CustomDDX.h>

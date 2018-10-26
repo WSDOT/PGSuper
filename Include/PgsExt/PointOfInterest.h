@@ -36,7 +36,7 @@ typedef Uint64 PoiAttributeType;
 #define POI_GRAPHICAL         0x4000000000000000 // POI used to create graphs
 
 // cross section transition point
-#define POI_SECTCHANGE        0x2000000000000000
+//#define POI_SECTCHANGE        0x2000000000000000 (unused, see below for POI_SECTCHANGE)
 
 // Special Points
 #define POI_CRITSECTSHEAR1    0x1000000000000000 // critical section for shear, for strength I limit state
@@ -59,6 +59,12 @@ typedef Uint64 PoiAttributeType;
 #define POI_FLEXURECAPACITY   0x0000200000000000
 #define POI_SHEAR             0x0000100000000000
 #define POI_DISPLACEMENT      0x0000080000000000
+
+// section changes
+#define POI_SECTCHANGE_LEFTFACE    0x0000000000002000
+#define POI_SECTCHANGE_RIGHTFACE   0x0000000000004000
+#define POI_SECTCHANGE_TRANSITION  0x0000000000008000
+#define POI_SECTCHANGE POI_SECTCHANGE_LEFTFACE | POI_SECTCHANGE_RIGHTFACE | POI_SECTCHANGE_TRANSITION
 
 #define POI_ALLACTIONS        POI_FLEXURESTRESS | POI_FLEXURECAPACITY | POI_SHEAR | POI_DISPLACEMENT
 
@@ -85,9 +91,6 @@ typedef Uint64 PoiAttributeType;
 // 0x0000 0000 0000 0400 1.0L
 // 0x0000 0000 0000 0800 - Unused
 // 0x0000 0000 0000 1000 - Unused
-// 0x0000 0000 0000 2000 - Unused
-// 0x0000 0000 0000 4000 - Unused
-// 0x0000 0000 0000 8000 - Unused
 
 /*****************************************************************************
 CLASS 

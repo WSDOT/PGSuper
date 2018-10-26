@@ -1,0 +1,233 @@
+// TxDOTOptionalDesignNonStandardFillDlg.cpp : implementation file
+//
+
+#include "stdafx.h"
+#include "TxDOTOptionalDesignNonStandardFillDlg.h"
+
+
+// CTxDOTOptionalDesignNonStandardFillDlg dialog
+
+IMPLEMENT_DYNAMIC(CTxDOTOptionalDesignNonStandardFillDlg, CDialog)
+
+CTxDOTOptionalDesignNonStandardFillDlg::CTxDOTOptionalDesignNonStandardFillDlg(CWnd* pParent /*=NULL*/)
+	: CDialog(CTxDOTOptionalDesignNonStandardFillDlg::IDD, pParent),
+   m_pGirderData(NULL),
+   m_pBrokerRetriever(NULL),
+   m_bFirstActive(true)
+{
+
+}
+
+CTxDOTOptionalDesignNonStandardFillDlg::~CTxDOTOptionalDesignNonStandardFillDlg()
+{
+}
+
+void CTxDOTOptionalDesignNonStandardFillDlg::Init(CTxDOTOptionalDesignGirderData* pGirderData, ITxDOTBrokerRetriever* pBrokerRetriever)
+{
+   m_pGirderData = pGirderData;
+   m_pBrokerRetriever = pBrokerRetriever;
+   m_UseDepressed = m_pGirderData->GetUseDepressedStrands();
+}
+
+void CTxDOTOptionalDesignNonStandardFillDlg::DoDataExchange(CDataExchange* pDX)
+{
+   CDialog::DoDataExchange(pDX);
+
+   ASSERT(m_pGirderData);
+   ASSERT(m_pBrokerRetriever);
+
+   GirderLibrary* pLib = m_pBrokerRetriever->GetGirderLibrary();
+
+   CString girder_name = m_pGirderData->GetGirderEntryName();
+   const GirderLibraryEntry* pGdrEntry = dynamic_cast<const GirderLibraryEntry*>(pLib->GetEntry(girder_name));
+   if (pGdrEntry==NULL)
+   {
+      CString msg;
+      msg.Format("The girder with name: \"%s\" does not exist in the master library. Cannot continue",girder_name);
+      ::AfxMessageBox(msg);
+      return pDX->Fail();
+   }
+
+   if (pDX->m_bSaveAndValidate)
+   {
+      CTxDOTOptionalDesignGirderData::StrandRowContainer cl_rows = m_GridAtCL.GetData();
+
+      if (m_UseDepressed)
+      {
+         CTxDOTOptionalDesignGirderData::StrandRowContainer end_rows = m_GridAtEnds.GetData();
+
+         CString msg;
+         if (!m_pGirderData->CheckAndBuildStrandRows(pGdrEntry, cl_rows, end_rows, msg))
+         {
+            pDX->PrepareCtrl(IDC_CL_GRID);
+            ::AfxMessageBox(msg, MB_OK|MB_ICONEXCLAMATION);
+            pDX->Fail();
+         }
+
+         m_pGirderData->SetStrandsAtEnds(end_rows);
+      }
+
+      m_pGirderData->SetStrandsAtCL(cl_rows);
+
+
+      // Don't allow exit if cl/end strand no's don't match
+      if (m_UseDepressed)
+      {
+         StrandIndexType clnos = m_GridAtCL.ComputeNoStrands();
+         StrandIndexType endnos = m_GridAtEnds.ComputeNoStrands();
+
+         if (clnos != endnos)
+         {
+            pDX->PrepareCtrl(IDC_CL_GRID);
+            ::AfxMessageBox("No. Strands must match at girder C.L. and Ends",MB_OK|MB_ICONEXCLAMATION);
+            pDX->Fail();
+         }
+      }
+
+   }
+   else
+   {
+      if (pGdrEntry->IsDifferentHarpedGridAtEndsUsed())
+      {
+         CString msg;
+         msg.Format("The girder entry with name: \"%s\" has harped strands with different locations at the ends and C.L. Cannot continue",girder_name);
+         ::AfxMessageBox(msg);
+         return pDX->Fail();
+      }
+
+      CTxDOTOptionalDesignGirderData::AvailableStrandsInRowContainer available_rows =m_pGirderData->ComputeAvailableStrandRows(pGdrEntry);
+
+      m_GridAtCL.FillGrid(available_rows,   m_pGirderData->GetStrandsAtCL());
+      m_GridAtEnds.FillGrid(available_rows, m_pGirderData->GetStrandsAtEnds());
+   }
+
+   DDX_Control(pDX, IDC_CL_NO_STRANDS, m_CLNoStrandsCtrl);
+   DDX_Control(pDX, IDC_END_NO_STRANDS, m_EndsNoStrandsCtrl);
+}
+
+
+BEGIN_MESSAGE_MAP(CTxDOTOptionalDesignNonStandardFillDlg, CDialog)
+   ON_WM_CTLCOLOR()
+   ON_WM_ERASEBKGND()
+END_MESSAGE_MAP()
+
+// CTxDOTOptionalDesignNonStandardFillDlg message handlers
+BOOL CTxDOTOptionalDesignNonStandardFillDlg::OnInitDialog()
+{
+	m_GridAtCL.SubclassDlgItem(IDC_CL_GRID, this);
+   m_GridAtCL.CustomInit(this);
+
+	m_GridAtEnds.SubclassDlgItem(IDC_END_GRID, this);
+   m_GridAtEnds.CustomInit(this);
+
+   if(!CDialog::OnInitDialog())
+      return FALSE;
+
+   DisplayEndCtrls();
+
+   return TRUE;
+}
+
+BOOL CTxDOTOptionalDesignNonStandardFillDlg::OnFillSetActive()
+{
+   if (m_bFirstActive)
+   {
+      m_bFirstActive = false;
+   }
+   else
+   {
+      if(!UpdateData(FALSE))
+         return FALSE;
+
+      UpdateNoStrandsCtrls();
+   }
+
+   return TRUE;
+}
+
+BOOL CTxDOTOptionalDesignNonStandardFillDlg::OnFillKillActive()
+{
+   return UpdateData(TRUE);
+}
+
+void CTxDOTOptionalDesignNonStandardFillDlg::UpdateNoStrandsCtrls()
+{
+   // Centerline
+   StrandIndexType clnos = m_GridAtCL.ComputeNoStrands();
+   CString msg;
+   msg.Format("No. Strands = %d", clnos);
+
+   m_CLNoStrandsCtrl.SetWindowTextA(msg);
+
+   // Ends
+   StrandIndexType endnos = m_GridAtEnds.ComputeNoStrands();
+   msg.Format("No. Strands = %d", endnos);
+
+   m_EndsNoStrandsCtrl.SetWindowTextA(msg);
+}
+
+HBRUSH CTxDOTOptionalDesignNonStandardFillDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+   // Set strand no text red if no's dont' match
+   if (m_UseDepressed)
+   {
+      int id = pWnd->GetDlgCtrlID();
+      if (id==IDC_CL_NO_STRANDS || id==IDC_END_NO_STRANDS)
+      {
+         StrandIndexType clnos = m_GridAtCL.ComputeNoStrands();
+         StrandIndexType endnos = m_GridAtEnds.ComputeNoStrands();
+
+         if (clnos != endnos)
+         {
+            pDC->SetTextColor(RGB(255, 0, 0));
+         }
+      }
+   }
+
+   pDC->SetBkColor(TXDOT_BACK_COLOR);
+
+   CBrush backBrush;
+   backBrush.CreateSolidBrush(TXDOT_BACK_COLOR);
+
+   return (HBRUSH)backBrush;
+}
+
+void CTxDOTOptionalDesignNonStandardFillDlg::OnGridDataChanged()
+{
+   // grid data change - update controls
+   UpdateNoStrandsCtrls();
+}
+
+void CTxDOTOptionalDesignNonStandardFillDlg::DoUseDepressed(bool useDepr)
+{
+   m_UseDepressed = useDepr;
+
+   DisplayEndCtrls();
+}
+
+void CTxDOTOptionalDesignNonStandardFillDlg::DisplayEndCtrls()
+{
+   // show or hide end grid and assoc controls
+   int do_show = m_UseDepressed ? SW_SHOW : SW_HIDE;
+
+   m_GridAtEnds.ShowWindow( do_show );
+   m_EndsNoStrandsCtrl.ShowWindow( do_show );
+
+   CWnd* pGroup = GetDlgItem(IDC_ENDS_GROUP);
+   pGroup->ShowWindow( do_show );
+
+   // strand no colors need to be updated
+   this->Invalidate(TRUE);
+}
+
+BOOL CTxDOTOptionalDesignNonStandardFillDlg::OnEraseBkgnd(CDC* pDC)
+{
+    CRect r;
+    GetClientRect(&r);
+
+    CBrush brush;
+    brush.CreateSolidBrush(TXDOT_BACK_COLOR);
+
+    pDC->FillRect(&r, &brush);
+    return TRUE;
+}

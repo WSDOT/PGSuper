@@ -51,7 +51,7 @@ class REPORTINGCLASS CEffFlangeWidthDetailsChapterBuilder : public CPGSuperChapt
 {
 public:
    // GROUP: LIFECYCLE
-   CEffFlangeWidthDetailsChapterBuilder();
+   CEffFlangeWidthDetailsChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

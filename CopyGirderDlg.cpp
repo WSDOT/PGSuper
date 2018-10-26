@@ -23,13 +23,15 @@
 // CopyGirderDlg.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
+#include "PGSuperAppPlugin\Resource.h"
 #include "PGSuperDoc.h"
 #include "CopyGirderDlg.h"
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
+#include <IFace\Selection.h>
 
 #include <PgsExt\BridgeDescription.h>
 
@@ -150,10 +152,24 @@ BOOL CCopyGirderDlg::OnInitDialog()
 
    FillComboBoxes(m_FromSpan,m_FromGirder,false);
    FillComboBoxes(m_ToSpan,  m_ToGirder,  true );
+
+   GET_IFACE(ISelection,pSelection);
+   SpanIndexType currSpan = pSelection->GetSpanIdx();
+   GirderIndexType currGirder = pSelection->GetGirderIdx();
+   if ( currSpan != INVALID_INDEX && currGirder != INVALID_INDEX )
+   {
+      m_FromSpan.SetCurSel((int)currSpan);
+      m_FromGirder.SetCurSel((int)currGirder);
+   }
 	
    UpdateApply();
 
-	return TRUE;  // return TRUE unless you set the focus to a control
+
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   HICON hIcon = (HICON)LoadImage(AfxGetResourceHandle(),MAKEINTRESOURCE(IDI_COPY_PROPERTIES),IMAGE_ICON,0,0,LR_DEFAULTSIZE);
+   SetIcon(hIcon,FALSE);
+
+   return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 

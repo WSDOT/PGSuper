@@ -50,7 +50,7 @@ class REPORTINGCLASS CDeckElevationChapterBuilder : public CPGSuperChapterBuilde
 {
 public:
    // GROUP: LIFECYCLE
-   CDeckElevationChapterBuilder();
+   CDeckElevationChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

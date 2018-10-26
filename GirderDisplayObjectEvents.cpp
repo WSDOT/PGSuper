@@ -23,7 +23,7 @@
 // GirderDisplayObjectEvents.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "resource.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "GirderDisplayObjectEvents.h"
@@ -223,15 +223,21 @@ STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnContext
 
       CPGSuperDoc* pPGSuperDoc = (CPGSuperDoc*)pDoc;
 
-      CMenu menu;
-      menu.LoadMenu(IDR_SELECTED_GIRDER_CONTEXT);
-      CEAFMenu contextMenu(menu.Detach(),pPGSuperDoc->GetPluginCommandManager());
+      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pPGSuperDoc->GetPluginCommandManager());
+      pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT,NULL);
+      pPGSuperDoc->BuildReportMenu(pMenu,true);
 
-      CEAFMenu* pmnuReport = contextMenu.GetSubMenu(0);
+      std::vector<IBridgePlanViewEventCallback*> callbacks = pPGSuperDoc->GetBridgePlanViewCallbacks();
+      std::vector<IBridgePlanViewEventCallback*>::iterator iter;
+      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+      {
+         IBridgePlanViewEventCallback* callback = *iter;
+         callback->OnGirderContextMenu(pThis->m_SpanIdx,pThis->m_GirderIdx,pMenu);
+      }
 
-      pPGSuperDoc->BuildReportMenu(pmnuReport,true);
+      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
 
-      pmnuReport->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
+      delete pMenu;
 
       return true;
    }
@@ -439,15 +445,21 @@ STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnCont
 
       CPGSuperDoc* pPGSuperDoc = (CPGSuperDoc*)pDoc;
 
-      CMenu menu;
-      menu.LoadMenu(IDR_SELECTED_GIRDER_CONTEXT);
-      CEAFMenu contextMenu(menu.Detach(),pPGSuperDoc->GetPluginCommandManager());
+      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pPGSuperDoc->GetPluginCommandManager());
+      pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT,NULL);
+      pPGSuperDoc->BuildReportMenu(pMenu,true);
 
-      CEAFMenu* pmnuReport = contextMenu.GetSubMenu(0);
+      std::vector<IBridgePlanViewEventCallback*> callbacks = pPGSuperDoc->GetBridgePlanViewCallbacks();
+      std::vector<IBridgePlanViewEventCallback*>::iterator iter;
+      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+      {
+         IBridgePlanViewEventCallback* callback = *iter;
+         callback->OnGirderContextMenu(pThis->m_SpanIdx,pThis->m_GirderIdx,pMenu);
+      }
 
-      pPGSuperDoc->BuildReportMenu(pmnuReport,true);
+      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
 
-      pmnuReport->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
+      delete pMenu;
 
       return true;
    }
