@@ -84,6 +84,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    bool bDeckPanels = (pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP ? true : false);
+   bool bFutureOverlay = pBridge->IsFutureOverlay();
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
@@ -92,8 +93,8 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
    GET_IFACE2(pBroker,IProductForces,pForces);
    GET_IFACE2(pBroker,IProductForces2,pForces2);
 
-   pgsTypes::BridgeAnalysisType maxBAT = pForces->GetBridgeAnalysisType(pgsTypes::Maximize);
-   pgsTypes::BridgeAnalysisType minBAT = pForces->GetBridgeAnalysisType(pgsTypes::Minimize);
+   pgsTypes::BridgeAnalysisType maxBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType minBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
@@ -125,16 +126,19 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
    PierIndexType lastPierIdx  = pBridge->GetGirderGroupEndPier(lastGroupIdx);
    for (PierIndexType pierIdx = firstPierIdx; pierIdx <= lastPierIdx; pierIdx++ )
    {
-      EventIndexType leftContinuityEventIdx, rightContinuityEventIdx;
-      pBridge->GetContinuityEventIndex(pierIdx,&leftContinuityEventIdx,&rightContinuityEventIdx);
-      continuityEventIdx = _cpp_min(continuityEventIdx,leftContinuityEventIdx);
-      continuityEventIdx = _cpp_min(continuityEventIdx,rightContinuityEventIdx);
+      if ( pBridge->IsBoundaryPier(pierIdx) )
+      {
+         EventIndexType leftContinuityEventIdx, rightContinuityEventIdx;
+         pBridge->GetContinuityEventIndex(pierIdx,&leftContinuityEventIdx,&rightContinuityEventIdx);
+         continuityEventIdx = _cpp_min(continuityEventIdx,leftContinuityEventIdx);
+         continuityEventIdx = _cpp_min(continuityEventIdx,rightContinuityEventIdx);
+      }
    }
 
    IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetErectSegmentInterval(CSegmentKey(0,0,0));
    IntervalIndexType continuityIntervalIdx    = pIntervals->GetInterval(continuityEventIdx);
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetRailingSystemInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
@@ -235,7 +239,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
       p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   RowIndexType row = ConfigureProductLoadTableHeading<rptStressUnitTag,unitmgtStressData>(pBroker,p_table,false,bSlabShrinkage,bConstruction,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,bPermit,bRating,analysisType,continuityIntervalIdx,pRatingSpec,pDisplayUnits,pDisplayUnits->GetStressUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptStressUnitTag,unitmgtStressData>(pBroker,p_table,false,bSlabShrinkage,bConstruction,bDeckPanels,bSidewalk,bShearKey,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,continuityIntervalIdx,pRatingSpec,pDisplayUnits,pDisplayUnits->GetStressUnit());
 
 
    // Get the interface pointers we need

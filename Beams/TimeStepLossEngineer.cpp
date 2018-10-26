@@ -93,20 +93,21 @@ const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& po
                 );
       // losses were not computed at the POI we are looking for. This happens for a couple of reasons.
       // 1) The POI was created on the fly (its ID is INVALID_ID)
-      // 2) Harp Points -> we often tweak the position of the harp point so we get the results on the side
+      // 2) Harp Points -> we tweak the position of the harp point so we get the results on the side
       //    with the sloped strands
       // 3) Critical Section for Shear -> We don't know where these locations are prior to computing losses. Losses
       //    are needed to compute this locations
       // 4) Lifting and Hauling POI - these change with changing locations of the pick and bunk points
 
-      // approximate the losses at poi
+      // approximate the losses at the poi by using the losses at the nearest poi
+      // (could use linear interpolation, however, take a look at the LOSSDETAILS struct...
+      // it would be a royal pain to interpolate all the values)
       std::map<pgsPointOfInterest,LOSSDETAILS>::iterator iter1(losses.begin());
       std::map<pgsPointOfInterest,LOSSDETAILS>::iterator iter2(losses.begin());
       iter2++;
       std::map<pgsPointOfInterest,LOSSDETAILS>::iterator end(losses.end());
       for ( ; iter2 != end; iter1++, iter2++ )
       {
-#pragma Reminder("UPDATE: use linear interpolation to approximate losses")
          const pgsPointOfInterest& poi1(iter1->first);
          const pgsPointOfInterest& poi2(iter2->first);
          if ( poi1 < poi && poi < poi2 )
@@ -183,7 +184,7 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    GET_IFACE(IPosttensionForce,pPTForce);
    GET_IFACE(ITendonGeometry,pTendonGeom);
-   GET_IFACE(ISplicedGirder,pISplicedGirder);
+   GET_IFACE(IBridge,pBridge);
 
    GET_IFACE(ILossParameters,pLossParams);
    Float64 Dset, wobble, friction;
@@ -232,7 +233,7 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
          Float64 fpj = (nStrands == 0 ? 0 : Pj/Aps);
          
          Float64 Xg = pIPOI->ConvertPoiToGirderCoordinate(poi); // distance along girder
-         Float64 Lg = pISplicedGirder->GetSplicedGirderLength(poi.GetSegmentKey());
+         Float64 Lg = pBridge->GetGirderLength(poi.GetSegmentKey());
 
          // determine from which end of the girder to measure the angular change of the tendon path
          pgsTypes::MemberEndType endType;
@@ -278,7 +279,6 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CGirderKey& girderKey,L
    // First, compute the seating wedge, then compute anchor set loss at each POI
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IGirder,pIGirder);
-   GET_IFACE(ISplicedGirder,pISplicedGirder);
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CSplicedGirderData* pGirder = pIBridgeDesc->GetGirder(girderKey);
@@ -405,7 +405,7 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CGirderKey& girderKey,L
       const pgsPointOfInterest& poi(iter->first);
       LOSSDETAILS& details(iter->second);
 
-      Float64 Lg = pISplicedGirder->GetSplicedGirderSpanLength(poi.GetSegmentKey());
+      Float64 Lg = pBridge->GetGirderSpanLength(poi.GetSegmentKey());
 
       for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
       {
@@ -726,7 +726,6 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
 #if defined IGNORE_SHRINKAGE_EFFECTS
       esi = 0;
 #else
-#pragma Reminder("UPDATE: add the elastic gains factor for deck shrinkage") // and for the other elastic gains
       esi = pMaterials->GetDeckFreeShrinkageStrain(intervalIdx);
 #endif
       tsDetails.Deck.esi = esi;
@@ -1405,7 +1404,6 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       }
    }
 
-#pragma Reminder("UPDATE: don't need equilibrium checks in release version")
    // Equilibrium Checks
    // Check : Change in External Forces = Change in Internal Forces
    tsDetails.dPext = 0;

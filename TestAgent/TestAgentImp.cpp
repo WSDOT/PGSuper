@@ -731,7 +731,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetRailingSystemInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
@@ -919,10 +919,9 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
    // Girder bearing reactions
    GET_IFACE(IBearingDesign,pBearingDesign);
    bool bleft, bright;
-   if(pBearingDesign->AreBearingReactionsAvailable(segmentKey,&bleft,&bright))
+   IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+   if(pBearingDesign->AreBearingReactionsAvailable(erectSegmentIntervalIdx,segmentKey,&bleft,&bright))
    {
-      IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
-
       Float64 lftReact, rgtReact;
       // girder
       pBearingDesign->GetBearingProductReaction(erectSegmentIntervalIdx, pftGirder, segmentKey, ctCummulative, bat, &lftReact, &rgtReact);
@@ -1225,7 +1224,7 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34051, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
 
       bool isLeft, isRight;
-      pBearingDesign->AreBearingReactionsAvailable(segmentKey, &isLeft, &isRight);
+      pBearingDesign->AreBearingReactionsAvailable(liveLoadIntervalIdx,segmentKey, &isLeft, &isRight);
       if (isLeft || isRight)
       {
          Float64 leftVal, rightVal;
@@ -1276,7 +1275,7 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34043, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
 
       bool isLeft, isRight;
-      pBearingDesign->AreBearingReactionsAvailable(segmentKey, &isLeft, &isRight);
+      pBearingDesign->AreBearingReactionsAvailable(liveLoadIntervalIdx,segmentKey, &isLeft, &isRight);
       if (isLeft || isRight)
       {
          Float64 leftMinVal, rightMinVal, leftMaxVal, rightMaxVal;

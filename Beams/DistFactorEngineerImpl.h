@@ -63,6 +63,8 @@ struct BASE_LLDFDETAILS
    Float64 skew2;
 };
 
+#define USE_CURRENT_FC -1
+
 template <class T>
 class CDistFactorEngineerImpl : public IDistFactorEngineer, public IInitialize 
 {
@@ -158,7 +160,7 @@ template <class T>
 Float64 CDistFactorEngineerImpl<T>::GetMomentDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls)
 {
    SPANDETAILS lldf;
-   GetSpanDF(spanIdx,gdrIdx,ls,-1,&lldf);
+   GetSpanDF(spanIdx,gdrIdx,ls,USE_CURRENT_FC,&lldf);
    return lldf.gM;
 }
 
@@ -190,7 +192,7 @@ template <class T>
 Float64 CDistFactorEngineerImpl<T>::GetShearDF(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls)
 {
    SPANDETAILS lldf;
-   GetSpanDF(spanIdx,gdrIdx,ls,-1,&lldf);
+   GetSpanDF(spanIdx,gdrIdx,ls,USE_CURRENT_FC,&lldf);
    return lldf.gV;
 }
 
@@ -224,7 +226,7 @@ void CDistFactorEngineerImpl<T>::GetPierReactionDF(PierIndexType pierIdx,GirderI
 {
    std::map<PierGirderHashType,REACTIONDETAILS>::iterator found;
    found = m_ReactionLLDF[LimitStateType(ls)].find(HashPierGirder(pierIdx,gdrIdx));
-   if ( found != m_ReactionLLDF[LimitStateType(ls)].end() && fcgdr < 0 )
+   if ( found != m_ReactionLLDF[LimitStateType(ls)].end() && fcgdr == USE_CURRENT_FC )
    {
       *plldf = (*found).second;
       return; // We already have the distribution factors for this girder
@@ -332,7 +334,7 @@ void CDistFactorEngineerImpl<T>::GetPierDF(PierIndexType pierIdx,GirderIndexType
 {
    std::map<PierGirderHashType,PIERDETAILS>::iterator found;
    found = m_PierLLDF[pierFace][LimitStateType(ls)].find(HashPierGirder(pierIdx,gdrIdx));
-   if ( found != m_PierLLDF[pierFace][LimitStateType(ls)].end() && fcgdr < 0 )
+   if ( found != m_PierLLDF[pierFace][LimitStateType(ls)].end() && fcgdr == USE_CURRENT_FC )
    {
       *plldf = (*found).second;
       return; // We already have the distribution factors for this girder
@@ -440,7 +442,7 @@ void CDistFactorEngineerImpl<T>::GetSpanDF(SpanIndexType spanIdx,GirderIndexType
 {
    std::map<SpanGirderHashType,SPANDETAILS>::iterator found;
    found = m_SpanLLDF[LimitStateType(ls)].find(::HashSpanGirder(spanIdx,gdrIdx));
-   if ( found != m_SpanLLDF[LimitStateType(ls)].end() && fcgdr < 0 )
+   if ( found != m_SpanLLDF[LimitStateType(ls)].end() && fcgdr == USE_CURRENT_FC )
    {
       *plldf = (*found).second;
       return; // We already have the distribution factors for this girder
@@ -937,10 +939,7 @@ bool CDistFactorEngineerImpl<T>::Run1250Tests(SpanIndexType spanIdx,GirderIndexT
       const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
 
-#pragma Reminder("BUG: this looks like a bug")
-      // Not InteriorGirder is exterior girder, but interior girder results are reported
-      // and exterior girder results in the else block
-      if ( !pGroup->IsInteriorGirder(gdrIdx) )
+      if ( pGroup->IsInteriorGirder(gdrIdx) )
       {
          Float64 M,V;
          M = pSpan->GetLLDFPosMoment(gdrIdx,ls);
@@ -968,7 +967,7 @@ bool CDistFactorEngineerImpl<T>::Run1250Tests(SpanIndexType spanIdx,GirderIndexT
    else
    {
       SPANDETAILS gdet;
-      GetSpanDF(spanIdx,gdrIdx,ls,-1,&gdet);
+      GetSpanDF(spanIdx,gdrIdx,ls,USE_CURRENT_FC,&gdet);
 
       if ( gdet.bExteriorGirder )
       {
@@ -1046,7 +1045,7 @@ bool CDistFactorEngineerImpl<T>::GetDFResultsEx(SpanIndexType spanIdx,GirderInde
    else
    {
       SPANDETAILS gdet;
-      GetSpanDF(spanIdx,gdrIdx,ls,-1,&gdet);
+      GetSpanDF(spanIdx,gdrIdx,ls,USE_CURRENT_FC,&gdet);
 
       *gpM  = gdet.gM;
       *gpM1 = gdet.gM1.mg;

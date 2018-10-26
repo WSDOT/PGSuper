@@ -23,7 +23,6 @@
 #include "StdAfx.h"
 #include <Reporting\ProductReactionTable.h>
 #include <Reporting\ProductMomentsTable.h>
-#include <Reporting\ReactionInterfaceAdapters.h>
 
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -67,7 +66,7 @@ CProductReactionTable& CProductReactionTable::operator= (const CProductReactionT
 
 //======================== OPERATIONS =======================================
 rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
-                                         TableType tableType, bool bIncludeImpact, bool bIncludeLLDF,bool bDesign,bool bRating,bool bIndicateControllingLoad,
+                                         ReactionTableType tableType, bool bIncludeImpact, bool bIncludeLLDF,bool bDesign,bool bRating,bool bIndicateControllingLoad,
                                          IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
@@ -75,6 +74,7 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
    INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDisplayUnits->GetShearUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
+   bool bFutureOverlay = pBridge->IsFutureOverlay();
    PierIndexType nPiers = pBridge->GetPierCount();
 
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
@@ -84,67 +84,81 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
 
    ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuityIntervalIdx,&startGroup,&nGroups);
-
-   PierIndexType startPier = pBridge->GetGirderGroupStartPier(startGroup);
-   PierIndexType endPier   = pBridge->GetGirderGroupEndPier(startGroup+nGroups-1);
    
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,
                          tableType==PierReactionsTable ?_T("Total Girderline Reactions at Abutments and Piers"): _T("Girder Bearing Reactions") );
-   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,true,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,bPermit,bRating,analysisType,continuityIntervalIdx,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,true,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,continuityIntervalIdx,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    GET_IFACE2(pBroker,IProductForces,pProductForces);
    GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
+  
+   GET_IFACE2(pBroker,IProductForces,pProdForces);
+   pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
+
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
+   IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetFirstErectedSegmentInterval();
 
    // TRICKY: use adapter class to get correct reaction interfaces
    std::auto_ptr<IProductReactionAdapter> pForces;
    if( tableType == PierReactionsTable )
    {
-      pForces =  std::auto_ptr<ProductForcesReactionAdapter>(new ProductForcesReactionAdapter(pProductForces));
+      pForces =  std::auto_ptr<ProductForcesReactionAdapter>(new ProductForcesReactionAdapter(pProductForces,girderKey));
    }
    else
    {
-      pForces =  std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, startPier, endPier) );
+      pForces =  std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, compositeDeckIntervalIdx, girderKey) );
    }
 
-   GET_IFACE2(pBroker,IProductForces,pProdForces);
-   pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
-   pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(pgsTypes::Minimize);
+   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetRailingSystemInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
-   IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetFirstErectedSegmentInterval();
-
-   for ( PierIndexType pier = startPier; pier <= endPier; pier++ )
+   for (iter.First(); !iter.IsDone(); iter.Next())
    {
-      if (!pForces->DoReportAtPier(pier, girderKey))
-      {
-         // Don't report pier if information is not available
-         continue;
-      }
-
       ColumnIndexType col = 0;
 
-      if ( pier == 0 || pier == nPiers-1 )
-         (*p_table)(row,col++) << _T("Abutment ") << LABEL_PIER(pier);
-      else
-         (*p_table)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
+      const ReactionLocation& reactionLocation( iter.CurrentItem() );
+
+     (*p_table)(row,col++) << reactionLocation.PierLabel;
+
+     ReactionDecider reactionDecider(tableType,reactionLocation,pBridge,pIntervals);
    
-      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( erectSegmentIntervalIdx, pftGirder,    pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
-      (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx,     pftDiaphragm, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+     (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( erectSegmentIntervalIdx, reactionLocation, pftGirder,    analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+
+     if ( reactionDecider.DoReport(castDeckIntervalIdx) )
+        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx,     reactionLocation, pftDiaphragm, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+     else
+        (*p_table)(row,col++) << RPT_NA;
 
       if ( bShearKey )
       {
          if ( analysisType == pgsTypes::Envelope )
          {
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, pftShearKey, pier, girderKey, maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, pftShearKey, pier, girderKey, minBAT ) );
+            if ( reactionDecider.DoReport(castDeckIntervalIdx) )
+            {
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, reactionLocation, pftShearKey, maxBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, reactionLocation, pftShearKey, minBAT ) );
+            }
+            else
+            {
+               (*p_table)(row,col++) << RPT_NA;
+               (*p_table)(row,col++) << RPT_NA;
+            }
          }
          else
          {
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, pftShearKey, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+            if ( reactionDecider.DoReport(castDeckIntervalIdx) )
+            {
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, reactionLocation, pftShearKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+            }
+            else
+            {
+               (*p_table)(row,col++) << RPT_NA;
+            }
          }
       }
 
@@ -152,39 +166,87 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
       {
          if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
          {
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, pftConstruction,   pier, girderKey, maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, pftConstruction,   pier, girderKey, minBAT ) );
+            if ( reactionDecider.DoReport(castDeckIntervalIdx) )
+            {
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, reactionLocation, pftConstruction,   maxBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, reactionLocation, pftConstruction, minBAT ) );
+            }
+            else
+            {
+               (*p_table)(row,col++) << RPT_NA;
+               (*p_table)(row,col++) << RPT_NA;
+            }
          }
          else
          {
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, pftConstruction,   pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+            if ( reactionDecider.DoReport(castDeckIntervalIdx) )
+            {
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, reactionLocation, pftConstruction, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+            }
+            else
+            {
+               (*p_table)(row,col++) << RPT_NA;
+            }
          }
       }
 
       if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
       {
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, pftSlab, pier, girderKey, maxBAT ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, pftSlab, pier, girderKey, minBAT ) );
+         if ( reactionDecider.DoReport(castDeckIntervalIdx) )
+         {
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, reactionLocation, pftSlab, maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, reactionLocation, pftSlab, minBAT ) );
 
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, pftSlabPad, pier, girderKey, maxBAT ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, pftSlabPad, pier, girderKey, minBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, reactionLocation, pftSlabPad, maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, reactionLocation, pftSlabPad, minBAT ) );
+         }
+         else
+         {
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+         }
       }
       else
       {
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, pftSlab, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan  ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, pftSlabPad, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan  ) );
+         if ( reactionDecider.DoReport(castDeckIntervalIdx) )
+         {
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, reactionLocation, pftSlab,    analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan  ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, reactionLocation, pftSlabPad, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan  ) );
+         }
+         else
+         {
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+         }
       }
 
       if ( bDeckPanels )
       {
          if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
          {
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, pftSlabPanel,   pier, girderKey, maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, pftSlabPanel,   pier, girderKey, minBAT ) );
+            if ( reactionDecider.DoReport(castDeckIntervalIdx) )
+            {
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, reactionLocation, pftSlabPanel, maxBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, reactionLocation, pftSlabPanel, minBAT ) );
+            }
+            else
+            {
+               (*p_table)(row,col++) << RPT_NA;
+               (*p_table)(row,col++) << RPT_NA;
+            }
          }
          else
          {
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, pftSlabPanel,   pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+            if ( reactionDecider.DoReport(castDeckIntervalIdx) )
+            {
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( castDeckIntervalIdx, reactionLocation, pftSlabPanel, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+            }
+            else
+            {
+               (*p_table)(row,col++) << RPT_NA;
+            }
          }
       }
 
@@ -192,111 +254,75 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
       {
          if ( bSidewalk )
          {
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( railingSystemIntervalIdx, pftSidewalk, pier, girderKey, maxBAT ) );
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( railingSystemIntervalIdx, pftSidewalk, pier, girderKey, minBAT ) );
+            if ( reactionDecider.DoReport(railingSystemIntervalIdx) )
+            {
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( railingSystemIntervalIdx, reactionLocation, pftSidewalk, maxBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( railingSystemIntervalIdx, reactionLocation, pftSidewalk, minBAT ) );
+            }
+            else
+            {
+               (*p_table)(row,col++) << RPT_NA;
+               (*p_table)(row,col++) << RPT_NA;
+            }
          }
 
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( railingSystemIntervalIdx, pftTrafficBarrier, pier, girderKey, maxBAT ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( railingSystemIntervalIdx, pftTrafficBarrier, pier, girderKey, minBAT ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( overlayIntervalIdx, bRating ? pftOverlayRating : pftOverlay, pier, girderKey, maxBAT ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( overlayIntervalIdx, bRating ? pftOverlayRating : pftOverlay, pier, girderKey, minBAT ) );
+         if ( reactionDecider.DoReport(railingSystemIntervalIdx) )
+         {
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( railingSystemIntervalIdx, reactionLocation, pftTrafficBarrier, maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( railingSystemIntervalIdx, reactionLocation, pftTrafficBarrier, minBAT ) );
+         }
+         else
+         {
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+         }
+
+         if ( reactionDecider.DoReport(overlayIntervalIdx) )
+         {
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( overlayIntervalIdx, reactionLocation, bRating && !bDesign ? pftOverlayRating : pftOverlay, maxBAT ) );
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( overlayIntervalIdx, reactionLocation, bRating && !bDesign ? pftOverlayRating : pftOverlay, minBAT ) );
+         }
+         else
+         {
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+         }
 
          Float64 min, max;
          VehicleIndexType minConfig, maxConfig;
 
          if ( bPedLoading )
          {
-            pForces->GetLiveLoadReaction( pgsTypes::lltPedestrian, liveLoadIntervalIdx, pier, girderKey, maxBAT, bIncludeImpact, true, &min, &max );
-            (*p_table)(row,col++) << reaction.SetValue( max );
+            if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+            {
+               pForces->GetLiveLoadReaction( pgsTypes::lltPedestrian, liveLoadIntervalIdx, reactionLocation, maxBAT, bIncludeImpact, true, &min, &max );
+               (*p_table)(row,col++) << reaction.SetValue( max );
 
-            pForces->GetLiveLoadReaction( pgsTypes::lltPedestrian, liveLoadIntervalIdx, pier, girderKey, minBAT, bIncludeImpact, true, &min, &max );
-            (*p_table)(row,col++) << reaction.SetValue( min );
+               pForces->GetLiveLoadReaction( pgsTypes::lltPedestrian, liveLoadIntervalIdx, reactionLocation, minBAT, bIncludeImpact, true, &min, &max );
+               (*p_table)(row,col++) << reaction.SetValue( min );
+            }
+            else
+            {
+               (*p_table)(row,col++) << RPT_NA;
+               (*p_table)(row,col++) << RPT_NA;
+            }
          }
 
          if ( bDesign )
          {
-            pForces->GetLiveLoadReaction( pgsTypes::lltDesign, liveLoadIntervalIdx, pier, girderKey, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-            (*p_table)(row,col) << reaction.SetValue( max );
-
-            if ( bIndicateControllingLoad && minConfig!=INVALID_INDEX )
+            if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
             {
-               (*p_table)(row,col) << rptNewLine <<  _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << _T(")");
-            }
-
-            col++;
-
-            pForces->GetLiveLoadReaction( pgsTypes::lltDesign, liveLoadIntervalIdx, pier, girderKey, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig  );
-            (*p_table)(row,col) << reaction.SetValue( min );
-
-            if ( bIndicateControllingLoad && minConfig!=INVALID_INDEX )
-            {
-               (*p_table)(row,col) << rptNewLine <<  _T("(") << LiveLoadPrefix(pgsTypes::lltDesign)<< minConfig << _T(")");
-            }
-
-            col++;
-
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-            {
-               pForces->GetLiveLoadReaction( pgsTypes::lltFatigue, liveLoadIntervalIdx, pier, girderKey, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+               pForces->GetLiveLoadReaction( pgsTypes::lltDesign, liveLoadIntervalIdx, reactionLocation, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                (*p_table)(row,col) << reaction.SetValue( max );
-
-               if ( bIndicateControllingLoad && maxConfig!=INVALID_INDEX )
-               {
-                  (*p_table)(row,col) << rptNewLine <<  _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << maxConfig << _T(")");
-               }
-
-               col++;
-
-               pForces->GetLiveLoadReaction( pgsTypes::lltFatigue, liveLoadIntervalIdx, pier, girderKey, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig  );
-               (*p_table)(row,col) << reaction.SetValue( min );
 
                if ( bIndicateControllingLoad && minConfig!=INVALID_INDEX )
-               {
-                  (*p_table)(row,col) << rptNewLine <<  _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << minConfig << _T(")");
-               }
-
-               col++;
-            }
-
-            if ( bPermit )
-            {
-               pForces->GetLiveLoadReaction( pgsTypes::lltPermit, liveLoadIntervalIdx, pier, girderKey, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-               (*p_table)(row,col) << reaction.SetValue( max );
-
-               if ( bIndicateControllingLoad && maxConfig!=INVALID_INDEX )
-               {
-                  (*p_table)(row,col) << rptNewLine <<  _T("(") << LiveLoadPrefix(pgsTypes::lltPermit) << maxConfig << _T(")");
-               }
-
-               col++;
-
-               pForces->GetLiveLoadReaction( pgsTypes::lltPermit, liveLoadIntervalIdx, pier, girderKey, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-               (*p_table)(row,col) << reaction.SetValue( min );
-
-               if ( bIndicateControllingLoad && minConfig!=INVALID_INDEX )
-               {
-                  (*p_table)(row,col) << rptNewLine <<  _T("(") << LiveLoadPrefix(pgsTypes::lltPermit) << minConfig << _T(")");
-               }
-
-               col++;
-            }
-         }
-
-         if ( bRating )
-         {
-            if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
-            {
-               pForces->GetLiveLoadReaction( pgsTypes::lltDesign, liveLoadIntervalIdx, pier, girderKey, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-               (*p_table)(row,col) << reaction.SetValue( max );
-
-               if ( bIndicateControllingLoad && maxConfig!=INVALID_INDEX )
                {
                   (*p_table)(row,col) << rptNewLine <<  _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << _T(")");
                }
 
                col++;
 
-               pForces->GetLiveLoadReaction( pgsTypes::lltDesign, liveLoadIntervalIdx, pier, girderKey, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig  );
+               pForces->GetLiveLoadReaction( pgsTypes::lltDesign, liveLoadIntervalIdx, reactionLocation, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig  );
                (*p_table)(row,col) << reaction.SetValue( min );
 
                if ( bIndicateControllingLoad && minConfig!=INVALID_INDEX )
@@ -306,101 +332,234 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
 
                col++;
             }
+            else
+            {
+               (*p_table)(row,col++) << RPT_NA;
+               (*p_table)(row,col++) << RPT_NA;
+            }
+
+            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            {
+               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               {
+                  pForces->GetLiveLoadReaction( pgsTypes::lltFatigue, liveLoadIntervalIdx, reactionLocation, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  (*p_table)(row,col) << reaction.SetValue( max );
+
+                  if ( bIndicateControllingLoad && maxConfig!=INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine <<  _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << maxConfig << _T(")");
+                  }
+
+                  col++;
+
+                  pForces->GetLiveLoadReaction( pgsTypes::lltFatigue, liveLoadIntervalIdx, reactionLocation, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig  );
+                  (*p_table)(row,col) << reaction.SetValue( min );
+
+                  if ( bIndicateControllingLoad && minConfig!=INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine <<  _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << minConfig << _T(")");
+                  }
+
+                  col++;
+               }
+               else
+               {
+                  (*p_table)(row,col++) << RPT_NA;
+                  (*p_table)(row,col++) << RPT_NA;
+               }
+            }
+
+            if ( bPermit )
+            {
+               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               {
+                  pForces->GetLiveLoadReaction( pgsTypes::lltPermit, liveLoadIntervalIdx, reactionLocation, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  (*p_table)(row,col) << reaction.SetValue( max );
+
+                  if ( bIndicateControllingLoad && maxConfig!=INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine <<  _T("(") << LiveLoadPrefix(pgsTypes::lltPermit) << maxConfig << _T(")");
+                  }
+
+                  col++;
+
+                  pForces->GetLiveLoadReaction( pgsTypes::lltPermit, liveLoadIntervalIdx, reactionLocation, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  (*p_table)(row,col) << reaction.SetValue( min );
+
+                  if ( bIndicateControllingLoad && minConfig!=INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine <<  _T("(") << LiveLoadPrefix(pgsTypes::lltPermit) << minConfig << _T(")");
+                  }
+
+                  col++;
+               }
+               else
+               {
+                  (*p_table)(row,col++) << RPT_NA;
+                  (*p_table)(row,col++) << RPT_NA;
+               }
+            }
+         }
+
+         if ( bRating )
+         {
+            if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+            {
+               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               {
+                  pForces->GetLiveLoadReaction( pgsTypes::lltDesign, liveLoadIntervalIdx, reactionLocation, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  (*p_table)(row,col) << reaction.SetValue( max );
+
+                  if ( bIndicateControllingLoad && maxConfig!=INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine <<  _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << _T(")");
+                  }
+
+                  col++;
+
+                  pForces->GetLiveLoadReaction( pgsTypes::lltDesign, liveLoadIntervalIdx, reactionLocation, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig  );
+                  (*p_table)(row,col) << reaction.SetValue( min );
+
+                  if ( bIndicateControllingLoad && minConfig!=INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine <<  _T("(") << LiveLoadPrefix(pgsTypes::lltDesign)<< minConfig << _T(")");
+                  }
+
+                  col++;
+               }
+               else
+               {
+                  (*p_table)(row,col++) << RPT_NA;
+                  (*p_table)(row,col++) << RPT_NA;
+               }
+            }
 
             // Legal - Routine
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
             {
-               pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Routine, liveLoadIntervalIdx, pier, girderKey, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-               (*p_table)(row,col) << reaction.SetValue( max );
-
-               if ( bIndicateControllingLoad && maxConfig!=INVALID_INDEX )
+               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
                {
-                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << maxConfig << _T(")");
+                  pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Routine, liveLoadIntervalIdx, reactionLocation, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  (*p_table)(row,col) << reaction.SetValue( max );
+
+                  if ( bIndicateControllingLoad && maxConfig!=INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << maxConfig << _T(")");
+                  }
+
+                  col++;
+
+                  pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Routine, liveLoadIntervalIdx, reactionLocation, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  (*p_table)(row,col) << reaction.SetValue( min );
+
+                  if ( bIndicateControllingLoad && minConfig!=INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << minConfig << _T(")");
+                  }
+
+                  col++;
                }
-
-               col++;
-
-               pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Routine, liveLoadIntervalIdx, pier, girderKey, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-               (*p_table)(row,col) << reaction.SetValue( min );
-
-               if ( bIndicateControllingLoad && minConfig!=INVALID_INDEX )
+               else
                {
-                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << minConfig << _T(")");
+                  (*p_table)(row,col++) << RPT_NA;
+                  (*p_table)(row,col++) << RPT_NA;
                }
-
-               col++;
             }
 
             // Legal - Special
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
             {
-               pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Special, liveLoadIntervalIdx, pier, girderKey, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-               (*p_table)(row,col) << reaction.SetValue( max );
-
-               if ( bIndicateControllingLoad && maxConfig!=INVALID_INDEX )
+               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
                {
-                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << maxConfig << _T(")");
+                  pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Special, liveLoadIntervalIdx, reactionLocation, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  (*p_table)(row,col) << reaction.SetValue( max );
+
+                  if ( bIndicateControllingLoad && maxConfig!=INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << maxConfig << _T(")");
+                  }
+
+                  col++;
+
+                  pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Special, liveLoadIntervalIdx, reactionLocation, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  (*p_table)(row,col) << reaction.SetValue( min );
+
+                  if ( bIndicateControllingLoad && minConfig!=INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << minConfig << _T(")");
+                  }
+
+                  col++;
                }
-
-               col++;
-
-               pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Special, liveLoadIntervalIdx, pier, girderKey, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-               (*p_table)(row,col) << reaction.SetValue( min );
-
-               if ( bIndicateControllingLoad && minConfig!=INVALID_INDEX )
+               else
                {
-                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << minConfig << _T(")");
+                  (*p_table)(row,col++) << RPT_NA;
+                  (*p_table)(row,col++) << RPT_NA;
                }
-
-               col++;
             }
 
             // Permit Rating - Routine
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
             {
-               pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Routine, liveLoadIntervalIdx, pier, girderKey, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-               (*p_table)(row,col) << reaction.SetValue( max );
-
-               if ( bIndicateControllingLoad && maxConfig!=INVALID_INDEX )
+               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
                {
-                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << maxConfig << _T(")");
+                  pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Routine, liveLoadIntervalIdx, reactionLocation, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  (*p_table)(row,col) << reaction.SetValue( max );
+
+                  if ( bIndicateControllingLoad && maxConfig!=INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << maxConfig << _T(")");
+                  }
+
+                  col++;
+
+                  pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Routine, liveLoadIntervalIdx, reactionLocation, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  (*p_table)(row,col) << reaction.SetValue( min );
+
+                  if ( bIndicateControllingLoad && minConfig != INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << minConfig << _T(")");
+                  }
+
+                  col++;
                }
-
-               col++;
-
-               pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Routine, liveLoadIntervalIdx, pier, girderKey, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-               (*p_table)(row,col) << reaction.SetValue( min );
-
-               if ( bIndicateControllingLoad && minConfig != INVALID_INDEX )
+               else
                {
-                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << minConfig << _T(")");
+                  (*p_table)(row,col++) << RPT_NA;
+                  (*p_table)(row,col++) << RPT_NA;
                }
-
-               col++;
             }
 
             // Permit Rating - Special
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
             {
-               pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Special, liveLoadIntervalIdx, pier, girderKey, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-               (*p_table)(row,col) << reaction.SetValue( max );
-
-               if ( bIndicateControllingLoad && maxConfig != INVALID_INDEX )
+               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
                {
-                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << maxConfig << _T(")");
+                  pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Special, liveLoadIntervalIdx, reactionLocation, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  (*p_table)(row,col) << reaction.SetValue( max );
+
+                  if ( bIndicateControllingLoad && maxConfig != INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << maxConfig << _T(")");
+                  }
+
+                  col++;
+
+                  pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Special, liveLoadIntervalIdx, reactionLocation, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  (*p_table)(row,col) << reaction.SetValue( min );
+
+                  if ( bIndicateControllingLoad && minConfig != INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << minConfig << _T(")");
+                  }
+
+                  col++;
                }
-
-               col++;
-
-               pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Special, liveLoadIntervalIdx, pier, girderKey, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-               (*p_table)(row,col) << reaction.SetValue( min );
-
-               if ( bIndicateControllingLoad && minConfig != INVALID_INDEX )
+               else
                {
-                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << minConfig << _T(")");
+                  (*p_table)(row,col++) << RPT_NA;
+                  (*p_table)(row,col++) << RPT_NA;
                }
-
-               col++;
             }
          }
       }
@@ -408,86 +567,58 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
       {
          if ( bSidewalk )
          {
-            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( railingSystemIntervalIdx, pftSidewalk, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+            if ( reactionDecider.DoReport(railingSystemIntervalIdx) )
+            {
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( railingSystemIntervalIdx, reactionLocation, pftSidewalk, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+            }
+            else
+            {
+               (*p_table)(row,col++) << RPT_NA;
+            }
          }
 
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( railingSystemIntervalIdx, pftTrafficBarrier, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
-         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( overlayIntervalIdx, bRating ? pftOverlayRating : pftOverlay,        pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+         if ( reactionDecider.DoReport(railingSystemIntervalIdx) )
+         {
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( railingSystemIntervalIdx, reactionLocation, pftTrafficBarrier, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+         }
+         else
+         {
+            (*p_table)(row,col++) << RPT_NA;
+         }
+
+         if ( reactionDecider.DoReport(overlayIntervalIdx) )
+         {
+            (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( overlayIntervalIdx, reactionLocation, bRating && !bDesign ? pftOverlayRating : pftOverlay, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+         }
+         else
+         {
+            (*p_table)(row,col++) << RPT_NA;
+         }
 
          Float64 min, max;
          VehicleIndexType minConfig, maxConfig;
          if ( bPedLoading )
          {
-            pForces->GetLiveLoadReaction( pgsTypes::lltPedestrian, liveLoadIntervalIdx, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, true, &min, &max );
-            (*p_table)(row,col++) << reaction.SetValue( max );
-            (*p_table)(row,col++) << reaction.SetValue( min );
+            if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+            {
+               pForces->GetLiveLoadReaction( pgsTypes::lltPedestrian, liveLoadIntervalIdx, reactionLocation, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, true, &min, &max );
+               (*p_table)(row,col++) << reaction.SetValue( max );
+               (*p_table)(row,col++) << reaction.SetValue( min );
+            }
+            else
+            {
+               (*p_table)(row,col++) << RPT_NA;
+               (*p_table)(row,col++) << RPT_NA;
+            }
          }
 
          if ( bDesign )
          {
-            pForces->GetLiveLoadReaction( pgsTypes::lltDesign, liveLoadIntervalIdx, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-            (*p_table)(row,col) << reaction.SetValue( max );
-            if ( bIndicateControllingLoad && maxConfig!=INVALID_INDEX)
+            if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
             {
-               (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << _T(")");
-            }
-
-            col++;
-
-            (*p_table)(row,col) << reaction.SetValue( min );
-            if ( bIndicateControllingLoad && minConfig != INVALID_INDEX )
-            {
-               (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << minConfig << _T(")");
-            }
-
-            col++;
-
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-            {
-               pForces->GetLiveLoadReaction( pgsTypes::lltFatigue, liveLoadIntervalIdx, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+               pForces->GetLiveLoadReaction( pgsTypes::lltDesign, liveLoadIntervalIdx, reactionLocation, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
                (*p_table)(row,col) << reaction.SetValue( max );
-               if ( bIndicateControllingLoad && maxConfig != INVALID_INDEX )
-               {
-                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << maxConfig << _T(")");
-               }
-
-               col++;
-
-               (*p_table)(row,col) << reaction.SetValue( min );
-               if ( bIndicateControllingLoad && minConfig != INVALID_INDEX )
-               {
-                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << minConfig << _T(")");
-               }
-
-               col++;
-            }
-
-            if ( bPermit )
-            {
-               pForces->GetLiveLoadReaction( pgsTypes::lltPermit, liveLoadIntervalIdx, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-               (*p_table)(row,col) << reaction.SetValue( max );
-               if ( bIndicateControllingLoad && maxConfig!=INVALID_INDEX )
-               {
-                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermit) << maxConfig << _T(")");
-               }
-               col++;
-
-               (*p_table)(row,col) << reaction.SetValue( min );
-               if ( bIndicateControllingLoad && minConfig!=INVALID_INDEX )
-               {
-                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermit)<< minConfig << _T(")");
-               }
-               col++;
-            }
-         }
-
-         if ( bRating )
-         {
-            if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating))  )
-            {
-               pForces->GetLiveLoadReaction( pgsTypes::lltDesign, liveLoadIntervalIdx, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-               (*p_table)(row,col) << reaction.SetValue( max );
-               if ( bIndicateControllingLoad && maxConfig != INVALID_INDEX )
+               if ( bIndicateControllingLoad && maxConfig!=INVALID_INDEX)
                {
                   (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << _T(")");
                }
@@ -502,81 +633,203 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
 
                col++;
             }
+            else
+            {
+               (*p_table)(row,col++) << RPT_NA;
+               (*p_table)(row,col++) << RPT_NA;
+            }
+
+            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            {
+               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               {
+                  pForces->GetLiveLoadReaction( pgsTypes::lltFatigue, liveLoadIntervalIdx, reactionLocation, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  (*p_table)(row,col) << reaction.SetValue( max );
+                  if ( bIndicateControllingLoad && maxConfig != INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << maxConfig << _T(")");
+                  }
+
+                  col++;
+
+                  (*p_table)(row,col) << reaction.SetValue( min );
+                  if ( bIndicateControllingLoad && minConfig != INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << minConfig << _T(")");
+                  }
+
+                  col++;
+               }
+               else
+               {
+                  (*p_table)(row,col++) << RPT_NA;
+                  (*p_table)(row,col++) << RPT_NA;
+               }
+            }
+
+            if ( bPermit )
+            {
+               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               {
+                  pForces->GetLiveLoadReaction( pgsTypes::lltPermit, liveLoadIntervalIdx, reactionLocation, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  (*p_table)(row,col) << reaction.SetValue( max );
+                  if ( bIndicateControllingLoad && maxConfig!=INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermit) << maxConfig << _T(")");
+                  }
+                  col++;
+
+                  (*p_table)(row,col) << reaction.SetValue( min );
+                  if ( bIndicateControllingLoad && minConfig!=INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermit)<< minConfig << _T(")");
+                  }
+                  col++;
+               }
+               else
+               {
+                  (*p_table)(row,col++) << RPT_NA;
+                  (*p_table)(row,col++) << RPT_NA;
+               }
+            }
+         }
+
+         if ( bRating )
+         {
+            if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating))  )
+            {
+               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
+               {
+                  pForces->GetLiveLoadReaction( pgsTypes::lltDesign, liveLoadIntervalIdx, reactionLocation, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  (*p_table)(row,col) << reaction.SetValue( max );
+                  if ( bIndicateControllingLoad && maxConfig != INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << _T(")");
+                  }
+
+                  col++;
+
+                  (*p_table)(row,col) << reaction.SetValue( min );
+                  if ( bIndicateControllingLoad && minConfig != INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << minConfig << _T(")");
+                  }
+
+                  col++;
+               }
+               else
+               {
+                  (*p_table)(row,col++) << RPT_NA;
+                  (*p_table)(row,col++) << RPT_NA;
+               }
+            }
 
             // Legal - Routine
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
             {
-               pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Routine, liveLoadIntervalIdx, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-               (*p_table)(row,col) << reaction.SetValue( max );
-               if ( bIndicateControllingLoad && maxConfig != INVALID_INDEX )
+               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
                {
-                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << maxConfig << _T(")");
-               }
-               col++;
+                  pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Routine, liveLoadIntervalIdx, reactionLocation, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  (*p_table)(row,col) << reaction.SetValue( max );
+                  if ( bIndicateControllingLoad && maxConfig != INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << maxConfig << _T(")");
+                  }
+                  col++;
 
-               (*p_table)(row,col) << reaction.SetValue( min );
-               if ( bIndicateControllingLoad && minConfig != INVALID_INDEX )
-               {
-                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine)<< minConfig << _T(")");
+                  (*p_table)(row,col) << reaction.SetValue( min );
+                  if ( bIndicateControllingLoad && minConfig != INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine)<< minConfig << _T(")");
+                  }
+                  col++;
                }
-               col++;
+               else
+               {
+                  (*p_table)(row,col++) << RPT_NA;
+                  (*p_table)(row,col++) << RPT_NA;
+               }
             }
 
             // Legal - Special
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
             {
-               pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Special, liveLoadIntervalIdx, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-               (*p_table)(row,col) << reaction.SetValue( max );
-               if ( bIndicateControllingLoad && maxConfig != INVALID_INDEX )
+               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
                {
-                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << maxConfig << _T(")");
-               }
-               col++;
+                  pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Special, liveLoadIntervalIdx, reactionLocation, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  (*p_table)(row,col) << reaction.SetValue( max );
+                  if ( bIndicateControllingLoad && maxConfig != INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << maxConfig << _T(")");
+                  }
+                  col++;
 
-               (*p_table)(row,col) << reaction.SetValue( min );
-               if ( bIndicateControllingLoad && minConfig != INVALID_INDEX )
-               {
-                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special)<< minConfig << _T(")");
+                  (*p_table)(row,col) << reaction.SetValue( min );
+                  if ( bIndicateControllingLoad && minConfig != INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltLegalRating_Special)<< minConfig << _T(")");
+                  }
+                  col++;
                }
-               col++;
+               else
+               {
+                  (*p_table)(row,col++) << RPT_NA;
+                  (*p_table)(row,col++) << RPT_NA;
+               }
             }
 
             // Permit Rating - Routine
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
             {
-               pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Routine, liveLoadIntervalIdx, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-               (*p_table)(row,col) << reaction.SetValue( max );
-               if ( bIndicateControllingLoad && maxConfig != INVALID_INDEX )
+               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
                {
-                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << maxConfig << _T(")");
-               }
-               col++;
+                  pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Routine, liveLoadIntervalIdx, reactionLocation, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  (*p_table)(row,col) << reaction.SetValue( max );
+                  if ( bIndicateControllingLoad && maxConfig != INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << maxConfig << _T(")");
+                  }
+                  col++;
 
-               (*p_table)(row,col) << reaction.SetValue( min );
-               if ( bIndicateControllingLoad && minConfig != INVALID_INDEX )
-               {
-                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine)<< minConfig << _T(")");
+                  (*p_table)(row,col) << reaction.SetValue( min );
+                  if ( bIndicateControllingLoad && minConfig != INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine)<< minConfig << _T(")");
+                  }
+                  col++;
                }
-               col++;
+               else
+               {
+                  (*p_table)(row,col++) << RPT_NA;
+                  (*p_table)(row,col++) << RPT_NA;
+               }
             }
 
             // Permit Rating - Special
             if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
             {
-               pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Special, liveLoadIntervalIdx, pier, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-               (*p_table)(row,col) << reaction.SetValue( max );
-               if ( bIndicateControllingLoad && maxConfig != INVALID_INDEX )
+               if ( reactionDecider.DoReport(liveLoadIntervalIdx) )
                {
-                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << maxConfig << _T(")");
-               }
-               col++;
+                  pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Special, liveLoadIntervalIdx, reactionLocation, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+                  (*p_table)(row,col) << reaction.SetValue( max );
+                  if ( bIndicateControllingLoad && maxConfig != INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << maxConfig << _T(")");
+                  }
+                  col++;
 
-               (*p_table)(row,col) << reaction.SetValue( min );
-               if ( bIndicateControllingLoad && minConfig != INVALID_INDEX )
-               {
-                  (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Special)<< minConfig << _T(")");
+                  (*p_table)(row,col) << reaction.SetValue( min );
+                  if ( bIndicateControllingLoad && minConfig != INVALID_INDEX )
+                  {
+                     (*p_table)(row,col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermitRating_Special)<< minConfig << _T(")");
+                  }
+                  col++;
                }
-               col++;
+               else
+               {
+                  (*p_table)(row,col++) << RPT_NA;
+                  (*p_table)(row,col++) << RPT_NA;
+               }
             }
          }
       }

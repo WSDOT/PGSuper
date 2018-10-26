@@ -39,6 +39,7 @@ CLASS
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <EAF\EAFAutoProgress.h>
+#include <IFace\DocumentType.h>
 
 #include <LRFD\VersionMgr.h>
 
@@ -107,6 +108,7 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpe
 
       GET_IFACE2(pBroker,IArtifact,pIArtifact);
       GET_IFACE2(pBroker,IBridge,pBridge);
+      GET_IFACE2(pBroker,IDocumentType,pDocType);
 
       for (std::vector<CGirderKey>::const_iterator it=girderKeys.begin(); it!=girderKeys.end(); it++)
       {
@@ -117,8 +119,10 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpe
          rptParagraph* pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
          *pChapter << pParagraph;
 
-#pragma Reminder("UPDATE: update label")
-         *pParagraph << _T("Results for Span ") << LABEL_SPAN(girderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(girderKey.girderIndex);
+         if ( pDocType->IsPGSuperDocument() )
+            *pParagraph << _T("Results for Span ") << LABEL_SPAN(girderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(girderKey.girderIndex);
+         else
+            *pParagraph << _T("Results for Group ") << LABEL_GROUP(girderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(girderKey.girderIndex);
 
          CreateContent(pChapter, pBroker, pGirderArtifact);
 

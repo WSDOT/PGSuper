@@ -23,8 +23,10 @@
 #include "StdAfx.h"
 #include <Reporting\UserRotationTable.h>
 #include <Reporting\UserMomentsTable.h>
+#include <Reporting\ReactionInterfaceAdapters.h>
 
 #include <IFace\Bridge.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 
@@ -77,22 +79,25 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
 
    rptRcTable* p_table = CreateUserLoadHeading<rptAngleUnitTag,unitmgtAngleData>(_T("Rotations - User Defined Loads"),true,analysisType,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
 
-   GET_IFACE2(pBroker,IProductForces,pForces);
    GET_IFACE2(pBroker,IBridge,pBridge);
-   PierIndexType nPiers = pBridge->GetPierCount();
+   GET_IFACE2(pBroker,IProductForces,pForces);
+   GET_IFACE2(pBroker,IPointOfInterest,pPOI);
+   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
 
-   PierIndexType startPier = pBridge->GetGirderGroupStartPier(startGroupIdx);
-   PierIndexType endPier   = pBridge->GetGirderGroupEndPier(endGroupIdx);
+   PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(startGroupIdx);
 
-   GET_IFACE2(pBroker,IPointOfInterest,pPOI);
+   GET_IFACE2(pBroker,IProductForces,pProdForces);
+   pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
    // get poi at start and end of each segment in the girder
@@ -112,40 +117,103 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
       }
    }
 
-   // Fill up the table
+   // TRICKY: use adapter class to get correct reaction interfaces
+   std::auto_ptr<IProductReactionAdapter> pForcesAdapt =  std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, compositeDeckIntervalIdx, girderKey) );
+
+   // User iterator to walk locations
+   ReactionLocationIter iter = pForcesAdapt->GetReactionLocations(pBridge);
+
    RowIndexType row = p_table->GetNumberOfHeaderRows();
-   for ( PierIndexType pier = startPier; pier <= endPier; pier++ )
+   for (iter.First(); !iter.IsDone(); iter.Next())
    {
       ColumnIndexType col = 0;
-      pgsPointOfInterest& poi = vPoi[pier-startPier];
 
-      if ( pier == 0 || pier == nPiers-1 )
-         (*p_table)(row,col++) << _T("Abutment ") << LABEL_PIER(pier);
-      else
-         (*p_table)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
+      const ReactionLocation& reactionLocation( iter.CurrentItem() );
+
+      (*p_table)(row,col++) << reactionLocation.PierLabel;
+
+      pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx-startPierIdx];
+      IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
+
+      // Use reaction decider tool to determine when to report stages
+      ReactionDecider rctdr(BearingReactionsTable, reactionLocation, pBridge, pIntervals);
+
 
       if ( analysisType == pgsTypes::Envelope )
       {
-         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDC, poi, pgsTypes::MaxSimpleContinuousEnvelope ) );
-         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDC, poi, pgsTypes::MinSimpleContinuousEnvelope ) );
-         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDW, poi, pgsTypes::MaxSimpleContinuousEnvelope ) );
-         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDW, poi, pgsTypes::MinSimpleContinuousEnvelope ) );
+         if (rctdr.DoReport(castDeckIntervalIdx))
+         {
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDC, poi, maxBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDC, poi, minBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDW, poi, maxBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDW, poi, minBAT ) );
+         }
+         else
+         {
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+         }
 
-         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( compositeDeckIntervalIdx, pftUserDC,    poi, pgsTypes::MaxSimpleContinuousEnvelope ) );
-         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( compositeDeckIntervalIdx, pftUserDC,    poi, pgsTypes::MinSimpleContinuousEnvelope ) );
-         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( compositeDeckIntervalIdx, pftUserDW,    poi, pgsTypes::MaxSimpleContinuousEnvelope ) );
-         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( compositeDeckIntervalIdx, pftUserDW,    poi, pgsTypes::MinSimpleContinuousEnvelope ) );
+         if (rctdr.DoReport(railingSystemIntervalIdx))
+         {
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( railingSystemIntervalIdx, pftUserDC,    poi, maxBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( railingSystemIntervalIdx, pftUserDC,    poi, minBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( railingSystemIntervalIdx, pftUserDW,    poi, maxBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( railingSystemIntervalIdx, pftUserDW,    poi, minBAT ) );
+         }
+         else
+         {
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+         }
          
-         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( liveLoadIntervalIdx, pftUserLLIM, poi, pgsTypes::MaxSimpleContinuousEnvelope ) );
-         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( liveLoadIntervalIdx, pftUserLLIM, poi, pgsTypes::MinSimpleContinuousEnvelope ) );
+         if (rctdr.DoReport(liveLoadIntervalIdx))
+         {
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( liveLoadIntervalIdx, pftUserLLIM, poi, maxBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( liveLoadIntervalIdx, pftUserLLIM, poi, minBAT ) );
+         }
+         else
+         {
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+         }
       }
       else
       {
-         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDC, poi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
-         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDW, poi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
-         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( compositeDeckIntervalIdx, pftUserDC, poi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
-         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( compositeDeckIntervalIdx, pftUserDW,    poi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
-         (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( liveLoadIntervalIdx, pftUserLLIM, poi, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+         if (rctdr.DoReport(castDeckIntervalIdx))
+         {
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDC, poi, maxBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( castDeckIntervalIdx, pftUserDW, poi, maxBAT ) );
+         }
+         else
+         {
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+         }
+
+         if (rctdr.DoReport(railingSystemIntervalIdx))
+         {
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( railingSystemIntervalIdx, pftUserDC, poi, maxBAT ) );
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( railingSystemIntervalIdx, pftUserDW, poi, maxBAT ) );
+         }
+         else
+         {
+            (*p_table)(row,col++) << RPT_NA;
+            (*p_table)(row,col++) << RPT_NA;
+         }
+
+         if (rctdr.DoReport(liveLoadIntervalIdx))
+         {
+            (*p_table)(row,col++) << rotation.SetValue( pForces->GetRotation( liveLoadIntervalIdx, pftUserLLIM, poi, maxBAT ) );
+         }
+         else
+         {
+            (*p_table)(row,col++) << RPT_NA;
+         }
       }
 
       row++;

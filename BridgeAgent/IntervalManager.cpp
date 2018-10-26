@@ -579,7 +579,7 @@ IntervalIndexType CIntervalManager::GetOverlayInterval() const
    return m_OverlayInterval; 
 }
 
-IntervalIndexType CIntervalManager::GetRailingSystemInterval() const
+IntervalIndexType CIntervalManager::GetInstallRailingSystemInterval() const
 {
    ATLASSERT(m_RailingSystemInterval != INVALID_INDEX);
    return m_RailingSystemInterval;

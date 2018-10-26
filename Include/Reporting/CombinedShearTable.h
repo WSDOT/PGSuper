@@ -78,7 +78,7 @@ public:
                       const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits,
                       IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
-                      bool bDesign=true,bool bRating=true) const;
+                      bool bDesign,bool bRating) const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

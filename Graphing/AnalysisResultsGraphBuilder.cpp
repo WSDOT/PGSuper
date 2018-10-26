@@ -223,7 +223,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
    IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(CSegmentKey(0,0,0));
    IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetFirstErectedSegmentInterval();
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetRailingSystemInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
    std::vector<IntervalIndexType> vInitialIntervals;
    vInitialIntervals.push_back(releaseIntervalIdx);

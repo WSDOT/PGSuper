@@ -1410,7 +1410,6 @@ void CBridgePlanView::BuildGirderSegmentDisplayObjects()
 #endif // _SHOW_CL_GIRDER
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IGirderSegment,pGirderSegment);
    GET_IFACE2(pBroker,IGirder,pIGirder);
    GET_IFACE2(pBroker,ITempSupport,pTempSupport);
 
@@ -1433,11 +1432,10 @@ void CBridgePlanView::BuildGirderSegmentDisplayObjects()
          {
             CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
 
-#pragma Reminder("UPDATE: Assuming constant top width of girder")
             // assumes top flange of girder is a rectangle (parallelogram) in plan view
             // a future version may go back to the beam factory to get a shape
             // that represents the top flange (curved girders???)
-            Float64 top_width = pGirderSegment->GetTopWidth(segmentKey);
+            Float64 top_width = pIGirder->GetTopWidth( pgsPointOfInterest(segmentKey,0.0) );
 
             // get the segment geometry points
             CComPtr<IPoint2d> pntSupport1,pntEnd1,pntBrg1,pntBrg2,pntEnd2,pntSupport2;
@@ -1549,7 +1547,7 @@ void CBridgePlanView::BuildGirderSegmentDisplayObjects()
             strategy1->SetRightOffset(top_width/2);
 
             CComPtr<IDirection> objBearing;
-            pGirderSegment->GetSegmentDirection(segmentKey,&objBearing);
+            pIGirder->GetSegmentDirection(segmentKey,&objBearing);
 
             CComPtr<IDirection> objNormal;
             objBearing->Increment(CComVariant(PI_OVER_2),&objNormal);
@@ -2610,7 +2608,6 @@ void CBridgePlanView::BuildClosurePourDisplayObjects()
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IBridge,pIBridge);
    GET_IFACE2(pBroker,IGirder,pIGirder);
-   GET_IFACE2(pBroker,IGirderSegment,pIGirderSegment);
    GET_IFACE2(pBroker,ITempSupport,pITemporarySupport);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -2634,7 +2631,7 @@ void CBridgePlanView::BuildClosurePourDisplayObjects()
             CSegmentKey leftSegmentKey(pLeftSegment->GetSegmentKey());
             CSegmentKey rightSegmentKey(pRightSegment->GetSegmentKey());
 
-            Float64 top_width = pIGirderSegment->GetTopWidth(leftSegmentKey);
+            Float64 top_width = pIGirder->GetTopWidth( pgsPointOfInterest(leftSegmentKey,0.0) );
 
             CComPtr<IDirection> objDirection;
             if( pClosure )
@@ -2727,8 +2724,8 @@ void CBridgePlanView::BuildClosurePourDisplayObjects()
             strategy1->SetRightOffset(top_width/2);
 
             CComPtr<IDirection> objLeftSegmentBearing, objRightSegmentBearing;
-            pIGirderSegment->GetSegmentDirection(leftSegmentKey, &objLeftSegmentBearing);
-            pIGirderSegment->GetSegmentDirection(rightSegmentKey,&objRightSegmentBearing);
+            pIGirder->GetSegmentDirection(leftSegmentKey, &objLeftSegmentBearing);
+            pIGirder->GetSegmentDirection(rightSegmentKey,&objRightSegmentBearing);
 
             CComPtr<IDirection> objLeftNormal, objRightNormal;
             objLeftSegmentBearing->Increment(CComVariant(PI_OVER_2),&objLeftNormal);

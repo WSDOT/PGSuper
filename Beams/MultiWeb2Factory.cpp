@@ -255,15 +255,6 @@ void CMultiWeb2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,con
 
    pPoiMgr->AddPointOfInterest(poiStart);
    pPoiMgr->AddPointOfInterest(poiEnd);
-
-   // move bridge site poi to the start/end bearing
-   Float64 start_length = pBridge->GetSegmentStartEndDistance(segmentKey);
-   Float64 end_length   = pBridge->GetSegmentEndEndDistance(segmentKey);
-   poiStart.SetDistFromStart(start_length);
-   poiEnd.SetDistFromStart(gdrLength-end_length);
-
-   pPoiMgr->AddPointOfInterest(poiStart);
-   pPoiMgr->AddPointOfInterest(poiEnd);
 }
 
 void CMultiWeb2Factory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)

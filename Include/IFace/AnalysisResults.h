@@ -255,6 +255,7 @@ DEFINE_GUID(IID_IProductForces,
 0x3bacf776, 0x6a93, 0x11d2, 0x88, 0x3e, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
 interface IProductForces : IUnknown
 {
+   virtual pgsTypes::BridgeAnalysisType GetBridgeAnalysisType(pgsTypes::AnalysisType analysisType,pgsTypes::OptimizationType optimization) = 0;
    virtual pgsTypes::BridgeAnalysisType GetBridgeAnalysisType(pgsTypes::OptimizationType optimization) = 0;
 
    virtual sysSectionValue GetShear(IntervalIndexType intervalIdx,ProductForceType type,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat) = 0;
@@ -376,7 +377,7 @@ interface ICombinedForces : IUnknown
    virtual sysSectionValue GetShear(LoadingCombination combo,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,CombinationType type,pgsTypes::BridgeAnalysisType bat) = 0;
    virtual Float64 GetMoment(LoadingCombination combo,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,CombinationType type,pgsTypes::BridgeAnalysisType bat) = 0;
    virtual Float64 GetDisplacement(LoadingCombination combo,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,CombinationType type,pgsTypes::BridgeAnalysisType bat) = 0;
-   virtual Float64 GetReaction(LoadingCombination combo,IntervalIndexType intervalIdx,PierIndexType pier,const CGirderKey& girderKey,CombinationType type,pgsTypes::BridgeAnalysisType bat) = 0;
+   virtual Float64 GetReaction(LoadingCombination combo,IntervalIndexType intervalIdx,PierIndexType pierIdx,const CGirderKey& girderKey,CombinationType type,pgsTypes::BridgeAnalysisType bat) = 0;
    virtual void GetStress(LoadingCombination combo,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,CombinationType type,pgsTypes::BridgeAnalysisType bat,Float64* pfTop,Float64* pfBot) = 0;
 
    virtual void GetCombinedLiveLoadMoment(pgsTypes::LiveLoadType llType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,Float64* pMmin,Float64* pMmax) = 0;
@@ -729,9 +730,9 @@ DEFINE_GUID(IID_IBearingDesign,
 0xdacec889, 0x2b86, 0x46e9, 0x8b, 0x47, 0x8, 0x75, 0xbc, 0x9b, 0x19, 0xa5);
 interface IBearingDesign : IUnknown
 {
-   // Determine if bearing reactions are available for the span in question. Function will return true if span has a
-   // simply supported interior connection. Passed-in bools will be true for simple-supported ends.
-   virtual bool AreBearingReactionsAvailable(const CGirderKey& girderKey, bool* pBleft, bool* pBright)=0;
+   // Determine if bearing reactions are available for the girder in question. Function will return true if girder has a
+   // simply supported boundary connection. Passed-in bools will be true for simple-supported ends.
+   virtual bool AreBearingReactionsAvailable(IntervalIndexType intervalIdx,const CGirderKey& girderKey, bool* pBleft, bool* pBright)=0;
 
    // From IProductForces
    virtual void GetBearingProductReaction(IntervalIndexType intervalIdx,ProductForceType type,const CGirderKey& girderKey,

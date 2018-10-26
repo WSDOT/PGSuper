@@ -99,6 +99,14 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
 
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   IntervalIndexType lastIntervalIdx = nIntervals-1;
+   IntervalIndexType releaseIntervalIdx  = pIntervals->GetPrestressReleaseInterval(CSegmentKey(0,0,0)); // release interval is the same for all segments
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+
    rptParagraph* p = 0;
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -226,7 +234,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       // Product Reactions
       p = new rptParagraph;
       *pChapter << p;
-      *p << CProductReactionTable().Build(pBroker,thisGirderKey,analysisType,CProductReactionTable::PierReactionsTable,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+      *p << CProductReactionTable().Build(pBroker,thisGirderKey,analysisType,PierReactionsTable,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
 
       if ( bPedestrian )
          *p << _T("$ Pedestrian values are per girder") << rptNewLine;
@@ -236,15 +244,15 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       LiveLoadTableFooter(pBroker,p,thisGirderKey,bDesign,bRating);
       *p << rptNewLine;
 
-      CTSRemovalReactionTable().Build(pChapter,pBroker,thisGirderKey,analysisType,CTSRemovalReactionTable::PierReactionsTable,pDisplayUnits);
+      CTSRemovalReactionTable().Build(pChapter,pBroker,thisGirderKey,analysisType,PierReactionsTable,pDisplayUnits);
 
       // For girder bearing reactions
       GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
       bool bDoBearingReaction, bDummy;
-      bDoBearingReaction = pBearingDesign->AreBearingReactionsAvailable(thisGirderKey,&bDummy,&bDummy);
-      if(bDoBearingReaction && girderKey.groupIndex != ALL_GROUPS)
+      bDoBearingReaction = pBearingDesign->AreBearingReactionsAvailable(lastIntervalIdx,thisGirderKey,&bDummy,&bDummy);
+      if(bDoBearingReaction)
       {
-         *p << CProductReactionTable().Build(pBroker,thisGirderKey,analysisType,CProductReactionTable::BearingReactionsTable,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+         *p << CProductReactionTable().Build(pBroker,thisGirderKey,analysisType,BearingReactionsTable,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
 
          if ( bPedestrian )
             *p << _T("$ Pedestrian values are per girder") << rptNewLine;
@@ -256,10 +264,10 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
 
       if (bAreThereUserLoads)
       {
-         *p << CUserReactionTable().Build(pBroker,thisGirderKey,analysisType,CUserReactionTable::PierReactionsTable,pDisplayUnits) << rptNewLine;
+         *p << CUserReactionTable().Build(pBroker,thisGirderKey,analysisType,PierReactionsTable,pDisplayUnits) << rptNewLine;
          if(bDoBearingReaction)
          {
-            *p << CUserReactionTable().Build(pBroker,thisGirderKey,analysisType,CUserReactionTable::BearingReactionsTable,pDisplayUnits) << rptNewLine;
+            *p << CUserReactionTable().Build(pBroker,thisGirderKey,analysisType,BearingReactionsTable,pDisplayUnits) << rptNewLine;
          }
       }
 
@@ -323,16 +331,10 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       } // if design
    } // next group
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-   IntervalIndexType releaseIntervalIdx  = pIntervals->GetPrestressReleaseInterval(CSegmentKey(0,0,0)); // release interval is the same for all segments
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
    bool bDoBearingReaction, bDummy;
-   bDoBearingReaction = pBearingDesign->AreBearingReactionsAvailable(girderKey,&bDummy,&bDummy);
+   bDoBearingReaction = pBearingDesign->AreBearingReactionsAvailable(lastIntervalIdx,girderKey,&bDummy,&bDummy);
 
    // Load Combinations (DC, DW, etc) & Limit States
    for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
@@ -353,22 +355,22 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       CCombinedShearTable().Build(  pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
       if ( castDeckIntervalIdx <= intervalIdx )
       {
-         CCombinedReactionTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx,analysisType,CCombinedReactionTable::PierReactionsTable, bDesign, bRating);
+         CCombinedReactionTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx,analysisType,PierReactionsTable, bDesign, bRating);
          if( bDoBearingReaction )
          {
-            CCombinedReactionTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx,analysisType,CCombinedReactionTable::BearingReactionsTable, bDesign, bRating);
+            CCombinedReactionTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx,analysisType,BearingReactionsTable, bDesign, bRating);
          }
 
-         if ( intervalIdx == nIntervals-1 )
+         if ( liveLoadIntervalIdx <= intervalIdx )
          {
             p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << p;
             *p << _T("Live Load Reactions Without Impact") << rptNewLine;
             p->SetName(_T("Live Load Reactions Without Impact"));
-            CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter,girderKey,pDisplayUnits,analysisType,CCombinedReactionTable::PierReactionsTable, false, true, false);
+            CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter,girderKey,pDisplayUnits,analysisType,PierReactionsTable, false, true, false);
             if(bDoBearingReaction)
             {
-               CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter,girderKey,pDisplayUnits,analysisType,CCombinedReactionTable::BearingReactionsTable, false, true, false);
+               CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter,girderKey,pDisplayUnits,analysisType,BearingReactionsTable, false, true, false);
             }
 
             if ( pSpecEntry->GetShearCapacityMethod() == scmVciVcw )

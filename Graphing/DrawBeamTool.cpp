@@ -60,9 +60,8 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC,Float64 graphStartOffset,
 
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   GET_IFACE(IGirderSegment,pGirderSegment);
    GET_IFACE(IClosurePour,pClosurePour);
-   GET_IFACE(IGirder,pGirder);
+   GET_IFACE(IGirder,pIGirder);
    GET_IFACE(ISectionProperties,pSectProp);
    GET_IFACE(IPointOfInterest,pPoi);
 
@@ -173,7 +172,7 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC,Float64 graphStartOffset,
          // Get segment profile, don't include shape in the closure pour region.
          // Coordinates are in the girder path coordinate system.
          CComPtr<IShape> shape;
-         pGirderSegment->GetSegmentProfile(segmentKey,false,&shape);
+         pIGirder->GetSegmentProfile(segmentKey,false,&shape);
 
          // map the points into the logical space of the graph
          CComPtr<IPoint2dCollection> points;
@@ -418,8 +417,8 @@ void CDrawBeamTool::DrawSegmentEndSupport(Float64 segToGraphCoordinateAdjustment
    if ( intervalIdx == storageIntervalIdx )
    {
       Float64 left_support, right_support;
-      GET_IFACE(IGirderSegment,pGirderSegment);
-      pGirderSegment->GetSegmentStorageSupportLocations(segmentKey,&left_support,&right_support);
+      GET_IFACE(IGirder,pGirder);
+      pGirder->GetSegmentStorageSupportLocations(segmentKey,&left_support,&right_support);
 
       Xs += (endType == pgsTypes::metStart ? left_support : -right_support);
    }

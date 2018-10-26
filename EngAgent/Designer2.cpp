@@ -689,15 +689,6 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey)
          os << _T("Performing LRFD specification checks for Interval ") << LABEL_INTERVAL(intervalIdx) << _T(": ") << OLE2T(bstrIntervalDescription) << std::endl;
          pProgress->UpdateMessage(os.str().c_str());
 
-
-#pragma Reminder("UPDATE: need to deal with temporary strands")
-         // Used to determine if stresses are checked when temporary strands are removed.
-         // There is no need to check if there aren't any temporary strands.
-         // Hmmm.... need to update this loop so temporary strand removal is considered
-         //StrandIndexType NtMax = pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary);
-         //StrandIndexType Nt    = pStrandGeom->GetNumStrands(segmentKey,pgsTypes::Temporary);
-
-
          // Check Service I compression and tension for all intervals before live load is applied
          if ( intervalIdx < liveLoadIntervalIdx )
          {
@@ -2430,13 +2421,15 @@ Float64 pgsDesigner2::GetNormalFrictionForce(const pgsPointOfInterest& poi)
       {
          Float64 slab_overhang;
 
-#pragma Reminder("BUG:  slab overhang")
-         // GetLeft/RightSlabOverhang uses span/distance. poi.GetDistFromStart() is measured along the
-         // segment and we are using a group index
+         Float64 station,offset;
+         pBridge->GetStationAndOffset(poi,&station,&offset);
+         Float64 start_station = pBridge->GetPierStation(0);
+         Float64 distFromStartOfBridge = station - start_station;
+
          if ( segmentKey.girderIndex == 0 )
-            slab_overhang = pBridge->GetLeftSlabOverhang(segmentKey.groupIndex,poi.GetDistFromStart()); 
+            slab_overhang = pBridge->GetLeftSlabOverhang(distFromStartOfBridge); 
          else
-            slab_overhang = pBridge->GetRightSlabOverhang(segmentKey.groupIndex,poi.GetDistFromStart());
+            slab_overhang = pBridge->GetRightSlabOverhang(distFromStartOfBridge);
 
          Float64 top_width = pGdr->GetTopWidth(poi); // total width of the top of the girder
 
@@ -2447,9 +2440,7 @@ Float64 pgsDesigner2::GetNormalFrictionForce(const pgsPointOfInterest& poi)
       }
    }
 
-
-   Float64 comp_force = wslab;
-   return comp_force;
+   return wslab;
 }
 
 void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi, 
@@ -4991,7 +4982,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetRailingSystemInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
 
    // Get some information about the girder

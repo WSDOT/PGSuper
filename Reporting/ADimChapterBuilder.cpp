@@ -88,7 +88,6 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
 
    GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
    GET_IFACE2(pBroker,IGirder,pGdr);
-   GET_IFACE2(pBroker,IGirderSegment,pGdrSegment);
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )

@@ -43,6 +43,10 @@
 
 #include <Plugins\BeamFamilyCLSID.h>
 
+#if defined _DEBUG
+#include <IFace\DocumentType.h>
+#endif
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -91,7 +95,12 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-#pragma Reminder("UPDATE: assuming precast girder bridge")
+#if defined _DEBUG
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   ATLASSERT(pDocType->IsPGSuperDocument());
+   // This chapter builder assumes a precast girder bridge
+   // it must be updated for use with PGSplice.
+#endif
    SpanIndexType span = girderKey.groupIndex;
    GirderIndexType girder = girderKey.girderIndex;
 

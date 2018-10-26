@@ -237,15 +237,6 @@ void CUBeam2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const 
    pPoiMgr->AddPointOfInterest(poiStart);
    pPoiMgr->AddPointOfInterest(poiEnd);
 
-   // move bridge site poi to the start/end bearing
-   Float64 start_length = pBridge->GetSegmentStartEndDistance(segmentKey);
-   Float64 end_length   = pBridge->GetSegmentEndEndDistance(segmentKey);
-   poiStart.SetDistFromStart(start_length);
-   poiEnd.SetDistFromStart(gdrLength-end_length);
-
-   pPoiMgr->AddPointOfInterest(poiStart);
-   pPoiMgr->AddPointOfInterest(poiEnd);
-
    // put section breaks just on either side of the end blocks/void interface
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();

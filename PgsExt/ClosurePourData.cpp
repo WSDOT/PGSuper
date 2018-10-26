@@ -390,40 +390,38 @@ void CClosurePourData::MakeCopy(const CClosurePourData& rOther,bool bCopyDataOnl
 {
    if ( !bCopyDataOnly )
    {
-      // if CClosurePourData had its own ID and/or Index, it would be copied here
-   }
-
-   if ( rOther.m_pTempSupport )
-   {
-      // other has a temporary support that is resolved
-      m_pTempSupport  = NULL; // NULL because this will be resolved later
-      m_TempSupportID = rOther.m_pTempSupport->GetID(); // capture ID for later resolution of m_pTempSupport
-      m_pPier         = NULL; // No pier
-      m_PierID        = INVALID_ID; // No pier
-   }
-   else if ( rOther.m_TempSupportID != INVALID_ID )
-   {
-      // other has a temporary support that is not resolved
-      m_pTempSupport  = NULL; // NULL because this will be resolved later
-      m_TempSupportID = rOther.m_TempSupportID; // capture ID for later resolution of m_pTempSupport
-      m_pPier         = NULL; // No pier
-      m_PierID        = INVALID_ID; // No pier
-   }
-   else if ( rOther.m_pPier )
-   {
-      // other has a pier that is resolved
-      m_pTempSupport  = NULL; // No temp support
-      m_TempSupportID = INVALID_ID; // No temp support 
-      m_pPier         = NULL; // NULL because this will be resolved later
-      m_PierID        = rOther.m_pPier->GetID(); // capture index for later resolution of m_pPier
-   }
-   else
-   {
-      // other has a pier that is not resolved
-      m_pTempSupport  = NULL; // No temp support 
-      m_TempSupportID = INVALID_ID; // No temp support 
-      m_pPier         = NULL; // NULL because this will be resolved later
-      m_PierID        = rOther.m_PierID; // capture index for later resolution of m_pPier
+      if ( rOther.m_pTempSupport )
+      {
+         // other has a temporary support that is resolved
+         m_pTempSupport  = NULL; // NULL because this will be resolved later
+         m_TempSupportID = rOther.m_pTempSupport->GetID(); // capture ID for later resolution of m_pTempSupport
+         m_pPier         = NULL; // No pier
+         m_PierID        = INVALID_ID; // No pier
+      }
+      else if ( rOther.m_TempSupportID != INVALID_ID )
+      {
+         // other has a temporary support that is not resolved
+         m_pTempSupport  = NULL; // NULL because this will be resolved later
+         m_TempSupportID = rOther.m_TempSupportID; // capture ID for later resolution of m_pTempSupport
+         m_pPier         = NULL; // No pier
+         m_PierID        = INVALID_ID; // No pier
+      }
+      else if ( rOther.m_pPier )
+      {
+         // other has a pier that is resolved
+         m_pTempSupport  = NULL; // No temp support
+         m_TempSupportID = INVALID_ID; // No temp support 
+         m_pPier         = NULL; // NULL because this will be resolved later
+         m_PierID        = rOther.m_pPier->GetID(); // capture index for later resolution of m_pPier
+      }
+      else
+      {
+         // other has a pier that is not resolved
+         m_pTempSupport  = NULL; // No temp support 
+         m_TempSupportID = INVALID_ID; // No temp support 
+         m_pPier         = NULL; // NULL because this will be resolved later
+         m_PierID        = rOther.m_PierID; // capture index for later resolution of m_pPier
+      }
    }
 
    CopyMaterialFrom(rOther);

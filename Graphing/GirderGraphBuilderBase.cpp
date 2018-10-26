@@ -203,8 +203,8 @@ bool CGirderGraphBuilderBase::UpdateNow()
    else if ( intervalIdx == pIntervals->GetStorageInterval(segmentKey) )
    {
       Float64 start_support_location, end_support_location;
-      GET_IFACE(IGirderSegment,pSegment);
-      pSegment->GetSegmentStorageSupportLocations(segmentKey,&start_support_location,&end_support_location);
+      GET_IFACE(IGirder,pGirder);
+      pGirder->GetSegmentStorageSupportLocations(segmentKey,&start_support_location,&end_support_location);
       m_GraphStartOffset = -(start_offset + start_support_location);
    }
    else

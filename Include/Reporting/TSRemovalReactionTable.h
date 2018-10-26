@@ -25,6 +25,7 @@
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
+#include <Reporting\ReactionInterfaceAdapters.h>
 #include "ReportNotes.h"
 
 interface IEAFDisplayUnits;
@@ -54,17 +55,13 @@ LOG
 class REPORTINGCLASS CTSRemovalReactionTable
 {
 public:
-   // This class serves double duty. It can report pier reactions or girder bearing reactions.
-   // The two are identical except for the title and the interfaces they use to get responses
-   enum TableType { PierReactionsTable, BearingReactionsTable};
-
    CTSRemovalReactionTable();
    CTSRemovalReactionTable(const CTSRemovalReactionTable& rOther);
    virtual ~CTSRemovalReactionTable();
 
    CTSRemovalReactionTable& operator = (const CTSRemovalReactionTable& rOther);
 
-   void Build(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,TableType tableType,IEAFDisplayUnits* pDisplayUnits) const;
+   void Build(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,ReactionTableType tableType,IEAFDisplayUnits* pDisplayUnits) const;
 
 protected:
    void MakeCopy(const CTSRemovalReactionTable& rOther);

@@ -137,10 +137,13 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
    PierIndexType lastPierIdx  = pBridge->GetGirderGroupEndPier(lastGroupIdx);
    for (PierIndexType pierIdx = firstPierIdx; pierIdx <= lastPierIdx; pierIdx++ )
    {
-      EventIndexType leftContinuityEventIdx, rightContinuityEventIdx;
-      pBridge->GetContinuityEventIndex(pierIdx,&leftContinuityEventIdx,&rightContinuityEventIdx);
-      continuityEventIndex = _cpp_min(continuityEventIndex,leftContinuityEventIdx);
-      continuityEventIndex = _cpp_min(continuityEventIndex,rightContinuityEventIdx);
+      if ( pBridge->IsBoundaryPier(pierIdx) )
+      {
+         EventIndexType leftContinuityEventIdx, rightContinuityEventIdx;
+         pBridge->GetContinuityEventIndex(pierIdx,&leftContinuityEventIdx,&rightContinuityEventIdx);
+         continuityEventIndex = _cpp_min(continuityEventIndex,leftContinuityEventIdx);
+         continuityEventIndex = _cpp_min(continuityEventIndex,rightContinuityEventIdx);
+      }
    }
    IntervalIndexType continunityIntervalIdx = pIntervals->GetInterval(continuityEventIndex);
 
@@ -151,36 +154,34 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
    // Set up table headings
-   //if ( intervalIdx < compositeDeckIntervalIdx )
-   //{
-   //   pTable = pgsReportStyleHolder::CreateDefaultTable(3,strLabel);
-   //   (*pTable)(0,0) << COLHDR(RPT_GDR_END_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   //   (*pTable)(0,1) << COLHDR(_T("DC"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   //   (*pTable)(0,2) << COLHDR(_T("Service I"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   //}
-   //else
-   //{
-      pTable = pgsReportStyleHolder::CreateDefaultTable(bTimeStepMethod ? 12 : 6,_T("Stress"));
+   pTable = pgsReportStyleHolder::CreateDefaultTable(bTimeStepMethod ? 12 : 6,_T("Stress"));
 
-      (*pTable)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*pTable)(0,col1++) << COLHDR(_T("DC"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
-      (*pTable)(0,col1++) << COLHDR(_T("DW"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
-      if ( bTimeStepMethod )
-      {
-         (*pTable)(0,col1++) << COLHDR(_T("CR"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
-         (*pTable)(0,col1++) << COLHDR(_T("SH"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
-         (*pTable)(0,col1++) << COLHDR(_T("PS"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
-      }
-      (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DC"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DW"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      if ( bTimeStepMethod )
-      {
-         (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("CR"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("SH"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("PS"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      }
-      (*pTable)(0,col1++) << COLHDR(_T("Service I"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   //}
+   (*pTable)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*pTable)(0,col1++) << COLHDR(_T("DC"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(0,col1++) << COLHDR(_T("DW"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   if ( bRating )
+   {
+      (*pTable)(0,col1++) << COLHDR(_T("DW") << rptNewLine << _T("Rating"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   }
+   if ( bTimeStepMethod )
+   {
+      (*pTable)(0,col1++) << COLHDR(_T("CR"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable)(0,col1++) << COLHDR(_T("SH"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable)(0,col1++) << COLHDR(_T("PS"),          rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   }
+   (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DC"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DW"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   if ( bRating )
+   {
+      (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DW") << rptNewLine << _T("Rating"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   }
+   if ( bTimeStepMethod )
+   {
+      (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("CR"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("SH"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("PS"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   }
+   (*pTable)(0,col1++) << COLHDR(_T("Service I"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
@@ -196,18 +197,20 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
    GET_IFACE2(pBroker,ICombinedForces2,pForces2);
    GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
    GET_IFACE2(pBroker,IProductForces,pProdForces);
-   pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
 
 
    for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
       std::vector<Float64> fTopDCinc, fBotDCinc;
       std::vector<Float64> fTopDWinc, fBotDWinc;
+      std::vector<Float64> fTopDWRatinginc, fBotDWRatinginc;
       std::vector<Float64> fTopCRinc, fBotCRinc;
       std::vector<Float64> fTopSHinc, fBotSHinc;
       std::vector<Float64> fTopPSinc, fBotPSinc;
       std::vector<Float64> fTopDCcum, fBotDCcum;
       std::vector<Float64> fTopDWcum, fBotDWcum;
+      std::vector<Float64> fTopDWRatingcum, fBotDWRatingcum;
       std::vector<Float64> fTopCRcum, fBotCRcum;
       std::vector<Float64> fTopSHcum, fBotSHcum;
       std::vector<Float64> fTopPScum, fBotPScum;
@@ -216,32 +219,32 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
 
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
       std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS)) );
-      //if ( intervalIdx < compositeDeckIntervalIdx )
-      //{
-      //   pForces2->GetStress(lcDC,intervalIdx,vPoi, ctIncremental, bat, &fTopDCinc, &fBotDCinc);
-      //   pLsForces2->GetStress( pgsTypes::ServiceI, intervalIdx, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinServiceI, &fTopMaxServiceI);
-      //   pLsForces2->GetStress( pgsTypes::ServiceI, intervalIdx, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinServiceI, &fBotMaxServiceI);
-      //}
-      //else
-      //{
-         pForces2->GetStress( lcDC, intervalIdx, vPoi, ctIncremental, bat, &fTopDCinc, &fBotDCinc);
-         pForces2->GetStress( bRating ? lcDWRating : lcDW, intervalIdx, vPoi, ctIncremental, bat, &fTopDWinc, &fBotDWinc);
-         pForces2->GetStress( lcDC, intervalIdx, vPoi, ctCummulative, bat, &fTopDCcum, &fBotDCcum);
-         pForces2->GetStress( bRating ? lcDWRating : lcDW, intervalIdx, vPoi, ctCummulative, bat, &fTopDWcum, &fBotDWcum);
 
-         if ( bTimeStepMethod )
-         {
-            pForces2->GetStress( lcCR, intervalIdx, vPoi, ctIncremental, bat, &fTopCRinc, &fBotCRinc);
-            pForces2->GetStress( lcCR, intervalIdx, vPoi, ctCummulative, bat, &fTopCRcum, &fBotCRcum);
-            pForces2->GetStress( lcSH, intervalIdx, vPoi, ctIncremental, bat, &fTopSHinc, &fBotSHinc);
-            pForces2->GetStress( lcSH, intervalIdx, vPoi, ctCummulative, bat, &fTopSHcum, &fBotSHcum);
-            pForces2->GetStress( lcPS, intervalIdx, vPoi, ctIncremental, bat, &fTopPSinc, &fBotPSinc);
-            pForces2->GetStress( lcPS, intervalIdx, vPoi, ctCummulative, bat, &fTopPScum, &fBotPScum);
-         }
+      pForces2->GetStress( lcDC, intervalIdx, vPoi, ctIncremental, bat, &fTopDCinc, &fBotDCinc);
+      pForces2->GetStress( lcDW, intervalIdx, vPoi, ctIncremental, bat, &fTopDWinc, &fBotDWinc);
+      if ( bRating )
+      {
+         pForces2->GetStress( lcDWRating, intervalIdx, vPoi, ctIncremental, bat, &fTopDWRatinginc, &fBotDWRatinginc);
+      }
+      pForces2->GetStress( lcDC, intervalIdx, vPoi, ctCummulative, bat, &fTopDCcum, &fBotDCcum);
+      pForces2->GetStress( lcDW, intervalIdx, vPoi, ctCummulative, bat, &fTopDWcum, &fBotDWcum);
+      if ( bRating )
+      {
+         pForces2->GetStress( lcDWRating, intervalIdx, vPoi, ctCummulative, bat, &fTopDWRatingcum, &fBotDWRatingcum);
+      }
 
-         pLsForces2->GetStress( pgsTypes::ServiceI, intervalIdx, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinServiceI,&fTopMaxServiceI);
-         pLsForces2->GetStress( pgsTypes::ServiceI, intervalIdx, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinServiceI,&fBotMaxServiceI);
-      //}
+      if ( bTimeStepMethod )
+      {
+         pForces2->GetStress( lcCR, intervalIdx, vPoi, ctIncremental, bat, &fTopCRinc, &fBotCRinc);
+         pForces2->GetStress( lcCR, intervalIdx, vPoi, ctCummulative, bat, &fTopCRcum, &fBotCRcum);
+         pForces2->GetStress( lcSH, intervalIdx, vPoi, ctIncremental, bat, &fTopSHinc, &fBotSHinc);
+         pForces2->GetStress( lcSH, intervalIdx, vPoi, ctCummulative, bat, &fTopSHcum, &fBotSHcum);
+         pForces2->GetStress( lcPS, intervalIdx, vPoi, ctIncremental, bat, &fTopPSinc, &fBotPSinc);
+         pForces2->GetStress( lcPS, intervalIdx, vPoi, ctCummulative, bat, &fTopPScum, &fBotPScum);
+      }
+
+      pLsForces2->GetStress( pgsTypes::ServiceI, intervalIdx, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinServiceI,&fTopMaxServiceI);
+      pLsForces2->GetStress( pgsTypes::ServiceI, intervalIdx, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinServiceI,&fBotMaxServiceI);
 
       // Fill up the table
       RowIndexType row = pTable->GetNumberOfHeaderRows();
@@ -260,58 +263,62 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
 
          Float64 end_size = 0 ;
          if ( intervalIdx != releaseIntervalIdx )
+         {
             end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
+         }
 
          (*pTable)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi, end_size );
-         //if ( intervalIdx < compositeDeckIntervalIdx )
-         //{
-         //   (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDCinc[index]) << rptNewLine;
-         //   (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDCinc[index]);
+         (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDCinc[index]) << rptNewLine;
+         (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDCinc[index]);
 
-         //   (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinServiceI[index]) << rptNewLine;
-         //   (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxServiceI[index]);
-         //}
-         //else
-         //{
-            (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDCinc[index]) << rptNewLine;
-            (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDCinc[index]);
+         (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDWinc[index]) << rptNewLine;
+         (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDWinc[index]);
 
-            (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDWinc[index]) << rptNewLine;
-            (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDWinc[index]);
+         if ( bRating )
+         {
+            (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDWRatinginc[index]) << rptNewLine;
+            (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDWRatinginc[index]);
+         }
 
-            if ( bTimeStepMethod )
-            {
-               (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopCRinc[index]) << rptNewLine;
-               (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotCRinc[index]);
+         if ( bTimeStepMethod )
+         {
+            (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopCRinc[index]) << rptNewLine;
+            (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotCRinc[index]);
 
-               (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopSHinc[index]) << rptNewLine;
-               (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotSHinc[index]);
+            (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopSHinc[index]) << rptNewLine;
+            (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotSHinc[index]);
 
-               (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopPSinc[index]) << rptNewLine;
-               (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotPSinc[index]);
-            }
+            (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopPSinc[index]) << rptNewLine;
+            (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotPSinc[index]);
+         }
 
-            (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDCcum[index]) << rptNewLine;
-            (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDCcum[index]);
+         (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDCcum[index]) << rptNewLine;
+         (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDCcum[index]);
 
-            (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDWcum[index]) << rptNewLine;
-            (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDWcum[index]);
+         (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDWcum[index]) << rptNewLine;
+         (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDWcum[index]);
 
-            if ( bTimeStepMethod )
-            {
-               (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopCRcum[index]) << rptNewLine;
-               (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotCRcum[index]);
+         if ( bRating )
+         {
+            (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDWRatingcum[index]) << rptNewLine;
+            (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDWRatingcum[index]);
+         }
 
-               (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopSHcum[index]) << rptNewLine;
-               (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotSHcum[index]);
+         if ( bTimeStepMethod )
+         {
+            (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopCRcum[index]) << rptNewLine;
+            (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotCRcum[index]);
 
-               (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopPScum[index]) << rptNewLine;
-               (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotPScum[index]);
-            }
+            (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopSHcum[index]) << rptNewLine;
+            (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotSHcum[index]);
 
-            (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinServiceI[index]) << rptNewLine;
-            (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxServiceI[index]);
-         //}
+            (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopPScum[index]) << rptNewLine;
+            (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotPScum[index]);
+         }
+
+         (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinServiceI[index]) << rptNewLine;
+         (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxServiceI[index]);
+
          row++;
       }
    } // next group
@@ -372,7 +379,7 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
    GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
    GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
    GET_IFACE2(pBroker,IProductForces,pProdForces);
-   pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
 
    for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
@@ -604,7 +611,7 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
                       bRating && pRatingSpec->IncludePedestrianLiveLoad();
 
    GET_IFACE2(pBroker,IProductForces,pProdForces);
-   pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
 
    // create second table for BSS3 Limit states
    p = new rptParagraph;

@@ -141,10 +141,13 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
    PierIndexType endPierIdx   = pBridge->GetGirderGroupEndPier(  endGroupIdx);
    for ( PierIndexType pierIdx = startPierIdx; pierIdx != endPierIdx; pierIdx++ )
    {
-      EventIndexType leftContinuityEventIdx, rightContinuityEventIdx;
-      pBridge->GetContinuityEventIndex(pierIdx,&leftContinuityEventIdx,&rightContinuityEventIdx);
-      continuityEventIndex = _cpp_min(continuityEventIndex,leftContinuityEventIdx);
-      continuityEventIndex = _cpp_min(continuityEventIndex,rightContinuityEventIdx);
+      if ( pBridge->IsBoundaryPier(pierIdx) )
+      {
+         EventIndexType leftContinuityEventIdx, rightContinuityEventIdx;
+         pBridge->GetContinuityEventIndex(pierIdx,&leftContinuityEventIdx,&rightContinuityEventIdx);
+         continuityEventIndex = _cpp_min(continuityEventIndex,leftContinuityEventIdx);
+         continuityEventIndex = _cpp_min(continuityEventIndex,rightContinuityEventIdx);
+      }
    }
    IntervalIndexType continunityIntervalIdx = pIntervals->GetInterval(continuityEventIndex);
 
@@ -169,8 +172,8 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
    GET_IFACE2(pBroker,ICombinedForces2,pForces2);
    GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
    GET_IFACE2(pBroker,IProductForces,pProdForces);
-   pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
-   pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
 
    // Fill up the table
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
@@ -184,6 +187,8 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
       std::vector<sysSectionValue> minDCcum, maxDCcum;
       std::vector<sysSectionValue> minDWinc, maxDWinc;
       std::vector<sysSectionValue> minDWcum, maxDWcum;
+      std::vector<sysSectionValue> minDWRatinginc, maxDWRatinginc;
+      std::vector<sysSectionValue> minDWRatingcum, maxDWRatingcum;
       std::vector<sysSectionValue> minCRinc, maxCRinc;
       std::vector<sysSectionValue> minCRcum, maxCRcum;
       std::vector<sysSectionValue> minSHinc, maxSHinc;
@@ -196,14 +201,26 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
          maxDCinc = pForces2->GetShear( lcDC, intervalIdx, vPoi, ctIncremental, maxBAT );
          minDCinc = maxDCinc;
 
-         maxDWinc = pForces2->GetShear( bRating ? lcDWRating : lcDW, intervalIdx, vPoi, ctIncremental, maxBAT );
+         maxDWinc = pForces2->GetShear( lcDW, intervalIdx, vPoi, ctIncremental, maxBAT );
          minDWinc = maxDWinc;
+
+         if ( bRating )
+         {
+            maxDWRatinginc = pForces2->GetShear( lcDWRating, intervalIdx, vPoi, ctIncremental, maxBAT );
+            minDWRatinginc = maxDWRatinginc;
+         }
 
          maxDCcum = pForces2->GetShear( lcDC, intervalIdx, vPoi, ctCummulative, maxBAT );
          minDCcum = maxDCcum;
 
-         maxDWcum = pForces2->GetShear( bRating ? lcDWRating : lcDW, intervalIdx, vPoi, ctCummulative, maxBAT );
+         maxDWcum = pForces2->GetShear( lcDW, intervalIdx, vPoi, ctCummulative, maxBAT );
          minDWcum = maxDWcum;
+
+         if ( bRating )
+         {
+            maxDWRatingcum = pForces2->GetShear( lcDWRating, intervalIdx, vPoi, ctCummulative, maxBAT );
+            minDWRatingcum = maxDWRatingcum;
+         }
 
          if ( bTimeStepMethod )
          {
@@ -235,12 +252,25 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
       {
          maxDCinc = pForces2->GetShear( lcDC, intervalIdx, vPoi, ctIncremental, maxBAT );
          minDCinc = pForces2->GetShear( lcDC, intervalIdx, vPoi, ctIncremental, minBAT );
-         maxDWinc = pForces2->GetShear( bRating ? lcDWRating : lcDW, intervalIdx, vPoi, ctIncremental, maxBAT );
-         minDWinc = pForces2->GetShear( bRating ? lcDWRating : lcDW, intervalIdx, vPoi, ctIncremental, minBAT );
+         maxDWinc = pForces2->GetShear( lcDW, intervalIdx, vPoi, ctIncremental, maxBAT );
+         minDWinc = pForces2->GetShear( lcDW, intervalIdx, vPoi, ctIncremental, minBAT );
+
+         if ( bRating )
+         {
+            maxDWRatinginc = pForces2->GetShear( lcDWRating, intervalIdx, vPoi, ctIncremental, maxBAT );
+            minDWRatinginc = pForces2->GetShear( lcDWRating, intervalIdx, vPoi, ctIncremental, minBAT );
+         }
+
          maxDCcum = pForces2->GetShear( lcDC, intervalIdx, vPoi, ctCummulative, maxBAT );
          minDCcum = pForces2->GetShear( lcDC, intervalIdx, vPoi, ctCummulative, minBAT );
-         maxDWcum = pForces2->GetShear( bRating ? lcDWRating : lcDW, intervalIdx, vPoi, ctCummulative, maxBAT );
-         minDWcum = pForces2->GetShear( bRating ? lcDWRating : lcDW, intervalIdx, vPoi, ctCummulative, minBAT );
+         maxDWcum = pForces2->GetShear( lcDW, intervalIdx, vPoi, ctCummulative, maxBAT );
+         minDWcum = pForces2->GetShear( lcDW, intervalIdx, vPoi, ctCummulative, minBAT );
+
+         if(bRating)
+         {
+            maxDWRatingcum = pForces2->GetShear( lcDWRating, intervalIdx, vPoi, ctCummulative, maxBAT );
+            minDWRatingcum = pForces2->GetShear( lcDWRating, intervalIdx, vPoi, ctCummulative, minBAT );
+         }
 
          if ( bTimeStepMethod )
          {
@@ -282,7 +312,9 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
 
          Float64 end_size = 0 ;
          if ( intervalIdx != releaseIntervalIdx )
+         {
             end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
+         }
 
          (*p_table)(row,col++) << location.SetValue( intervalIdx == releaseIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT, poi, end_size );
 
@@ -292,6 +324,12 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
             (*p_table)(row,col++) << shear.SetValue( minDCinc[index] );
             (*p_table)(row,col++) << shear.SetValue( maxDWinc[index] );
             (*p_table)(row,col++) << shear.SetValue( minDWinc[index] );
+
+            if ( bRating )
+            {
+               (*p_table)(row,col++) << shear.SetValue( maxDWRatinginc[index] );
+               (*p_table)(row,col++) << shear.SetValue( minDWRatinginc[index] );
+            }
 
             if ( bTimeStepMethod )
             {
@@ -307,6 +345,12 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
             (*p_table)(row,col++) << shear.SetValue( minDCcum[index] );
             (*p_table)(row,col++) << shear.SetValue( maxDWcum[index] );
             (*p_table)(row,col++) << shear.SetValue( minDWcum[index] );
+
+            if ( bRating )
+            {
+               (*p_table)(row,col++) << shear.SetValue( maxDWRatingcum[index] );
+               (*p_table)(row,col++) << shear.SetValue( minDWRatingcum[index] );
+            }
 
             if ( bTimeStepMethod )
             {
@@ -329,6 +373,11 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
             (*p_table)(row,col++) << shear.SetValue( maxDCinc[index] );
             (*p_table)(row,col++) << shear.SetValue( maxDWinc[index] );
 
+            if ( bRating )
+            {
+               (*p_table)(row,col++) << shear.SetValue( maxDWRatinginc[index] );
+            }
+
             if ( bTimeStepMethod )
             {
                (*p_table)(row,col++) << shear.SetValue( maxCRinc[index] );
@@ -338,6 +387,11 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
 
             (*p_table)(row,col++) << shear.SetValue( maxDCcum[index] );
             (*p_table)(row,col++) << shear.SetValue( maxDWcum[index] );
+
+            if ( bRating )
+            {
+               (*p_table)(row,col++) << shear.SetValue( maxDWRatingcum[index] );
+            }
 
             if ( bTimeStepMethod )
             {
@@ -414,8 +468,8 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
    GET_IFACE2(pBroker,ICombinedForces2,pForces2);
    GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
    GET_IFACE2(pBroker,IProductForces,pProdForces);
-   pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
-   pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
 
    // Fill up the table
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
@@ -689,8 +743,8 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
    GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
    GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
    GET_IFACE2(pBroker,IProductForces,pProdForces);
-   pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
-   pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
 
    // Get data and fill up the table
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )

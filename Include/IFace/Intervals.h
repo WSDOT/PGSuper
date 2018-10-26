@@ -107,7 +107,7 @@ interface IIntervals : IUnknown
    virtual IntervalIndexType GetCastDeckInterval() = 0;
 
    // returns the index of the interval when the deck becomes composite
-   // this is the replacement for pgsTypes::BridgeSite2 (also see GetOverlayInterval and GetRailingSystemInterval)
+   // this is the replacement for pgsTypes::BridgeSite2 (also see GetOverlayInterval and GetInstallRailingSystemInterval)
    virtual IntervalIndexType GetCompositeDeckInterval() = 0;
 
    // returns the index of the interval when live load is first
@@ -125,7 +125,7 @@ interface IIntervals : IUnknown
 
    // returns the index of the interval when the railing system is constructed
    // this is the same as pgsTypes::BridgeSite2 for pre version 3.0 PGSuper projects
-   virtual IntervalIndexType GetRailingSystemInterval() = 0;
+   virtual IntervalIndexType GetInstallRailingSystemInterval() = 0;
 
    // returns the index of the interval when the specified tendon is stressed
    // note that this tendon in all girders in the group are assumed to be stressed at the same time

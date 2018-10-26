@@ -463,7 +463,7 @@ bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescript
       // girder spacing is measured along CL pier
       // adjust the spacing and the reference girder offset so
       // that it is measured normal to the alignment
-      
+#pragma Reminder("IMPLEMENT")
       ATLASSERT(false); // need to implement this
    }
 

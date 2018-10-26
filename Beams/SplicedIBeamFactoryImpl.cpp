@@ -337,19 +337,6 @@ void CSplicedIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
 
 
    //
-   // CL Brg POI from time of erection and thereafter
-   //
-
-   Float64 start_length = pBridge->GetSegmentStartEndDistance(segmentKey);
-   Float64 end_length   = pBridge->GetSegmentEndEndDistance(segmentKey);
-   pgsPointOfInterest poiCLBrgStart(segmentKey,start_length);
-   pgsPointOfInterest poiCLBrgEnd(segmentKey,segment_length-end_length);
-
-   pPoiMgr->AddPointOfInterest(poiCLBrgStart);
-   pPoiMgr->AddPointOfInterest(poiCLBrgEnd);
-
-
-   //
    // end block transition points
    //
 

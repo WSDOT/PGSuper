@@ -80,6 +80,8 @@ void CTSRemovalRotationTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
    IntervalIndexType continuity_interval;
    GET_IFACE2(pBroker,IBridge,pBridge);
+   bool bIsFutureOverlay = pBridge->IsFutureOverlay();
+
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType startGroup = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroup   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroup);
@@ -92,12 +94,12 @@ void CTSRemovalRotationTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
    GET_IFACE2(pBroker,IProductForces2,pForces2);
    GET_IFACE2(pBroker,IProductLoads,pLoads);
    GET_IFACE2(pBroker,IProductForces,pProdForces);
-   pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
-   pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(pgsTypes::Minimize);
+   pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetRailingSystemInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
    IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetFirstErectedSegmentInterval();
@@ -161,7 +163,7 @@ void CTSRemovalRotationTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 
          location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-         RowIndexType row = ConfigureProductLoadTableHeading<rptAngleUnitTag,unitmgtAngleData>(pBroker,p_table,true,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,false,bPedLoading,
+         RowIndexType row = ConfigureProductLoadTableHeading<rptAngleUnitTag,unitmgtAngleData>(pBroker,p_table,true,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bIsFutureOverlay,false,bPedLoading,
                                                                                                bPermit,false,analysisType,continuity_interval,
                                                                                                pRatingSpec,pDisplayUnits,pDisplayUnits->GetAngleUnit());
 

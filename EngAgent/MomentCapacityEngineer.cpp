@@ -1310,6 +1310,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 
    GET_IFACE(IIntervals,pIntervals);
    ATLASSERT( pIntervals->GetLiveLoadInterval() <= intervalIdx );
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
    Float64 dist_from_start = poi.GetDistFromStart();
@@ -1403,27 +1404,22 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    
    // beam shape
    CComPtr<IShape> shapeBeam;
-   pShapes->GetSegmentShape(intervalIdx,poi,false,pgsTypes::scGirder,&shapeBeam);
+   if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+   {
+      // if there is no deck, get the shape in this interval because the section
+      // may have been altered because of wearing surface
+      pShapes->GetSegmentShape(intervalIdx,poi,false,pgsTypes::scGirder,&shapeBeam);
+   }
+   else
+   {
+      // want just the plain girder shape so get it at release (though any interval
+      // before the deck is composite would do)
+      pShapes->GetSegmentShape(releaseIntervalIdx,poi,false,pgsTypes::scGirder,&shapeBeam);
+   }
 
    CComQIPtr<ICompositeShape> compBeam(shapeBeam);
    CComQIPtr<IXYPosition> posBeam(shapeBeam);
 
-   // If the interval under consideration is at or after
-   // the interval when the deck becomes composite, remove
-   // the deck from the shape model (we only want the beam).
-   // The deck gets modeled below
-   if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
-   {
-      if ( compositeDeckIntervalIdx <= intervalIdx )
-      {
-         // This assumes the deck is the last shape in the composite!
-         ATLASSERT(compBeam != NULL);
-         CollectionIndexType shapeCount;
-         compBeam->get_Count(&shapeCount);
-         ATLASSERT(shapeCount != 1);
-         compBeam->Remove(shapeCount-1);
-      }
-   }
 
    // offset each shape so that the origin of the composite (if it is composite)
    // is located at the origin (this keeps the moment capacity solver happy)

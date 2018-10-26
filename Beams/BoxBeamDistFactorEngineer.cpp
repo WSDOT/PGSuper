@@ -55,13 +55,31 @@ HRESULT CBoxBeamDistFactorEngineer::FinalConstruct()
 
 void CBoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
-#pragma Reminder("UPDATE: this can be simplified")
-   // Loop over span has code that can be pulled out of the loop because it only needs to be
-   // initialized once... looks like we are reporting intermediate piers twice
-
    // Grab the interfaces that are needed
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(ILiveLoads,pLiveLoads);
+
+   // Do some initial se
+   bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
+   std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
+
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    location, pDisplayUnits->GetSpanLengthUnit(),      true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    offsetFormatter, pDisplayUnits->GetSpanLengthUnit(),      false );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue,      area,     pDisplayUnits->GetAreaUnit(),            true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,     pDisplayUnits->GetSpanLengthUnit(),      true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim2,    pDisplayUnits->GetComponentDimUnit(),    true );
+   INIT_UV_PROTOTYPE( rptLength4UnitValue,   inertia,  pDisplayUnits->GetMomentOfInertiaUnit(), true );
+   INIT_UV_PROTOTYPE( rptAngleUnitValue,     angle,    pDisplayUnits->GetAngleUnit(),           true );
+
+   rptRcScalar scalar;
+   scalar.SetFormat( sysNumericFormatTool::Fixed );
+   scalar.SetWidth(6);
+   scalar.SetPrecision(3);
+   scalar.SetTolerance(1.0e-6);
+
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
    SpanIndexType startSpanIdx = pBridge->GetGirderGroupStartSpan(girderKey.groupIndex);
    SpanIndexType endSpanIdx   = pBridge->GetGirderGroupEndSpan(girderKey.groupIndex);
@@ -71,18 +89,18 @@ void CBoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChap
    for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
    {
       SPANDETAILS span_lldf;
-      GetSpanDF(spanIdx,gdrIdx,pgsTypes::StrengthI,-1,&span_lldf);
+      GetSpanDF(spanIdx,gdrIdx,pgsTypes::StrengthI,USE_CURRENT_FC,&span_lldf);
 
       PierIndexType pier1 = spanIdx;
       PierIndexType pier2 = spanIdx+1;
 
       PIERDETAILS pier1_lldf, pier2_lldf;
-      GetPierDF(pier1, gdrIdx, pgsTypes::StrengthI, pgsTypes::Ahead, -1, &pier1_lldf);
-      GetPierDF(pier2, gdrIdx, pgsTypes::StrengthI, pgsTypes::Back,  -1, &pier2_lldf);
+      GetPierDF(pier1, gdrIdx, pgsTypes::StrengthI, pgsTypes::Ahead, USE_CURRENT_FC, &pier1_lldf);
+      GetPierDF(pier2, gdrIdx, pgsTypes::StrengthI, pgsTypes::Back,  USE_CURRENT_FC, &pier2_lldf);
 
       REACTIONDETAILS reaction1_lldf, reaction2_lldf;
-      GetPierReactionDF(pier1, gdrIdx, pgsTypes::StrengthI, -1, &reaction1_lldf);
-      GetPierReactionDF(pier2, gdrIdx, pgsTypes::StrengthI, -1, &reaction2_lldf);
+      GetPierReactionDF(pier1, gdrIdx, pgsTypes::StrengthI, USE_CURRENT_FC, &reaction1_lldf);
+      GetPierReactionDF(pier2, gdrIdx, pgsTypes::StrengthI, USE_CURRENT_FC, &reaction2_lldf);
 
       // do a sanity check to make sure the fundimental values are correct
       ATLASSERT(span_lldf.Method  == pier1_lldf.Method);
@@ -92,10 +110,6 @@ void CBoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChap
       ATLASSERT(span_lldf.bExteriorGirder  == pier1_lldf.bExteriorGirder);
       ATLASSERT(span_lldf.bExteriorGirder  == pier2_lldf.bExteriorGirder);
       ATLASSERT(pier1_lldf.bExteriorGirder == pier2_lldf.bExteriorGirder);
-
-      // Grab the interfaces that are needed
-      GET_IFACE(IBridge,pBridge);
-      GET_IFACE(ILiveLoads,pLiveLoads);
 
       // determine continuity
       bool bContinuous, bContinuousAtStart, bContinuousAtEnd;
@@ -108,26 +122,6 @@ void CBoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChap
 
       rptParagraph* pPara;
 
-      bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
-      std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
-
-      INIT_UV_PROTOTYPE( rptLengthUnitValue,    location, pDisplayUnits->GetSpanLengthUnit(),      true );
-      INIT_UV_PROTOTYPE( rptLengthUnitValue,    offsetFormatter, pDisplayUnits->GetSpanLengthUnit(),      false );
-      INIT_UV_PROTOTYPE( rptAreaUnitValue,      area,     pDisplayUnits->GetAreaUnit(),            true );
-      INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,     pDisplayUnits->GetSpanLengthUnit(),      true );
-      INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim2,    pDisplayUnits->GetComponentDimUnit(),    true );
-      INIT_UV_PROTOTYPE( rptLength4UnitValue,   inertia,  pDisplayUnits->GetMomentOfInertiaUnit(), true );
-      INIT_UV_PROTOTYPE( rptAngleUnitValue,     angle,    pDisplayUnits->GetAngleUnit(),           true );
-
-      rptRcScalar scalar;
-      scalar.SetFormat( sysNumericFormatTool::Fixed );
-      scalar.SetWidth(6);
-      scalar.SetPrecision(3);
-      scalar.SetTolerance(1.0e-6);
-
-      GET_IFACE(IBridgeDescription,pIBridgeDesc);
-      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-      const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
       const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
 

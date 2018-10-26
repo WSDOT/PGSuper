@@ -141,10 +141,13 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
    PierIndexType endPierIdx   = pBridge->GetGirderGroupEndPier(  endGroupIdx);
    for ( PierIndexType pierIdx = startPierIdx; pierIdx != endPierIdx; pierIdx++ )
    {
-      EventIndexType leftContinuityEventIdx, rightContinuityEventIdx;
-      pBridge->GetContinuityEventIndex(pierIdx,&leftContinuityEventIdx,&rightContinuityEventIdx);
-      continuityEventIndex = _cpp_min(continuityEventIndex,leftContinuityEventIdx);
-      continuityEventIndex = _cpp_min(continuityEventIndex,rightContinuityEventIdx);
+      if ( pBridge->IsBoundaryPier(pierIdx) )
+      {
+         EventIndexType leftContinuityEventIdx, rightContinuityEventIdx;
+         pBridge->GetContinuityEventIndex(pierIdx,&leftContinuityEventIdx,&rightContinuityEventIdx);
+         continuityEventIndex = _cpp_min(continuityEventIndex,leftContinuityEventIdx);
+         continuityEventIndex = _cpp_min(continuityEventIndex,rightContinuityEventIdx);
+      }
    }
    IntervalIndexType continunityIntervalIdx = pIntervals->GetInterval(continuityEventIndex);
 
@@ -169,8 +172,8 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
    GET_IFACE2(pBroker,ICombinedForces2,  pForces2);
    GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
    GET_IFACE2(pBroker,IProductForces,pProdForces);
-   pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(pgsTypes::Minimize);
-   pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
+   pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
 
    // Fill up the table
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
@@ -184,6 +187,8 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
       std::vector<Float64> minDCcum, maxDCcum;
       std::vector<Float64> minDWinc, maxDWinc;
       std::vector<Float64> minDWcum, maxDWcum;
+      std::vector<Float64> minDWRatinginc, maxDWRatinginc;
+      std::vector<Float64> minDWRatingcum, maxDWRatingcum;
       std::vector<Float64> minCRinc, maxCRinc;
       std::vector<Float64> minCRcum, maxCRcum;
       std::vector<Float64> minSHinc, maxSHinc;
@@ -192,55 +197,42 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
       std::vector<Float64> minPScum, maxPScum;
 
 
-      //if ( intervalIdx < castDeckIntervalIdx )
-      //{
-      //   maxDCinc = pForces2->GetMoment( lcDC, intervalIdx, vPoi, ctIncremental, maxBAT );
+      maxDCinc = pForces2->GetMoment( lcDC, intervalIdx, vPoi, ctIncremental, maxBAT );
+      minDCinc = pForces2->GetMoment( lcDC, intervalIdx, vPoi, ctIncremental, minBAT );
+      maxDWinc = pForces2->GetMoment( lcDW, intervalIdx, vPoi, ctIncremental, maxBAT );
+      minDWinc = pForces2->GetMoment( lcDW, intervalIdx, vPoi, ctIncremental, minBAT );
+      maxDWRatinginc = pForces2->GetMoment( lcDWRating, intervalIdx, vPoi, ctIncremental, maxBAT );
+      minDWRatinginc = pForces2->GetMoment( lcDWRating, intervalIdx, vPoi, ctIncremental, minBAT );
+      maxDCcum = pForces2->GetMoment( lcDC, intervalIdx, vPoi, ctCummulative, maxBAT );
+      minDCcum = pForces2->GetMoment( lcDC, intervalIdx, vPoi, ctCummulative, minBAT );
+      maxDWcum = pForces2->GetMoment( lcDW, intervalIdx, vPoi, ctCummulative, maxBAT );
+      minDWcum = pForces2->GetMoment( lcDW, intervalIdx, vPoi, ctCummulative, minBAT );
+      maxDWRatingcum = pForces2->GetMoment( lcDWRating, intervalIdx, vPoi, ctCummulative, maxBAT );
+      minDWRatingcum = pForces2->GetMoment( lcDWRating, intervalIdx, vPoi, ctCummulative, minBAT );
 
-      //   if ( bTimeStepMethod )
-      //   {
-      //      maxCRinc = pForces2->GetMoment( lcCR, intervalIdx, vPoi, ctIncremental, maxBAT );
-      //      maxSHinc = pForces2->GetMoment( lcSH, intervalIdx, vPoi, ctIncremental, maxBAT );
-      //      maxPSinc = pForces2->GetMoment( lcPS, intervalIdx, vPoi, ctIncremental, maxBAT );
-      //   }
+      if ( bTimeStepMethod )
+      {
+         maxCRinc = pForces2->GetMoment( lcCR, intervalIdx, vPoi, ctIncremental, maxBAT );
+         minCRinc = pForces2->GetMoment( lcCR, intervalIdx, vPoi, ctIncremental, minBAT );
+         maxCRcum = pForces2->GetMoment( lcCR, intervalIdx, vPoi, ctCummulative, maxBAT );
+         minCRcum = pForces2->GetMoment( lcCR, intervalIdx, vPoi, ctCummulative, minBAT );
 
-      //   pLsForces2->GetMoment( pgsTypes::ServiceI, intervalIdx, vPoi, maxBAT, &dummy, &maxServiceI );
-      //}
-      //else
-      //{
-         maxDCinc = pForces2->GetMoment( lcDC, intervalIdx, vPoi, ctIncremental, maxBAT );
-         minDCinc = pForces2->GetMoment( lcDC, intervalIdx, vPoi, ctIncremental, minBAT );
-         maxDWinc = pForces2->GetMoment( bRating ? lcDWRating : lcDW, intervalIdx, vPoi, ctIncremental, maxBAT );
-         minDWinc = pForces2->GetMoment( bRating ? lcDWRating : lcDW, intervalIdx, vPoi, ctIncremental, minBAT );
-         maxDCcum = pForces2->GetMoment( lcDC, intervalIdx, vPoi, ctCummulative, maxBAT );
-         minDCcum = pForces2->GetMoment( lcDC, intervalIdx, vPoi, ctCummulative, minBAT );
-         maxDWcum = pForces2->GetMoment( bRating ? lcDWRating : lcDW, intervalIdx, vPoi, ctCummulative, maxBAT );
-         minDWcum = pForces2->GetMoment( bRating ? lcDWRating : lcDW, intervalIdx, vPoi, ctCummulative, minBAT );
+         maxSHinc = pForces2->GetMoment( lcSH, intervalIdx, vPoi, ctIncremental, maxBAT );
+         minSHinc = pForces2->GetMoment( lcSH, intervalIdx, vPoi, ctIncremental, minBAT );
+         maxSHcum = pForces2->GetMoment( lcSH, intervalIdx, vPoi, ctCummulative, maxBAT );
+         minSHcum = pForces2->GetMoment( lcSH, intervalIdx, vPoi, ctCummulative, minBAT );
 
-         if ( bTimeStepMethod )
-         {
-            maxCRinc = pForces2->GetMoment( lcCR, intervalIdx, vPoi, ctIncremental, maxBAT );
-            minCRinc = pForces2->GetMoment( lcCR, intervalIdx, vPoi, ctIncremental, minBAT );
-            maxCRcum = pForces2->GetMoment( lcCR, intervalIdx, vPoi, ctCummulative, maxBAT );
-            minCRcum = pForces2->GetMoment( lcCR, intervalIdx, vPoi, ctCummulative, minBAT );
+         maxPSinc = pForces2->GetMoment( lcPS, intervalIdx, vPoi, ctIncremental, maxBAT );
+         minPSinc = pForces2->GetMoment( lcPS, intervalIdx, vPoi, ctIncremental, minBAT );
+         maxPScum = pForces2->GetMoment( lcPS, intervalIdx, vPoi, ctCummulative, maxBAT );
+         minPScum = pForces2->GetMoment( lcPS, intervalIdx, vPoi, ctCummulative, minBAT );
+      }
 
-            maxSHinc = pForces2->GetMoment( lcSH, intervalIdx, vPoi, ctIncremental, maxBAT );
-            minSHinc = pForces2->GetMoment( lcSH, intervalIdx, vPoi, ctIncremental, minBAT );
-            maxSHcum = pForces2->GetMoment( lcSH, intervalIdx, vPoi, ctCummulative, maxBAT );
-            minSHcum = pForces2->GetMoment( lcSH, intervalIdx, vPoi, ctCummulative, minBAT );
-
-            maxPSinc = pForces2->GetMoment( lcPS, intervalIdx, vPoi, ctIncremental, maxBAT );
-            minPSinc = pForces2->GetMoment( lcPS, intervalIdx, vPoi, ctIncremental, minBAT );
-            maxPScum = pForces2->GetMoment( lcPS, intervalIdx, vPoi, ctCummulative, maxBAT );
-            minPScum = pForces2->GetMoment( lcPS, intervalIdx, vPoi, ctCummulative, minBAT );
-         }
-
-         if ( intervalIdx < liveLoadIntervalIdx )
-         {
-            pLsForces2->GetMoment( pgsTypes::ServiceI, intervalIdx, vPoi, maxBAT, &dummy, &maxServiceI );
-            pLsForces2->GetMoment( pgsTypes::ServiceI, intervalIdx, vPoi, minBAT, &minServiceI, &dummy );
-         }
-      //}
-
+      if ( intervalIdx < liveLoadIntervalIdx )
+      {
+         pLsForces2->GetMoment( pgsTypes::ServiceI, intervalIdx, vPoi, maxBAT, &dummy, &maxServiceI );
+         pLsForces2->GetMoment( pgsTypes::ServiceI, intervalIdx, vPoi, minBAT, &minServiceI, &dummy );
+      }
 
       IndexType index = 0;
       std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
@@ -261,87 +253,93 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
             end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
          
          (*p_table)(row,col++) << location.SetValue( intervalIdx == releaseIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT, poi, end_size );
-         //if ( intervalIdx < castDeckIntervalIdx )
-         //{
-         //   (*p_table)(row,col++) << moment.SetValue( maxDCinc[index] );
+         if ( analysisType == pgsTypes::Envelope )
+         {
+            (*p_table)(row,col++) << moment.SetValue( maxDCinc[index] );
+            (*p_table)(row,col++) << moment.SetValue( minDCinc[index] );
+            (*p_table)(row,col++) << moment.SetValue( maxDWinc[index] );
+            (*p_table)(row,col++) << moment.SetValue( minDWinc[index] );
 
-         //   if ( bTimeStepMethod )
-         //   {
-         //      (*p_table)(row,col++) << moment.SetValue( maxCRinc[index] );
-         //      (*p_table)(row,col++) << moment.SetValue( maxSHinc[index] );
-         //      (*p_table)(row,col++) << moment.SetValue( maxPSinc[index] );
-         //   }
-
-         //   (*p_table)(row,col++) << moment.SetValue( maxServiceI[index] );
-         //}
-         //else
-         //{
-            if ( analysisType == pgsTypes::Envelope )
+            if(bRating)
             {
-               (*p_table)(row,col++) << moment.SetValue( maxDCinc[index] );
-               (*p_table)(row,col++) << moment.SetValue( minDCinc[index] );
-               (*p_table)(row,col++) << moment.SetValue( maxDWinc[index] );
-               (*p_table)(row,col++) << moment.SetValue( minDWinc[index] );
-
-               if ( bTimeStepMethod )
-               {
-                  (*p_table)(row,col++) << moment.SetValue( maxCRinc[index] );
-                  (*p_table)(row,col++) << moment.SetValue( minCRinc[index] );
-                  (*p_table)(row,col++) << moment.SetValue( maxSHinc[index] );
-                  (*p_table)(row,col++) << moment.SetValue( minSHinc[index] );
-                  (*p_table)(row,col++) << moment.SetValue( maxPSinc[index] );
-                  (*p_table)(row,col++) << moment.SetValue( minPSinc[index] );
-               }
-
-               (*p_table)(row,col++) << moment.SetValue( maxDCcum[index] );
-               (*p_table)(row,col++) << moment.SetValue( minDCcum[index] );
-               (*p_table)(row,col++) << moment.SetValue( maxDWcum[index] );
-               (*p_table)(row,col++) << moment.SetValue( minDWcum[index] );
-
-               if ( bTimeStepMethod )
-               {
-                  (*p_table)(row,col++) << moment.SetValue( maxCRcum[index] );
-                  (*p_table)(row,col++) << moment.SetValue( minCRcum[index] );
-                  (*p_table)(row,col++) << moment.SetValue( maxSHcum[index] );
-                  (*p_table)(row,col++) << moment.SetValue( minSHcum[index] );
-                  (*p_table)(row,col++) << moment.SetValue( maxPScum[index] );
-                  (*p_table)(row,col++) << moment.SetValue( minPScum[index] );
-               }
-
-               if ( intervalIdx < liveLoadIntervalIdx )
-               {
-                  (*p_table)(row,col++) << moment.SetValue( maxServiceI[index] );
-                  (*p_table)(row,col++) << moment.SetValue( minServiceI[index] );
-               }
+               (*p_table)(row,col++) << moment.SetValue( maxDWRatinginc[index] );
+               (*p_table)(row,col++) << moment.SetValue( minDWRatinginc[index] );
             }
-            else
+
+            if ( bTimeStepMethod )
             {
-               (*p_table)(row,col++) << moment.SetValue( maxDCinc[index] );
-               (*p_table)(row,col++) << moment.SetValue( maxDWinc[index] );
-
-               if ( bTimeStepMethod )
-               {
-                  (*p_table)(row,col++) << moment.SetValue( maxCRinc[index] );
-                  (*p_table)(row,col++) << moment.SetValue( maxSHinc[index] );
-                  (*p_table)(row,col++) << moment.SetValue( maxPSinc[index] );
-               }
-
-               (*p_table)(row,col++) << moment.SetValue( maxDCcum[index] );
-               (*p_table)(row,col++) << moment.SetValue( maxDWcum[index] );
-
-               if ( bTimeStepMethod )
-               {
-                  (*p_table)(row,col++) << moment.SetValue( maxCRcum[index] );
-                  (*p_table)(row,col++) << moment.SetValue( maxSHcum[index] );
-                  (*p_table)(row,col++) << moment.SetValue( maxPScum[index] );
-               }
-
-               if ( intervalIdx < liveLoadIntervalIdx )
-               {
-                  (*p_table)(row,col++) << moment.SetValue( maxServiceI[index] );
-               }
+               (*p_table)(row,col++) << moment.SetValue( maxCRinc[index] );
+               (*p_table)(row,col++) << moment.SetValue( minCRinc[index] );
+               (*p_table)(row,col++) << moment.SetValue( maxSHinc[index] );
+               (*p_table)(row,col++) << moment.SetValue( minSHinc[index] );
+               (*p_table)(row,col++) << moment.SetValue( maxPSinc[index] );
+               (*p_table)(row,col++) << moment.SetValue( minPSinc[index] );
             }
-         //}
+
+            (*p_table)(row,col++) << moment.SetValue( maxDCcum[index] );
+            (*p_table)(row,col++) << moment.SetValue( minDCcum[index] );
+            (*p_table)(row,col++) << moment.SetValue( maxDWcum[index] );
+            (*p_table)(row,col++) << moment.SetValue( minDWcum[index] );
+
+            if(bRating)
+            {
+               (*p_table)(row,col++) << moment.SetValue( maxDWRatingcum[index] );
+               (*p_table)(row,col++) << moment.SetValue( minDWRatingcum[index] );
+            }
+
+            if ( bTimeStepMethod )
+            {
+               (*p_table)(row,col++) << moment.SetValue( maxCRcum[index] );
+               (*p_table)(row,col++) << moment.SetValue( minCRcum[index] );
+               (*p_table)(row,col++) << moment.SetValue( maxSHcum[index] );
+               (*p_table)(row,col++) << moment.SetValue( minSHcum[index] );
+               (*p_table)(row,col++) << moment.SetValue( maxPScum[index] );
+               (*p_table)(row,col++) << moment.SetValue( minPScum[index] );
+            }
+
+            if ( intervalIdx < liveLoadIntervalIdx )
+            {
+               (*p_table)(row,col++) << moment.SetValue( maxServiceI[index] );
+               (*p_table)(row,col++) << moment.SetValue( minServiceI[index] );
+            }
+         }
+         else
+         {
+            (*p_table)(row,col++) << moment.SetValue( maxDCinc[index] );
+            (*p_table)(row,col++) << moment.SetValue( maxDWinc[index] );
+
+            if(bRating)
+            {
+               (*p_table)(row,col++) << moment.SetValue( maxDWRatinginc[index] );
+            }
+
+            if ( bTimeStepMethod )
+            {
+               (*p_table)(row,col++) << moment.SetValue( maxCRinc[index] );
+               (*p_table)(row,col++) << moment.SetValue( maxSHinc[index] );
+               (*p_table)(row,col++) << moment.SetValue( maxPSinc[index] );
+            }
+
+            (*p_table)(row,col++) << moment.SetValue( maxDCcum[index] );
+            (*p_table)(row,col++) << moment.SetValue( maxDWcum[index] );
+
+            if(bRating)
+            {
+               (*p_table)(row,col++) << moment.SetValue( maxDWRatingcum[index] );
+            }
+
+            if ( bTimeStepMethod )
+            {
+               (*p_table)(row,col++) << moment.SetValue( maxCRcum[index] );
+               (*p_table)(row,col++) << moment.SetValue( maxSHcum[index] );
+               (*p_table)(row,col++) << moment.SetValue( maxPScum[index] );
+            }
+
+            if ( intervalIdx < liveLoadIntervalIdx )
+            {
+               (*p_table)(row,col++) << moment.SetValue( maxServiceI[index] );
+            }
+         }
 
          row++;
       }
@@ -411,8 +409,8 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
    GET_IFACE2(pBroker,ICombinedForces2,  pForces2);
    GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
    GET_IFACE2(pBroker,IProductForces,pProdForces);
-   pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
-   pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
 
    // Fill up the table
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
@@ -700,8 +698,8 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
    GET_IFACE2(pBroker,ILimitStateForces, pLsForces);
    GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
    GET_IFACE2(pBroker,IProductForces,pProdForces);
-   pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
-   pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
 
    // Fill up the table
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )

@@ -228,8 +228,7 @@ void CGirderGrid::EditSegment(SegmentIndexType segIdx)
 
 #pragma Reminder("UPDATE: Clean up handling of shear data")
    // Shear data is kind of messy. It is the only data on the segment that we have to
-   // set on the dialog and then get it for the transaction. This has to do with
-   // the way RDP wrote the class for the new shear designer. Updated the dialog
+   // set on the dialog and then get it for the transaction. Updated the dialog
    // so it works seamlessly for all cases
    dlg.m_Stirrups.m_ShearData = dlg.m_Girder.GetSegment(segIdx)->ShearData;
 

@@ -48,24 +48,20 @@ void CDrawTendonsControl::OnPaint()
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IGirderSegment,pGirderSegment);
+   GET_IFACE2(pBroker,IGirder,pIGirder);
 
    const CGirderKey& girderKey = m_pSource->GetGirderKey();
    const CSplicedGirderData* pGirder = m_pSource->GetGirder();
    SegmentIndexType nSegments = pGirder->GetSegmentCount();
 
    std::vector<CComPtr<IShape>> segmentShapes;
-   //std::vector<CComPtr<IPoint2dCollection>> bottomFlangeProfiles;
    CComPtr<IRect2d> bounding_box;
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       CSegmentKey segmentKey(girderKey,segIdx);
 
       CComPtr<IShape> shape;
-      pGirderSegment->GetSegmentProfile( segmentKey, pGirder, true, &shape);
-
-      //CComPtr<IPoint2dCollection> bottomFlange;
-      //pGirderSegment->GetSegmentBottomFlangeProfile( segmentKey, pGirder, &bottomFlange);
+      pIGirder->GetSegmentProfile( segmentKey, pGirder, true, &shape);
 
       if ( segIdx == 0 )
       {
@@ -79,7 +75,6 @@ void CDrawTendonsControl::OnPaint()
       }
 
       segmentShapes.push_back(shape);
-      //bottomFlangeProfiles.push_back(bottomFlange);
    }
 
    // Create a poly line for each tendon. 
@@ -114,7 +109,6 @@ void CDrawTendonsControl::OnPaint()
 
    grlibPointMapper mapper;
    mapper.SetMappingMode(grlibPointMapper::Isotropic);
-   //mapper.SetMappingMode(grlibPointMapper::Anisotropic);
    mapper.SetWorldExt(size);
    mapper.SetWorldOrg(org);
    mapper.SetDeviceExt(sClient.cx,sClient.cy);
@@ -153,15 +147,6 @@ void CDrawTendonsControl::OnPaint()
       str.Format(_T("%d"),LABEL_SEGMENT(segIdx++));
       dc.TextOut(dx,dy,str);
    }
-
-   //// Draw bottom flange line
-   //std::vector<CComPtr<IPoint2dCollection>>::iterator bfIter(bottomFlangeProfiles.begin());
-   //std::vector<CComPtr<IPoint2dCollection>>::iterator bfIterEnd(bottomFlangeProfiles.end());
-   //for ( ; bfIter != bfIterEnd; bfIter++ )
-   //{
-   //   CComPtr<IPoint2dCollection> points = *bfIter;
-   //   Draw(&dc,mapper,points,FALSE);
-   //}
 
    // Draw the tendons
    CPen tendonColor(PS_SOLID,1,TENDON_LINE_COLOR);

@@ -314,45 +314,15 @@ void CIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const C
    pPoiMgr->AddPointOfInterest(poiStart);
    pPoiMgr->AddPointOfInterest(poiEnd);
 
-#pragma Reminder("REVIEW: are these poi needed?") // if not, remove the code
-   //// move bridge site poi to the start/end bearing
-   //Float64 start_length = pBridge->GetSegmentStartEndDistance(segmentKey);
-   //Float64 end_length   = pBridge->GetSegmentEndEndDistance(segmentKey);
-   //poiStart.SetDistFromStart(start_length);
-   //poiEnd.SetDistFromStart(gdrLength-end_length);
-
-   //pPoiMgr->AddPointOfInterest(poiStart);
-   //pPoiMgr->AddPointOfInterest(poiEnd);
-
-
    // end block transition points
    pgsPointOfInterest poiStartEndBlock1(segmentKey, ebLength,                            POI_SECTCHANGE_TRANSITION);
    pgsPointOfInterest poiStartEndBlock2(segmentKey, ebLength  + ebTransition,            POI_SECTCHANGE_TRANSITION);
    pgsPointOfInterest poiEndEndBlock2(  segmentKey, gdrLength - ebLength - ebTransition, POI_SECTCHANGE_TRANSITION);
    pgsPointOfInterest poiEndEndBlock1(  segmentKey, gdrLength - ebLength,                POI_SECTCHANGE_TRANSITION);
 
-   //// add end block transition to late stages if after start bearing
-   //if ( poiStart.GetDistFromStart() < poiStartEndBlock1.GetDistFromStart() )
-   //   poiStartEndBlock1.AddStages(stages,POI_SECTCHANGE_TRANSITION | attrib);
-
    pPoiMgr->AddPointOfInterest(poiStartEndBlock1);
-
-   //// add end block transition if after start bearing
-   //if ( poiStart.GetDistFromStart() < poiStartEndBlock2.GetDistFromStart() )
-   //   poiStartEndBlock2.AddStages(stages,POI_SECTCHANGE_TRANSITION | attrib);
-
    pPoiMgr->AddPointOfInterest(poiStartEndBlock2);
-
-   //// add end block transion if before end bearing
-   //if ( poiEndEndBlock2.GetDistFromStart() < poiEnd.GetDistFromStart() )
-   //   poiEndEndBlock2.AddStages(stages,POI_SECTCHANGE_TRANSITION | attrib);
-
    pPoiMgr->AddPointOfInterest(poiEndEndBlock2);
-
-   //// add end block transion if before end bearing
-   //if ( poiEndEndBlock1.GetDistFromStart() < poiEnd.GetDistFromStart() )
-   //   poiEndEndBlock1.AddStages(stages,POI_SECTCHANGE_TRANSITION | attrib);
-
    pPoiMgr->AddPointOfInterest(poiEndEndBlock1);
 
 #pragma Reminder("UPDATE: need POI at profile transition points")

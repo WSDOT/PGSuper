@@ -941,7 +941,9 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
 
 void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses)
 {
-#pragma Reminder("UPDATE: why are are these parameters needed for lump sum losses")
+   // Need the following parameters for the lump sum loss object: ApsPerm,ApsTTS,fpjPerm,fpjTTS,usage
+   // It is easier to call the general GetLossParameters method and get everything this
+   // to create yet another function to get just those parameters we need.
    PRECONDITION(pLosses != 0 );
    lrfdLosses::SectionPropertiesType spType;
    matPsStrand::Grade grade;
@@ -2187,8 +2189,6 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
-   pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
-
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
@@ -2222,7 +2222,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    IntervalIndexType erectIntervalIdx         = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetRailingSystemInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
    
@@ -2383,6 +2383,11 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
                             pProdForces->GetMoment( castDeckIntervalIdx, pftShearKey,  poi, bat )) + 
                 K_userdc1 * pProdForces->GetMoment( castDeckIntervalIdx, pftUserDC,    poi, bat ) +
                 K_userdw1 * pProdForces->GetMoment( castDeckIntervalIdx, pftUserDW,    poi, bat );
+
+      if ( pDeck->DeckType == pgsTypes::sdtCompositeSIP )
+      {
+         *pMadlg += K_slab * pProdForces->GetMoment( castDeckIntervalIdx, pftSlabPanel, poi, bat );
+      }
    }
 
    if ( m_bComputingLossesForDesign )

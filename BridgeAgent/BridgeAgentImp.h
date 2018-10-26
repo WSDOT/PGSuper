@@ -80,16 +80,14 @@ class ATL_NO_VTABLE CBridgeAgentImp :
    public ISectionProperties,
    public IShapes,
    public IBarriers,
-   public IGirder,
    public IGirderLiftingPointsOfInterest,
    public IGirderHaulingPointsOfInterest,
    public IBridgeDescriptionEventSink,
    public ISpecificationEventSink,
    public IUserDefinedLoads,
    public ITempSupport,
-   public IGirderSegment,
+   public IGirder,
    public IClosurePour,
-   public ISplicedGirder,
    public ITendonGeometry,
    public IIntervals
 {
@@ -125,16 +123,14 @@ BEGIN_COM_MAP(CBridgeAgentImp)
    COM_INTERFACE_ENTRY(ISectionProperties)
    COM_INTERFACE_ENTRY(IShapes)
    COM_INTERFACE_ENTRY(IBarriers)
-   COM_INTERFACE_ENTRY(IGirder)
    COM_INTERFACE_ENTRY(IGirderLiftingPointsOfInterest)
    COM_INTERFACE_ENTRY(IGirderHaulingPointsOfInterest)
    COM_INTERFACE_ENTRY(IBridgeDescriptionEventSink)
    COM_INTERFACE_ENTRY(ISpecificationEventSink)
    COM_INTERFACE_ENTRY(IUserDefinedLoads)
    COM_INTERFACE_ENTRY(ITempSupport)
-   COM_INTERFACE_ENTRY(IGirderSegment)
+   COM_INTERFACE_ENTRY(IGirder)
    COM_INTERFACE_ENTRY(IClosurePour)
-   COM_INTERFACE_ENTRY(ISplicedGirder)
    COM_INTERFACE_ENTRY(ITendonGeometry)
    COM_INTERFACE_ENTRY(IIntervals)
    COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
@@ -167,8 +163,7 @@ public:
 
 // IRoadway
 public:
-   virtual Float64 GetCrownPointOffset(Float64 station);
-   virtual Float64 GetCrownSlope(Float64 station,Float64 offset);
+   virtual Float64 GetSlope(Float64 station,Float64 offset);
    virtual Float64 GetProfileGrade(Float64 station);
    virtual Float64 GetElevation(Float64 station,Float64 offset);
    virtual void GetBearing(Float64 station,IDirection** ppBearing);
@@ -179,16 +174,18 @@ public:
    virtual void GetCurve(CollectionIndexType idx,IHorzCurve** ppCurve);
    virtual CollectionIndexType GetVertCurveCount();
    virtual void GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve);
-   virtual void GetCrownPoint(Float64 station,IDirection* pDirection,IPoint2d** ppPoint);
-   virtual void GetCrownPoint(Float64 station,IDirection* pDirection,IPoint3d** ppPoint);
+   virtual void GetRoadwaySurface(Float64 station,IPoint2dCollection** ppPoints);
 
 // IBridge
 public:
    virtual Float64 GetLength();
    virtual Float64 GetSpanLength(SpanIndexType span);
    virtual Float64 GetGirderLayoutLength(const CGirderKey& girderKey);
+   virtual Float64 GetGirderSpanLength(const CGirderKey& girderKey);
+   virtual Float64 GetGirderLength(const CGirderKey& girderKey);
    virtual Float64 GetAlignmentOffset();
    virtual Float64 GetDistanceFromStartOfBridge(Float64 station);
+   virtual Float64 GetDistanceFromStartOfBridge(const pgsPointOfInterest& poi);
    virtual SpanIndexType GetSpanCount();
    virtual PierIndexType GetPierCount();
    virtual SupportIndexType GetTemporarySupportCount();
@@ -216,6 +213,7 @@ public:
    virtual Float64 GetSegmentPlanLength(const CSegmentKey& segmentKey);
    virtual Float64 GetSegmentSlope(const CSegmentKey& segmentKey);
    virtual Float64 GetSpanLength(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual Float64 GetLoadingSpanLength(SpanIndexType spanIdx,GirderIndexType gdrIdx);
    virtual Float64 GetSegmentStartEndDistance(const CSegmentKey& segmentKey);
    virtual Float64 GetSegmentEndEndDistance(const CSegmentKey& segmentKey);
    virtual Float64 GetSegmentStartBearingOffset(const CSegmentKey& segmentKey);
@@ -238,7 +236,6 @@ public:
    virtual bool GetSegmentTempSupportIntersection(const CSegmentKey& segmentKey,SupportIndexType tsIdx,IPoint2d** ppPoint);
    virtual void GetStationAndOffset(const CSegmentKey& segmentKey,Float64 distFromStartOfSegment,Float64* pStation,Float64* pOffset);
    virtual void GetStationAndOffset(const pgsPointOfInterest& poi,Float64* pStation,Float64* pOffset);
-   virtual void GetDistFromStartOfSpan(GirderIndexType gdrIdx,Float64 distFromStartOfBridge,SpanIndexType* pSpanIdx,Float64* pDistFromStartOfSpan);
    virtual bool IsInteriorGirder(const CGirderKey& girderKey);
    virtual bool IsExteriorGirder(const CGirderKey& girderKey);
    virtual bool IsLeftExteriorGirder(const CGirderKey& girderKey);
@@ -813,50 +810,6 @@ public:
    virtual void GetSidewalkPedLoadEdges(pgsTypes::TrafficBarrierOrientation orientation, Float64* pintEdge, Float64* pextEdge);
    virtual bool HasSidewalk(pgsTypes::TrafficBarrierOrientation orientation);
 
-// IGirder
-public:
-   virtual bool    IsPrismatic(IntervalIndexType intervalIdx,const CSegmentKey& segmentKey);
-   virtual bool    IsSymmetric(IntervalIndexType intervalIdx,const CSegmentKey& segmentKey); 
-   virtual MatingSurfaceIndexType  GetNumberOfMatingSurfaces(const CGirderKey& girderKey);
-   virtual Float64 GetMatingSurfaceLocation(const pgsPointOfInterest& poi,MatingSurfaceIndexType idx);
-   virtual Float64 GetMatingSurfaceWidth(const pgsPointOfInterest& poi,MatingSurfaceIndexType idx);
-   virtual FlangeIndexType GetNumberOfTopFlanges(const CSegmentKey& segmentKey);
-   virtual Float64 GetTopFlangeLocation(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx);
-   virtual Float64 GetTopFlangeWidth(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx);
-   virtual Float64 GetTopFlangeThickness(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx);
-   virtual Float64 GetTopFlangeSpacing(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx);
-   virtual Float64 GetTopFlangeWidth(const pgsPointOfInterest& poi);
-   virtual Float64 GetTopWidth(const pgsPointOfInterest& poi);
-   virtual FlangeIndexType GetNumberOfBottomFlanges(const CSegmentKey& segmentKey);
-   virtual Float64 GetBottomFlangeLocation(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx);
-   virtual Float64 GetBottomFlangeWidth(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx);
-   virtual Float64 GetBottomFlangeThickness(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx);
-   virtual Float64 GetBottomFlangeSpacing(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx);
-   virtual Float64 GetBottomFlangeWidth(const pgsPointOfInterest& poi);
-    virtual Float64 GetBottomWidth(const pgsPointOfInterest& poi);
-   virtual Float64 GetMinWebWidth(const pgsPointOfInterest& poi);
-   virtual Float64 GetMinTopFlangeThickness(const pgsPointOfInterest& poi);
-   virtual Float64 GetMinBottomFlangeThickness(const pgsPointOfInterest& poi);
-   virtual Float64 GetHeight(const pgsPointOfInterest& poi);
-   virtual Float64 GetShearWidth(const pgsPointOfInterest& poi);
-   virtual Float64 GetShearInterfaceWidth(const pgsPointOfInterest& poi);
-   virtual WebIndexType GetWebCount(const CGirderKey& girderKey);
-	virtual Float64 GetWebLocation(const pgsPointOfInterest& poi,WebIndexType webIdx);
-	virtual Float64 GetWebSpacing(const pgsPointOfInterest& poi,WebIndexType spaceIdx);
-   virtual Float64 GetWebThickness(const pgsPointOfInterest& poi,WebIndexType webIdx);
-   virtual Float64 GetCL2ExteriorWebDistance(const pgsPointOfInterest& poi);
-   virtual void GetSegmentEndPoints(const CSegmentKey& segmentKey,IPoint2d** pntPier1,IPoint2d** pntEnd1,IPoint2d** pntBrg1,IPoint2d** pntBrg2,IPoint2d** pntEnd2,IPoint2d** pntPier2);
-   virtual Float64 GetOrientation(const CSegmentKey& segmentKey);
-   virtual Float64 GetTopGirderReferenceChordElevation(const pgsPointOfInterest& poi);
-   virtual Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,MatingSurfaceIndexType matingSurfaceIdx);
-   virtual Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,const GDRCONFIG& config,MatingSurfaceIndexType matingSurfaceIdx);
-   virtual Float64 GetSplittingZoneHeight(const pgsPointOfInterest& poi);
-   virtual pgsTypes::SplittingDirection GetSplittingDirection(const CGirderKey& girderKey);
-   virtual void GetProfileShape(const CSegmentKey& segmentKey,IShape** ppShape);
-   virtual bool HasShearKey(const CGirderKey& girderKey,pgsTypes::SupportedBeamSpacing spacingType);
-   virtual void GetShearKeyAreas(const CGirderKey& girderKey,pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint);
-   virtual void GetSegment(const CGirderKey& girderKey,Float64 distFromStartOfGirder,SegmentIndexType* pSegIdx,Float64* pDistFromStartOfSegment);
-
 // IGirderLiftingPointsOfInterest
 public:
    virtual std::vector<pgsPointOfInterest> GetLiftingPointsOfInterest(const CSegmentKey& segmentKey,PoiAttributeType attrib,Uint32 mode = POIFIND_AND);
@@ -896,15 +849,54 @@ public:
    virtual void GetDirection(SupportIndexType tsIdx,IDirection** ppDirection);
    virtual void GetSkew(SupportIndexType tsIdx,IAngle** ppAngle);
 
-// IGirderSegment
-#pragma Reminder("Combine IGirderSegment with IGirder") // these are the same interface when precast girders are just a single segment
+// IGirder
 public:
+   virtual bool    IsPrismatic(IntervalIndexType intervalIdx,const CSegmentKey& segmentKey);
+   virtual bool    IsSymmetric(IntervalIndexType intervalIdx,const CSegmentKey& segmentKey); 
+   virtual MatingSurfaceIndexType  GetNumberOfMatingSurfaces(const CGirderKey& girderKey);
+   virtual Float64 GetMatingSurfaceLocation(const pgsPointOfInterest& poi,MatingSurfaceIndexType idx);
+   virtual Float64 GetMatingSurfaceWidth(const pgsPointOfInterest& poi,MatingSurfaceIndexType idx);
+   virtual FlangeIndexType GetNumberOfTopFlanges(const CGirderKey& girderKey);
+   virtual Float64 GetTopFlangeLocation(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx);
+   virtual Float64 GetTopFlangeWidth(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx);
+   virtual Float64 GetTopFlangeThickness(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx);
+   virtual Float64 GetTopFlangeSpacing(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx);
+   virtual Float64 GetTopFlangeWidth(const pgsPointOfInterest& poi);
+   virtual Float64 GetTopWidth(const pgsPointOfInterest& poi);
+   virtual FlangeIndexType GetNumberOfBottomFlanges(const CSegmentKey& segmentKey);
+   virtual Float64 GetBottomFlangeLocation(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx);
+   virtual Float64 GetBottomFlangeWidth(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx);
+   virtual Float64 GetBottomFlangeThickness(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx);
+   virtual Float64 GetBottomFlangeSpacing(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx);
+   virtual Float64 GetBottomFlangeWidth(const pgsPointOfInterest& poi);
+   virtual Float64 GetBottomWidth(const pgsPointOfInterest& poi);
+   virtual Float64 GetMinWebWidth(const pgsPointOfInterest& poi);
+   virtual Float64 GetMinTopFlangeThickness(const pgsPointOfInterest& poi);
+   virtual Float64 GetMinBottomFlangeThickness(const pgsPointOfInterest& poi);
+   virtual Float64 GetHeight(const pgsPointOfInterest& poi);
+   virtual Float64 GetShearWidth(const pgsPointOfInterest& poi);
+   virtual Float64 GetShearInterfaceWidth(const pgsPointOfInterest& poi);
+   virtual WebIndexType GetWebCount(const CGirderKey& girderKey);
+	virtual Float64 GetWebLocation(const pgsPointOfInterest& poi,WebIndexType webIdx);
+	virtual Float64 GetWebSpacing(const pgsPointOfInterest& poi,WebIndexType spaceIdx);
+   virtual Float64 GetWebThickness(const pgsPointOfInterest& poi,WebIndexType webIdx);
+   virtual Float64 GetCL2ExteriorWebDistance(const pgsPointOfInterest& poi);
+   virtual void GetSegmentEndPoints(const CSegmentKey& segmentKey,IPoint2d** pntPier1,IPoint2d** pntEnd1,IPoint2d** pntBrg1,IPoint2d** pntBrg2,IPoint2d** pntEnd2,IPoint2d** pntPier2);
+   virtual Float64 GetOrientation(const CSegmentKey& segmentKey);
+   virtual Float64 GetTopGirderReferenceChordElevation(const pgsPointOfInterest& poi);
+   virtual Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,MatingSurfaceIndexType matingSurfaceIdx);
+   virtual Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,const GDRCONFIG& config,MatingSurfaceIndexType matingSurfaceIdx);
+   virtual Float64 GetSplittingZoneHeight(const pgsPointOfInterest& poi);
+   virtual pgsTypes::SplittingDirection GetSplittingDirection(const CGirderKey& girderKey);
+   virtual void GetProfileShape(const CSegmentKey& segmentKey,IShape** ppShape);
+   virtual bool HasShearKey(const CGirderKey& girderKey,pgsTypes::SupportedBeamSpacing spacingType);
+   virtual void GetShearKeyAreas(const CGirderKey& girderKey,pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint);
+   virtual void GetSegment(const CGirderKey& girderKey,Float64 distFromStartOfGirder,SegmentIndexType* pSegIdx,Float64* pDistFromStartOfSegment);
    virtual void GetSegmentProfile(const CSegmentKey& segmentKey,bool bIncludeClosure,IShape** ppShape);
    virtual void GetSegmentProfile(const CSegmentKey& segmentKey,const CSplicedGirderData* pGirder,bool bIncludeClosure,IShape** ppShape);
    virtual void GetSegmentBottomFlangeProfile(const CSegmentKey& segmentKey,IPoint2dCollection** points);
    virtual void GetSegmentBottomFlangeProfile(const CSegmentKey& segmentKey,const CSplicedGirderData* pGirder,IPoint2dCollection** points);
    virtual void GetSegmentDirection(const CSegmentKey& segmentKey,IDirection** ppDirection);
-   virtual Float64 GetTopWidth(const CSegmentKey& segmentKey);
    virtual void GetSegmentEndDistance(const CSegmentKey& segmentKey,Float64* pStartEndDistance,Float64* pEndEndDistance);
    virtual void GetSegmentEndDistance(const CSegmentKey& segmentKey,const CSplicedGirderData* pGirder,Float64* pStartEndDistance,Float64* pEndEndDistance);
    virtual void GetSegmentBearingOffset(const CSegmentKey& segmentKey,Float64* pStartBearingOffset,Float64* pEndBearingOffset);
@@ -915,13 +907,6 @@ public:
    virtual void GetClosurePourProfile(const CClosureKey& closureKey,IShape** ppShape);
    virtual Float64 GetClosurePourLength(const CClosureKey& closureKey);
    virtual void GetClosurePourSize(const CClosureKey& closureKey,Float64* pLeft,Float64* pRight);
-
-// ISplicedGirder
-public:
-#pragma Reminder("UPDATE: unify the ISplicedGirder interface")
-   virtual Float64 GetSplicedGirderLayoutLength(const CGirderKey& girderKey);
-   virtual Float64 GetSplicedGirderSpanLength(const CGirderKey& girderKey);
-   virtual Float64 GetSplicedGirderLength(const CGirderKey& girderKey);
 
 // ITendonGeometry
 public:
@@ -966,7 +951,7 @@ public:
    virtual IntervalIndexType GetCompositeDeckInterval();
    virtual IntervalIndexType GetLiveLoadInterval();
    virtual IntervalIndexType GetOverlayInterval();
-   virtual IntervalIndexType GetRailingSystemInterval();
+   virtual IntervalIndexType GetInstallRailingSystemInterval();
    virtual IntervalIndexType GetStressTendonInterval(const CGirderKey& girderKey,DuctIndexType ductIdx);
    virtual IntervalIndexType GetTemporarySupportRemovalInterval(SupportIDType tsID);
    virtual std::vector<IntervalIndexType> GetSpecCheckIntervals(const CGirderKey& girderKey);
@@ -1071,8 +1056,7 @@ private:
    bool BuildGirder();
    void ValidateGirder();
 
-   // helper functions for building the old CGenericBridge model
-   //bool LayoutPrecastGirders(const CBridgeDescription2* pBridgeDesc);
+   // helper functions for building the bridge model
    bool LayoutGirders(const CBridgeDescription2* pBridgeDesc);
    bool LayoutDeck(const CBridgeDescription2* pBridgeDesc);
    bool LayoutNoDeck(const CBridgeDescription2* pBridgeDesc,IBridgeDeck** ppDeck);
@@ -1144,7 +1128,6 @@ private:
    std::vector<UserMomentLoad>* GetUserMomentLoads(IntervalIndexType intervalIdx,const CSpanGirderKey& spanGirderKey);
 
    HRESULT GetSlabOverhangs(Float64 distance,Float64* pLeft,Float64* pRight);
-   Float64 GetDistanceFromStartOfBridge(const pgsPointOfInterest& poi);
    Float64 GetDistanceFromStartOfBridge(const CSegmentKey& segmentKey,Float64 distFromStartOfSegment);
    HRESULT GetGirderSection(const pgsPointOfInterest& poi,pgsTypes::SectionCoordinateType csType,IGirderSection** gdrSection);
    HRESULT GetSuperstructureMember(const CGirderKey& girderKey,ISuperstructureMember* *ssmbr);

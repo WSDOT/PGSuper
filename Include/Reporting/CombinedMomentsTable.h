@@ -84,7 +84,7 @@ public:
                       const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits,
                       IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
-                      bool bDesign=true,bool bRating=true) const;
+                      bool bDesign,bool bRating) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
@@ -622,270 +622,146 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker*
    ColumnIndexType nCols = 0;
 
    rptRcTable* pTable;
-   //if ( intervalIdx < castDeckIntervalIdx )
-   //{
-   //   nCols = (bTimeStepMethod ? 6 : 3);
-   //   pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,strLabel);
+   nCols = (bTimeStepMethod ? 12 : 6);
 
-   //   if ( !bPierTable )
-   //      (*pTable)(0,col1++) << COLHDR(RPT_GDR_END_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   //   else
-   //      (*pTable)(0,col1++) << _T("");
+   if ( bRating )
+   {
+      nCols += (analysisType == pgsTypes::Envelope ? 4 : 2);
+   }
 
-   //   (*pTable)(0,col1++) << COLHDR(_T("DC"), M, unitT );
+   if ( analysisType == pgsTypes::Envelope )
+   {
+      nCols += (bTimeStepMethod ? 11 : 5);
+   }
 
-   //   if ( bTimeStepMethod )
-   //   {
-   //      (*pTable)(0,col1++) << COLHDR(_T("CR"), M, unitT );
-   //      (*pTable)(0,col1++) << COLHDR(_T("SH"), M, unitT );
-   //      (*pTable)(0,col1++) << COLHDR(_T("PS"), M, unitT );
-   //   }
-
-   //   (*pTable)(0,col1++) << COLHDR(_T("Service I"), M, unitT );
-   //   nRows = 1;
-   //}
-   //else
-   //{
-      nCols = (bTimeStepMethod ? 12 : 6);
-
+   if ( liveLoadIntervalIdx <= intervalIdx )
+   {
       if ( analysisType == pgsTypes::Envelope )
-      {
-         nCols += (bTimeStepMethod ? 11 : 5);
-      }
-
-      if ( liveLoadIntervalIdx <= intervalIdx )
-      {
-         if ( analysisType == pgsTypes::Envelope )
-            nCols -= 2;
-         else
-            nCols--;
-      }
-
-      pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,strLabel);
-
-      if ( analysisType == pgsTypes::Envelope /*&& continuityIntervalIdx == castDeckIntervalIdx*/ )
-      {
-         nRows = 2;
-
-         pTable->SetRowSpan(0,col1,2);
-         pTable->SetRowSpan(1,col2++,SKIP_CELL);
-         if ( !bPierTable )
-            (*pTable)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-         else
-            (*pTable)(0,col1++) << _T("");
-
-         pTable->SetColumnSpan(0,col1,2);
-         (*pTable)(0,col1++) << _T("DC");
-         (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
-         (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
-
-         pTable->SetColumnSpan(0,col1,2);
-         (*pTable)(0,col1++) << _T("DW");
-         (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
-         (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
-
-         pTable->SetColumnSpan(0,col1,2);
-         (*pTable)(0,col1++) << symbol(SUM) << _T("DC");
-         (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
-         (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
-
-         pTable->SetColumnSpan(0,col1,2);
-         (*pTable)(0,col1++) << symbol(SUM) << _T("DW");
-         (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
-         (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
-
-         if ( bTimeStepMethod )
-         {
-            pTable->SetColumnSpan(0,col1,2);
-            (*pTable)(0,col1++) << symbol(SUM) << _T("CR");
-            (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
-
-            pTable->SetColumnSpan(0,col1,2);
-            (*pTable)(0,col1++) << symbol(SUM) << _T("SH");
-            (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
-
-            pTable->SetColumnSpan(0,col1,2);
-            (*pTable)(0,col1++) << symbol(SUM) << _T("PS");
-            (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
-         }
-
-         if ( intervalIdx < liveLoadIntervalIdx )
-         {
-            pTable->SetColumnSpan(0,col1,2);
-            (*pTable)(0,col1++) << _T("Service I");
-            (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
-            (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
-         }
-      }
+         nCols -= 2;
       else
+         nCols--;
+   }
+
+   pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,strLabel);
+
+   if ( analysisType == pgsTypes::Envelope /*&& continuityIntervalIdx == castDeckIntervalIdx*/ )
+   {
+      nRows = 2;
+
+      pTable->SetRowSpan(0,col1,2);
+      pTable->SetRowSpan(1,col2++,SKIP_CELL);
+      if ( !bPierTable )
+         (*pTable)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      else
+         (*pTable)(0,col1++) << _T("");
+
+      pTable->SetColumnSpan(0,col1,2);
+      (*pTable)(0,col1++) << _T("DC");
+      (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
+      (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
+
+      pTable->SetColumnSpan(0,col1,2);
+      (*pTable)(0,col1++) << _T("DW");
+      (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
+      (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
+
+      if (bRating)
       {
-         if ( !bPierTable )
-            (*pTable)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-         else
-            (*pTable)(0,col1++) << _T("");
-
-         (*pTable)(0,col1++) << COLHDR(_T("DC"),          M, unitT );
-         (*pTable)(0,col1++) << COLHDR(_T("DW"),          M, unitT );
-
-         if ( bTimeStepMethod )
-         {
-            (*pTable)(0,col1++) << COLHDR(_T("CR"),          M, unitT );
-            (*pTable)(0,col1++) << COLHDR(_T("SH"),          M, unitT );
-            (*pTable)(0,col1++) << COLHDR(_T("PS"),          M, unitT );
-         }
-
-         (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DC"),          M, unitT );
-         (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DW"),          M, unitT );
-
-         if ( bTimeStepMethod )
-         {
-            (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("CR"),          M, unitT );
-            (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("SH"),          M, unitT );
-            (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("PS"),          M, unitT );
-         }
-
-         if ( intervalIdx < liveLoadIntervalIdx )
-         {
-            (*pTable)(0,col1++) << COLHDR(_T("Service I"), M, unitT );
-         }
-
-         nRows = 1;
+         pTable->SetColumnSpan(0,col1,2);
+         (*pTable)(0,col1++) << _T("DW") << rptNewLine << _T("Rating");
+         (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
+         (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
       }
-   //}
-   //else if ( intervalIdx == compositeDeckIntervalIdx )
-   //{
-   //   nCols = 6;
-   //   if ( analysisType == pgsTypes::Envelope )
-   //      nCols += 5;
 
-   //   col1 = 0;
-   //   col2 = 0;
+      pTable->SetColumnSpan(0,col1,2);
+      (*pTable)(0,col1++) << symbol(SUM) << _T("DC");
+      (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
+      (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
 
-   //   pTable = pgsReportStyleHolder::CreateDefaultTable(nCols, strLabel);
+      pTable->SetColumnSpan(0,col1,2);
+      (*pTable)(0,col1++) << symbol(SUM) << _T("DW");
+      (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
+      (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
 
-   //   if ( analysisType == pgsTypes::Envelope )
-   //   {
-   //      pTable->SetRowSpan(0,col1,2);
-   //      pTable->SetRowSpan(1,col2++,SKIP_CELL);
-   //
-   //      if ( !bPierTable )
-   //         (*pTable)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   //      else
-   //         (*pTable)(0,col1++) << _T("");
+      if ( bTimeStepMethod )
+      {
+         pTable->SetColumnSpan(0,col1,2);
+         (*pTable)(0,col1++) << symbol(SUM) << _T("CR");
+         (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
+         (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
 
-   //      pTable->SetColumnSpan(0,col1,2);
-   //      (*pTable)(0,col1++) << _T("DC");
-   //      (*pTable)(1,col2++) << COLHDR(_T("Max"),          M, unitT );
-   //      (*pTable)(1,col2++) << COLHDR(_T("Min"),          M, unitT );
+         pTable->SetColumnSpan(0,col1,2);
+         (*pTable)(0,col1++) << symbol(SUM) << _T("SH");
+         (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
+         (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
 
-   //      pTable->SetColumnSpan(0,col1,2);
-   //      (*pTable)(0,col1++) << _T("DW");
-   //      (*pTable)(1,col2++) << COLHDR(_T("Max"),          M, unitT );
-   //      (*pTable)(1,col2++) << COLHDR(_T("Min"),          M, unitT );
+         pTable->SetColumnSpan(0,col1,2);
+         (*pTable)(0,col1++) << symbol(SUM) << _T("PS");
+         (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
+         (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
+      }
 
-   //      pTable->SetColumnSpan(0,col1,2);
-   //      (*pTable)(0,col1++) << symbol(SUM) << _T("DC");
-   //      (*pTable)(1,col2++) << COLHDR(_T("Max"),          M, unitT );
-   //      (*pTable)(1,col2++) << COLHDR(_T("Min"),          M, unitT );
+      if (bRating)
+      {
+         pTable->SetColumnSpan(0,col1,2);
+         (*pTable)(0,col1++) << symbol(SUM) << _T("DW") << rptNewLine << _T("Rating");
+         (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
+         (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
+      }
 
-   //      pTable->SetColumnSpan(0,col1,2);
-   //      (*pTable)(0,col1++) << symbol(SUM) << _T("DW");
-   //      (*pTable)(1,col2++) << COLHDR(_T("Max"),          M, unitT );
-   //      (*pTable)(1,col2++) << COLHDR(_T("Min"),          M, unitT );
+      if ( intervalIdx < liveLoadIntervalIdx )
+      {
+         pTable->SetColumnSpan(0,col1,2);
+         (*pTable)(0,col1++) << _T("Service I");
+         (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
+         (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
+      }
+   }
+   else
+   {
+      if ( !bPierTable )
+         (*pTable)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      else
+         (*pTable)(0,col1++) << _T("");
 
-   //      pTable->SetColumnSpan(0,col1,2);
-   //      (*pTable)(0,col1++) << _T("Service I");
-   //      (*pTable)(1,col2++) << COLHDR(_T("Max"), M, unitT );
-   //      (*pTable)(1,col2++) << COLHDR(_T("Min"), M, unitT );
-   //      
-   //      nRows = 2;
-   //   }
-   //   else
-   //   {
-   //      if ( !bPierTable )
-   //         (*pTable)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   //      else
-   //         (*pTable)(0,col1++) << _T("");
+      (*pTable)(0,col1++) << COLHDR(_T("DC"),          M, unitT );
+      (*pTable)(0,col1++) << COLHDR(_T("DW"),          M, unitT );
 
-   //      (*pTable)(0,col1++) << COLHDR(_T("DC"),          M, unitT );
-   //      (*pTable)(0,col1++) << COLHDR(_T("DW"),          M, unitT );
-   //      (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DC"),          M, unitT );
-   //      (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DW"),          M, unitT );
-   //      (*pTable)(0,col1++) << COLHDR(_T("Service I"), M, unitT );
-   //      
-   //      nRows = 1;
-   //   }
-   //}
-   //else if ( intervalIdx == liveLoadIntervalIdx )
-   //{
-   //   nCols = 5;
+      if(bRating)
+      {
+         (*pTable)(0,col1++) << COLHDR(_T("DW") << rptNewLine << _T("Rating"),          M, unitT );
+      }
 
-   //   if ( analysisType == pgsTypes::Envelope )
-   //      nCols += 4; // DC, DW, sum DC, sum DW min/max
 
-   //   col1 = 0;
-   //   col2 = 0;
-   //   
-   //   pTable = pgsReportStyleHolder::CreateDefaultTable(nCols, strLabel);
+      if ( bTimeStepMethod )
+      {
+         (*pTable)(0,col1++) << COLHDR(_T("CR"),          M, unitT );
+         (*pTable)(0,col1++) << COLHDR(_T("SH"),          M, unitT );
+         (*pTable)(0,col1++) << COLHDR(_T("PS"),          M, unitT );
+      }
 
-   //   pTable->SetRowSpan(0,col1,2);
-   //   pTable->SetRowSpan(1,col2++,SKIP_CELL);
-   //
-   //   if ( !bPierTable )
-   //      (*pTable)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   //   else
-   //      (*pTable)(0,col1++) << _T("");
+      (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DC"),          M, unitT );
+      (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DW"),          M, unitT );
 
-   //   if ( analysisType == pgsTypes::Envelope )
-   //   {
-   //      pTable->SetColumnSpan(0,col1,2);
-   //      (*pTable)(0,col1++) << _T("DC");
-   //      (*pTable)(1,col2++) << COLHDR(_T("Max"),          M, unitT );
-   //      (*pTable)(1,col2++) << COLHDR(_T("Min"),          M, unitT );
+      if (bRating)
+      {
+         (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DW") << rptNewLine << _T("Rating"),          M, unitT );
+      }
 
-   //      pTable->SetColumnSpan(0,col1,2);
-   //      (*pTable)(0,col1++) << _T("DW");
-   //      (*pTable)(1,col2++) << COLHDR(_T("Max"),          M, unitT );
-   //      (*pTable)(1,col2++) << COLHDR(_T("Min"),          M, unitT );
+      if ( bTimeStepMethod )
+      {
+         (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("CR"),          M, unitT );
+         (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("SH"),          M, unitT );
+         (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("PS"),          M, unitT );
+      }
 
-   //      pTable->SetColumnSpan(0,col1,2);
-   //      (*pTable)(0,col1++) << symbol(SUM) << _T("DC");
-   //      (*pTable)(1,col2++) << COLHDR(_T("Max"),          M, unitT );
-   //      (*pTable)(1,col2++) << COLHDR(_T("Min"),          M, unitT );
+      if ( intervalIdx < liveLoadIntervalIdx )
+      {
+         (*pTable)(0,col1++) << COLHDR(_T("Service I"), M, unitT );
+      }
 
-   //      pTable->SetColumnSpan(0,col1,2);
-   //      (*pTable)(0,col1++) << symbol(SUM) << _T("DW");
-   //      (*pTable)(1,col2++) << COLHDR(_T("Max"),          M, unitT );
-   //      (*pTable)(1,col2++) << COLHDR(_T("Min"),          M, unitT );
-   //   }
-   //   else
-   //   {
-   //      pTable->SetRowSpan(0,col1,2);
-   //      pTable->SetRowSpan(1,col2++,SKIP_CELL);
-   //      (*pTable)(0,col1++) << COLHDR(_T("DC"),          M, unitT );
-
-   //      pTable->SetRowSpan(0,col1,2);
-   //      pTable->SetRowSpan(1,col2++,SKIP_CELL);
-   //      (*pTable)(0,col1++) << COLHDR(_T("DW"),          M, unitT );
-
-   //      pTable->SetRowSpan(0,col1,2);
-   //      pTable->SetRowSpan(1,col2++,SKIP_CELL);
-   //      (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DC"),          M, unitT );
-
-   //      pTable->SetRowSpan(0,col1,2);
-   //      pTable->SetRowSpan(1,col2++,SKIP_CELL);
-   //      (*pTable)(0,col1++) << COLHDR(symbol(SUM) << _T("DW"),          M, unitT );
-   //   }
-
-   //   nRows = 2;
-   //}
-   //else
-   //{
-   //   ATLASSERT(0); // who added a new stage without telling me?
-   //}
+      nRows = 1;
+   }
 
    for ( ColumnIndexType i = col1; i < nCols; i++ )
       pTable->SetColumnSpan(0,i,SKIP_CELL);

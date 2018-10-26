@@ -4248,6 +4248,14 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
 {
    const GirderLibraryEntry* pGirderEntry = pSegment->GetGirder()->GetGirderLibraryEntry();
 
+   GET_IFACE(IDocumentType,pDocType);
+   std::_tostringstream str;
+   if ( pDocType->IsPGSuperDocument() )
+      str << _T("Span ") << LABEL_SPAN(segmentKey.groupIndex) << _T(", Girder ") << LABEL_GIRDER(segmentKey.girderIndex);
+   else
+      str << _T("Group ") << LABEL_GROUP(segmentKey.groupIndex) << _T(", Girder ") << LABEL_GIRDER(segmentKey.girderIndex) << _T(", Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex);
+   std::_tstring segmentLabel(str.str());
+
    if (!pGirderEntry->IsVerticalAdjustmentAllowedEnd() && pSegment->Strands.HpOffsetAtEnd!=0.0 
                                                        && pSegment->Strands.HsoEndMeasurement!=hsoLEGACY)
    {
@@ -4339,11 +4347,8 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
 
          if (fromLibrary && debond_changed) // no message if strands where trimmed in project due to a strand reduction
          {
-#pragma Reminder("UPDATE: assuming precast girder bridge")
-            SpanIndexType spanIdx = segmentKey.groupIndex;
-            GirderIndexType gdrIdx = segmentKey.girderIndex;
             std::_tostringstream msg;
-            msg<< _T(" Girder ")<<LABEL_GIRDER(gdrIdx)<<_T(", span ")<<LABEL_SPAN(spanIdx)<<_T(" specified debonding that is not allowed by the library entry. The invalid debond regions were removed.");
+            msg << segmentLabel << _T(" specified debonding that is not allowed by the library entry. The invalid debond regions were removed.");
             AddSegmentStatusItem(segmentKey, msg.str());
          }
       }
@@ -4358,11 +4363,8 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
 
          if (!st || pSegment->Strands.GetNstrands(pgsTypes::Straight) !=ns || pSegment->Strands.GetNstrands(pgsTypes::Harped) != nh)
          {
-#pragma Reminder("UPDATE: assuming precast girder bridge")
-            SpanIndexType spanIdx = segmentKey.groupIndex;
-            GirderIndexType gdrIdx = segmentKey.girderIndex;
             std::_tostringstream msg;
-            msg<< pSegment->Strands.GetNstrands(pgsTypes::Permanent)<<_T(" permanent strands no longer fit in girder ")<<LABEL_GIRDER(gdrIdx)<<_T(", span ")<<LABEL_SPAN(spanIdx)<<_T(" because library entry changed. All strands were removed.");
+            msg << segmentLabel << _T(": ") << pSegment->Strands.GetNstrands(pgsTypes::Permanent)<<_T(" permanent strands no longer valid because library entry changed. All strands were removed.");
             AddSegmentStatusItem(segmentKey, msg.str());
 
             clean = false;
@@ -4376,11 +4378,8 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
 
          if ( !(vst&&vhp) )
          {
-#pragma Reminder("UPDATE: assuming precast girder bridge")
-            SpanIndexType spanIdx = segmentKey.groupIndex;
-            GirderIndexType gdrIdx = segmentKey.girderIndex;
             std::_tostringstream msg;
-            msg<< pSegment->Strands.GetNstrands(pgsTypes::Straight)<<_T(" straight, ")<<pSegment->Strands.GetNstrands(pgsTypes::Harped)<<_T(" harped strands no longer fit in girder ")<<LABEL_GIRDER(gdrIdx)<<_T(", span ")<<LABEL_SPAN(spanIdx)<<_T(" because library entry changed. All strands were removed.");
+            msg << segmentLabel << _T(": ") << pSegment->Strands.GetNstrands(pgsTypes::Straight) <<_T(" straight, ") << pSegment->Strands.GetNstrands(pgsTypes::Harped) << _T(" harped strands is no longer valid because library entry changed. All strands were removed.");
             AddSegmentStatusItem(segmentKey, msg.str());
 
             clean = false;
@@ -4396,11 +4395,8 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
       bool vhp = pGirderEntry->IsValidNumberOfTemporaryStrands(pSegment->Strands.GetNstrands(pgsTypes::Temporary));
       if ( !vhp )
       {
-#pragma Reminder("UPDATE: assuming precast girder bridge")
-         SpanIndexType spanIdx = segmentKey.groupIndex;
-         GirderIndexType gdrIdx = segmentKey.girderIndex;
          std::_tostringstream msg;
-         msg<< pSegment->Strands.GetNstrands(pgsTypes::Temporary)<<_T(" temporary strands no longer fit in girder ")<<LABEL_GIRDER(gdrIdx)<<_T(", span ")<<LABEL_SPAN(spanIdx)<<_T(" because library entry changed. All temporary strands were removed.");
+         msg<< segmentLabel << _T(": ") << pSegment->Strands.GetNstrands(pgsTypes::Temporary) << _T(" temporary strands are no longer valid because library entry changed. All temporary strands were removed.");
          AddSegmentStatusItem(segmentKey, msg.str());
 
          clean = false;
@@ -4463,11 +4459,8 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
 
             if (fromLibrary && debond_changed) // no message if strands where trimmed in project due to a strand reduction
             {
-#pragma Reminder("UPDATE: assuming precast girder bridge")
-               SpanIndexType spanIdx = segmentKey.groupIndex;
-               GirderIndexType gdrIdx = segmentKey.girderIndex;
                std::_tostringstream msg;
-               msg<< _T(" Girder ")<<LABEL_GIRDER(gdrIdx)<<_T(", span ")<<LABEL_SPAN(spanIdx)<<_T(" specified debonding that is not allowed by the library entry. The invalid debond regions were removed.");
+               msg << segmentLabel << _T(" specified debonding that is not allowed by the library entry. The invalid debond regions were removed.");
                AddSegmentStatusItem(segmentKey, msg.str());
             }
          }

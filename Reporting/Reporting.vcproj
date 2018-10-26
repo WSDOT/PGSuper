@@ -983,6 +983,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ReactionInterfaceAdapters.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Reporting.cpp"
 				>
 			</File>

@@ -189,6 +189,8 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CBearingDesignParametersChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 
+#pragma Reminder("UPDATE: this is a report for development purposes")
+   // either flesh out this report or eliminate it
    pRptBuilder = new CReportBuilder(_T("Stage by Stage Details Report"));
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSpliceTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );

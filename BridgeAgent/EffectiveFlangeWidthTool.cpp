@@ -73,10 +73,10 @@ void CEffectiveFlangeWidthTool::Init(IBroker* pBroker,StatusGroupIDType statusGr
 
    // Register status callbacks that we want to use
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   m_scidInformationalWarning   = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning)); 
-   m_scidBridgeDescriptionError = pStatusCenter->RegisterCallback(new pgsBridgeDescriptionStatusCallback(m_pBroker,eafTypes::statusError));
+   m_scidInformationalWarning        = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning)); 
+   m_scidBridgeDescriptionError      = pStatusCenter->RegisterCallback(new pgsBridgeDescriptionStatusCallback(m_pBroker,eafTypes::statusError));
    m_scidEffectiveFlangeWidthWarning = pStatusCenter->RegisterCallback(new pgsEffectiveFlangeWidthStatusCallback(m_pBroker,eafTypes::statusWarning));
-   m_scidEffectiveFlangeWidthInfo = pStatusCenter->RegisterCallback(new pgsEffectiveFlangeWidthStatusCallback(m_pBroker,eafTypes::statusOK));
+   m_scidEffectiveFlangeWidthInfo    = pStatusCenter->RegisterCallback(new pgsEffectiveFlangeWidthStatusCallback(m_pBroker,eafTypes::statusOK));
 }
 
 HRESULT CEffectiveFlangeWidthTool::FinalConstruct()
@@ -86,6 +86,11 @@ HRESULT CEffectiveFlangeWidthTool::FinalConstruct()
       return hr;
 
    m_bUseTribWidth = VARIANT_FALSE;
+
+
+   bMaxSkewAngleComputed = false;
+   m_MaxSkewAngle = 0;
+
 
    return S_OK;
 }
@@ -313,22 +318,20 @@ STDMETHODIMP CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySSMbr(IGenericBrid
 
 STDMETHODIMP CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySSMbrEx(IGenericBridge* bridge,GirderIDType gdrID,Float64 distFromStartOfSSMbr, GirderIDType leftGdrID, GirderIDType rightGdrID, IEffectiveFlangeWidthDetails** details)
 {
-#pragma Reminder("UPDATE: remove obsolete code")
-   ATLASSERT(false); // this should be called
-   //CComPtr<ISuperstructureMember> ssMbr;
-   //bridge->get_SuperstructureMember(gdrID,&ssMbr);
+   CComPtr<ISuperstructureMember> ssMbr;
+   bridge->get_SuperstructureMember(gdrID,&ssMbr);
 
-   //Float64 distFromStartOfSegment;
-   //SegmentIndexType segIdx;
-   //CComPtr<ISegment> segment;
-   //ssMbr->GetDistanceFromStartOfSegment(distFromStartOfSSMbr,&distFromStartOfSegment,&segIdx,&segment);
+   Float64 distFromStartOfSegment;
+   SegmentIndexType segIdx;
+   CComPtr<ISegment> segment;
+   ssMbr->GetDistanceFromStartOfSegment(distFromStartOfSSMbr,&distFromStartOfSegment,&segIdx,&segment);
 
-   //EffFlangeWidth efw;
-   //HRESULT hr = EffectiveFlangeWidthBySegmentDetails(bridge,gdrID,segIdx,distFromStartOfSegment,leftGdrID,rightGdrID,&efw);
-   //if ( FAILED(hr) )
-   //   return hr;
+   EffFlangeWidth efw;
+   HRESULT hr = EffectiveFlangeWidthBySegmentDetails(bridge,gdrID,segIdx,distFromStartOfSegment,leftGdrID,rightGdrID,&efw);
+   if ( FAILED(hr) )
+      return hr;
 
-   //efw.m_Details.CopyTo(details);
+   efw.m_Details.CopyTo(details);
 
    return S_OK;
 }
@@ -496,67 +499,70 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
 	         }
 	      }
 	
-	      // the code below could be more efficient if the evaluation happens once and is cached
-	      // if the framing plan doesn't change, this evaluation will not change
-	#pragma Reminder("UPDATE: This could be more efficient")
-	
          if ( !pIEffFW->IgnoreEffectiveFlangeWidthLimits() )
          {
-	      // check maximum skew angle... AASHTO defines the skew angle as...
-	      // The largest skew angle (theta) in the BRIDGE SYSTEM where (theta)
-	      // is the angle of a bearing line measured relative to a normal to
-	      // the cneterline of a longitudial component
-	      Float64 maxSkew = 0;
-	      PierIndexType nPiers = pBridge->GetPierCount();
-	      for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
-	      {
-	         CComPtr<IDirection> pierDirection;
-	         pBridge->GetPierDirection(pierIdx,&pierDirection);
-	
-	         SpanIndexType spanIndex = pierIdx;
-	         if ( nPiers-1 == pierIdx ) // at the last pier... use the previous span index
-	            spanIndex -= 1;
-	
-            GroupIndexType groupIdx = pBridge->GetGirderGroupIndex(spanIndex);
-	         GirderIndexType nGirders = pBridge->GetGirderCount(groupIdx);
-	         for ( GirderIndexType gdr = 0; gdr < nGirders; gdr++ )
-	         {
-	            CComPtr<IDirection> girderDirection;
-		
-	            SegmentIndexType segIdx = 0;
-	            pBridge->GetSegmentBearing(segmentKey,&girderDirection);
-		
-	            CComPtr<IDirection> girderNormal;
-	            girderDirection->Increment(CComVariant(PI_OVER_2),&girderNormal);
+            // check maximum skew angle... AASHTO defines the skew angle as...
+            // The largest skew angle (theta) in the BRIDGE SYSTEM where (theta)
+            // is the angle of a bearing line measured relative to a normal to
+            // the cneterline of a longitudial component
+            if ( !bMaxSkewAngleComputed )
+            {
+               // the max skew angle for the BRIDGE SYSTEM only needs to be
+               // computed once. Compute it and cache it
+	            Float64 maxSkew = 0;
+	            PierIndexType nPiers = pBridge->GetPierCount();
+	            for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
+	            {
+	               CComPtr<IDirection> pierDirection;
+	               pBridge->GetPierDirection(pierIdx,&pierDirection);
+      	
+	               SpanIndexType spanIndex = pierIdx;
+	               if ( nPiers-1 == pierIdx ) // at the last pier... use the previous span index
+	                  spanIndex -= 1;
+      	
+                  GroupIndexType groupIdx = pBridge->GetGirderGroupIndex(spanIndex);
+	               GirderIndexType nGirders = pBridge->GetGirderCount(groupIdx);
+	               for ( GirderIndexType gdr = 0; gdr < nGirders; gdr++ )
+	               {
+	                  CComPtr<IDirection> girderDirection;
+      		
+	                  SegmentIndexType segIdx = 0;
+	                  pBridge->GetSegmentBearing(segmentKey,&girderDirection);
+      		
+	                  CComPtr<IDirection> girderNormal;
+	                  girderDirection->Increment(CComVariant(PI_OVER_2),&girderNormal);
 
-               CComPtr<IAngle> angle;
-	            girderNormal->AngleBetween(pierDirection,&angle);
-	
-	            Float64 angle_value;
-	            angle->get_Value(&angle_value);
-	
-	            if ( M_PI < angle_value )
-	               angle_value = TWO_PI - angle_value;
-	
-	            maxSkew = _cpp_max(maxSkew,angle_value);
+                     CComPtr<IAngle> angle;
+	                  girderNormal->AngleBetween(pierDirection,&angle);
+      	
+	                  Float64 angle_value;
+	                  angle->get_Value(&angle_value);
+      	
+	                  if ( M_PI < angle_value )
+	                     angle_value = TWO_PI - angle_value;
+      	
+	                  maxSkew = _cpp_max(maxSkew,angle_value);
+	               }
+	            }
+               bMaxSkewAngleComputed = true;
+               m_MaxSkewAngle = maxSkew;
+            }
+   	
+	         if ( 75.*M_PI/180. < m_MaxSkewAngle )
+	         {
+	            // skew is too large
+	            std::_tostringstream os;
+	            os << "The maximum skew angle in the bridge system exceeds the limit of 75 degrees for computing effective flange width (LRFD 4.6.2.6.1)" << std::endl;
+   	
+	            pgsBridgeDescriptionStatusItem* pStatusItem = 
+	               new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,pgsBridgeDescriptionStatusItem::General,os.str().c_str());
+   	
+	            pStatusCenter->Add(pStatusItem);
+   	
+	            os << "See Status Center for Details";
+	            THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
+   	
 	         }
-	      }
-	
-	      if ( 75.*M_PI/180. < maxSkew )
-	      {
-	         // skew is too large
-	         std::_tostringstream os;
-	         os << "The maximum skew angle in the bridge system exceeds the limit of 75 degrees for computing effective flange width (LRFD 4.6.2.6.1)" << std::endl;
-	
-	         pgsBridgeDescriptionStatusItem* pStatusItem = 
-	            new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,pgsBridgeDescriptionStatusItem::General,os.str().c_str());
-	
-	         pStatusCenter->Add(pStatusItem);
-	
-	         os << "See Status Center for Details";
-	         THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
-	
-	      }
          }
       }
 
@@ -1010,8 +1016,6 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
 
 void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange_Prismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType leftGdrID,GirderIDType gdrID,GirderIDType rightGdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
-#pragma Reminder("UPDATE: assuming same number of segments in all girders")
-
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -1569,9 +1573,6 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
 
 void CEffectiveFlangeWidthTool::GetBeamFactory(IBroker* pBroker,const CSegmentKey& segmentKey,IBeamFactory** factory)
 {
-#pragma Reminder("UPDATE: re-implement this so it calls the parent agent method")
-   // the method in the agent is more general and deals with spliced girder bridges
-
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);

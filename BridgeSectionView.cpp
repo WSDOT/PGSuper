@@ -760,7 +760,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       Float64 start_connection_length = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
       Float64 start_bearing_offset    = pBridge->GetSegmentStartBearingOffset(thisSegmentKey);
       Float64 end_offset = start_bearing_offset - start_connection_length;
-#pragma Reminder("BUG: ?? should be using girder length, not segment length")
+
       Float64 segment_length = pBridge->GetSegmentLength(thisSegmentKey);
 
       const CPrecastSegmentData* pSegment = pGirder->GetSegment(thisSegmentKey.segmentIndex);
@@ -1009,16 +1009,11 @@ void CBridgeSectionView::BuildOverlayDisplayObjects()
    right_offset = pBridge->GetRightOverlayToeOffset(dist_from_start_of_bridge);
 
    GET_IFACE2(pBroker,IRoadway,pRoadway);
-   Float64 left_elev  = pRoadway->GetElevation(station,left_offset);
-   Float64 right_elev = pRoadway->GetElevation(station,right_offset);
-
-   GET_IFACE2(pBroker,IRoadwayData,pRoadwayData);
-   Float64 crown_point_offset = pRoadway->GetCrownPointOffset(station);
-   Float64 crown_point_elev = pRoadway->GetElevation(station,crown_point_offset);
+   CComPtr<IPoint2dCollection> surfacePoints;
+   pRoadway->GetRoadwaySurface(station,&surfacePoints);
 
    CComPtr<IPoint2d> pos;
-   pos.CoCreateInstance(CLSID_Point2d);
-   pos->Move(left_offset,left_elev);
+   surfacePoints->get_Item(0,&pos);
    dispObj->SetPosition(pos,FALSE,FALSE);
 
    // create a poly shape to represent the overlay
@@ -1048,36 +1043,29 @@ void CBridgeSectionView::BuildOverlayDisplayObjects()
 
    // associate the strategy with the display object
    dispObj->SetDrawingStrategy(strategy);
-   CComPtr<IPoint2d> p1,p2,p3,p4,p5,p6;
-   p1.CoCreateInstance(CLSID_Point2d);
-   p1->Move(left_offset,left_elev);
 
-   p2.CoCreateInstance(CLSID_Point2d);
-   p2->Move(left_offset,left_elev+depth);
+   // Fill up the polygon
+   IndexType nPoints;
+   surfacePoints->get_Count(&nPoints);
 
-   p3.CoCreateInstance(CLSID_Point2d);
-   p3->Move(crown_point_offset,crown_point_elev+depth);
+   // points along the bottom of the overlay (along the top of deck)
+   for (IndexType pntIdx = 0; pntIdx < nPoints; pntIdx++ )
+   {
+      CComPtr<IPoint2d> pnt;
+      surfacePoints->get_Item(pntIdx,&pnt);
+      poly_shape->AddPointEx(pnt);
+   }
 
-   p4.CoCreateInstance(CLSID_Point2d);
-   p4->Move(right_offset,right_elev+depth);
-
-   p5.CoCreateInstance(CLSID_Point2d);
-   p5->Move(right_offset,right_elev);
-
-   p6.CoCreateInstance(CLSID_Point2d);
-   p6->Move(crown_point_offset,crown_point_elev);
-
-   poly_shape->AddPointEx(p1);
-   poly_shape->AddPointEx(p2);
-
-   if ( InRange(left_offset,crown_point_offset,right_offset) )
-      poly_shape->AddPointEx(p3);
-
-   poly_shape->AddPointEx(p4);
-   poly_shape->AddPointEx(p5);
-
-   if ( InRange(left_offset,crown_point_offset,right_offset) )
-      poly_shape->AddPointEx(p6);
+   // now work backwards, offset the point by the depth of the overlay
+   for ( IndexType pntIdx = nPoints-1; pntIdx != INVALID_INDEX; pntIdx-- )
+   {
+      CComPtr<IPoint2d> pnt;
+      surfacePoints->get_Item(pntIdx,&pnt);
+      CComPtr<IPoint2d> topPoint;
+      pnt->Clone(&topPoint);
+      topPoint->Offset(0,depth);
+      poly_shape->AddPointEx(topPoint);
+   }
 
    display_list->AddDisplayObject(dispObj);
 }
@@ -1118,7 +1106,7 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    if ( left_shape )
    {
       // rotate the shape to match the crown slope
-      Float64 slope = pAlignment->GetCrownSlope(cut_station,left_curb_offset);
+      Float64 slope = pAlignment->GetSlope(cut_station,left_curb_offset);
       Float64 angle = atan(slope);
 
       // Rotate shape around edge of deck - this is where barrier origin is placed
@@ -1158,7 +1146,7 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    if ( right_shape )
    {
       // rotate the shape to match the crown slope
-      Float64 slope = pAlignment->GetCrownSlope(cut_station,right_curb_offset);
+      Float64 slope = pAlignment->GetSlope(cut_station,right_curb_offset);
       Float64 angle = atan(slope);
       CComQIPtr<IXYPosition> position(right_shape);
       CComPtr<IPoint2d> hook_point;

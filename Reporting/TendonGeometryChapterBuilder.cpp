@@ -77,11 +77,7 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
    if ( pTendonGeom->GetDuctCount(girderKey) == 0 )
       return pChapter;
 
-#pragma Reminder("UPDATE: assuming only one duct")
-   DuctIndexType ductIdx = 0;
-
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-   IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),  false);
    INIT_UV_PROTOTYPE( rptLengthUnitValue,        X,        pDisplayUnits->GetSpanLengthUnit(),  false);
@@ -91,46 +87,49 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
    location.IncludeSpanAndGirder(true);
 
 
-   //X.ShowUnitTag(true);
-   //*pPara << _T("Anchor Set Zone Length (Left)  = ") << X.SetValue(pLosses->GetAnchorSetZoneLength(girderKey,ductIdx,pgsTypes::metStart)) << rptNewLine;
-   //*pPara << _T("Anchor Set Zone Length (Right) = ") << X.SetValue(pLosses->GetAnchorSetZoneLength(girderKey,ductIdx,pgsTypes::metEnd  )) << rptNewLine;
-   //X.ShowUnitTag(false);
-
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(8,_T("Tendon Geometry"));
-   *pPara << pTable << rptNewLine;
-
-   ColumnIndexType col = 0;
-   (*pTable)(0,col++) << _T("POI");
-   (*pTable)(0,col++) << COLHDR(_T("X"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*pTable)(0,col++) << COLHDR(_T("Y"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*pTable)(0,col++) << COLHDR(Sub2(_T("e"),_T("pt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*pTable)(0,col++) << symbol(alpha) << rptNewLine << _T("(from Start)");
-   (*pTable)(0,col++) << symbol(alpha) << rptNewLine << _T("(from End)");
-   (*pTable)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pF")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pA")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-
-   std::vector<pgsPointOfInterest> vPOI(pSegmentPOI->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)));
-
-   RowIndexType row = 1;
-   std::vector<pgsPointOfInterest>::iterator iter(vPOI.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPOI.end());
-   for ( ; iter != end; iter++, row++ )
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
+   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
-      col = 0;
+      CString strTitle;
+      strTitle.Format(_T("Tendon Geometry - Tendon %d"),LABEL_DUCT(ductIdx));
+      rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(8,strTitle);
+      *pPara << pTable << rptNewLine;
 
-      pgsPointOfInterest& poi = *iter;
-      const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi);
+      IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
 
-      const FRICTIONLOSSDETAILS& frDetails(pDetails->FrictionLossDetails[ductIdx]);
+      ColumnIndexType col = 0;
+      (*pTable)(0,col++) << _T("POI");
+      (*pTable)(0,col++) << COLHDR(_T("X"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+      (*pTable)(0,col++) << COLHDR(_T("Y"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*pTable)(0,col++) << COLHDR(Sub2(_T("e"),_T("pt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*pTable)(0,col++) << symbol(alpha) << rptNewLine << _T("(from Start)");
+      (*pTable)(0,col++) << symbol(alpha) << rptNewLine << _T("(from End)");
+      (*pTable)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pF")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*pTable)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pA")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      (*pTable)(row,col++) << location.SetValue(POI_GIRDER,poi,0.0);
-      (*pTable)(row,col++) << X.SetValue( frDetails.X );
-      (*pTable)(row,col++) << ecc.SetValue(pTendonGeom->GetDuctOffset(stressTendonIntervalIdx,poi,ductIdx));
-      (*pTable)(row,col++) << ecc.SetValue(pTendonGeom->GetEccentricity(stressTendonIntervalIdx,poi,ductIdx));
-      (*pTable)(row,col++) << pTendonGeom->GetAngularChange(poi,ductIdx,pgsTypes::metStart);
-      (*pTable)(row,col++) << pTendonGeom->GetAngularChange(poi,ductIdx,pgsTypes::metEnd);
-      (*pTable)(row,col++) << stress.SetValue( frDetails.dfpF ); // friction
-      (*pTable)(row,col++) << stress.SetValue( frDetails.dfpA ); // anchor set
+      std::vector<pgsPointOfInterest> vPOI(pSegmentPOI->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)));
+
+      RowIndexType row = 1;
+      std::vector<pgsPointOfInterest>::iterator iter(vPOI.begin());
+      std::vector<pgsPointOfInterest>::iterator end(vPOI.end());
+      for ( ; iter != end; iter++, row++ )
+      {
+         col = 0;
+
+         pgsPointOfInterest& poi = *iter;
+         const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi);
+
+         const FRICTIONLOSSDETAILS& frDetails(pDetails->FrictionLossDetails[ductIdx]);
+
+         (*pTable)(row,col++) << location.SetValue(POI_GIRDER,poi,0.0);
+         (*pTable)(row,col++) << X.SetValue( frDetails.X );
+         (*pTable)(row,col++) << ecc.SetValue(pTendonGeom->GetDuctOffset(stressTendonIntervalIdx,poi,ductIdx));
+         (*pTable)(row,col++) << ecc.SetValue(pTendonGeom->GetEccentricity(stressTendonIntervalIdx,poi,ductIdx));
+         (*pTable)(row,col++) << pTendonGeom->GetAngularChange(poi,ductIdx,pgsTypes::metStart);
+         (*pTable)(row,col++) << pTendonGeom->GetAngularChange(poi,ductIdx,pgsTypes::metEnd);
+         (*pTable)(row,col++) << stress.SetValue( frDetails.dfpF ); // friction
+         (*pTable)(row,col++) << stress.SetValue( frDetails.dfpA ); // anchor set
+      }
    }
 
    return pChapter;

@@ -316,16 +316,6 @@ void CBulbTeeFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const
    pPoiMgr->AddPointOfInterest(poiStart);
    pPoiMgr->AddPointOfInterest(poiEnd);
 
-   // move bridge site poi to the start/end bearing
-   Float64 start_length = pBridge->GetSegmentStartEndDistance(segmentKey);
-   Float64 end_length   = pBridge->GetSegmentEndEndDistance(segmentKey);
-
-   poiStart.SetDistFromStart(start_length);
-   poiEnd.SetDistFromStart(gdrLength-end_length);
-
-   pPoiMgr->AddPointOfInterest(poiStart);
-   pPoiMgr->AddPointOfInterest(poiEnd);
-
    if ( !IsPrismatic(pBroker,segmentKey) )
    {
       pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,1*gdrLength/8,POI_SECTCHANGE_TRANSITION ) );

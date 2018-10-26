@@ -93,12 +93,12 @@ rptRcTable* CUserShearTable::Build(IBroker* pBroker,const CGirderKey& girderKey,
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    GET_IFACE2(pBroker,IProductForces,pForces);
-   pgsTypes::BridgeAnalysisType maxBAT = pForces->GetBridgeAnalysisType(pgsTypes::Maximize);
-   pgsTypes::BridgeAnalysisType minBAT = pForces->GetBridgeAnalysisType(pgsTypes::Minimize);
+   pgsTypes::BridgeAnalysisType maxBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType minBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -122,13 +122,13 @@ rptRcTable* CUserShearTable::Build(IBroker* pBroker,const CGirderKey& girderKey,
 
       maxDC1 = pForces2->GetShear( castDeckIntervalIdx, pftUserDC, vPoi, maxBAT );
       minDC1 = pForces2->GetShear( castDeckIntervalIdx, pftUserDC, vPoi, minBAT );
-      maxDC2 = pForces2->GetShear( compositeDeckIntervalIdx, pftUserDC, vPoi, maxBAT );
-      minDC2 = pForces2->GetShear( compositeDeckIntervalIdx, pftUserDC, vPoi, minBAT );
+      maxDC2 = pForces2->GetShear( railingSystemIntervalIdx, pftUserDC, vPoi, maxBAT );
+      minDC2 = pForces2->GetShear( railingSystemIntervalIdx, pftUserDC, vPoi, minBAT );
 
       maxDW1 = pForces2->GetShear( castDeckIntervalIdx, pftUserDW, vPoi, maxBAT );
       minDW1 = pForces2->GetShear( castDeckIntervalIdx, pftUserDW, vPoi, minBAT );
-      maxDW2 = pForces2->GetShear( compositeDeckIntervalIdx, pftUserDW, vPoi, maxBAT );
-      minDW2 = pForces2->GetShear( compositeDeckIntervalIdx, pftUserDW, vPoi, minBAT );
+      maxDW2 = pForces2->GetShear( railingSystemIntervalIdx, pftUserDW, vPoi, maxBAT );
+      minDW2 = pForces2->GetShear( railingSystemIntervalIdx, pftUserDW, vPoi, minBAT );
       maxLL3 = pForces2->GetShear( liveLoadIntervalIdx, pftUserLLIM, vPoi, maxBAT );
       minLL3 = pForces2->GetShear( liveLoadIntervalIdx, pftUserLLIM, vPoi, minBAT );
 

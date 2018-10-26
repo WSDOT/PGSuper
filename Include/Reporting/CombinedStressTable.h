@@ -77,7 +77,7 @@ public:
                       const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits,
                       IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
-                      bool bDesign = true,bool bRating = true) const;
+                      bool bDesign,bool bRating) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
@@ -91,7 +91,7 @@ protected:
                       const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits,
                       IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
-                      bool bDesign = true,bool bRating = true) const;
+                      bool bDesign,bool bRating) const;
 
    //------------------------------------------------------------------------
    virtual void BuildCombinedLiveTable(IBroker* pBroker, rptChapter* pChapter,

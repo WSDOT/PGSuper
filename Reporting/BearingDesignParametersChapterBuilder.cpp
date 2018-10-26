@@ -90,16 +90,10 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    GET_IFACE2(pBroker,IBearingDesign,pBearing);
 
-   // Don't create report if no simple span ends
+   // Don't create much of report if no simple span ends
    bool doStartPier, doEndPier;
-   pBearing->AreBearingReactionsAvailable(girderKey, &doStartPier, &doEndPier);
-   if( !(doStartPier || doEndPier) )
-   {
-      rptParagraph* p = new rptParagraph;
-      *p << _T("Bearing Reactions are not available if neither end of girder is simply supported") << rptNewLine;
-      *pChapter << p;
-      return pChapter;
-   }
+   pBearing->AreBearingReactionsAvailable(intervalIdx, girderKey, &doStartPier, &doEndPier);
+   bool doFinalLoads = doStartPier || doEndPier;
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bPedestrian = pProductLoads->HasPedestrianLoad();
@@ -109,13 +103,24 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    // Product Reactions
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
-   *p << CProductReactionTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(),CProductReactionTable::BearingReactionsTable,false,true,true,false,true,pDisplayUnits) << rptNewLine;
-   *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
+   *p << CProductReactionTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(),BearingReactionsTable,false,true,true,false,true,pDisplayUnits) << rptNewLine;
 
-   if (bPedestrian)
-      *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+   if( doFinalLoads )
+   {
+      *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
 
-   CTSRemovalReactionTable().Build(pChapter,pBroker,girderKey,pSpec->GetAnalysisType(),CTSRemovalReactionTable::BearingReactionsTable,pDisplayUnits);
+      if (bPedestrian)
+         *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+   }
+   else
+   {
+      rptParagraph* p = new rptParagraph;
+      *p << _T("Final Bearing Reactions are not available if neither end of girder is simply supported") << rptNewLine;
+      *pChapter << p;
+      return pChapter;
+   }
+
+   CTSRemovalReactionTable().Build(pChapter,pBroker,girderKey,pSpec->GetAnalysisType(),BearingReactionsTable,pDisplayUnits);
 
    *p << rptNewLine;
 
@@ -149,7 +154,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    if (are_user_loads)
    {
-      *p << CUserReactionTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(),CUserReactionTable::BearingReactionsTable,pDisplayUnits) << rptNewLine;
+      *p << CUserReactionTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(),BearingReactionsTable,pDisplayUnits) << rptNewLine;
    }
 
    // Combined reactions
@@ -226,8 +231,6 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
-   GET_IFACE2(pBroker,IGirderSegment,pGdrSegment);
-
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
    std::vector<pgsPointOfInterest> vPoi1( pPOI->GetPointsOfInterest(CSegmentKey(girderKey,0),POI_ERECTED_SEGMENT | POI_0L,POIFIND_AND) );
@@ -236,12 +239,12 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    // TRICKY: use adapter class to get correct reaction interfaces
    GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
-   std::auto_ptr<IProductReactionAdapter> pForces = std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, startPierIdx, endPierIdx) );
+   std::auto_ptr<IProductReactionAdapter> pForces = std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, intervalIdx, girderKey) );
 
-   PierIndexType pier = 0;
-   for ( pier = startPierIdx; pier <= endPierIdx; pier++ )
+   PierIndexType pierIdx = 0;
+   for ( pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
    {
-      if (!pForces->DoReportAtPier(pier, girderKey))
+      if (!pForces->DoReportAtPier(pierIdx, girderKey))
       {
          // Don't report pier if information is not available
          continue;
@@ -249,15 +252,15 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       
       ColumnIndexType col = 0;
 
-      pgsTypes::PierFaceType pierFace = (pier == startPierIdx ? pgsTypes::Ahead : pgsTypes::Back );
+      pgsTypes::PierFaceType pierFace = (pierIdx == startPierIdx ? pgsTypes::Ahead : pgsTypes::Back );
 
-      if ( pier == 0 || pier == nPiers-1 )
-         (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(pier);
+      if ( pierIdx == 0 || pierIdx == nPiers-1 )
+         (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(pierIdx);
       else
-         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
+         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pierIdx);
 
       pgsPointOfInterest poi;
-      if ( pier == startPierIdx )
+      if ( pierIdx == startPierIdx )
       {
          poi = vPoi1.front();
       }
@@ -429,9 +432,9 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    row = pTable->GetNumberOfHeaderRows();
 
-   for ( pier = startPierIdx; pier <= endPierIdx; pier++ )
+   for ( pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
    {
-      if (!pForces->DoReportAtPier(pier, girderKey))
+      if (!pForces->DoReportAtPier(pierIdx, girderKey))
       {
          // Don't report pier if information is not available
          continue;
@@ -439,20 +442,20 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
       ColumnIndexType col = 0;
 
-      pgsTypes::PierFaceType pierFace = (pier == startPierIdx ? pgsTypes::Ahead : pgsTypes::Back );
+      pgsTypes::PierFaceType pierFace = (pierIdx == startPierIdx ? pgsTypes::Ahead : pgsTypes::Back );
 
-      if ( pier == 0 || pier == nPiers-1 )
-         (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(pier);
+      if ( pierIdx == 0 || pierIdx == nPiers-1 )
+         (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(pierIdx);
       else
-         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
+         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pierIdx);
 
 
-      Float64 slope1 = pBridge->GetSegmentSlope( pier == startPierIdx ? CSegmentKey(girderKey,0) : CSegmentKey(girderKey,nSegments-1) );
+      Float64 slope1 = pBridge->GetSegmentSlope( pierIdx == startPierIdx ? CSegmentKey(girderKey,0) : CSegmentKey(girderKey,nSegments-1) );
       (*pTable)(row,col++) << scalar.SetValue(slope1);
 
       
       pgsPointOfInterest poi;
-      if ( pier == startPierIdx )
+      if ( pierIdx == startPierIdx )
       {
          poi = vPoi1.front();
       }

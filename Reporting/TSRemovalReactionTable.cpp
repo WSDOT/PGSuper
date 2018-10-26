@@ -72,7 +72,7 @@ CTSRemovalReactionTable& CTSRemovalReactionTable::operator= (const CTSRemovalRea
 }
 
 
-void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,TableType tableType,IEAFDisplayUnits* pDisplayUnits) const
+void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,ReactionTableType tableType,IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -81,6 +81,8 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
    IntervalIndexType continuity_interval;
    GET_IFACE2(pBroker,IBridge,pBridge);
+   bool bIsFutureOverlay = pBridge->IsFutureOverlay();
+
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType startGroup = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroup   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroup);
@@ -93,8 +95,8 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
    GET_IFACE2(pBroker,IProductForces2,pForces2);
    GET_IFACE2(pBroker,IProductLoads,pLoads);
    GET_IFACE2(pBroker,IProductForces,pProdForces);
-   pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
-   pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(pgsTypes::Minimize);
+   pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
@@ -105,17 +107,6 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 
    GET_IFACE2(pBroker,IProductForces,pProductForces);
    GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
-
-   // TRICKY: use adapter class to get correct reaction interfaces
-   std::auto_ptr<IProductReactionAdapter> pForces;
-   if( tableType == PierReactionsTable )
-   {
-      pForces =  std::auto_ptr<ProductForcesReactionAdapter>(new ProductForcesReactionAdapter(pProductForces));
-   }
-   else
-   {
-      pForces =  std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, startPier, endPier) );
-   }
 
    std::set<IntervalIndexType> tsrIntervals;
    for ( GroupIndexType grpIdx = startGroup; grpIdx <= endGroup; grpIdx++ )
@@ -145,7 +136,7 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
       if ( tsrIntervals.size() == 0 )
          continue; // next group
 
-
+#pragma Reminder("UPDATE: can this be re-worked to use RDP's ReactionLocationIterator?")
 
       std::set<IntervalIndexType>::iterator iter(tsrIntervals.begin());
       std::set<IntervalIndexType>::iterator end(tsrIntervals.end());
@@ -156,6 +147,16 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
          ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,false,false,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuity_interval,&startGroup,&nGroups);
          bPedLoading = false;
          bPermit     = false;
+
+         std::auto_ptr<IProductReactionAdapter> pForces;
+         if( tableType == PierReactionsTable )
+         {
+            pForces =  std::auto_ptr<ProductForcesReactionAdapter>(new ProductForcesReactionAdapter(pProductForces,girderKey));
+         }
+         else
+         {
+            pForces =  std::auto_ptr<BearingDesignProductReactionAdapter>(new BearingDesignProductReactionAdapter(pBearingDesign, continuity_interval, girderKey) );
+         }
 
          CString strLabel;
          strLabel.Format(_T("Reactions due to removal of temporary supports in Interval %d"),LABEL_INTERVAL(tsrIntervalIdx));
@@ -173,7 +174,7 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 
          location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
-         RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,true,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,false,bPedLoading,
+         RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,true,false,bConstruction,bDeckPanels,bSidewalk,bShearKey,bIsFutureOverlay,false,bPedLoading,
                                                                                                bPermit,false,analysisType,continuity_interval,
                                                                                                pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
          // write out the results

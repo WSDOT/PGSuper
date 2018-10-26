@@ -27,10 +27,16 @@
 
 struct txnEditClosurePourData
 {
+   txnEditClosurePourData()
+   { m_ClosureEventIdx = INVALID_INDEX; m_PierIdx = INVALID_INDEX; m_TSIdx = INVALID_INDEX; }
+
    bool operator<(const txnEditClosurePourData& rOther) const { return m_ClosureKey < rOther.m_ClosureKey; }
+
    CSegmentKey m_ClosureKey;
    CClosurePourData m_ClosurePour;
    EventIndexType m_ClosureEventIdx;
+   PierIndexType m_PierIdx;
+   SupportIndexType m_TSIdx;
 };
 
 class txnEditClosurePour : public txnTransaction

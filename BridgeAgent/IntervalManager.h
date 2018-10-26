@@ -91,7 +91,7 @@ public:
    IntervalIndexType GetOverlayInterval() const;
 
    // returns index of interval when the railing system is installed
-   IntervalIndexType GetRailingSystemInterval() const;
+   IntervalIndexType GetInstallRailingSystemInterval() const;
 
    // returns the interval index when a temporary support is removed
    IntervalIndexType GetTemporarySupportRemovalInterval(SupportIDType tsID) const;

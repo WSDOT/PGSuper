@@ -133,6 +133,7 @@ public:
 
 // IProductLoads
 public:
+   virtual pgsTypes::BridgeAnalysisType GetBridgeAnalysisType(pgsTypes::AnalysisType analysisType,pgsTypes::OptimizationType optimization);
    virtual pgsTypes::BridgeAnalysisType GetBridgeAnalysisType(pgsTypes::OptimizationType optimization);
    virtual void GetGirderSelfWeightLoad(const CSegmentKey& segmentKey,std::vector<GirderLoad>* pDistLoad,std::vector<DiaphragmLoad>* pPointLoad);
    virtual Float64 GetTrafficBarrierLoad(const CSegmentKey& segmentKey);
@@ -364,7 +365,7 @@ public:
 
 // IBearingDesign
 public:
-   virtual bool AreBearingReactionsAvailable(const CGirderKey& girderKey, bool* pBleft, bool* pBright);
+   virtual bool AreBearingReactionsAvailable(IntervalIndexType intervalIdx,const CGirderKey& girderKey, bool* pBleft, bool* pBright);
 
    virtual void GetBearingProductReaction(IntervalIndexType intervalIdx,ProductForceType type,const CGirderKey& girderKey,
                                           CombinationType cmbtype, pgsTypes::BridgeAnalysisType bat, Float64* pLftEnd,Float64* pRgtEnd);
@@ -615,7 +616,6 @@ private:
 
    void CheckGirderEndGeometry(IBridge* pBridge,const CGirderKey& girderKey);
    void BuildBridgeSiteModel(GirderIndexType gdrIdx,bool bContinuous,IContraflexureResponse* pContraflexureResponse,IContraflexureResponse* pDeflContraflexureResponse,ILBAMModel* pModel);
-   void ModelCantilevers(const CSegmentKey& segmentKey,bool* pbStartCantilever,bool* pbEndCantilever);
    void ApplySelfWeightLoad(ILBAMModel* pModel, pgsTypes::AnalysisType analysisType,GirderIndexType gdrIdx);
    void ApplyDiaphragmLoad(ILBAMModel* pModel, pgsTypes::AnalysisType analysisType,GirderIndexType gdrIdx);
    void ApplySlabLoad(ILBAMModel* pModel, pgsTypes::AnalysisType analysisType,GirderIndexType gdrIdx);
@@ -847,6 +847,8 @@ private:
 
    // Returns the number of superstructure members used to model the segment
    IndexType GetSuperstructureMemberCount(const CSegmentKey& segmentKey);
+
+   void ConfigureLBAMPoisForReactions(PierIndexType pierIdx,IntervalIndexType intervalIdx,pgsTypes::BridgeAnalysisType bat);
 };
 
 #endif //__ANALYSISAGENT_H_

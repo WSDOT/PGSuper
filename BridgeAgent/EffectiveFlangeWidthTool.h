@@ -97,6 +97,10 @@ private:
    StatusCallbackIDType m_scidEffectiveFlangeWidthWarning;
    StatusCallbackIDType m_scidEffectiveFlangeWidthInfo;
 
+   // Max skew angle check
+   bool bMaxSkewAngleComputed;
+   Float64 m_MaxSkewAngle;
+
    // container for tributary width
    struct TribWidth
    {

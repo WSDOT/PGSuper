@@ -164,12 +164,33 @@ interface IBridge : IUnknown
    // Returns the distance along the alignment from the start of the bridge to a particular station
    virtual Float64 GetDistanceFromStartOfBridge(Float64 station) = 0;
 
-   // Returns the brg-brg span length for the specified girder in the specified span
-   // measured along the CL girder
+   // Returns the distance along the alignment from the start of the bridge to
+   // the station where a line normal to the alignment, passing through the POI
+   // intersects the alignment
+   virtual Float64 GetDistanceFromStartOfBridge(const pgsPointOfInterest& poi) = 0;
+
+   // Returns the span length for the specified girder in the specified span
+   // measured along the CL girder. The span length is measured from the CL Piers
+   // except for the first and last span in the bridge where it is measured from the CL Bearing.
    virtual Float64 GetSpanLength(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
 
-   // returns the CL Pier to CL Pier girder length
+   // Returns the span length for the specified girder in the specifed span
+   // measured along the CL girder. This span length is the length used for
+   // user defined loads when a fractional measure is used to describe the position
+   // of the load. This method differs from GetSpanLength(spanIdx,gdrIdx) in that it
+   // accounts for the geometry and boundary condition at boundary piers that have a 
+   // simple span connection type (hinge/roller).
+   virtual Float64 GetLoadingSpanLength(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
+
+   // returns the length of a spliced girder measured along the centerline of its segments between backs of pavement seats
    virtual Float64 GetGirderLayoutLength(const CGirderKey& girderKey) = 0;
+
+   // returns the length of the girder measured along the centerline of its segments between the CL-Bearing
+   // at the end piers
+   virtual Float64 GetGirderSpanLength(const CGirderKey& girderKey) = 0;
+
+   // returns the end to end length of the girder measured along the centerline of its segments
+   virtual Float64 GetGirderLength(const CGirderKey& girderKey) = 0;
 
    //
    // Segment geometry
@@ -178,7 +199,8 @@ interface IBridge : IUnknown
    // Returns a vector of segment index/length pairs for the length of each segment in a span for a given girder.
    // The first item in the pair is the segment index and the segment item is the length of the segment
    // in the given span. Segment lengths are measured between CL-Piers and CL-Temporary Supports except for the
-   // first and last segment in a group where the start and end of the segments are measured from the CL-Bearing.
+   // first in the first group and and last segment in the last group where the start and end of the segments 
+   // are measured from the CL-Bearing.
    virtual std::vector<std::pair<SegmentIndexType,Float64>> GetSegmentLengths(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
 
    // Determines the segment, and the location on the segment, for a point measured from the start of a span along a girder line
@@ -256,11 +278,6 @@ interface IBridge : IUnknown
    // Computes the intersection point of a segment and a temporary support. Returns true if the intersection is found
    virtual bool GetSegmentTempSupportIntersection(const CSegmentKey& segmentKey,SupportIndexType tsIdx,IPoint2d** ppPoint) = 0;
 
-
-   // Gets the span index and distance from the start of the span (measured from CL Pier) for a point
-   // measured from the CL Pier of the first abutment to a point on a girderline
-   virtual void GetDistFromStartOfSpan(GirderIndexType gdrIdx,Float64 distFromStartOfBridge,SpanIndexType* pSpanIdx,Float64* pDistFromStartOfSpan) = 0;
-
    // Returns true if the girder is in an interior girder
    virtual bool IsInteriorGirder(const CGirderKey& girderKey) = 0;
 
@@ -326,32 +343,68 @@ interface IBridge : IUnknown
    virtual Float64 GetPanelDepth(const pgsPointOfInterest& poi) = 0;
 
    // Returns distance from the left exterior girder to the edge of slab, measured normal to the alignment
+   // distFromStartOfBridge is measured along the alignment and can be easily determined by station
+   // at the section where the overhang is desired and the station of pier 0
    virtual Float64 GetLeftSlabOverhang(Float64 distFromStartOfBridge) = 0;
+   // distFromStartOfSpan is measured along the alignment and can be easily determined by station
+   // at the section where the overhang is desired and the station of the pier at the start of the span
    virtual Float64 GetLeftSlabOverhang(SpanIndexType span,Float64 distFromStartOfSpan) = 0;
+   // returns the overhang at the location where the CL Pier intserects the alignment
    virtual Float64 GetLeftSlabOverhang(PierIndexType pier) = 0;
 
    // Returns distance from the right exterior girder to the edge of slab, measured normal to the alignment
+   // distFromStartOfBridge is measured along the alignment and can be easily determined by station
+   // at the section where the overhang is desired and the station of pier 0
    virtual Float64 GetRightSlabOverhang(Float64 distFromStartOfBridge) = 0;
+   // distFromStartOfSpan is measured along the alignment and can be easily determined by station
+   // at the section where the overhang is desired and the station of the pier at the start of the span
    virtual Float64 GetRightSlabOverhang(SpanIndexType span,Float64 distFromStartOfSpan) = 0;
+   // returns the overhang at the location where the CL Pier intserects the alignment
    virtual Float64 GetRightSlabOverhang(PierIndexType pier) = 0;
 
    // Returns distance from the alignment to the left slab edge, measured normal to the alignment
+   // distFromStartOfBridge is measured along the alignment and can be easily determined by station
+   // at the section where the end offset is desired and the station of pier 0
    virtual Float64 GetLeftSlabEdgeOffset(Float64 distFromStartOfBridge) = 0;
+   // returns the edge offset at the location where the CL Pier intserects the alignment
    virtual Float64 GetLeftSlabEdgeOffset(PierIndexType pier) = 0;
 
    // Returns distance from the alignment to the right slab edge, measured normal to the alignment
+   // distFromStartOfBridge is measured along the alignment and can be easily determined by station
+   // at the section where the end offset is desired and the station of pier 0
    virtual Float64 GetRightSlabEdgeOffset(Float64 distFromStartOfBridge) = 0;
+   // returns the edge offset at the location where the CL Pier intserects the alignment
    virtual Float64 GetRightSlabEdgeOffset(PierIndexType pier) = 0;
 
-
+   // Returns the curb-to-curb width of the deck measured normal to the alignment along a line
+   // passing through the POI
    virtual Float64 GetCurbToCurbWidth(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetCurbToCurbWidth(const CSegmentKey& segmentKey,Float64 distFromStartOfSpan) = 0;
+   // Returns the curb-to-curb width of the deck measured at distFromStartOfBridge along the alignment.
+   // distFromStartOfBridge can be easily determined by station at the section where the end offset is
+   // desired and the station of pier 0
    virtual Float64 GetCurbToCurbWidth(Float64 distFromStartOfBridge) = 0;
+   // Returns the offset from the alignment to the left curb line measured at distFromStartOfBridge along the alignment.
+   // distFromStartOfBridge can be easily determined by station at the section where the end offset is
+   // desired and the station of pier 0
    virtual Float64 GetLeftCurbOffset(Float64 distFromStartOfBridge) = 0;
+   // Returns the offset from the alignment to the right curb line measured at distFromStartOfBridge along the alignment.
+   // distFromStartOfBridge can be easily determined by station at the section where the end offset is
+   // desired and the station of pier 0
    virtual Float64 GetRightCurbOffset(Float64 distFromStartOfBridge) = 0;
+   // Returns the offset from the alignment to the left curb line measured at distFromStartOfSpan along the alignment.
+   // distFromStartOfSpan can be easily determined by station at the section where the offset is
+   // desired and the station of the pier at the start of the span.
    virtual Float64 GetLeftCurbOffset(SpanIndexType span,Float64 distFromStartOfSpan) = 0;
+   // Returns the offset from the alignment to the right curb line measured at distFromStartOfSpan along the alignment.
+   // distFromStartOfSpan can be easily determined by station at the section where the offset is
+   // desired and the station of the pier at the start of the span.
    virtual Float64 GetRightCurbOffset(SpanIndexType span,Float64 distFromStartOfSpan) = 0;
+   // Returns the offset from the alignment to the left curb line along a line normal to the alignment
+   // passing through the point where the CL pier line intersects the alignment
    virtual Float64 GetLeftCurbOffset(PierIndexType pier) = 0;
+   // Returns the offset from the alignment to the right curb line along a line normal to the alignment
+   // passing through the point where the CL pier line intersects the alignment
    virtual Float64 GetRightCurbOffset(PierIndexType pier) = 0;
 
    // Offset distances to curbline of interior barrier or sidewalk curb if present
@@ -381,7 +434,7 @@ interface IBridge : IUnknown
    virtual void GetPierPoints(PierIndexType pier,IPoint2d** left,IPoint2d** alignment,IPoint2d** bridge,IPoint2d** right) = 0;
    virtual void IsContinuousAtPier(PierIndexType pierIdx,bool* pbLeft,bool* pbRight) = 0;
    virtual void IsIntegralAtPier(PierIndexType pierIdx,bool* pbLeft,bool* pbRight) = 0;
-   virtual void GetContinuityEventIndex(PierIndexType pierIdx,EventIndexType* pLeft,EventIndexType* pRight) = 0;
+   virtual void GetContinuityEventIndex(PierIndexType pierIdx,EventIndexType* pBack,EventIndexType* pAhead) = 0;
 
    // Returns the connection boundary condition at a pier (only valid if IsBoundaryPier returns true)
    virtual pgsTypes::PierConnectionType GetPierConnectionType(PierIndexType pierIdx) = 0;
@@ -1012,8 +1065,8 @@ interface ISectionProperties : IUnknown
 
    // Bending stiffness of entire bridge section - for deflection calculation
    // Crowns, slopes, and slab haunches are ignored.
-   virtual Float64 GetBridgeEIxx(Float64 distFromStart) = 0;
-   virtual Float64 GetBridgeEIyy(Float64 distFromStart) = 0;
+   virtual Float64 GetBridgeEIxx(Float64 distFromStartOfBridge) = 0;
+   virtual Float64 GetBridgeEIyy(Float64 distFromStartOfBridge) = 0;
 
 
    virtual Float64 GetSegmentWeightPerLength(const CSegmentKey& segmentKey) = 0;
@@ -1079,77 +1132,6 @@ interface IBarriers : public IUnknown
 
    virtual Float64 GetSidewalkWeight(pgsTypes::TrafficBarrierOrientation orientation) = 0;
    virtual bool HasSidewalk(pgsTypes::TrafficBarrierOrientation orientation) = 0;
-};
-
-/*****************************************************************************
-INTERFACE
-   IGirder
-
-   Interface for obtaining information about the girder
-
-DESCRIPTION
-   Interface for obtaining information about the girder
-*****************************************************************************/
-// {042428C6-03E8-4843-A9A5-09DCE1FC8CD6}
-DEFINE_GUID(IID_IGirder, 
-0x42428c6, 0x3e8, 0x4843, 0xa9, 0xa5, 0x9, 0xdc, 0xe1, 0xfc, 0x8c, 0xd6);
-interface IGirder : IUnknown
-{
-   virtual bool    IsPrismatic(IntervalIndexType intervalIdx,const CSegmentKey& segmentKey) = 0;
-   virtual bool    IsSymmetric(IntervalIndexType intervalIdx,const CSegmentKey& segmentKey) = 0; 
-   virtual MatingSurfaceIndexType  GetNumberOfMatingSurfaces(const CGirderKey& girderKey) = 0;
-
-   // Location of mating surface, measured from the CL girder. < 0 if left of CL.
-   virtual Float64 GetMatingSurfaceLocation(const pgsPointOfInterest& poi,MatingSurfaceIndexType idx) = 0;
-   virtual Float64 GetMatingSurfaceWidth(const pgsPointOfInterest& poi,MatingSurfaceIndexType idx) = 0;
-   virtual FlangeIndexType GetNumberOfTopFlanges(const CSegmentKey& segmentKey) = 0;
-   virtual Float64 GetTopFlangeLocation(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) = 0;
-   virtual Float64 GetTopFlangeWidth(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) = 0;
-   virtual Float64 GetTopFlangeThickness(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) = 0;
-   virtual Float64 GetTopFlangeSpacing(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) = 0;
-   virtual Float64 GetTopFlangeWidth(const pgsPointOfInterest& poi) = 0; // sum of mating surface widths
-   virtual Float64 GetTopWidth(const pgsPointOfInterest& poi) = 0;
-   virtual FlangeIndexType GetNumberOfBottomFlanges(const CSegmentKey& segmentKey) = 0;
-   virtual Float64 GetBottomFlangeLocation(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) = 0;
-   virtual Float64 GetBottomFlangeWidth(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) = 0;
-   virtual Float64 GetBottomFlangeThickness(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) = 0;
-   virtual Float64 GetBottomFlangeSpacing(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) = 0;
-   virtual Float64 GetBottomFlangeWidth(const pgsPointOfInterest& poi) = 0; // sum of mating surface widths
-   virtual Float64 GetBottomWidth(const pgsPointOfInterest& poi) = 0;
-   virtual Float64 GetMinWebWidth(const pgsPointOfInterest& poi) = 0;
-   virtual Float64 GetMinTopFlangeThickness(const pgsPointOfInterest& poi) = 0;
-   virtual Float64 GetMinBottomFlangeThickness(const pgsPointOfInterest& poi) = 0;
-
-   // Returns the height of the basic (non-composite) girder at the specified POI.
-   // Interval isn't taken into account so you always get a value.
-   virtual Float64 GetHeight(const pgsPointOfInterest& poi) = 0;
-   virtual Float64 GetShearWidth(const pgsPointOfInterest& poi) = 0; // bv for vertical shear
-   virtual Float64 GetShearInterfaceWidth(const pgsPointOfInterest& poi) = 0; // acv for horizontal shear
-
-   virtual WebIndexType GetWebCount(const CGirderKey& girderKey) = 0;
-	virtual Float64 GetWebLocation(const pgsPointOfInterest& poi,WebIndexType webIdx) = 0;
-	virtual Float64 GetWebSpacing(const pgsPointOfInterest& poi,WebIndexType spaceIdx) = 0;
-   virtual Float64 GetWebThickness(const pgsPointOfInterest& poi,WebIndexType webIdx) = 0;
-   virtual Float64 GetCL2ExteriorWebDistance(const pgsPointOfInterest& poi) = 0; // horiz. distance from girder cl to cl of exterior web
-
-   virtual void GetSegmentEndPoints(const CSegmentKey& segmentKey,IPoint2d** pntPier1,IPoint2d** pntEnd1,IPoint2d** pntBrg1,IPoint2d** pntBrg2,IPoint2d** pntEnd2,IPoint2d** pntPier2) = 0;
-
-   virtual Float64 GetOrientation(const CSegmentKey& segmentKey) = 0;
-
-   virtual Float64 GetTopGirderReferenceChordElevation(const pgsPointOfInterest& poi) = 0;
-   virtual Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,MatingSurfaceIndexType matingSurfaceIdx) = 0;
-   virtual Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,const GDRCONFIG& config,MatingSurfaceIndexType matingSurfaceIdx) = 0;
-
-   virtual Float64 GetSplittingZoneHeight(const pgsPointOfInterest& poi) = 0;
-   virtual pgsTypes::SplittingDirection GetSplittingDirection(const CGirderKey& girderKey) = 0;
-
-   virtual void GetProfileShape(const CSegmentKey& segmentKey,IShape** ppShape) = 0;
-
-   // Area of shear key. uniform portion assumes no joint, section is per joint spacing.
-   virtual bool HasShearKey(const CGirderKey& girderKey,pgsTypes::SupportedBeamSpacing spacingType)=0;
-   virtual void GetShearKeyAreas(const CGirderKey& girderKey,pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint)=0;
-
-   virtual void GetSegment(const CGirderKey& girderKey,Float64 distFromStartOfGirder,SegmentIndexType* pSegIdx,Float64* pDistFromStartOfSegment) = 0;
 };
 
 /*****************************************************************************
@@ -1221,16 +1203,116 @@ interface ITempSupport : public IUnknown
 
 /*****************************************************************************
 INTERFACE
-   IGirderSegment
-
+   IGirder
 DESCRIPTION
    Interface for obtaining information about girder segments
 *****************************************************************************/
 // {7B03736C-E8AD-49b9-BF5C-D5F6E61B50D5}
-DEFINE_GUID(IID_IGirderSegment, 
+DEFINE_GUID(IID_IGirder, 
 0x7b03736c, 0xe8ad, 0x49b9, 0xbf, 0x5c, 0xd5, 0xf6, 0xe6, 0x1b, 0x50, 0xd5);
-interface IGirderSegment : public IUnknown
+interface IGirder : public IUnknown
 {
+   // Returns true if the segment is prismatic in the specified interval
+   virtual bool    IsPrismatic(IntervalIndexType intervalIdx,const CSegmentKey& segmentKey) = 0;
+
+   // Returns true if the segment is symmetric in the specified interval. Symmetry is defined
+   // as the left end and right end of the girder is the same (same debonding, symmetric harp points, etc)
+   virtual bool    IsSymmetric(IntervalIndexType intervalIdx,const CSegmentKey& segmentKey) = 0; 
+
+   // Returns teh number of mating surfaces
+   virtual MatingSurfaceIndexType  GetNumberOfMatingSurfaces(const CGirderKey& girderKey) = 0;
+
+   // Location of mating surface, measured from the CL girder. < 0 if left of CL.
+   virtual Float64 GetMatingSurfaceLocation(const pgsPointOfInterest& poi,MatingSurfaceIndexType idx) = 0;
+
+   // Returns the width of a mating surface
+   virtual Float64 GetMatingSurfaceWidth(const pgsPointOfInterest& poi,MatingSurfaceIndexType idx) = 0;
+
+   // Returns the number of top flanges
+   virtual FlangeIndexType GetNumberOfTopFlanges(const CGirderKey& girderKey) = 0;
+
+   // Returns the location of the center of a top flange measured from the CL girder. < 0 if left of CL.
+   virtual Float64 GetTopFlangeLocation(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) = 0;
+
+   // Returns the width of a top flange
+   virtual Float64 GetTopFlangeWidth(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) = 0;
+
+   // Returns the total top flange width by summing with width of all the mating surfaces
+   virtual Float64 GetTopFlangeWidth(const pgsPointOfInterest& poi) = 0;
+
+   // Returns the overall top width of a girder (for U-beam, this would be out-to-out width at top of girder)
+   virtual Float64 GetTopWidth(const pgsPointOfInterest& poi) = 0;
+
+   // Returns the thickness of a top flange
+   virtual Float64 GetTopFlangeThickness(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) = 0;
+
+   // Returns the spacing between the centers of top flanges
+   virtual Float64 GetTopFlangeSpacing(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) = 0;
+
+   // Returns the number of bottom flanges
+   virtual FlangeIndexType GetNumberOfBottomFlanges(const CSegmentKey& segmentKey) = 0;
+
+   // Returns the location of the center of a bottom flange measured from the CL girder. < 0 if left of CL.
+   virtual Float64 GetBottomFlangeLocation(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) = 0;
+
+   // Returns the width of a bottom flange
+   virtual Float64 GetBottomFlangeWidth(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) = 0;
+
+   // Returns the width of all the bottom flanges summed together
+   virtual Float64 GetBottomFlangeWidth(const pgsPointOfInterest& poi) = 0;
+
+   // Returns the total width of the bottom of a girder
+   virtual Float64 GetBottomWidth(const pgsPointOfInterest& poi) = 0;
+
+   // Returns the thickness of a top flange
+   virtual Float64 GetBottomFlangeThickness(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) = 0;
+
+   // Returns the spacing between the centers of bottom flanges
+   virtual Float64 GetBottomFlangeSpacing(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) = 0;
+
+   // Returns the minimum web width
+   virtual Float64 GetMinWebWidth(const pgsPointOfInterest& poi) = 0;
+
+   // Returns the minimum top flange thickness
+   virtual Float64 GetMinTopFlangeThickness(const pgsPointOfInterest& poi) = 0;
+
+   // Returns the minimum bottom flange thickness
+   virtual Float64 GetMinBottomFlangeThickness(const pgsPointOfInterest& poi) = 0;
+
+   // Returns the height of the basic (non-composite) girder at the specified POI.
+   // Interval isn't taken into account so you always get a value.
+   virtual Float64 GetHeight(const pgsPointOfInterest& poi) = 0;
+
+   // Returns the shear width (bv for vertical shear calculations)
+   virtual Float64 GetShearWidth(const pgsPointOfInterest& poi) = 0;
+
+   // Returns the width used for horizontal interface shear calculations (acv for horizontal shear)
+   virtual Float64 GetShearInterfaceWidth(const pgsPointOfInterest& poi) = 0;
+
+   virtual WebIndexType GetWebCount(const CGirderKey& girderKey) = 0;
+	virtual Float64 GetWebLocation(const pgsPointOfInterest& poi,WebIndexType webIdx) = 0;
+	virtual Float64 GetWebSpacing(const pgsPointOfInterest& poi,WebIndexType spaceIdx) = 0;
+   virtual Float64 GetWebThickness(const pgsPointOfInterest& poi,WebIndexType webIdx) = 0;
+   virtual Float64 GetCL2ExteriorWebDistance(const pgsPointOfInterest& poi) = 0; // horiz. distance from girder cl to cl of exterior web
+
+   virtual void GetSegmentEndPoints(const CSegmentKey& segmentKey,IPoint2d** pntPier1,IPoint2d** pntEnd1,IPoint2d** pntBrg1,IPoint2d** pntBrg2,IPoint2d** pntEnd2,IPoint2d** pntPier2) = 0;
+
+   virtual Float64 GetOrientation(const CSegmentKey& segmentKey) = 0;
+
+   virtual Float64 GetTopGirderReferenceChordElevation(const pgsPointOfInterest& poi) = 0;
+   virtual Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,MatingSurfaceIndexType matingSurfaceIdx) = 0;
+   virtual Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,const GDRCONFIG& config,MatingSurfaceIndexType matingSurfaceIdx) = 0;
+
+   virtual Float64 GetSplittingZoneHeight(const pgsPointOfInterest& poi) = 0;
+   virtual pgsTypes::SplittingDirection GetSplittingDirection(const CGirderKey& girderKey) = 0;
+
+
+   // Area of shear key. uniform portion assumes no joint, section is per joint spacing.
+   virtual bool HasShearKey(const CGirderKey& girderKey,pgsTypes::SupportedBeamSpacing spacingType)=0;
+   virtual void GetShearKeyAreas(const CGirderKey& girderKey,pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint)=0;
+
+   virtual void GetSegment(const CGirderKey& girderKey,Float64 distFromStartOfGirder,SegmentIndexType* pSegIdx,Float64* pDistFromStartOfSegment) = 0;
+
    // Returns the shape of the segment profile. If bIncludeClosure is true, the segment shape
    // includes its projection into the closure pour. Y=0 is at the top of the segment
    // X values are in girder path coordinates.
@@ -1240,10 +1322,13 @@ interface IGirderSegment : public IUnknown
    // true, the segment shape includes its projection into the closure pour. Y=0 is at the top of the segment
    // X values are in girder path coordinates.
    virtual void GetSegmentProfile(const CSegmentKey& segmentKey,const CSplicedGirderData* pSplicedGirder,bool bIncludeClosure,IShape** ppShape) = 0;
+
+   virtual void GetProfileShape(const CSegmentKey& segmentKey,IShape** ppShape) = 0;
+
    virtual void GetSegmentBottomFlangeProfile(const CSegmentKey& segmentKey,IPoint2dCollection** points) = 0;
    virtual void GetSegmentBottomFlangeProfile(const CSegmentKey& segmentKey,const CSplicedGirderData* pSplicedGirder,IPoint2dCollection** points) = 0;
    virtual void GetSegmentDirection(const CSegmentKey& segmentKey,IDirection** ppDirection) = 0;
-   virtual Float64 GetTopWidth(const CSegmentKey& segmentKey) = 0;
+
    virtual void GetSegmentEndDistance(const CSegmentKey& segmentKey,Float64* pStartEndDistance,Float64* pEndEndDistance) = 0;
    virtual void GetSegmentEndDistance(const CSegmentKey& segmentKey,const CSplicedGirderData* pSplicedGirder,Float64* pStartEndDistance,Float64* pEndEndDistance) = 0;
    virtual void GetSegmentBearingOffset(const CSegmentKey& segmentKey,Float64* pStartBearingOffset,Float64* pEndBearingOffset) = 0;
@@ -1271,29 +1356,6 @@ interface IClosurePour : public IUnknown
 
    // Returns the left and right size of the closure pour.
    virtual void GetClosurePourSize(const CClosureKey& closureKey,Float64* pLeft,Float64* pRight) = 0;
-};
-
-/*****************************************************************************
-INTERFACE
-   ISplicedGirder
-
-DESCRIPTION
-   Interface for obtaining information about spliced girders
-*****************************************************************************/
-// {E8A643AD-4831-4735-9D88-21ED3E84D8F3}
-DEFINE_GUID(IID_ISplicedGirder, 
-0xe8a643ad, 0x4831, 0x4735, 0x9d, 0x88, 0x21, 0xed, 0x3e, 0x84, 0xd8, 0xf3);
-interface ISplicedGirder : public IUnknown
-{
-   // returns the length of a spliced girder measured along the centerline of its segments between backs of pavement seats
-   virtual Float64 GetSplicedGirderLayoutLength(const CGirderKey& girderKey) = 0;
-
-   // returns the length of the spliced girder measured along the centerline of its segments between the CL-Bearing
-   // at the end piers
-   virtual Float64 GetSplicedGirderSpanLength(const CGirderKey& girderKey) = 0;
-
-   // returns the end to end length of the spliced girder measured along the centerline of its segments
-   virtual Float64 GetSplicedGirderLength(const CGirderKey& girderKey) = 0;
 };
 
 /*****************************************************************************

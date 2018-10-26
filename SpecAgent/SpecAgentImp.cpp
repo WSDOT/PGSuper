@@ -435,10 +435,6 @@ Float64 CSpecAgentImp::GetHaulingModulusOfRuptureCoefficient(pgsTypes::ConcreteT
 
 Float64 CSpecAgentImp::GetAllowableCompressiveStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls)
 {
-#pragma Reminder("UPDATE: need to deal with allowable stress at closure pour")
-   // if there are different allowable stresses for segments and closures then we need to check the poi for the POI_CLOSURE attribute 
-   // and get the correct coefficients
-
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 x = -999999;
 
@@ -454,44 +450,57 @@ Float64 CSpecAgentImp::GetAllowableCompressiveStressCoefficient(const pgsPointOf
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
-   if ( intervalIdx == releaseIntervalIdx )
+   if ( poi.HasAttribute(POI_CLOSURE) )
    {
-      ATLASSERT( ls == pgsTypes::ServiceI );
-      x = pSpec->GetCyCompStressService();
-   }
-   else if ( intervalIdx == liftIntervalIdx )
-   {
-      ATLASSERT( ls == pgsTypes::ServiceI );
-      x = pSpec->GetCyCompStressLifting();
-   }
-   else if ( intervalIdx == haulIntervalIdx )
-   {
-      ATLASSERT( ls == pgsTypes::ServiceI );
-      x = pSpec->GetHaulingCompStress();
-   }
-   else if ( intervalIdx == tempStrandRemovalIdx )
-   {
-      ATLASSERT( ls == pgsTypes::ServiceI );
-      x = pSpec->GetTempStrandRemovalCompStress();
-   }
-   else if ( tempStrandRemovalIdx < intervalIdx && intervalIdx < compositeDeckIntervalIdx )
-   {
-      ATLASSERT( ls == pgsTypes::ServiceI );
-      x = pSpec->GetBs1CompStress();
-   }
-   else if ( compositeDeckIntervalIdx <= intervalIdx && intervalIdx < liveLoadIntervalIdx )
-   {
-      ATLASSERT( ls == pgsTypes::ServiceI );
-      x = pSpec->GetBs2CompStress();
-   }
-   else if ( liveLoadIntervalIdx <= intervalIdx )
-   {
-      ATLASSERT( (ls == pgsTypes::ServiceI) || (ls == pgsTypes::ServiceIA) || (ls == pgsTypes::FatigueI));
-      x = (ls == pgsTypes::ServiceI ? pSpec->GetBs3CompStressService() : pSpec->GetBs3CompStressService1A());
+      IntervalIndexType compositeClosurePourIntervalIdx = pIntervals->GetCompositeClosurePourInterval(segmentKey);
+      if ( intervalIdx <= compositeClosurePourIntervalIdx )
+         x = pSpec->GetCyCompStressService();
+      else if ( liveLoadIntervalIdx <= intervalIdx )
+         x = (ls == pgsTypes::ServiceIA || ls == pgsTypes::FatigueI ? pSpec->GetBs3CompStressService1A() : pSpec->GetBs3CompStressService() );
+      else
+         x = pSpec->GetBs2CompStress();
    }
    else
    {
-      ATLASSERT(false); // unexpected interval
+      if ( intervalIdx == releaseIntervalIdx )
+      {
+         ATLASSERT( ls == pgsTypes::ServiceI );
+         x = pSpec->GetCyCompStressService();
+      }
+      else if ( intervalIdx == liftIntervalIdx )
+      {
+         ATLASSERT( ls == pgsTypes::ServiceI );
+         x = pSpec->GetCyCompStressLifting();
+      }
+      else if ( intervalIdx == haulIntervalIdx )
+      {
+         ATLASSERT( ls == pgsTypes::ServiceI );
+         x = pSpec->GetHaulingCompStress();
+      }
+      else if ( intervalIdx == tempStrandRemovalIdx )
+      {
+         ATLASSERT( ls == pgsTypes::ServiceI );
+         x = pSpec->GetTempStrandRemovalCompStress();
+      }
+      else if ( tempStrandRemovalIdx < intervalIdx && intervalIdx < compositeDeckIntervalIdx )
+      {
+         ATLASSERT( ls == pgsTypes::ServiceI );
+         x = pSpec->GetBs1CompStress();
+      }
+      else if ( compositeDeckIntervalIdx <= intervalIdx && intervalIdx < liveLoadIntervalIdx )
+      {
+         ATLASSERT( ls == pgsTypes::ServiceI );
+         x = pSpec->GetBs2CompStress();
+      }
+      else if ( liveLoadIntervalIdx <= intervalIdx )
+      {
+         ATLASSERT( (ls == pgsTypes::ServiceI) || (ls == pgsTypes::ServiceIA) || (ls == pgsTypes::FatigueI));
+         x = (ls == pgsTypes::ServiceI ? pSpec->GetBs3CompStressService() : pSpec->GetBs3CompStressService1A());
+      }
+      else
+      {
+         ATLASSERT(false); // unexpected interval
+      }
    }
 
    return x;

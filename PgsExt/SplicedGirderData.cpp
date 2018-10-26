@@ -1297,10 +1297,6 @@ void CSplicedGirderData::MergeSegmentsLeft(CPrecastSegmentData* pLeftSegment,con
 void CSplicedGirderData::SplitSegmentRight(CPrecastSegmentData* pLeftSegment,CPrecastSegmentData* pRightSegment,Float64 splitStation)
 {
    // split off the right side of pLeftSegment and apply it to pRightSegment
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IGirderSegment,pISegment);
-
    const CSplicedGirderData* pGirder = pLeftSegment->GetGirder();
    const CGirderGroupData* pGroup = pGirder->GetGirderGroup();
 

@@ -772,12 +772,12 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 fir
    point.CoCreateInstance(CLSID_Point2d);
    point->Move(pierStation-firstStation,-sectionHeight);
 
-   GET_IFACE2(pBroker,IGirderSegment,pGirderSegment);
+   GET_IFACE2(pBroker,IGirder,pIGirder);
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
    const CGirderGroupData* pGroup = pGirder->GetGirderGroup();
    const CBridgeDescription2* pBridge = pGroup->GetBridgeDescription();
    Float64 brgOffsetStart, brgOffsetEnd;
-   pGirderSegment->GetSegmentBearingOffset(segmentKey,&brgOffsetStart,&brgOffsetEnd);
+   pIGirder->GetSegmentBearingOffset(segmentKey,&brgOffsetStart,&brgOffsetEnd);
    if ( segmentKey.groupIndex == 0 && segmentKey.segmentIndex == 0 && endType == pgsTypes::metStart )
    {
       point->Offset(brgOffsetStart,0);
@@ -804,8 +804,8 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 fir
    else
    {
       Float64 temp, leftBrgOffset, rightBrgOffset;
-      pGirderSegment->GetSegmentBearingOffset(segmentKey,&temp,&leftBrgOffset);
-      pGirderSegment->GetSegmentBearingOffset(CSegmentKey(segmentKey.groupIndex,segmentKey.girderIndex,segmentKey.segmentIndex+1),&rightBrgOffset,&temp);
+      pIGirder->GetSegmentBearingOffset(segmentKey,&temp,&leftBrgOffset);
+      pIGirder->GetSegmentBearingOffset(CSegmentKey(segmentKey.groupIndex,segmentKey.girderIndex,segmentKey.segmentIndex+1),&rightBrgOffset,&temp);
       CTemporarySupportDrawStrategyImpl* pDrawStrategy = new CTemporarySupportDrawStrategyImpl(pTS->GetSupportType(),leftBrgOffset,rightBrgOffset);
       unk = pDrawStrategy->GetInterface(&IID_iDrawPointStrategy);
    }
@@ -946,7 +946,6 @@ void CGirderModelElevationView::BuildSupportDisplayObjects(CPGSuperDocBase* pDoc
    ATLASSERT(pDL);
    pDL->Clear();
 
-   GET_IFACE2(pBroker,IGirderSegment,pGirderSegment);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -1069,7 +1068,7 @@ void CGirderModelElevationView::BuildSegmentDisplayObjects(CPGSuperDocBase* pDoc
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? pBridgeDesc->GetGirderGroupCount()-1 : startGroupIdx);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IGirderSegment,pGirderSegment);
+   GET_IFACE2(pBroker,IGirder,pIGirder);
    Float64 group_offset = 0;
   
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
@@ -1098,7 +1097,7 @@ void CGirderModelElevationView::BuildSegmentDisplayObjects(CPGSuperDocBase* pDoc
          if ( constructionEventIdx <= eventIdx )
          {
             CComPtr<IShape> shape;
-            pGirderSegment->GetSegmentProfile(segmentKey,false,&shape);
+            pIGirder->GetSegmentProfile(segmentKey,false,&shape);
 
             // create the display object
             CComPtr<iPointDisplayObject> doPnt;
@@ -1156,7 +1155,6 @@ void CGirderModelElevationView::BuildClosurePourDisplayObjects(CPGSuperDocBase* 
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? pBridgeDesc->GetGirderGroupCount()-1 : startGroupIdx);
 
    GET_IFACE2(pBroker,IClosurePour,pClosurePour);
-   GET_IFACE2(pBroker,IGirderSegment,pGirderSegment);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    Float64 group_offset = 0;
@@ -1569,7 +1567,6 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSuperDocBase* pDoc,
 
    Float64 group_offset = 0;
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeometry);
-   GET_IFACE2(pBroker,ISplicedGirder,pISplicedGirder);
    GET_IFACE2(pBroker,IGirder,pGirder);
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
@@ -1617,7 +1614,7 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSuperDocBase* pDoc,
          }
       }
 
-      Float64 girder_length = pISplicedGirder->GetSplicedGirderLayoutLength(thisGirderKey);
+      Float64 girder_length = pBridge->GetGirderLayoutLength(thisGirderKey);
       group_offset += girder_length;
    }
 }

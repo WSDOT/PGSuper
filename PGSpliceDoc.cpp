@@ -584,6 +584,8 @@ bool CPGSpliceDoc::EditClosurePourDescription(const CClosurePourData* pClosure,i
    if ( dlg.DoModal() == IDOK )
    {
       txnEditClosurePourData newData;
+      newData.m_PierIdx         = pClosure->GetPierIndex();
+      newData.m_TSIdx           = pClosure->GetTemporarySupportIndex();
       newData.m_ClosurePour     = dlg.m_ClosurePour;
       newData.m_ClosureEventIdx = dlg.m_EventIdx;
 

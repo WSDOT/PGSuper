@@ -65,8 +65,7 @@ DEFINE_GUID(IID_IRoadway,
 0xab9cdaa6, 0x22d, 0x11d3, 0x89, 0x26, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
 interface IRoadway : IUnknown
 {
-   virtual Float64 GetCrownPointOffset(Float64 station) = 0;
-   virtual Float64 GetCrownSlope(Float64 station,Float64 offset) = 0;
+   virtual Float64 GetSlope(Float64 station,Float64 offset) = 0;
    virtual Float64 GetProfileGrade(Float64 station) = 0;
    virtual Float64 GetElevation(Float64 station,Float64 offset) = 0;
    virtual void GetBearing(Float64 station,IDirection** ppBearing) = 0;
@@ -78,8 +77,7 @@ interface IRoadway : IUnknown
    virtual CollectionIndexType GetVertCurveCount() = 0;
    virtual void GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve) = 0;
 
-   virtual void GetCrownPoint(Float64 station,IDirection* pDirection,IPoint2d** ppPoint) = 0;
-   virtual void GetCrownPoint(Float64 station,IDirection* pDirection,IPoint3d** ppPoint) = 0;
+   virtual void GetRoadwaySurface(Float64 station,IPoint2dCollection** ppPoints) = 0;
 };
 
 #endif // INCLUDED_IFACE_ALIGNMENT_H_

@@ -281,7 +281,6 @@ pgsPointOfInterest CSectionCutDisplayImpl::GetCutPOI(Float64 distFromStart)
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   GET_IFACE(ISplicedGirder,pGirder);
    GET_IFACE(IBridge,pBridge);
 
    Float64 distFromStartOfGirder = 0;
@@ -291,7 +290,7 @@ pgsPointOfInterest CSectionCutDisplayImpl::GetCutPOI(Float64 distFromStart)
    GroupIndexType endGroupIdx   = (m_GirderKey.groupIndex == ALL_GROUPS ? pBridgeDesc->GetGirderGroupCount()-1 : startGroupIdx);
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
-      Float64 girder_layout_length = pGirder->GetSplicedGirderLayoutLength(CSegmentKey(grpIdx,m_GirderKey.girderIndex,INVALID_INDEX));
+      Float64 girder_layout_length = pBridge->GetGirderLayoutLength(CSegmentKey(grpIdx,m_GirderKey.girderIndex,INVALID_INDEX));
       if ( ::InRange(group_offset,distFromStart,group_offset+girder_layout_length) )
       {
          distFromStartOfGirder = distFromStart - group_offset;
@@ -306,7 +305,6 @@ pgsPointOfInterest CSectionCutDisplayImpl::GetCutPOI(Float64 distFromStart)
 
    SegmentIndexType segmentIndex = INVALID_INDEX;
    SegmentIndexType nSegments = pBridgeDesc->GetGirderGroup(groupIndex)->GetGirder(m_GirderKey.girderIndex)->GetSegmentCount();
-   GET_IFACE(IGirderSegment,pSegment);
    Float64 running_segment_length = 0;
    Float64 distFromStartOfSegment = 0;
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )

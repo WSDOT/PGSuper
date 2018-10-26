@@ -2110,8 +2110,6 @@ void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
    INIT_UV_PROTOTYPE( rptForceUnitValue,   force,   pDisplayUnits->GetGeneralForceUnit(), true );
 
    GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker, ISplicedGirder,    pSplicedGirder);
-   GET_IFACE2(pBroker, IGirderSegment,    pGirderSegment);
    GET_IFACE2(pBroker, IClosurePour,      pClosurePour);
    GET_IFACE2(pBroker, IBridge,           pBridge);
 
@@ -2133,8 +2131,8 @@ void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
       pPara = new rptParagraph;
       *pChapter << pPara;
       (*pPara) << _T("Group ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
-      (*pPara) << _T("Layout Length: ") << xdim.SetValue(pSplicedGirder->GetSplicedGirderLayoutLength(girderKey)) << rptNewLine;
-      (*pPara) << _T("Span Length: ") << xdim.SetValue(pSplicedGirder->GetSplicedGirderSpanLength(girderKey)) << rptNewLine;
+      (*pPara) << _T("Layout Length: ") << xdim.SetValue(pBridge->GetGirderLayoutLength(girderKey)) << rptNewLine;
+      (*pPara) << _T("Span Length: ") << xdim.SetValue(pBridge->GetGirderSpanLength(girderKey)) << rptNewLine;
 
       const CSplicedGirderData* pGirderData = pBridgeDesc->GetGirderGroup(grpIdx)->GetGirder(gdrIdx);
 

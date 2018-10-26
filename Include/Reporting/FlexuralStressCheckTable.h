@@ -28,7 +28,6 @@
 interface IEAFDisplayUnits;
 class pgsGirderArtifact;
 class pgsSegmentArtifact;
-class pgsClosurePourArtifact;
 
 /*****************************************************************************
 CLASS 
@@ -53,26 +52,12 @@ LOG
 class REPORTINGCLASS CFlexuralStressCheckTable
 {
 public:
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
    CFlexuralStressCheckTable();
-
-   //------------------------------------------------------------------------
-   // Copy constructor
    CFlexuralStressCheckTable(const CFlexuralStressCheckTable& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
    virtual ~CFlexuralStressCheckTable();
 
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
    CFlexuralStressCheckTable& operator = (const CFlexuralStressCheckTable& rOther);
 
-   // GROUP: OPERATIONS
    virtual void Build(rptChapter* pChapter,
                       IBroker* pBroker,
                       const pgsGirderArtifact* pGirderArtifact,
@@ -134,44 +119,8 @@ public:
                    pgsTypes::LimitState ls,
                    pgsTypes::StressType stress=pgsTypes::Tension) const;
 
-
-
-
-   virtual void Build(rptChapter* pChapter,
-                      IBroker* pBroker,
-                      const pgsClosurePourArtifact* pClosureArtifact,
-                      IEAFDisplayUnits* pDisplayUnits,
-                      IntervalIndexType intervalIdx,
-                      pgsTypes::LimitState ls
-                      ) const;
-
-   void BuildNotes(rptChapter* pChapter, 
-                   IBroker* pBroker,
-                   const pgsClosurePourArtifact* pClosureArtifact,
-                   IEAFDisplayUnits* pDisplayUnits,
-                   IntervalIndexType intervalIdx,
-                   pgsTypes::LimitState ls,
-                   pgsTypes::StressType stress=pgsTypes::Tension) const;
-
-   void BuildTable(rptChapter* pChapter, 
-                   IBroker* pBroker,
-                   const pgsClosurePourArtifact* pClosureArtifact,
-                   IEAFDisplayUnits* pDisplayUnits,
-                   IntervalIndexType intervalIdx,
-                   pgsTypes::LimitState ls) const;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
    void MakeCopy(const CFlexuralStressCheckTable& rOther);
-
-   //------------------------------------------------------------------------
    virtual void MakeAssignment(const CFlexuralStressCheckTable& rOther);
 
 
@@ -194,16 +143,7 @@ protected:
                    pgsTypes::StressType stress) const;
 
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 
 public:
    // GROUP: DEBUG
@@ -224,11 +164,5 @@ public:
    static bool TestMe(dbgLog& rlog);
    #endif // _UNITTEST
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
 
 #endif // INCLUDED_FLEXURALSTRESSCHECKTABLE_H_

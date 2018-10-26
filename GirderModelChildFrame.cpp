@@ -429,8 +429,8 @@ void CGirderModelChildFrame::UpdateBar()
    }
    else
    {
-      GET_IFACE2(pBroker,ISplicedGirder,pGirder);
-      m_MaxCutLocation = pGirder->GetSplicedGirderLength(m_GirderKey);
+      GET_IFACE2(pBroker,IBridge,pBridge);
+      m_MaxCutLocation = pBridge->GetGirderLength(m_GirderKey);
    }
 
    if (m_CutLocation == UserInput)

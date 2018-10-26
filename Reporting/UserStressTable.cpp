@@ -93,12 +93,12 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    GET_IFACE2(pBroker,IProductForces,pForces);
-   pgsTypes::BridgeAnalysisType maxBAT = pForces->GetBridgeAnalysisType(pgsTypes::Maximize);
-   pgsTypes::BridgeAnalysisType minBAT = pForces->GetBridgeAnalysisType(pgsTypes::Minimize);
+   pgsTypes::BridgeAnalysisType maxBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType minBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -129,14 +129,14 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey
 
       pForces2->GetStress(castDeckIntervalIdx, pftUserDC, vPoi, maxBAT, &fTopMaxDC1, &fBotMaxDC1);
       pForces2->GetStress(castDeckIntervalIdx, pftUserDC, vPoi, minBAT, &fTopMinDC1, &fBotMinDC1);
-      pForces2->GetStress(compositeDeckIntervalIdx, pftUserDC, vPoi, maxBAT, &fTopMaxDC2, &fBotMaxDC2);
-      pForces2->GetStress(compositeDeckIntervalIdx, pftUserDC, vPoi, minBAT, &fTopMinDC2, &fBotMinDC2);
+      pForces2->GetStress(railingSystemIntervalIdx, pftUserDC, vPoi, maxBAT, &fTopMaxDC2, &fBotMaxDC2);
+      pForces2->GetStress(railingSystemIntervalIdx, pftUserDC, vPoi, minBAT, &fTopMinDC2, &fBotMinDC2);
 
       pForces2->GetStress(castDeckIntervalIdx, pftUserDW, vPoi, maxBAT, &fTopMaxDW1, &fBotMaxDW1);
       pForces2->GetStress(castDeckIntervalIdx, pftUserDW, vPoi, minBAT, &fTopMinDW1, &fBotMinDW1);
 
-      pForces2->GetStress(compositeDeckIntervalIdx, pftUserDW, vPoi, maxBAT, &fTopMaxDW2, &fBotMaxDW2);
-      pForces2->GetStress(compositeDeckIntervalIdx, pftUserDW, vPoi, minBAT, &fTopMinDW2, &fBotMinDW2);
+      pForces2->GetStress(railingSystemIntervalIdx, pftUserDW, vPoi, maxBAT, &fTopMaxDW2, &fBotMaxDW2);
+      pForces2->GetStress(railingSystemIntervalIdx, pftUserDW, vPoi, minBAT, &fTopMinDW2, &fBotMinDW2);
 
       pForces2->GetStress(liveLoadIntervalIdx, pftUserLLIM, vPoi, maxBAT, &fTopMaxLL3, &fBotMaxLL3);
       pForces2->GetStress(liveLoadIntervalIdx, pftUserLLIM, vPoi, minBAT, &fTopMinLL3, &fBotMinLL3);

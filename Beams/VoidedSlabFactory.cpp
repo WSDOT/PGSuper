@@ -184,16 +184,6 @@ void CVoidedSlabFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,co
 
    pPoiMgr->AddPointOfInterest(poiStart);
    pPoiMgr->AddPointOfInterest(poiEnd);
-
-   // move bridge site poi to the start/end bearing
-  
-   Float64 start_length = pBridge->GetSegmentStartEndDistance(segmentKey);
-   Float64 end_length   = pBridge->GetSegmentEndEndDistance(segmentKey);
-   poiStart.SetDistFromStart(start_length);
-   poiEnd.SetDistFromStart(gdrLength-end_length);
-
-   pPoiMgr->AddPointOfInterest(poiStart);
-   pPoiMgr->AddPointOfInterest(poiEnd);
 }
 
 void CVoidedSlabFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)

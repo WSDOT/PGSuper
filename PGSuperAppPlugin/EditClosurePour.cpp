@@ -109,12 +109,11 @@ txnTransaction* txnEditClosurePour::CreateClone() const
 
 std::_tstring txnEditClosurePour::Name() const
 {
-#pragma Reminder("UPDATE: updated menu text")
-   // should say
-   // Edit Closure Pour for Girder <?> at Temporary Support <?>
-   // Edit Closure Pour for Girder <?> at Pier <?>
    std::_tostringstream os;
-   os << "Edit Closure Pour";
+   if ( m_NewData.m_PierIdx != INVALID_INDEX )
+      os << "Edit Closure Pour for Girder " << LABEL_GIRDER(m_ClosureKey.girderIndex) << " at Pier " << LABEL_PIER(m_NewData.m_PierIdx);
+   else
+      os << "Edit Closure Pour for Girder " << LABEL_GIRDER(m_ClosureKey.girderIndex) << " at Temporary Support " << LABEL_TEMPORARY_SUPPORT(m_NewData.m_TSIdx);
 
    return os.str();
 }
