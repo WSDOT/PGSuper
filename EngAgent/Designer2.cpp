@@ -1346,7 +1346,7 @@ pgsStirrupCheckAtPoisArtifact pgsDesigner2::CreateStirrupCheckAtPoisArtifact(con
    {
       Int32 reason = XREASON_AGENTVALIDATIONFAILURE;
       std::_tostringstream os;
-      os << _T("Cannot perform shear check - Span-to-Depth ratio is less than ")<< MIN_SPAN_DEPTH_RATIO <<_T(" for Span ")<< poi.GetSpan()+1 << _T(" Girder ")<< LABEL_GIRDER(poi.GetGirder());
+      os << _T("Cannot perform shear check - Span-to-Depth ratio is less than ")<< MIN_SPAN_DEPTH_RATIO <<_T(" for Span ")<< LABEL_SPAN(poi.GetSpan()) << _T(" Girder ")<< LABEL_GIRDER(poi.GetGirder());
 
       pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,0,os.str().c_str());
       pStatusCenter->Add(pStatusItem);

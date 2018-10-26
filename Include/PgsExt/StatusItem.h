@@ -192,4 +192,26 @@ private:
    IBroker* m_pBroker;
 };
 
+
+// status for effective flange width warnings
+class PGSEXTCLASS pgsEffectiveFlangeWidthStatusItem : public CEAFStatusItem
+{
+public:
+   pgsEffectiveFlangeWidthStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
+   bool IsEqual(CEAFStatusItem* pOther);
+};
+
+///////////////////////////
+class PGSEXTCLASS pgsEffectiveFlangeWidthStatusCallback : public iStatusCallback
+{
+public:
+   pgsEffectiveFlangeWidthStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
+   virtual eafTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(CEAFStatusItem* pStatusItem);
+
+private:
+   IBroker* m_pBroker;
+   eafTypes::StatusSeverityType m_Severity;
+};
+
 #endif // INCLUDED_STATUSITEM_H_

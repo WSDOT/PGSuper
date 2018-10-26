@@ -91,7 +91,8 @@ class ATL_NO_VTABLE CProjectAgentImp :
    public ILimits,
    public ILimits2,
    public ILoadFactors,
-   public ILiveLoads
+   public ILiveLoads,
+   public IEffectiveFlangeWidth
 {  
 public:
 	CProjectAgentImp(); 
@@ -125,6 +126,7 @@ BEGIN_COM_MAP(CProjectAgentImp)
    COM_INTERFACE_ENTRY(ILimits2)
    COM_INTERFACE_ENTRY(ILoadFactors)
    COM_INTERFACE_ENTRY(ILiveLoads)
+   COM_INTERFACE_ENTRY(IEffectiveFlangeWidth)
 END_COM_MAP()
 
 BEGIN_CONNECTION_POINT_MAP(CProjectAgentImp)
@@ -233,10 +235,6 @@ public:
    virtual void SetSlabOffset( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 start, Float64 end);
    virtual pgsTypes::SlabOffsetType GetSlabOffsetType();
    virtual void GetSlabOffset( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64* pStart, Float64* pEnd);
-   //virtual bool CanModelPostTensioning();
-   //virtual bool IsPostTensioningModeled();
-   //virtual void ConfigureBridgeForPostTensioning();
-   //virtual bool CanBePostTensioned(SpanIndexType spanIdx,GirderIndexType gdrIdx);
 
 // IGirderData
 public:
@@ -461,6 +459,11 @@ public:
    const CLoadFactors* GetLoadFactors() const;
    void SetLoadFactors(const CLoadFactors& loadFactors) ;
 
+// IEffectiveFlangeWidth
+public:
+   virtual bool IgnoreEffectiveFlangeWidthLimits();
+   virtual void IgnoreEffectiveFlangeWidthLimits(bool bIgnore);
+
 #ifdef _DEBUG
    bool AssertValid() const;
 #endif//
@@ -491,6 +494,8 @@ private:
    bool m_bGetAnalysisTypeFromLibrary; // if true, we are reading old input... get the analysis type from the library entry
 
    std::vector<std::_tstring> m_GirderFamilyNames;
+
+   bool m_bIgnoreEffectiveFlangeWidthLimits;
 
    // rating data
    std::_tstring m_RatingSpec;
@@ -628,6 +633,7 @@ private:
    static HRESULT LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
    static HRESULT SaveLiveLoad(IStructuredSave* pSave,IProgress* pProgress,CProjectAgentImp* pObj,LPTSTR lpszUnitName,pgsTypes::LiveLoadType llType);
    static HRESULT LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj,LPTSTR lpszUnitName,pgsTypes::LiveLoadType llType);
+   static HRESULT EffectiveFlangeWidthProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
 
    HRESULT BuildDummyBridge();
    void ValidateStrands(SpanIndexType span,GirderIndexType girder,CGirderData& girder_data,bool fromLibrary);

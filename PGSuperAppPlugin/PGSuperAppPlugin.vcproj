@@ -1754,11 +1754,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\GirderDesigner.bmp"
+				RelativePath=".\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\res\GirderDesigner.bmp"
+				RelativePath="..\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
@@ -1822,11 +1822,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\PGSuper.ico"
+				RelativePath=".\res\PGSuper.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\PGSuper.ico"
+				RelativePath="..\res\PGSuper.ico"
 				>
 			</File>
 			<File
@@ -1961,6 +1961,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\EditEffectiveFlangeWidth.h"
+					>
+				</File>
+				<File
 					RelativePath="..\EditEnvironment.h"
 					>
 				</File>
@@ -2038,6 +2042,10 @@
 				</File>
 				<File
 					RelativePath="..\EditConstructionLoad.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\EditEffectiveFlangeWidth.cpp"
 					>
 				</File>
 				<File

@@ -234,6 +234,7 @@ public:
    virtual void DeleteDistributedLoad(CollectionIndexType loadIdx);
    virtual void AddMomentLoad(const CMomentLoadData& loadData);
    virtual void DeleteMomentLoad(CollectionIndexType loadIdx);
+   virtual void EditEffectiveFlangeWidth();
 
 // IDesign
 public:

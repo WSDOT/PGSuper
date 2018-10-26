@@ -445,3 +445,44 @@ void pgsLldfWarningStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    GET_IFACE(IEditByUI,pEdit);
    pEdit->EditLiveLoadDistributionFactors(method,roaAction);
 }
+
+//////////////////////////////////////////////////////////
+pgsEffectiveFlangeWidthStatusItem::pgsEffectiveFlangeWidthStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription)
+{
+}
+
+bool pgsEffectiveFlangeWidthStatusItem::IsEqual(CEAFStatusItem* pOther)
+{
+   // we only want one of these in the status center
+   SetID(-1);
+
+   pgsEffectiveFlangeWidthStatusItem* other = dynamic_cast<pgsEffectiveFlangeWidthStatusItem*>(pOther);
+   if ( !other )
+      return false;
+
+   return true;
+}
+
+//////////////////////////////////////////////////////////
+pgsEffectiveFlangeWidthStatusCallback::pgsEffectiveFlangeWidthStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity):
+m_pBroker(pBroker),
+m_Severity(severity)
+{
+}
+
+eafTypes::StatusSeverityType pgsEffectiveFlangeWidthStatusCallback::GetSeverity()
+{
+   return m_Severity;
+}
+
+void pgsEffectiveFlangeWidthStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   pgsEffectiveFlangeWidthStatusItem* pItem = dynamic_cast<pgsEffectiveFlangeWidthStatusItem*>(pStatusItem);
+   ATLASSERT(pItem!=NULL);
+
+   // Just go straight to main editing dialog
+   GET_IFACE(IEditByUIEx,pEdit);
+   pEdit->EditEffectiveFlangeWidth();
+}

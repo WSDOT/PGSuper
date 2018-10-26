@@ -27,6 +27,7 @@
 #include <PgsExt\PointOfInterest.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
+#include <IFace\Project.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -86,6 +87,7 @@ rptChapter* CEffFlangeWidthDetailsChapterBuilder::Build(CReportSpecification* pR
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IEffectiveFlangeWidth, pIEffFW);
    if ( pBridge->IsCompositeDeck() )
    {
       GET_IFACE2(pBroker,ISectProp2,pSectProp2);
@@ -94,9 +96,9 @@ rptChapter* CEffFlangeWidthDetailsChapterBuilder::Build(CReportSpecification* pR
       SpanIndexType lastSpanIdx  = (span == ALL_SPANS ? nSpans : firstSpanIdx+1);
       for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx < lastSpanIdx; spanIdx++ )
       {
-      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-      GirderIndexType firstGirderIdx = min(nGirders-1,(gdr == ALL_GIRDERS ? 0 : gdr));
-      GirderIndexType lastGirderIdx  = min(nGirders,  (gdr == ALL_GIRDERS ? nGirders : firstGirderIdx + 1));
+         GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
+         GirderIndexType firstGirderIdx = min(nGirders-1,(gdr == ALL_GIRDERS ? 0 : gdr));
+         GirderIndexType lastGirderIdx  = min(nGirders,  (gdr == ALL_GIRDERS ? nGirders : firstGirderIdx + 1));
          for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx < lastGirderIdx; gdrIdx++ )
          {
             rptParagraph* pPara;
@@ -110,6 +112,12 @@ rptChapter* CEffFlangeWidthDetailsChapterBuilder::Build(CReportSpecification* pR
                (*pPara) << pPara->GetName() << rptNewLine;
             }
 
+            if ( spanIdx == firstSpanIdx && gdrIdx == firstGirderIdx && pIEffFW->IgnoreEffectiveFlangeWidthLimits() )
+            {
+               rptParagraph* pPara = new rptParagraph;
+               *pChapter << pPara;
+               (*pPara) << _T("Limitations on effective flange width calculations defined in LRFD 4.6.2.6.1 have been ignored") << rptNewLine;
+            }
             pSectProp2->ReportEffectiveFlangeWidth(spanIdx,gdrIdx,pChapter,pDisplayUnits);
          }
       }

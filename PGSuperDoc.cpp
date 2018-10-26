@@ -159,6 +159,7 @@
 #include "EditAnalysisType.h"
 #include "EditConstructionLoad.h"
 #include "InsertDeleteLoad.h"
+#include "EditEffectiveFlangeWidth.h"
 
 // Logging
 #include <iostream>
@@ -169,6 +170,7 @@
 
 #include <PgsExt\StatusItem.h>
 
+#include <MFCTools\Prompts.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -202,6 +204,7 @@ BEGIN_MESSAGE_MAP(CPGSuperDoc, CEAFBrokerDocument)
 	//{{AFX_MSG_MAP(CPGSuperDoc)
 	ON_COMMAND(ID_FILE_PROJECT_PROPERTIES, OnFileProjectProperties)
 	ON_COMMAND(ID_PROJECT_ENVIRONMENT, OnProjectEnvironment)
+   ON_COMMAND(ID_PROJECT_EFFECTIVEFLANGEWIDTH, OnEffectiveFlangeWidth)
 	ON_COMMAND(ID_PROJECT_BRIDGEDESC, OnProjectBridgeDesc)
 	ON_COMMAND(ID_PROJECT_SPEC, OnProjectSpec)
 	ON_COMMAND(ID_RATING_SPEC,  OnRatingSpec)
@@ -1549,6 +1552,22 @@ void CPGSuperDoc::OnProjectEnvironment()
          GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(pTxn);
       }
+   }
+}
+
+void CPGSuperDoc::OnEffectiveFlangeWidth()
+{
+   GET_IFACE(IEffectiveFlangeWidth,pEFW);
+   CString strQuestion(_T("The LRFD General Effective Flange Width provisions (4.6.2.6.1) are consider applicable for skew angles less than 75 degress, L/S less than or equal to 2.0 and overhang widths less than or equal to 0.5S. In unusual cases where these limits are violated, a refined analysis should be used."));
+   CString strResponses(_T("Stop analysis if structure violates these limits\nIgnore these limits"));
+
+   int choice = pEFW->IgnoreEffectiveFlangeWidthLimits() ? 1 : 0;
+   int new_choice = AfxChoose(_T("Effective Flange Width"),strQuestion,strResponses,TRUE,choice,EAFGetApp()->m_pszHelpFilePath,IDH_EFFECTIVEFLANGEWIDTH);
+   if ( choice != new_choice && 0 <= new_choice )
+   {
+      txnEditEffectiveFlangeWidth* pTxn = new txnEditEffectiveFlangeWidth(pEFW->IgnoreEffectiveFlangeWidthLimits(),new_choice == 0 ? false : true);
+      GET_IFACE(IEAFTransactions,pTransactions);
+      pTransactions->Execute(pTxn);
    }
 }
 

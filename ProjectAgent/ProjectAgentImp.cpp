@@ -306,6 +306,8 @@ CProjectAgentImp::CProjectAgentImp()
    m_ReservedLiveLoads.push_back(_T("Single-Unit SHVs"));
 
    m_ConstructionLoad = 0;
+
+   m_bIgnoreEffectiveFlangeWidthLimits = false;
 }
 
 CProjectAgentImp::~CProjectAgentImp()
@@ -362,6 +364,51 @@ HRESULT CProjectAgentImp::SpecificationProc(IStructuredSave* pSave,IStructuredLo
       }
 
       pLoad->EndUnit();
+   }
+
+   return S_OK;
+}
+
+HRESULT CProjectAgentImp::EffectiveFlangeWidthProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+{
+   HRESULT hr = S_OK;
+   if ( pSave )
+   {
+      hr = pSave->BeginUnit(_T("EffectiveFlangeWidth"),1.0);
+      if ( FAILED(hr) )
+         return hr;
+
+      hr = pSave->put_Property(_T("IgnoreLimits"),CComVariant(pObj->m_bIgnoreEffectiveFlangeWidthLimits ? VARIANT_TRUE : VARIANT_FALSE));
+      if ( FAILED(hr) )
+         return hr;
+
+      hr = pSave->EndUnit();
+      if ( FAILED(hr) )
+         return hr;
+   }
+   else
+   {
+      Float64 parent_version;
+      pLoad->get_Version(&parent_version);
+      if ( 3.0 <= parent_version )
+      {
+         hr = pLoad->BeginUnit(_T("EffectiveFlangeWidth"));
+         if ( FAILED(hr) )
+            return hr;
+
+         CComVariant var;
+         var.vt = VT_BOOL;
+         hr = pLoad->get_Property(_T("IgnoreLimits"),&var);
+         if ( FAILED(hr) )
+            return hr;
+
+         pObj->m_bIgnoreEffectiveFlangeWidthLimits = (var.boolVal == VARIANT_TRUE ? true : false);
+
+         hr = pLoad->EndUnit();
+         if ( FAILED(hr) )
+            return hr;
+
+      }
    }
 
    return S_OK;
@@ -2894,7 +2941,7 @@ bool CProjectAgentImp::AssertValid() const
 }
 #endif // _DEBUG
 
-BEGIN_STRSTORAGEMAP(CProjectAgentImp,_T("ProjectData"),2.0)
+BEGIN_STRSTORAGEMAP(CProjectAgentImp,_T("ProjectData"),3.0)
    BEGIN_UNIT(_T("ProjectProperties"),_T("Project Properties"),1.0)
       PROPERTY(_T("BridgeName"),SDT_STDSTRING, m_BridgeName )
       PROPERTY(_T("BridgeId"),  SDT_STDSTRING, m_BridgeId )
@@ -2949,6 +2996,7 @@ BEGIN_STRSTORAGEMAP(CProjectAgentImp,_T("ProjectData"),2.0)
    PROP_CALLBACK(CProjectAgentImp::LiveLoadsDataProc )
 
    PROP_CALLBACK(CProjectAgentImp::RatingSpecificationProc)
+   PROP_CALLBACK(CProjectAgentImp::EffectiveFlangeWidthProc)
 
 END_STRSTORAGEMAP
 
@@ -2978,11 +3026,12 @@ STDMETHODIMP CProjectAgentImp::RegInterfaces()
    pBrokerInit->RegInterface( IID_IGirderHauling,        this );
    pBrokerInit->RegInterface( IID_IImportProjectLibrary, this );
    pBrokerInit->RegInterface( IID_IUserDefinedLoadData,  this );
-   pBrokerInit->RegInterface( IID_IEvents,               this);
-   pBrokerInit->RegInterface( IID_ILimits,               this);
-   pBrokerInit->RegInterface( IID_ILimits2,              this);
-   pBrokerInit->RegInterface( IID_ILoadFactors,          this);
+   pBrokerInit->RegInterface( IID_IEvents,               this );
+   pBrokerInit->RegInterface( IID_ILimits,               this );
+   pBrokerInit->RegInterface( IID_ILimits2,              this );
+   pBrokerInit->RegInterface( IID_ILoadFactors,          this );
    pBrokerInit->RegInterface( IID_ILiveLoads,            this );
+   pBrokerInit->RegInterface( IID_IEffectiveFlangeWidth, this );
 
    return S_OK;
 };
@@ -6650,6 +6699,22 @@ std::_tstring CProjectAgentImp::GetLLDFSpecialActionText()
    else
    {
       return std::_tstring(); //  nothing special
+   }
+}
+
+////////////////////////////////////////////////////////////////////////
+// IEffectiveFlangeWidth
+bool CProjectAgentImp::IgnoreEffectiveFlangeWidthLimits()
+{
+   return m_bIgnoreEffectiveFlangeWidthLimits;
+}
+
+void CProjectAgentImp::IgnoreEffectiveFlangeWidthLimits(bool bIgnore)
+{
+   if ( bIgnore != m_bIgnoreEffectiveFlangeWidthLimits )
+   {
+      m_bIgnoreEffectiveFlangeWidthLimits = bIgnore;
+      Fire_BridgeChanged();
    }
 }
 

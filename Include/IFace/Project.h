@@ -899,4 +899,13 @@ interface IBridgeDescription : IUnknown
    virtual void GetSlabOffset( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64* pStart, Float64* pEnd) = 0;
 };
 
+// {1EAF4313-36A3-434d-801A-0458447A9B49}
+DEFINE_GUID(IID_IEffectiveFlangeWidth, 
+0x1eaf4313, 0x36a3, 0x434d, 0x80, 0x1a, 0x4, 0x58, 0x44, 0x7a, 0x9b, 0x49);
+interface IEffectiveFlangeWidth : IUnknown
+{
+   virtual bool IgnoreEffectiveFlangeWidthLimits() = 0;
+   virtual void IgnoreEffectiveFlangeWidthLimits(bool bIgnore) = 0;
+};
+
 #endif // INCLUDED_IFACE_PROJECT_H_

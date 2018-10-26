@@ -95,4 +95,6 @@ interface IEditByUIEx : IEditByUI
    virtual void DeleteDistributedLoad(CollectionIndexType loadIdx) = 0;
    virtual void AddMomentLoad(const CMomentLoadData& loadData) = 0;
    virtual void DeleteMomentLoad(CollectionIndexType loadIdx) = 0;
+
+   virtual void EditEffectiveFlangeWidth() = 0;
 };

@@ -94,6 +94,8 @@ private:
    // callback IDs for the status callbacks we register
    StatusCallbackIDType m_scidInformationalWarning;
    StatusCallbackIDType m_scidBridgeDescriptionError;
+   StatusCallbackIDType m_scidEffectiveFlangeWidthWarning;
+   StatusCallbackIDType m_scidEffectiveFlangeWidthInfo;
 
    // container for tributary width
    struct TribWidth

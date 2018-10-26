@@ -1149,13 +1149,14 @@
 #define ID_HELP_INET_PGSUPER            33230
 #define ID_CONSTRUCTION_LOADS           33232
 #define ID_FILE_MANAGE                  33234
+#define ID_PROJECT_EFFECTIVEFLANGEWIDTH 33235
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        322
-#define _APS_NEXT_COMMAND_VALUE         33235
+#define _APS_NEXT_COMMAND_VALUE         33236
 #define _APS_NEXT_CONTROL_VALUE         1614
 #define _APS_NEXT_SYMED_VALUE           111
 #endif

@@ -970,6 +970,11 @@ void CPGSuperDocProxyAgent::DeleteMomentLoad(CollectionIndexType loadIdx)
    return m_pPGSuperDoc->DeleteMomentLoad(loadIdx);
 }
 
+void CPGSuperDocProxyAgent::EditEffectiveFlangeWidth()
+{
+   m_pPGSuperDoc->OnEffectiveFlangeWidth();
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////
 // IDesign

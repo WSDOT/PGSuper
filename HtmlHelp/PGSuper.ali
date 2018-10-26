@@ -103,3 +103,4 @@ IDH_DIALOG_LIBIMPORTENTRYCONFLICT=Dialogs\Library_Import_Entry_Conflict.htm
 IDH_GIRDERVIEW_ELEV=Girder View\Girder_View_Elevation.htm
 IDH_GIRDERWIZ_LIFTING=Girder Editing Wizard\Lifting_and_Shipping.htm
 IDH_FILL_DISTRIBUTION_FACTORS=Dialogs\Fill_Live_Load_Distribution_Factors_With_Computed_Values.htm
+IDH_EFFECTIVEFLANGEWIDTH=Dialogs\Effective_Flange_Width.htm

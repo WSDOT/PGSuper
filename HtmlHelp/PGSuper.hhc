@@ -660,6 +660,10 @@
         <param name="Local" value="Bridge Description\Environment.htm">
       </object>
       <li><object type="text/sitemap">
+        <param name="Name" value="Effective Flange Width">
+        <param name="Local" value="Dialogs\Effective_Flange_Width.htm">
+      </object>
+      <li><object type="text/sitemap">
         <param name="Name" value="Select Girder for Editing">
         <param name="Local" value="Girder Editing Wizard\Select_Girder_for_Editing.htm">
       </object>

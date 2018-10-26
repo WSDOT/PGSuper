@@ -3,11 +3,6 @@
 	<folders/>
 	<topics>
 		<topic>
-			<name>Girder_Editing_Dialog.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
 			<name>Construction_Loads.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
@@ -19,6 +14,11 @@
 		</topic>
 		<topic>
 			<name>Copy_Girder_Properties.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Girder_Editing_Dialog.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -38,17 +38,17 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Project_Properties.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
 			<name>Library_Entry_Conflict.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
 			<name>Live_Load_Distibution_Factors.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Load_Modifiers.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -88,17 +88,7 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Load_Modifiers.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
 			<name>environment.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Edit_User_Defined_Loads.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -108,7 +98,12 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Rating_Options_(Legal).htm</name>
+			<name>Rating_Options_(Permit).htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Fill_Live_Load_Distribution_Factors_With_Computed_Values.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -118,17 +113,22 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Edit_Moment_Load.htm</name>
+			<name>Rating_Options_(Legal).htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Rating_Options_(Permit).htm</name>
+			<name>Edit_User_Defined_Loads.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
 			<name>Units.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Project_Properties.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -158,7 +158,12 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Fill_Live_Load_Distribution_Factors_With_Computed_Values.htm</name>
+			<name>Edit_Moment_Load.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Effective_Flange_Width.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
