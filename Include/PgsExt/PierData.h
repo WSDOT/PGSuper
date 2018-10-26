@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -19,37 +19,18 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
+#pragma once
 
-#ifndef INCLUDED_PGSEXT_PIERDATA_H_
-#define INCLUDED_PGSEXT_PIERDATA_H_
-
-// SYSTEM INCLUDES
-//
 #include <WBFLCore.h>
-
-#if !defined INCLUDED_MATHEX_H_
 #include <MathEx.h>
-#endif
-
-// PROJECT INCLUDES
-//
-#if !defined INCLUDED_PGSEXTEXP_H_
 #include <PgsExt\PgsExtExp.h>
-#endif
-
 #include <StrData.h>
+#include <PsgLib\ConnectionLibraryEntry.h>
 
-// LOCAL INCLUDES
-//
+#include <PgsExt\GirderSpacing.h>
 
-// FORWARD DECLARATIONS
-//
-class ConnectionLibraryEntry;
 class CSpanData;
 class CBridgeDescription;
-
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 CLASS 
@@ -71,6 +52,7 @@ COPYRIGHT
 LOG
    rab : 08.25.1998 : Created file
 *****************************************************************************/
+
 
 class PGSEXTCLASS CPierData
 {
@@ -127,11 +109,20 @@ public:
    pgsTypes::PierConnectionType GetConnectionType() const;
    void SetConnectionType(pgsTypes::PierConnectionType type);
 
-   LPCTSTR GetConnection(pgsTypes::PierFaceType pierFace) const;
-   void SetConnection(pgsTypes::PierFaceType pierFace,LPCTSTR strConnection);
-
-   const ConnectionLibraryEntry* GetConnectionLibraryEntry(pgsTypes::PierFaceType pierFace) const;
-   void SetConnectionLibraryEntry(pgsTypes::PierFaceType pierFace,const ConnectionLibraryEntry* pLibEntry);
+   void SetGirderEndDistance(pgsTypes::PierFaceType face,Float64 endDist,ConnectionLibraryEntry::EndDistanceMeasurementType measure);
+   void GetGirderEndDistance(pgsTypes::PierFaceType face,Float64* pEndDist,ConnectionLibraryEntry::EndDistanceMeasurementType* pMeasure) const;
+   void SetBearingOffset(pgsTypes::PierFaceType face,Float64 offset,ConnectionLibraryEntry::BearingOffsetMeasurementType measure);
+   void GetBearingOffset(pgsTypes::PierFaceType face,Float64* pOffset,ConnectionLibraryEntry::BearingOffsetMeasurementType* pMeasure) const;
+   void SetSupportWidth(pgsTypes::PierFaceType face,Float64 w);
+   Float64 GetSupportWidth(pgsTypes::PierFaceType face) const;
+   void SetDiaphragmHeight(pgsTypes::PierFaceType pierFace,Float64 d);
+   Float64 GetDiaphragmHeight(pgsTypes::PierFaceType pierFace) const;
+   void SetDiaphragmWidth(pgsTypes::PierFaceType pierFace,Float64 w);
+   Float64 GetDiaphragmWidth(pgsTypes::PierFaceType pierFace)const;
+   ConnectionLibraryEntry::DiaphragmLoadType GetDiaphragmLoadType(pgsTypes::PierFaceType pierFace) const;
+   void SetDiaphragmLoadType(pgsTypes::PierFaceType pierFace,ConnectionLibraryEntry::DiaphragmLoadType type);
+   Float64 GetDiaphragmLoadLocation(pgsTypes::PierFaceType pierFace) const;
+   void SetDiaphragmLoadLocation(pgsTypes::PierFaceType pierFace,Float64 loc);
 
    Float64 GetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const;
    void SetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls, Float64 gM);
@@ -143,6 +134,7 @@ public:
 
    bool IsContinuous() const;
    void IsIntegral(bool* pbLeft,bool* pbRight) const;
+   bool IsAbutment() const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -176,8 +168,17 @@ private:
    Float64 m_Station;
    std::_tstring m_strOrientation;
    pgsTypes::PierConnectionType m_ConnectionType;
-   std::_tstring m_Connection[2];
-   const ConnectionLibraryEntry* m_pConnectionEntry[2];
+
+   Float64 m_GirderEndDistance[2];
+   ConnectionLibraryEntry::EndDistanceMeasurementType m_EndDistanceMeasurementType[2];
+   Float64 m_GirderBearingOffset[2];
+   ConnectionLibraryEntry::BearingOffsetMeasurementType m_BearingOffsetMeasurementType[2];
+   Float64 m_SupportWidth[2];
+
+   Float64 m_DiaphragmHeight[2];
+   Float64 m_DiaphragmWidth[2];
+   ConnectionLibraryEntry::DiaphragmLoadType m_DiaphragmLoadType[2];
+   Float64 m_DiaphragmLoadLocation[2];
 
    CSpanData* m_pPrevSpan;
    CSpanData* m_pNextSpan;
@@ -243,4 +244,3 @@ private:
    CPierData PierData;
 };
 
-#endif // INCLUDED_PGSEXT_PIERDATA_H_

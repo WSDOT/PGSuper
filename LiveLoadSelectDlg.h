@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -75,12 +75,12 @@ public:
    std::vector< std::_tstring>& m_DesignNames;
    std::vector< std::_tstring>& m_FatigueNames;
    std::vector< std::_tstring>& m_PermitNames;
-   Float64 m_DesignTruckImpact;
-   Float64 m_DesignLaneImpact;
-   Float64 m_FatigueTruckImpact;
-   Float64 m_FatigueLaneImpact;
-   Float64 m_PermitTruckImpact;
-   Float64 m_PermitLaneImpact;
+   double m_DesignTruckImpact;
+   double m_DesignLaneImpact;
+   double m_FatigueTruckImpact;
+   double m_FatigueLaneImpact;
+   double m_PermitTruckImpact;
+   double m_PermitLaneImpact;
 
    ILiveLoads::PedestrianLoadApplicationType m_DesignPedesType;
    ILiveLoads::PedestrianLoadApplicationType m_FatiguePedesType;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -68,7 +68,7 @@ protected:
    virtual CRuntimeClass* GetLowerPaneClass() const =0;
 
    // Get the fraction that the top frame takes of the client window
-   virtual Float64 GetTopFrameFraction() const =0;
+   virtual double GetTopFrameFraction() const =0;
 
 
    BOOL m_bPanesCreated;

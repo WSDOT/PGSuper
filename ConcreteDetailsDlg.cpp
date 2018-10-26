@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -272,8 +272,8 @@ void CConcreteDetailsDlg::UpdateEc()
 CString CConcreteDetailsDlg::UpdateEc(const CString& strFc,const CString& strDensity,const CString& strK1,const CString& strK2)
 {
   CString strEc;
-   Float64 fc, density, k1,k2;
-   Float64 ec = 0;
+   double fc, density, k1,k2;
+   double ec = 0;
    if (sysTokenizer::ParseDouble(strFc, &fc) && 
        sysTokenizer::ParseDouble(strDensity,&density) &&
        sysTokenizer::ParseDouble(strK1,&k1) &&

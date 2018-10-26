@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -436,7 +436,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
 
          if ( !IsZero(allowable_tension) )
          {
-            Float64 f = (limitState == pgsTypes::ServiceIII ? fBot : max(fBot,fTop));
+            double f = (limitState == pgsTypes::ServiceIII ? fBot : max(fBot,fTop));
            (*p_table)(row,col) << rptNewLine <<_T("(")<< cap_demand.SetValue(allowable_tension,f,bPassed)<<_T(")");
          }
       }
@@ -456,7 +456,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
 
          if ( !IsZero(allowable_tension_with_rebar) )
          {
-            Float64 f = max(fTop,fBot);
+            double f = max(fTop,fBot);
             (*p_table)(row,col) << rptNewLine <<_T("(")<< cap_demand.SetValue(allowable_tension_with_rebar,f,bPassed)<<_T(")");
           }
       }
@@ -486,7 +486,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
 	      else
 		      (*p_table)(row, ++col) << RPT_FAIL;
 
-         Float64 f = min(fTop,fBot);
+         double f = min(fTop,fBot);
          (*p_table)(row,col) << rptNewLine <<_T("(")<< cap_demand.SetValue(allowable_compression,f,bPassed)<<_T(")");
       }
 

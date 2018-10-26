@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -455,6 +455,8 @@ CEAFStatusItem(statusGroupID,callbackID,strDescription)
 bool pgsEffectiveFlangeWidthStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    // we only want one of these in the status center
+   SetID(INVALID_ID);
+
    pgsEffectiveFlangeWidthStatusItem* other = dynamic_cast<pgsEffectiveFlangeWidthStatusItem*>(pOther);
    if ( !other )
       return false;

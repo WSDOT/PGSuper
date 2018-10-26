@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -123,7 +123,7 @@ void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexT
    {
       CComPtr<IPoint2d> location;
       rebar_section_item->get_Location(&location);
-      Float64 x,y;
+      double x,y;
       location->get_X(&x);
       location->get_Y(&y);
 

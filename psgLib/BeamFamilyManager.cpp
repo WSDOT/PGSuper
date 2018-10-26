@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,9 +27,8 @@
 #include <PsgLib\BeamFamilyManager.h>
 
 CBeamFamilyManager::FamilyContainer CBeamFamilyManager::m_Families;
-std::vector<CString> CBeamFamilyManager::m_Names;
 
-HRESULT CBeamFamilyManager::Init(CATID catid)
+HRESULT CBeamFamilyManager::Init()
 {
    CComPtr<ICatRegister> pICatReg = 0;
    HRESULT hr;
@@ -52,7 +51,7 @@ HRESULT CBeamFamilyManager::Init(CATID catid)
 
    const int nID = 1;
    CATID ID[nID];
-   ID[0] = catid;
+   ID[0] = CATID_BeamFamily;
 
    pICatInfo->EnumClassesOfCategories(nID,ID,0,NULL,&pIEnumCLSID);
 
@@ -64,15 +63,21 @@ HRESULT CBeamFamilyManager::Init(CATID catid)
       CString str(pszUserType);
 
       m_Families.insert( std::make_pair(str,clsid[0]) );
-      m_Names.push_back(str);
    }
 
    return S_OK;
 }
 
-const std::vector<CString>& CBeamFamilyManager::GetBeamFamilyNames()
+std::vector<CString> CBeamFamilyManager::GetBeamFamilyNames()
 {
-   return m_Names;
+   std::vector<CString> names;
+   FamilyContainer::iterator iter;
+   for ( iter = m_Families.begin(); iter != m_Families.end(); iter++ )
+   {
+      names.push_back( iter->first );
+   }
+
+   return names;
 }
 
 HRESULT CBeamFamilyManager::GetBeamFamily(LPCTSTR strName,IBeamFamily** ppFamily)
@@ -99,10 +104,4 @@ CLSID CBeamFamilyManager::GetBeamFamilyCLSID(LPCTSTR strName)
       return CLSID_NULL;
 
    return found->second;
-}
-
-void CBeamFamilyManager::Reset()
-{
-   m_Families.clear();
-   m_Names.clear();
 }

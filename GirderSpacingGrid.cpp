@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -99,7 +99,7 @@ void CGirderSpacingGrid::SetMeasurementLocation(pgsTypes::MeasurementLocation ml
    m_GridData.m_GirderSpacing.SetMeasurementLocation(ml);
 }
 
-void CGirderSpacingGrid::SetPierSkewAngle(Float64 skewAngle)
+void CGirderSpacingGrid::SetPierSkewAngle(double skewAngle)
 {
    m_PierSkewAngle = skewAngle;
    FillGrid();
@@ -108,12 +108,12 @@ void CGirderSpacingGrid::SetPierSkewAngle(Float64 skewAngle)
 bool CGirderSpacingGrid::InputSpacing() const
 {
    ATLASSERT(m_MinGirderSpacing.size() == m_MaxGirderSpacing.size());
-   std::vector<Float64>::const_iterator minIter, maxIter;
+   std::vector<double>::const_iterator minIter, maxIter;
    for ( minIter  = m_MinGirderSpacing.begin(), maxIter  = m_MaxGirderSpacing.begin();
          minIter != m_MinGirderSpacing.end(),   maxIter != m_MaxGirderSpacing.end();
          minIter++, maxIter++ )
    {
-      Float64 v = (*maxIter) - (*minIter);
+      double v = (*maxIter) - (*minIter);
       if ( !IsZero(v) )
          return true;
    }
@@ -123,7 +123,7 @@ bool CGirderSpacingGrid::InputSpacing() const
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderSpacingGrid message handlers
-void CGirderSpacingGrid::Init(pgsTypes::SupportedBeamSpacing girderSpacingType,bool bSharedGirderCount,const CGirderSpacing* pGirderSpacing,const CGirderTypes* pGirderTypes,pgsTypes::PierFaceType pierFace,PierIndexType pierIdx,Float64 skewAngle,bool bAbutment)
+void CGirderSpacingGrid::Init(pgsTypes::SupportedBeamSpacing girderSpacingType,bool bSharedGirderCount,const CGirderSpacing* pGirderSpacing,const CGirderTypes* pGirderTypes,pgsTypes::PierFaceType pierFace,PierIndexType pierIdx,double skewAngle,bool bAbutment)
 {
    m_GirderSpacingType = girderSpacingType;
 
@@ -139,7 +139,7 @@ void CGirderSpacingGrid::Init(pgsTypes::SupportedBeamSpacing girderSpacingType,b
    m_bAbutment = bAbutment;
 }
 
-void CGirderSpacingGrid::CustomInit(pgsTypes::SupportedBeamSpacing girderSpacingType,bool bSharedGirderCount,const CGirderSpacing* pGirderSpacing,const CGirderTypes* pGirderTypes,pgsTypes::PierFaceType pierFace,PierIndexType pierIdx,Float64 skewAngle,bool bAbutment)
+void CGirderSpacingGrid::CustomInit(pgsTypes::SupportedBeamSpacing girderSpacingType,bool bSharedGirderCount,const CGirderSpacing* pGirderSpacing,const CGirderTypes* pGirderTypes,pgsTypes::PierFaceType pierFace,PierIndexType pierIdx,double skewAngle,bool bAbutment)
 {
    // Initialize the grid. For CWnd based grids this call is
    // essential. For view based grids this initialization is done 
@@ -209,7 +209,7 @@ void CGirderSpacingGrid::FillGrid()
    GirderIndexType nGirders      = m_GridData.m_GirderSpacing.GetSpacingCount() + 1;
 
    // get the pier direction so the allowable girder spacing can be skew corrected
-   Float64 skewCorrection;
+   double skewCorrection;
    if ( m_GridData.m_GirderSpacing.GetMeasurementType() == pgsTypes::NormalToItem )
    {
       skewCorrection = 1;
@@ -240,7 +240,7 @@ void CGirderSpacingGrid::FillGrid()
    m_MaxGirderSpacing.clear();
    for ( GroupIndexType grpIdx = 0; grpIdx < nSpacingGroups; grpIdx++ )
    {
-      Float64 spacing;
+      double spacing;
       GirderIndexType firstGdrIdx, lastGdrIdx;
       m_GridData.m_GirderSpacing.GetSpacingGroup(grpIdx,&firstGdrIdx,&lastGdrIdx,&spacing);
 
@@ -272,8 +272,8 @@ void CGirderSpacingGrid::FillGrid()
          );
 
       // get valid girder spacing for this group
-      Float64 minGirderSpacing = -MAX_GIRDER_SPACING;
-      Float64 maxGirderSpacing =  MAX_GIRDER_SPACING;
+      double minGirderSpacing = -MAX_GIRDER_SPACING;
+      double maxGirderSpacing =  MAX_GIRDER_SPACING;
       for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx <= lastGdrIdx; gdrIdx++ )
       {
          const GirderLibraryEntry* pGdrEntry = m_GridData.m_GirderTypes.GetGirderLibraryEntry(gdrIdx);
@@ -282,7 +282,7 @@ void CGirderSpacingGrid::FillGrid()
          pGdrEntry->GetBeamFactory(&factory);
 
          // save spacing range to local class data
-         Float64 minGS, maxGS;
+         double minGS, maxGS;
          factory->GetAllowableSpacingRange(dimensions,deckType,m_GirderSpacingType,&minGS, &maxGS);
          minGS *= skewCorrection;
          maxGS *= skewCorrection;
@@ -670,7 +670,7 @@ BOOL CGirderSpacingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
    }
 
 
-   Float64 spacing = _tstof(strText); // returns zero if error
+   double spacing = _tstof(strText); // returns zero if error
    if ( spacing <= 0 )
    {
       if ( IsGirderSpacing(m_GirderSpacingType) )
@@ -696,8 +696,8 @@ BOOL CGirderSpacingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
    if ( IsGirderSpacing(m_GirderSpacingType) )
    {
       spacing = ::ConvertToSysUnits(spacing,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
-      Float64 minGirderSpacing = m_MinGirderSpacing[nCol-1];
-      Float64 maxGirderSpacing = m_MaxGirderSpacing[nCol-1];
+      double minGirderSpacing = m_MinGirderSpacing[nCol-1];
+      double maxGirderSpacing = m_MaxGirderSpacing[nCol-1];
       if ( IsLT(spacing,minGirderSpacing) || IsLT(maxGirderSpacing,spacing) )
       {
          SetWarningText(_T("Girder spacing is out of range"));
@@ -707,9 +707,9 @@ BOOL CGirderSpacingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
    else
    {
       spacing = ::ConvertToSysUnits(spacing,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-      Float64 minGirderSpacing = m_MinGirderSpacing[nCol-1];
-      Float64 maxGirderSpacing = m_MaxGirderSpacing[nCol-1];
-      if ( spacing < 0 || IsGT(maxGirderSpacing-minGirderSpacing,spacing) )
+      double minGirderSpacing = m_MinGirderSpacing[nCol-1];
+      double maxGirderSpacing = m_MaxGirderSpacing[nCol-1];
+      if ( spacing < 0 || IsGT(spacing,maxGirderSpacing-minGirderSpacing) )
       {
          SetWarningText(_T("Joint spacing is out of range"));
          return FALSE;
@@ -731,7 +731,7 @@ BOOL CGirderSpacingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
       CString strValue;
       GetCurrentCellControl()->GetCurrentText(strValue);
 
-      Float64 spacing = _tstof(strValue);
+      double spacing = _tstof(strValue);
 
       if ( IsGirderSpacing(m_GirderSpacingType) )
       {

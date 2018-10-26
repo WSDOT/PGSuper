@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,7 +34,6 @@ class RatingLibraryEntry;
 class RatingLibraryEntryObserver;
 PSGLIBTPL sysSubjectT<RatingLibraryEntryObserver, RatingLibraryEntry>;
 
-// Live Load, Load Factor Model before LRFR2013
 class PSGLIBCLASS CLiveLoadFactorModel
 {
    // the dialog is our friend.
@@ -83,72 +82,9 @@ public:
 
 private:
    Float64 m_Wlower, m_Wupper; // vehicle weight boundaries
-   Int16 m_ADTT[4]; // index, 0=lower,1=middle,2=upper,3=unknown
+   Int16 m_ADTT[4];
    Float64 m_gLL_Lower[4];
    Float64 m_gLL_Upper[4];
-   Float64 m_gLL_Service[4];
-   pgsTypes::LiveLoadFactorType m_LiveLoadFactorType;
-   pgsTypes::LiveLoadFactorModifier m_LiveLoadFactorModifier;
-   bool m_bAllowUserOverride;
-};
-
-
-// Live Load, Load Factor Model for LRFR2013 and later
-class PSGLIBCLASS CLiveLoadFactorModel2
-{
-   // the dialog is our friend.
-   friend CRatingDialog;
-
-public:
-   CLiveLoadFactorModel2();
-
-   bool operator!=(const CLiveLoadFactorModel2& other) const;
-   bool operator==(const CLiveLoadFactorModel2& other) const;
-
-   void SetPermitWeightRatio(Float64 PWRlower,Float64 PWRupper);
-   void GetPermitWeightRatio(Float64* pPWRlower,Float64* pPWRupper) const;
-
-   void SetLiveLoadFactorType(pgsTypes::LiveLoadFactorType gllType);
-   pgsTypes::LiveLoadFactorType GetLiveLoadFactorType() const;
-
-   void SetLiveLoadFactorModifier(pgsTypes::LiveLoadFactorModifier gllModifier);
-   pgsTypes::LiveLoadFactorModifier GetLiveLoadFactorModifier() const;
-
-   void AllowUserOverride(bool bAllow);
-   bool AllowUserOverride() const;
-
-   void SetADTT(Int16 adtt1, Int16 adtt2, Int16 adtt3, Int16 adtt4);
-   void GetADTT(Int16* adtt1, Int16* adtt2, Int16* adtt3, Int16* adtt4) const;
-
-   void SetLowerLiveLoadFactor(Float64 gll1,Float64 gll2,Float64 gll3,Float64 gll4);
-   void GetLowerLiveLoadFactor(Float64* gll1,Float64* gll2,Float64* gll3,Float64* gll4) const;
-
-   void SetMiddleLiveLoadFactor(Float64 gll1,Float64 gll2,Float64 gll3,Float64 gll4);
-   void GetMiddleLiveLoadFactor(Float64* gll1,Float64* gll2,Float64* gll3,Float64* gll4) const;
-
-   void SetUpperLiveLoadFactor(Float64 gll1,Float64 gll2,Float64 gll3,Float64 gll4);
-   void GetUpperLiveLoadFactor(Float64* gll1,Float64* gll2,Float64* gll3,Float64* gll4) const;
-
-   void SetServiceLiveLoadFactor(Float64 gll1,Float64 gll2,Float64 gll3,Float64 gll4);
-   void GetServiceLiveLoadFactor(Float64* gll1,Float64* gll2,Float64* gll3,Float64* gll4) const;
-
-   Float64 GetStrengthLiveLoadFactor(Int16 adtt,Float64 W) const;
-   Float64 GetServiceLiveLoadFactor(Int16 adtt) const;
-
-   //------------------------------------------------------------------------
-   // Save to structured storage
-   bool SaveMe(sysIStructuredSave* pSave);
-
-   //------------------------------------------------------------------------
-   // Load from structured storage
-   bool LoadMe(sysIStructuredLoad* pLoad);
-
-private:
-   Float64 m_PWRlower, m_PWRupper; // permit weight ratiot boundaries
-   Int16 m_ADTT[4]; // index, 0=lower,1=middle,2=upper,3=unknown
-   Float64 m_gLL_Lower[4];  // associated with lower value of PWR
-   Float64 m_gLL_Middle[4]; // for PWR between lower and upper PWR, not used unless m_LoadFactorType is gllBilinearWithWeight
-   Float64 m_gLL_Upper[4];  // associated with uper value of PWR, not used unless m_LoadFactorType is gllBilinearWithWeight
    Float64 m_gLL_Service[4];
    pgsTypes::LiveLoadFactorType m_LiveLoadFactorType;
    pgsTypes::LiveLoadFactorModifier m_LiveLoadFactorModifier;
@@ -258,21 +194,11 @@ public:
    void AlwaysLoadRate(bool bAlways);
    bool AlwaysLoadRate() const;
 
-   // For use with LRFR before LRFR2013
    void SetLiveLoadFactorModel(pgsTypes::LoadRatingType ratingType,const CLiveLoadFactorModel& model);
    const CLiveLoadFactorModel& GetLiveLoadFactorModel(pgsTypes::LoadRatingType ratingType) const;
 
-   // For use with LRFR before LRFR2013
    void SetLiveLoadFactorModel(pgsTypes::SpecialPermitType permitType,const CLiveLoadFactorModel& model);
    const CLiveLoadFactorModel& GetLiveLoadFactorModel(pgsTypes::SpecialPermitType permitType) const;
-
-   // For use with LRFR2013 and later
-   void SetLiveLoadFactorModel2(pgsTypes::LoadRatingType ratingType,const CLiveLoadFactorModel2& model);
-   const CLiveLoadFactorModel2& GetLiveLoadFactorModel2(pgsTypes::LoadRatingType ratingType) const;
-
-   // For use with LRFR2013 and later
-   void SetLiveLoadFactorModel2(pgsTypes::SpecialPermitType permitType,const CLiveLoadFactorModel2& model);
-   const CLiveLoadFactorModel2& GetLiveLoadFactorModel2(pgsTypes::SpecialPermitType permitType) const;
 
 protected:
    //------------------------------------------------------------------------
@@ -289,12 +215,6 @@ private:
 
    bool m_bAlwaysRate;
 
-   // for use with LRFR before 2013
    CLiveLoadFactorModel m_LiveLoadFactorModels[5]; // index is pgsTypes::LoadRatingType excluding lrPermit_Special
    CLiveLoadFactorModel m_SpecialPermitLiveLoadFactorModels[3]; // index is pgsTypes::SpecialPermitType
-
-
-   // for use with LRFR2013 and later
-   CLiveLoadFactorModel2 m_LiveLoadFactorModels2[5]; // index is pgsTypes::LoadRatingType excluding lrPermit_Special
-   CLiveLoadFactorModel2 m_SpecialPermitLiveLoadFactorModels2[3]; // index is pgsTypes::SpecialPermitType
 };

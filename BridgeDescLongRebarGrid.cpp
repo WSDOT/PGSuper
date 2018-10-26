@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -281,7 +281,7 @@ void CGirderDescLongRebarGrid::SetRowStyle(ROWCOL nRow)
 #pragma Reminder("UPDATE: need to get bar sizes from rebar pool")
 	SetStyleRange(CGXRange(nRow,2), CGXStyle()
 			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
-			.SetChoiceList(_T("#3\n#4\n#5\n#6\n#7\n#8\n#9\n#10\n#11\n#14\n#18"))
+			.SetChoiceList(_T("#3\n#4\n#5\n#6\n#8\n#9\n#10\n#11\n#14\n#18"))
 			.SetValue(_T("#4"))
          .SetHorizontalAlignment(DT_RIGHT)
          );
@@ -347,7 +347,7 @@ matRebar::Size CGirderDescLongRebarGrid::GetBarSize(ROWCOL row)
 
 bool CGirderDescLongRebarGrid::GetRowData(ROWCOL nRow, CLongitudinalRebarData::RebarRow* plsi)
 {
-   Float64 d;
+   double d;
    int i;
 
    CString s = GetCellValue(nRow, 1);
@@ -449,7 +449,7 @@ BOOL CGirderDescLongRebarGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	}
 	else if ((nCol==4 || nCol==5)  && !s.IsEmpty( ))
 	{
-      Float64 d;
+      double d;
       if (!sysTokenizer::ParseDouble(s, &d))
 		{
 			SetWarningText (_T("Value must be a number"));

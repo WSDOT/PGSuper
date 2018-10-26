@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -105,7 +105,7 @@ public:
    virtual Float64 GetAllowableStress(pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc);
    virtual Float64 GetCastingYardWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetAllowableCompressiveStressCoefficient(pgsTypes::Stage stage,pgsTypes::LimitState ls);
-   virtual void GetAllowableTensionStressCoefficient(pgsTypes::Stage stage,pgsTypes::LimitState ls,Float64* pCoeff,bool* pbMax,Float64* pMaxValue);
+   virtual void GetAllowableTensionStressCoefficient(pgsTypes::Stage stage,pgsTypes::LimitState ls,double* pCoeff,bool* pbMax,double* pMaxValue);
    virtual Float64 GetCastingYardAllowableStress(pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc);
    virtual Float64 GetBridgeSiteAllowableStress(pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type,Float64 fc);
    virtual Float64 GetInitialAllowableCompressiveStress(Float64 fci);
@@ -148,7 +148,7 @@ public:
    virtual Float64 GetLiftingSweepTolerance()const;
    virtual Float64 GetLiftingWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetLiftingWithMildRebarAllowableStressFactor();
-   virtual void GetLiftingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax);
+   virtual void GetLiftingAllowableTensileConcreteStressParameters(double* factor,bool* pbMax,double* fmax);
    virtual Float64 GetLiftingAllowableTensileConcreteStressEx(Float64 fci, bool includeRebar);
    virtual Float64 GetLiftingAllowableCompressiveConcreteStressEx(Float64 fci);
    virtual Float64 GetLiftingModulusOfRupture(SpanIndexType span,GirderIndexType gdr);
@@ -168,7 +168,7 @@ public:
    virtual void GetHaulingImpact(Float64* pDownward, Float64* pUpward) const;
    virtual Float64 GetHaulingCrackingFs() const;
    virtual Float64 GetHaulingRolloverFs() const;
-   virtual void GetHaulingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax);
+   virtual void GetHaulingAllowableTensileConcreteStressParameters(double* factor,bool* pbMax,double* fmax);
    virtual Float64 GetHaulingAllowableTensileConcreteStress(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetHaulingAllowableCompressiveConcreteStress(SpanIndexType span,GirderIndexType gdr);
    virtual Float64 GetHaulingAllowableTensionFactor();
@@ -215,7 +215,6 @@ public:
 // IResistanceFactors
 public:
    virtual void GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiCompression);
-   virtual void GetFlexuralStrainLimits(matPsStrand::Grade grade,matPsStrand::Type type,Float64* pecl,Float64* petl);
    virtual void GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* pecl,Float64* petl);
    virtual Float64 GetShearResistanceFactor(pgsTypes::ConcreteType type);
 

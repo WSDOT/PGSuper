@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1422>
-<meta name=layout-width content=963>
+<meta name=layout-height content=1645>
+<meta name=layout-width content=1234>
 
 
 <!--(Links)=========================================================-->
@@ -43,10 +43,10 @@
 
 <body>
 
-<h1>Girder Connection Dialog</h1>
+<h1>Connection Dialog</h1>
 
-<p>The Girder Connection Dialog allows you to edit the description of the 
- connection between the end of the girder and the substructure.</p>
+<p>The Connection Dialog allows you to edit the description of the connection 
+ between the end of the girder and the substructure.</p>
 
 <h2><span><span style="font-weight: normal;">Entry Name</span></span></h2>
 
@@ -59,9 +59,10 @@
 
 <p>The bearing offset is the distance from the pier or abutment reference 
  line to the point of bearing on the girder (See Figure in Dialog). The 
- bearing offset may be measured normal to the centerline of pier or along 
- the centerline of the girder. The centerline of bearing is always parallel 
- to the centerline of pier.</p>
+ bearing offset may be measured normal to the pier or abutment reference 
+ line or along the centerline of the girder. <span style="font-style: italic;">The 
+ centerline of bearing is always parallel to the pier or abutment reference 
+ line</span>.</p>
 
 <h3><span style="font-weight: bold;"><span><span style="font-weight: bold;">E</span></span>nd 
  Distance</span></h3>
@@ -72,35 +73,38 @@
 <ul style="list-style: disc;"
 	type=disc>
 	
-	<li class=kadov-p><p>From the centerline of the pier, along the centerline 
+	<li class=kadov-p><p>From the Abutment/Pier Line, along the centerline 
  of the girder</p></li>
 	
-	<li class=kadov-p><p>From the centerline of the pier, normal to the 
- centerline of the pier</p></li>
+	<li class=kadov-p><p>From the Abutment/Pier Line, normal to the Abutment/Pier 
+ Line</p></li>
 	
 	<li class=kadov-p><p>From the bearing, along the centerline of the 
  girder</p></li>
 	
-	<li class=kadov-p><p>From the bearing, normal to the centerline of 
- the girder</p></li>
+	<li class=kadov-p><p>From, and normal to, the bearing centerline</p></li>
 </ul>
 
-<p class=Tip>Note that the value of End Distance can never be larger than 
- the Bearing offset. However, if there is a large skew, it is still possible 
- to input valid library entry values, but have the bearings located off 
- of the girder. For example: In the figure below, with a Bearing Offset 
- = 9” measured along alignment; and End Distance =9” measured from CL pier, 
- normal to CL pier. For this case a zero skew would place the bearing at 
- the end of the girder, a valid condition. However, any non-zero skew would 
- cause the bearing to be beyond the end of the girder – negative cantilever 
- - Not Good:</p>
+<p class=Tip>Note that at intermediate piers the value of End Distance 
+ can never be larger than the Bearing Offset. However, if there is a large 
+ skew, it is still possible to input valid library entry values, but have 
+ the bearings located off of the girder. For example: In the figure below, 
+ with a Bearing Offset = 9” measured along alignment; and End Distance 
+ =9” measured from and normal to the Abutment/Pier Line. For this case 
+ a zero skew would place the bearing at the end of the girder, a valid 
+ condition. However, any non-zero skew would cause the bearing to be beyond 
+ the end of the girder – negative cantilever - Not Good:</p>
 
 <p class=Tip><img src="BearingEndDistanceError.gif"
 					x-maintain-ratio=TRUE
 					style="border: none;
 							float: none;
+							width: 289px;
+							height: 265px;
 							border-style: none;
 							border-style: none;"
+					width=289
+					height=265
 					border=0></p>
 
 <p class=Tip>PGSuper will issue an error message when this condition occurs. 

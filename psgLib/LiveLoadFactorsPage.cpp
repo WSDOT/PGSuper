@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,8 +32,8 @@
 
 IMPLEMENT_DYNAMIC(CLiveLoadFactorsPage, CPropertyPage)
 
-CLiveLoadFactorsPage::CLiveLoadFactorsPage(UINT idd,LPCTSTR strTitle,pgsTypes::LoadRatingType ratingType)
-	: CPropertyPage(idd)
+CLiveLoadFactorsPage::CLiveLoadFactorsPage(LPCTSTR strTitle,pgsTypes::LoadRatingType ratingType)
+	: CPropertyPage(CLiveLoadFactorsPage::IDD)
 {
    m_RatingType = ratingType;
    m_SpecialPermitType = (pgsTypes::SpecialPermitType)(-1); // bogus value so we know this is not for a special permit rating
@@ -42,8 +42,8 @@ CLiveLoadFactorsPage::CLiveLoadFactorsPage(UINT idd,LPCTSTR strTitle,pgsTypes::L
   	m_psp.dwFlags |= PSP_USETITLE;
 }
 
-CLiveLoadFactorsPage::CLiveLoadFactorsPage(UINT idd,LPCTSTR strTitle,pgsTypes::LoadRatingType ratingType,pgsTypes::SpecialPermitType permitType)
-	: CPropertyPage(idd)
+CLiveLoadFactorsPage::CLiveLoadFactorsPage(LPCTSTR strTitle,pgsTypes::LoadRatingType ratingType,pgsTypes::SpecialPermitType permitType)
+	: CPropertyPage(CLiveLoadFactorsPage::IDD)
 {
    m_RatingType = ratingType;
    m_SpecialPermitType = permitType;
@@ -79,8 +79,6 @@ END_MESSAGE_MAP()
 
 BOOL CLiveLoadFactorsPage::OnInitDialog()
 {
-   CRatingDialog* pParent = (CRatingDialog*)GetParent();
-
    CComboBox* pcbLLMethod = (CComboBox*)GetDlgItem(IDC_LL_METHOD);
    int idx = pcbLLMethod->AddString(_T("Single Value"));
    pcbLLMethod->SetItemData(idx,(DWORD_PTR)pgsTypes::gllSingleValue);
@@ -90,11 +88,7 @@ BOOL CLiveLoadFactorsPage::OnInitDialog()
    pcbLLMethod->SetItemData(idx,(DWORD_PTR)pgsTypes::gllLinear);
    idx = pcbLLMethod->AddString(_T("Bilinear"));
    pcbLLMethod->SetItemData(idx,(DWORD_PTR)pgsTypes::gllBilinear);
-
-   if ( pParent->m_RatingDescriptionPage.GetSpecVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
-      idx = pcbLLMethod->AddString(_T("Bilinear with vehicle weight"));
-   else
-      idx = pcbLLMethod->AddString(_T("Bilinear with permit weight ratio"));
+   idx = pcbLLMethod->AddString(_T("Bilinear with vehicle weight"));
    pcbLLMethod->SetItemData(idx,(DWORD_PTR)pgsTypes::gllBilinearWithWeight);
 
    CComboBox* pcbOptions = (CComboBox*)GetDlgItem(IDC_INTERPOLATE);
@@ -113,8 +107,6 @@ BOOL CLiveLoadFactorsPage::OnInitDialog()
 
 void CLiveLoadFactorsPage::OnLiveLoadFactorTypeChanged()
 {
-   CRatingDialog* pParent = (CRatingDialog*)GetParent();
-
    CComboBox* pcbLLMethod = (CComboBox*)GetDlgItem(IDC_LL_METHOD);
    int curSel =  pcbLLMethod->GetCurSel();
    pgsTypes::LiveLoadFactorType gllType = (pgsTypes::LiveLoadFactorType)(pcbLLMethod->GetItemData(curSel));
@@ -141,16 +133,6 @@ void CLiveLoadFactorsPage::OnLiveLoadFactorTypeChanged()
    BOOL bgllLower3 = FALSE;
    BOOL bgllLower4Label = FALSE;
    BOOL bgllLower4 = FALSE;
-
-   BOOL bgllMiddle1Label = FALSE;
-   BOOL bgllMiddle1 = FALSE;
-   BOOL bgllMiddle2Label = FALSE;
-   BOOL bgllMiddle2 = FALSE;
-   BOOL bgllMiddle3Label = FALSE;
-   BOOL bgllMiddle3 = FALSE;
-   BOOL bgllMiddle4Label = FALSE;
-   BOOL bgllMiddle4 = FALSE;
-
    BOOL bgllUpper1Label = FALSE;
    BOOL bgllUpper1 = FALSE;
    BOOL bgllUpper2Label = FALSE;
@@ -195,8 +177,7 @@ void CLiveLoadFactorsPage::OnLiveLoadFactorTypeChanged()
       bADTT1          = TRUE;
       bADTT2Label     = TRUE;
       bADTT2          = TRUE;
-      GetDlgItem(IDC_ADTT1_LABEL)->SetWindowText(_T("ADTT <="));
-      GetDlgItem(IDC_ADTT2_LABEL)->SetWindowText(_T("ADTT >="));
+      GetDlgItem(IDC_ADTT2_LABEL)->SetWindowText(_T("ADTT >"));
       bgllLower1Label = TRUE;
       bgllLower1      = TRUE;
       bgllService1    = TRUE;
@@ -214,9 +195,7 @@ void CLiveLoadFactorsPage::OnLiveLoadFactorTypeChanged()
       bADTT1Label = TRUE;
       bADTT1 = TRUE;
       bADTT2Label = TRUE;
-      GetDlgItem(IDC_ADTT1_LABEL)->SetWindowText(_T("ADTT <"));
       GetDlgItem(IDC_ADTT2_LABEL)->SetWindowText(_T("ADTT ="));
-      GetDlgItem(IDC_ADTT3_LABEL)->SetWindowText(_T("ADTT >"));
       bADTT2 = TRUE;
       bADTT3Label = TRUE;
       bADTT3 = TRUE;
@@ -264,19 +243,6 @@ void CLiveLoadFactorsPage::OnLiveLoadFactorTypeChanged()
       bgllLower4Label = TRUE;
       bgllLower4 = TRUE;
       bgllService4    = TRUE;
-
-      if ( lrfrVersionMgr::SecondEditionWith2013Interims <= pParent->m_RatingDescriptionPage.GetSpecVersion() )
-      {
-         bgllMiddle1Label = TRUE;
-         bgllMiddle1 = TRUE;
-         bgllMiddle2Label = TRUE;
-         bgllMiddle2 = TRUE;
-         bgllMiddle3Label = TRUE;
-         bgllMiddle3 = TRUE;
-         bgllMiddle4Label = TRUE;
-         bgllMiddle4 = TRUE;
-      }
-
       bgllUpper1Label = TRUE;
       bgllUpper1 = TRUE;
       bgllUpper2Label = TRUE;
@@ -320,19 +286,6 @@ void CLiveLoadFactorsPage::OnLiveLoadFactorTypeChanged()
    GetDlgItem(IDC_LF_LOWER2)->ShowWindow(bgllLower2 ? SW_SHOW : SW_HIDE);
    GetDlgItem(IDC_LF_LOWER3)->ShowWindow(bgllLower3 ? SW_SHOW : SW_HIDE);
    GetDlgItem(IDC_LF_LOWER4)->ShowWindow(bgllLower4 ? SW_SHOW : SW_HIDE);
-
-   if ( lrfrVersionMgr::SecondEditionWith2013Interims <= pParent->m_RatingDescriptionPage.GetSpecVersion() )
-   {
-      GetDlgItem(IDC_LF_MIDDLE1_LABEL)->ShowWindow(bgllMiddle1Label ? SW_SHOW : SW_HIDE);
-      GetDlgItem(IDC_LF_MIDDLE2_LABEL)->ShowWindow(bgllMiddle2Label ? SW_SHOW : SW_HIDE);
-      GetDlgItem(IDC_LF_MIDDLE3_LABEL)->ShowWindow(bgllMiddle3Label ? SW_SHOW : SW_HIDE);
-      GetDlgItem(IDC_LF_MIDDLE4_LABEL)->ShowWindow(bgllMiddle4Label ? SW_SHOW : SW_HIDE);
-
-      GetDlgItem(IDC_LF_MIDDLE1)->ShowWindow(bgllMiddle1 ? SW_SHOW : SW_HIDE);
-      GetDlgItem(IDC_LF_MIDDLE2)->ShowWindow(bgllMiddle2 ? SW_SHOW : SW_HIDE);
-      GetDlgItem(IDC_LF_MIDDLE3)->ShowWindow(bgllMiddle3 ? SW_SHOW : SW_HIDE);
-      GetDlgItem(IDC_LF_MIDDLE4)->ShowWindow(bgllMiddle4 ? SW_SHOW : SW_HIDE);
-   }
 
    GetDlgItem(IDC_LF_UPPER1_LABEL)->ShowWindow(bgllUpper1Label ? SW_SHOW : SW_HIDE);
    GetDlgItem(IDC_LF_UPPER2_LABEL)->ShowWindow(bgllUpper2Label ? SW_SHOW : SW_HIDE);

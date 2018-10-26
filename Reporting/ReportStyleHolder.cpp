@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,9 +23,6 @@
 #include "stdafx.h"
 #include <Reporting\ReportStyleHolder.h>
 #include <ctype.h>
-
-#include <EAF\EAFUtilities.h>
-#include <EAF\EAFApp.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -308,35 +305,25 @@ const std::_tstring& pgsReportStyleHolder::GetCopyrightStyle()
    return ms_CopyrightStyle;
 }
 
-Float64 pgsReportStyleHolder::GetMaxTableWidth()
+double pgsReportStyleHolder::GetMaxTableWidth()
 {
    return ms_MaxTableWidth;
 }
 
-rptRcTable* pgsReportStyleHolder::CreateDefaultTable(ColumnIndexType numColumns, const std::_tstring& strLabel)
-{
-   return CreateDefaultTable(numColumns,strLabel.c_str());
-}
-
-rptRcTable* pgsReportStyleHolder::CreateDefaultTable(ColumnIndexType numColumns, LPCTSTR lpszLabel)
+rptRcTable* pgsReportStyleHolder::CreateDefaultTable(ColumnIndexType numColumns, std::_tstring label)
 {
    rptRcTable* pTable = new rptRcTable( numColumns, 0.0/*pgsReportStyleHolder::GetMaxTableWidth()*/ );
-   if (lpszLabel != NULL)
-      pTable->TableLabel() << lpszLabel;
+   if (!label.empty())
+      pTable->TableLabel() << label;
 
    pgsReportStyleHolder::ConfigureTable(pTable);
 
    return pTable;
 }
 
-rptRcTable* pgsReportStyleHolder::CreateTableNoHeading(ColumnIndexType numColumns, const std::_tstring& strLabel)
+rptRcTable* pgsReportStyleHolder::CreateTableNoHeading(ColumnIndexType numColumns, std::_tstring label)
 {
-   return CreateTableNoHeading(numColumns,strLabel.c_str());
-}
-
-rptRcTable* pgsReportStyleHolder::CreateTableNoHeading(ColumnIndexType numColumns, LPCTSTR lpszLabel)
-{
-   rptRcTable* pTable = CreateDefaultTable(numColumns,lpszLabel);
+   rptRcTable* pTable = CreateDefaultTable(numColumns,label);
 
    pTable->SetTableHeaderStyle( pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
    pTable->SetNumberOfHeaderRows(0);
@@ -388,22 +375,18 @@ const std::_tstring& pgsReportStyleHolder::GetImagePath()
       std::_tstring filename(szBuff);
       make_upper( filename.begin(), filename.end() );
 
-      CEAFApp* pApp = EAFGetApp();
-      // find first occurance of the application name
-      std::_tstring strAppName(pApp->m_pszAppName);
-      make_upper( strAppName.begin(), strAppName.end() );
-      std::_tstring::size_type loc = filename.find(strAppName);
+      // find first occurance of "PGSUPER"
+      std::_tstring strPGSuper(_T("PGSUPER"));
+      std::_tstring::size_type loc = filename.find(strPGSuper);
       if ( loc != std::_tstring::npos )
       {
-         loc += strAppName.length();
+         loc += strPGSuper.length();
       }
       else
       {
          // something is wrong... that find should have succeeded
          // hard code the default install location so that there is a remote chance of success
-         TCHAR szNativeProgramFilesFolder[MAX_PATH];
-         ExpandEnvironmentStrings(_T("%ProgramW6432%"),szNativeProgramFilesFolder,ARRAYSIZE(szNativeProgramFilesFolder));
-         filename = _T("\\") + std::_tstring(szNativeProgramFilesFolder) + _T("\\WSDOT\\") + strAppName;
+         filename = _T("\\PROGRAM FILES\\WSDOT\\PGSUPER");
          loc = filename.length();
       }
 

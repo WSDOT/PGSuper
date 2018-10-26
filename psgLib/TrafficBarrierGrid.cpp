@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -290,7 +290,7 @@ void CTrafficBarrierGrid::UploadData(CDataExchange* pDX, IPoint2dCollection* poi
    CComPtr<IPoint2d> point;
    while ( enum_points->Next(1,&point,NULL) != S_FALSE )
    {
-      Float64 x,y;
+      double x,y;
       point->get_X(&x);
       point->get_Y(&y);
 
@@ -320,7 +320,7 @@ void CTrafficBarrierGrid::DownloadData(CDataExchange* pDX, IPoint2dCollection* p
    ROWCOL nRow=1;
    for (ROWCOL i = 0; i < nRows; i++)
    {
-      Float64 x,y;
+      double x,y;
       ParseRow(nRow,pDX,&x,&y);
 
       x = ::ConvertToSysUnits(x,pDisplayUnits->ComponentDim.UnitOfMeasure);
@@ -335,7 +335,7 @@ void CTrafficBarrierGrid::DownloadData(CDataExchange* pDX, IPoint2dCollection* p
    }
 }
 
-void CTrafficBarrierGrid::ParseRow(ROWCOL nRow, CDataExchange* pDX, Float64* pX,Float64* pY)
+void CTrafficBarrierGrid::ParseRow(ROWCOL nRow, CDataExchange* pDX, double* pX,double* pY)
 {
 	CString s = GetCellValue(nRow, 1);
    sysTokenizer::ParseDouble(s, pX);

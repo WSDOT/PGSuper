@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -127,9 +127,9 @@ void CLiftingCheck::Build(rptChapter* pChapter,
    std::_tstring specName = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( specName.c_str() );
 
-   Float64 c; // compression coefficient
-   Float64 t; // tension coefficient
-   Float64 t_max; // maximum allowable tension
+   double c; // compression coefficient
+   double t; // tension coefficient
+   double t_max; // maximum allowable tension
    bool b_t_max; // true if max allowable tension is applicable
 
    c = pSpecEntry->GetCyCompStressLifting();
@@ -147,7 +147,7 @@ void CLiftingCheck::Build(rptChapter* pChapter,
    *p << _T(" = ") << stress.SetValue(pLiftArtifact->GetAllowableTensileStress())<< _T(" ") <<
       stress.GetUnitTag()<< rptNewLine;
 
-   Float64 As_reqd = pLiftArtifact->GetAlterantiveTensileStressAsMax();
+   double As_reqd = pLiftArtifact->GetAlterantiveTensileStressAsMax();
    *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t2) << symbol(ROOT) << RPT_FCI
        << _T(" = ") << stress.SetValue(pLiftArtifact->GetAlternativeTensionAllowableStress()) << _T(" ") << stress.GetUnitTag();
    if ( !IsZero(As_reqd) )
@@ -157,11 +157,11 @@ void CLiftingCheck::Build(rptChapter* pChapter,
 
    *p <<_T("Allowable factor of safety against cracking = ")<<pLiftArtifact->GetAllowableFsForCracking()<<rptNewLine;
 
-   Float64 fc_reqd_comp,fc_reqd_tens;
+   double fc_reqd_comp,fc_reqd_tens;
    bool min_rebar_reqd;
    pLiftArtifact->GetRequiredConcreteStrength(&fc_reqd_comp,&fc_reqd_tens,&min_rebar_reqd);
 
-   Float64 fci_reqd = max(fc_reqd_comp,fc_reqd_tens);
+   double fci_reqd = max(fc_reqd_comp,fc_reqd_tens);
 
    if ( 0 < fci_reqd )
       *p << RPT_FCI << _T(" required to satisfy this stress check = ") << stress_u.SetValue( fci_reqd ) << rptNewLine;

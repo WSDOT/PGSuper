@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -871,16 +871,12 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
 {
    USES_CONVERSION;
 
-   GET_IFACE2(pBroker, ILibrary,     pLib );
    GET_IFACE2(pBroker, IBridge,      pBridge ); 
-   GET_IFACE2(pBroker, IRoadwayData, pAlignment);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, xdim,   pDisplayUnits->GetXSectionDimUnit(),  false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, cmpdim, pDisplayUnits->GetComponentDimUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, offset, pDisplayUnits->GetAlignmentLengthUnit(), true );
 
    CComPtr<IAngleDisplayUnitFormatter> angle_formatter;
    angle_formatter.CoCreateInstance(CLSID_AngleDisplayUnitFormatter);
@@ -890,49 +886,105 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    direction_formatter.CoCreateInstance(CLSID_DirectionDisplayUnitFormatter);
    direction_formatter->put_BearingFormat(VARIANT_TRUE);
 
-   rptParagraph* pPara = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
-   *pPara << _T("Piers") << rptNewLine;
+
+   // Table for pier layout
+   rptRcTable* pLayoutTable = pgsReportStyleHolder::CreateDefaultTable(13,_T("Piers"));
+   *pPara << pLayoutTable << rptNewLine;
+
+   pLayoutTable->SetNumberOfHeaderRows(2);
+
+   pLayoutTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+   pLayoutTable->SetRowSpan(0,0,2);
+   pLayoutTable->SetRowSpan(1,0,SKIP_CELL);
+   (*pLayoutTable)(0,0) << _T("");
+
+   pLayoutTable->SetRowSpan(0,1,2);
+   pLayoutTable->SetRowSpan(1,1,SKIP_CELL);
+   (*pLayoutTable)(0,1) << _T("Station");
+
+   pLayoutTable->SetRowSpan(0,2,2);
+   pLayoutTable->SetRowSpan(1,2,SKIP_CELL);
+   (*pLayoutTable)(0,2) << _T("Bearing");
+
+   pLayoutTable->SetRowSpan(0,3,2);
+   pLayoutTable->SetRowSpan(1,3,SKIP_CELL);
+   (*pLayoutTable)(0,3) << _T("Skew Angle");
+
+   pLayoutTable->SetRowSpan(0,4,2);
+   pLayoutTable->SetRowSpan(1,4,SKIP_CELL);
+   (*pLayoutTable)(0,4) << _T("Boundary") << rptNewLine << _T("Condition");
+
+   pLayoutTable->SetColumnSpan(0,5,4);
+   pLayoutTable->SetColumnSpan(0,6,SKIP_CELL);
+   pLayoutTable->SetColumnSpan(0,7,SKIP_CELL);
+   pLayoutTable->SetColumnSpan(0,8,SKIP_CELL);
+   (*pLayoutTable)(0,5) << _T("Diaphragm - Back");
+   (*pLayoutTable)(1,5) << COLHDR(_T("Height"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*pLayoutTable)(1,6) << COLHDR(_T("Width"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*pLayoutTable)(1,7) << _T("Loading");
+   (*pLayoutTable)(1,8) << COLHDR(_T("Location(*)"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+
+   pLayoutTable->SetColumnSpan(0,9,4);
+   pLayoutTable->SetColumnSpan(0,10,SKIP_CELL);
+   pLayoutTable->SetColumnSpan(0,11,SKIP_CELL);
+   pLayoutTable->SetColumnSpan(0,12,SKIP_CELL);
+   (*pLayoutTable)(0,9) << _T("Diaphragm - Ahead");
+   (*pLayoutTable)(1,9) << COLHDR(_T("Height"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*pLayoutTable)(1,10) << COLHDR(_T("Width"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*pLayoutTable)(1,11) << _T("Loading");
+   (*pLayoutTable)(1,12) << COLHDR(_T("Location(*)"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+
+   pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   *pChapter << pPara;
+   (*pPara) << _T("(*) Distance from Abutment/Pier Line to Centroid of Diaphragm") << rptNewLine;
+
+   // table for connection data
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(7,_T("Pier Layout and Connections"));
-   *pPara << pTable << rptNewLine;
+   rptRcTable* pConnectionTable = pgsReportStyleHolder::CreateDefaultTable(11,_T("Pier Connections"));
+   *pPara << pConnectionTable << rptNewLine;
 
-   pTable->SetNumberOfHeaderRows(2);
+   pConnectionTable->SetNumberOfHeaderRows(2);
 
-   pTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pConnectionTable->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pConnectionTable->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-   pTable->SetRowSpan(0,0,2);
-   pTable->SetRowSpan(1,0,SKIP_CELL);
-   (*pTable)(0,0) << _T("");
+   pConnectionTable->SetRowSpan(0,0,2);
+   pConnectionTable->SetRowSpan(1,0,SKIP_CELL);
+   (*pConnectionTable)(0,0) << _T("");
 
-   pTable->SetRowSpan(0,1,2);
-   pTable->SetRowSpan(1,1,SKIP_CELL);
-   (*pTable)(0,1) << _T("Station");
+   pConnectionTable->SetColumnSpan(0,1,5);
+   pConnectionTable->SetColumnSpan(0,2,SKIP_CELL);
+   pConnectionTable->SetColumnSpan(0,3,SKIP_CELL);
+   pConnectionTable->SetColumnSpan(0,4,SKIP_CELL);
+   pConnectionTable->SetColumnSpan(0,5,SKIP_CELL);
+   (*pConnectionTable)(0,1) << _T("Back");
+   (*pConnectionTable)(1,1) << COLHDR(_T("Bearing") << rptNewLine << _T("Offset"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*pConnectionTable)(1,2) << _T("Bearing") << rptNewLine << _T("Offset") << rptNewLine << _T("Measure");
+   (*pConnectionTable)(1,3) << COLHDR(_T("End") << rptNewLine << _T("Distance"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*pConnectionTable)(1,4) << _T("End") << rptNewLine << _T("Distance") << rptNewLine << _T("Measure");
+   (*pConnectionTable)(1,5) << COLHDR(_T("Support") << rptNewLine << _T("Width"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
 
-   pTable->SetRowSpan(0,2,2);
-   pTable->SetRowSpan(1,2,SKIP_CELL);
-   (*pTable)(0,2) << _T("Bearing");
-
-   pTable->SetRowSpan(0,3,2);
-   pTable->SetRowSpan(1,3,SKIP_CELL);
-   (*pTable)(0,3) << _T("Skew Angle");
-
-   pTable->SetColumnSpan(0,4,2);
-   pTable->SetColumnSpan(0,5,SKIP_CELL);
-   (*pTable)(0,4) << _T("Connection Geometry");
-   (*pTable)(1,4) << _T("Back");
-   (*pTable)(1,5) << _T("Ahead");
-
-   pTable->SetRowSpan(0,6,2);
-   pTable->SetRowSpan(1,6,SKIP_CELL);
-   (*pTable)(0,6) << _T("Boundary") << rptNewLine << _T("Condition");
-
+   pConnectionTable->SetColumnSpan(0,6,5);
+   pConnectionTable->SetColumnSpan(0,7,SKIP_CELL);
+   pConnectionTable->SetColumnSpan(0,8,SKIP_CELL);
+   pConnectionTable->SetColumnSpan(0,9,SKIP_CELL);
+   pConnectionTable->SetColumnSpan(0,10,SKIP_CELL);
+   (*pConnectionTable)(0,6) << _T("Ahead");
+   (*pConnectionTable)(1,6) << COLHDR(_T("Bearing") << rptNewLine << _T("Offset"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*pConnectionTable)(1,7) << _T("Bearing") << rptNewLine << _T("Offset") << rptNewLine << _T("Measure");
+   (*pConnectionTable)(1,8) << COLHDR(_T("End") << rptNewLine << _T("Distance"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*pConnectionTable)(1,9) << _T("End") << rptNewLine << _T("Distance") << rptNewLine << _T("Measure");
+   (*pConnectionTable)(1,10)<< COLHDR(_T("Support") << rptNewLine << _T("Width"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
 
    const CPierData* pPier = pBridgeDesc->GetPier(0);
-   RowIndexType row = pTable->GetNumberOfHeaderRows();
+   RowIndexType row1 = pLayoutTable->GetNumberOfHeaderRows();
+   RowIndexType row2 = pConnectionTable->GetNumberOfHeaderRows();
    while ( pPier != NULL )
    {
       PierIndexType pierIdx = pPier->GetPierIndex();
@@ -955,44 +1007,144 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
       CComBSTR bstrBearing;
       direction_formatter->Format(bearing_value,CComBSTR("°,\',\""),&bstrBearing);
 
-      if ( pPier->GetPrevSpan() == NULL || pPier->GetNextSpan() == NULL )
-         (*pTable)(row,0) << _T("Abutment ") << LABEL_PIER(pierIdx);
-      else
-         (*pTable)(row,0) << _T("Pier ") << LABEL_PIER(pierIdx);
+      (*pLayoutTable)(row1,0) << _T("Pier ") << LABEL_PIER(pierIdx);
 
-      (*pTable)(row,1) << rptRcStation(pPier->GetStation(), &pDisplayUnits->GetStationFormat() );
-      (*pTable)(row,2) << RPT_BEARING(OLE2T(bstrBearing));
-      (*pTable)(row,3) << RPT_ANGLE(OLE2T(bstrAngle));
+      (*pLayoutTable)(row1,1) << rptRcStation(pPier->GetStation(), &pDisplayUnits->GetStationFormat() );
+      (*pLayoutTable)(row1,2) << RPT_BEARING(OLE2T(bstrBearing));
+      (*pLayoutTable)(row1,3) << RPT_ANGLE(OLE2T(bstrAngle));
+
+      (*pLayoutTable)(row1,4) << CPierData::AsString(pPier->GetConnectionType());
 
       if ( pPier->GetPrevSpan() )
       {
-         (*pTable)(row,4) << pPier->GetConnection(pgsTypes::Back);
+         (*pLayoutTable)(row1,5) << cmpdim.SetValue(pPier->GetDiaphragmHeight(pgsTypes::Back));
+         (*pLayoutTable)(row1,6) << cmpdim.SetValue(pPier->GetDiaphragmWidth(pgsTypes::Back));
+         switch( pPier->GetDiaphragmLoadType(pgsTypes::Back) )
+         {
+         case ConnectionLibraryEntry::ApplyAtBearingCenterline:
+            (*pLayoutTable)(row1,7) << _T("Apply load at centerline bearing");
+            (*pLayoutTable)(row1,8) << RPT_NA;
+            break;
+         case ConnectionLibraryEntry::ApplyAtSpecifiedLocation:
+            (*pLayoutTable)(row1,7) << _T("Apply load to girder");
+            (*pLayoutTable)(row1,8) << cmpdim.SetValue(pPier->GetDiaphragmLoadLocation(pgsTypes::Back));
+            break;
+         case ConnectionLibraryEntry::DontApply:
+            (*pLayoutTable)(row1,7) << _T("Ignore weight");
+            (*pLayoutTable)(row1,8) << RPT_NA;
+            break;
+         default:
+            ATLASSERT(false); // is there a new type????
+         }
       }
       else
       {
-         (*pTable)(row,4) << _T("");
+         (*pLayoutTable)(row1,5) << _T("");
+         (*pLayoutTable)(row1,6) << _T("");
+         (*pLayoutTable)(row1,7) << _T("");
+         (*pLayoutTable)(row1,8) << _T("");
       }
 
       if ( pPier->GetNextSpan() )
       {
-         (*pTable)(row,5) << pPier->GetConnection(pgsTypes::Ahead);
+         (*pLayoutTable)(row1,9) << cmpdim.SetValue(pPier->GetDiaphragmHeight(pgsTypes::Ahead));
+         (*pLayoutTable)(row1,10) << cmpdim.SetValue(pPier->GetDiaphragmWidth(pgsTypes::Ahead));
+         switch( pPier->GetDiaphragmLoadType(pgsTypes::Ahead) )
+         {
+         case ConnectionLibraryEntry::ApplyAtBearingCenterline:
+            (*pLayoutTable)(row1,11) << _T("Apply load at centerline bearing");
+            (*pLayoutTable)(row1,12) << RPT_NA;
+            break;
+         case ConnectionLibraryEntry::ApplyAtSpecifiedLocation:
+            (*pLayoutTable)(row1,11) << _T("Apply load to girder");
+            (*pLayoutTable)(row1,12) << cmpdim.SetValue(pPier->GetDiaphragmLoadLocation(pgsTypes::Ahead));
+            break;
+         case ConnectionLibraryEntry::DontApply:
+            (*pLayoutTable)(row1,11) << _T("Ignore weight");
+            (*pLayoutTable)(row1,12) << RPT_NA;
+            break;
+         default:
+            ATLASSERT(false); // is there a new type????
+         }
       }
       else
       {
-         (*pTable)(row,5) << _T("");
+         (*pLayoutTable)(row1,9) << _T("");
+         (*pLayoutTable)(row1,10) << _T("");
+         (*pLayoutTable)(row1,11) << _T("");
+         (*pLayoutTable)(row1,12) << _T("");
       }
 
-      (*pTable)(row,6) << CPierData::AsString(pPier->GetConnectionType());
+      row1++;
+
+      //
+      // Connection table
+      //
+      (*pConnectionTable)(row2,0) << _T("Pier ") << LABEL_PIER(pierIdx);
+
+      bool bAbutment = pPier->IsAbutment();
+
+      // back side
+      if ( pPier->GetPrevSpan() )
+      {
+         Float64 brgOffset;
+         ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
+         pPier->GetBearingOffset(pgsTypes::Back,&brgOffset,&brgOffsetMeasure);
+         (*pConnectionTable)(row2,1) << cmpdim.SetValue(brgOffset);
+
+         (*pConnectionTable)(row2,2) << GetBearingOffsetMeasureString(brgOffsetMeasure,bAbutment).c_str();
+
+         Float64 endDist;
+         ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
+         pPier->GetGirderEndDistance(pgsTypes::Back,&endDist,&endDistMeasure);
+         (*pConnectionTable)(row2,3) << cmpdim.SetValue(endDist);
+         (*pConnectionTable)(row2,4) << GetEndDistanceMeasureString(endDistMeasure,bAbutment).c_str();
+
+         (*pConnectionTable)(row2,5) << cmpdim.SetValue(pPier->GetSupportWidth(pgsTypes::Back));
+      }
+      else
+      {
+         (*pConnectionTable)(row2,1) << _T("");
+         (*pConnectionTable)(row2,2) << _T("");
+         (*pConnectionTable)(row2,3) << _T("");
+         (*pConnectionTable)(row2,4) << _T("");
+         (*pConnectionTable)(row2,5) << _T("");
+      }
+
+      // Ahead side
+      if ( pPier->GetNextSpan() )
+      {
+         Float64 brgOffset;
+         ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
+         pPier->GetBearingOffset(pgsTypes::Ahead,&brgOffset,&brgOffsetMeasure);
+         (*pConnectionTable)(row2,6) << cmpdim.SetValue(brgOffset);
+         (*pConnectionTable)(row2,7) << GetBearingOffsetMeasureString(brgOffsetMeasure,bAbutment).c_str();
+
+         Float64 endDist;
+         ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
+         pPier->GetGirderEndDistance(pgsTypes::Ahead,&endDist,&endDistMeasure);
+         (*pConnectionTable)(row2,8) << cmpdim.SetValue(endDist);
+         (*pConnectionTable)(row2,9) << GetEndDistanceMeasureString(endDistMeasure,bAbutment).c_str();
+
+         (*pConnectionTable)(row2,10)<< cmpdim.SetValue(pPier->GetSupportWidth(pgsTypes::Ahead));
+      }
+      else
+      {
+         (*pConnectionTable)(row2,6) << _T("");
+         (*pConnectionTable)(row2,7) << _T("");
+         (*pConnectionTable)(row2,8) << _T("");
+         (*pConnectionTable)(row2,9) << _T("");
+         (*pConnectionTable)(row2,10)<< _T("");
+      }
 
       if ( pPier->GetNextSpan() )
          pPier = pPier->GetNextSpan()->GetNextPier();
       else
          pPier = NULL;
 
-      row++;
+      row2++;
    }
 }
-
 
 void write_span_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
@@ -1078,9 +1230,9 @@ void write_span_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    else
       *pPara << _T("Joint Spacing Datum") << rptNewLine;
 
-   *pPara << _T("(1) Measured normal to the alignment at the centerline of abutment/pier") << rptNewLine;
+   *pPara << _T("(1) Measured normal to the alignment at the abutment/pier line") << rptNewLine;
    *pPara << _T("(2) Measured normal to the alignment at the centerline of bearing") << rptNewLine;
-   *pPara << _T("(3) Measured at and along the centerline of abutment/pier") << rptNewLine;
+   *pPara << _T("(3) Measured at and along the abutment/pier line") << rptNewLine;
    *pPara << _T("(4) Measured at and along the centerline of bearing") << rptNewLine;
 }
 
@@ -1109,7 +1261,7 @@ void write_girder_spacing(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptRc
 
    if ( pGirderSpacing->GetMeasurementType() == pgsTypes::NormalToItem )
    {
-      if ( pGirderSpacing->GetMeasurementLocation() == pgsTypes::AtCenterlinePier )
+      if ( pGirderSpacing->GetMeasurementLocation() == pgsTypes::AtPierLine )
       {
          (*pTable)(row,col+1) << _T("1");
       }
@@ -1120,7 +1272,7 @@ void write_girder_spacing(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptRc
    }
    else
    {
-      if ( pGirderSpacing->GetMeasurementLocation() == pgsTypes::AtCenterlinePier )
+      if ( pGirderSpacing->GetMeasurementLocation() == pgsTypes::AtPierLine )
       {
          (*pTable)(row,col+1) << _T("3");
       }

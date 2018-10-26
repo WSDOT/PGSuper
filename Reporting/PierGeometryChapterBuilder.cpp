@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -170,13 +170,13 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDispl
       pBridge->GetPierDirection( pierIdx, &bearing );
       pBridge->GetPierSkew( pierIdx, &skew );
 
-      Float64 skew_value;
+      double skew_value;
       skew->get_Value(&skew_value);
 
       CComBSTR bstrAngle;
       angle_formatter->Format(skew_value,CComBSTR("°,\',\""),&bstrAngle);
 
-      Float64 bearing_value;
+      double bearing_value;
       bearing->get_Value(&bearing_value);
 
       CComBSTR bstrBearing;
@@ -195,7 +195,7 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDispl
       pBridge->GetPierPoints(pierIdx,&pntLeft,&pntAlignment,&pntBridge,&pntRight);
 
       offset.ShowUnitTag(false);
-      Float64 x,y;
+      double x,y;
       pntAlignment->get_X(&x);
       pntAlignment->get_Y(&y);
       (*pTable)(row,4) << offset.SetValue(x);

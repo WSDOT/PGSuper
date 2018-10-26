@@ -5,9 +5,6 @@
 
 The Specification Check was Not Successful
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Stirrup detailing checks failed for the Strength I Limit State.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -15,10 +12,7 @@ Stirrup detailing checks failed for the Strength I Limit State.
  38.33   5  8.50  1     2     6          26   1/2  270 22.07 10.38   8 46.0  4.100  5.000    2.708   -2.824   4048  0.748  0.872  0.19 -0.04 -0.00 -0.00 -0.04  63.55 164.94   1.00   5.00   5.00
 
 
-The Specification Check was Not Successful
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Stirrup detailing checks failed for the Strength I Limit State.
+The Specification Check was Successful
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -28,8 +22,5 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
 The Specification Check was Not Successful
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Stirrup detailing checks failed for the Strength I Limit State.
 
 

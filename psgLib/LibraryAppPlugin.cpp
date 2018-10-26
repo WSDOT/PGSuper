@@ -91,12 +91,9 @@ void CLibraryAppPlugin::IntegrateWithUI(BOOL bIntegrate)
    }
 }
 
-std::vector<CEAFDocTemplate*> CLibraryAppPlugin::CreateDocTemplates()
+CEAFDocTemplate* CLibraryAppPlugin::CreateDocTemplate()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   std::vector<CEAFDocTemplate*> vDocTemplates;
-
    // doc template for Library editor
 	CLibraryDocTemplate* pLibMgrDocTemplate = new CLibraryDocTemplate(
 		IDR_LIBRARYTYPE,this,
@@ -109,13 +106,17 @@ std::vector<CEAFDocTemplate*> CLibraryAppPlugin::CreateDocTemplates()
    HICON hIcon = AfxGetApp()->LoadIcon(IDI_LIBRARY_MANAGER);
    pLibMgrDocTemplate->CreateDefaultItem(hIcon);
 
-   vDocTemplates.push_back(pLibMgrDocTemplate);
-   return vDocTemplates;
+   return pLibMgrDocTemplate;
 }
 
 HMENU CLibraryAppPlugin::GetSharedMenuHandle()
 {
    return NULL;
+}
+
+UINT CLibraryAppPlugin::GetDocumentResourceID()
+{
+   return IDR_LIBRARYTYPE;
 }
 
 CString CLibraryAppPlugin::GetName()

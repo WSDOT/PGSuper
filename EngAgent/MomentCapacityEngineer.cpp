@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -372,8 +372,6 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
 
    Float64 fps_avg = 0;
 
-   const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr,pgsTypes::Permanent);
-
    if ( !IsZero(Mn) )
    {
       pmcd->MomentArm = fabs(Mn/T);
@@ -401,6 +399,8 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
       szOffset->get_Dx(&dx);
       szOffset->get_Dy(&dy);
 
+      GET_IFACE(IBridgeMaterial,pMaterial);
+      const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr,pgsTypes::Permanent);
       Float64 aps = pStrand->GetNominalArea();
 
       // determine average stress in strands and location of de
@@ -579,7 +579,8 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
       Float64 ecl, etl;
       if ( bPositiveMoment )
       {
-         pResistanceFactors->GetFlexuralStrainLimits(pStrand->GetGrade(),pStrand->GetType(),&ecl,&etl);
+         // the strain limits are the same for grade 60 rebar and strand
+         pResistanceFactors->GetFlexuralStrainLimits(matRebar::Grade60,&ecl,&etl);
       }
       else
       {
@@ -1811,7 +1812,7 @@ Float64 pgsMomentCapacityEngineer::pgsBondTool::GetBondFactor(StrandIndexType st
          GET_IFACE(IStrandGeometry,pStrandGeom);
          Float64 bond_start, bond_end;
          bool bDebonded = pStrandGeom->IsStrandDebonded(m_Poi.GetSpan(),m_Poi.GetGirder(),strandIdx,strandType,m_Config.PrestressConfig,&bond_start,&bond_end);
-         STRANDDEVLENGTHDETAILS dev_length = m_pPrestressForce->GetDevLengthDetails(m_PoiMidSpan,m_Config,bDebonded);
+         STRANDDEVLENGTHDETAILS dev_length = m_pPrestressForce->GetDevLengthDetails(m_PoiMidSpan,bDebonded);
 
          bond_factor = m_pPrestressForce->GetStrandBondFactor(m_Poi,m_Config,strandIdx,strandType,dev_length.fps,dev_length.fpe);
       }

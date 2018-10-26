@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -110,10 +110,10 @@ public:
 public:
    // IDistFactorEngineer
 //   virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID);
-//   virtual Float64 GetMomentDF(SpanIndexType span,GirderIndexType gdr);
-//   virtual Float64 GetNegMomentDF(PierIndexType pier,GirderIndexType gdr);
-//   virtual Float64 GetShearDF(SpanIndexType span,GirderIndexType gdr);
-//   virtual Float64 GetReactionDF(PierIndexType pier,GirderIndexType gdr);
+//   virtual double GetMomentDF(SpanIndexType span,GirderIndexType gdr);
+//   virtual double GetNegMomentDF(PierIndexType pier,GirderIndexType gdr);
+//   virtual double GetShearDF(SpanIndexType span,GirderIndexType gdr);
+//   virtual double GetReactionDF(PierIndexType pier,GirderIndexType gdr);
    virtual void BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
    virtual std::_tstring GetComputationDescription(SpanIndexType span,GirderIndexType gdr,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect);
 
@@ -121,8 +121,8 @@ private:
 
    lrfdLiveLoadDistributionFactorBase* GetLLDFParameters(SpanIndexType spanOrPier,GirderIndexType gdr,DFParam dfType,Float64 fcgdr,MULTIWEB_LLDFDETAILS* plldf);
 
-   void ReportMoment(rptParagraph* pPara,MULTIWEB_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits);
-   void ReportShear(rptParagraph* pPara,MULTIWEB_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits);
+   void ReportMoment(rptParagraph* pPara,MULTIWEB_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,double gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits);
+   void ReportShear(rptParagraph* pPara,MULTIWEB_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,double gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits);
 
    BeamType m_BeamType;
 };

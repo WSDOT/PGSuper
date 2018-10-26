@@ -101,8 +101,7 @@
 #define IDI_RATING_ENTRY                202
 #define IDI_ICON1                       203
 #define IDD_STRAND_GENERATION           204
-#define IDD_LIVE_LOAD_FACTORS1          306
-#define IDD_LIVE_LOAD_FACTORS2          307
+#define IDD_LIVE_LOAD_FACTORS           306
 #define IDC_D1                          1001
 #define IDC_W1                          1002
 #define IDC_D2                          1003
@@ -966,12 +965,9 @@
 #define IDC_EG_OVERLAY_UNIT             1547
 #define IDC_HP_BOX                      1547
 #define IDC_EG_OVERLAY_LABEL            1548
-#define IDC_LOWER_PWR                   1548
+#define IDC_EDIT3                       1548
 #define IDC_EG_LIVELOAD_UNIT            1549
-#define IDC_UPPER_PWR                   1549
 #define IDC_EG_LIVELOAD_LABEL           1550
-#define IDC_LOWER_PWR_UNIT              1550
-#define IDC_UPPER_PWR_UNIT              1551
 #define IDC_LOWER_VEHICLE_WEIGHT_UNIT   1565
 #define IDC_LOWER_VEHICLE_WEIGHT_LABEL  1566
 #define IDC_UPPER_VEHICLE_WEIGHT_LABEL  1567
@@ -1002,14 +998,6 @@
 #define IDC_LF_UPPER4_LABEL             1591
 #define IDC_LF_UPPER4                   1592
 #define IDC_VEHICLE_WEIGHT_LABEL        1593
-#define IDC_LF_MIDDLE4_LABEL            1594
-#define IDC_LF_MIDDLE4                  1595
-#define IDC_LF_MIDDLE3_LABEL            1596
-#define IDC_LF_MIDDLE3                  1597
-#define IDC_LF_MIDDLE2_LABEL            1598
-#define IDC_LF_MIDDLE2                  1599
-#define IDC_LF_MIDDLE1_LABEL            1600
-#define IDC_LF_MIDDLE1                  1601
 #define IDS_E_BADINSTALL                1636
 #define IDS_E_PROBPERSISTS              1638
 #define IDS_E_INVALIDFORMAT             1640
@@ -1046,7 +1034,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        208
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1552
+#define _APS_NEXT_CONTROL_VALUE         1549
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

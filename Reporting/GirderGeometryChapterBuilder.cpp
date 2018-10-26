@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -154,7 +154,10 @@ void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          pTable->SetColumnSpan(0,i,SKIP_CELL);
 
 
-      (*pTable)(1,1) << _T("CL Pier");
+      if ( span == 0 )
+         (*pTable)(1,1) << _T("Abutment Line");
+      else
+         (*pTable)(1,1) << _T("Pier Line");
       pTable->SetColumnSpan(1,1,3);
 
       (*pTable)(1,2) << _T("Girder End");
@@ -169,7 +172,10 @@ void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
       (*pTable)(1,5) << _T("Girder End");
       pTable->SetColumnSpan(1,5,3);
 
-      (*pTable)(1,6) << _T("CL Pier");
+      if ( span == nSpans-1 )
+         (*pTable)(1,6) << _T("Abutment Line");
+      else
+         (*pTable)(1,6) << _T("Pier Line");
       pTable->SetColumnSpan(1,6,3);
 
       for ( i = 7; i < pTable->GetNumberOfColumns(); i++ )
@@ -308,7 +314,10 @@ void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
          pTable->SetColumnSpan(0,i,SKIP_CELL);
 
 
-      (*pTable)(1,1) << _T("CL Pier");
+      if ( span == 0 )
+         (*pTable)(1,1) << _T("Abutment Line");
+      else
+         (*pTable)(1,1) << _T("Pier Line");
       pTable->SetColumnSpan(1,1,3);
 
       (*pTable)(1,2) << _T("Girder End");
@@ -323,7 +332,10 @@ void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
       (*pTable)(1,5) << _T("Girder End");
       pTable->SetColumnSpan(1,5,3);
 
-      (*pTable)(1,6) << _T("CL Pier");
+      if ( span == nSpans-1 )
+         (*pTable)(1,6) << _T("Abutment Line");
+      else
+         (*pTable)(1,6) << _T("Pier Line");
       pTable->SetColumnSpan(1,6,3);
 
       for ( i = 7; i < pTable->GetNumberOfColumns(); i++ )
@@ -431,7 +443,7 @@ void girder_lengths(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
    pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   *pPara << _T("C-C Pier = Centerline pier to centerline pier length measured along the girder") << rptNewLine;
+   *pPara << _T("C-C Pier = Abutment/Pier Line to Abutment/Pier Line length measured along the girder") << rptNewLine;
    *pPara << _T("C-C Bearing = Centerline bearing to centerline bearing length measured along the girder") << rptNewLine;
    *pPara << _T("Girder Length, Horizontal = End to end length of the girder projected into a horizontal plane") << rptNewLine;
    *pPara << _T("Girder Length, Along Grade = End to end length of girder measured along grade of the girder (slope adjusted) = ") << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("SlopeAdjustedGirderLength.png"),rptRcImage::Middle) << rptNewLine;
@@ -575,7 +587,10 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          pTable->SetColumnSpan(0,i,SKIP_CELL);
 
 
-      (*pTable)(1,1) << _T("Spacing at CL Pier");
+      if ( span == 0 )
+         (*pTable)(1,1) << _T("Spacing at Abutment Line");
+      else
+         (*pTable)(1,1) << _T("Spacing at Pier Line");
       pTable->SetColumnSpan(1,1,2);
 
       (*pTable)(1,2) << _T("Spacing at CL Brg");
@@ -587,7 +602,10 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
       (*pTable)(1,4) << _T("Spacing at CL Brg");
       pTable->SetColumnSpan(1,4,2);
 
-      (*pTable)(1,5) << _T("Spacing at CL Pier");
+      if ( span == nSpans-1 )
+         (*pTable)(1,5) << _T("Spacing at Abutment Line");
+      else
+         (*pTable)(1,5) << _T("Spacing at Pier Line");
       pTable->SetColumnSpan(1,5,2);
 
       (*pTable)(1,6) << _T("Angle") << rptNewLine << _T("with") << rptNewLine << _T("CL Pier");
@@ -597,7 +615,10 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          pTable->SetColumnSpan(1,i,SKIP_CELL);
 
       (*pTable)(2,1)  << COLHDR(symbol(NORMAL) << _T(" to Alignment"),  rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
-      (*pTable)(2,2)  << COLHDR(_T("Along CL Pier"),rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
+      if ( span == 0 )
+         (*pTable)(2,2)  << COLHDR(_T("Along Abutment Line"),rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
+      else
+         (*pTable)(2,2)  << COLHDR(_T("Along Pier Line"),rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
       (*pTable)(2,3)  << COLHDR(symbol(NORMAL) << _T(" to Alignment"),  rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
       (*pTable)(2,4)  << COLHDR(_T("Along CL Brg"),rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
       pTable->SetRowSpan(2,5,SKIP_CELL);
@@ -605,7 +626,10 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
       (*pTable)(2,6)  << COLHDR(symbol(NORMAL) << _T(" to Alignment"),  rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
       (*pTable)(2,7)  << COLHDR(_T("Along CL Brg"),rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
       (*pTable)(2,8)  << COLHDR(symbol(NORMAL) << _T(" to Alignment"),  rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
-      (*pTable)(2,9)  << COLHDR(_T("Along CL Pier"),rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
+      if ( span == nSpans-1 )
+         (*pTable)(2,9)  << COLHDR(_T("Along Abutment Line"),rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
+      else
+         (*pTable)(2,9)  << COLHDR(_T("Along Pier Line"),rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
       pTable->SetRowSpan(2,10,SKIP_CELL);
 
       RowIndexType row = pTable->GetNumberOfHeaderRows();
@@ -614,14 +638,14 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
       PierIndexType nextPierIdx = span+1;
 
       std::vector<Float64> spacing[8];
-      spacing[0] = pBridge->GetGirderSpacing(prevPierIdx, pgsTypes::Ahead, pgsTypes::AtCenterlinePier,    pgsTypes::NormalToItem);
-      spacing[1] = pBridge->GetGirderSpacing(prevPierIdx, pgsTypes::Ahead, pgsTypes::AtCenterlinePier,    pgsTypes::AlongItem);
+      spacing[0] = pBridge->GetGirderSpacing(prevPierIdx, pgsTypes::Ahead, pgsTypes::AtPierLine,    pgsTypes::NormalToItem);
+      spacing[1] = pBridge->GetGirderSpacing(prevPierIdx, pgsTypes::Ahead, pgsTypes::AtPierLine,    pgsTypes::AlongItem);
       spacing[2] = pBridge->GetGirderSpacing(prevPierIdx, pgsTypes::Ahead, pgsTypes::AtCenterlineBearing, pgsTypes::NormalToItem);
       spacing[3] = pBridge->GetGirderSpacing(prevPierIdx, pgsTypes::Ahead, pgsTypes::AtCenterlineBearing, pgsTypes::AlongItem);
       spacing[4] = pBridge->GetGirderSpacing(nextPierIdx, pgsTypes::Back,  pgsTypes::AtCenterlineBearing, pgsTypes::NormalToItem);
       spacing[5] = pBridge->GetGirderSpacing(nextPierIdx, pgsTypes::Back,  pgsTypes::AtCenterlineBearing, pgsTypes::AlongItem);
-      spacing[6] = pBridge->GetGirderSpacing(nextPierIdx, pgsTypes::Back,  pgsTypes::AtCenterlinePier,    pgsTypes::NormalToItem);
-      spacing[7] = pBridge->GetGirderSpacing(nextPierIdx, pgsTypes::Back,  pgsTypes::AtCenterlinePier,    pgsTypes::AlongItem);
+      spacing[6] = pBridge->GetGirderSpacing(nextPierIdx, pgsTypes::Back,  pgsTypes::AtPierLine,    pgsTypes::NormalToItem);
+      spacing[7] = pBridge->GetGirderSpacing(nextPierIdx, pgsTypes::Back,  pgsTypes::AtPierLine,    pgsTypes::AlongItem);
 
 
       GirderIndexType nGdrs = pBridge->GetGirderCount(span);
@@ -687,7 +711,7 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
       }
    }
 
-   (*pPara) << symbol(NORMAL) << _T(" to Alignment: spacing is measured along a line that is normal to the alignment and passes through the point where the CL Pier or CL Brg intersect the alignment.") << rptNewLine;
+   (*pPara) << symbol(NORMAL) << _T(" to Alignment: spacing is measured along a line that is normal to the alignment and passes through the point where the Abutment/Pier Line or CL Brg intersect the alignment.") << rptNewLine;
 }
 
 
@@ -740,12 +764,18 @@ void girder_ends(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pC
       col2++;
 
       pTable->SetColumnSpan(1,col1,2);
-      (*pTable)(1,col1++) << _T("CL Pier to CL Brg");
+      if ( span == 0 ) 
+         (*pTable)(1,col1++) << _T("Abutment Line to CL Brg");
+      else
+         (*pTable)(1,col1++) << _T("Pier Line to CL Brg");
       (*pTable)(2,col2++) << COLHDR(symbol(NORMAL) << _T(" to Pier"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       (*pTable)(2,col2++) << COLHDR(_T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
       pTable->SetColumnSpan(1,col1,2);
-      (*pTable)(1,col1++) << _T("CL Pier to Girder End");
+      if ( span == 0 ) 
+         (*pTable)(1,col1++) << _T("Abutment Line to Girder End");
+      else
+         (*pTable)(1,col1++) << _T("Pier Line to Girder End");
       (*pTable)(2,col2++) << COLHDR(symbol(NORMAL) << _T(" to Pier"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       (*pTable)(2,col2++) << COLHDR(_T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
@@ -755,12 +785,18 @@ void girder_ends(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pC
 
 
       pTable->SetColumnSpan(1,col1,2);
-      (*pTable)(1,col1++) << _T("CL Pier to CL Brg");
+      if ( span == nSpans-1 ) 
+         (*pTable)(1,col1++) << _T("Abutment Line to CL Brg");
+      else
+         (*pTable)(1,col1++) << _T("Pier Line to CL Brg");
       (*pTable)(2,col2++) << COLHDR(symbol(NORMAL) << _T(" to Pier"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       (*pTable)(2,col2++) << COLHDR(_T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
       pTable->SetColumnSpan(1,col1,2);
-      (*pTable)(1,col1++) << _T("CL Pier to Girder End");
+      if ( span == nSpans-1 ) 
+         (*pTable)(1,col1++) << _T("Abutment Line to Girder End");
+      else
+         (*pTable)(1,col1++) << _T("Pier Line to Girder End");
       (*pTable)(2,col2++) << COLHDR(symbol(NORMAL) << _T(" to Pier"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       (*pTable)(2,col2++)<< COLHDR(_T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 

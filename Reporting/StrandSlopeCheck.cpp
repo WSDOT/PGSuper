@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -101,12 +101,10 @@ void CStrandSlopeCheck::Build(rptChapter* pChapter,
       pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
       pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
-      (*pTable)(0,0) << _T("");
-      (*pTable)(0,1) << _T("1 : n");
-
       (*pTable)(1,0) << _T("Allowable Slope");
       (*pTable)(2,0) << _T("Strand Slope");
       (*pTable)(3,0) << _T("Status");
+      (*pTable)(0,1) << _T("1 : n");
 
       (*pTable)(1,1) << slope.SetValue(pArtifact->GetCapacity());
       (*pTable)(2,1) << slope.SetValue(pArtifact->GetDemand());

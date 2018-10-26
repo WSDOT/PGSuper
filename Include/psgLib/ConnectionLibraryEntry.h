@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,37 +20,18 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_CONNECTIONLIBRARYENTRY_H_
-#define INCLUDED_CONNECTIONLIBRARYENTRY_H_
-
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
+#pragma once
 
 #include "psgLibLib.h"
-
 #include <psgLib\ISupportIcon.h>
 #include <libraryFw\LibraryEntry.h>
-
-#if !defined INCLUDED_SYSTEM_SUBJECTT_H_
 #include <System\SubjectT.h>
-#endif
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
 
 class ConnectionLibraryEntry;
 class ConnectionLibraryEntryObserver;
 #pragma warning(disable:4231)
 PSGLIBTPL sysSubjectT<ConnectionLibraryEntryObserver, ConnectionLibraryEntry>;
 
-// MISCELLANEOUS
-//
 /*****************************************************************************
 CLASS 
    ConnectionLibraryEntryObserver
@@ -73,8 +54,6 @@ LOG
 class PSGLIBCLASS ConnectionLibraryEntryObserver
 {
 public:
-
-   // GROUP: LIFECYCLE
    //------------------------------------------------------------------------
    // called by our subject to let us now he's changed, along with an optional
    // hint
@@ -127,6 +106,12 @@ public:
       AlongGirder = 0, 
       NormalToPier = 1
    };
+
+   static std::_tstring StringForEndDistanceMeasurementType(EndDistanceMeasurementType type);
+   static ConnectionLibraryEntry::EndDistanceMeasurementType EndDistanceMeasurementTypeFromString(LPCTSTR strType);
+
+   static std::_tstring StringForBearingOffsetMeasurementType(BearingOffsetMeasurementType type);
+   static ConnectionLibraryEntry::BearingOffsetMeasurementType BearingOffsetMeasurementTypeFromString(LPCTSTR strType);
 
 
    // GROUP: LIFECYCLE
@@ -241,7 +226,7 @@ protected:
    void MakeCopy(const ConnectionLibraryEntry& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const ConnectionLibraryEntry& rOther);
+   virtual void MakeAssignment(const ConnectionLibraryEntry& rOther);
   // GROUP: ACCESS
   // GROUP: INQUIRY
 
@@ -284,10 +269,3 @@ public:
    #endif // _UNITTEST
 };
 
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_PSGLIB_CONNECTIONMATERIAL_H_

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -35,10 +35,20 @@ struct txnEditPierData
    txnEditPierData(const CPierData* pPier);
    Float64 Station;
    std::_tstring Orientation;
+   Float64 BearingOffset[2];
+   Float64 EndDistance[2];
+   Float64 SupportWidth[2];
+   ConnectionLibraryEntry::EndDistanceMeasurementType EndDistanceMeasurementType[2];
+   ConnectionLibraryEntry::BearingOffsetMeasurementType BearingOffsetMeasurementType[2];
    GirderIndexType nGirders[2];
-   std::_tstring Connection[2];
+   
    pgsTypes::PierConnectionType ConnectionType;
    CGirderSpacing GirderSpacing[2];
+
+   Float64 DiaphragmHeight[2];
+   Float64 DiaphragmWidth[2];
+   ConnectionLibraryEntry::DiaphragmLoadType DiaphragmLoadType[2];
+   Float64 DiaphragmLoadLocation[2];
 
    // data for the entire bridge
    pgsTypes::SupportedBeamSpacing GirderSpacingType;

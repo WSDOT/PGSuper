@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -48,8 +48,8 @@ private:
    CComPtr<IPath> m_LeftSubPath, m_RightSubPath;
 
    // data for building the parallel sub-path
-   Float64 m_LeftStartStation, m_RightStartStation;
-   Float64 m_LeftOffset, m_RightOffset;
+   double m_LeftStartStation, m_RightStartStation;
+   double m_LeftOffset, m_RightOffset;
 
    void NextDeckPoint();
    void GetDeckEdges(IPath** ppLeftEdgePath,IPath** ppRightEdgePath);
@@ -58,12 +58,12 @@ private:
    pgsTypes::DeckPointTransitionType Spline(IPath* pPath,IPoint2d* pPoint,ICubicSpline* pSpline,pgsTypes::DeckPointTransitionType transition);
    pgsTypes::DeckPointTransitionType EndSpline(IPath* pPath,IPoint2d* pPoint,ICubicSpline* pSpline,pgsTypes::DeckPointTransitionType transition,bool bLeft);
 
-   pgsTypes::DeckPointTransitionType BeginParallel(Float64 station,Float64 offset,Float64* pStartStation,Float64* pOffset,pgsTypes::DeckPointTransitionType transition);
-   pgsTypes::DeckPointTransitionType EndParallel(IPath* pPath,Float64 startStation,Float64 endStation,Float64 offset,pgsTypes::DeckPointTransitionType transition);
+   pgsTypes::DeckPointTransitionType BeginParallel(double station,double offset,double* pStartStation,double* pOffset,pgsTypes::DeckPointTransitionType transition);
+   pgsTypes::DeckPointTransitionType EndParallel(IPath* pPath,double startStation,double endStation,double offset,pgsTypes::DeckPointTransitionType transition);
 
    pgsTypes::DeckPointTransitionType LinearTransition(IPath* pPath,IPoint2d* pPoint,pgsTypes::DeckPointTransitionType transition);
 
-   Float64 GetAlignmentOffset(Float64 station);
+   double GetAlignmentOffset(double station);
 };
 
 #endif // INCLUDED_DECKEDGEBUILDER_H_

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -79,16 +79,16 @@ public:
 
    virtual void SetRefGirder(GirderIndexType refGdrIdx);
    virtual GirderIndexType GetRefGirder() const;
-   virtual void SetRefGirderOffset(Float64 offset);
-   virtual Float64 GetRefGirderOffset() const;
+   virtual void SetRefGirderOffset(double offset);
+   virtual double GetRefGirderOffset() const;
    virtual void SetRefGirderOffsetType(pgsTypes::OffsetMeasurementType offsetDatum);
    virtual pgsTypes::OffsetMeasurementType GetRefGirderOffsetType() const;
 
-   virtual void SetGirderSpacing(GroupIndexType grpIdx,Float64 s);
+   virtual void SetGirderSpacing(GroupIndexType grpIdx,double s);
    virtual GroupIndexType GetSpacingGroupCount() const;
-   virtual void GetSpacingGroup(GroupIndexType groupIdx,GirderIndexType* pFirstGdrIdx,GirderIndexType* pLastGdrIdx,Float64* pSpacing) const;
+   virtual void GetSpacingGroup(GroupIndexType groupIdx,GirderIndexType* pFirstGdrIdx,GirderIndexType* pLastGdrIdx,double* pSpacing) const;
    virtual SpacingIndexType GetSpacingCount() const;
-   virtual Float64 GetGirderSpacing(SpacingIndexType spacingIdx) const;
+   virtual double GetGirderSpacing(SpacingIndexType spacingIdx) const;
 
    void ExpandAll();
    void Expand(GroupIndexType grpIdx);
@@ -113,11 +113,11 @@ protected:
 
    GirderIndexType m_RefGirderIdx; // use ALL_GIRDERS to indicate centers of the girder group
    pgsTypes::OffsetMeasurementType m_RefGirderOffsetType;
-   Float64 m_RefGirderOffset;
+   double m_RefGirderOffset;
 
-   std::vector<Float64> m_GirderSpacing;
+   std::vector<double> m_GirderSpacing;
 
-   Float64 m_DefaultSpacing; // default spacing... 5ft, or cache of last spacing removed
+   double m_DefaultSpacing; // default spacing... 5ft, or cache of last spacing removed
 
    typedef std::pair<GirderIndexType,GirderIndexType> SpacingGroup; // first and second can never be the same value
    std::vector<SpacingGroup> m_SpacingGroups; // defines how girder lines are grouped
@@ -138,13 +138,13 @@ public:
    virtual pgsTypes::MeasurementType GetMeasurementType() const;
    virtual pgsTypes::MeasurementLocation GetMeasurementLocation() const;
    virtual GirderIndexType GetRefGirder() const;
-   virtual Float64 GetRefGirderOffset() const;
+   virtual double GetRefGirderOffset() const;
    virtual pgsTypes::OffsetMeasurementType GetRefGirderOffsetType() const;
-   virtual void SetGirderSpacing(GroupIndexType grpIdx,Float64 s);
+   virtual void SetGirderSpacing(GroupIndexType grpIdx,double s);
    virtual GroupIndexType GetSpacingGroupCount() const;
-   virtual void GetSpacingGroup(GroupIndexType groupIdx,GirderIndexType* pFirstGdrIdx,GirderIndexType* pLastGdrIdx,Float64* pSpacing) const;
+   virtual void GetSpacingGroup(GroupIndexType groupIdx,GirderIndexType* pFirstGdrIdx,GirderIndexType* pLastGdrIdx,double* pSpacing) const;
    virtual SpacingIndexType GetSpacingCount() const;
-   virtual Float64 GetGirderSpacing(SpacingIndexType spacingIdx) const;
+   virtual double GetGirderSpacing(SpacingIndexType spacingIdx) const;
 
 protected:
    friend CSpanData;

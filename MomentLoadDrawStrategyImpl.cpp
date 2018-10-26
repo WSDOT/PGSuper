@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -103,7 +103,7 @@ STDMETHODIMP_(void) CMomentLoadDrawStrategyImpl::XDrawPointStrategy::DrawDragIma
 {
    METHOD_PROLOGUE(CMomentLoadDrawStrategyImpl,DrawPointStrategy);
 
-   Float64 wx, wy;
+   double wx, wy;
    map->LPtoWP(dragPoint.x, dragPoint.y, &wx, &wy);
    pThis->m_CachePoint->put_X(wx);
    pThis->m_CachePoint->put_Y(wy);
@@ -118,7 +118,7 @@ STDMETHODIMP_(void) CMomentLoadDrawStrategyImpl::XDrawPointStrategy::GetBounding
    CComPtr<IPoint2d> point;
    pDO->GetPosition(&point);
 
-   Float64 xpos;
+   double xpos;
    point->get_X(&xpos);
 
    CComPtr<iDisplayList> pDL;
@@ -130,7 +130,7 @@ STDMETHODIMP_(void) CMomentLoadDrawStrategyImpl::XDrawPointStrategy::GetBounding
    CComPtr<iCoordinateMap> pMap;
    pDispMgr->GetCoordinateMap(&pMap);
 
-   Float64 diameter;
+   double diameter;
    pThis->GetWSymbolSize(pMap, &diameter);
 
    CComPtr<IRect2d> bounding_box;
@@ -374,15 +374,15 @@ void CMomentLoadDrawStrategyImpl::GetTSymbolSize(iCoordinateMap* pMap, Uint32* p
 //   *psx = SSIZE/6.;
 }
 
-void CMomentLoadDrawStrategyImpl::GetWSymbolSize(iCoordinateMap* pMap, Float64* pd)
+void CMomentLoadDrawStrategyImpl::GetWSymbolSize(iCoordinateMap* pMap, double* pd)
 {
    Uint32 d;
    GetTSymbolSize(pMap, &d);
 
-   Float64 xo,yo;
+   double xo,yo;
    pMap->TPtoWP(0,0,&xo,&yo);
 
-   Float64 x2,y2;
+   double x2,y2;
    pMap->TPtoWP(d,d,&x2,&y2);
 
    *pd = x2-xo;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,9 +29,6 @@
 #include "PGSuperUnits.h"
 #include "BridgeDescDlg.h"
 #include "BridgeDescFramingPage.h"
-
-#include "SpanDetailsDlg.h"
-#include "PierDetailsDlg.h"
 
 #include <Units\Measure.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -68,9 +65,9 @@ BEGIN_MESSAGE_MAP(CBridgeDescFramingGrid, CGXGridWnd)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
-std::vector<Float64> CBridgeDescFramingGrid::GetSpanLengths()
+std::vector<double> CBridgeDescFramingGrid::GetSpanLengths()
 {
-   std::vector<Float64> spanLengths;
+   std::vector<double> spanLengths;
 
    ROWCOL nRows = GetRowCount();
    for (ROWCOL row = 3; row <= nRows; row += 2)
@@ -81,7 +78,7 @@ std::vector<Float64> CBridgeDescFramingGrid::GetSpanLengths()
 
       CPierData* pPier1 = GetPierRowData(row-2);
 
-      Float64 L = pPier2->GetStation() - pPier1->GetStation();
+      double L = pPier2->GetStation() - pPier1->GetStation();
       spanLengths.push_back(L);
    }
 
@@ -89,11 +86,11 @@ std::vector<Float64> CBridgeDescFramingGrid::GetSpanLengths()
    return spanLengths;
 }
 
-void CBridgeDescFramingGrid::SetSpanLengths(const std::vector<Float64>& spanLengths,PierIndexType fixedPierIdx)
+void CBridgeDescFramingGrid::SetSpanLengths(const std::vector<double>& spanLengths,PierIndexType fixedPierIdx)
 {
    ROWCOL row = GetPierRow(fixedPierIdx);
    CPierData* pFixedPierData = GetPierRowData(row);
-   Float64 station = pFixedPierData->GetStation();
+   double station = pFixedPierData->GetStation();
 
    // work backwards to the first pier
    PierIndexType idx = fixedPierIdx-1;
@@ -116,10 +113,10 @@ void CBridgeDescFramingGrid::SetSpanLengths(const std::vector<Float64>& spanLeng
 
    ASSERT(spanLengths.size() == pDlg->m_BridgeDesc.GetSpanCount());
 
-   std::vector<Float64>::const_iterator iter;
+   std::vector<double>::const_iterator iter;
    for ( iter = spanLengths.begin(); iter != spanLengths.end(); iter++ )
    {
-      Float64 L = *iter;
+      double L = *iter;
 
       CSpanData* pNextSpan = pPrevPier->GetNextSpan();
       ASSERT(pNextSpan);
@@ -484,7 +481,7 @@ CPierData* CBridgeDescFramingGrid::GetPierRowData(ROWCOL nRow)
    CString strStation = GetCellValue(nRow,1);
    UnitModeType unitMode = (UnitModeType)(pDisplayUnits->GetUnitMode());
    m_objStation->FromString(CComBSTR(strStation),unitMode);
-   Float64 station;
+   double station;
    m_objStation->get_Value(&station);
    pPier->SetStation( ::ConvertToSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure) );
 
@@ -600,7 +597,7 @@ void CBridgeDescFramingGrid::FillSpanRow(ROWCOL row,const CSpanData& spanData)
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CString strSpanLength;
-   Float64 spanLength = spanData.GetSpanLength();
+   double spanLength = spanData.GetSpanLength();
    strSpanLength.Format(_T("%s"),FormatDimension(spanLength,pDisplayUnits->GetSpanLengthUnit()));
 
    SetStyleRange(CGXRange(row,1,row,2), CGXStyle()
@@ -707,7 +704,7 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       HRESULT hr_angle = angle->FromString(CComBSTR(strOrientation));
       if ( SUCCEEDED(hr_angle) )
       {
-         Float64 value;
+         double value;
          angle->get_Value(&value);
          if ( value < -MAX_SKEW_ANGLE || MAX_SKEW_ANGLE < value )
          {
@@ -770,11 +767,11 @@ BOOL CBridgeDescFramingGrid::CanActivateGrid(BOOL bActivate)
    if ( !bActivate )
    {
       // make sure all the grid data is active
-      std::vector<Float64> spanLengths = GetSpanLengths();
-      std::vector<Float64>::iterator iter;
+      std::vector<double> spanLengths = GetSpanLengths();
+      std::vector<double>::iterator iter;
       for ( iter = spanLengths.begin(); iter != spanLengths.end(); iter++ )
       {
-         Float64 L = *iter;
+         double L = *iter;
          if ( L <= 0 )
          {
    			AfxMessageBox(_T("Invalid Span Length"));
@@ -812,13 +809,13 @@ void CBridgeDescFramingGrid::EditSpan(SpanIndexType spanIdx)
 
 
       if ( pPrevPier->GetPrevSpan() )
-         pPrevPier->SetConnection( pgsTypes::Back, dlg.GetPrevPierConnection(pgsTypes::Back) );
+         GetConnectionData(pPrevPier,pgsTypes::Back,dlg);
 
-      pPrevPier->SetConnection( pgsTypes::Ahead, dlg.GetPrevPierConnection(pgsTypes::Ahead) );
-      pNextPier->SetConnection( pgsTypes::Back,  dlg.GetNextPierConnection(pgsTypes::Back) );
+      GetConnectionData(pPrevPier,pgsTypes::Ahead,dlg);
+      GetConnectionData(pNextPier,pgsTypes::Back,dlg);
 
       if ( pNextPier->GetNextSpan() )
-         pNextPier->SetConnection( pgsTypes::Ahead, dlg.GetNextPierConnection(pgsTypes::Ahead) );
+         GetConnectionData(pNextPier,pgsTypes::Ahead,dlg);
 
 
 
@@ -827,13 +824,12 @@ void CBridgeDescFramingGrid::EditSpan(SpanIndexType spanIdx)
 
 
 
-      pSpanData->UseSameSpacingAtBothEndsOfSpan( dlg.UseSameGirderSpacingAtEachEnd() );
       if ( IsGirderSpacing(dlg.GetGirderSpacingType()) && 1 < dlg.GetGirderCount() )
       {
-         pDlg->m_BridgeDesc.SetGirderSpacing( dlg.GetGirderSpacing(pgsTypes::Ahead).GetGirderSpacing(0) );
+         pDlg->m_BridgeDesc.SetGirderSpacing( dlg.GetGirderSpacing(pgsTypes::metStart).GetGirderSpacing(0) );
       }
-      *pSpanData->GetGirderSpacing(pgsTypes::Ahead) = dlg.GetGirderSpacing(pgsTypes::Ahead);
-      *pSpanData->GetGirderSpacing(pgsTypes::Back)  = dlg.GetGirderSpacing(pgsTypes::Back);
+      *pSpanData->GetGirderSpacing(pgsTypes::metStart) = dlg.GetGirderSpacing(pgsTypes::metStart);
+      *pSpanData->GetGirderSpacing(pgsTypes::metEnd)   = dlg.GetGirderSpacing(pgsTypes::metEnd);
       
       if ( dlg.UseSameGirderType() )
       {
@@ -859,6 +855,19 @@ void CBridgeDescFramingGrid::EditSpan(SpanIndexType spanIdx)
    }
 }
 
+void CBridgeDescFramingGrid::GetConnectionData(CPierData* pPier,pgsTypes::PierFaceType pierFace,CSpanDetailsDlg& dlg)
+{
+   pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)(pierFace);
+   pPier->SetConnectionType(dlg.GetConnectionType(end));
+   pPier->SetDiaphragmHeight(pierFace,dlg.GetDiaphragmHeight(end));
+   pPier->SetDiaphragmWidth(pierFace,dlg.GetDiaphragmWidth(end));
+   pPier->SetDiaphragmLoadType(pierFace,dlg.GetDiaphragmLoadType(end));
+   pPier->SetDiaphragmLoadLocation(pierFace,dlg.GetDiaphragmLoadLocation(end));
+   pPier->SetGirderEndDistance(pierFace,dlg.GetEndDistance(end,pierFace),dlg.GetEndDistanceMeasurementType(end,pierFace));
+   pPier->SetBearingOffset(pierFace,dlg.GetBearingOffset(end,pierFace),dlg.GetBearingOffsetMeasurementType(end,pierFace));
+   pPier->SetSupportWidth(pierFace,dlg.GetSupportWidth(end,pierFace));
+}
+
 void CBridgeDescFramingGrid::EditPier(PierIndexType pierIdx)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -880,18 +889,38 @@ void CBridgeDescFramingGrid::EditPier(PierIndexType pierIdx)
    if ( dlg.DoModal() == IDOK )
    {
       pPierData->SetOrientation( dlg.GetOrientation() );
-      pPierData->SetConnection( pgsTypes::Back,  dlg.GetConnection(pgsTypes::Back)  );
-      pPierData->SetConnection( pgsTypes::Ahead, dlg.GetConnection(pgsTypes::Ahead) );
       pPierData->SetConnectionType( dlg.GetConnectionType()  );
+
+      if ( pPierData->GetPrevSpan() )
+      {
+         pPierData->SetGirderEndDistance(pgsTypes::Back,dlg.GetEndDistance(pgsTypes::Back),dlg.GetEndDistanceMeasurementType(pgsTypes::Back));
+         pPierData->SetBearingOffset(pgsTypes::Back,dlg.GetBearingOffset(pgsTypes::Back),dlg.GetBearingOffsetMeasurementType(pgsTypes::Back));
+         pPierData->SetSupportWidth(pgsTypes::Back,dlg.GetSupportWidth(pgsTypes::Back));
+         pPierData->SetDiaphragmHeight(pgsTypes::Back,dlg.GetDiaphragmHeight(pgsTypes::Back));
+         pPierData->SetDiaphragmWidth(pgsTypes::Back,dlg.GetDiaphragmHeight(pgsTypes::Back));
+         pPierData->SetDiaphragmLoadType(pgsTypes::Back,dlg.GetDiaphragmLoadType(pgsTypes::Back));
+         pPierData->SetDiaphragmLoadLocation(pgsTypes::Back,dlg.GetDiaphragmLoadLocation(pgsTypes::Back));
+      }
+
+      if ( pPierData->GetNextSpan() )
+      {
+         pPierData->SetGirderEndDistance(pgsTypes::Ahead,dlg.GetEndDistance(pgsTypes::Ahead),dlg.GetEndDistanceMeasurementType(pgsTypes::Ahead));
+         pPierData->SetBearingOffset(pgsTypes::Ahead,dlg.GetBearingOffset(pgsTypes::Ahead),dlg.GetBearingOffsetMeasurementType(pgsTypes::Ahead));
+         pPierData->SetSupportWidth(pgsTypes::Ahead,dlg.GetSupportWidth(pgsTypes::Ahead));
+         pPierData->SetDiaphragmHeight(pgsTypes::Ahead,dlg.GetDiaphragmHeight(pgsTypes::Ahead));
+         pPierData->SetDiaphragmWidth(pgsTypes::Ahead,dlg.GetDiaphragmHeight(pgsTypes::Ahead));
+         pPierData->SetDiaphragmLoadType(pgsTypes::Ahead,dlg.GetDiaphragmLoadType(pgsTypes::Ahead));
+         pPierData->SetDiaphragmLoadLocation(pgsTypes::Ahead,dlg.GetDiaphragmLoadLocation(pgsTypes::Ahead));
+      }
 
       GirderIndexType nGirders = 9999;
 
       if ( dlg.UseSameNumberOfGirdersInAllSpans() )
       {
          if ( pPierData->GetPrevSpan() )
-            nGirders = dlg.GetNumGirders(pgsTypes::Back);
+            nGirders = dlg.GetGirderCount(pgsTypes::Back);
          else
-            nGirders = dlg.GetNumGirders(pgsTypes::Ahead);
+            nGirders = dlg.GetGirderCount(pgsTypes::Ahead);
 
          pDlg->m_BridgeDesc.SetGirderCount( nGirders );
       }
@@ -900,14 +929,14 @@ void CBridgeDescFramingGrid::EditPier(PierIndexType pierIdx)
          if ( pPierData->GetPrevSpan() )
          {
             nGirders = 9999;
-            nGirders = _cpp_min(nGirders,dlg.GetNumGirders(pgsTypes::Back));
+            nGirders = _cpp_min(nGirders,dlg.GetGirderCount(pgsTypes::Back));
             pPierData->GetPrevSpan()->SetGirderCount( nGirders );
          }
 
          if ( pPierData->GetNextSpan() )
          {
             nGirders = 9999;
-            nGirders = _cpp_min(nGirders,dlg.GetNumGirders(pgsTypes::Ahead));
+            nGirders = _cpp_min(nGirders,dlg.GetGirderCount(pgsTypes::Ahead));
             pPierData->GetNextSpan()->SetGirderCount( nGirders );
          }
       }
@@ -916,18 +945,18 @@ void CBridgeDescFramingGrid::EditPier(PierIndexType pierIdx)
 
       if ( 2 <= nGirders )
       {
-         if ( IsSpanSpacing(dlg.GetGirderSpacingType()) )
+         if ( IsSpanSpacing(dlg.GetSpacingType()) )
          {
             // spacing is span by span
             if ( pPierData->GetPrevSpan() )
             {
-               CGirderSpacing girderSpacing( dlg.GetGirderSpacing(pgsTypes::Back) );
+               CGirderSpacing girderSpacing( dlg.GetSpacing(pgsTypes::Back) );
                *pPierData->GetPrevSpan()->GetGirderSpacing(pgsTypes::metEnd) = girderSpacing;
             }
 
             if ( pPierData->GetNextSpan() )
             {
-               CGirderSpacing girderSpacing( dlg.GetGirderSpacing(pgsTypes::Ahead) );
+               CGirderSpacing girderSpacing( dlg.GetSpacing(pgsTypes::Ahead) );
                *pPierData->GetNextSpan()->GetGirderSpacing(pgsTypes::metStart) = girderSpacing;
             }
          }
@@ -935,13 +964,13 @@ void CBridgeDescFramingGrid::EditPier(PierIndexType pierIdx)
          {
             // one spacing for the entire bridge
             if ( pPierData->GetPrevSpan() )
-               pDlg->m_BridgeDesc.SetGirderSpacing( dlg.GetGirderSpacing(pgsTypes::Back).GetGirderSpacing(0) );
+               pDlg->m_BridgeDesc.SetGirderSpacing( dlg.GetSpacing(pgsTypes::Back).GetGirderSpacing(0) );
             else
-               pDlg->m_BridgeDesc.SetGirderSpacing( dlg.GetGirderSpacing(pgsTypes::Ahead).GetGirderSpacing(0) );
+               pDlg->m_BridgeDesc.SetGirderSpacing( dlg.GetSpacing(pgsTypes::Ahead).GetGirderSpacing(0) );
          }
       }
 
-      pDlg->m_BridgeDesc.SetGirderSpacingType( dlg.GetGirderSpacingType() );
+      pDlg->m_BridgeDesc.SetGirderSpacingType( dlg.GetSpacingType() );
       pDlg->m_BridgeDesc.SetMeasurementLocation( dlg.GetMeasurementLocation() );
       pDlg->m_BridgeDesc.MovePier(pierIdx,dlg.GetStation(),dlg.GetMovePierOption());
 

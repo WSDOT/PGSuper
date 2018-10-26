@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -62,12 +62,9 @@ void CTxDOTAppPlugin::IntegrateWithUI(BOOL bIntegrate)
    // no UI integration
 }
 
-std::vector<CEAFDocTemplate*> CTxDOTAppPlugin::CreateDocTemplates()
+CEAFDocTemplate* CTxDOTAppPlugin::CreateDocTemplate()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   std::vector<CEAFDocTemplate*> vDocTemplates;
-
 	CTxDOTOptionalDesignDocTemplate* pDocTemplate = new CTxDOTOptionalDesignDocTemplate(
 		IDR_TXDOTOPTIONALDESIGN,
       this,
@@ -77,13 +74,17 @@ std::vector<CEAFDocTemplate*> CTxDOTAppPlugin::CreateDocTemplates()
 
    pDocTemplate->SetPlugin(this);
 
-   vDocTemplates.push_back(pDocTemplate);
-   return vDocTemplates;
+   return pDocTemplate;
 }
 
 HMENU CTxDOTAppPlugin::GetSharedMenuHandle()
 {
    return NULL;
+}
+
+UINT CTxDOTAppPlugin::GetDocumentResourceID()
+{
+   return IDR_TXDOTOPTIONALDESIGN;
 }
 
 CString CTxDOTAppPlugin::GetName()

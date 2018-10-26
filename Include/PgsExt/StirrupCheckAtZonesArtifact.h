@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -213,7 +213,7 @@ public:
    Float64 GetStartFpj() const;
    void SetStartFpj(Float64 fpj);
    Float64 GetStartLossesAfterTransfer() const;
-   void SetStartLossesAfterTransfer(Float64 dFpT);
+   void SetStartLossesAfterTransfer(double dFpT);
    Float64 GetStartSplittingForce() const;
    Float64 GetStartSplittingResistance() const;
    void SetStartSplittingResistance(Float64 p);
@@ -233,7 +233,7 @@ public:
    Float64 GetEndFpj() const;
    void SetEndFpj(Float64 fpj);
    Float64 GetEndLossesAfterTransfer() const;
-   void SetEndLossesAfterTransfer(Float64 dFpT);
+   void SetEndLossesAfterTransfer(double dFpT);
    Float64 GetEndSplittingForce() const;
    Float64 GetEndSplittingResistance() const;
    void SetEndSplittingResistance(Float64 p);

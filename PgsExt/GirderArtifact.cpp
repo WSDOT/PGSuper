@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -332,9 +332,9 @@ bool pgsGirderArtifact::Passed() const
    return bPassed;
 }
 
-Float64 pgsGirderArtifact::GetRequiredConcreteStrength(pgsTypes::Stage stage,pgsTypes::LimitState ls) const
+double pgsGirderArtifact::GetRequiredConcreteStrength(pgsTypes::Stage stage,pgsTypes::LimitState ls) const
 {
-   Float64 fc_reqd = 0;
+   double fc_reqd = 0;
 
    std::map<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>::const_iterator i;
    for ( i = m_FlexuralStressArtifacts.begin(); i != m_FlexuralStressArtifacts.end(); i++ )
@@ -344,7 +344,7 @@ Float64 pgsGirderArtifact::GetRequiredConcreteStrength(pgsTypes::Stage stage,pgs
 
       if ( key.GetStage() == stage && key.GetLimitState() == ls )
       {
-         Float64 fc = artifact.second.GetRequiredConcreteStrength();
+         double fc = artifact.second.GetRequiredConcreteStrength();
 
          if ( fc < 0 ) 
             return fc;
@@ -357,9 +357,9 @@ Float64 pgsGirderArtifact::GetRequiredConcreteStrength(pgsTypes::Stage stage,pgs
    return fc_reqd;
 }
 
-Float64 pgsGirderArtifact::GetRequiredConcreteStrength() const
+double pgsGirderArtifact::GetRequiredConcreteStrength() const
 {
-   Float64 fc_reqd = 0;
+   double fc_reqd = 0;
 
    std::map<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>::const_iterator i;
    for ( i = m_FlexuralStressArtifacts.begin(); i != m_FlexuralStressArtifacts.end(); i++ )
@@ -369,7 +369,7 @@ Float64 pgsGirderArtifact::GetRequiredConcreteStrength() const
       if ( artifact.first.GetStage() == pgsTypes::CastingYard )
          continue;
 
-      Float64 fc = artifact.second.GetRequiredConcreteStrength();
+      double fc = artifact.second.GetRequiredConcreteStrength();
 
       if ( fc < 0 ) // there is no concrete strength that will work
          return fc;
@@ -380,12 +380,12 @@ Float64 pgsGirderArtifact::GetRequiredConcreteStrength() const
 
    if (m_pHaulingCheckArtifact.get()!=NULL)
    {
-      Float64 fc_reqd_hauling_tens,fc_reqd_hauling_comp;
-      Float64 fcMax = lrfdVersionMgr::GetUnits() == lrfdVersionMgr::SI ? ::ConvertToSysUnits(105,unitMeasure::MPa) : ::ConvertToSysUnits(15.0,unitMeasure::KSI);
+      double fc_reqd_hauling_tens,fc_reqd_hauling_comp;
+      double fcMax = lrfdVersionMgr::GetUnits() == lrfdVersionMgr::SI ? ::ConvertToSysUnits(105,unitMeasure::MPa) : ::ConvertToSysUnits(15.0,unitMeasure::KSI);
       bool min_rebar_reqd;
       m_pHaulingCheckArtifact->GetRequiredConcreteStrength(&fc_reqd_hauling_comp,&fc_reqd_hauling_tens,&min_rebar_reqd,fcMax,false);
 
-      Float64 fc_reqd_hauling = max(fc_reqd_hauling_tens,fc_reqd_hauling_comp);
+      double fc_reqd_hauling = max(fc_reqd_hauling_tens,fc_reqd_hauling_comp);
 
       if ( fc_reqd_hauling < 0 ) // there is no concrete strength that will work
          return fc_reqd_hauling;
@@ -396,9 +396,9 @@ Float64 pgsGirderArtifact::GetRequiredConcreteStrength() const
    return fc_reqd;
 }
 
-Float64 pgsGirderArtifact::GetRequiredReleaseStrength() const
+double pgsGirderArtifact::GetRequiredReleaseStrength() const
 {
-   Float64 fc_reqd = 0;
+   double fc_reqd = 0;
 
    std::map<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>::const_iterator i;
    for ( i = m_FlexuralStressArtifacts.begin(); i != m_FlexuralStressArtifacts.end(); i++ )
@@ -408,7 +408,7 @@ Float64 pgsGirderArtifact::GetRequiredReleaseStrength() const
       if ( artifact.first.GetStage() != pgsTypes::CastingYard )
          continue;
 
-      Float64 fc = artifact.second.GetRequiredConcreteStrength();
+      double fc = artifact.second.GetRequiredConcreteStrength();
 
       if ( fc < 0 ) // there is no concrete strength that will work
          return fc;
@@ -419,11 +419,11 @@ Float64 pgsGirderArtifact::GetRequiredReleaseStrength() const
 
    if (m_pLiftingCheckArtifact.get()!=NULL)
    {
-      Float64 fc_reqd_lifting_tens,fc_reqd_lifting_comp;
+      double fc_reqd_lifting_tens,fc_reqd_lifting_comp;
       bool min_rebar_reqd;
       m_pLiftingCheckArtifact->GetRequiredConcreteStrength(&fc_reqd_lifting_comp,&fc_reqd_lifting_tens,&min_rebar_reqd);
       
-      Float64 fc_reqd_lifting = max(fc_reqd_lifting_tens,fc_reqd_lifting_comp);
+      double fc_reqd_lifting = max(fc_reqd_lifting_tens,fc_reqd_lifting_comp);
 
       if ( fc_reqd_lifting < 0 ) // there is no concrete strength that will work
          return fc_reqd_lifting;

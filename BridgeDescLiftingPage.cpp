@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -87,11 +87,11 @@ void CGirderDescLiftingPage::DoDataExchange(CDataExchange* pDX)
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   Float64 gdrlength = pBridge->GetGirderLength(pParent->m_CurrentSpanIdx,pParent->m_CurrentGirderIdx);
+   double gdrlength = pBridge->GetGirderLength(pParent->m_CurrentSpanIdx,pParent->m_CurrentGirderIdx);
    DDX_UnitValueAndTag( pDX, IDC_GIRDERLENGTH, IDC_GIRDERLENGTH_UNIT, gdrlength, pDisplayUnits->GetSpanLengthUnit() );
 
 #pragma Reminder("IMPLEMENT: Check clear span... make sure it is positive")
-   Float64 clearspan = gdrlength - m_LeadingOverhang - m_TrailingOverhang;
+   double clearspan = gdrlength - m_LeadingOverhang - m_TrailingOverhang;
 //   DDV_UnitValueZeroOrMore( pDX, clearspan, bUnitsSI, usLength, siLength );
 #pragma Reminder("STATUS ITEM: If leading overhang exceeds max, post status item")
 //    // this should be done in an agent

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -68,8 +68,8 @@ void CTxDOTOptionalDesignDocTemplate::LoadTemplateInformation()
 
    // top level icon
    HICON hIcon = AfxGetApp()->LoadIcon(IDI_TXDOT);
-   m_TemplateGroup.SetIcon(hIcon);
-   m_TemplateGroup.AddItem( new CEAFTemplateItem(this,strItemName,NULL,hIcon) );
+
+   m_TemplateGroup.AddItem( new CEAFTemplateItem(strItemName,NULL,hIcon) );
 
    // Location of template folders
    CString strWorkgroupFolderName = GetTOGAFolder();
@@ -78,10 +78,10 @@ void CTxDOTOptionalDesignDocTemplate::LoadTemplateInformation()
 
    if ( strWorkgroupFolderName.GetLength() != 0 )
    {
-      //CEAFTemplateGroup* pGroup = new CEAFTemplateGroup();
-      //pGroup->SetGroupName(_T("Templates"));
-      //m_TemplateGroup.AddGroup(pGroup);
-      FindInFolder(strWorkgroupFolderName,&m_TemplateGroup,hIcon);
+      CEAFTemplateGroup* pGroup = new CEAFTemplateGroup(this);
+      pGroup->SetGroupName(_T("Templates"));
+      m_TemplateGroup.AddGroup(pGroup);
+      FindInFolder(strWorkgroupFolderName,pGroup,hIcon);
 
       // CEAFSplashScreen::SetText(_T(""));
    }
@@ -127,7 +127,7 @@ void CTxDOTOptionalDesignDocTemplate::FindTemplateFiles(LPCTSTR strPath,CEAFTemp
       if ( hIcon )
          fileIcon = hIcon;
 
-      CEAFTemplateItem* pItem = new CEAFTemplateItem(this,finder.GetFileTitle(),finder.GetFilePath(),fileIcon);
+      CEAFTemplateItem* pItem = new CEAFTemplateItem(finder.GetFileTitle(),finder.GetFilePath(),fileIcon);
       pGroup->AddItem(pItem);
    }
 }

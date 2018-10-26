@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -412,7 +412,7 @@ Float64 CSpecAgentImp::GetHaulingModulusOfRupture(SpanIndexType span,GirderIndex
 Float64 CSpecAgentImp::GetHaulingModulusOfRupture(Float64 fc)
 {
    ATLASSERT(false); // obsolete
-   Float64 x = GetHaulingModulusOfRuptureCoefficient();
+   double x = GetHaulingModulusOfRuptureCoefficient();
    return x*sqrt(fc);
 }
 
@@ -437,7 +437,7 @@ Float64 CSpecAgentImp::GetBridgeSiteAllowableStress(pgsTypes::Stage stage,pgsTyp
 Float64 CSpecAgentImp::GetAllowableCompressiveStressCoefficient(pgsTypes::Stage stage,pgsTypes::LimitState ls)
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 x = -999999;
+   double x = -999999;
 
    switch( stage )
    {
@@ -484,12 +484,12 @@ Float64 CSpecAgentImp::GetAllowableCompressiveStressCoefficient(pgsTypes::Stage 
    return x;
 }
 
-void CSpecAgentImp::GetAllowableTensionStressCoefficient(pgsTypes::Stage stage,pgsTypes::LimitState ls,Float64* pCoeff,bool* pbMax,Float64* pMaxValue)
+void CSpecAgentImp::GetAllowableTensionStressCoefficient(pgsTypes::Stage stage,pgsTypes::LimitState ls,double* pCoeff,bool* pbMax,double* pMaxValue)
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 x = -999999;
+   double x = -999999;
    bool bCheckMax;
-   Float64 fmax;
+   double fmax;
 
    GET_IFACE(IEnvironment,pEnv);
 
@@ -556,7 +556,7 @@ void CSpecAgentImp::GetAllowableTensionStressCoefficient(pgsTypes::Stage stage,p
 
 Float64 CSpecAgentImp::GetInitialAllowableCompressiveStress(Float64 fci)
 {
-   Float64 x = GetAllowableCompressiveStressCoefficient(pgsTypes::CastingYard,pgsTypes::ServiceI);
+   double x = GetAllowableCompressiveStressCoefficient(pgsTypes::CastingYard,pgsTypes::ServiceI);
 
    // Add a minus sign because compression is negative
    return -x*fci;
@@ -590,7 +590,7 @@ Float64 CSpecAgentImp::GetInitialAllowableTensileStress(Float64 fci, bool withMi
 
 Float64 CSpecAgentImp::GetFinalAllowableCompressiveStress(pgsTypes::Stage stage,pgsTypes::LimitState ls,Float64 fc)
 {
-   Float64 x = GetAllowableCompressiveStressCoefficient(stage,ls);
+   double x = GetAllowableCompressiveStressCoefficient(stage,ls);
    // Add a minus sign because compression is negative
    return -x*fc;
 }
@@ -765,7 +765,7 @@ Float64 CSpecAgentImp::GetLiftingFailureFs() const
    return pSpec->GetCyLiftingFailFs();
 }
 
-void CSpecAgentImp::GetLiftingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax)
+void CSpecAgentImp::GetLiftingAllowableTensileConcreteStressParameters(double* factor,bool* pbMax,double* fmax)
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    *factor = GetLiftingAllowableTensionFactor();
@@ -845,7 +845,7 @@ Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStressEx(Float64 fci, b
 
 Float64 CSpecAgentImp::GetLiftingAllowableCompressiveConcreteStressEx(Float64 fci)
 {
-   Float64 x = GetLiftingAllowableCompressionFactor();
+   double x = GetLiftingAllowableCompressionFactor();
 
    return x*fci;
 }
@@ -898,7 +898,7 @@ Float64 CSpecAgentImp::GetLiftingModulusOfRupture(SpanIndexType span,GirderIndex
 Float64 CSpecAgentImp::GetLiftingModulusOfRupture(Float64 fci)
 {
    ATLASSERT(false); // obsolete...
-   Float64 x = GetLiftingModulusOfRuptureCoefficient();
+   double x = GetLiftingModulusOfRuptureCoefficient();
    return x*sqrt(fci);
 }
 
@@ -939,7 +939,7 @@ Float64 CSpecAgentImp::GetLiftingModulusOfRuptureCoefficient(pgsTypes::ConcreteT
 
 Float64 CSpecAgentImp::GetLiftingModulusOfRupture(Float64 fci,pgsTypes::ConcreteType concType)
 {
-   Float64 x = GetLiftingModulusOfRuptureCoefficient(concType);
+   double x = GetLiftingModulusOfRuptureCoefficient(concType);
    return x*sqrt(fci);
 }
 
@@ -969,7 +969,7 @@ Float64 CSpecAgentImp::GetHaulingRolloverFs() const
    return pSpec->GetHaulingFailFs();
 }
 
-void CSpecAgentImp::GetHaulingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax)
+void CSpecAgentImp::GetHaulingAllowableTensileConcreteStressParameters(double* factor,bool* pbMax,double* fmax)
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    *factor = GetHaulingAllowableTensionFactor();
@@ -1045,7 +1045,7 @@ Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressEx(Float64 fc, bo
 
 Float64 CSpecAgentImp::GetHaulingAllowableCompressiveConcreteStressEx(Float64 fc)
 {
-   Float64 x = GetHaulingAllowableCompressionFactor();
+   double x = GetHaulingAllowableCompressionFactor();
 
    return x*fc;
 }
@@ -1177,7 +1177,7 @@ Float64 CSpecAgentImp::GetHaulingModulusOfRuptureCoefficient(pgsTypes::ConcreteT
 
 Float64 CSpecAgentImp::GetHaulingModulusOfRupture(Float64 fc,pgsTypes::ConcreteType concType)
 {
-   Float64 x = GetHaulingModulusOfRuptureCoefficient(concType);
+   double x = GetHaulingModulusOfRuptureCoefficient(concType);
    return x*sqrt(fc);
 }
 
@@ -1199,7 +1199,7 @@ Float64 CSpecAgentImp::GetMaxDebondedStrandsPerRow(SpanIndexType spanIdx,GirderI
 Float64 CSpecAgentImp::GetMaxDebondedStrandsPerSection(SpanIndexType spanIdx,GirderIndexType gdrIdx)
 {
    StrandIndexType nMax;
-   Float64 fMax;
+   double fMax;
 
    const GirderLibraryEntry* pGirderEntry = GetGirderEntry(spanIdx,gdrIdx);
    pGirderEntry->GetMaxDebondedStrandsPerSection(&nMax,&fMax);
@@ -1210,7 +1210,7 @@ Float64 CSpecAgentImp::GetMaxDebondedStrandsPerSection(SpanIndexType spanIdx,Gir
 StrandIndexType CSpecAgentImp::GetMaxNumDebondedStrandsPerSection(SpanIndexType spanIdx,GirderIndexType gdrIdx)
 {
    StrandIndexType nMax;
-   Float64 fMax;
+   double fMax;
 
    const GirderLibraryEntry* pGirderEntry = GetGirderEntry(spanIdx,gdrIdx);
    pGirderEntry->GetMaxDebondedStrandsPerSection(&nMax,&fMax);
@@ -1247,8 +1247,8 @@ void CSpecAgentImp::GetMaxDebondLength(SpanIndexType span, GirderIndexType gdr, 
       if (sflen < min_len)
       {
          min_len = sflen;
-      *pControl = pgsTypes::mbdFractional;
-   }
+         *pControl = pgsTypes::mbdFractional;
+      }
    }
 
    if (buseHard)
@@ -1256,7 +1256,7 @@ void CSpecAgentImp::GetMaxDebondLength(SpanIndexType span, GirderIndexType gdr, 
       if (hardDistance < min_len )
       {
          min_len = hardDistance;
-      *pControl = pgsTypes::mdbHardLength;
+         *pControl = pgsTypes::mdbHardLength;
       }
    }
 
@@ -1277,12 +1277,6 @@ void CSpecAgentImp::GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Floa
    pSpec->GetFlexureResistanceFactors(type,phiTensionPS,phiTensionRC,phiCompression);
 }
 
-void CSpecAgentImp::GetFlexuralStrainLimits(matPsStrand::Grade grade,matPsStrand::Type type,Float64* pecl,Float64* petl)
-{
-   // The values for Grade 60 are the same as for all types of strand
-   GetFlexuralStrainLimits(matRebar::Grade60,pecl,petl);
-}
-
 void CSpecAgentImp::GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* pecl,Float64* petl)
 {
    switch (rebarGrade )
@@ -1298,18 +1292,13 @@ void CSpecAgentImp::GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* 
       break;
 
    case matRebar::Grade75:
-      *pecl = 0.0028;
-      *petl = 0.0050;
+      *pecl = 0.0026;
+      *petl = 0.0054;
       break;
 
    case matRebar::Grade80:
-      *pecl = 0.0030;
+      *pecl = 0.0028;
       *petl = 0.0056;
-      break;
-
-   case matRebar::Grade100:
-      *pecl = 0.0040;
-      *petl = 0.0080;
       break;
 
    default:

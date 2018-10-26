@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -96,8 +96,8 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
 //   const pgsFlexuralCapacityArtifact* pGirderCap = pArtifact->GetFlexuralCapacityArtifact(pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite1,pgsTypes::StrengthI,poi.GetDistFromStart()));
    const pgsFlexuralCapacityArtifact* pCompositeCap = pArtifact->GetPositiveMomentFlexuralCapacityArtifact(pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,poi.GetDistFromStart()));
 
-   Float64 Mu = pCompositeCap->GetDemand();
-   Float64 Mr = pCompositeCap->GetCapacity();
+   double Mu = pCompositeCap->GetDemand();
+   double Mr = pCompositeCap->GetCapacity();
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 

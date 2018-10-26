@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -486,43 +486,8 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
          CComPtr<IBroker> pBroker;
          EAFGetBroker(&pBroker);
          GET_IFACE2(pBroker,IBridge,pBridge);
-
-         if ( pHint )
-         {
-            // The span configuration of the bridge changed
-            CBridgeHint* pBridgeHint = (CBridgeHint*)pHint;
-
-            // We want to know if the span that was added or removed
-            // is within the range of spans being displayed. If it is,
-            // adjust the display range.
-            SpanIndexType nSpans = pBridge->GetSpanCount();
-            SpanIndexType nPrevSpans = nSpans + (pBridgeHint->bAdded ? -1 : 1);
-
-
-            SpanIndexType spanIdx = pBridgeHint->PierIdx + (pBridgeHint->PierFace == pgsTypes::Back ? -1 : 0);
-            if ( (m_StartSpanIdx <= spanIdx && spanIdx <= m_EndSpanIdx) || // span in range
-                 (m_EndSpanIdx == nPrevSpans-1 && spanIdx == nSpans-1) || // at end
-                 (m_StartSpanIdx == 0 && spanIdx == INVALID_INDEX) // at start
-               )
-            {
-               // new span is in the display range
-               if ( pBridgeHint->bAdded )
-               {
-                  m_EndSpanIdx++;
-               }
-               else
-               {
-                  if ( spanIdx == m_StartSpanIdx && spanIdx != 0)
-                     m_StartSpanIdx++; // span at start of range was removed, so make the range smaller
-                  else
-                     m_EndSpanIdx--; // span at within or at the end of the range was removed...
-               }
-            }
-         }
-
-         // Make sure we aren't displaying spans past the end of the bridge
          SpanIndexType nSpans = pBridge->GetSpanCount();
-         m_EndSpanIdx = (nSpans <= m_EndSpanIdx ? nSpans-1 : m_EndSpanIdx);
+         m_EndSpanIdx = nSpans-1;
 
          m_pFrame->InitSpanRange();
       }
@@ -1068,8 +1033,8 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
    CComPtr<iPolyLineDisplayObject> doAlignment;
    doAlignment.CoCreateInstance(CLSID_PolyLineDisplayObject);
 
-   // Register an event sink with the alignment object so that we can handle Float64 clicks
-   // on the alignment differently then a general Float64 click
+   // Register an event sink with the alignment object so that we can handle double clicks
+   // on the alignment differently then a general double click
    CAlignmentDisplayObjectEvents* pEvents = new CAlignmentDisplayObjectEvents(pBroker,m_pFrame);
    IUnknown* unk = pEvents->GetInterface(&IID_iDisplayObjectEvents);
    CComQIPtr<iDisplayObjectEvents,&IID_iDisplayObjectEvents> events(unk);
@@ -1527,15 +1492,15 @@ void CBridgePlanView::BuildPierDisplayObjects()
       CString strConnectionTip;
       if ( pierIdx == 0 ) // first pier
       {
-         strConnectionTip.Format(_T("Ahead Connection: %s\nBoundary Conditions: %s"),pPier->GetConnection(pgsTypes::Ahead),CPierData::AsString(pPier->GetConnectionType()));
+         strConnectionTip.Format(_T("Boundary Condition: %s"),CPierData::AsString(pPier->GetConnectionType()));
       }
       else if ( pierIdx == nPiers-1 ) // last pier
       {
-         strConnectionTip.Format(_T("Back Connection: %s\nBoundary Conditions: %s"),pPier->GetConnection(pgsTypes::Back),CPierData::AsString(pPier->GetConnectionType()));
+         strConnectionTip.Format(_T("Boundary Condition: %s"),CPierData::AsString(pPier->GetConnectionType()));
       }
       else // intermediate pier
       {
-         strConnectionTip.Format(_T("Back Connection: %s\nAhead Connection: %s\nBoundary Conditions: %s"),pPier->GetConnection(pgsTypes::Back),pPier->GetConnection(pgsTypes::Ahead),CPierData::AsString(pPier->GetConnectionType()));
+         strConnectionTip.Format(_T("Boundary Condition: %s"),CPierData::AsString(pPier->GetConnectionType()));
       }
 
       CString strMsg = strMsg1 + _T("\r\n\r\n") + strMsg2 + _T("\r\n") + strConnectionTip;
@@ -1559,8 +1524,8 @@ void CBridgePlanView::BuildPierDisplayObjects()
       connectable1->Connect(0,atByID,startPlug,&dwCookie);
       connectable2->Connect(0,atByID,endPlug,  &dwCookie);
 
-      // Register an event sink with the pier centerline display object so that we can handle Float64 clicks
-      // on the piers differently then a general Float64 click
+      // Register an event sink with the pier centerline display object so that we can handle double clicks
+      // on the piers differently then a general double click
       CPierDisplayObjectEvents* pEvents = new CPierDisplayObjectEvents(pierIdx,
                                                                        nPiers,
                                                                        pBridge->GetDeckType() != pgsTypes::sdtNone,
@@ -1590,14 +1555,30 @@ void CBridgePlanView::BuildPierDisplayObjects()
 
       Float64 left_offset  = 0;
       Float64 right_offset = 0;
-      if ( prev_span_idx != ALL_SPANS)
-         left_offset  = 1.05*(pBridge->GetGirderEndBearingOffset(prev_span_idx,0) + pBridge->GetGirderEndSupportWidth(prev_span_idx,0));
+      if ( pPier->GetPrevSpan() == NULL )
+      {
+         // start abutment
+         SpanIndexType spanIdx = pPier->GetNextSpan()->GetSpanIndex();
+         left_offset  = pBridge->GetGirderStartConnectionLength(spanIdx,0);
+         right_offset = pBridge->GetGirderStartBearingOffset(spanIdx,0) + pBridge->GetGirderStartConnectionLength(spanIdx,0);
+      }
+      else if ( pPier->GetNextSpan() == NULL )
+      {
+         // end abutment
+         SpanIndexType spanIdx = pPier->GetPrevSpan()->GetSpanIndex();
+         left_offset  = pBridge->GetGirderEndBearingOffset(spanIdx,0) + pBridge->GetGirderEndConnectionLength(spanIdx,0);
+         right_offset = pBridge->GetGirderEndConnectionLength(spanIdx,0);
+      }
+      else
+      {
+         // intermediate pier
+         SpanIndexType spanIdx = pPier->GetPrevSpan()->GetSpanIndex();
+         left_offset  = pBridge->GetGirderEndBearingOffset(spanIdx,0) + pBridge->GetGirderEndConnectionLength(spanIdx,0);
 
-      if ( next_span_idx != ALL_SPANS)
-         right_offset = 1.05*(pBridge->GetGirderStartBearingOffset(next_span_idx,0) + pBridge->GetGirderStartSupportWidth(next_span_idx,0));
+         spanIdx = pPier->GetNextSpan()->GetSpanIndex();
+         right_offset = pBridge->GetGirderStartBearingOffset(spanIdx,0) + pBridge->GetGirderStartConnectionLength(spanIdx,0);
+      }
 
-      left_offset  = ( IsZero(left_offset)  ? right_offset/2 : left_offset );
-      right_offset = ( IsZero(right_offset) ? left_offset/2  : right_offset );
       strategy_pier->SetLeftOffset(left_offset);
       strategy_pier->SetRightOffset(right_offset);
 

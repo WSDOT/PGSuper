@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,7 +32,6 @@
 #include "GirderModelElevationView.h"
 #include "GirderModelSectionView.h"
 
-#include <IFace\VersionInfo.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #ifdef _DEBUG
@@ -103,10 +102,7 @@ void CGirderViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    m_pFrame->GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
    ATLASSERT(  spanIdx != ALL_SPANS && gdrIdx != ALL_GIRDERS  );
 
-   GET_IFACE(IVersionInfo,pVerInfo);
-   title.Format(_T("Span %d Girder %s - PGSuper™ Version %s, Copyright © %4d, WSDOT, All rights reserved"), LABEL_SPAN(spanIdx), LABEL_GIRDER(gdrIdx), pVerInfo->GetVersion(), sysDate().Year());  
-   border.SetTitle(title);
-
+   title.Format(_T("Span %d Girder %s - PGSuper™, Copyright © %4d, WSDOT, All rights reserved"), LABEL_SPAN(spanIdx), LABEL_GIRDER(gdrIdx), sysDate().Year());  border.SetTitle(title);
    CString path = pDoc->GetPathName();
    border.SetFileName(path);
    CRect rcPrint = border.Print(pDC, 1);

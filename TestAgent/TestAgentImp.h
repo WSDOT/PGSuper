@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -87,6 +87,8 @@ private:
    std::_tstring GetBridgeID();
    std::_tstring GetProcessID();
 
+   bool RunHaunchTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
+   bool RunGeometryTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
    bool RunDistFactorTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
    bool RunHL93Test(std::_tofstream& resultsFile, std::_tofstream& poiFile,SpanIndexType span,GirderIndexType gdr);
    bool RunCrossSectionTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,SpanIndexType span,GirderIndexType gdr);

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,8 +25,6 @@
 #include <Reporting\StirrupDetailingCheckTable.h>
 
 #include <IFace\Artifact.h>
-#include <IFace\Bridge.h>
-#include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include <PgsExt\GirderArtifact.h>
@@ -99,12 +97,6 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
    {
       *p << _T("* - Transverse reinforcement not required if ") << Sub2(_T("V"),_T("u")) << _T(" < 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"),_T("c"));
       *p  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [Eqn 5.8.2.4-1]")<< rptNewLine;
-   }
-
-   if (!m_BasicVersion)
-   {
-      // Stirrup Layout Check
-      BuildStirrupLayoutCheck(pChapter, pBroker, span, girder, pDisplayUnits);
    }
 }
 
@@ -214,88 +206,6 @@ void CGirderDetailingCheck::BuildDimensionCheck(rptChapter* pChapter,
    }
 }
 
-void CGirderDetailingCheck::BuildStirrupLayoutCheck(rptChapter* pChapter,
-                              IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                              IEAFDisplayUnits* pDisplayUnits) const
-{
-   GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
-
-   INIT_FRACTIONAL_LENGTH_PROTOTYPE( gdim,  IS_US_UNITS(pDisplayUnits), 8, pDisplayUnits->GetComponentDimUnit(), true, true );
-   rptRcScalar scalar;
-
-   rptParagraph* pPara = new rptParagraph;
-   *pChapter << pPara;
-
-   rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T("Stirrup Layout Geometry Check"));
-   *pPara << p_table;
-
-   (*p_table)(0,0) << _T("Zone");
-   (*p_table)(0,1) << _T("Stirrup Layout");
-   (*p_table)(0,2) << _T("Status");
-
-   GET_IFACE2(pBroker,IShear,pShear);
-   CShearData shearData = pShear->GetShearData(span,girder);
-
-   ZoneIndexType squishyZoneIdx = INVALID_INDEX;
-   if ( shearData.bAreZonesSymmetrical )
-   {
-      // if zones are symmetrical, the last zone input is the "squishy" zone
-      squishyZoneIdx = shearData.ShearZones.size()-1;
-   }
-
-
-   RowIndexType row = p_table->GetNumberOfHeaderRows();
-   ZoneIndexType nz = pStirrupGeometry->GetNumPrimaryZones(span,girder);
-   for (ZoneIndexType iz=0; iz<nz; iz++)
-   {
-      (*p_table)(row,0) << LABEL_STIRRUP_ZONE(iz);
-
-      Float64 zoneStart, zoneEnd;
-      pStirrupGeometry->GetPrimaryZoneBounds(span , girder, iz, &zoneStart, &zoneEnd);
-      Float64 zoneLength = zoneEnd-zoneStart;
-
-      matRebar::Size barSize;
-      Float64 spacing;
-      Float64 nStirrups;
-      pStirrupGeometry->GetPrimaryVertStirrupBarInfo(span,girder,iz,&barSize,&nStirrups,&spacing);
-
-      if (barSize != matRebar::bsNone && spacing > TOLERANCE)
-      {
-         // If spacings fit within 1%, then pass. Otherwise fail
-         Float64 nFSpaces = zoneLength / spacing;
-         Int32 nSpaces = (Int32)nFSpaces;
-         Float64 rmdr = nFSpaces - nSpaces;
-
-         if ( iz == squishyZoneIdx )
-         {
-            nSpaces++; // round up one (the value was truncated above)
-            (*p_table)(row,1) << nSpaces <<_T(" Spa. @ ")<<gdim.SetValue(spacing)<<_T(" (Max) = ")<<gdim.SetValue(zoneLength);
-            (*p_table)(row,2) << _T("OK");
-         }
-         else
-         {
-            bool pass = IsZero(rmdr, 0.01) || IsEqual(rmdr, 1.0, 0.01);
-
-            (*p_table)(row,1) <<scalar.SetValue(nFSpaces)<<_T(" Spa. @ ")<<gdim.SetValue(spacing)<<_T(" = ")<<gdim.SetValue(zoneLength);
-            if (pass)
-            {
-               (*p_table)(row,2) << _T("OK");
-            }
-            else
-            {
-               (*p_table)(row,2) << color(Red) << _T("Zone length is not compatible with stirrup spacing") << color(Black);
-            }
-         }
-      }
-      else
-      {
-         (*p_table)(row,1) << _T("(None)");
-         (*p_table)(row,2) << RPT_NA;
-      }
-
-      row++;
-   }
-}
 
 
 //======================== ACCESS     =======================================

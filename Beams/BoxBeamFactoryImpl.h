@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -49,7 +49,7 @@ public:
    virtual void CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng);
    virtual std::vector<std::_tstring> GetDimensionNames();
    virtual std::vector<const unitLength*> GetDimensionUnits(bool bSIUnits);
-   virtual std::vector<Float64> GetDefaultDimensions();
+   virtual std::vector<double> GetDefaultDimensions();
    virtual bool IsPrismatic(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx);
    virtual Float64 GetVolume(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx);
    virtual CLSID GetFamilyCLSID();
@@ -69,10 +69,10 @@ public:
 
 protected:
    std::vector<std::_tstring> m_DimNames;
-   std::vector<Float64> m_DefaultDims;
+   std::vector<double> m_DefaultDims;
    std::vector<const unitLength*> m_DimUnits[2];
 
-   Float64 GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name);
+   double GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name);
 
    virtual bool ExcludeExteriorBeamShearKeys() = 0;
    virtual bool UseOverallWidth() = 0;

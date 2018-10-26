@@ -658,6 +658,10 @@
 			Filter="cpp"
 			>
 			<File
+				RelativePath=".\BoundaryConditionComboBox.cpp"
+				>
+			</File>
+			<File
 				RelativePath="BridgeDescription.cpp"
 				>
 				<FileConfiguration
@@ -3164,6 +3168,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\AutoProgress.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\BoundaryConditionComboBox.h"
 				>
 			</File>
 			<File

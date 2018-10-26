@@ -1,7 +1,6 @@
 #include "StdAfx.h"
 
 #include "TxDOTOptionalDesignView.h"
-#include "TxDOTOptionalDesignChildFrame.h"
 #include "TxDOTOptionalDesignPropertySheet.h"
 #include "TxDOTOptionalDesignBridgeInputPage.h"
 #include "TxDOTOptionalDesignGirderInputPage.h"
@@ -41,10 +40,10 @@ LRESULT FAR PASCAL GetMsgProc(int nCode, WPARAM wParam,LPARAM lParam)
    return CallNextHookEx(hHook, nCode, wParam, lParam);
 }
 
-IMPLEMENT_DYNCREATE(CTxDOTOptionalDesignView, CView)
+IMPLEMENT_DYNCREATE(CTxDOTOptionalDesignView, CFormView)
 
 
-BEGIN_MESSAGE_MAP(CTxDOTOptionalDesignView, CView)
+BEGIN_MESSAGE_MAP(CTxDOTOptionalDesignView, CFormView)
 	//{{AFX_MSG_MAP(CTxDOTOptionalDesignView)
 	//}}AFX_MSG_MAP
    ON_WM_SIZE()
@@ -52,7 +51,7 @@ BEGIN_MESSAGE_MAP(CTxDOTOptionalDesignView, CView)
 END_MESSAGE_MAP()
 
 
-CTxDOTOptionalDesignView::CTxDOTOptionalDesignView(void): CView()
+CTxDOTOptionalDesignView::CTxDOTOptionalDesignView(void): CFormView((LPCTSTR)NULL)
 {
 	m_pPropSheet = NULL;
 	m_pBridgeInputPage = NULL;
@@ -72,7 +71,14 @@ CTxDOTOptionalDesignView::~CTxDOTOptionalDesignView(void)
 
 void CTxDOTOptionalDesignView::OnInitialUpdate()
 {
-	CView::OnInitialUpdate();
+	CFormView::OnInitialUpdate();
+
+   CWnd* pParentWnd = this->GetParent();
+
+   // get size of parent - we want to maximize
+	CRect rectSize;
+	pParentWnd->GetWindowRect(rectSize);
+	pParentWnd->CalcWindowRect(rectSize);
 
    // manage state only within block below, otherwise sizing will crash
    {
@@ -123,45 +129,41 @@ void CTxDOTOptionalDesignView::OnInitialUpdate()
       m_pPropSheet->SetParent(this);
    }
 
+   // Resize mainframe to fit entire property sheet initially
+	CRect rects;
+	m_pPropSheet->GetWindowRect(rects);
+	m_pPropSheet->CalcWindowRect(rects);
+
+   GetParentFrame()->RecalcLayout();
+
+   // Expand mainframe to fit entire dialogs
+   CEAFMainFrame* pFrame = EAFGetMainFrame();
+
+   CRect rframe;
+   pFrame->GetWindowRect(rframe);
+
+   CRect rthis;
+   this->GetWindowRect(rthis); 
+
+   // height of menus,toolbars, other stuff
+   int rjunk = rthis.top - rframe.top; // (rframe.Height() - rthis.Height());
+
+   // Minimum size so we fit
+   int minWid = rects.Width();
+   int minHgt = rects.Height()+rjunk;
+
+   // Don't shrink window, only grow
+   minWid = max(minWid, rframe.Width());
+   minHgt = max(minHgt, rframe.Height());
+
+   pFrame->SetWindowPos(NULL,0,0,minWid,minHgt,SWP_NOMOVE | SWP_NOZORDER);
+
+   // no scrolling
+   this->SetScaleToFitSize(CSize(1,1));
+   
    // plug in our hook so dialog messages are redirected to the property sheet
    PageHwnd = m_pPropSheet->GetSafeHwnd();
    hHook = ::SetWindowsHookEx(WH_GETMESSAGE, GetMsgProc, NULL, GetCurrentThreadId());
-
-   // Resize the application main frame to fits around the property sheet.
-	CRect rcPropSheet;
-	m_pPropSheet->GetWindowRect(rcPropSheet);
-	m_pPropSheet->CalcWindowRect(rcPropSheet);
-
-   // Minimum size so we fit
-   int cxMin = rcPropSheet.Width();
-   int cyMin = rcPropSheet.Height();
-
-   // figure out how much height the control bars take (menus, toolbars, etc)
-   CRect rcView;
-   GetWindowRect(rcView);
-
-   CRect rcMainFrame;
-   CEAFMainFrame* pMainFrame = EAFGetMainFrame();
-   pMainFrame->GetWindowRect(rcMainFrame);
-
-   int cyControlBars = rcView.top - rcMainFrame.top; // (rcMainFrame.Height() - rcView.Height());
-   cyMin += cyControlBars;
-
-   CTxDOTOptionalDesignChildFrame* pChildFrame = (CTxDOTOptionalDesignChildFrame*)GetParentFrame();
-   pChildFrame->SetFrameSize(cxMin,cyMin);
-   SetWindowPos(pChildFrame,0,0,cxMin,cyMin,SWP_NOMOVE | SWP_NOZORDER);
-   m_pPropSheet->SetWindowPos(this,0,0,cxMin,cyMin,SWP_NOZORDER);
-
-   GetClientRect(rcView);
-
-   m_szMin.cx = rcView.Width();
-   m_szMin.cy = rcView.Height();
-
-   // Don't shrink window, only grow
-   cxMin = max(cxMin, rcMainFrame.Width());
-   cyMin = max(cyMin, rcMainFrame.Height());
-
-   pMainFrame->SetWindowPos(NULL,0,0,cxMin,cyMin,SWP_NOMOVE | SWP_NOZORDER);
 }
 
 BOOL CTxDOTOptionalDesignView::DestroyWindow()
@@ -169,33 +171,47 @@ BOOL CTxDOTOptionalDesignView::DestroyWindow()
    // unhook hook
    UnhookWindowsHookEx(hHook);
 
-   return CView::DestroyWindow();
+   return CFormView::DestroyWindow();
 }
 
 
 void CTxDOTOptionalDesignView::DoDataExchange(CDataExchange* pDX)
 {
-	CView::DoDataExchange(pDX);
+	CFormView::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CTxDOTOptionalDesignView)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 }
 
+BOOL CTxDOTOptionalDesignView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName,
+	DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, CCreateContext* pContext)
+{
+   ENSURE(pParentWnd != NULL);
+   ASSERT_KINDOF(CFrameWnd, pParentWnd);
+
+	CRect rectSize;
+	pParentWnd->GetWindowRect(rectSize);
+	pParentWnd->CalcWindowRect(rectSize);
+
+   DWORD dwMyStyle = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN;
+
+   m_pCreateContext = pContext;
+   if (!CWnd::Create(lpszClassName, lpszWindowName,  dwMyStyle,
+	   rectSize, pParentWnd, nID, pContext))
+   {
+	   return FALSE;
+   }
+   m_pCreateContext = NULL;
+
+   return TRUE;
+}
+
 void CTxDOTOptionalDesignView::OnSize(UINT nType, int cx, int cy)
 {
-   CView::OnSize(nType, cx, cy);
+   CFormView::OnSize(nType, cx, cy);
 
-   if (m_pPropSheet!=NULL && ::IsWindow(m_pPropSheet->m_hWnd) )
+   if (m_pPropSheet!=NULL && ::IsWindow(m_pPropSheet->m_hWnd))
    {
-      if ( GetParentFrame()->IsZoomed() )
-      {
-         // window is maximized so the only way it can resize is if
-         // the main frame is resizing... limit the size of the
-         // property sheet to its minimum size
-         cx = max(cx,m_szMin.cx);
-         cy = max(cy,m_szMin.cy);
-      }
-
 	   m_pPropSheet->SetWindowPos(this, 0, 0, cx, cy, SWP_NOZORDER);
    }
 }
@@ -243,7 +259,7 @@ BOOL CTxDOTOptionalDesignView::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_C
         return TRUE;
    }
 
-   return CView::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+   return CFormView::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
 }
 
 
@@ -262,19 +278,13 @@ BOOL CTxDOTOptionalDesignView::PreTranslateMessage(MSG* pMsg)
    }
 
 
-   return CView::PreTranslateMessage(pMsg);
+   return CFormView::PreTranslateMessage(pMsg);
 }
 
-void CTxDOTOptionalDesignView::OnDraw(CDC* pDC)
-{
-   // do nothing
-}
-
-#if defined _DEBUG
 void CTxDOTOptionalDesignView::AssertValid() const
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
 
-   CView::AssertValid();
+   CFormView::AssertValid();
 }
-#endif
+

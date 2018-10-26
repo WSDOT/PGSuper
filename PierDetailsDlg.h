@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -38,7 +38,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // CPierDetailsDlg
 
-class CPierDetailsDlg : public CPropertySheet
+class CPierDetailsDlg : public CPropertySheet, public IPierConnectionsParent
 {
 	DECLARE_DYNAMIC(CPierDetailsDlg)
 
@@ -49,16 +49,27 @@ public:
    void SetPierData(const CPierData* pPier);
    txnEditPierData GetEditPierData();
 
+//interface IPierConnectionsParent
+   virtual pgsTypes::PierConnectionType GetConnectionType(PierIndexType pierIdx);
+   virtual void SetConnectionType(PierIndexType pierIdx,pgsTypes::PierConnectionType type);
+   virtual const CSpanData* GetPrevSpan(PierIndexType pierIdx);
+   virtual const CSpanData* GetNextSpan(PierIndexType pierIdx);
+   virtual const CBridgeDescription* GetBridgeDescription();
+
    pgsTypes::MovePierOption GetMovePierOption();
    Float64 GetStation();
    LPCTSTR GetOrientation();
 
-   LPCTSTR GetConnection(pgsTypes::PierFaceType pierFace);
    pgsTypes::PierConnectionType GetConnectionType();
-   
-   GirderIndexType GetNumGirders(pgsTypes::PierFaceType pierFace);
-   CGirderSpacing GetGirderSpacing(pgsTypes::PierFaceType pierFace);
-   pgsTypes::SupportedBeamSpacing GetGirderSpacingType();
+   Float64 GetBearingOffset(pgsTypes::PierFaceType face);
+   ConnectionLibraryEntry::BearingOffsetMeasurementType GetBearingOffsetMeasurementType(pgsTypes::PierFaceType face);
+   Float64 GetEndDistance(pgsTypes::PierFaceType face);
+   ConnectionLibraryEntry::EndDistanceMeasurementType GetEndDistanceMeasurementType(pgsTypes::PierFaceType face);
+   Float64 GetSupportWidth(pgsTypes::PierFaceType face);
+
+   GirderIndexType GetGirderCount(pgsTypes::PierFaceType pierFace);
+   CGirderSpacing GetSpacing(pgsTypes::PierFaceType pierFace);
+   pgsTypes::SupportedBeamSpacing GetSpacingType();
    bool UseSameNumberOfGirdersInAllSpans();
    pgsTypes::MeasurementLocation GetMeasurementLocation(pgsTypes::PierFaceType pierFace);
    pgsTypes::MeasurementType GetMeasurementType(pgsTypes::PierFaceType pierFace);
@@ -67,6 +78,12 @@ public:
 
    pgsTypes::SlabOffsetType GetSlabOffsetType();
    Float64 GetSlabOffset(pgsTypes::PierFaceType pierFace);
+
+   Float64 GetDiaphragmHeight(pgsTypes::PierFaceType pierFace);
+   Float64 GetDiaphragmWidth(pgsTypes::PierFaceType pierFace);
+   ConnectionLibraryEntry::DiaphragmLoadType GetDiaphragmLoadType(pgsTypes::PierFaceType pierFace);
+   Float64 GetDiaphragmLoadLocation(pgsTypes::PierFaceType pierFace);
+
 
    bool AllowConnectionChange(pgsTypes::PierFaceType side, const CString& conectionName);
 
@@ -100,16 +117,16 @@ protected:
    const CSpanData* m_pNextSpan;
 
    pgsTypes::PierConnectionType m_ConnectionType;
-   CString m_ConnectionName[2];
+   pgsTypes::SupportedBeamSpacing m_SpacingType;
+   pgsTypes::MeasurementLocation m_GirderSpacingMeasurementLocation;
 
 private:
    friend CPierLayoutPage;
-   friend CPierConnectionsPage;
    friend CPierGirderSpacingPage;
 
-   CPierLayoutPage m_PierLayoutPage;
-   CPierConnectionsPage m_PierConnectionsPage;
-   CPierGirderSpacingPage m_PierGirderSpacingPage;
+   CPierLayoutPage            m_PierLayoutPage;
+   CPierConnectionsPage       m_PierConnectionsPage;
+   CPierGirderSpacingPage     m_PierGirderSpacingPage;
 };
 
 /////////////////////////////////////////////////////////////////////////////

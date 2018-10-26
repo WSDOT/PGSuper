@@ -16,6 +16,10 @@
 #define IDC_RADIO_IGNORE                1443
 #define IDC_RADIO_IGNORE_LEVER          1010
 #define IDC_RADIO_LEVER                 1110
+#define IDB_HINGES                      289
+#define IDB_ROLLERS                     290
+#define IDB_CONTINUOUS                  291
+
 
 // Next default values for new objects
 // 

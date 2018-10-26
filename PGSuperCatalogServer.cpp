@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,7 +34,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 // Functions to save and create our servers to/from a string
-CPGSuperCatalogServer* CreateCatalogServer(const CString& createString,const CString& strExt)
+CPGSuperCatalogServer* CreateCatalogServer(const CString& createString)
 {
    int p = createString.Find(_T('|'));
    if ( p != -1 )
@@ -49,12 +49,12 @@ CPGSuperCatalogServer* CreateCatalogServer(const CString& createString,const CSt
 
          if (strType==_T("FTP"))
          {
-            CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(strName, strAddress, strExt);
+            CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(strName, strAddress);
             return psvr;
          }
          else if (strType==_T("HTTP"))
          {
-            CHttpPGSuperCatalogServer* psvr = new CHttpPGSuperCatalogServer(strName, strAddress, strExt);
+            CHttpPGSuperCatalogServer* psvr = new CHttpPGSuperCatalogServer(strName, strAddress);
             return psvr;
          }
          else
@@ -65,7 +65,7 @@ CPGSuperCatalogServer* CreateCatalogServer(const CString& createString,const CSt
             {
                CString strLibraryFileName = strAddress.Left(p);
                CString strTemplateFolder = strAddress.Mid(p+1);
-               CFileSystemPGSuperCatalogServer* psvr = new CFileSystemPGSuperCatalogServer(strName, strLibraryFileName, strTemplateFolder, strExt);
+               CFileSystemPGSuperCatalogServer* psvr = new CFileSystemPGSuperCatalogServer(strName, strLibraryFileName, strTemplateFolder);
                return psvr;
             }
             else
@@ -90,7 +90,7 @@ CPGSuperCatalogServer* CreateCatalogServer(const CString& createString,const CSt
       {
          CString strName = createString.Left(p);
          CString strAddress = createString.Mid(p+1);
-         CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(strName, strAddress, strExt);
+         CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(strName, strAddress);
          return psvr;
       }
       else
@@ -101,7 +101,7 @@ CPGSuperCatalogServer* CreateCatalogServer(const CString& createString,const CSt
    }
 }
 
-CPGSuperCatalogServer* CreateCatalogServer(const CString& strServerName,const CString& createString,const CString& strExt)
+CPGSuperCatalogServer* CreateCatalogServer(const CString& strServerName,const CString& createString)
 {
    int p = createString.Find(_T('|'));
    if ( p != -1 )
@@ -110,12 +110,12 @@ CPGSuperCatalogServer* CreateCatalogServer(const CString& strServerName,const CS
       CString strAddress = createString.Mid(p+1);
       if (strType==_T("FTP"))
       {
-         CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(strServerName, strAddress, strExt);
+         CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(strServerName, strAddress);
          return psvr;
       }
       else if (strType==_T("HTTP"))
       {
-         CHttpPGSuperCatalogServer* psvr = new CHttpPGSuperCatalogServer(strServerName, strAddress, strExt);
+         CHttpPGSuperCatalogServer* psvr = new CHttpPGSuperCatalogServer(strServerName, strAddress);
          return psvr;
       }
       else
@@ -126,7 +126,7 @@ CPGSuperCatalogServer* CreateCatalogServer(const CString& strServerName,const CS
          {
             CString strLibraryFileName = strAddress.Left(p);
             CString strTemplateFolder = strAddress.Mid(p+1);
-            CFileSystemPGSuperCatalogServer* psvr = new CFileSystemPGSuperCatalogServer(strServerName, strLibraryFileName, strTemplateFolder, strExt);
+            CFileSystemPGSuperCatalogServer* psvr = new CFileSystemPGSuperCatalogServer(strServerName, strLibraryFileName, strTemplateFolder);
             return psvr;
          }
          else
@@ -144,7 +144,7 @@ CPGSuperCatalogServer* CreateCatalogServer(const CString& strServerName,const CS
       if ( p != -1 )
       {
          CString strAddress = createString.Left(p);
-         CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(strServerName, strAddress, strExt);
+         CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(strServerName, strAddress);
          return psvr;
       }
       else
@@ -203,43 +203,27 @@ static CString GetLocalWorkgroupTemplateFolderMD5Filename()
 
 static CString GetPgzFilename()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
-   CString strPgzFilename;
-   strPgzFilename.Format(_T("%s.pgz"),pApp->m_pszProfileName);
-   return strPgzFilename;
+   return CString(_T("PGSuper.pgz"));
 }
 
 static CString GetPgzMd5Filename()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
-   CString strPgzMd5;
-   strPgzMd5.Format(_T("%s.pgz.md5"),pApp->m_pszProfileName);
-   return strPgzMd5;
+   return CString(_T("PGSuper.pgz.md5"));
 }
 
 static CString GetTempPgzMD5Filename()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
-   CString strCatalogFile;
-
    TCHAR buffer[256];
    ::GetTempPath(256,buffer);
 
    CString cbuf;
-   cbuf.Format(_T("%s%s.pgz.md5"),buffer,pApp->m_pszProfileName);
+   cbuf.Format(_T("%sPGSuper.pgz.md5"),buffer);
    return cbuf;
 }
 
 static CString GetCatalogFileName()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
-   CString strCatalogFile;
-   strCatalogFile.Format(_T("%sPackages.ini"),pApp->m_pszProfileName);
-   return strCatalogFile;
+   return CString(_T("PGSuperPackages.ini"));
 }
 
 // return true if check passes
@@ -334,10 +318,9 @@ BOOL PeekAndPump()
 
 /////    CPGSuperCatalogServer  ///////////
 
-CPGSuperCatalogServer::CPGSuperCatalogServer(const CString& name,SharedResourceType type,const CString& strExt):
+CPGSuperCatalogServer::CPGSuperCatalogServer(const CString& name,SharedResourceType type):
 m_Name(name),
-m_ServerType(type),
-m_TemplateFileExt(strExt)
+m_ServerType(type)
 {
 }
 
@@ -349,11 +332,6 @@ CString CPGSuperCatalogServer::GetServerName() const
 SharedResourceType CPGSuperCatalogServer::GetServerType() const
 {
    return m_ServerType;
-}
-
-CString CPGSuperCatalogServer::GetTemplateFileExtension() const
-{
-   return m_TemplateFileExt;
 }
 
 bool CPGSuperCatalogServer::CheckForUpdatesUsingMD5(const CString& strLocalMasterLibMD5,const CString& strLocalWorkgroupTemplateMD5,
@@ -414,17 +392,15 @@ bool CPGSuperCatalogServer::CheckForUpdatesUsingMD5(const CString& strLocalMaste
 
 /// CFtpPGSuperCatalogServer ///
 // default ftp to wsdot
-CFtpPGSuperCatalogServer::CFtpPGSuperCatalogServer(const CString& strExt):
-CPGSuperCatalogServer(_T("WSDOT"),srtInternetFtp,strExt)
+CFtpPGSuperCatalogServer::CFtpPGSuperCatalogServer():
+CPGSuperCatalogServer(_T("WSDOT"),srtInternetFtp),
+m_ServerAddress(_T("ftp://ftp.wsdot.wa.gov/public/bridge/software/PGSuper/"))
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
-   m_ServerAddress.Format(_T("%s/%s/"),_T("ftp://ftp.wsdot.wa.gov/public/bridge/software"),pApp->m_pszProfileName);
    Init();
 }
 
-CFtpPGSuperCatalogServer::CFtpPGSuperCatalogServer(const CString& name, const CString& address,const CString& strExt):
-CPGSuperCatalogServer(name,srtInternetFtp,strExt)
+CFtpPGSuperCatalogServer::CFtpPGSuperCatalogServer(const CString& name, const CString& address):
+CPGSuperCatalogServer(name,srtInternetFtp)
 {
    SetAddress(address);
    Init();
@@ -919,7 +895,7 @@ bool CFtpPGSuperCatalogServer::PopulateTemplateFolder(IProgressMonitor* pProgres
    {
       pFTP = inetSession.GetFtpConnection(strServer);
 
-      CFTPTemplateManager templateMgr(GetTemplateFileExtension(),pFTP);
+      CFTPTemplateManager templateMgr(pFTP);
       templateMgr.GetTemplates(strObject,cachedTemplateFolder,pProgress);
    }
    catch ( CInternetException* pException)
@@ -1114,8 +1090,8 @@ bool CFtpPGSuperCatalogServer::TestServer(CString& errorMessage) const
 
 /// CHttpPGSuperCatalogServer ///
 
-CHttpPGSuperCatalogServer::CHttpPGSuperCatalogServer(const CString& name, const CString& address,const CString& strExt):
-CPGSuperCatalogServer(name,srtInternetHttp,strExt)
+CHttpPGSuperCatalogServer::CHttpPGSuperCatalogServer(const CString& name, const CString& address):
+CPGSuperCatalogServer(name,srtInternetHttp)
 {
    SetAddress(address);
    Init();
@@ -1582,8 +1558,8 @@ CHttpPGSuperCatalogServer::gwResult CHttpPGSuperCatalogServer::GetWebFile(const 
 
 
 /// CFileSystemPGSuperCatalogServer ///
-CFileSystemPGSuperCatalogServer::CFileSystemPGSuperCatalogServer(const CString& name, const CString& libraryFileName, const CString& templateFilePath,const CString& strExt):
-CPGSuperCatalogServer(name,srtLocal,strExt),
+CFileSystemPGSuperCatalogServer::CFileSystemPGSuperCatalogServer(const CString& name, const CString& libraryFileName, const CString& templateFilePath):
+CPGSuperCatalogServer(name,srtLocal),
 m_LibraryFileName(libraryFileName),
 m_TemplateFilePath(templateFilePath),
 m_bFakeError(false)
@@ -1730,7 +1706,7 @@ bool CFileSystemPGSuperCatalogServer::PopulateCatalog(const CString& publisher, 
    }
 
    CString localTemplateFolder = GetTemplateFolderPath();
-   CFileTemplateManager templateMgr(GetTemplateFileExtension());
+   CFileTemplateManager templateMgr;
    templateMgr.GetTemplates(localTemplateFolder,cachedTemplateFolder,pProgress);
 
    return true;

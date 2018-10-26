@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -87,8 +87,6 @@ public:
    CGirderTypes* GetGirderTypes();
    void SetGirderTypes(const CGirderTypes& girderTypes);
 
-   void UseSameSpacingAtBothEndsOfSpan(bool bUseSame);
-   bool UseSameSpacingAtBothEndsOfSpan() const;
    const CGirderSpacing* GetGirderSpacing(pgsTypes::MemberEndType end) const;
    const CGirderSpacing* GetGirderSpacing(pgsTypes::PierFaceType pierFace) const;
 

@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 61.00   8  8.25  1     1    Sellw  *    41  0.60  270 25.52  8.15  15 59.0  4.000 14.600    4.641   -4.642   8121  0.720  0.709  0.51 -0.07  0.00 -0.01 -0.08 198.33 434.91   4.50  13.00  13.00
+ 61.00   8  8.25  1     1    Sellw  *    41  0.60  270 25.52  8.15  15 59.0  4.000 14.600    4.641   -4.643   8121  0.720  0.709  0.51 -0.07  0.00 -0.01 -0.08 198.33 434.91   4.50  13.00  13.00
 
 
 Girder design was Not Successful
@@ -53,7 +53,7 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 61.00   8  8.25  1     5    Sellw  *    45  0.60  270 25.27  6.40  19 59.0  6.200  6.800    5.110   -5.380   9076  0.734  0.832  0.40 -0.10  0.00 -0.01 -0.12 199.93 262.98   3.00  13.00  13.00
+ 61.00   8  8.25  1     5    Sellw  *    45  0.60  270 25.27  6.40  19 59.0  6.200  6.800    5.110   -5.381   9076  0.734  0.832  0.40 -0.10  0.00 -0.01 -0.12 199.93 262.98   3.00  13.00  13.00
 
 
 Girder design was Not Successful
@@ -79,7 +79,7 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 61.00   8  8.25  2     1    Sellw  *    38  0.60  270 25.66  9.97  12 59.0  4.000 14.600    4.473   -4.377   7759  0.798  0.798  0.47 -0.07  0.00 -0.00 -0.07 168.08 381.82   4.50  17.00  17.00
+ 61.00   8  8.25  2     1    Sellw  *    38  0.60  270 25.66  9.97  12 59.0  4.000 14.600    4.473   -4.378   7759  0.798  0.798  0.47 -0.07  0.00 -0.00 -0.07 168.08 381.82   4.50  17.00  17.00
 
 
 Girder design was Not Successful
@@ -308,13 +308,12 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 61.00   9  9.31  5     1    Sellw  *    26  0.60  270 12.42  3.84  10 30.0  6.600  6.600    5.120   -6.158   3701  1.014  1.074  0.36 -0.17  0.00 -0.01 -0.18 112.84 143.22   0.00   0.00   0.00
+ 61.00   9  9.31  5     1    Sellw  *    26  0.60  270 12.42  3.84  10 30.0  6.600  6.600    5.120   -6.158   3702  1.014  1.074  0.36 -0.17  0.00 -0.01 -0.18 112.84 143.22   0.00   0.00   0.00
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release) (for allowable tension limit without mild reinforcement provided).
-Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
@@ -337,7 +336,6 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Tensile stress check failed for Service I for the Casting Yard Stage (At Release) (for allowable tension limit without mild reinforcement provided).
 Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
-Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State for the Bridge Site Stage 3.
@@ -353,7 +351,7 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 61.00   9  8.83  5     5    Sellw  *    26  0.60  270 12.42  3.84  10 30.0  6.500  6.500    6.198   -7.011   3699  0.723  0.923  0.37 -0.17  0.00 -0.01 -0.18 112.43  96.42   0.00   0.00   0.00
+ 61.00   9  8.83  5     5    Sellw  *    26  0.60  270 12.42  3.84  10 30.0  6.500  6.500    6.198   -7.012   3699  0.723  0.923  0.37 -0.17  0.00 -0.01 -0.18 112.43  96.42   0.00   0.00   0.00
 
 
 Girder design was Not Successful

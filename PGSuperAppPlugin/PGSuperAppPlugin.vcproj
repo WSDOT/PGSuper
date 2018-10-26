@@ -56,7 +56,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/Zm200"
 				Optimization="0"
 				AdditionalIncludeDirectories="$(SolutionDir);$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;_ATL_NO_UUIDOF;"
@@ -154,7 +153,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/Zm200"
 				Optimization="0"
 				AdditionalIncludeDirectories="$(SolutionDir);$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;_ATL_NO_UUIDOF;"
@@ -260,7 +258,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="$(SolutionDir);$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;_xBETA_VERSION"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;_BETA_VERSION"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="PGSuperAppPlugin\StdAfx.h"
@@ -363,7 +361,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="$(SolutionDir);$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;_xBETA_VERSION"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;_BETA_VERSION"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="PGSuperAppPlugin\StdAfx.h"
@@ -467,7 +465,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="$(SolutionDir);$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;x_xBETA_VERSION"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;x_BETA_VERSION"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="PGSuperAppPlugin\StdAfx.h"
@@ -571,7 +569,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="$(SolutionDir);$(SolutionDir)\Include;$(SolutionDir)\Include\$(PlatformName);\ARP\WBFL\Include;\ARP\WBFL\Include\$(PlatformName)"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;x_xBETA_VERSION"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;x_BETA_VERSION"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="PGSuperAppPlugin\StdAfx.h"
@@ -771,10 +769,6 @@
 			</File>
 			<File
 				RelativePath="..\ConfigurePGSuperDlg.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\ConnectionComboBox.cpp"
 				>
 			</File>
 			<File
@@ -1306,10 +1300,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\SpanConnectionsPage.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\SpanDetailsDlg.cpp"
 				>
 			</File>
@@ -1545,10 +1535,6 @@
 			</File>
 			<File
 				RelativePath="..\ConfigurePGSuperDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="..\ConnectionComboBox.h"
 				>
 			</File>
 			<File
@@ -2036,10 +2022,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\SpanConnectionsPage.h"
-				>
-			</File>
-			<File
 				RelativePath="..\SpanDetailsDlg.h"
 				>
 			</File>
@@ -2126,6 +2108,38 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\CLPier_BrgAlongGdr_EndAlongGdrFromBrg.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\CLPier_BrgAlongGdr_EndAlongGdrFromPier.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\CLPier_BrgAlongGdr_EndAlongNormalFromBrg.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\CLPier_BrgAlongGdr_EndAlongNormalFromPier.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\CLPier_BrgAlongNormal_EndAlongGdrFromBrg.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\CLPier_BrgAlongNormal_EndAlongGdrFromPier.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\CLPier_BrgAlongNormal_EndAlongNormalFromBrg.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\CLPier_BrgAlongNormal_EndAlongNormalFromPier.emf"
+				>
+			</File>
+			<File
 				RelativePath="..\res\colhdr.bmp"
 				>
 			</File>
@@ -2143,6 +2157,38 @@
 			</File>
 			<File
 				RelativePath="..\res\distributed_load.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\EA_BrgAlongGdr_EndAlongGdrFromBrg.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\EA_BrgAlongGdr_EndAlongGdrFromPier.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\EA_BrgAlongGdr_EndAlongNormalFromBrg.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\EA_BrgAlongGdr_EndAlongNormalFromPier.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\EA_BrgAlongNormal_EndAlongGdrFromBrg.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\EA_BrgAlongNormal_EndAlongGdrFromPier.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\EA_BrgAlongNormal_EndAlongNormalFromBrg.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\EA_BrgAlongNormal_EndAlongNormalFromPier.emf"
 				>
 			</File>
 			<File
@@ -2234,11 +2280,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\PGSuper.ico"
+				RelativePath=".\res\PGSuper.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\PGSuper.ico"
+				RelativePath="..\res\PGSuper.ico"
 				>
 			</File>
 			<File
@@ -2279,6 +2325,38 @@
 			</File>
 			<File
 				RelativePath="..\res\Rollers.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\res\SA_BrgAlongGdr_EndAlongGdrFromBrg.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\SA_BrgAlongGdr_EndAlongGdrFromPier.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\SA_BrgAlongGdr_EndAlongNormalFromBrg.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\SA_BrgAlongGdr_EndAlongNormalFromPier.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\SA_BrgAlongNormal_EndAlongGdrFromBrg.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\SA_BrgAlongNormal_EndAlongGdrFromPier.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\SA_BrgAlongNormal_EndAlongNormalFromBrg.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\SA_BrgAlongNormal_EndAlongNormalFromPier.emf"
 				>
 			</File>
 			<File

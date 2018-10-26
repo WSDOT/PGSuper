@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -295,9 +295,8 @@ public:
    bool UpdateConcreteStrength(Float64 fcRequired,pgsTypes::Stage stage,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation StressLocation);
    bool UpdateReleaseStrength(Float64 fciRequired,ConcStrengthResultType strengthResult,pgsTypes::Stage stage,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation StressLocation);
    bool Bump500(pgsTypes::Stage stage,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation);
-   bool UpdateConcreteStrengthForShear(Float64 fcRequired,pgsTypes::Stage stage,pgsTypes::LimitState limitState);
 
-   ConcStrengthResultType ComputeRequiredConcreteStrength(Float64 fControl,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType stressType,Float64* pfc);
+   ConcStrengthResultType ComputeRequiredConcreteStrength(double fControl,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType stressType,double* pfc);
 
    // "A"
    void SetSlabOffset(pgsTypes::MemberEndType end,Float64 offset);
@@ -433,11 +432,6 @@ private:
 
       bool WasSet() const {return m_Control!=fciInitial;} // if false, minimum strength controlled
 
-      pgsDesignArtifact::ConcreteStrengthDesignState::Action ControllingAction() const
-      {
-         return m_Control==fciSetShear ? pgsDesignArtifact::ConcreteStrengthDesignState::actShear : 
-                                      pgsDesignArtifact::ConcreteStrengthDesignState::actStress;
-      }
       Float64    Strength() const {return m_CurrentState.m_Strength;}
       pgsTypes::Stage Stage() const {return m_CurrentState.m_Stage;}
       pgsTypes::StressType StressType() const {return m_CurrentState.m_StressType;}
@@ -535,10 +529,6 @@ private:
                retval = false;
             }
          }
-         else if (m_Control==fciSetShear)
-         {
-            retval = false; // never update if shear strength has previously controlled
-         }
          else
          {
             ATLASSERT(0); // bad condition??
@@ -548,15 +538,6 @@ private:
          return retval;
       }
 
-      void DoUpdateForShear(Float64 strength, pgsTypes::Stage stage,  pgsTypes::LimitState limitState)
-      {
-         ATLASSERT(m_Control!=fciSetShear); // this should only ever happen once
-         m_Control=fciSetShear;
-
-         m_CurrentState.m_Strength       = strength;
-         m_CurrentState.m_Stage          = stage;
-         m_CurrentState.m_LimitState     = limitState;
-      }
 
 private:
       bool ConditionsMatchCurrent(pgsTypes::Stage stage, pgsTypes::StressType stressType, pgsTypes::LimitState limitState, pgsTypes::StressLocation stressLocation)
@@ -602,8 +583,7 @@ private:
       {
          fciInitial,
          fciSetOnce,     // have a current value, but no decreases
-         fciSetDecrease, // have current and decreases
-         fciSetShear     // shear controlled - we cannot change strength anymore
+         fciSetDecrease  // have current and decreases
       };
 
       fciControl               m_Control; // state we are in

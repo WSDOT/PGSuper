@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,8 @@
 
 #include <string>
 
+#include <PsgLib\ConnectionLibraryEntry.h>
+
 #define LABEL_GIRDER(_g_) pgsGirderLabel::GetGirderLabel(_g_).c_str()
 #define LABEL_SPAN(_s_) (SpanIndexType)(_s_ + 1)
 #define LABEL_PIER(_p_) (PierIndexType)(_p_ + 1)
@@ -46,7 +48,7 @@ private:
    ~pgsGirderLabel(void);
 };
 
-class pgsAutoLabel
+class PGSEXTCLASS pgsAutoLabel
 {
 public:
    pgsAutoLabel() { m_bOldSetting = pgsGirderLabel::UseAlphaLabel(false); }
@@ -54,3 +56,6 @@ public:
 private:
    bool m_bOldSetting;
 };
+
+std::_tstring PGSEXTFUNC GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType type,bool bAbutment);
+std::_tstring PGSEXTFUNC GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType type,bool bAbutment);

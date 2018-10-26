@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -58,50 +58,6 @@ pgsLibraryEntryObserver::~pgsLibraryEntryObserver()
 void pgsLibraryEntryObserver::Update(ConcreteLibraryEntry* pSubject, Int32 hint)
 {
    // no action required
-   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
-   pDoc->SetModified();
-}
-
-void pgsLibraryEntryObserver::Update(ConnectionLibraryEntry* pSubject, Int32 hint)
-{
-   m_pAgent->HoldEvents();
-   if (hint & LibraryHints::EntryRenamed)
-   {
-      CPierData* pPier = m_pAgent->m_BridgeDescription.GetPier(0);
-      bool bDidIt;
-      while ( pPier )
-      {
-         if (pPier->GetConnectionLibraryEntry(pgsTypes::Back) == pSubject)
-         {
-            pPier->SetConnection( pgsTypes::Back, pSubject->GetName().c_str() );
-            bDidIt = true;
-         }
-
-         if (pPier->GetConnectionLibraryEntry(pgsTypes::Ahead) == pSubject)
-         {
-            pPier->SetConnection( pgsTypes::Ahead, pSubject->GetName().c_str() );
-            bDidIt = true;
-         }
-
-         if ( pPier->GetNextSpan() )
-            pPier = pPier->GetNextSpan()->GetNextPier();
-         else
-            pPier = NULL;
-      }
-      ATLASSERT(bDidIt);
-   }
-
-   if (hint & LibraryHints::EntryEdited)
-   {
-      ClearStatusItems();
-
-      // make sure changed library data is compatible with current project data
-      m_pAgent->DealWithConnectionLibraryChanges(true);
-
-      m_pAgent->Fire_BridgeChanged();
-   }
-   m_pAgent->FirePendingEvents();
-
    GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
    pDoc->SetModified();
 }

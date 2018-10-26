@@ -841,7 +841,7 @@
         <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\GenerateStrands.htm">
       </object>
       <li><object type="text/sitemap">
-        <param name="Name" value="Girder Connection Dialog">
+        <param name="Name" value="Connection Dialog">
         <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibGirder_Connection_Dialog.htm">
       </object>
       <li><object type="text/sitemap">

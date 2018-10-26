@@ -120,8 +120,6 @@
     <param name="Local" value="User's Guide\Bridge_Model_Editing\Understanding_the_Bridge_View.htm">
     <param name="Name" value="Defining the Superstructure">
     <param name="Local" value="User's Guide\Bridge_Model_Editing\Defining_the_Superstructure.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="Horizontal Alignment">
     <param name="Local" value="Bridge Description\Alignment.htm">
     <param name="Name" value="Defining the Roadway">
@@ -237,8 +235,6 @@
     <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibDiaphragm_Layout_Dialog.htm">
     <param name="Name" value="The Toolbars">
     <param name="Local" value="User's Guide\Introduction\The_Toolbar.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="Live Load Distribution Factors">
     <param name="Local" value="Theoretical Manual\Live_Load_Distribution_Factors.htm">
     <param name="Name" value="User Guide Introduction">
@@ -632,8 +628,6 @@
     <param name="Local" value="Theoretical Manual\Fabrication_Optimization.htm">
     <param name="Name" value="Introduction to Projects">
     <param name="Local" value="User's Guide\Projects\Introduction_Projects.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="Live Load Distribution Factors">
     <param name="Local" value="Theoretical Manual\Live_Load_Distribution_Factors.htm">
     <param name="Name" value="Introduction to Project Templates">
@@ -722,8 +716,6 @@
     <param name="Local" value="Bridge Description\Cross_Section.htm">
     <param name="Name" value="Design Complete">
     <param name="Local" value="Dialogs\Design_Complete.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="Alignment">
     <param name="Local" value="Bridge Description\Alignment.htm">
     <param name="Name" value="Deck Rebar">
@@ -1291,8 +1283,6 @@
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="Connection Type">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="Defining the Piers">
     <param name="Local" value="User's Guide\Bridge_Model_Editing\Defining_the_Piers.htm">
     <param name="Name" value="Editing the Bridge Model">
@@ -2431,8 +2421,6 @@
     <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Bridge_Site_1_Tab.htm">
     <param name="Name" value="Bridges Composed of Simple Spans Made Continuous">
     <param name="Local" value="Theoretical Manual\Continuity.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="Live Load Distribution Factors">
     <param name="Local" value="Theoretical Manual\Live_Load_Distribution_Factors.htm">
     <param name="Name" value="Introduction">
@@ -2879,8 +2867,6 @@
     <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibDiaphragm_Layout_Dialog.htm">
     <param name="Name" value="Edit User Defined Loads">
     <param name="Local" value="Dialogs\Edit_User_Defined_Loads.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="Edit Distributed Load">
     <param name="Local" value="Dialogs\Edit_Distributed_Load.htm">
     <param name="Name" value="Introduction">
@@ -3043,8 +3029,6 @@
     <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibDiaphragm_Layout_Dialog.htm">
     <param name="Name" value="Introduction to Projects">
     <param name="Local" value="User's Guide\Projects\Introduction_Projects.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="Edit Distributed Load">
     <param name="Local" value="Dialogs\Edit_Distributed_Load.htm">
     <param name="Name" value="Introduction">
@@ -4208,8 +4192,6 @@
     <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibDiaphragm_Layout_Dialog.htm">
     <param name="Name" value="Fabrication Optimization">
     <param name="Local" value="Theoretical Manual\Fabrication_Optimization.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="Live Load Distribution Factors">
     <param name="Local" value="Theoretical Manual\Live_Load_Distribution_Factors.htm">
     <param name="Name" value="User Guide Introduction">
@@ -4948,8 +4930,6 @@
     <param name="Local" value="User's Guide\Bridge_Model_Editing\Defining_the_Superstructure.htm">
     <param name="Name" value="Debonding">
     <param name="Local" value="Girder Editing Wizard\Debonding.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="Edit Distributed Load">
     <param name="Local" value="Dialogs\Edit_Distributed_Load.htm">
     <param name="Name" value="Introduction">
@@ -5030,8 +5010,6 @@
     <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Harped Strands Tab.htm">
     <param name="Name" value="Diaphragm Layout Dialog">
     <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibDiaphragm_Layout_Dialog.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="Live Load Distribution Factors">
     <param name="Local" value="Theoretical Manual\Live_Load_Distribution_Factors.htm">
     <param name="Name" value="Design Capabilities">
@@ -5460,8 +5438,6 @@
     <param name="Local" value="Dialogs\Edit_User_Defined_Loads.htm">
     <param name="Name" value="Fabrication Optimization">
     <param name="Local" value="Theoretical Manual\Fabrication_Optimization.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="Design Capabilities">
     <param name="Local" value="User's Guide\Design\Design_Capabilities.htm">
     <param name="Name" value="User Guide Introduction">
@@ -6281,8 +6257,6 @@
     <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibCasting_Yard_Tab.htm">
     <param name="Name" value="Defining the Piers">
     <param name="Local" value="User's Guide\Bridge_Model_Editing\Defining_the_Piers.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="Horizontal Alignment">
     <param name="Local" value="Bridge Description\Alignment.htm">
     <param name="Name" value="Introduction">
@@ -6429,8 +6403,6 @@
     <param name="Local" value="Dialogs\Edit_User_Defined_Loads.htm">
     <param name="Name" value="Introduction to Projects">
     <param name="Local" value="User's Guide\Projects\Introduction_Projects.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="Introduction to Project Templates">
     <param name="Local" value="User's Guide\Project_Templates\Introduction_to_Project_Templates.htm">
     <param name="Name" value="Introduction To Project Templates">
@@ -6505,8 +6477,6 @@
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="Normal">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="Defining the Piers">
     <param name="Local" value="User's Guide\Bridge_Model_Editing\Defining_the_Piers.htm">
     <param name="Name" value="Deflections Due To Creep">
@@ -6749,8 +6719,6 @@
     <param name="Name" value="Pavement Seat">
     <param name="Name" value="Introduction">
     <param name="Local" value="Tutorial\GeneralFeatures\Introduction_Tutorial.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="PCI">
@@ -6902,8 +6870,6 @@
     <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Harped Strands Tab.htm">
     <param name="Name" value="Diaphragm Layout Dialog">
     <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibDiaphragm_Layout_Dialog.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="Wrapping Up">
     <param name="Local" value="Tutorial\GeneralFeatures\Wrapping_Up.htm">
     <param name="Name" value="Introduction To Project Templates">
@@ -7099,8 +7065,6 @@
     <param name="Local" value="Program Settings\File_Locations.htm">
     <param name="Name" value="PGSuper Library Dialogs">
     <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibPGSuper_Library_Dialogs.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="Transverse Reinforcement">
     <param name="Local" value="Girder Editing Wizard\Transverse_Reinforcement.htm">
   </object>
@@ -7557,8 +7521,6 @@
     <param name="Local" value="User's Guide\Bridge_Model_Editing\Defining_the_Piers.htm">
     <param name="Name" value="Lifting and Shipping">
     <param name="Local" value="Girder Editing Wizard\Lifting_and_Shipping.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="Introduction to Working with Libraries">
     <param name="Local" value="User's Guide\Working_With_Libraries\Introduction_to_Working_with_Libraries.htm">
     <param name="Name" value="Design Criteria">
@@ -8076,8 +8038,6 @@
     <param name="Local" value="User's Guide\AutoCalc_Mode\Using_AutoCalc_Mode.htm">
     <param name="Name" value="Debonding">
     <param name="Local" value="Girder Editing Wizard\Debonding.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="User Guide Introduction">
     <param name="Local" value="User's Guide\Introduction\Introduction_User_Guide.htm">
     <param name="Name" value="Edit Distributed Load">
@@ -8127,8 +8087,6 @@
     <param name="Local" value="User's Guide\Bridge_Model_Editing\Defining_the_Piers.htm">
     <param name="Name" value="Design Tab">
     <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Design_Tab.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="Defining the Deck Geometry and Materials">
     <param name="Local" value="User's Guide\Bridge_Model_Editing\Defining_the_Deck_Geometry_and_Materials.htm">
     <param name="Name" value="Alignment Description Dialog">
@@ -8850,8 +8808,6 @@
     <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibDiaphragm_Layout_Dialog.htm">
     <param name="Name" value="Fabrication Optimization">
     <param name="Local" value="Theoretical Manual\Fabrication_Optimization.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="Design Capabilities">
     <param name="Local" value="User's Guide\Design\Design_Capabilities.htm">
     <param name="Name" value="Edit Distributed Load">
@@ -9048,8 +9004,6 @@
     <param name="Local" value="User's Guide\Bridge_Model_Editing\Understanding_the_Bridge_View.htm">
     <param name="Name" value="Editing the Bridge Model">
     <param name="Local" value="Tutorial\GeneralFeatures\Editing_the_Bridge_Model.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="Defining the Roadway">
     <param name="Local" value="User's Guide\Bridge_Model_Editing\Defining_the_Roadway.htm">
     <param name="Name" value="Profile">
@@ -9453,8 +9407,6 @@
     <param name="Local" value="Bridge Description\Deck_Details.htm">
     <param name="Name" value="Defining the Piers">
     <param name="Local" value="User's Guide\Bridge_Model_Editing\Defining_the_Piers.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
   </object>
   <ul>
     <li><object type="text/sitemap">
@@ -10040,8 +9992,6 @@
     <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Harped Strands Tab.htm">
     <param name="Name" value="Diaphragm Layout Dialog">
     <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibDiaphragm_Layout_Dialog.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="User Guide Introduction">
     <param name="Local" value="User's Guide\Introduction\Introduction_User_Guide.htm">
     <param name="Name" value="Edit Distributed Load">
@@ -11092,8 +11042,6 @@
     <param name="Local" value="Theoretical Manual\Fabrication_Optimization.htm">
     <param name="Name" value="Strand Stresses Tab">
     <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Strand_Stresses_Tab.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="User Guide Introduction">
     <param name="Local" value="User's Guide\Introduction\Introduction_User_Guide.htm">
     <param name="Name" value="Bridge View Section">
@@ -13005,8 +12953,6 @@
     <param name="Local" value="Girder Editing Wizard\Longitudinal_Reinforcement.htm">
     <param name="Name" value="Defining the Piers">
     <param name="Local" value="User's Guide\Bridge_Model_Editing\Defining_the_Piers.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
     <param name="Name" value="Design Capabilities">
     <param name="Local" value="User's Guide\Design\Design_Capabilities.htm">
   </object>
@@ -13981,8 +13927,6 @@
     <param name="Local" value="User's Guide\Bridge_Model_Editing\Defining_the_Piers.htm">
     <param name="Name" value="Bridges Composed of Simple Spans Made Continuous">
     <param name="Local" value="Theoretical Manual\Continuity.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="Ctrl key">
@@ -15093,8 +15037,6 @@
     <param name="Name" value="Structural Analysis">
     <param name="Name" value="Defining the Piers">
     <param name="Local" value="User's Guide\Bridge_Model_Editing\Defining_the_Piers.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="Integral">
@@ -15110,8 +15052,6 @@
     <param name="Name" value="Alignment Offset">
     <param name="Name" value="Defining the Piers">
     <param name="Local" value="User's Guide\Bridge_Model_Editing\Defining_the_Piers.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="Piers">
@@ -15119,8 +15059,6 @@
     <param name="Local" value="User's Guide\Bridge_Model_Editing\Defining_the_Piers.htm">
     <param name="Name" value="Editing the Bridge Model">
     <param name="Local" value="Tutorial\GeneralFeatures\Editing_the_Bridge_Model.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
   </object>
   <ul>
     <li><object type="text/sitemap">
@@ -15140,8 +15078,6 @@
     <param name="Name" value="Hinged">
     <param name="Name" value="Defining the Piers">
     <param name="Local" value="User's Guide\Bridge_Model_Editing\Defining_the_Piers.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="Counterclockwise">
@@ -15152,8 +15088,6 @@
     <param name="Name" value="Structural">
     <param name="Name" value="Defining the Piers">
     <param name="Local" value="User's Guide\Bridge_Model_Editing\Defining_the_Piers.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="Girder/pier">
@@ -15812,14 +15746,10 @@
     <param name="Name" value="Layout">
     <param name="Name" value="Defining the Superstructure">
     <param name="Local" value="User's Guide\Bridge_Model_Editing\Defining_the_Superstructure.htm">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
   </object>
   <ul>
     <li><object type="text/sitemap">
       <param name="Name" value="present">
-      <param name="Name" value="Piers">
-      <param name="Local" value="Bridge Description\Piers.htm">
     </object>
     </ul>
   <li><object type="text/sitemap">
@@ -16421,60 +16351,38 @@
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="Present">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
   </object>
   <ul>
     <li><object type="text/sitemap">
       <param name="Name" value="Layout">
-      <param name="Name" value="Piers">
-      <param name="Local" value="Bridge Description\Piers.htm">
     </object>
     </ul>
   <li><object type="text/sitemap">
     <param name="Name" value="Integral Before">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="Fixity">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="Continuous Before">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="Connection Boundary Conditions">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="Remove Pier">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="After Deck Placement">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="Add Pier">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="Connection Geometry">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="Connection button">
-    <param name="Name" value="Piers">
-    <param name="Local" value="Bridge Description\Piers.htm">
   </object>
   <li><object type="text/sitemap">
     <param name="Name" value="Live Load Distribution">

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -118,7 +118,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   Float64 fci_form_stripping_without_tts = (bUSUnits ? CeilOff(details.Fci_FormStripping_WithoutTTS, ::ConvertToSysUnits(100,unitMeasure::PSI)) 
+   double fci_form_stripping_without_tts = (bUSUnits ? CeilOff(details.Fci_FormStripping_WithoutTTS, ::ConvertToSysUnits(100,unitMeasure::PSI)) 
                                                      : CeilOff(details.Fci_FormStripping_WithoutTTS, ::ConvertToSysUnits(6,unitMeasure::MPa)) );
    
    if ( 0 <  pStrandGeom->GetMaxStrands(span,gdr,pgsTypes::Temporary) )
@@ -167,7 +167,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
          *pPara << _T("Number of Temporary Strands = ") << details.Nt << rptNewLine;
          *pPara << _T("Jacking Force, ") << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue(details.Pjack) << rptNewLine;
 
-         Float64 fci[4];
+         double fci[4];
          fci[NO_TTS]          = (bUSUnits ? CeilOff(details.Fci[NO_TTS],          ::ConvertToSysUnits(100,unitMeasure::PSI)) 
                                           : CeilOff(details.Fci[NO_TTS],          ::ConvertToSysUnits(6,  unitMeasure::MPa)));
          fci[PS_TTS]          = (bUSUnits ? CeilOff(details.Fci[PS_TTS],          ::ConvertToSysUnits(100,unitMeasure::PSI)) 
@@ -281,7 +281,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
 //      *pPara << _T("Shipping Strength") << rptNewLine;
 //      pPara = new rptParagraph;
 //      *pChapter << pPara;
-//      Float64 fc = (bUSUnits ? CeilOff(details.Fc, ::ConvertToSysUnits(100,unitMeasure::PSI)) 
+//      double fc = (bUSUnits ? CeilOff(details.Fc, ::ConvertToSysUnits(100,unitMeasure::PSI)) 
 //                            : CeilOff(details.Fc, ::ConvertToSysUnits(6,  unitMeasure::MPa)));
 //      *pPara << RPT_FC << _T(" = ") << stress.SetValue(details.Fc);
 //       *pPara << _T(" ") << symbol(RIGHT_DOUBLE_ARROW) << _T(" ") << stress.SetValue(fc) << rptNewLine;

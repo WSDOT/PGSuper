@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -75,12 +75,9 @@ public:
 	//}}AFX_VIRTUAL
 
 public:
-   // array index is pgsTypes::PierFaceType constant
-   // pgsTypes::Ahead = start of span
-   // pgsTypes::Back  = end of span
-   bool m_bUseSameSpacingAtBothEnds;
+   // array index is pgsTypes::MemberEndType constant
    GirderIndexType m_nGirders;
-   long m_GirderSpacingMeasure[2];
+   DWORD m_GirderSpacingMeasure[2];
 
    CGirderNameGrid    m_GirderNameGrid;
    CGirderSpacingGrid m_SpacingGrid[2];
@@ -102,7 +99,7 @@ public:
 
    void Init(const CSpanData* pSpan);
 
-   bool AllowConnectionChange(pgsTypes::PierFaceType side, const CString& conectionName);
+   bool AllowConnectionChange(pgsTypes::MemberEndType end, const CString& conectionName);
 // Implementation
 protected:
 
@@ -113,7 +110,9 @@ protected:
 	//{{AFX_MSG(CSpanGirderLayoutPage)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnNumGirdersChanged(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnSameGirderSpacing();
+	//afx_msg void OnSameGirderSpacing();
+   afx_msg void OnCopySpacingToStart();
+   afx_msg void OnCopySpacingToEnd();
 	afx_msg void OnPrevPierGirderSpacingMeasureChanged();
 	afx_msg void OnNextPierGirderSpacingMeasureChanged();
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
@@ -129,17 +128,14 @@ protected:
    void AddGirders(GirderIndexType nGirders);
    void RemoveGirders(GirderIndexType nGirders);
 
-   void FillGirderSpacingMeasurementComboBox(int nIDC, ConnectionLibraryEntry::BearingOffsetMeasurementType bearingMeasure);
-   void FillRefGirderOffsetTypeComboBox(pgsTypes::PierFaceType pierFace);
-   void FillRefGirderComboBox(pgsTypes::PierFaceType pierFace);
-
-   void CacheEndSpacing();
-   void RestoreEndSpacing();
+   void FillGirderSpacingMeasurementComboBox(int nIDC, pgsTypes::MemberEndType end, ConnectionLibraryEntry::BearingOffsetMeasurementType bearingMeasure);
+   void FillRefGirderOffsetTypeComboBox(pgsTypes::MemberEndType end);
+   void FillRefGirderComboBox(pgsTypes::MemberEndType end);
 
    GirderIndexType GetMinGirderCount();
    void UpdateGirderSpacingState();
 
-   long m_CacheGirderSpacingMeasure[2];
+   DWORD m_CacheGirderSpacingMeasure[2];
    CGirderSpacingGridData m_GirderSpacingCache[2];
 
    GirderIndexType m_CacheRefGirderIdx[2];
@@ -152,6 +148,8 @@ protected:
    void UpdateGirderTypeHyperLinkText();
    void UpdateGirderSpacingHyperLinkText();
    void UpdateSlabOffsetHyperLinkText();
+
+   bool IsAbutment(pgsTypes::MemberEndType end);
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -488,10 +488,10 @@ public:
    void SetAlterantiveTensileStressAsMax(Float64 AsMax);
    Float64 GetAlterantiveTensileStressAsMax() const;
 
-   void GetRequiredConcreteStrength(Float64 *pfcCompression,Float64 *pfcTension,bool* pMinRebarRequired,Float64 fcMax,bool bDesign) const;
-   void SetAllowableTensileConcreteStressParameters(Float64 f,bool bMax,Float64 fmax);
-   void SetAllowableCompressionFactor(Float64 c);
-   void SetAlternativeTensileConcreteStressFactor(Float64 f);
+   void GetRequiredConcreteStrength(double *pfcCompression,double *pfcTension,bool* pMinRebarRequired,double fcMax,bool bDesign) const;
+   void SetAllowableTensileConcreteStressParameters(double f,bool bMax,double fmax);
+   void SetAllowableCompressionFactor(double c);
+   void SetAlternativeTensileConcreteStressFactor(double f);
 
    // GROUP: INQUIRY
 

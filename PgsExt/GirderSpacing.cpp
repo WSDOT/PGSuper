@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,7 +40,7 @@ CLASS
 CGirderSpacingData::CGirderSpacingData()
 {
    m_MeasurementType     = pgsTypes::NormalToItem;
-   m_MeasurementLocation = pgsTypes::AtCenterlinePier;
+   m_MeasurementLocation = pgsTypes::AtPierLine;
    
    m_RefGirderIdx = INVALID_INDEX; // reference girder is the center of the girder group
    m_RefGirderOffsetType = pgsTypes::omtBridge;
@@ -114,7 +114,7 @@ HRESULT CGirderSpacingData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       hr = pStrLoad->BeginUnit(_T("GirderSpacing"));
 
-      Float64 version;
+      double version;
       hr = pStrLoad->get_Version(&version);
 
 
@@ -127,7 +127,7 @@ HRESULT CGirderSpacingData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       if ( 1 < m_MeasurementLocation )
       {
          ATLASSERT(false); // bad data read from file... setting it to a default value
-         m_MeasurementLocation = pgsTypes::AtCenterlinePier;
+         m_MeasurementLocation = pgsTypes::AtPierLine;
       }
 
       var.vt = VT_I4;
@@ -163,13 +163,13 @@ HRESULT CGirderSpacingData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       {
          hr = pStrLoad->BeginUnit(_T("SpacingGroup"));
 
-         Float64 grp_version;
+         double grp_version;
          hr = pStrLoad->get_Version(&grp_version);
          ATLASSERT(grp_version == 1);
 
          var.vt = VT_R8;
          hr = pStrLoad->get_Property(_T("Spacing"),&var);
-         Float64 spacing = var.dblVal;
+         double spacing = var.dblVal;
 
          var.vt = VT_I2;
          hr = pStrLoad->get_Property(_T("FirstGirderIndex"),&var);
@@ -265,14 +265,14 @@ void CGirderSpacingData::MakeAssignment(const CGirderSpacingData& rOther)
 void CGirderSpacingData::AssertValid() const
 {
    _ASSERT( m_MeasurementType     == pgsTypes::AlongItem        || m_MeasurementType     == pgsTypes::NormalToItem );
-   _ASSERT( m_MeasurementLocation == pgsTypes::AtCenterlinePier || m_MeasurementLocation == pgsTypes::AtCenterlineBearing );
+   _ASSERT( m_MeasurementLocation == pgsTypes::AtPierLine || m_MeasurementLocation == pgsTypes::AtCenterlineBearing );
 }
 #endif
 
-void CGirderSpacingData::SetGirderSpacing(GroupIndexType grpIdx,Float64 s)
+void CGirderSpacingData::SetGirderSpacing(GroupIndexType grpIdx,double s)
 {
    GirderIndexType firstGdrIdx, lastGdrIdx;
-   Float64 spacing;
+   double spacing;
    GetSpacingGroup(grpIdx,&firstGdrIdx,&lastGdrIdx,&spacing);
 
    SpacingIndexType firstSpaceIdx = firstGdrIdx;
@@ -301,7 +301,7 @@ pgsTypes::MeasurementType CGirderSpacingData::GetMeasurementType() const
 
 void CGirderSpacingData::SetMeasurementLocation(pgsTypes::MeasurementLocation ml)
 {
-   _ASSERT( ml == pgsTypes::AtCenterlinePier || ml == pgsTypes::AtCenterlineBearing );
+   _ASSERT( ml == pgsTypes::AtPierLine || ml == pgsTypes::AtCenterlineBearing );
    m_MeasurementLocation = ml;
    IS_VALID;
 }
@@ -321,12 +321,12 @@ GirderIndexType CGirderSpacingData::GetRefGirder() const
    return m_RefGirderIdx;
 }
 
-void CGirderSpacingData::SetRefGirderOffset(Float64 offset)
+void CGirderSpacingData::SetRefGirderOffset(double offset)
 {
    m_RefGirderOffset = offset;
 }
 
-Float64 CGirderSpacingData::GetRefGirderOffset() const
+double CGirderSpacingData::GetRefGirderOffset() const
 {
    return m_RefGirderOffset;
 }
@@ -346,7 +346,7 @@ GroupIndexType CGirderSpacingData::GetSpacingGroupCount() const
    return m_SpacingGroups.size();
 }
 
-void CGirderSpacingData::GetSpacingGroup(GroupIndexType groupIdx,GirderIndexType* pFirstGdrIdx,GirderIndexType* pLastGdrIdx,Float64* pSpacing) const
+void CGirderSpacingData::GetSpacingGroup(GroupIndexType groupIdx,GirderIndexType* pFirstGdrIdx,GirderIndexType* pLastGdrIdx,double* pSpacing) const
 {
    _ASSERT( groupIdx < (SpacingIndexType)m_SpacingGroups.size() );
    SpacingGroup group = m_SpacingGroups[groupIdx];
@@ -380,7 +380,7 @@ void CGirderSpacingData::ExpandAll()
 void CGirderSpacingData::Expand(GroupIndexType groupIdx)
 {
    GirderIndexType firstGdrIdx, lastGdrIdx;
-   Float64 spacing;
+   double spacing;
    GetSpacingGroup(groupIdx,&firstGdrIdx,&lastGdrIdx,&spacing);
 
    if ( (lastGdrIdx - firstGdrIdx) <= 1 )
@@ -403,7 +403,7 @@ void CGirderSpacingData::JoinAll(SpacingIndexType spacingKey)
    if ( m_GirderSpacing.size() == 0 )
       return;
 
-   Float64 spacing = m_GirderSpacing[spacingKey];
+   double spacing = m_GirderSpacing[spacingKey];
    SpacingGroup firstGroup = m_SpacingGroups.front();
    SpacingGroup lastGroup  = m_SpacingGroups.back();
 
@@ -414,7 +414,7 @@ void CGirderSpacingData::JoinAll(SpacingIndexType spacingKey)
    m_SpacingGroups.clear();
    m_SpacingGroups.push_back(joinedGroup);
 
-   std::vector<Float64>::iterator iter;
+   std::vector<double>::iterator iter;
    for ( iter = m_GirderSpacing.begin(); iter != m_GirderSpacing.end(); iter++ )
    {
       (*iter) = spacing;
@@ -429,7 +429,7 @@ void CGirderSpacingData::Join(GirderIndexType firstGdrIdx,GirderIndexType lastGd
    _ASSERT( firstGdrIdx <= spacingKey && spacingKey <= lastGdrIdx );
 
    // get the girder spacing for the group
-   Float64 spacing = m_GirderSpacing[spacingKey];
+   double spacing = m_GirderSpacing[spacingKey];
 
    // assign the spacing to the group
    SpacingIndexType firstSpaceIdx = SpacingIndexType(firstGdrIdx);
@@ -493,7 +493,7 @@ SpacingIndexType CGirderSpacingData::GetSpacingCount() const
    return m_GirderSpacing.size();
 }
 
-Float64 CGirderSpacingData::GetGirderSpacing(SpacingIndexType spacingIdx) const
+double CGirderSpacingData::GetGirderSpacing(SpacingIndexType spacingIdx) const
 {
    _ASSERT( 0 <= spacingIdx && spacingIdx < (SpacingIndexType)m_GirderSpacing.size() );
    return m_GirderSpacing[spacingIdx];
@@ -522,7 +522,7 @@ void CGirderSpacingData::AddGirders(GirderIndexType nGirders)
    }
    else
    {
-      Float64 spacing = m_GirderSpacing.back();
+      double spacing = m_GirderSpacing.back();
       m_GirderSpacing.insert(m_GirderSpacing.end(),nGirders, spacing );
 
       SpacingGroup& group = m_SpacingGroups.back();
@@ -666,7 +666,7 @@ GirderIndexType CGirderSpacing::GetRefGirder() const
    }
 }
 
-Float64 CGirderSpacing::GetRefGirderOffset() const
+double CGirderSpacing::GetRefGirderOffset() const
 {
    if ( m_pSpan && IsBridgeSpacing(m_pSpan->GetBridgeDescription()->GetGirderSpacingType()) )
    {
@@ -690,7 +690,7 @@ pgsTypes::OffsetMeasurementType CGirderSpacing::GetRefGirderOffsetType() const
    }
 }
 
-void CGirderSpacing::SetGirderSpacing(GroupIndexType grpIdx,Float64 s)
+void CGirderSpacing::SetGirderSpacing(GroupIndexType grpIdx,double s)
 {
    if ( m_pSpan && m_pSpan->GetGirderCount() < 2 )
       return;
@@ -710,7 +710,7 @@ GroupIndexType CGirderSpacing::GetSpacingGroupCount() const
    }
 }
 
-void CGirderSpacing::GetSpacingGroup(GroupIndexType groupIdx,GirderIndexType* pFirstGdrIdx,GirderIndexType* pLastGdrIdx,Float64* pSpacing) const
+void CGirderSpacing::GetSpacingGroup(GroupIndexType groupIdx,GirderIndexType* pFirstGdrIdx,GirderIndexType* pLastGdrIdx,double* pSpacing) const
 {
    if ( m_pSpan && IsBridgeSpacing(m_pSpan->GetBridgeDescription()->GetGirderSpacingType()) )
    {
@@ -744,7 +744,7 @@ SpacingIndexType CGirderSpacing::GetSpacingCount() const
    }
 }
 
-Float64 CGirderSpacing::GetGirderSpacing(SpacingIndexType spacingIdx) const
+double CGirderSpacing::GetGirderSpacing(SpacingIndexType spacingIdx) const
 {
    if ( m_pSpan && IsBridgeSpacing(m_pSpan->GetBridgeDescription()->GetGirderSpacingType()) )
    {

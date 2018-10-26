@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -139,10 +139,10 @@ void CBulbTeeFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType sta
    CComPtr<IBulbTee> beam;
    gdrsection->get_Beam(&beam);
 
-   Float64 c1;
-   Float64 d1,d2,d3,d4,d5,d6,d7,d8;
-   Float64 w1,w2,w3,w4,wmin,wmax;
-   Float64 t1,t2;
+   double c1;
+   double d1,d2,d3,d4,d5,d6,d7,d8;
+   double w1,w2,w3,w4,wmin,wmax;
+   double t1,t2;
    GetDimensions(dimensions,c1,d1,d2,d3,d4,d5,d6,d7,d8,w1,w2,w3,w4,wmin,wmax,t1,t2);
    beam->put_W1(w1);
    beam->put_W2(w2);
@@ -163,7 +163,7 @@ void CBulbTeeFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType sta
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       ATLASSERT(pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsConstantAdjacent);
-      Float64 spacing = pBridgeDesc->GetGirderSpacing();;
+      double spacing = pBridgeDesc->GetGirderSpacing();;
 
       // if this is a fixed width section, then set the spacing equal to the width
       if ( IsEqual(wmin,wmax) )
@@ -191,10 +191,10 @@ void CBulbTeeFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType sta
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
 
-   Float64 c1;
-   Float64 d1,d2,d3,d4,d5,d6,d7,d8;
-   Float64 w1,w2,w3,w4,wmin,wmax;
-   Float64 t1,t2;
+   double c1;
+   double d1,d2,d3,d4,d5,d6,d7,d8;
+   double w1,w2,w3,w4,wmin,wmax;
+   double t1,t2;
    GetDimensions(dimensions,c1,d1,d2,d3,d4,d5,d6,d7,d8,w1,w2,w3,w4,wmin,wmax,t1,t2);
 
    Float64 height = d1 + d2 + d3 + d4 + d5 + d6 + d7;
@@ -278,8 +278,8 @@ void CBulbTeeFactory::LayoutGirderLine(IBroker* pBroker,StatusGroupIDType status
 
    // Beam materials
    GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
-   Float64 Ecgdr = pMaterial->GetEcGdr(spanIdx,gdrIdx);
-   Float64 density = pMaterial->GetStrDensityGdr(spanIdx,gdrIdx);
+   double Ecgdr = pMaterial->GetEcGdr(spanIdx,gdrIdx);
+   double density = pMaterial->GetStrDensityGdr(spanIdx,gdrIdx);
 
    CComPtr<IMaterial> material;
    material.CoCreateInstance(CLSID_Material);
@@ -394,9 +394,9 @@ void CBulbTeeFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType st
 }
 
 void CBulbTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
-                                  IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
-                                  IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
-                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
+                                  IBeamFactory::BeamFace endTopFace, double endTopLimit, IBeamFactory::BeamFace endBottomFace, double endBottomLimit, 
+                                  IBeamFactory::BeamFace hpTopFace, double hpTopLimit, IBeamFactory::BeamFace hpBottomFace, double hpBottomLimit, 
+                                  double endIncrement, double hpIncrement, IStrandMover** strandMover)
 {
    HRESULT hr = S_OK;
 
@@ -411,14 +411,14 @@ void CBulbTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensio
    hr = harp_rect.CoCreateInstance(CLSID_Rect);
    ATLASSERT (SUCCEEDED(hr));
 
-   Float64 c1;
-   Float64 d1,d2,d3,d4,d5,d6,d7,d8;
-   Float64 w1,w2,w3,w4,wmin,wmax;
-   Float64 t1,t2;
+   double c1;
+   double d1,d2,d3,d4,d5,d6,d7,d8;
+   double w1,w2,w3,w4,wmin,wmax;
+   double t1,t2;
    GetDimensions(dimensions,c1,d1,d2,d3,d4,d5,d6,d7,d8,w1,w2,w3,w4,wmin,wmax,t1,t2);
 
-   Float64 width = min(t1,t2);
-   Float64 depth = d1 + d2 + d3 + d4 + d5 + d6 + d7;
+   double width = min(t1,t2);
+   double depth = d1 + d2 + d3 + d4 + d5 + d6 + d7;
 
    harp_rect->put_Width(width);
    harp_rect->put_Height(depth);
@@ -437,10 +437,10 @@ void CBulbTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensio
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
-   Float64 hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
-   Float64 endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
-   Float64 endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
+   double hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
+   double hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
+   double endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
+   double endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(depth, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -454,7 +454,7 @@ std::vector<std::_tstring> CBulbTeeFactory::GetDimensionNames()
    return m_DimNames;
 }
 
-std::vector<Float64> CBulbTeeFactory::GetDefaultDimensions()
+std::vector<double> CBulbTeeFactory::GetDefaultDimensions()
 {
    return m_DefaultDims;
 }
@@ -466,10 +466,10 @@ std::vector<const unitLength*> CBulbTeeFactory::GetDimensionUnits(bool bSIUnits)
 
 bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg)
 {
-   Float64 c1;
-   Float64 d1,d2,d3,d4,d5,d6,d7,d8;
-   Float64 w1,w2,w3,w4,wmin,wmax;
-   Float64 t1,t2;
+   double c1;
+   double d1,d2,d3,d4,d5,d6,d7,d8;
+   double w1,w2,w3,w4,wmin,wmax;
+   double t1,t2;
    GetDimensions(dimensions,c1,d1,d2,d3,d4,d5,d6,d7,d8,w1,w2,w3,w4,wmin,wmax,t1,t2);
 
 // 0  D1  
@@ -634,13 +634,13 @@ bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
       return false;
    }
 
-   Float64 inp_toler = ::ConvertToSysUnits(2.0, unitMeasure::Millimeter);
+   double inp_toler = ::ConvertToSysUnits(2.0, unitMeasure::Millimeter);
 
-   Float64 min_topflange = t2+2.0*(w3+w4);
+   double min_topflange = t2+2.0*(w3+w4);
    if ( wmin + inp_toler < min_topflange )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][15];
-      Float64 mf_u = ::ConvertFromSysUnits(min_topflange,*pUnit);
+      double mf_u = ::ConvertFromSysUnits(min_topflange,*pUnit);
 
       std::_tostringstream os;
       os << _T("Wmin must be greater than or equal to bottom flange width = ")<<mf_u<< pUnit->UnitTag() <<_T(" = T2 + 2.0*(W3+W4)") << std::ends;
@@ -652,7 +652,7 @@ bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
    if ( wmin + inp_toler < min_topflange  )
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][15];
-      Float64 mf_u = ::ConvertFromSysUnits(min_topflange,*pUnit);
+      double mf_u = ::ConvertFromSysUnits(min_topflange,*pUnit);
 
       std::_tostringstream os;
       os << _T("Wmin must be greater than or equal to T1 + 2.0*(W1 + W2) = ")<<mf_u<< pUnit->UnitTag() <<_T(" = ") << std::ends;
@@ -937,10 +937,10 @@ HICON  CBulbTeeFactory::GetIcon()
    return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_BULBTEE) );
 }
 
-void CBulbTeeFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions, Float64& c1,
-                                  Float64& d1,Float64& d2,Float64& d3,Float64& d4,Float64& d5,Float64& d6,Float64& d7,Float64& d8,
-                                  Float64& w1,Float64& w2,Float64& w3,Float64& w4,Float64& wmin,Float64& wmax,
-                                  Float64& t1,Float64& t2)
+void CBulbTeeFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions, double& c1,
+                                  double& d1,double& d2,double& d3,double& d4,double& d5,double& d6,double& d7,double& d8,
+                                  double& w1,double& w2,double& w3,double& w4,double& wmin,double& wmax,
+                                  double& t1,double& t2)
 {
    c1 = GetDimension(dimensions,_T("C1"));
    d1 = GetDimension(dimensions,_T("D1"));
@@ -961,7 +961,7 @@ void CBulbTeeFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions, 
    t2 = GetDimension(dimensions,_T("T2"));
 }
 
-Float64 CBulbTeeFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
+double CBulbTeeFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
 {
    Dimensions::const_iterator iter;
    for ( iter = dimensions.begin(); iter != dimensions.end(); iter++ )
@@ -1001,13 +1001,13 @@ pgsTypes::SupportedBeamSpacings CBulbTeeFactory::GetSupportedBeamSpacings()
 }
 
 void CBulbTeeFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, 
-                                               pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing)
+                                               pgsTypes::SupportedBeamSpacing sbs, double* minSpacing, double* maxSpacing)
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
 
-   Float64 Wmax = GetDimension(dimensions,_T("Wmax"));
-   Float64 Wmin = GetDimension(dimensions,_T("Wmin"));
+   double Wmax = GetDimension(dimensions,_T("Wmax"));
+   double Wmin = GetDimension(dimensions,_T("Wmin"));
 
    if (sdt == pgsTypes::sdtCompositeOverlay || sdt == pgsTypes::sdtNone)
    {
@@ -1034,13 +1034,13 @@ WebIndexType CBulbTeeFactory::GetNumberOfWebs(const IBeamFactory::Dimensions& di
 
 Float64 CBulbTeeFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   Float64 D1 = GetDimension(dimensions,_T("D1"));
-   Float64 D2 = GetDimension(dimensions,_T("D2"));
-   Float64 D3 = GetDimension(dimensions,_T("D3"));
-   Float64 D4 = GetDimension(dimensions,_T("D4"));
-   Float64 D5 = GetDimension(dimensions,_T("D5"));
-   Float64 D6 = GetDimension(dimensions,_T("D6"));
-   Float64 D7 = GetDimension(dimensions,_T("D7"));
+   double D1 = GetDimension(dimensions,_T("D1"));
+   double D2 = GetDimension(dimensions,_T("D2"));
+   double D3 = GetDimension(dimensions,_T("D3"));
+   double D4 = GetDimension(dimensions,_T("D4"));
+   double D5 = GetDimension(dimensions,_T("D5"));
+   double D6 = GetDimension(dimensions,_T("D6"));
+   double D7 = GetDimension(dimensions,_T("D7"));
 
    return D1 + D2 + D3 + D4 + D5 + D6 + D7;
 }

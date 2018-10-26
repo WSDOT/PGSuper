@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -93,25 +93,34 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
    {
       if ( IS_SI_UNITS(pDisplayUnits) )
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-SI.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("VSFactor_SI_2005.png")) << rptNewLine;
       else
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-US.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("VSFactor_US_2005.png")) << rptNewLine;
    }
+#if defined IGNORE_2007_CHANGES
+   else
+   {
+      if ( IS_SI_UNITS(pDisplayUnits) )
+         *pParagraph << rptRcImage(strImagePath + _T("VSFactor_SI_2006.png")) << rptNewLine;
+      else
+         *pParagraph << rptRcImage(strImagePath + _T("VSFactor_US_2006.png")) << rptNewLine;
+   }
+#else
    else if ( pSpecEntry->GetSpecificationType() == lrfdVersionMgr::ThirdEditionWith2006Interims )
    {
       if ( IS_SI_UNITS(pDisplayUnits) )
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-SI.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("VSFactor_SI_2006.png")) << rptNewLine;
       else
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2006-US.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("VSFactor_US_2006.png")) << rptNewLine;
    }
    else
    {
       if ( IS_SI_UNITS(pDisplayUnits) )
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-SI.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("VSFactor_SI_2007.png")) << rptNewLine;
       else
-         *pParagraph << rptRcImage(strImagePath + _T("KvsEqn2007-US.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("VSFactor_US_2007.png")) << rptNewLine;
    }
-
+#endif // IGNORE_2007_CHANGES
    *pParagraph << rptRcImage(strImagePath + _T("HumidityFactor.png")) << rptNewLine;
 
    if ( IS_SI_UNITS(pDisplayUnits) )
@@ -127,13 +136,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    *pParagraph << pParamTable << rptNewLine;
 
    (*pParamTable)(0,0) << COLHDR(_T("V/S") << rptNewLine << _T("deck"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-
-   if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
-     (*pParamTable)(0,1) << Sub2(_T("k"),_T("s")) << rptNewLine << _T("deck");
-   else
-     (*pParamTable)(0,1) << Sub2(_T("k"),_T("vs")) << rptNewLine << _T("deck");
-
-
+   (*pParamTable)(0,1) << Sub2(_T("k"),_T("vs")) << rptNewLine << _T("deck");
    (*pParamTable)(0,2) << Sub2(_T("k"),_T("hs"));
    (*pParamTable)(0,3) << COLHDR(RPT_FC << rptNewLine << _T("deck"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pParamTable)(0,4) << Sub2(_T("k"),_T("f"));
@@ -188,7 +191,11 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    (*table)(0,8) << COLHDR(RPT_FTOP << rptNewLine << _T("Girder"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
    (*table)(0,9) << COLHDR(RPT_FBOT << rptNewLine << _T("Girder"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
 
+#if defined IGNORE_2007_CHANGES
+   table->m_Sign = -1;
+#else
    table->m_Sign =  ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 ) ? 1 : -1;
+#endif // IGNORE_2007_CHANGES
 
    return table;
 }

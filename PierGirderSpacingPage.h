@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,6 +29,7 @@
 // PierGirderSpacingPage.h : header file
 //
 
+#include "PGSuperAppPlugin\resource.h"
 #include "GirderSpacingGrid.h"
 #include "SameNumberOfGirdersHyperLink.h"
 #include "SameGirderSpacingHyperLink.h"
@@ -66,12 +67,10 @@ public:
    GirderIndexType m_nGirders[2];
    
    // global bridge girder spacing and number of girder settings
-   pgsTypes::SupportedBeamSpacing m_GirderSpacingType;
-   pgsTypes::MeasurementLocation m_GirderSpacingMeasurementLocation;
    bool m_bUseSameNumGirders;
 
    CGirderSpacingGrid m_GirderSpacingGrid[2];
-   long m_GirderSpacingMeasure[2];
+   DWORD m_GirderSpacingMeasure[2];
 
    GirderIndexType m_RefGirderIdx[2];
    Float64 m_RefGirderOffset[2];
@@ -148,6 +147,22 @@ protected:
    void UpdateChildWindowState();
    void UpdateGirderSpacingState(pgsTypes::PierFaceType pierFace);
    void UpdateCopyButtonState(BOOL bEnable);
+
+   void HideBackGroup(bool bHide=true);
+   void HideAheadGroup(bool bHide=true);
+   void HideGroup(UINT* nIDs,UINT nControls,bool bHide=true);
+   void MoveAheadGroup();
+
+   void InitSpacingBack(bool bUse);
+   void InitSpacingAhead(bool bUse);
+
+   bool IsAbutment();
+
+   enum SpacingType {Single, // a single spacing is used for both sides
+                     Back, // last pier, spacing on back side only
+                     Ahead, // first pier, spacing on ahead side only
+                     Both}; // spacing on both sides
+   SpacingType m_SpacingType;
 };
 
 //{{AFX_INSERT_LOCATION}}

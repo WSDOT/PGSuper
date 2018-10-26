@@ -25,10 +25,10 @@ public:
 	enum { IDD = IDD_STRAND_DEFINITION };
 	int		m_StrandType;
 	CString	m_UnitString;
-	Float64	m_HpX;
-	Float64	m_HpY;
-	Float64	m_EndX;
-	Float64	m_EndY;
+	double	m_HpX;
+	double	m_HpY;
+	double	m_EndX;
+	double	m_EndY;
 	BOOL	m_AllowDebonding;
 	//}}AFX_DATA
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);

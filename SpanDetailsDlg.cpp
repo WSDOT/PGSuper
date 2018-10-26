@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -58,24 +58,67 @@ void CSpanDetailsDlg::SetSpanData(const CSpanData* pSpan)
    m_pSpanData = pSpan;
    m_pNextPier = pSpan->GetNextPier();
 
+   m_ConnectionType[pgsTypes::Ahead] = m_pPrevPier->GetConnectionType();
+   m_ConnectionType[pgsTypes::Back]  = m_pNextPier->GetConnectionType();
    m_SpanLayoutPage.Init(pSpan);
    m_GirderLayoutPage.Init(pSpan);
 
-   const CPierData* pPrevPier = pSpan->GetPrevPier();
-   const CPierData* pNextPier = pSpan->GetNextPier();
-
-   m_PrevPierConnectionName[pgsTypes::Back]  = pPrevPier->GetConnection(pgsTypes::Back);
-   m_PrevPierConnectionName[pgsTypes::Ahead] = pPrevPier->GetConnection(pgsTypes::Ahead);
-   m_NextPierConnectionName[pgsTypes::Back]  = pNextPier->GetConnection(pgsTypes::Back);
-   m_NextPierConnectionName[pgsTypes::Ahead] = pNextPier->GetConnection(pgsTypes::Ahead);
-
-   m_ConnectionType[pgsTypes::Ahead] = pPrevPier->GetConnectionType();
-   m_ConnectionType[pgsTypes::Back]  = pNextPier->GetConnectionType();
+   m_StartPierPage.Init(m_pPrevPier);
+   m_EndPierPage.Init(m_pNextPier);
+   m_GirderLayoutPage.Init(pSpan);
 
    // Set dialog title
    CString strTitle;
    strTitle.Format(_T("Span %d Details"),LABEL_SPAN(pSpan->GetSpanIndex()));
    SetTitle(strTitle);
+
+
+   CString strStartPierLabel(m_pPrevPier->GetPrevSpan() == NULL ? _T("Abut.") : _T("Pier"));
+   m_strStartPierTitle.Format(_T("%s %d Connections"),strStartPierLabel,LABEL_PIER(m_pPrevPier->GetPierIndex()));
+   m_StartPierPage.m_psp.dwFlags |= PSP_USETITLE;
+   m_StartPierPage.m_psp.pszTitle = m_strStartPierTitle.GetBuffer();
+
+   CString strEndPierLabel(m_pNextPier->GetNextSpan() == NULL ? _T("Abut.") : _T("Pier"));
+   m_strEndPierTitle.Format(_T("%s %d Connections"),strEndPierLabel,LABEL_PIER(m_pNextPier->GetPierIndex()));
+   m_EndPierPage.m_psp.dwFlags |= PSP_USETITLE;
+   m_EndPierPage.m_psp.pszTitle = m_strEndPierTitle.GetBuffer();
+}
+
+pgsTypes::PierConnectionType CSpanDetailsDlg::GetConnectionType(PierIndexType pierIdx)
+{
+   if ( m_pPrevPier->GetPierIndex() == pierIdx )
+      return m_ConnectionType[pgsTypes::metStart];
+   else
+      return m_ConnectionType[pgsTypes::metEnd];
+}
+
+void CSpanDetailsDlg::SetConnectionType(PierIndexType pierIdx,pgsTypes::PierConnectionType type)
+{
+   if ( m_pPrevPier->GetPierIndex() == pierIdx )
+      m_ConnectionType[pgsTypes::metStart] = type;
+   else
+      m_ConnectionType[pgsTypes::metEnd] = type;
+}
+
+const CSpanData* CSpanDetailsDlg::GetPrevSpan(PierIndexType pierIdx)
+{
+   if ( m_pPrevPier->GetPierIndex() == pierIdx )
+      return m_pPrevPier->GetPrevSpan();
+   else
+      return m_pNextPier->GetPrevSpan();
+}
+
+const CSpanData* CSpanDetailsDlg::GetNextSpan(PierIndexType pierIdx)
+{
+   if ( m_pPrevPier->GetPierIndex() == pierIdx )
+      return m_pPrevPier->GetNextSpan();
+   else
+      return m_pNextPier->GetNextSpan();
+}
+
+const CBridgeDescription* CSpanDetailsDlg::GetBridgeDescription()
+{
+   return m_pBridgeDesc;
 }
 
 BEGIN_MESSAGE_MAP(CSpanDetailsDlg, CPropertySheet)
@@ -89,12 +132,17 @@ END_MESSAGE_MAP()
 void CSpanDetailsDlg::Init()
 {
    m_psh.dwFlags                       |= PSH_HASHELP | PSH_NOAPPLYNOW;
-   m_SpanLayoutPage.m_psp.dwFlags      |= PSP_HASHELP;
-   m_SpanConnectionsPage.m_psp.dwFlags |= PSP_HASHELP;
-   m_GirderLayoutPage.m_psp.dwFlags    |= PSP_HASHELP;
 
+   m_SpanLayoutPage.m_psp.dwFlags      |= PSP_HASHELP;
    AddPage(&m_SpanLayoutPage);
-   AddPage(&m_SpanConnectionsPage);
+
+   m_StartPierPage.m_psp.dwFlags |= PSP_HASHELP;
+   AddPage(&m_StartPierPage);
+
+   m_EndPierPage.m_psp.dwFlags |= PSP_HASHELP;
+   AddPage(&m_EndPierPage);
+
+   m_GirderLayoutPage.m_psp.dwFlags |= PSP_HASHELP;
    AddPage(&m_GirderLayoutPage);
 }
 
@@ -102,28 +150,43 @@ txnEditSpanData CSpanDetailsDlg::GetEditSpanData()
 {
    txnEditSpanData editSpanData(m_pSpanData); // initialize with current data
 
-   editSpanData.bSameGirderType                = UseSameGirderType();
-   editSpanData.bSameNumberOfGirdersInAllSpans = UseSameNumGirders();
-
-   editSpanData.GirderMeasurementLocation = GetMeasurementLocation();
-   
-   editSpanData.PrevPierConnection[pgsTypes::Back]  = GetPrevPierConnection(pgsTypes::Back);
-   editSpanData.PrevPierConnection[pgsTypes::Ahead] = GetPrevPierConnection(pgsTypes::Ahead);
-   editSpanData.NextPierConnection[pgsTypes::Back]  = GetNextPierConnection(pgsTypes::Back);
-   editSpanData.NextPierConnection[pgsTypes::Ahead] = GetNextPierConnection(pgsTypes::Ahead);
-
-   editSpanData.ConnectionType[pgsTypes::Back]  = GetConnectionType(pgsTypes::Back);
-   editSpanData.ConnectionType[pgsTypes::Ahead] = GetConnectionType(pgsTypes::Ahead);
-
-   editSpanData.bSameGirderSpacingAtEachEnd    = UseSameGirderSpacingAtEachEnd();
-   editSpanData.GirderSpacingType              = GetGirderSpacingType();
-   editSpanData.GirderSpacing[pgsTypes::Back]  = GetGirderSpacing(pgsTypes::Back);
-   editSpanData.GirderSpacing[pgsTypes::Ahead] = GetGirderSpacing(pgsTypes::Ahead);
-
-   editSpanData.GirderTypes = GetGirderTypes();
-   editSpanData.nGirders    = GetGirderCount();
-   
+   // General Layout
    editSpanData.SpanLength = GetSpanLength();
+
+   // Spacing
+   editSpanData.nGirders                           = GetGirderCount();
+   editSpanData.bSameNumberOfGirdersInAllSpans     = UseSameNumGirders();
+   editSpanData.bSameGirderType                    = UseSameGirderType();
+   editSpanData.GirderSpacingType                  = GetGirderSpacingType();
+   editSpanData.GirderMeasurementLocation          = GetMeasurementLocation();
+   // more spacing below
+
+   // Connections and Spacing
+   for ( int i = 0; i < 2; i++ )
+   {
+      pgsTypes::MemberEndType end = (i == 0 ? pgsTypes::metStart : pgsTypes::metEnd);
+
+      // Connection
+      editSpanData.m_ConnectionType[end]        = GetConnectionType(end);
+      editSpanData.m_DiaphragmHeight[end]       = GetDiaphragmHeight(end);
+      editSpanData.m_DiaphragmWidth[end]        = GetDiaphragmWidth(end);
+      editSpanData.m_DiaphragmLoadType[end]     = GetDiaphragmLoadType(end);
+      editSpanData.m_DiaphragmLoadLocation[end] = GetDiaphragmLoadLocation(end);
+
+      // Spacing
+      editSpanData.GirderSpacing[end] = GetGirderSpacing(end);
+
+      // Connections
+      for ( int j = 0; j < 2; j++ )
+      {
+         pgsTypes::PierFaceType face = (j == 0 ? pgsTypes::Back : pgsTypes::Ahead);
+         editSpanData.m_EndDistanceMeasurementType[end][face]   = GetEndDistanceMeasurementType(end,face);
+         editSpanData.m_EndDistance[end][face]                  = GetEndDistance(end,face);
+         editSpanData.m_BearingOffsetMeasurementType[end][face] = GetBearingOffsetMeasurementType(end,face);
+         editSpanData.m_BearingOffset[end][face]                = GetBearingOffset(end,face);
+         editSpanData.m_SupportWidth[end][face]                 = GetSupportWidth(end,face);
+      }
+   }
 
    editSpanData.SlabOffsetType = GetSlabOffsetType();
    editSpanData.SlabOffset[pgsTypes::metStart] = GetSlabOffset(pgsTypes::metStart);
@@ -137,19 +200,82 @@ Float64 CSpanDetailsDlg::GetSpanLength()
    return m_SpanLayoutPage.GetSpanLength();
 }
 
-pgsTypes::PierConnectionType CSpanDetailsDlg::GetConnectionType(pgsTypes::PierFaceType pierFace)
+pgsTypes::PierConnectionType CSpanDetailsDlg::GetConnectionType(pgsTypes::MemberEndType end)
 {
-   return m_ConnectionType[pierFace];
+   return m_ConnectionType[end];
 }
 
-LPCTSTR CSpanDetailsDlg::GetPrevPierConnection(pgsTypes::PierFaceType pierFace)
+
+Float64 CSpanDetailsDlg::GetDiaphragmHeight(pgsTypes::MemberEndType end)
 {
-   return m_PrevPierConnectionName[pierFace];
+   if ( end == pgsTypes::metStart )
+      return m_StartPierPage.m_DiaphragmHeight[pgsTypes::Ahead];
+   else
+      return m_EndPierPage.m_DiaphragmHeight[pgsTypes::Back];
 }
 
-LPCTSTR CSpanDetailsDlg::GetNextPierConnection(pgsTypes::PierFaceType pierFace)
+Float64 CSpanDetailsDlg::GetDiaphragmWidth(pgsTypes::MemberEndType end)
 {
-   return m_NextPierConnectionName[pierFace];
+   if ( end == pgsTypes::metStart )
+      return m_StartPierPage.m_DiaphragmWidth[pgsTypes::Ahead];
+   else
+      return m_EndPierPage.m_DiaphragmWidth[pgsTypes::Back];
+}
+
+ConnectionLibraryEntry::DiaphragmLoadType CSpanDetailsDlg::GetDiaphragmLoadType(pgsTypes::MemberEndType end)
+{
+   if ( end == pgsTypes::metStart )
+      return m_StartPierPage.m_DiaphragmLoadType[pgsTypes::Ahead];
+   else
+      return m_EndPierPage.m_DiaphragmLoadType[pgsTypes::Back];
+}
+
+Float64 CSpanDetailsDlg::GetDiaphragmLoadLocation(pgsTypes::MemberEndType end)
+{
+   if ( end == pgsTypes::metStart )
+      return m_StartPierPage.m_DiaphragmLoadLocation[pgsTypes::Ahead];
+   else
+      return m_EndPierPage.m_DiaphragmLoadLocation[pgsTypes::Back];
+}
+
+ConnectionLibraryEntry::EndDistanceMeasurementType CSpanDetailsDlg::GetEndDistanceMeasurementType(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face)
+{
+   if ( end == pgsTypes::metStart )
+      return m_StartPierPage.m_EndDistanceMeasurementType;
+   else
+      return m_EndPierPage.m_EndDistanceMeasurementType;
+}
+
+Float64 CSpanDetailsDlg::GetEndDistance(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face)
+{
+   if ( end == pgsTypes::metStart )
+      return m_StartPierPage.m_EndDistance[face];
+   else
+      return m_EndPierPage.m_EndDistance[face];
+}
+
+ConnectionLibraryEntry::BearingOffsetMeasurementType CSpanDetailsDlg::GetBearingOffsetMeasurementType(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face)
+{
+   if ( end == pgsTypes::metStart )
+      return m_StartPierPage.m_BearingOffsetMeasurementType;
+   else
+      return m_EndPierPage.m_BearingOffsetMeasurementType;
+}
+
+Float64 CSpanDetailsDlg::GetBearingOffset(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face)
+{
+   if ( end == pgsTypes::metStart )
+      return m_StartPierPage.m_BearingOffset[face];
+   else
+      return m_EndPierPage.m_BearingOffset[face];
+}
+
+Float64 CSpanDetailsDlg::GetSupportWidth(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face)
+{
+   if ( end == pgsTypes::metStart )
+      return m_StartPierPage.m_SupportWidth[face];
+   else
+      return m_EndPierPage.m_SupportWidth[face];
 }
 
 pgsTypes::SupportedBeamSpacing CSpanDetailsDlg::GetGirderSpacingType()
@@ -167,19 +293,19 @@ bool CSpanDetailsDlg::UseSameNumGirders()
    return m_GirderLayoutPage.m_bUseSameNumGirders;
 }
 
-bool CSpanDetailsDlg::UseSameGirderSpacingAtEachEnd()
-{
-   return m_GirderLayoutPage.m_bUseSameSpacingAtBothEnds;
-}
+//bool CSpanDetailsDlg::UseSameGirderSpacingAtEachEnd()
+//{
+//   return m_GirderLayoutPage.m_bUseSameSpacingAtBothEnds;
+//}
 
-CGirderSpacing CSpanDetailsDlg::GetGirderSpacing(pgsTypes::PierFaceType pierFace)
+CGirderSpacing CSpanDetailsDlg::GetGirderSpacing(pgsTypes::MemberEndType end)
 {
-   CGirderSpacing gdrSpacing = m_GirderLayoutPage.m_SpacingGrid[pierFace].GetGirderSpacingData().m_GirderSpacing;
-   gdrSpacing.SetMeasurementLocation( GetMeasurementLocation(pierFace) );
-   gdrSpacing.SetMeasurementType( GetMeasurementType(pierFace) );
-   gdrSpacing.SetRefGirder( GetRefGirder(pierFace) );
-   gdrSpacing.SetRefGirderOffset( GetRefGirderOffset(pierFace) );
-   gdrSpacing.SetRefGirderOffsetType( GetRefGirderOffsetType(pierFace) );
+   CGirderSpacing gdrSpacing = m_GirderLayoutPage.m_SpacingGrid[end].GetGirderSpacingData().m_GirderSpacing;
+   gdrSpacing.SetMeasurementLocation( GetMeasurementLocation(end) );
+   gdrSpacing.SetMeasurementType( GetMeasurementType(end) );
+   gdrSpacing.SetRefGirder( GetRefGirder(end) );
+   gdrSpacing.SetRefGirderOffset( GetRefGirderOffset(end) );
+   gdrSpacing.SetRefGirderOffsetType( GetRefGirderOffsetType(end) );
    return gdrSpacing;
 }
 
@@ -193,27 +319,27 @@ GirderIndexType CSpanDetailsDlg::GetGirderCount()
    return m_GirderLayoutPage.m_nGirders;
 }
 
-pgsTypes::MeasurementLocation CSpanDetailsDlg::GetMeasurementLocation(pgsTypes::PierFaceType pierFace)
+pgsTypes::MeasurementLocation CSpanDetailsDlg::GetMeasurementLocation(pgsTypes::MemberEndType end)
 {
    pgsTypes::MeasurementLocation ml;
    pgsTypes::MeasurementType mt;
-   UnhashGirderSpacing(m_GirderLayoutPage.m_GirderSpacingMeasure[pierFace],&ml,&mt);
+   UnhashGirderSpacing(m_GirderLayoutPage.m_GirderSpacingMeasure[end],&ml,&mt);
 
    return ml;
 }
 
-pgsTypes::MeasurementType CSpanDetailsDlg::GetMeasurementType(pgsTypes::PierFaceType pierFace)
+pgsTypes::MeasurementType CSpanDetailsDlg::GetMeasurementType(pgsTypes::MemberEndType end)
 {
    pgsTypes::MeasurementLocation ml;
    pgsTypes::MeasurementType mt;
-   UnhashGirderSpacing(m_GirderLayoutPage.m_GirderSpacingMeasure[pierFace],&ml,&mt);
+   UnhashGirderSpacing(m_GirderLayoutPage.m_GirderSpacingMeasure[end],&ml,&mt);
 
    return mt;
 }
 
-bool CSpanDetailsDlg::AllowConnectionChange(pgsTypes::PierFaceType side, const CString& conectionName)
+bool CSpanDetailsDlg::AllowConnectionChange(pgsTypes::MemberEndType end, const CString& conectionName)
 {
-   return m_GirderLayoutPage.AllowConnectionChange(side, conectionName);
+   return m_GirderLayoutPage.AllowConnectionChange(end, conectionName);
 }
 
 pgsTypes::MeasurementLocation CSpanDetailsDlg::GetMeasurementLocation()
@@ -221,19 +347,19 @@ pgsTypes::MeasurementLocation CSpanDetailsDlg::GetMeasurementLocation()
    return m_GirderLayoutPage.m_GirderSpacingMeasurementLocation;
 }
 
-GirderIndexType CSpanDetailsDlg::GetRefGirder(pgsTypes::PierFaceType pierFace)
+GirderIndexType CSpanDetailsDlg::GetRefGirder(pgsTypes::MemberEndType end)
 {
-   return m_GirderLayoutPage.m_RefGirderIdx[pierFace];
+   return m_GirderLayoutPage.m_RefGirderIdx[end];
 }
 
-Float64 CSpanDetailsDlg::GetRefGirderOffset(pgsTypes::PierFaceType pierFace)
+Float64 CSpanDetailsDlg::GetRefGirderOffset(pgsTypes::MemberEndType end)
 {
-   return m_GirderLayoutPage.m_RefGirderOffset[pierFace];
+   return m_GirderLayoutPage.m_RefGirderOffset[end];
 }
 
-pgsTypes::OffsetMeasurementType CSpanDetailsDlg::GetRefGirderOffsetType(pgsTypes::PierFaceType pierFace)
+pgsTypes::OffsetMeasurementType CSpanDetailsDlg::GetRefGirderOffsetType(pgsTypes::MemberEndType end)
 {
-   return m_GirderLayoutPage.m_RefGirderOffsetType[pierFace];
+   return m_GirderLayoutPage.m_RefGirderOffsetType[end];
 }
 
 pgsTypes::SlabOffsetType CSpanDetailsDlg::GetSlabOffsetType()

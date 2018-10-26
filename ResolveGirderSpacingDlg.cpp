@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -75,12 +75,12 @@ END_MESSAGE_MAP()
 BOOL CResolveGirderSpacingDlg::OnInitDialog() 
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_MEASUREMENT_DATUM);
-   int idx = pCB->AddString(_T("Measured at and along the CL pier"));
-   DWORD item_data = HashGirderSpacing(pgsTypes::AtCenterlinePier,pgsTypes::AlongItem);
+   int idx = pCB->AddString(_T("Measured at and along the abutment/pier line"));
+   DWORD item_data = HashGirderSpacing(pgsTypes::AtPierLine,pgsTypes::AlongItem);
    pCB->SetItemData(idx,item_data);
    
-   idx = pCB->AddString(_T("Measured normal to alignment at CL pier"));
-   item_data = HashGirderSpacing(pgsTypes::AtCenterlinePier,pgsTypes::NormalToItem);
+   idx = pCB->AddString(_T("Measured normal to alignment at abutment/pier line"));
+   item_data = HashGirderSpacing(pgsTypes::AtPierLine,pgsTypes::NormalToItem);
    pCB->SetItemData(idx,item_data);
    
    if (!m_RestrictSpacing)

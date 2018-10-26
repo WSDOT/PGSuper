@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -154,7 +154,7 @@ rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,c
             HAUNCHDETAILS haunch_details;
             pGdrHaunch->GetHaunchDetails(span,girder,&haunch_details);
 
-            (*pTable)(row, col++) << color(Red) << _T("The haunch depth in the middle of the girder exceeds the depth at the ends by ") << dim2.SetValue(haunch_details.HaunchDiff) << _T(". Check stirrup lengths to ensure they engage the deck in all locations.") << color(Black) << rptNewLine;
+            (*pTable)(row, col++) << color(Red) << _T("There is a large variation in the slab haunch thickness (") << dim2.SetValue(haunch_details.HaunchDiff) << _T("). Check stirrup length to ensure they engage the deck at all locations.") << color(Black) << rptNewLine;
          }
          else
          {
@@ -213,9 +213,9 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
    (*pTable)(0,3) << _T("Max Incline") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
    (*pTable)(0,4) << _T("Status");
 
-   Float64 Wb, Yb, Orientation;
+   double Wb, Yb, Orientation;
    pArtifact->GetGlobalGirderStabilityParameters(&Wb,&Yb,&Orientation);
-   Float64 maxIncline = pArtifact->GetMaxGirderIncline();
+   double maxIncline = pArtifact->GetMaxGirderIncline();
 
    (*pTable)(1,0) << dim.SetValue(Wb);
    (*pTable)(1,1) << dim.SetValue(Yb);

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -103,9 +103,9 @@ void CMultiWebFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType st
    CComPtr<IMultiWeb> beam;
    gdrsection->get_Beam(&beam);
 
-   Float64 d1,d2;
-   Float64 w,wmin,wmax;
-   Float64 t1,t2;
+   double d1,d2;
+   double w,wmin,wmax;
+   double t1,t2;
    long nWebs;
    GetDimensions(dimensions,d1,d2,w,wmin,wmax,t1,t2,nWebs);
 
@@ -117,7 +117,7 @@ void CMultiWebFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType st
    beam->put_WebCount(nWebs);
 
    // figure out the overhang, w1, based on the spacing
-   Float64 w1;
+   double w1;
    if ( pBroker == NULL || spanIdx == INVALID_INDEX || gdrIdx == INVALID_INDEX )
    {
       // just use the max
@@ -133,7 +133,7 @@ void CMultiWebFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType st
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       ATLASSERT(pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsConstantAdjacent);
-      Float64 spacing = pBridgeDesc->GetGirderSpacing();;
+      double spacing = pBridgeDesc->GetGirderSpacing();;
 
       // if this is a fixed width section, then set the spacing equal to the width
       if ( IsEqual(wmax,wmin) )
@@ -161,9 +161,9 @@ void CMultiWebFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType st
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
 
-   Float64 d1,d2;
-   Float64 w,wmin,wmax;
-   Float64 t1,t2;
+   double d1,d2;
+   double w,wmin,wmax;
+   double t1,t2;
    long nWebs;
    GetDimensions(dimensions,d1,d2,w,wmin,wmax,t1,t2,nWebs);
 
@@ -286,9 +286,9 @@ void CMultiWebFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType s
 }
 
 void CMultiWebFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
-                                  IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
-                                  IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
-                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
+                                  IBeamFactory::BeamFace endTopFace, double endTopLimit, IBeamFactory::BeamFace endBottomFace, double endBottomLimit, 
+                                  IBeamFactory::BeamFace hpTopFace, double hpTopLimit, IBeamFactory::BeamFace hpBottomFace, double hpBottomLimit, 
+                                  double endIncrement, double hpIncrement, IStrandMover** strandMover)
 {
    HRESULT hr = S_OK;
 
@@ -298,15 +298,15 @@ void CMultiWebFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensi
    CComPtr<IStrandMover> sm = pStrandMover;
 
    // set the shapes for harped strand bounds - only in the thinest part of the webs
-   Float64 d1,d2;
-   Float64 w,wmin,wmax;
-   Float64 t1,t2;
+   double d1,d2;
+   double w,wmin,wmax;
+   double t1,t2;
    long nWebs;
    GetDimensions(dimensions,d1,d2,w,wmin,wmax,t1,t2,nWebs);
    ATLASSERT(nWebs==3);
 
-   Float64 width = min(t1,t2);
-   Float64 depth = d1 + d2;
+   double width = min(t1,t2);
+   double depth = d1 + d2;
 
    CComPtr<IRectangle> lft_harp_rect, rgt_harp_rect, ctr_harp_rect;
    hr = lft_harp_rect.CoCreateInstance(CLSID_Rect);
@@ -323,7 +323,7 @@ void CMultiWebFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensi
    ctr_harp_rect->put_Width(width);
    ctr_harp_rect->put_Height(depth);
 
-   Float64 hook_offset = w + t1;
+   double hook_offset = w + t1;
 
    CComPtr<IPoint2d> lft_hook, rgt_hook, ctr_hook;
    lft_hook.CoCreateInstance(CLSID_Point2d);
@@ -352,10 +352,10 @@ void CMultiWebFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensi
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
-   Float64 hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
-   Float64 endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
-   Float64 endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
+   double hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
+   double hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
+   double endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
+   double endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(depth, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -369,7 +369,7 @@ std::vector<std::_tstring> CMultiWebFactory::GetDimensionNames()
    return m_DimNames;
 }
 
-std::vector<Float64> CMultiWebFactory::GetDefaultDimensions()
+std::vector<double> CMultiWebFactory::GetDefaultDimensions()
 {
    return m_DefaultDims;
 }
@@ -381,9 +381,9 @@ std::vector<const unitLength*> CMultiWebFactory::GetDimensionUnits(bool bSIUnits
 
 bool CMultiWebFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg)
 {
-   Float64 d1,d2;
-   Float64 w1,wmin,wmax;
-   Float64 t1,t2;
+   double d1,d2;
+   double w1,wmin,wmax;
+   double t1,t2;
    long nWebs;
    GetDimensions(dimensions,d1,d2,w1,wmin,wmax,t1,t2,nWebs);
 
@@ -440,7 +440,7 @@ bool CMultiWebFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimens
       return false;
    }   
 
-   Float64 web_wid = nWebs*t1 + (nWebs-1)*w1;
+   double web_wid = nWebs*t1 + (nWebs-1)*w1;
    if (wmin < web_wid)
    {
       const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][5];
@@ -699,9 +699,9 @@ HICON  CMultiWebFactory::GetIcon()
 }
 
 void CMultiWebFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
-                                  Float64& d1,Float64& d2,
-                                  Float64& w,Float64& wmin,Float64& wmax,
-                                  Float64& t1,Float64& t2,
+                                  double& d1,double& d2,
+                                  double& w,double& wmin,double& wmax,
+                                  double& t1,double& t2,
                                   long& nWebs)
 {
    d1 = GetDimension(dimensions,_T("D1"));
@@ -714,7 +714,7 @@ void CMultiWebFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
    nWebs = 3;
 }
 
-Float64 CMultiWebFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
+double CMultiWebFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
 {
    Dimensions::const_iterator iter;
    for ( iter = dimensions.begin(); iter != dimensions.end(); iter++ )
@@ -752,13 +752,13 @@ pgsTypes::SupportedBeamSpacings CMultiWebFactory::GetSupportedBeamSpacings()
 }
 
 void CMultiWebFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, 
-                                               pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing)
+                                               pgsTypes::SupportedBeamSpacing sbs, double* minSpacing, double* maxSpacing)
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
 
-   Float64 gw_min = GetDimension(dimensions,_T("Wmin"));
-   Float64 gw_max = GetDimension(dimensions,_T("Wmax"));
+   double gw_min = GetDimension(dimensions,_T("Wmin"));
+   double gw_max = GetDimension(dimensions,_T("Wmax"));
 
    if ( sdt == pgsTypes::sdtNone || sdt == pgsTypes::sdtCompositeOverlay )
    {
@@ -785,8 +785,8 @@ WebIndexType CMultiWebFactory::GetNumberOfWebs(const IBeamFactory::Dimensions& d
 
 Float64 CMultiWebFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   Float64 D1 = GetDimension(dimensions,_T("D1"));
-   Float64 D2 = GetDimension(dimensions,_T("D2"));
+   double D1 = GetDimension(dimensions,_T("D1"));
+   double D2 = GetDimension(dimensions,_T("D2"));
 
    return D1 + D2;
 }

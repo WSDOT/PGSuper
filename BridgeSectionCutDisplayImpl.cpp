@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -36,7 +36,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 // height of section cut above/below girder
-static const Float64 SSIZE = 1440 * 3/8; // (twips)
+static const double SSIZE = 1440 * 3/8; // (twips)
 
 
 UINT CBridgeSectionCutDisplayImpl::ms_Format = ::RegisterClipboardFormat(_T("BridgeSectionCutData"));
@@ -95,7 +95,7 @@ STDMETHODIMP_(void) CBridgeSectionCutDisplayImpl::XStrategy::Init(CBridgeModelVi
    pThis->m_pBridge = pBridge;
    pThis->m_pCutLocation = pCutLoc;
 
-   Float64 pos = pThis->m_pCutLocation->GetCurrentCutLocation();
+   double pos = pThis->m_pCutLocation->GetCurrentCutLocation();
 
    CComPtr<IPoint2d> pnt;
    pnt.CoCreateInstance(CLSID_Point2d);
@@ -146,7 +146,7 @@ STDMETHODIMP_(void) CBridgeSectionCutDisplayImpl::XDrawPointStrategy::DrawDragIm
 {
    METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DrawPointStrategy);
 
-   Float64 wx, wy;
+   double wx, wy;
    map->LPtoWP(dragPoint.x, dragPoint.y, &wx, &wy);
    map->WPtoMP(wx, wy, &wx, &wy);
    pThis->m_CachePoint->put_X(wx);
@@ -190,7 +190,7 @@ void CBridgeSectionCutDisplayImpl::GetBoundingBox(iPointDisplayObject* pDO, Floa
    CComPtr<IPoint2d> p1,p2;
    GetSectionCutPointsInWorldSpace(pDO,pos,&p1,&p2);
 
-   Float64 x1,y1,x2,y2;
+   double x1,y1,x2,y2;
    p1->get_X(&x1);
    p1->get_Y(&y1);
    p2->get_X(&x2);
@@ -206,7 +206,7 @@ void CBridgeSectionCutDisplayImpl::GetBoundingBox(iPointDisplayObject* pDO, Floa
    CComPtr<iCoordinateMap> pMap;
    pDispMgr->GetCoordinateMap(&pMap);
 
-   Float64 lx, ly, rx, ry;
+   double lx, ly, rx, ry;
    pMap->LPtoWP(left_arrow[1].x, left_arrow[1].y,  &lx,&ly);
    pMap->LPtoWP(right_arrow[1].x,right_arrow[1].y, &rx,&ry);
 
@@ -218,33 +218,33 @@ void CBridgeSectionCutDisplayImpl::GetBoundingBox(iPointDisplayObject* pDO, Floa
 
 void CBridgeSectionCutDisplayImpl::GetSectionCutPointsInWorldSpace(iPointDisplayObject* pDO,IPoint2d* userLoc,IPoint2d** p1,IPoint2d** p2)
 {
-   Float64 station, offset;
+   double station, offset;
    m_pRoadway->GetStationAndOffset(userLoc,&station,&offset);
    
    CComPtr<IDirection> normal;
    m_pRoadway->GetBearingNormal(station,&normal);
 
-   Float64 start_station = m_pBridge->GetPierStation(0);
-   Float64 distFromStartOfBridge = station - start_station;
+   double start_station = m_pBridge->GetPierStation(0);
+   double distFromStartOfBridge = station - start_station;
 
-   Float64 left  = m_pBridge->GetLeftSlabEdgeOffset(distFromStartOfBridge);
-   Float64 right = m_pBridge->GetRightSlabEdgeOffset(distFromStartOfBridge);
+   double left  = m_pBridge->GetLeftSlabEdgeOffset(distFromStartOfBridge);
+   double right = m_pBridge->GetRightSlabEdgeOffset(distFromStartOfBridge);
 
    m_pRoadway->GetPoint(station, left, normal,p1);
    m_pRoadway->GetPoint(station, right,normal,p2);
 
-   Float64 x1,y1;
+   double x1,y1;
    (*p1)->get_X(&x1);
    (*p1)->get_Y(&y1);
 
-   Float64 x2,y2;
+   double x2,y2;
    (*p2)->get_X(&x2);
    (*p2)->get_Y(&y2);
 
-   Float64 dx = x2 - x1;
-   Float64 dy = y2 - y1;
+   double dx = x2 - x1;
+   double dy = y2 - y1;
 
-   Float64 extension_factor = 0.1;
+   double extension_factor = 0.1;
 
    (*p1)->Offset(-extension_factor*dx,-extension_factor*dy);
    (*p2)->Offset( extension_factor*dx, extension_factor*dy);
@@ -304,13 +304,13 @@ void CBridgeSectionCutDisplayImpl::GetArrowHeadPoints(iPointDisplayObject* pDO,I
 void CBridgeSectionCutDisplayImpl::GetArrowHeadPoints(iPointDisplayObject* pDO,IPoint2d* userLoc,CPoint p1,CPoint p2,POINT* left,POINT* right)
 {
    // arrows
-   Float64 dx,dy;
+   double dx,dy;
    dx = p2.x - p1.x;
    dy = p2.y - p1.y;
 
-   Float64 angle = atan2(dy,dx);
+   double angle = atan2(dy,dx);
 
-   Float64 xs,ys;
+   double xs,ys;
    xs = 10;
    ys = 20;
    left[0].x = p1.x;
@@ -362,7 +362,7 @@ STDMETHODIMP_(void) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnDragMo
 {
    METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DisplayObjectEvents);
 
-   Float64 pos =  pThis->m_pCutLocation->GetCurrentCutLocation();
+   double pos =  pThis->m_pCutLocation->GetCurrentCutLocation();
 
    CComPtr<IDirection> direction;
    pThis->m_pRoadway->GetBearing(pos,&direction);
@@ -372,7 +372,7 @@ STDMETHODIMP_(void) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnDragMo
 
    point->OffsetEx(offset);
 
-   Float64 station, alignment_offset;
+   double station, alignment_offset;
    pThis->m_pRoadway->GetStationAndOffset(point,&station,&alignment_offset);
 
    pThis->PutPosition(station);
@@ -477,7 +477,7 @@ STDMETHODIMP_(bool) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnContex
    return false;
 }
 
-void CBridgeSectionCutDisplayImpl::PutPosition(Float64 pos)
+void CBridgeSectionCutDisplayImpl::PutPosition(double pos)
 {
    m_pCutLocation->CutAt(pos);
 }

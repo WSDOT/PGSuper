@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,8 +30,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CPGSuperTemplateManager::CPGSuperTemplateManager(LPCTSTR strExt,CHAR chSep) :
-m_strExt(strExt),
+CPGSuperTemplateManager::CPGSuperTemplateManager(CHAR chSep) :
 m_cFolderSeparator(chSep)
 {
 }
@@ -86,7 +85,9 @@ void CPGSuperTemplateManager::GetTemplates(const CString& strRootSourcePath,cons
 
 void CPGSuperTemplateManager::GetTemplateFiles(const CString& strSourcePath,const CString& strDestinationPath,IProgressMonitor* pProgress)
 {
-   CString strTemplateSuffix(m_strExt);
+   CString strTemplateSuffix;
+   VERIFY(strTemplateSuffix.LoadString(IDS_TEMPLATE_FILE_SUFFIX));
+   ASSERT(!strTemplateSuffix.IsEmpty());
 
    CFileFind* pTemplateFinder = CreateFileFinder();
    CString strTemplateFileSpec = strSourcePath + CString(m_cFolderSeparator) + CString(_T("*.")) + strTemplateSuffix;
@@ -147,8 +148,8 @@ void CPGSuperTemplateManager::GetTemplateFiles(const CString& strSourcePath,cons
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
-CFileTemplateManager::CFileTemplateManager(LPCTSTR strExt) :
-CPGSuperTemplateManager(strExt,_T('\\'))
+CFileTemplateManager::CFileTemplateManager() :
+CPGSuperTemplateManager(_T('\\'))
 {
 }
 
@@ -165,8 +166,8 @@ BOOL CFileTemplateManager::GetFile(const CString& strSource,const CString& strDe
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
-CFTPTemplateManager::CFTPTemplateManager(LPCTSTR strExt,CFtpConnection* pFTP) :
-CPGSuperTemplateManager(strExt,_T('/'))
+CFTPTemplateManager::CFTPTemplateManager(CFtpConnection* pFTP) :
+CPGSuperTemplateManager(_T('/'))
 {
    m_pFTP = pFTP;
 }

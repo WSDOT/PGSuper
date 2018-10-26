@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -152,12 +152,12 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,SpanIndexType span,G
     // Write non-composite properties
    row = xs_table->GetNumberOfHeaderRows();
 
-   Float64 Yt, Yb;
+   double Yt, Yb;
    Yt = pSectProp->GetYt(pgsTypes::CastingYard,poi);
    Yb = fabs(pSectProp->GetYb(pgsTypes::CastingYard,poi));
-   Float64 depth = Yt + Yb;
+   double depth = Yt + Yb;
 
-   Float64 span_length = pBridge->GetSpanLength(span,girder);
+   double span_length = pBridge->GetSpanLength(span,girder);
 
    (*xs_table)(row++,1) << l2.SetValue( pSectProp->GetAg(pgsTypes::CastingYard,poi) );
    (*xs_table)(row++,1) << l4.SetValue( pSectProp->GetIx(pgsTypes::CastingYard,poi) );

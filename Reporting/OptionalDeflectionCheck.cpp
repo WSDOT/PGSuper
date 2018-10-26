@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -87,7 +87,7 @@ void COptionalDeflectionCheck::Build(rptChapter* pChapter, const pgsGirderArtifa
       rptParagraph* p = new rptParagraph;
       *pChapter<<p;
 
-      Float64 min, max;
+      double min, max;
       pDef->GetDemand(&min,&max);
 
       *p<< _T("Allowable deflection span ratio = L/")<<pDef->GetAllowableSpanRatio()<<rptNewLine;

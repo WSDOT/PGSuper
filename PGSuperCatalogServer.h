@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,6 @@
 #define INCLUDED_PGSUPERCATALOGSERVER_H_
 
 #include "PGSuperCatalog.h"
-#include <WBFLTools.h>
 
 enum CacheUpdateFrequency
 {
@@ -59,8 +58,8 @@ class CPGSuperCatalogServer;
 class CPGSuperApp;
 
 // Factory functions for creating and saving servers
-CPGSuperCatalogServer* CreateCatalogServer(const CString& createString,const CString& strExt);
-CPGSuperCatalogServer* CreateCatalogServer(const CString& strServerName,const CString& createString,const CString& strExt);
+CPGSuperCatalogServer* CreateCatalogServer(const CString& createString);
+CPGSuperCatalogServer* CreateCatalogServer(const CString& strServerName,const CString& createString);
 CString GetCreationString(const CPGSuperCatalogServer* pServer);
 
 // Exception class for catalog server errors
@@ -110,12 +109,10 @@ private:
 class CPGSuperCatalogServer
 {
 public:
-   CPGSuperCatalogServer(const CString& name,SharedResourceType type,const CString& strExt); 
+   CPGSuperCatalogServer(const CString& name,SharedResourceType type); 
 
    CString GetServerName() const;
    SharedResourceType GetServerType() const;
-
-   virtual CString GetTemplateFileExtension() const; // returns the file extension for template files
 
    // ** Any below can throw a CCatalogServerException **
    //////////////////////////////////////////////////////
@@ -144,7 +141,6 @@ public:
    virtual bool IsNetworkError() const=0;
    virtual void FakeNetworkError(bool bFake) const=0; // used for testing... causes IsNetworkError to always return true
 
-
 protected:
    bool CheckForUpdatesUsingMD5(const CString& strLocalMasterLibMD5,const CString& strLocalWorkgroupTemplateMD5,
                                 const CString& cachedMasterLibFile, const CString& cachedTemplateFolder) const;
@@ -154,7 +150,6 @@ private:
 
    CString m_Name;
    SharedResourceType m_ServerType;
-   CString m_TemplateFileExt;
 };
 
 //////////////////////  CFtpPGSuperCatalogServer    ////////////////////////////////
@@ -163,9 +158,9 @@ class CFtpPGSuperCatalogServer : public CPGSuperCatalogServer
 {
 public:
    // Default constructor tries to hit wsdot server
-   CFtpPGSuperCatalogServer(const CString& strExt);
+   CFtpPGSuperCatalogServer();
    // constructor for anonymous server
-   CFtpPGSuperCatalogServer(const CString& name, const CString& address,const CString& strExt);
+   CFtpPGSuperCatalogServer(const CString& name, const CString& address);
    CString GetAddress() const;
 
    // virtual's
@@ -208,7 +203,7 @@ class CHttpPGSuperCatalogServer : public CPGSuperCatalogServer
 {
 public:
    // constructor for anonymous server
-   CHttpPGSuperCatalogServer(const CString& name, const CString& address,const CString& strExt);
+   CHttpPGSuperCatalogServer(const CString& name, const CString& address);
 
    CString GetAddress() const;
 
@@ -255,7 +250,7 @@ private:
 class CFileSystemPGSuperCatalogServer : public CPGSuperCatalogServer
 {
 public:
-   CFileSystemPGSuperCatalogServer(const CString& name, const CString& libraryFileName, const CString& templateFilePath,const CString& strExt);
+   CFileSystemPGSuperCatalogServer(const CString& name, const CString& libraryFileName, const CString& templateFilePath);
 
    CString GetLibraryFileName() const;
 

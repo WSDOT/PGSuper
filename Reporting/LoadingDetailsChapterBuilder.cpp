@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -505,43 +505,22 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
                pPara = new rptParagraph;
                *pChapter << pPara;
 
-               p_table = pgsReportStyleHolder::CreateDefaultTable(5,_T(""));
+               p_table = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
                *pPara << p_table;
 
-               p_table->SetNumberOfHeaderRows(2);
-               p_table->SetRowSpan(0,0,2);
-               p_table->SetRowSpan(1,0,SKIP_CELL);
                (*p_table)(0,0) << _T("Location");
-
-               p_table->SetColumnSpan(0,1,2);
-               p_table->SetColumnSpan(0,2,SKIP_CELL);
-               (*p_table)(0,1) << _T("Main Slab");
-               (*p_table)(1,1) << COLHDR(_T("Point Load"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-               (*p_table)(1,2) << COLHDR(_T("Point Moment"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-
-               p_table->SetColumnSpan(0,3,2);
-               p_table->SetColumnSpan(0,4,SKIP_CELL);
-               (*p_table)(0,3) << _T("Haunch");
-               (*p_table)(1,3) << COLHDR(_T("Point Load"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-               (*p_table)(1,4) << COLHDR(_T("Point Moment"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-
-               (*p_table)(2,0) << _T("Left Bearing");
-               (*p_table)(3,0) << _T("Right Bearing");
+               (*p_table)(0,1) << COLHDR(_T("Point Load"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+               (*p_table)(0,2) << COLHDR(_T("Point Moment"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
                Float64 P1, P2, M1, M2;
                pProdLoads->GetCantileverSlabLoad(spanIdx, gdrIdx, &P1, &M1, &P2, &M2);
-               (*p_table)(2,1) << force.SetValue(-P1);
-               (*p_table)(2,2) << moment.SetValue(M1);
+               (*p_table)(1,0) << _T("Left Bearing");
+               (*p_table)(1,1) << force.SetValue(-P1);
+               (*p_table)(1,2) << moment.SetValue(M1);
             
-               (*p_table)(3,1) << force.SetValue(-P2);
-               (*p_table)(3,2) << moment.SetValue(M2);
-
-               pProdLoads->GetCantileverSlabPadLoad(spanIdx, gdrIdx, &P1, &M1, &P2, &M2);
-               (*p_table)(2,3) << force.SetValue(-P1);
-               (*p_table)(2,4) << moment.SetValue(M1);
-            
-               (*p_table)(3,3) << force.SetValue(-P2);
-               (*p_table)(3,4) << moment.SetValue(M2);
+               (*p_table)(2,0) << _T("Right Bearing");
+               (*p_table)(2,1) << force.SetValue(-P2);
+               (*p_table)(2,2) << moment.SetValue(M2);
 
                p_table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
                p_table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -1577,15 +1556,15 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("StraightStrandCamberLoading.gif")) << rptNewLine;
          for ( iter = loads.begin(); iter != loads.end(); iter++ )
          {
-            Float64 M = iter->first;
-            Float64 X = iter->second;
+            double M = iter->first;
+            double X = iter->second;
 
             *pPara << _T("M = ") << moment.SetValue(M) << _T(" at ") << loc.SetValue(X) << rptNewLine;
          }
 
          *pPara << rptNewLine;
 
-         Float64 Ml,Mr,Nl,Nr,Xl,Xr;
+         double Ml,Mr,Nl,Nr,Xl,Xr;
          pCamber->GetHarpedStrandEquivLoading(spanIdx,gdrIdx,&Ml, &Mr, &Nl, &Nr, &Xl, &Xr);
          *pPara << Bold(_T("Harped Strands")) << rptNewLine;
          *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("HarpedStrandCamberLoading.gif")) << rptNewLine;
@@ -1599,7 +1578,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
          if ( 0 < pStrandGeom->GetNumStrands(spanIdx,gdrIdx,pgsTypes::Temporary) )
          {
-            Float64 MxferL, MxferR, MremoveL, MremoveR;
+            double MxferL, MxferR, MremoveL, MremoveR;
             pCamber->GetTempStrandEquivLoading(spanIdx,gdrIdx,&MxferL,&MxferR,&MremoveL,&MremoveR);
             *pPara << Bold(_T("Temporary Strands")) << rptNewLine;
             *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("TempStrandCamberLoading.gif")) << rptNewLine;

@@ -60,7 +60,7 @@
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
 				AdditionalIncludeDirectories=".\;.\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;&quot;$(ProjectDir)\LibraryEditor&quot;;&quot;$(VCInstallDir)atlmfc\src\mfc&quot;"
-				PreprocessorDefinitions="PGSUPER_DEBUG;_DEBUG;ENABLE_LOGGING;_GXDLL;WIN32;_WINDOWS;_ATL_NO_UUIDOF;_xBETA_VERSION;"
+				PreprocessorDefinitions="PGSUPER_DEBUG;_DEBUG;ENABLE_LOGGING;_GXDLL;WIN32;_WINDOWS;_ATL_NO_UUIDOF;_BETA_VERSION;"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="true"
@@ -164,7 +164,7 @@
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
 				AdditionalIncludeDirectories=".\;.\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;&quot;$(ProjectDir)\LibraryEditor&quot;;&quot;$(VCInstallDir)atlmfc\src\mfc&quot;"
-				PreprocessorDefinitions="PGSUPER_DEBUG;_DEBUG;ENABLE_LOGGING;_GXDLL;WIN32;_WINDOWS;_ATL_NO_UUIDOF;_xBETA_VERSION;"
+				PreprocessorDefinitions="PGSUPER_DEBUG;_DEBUG;ENABLE_LOGGING;_GXDLL;WIN32;_WINDOWS;_ATL_NO_UUIDOF;_BETA_VERSION;"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="true"
@@ -274,7 +274,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories=".\;.\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;&quot;$(ProjectDir)\LibraryEditor&quot;;&quot;$(VCInstallDir)atlmfc\src\mfc&quot;"
-				PreprocessorDefinitions="NDEBUG;_GXDLL;WIN32;_WINDOWS;_ATL_NO_UUIDOF;_xBETA_VERSION"
+				PreprocessorDefinitions="NDEBUG;_GXDLL;WIN32;_WINDOWS;_ATL_NO_UUIDOF;_BETA_VERSION"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
@@ -386,7 +386,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories=".\;.\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;&quot;$(ProjectDir)\LibraryEditor&quot;;&quot;$(VCInstallDir)atlmfc\src\mfc&quot;"
-				PreprocessorDefinitions="NDEBUG;_GXDLL;WIN32;_WINDOWS;_ATL_NO_UUIDOF;_xBETA_VERSION"
+				PreprocessorDefinitions="NDEBUG;_GXDLL;WIN32;_WINDOWS;_ATL_NO_UUIDOF;_BETA_VERSION"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
@@ -1231,15 +1231,15 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\ico00001.ico"
-				>
-			</File>
-			<File
 				RelativePath="res\ico00001.ico"
 				>
 			</File>
 			<File
 				RelativePath="psgLib\LibraryEditor\res\ico00001.ico"
+				>
+			</File>
+			<File
+				RelativePath="LibraryEditor\res\ico00001.ico"
 				>
 			</File>
 			<File
@@ -1263,15 +1263,15 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\ico00004.ico"
-				>
-			</File>
-			<File
 				RelativePath="res\ico00004.ico"
 				>
 			</File>
 			<File
 				RelativePath="psgLib\LibraryEditor\res\ico00004.ico"
+				>
+			</File>
+			<File
+				RelativePath="LibraryEditor\res\ico00004.ico"
 				>
 			</File>
 			<File
@@ -1287,7 +1287,7 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\ico00006.ico"
+				RelativePath="psgLib\LibraryEditor\res\ico00006.ico"
 				>
 			</File>
 			<File
@@ -1295,7 +1295,7 @@
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\ico00006.ico"
+				RelativePath="LibraryEditor\res\ico00006.ico"
 				>
 			</File>
 			<File
@@ -1351,15 +1351,15 @@
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\icon1.ico"
-				>
-			</File>
-			<File
 				RelativePath="res\icon1.ico"
 				>
 			</File>
 			<File
 				RelativePath="LibraryEditor\res\icon1.ico"
+				>
+			</File>
+			<File
+				RelativePath="psgLib\LibraryEditor\res\icon1.ico"
 				>
 			</File>
 			<File

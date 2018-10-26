@@ -11,8 +11,7 @@ The Specification Check was Successful
  33.17   5  8.75  1     2     Tx40       20   1/2  270 15.00 14.20   4  8.5  4.100  5.100    1.715   -2.192   2989  0.796  1.137  0.14 -0.03 -0.00 -0.00 -0.04  39.14 109.32   1.00   1.00   1.00
 
 
-The Specification Check was Not Successful
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+The Specification Check was Successful
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul

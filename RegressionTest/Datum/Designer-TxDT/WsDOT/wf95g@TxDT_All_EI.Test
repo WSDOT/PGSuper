@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   6  6.00  1     1    WF95G  *    43  0.60  270 42.41 24.84   9 90.5  5.100  6.500    4.023   -3.735  15241  0.566  0.671  0.30 -0.12 -0.01 -0.01 -0.15 157.11 313.78   3.00  15.00  20.00
+ 34.25   6  6.00  1     1    WF95G  *    43  0.60  270 42.41 24.84   9 90.5  5.100  6.500    4.023   -3.735  15243  0.566  0.671  0.30 -0.12 -0.01 -0.01 -0.15 157.11 313.59   3.00  15.00  20.00
 
 
 The Specification Check was Not Successful
@@ -9,7 +9,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   6  6.00  1     2    WF95G  *    43  0.60  270 42.55 21.33  11 90.5  5.200  6.400    4.043   -3.758  15284  0.565  0.671  0.27 -0.13 -0.01 -0.01 -0.16 156.41 307.77   2.75  15.00  20.00
+ 34.25   6  6.00  1     2    WF95G  *    43  0.60  270 42.55 21.33  11 90.5  5.200  6.400    4.043   -3.758  15286  0.565  0.671  0.27 -0.13 -0.01 -0.01 -0.16 156.41 307.58   2.75  15.00  20.00
 
 
 The Specification Check was Not Successful
@@ -18,7 +18,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 34.25   6  6.00  1     4    WF95G  *    43  0.60  270 42.55 21.33  11 90.5  5.200  6.400    4.043   -3.758  15284  0.565  0.671  0.27 -0.13 -0.01 -0.01 -0.16 156.41 307.77   2.75  15.00  20.00
+ 34.25   6  6.00  1     4    WF95G  *    43  0.60  270 42.55 21.33  11 90.5  5.200  6.400    4.043   -3.758  15286  0.565  0.671  0.27 -0.13 -0.01 -0.01 -0.16 156.41 307.58   2.75  15.00  20.00
 
 
 The Specification Check was Not Successful

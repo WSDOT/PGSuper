@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -458,7 +458,7 @@ public:
    std::vector<pgsPointOfInterest> GetLiftingPointsOfInterest() const;
 
    // returns the top and bottom girder stresses for the supplied vector of locations
-   void GetGirderStress(std::vector<Float64> locs,bool bMin,bool bIncludePrestress,std::vector<Float64>& fTop,std::vector<Float64>& fBot) const;
+   void GetGirderStress(std::vector<double> locs,bool bMin,bool bIncludePrestress,std::vector<double>& fTop,std::vector<double>& fBot) const;
 
    void GetMinMaxStresses(Float64* minStress, Float64* maxStress,Float64* minDistFromStart,Float64* maxDistFromStart) const;
 
@@ -498,10 +498,10 @@ public:
    void SetAlterantiveTensileStressAsMax(Float64 AsMax);
    Float64 GetAlterantiveTensileStressAsMax() const;
 
-   void SetAllowableTensileConcreteStressParameters(Float64 f,bool bMax,Float64 fmax);
-   void SetAllowableCompressionFactor(Float64 c);
-   void SetAlternativeTensileConcreteStressFactor(Float64 f);
-   void GetRequiredConcreteStrength(Float64 *pfcCompression,Float64 *pfcTension,bool* pMinRebarRequired) const;
+   void SetAllowableTensileConcreteStressParameters(double f,bool bMax,double fmax);
+   void SetAllowableCompressionFactor(double c);
+   void SetAlternativeTensileConcreteStressFactor(double f);
+   void GetRequiredConcreteStrength(double *pfcCompression,double *pfcTension,bool* pMinRebarRequired) const;
 
    // GROUP: INQUIRY
 

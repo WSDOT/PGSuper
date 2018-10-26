@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 46.92   8  6.00  1     1     III        10  0.60  270 20.08 14.48   2 30.0  4.000  5.000    1.780   -1.896   2349  0.668  0.668  0.08 -0.01  0.00 -0.00 -0.01  21.97  67.40   1.00   5.00   5.00
+ 46.92   8  6.00  1     1     III        10  0.60  270 20.08 14.48   2 30.0  4.000  5.000    1.743   -1.881   2359  0.668  0.668  0.08 -0.01  0.00 -0.00 -0.01  21.97  67.59   1.00   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -30,7 +30,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State for
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 46.92   8  5.00  2     1     III        10  0.60  270 20.08 14.48   2 30.0  4.000  5.000    1.830   -1.833   2303  0.658  0.658  0.08 -0.01  0.00 -0.00 -0.01  21.97  68.54   1.00   5.00   5.00
+ 46.92   8  5.00  2     1     III        10  0.60  270 20.08 14.48   2 30.0  4.000  5.000    1.785   -1.815   2316  0.658  0.658  0.08 -0.01  0.00 -0.00 -0.01  21.97  68.77   1.00   5.00   5.00
 
 
 The Specification Check was Not Successful

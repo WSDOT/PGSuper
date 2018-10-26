@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -55,7 +55,7 @@ public:
 
 // Operations
 public:
-   virtual bool DoResultsExist();
+   virtual bool DoResultsExist() const;
    virtual void UpdateFromBar(); // user interacted with bar
    virtual void UpdateNow();
    void UpdateGrid();
@@ -96,14 +96,14 @@ private:
    void UpdateXAxisTitle(pgsTypes::Stage stage);
    void UpdateGraphTitle(SpanIndexType span,GirderIndexType girder,pgsTypes::Stage stage,ActionType action);
 
-   void CombinedLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI,const std::vector<Float64>& xVals,bool bIsFinalShear=false);
-   void LiveLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI,const std::vector<Float64>& xVals,bool bIsFinalShear=false);
-   void VehicularLiveLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI,const std::vector<Float64>& xVals,bool bIsFinalShear=false);
-   void LimitStateLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI,const std::vector<Float64>& xVals,bool bIsFinalShear=false);
-   void ProductLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI,const std::vector<Float64>& xVals,bool bIsFinalShear=false);
+   void CombinedLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI,const std::vector<Float64>& xVals);
+   void LiveLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI,const std::vector<Float64>& xVals);
+   void VehicularLiveLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI,const std::vector<Float64>& xVals);
+   void LimitStateLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI,const std::vector<Float64>& xVals);
+   void ProductLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI,const std::vector<Float64>& xVals);
    void PrestressLoadGraph(int graphIdx,pgsTypes::Stage stage,ActionType action,const std::vector<pgsPointOfInterest>& vPOI,const std::vector<Float64>& xVals);
 
-   void InitializeGraph(int graphIdx,ActionType action,pgsTypes::Stage stage,bool bIsFinalShear,IndexType* pDataSeriesID,BridgeAnalysisType* pBAT,Uint16* pAnalysisTypeCount);
+   void InitializeGraph(int graphIdx,ActionType action,IndexType* pDataSeriesID,BridgeAnalysisType* pBAT,Uint16* pAnalysisTypeCount);
    void AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<Float64>& yvals);
    void AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<sysSectionValue>& yvals);
    void AddGraphPoint(IndexType series, Float64 xval, Float64 yval);

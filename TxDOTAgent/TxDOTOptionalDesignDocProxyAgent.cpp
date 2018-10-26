@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -419,8 +419,8 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
             // Compute and store required concrete strength
             if ( ststype[icase] == pgsTypes::Compression )
             {
-               Float64 c = pAllowable->GetAllowableCompressiveStressCoefficient(stages[icase],lstates[icase]);
-               Float64 fc_reqd = (IsZero(c) ? 0 : _cpp_min(fTop,fBot)/-c);
+               double c = pAllowable->GetAllowableCompressiveStressCoefficient(stages[icase],lstates[icase]);
+               double fc_reqd = (IsZero(c) ? 0 : _cpp_min(fTop,fBot)/-c);
                
                if ( fc_reqd < 0 ) // the minimum stress is tensile so compression isn't an issue
                   fc_reqd = 0;
@@ -429,17 +429,17 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
             }
             else
             {
-               Float64 t;
+               double t;
                bool bCheckMax;
-               Float64 fmax;
+               double fmax;
 
                pAllowable->GetAllowableTensionStressCoefficient(stages[icase],lstates[icase],&t,&bCheckMax,&fmax);
 
                // if this is bridge site 3, only look at the bottom stress (stress in the precompressed tensile zone)
                // otherwise, take the controlling tension
-               Float64 f = (stages[icase] == pgsTypes::BridgeSite3 ? fBot : _cpp_max(fTop,fBot));
+               double f = (stages[icase] == pgsTypes::BridgeSite3 ? fBot : _cpp_max(fTop,fBot));
 
-               Float64 fc_reqd;
+               double fc_reqd;
                if (f>0.0)
                {
                   fc_reqd = (IsZero(t) ? 0 : BinarySign(f)*pow(f/t,2));

@@ -1,6 +1,7 @@
+
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -206,7 +207,8 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    (*av_table)(0,5)  << COLHDR(_T("a") << Sub(_T("vf"))<<rptNewLine<<_T("Composite") , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
 
    // general quantities
-   Float64 fy_max = ::ConvertToSysUnits(60.0,unitMeasure::KSI); // LRFD2013 5.8.4.1
+   Float64 Es,Fy,Fu;
+   pMaterial->GetTransverseRebarProperties(span,girder,&Es,&Fy,&Fu);
 
    *pPara << _T("Coeff. of Friction (")<<symbol(mu)<<_T(") = ")<< p_first_artifact->GetFrictionFactor()<<rptNewLine;
    *pPara << _T("Cohesion Factor (c) = ")<< stress_with_tag.SetValue(p_first_artifact->GetCohesionFactor())<<rptNewLine;
@@ -219,13 +221,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    }
 
    *pPara << RPT_FC<<_T(" = ")<<stress_with_tag.SetValue(p_first_artifact->GetFc())<<rptNewLine;
-   *pPara << RPT_FY<<_T(" = ")<<stress_with_tag.SetValue(p_first_artifact->GetFy());
-   if ( p_first_artifact->WasFyLimited() )
-   {
-      *pPara << _T(", ") << RPT_FY << _T(" is limited to ") << stress_with_tag.SetValue(fy_max) << _T(" (LRFD 5.8.4.1)") << rptNewLine;
-   }
-   *pPara << rptNewLine;
-
+   *pPara << RPT_FY<<_T(" = ")<<stress_with_tag.SetValue(Fy)<<rptNewLine;
    *pPara << symbol(phi)<<_T(" = ")<< p_first_artifact->GetPhi()<<rptNewLine;
 
    if ( spec2007OrOlder )

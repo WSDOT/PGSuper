@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -223,7 +223,7 @@ void CProfileGrid::SetRowData(ROWCOL nRow,VertCurveData& data)
    GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
-   Float64 station = data.PVIStation;
+   double station = data.PVIStation;
    station = ::ConvertFromSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    CComPtr<IStation> objStation;
@@ -233,19 +233,19 @@ void CProfileGrid::SetRowData(ROWCOL nRow,VertCurveData& data)
    objStation->AsString(unit_mode,&bstrStation);
    SetValueRange(CGXRange(nRow,1),CString(bstrStation));
 
-   Float64 grade = data.ExitGrade*100;
+   double grade = data.ExitGrade*100;
    SetValueRange(CGXRange(nRow,2), grade);
 
-   Float64 L1 = ::ConvertFromSysUnits(data.L1,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   double L1 = ::ConvertFromSysUnits(data.L1,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,3),L1);
 
-   Float64 L2 = ::ConvertFromSysUnits(data.L2,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   double L2 = ::ConvertFromSysUnits(data.L2,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,4),L2);
 
    GetParam()->EnableUndo(TRUE);
 }
 
-bool CProfileGrid::GetRowData(ROWCOL nRow,Float64* pStation,Float64* pGrade,Float64* pL1,Float64* pL2)
+bool CProfileGrid::GetRowData(ROWCOL nRow,double* pStation,double* pGrade,double* pL1,double* pL2)
 {
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
@@ -259,7 +259,7 @@ bool CProfileGrid::GetRowData(ROWCOL nRow,Float64* pStation,Float64* pGrade,Floa
    if ( FAILED(hr) )
       return false;
 
-   Float64 station_value;
+   double station_value;
    station->get_Value(&station_value);
    station_value = ::ConvertToSysUnits(station_value,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    *pStation = station_value;

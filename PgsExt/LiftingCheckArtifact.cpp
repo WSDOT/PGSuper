@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -76,7 +76,7 @@ bool pgsLiftingStressCheckArtifact::TensionPassed() const
 {
    Float64 tens_stress = GetMaximumConcreteTensileStress();
    Float64 max_tens_stress = m_pParent->GetAllowableTensileStress();
-   if ( IsGT(tens_stress,max_tens_stress) )
+   if ( IsGT(max_tens_stress,tens_stress) )
       return true;
 
    return false;
@@ -86,7 +86,7 @@ bool pgsLiftingStressCheckArtifact::AlternativeTensionPassed() const
 {
    Float64 tens_stress = GetMaximumConcreteTensileStress();
    Float64 max_tens_stress = m_pParent->GetAlternativeTensionAllowableStress();
-   if ( IsGT(tens_stress,max_tens_stress) )
+   if ( IsGT(max_tens_stress,tens_stress) )
       return true;
 
    return false;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,13 +32,13 @@
 #include <PgsExt\BridgeDescription.h>
 #include "SpanLayoutPage.h"
 #include "GirderLayoutPage.h"
-#include "SpanConnectionsPage.h"
+#include "PierConnectionsPage.h"
 #include "EditSpan.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpanDetailsDlg
 
-class CSpanDetailsDlg : public CPropertySheet
+class CSpanDetailsDlg : public CPropertySheet, public IPierConnectionsParent
 {
 	DECLARE_DYNAMIC(CSpanDetailsDlg)
 
@@ -47,6 +47,12 @@ public:
 	CSpanDetailsDlg(const CSpanData* pSpanData = NULL,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
    void SetSpanData(const CSpanData* pSpan);
 
+   //interface IPierConnectionsParent
+   virtual pgsTypes::PierConnectionType GetConnectionType(PierIndexType pierIdx);
+   virtual void SetConnectionType(PierIndexType pierIdx,pgsTypes::PierConnectionType type);
+   virtual const CSpanData* GetPrevSpan(PierIndexType pierIdx);
+   virtual const CSpanData* GetNextSpan(PierIndexType pierIdx);
+   virtual const CBridgeDescription* GetBridgeDescription();
 
 // Attributes
 public:
@@ -55,24 +61,35 @@ public:
 public:
    txnEditSpanData GetEditSpanData();
 
+   // General Layout
    Float64 GetSpanLength();
 
-   pgsTypes::PierConnectionType GetConnectionType(pgsTypes::PierFaceType pierFace);
-   LPCTSTR GetPrevPierConnection(pgsTypes::PierFaceType pierFace);
-   LPCTSTR GetNextPierConnection(pgsTypes::PierFaceType pierFace);
+   // Connections
+   pgsTypes::PierConnectionType GetConnectionType(pgsTypes::MemberEndType end);
+   Float64 GetDiaphragmHeight(pgsTypes::MemberEndType end);
+   Float64 GetDiaphragmWidth(pgsTypes::MemberEndType end);
+   ConnectionLibraryEntry::DiaphragmLoadType GetDiaphragmLoadType(pgsTypes::MemberEndType end);
+   Float64 GetDiaphragmLoadLocation(pgsTypes::MemberEndType end);
+   ConnectionLibraryEntry::EndDistanceMeasurementType GetEndDistanceMeasurementType(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
+   Float64 GetEndDistance(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
+   ConnectionLibraryEntry::BearingOffsetMeasurementType GetBearingOffsetMeasurementType(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
+   Float64 GetBearingOffset(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
+   Float64 GetSupportWidth(pgsTypes::MemberEndType end,pgsTypes::PierFaceType face);
+
+
    pgsTypes::SupportedBeamSpacing GetGirderSpacingType();
    bool UseSameGirderType();
    bool UseSameNumGirders();
-   bool UseSameGirderSpacingAtEachEnd();
-   CGirderSpacing GetGirderSpacing(pgsTypes::PierFaceType pierFace);
+   //bool UseSameGirderSpacingAtEachEnd();
+   CGirderSpacing GetGirderSpacing(pgsTypes::MemberEndType end);
    CGirderTypes GetGirderTypes();
    GirderIndexType GetGirderCount();
-   pgsTypes::MeasurementLocation GetMeasurementLocation(pgsTypes::PierFaceType pierFace);
-   pgsTypes::MeasurementType GetMeasurementType(pgsTypes::PierFaceType pierFace);
+   pgsTypes::MeasurementLocation GetMeasurementLocation(pgsTypes::MemberEndType end);
+   pgsTypes::MeasurementType GetMeasurementType(pgsTypes::MemberEndType end);
 
-   GirderIndexType GetRefGirder(pgsTypes::PierFaceType pierFace);
-   Float64 GetRefGirderOffset(pgsTypes::PierFaceType pierFace);
-   pgsTypes::OffsetMeasurementType GetRefGirderOffsetType(pgsTypes::PierFaceType pierFace);
+   GirderIndexType GetRefGirder(pgsTypes::MemberEndType end);
+   Float64 GetRefGirderOffset(pgsTypes::MemberEndType end);
+   pgsTypes::OffsetMeasurementType GetRefGirderOffsetType(pgsTypes::MemberEndType end);
 
    pgsTypes::MeasurementLocation GetMeasurementLocation(); // for the entire bridge
 
@@ -97,7 +114,8 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
    void Init();
-   bool AllowConnectionChange(pgsTypes::PierFaceType side, const CString& conectionName);
+   bool AllowConnectionChange(pgsTypes::MemberEndType end, const CString& conectionName);
+
 
    const CBridgeDescription* m_pBridgeDesc;
    const CPierData* m_pPrevPier;
@@ -111,18 +129,18 @@ protected:
    // index is pgsTypes::PierFaceType
    // start of span is pgsTypes::Ahead, end of span is pgsTypes::Back
    pgsTypes::PierConnectionType m_ConnectionType[2];
-   CString m_PrevPierConnectionName[2];
-   CString m_NextPierConnectionName[2];
 
 
    friend CSpanLayoutPage;
-   friend CSpanConnectionsPage;
    friend CSpanGirderLayoutPage;
 
    CSpanLayoutPage m_SpanLayoutPage;
-   CSpanConnectionsPage m_SpanConnectionsPage;
+   CPierConnectionsPage m_StartPierPage;
+   CPierConnectionsPage m_EndPierPage;
    CSpanGirderLayoutPage m_GirderLayoutPage;
 
+   CString m_strStartPierTitle;
+   CString m_strEndPierTitle;
 };
 
 /////////////////////////////////////////////////////////////////////////////

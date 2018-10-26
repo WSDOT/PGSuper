@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -631,7 +631,7 @@ STDMETHODIMP CPGSuperDocProxyAgent::IntegrateWithUI(BOOL bIntegrate)
 
 ////////////////////////////////////////////////////////////////////
 // IBridgeDescriptionEventSink
-HRESULT CPGSuperDocProxyAgent::OnBridgeChanged(CBridgeChangedHint* pHint)
+HRESULT CPGSuperDocProxyAgent::OnBridgeChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    //
@@ -676,18 +676,8 @@ HRESULT CPGSuperDocProxyAgent::OnBridgeChanged(CBridgeChangedHint* pHint)
       m_pPGSuperDoc->ClearSelection();
 
    m_pPGSuperDoc->SetModifiedFlag();
-
-   boost::shared_ptr<CBridgeHint> pBridgeHint;
-   if ( pHint )
-   {
-      pBridgeHint = boost::shared_ptr<CBridgeHint>(new CBridgeHint);
-      pBridgeHint->PierIdx = pHint->PierIdx;
-      pBridgeHint->PierFace = pHint->PierFace;
-      pBridgeHint->bAdded = pHint->bAdded;
-   }
-
-   boost::shared_ptr<CObject> pObjHint = boost::shared_dynamic_cast<CObject,CBridgeHint>(pBridgeHint);
-   FireEvent( 0, HINT_BRIDGECHANGED, pObjHint );
+   boost::shared_ptr<CObject> pnull;
+   FireEvent( 0, HINT_BRIDGECHANGED, pnull );
 
    return S_OK;
 }

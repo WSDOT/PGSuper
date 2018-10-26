@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -81,7 +81,6 @@ const UINT DEF_GV =  IDG_SV_SHOW_STRANDS     |
                      IDG_EV_DRAW_TO_SCALE    |
                      IDG_EV_SHOW_STIRRUPS    |
                      IDG_EV_SHOW_LONG_REINF;
-
 
 /*--------------------------------------------------------------------*/
 class CTxDOTOptionalDesignDoc : public CEAFBrokerDocument, public ITxDataObserver, public ITxDOTBrokerRetriever

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -38,24 +38,11 @@ txnEditSpanData::txnEditSpanData(const CSpanData* pSpan)
 {
    bSameNumberOfGirdersInAllSpans = pSpan->GetBridgeDescription()->UseSameNumberOfGirdersInAllSpans();
    bSameGirderType                = pSpan->GetBridgeDescription()->UseSameGirderForEntireBridge();
-   bSameGirderSpacingAtEachEnd    = pSpan->UseSameSpacingAtBothEndsOfSpan();
 
    SpanLength = pSpan->GetSpanLength();
 
    nGirders = pSpan->GetGirderCount();
    GirderTypes = *pSpan->GetGirderTypes();
-
-   if ( pSpan->GetPrevPier()->GetPrevSpan() )
-      PrevPierConnection[pgsTypes::Back] = pSpan->GetPrevPier()->GetConnection(pgsTypes::Back);
-
-   PrevPierConnection[pgsTypes::Ahead] = pSpan->GetPrevPier()->GetConnection(pgsTypes::Ahead);
-   NextPierConnection[pgsTypes::Back]  = pSpan->GetNextPier()->GetConnection(pgsTypes::Back);
-
-   if ( pSpan->GetNextPier()->GetNextSpan() )
-      NextPierConnection[pgsTypes::Ahead] = pSpan->GetNextPier()->GetConnection(pgsTypes::Ahead);
-
-   ConnectionType[pgsTypes::Ahead] = pSpan->GetPrevPier()->GetConnectionType();
-   ConnectionType[pgsTypes::Back]  = pSpan->GetNextPier()->GetConnectionType();
 
    GirderSpacingType              = pSpan->GetBridgeDescription()->GetGirderSpacingType();
    GirderMeasurementLocation      = pSpan->GetBridgeDescription()->GetMeasurementLocation();
@@ -164,39 +151,43 @@ void txnEditSpan::DoExecute(int i)
       pBridgeDesc->SetMeasurementType(     m_SpanData[i].GirderSpacing[pgsTypes::Ahead].GetMeasurementType() );
    }
 
-   pBridgeDesc->UseSameGirderSpacingAtBothEndsOfSpan(m_SpanIdx,m_SpanData[i].bSameGirderSpacingAtEachEnd);
-
    CGirderSpacing girderSpacingAhead( m_SpanData[i].GirderSpacing[pgsTypes::Ahead] );
    pBridgeDesc->SetGirderSpacingAtStartOfSpan( m_SpanIdx,girderSpacingAhead);
    pBridgeDesc->SetMeasurementLocation(        m_SpanIdx,pgsTypes::Ahead,girderSpacingAhead.GetMeasurementLocation());
    pBridgeDesc->SetMeasurementType(            m_SpanIdx,pgsTypes::Ahead,girderSpacingAhead.GetMeasurementType());
 
    CGirderSpacing girderSpacingBack( m_SpanData[i].GirderSpacing[pgsTypes::Back] );
-   if ( !m_SpanData[i].bSameGirderSpacingAtEachEnd )
-   {
-      pBridgeDesc->SetGirderSpacingAtEndOfSpan(m_SpanIdx,girderSpacingBack);
-   }
+   pBridgeDesc->SetGirderSpacingAtEndOfSpan(m_SpanIdx,girderSpacingBack);
    pBridgeDesc->SetMeasurementLocation(     m_SpanIdx+1,pgsTypes::Back,girderSpacingBack.GetMeasurementLocation());
    pBridgeDesc->SetMeasurementType(         m_SpanIdx+1,pgsTypes::Back,girderSpacingBack.GetMeasurementType());
 
-   CPierData prevPier = *pBridgeDesc->GetPier(m_SpanIdx);
-   CPierData nextPier = *pBridgeDesc->GetPier(m_SpanIdx+1);
+   // Connections
+   PierIndexType prevPierIdx = (PierIndexType)m_SpanIdx;
+   PierIndexType nextPierIdx = prevPierIdx + 1;
+   for ( int j = 0; j < 2; j++ )
+   {
+      pgsTypes::MemberEndType end = (j == 0 ? pgsTypes::metStart : pgsTypes::metEnd);
+      PierIndexType pierIdx = (j == 0 ? prevPierIdx : nextPierIdx);
+      CPierData pier = *pBridgeDesc->GetPier( pierIdx );
+      pier.SetConnectionType( m_SpanData[i].m_ConnectionType[end] );
 
-   if ( pBridgeDesc->GetPier(m_SpanIdx)->GetPrevSpan() )
-      prevPier.SetConnection(pgsTypes::Back,      m_SpanData[i].PrevPierConnection[pgsTypes::Back].c_str() );
+      // Diaphragm
+      pier.SetDiaphragmHeight(       (pgsTypes::PierFaceType)end, m_SpanData[i].m_DiaphragmHeight[end]);
+      pier.SetDiaphragmWidth(        (pgsTypes::PierFaceType)end, m_SpanData[i].m_DiaphragmWidth[end]);
+      pier.SetDiaphragmLoadType(     (pgsTypes::PierFaceType)end, m_SpanData[i].m_DiaphragmLoadType[end]);
+      pier.SetDiaphragmLoadLocation( (pgsTypes::PierFaceType)end, m_SpanData[i].m_DiaphragmLoadLocation[end]);
 
-   prevPier.SetConnection(pgsTypes::Ahead,      m_SpanData[i].PrevPierConnection[pgsTypes::Ahead].c_str() );
+      for ( int k = 0; k < 2; k++ )
+      {
+         pgsTypes::PierFaceType face = (k == 0 ? pgsTypes::Ahead : pgsTypes::Back);
 
-   nextPier.SetConnection(pgsTypes::Back,      m_SpanData[i].NextPierConnection[pgsTypes::Back].c_str() );
+         pier.SetGirderEndDistance( face,m_SpanData[i].m_EndDistance[end][face],  m_SpanData[i].m_EndDistanceMeasurementType[end][face]);
+         pier.SetBearingOffset(     face,m_SpanData[i].m_BearingOffset[end][face],m_SpanData[i].m_BearingOffsetMeasurementType[end][face]);
+         pier.SetSupportWidth(      face,m_SpanData[i].m_SupportWidth[end][face]);
 
-   if ( pBridgeDesc->GetPier(m_SpanIdx+1)->GetNextSpan() )
-      nextPier.SetConnection(pgsTypes::Ahead,      m_SpanData[i].NextPierConnection[pgsTypes::Ahead].c_str() );
-   
-   prevPier.SetConnectionType( m_SpanData[i].ConnectionType[pgsTypes::Ahead] );
-   nextPier.SetConnectionType( m_SpanData[i].ConnectionType[pgsTypes::Back] );
-
-   pBridgeDesc->SetPier(m_SpanIdx,  prevPier);
-   pBridgeDesc->SetPier(m_SpanIdx+1,nextPier);
+         pBridgeDesc->SetPier(pierIdx,pier);
+      }
+   }
 
    if ( m_SpanData[i].SlabOffsetType == pgsTypes::sotBridge )
    {

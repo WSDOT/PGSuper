@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -607,7 +607,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
             (*p_table)(row,0) << _T(" (w/o Temporary Strands)");
       }
 
-      Float64 nEff;
+      double nEff;
       (*p_table)(row++,col) << ecc.SetValue( pStrandGeometry->GetEccentricity( pmid[0], false, &nEff ) );
 
       if(bFirst)
@@ -649,7 +649,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
             if (bFirst)
                (*p_table)(row,0) << _T("Y")<<Sub(_T("b"))<<_T(" of Topmost Depressed Strand(s) @ End");
 
-            Float64 TO;
+            double TO;
             pStrandGeometry->GetHighestHarpedStrandLocation(span,girder,&TO);
             (*p_table)(row++,col) << ecc.SetValue(TO);
          }
@@ -686,7 +686,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       (*p_table)(row++,col) << Bold(_T(""));
 
       const pgsFlexuralStressArtifact* pArtifact;
-      Float64 fcTop = 0.0, fcBot = 0.0, ftTop = 0.0, ftBot = 0.0;
+      double fcTop = 0.0, fcBot = 0.0, ftTop = 0.0, ftBot = 0.0;
 
 
       const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,girder);

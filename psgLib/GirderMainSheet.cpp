@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -563,7 +563,7 @@ void CGirderMainSheet::ExchangeDebondCriteriaData(CDataExchange* pDX)
       BOOL bval = m_Entry.m_MaxDebondLengthBySpanFraction<0 ? FALSE:TRUE;
       DDX_Check(pDX, IDC_CHECK_MAX_LENGTH_FRACTION, bval);
 
-      Float64 dval = (bval!=FALSE) ? m_Entry.m_MaxDebondLengthBySpanFraction : 0.0;
+      double dval = (bval!=FALSE) ? m_Entry.m_MaxDebondLengthBySpanFraction : 0.0;
       DDX_Percentage(pDX,IDC_MAX_LENGTH_FRACTION, dval);
 
       bval = m_Entry.m_MaxDebondLengthByHardDistance<0 ? FALSE:TRUE;
@@ -581,7 +581,7 @@ void CGirderMainSheet::ExchangeDebondCriteriaData(CDataExchange* pDX)
       if(bval!=FALSE)
       {
          DDX_Percentage(pDX,IDC_MAX_LENGTH_FRACTION, m_Entry.m_MaxDebondLengthBySpanFraction);
-         Float64 dval = m_Entry.m_MaxDebondLengthBySpanFraction * 100;
+         double dval = m_Entry.m_MaxDebondLengthBySpanFraction * 100;
          DDV_MinMaxDouble(pDX, dval, 0.0, 45.0);
       }
       else

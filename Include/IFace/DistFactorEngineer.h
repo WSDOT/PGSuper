@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -71,23 +71,23 @@ interface IDistFactorEngineer : IUnknown
 
    //---------------------------------------------------------------------
    // Returns the distribution factor for moment
-   virtual Float64 GetMomentDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls) = 0;
-   virtual Float64 GetMomentDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
+   virtual double GetMomentDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls) = 0;
+   virtual double GetMomentDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
 
    //---------------------------------------------------------------------
    // Returns the distribution factor for negative moment over a pier
-   virtual Float64 GetNegMomentDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace) = 0;
-   virtual Float64 GetNegMomentDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr) = 0;
+   virtual double GetNegMomentDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace) = 0;
+   virtual double GetNegMomentDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr) = 0;
 
    //---------------------------------------------------------------------
    // Returns the distribution factor for shear
-   virtual Float64 GetShearDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls) = 0;
-   virtual Float64 GetShearDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
+   virtual double GetShearDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls) = 0;
+   virtual double GetShearDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
 
    //---------------------------------------------------------------------
    // Returns the distribution factor for reaction
-   virtual Float64 GetReactionDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls) = 0;
-   virtual Float64 GetReactionDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
+   virtual double GetReactionDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls) = 0;
+   virtual double GetReactionDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
 
    //---------------------------------------------------------------------
    // Creates a detailed report of the distribution factor computation

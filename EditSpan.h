@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -45,11 +45,24 @@ struct txnEditSpanData
    GirderIndexType nGirders;
    CGirderTypes GirderTypes;
 
-   std::_tstring PrevPierConnection[2];
-   std::_tstring NextPierConnection[2];
-   pgsTypes::PierConnectionType ConnectionType[2];
-   bool bSameGirderSpacingAtEachEnd;
    CGirderSpacing GirderSpacing[2];
+
+   // Connections
+   pgsTypes::PierConnectionType m_ConnectionType[2];
+
+   // first index is MemberEndType, second index is PierFaceType
+   // Example, bearing offset at back side of pier at the start of this span
+   // m_BearingOffset[pgsTypes::metStart][pgsTypes::Back]
+   ConnectionLibraryEntry::EndDistanceMeasurementType m_EndDistanceMeasurementType[2][2];
+   Float64 m_EndDistance[2][2];
+   ConnectionLibraryEntry::BearingOffsetMeasurementType m_BearingOffsetMeasurementType[2][2];
+   Float64 m_BearingOffset[2][2]; 
+   Float64 m_SupportWidth[2][2];
+
+   Float64 m_DiaphragmHeight[2];
+   Float64 m_DiaphragmWidth[2];
+   ConnectionLibraryEntry::DiaphragmLoadType m_DiaphragmLoadType[2];
+   Float64 m_DiaphragmLoadLocation[2];
 
    pgsTypes::SlabOffsetType SlabOffsetType;
    Float64 SlabOffset[2];

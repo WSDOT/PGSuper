@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -118,11 +118,11 @@ void CTxDotDoubleTFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDTyp
    CComPtr<IMultiWeb2> beam;
    gdrsection->get_Beam(&beam);
 
-   Float64 c1,c2;
-   Float64 h1,h2,h3;
-   Float64 w1,w2,j;
-   Float64 t1,t2,t3;
-   Float64 f1;
+   double c1,c2;
+   double h1,h2,h3;
+   double w1,w2,j;
+   double t1,t2,t3;
+   double f1;
    GetDimensions(dimensions,h1,h2,h3,t1,t2,t3,f1,c1,c2,w1,w2,j);
 
    beam->put_C1(c1);
@@ -149,11 +149,11 @@ void CTxDotDoubleTFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDTyp
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
 
-   Float64 c1,c2;
-   Float64 h1,h2,h3;
-   Float64 w1,w2,j;
-   Float64 t1,t2,t3;
-   Float64 f1;
+   double c1,c2;
+   double h1,h2,h3;
+   double w1,w2,j;
+   double t1,t2,t3;
+   double f1;
    GetDimensions(dimensions,h1,h2,h3,t1,t2,t3,f1,c1,c2,w1,w2,j);
 
    Float64 height = h1 + h2 + h3;
@@ -290,15 +290,15 @@ void CTxDotDoubleTFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDTy
 }
 
 void CTxDotDoubleTFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
-                                  IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
-                                  IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
-                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
+                                  IBeamFactory::BeamFace endTopFace, double endTopLimit, IBeamFactory::BeamFace endBottomFace, double endBottomLimit, 
+                                  IBeamFactory::BeamFace hpTopFace, double hpTopLimit, IBeamFactory::BeamFace hpBottomFace, double hpBottomLimit, 
+                                  double endIncrement, double hpIncrement, IStrandMover** strandMover)
 {
-   Float64 h1,h2,h3;
-   Float64 c1,c2;
-   Float64 w1,w2,j;
-   Float64 t1,t2,t3;
-   Float64 f1;
+   double h1,h2,h3;
+   double c1,c2;
+   double w1,w2,j;
+   double t1,t2,t3;
+   double f1;
    GetDimensions(dimensions,h1,h2,h3,t1,t2,t3,f1,c1,c2,w1,w2,j);
 
    HRESULT hr = S_OK;
@@ -308,8 +308,8 @@ void CTxDotDoubleTFactory::CreateStrandMover(const IBeamFactory::Dimensions& dim
 
    CComPtr<IStrandMover> sm = pStrandMover;
 
-   Float64 width = t2;
-   Float64 depth = h1 + h2 + h3;
+   double width = t2;
+   double depth = h1 + h2 + h3;
 
    CComPtr<IRectangle> lft_harp_rect, rgt_harp_rect;
    hr = lft_harp_rect.CoCreateInstance(CLSID_Rect);
@@ -322,7 +322,7 @@ void CTxDotDoubleTFactory::CreateStrandMover(const IBeamFactory::Dimensions& dim
    rgt_harp_rect->put_Width(width);
    rgt_harp_rect->put_Height(depth);
 
-   Float64 hook_offset = w2/2.0 + t2/2.0 + t3;
+   double hook_offset = w2/2.0 + t2/2.0 + t3;
 
    CComPtr<IPoint2d> lft_hook, rgt_hook;
    lft_hook.CoCreateInstance(CLSID_Point2d);
@@ -345,10 +345,10 @@ void CTxDotDoubleTFactory::CreateStrandMover(const IBeamFactory::Dimensions& dim
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
-   Float64 hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
-   Float64 endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
-   Float64 endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
+   double hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
+   double hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
+   double endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
+   double endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(depth, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -362,7 +362,7 @@ std::vector<std::_tstring> CTxDotDoubleTFactory::GetDimensionNames()
    return m_DimNames;
 }
 
-std::vector<Float64> CTxDotDoubleTFactory::GetDefaultDimensions()
+std::vector<double> CTxDotDoubleTFactory::GetDefaultDimensions()
 {
    return m_DefaultDims;
 }
@@ -374,11 +374,11 @@ std::vector<const unitLength*> CTxDotDoubleTFactory::GetDimensionUnits(bool bSIU
 
 bool CTxDotDoubleTFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg)
 {
-   Float64 h1,h2,h3;
-   Float64 c1,c2;
-   Float64 w1,w2,j;
-   Float64 t1,t2,t3;
-   Float64 f1;
+   double h1,h2,h3;
+   double c1,c2;
+   double w1,w2,j;
+   double t1,t2,t3;
+   double f1;
    GetDimensions(dimensions,h1,h2,h3,t1,t2,t3,f1,c1,c2,w1,w2,j);
 
  // C1
@@ -776,11 +776,11 @@ HICON  CTxDotDoubleTFactory::GetIcon()
 }
 
 void CTxDotDoubleTFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
-                                      Float64& h1,Float64& h2,Float64& h3,
-                                      Float64& t1,Float64& t2,Float64& t3,
-                                      Float64& f1,
-                                      Float64& c1,Float64& c2,
-                                      Float64& w1,Float64& w2,Float64& j)
+                                      double& h1,double& h2,double& h3,
+                                      double& t1,double& t2,double& t3,
+                                      double& f1,
+                                      double& c1,double& c2,
+                                      double& w1,double& w2,double& j)
 {
    c1 = GetDimension(dimensions,_T("C1"));
    c2 = GetDimension(dimensions,_T("C2"));
@@ -796,7 +796,7 @@ void CTxDotDoubleTFactory::GetDimensions(const IBeamFactory::Dimensions& dimensi
    j = GetDimension(dimensions,_T("J"));
 }
 
-Float64 CTxDotDoubleTFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
+double CTxDotDoubleTFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
 {
    Dimensions::const_iterator iter;
    for ( iter = dimensions.begin(); iter != dimensions.end(); iter++ )
@@ -837,21 +837,21 @@ pgsTypes::SupportedBeamSpacings CTxDotDoubleTFactory::GetSupportedBeamSpacings()
 }
 
 void CTxDotDoubleTFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, 
-                                               pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing)
+                                               pgsTypes::SupportedBeamSpacing sbs, double* minSpacing, double* maxSpacing)
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
 
-   Float64 T1 = GetDimension(dimensions,_T("T1"));
-   Float64 T2 = GetDimension(dimensions,_T("T2"));
-   Float64 T3 = GetDimension(dimensions,_T("T3"));
-   Float64 W1 = GetDimension(dimensions,_T("W1"));
-   Float64 W2 = GetDimension(dimensions,_T("W2"));
-   Float64  J = GetDimension(dimensions,_T("J"));
+   double T1 = GetDimension(dimensions,_T("T1"));
+   double T2 = GetDimension(dimensions,_T("T2"));
+   double T3 = GetDimension(dimensions,_T("T3"));
+   double W1 = GetDimension(dimensions,_T("W1"));
+   double W2 = GetDimension(dimensions,_T("W2"));
+   double  J = GetDimension(dimensions,_T("J"));
 
-   Float64 gw_min = W2 + 2.0*(W1 + T1 + T2 + T3);
+   double gw_min = W2 + 2.0*(W1 + T1 + T2 + T3);
 
-   Float64 gw_max = gw_min + J;
+   double gw_max = gw_min + J;
 
    if ( sdt == pgsTypes::sdtCompositeOverlay ||  sdt == pgsTypes::sdtNone )
    {
@@ -878,21 +878,21 @@ WebIndexType CTxDotDoubleTFactory::GetNumberOfWebs(const IBeamFactory::Dimension
 
 Float64 CTxDotDoubleTFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   Float64 H1 = GetDimension(dimensions,_T("H1"));
-   Float64 H2 = GetDimension(dimensions,_T("H2"));
-   Float64 H3 = GetDimension(dimensions,_T("H3"));
+   double H1 = GetDimension(dimensions,_T("H1"));
+   double H2 = GetDimension(dimensions,_T("H2"));
+   double H3 = GetDimension(dimensions,_T("H3"));
 
    return H1 + H2 + H3;
 }
 
 Float64 CTxDotDoubleTFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   Float64 T1 = GetDimension(dimensions,_T("T1"));
-   Float64 T2 = GetDimension(dimensions,_T("T2"));
-   Float64 T3 = GetDimension(dimensions,_T("T3"));
+   double T1 = GetDimension(dimensions,_T("T1"));
+   double T2 = GetDimension(dimensions,_T("T2"));
+   double T3 = GetDimension(dimensions,_T("T3"));
 
-   Float64 W1 = GetDimension(dimensions,_T("W1"));
-   Float64 W2 = GetDimension(dimensions,_T("W2"));
+   double W1 = GetDimension(dimensions,_T("W1"));
+   double W2 = GetDimension(dimensions,_T("W2"));
 
    return 2*(T1+T2+T3+W1) + W2;
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1736,7 +1736,7 @@ bool CBridgeAgentImp::BuildCogoModel()
       CollectionIndexType curveIdx = 0;
 
       std::vector<HorzCurveData>::iterator iter;
-      for ( iter = alignment_data.HorzCurves.begin(); iter != alignment_data.HorzCurves.end(); iter++, curveID++, curveIdx++ )
+      for ( iter = alignment_data.HorzCurves.begin(); iter != alignment_data.HorzCurves.end(); iter++ )
       {
          HorzCurveData& curve_data = *iter;
 
@@ -1807,27 +1807,13 @@ bool CBridgeAgentImp::BuildCogoModel()
             if ( IsZero(fabs(back_tangent - fwd_tangent)) || IsEqual(fabs(back_tangent - fwd_tangent),M_PI) )
             {
                std::_tostringstream os;
-               os << _T("The central angle of horizontal curve ") << curveID << _T(" is 0 or 180 degrees. Horizontal curve was modeled as a single point at the PI location.");
+               os << _T("The central angle of curve ") << curveID << _T(" is 0 or 180 degrees");
                std::_tstring strMsg = os.str();
                pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentError,0,strMsg.c_str());
                GET_IFACE(IEAFStatusCenter,pStatusCenter);
                pStatusCenter->Add(p_status_item);
-               
-               alignment->AddEx(pi);
-
-               back_tangent = fwd_tangent;
-               prev_curve_ST_station = pi_station;
-
-               if ( curveIdx == 0 )
-               {
-                  // this is the first curve so set the reference station at the PI
-                  alignment->put_RefStation( CComVariant(pi_station) );
-               }
-
-               continue; // GO TO NEXT HORIZONTAL CURVE
-
-               //strMsg += std::_tstring(_T("\nSee Status Center for Details"));
-               //THROW_UNWIND(strMsg.c_str(),-1);
+               strMsg += std::_tstring(_T("\nSee Status Center for Details"));
+               THROW_UNWIND(strMsg.c_str(),-1);
             }
 
             CComPtr<IHorzCurve> hc;
@@ -1913,6 +1899,9 @@ bool CBridgeAgentImp::BuildCogoModel()
             // this is the first curve so set the reference station at the TS 
             alignment->put_RefStation( CComVariant(pi_station - T) );
          }
+
+         curveID++;
+         curveIdx++;  
       }
    }
 
@@ -2032,16 +2021,6 @@ bool CBridgeAgentImp::BuildCogoModel()
 
          if ( IsZero(L1) && IsZero(L2) )
          {
-            // zero length vertical curve.... this is ok as it creates
-            // a profile point. It isn't common so warn the user
-            std::_tostringstream os;
-            os << _T("Vertical curve ") << curveID << _T(" is a zero length curve.");
-            std::_tstring strMsg = os.str();
-
-            pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentWarning,1,strMsg.c_str());
-            GET_IFACE(IEAFStatusCenter,pStatusCenter);
-            pStatusCenter->Add(p_status_item);
-
             // add a profile point
             if ( iter == profile_data.VertCurves.begin() )
             {
@@ -2369,10 +2348,8 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription* pBridgeDesc)
       prevPier->get_Connection(qcbAfter, &start_connection);
       nextPier->get_Connection(qcbBefore,&end_connection);
 
-      const ConnectionLibraryEntry* start_connection_entry = pPrevPier->GetConnectionLibraryEntry(pgsTypes::Ahead);
-      const ConnectionLibraryEntry* end_connection_entry   = pNextPier->GetConnectionLibraryEntry(pgsTypes::Back);
-      ConfigureConnection(start_connection_entry,start_connection);
-      ConfigureConnection(end_connection_entry, end_connection);
+      ConfigureConnection(pPrevPier,pgsTypes::Ahead,start_connection);
+      ConfigureConnection(pNextPier,pgsTypes::Back, end_connection);
 
       CComPtr<IGirderSpacing> startSpacing, endSpacing;
       span->get_GirderSpacing(etStart, &startSpacing);
@@ -3284,17 +3261,26 @@ void CBridgeAgentImp::UpdatePrestressing(SpanIndexType spanIdx,GirderIndexType g
    }
 }
 
-void CBridgeAgentImp::ConfigureConnection( const ConnectionLibraryEntry* pEntry, IConnection* connection )
+void CBridgeAgentImp::ConfigureConnection(const CPierData* pPier,pgsTypes::PierFaceType pierFace, IConnection* connection )
 {
-   connection->put_BearingOffset(pEntry->GetGirderBearingOffset());
-   connection->put_EndDistance(pEntry->GetGirderEndDistance());
-   connection->put_SupportWidth(pEntry->GetSupportWidth());
-
-   ConnectionLibraryEntry::BearingOffsetMeasurementType mtBearingOffset = pEntry->GetBearingOffsetMeasurementType();
-   ConnectionLibraryEntry::EndDistanceMeasurementType mtEndDistance   = pEntry->GetEndDistanceMeasurementType();
+   // Bearing Offset
+   Float64 brgOffset;
+   ConnectionLibraryEntry::BearingOffsetMeasurementType mtBearingOffset;
+   pPier->GetBearingOffset(pierFace,&brgOffset,&mtBearingOffset);
+   connection->put_BearingOffset(brgOffset);
    connection->put_BearingOffsetMeasurementType(mtBearingOffset == ConnectionLibraryEntry::NormalToPier ? mtNormal : mtAlongItem);
+
+   // End Distance
+   Float64 endDistance;
+   ConnectionLibraryEntry::EndDistanceMeasurementType mtEndDistance;
+   pPier->GetGirderEndDistance(pierFace,&endDistance,&mtEndDistance);
+   connection->put_EndDistance(endDistance);
    connection->put_EndDistanceMeasurementType((mtEndDistance==ConnectionLibraryEntry::FromBearingNormalToPier || mtEndDistance==ConnectionLibraryEntry::FromPierNormalToPier) ? mtNormal : mtAlongItem);
-   connection->put_EndDistanceMeasurementLocation((mtEndDistance==ConnectionLibraryEntry::FromBearingNormalToPier || mtEndDistance==ConnectionLibraryEntry::FromBearingAlongGirder) ? mlCenterlineBearing : mlCenterlinePier);
+   connection->put_EndDistanceMeasurementLocation((mtEndDistance==ConnectionLibraryEntry::FromBearingNormalToPier || mtEndDistance==ConnectionLibraryEntry::FromBearingAlongGirder) ? mlCenterlineBearing : mlPierLine);
+
+   // Support Width
+   Float64 supportWidth = pPier->GetSupportWidth(pierFace);
+   connection->put_SupportWidth(supportWidth);
 }
 
 bool CBridgeAgentImp::AreGirderTopFlangesRoughened(SpanIndexType span,GirderIndexType gdr)
@@ -3920,26 +3906,6 @@ void CBridgeAgentImp::LayoutPoiForShear(SpanIndexType span,GirderIndexType gdr)
       m_PoiMgr.AddPointOfInterest(poi_l);
       m_PoiMgr.AddPointOfInterest(poi_r);
    }
-
-   // POI's at stirrup zone boundaries
-   Float64 right_support_loc = length - right_end_size;
-   Float64 midLen = length/2.0;
-
-   ZoneIndexType npzs = GetNumPrimaryZones(span, gdr);
-   for (ZoneIndexType zn = 1; zn<npzs; zn++) // note that count starts at one
-   {
-      Float64 zStart, zEnd;
-      GetPrimaryZoneBounds(span, gdr, zn, &zStart, &zEnd);
-
-      // Nudge poi toward mid-span as this is where smaller Av/s will typically lie
-      zStart += zStart<midLen ? 0.001 : -0.001;
-
-      if (zStart>left_end_size && zStart<right_support_loc)
-      {
-         pgsPointOfInterest poi(stages,span,gdr,zStart, POI_FLEXURECAPACITY | POI_SHEAR | POI_ALLOUTPUT);
-         m_PoiMgr.AddPointOfInterest(poi);
-      }
-   }
 }
 
 void CBridgeAgentImp::LayoutPoiForBarCutoffs(SpanIndexType span,GirderIndexType gdr)
@@ -3972,29 +3938,21 @@ void CBridgeAgentImp::LayoutPoiForBarCutoffs(SpanIndexType span,GirderIndexType 
 
       if ( nmRebarData.PierIdx == prev_pier )
       {
-         Float64 girder_start_dist = left_brg_offset - left_end_size;
-         if ( girder_start_dist <= nmRebarData.RightCutoff )
-         {
-            Float64 dist_from_start = nmRebarData.RightCutoff - girder_start_dist;
-            if ( gdr_length < dist_from_start )
-               dist_from_start = gdr_length - 0.0015;
+         Float64 dist_from_start = nmRebarData.RightCutoff - left_brg_offset + left_end_size;
+         if ( gdr_length < dist_from_start )
+            dist_from_start = gdr_length - 0.0015;
 
-            m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start,attribute) );
-            m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start+0.0015,POI_FLEXURECAPACITY | POI_GRAPHICAL) );
-         }
+         m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start,attribute) );
+         m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start+0.0015,POI_FLEXURECAPACITY | POI_GRAPHICAL) );
       }
       else if ( nmRebarData.PierIdx == next_pier )
       {
-         Float64 girder_end_dist = right_brg_offset - right_end_size;
-         if ( girder_end_dist <= nmRebarData.LeftCutoff )
-         {
-            Float64 dist_from_start = gdr_length - (nmRebarData.LeftCutoff - girder_end_dist);
-            if ( dist_from_start < 0 )
-               dist_from_start = 0.0015;
+         Float64 dist_from_start = gdr_length - (nmRebarData.LeftCutoff - right_brg_offset + right_end_size);
+         if ( dist_from_start < 0 )
+            dist_from_start = 0.0015;
 
-            m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start-0.0015,POI_FLEXURECAPACITY | POI_GRAPHICAL) );
-            m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start,attribute) );
-         }
+         m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start-0.0015,POI_FLEXURECAPACITY | POI_GRAPHICAL) );
+         m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start,attribute) );
       }
    }
 }
@@ -4756,7 +4714,7 @@ std::vector<Float64> CBridgeAgentImp::GetGirderSpacing(PierIndexType pierIdx,pgs
    {
       Float64 spa;
       MeasurementType mt = (measureType == pgsTypes::NormalToItem ? mtNormal : mtAlongItem);
-      MeasurementLocation ml = (measureLocation == pgsTypes::AtCenterlinePier ? mlCenterlinePier : mlCenterlineBearing);
+      MeasurementLocation ml = (measureLocation == pgsTypes::AtPierLine ? mlPierLine : mlCenterlineBearing);
       gdrSpacing->get_GirderSpacing(spaceIdx,ml,mt,&spa);
       spaces.push_back(spa);
    }
@@ -5025,8 +4983,8 @@ void CBridgeAgentImp::GetLeftSideEndDiaphragmSize(PierIndexType pierIdx,Float64*
    const CPierData* pPierData = pBridgeDesc->GetPier(pierIdx);
    ATLASSERT( pPierData );
 
-   *pH = pPierData->GetConnectionLibraryEntry(pgsTypes::Back)->GetDiaphragmHeight();
-   *pW = pPierData->GetConnectionLibraryEntry(pgsTypes::Back)->GetDiaphragmWidth();
+   *pH = pPierData->GetDiaphragmHeight(pgsTypes::Back);
+   *pW = pPierData->GetDiaphragmWidth(pgsTypes::Back);
 }
 
 void CBridgeAgentImp::GetRightSideEndDiaphragmSize(PierIndexType pierIdx,Float64* pW,Float64* pH)
@@ -5038,8 +4996,8 @@ void CBridgeAgentImp::GetRightSideEndDiaphragmSize(PierIndexType pierIdx,Float64
    const CPierData* pPierData = pBridgeDesc->GetPier(pierIdx);
    ATLASSERT( pPierData );
 
-   *pH = pPierData->GetConnectionLibraryEntry(pgsTypes::Ahead)->GetDiaphragmHeight();
-   *pW = pPierData->GetConnectionLibraryEntry(pgsTypes::Ahead)->GetDiaphragmWidth();
+   *pH = pPierData->GetDiaphragmHeight(pgsTypes::Ahead);
+   *pW = pPierData->GetDiaphragmWidth(pgsTypes::Ahead);
 }
 
 Float64 CBridgeAgentImp::GetGirderStartBearingOffset(SpanIndexType spanIdx,GirderIndexType gdrIdx)
@@ -5352,7 +5310,7 @@ bool CBridgeAgentImp::DoesLeftSideEndDiaphragmLoadGirder(PierIndexType pierIdx)
    const CPierData* pPierData = pBridgeDesc->GetPier(pierIdx);
    ATLASSERT( pPierData );
 
-   return (pPierData->GetConnectionLibraryEntry(pgsTypes::Back)->GetDiaphragmLoadType() != ConnectionLibraryEntry::DontApply);
+   return (pPierData->GetDiaphragmLoadType(pgsTypes::Back) != ConnectionLibraryEntry::DontApply);
 }
 
 bool CBridgeAgentImp::DoesRightSideEndDiaphragmLoadGirder(PierIndexType pierIdx)
@@ -5364,7 +5322,7 @@ bool CBridgeAgentImp::DoesRightSideEndDiaphragmLoadGirder(PierIndexType pierIdx)
    const CPierData* pPierData = pBridgeDesc->GetPier(pierIdx);
    ATLASSERT( pPierData );
 
-   return (pPierData->GetConnectionLibraryEntry(pgsTypes::Ahead)->GetDiaphragmLoadType() != ConnectionLibraryEntry::DontApply);
+   return (pPierData->GetDiaphragmLoadType(pgsTypes::Ahead) != ConnectionLibraryEntry::DontApply);
 }
 
 Float64 CBridgeAgentImp::GetEndDiaphragmLoadLocationAtStart(SpanIndexType span,GirderIndexType gdr)
@@ -5378,10 +5336,10 @@ Float64 CBridgeAgentImp::GetEndDiaphragmLoadLocationAtStart(SpanIndexType span,G
    ATLASSERT( pPierData );
 
    Float64 dist;
-   if (pPierData->GetConnectionLibraryEntry(pgsTypes::Ahead)->GetDiaphragmLoadType()==ConnectionLibraryEntry::ApplyAtSpecifiedLocation)
+   if (pPierData->GetDiaphragmLoadType(pgsTypes::Ahead)==ConnectionLibraryEntry::ApplyAtSpecifiedLocation)
    {
       // return distance adjusted for skew
-      dist  = pPierData->GetConnectionLibraryEntry(pgsTypes::Ahead)->GetDiaphragmLoadLocation();
+      dist  = pPierData->GetDiaphragmLoadLocation(pgsTypes::Ahead);
 
       CComPtr<IAngle> angle;
       GetPierSkew(span,&angle);
@@ -5390,7 +5348,7 @@ Float64 CBridgeAgentImp::GetEndDiaphragmLoadLocationAtStart(SpanIndexType span,G
 
       dist /=  cos ( fabs(value) );
    }
-   else if (pPierData->GetConnectionLibraryEntry(pgsTypes::Ahead)->GetDiaphragmLoadType()==ConnectionLibraryEntry::ApplyAtBearingCenterline)
+   else if (pPierData->GetDiaphragmLoadType(pgsTypes::Ahead)==ConnectionLibraryEntry::ApplyAtBearingCenterline)
    {
       // same as bearing offset
       dist = GetGirderStartBearingOffset(span,gdr);
@@ -5415,10 +5373,10 @@ Float64 CBridgeAgentImp::GetEndDiaphragmLoadLocationAtEnd(SpanIndexType span,Gir
    ATLASSERT( pPierData );
 
    Float64 dist;
-   if (pPierData->GetConnectionLibraryEntry(pgsTypes::Back)->GetDiaphragmLoadType()==ConnectionLibraryEntry::ApplyAtSpecifiedLocation)
+   if (pPierData->GetDiaphragmLoadType(pgsTypes::Back)==ConnectionLibraryEntry::ApplyAtSpecifiedLocation)
    {
       // return distance adjusted for skew
-      dist  = pPierData->GetConnectionLibraryEntry(pgsTypes::Back)->GetDiaphragmLoadLocation();
+      dist  = pPierData->GetDiaphragmLoadLocation(pgsTypes::Back);
 
       CComPtr<IAngle> angle;
       GetPierSkew(span+1,&angle);
@@ -5427,7 +5385,7 @@ Float64 CBridgeAgentImp::GetEndDiaphragmLoadLocationAtEnd(SpanIndexType span,Gir
 
       dist /=  cos ( fabs(value) );
    }
-   else if (pPierData->GetConnectionLibraryEntry(pgsTypes::Back)->GetDiaphragmLoadType()==ConnectionLibraryEntry::ApplyAtBearingCenterline)
+   else if (pPierData->GetDiaphragmLoadType(pgsTypes::Back)==ConnectionLibraryEntry::ApplyAtBearingCenterline)
    {
       // same as bearing offset
       dist = GetGirderEndBearingOffset(span,gdr);
@@ -6178,7 +6136,7 @@ Float64 CBridgeAgentImp::GetCurbToCurbWidth(Float64 distFromStartOfBridge)
    return right_offset - left_offset;
 }
 
-Float64 CBridgeAgentImp::GetLeftInteriorCurbOffset(Float64 distFromStartOfBridge)
+Float64 CBridgeAgentImp::GetLeftInteriorCurbOffset(double distFromStartOfBridge)
 {
    VALIDATE( BRIDGE );
    Float64 station = GetPierStation(0);
@@ -6188,7 +6146,7 @@ Float64 CBridgeAgentImp::GetLeftInteriorCurbOffset(Float64 distFromStartOfBridge
    return offset;
 }
 
-Float64 CBridgeAgentImp::GetRightInteriorCurbOffset(Float64 distFromStartOfBridge)
+Float64 CBridgeAgentImp::GetRightInteriorCurbOffset(double distFromStartOfBridge)
 {
    VALIDATE( BRIDGE );
    Float64 station = GetPierStation(0);
@@ -6198,7 +6156,7 @@ Float64 CBridgeAgentImp::GetRightInteriorCurbOffset(Float64 distFromStartOfBridg
    return offset;
 }
 
-Float64 CBridgeAgentImp::GetLeftOverlayToeOffset(Float64 distFromStartOfBridge)
+Float64 CBridgeAgentImp::GetLeftOverlayToeOffset(double distFromStartOfBridge)
 {
    Float64 slab_edge = GetLeftSlabEdgeOffset(distFromStartOfBridge);
 
@@ -6211,7 +6169,7 @@ Float64 CBridgeAgentImp::GetLeftOverlayToeOffset(Float64 distFromStartOfBridge)
    return slab_edge + toe_width;
 }
 
-Float64 CBridgeAgentImp::GetRightOverlayToeOffset(Float64 distFromStartOfBridge)
+Float64 CBridgeAgentImp::GetRightOverlayToeOffset(double distFromStartOfBridge)
 {
    Float64 slab_edge = GetRightSlabEdgeOffset(distFromStartOfBridge);
 
@@ -6238,31 +6196,9 @@ Float64 CBridgeAgentImp::GetRightOverlayToeOffset(const pgsPointOfInterest& poi)
 
 void CBridgeAgentImp::GetSlabPerimeter(CollectionIndexType nPoints,IPoint2dCollection** points)
 {
-   VALIDATE( BRIDGE );
-
-   CComPtr<IPoint2dCollection> left_edge, right_edge;
-   m_BridgeGeometryTool->DeckEdgePoints(m_Bridge,qcbLeft, nPoints,&left_edge);
-   m_BridgeGeometryTool->DeckEdgePoints(m_Bridge,qcbRight,nPoints,&right_edge);
-
-   // append the left edge to the right edge, in reverse order
-   CollectionIndexType count;
-   left_edge->get_Count(&count);
-   bool bDone = false;
-   CollectionIndexType i = count-1;
-   do
-   {
-      CComPtr<IPoint2d> p;
-      left_edge->get_Item(i,&p);
-      right_edge->Add(p);
-
-      if ( i == 0 )
-         bDone = true;
-
-      i--;
-   } while ( !bDone );
-
-   (*points) = right_edge;
-   (*points)->AddRef();
+   SpanIndexType startSpanIdx = 0;
+   SpanIndexType endSpanIdx = GetSpanCount()-1;
+   GetSlabPerimeter(startSpanIdx,endSpanIdx,nPoints,points);
 }
 
 void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx,CollectionIndexType nPoints,IPoint2dCollection** points)
@@ -6282,6 +6218,18 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
 
    Float64 startStation = GetPierStation(startPierIdx);
    Float64 endStation   = GetPierStation(endPierIdx);
+
+   if ( startSpanIdx == 0 )
+   {
+      startStation -= GetGirderStartConnectionLength(startSpanIdx,0);
+   }
+
+   SpanIndexType nSpans = GetSpanCount();
+   if ( endSpanIdx == nSpans-1 )
+   {
+      endStation += GetGirderEndConnectionLength(endSpanIdx,0);
+   }
+
    Float64 stationInc   = (endStation - startStation)/(nPoints-1);
 
    CComPtr<IDirection> startDirection, endDirection;
@@ -6382,6 +6330,18 @@ void CBridgeAgentImp::GetSpanPerimeter(SpanIndexType spanIdx,CollectionIndexType
 
    Float64 startStation = GetPierStation(startPierIdx);
    Float64 endStation   = GetPierStation(endPierIdx);
+
+   if ( spanIdx == 0 )
+   {
+      startStation -= GetGirderStartConnectionLength(spanIdx,0);
+   }
+
+   SpanIndexType nSpans = GetSpanCount();
+   if ( spanIdx == nSpans-1 )
+   {
+      endStation += GetGirderEndConnectionLength(spanIdx,0);
+   }
+
    Float64 stationInc   = (endStation - startStation)/(nPoints-1);
 
    CComPtr<IDirection> startDirection, endDirection;
@@ -6624,36 +6584,6 @@ void CBridgeAgentImp::GetPierSkew(PierIndexType pierIdx,IAngle** ppAngle)
    piers->get_Item(pierIdx,&pier);
 
    pier->get_SkewAngle(ppAngle);
-}
-
-std::_tstring CBridgeAgentImp::GetLeftSidePierConnection(PierIndexType pierIdx)
-{
-   VALIDATE( BRIDGE );
-
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CPierData* pPierData = pBridgeDesc->GetPier(pierIdx);
-   ATLASSERT( pPierData );
-
-   if ( pPierData->GetPrevSpan() == NULL )
-      return pPierData->GetConnectionLibraryEntry(pgsTypes::Ahead)->GetName();
-   else
-      return pPierData->GetConnectionLibraryEntry(pgsTypes::Back)->GetName();
-}
-
-std::_tstring CBridgeAgentImp::GetRightSidePierConnection(PierIndexType pierIdx)
-{
-   VALIDATE( BRIDGE );
-   
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CPierData* pPierData = pBridgeDesc->GetPier(pierIdx);
-   ATLASSERT( pPierData );
-
-   if ( pPierData->GetNextSpan() == NULL )
-      return pPierData->GetConnectionLibraryEntry(pgsTypes::Back)->GetName();
-   else
-      return pPierData->GetConnectionLibraryEntry(pgsTypes::Ahead)->GetName();
 }
 
 void CBridgeAgentImp::GetPierPoints(PierIndexType pier,IPoint2d** left,IPoint2d** alignment,IPoint2d** bridge,IPoint2d** right)
@@ -10934,60 +10864,6 @@ StrandIndexType CBridgeAgentImp::GetNumBondedStrandsAtSection(SpanIndexType span
    return nStrands - nDebondedStrands;
 }
 
-std::vector<StrandIndexType> CBridgeAgentImp::GetDebondedStrandsAtSection(SpanIndexType span,GirderIndexType gdr,GirderEnd end,SectionIndexType sectionIdx,pgsTypes::StrandType strandType)
-{
-   VALIDATE( GIRDER );
-
-   std::vector<StrandIndexType> debondedStrands;
-
-   CComPtr<IPrecastGirder> girder;
-   GetGirder(span,gdr,&girder);
-
-   switch( strandType )
-   {
-
-   case pgsTypes::Harped:
-   case pgsTypes::Temporary:
-                    // Assumed only bonded for the end 10'... PS force is constant through the debonded section
-                    // this is different than strands debonded at the ends and bonded in the middle
-                    // Treat this strand as bonded
-      return debondedStrands;
-      break;
-
-   case pgsTypes::Straight:
-      break; // fall through to below
-
-
-   default:
-      ATLASSERT(false); // should never get here
-      return debondedStrands;
-   }
-
-   HRESULT hr;
-   CollectionIndexType nStrands;
-   CComPtr<IIndexArray> strands;
-   if (end == IStrandGeometry::geLeftEnd)
-   {
-      // left
-      hr = girder->GetStraightStrandDebondAtLeftSection(sectionIdx,&strands);
-   }
-   else
-   {
-      hr = girder->GetStraightStrandDebondAtRightSection(sectionIdx,&strands);
-   }
-   ATLASSERT(SUCCEEDED(hr));
-   strands->get_Count(&nStrands);
-
-   for ( IndexType idx = 0; idx < nStrands; idx++ )
-   {
-      StrandIndexType strandIdx;
-      strands->get_Item(idx,&strandIdx);
-      debondedStrands.push_back(strandIdx);
-   }
-
-   return debondedStrands;
-}
-
 //-----------------------------------------------------------------------------
 bool CBridgeAgentImp::CanDebondStrands(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::StrandType strandType)
 {
@@ -11314,19 +11190,7 @@ void CBridgeAgentImp::GetStrandPositionsEx(const pgsPointOfInterest& poi,const P
       break;
 
    case pgsTypes::Harped:
-      // save and restore precast harped girders adjustment shift values, before/after geting point locations
-      Float64 t_end_shift, t_hp_shift;
-      girder->get_HarpedStrandAdjustmentEnd(&t_end_shift);
-      girder->get_HarpedStrandAdjustmentHP(&t_hp_shift);
-
-      girder->put_HarpedStrandAdjustmentEnd(rconfig.EndOffset);
-      girder->put_HarpedStrandAdjustmentHP(rconfig.HpOffset);
-
       hr = girder->get_HarpedStrandPositionsEx(poi.GetDistFromStart(),&fill,ppPoints);
-
-      girder->put_HarpedStrandAdjustmentEnd(t_end_shift);
-      girder->put_HarpedStrandAdjustmentHP(t_hp_shift);
-
       break;
 
    case pgsTypes::Temporary:
@@ -14562,7 +14426,7 @@ std::vector<IUserDefinedLoads::UserMomentLoad>* CBridgeAgentImp::GetUserMomentLo
 ////////////////////////////////////////////////////////////////////////
 // IBridgeDescriptionEventSink
 //
-HRESULT CBridgeAgentImp::OnBridgeChanged(CBridgeChangedHint* pHint)
+HRESULT CBridgeAgentImp::OnBridgeChanged()
 {
 //   LOG(_T("OnBridgeChanged Event Received"));
    INVALIDATE( CLEAR_ALL );
@@ -15136,25 +15000,17 @@ void CBridgeAgentImp::LayoutGirderRebar(SpanIndexType span,GirderIndexType gdr)
    matRebar::Grade grade;
    matRebar::Type type;
    pLongRebar->GetLongitudinalRebarMaterial(span,gdr,type,grade);
-   MaterialSpec matSpec = (type == matRebar::A615 ? msA615 : (type == matRebar::A706 ? msA706 : msA1035));
+   MaterialSpec matSpec = (type == matRebar::A615 ? msA615 : msA706);
    RebarGrade matGrade;
    switch(grade)
    {
-   case matRebar::Grade40:  matGrade = Grade40;  break;
-   case matRebar::Grade60:  matGrade = Grade60;  break;
-   case matRebar::Grade75:  matGrade = Grade75;  break;
-   case matRebar::Grade80:  matGrade = Grade80;  break;
-   case matRebar::Grade100: matGrade = Grade100; break;
+   case matRebar::Grade40: matGrade = Grade40; break;
+   case matRebar::Grade60: matGrade = Grade60; break;
+   case matRebar::Grade75: matGrade = Grade75; break;
+   case matRebar::Grade80: matGrade = Grade80; break;
    default:
       ATLASSERT(false);
    }
-
-#if defined _DEBUG
-      if ( matGrade == Grade100 )
-      {
-         ATLASSERT(lrfdVersionMgr::SixthEditionWith2013Interims <= lrfdVersionMgr::GetVersion());
-      }
-#endif
 
    CComPtr<IRebarFactory> rebar_factory;
    rebar_factory.CoCreateInstance(CLSID_RebarFactory);
@@ -16203,12 +16059,8 @@ Float64 CBridgeAgentImp::GetAsDeckMats(const pgsPointOfInterest& poi,ILongRebarG
          if ( (bTopMat    && (nmRebarData.Mat == CDeckRebarData::TopMat)) ||
               (bBottomMat && (nmRebarData.Mat == CDeckRebarData::BottomMat)) )
          {
-            bool bAddRebarForPrevPier = ( nmRebarData.PierIdx == prev_pier && IsLE(dist_from_cl_prev_pier,nmRebarData.RightCutoff) );
-            bool bAddRebarForNextPier = ( nmRebarData.PierIdx == next_pier && IsLE(dist_to_cl_next_pier,  nmRebarData.LeftCutoff ) );
-            pgsTypes::PierConnectionType connectionType = pBridgeDesc->GetPier(nmRebarData.PierIdx)->GetConnectionType();
-            bool bIsContinuous = !(connectionType == pgsTypes::Hinged || connectionType == pgsTypes::Roller);
-            
-            if ( (bAddRebarForPrevPier || bAddRebarForNextPier) && bIsContinuous )
+            if ( ( nmRebarData.PierIdx == prev_pier && IsLE(dist_from_cl_prev_pier,nmRebarData.RightCutoff) ) ||
+                 ( nmRebarData.PierIdx == next_pier && IsLE(dist_to_cl_next_pier,  nmRebarData.LeftCutoff)  ) )
             {
                if ( nmRebarData.RebarSize != matRebar::bsNone )
                {

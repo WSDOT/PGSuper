@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -121,7 +121,7 @@ void CHorizontalAlignmentGrid::InitRowData(ROWCOL row)
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    SetValueRange(CGXRange(row,1),unit_mode == umUS ? "0+00" : "0+000");
-   SetValueRange(CGXRange(row,2),"45 L");
+   SetValueRange(CGXRange(row,2),"N 90 E");
    SetValueRange(CGXRange(row,3),"1000");
    SetValueRange(CGXRange(row,4),"0");
    SetValueRange(CGXRange(row,5),"0");
@@ -274,7 +274,7 @@ void CHorizontalAlignmentGrid::SetRowData(ROWCOL nRow,HorzCurveData& data)
    GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
-   Float64 station = data.PIStation;
+   double station = data.PIStation;
    station = ::ConvertFromSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    CComPtr<IStation> objStation;
@@ -299,19 +299,19 @@ void CHorizontalAlignmentGrid::SetRowData(ROWCOL nRow,HorzCurveData& data)
       SetValueRange(CGXRange(nRow,2),CString(bstrAngle));
    }
 
-   Float64 radius = ::ConvertFromSysUnits(data.Radius,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   double radius = ::ConvertFromSysUnits(data.Radius,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,3),radius );
 
-   Float64 entry_spiral = ::ConvertFromSysUnits(data.EntrySpiral,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   double entry_spiral = ::ConvertFromSysUnits(data.EntrySpiral,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,4),entry_spiral );
 
-   Float64 exit_spiral = ::ConvertFromSysUnits(data.ExitSpiral,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   double exit_spiral = ::ConvertFromSysUnits(data.ExitSpiral,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,5),exit_spiral );
 
    GetParam()->EnableUndo(TRUE);
 }
 
-bool CHorizontalAlignmentGrid::GetRowData(ROWCOL nRow,Float64* pStation,Float64* pFwdTangent,bool* pbFwdTangent,Float64* pRadius,Float64* pEntrySpiral,Float64* pExitSpiral)
+bool CHorizontalAlignmentGrid::GetRowData(ROWCOL nRow,double* pStation,double* pFwdTangent,bool* pbFwdTangent,double* pRadius,double* pEntrySpiral,double* pExitSpiral)
 {
    HRESULT hr;
 
@@ -327,7 +327,7 @@ bool CHorizontalAlignmentGrid::GetRowData(ROWCOL nRow,Float64* pStation,Float64*
    if ( FAILED(hr) )
       return false;
 
-   Float64 station_value;
+   double station_value;
    station->get_Value(&station_value);
    station_value = ::ConvertToSysUnits(station_value,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    *pStation = station_value;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -78,8 +78,6 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 #define MIN_SPAN_DEPTH_RATIO 4
-
-static Float64 gs_60KSI = ::ConvertToSysUnits(60.0,unitMeasure::KSI);
 
 /****************************************************************************
 CLASS
@@ -417,17 +415,8 @@ void pgsDesigner2::GetHaunchDetails(SpanIndexType span,GirderIndexType gdr,bool 
          // slope of the line connecting the two exterior mating surfaces
          ATLASSERT( 2 <= nMatingSurfaces );
 
-         // this is at CL mating surface... we need out to out
          Float64 left_mating_surface_offset  = pGdr->GetMatingSurfaceLocation(poi,0);
          Float64 right_mating_surface_offset = pGdr->GetMatingSurfaceLocation(poi,nMatingSurfaces-1);
-
-         // width of mating surface
-         Float64 left_mating_surface_width  = pGdr->GetMatingSurfaceWidth(poi,0);
-         Float64 right_mating_surface_width = pGdr->GetMatingSurfaceWidth(poi,nMatingSurfaces-1);
-
-         // add half the width to get the offset to the outside edge of the top of the section
-         left_mating_surface_offset  += ::BinarySign(left_mating_surface_offset) * left_mating_surface_width/2;
-         right_mating_surface_offset += ::BinarySign(right_mating_surface_offset)* right_mating_surface_width/2;
 
          Float64 ya_left  = pAlignment->GetElevation(x,z+left_mating_surface_offset);
          Float64 ya_right = pAlignment->GetElevation(x,z+right_mating_surface_offset);
@@ -1711,14 +1700,6 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
    pArtifact->SetK2(K2);
 
    // nominal shear capacities 5.8.4.1-2,3
-   if ( lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::SixthEditionWith2013Interims && gs_60KSI < fy)
-   {
-      fy = gs_60KSI;
-      pArtifact->WasFyLimited(true);
-   }
-
-   pArtifact->SetFy(fy);
-
    Float64 Vn1, Vn2, Vn3;
    lrfdConcreteUtil::HorizontalShearResistances(c, u, K1, K2, Acv, pArtifact->GetAvOverS(), Pc, fc, fy,
                                                 &Vn1, &Vn2, &Vn3);
@@ -2466,8 +2447,7 @@ void pgsDesigner2::CheckMomentCapacity(SpanIndexType span,GirderIndexType gdr,pg
    }
 }
 
-void pgsDesigner2::InitShearCheck(SpanIndexType span,GirderIndexType gdr,const std::vector<pgsPointOfInterest>& VPoi,
-                                  pgsTypes::LimitState ls,const GDRCONFIG* pConfig)
+void pgsDesigner2::InitShearCheck(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,const GDRCONFIG* pConfig)
 {
    GET_IFACE(ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
@@ -2476,43 +2456,16 @@ void pgsDesigner2::InitShearCheck(SpanIndexType span,GirderIndexType gdr,const s
    PierIndexType prev_pier = PierIndexType(span);
    PierIndexType next_pier = prev_pier+1;
 
+
    // cache CS locations as they are very expensive to get
-   // First try to get them from our list of POI's
-   std::vector<pgsPointOfInterest> csPoi;
-   PoiAttributeType attrib = (ls == pgsTypes::StrengthI ? POI_CRITSECTSHEAR1 : POI_CRITSECTSHEAR2);
-   std::vector<pgsPointOfInterest>::const_iterator its = VPoi.begin();
-   std::vector<pgsPointOfInterest>::const_iterator ite = VPoi.end();
-   while(its != ite)
+   GET_IFACE(IPointOfInterest,pPOI);
+   if(pConfig!=NULL)
    {
-      const pgsPointOfInterest& rpoi = *its;
-      if (rpoi.HasAttribute(pgsTypes::BridgeSite3, attrib))
-      {
-         csPoi.push_back(rpoi);
-      }
-
-      its++;
-   }
-
-   if (!csPoi.empty())
-   {
-      // Got them from POI list - much faster
-      ATLASSERT(csPoi.size()==2);
-      m_LeftCS = csPoi.front();
-      m_RightCS = csPoi.back();
+      pPOI->GetCriticalSection(ls,span,gdr,*pConfig,&m_LeftCS,&m_RightCS);
    }
    else
    {
-      // CSS's not in POI list - we need to compute them - this is really expensive,
-      // and likely for load rating cases only
-      GET_IFACE(IPointOfInterest,pPOI);
-      if(pConfig!=NULL)
-      {
-         pPOI->GetCriticalSection(ls,span,gdr,*pConfig,&m_LeftCS,&m_RightCS);
-      }
-      else
-      {
-         pPOI->GetCriticalSection(ls,span,gdr,&m_LeftCS,&m_RightCS);
-      }
+      pPOI->GetCriticalSection(ls,span,gdr,&m_LeftCS,&m_RightCS);
    }
 
    // DETERMINE IF vu <= 0.18f'c at each POI... set a boolean flag that indicates if strut and tie analysis is required
@@ -2552,7 +2505,7 @@ void pgsDesigner2::CheckShear(SpanIndexType span,GirderIndexType gdr,const std::
                               pgsTypes::LimitState ls,const GDRCONFIG* pConfig,pgsStirrupCheckArtifact* pStirrupArtifact)
 {
    pgsTypes::Stage stage = pgsTypes::BridgeSite3;
-   InitShearCheck(span,gdr,VPoi, ls,pConfig); // sets up some class member variables used for checking
+   InitShearCheck(span,gdr,ls,pConfig); // sets up some class member variables used for checking
                                         // this span and girder
 
    CHECK(pStirrupArtifact);
@@ -3064,7 +3017,7 @@ void pgsDesigner2::CheckConstructability(SpanIndexType span,GirderIndexType gdr,
 
       HAUNCHDETAILS haunch_details;
       pGdrHaunch->GetHaunchDetails(span,gdr,&haunch_details);
-      pArtifact->CheckStirrupLength( bDoStirrupsEngageDeck && ::IsGT(0.0,haunch_details.HaunchDiff) );
+      pArtifact->CheckStirrupLength( bDoStirrupsEngageDeck && 0.0 < haunch_details.HaunchDiff );
    }
 
    ///////////////////////////////////////////////////////////////
@@ -6835,21 +6788,6 @@ void pgsDesigner2::DesignShear(pgsDesignArtifact* pArtifact, bool bDoStartFromSc
                m_DesignerOutcome.SetOutcome(pgsDesignCodes::PermanentStrandsChanged);
                pArtifact->AddDesignNote(pgsDesignArtifact::dnStrandsAddedForLongReinfShear); // give user a note
             }
-         }
-      }
-      else if (sdo == pgsShearDesignTool::sdDesignFailedFromShearStress)
-      {
-         // Strut and tie required - see if we can find a f'c that will work
-         Float64 fcreqd = m_ShearDesignTool.GetFcRequiredForShearStress();
-
-         if (fcreqd < m_StrandDesignTool.GetMaximumConcreteStrength())
-         {
-            m_StrandDesignTool.UpdateConcreteStrengthForShear(fcreqd, pgsTypes::BridgeSite3, pgsTypes::StrengthI);
-         }
-         else
-         {
-            // We can't increase concrete strength enough. Just issue message
-            pArtifact->AddDesignNote(pgsDesignArtifact::dnShearRequiresStrutAndTie);
          }
       }
       else if (sdo != pgsShearDesignTool::sdSuccess)

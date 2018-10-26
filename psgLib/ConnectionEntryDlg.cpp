@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -145,23 +145,6 @@ void CConnectionEntryDlg::DoDataExchange(CDataExchange* pDX)
       Float64 end_distance, bearing_end_offset;
       DDX_UnitValueAndTag(pDX, IDC_END_DISTANCE, IDC_END_DISTANCE_T, end_distance, pDisplayUnits->ComponentDim );
       DDX_UnitValueAndTag(pDX, IDC_BEARING_OFFSET, IDC_BEARING_OFFSET_T, bearing_end_offset, pDisplayUnits->ComponentDim );
-
-      // RAB 8/16/2007
-      // NOTE: At one time this code block was commented out with the following comment
-      //
-      // "why??? this isn't needed.... who cares if the girder hangs past the bearing"
-      //
-      // Consider an interior pier... If the distance from the point of bearing to the end
-      // of the girder exceeds the distance from the CL pier to the point of bearing the
-      // girders on either side of the pier will interfere with one another.
-      //
-      // ... AND PGSuper will crash if this criteria is not enforced!
-
-      if ( bearing_end_offset < end_distance )
-      {
-         AfxMessageBox(_T("End Distance cannot be greater than Bearing Offset"));
-         pDX->Fail();
-      }
    }
 }
 
@@ -310,7 +293,7 @@ void CConnectionEntryDlg::FillBearingOffsetComboBox()
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_BEARING_OFFSET_MEASURE);
    pCB->ResetContent();
 
-   int idx = pCB->AddString(_T("Measured Normal to Abutment/Pier"));
+   int idx = pCB->AddString(_T("Measured Normal to Abutment/Pier Line"));
    pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::NormalToPier));
 
    idx = pCB->AddString(_T("Measured Along Centerline Girder"));
@@ -322,16 +305,16 @@ void CConnectionEntryDlg::FillEndDistanceComboBox()
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_END_DISTANCE_MEASURE);
    pCB->ResetContent();
 
-   int idx = pCB->AddString(_T("Measured from Bearing, Along Girder"));
+   int idx = pCB->AddString(_T("Measured from CL Bearing, Along Girder"));
    pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromBearingAlongGirder));
 
-   idx = pCB->AddString(_T("Measured from Bearing, Normal to Pier"));
+   idx = pCB->AddString(_T("Measured from and Normal to CL Bearing"));
    pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromBearingNormalToPier));
 
-   idx = pCB->AddString(_T("Measured from Centerline Pier, Along Girder"));
+   idx = pCB->AddString(_T("Measured from Abutment/Pier Line, Along Girder"));
    pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromPierAlongGirder));
 
-   idx = pCB->AddString(_T("Measured from Centerline Pier, Normal to Pier"));
+   idx = pCB->AddString(_T("Measured from and Normal to the Abutment/Pier Line"));
    pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromPierNormalToPier));
 }
 

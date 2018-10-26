@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // Library Editor - Editor for WBFL Library Services
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,7 +30,6 @@
 #include <PsgLib\StructuredLoad.h>
 #include <PsgLib\StructuredSave.h>
 #include <psglib\LibraryEditorDoc.h>
-#include <psgLib\BeamFamilyManager.h>
 
 #include <System\FileStream.h>
 #include <System\StructuredLoadXmlPrs.h>
@@ -43,7 +42,6 @@
 #include <EAF\EAFMainFrame.h>
 
 #include "PGSuperLibraryMgrCATID.h"
-#include "PGSuperCatCom.h"
 
 
 
@@ -127,35 +125,39 @@ void CLibraryEditorDoc::Dump(CDumpContext& dc) const
 
 /////////////////////////////////////////////////////////////////////////////
 // CLibraryEditorDoc commands
-BOOL CLibraryEditorDoc::Init()
-{
-   if ( !__super::Init() )
-      return FALSE;
-
-   if ( FAILED(CBeamFamilyManager::Init(CATID_BeamFamily)) )
-      return FALSE;
-
-   return TRUE;
-}
-
 void CLibraryEditorDoc::DoIntegrateWithUI(BOOL bIntegrate)
 {
    // Add the document's user interface stuff first
    CEAFMainFrame* pFrame = EAFGetMainFrame();
    if ( bIntegrate )
    {
-      // set up the toolbar here
+#if defined _EAF_USING_MFC_FEATURE_PACK
+      // We want to use tabbed views
+      pFrame->EnableMDITabs(TRUE,TRUE,CMFCTabCtrl::LOCATION_TOP,TRUE,CMFCTabCtrl::STYLE_3D_ROUNDED_SCROLL,FALSE,TRUE);
+      CMFCTabCtrl& tabs = pFrame->GetMDITabs();
+      tabs.SetActiveTabBoldFont();
+
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      UINT tbID = pFrame->CreateToolBar(_T("Library"),GetPluginCommandManager());
+      m_pMyToolBar = pFrame->GetToolBarByID(tbID);
+      m_pMyToolBar->LoadToolBar(IDR_LIBEDITORTOOLBAR,NULL);
+#else
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
       UINT tbID = pFrame->CreateToolBar(_T("Library"),GetPluginCommandManager());
       m_pMyToolBar = pFrame->GetToolBar(tbID);
       m_pMyToolBar->LoadToolBar(IDR_LIBEDITORTOOLBAR,NULL);
       m_pMyToolBar->CreateDropDownButton(ID_FILE_OPEN,NULL,BTNS_DROPDOWN);
+#endif
    }
    else
    {
       // remove toolbar here
       pFrame->DestroyToolBar(m_pMyToolBar);
       m_pMyToolBar = NULL;
+
+#if defined _EAF_USING_MFC_FEATURE_PACK
+      pFrame->EnableMDITabs(FALSE);
+#endif
    }
 
    // then call base class, which handles UI integration for
@@ -315,7 +317,7 @@ void CLibraryEditorDoc::OnImport()
             ASSERT(FALSE);
          }
 
-         Float64 ver;
+         double ver;
          pStrLoad->get_Version(&ver);
          if(ver < FILE_VERSION)
             return;
@@ -378,7 +380,6 @@ void CLibraryEditorDoc::OnImport()
 
 void CLibraryEditorDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName )
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CString msg1;
    switch( hr )
    {

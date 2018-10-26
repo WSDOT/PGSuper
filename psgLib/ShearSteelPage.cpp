@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,6 @@
 #include <PsgLib\ShearData.h>
 #include <PsgLib\ShearSteelPage.h>
 #include <PsgLib\RebarUIUtils.h>
-#include <psglib\LibraryEditorDoc.h>
 
 #include <EAF\EAFApp.h>
 #include <EAF\EAFUtilities.h>
@@ -151,15 +150,7 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
    {
       int idx;
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
-      if ( idx == CB_ERR )
-      {
-         m_ShearData.ShearBarType = matRebar::A615;
-         m_ShearData.ShearBarGrade = matRebar::Grade60;
-      }
-      else
-      {
-         GetStirrupMaterial(idx,m_ShearData.ShearBarType,m_ShearData.ShearBarGrade);
-      }
+      GetStirrupMaterial(idx,m_ShearData.ShearBarType,m_ShearData.ShearBarGrade);
 
       // zone info from grid
       m_ShearData.ShearZones.clear();
@@ -350,13 +341,8 @@ BOOL CShearSteelPage::OnInitDialog()
 	m_pHorizGrid->SubclassDlgItem(IDC_HORIZ_GRID, this);
    m_pHorizGrid->CustomInit();
 
-   CEAFDocument* pEAFDoc = EAFGetDocument();
-   bool bFilterBySpec = true;
-   if ( pEAFDoc->IsKindOf(RUNTIME_CLASS(CLibraryEditorDoc)) )
-      bFilterBySpec = false;
-
    CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   FillRebarMaterialComboBox(pc,bFilterBySpec);
+   FillMaterialComboBox(pc);
 
    FillBarComboBox((CComboBox*)GetDlgItem(IDC_SPLITTING_BAR_SIZE));
    FillBarComboBox((CComboBox*)GetDlgItem(IDC_CONFINE_BAR_SIZE));

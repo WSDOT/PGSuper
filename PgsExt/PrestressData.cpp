@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -38,7 +38,7 @@ HRESULT CDebondInfo::Load(IStructuredLoad* pStrLoad)
 {
    pStrLoad->BeginUnit(_T("DebondInfo"));
 
-   Float64 version;
+   double version;
    pStrLoad->get_Version(&version);
 
    CComVariant var;
@@ -495,7 +495,7 @@ HRESULT CPrestressData::Load(IStructuredLoad* pStrLoad)
 
    HRESULT hr = S_OK;
 
-   Float64 version;
+   double version;
    pStrLoad->get_Version(&version);
 
    CComVariant var;

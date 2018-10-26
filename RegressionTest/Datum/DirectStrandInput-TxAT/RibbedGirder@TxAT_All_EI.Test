@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00  1     1    Girde  *    29  0.60  270 10.33  1.00  29 22.0  6.700  7.900    2.905   -4.980   2066  0.625  0.625  0.19  0.00 -0.01 -0.01 -0.03 111.44 230.18   3.00   2.25   2.25
+ 28.25   5  6.00  1     1    Girde  *    29  0.60  270 10.33  1.00  29 22.0  6.700  7.900    2.905   -4.980   2066  0.625  0.625  0.19  0.00 -0.01 -0.01 -0.03 111.44 229.89   3.00   2.25   2.25
 
 
 The Specification Check was Successful
@@ -8,7 +8,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00  1     2    Girde  *    29  0.60  270 10.33  1.00  29 22.0  6.700  7.900    2.612   -4.524   1832  0.518  0.667  0.19  0.00 -0.01 -0.01 -0.03 111.44 230.18   3.00   2.25   2.25
+ 28.25   5  6.00  1     2    Girde  *    29  0.60  270 10.33  1.00  29 22.0  6.700  7.900    2.612   -4.524   1832  0.518  0.667  0.19  0.00 -0.01 -0.01 -0.03 111.44 229.89   3.00   2.25   2.25
 
 
 The Specification Check was Successful

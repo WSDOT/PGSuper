@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -166,6 +166,9 @@ public:
    // version, and finishes them.
    void ReconcileEdits(IBroker* pBroker, const CBridgeDescription* pOriginalDesc);
 
+   // Returns a vector of the valid connection types for a pier. 
+   std::vector<pgsTypes::PierConnectionType> GetConnectionTypes(PierIndexType pierIdx) const;
+
    void Clear();
 
 protected:
@@ -212,6 +215,8 @@ private:
    bool MoveBridgeAdjustPrevSpan(PierIndexType pierIdx,Float64 newStation);
    bool MoveBridgeAdjustNextSpan(PierIndexType pierIdx,Float64 newStation);
    bool MoveBridgeAdjustAdjacentSpans(PierIndexType pierIdx,Float64 newStation);
+
+   void UpdateConnectionDimensions(CPierData* pPier);
 
    void RenumberSpans();
    void AssertValid();

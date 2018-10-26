@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -69,7 +69,7 @@ public:
    CGirderSpacingGridData GetGirderSpacingData();
    void SetGirderSpacingData(const CGirderSpacingGridData& gridData);
 
-   void SetPierSkewAngle(Float64 skewAngle);
+   void SetPierSkewAngle(double skewAngle);
 
    void SetMeasurementType(pgsTypes::MeasurementType mt);
    void SetMeasurementLocation(pgsTypes::MeasurementLocation ml);
@@ -96,8 +96,8 @@ protected:
 
 public:
    // custom stuff for grid
-   void Init(pgsTypes::SupportedBeamSpacing girderSpacingType,bool bSharedGirderCount,const CGirderSpacing* pGirderSpacing,const CGirderTypes* pGirderTypes,pgsTypes::PierFaceType pierFace,PierIndexType pierIdx,Float64 skewAngle,bool bAbutment);
-   void CustomInit(pgsTypes::SupportedBeamSpacing girderSpacingType,bool bSharedGirderCount,const CGirderSpacing* pGirderSpacing,const CGirderTypes* pGirderTypes,pgsTypes::PierFaceType pierFace,PierIndexType pierIdx,Float64 skewAngle,bool bAbutment);
+   void Init(pgsTypes::SupportedBeamSpacing girderSpacingType,bool bSharedGirderCount,const CGirderSpacing* pGirderSpacing,const CGirderTypes* pGirderTypes,pgsTypes::PierFaceType pierFace,PierIndexType pierIdx,double skewAngle,bool bAbutment);
+   void CustomInit(pgsTypes::SupportedBeamSpacing girderSpacingType,bool bSharedGirderCount,const CGirderSpacing* pGirderSpacing,const CGirderTypes* pGirderTypes,pgsTypes::PierFaceType pierFace,PierIndexType pierIdx,double skewAngle,bool bAbutment);
    void CustomInit();
    void FillGrid(const CGirderSpacing* pGirderSpacing);
    void FillGrid();
@@ -111,12 +111,12 @@ private:
    BOOL m_bEnabled;
    PierIndexType m_PierIdx;
    bool m_bAbutment;
-   Float64 m_PierSkewAngle;
+   double m_PierSkewAngle;
    
    CGirderSpacingGridData m_GridData;
 
-   std::vector<Float64> m_MinGirderSpacing;
-   std::vector<Float64> m_MaxGirderSpacing;
+   std::vector<double> m_MinGirderSpacing;
+   std::vector<double> m_MaxGirderSpacing;
 
    pgsTypes::SupportedBeamSpacing m_GirderSpacingType;
 

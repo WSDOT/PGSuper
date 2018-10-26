@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,18 @@
 #include <Reporter\Reporter.h>
 
 #include <MathEx.h>
+
+#define DECLARE_UV_PROTOTYPE( type, proto ) type proto
+#define DEFINE_UV_PROTOTYPE( proto, im, _bShowTag ) \
+   proto.SetUnitOfMeasure(&im.UnitOfMeasure ); \
+   proto.ShowUnitTag(_bShowTag); \
+   proto.SetZeroTolerance( im.Tol ); \
+   proto.SetFormat( im.Format );\
+   proto.SetWidth( im.Width ); \
+   proto.SetPrecision( im.Precision )
+
+#define RPT_OFFSET(_value_,_um_) \
+_um_.SetValue(fabs(_value_)) << (::Sign(_value_) < 0 ? _T(" L") : (::Sign(_value_) > 0 ? _T(" R") : _T("")))
 
 #define RPT_BEARING(_value_) rptRcString(_value_,true)
 #define RPT_ANGLE(_value_) rptRcString(_value_,true)
@@ -110,21 +122,19 @@ public:
 
    //------------------------------------------------------------------------
    // Returns the maximum table width to be used in any given chapter
-   static Float64 GetMaxTableWidth();
+   static double GetMaxTableWidth();
 
    //------------------------------------------------------------------------ 
    // Returns a pointer to a dynamically allocated defaultly configured table 
    // with 0.75" wide columns
    // If bLoadingColumn is true, column 1 is 1.5" wide
-   static rptRcTable* CreateDefaultTable(ColumnIndexType numColumns, LPCTSTR lpszLabel=NULL);
-   static rptRcTable* CreateDefaultTable(ColumnIndexType numColumns, const std::_tstring& strLabel);
+   static rptRcTable* CreateDefaultTable(ColumnIndexType numColumns, std::_tstring label);
 
    //------------------------------------------------------------------------ 
    // Returns a pointer to a dynamically allocated defaultly configured table 
    // with 0.75" wide columns
    // This table does not have a heading row.
-   static rptRcTable* CreateTableNoHeading(ColumnIndexType numColumns, LPCTSTR lpszLabel=NULL);
-   static rptRcTable* CreateTableNoHeading(ColumnIndexType numColumns, const std::_tstring& strLabel);
+   static rptRcTable* CreateTableNoHeading(ColumnIndexType numColumns, std::_tstring label);
 
    static void ConfigureTable(rptRcTable* pTable);
 
@@ -159,7 +169,7 @@ private:
    static std::_tstring ms_TableCellStyle[6];
    static std::_tstring ms_TableStripeRowCellStyle[6];
    static std::auto_ptr<std::_tstring> ms_pImagePath;
-   static Float64 ms_MaxTableWidth;
+   static double ms_MaxTableWidth;
    static std::_tstring ms_ReportCoverImage;
 
    // GROUP: LIFECYCLE

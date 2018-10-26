@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -252,8 +252,8 @@ void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesig
    GET_IFACE2(pBroker,ISectProp2,pSectProp);
    GET_IFACE2(pBroker,IGirder,pGirder);
 
-   Float64 top_width = pGirder->GetTopWidth(poi);
-   Float64 bottom_width = pGirder->GetBottomWidth(poi);
+   double top_width = pGirder->GetTopWidth(poi);
+   double bottom_width = pGirder->GetBottomWidth(poi);
 
    CComPtr<iPointDisplayObject> doPnt;
    ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
@@ -311,7 +311,7 @@ void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesig
    pntBC.Release();
    box->get_TopCenter(&pntTC);
    box->get_BottomCenter(&pntBC);
-   Float64 dx = -_cpp_max(top_width,bottom_width)/2.0;
+   double dx = -_cpp_max(top_width,bottom_width)/2.0;
    pntTC->Offset(dx,0);
    pntBC->Offset(dx,0);
    connectable->AddSocket(SOCKET_HT,pntTC,&socketHT);
@@ -334,7 +334,7 @@ void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesign
 
    GET_IFACE2(pBroker,IBridgeMaterial,pBridgeMaterial);
    const matPsStrand* pStrand = pBridgeMaterial->GetStrand(span,girder,pgsTypes::Straight);
-   Float64 diameter = pStrand->GetNominalDiameter();
+   double diameter = pStrand->GetNominalDiameter();
 
    CComPtr<iSimpleDrawPointStrategy> strategy;
    ::CoCreateInstance(CLSID_SimpleDrawPointStrategy,NULL,CLSCTX_ALL,IID_iSimpleDrawPointStrategy,(void**)&strategy);
@@ -462,7 +462,7 @@ void CTogaGirderModelSectionView::BuildLongReinfDisplayObjects(CTxDOTOptionalDes
       CComPtr<IPoint2d> location;
       item->get_Location(&location);
 
-      Float64 x, y;
+      double x, y;
       location->get_X(&x);
       location->get_Y(&y);
 
@@ -491,11 +491,11 @@ void CTogaGirderModelSectionView::BuildCGDisplayObjects(CTxDOTOptionalDesignDoc*
    pgsPointOfInterest poi(span,girder,m_pFrame->GetCurrentCutLocation());
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   Float64 nEff;
-   Float64 ecc = pStrandGeom->GetEccentricity(poi,true, &nEff);
+   double nEff;
+   double ecc = pStrandGeom->GetEccentricity(poi,true, &nEff);
 
    GET_IFACE2(pBroker,ISectProp2,pSectProp);
-   Float64 Yb = pSectProp->GetYb(pgsTypes::CastingYard,poi);
+   double Yb = pSectProp->GetYb(pgsTypes::CastingYard,poi);
 
    CComPtr<IPoint2d> point;
    point.CoCreateInstance(__uuidof(Point2d));
@@ -633,12 +633,12 @@ void CTogaGirderModelSectionView::BuildDimensionDisplayObjects(CTxDOTOptionalDes
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    GET_IFACE2(pBroker,ISectProp2,pSectProp);
 
-   Float64 top_width = pGirder->GetTopWidth(poi);
-   Float64 bottom_width = pGirder->GetBottomWidth(poi);
-   Float64 height = pGirder->GetHeight(poi);
-   Float64 nEff;
-   Float64 ecc = pStrandGeometry->GetEccentricity(poi,true, &nEff);
-   Float64 yps = pSectProp->GetYb(pgsTypes::CastingYard,poi) - ecc;
+   double top_width = pGirder->GetTopWidth(poi);
+   double bottom_width = pGirder->GetBottomWidth(poi);
+   double height = pGirder->GetHeight(poi);
+   double nEff;
+   double ecc = pStrandGeometry->GetEccentricity(poi,true, &nEff);
+   double yps = pSectProp->GetYb(pgsTypes::CastingYard,poi) - ecc;
 
    CString strDim;
    CComPtr<iTextBlock> textBlock;

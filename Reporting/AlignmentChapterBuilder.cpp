@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -204,10 +204,10 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
          CComPtr<IDirection> fwdTangent;
          pRoadway->GetBearing(hc_data.PIStation + ::ConvertToSysUnits(1.0,unitMeasure::Feet),&fwdTangent);
 
-         Float64 bk_tangent_value;
+         double bk_tangent_value;
          bkTangent->get_Value(&bk_tangent_value);
 
-         Float64 fwd_tangent_value;
+         double fwd_tangent_value;
          fwdTangent->get_Value(&fwd_tangent_value);
 
          CComBSTR bstrBkTangent;
@@ -249,10 +249,10 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
          hc->get_BkTangentBrg(&bkTangent);
          hc->get_FwdTangentBrg(&fwdTangent);
 
-         Float64 bk_tangent_value;
+         double bk_tangent_value;
          bkTangent->get_Value(&bk_tangent_value);
 
-         Float64 fwd_tangent_value;
+         double fwd_tangent_value;
          fwdTangent->get_Value(&fwd_tangent_value);
 
          CComBSTR bstrBkTangent;
@@ -261,13 +261,13 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
          CComBSTR bstrFwdTangent;
          direction_formatter->Format(fwd_tangent_value,CComBSTR("°,\',\""),&bstrFwdTangent);
 
-         Float64 bk_tangent_length;
+         double bk_tangent_length;
          hc->get_BkTangentLength(&bk_tangent_length);
 
-         Float64 total_length;
+         double total_length;
          hc->get_TotalLength(&total_length);
 
-         Float64 ts,sc,cs,st;
+         double ts,sc,cs,st;
          ts = hc_data.PIStation - bk_tangent_length;
          sc = hc_data.PIStation - bk_tangent_length + hc_data.EntrySpiral;
          cs = hc_data.PIStation - bk_tangent_length + total_length - hc_data.ExitSpiral;
@@ -306,7 +306,7 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
 
          CComPtr<IAngle> delta;
          hc->get_CurveAngle(&delta);
-         Float64 delta_value;
+         double delta_value;
          delta->get_Value(&delta_value);
          delta_value *= (direction == cdRight ? -1 : 1);
          CComBSTR bstrDelta;
@@ -335,19 +335,19 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
          angle_formatter->Format(delta_value,CComBSTR("°,\',\""),&bstrDC);
 
 
-         Float64 tangent;
+         double tangent;
          hc->get_Tangent(&tangent);
 
-         Float64 curve_length;
+         double curve_length;
          hc->get_CurveLength(&curve_length);
 
-         Float64 chord;
+         double chord;
          hc->get_Chord(&chord);
 
-         Float64 external;
+         double external;
          hc->get_External(&external);
          
-         Float64 mid_ordinate;
+         double mid_ordinate;
          hc->get_MidOrdinate(&mid_ordinate);
 
          (*pTable)(row++,col) << RPT_ANGLE(OLE2T(bstrDelta));
@@ -461,10 +461,10 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
          CComPtr<IStation> bvc_station;
          bvc->get_Station(&bvc_station);
 
-         Float64 bvc_station_value;
+         double bvc_station_value;
          bvc_station->get_Value(&bvc_station_value);
 
-         Float64 bvc_elevation;
+         double bvc_elevation;
          bvc->get_Elevation(&bvc_elevation);
 
 
@@ -474,10 +474,10 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
          CComPtr<IStation> pvi_station;
          pvi->get_Station(&pvi_station);
 
-         Float64 pvi_station_value;
+         double pvi_station_value;
          pvi_station->get_Value(&pvi_station_value);
 
-         Float64 pvi_elevation;
+         double pvi_elevation;
          pvi->get_Elevation(&pvi_elevation);
 
 
@@ -487,17 +487,17 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
          CComPtr<IStation> evc_station;
          evc->get_Station(&evc_station);
 
-         Float64 evc_station_value;
+         double evc_station_value;
          evc_station->get_Value(&evc_station_value);
 
-         Float64 evc_elevation;
+         double evc_elevation;
          evc->get_Elevation(&evc_elevation);
 
-         Float64 g1,g2;
+         double g1,g2;
          vc->get_EntryGrade(&g1);
          vc->get_ExitGrade(&g2);
 
-         Float64 L1,L2, Length;
+         double L1,L2, Length;
          vc->get_L1(&L1);
          vc->get_L2(&L2);
          vc->get_Length(&Length);
@@ -508,10 +508,10 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
          CComPtr<IStation> high_station;
          high->get_Station(&high_station);
 
-         Float64 high_station_value;
+         double high_station_value;
          high_station->get_Value(&high_station_value);
 
-         Float64 high_elevation;
+         double high_elevation;
          high->get_Elevation(&high_elevation);
 
          CComPtr<IProfilePoint> low;
@@ -520,10 +520,10 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
          CComPtr<IStation> low_station;
          low->get_Station(&low_station);
 
-         Float64 low_station_value;
+         double low_station_value;
          low_station->get_Value(&low_station_value);
 
-         Float64 low_elevation;
+         double low_elevation;
          low->get_Elevation(&low_elevation);
 
          (*pTable)(row++,col) << rptRcStation(bvc_station_value, &pDisplayUnits->GetStationFormat());

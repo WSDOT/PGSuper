@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -151,8 +151,8 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
       {
          (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
 
-         Float64 C = pArtifact->GetCapacityForce();
-         Float64 D = pArtifact->GetDemandForce();
+         double C = pArtifact->GetCapacityForce();
+         double D = pArtifact->GetDemandForce();
          (*table)(row,1) << shear.SetValue( C );
          (*table)(row,2) << shear.SetValue( D );
 
@@ -164,7 +164,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
          else
             (*table)(row,4) << RPT_FAIL;
 
-         Float64 ratio = IsZero(D) ? DBL_MAX : C/D;
+         double ratio = IsZero(D) ? DBL_MAX : C/D;
          if ( bPassed && fabs(pArtifact->GetMu()) <= fabs(pArtifact->GetMr()) && ratio < 1.0 )
          {
             bAddFootnote = true;
@@ -254,8 +254,8 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
       {
          (*table)(row,0) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
 
-         Float64 C = artifact.GetCapacityForce();
-         Float64 D = artifact.GetDemandForce();
+         double C = artifact.GetCapacityForce();
+         double D = artifact.GetDemandForce();
          (*table)(row,1) << shear.SetValue( C );
          (*table)(row,2) << shear.SetValue( D );
 
@@ -267,7 +267,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
          else
             (*table)(row,4) << RPT_FAIL;
 
-         Float64 ratio = IsZero(D) ? DBL_MAX : C/D;
+         double ratio = IsZero(D) ? DBL_MAX : C/D;
          if ( artifact.Passed() && fabs(artifact.GetMu()) <= fabs(artifact.GetMr()) && ratio < 1.0 )
          {
             bAddFootnote = true;

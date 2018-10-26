@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -125,12 +125,19 @@ BOOL CPierLayoutPage::OnInitDialog()
    
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
 
-   CString strPierLabel;
-   strPierLabel.Format(_T("%s %d"),
-      pParent->m_pPrevSpan == NULL || pParent->m_pNextSpan == NULL ? _T("Abutment") : _T("Pier"),
-      m_PierIdx+1);
+   CString strPierType(pParent->m_pPrevSpan == NULL || pParent->m_pNextSpan == NULL ? _T("Abutment") : _T("Pier"));
 
+   CString strGroupLabel;
+   strGroupLabel.Format(_T("%s Line"),strPierType);
+   GetDlgItem(IDC_LINE_GROUP)->SetWindowText(strGroupLabel);
+
+   CString strPierLabel;
+   strPierLabel.Format(_T("%s %d"),strPierType,LABEL_PIER(m_PierIdx));
    GetDlgItem(IDC_PIER_LABEL)->SetWindowText(strPierLabel);
+
+   CString strStationLocation;
+   strStationLocation.Format(_T("Station and Orientation defines the %s Line"),strPierType);
+   GetDlgItem(IDC_STATION_LOCATION_LABEL)->SetWindowText(strStationLocation);
 	
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -188,7 +195,7 @@ void CPierLayoutPage::UpdateMoveOptionList()
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // read the current value of the station edit
-   Float64 toStation;
+   double toStation;
    try
    {
       DDX_Station(&dx,IDC_STATION,toStation,pDisplayUnits->GetStationFormat());

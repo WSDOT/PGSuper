@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -51,8 +51,6 @@
 #include <PgsExt\DistributedLoadData.h>
 #include <PgsExt\GirderData.h>
 #include <Lrfd\StrandPool.h>
-
-#include <PsgLib\BeamFamilyManager.h>
 
 #include <limits>
 
@@ -180,7 +178,7 @@ HRESULT CTxDOTOptionalDesignDoc::LoadThePGSuperDocument(IStructuredLoad* pStrLoa
    if ( FAILED(hr) )
       return hr;
 
-   Float64 ver;
+   double ver;
    pStrLoad->get_Version(&ver);
    if ( 1.0 < ver )
    {
@@ -347,9 +345,6 @@ BOOL CTxDOTOptionalDesignDoc::Init()
    if ( !CEAFBrokerDocument::Init() )
       return FALSE;
 
-   if ( FAILED(CBeamFamilyManager::Init(CATID_BeamFamily)) )
-      return FALSE;
-
    m_ProjectData.ResetData();
 
    try
@@ -377,7 +372,7 @@ CString CTxDOTOptionalDesignDoc::GetToolbarSectionName()
 void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
 {
    // Add the document's user interface stuff first
-   CEAFMainFrame* pFrame = EAFGetMainFrame();
+   CEAFMainFrame* pFrame = (CEAFMainFrame*)AfxGetMainWnd();
    if ( bIntegrate )
    {
       {
@@ -385,15 +380,20 @@ void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
 
          // set up the toolbar here
          UINT tbID = pFrame->CreateToolBar(_T("TxDOT Optional Girder Analysis"),GetPluginCommandManager());
+#if defined _EAF_USING_MFC_FEATURE_PACK
+         m_pMyToolBar = pFrame->GetToolBarByID(tbID);
+         m_pMyToolBar->LoadToolBar(IDR_TXDOTOPTIONALDESIGNTOOLBAR,NULL);
+#else
          m_pMyToolBar = pFrame->GetToolBar(tbID);
          m_pMyToolBar->LoadToolBar(IDR_TXDOTOPTIONALDESIGNTOOLBAR,NULL);
          m_pMyToolBar->CreateDropDownButton(ID_FILE_OPEN,   NULL,BTNS_DROPDOWN);
+#endif
       }
 
       // use our status bar
       CTOGAStatusBar* pSB = new CTOGAStatusBar;
       pSB->Create(EAFGetMainFrame());
-      pFrame->SetStatusBar(pSB);
+      EAFGetMainFrame()->SetStatusBar(pSB);
    }
    else
    {
@@ -402,7 +402,7 @@ void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
       m_pMyToolBar = NULL;
 
       // put the status bar back the way it was
-      pFrame->SetStatusBar(NULL);
+      //EAFGetMainFrame()->ResetStatusBar();
    }
 
    // then call base class, which handles UI integration for
@@ -1073,7 +1073,13 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    }
 
    CPierData* pLftPier =  bridgeDesc.GetPier(0);
-   pLftPier->SetConnection(pgsTypes::Ahead,conL_name);
+   pLftPier->SetGirderEndDistance(pgsTypes::Ahead,pConLEntry->GetGirderEndDistance(),pConLEntry->GetEndDistanceMeasurementType());
+   pLftPier->SetBearingOffset(pgsTypes::Ahead,pConLEntry->GetGirderBearingOffset(),pConLEntry->GetBearingOffsetMeasurementType());
+   pLftPier->SetSupportWidth(pgsTypes::Ahead,pConLEntry->GetSupportWidth());
+   pLftPier->SetDiaphragmHeight(pgsTypes::Ahead,pConLEntry->GetDiaphragmHeight());
+   pLftPier->SetDiaphragmWidth(pgsTypes::Ahead,pConLEntry->GetDiaphragmWidth());
+   pLftPier->SetDiaphragmLoadType(pgsTypes::Ahead,pConLEntry->GetDiaphragmLoadType());
+   pLftPier->SetDiaphragmLoadLocation(pgsTypes::Ahead,pConLEntry->GetDiaphragmLoadLocation());
 
    // Right
    CString conR_name = m_ProjectData.GetRightConnectionEntryName();
@@ -1088,7 +1094,13 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    }
 
    CPierData* pRgtPier =  bridgeDesc.GetPier(1);
-   pRgtPier->SetConnection(pgsTypes::Back,conR_name);
+   pRgtPier->SetGirderEndDistance(pgsTypes::Back,pConREntry->GetGirderEndDistance(),pConREntry->GetEndDistanceMeasurementType());
+   pRgtPier->SetBearingOffset(pgsTypes::Back,pConREntry->GetGirderBearingOffset(),pConREntry->GetBearingOffsetMeasurementType());
+   pRgtPier->SetSupportWidth(pgsTypes::Back,pConREntry->GetSupportWidth());
+   pRgtPier->SetDiaphragmHeight(pgsTypes::Back,pConREntry->GetDiaphragmHeight());
+   pRgtPier->SetDiaphragmWidth(pgsTypes::Back,pConREntry->GetDiaphragmWidth());
+   pRgtPier->SetDiaphragmLoadType(pgsTypes::Back,pConREntry->GetDiaphragmLoadType());
+   pRgtPier->SetDiaphragmLoadLocation(pgsTypes::Back,pConREntry->GetDiaphragmLoadLocation());
 
    // Span length is bearing to bearing - must subtract connection length
    Float64 conn_len = pConLEntry->GetGirderBearingOffset();

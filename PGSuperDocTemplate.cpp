@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -81,9 +81,6 @@ void CPGSuperDocTemplate::LoadTemplateInformation()
 
       CEAFSplashScreen::SetText(_T(""));
    }
-
-   HICON hAppIcon = pApp->LoadIcon(IDR_PGSUPER);
-   m_TemplateGroup.SetIcon(hAppIcon);
 }
 
 void CPGSuperDocTemplate::SetDocStrings(const CString& str)
@@ -100,20 +97,12 @@ void CPGSuperDocTemplate::FindInFolder(LPCTSTR strPath,CEAFTemplateGroup* pGroup
    CEAFSplashScreen::SetText(strMsg);
 
    CString strIconFile = strPath;
-   int i = strIconFile.ReverseFind('\\');
-
-   CString strIconRootName = strIconFile.Mid(i);
-   if ( strIconRootName == _T("\\") )
-      strIconRootName = _T("Default"); // there isn't foldername to generate the icon file name with, just use "Default"
-
-   strIconFile += strIconRootName;
-
+   int i = strIconFile.ReverseFind(_T('\\'));
+   strIconFile += strIconFile.Mid(i);
    strIconFile += _T(".ico");
    HICON hIcon = (HICON)::LoadImage(NULL,strIconFile,IMAGE_ICON,0,0,LR_LOADFROMFILE);
    if ( hIcon )
       folderIcon = hIcon;
-
-   pGroup->SetIcon(folderIcon);
 
    FindTemplateFiles(strPath,pGroup,folderIcon); // find template files in this folder
 
@@ -127,7 +116,7 @@ void CPGSuperDocTemplate::FindInFolder(LPCTSTR strPath,CEAFTemplateGroup* pGroup
       if (finder.IsDirectory() && !finder.IsDots())
       {
          // sub-directory found
-         CEAFTemplateGroup* pNewGroup = new CEAFTemplateGroup();
+         CEAFTemplateGroup* pNewGroup = new CEAFTemplateGroup(this);
          pNewGroup->SetGroupName(finder.GetFileTitle());
 
          FindInFolder(finder.GetFilePath(),pNewGroup,folderIcon);
@@ -144,7 +133,7 @@ void CPGSuperDocTemplate::FindTemplateFiles(LPCTSTR strPath,CEAFTemplateGroup* p
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CString strTemplateSuffix;
-   VERIFY(strTemplateSuffix.LoadString(IDS_PGSUPER_TEMPLATE_FILE_SUFFIX));
+   VERIFY(strTemplateSuffix.LoadString(IDS_TEMPLATE_FILE_SUFFIX));
    ASSERT(!strTemplateSuffix.IsEmpty());
 
    CFileFind finder;
@@ -162,7 +151,7 @@ void CPGSuperDocTemplate::FindTemplateFiles(LPCTSTR strPath,CEAFTemplateGroup* p
       if ( hIcon )
          fileIcon = hIcon;
 
-      CEAFTemplateItem* pItem = new CEAFTemplateItem(this,finder.GetFileTitle(),finder.GetFilePath(),fileIcon);
+      CEAFTemplateItem* pItem = new CEAFTemplateItem(finder.GetFileTitle(),finder.GetFilePath(),fileIcon);
       pGroup->AddItem(pItem);
    }
 }

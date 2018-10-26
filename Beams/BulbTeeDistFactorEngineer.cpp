@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -70,42 +70,42 @@ void CBulbTeeDistFactorEngineer::SetBroker(IBroker* pBroker,StatusGroupIDType st
 }
 
 
-Float64 CBulbTeeDistFactorEngineer::GetMomentDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls)
+double CBulbTeeDistFactorEngineer::GetMomentDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls)
 {
    return m_pImpl->GetMomentDF(span,gdr,ls);
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetMomentDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr)
+double CBulbTeeDistFactorEngineer::GetMomentDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr)
 {
    return m_pImpl->GetMomentDF(span, gdr, ls, fcgdr);
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetNegMomentDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace)
+double CBulbTeeDistFactorEngineer::GetNegMomentDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace)
 {
    return m_pImpl->GetNegMomentDF(pier,gdr,ls,pierFace);
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetNegMomentDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr)
+double CBulbTeeDistFactorEngineer::GetNegMomentDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr)
 {
    return m_pImpl->GetNegMomentDF(pier,gdr,ls,pierFace,fcgdr);
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetShearDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls)
+double CBulbTeeDistFactorEngineer::GetShearDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls)
 {
    return m_pImpl->GetShearDF(span,gdr,ls);
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetShearDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr)
+double CBulbTeeDistFactorEngineer::GetShearDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr)
 {
    return m_pImpl->GetShearDF(span,gdr,ls,fcgdr);
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetReactionDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls)
+double CBulbTeeDistFactorEngineer::GetReactionDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls)
 {
    return m_pImpl->GetReactionDF(pier,gdr,ls);
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetReactionDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr)
+double CBulbTeeDistFactorEngineer::GetReactionDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr)
 {
    return m_pImpl->GetReactionDF(pier,gdr,ls,fcgdr);
 }
@@ -146,7 +146,7 @@ std::_tstring CBulbTeeDistFactorEngineer::GetComputationDescription(SpanIndexTyp
    {
       if (decktype == pgsTypes::sdtCompositeOverlay && connect == pgsTypes::atcConnectedAsUnit)
       {
-         descr = _T("WSDOT Method per Bridge Design Manual Section 3.9.4. Using type (k) cross section.");
+         descr = _T("WSDOT Method per Design Memorandum 2-1999 Dated February 22, 1999 using type (k) cross section.");
       }
       else if (connect == pgsTypes::atcConnectedAsUnit)
       {

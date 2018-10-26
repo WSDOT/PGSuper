@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -102,7 +102,7 @@ CSectionViewDialog::CSectionViewDialog(const GirderLibraryEntry* pEntry,bool isE
    for (IndexType is=0; is<num_shapes; is++)
    {
       CComPtr<IShape> rshape;
-      Float64 slope;
+      double slope;
       config->GetRegion(is, &rshape, &slope);
       m_RegionShapes.push_back(rshape);
    }
@@ -166,7 +166,7 @@ void CSectionViewDialog::OnPaint()
 
    CComPtr<IRect2d> bbox;
    m_pShape->get_BoundingBox(&bbox);
-   Float64 left,right,top,bottom;
+   double left,right,top,bottom;
    bbox->get_Left(&left);
    bbox->get_Right(&right);
    bbox->get_Top(&top);
@@ -529,7 +529,7 @@ BOOL CSectionViewDialog::OnInitDialog()
    CStatic* pShapeProps = (CStatic*)GetDlgItem(IDC_SECTION_PROPERTIES);
    CString strProps;
 
-   Float64 Area, Ix, Ytop, Ybot, Stop, Sbot;
+   double Area, Ix, Ytop, Ybot, Stop, Sbot;
    m_ShapeProps->get_Area(&Area);
    m_ShapeProps->get_Ixx(&Ix);
    m_ShapeProps->get_Ytop(&Ytop);
@@ -537,8 +537,8 @@ BOOL CSectionViewDialog::OnInitDialog()
    Stop = Ix/Ytop;
    Sbot = Ix/Ybot;
 
-   Float64 Kt = Sbot/Area;
-   Float64 Kb = Stop/Area;
+   double Kt = Sbot/Area;
+   double Kb = Stop/Area;
 
    CString strAreaUnit, strIxUnit, strYUnit, strSUnit;
    Area = ::ConvertFromSysUnits(Area,pDisplayUnits->Area.UnitOfMeasure);

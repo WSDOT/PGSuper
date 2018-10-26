@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -68,14 +68,14 @@ class CDistFactorEngineerImpl : public IDistFactorEngineer, public IInitialize
 {
 public:
    virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID);
-   virtual Float64 GetMomentDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls);
-   virtual Float64 GetNegMomentDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace);
-   virtual Float64 GetShearDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls);
-   virtual Float64 GetReactionDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls);
-   virtual Float64 GetMomentDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr);
-   virtual Float64 GetNegMomentDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr);
-   virtual Float64 GetShearDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr);
-   virtual Float64 GetReactionDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr);
+   virtual double GetMomentDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls);
+   virtual double GetNegMomentDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace);
+   virtual double GetShearDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls);
+   virtual double GetReactionDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls);
+   virtual double GetMomentDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr);
+   virtual double GetNegMomentDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr);
+   virtual double GetShearDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr);
+   virtual double GetReactionDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr);
    virtual bool Run1250Tests(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile);
    virtual bool GetDFResultsEx(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,
                                Float64* gpM, Float64* gpM1, Float64* gpM2,  // pos moment
@@ -155,7 +155,7 @@ void CDistFactorEngineerImpl<T>::SetBroker(IBroker* pBroker,StatusGroupIDType st
 }
 
 template <class T>
-Float64 CDistFactorEngineerImpl<T>::GetMomentDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls)
+double CDistFactorEngineerImpl<T>::GetMomentDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls)
 {
    SPANDETAILS lldf;
    GetSpanDF(span,gdr,ls,-1,&lldf);
@@ -163,7 +163,7 @@ Float64 CDistFactorEngineerImpl<T>::GetMomentDF(SpanIndexType span,GirderIndexTy
 }
 
 template <class T>
-Float64 CDistFactorEngineerImpl<T>::GetMomentDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr)
+double CDistFactorEngineerImpl<T>::GetMomentDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr)
 {
    SPANDETAILS lldf;
    GetSpanDF(span,gdr,ls,fcgdr,&lldf);
@@ -171,7 +171,7 @@ Float64 CDistFactorEngineerImpl<T>::GetMomentDF(SpanIndexType span,GirderIndexTy
 }
 
 template <class T>
-Float64 CDistFactorEngineerImpl<T>::GetNegMomentDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace)
+double CDistFactorEngineerImpl<T>::GetNegMomentDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace)
 {
    PIERDETAILS lldf;
    GetPierDF(pier,gdr,ls,pierFace,-1,&lldf);
@@ -179,7 +179,7 @@ Float64 CDistFactorEngineerImpl<T>::GetNegMomentDF(PierIndexType pier,GirderInde
 }
 
 template <class T>
-Float64 CDistFactorEngineerImpl<T>::GetNegMomentDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr)
+double CDistFactorEngineerImpl<T>::GetNegMomentDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr)
 {
    PIERDETAILS lldf;
    GetPierDF(pier,gdr,ls,pierFace,fcgdr,&lldf);
@@ -187,7 +187,7 @@ Float64 CDistFactorEngineerImpl<T>::GetNegMomentDF(PierIndexType pier,GirderInde
 }
 
 template <class T>
-Float64 CDistFactorEngineerImpl<T>::GetShearDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls)
+double CDistFactorEngineerImpl<T>::GetShearDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls)
 {
    SPANDETAILS lldf;
    GetSpanDF(span,gdr,ls,-1,&lldf);
@@ -195,7 +195,7 @@ Float64 CDistFactorEngineerImpl<T>::GetShearDF(SpanIndexType span,GirderIndexTyp
 }
 
 template <class T>
-Float64 CDistFactorEngineerImpl<T>::GetShearDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr)
+double CDistFactorEngineerImpl<T>::GetShearDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr)
 {
    SPANDETAILS lldf;
    GetSpanDF(span,gdr,ls,fcgdr,&lldf);
@@ -203,7 +203,7 @@ Float64 CDistFactorEngineerImpl<T>::GetShearDF(SpanIndexType span,GirderIndexTyp
 }
 
 template <class T>
-Float64 CDistFactorEngineerImpl<T>::GetReactionDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls)
+double CDistFactorEngineerImpl<T>::GetReactionDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls)
 {
    REACTIONDETAILS lldf;
    GetPierReactionDF(pier,gdr,ls,-1,&lldf);
@@ -211,7 +211,7 @@ Float64 CDistFactorEngineerImpl<T>::GetReactionDF(PierIndexType pier,GirderIndex
 }
 
 template <class T>
-Float64 CDistFactorEngineerImpl<T>::GetReactionDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr)
+double CDistFactorEngineerImpl<T>::GetReactionDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr)
 {
    REACTIONDETAILS lldf;
    GetPierReactionDF(pier,gdr,ls,fcgdr,&lldf);
@@ -821,7 +821,7 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(SpanIndexType span,
 }
 
 template <class T>
-Float64 CDistFactorEngineerImpl<T>::GetEffectiveSpanLength(IndexType spanOrPier,GirderIndexType gdr,DFParam dfType)
+double CDistFactorEngineerImpl<T>::GetEffectiveSpanLength(IndexType spanOrPier,GirderIndexType gdr,DFParam dfType)
 {
    GET_IFACE(IBridge,pBridge);
 
@@ -851,7 +851,7 @@ Float64 CDistFactorEngineerImpl<T>::GetEffectiveSpanLength(IndexType spanOrPier,
 
    ATLASSERT(next_span_gdr_idx != ALL_GIRDERS);
 
-   Float64 L = 0;
+   double L = 0;
    if ( dfType == dfSpan )
    {
       L = pBridge->GetSpanLength(span,gdr);
@@ -864,7 +864,7 @@ Float64 CDistFactorEngineerImpl<T>::GetEffectiveSpanLength(IndexType spanOrPier,
       bool bContinuousLeft, bContinuousRight;
       pBridge->IsContinuousAtPier(pier,&bContinuousLeft,&bContinuousRight);
 
-      Float64 l1, l2;
+      double l1, l2;
       if ( dfType == dfPierLeft )
       {
          l1 = pBridge->GetSpanLength(prev_span,prev_span_gdr_idx);
@@ -923,7 +923,7 @@ bool CDistFactorEngineerImpl<T>::Run1250Tests(SpanIndexType span,GirderIndexType
       const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
       if ( !pSpan->IsInteriorGirder(gdr) )
       {
-         Float64 M,V;
+         double M,V;
          M = pSpan->GetLLDFPosMoment(gdr,ls);
          V = pSpan->GetLLDFShear(gdr,ls);
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12054, 0.0, ")<<M<<_T(", 2, ")<<gdr<<std::endl;
@@ -935,7 +935,7 @@ bool CDistFactorEngineerImpl<T>::Run1250Tests(SpanIndexType span,GirderIndexType
       }
       else
       {
-         Float64 M,V;
+         double M,V;
          M = pSpan->GetLLDFPosMoment(gdr,ls);
          V = pSpan->GetLLDFShear(gdr,ls);
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 12024, 0.0, ")<<M<<_T(", 2, ")<<gdr<<std::endl;
@@ -1003,7 +1003,7 @@ bool CDistFactorEngineerImpl<T>::GetDFResultsEx(SpanIndexType span,GirderIndexTy
 
       const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
 
-      Float64 pM, nM, V;
+      double pM, nM, V;
       pM = pSpan->GetLLDFPosMoment(gdr,ls);
       nM = pSpan->GetLLDFNegMoment(gdr,ls);
       V  = pSpan->GetLLDFShear(gdr,ls);

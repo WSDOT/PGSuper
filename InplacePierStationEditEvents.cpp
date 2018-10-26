@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -48,8 +48,8 @@ void CInplacePierStationEditEvents::Handle_OnChanged(iDisplayObject* pDO)
    CComQIPtr<iEditableUnitValueTextBlock> pTextBlock(pDO);
    ATLASSERT(pTextBlock);
 
-   Float64 old_station = pTextBlock->GetValue();
-   Float64 new_station = pTextBlock->GetEditedValue();
+   double old_station = pTextBlock->GetValue();
+   double new_station = pTextBlock->GetEditedValue();
 
    if ( IsEqual(old_station,new_station) )
       return;
@@ -61,8 +61,8 @@ void CInplacePierStationEditEvents::Handle_OnChanged(iDisplayObject* pDO)
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
 
-   Float64 prevPierStation = 0;
-   Float64 nextPierStation = DBL_MAX;
+   double prevPierStation = 0;
+   double nextPierStation = DBL_MAX;
 
    if ( m_PierIdx != 0 )
    {

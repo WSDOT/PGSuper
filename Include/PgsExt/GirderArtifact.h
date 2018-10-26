@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -202,9 +202,9 @@ public:
    
    bool Passed() const;
 
-   Float64 GetRequiredConcreteStrength(pgsTypes::Stage stage,pgsTypes::LimitState ls) const;
-   Float64 GetRequiredConcreteStrength() const;
-   Float64 GetRequiredReleaseStrength() const;
+   double GetRequiredConcreteStrength(pgsTypes::Stage stage,pgsTypes::LimitState ls) const;
+   double GetRequiredConcreteStrength() const;
+   double GetRequiredReleaseStrength() const;
 
    // GROUP: INQUIRY
 

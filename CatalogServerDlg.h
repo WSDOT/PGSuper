@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,7 +40,6 @@ class CCatalogServerDlg : public CDialog
 // Construction
 public:
 	CCatalogServerDlg(CWnd* pParent = NULL);   // standard constructor
-	CCatalogServerDlg(const CString& strExt,CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CCatalogServerDlg)
@@ -50,7 +49,6 @@ public:
 
 
    CPGSuperCatalogServers m_Servers;
-   CString m_TemplateFileExt;
 
 // Overrides
 	// ClassWizard generated virtual function overrides

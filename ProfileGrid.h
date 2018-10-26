@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -77,7 +77,7 @@ public:
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
 
    // get data for a row
-   bool GetRowData(ROWCOL nRow,Float64* pStation,Float64* pGrade,Float64* pL1,Float64* pL2);
+   bool GetRowData(ROWCOL nRow,double* pStation,double* pGrade,double* pL1,double* pL2);
    void SetRowData(ROWCOL nRow,VertCurveData& data);
 
 private:

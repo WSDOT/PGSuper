@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -39,10 +39,13 @@ txnEditPierData::txnEditPierData(const CPierData* pPier)
    Station     = pPier->GetStation();
    Orientation = pPier->GetOrientation();
 
-   Connection[pgsTypes::Back]  = pPier->GetConnection(pgsTypes::Back);
-   Connection[pgsTypes::Ahead] = pPier->GetConnection(pgsTypes::Ahead);
-
    ConnectionType  = pPier->GetConnectionType();
+   for ( int i = 0; i < 2; i++ )
+   {
+      pPier->GetBearingOffset((pgsTypes::PierFaceType)i,&BearingOffset[i],&BearingOffsetMeasurementType[i]);
+      pPier->GetGirderEndDistance((pgsTypes::PierFaceType)i,&EndDistance[i],&EndDistanceMeasurementType[i]);
+      SupportWidth[i] = pPier->GetSupportWidth((pgsTypes::PierFaceType)i);
+   }
 
    SlabOffsetType = pPier->GetBridgeDescription()->GetSlabOffsetType();
 
@@ -148,12 +151,25 @@ void txnEditPier::DoExecute(int i)
 
    CPierData pierData = *pIBridgeDesc->GetPier(m_PierIdx);
 
-   pierData.SetConnection(pgsTypes::Back,  m_PierData[i].Connection[pgsTypes::Back].c_str() );
-   pierData.SetConnection(pgsTypes::Ahead, m_PierData[i].Connection[pgsTypes::Ahead].c_str());
-
    pierData.SetConnectionType( m_PierData[i].ConnectionType );
 
    pierData.SetOrientation(m_PierData[i].Orientation.c_str());
+   pierData.SetBearingOffset(pgsTypes::Back, m_PierData[i].BearingOffset[pgsTypes::Back],  m_PierData[i].BearingOffsetMeasurementType[pgsTypes::Back]);
+   pierData.SetBearingOffset(pgsTypes::Ahead,m_PierData[i].BearingOffset[pgsTypes::Ahead], m_PierData[i].BearingOffsetMeasurementType[pgsTypes::Ahead]);
+   pierData.SetGirderEndDistance(pgsTypes::Back, m_PierData[i].EndDistance[pgsTypes::Back], m_PierData[i].EndDistanceMeasurementType[pgsTypes::Back]);
+   pierData.SetGirderEndDistance(pgsTypes::Ahead,m_PierData[i].EndDistance[pgsTypes::Ahead],m_PierData[i].EndDistanceMeasurementType[pgsTypes::Ahead]);
+   pierData.SetSupportWidth(pgsTypes::Back, m_PierData[i].SupportWidth[pgsTypes::Back]);
+   pierData.SetSupportWidth(pgsTypes::Ahead,m_PierData[i].SupportWidth[pgsTypes::Ahead]);
+
+   pierData.SetDiaphragmHeight(pgsTypes::Back,m_PierData[i].DiaphragmHeight[pgsTypes::Back]);
+   pierData.SetDiaphragmWidth(pgsTypes::Back,m_PierData[i].DiaphragmWidth[pgsTypes::Back]);
+   pierData.SetDiaphragmLoadType(pgsTypes::Back,m_PierData[i].DiaphragmLoadType[pgsTypes::Back]);
+   pierData.SetDiaphragmLoadLocation(pgsTypes::Back,m_PierData[i].DiaphragmLoadLocation[pgsTypes::Back]);
+
+   pierData.SetDiaphragmHeight(pgsTypes::Ahead,m_PierData[i].DiaphragmHeight[pgsTypes::Ahead]);
+   pierData.SetDiaphragmWidth(pgsTypes::Ahead,m_PierData[i].DiaphragmWidth[pgsTypes::Ahead]);
+   pierData.SetDiaphragmLoadType(pgsTypes::Ahead,m_PierData[i].DiaphragmLoadType[pgsTypes::Ahead]);
+   pierData.SetDiaphragmLoadLocation(pgsTypes::Ahead,m_PierData[i].DiaphragmLoadLocation[pgsTypes::Ahead]);
 
    pIBridgeDesc->SetPier(m_PierIdx,pierData);
 

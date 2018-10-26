@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -37,7 +37,7 @@ class CMovePierDlg : public CDialog
 {
 // Construction
 public:
-	CMovePierDlg(PierIndexType pierIdx,Float64 fromStation,Float64 toStation,Float64 prevPierStation,Float64 nextPierStation,SpanIndexType nSpans,const unitStationFormat& stationFormat,CWnd* pParent = NULL);   // standard constructor
+	CMovePierDlg(PierIndexType pierIdx,double fromStation,double toStation,double prevPierStation,double nextPierStation,SpanIndexType nSpans,const unitStationFormat& stationFormat,CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CMovePierDlg)
@@ -59,10 +59,10 @@ public:
 protected:
    PierIndexType m_PierIdx;
    SpanIndexType m_nSpans;
-   Float64 m_FromStation;
-   Float64 m_ToStation;
-   Float64 m_PrevPierStation;
-   Float64 m_NextPierStation;
+   double m_FromStation;
+   double m_ToStation;
+   double m_PrevPierStation;
+   double m_NextPierStation;
    const unitStationFormat& m_StationFormat;
 
 	// Generated message map functions

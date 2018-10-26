@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,7 +28,6 @@
 #include "LongSteelPage.h"
 #include "GirderMainSheet.h"
 #include <psgLib\RebarUIUtils.h>
-#include <psglib\LibraryEditorDoc.h>
 #include "..\htmlhelp\HelpTopics.hh"
 
 #ifdef _DEBUG
@@ -108,16 +107,12 @@ void CLongSteelPage::OnEnableDelete(bool canDelete)
 
 BOOL CLongSteelPage::OnInitDialog() 
 {
+
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
    ASSERT(pDad);
 
-   CEAFDocument* pEAFDoc = EAFGetDocument();
-   bool bFilterBySpec = true;
-   if ( pEAFDoc->IsKindOf(RUNTIME_CLASS(CLibraryEditorDoc)) )
-      bFilterBySpec = false;
-
    CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   FillRebarMaterialComboBox(pc,bFilterBySpec);
+   FillMaterialComboBox(pc);
 
 	CPropertyPage::OnInitDialog();
 	

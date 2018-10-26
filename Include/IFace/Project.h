@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -63,8 +63,6 @@ class CSpanData;
 class CGirderSpacing;
 class CGirderTypes;
 class CGirderMaterial;
-
-class CBridgeChangedHint;
 
 interface IStructuredLoad;
 interface IPrestressingStrand;
@@ -223,11 +221,11 @@ DESCRIPTION
 
 struct HorzCurveData
 {
-   Float64 PIStation;
-   Float64 FwdTangent;
-   Float64 Radius;
-   Float64 EntrySpiral;
-   Float64 ExitSpiral;
+   double PIStation;
+   double FwdTangent;
+   double Radius;
+   double EntrySpiral;
+   double ExitSpiral;
 
    bool bFwdTangent; // if true, FwdTangent is the bearing of the forward tangent otherwise it is a delta angle
 
@@ -244,7 +242,7 @@ struct HorzCurveData
 
 struct AlignmentData2
 {
-   Float64 Direction;
+   double Direction;
    std::vector<HorzCurveData> HorzCurves;
 
    bool operator==(const AlignmentData2& other) const
@@ -276,17 +274,17 @@ struct AlignmentData2
    }
 
    // alignment reference point
-   Float64 RefStation;
-   Float64 xRefPoint;
-   Float64 yRefPoint;
+   double RefStation;
+   double xRefPoint;
+   double yRefPoint;
 };
 
 struct VertCurveData
 {
-   Float64 PVIStation;
-   Float64 ExitGrade;
-   Float64 L1;
-   Float64 L2;
+   double PVIStation;
+   double ExitGrade;
+   double L1;
+   double L2;
 
    bool operator==(const VertCurveData& other) const
    {
@@ -299,9 +297,9 @@ struct VertCurveData
 
 struct ProfileData2
 {
-   Float64 Station;
-   Float64 Elevation;
-   Float64 Grade;
+   double Station;
+   double Elevation;
+   double Grade;
    std::vector<VertCurveData> VertCurves;
 
    bool operator==(const ProfileData2& other) const
@@ -329,10 +327,10 @@ struct ProfileData2
 
 struct CrownData2
 {
-   Float64 Station;
-   Float64 Left;
-   Float64 Right;
-   Float64 CrownPointOffset;
+   double Station;
+   double Left;
+   double Right;
+   double CrownPointOffset;
 
    bool operator==(const CrownData2& other) const
    {
@@ -579,22 +577,12 @@ DESCRIPTION
 #define GCH_LOADING_CHANGED            0x0100
 #define GCH_CONCRETE                   0x0200
 
-
-class CBridgeChangedHint
-{
-public:
-   // Used when a span is added or removed... 
-   PierIndexType PierIdx; // Reference pier where the span is added or removed
-   pgsTypes::PierFaceType PierFace; // Pier face where the span is added or removed
-   bool bAdded; // true if a span was added, false if removed
-};
-
 // {6132E890-719D-11d2-8EF1-006097DF3C68}
 DEFINE_GUID(IID_IBridgeDescriptionEventSink, 
 0x6132e890, 0x719d, 0x11d2, 0x8e, 0xf1, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
 interface IBridgeDescriptionEventSink : IUnknown
 {
-   virtual HRESULT OnBridgeChanged(CBridgeChangedHint* pHint) = 0;
+   virtual HRESULT OnBridgeChanged() = 0;
    virtual HRESULT OnGirderFamilyChanged() = 0;
    virtual HRESULT OnGirderChanged(SpanIndexType span,GirderIndexType gdr,Uint32 lHint) = 0;
    virtual HRESULT OnLiveLoadChanged() = 0;
@@ -773,11 +761,11 @@ DEFINE_GUID(IID_ILimits,
 0xdb41f235, 0x1ed8, 0x4024, 0xb7, 0xab, 0xad, 0x5, 0x33, 0x30, 0xcd, 0x26);
 interface ILimits : IUnknown
 {
-   virtual Float64 GetMaxSlabFc() = 0;
-   virtual Float64 GetMaxGirderFci() = 0;
-   virtual Float64 GetMaxGirderFc() = 0;
-   virtual Float64 GetMaxConcreteUnitWeight() = 0;
-   virtual Float64 GetMaxConcreteAggSize() = 0;
+   virtual double GetMaxSlabFc() = 0;
+   virtual double GetMaxGirderFci() = 0;
+   virtual double GetMaxGirderFc() = 0;
+   virtual double GetMaxConcreteUnitWeight() = 0;
+   virtual double GetMaxConcreteAggSize() = 0;
 };
 
 /*****************************************************************************
@@ -794,11 +782,11 @@ DEFINE_GUID(IID_ILimits2,
 0x797998b4, 0xfe8c, 0x4ad1, 0xae, 0x9e, 0x16, 0x7a, 0x19, 0x3c, 0xc2, 0x96);
 interface ILimits2 : IUnknown
 {
-   virtual Float64 GetMaxSlabFc(pgsTypes::ConcreteType concType) = 0;
-   virtual Float64 GetMaxGirderFci(pgsTypes::ConcreteType concType) = 0;
-   virtual Float64 GetMaxGirderFc(pgsTypes::ConcreteType concType) = 0;
-   virtual Float64 GetMaxConcreteUnitWeight(pgsTypes::ConcreteType concType) = 0;
-   virtual Float64 GetMaxConcreteAggSize(pgsTypes::ConcreteType concType) = 0;
+   virtual double GetMaxSlabFc(pgsTypes::ConcreteType concType) = 0;
+   virtual double GetMaxGirderFci(pgsTypes::ConcreteType concType) = 0;
+   virtual double GetMaxGirderFc(pgsTypes::ConcreteType concType) = 0;
+   virtual double GetMaxConcreteUnitWeight(pgsTypes::ConcreteType concType) = 0;
+   virtual double GetMaxConcreteAggSize(pgsTypes::ConcreteType concType) = 0;
 };
 
 /*****************************************************************************
@@ -840,10 +828,10 @@ interface ILiveLoads : IUnknown
    virtual void SetPedestrianLoadApplication(pgsTypes::LiveLoadType llType, PedestrianLoadApplicationType PedLoad) = 0;
    virtual std::vector<std::_tstring> GetLiveLoadNames(pgsTypes::LiveLoadType llType) = 0;
    virtual void SetLiveLoadNames(pgsTypes::LiveLoadType llType,const std::vector<std::_tstring>& names) = 0;
-   virtual Float64 GetTruckImpact(pgsTypes::LiveLoadType llType) = 0;
-   virtual void SetTruckImpact(pgsTypes::LiveLoadType llType,Float64 impact) = 0;
-   virtual Float64 GetLaneImpact(pgsTypes::LiveLoadType llType) = 0;
-   virtual void SetLaneImpact(pgsTypes::LiveLoadType llType,Float64 impact) = 0;
+   virtual double GetTruckImpact(pgsTypes::LiveLoadType llType) = 0;
+   virtual void SetTruckImpact(pgsTypes::LiveLoadType llType,double impact) = 0;
+   virtual double GetLaneImpact(pgsTypes::LiveLoadType llType) = 0;
+   virtual void SetLaneImpact(pgsTypes::LiveLoadType llType,double impact) = 0;
    virtual void SetLldfRangeOfApplicabilityAction(LldfRangeOfApplicabilityAction action) = 0;
    virtual LldfRangeOfApplicabilityAction GetLldfRangeOfApplicabilityAction() = 0;
    virtual std::_tstring GetLLDFSpecialActionText()=0; // get common string for ignore roa case
@@ -867,15 +855,14 @@ interface IBridgeDescription : IUnknown
    virtual const CPierData* GetPier(PierIndexType pierIdx) = 0;
    virtual void SetPier(PierIndexType pierIdx,const CPierData& PierData) = 0;
 
-   virtual void SetSpanLength(SpanIndexType spanIdx,Float64 newLength) = 0;
-   virtual void MovePier(PierIndexType pierIdx,Float64 newStation,pgsTypes::MovePierOption moveOption) = 0;
+   virtual void SetSpanLength(SpanIndexType spanIdx,double newLength) = 0;
+   virtual void MovePier(PierIndexType pierIdx,double newStation,pgsTypes::MovePierOption moveOption) = 0;
 
    virtual void SetMeasurementType(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::MeasurementType mt) = 0;
    virtual void SetMeasurementLocation(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::MeasurementLocation ml) = 0;
    virtual void SetGirderSpacing(PierIndexType pierIdx,pgsTypes::PierFaceType face,const CGirderSpacing& spacing) = 0;
    virtual void SetGirderSpacingAtStartOfSpan(SpanIndexType spanIdx,const CGirderSpacing& spacing) = 0;
    virtual void SetGirderSpacingAtEndOfSpan(SpanIndexType spanIdx,const CGirderSpacing& spacing) = 0;
-   virtual void UseSameGirderSpacingAtBothEndsOfSpan(SpanIndexType spanIdx,bool bUseSame) = 0;
    virtual void SetGirderTypes(SpanIndexType spanIdx,const CGirderTypes& girderTypes) = 0;
    virtual void SetGirderName( SpanIndexType spanIdx, GirderIndexType gdrIdx, LPCTSTR strGirderName) = 0;
    virtual void SetGirderCount(SpanIndexType spanIdx,GirderIndexType nGirders) = 0;
@@ -897,7 +884,7 @@ interface IBridgeDescription : IUnknown
 
    virtual void SetGirderSpacingType(pgsTypes::SupportedBeamSpacing sbs) = 0;
    virtual pgsTypes::SupportedBeamSpacing GetGirderSpacingType() = 0;
-   virtual void SetGirderSpacing(Float64 spacing) = 0; // used for the entire bridge
+   virtual void SetGirderSpacing(double spacing) = 0; // used for the entire bridge
    virtual void SetMeasurementType(pgsTypes::MeasurementType mt) = 0;
    virtual pgsTypes::MeasurementType GetMeasurementType() = 0;
    virtual void SetMeasurementLocation(pgsTypes::MeasurementLocation ml) = 0;
@@ -912,6 +899,9 @@ interface IBridgeDescription : IUnknown
    virtual void SetSlabOffset( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 start, Float64 end) = 0;
    virtual pgsTypes::SlabOffsetType GetSlabOffsetType() = 0;
    virtual void GetSlabOffset( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64* pStart, Float64* pEnd) = 0;
+
+   // Returns a vector of valid connection types
+   virtual std::vector<pgsTypes::PierConnectionType> GetConnectionTypes(PierIndexType pierIdx) = 0;
 };
 
 // {1EAF4313-36A3-434d-801A-0458447A9B49}

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -67,4 +67,43 @@ pgsGirderLabel::pgsGirderLabel(void)
 
 pgsGirderLabel::~pgsGirderLabel(void)
 {
+}
+
+
+std::_tstring GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType type,bool bAbutment)
+{
+   switch( type )
+   {
+   case ConnectionLibraryEntry::FromBearingAlongGirder:
+      return _T("Measured From CL Bearing along Girder Centerline");
+
+   case ConnectionLibraryEntry::FromBearingNormalToPier:
+      return bAbutment ? _T("Measured From CL Bearing and Normal to Abutment Line") : _T("Measured From CL Bearing and Normal to Pier Line");
+
+   case ConnectionLibraryEntry::FromPierAlongGirder:
+      return bAbutment ? _T("Measured From Abutment Line and Along Girder Centerline") : _T("Measured From Pier Line and Along Girder Centerline");
+
+   case ConnectionLibraryEntry::FromPierNormalToPier:
+      return bAbutment ? _T("Measured From and Normal to Abutment Line") : _T("Measured From and Normal to Pier Line");
+
+   default:
+      ATLASSERT(0);
+      return _T("");
+   }
+}
+
+std::_tstring GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType type,bool bAbutment)
+{
+   switch( type )
+   {
+   case ConnectionLibraryEntry::AlongGirder:
+      return bAbutment ? _T("Measured From Abutment Line and Along Girder Centerline") :  _T("Measured From Pier Line and Along Girder Centerline");
+
+   case ConnectionLibraryEntry::NormalToPier:
+      return bAbutment ? _T("Measured From and Normal to Abutment Line") : _T("Measured From and Normal to Pier Line");
+
+   default:
+      ATLASSERT(0);
+      return _T("");
+   }
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -181,14 +181,28 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          hash = HashGirderSpacing(pSpan->GetGirderSpacing(pgsTypes::metEnd)->GetMeasurementLocation(),pSpan->GetGirderSpacing(pgsTypes::metEnd)->GetMeasurementType());
       }
 
-      if ( hash == HashGirderSpacing(pgsTypes::AtCenterlinePier,pgsTypes::AlongItem) )
-         *pStr = _T("Measured at and along the centerline pier");
+      if ( hash == HashGirderSpacing(pgsTypes::AtPierLine,pgsTypes::AlongItem) )
+      {
+         if ( (i == 0 && pPrevPier->GetPrevSpan() == NULL) || (i == 1 && pNextPier->GetNextSpan() == NULL) )
+            *pStr = _T("Measured at and along the abutment line");
+         else
+            *pStr = _T("Measured at and along the pier line");
+      }
       else if ( hash == HashGirderSpacing(pgsTypes::AtCenterlineBearing,pgsTypes::AlongItem) )
+      {
          *pStr = _T("Measured at and along the centerline bearing");
-      else if ( hash == HashGirderSpacing(pgsTypes::AtCenterlinePier,pgsTypes::NormalToItem) )
-         *pStr = _T("Measured normal to alignment at centerline pier");
+      }
+      else if ( hash == HashGirderSpacing(pgsTypes::AtPierLine,pgsTypes::NormalToItem) )
+      {
+         if ( (i == 0 && pPrevPier->GetPrevSpan() == NULL) || (i == 1 && pNextPier->GetNextSpan() == NULL) )
+            *pStr = _T("Measured normal to alignment at abutment line");
+         else
+            *pStr = _T("Measured normal to alignment at pier line");
+      }
       else if ( hash == HashGirderSpacing(pgsTypes::AtCenterlineBearing,pgsTypes::NormalToItem) )
+      {
          *pStr = _T("Measured normal to alignment at centerline bearing");
+      }
    }
 
    // Populate the table
@@ -366,15 +380,31 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,0) << _T("Right Traffic Barrier");
    (*pTable)(row++,1) << pBridgeDesc->GetRightRailingSystem()->strExteriorRailing;
 
-   (*pTable)(row,0) << _T("Connection Geometry at Pier ") << LABEL_PIER(span);
-   (*pTable)(row++,1) << pPrevPier->GetConnection(pgsTypes::Ahead);
-   (*pTable)(row,0) << _T("Connection Boundary Condition at Pier ") << LABEL_PIER(span);
+   const CPierData* pPier = pBridgeDesc->GetPier(span);
+   std::_tstring strPierLabel(pPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
+   Float64 brgOffset, endDistance;
+   ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
+   ConnectionLibraryEntry::EndDistanceMeasurementType endDistanceMeasure;
+   pPier->GetBearingOffset(pgsTypes::Ahead,&brgOffset,&brgOffsetMeasure);
+   pPier->GetGirderEndDistance(pgsTypes::Ahead,&endDistance,&endDistanceMeasure);
+   (*pTable)(row,0) << _T("Connection Geometry at ") << strPierLabel.c_str() << _T(" ") << LABEL_PIER(span);
+   (*pTable)(row,1) << _T("Bearing Offset: ") << length.SetValue(brgOffset) << _T(" ") << GetBearingOffsetMeasureString(brgOffsetMeasure,pPier->IsAbutment()) << rptNewLine;
+   (*pTable)(row,1) << _T("End Distance: ") << length.SetValue(endDistance) << _T(" ") << GetEndDistanceMeasureString(endDistanceMeasure,pPier->IsAbutment());
+   row++;
+
+   (*pTable)(row,0) << _T("Connection Boundary Condition at ") << strPierLabel.c_str() << _T(" ") << LABEL_PIER(span);
    (*pTable)(row++,1) << CPierData::AsString(pPrevPier->GetConnectionType());
 
-   (*pTable)(row,0) << _T("Connection Geometry at Pier ") << LABEL_PIER(span+1);
-   (*pTable)(row++,1) << pNextPier->GetConnection(pgsTypes::Back);
+   pPier = pBridgeDesc->GetPier(span+1);
+   strPierLabel = (pPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
+   pPier->GetBearingOffset(pgsTypes::Back,&brgOffset,&brgOffsetMeasure);
+   pPier->GetGirderEndDistance(pgsTypes::Back,&endDistance,&endDistanceMeasure);
+   (*pTable)(row,0) << _T("Connection Geometry at ") << strPierLabel.c_str() << _T(" ") << LABEL_PIER(span+1);
+   (*pTable)(row,1) << _T("Bearing Offset: ") << length.SetValue(brgOffset) << _T(" ") << GetBearingOffsetMeasureString(brgOffsetMeasure,pPier->IsAbutment()) << rptNewLine;
+   (*pTable)(row,1) << _T("End Distance: ") << length.SetValue(endDistance) << _T(" ") << GetEndDistanceMeasureString(endDistanceMeasure,pPier->IsAbutment());
+   row++;
 
-   (*pTable)(row,0) << _T("Connection Boundary Condition at Pier ") << LABEL_PIER(span+1);
+   (*pTable)(row,0) << _T("Connection Boundary Condition at ") << strPierLabel.c_str() << _T(" ") << LABEL_PIER(span+1);
    (*pTable)(row++,1) << CPierData::AsString(pNextPier->GetConnectionType());
 
    GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);

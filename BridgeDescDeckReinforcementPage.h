@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -52,7 +52,6 @@ public:
 		//    DO NOT EDIT what you see in these blocks of generated code !
 	//}}AFX_DATA
 
-   void EnableAddBtn(bool bEnable);
    void EnableRemoveBtn(bool bEnable);
 
 // Overrides
@@ -78,14 +77,15 @@ protected:
 
    void FillRebarComboBox(CComboBox* pcbRebar);
 
+   void FillMaterialComboBox(CComboBox* pCB);
+   void GetStirrupMaterial(int idx,matRebar::Type& type,matRebar::Grade& grade);
+   int GetStirrupMaterialIndex(matRebar::Type type,matRebar::Grade grade);
+
    CString m_strTip;
 
 public:
-   CBridgeDescDeckRebarGrid m_Grid;
-
-private:
    CDeckRebarData m_RebarData;
-   friend CBridgeDescDeckRebarGrid;
+   CBridgeDescDeckRebarGrid m_Grid;
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -107,7 +107,7 @@ rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,SpanIndexType span,G
       const pgsPointOfInterest& poi = *i;
       (*p_table)(row,0) << location.SetValue( pgsTypes::CastingYard, poi );
 
-      Float64 fTop, fBot;
+      double fTop, fBot;
       pProductForces->GetStress(pgsTypes::CastingYard,pftGirder, poi, SimpleSpan, &fTop, &fBot);
       (*p_table)(row,1) << stress.SetValue( fTop );
       (*p_table)(row,2) << stress.SetValue( fBot );

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -46,7 +46,7 @@ CLASS
 ****************************************************************************/
 
 
-inline std::_tstring StringForEndDistanceMeasurementType(ConnectionLibraryEntry::EndDistanceMeasurementType type)
+std::_tstring ConnectionLibraryEntry::StringForEndDistanceMeasurementType(ConnectionLibraryEntry::EndDistanceMeasurementType type)
 {
    switch (type)
    {
@@ -64,6 +64,51 @@ inline std::_tstring StringForEndDistanceMeasurementType(ConnectionLibraryEntry:
    };
 }
 
+ConnectionLibraryEntry::EndDistanceMeasurementType ConnectionLibraryEntry::EndDistanceMeasurementTypeFromString(LPCTSTR strType)
+{
+   std::_tstring type(strType);
+   if ( type == std::_tstring(_T("FromBearingAlongGirder")) )
+      return FromBearingAlongGirder;
+   else if ( type == std::_tstring(_T("FromBearingNormalToPier")) )
+      return FromBearingNormalToPier;
+   else if ( type == std::_tstring(_T("FromPierAlongGirder")) )
+      return FromPierAlongGirder;
+   else if ( type == std::_tstring(_T("FromPierNormalToPier")) )
+      return FromPierNormalToPier;
+   else
+   {
+      ATLASSERT(false);
+      return FromPierNormalToPier;
+   }
+}
+
+std::_tstring ConnectionLibraryEntry::StringForBearingOffsetMeasurementType(ConnectionLibraryEntry::BearingOffsetMeasurementType type)
+{
+   switch (type)
+   {
+   case ConnectionLibraryEntry::AlongGirder:
+      return std::_tstring(_T("AlongGirder"));
+   case ConnectionLibraryEntry::NormalToPier:
+      return std::_tstring(_T("NormalToPier"));
+   default:
+      ATLASSERT(0);
+      return std::_tstring(_T("NormalToPier"));
+   };
+}
+
+ConnectionLibraryEntry::BearingOffsetMeasurementType ConnectionLibraryEntry::BearingOffsetMeasurementTypeFromString(LPCTSTR strType)
+{
+   std::_tstring type(strType);
+   if ( type == std::_tstring(_T("AlongGirder")) )
+      return AlongGirder;
+   else if ( type == std::_tstring(_T("NormalToPier")) )
+      return NormalToPier;
+   else
+   {
+      ATLASSERT(false);
+      return NormalToPier;
+   }
+}
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -115,7 +160,7 @@ bool ConnectionLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 
    // changed/added in version 5
    pSave->Property(_T("EndDistanceMeasurementType"), StringForEndDistanceMeasurementType(m_EndDistanceMeasure).c_str() );
-   pSave->Property(_T("BearingOffsetMeasurementType"),m_BearingOffsetMeasure == AlongGirder ? _T("AlongGirder") : _T("NormalToPier"));
+   pSave->Property(_T("BearingOffsetMeasurementType"), StringForBearingOffsetMeasurementType(m_BearingOffsetMeasure).c_str() );
 
    pSave->Property(_T("DiaphragmWidth"),m_DiaphragmWidth);
 
@@ -381,13 +426,11 @@ void ConnectionLibraryEntry::SetDiaphragmLoadType(DiaphragmLoadType type)
 
 Float64 ConnectionLibraryEntry::GetDiaphragmLoadLocation() const
 {
-   CHECK(m_DiaphragmLoadType==ApplyAtSpecifiedLocation);
    return m_DiaphragmLoadLocation;
 }
 
 void ConnectionLibraryEntry::SetDiaphragmLoadLocation(Float64 loc)
 {
-   CHECK(m_DiaphragmLoadType==ApplyAtSpecifiedLocation);
    m_DiaphragmLoadLocation = loc;
 }
 

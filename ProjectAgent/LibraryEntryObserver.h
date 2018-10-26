@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,6 @@
 // PROJECT INCLUDES
 //
 #include <PsgLib\ConcreteLibraryEntry.h>
-#include <PsgLib\ConnectionLibraryEntry.h>
 #include <PsgLib\GirderLibraryEntry.h>
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PsgLib\RatingLibraryEntry.h>
@@ -71,7 +70,6 @@ LOG
 *****************************************************************************/
 
 class pgsLibraryEntryObserver : public ConcreteLibraryEntryObserver,
-                                public ConnectionLibraryEntryObserver,
                                 public GirderLibraryEntryObserver,
                                 public SpecLibraryEntryObserver,
                                 public RatingLibraryEntryObserver,
@@ -92,7 +90,6 @@ public:
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
    virtual void Update(ConcreteLibraryEntry* pSubject, Int32 hint);
-   virtual void Update(ConnectionLibraryEntry* pSubject, Int32 hint);
    virtual void Update(GirderLibraryEntry* pSubject, Int32 hint);
    virtual void Update(SpecLibraryEntry* pSubject, Int32 hint);
    virtual void Update(RatingLibraryEntry* pSubject, Int32 hint);

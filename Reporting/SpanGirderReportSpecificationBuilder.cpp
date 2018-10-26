@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -63,7 +63,7 @@ boost::shared_ptr<CReportSpecification> CSpanReportSpecificationBuilder::CreateR
       boost::shared_ptr<CReportSpecification> pRptSpec( new CSpanReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.m_Span) );
 
       std::vector<std::_tstring> chList = dlg.m_ChapterList;
-      rptDesc.ConfigureReportSpecification(chList,pRptSpec);
+      AddChapters(rptDesc,chList,pRptSpec);
 
       return pRptSpec;
    }
@@ -82,7 +82,7 @@ boost::shared_ptr<CReportSpecification> CSpanReportSpecificationBuilder::CreateD
    spanIdx = (spanIdx == INVALID_INDEX ? 0 : spanIdx );
    boost::shared_ptr<CReportSpecification> pRptSpec( new CSpanReportSpecification(rptDesc.GetReportName(),m_pBroker,spanIdx) );
 
-   rptDesc.ConfigureReportSpecification(pRptSpec);
+   AddChapters(rptDesc,pRptSpec);
 
    return pRptSpec;
 }
@@ -118,7 +118,7 @@ boost::shared_ptr<CReportSpecification> CGirderReportSpecificationBuilder::Creat
       boost::shared_ptr<CReportSpecification> pRptSpec( new CGirderReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.m_Girder) );
 
       std::vector<std::_tstring> chList = dlg.m_ChapterList;
-      rptDesc.ConfigureReportSpecification(chList,pRptSpec);
+      AddChapters(rptDesc,chList,pRptSpec);
 
       return pRptSpec;
    }
@@ -137,7 +137,7 @@ boost::shared_ptr<CReportSpecification> CGirderReportSpecificationBuilder::Creat
    gdrIdx = (gdrIdx == INVALID_INDEX ? 0 : gdrIdx );
    boost::shared_ptr<CReportSpecification> pRptSpec( new CGirderReportSpecification(rptDesc.GetReportName(),m_pBroker,gdrIdx) );
 
-   rptDesc.ConfigureReportSpecification(pRptSpec);
+   AddChapters(rptDesc,pRptSpec);
 
    return pRptSpec;
 }
@@ -176,7 +176,7 @@ boost::shared_ptr<CReportSpecification> CSpanGirderReportSpecificationBuilder::C
       boost::shared_ptr<CReportSpecification> pRptSpec( new CSpanGirderReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.m_Span,dlg.m_Girder) );
 
       std::vector<std::_tstring> chList = dlg.m_ChapterList;
-      rptDesc.ConfigureReportSpecification(chList,pRptSpec);
+      AddChapters(rptDesc,chList,pRptSpec);
 
       return pRptSpec;
    }
@@ -195,7 +195,7 @@ boost::shared_ptr<CReportSpecification> CSpanGirderReportSpecificationBuilder::C
    gdrIdx  = (gdrIdx  == INVALID_INDEX ? 0 : gdrIdx  );
    boost::shared_ptr<CReportSpecification> pRptSpec( new CSpanGirderReportSpecification(rptDesc.GetReportName(),m_pBroker,spanIdx,gdrIdx) );
 
-   rptDesc.ConfigureReportSpecification(pRptSpec);
+   AddChapters(rptDesc,pRptSpec);
 
    return pRptSpec;
 }
@@ -238,7 +238,7 @@ boost::shared_ptr<CReportSpecification> CMultiGirderReportSpecificationBuilder::
       boost::shared_ptr<CReportSpecification> pRptSpec( new CMultiGirderReportSpecification(rptDesc.GetReportName(),m_pBroker, dlg.m_SelGdrs) );
 
       std::vector<std::_tstring> chList = dlg.m_ChapterList;
-      rptDesc.ConfigureReportSpecification(chList,pRptSpec);
+      AddChapters(rptDesc,chList,pRptSpec);
 
       return pRptSpec;
    }
@@ -262,7 +262,7 @@ boost::shared_ptr<CReportSpecification> CMultiGirderReportSpecificationBuilder::
 
    boost::shared_ptr<CReportSpecification> pRptSpec( new CMultiGirderReportSpecification(rptDesc.GetReportName(),m_pBroker, gdrlist) );
 
-   rptDesc.ConfigureReportSpecification(pRptSpec);
+   AddChapters(rptDesc,pRptSpec);
 
    return pRptSpec;
 }
@@ -309,7 +309,7 @@ boost::shared_ptr<CReportSpecification> CMultiViewSpanGirderReportSpecificationB
          boost::shared_ptr<CReportSpecification> pRptSpec( new CMultiViewSpanGirderReportSpecification(rptDesc.GetReportName(),m_pBroker,girderList) );
 
          std::vector<std::_tstring> chList = dlg.m_ChapterList;
-         rptDesc.ConfigureReportSpecification(chList,pRptSpec);
+         AddChapters(rptDesc,chList,pRptSpec);
 
          return pRptSpec;
       }
@@ -329,7 +329,7 @@ boost::shared_ptr<CReportSpecification> CMultiViewSpanGirderReportSpecificationB
    gdrIdx  = (gdrIdx  == INVALID_INDEX ? 0 : gdrIdx  );
    boost::shared_ptr<CReportSpecification> pRptSpec( new CSpanGirderReportSpecification(rptDesc.GetReportName(),m_pBroker,spanIdx,gdrIdx) );
 
-   rptDesc.ConfigureReportSpecification(pRptSpec);
+   AddChapters(rptDesc,pRptSpec);
 
    return pRptSpec;
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -86,16 +86,27 @@ BOOL CSpanLayoutPage::OnInitDialog()
 {
    CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
    SpanIndexType spanIdx = pParent->m_pSpanData->GetSpanIndex();
+   PierIndexType prevPierIdx = (PierIndexType)spanIdx;
+   PierIndexType nextPierIdx = prevPierIdx+1;
    
    CPropertyPage::OnInitDialog();
 
+   const CSpanData* pPrevSpan = pParent->m_pSpanData->GetPrevPier()->GetPrevSpan();
+   const CSpanData* pNextSpan = pParent->m_pSpanData->GetNextPier()->GetNextSpan();
+
+   CString strPrevPierType(pPrevSpan ? _T("Pier") : _T("Abutment"));
+   CString strNextPierType(pNextSpan ? _T("Pier") : _T("Abutment"));
 
    CString strSpanLabel;
    strSpanLabel.Format(_T("Span %d"),LABEL_SPAN(spanIdx));
    GetDlgItem(IDC_SPAN_LABEL)->SetWindowText(strSpanLabel);
 
+   CString strSpanLengthBasis;
+   strSpanLengthBasis.Format(_T("Span length is measured along the alignment between the %s Line at %s %d and the %s Line at %s %d."),strPrevPierType,strPrevPierType,LABEL_PIER(prevPierIdx),strNextPierType,strNextPierType,LABEL_PIER(nextPierIdx));
+   GetDlgItem(IDC_SPAN_LENGTH_BASIS)->SetWindowText(strSpanLengthBasis);
+
    CString strSpanLengthNote;
-   strSpanLengthNote.Format(_T("The length of Span %d is changed by moving all piers after Pier %d. Only the length of Span %d is changed."),LABEL_SPAN(spanIdx),LABEL_PIER(spanIdx),LABEL_SPAN(spanIdx));
+   strSpanLengthNote.Format(_T("The length of Span %d is changed by moving all piers after %s %d. Only the length of Span %d is changed."),LABEL_SPAN(spanIdx),strPrevPierType,LABEL_PIER(prevPierIdx),LABEL_SPAN(spanIdx));
    GetDlgItem(IDC_SPAN_LENGTH_NOTE)->SetWindowText(strSpanLengthNote);
 	
 	return TRUE;  // return TRUE unless you set the focus to a control

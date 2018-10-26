@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -251,7 +251,7 @@ void CGirderDescDebondPage::OnPaint()
    {
       CComPtr<IPoint2d> point;
       points->get_Item(strIdx,&point);
-      Float64 y;
+      double y;
       point->get_Y(&y);
       y_min = _cpp_min(y,y_min);
       y_max = _cpp_max(y,y_max);

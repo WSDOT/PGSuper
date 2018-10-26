@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -226,7 +226,7 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
       GirderIndexType gdrIdx = poi.GetGirder();
       Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
 
-      Float64 pM, nM, V;
+      double pM, nM, V;
       pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
       pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special ? pgsTypes::FatigueI : pgsTypes::StrengthI);
       pDistFact->GetDistributionFactors(poi,limit_state,&pM,&nM,&V);
@@ -320,7 +320,7 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
       GirderIndexType gdrIdx = poi.GetGirder();
       Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
 
-      Float64 pM, nM, V;
+      double pM, nM, V;
       pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
       pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special ? pgsTypes::FatigueI : pgsTypes::StrengthI);
       pDistFact->GetDistributionFactors(poi,limit_state,&pM,&nM,&V);
@@ -411,7 +411,7 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
       GirderIndexType gdrIdx = poi.GetGirder();
       Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
 
-      Float64 pM, nM, V;
+      double pM, nM, V;
       pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
       pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special ? pgsTypes::FatigueI : pgsTypes::StrengthI);
       pDistFact->GetDistributionFactors(poi,limit_state,&pM,&nM,&V);
@@ -523,7 +523,7 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
       GirderIndexType gdrIdx = poi.GetGirder();
       Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
 
-      Float64 pM, nM, V;
+      double pM, nM, V;
       pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
       pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special ? pgsTypes::FatigueI : pgsTypes::StrengthI);
       pDistFact->GetDistributionFactors(poi,limit_state,&pM,&nM,&V);

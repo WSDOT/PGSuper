@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -58,9 +58,9 @@ void CBoxBeamFactoryImpl::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
 
-   Float64 H1 = GetDimension(dimensions,_T("H1"));
-   Float64 H2 = GetDimension(dimensions,_T("H2"));
-   Float64 H3 = GetDimension(dimensions,_T("H3"));
+   double H1 = GetDimension(dimensions,_T("H1"));
+   double H2 = GetDimension(dimensions,_T("H2"));
+   double H3 = GetDimension(dimensions,_T("H3"));
 
    Float64 height = H1 + H2 + H3;
 
@@ -271,7 +271,7 @@ std::vector<std::_tstring> CBoxBeamFactoryImpl::GetDimensionNames()
    return m_DimNames;
 }
 
-std::vector<Float64> CBoxBeamFactoryImpl::GetDefaultDimensions()
+std::vector<double> CBoxBeamFactoryImpl::GetDefaultDimensions()
 {
    return m_DefaultDims;
 }
@@ -344,7 +344,7 @@ HINSTANCE CBoxBeamFactoryImpl::GetResourceInstance()
    return _Module.GetResourceInstance();
 }
 
-Float64 CBoxBeamFactoryImpl::GetDimension(const IBeamFactory::Dimensions& dimensions,
+double CBoxBeamFactoryImpl::GetDimension(const IBeamFactory::Dimensions& dimensions,
                                         const std::_tstring& name)
 {
    IBeamFactory::Dimensions::const_iterator iter;
@@ -403,9 +403,9 @@ WebIndexType CBoxBeamFactoryImpl::GetNumberOfWebs(const IBeamFactory::Dimensions
 
 Float64 CBoxBeamFactoryImpl::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   Float64 H1 = GetDimension(dimensions,_T("H1"));
-   Float64 H2 = GetDimension(dimensions,_T("H2"));
-   Float64 H3 = GetDimension(dimensions,_T("H3"));
+   double H1 = GetDimension(dimensions,_T("H1"));
+   double H2 = GetDimension(dimensions,_T("H2"));
+   double H3 = GetDimension(dimensions,_T("H3"));
 
    return H1 + H2 + H3;
 }

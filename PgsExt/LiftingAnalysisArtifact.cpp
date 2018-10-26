@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -858,11 +858,11 @@ void pgsLiftingAnalysisArtifact::GetMinMaxStresses(Float64* minStress, Float64* 
 }
 
 void pgsLiftingAnalysisArtifact::GetGirderStress(
-   std::vector<Float64> locs, // locations were stresses are to be retreived
+   std::vector<double> locs, // locations were stresses are to be retreived
    bool bMin,                // if true, minimum (compression) stresses are returned
    bool bIncludePrestress,   // if true, stresses contain the effect of prestressing
-   std::vector<Float64>& fTop,// vector of resulting stresses at top of girder
-   std::vector<Float64>& fBot // vector of resulting stresses at bottom of girder
+   std::vector<double>& fTop,// vector of resulting stresses at top of girder
+   std::vector<double>& fBot // vector of resulting stresses at bottom of girder
 ) const
 {
    // get the girder stress duing lift
@@ -874,23 +874,23 @@ void pgsLiftingAnalysisArtifact::GetGirderStress(
       Float64 distFromStart = iter->first;
       const pgsLiftingStressAnalysisArtifact& liftStressArtifact = iter->second;
 
-      std::vector<Float64>::iterator locIter;
+      std::vector<double>::iterator locIter;
       for ( locIter = locs.begin(); locIter != locs.end(); locIter++ )
       {
-         Float64 location = *locIter;
+         double location = *locIter;
          if ( IsEqual(location,distFromStart) )
          {
-            Float64 fTopPS,fTopImpactUp,fTopNoImpact,fTopImpactDown;
+            double fTopPS,fTopImpactUp,fTopNoImpact,fTopImpactDown;
             liftStressArtifact.GetTopFiberStress(&fTopPS,&fTopImpactUp,&fTopNoImpact,&fTopImpactDown);
 
-            Float64 ft = ( bMin ? Min3(fTopImpactUp,fTopNoImpact,fTopImpactDown) : Max3(fTopImpactUp,fTopNoImpact,fTopImpactDown) );
+            double ft = ( bMin ? Min3(fTopImpactUp,fTopNoImpact,fTopImpactDown) : Max3(fTopImpactUp,fTopNoImpact,fTopImpactDown) );
             if ( !bIncludePrestress )
                ft -= fTopPS;
 
-            Float64 fBottomPS,fBottomImpactUp,fBottomNoImpact,fBottomImpactDown;
+            double fBottomPS,fBottomImpactUp,fBottomNoImpact,fBottomImpactDown;
             liftStressArtifact.GetBottomFiberStress(&fBottomPS,&fBottomImpactUp,&fBottomNoImpact,&fBottomImpactDown);
 
-            Float64 fb = ( bMin ? Min3(fBottomImpactUp,fBottomNoImpact,fBottomImpactDown) : Max3(fBottomImpactUp,fBottomNoImpact,fBottomImpactDown) );
+            double fb = ( bMin ? Min3(fBottomImpactUp,fBottomNoImpact,fBottomImpactDown) : Max3(fBottomImpactUp,fBottomNoImpact,fBottomImpactDown) );
             if ( !bIncludePrestress )
                fb -= fBottomPS;
 
@@ -1096,20 +1096,20 @@ Float64 pgsLiftingAnalysisArtifact::GetAlterantiveTensileStressAsMax() const
     return m_AsMax;
 }
 
-void pgsLiftingAnalysisArtifact::GetRequiredConcreteStrength(Float64 *pfciComp,Float64 *pfciTens,bool* pMinRebarReqd) const
+void pgsLiftingAnalysisArtifact::GetRequiredConcreteStrength(double *pfciComp,double *pfciTens,bool* pMinRebarReqd) const
 {
    Float64 min_stress, max_stress;
    Float64 minDistFromStart, maxDistFromStart; // Distance from start for min/max stresses
    this->GetMinMaxStresses(&min_stress, &max_stress,&minDistFromStart,&maxDistFromStart);
 
-   Float64 fc_compression = 0.0;
+   double fc_compression = 0.0;
    if ( min_stress < 0 )
    {
       fc_compression = min_stress/m_C;
    }
 
    *pMinRebarReqd = false;
-   Float64 fc_tension = -1;
+   double fc_tension = -1;
    if ( 0 < max_stress )
    {
       fc_tension = pow(max_stress/m_T,2);
@@ -1133,19 +1133,19 @@ void pgsLiftingAnalysisArtifact::GetRequiredConcreteStrength(Float64 *pfciComp,F
    *pfciTens = fc_tension;
 }
 
-void pgsLiftingAnalysisArtifact::SetAllowableTensileConcreteStressParameters(Float64 f,bool bMax,Float64 fmax)
+void pgsLiftingAnalysisArtifact::SetAllowableTensileConcreteStressParameters(double f,bool bMax,double fmax)
 {
    m_T = f;
    m_bfmax = bMax;
    m_fmax = fmax;
 }
 
-void pgsLiftingAnalysisArtifact::SetAllowableCompressionFactor(Float64 c)
+void pgsLiftingAnalysisArtifact::SetAllowableCompressionFactor(double c)
 {
    m_C = c;
 }
 
-void pgsLiftingAnalysisArtifact::SetAlternativeTensileConcreteStressFactor(Float64 f)
+void pgsLiftingAnalysisArtifact::SetAlternativeTensileConcreteStressFactor(double f)
 {
    m_Talt = f;
 }
@@ -1241,13 +1241,13 @@ void pgsLiftingAnalysisArtifact::Dump(dbgDumpContext& os) const
    for (iter=m_LiftingPois.begin(); iter!=m_LiftingPois.end(); iter++)
    {
       const pgsPointOfInterest& rpoi = *iter;
-      Float64 loc = rpoi.GetDistFromStart();
+      double loc = rpoi.GetDistFromStart();
       os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
       std::map<Float64,pgsLiftingStressAnalysisArtifact,Float64_less>::const_iterator found;
       found = m_LiftingStressAnalysisArtifacts.find( loc );
 /*
       os<<endl;
-      Float64 fps, fup, fno, fdown;
+      double fps, fup, fno, fdown;
       found->second.GetTopFiberStress(&fps, &fup, &fno, &fdown);
       os<<_T("TopStress fps=")<<::ConvertFromSysUnits(fps,unitMeasure::KSI)<<_T("ksi, fup=")<<::ConvertFromSysUnits(fup,unitMeasure::KSI)<<_T("ksi, fno=")<<::ConvertFromSysUnits(fno,unitMeasure::KSI)<<_T("ksi, fdown=")<<::ConvertFromSysUnits(fdown,unitMeasure::KSI)<<_T("ksi")<<endl;
 
@@ -1264,7 +1264,7 @@ void pgsLiftingAnalysisArtifact::Dump(dbgDumpContext& os) const
    for (iter=m_LiftingPois.begin(); iter!=m_LiftingPois.end(); iter++)
    {
       const pgsPointOfInterest& rpoi = *iter;
-      Float64 loc = rpoi.GetDistFromStart();
+      double loc = rpoi.GetDistFromStart();
       os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
       std::map<Float64,pgsLiftingCrackingAnalysisArtifact,Float64_less>::const_iterator found;
       found = m_LiftingCrackingAnalysisArtifacts.find( loc );

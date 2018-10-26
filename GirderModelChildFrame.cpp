@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -183,7 +183,7 @@ CRuntimeClass* CGirderModelChildFrame::GetLowerPaneClass() const
    return RUNTIME_CLASS(CGirderModelSectionView);
 }
 
-Float64 CGirderModelChildFrame::GetTopFrameFraction() const
+double CGirderModelChildFrame::GetTopFrameFraction() const
 {
    return 0.4;
 }
@@ -598,7 +598,7 @@ void CGirderModelChildFrame::CutAtRightEnd()
 
 void CGirderModelChildFrame::CutAtNext()
 {
-   Float64 f = m_CurrentCutLocation/m_MaxCutLocation;
+   double f = m_CurrentCutLocation/m_MaxCutLocation;
    f = ::RoundOff(f+0.1,0.1);
    if ( 1 < f )
       f = 1;
@@ -608,7 +608,7 @@ void CGirderModelChildFrame::CutAtNext()
 
 void CGirderModelChildFrame::CutAtPrev()
 {
-   Float64 f = m_CurrentCutLocation/m_MaxCutLocation;
+   double f = m_CurrentCutLocation/m_MaxCutLocation;
    f = ::RoundOff(f-0.1,0.1);
    if ( f < 0 )
       f = 0;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -69,9 +69,9 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
-   Float64 Eci = pMaterial->GetEciGdr(span,gdr);
-   Float64 Epp = pMaterial->GetStrand(span,gdr,pgsTypes::Permanent)->GetE();
-   Float64 Ept = pMaterial->GetStrand(span,gdr,pgsTypes::Temporary)->GetE();
+   double Eci = pMaterial->GetEciGdr(span,gdr);
+   double Epp = pMaterial->GetStrand(span,gdr,pgsTypes::Permanent)->GetE();
+   double Ept = pMaterial->GetStrand(span,gdr,pgsTypes::Temporary)->GetE();
 
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
@@ -87,7 +87,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
    table->mom_inertia.ShowUnitTag(true);
    if ( bIsPrismatic )
    {
-      Float64 Ag, Ig;
+      double Ag, Ig;
       GET_IFACE2(pBroker,ISectProp2,pSectProp);
       Ag = pSectProp->GetAg(pgsTypes::CastingYard,pgsPointOfInterest(span,gdr,0.0));
       Ig = pSectProp->GetIx(pgsTypes::CastingYard,pgsPointOfInterest(span,gdr,0.0));

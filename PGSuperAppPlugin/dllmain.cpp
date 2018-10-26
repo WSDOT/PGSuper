@@ -13,7 +13,8 @@
 #include <BridgeLinkCatCom.h>
 #include <PGSuperCatCom.h>
 #include <Plugins\PGSuperIEPlugin.h>
-#include <IFace\BeamFactory.h>
+
+#include <MFCTools\VersionInfo.h>
 
 #include <EAF\EAFApp.h>
 #include <EAF\EAFUtilities.h>
@@ -33,8 +34,6 @@ BOOL CPGSuperAppPluginApp::InitInstance()
 	GXSetNewGridLineMode(TRUE);	// use smarter grid lines (and dotted) 
 
    CGXTabWnd::RegisterClass(m_hInstance);
-
-   SetRegistryKey( _T("Washington State Department of Transportation") );
 
    // Register the component categories PGSuper needs
    // This should be done in the installer, but do it again here just in case
@@ -93,141 +92,6 @@ CString CPGSuperAppPluginApp::GetVersion(bool bIncludeBuildNumber) const
 
    return strVersion;
 }
-
-// returns key for HKEY_LOCAL_MACHINE\Software\Washington State Department of Transportation\PGSuper"
-// responsibility of the caller to call RegCloseKey() on the returned HKEY
-// key is not created if missing (
-HKEY CPGSuperAppPluginApp::GetAppLocalMachineRegistryKey()
-{
-	ASSERT(m_pszRegistryKey != NULL);
-	ASSERT(m_pszProfileName != NULL);
-
-	HKEY hAppKey = NULL;
-	HKEY hSoftKey = NULL;
-	HKEY hCompanyKey = NULL;
-
-
-   // open the "software" key
-   LONG result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, _T("software"), 0, KEY_WRITE|KEY_READ, &hSoftKey);
-	if ( result == ERROR_SUCCESS)
-	{
-      // open the "Washington State Department of Transportation" key
-      result = RegOpenKeyEx(hSoftKey, m_pszRegistryKey, 0, KEY_WRITE|KEY_READ, &hCompanyKey);
-		if (result == ERROR_SUCCESS)
-		{
-         // Open the "PGSuper" key
-			result = RegOpenKeyEx(hCompanyKey, m_pszProfileName, 0, KEY_WRITE|KEY_READ, &hAppKey);
-		}
-	}
-
-	if (hSoftKey != NULL)
-		RegCloseKey(hSoftKey);
-	
-   if (hCompanyKey != NULL)
-		RegCloseKey(hCompanyKey);
-
-	return hAppKey;
-}
-
-// returns key for:
-//      HKEY_LOCAL_MACHINE\"Software"\Washington State Deparment of Transportation\PGSuper\lpszSection
-// responsibility of the caller to call RegCloseKey() on the returned HKEY
-HKEY CPGSuperAppPluginApp::GetLocalMachineSectionKey(LPCTSTR lpszSection)
-{
-	HKEY hAppKey = GetAppLocalMachineRegistryKey();
-	if (hAppKey == NULL)
-		return NULL;
-
-   return GetLocalMachineSectionKey(hAppKey,lpszSection);
-}
-
-HKEY CPGSuperAppPluginApp::GetLocalMachineSectionKey(HKEY hAppKey,LPCTSTR lpszSection)
-{
-	ASSERT(lpszSection != NULL);
-
-	HKEY hSectionKey = NULL;
-
-	LONG result = RegOpenKeyEx(hAppKey, lpszSection, 0, KEY_WRITE|KEY_READ, &hSectionKey);
-	RegCloseKey(hAppKey);
-	return hSectionKey;
-}
-
-UINT CPGSuperAppPluginApp::GetLocalMachineInt(LPCTSTR lpszSection, LPCTSTR lpszEntry,int nDefault)
-{
-	HKEY hAppKey = GetAppLocalMachineRegistryKey();
-	if (hAppKey == NULL)
-		return nDefault;
-
-   return GetLocalMachineInt(hAppKey,lpszSection,lpszEntry,nDefault);
-}
-
-UINT CPGSuperAppPluginApp::GetLocalMachineInt(HKEY hAppKey,LPCTSTR lpszSection, LPCTSTR lpszEntry,int nDefault)
-{
-	ASSERT(lpszSection != NULL);
-	ASSERT(lpszEntry != NULL);
-	ASSERT(m_pszRegistryKey != NULL);
-
-	HKEY hSecKey = GetLocalMachineSectionKey(hAppKey,lpszSection);
-	if (hSecKey == NULL)
-		return nDefault;
-	DWORD dwValue;
-	DWORD dwType;
-	DWORD dwCount = sizeof(DWORD);
-	LONG lResult = RegQueryValueEx(hSecKey, (LPTSTR)lpszEntry, NULL, &dwType,
-		(LPBYTE)&dwValue, &dwCount);
-	RegCloseKey(hSecKey);
-	if (lResult == ERROR_SUCCESS)
-	{
-		ASSERT(dwType == REG_DWORD);
-		ASSERT(dwCount == sizeof(dwValue));
-		return (UINT)dwValue;
-	}
-	return nDefault;
-}
-
-CString CPGSuperAppPluginApp::GetLocalMachineString(LPCTSTR lpszSection, LPCTSTR lpszEntry,LPCTSTR lpszDefault)
-{
-	HKEY hAppKey = GetAppLocalMachineRegistryKey();
-	if (hAppKey == NULL)
-		return lpszDefault;
-
-   return GetLocalMachineString(hAppKey,lpszSection,lpszEntry,lpszDefault);
-}
-
-CString CPGSuperAppPluginApp::GetLocalMachineString(HKEY hAppKey,LPCTSTR lpszSection, LPCTSTR lpszEntry,LPCTSTR lpszDefault)
-{
-	ASSERT(lpszSection != NULL);
-	ASSERT(lpszEntry != NULL);
-	ASSERT(m_pszRegistryKey != NULL);
-	HKEY hSecKey = GetLocalMachineSectionKey(hAppKey,lpszSection);
-	if (hSecKey == NULL)
-		return lpszDefault;
-	CString strValue;
-	DWORD dwType, dwCount;
-	LONG lResult = RegQueryValueEx(hSecKey, (LPTSTR)lpszEntry, NULL, &dwType,
-		NULL, &dwCount);
-	if (lResult == ERROR_SUCCESS)
-	{
-		ASSERT(dwType == REG_SZ);
-		lResult = RegQueryValueEx(hSecKey, (LPTSTR)lpszEntry, NULL, &dwType,
-			(LPBYTE)strValue.GetBuffer(dwCount/sizeof(TCHAR)), &dwCount);
-		strValue.ReleaseBuffer();
-	}
-	RegCloseKey(hSecKey);
-	if (lResult == ERROR_SUCCESS)
-	{
-		ASSERT(dwType == REG_SZ);
-		return strValue;
-	}
-	return lpszDefault;
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////
-
 
 // Used to determine whether the DLL can be unloaded by OLE
 STDAPI DllCanUnloadNow(void)

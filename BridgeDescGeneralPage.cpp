@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -720,13 +720,13 @@ void CBridgeDescGeneralPage::FillGirderSpacingMeasurementComboBox()
 
    DWORD current_value = HashGirderSpacing(m_GirderSpacingMeasurementLocation,m_GirderSpacingMeasurementType);
 
-   int idx = pSpacingType->AddString(_T("Measured at and along the CL pier"));
-   DWORD item_data = HashGirderSpacing(pgsTypes::AtCenterlinePier,pgsTypes::AlongItem);
+   int idx = pSpacingType->AddString(_T("Measured at and along the abutment/pier lines"));
+   DWORD item_data = HashGirderSpacing(pgsTypes::AtPierLine,pgsTypes::AlongItem);
    pSpacingType->SetItemData(idx,item_data);
    m_CacheGirderSpacingMeasureIdx = (item_data == current_value ? idx : m_CacheGirderSpacingMeasureIdx );
    
-   idx = pSpacingType->AddString(_T("Measured normal to alignment at CL pier"));
-   item_data = HashGirderSpacing(pgsTypes::AtCenterlinePier,pgsTypes::NormalToItem);
+   idx = pSpacingType->AddString(_T("Measured normal to alignment at abutment/pier lines"));
+   item_data = HashGirderSpacing(pgsTypes::AtPierLine,pgsTypes::NormalToItem);
    pSpacingType->SetItemData(idx,item_data);
    m_CacheGirderSpacingMeasureIdx = (item_data == current_value ? idx : m_CacheGirderSpacingMeasureIdx );
 
@@ -747,10 +747,6 @@ void CBridgeDescGeneralPage::FillGirderSpacingMeasurementComboBox()
 
 bool CBridgeDescGeneralPage::AreAnyBearingsMeasuredAlongGirder()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2( pBroker, ILibrary, pLib );
-   
    bool test=false;
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
 
@@ -761,14 +757,11 @@ bool CBridgeDescGeneralPage::AreAnyBearingsMeasuredAlongGirder()
       const CPierData* pPrevPier = pSpan->GetPrevPier();
       const CPierData* pNextPier = pSpan->GetNextPier();
 
-      std::_tstring start_connection = pPrevPier->GetConnection(pgsTypes::Ahead);
-      std::_tstring end_connection   = pNextPier->GetConnection(pgsTypes::Back);
+      Float64 offset;
+      ConnectionLibraryEntry::BearingOffsetMeasurementType mbs, mbe;
+      pPrevPier->GetBearingOffset(pgsTypes::Ahead,&offset,&mbs);
+      pNextPier->GetBearingOffset(pgsTypes::Back, &offset,&mbe);
 
-      const ConnectionLibraryEntry* start_connection_entry = pLib->GetConnectionEntry(start_connection.c_str());
-      const ConnectionLibraryEntry*   end_connection_entry = pLib->GetConnectionEntry(  end_connection.c_str());
-
-      ConnectionLibraryEntry::BearingOffsetMeasurementType mbs = start_connection_entry->GetBearingOffsetMeasurementType();
-      ConnectionLibraryEntry::BearingOffsetMeasurementType mbe =   end_connection_entry->GetBearingOffsetMeasurementType();
       if (mbs==ConnectionLibraryEntry::AlongGirder || mbe==ConnectionLibraryEntry::AlongGirder )
       {
          test = true;
@@ -1167,7 +1160,7 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
          const CGirderTypes* pGirderTypes = pSpan->GetGirderTypes();
 
          GirderIndexType nGirders = pSpan->GetGirderCount();
-         Float64 w = 0;
+         double w = 0;
          for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
          {
             const GirderLibraryEntry* pEntry = pGirderTypes->GetGirderLibraryEntry(gdrIdx);
@@ -1234,14 +1227,14 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
    {
       // get skew information so spacing ranges can be skew adjusted
       const CPierData* pPrevPier = pSpan->GetPrevPier();
-      Float64 prevSkewAngle;
+      double prevSkewAngle;
       pBridge->GetSkewAngle(pPrevPier->GetStation(),pPrevPier->GetOrientation(),&prevSkewAngle);
 
       const CPierData* pNextPier = pSpan->GetNextPier();
-      Float64 nextSkewAngle;
+      double nextSkewAngle;
       pBridge->GetSkewAngle(pNextPier->GetStation(),pNextPier->GetOrientation(),&nextSkewAngle);
 
-      Float64 startSkewCorrection, endSkewCorrection;
+      double startSkewCorrection, endSkewCorrection;
       if ( m_GirderSpacingMeasurementType == pgsTypes::NormalToItem )
       {
          startSkewCorrection = 1;
@@ -1272,13 +1265,13 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
          CComPtr<IBeamFactory> factory;
          pGdrEntry->GetBeamFactory(&factory);
 
-         Float64 min, max;
+         double min, max;
          factory->GetAllowableSpacingRange(dimensions,m_Deck.DeckType,m_GirderSpacingType,&min,&max);
 
-         Float64 min1 = min*startSkewCorrection;
-         Float64 max1 = max*startSkewCorrection;
-         Float64 min2 = min*endSkewCorrection;
-         Float64 max2 = max*endSkewCorrection;
+         double min1 = min*startSkewCorrection;
+         double max1 = max*startSkewCorrection;
+         double min2 = min*endSkewCorrection;
+         double max2 = max*endSkewCorrection;
 
          if ( IsGirderSpacing(m_GirderSpacingType) )
          {

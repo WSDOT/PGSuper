@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -118,7 +118,7 @@ bool TrafficBarrierEntry::SaveMe(sysIStructuredSave* pSave)
    CComPtr<IPoint2d> point;
    while ( enum_points->Next(1,&point,NULL) != S_FALSE )
    {
-      Float64 x,y;
+      double x,y;
       point->get_X(&x);
       point->get_Y(&y);
 
@@ -152,7 +152,7 @@ bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
 
    if(pLoad->BeginUnit(_T("TrafficBarrierEntry")))
    {
-      Float64 version = pLoad->GetVersion();
+      double version = pLoad->GetVersion();
       if (7.0 < version)
          THROW_LOAD(BadVersion,pLoad);
 
@@ -164,7 +164,7 @@ bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
 
       if ( version < 3 ) // 2 or earlier
       {
-         Float64 x1,x2,x3,x4,x5,y1,y2,y3;
+         double x1,x2,x3,x4,x5,y1,y2,y3;
 
          if(!pLoad->Property(_T("X1"), &x1))
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -208,7 +208,7 @@ bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          // version 3 and later
          CollectionIndexType count;
-         Float64 x,y;
+         double x,y;
 
          Configuration configuration;
 
@@ -265,7 +265,7 @@ bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
             ATLASSERT( version == 3 || version == 4 );
 
             // more obsolete data... load it and ignore it
-            Float64 dummy_val;
+            double dummy_val;
 
             if ( configuration == ExteriorBarrier_Sidewalk ||
                  configuration == ExteriorBarrier_Sidewalk_InteriorBarrier )
@@ -463,12 +463,12 @@ void TrafficBarrierEntry::IsBarrierStructurallyContinuous(bool bContinuous)
    m_bStructurallyContinuous = bContinuous;
 }
 
-void TrafficBarrierEntry::SetCurbOffset(Float64 curbOffset)
+void TrafficBarrierEntry::SetCurbOffset(double curbOffset)
 {
    m_CurbOffset = curbOffset;
 }
 
-Float64 TrafficBarrierEntry::GetCurbOffset() const
+double TrafficBarrierEntry::GetCurbOffset() const
 {
    return m_CurbOffset;
 }
@@ -558,11 +558,11 @@ bool TrafficBarrierEntry::ComparePoints(IPoint2dCollection* points1,IPoint2dColl
       points1->get_Item(i,&p1);
       points2->get_Item(i,&p2);
 
-      Float64 x1,y1;
+      double x1,y1;
       p1->get_X(&x1);
       p1->get_Y(&y1);
 
-      Float64 x2,y2;
+      double x2,y2;
       p2->get_X(&x2);
       p2->get_Y(&y2);
 
@@ -581,7 +581,7 @@ void TrafficBarrierEntry::CopyPoints(IPoint2dCollection* points1,IPoint2dCollect
    CComPtr<IPoint2d> point;
    while ( enum_points->Next(1,&point,NULL) != S_FALSE )
    {
-      Float64 x,y;
+      double x,y;
       point->get_X(&x);
       point->get_Y(&y);
 
@@ -603,7 +603,7 @@ void TrafficBarrierEntry::CopyPoints(IPoint2dCollection* points1,IPoint2dCollect
    CComPtr<IPoint2d> point;
    while ( enum_points->Next(1,&point,NULL) != S_FALSE )
    {
-      Float64 x,y;
+      double x,y;
       point->get_X(&x);
       point->get_Y(&y);
 
@@ -617,9 +617,9 @@ void TrafficBarrierEntry::CopyPoints(IPoint2dCollection* points1,IPoint2dCollect
    }
 }
 
-void TrafficBarrierEntry::ConvertDimensionsToPoints(Float64 x1,Float64 x2,Float64 x3,Float64 x4,Float64 x5,Float64 y1,Float64 y2,Float64 y3)
+void TrafficBarrierEntry::ConvertDimensionsToPoints(double x1,double x2,double x3,double x4,double x5,double y1,double y2,double y3)
 {
-   Float64 y4 = ::ConvertToSysUnits(7.0,unitMeasure::Inch);
+   double y4 = ::ConvertToSysUnits(7.0,unitMeasure::Inch);
    CComPtr<ITrafficBarrier> barrier;
    barrier.CoCreateInstance(CLSID_TrafficBarrier);
    barrier->put_X1(x1);
@@ -653,14 +653,14 @@ void TrafficBarrierEntry::CreatePolyShape(pgsTypes::TrafficBarrierOrientation or
    CComPtr<IPolyShape> polyshape;
    polyshape.CoCreateInstance(CLSID_PolyShape);
 
-   Float64 sign = (orientation == pgsTypes::tboLeft ? 1 : -1);
+   double sign = (orientation == pgsTypes::tboLeft ? 1 : -1);
 
    CComPtr<IEnumPoint2d> enum_points;
    points->get__Enum(&enum_points);
    CComPtr<IPoint2d> point;
    while ( enum_points->Next(1,&point,NULL) != S_FALSE )
    {
-      Float64 x,y;
+      double x,y;
       point->get_X(&x);
       point->get_Y(&y);
       polyshape->AddPoint(sign*x,y);

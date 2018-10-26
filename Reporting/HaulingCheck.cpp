@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -118,9 +118,9 @@ void CHaulingCheck::Build(rptChapter* pChapter,
    std::_tstring specName = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( specName.c_str() );
 
-   Float64 c; // compression coefficient
-   Float64 t; // tension coefficient
-   Float64 t_max; // maximum allowable tension
+   double c; // compression coefficient
+   double t; // tension coefficient
+   double t_max; // maximum allowable tension
    bool b_t_max; // true if max allowable tension is applicable
 
    c = pSpecEntry->GetHaulingCompStress();
@@ -143,7 +143,7 @@ void CHaulingCheck::Build(rptChapter* pChapter,
    *p << _T(" = ") << stress.SetValue(pHaulArtifact->GetAllowableTensileStress())<< _T(" ") <<
       stress.GetUnitTag()<< rptNewLine;
 
-   Float64 As_reqd = pHaulArtifact->GetAlterantiveTensileStressAsMax();
+   double As_reqd = pHaulArtifact->GetAlterantiveTensileStressAsMax();
    *p <<_T("Maximum allowable concrete tensile stress, plumb girder with impact = ") << tension_coeff.SetValue(t2) << symbol(ROOT) << RPT_FC
        << _T(" = ") << stress.SetValue(pHaulArtifact->GetAlternativeTensionAllowableStress()) << _T(" ") << stress.GetUnitTag();
    if ( !IsZero(As_reqd) )
@@ -159,13 +159,13 @@ void CHaulingCheck::Build(rptChapter* pChapter,
 
    *p <<_T("Allowable factor of safety against cracking = ")<<pHaulArtifact->GetAllowableFsForCracking()<<rptNewLine;
 
-   Float64 fcMax = IS_SI_UNITS(pDisplayUnits) ? ::ConvertToSysUnits(105,unitMeasure::MPa) : ::ConvertToSysUnits(15.0,unitMeasure::KSI);
+   double fcMax = IS_SI_UNITS(pDisplayUnits) ? ::ConvertToSysUnits(105,unitMeasure::MPa) : ::ConvertToSysUnits(15.0,unitMeasure::KSI);
 
-   Float64 fc_reqd_comp,fc_reqd_tens;
+   double fc_reqd_comp,fc_reqd_tens;
    bool min_rebar_reqd;
    pHaulArtifact->GetRequiredConcreteStrength(&fc_reqd_comp,&fc_reqd_tens,&min_rebar_reqd,fcMax,false);
 
-   Float64 fc_reqd = max(fc_reqd_comp,fc_reqd_tens);
+   double fc_reqd = max(fc_reqd_comp,fc_reqd_tens);
 
    if ( 0 < fc_reqd )
       *p << RPT_FC << _T(" required to satisfy stress and stability criteria = ") << stress_u.SetValue( fc_reqd ) << rptNewLine;

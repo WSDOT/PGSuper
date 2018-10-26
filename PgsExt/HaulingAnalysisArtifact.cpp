@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -922,7 +922,7 @@ void pgsHaulingAnalysisArtifact::GetMinMaxInclinedStresses(Float64* pftuMin,Floa
    for (std::map<Float64,pgsHaulingStressAnalysisArtifact,Float64_less>::const_iterator is = m_HaulingStressAnalysisArtifacts.begin(); 
         is!=m_HaulingStressAnalysisArtifacts.end(); is++)
    {
-           Float64 ftu,ftd,fbu,fbd;
+           double ftu,ftd,fbu,fbd;
            is->second.GetIncludedGirderStresses(&ftu,&ftd,&fbu,&fbd);
 
            *pftuMin = min(*pftuMin,ftu);
@@ -947,14 +947,14 @@ Float64 pgsHaulingAnalysisArtifact::GetAlterantiveTensileStressAsMax() const
     return m_AsMax;
 }
 
-void pgsHaulingAnalysisArtifact::GetRequiredConcreteStrength(Float64 *pfcComp,Float64 *pfcTens,bool* pMinRebarReqd,Float64 fcMax,bool bDesign) const
+void pgsHaulingAnalysisArtifact::GetRequiredConcreteStrength(double *pfcComp,double *pfcTens,bool* pMinRebarReqd,double fcMax,bool bDesign) const
 {
    // required concrete strength based on plumb girder
    // compression limited by xf'ci, tension limited by xSqrt(f'ci) <= max
    Float64 min_stress, max_stress;
    GetMinMaxStresses(&min_stress, &max_stress);
 
-   Float64 fc_compression = -1;
+   double fc_compression = -1;
    if ( min_stress < 0 )
    {
       fc_compression = min_stress/m_C;
@@ -965,7 +965,7 @@ void pgsHaulingAnalysisArtifact::GetRequiredConcreteStrength(Float64 *pfcComp,Fl
    }
 
    *pMinRebarReqd = false;
-   Float64 fc_tension = -1;
+   double fc_tension = -1;
    if ( bDesign )
    {
       if ( 0 < max_stress )
@@ -1000,15 +1000,15 @@ void pgsHaulingAnalysisArtifact::GetRequiredConcreteStrength(Float64 *pfcComp,Fl
 
    // required concrete strength based on inclined girder
    // compression limited by xf'ci, tension limited by modulus of rupture
-   Float64 ftuMin,ftdMin,fbuMin,fbdMin;
-   Float64 ftuMax,ftdMax,fbuMax,fbdMax;
+   double ftuMin,ftdMin,fbuMin,fbdMin;
+   double ftuMax,ftdMax,fbuMax,fbdMax;
 
    GetMinMaxInclinedStresses(&ftuMin,&ftdMin,&fbuMin,&fbdMin,&ftuMax,&ftdMax,&fbuMax,&fbdMax);
 
-   Float64 fmin = Min4(ftuMin,ftdMin,fbuMin,fbdMin);
-   Float64 fmax = Max4(ftuMax,ftdMax,fbuMax,fbdMax);
+   double fmin = Min4(ftuMin,ftdMin,fbuMin,fbdMin);
+   double fmax = Max4(ftuMax,ftdMax,fbuMax,fbdMax);
 
-   Float64 fc_compression_inclined = -1;
+   double fc_compression_inclined = -1;
    if ( fmin < 0 )
    {
       fc_compression_inclined = fmin/m_C;
@@ -1018,7 +1018,7 @@ void pgsHaulingAnalysisArtifact::GetRequiredConcreteStrength(Float64 *pfcComp,Fl
       fc_compression_inclined = 0;
    }
 
-   Float64 fc_tension_inclined = -1;
+   double fc_tension_inclined = -1;
    if ( 0 < fmax )
    {
       fc_tension_inclined = pow(fmax/GetModRuptureCoefficient(),2);
@@ -1029,26 +1029,26 @@ void pgsHaulingAnalysisArtifact::GetRequiredConcreteStrength(Float64 *pfcComp,Fl
    }
 
    // get max f'c for plumb and inclined conditions
-   Float64 fc_comp = max(fc_compression_inclined, fc_compression);
-   Float64 fc_tens = max(fc_tension_inclined, fc_tension);
+   double fc_comp = max(fc_compression_inclined, fc_compression);
+   double fc_tens = max(fc_tension_inclined, fc_tension);
 
    *pfcComp = fc_comp;
    *pfcTens = fc_tens;
 }
 
-void pgsHaulingAnalysisArtifact::SetAllowableTensileConcreteStressParameters(Float64 f,bool bMax,Float64 fmax)
+void pgsHaulingAnalysisArtifact::SetAllowableTensileConcreteStressParameters(double f,bool bMax,double fmax)
 {
    m_T = f;
    m_bfmax = bMax;
    m_fmax = fmax;
 }
 
-void pgsHaulingAnalysisArtifact::SetAllowableCompressionFactor(Float64 c)
+void pgsHaulingAnalysisArtifact::SetAllowableCompressionFactor(double c)
 {
    m_C = c;
 }
 
-void pgsHaulingAnalysisArtifact::SetAlternativeTensileConcreteStressFactor(Float64 f)
+void pgsHaulingAnalysisArtifact::SetAlternativeTensileConcreteStressFactor(double f)
 {
    m_Talt = f;
 }
@@ -1143,13 +1143,13 @@ void pgsHaulingAnalysisArtifact::Dump(dbgDumpContext& os) const
    for (iter=m_HaulingPois.begin(); iter!=m_HaulingPois.end(); iter++)
    {
       const pgsPointOfInterest& rpoi = *iter;
-      Float64 loc = rpoi.GetDistFromStart();
+      double loc = rpoi.GetDistFromStart();
       os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
       std::map<Float64,pgsHaulingStressAnalysisArtifact,Float64_less>::const_iterator found;
       found = m_HaulingStressAnalysisArtifacts.find( loc );
 
       os<<endl;
-      Float64 fps, fup, fno, fdown;
+      double fps, fup, fno, fdown;
       found->second.GetTopFiberStress(&fps, &fup, &fno, &fdown);
       os<<_T("TopStress fps=")<<::ConvertFromSysUnits(fps,unitMeasure::KSI)<<_T("ksi, fup=")<<::ConvertFromSysUnits(fup,unitMeasure::KSI)<<_T("ksi, fno=")<<::ConvertFromSysUnits(fno,unitMeasure::KSI)<<_T("ksi, fdown=")<<::ConvertFromSysUnits(fdown,unitMeasure::KSI)<<_T("ksi")<<endl;
 
@@ -1166,7 +1166,7 @@ void pgsHaulingAnalysisArtifact::Dump(dbgDumpContext& os) const
    for (iter=m_HaulingPois.begin(); iter!=m_HaulingPois.end(); iter++)
    {
       const pgsPointOfInterest& rpoi = *iter;
-      Float64 loc = rpoi.GetDistFromStart();
+      double loc = rpoi.GetDistFromStart();
       os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
       std::map<Float64,pgsHaulingStressAnalysisArtifact,Float64_less>::const_iterator found;
       found = m_HaulingStressAnalysisArtifacts.find( loc );

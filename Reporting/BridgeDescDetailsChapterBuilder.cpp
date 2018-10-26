@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -50,7 +50,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-static void write_connection_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level);
 static void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level);
 static void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level);
@@ -63,44 +62,6 @@ void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pD
 
 std::_tstring get_connection_image_name(ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType);
 
-
-std::_tstring get_bearing_measure_string(ConnectionLibraryEntry::BearingOffsetMeasurementType type)
-{
-   switch( type )
-   {
-   case ConnectionLibraryEntry::AlongGirder:
-      return _T("Measured From Pier Centerline and Along Girder Centerline");
-
-   case ConnectionLibraryEntry::NormalToPier:
-      return _T("Measured From and Normal to Pier Centerline");
-
-   default:
-      ATLASSERT(0);
-      return _T("");
-   }
-}
-
-inline std::_tstring get_end_distance_measure_string(ConnectionLibraryEntry::EndDistanceMeasurementType type)
-{
-   switch( type )
-   {
-   case ConnectionLibraryEntry::FromBearingAlongGirder:
-      return _T("Measured From Bearing along Girder Centerline");
-
-   case ConnectionLibraryEntry::FromBearingNormalToPier:
-      return _T("Measured From Bearing and Normal to Pier Centerline");
-
-   case ConnectionLibraryEntry::FromPierAlongGirder:
-      return _T("Measured From Pier Centerline and Along Girder Centerline");
-
-   case ConnectionLibraryEntry::FromPierNormalToPier:
-      return _T("Measured From and Normal to Pier Centerline");
-
-   default:
-      ATLASSERT(0);
-      return _T("");
-   }
-}
 
 
 /****************************************************************************
@@ -156,8 +117,6 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrand);
-
-   write_connection_details( pBroker, pDisplayUnits, pChapter, level);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
@@ -264,99 +223,6 @@ CChapterBuilder* CBridgeDescDetailsChapterBuilder::Clone() const
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-void write_connection_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
-{
-   GET_IFACE2(pBroker, ILibrary,   pLib );
-   GET_IFACE2(pBroker, IBridge,    pBridge ); 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, xdim,   pDisplayUnits->GetComponentDimUnit(),  true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, cmpdim, pDisplayUnits->GetComponentDimUnit(), true );
-
-   rptParagraph* pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-   *pChapter<<pHead;
-   *pHead<<_T("Girder Connection Library Entries")<<rptNewLine;
-
-   rptParagraph* pPara;
-   pPara = new rptParagraph;
-   *pChapter << pPara;
-
-   std::set<std::_tstring> used_connections;
-
-   PierIndexType cPiers = pBridge->GetPierCount();
-   for ( PierIndexType pier = 0; pier < cPiers; pier++ )
-   {
-      for ( int side = 0; side < 2; side++ )
-      {
-         std::_tstring strConnection;
-         if ( side == 0 )
-            strConnection = pBridge->GetLeftSidePierConnection( pier );
-         else
-            strConnection = pBridge->GetRightSidePierConnection( pier );
-
-         std::set<std::_tstring>::iterator found = used_connections.find( strConnection );
-         if ( found == used_connections.end() )
-         {
-            const ConnectionLibraryEntry* pEntry = pLib->GetConnectionEntry( strConnection.c_str() );
-
-            rptRcTable* pTable = 0;
-            pTable = pgsReportStyleHolder::CreateDefaultTable(3,_T(""));
-            *pPara << rptNewLine << pTable;
-
-            pTable->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-            pTable->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
-
-            pTable->SetColumnStyle(2, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-            pTable->SetStripeRowColumnStyle(2, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
-
-            // header
-            pTable->SetNumberOfHeaderRows(1);
-            pTable->SetColumnSpan(0,0,3);
-            pTable->SetColumnSpan(0,1,SKIP_CELL);
-            pTable->SetColumnSpan(0,2,SKIP_CELL);
-            (*pTable)(0,0) << strConnection;
-
-            // picture in first column
-            pTable->SetRowSpan(1,0,6);
-            pTable->SetRowSpan(2,0,SKIP_CELL);
-            pTable->SetRowSpan(3,0,SKIP_CELL);
-            pTable->SetRowSpan(4,0,SKIP_CELL);
-            pTable->SetRowSpan(5,0,SKIP_CELL);
-            pTable->SetRowSpan(6,0,SKIP_CELL);
-            (*pTable)(1,0) << rptRcImage( pgsReportStyleHolder::GetImagePath() + get_connection_image_name(pEntry->GetBearingOffsetMeasurementType(),pEntry->GetEndDistanceMeasurementType()) );
-
-
-            (*pTable)(1,1) << _T("Girder End Distance");
-            (*pTable)(1,2) << xdim.SetValue( pEntry->GetGirderEndDistance() ) 
-                             << rptNewLine << get_end_distance_measure_string(pEntry->GetEndDistanceMeasurementType());
-
-            (*pTable)(2,1) << _T("Girder Bearing Offset");
-            (*pTable)(2,2)   << xdim.SetValue( pEntry->GetGirderBearingOffset() )
-                               << rptNewLine << get_bearing_measure_string(pEntry->GetBearingOffsetMeasurementType());
-
-            (*pTable)(3,1) << _T("Support Width");
-            (*pTable)(3,2) << xdim.SetValue( pEntry->GetSupportWidth() );
-
-            (*pTable)(4,1) << _T("End Diaphragm Width (W)");
-            (*pTable)(4,2) << cmpdim.SetValue( pEntry->GetDiaphragmWidth() );
-
-            (*pTable)(5,1) << _T("End Diaphragm Height (H)");
-            (*pTable)(5,2) << cmpdim.SetValue( pEntry->GetDiaphragmHeight() );
-
-            (*pTable)(6,1) << _T("End Diaphragm C.G. Distance");
-
-            ConnectionLibraryEntry::DiaphragmLoadType ltype = pEntry->GetDiaphragmLoadType();
-            if (ltype==ConnectionLibraryEntry::ApplyAtBearingCenterline)
-               (*pTable)(6,2) << _T("Applied at CL bearing");
-            else if(ltype==ConnectionLibraryEntry::ApplyAtSpecifiedLocation)
-               (*pTable)(6,2) << xdim.SetValue( pEntry->GetDiaphragmLoadLocation())<<_T(" from CL Pier");
-            else if(ltype==ConnectionLibraryEntry::DontApply)
-               (*pTable)(6,2) << RPT_NA;
-         }
-
-         used_connections.insert( strConnection );
-      }
-   }
-}
-
 
 void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level)
 {
@@ -438,7 +304,7 @@ void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pD
       *pPara << _T("Maximum number of debonded strands per row = ") << pGdrEntry->GetMaxFractionDebondedStrandsPerRow()*100 << _T("% of strands in any row") << rptNewLine;
 
       StrandIndexType nMax;
-      Float64 fMax;
+      double fMax;
 
       pGdrEntry->GetMaxDebondedStrandsPerSection(&nMax,&fMax);   
       *pPara << _T("Maximum number of debonded strands per section. The greater of ") << nMax << _T(" strands or ") << fMax*100 << _T("% of strands debonded at any section") << rptNewLine;
@@ -653,7 +519,7 @@ void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    long i = 1;
    while ( enum_points->Next(1,&point,NULL) != S_FALSE )
    {
-      Float64 x,y;
+      double x,y;
       point->get_X(&x);
       point->get_Y(&y);
 

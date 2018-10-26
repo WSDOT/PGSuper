@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -151,7 +151,7 @@ void CFactorOfSafetyView::UpdateUnits()
    m_Graph.SetYAxisValueFormat(*m_pYFormat);
 }
 
-bool CFactorOfSafetyView::DoResultsExist()
+bool CFactorOfSafetyView::DoResultsExist() const
 {
    return m_bValidGraph;
 }
@@ -472,6 +472,7 @@ void CFactorOfSafetyView::DoUpdateNow()
    m_PrintSubtitle = std::_tstring(subtitle);
 
    Float64 hp1,hp2;
+   Float64 stepSize = ::ConvertToSysUnits(1.0,unitMeasure::Feet);
    pStrandGeom->GetHarpingPointLocations(span,gdr,&hp1,&hp2);
 
    if ( m_pFrame->GetStage() == CFactorOfSafetyChildFrame::Lifting )
@@ -488,7 +489,6 @@ void CFactorOfSafetyView::DoUpdateNow()
          Float64 FS2 = pGirderLiftingSpecCriteria->GetLiftingFailureFs();
 
          Float64 loc = 0.0;
-         Float64 stepSize = (hp1-loc)/20;
          while ( loc <= hp1 )
          {
             pProgress->UpdateMessage(_T("Working..."));
@@ -528,9 +528,7 @@ void CFactorOfSafetyView::DoUpdateNow()
          Float64 FS1 = pGirderHaulingSpecCriteria->GetHaulingCrackingFs();
          Float64 FS2 = pGirderHaulingSpecCriteria->GetHaulingRolloverFs();
 
-         Float64 loc = min(pGirderHaulingSpecCriteria->GetMinimumHaulingSupportLocation(span,gdr,pgsTypes::metStart),
-                           pGirderHaulingSpecCriteria->GetMinimumHaulingSupportLocation(span,gdr,pgsTypes::metEnd));
-         Float64 stepSize = (hp1-loc)/20;
+         Float64 loc = pHaulingPoi->GetMinimumOverhang(span,gdr);
          while ( loc <= hp1 )
          {
             pProgress->UpdateMessage(_T("Working..."));
@@ -604,6 +602,9 @@ void CFactorOfSafetyView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 {
    // get paper size
    PGSuperCalculationSheet border(m_pBroker);
+   CString strBottomTitle;
+   strBottomTitle.Format(_T("PGSuper™, Copyright © %4d, WSDOT, All rights reserved"),sysDate().Year());
+   border.SetTitle(strBottomTitle);
    CDocument* pdoc = GetDocument();
    CString path = pdoc->GetPathName();
    border.SetFileName(path);

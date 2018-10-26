@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,6 @@
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperAppPlugin\Resource.h"
 #include "BridgeDescDlg.h"
-#include <PgsExt\DeckRebarData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -53,10 +52,12 @@ CBridgeDescDlg::~CBridgeDescDlg()
 void CBridgeDescDlg::SetBridgeDescription(const CBridgeDescription& bridgeDesc)
 {
    m_BridgeDesc = bridgeDesc;
+   m_DeckRebarPage.m_RebarData = m_BridgeDesc.GetDeckDescription()->DeckRebarData;
 }
 
 const CBridgeDescription& CBridgeDescDlg::GetBridgeDescription()
 {
+   m_BridgeDesc.GetDeckDescription()->DeckRebarData = m_DeckRebarPage.m_RebarData;
    return m_BridgeDesc;
 }
 
@@ -85,7 +86,6 @@ BEGIN_MESSAGE_MAP(CBridgeDescDlg, CPropertySheet)
 	//{{AFX_MSG_MAP(CBridgeDescDlg)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 	//}}AFX_MSG_MAP
-   WBFL_ON_PROPSHEET_OK
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -98,25 +98,7 @@ BOOL CBridgeDescDlg::OnInitDialog()
    HICON hIcon = (HICON)LoadImage(AfxGetResourceHandle(),MAKEINTRESOURCE(IDI_EDIT_BRIDGE),IMAGE_ICON,0,0,LR_DEFAULTSIZE);
    SetIcon(hIcon,FALSE);
 
-   UpdateData(FALSE); // calls DoDataExchange
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
-}
-
-BOOL CBridgeDescDlg::OnOK()
-{
-   BOOL bOK = UpdateData(TRUE);
-   return !bOK;
-}
-
-void CBridgeDescDlg::DoDataExchange(CDataExchange* pDX)
-{
-   CPropertySheet::DoDataExchange(pDX);
-   if ( pDX->m_bSaveAndValidate )
-   {
-      // force the active page to update its data
-      CPropertyPage* pPage = GetActivePage();
-      pPage->UpdateData(TRUE);
-   }
 }

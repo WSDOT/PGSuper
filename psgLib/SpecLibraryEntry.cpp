@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -356,8 +356,6 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2010"));
    else if (m_SpecificationType==lrfdVersionMgr::SixthEdition2012)
       pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2012"));
-   else if (m_SpecificationType==lrfdVersionMgr::SixthEditionWith2013Interims)
-      pSave->Property(_T("SpecificationType"), _T("AashtoLrfd2013"));
    else
       ASSERT(false); // is there a new version?
 
@@ -726,9 +724,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       std::_tstring tmp;
       if(pLoad->Property(_T("SpecificationType"),&tmp))
       {
-         if(tmp==_T("AashtoLrfd2013"))
-            m_SpecificationType = lrfdVersionMgr::SixthEditionWith2013Interims;
-         else if(tmp==_T("AashtoLrfd2012"))
+         if(tmp==_T("AashtoLrfd2012"))
             m_SpecificationType = lrfdVersionMgr::SixthEdition2012;
          else if(tmp==_T("AashtoLrfd2010"))
             m_SpecificationType = lrfdVersionMgr::FifthEdition2010;

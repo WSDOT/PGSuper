@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper Beam Factory
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This library is a part of the Washington Bridge Foundation Libraries
@@ -59,19 +59,19 @@ interface DummyBeamFactory : IUnknown
 interface IConfigureStrandMover : IUnknown
 {
    // offset limits and default increments for harped strands
-   [helpstring("method SetHarpedStrandOffsetBounds")] HRESULT SetHarpedStrandOffsetBounds([in]Float64 topGirderElevation, 
-																						  [in]Float64 topHpElevationBoundary,[in]Float64 botHpElevationBoundary,
-																						  [in]Float64 topEndElevationBoundary,[in]Float64 botEndElevationBoundary,
-																						  [in]Float64 endIncrement,[in]Float64 hpIncrement);
+   [helpstring("method SetHarpedStrandOffsetBounds")] HRESULT SetHarpedStrandOffsetBounds([in]double topGirderElevation, 
+																						  [in]double topHpElevationBoundary,[in]double botHpElevationBoundary,
+																						  [in]double topEndElevationBoundary,[in]double botEndElevationBoundary,
+																						  [in]double endIncrement,[in]double hpIncrement);
    // remove all regions
    [helpstring("method ClearAll")] HRESULT ClearAll();
    // Add a shape that is to be tested for PointInShape, and arcSlope (x/y) that a strand
    // point is to be moved along
-   [helpstring("method AddRegion")] HRESULT AddRegion([in]IShape* shape,[in]Float64 arcSlope);
+   [helpstring("method AddRegion")] HRESULT AddRegion([in]IShape* shape,[in]double arcSlope);
 
    // methods to help debugging
    [propget, helpstring("NumRegions")] HRESULT NumRegions([out,retval]IndexType* pNum);
-   [helpstring("method GetRegion")] HRESULT GetRegion([in]IndexType index, [out]IShape** shape,[out]Float64* arcSlope);
+   [helpstring("method GetRegion")] HRESULT GetRegion([in]IndexType index, [out]IShape** shape,[out]double* arcSlope);
 };
 
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -217,7 +217,7 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("2")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("3")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   Float64 days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
+   double days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
    days = ::ConvertFromSysUnits(days,unitMeasure::Day);
    std::_tostringstream os;
    os << days;
@@ -237,7 +237,7 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    {
       const pgsPointOfInterest& poi = *i;
 
-      Float64 Dps1, Dps, Dtpsi, Dtpsr, Dgirder, Dcreep1, Ddiaphragm, Dshearkey, Ddeck, Dcreep2, Duser1, Dbarrier, Dsidewalk, Doverlay, Duser2;
+      double Dps1, Dps, Dtpsi, Dtpsr, Dgirder, Dcreep1, Ddiaphragm, Dshearkey, Ddeck, Dcreep2, Duser1, Dbarrier, Dsidewalk, Doverlay, Duser2;
       Dps1       = pCamber->GetPrestressDeflection( poi, false );
       Dps        = pCamber->GetPrestressDeflection( poi, true );
       Dtpsi      = pCamber->GetInitialTempPrestressDeflection( poi,true );
@@ -294,12 +294,12 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
       // Table 3
       col = 0;
-      Float64 D1 = Dgirder + Dps + Dtpsi;
-      Float64 D2 = D1 + Dcreep1;
-      Float64 D3 = D2 + Ddiaphragm + Dshearkey + Dtpsr;
-      Float64 D4 = D3 + Dcreep2;
-      Float64 D5 = D4 + Ddeck + Duser1;
-      Float64 D6 = D5 + Dsidewalk + Dbarrier + Doverlay + Duser2;
+      double D1 = Dgirder + Dps + Dtpsi;
+      double D2 = D1 + Dcreep1;
+      double D3 = D2 + Ddiaphragm + Dshearkey + Dtpsr;
+      double D4 = D3 + Dcreep2;
+      double D5 = D4 + Ddeck + Duser1;
+      double D6 = D5 + Dsidewalk + Dbarrier + Doverlay + Duser2;
 
       (*table3)(row3,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
       (*table3)(row3,col++) << displacement.SetValue( D1 );
@@ -425,7 +425,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    (*table3)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("1")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   Float64 days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
+   double days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
    days = ::ConvertFromSysUnits(days,unitMeasure::Day);
    std::_tostringstream os;
    (*table3)(0,col++) << COLHDR(Sub2(_T("D"),os.str().c_str()) << _T(" = ") << Sub2(symbol(DELTA),_T("2")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
@@ -444,7 +444,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    {
       const pgsPointOfInterest& poi = *i;
 
-      Float64 Dps1, Dps, Dgirder, Dcreep, Ddiaphragm, Dshearkey, Ddeck, Duser1, Dbarrier, Dsidewalk, Doverlay, Duser2;
+      double Dps1, Dps, Dgirder, Dcreep, Ddiaphragm, Dshearkey, Ddeck, Duser1, Dbarrier, Dsidewalk, Doverlay, Duser2;
       Dps1       = pCamber->GetPrestressDeflection( poi, false );
       Dps        = pCamber->GetPrestressDeflection( poi, true );
       Dgirder    = pProduct->GetGirderDeflectionForCamber( poi );
@@ -493,10 +493,10 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
       // Table 3
       col = 0;
-      Float64 D1 = Dgirder + Dps;
-      Float64 D2 = D1 + Dcreep;
-      Float64 D3 = D2 + Ddiaphragm + Ddeck + Dshearkey + Duser1;
-      Float64 D4 = D3 + Dsidewalk + Dbarrier + Duser2 + Doverlay;
+      double D1 = Dgirder + Dps;
+      double D2 = D1 + Dcreep;
+      double D3 = D2 + Ddiaphragm + Ddeck + Dshearkey + Duser1;
+      double D4 = D3 + Dsidewalk + Dbarrier + Duser2 + Doverlay;
 
       (*table3)(row3,col++) << location.SetValue(pgsTypes::BridgeSite3, poi,end_size );
       (*table3)(row3,col++) << displacement.SetValue( D1 );
@@ -624,7 +624,7 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("2")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("3")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   Float64 days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
+   double days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
    days = ::ConvertFromSysUnits(days,unitMeasure::Day);
    std::_tostringstream os;
    os << days;
@@ -645,7 +645,7 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    {
       const pgsPointOfInterest& poi = *i;
 
-      Float64 Dps1, Dps, Dtpsi, Dtpsr, Dgirder, Dcreep1, Ddiaphragm, Dshearkey, Dpanel, Ddeck, Dcreep2, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2;
+      double Dps1, Dps, Dtpsi, Dtpsr, Dgirder, Dcreep1, Ddiaphragm, Dshearkey, Dpanel, Ddeck, Dcreep2, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2;
       Dps1       = pCamber->GetPrestressDeflection( poi, false );
       Dps        = pCamber->GetPrestressDeflection( poi, true );
       Dtpsi      = pCamber->GetInitialTempPrestressDeflection( poi,true );
@@ -702,12 +702,12 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
       // Table 3
       col = 0;
-      Float64 D1 = Dgirder + Dps + Dtpsi;
-      Float64 D2 = D1 + Dcreep1;
-      Float64 D3 = D2 + Ddiaphragm + + Dshearkey + Dtpsr + Dpanel;
-      Float64 D4 = D3 + Dcreep2;
-      Float64 D5 = D4 + Ddeck + Duser1;
-      Float64 D6 = D5 + Dbarrier + Dsidewalk + Doverlay + Duser2;
+      double D1 = Dgirder + Dps + Dtpsi;
+      double D2 = D1 + Dcreep1;
+      double D3 = D2 + Ddiaphragm + + Dshearkey + Dtpsr + Dpanel;
+      double D4 = D3 + Dcreep2;
+      double D5 = D4 + Ddeck + Duser1;
+      double D6 = D5 + Dbarrier + Dsidewalk + Doverlay + Duser2;
 
       (*table3)(row3,col++) << location.SetValue( pgsTypes::BridgeSite3,poi,end_size );
       (*table3)(row3,col++) << displacement.SetValue( D1 );
@@ -832,7 +832,7 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    (*table3)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("1")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   Float64 days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
+   double days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
    days = ::ConvertFromSysUnits(days,unitMeasure::Day);
    std::_tostringstream os;
    os << days;
@@ -852,7 +852,7 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    {
       const pgsPointOfInterest& poi = *i;
 
-      Float64 Dps1, Dps, Dgirder, Dcreep, Ddiaphragm, Dshearkey, Dpanel, Ddeck, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2;
+      double Dps1, Dps, Dgirder, Dcreep, Ddiaphragm, Dshearkey, Dpanel, Ddeck, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2;
       Dps1       = pCamber->GetPrestressDeflection( poi, false );
       Dps        = pCamber->GetPrestressDeflection( poi, true );
       Dgirder    = pProduct->GetGirderDeflectionForCamber( poi );
@@ -903,10 +903,10 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
       // Table 3
       col = 0;
-      Float64 D1 = Dgirder + Dps;
-      Float64 D2 = D1 + Dcreep;
-      Float64 D3 = D2 + Ddiaphragm + Dshearkey + Dpanel;
-      Float64 D4 = D3 + Ddeck + Duser1 + Dsidewalk + Dbarrier + Doverlay + Duser2;
+      double D1 = Dgirder + Dps;
+      double D2 = D1 + Dcreep;
+      double D3 = D2 + Ddiaphragm + Dshearkey + Dpanel;
+      double D4 = D3 + Ddeck + Duser1 + Dsidewalk + Dbarrier + Doverlay + Duser2;
 
       (*table3)(row3,col++) << location.SetValue( pgsTypes::BridgeSite3, poi,end_size );
       (*table3)(row3,col++) << displacement.SetValue( D1 );
@@ -1033,7 +1033,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
    (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("2")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("3")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    
-   Float64 days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
+   double days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
    days = ::ConvertFromSysUnits(days,unitMeasure::Day);
    std::_tostringstream os;
    os << days;
@@ -1052,7 +1052,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
    {
       const pgsPointOfInterest& poi = *i;
 
-      Float64 Dps1, Dps, Dtpsi, Dtpsr, Dgirder, Dcreep1, Ddiaphragm, Dshearkey, Ddeck, Dcreep2, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2, Dcreep3;
+      double Dps1, Dps, Dtpsi, Dtpsr, Dgirder, Dcreep1, Ddiaphragm, Dshearkey, Ddeck, Dcreep2, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2, Dcreep3;
       Dps1       = pCamber->GetPrestressDeflection( poi, false );
       Dps        = pCamber->GetPrestressDeflection( poi, true );
       Dtpsi      = pCamber->GetInitialTempPrestressDeflection( poi,true );
@@ -1109,12 +1109,12 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
 
       // Table 3
       col = 0;
-      Float64 D1 = Dgirder + Dps + Dtpsi;
-      Float64 D2 = D1 + Dcreep1;
-      Float64 D3 = D2 + Ddiaphragm + Dshearkey + Dtpsr + Duser1;
-      Float64 D4 = D3 + Dcreep2;
-      Float64 D5 = D4 + Dsidewalk + Dbarrier + Doverlay + Duser2;
-      Float64 D6 = D5 + Dcreep3;
+      double D1 = Dgirder + Dps + Dtpsi;
+      double D2 = D1 + Dcreep1;
+      double D3 = D2 + Ddiaphragm + Dshearkey + Dtpsr + Duser1;
+      double D4 = D3 + Dcreep2;
+      double D5 = D4 + Dsidewalk + Dbarrier + Doverlay + Duser2;
+      double D6 = D5 + Dcreep3;
 
       (*table3)(row3,col++) << location.SetValue( pgsTypes::BridgeSite3,poi,end_size );
       (*table3)(row3,col++) << displacement.SetValue( D1 );
@@ -1239,7 +1239,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
    (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("2")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("3")),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   Float64 days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
+   double days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
    days = ::ConvertFromSysUnits(days,unitMeasure::Day);
    std::_tostringstream os;
    os << days;
@@ -1258,7 +1258,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
    {
       const pgsPointOfInterest& poi = *i;
 
-      Float64 Dps1, Dps, Dgirder, Dcreep1, Ddiaphragm, Dshearkey, Dcreep2, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2, Dcreep3;
+      double Dps1, Dps, Dgirder, Dcreep1, Ddiaphragm, Dshearkey, Dcreep2, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2, Dcreep3;
       Dps1       = pCamber->GetPrestressDeflection( poi, false );
       Dps        = pCamber->GetPrestressDeflection( poi, true );
       Dgirder    = pProduct->GetGirderDeflectionForCamber( poi );
@@ -1309,12 +1309,12 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
 
       // Table 3
       col = 0;
-      Float64 D1 = Dgirder + Dps;
-      Float64 D2 = D1 + Dcreep1;
-      Float64 D3 = D2 + Ddiaphragm + Dshearkey + Duser1;
-      Float64 D4 = D3 + Dcreep2;
-      Float64 D5 = D4 + Dsidewalk + Dbarrier + Doverlay + Duser2;
-      Float64 D6 = D5 + Dcreep3;
+      double D1 = Dgirder + Dps;
+      double D2 = D1 + Dcreep1;
+      double D3 = D2 + Ddiaphragm + Dshearkey + Duser1;
+      double D4 = D3 + Dcreep2;
+      double D5 = D4 + Dsidewalk + Dbarrier + Doverlay + Duser2;
+      double D6 = D5 + Dcreep3;
 
       (*table3)(row3,col++) << location.SetValue( pgsTypes::BridgeSite3,poi,end_size );
       (*table3)(row3,col++) << displacement.SetValue( D1 );

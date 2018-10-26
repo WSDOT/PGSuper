@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -85,7 +85,7 @@ interface IGirderLiftingSpecCriteria : IUnknown
    virtual Float64 GetLiftingAllowableTensionFactor() = 0; // T*Sqrt(f'ci) -> returns T
    virtual Float64 GetLiftingWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr) = 0;
    virtual Float64 GetLiftingWithMildRebarAllowableStressFactor() = 0;
-   virtual void GetLiftingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax) = 0;
+   virtual void GetLiftingAllowableTensileConcreteStressParameters(double* factor,bool* pbMax,double* fmax) = 0;
 
    virtual Float64 GetLiftingAllowableTensileConcreteStressEx(Float64 fci, bool includeRebar)=0;
    virtual Float64 GetLiftingAllowableCompressiveConcreteStressEx(Float64 fci)=0;
@@ -152,7 +152,7 @@ interface IGirderHaulingSpecCriteria : IUnknown
    virtual Float64 GetHaulingAllowableCompressionFactor()=0;
    virtual Float64 GetHaulingWithMildRebarAllowableStress(SpanIndexType span,GirderIndexType gdr) = 0;
    virtual Float64 GetHaulingWithMildRebarAllowableStressFactor() = 0;
-   virtual void GetHaulingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax) = 0;
+   virtual void GetHaulingAllowableTensileConcreteStressParameters(double* factor,bool* pbMax,double* fmax) = 0;
    virtual Float64 GetHaulingAllowableTensileConcreteStressEx(Float64 fc, bool includeRebar)=0;
    virtual Float64 GetHaulingAllowableCompressiveConcreteStressEx(Float64 fc)=0;
 

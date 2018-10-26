@@ -8,6 +8,9 @@
 #define STRICT
 #endif
 
+
+#include <PGSuperVersion.h>
+
 #include <PGSuperAll.h>
 
 #define _ATL_APARTMENT_THREADED
@@ -15,11 +18,17 @@
 
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS	// some CString constructors will be explicit
 
-#include <afxwin.h>
 #ifndef _AFX_NO_OLE_SUPPORT
-#include <afxdisp.h>        // MFC Automation classes
+#include <afxole.h>         // MFC OLE classes
+#include <afxodlgs.h>       // MFC OLE dialog classes
+#include <afxdisp.h>        // MFC OLE automation classes
 #endif // _AFX_NO_OLE_SUPPORT
 
+#include <afxwin.h>
+#include <afxMDIFrameWndEx.h>
+#include <afxMDIChildWndEx.h>
+
+#include "PGSuperAppPlugin\resource.h"
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlctl.h>
@@ -40,7 +49,6 @@
 #include <WBFLCogo.h>
 #include <WBFLGenericBridge.h>
 
-#include <PgsExt\PointOfInterest.h>
 #include <PgsExt\GirderLabel.h>
 #include <afxwin.h>
 
@@ -52,7 +60,5 @@
 
 #include "MakePgz\zip.h"
 #include "MakePgz\unzip.h"
-
-#include <MFCTools\MFCTools.h>
 
 using namespace ATL;

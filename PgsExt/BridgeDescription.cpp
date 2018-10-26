@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2012  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -46,7 +46,7 @@ CBridgeDescription::CBridgeDescription()
    m_bSameGirderName      = true;
 
    m_MeasurementType     = pgsTypes::NormalToItem;
-   m_MeasurementLocation = pgsTypes::AtCenterlinePier;
+   m_MeasurementLocation = pgsTypes::AtPierLine;
 
    m_AlignmentOffset = 0;
 
@@ -599,11 +599,6 @@ void CBridgeDescription::MakeCopy(const CBridgeDescription& rOther)
       }
    }
 
-   // Make sure connection data at ends of bridge are cleared
-   CPierData* pPier = m_Piers.front();
-   pPier->SetConnectionLibraryEntry(pgsTypes::Back, NULL);
-   pPier = m_Piers.back();
-   pPier->SetConnectionLibraryEntry(pgsTypes::Ahead, NULL);
 
    m_LLDFMethod = rOther.m_LLDFMethod;
 
@@ -664,7 +659,6 @@ void CBridgeDescription::Clear()
    m_Spans.clear();
 
    m_Deck.DeckEdgePoints.clear();
-   m_Deck.DeckRebarData.NegMomentRebar.clear();
 }
 
 void CBridgeDescription::CreateFirstSpan(const CPierData* pFirstPier,const CSpanData* pFirstSpan,const CPierData* pNextPier)
@@ -793,6 +787,23 @@ void CBridgeDescription::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceT
    // store the new span and pier
    m_Spans.insert(m_Spans.begin()+newSpanIdx,pNewSpan); 
 
+   PierIndexType nPiers = m_Piers.size();
+   CPierData* pRefPier = m_Piers[refPierIdx];
+   if ( (pierFace == pgsTypes::Back && refPierIdx == 0) || (pierFace == pgsTypes::Ahead && refPierIdx != nPiers-1) )
+   {
+      pgsTypes::PierFaceType fromFace = (pierFace == pgsTypes::Back ? pgsTypes::Ahead : pgsTypes::Back);
+      pgsTypes::PierFaceType toFace   = (pierFace == pgsTypes::Back ? pgsTypes::Back  : pgsTypes::Ahead);
+      Float64 brgOffset, endDist, supportWidth;
+      ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
+      ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
+      pRefPier->GetBearingOffset(fromFace,&brgOffset,&brgOffsetMeasure);
+      pRefPier->GetGirderEndDistance(fromFace,&endDist,&endDistMeasure);
+      supportWidth = pRefPier->GetSupportWidth(fromFace);
+      pRefPier->SetBearingOffset(toFace,brgOffset,brgOffsetMeasure);
+      pRefPier->SetGirderEndDistance(toFace,endDist,endDistMeasure);
+      pRefPier->SetSupportWidth(toFace,supportWidth);
+   }
+
    std::vector<CPierData*>::iterator backPierIter; // pier just to the back of our new span
    if ( pierFace == pgsTypes::Back )
    {
@@ -806,26 +817,10 @@ void CBridgeDescription::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceT
       backPierIter--;
    }
 
+
+
    // renumbers spans and sets the pier<-->span<-->pier pointers
    RenumberSpans();
-
-   CPierData* pPrevPier = pNewSpan->GetPrevPier();
-   if ( pPrevPier->GetConnectionLibraryEntry(pgsTypes::Ahead) == NULL )
-   {
-      // the prev pier doesn't have a connection on this span's side of the pier
-      // copy from the back side
-      pPrevPier->SetConnection(pgsTypes::Ahead,             pPrevPier->GetConnection(pgsTypes::Back) );
-      pPrevPier->SetConnectionLibraryEntry(pgsTypes::Ahead, pPrevPier->GetConnectionLibraryEntry(pgsTypes::Back) );
-   }
-
-   CPierData* pNextPier = pNewSpan->GetNextPier();
-   if ( pNextPier->GetConnectionLibraryEntry(pgsTypes::Back) == NULL )
-   {
-      // the next pier doesn't have a connection on this span's side of the pier
-      // copy from the back side
-      pNextPier->SetConnection(pgsTypes::Back,             pNextPier->GetConnection(pgsTypes::Ahead) );
-      pNextPier->SetConnectionLibraryEntry(pgsTypes::Back, pNextPier->GetConnectionLibraryEntry(pgsTypes::Ahead) );
-   }
 
    // Adjust location of down-station piers
    if ( refPierIdx == 0 && refSpanIdx == 0 && pierFace == pgsTypes::Back )
@@ -852,17 +847,83 @@ void CBridgeDescription::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceT
    if ( !pSpanData && m_bSameNumberOfGirders )
       pNewSpan->SetGirderCount(m_nGirders);
 
+   UpdateConnectionDimensions(pRefPier);
+   UpdateConnectionDimensions(pNewPier);
+
    AssertValid();
 }
 
-class RemoveNegMomentRebar
+void CBridgeDescription::UpdateConnectionDimensions(CPierData* pPier)
 {
-public:
-   RemoveNegMomentRebar(PierIndexType pierIdx) { m_PierIdx = pierIdx; }
-   bool operator()(CDeckRebarData::NegMomentRebarData& rebarData) { return rebarData.PierIdx == m_PierIdx; }
-private:
-   PierIndexType m_PierIdx;
-};
+   if ( pPier->IsAbutment() )
+      return;
+
+   Float64 brgOffset[2], endDist[2];
+   ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure[2];
+   ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure[2];
+   pPier->GetBearingOffset(pgsTypes::Back,&brgOffset[pgsTypes::Back],&brgOffsetMeasure[pgsTypes::Back]);
+   pPier->GetBearingOffset(pgsTypes::Ahead,&brgOffset[pgsTypes::Ahead],&brgOffsetMeasure[pgsTypes::Ahead]);
+   pPier->GetGirderEndDistance(pgsTypes::Back,&endDist[pgsTypes::Back],&endDistMeasure[pgsTypes::Back]);
+   pPier->GetGirderEndDistance(pgsTypes::Ahead,&endDist[pgsTypes::Ahead],&endDistMeasure[pgsTypes::Ahead]);
+
+   if ( endDistMeasure[pgsTypes::Back] == ConnectionLibraryEntry::FromPierAlongGirder ||
+        endDistMeasure[pgsTypes::Back] == ConnectionLibraryEntry::FromPierNormalToPier
+      )
+   {
+      // if measuring the location of the end of the girder from the pier line
+      // then the end distance cannot exceed the bearing offset (otherwise 
+      // the end of the girder will be off the bearing)
+      //
+      //                       CL Bearing
+      //                       |
+      //    End of Girder (girder isn't supported)
+      //  ------------------+  |
+      //                    |  |
+      //  ------------------+  |
+      //
+      // NOTE: there is one problem with this adjustment. If the bearing offset
+      // and end distance are measured in different directions, and the girders
+      // are non-parallel, we could still end up with girder end overlay/interference
+      if ( brgOffset[pgsTypes::Back] < endDist[pgsTypes::Back] )
+      {
+         endDist[pgsTypes::Back] = brgOffset[pgsTypes::Back];
+      }
+   }
+
+   if ( endDistMeasure[pgsTypes::Ahead] == ConnectionLibraryEntry::FromPierAlongGirder ||
+        endDistMeasure[pgsTypes::Ahead] == ConnectionLibraryEntry::FromPierNormalToPier
+      )
+   {
+      // if measuring the location of the end of the girder from the pier line
+      // then the end distance cannot exceed the bearing offset (otherwise 
+      // the end of the girder will be off the bearing)
+      //
+      // CL Bearing
+      // |
+      // |  End of Girder (girder isn't supported)
+      // |  +---------------
+      // |  |
+      // |  +---------------
+      //
+      // NOTE: there is one problem with this adjustment. If the bearing offset
+      // and end distance are measured in different directions, and the girders
+      // are non-parallel, we could still end up with girder end overlay/interference
+      if ( brgOffset[pgsTypes::Ahead] < endDist[pgsTypes::Ahead] )
+      {
+         endDist[pgsTypes::Ahead] = brgOffset[pgsTypes::Ahead];
+      }
+   }
+
+   if ( brgOffset[pgsTypes::Back]+brgOffset[pgsTypes::Ahead] < endDist[pgsTypes::Back]+endDist[pgsTypes::Ahead] )
+   {
+      // girder ends overlap...
+      endDist[pgsTypes::Back] = brgOffset[pgsTypes::Back];
+      endDist[pgsTypes::Ahead] = brgOffset[pgsTypes::Ahead];
+   }
+
+   pPier->SetGirderEndDistance(pgsTypes::Back,endDist[pgsTypes::Back],endDistMeasure[pgsTypes::Back]);
+   pPier->SetGirderEndDistance(pgsTypes::Ahead,endDist[pgsTypes::Ahead],endDistMeasure[pgsTypes::Ahead]);
+}
 
 void CBridgeDescription::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType rmPierType)
 {
@@ -875,8 +936,6 @@ void CBridgeDescription::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
 
    Float64 span_length = pSpan->GetSpanLength();
    PierIndexType removePierIdx;
-
-   PierIndexType nPiers = m_Piers.size(); // number of piers before removal
 
    if ( rmPierType == pgsTypes::PrevPier )
    {
@@ -894,26 +953,6 @@ void CBridgeDescription::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
       delete pSpan;
       delete pNextPier;
    }
-
-   // Remove negative rebar data at the pier that is being removed
-   PierIndexType rebarRemovePierIdx(removePierIdx);
-   if ( rebarRemovePierIdx == 0 )
-   {
-      // if the first pier is removed, the next pier becomes the first pier and it can't have neg moment
-      // rebar so remove the rebar from that pier;
-      rebarRemovePierIdx++;
-   }
-   else if ( rebarRemovePierIdx == nPiers-1 )
-   {
-      // if the last pier is removed, the next to last pier becomes the last pier and it can't have neg moment
-      // rebar so remove the rebar from that pier
-      rebarRemovePierIdx--;
-   }
-
-   std::vector<CDeckRebarData::NegMomentRebarData>::iterator begin(m_Deck.DeckRebarData.NegMomentRebar.begin());
-   std::vector<CDeckRebarData::NegMomentRebarData>::iterator end(m_Deck.DeckRebarData.NegMomentRebar.end());
-   std::vector<CDeckRebarData::NegMomentRebarData>::iterator last = std::remove_if(begin,end,RemoveNegMomentRebar(rebarRemovePierIdx));
-   m_Deck.DeckRebarData.NegMomentRebar.erase(last,end);
 
    RenumberSpans();
 
@@ -1192,6 +1231,31 @@ void CBridgeDescription::SetSlabOffsetType(pgsTypes::SlabOffsetType slabOffsetTy
 pgsTypes::SlabOffsetType CBridgeDescription::GetSlabOffsetType() const
 {
    return m_SlabOffsetType;
+}
+
+std::vector<pgsTypes::PierConnectionType> CBridgeDescription::GetConnectionTypes(PierIndexType pierIdx) const
+{
+   std::vector<pgsTypes::PierConnectionType> connectionTypes;
+
+   connectionTypes.push_back(pgsTypes::Hinged);
+   connectionTypes.push_back(pgsTypes::Roller);
+   connectionTypes.push_back(pgsTypes::IntegralAfterDeck);
+   connectionTypes.push_back(pgsTypes::IntegralBeforeDeck);
+
+   const CPierData* pPier = GetPier(pierIdx);
+   if ( pPier->GetPrevSpan() && pPier->GetNextSpan() )
+   {
+      // all these connection types require that there is a span on 
+      // both sides of this pier
+      connectionTypes.push_back(pgsTypes::ContinuousAfterDeck);
+      connectionTypes.push_back(pgsTypes::ContinuousBeforeDeck);
+      connectionTypes.push_back(pgsTypes::IntegralAfterDeckHingeBack);
+      connectionTypes.push_back(pgsTypes::IntegralBeforeDeckHingeBack);
+      connectionTypes.push_back(pgsTypes::IntegralAfterDeckHingeAhead);
+      connectionTypes.push_back(pgsTypes::IntegralBeforeDeckHingeAhead);
+   }
+
+   return connectionTypes;
 }
 
 void CBridgeDescription::SetSlabOffset(Float64 slabOffset)

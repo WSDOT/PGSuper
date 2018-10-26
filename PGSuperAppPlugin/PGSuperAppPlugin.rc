@@ -93,7 +93,7 @@ IDR_PGSUPERPROJECTIMPORTERAPPPLUGIN REGISTRY                "res\\PGSuperProject
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_PGSUPER             ICON                    "..\\res\\PGSuperDoc.ico"
+IDR_PGSUPERTYPE         ICON                    "..\\res\\PGSuperDoc.ico"
 IDR_PGSUPER_TEMPLATE_ICON ICON                    "..\\res\\pgs_template.ico"
 IDR_BRIDGEMODELEDITOR   ICON                    "..\\res\\Bridge.ico"
 IDR_GIRDERMODELEDITOR   ICON                    "..\\res\\GirderView.ico"
@@ -129,9 +129,6 @@ IDR_HELPTOOLBAR         BITMAP                  "..\\res\\HelpToolbar.bmp"
 IDB_IN_USE              BITMAP                  "..\\res\\LibEntryInUse.bmp"
 IDB_IN_USE_AND_READ_ONLY BITMAP                  "..\\res\\LibEntryInUseAndReadOnly.bmp"
 IDB_READ_ONLY           BITMAP                  "..\\res\\LibEntryReadOnly.bmp"
-IDB_HINGES              BITMAP                  "..\\res\\Hinges.bmp"
-IDB_ROLLERS             BITMAP                  "..\\res\\Rollers.bmp"
-IDB_CONTINUOUS          BITMAP                  "..\\res\\Continuous.bmp"
 IDB_GIRDERDESIGNER      BITMAP                  "..\\res\\GirderDesigner.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -202,7 +199,7 @@ END
 // Menu
 //
 
-IDR_PGSUPER MENUEX 
+IDR_PGSUPERTYPE MENUEX 
 BEGIN
     POPUP "&File",                          65535,MFT_STRING,MFS_ENABLED
     BEGIN
@@ -1080,10 +1077,10 @@ BEGIN
     LTEXT           "North (Y)",IDC_STATIC,205,166,29,8
 END
 
-IDD_PROFILE_PAGE DIALOGEX 0, 0, 275, 185
+IDD_PROFILE_PAGE DIALOG  0, 0, 275, 185
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Profile"
-FONT 8, "MS Sans Serif", 0, 0, 0x0
+FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "Station",IDC_STATIC,7,37,23,8
     EDITTEXT        IDC_STATION,39,37,40,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -1093,13 +1090,12 @@ BEGIN
     LTEXT           "Unit",IDC_ELEVATION_UNIT,162,37,14,8
     EDITTEXT        IDC_GRADE,211,37,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,255,37,8,8
-    CONTROL         "Custom1",IDC_VCURVE_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,62,260,62
+    CONTROL         "Custom1",IDC_VCURVE_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,58,260,66
     PUSHBUTTON      "Add",IDC_ADD,59,128,50,14
     PUSHBUTTON      "Remove",IDC_REMOVE,113,128,50,14
     PUSHBUTTON      "Sort",IDC_SORT,167,128,50,14
     LTEXT           "Reference Point - Enter a point on the profile defined by its station, elevation, and grade. This point may be the PVI point of the first vertical curve and the entry grade.",IDC_STATIC,7,7,256,26
-    LTEXT           "Symmetrical curves: Enter curve length as L1 and leave L2 blank or enter zero.\n\nUnsymmetrical curves: Enter left and right curve lengths in L1 and L2, respectively.",IDC_STATIC,7,147,261,31
-    LTEXT           "Vertical Curves",IDC_STATIC,7,52,48,8
+    LTEXT           "Enter L1 and L2 for unsymmetrical vertical curves.\n\nFor symmetrical vertical curves L1 will be taken as the full curve length if L2 is blank or zero",IDC_STATIC,7,145,261,33
 END
 
 IDD_SUPERELEVATIONS DIALOG  0, 0, 274, 185
@@ -1527,31 +1523,6 @@ BEGIN
     LTEXT           "Number of Girders",IDC_NUMGDR_LABEL,7,23,58,8
     EDITTEXT        IDC_NUMGDR,83,23,40,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER | WS_GROUP
     CONTROL         "Spin1",IDC_NUMGDR_SPIN,"msctls_updown32",UDS_WRAP | UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,127,23,11,14
-    LTEXT           "Girder Name Note",IDC_GIRDERGRID_NOTE,7,40,384,8
-    CONTROL         "Custom1",IDC_GIRDERGRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,50,384,35
-    LTEXT           "Girder Spacing Note",IDC_GIRDER_SPACING_NOTE,7,88,384,8
-    CONTROL         "Use same girder spacing at both ends of span",IDC_SAME_GIRDER_SPACING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,102,160,10
-    LTEXT           "Girder Spacing",IDC_PREV_PIER_GIRDER_SPACING_LABEL,69,117,51,8
-    COMBOBOX        IDC_PREV_PIER_GIRDER_SPACING_MEASURE,123,115,268,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Custom1",IDC_PREV_PIER_SPACING_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,130,384,46
-    LTEXT           "Girder Spacing",IDC_NEXT_PIER_GIRDER_SPACING_LABEL,69,203,51,8
-    COMBOBOX        IDC_NEXT_PIER_GIRDER_SPACING_MEASURE,123,201,268,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Custom1",IDC_NEXT_PIER_SPACING_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,216,384,46
-    LTEXT           "Start of Span",IDC_STATIC,7,117,42,8
-    LTEXT           "End of Span",IDC_STATIC,7,203,40,8
-    LTEXT           "Locate",IDC_PREV_REF_GIRDER_LABEL,7,179,23,8
-    COMBOBOX        IDC_PREV_REF_GIRDER,34,178,80,79,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_PREV_REF_GIRDER_OFFSET,116,178,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_PREV_REF_GIRDER_OFFSET_UNIT,158,179,11,8
-    LTEXT           "from",IDC_PREV_REF_GIRDER_FROM,174,179,14,8
-    COMBOBOX        IDC_PREV_REF_GIRDER_OFFSET_TYPE,192,178,62,78,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Locate",IDC_NEXT_REF_GIRDER_LABEL,7,265,23,8
-    COMBOBOX        IDC_NEXT_REF_GIRDER,34,264,80,79,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_NEXT_REF_GIRDER_OFFSET,116,264,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_NEXT_REF_GIRDER_OFFSET_UNIT,158,265,11,8
-    LTEXT           "from",IDC_NEXT_REF_GIRDER_FROM,174,265,14,8
-    COMBOBOX        IDC_NEXT_REF_GIRDER_OFFSET_TYPE,192,264,62,78,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Slab Offset Note",IDC_SLAB_OFFSET_NOTE,168,7,186,8
     LTEXT           "Start of Span",IDC_START_SLAB_OFFSET_LABEL,168,26,42,8
     EDITTEXT        IDC_START_SLAB_OFFSET,212,23,40,14,ES_AUTOHSCROLL
@@ -1559,69 +1530,118 @@ BEGIN
     LTEXT           "End of Span",IDC_END_SLAB_OFFSET_LABEL,280,26,40,8
     EDITTEXT        IDC_END_SLAB_OFFSET,323,23,40,14,ES_AUTOHSCROLL
     LTEXT           "Static",IDC_END_SLAB_OFFSET_UNIT,367,26,19,8
+    LTEXT           "Girder Name Note",IDC_GIRDERGRID_NOTE,7,40,384,8
+    CONTROL         "Custom1",IDC_GIRDERGRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,50,384,35
+    LTEXT           "Girder Spacing Note",IDC_GIRDER_SPACING_NOTE,7,91,384,8
+    LTEXT           "Start of Span",IDC_PREV_PIER_LABEL,7,107,42,8
+    LTEXT           "Girder Spacing",IDC_PREV_PIER_GIRDER_SPACING_LABEL,69,107,51,8
+    COMBOBOX        IDC_PREV_PIER_GIRDER_SPACING_MEASURE,123,105,268,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Custom1",IDC_PREV_PIER_SPACING_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,120,384,46
+    LTEXT           "Locate",IDC_PREV_REF_GIRDER_LABEL,7,169,23,8
+    COMBOBOX        IDC_PREV_REF_GIRDER,34,168,80,79,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_PREV_REF_GIRDER_OFFSET,116,168,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_PREV_REF_GIRDER_OFFSET_UNIT,158,169,11,8
+    LTEXT           "from",IDC_PREV_REF_GIRDER_FROM,174,169,14,8
+    COMBOBOX        IDC_PREV_REF_GIRDER_OFFSET_TYPE,192,168,62,78,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Copy to End of Span",IDC_COPY_TO_END,290,168,101,14
+    LTEXT           "End of Span",IDC_NEXT_PIER_LABEL,7,203,40,8
+    LTEXT           "Girder Spacing",IDC_NEXT_PIER_GIRDER_SPACING_LABEL,69,203,51,8
+    COMBOBOX        IDC_NEXT_PIER_GIRDER_SPACING_MEASURE,123,201,268,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Custom1",IDC_NEXT_PIER_SPACING_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,216,384,46
+    LTEXT           "Locate",IDC_NEXT_REF_GIRDER_LABEL,7,265,23,8
+    COMBOBOX        IDC_NEXT_REF_GIRDER,34,264,80,79,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_NEXT_REF_GIRDER_OFFSET,116,264,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_NEXT_REF_GIRDER_OFFSET_UNIT,158,265,11,8
+    LTEXT           "from",IDC_NEXT_REF_GIRDER_FROM,174,265,14,8
+    COMBOBOX        IDC_NEXT_REF_GIRDER_OFFSET_TYPE,192,264,62,78,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Copy to Start of Span",IDC_COPY_TO_START,290,264,101,14
 END
 
-IDD_SPANCONNECTIONS DIALOG  0, 0, 425, 119
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Connections"
-FONT 8, "MS Sans Serif"
-BEGIN
-    GROUPBOX        "Pier n",IDC_AHEAD_GROUP,7,7,204,105
-    LTEXT           "Connection Geometry - Back Side",IDC_STATIC,14,21,108,8
-    COMBOBOX        IDC_PREV_PIER_BACK_CONNECTION,14,31,189,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Connection Geometry - Ahead Side",IDC_STATIC,14,51,112,8
-    COMBOBOX        IDC_PREV_PIER_AHEAD_CONNECTION,14,61,189,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Connection Boundary Condition",IDC_STATIC,14,80,100,8
-    COMBOBOX        IDC_AHEAD_BOUNDARY_CONDITIONS,14,91,189,78,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_HASSTRINGS | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Pier n",IDC_BACK_GROUP,214,7,204,105
-    LTEXT           "Connection Geometry -  Back Side",IDC_STATIC,220,20,110,8
-    COMBOBOX        IDC_NEXT_PIER_BACK_CONNECTION,220,31,189,131,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Connection Geometry - Ahead Side",IDC_STATIC,220,51,112,8
-    COMBOBOX        IDC_NEXT_PIER_AHEAD_CONNECTION,220,61,189,131,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Connection Boundary Condition",IDC_STATIC,220,80,100,8
-    COMBOBOX        IDC_BACK_BOUNDARY_CONDITIONS,220,91,189,81,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_HASSTRINGS | WS_VSCROLL | WS_TABSTOP
-END
-
-IDD_SPANLAYOUT DIALOG  0, 0, 186, 147
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "General"
-FONT 8, "MS Sans Serif"
-BEGIN
-    LTEXT           "Static",IDC_SPAN_LABEL,7,7,51,8
-    LTEXT           "Span Length",IDC_STATIC,7,27,42,8
-    EDITTEXT        IDC_SPAN_LENGTH,54,24,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_SPAN_LENGTH_UNIT,97,28,19,8
-    LTEXT           "Static",IDC_SPAN_LENGTH_NOTE,7,50,172,40
-END
-
-IDD_PIERLAYOUT DIALOGEX 0, 0, 354, 158
+IDD_SPANLAYOUT DIALOGEX 0, 0, 334, 129
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "General"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "Static",IDC_PIER_LABEL,7,7,99,8
-    LTEXT           "Station",IDC_STATIC,7,24,23,8
-    EDITTEXT        IDC_STATION,47,23,65,12,ES_AUTOHSCROLL
-    COMBOBOX        IDC_MOVE_PIER,118,23,229,66,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Static",IDC_MOVE_LABEL,121,11,217,8
-    LTEXT           "Static",IDC_STATION_FORMAT,7,38,340,12
-    LTEXT           "Orientation",IDC_STATIC,7,66,35,8
-    EDITTEXT        IDC_ORIENTATION,47,63,65,14,ES_AUTOHSCROLL
-    LTEXT           "Orientation format note",IDC_ORIENTATION_FORMAT,7,80,340,23
+    GROUPBOX        "Span Length",IDC_STATIC,7,7,320,115
+    LTEXT           "Static",IDC_SPAN_LABEL,14,20,51,8
+    LTEXT           "Span length is measured between CL Brg Line at Abutment 1 and CL Pier Line at Pier 2",IDC_SPAN_LENGTH_BASIS,14,32,301,20
+    LTEXT           "Span Length",IDC_STATIC,14,57,42,8
+    EDITTEXT        IDC_SPAN_LENGTH,61,54,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_SPAN_LENGTH_UNIT,104,57,19,8
+    LTEXT           "Static",IDC_SPAN_LENGTH_NOTE,14,73,301,40
 END
 
-IDD_PIERCONNECTIONS DIALOG  0, 0, 318, 121
+IDD_PIERLAYOUT DIALOGEX 0, 0, 344, 150
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "General"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    GROUPBOX        "Static",IDC_LINE_GROUP,7,7,330,135
+    LTEXT           "Static",IDC_PIER_LABEL,16,22,99,8
+    LTEXT           "Station locates the <Datum Line Name> line",IDC_STATION_LOCATION_LABEL,16,35,317,8
+    LTEXT           "Station",IDC_STATIC,16,63,23,8
+    EDITTEXT        IDC_STATION,56,62,65,12,ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_MOVE_LABEL,130,50,199,8
+    COMBOBOX        IDC_MOVE_PIER,129,62,201,66,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Static",IDC_STATION_FORMAT,16,77,316,12
+    LTEXT           "Orientation",IDC_STATIC,16,98,35,8
+    EDITTEXT        IDC_ORIENTATION,56,93,65,14,ES_AUTOHSCROLL
+    LTEXT           "Orientation format note",IDC_ORIENTATION_FORMAT,16,110,318,23
+END
+
+IDD_PIERCONNECTIONS DIALOGEX 0, 0, 488, 355
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Connections"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Connection Geometry",IDC_BACKGROUP,7,11,304,47
-    LTEXT           "Back Side of Pier",IDC_BACK_CONNECTION_LABEL,16,26,145,8
-    COMBOBOX        IDC_BACK_CONNECTION,17,36,140,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Ahead Side of Pier",IDC_AHEAD_CONNECTION_LABEL,161,26,138,8
-    COMBOBOX        IDC_AHEAD_CONNECTION,161,36,140,131,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Boundary Condition at Pier/Abutment",IDC_BC_GROUP,7,64,304,50
-    COMBOBOX        IDC_BOUNDARY_CONDITIONS,17,85,286,179,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_HASSTRINGS | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Boundary Condition",IDC_BC_GROUP,7,7,268,44
+    COMBOBOX        IDC_BOUNDARY_CONDITIONS,17,27,253,179,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_HASSTRINGS | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Copy Connection Geometry from Library",IDC_COPY,20,70,163,14
+    GROUPBOX        "Girder Connection Properties",IDC_STATIC,19,89,244,109,0,WS_EX_TRANSPARENT
+    LTEXT           "Back",IDC_LEFT_LABEL,94,100,18,8
+    LTEXT           "Ahead",IDC_RIGHT_LABEL,159,100,22,8
+    LTEXT           "Bearing Offset",IDC_BEARING_OFFSET_LABEL,26,116,49,8
+    EDITTEXT        IDC_LEFT_BEARING_OFFSET,78,113,37,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_LEFT_BEARING_OFFSET_T,117,116,14,8
+    EDITTEXT        IDC_RIGHT_BEARING_OFFSET,145,112,37,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_RIGHT_BEARING_OFFSET_T,184,115,14,8
+    COMBOBOX        IDC_BEARING_OFFSET_MEASURE,25,130,229,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "End Distance",IDC_END_DISTANCE_LABEL,26,150,46,8
+    EDITTEXT        IDC_LEFT_END_DISTANCE,78,147,37,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_LEFT_END_DISTANCE_T,117,150,14,8
+    EDITTEXT        IDC_RIGHT_END_DISTANCE,145,146,37,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_RIGHT_END_DISTANCE_T,184,149,14,8
+    COMBOBOX        IDC_END_DISTANCE_MEASURE,25,165,229,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Support Width",IDC_SUPPORT_WIDTH_LABEL,25,184,46,8
+    EDITTEXT        IDC_LEFT_SUPPORT_WIDTH,78,181,37,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_LEFT_SUPPORT_WIDTH_T,117,184,14,8
+    EDITTEXT        IDC_RIGHT_SUPPORT_WIDTH,145,180,37,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_RIGHT_SUPPORT_WIDTH_T,184,183,14,8
+    CONTROL         "",IDC_CONNECTION_MF,"Static",SS_ENHMETAFILE | WS_BORDER,273,91,197,109
+    GROUPBOX        "Diaphragm",IDC_STATIC,19,211,451,127,0,WS_EX_TRANSPARENT
+    LTEXT           "Diaphragm Height",IDC_STATIC,27,241,64,8
+    EDITTEXT        IDC_BACK_DIAPHRAGM_HEIGHT,92,238,65,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_BACK_DIAPHRAGM_HEIGHT_T,162,241,35,8
+    LTEXT           "Diaphragm Width",IDC_STATIC,27,261,62,8
+    EDITTEXT        IDC_BACK_DIAPHRAGM_WIDTH,92,258,65,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_BACK_DIAPHRAGM_WIDTH_T,162,261,35,8
+    LTEXT           "Distance From C.L. Pier to C.G. of Diaphragm",IDC_BACK_DIAPHRAGM_OFFSET_LABEL,31,292,196,8
+    EDITTEXT        IDC_BACK_DIAPHRAGM_OFFSET,31,303,85,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_BACK_DIAPHRAGM_OFFSET_UNITS,119,305,48,8
+    COMBOBOX        IDC_BACK_DIAPHRAGM_LOAD,27,276,199,73,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Diaphragm Height",IDC_STATIC,265,241,64,8
+    EDITTEXT        IDC_AHEAD_DIAPHRAGM_HEIGHT,329,238,65,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_AHEAD_DIAPHRAGM_HEIGHT_T,399,241,35,8
+    LTEXT           "Diaphragm Width",IDC_STATIC,265,261,62,8
+    EDITTEXT        IDC_AHEAD_DIAPHRAGM_WIDTH,329,258,65,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_AHEAD_DIAPHRAGM_WIDTH_T,399,261,35,8
+    LTEXT           "Distance From C.L. Pier to C.G. of Diaphragm",IDC_AHEAD_DIAPHRAGM_OFFSET_LABEL,269,292,196,8
+    EDITTEXT        IDC_AHEAD_DIAPHRAGM_OFFSET,269,303,85,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_AHEAD_DIAPHRAGM_OFFSET_UNITS,357,305,48,8
+    COMBOBOX        IDC_AHEAD_DIAPHRAGM_LOAD,265,276,199,73,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Back",IDC_STATIC,117,223,18,8
+    LTEXT           "Ahead",IDC_STATIC,351,222,22,8
+    GROUPBOX        "Connection Definition",IDC_STATIC,7,56,474,292
 END
 
 IDD_GIRDERSPACING DIALOGEX 0, 0, 367, 329
@@ -1859,7 +1879,7 @@ BEGIN
     LTEXT           "Shear",IDC_STATIC,87,49,20,8
     EDITTEXT        IDC_SYSTEM_FACTOR_SHEAR,109,47,29,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Average Daily Truck Traffic (ADTT) - One Direction",IDC_STATIC,7,74,162,8
-    EDITTEXT        IDC_ADTT,171,72,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
+    EDITTEXT        IDC_ADTT,171,72,40,14,ES_AUTOHSCROLL
     LTEXT           "(ADTT value or Unknown)",IDC_STATIC,213,74,83,8
     CONTROL         "Apply pedestrian live load concurrently with vehicular live loads (MBE 6A.2.3.4)",IDC_PEDESTRIAN,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,91,269,10
@@ -2110,7 +2130,6 @@ BEGIN
     LTEXT           "to",IDC_STATIC,83,3,8,8
     EDITTEXT        IDC_END_SPAN_EDIT,90,1,32,12,ES_AUTOHSCROLL | ES_READONLY,WS_EX_RIGHT
     CONTROL         "",IDC_END_SPAN_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_HOTTRACK,111,1,10,12
-    LTEXT           "of n Spans",IDC_SPAN_COUNT,124,3,76,8
 END
 
 IDD_LOAD_FACTORS DIALOGEX 0, 0, 240, 179
@@ -2213,8 +2232,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,7,4,0
- PRODUCTVERSION 2,7,4,0
+ FILEVERSION 2,0,0,0
+ PRODUCTVERSION 2,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2231,12 +2250,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.7.4.0"
+            VALUE "FileVersion", "2.8.0.0"
             VALUE "InternalName", "PGSuper"
-            VALUE "LegalCopyright", "Copyright © 1999-2013, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2012, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.7.4.0"
+            VALUE "ProductVersion", "2.8.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -2599,36 +2618,28 @@ BEGIN
         BOTTOMMARGIN, 279
     END
 
-    IDD_SPANCONNECTIONS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 418
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 112
-    END
-
     IDD_SPANLAYOUT, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 179
+        RIGHTMARGIN, 327
         TOPMARGIN, 7
-        BOTTOMMARGIN, 140
+        BOTTOMMARGIN, 122
     END
 
     IDD_PIERLAYOUT, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 347
+        RIGHTMARGIN, 337
         TOPMARGIN, 7
-        BOTTOMMARGIN, 151
+        BOTTOMMARGIN, 143
     END
 
     IDD_PIERCONNECTIONS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 311
+        RIGHTMARGIN, 481
         TOPMARGIN, 7
-        BOTTOMMARGIN, 114
+        BOTTOMMARGIN, 348
     END
 
     IDD_GIRDERSPACING, DIALOG
@@ -2811,6 +2822,30 @@ END
 //
 
 HAULINGOVERHANGS        METAFILE                "..\\res\\HaulingOverhangs.emf"
+CLPIER_BRGALONGGDR_ENDALONGGDRFROMBRG METAFILE                "res\\CLPier_BrgAlongGdr_EndAlongGdrFromBrg.emf"
+CLPIER_BRGALONGGDR_ENDALONGNORMALFROMBRG METAFILE                "res\\CLPier_BrgAlongGdr_EndAlongNormalFromBrg.emf"
+CLPIER_BRGALONGGDR_ENDALONGGDRFROMPIER METAFILE                "res\\CLPier_BrgAlongGdr_EndAlongGdrFromPier.emf"
+CLPIER_BRGALONGGDR_ENDALONGNORMALFROMPIER METAFILE                "res\\CLPier_BrgAlongGdr_EndAlongNormalFromPier.emf"
+CLPIER_BRGALONGNORMAL_ENDALONGGDRFROMBRG METAFILE                "res\\CLPier_BrgAlongNormal_EndAlongGdrFromBrg.emf"
+CLPIER_BRGALONGNORMAL_ENDALONGNORMALFROMBRG METAFILE                "res\\CLPier_BrgAlongNormal_EndAlongNormalFromBrg.emf"
+CLPIER_BRGALONGNORMAL_ENDALONGGDRFROMPIER METAFILE                "res\\CLPier_BrgAlongNormal_EndAlongGdrFromPier.emf"
+CLPIER_BRGALONGNORMAL_ENDALONGNORMALFROMPIER METAFILE                "res\\CLPier_BrgAlongNormal_EndAlongNormalFromPier.emf"
+SA_BRGALONGGDR_ENDALONGGDRFROMBRG METAFILE                "res\\SA_BrgAlongGdr_EndAlongGdrFromBrg.emf"
+SA_BRGALONGGDR_ENDALONGNORMALFROMBRG METAFILE                "res\\SA_BrgAlongGdr_EndAlongNormalFromBrg.emf"
+SA_BRGALONGGDR_ENDALONGGDRFROMPIER METAFILE                "res\\SA_BrgAlongGdr_EndAlongGdrFromPier.emf"
+SA_BRGALONGGDR_ENDALONGNORMALFROMPIER METAFILE                "res\\SA_BrgAlongGdr_EndAlongNormalFromPier.emf"
+SA_BRGALONGNORMAL_ENDALONGGDRFROMBRG METAFILE                "res\\SA_BrgAlongNormal_EndAlongGdrFromBrg.emf"
+SA_BRGALONGNORMAL_ENDALONGNORMALFROMBRG METAFILE                "res\\SA_BrgAlongNormal_EndAlongNormalFromBrg.emf"
+SA_BRGALONGNORMAL_ENDALONGGDRFROMPIER METAFILE                "res\\SA_BrgAlongNormal_EndAlongGdrFromPier.emf"
+SA_BRGALONGNORMAL_ENDALONGNORMALFROMPIER METAFILE                "res\\SA_BrgAlongNormal_EndAlongNormalFromPier.emf"
+EA_BRGALONGGDR_ENDALONGGDRFROMBRG METAFILE                "res\\EA_BrgAlongGdr_EndAlongGdrFromBrg.emf"
+EA_BRGALONGGDR_ENDALONGNORMALFROMBRG METAFILE                "res\\EA_BrgAlongGdr_EndAlongNormalFromBrg.emf"
+EA_BRGALONGGDR_ENDALONGGDRFROMPIER METAFILE                "res\\EA_BrgAlongGdr_EndAlongGdrFromPier.emf"
+EA_BRGALONGGDR_ENDALONGNORMALFROMPIER METAFILE                "res\\EA_BrgAlongGdr_EndAlongNormalFromPier.emf"
+EA_BRGALONGNORMAL_ENDALONGGDRFROMBRG METAFILE                "res\\EA_BrgAlongNormal_EndAlongGdrFromBrg.emf"
+EA_BRGALONGNORMAL_ENDALONGNORMALFROMBRG METAFILE                "res\\EA_BrgAlongNormal_EndAlongNormalFromBrg.emf"
+EA_BRGALONGNORMAL_ENDALONGGDRFROMPIER METAFILE                "res\\EA_BrgAlongNormal_EndAlongGdrFromPier.emf"
+EA_BRGALONGNORMAL_ENDALONGNORMALFROMPIER METAFILE                "res\\EA_BrgAlongNormal_EndAlongNormalFromPier.emf"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2900,7 +2935,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDR_PGSUPER             "\n\n\n\n\n\n"
+    IDR_PGSUPERTYPE         "\n\n\n\n\n\n"
     IDR_BRIDGEMODELEDITOR   "Bridge Model View\nPGSuper\nPGSuper Project Templates\nPGSuper Project and Template Files (*.pgs; *.pgt)\n.pgs;.pgt\nPGSuper.Document\nPGSuper Document"
     IDR_PROJECTIMPORTER     "Bridge Model View\nPGSuper\nPGSuper Project Importers\n\n\n\n"
     IDR_GIRDERMODELEDITOR   "Girder View\n\n\n\n\n\n"
@@ -3046,9 +3081,9 @@ END
 STRINGTABLE 
 BEGIN
     IDS_INCOMPATIBLE_BEARING_MSG 
-                            "This connection locates the point of bearing by measuring along the centerline of the girder. The girder spacing is measured at the centerline of bearing. These are incompatible options.\r\n\r\nWhen the bearing is located along the girder, girder spacing must be measured at the pier. Would you like to measure the girder spacing at the centerline of pier?\r\n\r\nYes: Change girder spacing\r\nNo: Don't change anything"
+                            "This connection locates the point of bearing by measuring along the centerline of the girder. The girder spacing is measured at the centerline of bearing. These are incompatible options.\r\n\r\nWhen the bearing is located along the girder, girder spacing must be measured at the pier. Would you like to measure the girder spacing along the Abutmentier Line?\r\n\r\nYes: Change girder spacing\r\nNo: Don't change anything"
     IDS_INCOMPATIBLE_BEARING_MSG2 
-                            "This connection locates the point of bearing by measuring along the centerline of the girder. The girder spacing for the bridge is measured at the centerline of bearing. These are incompatible options.\r\n\r\nWhen the bearing is located along the girder, girder spacing must be measured at the pier. Would you like to change the bridge so that the girder spacing is measured at the centerline of pier?\r\n\r\nYes: Change girder spacing for the entire bridge\r\nNo:  Change the girder spacing for this span only\r\nCancel: Don't change anything."
+                            "This connection locates the point of bearing by measuring along the centerline of the girder. The girder spacing for the bridge is measured at the centerline of bearing. These are incompatible options.\r\n\r\nWhen the bearing is located along the girder, girder spacing must be measured at the pier. Would you like to change the bridge so that the girder spacing is measured along the Abutment/Pier Line?\r\n\r\nYes: Change girder spacing for the entire bridge\r\nNo:  Change the girder spacing for this span only\r\nCancel: Don't change anything."
 END
 
 STRINGTABLE 
@@ -3098,7 +3133,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_ALIGNMENTOFFSET_FMT "Enter offset from the alignment, measured normal to the alignment. Use a signed value (+/-xxx.xx) or a left/right indicator (xxx.xxx L|R)\nPositive values indicate the centerline of pier is offset to the right of the alignment. \nExample: -2.25 or 2.25 L"
+    IDS_ALIGNMENTOFFSET_FMT "The Bridge Line is an arbritrary reference line that can be used to locate elements of the bridge. Use a signed value (+/-xxx.xx) or a left/right indicator (xxx.xxx L|R)\nPositive signed values indicate the Bridge Line is located to the right of the alignment.\nExample: -2.25 and 2.25 L locate the Bridge Line left of the alignment."
 END
 
 STRINGTABLE 
@@ -3212,7 +3247,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_PGSUPER_TEMPLATE_FILE_SUFFIX "pgt"
+    IDS_TEMPLATE_FILE_SUFFIX "pgt"
     IDS_DEFAULT_MASTER_LIB  "PGSuper.lbr"
     IDS_CANT_FIND_LIBRARY_FILE 
                             "There is a problem with the software configuration. The master library file could not be found. Please use the next window to update the Libraries and Templates configuration."
