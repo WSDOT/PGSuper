@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -267,7 +267,7 @@ void CBridgeDescDeckPointGrid::SetPointRowData(ROWCOL row,const CDeckPoint& poin
       .SetValue(point.MeasurementType == pgsTypes::omtBridge ? _T("Bridge Line") : _T("Alignment"))
       );
 
-   double offset = ::ConvertFromSysUnits(point.LeftEdge,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   Float64 offset = ::ConvertFromSysUnits(point.LeftEdge,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    SetStyleRange(CGXRange(row,3),CGXStyle()
       .SetControl(GX_IDS_CTRL_EDIT)
       .SetHorizontalAlignment(DT_RIGHT)
@@ -295,7 +295,7 @@ void CBridgeDescDeckPointGrid::GetPointRowData(ROWCOL row,CDeckPoint* pPoint)
    UnitModeType unitMode = (UnitModeType)(pDisplayUnits->GetUnitMode());
    m_objStation->FromString(CComBSTR(strStation),unitMode);
 
-   double station;
+   Float64 station;
    m_objStation->get_Value(&station);
    pPoint->Station = ::ConvertToSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
@@ -304,7 +304,7 @@ void CBridgeDescDeckPointGrid::GetPointRowData(ROWCOL row,CDeckPoint* pPoint)
    pPoint->MeasurementType = (strDatum == _T("Alignment") ? pgsTypes::omtAlignment : pgsTypes::omtBridge);
 
    // Left Edge
-   double offset = _tstof(GetCellValue(row,3));
+   Float64 offset = _tstof(GetCellValue(row,3));
    pPoint->LeftEdge = ::ConvertToSysUnits(offset,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    // Right Edge

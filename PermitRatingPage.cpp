@@ -156,6 +156,7 @@ BOOL CPermitRatingPage::OnInitDialog()
 BOOL CPermitRatingPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
 {
    pgsTypes::LimitState limit_state;
+   pgsTypes::SpecialPermitType specialPermitType = GetSpecialPermitType();
    bool bIsLoadFactorTip = false;
 
    TOOLTIPTEXT* pTTT = (TOOLTIPTEXT*)pNMHDR;
@@ -198,7 +199,7 @@ BOOL CPermitRatingPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
       if ( bIsLoadFactorTip )
       {
          CRatingOptionsDlg* pParent = (CRatingOptionsDlg*)GetParent();
-         pParent->GetLoadFactorToolTip(m_strTip,limit_state);
+         pParent->GetLoadFactorToolTip(m_strTip,limit_state,specialPermitType);
       }
 
       ::SendMessage(pNMHDR->hwndFrom,TTM_SETDELAYTIME,TTDT_AUTOPOP,TOOLTIP_DURATION); // sets the display time to 10 seconds
@@ -221,6 +222,14 @@ void CPermitRatingPage::OnCheckYieldingClicked()
    GetDlgItem(IDC_FY_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_FY_COEFFICIENT)->EnableWindow(bEnable);
    GetDlgItem(IDC_FY)->EnableWindow(bEnable);
+}
+
+pgsTypes::SpecialPermitType CPermitRatingPage::GetSpecialPermitType()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_PERMIT_TYPE);
+   int curSel = pCB->GetCurSel();
+   pgsTypes::SpecialPermitType permitType = (pgsTypes::SpecialPermitType)pCB->GetItemData(curSel);
+   return permitType;
 }
 
 void CPermitRatingPage::OnPermitTypeChanged()

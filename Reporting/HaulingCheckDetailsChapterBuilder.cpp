@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -179,7 +179,7 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
       (*p_table)(row,1) << force.SetValue( stressArtifact.GetEffectiveHorizPsForce());
       (*p_table)(row,2) << dim.SetValue( stressArtifact.GetEccentricityPsForce());
 
-      double M1,M2,M3;
+      Float64 M1,M2,M3;
       stressArtifact.GetMomentImpact(&M1,&M2,&M3);
       (*p_table)(row,3) << moment.SetValue(M1);
       (*p_table)(row,4) << moment.SetValue(M2);

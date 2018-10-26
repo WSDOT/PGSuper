@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -227,10 +227,10 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
 
    std::_tstring specName = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( specName.c_str() );
-   double c; // compression coefficient
-   double t; // tension coefficient
-   double t_max; // maximum allowable tension
-   double t_with_rebar; // allowable tension when sufficient rebar is used
+   Float64 c; // compression coefficient
+   Float64 t; // tension coefficient
+   Float64 t_max; // maximum allowable tension
+   Float64 t_with_rebar; // allowable tension when sufficient rebar is used
    bool b_t_max; // true if max allowable tension is applicable
 
    switch ( stage )
@@ -371,7 +371,7 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
       *p << _T(" = ") <<stress_u.SetValue(allowable_compression)<<rptNewLine;
    }
 
-   double fc_reqd = gdrArtifact->GetRequiredConcreteStrength(stage,limitState);
+   Float64 fc_reqd = gdrArtifact->GetRequiredConcreteStrength(stage,limitState);
    if ( 0 < fc_reqd )
    {
       if ( stage == pgsTypes::CastingYard )
@@ -642,7 +642,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
 
          if ( !IsZero(allowable_tension) )
          {
-            double f = (limitState == pgsTypes::ServiceIII ? fBot : max(fBot,fTop));
+            Float64 f = (limitState == pgsTypes::ServiceIII ? fBot : max(fBot,fTop));
            (*p_table)(row,col) << rptNewLine <<_T("(")<< cap_demand.SetValue(allowable_tension,f,bPassed)<<_T(")");
          }
       }
@@ -662,7 +662,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
 
          if ( !IsZero(allowable_tension_with_rebar) )
          {
-            double f = max(fTop,fBot);
+            Float64 f = max(fTop,fBot);
             (*p_table)(row,col) << rptNewLine <<_T("(")<< cap_demand.SetValue(allowable_tension_with_rebar,f,bPassed)<<_T(")");
           }
       }
@@ -692,7 +692,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, const pgsGirder
 	      else
 		      (*p_table)(row, ++col) << RPT_FAIL;
 
-         double f = min(fTop,fBot);
+         Float64 f = min(fTop,fBot);
          (*p_table)(row,col) << rptNewLine <<_T("(")<< cap_demand.SetValue(allowable_compression,f,bPassed)<<_T(")");
       }
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,35 @@
 #include "PGSuperDocTemplate.h"
 #include "ConfigurePGSuperDlg.h"
 
+#include <EAF\EAFDocManager.h>
+
+// class that sets the application profile name for this plug-in and then
+// rolls it back to the original value when the object goes out of scope
+class CAutoRegistry
+{
+public:
+   CAutoRegistry(LPCTSTR lpszProfile)
+   {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      CWinApp* pMyApp = AfxGetApp();
+
+      m_strAppProfileName = pMyApp->m_pszProfileName;
+      free((void*)pMyApp->m_pszProfileName);
+      pMyApp->m_pszProfileName = _tcsdup(lpszProfile);
+   }
+
+   ~CAutoRegistry()
+   {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      CWinApp* pMyApp = AfxGetApp();
+      free((void*)pMyApp->m_pszProfileName);
+      pMyApp->m_pszProfileName = _tcsdup(m_strAppProfileName);
+   }
+
+private:
+   CString m_strAppProfileName;
+};
+
 CPGSuperBaseAppPlugin::CPGSuperBaseAppPlugin()
 {
    m_CacheUpdateFrequency = Daily;
@@ -47,6 +76,7 @@ void CPGSuperBaseAppPlugin::OnFinalRelease()
 
 void CPGSuperBaseAppPlugin::DefaultInit()
 {
+   m_CatalogServers.SetTemplateFileExtenstion(GetTemplateFileExtension());
    LoadRegistryValues();
 }
 
@@ -74,10 +104,13 @@ CString CPGSuperBaseAppPlugin::GetEngineerCompany()
 
 void CPGSuperBaseAppPlugin::LoadRegistryValues()
 {
+   CAutoRegistry autoReg(GetAppName());
+
    // The default values are read from HKEY_LOCAL_MACHINE\Software\Washington State Deparment of Transportation\PGSuper
    // If the default values are missing, the hard coded defaults found herein are used.
    // Install writers can create MSI transforms to alter the "defaults" by changing the registry values
-   CEAFApp* pApp = EAFGetApp();
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
 
    int iDefaultSharedResourceType     = pApp->GetLocalMachineInt(   _T("Settings"),_T("SharedResourceType"),    1);
    int iDefaultCacheUpdateFrequency   = pApp->GetLocalMachineInt(   _T("Settings"),_T("CacheUpdateFrequency"),  2);
@@ -136,7 +169,10 @@ void CPGSuperBaseAppPlugin::LoadRegistryValues()
 
 void CPGSuperBaseAppPlugin::SaveRegistryValues()
 {
-   CEAFApp* pApp = EAFGetApp();
+   CAutoRegistry autoReg(GetAppName());
+
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pApp = AfxGetApp();
 
    // Options settings
    VERIFY(pApp->WriteProfileString(_T("Options"), _T("CompanyName"), m_CompanyName));
@@ -161,7 +197,10 @@ void CPGSuperBaseAppPlugin::SaveRegistryValues()
 
 void CPGSuperBaseAppPlugin::RegistryConvert()
 {
-   CEAFApp* pApp = EAFGetApp();
+   CAutoRegistry autoReg(GetAppName());
+
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pApp = AfxGetApp();
 
    // Prior to version 2.2.3 we allowed only a single local file system catalog server and the
    // app class did much of the server heavy lifting. The code below removes those registry keys
@@ -183,7 +222,7 @@ void CPGSuperBaseAppPlugin::RegistryConvert()
       pApp->WriteProfileString(_T("Options"),_T("Publisher"),    _T("Local Files"));
 
       // create that server
-      CFileSystemPGSuperCatalogServer server(_T("Local Files"),masterlib,tempfolder);
+      CFileSystemPGSuperCatalogServer server(_T("Local Files"),masterlib,tempfolder,GetTemplateFileExtension());
       CString create_string = GetCreationString(&server);
 
       int count = pApp->GetProfileInt(_T("Servers"),_T("Count"),-1);
@@ -276,7 +315,7 @@ CString CPGSuperBaseAppPlugin::GetMasterLibraryPublisher() const
    switch( m_SharedResourceType )
    {
    case srtDefault:
-      strPublisher = _T("Default libraries installed with PGSuper");
+      strPublisher.Format(_T("Default libraries installed with %s"),GetAppName());
       break;
 
    case srtInternetFtp:
@@ -308,16 +347,17 @@ void CPGSuperBaseAppPlugin::UpdateProgramSettings(BOOL bFirstRun)
    }
    else
    {
-      CConfigurePGSuperDlg dlg(bFirstRun,EAFGetMainFrame());
+      CAutoRegistry autoReg(GetAppName());
+      CConfigurePGSuperDlg dlg(GetAppName(),GetTemplateFileExtension(),bFirstRun,EAFGetMainFrame());
 
       dlg.m_Company  = m_CompanyName;
       dlg.m_Engineer = m_EngineerName;
 
-      dlg.m_SharedResourceType               = m_SharedResourceType;
+      dlg.m_SharedResourceType   = m_SharedResourceType;
       dlg.m_CacheUpdateFrequency = m_CacheUpdateFrequency;
-      dlg.m_CurrentServer  = m_CurrentCatalogServer;
-      dlg.m_Publisher      = m_Publisher;
-      dlg.m_Servers = m_CatalogServers;
+      dlg.m_CurrentServer        = m_CurrentCatalogServer;
+      dlg.m_Publisher            = m_Publisher;
+      dlg.m_Servers              = m_CatalogServers;
 
       // Save a copy of all server information in case our update fails
       SharedResourceType        original_type = m_SharedResourceType;
@@ -370,6 +410,7 @@ void CPGSuperBaseAppPlugin::UpdateProgramSettings(BOOL bFirstRun)
 
 void CPGSuperBaseAppPlugin::UpdateCache()
 {
+   CAutoRegistry autoReg(GetAppName());
    CEAFApp* pApp = EAFGetApp();
 
    bool was_error=false;
@@ -394,7 +435,9 @@ void CPGSuperBaseAppPlugin::UpdateCache()
             LOG(_T("Time to update cache and Updates are pending"));
             // this is not the first time, it is time to check for updates,
             // and sure enough there are updates pending.... do the update
-            int result = ::MessageBox(EAFGetMainFrame()->GetSafeHwnd(),_T("There are updates to Master Library and Workgroup Templates pending.\n\nWould you like to update PGSuper now?"),_T("Pending Updates"),MB_YESNO | MB_ICONINFORMATION);
+            CString strMsg;
+            strMsg.Format(_T("There are updates to Master Library and Workgroup Templates pending.\n\nWould you like to update %s now?"),AfxGetApp()->m_pszProfileName);
+            int result = ::MessageBox(EAFGetMainFrame()->GetSafeHwnd(),strMsg,_T("Pending Updates"),MB_YESNO | MB_ICONINFORMATION);
 
             if ( result == IDYES )
                was_error = !DoCacheUpdate();
@@ -556,7 +599,7 @@ bool CPGSuperBaseAppPlugin::AreUpdatesPending()
       wndProgress->put_HasGauge(VARIANT_FALSE);
       wndProgress->put_HasCancel(VARIANT_FALSE);
       CEAFMainFrame* pWnd = EAFGetMainFrame();
-      wndProgress->Show(CComBSTR("Checking the Internet for Library updates"),pWnd->GetSafeHwnd());
+      wndProgress->Show(CComBSTR(_T("Checking the Internet for Library updates")),pWnd->GetSafeHwnd());
 
       try
       {
@@ -646,23 +689,12 @@ bool CPGSuperBaseAppPlugin::DoCacheUpdate()
       try
       {
          const CPGSuperCatalogServer* pserver = m_CatalogServers.GetServer(m_CurrentCatalogServer);
+         bSuccessful = pserver->PopulateCatalog(m_Publisher,progress,GetCacheFolder());
 
-         if (pserver!=NULL)
-         {
-            bSuccessful = pserver->PopulateCatalog(m_Publisher,progress,GetCacheFolder());
+         m_MasterLibraryFileURL = pserver->GetMasterLibraryURL(m_Publisher);
 
-            m_MasterLibraryFileURL = pserver->GetMasterLibraryURL(m_Publisher);
-
-            if ( m_MasterLibraryFileURL == _T("") )
-               m_MasterLibraryFileCache = _T("");
-         }
-         else
-         {
-            CString msg;
-            msg.Format(_T("Error: Cannot perform update - Currently selected catalog server is not in server list. Name is %s"),m_CurrentCatalogServer);
-            AfxMessageBox(msg,MB_ICONEXCLAMATION);
-            bSuccessful = false;
-         }
+         if ( m_MasterLibraryFileURL == _T("") )
+            m_MasterLibraryFileCache = _T("");
       }
       catch(CCatalogServerException exp)
       {
@@ -697,22 +729,28 @@ bool CPGSuperBaseAppPlugin::DoCacheUpdate()
    }
 
    if (bSuccessful)
-      progress->put_Message(0,CComBSTR(_T("The Master Library and Templates have been updated")));
+      progress->put_Message(0,CComBSTR("The Master Library and Templates have been updated"));
    else
-      progress->put_Message(0,CComBSTR(_T("Update failed. Previous settings restored.")));
+      progress->put_Message(0,CComBSTR("Update failed. Previous settings restored."));
 
    if ( bSuccessful )
    {
       // Need to update the main document template so that the File | New dialog is updated
       // Search for the CPGSuperDocTemplate object
-      POSITION pos = pApp->m_pDocManager->GetFirstDocTemplatePosition();
+      CEAFDocManager* pDocMgr = (CEAFDocManager*)(pApp->m_pDocManager);
+      POSITION pos = pDocMgr->GetFirstDocTemplatePosition();
       while ( pos != NULL )
       {
-         CDocTemplate* pDocTemplate = pApp->m_pDocManager->GetNextDocTemplate(pos);
+         POSITION templatePos = pos;
+         CDocTemplate* pDocTemplate = pDocMgr->GetNextDocTemplate(pos);
          if ( pDocTemplate->IsKindOf(RUNTIME_CLASS(CPGSuperDocTemplate)) )
          {
+            pDocMgr->RemoveDocTemplate(templatePos);
+
             CPGSuperDocTemplate* pPGSuperDocTemplate = dynamic_cast<CPGSuperDocTemplate*>(pDocTemplate);
             pPGSuperDocTemplate->LoadTemplateInformation();
+
+            pDocMgr->AddDocTemplate(pDocTemplate);
             break;
          }
       }
@@ -723,7 +761,10 @@ bool CPGSuperBaseAppPlugin::DoCacheUpdate()
 
 sysDate CPGSuperBaseAppPlugin::GetLastCacheUpdateDate()
 {
-   CEAFApp* pApp = EAFGetApp();
+   CAutoRegistry autoReg(GetAppName());
+
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pApp = AfxGetApp();
 
    JulTy last_update = pApp->GetProfileInt(_T("Settings"),_T("LastCacheUpdate"),0);
    return sysDate(last_update);
@@ -731,7 +772,10 @@ sysDate CPGSuperBaseAppPlugin::GetLastCacheUpdateDate()
 
 void CPGSuperBaseAppPlugin::SetLastCacheUpdateDate(const sysDate& date)
 {
-   CEAFApp* pApp = EAFGetApp();
+   CAutoRegistry autoReg(GetAppName());
+
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pApp = AfxGetApp();
 
    pApp->WriteProfileInt(_T("Settings"),_T("LastCacheUpdate"),date.Hash());
 }
@@ -754,15 +798,19 @@ CString CPGSuperBaseAppPlugin::GetDefaultWorkgroupTemplateFolder()
 
 CString CPGSuperBaseAppPlugin::GetCacheFolder()
 {
-   CEAFApp* pApp = EAFGetApp();
+   CAutoRegistry autoReg(GetAppName());
+
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pMyApp     = AfxGetApp();
+   CEAFApp* pParentApp = EAFGetApp();
 
    TCHAR buffer[MAX_PATH];
    BOOL bResult = ::SHGetSpecialFolderPath(NULL,buffer,CSIDL_APPDATA,FALSE);
 
    if ( !bResult )
-      return pApp->GetAppLocation() + CString(_T("Cache\\"));
+      return pParentApp->GetAppLocation() + CString(_T("Cache\\"));
    else
-      return CString(buffer) + CString(_T("\\PGSuper\\"));
+      return CString(buffer) + CString(_T("\\")) + CString(pMyApp->m_pszProfileName) + CString(_T("\\"));
 }
 
 CString CPGSuperBaseAppPlugin::GetSaveCacheFolder()

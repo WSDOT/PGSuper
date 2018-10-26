@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -2581,9 +2581,9 @@ void write_bar_spacing_table(IBroker* pBroker,
 
    lrfdRebarPool* pRebarPool = lrfdRebarPool::GetInstance();
 
-   double Ab3 = pRebarPool->GetRebar(shearData.ShearBarType,shearData.ShearBarGrade,matRebar::bs3)->GetNominalArea();
-   double Ab4 = pRebarPool->GetRebar(shearData.ShearBarType,shearData.ShearBarGrade,matRebar::bs4)->GetNominalArea();
-   double Ab5 = pRebarPool->GetRebar(shearData.ShearBarType,shearData.ShearBarGrade,matRebar::bs5)->GetNominalArea();
+   Float64 Ab3 = pRebarPool->GetRebar(shearData.ShearBarType,shearData.ShearBarGrade,matRebar::bs3)->GetNominalArea();
+   Float64 Ab4 = pRebarPool->GetRebar(shearData.ShearBarType,shearData.ShearBarGrade,matRebar::bs4)->GetNominalArea();
+   Float64 Ab5 = pRebarPool->GetRebar(shearData.ShearBarType,shearData.ShearBarGrade,matRebar::bs5)->GetNominalArea();
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,gdr);
@@ -2617,9 +2617,9 @@ void write_bar_spacing_table(IBroker* pBroker,
 
       if ( !IsZero(scd.AvOverS_Reqd) )
       {
-         double S3 = nLegs*Ab3/scd.AvOverS_Reqd;
-         double S4 = nLegs*Ab4/scd.AvOverS_Reqd;
-         double S5 = nLegs*Ab5/scd.AvOverS_Reqd;
+         Float64 S3 = nLegs*Ab3/scd.AvOverS_Reqd;
+         Float64 S4 = nLegs*Ab4/scd.AvOverS_Reqd;
+         Float64 S5 = nLegs*Ab5/scd.AvOverS_Reqd;
 
          (*table)(row,col++) << spacing.SetValue(S3);
          (*table)(row,col++) << spacing.SetValue(S4);

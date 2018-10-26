@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -56,13 +56,13 @@ HRESULT CStrandMoverImpl::FinalConstruct()
    return hr;
 }
 
-STDMETHODIMP CStrandMoverImpl::get_TopElevation(double* topElevation)
+STDMETHODIMP CStrandMoverImpl::get_TopElevation(Float64* topElevation)
 {
    *topElevation = m_TopElevation;
    return S_OK;
 }
 
-STDMETHODIMP CStrandMoverImpl::get_HpStrandElevationBoundaries(/*[out]*/double* bottomMin,/*[out]*/double* topMax)
+STDMETHODIMP CStrandMoverImpl::get_HpStrandElevationBoundaries(/*[out]*/Float64* bottomMin,/*[out]*/Float64* topMax)
 {
    CHECK_RETVAL(bottomMin);
    CHECK_RETVAL(topMax);
@@ -82,7 +82,7 @@ STDMETHODIMP CStrandMoverImpl::get_HpStrandElevationBoundaries(/*[out]*/double* 
    return S_OK;
 }
 
-STDMETHODIMP CStrandMoverImpl::get_EndStrandElevationBoundaries(/*[out]*/double* bottomMin,/*[out]*/double* topMax)
+STDMETHODIMP CStrandMoverImpl::get_EndStrandElevationBoundaries(/*[out]*/Float64* bottomMin,/*[out]*/Float64* topMax)
 {
    CHECK_RETVAL(bottomMin);
    CHECK_RETVAL(topMax);
@@ -103,7 +103,7 @@ STDMETHODIMP CStrandMoverImpl::get_EndStrandElevationBoundaries(/*[out]*/double*
 }
 
 
-STDMETHODIMP CStrandMoverImpl::get_StrandIncrements(/*[out]*/double* endIncrement,/*[out]*/double* hpIncrement)
+STDMETHODIMP CStrandMoverImpl::get_StrandIncrements(/*[out]*/Float64* endIncrement,/*[out]*/Float64* hpIncrement)
 {
    CHECK_RETVAL(endIncrement);
    CHECK_RETVAL(hpIncrement);
@@ -114,11 +114,11 @@ STDMETHODIMP CStrandMoverImpl::get_StrandIncrements(/*[out]*/double* endIncremen
    return S_OK;
 }
 
-STDMETHODIMP CStrandMoverImpl::TestHpStrandLocation(/*[in]*/double originalX, /*[in]*/double originalY, /*[in]*/double Yoffset, /*[out,retval]*/VARIANT_BOOL* isWithin )
+STDMETHODIMP CStrandMoverImpl::TestHpStrandLocation(/*[in]*/Float64 originalX, /*[in]*/Float64 originalY, /*[in]*/Float64 Yoffset, /*[out,retval]*/VARIANT_BOOL* isWithin )
 {
    CHECK_RETVAL(isWithin);
 
-   double newx, newy;
+   Float64 newx, newy;
 
    // use translate function to make test. Could be more stringent in future.
    HRESULT hr = TranslateStrand(originalX, originalY, Yoffset, &newx, &newy);
@@ -143,11 +143,11 @@ STDMETHODIMP CStrandMoverImpl::TestHpStrandLocation(/*[in]*/double originalX, /*
    return S_OK;
 }
 
-STDMETHODIMP CStrandMoverImpl::TestEndStrandLocation(/*[in]*/double originalX, /*[in]*/double originalY, /*[in]*/double Yoffset, /*[out,retval]*/VARIANT_BOOL* isWithin )
+STDMETHODIMP CStrandMoverImpl::TestEndStrandLocation(/*[in]*/Float64 originalX, /*[in]*/Float64 originalY, /*[in]*/Float64 Yoffset, /*[out,retval]*/VARIANT_BOOL* isWithin )
 {
    CHECK_RETVAL(isWithin);
 
-   double newx, newy;
+   Float64 newx, newy;
 
    // use translate function to make test. Could be more stringent in future.
    HRESULT hr = TranslateStrand(originalX, originalY, Yoffset, &newx, &newy);
@@ -172,8 +172,8 @@ STDMETHODIMP CStrandMoverImpl::TestEndStrandLocation(/*[in]*/double originalX, /
 }
 
 
-STDMETHODIMP CStrandMoverImpl::TranslateStrand(/*[in]*/double originalX, /*[in]*/double originalY, /*[in]*/double Yoffset,
-                                               /*[out]*/double* newX, /*[out]*/double* newY )
+STDMETHODIMP CStrandMoverImpl::TranslateStrand(/*[in]*/Float64 originalX, /*[in]*/Float64 originalY, /*[in]*/Float64 Yoffset,
+                                               /*[out]*/Float64* newX, /*[out]*/Float64* newY )
 {
    CHECK_RETVAL(newX);
    CHECK_RETVAL(newY);
@@ -181,7 +181,7 @@ STDMETHODIMP CStrandMoverImpl::TranslateStrand(/*[in]*/double originalX, /*[in]*
    bool found=false;
    m_TestPoint->Move(originalX,originalY);
 
-   double arc_slope=0.0;
+   Float64 arc_slope=0.0;
 
    for (RegionIterator it=m_Regions.begin(); it!=m_Regions.end(); it++)
    {
@@ -206,10 +206,10 @@ STDMETHODIMP CStrandMoverImpl::TranslateStrand(/*[in]*/double originalX, /*[in]*
 
 
 // IConfigureStrandMover
-STDMETHODIMP CStrandMoverImpl::SetHarpedStrandOffsetBounds(double topElevation, 
-                                          double topHpElevationBoundary,double botHpElevationBoundary,
-                                          double topEndElevationBoundary,double botEndElevationBoundary,
-                                          double endIncrement,double hpIncrement)
+STDMETHODIMP CStrandMoverImpl::SetHarpedStrandOffsetBounds(Float64 topElevation, 
+                                          Float64 topHpElevationBoundary,Float64 botHpElevationBoundary,
+                                          Float64 topEndElevationBoundary,Float64 botEndElevationBoundary,
+                                          Float64 endIncrement,Float64 hpIncrement)
 {
    if (topElevation<topHpElevationBoundary || topHpElevationBoundary<0.0 || botHpElevationBoundary<0.0  ||
        topElevation<topEndElevationBoundary || topEndElevationBoundary<0.0 || botEndElevationBoundary<0.0)
@@ -236,7 +236,7 @@ STDMETHODIMP CStrandMoverImpl::ClearAll()
    return S_OK;
 }
 
-STDMETHODIMP CStrandMoverImpl::AddRegion(IShape* shape, double arcSlope)
+STDMETHODIMP CStrandMoverImpl::AddRegion(IShape* shape, Float64 arcSlope)
 {
    CHECK_IN(shape);
 
@@ -255,7 +255,7 @@ STDMETHODIMP CStrandMoverImpl::get_NumRegions(IndexType* pNum)
    return S_OK;
 }
 
-STDMETHODIMP CStrandMoverImpl::GetRegion(IndexType index, IShape** shape, double* arcSlope)
+STDMETHODIMP CStrandMoverImpl::GetRegion(IndexType index, IShape** shape, Float64* arcSlope)
 {
    HarpRegion& region = m_Regions[index];
    

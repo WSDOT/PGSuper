@@ -95,7 +95,7 @@ IDR_PGSUPERPROJECTIMPORTERAPPPLUGIN REGISTRY                "res\\PGSuperProject
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_PGSUPERTYPE         ICON                    "..\\res\\PGSuperDoc.ico"
+IDR_PGSUPER             ICON                    "..\\res\\PGSuperDoc.ico"
 IDR_PGSUPER_TEMPLATE_ICON ICON                    "..\\res\\pgs_template.ico"
 IDR_BRIDGEMODELEDITOR   ICON                    "..\\res\\Bridge.ico"
 IDR_GIRDERMODELEDITOR   ICON                    "..\\res\\GirderView.ico"
@@ -204,7 +204,7 @@ END
 // Menu
 //
 
-IDR_PGSUPERTYPE MENUEX 
+IDR_PGSUPER MENUEX 
 BEGIN
     POPUP "&File",                          65535,MFT_STRING,MFS_ENABLED
     BEGIN
@@ -1082,10 +1082,10 @@ BEGIN
     LTEXT           "North (Y)",IDC_STATIC,205,166,29,8
 END
 
-IDD_PROFILE_PAGE DIALOG  0, 0, 275, 185
+IDD_PROFILE_PAGE DIALOGEX 0, 0, 275, 185
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Profile"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     LTEXT           "Station",IDC_STATIC,7,37,23,8
     EDITTEXT        IDC_STATION,39,37,40,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -1095,12 +1095,13 @@ BEGIN
     LTEXT           "Unit",IDC_ELEVATION_UNIT,162,37,14,8
     EDITTEXT        IDC_GRADE,211,37,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,255,37,8,8
-    CONTROL         "Custom1",IDC_VCURVE_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,58,260,66
+    CONTROL         "Custom1",IDC_VCURVE_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,62,260,62
     PUSHBUTTON      "Add",IDC_ADD,59,128,50,14
     PUSHBUTTON      "Remove",IDC_REMOVE,113,128,50,14
     PUSHBUTTON      "Sort",IDC_SORT,167,128,50,14
     LTEXT           "Reference Point - Enter a point on the profile defined by its station, elevation, and grade. This point may be the PVI point of the first vertical curve and the entry grade.",IDC_STATIC,7,7,256,26
-    LTEXT           "Enter L1 and L2 for unsymmetrical vertical curves.\n\nFor symmetrical vertical curves L1 will be taken as the full curve length if L2 is blank or zero",IDC_STATIC,7,145,261,33
+    LTEXT           "Symmetrical curves: Enter curve length as L1 and leave L2 blank or enter zero.\n\nUnsymmetrical curves: Enter left and right curve lengths in L1 and L2, respectively.",IDC_STATIC,7,147,261,31
+    LTEXT           "Vertical Curves",IDC_STATIC,7,52,48,8
 END
 
 IDD_SUPERELEVATIONS DIALOG  0, 0, 274, 185
@@ -1860,7 +1861,7 @@ BEGIN
     LTEXT           "Shear",IDC_STATIC,87,49,20,8
     EDITTEXT        IDC_SYSTEM_FACTOR_SHEAR,109,47,29,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Average Daily Truck Traffic (ADTT) - One Direction",IDC_STATIC,7,74,162,8
-    EDITTEXT        IDC_ADTT,171,72,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ADTT,171,72,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
     LTEXT           "(ADTT value or Unknown)",IDC_STATIC,213,74,83,8
     CONTROL         "Apply pedestrian live load concurrently with vehicular live loads (MBE 6A.2.3.4)",IDC_PEDESTRIAN,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,91,269,10
@@ -2003,8 +2004,8 @@ BEGIN
     EDITTEXT        IDC_SERVICE_I_LL_PERMIT2,153,225,43,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "(LL+IM) - Special/Limited Crossing",IDC_STATIC,200,228,109,8
     CONTROL         "Rate for Shear",IDC_RATE_FOR_SHEAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,265,63,10
-    CONTROL         "Check reinforcement yielding (6A.5.2.2b)",IDC_CHECK_YIELDING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,281,148,10
+    CONTROL         "Check reinforcement yielding (6A.5.4.2.2b)",IDC_CHECK_YIELDING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,281,151,10
     LTEXT           "Allowable Stress",IDC_FY_LABEL,176,282,53,8
     EDITTEXT        IDC_FY_COEFFICIENT,232,279,30,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "fy",IDC_FY,264,281,8,8
@@ -2233,7 +2234,7 @@ BEGIN
             VALUE "FileDescription", "PGSuper"
             VALUE "FileVersion", "2.7.3.0"
             VALUE "InternalName", "PGSuper"
-            VALUE "LegalCopyright", "Copyright © 1999-2012, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2013, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
             VALUE "ProductVersion", "2.7.3.0"
@@ -2900,7 +2901,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDR_PGSUPERTYPE         "\n\n\n\n\n\n"
+    IDR_PGSUPER             "\n\n\n\n\n\n"
     IDR_BRIDGEMODELEDITOR   "Bridge Model View\nPGSuper\nPGSuper Project Templates\nPGSuper Project and Template Files (*.pgs; *.pgt)\n.pgs;.pgt\nPGSuper.Document\nPGSuper Document"
     IDR_PROJECTIMPORTER     "Bridge Model View\nPGSuper\nPGSuper Project Importers\n\n\n\n"
     IDR_GIRDERMODELEDITOR   "Girder View\n\n\n\n\n\n"
@@ -3212,7 +3213,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_TEMPLATE_FILE_SUFFIX "pgt"
+    IDS_PGSUPER_TEMPLATE_FILE_SUFFIX "pgt"
     IDS_DEFAULT_MASTER_LIB  "PGSuper.lbr"
     IDS_CANT_FIND_LIBRARY_FILE 
                             "There is a problem with the software configuration. The master library file could not be found. Please use the next window to update the Libraries and Templates configuration."
@@ -3255,6 +3256,11 @@ BEGIN
     ID_APP_LEGAL            "Display PGSuper Legal Notices"
     ID_UNITS_SI             "Change units to SI\nSI Units"
     ID_UNITS_US             "Change units to US\nUS Units"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_E_INVALIDVERSION    "The file %1 came from a newer version of PGSuper. You must upgrade in order to read it."
 END
 
 #endif    // English (U.S.) resources

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -437,7 +437,7 @@ lrfdLiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFParameters(
    pDistFactors->VerifyDistributionFactorRequirements(poi);
 
    pgsTypes::TrafficBarrierOrientation side = pBarriers->GetNearestBarrier(span,gdr);
-   double curb_offset = pBarriers->GetInterfaceWidth(side);
+   Float64 curb_offset = pBarriers->GetInterfaceWidth(side);
 
    // compute de (inside edge of barrier to CL of exterior web)
    Float64 wd = pGdr->GetCL2ExteriorWebDistance(poi); // cl beam to cl web
@@ -520,7 +520,7 @@ lrfdLiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFParameters(
    return pLLDF;
 }
 
-void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPier, rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,double gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
+void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPier, rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
 {
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
@@ -547,7 +547,7 @@ void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPier, rptParagraph* 
 
          // if roadway width is > 20ft and TxDOT, and nb>=3, use multiple lane method
          GirderIndexType nb = pBridge->GetGirderCount(spanOrPier);
-         double w20 = ::ConvertToSysUnits(20.0, unitMeasure::Feet);
+         Float64 w20 = ::ConvertToSysUnits(20.0, unitMeasure::Feet);
          if (pSpecEntry->GetLiveLoadDistributionMethod()==LLDF_TXDOT && lldf.wCurbToCurb>=w20 && nb>=3)
          {
             // Using TxDOT spec and w >= 20.0
@@ -767,7 +767,7 @@ void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPier, rptParagraph* 
    }
 }
 
-void CUBeamDistFactorEngineer::ReportShear(IndexType spanOrPier,rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,double gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
+void CUBeamDistFactorEngineer::ReportShear(IndexType spanOrPier,rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
 {
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
@@ -795,7 +795,7 @@ void CUBeamDistFactorEngineer::ReportShear(IndexType spanOrPier,rptParagraph* pP
          // if roadway width is > 20ft and TxDOT, and nb>=3, use multiple lane method
          GirderIndexType nb = pBridge->GetGirderCount(spanOrPier);
          Float64 roadwayWidth = pBridge->GetCurbToCurbWidth(0.00);
-         double w20 = ::ConvertToSysUnits(20.0, unitMeasure::Feet);
+         Float64 w20 = ::ConvertToSysUnits(20.0, unitMeasure::Feet);
          if (pSpecEntry->GetLiveLoadDistributionMethod()==LLDF_TXDOT && roadwayWidth>=w20 && nb>=3)
          {
             // Using TxDOT spec and w >= 20.0

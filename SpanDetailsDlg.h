@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -55,7 +55,7 @@ public:
 public:
    txnEditSpanData GetEditSpanData();
 
-   double GetSpanLength();
+   Float64 GetSpanLength();
 
    pgsTypes::PierConnectionType GetConnectionType(pgsTypes::PierFaceType pierFace);
    LPCTSTR GetPrevPierConnection(pgsTypes::PierFaceType pierFace);
@@ -71,7 +71,7 @@ public:
    pgsTypes::MeasurementType GetMeasurementType(pgsTypes::PierFaceType pierFace);
 
    GirderIndexType GetRefGirder(pgsTypes::PierFaceType pierFace);
-   double GetRefGirderOffset(pgsTypes::PierFaceType pierFace);
+   Float64 GetRefGirderOffset(pgsTypes::PierFaceType pierFace);
    pgsTypes::OffsetMeasurementType GetRefGirderOffsetType(pgsTypes::PierFaceType pierFace);
 
    pgsTypes::MeasurementLocation GetMeasurementLocation(); // for the entire bridge

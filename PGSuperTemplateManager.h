@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,7 +32,7 @@
 class CPGSuperTemplateManager
 {
 public:
-	CPGSuperTemplateManager(CHAR chSep); // chSep is the folder separator chacter
+	CPGSuperTemplateManager(LPCTSTR strExt,CHAR chSep); // chSep is the folder separator chacter
 
    // Recursively copies PTG template files and associated icon files from the source to the destination
    void GetTemplates(const CString& strSourcePath,const CString& strRootDestinationPath,IProgressMonitor* pProgress);
@@ -49,6 +49,8 @@ private:
 
 protected:
    CHAR m_cFolderSeparator;
+
+   CString m_strExt;
 };
 
 ////////////////////////////////////////////////////////////////
@@ -57,7 +59,7 @@ protected:
 class CFileTemplateManager : public CPGSuperTemplateManager
 {
 public:
-   CFileTemplateManager();
+   CFileTemplateManager(LPCTSTR strExt);
 
 protected:
    virtual CFileFind* CreateFileFinder();
@@ -69,7 +71,7 @@ protected:
 class CFTPTemplateManager : public CPGSuperTemplateManager
 {
 public:
-   CFTPTemplateManager(CFtpConnection* pFTP);
+   CFTPTemplateManager(LPCTSTR strExt,CFtpConnection* pFTP);
 
 protected:
    virtual CFileFind* CreateFileFinder();

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -251,7 +251,7 @@ void CSpanGirderLayoutPage::Init(const CSpanData* pSpan)
 
    m_bUseSameSpacingAtBothEnds = pSpan->UseSameSpacingAtBothEndsOfSpan();
 
-   double skew_angle = 0; // dummy value
+   Float64 skew_angle = 0; // dummy value
 
    // back of pier (end of span)
    CGirderSpacingGridData gridData;
@@ -305,7 +305,7 @@ void CSpanGirderLayoutPage::Init(const CSpanData* pSpan)
    }
 }
 
-void CSpanGirderLayoutPage::GetPierSkewAngles(double& skew1,double& skew2)
+void CSpanGirderLayoutPage::GetPierSkewAngles(Float64& skew1,Float64& skew2)
 {
    CSpanDetailsDlg* pParent   = (CSpanDetailsDlg*)GetParent();
    const CPierData* pPrevPier = pParent->m_pSpanData->GetPrevPier();
@@ -315,15 +315,15 @@ void CSpanGirderLayoutPage::GetPierSkewAngles(double& skew1,double& skew2)
    EAFGetBroker(&broker);
    GET_IFACE2(broker,IBridge,pBridge);
 
-   double skew_angle_1;
+   Float64 skew_angle_1;
    pBridge->GetSkewAngle(pPrevPier->GetStation(),pPrevPier->GetOrientation(),&skew_angle_1);
 
-   double skew_angle_2;
+   Float64 skew_angle_2;
    pBridge->GetSkewAngle(pNextPier->GetStation(),pNextPier->GetOrientation(),&skew_angle_2);
 
    if (m_bUseSameSpacingAtBothEnds)
    {
-      double max_skew = _cpp_max(skew_angle_1,skew_angle_2);
+      Float64 max_skew = _cpp_max(skew_angle_1,skew_angle_2);
       skew_angle_1    = max_skew;
       skew_angle_2    = max_skew;
    }
@@ -338,7 +338,7 @@ BOOL CSpanGirderLayoutPage::OnInitDialog()
 
    SpanIndexType spanIdx = pParent->m_pSpanData->GetSpanIndex();
 
-   double skew_angle_1, skew_angle_2;
+   Float64 skew_angle_1, skew_angle_2;
    GetPierSkewAngles(skew_angle_1,skew_angle_2);
 
    // set up the girder name grid
@@ -600,7 +600,7 @@ void CSpanGirderLayoutPage::CacheEndSpacing()
    GetDlgItem(IDC_NEXT_REF_GIRDER_OFFSET)->EnableWindow(FALSE);
 
 
-   double skew_angle_1, skew_angle_2;
+   Float64 skew_angle_1, skew_angle_2;
    GetPierSkewAngles(skew_angle_1,skew_angle_2);
    m_SpacingGrid[pgsTypes::Ahead].SetPierSkewAngle(skew_angle_1);
    m_SpacingGrid[pgsTypes::Back].SetPierSkewAngle(skew_angle_2);
@@ -642,7 +642,7 @@ void CSpanGirderLayoutPage::RestoreEndSpacing()
    DDX_CBItemData(&dx, IDC_NEXT_REF_GIRDER_OFFSET_TYPE, m_CacheRefGirderOffsetType[pgsTypes::Back]);
    GetDlgItem(IDC_NEXT_REF_GIRDER_OFFSET_TYPE)->EnableWindow(TRUE);
 
-   double skew_angle_1, skew_angle_2;
+   Float64 skew_angle_1, skew_angle_2;
    GetPierSkewAngles(skew_angle_1,skew_angle_2);
    m_SpacingGrid[pgsTypes::Ahead].SetPierSkewAngle(skew_angle_1);
    m_SpacingGrid[pgsTypes::Back].SetPierSkewAngle(skew_angle_2);
@@ -798,8 +798,8 @@ LRESULT CSpanGirderLayoutPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM lP
       m_CacheGirderSpacingMeasure[pgsTypes::Back]  = (long)pcbEndOfSpanSpacingDatum->GetItemData( pcbEndOfSpanSpacingDatum->GetCurSel() );
 
       // determine if there is more than one spacing group
-      std::set<double> spacings;
-      double bridgeSpacing = 0;
+      std::set<Float64> spacings;
+      Float64 bridgeSpacing = 0;
       long datum = 0;
       for ( int i = 0; i < 2; i++ )
       {
@@ -810,7 +810,7 @@ LRESULT CSpanGirderLayoutPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM lP
          for ( GroupIndexType spaIdx = 0; spaIdx < nSpacingGroups;spaIdx++ )
          {
             GirderIndexType firstGdrIdx, lastGdrIdx;
-            double space;
+            Float64 space;
             spacingData.m_GirderSpacing.GetSpacingGroup(spaIdx,&firstGdrIdx,&lastGdrIdx,&space);
             spacings.insert( space );
          }
@@ -826,10 +826,10 @@ LRESULT CSpanGirderLayoutPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM lP
 
          CResolveGirderSpacingDlg dlg;
          CString strItems;
-         std::set<double>::iterator iter;
+         std::set<Float64>::iterator iter;
          for ( iter = spacings.begin(); iter != spacings.end(); iter++ )
          {
-            double spacing = *iter;
+            Float64 spacing = *iter;
 
             CString strItem;
             if ( IsGirderSpacing(oldGirderSpacingType) )

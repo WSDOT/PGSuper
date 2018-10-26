@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -88,8 +88,8 @@ private:
    void SetRowStyle(ROWCOL nRow);
 
    enum SpacingType {stNone, stFixed, stVariable} ;
-   SpacingType ParseAxleRow(ROWCOL nRow, CDataExchange* pDX, double* pWeight, 
-                            double* pSpacingMin, double* pSpacingMax);
+   SpacingType ParseAxleRow(ROWCOL nRow, CDataExchange* pDX, Float64* pWeight, 
+                            Float64* pSpacingMin, Float64* pSpacingMax);
 
 };
 

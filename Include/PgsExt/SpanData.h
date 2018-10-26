@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -95,17 +95,17 @@ public:
    CGirderSpacing* GetGirderSpacing(pgsTypes::MemberEndType end);
    CGirderSpacing* GetGirderSpacing(pgsTypes::PierFaceType pierFace);
 
-   void SetLLDFPosMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls,double gM);
-   void SetLLDFPosMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,double gM);
-   double GetLLDFPosMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const;
+   void SetLLDFPosMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls,Float64 gM);
+   void SetLLDFPosMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,Float64 gM);
+   Float64 GetLLDFPosMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const;
 
-   void SetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls,double gM);
-   void SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,double gM);
-   double GetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const;
+   void SetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls,Float64 gM);
+   void SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,Float64 gM);
+   Float64 GetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const;
 
-   void SetLLDFShear(GirderIndexType gdrIdx, pgsTypes::LimitState ls,double gV);
-   void SetLLDFShear(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,double gV);
-   double GetLLDFShear(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const;
+   void SetLLDFShear(GirderIndexType gdrIdx, pgsTypes::LimitState ls,Float64 gV);
+   void SetLLDFShear(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,Float64 gV);
+   Float64 GetLLDFShear(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const;
 
    // set/get the slab offset at each end of the span
    // if the slab offset is defined for the entire bridge, the value is pushed up to the bridge level
@@ -114,7 +114,7 @@ public:
    void SetSlabOffset(pgsTypes::PierFaceType face,Float64 offset);
    Float64 GetSlabOffset(pgsTypes::PierFaceType face) const;
 
-   double GetSpanLength() const;
+   Float64 GetSpanLength() const;
    bool IsInteriorGirder(GirderIndexType gdrIdx) const;
    bool IsExteriorGirder(GirderIndexType gdrIdx) const;
 
@@ -150,9 +150,9 @@ private:
    // 0 for strength/service limit state, 1 for fatigue limit state
    struct LLDF
    {
-      double gNM[2];
-      double gPM[2];
-      double gV[2];
+      Float64 gNM[2];
+      Float64 gPM[2];
+      Float64 gV[2];
 
       LLDF()
       {

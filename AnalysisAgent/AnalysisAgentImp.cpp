@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -2288,6 +2288,36 @@ void CAnalysisAgentImp::ApplySlabLoad(ILBAMModel* pModel,GirderIndexType gdr)
          pointLoads->Add(bstrStage,bstrSlabLoadGroup,loadM2,&ptLoadItem);
       }
 
+      GetCantileverSlabPadLoad(spanIdx, gdrIdx, &P1, &M1, &P2, &M2);
+      AddOverhangPointLoads(spanIdx, gdrIdx, bstrStage, bstrSlabPadLoadGroup, P1, P2, pointLoads);
+
+      // apply moments to span members
+      if (!IsZero(M1))
+      {
+         CComPtr<IPointLoad> loadM1;
+         loadM1.CoCreateInstance(CLSID_PointLoad);
+         loadM1->put_MemberType(mtSpan);
+         loadM1->put_MemberID(spanIdx);
+         loadM1->put_Location(0.0);
+         loadM1->put_Mz(M1);
+
+         ptLoadItem.Release();
+         pointLoads->Add(bstrStage,bstrSlabPadLoadGroup,loadM1,&ptLoadItem);
+      }
+
+      if (!IsZero(M2))
+      {
+         CComPtr<IPointLoad> loadM2;
+         loadM2.CoCreateInstance(CLSID_PointLoad);
+         loadM2->put_MemberType(mtSpan);
+         loadM2->put_MemberID(spanIdx);
+         loadM2->put_Location(-1.0);
+         loadM2->put_Mz(M2);
+
+         ptLoadItem.Release();
+         pointLoads->Add(bstrStage,bstrSlabPadLoadGroup,loadM2,&ptLoadItem);
+      }
+
       // main slab load
       std::vector<SlabLoad> sload;
       GetMainSpanSlabLoad(spanIdx, gdrIdx, &sload);
@@ -4295,7 +4325,7 @@ PoiIDType CAnalysisAgentImp::AddPointOfInterest(ModelData* pModelData,const pgsP
    GET_IFACE(IBridge,pBridge);
    Float64 start_offset = pBridge->GetGirderStartConnectionLength(span,gdr);
    Float64 span_length = pBridge->GetSpanLength(span,gdr);
-   if ( ::IsGT(start_offset,poi.GetDistFromStart(),0.01) || ::IsLT((start_offset+span_length),poi.GetDistFromStart(),0.01) )
+   if ( ::IsGT(poi.GetDistFromStart(),start_offset,0.01) || ::IsLT((start_offset+span_length),poi.GetDistFromStart(),0.01) )
       return INVALID_ID;
 
    CComPtr<ISpans> spans;
@@ -4401,8 +4431,16 @@ void CAnalysisAgentImp::AddPoiStressPoints(const pgsPointOfInterest& poi,IStage*
    rightStressPoints->Add(spTopGirder);
 
    // Top of Slab
-   Sa = 1/pSectProp2->GetAg(stage,poi);
-   Sm = 1/pSectProp2->GetSt(stage,poi);
+   if ( stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3 )
+   {
+      Sa = 1/pSectProp2->GetAg(stage,poi);
+      Sm = 1/pSectProp2->GetSt(stage,poi);
+   }
+   else
+   {
+      Sa = 0;
+      Sm = 0;
+   }
 
    CComPtr<IStressPoint> spTopSlab;
    spTopSlab.CoCreateInstance(CLSID_StressPoint);
@@ -5060,12 +5098,14 @@ void CAnalysisAgentImp::GetCantileverSlabLoad(SpanIndexType span,GirderIndexType
    GirderIndexType nGirders = pBridge->GetGirderCount(span);
    GirderIndexType gdrIdx = min(gdr,nGirders-1);
 
+   pgsPointOfInterest poi(span,gdrIdx,0.00);
+
    Float64 AdimStart        = pBridge->GetSlabOffset(span,gdrIdx,pgsTypes::metStart);
    Float64 AdimEnd          = pBridge->GetSlabOffset(span,gdrIdx,pgsTypes::metEnd);
    Float64 fillet           = pDeck->Fillet;
-   Float64 slab_depth       = pBridge->GetStructuralSlabDepth( pgsPointOfInterest(span,gdrIdx,0.00) );
-   Float64 top_flange_width = pGdr->GetTopFlangeWidth( pgsPointOfInterest(span,gdrIdx,0.00) );
-   Float64 gdr_height       = pGdr->GetHeight(pgsPointOfInterest(span,gdrIdx,0.00));
+   Float64 slab_depth       = pBridge->GetGrossSlabDepth( poi );
+   Float64 top_flange_width = pGdr->GetTopFlangeWidth( poi );
+   Float64 gdr_height       = pGdr->GetHeight( poi );
 
    Float64 gdr_length = pBridge->GetGirderLength(span,gdrIdx);
 
@@ -5079,43 +5119,236 @@ void CAnalysisAgentImp::GetCantileverSlabLoad(SpanIndexType span,GirderIndexType
 
    // left end
    Float64 end_size = pBridge->GetGirderStartConnectionLength( span, gdrIdx );
-   Float64 start_trib_slab_width = pSectProp2->GetTributaryFlangeWidth( pgsPointOfInterest( span, gdrIdx, 0.00 ) );
-   Float64 slab_length;
-   bool is_diaph_loading = pBridge->DoesRightSideEndDiaphragmLoadGirder(prev_pier);
-   if (is_diaph_loading)
-      slab_length = pBridge->GetGirderStartBearingOffset(span,gdrIdx);
-   else
-      slab_length = end_size;
+   Float64 start_trib_slab_width = pSectProp2->GetTributaryFlangeWidth( poi );
+
+   bool bIsInteriorGirder = pBridge->IsInteriorGirder(span,gdrIdx);
 
    Float64 wgt_dens = pMat->GetWgtDensitySlab() * unitSysUnitsMgr::GetGravitationalAcceleration();
-   Float64 Pmain, Ppad;
-   Pmain = start_trib_slab_width * slab_depth * slab_length * wgt_dens;  // main slab
-   Ppad  = (AdimStart - slab_depth) * top_flange_width * end_size * wgt_dens; // slab pad
+   Float64 Pmain;
+   if ( bIsInteriorGirder )
+   {
+      Pmain = start_trib_slab_width * slab_depth * end_size * wgt_dens;  // main slab
+   }
+   else
+   {
+      // determine depth of the slab at the edge and flange tip
+      Float64 overhang_edge_depth = pDeck->OverhangEdgeDepth;
+      Float64 overhang_depth_at_flange_tip = overhang_edge_depth;
+      if ( pDeck->OverhangTaper == pgsTypes::None )
+      {
+         // overhang is constant depth
+         overhang_depth_at_flange_tip = overhang_edge_depth;
+      }
+      else if ( pDeck->OverhangTaper == pgsTypes::TopTopFlange )
+      {
+         // deck overhang tapers to the top of the top flange
+         overhang_depth_at_flange_tip = AdimStart;
+      }
+      else if ( pDeck->OverhangTaper == pgsTypes::BottomTopFlange )
+      {
+         // deck overhang tapers to the bottom of the top flange
+         FlangeIndexType nFlanges = pGdr->GetNumberOfTopFlanges(span,gdrIdx);
+         Float64 flange_thickness;
+         if ( gdrIdx == 0 )
+            flange_thickness = pGdr->GetTopFlangeThickness(poi,0);
+         else
+            flange_thickness = pGdr->GetTopFlangeThickness(poi,nFlanges-1);
+
+         overhang_depth_at_flange_tip = AdimStart + flange_thickness;
+      }
+      else
+      {
+         ATLASSERT(false); // is there a new deck overhang taper???
+      }
+
+      // Determine the slab overhang
+      Float64 station,offset;
+      pBridge->GetStationAndOffset(poi,&station,&offset);
+      Float64 dist_from_start_of_bridge = pBridge->GetDistanceFromStartOfBridge(station);
+
+      // slab overhang from CL of girder (normal to alignment)
+      Float64 slab_overhang = (gdrIdx == 0 ? pBridge->GetLeftSlabOverhang(dist_from_start_of_bridge) : pBridge->GetRightSlabOverhang(dist_from_start_of_bridge));
+
+      if (slab_overhang < 0.0)
+      {
+         // negative overhang - girder probably has no slab over it
+         slab_overhang = 0.0;
+      }
+      else
+      {
+         Float64 top_width = pGdr->GetTopWidth(poi);
+
+         // slab overhang from edge of girder (normal to alignment)
+         slab_overhang -= top_width/2;
+      }
+
+      // area of slab overhang
+      Float64 slab_overhang_area = slab_overhang*(overhang_edge_depth + overhang_depth_at_flange_tip)/2;
+
+      // Determine area of slab from exterior flange tip to 1/2 distance to interior girder
+      Float64 w = start_trib_slab_width - slab_overhang;
+      Float64 slab_area = w*slab_depth;
+      Float64 wslab = (slab_area + slab_overhang_area) * wgt_dens;
+
+      Pmain = wslab * end_size;  // main slab
+   }
 
    // + force is up, + moment is ccw
-   *pP1 = -Pmain - Ppad;
+   *pP1 = -Pmain;
    if ( end_size < gdr_height )
       *pM1 = 0;
    else
-      *pM1 = Pmain*slab_length/2.0 + Ppad*end_size/2.0;
+      *pM1 = Pmain*end_size/2.0;
 
    // right end
    end_size = pBridge->GetGirderEndConnectionLength( span, gdrIdx );
    Float64 end_trib_slab_width = pSectProp2->GetTributaryFlangeWidth( pgsPointOfInterest( span, gdrIdx, gdr_length ) );
-   is_diaph_loading = pBridge->DoesLeftSideEndDiaphragmLoadGirder(next_pier);
-   if (is_diaph_loading)
-      slab_length = pBridge->GetGirderEndBearingOffset(span,gdrIdx);
+
+   if ( bIsInteriorGirder )
+   {
+      Pmain = end_trib_slab_width * slab_depth * end_size * wgt_dens;  // main slab
+   }
    else
-      slab_length = end_size;
+   {
+      // determine depth of the slab at the edge and flange tip
+      Float64 overhang_edge_depth = pDeck->OverhangEdgeDepth;
+      Float64 overhang_depth_at_flange_tip = overhang_edge_depth;
+      if ( pDeck->OverhangTaper == pgsTypes::None )
+      {
+         // overhang is constant depth
+         overhang_depth_at_flange_tip = overhang_edge_depth;
+      }
+      else if ( pDeck->OverhangTaper == pgsTypes::TopTopFlange )
+      {
+         // deck overhang tapers to the top of the top flange
+         overhang_depth_at_flange_tip = AdimEnd;
+      }
+      else if ( pDeck->OverhangTaper == pgsTypes::BottomTopFlange )
+      {
+         // deck overhang tapers to the bottom of the top flange
+         FlangeIndexType nFlanges = pGdr->GetNumberOfTopFlanges(span,gdrIdx);
+         Float64 flange_thickness;
+         if ( gdrIdx == 0 )
+            flange_thickness = pGdr->GetTopFlangeThickness(poi,0);
+         else
+            flange_thickness = pGdr->GetTopFlangeThickness(poi,nFlanges-1);
 
-   Pmain = end_trib_slab_width * slab_depth * slab_length * wgt_dens;  // main slab
-   Ppad  = (AdimEnd - slab_depth) * top_flange_width * end_size * wgt_dens; // slab pad
+         overhang_depth_at_flange_tip = AdimEnd + flange_thickness;
+      }
+      else
+      {
+         ATLASSERT(false); // is there a new deck overhang taper???
+      }
 
-   *pP2 =  -Pmain - Ppad;
+      // Determine the slab overhang
+      Float64 station,offset;
+      pBridge->GetStationAndOffset(poi,&station,&offset);
+      Float64 dist_from_start_of_bridge = pBridge->GetDistanceFromStartOfBridge(station);
+
+      // slab overhang from CL of girder (normal to alignment)
+      Float64 slab_overhang = (gdrIdx == 0 ? pBridge->GetLeftSlabOverhang(dist_from_start_of_bridge) : pBridge->GetRightSlabOverhang(dist_from_start_of_bridge));
+
+      if (slab_overhang < 0.0)
+      {
+         // negative overhang - girder probably has no slab over it
+         slab_overhang = 0.0;
+      }
+      else
+      {
+         Float64 top_width = pGdr->GetTopWidth(poi);
+
+         // slab overhang from edge of girder (normal to alignment)
+         slab_overhang -= top_width/2;
+      }
+
+      // area of slab overhang
+      Float64 slab_overhang_area = slab_overhang*(overhang_edge_depth + overhang_depth_at_flange_tip)/2;
+
+      // Determine area of slab from exterior flange tip to 1/2 distance to interior girder
+      Float64 w = end_trib_slab_width - slab_overhang;
+      Float64 slab_area = w*slab_depth;
+      Float64 wslab = (slab_area + slab_overhang_area) * wgt_dens;
+
+      Pmain = wslab * end_size;  // main slab
+   }
+
+   *pP2 =  -Pmain;
    if ( end_size < gdr_height )
       *pM2 = 0;
    else
-      *pM2 = -(Pmain*slab_length/2.0 + Ppad*end_size/2.0);
+      *pM2 = -(Pmain*end_size/2.0);
+}
+
+void CAnalysisAgentImp::GetCantileverSlabPadLoad(SpanIndexType span,GirderIndexType gdr, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2)
+{
+   GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IGirder, pGdr);
+   GET_IFACE(IBridgeMaterial,pMat);
+   GET_IFACE(IPointOfInterest,pIPoi);
+   GET_IFACE(ISectProp2,pSectProp2);
+
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CDeckDescription* pDeck = pBridgeDesc->GetDeckDescription();
+
+   if ( pDeck->DeckType == pgsTypes::sdtNone )
+   {
+      *pP1 = 0;
+      *pM1 = 0;
+      *pP2 = 0;
+      *pM2 = 0;
+      return;
+   }
+
+   GirderIndexType nGirders = pBridge->GetGirderCount(span);
+   GirderIndexType gdrIdx = min(gdr,nGirders-1);
+
+   pgsPointOfInterest poi(span,gdrIdx,0.00);
+
+   Float64 AdimStart        = pBridge->GetSlabOffset(span,gdrIdx,pgsTypes::metStart);
+   Float64 AdimEnd          = pBridge->GetSlabOffset(span,gdrIdx,pgsTypes::metEnd);
+   Float64 fillet           = pDeck->Fillet;
+   Float64 slab_depth       = pBridge->GetGrossSlabDepth( poi );
+   Float64 top_flange_width = pGdr->GetTopFlangeWidth( poi );
+   Float64 gdr_height       = pGdr->GetHeight( poi );
+
+   Float64 gdr_length = pBridge->GetGirderLength(span,gdrIdx);
+
+   // Apply the portion of the slab load that is outside the cl-bearings
+   // This is load that is along the length of the girder, not transverse to the
+   // girder centerline.
+   // Assume pad load extends only to end of girder
+
+   PierIndexType prev_pier = span;
+   PierIndexType next_pier = prev_pier + 1;
+
+   // left end
+   Float64 end_size = pBridge->GetGirderStartConnectionLength( span, gdrIdx );
+   Float64 start_trib_slab_width = pSectProp2->GetTributaryFlangeWidth( poi );
+
+   bool bIsInteriorGirder = pBridge->IsInteriorGirder(span,gdrIdx);
+
+   Float64 wgt_dens = pMat->GetWgtDensitySlab() * unitSysUnitsMgr::GetGravitationalAcceleration();
+   Float64 Ppad = (AdimStart - slab_depth) * top_flange_width * end_size * wgt_dens; // slab pad
+
+   // + force is up, + moment is ccw
+   *pP1 = -Ppad;
+   if ( end_size < gdr_height )
+      *pM1 = 0;
+   else
+      *pM1 = Ppad*end_size/2.0;
+
+   // right end
+   end_size = pBridge->GetGirderEndConnectionLength( span, gdrIdx );
+   Float64 end_trib_slab_width = pSectProp2->GetTributaryFlangeWidth( pgsPointOfInterest( span, gdrIdx, gdr_length ) );
+
+   Ppad  = (AdimEnd - slab_depth) * top_flange_width * end_size * wgt_dens; // slab pad
+
+   *pP2 =  -Ppad;
+   if ( end_size < gdr_height )
+      *pM2 = 0;
+   else
+      *pM2 = -(Ppad*end_size/2.0);
 }
 
 void CAnalysisAgentImp::GetMainSpanOverlayLoad(SpanIndexType span,GirderIndexType gdr, std::vector<OverlayLoad>* pOverlayLoads)
@@ -10938,7 +11171,7 @@ Float64 CAnalysisAgentImp::GetDesignStress(pgsTypes::Stage stage,const pgsPointO
 /////////////////////////////////////////////////////////////////////////////
 // IBridgeDescriptionEventSink
 //
-HRESULT CAnalysisAgentImp::OnBridgeChanged()
+HRESULT CAnalysisAgentImp::OnBridgeChanged(CBridgeChangedHint* pHint)
 {
    LOG("OnBridgeChanged Event Received");
    Invalidate();
@@ -12275,15 +12508,36 @@ bool CAnalysisAgentImp::AreBearingReactionsAvailable(SpanIndexType span,GirderIn
 void CAnalysisAgentImp::GetBearingProductReaction(pgsTypes::Stage stage,ProductForceType type,SpanIndexType span,GirderIndexType gdr,
                                                   CombinationType cmbtype, BridgeAnalysisType bat,Float64* pLftEnd,Float64* pRgtEnd)
 {
-   // Get Pois at supports
-   GET_IFACE(IPointOfInterest,pIPOI);
-   std::vector<pgsPointOfInterest> vPois( pIPOI->GetPointsOfInterest(span,gdr,stage, POI_0L | POI_10L,POIFIND_OR) );
-   ATLASSERT(vPois.size()==2);
+   if ( bat == SimpleSpan || bat == ContinuousSpan )
+   {
+      // Get Pois at supports
+      GET_IFACE(IPointOfInterest,pIPOI);
+      std::vector<pgsPointOfInterest> vPois( pIPOI->GetPointsOfInterest(span,gdr,stage, POI_0L | POI_10L,POIFIND_OR) );
+      ATLASSERT(vPois.size()==2);
 
-   std::vector<sysSectionValue> sec_vals = GetShear(stage, type, vPois, bat, cmbtype);
+      std::vector<sysSectionValue> sec_vals = GetShear(stage, type, vPois, bat, cmbtype);
 
-   *pLftEnd =  sec_vals.front().Left();
-   *pRgtEnd = -sec_vals.back().Right();
+      *pLftEnd =  sec_vals.front().Left();
+      *pRgtEnd = -sec_vals.back().Right();
+   }
+   else
+   {
+      // we are enveloping... at the right end of the span, the max shear = min reaction and min shear = max reaction
+
+      // left end of span
+      GET_IFACE(IPointOfInterest,pIPOI);
+      std::vector<pgsPointOfInterest> vPois(pIPOI->GetPointsOfInterest(span,gdr,stage,POI_0L,POIFIND_OR));
+      ATLASSERT(vPois.size() == 1);
+      std::vector<sysSectionValue> left_shear = GetShear(stage,type,vPois,bat,cmbtype);
+      *pLftEnd = left_shear.front().Left();
+
+      // right end of span
+      BridgeAnalysisType batRight = (bat == MinSimpleContinuousEnvelope ? MaxSimpleContinuousEnvelope : MinSimpleContinuousEnvelope);
+      vPois = pIPOI->GetPointsOfInterest(span,gdr,stage,POI_10L,POIFIND_OR);
+      ATLASSERT(vPois.size() == 1);
+      std::vector<sysSectionValue> right_shear = GetShear(stage,type,vPois,batRight,cmbtype);
+      *pRgtEnd = -right_shear.front().Right();
+   }
 
    Float64 lft_pnt_load, rgt_pnt_load;
    bool found_load = GetOverhangPointLoads(span, gdr, stage, type, cmbtype, &lft_pnt_load, &rgt_pnt_load);
@@ -12336,14 +12590,35 @@ void CAnalysisAgentImp::GetBearingLiveLoadReaction(pgsTypes::LiveLoadType llType
       CComPtr<ILBAMAnalysisEngine> pEngine;
       GetEngine(pModelData,bat == SimpleSpan ? false : true, &pEngine);
       CComPtr<IBasicVehicularResponse> response;
-      pEngine->get_BasicVehicularResponse(&response);
+      pEngine->get_BasicVehicularResponse(&response); // used to get corresponding rotations
 
       CComPtr<ILiveLoadModelSectionResults> minResults;
       CComPtr<ILiveLoadModelSectionResults> maxResults;
-      pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
-             roMember, fetFy, optMaximize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&maxResults);
-      pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
-             roMember, fetFy, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
+      if ( bat == SimpleSpan || bat == ContinuousSpan )
+      {
+         pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
+                roMember, fetFy, optMaximize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&maxResults);
+         pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
+                roMember, fetFy, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
+      }
+      else
+      {
+         if ( idx == 0 )
+         {
+            BridgeAnalysisType batLeft = (bat == MinSimpleContinuousEnvelope ? MaxSimpleContinuousEnvelope : MinSimpleContinuousEnvelope);
+            pModelData->pLiveLoadResponse[batLeft]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
+                   roMember, fetFy, optMaximize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&maxResults);
+            pModelData->pLiveLoadResponse[batLeft]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
+                   roMember, fetFy, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
+         }
+         else
+         {
+            pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
+                   roMember, fetFy, optMaximize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&maxResults);
+            pModelData->pLiveLoadResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, 
+                   roMember, fetFy, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
+         }
+      }
 
       // Extract reactions and corresponding rotations
       Float64 FyMaxLeft, FyMaxRight;
@@ -12487,10 +12762,31 @@ void CAnalysisAgentImp::GetBearingLiveLoadRotation(pgsTypes::LiveLoadType llType
       CComPtr<ILiveLoadModelSectionResults> maxResults;
       CComBSTR bstrStage = pStageMap->GetStageName(stage);
 
-      pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
-                          fetRz, optMaximize, vlcDefault, vbIncludeImpact, vbIncludeLLDF, VARIANT_TRUE,&maxResults);
-      pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
-                          fetRz, optMinimize, vlcDefault, vbIncludeImpact, vbIncludeLLDF, VARIANT_TRUE,&minResults);
+      if ( bat == SimpleSpan || bat == ContinuousSpan )
+      {
+         pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+                fetRz, optMaximize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&maxResults);
+         pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+                fetRz, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
+      }
+      else
+      {
+         if ( idx == 0 )
+         {
+            BridgeAnalysisType batLeft = (bat == MinSimpleContinuousEnvelope ? MaxSimpleContinuousEnvelope : MinSimpleContinuousEnvelope);
+            pModelData->pLiveLoadResponse[batLeft]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+                   fetRz, optMaximize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&maxResults);
+            pModelData->pLiveLoadResponse[batLeft]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+                   fetRz, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
+         }
+         else
+         {
+            pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+                   fetRz, optMaximize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&maxResults);
+            pModelData->pLiveLoadResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, 
+                   fetRz, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
+         }
+      }
 
       // Extract rotations and corresponding reactions
       Float64 TzMaxLeft, TzMaxRight;
@@ -12805,12 +13101,12 @@ bool CAnalysisAgentImp::GetOverhangPointLoads(SpanIndexType spanIdx, GirderIndex
    const int nstages=5;
    pgsTypes::Stage stage_order[nstages]={pgsTypes::GirderPlacement, pgsTypes::TemporaryStrandRemoval, pgsTypes::BridgeSite1, pgsTypes::BridgeSite2, pgsTypes::BridgeSite3};
 
-   // Start of stage loop
-   pgsTypes::Stage* pstart=std::find(stage_order, stage_order+nstages, stage);
+   // Get iterator to current stage in stage loop
+   pgsTypes::Stage* pcurrent = std::find(stage_order, stage_order+nstages, stage);
 
-   if (pstart == stage_order+nstages)
+   if (pcurrent == stage_order+nstages)
    {
-      ATLASSERT(0); // shouldn't be passing in non-bridge site stages?
+      ATLASSERT(0); // not found. shouldn't be passing in non-bridge site stages?
       return false;
    }
    else
@@ -12819,15 +13115,17 @@ bool CAnalysisAgentImp::GetOverhangPointLoads(SpanIndexType spanIdx, GirderIndex
 
       CComBSTR bstrLoadGroup( GetLoadGroupName(type) );
 
-      // Determine end of loop range
-      pgsTypes::Stage* pend;
+      // Determine start and end of loop range
+      pgsTypes::Stage* pend = pcurrent+1;
+
+      pgsTypes::Stage* pstart;
       if (cmbtype==ctCummulative)
       {
-         pend =  stage_order+nstages;
+         pstart = &stage_order[0];
       }
       else
       {
-         pend = pstart+1;
+         pstart = pcurrent;
       }
 
       bool found = false;
@@ -13187,13 +13485,9 @@ void CAnalysisAgentImp::ApplyLLDF_Support(PierIndexType pierIdx,GirderIndexType 
    // For pedestrian loads - take average of loads from adjacent spans
    Float64 leftPedes(0.0), rightPedes(0.0);
    Int32 nls(0);
-   if(0 < pierIdx)
+   if(pierIdx>0)
    {
-      SpanIndexType prevSpanIdx = (SpanIndexType)(pierIdx-1);
-      GET_IFACE(IBridge,pBridge);
-      GirderIndexType nGirders = pBridge->GetGirderCount(prevSpanIdx);
-      GirderIndexType g = min(gdrIdx,nGirders-1);
-      leftPedes = this->GetPedestrianLiveLoad(prevSpanIdx,g);
+      leftPedes = this->GetPedestrianLiveLoad(pierIdx-1,gdrIdx);
       nls++;
    }
 

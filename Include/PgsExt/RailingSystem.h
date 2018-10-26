@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -82,9 +82,9 @@ public:
    bool bUseInteriorRailing; // true if an interior railing is used (sidewalk must also be used)
 
    // sidewalk dimensions
-   double Width;
-   double LeftDepth;
-   double RightDepth;
+   Float64 Width;
+   Float64 LeftDepth;
+   Float64 RightDepth;
 
    bool bBarriersOnTopOfSidewalk;
    bool bSidewalkStructurallyContinuous;

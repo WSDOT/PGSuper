@@ -20,11 +20,12 @@ Tensile stress check failed for Service III for the Final with Live Load Stage (
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 38.25   5  8.00  1     3    U54G4  *    60  0.60  270 17.77 -1.16  28 50.0  5.900  8.500    7.376   -5.061  10907  0.540  0.763  0.30 -0.24 -0.02 -0.02 -0.27 253.20 389.42   1.75   5.00   5.00
+ 38.25   5  8.00  1     3    U54G4  *    60  0.60  270 17.77 -1.16  28 50.0  6.100  8.500    7.376   -5.061  10956  0.540  0.763  0.29 -0.24 -0.02 -0.02 -0.27 249.92 379.93   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Slab Offset ("A" Dimension) check failed
 
 

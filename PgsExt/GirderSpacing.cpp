@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -114,7 +114,7 @@ HRESULT CGirderSpacingData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       hr = pStrLoad->BeginUnit(_T("GirderSpacing"));
 
-      double version;
+      Float64 version;
       hr = pStrLoad->get_Version(&version);
 
 
@@ -163,13 +163,13 @@ HRESULT CGirderSpacingData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       {
          hr = pStrLoad->BeginUnit(_T("SpacingGroup"));
 
-         double grp_version;
+         Float64 grp_version;
          hr = pStrLoad->get_Version(&grp_version);
          ATLASSERT(grp_version == 1);
 
          var.vt = VT_R8;
          hr = pStrLoad->get_Property(_T("Spacing"),&var);
-         double spacing = var.dblVal;
+         Float64 spacing = var.dblVal;
 
          var.vt = VT_I2;
          hr = pStrLoad->get_Property(_T("FirstGirderIndex"),&var);
@@ -269,10 +269,10 @@ void CGirderSpacingData::AssertValid() const
 }
 #endif
 
-void CGirderSpacingData::SetGirderSpacing(GroupIndexType grpIdx,double s)
+void CGirderSpacingData::SetGirderSpacing(GroupIndexType grpIdx,Float64 s)
 {
    GirderIndexType firstGdrIdx, lastGdrIdx;
-   double spacing;
+   Float64 spacing;
    GetSpacingGroup(grpIdx,&firstGdrIdx,&lastGdrIdx,&spacing);
 
    SpacingIndexType firstSpaceIdx = firstGdrIdx;
@@ -321,12 +321,12 @@ GirderIndexType CGirderSpacingData::GetRefGirder() const
    return m_RefGirderIdx;
 }
 
-void CGirderSpacingData::SetRefGirderOffset(double offset)
+void CGirderSpacingData::SetRefGirderOffset(Float64 offset)
 {
    m_RefGirderOffset = offset;
 }
 
-double CGirderSpacingData::GetRefGirderOffset() const
+Float64 CGirderSpacingData::GetRefGirderOffset() const
 {
    return m_RefGirderOffset;
 }
@@ -346,7 +346,7 @@ GroupIndexType CGirderSpacingData::GetSpacingGroupCount() const
    return m_SpacingGroups.size();
 }
 
-void CGirderSpacingData::GetSpacingGroup(GroupIndexType groupIdx,GirderIndexType* pFirstGdrIdx,GirderIndexType* pLastGdrIdx,double* pSpacing) const
+void CGirderSpacingData::GetSpacingGroup(GroupIndexType groupIdx,GirderIndexType* pFirstGdrIdx,GirderIndexType* pLastGdrIdx,Float64* pSpacing) const
 {
    _ASSERT( groupIdx < (SpacingIndexType)m_SpacingGroups.size() );
    SpacingGroup group = m_SpacingGroups[groupIdx];
@@ -380,7 +380,7 @@ void CGirderSpacingData::ExpandAll()
 void CGirderSpacingData::Expand(GroupIndexType groupIdx)
 {
    GirderIndexType firstGdrIdx, lastGdrIdx;
-   double spacing;
+   Float64 spacing;
    GetSpacingGroup(groupIdx,&firstGdrIdx,&lastGdrIdx,&spacing);
 
    if ( (lastGdrIdx - firstGdrIdx) <= 1 )
@@ -403,7 +403,7 @@ void CGirderSpacingData::JoinAll(SpacingIndexType spacingKey)
    if ( m_GirderSpacing.size() == 0 )
       return;
 
-   double spacing = m_GirderSpacing[spacingKey];
+   Float64 spacing = m_GirderSpacing[spacingKey];
    SpacingGroup firstGroup = m_SpacingGroups.front();
    SpacingGroup lastGroup  = m_SpacingGroups.back();
 
@@ -414,7 +414,7 @@ void CGirderSpacingData::JoinAll(SpacingIndexType spacingKey)
    m_SpacingGroups.clear();
    m_SpacingGroups.push_back(joinedGroup);
 
-   std::vector<double>::iterator iter;
+   std::vector<Float64>::iterator iter;
    for ( iter = m_GirderSpacing.begin(); iter != m_GirderSpacing.end(); iter++ )
    {
       (*iter) = spacing;
@@ -429,7 +429,7 @@ void CGirderSpacingData::Join(GirderIndexType firstGdrIdx,GirderIndexType lastGd
    _ASSERT( firstGdrIdx <= spacingKey && spacingKey <= lastGdrIdx );
 
    // get the girder spacing for the group
-   double spacing = m_GirderSpacing[spacingKey];
+   Float64 spacing = m_GirderSpacing[spacingKey];
 
    // assign the spacing to the group
    SpacingIndexType firstSpaceIdx = SpacingIndexType(firstGdrIdx);
@@ -493,7 +493,7 @@ SpacingIndexType CGirderSpacingData::GetSpacingCount() const
    return m_GirderSpacing.size();
 }
 
-double CGirderSpacingData::GetGirderSpacing(SpacingIndexType spacingIdx) const
+Float64 CGirderSpacingData::GetGirderSpacing(SpacingIndexType spacingIdx) const
 {
    _ASSERT( 0 <= spacingIdx && spacingIdx < (SpacingIndexType)m_GirderSpacing.size() );
    return m_GirderSpacing[spacingIdx];
@@ -522,7 +522,7 @@ void CGirderSpacingData::AddGirders(GirderIndexType nGirders)
    }
    else
    {
-      double spacing = m_GirderSpacing.back();
+      Float64 spacing = m_GirderSpacing.back();
       m_GirderSpacing.insert(m_GirderSpacing.end(),nGirders, spacing );
 
       SpacingGroup& group = m_SpacingGroups.back();
@@ -666,7 +666,7 @@ GirderIndexType CGirderSpacing::GetRefGirder() const
    }
 }
 
-double CGirderSpacing::GetRefGirderOffset() const
+Float64 CGirderSpacing::GetRefGirderOffset() const
 {
    if ( m_pSpan && IsBridgeSpacing(m_pSpan->GetBridgeDescription()->GetGirderSpacingType()) )
    {
@@ -690,7 +690,7 @@ pgsTypes::OffsetMeasurementType CGirderSpacing::GetRefGirderOffsetType() const
    }
 }
 
-void CGirderSpacing::SetGirderSpacing(GroupIndexType grpIdx,double s)
+void CGirderSpacing::SetGirderSpacing(GroupIndexType grpIdx,Float64 s)
 {
    if ( m_pSpan && m_pSpan->GetGirderCount() < 2 )
       return;
@@ -710,7 +710,7 @@ GroupIndexType CGirderSpacing::GetSpacingGroupCount() const
    }
 }
 
-void CGirderSpacing::GetSpacingGroup(GroupIndexType groupIdx,GirderIndexType* pFirstGdrIdx,GirderIndexType* pLastGdrIdx,double* pSpacing) const
+void CGirderSpacing::GetSpacingGroup(GroupIndexType groupIdx,GirderIndexType* pFirstGdrIdx,GirderIndexType* pLastGdrIdx,Float64* pSpacing) const
 {
    if ( m_pSpan && IsBridgeSpacing(m_pSpan->GetBridgeDescription()->GetGirderSpacingType()) )
    {
@@ -744,7 +744,7 @@ SpacingIndexType CGirderSpacing::GetSpacingCount() const
    }
 }
 
-double CGirderSpacing::GetGirderSpacing(SpacingIndexType spacingIdx) const
+Float64 CGirderSpacing::GetGirderSpacing(SpacingIndexType spacingIdx) const
 {
    if ( m_pSpan && IsBridgeSpacing(m_pSpan->GetBridgeDescription()->GetGirderSpacingType()) )
    {

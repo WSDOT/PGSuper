@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -272,7 +272,7 @@ CString CGirderStrandGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
 
 bool CGirderStrandGrid::GetRowData(ROWCOL nRow, Float64* pX, Float64* pY)
 {
-   double x,y;
+   Float64 x,y;
 
    CString s = GetCellValue(nRow, 1);
    Float64 d = _tstof(s);
@@ -318,7 +318,7 @@ void CGirderStrandGrid::FillGrid(IPoint2dCollection* points)
       points->get__Enum(&enumpoints);
       while ( enumpoints->Next(1,&point,NULL) != S_FALSE )
       {
-         double x,y;
+         Float64 x,y;
          point->get_X(&x);
          point->get_Y(&y);
 
@@ -342,7 +342,7 @@ BOOL CGirderStrandGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 
 	if ((nCol==1 || nCol==2) && !s.IsEmpty( ))
 	{
-      double d;
+      Float64 d;
       if (!sysTokenizer::ParseDouble(s, &d))
 		{
 			SetWarningText (_T("Value must be a number"));

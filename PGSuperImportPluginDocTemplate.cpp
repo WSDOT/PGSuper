@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -35,11 +35,17 @@ static char THIS_FILE[] = __FILE__;
 class CMyTemplateItem : public CEAFTemplateItem
 {
 public:
-   CMyTemplateItem(LPCTSTR name,LPCTSTR path,HICON hIcon,IPGSuperProjectImporter* pImporter) :
-      CEAFTemplateItem(name,path,hIcon)
+   CMyTemplateItem(CEAFDocTemplate* pDocTemplate,LPCTSTR name,LPCTSTR path,HICON hIcon,IPGSuperProjectImporter* pImporter) :
+      CEAFTemplateItem(pDocTemplate,name,path,hIcon)
       {
          m_Importer = pImporter;
       }
+
+   virtual CEAFTemplateItem* Clone() const
+   {
+      CMyTemplateItem* pClone = new CMyTemplateItem(m_pDocTemplate,m_Name,m_Path,m_hIcon,m_Importer);
+      return pClone;
+   }
 
    CComPtr<IPGSuperProjectImporter> m_Importer;
    DECLARE_DYNAMIC(CMyTemplateItem)
@@ -74,7 +80,7 @@ CEAFDocTemplate(nIDResource,pCallback,pDocClass,pFrameClass,pViewClass,hSharedMe
 
       HICON hIcon;
       importer->GetIcon(&hIcon);
-      m_TemplateGroup.AddItem( new CMyTemplateItem(OLE2T(bstrText),NULL,hIcon,importer) );
+      m_TemplateGroup.AddItem( new CMyTemplateItem(this,OLE2T(bstrText),NULL,hIcon,importer) );
    }
 }
 

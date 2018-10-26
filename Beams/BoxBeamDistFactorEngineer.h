@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,7 +32,7 @@
 struct BOXBEAM_J_VOID
 {
    Float64 Ao;
-   typedef std::pair<double,double> Element; // first = s, second = t
+   typedef std::pair<Float64,Float64> Element; // first = s, second = t
    std::vector<Element> Elements;
    Float64 S_over_T; // Sum of s/t for all the elements
 };
@@ -78,10 +78,10 @@ END_COM_MAP()
 public:
    // IDistFactorEngineer
 //   virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID);
-//   virtual double GetMomentDF(SpanIndexType span,GirderIndexType gdr);
-//   virtual double GetNegMomentDF(SpanIndexType pier,GirderIndexType gdr,IDistFactorEngineer::Side side);
-//   virtual double GetShearDF(SpanIndexType span,GirderIndexType gdr);
-//   virtual double GetReactionDF(SpanIndexType pier,GirderIndexType gdr);
+//   virtual Float64 GetMomentDF(SpanIndexType span,GirderIndexType gdr);
+//   virtual Float64 GetNegMomentDF(SpanIndexType pier,GirderIndexType gdr,IDistFactorEngineer::Side side);
+//   virtual Float64 GetShearDF(SpanIndexType span,GirderIndexType gdr);
+//   virtual Float64 GetReactionDF(SpanIndexType pier,GirderIndexType gdr);
    virtual void BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
    virtual std::_tstring GetComputationDescription(SpanIndexType span,GirderIndexType gdr,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect);
 
@@ -91,8 +91,8 @@ private:
 
    lrfdLiveLoadDistributionFactorBase* GetLLDFParameters(SpanIndexType spanOrPier,GirderIndexType gdr,DFParam dfType,Float64 fcgdr,BOXBEAM_LLDFDETAILS* plldf);
 
-   void ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,double gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits);
-   void ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,double gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits);
+   void ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits);
+   void ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits);
 };
 
 #endif //__BOXBEAMDISTFACTORENGINEER_H_

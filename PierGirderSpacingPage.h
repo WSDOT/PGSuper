@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -74,7 +74,7 @@ public:
    long m_GirderSpacingMeasure[2];
 
    GirderIndexType m_RefGirderIdx[2];
-   double m_RefGirderOffset[2];
+   Float64 m_RefGirderOffset[2];
    pgsTypes::OffsetMeasurementType m_RefGirderOffsetType[2];
 
    pgsTypes::SlabOffsetType m_SlabOffsetType;

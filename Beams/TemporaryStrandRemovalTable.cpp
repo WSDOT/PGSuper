@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -57,13 +57,13 @@ CTemporaryStrandRemovalTable* CTemporaryStrandRemovalTable::PrepareTable(rptChap
    pgsReportStyleHolder::ConfigureTable(table);
 
    GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
-   double Ec  = pMaterial->GetEcGdr(span,gdr);
-   double Ep  = pMaterial->GetStrand(span,gdr,pgsTypes::Temporary)->GetE();
+   Float64 Ec  = pMaterial->GetEcGdr(span,gdr);
+   Float64 Ep  = pMaterial->GetStrand(span,gdr,pgsTypes::Temporary)->GetE();
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   double nEffectiveStrands;
-   double ept = pStrandGeom->GetTempEccentricity( pgsPointOfInterest(span,gdr,0), &nEffectiveStrands);
-   double Apt = pStrandGeom->GetStrandArea(span,gdr,pgsTypes::Temporary);
+   Float64 nEffectiveStrands;
+   Float64 ept = pStrandGeom->GetTempEccentricity( pgsPointOfInterest(span,gdr,0), &nEffectiveStrands);
+   Float64 Apt = pStrandGeom->GetStrandArea(span,gdr,pgsTypes::Temporary);
 
 
    GET_IFACE2(pBroker,IGirderData,pGirderData);

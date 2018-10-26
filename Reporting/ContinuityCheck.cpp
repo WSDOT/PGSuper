@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -107,7 +107,7 @@ void CContinuityCheck::Build(rptChapter* pChapter,
    RowIndexType row = 1;
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
    {
-      double fBottom = pContinuity->GetContinuityStressLevel(pierIdx,girder);
+      Float64 fBottom = pContinuity->GetContinuityStressLevel(pierIdx,girder);
 
       if ( pierIdx == 0 || pierIdx == nPiers-1 )
          (*pTable)(row,0) << _T("Abutment ") << (long)(pierIdx+1);

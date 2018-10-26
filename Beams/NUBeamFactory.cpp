@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -119,11 +119,11 @@ void CNUBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType stat
    CComPtr<INUBeam> beam;
    gdrsection->get_Beam(&beam);
 
-   double d1,d2,d3,d4,d5;
-   double r1,r2,r3,r4;
-   double t;
-   double w1,w2;
-   double c1;
+   Float64 d1,d2,d3,d4,d5;
+   Float64 r1,r2,r3,r4;
+   Float64 t;
+   Float64 w1,w2;
+   Float64 c1;
 
    GetDimensions(dimensions,d1,d2,d3,d4,d5,r1,r2,r3,r4,t,w1,w2,c1);
    beam->put_W1(w1);
@@ -148,11 +148,11 @@ void CNUBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType stat
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
 
-   double d1,d2,d3,d4,d5;
-   double r1,r2,r3,r4;
-   double t;
-   double w1,w2;
-   double c1;
+   Float64 d1,d2,d3,d4,d5;
+   Float64 r1,r2,r3,r4;
+   Float64 t;
+   Float64 w1,w2;
+   Float64 c1;
    GetDimensions(dimensions,d1,d2,d3,d4,d5,r1,r2,r3,r4,t,w1,w2,c1);
 
    Float64 height = d1 + d2 + d3 + d4 + d5;
@@ -271,15 +271,15 @@ void CNUBeamFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType sta
 }
 
 void CNUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
-                                  IBeamFactory::BeamFace endTopFace, double endTopLimit, IBeamFactory::BeamFace endBottomFace, double endBottomLimit, 
-                                  IBeamFactory::BeamFace hpTopFace, double hpTopLimit, IBeamFactory::BeamFace hpBottomFace, double hpBottomLimit, 
-                                  double endIncrement, double hpIncrement, IStrandMover** strandMover)
+                                  IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
+                                  IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
+                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
 {
-   double d1,d2,d3,d4,d5;
-   double r1,r2,r3,r4;
-   double t;
-   double w1,w2;
-   double c1;
+   Float64 d1,d2,d3,d4,d5;
+   Float64 r1,r2,r3,r4;
+   Float64 t;
+   Float64 w1,w2;
+   Float64 c1;
    GetDimensions(dimensions,d1,d2,d3,d4,d5,r1,r2,r3,r4,t,w1,w2,c1);
 
    // set the shape for harped strand bounds - only in the thinest part of the web
@@ -287,8 +287,8 @@ void CNUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimension
    HRESULT hr = harp_rect.CoCreateInstance(CLSID_Rect);
    ATLASSERT (SUCCEEDED(hr));
 
-   double width = t;
-   double depth = d1 + d2 + d3 + d4 + d5;
+   Float64 width = t;
+   Float64 depth = d1 + d2 + d3 + d4 + d5;
 
    harp_rect->put_Width(width);
    harp_rect->put_Height(depth);
@@ -311,10 +311,10 @@ void CNUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimension
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   double hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
-   double hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
-   double endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
-   double endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
+   Float64 hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
+   Float64 hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
+   Float64 endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
+   Float64 endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(depth, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -329,7 +329,7 @@ std::vector<std::_tstring> CNUBeamFactory::GetDimensionNames()
    return m_DimNames;
 }
 
-std::vector<double> CNUBeamFactory::GetDefaultDimensions()
+std::vector<Float64> CNUBeamFactory::GetDefaultDimensions()
 {
    return m_DefaultDims;
 }
@@ -341,11 +341,11 @@ std::vector<const unitLength*> CNUBeamFactory::GetDimensionUnits(bool bSIUnits)
 
 bool CNUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg)
 {
-   double d1,d2,d3,d4,d5;
-   double r1,r2,r3,r4;
-   double t;
-   double w1,w2;
-   double c1;
+   Float64 d1,d2,d3,d4,d5;
+   Float64 r1,r2,r3,r4;
+   Float64 t;
+   Float64 w1,w2;
+   Float64 c1;
    GetDimensions(dimensions,d1,d2,d3,d4,d5,r1,r2,r3,r4,t,w1,w2,c1);
 
 // D1  0
@@ -717,11 +717,11 @@ HICON  CNUBeamFactory::GetIcon()
 }
 
 void CNUBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
-                                   double& d1,double& d2,double& d3,double& d4,double& d5,
-                                   double& r1,double& r2,double& r3,double& r4,
-                                   double& t,
-                                   double& w1,double& w2,
-                                   double& c1)
+                                   Float64& d1,Float64& d2,Float64& d3,Float64& d4,Float64& d5,
+                                   Float64& r1,Float64& r2,Float64& r3,Float64& r4,
+                                   Float64& t,
+                                   Float64& w1,Float64& w2,
+                                   Float64& c1)
 {
    d1 = GetDimension(dimensions,_T("D1"));
    d2 = GetDimension(dimensions,_T("D2"));
@@ -738,7 +738,7 @@ void CNUBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
    c1 = GetDimension(dimensions,_T("C1"));
 }
 
-double CNUBeamFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
+Float64 CNUBeamFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
 {
    Dimensions::const_iterator iter;
    for ( iter = dimensions.begin(); iter != dimensions.end(); iter++ )
@@ -778,15 +778,15 @@ pgsTypes::SupportedBeamSpacings CNUBeamFactory::GetSupportedBeamSpacings()
 }
 
 void CNUBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, 
-                                               pgsTypes::SupportedBeamSpacing sbs, double* minSpacing, double* maxSpacing)
+                                               pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing)
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
 
-   double W1 = GetDimension(dimensions,_T("W1"));
-   double W2 = GetDimension(dimensions,_T("W2"));
+   Float64 W1 = GetDimension(dimensions,_T("W1"));
+   Float64 W2 = GetDimension(dimensions,_T("W2"));
 
-   double gw = max(W1, W2);
+   Float64 gw = max(W1, W2);
 
 
    if ( sdt == pgsTypes::sdtCompositeCIP || sdt == pgsTypes::sdtCompositeSIP )
@@ -814,11 +814,11 @@ WebIndexType CNUBeamFactory::GetNumberOfWebs(const IBeamFactory::Dimensions& dim
 
 Float64 CNUBeamFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
-   double D1 = GetDimension(dimensions,_T("D1"));
-   double D2 = GetDimension(dimensions,_T("D2"));
-   double D3 = GetDimension(dimensions,_T("D3"));
-   double D4 = GetDimension(dimensions,_T("D4"));
-   double D5 = GetDimension(dimensions,_T("D5"));
+   Float64 D1 = GetDimension(dimensions,_T("D1"));
+   Float64 D2 = GetDimension(dimensions,_T("D2"));
+   Float64 D3 = GetDimension(dimensions,_T("D3"));
+   Float64 D4 = GetDimension(dimensions,_T("D4"));
+   Float64 D5 = GetDimension(dimensions,_T("D5"));
 
    return D1 + D2 + D3 + D4 + D5;
 }

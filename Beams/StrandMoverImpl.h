@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -65,42 +65,42 @@ END_COM_MAP()
 
 // IStrandMover
 public:
-	STDMETHOD(get_HpStrandElevationBoundaries)(/*[out]*/double* bottomMin,/*[out]*/double* topMax);
-	STDMETHOD(get_EndStrandElevationBoundaries)(/*[out]*/double* bottomMin,/*[out]*/double* topMax);
-	STDMETHOD(get_StrandIncrements)(/*[out]*/double* endIncrement,/*[out]*/double* hpIncrement);
-	STDMETHOD(TestHpStrandLocation)(/*[in]*/double originalX, /*[in]*/double originalY, /*[in]*/double Yoffset, /*[out,retval]*/VARIANT_BOOL* isWithin );
-	STDMETHOD(TestEndStrandLocation)(/*[in]*/double originalX, /*[in]*/double originalY, /*[in]*/double Yoffset, /*[out,retval]*/VARIANT_BOOL* isWithin );
-	STDMETHOD(TranslateStrand)(/*[in]*/double originalX, /*[in]*/double originalY, /*[in]*/double Yoffset, /*[out]*/double* newX, /*[out]*/double* newY );
+	STDMETHOD(get_HpStrandElevationBoundaries)(/*[out]*/Float64* bottomMin,/*[out]*/Float64* topMax);
+	STDMETHOD(get_EndStrandElevationBoundaries)(/*[out]*/Float64* bottomMin,/*[out]*/Float64* topMax);
+	STDMETHOD(get_StrandIncrements)(/*[out]*/Float64* endIncrement,/*[out]*/Float64* hpIncrement);
+	STDMETHOD(TestHpStrandLocation)(/*[in]*/Float64 originalX, /*[in]*/Float64 originalY, /*[in]*/Float64 Yoffset, /*[out,retval]*/VARIANT_BOOL* isWithin );
+	STDMETHOD(TestEndStrandLocation)(/*[in]*/Float64 originalX, /*[in]*/Float64 originalY, /*[in]*/Float64 Yoffset, /*[out,retval]*/VARIANT_BOOL* isWithin );
+	STDMETHOD(TranslateStrand)(/*[in]*/Float64 originalX, /*[in]*/Float64 originalY, /*[in]*/Float64 Yoffset, /*[out]*/Float64* newX, /*[out]*/Float64* newY );
 
 // IConfigureStrandMover
-   STDMETHOD(get_TopElevation)(double* topElevation);
+   STDMETHOD(get_TopElevation)(Float64* topElevation);
    // offset limits and default increments for harped strands
-   STDMETHOD(SetHarpedStrandOffsetBounds)(double topElevation, 
-                                          double topHpElevationBoundary,double botHpElevationBoundary,
-                                          double topEndElevationBoundary,double botEndElevationBoundary,
-                                          double endIncrement,double hpIncrement);
+   STDMETHOD(SetHarpedStrandOffsetBounds)(Float64 topElevation, 
+                                          Float64 topHpElevationBoundary,Float64 botHpElevationBoundary,
+                                          Float64 topEndElevationBoundary,Float64 botEndElevationBoundary,
+                                          Float64 endIncrement,Float64 hpIncrement);
    // remove all regions
    STDMETHOD(ClearAll)();
    // Add a shape that is to be tested for PointInShape, and arcSlope (x/y) that a strand
    // point is to be moved along
-   STDMETHOD(AddRegion)(IShape* shape, double arcSlope);
+   STDMETHOD(AddRegion)(IShape* shape, Float64 arcSlope);
    // debuggin
    STDMETHOD(get_NumRegions)(IndexType* pNum);
-   STDMETHOD(GetRegion)(IndexType index, IShape** shape, double* arcSlope);
+   STDMETHOD(GetRegion)(IndexType index, IShape** shape, Float64* arcSlope);
 
 private:
-   double m_TopElevation;
-   double m_HpTopElevationBoundary;
-   double m_HpBotElevationBoundary;
-   double m_EndTopElevationBoundary;
-   double m_EndBotElevationBoundary;
-   double m_EndIncrement;
-   double m_HpIncrement;
+   Float64 m_TopElevation;
+   Float64 m_HpTopElevationBoundary;
+   Float64 m_HpBotElevationBoundary;
+   Float64 m_EndTopElevationBoundary;
+   Float64 m_EndBotElevationBoundary;
+   Float64 m_EndIncrement;
+   Float64 m_HpIncrement;
 
    struct HarpRegion
    {
       CComPtr<IShape> pShape;
-      double          dArcSlope;
+      Float64          dArcSlope;
    };
 
    typedef std::vector<HarpRegion>     RegionCollection;

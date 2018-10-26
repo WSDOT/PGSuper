@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1080,8 +1080,8 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSuperDoc* pDoc, I
       GET_IFACE2(pBroker,IPointOfInterest,pPOI);
       std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(span,girder,stage,POI_ALLACTIONS | POI_ALLOUTPUT,POIFIND_OR);
 
-      double from_y;
-      double to_y;
+      Float64 from_y;
+      Float64 to_y;
       std::vector<pgsPointOfInterest>::iterator iter = vPOI.begin();
       pgsPointOfInterest prev_poi = *iter;
 
@@ -1299,9 +1299,9 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSuperDoc* 
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserDefinedLoadData);
 
    Float64 gdr_length = pBridge->GetGirderLength(span, girder);
-   double  start_lgth = pBridge->GetGirderStartConnectionLength(span, girder);
-   double  end_lgth   = pBridge->GetGirderEndConnectionLength(span, girder);
-   double span_lgth   = gdr_length - start_lgth - end_lgth;
+   Float64  start_lgth = pBridge->GetGirderStartConnectionLength(span, girder);
+   Float64  end_lgth   = pBridge->GetGirderEndConnectionLength(span, girder);
+   Float64 span_lgth   = gdr_length - start_lgth - end_lgth;
 
    CollectionIndexType num_loads =  pUserDefinedLoadData->GetDistributedLoadCount();
 
@@ -1355,7 +1355,7 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSuperDoc* 
             }
          }
 
-         double load_length = wend_loc - wstart_loc;
+         Float64 load_length = wend_loc - wstart_loc;
          if(load_length<=0.0)
          {
             ATLASSERT(0); // interface should be blocking this
@@ -1767,7 +1767,7 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSuperDoc* pDoc, IB
 
          for ( Uint32 i = 0; i < nStirrupsInZone; i++ )
          {
-            double x = start + left_offset + i*spacing;
+            Float64 x = start + left_offset + i*spacing;
 
             pgsPointOfInterest poi(span,girder,x);
 
@@ -1914,7 +1914,7 @@ void CGirderModelElevationView::BuildDebondTick(iDisplayList* pDL, IPoint2d* tic
    pDL->AddDisplayObject(doPnt);
 }
 
-iDimensionLine* CGirderModelElevationView::BuildDimensionLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint,double dimension)
+iDimensionLine* CGirderModelElevationView::BuildDimensionLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint,Float64 dimension)
 {
    // put points at locations and make them sockets
    CComPtr<iPointDisplayObject> from_rep;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -81,9 +81,9 @@ interface ILiveLoadDistributionFactors : IUnknown
    virtual Float64 GetShearDistFactor(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
    virtual Float64 GetReactionDistFactor(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
 
-   virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,double* pM,double* nM,double* V) = 0;
-   virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,double fcgdr,double* pM,double* nM,double* V) = 0;
-   virtual void GetNegMomentDistFactorPoints(SpanIndexType span,GirderIndexType gdr,double* dfPoints,Uint32* nPoints) = 0;
+   virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,Float64* pM,Float64* nM,Float64* V) = 0;
+   virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,Float64 fcgdr,Float64* pM,Float64* nM,Float64* V) = 0;
+   virtual void GetNegMomentDistFactorPoints(SpanIndexType span,GirderIndexType gdr,Float64* dfPoints,Uint32* nPoints) = 0;
 
    virtual void ReportDistributionFactors(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
    virtual bool Run1250Tests(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile) = 0;

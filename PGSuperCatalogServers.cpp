@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -38,6 +38,12 @@ CPGSuperCatalogServers::CPGSuperCatalogServers()
 CPGSuperCatalogServers::~CPGSuperCatalogServers()
 {
 }
+
+void CPGSuperCatalogServers::SetTemplateFileExtenstion(const CString& strExt)
+{
+   m_strExt = strExt;
+}
+
 void CPGSuperCatalogServers::AddServer(CPGSuperCatalogServer* server)
 {
 	m_Servers.insert( ServerPtr(server) );
@@ -59,7 +65,7 @@ const CPGSuperCatalogServer* CPGSuperCatalogServers::GetServer(CollectionIndexTy
 
 const CPGSuperCatalogServer* CPGSuperCatalogServers::GetServer(const CString& strName) const
 {
-   ServerPtr target(new CFtpPGSuperCatalogServer(strName,CString("bogus")));
+   ServerPtr target(new CFtpPGSuperCatalogServer(strName,CString("bogus"),m_strExt));
    Servers::const_iterator found = m_Servers.find( target );
 
    if(found == m_Servers.end())
@@ -84,7 +90,7 @@ void CPGSuperCatalogServers::RemoveServer(CollectionIndexType index)
 
 void CPGSuperCatalogServers::RemoveServer(const CString& strName)
 {
-   ServerPtr target(new CFtpPGSuperCatalogServer(strName,CString("bogus")));
+   ServerPtr target(new CFtpPGSuperCatalogServer(strName,CString("bogus"),m_strExt));
    Servers::iterator found = m_Servers.find(target);
    if (found != m_Servers.end())
    {
@@ -94,7 +100,7 @@ void CPGSuperCatalogServers::RemoveServer(const CString& strName)
 
 bool CPGSuperCatalogServers::IsServerDefined(const CString& strName) const
 {
-   ServerPtr target(new CFtpPGSuperCatalogServer(strName,CString("bogus")));
+   ServerPtr target(new CFtpPGSuperCatalogServer(strName,CString("bogus"),m_strExt));
    Servers::const_iterator found = m_Servers.find(target);
    return ( found == m_Servers.end() ? false : true );
 }
@@ -116,7 +122,7 @@ void CPGSuperCatalogServers::LoadFromRegistry(CWinApp* theApp)
             CString key(TCHAR(i+_T('A')));
             CString strValue = theApp->GetProfileString(_T("Servers"),key);
 
-            CPGSuperCatalogServer* pserver = CreateCatalogServer(strValue);
+            CPGSuperCatalogServer* pserver = CreateCatalogServer(strValue,m_strExt);
 
             if (pserver!=NULL) // this is not good, but an assert should fire in CreateCatalogServer to help debugging
             {
@@ -146,7 +152,7 @@ void CPGSuperCatalogServers::LoadFromRegistry(CWinApp* theApp)
          DWORD type;
          while ( ::RegEnumValue(hSecKey,dwIndex++,&serverName[0],&serverNameSize,NULL,&type,(LPBYTE)&serverString[0],&serverStringSize) != ERROR_NO_MORE_ITEMS )
          {
-            CPGSuperCatalogServer* pServer = CreateCatalogServer(serverName,serverString);
+            CPGSuperCatalogServer* pServer = CreateCatalogServer(serverName,serverString,m_strExt );
             if ( pServer )
             {
                m_Servers.insert( ServerPtr(pServer) );
@@ -164,10 +170,10 @@ void CPGSuperCatalogServers::LoadFromRegistry(CWinApp* theApp)
 
    // Always have a WSDOT and TxDOT server
    if (!IsServerDefined(_T("WSDOT")))
-      m_Servers.insert( ServerPtr(new CFtpPGSuperCatalogServer()) ); // wsdot
+      m_Servers.insert( ServerPtr(new CFtpPGSuperCatalogServer(m_strExt)) ); // wsdot
 
    if (!IsServerDefined("TxDOT"))
-      m_Servers.insert( ServerPtr( new CFtpPGSuperCatalogServer(CString("TxDOT"),CString("ftp://ftp.dot.state.tx.us/pub/txdot-info/brg/pgsuper/")) ) );
+      m_Servers.insert( ServerPtr( new CFtpPGSuperCatalogServer(CString("TxDOT"),CString("ftp://ftp.dot.state.tx.us/pub/txdot-info/brg/pgsuper/"),m_strExt) ) );
 }
 
 void CPGSuperCatalogServers::SaveToRegistry(CWinApp* theApp) const

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -159,7 +159,7 @@ protected:
 };
 
 /////////////////////////////////////////////////////////////////////////////
-// CDoubleTeeBeamFamily - beam family for double tee beams
+// CDoubleTeeBeamFamily - beam family for Float64 tee beams
 class ATL_NO_VTABLE CDoubleTeeBeamFamily : 
    public CComObjectRootEx<CComSingleThreadModel>,
    public CComCoClass<CDoubleTeeBeamFamily, &CLSID_DoubleTeeBeamFamily>,

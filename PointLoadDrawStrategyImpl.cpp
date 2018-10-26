@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -105,7 +105,7 @@ STDMETHODIMP_(void) CPointLoadDrawStrategyImpl::XDrawPointStrategy::DrawDragImag
 {
    METHOD_PROLOGUE(CPointLoadDrawStrategyImpl,DrawPointStrategy);
 
-   double wx, wy;
+   Float64 wx, wy;
    map->LPtoWP(dragPoint.x, dragPoint.y, &wx, &wy);
    pThis->m_CachePoint->put_X(wx);
    pThis->m_CachePoint->put_Y(wy);
@@ -120,7 +120,7 @@ STDMETHODIMP_(void) CPointLoadDrawStrategyImpl::XDrawPointStrategy::GetBoundingB
    CComPtr<IPoint2d> point;
    pDO->GetPosition(&point);
 
-   double xpos;
+   Float64 xpos;
    point->get_X(&xpos);
 
    CComPtr<iDisplayList> pDL;
@@ -132,7 +132,7 @@ STDMETHODIMP_(void) CPointLoadDrawStrategyImpl::XDrawPointStrategy::GetBoundingB
    CComPtr<iCoordinateMap> pMap;
    pDispMgr->GetCoordinateMap(&pMap);
 
-   double height, width;
+   Float64 height, width;
    pThis->GetWSymbolSize(pMap, &width, &height);
 
    CComPtr<IRect2d> bounding_box;
@@ -168,7 +168,7 @@ void CPointLoadDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF
    pMap->WPtoLP(wx, wyb, &cxb, &cyb);
 
    // height and width of load
-   double wid, hgt;
+   Float64 wid, hgt;
    GetWSymbolSize(pMap, &wid, &hgt);
 
    // line style and width
@@ -372,14 +372,14 @@ void CPointLoadDrawStrategyImpl::GetTSymbolSize(iCoordinateMap* pMap, long* psx,
    *psx = SSIZE/6;
 }
 
-void CPointLoadDrawStrategyImpl::GetWSymbolSize(iCoordinateMap* pMap, double* psx, double* psy)
+void CPointLoadDrawStrategyImpl::GetWSymbolSize(iCoordinateMap* pMap, Float64* psx, Float64* psy)
 {
    long hgt, wid2;
    GetTSymbolSize(pMap, &wid2, &hgt);
 
-   double xo,yo;
+   Float64 xo,yo;
    pMap->TPtoWP(0,0,&xo,&yo);
-   double x2,y2;
+   Float64 x2,y2;
    pMap->TPtoWP(wid2,hgt,&x2,&y2);
 
    *psx = x2-xo;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -197,7 +197,7 @@ void CPierGirderSpacingPage::Init(const CPierData* pPier)
       m_SlabOffsetTypeCache = pgsTypes::sotBridge;
 
    // use a dummy skew angle for basic initialization... set it to the correct value OnInitialDialog
-   double skew_angle = 0;
+   Float64 skew_angle = 0;
 
    if ( m_pPrevSpan )
    {
@@ -298,7 +298,7 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
    EAFGetBroker(&broker);
    GET_IFACE2(broker,IBridge,pBridge);
 
-   double skew_angle;
+   Float64 skew_angle;
    pBridge->GetSkewAngle(pParent->GetStation(),pParent->GetOrientation(),&skew_angle);
 
    m_GirderSpacingGrid[pgsTypes::Back].SubclassDlgItem(IDC_PREV_SPAN_SPACING_GRID,this);
@@ -943,15 +943,15 @@ LRESULT CPierGirderSpacingPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM l
       // determine if there is more than one spacing group
       CGirderSpacingGridData spacingData = m_GirderSpacingGrid[pierFace].GetGirderSpacingData(); 
       GroupIndexType nSpacingGroups = spacingData.m_GirderSpacing.GetSpacingGroupCount();
-      double bridgeSpacing = 0;
+      Float64 bridgeSpacing = 0;
       if ( 1 < nSpacingGroups )
       {
          // there is more than one group... get all the unique spacing values
-         std::set<double> spacings;
+         std::set<Float64> spacings;
          for ( GroupIndexType spaIdx = 0; spaIdx < nSpacingGroups;spaIdx++ )
          {
             GirderIndexType firstGdrIdx, lastGdrIdx;
-            double space;
+            Float64 space;
             spacingData.m_GirderSpacing.GetSpacingGroup(spaIdx,&firstGdrIdx,&lastGdrIdx,&space);
             spacings.insert( space );
          }
@@ -971,10 +971,10 @@ LRESULT CPierGirderSpacingPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM l
             dlg.m_ItemIdx = 0;
 
             CString strItems;
-            std::set<double>::iterator iter;
+            std::set<Float64>::iterator iter;
             for ( iter = spacings.begin(); iter != spacings.end(); iter++ )
             {
-               double spacing = *iter;
+               Float64 spacing = *iter;
 
                CString strItem;
                if ( IsGirderSpacing(oldGirderSpacingType) )

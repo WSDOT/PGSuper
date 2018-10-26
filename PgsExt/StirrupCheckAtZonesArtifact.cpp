@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -281,7 +281,7 @@ Float64 pgsSplittingZoneArtifact::GetStartLossesAfterTransfer() const
    return m_StartdFpT;
 }
 
-void pgsSplittingZoneArtifact::SetStartLossesAfterTransfer(double dFpT)
+void pgsSplittingZoneArtifact::SetStartLossesAfterTransfer(Float64 dFpT)
 {
    m_StartdFpT = dFpT;
 }
@@ -289,7 +289,7 @@ void pgsSplittingZoneArtifact::SetStartLossesAfterTransfer(double dFpT)
 Float64 pgsSplittingZoneArtifact::GetStartSplittingForce() const
 {
    ATLASSERT(m_IsApplicable);
-   double P = 0.04*m_StartAps*(m_StartFpj - m_StartdFpT);
+   Float64 P = 0.04*m_StartAps*(m_StartFpj - m_StartdFpT);
    return P;
 }
 
@@ -398,7 +398,7 @@ Float64 pgsSplittingZoneArtifact::GetEndLossesAfterTransfer() const
    return m_EnddFpT;
 }
 
-void pgsSplittingZoneArtifact::SetEndLossesAfterTransfer(double dFpT)
+void pgsSplittingZoneArtifact::SetEndLossesAfterTransfer(Float64 dFpT)
 {
    m_EnddFpT = dFpT;
 }
@@ -406,7 +406,7 @@ void pgsSplittingZoneArtifact::SetEndLossesAfterTransfer(double dFpT)
 Float64 pgsSplittingZoneArtifact::GetEndSplittingForce() const
 {
    ATLASSERT(m_IsApplicable);
-   double P = 0.04*m_EndAps*(m_EndFpj - m_EnddFpT);
+   Float64 P = 0.04*m_EndAps*(m_EndFpj - m_EnddFpT);
    return P;
 }
 

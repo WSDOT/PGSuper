@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,8 +31,6 @@
 #include "PGSuperAppPlugin\resource.h"
 
 #include "PGSuperCatalogServers.h"
-#include <MfcTools\ddxFolder.h>
-#include <MfcTools\ddxfile.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CServerDefinitionDlg dialog
@@ -41,8 +39,8 @@ class CServerDefinitionDlg : public CDialog
 {
 // Construction
 public:
-	CServerDefinitionDlg(const CPGSuperCatalogServers& servers,CWnd* pParent = NULL);
-	CServerDefinitionDlg(const CPGSuperCatalogServers& servers,const CPGSuperCatalogServer* pcurrentServer,CWnd* pParent = NULL);
+	CServerDefinitionDlg(const CPGSuperCatalogServers& servers,const CString& strExt,CWnd* pParent = NULL);
+	CServerDefinitionDlg(const CPGSuperCatalogServers& servers,const CPGSuperCatalogServer* pcurrentServer,const CString& strExt,CWnd* pParent = NULL);
 
 // Dialog Data
 	//{{AFX_DATA(CServerDefinitionDlg)
@@ -72,6 +70,7 @@ protected:
 protected:
    SharedResourceType m_ServerType;
    CString m_OriginalServerName;
+   CString m_TemplateFileExt;
 
    CGetFilenameControl m_ctrlLibraryFile;
    CGetFolderControl m_ctrlWorkgroupFolder;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,11 +23,11 @@
 //
 
 #include "PGSuperAppPlugin\stdafx.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PluginPage.h"
 #include "PGSuperPluginMgr.h"
 
-#include "PGSuperCatCom.h"
 #include "HtmlHelp\HelpTopics.hh"
 
 #include <EAF\EAFApp.h>
@@ -53,9 +53,10 @@ void CPluginPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_PLUGIN_LIST, m_ctlPluginList);
 }
 
-void CPluginPage::Init(int pageType)
+void CPluginPage::Init(LPCTSTR strSection,const CATID& catid)
 {
-   m_PageType = pageType;
+   m_Section = strSection;
+   m_CATID   = catid;
 }
 
 BEGIN_MESSAGE_MAP(CPluginPage, CPropertyPage)
@@ -69,15 +70,7 @@ BOOL CPluginPage::OnInitDialog()
 {
    CPropertyPage::OnInitDialog();
 
-   bool bResult;
-   if ( m_PageType == PROJECT_IMPORTER_PAGE )
-      bResult = InitList(CATID_PGSuperProjectImporter);
-   else if ( m_PageType == DATA_IMPORTER_PAGE )
-      bResult = InitList(CATID_PGSuperDataImporter);
-   else if ( m_PageType == DATA_EXPORTER_PAGE )
-      bResult = InitList(CATID_PGSuperDataExporter);
-   else
-      bResult = InitList(CATID_PGSuperExtensionAgent);
+   bool bResult = InitList();
 
    if ( !bResult )
       return FALSE;
@@ -86,8 +79,11 @@ BOOL CPluginPage::OnInitDialog()
    // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-bool CPluginPage::InitList(const CATID& catid)
+bool CPluginPage::InitList()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pApp = AfxGetApp();
+
    USES_CONVERSION;
 
    CWaitCursor cursor;
@@ -106,18 +102,14 @@ bool CPluginPage::InitList(const CATID& catid)
    const int nID = 1;
    CATID ID[nID];
 
-   ID[0] = catid;
+   ID[0] = m_CATID;
    pICatInfo->EnumClassesOfCategories(nID,ID,0,NULL,&pIEnumCLSID);
 
    const int nPlugins = 5;
    CLSID clsid[nPlugins]; 
    ULONG nFetched = 0;
 
-   CString strSection( m_PageType == EXTENSION_AGENT_PAGE ? _T("Extensions") : _T("Plugins") );
-
    // Load Importers
-   CEAFApp* pApp = EAFGetApp();
-
    while ( SUCCEEDED(pIEnumCLSID->Next(nPlugins,clsid,&nFetched)) && 0 < nFetched)
    {
       for ( ULONG i = 0; i < nFetched; i++ )
@@ -129,7 +121,7 @@ bool CPluginPage::InitList(const CATID& catid)
          LPOLESTR pszCLSID;
          ::StringFromCLSID(clsid[i],&pszCLSID);
          
-         CString strState = pApp->GetProfileString(strSection,OLE2T(pszCLSID),_T("Enabled"));
+         CString strState = pApp->GetProfileString(m_Section,OLE2T(pszCLSID),_T("Enabled"));
          m_CLSIDs.push_back(CString(pszCLSID));
 
          ::CoTaskMemFree((void*)pszCLSID);
@@ -146,9 +138,8 @@ bool CPluginPage::InitList(const CATID& catid)
 
 void CPluginPage::OnOK()
 {
-   CEAFApp* pApp = EAFGetApp();
-
-   CString strSection( m_PageType == EXTENSION_AGENT_PAGE ? _T("Extensions") : _T("Plugins") );
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pApp = AfxGetApp();
 
    int nItems = m_ctlPluginList.GetCount();
    for (int idx = 0; idx < nItems; idx++ )
@@ -156,7 +147,7 @@ void CPluginPage::OnOK()
       CString strCLSID = m_CLSIDs[idx];
       BOOL bEnabled = m_ctlPluginList.GetCheck(idx);
 
-      pApp->WriteProfileString(strSection,strCLSID,(bEnabled ? _T("Enabled") : _T("Disabled")));
+      pApp->WriteProfileString(m_Section,strCLSID,(bEnabled ? _T("Enabled") : _T("Disabled")));
    }
    CPropertyPage::OnOK();
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -152,25 +152,9 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
       *pPara << _T("Load Rating Criteria") << rptNewLine;
       *pPara << Bold(_T("Name: ")) << rating_name << rptNewLine;
       *pPara << Bold(_T("Description: ")) << pRatingEntry->GetDescription() << rptNewLine;
-      *pPara <<Bold(_T("Based on:  "));
-      switch( pRatingEntry->GetSpecificationVersion() )
-      {
-      case lrfrVersionMgr::FirstEdition2008:
-         *pPara << _T("AASHTO Manual for Bridge Evaluation, 1st Edition, 2008") << rptNewLine;
-         break;
+      *pPara <<Bold(_T("Based on:  ")) << lrfrVersionMgr::GetCodeString() << _T(", ") << lrfrVersionMgr::GetVersionString();
 
-      case lrfrVersionMgr::FirstEditionWith2010Interims:
-         *pPara << _T("AASHTO Manual for Bridge Evaluation, 1st Edition, 2008 with 2010 interim provisions") << rptNewLine;
-         break;
-
-      default:
-         ATLASSERT(false);
-         *pPara <<_T("Unknown") << rptNewLine;
-         break;
-      }
-
-      // write load rating criteria here
-
+      // Load rating criteria includes the design criteria... write the name here
       *pPara << _T("Load Rating Criteria includes ") << spec_name << rptNewLine;
    }
 
@@ -180,7 +164,7 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
 
    *pPara <<Bold(_T("Name: "))<< spec_name << rptNewLine;
    *pPara <<Bold(_T("Description: "))<<pSpecEntry->GetDescription()<<rptNewLine;
-   *pPara <<Bold(_T("Based on: ")) << _T("AASHTO LRFD Bridge Design Specifications, ") << lrfdVersionMgr::GetVersionString();
+   *pPara <<Bold(_T("Based on: ")) << lrfdVersionMgr::GetCodeString() << _T(", ") << lrfdVersionMgr::GetVersionString();
    
    lrfdVersionMgr::Units units = pSpecEntry->GetSpecificationUnits();
    if (units==lrfdVersionMgr::SI)

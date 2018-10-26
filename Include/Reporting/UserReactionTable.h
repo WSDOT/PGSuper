@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -51,7 +51,7 @@ LOG
 class REPORTINGCLASS CUserReactionTable
 {
 public:
-   // This class serves double duty. It can report pier reactions or girder bearing reactions.
+   // This class serves Float64 duty. It can report pier reactions or girder bearing reactions.
    // The two are identical except for the title and the interfaces they use to get responses
    enum TableType { PierReactionsTable, BearingReactionsTable};
 

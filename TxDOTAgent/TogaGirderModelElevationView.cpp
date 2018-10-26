@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -940,8 +940,8 @@ void CTogaGirderModelElevationView::BuildStrandCGDisplayObjects(CTxDOTOptionalDe
       GET_IFACE2(pBroker,IPointOfInterest,pPOI);
       std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(span,girder,stage,POI_ALLACTIONS | POI_ALLOUTPUT,POIFIND_OR);
 
-      double from_y;
-      double to_y;
+      Float64 from_y;
+      Float64 to_y;
       std::vector<pgsPointOfInterest>::iterator iter = vPOI.begin();
       pgsPointOfInterest prev_poi = *iter;
 
@@ -1185,7 +1185,7 @@ void CTogaGirderModelElevationView::BuildStirrupDisplayObjects(CTxDOTOptionalDes
          spacing = (end-start)/nStirrupsInZone;
          for ( ZoneIndexType i = 0; i <= nStirrupsInZone; i++ )
          {
-            double x = start + i*spacing;
+            Float64 x = start + i*spacing;
 
             pgsPointOfInterest poi(span,girder,x);
 
@@ -1332,7 +1332,7 @@ void CTogaGirderModelElevationView::BuildDebondTick(iDisplayList* pDL, IPoint2d*
    pDL->AddDisplayObject(doPnt);
 }
 
-iDimensionLine* CTogaGirderModelElevationView::BuildDimensionLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint,double dimension)
+iDimensionLine* CTogaGirderModelElevationView::BuildDimensionLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint,Float64 dimension)
 {
    // put points at locations and make them sockets
    CComPtr<iPointDisplayObject> from_rep;

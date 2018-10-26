@@ -18,7 +18,7 @@
 #define IDR_PGSUPERCOMPONENTINFO        102
 #define IDR_PGSUPERAPPPLUGINIMPL        103
 #define IDR_PGSUPERPROJECTIMPORTERAPPPLUGIN 104
-#define IDR_PGSUPERTYPE                 130
+#define IDR_PGSUPER                 130
 #define IDD_PROJECTPROPERTIES           131
 #define IDR_BRIDGEMODELEDITOR           132
 #define IDR_PROJECTIMPORTER             133
@@ -1018,7 +1018,7 @@
 #define IDC_LLDF_SINGLE_VALUE           1710
 #define IDC_ALPHA                       1711
 #define IDC_RADIO_MULTIPLE              1711
-#define IDS_TEMPLATE_FILE_SUFFIX        1712
+#define IDS_PGSUPER_TEMPLATE_FILE_SUFFIX        1712
 #define IDC_ADIM_START_LABEL            1714
 #define IDC_ADIM_START_UNIT             1716
 #define IDS_DEFAULT_MASTER_LIB          1717
@@ -1050,6 +1050,7 @@
 #define IDC_LEFT_FC                     1745
 #define IDC_LEFT_FC_UNIT                1747
 #define IDC_LEFT_MOD_E                  1749
+#define IDS_E_INVALIDVERSION            1750
 #define IDC_LEFT_EC                     1751
 #define IDC_LEFT_EC_UNIT                1753
 #define IDC_LEFT_MORE                   1755

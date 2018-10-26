@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1421,7 +1421,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          legacy.m_ShearZoneInfo.clear();
          while(pLoad->BeginUnit(_T("ShearZones")))
          {
-            double shear_zone_version = pLoad->GetVersion();
+            Float64 shear_zone_version = pLoad->GetVersion();
 
             if(3 < shear_zone_version )
                THROW_LOAD(BadVersion,pLoad);
@@ -1713,7 +1713,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          m_AvailableBarSpacings.clear();
          for (IndexType is=0; is<size; is++)
          {
-            double spacing;
+            Float64 spacing;
             if ( !pLoad->Property(_T("Spacing"),&spacing) )
                THROW_LOAD(InvalidFileFormat,pLoad);
 
@@ -2641,12 +2641,30 @@ void GirderLibraryEntry::GetHarpedStrandCoordinates(GridIndexType hsGridIdx, Flo
    ATLASSERT( hsGridIdx < (GridIndexType)m_HarpedStrands.size());
 
    const HarpedStrandLocation& strandLocation = m_HarpedStrands[hsGridIdx];
+
+   if (m_bUseDifferentHarpedGridAtEnds)
+   {
    *Xstart = strandLocation.m_Xstart;
    *Ystart = strandLocation.m_Ystart;
    *Xhp    = strandLocation.m_Xhp;
    *Yhp    = strandLocation.m_Yhp;
    *Xend   = strandLocation.m_Xend;
    *Yend   = strandLocation.m_Yend;
+   }
+   else
+   {
+      // Data stored in end locations is not always reliably stored.
+      // Force all coordinates to hp location
+      Float64 x = strandLocation.m_Xhp;
+      Float64 y = strandLocation.m_Yhp;
+
+      *Xstart = x;
+      *Ystart = y;
+      *Xhp    = x;
+      *Yhp    = y;
+      *Xend   = x;
+      *Yend   = y;
+   }
 }
 
 StrandIndexType GirderLibraryEntry::AddHarpedStrandCoordinates(Float64 Xstart,Float64 Ystart, Float64 Xhp, Float64 Yhp,Float64 Xend, Float64 Yend)

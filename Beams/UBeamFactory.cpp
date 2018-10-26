@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -45,11 +45,11 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 
-static void GetSlope(IUBeam* beam,double* slope)
+static void GetSlope(IUBeam* beam,Float64* slope)
 {
 
-   double d1, d4, d5;
-   double w1, w2, w5;
+   Float64 d1, d4, d5;
+   Float64 w1, w2, w5;
    beam->get_D1(&d1);
    beam->get_D4(&d4);
    beam->get_D5(&d5);
@@ -57,8 +57,8 @@ static void GetSlope(IUBeam* beam,double* slope)
    beam->get_W2(&w2);
    beam->get_W5(&w5);
 
-   double rise = d1 - d4 - d5;
-   double run = (w2 - w1)/2 - w5;
+   Float64 rise = d1 - d4 - d5;
+   Float64 run = (w2 - w1)/2 - w5;
 
    if ( IsZero(run) )
       *slope = DBL_MAX;
@@ -198,9 +198,9 @@ void CUBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statu
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
 
-   double w1, w2, w3, w4, w5;
-   double d1, d2, d3, d4, d5, d6, d7;
-   double t;
+   Float64 w1, w2, w3, w4, w5;
+   Float64 d1, d2, d3, d4, d5, d6, d7;
+   Float64 t;
    GetDimensions(dimensions,d1, d2, d3, d4, d5, d6, d7, w1, w2, w3, w4, w5, t);
 
    Float64 height = d1;
@@ -319,9 +319,9 @@ void CUBeamFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType stat
 }
 
 void CUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
-                                  IBeamFactory::BeamFace endTopFace, double endTopLimit, IBeamFactory::BeamFace endBottomFace, double endBottomLimit, 
-                                  IBeamFactory::BeamFace hpTopFace, double hpTopLimit, IBeamFactory::BeamFace hpBottomFace, double hpBottomLimit, 
-                                  double endIncrement, double hpIncrement, IStrandMover** strandMover)
+                                  IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
+                                  IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
+                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
 {
    // build our shape so we can get higher-level info
    CComPtr<IUBeam> beam;
@@ -330,34 +330,34 @@ void CUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions
    ConfigureShape(dimensions, beam);
 
    // our goal is to build a parallelogram using the thin web dimension from top to bottom
-   double t;
+   Float64 t;
    beam->get_T(&t);
-   double slope;
+   Float64 slope;
    GetSlope(beam, &slope);
-   double height;
+   Float64 height;
    beam->get_Height(&height);
-   double w1;
+   Float64 w1;
    beam->get_W1(&w1);
 
-   double arc_slope = 1.0/slope;
+   Float64 arc_slope = 1.0/slope;
 
-   double t_x_project = t*sqrt(slope*slope+1)/slope;
+   Float64 t_x_project = t*sqrt(slope*slope+1)/slope;
 
    CComPtr<IPolyShape> rgt_harp_poly;
    rgt_harp_poly.CoCreateInstance(CLSID_PolyShape);
 
    // travel counter clockwise around right web;
-   double x1 = w1/2.0;
-   double y1 = 0.0;
+   Float64 x1 = w1/2.0;
+   Float64 y1 = 0.0;
 
-   double x2 = x1 + height * arc_slope;
-   double y2 = height;
+   Float64 x2 = x1 + height * arc_slope;
+   Float64 y2 = height;
 
-   double x3 = x2 - t_x_project;
-   double y3 = y2;
+   Float64 x3 = x2 - t_x_project;
+   Float64 y3 = y2;
 
-   double x4 = x1 - t_x_project;
-   double y4 = 0.0;
+   Float64 x4 = x1 - t_x_project;
+   Float64 y4 = 0.0;
 
    rgt_harp_poly->AddPoint(x1,y1);
    rgt_harp_poly->AddPoint(x2,y2);
@@ -393,10 +393,10 @@ void CUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   double hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : height-hpTopLimit;
-   double hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : height-hpBottomLimit;
-   double endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : height-endTopLimit;
-   double endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : height-endBottomLimit;
+   Float64 hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : height-hpTopLimit;
+   Float64 hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : height-hpBottomLimit;
+   Float64 endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : height-endTopLimit;
+   Float64 endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : height-endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(height, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -410,7 +410,7 @@ std::vector<std::_tstring> CUBeamFactory::GetDimensionNames()
    return m_DimNames;
 }
 
-std::vector<double> CUBeamFactory::GetDefaultDimensions()
+std::vector<Float64> CUBeamFactory::GetDefaultDimensions()
 {
    return m_DefaultDims;
 }
@@ -422,9 +422,9 @@ std::vector<const unitLength*> CUBeamFactory::GetDimensionUnits(bool bSIUnits)
 
 bool CUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg)
 {
-   double w1, w2, w3, w4, w5;
-   double d1, d2, d3, d4, d5, d6, d7;
-   double t;
+   Float64 w1, w2, w3, w4, w5;
+   Float64 d1, d2, d3, d4, d5, d6, d7;
+   Float64 t;
    GetDimensions(dimensions,d1, d2, d3, d4, d5, d6, d7, w1, w2, w3, w4, w5, t);
 
 // D1  0
@@ -579,15 +579,15 @@ IBeamFactory::Dimensions CUBeamFactory::LoadSectionDimensions(sysIStructuredLoad
       // maintained for all other versions.
       //
       // Need to compute W4 as the slope adjusted web width (measured horizontally)
-      double W1 = GetDimension(dimensions,std::_tstring(_T("W1")));
-      double W2 = GetDimension(dimensions,std::_tstring(_T("W2")));
-      double W4 = GetDimension(dimensions,std::_tstring(_T("W4")));
-      double T  = GetDimension(dimensions,std::_tstring(_T("T")));
-      double D1 = GetDimension(dimensions,std::_tstring(_T("D1")));
-      double D6 = GetDimension(dimensions,std::_tstring(_T("D6")));
+      Float64 W1 = GetDimension(dimensions,std::_tstring(_T("W1")));
+      Float64 W2 = GetDimension(dimensions,std::_tstring(_T("W2")));
+      Float64 W4 = GetDimension(dimensions,std::_tstring(_T("W4")));
+      Float64 T  = GetDimension(dimensions,std::_tstring(_T("T")));
+      Float64 D1 = GetDimension(dimensions,std::_tstring(_T("D1")));
+      Float64 D6 = GetDimension(dimensions,std::_tstring(_T("D6")));
 
-      double slope = ComputeSlope(T,D1,D6,W1,W2,W4);
-      double W5 = W4 - T*sqrt(slope*slope + 1)/slope;
+      Float64 slope = ComputeSlope(T,D1,D6,W1,W2,W4);
+      Float64 W5 = W4 - T*sqrt(slope*slope + 1)/slope;
       W5 = IsZero(W5) ? 0.0 : W5; // Deaden any noise
 
       // Set W4 = 0
@@ -801,9 +801,9 @@ HICON  CUBeamFactory::GetIcon()
 }
 
 void CUBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
-                                  double& d1,double& d2,double& d3,double& d4,double& d5,double& d6,double& d7,
-                                  double& w1,double& w2,double& w3,double& w4,double& w5,
-                                  double& t)
+                                  Float64& d1,Float64& d2,Float64& d3,Float64& d4,Float64& d5,Float64& d6,Float64& d7,
+                                  Float64& w1,Float64& w2,Float64& w3,Float64& w4,Float64& w5,
+                                  Float64& t)
 {
    d1 = GetDimension(dimensions,_T("D1"));
    d2 = GetDimension(dimensions,_T("D2"));
@@ -820,7 +820,7 @@ void CUBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
    t  = GetDimension(dimensions,_T("T"));
 }
 
-double CUBeamFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
+Float64 CUBeamFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
 {
    Dimensions::const_iterator iter;
    for ( iter = dimensions.begin(); iter != dimensions.end(); iter++ )
@@ -860,15 +860,15 @@ pgsTypes::SupportedBeamSpacings CUBeamFactory::GetSupportedBeamSpacings()
 }
 
 void CUBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, 
-                                               pgsTypes::SupportedBeamSpacing sbs, double* minSpacing, double* maxSpacing)
+                                               pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing)
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
 
-   double W1 = GetDimension(dimensions,_T("W1"));
-   double W2 = GetDimension(dimensions,_T("W2"));
+   Float64 W1 = GetDimension(dimensions,_T("W1"));
+   Float64 W2 = GetDimension(dimensions,_T("W2"));
 
-   double gw = max(W1, W2);
+   Float64 gw = max(W1, W2);
 
 
    if ( sdt == pgsTypes::sdtCompositeCIP || sdt == pgsTypes::sdtCompositeSIP )
@@ -892,9 +892,9 @@ void CUBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dim
 
 void CUBeamFactory::ConfigureShape(const IBeamFactory::Dimensions& dimensions, IUBeam* beam)
 {
-   double w1, w2, w3, w4, w5;
-   double d1, d2, d3, d4, d5, d6, d7;
-   double t;
+   Float64 w1, w2, w3, w4, w5;
+   Float64 d1, d2, d3, d4, d5, d6, d7;
+   Float64 t;
    GetDimensions(dimensions,d1, d2, d3, d4, d5, d6, d7, w1, w2, w3, w4, w5, t);
    beam->put_W1(w1);
    beam->put_W2(w2);

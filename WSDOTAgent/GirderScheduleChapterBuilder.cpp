@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,7 @@
 #include <Reporting\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <PgsExt\PointOfInterest.h>
+#include <PgsExt\BridgeDescription.h>
 #include <PgsExt\GirderData.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
@@ -39,12 +40,22 @@
 
 #include <WBFLCogo.h>
 
+#include <Plugins\BeamFamilyCLSID.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#define STIRRUP_ERROR_NONE        0
+#define STIRRUP_ERROR            -1
+#define STIRRUP_ERROR_BARSIZE    -2
+#define STIRRUP_ERROR_ZONES      -3
+#define STIRRUP_ERROR_SYMMETRIC  -4
+#define STIRRUP_ERROR_STARTZONE  -5
+#define STIRRUP_ERROR_LASTZONE   -6
+#define STIRRUP_ERROR_V6         -7
 
 /****************************************************************************
 CLASS
@@ -75,36 +86,44 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    SpanIndexType span = pSGRptSpec->GetSpan();
    GirderIndexType girder = pSGRptSpec->GetGirder();
 
+
+   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
+
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CSpanData* pSpan = pIBridgeDesc->GetSpan(span);
+   const CGirderTypes* pGirderTypes = pSpan->GetGirderTypes();
+   const GirderLibraryEntry* pGdrLibEntry = pGirderTypes->GetGirderLibraryEntry(girder);
+   CComPtr<IBeamFactory> factory;
+   pGdrLibEntry->GetBeamFactory(&factory);
+   CLSID familyCLSID = factory->GetFamilyCLSID();
+   if ( CLSID_WFBeamFamily != familyCLSID && CLSID_UBeamFamily != familyCLSID )
+   {
+      rptParagraph* pPara = new rptParagraph;
+      *pPara << _T("WSDOT girder schedules can only be created for WF and U sections") << rptNewLine;
+      *pChapter << pPara;
+      return pChapter;
+   }
 
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pArtifact = pIArtifact->GetArtifact(span,girder);
 
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
-
+   bool bCanReportPrestressInformation = true;
    GET_IFACE2( pBroker, IStrandGeometry, pStrandGeometry );
 
    // WsDOT reports don't support Straight-Web strand option
    if (pStrandGeometry->GetAreHarpedStrandsForcedStraight(span, girder))
    {
-      rptParagraph* p;
-      
-      p = new rptParagraph;
-      *pChapter << p;
-      *p << color(Red) << Bold(_T("A WSDOT Girder Schedule could not be generated because this girder utilizes straight web strands. WSDOT Standard Girders utilize harped strands.")) << color(Black) << rptNewLine;
-      return pChapter;
+      bCanReportPrestressInformation = false;
    }
 
-   GET_IFACE2(pBroker,IGirderData,pGirderData);
-   const CGirderData* pgirderData = pGirderData->GetGirderData(span,girder);
-   if (pgirderData->PrestressData.GetNumPermStrandsType() == NPS_DIRECT_SELECTION)
+   GET_IFACE2(pBroker,IGirderData,pIGirderData);
+   const CGirderData* pGirderData = pIGirderData->GetGirderData(span,girder);
+
+   if (pGirderData->PrestressData.GetNumPermStrandsType() == NPS_DIRECT_SELECTION)
    {
-      rptParagraph* p;
-      
-      p = new rptParagraph;
-      *pChapter << p;
-      *p << color(Red) << Bold(_T("A WSDOT Girder Schedule could not be generated because this girder utilizes Direct Strand Fill. WSDOT Standard Girders utilize sequentially filled strands.")) << color(Black) << rptNewLine;
-      return pChapter;
+      bCanReportPrestressInformation = false;
    }
 
    if( pArtifact->Passed() )
@@ -132,9 +151,8 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    INIT_UV_PROTOTYPE( rptAngleUnitValue,  angle,          pDisplayUnits->GetAngleUnit(),         true );
    INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, wt_len, pDisplayUnits->GetForcePerLengthUnit(),true );
    INIT_UV_PROTOTYPE( rptMomentPerAngleUnitValue, spring, pDisplayUnits->GetMomentPerAngleUnit(),true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, stirrup_spacing,pDisplayUnits->GetComponentDimUnit(),    true );
 
-   INIT_FRACTIONAL_LENGTH_PROTOTYPE( titledim1, IS_US_UNITS(pDisplayUnits), 4, pDisplayUnits->GetComponentDimUnit(), true, true );
-   INIT_FRACTIONAL_LENGTH_PROTOTYPE( titledim2, IS_US_UNITS(pDisplayUnits), 8, pDisplayUnits->GetComponentDimUnit(), true, true );
    INIT_FRACTIONAL_LENGTH_PROTOTYPE( gdim,      IS_US_UNITS(pDisplayUnits), 8, pDisplayUnits->GetComponentDimUnit(), true, false );
    INIT_FRACTIONAL_LENGTH_PROTOTYPE( glength,   IS_US_UNITS(pDisplayUnits), 4, pDisplayUnits->GetSpanLengthUnit(),   true, false );
 
@@ -148,7 +166,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    GET_IFACE2(pBroker,ICamber,pCamber);
 
    // create pois at the start of girder and mid-span
-   pgsPointOfInterest pois(span,girder,0.0);
+   pgsPointOfInterest poiStart(span,girder,0.0);
 
    GET_IFACE2( pBroker, ILibrary, pLib );
    GET_IFACE2( pBroker, ISpecification, pSpec );
@@ -162,12 +180,8 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    ATLASSERT(pmid.size()==1);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   if ( pBridge->GetDeckType() != pgsTypes::sdtNone && pConstArtifact->IsSlabOffsetApplicable() )
-   {
-      *p << _T("Dimension \"A\" at CL Bearing = ")<< titledim1.SetValue(pConstArtifact->GetProvidedSlabOffset())
-         << _T(" based on a deflection (D at ") << max_days << _T(" days) of ")<< titledim2.SetValue(pCamber->GetDCamberForGirderSchedule( pmid[0], CREEP_MAXTIME )) << 
-            _T(" at the time of slab casting")<<rptNewLine;
-   }
+
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(2,_T(""));
    *p << p_table;
@@ -179,13 +193,35 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    (*p_table)(++row,0) << _T("Girder");
    (*p_table)(row  ,1) << LABEL_GIRDER(girder);
 
-   std::_tstring start_connection = pBridge->GetRightSidePierConnection(span);
-   (*p_table)(++row,0) << _T("End 1 Type");
-   (*p_table)(row  ,1) << start_connection;
+   (*p_table)(++row,0) << _T("Girder Series");
+   (*p_table)(row,  1) << pGirderTypes->GetGirderName(girder);
 
-   std::_tstring end_connection = pBridge->GetLeftSidePierConnection(span+1);
+   (*p_table)(++row,0) << _T("End 1 Type");
+   (*p_table)(row  ,1) << _T("*");
+
    (*p_table)(++row,0) << _T("End 2 Type");
-   (*p_table)(row  ,1) << end_connection;
+   (*p_table)(row  ,1) << _T("*");
+
+   if ( pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge )
+   {
+      (*p_table)(++row,0) << _T("\"A\" Dimension at CL Bearings");
+      (*p_table)(row,  1) << gdim.SetValue(pBridgeDesc->GetSlabOffset());
+   }
+   else
+   {
+      (*p_table)(++row,0) << _T("\"A\" Dimension at CL Bearing End 1");
+      (*p_table)(row,  1) << gdim.SetValue(pGirderTypes->GetSlabOffset(girder,pgsTypes::metStart));
+
+      (*p_table)(++row,0) << _T("\"A\" Dimension at CL Bearing End 2");
+      (*p_table)(row,  1) << gdim.SetValue(pGirderTypes->GetSlabOffset(girder,pgsTypes::metEnd));
+   }
+
+   if ( familyCLSID == CLSID_WFBeamFamily )
+   {
+      // only applies to WF sections
+      (*p_table)(++row,0) << _T("Intermediate Diaphragm Type");
+      (*p_table)(row,  1) << _T("**");
+   }
 
    const pgsLiftingCheckArtifact* pLiftArtifact = pGdrArtifact->GetLiftingCheckArtifact();
    if (pLiftArtifact!=NULL)
@@ -194,6 +230,9 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       (*p_table)(++row,0) << _T("Location of Lifting Loops, L");
       (*p_table)(row  ,1) << loc.SetValue(L);
    }
+
+   (*p_table)(++row,0) << Sub2(_T("L"),_T("d"));
+   (*p_table)(row,  1) << _T("***");
 
    const pgsHaulingCheckArtifact* pHaulingArtifact = pGdrArtifact->GetHaulingCheckArtifact();
    if ( pHaulingArtifact != NULL )
@@ -208,17 +247,17 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    CComPtr<IDirection> objDirGirder;
    pBridge->GetGirderBearing(span,girder,&objDirGirder);
-   double dirGdr;
+   Float64 dirGdr;
    objDirGirder->get_Value(&dirGdr);
 
    CComPtr<IDirection> objDir1;
    pBridge->GetPierDirection(span,&objDir1);
-   double dir1;
+   Float64 dir1;
    objDir1->get_Value(&dir1);
 
    CComPtr<IDirection> objDir2;
    pBridge->GetPierDirection(span+1,&objDir2);
-   double dir2;
+   Float64 dir2;
    objDir1->get_Value(&dir2);
 
    CComPtr<IAngle> objAngle1;
@@ -240,15 +279,6 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    (*p_table)(++row,0) << Sub2(symbol(theta),_T("2"));
    (*p_table)(row  ,1) << angle.SetValue(t2);
 
-   const ConnectionLibraryEntry* pConnEntry = pLib->GetConnectionEntry( start_connection.c_str() );
-   Float64 N1 = pConnEntry->GetGirderEndDistance();
-   (*p_table)(++row,0) << Sub2(_T("N"),_T("1"));
-   (*p_table)(row  ,1) << gdim.SetValue(N1);
-
-   pConnEntry = pLib->GetConnectionEntry( end_connection.c_str() );
-   Float64 N2 = pConnEntry->GetGirderEndDistance();
-   (*p_table)(++row,0) << Sub2(_T("N"),_T("2"));
-   (*p_table)(row  ,1) << gdim.SetValue(N2);
 
    PierIndexType prevPierIdx = (PierIndexType)span;
    PierIndexType nextPierIdx = prevPierIdx+1;
@@ -264,7 +294,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    }
    else
    {
-      Float64 P1 = N1 / sin(t1);
+      Float64 P1 = pBridge->GetGirderStartConnectionLength(span,girder);
       (*p_table)(row  ,1) << gdim.SetValue(P1);
    }
 
@@ -277,7 +307,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    }
    else
    {
-      Float64 P2 = N2 / sin(t2);
+      Float64 P2 = pBridge->GetGirderEndConnectionLength(span,girder);
       (*p_table)(row  ,1) << gdim.SetValue(P2);
    }
 
@@ -291,46 +321,48 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    (*p_table)(++row,0) << RPT_FCI << _T(" (at Release)");
    (*p_table)(row  ,1) << stress.SetValue(pMaterial->GetFciGdr(span,girder));
 
-   StrandIndexType nh = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Harped);
-   (*p_table)(++row,0) << _T("Number of Harped Strands");
-   (*p_table)(row  ,1) << nh;
-
-   Float64 hj = pStrandGeometry->GetPjack(span,girder,pgsTypes::Harped);
-   (*p_table)(++row,0) << _T("Jacking Force, Harped Strands");
-   (*p_table)(row  ,1) << force.SetValue(hj);
-
-   StrandIndexType ns = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Straight);
-   (*p_table)(++row,0) << _T("Number of Straight Strands");
-   (*p_table)(row  ,1) << ns;
-   StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(span,girder,pgsTypes::Straight);
-   if ( nDebonded != 0 )
-      (*p_table)(row,1) << _T(" (") << nDebonded << _T(" debonded)");
-
-   Float64 sj = pStrandGeometry->GetPjack(span,girder,pgsTypes::Straight);
-   (*p_table)(++row,0) << _T("Jacking Force, Straight Strands");
-   (*p_table)(row  ,1) << force.SetValue(sj);
-
-   if ( 0 < pStrandGeometry->GetMaxStrands(span,girder,pgsTypes::Temporary ) )
+   StrandIndexType Nh = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Harped);
+   StrandIndexType Ns = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Straight);
+   if ( bCanReportPrestressInformation )
    {
-      StrandIndexType nt = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Temporary);
-      (*p_table)(++row,0) << _T("Number of Temporary Strands");
+      (*p_table)(++row,0) << _T("Number of Harped Strands");
+      (*p_table)(row  ,1) << Nh;
 
-      switch ( pgirderData->PrestressData.TempStrandUsage )
+      (*p_table)(++row,0) << _T("Number of Straight Strands");
+      (*p_table)(row  ,1) << Ns;
+      StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(span,girder,pgsTypes::Straight);
+      if ( nDebonded != 0 )
+         (*p_table)(row,1) << _T(" (") << nDebonded << _T(" debonded)");
+
+      if ( 0 < pStrandGeometry->GetMaxStrands(span,girder,pgsTypes::Temporary ) )
       {
-      case pgsTypes::ttsPTAfterLifting:
-         (*p_table)(row,0) << rptNewLine << _T("Temporary strands post-tensioned immediately after lifting");
-         break;
+         StrandIndexType Nt = pStrandGeometry->GetNumStrands(span,girder,pgsTypes::Temporary);
+         (*p_table)(++row,0) << _T("Number of Temporary Strands");
 
-      case pgsTypes::ttsPTBeforeShipping:
-         (*p_table)(row,0) << rptNewLine << _T("Temporary strands post-tensioned immediately before shipping");
-         break;
+         switch ( pGirderData->PrestressData.TempStrandUsage )
+         {
+         case pgsTypes::ttsPTAfterLifting:
+            (*p_table)(row,0) << rptNewLine << _T("Temporary strands post-tensioned immediately after lifting");
+            break;
+
+         case pgsTypes::ttsPTBeforeShipping:
+            (*p_table)(row,0) << rptNewLine << _T("Temporary strands post-tensioned immediately before shipping");
+            break;
+         }
+
+         (*p_table)(row  ,1) << Nt;
       }
+   }
+   else
+   {
+      (*p_table)(++row,0) << _T("Number of Harped Strands");
+      (*p_table)(row  ,1) << _T("#");
 
-      (*p_table)(row  ,1) << nt;
+      (*p_table)(++row,0) << _T("Number of Straight Strands");
+      (*p_table)(row  ,1) << _T("#");
 
-      Float64 tj = pStrandGeometry->GetPjack(span,girder,pgsTypes::Temporary);
-      (*p_table)(++row,0) << _T("Jacking Force, Temporary Strands");
-      (*p_table)(row  ,1) << force.SetValue(tj);
+      (*p_table)(++row,0) << _T("Number of Temporary Strands");
+      (*p_table)(row  ,1) << _T("#");
    }
 
    GET_IFACE2(pBroker, ISectProp2, pSectProp2 );
@@ -338,48 +370,60 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    Float64 nEff;
    Float64 sse = pStrandGeometry->GetSsEccentricity(pmid[0], &nEff);
    (*p_table)(++row,0) << _T("E");
-   if (0 < ns)
+   if (0 < Ns)
       (*p_table)(row,1) << gdim.SetValue(ybg-sse);
    else
       (*p_table)(row,1) << RPT_NA;
 
    Float64 hse = pStrandGeometry->GetHsEccentricity(pmid[0], &nEff);
    (*p_table)(++row,0) << Sub2(_T("F"),_T("C.L."));
-   if (0 < nh)
+   if (0 < Nh)
       (*p_table)(row,1) << gdim.SetValue(ybg-hse);
    else
       (*p_table)(row,1) << RPT_NA;
 
-   // get location of first harped strand
-   (*p_table)(++row,0) << Sub2(_T("F"),_T("b"));
-   if (0 < nh)
-   {
-      CComPtr<IPoint2dCollection> p2dcol;
-      pStrandGeometry->GetStrandPositions(pmid[0],pgsTypes::Harped,&p2dcol);
-      CComPtr<IPoint2d> pnt0, pnt1;
-      p2dcol->get_Item(0,&pnt0);
-      p2dcol->get_Item(nh-1,&pnt1);
-      Float64 x,Fb0,Fb1;
-      pnt0->Location(&x,&Fb0);
-      pnt1->Location(&x,&Fb1);
-      Float64 Fb = min(Fb0,Fb1);
-      (*p_table)(row,1) << gdim.SetValue(Fb);
-   }
-   else
-   {
-      (*p_table)(row,1) << RPT_NA;
-   }
 
-   Float64 ytg = pSectProp2->GetYtGirder(pgsTypes::CastingYard,pois);
-   Float64 hss = pStrandGeometry->GetHsEccentricity(pois, &nEff);
+   Float64 ytg = pSectProp2->GetYtGirder(pgsTypes::CastingYard,poiStart);
+   Float64 hss = pStrandGeometry->GetHsEccentricity(poiStart, &nEff);
    (*p_table)(++row,0) << Sub2(_T("F"),_T("o"));
-   if (0 < nh)
+   if (0 < Nh)
    {
       (*p_table)(row,1) << gdim.SetValue(ytg+hss);
    }
    else
    {
       (*p_table)(row,1) << RPT_NA;
+   }
+
+   // Strand Extensions
+   (*p_table)(++row,0) << _T("Straight Strands to Extend, End 1");
+   StrandIndexType nExtended = 0;
+   for ( StrandIndexType strandIdx = 0; strandIdx < Ns; strandIdx++ )
+   {
+      if ( pStrandGeometry->IsExtendedStrand(span,girder,pgsTypes::metStart,strandIdx,pgsTypes::Straight) )
+      {
+         nExtended++;
+         (*p_table)(row,1) << _T(" ") << (strandIdx+1);
+      }
+   }
+   if ( nExtended == 0 )
+   {
+      (*p_table)(row,1) << _T("");
+   }
+
+   (*p_table)(++row,0) << _T("Straight Strands to Extend, End 2");
+   nExtended = 0;
+   for ( StrandIndexType strandIdx = 0; strandIdx < Ns; strandIdx++ )
+   {
+      if ( pStrandGeometry->IsExtendedStrand(span,girder,pgsTypes::metEnd,strandIdx,pgsTypes::Straight) )
+      {
+         nExtended++;
+         (*p_table)(row,1) << _T(" ") << (strandIdx+1);
+      }
+   }
+   if ( nExtended == 0 )
+   {
+      (*p_table)(row,1) << _T("");
    }
 
    (*p_table)(++row,0) << _T("Screed Camber, C");
@@ -391,7 +435,113 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    (*p_table)(++row,0) << _T("Upper bound camber at ")<< max_days<<_T(" days, D") << Sub(max_days);
    (*p_table)(row  ,1) << gdim.SetValue(pCamber->GetDCamberForGirderSchedule( pmid[0], CREEP_MAXTIME) );
 
+
+   // Stirrups
+   IndexType V1, V3, V5;
+   Float64 V2, V4, V6;
+   int reinfDetailsResult = GetReinforcementDetails(pBroker,span,girder,familyCLSID == CLSID_UBeamFamily,&V1,&V2,&V3,&V4,&V5,&V6);
+   if (reinfDetailsResult < 0)
+   {
+      (*p_table)(++row,0) << _T("V1");
+      (*p_table)(row,1) << _T("###");
+      (*p_table)(++row,0) << _T("V2");
+      (*p_table)(row,1) << _T("###");
+      (*p_table)(++row,0) << _T("V3");
+      (*p_table)(row,1) << _T("###");
+      (*p_table)(++row,0) << _T("V4");
+      (*p_table)(row,1) << _T("###");
+      (*p_table)(++row,0) << _T("V5");
+      (*p_table)(row,1) << _T("###");
+      (*p_table)(++row,0) << _T("V6");
+      (*p_table)(row,1) << _T("###");
+   }
+   else
+   {
+      (*p_table)(++row,0) << _T("V1");
+      (*p_table)(row,1) << V1;
+      (*p_table)(++row,0) << _T("V2");
+      (*p_table)(row,1) << stirrup_spacing.SetValue(V2);
+      (*p_table)(++row,0) << _T("V3");
+      (*p_table)(row,1) << V3;
+      (*p_table)(++row,0) << _T("V4");
+      (*p_table)(row,1) << stirrup_spacing.SetValue(V4);
+      (*p_table)(++row,0) << _T("V5");
+      (*p_table)(row,1) << V5;
+      (*p_table)(++row,0) << _T("V6");
+      (*p_table)(row,1) << stirrup_spacing.SetValue(V6);
+   }
+
+   // Stirrup Zones
+
+   // H1 (Hg + "A" + 3")
+   if ( pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge )
+   {
+      (*p_table)(++row,0) << _T("H1 (##)");
+      Float64 Hg = pSectProp2->GetHg(pgsTypes::CastingYard,poiStart);
+      Float64 H1 = pBridgeDesc->GetSlabOffset() + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
+      (*p_table)(row,  1) << gdim.SetValue(H1);
+   }
+   else
+   {
+      (*p_table)(++row,0) << _T("H1 at End 1 (##)");
+      Float64 Hg = pSectProp2->GetHg(pgsTypes::CastingYard,poiStart);
+      Float64 H1 = pGirderTypes->GetSlabOffset(girder,pgsTypes::metStart) + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
+      (*p_table)(row,  1) << gdim.SetValue(H1);
+
+      (*p_table)(++row,0) << _T("H1 at End 2 (##)");
+      pgsPointOfInterest poiEnd(poiStart);
+      poiEnd.SetDistFromStart(pBridge->GetGirderLength(span,girder));
+      Hg = pSectProp2->GetHg(pgsTypes::CastingYard,poiEnd);
+      H1 = pGirderTypes->GetSlabOffset(girder,pgsTypes::metEnd) + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
+      (*p_table)(row,  1) << gdim.SetValue(H1);
+   }
+
+
+   p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   *pChapter << p;
+   *p << _T("* End Types to be determined by the Designer.") << rptNewLine;
+   *p << _T("** Intermediate Diaphragm Type to be determined by the Designer.") << rptNewLine;
+   *p << _T("*** ") << Sub2(_T("L"),_T("d")) << _T(" to be determined by the Designer.") << rptNewLine;
+   if ( !bCanReportPrestressInformation )
+   {
+      *p << _T("# Prestressing information could not be included in the girder schedule because strand input is not consistent with the standard WSDOT details.") << rptNewLine;
+   }
+   *p << _T("## H1 is computed as the height of the girder H + 3\" + \"A\" Dimension. Designers shall check H1 for the effect of vertical curve and increase as necessary.") << rptNewLine;
+
+   if (reinfDetailsResult == STIRRUP_ERROR_ZONES)
+   {
+      *p << _T("### Reinforcement details could not be listed because the number of transverse reinforcement zones is not consistent with the girder schedule.") << rptNewLine;
+   }
+   else if ( reinfDetailsResult == STIRRUP_ERROR_SYMMETRIC )
+   {
+      *p << _T("### Reinforcement details could not be listed because the girder schedule is for symmetric transverse reinforcement layouts.") << rptNewLine;
+   }
+   else if ( reinfDetailsResult == STIRRUP_ERROR_STARTZONE )
+   {
+      *p << _T("### Reinforcement details could not be listed because first zone of transverse reinforcement is not consistent with standard WSDOT details.") << rptNewLine;
+   }
+   else if ( reinfDetailsResult == STIRRUP_ERROR_LASTZONE )
+   {
+      *p << _T("### Reinforcement details could not be listed because spacing in the last zone is not 1'-6\" per the standard WSDOT details.") << rptNewLine;
+   }
+   else if ( reinfDetailsResult == STIRRUP_ERROR_BARSIZE )
+   {
+      *p << _T("### Reinforcement details could not be listed because the bar size is not #5 in one or more zones.") << rptNewLine;
+   }
+   else if ( reinfDetailsResult == STIRRUP_ERROR_V6 )
+   {
+      *p << _T("### Reinforcement details could not be listed because two different values are needed for V6.") << rptNewLine;
+   }
+   else if ( reinfDetailsResult < 0 )
+   {
+      *p << _T("### Reinforcement details could not be listed.") << rptNewLine;
+   }
+
+
+
    // Figure
+   p = new rptParagraph;
+   *pChapter << p;
    *p << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("GirderSchedule.jpg")) << rptNewLine;
 
    return pChapter;
@@ -420,3 +570,140 @@ CChapterBuilder* CGirderScheduleChapterBuilder::Clone() const
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
+int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,bool bIsUBeam,IndexType* pV1,Float64 *pV2,IndexType *pV3,Float64* pV4,IndexType *pV5,Float64* pV6) const
+{
+   GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
+   if ( !pStirrupGeometry->AreStirrupZonesSymmetrical(span,gdr) )
+      return STIRRUP_ERROR_SYMMETRIC;
+
+   // Check if the number of zones is consistent with the girder schedule
+   ZoneIndexType nZones = pStirrupGeometry->GetNumPrimaryZones(span,gdr); // this is total number of zones
+   nZones = nZones/2 + 1; // this is the input number of zones (and it must be symmetric)
+   if ( nZones != 5 && nZones != 6 )
+      return STIRRUP_ERROR_ZONES;
+
+   // Check first zone... it must be 1-1/2" long with 1-1/2" spacing... one space
+   matRebar::Size barSize;
+   Float64 count, spacing;
+   pStirrupGeometry->GetPrimaryVertStirrupBarInfo(span,gdr,0, &barSize, &count, &spacing);
+
+   Float64 zoneStart,zoneEnd;
+   pStirrupGeometry->GetPrimaryZoneBounds(span,gdr,0,&zoneStart,&zoneEnd);
+   pStirrupGeometry->GetPrimaryVertStirrupBarInfo(span,gdr,0, &barSize, &count, &spacing);
+   Float64 zoneLength = zoneEnd - zoneStart;
+   Float64 v = zoneLength/spacing;
+
+   if ( barSize != matRebar::bs5 )
+      return STIRRUP_ERROR_BARSIZE;
+
+   if ( !IsEqual(v,1.0) && !IsEqual(spacing,::ConvertToSysUnits(1.5,unitMeasure::Inch)) )
+      return STIRRUP_ERROR_STARTZONE;
+
+   // So far, so good... start figuring out the V values
+
+   // Zone 1 (V1 & V2)
+   pStirrupGeometry->GetPrimaryZoneBounds(span,gdr,1,&zoneStart,&zoneEnd);
+   pStirrupGeometry->GetPrimaryVertStirrupBarInfo(span,gdr,1, &barSize, &count, &spacing);
+   zoneLength = zoneEnd - zoneStart;
+   v = zoneLength/spacing;
+   if ( !IsEqual(v,Round(v)) )
+      return STIRRUP_ERROR_ZONES;
+
+   if ( barSize != matRebar::bs5 )
+      return STIRRUP_ERROR_BARSIZE;
+
+   *pV1 = IndexType(floor(v));
+   *pV2 = spacing;
+
+   // Zone 2 (V3 & V4)
+   pStirrupGeometry->GetPrimaryZoneBounds(span,gdr,2,&zoneStart,&zoneEnd);
+   pStirrupGeometry->GetPrimaryVertStirrupBarInfo(span,gdr,2, &barSize, &count, &spacing);
+   zoneLength = zoneEnd - zoneStart;
+   v = zoneLength/spacing;
+   if ( !IsEqual(v,Round(v)) )
+      return STIRRUP_ERROR_ZONES;
+
+   if ( barSize != matRebar::bs5 )
+      return STIRRUP_ERROR_BARSIZE;
+
+   *pV3 = IndexType(Round(v));
+   *pV4 = spacing;
+
+   // Zone 3 (either V6 or V5 & V6);
+   Float64 v6Spacing;
+   if ( nZones == 6 )
+   {
+      // this small zone that is labeled V6 on the stirrup layout is modeled
+      pStirrupGeometry->GetPrimaryZoneBounds(span,gdr,3,&zoneStart,&zoneEnd);
+      pStirrupGeometry->GetPrimaryVertStirrupBarInfo(span,gdr,3, &barSize, &count, &spacing);
+      zoneLength = zoneEnd - zoneStart;
+      v = zoneLength/spacing;
+      if ( !IsEqual(v,Round(v)) )
+         return STIRRUP_ERROR_ZONES;
+
+      if ( bIsUBeam )
+      {
+         if ( barSize != matRebar::bs4 )
+            return STIRRUP_ERROR_BARSIZE;
+      }
+      else
+      {
+         if ( barSize != matRebar::bs5 )
+            return STIRRUP_ERROR_BARSIZE;
+      }
+
+      if ( !IsEqual(zoneLength,spacing) )
+      {
+         return STIRRUP_ERROR_V6;
+      }
+
+      v6Spacing = spacing;
+   }
+
+   ZoneIndexType zoneIdx = (nZones == 5 ? 3 : 4);
+   pStirrupGeometry->GetPrimaryZoneBounds(span,gdr,zoneIdx,&zoneStart,&zoneEnd);
+   pStirrupGeometry->GetPrimaryVertStirrupBarInfo(span,gdr,zoneIdx, &barSize, &count, &spacing);
+   zoneLength = zoneEnd - zoneStart;
+   v = zoneLength/spacing;
+   if ( !IsEqual(v,Round(v)) )
+      return STIRRUP_ERROR_ZONES;
+
+   if ( bIsUBeam )
+   {
+      if ( barSize != matRebar::bs4 )
+         return STIRRUP_ERROR_BARSIZE;
+   }
+   else
+   {
+      if ( barSize != matRebar::bs5 )
+         return STIRRUP_ERROR_BARSIZE;
+   }
+
+   *pV5 = IndexType(Round(v)) - (nZones == 5 ? 1 : 0);
+   *pV6 = spacing;
+
+   if ( nZones == 6 && !IsEqual(spacing,v6Spacing) )
+   {
+      return STIRRUP_ERROR_V6;
+   }
+
+   zoneIdx = (nZones == 5 ? 4 : 5);
+   pStirrupGeometry->GetPrimaryVertStirrupBarInfo(span,gdr,zoneIdx, &barSize, &count, &spacing);
+
+   if ( !IsEqual(spacing,::ConvertToSysUnits(18.0,unitMeasure::Inch)) )
+      return STIRRUP_ERROR_LASTZONE;
+
+
+   if ( bIsUBeam )
+   {
+      if ( barSize != matRebar::bs4 )
+         return STIRRUP_ERROR_BARSIZE;
+   }
+   else
+   {
+      if ( barSize != matRebar::bs5 )
+         return STIRRUP_ERROR_BARSIZE;
+   }
+
+   return STIRRUP_ERROR_NONE;
+}

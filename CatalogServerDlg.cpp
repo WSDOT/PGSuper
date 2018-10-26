@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
+#include "PGSuperAppPlugin\resource.h"
 #include "CatalogServerDlg.h"
 #include "ServerDefinitionDlg.h"
 
@@ -37,9 +38,17 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CCatalogServerDlg dialog
 
-
 CCatalogServerDlg::CCatalogServerDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CCatalogServerDlg::IDD, pParent)
+{
+	//{{AFX_DATA_INIT(CCatalogServerDlg)
+		// NOTE: the ClassWizard will add member initialization here
+	//}}AFX_DATA_INIT
+}
+
+
+CCatalogServerDlg::CCatalogServerDlg(const CString& strExt,CWnd* pParent /*=NULL*/)
+	: CDialog(CCatalogServerDlg::IDD, pParent),m_TemplateFileExt(strExt)
 {
 	//{{AFX_DATA_INIT(CCatalogServerDlg)
 		// NOTE: the ClassWizard will add member initialization here
@@ -72,7 +81,7 @@ void CCatalogServerDlg::OnAdd()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CServerDefinitionDlg dlg(m_Servers);
+   CServerDefinitionDlg dlg(m_Servers,m_TemplateFileExt);
    if ( dlg.DoModal() == IDOK )
    {
       m_Servers.RemoveServer(dlg.m_ServerName);
@@ -113,7 +122,7 @@ void CCatalogServerDlg::OnEdit()
    pLB->GetText(idx,strName);
    const CPGSuperCatalogServer* pserver = m_Servers.GetServer(strName);
 	
-   CServerDefinitionDlg dlg(m_Servers,pserver);
+   CServerDefinitionDlg dlg(m_Servers,pserver,m_TemplateFileExt);
 
    if ( dlg.DoModal() == IDOK )
    {

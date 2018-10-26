@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -184,7 +184,7 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       hr = pStrLoad->BeginUnit(_T("SpanDataDetails"));
 
-      double version;
+      Float64 version;
       pStrLoad->get_Version(&version);
 
       if ( !m_pBridgeDesc->UseSameNumberOfGirdersInAllSpans() )
@@ -295,15 +295,15 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       if ( m_pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
       {
          pStrLoad->BeginUnit(_T("LLDF"));
-         double lldf_version;
+         Float64 lldf_version;
          pStrLoad->get_Version(&lldf_version);
 
          if ( lldf_version < 3 )
          {
             // have to convert old data
-            double gPM[2][2];
-            double gNM[2][2];
-            double  gV[2][2];
+            Float64 gPM[2][2];
+            Float64 gNM[2][2];
+            Float64  gV[2][2];
 
             if ( lldf_version < 2 )
             {
@@ -635,14 +635,14 @@ CGirderSpacing* CSpanData::GetGirderSpacing(pgsTypes::PierFaceType pierFace)
    return GetGirderSpacing(PIER_FACE_TO_GIRDER_END(pierFace));
 }
 
-void CSpanData::SetLLDFPosMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls,double gM)
+void CSpanData::SetLLDFPosMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls,Float64 gM)
 {
    LLDF& rlldf = GetLLDF(gdrIdx);
 
    rlldf.gPM[ls == pgsTypes::FatigueI ? 1 : 0] = gM;
 }
 
-void CSpanData::SetLLDFPosMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,double gM)
+void CSpanData::SetLLDFPosMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,Float64 gM)
 {
    GirderIndexType ngdrs = GetGirderCount();
    if (ngdrs>2 && gdrloc==pgsTypes::Interior)
@@ -660,21 +660,21 @@ void CSpanData::SetLLDFPosMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::Limi
 }
 
 
-double CSpanData::GetLLDFPosMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
+Float64 CSpanData::GetLLDFPosMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
 {
    const LLDF& rlldf = GetLLDF(gdrIdx);
 
    return rlldf.gPM[ls == pgsTypes::FatigueI ? 1 : 0];
 }
 
-void CSpanData::SetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls,double gM)
+void CSpanData::SetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls,Float64 gM)
 {
    LLDF& rlldf = GetLLDF(gdrIdx);
 
    rlldf.gNM[ls == pgsTypes::FatigueI ? 1 : 0] = gM;
 }
 
-void CSpanData::SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,double gM)
+void CSpanData::SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,Float64 gM)
 {
    GirderIndexType ngdrs = GetGirderCount();
    if (ngdrs>2 && gdrloc==pgsTypes::Interior)
@@ -691,21 +691,21 @@ void CSpanData::SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::Limi
    }
 }
 
-double CSpanData::GetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
+Float64 CSpanData::GetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
 {
    const LLDF& rlldf = GetLLDF(gdrIdx);
 
    return rlldf.gNM[ls == pgsTypes::FatigueI ? 1 : 0];
 }
 
-void CSpanData::SetLLDFShear(GirderIndexType gdrIdx, pgsTypes::LimitState ls,double gV)
+void CSpanData::SetLLDFShear(GirderIndexType gdrIdx, pgsTypes::LimitState ls,Float64 gV)
 {
    LLDF& rlldf = GetLLDF(gdrIdx);
 
    rlldf.gV[ls == pgsTypes::FatigueI ? 1 : 0] = gV;
 }
 
-void CSpanData::SetLLDFShear(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,double gM)
+void CSpanData::SetLLDFShear(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,Float64 gM)
 {
    GirderIndexType ngdrs = GetGirderCount();
    if (ngdrs>2 && gdrloc==pgsTypes::Interior)
@@ -722,14 +722,14 @@ void CSpanData::SetLLDFShear(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitSta
    }
 }
 
-double CSpanData::GetLLDFShear(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
+Float64 CSpanData::GetLLDFShear(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
 {
    const LLDF& rlldf = GetLLDF(gdrIdx);
 
    return rlldf.gV[ls == pgsTypes::FatigueI ? 1 : 0];
 }
 
-double CSpanData::GetSpanLength() const
+Float64 CSpanData::GetSpanLength() const
 {
    return m_pNextPier->GetStation() - m_pPrevPier->GetStation();
 }

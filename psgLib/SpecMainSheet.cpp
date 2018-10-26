@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -598,6 +598,7 @@ void CSpecMainSheet::ExchangeDeflectionsData(CDataExchange* pDX)
 
 void CSpecMainSheet::ExchangeCreepData(CDataExchange* pDX)
 {
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
@@ -615,6 +616,23 @@ void CSpecMainSheet::ExchangeCreepData(CDataExchange* pDX)
 
    DDX_UnitValueAndTag(pDX, IDC_CREEP_DURATION2_MAX, IDC_CREEP_DURATION2_TAG, m_Entry.m_CreepDuration2Max, pDisplayUnits->Time2 );
    DDV_UnitValueLimitOrMore(pDX, IDC_CREEP_DURATION2_MAX,m_Entry.m_CreepDuration2Max, m_Entry.m_CreepDuration2Min, pDisplayUnits->Time2 );
+
+   if ( pDX->m_bSaveAndValidate )
+   {
+      if ( m_Entry.m_CreepDuration2Min < m_Entry.m_CreepDuration1Min )
+      {
+         pDX->PrepareEditCtrl(IDC_CREEP_DURATION2_MIN);
+         AfxMessageBox(_T("The time from prestress transfer to slab casting must be greater than the time from prestress transfer to temporary strand removal/diaphragm casting."));
+         pDX->Fail();
+      }
+
+      if ( m_Entry.m_CreepDuration2Max < m_Entry.m_CreepDuration1Max )
+      {
+         pDX->PrepareEditCtrl(IDC_CREEP_DURATION2_MAX);
+         AfxMessageBox(_T("The time from prestress transfer to slab casting must be greater than the time from prestress transfer to temporary strand removal/diaphragm casting."));
+         pDX->Fail();
+      }
+   }
 
    DDX_UnitValueAndTag(pDX, IDC_NC_CREEP, IDC_NC_CREEP_TAG, m_Entry.m_TotalCreepDuration, pDisplayUnits->Time2 );
    DDV_UnitValueGreaterThanLimit(pDX, IDC_NC_CREEP,m_Entry.m_TotalCreepDuration, m_Entry.m_CreepDuration2Min, pDisplayUnits->Time2 );
@@ -727,7 +745,7 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
 
       DDX_CBIndex(pDX,IDC_LOSS_METHOD,idx);
 
-      double dummy = 0;
+      Float64 dummy = 0;
       if ( m_Entry.m_LossMethod == LOSSES_AASHTO_REFINED || m_Entry.m_LossMethod == LOSSES_WSDOT_REFINED || 
            m_Entry.m_LossMethod == LOSSES_AASHTO_LUMPSUM || m_Entry.m_LossMethod == LOSSES_WSDOT_LUMPSUM ||
            m_Entry.m_LossMethod == LOSSES_TXDOT_REFINED_2004)

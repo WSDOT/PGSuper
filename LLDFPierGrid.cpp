@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -444,7 +444,7 @@ BOOL CLLDFPierGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	   CGXControl* pControl = GetControl(nRow, nCol);
 	   pControl->GetCurrentText(s);
 
-      double d;
+      Float64 d;
       if (!sysTokenizer::ParseDouble(s, &d))
 	   {
 		   SetWarningText (_T("Distribution factor value must be a non-negative number"));

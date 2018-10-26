@@ -1,10 +1,9 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 40.00   5  9.00  1     1     Tx28       12   1/2  270 10.48 10.48   0  0.0  4.000  5.000    1.020   -1.486   1306  0.810  1.060  0.05 -0.01  0.00 -0.00 -0.01  18.78  59.24   1.00   1.00   1.00
+ 40.00   5  9.00  1     1     Tx28       14   1/2  270 10.48 10.48   0  0.0  4.000  5.000    1.020   -1.486   1363  0.810  1.060  0.06 -0.01  0.00 -0.00 -0.01  25.42  77.27   1.00   1.00   1.00
 
 
-The Specification Check was Not Successful
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+The Specification Check was Successful
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -17,11 +16,10 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 40.00   5  9.00  1     3     Tx28       12   1/2  270 10.48 10.48   0  0.0  4.000  5.000    1.070   -1.549   1340  0.810  1.060  0.05 -0.01  0.00 -0.00 -0.01  18.78  58.47   1.00   1.00   1.00
+ 40.00   5  9.00  1     3     Tx28       14   1/2  270 10.48 10.48   0  0.0  4.000  5.000    1.070   -1.549   1367  0.810  1.060  0.06 -0.01  0.00 -0.00 -0.01  25.42  76.37   1.00   1.00   1.00
 
 
-The Specification Check was Not Successful
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+The Specification Check was Successful
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -43,19 +41,19 @@ Ultimate vertical shear capacity check failed for Strength I Limit State for the
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 40.00   5  9.00  2     3     Tx28       16   1/2  270 10.23 10.23   0  0.0  4.000  5.000    1.353   -1.895   1593  0.790  1.060  0.08 -0.02  0.00 -0.00 -0.02  30.97  90.02   1.00   1.00   1.00
+ 40.00   5  9.00  2     3     Tx28       18   1/2  270 10.04  9.59   4  6.5  4.000  5.000    1.353   -1.895   1593  0.790  1.060  0.09 -0.02  0.00 -0.00 -0.02  38.48 109.90   1.00   1.00   1.00
 
 
-The Specification Check was Successful
+The Specification Check was Not Successful
+Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 40.00   5  9.00  3     1     Tx28       18   1/2  270 10.04  9.59   4  6.5  4.000  5.000    1.580   -2.176   1823  0.760  1.070  0.10 -0.03  0.00 -0.00 -0.03  36.85 105.54   1.00   1.00   1.00
+ 40.00   5  9.00  3     1     Tx28       20   1/2  270  9.88  9.48   4  6.5  4.000  5.000    1.580   -2.176   1823  0.760  1.070  0.12 -0.03  0.00 -0.00 -0.03  44.96 126.74   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 
 
@@ -70,7 +68,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State for the
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 40.00   5  9.00  3     3     Tx28       18   1/2  270 10.04  9.59   4  6.5  4.000  5.000    1.671   -2.282   1877  0.760  1.070  0.10 -0.03  0.00 -0.00 -0.04  36.85 103.77   1.00   1.00   1.00
+ 40.00   5  9.00  3     3     Tx28       20   1/2  270  9.88  9.48   4  6.5  4.000  5.000    1.671   -2.282   1877  0.760  1.070  0.12 -0.03  0.00 -0.00 -0.04  44.96 124.81   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -129,7 +127,6 @@ Ultimate vertical shear capacity check failed for Strength I Limit State for the
 
 The Specification Check was Not Successful
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
-Stirrup detailing checks failed for the Strength I Limit State.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -54,7 +54,7 @@ extern CComModule _Module;
 #include <WBFLCogo.h>
 #include <WBFLGenericBridge.h>
 
-static const double SPACING_TOLER=::ConvertToSysUnits( 1.0,unitMeasure::Millimeter);
+static const Float64 SPACING_TOLER=::ConvertToSysUnits( 1.0,unitMeasure::Millimeter);
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.

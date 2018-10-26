@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -191,7 +191,7 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
    HRESULT hr2 = pStrLoad->BeginUnit(_T("PierDataDetails"));
 
-   double version;
+   Float64 version;
    pStrLoad->get_Version(&version);
    if ( version == 1.0 )
    {
@@ -427,14 +427,14 @@ HRESULT CPierData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          if ( m_pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
          {
             pStrLoad->BeginUnit(_T("LLDF"));
-            double lldf_version;
+            Float64 lldf_version;
             pStrLoad->get_Version(&lldf_version);
 
             if ( lldf_version < 3 )
             {
                // Prior to version 3, factors were for interior and exterior only
-               double gM[2][2];
-               double gR[2][2];
+               Float64 gM[2][2];
+               Float64 gR[2][2];
 
                if ( lldf_version < 2 )
                {
@@ -719,12 +719,12 @@ const CSpanData* CPierData::GetSpan(pgsTypes::PierFaceType face) const
    return (face == pgsTypes::Ahead ? m_pNextSpan : m_pPrevSpan);
 }
 
-double CPierData::GetStation() const
+Float64 CPierData::GetStation() const
 {
    return m_Station;
 }
 
-void CPierData::SetStation(double station)
+void CPierData::SetStation(Float64 station)
 {
    m_Station = station;
 }
@@ -769,21 +769,21 @@ void CPierData::SetConnectionLibraryEntry(pgsTypes::PierFaceType pierFace,const 
    m_pConnectionEntry[pierFace] = pLibEntry;
 }
 
-double CPierData::GetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
+Float64 CPierData::GetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
 {
    LLDF& rlldf = GetLLDF(gdrIdx);
 
    return rlldf.gM[ls == pgsTypes::FatigueI ? 1 : 0];
 }
 
-void CPierData::SetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls, double gM)
+void CPierData::SetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls, Float64 gM)
 {
    LLDF& rlldf = GetLLDF(gdrIdx);
 
    rlldf.gM[ls == pgsTypes::FatigueI ? 1 : 0] = gM;
 }
 
-void CPierData::SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls, double gM)
+void CPierData::SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls, Float64 gM)
 {
    GirderIndexType ngdrs = GetLldfGirderCount();
    if (ngdrs>2 && gdrloc==pgsTypes::Interior)
@@ -800,21 +800,21 @@ void CPierData::SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::Limi
    }
 }
 
-double CPierData::GetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
+Float64 CPierData::GetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
 {
    LLDF& rlldf = GetLLDF(gdrIdx);
 
    return rlldf.gR[ls == pgsTypes::FatigueI ? 1 : 0];
 }
 
-void CPierData::SetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls, double gR)
+void CPierData::SetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls, Float64 gR)
 {
    LLDF& rlldf = GetLLDF(gdrIdx);
 
    rlldf.gR[ls == pgsTypes::FatigueI ? 1 : 0] = gR;
 }
 
-void CPierData::SetLLDFReaction(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls, double gM)
+void CPierData::SetLLDFReaction(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls, Float64 gM)
 {
    GirderIndexType ngdrs = GetLldfGirderCount();
    if (ngdrs>2 && gdrloc==pgsTypes::Interior)

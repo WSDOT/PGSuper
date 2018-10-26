@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -297,9 +297,9 @@ bool pgsGirderHandlingChecker::DesignShipping(SpanIndexType span,GirderIndexType
       maxLeadingOverhang = Lg/2;
    }
 
-   double bigInc = 8*location_accuracy;
-   double smallInc = location_accuracy;
-   double inc = bigInc;
+   Float64 bigInc = 8*location_accuracy;
+   Float64 smallInc = location_accuracy;
+   Float64 inc = bigInc;
    bool bLargeStepSize = true;
 
    Float64 FScr = 0;
@@ -363,7 +363,7 @@ bool pgsGirderHandlingChecker::DesignShipping(SpanIndexType span,GirderIndexType
       if ( 0.95*FScrMin < FScr && 0.95*FSrMin < FSr && bLargeStepSize)
       {
          // we are getting close... Use a smaller step size
-         double oldInc = inc;
+         Float64 oldInc = inc;
          inc = smallInc;
          bLargeStepSize = false;
          if ( 1.05*FSrMin <= FSr )
@@ -655,7 +655,7 @@ void pgsGirderHandlingChecker::PrepareLiftingAnalysisArtifact(SpanIndexType span
    pArtifact->SetTotalInitialEccentricity(e_sweep*offset_factor + e_placement);
 
 
-   double f,fmax;
+   Float64 f,fmax;
    bool bMax;
    pGirderLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStressParameters(&f,&bMax,&fmax);
    pArtifact->SetAllowableTensileConcreteStressParameters(f,bMax,fmax);
@@ -819,7 +819,7 @@ void pgsGirderHandlingChecker::ComputeLiftingStresses(SpanIndexType span,GirderI
       GetRequirementsForAlternativeTensileStress(poi,ft_down,ft_down,fb_down,fb_down,&Yna3,&At3,&T3,&As3);
 
       Float64 As = Max3(As1,As2,As3);
-      double At, T;
+      Float64 At, T;
       if ( IsEqual(As,As1) )
       {
          At = At1;
@@ -1156,7 +1156,7 @@ void pgsGirderHandlingChecker::PrepareHaulingAnalysisArtifact(SpanIndexType span
 
    pArtifact->SetTotalInitialEccentricity(e_sweep*offset_factor + e_placement);
 
-   double f,fmax;
+   Float64 f,fmax;
    bool bMax;
    pGirderHaulingSpecCriteria->GetHaulingAllowableTensileConcreteStressParameters(&f,&bMax,&fmax);
    pArtifact->SetAllowableTensileConcreteStressParameters(f,bMax,fmax);
@@ -1321,7 +1321,7 @@ void pgsGirderHandlingChecker::ComputeHaulingStresses(SpanIndexType span,GirderI
       Float64 As = Max3(As1,As2,As3);
       ImpactDir controlling_impact;
       GirderOrientation controlling_orientation;
-      double At, T;
+      Float64 At, T;
       if ( IsEqual(As,As1) )
       {
          At = At1;
@@ -1623,15 +1623,15 @@ void pgsGirderHandlingChecker::GetRequirementsForAlternativeTensileStress(const 
        position->get_LocatorPoint(lpTopCenter,   &tc);
        position->get_LocatorPoint(lpBottomCenter,&bc);
 
-       double Xtop,Ytop;
-       double Xbot,Ybot;
+       Float64 Xtop,Ytop;
+       Float64 Xbot,Ybot;
        tc->get_X(&Xtop);
        tc->get_Y(&Ytop);
 
        bc->get_X(&Xbot);
        bc->get_Y(&Ybot);
 
-       double Wt, Wb;
+       Float64 Wt, Wb;
        Wt = pGirder->GetTopWidth(poi);
        Wb = pGirder->GetBottomWidth(poi);
 
@@ -1650,7 +1650,7 @@ void pgsGirderHandlingChecker::GetRequirementsForAlternativeTensileStress(const 
        plane->ThroughPoints(p1,p2,p3);
 
        // Determine neutral axis line by finding two points where z(stress) is zero
-       double ya,yb;
+       Float64 ya,yb;
        plane->GetY(-10000,0.00,&ya);
        plane->GetY( 10000,0.00,&yb);
 

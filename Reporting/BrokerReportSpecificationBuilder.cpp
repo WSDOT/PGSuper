@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -51,7 +51,7 @@ boost::shared_ptr<CReportSpecification> CBrokerReportSpecificationBuilder::Creat
       boost::shared_ptr<CReportSpecification> pRptSpec( new CBrokerReportSpecification(rptDesc.GetReportName(),m_pBroker) );
 
       std::vector<std::_tstring> chList = dlg.m_ChapterList;
-      AddChapters(rptDesc,chList,pRptSpec);
+      rptDesc.ConfigureReportSpecification(chList,pRptSpec);
 
       return pRptSpec;
    }
@@ -64,38 +64,7 @@ boost::shared_ptr<CReportSpecification> CBrokerReportSpecificationBuilder::Creat
    // Use all chapters at the maximum level
    boost::shared_ptr<CReportSpecification> pRptSpec( new CBrokerReportSpecification(rptDesc.GetReportName(),m_pBroker) );
 
-   AddChapters(rptDesc,pRptSpec);
+   rptDesc.ConfigureReportSpecification(pRptSpec);
 
    return pRptSpec;
-}
-
-void CBrokerReportSpecificationBuilder::AddChapters(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec)
-{
-   std::vector<CChapterInfo> vChInfo = rptDesc.GetChapterInfo();
-   std::vector<CChapterInfo>::const_iterator iter;
-   for ( iter = vChInfo.begin(); iter != vChInfo.end(); iter++ )
-   {
-      CChapterInfo chInfo = *iter;
-      if (chInfo.Select)
-         pRptSpec->AddChapter(chInfo.Name.c_str(),chInfo.Key.c_str(),chInfo.MaxLevel);
-   }
-}
-
-
-void CBrokerReportSpecificationBuilder::AddChapters(const CReportDescription& rptDesc,const std::vector<std::_tstring>& chList,boost::shared_ptr<CReportSpecification>& pRptSpec)
-{
-   std::vector<CChapterInfo> vChInfo = rptDesc.GetChapterInfo();
-
-   std::vector<std::_tstring>::const_iterator iter;
-   for ( iter = chList.begin(); iter != chList.end(); iter++ )
-   {
-      CChapterInfo search;
-      search.Name = *iter;
-
-      std::vector<CChapterInfo>::iterator found = std::find(vChInfo.begin(),vChInfo.end(),search);
-      ATLASSERT( found != vChInfo.end() ); // if this fires, the supplied chapter list isn't consistent with the report description
-      CChapterInfo chInfo = *found;
-      ATLASSERT( chInfo.Name == *iter);
-      pRptSpec->AddChapter(chInfo.Name.c_str(),chInfo.Key.c_str(),chInfo.MaxLevel);
-   }
 }

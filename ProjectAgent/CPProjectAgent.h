@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,8 @@
 #define EVT_ANALYSISTYPE      0x0800
 #define EVT_RATING_SPECIFICATION 0x1000
 #define EVT_CONSTRUCTIONLOAD     0x2000
+
+
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -142,13 +144,14 @@ class CProxyIBridgeDescriptionEventSink : public IConnectionPointImpl<T, &IID_IB
 public:
 
 public:
-	HRESULT Fire_BridgeChanged()
+	HRESULT Fire_BridgeChanged(CBridgeChangedHint* pHint = NULL)
 	{
 		T* pT = (T*)this;
 
       if ( pT->m_bHoldingEvents )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_BRIDGE);
+         pT->m_PendingBridgeChangedHints.push_back(pHint);
          return S_OK;
       }
 
@@ -160,10 +163,16 @@ public:
 			if (*pp != NULL)
 			{
 				IBridgeDescriptionEventSink* pEventSink = reinterpret_cast<IBridgeDescriptionEventSink*>(*pp);
-				ret = pEventSink->OnBridgeChanged();
+				ret = pEventSink->OnBridgeChanged(pHint);
 			}
 			pp++;
 		}
+      if ( pHint )
+      {
+         delete pHint;
+         pHint = NULL;
+      }
+
 		pT->Unlock();
 		return ret;
 	}

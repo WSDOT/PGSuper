@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -138,9 +138,9 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
          pThis->m_pDoc->GetBroker(&pBroker);
          GET_IFACE2(pBroker,IBridge,pBridge);
          Float64 gdr_length = pBridge->GetGirderLength(data.m_Span, data.m_Girder);
-         double  start_lgth = pBridge->GetGirderStartConnectionLength(data.m_Span, data.m_Girder);
-         double  end_lgth   = pBridge->GetGirderEndConnectionLength(data.m_Span, data.m_Girder);
-         double  span_lgth  = gdr_length - start_lgth - end_lgth;
+         Float64  start_lgth = pBridge->GetGirderStartConnectionLength(data.m_Span, data.m_Girder);
+         Float64  end_lgth   = pBridge->GetGirderEndConnectionLength(data.m_Span, data.m_Girder);
+         Float64  span_lgth  = gdr_length - start_lgth - end_lgth;
 
          Float64 wx;
          point->get_X(&wx);
@@ -183,9 +183,9 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
          pThis->m_pDoc->GetBroker(&pBroker);
          GET_IFACE2(pBroker,IBridge,pBridge);
          Float64 gdr_length = pBridge->GetGirderLength(data.m_Span, data.m_Girder);
-         double  start_lgth = pBridge->GetGirderStartConnectionLength(data.m_Span, data.m_Girder);
-         double  end_lgth   = pBridge->GetGirderEndConnectionLength(data.m_Span, data.m_Girder);
-         double  span_lgth  = gdr_length - start_lgth - end_lgth;
+         Float64  start_lgth = pBridge->GetGirderStartConnectionLength(data.m_Span, data.m_Girder);
+         Float64  end_lgth   = pBridge->GetGirderEndConnectionLength(data.m_Span, data.m_Girder);
+         Float64  span_lgth  = gdr_length - start_lgth - end_lgth;
 
          // set length of load to 1/10 span length
          Float64 load_length = span_lgth/10;
@@ -232,9 +232,9 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
          pThis->m_pDoc->GetBroker(&pBroker);
          GET_IFACE2(pBroker,IBridge,pBridge);
          Float64 gdr_length = pBridge->GetGirderLength(data.m_Span, data.m_Girder);
-         double  start_lgth = pBridge->GetGirderStartConnectionLength(data.m_Span, data.m_Girder);
-         double  end_lgth   = pBridge->GetGirderEndConnectionLength(data.m_Span, data.m_Girder);
-         double span_lgth   = gdr_length - start_lgth - end_lgth;
+         Float64  start_lgth = pBridge->GetGirderStartConnectionLength(data.m_Span, data.m_Girder);
+         Float64  end_lgth   = pBridge->GetGirderEndConnectionLength(data.m_Span, data.m_Girder);
+         Float64 span_lgth   = gdr_length - start_lgth - end_lgth;
 
          Float64 wx;
          point->get_X(&wx);

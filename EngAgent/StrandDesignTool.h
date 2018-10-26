@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -296,7 +296,7 @@ public:
    bool UpdateReleaseStrength(Float64 fciRequired,ConcStrengthResultType strengthResult,pgsTypes::Stage stage,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation StressLocation);
    bool Bump500(pgsTypes::Stage stage,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation);
 
-   ConcStrengthResultType ComputeRequiredConcreteStrength(double fControl,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType stressType,double* pfc);
+   ConcStrengthResultType ComputeRequiredConcreteStrength(Float64 fControl,pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType stressType,Float64* pfc);
 
    // "A"
    void SetSlabOffset(pgsTypes::MemberEndType end,Float64 offset);

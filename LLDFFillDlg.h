@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -101,7 +101,7 @@ public:
    CComboBox m_PierGirderCB;
    afx_msg void OnCbnSelchangeGirderSpan();
    afx_msg void OnCbnSelchangePier();
-   double m_UserInputValue;
+   Float64 m_UserInputValue;
    int m_Method;
    int m_GIRDER_SPAN_INT;
    int m_GIRDER_GIRDER_INT;

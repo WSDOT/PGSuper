@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -107,7 +107,7 @@ void CTrafficBarrierViewDialog::OnPaint()
 
    CComPtr<IRect2d> bbox;
    m_pShape->get_BoundingBox(&bbox);
-   double left,right,top,bottom;
+   Float64 left,right,top,bottom;
    bbox->get_Left(&left);
    bbox->get_Right(&right);
    bbox->get_Top(&top);

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -49,8 +49,8 @@ void CDeckEdgeBuilder::BuildDeckEdges(const CBridgeDescription* pBridgeDesc,ICog
    const CDeckDescription* pDeck = m_pBridgeDesc->GetDeckDescription();
    m_DeckPoints = pDeck->DeckEdgePoints;
 
-   double startPierStation = m_pBridgeDesc->GetPier(0)->GetStation();
-   double lastPierStation  = m_pBridgeDesc->GetPier(m_pBridgeDesc->GetPierCount()-1)->GetStation();
+   Float64 startPierStation = m_pBridgeDesc->GetPier(0)->GetStation();
+   Float64 lastPierStation  = m_pBridgeDesc->GetPier(m_pBridgeDesc->GetPierCount()-1)->GetStation();
 
    if ( startPierStation < m_DeckPoints.front().Station )
    {
@@ -111,8 +111,8 @@ void CDeckEdgeBuilder::NextDeckPoint()
    CComPtr<IDirection> alignmentNormal;
    m_Alignment->Normal(CComVariant(deckPoint.Station),&alignmentNormal);
 
-   double left_offset;
-   double right_offset;
+   Float64 left_offset;
+   Float64 right_offset;
 
    if ( deckPoint.MeasurementType == pgsTypes::omtAlignment )
    {
@@ -123,7 +123,7 @@ void CDeckEdgeBuilder::NextDeckPoint()
    else
    {
       // deck edge is measured from the CL bridge. compute the offsets from the alignment
-      double alignment_offset = m_pBridgeDesc->GetAlignmentOffset();
+      Float64 alignment_offset = m_pBridgeDesc->GetAlignmentOffset();
       left_offset  = alignment_offset - deckPoint.LeftEdge;
       right_offset = alignment_offset + deckPoint.RightEdge;
    }
@@ -425,7 +425,7 @@ pgsTypes::DeckPointTransitionType CDeckEdgeBuilder::EndSpline(IPath* pPath,IPoin
       CComPtr<IDirection> nextAlignmentNormal;
       m_Alignment->Normal(CComVariant(nextDeckPoint.Station),&nextAlignmentNormal);
 
-      double offset  = (bLeft ? -nextDeckPoint.LeftEdge : nextDeckPoint.RightEdge);
+      Float64 offset  = (bLeft ? -nextDeckPoint.LeftEdge : nextDeckPoint.RightEdge);
 
       CComPtr<IPoint2d> next_point;
       m_Alignment->LocatePoint(CComVariant(nextDeckPoint.Station), omtAlongDirection, offset, CComVariant(nextAlignmentNormal),&next_point);
@@ -442,14 +442,14 @@ pgsTypes::DeckPointTransitionType CDeckEdgeBuilder::EndSpline(IPath* pPath,IPoin
    return transition;
 }
 
-pgsTypes::DeckPointTransitionType CDeckEdgeBuilder::BeginParallel(double station,double offset,double* pStartStation,double* pOffset,pgsTypes::DeckPointTransitionType transition)
+pgsTypes::DeckPointTransitionType CDeckEdgeBuilder::BeginParallel(Float64 station,Float64 offset,Float64* pStartStation,Float64* pOffset,pgsTypes::DeckPointTransitionType transition)
 {
    *pStartStation = station;
    *pOffset = offset;
    return transition;
 }
 
-pgsTypes::DeckPointTransitionType CDeckEdgeBuilder::EndParallel(IPath* pPath,double startStation,double endStation,double offset,pgsTypes::DeckPointTransitionType transition)
+pgsTypes::DeckPointTransitionType CDeckEdgeBuilder::EndParallel(IPath* pPath,Float64 startStation,Float64 endStation,Float64 offset,pgsTypes::DeckPointTransitionType transition)
 {
    CComPtr<IPath> subPath;
    m_Alignment->CreateSubPath(CComVariant(startStation),CComVariant(endStation),&subPath);
@@ -476,7 +476,7 @@ pgsTypes::DeckPointTransitionType CDeckEdgeBuilder::LinearTransition(IPath* pPat
    return transition;
 }
 
-double CDeckEdgeBuilder::GetAlignmentOffset(double station)
+Float64 CDeckEdgeBuilder::GetAlignmentOffset(Float64 station)
 {
    return m_pBridgeDesc->GetAlignmentOffset();
 }

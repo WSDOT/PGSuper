@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -78,6 +78,8 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 #define MIN_SPAN_DEPTH_RATIO 4
+
+static Float64 gs_60KSI = ::ConvertToSysUnits(60.0,unitMeasure::KSI);
 
 /****************************************************************************
 CLASS
@@ -387,14 +389,25 @@ void pgsDesigner2::GetHaunchDetails(SpanIndexType span,GirderIndexType gdr,bool 
       diff_max = _cpp_max(diff_max,section_profile_effect);
 
       // girder orientation effect
+      Float64 pivot_crown = 0; // accounts for the pivot point being over a girder
       Float64 crown_slope = 0;
       if ( nMatingSurfaces == 1 )
       {
          // single top flange situation
-         crown_slope = pAlignment->GetCrownSlope(x,z);
+         // to account for the case when the pivot point is over the girder, compute an
+         // average crown slope based on the elevation at the flange tips
+         Float64 Wtf = pGdr->GetTopFlangeWidth(poi);
 
-         if ( 0 < z )
-            crown_slope *= -1;
+         Float64 ya_left  = pAlignment->GetElevation(x,z-Wtf/2);
+         Float64 ya_right = pAlignment->GetElevation(x,z+Wtf/2);
+
+         crown_slope = (ya_left - ya_right)/Wtf;
+
+         Float64 ya = pAlignment->GetElevation(x,z);
+         if ( (ya_left < ya && ya_right < ya) || (ya < ya_left && ya < ya_right) )
+         {
+            pivot_crown = ya - (ya_left+ya_right)/2;
+         }
       }
       else
       {
@@ -411,9 +424,15 @@ void pgsDesigner2::GetHaunchDetails(SpanIndexType span,GirderIndexType gdr,bool 
          Float64 ya_right = pAlignment->GetElevation(x,z+right_mating_surface_offset);
 
          crown_slope = (ya_left - ya_right)/(right_mating_surface_offset - left_mating_surface_offset);
+
+         Float64 ya = pAlignment->GetElevation(x,z);
+         if ( (ya_left < ya && ya_right < ya) || (ya < ya_left && ya < ya_right) )
+         {
+            pivot_crown = ya - (ya_left+ya_right)/2;
+         }
       }
 
-      Float64 section_girder_orientation_effect = (top_width/2)*(fabs(crown_slope - girder_orientation)/(sqrt(1+girder_orientation*girder_orientation)));
+      Float64 section_girder_orientation_effect = pivot_crown + (top_width/2)*(fabs(crown_slope - girder_orientation)/(sqrt(1+girder_orientation*girder_orientation)));
 
       SECTIONHAUNCH haunch;
       haunch.PointOfInterest = poi;
@@ -1683,6 +1702,14 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
    pArtifact->SetK2(K2);
 
    // nominal shear capacities 5.8.4.1-2,3
+   if ( lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::SixthEditionWith2013Interims && gs_60KSI < fy)
+   {
+      fy = gs_60KSI;
+      pArtifact->WasFyLimited(true);
+   }
+
+   pArtifact->SetFy(fy);
+
    Float64 Vn1, Vn2, Vn3;
    lrfdConcreteUtil::HorizontalShearResistances(c, u, K1, K2, Acv, pArtifact->GetAvOverS(), Pc, fc, fy,
                                                 &Vn1, &Vn2, &Vn3);
@@ -2430,7 +2457,8 @@ void pgsDesigner2::CheckMomentCapacity(SpanIndexType span,GirderIndexType gdr,pg
    }
 }
 
-void pgsDesigner2::InitShearCheck(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,const GDRCONFIG* pConfig)
+void pgsDesigner2::InitShearCheck(SpanIndexType span,GirderIndexType gdr,const std::vector<pgsPointOfInterest>& VPoi,
+                                  pgsTypes::LimitState ls,const GDRCONFIG* pConfig)
 {
    GET_IFACE(ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
@@ -2439,16 +2467,43 @@ void pgsDesigner2::InitShearCheck(SpanIndexType span,GirderIndexType gdr,pgsType
    PierIndexType prev_pier = PierIndexType(span);
    PierIndexType next_pier = prev_pier+1;
 
-
    // cache CS locations as they are very expensive to get
-   GET_IFACE(IPointOfInterest,pPOI);
-   if(pConfig!=NULL)
+   // First try to get them from our list of POI's
+   std::vector<pgsPointOfInterest> csPoi;
+   PoiAttributeType attrib = (ls == pgsTypes::StrengthI ? POI_CRITSECTSHEAR1 : POI_CRITSECTSHEAR2);
+   std::vector<pgsPointOfInterest>::const_iterator its = VPoi.begin();
+   std::vector<pgsPointOfInterest>::const_iterator ite = VPoi.end();
+   while(its != ite)
    {
-      pPOI->GetCriticalSection(ls,span,gdr,*pConfig,&m_LeftCS,&m_RightCS);
+      const pgsPointOfInterest rpoi = *its;
+      if (rpoi.HasAttribute(pgsTypes::BridgeSite3, attrib))
+      {
+         csPoi.push_back(rpoi);
+      }
+
+      its++;
+   }
+
+   if (!csPoi.empty())
+   {
+      // Got them from POI list - much faster
+      ATLASSERT(csPoi.size()==2);
+      m_LeftCS = csPoi.front();
+      m_RightCS = csPoi.back();
    }
    else
    {
-      pPOI->GetCriticalSection(ls,span,gdr,&m_LeftCS,&m_RightCS);
+      // CSS's not in POI list - we need to compute them - this is really expensive,
+      // and likely for load rating cases only
+      GET_IFACE(IPointOfInterest,pPOI);
+      if(pConfig!=NULL)
+      {
+         pPOI->GetCriticalSection(ls,span,gdr,*pConfig,&m_LeftCS,&m_RightCS);
+      }
+      else
+      {
+         pPOI->GetCriticalSection(ls,span,gdr,&m_LeftCS,&m_RightCS);
+      }
    }
 
    // DETERMINE IF vu <= 0.18f'c at each POI... set a boolean flag that indicates if strut and tie analysis is required
@@ -2488,7 +2543,7 @@ void pgsDesigner2::CheckShear(SpanIndexType span,GirderIndexType gdr,const std::
                               pgsTypes::LimitState ls,const GDRCONFIG* pConfig,pgsStirrupCheckArtifact* pStirrupArtifact)
 {
    pgsTypes::Stage stage = pgsTypes::BridgeSite3;
-   InitShearCheck(span,gdr,ls,pConfig); // sets up some class member variables used for checking
+   InitShearCheck(span,gdr,VPoi, ls,pConfig); // sets up some class member variables used for checking
                                         // this span and girder
 
    CHECK(pStirrupArtifact);

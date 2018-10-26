@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -180,7 +180,7 @@ CString CSpanLengthGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
         return GetValueRowCol(nRow, nCol);
 }
 
-void CSpanLengthGrid::FillGrid(const std::vector<double>& vSpanLengths)
+void CSpanLengthGrid::FillGrid(const std::vector<Float64>& vSpanLengths)
 {
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
@@ -203,10 +203,10 @@ void CSpanLengthGrid::FillGrid(const std::vector<double>& vSpanLengths)
 
       // fill grid
       ROWCOL nRow=1;
-      std::vector<double>::const_iterator iter;
+      std::vector<Float64>::const_iterator iter;
       for ( iter = vSpanLengths.begin(); iter != vSpanLengths.end(); iter++ )
       {
-         double L = *iter;
+         Float64 L = *iter;
          CString strLength;
          strLength.Format(_T("%s"),FormatDimension(L,pDisplayUnits->GetSpanLengthUnit(),false));
          SetValueRange(CGXRange(nRow,1),strLength);
@@ -224,7 +224,7 @@ void CSpanLengthGrid::FillGrid(const std::vector<double>& vSpanLengths)
 	GetParam()->EnableUndo(TRUE);
 }
 
-void CSpanLengthGrid::GetSpanLengths(std::vector<double>& vSpanLengths)
+void CSpanLengthGrid::GetSpanLengths(std::vector<Float64>& vSpanLengths)
 {
    vSpanLengths.clear();
 
@@ -237,7 +237,7 @@ void CSpanLengthGrid::GetSpanLengths(std::vector<double>& vSpanLengths)
    ROWCOL rows = GetRowCount();
    for ( ROWCOL row = 1; row <= rows; row++ )
    {
-      double L = _tstof(GetCellValue(row,1));
+      Float64 L = _tstof(GetCellValue(row,1));
       L = ::ConvertToSysUnits(L,um);
       vSpanLengths.push_back(L);
    }

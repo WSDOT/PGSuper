@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -86,7 +86,7 @@ public:
    CGirderSpacingGrid m_SpacingGrid[2];
 
    GirderIndexType m_RefGirderIdx[2];
-   double m_RefGirderOffset[2];
+   Float64 m_RefGirderOffset[2];
    pgsTypes::OffsetMeasurementType m_RefGirderOffsetType[2];
 
    // global bridge settings
@@ -124,7 +124,7 @@ protected:
    afx_msg LRESULT OnChangeSlabOffset(WPARAM wParam,LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 
-   void GetPierSkewAngles(double& skew1,double& skew2);
+   void GetPierSkewAngles(Float64& skew1,Float64& skew2);
 
    void AddGirders(GirderIndexType nGirders);
    void RemoveGirders(GirderIndexType nGirders);
@@ -143,7 +143,7 @@ protected:
    CGirderSpacingGridData m_GirderSpacingCache[2];
 
    GirderIndexType m_CacheRefGirderIdx[2];
-   double m_CacheRefGirderOffset[2];
+   Float64 m_CacheRefGirderOffset[2];
    pgsTypes::OffsetMeasurementType m_CacheRefGirderOffsetType[2];
 
    CGirderTypes m_GirderTypesCache;

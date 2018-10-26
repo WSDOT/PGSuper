@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper Beam Factory
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This library is a part of the Washington Bridge Foundation Libraries
@@ -65,7 +65,7 @@ DEFINE_GUID(IID_IBeamFactory,
 0xd3810b3e, 0x91d6, 0x4aed, 0xa7, 0x48, 0x8a, 0xbe, 0xb8, 0x7f, 0xcf, 0x44);
 interface IBeamFactory : IUnknown
 {
-   typedef std::pair<std::_tstring,double> Dimension;
+   typedef std::pair<std::_tstring,Float64> Dimension;
    typedef std::vector<Dimension> Dimensions;
 
    enum BeamFace {BeamTop, BeamBottom};
@@ -116,9 +116,9 @@ interface IBeamFactory : IUnknown
    // The StrandMover object knows how to move harped strands within the section when
    // the group elevation is changed
    virtual void CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
-                                  IBeamFactory::BeamFace endTopFace, double endTopLimit, IBeamFactory::BeamFace endBottomFace, double endBottomLimit, 
-                                  IBeamFactory::BeamFace hpTopFace, double hpTopLimit, IBeamFactory::BeamFace hpBottomFace, double hpBottomLimit, 
-                                  double endIncrement, double hpIncrement, IStrandMover** strandMover) = 0;
+                                  IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
+                                  IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
+                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) = 0;
 
    //---------------------------------------------------------------------------------
    // Returns a vector of strings representing the names of the dimensions that are used
@@ -133,7 +133,7 @@ interface IBeamFactory : IUnknown
    //---------------------------------------------------------------------------------
    // Returns a defaults for the dimensions. Values are order to match the vector returned by
    // GetDimensionNames
-   virtual std::vector<double> GetDefaultDimensions() = 0;
+   virtual std::vector<Float64> GetDefaultDimensions() = 0;
 
    //---------------------------------------------------------------------------------
    // Validates the dimensions. Return true if the dimensions are OK, otherwise false.
@@ -222,7 +222,7 @@ interface IBeamFactory : IUnknown
    // Returns allowable spacing distances for the given deck and spacing type.
    // Max spacing will be MAX_GIRDER_SPACING of no range is specified
    // Spacing is measured normal to the centerline of a typical girder
-   virtual void GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, double* minSpacing, double* maxSpacing) = 0;
+   virtual void GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the number of webs that the section has

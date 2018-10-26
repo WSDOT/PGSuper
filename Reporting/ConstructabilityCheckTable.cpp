@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -213,9 +213,9 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
    (*pTable)(0,3) << _T("Max Incline") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
    (*pTable)(0,4) << _T("Status");
 
-   double Wb, Yb, Orientation;
+   Float64 Wb, Yb, Orientation;
    pArtifact->GetGlobalGirderStabilityParameters(&Wb,&Yb,&Orientation);
-   double maxIncline = pArtifact->GetMaxGirderIncline();
+   Float64 maxIncline = pArtifact->GetMaxGirderIncline();
 
    (*pTable)(1,0) << dim.SetValue(Wb);
    (*pTable)(1,1) << dim.SetValue(Yb);

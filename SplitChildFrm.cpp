@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -86,7 +86,7 @@ BOOL CSplitChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pCont
    }
 
    // Add the first pane
-   int top_siz = (int)(((double)lpcs->cy)*GetTopFrameFraction());
+   int top_siz = (int)(((Float64)lpcs->cy)*GetTopFrameFraction());
    int bot_siz = lpcs->cy - top_siz;
    if ( !m_SplitterWnd.CreateView(0,0,pContext->m_pNewViewClass, CSize(lpcs->cx,top_siz), pContext) )
    {

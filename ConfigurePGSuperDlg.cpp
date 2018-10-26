@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,7 +28,7 @@
 #include "ConfigurePGSuperDlg.h"
 #include "CatalogServerDlg.h"
 #include "HtmlHelp\HelpTopics.hh"
-#include <MFCTools\CustomDDX.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -40,8 +40,8 @@ static char THIS_FILE[] = __FILE__;
 // CConfigurePGSuperDlg dialog
 
 
-CConfigurePGSuperDlg::CConfigurePGSuperDlg(BOOL bFirstRun,CWnd* pParent /*=NULL*/)
-	: CDialog(CConfigurePGSuperDlg::IDD, pParent)
+CConfigurePGSuperDlg::CConfigurePGSuperDlg(LPCTSTR lpszAppName,LPCTSTR lpszTemplateExt,BOOL bFirstRun,CWnd* pParent /*=NULL*/)
+	: CDialog(CConfigurePGSuperDlg::IDD, pParent), m_AppName(lpszAppName), m_TemplateFileExt(lpszTemplateExt)
 {
 	//{{AFX_DATA_INIT(CConfigurePGSuperDlg)
 	m_Company = _T("");
@@ -184,19 +184,29 @@ BOOL CConfigurePGSuperDlg::OnInitDialog()
    ServerList();
 
    CWnd* pWnd = GetDlgItem(IDC_EDIT);
-   pWnd->SetWindowText(_T("PGSuper doesn't have any default girders, design criteria, or other settings. All of the \"default\" information is stored in the Master Library and User and Workgroup Templates.\r\n\r\nPGSuper must be configured to use a specific Master Library and Templates. Use the Help button to get more information."));
+   CString strMsg;
+   strMsg.Format(_T("%s doesn't have any default girders, design criteria, or other settings. All of the \"default\" information is stored in the Master Library and User and Workgroup Templates.\r\n\r\nPGSuper must be configured to use a specific Master Library and Templates. Use the Help button to get more information."),m_AppName);
+   pWnd->SetWindowText(strMsg);
 
    pWnd = GetDlgItem(IDC_FIRST_RUN);
    if ( m_bFirstRun )
-      pWnd->SetWindowText(_T("This is the first time you've run PGSuper since it was installed. Before you can use PGSuper, it must be configured."));
+   {
+      strMsg.Format(_T("This is the first time you've run %s since it was installed. Before you can use %s, it must be configured."),m_AppName,m_AppName);
+      pWnd->SetWindowText(strMsg);
+   }
    else
+   {
       pWnd->SetWindowText(_T("Set the User, Library, and Template Configuration information."));
+   }
 
    if ( m_bFirstRun )
       HideOkAndCancelButtons();
 
    OnMethod();
    OnServerChanged();
+
+   strMsg.Format(_T("Configure %s"),m_AppName);
+   SetWindowText(strMsg);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -220,7 +230,7 @@ void CConfigurePGSuperDlg::UpdateFrequencyList()
    int idx = pCB->AddString(_T("Never"));
    pCB->SetItemData(idx,Never);
 
-   idx = pCB->AddString(_T("Every time PGSuper starts"));
+   idx = pCB->AddString(_T("Always"));
    pCB->SetItemData(idx,Always);
 
    idx = pCB->AddString(_T("Once a day"));
@@ -271,6 +281,7 @@ void CConfigurePGSuperDlg::OnAddCatalogServer()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CCatalogServerDlg dlg;
+   dlg.m_TemplateFileExt = m_TemplateFileExt;
    dlg.m_Servers = m_Servers;
    if ( dlg.DoModal() == IDOK )
    {
@@ -321,7 +332,7 @@ void CConfigurePGSuperDlg::PublisherList()
       wndProgress.CoCreateInstance(CLSID_ProgressMonitorWindow);
       wndProgress->put_HasGauge(VARIANT_FALSE);
       wndProgress->put_HasCancel(VARIANT_FALSE);
-      wndProgress->Show(CComBSTR(_T("Fetching package names from server...")),GetSafeHwnd());
+      wndProgress->Show(CComBSTR("Fetching package names from server..."),GetSafeHwnd());
 
       // fill up the list box
       const CPGSuperCatalogServer* pserver = m_Servers.GetServer(m_CurrentServer);
@@ -474,7 +485,6 @@ void CConfigurePGSuperDlg::ConfigureWebLink()
             {
                pWeb->EnableWindow(TRUE);
                m_PublisherHyperLink.SetURL(url);
-               m_PublisherHyperLink.SetTooltip(url);
             }
             else
             {

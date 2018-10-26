@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -200,8 +200,8 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
          (*table)(row,col++) << RPT_NA;
       }
 
-      double vu = pArtifact->GetDemand();
-      double vr = pArtifact->GetCapacity();
+      Float64 vu = pArtifact->GetDemand();
+      Float64 vr = pArtifact->GetCapacity();
       (*table)(row,col++) << shear.SetValue( vu );
       (*table)(row,col++) << shear.SetValue( vr );
 

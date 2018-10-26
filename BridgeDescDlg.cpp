@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperAppPlugin\Resource.h"
 #include "BridgeDescDlg.h"
+#include <PgsExt\DeckRebarData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -86,6 +87,7 @@ BEGIN_MESSAGE_MAP(CBridgeDescDlg, CPropertySheet)
 	//{{AFX_MSG_MAP(CBridgeDescDlg)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 	//}}AFX_MSG_MAP
+   WBFL_ON_PROPSHEET_OK
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -98,7 +100,45 @@ BOOL CBridgeDescDlg::OnInitDialog()
    HICON hIcon = (HICON)LoadImage(AfxGetResourceHandle(),MAKEINTRESOURCE(IDI_EDIT_BRIDGE),IMAGE_ICON,0,0,LR_DEFAULTSIZE);
    SetIcon(hIcon,FALSE);
 
+   UpdateData(FALSE); // calls DoDataExchange
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+BOOL CBridgeDescDlg::OnOK()
+{
+   BOOL bOK = UpdateData(TRUE);
+   return !bOK;
+}
+
+void CBridgeDescDlg::DoDataExchange(CDataExchange* pDX)
+{
+   CPropertySheet::DoDataExchange(pDX);
+   if ( pDX->m_bSaveAndValidate )
+   {
+      // force the active page to update its data
+      CPropertyPage* pPage = GetActivePage();
+      pPage->UpdateData(TRUE);
+
+      // Do bridge-wide validation
+
+      // Make sure there isn't negative moment rebar at non-continuous piers
+      // (Note that the latest rebar data is still in the rebar page, not in the bridge model)
+      std::vector<CDeckRebarData::NegMomentRebarData>::iterator iter(m_DeckRebarPage.m_RebarData.NegMomentRebar.begin());
+      std::vector<CDeckRebarData::NegMomentRebarData>::iterator end(m_DeckRebarPage.m_RebarData.NegMomentRebar.end());
+      for ( ; iter != end; iter++ )
+      {
+         CDeckRebarData::NegMomentRebarData& nmRebarData = *iter;
+         CPierData* pPier = m_BridgeDesc.GetPier(nmRebarData.PierIdx);
+         pgsTypes::PierConnectionType connectionType = pPier->GetConnectionType();
+         if ( connectionType == pgsTypes::Hinged || connectionType == pgsTypes::Roller )
+         {
+            CString strMsg;
+            strMsg.Format(_T("Pier %d has a roller/hinge boundary condition. Supplemental deck reinforcement is not permitted at this pier. Change the boundary conditions or remove the supplemental reinforcement."),LABEL_PIER(nmRebarData.PierIdx));
+            AfxMessageBox(strMsg);
+            pDX->Fail();
+         }
+      }
+   }
 }

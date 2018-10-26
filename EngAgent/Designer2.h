@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -229,7 +229,7 @@ private:
    pgsStirrupCheckAtPoisArtifact CreateStirrupCheckAtPoisArtifact(const pgsPointOfInterest& poi,pgsTypes::Stage stage, pgsTypes::LimitState ls, Float64 vu,
                                                                   Float64 fcSlab,Float64 fcGdr, Float64 fy, bool checkConfinement,const GDRCONFIG* pConfig);
 
-   void InitShearCheck(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls,const GDRCONFIG* pConfig);
+   void InitShearCheck(SpanIndexType span,GirderIndexType gdr,const std::vector<pgsPointOfInterest>& VPoi,pgsTypes::LimitState ls,const GDRCONFIG* pConfig);
    bool IsDeepSection( const pgsPointOfInterest& poi);
    void CheckStirrupRequirement( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, pgsVerticalShearArtifact* pArtifact );
    void CheckUltimateShearCapacity( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, Float64 vu, const GDRCONFIG* pConfig, pgsVerticalShearArtifact* pArtifact );

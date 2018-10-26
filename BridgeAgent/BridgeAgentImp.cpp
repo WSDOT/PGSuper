@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -2021,6 +2021,16 @@ bool CBridgeAgentImp::BuildCogoModel()
 
          if ( IsZero(L1) && IsZero(L2) )
          {
+            // zero length vertical curve.... this is ok as it creates
+            // a profile point. It isn't common so warn the user
+            std::_tostringstream os;
+            os << _T("Vertical curve ") << curveID << _T(" is a zero length curve.");
+            std::_tstring strMsg = os.str();
+
+            pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentWarning,1,strMsg.c_str());
+            GET_IFACE(IEAFStatusCenter,pStatusCenter);
+            pStatusCenter->Add(p_status_item);
+
             // add a profile point
             if ( iter == profile_data.VertCurves.begin() )
             {
@@ -3931,21 +3941,29 @@ void CBridgeAgentImp::LayoutPoiForBarCutoffs(SpanIndexType span,GirderIndexType 
 
       if ( nmRebarData.PierIdx == prev_pier )
       {
-         Float64 dist_from_start = nmRebarData.RightCutoff - left_brg_offset + left_end_size;
-         if ( gdr_length < dist_from_start )
-            dist_from_start = gdr_length - 0.0015;
+         Float64 girder_start_dist = left_brg_offset - left_end_size;
+         if ( girder_start_dist <= nmRebarData.RightCutoff )
+         {
+            Float64 dist_from_start = nmRebarData.RightCutoff - girder_start_dist;
+            if ( gdr_length < dist_from_start )
+               dist_from_start = gdr_length - 0.0015;
 
-         m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start,attribute) );
-         m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start+0.0015,POI_FLEXURECAPACITY | POI_GRAPHICAL) );
+            m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start,attribute) );
+            m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start+0.0015,POI_FLEXURECAPACITY | POI_GRAPHICAL) );
+         }
       }
       else if ( nmRebarData.PierIdx == next_pier )
       {
-         Float64 dist_from_start = gdr_length - (nmRebarData.LeftCutoff - right_brg_offset + right_end_size);
-         if ( dist_from_start < 0 )
-            dist_from_start = 0.0015;
+         Float64 girder_end_dist = right_brg_offset - right_end_size;
+         if ( girder_end_dist <= nmRebarData.LeftCutoff )
+         {
+            Float64 dist_from_start = gdr_length - (nmRebarData.LeftCutoff - girder_end_dist);
+            if ( dist_from_start < 0 )
+               dist_from_start = 0.0015;
 
-         m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start-0.0015,POI_FLEXURECAPACITY | POI_GRAPHICAL) );
-         m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start,attribute) );
+            m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start-0.0015,POI_FLEXURECAPACITY | POI_GRAPHICAL) );
+            m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start,attribute) );
+         }
       }
    }
 }
@@ -6129,7 +6147,7 @@ Float64 CBridgeAgentImp::GetCurbToCurbWidth(Float64 distFromStartOfBridge)
    return right_offset - left_offset;
 }
 
-Float64 CBridgeAgentImp::GetLeftInteriorCurbOffset(double distFromStartOfBridge)
+Float64 CBridgeAgentImp::GetLeftInteriorCurbOffset(Float64 distFromStartOfBridge)
 {
    VALIDATE( BRIDGE );
    Float64 station = GetPierStation(0);
@@ -6139,7 +6157,7 @@ Float64 CBridgeAgentImp::GetLeftInteriorCurbOffset(double distFromStartOfBridge)
    return offset;
 }
 
-Float64 CBridgeAgentImp::GetRightInteriorCurbOffset(double distFromStartOfBridge)
+Float64 CBridgeAgentImp::GetRightInteriorCurbOffset(Float64 distFromStartOfBridge)
 {
    VALIDATE( BRIDGE );
    Float64 station = GetPierStation(0);
@@ -6149,7 +6167,7 @@ Float64 CBridgeAgentImp::GetRightInteriorCurbOffset(double distFromStartOfBridge
    return offset;
 }
 
-Float64 CBridgeAgentImp::GetLeftOverlayToeOffset(double distFromStartOfBridge)
+Float64 CBridgeAgentImp::GetLeftOverlayToeOffset(Float64 distFromStartOfBridge)
 {
    Float64 slab_edge = GetLeftSlabEdgeOffset(distFromStartOfBridge);
 
@@ -6162,7 +6180,7 @@ Float64 CBridgeAgentImp::GetLeftOverlayToeOffset(double distFromStartOfBridge)
    return slab_edge + toe_width;
 }
 
-Float64 CBridgeAgentImp::GetRightOverlayToeOffset(double distFromStartOfBridge)
+Float64 CBridgeAgentImp::GetRightOverlayToeOffset(Float64 distFromStartOfBridge)
 {
    Float64 slab_edge = GetRightSlabEdgeOffset(distFromStartOfBridge);
 
@@ -11211,7 +11229,19 @@ void CBridgeAgentImp::GetStrandPositionsEx(const pgsPointOfInterest& poi,const P
       break;
 
    case pgsTypes::Harped:
+      // save and restore precast harped girders adjustment shift values, before/after geting point locations
+      Float64 t_end_shift, t_hp_shift;
+      girder->get_HarpedStrandAdjustmentEnd(&t_end_shift);
+      girder->get_HarpedStrandAdjustmentHP(&t_hp_shift);
+
+      girder->put_HarpedStrandAdjustmentEnd(rconfig.EndOffset);
+      girder->put_HarpedStrandAdjustmentHP(rconfig.HpOffset);
+
       hr = girder->get_HarpedStrandPositionsEx(poi.GetDistFromStart(),&fill,ppPoints);
+
+      girder->put_HarpedStrandAdjustmentEnd(t_end_shift);
+      girder->put_HarpedStrandAdjustmentHP(t_hp_shift);
+
       break;
 
    case pgsTypes::Temporary:
@@ -14447,7 +14477,7 @@ std::vector<IUserDefinedLoads::UserMomentLoad>* CBridgeAgentImp::GetUserMomentLo
 ////////////////////////////////////////////////////////////////////////
 // IBridgeDescriptionEventSink
 //
-HRESULT CBridgeAgentImp::OnBridgeChanged()
+HRESULT CBridgeAgentImp::OnBridgeChanged(CBridgeChangedHint* pHint)
 {
 //   LOG(_T("OnBridgeChanged Event Received"));
    INVALIDATE( CLEAR_ALL );
@@ -15021,17 +15051,25 @@ void CBridgeAgentImp::LayoutGirderRebar(SpanIndexType span,GirderIndexType gdr)
    matRebar::Grade grade;
    matRebar::Type type;
    pLongRebar->GetLongitudinalRebarMaterial(span,gdr,type,grade);
-   MaterialSpec matSpec = (type == matRebar::A615 ? msA615 : msA706);
+   MaterialSpec matSpec = (type == matRebar::A615 ? msA615 : (type == matRebar::A706 ? msA706 : msA1035));
    RebarGrade matGrade;
    switch(grade)
    {
-   case matRebar::Grade40: matGrade = Grade40; break;
-   case matRebar::Grade60: matGrade = Grade60; break;
-   case matRebar::Grade75: matGrade = Grade75; break;
-   case matRebar::Grade80: matGrade = Grade80; break;
+   case matRebar::Grade40:  matGrade = Grade40;  break;
+   case matRebar::Grade60:  matGrade = Grade60;  break;
+   case matRebar::Grade75:  matGrade = Grade75;  break;
+   case matRebar::Grade80:  matGrade = Grade80;  break;
+   case matRebar::Grade100: matGrade = Grade100; break;
    default:
       ATLASSERT(false);
    }
+
+#if defined _DEBUG
+      if ( matGrade == Grade100 )
+      {
+         ATLASSERT(lrfdVersionMgr::SixthEditionWith2013Interims <= lrfdVersionMgr::GetVersion());
+      }
+#endif
 
    CComPtr<IRebarFactory> rebar_factory;
    rebar_factory.CoCreateInstance(CLSID_RebarFactory);

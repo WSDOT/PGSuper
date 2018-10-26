@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -99,7 +99,7 @@ void CProfilePage::DoDataExchange(CDataExchange* pDX)
    }
    else
    {
-      double grade = m_ProfileData.Grade * 100;
+      Float64 grade = m_ProfileData.Grade * 100;
       DDX_Text(pDX, IDC_GRADE, grade );
 
       m_Grid.SetCurveData(m_ProfileData.VertCurves);

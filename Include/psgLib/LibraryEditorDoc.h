@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // Library Editor - Editor for WBFL Library Services
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,7 @@
 
 #include <psglib\ISupportLibraryManager.h>
 #include <psgLib\LibraryManager.h>
+
 #include <EAF\EAFDocument.h>
 
 class PSGLIBCLASS CLibraryEditorDoc  : public CEAFDocument , public libISupportLibraryManager
@@ -47,6 +48,7 @@ public:
 
 // Operations
 public:
+   virtual BOOL Init(); 
 
 // Overrides
 	// ClassWizard generated virtual function overrides

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -70,8 +70,8 @@ LOG
 class PGSEXTCLASS CDeckRebarData
 {
 public:
-   double TopCover;
-   double BottomCover;
+   Float64 TopCover;
+   Float64 BottomCover;
 
    matRebar::Type TopRebarType;
    matRebar::Grade TopRebarGrade;
@@ -81,11 +81,11 @@ public:
    matRebar::Grade BottomRebarGrade;
    matRebar::Size BottomRebarSize;
 
-   double TopSpacing;
-   double BottomSpacing;
+   Float64 TopSpacing;
+   Float64 BottomSpacing;
 
-   double TopLumpSum;
-   double BottomLumpSum;
+   Float64 TopLumpSum;
+   Float64 BottomLumpSum;
 
    enum RebarMat { TopMat, BottomMat };
    struct NegMomentRebarData
@@ -96,10 +96,10 @@ public:
 
       PierIndexType PierIdx;
       RebarMat Mat;
-      double LumpSum;
-      double Spacing;
-      double LeftCutoff;
-      double RightCutoff;
+      Float64 LumpSum;
+      Float64 Spacing;
+      Float64 LeftCutoff;
+      Float64 RightCutoff;
 
       bool operator!=(const NegMomentRebarData& rOther) const;
       bool operator==(const NegMomentRebarData& rOther) const;

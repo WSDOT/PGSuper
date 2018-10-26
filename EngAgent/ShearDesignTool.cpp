@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -546,10 +546,32 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const std::vector<pgsPointOfIn
    for ( ; poiIter != poiIterEnd; poiIter++)
    {
       const pgsPointOfInterest& poi = *poiIter;
+      if (poi.HasAttribute(pgsTypes::BridgeSite3, POI_CRITSECTSHEAR1))
+      {
+         // Strip CSS's of their attribute
+         pgsPointOfInterest newpoi = poi;
+         PoiAttributeType nattrib = poi.GetAttributes(pgsTypes::BridgeSite3);
+         nattrib = nattrib ^ POI_CRITSECTSHEAR1;
+         newpoi.SetAttributes(pgsTypes::BridgeSite3, nattrib);
 
-      m_PoiMgr.AddPointOfInterest(poi);
+         m_PoiMgr.AddPointOfInterest(newpoi);
+      }
+      else
+      {
+         m_PoiMgr.AddPointOfInterest(poi);
+      }
    }
 
+   // Get CSS for current configuration and add POI to our list
+   GDRCONFIG gconfig = GetGirderConfiguration();
+
+   pgsPointOfInterest cssLeft, cssRight;
+   GET_IFACE(IPointOfInterest,pPOI);
+   pPOI->GetCriticalSection(pgsTypes::StrengthI,m_Span,m_Girder,gconfig,&cssLeft,&cssRight);
+   m_PoiMgr.AddPointOfInterest(cssLeft);
+   m_PoiMgr.AddPointOfInterest(cssRight);
+
+   // Some additional pois
    const PoiAttributeType attrib = POI_ALLACTIONS | POI_ALLOUTPUT;
 
    std::vector<pgsTypes::Stage> stages;
@@ -2151,7 +2173,19 @@ Float64 pgsShearDesignTool::ComputeMaxStirrupSpacing(IndexType PoiIdx)
 
    Float64 spec_spacing=Float64_Max;
 
-   pgsStirrupCheckAtPoisArtifactKey keyI(pgsTypes::BridgeSite3, pgsTypes::StrengthI, location);
+   // If we are inside of CSS, use location of CSS for stirrup detailing. This gets rid
+   // of wierdness happening close to supports - like small negative moment affecting dv
+   Float64 detail_loc = location;
+   if (location < m_LeftCSS)
+   {
+      detail_loc = m_LeftCSS;
+   }
+   else if (location > m_RightCSS)
+   {
+      detail_loc = m_RightCSS;
+   }
+
+   pgsStirrupCheckAtPoisArtifactKey keyI(pgsTypes::BridgeSite3, pgsTypes::StrengthI, detail_loc);
    const pgsStirrupCheckAtPoisArtifact* pStrI_artf = m_StirrupCheckArtifact.GetStirrupCheckAtPoisArtifact(keyI);
    if(pStrI_artf!=NULL)
    {
@@ -2165,7 +2199,7 @@ Float64 pgsShearDesignTool::ComputeMaxStirrupSpacing(IndexType PoiIdx)
 
    if (m_bIsPermit)
    {
-      pgsStirrupCheckAtPoisArtifactKey keyII(pgsTypes::BridgeSite3, pgsTypes::StrengthII, location);
+      pgsStirrupCheckAtPoisArtifactKey keyII(pgsTypes::BridgeSite3, pgsTypes::StrengthII, detail_loc);
       const pgsStirrupCheckAtPoisArtifact* pStrII_artf = m_StirrupCheckArtifact.GetStirrupCheckAtPoisArtifact(keyII);
       if(pStrII_artf!=NULL)
       {
@@ -2182,7 +2216,7 @@ Float64 pgsShearDesignTool::ComputeMaxStirrupSpacing(IndexType PoiIdx)
 
    Float64 spacing = spec_spacing;
 
-   // Confinement
+   // Confinement - use real location
    if (DoDesignForConfinement() && GetBarsActAsConfinement() && IsLocationInConfinementZone(location) )
    {
       // We are in a confinement zone and use primary bars for confinement

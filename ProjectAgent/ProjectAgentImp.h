@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -54,6 +54,7 @@
 
 class CStructuredLoad;
 class ConflictList;
+class CBridgeChangedHint;
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -140,6 +141,7 @@ BEGIN_CONNECTION_POINT_MAP(CProjectAgentImp)
 END_CONNECTION_POINT_MAP()
 
    StatusCallbackIDType m_scidGirderDescriptionWarning;
+   StatusCallbackIDType m_scidRebarStrengthWarning;
 
 
 // IAgent
@@ -201,8 +203,8 @@ public:
    virtual void SetSpan(SpanIndexType spanIdx,const CSpanData& spanData);
    virtual const CPierData* GetPier(PierIndexType pierIdx);
    virtual void SetPier(PierIndexType pierIdx,const CPierData& PierData);
-   virtual void SetSpanLength(SpanIndexType spanIdx,double newLength);
-   virtual void MovePier(PierIndexType pierIdx,double newStation,pgsTypes::MovePierOption moveOption);
+   virtual void SetSpanLength(SpanIndexType spanIdx,Float64 newLength);
+   virtual void MovePier(PierIndexType pierIdx,Float64 newStation,pgsTypes::MovePierOption moveOption);
    virtual void SetMeasurementType(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::MeasurementType mt);
    virtual void SetMeasurementLocation(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::MeasurementLocation ml);
    virtual void SetGirderSpacing(PierIndexType pierIdx,pgsTypes::PierFaceType face,const CGirderSpacing& spacing);
@@ -225,7 +227,7 @@ public:
    virtual void SetGirderName(LPCTSTR strGirderName);
    virtual void SetGirderSpacingType(pgsTypes::SupportedBeamSpacing sbs);
    virtual pgsTypes::SupportedBeamSpacing GetGirderSpacingType();
-   virtual void SetGirderSpacing(double spacing);
+   virtual void SetGirderSpacing(Float64 spacing);
    virtual void SetMeasurementType(pgsTypes::MeasurementType mt);
    virtual pgsTypes::MeasurementType GetMeasurementType();
    virtual void SetMeasurementLocation(pgsTypes::MeasurementLocation ml);
@@ -308,7 +310,7 @@ public:
    virtual Float64 GetWearingSurfaceFactor(pgsTypes::LimitState ls) const;
    virtual void SetLiveLoadFactor(pgsTypes::LimitState ls,Float64 gLL);
    virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,bool bResolveIfDefault=false) const;
-   virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,Int16 adtt,const RatingLibraryEntry* pRatingEntry,bool bResolveIfDefault=false) const;
+   virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,pgsTypes::SpecialPermitType specialPermitType,Int16 adtt,const RatingLibraryEntry* pRatingEntry,bool bResolveIfDefault=false) const;
    virtual void SetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType,Float64 t);
    virtual Float64 GetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType) const;
    virtual Float64 GetAllowableTension(pgsTypes::LoadRatingType ratingType,SpanIndexType spanIdx,GirderIndexType gdrIdx) const;
@@ -423,10 +425,10 @@ public:
    virtual void SetPedestrianLoadApplication(pgsTypes::LiveLoadType llType, PedestrianLoadApplicationType PedLoad);
    virtual std::vector<std::_tstring> GetLiveLoadNames(pgsTypes::LiveLoadType llType);
    virtual void SetLiveLoadNames(pgsTypes::LiveLoadType llType,const std::vector<std::_tstring>& names);
-   virtual double GetTruckImpact(pgsTypes::LiveLoadType llType);
-   virtual void SetTruckImpact(pgsTypes::LiveLoadType llType,double impact);
-   virtual double GetLaneImpact(pgsTypes::LiveLoadType llType);
-   virtual void SetLaneImpact(pgsTypes::LiveLoadType llType,double impact);
+   virtual Float64 GetTruckImpact(pgsTypes::LiveLoadType llType);
+   virtual void SetTruckImpact(pgsTypes::LiveLoadType llType,Float64 impact);
+   virtual Float64 GetLaneImpact(pgsTypes::LiveLoadType llType);
+   virtual void SetLaneImpact(pgsTypes::LiveLoadType llType,Float64 impact);
    virtual void SetLldfRangeOfApplicabilityAction(LldfRangeOfApplicabilityAction action);
    virtual LldfRangeOfApplicabilityAction GetLldfRangeOfApplicabilityAction();
    virtual std::_tstring GetLLDFSpecialActionText(); // get common string for ignore roa case
@@ -440,19 +442,19 @@ public:
 
 // ILimits
 public:
-   virtual double GetMaxSlabFc();
-   virtual double GetMaxGirderFci();
-   virtual double GetMaxGirderFc();
-   virtual double GetMaxConcreteUnitWeight();
-   virtual double GetMaxConcreteAggSize();
+   virtual Float64 GetMaxSlabFc();
+   virtual Float64 GetMaxGirderFci();
+   virtual Float64 GetMaxGirderFc();
+   virtual Float64 GetMaxConcreteUnitWeight();
+   virtual Float64 GetMaxConcreteAggSize();
 
 // ILimits2
 public:
-   virtual double GetMaxSlabFc(pgsTypes::ConcreteType concType);
-   virtual double GetMaxGirderFci(pgsTypes::ConcreteType concType);
-   virtual double GetMaxGirderFc(pgsTypes::ConcreteType concType);
-   virtual double GetMaxConcreteUnitWeight(pgsTypes::ConcreteType concType);
-   virtual double GetMaxConcreteAggSize(pgsTypes::ConcreteType concType);
+   virtual Float64 GetMaxSlabFc(pgsTypes::ConcreteType concType);
+   virtual Float64 GetMaxGirderFci(pgsTypes::ConcreteType concType);
+   virtual Float64 GetMaxGirderFc(pgsTypes::ConcreteType concType);
+   virtual Float64 GetMaxConcreteUnitWeight(pgsTypes::ConcreteType concType);
+   virtual Float64 GetMaxConcreteAggSize(pgsTypes::ConcreteType concType);
 
 // ILoadFactors
 public:
@@ -520,7 +522,7 @@ private:
    Float64 m_RelHumidity;
 
    // Alignment Data
-   double m_AlignmentOffset_Temp;
+   Float64 m_AlignmentOffset_Temp;
    bool m_bUseTempAlignmentOffset;
 
    AlignmentData2 m_AlignmentData2;
@@ -560,8 +562,8 @@ private:
 
    // index is pgsTypes::LiveLoadTypes constant
    LiveLoadSelectionContainer m_SelectedLiveLoads[8];
-   double m_TruckImpact[8];
-   double m_LaneImpact[8];
+   Float64 m_TruckImpact[8];
+   Float64 m_LaneImpact[8];
    PedestrianLoadApplicationType m_PedestrianLoadApplicationType[3]; // lltDesign, lltPermit, lltFatigue only
 
    std::vector<std::_tstring> m_ReservedLiveLoads; // reserved live load names (names not found in library)
@@ -605,6 +607,7 @@ private:
    Uint32 m_PendingEvents;
    bool m_bHoldingEvents;
    std::map<SpanGirderHashType,Uint32> m_PendingEventsHash; // hash values for span/girders that have pending events
+   std::vector<CBridgeChangedHint*> m_PendingBridgeChangedHints;
 
    // Callback methods for structured storage map
    static HRESULT SpecificationProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
@@ -647,10 +650,10 @@ private:
    void DealWithGirderLibraryChanges(bool fromLibrary);  // behavior is different if problem is caused by a library change
    void DealWithConnectionLibraryChanges(bool fromLibrary);
    
-   void MoveBridge(PierIndexType pierIdx,double newStation);
-   void MoveBridgeAdjustPrevSpan(PierIndexType pierIdx,double newStation);
-   void MoveBridgeAdjustNextSpan(PierIndexType pierIdx,double newStation);
-   void MoveBridgeAdjustAdjacentSpans(PierIndexType pierIdx,double newStation);
+   void MoveBridge(PierIndexType pierIdx,Float64 newStation);
+   void MoveBridgeAdjustPrevSpan(PierIndexType pierIdx,Float64 newStation);
+   void MoveBridgeAdjustNextSpan(PierIndexType pierIdx,Float64 newStation);
+   void MoveBridgeAdjustAdjacentSpans(PierIndexType pierIdx,Float64 newStation);
 
    void SpecificationChanged(bool bFireEvent);
    void InitSpecification(const std::_tstring& spec);
@@ -664,6 +667,8 @@ private:
    void UseGirderLibraryEntries();
    void ReleaseBridgeLibraryEntries();
    void ReleaseGirderLibraryEntries();
+
+   void VerifyRebarGrade();
 
    DECLARE_STRSTORAGEMAP(CProjectAgentImp)
 

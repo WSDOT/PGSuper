@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -60,7 +60,7 @@ private:
       // index 0 = old data (before design), 1 = new data (design outcome)
       CGirderData m_GirderData[2];
       CShearData m_ShearData[2];
-      double m_SlabOffset[2][2]; // first index is pgsTypes::MemberEndType
+      Float64 m_SlabOffset[2][2]; // first index is pgsTypes::MemberEndType
       pgsTypes::SlabOffsetType m_SlabOffsetType[2];
    };
 

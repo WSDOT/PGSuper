@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -568,8 +568,8 @@ public:
 struct DEBONDCONFIG
 {
    StrandIndexType strandIdx; // index of strand that is debonded (indexed by total # of filled strand locations)
-   double LeftDebondLength;   // length of debond at left end of the girder
-   double RightDebondLength;  // length of debond at right end of the girder
+   Float64 LeftDebondLength;   // length of debond at left end of the girder
+   Float64 RightDebondLength;  // length of debond at right end of the girder
 
    bool operator<(const DEBONDCONFIG& other) const
    {

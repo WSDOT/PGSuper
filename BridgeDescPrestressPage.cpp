@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1455,7 +1455,7 @@ void CGirderDescPrestressPage::OnSelchangeHpComboHp()
       CString strOffset;
       CWnd* pWnd = GetDlgItem(IDC_HPOFFSET_HP);
       pWnd->GetWindowText(strOffset);
-      double offset = _tstof(strOffset);
+      Float64 offset = _tstof(strOffset);
 
       offset = ::ConvertToSysUnits(offset,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
@@ -1492,7 +1492,7 @@ void CGirderDescPrestressPage::OnSelchangeHpComboEnd()
       CString strOffset;
       CWnd* pWnd = GetDlgItem(IDC_HPOFFSET_END);
       pWnd->GetWindowText(strOffset);
-      double offset = _tstof(strOffset);
+      Float64 offset = _tstof(strOffset);
       offset = ::ConvertToSysUnits(offset,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
       ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );

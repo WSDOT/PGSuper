@@ -1,6 +1,7 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
+#include <EAF\EAFResources.h>
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -236,7 +237,7 @@ BEGIN
             VALUE "FileDescription", "PGSuper"
             VALUE "FileVersion", "2.7.3.0"
             VALUE "InternalName", "PGSuper"
-            VALUE "LegalCopyright", "Copyright © 1999-2012, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2013, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuper.EXE"
             VALUE "ProductName", "PGSuper"
             VALUE "ProductVersion", "2.7.3.0"
@@ -442,7 +443,6 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_E_INVALIDVERSION    "The file %1 came from a newer version of PGSuper. You must upgrade in order to read it."
     IDS_E_USERDEFINED       "An unknown error occured while reading %1"
 END
 

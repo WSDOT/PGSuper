@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -52,6 +52,8 @@
 #include <PgsExt\GirderData.h>
 #include <Lrfd\StrandPool.h>
 
+#include <PsgLib\BeamFamilyManager.h>
+
 #include <limits>
 
 #ifdef _DEBUG
@@ -59,6 +61,8 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+#define TOGA_PLUGIN_COMMAND_COUNT 256
 
 // misc
 static bool DoesFileExist(const CString& filename)
@@ -138,6 +142,8 @@ m_GirderModelEditorSettings(DEF_GV)
 
    m_ProjectData.Attach(this); // subscribe to events
 
+   // Reserve command IDs for document plug ins
+   GetPluginCommandManager()->ReserveCommandIDRange(TOGA_PLUGIN_COMMAND_COUNT);
 }
 
 CTxDOTOptionalDesignDoc::~CTxDOTOptionalDesignDoc()
@@ -174,7 +180,7 @@ HRESULT CTxDOTOptionalDesignDoc::LoadThePGSuperDocument(IStructuredLoad* pStrLoa
    if ( FAILED(hr) )
       return hr;
 
-   double ver;
+   Float64 ver;
    pStrLoad->get_Version(&ver);
    if ( 1.0 < ver )
    {
@@ -341,6 +347,9 @@ BOOL CTxDOTOptionalDesignDoc::Init()
    if ( !CEAFBrokerDocument::Init() )
       return FALSE;
 
+   if ( FAILED(CBeamFamilyManager::Init(CATID_BeamFamily)) )
+      return FALSE;
+
    m_ProjectData.ResetData();
 
    try
@@ -376,14 +385,9 @@ void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
 
          // set up the toolbar here
          UINT tbID = pFrame->CreateToolBar(_T("TxDOT Optional Girder Analysis"),GetPluginCommandManager());
-#if defined _EAF_USING_MFC_FEATURE_PACK
-         m_pMyToolBar = pFrame->GetToolBarByID(tbID);
-         m_pMyToolBar->LoadToolBar(IDR_TXDOTOPTIONALDESIGNTOOLBAR,NULL);
-#else
          m_pMyToolBar = pFrame->GetToolBar(tbID);
          m_pMyToolBar->LoadToolBar(IDR_TXDOTOPTIONALDESIGNTOOLBAR,NULL);
          m_pMyToolBar->CreateDropDownButton(ID_FILE_OPEN,   NULL,BTNS_DROPDOWN);
-#endif
       }
 
       // use our status bar
@@ -398,7 +402,7 @@ void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
       m_pMyToolBar = NULL;
 
       // put the status bar back the way it was
-      //EAFGetMainFrame()->ResetStatusBar();
+      EAFGetMainFrame()->SetStatusBar(NULL);
    }
 
    // then call base class, which handles UI integration for

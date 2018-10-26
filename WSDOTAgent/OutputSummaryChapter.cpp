@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -176,20 +176,6 @@ void section_properties(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span
 
 void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IEAFDisplayUnits* pDisplayUnits)
 {
-#if defined IGNORE_2007_CHANGES
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-
-   if ( lrfdVersionMgr::FourthEdition2007 == pSpecEntry->GetSpecificationType() )
-   {
-
-      rptParagraph* pPara = new rptParagraph;
-      *pChapter << pPara;
-      *pPara << color(Red) << bold(ON) << _T("Changes to LRFD 4th Edition, 2007, Article 5.4.2.3.2 have been ignored.") << bold(OFF) << color(Black) << rptNewLine;
-   }
-#endif
-
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
@@ -395,7 +381,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
    else
       (*pTable)(row,0) << _T("Estimated camber immediately before slab casting at ")<< min_days<<_T(" days, D");
 
-   double D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MINTIME);
+   Float64 D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MINTIME);
    if ( D < 0 )
       (*pTable)(row,1) << color(Red) << camber.SetValue( D ) << color(Black);
    else
@@ -474,7 +460,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
    }
 
    (*pTable)(row,0) << _T("Excess Camber") << rptNewLine << _T("(based on D at ") << max_days << _T(" days)");
-   double excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME);
+   Float64 excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME);
    if ( excess_camber < 0 )
       (*pTable)(row,1) << color(Red) << camber.SetValue( excess_camber ) << color(Black);
    else

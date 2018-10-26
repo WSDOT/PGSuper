@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -307,7 +307,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
          if (bFirst)
             (*pTable)(row,0) << _T("Design Camber");
 
-         double D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MINTIME);
+         Float64 D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MINTIME);
          if ( D < 0 )
          {
             if (isSingleGirder)
@@ -329,7 +329,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
          if (bFirst)
             (*pTable)(row,0) << _T("Estimated camber at ")<< min_days<<_T(" days, D");
 
-         double D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MINTIME);
+         Float64 D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MINTIME);
          if ( D < 0 )
          {
             if (isSingleGirder)
@@ -491,7 +491,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       if (bFirst)
          (*pTable)(row,0) << _T("Excess Camber (Based on Design Camber)");
 
-      double excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME);
+      Float64 excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME);
       if ( excess_camber < 0 )
       {
          if (isSingleGirder)

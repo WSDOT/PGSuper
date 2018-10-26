@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,7 +32,7 @@ static char THIS_FILE[] = __FILE__;
 
 txnEditBridge::txnEditBridge(const CBridgeDescription& oldBridgeDesc,const CBridgeDescription& newBridgeDesc,
                              enumExposureCondition oldExposureCondition, enumExposureCondition newExposureCondition,
-                             double oldRelHumidity, double newRelHumidity)
+                             Float64 oldRelHumidity, Float64 newRelHumidity)
 {
    m_pBridgeDesc[0] = new CBridgeDescription(oldBridgeDesc);
    m_pBridgeDesc[1] = new CBridgeDescription(newBridgeDesc);

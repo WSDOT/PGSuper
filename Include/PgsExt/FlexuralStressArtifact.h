@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -101,13 +101,13 @@ public:
    void SetCapacity(Float64 fAllowable,pgsTypes::StressType stressType);
    Float64 GetCapacity() const;
    pgsTypes::StressType GetStressType() const;
-   void SetRequiredConcreteStrength(double fcReqd);
-   double GetRequiredConcreteStrength() const;
+   void SetRequiredConcreteStrength(Float64 fcReqd);
+   Float64 GetRequiredConcreteStrength() const;
 
    void IsAlternativeTensileStressApplicable(bool bApplicable);
    bool IsAlternativeTensileStressApplicable() const;
-   void SetAlternativeTensileStressParameters(double Yna,double At,double T,double As,double fAllow);
-   void GetAlternativeTensileStressParameters(double* Yna,double* At,double* T,double* As) const;
+   void SetAlternativeTensileStressParameters(Float64 Yna,Float64 At,Float64 T,Float64 As,Float64 fAllow);
+   void GetAlternativeTensileStressParameters(Float64* Yna,Float64* At,Float64* T,Float64* As) const;
 
    bool TopPassed(TensionReinforcement reinfType) const;
    bool BottomPassed(TensionReinforcement reinfType) const;
@@ -152,19 +152,19 @@ private:
 
    // Alternative tensile stress parameters
    bool   m_bIsAltTensileStressApplicable;
-   double m_Yna;
-   double m_At;
-   double m_T;
-   double m_As;
-   double m_fAltAllowableStress;
+   Float64 m_Yna;
+   Float64 m_At;
+   Float64 m_T;
+   Float64 m_As;
+   Float64 m_fAltAllowableStress;
 
    // Other
-   double m_FcReqd; // concrete strenght required to satisfy allowable for this section
+   Float64 m_FcReqd; // concrete strenght required to satisfy allowable for this section
                     // No concrete strength work if < 0
    pgsFlexuralStressArtifactKey m_Key;
 
-   bool TensionPassedWithRebar(double fTens) const;
-   bool TensionPassedWithoutRebar(double fTens) const;
+   bool TensionPassedWithRebar(Float64 fTens) const;
+   bool TensionPassedWithoutRebar(Float64 fTens) const;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

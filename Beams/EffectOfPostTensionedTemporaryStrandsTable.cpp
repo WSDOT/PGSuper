@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -64,13 +64,13 @@ CEffectOfPostTensionedTemporaryStrandsTable* CEffectOfPostTensionedTemporaryStra
 
    // gather some data
    GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
-   double Eci = (tempStrandUsage == pgsTypes::ttsPTBeforeShipping ? pMaterial->GetEcGdr(span,gdr) : pMaterial->GetEciGdr(span,gdr));
-   double Ep  = pMaterial->GetStrand(span,gdr,pgsTypes::Temporary)->GetE();
+   Float64 Eci = (tempStrandUsage == pgsTypes::ttsPTBeforeShipping ? pMaterial->GetEcGdr(span,gdr) : pMaterial->GetEciGdr(span,gdr));
+   Float64 Ep  = pMaterial->GetStrand(span,gdr,pgsTypes::Temporary)->GetE();
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   double nEffectiveStrands;
-   double ept = pStrandGeom->GetTempEccentricity( pgsPointOfInterest(span,gdr,0), &nEffectiveStrands);
-   double Apt = pStrandGeom->GetStrandArea(span,gdr,pgsTypes::Temporary);
+   Float64 nEffectiveStrands;
+   Float64 ept = pStrandGeom->GetTempEccentricity( pgsPointOfInterest(span,gdr,0), &nEffectiveStrands);
+   Float64 Apt = pStrandGeom->GetStrandArea(span,gdr,pgsTypes::Temporary);
    StrandIndexType Npt = pStrandGeom->GetNumStrands(span,gdr,pgsTypes::Temporary);
 
    // add content to chapter

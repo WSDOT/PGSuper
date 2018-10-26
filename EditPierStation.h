@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,7 +28,7 @@
 class txnEditPierStation : public txnTransaction
 {
 public:
-   txnEditPierStation(PierIndexType pierIdx,double oldStation,double newStation,pgsTypes::MovePierOption moveOption);
+   txnEditPierStation(PierIndexType pierIdx,Float64 oldStation,Float64 newStation,pgsTypes::MovePierOption moveOption);
 
    ~txnEditPierStation();
 
@@ -42,7 +42,7 @@ public:
 private:
    void DoExecute(int i);
    PierIndexType m_PierIdx;
-   double m_Station[2];
+   Float64 m_Station[2];
    pgsTypes::MovePierOption m_MoveOption;
 };
 

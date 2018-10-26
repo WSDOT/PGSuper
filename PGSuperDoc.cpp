@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -49,6 +49,7 @@
 #include <PGSuperProjectImporterAppPlugin.h>
 
 #include <PsgLib\PsgLib.h>
+#include <PsgLib\BeamFamilyManager.h>
 
 #include <IFace\Test1250.h>
 #include <IFace\DrawBridgeSettings.h>
@@ -446,7 +447,7 @@ void CPGSuperDoc::EditBridgeDescription(int nPage)
 
    const CBridgeDescription* pOldBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    enumExposureCondition oldExposureCondition = pEnvironment->GetExposureCondition();
-   double oldRelHumidity = pEnvironment->GetRelHumidity();
+   Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
 
    CBridgeDescDlg dlg;
    dlg.SetBridgeDescription(*pOldBridgeDesc);
@@ -683,9 +684,9 @@ bool CPGSuperDoc::EditDirectInputPrestressing(SpanIndexType span,GirderIndexType
       GET_IFACE(IGirderLifting,pGirderLifting);
       GET_IFACE(IGirderHauling,pGirderHauling);
       bool bUseSameGirder              = pBridgeDesc->UseSameGirderForEntireBridge();
-      double liftingLocation           = pGirderLifting->GetLeftLiftingLoopLocation( span, gdr );
-      double trailingOverhang          = pGirderHauling->GetTrailingOverhang( span, gdr );
-      double leadingOverhang           = pGirderHauling->GetLeadingOverhang( span, gdr );
+      Float64 liftingLocation           = pGirderLifting->GetLeftLiftingLoopLocation( span, gdr );
+      Float64 trailingOverhang          = pGirderHauling->GetTrailingOverhang( span, gdr );
+      Float64 leadingOverhang           = pGirderHauling->GetLeadingOverhang( span, gdr );
 
       pgsTypes::SlabOffsetType slabOffsetType = pBridgeDesc->GetSlabOffsetType();
       Float64 slabOffset[2];
@@ -1082,6 +1083,8 @@ BOOL CPGSuperDoc::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
 void CPGSuperDoc::OnCloseDocument()
 {
    CEAFBrokerDocument::OnCloseDocument();
+
+   CBeamFamilyManager::Reset();
 }
 
 void CPGSuperDoc::InitProjectProperties()
@@ -1404,6 +1407,13 @@ BOOL CPGSuperDoc::Init()
       return FALSE;
 
    // extend the default initialization
+
+   // Application start up can be improved if this call
+   // is executed in its own thread... Need to add some
+   // code that indicates if the call fails.. then throw
+   // a shut down exception
+   if ( FAILED(CBeamFamilyManager::Init(CATID_BeamFamily)) )
+      return FALSE;
 
    // load up the library manager
    if ( !LoadMasterLibrary() )
@@ -3056,7 +3066,7 @@ void CPGSuperDoc::OnInsert()
    dlg.m_strTitle = _T("Insert Span");
    dlg.m_strItems = strItems;
    dlg.m_strLabel = _T("Select location to insert span");
-   dlg.m_ItemIdx = 0;
+   dlg.m_ItemIdx = keys.size()-1;
 
    if ( dlg.DoModal() == IDOK )
    {

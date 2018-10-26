@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -456,7 +456,7 @@ pgsPointOfInterest CEngAgentImp::GetEquivalentPointOfInterest(pgsTypes::Stage st
    // check for symmetry
    if ( pGirder->IsSymmetric(stage,span,gdr) )
    {
-      double girder_length = pBridge->GetGirderLength(span,gdr);
+      Float64 girder_length = pBridge->GetGirderLength(span,gdr);
 
       if ( girder_length/2 < dist_from_start )
       {
@@ -817,14 +817,14 @@ void CEngAgentImp::CalculateShearCritSection(pgsTypes::LimitState limitState,
    std::vector<pgsPointOfInterest>::iterator iter;
 
    // only use POI's within 2.5H from the face of the supports
-   double start = 2.5*Hl + left_end_size + left_support_width/2;
-   double end = gdr_length-2.5*Hr - right_end_size - right_support_width/2;
+   Float64 start = 2.5*Hl + left_end_size + left_support_width/2;
+   Float64 end = gdr_length-2.5*Hr - right_end_size - right_support_width/2;
    vPoi.clear();
    for ( iter = pois.begin(); iter != pois.end(); iter++ )
    {
       pgsPointOfInterest& poi = *iter;
 
-      double loc = poi.GetDistFromStart();
+      Float64 loc = poi.GetDistFromStart();
       if ( InRange(left_end_size,loc,start) || InRange(end,loc,gdr_length-right_end_size) )
          vPoi.push_back(poi);
    }
@@ -1663,14 +1663,14 @@ Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,
                                         pgsTypes::LossStage lossStage)
 {
    PrestressPoiKey key(PrestressSubKey(lossStage,strandType),poi);
-   std::map<PrestressPoiKey,double>::iterator found = m_PsForce.find(key);
+   std::map<PrestressPoiKey,Float64>::iterator found = m_PsForce.find(key);
    if ( found != m_PsForce.end() )
    {
       return (*found).second;
    }
    else
    {
-      double F = m_PsForceEngineer.GetPrestressForce(poi,strandType,lossStage);
+      Float64 F = m_PsForceEngineer.GetPrestressForce(poi,strandType,lossStage);
       m_PsForce.insert(std::make_pair(key,F));
       return F;
    }
@@ -1853,7 +1853,7 @@ void CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi)
    CComPtr<IAngle> subtended_angle;
    end_brg->AngleBetween(start_brg,&subtended_angle);
 
-   double delta;
+   Float64 delta;
    subtended_angle->get_Value(&delta);
    delta = ToDegrees(fabs(delta));
 
@@ -1922,7 +1922,7 @@ void CEngAgentImp::CheckGirderStiffnessRequirements(const pgsPointOfInterest& po
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   double minStiffnessRatio = pSpecEntry->GetMinGirderStiffnessRatio();
+   Float64 minStiffnessRatio = pSpecEntry->GetMinGirderStiffnessRatio();
 
    SpanIndexType span = poi.GetSpan();
    GirderIndexType nGirders = pBridge->GetGirderCount(span);
@@ -1935,19 +1935,19 @@ void CEngAgentImp::CheckGirderStiffnessRequirements(const pgsPointOfInterest& po
    // we want girders that are basically the same
    pgsTypes::Stage stage = pgsTypes::BridgeSite1;
   
-   double Imin = pSectProp->GetIx(stage,poi);
-   double Imax = Imin;
+   Float64 Imin = pSectProp->GetIx(stage,poi);
+   Float64 Imax = Imin;
 
    for ( GirderIndexType gdrIdx = 1; gdrIdx < nGirders; gdrIdx++ )
    {
       current_poi.SetGirder(gdrIdx);
       
-      double I = pSectProp->GetIx(stage,current_poi);
+      Float64 I = pSectProp->GetIx(stage,current_poi);
       Imin = _cpp_min(Imin,I);
       Imax = _cpp_max(Imax,I);
    }
 
-   double ratio = Imin/Imax;
+   Float64 ratio = Imin/Imax;
    if ( ratio < minStiffnessRatio )
    {
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
@@ -1982,7 +1982,7 @@ void CEngAgentImp::CheckParallelGirderRequirements(const pgsPointOfInterest& poi
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   double maxAllowableAngle = pSpecEntry->GetMaxAngularDeviationBetweenGirders();
+   Float64 maxAllowableAngle = pSpecEntry->GetMaxAngularDeviationBetweenGirders();
 
    SpanIndexType span = poi.GetSpan();
    GirderIndexType nGirders = pBridge->GetGirderCount(span);
@@ -1991,24 +1991,24 @@ void CEngAgentImp::CheckParallelGirderRequirements(const pgsPointOfInterest& poi
    // if angle is greater than pi, convert it to 2pi - angle
    CComPtr<IDirection> objDirection;
    pBridge->GetGirderBearing(span,0,&objDirection);
-   double dir_of_prev_girder;
+   Float64 dir_of_prev_girder;
    objDirection->get_Value(&dir_of_prev_girder);
 
    if ( M_PI < dir_of_prev_girder )
       dir_of_prev_girder = TWO_PI - dir_of_prev_girder;
 
-   double maxAngularDifference = -DBL_MAX;
+   Float64 maxAngularDifference = -DBL_MAX;
    for ( GirderIndexType gdrIdx = 1; gdrIdx < nGirders; gdrIdx++ )
    {
       objDirection.Release();
       pBridge->GetGirderBearing(span,gdrIdx,&objDirection);
-      double dir_of_this_girder;
+      Float64 dir_of_this_girder;
       objDirection->get_Value(&dir_of_this_girder);
 
       if ( M_PI < dir_of_this_girder )
          dir_of_this_girder = TWO_PI - dir_of_this_girder;
 
-      double angular_diff = fabs(dir_of_this_girder - dir_of_prev_girder);
+      Float64 angular_diff = fabs(dir_of_this_girder - dir_of_prev_girder);
       maxAngularDifference = _cpp_max(angular_diff,maxAngularDifference);
    }
 
@@ -2216,7 +2216,7 @@ Float64 CEngAgentImp::GetReactionDistFactor(PierIndexType pier,GirderIndexType g
    }
 }
 
-void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,double* pM,double* nM,double* V)
+void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,Float64* pM,Float64* nM,Float64* V)
 {
    GET_IFACE(IBridge,pBridge);
    SpanIndexType span   = poi.GetSpan();
@@ -2227,9 +2227,9 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
    SpanIndexType nSpans = pBridge->GetSpanCount();
 
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
-   double dist_from_start = poi.GetDistFromStart() - end_size;
+   Float64 dist_from_start = poi.GetDistFromStart() - end_size;
 
-   double dfPoints[2];
+   Float64 dfPoints[2];
    Uint32 nPoints;
    GetNegMomentDistFactorPoints(span,girder,&dfPoints[0],&nPoints);
 
@@ -2294,7 +2294,7 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
    }
 }
 
-void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,double fcgdr,double* pM,double* nM,double* V)
+void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,Float64 fcgdr,Float64* pM,Float64* nM,Float64* V)
 {
    GET_IFACE(IBridge,pBridge);
    SpanIndexType span   = poi.GetSpan();
@@ -2305,9 +2305,9 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
    SpanIndexType nSpans = pBridge->GetSpanCount();
 
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
-   double dist_from_start = poi.GetDistFromStart() - end_size;
+   Float64 dist_from_start = poi.GetDistFromStart() - end_size;
 
-   double dfPoints[2];
+   Float64 dfPoints[2];
    Uint32 nPoints;
    GetNegMomentDistFactorPoints(span,girder,&dfPoints[0],&nPoints);
 
@@ -2372,7 +2372,7 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
    }
 }
 
-void CEngAgentImp::GetNegMomentDistFactorPoints(SpanIndexType span,GirderIndexType gdr,double* dfPoints,Uint32* nPoints)
+void CEngAgentImp::GetNegMomentDistFactorPoints(SpanIndexType span,GirderIndexType gdr,Float64* dfPoints,Uint32* nPoints)
 {
    GET_IFACE(IContraflexurePoints,pCP);
    pCP->GetContraflexurePoints(span,gdr,dfPoints,nPoints);
@@ -3052,7 +3052,7 @@ Float64 CEngAgentImp::GetRequiredSlabOffset(SpanIndexType span,GirderIndexType g
    HAUNCHDETAILS details;
    GetHaunchDetails(span,gdr,&details);
 
-   double slab_offset = details.RequiredSlabOffset;
+   Float64 slab_offset = details.RequiredSlabOffset;
 
    // Round to nearest 1/4" (5 mm) per WSDOT BDM
 
@@ -3198,29 +3198,29 @@ void CEngAgentImp::GetFabricationOptimizationDetails(SpanIndexType span,GirderIn
    config_WithoutTTS.PrestressConfig.Pjack[pgsTypes::Temporary] = 0;
    config_WithoutTTS.PrestressConfig.ClearStrandFill(pgsTypes::Temporary);
 
-   double min_stress_WithoutTTS = DBL_MAX;
-   double max_stress_WithoutTTS = -DBL_MAX;
-   double min_stress_WithTTS = DBL_MAX;
-   double max_stress_WithTTS = -DBL_MAX;
+   Float64 min_stress_WithoutTTS = DBL_MAX;
+   Float64 max_stress_WithoutTTS = -DBL_MAX;
+   Float64 min_stress_WithTTS = DBL_MAX;
+   Float64 max_stress_WithTTS = -DBL_MAX;
    std::vector<pgsPointOfInterest>::iterator iter;
    for ( iter = vPOI.begin(); iter != vPOI.end(); iter++ )
    {
       pgsPointOfInterest poi = *iter;
 
-      double fTopLimitStateMin,fTopLimitStateMax;
+      Float64 fTopLimitStateMin,fTopLimitStateMax;
       pLS->GetStress(pgsTypes::ServiceI,pgsTypes::CastingYard,poi,pgsTypes::TopGirder,false,SimpleSpan,&fTopLimitStateMin,&fTopLimitStateMax);
 
-      double fBotLimitStateMin,fBotLimitStateMax;
+      Float64 fBotLimitStateMin,fBotLimitStateMax;
       pLS->GetStress(pgsTypes::ServiceI,pgsTypes::CastingYard,poi,pgsTypes::BottomGirder,false,SimpleSpan,&fBotLimitStateMin,&fBotLimitStateMax);
 
-      double fTopPre_WithoutTTS = pPS->GetDesignStress(pgsTypes::CastingYard,poi,pgsTypes::TopGirder,config_WithoutTTS);
-      double fBotPre_WithoutTTS = pPS->GetDesignStress(pgsTypes::CastingYard,poi,pgsTypes::BottomGirder,config_WithoutTTS);
+      Float64 fTopPre_WithoutTTS = pPS->GetDesignStress(pgsTypes::CastingYard,poi,pgsTypes::TopGirder,config_WithoutTTS);
+      Float64 fBotPre_WithoutTTS = pPS->GetDesignStress(pgsTypes::CastingYard,poi,pgsTypes::BottomGirder,config_WithoutTTS);
 
-      double fTopMin_WithoutTTS = fTopLimitStateMin + fTopPre_WithoutTTS;
-      double fTopMax_WithoutTTS = fTopLimitStateMax + fTopPre_WithoutTTS;
+      Float64 fTopMin_WithoutTTS = fTopLimitStateMin + fTopPre_WithoutTTS;
+      Float64 fTopMax_WithoutTTS = fTopLimitStateMax + fTopPre_WithoutTTS;
 
-      double fBotMin_WithoutTTS = fBotLimitStateMin + fBotPre_WithoutTTS;
-      double fBotMax_WithoutTTS = fBotLimitStateMax + fBotPre_WithoutTTS;
+      Float64 fBotMin_WithoutTTS = fBotLimitStateMin + fBotPre_WithoutTTS;
+      Float64 fBotMax_WithoutTTS = fBotLimitStateMax + fBotPre_WithoutTTS;
 
       min_stress_WithoutTTS = Min3(fBotMin_WithoutTTS,fTopMin_WithoutTTS,min_stress_WithoutTTS);
       max_stress_WithoutTTS = Max3(fBotMax_WithoutTTS,fTopMax_WithoutTTS,max_stress_WithoutTTS);
@@ -3245,7 +3245,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(SpanIndexType span,GirderIn
          {
             // allowable stress is limited to value lower than needed
             // look at the with rebar case
-            double talt = pAllowStress->GetCastingYardAllowableTensionStressCoefficientWithRebar();
+            Float64 talt = pAllowStress->GetCastingYardAllowableTensionStressCoefficientWithRebar();
             fc_reqd_tension = pow(max_stress_WithoutTTS/talt,2);
          }
       }
@@ -3271,9 +3271,9 @@ void CEngAgentImp::GetFabricationOptimizationDetails(SpanIndexType span,GirderIn
    }
 
    GET_IFACE(IBridgeMaterial,pMaterial);
-   double fcMax = pMaterial->GetFcGdr(span,gdr);
+   Float64 fcMax = pMaterial->GetFcGdr(span,gdr);
 
-   double fcReqd = -1;
+   Float64 fcReqd = -1;
 
    ATLASSERT( IsEqual(hauling_artifact.GetLeadingOverhang(),hauling_artifact.GetTrailingOverhang()) );
 
@@ -3283,10 +3283,10 @@ void CEngAgentImp::GetFabricationOptimizationDetails(SpanIndexType span,GirderIn
 
    bool bDone = false;
    bool bUsingBigInc = true;
-   double bigInc = 4*location_accuracy;
-   double smallInc = location_accuracy;
-   double inc = bigInc;
-   double L = hauling_artifact.GetLeadingOverhang();
+   Float64 bigInc = 4*location_accuracy;
+   Float64 smallInc = location_accuracy;
+   Float64 inc = bigInc;
+   Float64 L = hauling_artifact.GetLeadingOverhang();
    while ( !bDone )
    {
       L += inc;
@@ -3299,8 +3299,8 @@ void CEngAgentImp::GetFabricationOptimizationDetails(SpanIndexType span,GirderIn
       pgsHaulingAnalysisArtifact hauling_artifact2;
       checker.AnalyzeHauling(span,gdr,hauling_config,pGirderHaulingPointsOfInterest,&hauling_artifact2);
    
-      double fc;
-      double fc_tens, fc_comp;
+      Float64 fc;
+      Float64 fc_tens, fc_comp;
       bool min_rebar_required;
       hauling_artifact2.GetRequiredConcreteStrength(&fc_comp,&fc_tens,&min_rebar_required,0.0,true);
       fc = max(fc_comp, fc_tens);
@@ -3335,12 +3335,12 @@ void CEngAgentImp::GetFabricationOptimizationDetails(SpanIndexType span,GirderIn
    Float64 FScrMin = pCriteria->GetHaulingCrackingFs();
    Float64 FSrMin = pCriteria->GetHaulingRolloverFs();
 
-   double overhang_sum = 2*pDetails->Lmin;
+   Float64 overhang_sum = 2*pDetails->Lmin;
    bDone = false;
    bUsingBigInc = true;
    inc = bigInc;
-   double leading_overhang = min_location;
-   double trailing_overhang = -99999;
+   Float64 leading_overhang = min_location;
+   Float64 trailing_overhang = -99999;
    while ( !bDone )
    {
       trailing_overhang = overhang_sum - leading_overhang;
@@ -3353,15 +3353,15 @@ void CEngAgentImp::GetFabricationOptimizationDetails(SpanIndexType span,GirderIn
       pgsHaulingAnalysisArtifact hauling_artifact2;
       checker.AnalyzeHauling(span,gdr,hauling_config,pGirderHaulingPointsOfInterest,&hauling_artifact2);
    
-      double fc;
-      double fc_tens, fc_comp;
+      Float64 fc;
+      Float64 fc_tens, fc_comp;
       bool min_rebar_required;
       hauling_artifact2.GetRequiredConcreteStrength(&fc_comp,&fc_tens,&min_rebar_required,0.0,true);
       fc = max(fc_comp, fc_tens);
 
       // check factors of safety
-      double FSr  = hauling_artifact2.GetFsRollover();
-      double FScr = hauling_artifact2.GetMinFsForCracking();
+      Float64 FSr  = hauling_artifact2.GetFsRollover();
+      Float64 FScr = hauling_artifact2.GetMinFsForCracking();
       bool bFS = ( FSrMin <= FSr && FScrMin <= FScr );
 
       // check concrete stress
@@ -3598,7 +3598,7 @@ std::vector<CRACKEDSECTIONDETAILS> CEngAgentImp::GetCrackedSectionDetails(const 
 
 /////////////////////////////////////////////////////////////////////////////
 // IBridgeDescriptionEventSink
-HRESULT CEngAgentImp::OnBridgeChanged()
+HRESULT CEngAgentImp::OnBridgeChanged(CBridgeChangedHint* pHint)
 {
    LOG(_T("OnBridgeChanged Event Received"));
    InvalidateAll();

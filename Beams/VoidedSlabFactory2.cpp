@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -125,7 +125,7 @@ void CVoidedSlab2Factory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType
    CComPtr<IVoidedSlab2> beam;
    gdrsection->get_Beam(&beam);
 
-   double H,W,D1,D2,H1,H2,S1,S2,C1,C2,C3,J,EndBlockLength;
+   Float64 H,W,D1,D2,H1,H2,S1,S2,C1,C2,C3,J,EndBlockLength;
    IndexType N;
    GetDimensions(dimensions,H,W,D1,D2,H1,H2,S1,S2,C1,C2,C3,N,J,EndBlockLength);
 
@@ -329,7 +329,7 @@ void CVoidedSlab2Factory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDTyp
    const CSpanData* pSpan = pBridgeDesc->GetSpan(spanIdx);
    const GirderLibraryEntry* pGirderLib = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
 
-   double nVoids = pGirderLib->GetDimension(_T("Number_of_Voids"));
+   Float64 nVoids = pGirderLib->GetDimension(_T("Number_of_Voids"));
 
    if ( nVoids == 0 )
       pEngineer->Init(SolidSlab);
@@ -341,7 +341,7 @@ void CVoidedSlab2Factory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDTyp
    (*ppEng)->AddRef();
 }
 
-static void MakeRectangle(double width, double depth, double xOffset, IShape** shape)
+static void MakeRectangle(Float64 width, Float64 depth, Float64 xOffset, IShape** shape)
 {
    CComPtr<IRectangle> harp_rect;
    HRESULT hr = harp_rect.CoCreateInstance(CLSID_Rect);
@@ -350,7 +350,7 @@ static void MakeRectangle(double width, double depth, double xOffset, IShape** s
    harp_rect->put_Width(width);
    harp_rect->put_Height(depth);
 
-   double hook_offset = 0.0;
+   Float64 hook_offset = 0.0;
 
    CComPtr<IPoint2d> hook;
    hook.CoCreateInstance(CLSID_Point2d);
@@ -362,9 +362,9 @@ static void MakeRectangle(double width, double depth, double xOffset, IShape** s
 }
 
 void CVoidedSlab2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
-                                  IBeamFactory::BeamFace endTopFace, double endTopLimit, IBeamFactory::BeamFace endBottomFace, double endBottomLimit, 
-                                  IBeamFactory::BeamFace hpTopFace, double hpTopLimit, IBeamFactory::BeamFace hpBottomFace, double hpBottomLimit, 
-                                  double endIncrement, double hpIncrement, IStrandMover** strandMover)
+                                  IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
+                                  IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
+                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
 {
    HRESULT hr = S_OK;
 
@@ -377,17 +377,17 @@ void CVoidedSlab2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dime
 
    // Set the shapes for harped strand bounds 
    // Voided slabs don't normally support harped strands, so the question
-   double H,W,D1,D2,H1,H2,S1,S2,C1,C2,C3,J,EndBlockLength;
+   Float64 H,W,D1,D2,H1,H2,S1,S2,C1,C2,C3,J,EndBlockLength;
    IndexType N;
    GetDimensions(dimensions,H,W,D1,D2,H1,H2,S1,S2,C1,C2,C3,N,J,EndBlockLength);
 
-   double width = W;
-   double depth = H;
+   Float64 width = W;
+   Float64 depth = H;
 
    if (N==0)
    {
       // easy part, no voids
-      double hook_offset = 0.0;
+      Float64 hook_offset = 0.0;
 
       CComPtr<IShape> shape;
       MakeRectangle(width, depth, hook_offset, &shape);
@@ -435,7 +435,7 @@ void CVoidedSlab2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dime
       else
          t_ext_int = S1 - D1/2 - D2/2;
 
-      double end_loc = (width-t_ext)/2.0; 
+      Float64 end_loc = (width-t_ext)/2.0; 
 
       // rectangles at ends
       CComPtr<IShape> shapel, shaper;
@@ -487,10 +487,10 @@ void CVoidedSlab2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dime
    }
 
    // set vertical offset bounds and increments
-   double hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
-   double hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
-   double endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
-   double endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
+   Float64 hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
+   Float64 hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
+   Float64 endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
+   Float64 endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(depth, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -504,7 +504,7 @@ std::vector<std::_tstring> CVoidedSlab2Factory::GetDimensionNames()
    return m_DimNames;
 }
 
-std::vector<double> CVoidedSlab2Factory::GetDefaultDimensions()
+std::vector<Float64> CVoidedSlab2Factory::GetDefaultDimensions()
 {
    return m_DefaultDims;
 }
@@ -516,7 +516,7 @@ std::vector<const unitLength*> CVoidedSlab2Factory::GetDimensionUnits(bool bSIUn
 
 bool CVoidedSlab2Factory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg)
 {
-   double H,W,D1,D2,H1,H2,S1,S2,C1,C2,C3,J,EndBlockLength;
+   Float64 H,W,D1,D2,H1,H2,S1,S2,C1,C2,C3,J,EndBlockLength;
    IndexType N;
    GetDimensions(dimensions,H,W,D1,D2,H1,H2,S1,S2,C1,C2,C3,N,J,EndBlockLength);
 
@@ -1007,7 +1007,7 @@ HICON  CVoidedSlab2Factory::GetIcon()
 }
 
 void CVoidedSlab2Factory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
-                      double& H,double& W,double& D1,double& D2,double& H1,double& H2,double& S1,double& S2,double& C1,double& C2,double& C3,IndexType& N,double& J,double& EndBlockLength)
+                      Float64& H,Float64& W,Float64& D1,Float64& D2,Float64& H1,Float64& H2,Float64& S1,Float64& S2,Float64& C1,Float64& C2,Float64& C3,IndexType& N,Float64& J,Float64& EndBlockLength)
 {
    H = GetDimension(dimensions,_T("H"));
    W = GetDimension(dimensions,_T("W"));
@@ -1025,7 +1025,7 @@ void CVoidedSlab2Factory::GetDimensions(const IBeamFactory::Dimensions& dimensio
    EndBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
 }
 
-double CVoidedSlab2Factory::GetDimension(const IBeamFactory::Dimensions& dimensions,
+Float64 CVoidedSlab2Factory::GetDimension(const IBeamFactory::Dimensions& dimensions,
                                         const std::_tstring& name)
 {
    Dimensions::const_iterator iter;
@@ -1067,13 +1067,13 @@ pgsTypes::SupportedBeamSpacings CVoidedSlab2Factory::GetSupportedBeamSpacings()
 }
 
 void CVoidedSlab2Factory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, 
-                                               pgsTypes::SupportedBeamSpacing sbs, double* minSpacing, double* maxSpacing)
+                                               pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing)
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
 
-   double gw = GetDimension(dimensions,_T("W"));
-   double J  = GetDimension(dimensions,_T("Jmax"));
+   Float64 gw = GetDimension(dimensions,_T("W"));
+   Float64 J  = GetDimension(dimensions,_T("Jmax"));
 
    if ( sdt == pgsTypes::sdtCompositeOverlay || sdt == pgsTypes::sdtNone )
    {

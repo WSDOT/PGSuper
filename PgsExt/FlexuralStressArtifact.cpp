@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -118,12 +118,12 @@ pgsTypes::StressType pgsFlexuralStressArtifact::GetStressType() const
    return m_StressType;
 }
 
-void pgsFlexuralStressArtifact::SetRequiredConcreteStrength(double fcReqd)
+void pgsFlexuralStressArtifact::SetRequiredConcreteStrength(Float64 fcReqd)
 {
    m_FcReqd = fcReqd;
 }
 
-double pgsFlexuralStressArtifact::GetRequiredConcreteStrength() const
+Float64 pgsFlexuralStressArtifact::GetRequiredConcreteStrength() const
 {
    return m_FcReqd;
 }
@@ -138,7 +138,7 @@ bool pgsFlexuralStressArtifact::IsAlternativeTensileStressApplicable() const
    return m_bIsAltTensileStressApplicable;
 }
 
-void pgsFlexuralStressArtifact::SetAlternativeTensileStressParameters(double Yna,double At,double T,double As,double fAllow)
+void pgsFlexuralStressArtifact::SetAlternativeTensileStressParameters(Float64 Yna,Float64 At,Float64 T,Float64 As,Float64 fAllow)
 {
    m_Yna = Yna;
    m_At = At;
@@ -147,7 +147,7 @@ void pgsFlexuralStressArtifact::SetAlternativeTensileStressParameters(double Yna
    m_fAltAllowableStress = fAllow;
 }
 
-void pgsFlexuralStressArtifact::GetAlternativeTensileStressParameters(double* Yna,double* At,double* T,double* As) const
+void pgsFlexuralStressArtifact::GetAlternativeTensileStressParameters(Float64* Yna,Float64* At,Float64* T,Float64* As) const
 {
    *Yna = m_Yna;
    *At = m_At;
@@ -197,7 +197,7 @@ bool pgsFlexuralStressArtifact::BottomPassed(pgsFlexuralStressArtifact::TensionR
    return bPassed;
 }
 
-bool pgsFlexuralStressArtifact::TensionPassedWithRebar(double fTens) const
+bool pgsFlexuralStressArtifact::TensionPassedWithRebar(Float64 fTens) const
 {
    bool bPassed = true;
    if ( m_bIsAltTensileStressApplicable )
@@ -211,7 +211,7 @@ bool pgsFlexuralStressArtifact::TensionPassedWithRebar(double fTens) const
    return bPassed;
 }
 
-bool pgsFlexuralStressArtifact::TensionPassedWithoutRebar(double fTens) const
+bool pgsFlexuralStressArtifact::TensionPassedWithoutRebar(Float64 fTens) const
 {
    bool bPassed = true;
    if ( (m_fAllowableStress < fTens && !IsEqual(m_fAllowableStress,fTens,0.001) ) )

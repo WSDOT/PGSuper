@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -347,7 +347,7 @@ matRebar::Size CGirderDescLongRebarGrid::GetBarSize(ROWCOL row)
 
 bool CGirderDescLongRebarGrid::GetRowData(ROWCOL nRow, CLongitudinalRebarData::RebarRow* plsi)
 {
-   double d;
+   Float64 d;
    int i;
 
    CString s = GetCellValue(nRow, 1);
@@ -449,7 +449,7 @@ BOOL CGirderDescLongRebarGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	}
 	else if ((nCol==4 || nCol==5)  && !s.IsEmpty( ))
 	{
-      double d;
+      Float64 d;
       if (!sysTokenizer::ParseDouble(s, &d))
 		{
 			SetWarningText (_T("Value must be a number"));

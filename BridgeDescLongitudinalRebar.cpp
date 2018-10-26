@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -90,7 +90,15 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
 
       int idx;
       DDX_CBIndex(pDX,IDC_MILD_STEEL_SELECTOR,idx);
-      GetStirrupMaterial(idx,m_RebarData.BarType,m_RebarData.BarGrade);
+      if ( idx == CB_ERR )
+      {
+         m_RebarData.BarType = matRebar::A615;
+         m_RebarData.BarGrade = matRebar::Grade60;
+      }
+      else
+      {
+         GetStirrupMaterial(idx,m_RebarData.BarType,m_RebarData.BarGrade);
+      }
    }
    else
    {
@@ -160,7 +168,7 @@ BOOL CGirderDescLongitudinalRebar::OnInitDialog()
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    CComboBox* pc = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
-   FillMaterialComboBox(pc);
+   FillRebarMaterialComboBox(pc);
 
    CPropertyPage::OnInitDialog();
 	

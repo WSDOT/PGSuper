@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2012  Washington State Department of Transportation
+// Copyright © 1999-2013  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -83,7 +83,7 @@ STDMETHODIMP_(void) CSupportDrawStrategyImpl::XDrawPointStrategy::DrawDragImage(
 {
    METHOD_PROLOGUE(CSupportDrawStrategyImpl,DrawPointStrategy);
 
-   double wx, wy;
+   Float64 wx, wy;
    map->LPtoWP(dragPoint.x, dragPoint.y, &wx, &wy);
    pThis->m_CachePoint->put_X(wx);
    pThis->m_CachePoint->put_Y(wy);
@@ -99,7 +99,7 @@ STDMETHODIMP_(void) CSupportDrawStrategyImpl::XDrawPointStrategy::GetBoundingBox
    CComPtr<IPoint2d> point;
    pDO->GetPosition(&point);
 
-   double px, py;
+   Float64 px, py;
    point->get_X(&px);
    point->get_Y(&py);
 
@@ -110,7 +110,7 @@ STDMETHODIMP_(void) CSupportDrawStrategyImpl::XDrawPointStrategy::GetBoundingBox
    CComPtr<iCoordinateMap> pMap;
    pDispMgr->GetCoordinateMap(&pMap);
 
-   double wid,hgt;
+   Float64 wid,hgt;
    pThis->GetWSymbolSize(pMap, &wid, &hgt);
 
    CComPtr<IRect2d> bounding_box;
@@ -125,12 +125,12 @@ STDMETHODIMP_(void) CSupportDrawStrategyImpl::XDrawPointStrategy::GetBoundingBox
    (*rect)->AddRef();
 }
 
-void CSupportDrawStrategyImpl::GetWSymbolSize(iCoordinateMap* pMap, double* psx, double* psy)
+void CSupportDrawStrategyImpl::GetWSymbolSize(iCoordinateMap* pMap, Float64* psx, Float64* psy)
 {
 
-   double xo,yo;
+   Float64 xo,yo;
    pMap->TPtoWP(0,0,&xo,&yo);
-   double x2,y2;
+   Float64 x2,y2;
    pMap->TPtoWP(SSIZE,SSIZE,&x2,&y2);
 
    *psx = fabs(x2-xo)/2.0;
