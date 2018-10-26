@@ -1045,8 +1045,10 @@ bool pgsStrandDesignTool::ResetHarpedStrandConfiguration()
    if (nh == 0)
    {
       m_bConfigDirty = true; // cache is dirty
-      m_pArtifact->SetHarpStrandOffsetEnd(0.0);
-      m_pArtifact->SetHarpStrandOffsetHp(0.0);
+      m_pArtifact->SetHarpStrandOffsetEnd(pgsTypes::metStart,0.0);
+      m_pArtifact->SetHarpStrandOffsetHp(pgsTypes::metStart,0.0);
+      m_pArtifact->SetHarpStrandOffsetHp(pgsTypes::metEnd,0.0);
+      m_pArtifact->SetHarpStrandOffsetEnd(pgsTypes::metEnd,0.0);
    }
    else
    {
@@ -1060,8 +1062,12 @@ bool pgsStrandDesignTool::ResetHarpedStrandConfiguration()
       // cant adjust if we're not allowed.
       if (0.0 < end_offset_inc)
       {
-         pStrandGeom->GetHarpedEndOffsetBoundsEx(m_GirderEntryName.c_str(), pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, fillvec, &end_lower_bound, &end_upper_bound);
-         m_pArtifact->SetHarpStrandOffsetEnd(end_upper_bound);
+         pStrandGeom->GetHarpedEndOffsetBoundsEx(m_GirderEntryName.c_str(), pgsTypes::metStart,pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, fillvec, &end_lower_bound, &end_upper_bound);
+         m_pArtifact->SetHarpStrandOffsetEnd(pgsTypes::metStart,end_upper_bound);
+
+         pStrandGeom->GetHarpedEndOffsetBoundsEx(m_GirderEntryName.c_str(), pgsTypes::metEnd,pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, fillvec, &end_lower_bound, &end_upper_bound);
+         m_pArtifact->SetHarpStrandOffsetEnd(pgsTypes::metEnd,end_upper_bound);
+
          m_bConfigDirty = true; // cache is dirty
       }
 
@@ -1071,8 +1077,12 @@ bool pgsStrandDesignTool::ResetHarpedStrandConfiguration()
       Float64 hp_lower_bound, hp_upper_bound;
       if (0.0 < hp_offset_inc)
       {
-         pStrandGeom->GetHarpedHpOffsetBoundsEx(m_GirderEntryName.c_str(), pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, fillvec, &hp_lower_bound, &hp_upper_bound);
-         m_pArtifact->SetHarpStrandOffsetHp(hp_lower_bound);
+         pStrandGeom->GetHarpedHpOffsetBoundsEx(m_GirderEntryName.c_str(), pgsTypes::metStart, pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, fillvec, &hp_lower_bound, &hp_upper_bound);
+         m_pArtifact->SetHarpStrandOffsetHp(pgsTypes::metStart,hp_lower_bound);
+
+         pStrandGeom->GetHarpedHpOffsetBoundsEx(m_GirderEntryName.c_str(), pgsTypes::metEnd, pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, fillvec, &hp_lower_bound, &hp_upper_bound);
+         m_pArtifact->SetHarpStrandOffsetHp(pgsTypes::metEnd,hp_lower_bound);
+
          m_bConfigDirty = true; // cache is dirty
       }
 
@@ -1224,42 +1234,56 @@ bool pgsStrandDesignTool::AdjustForStrandSlope()
    ATLASSERT(!m_pRaisedStraightStrandDesignTool);
    ATLASSERT(m_DoDesignForStrandSlope); // should not be calling this
 
-   StrandIndexType nh = m_pArtifact->GetNumHarpedStrands();
-   Float64 hp_offset = GetHarpStrandOffsetHp();
-   Float64 end_offset = GetHarpStrandOffsetEnd();
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
-
-   Float64 slope = pStrandGeom->GetMaxStrandSlope(pgsPointOfInterest(m_SegmentKey,0.00), nh,
-                                               end_offset, hp_offset );
-
-   ATLASSERT(slope < 0); // we got the slope at the start of the girder
-                         // it should be going downward to the right... this is a negative slope
-
-   slope *= -1; // all the code below is based on the slope being a positive value so reverse the sign
-
-
-   LOG(_T("Design for Maximum Strand Slope"));
-   LOG(_T("Maximum Strand Slope 1 : ") << m_AllowableStrandSlope);
-   LOG(_T("Actual  Strand Slope 1 : ") << slope);
-
-   Float64 adj = 0.0;
-   if ( slope < m_AllowableStrandSlope)
+   const GDRCONFIG& config = GetSegmentConfiguration();
+   for ( int i = 0; i < 2; i++ )
    {
-      LOG(_T("Strand slope needs adjusting"));
-      LOG(_T("Current End offset = ")<< ::ConvertFromSysUnits(end_offset,unitMeasure::Inch) << _T(" in"));
-      LOG(_T("Current HP  offset = ")<< ::ConvertFromSysUnits(hp_offset,unitMeasure::Inch) << _T(" in"));
+      pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
 
-      if (! AdjustStrandsForSlope(m_AllowableStrandSlope, slope, nh, pStrandGeom))
+      pgsPointOfInterest poi(m_SegmentKey, endType == pgsTypes::metStart ? 0.0 : m_SegmentLength);
+      Float64 slope = pStrandGeom->GetMaxStrandSlope(poi, config.PrestressConfig);
+
+      if ( endType == pgsTypes::metStart )
       {
-         LOG(_T("** DESIGN FAILED ** We cannot adjust Strands to design for allowable strand slope"));
-         m_pArtifact->SetOutcome(pgsSegmentDesignArtifact::StrandSlopeOutOfRange);
-         return false;
+         ATLASSERT(slope < 0); // we got the slope at the start of the girder
+                               // it should be going downward to the right... this is a negative slope
+
+         slope *= -1; // all the code below is based on the slope being a positive value so reverse the sign
+      }
+      else
+      {
+         ATLASSERT(0 < slope); // we got the slope at the end of the girder
+                               // it should be going upward to the right... this is a positive slope
       }
 
-      LOG(_T("** Adjusted End offset = ")<< ::ConvertFromSysUnits(end_offset = GetHarpStrandOffsetEnd() ,unitMeasure::Inch) << _T(" in"));
-      LOG(_T("** Adjusted HP  offset = ")<< ::ConvertFromSysUnits(hp_offset = GetHarpStrandOffsetHp() ,unitMeasure::Inch) << _T(" in"));
-      LOG(_T("New slope is 1 : ")<< pStrandGeom->GetMaxStrandSlope( pgsPointOfInterest(m_SegmentKey,0.00), nh, end_offset, hp_offset) );
+
+      LOG(_T("Design for Maximum Strand Slope at ") << (pgsTypes::metStart ? _T("start") : _T("end")) << _T(" of girder"));
+      LOG(_T("Maximum Strand Slope 1 : ") << m_AllowableStrandSlope);
+      LOG(_T("Actual  Strand Slope 1 : ") << slope);
+
+      Float64 adj = 0.0;
+      if ( slope < m_AllowableStrandSlope)
+      {
+         LOG(_T("Strand slope needs adjusting"));
+         LOG(_T("Current Start offset = ")<< ::ConvertFromSysUnits(config.PrestressConfig.EndOffset[pgsTypes::metStart],unitMeasure::Inch) << _T(" in"));
+         LOG(_T("Current HP1  offset = ")<< ::ConvertFromSysUnits(config.PrestressConfig.HpOffset[pgsTypes::metStart],unitMeasure::Inch) << _T(" in"));
+         LOG(_T("Current HP2  offset = ")<< ::ConvertFromSysUnits(config.PrestressConfig.HpOffset[pgsTypes::metEnd],unitMeasure::Inch) << _T(" in"));
+         LOG(_T("Current End  offset = ")<< ::ConvertFromSysUnits(config.PrestressConfig.EndOffset[pgsTypes::metEnd],unitMeasure::Inch) << _T(" in"));
+
+         if ( !AdjustStrandsForSlope(m_AllowableStrandSlope, slope, endType, config.PrestressConfig.GetStrandCount(pgsTypes::Harped), pStrandGeom))
+         {
+            LOG(_T("** DESIGN FAILED ** We cannot adjust Strands to design for allowable strand slope"));
+            m_pArtifact->SetOutcome(pgsSegmentDesignArtifact::StrandSlopeOutOfRange);
+            return false;
+         }
+
+         LOG(_T("** Adjusted Start offset = ")<< ::ConvertFromSysUnits(GetHarpStrandOffsetEnd(pgsTypes::metStart) ,unitMeasure::Inch) << _T(" in"));
+         LOG(_T("** Adjusted HP1   offset = ")<< ::ConvertFromSysUnits(GetHarpStrandOffsetHp(pgsTypes::metStart) ,unitMeasure::Inch) << _T(" in"));
+         LOG(_T("** Adjusted HP2   offset = ")<< ::ConvertFromSysUnits(GetHarpStrandOffsetHp(pgsTypes::metEnd) ,unitMeasure::Inch) << _T(" in"));
+         LOG(_T("** Adjusted End   offset = ")<< ::ConvertFromSysUnits(GetHarpStrandOffsetEnd(pgsTypes::metEnd) ,unitMeasure::Inch) << _T(" in"));
+         LOG(_T("New slope is 1 : ")<< pStrandGeom->GetMaxStrandSlope( pgsPointOfInterest(m_SegmentKey,0.00), GetSegmentConfiguration().PrestressConfig) );
+      }
    }
 
    return true;
@@ -1279,9 +1303,7 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
    }
 
    // could use interface to get hdf directly, but need raw values to adjust
-   GDRCONFIG config = GetSegmentConfiguration();
-   Float64 hp_offset = GetHarpStrandOffsetHp();
-   Float64 end_offset = GetHarpStrandOffsetEnd();
+   const GDRCONFIG& config = GetSegmentConfiguration();
 
    GET_IFACE(IPointOfInterest,pPOI);
    std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(m_SegmentKey,POI_HARPINGPOINT) );
@@ -1308,7 +1330,7 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
    {
       pgsPointOfInterest& thisPOI(*iter);
 
-      Float64 s = pStrandGeom->GetAvgStrandSlope( thisPOI, nh, end_offset, hp_offset);
+      Float64 s = pStrandGeom->GetAvgStrandSlope( thisPOI, config.PrestressConfig);
       s = fabs(s); // slope could be + or -
       LOG(_T("Average Strand Slope = 1 : ") << s);
 
@@ -1340,25 +1362,31 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
       ATLASSERT(sl_reqd > slope);
 
       LOG(_T("Slope required = 1 : ")<< sl_reqd);
-      LOG(_T("Current End offset = ")<< ::ConvertFromSysUnits(end_offset,unitMeasure::Inch) << _T(" in"));
-      LOG(_T("Current HP  offset = ")<< ::ConvertFromSysUnits(hp_offset,unitMeasure::Inch) << _T(" in"));
+      LOG(_T("Current Start offset = ")<< ::ConvertFromSysUnits(config.PrestressConfig.EndOffset[pgsTypes::metStart],unitMeasure::Inch) << _T(" in"));
+      LOG(_T("Current HP1 offset = ")<< ::ConvertFromSysUnits(config.PrestressConfig.HpOffset[pgsTypes::metStart],unitMeasure::Inch) << _T(" in"));
+      LOG(_T("Current HP2 offset = ")<< ::ConvertFromSysUnits(config.PrestressConfig.HpOffset[pgsTypes::metEnd],unitMeasure::Inch) << _T(" in"));
+      LOG(_T("Current End offset = ")<< ::ConvertFromSysUnits(config.PrestressConfig.EndOffset[pgsTypes::metEnd],unitMeasure::Inch) << _T(" in"));
 
-      if ( !AdjustStrandsForSlope(sl_reqd, slope, nh, pStrandGeom) )
+      pgsTypes::MemberEndType endType = (poi == vPOI.front() ? pgsTypes::metStart : pgsTypes::metEnd);
+
+      if ( !AdjustStrandsForSlope(sl_reqd, slope, endType, nh, pStrandGeom) )
       {
          LOG(_T("** DESIGN FAILED ** We cannot adjust Strands to design for allowable hold down"));
          m_pArtifact->SetOutcome(pgsSegmentDesignArtifact::ExceededMaxHoldDownForce);
          return false;
       }
 
-      LOG(_T("** Adjusted End offset = ")<< ::ConvertFromSysUnits(end_offset = GetHarpStrandOffsetEnd() ,unitMeasure::Inch) << _T(" in"));
-      LOG(_T("** Adjusted HP  offset = ")<< ::ConvertFromSysUnits(hp_offset = GetHarpStrandOffsetHp() ,unitMeasure::Inch) << _T(" in"));
-      LOG(_T("New slope is 1 : ")<< pStrandGeom->GetAvgStrandSlope( poi, nh, end_offset, hp_offset) );
+      LOG(_T("** Adjusted Start offset = ")<< ::ConvertFromSysUnits(GetHarpStrandOffsetEnd(pgsTypes::metStart) ,unitMeasure::Inch) << _T(" in"));
+      LOG(_T("** Adjusted HP1   offset = ")<< ::ConvertFromSysUnits(GetHarpStrandOffsetHp(pgsTypes::metStart) ,unitMeasure::Inch) << _T(" in"));
+      LOG(_T("** Adjusted HP2   offset = ")<< ::ConvertFromSysUnits(GetHarpStrandOffsetHp(pgsTypes::metEnd) ,unitMeasure::Inch) << _T(" in"));
+      LOG(_T("** Adjusted End   offset = ")<< ::ConvertFromSysUnits(GetHarpStrandOffsetEnd(pgsTypes::metEnd) ,unitMeasure::Inch) << _T(" in"));
+      LOG(_T("New slope is 1 : ")<< pStrandGeom->GetAvgStrandSlope( poi, GetSegmentConfiguration().PrestressConfig) );
    }
 
    return true;
 }
 
-bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, StrandIndexType nh, IStrandGeometry* pStrandGeom)
+bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, pgsTypes::MemberEndType endType,StrandIndexType nh, IStrandGeometry* pStrandGeom)
 {
    // compute adjustment distance
    Float64 X1, X2, X3, X4;
@@ -1373,13 +1401,13 @@ bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, 
    Float64 end_offset_inc = this->GetHarpedEndOffsetIncrement(pStrandGeom);
    if (0.0 < end_offset_inc && !m_DesignOptions.doForceHarpedStrandsStraight)
    {
-      LOG(_T("Attempt to adjust hold down by lowering at ends"));
-      Float64 curr_adj = m_pArtifact->GetHarpStrandOffsetEnd();
+      LOG(_T("Attempt to adjust hold down by lowering at ") << (endType == pgsTypes::metStart ? _T("start") : _T("end")) << _T(" ends"));
+      Float64 curr_adj = m_pArtifact->GetHarpStrandOffsetEnd(endType);
 
       const GDRCONFIG& config = GetSegmentConfiguration();
 
       Float64 end_lower_bound, end_upper_bound;
-      pStrandGeom->GetHarpedEndOffsetBoundsEx(m_GirderEntryName.c_str(), pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, config.PrestressConfig.GetStrandFill(pgsTypes::Harped), &end_lower_bound, &end_upper_bound);
+      pStrandGeom->GetHarpedEndOffsetBoundsEx(m_GirderEntryName.c_str(), endType, pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, config.PrestressConfig.GetStrandFill(pgsTypes::Harped), &end_lower_bound, &end_upper_bound);
 
       // adjust by round increment
       Float64 end_adj = ::CeilOff(adj, end_offset_inc);
@@ -1391,14 +1419,14 @@ bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, 
          if (end_adj <= max_adj)
          {
             LOG(_T("Entire adjustment for slope can be taken at girder end - doing so"));
-            m_pArtifact->SetHarpStrandOffsetEnd(curr_adj - end_adj);
+            m_pArtifact->SetHarpStrandOffsetEnd(endType,curr_adj - end_adj);
             m_bConfigDirty = true; // cache is dirty
             adj = 0.0;
          }
          else
          {
             LOG(_T("Partial adjustment for slope can be taken at girder end. Adjusting to ")<< ::ConvertFromSysUnits(end_lower_bound,unitMeasure::Inch) << _T(" in"));
-            m_pArtifact->SetHarpStrandOffsetEnd(end_lower_bound);
+            m_pArtifact->SetHarpStrandOffsetEnd(endType,end_lower_bound);
             m_bConfigDirty = true; // cache is dirty
             adj -= (curr_adj-end_lower_bound);
             LOG(_T("reminder of adjustment required = ")<< ::ConvertFromSysUnits(adj,unitMeasure::Inch) << _T(" in"));
@@ -1406,7 +1434,7 @@ bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, 
       }
       else
       {
-         LOG(_T("Strands at end already ajusted as low as possible"));
+         LOG(_T("Strands at end already adjusted as low as possible"));
       }
    }
 
@@ -1414,12 +1442,12 @@ bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, 
    Float64 hp_offset_inc = this->GetHarpedHpOffsetIncrement(pStrandGeom);
    if (0.0 < adj && 0.0 < hp_offset_inc)
    {
-      LOG(_T("Attempt to adjust Strand slope by rasing at HP's"));
-      Float64 curr_adj = m_pArtifact->GetHarpStrandOffsetHp();
+      LOG(_T("Attempt to adjust Strand slope by raising at ") << (endType == pgsTypes::metStart ? _T("left") : _T("right")) << _T(" HP"));
+      Float64 curr_adj = m_pArtifact->GetHarpStrandOffsetHp(endType);
       Float64 hp_lower_bound, hp_upper_bound;
 
       const GDRCONFIG& config = GetSegmentConfiguration();
-      pStrandGeom->GetHarpedHpOffsetBoundsEx(m_GirderEntryName.c_str(), pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, config.PrestressConfig.GetStrandFill(pgsTypes::Harped), &hp_lower_bound, &hp_upper_bound);
+      pStrandGeom->GetHarpedHpOffsetBoundsEx(m_GirderEntryName.c_str(), endType, pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, config.PrestressConfig.GetStrandFill(pgsTypes::Harped), &hp_lower_bound, &hp_upper_bound);
 
       Float64 max_adj = hp_upper_bound - curr_adj;
       if (0 < max_adj)
@@ -1427,14 +1455,14 @@ bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, 
          if (adj <= max_adj)
          {
             LOG(_T("Entire adjustment for slope can be taken at girder HP - doing so"));
-            m_pArtifact->SetHarpStrandOffsetHp(curr_adj + adj);
+            m_pArtifact->SetHarpStrandOffsetHp(endType,curr_adj + adj);
             m_bConfigDirty = true; // cache is dirty
             adj = 0.0;
          }
       }
       else
       {
-         LOG(_T("Strands at HP already ajusted as high as possible - cannot acheive target slope reduction"));
+         LOG(_T("Strands at HP already adjusted as high as possible - cannot acheive target slope reduction"));
       }
    }
 
@@ -1593,8 +1621,10 @@ void pgsStrandDesignTool::DumpDesignParameters()
    const GDRCONFIG& config = GetSegmentConfiguration();
    const ConfigStrandFillVector& fillvec = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
 
-   Float64 end_offset = pStrandGeom->ComputeHarpedOffsetFromAbsoluteEnd(m_GirderEntryName.c_str(), pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, fillvec, hsoTOP2TOP, m_pArtifact->GetHarpStrandOffsetEnd());
-   Float64 hp_offset  = pStrandGeom->ComputeHarpedOffsetFromAbsoluteHp(m_GirderEntryName.c_str(), pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, fillvec,  hsoBOTTOM2BOTTOM, m_pArtifact->GetHarpStrandOffsetHp());
+   Float64 start_offset = pStrandGeom->ComputeHarpedOffsetFromAbsoluteEnd(m_GirderEntryName.c_str(), pgsTypes::metStart, pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, fillvec, hsoTOP2TOP, m_pArtifact->GetHarpStrandOffsetEnd(pgsTypes::metStart));
+   Float64 hp1_offset  = pStrandGeom->ComputeHarpedOffsetFromAbsoluteHp(m_GirderEntryName.c_str(), pgsTypes::metStart, pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, fillvec,  hsoBOTTOM2BOTTOM, m_pArtifact->GetHarpStrandOffsetHp(pgsTypes::metStart));
+   Float64 hp2_offset  = pStrandGeom->ComputeHarpedOffsetFromAbsoluteHp(m_GirderEntryName.c_str(), pgsTypes::metEnd, pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, fillvec,  hsoBOTTOM2BOTTOM, m_pArtifact->GetHarpStrandOffsetHp(pgsTypes::metEnd));
+   Float64 end_offset = pStrandGeom->ComputeHarpedOffsetFromAbsoluteEnd(m_GirderEntryName.c_str(), pgsTypes::metEnd, pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, fillvec, hsoTOP2TOP, m_pArtifact->GetHarpStrandOffsetEnd(pgsTypes::metEnd));
 
    LOG(_T(""));
    LOG(_T("---------------------------------------------------------------"));
@@ -1606,8 +1636,10 @@ void pgsStrandDesignTool::DumpDesignParameters()
    LOG(_T("Ns = ") << m_pArtifact->GetNumStraightStrands() << _T("   Pjack = ") << ::ConvertFromSysUnits(m_pArtifact->GetPjackStraightStrands(), unitMeasure::Kip) << _T(" Kip"));
    LOG(_T("Nh = ") << m_pArtifact->GetNumHarpedStrands() << _T("   Pjack = ") << ::ConvertFromSysUnits(m_pArtifact->GetPjackHarpedStrands(), unitMeasure::Kip) << _T(" Kip"));
    LOG(_T("Nt = ") << m_pArtifact->GetNumTempStrands() << _T("   Pjack = ") << ::ConvertFromSysUnits(m_pArtifact->GetPjackTempStrands(), unitMeasure::Kip) << _T(" Kip"));
-   LOG(_T("HP Offset at End = ") << ::ConvertFromSysUnits(m_pArtifact->GetHarpStrandOffsetEnd(),unitMeasure::Inch) << _T(" in") << _T(" (From top = ") << ::ConvertFromSysUnits(end_offset,unitMeasure::Inch) << _T(" in)"));
-   LOG(_T("HP Offset at HP  = ") << ::ConvertFromSysUnits(m_pArtifact->GetHarpStrandOffsetHp(),unitMeasure::Inch) << _T(" in") << _T(" (From bottom = ") << ::ConvertFromSysUnits(hp_offset,unitMeasure::Inch) << _T(" in)"));
+   LOG(_T("HP Offset at Start = ") << ::ConvertFromSysUnits(m_pArtifact->GetHarpStrandOffsetEnd(pgsTypes::metStart),unitMeasure::Inch) << _T(" in") << _T(" (From top = ") << ::ConvertFromSysUnits(start_offset,unitMeasure::Inch) << _T(" in)"));
+   LOG(_T("HP Offset at HP1  = ") << ::ConvertFromSysUnits(m_pArtifact->GetHarpStrandOffsetHp(pgsTypes::metStart),unitMeasure::Inch) << _T(" in") << _T(" (From bottom = ") << ::ConvertFromSysUnits(hp1_offset,unitMeasure::Inch) << _T(" in)"));
+   LOG(_T("HP Offset at HP2  = ") << ::ConvertFromSysUnits(m_pArtifact->GetHarpStrandOffsetHp(pgsTypes::metEnd),unitMeasure::Inch) << _T(" in") << _T(" (From bottom = ") << ::ConvertFromSysUnits(hp2_offset,unitMeasure::Inch) << _T(" in)"));
+   LOG(_T("HP Offset at End = ") << ::ConvertFromSysUnits(m_pArtifact->GetHarpStrandOffsetEnd(pgsTypes::metEnd),unitMeasure::Inch) << _T(" in") << _T(" (From top = ") << ::ConvertFromSysUnits(end_offset,unitMeasure::Inch) << _T(" in)"));
    LOG(_T("Slab Offset at Start = ") << ::ConvertFromSysUnits(m_pArtifact->GetSlabOffset(pgsTypes::metStart),unitMeasure::Inch) << _T(" in"));
    LOG(_T("Slab Offset at End   = ") << ::ConvertFromSysUnits(m_pArtifact->GetSlabOffset(pgsTypes::metEnd),unitMeasure::Inch) << _T(" in"));
    LOG(_T("Pick Point = ") << ::ConvertFromSysUnits(m_pArtifact->GetLeftLiftingLocation(), unitMeasure::Feet) << _T(" ft"));
@@ -1680,10 +1712,14 @@ void pgsStrandDesignTool::FillArtifactWithFlexureValues()
    m_pArtifact->SetUsedMaxPjackStraightStrands( true );
    m_pArtifact->SetUsedMaxPjackHarpedStrands( true );
 
-   Float64 offsetEnd, offsetHP;
-   pStrandGeom->GetHarpStrandOffsets(m_SegmentKey,&offsetEnd,&offsetHP);
-   m_pArtifact->SetHarpStrandOffsetHp(offsetHP);
-   m_pArtifact->SetHarpStrandOffsetEnd(offsetEnd);
+   for ( int i = 0; i < 2; i++ )
+   {
+      pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+      Float64 offsetEnd, offsetHP;
+      pStrandGeom->GetHarpStrandOffsets(m_SegmentKey,endType,&offsetEnd,&offsetHP);
+      m_pArtifact->SetHarpStrandOffsetHp(endType,offsetHP);
+      m_pArtifact->SetHarpStrandOffsetEnd(endType,offsetEnd);
+   }
 
    m_pArtifact->SetReleaseStrength(pMaterial->GetSegmentDesignFc(m_SegmentKey,releaseIntervalIdx));
 
@@ -1861,6 +1897,9 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
    }
    else
    {
+      GET_IFACE(IMaterials,pMaterials);
+      Float64 lambda = pMaterials->GetSegmentLambda(GetSegmentKey());
+
       fc_reqd = -1;
       if ( 0 < fControl )
       {
@@ -1872,7 +1911,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
          if (0 < t)
          {
             LOG(_T("f allow coeff = ") << ::ConvertFromSysUnits(t,unitMeasure::SqrtKSI) << _T("_/f'c = ") << ::ConvertFromSysUnits(fControl,unitMeasure::KSI));
-            fc_reqd = pow(fControl/t,2);
+            fc_reqd = pow(fControl/(lambda*t),2);
 
             if ( bfMax && fmax < fControl) 
             {
@@ -1884,7 +1923,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
                   Float64 fMaxAlt;
                   Float64 talt;
                   pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,intervalIdx,pgsTypes::ServiceI,true/*with rebar*/,false/*in other than precompressed tensile zone*/,&talt,&bCheckMaxAlt,&fMaxAlt);
-                  fc_reqd = pow(fControl/talt,2);
+                  fc_reqd = pow(fControl/(lambda*talt),2);
                   result = ConcSuccessWithRebar;
                   LOG(_T("Min rebar is required to acheive required strength"));
                }
@@ -2098,39 +2137,39 @@ void pgsStrandDesignTool::SetOutcome(pgsSegmentDesignArtifact::Outcome outcome)
    m_pArtifact->SetOutcome(outcome);
 }
 
-Float64 pgsStrandDesignTool::GetHarpStrandOffsetEnd() const
+Float64 pgsStrandDesignTool::GetHarpStrandOffsetEnd(pgsTypes::MemberEndType endType) const
 {
-   return m_pArtifact->GetHarpStrandOffsetEnd();
+   return m_pArtifact->GetHarpStrandOffsetEnd(endType);
 }
 
-Float64 pgsStrandDesignTool::GetHarpStrandOffsetHp() const
+Float64 pgsStrandDesignTool::GetHarpStrandOffsetHp(pgsTypes::MemberEndType endType) const
 {
-   return m_pArtifact->GetHarpStrandOffsetHp();
+   return m_pArtifact->GetHarpStrandOffsetHp(endType);
 }
 
-void pgsStrandDesignTool::SetHarpStrandOffsetEnd(Float64 off)
+void pgsStrandDesignTool::SetHarpStrandOffsetEnd(pgsTypes::MemberEndType endType,Float64 off)
 {
    // set offset, but make sure it stays within bounds
    LOG(_T("Attempt to offset harped strands at ends to   = ") << ::ConvertFromSysUnits(off, unitMeasure::Inch) << _T(" in"));
-   m_pArtifact->SetHarpStrandOffsetEnd(off);
+   m_pArtifact->SetHarpStrandOffsetEnd(endType,off);
    m_bConfigDirty = true; // cache is dirty
 
    bool st = KeepHarpedStrandsInBounds();
    ATLASSERT(st);
 
-   LOG(_T("** Strands Actually offset to  = ") << ::ConvertFromSysUnits(m_pArtifact->GetHarpStrandOffsetEnd(), unitMeasure::Inch) << _T(" in"));
+   LOG(_T("** Strands Actually offset to  = ") << ::ConvertFromSysUnits(m_pArtifact->GetHarpStrandOffsetEnd(endType), unitMeasure::Inch) << _T(" in"));
 }
 
-void pgsStrandDesignTool::SetHarpStrandOffsetHp(Float64 off)
+void pgsStrandDesignTool::SetHarpStrandOffsetHp(pgsTypes::MemberEndType endType,Float64 off)
 {
    LOG(_T("Attempt to offset harped strands at HPs to   = ") << ::ConvertFromSysUnits(off, unitMeasure::Inch) << _T(" in"));
-   m_pArtifact->SetHarpStrandOffsetHp(off);
+   m_pArtifact->SetHarpStrandOffsetHp(endType,off);
    m_bConfigDirty = true; // cache is dirty
 
    bool st = KeepHarpedStrandsInBounds();
    ATLASSERT(st);
 
-   LOG(_T("** Strands Actually offset to  = ") << ::ConvertFromSysUnits(m_pArtifact->GetHarpStrandOffsetHp(), unitMeasure::Inch) << _T(" in"));
+   LOG(_T("** Strands Actually offset to  = ") << ::ConvertFromSysUnits(m_pArtifact->GetHarpStrandOffsetHp(endType), unitMeasure::Inch) << _T(" in"));
 }
 
 bool pgsStrandDesignTool::KeepHarpedStrandsInBounds()
@@ -2155,16 +2194,20 @@ bool pgsStrandDesignTool::KeepHarpedStrandsInBounds()
       // cant adjust if we're not allowed.
       if (0.0 <= end_offset_inc)
       {
-         pStrandGeom->GetHarpedEndOffsetBoundsEx(m_GirderEntryName.c_str(), pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, fillvec, &end_lower_bound, &end_upper_bound);
+         for ( int i = 0; i < 2; i++ )
+         {
+            pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+            pStrandGeom->GetHarpedEndOffsetBoundsEx(m_GirderEntryName.c_str(), endType, pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, fillvec, &end_lower_bound, &end_upper_bound);
 
-         Float64 end_offset = m_pArtifact->GetHarpStrandOffsetEnd();
-         if (end_upper_bound < end_offset)
-         {
-            m_pArtifact->SetHarpStrandOffsetEnd(end_upper_bound);
-         }
-         else if (end_offset < end_lower_bound)
-         {
-            m_pArtifact->SetHarpStrandOffsetEnd(end_lower_bound);
+            Float64 end_offset = m_pArtifact->GetHarpStrandOffsetEnd(endType);
+            if (end_upper_bound < end_offset)
+            {
+               m_pArtifact->SetHarpStrandOffsetEnd(endType,end_upper_bound);
+            }
+            else if (end_offset < end_lower_bound)
+            {
+               m_pArtifact->SetHarpStrandOffsetEnd(endType,end_lower_bound);
+            }
          }
 
          m_bConfigDirty = true; // cache is dirty
@@ -2176,16 +2219,20 @@ bool pgsStrandDesignTool::KeepHarpedStrandsInBounds()
       Float64 hp_lower_bound, hp_upper_bound;
       if (0.0 < hp_offset_inc)
       {
-         pStrandGeom->GetHarpedHpOffsetBoundsEx(m_GirderEntryName.c_str(), pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, fillvec, &hp_lower_bound, &hp_upper_bound);
+         for ( int i = 0; i < 2; i++ )
+         {
+            pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+            pStrandGeom->GetHarpedHpOffsetBoundsEx(m_GirderEntryName.c_str(), endType, pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, fillvec, &hp_lower_bound, &hp_upper_bound);
 
-         Float64 hp_offset = m_pArtifact->GetHarpStrandOffsetHp();
-         if (hp_upper_bound < hp_offset)
-         {
-            m_pArtifact->SetHarpStrandOffsetHp(hp_upper_bound);
-         }
-         else if (hp_offset < hp_lower_bound)
-         {
-            m_pArtifact->SetHarpStrandOffsetHp(hp_lower_bound);
+            Float64 hp_offset = m_pArtifact->GetHarpStrandOffsetHp(endType);
+            if (hp_upper_bound < hp_offset)
+            {
+               m_pArtifact->SetHarpStrandOffsetHp(endType,hp_upper_bound);
+            }
+            else if (hp_offset < hp_lower_bound)
+            {
+               m_pArtifact->SetHarpStrandOffsetHp(endType,hp_lower_bound);
+            }
          }
 
          m_bConfigDirty = true; // cache is dirty
@@ -2211,65 +2258,65 @@ bool pgsStrandDesignTool::KeepHarpedStrandsInBounds()
    return true;
 }
 
-void pgsStrandDesignTool::GetEndOffsetBounds(Float64* pLower, Float64* pUpper) const
-{
-   GET_IFACE(IStrandGeometry,pStrandGeom);
-   StrandIndexType nh = m_pArtifact->GetNumHarpedStrands();
-   if (0 < nh)
-   {
-      Float64 end_offset_inc = GetHarpedEndOffsetIncrement(pStrandGeom);
-      if (0.0 < end_offset_inc)
-      {
-         const GDRCONFIG& config = GetSegmentConfiguration();
-         const ConfigStrandFillVector& fillvec = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
-
-         pStrandGeom->GetHarpedEndOffsetBoundsEx(m_GirderEntryName.c_str(), pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, fillvec, pLower, pUpper);
-      }
-      else
-      {
-         // adjustment not allowed
-         *pLower=0;
-         *pUpper=0;
-      }
-   }
-   else
-   {
-      // should be smart enough not to call this with no hs
-      ATLASSERT(false);
-      *pLower=0;
-      *pUpper=0;
-   }
-}
-
-void pgsStrandDesignTool::GetHpOffsetBounds(Float64* pLower, Float64* pUpper) const
-{
-   GET_IFACE(IStrandGeometry,pStrandGeom);
-   StrandIndexType nh = m_pArtifact->GetNumHarpedStrands();
-   if (0 < nh)
-   {
-      Float64 offset_inc = this->GetHarpedHpOffsetIncrement(pStrandGeom);
-      if (0.0 < offset_inc)
-      {
-         const GDRCONFIG& config = GetSegmentConfiguration();
-         const ConfigStrandFillVector& fillvec = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
-
-         pStrandGeom->GetHarpedHpOffsetBoundsEx(m_GirderEntryName.c_str(), pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, fillvec, pLower, pUpper);
-      }
-      else
-      {
-         // adjustment not allowed
-         *pLower=0;
-         *pUpper=0;
-      }
-   }
-   else
-   {
-      // should be smart enough not to call this with no hs
-      ATLASSERT(false);
-      *pLower=0;
-      *pUpper=0;
-   }
-}
+//void pgsStrandDesignTool::GetEndOffsetBounds(Float64* pLower, Float64* pUpper) const
+//{
+//   GET_IFACE(IStrandGeometry,pStrandGeom);
+//   StrandIndexType nh = m_pArtifact->GetNumHarpedStrands();
+//   if (0 < nh)
+//   {
+//      Float64 end_offset_inc = GetHarpedEndOffsetIncrement(pStrandGeom);
+//      if (0.0 < end_offset_inc)
+//      {
+//         const GDRCONFIG& config = GetSegmentConfiguration();
+//         const ConfigStrandFillVector& fillvec = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
+//
+//         pStrandGeom->GetHarpedEndOffsetBoundsEx(m_GirderEntryName.c_str(), pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, fillvec, pLower, pUpper);
+//      }
+//      else
+//      {
+//         // adjustment not allowed
+//         *pLower=0;
+//         *pUpper=0;
+//      }
+//   }
+//   else
+//   {
+//      // should be smart enough not to call this with no hs
+//      ATLASSERT(false);
+//      *pLower=0;
+//      *pUpper=0;
+//   }
+//}
+//
+//void pgsStrandDesignTool::GetHpOffsetBounds(Float64* pLower, Float64* pUpper) const
+//{
+//   GET_IFACE(IStrandGeometry,pStrandGeom);
+//   StrandIndexType nh = m_pArtifact->GetNumHarpedStrands();
+//   if (0 < nh)
+//   {
+//      Float64 offset_inc = this->GetHarpedHpOffsetIncrement(pStrandGeom);
+//      if (0.0 < offset_inc)
+//      {
+//         const GDRCONFIG& config = GetSegmentConfiguration();
+//         const ConfigStrandFillVector& fillvec = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
+//
+//         pStrandGeom->GetHarpedHpOffsetBoundsEx(m_GirderEntryName.c_str(), pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, fillvec, pLower, pUpper);
+//      }
+//      else
+//      {
+//         // adjustment not allowed
+//         *pLower=0;
+//         *pUpper=0;
+//      }
+//   }
+//   else
+//   {
+//      // should be smart enough not to call this with no hs
+//      ATLASSERT(false);
+//      *pLower=0;
+//      *pUpper=0;
+//   }
+//}
 
 Float64 pgsStrandDesignTool::GetHarpedHpOffsetIncrement(IStrandGeometry* pStrandGeom) const
 {
@@ -2451,10 +2498,12 @@ Float64 pgsStrandDesignTool::ComputeEndOffsetForEccentricity(const pgsPointOfInt
    Float64 ecc_ts = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, guess, pgsTypes::Temporary, &neff_ts);
 
    // compute hs eccentricities for end offsets of 1.0 and -1.0, and extrapolate the required offset
-   guess.PrestressConfig.EndOffset = 1.0;
+   guess.PrestressConfig.EndOffset[pgsTypes::metStart] = 1.0;
+   guess.PrestressConfig.EndOffset[pgsTypes::metEnd]   = 1.0;
    Float64 ecc_hs_p1 = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, guess, pgsTypes::Harped, &neff_hs);
 
-   guess.PrestressConfig.EndOffset = -1.0;
+   guess.PrestressConfig.EndOffset[pgsTypes::metStart] = -1.0;
+   guess.PrestressConfig.EndOffset[pgsTypes::metEnd]   = -1.0;
    Float64 ecc_hs_m1 = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, guess, pgsTypes::Harped, &neff_hs);
 
    Float64 neff = neff_ss + neff_hs + neff_ts;
@@ -2472,7 +2521,8 @@ Float64 pgsStrandDesignTool::ComputeEndOffsetForEccentricity(const pgsPointOfInt
 
    Float64 off = mapper.GetA(ecc);
 
-   guess.PrestressConfig.EndOffset = off;
+   guess.PrestressConfig.EndOffset[pgsTypes::metStart] = off;
+   guess.PrestressConfig.EndOffset[pgsTypes::metEnd] = off;
 
    Float64 new_ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, guess, true, &neff);
    ATLASSERT(IsEqual(ecc,new_ecc,0.01));
@@ -2516,9 +2566,11 @@ Float64 pgsStrandDesignTool::ComputeHpOffsetForEccentricity(const pgsPointOfInte
       Float64 ecc_ts = bIncTempStrands ? pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, guess, pgsTypes::Temporary, &neff_ts) : 0.0;
 
       // compute hs eccentricities for hp offsets of +1.0 and -1.0, and extrapolate the required offset
-      guess.PrestressConfig.HpOffset = 1.0;
+      guess.PrestressConfig.HpOffset[pgsTypes::metStart] = 1.0;
+      guess.PrestressConfig.HpOffset[pgsTypes::metEnd] = 1.0;
       Float64 ecc_hs_p1 = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, guess, pgsTypes::Harped, &neff_hs);
-      guess.PrestressConfig.HpOffset = -1.0;
+      guess.PrestressConfig.HpOffset[pgsTypes::metStart] = -1.0;
+      guess.PrestressConfig.HpOffset[pgsTypes::metEnd] = -1.0;
       Float64 ecc_hs_m1 = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, guess, pgsTypes::Harped, &neff_hs);
 
       Float64 neff = neff_ss + neff_hs + neff_ts;
@@ -2536,7 +2588,8 @@ Float64 pgsStrandDesignTool::ComputeHpOffsetForEccentricity(const pgsPointOfInte
 
       Float64 off = mapper.GetA(ecc);
 
-      guess.PrestressConfig.HpOffset = off;
+      guess.PrestressConfig.HpOffset[pgsTypes::metStart] = off;
+      guess.PrestressConfig.HpOffset[pgsTypes::metEnd] = off;
       Float64 new_ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, guess, bIncTempStrands, &neff);
       ATLASSERT(IsEqual(ecc,new_ecc,0.01));
 
@@ -2792,9 +2845,6 @@ bool pgsStrandDesignTool::ComputeAddHarpedForMidZoneReleaseEccentricity(const pg
          LOG(_T("No straight strands to trade"));
          return false;
       }
-
-      Float64 off_hp = this->GetHarpStrandOffsetHp();
-      Float64 off_end= this->GetHarpStrandOffsetEnd();
 
       Float64 neff_ss(0.0), neff_ts(0.0), neff_hs(0.0);
       Float64 ecc_ts = 0 < nt ? pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, guess, pgsTypes::Temporary, &neff_ts) : 0.0;
@@ -3221,6 +3271,7 @@ std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetHandlingDesignPointsOfIn
       
       pgsPointOfInterest poi(segmentKey,dist,attribute);
       poi.MakeTenthPoint(poiReference,tenthPoint);
+      poi.CanMerge(false); // these POI need to be in their exact location so don't merge with nearby POI
       m_PoiMgr.AddPointOfInterest( poi );
    }
    
@@ -3547,8 +3598,10 @@ void pgsStrandDesignTool::InitHarpedPhysicalBounds(const matPsStrand* pstrand)
    m_bConfigDirty = true; // cache is dirty
 
    // Initialize strand offsets
-   m_pArtifact->SetHarpStrandOffsetEnd(0.00);
-   m_pArtifact->SetHarpStrandOffsetHp(0.00);
+   m_pArtifact->SetHarpStrandOffsetEnd(pgsTypes::metStart,0.00);
+   m_pArtifact->SetHarpStrandOffsetHp(pgsTypes::metStart,0.00);
+   m_pArtifact->SetHarpStrandOffsetHp(pgsTypes::metEnd,0.00);
+   m_pArtifact->SetHarpStrandOffsetEnd(pgsTypes::metEnd,0.00);
 
    // intialize data for strand slope and hold down checks
    GET_IFACE(IStrandGeometry,pStrandGeom);

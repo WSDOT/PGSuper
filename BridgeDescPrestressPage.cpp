@@ -91,8 +91,10 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
 	CPropertyPage::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CGirderDescPrestressPage)
 	//}}AFX_DATA_MAP
+   DDX_Tag( pDX, IDC_HPOFFSET_START_UNIT, pDisplayUnits->GetComponentDimUnit() );
+   DDX_Tag( pDX, IDC_HPOFFSET_HP1_UNIT, pDisplayUnits->GetComponentDimUnit() );
+   DDX_Tag( pDX, IDC_HPOFFSET_HP2_UNIT, pDisplayUnits->GetComponentDimUnit() );
    DDX_Tag( pDX, IDC_HPOFFSET_END_UNIT, pDisplayUnits->GetComponentDimUnit() );
-   DDX_Tag( pDX, IDC_HPOFFSET_HP_UNIT, pDisplayUnits->GetComponentDimUnit() );
 
    if (!pDX->m_bSaveAndValidate)
    {
@@ -312,32 +314,59 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
          {
             ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
 
-            Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(pParent->m_strGirderName.c_str(), 
-                                                                                   adjType, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
-                                                                                   harpFill,
-                                                                                   pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd(), 
-                                                                                   pParent->m_pSegment->Strands.GetHarpStrandOffsetAtEnd());
+            for ( int i = 0; i < 2; i++ )
+            {
+               pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+               Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(pParent->m_strGirderName.c_str(), endType,
+                                                                                      adjType, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
+                                                                                      harpFill,
+                                                                                      pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd(), 
+                                                                                      pParent->m_pSegment->Strands.GetHarpStrandOffsetAtEnd(endType));
 
-            Float64 topcg_offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(pParent->m_strGirderName.c_str(), 
-                                                                                       adjType, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
-                                                                                       harpFill,
-                                                                                       hsoCGFROMTOP, 
-                                                                                       absol_offset);
+               Float64 topcg_offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(pParent->m_strGirderName.c_str(), endType,
+                                                                                          adjType, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
+                                                                                          harpFill,
+                                                                                          hsoCGFROMTOP, 
+                                                                                          absol_offset);
 
+               pParent->m_pSegment->Strands.SetHarpStrandOffsetAtEnd(endType,topcg_offset);
+            }
             pParent->m_pSegment->Strands.SetHarpStrandOffsetMeasurementAtEnd(hsoCGFROMTOP);
-            pParent->m_pSegment->Strands.SetHarpStrandOffsetAtEnd(topcg_offset);
          }
 
          UpdateEndRangeLength(pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd(), nh);
       }
 
-      Float64 offset = pParent->m_pSegment->Strands.GetHarpStrandOffsetAtEnd();
-      HarpedStrandOffsetType offsetType = pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd();
-      DDX_UnitValueAndTag( pDX, IDC_HPOFFSET_END, IDC_HPOFFSET_END_UNIT, offset, pDisplayUnits->GetComponentDimUnit() );
-   	DDX_CBItemData(pDX, IDC_HP_COMBO_END, offsetType);
+      for ( int i = 0; i < 2; i++ )
+      {
+         pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+
+         Float64 offset = pParent->m_pSegment->Strands.GetHarpStrandOffsetAtEnd(endType);
+         UINT nIDC     = (endType == pgsTypes::metStart ? IDC_HPOFFSET_START      : IDC_HPOFFSET_END);
+         UINT nIDCUnit = (endType == pgsTypes::metStart ? IDC_HPOFFSET_START_UNIT : IDC_HPOFFSET_END_UNIT);
+         DDX_UnitValueAndTag( pDX, nIDC, nIDCUnit, offset, pDisplayUnits->GetComponentDimUnit() );
+
+         if ( pDX->m_bSaveAndValidate )
+         {
+            pParent->m_pSegment->Strands.SetHarpStrandOffsetAtEnd(endType,offset);
+         }
+      }
+
       if ( pDX->m_bSaveAndValidate )
       {
-         pParent->m_pSegment->Strands.SetHarpStrandOffsetAtEnd(offset);
+         GET_IFACE2(pBroker,IGirder,pGirder);
+         if ( pGirder->IsSymmetricSegment(pParent->m_pSegment->GetSegmentKey()) )
+         {
+            // if the segment is symmetric, the UI is only for the start half
+            // copy the start half parameters to the end half
+            pParent->m_pSegment->Strands.SetHarpStrandOffsetAtEnd(pgsTypes::metEnd,pParent->m_pSegment->Strands.GetHarpStrandOffsetAtEnd(pgsTypes::metStart));
+         }
+      }
+
+      HarpedStrandOffsetType offsetType = pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd();
+	   DDX_CBItemData(pDX, IDC_HP_COMBO_END, offsetType);
+      if ( pDX->m_bSaveAndValidate )
+      {
          pParent->m_pSegment->Strands.SetHarpStrandOffsetMeasurementAtEnd(offsetType);
       }
 
@@ -376,31 +405,57 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
          {
             ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
 
-            Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(pParent->m_strGirderName.c_str(),
-                                                                                  adjType, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
-                                                                                  harpFill,
-                                                                                  pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(), 
-                                                                                  pParent->m_pSegment->Strands.GetHarpStrandOffsetAtHarpPoint());
+            for ( int i = 0; i < 2; i++ )
+            {
+               pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
 
-            Float64 botcg_offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(pParent->m_strGirderName.c_str(), 
-                                                                                      adjType, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
-                                                                                      harpFill, 
-                                                                                      hsoCGFROMBOTTOM, absol_offset);
+               Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(pParent->m_strGirderName.c_str(), endType,
+                                                                                     adjType, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
+                                                                                     harpFill,
+                                                                                     pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(), 
+                                                                                     pParent->m_pSegment->Strands.GetHarpStrandOffsetAtHarpPoint(endType));
 
+               Float64 botcg_offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(pParent->m_strGirderName.c_str(), endType,
+                                                                                         adjType, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
+                                                                                         harpFill, 
+                                                                                         hsoCGFROMBOTTOM, absol_offset);
+
+               pParent->m_pSegment->Strands.SetHarpStrandOffsetAtHarpPoint( endType, botcg_offset );
+            }
             pParent->m_pSegment->Strands.SetHarpStrandOffsetMeasurementAtHarpPoint( hsoCGFROMBOTTOM );
-            pParent->m_pSegment->Strands.SetHarpStrandOffsetAtHarpPoint( botcg_offset );
          }
 
          UpdateHpRangeLength(pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(), nh);
       }
 
-      Float64 offset = pParent->m_pSegment->Strands.GetHarpStrandOffsetAtHarpPoint();
+      for ( int i = 0; i < 2; i++ )
+      {
+         pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+         Float64 offset = pParent->m_pSegment->Strands.GetHarpStrandOffsetAtHarpPoint(endType);
+         UINT nIDC     = (endType == pgsTypes::metStart ? IDC_HPOFFSET_HP1      : IDC_HPOFFSET_HP2);
+         UINT nIDCUnit = (endType == pgsTypes::metStart ? IDC_HPOFFSET_HP1_UNIT : IDC_HPOFFSET_HP2_UNIT);
+         DDX_UnitValueAndTag( pDX, nIDC, nIDCUnit, offset, pDisplayUnits->GetComponentDimUnit() );
+         if ( pDX->m_bSaveAndValidate )
+         {
+            pParent->m_pSegment->Strands.SetHarpStrandOffsetAtHarpPoint(endType,offset);
+         }
+      }
+
+      if ( pDX->m_bSaveAndValidate )
+      {
+         GET_IFACE2(pBroker,IGirder,pGirder);
+         if ( pGirder->IsSymmetricSegment(pParent->m_pSegment->GetSegmentKey()) )
+         {
+            // if the segment is symmetric, the UI is only for the start half
+            // copy the start half parameters to the end half
+            pParent->m_pSegment->Strands.SetHarpStrandOffsetAtHarpPoint(pgsTypes::metEnd,pParent->m_pSegment->Strands.GetHarpStrandOffsetAtHarpPoint(pgsTypes::metStart));
+         }
+      }
+
       HarpedStrandOffsetType offsetType = pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint();
-      DDX_UnitValueAndTag( pDX, IDC_HPOFFSET_HP, IDC_HPOFFSET_HP_UNIT, offset, pDisplayUnits->GetComponentDimUnit() );
    	DDX_CBItemData(pDX, IDC_HP_COMBO_HP, offsetType);
       if ( pDX->m_bSaveAndValidate )
       {
-         pParent->m_pSegment->Strands.SetHarpStrandOffsetAtHarpPoint(offset);
          pParent->m_pSegment->Strands.SetHarpStrandOffsetMeasurementAtHarpPoint(offsetType);
       }
 
@@ -432,40 +487,48 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
          // But first, for Adj.-Straight strands, make adjustment at hp the same as at ends
          if( adjType==pgsTypes::asStraight && m_AllowEndAdjustment)
          {
-            pParent->m_pSegment->Strands.SetHarpStrandOffsetAtHarpPoint( pParent->m_pSegment->Strands.GetHarpStrandOffsetAtEnd() );
+            for ( int i = 0; i < 2; i++ )
+            {
+               pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+               pParent->m_pSegment->Strands.SetHarpStrandOffsetAtHarpPoint( endType, pParent->m_pSegment->Strands.GetHarpStrandOffsetAtEnd(endType) );
+            }
             pParent->m_pSegment->Strands.SetHarpStrandOffsetMeasurementAtHarpPoint( pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd() );
          }
 
          // girder ends
          // first convert to abosolute offsets
-         Float64 absol_offset;
          if (m_AllowEndAdjustment)
          {
             ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
 
-            Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(pParent->m_strGirderName.c_str(), 
-                                                                                   adjType, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
-                                                                                   harpFill,
-                                                                                   pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd(), 
-                                                                                   pParent->m_pSegment->Strands.GetHarpStrandOffsetAtEnd());
-
-            Float64 max_end_offset, min_end_offset;
-            pStrandGeometry->GetHarpedEndOffsetBoundsEx(pParent->m_strGirderName.c_str(), adjType,
-                                                        m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
-                                                        harpFill, &min_end_offset, &max_end_offset);
-
-            if( absol_offset > max_end_offset+TOLERANCE )
+            for ( int i = 0; i < 2; i++ )
             {
-               HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_HPOFFSET_END);
-	            AfxMessageBox( _T("Harped strand offset is excessive at ends of girder - Strand lies above allowable cover"), MB_ICONEXCLAMATION);
-	            pDX->Fail();
-            }
+               pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+               Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(pParent->m_strGirderName.c_str(), endType,
+                                                                                      adjType, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
+                                                                                      harpFill,
+                                                                                      pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd(), 
+                                                                                      pParent->m_pSegment->Strands.GetHarpStrandOffsetAtEnd(endType));
 
-            if( absol_offset < min_end_offset-TOLERANCE )
-            {
-               HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_HPOFFSET_END);
-	            AfxMessageBox( _T("Harped strand offset is excessive at ends of girder - Strand lies below allowable cover"), MB_ICONEXCLAMATION);
-	            pDX->Fail();
+               Float64 max_end_offset, min_end_offset;
+               pStrandGeometry->GetHarpedEndOffsetBoundsEx(pParent->m_strGirderName.c_str(), endType, adjType,
+                                                           m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
+                                                           harpFill, &min_end_offset, &max_end_offset);
+
+               UINT nIDC = (endType == pgsTypes::metStart ? IDC_HPOFFSET_START      : IDC_HPOFFSET_END);
+               if( max_end_offset+TOLERANCE < absol_offset )
+               {
+                  HWND hWndCtrl = pDX->PrepareEditCtrl(nIDC);
+	               AfxMessageBox( _T("Harped strand offset is excessive at ends of girder - Strand lies above allowable cover"), MB_ICONEXCLAMATION);
+	               pDX->Fail();
+               }
+
+               if( absol_offset < min_end_offset-TOLERANCE )
+               {
+                  HWND hWndCtrl = pDX->PrepareEditCtrl(nIDC);
+	               AfxMessageBox( _T("Harped strand offset is excessive at ends of girder - Strand lies below allowable cover"), MB_ICONEXCLAMATION);
+	               pDX->Fail();
+               }
             }
          }
 
@@ -474,30 +537,35 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
          {
             ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
 
-            absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(pParent->m_strGirderName.c_str(), 
-                                                                          adjType, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
-                                                                          harpFill,
-                                                                          pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(), 
-                                                                          pParent->m_pSegment->Strands.GetHarpStrandOffsetAtHarpPoint());
-
-            Float64 max_hp_offset, min_hp_offset;
-            pStrandGeometry->GetHarpedHpOffsetBoundsEx(pParent->m_strGirderName.c_str(), 
-                                                       adjType, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
-                                                       harpFill,
-                                                       &min_hp_offset, &max_hp_offset);
-
-            if( absol_offset > max_hp_offset+TOLERANCE )
+            for ( int i = 0; i < 2; i++ )
             {
-               HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_HPOFFSET_HP);
-	            AfxMessageBox( _T("Harped strand offset is excessive at harping points - Strand lies above allowable cover"), MB_ICONEXCLAMATION);
-	            pDX->Fail();
-            }
+               pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+               Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(pParent->m_strGirderName.c_str(), endType,
+                                                                             adjType, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
+                                                                             harpFill,
+                                                                             pParent->m_pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(), 
+                                                                             pParent->m_pSegment->Strands.GetHarpStrandOffsetAtHarpPoint(endType));
 
-            if( absol_offset < min_hp_offset-TOLERANCE )
-            {
-               HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_HPOFFSET_HP);
-	            AfxMessageBox( _T("Harped strand offset is excessive at harping points - Strand lies below allowable cover"), MB_ICONEXCLAMATION);
-	            pDX->Fail();
+               Float64 max_hp_offset, min_hp_offset;
+               pStrandGeometry->GetHarpedHpOffsetBoundsEx(pParent->m_strGirderName.c_str(),endType, 
+                                                          adjType, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
+                                                          harpFill,
+                                                          &min_hp_offset, &max_hp_offset);
+
+               UINT nIDC = (endType == pgsTypes::metStart ? IDC_HPOFFSET_HP1 : IDC_HPOFFSET_HP2);
+               if( max_hp_offset+TOLERANCE < absol_offset )
+               {
+                  HWND hWndCtrl = pDX->PrepareEditCtrl(nIDC);
+	               AfxMessageBox( _T("Harped strand offset is excessive at harping points - Strand lies above allowable cover"), MB_ICONEXCLAMATION);
+	               pDX->Fail();
+               }
+
+               if( absol_offset < min_hp_offset-TOLERANCE )
+               {
+                  HWND hWndCtrl = pDX->PrepareEditCtrl(nIDC);
+	               AfxMessageBox( _T("Harped strand offset is excessive at harping points - Strand lies below allowable cover"), MB_ICONEXCLAMATION);
+	               pDX->Fail();
+               }
             }
          }
       }
@@ -1332,6 +1400,13 @@ void CGirderDescPrestressPage::DisableEndOffsetControls(BOOL hide)
 
    BOOL show = hide==TRUE ? FALSE : TRUE;
 
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IGirder,pGirder);
+
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+   bool bSymmetric = pGirder->IsSymmetricSegment(pParent->m_pSegment->GetSegmentKey());
+
    // These are the strand pattern offset controls
    pWnd = GetDlgItem( IDC_HPOFFSET_END_TITLE );
    ASSERT( pWnd );
@@ -1341,13 +1416,24 @@ void CGirderDescPrestressPage::DisableEndOffsetControls(BOOL hide)
    ASSERT( pWnd );
    pWnd->EnableWindow( show );
 
-   pWnd = GetDlgItem( IDC_HPOFFSET_END );
+   pWnd = GetDlgItem( IDC_HPOFFSET_START );
    ASSERT( pWnd );
    pWnd->EnableWindow( show );
 
-   pWnd = GetDlgItem( IDC_HPOFFSET_END_UNIT );
+   pWnd = GetDlgItem( IDC_HPOFFSET_START_UNIT );
    ASSERT( pWnd );
    pWnd->EnableWindow( show );
+
+   if ( !bSymmetric )
+   {
+      pWnd = GetDlgItem( IDC_HPOFFSET_END );
+      ASSERT( pWnd );
+      pWnd->EnableWindow( show );
+
+      pWnd = GetDlgItem( IDC_HPOFFSET_END_UNIT );
+      ASSERT( pWnd );
+      pWnd->EnableWindow( show );
+   }
 
    pWnd = GetDlgItem( IDC_HPOFFSET_END_NOTE );
    ASSERT( pWnd );
@@ -1360,6 +1446,13 @@ void CGirderDescPrestressPage::ShowEndOffsetControls(BOOL shw)
 
    int show = shw ? SW_SHOW : SW_HIDE;
 
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IGirder,pGirder);
+
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+   bool bSymmetric = pGirder->IsSymmetricSegment(pParent->m_pSegment->GetSegmentKey());
+
    // These are the strand pattern offset controls
    pWnd = GetDlgItem( IDC_HPOFFSET_END_TITLE );
    ASSERT( pWnd );
@@ -1369,13 +1462,24 @@ void CGirderDescPrestressPage::ShowEndOffsetControls(BOOL shw)
    ASSERT( pWnd );
    pWnd->ShowWindow( show );
 
-   pWnd = GetDlgItem( IDC_HPOFFSET_END );
+   pWnd = GetDlgItem( IDC_HPOFFSET_START );
    ASSERT( pWnd );
    pWnd->ShowWindow( show );
 
-   pWnd = GetDlgItem( IDC_HPOFFSET_END_UNIT );
+   pWnd = GetDlgItem( IDC_HPOFFSET_START_UNIT );
    ASSERT( pWnd );
    pWnd->ShowWindow( show );
+
+   if ( !bSymmetric )
+   {
+      pWnd = GetDlgItem( IDC_HPOFFSET_END );
+      ASSERT( pWnd );
+      pWnd->ShowWindow( show );
+
+      pWnd = GetDlgItem( IDC_HPOFFSET_END_UNIT );
+      ASSERT( pWnd );
+      pWnd->ShowWindow( show );
+   }
 
    pWnd = GetDlgItem( IDC_HPOFFSET_END_NOTE );
    ASSERT( pWnd );
@@ -1387,6 +1491,13 @@ void CGirderDescPrestressPage::DisableHpOffsetControls(BOOL hide)
    CWnd* pWnd = 0;
    BOOL show = hide==TRUE ? FALSE : TRUE;
 
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IGirder,pGirder);
+
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+   bool bSymmetric = pGirder->IsSymmetricSegment(pParent->m_pSegment->GetSegmentKey());
+
    // These are the strand pattern offset controls
    pWnd = GetDlgItem( IDC_HPOFFSET_HP_TITLE );
    ASSERT( pWnd );
@@ -1396,13 +1507,24 @@ void CGirderDescPrestressPage::DisableHpOffsetControls(BOOL hide)
    ASSERT( pWnd );
    pWnd->EnableWindow( show );
 
-   pWnd = GetDlgItem( IDC_HPOFFSET_HP );
+   pWnd = GetDlgItem( IDC_HPOFFSET_HP1 );
    ASSERT( pWnd );
    pWnd->EnableWindow( show );
 
-   pWnd = GetDlgItem( IDC_HPOFFSET_HP_UNIT );
+   pWnd = GetDlgItem( IDC_HPOFFSET_HP1_UNIT );
    ASSERT( pWnd );
    pWnd->EnableWindow( show );
+
+   if ( !bSymmetric )
+   {
+      pWnd = GetDlgItem( IDC_HPOFFSET_HP2 );
+      ASSERT( pWnd );
+      pWnd->EnableWindow( show );
+
+      pWnd = GetDlgItem( IDC_HPOFFSET_HP2_UNIT );
+      ASSERT( pWnd );
+      pWnd->EnableWindow( show );
+   }
 
    pWnd = GetDlgItem( IDC_HPOFFSET_HP_NOTE );
    ASSERT( pWnd );
@@ -1415,6 +1537,13 @@ void CGirderDescPrestressPage::ShowHpOffsetControls(BOOL show)
 
    int sShow = show ? SW_SHOW : SW_HIDE;
 
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IGirder,pGirder);
+
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+   bool bSymmetric = pGirder->IsSymmetricSegment(pParent->m_pSegment->GetSegmentKey());
+
    // These are the strand pattern offset controls
    pWnd = GetDlgItem( IDC_HPOFFSET_HP_TITLE );
    ASSERT( pWnd );
@@ -1424,13 +1553,24 @@ void CGirderDescPrestressPage::ShowHpOffsetControls(BOOL show)
    ASSERT( pWnd );
    pWnd->ShowWindow( sShow );
 
-   pWnd = GetDlgItem( IDC_HPOFFSET_HP );
+   pWnd = GetDlgItem( IDC_HPOFFSET_HP1 );
    ASSERT( pWnd );
    pWnd->ShowWindow( sShow );
 
-   pWnd = GetDlgItem( IDC_HPOFFSET_HP_UNIT );
+   pWnd = GetDlgItem( IDC_HPOFFSET_HP1_UNIT );
    ASSERT( pWnd );
    pWnd->ShowWindow( sShow );
+
+   if ( !bSymmetric )
+   {
+      pWnd = GetDlgItem( IDC_HPOFFSET_HP2 );
+      ASSERT( pWnd );
+      pWnd->ShowWindow( sShow );
+
+      pWnd = GetDlgItem( IDC_HPOFFSET_HP2_UNIT );
+      ASSERT( pWnd );
+      pWnd->ShowWindow( sShow );
+   }
 
    pWnd = GetDlgItem( IDC_HPOFFSET_HP_NOTE );
    ASSERT( pWnd );
@@ -1552,37 +1692,50 @@ void CGirderDescPrestressPage::UpdateEndRangeLength(HarpedStrandOffsetType measu
                                         ComputeHarpedStrandFillVector() :
                                         pStrandGeom->ComputeStrandFill(pParent->m_strGirderName.c_str(), pgsTypes::Harped, Nh);
 
-      Float64 lowRange, highRange;
-      pStrandGeom->ComputeValidHarpedOffsetForMeasurementTypeEnd(pParent->m_strGirderName.c_str(),
-                                                                 pParent->m_pSegment->Strands.GetAdjustableStrandType(),
-                                                                 m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
-                                                                 harpFill, measureType, &lowRange, &highRange);
+      Float64 low[2], high[2];
 
-      Float64 low  = Min(lowRange, highRange);
-      Float64 high = Max(lowRange, highRange);
-
-      // If offset value is blank, we need to fill it. Place at highest location in valid range
-      CWnd* pWnd = GetDlgItem( IDC_HPOFFSET_END );
-      ASSERT( pWnd );
-      CString txt;
-      pWnd->GetWindowText(txt);
-      if (txt.IsEmpty())
+      for ( int i = 0; i < 2; i++ )
       {
-         CDataExchange DX(this, FALSE);
-         DDX_UnitValueAndTag( &DX, IDC_HPOFFSET_END, IDC_HPOFFSET_END_UNIT, high, pDisplayUnits->GetComponentDimUnit() );
+         pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+
+         Float64 lowRange, highRange;
+         pStrandGeom->ComputeValidHarpedOffsetForMeasurementTypeEnd(pParent->m_strGirderName.c_str(),endType,
+                                                                    pParent->m_pSegment->Strands.GetAdjustableStrandType(),
+                                                                    m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
+                                                                    harpFill, measureType, &lowRange, &highRange);
+
+         low[endType]  = Min(lowRange, highRange);
+         high[endType] = Max(lowRange, highRange);
+
+         // If offset value is blank, we need to fill it. Place at highest location in valid range
+         UINT nIDC = (endType == pgsTypes::metStart ? IDC_HPOFFSET_START : IDC_HPOFFSET_END);
+         CWnd* pWnd = GetDlgItem( nIDC );
+         ASSERT( pWnd );
+         CString txt;
+         pWnd->GetWindowText(txt);
+         if (txt.IsEmpty())
+         {
+            CDataExchange DX(this, FALSE);
+            UINT nIDCUnit = (endType == pgsTypes::metStart ? IDC_HPOFFSET_START_UNIT : IDC_HPOFFSET_END_UNIT);
+            DDX_UnitValueAndTag( &DX, nIDC, nIDCUnit, high[endType], pDisplayUnits->GetComponentDimUnit() );
+         }
       }
 
       // Update message
-      low  = ::ConvertFromSysUnits(low, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-      high = ::ConvertFromSysUnits(high,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-
-      if ( IS_SI_UNITS(pDisplayUnits) )
+      GET_IFACE2(pBroker,IGirder,pGirder);
+      if ( pGirder->IsSymmetricSegment(pParent->m_pSegment->GetSegmentKey()) )
       {
-         str.Format(_T("(Valid Range %.1f to %.1f)"), low, high);
+         str.Format(_T("Valid Range %s to %s"),
+            ::FormatDimension(low[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit(),false),
+            ::FormatDimension(high[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit(),false));
       }
       else
       {
-         str.Format(_T("(Valid Range %.3f to %.3f)"), low, high);
+         str.Format(_T("Valid Range %s to %s (Left) %s to %s (Right)"),
+            ::FormatDimension(low[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit(),false),
+            ::FormatDimension(high[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit(),false),
+            ::FormatDimension(low[pgsTypes::metEnd],pDisplayUnits->GetComponentDimUnit(),false),
+            ::FormatDimension(high[pgsTypes::metEnd],pDisplayUnits->GetComponentDimUnit(),false));
       }
    }
 
@@ -1607,34 +1760,49 @@ void CGirderDescPrestressPage::UpdateHpRangeLength(HarpedStrandOffsetType measur
                                         ComputeHarpedStrandFillVector() :
                                         pStrandGeom->ComputeStrandFill(pParent->m_strGirderName.c_str(), pgsTypes::Harped, Nh);
 
-      Float64 lowRange, highRange;
-      pStrandGeom->ComputeValidHarpedOffsetForMeasurementTypeHp(pParent->m_strGirderName.c_str(), pParent->m_pSegment->Strands.GetAdjustableStrandType(), m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, harpFill, measureType, &lowRange, &highRange);
 
+      Float64 low[2], high[2];
 
-      Float64 low  = Min(lowRange, highRange);
-      Float64 high = Max(lowRange, highRange);
-      // If offset value is blank, we need to fill it. Place at lowest location in valid range
-      CWnd* pWnd = GetDlgItem( IDC_HPOFFSET_HP );
-      ASSERT( pWnd );
-      CString txt;
-      pWnd->GetWindowText(txt);
-      if (txt.IsEmpty())
+      for ( int i = 0; i < 2; i++ )
       {
-         CDataExchange DX(this, FALSE);
-         DDX_UnitValueAndTag( &DX, IDC_HPOFFSET_HP, IDC_HPOFFSET_HP_UNIT, low, pDisplayUnits->GetComponentDimUnit() );
+         pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+
+         Float64 lowRange, highRange;
+         pStrandGeom->ComputeValidHarpedOffsetForMeasurementTypeHp(pParent->m_strGirderName.c_str(), endType, pParent->m_pSegment->Strands.GetAdjustableStrandType(), m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, harpFill, measureType, &lowRange, &highRange);
+
+
+         low[endType]  = Min(lowRange, highRange);
+         high[endType] = Max(lowRange, highRange);
+
+         // If offset value is blank, we need to fill it. Place at lowest location in valid range
+         UINT nIDC = (endType == pgsTypes::metStart ? IDC_HPOFFSET_HP1 : IDC_HPOFFSET_HP2);
+         CWnd* pWnd = GetDlgItem( nIDC );
+         ASSERT( pWnd );
+         CString txt;
+         pWnd->GetWindowText(txt);
+         if (txt.IsEmpty())
+         {
+            CDataExchange DX(this, FALSE);
+            UINT nIDCUnit = (endType == pgsTypes::metStart ? IDC_HPOFFSET_HP1_UNIT : IDC_HPOFFSET_HP2_UNIT);
+            DDX_UnitValueAndTag( &DX, nIDC, nIDCUnit, low[endType], pDisplayUnits->GetComponentDimUnit() );
+         }
       }
 
       // Update message
-      low = ::ConvertFromSysUnits(low,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-      high = ::ConvertFromSysUnits(high,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-
-      if ( IS_SI_UNITS(pDisplayUnits) )
+      GET_IFACE2(pBroker,IGirder,pGirder);
+      if ( pGirder->IsSymmetricSegment(pParent->m_pSegment->GetSegmentKey()) )
       {
-         str.Format(_T("(Valid Range %.1f to %.1f)"), low, high);
+         str.Format(_T("Valid Range %s to %s"),
+            ::FormatDimension(low[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit(),false),
+            ::FormatDimension(high[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit(),false));
       }
       else
       {
-         str.Format(_T("(Valid Range %.3f to %.3f)"), low, high);
+         str.Format(_T("Valid Range %s to %s (Left) %s to %s (Right)"),
+            ::FormatDimension(low[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit(),false),
+            ::FormatDimension(high[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit(),false),
+            ::FormatDimension(low[pgsTypes::metEnd],pDisplayUnits->GetComponentDimUnit(),false),
+            ::FormatDimension(high[pgsTypes::metEnd],pDisplayUnits->GetComponentDimUnit(),false));
       }
    }
 
@@ -1676,22 +1844,28 @@ void CGirderDescPrestressPage::OnSelchangeHpComboHp()
       GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-      CString strOffset;
-      CWnd* pWnd = GetDlgItem(IDC_HPOFFSET_HP);
-      pWnd->GetWindowText(strOffset);
-      Float64 offset = _tstof(strOffset);
+      for ( int i = 0; i < 2; i++ )
+      {
+         pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
 
-      offset = ::ConvertToSysUnits(offset,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+         CString strOffset;
+         UINT nIDC = (endType == pgsTypes::metStart ? IDC_HPOFFSET_HP1 : IDC_HPOFFSET_HP2);
+         CWnd* pWnd = GetDlgItem(nIDC);
+         pWnd->GetWindowText(strOffset);
+         Float64 offset = _tstof(strOffset);
 
-      ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
+         offset = ::ConvertToSysUnits(offset,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
-      offset = pStrandGeom->ConvertHarpedOffsetHp(pParent->m_strGirderName.c_str(), 
-                                                  pParent->m_pSegment->Strands.GetAdjustableStrandType(),
-                                                  m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
-                                                  harpFill,  m_OldHpMeasureType, offset, measureType);
-      
-      strOffset = ::FormatDimension(offset,pDisplayUnits->GetComponentDimUnit(),false);
-      pWnd->SetWindowText(strOffset);
+         ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
+
+         offset = pStrandGeom->ConvertHarpedOffsetHp(pParent->m_strGirderName.c_str(), endType,
+                                                     pParent->m_pSegment->Strands.GetAdjustableStrandType(),
+                                                     m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
+                                                     harpFill,  m_OldHpMeasureType, offset, measureType);
+         
+         strOffset = ::FormatDimension(offset,pDisplayUnits->GetComponentDimUnit(),false);
+         pWnd->SetWindowText(strOffset);
+      }
    }
 
    StrandIndexType Nh = GetHarpedStrandCount();
@@ -1719,21 +1893,27 @@ void CGirderDescPrestressPage::OnSelchangeHpComboEnd()
          GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
          GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-         CString strOffset;
-         CWnd* pWnd = GetDlgItem(IDC_HPOFFSET_END);
-         pWnd->GetWindowText(strOffset);
-         Float64 offset = _tstof(strOffset);
-         offset = ::ConvertToSysUnits(offset,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+         for ( int i = 0; i < 2; i++ )
+         {
+            pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
 
-         ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
+            CString strOffset;
+            UINT nIDC = (endType == pgsTypes::metStart ? IDC_HPOFFSET_START : IDC_HPOFFSET_END);
+            CWnd* pWnd = GetDlgItem(nIDC);
+            pWnd->GetWindowText(strOffset);
+            Float64 offset = _tstof(strOffset);
+            offset = ::ConvertToSysUnits(offset,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
-         offset = pStrandGeom->ConvertHarpedOffsetEnd(pParent->m_strGirderName.c_str(), 
-                                                      pParent->m_pSegment->Strands.GetAdjustableStrandType(),
-                                                      m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
-                                                      harpFill, m_OldEndMeasureType, offset, measureType);
+            ConfigStrandFillVector harpFill( ComputeHarpedStrandFillVector() );
 
-         strOffset = FormatDimension(offset,pDisplayUnits->GetComponentDimUnit(),false);
-         pWnd->SetWindowText(strOffset);
+            offset = pStrandGeom->ConvertHarpedOffsetEnd(pParent->m_strGirderName.c_str(), endType, 
+                                                         pParent->m_pSegment->Strands.GetAdjustableStrandType(),
+                                                         m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd,
+                                                         harpFill, m_OldEndMeasureType, offset, measureType);
+
+            strOffset = FormatDimension(offset,pDisplayUnits->GetComponentDimUnit(),false);
+            pWnd->SetWindowText(strOffset);
+         }
       }
    }
    else
@@ -2500,12 +2680,19 @@ void CGirderDescPrestressPage::EditDirectSelect()
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    // Get current offset input values - dialog will force in bounds if needed
-   Float64 hpOffsetAtEnd(0.0), hpOffsetAtHp(0.0);
+   Float64 hpOffsetAtStart(0.0), hpOffsetAtHp1(0.0), hpOffsetAtHp2(0.0), hpOffsetAtEnd(0.0);
    HarpedStrandOffsetType endMeasureType(hsoLEGACY), hpMeasureType(hsoLEGACY);
    CDataExchange DXf(this, TRUE);
    if (m_AllowEndAdjustment)
    {
-      DDX_UnitValueAndTag( &DXf, IDC_HPOFFSET_END, IDC_HPOFFSET_END_UNIT, hpOffsetAtEnd, pDisplayUnits->GetComponentDimUnit() );
+      DDX_UnitValueAndTag( &DXf, IDC_HPOFFSET_START, IDC_HPOFFSET_START_UNIT, hpOffsetAtStart, pDisplayUnits->GetComponentDimUnit() );
+      DDX_UnitValueAndTag( &DXf, IDC_HPOFFSET_END,   IDC_HPOFFSET_END_UNIT,   hpOffsetAtEnd,   pDisplayUnits->GetComponentDimUnit() );
+
+      GET_IFACE2(pBroker,IGirder,pGirder);
+      if ( pGirder->IsSymmetricSegment(pParent->m_pSegment->GetSegmentKey()) )
+      {
+         hpOffsetAtEnd = hpOffsetAtStart;
+      }
 
       CComboBox* box = (CComboBox*)GetDlgItem(IDC_HP_COMBO_END);
       int cursel = box->GetCurSel();
@@ -2514,7 +2701,14 @@ void CGirderDescPrestressPage::EditDirectSelect()
 
    if (m_AllowHpAdjustment)
    {
-      DDX_UnitValueAndTag( &DXf, IDC_HPOFFSET_HP, IDC_HPOFFSET_HP_UNIT, hpOffsetAtHp, pDisplayUnits->GetComponentDimUnit() );
+      DDX_UnitValueAndTag( &DXf, IDC_HPOFFSET_HP1, IDC_HPOFFSET_HP1_UNIT, hpOffsetAtHp1, pDisplayUnits->GetComponentDimUnit() );
+      DDX_UnitValueAndTag( &DXf, IDC_HPOFFSET_HP2, IDC_HPOFFSET_HP2_UNIT, hpOffsetAtHp2, pDisplayUnits->GetComponentDimUnit() );
+
+      GET_IFACE2(pBroker,IGirder,pGirder);
+      if ( pGirder->IsSymmetricSegment(pParent->m_pSegment->GetSegmentKey()) )
+      {
+         hpOffsetAtHp2 = hpOffsetAtHp1;
+      }
 
       CComboBox* box = (CComboBox*)GetDlgItem(IDC_HP_COMBO_HP);
       int cursel = box->GetCurSel();
@@ -2526,7 +2720,10 @@ void CGirderDescPrestressPage::EditDirectSelect()
 
    CGirderSelectStrandsDlg dlg;
    dlg.m_SelectStrandsPage.InitializeData(pParent->m_SegmentKey, &pParent->m_pSegment->Strands, pSpecEntry, pGdrEntry,
-                      m_AllowEndAdjustment, m_AllowHpAdjustment, endMeasureType, hpMeasureType, hpOffsetAtEnd, hpOffsetAtHp, maxDebondLength);
+                      m_AllowEndAdjustment, m_AllowHpAdjustment, endMeasureType, hpMeasureType, 
+                      hpOffsetAtStart, hpOffsetAtHp1, hpOffsetAtHp2, hpOffsetAtEnd, 
+                      maxDebondLength,
+                      m_HgStart,m_HgHp1,m_HgHp2,m_HgEnd);
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -2701,4 +2898,28 @@ void CGirderDescPrestressPage::ShowOffsetControlGroup(BOOL show)
    pWnd = GetDlgItem( IDC_VERT_STATIC );
    ASSERT( pWnd );
    pWnd->ShowWindow( sShow );
+}
+
+BOOL CGirderDescPrestressPage::OnSetActive()
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IGirder,pGirder);
+
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+
+   UINT sw = SW_SHOW;
+   if ( pGirder->IsSymmetricSegment(pParent->m_pSegment->GetSegmentKey()) )
+   {
+      sw = SW_HIDE;
+   }
+
+   GetDlgItem(IDC_HPOFFSET_START_LABEL)->ShowWindow(sw);
+   GetDlgItem(IDC_HPOFFSET_END_LABEL)->ShowWindow(sw);
+   GetDlgItem(IDC_HPOFFSET_END)->ShowWindow(sw);
+   GetDlgItem(IDC_HPOFFSET_END_UNIT)->ShowWindow(sw);
+   GetDlgItem(IDC_HPOFFSET_HP2)->ShowWindow(sw);
+   GetDlgItem(IDC_HPOFFSET_HP2_UNIT)->ShowWindow(sw);
+
+   return CPropertyPage::OnSetActive();
 }

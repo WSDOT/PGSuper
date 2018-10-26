@@ -60,7 +60,7 @@ BEGIN_INTERFACE_MAP(CBridgeDisplayObjectEvents, CCmdTarget)
 	INTERFACE_PART(CBridgeDisplayObjectEvents, IID_iDisplayObjectEvents, Events)
 END_INTERFACE_MAP()
 
-// Not sure why, but the DELEGATE_CUSTOM_INTERFACE macro isn't working here
+// Not sure why, but the DELEGATE_CUSTOM_INTERFACE macro isn't working
 // Since the is simple, I've just implemented it directly
 //DELEGATE_CUSTOM_INTERFACE(CBridgeDisplayObjectEvents,Events);
 STDMETHODIMP_(ULONG) CBridgeDisplayObjectEvents::XEvents::AddRef() 

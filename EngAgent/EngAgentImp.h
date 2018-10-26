@@ -40,6 +40,43 @@
 #include <PgsExt\Keys.h>
 #include <map>
 
+
+class PrestressWithLiveLoadSubKey
+{
+public:
+   PrestressWithLiveLoadSubKey()
+   {
+      m_LimitState = pgsTypes::StrengthI;
+      m_Strand = pgsTypes::Straight;
+   }
+
+   PrestressWithLiveLoadSubKey(pgsTypes::StrandType strand,pgsTypes::LimitState limitState) :
+      m_Strand(strand), m_LimitState(limitState)
+      {
+      }
+
+   PrestressWithLiveLoadSubKey(const PrestressWithLiveLoadSubKey& rOther)
+   {
+      m_Strand = rOther.m_Strand;
+      m_LimitState = rOther.m_LimitState;
+   }
+
+   bool operator<(const PrestressWithLiveLoadSubKey& rOther) const
+   {
+      if ( m_Strand < rOther.m_Strand ) return true;
+      if ( rOther.m_Strand < m_Strand ) return false;
+
+      return false;
+   }
+
+private:
+   pgsTypes::LimitState m_LimitState;
+   pgsTypes::StrandType m_Strand;
+};
+
+typedef TPoiKey<PrestressWithLiveLoadSubKey> PrestressWithLiveLoadPoiKey;
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CEngAgentImp
 class ATL_NO_VTABLE CEngAgentImp : 
@@ -364,6 +401,7 @@ private:
    std::map<RatingArtifactKey,pgsRatingArtifact> m_RatingArtifacts[6]; // pgsTypes::LoadRatingType enum as key
 
    std::map<PrestressPoiKey,Float64> m_PsForce; // cache of prestress forces
+   std::map<PrestressWithLiveLoadPoiKey,Float64> m_PsForceWithLiveLoad; // cache of prestress forces including live load
 
    pgsPsForceEng             m_PsForceEngineer;
    pgsDesigner2              m_Designer;

@@ -585,8 +585,44 @@ bool CPGSDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segmentKey)
    HarpedStrandOffsetType endMeasureType = pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd();
    HarpedStrandOffsetType hpMeasureType  = pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint();
 
-   Float64 hpOffsetAtEnd = pSegment->Strands.GetHarpStrandOffsetAtEnd();
-   Float64 hpOffsetAtHp  = pSegment->Strands.GetHarpStrandOffsetAtHarpPoint();
+   Float64 hpOffsetAtStart = pSegment->Strands.GetHarpStrandOffsetAtEnd(pgsTypes::metStart);
+   Float64 hpOffsetAtHp1   = pSegment->Strands.GetHarpStrandOffsetAtHarpPoint(pgsTypes::metStart);
+   Float64 hpOffsetAtHp2   = pSegment->Strands.GetHarpStrandOffsetAtHarpPoint(pgsTypes::metEnd);
+   Float64 hpOffsetAtEnd   = pSegment->Strands.GetHarpStrandOffsetAtEnd(pgsTypes::metEnd);
+
+   GET_IFACE(IPointOfInterest,pPOI);
+   std::vector<pgsPointOfInterest> vPoi = pPOI->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT | POI_0L | POI_10L);
+   ATLASSERT(vPoi.size() == 2);
+   pgsPointOfInterest startPoi(vPoi.front());
+   pgsPointOfInterest endPoi(vPoi.back());
+
+   GET_IFACE(IGirder,pGdr);
+   Float64 HgStart = pGdr->GetHeight(startPoi);
+   Float64 HgEnd   = pGdr->GetHeight(endPoi);
+
+   vPoi = pPOI->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT);
+   ATLASSERT( 0 <= vPoi.size() && vPoi.size() <= 2 );
+   pgsPointOfInterest hp1_poi;
+   pgsPointOfInterest hp2_poi;
+
+   if ( 0 < vPoi.size() )
+   {
+      hp1_poi = vPoi.front();
+      hp2_poi = vPoi.back();
+   }
+
+   Float64 HgHp1, HgHp2;
+   if ( 0 < vPoi.size() )
+   {
+      HgHp1 = pGdr->GetHeight(hp1_poi);
+      HgHp2 = pGdr->GetHeight(hp2_poi);
+   }
+   else
+   {
+      HgHp1 = HgStart;
+      HgHp2 = HgEnd;
+   }
+
 
    // Max debond length is 1/2 girder length
    Float64 maxDebondLength = pBridge->GetSegmentLength(segmentKey)/2.0;
@@ -597,9 +633,12 @@ bool CPGSDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segmentKey)
    CGirderSelectStrandsDlg dlg;
 #pragma Reminder("UPDATE: clean up this initialization... the same code is in multiple locations")
    // this initialization is here, in BridgeDescPrestressPage.cpp and in GirderSegmentDlg.cpp
-   // make the page more self-sufficient
+   // make the page more self-sufficient (most all of this data can come from the "Strands" object
    dlg.m_SelectStrandsPage.InitializeData(segmentKey, &newSegmentData.m_SegmentData.Strands, pSpecEntry, pGdrEntry,
-                      allowEndAdjustment, allowHpAdjustment, endMeasureType, hpMeasureType, hpOffsetAtEnd, hpOffsetAtHp, maxDebondLength);
+                      allowEndAdjustment, allowHpAdjustment, endMeasureType, hpMeasureType, 
+                      hpOffsetAtStart, hpOffsetAtHp1, hpOffsetAtHp2, hpOffsetAtEnd,
+                      maxDebondLength,
+                      HgStart,HgHp1,HgHp2,HgEnd);
 
    if ( dlg.DoModal() == IDOK )
    {

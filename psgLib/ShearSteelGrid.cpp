@@ -451,14 +451,25 @@ matRebar::Size CShearSteelGrid::GetBarSize(ROWCOL row,ROWCOL col)
    return matRebar::bsNone;
 }
 
-bool CShearSteelGrid::GetRowData(ROWCOL nRow, CShearZoneData2* pszi)
+bool CShearSteelGrid::GetRowData(ROWCOL nRow, ROWCOL numRows, CShearZoneData2* pszi)
 {
    CString s = GetCellValue(nRow, 1);
    Float64 d = _tstof(s);
    if (s.IsEmpty() || (d==0.0 && s[0]!=_T('0')))
-      pszi->ZoneLength = 0;
+   {
+      if (nRow == numRows)
+      {
+         pszi->ZoneLength = Float64_Max;
+      }
+      else
+      {
+         pszi->ZoneLength = 0; // caller will catch error
+      }
+   }
    else
+   {
       pszi->ZoneLength = d;
+   }
 
    pszi->VertBarSize = GetBarSize(nRow,2);
 

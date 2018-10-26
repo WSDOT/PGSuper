@@ -59,7 +59,7 @@ BEGIN_INTERFACE_MAP(CProfileDisplayObjectEvents, CCmdTarget)
 	INTERFACE_PART(CProfileDisplayObjectEvents, IID_iDisplayObjectEvents, Events)
 END_INTERFACE_MAP()
 
-// Not sure why, but the DELEGATE_CUSTOM_INTERFACE macro isn't working here
+// Not sure why, but the DELEGATE_CUSTOM_INTERFACE macro isn't working
 // Since the is simple, I've just implemented it directly
 //DELEGATE_CUSTOM_INTERFACE(CProfileDisplayObjectEvents,Events);
 STDMETHODIMP_(ULONG) CProfileDisplayObjectEvents::XEvents::AddRef() 

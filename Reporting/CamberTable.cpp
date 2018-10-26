@@ -368,11 +368,8 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
 
       // Table 3
       col = 0;
-#pragma Reminder("UPDATE: D1 should be based on deflections after erection")
-      // PGSuper v2 used deflections at end of storage. Since RDP and TxDOT are
-      // going to totally redo camber, make it match v2 and fix it later
-      //Float64 D1 = DgdrErected + DpsErected;
-      Float64 D1 = DgdrStorage + DpsStorage;
+
+      Float64 D1 = DgdrErected + DpsErected;
       Float64 D2 = D1 + Dcreep1;
       Float64 D3 = D2 + Ddiaphragm + Dshearkey + Dtpsr;
       Float64 D4 = D3 + Dcreep2;

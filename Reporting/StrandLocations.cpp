@@ -260,65 +260,164 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
    }
 
    // Harped strands
+   GET_IFACE2(pBroker,IGirder,pGirder);
+   bool bSymmetric = pGirder->IsSymmetricSegment(segmentKey);
+
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   std::vector<pgsPointOfInterest> vPoi;
+
+   bool areHarpedStraight = pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey);
+   int nStrandGrids;
+   if ( areHarpedStraight )
+   {
+      if ( bSymmetric )
+      {
+         nStrandGrids = 1;
+         vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_0L | POI_RELEASED_SEGMENT);
+      }
+      else
+      {
+         nStrandGrids = 2;
+         vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_0L | POI_10L | POI_RELEASED_SEGMENT);
+      }
+   }
+   else
+   {
+      if ( bSymmetric )
+      {
+         nStrandGrids = 2;
+         vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_0L | POI_RELEASED_SEGMENT);
+         vPoi.push_back(pPoi->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT).front());
+      }
+      else
+      {
+         nStrandGrids = 4;
+         vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_0L | POI_10L | POI_RELEASED_SEGMENT);
+         std::vector<pgsPointOfInterest> vHpPoi(pPoi->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT));
+         vPoi.insert(vPoi.end(),vHpPoi.begin(),vHpPoi.end());
+         std::sort(vPoi.begin(),vPoi.end());
+      }
+   }
+
    pPara = new rptParagraph;
    *pChapter << pPara;
-   rptRcTable* pHarpedLayoutTable = pgsReportStyleHolder::CreateLayoutTable(2);
-   *pPara << pHarpedLayoutTable << rptNewLine;
+   rptRcTable* pHarpedLayoutTable = pgsReportStyleHolder::CreateLayoutTable(nStrandGrids);
+#pragma Reminder("UPDATE: need to use bottom justification for layout table")
+   // need to have layout tables support vertical justification so that everything can
+   // be bottom justified
+   //for ( ColumnIndexType colIdx = 0; colIdx < pHarpedLayoutTable->GetNumberOfColumns(); colIdx++ )
+   //{
+   //   pHarpedLayoutTable->SetColumnStyle(colIdx,pgsReportStyleHolder::GetTableCellStyle(CA_BOTTOM | CJ_LEFT));
+   //}
 
-   pPara = &(*pHarpedLayoutTable)(0,0);
+   *pPara << pHarpedLayoutTable << rptNewLine;
 
    StrandIndexType Nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
    nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Harped);
    if (0 < Nh)
    {
-      bool areHarpedStraight = pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey);
-
-      std::_tstring label( (areHarpedStraight ? _T("Adjustable Straight Strand Locations") : _T("Harped Strand Locations at Ends of Girder")));
-
-      rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3 + (0 < nDebonded ? 2 : 0),label.c_str());
-      *pPara << p_table;
-
-      (*p_table)(0,0) << _T("Strand");
-      (*p_table)(0,1) << COLHDR(_T("X"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*p_table)(0,2) << COLHDR(_T("Y"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-
-      if ( 0 < nDebonded )
+      for ( int i = 0; i < nStrandGrids; i++ )
       {
-         (*p_table)(0,3) << COLHDR(_T("Left End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-         (*p_table)(0,4) << COLHDR(_T("Right End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      }
+         pPara = &(*pHarpedLayoutTable)(0,i);
 
-      CComPtr<IPoint2dCollection> spts;
-      pStrandGeometry->GetStrandPositions(end_poi, pgsTypes::Harped, &spts);
-
-      RowIndexType row = p_table->GetNumberOfHeaderRows();
-      StrandIndexType is;
-      for (is = 0; is < Nh; is++,row++)
-      {
-         (*p_table)(row,0) << (Uint16)row;
-         CComPtr<IPoint2d> spt;
-         spts->get_Item(is, &spt);
-         Float64 x,y;
-         spt->Location(&x,&y);
-         (*p_table)(row,1) << dim.SetValue(x);
-         (*p_table)(row,2) << dim.SetValue(y);
-
-         if ( 0 < nDebonded ) 
+         std::_tstring label;
+         if ( areHarpedStraight )
          {
-            Float64 start,end;
-            if ( pStrandGeometry->IsStrandDebonded(segmentKey,is,pgsTypes::Harped,&start,&end) )
+            if ( bSymmetric )
             {
-               (*p_table)(row,3) << len.SetValue(start);
-               (*p_table)(row,4) << len.SetValue(end);
+               label = _T("Adjustable Straight Strand Locations");
             }
             else
             {
-               (*p_table)(row,3) << _T("-");
-               (*p_table)(row,4) << _T("-");
+               if ( i == 0 )
+               {
+                  label = _T("Adjustable Straight Strand Locations at Left End");
+               }
+               else
+               {
+                  label = _T("Adjustable Straight Strand Locations at Right End");
+               }
+            }
+         }
+         else
+         {
+            if ( bSymmetric )
+            {
+               if ( i == 0 )
+               {
+                  label = _T("Harped Strand Locations at Ends of Girder");
+               }
+               else
+               {
+                  label = _T("Harped Strand Locations at Harping Points");
+               }
+            }
+            else
+            {
+               if ( i == 0 )
+               {
+                  label = _T("Harped Strand Locations at Left End of Girder");
+               }
+               else if ( i == 1 )
+               {
+                  label = _T("Harped Strand Locations at Left Harp Point");
+               }
+               else if ( i == 2 )
+               {
+                  label = _T("Harped Strand Locations at Right Harp Point");
+               }
+               else
+               {
+                  label = _T("Harped Strand Locations at Right End of Girder");
+               }
+            }
+         }
+
+         rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3 + (0 < nDebonded ? 2 : 0),label.c_str());
+         *pPara << p_table;
+
+         (*p_table)(0,0) << _T("Strand");
+         (*p_table)(0,1) << COLHDR(_T("X"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*p_table)(0,2) << COLHDR(_T("Y"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+
+         if ( 0 < nDebonded )
+         {
+            (*p_table)(0,3) << COLHDR(_T("Left End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+            (*p_table)(0,4) << COLHDR(_T("Right End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         }
+
+         CComPtr<IPoint2dCollection> spts;
+         pStrandGeometry->GetStrandPositions(vPoi[i], pgsTypes::Harped, &spts);
+
+         RowIndexType row = p_table->GetNumberOfHeaderRows();
+         StrandIndexType is;
+         for (is = 0; is < Nh; is++,row++)
+         {
+            (*p_table)(row,0) << (Uint16)row;
+            CComPtr<IPoint2d> spt;
+            spts->get_Item(is, &spt);
+            Float64 x,y;
+            spt->Location(&x,&y);
+            (*p_table)(row,1) << dim.SetValue(x);
+            (*p_table)(row,2) << dim.SetValue(y);
+
+            if ( 0 < nDebonded ) 
+            {
+               Float64 start,end;
+               if ( pStrandGeometry->IsStrandDebonded(segmentKey,is,pgsTypes::Harped,&start,&end) )
+               {
+                  (*p_table)(row,3) << len.SetValue(start);
+                  (*p_table)(row,4) << len.SetValue(end);
+               }
+               else
+               {
+                  (*p_table)(row,3) << _T("-");
+                  (*p_table)(row,4) << _T("-");
+               }
             }
          }
       }
-
+/*
       if ( !areHarpedStraight )
       {
          // harped strands at harping point
@@ -349,12 +448,12 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
             (*p_table)(row,2) << dim.SetValue(y);
          }
       }
+*/
    }
    else
    {
       *pPara <<_T("No Harped Strands in Girder")<<rptNewLine;
    }
-
 }
 
 void CStrandLocations::MakeCopy(const CStrandLocations& rOther)

@@ -255,7 +255,7 @@ void CNUBeamFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType sta
    }
 }
 
-void CNUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
+void CNUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
@@ -273,7 +273,7 @@ void CNUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimension
    ATLASSERT (SUCCEEDED(hr));
 
    Float64 width = t;
-   Float64 depth = d1 + d2 + d3 + d4 + d5;
+   Float64 depth = (Hg < 0 ? d1 + d2 + d3 + d4 + d5 : Hg);
 
    harp_rect->put_Width(width);
    harp_rect->put_Height(depth);
@@ -301,7 +301,7 @@ void CNUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimension
    Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
    Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
 
-   hr = configurer->SetHarpedStrandOffsetBounds(0, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
+   hr = configurer->SetHarpedStrandOffsetBounds(0, depth, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
 
    hr = sm.CopyTo(strandMover);
@@ -524,6 +524,11 @@ IBeamFactory::Dimensions CNUBeamFactory::LoadSectionDimensions(sysIStructuredLoa
 }
 
 bool CNUBeamFactory::IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey)
+{
+   return true;
+}
+
+bool CNUBeamFactory::IsSymmetric(IBroker* pBroker,const CSegmentKey& segmentKey)
 {
    return true;
 }

@@ -66,8 +66,10 @@ public:
    // intialize data before domodal
    void InitializeData(const CSegmentKey& segmentKey, CStrandData* pStrands, 
                        const SpecLibraryEntry* pSpecEntry,const GirderLibraryEntry* pGdrEntry, bool allowEndAdjustment, bool allowHpAdjustment,
-                       HarpedStrandOffsetType endMeasureType, HarpedStrandOffsetType hpMeasureType, Float64 hpOffsetAtEnd, Float64 hpOffsetAtHp, 
-                       Float64 maxDebondLength);
+                       HarpedStrandOffsetType endMeasureType, HarpedStrandOffsetType hpMeasureType, 
+                       Float64 hpOffsetAtStart, Float64 hpOffsetAtHp1, Float64 hpOffsetAtHp2, Float64 hpOffsetAtEnd,
+                       Float64 maxDebondLength,
+                       Float64 HgStart,Float64 HgHp1,Float64 HgHp2,Float64 HgEnd);
 
 private:
    // data for dialog resizing
@@ -82,8 +84,10 @@ private:
    bool m_bAllowEndAdjustment;
    HarpedStrandOffsetType m_HsoEndMeasurement;
    HarpedStrandOffsetType m_HsoHpMeasurement;
-   Float64 m_HpOffsetAtEnd;
-   Float64 m_HpOffsetAtHp;
+   Float64 m_HpOffsetAtEnd[2];
+   Float64 m_HpOffsetAtHp[2];
+   Float64 m_HgEnd[2];
+   Float64 m_HgHp[2];
 
    bool m_bCanExtendStrands; // can strands be extended
    std::vector<StrandIndexType> m_ExtendedStrands[2]; // index is pgsTypes::MemberEndType

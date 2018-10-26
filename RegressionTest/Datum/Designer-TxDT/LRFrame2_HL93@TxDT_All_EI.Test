@@ -1,22 +1,21 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   11   9.83 SR520 West Appro  1      1      1)      *    63   0.6  270  31.44  15.82                                              17  70.0  6.0  7.700  9.600   5.704    -6.255    17783   0.884  0.940   6.325 -2.915  0.000 -0.320 -3.235 326.04  437.70    3.00    6.17    6.17 
+ 102.1   11   9.83 SR520 West Appro  1      1      1)      *    63   0.6  270  31.44  15.82                                              17  70.0  6.0  7.700  9.600   5.704    -6.254    17782   0.884  0.940   6.513 -2.914  0.000 -0.320 -3.234 327.26  432.30    3.00    6.17    6.17 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 9 Install Railing System and Overlay (Bridge Site 2)
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Splitting zone check failed.
+Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   11  10.67 SR520 West Appro  1      2      1)      *    62   0.6  270  31.46  16.37                                              16  70.0  6.0  7.600  9.500   5.654    -6.135    17083   0.794  0.968   6.127 -3.037  0.000 -0.314 -3.351 317.79  422.14    3.00    6.17    6.17 
+ 102.1   11  10.67 SR520 West Appro  1      2      1)      *    62   0.6  270  31.46  16.37                                              16  70.0  6.0  7.600  9.500   5.677    -6.156    17127   0.794  0.968   6.318 -3.065  0.000 -0.314 -3.379 319.03  415.12    3.00    6.17    6.17 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 9 Install Railing System and Overlay (Bridge Site 2)
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Splitting zone check failed.
 Confinement zone check failed.
@@ -24,11 +23,10 @@ Confinement zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   11   9.00 SR520 West Appro  1      6      1)      *    55   0.6  270  31.84  17.58                                              13  70.0  6.0  6.700  7.900   5.230    -5.445    15118   0.767  0.940   5.904 -3.155  0.000  0.000 -3.155 266.28  384.98    3.00    6.17    6.17 
+ 102.1   11   9.00 SR520 West Appro  1      6      1)      *    55   0.6  270  31.84  17.58                                              13  70.0  6.0  6.700  7.900   5.208    -5.425    15075   0.767  0.940   5.699 -3.126  0.000  0.000 -3.126 264.90  392.80    3.00    6.17    6.17 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 9 Install Railing System and Overlay (Bridge Site 2)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Confinement zone check failed.
@@ -36,11 +34,10 @@ Confinement zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   11   9.83 SR520 West Appro  2      1      1)      *    63   0.6  270  31.44  15.82                                              17  70.0  6.0  7.700  9.600   5.720    -6.277    17828   0.869  0.940   6.367 -2.948  0.000 -0.332 -3.280 324.55  435.02    3.00    6.17    6.17 
+ 102.1   11   9.83 SR520 West Appro  2      1      1)      *    63   0.6  270  31.44  15.82                                              17  70.0  6.0  7.700  9.600   5.719    -6.277    17826   0.869  0.940   6.367 -2.946  0.000 -0.332 -3.278 324.55  435.10    3.00    6.17    6.17 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 9 Install Railing System and Overlay (Bridge Site 2)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Splitting zone check failed.
@@ -49,11 +46,10 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   11  10.67 SR520 West Appro  2      2      1)      *    63   0.6  270  31.44  15.82                                              17  70.0  6.0  7.700  9.600   5.759    -6.242    17339   0.788  0.968   6.213 -3.149  0.000 -0.325 -3.474 324.86  425.47    3.00    6.17    6.17 
+ 102.1   11  10.67 SR520 West Appro  2      2      1)      *    62   0.6  270  31.46  16.37                                              16  70.0  6.0  7.700  9.500   5.752    -6.239    17335   0.788  0.968   6.303 -3.164  0.000 -0.327 -3.491 315.83  404.30    3.00    6.17    6.17 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 9 Install Railing System and Overlay (Bridge Site 2)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Splitting zone check failed.
 Confinement zone check failed.
@@ -62,11 +58,10 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   11   9.00 SR520 West Appro  2      6      1)      *    61   0.6  270  31.49  16.97                                              15  70.0  6.0  7.400  8.700   5.411    -5.584    16155   0.763  0.940   6.365 -3.203  0.000  0.000 -3.203 311.88  441.69    3.00    6.17    6.17 
+ 102.1   11   9.00 SR520 West Appro  2      6      1)      *    60   0.6  270  31.52  17.59                                              14  70.0  6.0  7.300  8.700   5.388    -5.563    15913   0.763  0.940   6.134 -3.173  0.000  0.000 -3.173 302.07  438.90    3.00    6.17    6.17 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 9 Install Railing System and Overlay (Bridge Site 2)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Splitting zone check failed.
 Confinement zone check failed.
@@ -74,52 +69,35 @@ Confinement zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   11   9.83 SR520 West Appro  3      1      1)      *    70   0.6  270  31.26  12.74                                              24  70.0  6.0  4.000  7.500   5.803    -6.308    17570   0.824  0.940  12.308 -3.647  0.000 -0.347 -3.994 522.14  810.68    0.00    0.00    0.00 
+ 102.1   11   9.83 SR520 West Appro  3      1      1)      *    60   0.6  270  31.52  17.59                                              14  70.0  6.0  7.300  9.200   5.490    -5.948    16768   0.832  0.940   6.422 -2.746  0.000 -0.323 -3.069 304.64  417.28    3.00    6.17    6.17 
+
+
+The Specification Check was Not Successful
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Splitting zone check failed.
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 102.1   11  10.67 SR520 West Appro  3      2      1)      *    61   0.6  270  31.49  16.97                                              15  70.0  6.0  7.400  9.200   5.578    -6.060    16868   0.790  0.968   6.319 -3.019  0.000 -0.310 -3.329 313.13  411.74    3.00    6.17    6.17 
+
+
+The Specification Check was Not Successful
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Splitting zone check failed.
+Confinement zone check failed.
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 102.1   11   9.00 SR520 West Appro  3      6      1)      *    64   0.6  270  31.41  15.28                                              18  70.0  6.0  7.700  8.800   5.305    -5.486    16745   0.765  0.940   6.279 -3.024  0.000  0.000 -3.024 337.75  487.47    3.00    6.17    6.17 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
 Compression stress check failed for Service I Limit State in Interval 8 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 9 Install Railing System and Overlay (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 10 Open to Traffic (Bridge Site 3)
-Tensile stress check failed for Service III Limit State in Interval 10 Open to Traffic (Bridge Site 3)
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State
-Stirrup detailing checks failed for the Strength I Limit State.
-Splitting zone check failed.
-Lifting checks failed
-Hauling checks failed
-Slab Offset ("A" Dimension) check failed
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   11  10.67 SR520 West Appro  3      2      1)      *    70   0.6  270  31.26  12.74                                              24  70.0  6.0  4.000  7.600   5.877    -6.399    17624   0.783  0.968  12.311 -3.887  0.000 -0.332 -4.218 522.08  794.16    0.00    0.00    0.00 
-
-
-Girder design was Not Successful
-The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 8 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 9 Install Railing System and Overlay (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 10 Open to Traffic (Bridge Site 3)
-Tensile stress check failed for Service III Limit State in Interval 10 Open to Traffic (Bridge Site 3)
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State
-Stirrup detailing checks failed for the Strength I Limit State.
-Splitting zone check failed.
-Confinement zone check failed.
-Lifting checks failed
-Hauling checks failed
-Slab Offset ("A" Dimension) check failed
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   11   9.00 SR520 West Appro  3      6      1)      *    64   0.6  270  31.41  15.28                                              18  70.0  6.0  7.900  8.900   5.332    -5.509    16855   0.766  0.940   6.334 -3.035  0.000  0.000 -3.035 335.51  471.12    3.00    6.17    6.17 
-
-
-The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 9 Install Railing System and Overlay (Bridge Site 2)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Splitting zone check failed.
 Confinement zone check failed.
@@ -127,53 +105,33 @@ Confinement zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   11   9.83 SR520 West Appro  4      1      1)      *    70   0.6  270  31.26  12.74                                              24  70.0  6.0  4.000  7.500   5.841    -6.373    17762   0.824  0.940  12.308 -3.676  0.000 -0.347 -4.023 522.14  803.35    0.00    0.00    0.00 
+ 102.1   11   9.83 SR520 West Appro  4      1      1)      *    60   0.6  270  31.52  17.59                                              14  70.0  6.0  7.400  9.300   5.537    -6.015    16963   0.832  0.940   6.359 -2.757  0.000 -0.321 -3.079 303.00  408.65    3.00    6.17    6.17 
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 8 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 9 Install Railing System and Overlay (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 10 Open to Traffic (Bridge Site 3)
-Tensile stress check failed for Service III Limit State in Interval 10 Open to Traffic (Bridge Site 3)
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State
-Stirrup detailing checks failed for the Strength I Limit State.
 Splitting zone check failed.
-Lifting checks failed
-Hauling checks failed
 Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   11  10.67 SR520 West Appro  4      2      1)      *    70   0.6  270  31.26  12.74                                              24  70.0  6.0  4.000  7.600   5.893    -6.444    17777   0.783  0.968  12.311 -3.888  0.000 -0.332 -4.219 522.08  788.98    0.00    0.00    0.00 
+ 102.1   11  10.67 SR520 West Appro  4      2      1)      *    61   0.6  270  31.49  16.97                                              15  70.0  6.0  7.400  9.200   5.618    -6.126    17064   0.790  0.968   6.319 -3.048  0.000 -0.310 -3.357 313.13  406.45    3.00    6.17    6.17 
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 8 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 9 Install Railing System and Overlay (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 10 Open to Traffic (Bridge Site 3)
-Tensile stress check failed for Service III Limit State in Interval 10 Open to Traffic (Bridge Site 3)
-Stirrup detailing checks failed for the Strength I Limit State.
 Splitting zone check failed.
 Confinement zone check failed.
-Lifting checks failed
-Hauling checks failed
 Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   11   9.00 SR520 West Appro  4      6      1)      *    70   0.6  270  31.26  12.74                                              24  70.0  6.0  6.500  7.600   5.152    -5.354    17175   0.760  0.940   7.985 -3.169  0.000  0.000 -3.169 432.30  648.99    3.00    6.17    6.17 
+ 102.1   11   9.00 SR520 West Appro  4      6      1)      *    70   0.6  270  31.26  12.74                                              24  70.0  6.0  6.500  8.000   5.177    -5.363    17149   0.762  0.940   7.758 -3.089  0.000  0.000 -3.089 431.27  663.81    3.00    6.17    6.17 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 7 Remove temporary strands
 Compression stress check failed for Service I Limit State in Interval 8 Cast Deck (Bridge Site 1)
 Compression stress check failed for Service I Limit State in Interval 9 Install Railing System and Overlay (Bridge Site 2)
 Compression stress check failed for Service I Limit State in Interval 10 Open to Traffic (Bridge Site 3)
@@ -187,23 +145,20 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   11   9.85 SR520 West Appro  5      1      1)      *    61   0.6  270  31.49  16.97                                              15  70.0  6.0  7.400  9.300   5.568    -6.063    17142   0.846  0.942   6.467 -2.782  0.000 -0.323 -3.105 312.88  421.72    3.00    6.17    6.17 
+ 102.1   11   9.85 SR520 West Appro  5      1      1)      *    61   0.6  270  31.49  16.97                                              15  70.0  6.0  7.400  9.300   5.568    -6.063    17142   0.846  0.942   6.467 -2.782  0.000 -0.323 -3.105 312.88  421.71    3.00    6.17    6.17 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 9 Install Railing System and Overlay (Bridge Site 2)
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Splitting zone check failed.
 Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   11  10.64 SR520 West Appro  5      2      1)      *    61   0.6  270  31.49  16.97                                              15  70.0  6.0  7.400  9.200   5.572    -6.066    16900   0.782  0.959   6.141 -2.973  0.000 -0.315 -3.287 311.58  416.02    3.00    6.17    6.17 
+ 102.1   11  10.64 SR520 West Appro  5      2      1)      *    61   0.6  270  31.49  16.97                                              15  70.0  6.0  7.400  9.200   5.594    -6.087    16944   0.782  0.959   6.335 -3.001  0.000 -0.315 -3.316 312.84  408.82    3.00    6.17    6.17 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 9 Install Railing System and Overlay (Bridge Site 2)
 Splitting zone check failed.
 Confinement zone check failed.
 Slab Offset ("A" Dimension) check failed
@@ -231,30 +186,21 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   10   9.85 SR520 West Appro  6      1      1)      *    70   0.6  270  31.26  12.74                                              24  70.0  6.0  4.000  7.600   5.930    -6.471    18053   0.838  0.942  12.335 -3.757  0.000 -0.348 -4.105 521.62  798.38    0.00    0.00    0.00 
+ 102.1   10   9.85 SR520 West Appro  6      1      1)      *    61   0.6  270  31.49  16.97                                              15  70.0  6.0  7.400  9.300   5.628    -6.120    17269   0.846  0.942   6.469 -2.861  0.000 -0.324 -3.185 312.80  417.41    3.00    6.17    6.17 
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 8 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 9 Install Railing System and Overlay (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 10 Open to Traffic (Bridge Site 3)
 Tensile stress check failed for Service III Limit State in Interval 10 Open to Traffic (Bridge Site 3)
-Stirrup detailing checks failed for the Strength I Limit State.
 Splitting zone check failed.
-Lifting checks failed
-Hauling checks failed
 Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   10   9.51 SR520 West Appro  6      2      1)      *    61   0.6  270  31.49  16.97                                              15  70.0  6.0  7.400  9.200   5.543    -6.006    16655   0.758  0.930   6.151 -2.944  0.000 -0.318 -3.262 311.51  417.79    3.00    6.17    6.17 
+ 102.1   10   9.51 SR520 West Appro  6      2      1)      *    61   0.6  270  31.49  16.97                                              15  70.0  6.0  7.400  9.200   5.565    -6.027    16700   0.758  0.930   6.345 -2.973  0.000 -0.318 -3.290 312.76  410.59    3.00    6.17    6.17 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 9 Install Railing System and Overlay (Bridge Site 2)
 Splitting zone check failed.
 Confinement zone check failed.
 Slab Offset ("A" Dimension) check failed
@@ -262,7 +208,7 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   10   9.00 SR520 West Appro  6      6      1)      *    70   0.6  270  31.26  12.74                                              24  70.0  6.0  6.100  7.200   4.900    -4.911    16671   0.711  0.884   8.397 -3.089  0.000  0.000 -3.089 443.11  712.44    3.00    6.17    6.17 
+ 102.1   10   9.00 SR520 West Appro  6      6      1)      *    70   0.6  270  31.26  12.74                                              24  70.0  6.0  5.900  7.100   4.895    -4.908    16554   0.711  0.884   8.607 -3.111  0.000  0.000 -3.111 448.91  728.16    3.00    6.17    6.17 
 
 
 Girder design was Not Successful
@@ -282,38 +228,28 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1    9   9.84 SR520 West Appro  7      1      1)      *    61   0.6  270  31.49  16.97                                              15  70.0  6.0  7.400  9.300   5.521    -6.015    17017   0.842  0.941   6.270 -2.727  0.000 -0.322 -3.050 311.70  430.42    3.00    6.17    6.17 
+ 102.1    9   9.84 SR520 West Appro  7      1      1)      *    61   0.6  270  31.49  16.97                                              15  70.0  6.0  7.400  9.300   5.548    -6.040    17072   0.842  0.941   6.465 -2.762  0.000 -0.322 -3.084 312.95  422.92    3.00    6.17    6.17 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 9 Install Railing System and Overlay (Bridge Site 2)
 Splitting zone check failed.
 Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1    9   9.51 SR520 West Appro  7      2      1)      *    70   0.6  270  31.26  12.74                                              24  70.0  6.0  4.000  7.500   5.783    -6.295    17300   0.751  0.930  12.327 -3.756  0.000 -0.341 -4.097 521.77  797.06    0.00    0.00    0.00 
+ 102.1    9   9.51 SR520 West Appro  7      2      1)      *    60   0.6  270  31.52  17.59                                              14  70.0  6.0  7.300  9.200   5.524    -5.987    16609   0.758  0.930   6.303 -2.917  0.000 -0.317 -3.233 304.38  403.62    3.00    6.17    6.17 
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 8 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 9 Install Railing System and Overlay (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 10 Open to Traffic (Bridge Site 3)
-Tensile stress check failed for Service III Limit State in Interval 10 Open to Traffic (Bridge Site 3)
-Stirrup detailing checks failed for the Strength I Limit State.
 Splitting zone check failed.
 Confinement zone check failed.
-Lifting checks failed
-Hauling checks failed
 Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1    9   9.00 SR520 West Appro  7      5      1)      *    70   0.6  270  31.26  12.74                                              24  70.0  6.0  6.200  7.400   5.050    -5.108    16820   0.766  0.949   8.277 -3.205  0.000  0.000 -3.205 440.31  696.33    3.00    6.17    6.17 
+ 102.1    9   9.00 SR520 West Appro  7      5      1)      *    70   0.6  270  31.26  12.74                                              24  70.0  6.0  6.200  7.300   5.033    -5.096    16811   0.766  0.949   8.278 -3.211  0.000  0.000 -3.211 440.31  695.76    3.00    6.17    6.17 
 
 
 Girder design was Not Successful
@@ -333,77 +269,64 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1    9   9.84 SR520 West Appro  8      1      1)      *    61   0.6  270  31.49  16.97                                              15  70.0  6.0  7.400  9.300   5.525    -6.020    17032   0.842  0.941   6.271 -2.732  0.000 -0.323 -3.055 311.65  430.12    3.00    6.17    6.17 
+ 102.1    9   9.84 SR520 West Appro  8      1      1)      *    61   0.6  270  31.49  16.97                                              15  70.0  6.0  7.400  9.400   5.559    -6.048    17090   0.843  0.941   6.466 -2.751  0.000 -0.322 -3.073 312.90  423.85    3.00    6.17    6.17 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 9 Install Railing System and Overlay (Bridge Site 2)
 Splitting zone check failed.
 Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1    9   9.49 SR520 West Appro  8      2      1)      *    70   0.6  270  31.26  12.74                                              24  70.0  6.0  4.000  7.500   5.785    -6.297    17304   0.751  0.930  12.331 -3.759  0.000 -0.341 -4.100 521.70  796.80    0.00    0.00    0.00 
+ 102.1    9   9.49 SR520 West Appro  8      2      1)      *    60   0.6  270  31.52  17.59                                              14  70.0  6.0  7.300  9.300   5.532    -5.991    16615   0.758  0.930   6.304 -2.903  0.000 -0.316 -3.219 304.33  404.75    3.00    6.17    6.17 
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 8 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 9 Install Railing System and Overlay (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 10 Open to Traffic (Bridge Site 3)
-Tensile stress check failed for Service III Limit State in Interval 10 Open to Traffic (Bridge Site 3)
-Stirrup detailing checks failed for the Strength I Limit State.
 Splitting zone check failed.
 Confinement zone check failed.
-Lifting checks failed
-Hauling checks failed
 Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1    9   8.71 SR520 West Appro  8      5      1)      *    60   0.6  270  31.52  17.59                                              14  70.0  6.0  7.300  8.700   4.824    -4.718    15557   0.669  0.826   6.365 -2.601  0.000  0.000 -2.601 304.36  489.07    3.00    6.17    6.17 
+ 102.1    9   8.71 SR520 West Appro  8      5      1)      *    59   0.6  270  31.62  16.61                                              15  70.0  6.0  7.000  8.400   4.787    -4.692    15277   0.668  0.826   6.340 -2.618  0.000  0.000 -2.618 299.80  487.75    3.00    6.17    6.17 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 8 Cast Deck (Bridge Site 1)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Splitting zone check failed.
 Confinement zone check failed.
+Lifting checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1    8   9.84 SR520 West Appro  9      1      1)      *    49   0.6  270  31.98  20.51                                               9  70.0  4.0  6.200  8.100   4.375    -4.784    13744   0.869  0.941   4.937 -1.739  0.000 -0.203 -1.942 230.38  374.93    3.00    6.17    6.17 
+ 102.1    8   9.84 SR520 West Appro  9      1      1)      *    48   0.6  270  32.07  19.16                                              10  70.0  4.0  6.100  7.800   4.335    -4.757    13692   0.867  0.941   4.784 -1.750  0.000 -0.205 -1.956 222.81  363.40    3.00    6.17    6.17 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 9 Install Railing System and Overlay (Bridge Site 2)
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1    8   9.52 SR520 West Appro  9      2      1)      *    49   0.6  270  31.98  20.51                                               9  70.0  4.0  6.200  8.100   4.388    -4.777    13755   0.784  0.930   4.844 -1.856  0.000 -0.198 -2.054 230.35  366.06    3.00    6.17    6.17 
+ 102.1    8   9.52 SR520 West Appro  9      2      1)      *    48   0.6  270  32.07  19.16                                              10  70.0  4.0  6.100  7.800   4.369    -4.771    13559   0.783  0.930   4.881 -1.892  0.000 -0.200 -2.092 224.11  347.11    3.00    6.17    6.17 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 9 Install Railing System and Overlay (Bridge Site 2)
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Confinement zone check failed.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1    8   9.00 SR520 West Appro  9      5      1)      *    54   0.6  270  31.73  20.25                                              10  70.0  4.0  7.000  8.100   4.009    -3.961    14466   0.741  0.880   5.238 -1.747  0.000  0.000 -1.747 266.88  456.62    3.00    6.17    6.17 
+ 102.1    8   9.00 SR520 West Appro  9      5      1)      *    53   0.6  270  31.88  19.13                                              11  70.0  4.0  6.800  8.100   4.001    -3.953    14256   0.741  0.880   5.175 -1.739  0.000  0.000 -1.739 261.13  451.96    3.00    6.17    6.17 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 8 Cast Deck (Bridge Site 1)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Confinement zone check failed.

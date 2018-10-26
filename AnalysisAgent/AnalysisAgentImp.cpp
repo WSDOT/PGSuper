@@ -65,6 +65,9 @@ const LoadCaseIDType g_lcidStraightStrand  = 2;
 const LoadCaseIDType g_lcidHarpedStrand    = 3;
 const LoadCaseIDType g_lcidTemporaryStrand = 4;
 
+#define TOP 0
+#define BOT 1
+
 CAnalysisAgentImp::CAnalysisAgentImp()
 {
    m_Level = 0;
@@ -1403,7 +1406,8 @@ void CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& p
    Float64 rotation = GetRotation(storageIntervalIdx,pgsTypes::pftGirder,poi,bat,rtCumulative,false);
 
 #pragma Reminder("WORKING HERE - CAMBER - this isn't exactly the right way to do camber")
-   // we want (1+Y(release,deck))*Dstorage + (1+Y(storage,deck))*Dinc
+   // we want Dstorage + Y(release,erect)*Dstorage + (Y(release,deck) - Y(release,erect))*Dstorage + Dinc + Y(storage,deck)*Dinc
+   // = (1+Y(release,deck))*Dstorage + (1+Y(storage,deck))*Dinc
    // Update all the camber functions that call this.
    // Also, need to figure why this gets called twice for each calculation and make it
    // be called only once
@@ -5389,41 +5393,98 @@ void CAnalysisAgentImp::GetCreepDeflection(const pgsPointOfInterest& poi, const 
 
 void CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi,Float64* pDy,Float64* pRz)
 {
-   // Screen camber is equal to and opposite the deflection caused by loads applied to the structure
-   // from just before deck casting until the railing system is installed.
+   // this version is only for PGSuper design mode
    pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
+
+   GET_IFACE(IBridge,pBridge);
+   pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
 
-   Float64 DdeckCasting, D;
-   GetDeflection(castDeckIntervalIdx-1,pgsTypes::ServiceI,poi,bat,true,false,true,&DdeckCasting,&D);
+   // NOTE: No need to validate camber models
+   Float64 Dslab            = 0;
+   Float64 Dtrafficbarrier  = 0;
+   Float64 Dsidewalk        = 0;
+   Float64 Doverlay         = 0;
+   Float64 Ddiaphragm       = 0;
+   Float64 Duser            = 0;
 
-   Float64 RdeckCasting, R;
-   GetRotation(castDeckIntervalIdx-1,pgsTypes::ServiceI,poi,bat,true,false,true,&RdeckCasting,&R);
+   Float64 Rslab            = 0;
+   Float64 Rtrafficbarrier  = 0;
+   Float64 Rsidewalk        = 0;
+   Float64 Roverlay         = 0;
+   Float64 Rdiaphragm       = 0;
+   Float64 Ruser            = 0;
 
-   Float64 Dopen;
-   GetDeflection(railingSystemIntervalIdx,pgsTypes::ServiceI,poi,bat,true,false,true,&Dopen,&D);
+   GetDeckDeflection(poi,&Dslab,&Rslab);
+   GetDiaphragmDeflection(poi,&Ddiaphragm,&Rdiaphragm);
+   Dtrafficbarrier = GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi, bat, rtIncremental, false);
+   Rtrafficbarrier = GetRotation(  railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi, bat, rtIncremental, false);
+   Dsidewalk = GetDeflection(railingSystemIntervalIdx, pgsTypes::pftSidewalk, poi, bat, rtIncremental, false);
+   Rsidewalk = GetRotation(  railingSystemIntervalIdx, pgsTypes::pftSidewalk, poi, bat, rtIncremental, false);
 
-   Float64 Ropen;
-   GetRotation(railingSystemIntervalIdx,pgsTypes::ServiceI,poi,bat,true,false,true,&Ropen,&R);
-
-   GET_IFACE(IBridge,pBridge);
-   if ( pBridge->IsFutureOverlay() )
+   // Only get deflections for user defined loads that occur during deck placement and later
+   GET_IFACE(IPointOfInterest,pPoi);
+   CSpanKey spanKey;
+   Float64 Xspan;
+   pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
+   std::vector<IntervalIndexType> vUserLoadIntervals(pIntervals->GetUserDefinedLoadIntervals(spanKey));
+   vUserLoadIntervals.erase(std::remove_if(vUserLoadIntervals.begin(),vUserLoadIntervals.end(),std::bind2nd(std::less<IntervalIndexType>(),castDeckIntervalIdx)),vUserLoadIntervals.end());
+   std::vector<IntervalIndexType>::iterator userLoadIter(vUserLoadIntervals.begin());
+   std::vector<IntervalIndexType>::iterator userLoadIterEnd(vUserLoadIntervals.end());
+   for ( ; userLoadIter != userLoadIterEnd; userLoadIter++ )
    {
-      // overlay is applied well after the bridge is open so we want the deflection that does not include overlay
-      Dopen = D;
-      Ropen = R;
+      IntervalIndexType intervalIdx = *userLoadIter;
+      Float64 D,R;
+
+      GetUserLoadDeflection(intervalIdx,poi,&D,&R);
+
+      Duser += D;
+      Ruser += R;
    }
 
-   D = Dopen - DdeckCasting;
-   R = Ropen - RdeckCasting;
+   if ( !pBridge->IsFutureOverlay() && overlayIntervalIdx != INVALID_INDEX )
+   {
+      Doverlay = GetDeflection(overlayIntervalIdx,pgsTypes::pftOverlay,poi,bat, rtIncremental, false);
+      Roverlay = GetRotation(  overlayIntervalIdx,pgsTypes::pftOverlay,poi,bat, rtIncremental, false);
+   }
 
-   *pDy = -1.0*D;
-   *pRz = -1.0*R;
+   GET_IFACE(ISegmentData,pSegmentData);
+   const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
+   pgsTypes::TTSUsage tempStrandUsage = pStrands->GetTemporaryStrandUsage();
+   StrandIndexType Nt = pStrands->GetStrandCount(pgsTypes::Temporary);
+
+   bool bTempStrands = (0 < Nt &&  // there are temp strands
+                   tempStrandUsage != pgsTypes::ttsPTBeforeShipping) // and they are not post-tensioned before shipping
+                   ? true : false;
+
+   if ( bTempStrands )
+   {
+      *pDy = Dslab + Dtrafficbarrier + Dsidewalk + Doverlay + Duser;
+      *pRz = Rslab + Rtrafficbarrier + Rsidewalk + Roverlay + Ruser;
+   }
+   else
+   {
+      // for SIP decks, diaphagms are applied before the cast portion of the slab so they don't apply to screed camber
+      if ( deckType == pgsTypes::sdtCompositeSIP )
+      {
+         Ddiaphragm = 0;
+         Rdiaphragm = 0;
+      }
+
+      *pDy = Dslab + Dtrafficbarrier + Dsidewalk + Doverlay + Duser + Ddiaphragm;
+      *pRz = Rslab + Rtrafficbarrier + Rsidewalk + Roverlay + Ruser + Rdiaphragm;
+   }
+
+   // Switch the sign. Negative deflection creates positive screed camber
+   (*pDy) *= -1;
+   (*pRz) *= -1;
 }
 
 void CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi,const GDRCONFIG& config,Float64* pDy,Float64* pRz)
@@ -5721,6 +5782,11 @@ Float64 CAnalysisAgentImp::GetLowerBoundCamberVariabilityFactor()const
 Float64 CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,bool bIncludeLiveLoad)
 {
    return m_pGirderModelManager->GetStress(intervalIdx,poi,stressLocation,bIncludeLiveLoad);
+}
+
+void CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation topLoc,pgsTypes::StressLocation botLoc,bool bIncludeLiveLoad,Float64* pfTop,Float64* pfBot)
+{
+   return m_pGirderModelManager->GetStress(intervalIdx,poi,topLoc,botLoc,bIncludeLiveLoad,pfTop,pfBot);
 }
 
 Float64 CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,Float64 P,Float64 e)
@@ -7104,9 +7170,21 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
    }
    else
    {
-      ATLASSERT(backGroupIdx == aheadGroupIdx-1);
+      if ( pPier->GetIndex() == 0 )
+      {
+         ATLASSERT(backGroupIdx == INVALID_INDEX);
+         ATLASSERT(aheadGroupIdx == 0);
+      }
+      else if ( pPier->GetIndex() == pIBridgeDesc->GetPierCount()-1 )
+      {
+         ATLASSERT(backGroupIdx == pIBridgeDesc->GetGirderGroupCount()-1);
+         ATLASSERT(aheadGroupIdx == INVALID_INDEX);
+      }
+      else
+      {
+         ATLASSERT(backGroupIdx == aheadGroupIdx-1);
+      }
    }
-
 #endif
 
    GirderIndexType gdrIdx = girderKey.girderIndex;
@@ -7250,20 +7328,43 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
 
 /////////////////////////////////////////////////
 // IPrecompressedTensileZone
-bool CAnalysisAgentImp::IsInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,pgsTypes::StressLocation stressLocation)
+void CAnalysisAgentImp::IsInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,pgsTypes::StressLocation topStressLocation,pgsTypes::StressLocation botStressLocation,bool* pbTopPTZ,bool* pbBotPTZ)
 {
-   return IsInPrecompressedTensileZone(poi,limitState,stressLocation,NULL);
+   IsInPrecompressedTensileZone(poi,limitState,topStressLocation,botStressLocation,NULL,pbTopPTZ,pbBotPTZ);
 }
 
-bool CAnalysisAgentImp::IsInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,pgsTypes::StressLocation stressLocation,const GDRCONFIG* pConfig)
+void CAnalysisAgentImp::IsInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,pgsTypes::StressLocation topStressLocation,pgsTypes::StressLocation botStressLocation,const GDRCONFIG* pConfig,bool* pbTopPTZ,bool* pbBotPTZ)
 {
-   if ( IsDeckStressLocation(stressLocation) )
+   bool bTopGirder = IsGirderStressLocation(topStressLocation);
+   bool bBotGirder = IsGirderStressLocation(botStressLocation);
+   if ( bTopGirder && bBotGirder )
    {
-      return IsDeckInPrecompressedTensileZone(poi,limitState,stressLocation);
+      IsGirderInPrecompressedTensileZone(poi,limitState,pConfig,pbTopPTZ,pbBotPTZ);
+   }
+   else if ( !bTopGirder && !bBotGirder )
+   {
+      IsDeckInPrecompressedTensileZone(poi,limitState,pbTopPTZ,pbBotPTZ);
    }
    else
    {
-      return IsGirderInPrecompressedTensileZone(poi,limitState,stressLocation,pConfig);
+      bool bDummy;
+      if ( bTopGirder )
+      {
+         IsGirderInPrecompressedTensileZone(poi,limitState,pConfig,pbTopPTZ,&bDummy);
+      }
+      else
+      {
+         IsDeckInPrecompressedTensileZone(poi,limitState,pbTopPTZ,&bDummy);
+      }
+
+      if ( bBotGirder )
+      {
+         IsGirderInPrecompressedTensileZone(poi,limitState,pConfig,&bDummy,pbBotPTZ);
+      }
+      else
+      {
+         IsDeckInPrecompressedTensileZone(poi,limitState,&bDummy,pbBotPTZ);
+      }
    }
 }
 
@@ -7884,15 +7985,15 @@ void CAnalysisAgentImp::ComputeTimeDependentEffects(const CGirderKey& girderKey,
    }
 }
 
-bool CAnalysisAgentImp::IsDeckInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,pgsTypes::StressLocation stressLocation)
+void CAnalysisAgentImp::IsDeckInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,bool* pbTopPTZ,bool* pbBotPTZ)
 {
-   ATLASSERT(IsDeckStressLocation(stressLocation));
-
    GET_IFACE(IBridge,pBridge);
    if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
    {
       // if there is no deck, the deck can't be in the PTZ
-      return false;
+      *pbTopPTZ = false;
+      *pbBotPTZ = false;
+      return;
    }
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
@@ -7905,44 +8006,66 @@ bool CAnalysisAgentImp::IsDeckInPrecompressedTensileZone(const pgsPointOfInteres
    // Envelope mode. In all other modes, Min/Max are the same
    pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
 
-   Float64 fMin, fMax;
-   GetStress(serviceLoadIntervalIdx,limitState,poi,bat,false/*without prestress*/,stressLocation,&fMin,&fMax);
-   if ( fMax <= 0 )
-   {
-      return false; // the location is not in tension so is not in the "tension zone"
-   }
+   Float64 fMin[2], fMax[2];
+   GetStress(serviceLoadIntervalIdx,limitState,poi,bat,false/*without prestress*/,pgsTypes::TopDeck,   &fMin[TOP],&fMax[TOP]);
+   GetStress(serviceLoadIntervalIdx,limitState,poi,bat,false/*without prestress*/,pgsTypes::BottomDeck,&fMin[BOT],&fMax[BOT]);
 
    // The section is in tension, does the prestress cause compression?
-   Float64 fPreTension  = GetStress(serviceLoadIntervalIdx,poi,stressLocation,false/*don't include live load*/);
-   Float64 fPostTension,fDummy;
-   GetStress(serviceLoadIntervalIdx,pgsTypes::pftPostTensioning,poi,bat,rtCumulative,stressLocation,stressLocation,&fPostTension,&fDummy);
-   Float64 fPS = fPreTension + fPostTension;
+   Float64 fPreTension[2];
+   GetStress(serviceLoadIntervalIdx,poi,pgsTypes::TopDeck,pgsTypes::BottomDeck,false/*don't include live load*/,&fPreTension[TOP],&fPreTension[BOT]);
 
-   if ( 0 <= fPS )
-   {
-      return false; // prestressing does not cause compression here so it is not a "precompressed" location
-   }
+   Float64 fPostTension[2];
+   GetStress(serviceLoadIntervalIdx,pgsTypes::pftPostTensioning,poi,bat,rtCumulative,pgsTypes::TopDeck,pgsTypes::BottomDeck,&fPostTension[TOP],&fPostTension[BOT]);
 
-   return true;
+   Float64 fPS[2];
+   fPS[TOP] = fPreTension[TOP] + fPostTension[TOP];
+   fPS[BOT] = fPreTension[BOT] + fPostTension[BOT];
+
+   *pbTopPTZ = 0 < fMax[TOP] && fPS[TOP] < 0 ? true : false;
+   *pbBotPTZ = 0 < fMax[BOT] && fPS[BOT] < 0 ? true : false;
 }
 
-bool CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,pgsTypes::StressLocation stressLocation,const GDRCONFIG* pConfig)
+void CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,const GDRCONFIG* pConfig,bool* pbTopPTZ,bool* pbBotPTZ)
 {
-   ATLASSERT(IsGirderStressLocation(stressLocation));
-
    // The specified location is in a precompressed tensile zone if the following requirements are true
-   // 1) The location is in tension in the Service III limit state for the final interval with the
-   //    contribution of prestressing
+   // 1) The location is in tension in the Service III limit state for the final interval
    // 2) Prestressing causes compression at the location
 
    // First deal with the special cases
+
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+   // Special case... this is a regular prestressed girder or a simple span spliced girder and the girder does not have cantilevered ends
+   // This case isn't that special, however, we know that the bottom of the girder is in the PTZ and the top is not. There
+   // is no need to do all the analytical work to figure this out.
+   GET_IFACE(IBridge,pBridge);
+   PierIndexType startPierIdx, endPierIdx;
+   pBridge->GetGirderGroupPiers(segmentKey.groupIndex,&startPierIdx,&endPierIdx);
+   bool bDummy;
+   bool bContinuousStart, bContinuousEnd;
+   bool bIntegralStart, bIntegralEnd;
+   pBridge->IsContinuousAtPier(startPierIdx,&bDummy,&bContinuousStart);
+   pBridge->IsIntegralAtPier(startPierIdx,&bDummy,&bIntegralStart);
+   pBridge->IsContinuousAtPier(endPierIdx,&bContinuousEnd,&bDummy);
+   pBridge->IsIntegralAtPier(endPierIdx,&bIntegralEnd,&bDummy);
+   bool bNegMoment = (bContinuousStart || bIntegralStart || bContinuousEnd || bIntegralEnd);
+   if ( startPierIdx == endPierIdx-1 && // the group is only one span long
+        pBridge->GetSegmentCount(segmentKey) == 1 && // there one segment in the group
+        !pBridge->HasCantilever(startPierIdx) && // start is not cantilever
+        !pBridge->HasCantilever(endPierIdx) && // end is not cantilever
+        !bNegMoment) // no contiuous or integral boundary conditions to cause negative moments
+   {
+      // we know the answer
+      *pbTopPTZ = false;
+      *pbBotPTZ = true;
+      return;
+   }
+
 
    // Special case... At the start/end of the first/last segment the stress due to 
    // externally applied loads is zero (moment is zero) for roller/hinge
    // boundary condition and the stress due to the prestressing is also zero (strands not developed). 
    // Consider the bottom of the girder to be in a precompressed tensile zone
-   GET_IFACE(IBridge,pBridge);
-   const CSegmentKey& segmentKey(poi.GetSegmentKey());
    if ( segmentKey.segmentIndex == 0 ) // start of first segment (end of last segment is below)
    {
       bool bModelStartCantilever,bModelEndCantilever;
@@ -7955,7 +8078,9 @@ bool CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
          pgsTypes::BoundaryConditionType boundaryConditionType = pBridge->GetBoundaryConditionType(pierIdx);
          if ( boundaryConditionType == pgsTypes::bctHinge || boundaryConditionType == pgsTypes::bctRoller )
          {
-            return (stressLocation == pgsTypes::BottomGirder ? true : false);
+            *pbTopPTZ = false;
+            *pbBotPTZ = true;
+            return;
          }
       }
    }
@@ -7974,7 +8099,9 @@ bool CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
          pgsTypes::BoundaryConditionType boundaryConditionType = pBridge->GetBoundaryConditionType(pierIdx);
          if ( boundaryConditionType == pgsTypes::bctHinge || boundaryConditionType == pgsTypes::bctRoller )
          {
-            return (stressLocation == pgsTypes::BottomGirder ? true : false);
+            *pbTopPTZ = false;
+            *pbBotPTZ = true;
+            return;
          }
       }
    }
@@ -7985,7 +8112,9 @@ bool CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
    // prestress force transfers over the transfer length.
    if ( poi.IsTenthPoint(POI_RELEASED_SEGMENT) == 1 || poi.IsTenthPoint(POI_RELEASED_SEGMENT) == 11 )
    {
-      return (stressLocation == pgsTypes::BottomGirder ? true : false);
+      *pbTopPTZ = false;
+      *pbBotPTZ = true;
+      return;
    }
 
    // Special case... if there aren't any strands the notion of a precompressed tensile zone
@@ -8007,9 +8136,13 @@ bool CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
       Pjack = pStrandGeom->GetPjack(segmentKey,true/*include temp strands*/);
    }
 
-   if ( IsZero(Pjack) )
+   GET_IFACE(ITendonGeometry,pTendonGeom);
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
+   if ( IsZero(Pjack) && nDucts == 0 )
    {
-      return (stressLocation == pgsTypes::BottomGirder ? true : false);
+      *pbTopPTZ = false;
+      *pbBotPTZ = true;
+      return;
    }
 
    // Special case... if the POI is located "near" interior supports with continuous boundary
@@ -8017,84 +8150,83 @@ bool CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
    // in this location (most likely from harped strands). From LRFD C5.14.1.4.6, this location is not
    // in a precompressed tensile zone. Assume that "near" means that the POI is somewhere between 
    // mid-span and the closest pier.
-   if ( stressLocation == pgsTypes::TopGirder )
+   SpanIndexType startSpanIdx, endSpanIdx;
+   pBridge->GetSpansForSegment(segmentKey,&startSpanIdx,&endSpanIdx);
+
+   GET_IFACE(IPointOfInterest,pIPoi);
+   CSpanKey spanKey;
+   Float64 Xspan;
+   pIPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
+   startPierIdx = (PierIndexType)spanKey.spanIndex;
+   endPierIdx = startPierIdx+1;
+
+   // some segments are not supported by piers at all. segments can be supported by
+   // just temporary supports. an example would be the center segment in a three-segment
+   // single span bridge. This special case doesn't apply to that segment.
+   bool bStartAtPier = true;  // start end of segment bears on a pier
+   bool bEndAtPier   = true;  // end end of segment bears on a pier
+
+   // one of the piers must be a boundary pier or C5.14.1.4.6 doesn't apply
+   // the segment must start and end in the same span (can't straddle a pier)
+   if ( startSpanIdx == endSpanIdx && (pBridge->IsBoundaryPier(startPierIdx) || pBridge->IsBoundaryPier(endPierIdx)) )
    {
-      SpanIndexType startSpanIdx, endSpanIdx;
-      pBridge->GetSpansForSegment(segmentKey,&startSpanIdx,&endSpanIdx);
-
-      GET_IFACE(IPointOfInterest,pIPoi);
-      CSpanKey spanKey;
-      Float64 Xspan;
-      pIPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
-      PierIndexType startPierIdx = (PierIndexType)spanKey.spanIndex;
-      PierIndexType endPierIdx = startPierIdx+1;
-
-      // some segments are not supported by piers at all. segments can be supported by
-      // just temporary supports. an example would be the center segment in a three-segment
-      // single span bridge. This special case doesn't apply to that segment.
-      bool bStartAtPier = true;  // start end of segment bears on a pier
-      bool bEndAtPier   = true;  // end end of segment bears on a pier
-
-      // one of the piers must be a boundary pier or C5.14.1.4.6 doesn't apply
-      // the segment must start and end in the same span (can't straddle a pier)
-      if ( startSpanIdx == endSpanIdx && (pBridge->IsBoundaryPier(startPierIdx) || pBridge->IsBoundaryPier(endPierIdx)) )
+      Float64 Xstart, Xend; // dist from end of segment to start/end pier
+      if ( pBridge->IsBoundaryPier(startPierIdx) )
       {
-         Float64 Xstart, Xend; // dist from end of segment to start/end pier
-         if ( pBridge->IsBoundaryPier(startPierIdx) )
-         {
-            // GetPierLocation returns false if the segment does not bear on the pier
-            bStartAtPier = pBridge->GetPierLocation(startPierIdx,segmentKey,&Xstart);
-         }
-         else
-         {
-            // not a boundary pier so use a really big number so
-            // this end doesn't control
-            Xstart = DBL_MAX;
-         }
+         // GetPierLocation returns false if the segment does not bear on the pier
+         bStartAtPier = pBridge->GetPierLocation(startPierIdx,segmentKey,&Xstart);
+      }
+      else
+      {
+         // not a boundary pier so use a really big number so
+         // this end doesn't control
+         Xstart = DBL_MAX;
+      }
 
-         if ( pBridge->IsBoundaryPier(endPierIdx) )
-         {
-            // GetPierLocation returns false if the segment does not bear on the pier
-            bEndAtPier = pBridge->GetPierLocation(endPierIdx,segmentKey,&Xend);
-         }
-         else
-         {
-            // not a boundary pier so use a really big number so
-            // this end doesn't control
-            Xend = DBL_MAX;
-         }
+      if ( pBridge->IsBoundaryPier(endPierIdx) )
+      {
+         // GetPierLocation returns false if the segment does not bear on the pier
+         bEndAtPier = pBridge->GetPierLocation(endPierIdx,segmentKey,&Xend);
+      }
+      else
+      {
+         // not a boundary pier so use a really big number so
+         // this end doesn't control
+         Xend = DBL_MAX;
+      }
 
-         if ( bStartAtPier && bEndAtPier ) // both ends must bear on a pier
+      if ( bStartAtPier && bEndAtPier ) // both ends must bear on a pier
+      {
+         // distance from POI to pier at start/end of the span
+         // If they are equal distances, then the POI is at mid-span
+         // and we can't make a direct determination if C5.14.1.4.6 applies.
+         // If they are both equal, continue with the procedure below
+         Float64 offsetStart = fabs(Xstart-poi.GetDistFromStart());
+         Float64 offsetEnd   = fabs(Xend-poi.GetDistFromStart());
+         if ( !IsEqual(offsetStart,offsetEnd) )
          {
-            // distance from POI to pier at start/end of the span
-            // If they are equal distances, then the POI is at mid-span
-            // and we can't make a direct determination if C5.14.1.4.6 applies.
-            // If they are both equal, continue with the procedure below
-            Float64 offsetStart = fabs(Xstart-poi.GetDistFromStart());
-            Float64 offsetEnd   = fabs(Xend-poi.GetDistFromStart());
-            if ( !IsEqual(offsetStart,offsetEnd) )
+            // poi is closer to one pier then the other.
+            // get the boundary conditions of the nearest pier
+            pgsTypes::BoundaryConditionType boundaryConditionType;
+            if ( offsetStart < offsetEnd )
             {
-               // poi is closer to one pier then the other.
-               // get the boundary conditions of the nearest pier
-               pgsTypes::BoundaryConditionType boundaryConditionType;
-               if ( offsetStart < offsetEnd )
-               {
-                  // nearest pier is at the start of the span
-                  boundaryConditionType = pBridge->GetBoundaryConditionType(startPierIdx);
-               }
-               else
-               {
-                  // nearest pier is at the end of the span
-                  boundaryConditionType = pBridge->GetBoundaryConditionType(endPierIdx);
-               }
+               // nearest pier is at the start of the span
+               boundaryConditionType = pBridge->GetBoundaryConditionType(startPierIdx);
+            }
+            else
+            {
+               // nearest pier is at the end of the span
+               boundaryConditionType = pBridge->GetBoundaryConditionType(endPierIdx);
+            }
 
-               // if hinge or roller boundary condition, C5.14.1.4.6 doesn't apply.
-               if ( boundaryConditionType != pgsTypes::bctRoller && boundaryConditionType != pgsTypes::bctHinge )
-               {
-                  // connection type is some sort of continuity/integral boundary condition
-                  // The top of the girder is not in the PTZ.
-                  return false;
-               }
+            // if hinge or roller boundary condition, C5.14.1.4.6 doesn't apply.
+            if ( boundaryConditionType != pgsTypes::bctRoller && boundaryConditionType != pgsTypes::bctHinge )
+            {
+               // connection type is some sort of continuity/integral boundary condition
+               // The top of the girder is not in the PTZ.
+               *pbTopPTZ = false;
+               *pbBotPTZ = true;
+               return;
             }
          }
       }
@@ -8108,38 +8240,40 @@ bool CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
 
    // Tensile stresses are greatest at the top of the girder using the minimum model in
    // Envelope mode. In all other modes, Min/Max are the same
-   pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(::IsTopStressLocation(stressLocation) ? pgsTypes::Minimize : pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType batTop = GetBridgeAnalysisType(pgsTypes::Minimize);
+   pgsTypes::BridgeAnalysisType batBot = GetBridgeAnalysisType(pgsTypes::Maximize);
 
    // Get stresses due to service loads
-   Float64 fMin, fMax;
-   GetStress(serviceLoadIntervalIdx,limitState,poi,bat,false/*without prestress*/,stressLocation,&fMin,&fMax);
-   if ( fMax <= 0 )
-   {
-      return false; // the location is not in tension so is not in the "tension zone"
-   }
+   Float64 fMin[2], fMax[2];
+   GetStress(serviceLoadIntervalIdx,limitState,poi,batTop,false/*without prestress*/,pgsTypes::TopGirder,   &fMin[TOP],&fMax[TOP]);
+   GetStress(serviceLoadIntervalIdx,limitState,poi,batBot,false/*without prestress*/,pgsTypes::BottomGirder,&fMin[BOT],&fMax[BOT]);
+   //if ( fMax <= 0 )
+   //{
+   //   return false; // the location is not in tension so is not in the "tension zone"
+   //}
 
    // The section is in tension, does the prestress cause compression in the service load interval?
-   Float64 fPreTension, fPostTension;
+   Float64 fPreTension[2], fPostTension[2];
    if ( pConfig )
    {
-      fPreTension = GetDesignStress(serviceLoadIntervalIdx,limitState,poi,stressLocation,*pConfig,false/*don't include live load*/);
-      fPostTension = 0; // no post-tensioning for precast girder design
+      fPreTension[TOP] = GetDesignStress(serviceLoadIntervalIdx,limitState,poi,pgsTypes::TopGirder,   *pConfig,false/*don't include live load*/);
+      fPreTension[BOT] = GetDesignStress(serviceLoadIntervalIdx,limitState,poi,pgsTypes::BottomGirder,*pConfig,false/*don't include live load*/);
+      fPostTension[TOP] = 0; // no post-tensioning for precast girder design
+      fPostTension[BOT] = 0; // no post-tensioning for precast girder design
    }
    else
    {
-      fPreTension  = GetStress(serviceLoadIntervalIdx,poi,stressLocation,false/*don't include live load*/);
+      GetStress(serviceLoadIntervalIdx,poi,pgsTypes::TopGirder,pgsTypes::BottomGirder,false/*don't include live load*/,&fPreTension[TOP],&fPreTension[BOT]);
 
-      Float64 fDummy;
-      GetStress(serviceLoadIntervalIdx,pgsTypes::pftPostTensioning,poi,bat,rtCumulative,stressLocation,stressLocation,&fPostTension,&fDummy);
+      GetStress(serviceLoadIntervalIdx,pgsTypes::pftPostTensioning,poi,batTop,rtCumulative,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fPostTension[TOP],&fPostTension[BOT]);
    }
    
-   Float64 fPS = fPreTension + fPostTension;
-   if ( 0 <= fPS )
-   {
-      return false; // prestressing does not cause compression here so it is not a "precompressed" location
-   }
+   Float64 fPS[2];
+   fPS[TOP] = fPreTension[TOP] + fPostTension[TOP];
+   fPS[BOT] = fPreTension[BOT] + fPostTension[BOT];
 
-   return true;
+   *pbTopPTZ = 0 < fMax[TOP] && fPS[TOP] < 0 ? true : false;
+   *pbBotPTZ = 0 < fMax[BOT] && fPS[BOT] < 0 ? true : false;
 }
 
 

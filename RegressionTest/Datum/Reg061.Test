@@ -1,20 +1,19 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                   1      1     MyGir         40   0.6  270  39.41  28.74   0   2.00   10     0    0   0   0   0   0   6.800  8.200   3.287    -5.747    10268   0.625  0.625   6.199 -1.259 -0.246 -0.234 -1.739 183.02  271.90    1.75    5.50    5.50 
+ 28.25    5   6.00                   1      1     MyGir         40   0.6  270  39.41  28.74   0   2.00   10     0    0   0   0   0   0   6.800  8.200   3.289    -5.751    10274   0.625  0.625   6.343 -1.259 -0.246 -0.234 -1.739 182.87  271.63    1.75    5.50    5.50 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Splitting zone check failed.
 Confinement zone check failed.
 Slab Offset ("A" Dimension) check failed
-Lifting checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                   1      2     MyGir         40   0.6  270  39.41  28.74   0   2.00   10     0    0   0   0   0   0   6.800  8.200   3.208    -5.573     9835   0.525  0.667   6.199 -1.319 -0.246 -0.234 -1.799 183.02  267.94    1.75    5.50    5.50 
+ 28.25    5   6.00                   1      2     MyGir         40   0.6  270  39.41  28.74   0   2.00   10     0    0   0   0   0   0   6.800  8.200   3.210    -5.576     9836   0.525  0.667   6.343 -1.319 -0.246 -0.234 -1.799 182.87  267.67    1.75    5.50    5.50 
 
 
 The Specification Check was Not Successful
@@ -22,6 +21,5 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 Splitting zone check failed.
 Confinement zone check failed.
 Slab Offset ("A" Dimension) check failed
-Lifting checks failed
 
 

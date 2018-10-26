@@ -879,7 +879,7 @@ void CGirderSegmentGeneralPage::UpdateConcreteParametersToolTip()
 
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
-      _T("Type"), matConcrete::GetTypeName((matConcrete::Type)pSegment->Material.Concrete.Type,true).c_str(),
+      _T("Type"), lrfdConcreteUtil::GetTypeName((matConcrete::Type)pSegment->Material.Concrete.Type,true).c_str(),
       _T("Unit Weight"),FormatDimension(pSegment->Material.Concrete.StrengthDensity,density),
       _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pSegment->Material.Concrete.WeightDensity,density),
       _T("Max Aggregate Size"),  FormatDimension(pSegment->Material.Concrete.MaxAggregateSize,aggsize)

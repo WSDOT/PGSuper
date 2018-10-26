@@ -907,7 +907,7 @@ void CBridgeDescDeckDetailsPage::UpdateConcreteParametersToolTip()
 
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
-      _T("Type"), matConcrete::GetTypeName((matConcrete::Type)pDeck->Concrete.Type,true).c_str(),
+      _T("Type"), lrfdConcreteUtil::GetTypeName((matConcrete::Type)pDeck->Concrete.Type,true).c_str(),
       _T("Unit Weight"),FormatDimension(pDeck->Concrete.StrengthDensity,density),
       _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pDeck->Concrete.WeightDensity,density),
       _T("Max Aggregate Size"),  FormatDimension(pDeck->Concrete.MaxAggregateSize,aggsize)

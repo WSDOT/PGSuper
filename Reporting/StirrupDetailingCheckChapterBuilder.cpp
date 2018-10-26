@@ -109,6 +109,8 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
+   bool bLambda = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() ? true : false);
+
    GET_IFACE2(pBroker,IMaterials,pMaterial);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -129,36 +131,43 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
       // Av/S check 5.8.2.5
       // picture depends on units
       std::_tstring strImage;
-      switch( concType )
+      if ( bLambda )
       {
-      case pgsTypes::Normal:
-         strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_NWC_US.png") : _T("AvOverSMin_NWC_SI.png"));
-         break;
+         strImage = _T("AvOverSMin_2016.png");
+      }
+      else
+      {
+         switch( concType )
+         {
+         case pgsTypes::Normal:
+            strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_NWC_US.png") : _T("AvOverSMin_NWC_SI.png"));
+            break;
 
-      case pgsTypes::AllLightweight:
-         if ( bHasAggSplittingStrength )
-         {
-            strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_LWC_US.png") : _T("AvOverSMin_LWC_SI.png"));
-         }
-         else
-         {
-            strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_ALWC_US.png") : _T("AvOverSMin_ALWC_SI.png"));
-         }
-         break;
+         case pgsTypes::AllLightweight:
+            if ( bHasAggSplittingStrength )
+            {
+               strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_LWC_US.png") : _T("AvOverSMin_LWC_SI.png"));
+            }
+            else
+            {
+               strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_ALWC_US.png") : _T("AvOverSMin_ALWC_SI.png"));
+            }
+            break;
 
-      case pgsTypes::SandLightweight:
-         if ( bHasAggSplittingStrength )
-         {
-            strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_LWC_US.png") : _T("AvOverSMin_LWC_SI.png"));
-         }
-         else
-         {
-            strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_SLWC_US.png") : _T("AvOverSMin_SLWC_SI.png"));
-         }
-         break;
+         case pgsTypes::SandLightweight:
+            if ( bHasAggSplittingStrength )
+            {
+               strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_LWC_US.png") : _T("AvOverSMin_LWC_SI.png"));
+            }
+            else
+            {
+               strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_SLWC_US.png") : _T("AvOverSMin_SLWC_SI.png"));
+            }
+            break;
 
-      default:
-         ATLASSERT(false);
+         default:
+            ATLASSERT(false);
+         }
       }
 
       *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strImage) << rptNewLine;

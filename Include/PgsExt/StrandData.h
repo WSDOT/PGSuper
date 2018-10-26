@@ -109,6 +109,7 @@ public:
 
    bool operator==(const CStrandRow& other) const;
    bool operator!=(const CStrandRow& other) const;
+   bool operator<(const CStrandRow& other) const;
 
    Float64 m_InnerSpacing; // spacing between strands that are on either side of the CL Beam
    Float64 m_Spacing; // spacing between all other strands
@@ -239,14 +240,14 @@ public:
    void SetHarpStrandOffsetMeasurementAtEnd(HarpedStrandOffsetType offsetType);
    HarpedStrandOffsetType GetHarpStrandOffsetMeasurementAtEnd() const;
 
-   void SetHarpStrandOffsetAtEnd(Float64 offset);
-   Float64 GetHarpStrandOffsetAtEnd() const;
+   void SetHarpStrandOffsetAtEnd(pgsTypes::MemberEndType endType,Float64 offset);
+   Float64 GetHarpStrandOffsetAtEnd(pgsTypes::MemberEndType endType) const;
 
    void SetHarpStrandOffsetMeasurementAtHarpPoint(HarpedStrandOffsetType offsetType);
    HarpedStrandOffsetType GetHarpStrandOffsetMeasurementAtHarpPoint() const;
 
-   void SetHarpStrandOffsetAtHarpPoint(Float64 offset);
-   Float64 GetHarpStrandOffsetAtHarpPoint() const;
+   void SetHarpStrandOffsetAtHarpPoint(pgsTypes::MemberEndType endType,Float64 offset);
+   Float64 GetHarpStrandOffsetAtHarpPoint(pgsTypes::MemberEndType endType) const;
 
    void SetTemporaryStrandUsage(pgsTypes::TTSUsage ttsUsage);
    pgsTypes::TTSUsage GetTemporaryStrandUsage() const;
@@ -273,9 +274,9 @@ protected:
    StrandIndexType m_Nstrands[4];
    Float64 m_Pjack[4];
    HarpedStrandOffsetType m_HsoEndMeasurement; // one of HarpedStrandOffsetType enums
-   Float64 m_HpOffsetAtEnd;
+   Float64 m_HpOffsetAtEnd[2]; // access array with pgsTypes::MemberEndType
    HarpedStrandOffsetType m_HsoHpMeasurement;  // one of HarpedStrandOffsetType enums
-   Float64 m_HpOffsetAtHp;
+   Float64 m_HpOffsetAtHp[2]; // access array with pgsTypes::MemberEndType
 
    std::vector<CDebondData> m_Debond[3];
    bool m_bSymmetricDebond; // if true, left and right debond are the same (Only use Length1 of CDebondData struct)

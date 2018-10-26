@@ -41,6 +41,7 @@
 #include <GeometricPrimitives\GeometricPrimitives.h>
 
 #include <System\SubjectT.h>
+#include <Units\sysUnits.h>
 
 #include <MathEx.h>
 
@@ -948,16 +949,28 @@ private:
       Float64 m_MaxFci;
       Float64 m_MaxFc;
 
+      PrestressDesignStrategy()
+      {
+         m_MaxFci = ::ConvertToSysUnits(15.0,unitMeasure::KSI);
+         m_MaxFc = m_MaxFci;
+      }
+
       bool operator == (const PrestressDesignStrategy& other) const
       {
          if(!m_FlexuralDesignType == other.m_FlexuralDesignType)
+         {
             return false;
+         }
 
          if(!::IsEqual(m_MaxFci, other.m_MaxFci))
+         {
             return false;
+         }
 
          if(!::IsEqual(m_MaxFc, other.m_MaxFc))
+         {
             return false;
+         }
 
          return true;
       }

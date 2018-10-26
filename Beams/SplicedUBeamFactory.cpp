@@ -233,7 +233,7 @@ void CSplicedUBeamFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDTy
    (*ppEng)->AddRef();
 }
 
-void CSplicedUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
+void CSplicedUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
@@ -249,10 +249,18 @@ void CSplicedUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dim
    beam->get_T(&t);
    Float64 slope;
    GetSlope(beam, &slope);
-   Float64 height;
-   beam->get_Height(&height);
+   Float64 depth;
+   if ( Hg < 0 )
+   {
+      beam->get_Height(&depth);
+   }
+   else
+   {
+      depth = Hg;
+   }
    Float64 w1;
    beam->get_W1(&w1);
+
 
    Float64 arc_slope = 1.0/slope;
 
@@ -263,9 +271,9 @@ void CSplicedUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dim
 
    // travel counter clockwise around right web;
    Float64 x1 = w1/2.0;
-   Float64 y1 = -height;
+   Float64 y1 = -depth;
 
-   Float64 x2 = x1 + height * arc_slope;
+   Float64 x2 = x1 + depth * arc_slope;
    Float64 y2 = 0;
 
    Float64 x3 = x2 - t_x_project;
@@ -308,12 +316,12 @@ void CSplicedUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dim
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb  = hpTopFace     == IBeamFactory::BeamBottom ? hpTopLimit     - height : -hpTopLimit;
-   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamBottom ? hpBottomLimit  - height : -hpBottomLimit;
-   Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - height : -endTopLimit;
-   Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - height : -endBottomLimit;
+   Float64 hptb  = hpTopFace     == IBeamFactory::BeamBottom ? hpTopLimit     - depth : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamBottom ? hpBottomLimit  - depth : -hpBottomLimit;
+   Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
+   Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
 
-   hr = configurer->SetHarpedStrandOffsetBounds(0, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
+   hr = configurer->SetHarpedStrandOffsetBounds(0, depth, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
 
    hr = sm.CopyTo(strandMover);
@@ -529,6 +537,11 @@ IBeamFactory::Dimensions CSplicedUBeamFactory::LoadSectionDimensions(sysIStructu
 }
 
 bool CSplicedUBeamFactory::IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey)
+{
+   return false;
+}
+
+bool CSplicedUBeamFactory::IsSymmetric(IBroker* pBroker,const CSegmentKey& segmentKey)
 {
    return false;
 }

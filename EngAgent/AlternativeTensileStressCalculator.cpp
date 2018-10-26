@@ -395,12 +395,17 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
    return fAllowable;
 }
 
-void pgsAlternativeTensileStressCalculator::ComputeReqdFcTens(Float64 ft, // stress demand
+void pgsAlternativeTensileStressCalculator::ComputeReqdFcTens(const CSegmentKey& segmentKey,Float64 ft, // stress demand
                        Float64 rcsT, bool rcsBfmax, Float64 rcsFmax, Float64 rcsTalt, // allowable stress coeff's
                        Float64* pFcNo,Float64* pFcWithRebar)
 {
    if ( 0 < ft )
    {
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker,IMaterials,pMaterials);
+      Float64 lambda = pMaterials->GetSegmentLambda(segmentKey);
+
       // Without rebar
       if ( rcsBfmax && (rcsFmax < ft) )
       {
@@ -409,11 +414,11 @@ void pgsAlternativeTensileStressCalculator::ComputeReqdFcTens(Float64 ft, // str
       }
       else
       {
-         *pFcNo = pow(ft/rcsT,2);
+         *pFcNo = pow(ft/(lambda*rcsT),2);
       }
 
       // With rebar
-      *pFcWithRebar = pow(ft/rcsTalt,2);
+      *pFcWithRebar = pow(ft/(lambda*rcsTalt),2);
 
    }
    else

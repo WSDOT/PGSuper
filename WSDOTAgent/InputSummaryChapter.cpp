@@ -175,8 +175,6 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    rptLengthUnitValue* pUnitValue = (IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) ? &glength : &spacing);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,ISegmentLifting,pSegmentLifting);
-   GET_IFACE2(pBroker,ISegmentHauling,pSegmentHauling);
 
    std::_tstring strGirderSpacingMeasureAtStartOfSpan, strGirderSpacingMeasureAtEndOfSpan;
    std::_tstring* pStr;
@@ -473,6 +471,7 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
    if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
    {
+      GET_IFACE2(pBroker,ISegmentLifting,pSegmentLifting);
       (*pTable)(row,0) << _T("Left Lifting Point Location");
       (*pTable)(row++,1) << length.SetValue(pSegmentLifting->GetLeftLiftingLoopLocation(segmentKey));
 
@@ -483,6 +482,7 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
+      GET_IFACE2(pBroker,ISegmentHauling,pSegmentHauling);
       (*pTable)(row,0) << _T("Leading Truck Support Location");
       (*pTable)(row++,1) << length.SetValue(pSegmentHauling->GetLeadingOverhang(segmentKey));
 
@@ -551,57 +551,72 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segme
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    GET_IFACE2(pBroker,IPointOfInterest, pIPOI);
-   std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(segmentKey,POI_5L | POI_RELEASED_SEGMENT) );
-   pgsPointOfInterest poi(*vPoi.begin());
+   std::vector<pgsPointOfInterest> vEndPoi( pIPOI->GetPointsOfInterest(segmentKey,POI_0L | POI_10L | POI_RELEASED_SEGMENT) );
+   ATLASSERT(vEndPoi.size() == 2);
+
+   std::vector<pgsPointOfInterest> vHpPoi( pIPOI->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT) );
+   ATLASSERT(vHpPoi.size() == 2);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
+   GET_IFACE2(pBroker,IGirder,pGirder);
+   bool bIsSymmetric = pGirder->IsSymmetricSegment(segmentKey);
 
    StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
 
-   Float64 es; // eccentricity of straight strands
-   Float64 eh; // eccentricity of harped strands at mid-span
-   Float64 eh2; // eccentricity of 1 harped strand at mid-span
-   Float64 ehe; // eccentricty of harped strands at end of girder
+   Float64 Fo[2];
+   Float64 Fcl[2];
+   Float64 Fb[2];
+   Float64 E[2];
 
-   Float64 EndOffset, HpOffset;
-   pStrandGeom->GetHarpStrandOffsets(segmentKey,&EndOffset,&HpOffset);
-
-   Float64 nEff;
-   es = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, pgsTypes::Straight, &nEff );
-   eh = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, pgsTypes::Harped,   &nEff );
-
-   if ( 0 < Nh  )
+   for ( int i = 0; i < 2; i++ )
    {
-      GET_IFACE2(pBroker,IBridge, pBridge);
-      GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+      pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
 
-      GDRCONFIG config = pBridge->GetSegmentConfiguration(segmentKey);
-      StrandIndexType ns1 = pStrandGeometry->GetNextNumStrands(segmentKey, pgsTypes::Harped, 0);
-      ConfigStrandFillVector hfill = pStrandGeom->ComputeStrandFill(segmentKey, pgsTypes::Harped, ns1);
-      config.PrestressConfig.SetStrandFill(pgsTypes::Harped, hfill);
+      Float64 es; // eccentricity of straight strands
+      Float64 eh; // eccentricity of harped strands at mid-span
+      Float64 eh2; // eccentricity of 1 harped strand at mid-span
+      Float64 ehe; // eccentricty of harped strands at end of girder
 
-      eh2 = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, config, pgsTypes::Harped, &nEff ); //** See Note Below
+      Float64 nEff;
+      es = pStrandGeom->GetEccentricity( releaseIntervalIdx, vEndPoi[endType], pgsTypes::Straight, &nEff );
+      eh = pStrandGeom->GetEccentricity( releaseIntervalIdx, vHpPoi[endType],  pgsTypes::Harped,   &nEff );
+
+      if ( 0 < Nh  )
+      {
+         GET_IFACE2(pBroker,IBridge, pBridge);
+         GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+
+         GDRCONFIG config = pBridge->GetSegmentConfiguration(segmentKey);
+         StrandIndexType ns1 = pStrandGeometry->GetNextNumStrands(segmentKey, pgsTypes::Harped, 0);
+         ConfigStrandFillVector hfill = pStrandGeom->ComputeStrandFill(segmentKey, pgsTypes::Harped, ns1);
+         config.PrestressConfig.SetStrandFill(pgsTypes::Harped, hfill);
+
+         eh2 = pStrandGeom->GetEccentricity( releaseIntervalIdx, vHpPoi[endType], config, pgsTypes::Harped, &nEff ); //** See Note Below
+      }
+      else
+      {
+         eh2 = eh;
+      }
+
+      ehe = pStrandGeom->GetEccentricity( releaseIntervalIdx, vEndPoi[endType], pgsTypes::Harped, &nEff );
+
+      // ** eh2 is the eccentricity of a harped strand, at the midspan. We use this value to compute Fb.
+      //    Fb is the distance from the bottom of the girder to the "lower bundle". This is a WSDOT
+      //    specific calculation. There is an assumption here that the first strand is in the "lower
+      //    bundle" and the actual definition of the harped strands at the harping point represents
+      //    a bundle. In general, this might not be true.
+
+      Fo[endType]  = pSectProp->GetY(releaseIntervalIdx,vEndPoi[endType],pgsTypes::TopGirder) + ehe;
+
+      Float64 Yb  = pSectProp->GetY(releaseIntervalIdx,vHpPoi[endType],pgsTypes::BottomGirder);
+      Fcl[endType] = Yb - eh;
+      Fb[endType]  = Yb - eh2;
+
+      Yb  = pSectProp->GetY(releaseIntervalIdx,vEndPoi[endType],pgsTypes::BottomGirder);
+      E[endType]   = Yb - es;
    }
-   else
-   {
-      eh2 = eh;
-   }
-
-   ehe = pStrandGeom->GetEccentricity( releaseIntervalIdx, pgsPointOfInterest(segmentKey,0.00), pgsTypes::Harped, &nEff );
-
-   // ** eh2 is the eccentricity of a harped strand, at the midspan. We use this value to compute Fb.
-   //    Fb is the distance from the bottom of the girder to the "lower bundle". This is a WSDOT
-   //    specific calculation. There is an assumption here that the first strand is in the "lower
-   //    bundle" and the actual definition of the harped strands at the harping point represents
-   //    a bundle. In general, this might not be true.
-
-   Float64 Fo  = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::TopGirder) + ehe;
-   Float64 Yb  = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder);
-   Float64 Fcl = Yb - eh;
-   Float64 Fb  = Yb - eh2;
-   Float64 E   = Yb - es;
 
    // Populate the table
    Int16 row = 0;
@@ -706,26 +721,81 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segme
 
    if (are_harped_straight)
    {
-      (*pTable)(row,0) << _T("C.G. of ") << LABEL_HARP_TYPE(are_harped_straight)<< _T(" Strands from top");
-      (*pTable)(row,1) << component.SetValue( Fo );
+      if ( bIsSymmetric )
+      {
+         (*pTable)(row,0) << _T("C.G. of ") << LABEL_HARP_TYPE(are_harped_straight)<< _T(" Strands from top");
+         (*pTable)(row,1) << component.SetValue( Fo[pgsTypes::metStart] );
+         row++;
+      }
+      else
+      {
+         (*pTable)(row,0) << _T("C.G. of ") << LABEL_HARP_TYPE(are_harped_straight)<< _T(" Strands from top at left end of girder");
+         (*pTable)(row,1) << component.SetValue( Fo[pgsTypes::metStart] );
+         row++;
+
+         (*pTable)(row,0) << _T("C.G. of ") << LABEL_HARP_TYPE(are_harped_straight)<< _T(" Strands from top at right end of girder");
+         (*pTable)(row,1) << component.SetValue( Fo[pgsTypes::metEnd] );
+         row++;
+      }
+   }
+   else
+   {
+      if ( bIsSymmetric )
+      {
+         (*pTable)(row,0) << _T("C.G. of Harped Strands at end, ") << Sub2(_T("F"),_T("o"));
+         (*pTable)(row,1) << component.SetValue( Fo[pgsTypes::metStart] );
+         row++;
+
+         (*pTable)(row,0) << _T("C.G. of Harped Strands at centerline, ") << Sub2(_T("F"),_T("cl"));
+         (*pTable)(row,1) << component.SetValue( Fcl[pgsTypes::metStart] );
+         row++;
+
+         (*pTable)(row,0) << _T("C.G. of Lower Harped Strand Bundle, ") << Sub2(_T("F"),_T("b"));
+         (*pTable)(row,1) << component.SetValue( Fb[pgsTypes::metStart] );
+         row++;
+      }
+      else
+      {
+         (*pTable)(row,0) << _T("C.G. of Harped Strands at left end, ") << Sub2(_T("F"),_T("o"));
+         (*pTable)(row,1) << component.SetValue( Fo[pgsTypes::metStart] );
+         row++;
+
+         (*pTable)(row,0) << _T("C.G. of Harped Strands at right end, ") << Sub2(_T("F"),_T("o"));
+         (*pTable)(row,1) << component.SetValue( Fo[pgsTypes::metEnd] );
+         row++;
+
+         (*pTable)(row,0) << _T("C.G. of Harped Strands at left harp point, ") << Sub2(_T("F"),_T("cl"));
+         (*pTable)(row,1) << component.SetValue( Fcl[pgsTypes::metStart] );
+         row++;
+
+         (*pTable)(row,0) << _T("C.G. of Harped Strands at right harp point, ") << Sub2(_T("F"),_T("cl"));
+         (*pTable)(row,1) << component.SetValue( Fcl[pgsTypes::metEnd] );
+         row++;
+
+         (*pTable)(row,0) << _T("C.G. of Lower Harped Strand Bundle at left harp point, ") << Sub2(_T("F"),_T("b"));
+         (*pTable)(row,1) << component.SetValue( Fb[pgsTypes::metStart] );
+         row++;
+
+         (*pTable)(row,0) << _T("C.G. of Lower Harped Strand Bundle at right harp point, ") << Sub2(_T("F"),_T("b"));
+         (*pTable)(row,1) << component.SetValue( Fb[pgsTypes::metEnd] );
+         row++;
+      }
+   }
+   
+   if ( bIsSymmetric )
+   {
+      (*pTable)(row,0) << _T("C.G. of Straight Strands, E");
+      (*pTable)(row,1) << component.SetValue( E[pgsTypes::metStart] );
       row++;
    }
    else
    {
-      (*pTable)(row,0) << _T("C.G. of Harped Strands at end, ") << Sub2(_T("F"),_T("o"));
-      (*pTable)(row,1) << component.SetValue( Fo );
+      (*pTable)(row,0) << _T("C.G. of Straight Strands at left end, E");
+      (*pTable)(row,1) << component.SetValue( E[pgsTypes::metStart] );
       row++;
 
-      (*pTable)(row,0) << _T("C.G. of Harped Strands at centerline, ") << Sub2(_T("F"),_T("cl"));
-      (*pTable)(row,1) << component.SetValue( Fcl );
-      row++;
-
-      (*pTable)(row,0) << _T("C.G. of Lower Harped Strand Bundle, ") << Sub2(_T("F"),_T("b"));
-      (*pTable)(row,1) << component.SetValue( Fb );
+      (*pTable)(row,0) << _T("C.G. of Straight Strands at right end, E");
+      (*pTable)(row,1) << component.SetValue( E[pgsTypes::metEnd] );
       row++;
    }
-   
-   (*pTable)(row,0) << _T("C.G. of Straight Strands, E");
-   (*pTable)(row,1) << component.SetValue( E );
-   row++;
 }

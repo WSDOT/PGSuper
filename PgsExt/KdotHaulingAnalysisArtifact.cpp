@@ -558,12 +558,19 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
 
    Float64 t2 = pSpecEntry->GetHaulingTensionStressFactorWithRebar();
 
+   bool bLambda = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() ? true : false);
+
    Float64 capCompression = pSegmentHaulingSpecCriteria->GetHaulingAllowableCompressiveConcreteStress(segmentKey);
 
    *p <<_T("Maximum allowable concrete compressive stress = -") << c << RPT_FC << _T(" = ") << 
       stress.SetValue(capCompression)<< _T(" ") <<
       stress.GetUnitTag()<< rptNewLine;
-   *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t) << symbol(ROOT) << RPT_FC;
+   *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t);
+   if ( bLambda )
+   {
+      *p << symbol(lambda);
+   }
+   *p << symbol(ROOT) << RPT_FC;
    if ( b_t_max )
    {
       *p << _T(" but not more than: ") << stress.SetValue(t_max);
@@ -571,7 +578,12 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
    *p << _T(" = ") << stress.SetValue(pSegmentHaulingSpecCriteria->GetHaulingAllowableTensileConcreteStress(segmentKey))<< _T(" ") <<
       stress.GetUnitTag()<< rptNewLine;
 
-   *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t2) << symbol(ROOT) << RPT_FC
+   *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t2);
+   if ( bLambda )
+   {
+      *p << symbol(lambda);
+   }
+   *p << symbol(ROOT) << RPT_FC
       << _T(" = ") << stress.SetValue(pSegmentHaulingSpecCriteria->GetHaulingWithMildRebarAllowableStress(segmentKey)) << _T(" ") << stress.GetUnitTag()
       << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
 

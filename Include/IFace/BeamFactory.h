@@ -136,8 +136,11 @@ interface IBeamFactory : IUnknown
 
    //---------------------------------------------------------------------------------
    // The StrandMover object knows how to move harped strands within the section when
-   // the group elevation is changed
-   virtual void CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
+   // the group elevation is changed.
+   // Hg is the height of the girder at the location where the strand mover is being created
+   // if Hg is < 0, height is computed based on dimensions
+   // Hg is typically only used for variable depth (non-prismatic) girders
+   virtual void CreateStrandMover(const IBeamFactory::Dimensions& dimensions, Float64 Hg,
                                   IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) = 0;
@@ -175,6 +178,10 @@ interface IBeamFactory : IUnknown
    //---------------------------------------------------------------------------------
    // Returns true if the non-composite beam section is prismatic
    virtual bool IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey) = 0;
+
+   //---------------------------------------------------------------------------------
+   // Returns true of the non-composite beam is longitudinally symmetric about its mid-point
+   virtual bool IsSymmetric(IBroker* pBroker,const CSegmentKey& segmentKey) = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the interal surface area of voids within the member

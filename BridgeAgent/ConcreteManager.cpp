@@ -754,7 +754,6 @@ matConcreteBase* CConcreteManager::CreateConcreteModel(LPCTSTR strName,const CCo
    // on the concrete model until a creep or shrinkage parameter is requested... then, make
    // V/S correct
 
-
    return pConcrete;
 }
 
@@ -777,6 +776,8 @@ void CConcreteManager::CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR 
       }
    }
 
+   Float64 lambda = lrfdConcreteUtil::ComputeConcreteDensityModificationFactor((matConcrete::Type)concrete.Type,concrete.StrengthDensity,concrete.bHasFct,concrete.Fct,concrete.Fc);
+
    // get the modulus of rupture.
    Float64 frShear   = lrfdConcreteUtil::ModRupture(concrete.Fci,GetShearFrCoefficient(concrete.Type));
    Float64 frFlexure = lrfdConcreteUtil::ModRupture(concrete.Fci,GetFlexureFrCoefficient(concrete.Type));
@@ -790,8 +791,8 @@ void CConcreteManager::CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR 
    pReleaseConc->SetType((matConcrete::Type)concrete.Type);
    pReleaseConc->HasAggSplittingStrength(concrete.bHasFct);
    pReleaseConc->SetAggSplittingStrength(concrete.Fct);
-   pReleaseConc->SetShearFr(frShear);
-   pReleaseConc->SetFlexureFr(frFlexure);
+   pReleaseConc->SetShearFr(lambda*frShear);
+   pReleaseConc->SetFlexureFr(lambda*frFlexure);
 
    if ( concrete.bUserEc )
    {
@@ -822,8 +823,8 @@ void CConcreteManager::CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR 
    pConcrete->SetType((matConcrete::Type)concrete.Type);
    pConcrete->HasAggSplittingStrength(concrete.bHasFct);
    pConcrete->SetAggSplittingStrength(concrete.Fct);
-   pConcrete->SetShearFr(frShear);
-   pConcrete->SetFlexureFr(frFlexure);
+   pConcrete->SetShearFr(lambda*frShear);
+   pConcrete->SetFlexureFr(lambda*frFlexure);
 }
 
 pgsTypes::ConcreteType CConcreteManager::GetSegmentConcreteType(const CSegmentKey& segmentKey)
@@ -1258,6 +1259,90 @@ matConcrete* CConcreteManager::GetPierConcrete(PierIndexType pierIdx)
    return found->second.get();
 }
 
+Float64 CConcreteManager::GetSegmentLambda(const CSegmentKey& segmentKey)
+{
+   ValidateConcrete();
+   const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(m_pSegmentConcrete[segmentKey].get());
+   const lrfdLRFDTimeDependentConcrete* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(m_pSegmentConcrete[segmentKey].get());
+   if ( pConcrete1 )
+   {
+      return pConcrete1->GetLambda();
+   }
+   else if ( pConcrete2 )
+   {
+      return pConcrete2->GetLambda();
+   }
+   else
+   {
+      return 1.0;
+   }
+}
+
+Float64 CConcreteManager::GetClosureJointLambda(const CClosureKey& closureKey)
+{
+   ValidateConcrete();
+   const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(m_pClosureConcrete[closureKey].get());
+   const lrfdLRFDTimeDependentConcrete* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(m_pClosureConcrete[closureKey].get());
+   if ( pConcrete1 )
+   {
+      return pConcrete1->GetLambda();
+   }
+   else if ( pConcrete2 )
+   {
+      return pConcrete2->GetLambda();
+   }
+   else
+   {
+      return 1.0;
+   }
+}
+
+Float64 CConcreteManager::GetDeckLambda()
+{
+   if ( m_pDeckConc.get() != NULL )
+   {
+      const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(m_pDeckConc.get());
+      const lrfdLRFDTimeDependentConcrete* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(m_pDeckConc.get());
+      if ( pConcrete1 )
+      {
+         return pConcrete1->GetLambda();
+      }
+      else if ( pConcrete2 )
+      {
+         return pConcrete2->GetLambda();
+      }
+      else
+      {
+         return 1.0;
+      }
+   }
+   else
+   {
+      return 1.0;
+   }
+}
+
+Float64 CConcreteManager::GetRailingSystemLambda(pgsTypes::TrafficBarrierOrientation orientation)
+{
+   ValidateConcrete();
+   ValidateRailingSystemConcrete();
+
+   const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(m_pRailingConc[orientation].get());
+   const lrfdLRFDTimeDependentConcrete* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(m_pRailingConc[orientation].get());
+   if ( pConcrete1 )
+   {
+      return pConcrete1->GetLambda();
+   }
+   else if ( pConcrete2 )
+   {
+      return pConcrete2->GetLambda();
+   }
+   else
+   {
+      return 1.0;
+   }
+}
+
 Float64 CConcreteManager::GetNWCDensityLimit()
 {
    return lrfdConcreteUtil::GetNWCDensityLimit();
@@ -1574,6 +1659,9 @@ lrfdLRFDConcrete* CConcreteManager::CreateLRFDConcreteModel(const CConcreteMater
    pLRFDConcrete->SetCreepCorrectionFactors(concrete.CreepK1,concrete.CreepK2);
    pLRFDConcrete->SetShrinkageCorrectionFactors(concrete.ShrinkageK1,concrete.ShrinkageK2);
 
+   Float64 lambda = lrfdConcreteUtil::ComputeConcreteDensityModificationFactor((matConcrete::Type)concrete.Type,concrete.StrengthDensity,concrete.bHasFct,concrete.Fct,concrete.Fc);
+   pLRFDConcrete->SetLambda(lambda);
+
    return pLRFDConcrete;
 }
 
@@ -1617,6 +1705,9 @@ lrfdLRFDTimeDependentConcrete* CConcreteManager::CreateTimeDependentLRFDConcrete
 
    pConcrete->SetShearModulusOfRuptureCoefficient(GetShearFrCoefficient(concrete.Type));
    pConcrete->SetFlexureModulusOfRuptureCoefficient(GetFlexureFrCoefficient(concrete.Type));
+
+   Float64 lambda = lrfdConcreteUtil::ComputeConcreteDensityModificationFactor((matConcrete::Type)concrete.Type,concrete.StrengthDensity,concrete.bHasFct,concrete.Fct,concrete.Fc);
+   pConcrete->SetLambda(lambda);
 
    return pConcrete;
 }

@@ -321,7 +321,7 @@ static void MakeRectangle(Float64 width, Float64 depth, Float64 xOffset, Float64
    harp_rect->get_Shape(shape);
 }
 
-void CVoidedSlab2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
+void CVoidedSlab2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
@@ -342,7 +342,7 @@ void CVoidedSlab2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dime
    GetDimensions(dimensions,H,W,D1,D2,H1,H2,S1,S2,C1,C2,C3,N,J,EndBlockLength);
 
    Float64 width = W;
-   Float64 depth = H;
+   Float64 depth = (Hg < 0 ? H : Hg);
 
    if (N==0)
    {
@@ -464,7 +464,7 @@ void CVoidedSlab2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dime
    Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
    Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
 
-   hr = configurer->SetHarpedStrandOffsetBounds(0, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
+   hr = configurer->SetHarpedStrandOffsetBounds(0, depth, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
 
    hr = sm.CopyTo(strandMover);
@@ -754,6 +754,11 @@ bool CVoidedSlab2Factory::IsPrismatic(IBroker* pBroker,const CSegmentKey& segmen
    Float64 endBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
 
    return IsZero(endBlockLength) ? true : false;
+}
+
+bool CVoidedSlab2Factory::IsSymmetric(IBroker* pBroker,const CSegmentKey& segmentKey)
+{
+   return true;
 }
 
 Float64 CVoidedSlab2Factory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey)

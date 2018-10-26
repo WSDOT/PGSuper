@@ -75,7 +75,7 @@ public:
                                                 Float64 *pYna, Float64 *pAreaTens, Float64 *pT, 
                                                 Float64 *pAsProvd, Float64 *pAsReqd, bool* pIsAdequateRebar);
 
-   static void ComputeReqdFcTens(Float64 ft, // stress demand
+   static void ComputeReqdFcTens(const CSegmentKey& segmentKey,Float64 ft, // stress demand
                           Float64 rcsT, bool rcsBfmax, Float64 rcsFmax, Float64 rcsTalt, // allowable stress coeff's
                           Float64* pFcNo,Float64* pFcWithRebar);
 

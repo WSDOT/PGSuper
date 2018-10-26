@@ -448,7 +448,7 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
          var.Clear();
          var.vt = VT_BSTR;
          hr = pStrLoad->get_Property(_T("Type"),&var);
-         SlabConcreteType = (pgsTypes::ConcreteType)matConcrete::GetTypeFromName(OLE2T(var.bstrVal));
+         SlabConcreteType = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromName(OLE2T(var.bstrVal));
 
          var.Clear();
          var.vt = VT_R8;
@@ -623,7 +623,7 @@ HRESULT CDeckDescription::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    // new parameters are Unit, SlabConcreteType, SlabHasFct, and SlabFct
    pStrSave->BeginUnit(_T("SlabConcrete"),1.0);
 
-      pStrSave->put_Property(_T("Type"),CComVariant( matConcrete::GetTypeName((matConcrete::Type)SlabConcreteType,false).c_str() ));
+      pStrSave->put_Property(_T("Type"),CComVariant( lrfdConcreteUtil::GetTypeName((matConcrete::Type)SlabConcreteType,false).c_str() ));
       pStrSave->put_Property(_T("Fc"),               CComVariant(SlabFc));
       pStrSave->put_Property(_T("WeightDensity"),    CComVariant(SlabWeightDensity));
       pStrSave->put_Property(_T("StrengthDensity"),  CComVariant(SlabStrengthDensity));

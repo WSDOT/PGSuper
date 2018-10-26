@@ -66,7 +66,7 @@ static void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,
 static void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level);
 static void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level);
-static void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,Float64 fci,Float64 fc,Float64 Eci,Float64 Ec,const CConcreteMaterial& concrete,RowIndexType row);
+static void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,Float64 fci,Float64 fc,Float64 Eci,Float64 Ec,Float64 lambda,const CConcreteMaterial& concrete,RowIndexType row);
 static void write_aci209_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level,bool bAASHTOParameters);
 static void write_aci209_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,Float64 fc28,Float64 Ec28,const CConcreteMaterial& concrete,RowIndexType row,bool bAASHTOParameters);
 static void write_cebfip_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level);
@@ -766,7 +766,19 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
 
    bool bK1 = (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion());
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(bK1 ? 16 : 10,_T("Concrete Properties"));
+   bool bLambda = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion());
+
+   ColumnIndexType nColumns = 10;
+   if ( bK1 )
+   {
+      nColumns += 6;
+   }
+   if ( bLambda )
+   {
+      nColumns++;
+   }
+
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(nColumns,_T("Concrete Properties"));
    pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
    pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
    pTable->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
@@ -789,29 +801,43 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    if ( bK1 )
    {
       pTable->SetNumberOfHeaderRows(2);
-      for ( int i = 0; i < 10; i++ )
+      for ( ColumnIndexType i = 0; i < col; i++ )
       {
          pTable->SetRowSpan(0,i,2); 
          pTable->SetRowSpan(1,i,SKIP_CELL);
       }
 
-      pTable->SetColumnSpan(0,10,2);
-      pTable->SetColumnSpan(0,11,SKIP_CELL);
-      (*pTable)(0,10) << Sub2(_T("E"),_T("c"));
-      (*pTable)(1,10) << Sub2(_T("K"),_T("1"));
-      (*pTable)(1,11) << Sub2(_T("K"),_T("2"));
+      pTable->SetColumnSpan(0,col,2);
+      pTable->SetColumnSpan(0,col+1,SKIP_CELL);
+      (*pTable)(0,col) << Sub2(_T("E"),_T("c"));
+      (*pTable)(1,col++) << Sub2(_T("K"),_T("1"));
+      (*pTable)(1,col++) << Sub2(_T("K"),_T("2"));
 
-      pTable->SetColumnSpan(0,12,2);
-      pTable->SetColumnSpan(0,13,SKIP_CELL);
-      (*pTable)(0,12) << _T("Creep");
-      (*pTable)(1,12) << Sub2(_T("K"),_T("1"));
-      (*pTable)(1,13) << Sub2(_T("K"),_T("2"));
+      pTable->SetColumnSpan(0,col,2);
+      pTable->SetColumnSpan(0,col+1,SKIP_CELL);
+      (*pTable)(0,col) << _T("Creep");
+      (*pTable)(1,col++) << Sub2(_T("K"),_T("1"));
+      (*pTable)(1,col++) << Sub2(_T("K"),_T("2"));
 
-      pTable->SetColumnSpan(0,14,2);
-      pTable->SetColumnSpan(0,15,SKIP_CELL);
-      (*pTable)(0,14) << _T("Shrinkage");
-      (*pTable)(1,14) << Sub2(_T("K"),_T("1"));
-      (*pTable)(1,15) << Sub2(_T("K"),_T("2"));
+      pTable->SetColumnSpan(0,col,2);
+      pTable->SetColumnSpan(0,col+1,SKIP_CELL);
+      (*pTable)(0,col) << _T("Shrinkage");
+      (*pTable)(1,col++) << Sub2(_T("K"),_T("1"));
+      (*pTable)(1,col++) << Sub2(_T("K"),_T("2"));
+   }
+
+   if ( bLambda )
+   {
+      if ( bK1 )
+      {
+         pTable->SetRowSpan(0,col,2);
+         pTable->SetRowSpan(1,col,SKIP_CELL);
+         (*pTable)(0,col++) << symbol(lambda);
+      }
+      else
+      {
+         (*pTable)(row,col++) << symbol(lambda);
+      }
    }
 
 
@@ -856,6 +882,8 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
             Float64 Eci = pMaterials->GetSegmentEc(thisSegmentKey,initialIntervalIdx);
             Float64 Ec  = pMaterials->GetSegmentEc(thisSegmentKey,finalIntervalIdx);
 
+            Float64 lambda = pMaterials->GetSegmentLambda(thisSegmentKey);
+
             if ( nSegments == 1 )
             {
                (*pTable)(row,0) << _T("Girder ") << LABEL_GIRDER(gdrIdx);
@@ -865,7 +893,7 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
                (*pTable)(row,0) << _T("Segment ") << LABEL_SEGMENT(segIdx);
             }
 
-            write_lrfd_concrete_row(pDisplayUnits,pTable,fci,fc,Eci,Ec,pSegment->Material.Concrete,row);
+            write_lrfd_concrete_row(pDisplayUnits,pTable,fci,fc,Eci,Ec,lambda,pSegment->Material.Concrete,row);
             row++;
 
             const CClosureJointData* pClosure = pSegment->GetEndClosure();
@@ -885,13 +913,14 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
 
       Float64 fc = pMaterials->GetDeckFc(intervalIdx);
       Float64 Ec = pMaterials->GetDeckEc(intervalIdx);
+      Float64 lambda = pMaterials->GetDeckLambda();
 
       (*pTable)(row,0) << _T("Slab");
-      write_lrfd_concrete_row(pDisplayUnits,pTable,-1.0,fc,-1.0,Ec,pDeck->Concrete,row);
+      write_lrfd_concrete_row(pDisplayUnits,pTable,-1.0,fc,-1.0,Ec,lambda,pDeck->Concrete,row);
    }
 }
 
-void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,Float64 fci,Float64 fc,Float64 Eci,Float64 Ec,const CConcreteMaterial& concrete,RowIndexType row)
+void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,Float64 fci,Float64 fc,Float64 Eci,Float64 Ec,Float64 lambda,const CConcreteMaterial& concrete,RowIndexType row)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDisplayUnits->GetStressUnit(),       false );
@@ -899,10 +928,11 @@ void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,
    INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDisplayUnits->GetModEUnit(),         false );
 
    bool bK1 = (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion());
+   bool bLambda = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion());
 
    ColumnIndexType col = 1;
 
-   (*pTable)(row,col++) << matConcrete::GetTypeName( (matConcrete::Type)concrete.Type, true );
+   (*pTable)(row,col++) << lrfdConcreteUtil::GetTypeName( (matConcrete::Type)concrete.Type, true );
    if ( !concrete.bHasInitial )
    {
       (*pTable)(row,col++) << _T("-");
@@ -954,6 +984,11 @@ void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,
       (*pTable)(row,col++) << concrete.CreepK2;
       (*pTable)(row,col++) << concrete.ShrinkageK1;
       (*pTable)(row,col++) << concrete.ShrinkageK2;
+   }
+
+   if ( bLambda )
+   {
+      (*pTable)(row,col++) << lambda;
    }
 }
 
@@ -1097,7 +1132,7 @@ void write_aci209_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTabl
    INIT_UV_PROTOTYPE( rptTimeUnitValue,    time,    pDisplayUnits->GetWholeDaysUnit(),     false );
 
    ColumnIndexType col = 1;
-   (*pTable)(row,col++) << matConcrete::GetTypeName( (matConcrete::Type)concrete.Type, true );
+   (*pTable)(row,col++) << lrfdConcreteUtil::GetTypeName( (matConcrete::Type)concrete.Type, true );
    (*pTable)(row,col++) << stress.SetValue( fc28 );
    (*pTable)(row,col++) << modE.SetValue( Ec28 );
 
@@ -1252,7 +1287,7 @@ void write_cebfip_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTabl
    INIT_UV_PROTOTYPE( rptTimeUnitValue,    time,    pDisplayUnits->GetWholeDaysUnit(),     false );
 
    ColumnIndexType col = 1;
-   (*pTable)(row,col++) << matConcrete::GetTypeName( (matConcrete::Type)concrete.Type, true );
+   (*pTable)(row,col++) << lrfdConcreteUtil::GetTypeName( (matConcrete::Type)concrete.Type, true );
    (*pTable)(row,col++) << stress.SetValue( fc28 );
    (*pTable)(row,col++) << modE.SetValue( Ec28 );
 
@@ -2169,124 +2204,203 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
                row++;
             }
 
-            std::_tstring endoff;
-            if (harpedAreStraight)
+            GET_IFACE2(pBroker,IGirder,pGirder);
+            bool bSymmetric = pGirder->IsSymmetricSegment(thisSegmentKey);
+
+            GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+            std::vector<pgsPointOfInterest> vPoi;
+            int nHarpedAdjustments;
+            if ( harpedAreStraight )
             {
-               if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoLEGACY)
-               {    // Method used pre-version 6.0
-                  endoff = _T("Distance from top-most location in harped strand grid to top-most harped strand at girder ends");
-               }
-               else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoCGFROMTOP)
+               if ( bSymmetric )
                {
-                  endoff = _T("Distance from top of girder to CG of harped strands at girder ends");
-               }
-               else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoCGFROMBOTTOM)
-               {
-                  endoff = _T("Distance from bottom of girder to CG of harped strands at girder ends");
-               }
-               else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoTOP2TOP)
-               {
-                  endoff = _T("Distance from top of girder to top-most harped strand at girder ends");
-               }
-               else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoTOP2BOTTOM)
-               {
-                  endoff = _T("Distance from bottom of girder to top-most harped strand at girder ends");
-               }
-               else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoBOTTOM2BOTTOM)
-               {
-                  endoff = _T("Distance from bottom of girder to lowest harped strand at girder ends");
-               }
-               else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoECCENTRICITY)
-               {
-                  endoff = _T("Eccentricity of harped strand group at girder ends");
+                  nHarpedAdjustments = 1;
+                  vPoi = pPoi->GetPointsOfInterest(thisSegmentKey,POI_0L | POI_RELEASED_SEGMENT);
                }
                else
                {
-                  ATLASSERT(false);
+                  nHarpedAdjustments = 2;
+                  vPoi = pPoi->GetPointsOfInterest(thisSegmentKey,POI_0L | POI_10L | POI_RELEASED_SEGMENT);
                }
             }
             else
             {
-               if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoLEGACY)
-               {    // Method used pre-version 6.0
-                  endoff = _T("Distance from top-most location in harped strand grid to top-most harped strand at girder ends");
-               }
-               else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoCGFROMTOP)
+               if ( bSymmetric )
                {
-                  endoff = _T("Distance from top of girder to CG of harped strands at girder ends");
-               }
-               else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoCGFROMBOTTOM)
-               {
-                  endoff = _T("Distance from bottom of girder to CG of harped strands at girder ends");
-               }
-               else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoTOP2TOP)
-               {
-                  endoff = _T("Distance from top of girder to top-most harped strand at girder ends");
-               }
-               else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoTOP2BOTTOM)
-               {
-                  endoff = _T("Distance from bottom of girder to top-most harped strand at girder ends");
-               }
-               else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoBOTTOM2BOTTOM)
-               {
-                  endoff = _T("Distance from bottom of girder to lowest harped strand at girder ends");
-               }
-               else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoECCENTRICITY)
-               {
-                  endoff = _T("Eccentricity of harped strand group at girder ends");
+                  nHarpedAdjustments = 2;
+                  vPoi = pPoi->GetPointsOfInterest(thisSegmentKey,POI_0L | POI_RELEASED_SEGMENT);
+                  vPoi.push_back(pPoi->GetPointsOfInterest(thisSegmentKey,POI_HARPINGPOINT).front());
                }
                else
                {
-                  ATLASSERT(false);
+                  nHarpedAdjustments = 4;
+                  vPoi = pPoi->GetPointsOfInterest(thisSegmentKey,POI_0L | POI_10L | POI_RELEASED_SEGMENT);
+                  std::vector<pgsPointOfInterest> vHpPoi(pPoi->GetPointsOfInterest(thisSegmentKey,POI_HARPINGPOINT));
+                  vPoi.insert(vPoi.end(),vHpPoi.begin(),vHpPoi.end());
+                  std::sort(vPoi.begin(),vPoi.end());
                }
             }
 
-
-            (*pTable)(row,0) << endoff;
-            (*pTable)(row,1) << cmpdim.SetValue(pStrands->GetHarpStrandOffsetAtEnd());
-            row++;
-
-            if(!harpedAreStraight)
+            for ( int i = 0; i < nHarpedAdjustments; i++ )
             {
-               std::_tstring hpoff;
-               if( pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint()==hsoLEGACY)
-               {    // Method used pre-version 6.0
-                  hpoff = _T("Distance from lowest location in harped strand grid to lowest harped strand at harping points");
-               }
-               else if( pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint()==hsoCGFROMTOP)
+               std::_tstring endoff;
+               if ( harpedAreStraight )
                {
-                  hpoff = _T("Distance from top of girder to CG of harped strands at harping points");
-               }
-               else if( pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint()==hsoCGFROMBOTTOM)
-               {
-                  hpoff = _T("Distance from bottom of girder to CG of harped strands at harping points");
-               }
-               else if( pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint()==hsoTOP2TOP)
-               {
-                  hpoff = _T("Distance from top of girder to top-most harped strand at harping points");
-               }
-               else if( pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint()==hsoTOP2BOTTOM)
-               {
-                  hpoff = _T("Distance from bottom of girder to top-most harped strand at harping points");
-               }
-               else if( pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint()==hsoBOTTOM2BOTTOM)
-               {
-                  hpoff = _T("Distance from bottom of girder to lowest harped strand at harping points");
-               }
-               else if( pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint()==hsoECCENTRICITY)
-               {
-                  hpoff = _T("Eccentricity of harped strand group at harping points");
+                  std::_tstring side;
+                  if ( bSymmetric )
+                  {
+                     side = _T("");
+                  }
+                  else
+                  {
+                     side = (i == 0 ? _T("left ") : _T("right "));
+                  }
+
+                  if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoLEGACY)
+                  {    // Method used pre-version 6.0
+                     endoff = _T("Distance from top-most location in harped strand grid to top-most harped strand at ") + side + _T("end of girder");
+                  }
+                  else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoCGFROMTOP)
+                  {
+                     endoff = _T("Distance from top of girder to CG of harped strands at ") + side + _T("end of girder");
+                  }
+                  else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoCGFROMBOTTOM)
+                  {
+                     endoff = _T("Distance from bottom of girder to CG of harped strands at ") + side + _T("end of girder");
+                  }
+                  else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoTOP2TOP)
+                  {
+                     endoff = _T("Distance from top of girder to top-most harped strand at ") + side + _T("end of girder");
+                  }
+                  else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoTOP2BOTTOM)
+                  {
+                     endoff = _T("Distance from bottom of girder to top-most harped strand at ") + side + _T("end of girder");
+                  }
+                  else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoBOTTOM2BOTTOM)
+                  {
+                     endoff = _T("Distance from bottom of girder to lowest harped strand at ") + side + _T("end of girder");
+                  }
+                  else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoECCENTRICITY)
+                  {
+                     endoff = _T("Eccentricity of harped strand group at ") + side + _T("end of girder");
+                  }
+                  else
+                  {
+                     ATLASSERT(false);
+                  }
+
+                  (*pTable)(row,0) << endoff;
+                  if ( bSymmetric )
+                  {
+                     (*pTable)(row,1) << cmpdim.SetValue(pStrands->GetHarpStrandOffsetAtEnd(pgsTypes::metStart));
+                  }
+                  else
+                  {
+                     if ( i == 0 )
+                     {
+                        (*pTable)(row,1) << cmpdim.SetValue(pStrands->GetHarpStrandOffsetAtEnd(pgsTypes::metStart));
+                     }
+                     else
+                     {
+                        (*pTable)(row,1) << cmpdim.SetValue(pStrands->GetHarpStrandOffsetAtEnd(pgsTypes::metEnd));
+                     }
+                  }
+                  row++;
                }
                else
                {
-                  ATLASSERT(false);
+                  std::_tstring location;
+                  if ( bSymmetric )
+                  {
+                     location = (i == 0 ? _T("ends of girder") : _T("harp point"));
+                  }
+                  else
+                  {
+                     if ( i == 0 )
+                     {
+                        location = _T("left end of girder");
+                     }
+                     else if ( i == 1 )
+                     {
+                        location = _T("left harp point");
+                     }
+                     else if ( i == 2 )
+                     {
+                        location = _T("right harp point");
+                     }
+                     else
+                     {
+                        location = _T("right end of girder");
+                     }
+                  }
+
+                  if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoLEGACY)
+                  {    // Method used pre-version 6.0
+                     endoff = _T("Distance from top-most location in harped strand grid to top-most harped strand at ") + location;
+                  }
+                  else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoCGFROMTOP)
+                  {
+                     endoff = _T("Distance from top of girder to CG of harped strands at ") + location;
+                  }
+                  else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoCGFROMBOTTOM)
+                  {
+                     endoff = _T("Distance from bottom of girder to CG of harped strands at ") + location;
+                  }
+                  else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoTOP2TOP)
+                  {
+                     endoff = _T("Distance from top of girder to top-most harped strand at ") + location;
+                  }
+                  else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoTOP2BOTTOM)
+                  {
+                     endoff = _T("Distance from bottom of girder to top-most harped strand at ") + location;
+                  }
+                  else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoBOTTOM2BOTTOM)
+                  {
+                     endoff = _T("Distance from bottom of girder to lowest harped strand at ") + location;
+                  }
+                  else if( pStrands->GetHarpStrandOffsetMeasurementAtEnd()==hsoECCENTRICITY)
+                  {
+                     endoff = _T("Eccentricity of harped strand group at ") + location;
+                  }
+                  else
+                  {
+                     ATLASSERT(false);
+                  }
+
+                  (*pTable)(row,0) << endoff;
+                  if ( bSymmetric )
+                  {
+                     if ( i == 0 )
+                     {
+                        (*pTable)(row,1) << cmpdim.SetValue(pStrands->GetHarpStrandOffsetAtEnd(pgsTypes::metStart));
+                     }
+                     else
+                     {
+                        (*pTable)(row,1) << cmpdim.SetValue(pStrands->GetHarpStrandOffsetAtHarpPoint(pgsTypes::metStart));
+                     }
+                  }
+                  else
+                  {
+                     if ( i == 0 )
+                     {
+                        (*pTable)(row,1) << cmpdim.SetValue(pStrands->GetHarpStrandOffsetAtEnd(pgsTypes::metStart));
+                     }
+                     else if ( i == 1 )
+                     {
+                        (*pTable)(row,1) << cmpdim.SetValue(pStrands->GetHarpStrandOffsetAtHarpPoint(pgsTypes::metStart));
+                     }
+                     else if ( i == 2 )
+                     {
+                        (*pTable)(row,1) << cmpdim.SetValue(pStrands->GetHarpStrandOffsetAtHarpPoint(pgsTypes::metEnd));
+                     }
+                     else
+                     {
+                        (*pTable)(row,1) << cmpdim.SetValue(pStrands->GetHarpStrandOffsetAtEnd(pgsTypes::metEnd));
+                     }
+                  }
+                  row++;
                }
-
-               (*pTable)(row,0) << hpoff;
-               (*pTable)(row,1) << cmpdim.SetValue(pStrands->GetHarpStrandOffsetAtHarpPoint());
-               row++;
             }
-
             (*pTable)(row,0) << _T("Specified Release Strength ") << RPT_FCI;
             (*pTable)(row,1) << stress.SetValue( pSegmentData->GetSegmentMaterial(thisSegmentKey)->Concrete.Fci );
             row++;

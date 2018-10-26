@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9  10.50 KAPOLEI BRIDGE (  1      1      IV      *    50   0.6  270  24.98  14.98                                              10  56.0  6.0  7.700  9.200   4.919    -5.527    10349   0.660  1.000   4.878 -1.809 -0.124 -0.202 -2.135 223.03  321.11    1.75    5.00    5.00 
+ 66.67    9  10.50 KAPOLEI BRIDGE (  1      1      IV      *    50   0.6  270  24.98  14.98                                              10  56.0  6.0  7.700  9.200   4.917    -5.525    10350   0.660  1.000   4.878 -1.806 -0.124 -0.202 -2.132 223.03  321.29    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
@@ -9,7 +9,7 @@ Ultimate moment capacity (negative moment) check failed for Strength I Limit Sta
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9  10.50 KAPOLEI BRIDGE (  1      2      IV      *    49   0.6  270  25.00  15.73                                               9  56.0  6.0  7.500  9.100   4.804    -5.488    10147   0.585  1.000   4.609 -1.943 -0.133 -0.215 -2.291 214.37  307.03    1.75    5.00    5.00 
+ 66.67    9  10.50 KAPOLEI BRIDGE (  1      2      IV      *    49   0.6  270  25.00  15.73                                               9  56.0  6.0  7.500  9.100   4.803    -5.488    10147   0.585  1.000   4.609 -1.942 -0.133 -0.215 -2.290 214.37  307.06    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
@@ -18,7 +18,7 @@ Ultimate moment capacity (negative moment) check failed for Strength I Limit Sta
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9  10.50 KAPOLEI BRIDGE (  1      5      IV      *    50   0.6  270  24.98  14.98                                              10  56.0  6.0  7.500  8.900   4.962    -5.558    10171   0.585  1.000   4.852 -2.272 -0.163  0.000 -2.435 217.84  318.89    1.75    5.00    5.00 
+ 66.67    9  10.50 KAPOLEI BRIDGE (  1      5      IV      *    50   0.6  270  24.98  14.98                                              10  56.0  6.0  7.500  8.900   4.962    -5.558    10171   0.585  1.000   4.852 -2.273 -0.163  0.000 -2.436 217.84  318.87    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
@@ -27,7 +27,7 @@ Ultimate moment capacity (positive moment) check failed for Strength I Limit Sta
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9   7.92 KAPOLEI BRIDGE (  2      1      IV      *    49   0.6  270  25.00  15.73                                               9  56.0  6.0  7.500  9.200   4.697    -5.411    10125   0.660  1.000   4.948 -1.712 -0.136 -0.221 -2.068 213.39  320.66    1.75    5.00    5.00 
+ 66.67    9   7.92 KAPOLEI BRIDGE (  2      1      IV      *    49   0.6  270  25.00  15.73                                               9  56.0  6.0  7.500  9.200   4.694    -5.408    10126   0.660  1.000   4.948 -1.708 -0.136 -0.221 -2.065 213.39  320.86    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
@@ -54,7 +54,7 @@ Ultimate moment capacity (positive moment) check failed for Strength I Limit Sta
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9   7.92 KAPOLEI BRIDGE (  3      1      IV      *    45   0.6  270  25.23  17.23                                               7  56.0  5.0  7.200  8.800   4.395    -5.044     9477   0.660  1.000   4.488 -1.499 -0.118 -0.191 -1.808 186.87  292.91    1.75    5.00    5.00 
+ 66.67    9   7.92 KAPOLEI BRIDGE (  3      1      IV      *    45   0.6  270  25.43  15.34                                               9  56.0  6.0  6.900  8.500   4.375    -5.037     9447   0.660  1.000   4.550 -1.525 -0.119 -0.193 -1.838 192.03  302.89    1.75    5.00    5.00 
 
 
 The Specification Check was Successful

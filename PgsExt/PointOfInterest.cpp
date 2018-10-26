@@ -255,6 +255,19 @@ bool pgsPointOfInterest::operator==(const pgsPointOfInterest& rOther) const
 {
    if ( AtSamePlace(rOther) )
    {
+      if ( m_Attributes != rOther.m_Attributes )
+      {
+         return false;
+      }
+
+      for ( int i = 0; i < 6; i++ )
+      {
+         if ( m_RefAttributes[i] != rOther.m_RefAttributes[i] )
+         {
+            return false;
+         }
+      }
+
       return true;
    }
    else

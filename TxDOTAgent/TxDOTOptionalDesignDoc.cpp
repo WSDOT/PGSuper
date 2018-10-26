@@ -1460,7 +1460,8 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
       strands.SetStrandCount(pgsTypes::Harped,    nh);
 
       strands.SetHarpStrandOffsetMeasurementAtEnd(hsoTOP2BOTTOM);
-      strands.SetHarpStrandOffsetAtEnd(pOdGirderData->GetStrandTo());
+      strands.SetHarpStrandOffsetAtEnd(pgsTypes::metStart,pOdGirderData->GetStrandTo());
+      strands.SetHarpStrandOffsetAtEnd(pgsTypes::metEnd,  pOdGirderData->GetStrandTo());
    }
    else if (fill_type == CTxDOTOptionalDesignGirderData::sfHarpedRows)
    {

@@ -284,12 +284,12 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
       ConfigStrandFillVector confvec = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, pStrands->GetStrandCount(pgsTypes::Harped));
 
       // convert to absolute adjustment
-      Float64 adjustment = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(segmentKey, confvec, 
-                                                           pStrands->GetHarpStrandOffsetMeasurementAtEnd(), pStrands->GetHarpStrandOffsetAtEnd());
+      Float64 adjustment = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(segmentKey, pgsTypes::metStart, confvec, 
+                                                                           pStrands->GetHarpStrandOffsetMeasurementAtEnd(), pStrands->GetHarpStrandOffsetAtEnd(pgsTypes::metStart));
       (*p_table)(row,col++) << dim.SetValue(adjustment);
 
-      adjustment = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(segmentKey, confvec, 
-                                                                  pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint(), pStrands->GetHarpStrandOffsetAtHarpPoint());
+      adjustment = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(segmentKey, pgsTypes::metStart, confvec, 
+                                                                  pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint(), pStrands->GetHarpStrandOffsetAtHarpPoint(pgsTypes::metEnd));
       (*p_table)(row,col++) << dim.SetValue(adjustment);
 
       if ( bTempStrands )

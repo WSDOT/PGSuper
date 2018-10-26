@@ -71,8 +71,8 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
    rptParagraph* p = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
    *pChapter << p;
 
-   GET_IFACE2( pBroker, ILossParameters, pLossParams);
-   pgsTypes::LossMethod lossMethod = pLossParams->GetLossMethod();
+   //GET_IFACE2( pBroker, ILossParameters, pLossParams);
+   //pgsTypes::LossMethod lossMethod = pLossParams->GetLossMethod();
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -94,27 +94,27 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
          {
             CSegmentKey thisSegmentKey(grpIdx,gdrIdx,segIdx);
 
-            if ( lossMethod == pgsTypes::TIME_STEP )
-            {
-               IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
-               IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-               for (IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
-               {
-                  CStrandEccTable ecc_table;
-                  *p << ecc_table.Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits) << rptNewLine;
-               }
-            }
-            else
-            {
+            //if ( lossMethod == pgsTypes::TIME_STEP )
+            //{
+            //   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
+            //   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+            //   for (IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
+            //   {
+            //      CStrandEccTable ecc_table;
+            //      *p << ecc_table.Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits) << rptNewLine;
+            //   }
+            //}
+            //else
+            //{
                IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
                CStrandEccTable ecc_table;
                *p << ecc_table.Build(pBroker,thisSegmentKey,releaseIntervalIdx,pDisplayUnits) << rptNewLine;
-            }
+            //}
 
             p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
             *pChapter << p;
-            *p << _T("Eccentricities measured from neutral axis of non-composite section") << rptNewLine;
-            *p << _T("Positive values indicate strands are below the centroid") << rptNewLine;
+            *p << _T("Eccentricities measured from neutral axis of non-composite section based on material properties at time of prestress release") << rptNewLine;
+            *p << _T("Positive values indicate strands are below the neutral axis") << rptNewLine;
             *p << rptNewLine;
 
             //p = new rptParagraph;

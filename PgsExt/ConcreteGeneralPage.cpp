@@ -174,14 +174,27 @@ BOOL CConcreteGeneralPage::OnInitDialog()
    }
 
    CComboBox* pcbConcreteType = (CComboBox*)GetDlgItem(IDC_CONCRETE_TYPE);
-   int idx = pcbConcreteType->AddString(_T("Normal weight"));
-   pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::Normal);
+   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
+   {  
+      int idx = pcbConcreteType->AddString(_T("Normal weight"));
+      pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::Normal);
 
-   idx = pcbConcreteType->AddString(_T("All lightweight"));
-   pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::AllLightweight);
+      idx = pcbConcreteType->AddString(_T("All lightweight"));
+      pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::AllLightweight);
 
-   idx = pcbConcreteType->AddString(_T("Sand lightweight"));
-   pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::SandLightweight);
+      idx = pcbConcreteType->AddString(_T("Sand lightweight"));
+      pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::SandLightweight);
+   }
+   else
+   {
+      int idx = pcbConcreteType->AddString(_T("Normal weight"));
+      pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::Normal);
+
+      idx = pcbConcreteType->AddString(_T("Lightweight"));
+      pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::SandLightweight);
+
+      ATLASSERT( m_Type == pgsTypes::Normal || m_Type == pgsTypes::SandLightweight );
+   }
 
 	CPropertyPage::OnInitDialog();
 	

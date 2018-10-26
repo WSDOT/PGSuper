@@ -331,7 +331,7 @@ void CTaperedIBeamFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDTy
    }
 }
 
-void CTaperedIBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
+void CTaperedIBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, Float64 Hg, 
                                   IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
@@ -355,8 +355,7 @@ void CTaperedIBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dim
    GetDimensions(dimensions,d1,d2,d3,d4,d5,d6,d7s,d7e,w1,w2,w3,w4,t1,t2,c1);
 
    Float64 width = Min(t1,t2);
-   Float64 depth = d1 + d2 + d3 + d4 + d5 + d6 + d7s;
-#pragma Reminder("*** Review strand mover for beam with variable depth")
+   Float64 depth = (Hg < 0 ? d1 + d2 + d3 + d4 + d5 + d6 + d7s : Hg);
 
    harp_rect->put_Width(width);
    harp_rect->put_Height(depth);
@@ -380,7 +379,7 @@ void CTaperedIBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dim
    Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
    Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
 
-   hr = configurer->SetHarpedStrandOffsetBounds(0, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
+   hr = configurer->SetHarpedStrandOffsetBounds(0, depth, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
 
    hr = sm.CopyTo(strandMover);
@@ -634,6 +633,32 @@ bool CTaperedIBeamFactory::IsPrismatic(IBroker* pBroker,const CSegmentKey& segme
    }
 
    return bPrismatic;
+}
+
+bool CTaperedIBeamFactory::IsSymmetric(IBroker* pBroker,const CSegmentKey& segmentKey)
+{
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+   const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
+   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
+
+   Float64 d7s = GetDimension(dimensions,_T("D7_Start"));
+   Float64 d7e = GetDimension(dimensions,_T("D7_End"));
+
+   bool bSymmetric = true;
+   if ( IsEqual(d7s,d7e) )
+   {
+      // symmetric
+      bSymmetric = true;
+   }
+   else
+   {
+      // non-symmetric
+      bSymmetric = false;
+   }
+
+   return bSymmetric;
 }
 
 Float64 CTaperedIBeamFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey)

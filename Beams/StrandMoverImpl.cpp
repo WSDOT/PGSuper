@@ -58,11 +58,19 @@ HRESULT CStrandMoverImpl::FinalConstruct()
 
 STDMETHODIMP CStrandMoverImpl::get_TopElevation(Float64* topElevation)
 {
+   CHECK_RETVAL(topElevation);
    *topElevation = m_TopElevation;
    return S_OK;
 }
 
-STDMETHODIMP CStrandMoverImpl::get_HpStrandElevationBoundaries(/*[out]*/Float64* bottomMin,/*[out]*/Float64* topMax)
+STDMETHODIMP CStrandMoverImpl::get_SectionHeight(Float64* pHeight)
+{
+   CHECK_RETVAL(pHeight);
+   *pHeight = m_Height;
+   return S_OK;
+}
+
+STDMETHODIMP CStrandMoverImpl::get_HpStrandElevationBoundaries(/*[in]*/EndType endType,/*[out]*/Float64* bottomMin,/*[out]*/Float64* topMax)
 {
    CHECK_RETVAL(bottomMin);
    CHECK_RETVAL(topMax);
@@ -75,14 +83,14 @@ STDMETHODIMP CStrandMoverImpl::get_HpStrandElevationBoundaries(/*[out]*/Float64*
    }
    else
    {
-      *bottomMin = m_HpBotElevationBoundary;
-      *topMax    = m_HpTopElevationBoundary;
+      *bottomMin = m_HpBotElevationBoundary[endType];
+      *topMax    = m_HpTopElevationBoundary[endType];
    }
 
    return S_OK;
 }
 
-STDMETHODIMP CStrandMoverImpl::get_EndStrandElevationBoundaries(/*[out]*/Float64* bottomMin,/*[out]*/Float64* topMax)
+STDMETHODIMP CStrandMoverImpl::get_EndStrandElevationBoundaries(/*[in]*/EndType endType,/*[out]*/Float64* bottomMin,/*[out]*/Float64* topMax)
 {
    CHECK_RETVAL(bottomMin);
    CHECK_RETVAL(topMax);
@@ -95,8 +103,8 @@ STDMETHODIMP CStrandMoverImpl::get_EndStrandElevationBoundaries(/*[out]*/Float64
    }
    else
    {
-      *bottomMin = m_EndBotElevationBoundary;
-      *topMax    = m_EndTopElevationBoundary;
+      *bottomMin = m_EndBotElevationBoundary[endType];
+      *topMax    = m_EndTopElevationBoundary[endType];
    }
 
    return S_OK;
@@ -114,27 +122,27 @@ STDMETHODIMP CStrandMoverImpl::get_StrandIncrements(/*[out]*/Float64* endIncreme
    return S_OK;
 }
 
-STDMETHODIMP CStrandMoverImpl::TestHpStrandLocation(/*[in]*/Float64 originalX, /*[in]*/Float64 originalY, /*[in]*/Float64 Yoffset, /*[out,retval]*/VARIANT_BOOL* isWithin )
+STDMETHODIMP CStrandMoverImpl::TestHpStrandLocation(/*[in]*/EndType endType,/*[in]*/Float64 Hg,/*[in]*/Float64 originalX, /*[in]*/Float64 originalY, /*[in]*/Float64 Yoffset, /*[out,retval]*/VARIANT_BOOL* isWithin )
 {
    CHECK_RETVAL(isWithin);
 
    Float64 newx, newy;
 
    // use translate function to make test. Could be more stringent in future.
-   HRESULT hr = TranslateStrand(originalX, originalY, Yoffset, &newx, &newy);
+   HRESULT hr = TranslateHpStrand(endType,originalX, originalY, Yoffset, &newx, &newy);
    *isWithin = SUCCEEDED(hr) ? VARIANT_TRUE:VARIANT_FALSE;
 
    // if strands are not adjustable, use entire height
    if (m_HpIncrement < 0.0)
    {
-      if ( newy < 0.0 || m_TopElevation+TOLERANCE < newy)
+      if ( newy < -Hg || m_TopElevation+TOLERANCE < newy)
       {
          *isWithin = VARIANT_FALSE;
       }
    }
    else
    {
-      if ( newy < m_HpBotElevationBoundary-TOLERANCE || m_HpTopElevationBoundary+TOLERANCE < newy )
+      if ( newy < m_HpBotElevationBoundary[endType]-TOLERANCE || m_HpTopElevationBoundary[endType]+TOLERANCE < newy )
       {
          *isWithin = VARIANT_FALSE;
       }
@@ -143,27 +151,27 @@ STDMETHODIMP CStrandMoverImpl::TestHpStrandLocation(/*[in]*/Float64 originalX, /
    return S_OK;
 }
 
-STDMETHODIMP CStrandMoverImpl::TestEndStrandLocation(/*[in]*/Float64 originalX, /*[in]*/Float64 originalY, /*[in]*/Float64 Yoffset, /*[out,retval]*/VARIANT_BOOL* isWithin )
+STDMETHODIMP CStrandMoverImpl::TestEndStrandLocation(/*[in]*/EndType endType,/*[in]*/Float64 Hg,/*[in]*/Float64 originalX, /*[in]*/Float64 originalY, /*[in]*/Float64 Yoffset, /*[out,retval]*/VARIANT_BOOL* isWithin )
 {
    CHECK_RETVAL(isWithin);
 
    Float64 newx, newy;
 
    // use translate function to make test. Could be more stringent in future.
-   HRESULT hr = TranslateStrand(originalX, originalY, Yoffset, &newx, &newy);
+   HRESULT hr = TranslateEndStrand(endType,originalX, originalY, Yoffset, &newx, &newy);
    *isWithin = SUCCEEDED(hr) ? VARIANT_TRUE:VARIANT_FALSE;
 
    // if strands are not adjustable, use entire height
    if (m_EndIncrement < 0.0)
    {
-      if ( newy < 0.0 || m_TopElevation+TOLERANCE < newy )
+      if ( newy < -Hg || m_TopElevation+TOLERANCE < newy )
       {
          *isWithin = VARIANT_FALSE;
       }
    }
    else
    {
-      if ( newy < m_EndBotElevationBoundary-TOLERANCE || m_EndTopElevationBoundary+TOLERANCE < newy)
+      if ( newy < m_EndBotElevationBoundary[endType]-TOLERANCE || m_EndTopElevationBoundary[endType]+TOLERANCE < newy)
       {
          *isWithin = VARIANT_FALSE;
       }
@@ -172,7 +180,39 @@ STDMETHODIMP CStrandMoverImpl::TestEndStrandLocation(/*[in]*/Float64 originalX, 
 }
 
 
-STDMETHODIMP CStrandMoverImpl::TranslateStrand(/*[in]*/Float64 originalX, /*[in]*/Float64 originalY, /*[in]*/Float64 Yoffset,
+STDMETHODIMP CStrandMoverImpl::TranslateHpStrand(/*[in]*/EndType endType,/*[in]*/Float64 originalX, /*[in]*/Float64 originalY, /*[in]*/Float64 Yoffset,
+                                               /*[out]*/Float64* newX, /*[out]*/Float64* newY )
+{
+   CHECK_RETVAL(newX);
+   CHECK_RETVAL(newY);
+
+   bool found=false;
+   m_TestPoint->Move(originalX,originalY);
+
+   Float64 arc_slope=0.0;
+
+   for (RegionIterator it=m_Regions.begin(); it!=m_Regions.end(); it++)
+   {
+      HarpRegion& region = *it;
+      
+      VARIANT_BOOL in_shape;
+      region.pShape->PointInShape(m_TestPoint, &in_shape);
+
+      if (in_shape!=VARIANT_FALSE)
+      {
+         arc_slope = region.dArcSlope;
+         found = true;
+         break;
+      }
+   }
+
+   *newX = originalX + Yoffset*arc_slope;
+   *newY = originalY + Yoffset;
+
+   return found ? S_OK:E_INVALIDARG;
+}
+
+STDMETHODIMP CStrandMoverImpl::TranslateEndStrand(/*[in]*/EndType end,/*[in]*/Float64 originalX, /*[in]*/Float64 originalY, /*[in]*/Float64 Yoffset,
                                                /*[out]*/Float64* newX, /*[out]*/Float64* newY )
 {
    CHECK_RETVAL(newX);
@@ -206,15 +246,23 @@ STDMETHODIMP CStrandMoverImpl::TranslateStrand(/*[in]*/Float64 originalX, /*[in]
 
 
 // IConfigureStrandMover
-STDMETHODIMP CStrandMoverImpl::SetHarpedStrandOffsetBounds(Float64 topElevation, 
-                                          Float64 topHpElevationBoundary,Float64 botHpElevationBoundary,
+STDMETHODIMP CStrandMoverImpl::SetHarpedStrandOffsetBounds(Float64 topElevation, Float64 height,
+                                          Float64 topStartElevationBoundary,Float64 botStartElevationBoundary,
+                                          Float64 topHp1ElevationBoundary,Float64 botHp1ElevationBoundary,
+                                          Float64 topHp2ElevationBoundary,Float64 botHp2ElevationBoundary,
                                           Float64 topEndElevationBoundary,Float64 botEndElevationBoundary,
                                           Float64 endIncrement,Float64 hpIncrement)
 {
-   if (topElevation < topHpElevationBoundary  ||  // elevation boundaries must be below the top of girder elevation
+   if (topElevation < topStartElevationBoundary  ||  // elevation boundaries must be below the top of girder elevation
+       topElevation < topHp1ElevationBoundary ||
+       topElevation < topHp2ElevationBoundary ||
        topElevation < topEndElevationBoundary ||
-       0 < topHpElevationBoundary || // elevation boundaries must be < zero because top of girder is at elevation 0
-       0 < botHpElevationBoundary ||
+       0 < topStartElevationBoundary || // elevation boundaries must be < zero because top of girder is at elevation 0
+       0 < botStartElevationBoundary ||
+       0 < topHp1ElevationBoundary ||
+       0 < botHp1ElevationBoundary ||
+       0 < topHp2ElevationBoundary ||
+       0 < botHp2ElevationBoundary ||
        0 < topEndElevationBoundary ||
        0 < botEndElevationBoundary )
    {
@@ -223,10 +271,20 @@ STDMETHODIMP CStrandMoverImpl::SetHarpedStrandOffsetBounds(Float64 topElevation,
    }
 
    m_TopElevation            = topElevation;
-   m_HpTopElevationBoundary  = topHpElevationBoundary;
-   m_HpBotElevationBoundary  = botHpElevationBoundary;
-   m_EndTopElevationBoundary = topEndElevationBoundary;
-   m_EndBotElevationBoundary = botEndElevationBoundary;
+   m_Height = height;
+
+   m_EndTopElevationBoundary[etStart] = topStartElevationBoundary;
+   m_EndBotElevationBoundary[etStart] = botStartElevationBoundary;
+
+   m_HpTopElevationBoundary[etStart]  = topHp1ElevationBoundary;
+   m_HpBotElevationBoundary[etStart]  = botHp1ElevationBoundary;
+
+   m_HpTopElevationBoundary[etEnd]  = topHp2ElevationBoundary;
+   m_HpBotElevationBoundary[etEnd]  = botHp2ElevationBoundary;
+
+   m_EndTopElevationBoundary[etEnd] = topEndElevationBoundary;
+   m_EndBotElevationBoundary[etEnd] = botEndElevationBoundary;
+
    m_EndIncrement            = endIncrement;
    m_HpIncrement             = hpIncrement;
 

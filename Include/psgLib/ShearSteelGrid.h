@@ -79,7 +79,7 @@ public:
    // get a cell value whether is is selected or not
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
    // get data for a row
-   bool GetRowData(ROWCOL nRow, CShearZoneData2* pz);
+   bool GetRowData(ROWCOL nRow, ROWCOL numRows, CShearZoneData2* pz);
 
    // fill grid with data
    void FillGrid(const CShearData2::ShearZoneVec& rvec, bool isSymmetrical);

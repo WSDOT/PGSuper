@@ -1535,8 +1535,8 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, I
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
       const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
+      Float64 running_segment_length = 0; // sum of the segment lengths from segIdx = 0 to current segment
       SegmentIndexType nSegments = pGirder->GetSegmentCount();
-      Float64 running_segment_length = 0;
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
          CSegmentKey segmentKey(grpIdx,girderKey.girderIndex,segIdx);
@@ -1549,12 +1549,9 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, I
          Float64 start_offset          = start_brg_offset - start_end_distance;
          Float64 segment_layout_length = pBridge->GetSegmentLayoutLength(segmentKey);
 
-         if ( !(grpIdx == 0 && segIdx == 0) )
-         {
-            // running_segment_length goes to the CL of the closure... adjust the distance
-            // so that it goes to the left face of the current segment
-            running_segment_length += start_offset;
-         }
+         // running_segment_length goes to the CL of the closure... adjust the distance
+         // so that it goes to the left face of the current segment
+         running_segment_length += start_offset;
 
          const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
          SegmentIDType segID = pSegment->GetID();
@@ -2923,8 +2920,8 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, IB
                   p1.CoCreateInstance(CLSID_Point2d);
                   p2.CoCreateInstance(CLSID_Point2d);
 
-                  p1->Move(x + running_segment_length,bottom);
-                  p2->Move(x + running_segment_length,top);
+                  p1->Move(x + running_segment_length + group_offset,bottom);
+                  p2->Move(x + running_segment_length + group_offset,top);
 
                   CComPtr<iPointDisplayObject> doPnt1, doPnt2;
                   ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt1);

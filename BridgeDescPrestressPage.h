@@ -87,6 +87,7 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CGirderDescPrestressPage)
 	virtual BOOL OnInitDialog();
+	virtual BOOL OnSetActive();
 	afx_msg void OnNumStraightStrandsChanged(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnNumHarpedStrandsChanged(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnNumTempStrandsChanged(NMHDR* pNMHDR, LRESULT* pResult);

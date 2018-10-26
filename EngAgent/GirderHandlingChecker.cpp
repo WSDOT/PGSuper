@@ -175,7 +175,7 @@ void pgsGirderHandlingChecker::ComputeMoments(IBroker* pBroker, pgsGirderModelFa
       {
          ATLASSERT(found_mid == false);
          // poi should be at the half-way point between the supports
-         ATLASSERT( IsEqual(poi.GetDistFromStart(),leftOH + (glen-leftOH-rightOH)/2) );
+         ATLASSERT( IsEqual(poi.GetDistFromStart(),leftOH + (glen-leftOH-rightOH)/2,0.001) );
 
          hr = results->ComputePOIDeflections(lcid,femPoiID,lotMember,&dx,&dy,&rz);
          ATLASSERT(SUCCEEDED(hr));

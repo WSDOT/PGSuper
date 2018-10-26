@@ -299,7 +299,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				RegisterOutput="true"
-				AdditionalDependencies="xerces-c_3D.lib;htmlhelp.lib"
+				AdditionalDependencies="xerces-c_3D.lib htmlhelp.lib"
 				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"

@@ -2267,8 +2267,8 @@ bool CTestAgentImp::RunDesignTest(std::_tofstream& resultsFile, std::_tofstream&
    resultsFile<<bridgeId<<", "<<pid<<", 124006, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pArtifact->GetPjackTempStrands(), unitMeasure::Newton)) <<   ", 102, "<<gdrIdx<<std::endl;
    resultsFile<<bridgeId<<", "<<pid<<", 124007, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pArtifact->GetPjackHarpedStrands(), unitMeasure::Newton)) <<   ", 102, "<<gdrIdx<<std::endl;
 
-   resultsFile<<bridgeId<<", "<<pid<<", 124008, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pArtifact->GetHarpStrandOffsetHp(), unitMeasure::Millimeter)) <<   ", 102, "<<gdrIdx<<std::endl;
-   resultsFile<<bridgeId<<", "<<pid<<", 124009, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pArtifact->GetHarpStrandOffsetEnd(), unitMeasure::Millimeter)) <<   ", 102, "<<gdrIdx<<std::endl;
+   resultsFile<<bridgeId<<", "<<pid<<", 124008, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pArtifact->GetHarpStrandOffsetHp(pgsTypes::metStart), unitMeasure::Millimeter)) <<   ", 102, "<<gdrIdx<<std::endl;
+   resultsFile<<bridgeId<<", "<<pid<<", 124009, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pArtifact->GetHarpStrandOffsetEnd(pgsTypes::metEnd), unitMeasure::Millimeter)) <<   ", 102, "<<gdrIdx<<std::endl;
 
    resultsFile<<bridgeId<<", "<<pid<<", 124010, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pArtifact->GetReleaseStrength(), unitMeasure::MPa)) <<   ", 102, "<<gdrIdx<<std::endl;
    resultsFile<<bridgeId<<", "<<pid<<", 124011, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pArtifact->GetConcrete().GetFc(), unitMeasure::MPa)) <<   ", 102, "<<gdrIdx<<std::endl;

@@ -125,7 +125,7 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
 
          const pgsStirrupDetailArtifact* pArtifact = psArtifact->GetStirrupDetailArtifact();
 
-         (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+         (*table)(row,0) << location.SetValue( POI_SPAN, poi );
          (*table)(row,1) << lrfdRebarPool::GetBarSize(pArtifact->GetBarSize()).c_str();
 
          Float64 s = pArtifact->GetS();

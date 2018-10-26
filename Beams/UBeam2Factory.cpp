@@ -283,7 +283,7 @@ void CUBeam2Factory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType sta
    }
 }
 
-void CUBeam2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
+void CUBeam2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
@@ -299,8 +299,8 @@ void CUBeam2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimension
    beam->get_T(&t);
    Float64 slope;
    beam->get_Slope(1, &slope);
-   Float64 height;
-   beam->get_Height(&height);
+   Float64 depth;
+   beam->get_Height(&depth);
    Float64 w1;
    beam->get_W1(&w1);
 
@@ -313,9 +313,9 @@ void CUBeam2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimension
 
    // travel counter clockwise around right web;
    Float64 x1 = w1/2.0;
-   Float64 y1 = -height;
+   Float64 y1 = -depth;
 
-   Float64 x2 = x1 + height * arc_slope;
+   Float64 x2 = x1 + depth * arc_slope;
    Float64 y2 = 0;
 
    Float64 x3 = x2 - t_x_project;
@@ -356,12 +356,12 @@ void CUBeam2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimension
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb  = hpTopFace     == IBeamFactory::BeamBottom ? hpTopLimit     - height : -hpTopLimit;
-   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamBottom ? hpBottomLimit  - height : -hpBottomLimit;
-   Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - height : -endTopLimit;
-   Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - height : -endBottomLimit;
+   Float64 hptb  = hpTopFace     == IBeamFactory::BeamBottom ? hpTopLimit     - depth : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamBottom ? hpBottomLimit  - depth : -hpBottomLimit;
+   Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
+   Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
 
-   hr = configurer->SetHarpedStrandOffsetBounds(0, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
+   hr = configurer->SetHarpedStrandOffsetBounds(0, depth, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
 
    hr = sm.CopyTo(strandMover);
@@ -604,6 +604,11 @@ bool CUBeam2Factory::IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey)
    Float64 endBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
 
    return IsZero(endBlockLength) ? true : false;
+}
+
+bool CUBeam2Factory::IsSymmetric(IBroker* pBroker,const CSegmentKey& segmentKey)
+{
+   return true;
 }
 
 Float64 CUBeam2Factory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey)

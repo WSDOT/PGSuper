@@ -91,7 +91,7 @@ CSectionViewDialog::CSectionViewDialog(const GirderLibraryEntry* pEntry,bool isE
 // only use strandmover view for debugging
 #ifdef _DEBUG
    CComPtr<IStrandMover> strand_mover;
-   pFactory->CreateStrandMover(dimensions, 
+   pFactory->CreateStrandMover(dimensions, -1,
                                IBeamFactory::BeamTop, 0.0, IBeamFactory::BeamBottom, 0.0,
                                IBeamFactory::BeamTop, 0.0, IBeamFactory::BeamBottom, 0.0, 
                                0.0, 0.0, &strand_mover);

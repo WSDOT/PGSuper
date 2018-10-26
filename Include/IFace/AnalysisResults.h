@@ -542,6 +542,7 @@ DEFINE_GUID(IID_IPretensionStresses,
 interface IPretensionStresses : IUnknown
 {
    virtual Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,bool bIncludeLiveLoad) = 0;
+   virtual void GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation topLoc,pgsTypes::StressLocation botLocation,bool bIncludeLiveLoad,Float64* pfTop,Float64* pfBot) = 0;
    virtual std::vector<Float64> GetStress(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation loc,bool bIncludeLiveLoad) = 0;
    virtual Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,Float64 P,Float64 e) = 0;
    virtual Float64 GetStressPerStrand(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::StressLocation loc) = 0;
@@ -771,10 +772,10 @@ DEFINE_GUID(IID_IPrecompressedTensileZone,
 interface IPrecompressedTensileZone : IUnknown
 {
    // Returns true of the specified location is in the precompressed tensile zone
-   virtual bool IsInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,pgsTypes::StressLocation stressLocation) = 0;
+   virtual void IsInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,pgsTypes::StressLocation topStressLocation,pgsTypes::StressLocation botStressLocation,bool* pbTopPTZ,bool* pbBotPTZ) = 0;
 
    // Returns true of the specified location is in the precompressed tensile zone
-   virtual bool IsInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,pgsTypes::StressLocation stressLocation,const GDRCONFIG* pConfig) = 0;
+   virtual void IsInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,pgsTypes::StressLocation topStressLocation,pgsTypes::StressLocation botStressLocation,const GDRCONFIG* pConfig,bool* pbTopPTZ,bool* pbBotPTZ) = 0;
 
    // Returns true if the deck is "precompressed". The deck is considered precompressed if
    // it experiences direct stresses due to post-tensioning applied after the deck

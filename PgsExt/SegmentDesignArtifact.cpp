@@ -293,24 +293,24 @@ bool pgsSegmentDesignArtifact::GetUsedMaxPjackHarpedStrands() const
    return m_PjHUsedMax;
 }
 
-void pgsSegmentDesignArtifact::SetHarpStrandOffsetEnd(Float64 oe)
+void pgsSegmentDesignArtifact::SetHarpStrandOffsetEnd(pgsTypes::MemberEndType endType,Float64 oe)
 {
-   m_HarpStrandOffsetEnd = oe;
+   m_HarpStrandOffsetEnd[endType] = oe;
 }
 
-Float64 pgsSegmentDesignArtifact::GetHarpStrandOffsetEnd() const
+Float64 pgsSegmentDesignArtifact::GetHarpStrandOffsetEnd(pgsTypes::MemberEndType endType) const
 {
-   return m_HarpStrandOffsetEnd;
+   return m_HarpStrandOffsetEnd[endType];
 }
 
-void pgsSegmentDesignArtifact::SetHarpStrandOffsetHp(Float64 ohp)
+void pgsSegmentDesignArtifact::SetHarpStrandOffsetHp(pgsTypes::MemberEndType endType,Float64 ohp)
 {
-   m_HarpStrandOffsetHp = ohp;
+   m_HarpStrandOffsetHp[endType] = ohp;
 }
 
-Float64 pgsSegmentDesignArtifact::GetHarpStrandOffsetHp() const
+Float64 pgsSegmentDesignArtifact::GetHarpStrandOffsetHp(pgsTypes::MemberEndType endType) const
 {
-   return m_HarpStrandOffsetHp;
+   return m_HarpStrandOffsetHp[endType];
 }
 
 DebondConfigCollection pgsSegmentDesignArtifact::GetStraightStrandDebondInfo() const
@@ -441,8 +441,11 @@ GDRCONFIG pgsSegmentDesignArtifact::GetSegmentConfiguration() const
    config.PrestressConfig.Pjack[pgsTypes::Harped]    = GetPjackHarpedStrands();
    config.PrestressConfig.Pjack[pgsTypes::Temporary] = GetPjackTempStrands();
 
-   config.PrestressConfig.EndOffset = GetHarpStrandOffsetEnd();
-   config.PrestressConfig.HpOffset  = GetHarpStrandOffsetHp();
+   for ( int i = 0; i < 2; i++ )
+   {
+      config.PrestressConfig.EndOffset[i] = GetHarpStrandOffsetEnd((pgsTypes::MemberEndType)i);
+      config.PrestressConfig.HpOffset[i]  = GetHarpStrandOffsetHp((pgsTypes::MemberEndType)i);
+   }
 
    config.PrestressConfig.AdjustableStrandType = GetAdjustableStrandType();
    
@@ -799,8 +802,12 @@ void pgsSegmentDesignArtifact::MakeCopy(const pgsSegmentDesignArtifact& rOther)
    m_ShipLocLeft         = rOther.m_ShipLocLeft;
    m_ShipLocRight        = rOther.m_ShipLocRight;
 
-   m_HarpStrandOffsetEnd = rOther.m_HarpStrandOffsetEnd;
-   m_HarpStrandOffsetHp  = rOther.m_HarpStrandOffsetHp;
+   for ( int i = 0; i < 2; i++ )
+   {
+      m_HarpStrandOffsetEnd[i] = rOther.m_HarpStrandOffsetEnd[i];
+      m_HarpStrandOffsetHp[i]  = rOther.m_HarpStrandOffsetHp[i];
+   }
+
    m_Fci                 = rOther.m_Fci;
    m_SsDebondInfo        = rOther.m_SsDebondInfo;
    m_SlabOffset[pgsTypes::metStart] = rOther.m_SlabOffset[pgsTypes::metStart];
@@ -854,8 +861,13 @@ void pgsSegmentDesignArtifact::Init()
    m_PjSUsedMax          = false;
    m_PjHUsedMax          = false;
    m_PjTUsedMax          = false;
-   m_HarpStrandOffsetEnd = 0;
-   m_HarpStrandOffsetHp  = 0;
+
+   for ( int i = 0; i < 2; i++ )
+   {
+      m_HarpStrandOffsetEnd[i] = 0;
+      m_HarpStrandOffsetHp[i]  = 0;
+   }
+
    m_SsDebondInfo.clear();
 
    m_Fci                 = 0;
@@ -924,22 +936,30 @@ void pgsSegmentDesignArtifact::ModSegmentDataForFlexureDesign(IBroker* pBroker, 
          pSegmentData->Strands.SetHarpStrandOffsetMeasurementAtEnd(hsoBOTTOM2BOTTOM);
       }
 
-      pSegmentData->Strands.SetHarpStrandOffsetAtEnd(pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(gdrName.c_str(), adjType,
-                                                                                          HgStart, HgHp1, HgHp2, HgEnd,
-                                                                                          harpfillvec, 
-                                                                                          pSegmentData->Strands.GetHarpStrandOffsetMeasurementAtEnd(), 
-                                                                                          GetHarpStrandOffsetEnd()));
+      for ( int i = 0; i < 2; i++ )
+      {
+         pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+         pSegmentData->Strands.SetHarpStrandOffsetAtEnd(endType,pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(gdrName.c_str(), endType, adjType,
+                                                                                             HgStart, HgHp1, HgHp2, HgEnd,
+                                                                                             harpfillvec, 
+                                                                                             pSegmentData->Strands.GetHarpStrandOffsetMeasurementAtEnd(), 
+                                                                                             GetHarpStrandOffsetEnd(endType)));
+      }
 
       if (hsoLEGACY == pSegmentData->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint())
       {
          pSegmentData->Strands.SetHarpStrandOffsetMeasurementAtHarpPoint(hsoBOTTOM2BOTTOM);
       }
 
-      pSegmentData->Strands.SetHarpStrandOffsetAtHarpPoint(pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(gdrName.c_str(), adjType,
-                                                                                        HgStart, HgHp1, HgHp2, HgEnd,
-                                                                                        harpfillvec, 
-                                                                                        pSegmentData->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(), 
-                                                                                        GetHarpStrandOffsetHp()));
+      for ( int i = 0; i < 2; i++ )
+      {
+         pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+         pSegmentData->Strands.SetHarpStrandOffsetAtHarpPoint(endType,pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(gdrName.c_str(), endType, adjType,
+                                                                                           HgStart, HgHp1, HgHp2, HgEnd,
+                                                                                           harpfillvec, 
+                                                                                           pSegmentData->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(), 
+                                                                                           GetHarpStrandOffsetHp(endType)));
+      }
 
       // See if strand design data fits in grid
       bool fills_grid=false;
@@ -994,17 +1014,21 @@ void pgsSegmentDesignArtifact::ModSegmentDataForFlexureDesign(IBroker* pBroker, 
       // convert them to the measurement basis that the CGirderData object is using
       ConfigStrandFillVector harpfillvec = GetRaisedAdjustableStrands();
          
-      pSegmentData->Strands.SetHarpStrandOffsetAtEnd(pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(gdrName.c_str(), pgsTypes::asStraight,
-                                                                                          HgStart, HgHp1, HgHp2, HgEnd,
-                                                                                          harpfillvec, 
-                                                                                          pSegmentData->Strands.GetHarpStrandOffsetMeasurementAtEnd(), 
-                                                                                          GetHarpStrandOffsetEnd()));
+      for ( int i = 0; i < 2; i++ )
+      {
+         pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+         pSegmentData->Strands.SetHarpStrandOffsetAtEnd(endType,pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(gdrName.c_str(), endType, pgsTypes::asStraight,
+                                                                                             HgStart, HgHp1, HgHp2, HgEnd,
+                                                                                             harpfillvec, 
+                                                                                             pSegmentData->Strands.GetHarpStrandOffsetMeasurementAtEnd(), 
+                                                                                             GetHarpStrandOffsetEnd(endType)));
 
-      pSegmentData->Strands.SetHarpStrandOffsetAtHarpPoint(pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(gdrName.c_str(), pgsTypes::asStraight,
-                                                                                        HgStart, HgHp1, HgHp2, HgEnd,
-                                                                                        harpfillvec, 
-                                                                                        pSegmentData->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(), 
-                                                                                        GetHarpStrandOffsetHp()));
+         pSegmentData->Strands.SetHarpStrandOffsetAtHarpPoint(endType,pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(gdrName.c_str(), endType, pgsTypes::asStraight,
+                                                                                           HgStart, HgHp1, HgHp2, HgEnd,
+                                                                                           harpfillvec, 
+                                                                                           pSegmentData->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(), 
+                                                                                           GetHarpStrandOffsetHp(endType)));
+      }
    }
 
    pSegmentData->Strands.SetPjack(pgsTypes::Harped,             GetPjackHarpedStrands());

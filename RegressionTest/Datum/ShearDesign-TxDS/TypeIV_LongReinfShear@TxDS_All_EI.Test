@@ -16,10 +16,9 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                   1      4     LongR         54   1/2  270  19.12  11.34                                              10  52.0 10.0  5.900  7.200   4.955    -4.832     7622   0.631  0.814   3.874 -2.353 -0.184 -0.119 -2.656 152.86  273.46    1.00    1.00    1.00 
+ 44.00    6   8.00                   1      4     LongR         54   1/2  270  19.12  11.71                                              10  50.0 10.0  6.000  7.300   4.964    -4.836     7624   0.631  0.814   3.883 -2.337 -0.183 -0.118 -2.638 151.74  270.24    1.00    1.00    1.00 
 
 
-The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+The Specification Check was Successful
 
 

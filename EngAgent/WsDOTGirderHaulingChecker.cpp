@@ -505,7 +505,7 @@ void pgsWsdotGirderHaulingChecker::PrepareHaulingAnalysisArtifact(const CSegment
    pArtifact->SetSupportPlacementTolerance(pSegmentHaulingSpecCriteria->GetHaulingSupportPlacementTolerance());
 
    pArtifact->SetConcreteStrength(Fc);
-   pArtifact->SetModRupture( pSegmentHaulingSpecCriteria->GetHaulingModulusOfRupture(Fc,concType) );
+   pArtifact->SetModRupture( pSegmentHaulingSpecCriteria->GetHaulingModulusOfRupture(segmentKey,Fc,concType) );
    pArtifact->SetModRuptureCoefficient( pSegmentHaulingSpecCriteria->GetHaulingModulusOfRuptureFactor(concType) );
 
    pArtifact->SetElasticModulusOfGirderConcrete(Ec);
@@ -745,7 +745,7 @@ void pgsWsdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& seg
 
       // Impacted plumb girder stress is treated differently than inclined girder
       Float64 fc_tens_norebar, fc_tens_withrebar;
-      pgsAlternativeTensileStressCalculator::ComputeReqdFcTens(max_stress, rcsT, rcsBfmax, rcsFmax, rcsTalt, &fc_tens_norebar, &fc_tens_withrebar);
+      pgsAlternativeTensileStressCalculator::ComputeReqdFcTens(segmentKey,max_stress, rcsT, rcsBfmax, rcsFmax, rcsTalt, &fc_tens_norebar, &fc_tens_withrebar);
 
       // For inclined girder, tension is limited by modulus of rupture. Rebar is not considered, so it must be treated differently.
       Float64 max_stress_inclined = haul_artifact.GetMaximumInclinedConcreteTensileStress();

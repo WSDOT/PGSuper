@@ -1226,7 +1226,15 @@ void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi
    Float64 P, M;
    pDetails->pLosses->GetDeckShrinkageEffects(&P,&M);
 
+   // Tricky: Eccentricity of deck changes with fc, so we need to recompute M
    GET_IFACE(ISectionProperties,pProps);
+   GET_IFACE(IBridge,pBridge);
+   Float64 ed  = pProps->GetY( compositeIntervalIdx, poi, pgsTypes::TopGirder, fcGdr ) 
+               + pBridge->GetStructuralSlabDepth(poi)/2;
+   ed *= -1;
+
+   M = P * ed;
+
    Float64 A  = pProps->GetAg(compositeIntervalIdx,poi,fcGdr);
    Float64 St = pProps->GetS(compositeIntervalIdx,poi,pgsTypes::TopGirder,fcGdr);
    Float64 Sb = pProps->GetS(compositeIntervalIdx,poi,pgsTypes::BottomGirder,fcGdr);
@@ -4536,9 +4544,14 @@ void CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::
    else
    {
       // Results are to be without prestress so remove the PT effect
-      std::vector<Float64> deltaPT = GetDeflection(intervalIdx,pgsTypes::pftPostTensioning,vPoi,bat,rtCumulative);
-      std::transform(pMin->begin(),pMin->end(),deltaPT.begin(),pMin->begin(),std::minus<Float64>());
-      std::transform(pMax->begin(),pMax->end(),deltaPT.begin(),pMax->begin(),std::minus<Float64>());
+      GET_IFACE(ITendonGeometry,pTendonGeom);
+      DuctIndexType nDucts = pTendonGeom->GetDuctCount(vPoi.front().GetSegmentKey());
+      if ( 0 < nDucts )
+      {
+         std::vector<Float64> deltaPT = GetDeflection(intervalIdx,pgsTypes::pftPostTensioning,vPoi,bat,rtCumulative);
+         std::transform(pMin->begin(),pMin->end(),deltaPT.begin(),pMin->begin(),std::minus<Float64>());
+         std::transform(pMax->begin(),pMax->end(),deltaPT.begin(),pMax->begin(),std::minus<Float64>());
+      }
    }
 }
 
@@ -4622,9 +4635,14 @@ void CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::Li
    else
    {
       // Results are to be without prestress so remove the PT effect
-      std::vector<Float64> deltaPT = GetRotation(intervalIdx,pgsTypes::pftPostTensioning,vPoi,bat,rtCumulative);
-      std::transform(pMin->begin(),pMin->end(),deltaPT.begin(),pMin->begin(),std::minus<Float64>());
-      std::transform(pMax->begin(),pMax->end(),deltaPT.begin(),pMax->begin(),std::minus<Float64>());
+      GET_IFACE(ITendonGeometry,pTendonGeom);
+      DuctIndexType nDucts = pTendonGeom->GetDuctCount(vPoi.front().GetSegmentKey());
+      if ( 0 < nDucts )
+      {
+         std::vector<Float64> deltaPT = GetRotation(intervalIdx,pgsTypes::pftPostTensioning,vPoi,bat,rtCumulative);
+         std::transform(pMin->begin(),pMin->end(),deltaPT.begin(),pMin->begin(),std::minus<Float64>());
+         std::transform(pMax->begin(),pMax->end(),deltaPT.begin(),pMax->begin(),std::minus<Float64>());
+      }
    }
 }
 
@@ -10262,6 +10280,9 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    GET_IFACE(ILoadFactors,pLF);
    const CLoadFactors* pLoadFactors = pLF->GetLoadFactors();
 
+   GET_IFACE( ILossParameters, pLossParams);
+   bool bTimeStepAnalysis = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
+
    // Have multiple options for applying pedestrian loads for different limit states
    GET_IFACE(ILiveLoads,pLiveLoads);
    ILiveLoads::PedestrianLoadApplicationType design_ped_type = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltDesign);
@@ -10278,10 +10299,13 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    AddLoadCase(loadcases, CComBSTR("DW"),        CComBSTR("Wearing Surfaces and Utilities"));
    AddLoadCase(loadcases, CComBSTR("DW_Rating"), CComBSTR("Wearing Surfaces and Utilities (for Load Rating)"));
    AddLoadCase(loadcases, CComBSTR("LL_IM"),     CComBSTR("User defined live load"));
-   AddLoadCase(loadcases, CComBSTR("CR"),        CComBSTR("Creep"));
-   AddLoadCase(loadcases, CComBSTR("SH"),        CComBSTR("Shrinkage"));
-   AddLoadCase(loadcases, CComBSTR("RE"),        CComBSTR("Relaxation")); // not specifically defined in the LRFD, but we need to include relaxation effects somewhere
-   AddLoadCase(loadcases, CComBSTR("PS"),        CComBSTR("Secondary Effects"));
+   if ( bTimeStepAnalysis )
+   {
+      AddLoadCase(loadcases, CComBSTR("CR"),        CComBSTR("Creep"));
+      AddLoadCase(loadcases, CComBSTR("SH"),        CComBSTR("Shrinkage"));
+      AddLoadCase(loadcases, CComBSTR("RE"),        CComBSTR("Relaxation")); // not specifically defined in the LRFD, but we need to include relaxation effects somewhere
+      AddLoadCase(loadcases, CComBSTR("PS"),        CComBSTR("Secondary Effects"));
+   }
 
    AddLoadCase(loadcases, CComBSTR("DWp"), CComBSTR("DW for permanent loads")); // User DW + Overlay
    AddLoadCase(loadcases, CComBSTR("DWf"), CComBSTR("DW for future loads")); // Future Overlay
@@ -10309,10 +10333,13 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = strength1->AddLoadCaseFactor(CComBSTR("DWp"),    pLoadFactors->DWmin[pgsTypes::StrengthI],   pLoadFactors->DWmax[pgsTypes::StrengthI]);
    hr = strength1->AddLoadCaseFactor(CComBSTR("DWf"),    0.0,   pLoadFactors->DWmax[pgsTypes::StrengthI]);
    hr = strength1->AddLoadCaseFactor(CComBSTR("LL_IM"), pLoadFactors->LLIMmin[pgsTypes::StrengthI], pLoadFactors->LLIMmax[pgsTypes::StrengthI]);
-   hr = strength1->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::StrengthI],   pLoadFactors->CRmax[pgsTypes::StrengthI]);
-   hr = strength1->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::StrengthI],   pLoadFactors->SHmax[pgsTypes::StrengthI]);
-   hr = strength1->AddLoadCaseFactor(CComBSTR("RE"),    pLoadFactors->REmin[pgsTypes::StrengthI],   pLoadFactors->REmax[pgsTypes::StrengthI]);
-   hr = strength1->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::StrengthI],   pLoadFactors->PSmax[pgsTypes::StrengthI]);
+   if ( bTimeStepAnalysis )
+   {
+      hr = strength1->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::StrengthI],   pLoadFactors->CRmax[pgsTypes::StrengthI]);
+      hr = strength1->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::StrengthI],   pLoadFactors->SHmax[pgsTypes::StrengthI]);
+      hr = strength1->AddLoadCaseFactor(CComBSTR("RE"),    pLoadFactors->REmin[pgsTypes::StrengthI],   pLoadFactors->REmax[pgsTypes::StrengthI]);
+      hr = strength1->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::StrengthI],   pLoadFactors->PSmax[pgsTypes::StrengthI]);
+   }
 
    hr = loadcombos->Add(strength1) ;
 
@@ -10334,10 +10361,13 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = strength2->AddLoadCaseFactor(CComBSTR("DWp"),    pLoadFactors->DWmin[pgsTypes::StrengthII],   pLoadFactors->DWmax[pgsTypes::StrengthII]);
    hr = strength2->AddLoadCaseFactor(CComBSTR("DWf"),    0.0,   pLoadFactors->DWmax[pgsTypes::StrengthII]);
    hr = strength2->AddLoadCaseFactor(CComBSTR("LL_IM"), pLoadFactors->LLIMmin[pgsTypes::StrengthII], pLoadFactors->LLIMmax[pgsTypes::StrengthII]);
-   hr = strength2->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::StrengthII],   pLoadFactors->CRmax[pgsTypes::StrengthII]);
-   hr = strength2->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::StrengthII],   pLoadFactors->SHmax[pgsTypes::StrengthII]);
-   hr = strength2->AddLoadCaseFactor(CComBSTR("RE"),    pLoadFactors->REmin[pgsTypes::StrengthII],   pLoadFactors->REmax[pgsTypes::StrengthII]);
-   hr = strength2->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::StrengthII],   pLoadFactors->PSmax[pgsTypes::StrengthII]);
+   if ( bTimeStepAnalysis )
+   {
+      hr = strength2->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::StrengthII],   pLoadFactors->CRmax[pgsTypes::StrengthII]);
+      hr = strength2->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::StrengthII],   pLoadFactors->SHmax[pgsTypes::StrengthII]);
+      hr = strength2->AddLoadCaseFactor(CComBSTR("RE"),    pLoadFactors->REmin[pgsTypes::StrengthII],   pLoadFactors->REmax[pgsTypes::StrengthII]);
+      hr = strength2->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::StrengthII],   pLoadFactors->PSmax[pgsTypes::StrengthII]);
+   }
 
    hr = loadcombos->Add(strength2) ;
 
@@ -10359,10 +10389,13 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = service1->AddLoadCaseFactor(CComBSTR("DWp"),    pLoadFactors->DWmin[pgsTypes::ServiceI],   pLoadFactors->DWmax[pgsTypes::ServiceI]);
    hr = service1->AddLoadCaseFactor(CComBSTR("DWf"),    0.0,   pLoadFactors->DWmax[pgsTypes::ServiceI]);
    hr = service1->AddLoadCaseFactor(CComBSTR("LL_IM"), pLoadFactors->LLIMmin[pgsTypes::ServiceI], pLoadFactors->LLIMmax[pgsTypes::ServiceI]);
-   hr = service1->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::ServiceI],   pLoadFactors->CRmax[pgsTypes::ServiceI]);
-   hr = service1->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::ServiceI],   pLoadFactors->SHmax[pgsTypes::ServiceI]);
-   hr = service1->AddLoadCaseFactor(CComBSTR("RE"),    pLoadFactors->REmin[pgsTypes::ServiceI],   pLoadFactors->REmax[pgsTypes::ServiceI]);
-   hr = service1->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::ServiceI],   pLoadFactors->PSmax[pgsTypes::ServiceI]);
+   if ( bTimeStepAnalysis )
+   {
+      hr = service1->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::ServiceI],   pLoadFactors->CRmax[pgsTypes::ServiceI]);
+      hr = service1->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::ServiceI],   pLoadFactors->SHmax[pgsTypes::ServiceI]);
+      hr = service1->AddLoadCaseFactor(CComBSTR("RE"),    pLoadFactors->REmin[pgsTypes::ServiceI],   pLoadFactors->REmax[pgsTypes::ServiceI]);
+      hr = service1->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::ServiceI],   pLoadFactors->PSmax[pgsTypes::ServiceI]);
+   }
 
    hr = loadcombos->Add(service1) ;
 
@@ -10384,10 +10417,13 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = service3->AddLoadCaseFactor(CComBSTR("DWp"),    pLoadFactors->DWmin[pgsTypes::ServiceIII],   pLoadFactors->DWmax[pgsTypes::ServiceIII]);
    hr = service3->AddLoadCaseFactor(CComBSTR("DWf"),    0.0,   pLoadFactors->DWmax[pgsTypes::ServiceIII]);
    hr = service3->AddLoadCaseFactor(CComBSTR("LL_IM"), pLoadFactors->LLIMmin[pgsTypes::ServiceIII], pLoadFactors->LLIMmax[pgsTypes::ServiceIII]);
-   hr = service3->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::ServiceIII],   pLoadFactors->CRmax[pgsTypes::ServiceIII]);
-   hr = service3->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::ServiceIII],   pLoadFactors->SHmax[pgsTypes::ServiceIII]);
-   hr = service3->AddLoadCaseFactor(CComBSTR("RE"),    pLoadFactors->REmin[pgsTypes::ServiceIII],   pLoadFactors->REmax[pgsTypes::ServiceIII]);
-   hr = service3->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::ServiceIII],   pLoadFactors->PSmax[pgsTypes::ServiceIII]);
+   if ( bTimeStepAnalysis )
+   {
+      hr = service3->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::ServiceIII],   pLoadFactors->CRmax[pgsTypes::ServiceIII]);
+      hr = service3->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::ServiceIII],   pLoadFactors->SHmax[pgsTypes::ServiceIII]);
+      hr = service3->AddLoadCaseFactor(CComBSTR("RE"),    pLoadFactors->REmin[pgsTypes::ServiceIII],   pLoadFactors->REmax[pgsTypes::ServiceIII]);
+      hr = service3->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::ServiceIII],   pLoadFactors->PSmax[pgsTypes::ServiceIII]);
+   }
  
    hr = loadcombos->Add(service3) ;
 
@@ -10409,10 +10445,13 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = service1a->AddLoadCaseFactor(CComBSTR("DWp"),    pLoadFactors->DWmin[pgsTypes::ServiceIA],   pLoadFactors->DWmax[pgsTypes::ServiceIA]);
    hr = service1a->AddLoadCaseFactor(CComBSTR("DWf"),    0.0,   pLoadFactors->DWmax[pgsTypes::ServiceIA]);
    hr = service1a->AddLoadCaseFactor(CComBSTR("LL_IM"), pLoadFactors->LLIMmin[pgsTypes::ServiceIA], pLoadFactors->LLIMmax[pgsTypes::ServiceIA]);
-   hr = service1a->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::ServiceIA],   pLoadFactors->CRmax[pgsTypes::ServiceIA]);
-   hr = service1a->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::ServiceIA],   pLoadFactors->SHmax[pgsTypes::ServiceIA]);
-   hr = service1a->AddLoadCaseFactor(CComBSTR("RE"),    pLoadFactors->REmin[pgsTypes::ServiceIA],   pLoadFactors->REmax[pgsTypes::ServiceIA]);
-   hr = service1a->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::ServiceIA],   pLoadFactors->PSmax[pgsTypes::ServiceIA]);
+   if ( bTimeStepAnalysis )
+   {
+      hr = service1a->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::ServiceIA],   pLoadFactors->CRmax[pgsTypes::ServiceIA]);
+      hr = service1a->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::ServiceIA],   pLoadFactors->SHmax[pgsTypes::ServiceIA]);
+      hr = service1a->AddLoadCaseFactor(CComBSTR("RE"),    pLoadFactors->REmin[pgsTypes::ServiceIA],   pLoadFactors->REmax[pgsTypes::ServiceIA]);
+      hr = service1a->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::ServiceIA],   pLoadFactors->PSmax[pgsTypes::ServiceIA]);
+   }
 
    loadcombos->Add(service1a);
 
@@ -10434,10 +10473,13 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    hr = fatigue1->AddLoadCaseFactor(CComBSTR("DWp"),    pLoadFactors->DWmin[pgsTypes::FatigueI],   pLoadFactors->DWmax[pgsTypes::FatigueI]);
    hr = fatigue1->AddLoadCaseFactor(CComBSTR("DWf"),    0.0,   pLoadFactors->DWmax[pgsTypes::FatigueI]);
    hr = fatigue1->AddLoadCaseFactor(CComBSTR("LL_IM"), pLoadFactors->LLIMmin[pgsTypes::FatigueI], pLoadFactors->LLIMmax[pgsTypes::FatigueI]);
-   hr = fatigue1->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::FatigueI],   pLoadFactors->CRmax[pgsTypes::FatigueI]);
-   hr = fatigue1->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::FatigueI],   pLoadFactors->SHmax[pgsTypes::FatigueI]);
-   hr = fatigue1->AddLoadCaseFactor(CComBSTR("RE"),    pLoadFactors->REmin[pgsTypes::FatigueI],   pLoadFactors->REmax[pgsTypes::FatigueI]);
-   hr = fatigue1->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::FatigueI],   pLoadFactors->PSmax[pgsTypes::FatigueI]);
+   if ( bTimeStepAnalysis )
+   {
+      hr = fatigue1->AddLoadCaseFactor(CComBSTR("CR"),    pLoadFactors->CRmin[pgsTypes::FatigueI],   pLoadFactors->CRmax[pgsTypes::FatigueI]);
+      hr = fatigue1->AddLoadCaseFactor(CComBSTR("SH"),    pLoadFactors->SHmin[pgsTypes::FatigueI],   pLoadFactors->SHmax[pgsTypes::FatigueI]);
+      hr = fatigue1->AddLoadCaseFactor(CComBSTR("RE"),    pLoadFactors->REmin[pgsTypes::FatigueI],   pLoadFactors->REmax[pgsTypes::FatigueI]);
+      hr = fatigue1->AddLoadCaseFactor(CComBSTR("PS"),    pLoadFactors->PSmin[pgsTypes::FatigueI],   pLoadFactors->PSmax[pgsTypes::FatigueI]);
+   }
 
    loadcombos->Add(fatigue1);
 
@@ -10463,19 +10505,23 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthI_Inventory);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthI_Inventory);
-   CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthI_Inventory);
-   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthI_Inventory);
-   RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::StrengthI_Inventory);
-   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::StrengthI_Inventory);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthI_Inventory,true);
    hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    strengthI_inventory->put_LiveLoadFactor(LLIM);
-   hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
-   hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
-   hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
-   hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+   if ( bTimeStepAnalysis )
+   {
+      CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthI_Inventory);
+      SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthI_Inventory);
+      RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::StrengthI_Inventory);
+      PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::StrengthI_Inventory);
+
+      hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+      hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+      hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+      hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+   }
    loadcombos->Add(strengthI_inventory);
 
 
@@ -10494,19 +10540,23 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthI_Operating);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthI_Operating);
-   CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthI_Operating);
-   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthI_Operating);
-   RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::StrengthI_Operating);
-   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::StrengthI_Operating);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthI_Operating,true);
    hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    strengthI_operating->put_LiveLoadFactor(LLIM);
-   hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
-   hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
-   hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
-   hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+   if ( bTimeStepAnalysis )
+   {
+      CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthI_Operating);
+      SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthI_Operating);
+      RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::StrengthI_Operating);
+      PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::StrengthI_Operating);
+
+      hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+      hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+      hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+      hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+   }
 
    loadcombos->Add(strengthI_operating);
 
@@ -10525,19 +10575,23 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceIII_Inventory);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_Inventory);
-   CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceIII_Inventory);
-   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_Inventory);
-   RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::ServiceIII_Inventory);
-   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::ServiceIII_Inventory);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceIII_Inventory,true);
    hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    serviceIII_inventory->put_LiveLoadFactor(LLIM);
-   hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
-   hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
-   hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
-   hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+   if ( bTimeStepAnalysis )
+   {
+      CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceIII_Inventory);
+      SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_Inventory);
+      RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::ServiceIII_Inventory);
+      PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::ServiceIII_Inventory);
+
+      hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+      hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+      hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+      hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+   }
 
    loadcombos->Add(serviceIII_inventory);
 
@@ -10556,20 +10610,23 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceIII_Operating);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_Operating);
-   CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceIII_Operating);
-   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_Operating);
-   RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::ServiceIII_Operating);
-   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::ServiceIII_Operating);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceIII_Operating,true);
    hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    serviceIII_operating->put_LiveLoadFactor(LLIM);
+   if ( bTimeStepAnalysis )
+   {
+      CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceIII_Operating);
+      SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_Operating);
+      RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::ServiceIII_Operating);
+      PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::ServiceIII_Operating);
 
-   hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
-   hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
-   hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
-   hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+      hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+      hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+      hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+      hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+   }
 
    loadcombos->Add(serviceIII_operating);
 
@@ -10588,20 +10645,23 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthI_LegalRoutine);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthI_LegalRoutine);
-   CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthI_LegalRoutine);
-   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthI_LegalRoutine);
-   RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::StrengthI_LegalRoutine);
-   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::StrengthI_LegalRoutine);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthI_LegalRoutine,true);
    hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    strengthI_routine->put_LiveLoadFactor(LLIM);
+   if ( bTimeStepAnalysis )
+   {
+      CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthI_LegalRoutine);
+      SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthI_LegalRoutine);
+      RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::StrengthI_LegalRoutine);
+      PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::StrengthI_LegalRoutine);
 
-   hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
-   hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
-   hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
-   hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+      hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+      hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+      hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+      hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+   }
 
    loadcombos->Add(strengthI_routine);
 
@@ -10620,20 +10680,24 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceIII_LegalRoutine);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_LegalRoutine);
-   CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceIII_LegalRoutine);
-   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_LegalRoutine);
-   RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::ServiceIII_LegalRoutine);
-   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::ServiceIII_LegalRoutine);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceIII_LegalRoutine,true);
    hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    serviceIII_routine->put_LiveLoadFactor(LLIM);
 
-   hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
-   hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
-   hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
-   hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+   if ( bTimeStepAnalysis )
+   {
+      CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceIII_LegalRoutine);
+      SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_LegalRoutine);
+      RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::ServiceIII_LegalRoutine);
+      PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::ServiceIII_LegalRoutine);
+
+      hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+      hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+      hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+      hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+   }
 
    loadcombos->Add(serviceIII_routine);
 
@@ -10652,20 +10716,23 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthI_LegalSpecial);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthI_LegalSpecial);
-   CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthI_LegalSpecial);
-   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthI_LegalSpecial);
-   RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::StrengthI_LegalSpecial);
-   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::StrengthI_LegalSpecial);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthI_LegalSpecial,true);
    hr = strengthI_special->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = strengthI_special->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = strengthI_special->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    strengthI_special->put_LiveLoadFactor(LLIM);
+   if ( bTimeStepAnalysis )
+   {
+      CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthI_LegalSpecial);
+      SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthI_LegalSpecial);
+      RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::StrengthI_LegalSpecial);
+      PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::StrengthI_LegalSpecial);
 
-   hr = strengthI_special->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
-   hr = strengthI_special->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
-   hr = strengthI_special->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
-   hr = strengthI_special->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+      hr = strengthI_special->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+      hr = strengthI_special->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+      hr = strengthI_special->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+      hr = strengthI_special->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+   }
 
    loadcombos->Add(strengthI_special);
 
@@ -10684,20 +10751,23 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceIII_LegalSpecial);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_LegalSpecial);
-   CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceIII_LegalSpecial);
-   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_LegalSpecial);
-   RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::ServiceIII_LegalSpecial);
-   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::ServiceIII_LegalSpecial);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceIII_LegalSpecial,true);
    hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    serviceIII_special->put_LiveLoadFactor(LLIM);
+   if ( bTimeStepAnalysis )
+   {
+      CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceIII_LegalSpecial);
+      SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_LegalSpecial);
+      RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::ServiceIII_LegalSpecial);
+      PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::ServiceIII_LegalSpecial);
 
-   hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
-   hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
-   hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
-   hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+      hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+      hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+      hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+      hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+   }
 
    loadcombos->Add(serviceIII_special);
 
@@ -10716,20 +10786,23 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthII_PermitRoutine);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthII_PermitRoutine);
-   CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthII_PermitRoutine);
-   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthII_PermitRoutine);
-   RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::StrengthII_PermitRoutine);
-   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::StrengthII_PermitRoutine);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthII_PermitRoutine,true);
    hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    strengthII_routine->put_LiveLoadFactor(LLIM);
+   if ( bTimeStepAnalysis )
+   {
+      CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthII_PermitRoutine);
+      SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthII_PermitRoutine);
+      RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::StrengthII_PermitRoutine);
+      PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::StrengthII_PermitRoutine);
 
-   hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
-   hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
-   hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
-   hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+      hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+      hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+      hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+      hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+   }
 
    loadcombos->Add(strengthII_routine);
 
@@ -10747,20 +10820,23 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthII_PermitSpecial);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthII_PermitSpecial);
-   CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthII_PermitSpecial);
-   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthII_PermitSpecial);
-   RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::StrengthII_PermitSpecial);
-   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::StrengthII_PermitSpecial);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthII_PermitSpecial,true);
    hr = strengthII_special->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = strengthII_special->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = strengthII_special->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    strengthII_special->put_LiveLoadFactor(LLIM);
+   if ( bTimeStepAnalysis )
+   {
+      CR = pRatingSpec->GetCreepFactor(         pgsTypes::StrengthII_PermitSpecial);
+      SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::StrengthII_PermitSpecial);
+      RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::StrengthII_PermitSpecial);
+      PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::StrengthII_PermitSpecial);
 
-   hr = strengthII_special->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
-   hr = strengthII_special->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
-   hr = strengthII_special->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
-   hr = strengthII_special->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+      hr = strengthII_special->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+      hr = strengthII_special->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+      hr = strengthII_special->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+      hr = strengthII_special->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+   }
 
    loadcombos->Add(strengthII_special);
 
@@ -10779,20 +10855,23 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceI_PermitRoutine);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceI_PermitRoutine);
-   CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceI_PermitRoutine);
-   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceI_PermitRoutine);
-   RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::ServiceI_PermitRoutine);
-   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::ServiceI_PermitRoutine);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceI_PermitRoutine,true);
    hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    serviceI_routine->put_LiveLoadFactor(LLIM);
+   if ( bTimeStepAnalysis )
+   {
+      CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceI_PermitRoutine);
+      SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceI_PermitRoutine);
+      RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::ServiceI_PermitRoutine);
+      PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::ServiceI_PermitRoutine);
 
-   hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
-   hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
-   hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
-   hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+      hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+      hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+      hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+      hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+   }
 
    loadcombos->Add(serviceI_routine);
 
@@ -10811,20 +10890,24 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceI_PermitSpecial);
    DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceI_PermitSpecial);
-   CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceI_PermitSpecial);
-   SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceI_PermitSpecial);
-   RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::ServiceI_PermitSpecial);
-   PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::ServiceI_PermitSpecial);
    LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceI_PermitSpecial,true);
    hr = serviceI_special->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
    hr = serviceI_special->AddLoadCaseFactor(CComBSTR("DW_Rating"), DW, DW);
    hr = serviceI_special->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
    serviceI_routine->put_LiveLoadFactor(LLIM);
 
-   hr = serviceI_special->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
-   hr = serviceI_special->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
-   hr = serviceI_special->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
-   hr = serviceI_special->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+   if ( bTimeStepAnalysis )
+   {
+      CR = pRatingSpec->GetCreepFactor(         pgsTypes::ServiceI_PermitSpecial);
+      SH = pRatingSpec->GetShrinkageFactor(     pgsTypes::ServiceI_PermitSpecial);
+      RE = pRatingSpec->GetRelaxationFactor(    pgsTypes::ServiceI_PermitSpecial);
+      PS = pRatingSpec->GetSecondaryEffectsFactor( pgsTypes::ServiceI_PermitSpecial);
+
+      hr = serviceI_special->AddLoadCaseFactor(CComBSTR("CR"),    CR, CR);
+      hr = serviceI_special->AddLoadCaseFactor(CComBSTR("SH"),    SH, SH);
+      hr = serviceI_special->AddLoadCaseFactor(CComBSTR("RE"),    RE, RE);
+      hr = serviceI_special->AddLoadCaseFactor(CComBSTR("PS"),    PS, PS);
+   }
 
    loadcombos->Add(serviceI_special);
 
@@ -10928,10 +11011,13 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    combos.push_back(lcDWRating);
    combos.push_back(lcDWp);
    combos.push_back(lcDWf);
-   combos.push_back(lcCR);
-   combos.push_back(lcSH);
-   combos.push_back(lcRE);
-   combos.push_back(lcPS);
+   if ( bTimeStepAnalysis )
+   {
+      combos.push_back(lcCR);
+      combos.push_back(lcSH);
+      combos.push_back(lcRE);
+      combos.push_back(lcPS);
+   }
    std::vector<LoadingCombinationType>::iterator lcIter(combos.begin());
    std::vector<LoadingCombinationType>::iterator lcIterEnd(combos.end());
    for ( ; lcIter != lcIterEnd; lcIter++ )
@@ -10946,6 +11032,12 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
       for ( ; pfIter != pfIterEnd; pfIter++ )
       {
          pgsTypes::ProductForceType pfType = *pfIter;
+
+         if ( !bTimeStepAnalysis && (pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation || pfType == pgsTypes::pftSecondaryEffects) )
+         {
+            continue;
+         }
+
          load_case->AddLoadGroup(GetLoadGroupName(pfType));
       }
    }
@@ -10969,15 +11061,18 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel)
    AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftSidewalk),       CComBSTR("Sidewalk self weight"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftTrafficBarrier), CComBSTR("Traffic Barrier self weight"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftShearKey),       CComBSTR("Shear Key Weight"));
-   AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftSecondaryEffects),CComBSTR("Secondary Effects"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftOverlay),        CComBSTR("Overlay self weight"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftOverlayRating),  CComBSTR("Overlay self weight (rating)"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftUserDC),         CComBSTR("User applied loads in DC"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftUserDW),         CComBSTR("User applied loads in DW"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftUserLLIM),       CComBSTR("User applied live load"));
-   AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftCreep),          CComBSTR("Creep"));
-   AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftShrinkage),      CComBSTR("Shrinkage"));
-   AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftRelaxation),     CComBSTR("Relaxation"));
+   if ( bTimeStepAnalysis )
+   {
+      AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftCreep),          CComBSTR("Creep"));
+      AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftShrinkage),      CComBSTR("Shrinkage"));
+      AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftRelaxation),     CComBSTR("Relaxation"));
+      AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftSecondaryEffects),CComBSTR("Secondary Effects"));
+   }
 
    // create a couple special load groups for getting effects of the differnet strand types
    AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::Straight),  CComBSTR("Straight Strand Equivalent Loading"));
@@ -13784,7 +13879,7 @@ void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIn
          Float64 brg_offset = pBridge->GetSegmentEndBearingOffset(startSegmentKey);
          Float64 moment_arm = brg_offset - pBridge->GetPierDiaphragmLoadLocation(startSegmentKey,pgsTypes::metStart);
          ATLASSERT(moment_arm <= brg_offset); // diaphragm load should be on same side of pier as girder
-         *pMahead = *pPahead * moment_arm;
+         *pMahead = -1 * (*pPahead) * moment_arm;
       }
    }
 }
@@ -14126,8 +14221,14 @@ void CGirderModelManager::GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std
       panel_support_width = pDeck->PanelSupport;
    }
 
-   // Get some important POIs that we will be using later
-   std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest(segmentKey) );
+   // Get the POIs for getting the deck load.
+   // We need to include section transition for things like U-Beams with end blocks
+   // The slab pad will be wider over the end block then in the middle of the girder
+   std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
+   std::vector<pgsPointOfInterest> vPoi2( pPoi->GetPointsOfInterest(segmentKey,POI_SECTCHANGE) );
+   vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
+   std::sort(vPoi.begin(),vPoi.end());
+   vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
    ATLASSERT(vPoi.size()!=0);
 
    bool bIsInteriorGirder = pBridge->IsInteriorGirder( segmentKey );
@@ -16185,11 +16286,22 @@ bool CGirderModelManager::GetLoadCaseTypeFromName(const CComBSTR& name, LoadingC
 
 Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,bool bIncludeLiveLoad)
 {
+   Float64 fTop, fBot;
+   GetStress(intervalIdx,poi,stressLocation,stressLocation,bIncludeLiveLoad,&fTop,&fBot);
+   ATLASSERT(IsEqual(fTop,fBot));
+   return fTop;
+}
+
+void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation topLoc,pgsTypes::StressLocation botLoc,bool bIncludeLiveLoad,Float64* pfTop,Float64* pfBot)
+{
    // Stress in the girder due to prestressing
 
-   if ( stressLocation == pgsTypes::TopDeck || stressLocation == pgsTypes::BottomDeck )
+   if ( ::IsDeckStressLocation(topLoc) && ::IsDeckStressLocation(botLoc) )
    {
-      return 0.0; // pretensioning does not cause stress in the deck
+      // pretensioning does not cause stress in the deck
+      *pfTop = 0;
+      *pfBot = 0;
+      return; 
    }
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
@@ -16244,7 +16356,8 @@ Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPo
 
    Float64 nSEffective;
    Float64 e = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, bIncTempStrands, &nSEffective );
-   return GetStress(releaseIntervalIdx,poi,stressLocation,P,e);
+   *pfTop = GetStress(releaseIntervalIdx,poi,topLoc,P,e);
+   *pfBot = GetStress(releaseIntervalIdx,poi,botLoc,P,e);
 }
 
 Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,Float64 P,Float64 e)

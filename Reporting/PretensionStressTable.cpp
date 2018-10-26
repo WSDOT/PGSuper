@@ -143,13 +143,18 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    }
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( segmentKey, POI_SPAN ) );
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest( segmentKey, POI_SPAN ) );
+   std::vector<pgsPointOfInterest> vMiscPoi( pPoi->GetPointsOfInterest(segmentKey,POI_PSXFER,POIFIND_OR) );
+   vPoi.insert(vPoi.begin(),vMiscPoi.begin(),vMiscPoi.end());
 
    // don't want to report at these locations since the are off segment
    // and don't have stresses due to pre-tensioning.
-   pIPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
-   pIPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
+   pPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
+   pPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
+
+   std::sort(vPoi.begin(),vPoi.end());
+   vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
 
    GET_IFACE2(pBroker,IPretensionStresses,pPrestress);
    GET_IFACE2(pBroker,IPretensionForce,pForce);
@@ -157,13 +162,9 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    // Fill up the table
    RowIndexType row = p_table->GetNumberOfHeaderRows();
 
-   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-   for ( ; iter != end; iter++ )
+   BOOST_FOREACH(const pgsPointOfInterest& poi,vPoi)
    {
       col = 0;
-
-      const pgsPointOfInterest& poi = *iter;
 
       if ( bDesign )
       {

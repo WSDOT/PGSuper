@@ -87,8 +87,8 @@ interface ISegmentLiftingSpecCriteria : IUnknown
    virtual Float64 GetLiftingWithMildRebarAllowableStressFactor() = 0;
    virtual void GetLiftingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax) = 0;
 
-   virtual Float64 GetLiftingAllowableTensileConcreteStressEx(Float64 fci, bool includeRebar)= 0;
-   virtual Float64 GetLiftingAllowableCompressiveConcreteStressEx(Float64 fci)= 0;
+   virtual Float64 GetLiftingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey,Float64 fci, bool includeRebar)= 0;
+   virtual Float64 GetLiftingAllowableCompressiveConcreteStressEx(const CSegmentKey& segmentKey,Float64 fci)= 0;
 
    // loop placement above top of girder
    virtual Float64 GetHeightOfPickPointAboveGirderTop() const = 0;
@@ -103,7 +103,7 @@ interface ISegmentLiftingSpecCriteria : IUnknown
    virtual Float64 GetLiftingSweepTolerance()const = 0;
 
    virtual Float64 GetLiftingModulusOfRupture(const CSegmentKey& segmentKey)= 0;
-   virtual Float64 GetLiftingModulusOfRupture(Float64 fci,pgsTypes::ConcreteType concType) = 0;
+   virtual Float64 GetLiftingModulusOfRupture(const CSegmentKey& segmentKey,Float64 fci,pgsTypes::ConcreteType concType) = 0;
    virtual Float64 GetLiftingModulusOfRuptureFactor(pgsTypes::ConcreteType concType) = 0;
 
    virtual Float64 GetMinimumLiftingPointLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end) const = 0;
@@ -146,11 +146,11 @@ interface ISegmentHaulingSpecCriteria : IUnknown
    virtual Float64 GetHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey) = 0;
    virtual Float64 GetHaulingWithMildRebarAllowableStressFactor() = 0;
    virtual void GetHaulingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax) = 0;
-   virtual Float64 GetHaulingAllowableTensileConcreteStressEx(Float64 fc, bool includeRebar)= 0;
-   virtual Float64 GetHaulingAllowableCompressiveConcreteStressEx(Float64 fc)= 0;
+   virtual Float64 GetHaulingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc, bool includeRebar)= 0;
+   virtual Float64 GetHaulingAllowableCompressiveConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc)= 0;
 
    virtual Float64 GetHaulingModulusOfRupture(const CSegmentKey& segmentKey)= 0;
-   virtual Float64 GetHaulingModulusOfRupture(Float64 fci,pgsTypes::ConcreteType concType) = 0;
+   virtual Float64 GetHaulingModulusOfRupture(const CSegmentKey& segmentKey,Float64 fci,pgsTypes::ConcreteType concType) = 0;
    virtual Float64 GetHaulingModulusOfRuptureFactor(pgsTypes::ConcreteType concType) = 0;
 
    // Truck parameters
@@ -200,8 +200,8 @@ interface IKdotGirderHaulingSpecCriteria : IUnknown
    virtual Float64 GetKdotHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey) = 0;
    virtual Float64 GetKdotHaulingWithMildRebarAllowableStressFactor() = 0;
    virtual void GetKdotHaulingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax) = 0;
-   virtual Float64 GetKdotHaulingAllowableTensileConcreteStressEx(Float64 fc, bool includeRebar)=0;
-   virtual Float64 GetKdotHaulingAllowableCompressiveConcreteStressEx(Float64 fc)=0;
+   virtual Float64 GetKdotHaulingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc, bool includeRebar)=0;
+   virtual Float64 GetKdotHaulingAllowableCompressiveConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc)=0;
 
    virtual void GetMinimumHaulingSupportLocation(Float64* pHardDistance, bool* pUseFactoredLength, Float64* pLengthFactor) const = 0;
    virtual Float64 GetHaulingDesignLocationAccuracy() const = 0;

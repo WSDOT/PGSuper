@@ -58,7 +58,6 @@ WsdotCalculationSheet()
 
    // set the bottom title
    GET_IFACE(IVersionInfo,pVerInfo);
-   GET_IFACE(IDocumentType,pDocType);
 
    CEAFDocument* pDoc = EAFGetDocument();
    CEAFDocTemplate* pDocTemplate = (CEAFDocTemplate*)pDoc->GetDocTemplate();

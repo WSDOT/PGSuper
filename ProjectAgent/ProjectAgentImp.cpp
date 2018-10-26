@@ -4461,6 +4461,10 @@ void CProjectAgentImp::ReleaseDuctLibraryEntries()
 
 void CProjectAgentImp::UpdateConcreteMaterial()
 {
+   bool bAfter2015 = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() ? true : false);
+   // starting with LRFD 2016, AllLightweight is not a valid concrete type. Concrete is either Normal weight or lightweight.
+   // We are using SandLightweight to mean lightweight so updated the concrete type if needed.
+
    GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
@@ -4483,6 +4487,11 @@ void CProjectAgentImp::UpdateConcreteMaterial()
                pSegment->Material.Concrete.Ec = lrfdConcreteUtil::ModE(pSegment->Material.Concrete.Fc,pSegment->Material.Concrete.StrengthDensity,false);
             }
 
+            if ( bAfter2015 && pSegment->Material.Concrete.Type == pgsTypes::AllLightweight )
+            {
+               pSegment->Material.Concrete.Type = pgsTypes::SandLightweight;
+            }
+
             CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
             if ( pClosureJoint )
             {
@@ -4494,6 +4503,11 @@ void CProjectAgentImp::UpdateConcreteMaterial()
                if ( !pClosureJoint->GetConcrete().bUserEc )
                {
                   pClosureJoint->GetConcrete().Ec = lrfdConcreteUtil::ModE(pClosureJoint->GetConcrete().Fc,pClosureJoint->GetConcrete().StrengthDensity,false);
+               }
+
+               if ( bAfter2015 && pClosureJoint->GetConcrete().Type == pgsTypes::AllLightweight )
+               {
+                  pClosureJoint->GetConcrete().Type = pgsTypes::SandLightweight;
                }
             }
          }
@@ -4511,6 +4525,11 @@ void CProjectAgentImp::UpdateConcreteMaterial()
       if ( !pDeck->Concrete.bUserEc )
       {
          pDeck->Concrete.Ec = lrfdConcreteUtil::ModE(pDeck->Concrete.Fc,pDeck->Concrete.StrengthDensity,false);
+      }
+
+      if ( bAfter2015 && pDeck->Concrete.Type == pgsTypes::AllLightweight )
+      {
+         pDeck->Concrete.Type = pgsTypes::SandLightweight;
       }
    }
 }
@@ -5051,13 +5070,15 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
    {
       if (!pGirderEntry->IsVerticalAdjustmentAllowedEnd() && pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd() != hsoLEGACY)
       {
-         pSegment->Strands.SetHarpStrandOffsetAtEnd(0.0);
+         pSegment->Strands.SetHarpStrandOffsetAtEnd(pgsTypes::metStart,0.0);
+         pSegment->Strands.SetHarpStrandOffsetAtEnd(pgsTypes::metEnd,  0.0);
          pSegment->Strands.SetHarpStrandOffsetMeasurementAtEnd(hsoLEGACY);
       }
 
       if (!pGirderEntry->IsVerticalAdjustmentAllowedHP() && pSegment->Strands.GetHarpStrandOffsetMeasurementAtHarpPoint() != hsoLEGACY)
       {
-         pSegment->Strands.SetHarpStrandOffsetAtHarpPoint(0.0);
+         pSegment->Strands.SetHarpStrandOffsetAtHarpPoint(pgsTypes::metStart,0.0);
+         pSegment->Strands.SetHarpStrandOffsetAtHarpPoint(pgsTypes::metEnd,  0.0);
          pSegment->Strands.SetHarpStrandOffsetMeasurementAtHarpPoint(hsoLEGACY);
       }
    }
@@ -5065,7 +5086,8 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
    {
       if (!pGirderEntry->IsVerticalAdjustmentAllowedStraight() && pSegment->Strands.GetHarpStrandOffsetMeasurementAtEnd() != hsoLEGACY)
       {
-         pSegment->Strands.SetHarpStrandOffsetAtEnd(0.0);
+         pSegment->Strands.SetHarpStrandOffsetAtEnd(pgsTypes::metStart,0.0);
+         pSegment->Strands.SetHarpStrandOffsetAtEnd(pgsTypes::metEnd,  0.0);
          pSegment->Strands.SetHarpStrandOffsetMeasurementAtEnd(hsoLEGACY);
       }
    }

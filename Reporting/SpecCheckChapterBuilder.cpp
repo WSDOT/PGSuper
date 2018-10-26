@@ -114,7 +114,6 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IArtifact,pArtifacts);
-   GET_IFACE2(pBroker,IMaterials,pMaterial);
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
@@ -134,8 +133,6 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
-   std::vector<pgsTypes::LimitState> vLimitStates(pAllowableConcreteStress->GetStressCheckLimitStates());
-
 
    pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pPara << _T("Stress Limitations on Prestressing Tendons [5.9.3]");
@@ -185,6 +182,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    if ( pDocType->IsPGSuperDocument() )
    {
+      GET_IFACE2(pBroker,IMaterials,pMaterial);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(girderKey,0));
       *p << _T("Actual ") << RPT_FCI << _T(" = ") << stress_u.SetValue( pMaterial->GetSegmentFc(CSegmentKey(girderKey,0),releaseIntervalIdx) ) << rptNewLine;
    }
@@ -205,6 +203,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    if ( pDocType->IsPGSuperDocument() )
    {
+      GET_IFACE2(pBroker,IMaterials,pMaterial);
       *p << _T("Actual ") << RPT_FC << _T(" = ") << stress_u.SetValue( pMaterial->GetSegmentFc28(CSegmentKey(girderKey,0))) << rptNewLine;
    }
 
@@ -223,6 +222,8 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       {
          continue;
       }
+
+      std::vector<pgsTypes::LimitState> vLimitStates(pAllowableConcreteStress->GetStressCheckLimitStates(intervalIdx));
 
       std::vector<pgsTypes::LimitState>::iterator lsIter(vLimitStates.begin());
       std::vector<pgsTypes::LimitState>::iterator lsIterEnd(vLimitStates.end());
@@ -274,6 +275,8 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
          {
             continue;
          }
+
+         std::vector<pgsTypes::LimitState> vLimitStates(pAllowableConcreteStress->GetStressCheckLimitStates(intervalIdx));
 
          std::vector<pgsTypes::LimitState>::iterator lsIter(vLimitStates.begin());
          std::vector<pgsTypes::LimitState>::iterator lsIterEnd(vLimitStates.end());

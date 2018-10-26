@@ -249,7 +249,7 @@ CString ConcreteDescription(const CConcreteMaterial& concrete)
             GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
             strLabel.Format(_T("%s, ACI 209R-92, %s cured, a = %s, Beta = %4.2f"),
-               matConcrete::GetTypeName((matConcrete::Type)concrete.Type,true).c_str(),
+               lrfdConcreteUtil::GetTypeName((matConcrete::Type)concrete.Type,true).c_str(),
                concrete.CureMethod == pgsTypes::Steam ? _T("Steam") : _T("Moist"),
                ::FormatDimension(concrete.A,pDisplayUnits->GetFractionalDaysUnit()),
                concrete.B);
@@ -257,7 +257,7 @@ CString ConcreteDescription(const CConcreteMaterial& concrete)
          else
          {
             strLabel.Format(_T("%s, ACI 209R-92, %s cured, %s cement"),
-               matConcrete::GetTypeName((matConcrete::Type)concrete.Type,true).c_str(),
+               lrfdConcreteUtil::GetTypeName((matConcrete::Type)concrete.Type,true).c_str(),
                concrete.CureMethod == pgsTypes::Steam ? _T("Steam") : _T("Moist"),
                concrete.ACI209CementType == pgsTypes::TypeI ? _T("Type I") : _T("Type III"));
          }
@@ -267,21 +267,21 @@ CString ConcreteDescription(const CConcreteMaterial& concrete)
          if ( concrete.bCEBFIPUserParameters )
          {
             strLabel.Format(_T("%s, CEB-FIP, s = %.6f, Beta SC = %.6f"),
-                  matConcrete::GetTypeName((matConcrete::Type)concrete.Type,true).c_str(),
+                  lrfdConcreteUtil::GetTypeName((matConcrete::Type)concrete.Type,true).c_str(),
                   concrete.S,
                   concrete.BetaSc);
          }
          else
          {
             strLabel.Format(_T("%s, CEB-FIP, Type %s cement"),
-                  matConcrete::GetTypeName((matConcrete::Type)concrete.Type,true).c_str(),
+                  lrfdConcreteUtil::GetTypeName((matConcrete::Type)concrete.Type,true).c_str(),
                   matCEBFIPConcrete::GetCementType((matCEBFIPConcrete::CementType)concrete.CEBFIPCementType));
          }
       }
    }
    else
    {
-      strLabel.Format(_T("%s"),matConcrete::GetTypeName((matConcrete::Type)concrete.Type,true).c_str());
+      strLabel.Format(_T("%s"),lrfdConcreteUtil::GetTypeName((matConcrete::Type)concrete.Type,true).c_str());
    }
 
    return strLabel;

@@ -416,7 +416,7 @@ void pgsGirderLiftingChecker::PrepareLiftingAnalysisArtifact(const CSegmentKey& 
    pArtifact->SetLiftingDeviceTolerance(pSegmentLiftingSpecCriteria->GetLiftingLoopPlacementTolerance());
 
    pArtifact->SetConcreteStrength(Fci);
-   pArtifact->SetModRupture( pSegmentLiftingSpecCriteria->GetLiftingModulusOfRupture(Fci,concType) );
+   pArtifact->SetModRupture( pSegmentLiftingSpecCriteria->GetLiftingModulusOfRupture(segmentKey,Fci,concType) );
    pArtifact->SetModRuptureCoefficient( pSegmentLiftingSpecCriteria->GetLiftingModulusOfRuptureFactor(concType) );
 
    pArtifact->SetElasticModulusOfGirderConcrete(Eci);
@@ -519,9 +519,22 @@ void pgsGirderLiftingChecker::ComputeLiftingStresses(const CSegmentKey& segmentK
 #endif
 
    // Get allowable tension for with and without rebar cases
-   Float64 fLowTensAllowable  = pSegmentLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStress(segmentKey);
-   Float64 fHighTensAllowable = pSegmentLiftingSpecCriteria->GetLiftingWithMildRebarAllowableStress(segmentKey);
-   Float64 fCompAllowable     = pSegmentLiftingSpecCriteria->GetLiftingAllowableCompressiveConcreteStress(segmentKey);
+   Float64 fLowTensAllowable;
+   Float64 fHighTensAllowable;
+   Float64 fCompAllowable;
+   if ( bUseConfig )
+   {
+      Float64 fci = liftConfig.GdrConfig.Fci;
+      fLowTensAllowable  = pSegmentLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStressEx(segmentKey,fci,false);
+      fHighTensAllowable = pSegmentLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStressEx(segmentKey,fci,true);
+      fCompAllowable     = pSegmentLiftingSpecCriteria->GetLiftingAllowableCompressiveConcreteStressEx(segmentKey,fci);
+   }
+   else
+   {
+      fLowTensAllowable  = pSegmentLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStress(segmentKey);
+      fHighTensAllowable = pSegmentLiftingSpecCriteria->GetLiftingWithMildRebarAllowableStress(segmentKey);
+      fCompAllowable     = pSegmentLiftingSpecCriteria->GetLiftingAllowableCompressiveConcreteStress(segmentKey);
+   }
 
    // Parameters for computing required concrete strengths
    Float64 rcsC = pSegmentLiftingSpecCriteria->GetLiftingAllowableCompressionFactor();
@@ -597,9 +610,13 @@ void pgsGirderLiftingChecker::ComputeLiftingStresses(const CSegmentKey& segmentK
       Float64 total_ps_force = hps_force + sps_force + tps_force;
       Float64 total_e = 0.0;
       if (0.0 < total_ps_force)
+      {
          total_e = (hps_force*he + sps_force*se + tps_force*te) / total_ps_force;
+      }
       else if ( 0 < (nfh + nfs + nft) )
+      {
          total_e = (he*nfh + se*nfs + te*nft) / (nfh + nfs + nft);
+      }
 
       // start building artifact
       pgsLiftingStressAnalysisArtifact lift_artifact;
@@ -671,7 +688,7 @@ void pgsGirderLiftingChecker::ComputeLiftingStresses(const CSegmentKey& segmentK
       Float64 max_stress = lift_artifact.GetMaximumConcreteTensileStress();
 
       Float64 fc_tens_norebar, fc_tens_withrebar;
-      pgsAlternativeTensileStressCalculator::ComputeReqdFcTens(max_stress, rcsT, rcsBfmax, rcsFmax, rcsTalt, &fc_tens_norebar, &fc_tens_withrebar);
+      pgsAlternativeTensileStressCalculator::ComputeReqdFcTens(segmentKey,max_stress, rcsT, rcsBfmax, rcsFmax, rcsTalt, &fc_tens_norebar, &fc_tens_withrebar);
 
       lift_artifact.SetRequiredConcreteStrength(fc_compression,fc_tens_norebar,fc_tens_withrebar);
 

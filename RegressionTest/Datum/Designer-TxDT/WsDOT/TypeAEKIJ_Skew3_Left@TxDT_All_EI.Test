@@ -4,7 +4,6 @@
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -17,7 +16,6 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -30,7 +28,6 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -43,7 +40,6 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -52,30 +48,26 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                   2      2     WF66G    *    36   0.6  270  28.69  11.03                                              12  62.0  4.0  4.300  5.200   3.550    -3.638     8834   0.505  0.759   4.626 -1.688 -0.150 -0.215 -2.053 149.03  282.04    3.00    5.50    5.50 
+ 28.25    5   6.00                   2      2     WF66G    *    35   0.6  270  28.72  11.92                                              11  62.0  4.0  4.300  5.200   3.550    -3.638     8684   0.505  0.759   4.463 -1.688 -0.150 -0.215 -2.053 140.24  265.69    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
-Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                   2      3     WF66G    *    36   0.6  270  28.69  11.03                                              12  62.0  4.0  4.300  5.200   3.550    -3.638     8834   0.505  0.671   4.626 -1.688 -0.150 -0.215 -2.053 149.03  282.04    3.00    5.50    5.50 
+ 28.25    5   6.00                   2      3     WF66G    *    35   0.6  270  28.72  11.92                                              11  62.0  4.0  4.300  5.200   3.550    -3.638     8684   0.505  0.671   4.463 -1.688 -0.150 -0.215 -2.053 140.24  265.69    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
-Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -84,7 +76,6 @@ Slab Offset ("A" Dimension) check failed
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -97,7 +88,6 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -110,7 +100,6 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State

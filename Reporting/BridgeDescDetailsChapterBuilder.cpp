@@ -216,7 +216,7 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
 
    //write_deck_concrete_details(pBroker,pDisplayUnits,pChapter,level);
 
-#pragma Reminder("UPDATE: write out tendon information : geometry and material")
+#pragma Reminder("WORKING HERE: write out tendon information : geometry and material")
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();

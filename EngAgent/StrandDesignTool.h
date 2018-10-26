@@ -218,14 +218,14 @@ public:
    void SetMinimumFinalMidZoneEccentricity(Float64 ecc); 
 
    // offsets are measured from original strand grid location from library
-   Float64 GetHarpStrandOffsetEnd() const;
-   Float64 GetHarpStrandOffsetHp() const;
+   Float64 GetHarpStrandOffsetEnd(pgsTypes::MemberEndType endType) const;
+   Float64 GetHarpStrandOffsetHp(pgsTypes::MemberEndType endType) const;
 
-   void SetHarpStrandOffsetEnd(Float64 off);
-   void SetHarpStrandOffsetHp(Float64 off);
+   void SetHarpStrandOffsetEnd(pgsTypes::MemberEndType endType,Float64 off);
+   void SetHarpStrandOffsetHp(pgsTypes::MemberEndType endType,Float64 off);
 
-   void GetEndOffsetBounds(Float64* pLower, Float64* pUpper) const;
-   void GetHpOffsetBounds(Float64* pLower, Float64* pUpper) const;
+   //void GetEndOffsetBounds(Float64* pLower, Float64* pUpper) const;
+   //void GetHpOffsetBounds(Float64* pLower, Float64* pUpper) const;
 
    Float64 GetHarpedHpOffsetIncrement(IStrandGeometry* pStrandGeom) const;
    Float64 GetHarpedEndOffsetIncrement(IStrandGeometry* pStrandGeom) const;
@@ -696,7 +696,7 @@ private:
 
    StrandIndexType ComputeNextNumProportionalStrands(StrandIndexType prevNum, StrandIndexType* ns, StrandIndexType* nh);
 
-   bool AdjustStrandsForSlope(Float64 targetSlope, Float64 currentSlope, StrandIndexType nh, IStrandGeometry* pStrandGeom);
+   bool AdjustStrandsForSlope(Float64 targetSlope, Float64 currentSlope, pgsTypes::MemberEndType endType,StrandIndexType nh, IStrandGeometry* pStrandGeom);
 
    // Private functions called from Initialize
    ///////////////////////////////////////////

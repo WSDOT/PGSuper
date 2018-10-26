@@ -289,7 +289,7 @@ void CMultiWeb2Factory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType 
    }
 }
 
-void CMultiWeb2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
+void CMultiWeb2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
@@ -309,7 +309,7 @@ void CMultiWeb2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimens
    CComPtr<IStrandMover> sm = pStrandMover;
 
    Float64 width = t2;
-   Float64 depth = h1 + h2 + h3;
+   Float64 depth = (Hg < 0 ? h1 + h2 + h3 : Hg);
 
    CComPtr<IRectangle> lft_harp_rect, rgt_harp_rect;
    hr = lft_harp_rect.CoCreateInstance(CLSID_Rect);
@@ -350,7 +350,7 @@ void CMultiWeb2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimens
    Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
    Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
 
-   hr = configurer->SetHarpedStrandOffsetBounds(0, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
+   hr = configurer->SetHarpedStrandOffsetBounds(0, depth, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
 
    hr = sm.CopyTo(strandMover);
@@ -589,6 +589,11 @@ IBeamFactory::Dimensions CMultiWeb2Factory::LoadSectionDimensions(sysIStructured
 }
 
 bool CMultiWeb2Factory::IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey)
+{
+   return true;
+}
+
+bool CMultiWeb2Factory::IsSymmetric(IBroker* pBroker,const CSegmentKey& segmentKey)
 {
    return true;
 }

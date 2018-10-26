@@ -40,10 +40,17 @@ class ATL_NO_VTABLE CStrandMoverImpl :
 public:
    CStrandMoverImpl():
    m_TopElevation(0),
-   m_HpTopElevationBoundary(0),m_HpBotElevationBoundary(0),
-   m_EndTopElevationBoundary(0),m_EndBotElevationBoundary(0),
+   m_Height(0),
    m_EndIncrement(0),m_HpIncrement(0)
 	{
+      m_HpTopElevationBoundary[etStart] = 0;
+      m_HpBotElevationBoundary[etStart] = 0;
+      m_HpTopElevationBoundary[etEnd]   = 0;
+      m_HpBotElevationBoundary[etEnd]   = 0;
+      m_EndTopElevationBoundary[etStart] = 0;
+      m_EndBotElevationBoundary[etStart] = 0;
+      m_EndTopElevationBoundary[etEnd] = 0;
+      m_EndBotElevationBoundary[etEnd] = 0;
 	}
 
    virtual ~CStrandMoverImpl() {;}
@@ -65,18 +72,22 @@ END_COM_MAP()
 
 // IStrandMover
 public:
-	STDMETHOD(get_HpStrandElevationBoundaries)(/*[out]*/Float64* bottomMin,/*[out]*/Float64* topMax);
-	STDMETHOD(get_EndStrandElevationBoundaries)(/*[out]*/Float64* bottomMin,/*[out]*/Float64* topMax);
+	STDMETHOD(get_HpStrandElevationBoundaries)(/*[in]*/EndType endType,/*[out]*/Float64* bottomMin,/*[out]*/Float64* topMax);
+	STDMETHOD(get_EndStrandElevationBoundaries)(/*[in]*/EndType endType,/*[out]*/Float64* bottomMin,/*[out]*/Float64* topMax);
 	STDMETHOD(get_StrandIncrements)(/*[out]*/Float64* endIncrement,/*[out]*/Float64* hpIncrement);
-	STDMETHOD(TestHpStrandLocation)(/*[in]*/Float64 originalX, /*[in]*/Float64 originalY, /*[in]*/Float64 Yoffset, /*[out,retval]*/VARIANT_BOOL* isWithin );
-	STDMETHOD(TestEndStrandLocation)(/*[in]*/Float64 originalX, /*[in]*/Float64 originalY, /*[in]*/Float64 Yoffset, /*[out,retval]*/VARIANT_BOOL* isWithin );
-	STDMETHOD(TranslateStrand)(/*[in]*/Float64 originalX, /*[in]*/Float64 originalY, /*[in]*/Float64 Yoffset, /*[out]*/Float64* newX, /*[out]*/Float64* newY );
+	STDMETHOD(TestHpStrandLocation)(/*[in]*/EndType endType,/*[in]*/Float64 Hg,/*[in]*/Float64 originalX, /*[in]*/Float64 originalY, /*[in]*/Float64 Yoffset, /*[out,retval]*/VARIANT_BOOL* isWithin );
+	STDMETHOD(TestEndStrandLocation)(/*[in]*/EndType endType,/*[in]*/Float64 Hg,/*[in]*/Float64 originalX, /*[in]*/Float64 originalY, /*[in]*/Float64 Yoffset, /*[out,retval]*/VARIANT_BOOL* isWithin );
+	STDMETHOD(TranslateHpStrand)(/*[in]*/EndType endType,/*[in]*/Float64 originalX, /*[in]*/Float64 originalY, /*[in]*/Float64 Yoffset, /*[out]*/Float64* newX, /*[out]*/Float64* newY );
+	STDMETHOD(TranslateEndStrand)(/*[in]*/EndType endType,/*[in]*/Float64 originalX, /*[in]*/Float64 originalY, /*[in]*/Float64 Yoffset, /*[out]*/Float64* newX, /*[out]*/Float64* newY );
 
 // IConfigureStrandMover
    STDMETHOD(get_TopElevation)(Float64* topElevation);
+   STDMETHOD(get_SectionHeight)(Float64* pHeight);
    // offset limits and default increments for harped strands
-   STDMETHOD(SetHarpedStrandOffsetBounds)(Float64 topElevation, 
-                                          Float64 topHpElevationBoundary,Float64 botHpElevationBoundary,
+   STDMETHOD(SetHarpedStrandOffsetBounds)(Float64 topElevation, Float64 Hg,
+                                          Float64 topStartElevationBoundary,Float64 botStartElevationBoundary,
+                                          Float64 topHp1ElevationBoundary,Float64 botHp1ElevationBoundary,
+                                          Float64 topHp2ElevationBoundary,Float64 botHp2ElevationBoundary,
                                           Float64 topEndElevationBoundary,Float64 botEndElevationBoundary,
                                           Float64 endIncrement,Float64 hpIncrement);
    // remove all regions
@@ -90,10 +101,11 @@ public:
 
 private:
    Float64 m_TopElevation;
-   Float64 m_HpTopElevationBoundary;
-   Float64 m_HpBotElevationBoundary;
-   Float64 m_EndTopElevationBoundary;
-   Float64 m_EndBotElevationBoundary;
+   Float64 m_Height;
+   Float64 m_HpTopElevationBoundary[2]; // use EndType to access array
+   Float64 m_HpBotElevationBoundary[2];
+   Float64 m_EndTopElevationBoundary[2];
+   Float64 m_EndBotElevationBoundary[2];
    Float64 m_EndIncrement;
    Float64 m_HpIncrement;
 

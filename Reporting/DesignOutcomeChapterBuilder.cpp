@@ -369,8 +369,9 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
       GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
 
       // current offsets, measured in absolute
-      Float64 abs_offset_end, abs_offset_hp;
-      pStrandGeometry->GetHarpStrandOffsets(segmentKey,&abs_offset_end,&abs_offset_hp);
+      Float64 abs_offset_end[2], abs_offset_hp[2];
+      pStrandGeometry->GetHarpStrandOffsets(segmentKey,pgsTypes::metStart,&abs_offset_end[pgsTypes::metStart],&abs_offset_hp[pgsTypes::metStart]);
+      pStrandGeometry->GetHarpStrandOffsets(segmentKey,pgsTypes::metEnd,  &abs_offset_end[pgsTypes::metEnd],  &abs_offset_hp[pgsTypes::metEnd]);
 
       (*pTable)(row,0) << _T("Number of Straight Strands");
       (*pTable)(row,1) << config.PrestressConfig.GetStrandCount(pgsTypes::Straight);
@@ -434,66 +435,71 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
          bool doAdjust = (0.0 <= pStrandGeometry->GetHarpedEndOffsetIncrement(gdrName.c_str(), pgsTypes::asHarped) ? true : false);
          if (doAdjust)
          {
-            switch( HsoEnd )
+            for ( int i = 0; i < 2; i++ )
             {
-            case hsoCGFROMTOP:
-               (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("CG of harped strand group at ends of girder");
-               break;
+               pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+               std::_tstring strEnd(endType == pgsTypes::metStart ? _T("start") : _T("end"));
 
-            case hsoCGFROMBOTTOM:
-               (*pTable)(row,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("CG of harped strand group at ends of girder");
-               break;
+               switch( HsoEnd )
+               {
+               case hsoCGFROMTOP:
+                  (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("CG of harped strand group at ") << strEnd << _T(" of girder");
+                  break;
 
-            case hsoLEGACY:
-               // convert legacy to display TOP 2 TOP
+               case hsoCGFROMBOTTOM:
+                  (*pTable)(row,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("CG of harped strand group at ") << strEnd << _T(" of girder");
+                  break;
 
-               HsoEnd = hsoTOP2TOP;
+               case hsoLEGACY:
+                  // convert legacy to display TOP 2 TOP
 
-            case hsoTOP2TOP:
-               (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("top of harped strand group at ends of girder");
-               break;
+                  HsoEnd = hsoTOP2TOP;
 
-            case hsoTOP2BOTTOM:
-               (*pTable)(row,0) << _T("Distance from bottom of girder") << rptNewLine << _T("to top of harped strand group at ends of girder");
-               break;
+               case hsoTOP2TOP:
+                  (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("top of harped strand group at ") << strEnd << _T(" of girder");
+                  break;
 
-            case hsoBOTTOM2BOTTOM:
-               (*pTable)(row,0) << _T("Distance from bottom of girder") << rptNewLine << _T("to bottom of harped strand group at ends of girder");
-               break;
+               case hsoTOP2BOTTOM:
+                  (*pTable)(row,0) << _T("Distance from bottom of girder") << rptNewLine << _T("to top of harped strand group at ") << strEnd << _T(" of girder");
+                  break;
 
-            case hsoECCENTRICITY:
-               (*pTable)(row,0) << _T("Eccentricity of harped strand") << rptNewLine << _T("group at ends of girder");
-               break;
+               case hsoBOTTOM2BOTTOM:
+                  (*pTable)(row,0) << _T("Distance from bottom of girder") << rptNewLine << _T("to bottom of harped strand group at ") << strEnd << _T(" of girder");
+                  break;
 
-            default:
-               ATLASSERT(false); // should never get here
+               case hsoECCENTRICITY:
+                  (*pTable)(row,0) << _T("Eccentricity of harped strand") << rptNewLine << _T("group at ") << strEnd << _T(" of girder");
+                  break;
+
+               default:
+                  ATLASSERT(false); // should never get here
+               }
+
+               const ConfigStrandFillVector& confvec_design = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
+
+               Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(gdrName.c_str(), endType, pgsTypes::asHarped,
+                                                                                   HgStart, HgHp1, HgHp2, HgEnd,
+                                                                                   confvec_design, 
+                                                                                   HsoEnd, 
+                                                                                   pArtifact->GetHarpStrandOffsetEnd(endType));
+               (*pTable)(row,1) << length.SetValue(offset);
+
+               if (pStrands->GetAdjustableStrandType() == pgsTypes::asHarped)
+               {
+                  ConfigStrandFillVector confvec_current = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, pStrands->GetStrandCount(pgsTypes::Harped));
+
+                  offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(segmentKey, endType, confvec_current, HsoEnd, abs_offset_end[endType]);
+
+                  (*pTable)(row,2) << length.SetValue(offset);
+               }
+               else
+               {
+                  // old design was straight - offset not applicable
+                  (*pTable)(row,2) << _T("N/A");
+               }
+
+               row++;
             }
-
-            const ConfigStrandFillVector& confvec_design = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
-
-            Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(gdrName.c_str(), pgsTypes::asHarped,
-                                                                                HgStart, HgHp1, HgHp2, HgEnd,
-                                                                                confvec_design, 
-                                                                                HsoEnd, 
-                                                                                pArtifact->GetHarpStrandOffsetEnd());
-            (*pTable)(row,1) << length.SetValue(offset);
-
-            if (pStrands->GetAdjustableStrandType() == pgsTypes::asHarped)
-            {
-               ConfigStrandFillVector confvec_current = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, pStrands->GetStrandCount(pgsTypes::Harped));
-
-               offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(segmentKey, confvec_current, 
-                                                                            HsoEnd, abs_offset_end);
-
-               (*pTable)(row,2) << length.SetValue(offset);
-            }
-            else
-            {
-               // old design was straight - offset not applicable
-               (*pTable)(row,2) << _T("N/A");
-            }
-
-            row++;
          }
 
          // At harping points
@@ -502,69 +508,75 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
          if (doAdjust)
          {
             HarpedStrandOffsetType HsoHp = pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint();
-            switch( HsoHp )
+            for ( int i = 0; i < 2; i++ )
             {
-            case hsoCGFROMTOP:
-               (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("CG of harped strand group at harping point");
-               break;
+               pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+               std::_tstring strHP(endType == pgsTypes::metStart ? _T("left") : _T("right"));
 
-            case hsoCGFROMBOTTOM:
-               (*pTable)(row,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("CG of harped strand group at harping point");
-               break;
+               switch( HsoHp )
+               {
+               case hsoCGFROMTOP:
+                  (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("CG of harped strand group at ") << strHP << _T(" harping point");
+                  break;
 
-            case hsoTOP2TOP:
-               (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("top of harped strand group at harping point");
-               break;
+               case hsoCGFROMBOTTOM:
+                  (*pTable)(row,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("CG of harped strand group at ") << strHP << _T(" harping point");
+                  break;
 
-            case hsoTOP2BOTTOM:
-               (*pTable)(row,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("top of harped strand group at harping point");
-               break;
+               case hsoTOP2TOP:
+                  (*pTable)(row,0) << _T("Distance from top of girder to") << rptNewLine << _T("top of harped strand group at ") << strHP << _T(" harping point");
+                  break;
 
-            case hsoLEGACY:
-               // convert legacy to display BOTTOM 2 BOTTOM
-               HsoHp = hsoBOTTOM2BOTTOM;
+               case hsoTOP2BOTTOM:
+                  (*pTable)(row,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("top of harped strand group at ") << strHP << _T(" harping point");
+                  break;
 
-            case hsoBOTTOM2BOTTOM:
-               (*pTable)(row,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("bottom of harped strand group at harping point");
-               break;
+               case hsoLEGACY:
+                  // convert legacy to display BOTTOM 2 BOTTOM
+                  HsoHp = hsoBOTTOM2BOTTOM;
+
+               case hsoBOTTOM2BOTTOM:
+                  (*pTable)(row,0) << _T("Distance from bottom of girder to") << rptNewLine << _T("bottom of harped strand group at ") << strHP << _T(" harping point");
+                  break;
 
 
-            case hsoECCENTRICITY:
-               (*pTable)(row,0) << _T("Eccentricity of harped strand") << rptNewLine << _T("group at harping point");
-               break;
+               case hsoECCENTRICITY:
+                  (*pTable)(row,0) << _T("Eccentricity of harped strand") << rptNewLine << _T("group at ") << strHP << _T(" harping point");
+                  break;
 
-            default:
-               ATLASSERT(false); // should never get here
+               default:
+                  ATLASSERT(false); // should never get here
+               }
+
+               const ConfigStrandFillVector& confvec_design = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
+
+               Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(gdrName.c_str(), endType, pgsTypes::asHarped,
+                                                                                   HgStart, HgHp1, HgHp2, HgEnd,
+                                                                                   confvec_design, 
+                                                                                   HsoHp, 
+                                                                                   pArtifact->GetHarpStrandOffsetHp(endType));
+
+               (*pTable)(row,1) << length.SetValue(offset);
+
+
+               if (pStrands->GetAdjustableStrandType() == pgsTypes::asHarped)
+               {
+                  ConfigStrandFillVector confvec_current = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, pStrands->GetStrandCount(pgsTypes::Harped));
+
+                  offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(gdrName.c_str(), endType, pgsTypes::asHarped,
+                                                                              HgStart, HgHp1, HgHp2, HgEnd,
+                                                                              confvec_current, 
+                                                                              HsoHp, abs_offset_hp[endType]);
+                  (*pTable)(row,2) << length.SetValue(offset);
+               }
+               else
+               {
+                  // old design was straight - offset not applicable
+                  (*pTable)(row,2) << _T("N/A");
+               }
+
+               row++;
             }
-
-            const ConfigStrandFillVector& confvec_design = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
-
-            Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(gdrName.c_str(), pgsTypes::asHarped,
-                                                                                HgStart, HgHp1, HgHp2, HgEnd,
-                                                                                confvec_design, 
-                                                                                HsoHp, 
-                                                                                pArtifact->GetHarpStrandOffsetHp());
-
-            (*pTable)(row,1) << length.SetValue(offset);
-
-
-            if (pStrands->GetAdjustableStrandType() == pgsTypes::asHarped)
-            {
-               ConfigStrandFillVector confvec_current = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, pStrands->GetStrandCount(pgsTypes::Harped));
-
-               offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(gdrName.c_str(), pgsTypes::asHarped,
-                                                                           HgStart, HgHp1, HgHp2, HgEnd,
-                                                                           confvec_current, 
-                                                                           HsoHp, abs_offset_hp);
-               (*pTable)(row,2) << length.SetValue(offset);
-            }
-            else
-            {
-               // old design was straight - offset not applicable
-               (*pTable)(row,2) << _T("N/A");
-            }
-
-            row++;
          }
       }
 
@@ -1250,10 +1262,10 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
                bool doAdjust = pStrandGeometry->GetHarpedEndOffsetIncrement(gdrName.c_str(), pgsTypes::asHarped) >= 0.0;
                if (doAdjust)
                {
-                  Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(segmentKey,
+                  Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(segmentKey, pgsTypes::metStart,
                                                                                       confvec_design, 
                                                                                       hsoTOP2BOTTOM, 
-                                                                                      pArtifact->GetHarpStrandOffsetEnd());
+                                                                                      pArtifact->GetHarpStrandOffsetEnd(pgsTypes::metStart));
                   (*pTable)(row++,col) << length.SetValue(offset);
                }
                else
@@ -1264,10 +1276,10 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
                doAdjust = pStrandGeometry->GetHarpedHpOffsetIncrement(gdrName.c_str(), pgsTypes::asHarped) >= 0.0;
                if (doAdjust)
                {
-                  Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(segmentKey,
+                  Float64 offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(segmentKey,pgsTypes::metStart,
                                                                               confvec_design, 
                                                                               hsoBOTTOM2BOTTOM, 
-                                                                              pArtifact->GetHarpStrandOffsetHp());
+                                                                              pArtifact->GetHarpStrandOffsetHp(pgsTypes::metStart));
                   (*pTable)(row++,col) << length.SetValue(offset);
                }
                else

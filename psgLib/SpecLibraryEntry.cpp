@@ -58,7 +58,7 @@ CLASS
 
 //======================== LIFECYCLE  =======================================
 SpecLibraryEntry::SpecLibraryEntry() :
-m_SpecificationType(lrfdVersionMgr::SeventhEditionWith2015Interims),
+m_SpecificationType(lrfdVersionMgr::SeventhEditionWith2016Interims),
 m_SpecificationUnits(lrfdVersionMgr::US),
 m_SectionPropertyMode(pgsTypes::spmGross),
 m_DoCheckStrandSlope(true),

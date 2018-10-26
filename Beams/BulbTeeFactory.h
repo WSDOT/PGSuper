@@ -60,7 +60,7 @@ public:
    virtual void LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr);
    virtual void CreateDistFactorEngineer(IBroker* pBroker,StatusItemIDType statusID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng);
    virtual void CreatePsLossEngineer(IBroker* pBroker,StatusItemIDType statusID,const CGirderKey& girderKey,IPsLossEngineer** ppEng);
-   virtual void CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
+   virtual void CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover);
@@ -71,6 +71,7 @@ public:
    virtual void SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions);
    virtual IBeamFactory::Dimensions LoadSectionDimensions(sysIStructuredLoad* pLoad);
    virtual bool IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey);
+   virtual bool IsSymmetric(IBroker* pBroker,const CSegmentKey& segmentKey);
    virtual Float64 GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey);
    virtual std::_tstring GetImage();
    virtual std::_tstring GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType);

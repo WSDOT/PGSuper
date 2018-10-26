@@ -59,8 +59,10 @@ interface IDummyInterface : IUnknown
 interface IConfigureStrandMover : IUnknown
 {
    // offset limits and default increments for harped strands
-   [helpstring("method SetHarpedStrandOffsetBounds")] HRESULT SetHarpedStrandOffsetBounds([in]Float64 topGirderElevation, 
-																						  [in]Float64 topHpElevationBoundary,[in]Float64 botHpElevationBoundary,
+   [helpstring("method SetHarpedStrandOffsetBounds")] HRESULT SetHarpedStrandOffsetBounds([in]Float64 topGirderElevation, [in]Float64 Hg,
+																						  [in]Float64 topStartElevationBoundary,[in]Float64 botStartElevationBoundary,
+																						  [in]Float64 topHp1ElevationBoundary,[in]Float64 botHp1ElevationBoundary,
+																						  [in]Float64 topHp2ElevationBoundary,[in]Float64 botHp2ElevationBoundary,
 																						  [in]Float64 topEndElevationBoundary,[in]Float64 botEndElevationBoundary,
 																						  [in]Float64 endIncrement,[in]Float64 hpIncrement);
    // remove all regions

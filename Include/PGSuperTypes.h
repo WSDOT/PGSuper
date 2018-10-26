@@ -891,15 +891,21 @@ struct PRESTRESSCONFIG
    // use one of the pgsTypes::StrandType constants to for array index
    std::vector<DEBONDCONFIG> Debond[3]; // Information about debonded strands (key is strand index into total number of filled strands)
    Float64 Pjack[3];  // Jacking force
-   Float64 EndOffset; // Offset of harped strands at end of girder
-   Float64 HpOffset;  // Offset of harped strands at the harping point
+
+   // array index is pgsTypes::MemberEndType
+   Float64 EndOffset[2]; // Offset of harped strands at end of girder
+   Float64 HpOffset[2];  // Offset of harped strands at the harping point
    pgsTypes::TTSUsage TempStrandUsage;
 
    pgsTypes::AdjustableStrandType AdjustableStrandType; // can be asHarped or asStraight only
 
    PRESTRESSCONFIG():
-   EndOffset(0.0), HpOffset(0.0), TempStrandUsage(pgsTypes::ttsPretensioned), AdjustableStrandType(pgsTypes::asHarped)
+   TempStrandUsage(pgsTypes::ttsPretensioned), AdjustableStrandType(pgsTypes::asHarped)
    {
+      EndOffset[pgsTypes::metStart] = 0;
+      EndOffset[pgsTypes::metEnd] = 0;
+      HpOffset[pgsTypes::metStart] = 0;
+      HpOffset[pgsTypes::metEnd] = 0;
       for (int i=0; i<3; i++)
       {
          Pjack[i] = 0.0;
@@ -1024,11 +1030,14 @@ inline bool PRESTRESSCONFIG::operator==(const PRESTRESSCONFIG& other) const
       ATLASSERT(NstrandsCached[i] == other.NstrandsCached[i]); // this should be impossible
    }
 
-   if( !IsEqual(EndOffset, other.EndOffset) )
-      return false;
+   for ( int i = 0; i < 2; i++ )
+   {
+      if( !IsEqual(EndOffset[i], other.EndOffset[i]) )
+         return false;
 
-   if( !IsEqual(HpOffset, other.HpOffset) )
-      return false;
+      if( !IsEqual(HpOffset[i], other.HpOffset[i]) )
+         return false;
+   }
 
    if (TempStrandUsage != other.TempStrandUsage)
       return false;
@@ -1055,8 +1064,11 @@ inline void PRESTRESSCONFIG::MakeCopy( const PRESTRESSCONFIG& other )
       NextendedStrands[i][pgsTypes::metEnd]   = other.NextendedStrands[i][pgsTypes::metEnd];
    }
 
-   EndOffset = other.EndOffset;
-   HpOffset  = other.HpOffset;
+   for ( int i = 0; i < 2; i++ )
+   {
+      EndOffset[i] = other.EndOffset[i];
+      HpOffset[i]  = other.HpOffset[i];
+   }
 
    TempStrandUsage = other.TempStrandUsage;
 

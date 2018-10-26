@@ -291,7 +291,7 @@ HRESULT CGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,
 
       var.vt = VT_BSTR;
       pStrLoad->get_Property(_T("Type"),&var);
-      Material.Concrete.Type = (pgsTypes::ConcreteType)matConcrete::GetTypeFromName(OLE2T(var.bstrVal));
+      Material.Concrete.Type = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromName(OLE2T(var.bstrVal));
 
       var.vt = VT_R8;
       pStrLoad->get_Property(_T("Fci"), &var);
@@ -327,20 +327,6 @@ HRESULT CGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,
       pStrLoad->get_Property(_T("ShrinkageK2"),&var);
       Material.Concrete.ShrinkageK2 = var.dblVal;
 
-      if ( Material.Concrete.Type != pgsTypes::Normal )
-      {
-         var.vt = VT_BOOL;
-         pStrLoad->get_Property(_T("HasFct"),&var);
-         Material.Concrete.bHasFct = (var.boolVal == VARIANT_TRUE ? true : false);
-
-         if ( Material.Concrete.bHasFct )
-         {
-            var.vt = VT_R8;
-            pStrLoad->get_Property(_T("Fct"),&var);
-            Material.Concrete.Fct = var.dblVal;
-         }
-      }
-
       var.vt = VT_BOOL;
       pStrLoad->get_Property(_T("UserEci"),&var);
       Material.Concrete.bUserEci = (var.boolVal == VARIANT_TRUE ? true : false);
@@ -361,6 +347,20 @@ HRESULT CGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,
          var.vt = VT_R8;
          pStrLoad->get_Property(_T("Ec"),&var);
          Material.Concrete.Ec = var.dblVal;
+      }
+
+      if ( Material.Concrete.Type != pgsTypes::Normal )
+      {
+         var.vt = VT_BOOL;
+         pStrLoad->get_Property(_T("HasFct"),&var);
+         Material.Concrete.bHasFct = (var.boolVal == VARIANT_TRUE ? true : false);
+
+         if ( Material.Concrete.bHasFct )
+         {
+            var.vt = VT_R8;
+            pStrLoad->get_Property(_T("Fct"),&var);
+            Material.Concrete.Fct = var.dblVal;
+         }
       }
 
 

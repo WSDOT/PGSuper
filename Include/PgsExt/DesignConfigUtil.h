@@ -230,14 +230,18 @@ inline void DealWithLegacyEndHarpedStrandAdjustment(const CSegmentKey& segmentKe
       {
          ConfigStrandFillVector fill = ComputeHarpedStrandFillVector(segmentKey,segmentData,pStrandGeometry);
 
-         Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(segmentKey, fill,
-                                                                               segmentData.Strands.GetHarpStrandOffsetMeasurementAtEnd(),
-                                                                               segmentData.Strands.GetHarpStrandOffsetAtEnd());
+         for ( int i = 0; i < 2; i++ )
+         {
+            pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+            Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(segmentKey, endType, fill,
+                                                                                  segmentData.Strands.GetHarpStrandOffsetMeasurementAtEnd(),
+                                                                                  segmentData.Strands.GetHarpStrandOffsetAtEnd(endType));
 
-         Float64 topcg_offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(segmentKey, fill,
-                                                                                   hsoCGFROMTOP, absol_offset);
+            Float64 topcg_offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(segmentKey, endType, fill,
+                                                                                      hsoCGFROMTOP, absol_offset);
 
-         segmentData.Strands.SetHarpStrandOffsetAtEnd(topcg_offset);
+            segmentData.Strands.SetHarpStrandOffsetAtEnd(endType,topcg_offset);
+         }
       }
 
       segmentData.Strands.SetHarpStrandOffsetMeasurementAtEnd(hsoCGFROMTOP);
@@ -253,14 +257,18 @@ inline void DealWithLegacyHpHarpedStrandAdjustment(const CSegmentKey& segmentKey
       {
          ConfigStrandFillVector fill = ComputeHarpedStrandFillVector(segmentKey, segmentData, pStrandGeometry);
 
-         Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(segmentKey, fill,
-                                                                               segmentData.Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(),
-                                                                               segmentData.Strands.GetHarpStrandOffsetAtHarpPoint());
+         for ( int i = 0; i < 2; i++ )
+         {
+            pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+            Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(segmentKey, endType, fill,
+                                                                                  segmentData.Strands.GetHarpStrandOffsetMeasurementAtHarpPoint(),
+                                                                                  segmentData.Strands.GetHarpStrandOffsetAtHarpPoint(endType));
 
-         Float64 botcg_offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(segmentKey, fill,
-                                                                                   hsoCGFROMBOTTOM, absol_offset);
+            Float64 botcg_offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(segmentKey, endType, fill,
+                                                                                      hsoCGFROMBOTTOM, absol_offset);
 
-         segmentData.Strands.SetHarpStrandOffsetAtHarpPoint(botcg_offset);
+            segmentData.Strands.SetHarpStrandOffsetAtHarpPoint(endType,botcg_offset);
+         }
       }
 
       segmentData.Strands.SetHarpStrandOffsetMeasurementAtHarpPoint(hsoCGFROMBOTTOM);

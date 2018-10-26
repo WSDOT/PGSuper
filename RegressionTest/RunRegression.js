@@ -30,9 +30,9 @@ if (machine=="RDPTHINKPAD")
    PGSuperDrive = "C:";
 else if (machine=="HQB0630025")
    PGSuperDrive = "F:";
-else if (machine=="HQA4434036")
-   PGSuperDrive = "F:";
 else if (machine=="HQC1431001")
+   PGSuperDrive = "F:";
+else if (machine=="HQD1764064")
    PGSuperDrive = "F:";
 
 var wsShell = new ActiveXObject("WScript.Shell");

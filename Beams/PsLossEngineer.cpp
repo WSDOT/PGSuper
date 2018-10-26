@@ -3123,10 +3123,34 @@ std::vector<pgsPointOfInterest> CPsLossEngineer::GetPointsOfInterest(const CGird
    CSegmentKey segmentKey(girderKey,0);
 
    GET_IFACE(IPointOfInterest,pPoi);
-   std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT) );
-   std::vector<pgsPointOfInterest> vPoi2( pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
+   std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
+   std::vector<pgsPointOfInterest> vPoi2( pPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT) );
+   std::vector<pgsPointOfInterest> vPoi3( pPoi->GetPointsOfInterest(segmentKey,POI_SPAN) );
+   std::vector<pgsPointOfInterest> vMiscPoi( pPoi->GetPointsOfInterest(segmentKey,POI_PSXFER | POI_STIRRUP_ZONE | POI_H | POI_15H | POI_DEBOND | POI_FACEOFSUPPORT,POIFIND_OR) );
    vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
+   vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
+   vPoi.insert(vPoi.end(),vMiscPoi.begin(),vMiscPoi.end());
    std::sort(vPoi.begin(),vPoi.end());
    vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
+
+   // remove all POI that are not between the ends of the actual segment
+   Float64 Xmin = vPoi2.front().GetDistFromStart(); // poi's at end of released segment
+   Float64 Xmax = vPoi2.back().GetDistFromStart();
+   std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
+   do
+   {
+      pgsPointOfInterest& poi(*iter);
+      Float64 Xpoi = poi.GetDistFromStart();
+      if ( Xpoi < Xmin || Xmax < Xpoi )
+      {
+         iter = vPoi.erase(iter);
+      }
+
+      if ( iter != vPoi.end() )
+      {
+         iter++;
+      }
+   } while ( iter != vPoi.end() );
+
    return vPoi;
 }

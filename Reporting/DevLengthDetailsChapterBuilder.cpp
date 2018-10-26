@@ -40,9 +40,16 @@ static char THIS_FILE[] = __FILE__;
 // Some utility functions
 rptRcTable* CreateDevelopmentTable(IEAFDisplayUnits* pDisplayUnits)
 {
-   bool is_2015 = lrfdVersionMgr::SeventhEditionWith2015Interims <= lrfdVersionMgr::GetVersion();
+   bool is_2015 = lrfdVersionMgr::SeventhEditionWith2015Interims == lrfdVersionMgr::GetVersion();
+   bool is_2016 = lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion();
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable( is_2015?9:7 , _T(""));
+   ColumnIndexType nColumns = 7;
+   if ( is_2015 || is_2016 )
+   {
+      nColumns += 2; // lamda rl and lamda lw
+   }
+
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable( nColumns, _T(""));
 
    ColumnIndexType col=0;
    (*pTable)(0,col++) << _T("Bar Size");
@@ -55,6 +62,11 @@ rptRcTable* CreateDevelopmentTable(IEAFDisplayUnits* pDisplayUnits)
       (*pTable)(0,col++) << symbol(lambda) << Sub(_T("rl"));
       (*pTable)(0,col++) << symbol(lambda) << Sub(_T("lw"));
    }
+   else if ( is_2016 )
+   {
+      (*pTable)(0,col++) << symbol(lambda) << Sub(_T("rl"));
+      (*pTable)(0,col++) << symbol(lambda);
+   }
    (*pTable)(0,col++) << _T("Modification")<<rptNewLine<<_T("Factor");
    (*pTable)(0,col++) << COLHDR(Sub2(_T("l"),_T("d")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
@@ -64,7 +76,8 @@ rptRcTable* CreateDevelopmentTable(IEAFDisplayUnits* pDisplayUnits)
 void WriteRowToDevelopmentTable(rptRcTable* pTable, RowIndexType row, CComBSTR barname, const REBARDEVLENGTHDETAILS& devDetails,
                                        rptAreaUnitValue& area, rptLengthUnitValue& length, rptStressUnitValue& stress, rptRcScalar& scalar)
 {
-   bool is_2015 = lrfdVersionMgr::SeventhEditionWith2015Interims <= lrfdVersionMgr::GetVersion();
+   bool is_2015 = lrfdVersionMgr::SeventhEditionWith2015Interims == lrfdVersionMgr::GetVersion();
+   bool is_2016 = lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion();
 
    ColumnIndexType col=0;
    (*pTable)(row,col++) << barname;
@@ -72,7 +85,7 @@ void WriteRowToDevelopmentTable(rptRcTable* pTable, RowIndexType row, CComBSTR b
    (*pTable)(row,col++) << length.SetValue(devDetails.db);
    (*pTable)(row,col++) << stress.SetValue(devDetails.fy);
    (*pTable)(row,col++) << stress.SetValue(devDetails.fc);
-   if (is_2015)
+   if (is_2015 || is_2016 )
    {
       (*pTable)(row,col++) << scalar.SetValue(devDetails.lambdaRl);
       (*pTable)(row,col++) << scalar.SetValue(devDetails.lambdaLw);
@@ -359,21 +372,64 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
             }
             else
             {
-            if ( lrfdVersionMgr::SeventhEditionWith2015Interims <= lrfdVersionMgr::GetVersion())
-            {
-               *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_2015.png")) << rptNewLine;
-            }
-            else
-            {
-               if ( IS_US_UNITS(pDisplayUnits) )
-               {
-                  *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_US.png")) << rptNewLine;
-               }
-               else
-               {
-                  *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_SI.png")) << rptNewLine;
-               }
-            }
+	            if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
+	            {
+	               *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_2016.png")) << rptNewLine;
+	            }
+	            else if ( lrfdVersionMgr::SeventhEditionWith2015Interims == lrfdVersionMgr::GetVersion() )
+	            {
+	               *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_2015.png")) << rptNewLine;
+	            }
+	            else
+	            {
+	               if ( IS_US_UNITS(pDisplayUnits) )
+	               {
+	                  *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_US.png")) << rptNewLine;
+	               }
+	               else
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	               {
+	                  *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_SI.png")) << rptNewLine;
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	               }
+	            }
 
                rptRcTable* pTable = CreateDevelopmentTable(pDisplayUnits);
                (*pParagraph) << pTable << rptNewLine;
@@ -404,7 +460,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
                     {
                         // We have a unique bar
                         diamSet.insert(diam);
-                        REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetRebarDevelopmentLengthDetails(rebar, concType, fc, hasFct, Fct);
+                        REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetSegmentRebarDevelopmentLengthDetails(thisSegmentKey, rebar, concType, fc, hasFct, Fct);
 
                         CComBSTR barname;
                         rebar->get_Name(&barname);
@@ -496,7 +552,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
                // stage this rebar is introduced for purposes of computing development length. The
                // next line of code computes the development length on the lfy
 
-               REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetRebarDevelopmentLengthDetails(rebar, concType, fc, hasFct, Fct);
+               REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetDeckRebarDevelopmentLengthDetails(rebar, concType, fc, hasFct, Fct);
 
                WriteRowToDevelopmentTable(pTable, row, barname, devDetails, area, length, stress, scalar);
                row++;

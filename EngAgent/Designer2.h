@@ -570,6 +570,7 @@ private:
    Float64 RoundSlabOffset(Float64 offset);
 
    void GetBridgeAnalysisType(GirderIndexType gdr,const StressCheckTask& task,pgsTypes::BridgeAnalysisType& batTop,pgsTypes::BridgeAnalysisType& batBottom);
+   void ComputeConcreteStrength(pgsFlexuralStressArtifact& artifact,pgsTypes::StressLocation stressLocation,const pgsPointOfInterest& poi,const StressCheckTask& task);
 
 
    friend pgsLoadRater;

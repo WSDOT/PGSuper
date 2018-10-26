@@ -2203,7 +2203,7 @@ CLASS
 ****************************************************************************/
 
 RatingLibraryEntry::RatingLibraryEntry() :
-m_SpecificationVersion(lrfrVersionMgr::FirstEditionWith2010Interims),
+m_SpecificationVersion(lrfrVersionMgr::SecondEditionWith2016Interims),
 m_bAlwaysRate(false)
 {
    // default for LRFR before 2013

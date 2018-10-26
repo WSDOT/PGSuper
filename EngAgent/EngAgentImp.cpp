@@ -78,11 +78,8 @@ Float64 GetHorizPsComponent(IBroker* pBroker,
                             const GDRCONFIG& config)
 {
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   Float64 ss = pStrandGeometry->GetAvgStrandSlope( poi,
-                                                 config.PrestressConfig.GetStrandCount(pgsTypes::Harped),
-                                                 config.PrestressConfig.EndOffset,
-                                                 config.PrestressConfig.HpOffset
-                                               );
+
+   Float64 ss = pStrandGeometry->GetAvgStrandSlope(poi, config.PrestressConfig);
    Float64 hz = 1.0;
 
    if (ss < Float64_Max)
@@ -190,6 +187,7 @@ void CEngAgentImp::InvalidateLosses()
    LOG("Invalidating losses");
    m_PsForceEngineer.Invalidate();
    m_PsForce.clear(); // if losses are gone, so are forces
+   m_PsForceWithLiveLoad.clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -661,6 +659,8 @@ const SHEARCAPACITYDETAILS* CEngAgentImp::ValidateShearCapacity(pgsTypes::LimitS
    SHEARCAPACITYDETAILS scd;
    m_ShearCapEngineer.ComputeShearCapacity(intervalIdx,limitState,poi,&scd);
 
+   ATLASSERT(poi.GetID() != INVALID_ID);
+
    PoiIDKey key(poi,poi.GetID());
    std::pair<std::map<PoiIDKey,SHEARCAPACITYDETAILS>::iterator,bool> retval;
    retval = m_ShearCapacity[idx].insert( std::make_pair(key,scd) );
@@ -689,6 +689,8 @@ const FPCDETAILS* CEngAgentImp::ValidateFpc(const pgsPointOfInterest& poi)
 
    FPCDETAILS mcd;
    m_ShearCapEngineer.ComputeFpc(poi,NULL,&mcd);
+
+   ATLASSERT(poi.GetID() != INVALID_ID);
 
    PoiIDKey key(poi,poi.GetID());
    std::pair<std::map<PoiIDKey,FPCDETAILS>::iterator,bool> retval;
@@ -779,6 +781,24 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
                                              bool bUseConfig,
                                              const GDRCONFIG& config)
 {
+   // NOTE: Think spliced girder bridge when working in this function...
+   // There are multiple critical sections for shear in a spliced girder. There is one on each
+   // side of every pier. There could be zero, one, two, or more critical sections in a segment.
+   // The critical sections do not necessarily occur near the ends of the segments (e.g. cantilever pier segment).
+   //
+   // For convensional pretensioned girders, there are two critical sections per girder (each girder with one segment)
+   // and they occur near the ends of the girder.
+   //
+   //       Segment               Segment                Segment           Segment
+   //  |<------------------->|<---------------->|<------------------>|<--------------->|
+   //  ####*=================|=*##########*=====|========*#######*===|=============*####  
+   //  o                            ^                        ^                         o  
+   //  |             Span           |       Span             |        Span             |
+   //  |<-------------------------->|<---------------------->|<----------------------->|
+   //
+   // * = critical section location
+   // # = location between FOS and critical section (critial section zones)
+
    std::vector<CRITSECTDETAILS> vcsDetails;
 
    PoiAttributeType attributes = (limitState == pgsTypes::StrengthI ? POI_CRITSECTSHEAR1 : POI_CRITSECTSHEAR2);
@@ -795,10 +815,10 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
    // Number of critical sections is equal to the number of face of supports
 
    GET_IFACE(IPointOfInterest, pIPoi);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_FACEOFSUPPORT) );
+   std::vector<pgsPointOfInterest> vFosPoi( pIPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_FACEOFSUPPORT) );
 
    // if there aren't any face of supports on this segment, leave now
-   if ( vPoi.size() == 0 )
+   if ( vFosPoi.size() == 0 )
    {
       return vcsDetails;
    }
@@ -831,15 +851,15 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
    vPiers.push_back(std::make_pair(pPier,pgsTypes::Back));
 
    // should be one pier for each FOS poi
-   ATLASSERT(vPoi.size() == vPiers.size());
+   ATLASSERT(vFosPoi.size() == vPiers.size());
 
    GET_IFACE(ILimitStateForces, pLSForces);
    GET_IFACE_NOCHECK(IGirder,   pGirder);
    GET_IFACE_NOCHECK(IBridge,   pBridge); // not always used, but don't want to get it every time through the loops below
 
    // find the critical section associated with each FOS
-   std::vector<pgsPointOfInterest>::iterator fosIter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator fosEnd(vPoi.end());
+   std::vector<pgsPointOfInterest>::iterator fosIter(vFosPoi.begin());
+   std::vector<pgsPointOfInterest>::iterator fosEnd(vFosPoi.end());
    std::vector<std::pair<const CPierData2*,pgsTypes::PierFaceType>>::iterator pierIter(vPiers.begin());
    for ( ; fosIter != fosEnd; fosIter++, pierIter++ )
    {
@@ -1146,7 +1166,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
          msg += std::_tstring(_T("\nSee Status Center for Details"));
          THROW_UNWIND(msg.c_str(),-1);
       }
-   }
+   } // next face of support
 
    return vcsDetails;
 }
@@ -1851,7 +1871,18 @@ Float64 CEngAgentImp::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTyp
 
 Float64 CEngAgentImp::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState)
 {
-   return m_PsForceEngineer.GetPrestressForceWithLiveLoad(poi,strandType,limitState,NULL);
+   PrestressWithLiveLoadPoiKey key(poi,PrestressWithLiveLoadSubKey(strandType,limitState));
+   std::map<PrestressWithLiveLoadPoiKey,Float64>::iterator found = m_PsForceWithLiveLoad.find(key);
+   if ( found != m_PsForceWithLiveLoad.end() )
+   {
+      return (*found).second;
+   }
+   else
+   {
+      Float64 F = m_PsForceEngineer.GetPrestressForceWithLiveLoad(poi,strandType,limitState,NULL);
+      m_PsForceWithLiveLoad.insert(std::make_pair(key,F));
+      return F;
+   }
 }
 
 Float64 CEngAgentImp::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState,const GDRCONFIG& config)

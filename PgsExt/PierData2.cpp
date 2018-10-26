@@ -42,7 +42,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#pragma Reminder("WORKING HERE - need to model Brg Height, Recess, and Grout Pad Height")
+#pragma Reminder("UPDATE - need to model Brg Height, Recess, and Grout Pad Height (this will come from TxDOT)")
 // maybe not here, but somewhere... these parameters are needed so compute the column
 // height if it is input by bottom elevation
 

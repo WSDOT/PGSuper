@@ -1,23 +1,19 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 46.25    4  12.00                   1      1     U54G5         78   0.6  270  16.70   4.98   0   2.00   24     0    0   0   0   0   0   7.100 12.500   9.062    -5.766    14332   0.724  1.056   5.891 -3.407 -0.218 -0.190 -3.815 364.69  542.44    1.75    5.00    5.00 
+ 46.25    4  12.00                   1      1     U54G5         80   0.6  270  16.71   4.11   0   2.00   24     0    0   0   0   0   0   7.400 12.500   9.062    -5.766    14734   0.724  1.056   5.840 -3.407 -0.218 -0.190 -3.815 378.54  554.35    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
-Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Hauling checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 46.25    4  12.00                   1      2     U54G5         78   0.6  270  16.70   4.98   0   2.00   24     0    0   0   0   0   0   7.100 12.300   8.962    -5.712    14357   0.724  1.056   5.891 -3.355 -0.219 -0.191 -3.765 364.69  544.64    1.75    5.00    5.00 
+ 46.25    4  12.00                   1      2     U54G5         80   0.6  270  16.71   4.11   0   2.00   24     0    0   0   0   0   0   7.400 12.300   8.962    -5.712    14759   0.724  1.056   5.840 -3.355 -0.219 -0.191 -3.765 378.54  556.58    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 8 Install Railing System and Overlay (Bridge Site 2)
-Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Hauling checks failed
 

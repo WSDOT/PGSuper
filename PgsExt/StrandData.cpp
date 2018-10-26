@@ -274,6 +274,11 @@ bool CStrandRow::operator!=(const CStrandRow& other) const
    return !operator==(other);
 }
 
+bool CStrandRow::operator<(const CStrandRow& other) const
+{
+   return (m_StrandType < other.m_StrandType ? true : false);
+}
+
 HRESULT CStrandRow::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    pStrSave->BeginUnit(_T("StrandRow"),3.0);
@@ -580,14 +585,17 @@ bool CStrandData::operator==(const CStrandData& rOther) const
       return false;
    }
 
-   if ( m_HpOffsetAtEnd != rOther.m_HpOffsetAtEnd )
+   for ( int i = 0; i < 2; i++ )
    {
-      return false;
-   }
+      if ( m_HpOffsetAtEnd[i] != rOther.m_HpOffsetAtEnd[i] )
+      {
+         return false;
+      }
 
-   if ( m_HpOffsetAtHp != rOther.m_HpOffsetAtHp )
-   {
-      return false;
+      if ( m_HpOffsetAtHp[i] != rOther.m_HpOffsetAtHp[i] )
+      {
+         return false;
+      }
    }
 
    if ( m_TempStrandUsage != rOther.m_TempStrandUsage )
@@ -653,10 +661,23 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
          m_HsoEndMeasurement = (HarpedStrandOffsetType)(var.lVal);
       }
 
-      var.Clear();
-      var.vt = VT_R8;
-      hr = pStrLoad->get_Property(_T("HpOffsetAtEnd"), &var );
-      m_HpOffsetAtEnd = var.dblVal;
+      if ( version < 16 )
+      {
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("HpOffsetAtEnd"), &var );
+         m_HpOffsetAtEnd[pgsTypes::metStart] = var.dblVal;
+         m_HpOffsetAtEnd[pgsTypes::metEnd]   = var.dblVal;
+      }
+      else
+      {
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("HpOffsetAtStart"), &var );
+         m_HpOffsetAtEnd[pgsTypes::metStart] = var.dblVal;
+         hr = pStrLoad->get_Property(_T("HpOffsetAtEnd"), &var );
+         m_HpOffsetAtEnd[pgsTypes::metEnd]   = var.dblVal;
+      }
 
       if (version<6.0)
       {
@@ -670,10 +691,23 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
          m_HsoHpMeasurement = (HarpedStrandOffsetType)(var.lVal);
       }
 
-      var.Clear();
-      var.vt = VT_R8;
-      hr = pStrLoad->get_Property(_T("HpOffsetAtHp"), &var );
-      m_HpOffsetAtHp = var.dblVal;
+      if ( version < 16 )
+      {
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("HpOffsetAtHp"), &var );
+         m_HpOffsetAtHp[pgsTypes::metStart] = var.dblVal;
+         m_HpOffsetAtHp[pgsTypes::metEnd]   = var.dblVal;
+      }
+      else
+      {
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("HpOffsetAtHp1"), &var );
+         m_HpOffsetAtHp[pgsTypes::metStart] = var.dblVal;
+         hr = pStrLoad->get_Property(_T("HpOffsetAtHp2"), &var );
+         m_HpOffsetAtHp[pgsTypes::metEnd]   = var.dblVal;
+      }
 
       if (version<8.0)
       {
@@ -701,6 +735,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
             hr = strandRow.Load(pStrLoad,pProgress);
             m_StrandRows.push_back(strandRow);
          }
+         std::sort(m_StrandRows.begin(),m_StrandRows.end());
          hr = pStrLoad->EndUnit();
       }
       else
@@ -1147,12 +1182,14 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("PrestressData"),15.0);
+   pStrSave->BeginUnit(_T("PrestressData"),16.0);
 
    pStrSave->put_Property(_T("HsoEndMeasurement"), CComVariant(m_HsoEndMeasurement));
-   pStrSave->put_Property(_T("HpOffsetAtEnd"), CComVariant(m_HpOffsetAtEnd));
+   pStrSave->put_Property(_T("HpOffsetAtStart"), CComVariant(m_HpOffsetAtEnd[pgsTypes::metStart])); // added in version 16
+   pStrSave->put_Property(_T("HpOffsetAtEnd"), CComVariant(m_HpOffsetAtEnd[pgsTypes::metEnd]));
    pStrSave->put_Property(_T("HsoHpMeasurement"), CComVariant(m_HsoHpMeasurement));
-   pStrSave->put_Property(_T("HpOffsetAtHp"), CComVariant(m_HpOffsetAtHp));
+   pStrSave->put_Property(_T("HpOffsetAtHp1"), CComVariant(m_HpOffsetAtHp[pgsTypes::metStart])); // changed in version 16
+   pStrSave->put_Property(_T("HpOffsetAtHp2"), CComVariant(m_HpOffsetAtHp[pgsTypes::metEnd])); // added in version 16
 
    pStrSave->put_Property(_T("NumPermStrandsType"), CComVariant(m_NumPermStrandsType));
 
@@ -1580,9 +1617,12 @@ void CStrandData::ResetPrestressData()
 
    // convert to legacy since this is the only measurement that is sure to fit in the girder
    m_HsoEndMeasurement  = hsoLEGACY;
-   m_HpOffsetAtEnd      = 0.0;
    m_HsoHpMeasurement   = hsoLEGACY;
-   m_HpOffsetAtHp       = 0.0;
+   for ( int i = 0; i < 2; i++ )
+   {
+      m_HpOffsetAtEnd[i] = 0.0;
+      m_HpOffsetAtHp[i]  = 0.0;
+   }
 
    m_AdjustableStrandType = pgsTypes::asHarped;
 }
@@ -1733,14 +1773,14 @@ HarpedStrandOffsetType CStrandData::GetHarpStrandOffsetMeasurementAtEnd() const
    return m_HsoEndMeasurement;
 }
 
-void CStrandData::SetHarpStrandOffsetAtEnd(Float64 offset)
+void CStrandData::SetHarpStrandOffsetAtEnd(pgsTypes::MemberEndType endType,Float64 offset)
 {
-   m_HpOffsetAtEnd = offset;
+   m_HpOffsetAtEnd[endType] = offset;
 }
 
-Float64 CStrandData::GetHarpStrandOffsetAtEnd() const
+Float64 CStrandData::GetHarpStrandOffsetAtEnd(pgsTypes::MemberEndType endType) const
 {
-   return m_HpOffsetAtEnd;
+   return m_HpOffsetAtEnd[endType];
 }
 
 void CStrandData::SetHarpStrandOffsetMeasurementAtHarpPoint(HarpedStrandOffsetType offsetType)
@@ -1753,14 +1793,14 @@ HarpedStrandOffsetType CStrandData::GetHarpStrandOffsetMeasurementAtHarpPoint() 
    return m_HsoHpMeasurement;
 }
 
-void CStrandData::SetHarpStrandOffsetAtHarpPoint(Float64 offset)
+void CStrandData::SetHarpStrandOffsetAtHarpPoint(pgsTypes::MemberEndType endType,Float64 offset)
 {
-   m_HpOffsetAtHp = offset;
+   m_HpOffsetAtHp[endType] = offset;
 }
 
-Float64 CStrandData::GetHarpStrandOffsetAtHarpPoint() const
+Float64 CStrandData::GetHarpStrandOffsetAtHarpPoint(pgsTypes::MemberEndType endType) const
 {
-   return m_HpOffsetAtHp;
+   return m_HpOffsetAtHp[endType];
 }
 
 void CStrandData::SetTemporaryStrandUsage(pgsTypes::TTSUsage ttsUsage)
@@ -1793,8 +1833,12 @@ void CStrandData::MakeCopy(const CStrandData& rOther)
 
    m_HsoEndMeasurement  = rOther.m_HsoEndMeasurement;
    m_HsoHpMeasurement   = rOther.m_HsoHpMeasurement;
-   m_HpOffsetAtEnd      = rOther.m_HpOffsetAtEnd;
-   m_HpOffsetAtHp       = rOther.m_HpOffsetAtHp;
+
+   for ( int i = 0; i < 2; i++ )
+   {
+      m_HpOffsetAtEnd[i]      = rOther.m_HpOffsetAtEnd[i];
+      m_HpOffsetAtHp[i]       = rOther.m_HpOffsetAtHp[i];
+   }
 
    m_NumPermStrandsType = rOther.m_NumPermStrandsType;
 
@@ -1880,12 +1924,20 @@ void CStrandData::ProcessStrandRowData()
       }
    }
 
-
+   std::sort(m_StrandRows.begin(),m_StrandRows.end()); // must be in sorted order so we work with each strand type one at a time
    CStrandRowCollection::iterator iter(m_StrandRows.begin());
    CStrandRowCollection::iterator iterEnd(m_StrandRows.end());
+   pgsTypes::StrandType lastStrandType = pgsTypes::Permanent; // not valid for this case so it is a good one to start with
    for ( ; iter != iterEnd; iter++ )
    {
       CStrandRow& strandRow(*iter);
+   
+      if ( lastStrandType != strandRow.m_StrandType )
+      {
+         // strand type changed so we are on to a new grid... reset rowStartGridIdx
+         rowStartGridIdx = 0;
+         lastStrandType = strandRow.m_StrandType;
+      }
 
       GridIndexType nRowGridPoints = strandRow.m_nStrands/2; // # grid points in this row
 
@@ -1902,7 +1954,7 @@ void CStrandData::ProcessStrandRowData()
                ATLASSERT(strandRow.m_StrandType != pgsTypes::Temporary); // extended strands can't be temporary
                ATLASSERT(!strandRow.m_bIsDebonded[end]); // extended strands can't be debonded
 
-               m_NextendedStrands[pgsTypes::Straight][end].push_back(gridIdx);
+               m_NextendedStrands[strandRow.m_StrandType][end].push_back(gridIdx);
             } // end if strand extension
          }
 
@@ -1929,7 +1981,7 @@ void CStrandData::ProcessStrandRowData()
                }
             }
 
-            m_Debond[pgsTypes::Straight].push_back(debondData);
+            m_Debond[strandRow.m_StrandType].push_back(debondData);
          } // end if debond
       } // next grid point
 

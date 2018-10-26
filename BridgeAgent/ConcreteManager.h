@@ -141,6 +141,11 @@ public:
 
    matConcrete* GetPierConcrete(PierIndexType pierIdx);
 
+   Float64 GetSegmentLambda(const CSegmentKey& segmentKey);
+   Float64 GetClosureJointLambda(const CClosureKey& closureKey);
+   Float64 GetDeckLambda();
+   Float64 GetRailingSystemLambda(pgsTypes::TrafficBarrierOrientation orientation);
+
 private:
    IBroker* m_pBroker; // weak reference
    StatusGroupIDType m_StatusGroupID;

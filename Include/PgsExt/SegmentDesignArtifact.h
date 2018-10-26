@@ -229,11 +229,11 @@ public:
    bool GetUsedMaxPjackHarpedStrands() const;
 
    // offsets are measured from original strand grid location from library
-   void SetHarpStrandOffsetEnd(Float64 oe);
-   Float64 GetHarpStrandOffsetEnd() const;
+   void SetHarpStrandOffsetEnd(pgsTypes::MemberEndType endType,Float64 oe);
+   Float64 GetHarpStrandOffsetEnd(pgsTypes::MemberEndType endType) const;
 
-   void SetHarpStrandOffsetHp(Float64 ohp);
-   Float64 GetHarpStrandOffsetHp() const;
+   void SetHarpStrandOffsetHp(pgsTypes::MemberEndType endType,Float64 ohp);
+   Float64 GetHarpStrandOffsetHp(pgsTypes::MemberEndType endType) const;
 
    DebondConfigCollection GetStraightStrandDebondInfo() const;
    void SetStraightStrandDebondInfo(const DebondConfigCollection& dbinfo);
@@ -316,8 +316,8 @@ private:
    bool    m_PjHUsedMax;
    Float64 m_PjT;
    bool    m_PjTUsedMax;
-   Float64 m_HarpStrandOffsetEnd;
-   Float64 m_HarpStrandOffsetHp;
+   Float64 m_HarpStrandOffsetEnd[2]; // use pgsTypes::MemberEndType to access array
+   Float64 m_HarpStrandOffsetHp[2];  // use pgsTypes::MemberEndType to access array
 
    ConfigStrandFillVector m_RaisedAdjustableStrandFill;
 

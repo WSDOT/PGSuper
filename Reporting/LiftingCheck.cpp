@@ -124,6 +124,8 @@ void CLiftingCheck::Build(rptChapter* pChapter,
 
    Float64 t2 = pSpecEntry->GetLiftingTensionStressFactorWithRebar();
 
+   bool bLambda = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() ? true : false);
+
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -150,10 +152,15 @@ void CLiftingCheck::Build(rptChapter* pChapter,
 
       Float64 capCompression = pSegmentLiftingSpecCriteria->GetLiftingAllowableCompressiveConcreteStress(thisSegmentKey);
 
-      *p <<_T("Maximum allowable concrete compressive stress = -") << c << RPT_FCI << _T(" = ") << 
-         stress.SetValue(capCompression)<< _T(" ") <<
-         stress.GetUnitTag()<< rptNewLine;
-      *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t) << symbol(ROOT) << RPT_FCI;
+      *p <<_T("Maximum allowable concrete compressive stress = -") << c;
+      *p << RPT_FCI << _T(" = ") << stress.SetValue(capCompression)<< _T(" ") << stress.GetUnitTag()<< rptNewLine;
+
+      *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t) ;
+      if ( bLambda )
+      {
+         *p << symbol(lambda);
+      }
+      *p << symbol(ROOT) << RPT_FCI;
       if ( b_t_max )
       {
          *p << _T(" but not more than: ") << stress.SetValue(t_max);
@@ -161,7 +168,12 @@ void CLiftingCheck::Build(rptChapter* pChapter,
       *p << _T(" = ") << stress.SetValue(pSegmentLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStress(thisSegmentKey))<< _T(" ") <<
          stress.GetUnitTag()<< rptNewLine;
 
-      *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t2) << symbol(ROOT) << RPT_FCI
+      *p <<_T("Maximum allowable concrete tensile stress = ") << tension_coeff.SetValue(t2);
+      if ( bLambda )
+      {
+         *p << symbol(lambda);
+      }
+      *p << symbol(ROOT) << RPT_FCI
          << _T(" = ") << stress.SetValue(pSegmentLiftingSpecCriteria->GetLiftingWithMildRebarAllowableStress(thisSegmentKey)) << _T(" ") << stress.GetUnitTag()
          << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
 
@@ -360,8 +372,9 @@ void CLiftingCheck::Build(rptChapter* pChapter,
       }
 
       // FS for failure
-      p = new rptParagraph;
-      *pChapter << p;
+      pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+      *pChapter << pTitle;
+      *pTitle << _T("Factor of Safety Against Failure");
 
       p_table = pgsReportStyleHolder::CreateTableNoHeading(2);
 

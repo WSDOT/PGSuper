@@ -353,7 +353,7 @@ void CIBeamFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType stat
    }
 }
 
-void CIBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
+void CIBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
@@ -378,7 +378,7 @@ void CIBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions
    GetDimensions(dimensions,d1,d2,d3,d4,d5,d6,d7,w1,w2,w3,w4,t1,t2,c1,ebWidth,ebLength,ebTransition);
 
    Float64 width = Min(t1,t2);
-   Float64 depth = d1 + d2 + d3 + d4 + d5 + d6 + d7;
+   Float64 depth = (Hg < 0 ? d1 + d2 + d3 + d4 + d5 + d6 + d7 : Hg);
 
    harp_rect->put_Width(width);
    harp_rect->put_Height(depth);
@@ -402,7 +402,7 @@ void CIBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions
    Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
    Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
 
-   hr = configurer->SetHarpedStrandOffsetBounds(0, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
+   hr = configurer->SetHarpedStrandOffsetBounds(0, depth, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
 
    ATLASSERT (SUCCEEDED(hr));
 
@@ -673,6 +673,11 @@ bool CIBeamFactory::IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey)
    }
 
    return bPrismatic;
+}
+
+bool CIBeamFactory::IsSymmetric(IBroker* pBroker,const CSegmentKey& segmentKey)
+{
+   return true;
 }
 
 Float64 CIBeamFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey)

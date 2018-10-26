@@ -355,6 +355,7 @@ Float64 CSpecAgentImp::GetAllowableTensionStress(pgsTypes::LoadRatingType rating
    IntervalIndexType ratingIntervalIdx = pIntervals->GetLoadRatingInterval();
 
    Float64 fc;
+   Float64 lambda;
    GET_IFACE(IMaterials,pMaterials);
    if ( IsGirderStressLocation(stressLocation) )
    {
@@ -363,22 +364,25 @@ Float64 CSpecAgentImp::GetAllowableTensionStress(pgsTypes::LoadRatingType rating
       if ( pPoi->IsInClosureJoint(poi,&closureKey) )
       {
          fc = pMaterials->GetClosureJointDesignFc(closureKey,ratingIntervalIdx);
+         lambda = pMaterials->GetClosureJointLambda(closureKey);
       }
       else
       {
          fc = pMaterials->GetSegmentDesignFc(segmentKey,ratingIntervalIdx);
+         lambda = pMaterials->GetSegmentLambda(segmentKey);
       }
    }
    else
    {
       ATLASSERT(IsDeckStressLocation(stressLocation));
       fc = pMaterials->GetDeckDesignFc(ratingIntervalIdx);
+      lambda = pMaterials->GetDeckLambda();
    }
 
    GET_IFACE(IRatingSpecification,pRatingSpec);
    Float64 x = pRatingSpec->GetAllowableTensionCoefficient(ratingType);
 
-   Float64 fallow = x*sqrt(fc);
+   Float64 fallow = x*lambda*sqrt(fc);
    return fallow;
 }
 
@@ -633,6 +637,7 @@ std::vector<Float64> CSpecAgentImp::GetDeckAllowableTensionStress(const std::vec
 Float64 CSpecAgentImp::GetSegmentAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc)
 {
    Float64 x = GetSegmentAllowableCompressionStressCoefficient(poi,intervalIdx,ls);
+
    // Add a minus sign because compression is negative
    return -x*fc;
 }
@@ -640,6 +645,11 @@ Float64 CSpecAgentImp::GetSegmentAllowableCompressionStress(const pgsPointOfInte
 Float64 CSpecAgentImp::GetClosureJointAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc)
 {
    Float64 x = GetClosureJointAllowableCompressionStressCoefficient(poi,intervalIdx,ls);
+
+   GET_IFACE(IPointOfInterest,pPoi);
+   CClosureKey closureKey;
+   VERIFY( pPoi->IsInClosureJoint(poi,&closureKey) );
+
    // Add a minus sign because compression is negative
    return -x*fc;
 }
@@ -647,6 +657,7 @@ Float64 CSpecAgentImp::GetClosureJointAllowableCompressionStress(const pgsPointO
 Float64 CSpecAgentImp::GetDeckAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc)
 {
    Float64 x = GetDeckAllowableCompressionStressCoefficient(poi,intervalIdx,ls);
+
    // Add a minus sign because compression is negative
    return -x*fc;
 }
@@ -658,7 +669,10 @@ Float64 CSpecAgentImp::GetSegmentAllowableTensionStress(const pgsPointOfInterest
    Float64 fmax; // In system units
    GetSegmentAllowableTensionStressCoefficient(poi,intervalIdx,ls,bWithBondedReinforcement,&x,&bCheckMax,&fmax);
 
-   Float64 f = x * sqrt( fc );
+   GET_IFACE(IMaterials,pMaterials);
+   Float64 lambda = pMaterials->GetSegmentLambda(poi.GetSegmentKey());
+
+   Float64 f = x * lambda * sqrt( fc );
    if ( bCheckMax )
    {
       f = Min(f,fmax);
@@ -674,7 +688,14 @@ Float64 CSpecAgentImp::GetClosureJointAllowableTensionStress(const pgsPointOfInt
    Float64 fmax; // In system units
    GetClosureJointAllowableTensionStressCoefficient(poi,intervalIdx,ls,bWithBondedReinforcement,bInPrecompressedTensileZone,&x,&bCheckMax,&fmax);
 
-   Float64 f = x * sqrt( fc );
+   GET_IFACE(IPointOfInterest,pPoi);
+   CClosureKey closureKey;
+   VERIFY( pPoi->IsInClosureJoint(poi,&closureKey) );
+
+   GET_IFACE(IMaterials,pMaterials);
+   Float64 lambda = pMaterials->GetClosureJointLambda(closureKey);
+
+   Float64 f = x * lambda * sqrt( fc );
    if ( bCheckMax )
    {
       f = Min(f,fmax);
@@ -690,7 +711,10 @@ Float64 CSpecAgentImp::GetDeckAllowableTensionStress(const pgsPointOfInterest& p
    Float64 fmax; // In system units
    GetDeckAllowableTensionStressCoefficient(poi,intervalIdx,ls,bWithBondedReinforcement,&x,&bCheckMax,&fmax);
 
-   Float64 f = x * sqrt( fc );
+   GET_IFACE(IMaterials,pMaterials);
+   Float64 lambda = pMaterials->GetDeckLambda();
+
+   Float64 f = x * lambda * sqrt( fc );
    if ( bCheckMax )
    {
       f = Min(f,fmax);
@@ -713,10 +737,11 @@ Float64 CSpecAgentImp::GetLiftingWithMildRebarAllowableStress(const CSegmentKey&
 
    GET_IFACE(IMaterials,pMaterial);
    Float64 fci = pMaterial->GetSegmentDesignFc(segmentKey,liftSegmentIntervalIdx);
+   Float64 lambda = pMaterial->GetSegmentLambda(segmentKey);
 
    Float64 x = GetLiftingWithMildRebarAllowableStressFactor();
 
-   return x*sqrt(fci);
+   return x*lambda*sqrt(fci);
 }
 
 Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStressFactor()
@@ -733,10 +758,11 @@ Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStress(const CSegmentKey&
 
    GET_IFACE(IMaterials,pMaterial);
    Float64 fc = pMaterial->GetSegmentDesignFc(segmentKey,haulSegmentIntervalIdx);
+   Float64 lambda = pMaterial->GetSegmentLambda(segmentKey);
 
    Float64 x = GetHaulingWithMildRebarAllowableStressFactor();
 
-   return x*sqrt(fc);
+   return x*lambda*sqrt(fc);
 }
 
 Float64 CSpecAgentImp::GetHaulingModulusOfRupture(const CSegmentKey& segmentKey)
@@ -750,13 +776,17 @@ Float64 CSpecAgentImp::GetHaulingModulusOfRupture(const CSegmentKey& segmentKey)
    GET_IFACE(IMaterials,pMaterial);
    pgsTypes::ConcreteType type = pMaterial->GetSegmentConcreteType(segmentKey);
 
-   return GetHaulingModulusOfRupture(fc,type);
+   return GetHaulingModulusOfRupture(segmentKey,fc,type);
 }
 
-Float64 CSpecAgentImp::GetHaulingModulusOfRupture(Float64 fc,pgsTypes::ConcreteType concType)
+Float64 CSpecAgentImp::GetHaulingModulusOfRupture(const CSegmentKey& segmentKey,Float64 fc,pgsTypes::ConcreteType concType)
 {
    Float64 x = GetHaulingModulusOfRuptureFactor(concType);
-   return x*sqrt(fc);
+
+   GET_IFACE(IMaterials,pMaterials);
+   Float64 lambda = pMaterials->GetSegmentLambda(segmentKey);
+
+   return x*lambda*sqrt(fc);
 }
 
 Float64 CSpecAgentImp::GetHaulingModulusOfRuptureFactor(pgsTypes::ConcreteType concType)
@@ -1062,11 +1092,19 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
          }
          else 
          {
-            ATLASSERT( ls == pgsTypes::ServiceIII  );
-            GET_IFACE(IEnvironment,pEnv);
-            int exposureCondition = pEnv->GetExposureCondition() == expNormal ? EXPOSURE_NORMAL : EXPOSURE_SEVERE;
-            x = pSpec->GetFinalTensionStressFactor(exposureCondition);
-            pSpec->GetFinalTensionStressFactor(exposureCondition,&bCheckMax,&fmax);
+            if ( ls == pgsTypes::ServiceI )
+            {
+               x = pSpec->GetBs2MaxConcreteTens();
+               pSpec->GetBs2AbsMaxConcreteTens(&bCheckMax,&fmax);
+            }
+            else
+            {
+               ATLASSERT( ls == pgsTypes::ServiceIII  );
+               GET_IFACE(IEnvironment,pEnv);
+               int exposureCondition = pEnv->GetExposureCondition() == expNormal ? EXPOSURE_NORMAL : EXPOSURE_SEVERE;
+               x = pSpec->GetFinalTensionStressFactor(exposureCondition);
+               pSpec->GetFinalTensionStressFactor(exposureCondition,&bCheckMax,&fmax);
+            }
          }
       } // end if bIsStressingInterval
    }// end if,else-if 
@@ -1200,12 +1238,18 @@ void CSpecAgentImp::GetDeckAllowableTensionStressCoefficient(const pgsPointOfInt
    *pMaxValue = fmax;
 }
 
-std::vector<pgsTypes::LimitState> CSpecAgentImp::GetStressCheckLimitStates()
+std::vector<pgsTypes::LimitState> CSpecAgentImp::GetStressCheckLimitStates(IntervalIndexType intervalIdx)
 {
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+
    std::vector<pgsTypes::LimitState> vLimitStates;
    vLimitStates.push_back(pgsTypes::ServiceI);
-   vLimitStates.push_back(pgsTypes::ServiceIII);
-   vLimitStates.push_back(lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI);
+   if ( liveLoadIntervalIdx <= intervalIdx || intervalIdx == INVALID_INDEX )
+   {
+      vLimitStates.push_back(pgsTypes::ServiceIII);
+      vLimitStates.push_back(lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI);
+   }
    return vLimitStates;
 }
 
@@ -1570,8 +1614,9 @@ Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStress(const CSegmentKe
 
    GET_IFACE(IMaterials,pMaterial);
    Float64 fci = pMaterial->GetSegmentDesignFc(segmentKey,liftSegmentIntervalIdx);
+   Float64 lambda = pMaterial->GetSegmentLambda(segmentKey);
 
-   Float64 f = factor * sqrt( fci );
+   Float64 f = factor * lambda * sqrt( fci );
 
    bool is_max;
    Float64 maxval;
@@ -1617,13 +1662,16 @@ Float64 CSpecAgentImp::GetLiftingAllowableCompressionFactor()
    return -factor;
 }
 
-Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStressEx(Float64 fci, bool withMinRebar)
+Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey,Float64 fci, bool withMinRebar)
 {
+   GET_IFACE(IMaterials,pMaterials);
+   Float64 lambda = pMaterials->GetSegmentLambda(segmentKey);
+
    if (withMinRebar)
    {
       Float64 x = GetLiftingWithMildRebarAllowableStressFactor();
 
-      Float64 f = x * sqrt( fci );
+      Float64 f = x * lambda * sqrt( fci );
       return f;
    }
    else
@@ -1634,7 +1682,7 @@ Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStressEx(Float64 fci, b
 
       GetLiftingAllowableTensileConcreteStressParameters(&x,&bCheckMax,&fmax);
 
-      Float64 f = x * sqrt( fci );
+      Float64 f = x * lambda * sqrt( fci );
 
       if ( bCheckMax )
       {
@@ -1645,7 +1693,7 @@ Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStressEx(Float64 fci, b
    }
 }
 
-Float64 CSpecAgentImp::GetLiftingAllowableCompressiveConcreteStressEx(Float64 fci)
+Float64 CSpecAgentImp::GetLiftingAllowableCompressiveConcreteStressEx(const CSegmentKey &segmentKey,Float64 fci)
 {
    Float64 x = GetLiftingAllowableCompressionFactor();
 
@@ -1689,13 +1737,17 @@ Float64 CSpecAgentImp::GetLiftingModulusOfRupture(const CSegmentKey& segmentKey)
    Float64 fci = pMaterials->GetSegmentDesignFc(segmentKey,intervalIdx);
    pgsTypes::ConcreteType type = pMaterials->GetSegmentConcreteType(segmentKey);
 
-   return GetLiftingModulusOfRupture(fci,type);
+   return GetLiftingModulusOfRupture(segmentKey,fci,type);
 }
 
-Float64 CSpecAgentImp::GetLiftingModulusOfRupture(Float64 fci,pgsTypes::ConcreteType concType)
+Float64 CSpecAgentImp::GetLiftingModulusOfRupture(const CSegmentKey& segmentKey,Float64 fci,pgsTypes::ConcreteType concType)
 {
    Float64 x = GetLiftingModulusOfRuptureFactor(concType);
-   return x*sqrt(fci);
+
+   GET_IFACE(IMaterials,pMaterials);
+   Float64 lambda = pMaterials->GetSegmentLambda(segmentKey);
+
+   return x*lambda*sqrt(fci);
 }
 
 Float64 CSpecAgentImp::GetLiftingModulusOfRuptureFactor(pgsTypes::ConcreteType concType)
@@ -1794,8 +1846,9 @@ Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStress(const CSegmentKe
 
    GET_IFACE(IMaterials,pMaterial);
    Float64 fc = pMaterial->GetSegmentDesignFc(segmentKey,haulSegmentIntervalIdx);
+   Float64 lambda = pMaterial->GetSegmentLambda(segmentKey);
 
-   Float64 allow = factor * sqrt( fc );
+   Float64 allow = factor * lambda * sqrt( fc );
 
    bool is_max;
    Float64 maxval;
@@ -1836,13 +1889,16 @@ Float64 CSpecAgentImp::GetHaulingAllowableCompressionFactor()
    return -factor;
 }
 
-Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressEx(Float64 fc, bool includeRebar)
+Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc, bool includeRebar)
 {
+   GET_IFACE(IMaterials,pMaterials);
+   Float64 lambda = pMaterials->GetSegmentLambda(segmentKey);
+
    if (includeRebar)
    {
       Float64 x = GetHaulingWithMildRebarAllowableStressFactor();
 
-      Float64 f = x * sqrt( fc );
+      Float64 f = x * lambda * sqrt( fc );
       return f;
    }
    else
@@ -1853,7 +1909,7 @@ Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressEx(Float64 fc, bo
 
       GetHaulingAllowableTensileConcreteStressParameters(&x,&bCheckMax,&fmax);
 
-      Float64 f = x * sqrt( fc );
+      Float64 f = x * lambda * sqrt( fc );
 
       if ( bCheckMax )
       {
@@ -1864,7 +1920,7 @@ Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressEx(Float64 fc, bo
    }
 }
 
-Float64 CSpecAgentImp::GetHaulingAllowableCompressiveConcreteStressEx(Float64 fc)
+Float64 CSpecAgentImp::GetHaulingAllowableCompressiveConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc)
 {
    Float64 x = GetHaulingAllowableCompressionFactor();
 
@@ -2040,14 +2096,14 @@ void CSpecAgentImp::GetKdotHaulingAllowableTensileConcreteStressParameters(Float
    GetHaulingAllowableTensileConcreteStressParameters(factor, pbMax, fmax);
 }
 
-Float64 CSpecAgentImp::GetKdotHaulingAllowableTensileConcreteStressEx(Float64 fc, bool includeRebar)
+Float64 CSpecAgentImp::GetKdotHaulingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc, bool includeRebar)
 {
-   return GetHaulingAllowableTensileConcreteStressEx(fc, includeRebar);
+   return GetHaulingAllowableTensileConcreteStressEx(segmentKey, fc, includeRebar);
 }
 
-Float64 CSpecAgentImp::GetKdotHaulingAllowableCompressiveConcreteStressEx(Float64 fc)
+Float64 CSpecAgentImp::GetKdotHaulingAllowableCompressiveConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc)
 {
-   return GetHaulingAllowableCompressiveConcreteStressEx(fc);
+   return GetHaulingAllowableCompressiveConcreteStressEx(segmentKey,fc);
 }
 
 void CSpecAgentImp::GetMinimumHaulingSupportLocation(Float64* pHardDistance, bool* pUseFactoredLength, Float64* pLengthFactor) const

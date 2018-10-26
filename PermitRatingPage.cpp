@@ -272,17 +272,20 @@ void CPermitRatingPage::OnPermitTypeChanged()
    GET_IFACE2( broker, ILibrary, pLib );
    const RatingLibraryEntry* pRatingEntry = pLib->GetRatingEntry( pParent->m_GeneralPage.m_Data.CriteriaName.c_str() );
 
-   const CLiveLoadFactorModel& permit = pRatingEntry->GetLiveLoadFactorModel(permitType);
-   if ( !permit.AllowUserOverride() )
+   bool bAllowUserOverride;
+   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
    {
-      GetDlgItem(IDC_STRENGTH_II_LL_PERMIT2)->EnableWindow(FALSE);
-      GetDlgItem(IDC_SERVICE_I_LL_PERMIT2)->EnableWindow(FALSE);
+      const CLiveLoadFactorModel& permit = pRatingEntry->GetLiveLoadFactorModel(permitType);
+      bAllowUserOverride = permit.AllowUserOverride();
    }
    else
    {
-      GetDlgItem(IDC_STRENGTH_II_LL_PERMIT2)->EnableWindow(TRUE);
-      GetDlgItem(IDC_SERVICE_I_LL_PERMIT2)->EnableWindow(TRUE);
+      const CLiveLoadFactorModel2& permit = pRatingEntry->GetLiveLoadFactorModel2(permitType);
+      bAllowUserOverride = permit.AllowUserOverride();
    }
+
+   GetDlgItem(IDC_STRENGTH_II_LL_SPECIAL)->EnableWindow(bAllowUserOverride ? TRUE : FALSE);
+   GetDlgItem(IDC_SERVICE_I_LL_SPECIAL)->EnableWindow(bAllowUserOverride ? TRUE : FALSE);
 }
 
 BOOL CPermitRatingPage::OnSetActive()
@@ -301,18 +304,29 @@ BOOL CPermitRatingPage::OnSetActive()
    CDataExchange dx(this,false);
    Float64 gLL = -1;
 
-   const CLiveLoadFactorModel& permit = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
-   if ( !permit.AllowUserOverride() )
+   bool bAllowUserOverride;
+   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+   {
+      const CLiveLoadFactorModel& permit = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
+      bAllowUserOverride = permit.AllowUserOverride();
+   }
+   else
+   {
+      const CLiveLoadFactorModel2& permit = pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrPermit_Routine);
+      bAllowUserOverride = permit.AllowUserOverride();
+   }
+
+   if ( bAllowUserOverride )
+   {
+      GetDlgItem(IDC_STRENGTH_II_LL_PERMIT)->EnableWindow(TRUE);
+      GetDlgItem(IDC_SERVICE_I_LL_PERMIT)->EnableWindow(TRUE);
+   }
+   else
    {
       DDX_Keyword(&dx,IDC_STRENGTH_II_LL_PERMIT,_T("Compute"),gLL);
       DDX_Keyword(&dx,IDC_SERVICE_I_LL_PERMIT,_T("Compute"),gLL);
       GetDlgItem(IDC_STRENGTH_II_LL_PERMIT)->EnableWindow(FALSE);
       GetDlgItem(IDC_SERVICE_I_LL_PERMIT)->EnableWindow(FALSE);
-   }
-   else
-   {
-      GetDlgItem(IDC_STRENGTH_II_LL_PERMIT)->EnableWindow(TRUE);
-      GetDlgItem(IDC_SERVICE_I_LL_PERMIT)->EnableWindow(TRUE);
    }
 
    GET_IFACE2(broker, ILossParameters, pLossParams);

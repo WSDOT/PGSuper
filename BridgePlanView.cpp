@@ -850,7 +850,7 @@ void CBridgePlanView::UpdateSegmentTooltips()
 
             CString strMsg3;
             strMsg3.Format(_T("\r\n\r\n%s\r\nf'ci: %s\r\nf'c: %s"),
-                           matConcrete::GetTypeName((matConcrete::Type)pMaterial->GetSegmentConcreteType(segmentKey),true).c_str(),
+                           lrfdConcreteUtil::GetTypeName((matConcrete::Type)pMaterial->GetSegmentConcreteType(segmentKey),true).c_str(),
                            FormatDimension(fci,pDisplayUnits->GetStressUnit()),
                            FormatDimension(fc, pDisplayUnits->GetStressUnit())
                            );
@@ -968,7 +968,7 @@ void CBridgePlanView::UpdateClosureJointTooltips()
 
             CString strMsg2;
             strMsg2.Format(_T("\r\n\r\n%s\r\nf'ci: %s\r\nf'c: %s"),
-                           matConcrete::GetTypeName((matConcrete::Type)pClosureJoint->GetConcrete().Type,true).c_str(),
+                           lrfdConcreteUtil::GetTypeName((matConcrete::Type)pClosureJoint->GetConcrete().Type,true).c_str(),
                            FormatDimension(fci,pDisplayUnits->GetStressUnit()),
                            FormatDimension(fc, pDisplayUnits->GetStressUnit())
                            );

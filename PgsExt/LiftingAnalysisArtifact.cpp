@@ -1121,7 +1121,7 @@ void pgsLiftingAnalysisArtifact::GetGirderStress(
       for ( ; poiIter != poiIterEnd; poiIter++ )
       {
          const pgsPointOfInterest& poi = *poiIter;
-         if ( poi == thisPoi )
+         if ( poi.AtSamePlace(thisPoi) )
          {
             Float64 fTopPS,fTopImpactUp,fTopNoImpact,fTopImpactDown;
             liftStressArtifact.GetTopFiberStress(&fTopPS,&fTopImpactUp,&fTopNoImpact,&fTopImpactDown);

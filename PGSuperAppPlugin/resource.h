@@ -385,12 +385,15 @@
 #define IDC_SHIPPING2_TAG               1116
 #define IDC_SHIPPING_TAG                1116
 #define IDC_FINAL_TAG                   1117
+#define IDC_HPOFFSET_START              1117
 #define IDC_HPOFFSET_END_UNIT           1118
 #define IDC_LIFTING                     1118
 #define IDC_HPOFFSET_HP                 1119
 #define IDC_AFTER_XFER_TAG              1119
+#define IDC_HPOFFSET_HP1                1119
 #define IDC_HPOFFSET_HP_UNIT            1120
 #define IDC_LIFTING_TAG                 1120
+#define IDC_HPOFFSET_HP1_UNIT           1120
 #define IDC_NUM_SS                      1121
 #define IDC_BEFORE_TEMP_STRAND_REMOVAL_TAG 1121
 #define IDC_NUM_SS_SPIN                 1122
@@ -410,12 +413,16 @@
 #define IDC_HS_JACK_FORCE_UNIT          1130
 #define IDC_TRAFFICBARRIER              1131
 #define IDC_TS_JACK_FORCE               1131
+#define IDC_HPOFFSET_START_UNIT         1131
 #define IDC_SPEC                        1132
 #define IDC_HS_JACK_FORCE_UNIT2         1132
 #define IDC_TS_JACK_FORCE_UNIT          1132
+#define IDC_HPOFFSET_HP2                1132
 #define IDC_NUM_TEMP                    1133
 #define IDC_HS_JACK_FORCE_UNIT3         1133
 #define IDC_LEFT_TRAFFICBARRIER         1134
+#define IDC_HPOFFSET_HP_UNIT2           1134
+#define IDC_HPOFFSET_HP2_UNIT           1134
 #define IDC_SPACING                     1135
 #define IDC_NUM_TEMP_SPIN               1136
 #define IDC_SPACING_UNIT                1137
@@ -1030,6 +1037,7 @@
 #define IDC_LIVELOAD                    1561
 #define IDC_TS_JACK                     1561
 #define IDC_IGNORE_SHRINKAGE            1561
+#define IDC_STRENGTH_II_LL_SPECIAL      1561
 #define IDC_SHOW_NUMBERS                1562
 #define IDC_NEXT_SPAN_SPACING_GRID      1562
 #define IDC_CHECK2                      1562
@@ -1047,6 +1055,7 @@
 #define IDC_LINK_TARGET_NOTE            1565
 #define IDC_SERVICE_I_LL_PERMIT2        1565
 #define IDC_FATIGUE_I_CR                1565
+#define IDC_SERVICE_I_LL_SPECIAL        1565
 #define IDC_NUMGDR_PREV_SPAN_LABEL      1566
 #define IDC_FATIGUE_I_SH                1566
 #define IDC_SERVICE_III_CR2             1566
@@ -1602,6 +1611,8 @@
 #define IDC_SERVICE_IA_CR_LABEL         1873
 #define IDC_SECONDARY_REBAR_GROUP_LABEL 1873
 #define IDC_SERVICE_IA_SH_LABEL         1874
+#define IDC_HPOFFSET_START_LABEL        1874
+#define IDC_HPOFFSET_END_LABEL          1875
 #define IDC_RATE_FOR_STRESS             1962
 #define IDC_APPLIST                     3333
 #define IDR_PGSUPER_STDTOOLBAR          12129
@@ -1762,7 +1773,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        367
 #define _APS_NEXT_COMMAND_VALUE         36994
-#define _APS_NEXT_CONTROL_VALUE         1874
+#define _APS_NEXT_CONTROL_VALUE         1876
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

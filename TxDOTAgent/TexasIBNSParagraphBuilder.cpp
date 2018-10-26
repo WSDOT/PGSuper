@@ -525,6 +525,10 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
+#if defined _DEBUG
+   GET_IFACE2(pBroker,IGirder,pGirder);
+#endif
+
    CollectionIndexType ng = endIdx-startIdx+1;
    rptRcTable* p_table = pgsReportStyleHolder::CreateTableNoHeading(ng+1,_T("TxDOT Girder Schedule"));
 
@@ -544,6 +548,8 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
    for (ColumnIndexType gdr_idx=startIdx; gdr_idx<=endIdx; gdr_idx++)
    {
       const CSegmentKey& segmentKey(segmentKeys[gdr_idx]);
+
+      ATLASSERT(pGirder->IsSymmetricSegment(segmentKey)); // this report assumes girders don't taper in depth
 
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();

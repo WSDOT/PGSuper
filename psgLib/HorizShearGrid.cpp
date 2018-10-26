@@ -418,14 +418,25 @@ matRebar::Size CHorizShearGrid::GetBarSize(ROWCOL row,ROWCOL col)
    return matRebar::bsNone;
 }
 
-bool CHorizShearGrid::GetRowData(ROWCOL nRow, CHorizontalInterfaceZoneData* pszi)
+bool CHorizShearGrid::GetRowData(ROWCOL nRow, ROWCOL numRows, CHorizontalInterfaceZoneData* pszi)
 {
    CString s = GetCellValue(nRow, 1);
    Float64 d = _tstof(s);
    if (s.IsEmpty() || (d==0.0 && s[0]!=_T('0')))
-      pszi->ZoneLength = 0;
+   {
+      if (nRow == numRows)
+      {
+         pszi->ZoneLength = Float64_Max;
+      }
+      else
+      {
+         pszi->ZoneLength = 0; // caller will catch error
+      }
+   }
    else
+   {
       pszi->ZoneLength = d;
+   }
 
    pszi->BarSize = GetBarSize(nRow,2);
 

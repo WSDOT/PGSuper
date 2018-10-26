@@ -197,15 +197,16 @@ void pgsLoadRater::MomentRating(const CGirderKey& girderKey,const std::vector<pg
          CR   = (bPositiveMoment ? vCRmax[i]   : vCRmin[i]);
          SH   = (bPositiveMoment ? vSHmax[i]   : vSHmin[i]);
          RE   = (bPositiveMoment ? vREmax[i]   : vREmin[i]);
+         PS   = (bPositiveMoment ? vPSmax[i]   : vPSmin[i]);
       }
       else
       {
          CR = 0;
          SH = 0;
          RE = 0;
+         PS = 0;
       }
 
-      PS   = (bPositiveMoment ? vPSmax[i]   : vPSmin[i]);
       LLIM = (bPositiveMoment ? vLLIMmax[i] : vLLIMmin[i]);
       PL   = (bIncludePL ? (bPositiveMoment ? vPLmax[i]   : vPLmin[i]) : 0.0);
 
@@ -359,10 +360,10 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const std::vector<pgs
 
       vREmin = pCombinedForces->GetShear(loadRatingIntervalIdx,lcRE,vPoi,batMin,rtCumulative);
       vREmax = pCombinedForces->GetShear(loadRatingIntervalIdx,lcRE,vPoi,batMax,rtCumulative);
-   }
 
-   vPSmin = pCombinedForces->GetShear(loadRatingIntervalIdx,lcPS,vPoi,batMin,rtCumulative);
-   vPSmax = pCombinedForces->GetShear(loadRatingIntervalIdx,lcPS,vPoi,batMax,rtCumulative);
+      vPSmin = pCombinedForces->GetShear(loadRatingIntervalIdx,lcPS,vPoi,batMin,rtCumulative);
+      vPSmax = pCombinedForces->GetShear(loadRatingIntervalIdx,lcPS,vPoi,batMax,rtCumulative);
+   }
 
    if ( vehicleIdx == INVALID_INDEX )
    {
@@ -420,7 +421,7 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const std::vector<pgs
       Float64 DWmin   = Min(vDWmin[i].Left(),  vDWmin[i].Right());
       Float64 DWmax   = Max(vDWmax[i].Left(),  vDWmax[i].Right());
 
-      Float64 CRmin, CRmax, SHmin, SHmax, REmin, REmax;
+      Float64 CRmin(0), CRmax(0), SHmin(0), SHmax(0), REmin(0), REmax(0), PSmin(0), PSmax(0);
       if ( bTimeStep )
       {
          CRmin = Min(vCRmin[i].Left(),  vCRmin[i].Right());
@@ -429,10 +430,21 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const std::vector<pgs
          SHmax = Max(vSHmax[i].Left(),  vSHmax[i].Right());
          REmin = Min(vREmin[i].Left(),  vREmin[i].Right());
          REmax = Max(vREmax[i].Left(),  vREmax[i].Right());
+         PSmin = Min(vPSmin[i].Left(),  vPSmin[i].Right());
+         PSmax = Max(vPSmax[i].Left(),  vPSmax[i].Right());
+      }
+      else
+      {
+         CRmin = 0;
+         CRmax = 0;
+         SHmin = 0;
+         SHmax = 0;
+         REmin = 0;
+         REmax = 0;
+         PSmin = 0;
+         PSmax = 0;
       }
 
-      Float64 PSmin   = Min(vPSmin[i].Left(),  vPSmin[i].Right());
-      Float64 PSmax   = Max(vPSmax[i].Left(),  vPSmax[i].Right());
       Float64 LLIMmin = Min(vLLIMmin[i].Left(),vLLIMmin[i].Right());
       Float64 LLIMmax = Max(vLLIMmax[i].Left(),vLLIMmax[i].Right());
       Float64 PLmin   = Min(vPLmin[i].Left(),  vPLmin[i].Right());
@@ -612,12 +624,21 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
    BOOST_FOREACH(const pgsPointOfInterest& poi,vPoi)
    {
       std::vector<pgsTypes::StressLocation> vStressLocations;
-      for ( int i = 0; i < 4; i++ )
+      for ( int i = 0; i < 2; i++ )
       {
-         pgsTypes::StressLocation stressLocation = (pgsTypes::StressLocation)i;
-         if ( pPTZ->IsInPrecompressedTensileZone(poi,limitState,stressLocation) )
+         pgsTypes::StressLocation topStressLocation = (i == 0 ? pgsTypes::TopGirder    : pgsTypes::TopDeck);
+         pgsTypes::StressLocation botStressLocation = (i == 0 ? pgsTypes::BottomGirder : pgsTypes::BottomDeck);
+
+         bool bTopPTZ, bBotPTZ;
+         pPTZ->IsInPrecompressedTensileZone(poi,limitState,topStressLocation,botStressLocation,&bTopPTZ,&bBotPTZ);
+         if ( bTopPTZ )
          {
-            vStressLocations.push_back(stressLocation);
+            vStressLocations.push_back(topStressLocation);
+         }
+
+         if ( bBotPTZ )
+         {
+            vStressLocations.push_back(botStressLocation);
          }
       }
 
@@ -640,15 +661,16 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
             pCombinedForces->GetStress(loadRatingIntervalIdx,lcCR,poi,bat,rtCumulative,stressLocation,stressLocation,&fDummy,&fCR);
             pCombinedForces->GetStress(loadRatingIntervalIdx,lcSH,poi,bat,rtCumulative,stressLocation,stressLocation,&fDummy,&fSH);
             pCombinedForces->GetStress(loadRatingIntervalIdx,lcRE,poi,bat,rtCumulative,stressLocation,stressLocation,&fDummy,&fRE);
+            pCombinedForces->GetStress(loadRatingIntervalIdx,lcPS,poi,bat,rtCumulative,stressLocation,stressLocation,&fDummy,&fPS);
          }
          else
          {
             fCR = 0;
             fSH = 0;
             fRE = 0;
+            fPS = 0;
          }
 
-         pCombinedForces->GetStress(loadRatingIntervalIdx,lcPS,poi,bat,rtCumulative,stressLocation,stressLocation,&fDummy,&fPS);
 
          Float64 fDummy1, fDummy2, fDummy3;
          VehicleIndexType truckIndex, dummyIndex1, dummyIndex2, dummyIndex3;
@@ -673,8 +695,11 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
 
          Float64 fps = pPrestress->GetStress(loadRatingIntervalIdx,poi,stressLocation,true/*include live load if applicable*/);
 
-         Float64 fpt;
-         pProductForces->GetStress(loadRatingIntervalIdx,pgsTypes::pftPostTensioning,poi,bat,rtCumulative,stressLocation,stressLocation,&fpt,&fDummy);
+         Float64 fpt = 0;
+         if ( bTimeStep )
+         {
+            pProductForces->GetStress(loadRatingIntervalIdx,pgsTypes::pftPostTensioning,poi,bat,rtCumulative,stressLocation,stressLocation,&fpt,&fDummy);
+         }
 
          // do this in the loop because the vector of POI can be for multiple segments
          Float64 condition_factor = pRatingSpec->GetGirderConditionFactor(poi.GetSegmentKey());
@@ -806,7 +831,7 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
    ATLASSERT(bTimeStep ? vPoi.size() == vCRmax.size() : true);
    ATLASSERT(bTimeStep ? vPoi.size() == vSHmax.size() : true);
    ATLASSERT(bTimeStep ? vPoi.size() == vREmax.size() : true);
-   ATLASSERT(vPoi.size()     == vPSmax.size());
+   ATLASSERT(bTimeStep ? vPoi.size() == vPSmax.size() : true);
    ATLASSERT(vPoi.size()     == vLLIMmax.size());
    ATLASSERT(vPoi.size()     == vMcr.size());
    ATLASSERT(vPoi.size()     == vCrackedSection.size());
@@ -1100,21 +1125,22 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
       Float64 DC   = (bPositiveMoment ? vDCmax[i]   : vDCmin[i]);
       Float64 DW   = (bPositiveMoment ? vDWmax[i]   : vDWmin[i]);
 
-      Float64 CR, SH, RE;
+      Float64 CR, SH, RE, PS;
       if ( bTimeStep )
       {
          CR = (bPositiveMoment ? vCRmax[i]   : vCRmin[i]);
          SH = (bPositiveMoment ? vSHmax[i]   : vSHmin[i]);
          RE = (bPositiveMoment ? vREmax[i]   : vREmin[i]);
+         PS   = (bPositiveMoment ? vPSmax[i]   : vPSmin[i]);
       }
       else
       {
          CR = 0;
          SH = 0;
          RE = 0;
+         PS = 0;
       }
 
-      Float64 PS   = (bPositiveMoment ? vPSmax[i]   : vPSmin[i]);
       Float64 LLIM = (bPositiveMoment ? vLLIMmax[i] : vLLIMmin[i]);
       Float64 PL   = (bIncludePL ? (bPositiveMoment ? vPLmax[i]   : vPLmin[i]) : 0.0);
       VehicleIndexType truck_index = vehicleIdx;
@@ -1312,10 +1338,10 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey,bool bPositiveMoment,p
 
          vREmin = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcRE,vPoi,batMin,rtCumulative);
          vREmax = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcRE,vPoi,batMax,rtCumulative);
-      }
 
-      vPSmin = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcPS,vPoi,batMin,rtCumulative);
-      vPSmax = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcPS,vPoi,batMax,rtCumulative);
+         vPSmin = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcPS,vPoi,batMin,rtCumulative);
+         vPSmax = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcPS,vPoi,batMax,rtCumulative);
+      }
 
       if ( vehicleIdx == INVALID_INDEX )
       {
@@ -1416,10 +1442,10 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey,bool bPositiveMoment,p
 
          vRelaxationMin = pProductForces->GetMoment(loadRatingIntervalIdx,pgsTypes::pftRelaxation,vPoi,batMin, rtCumulative);
          vRelaxationMax = pProductForces->GetMoment(loadRatingIntervalIdx,pgsTypes::pftRelaxation,vPoi,batMax, rtCumulative);
-      }
 
-      vSecondaryMin = pProductForces->GetMoment(loadRatingIntervalIdx,pgsTypes::pftSecondaryEffects,vPoi,batMin, rtCumulative);
-      vSecondaryMax = pProductForces->GetMoment(loadRatingIntervalIdx,pgsTypes::pftSecondaryEffects,vPoi,batMax, rtCumulative);
+         vSecondaryMin = pProductForces->GetMoment(loadRatingIntervalIdx,pgsTypes::pftSecondaryEffects,vPoi,batMin, rtCumulative);
+         vSecondaryMax = pProductForces->GetMoment(loadRatingIntervalIdx,pgsTypes::pftSecondaryEffects,vPoi,batMax, rtCumulative);
+      }
 
       if ( vehicleIdx == INVALID_INDEX )
       {
@@ -1496,10 +1522,10 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey,bool bPositiveMoment,p
 
          std::transform(vRelaxationMin.begin(),vRelaxationMin.end(),vREmin.begin(),vREmin.begin(),std::plus<Float64>());
          std::transform(vRelaxationMax.begin(),vRelaxationMax.end(),vREmax.begin(),vREmax.begin(),std::plus<Float64>());
-      }
 
-      std::transform(vSecondaryMin.begin(),vSecondaryMin.end(),vPSmin.begin(),vPSmin.begin(),std::plus<Float64>());
-      std::transform(vSecondaryMax.begin(),vSecondaryMax.end(),vPSmax.begin(),vPSmax.begin(),std::plus<Float64>());
+         std::transform(vSecondaryMin.begin(),vSecondaryMin.end(),vPSmin.begin(),vPSmin.begin(),std::plus<Float64>());
+         std::transform(vSecondaryMax.begin(),vSecondaryMax.end(),vPSmax.begin(),vPSmax.begin(),std::plus<Float64>());
+      }
    }
 }
 

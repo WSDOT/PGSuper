@@ -320,8 +320,12 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    }
 
    // WRITE DATA TO OUTPUT FILE
-   workerB.WriteString(bridgeName.c_str(),_T("STRUCTURE"), 16, (Int16)bridgeName.size(),_T("%s"));
-	//----- COL 1 ----- 
+   if (isExtendedVersion)
+   {
+      workerB.WriteString(bridgeName.c_str(),_T("STRUCTURE"), 16, (Int16)bridgeName.size(),_T("%s"));
+   }
+
+   //----- COL 1 ----- 
    workerB.WriteString(spanNumber,_T("Span"),7,3,_T("%-3s"));
 	//----- COL 2 ----- 
    workerB.WriteString(beamNumber,_T(" Gdr"),7,4,_T("%-4s"));
@@ -398,7 +402,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 
       // output
       //----- COL 10 ---- 
-      workerB.WriteInt16((Int16)dstrandNum,_T("Nh"),4,2,_T("%2d"));
+      workerB.WriteInt16((Int16)dstrandNum,_T("Nh"),(isExtendedVersion? 4:5),2,_T("%2d"));
 	   //----- COL 11 ---- 
       workerB.WriteFloat64(dstrandToEnd,_T("ToEnd"),5,4,_T("%4.1f"));
       workerB.WriteFloat64(dstrandToCL,_T("ToCL"),5,4,_T("%4.1f"));
@@ -425,6 +429,12 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    workerB.WriteFloat64(concreteRelStrength,_T(" Fci  "),7,6,_T("%6.3f"));
 	//----- COL 13 ---- 
    workerB.WriteFloat64(min28dayCompStrength,_T(" Fc   "),7,6,_T("%6.3f"));
+
+   if (isIBeam && !isExtendedVersion) // Tweak from txdot - do not affect test files
+   {
+      workerB.WriteBlankSpaces(1);
+   }
+
 	//----- COL 14 ---- 
    workerB.WriteFloat64(designLoadCompStress,_T(" fcomp"),10,6,_T("%6.3f"));
 	//----- COL 15 ---- 
@@ -768,11 +778,11 @@ void TxDOTCadWriter::WriteFinalData(FILE *fp, bool isExtended, bool isIBeam)
       Int16 nLeadingSpaces;
       if (isIBeam)
       {
-         nLeadingSpaces= isExtended ? 97 : 78; // more leading spaces for extended output
+         nLeadingSpaces= isExtended ? 97 : 62; // more leading spaces for extended output
       }
       else
       {
-         nLeadingSpaces= isExtended ? 96 : 77; // more leading spaces for extended output
+         nLeadingSpaces= isExtended ? 96 : 61; // more leading spaces for extended output
       }
 
       Int16 nrow = 1;

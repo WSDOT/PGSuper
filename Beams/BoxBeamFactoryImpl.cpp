@@ -253,6 +253,10 @@ bool CBoxBeamFactoryImpl::IsPrismatic(IBroker* pBroker,const CSegmentKey& segmen
    return IsZero(endBlockLength) ? true : false;
 }
 
+bool CBoxBeamFactoryImpl::IsSymmetric(IBroker* pBroker,const CSegmentKey& segmentKey)
+{
+   return true;
+}
 
 std::_tstring CBoxBeamFactoryImpl::GetName()
 {

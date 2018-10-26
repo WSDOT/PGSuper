@@ -378,7 +378,7 @@ void CBulbTeeFactory::CreatePsLossEngineer(IBroker* pBroker,StatusItemIDType sta
    }
 }
 
-void CBulbTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
+void CBulbTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
@@ -403,7 +403,7 @@ void CBulbTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensio
    GetDimensions(dimensions,c1,d1,d2,d3,d4,d5,d6,d7,d8,w1,w2,w3,w4,wmin,wmax,t1,t2);
 
    Float64 width = Min(t1,t2);
-   Float64 depth = d1 + d2 + d3 + d4 + d5 + d6 + d7;
+   Float64 depth = (Hg < 0 ? d1 + d2 + d3 + d4 + d5 + d6 + d7 : Hg);
 
    harp_rect->put_Width(width);
    harp_rect->put_Height(depth);
@@ -427,7 +427,7 @@ void CBulbTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensio
    Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
    Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
 
-   hr = configurer->SetHarpedStrandOffsetBounds(0, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
+   hr = configurer->SetHarpedStrandOffsetBounds(0, depth, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
 
    hr = sm.CopyTo(strandMover);
@@ -712,6 +712,11 @@ bool CBulbTeeFactory::IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey
    Float64 d8 = GetDimension(dimensions,_T("D8"));
 
    return IsZero(d8) ? true : false;
+}
+
+bool CBulbTeeFactory::IsSymmetric(IBroker* pBroker,const CSegmentKey& segmentKey)
+{
+   return true;
 }
 
 Float64 CBulbTeeFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey)

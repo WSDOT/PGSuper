@@ -130,6 +130,14 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       return pChapter;
    }
 
+   if ( !factory->IsSymmetric(pBroker,segmentKey) )
+   {
+      rptParagraph* pPara = new rptParagraph;
+      *pPara << _T("WSDOT girder schedules can only be created for constant depth sections.") << rptNewLine;
+      *pChapter << pPara;
+      return pChapter;
+   }
+
    GET_IFACE2( pBroker, IStrandGeometry, pStrandGeometry );
    StrandIndexType Nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
    if ( CLSID_SlabBeamFamily == familyCLSID && 0 < Nh )

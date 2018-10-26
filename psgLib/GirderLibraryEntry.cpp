@@ -26,7 +26,6 @@
 #include <System\IStructuredSave.h>
 #include <System\IStructuredLoad.h>
 #include <System\XStructuredLoad.h>
-#include <Units\sysUnits.h>
 
 #include <IFace\BeamFactory.h>
 
@@ -2774,6 +2773,7 @@ void GirderLibraryEntry::LoadIBeamDimensions(sysIStructuredLoad* pLoad)
 
 bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther, bool considerName) const
 {
+#pragma Reminder("UPDATE - this would be faster to return false on first fail")
    bool test = true;
 
    test &= (m_bUseDifferentHarpedGridAtEnds       == rOther.m_bUseDifferentHarpedGridAtEnds);
@@ -2868,6 +2868,14 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
 {
    pvec->clear();
 
+  CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_pBeamFactory);
+
+  if ( splicedBeamFactory )
+  {
+     //  nothing extra to validate for spliced girders
+     return;
+  }
+
    // check if strands are in girder and other possible issues
    CComPtr<IGirderSection> gdrSection;
    m_pBeamFactory->CreateGirderSection(NULL,DUMMY_AGENT_ID,m_Dimensions,-1.0,-1.0,&gdrSection);
@@ -2890,7 +2898,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
    IBeamFactory::BeamFace hbf = hpBottomFace==pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
 
    CComPtr<IStrandMover> strand_mover;
-   m_pBeamFactory->CreateStrandMover(m_Dimensions, 
+   m_pBeamFactory->CreateStrandMover(m_Dimensions, -1,
                                      etf, endTopLimit, ebf, endBottomLimit,
                                      htf, hpTopLimit,  hbf, hpBottomLimit,
                                      end_increment, hp_increment, &strand_mover);
@@ -2910,7 +2918,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
       IBeamFactory::BeamFace strtf = straightTopFace==pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
       IBeamFactory::BeamFace strbf = straightBottomFace==pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
 
-      m_pBeamFactory->CreateStrandMover(m_Dimensions, 
+      m_pBeamFactory->CreateStrandMover(m_Dimensions, -1,
                                         strtf, straightTopLimit, strbf, straightBottomLimit,
                                         strtf, straightTopLimit, strbf, straightBottomLimit,
                                         straight_increment, straight_increment, &straight_strand_mover);
@@ -3013,7 +3021,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
 
 
          VARIANT_BOOL is_within;
-         strand_mover->TestHpStrandLocation(strandLocation.m_Xhp, strandLocation.m_Yhp-height, 0.0, &is_within);
+         strand_mover->TestHpStrandLocation(etStart,height,strandLocation.m_Xhp, strandLocation.m_Yhp-height, 0.0, &is_within);
          if (is_within!=VARIANT_TRUE)
          {
             std::_tostringstream os;
@@ -3032,7 +3040,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
          // All straight case, if pertinant
          if (do_all_straight)
          {
-            straight_strand_mover->TestHpStrandLocation(strandLocation.m_Xhp, strandLocation.m_Yhp-height, 0.0, &is_within);
+            straight_strand_mover->TestHpStrandLocation(etStart,height,strandLocation.m_Xhp, strandLocation.m_Yhp-height, 0.0, &is_within);
             if (is_within!=VARIANT_TRUE)
             {
                std::_tostringstream os;
@@ -3079,7 +3087,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
                pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
             }
 
-            strand_mover->TestHpStrandLocation(0.0, strandLocation.m_Yhp-height, 0.0, &is_within);
+            strand_mover->TestHpStrandLocation(etStart,height, 0.0, strandLocation.m_Yhp-height, 0.0, &is_within);
             if (is_within!=VARIANT_TRUE)
             {
                std::_tostringstream os;
@@ -3112,7 +3120,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
             }
 
 
-            strand_mover->TestEndStrandLocation(strandLocation.m_Xstart, strandLocation.m_Ystart-height, 0.0, &is_within);
+            strand_mover->TestEndStrandLocation(etStart,height,strandLocation.m_Xstart, strandLocation.m_Ystart-height, 0.0, &is_within);
             if (is_within!=VARIANT_TRUE)
             {
                std::_tostringstream os;
@@ -3133,7 +3141,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
                   pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
                }
 
-               strand_mover->TestEndStrandLocation(0.0, strandLocation.m_Ystart-height, 0.0, &is_within);
+               strand_mover->TestEndStrandLocation(etStart,height,0.0, strandLocation.m_Ystart-height, 0.0, &is_within);
                if (is_within!=VARIANT_TRUE)
                {
                   std::_tostringstream os;
@@ -3337,46 +3345,41 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
    PrestressDesignStrategyConstIterator it = m_PrestressDesignStrategies.begin();
    while(it != m_PrestressDesignStrategies.end())
    {
-      bool did_remove(false);
-
       if ( cant_straight && (dtDesignFullyBonded==it->m_FlexuralDesignType || dtDesignFullyBondedRaised==it->m_FlexuralDesignType))
       {
          pvec->push_back(GirderEntryDataError(DesignAlgorithmStrategyMismatch,
                          _T("An all straight bonded strand flexural design algorithm strategy is selected and adjustable strands can only be harped - The strategy has been removed.") ));
 
-         m_PrestressDesignStrategies.erase(it);
-         did_remove = true;
+         it = m_PrestressDesignStrategies.erase(it);
+         continue;
       }
-
-      if ( cant_harp && dtDesignForHarping==it->m_FlexuralDesignType )
+      else if ( cant_harp && dtDesignForHarping==it->m_FlexuralDesignType )
       {
-
          pvec->push_back(GirderEntryDataError(DesignAlgorithmStrategyMismatch,
                          _T("A harped strand flexural design algorithm strategy is selected and harped strands are not allowed - The strategy has been removed.") ));
 
-         m_PrestressDesignStrategies.erase(it);
-         did_remove = true;
+         it = m_PrestressDesignStrategies.erase(it);
+         continue;
       }
+      else if ( dtDesignForHarping==it->m_FlexuralDesignType &&  GetNumHarpedStrandCoordinates()==0)
+      {
+         pvec->push_back(GirderEntryDataError(DesignAlgorithmStrategyMismatch,
+                         _T("A harped strand flexural design algorithm strategy is selected and no harped strands exist - The strategy has been removed.") ));
 
-      if ( cant_debond && (dtDesignForDebonding==it->m_FlexuralDesignType ||
+         it = m_PrestressDesignStrategies.erase(it);
+         continue;
+      }
+      else if ( cant_debond && (dtDesignForDebonding==it->m_FlexuralDesignType ||
                            dtDesignForDebondingRaised==it->m_FlexuralDesignType))
       {
-
          pvec->push_back(GirderEntryDataError(DesignAlgorithmStrategyMismatch,
                          _T("A debonded strand flexural design algorithm strategy is selected and no debondable strands exist - The strategy has been removed.") ));
 
-         m_PrestressDesignStrategies.erase(it);
-         did_remove = true;
+         it = m_PrestressDesignStrategies.erase(it);
+         continue;
       }
 
-      if (did_remove)
-      {
-         it = m_PrestressDesignStrategies.begin();
-      }
-      else
-      {
-         it++;
-      }
+      it++;
    }
 
    if (m_PrestressDesignStrategies.size()==0)
@@ -4694,7 +4697,7 @@ CShearData2 GirderLibraryEntry::LegacyShearData::ConvertToShearData() const
       zdata.BarSize = m_TopFlangeShearBarSize;
       zdata.BarSpacing = m_TopFlangeShearBarSpacing;
       zdata.nBars = 2;
-      zdata.ZoneLength=Float64_Max;
+      zdata.ZoneLength = Float64_Max;
 
       sdata.HorizontalInterfaceZones.push_back(zdata);
    }
@@ -4841,16 +4844,10 @@ void GirderLibraryEntry::SetDefaultPrestressDesignStrategy()
    // i.e., a single strategy based on prestressing in girder
    m_PrestressDesignStrategies.clear();
 
-   // old algorithm used 15ksi
-   Float64 str15 = ::ConvertToSysUnits( 15.0 ,unitMeasure::KSI);
-
    PrestressDesignStrategy ds;
-   ds.m_MaxFc  = str15;
-   ds.m_MaxFci = str15;
-
    StrandIndexType  nh = GetNumHarpedStrandCoordinates();
 
-   if (nh>0 && m_AdjustableStrandType==pgsTypes::asHarped || m_AdjustableStrandType==pgsTypes::asStraightOrHarped)
+   if (m_AdjustableStrandType==pgsTypes::asHarped || (0 < nh && m_AdjustableStrandType==pgsTypes::asStraightOrHarped) )
    {
       ds.m_FlexuralDesignType = dtDesignForHarping;
    }

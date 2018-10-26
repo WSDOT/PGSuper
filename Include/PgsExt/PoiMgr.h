@@ -61,16 +61,8 @@ public:
    pgsPoiMgr();
 
    //------------------------------------------------------------------------
-   // Copy constructor
-   pgsPoiMgr(const pgsPoiMgr& rOther);
-
-   //------------------------------------------------------------------------
    // Destructor
    virtual ~pgsPoiMgr();
-
-   //------------------------------------------------------------------------
-   // Assignment operator
-   pgsPoiMgr& operator = (const pgsPoiMgr& rOther);
 
    //------------------------------------------------------------------------
    // Adds a point of interest. Returns its unique identifier.
@@ -151,14 +143,19 @@ public:
    // Returns the number of points of interest.
    CollectionIndexType GetPointOfInterestCount() const;
 
-protected:
-   void MakeCopy(const pgsPoiMgr& rOther);
-   virtual void MakeAssignment(const pgsPoiMgr& rOther);
-
 private:
+   // make these private so we can't have copy or assignment
+   // may want it in the future, but for now, we don't want to bother
+   // copying the internal data structure
+   pgsPoiMgr(const pgsPoiMgr& rOther);
+   pgsPoiMgr& operator = (const pgsPoiMgr& rOther);
+
    static PoiIDType ms_NextID;
-   std::vector<pgsPointOfInterest> m_Poi;
    Float64 m_Tolerance;
+
+   std::map<CGirderKey,std::vector<pgsPointOfInterest>*> m_PoiData;
+   std::vector<std::vector<pgsPointOfInterest>*> GetPoiContainer(const CGirderKey& girderKey);
+   std::vector<const std::vector<pgsPointOfInterest>*> GetPoiContainer(const CGirderKey& girderKey) const;
 
 
    void AndFind(const CSegmentKey& segmentKey,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const;
@@ -167,15 +164,4 @@ private:
    void OrFind(const CSegmentKey& segmentKey,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const;
    bool OrFind(const pgsPointOfInterest& poi,const CSegmentKey& segmentKey,PoiAttributeType attrib) const;
    bool OrAttributeEvaluation(const pgsPointOfInterest& poi,PoiAttributeType attrib) const;
-
-public:
-#if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns true if the object is in a valid state, otherwise returns false.
-   virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const;
-#endif // _DEBUG
 };

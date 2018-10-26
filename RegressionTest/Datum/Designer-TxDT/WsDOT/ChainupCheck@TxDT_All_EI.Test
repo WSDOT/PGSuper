@@ -11,11 +11,10 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    8   0.00  Chain Up Creek   1      2     Chain         22   0.6  270   3.45   3.45   0   2.00   16     0    0   0   0   0   0   4.800 11.200   2.923    -2.894      880   0.408  0.736   1.682 -0.177 -0.022 -0.032 -0.231  63.91  170.30    0.00    5.00    5.00 
+ 40.00    8   0.00  Chain Up Creek   1      2     Chain         24   0.6  270   3.33   3.33   0   2.00   16     0    0   0   0   0   0   5.100 11.300   2.946    -2.915      884   0.408  0.736   1.747 -0.183 -0.022 -0.032 -0.237  72.54  186.41    0.00    5.00    5.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 10 Open to Traffic (Bridge Site 3)
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Splitting zone check failed.
 Hauling checks failed

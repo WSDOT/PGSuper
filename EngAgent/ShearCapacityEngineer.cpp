@@ -997,6 +997,9 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
    data.sx           = pscd->sx; // cracking
    data.ag           = pscd->ag;
 
+   GET_IFACE(IMaterials,pMaterials);
+   data.lambda = pMaterials->GetSegmentLambda(segmentKey);
+
 
    GET_IFACE(ISpecification, pSpec);
    GET_IFACE(ILibrary, pLib);
@@ -1120,39 +1123,47 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
          Float64 fct = ::ConvertFromSysUnits( pscd->fct, *pStressUnit );
 
          // 5.8.3.3-3
-         Float64 Vc = K * Beta * bv * dv;
-         switch( pscd->ConcreteType )
+         Float64 Vc = K * data.lambda * Beta * bv * dv;
+
+         if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
          {
-         case pgsTypes::Normal:
+            switch( pscd->ConcreteType )
+            {
+            case pgsTypes::Normal:
+               Vc *= sqrt(fc);
+               break;
+
+            case pgsTypes::AllLightweight:
+               if ( pscd->bHasFct )
+               {
+                  Vc *= Min(Kfct*fct,sqrt(fc));
+               }
+               else
+               {
+                  Vc *= 0.75*sqrt(fc);
+               }
+               break;
+
+            case pgsTypes::SandLightweight:
+               if ( pscd->bHasFct )
+               {
+                  Vc *= Min(Kfct*fct,sqrt(fc));
+               }
+               else
+               {
+                  Vc *= 0.85*sqrt(fc);
+               }
+               break;
+
+            default:
+               ATLASSERT(false); // is there a new concrete type
+               Vc *= sqrt(fc);
+               break;
+            }
+         }
+         else
+         {
             Vc *= sqrt(fc);
-            break;
-
-         case pgsTypes::AllLightweight:
-            if ( pscd->bHasFct )
-            {
-               Vc *= Min(Kfct*fct,sqrt(fc));
-            }
-            else
-            {
-               Vc *= 0.75*sqrt(fc);
-            }
-            break;
-
-         case pgsTypes::SandLightweight:
-            if ( pscd->bHasFct )
-            {
-               Vc *= Min(Kfct*fct,sqrt(fc));
-            }
-            else
-            {
-               Vc *= 0.85*sqrt(fc);
-            }
-            break;
-
-         default:
-            ATLASSERT(false); // is there a new concrete type
-            Vc *= sqrt(fc);
-            break;
          }
 
          Vc = ::ConvertToSysUnits( Vc, *pForceUnit);
@@ -1225,14 +1236,31 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
          }
 
          Float64 sqrt_fc;
-         if ( pscd->ConcreteType == pgsTypes::Normal )
-            sqrt_fc = sqrt(fc);
-         else if ( (pscd->ConcreteType == pgsTypes::AllLightweight || pscd->ConcreteType == pgsTypes::SandLightweight) && pscd->bHasFct )
-            sqrt_fc = Min(Kfct*fct,sqrt(fc));
-         else if ( pscd->ConcreteType == pgsTypes::AllLightweight && !pscd->bHasFct )
-            sqrt_fc = 0.75*sqrt(fc);
-         else if ( pscd->ConcreteType == pgsTypes::SandLightweight && !pscd->bHasFct )
-            sqrt_fc = 0.85*sqrt(fc);
+         if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
+         {
+            GET_IFACE(IMaterials,pMaterials);
+            Float64 lambda = pMaterials->GetSegmentLambda(poi.GetSegmentKey());
+            sqrt_fc = lambda * sqrt(fc);
+         }
+         else
+         {
+            if ( pscd->ConcreteType == pgsTypes::Normal )
+            {
+               sqrt_fc = sqrt(fc);
+            }
+            else if ( (pscd->ConcreteType == pgsTypes::AllLightweight || pscd->ConcreteType == pgsTypes::SandLightweight) && pscd->bHasFct )
+            {
+               sqrt_fc = Min(Kfct*fct,sqrt(fc));
+            }
+            else if ( pscd->ConcreteType == pgsTypes::AllLightweight && !pscd->bHasFct )
+            {
+               sqrt_fc = 0.75*sqrt(fc);
+            }
+            else if ( pscd->ConcreteType == pgsTypes::SandLightweight && !pscd->bHasFct )
+            {
+               sqrt_fc = 0.85*sqrt(fc);
+            }
+         }
 
          cot_theta = Min(1.0+K*(fpc/sqrt_fc),1.8);
       }

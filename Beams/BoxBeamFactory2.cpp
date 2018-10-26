@@ -434,7 +434,7 @@ Float64 CBoxBeamFactory2::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const C
    return void_surface_area;
 }
 
-void CBoxBeamFactory2::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
+void CBoxBeamFactory2::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
@@ -455,7 +455,7 @@ void CBoxBeamFactory2::CreateStrandMover(const IBeamFactory::Dimensions& dimensi
    Float64 W4 = GetDimension(dimensions,_T("W4"));
 
    Float64 width = W1-W4;
-   Float64 depth = H1+H2+H3;
+   Float64 depth = (Hg < 0 ? H1+H2+H3 : Hg);
 
    CComPtr<IRectangle> lft_harp_rect, rgt_harp_rect;
    hr = lft_harp_rect.CoCreateInstance(CLSID_Rect);
@@ -496,7 +496,7 @@ void CBoxBeamFactory2::CreateStrandMover(const IBeamFactory::Dimensions& dimensi
    Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
    Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
 
-   hr = configurer->SetHarpedStrandOffsetBounds(0, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
+   hr = configurer->SetHarpedStrandOffsetBounds(0, depth, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
 
    hr = sm.CopyTo(strandMover);

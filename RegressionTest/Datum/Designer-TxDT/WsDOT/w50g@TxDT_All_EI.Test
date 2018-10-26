@@ -1,29 +1,43 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.25    5   6.00                   1      1      W50G    *    26   0.6  270  19.61  10.15                                               6  46.0  3.0  6.200  6.900   4.589    -4.411     4830   0.548  0.671   4.379 -1.402 -0.115 -0.170 -1.688 113.53  189.20    1.75    5.00    5.00 
+ 27.25    5   6.00                   1      1      W50G    *    36   0.6  270  19.43   6.77                                              12  46.0  3.0  4.000 14.600   5.496    -4.903     5542   0.566  0.671   8.764 -1.171 -0.090 -0.133 -1.393 255.64  515.94    3.75   13.00   13.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
 Tensile stress check failed for Service III Limit State in Interval 9 Open to Traffic (Bridge Site 3)
+Splitting zone check failed.
+Lifting checks failed
 Hauling checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.25    5   6.00                   1      2      W50G    *    26   0.6  270  19.61  10.15                                               6  46.0  3.0  7.600  7.900   4.678    -4.465     5019   0.551  0.671   3.743 -1.341 -0.107 -0.158 -1.606 104.66  164.15    1.75    5.00    5.00 
+ 27.25    5   6.00                   1      2      W50G    *    36   0.6  270  19.43   6.77                                              12  46.0  3.0  4.000 14.600   5.417    -4.861     5586   0.566  0.671   8.764 -1.147 -0.087 -0.129 -1.363 255.64  517.18    3.75   13.00   13.00 
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Splitting zone check failed.
+Lifting checks failed
 Hauling checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.25    5   6.00                   1      3      W50G    *    26   0.6  270  19.61  10.15                                               6  46.0  3.0  7.600  7.900   4.678    -4.465     5019   0.551  0.671   3.743 -1.341 -0.107 -0.158 -1.606 104.66  164.15    1.75    5.00    5.00 
+ 27.25    5   6.00                   1      3      W50G    *    36   0.6  270  19.43   6.77                                              12  46.0  3.0  4.000 14.600   5.417    -4.861     5586   0.566  0.671   8.764 -1.147 -0.087 -0.129 -1.363 255.64  517.18    3.75   13.00   13.00 
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Splitting zone check failed.
+Lifting checks failed
 Hauling checks failed
 
 

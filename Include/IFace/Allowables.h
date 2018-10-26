@@ -170,8 +170,8 @@ interface IAllowableConcreteStress : IUnknown
    virtual void GetClosureJointAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) = 0;
    virtual void GetDeckAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) = 0;
 
-   // Returns a vector of limit states that are to be spec-checked in for service stresses
-   virtual std::vector<pgsTypes::LimitState> GetStressCheckLimitStates() = 0;
+   // Returns a vector of limit states that are to be spec-checked in for service stresses in a given interval
+   virtual std::vector<pgsTypes::LimitState> GetStressCheckLimitStates(IntervalIndexType intervalIdx) = 0;
 
    // Returns true if the stress check is applicable to this interval, limit state, and stress type
    virtual bool IsStressCheckApplicable(const CGirderKey& girderKey,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType) = 0;

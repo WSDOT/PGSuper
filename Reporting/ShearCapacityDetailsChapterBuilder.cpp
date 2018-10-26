@@ -889,6 +889,8 @@ void write_fpce_table(IBroker* pBroker,
    *pChapter << pParagraph;
 
    GET_IFACE2(pBroker,IMaterials,pMaterial);
+   bool bLambda = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() ? true : false);
+
    std::set<CSegmentKey>::iterator iter(segmentKeys.begin());
    std::set<CSegmentKey>::iterator endIter(segmentKeys.end());
    for ( ; iter != endIter; iter++ )
@@ -896,11 +898,21 @@ void write_fpce_table(IBroker* pBroker,
       CSegmentKey segmentKey(*iter);
       if ( segmentKeys.size() < 2 )
       {
-         *pParagraph << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetShearFrCoefficient(segmentKey)) << symbol(ROOT) << RPT_FC << rptNewLine;
+         *pParagraph << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetShearFrCoefficient(segmentKey));
+         if ( bLambda )
+         {
+            *pParagraph << symbol(lambda);
+         }
+         *pParagraph << symbol(ROOT) << RPT_FC << rptNewLine;
       }
       else
       {
-         *pParagraph << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << _T(": ") << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetShearFrCoefficient(segmentKey)) << symbol(ROOT) << RPT_FC << rptNewLine;
+         *pParagraph << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << _T(": ") << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetShearFrCoefficient(segmentKey));
+         if ( bLambda )
+         {
+            *pParagraph << symbol(lambda);
+         }
+         *pParagraph << symbol(ROOT) << RPT_FC << rptNewLine;
       }
    }
 
@@ -940,7 +952,6 @@ void write_fpo_table(IBroker* pBroker,
    pParagraph = new rptParagraph();
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IMaterials,pMaterial);
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
@@ -952,6 +963,7 @@ void write_fpo_table(IBroker* pBroker,
       // See PCI BDM 8.4.1.1.4
       Float64 Kps, Kpt;
 
+      GET_IFACE2(pBroker,IMaterials,pMaterial);
       BOOST_FOREACH(CGirderKey& girderKey,vGirderKeys)
       {
          DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
@@ -1996,6 +2008,8 @@ void write_Vc_table(IBroker* pBroker,
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
+   bool bLambda = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() ? true : false);
+
    GET_IFACE2(pBroker,IMaterials,pMaterial);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    std::vector<CGirderKey> vGirderKeys(pPoi->GetGirderKeys(vPoi));
@@ -2015,38 +2029,45 @@ void write_Vc_table(IBroker* pBroker,
          }
 
          std::_tstring strImage;
-         pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(segmentKey);
-         bool bHasAggSplittingStrength = pMaterial->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey);
-         switch( concType )
+         if ( bLambda )
          {
-         case pgsTypes::Normal:
-            strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_NWC_US.png") : _T("VcEquation_NWC_SI.png"));
-            break;
+            strImage = _T("VcEquation_2016.png");
+         }
+         else
+         {
+            pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(segmentKey);
+            bool bHasAggSplittingStrength = pMaterial->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey);
+            switch( concType )
+            {
+            case pgsTypes::Normal:
+               strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_NWC_US.png") : _T("VcEquation_NWC_SI.png"));
+               break;
 
-         case pgsTypes::AllLightweight:
-            if ( bHasAggSplittingStrength )
-            {
-               strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_LWC_US.png") : _T("VcEquation_LWC_SI.png"));
-            }
-            else
-            {
-               strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_ALWC_US.png") : _T("VcEquation_ALWC_SI.png"));
-            }
-            break;
+            case pgsTypes::AllLightweight:
+               if ( bHasAggSplittingStrength )
+               {
+                  strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_LWC_US.png") : _T("VcEquation_LWC_SI.png"));
+               }
+               else
+               {
+                  strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_ALWC_US.png") : _T("VcEquation_ALWC_SI.png"));
+               }
+               break;
 
-         case pgsTypes::SandLightweight:
-            if ( bHasAggSplittingStrength )
-            {
-               strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_LWC_US.png") : _T("VcEquation_LWC_SI.png"));
-            }
-            else
-            {
-               strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_SLWC_US.png") : _T("VcEquation_SLWC_SI.png"));
-            }
-            break;
+            case pgsTypes::SandLightweight:
+               if ( bHasAggSplittingStrength )
+               {
+                  strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_LWC_US.png") : _T("VcEquation_LWC_SI.png"));
+               }
+               else
+               {
+                  strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_SLWC_US.png") : _T("VcEquation_SLWC_SI.png"));
+               }
+               break;
 
-         default:
-            ATLASSERT(false);
+            default:
+               ATLASSERT(false);
+            }
          }
 
          *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strImage) << rptNewLine;
@@ -2178,6 +2199,8 @@ void write_Vci_table(IBroker* pBroker,
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    *pParagraph << pProductLoads->GetLimitStateName(ls) << _T(" - ");
 
+   bool bLambda = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() ? true : false);
+
    *pParagraph << _T("Shear Resistance Provided by Concrete when inclined cracking results from combined shear and moment") << rptNewLine;
    GET_IFACE2(pBroker,IMaterials,pMaterial);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
@@ -2198,38 +2221,45 @@ void write_Vci_table(IBroker* pBroker,
          }
 
          std::_tstring strImage;
-         pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(segmentKey);
-         bool bHasAggSplittingStrength = pMaterial->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey);
-         switch( concType )
+         if ( bLambda )
          {
-         case pgsTypes::Normal:
-            strImage = _T("Vci_NWC.png");
-            break;
+            strImage = _T("Vci_2016.png");
+         }
+         else
+         {
+            pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(segmentKey);
+            bool bHasAggSplittingStrength = pMaterial->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey);
+            switch( concType )
+            {
+            case pgsTypes::Normal:
+               strImage = _T("Vci_NWC.png");
+               break;
 
-         case pgsTypes::AllLightweight:
-            if ( bHasAggSplittingStrength )
-            {
-               strImage = _T("Vci_LWC.png");
-            }
-            else
-            {
-               strImage = _T("Vci_ALWC.png");
-            }
-            break;
+            case pgsTypes::AllLightweight:
+               if ( bHasAggSplittingStrength )
+               {
+                  strImage = _T("Vci_LWC.png");
+               }
+               else
+               {
+                  strImage = _T("Vci_ALWC.png");
+               }
+               break;
 
-         case pgsTypes::SandLightweight:
-            if ( bHasAggSplittingStrength )
-            {
-               strImage = _T("Vci_LWC.png");
-            }
-            else
-            {
-               strImage = _T("Vci_SLWC.png");
-            }
-            break;
+            case pgsTypes::SandLightweight:
+               if ( bHasAggSplittingStrength )
+               {
+                  strImage = _T("Vci_LWC.png");
+               }
+               else
+               {
+                  strImage = _T("Vci_SLWC.png");
+               }
+               break;
 
-         default:
-            ATLASSERT(false);
+            default:
+               ATLASSERT(false);
+            }
          }
 
          *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strImage) << rptNewLine;
@@ -2315,6 +2345,8 @@ void write_Vcw_table(IBroker* pBroker,
 
    *pParagraph << _T("Shear Resistance Provided by Concrete when inclined cracking results from excessive principal tension in the web.") << rptNewLine;
 
+   bool bLambda = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() ? true : false);
+
    GET_IFACE2(pBroker,IMaterials,pMaterial);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    std::vector<CGirderKey> vGirderKeys(pPoi->GetGirderKeys(vPoi));
@@ -2334,38 +2366,45 @@ void write_Vcw_table(IBroker* pBroker,
          }
 
          std::_tstring strImage;
-         pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(segmentKey);
-         bool bHasAggSplittingStrength = pMaterial->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey);
-         switch( concType )
+         if ( bLambda )
          {
-         case pgsTypes::Normal:
-            strImage = _T("Vcw_NWC.png");
-            break;
+            strImage = _T("Vcw_2016.png");
+         }
+         else
+         {
+            pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(segmentKey);
+            bool bHasAggSplittingStrength = pMaterial->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey);
+            switch( concType )
+            {
+            case pgsTypes::Normal:
+               strImage = _T("Vcw_NWC.png");
+               break;
 
-         case pgsTypes::AllLightweight:
-            if ( bHasAggSplittingStrength )
-            {
-               strImage = _T("Vcw_LWC.png");
-            }
-            else
-            {
-               strImage = _T("Vcw_ALWC.png");
-            }
-            break;
+            case pgsTypes::AllLightweight:
+               if ( bHasAggSplittingStrength )
+               {
+                  strImage = _T("Vcw_LWC.png");
+               }
+               else
+               {
+                  strImage = _T("Vcw_ALWC.png");
+               }
+               break;
 
-         case pgsTypes::SandLightweight:
-            if ( bHasAggSplittingStrength )
-            {
-               strImage = _T("Vcw_LWC.png");
-            }
-            else
-            {
-               strImage = _T("Vcw_SLWC.png");
-            }
-            break;
+            case pgsTypes::SandLightweight:
+               if ( bHasAggSplittingStrength )
+               {
+                  strImage = _T("Vcw_LWC.png");
+               }
+               else
+               {
+                  strImage = _T("Vcw_SLWC.png");
+               }
+               break;
 
-         default:
-            ATLASSERT(false);
+            default:
+               ATLASSERT(false);
+            }
          }
 
          *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strImage) << rptNewLine;
@@ -2446,6 +2485,8 @@ void write_theta_table(IBroker* pBroker,
 
    *pParagraph << _T("Angle of inclination of diagonal compressive stress [LRFD 5.8.3.3 and 5.8.3.4.3]") << rptNewLine;
 
+   bool bLambda = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() ? true : false);
+
    GET_IFACE2(pBroker,IMaterials,pMaterial);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    std::vector<CGirderKey> vGirderKeys(pPoi->GetGirderKeys(vPoi));
@@ -2465,38 +2506,45 @@ void write_theta_table(IBroker* pBroker,
          }
 
          std::_tstring strImage;
-         pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(segmentKey);
-         bool bHasAggSplittingStrength = pMaterial->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey);
-         switch( concType )
+         if ( bLambda )
          {
-         case pgsTypes::Normal:
-            strImage = _T("cotan_theta_NWC.png");
-            break;
+            strImage = _T("cotan_theta_2016.png");
+         }
+         else
+         {
+            pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(segmentKey);
+            bool bHasAggSplittingStrength = pMaterial->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey);
+            switch( concType )
+            {
+            case pgsTypes::Normal:
+               strImage = _T("cotan_theta_NWC.png");
+               break;
 
-         case pgsTypes::AllLightweight:
-            if ( bHasAggSplittingStrength )
-            {
-               strImage = _T("cotan_theta_LWC.png");
-            }
-            else
-            {
-               strImage = _T("cotan_theta_ALWC.png");
-            }
-            break;
+            case pgsTypes::AllLightweight:
+               if ( bHasAggSplittingStrength )
+               {
+                  strImage = _T("cotan_theta_LWC.png");
+               }
+               else
+               {
+                  strImage = _T("cotan_theta_ALWC.png");
+               }
+               break;
 
-         case pgsTypes::SandLightweight:
-            if ( bHasAggSplittingStrength )
-            {
-               strImage = _T("cotan_theta_LWC.png");
-            }
-            else
-            {
-               strImage = _T("cotan_theta_SLWC.png");
-            }
-            break;
+            case pgsTypes::SandLightweight:
+               if ( bHasAggSplittingStrength )
+               {
+                  strImage = _T("cotan_theta_LWC.png");
+               }
+               else
+               {
+                  strImage = _T("cotan_theta_SLWC.png");
+               }
+               break;
 
-         default:
-            ATLASSERT(false);
+            default:
+               ATLASSERT(false);
+            }
          }
 
          *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strImage) << rptNewLine;

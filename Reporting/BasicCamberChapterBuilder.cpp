@@ -182,7 +182,7 @@ void CBasicCamberChapterBuilder::Build_CIP_TempStrands(rptChapter* pChapter,CRep
 
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
       *pChapter << pPara;
-      *pPara << DEFL(_T("1")) << _T(" = ") << DEFL(_T("girder Storage")) << _T(" + ") << DEFL(_T("ps Storage")) << rptNewLine;
+      *pPara << DEFL(_T("1")) << _T(" = ") << DEFL(_T("girder Erected")) << _T(" + ") << DEFL(_T("ps Erected")) << rptNewLine;
       *pPara << DEFL(_T("2")) << _T(" = ") << DEFL(_T("1")) << _T(" + ") << DEFL(_T("creep1")) << rptNewLine;
       *pPara << DEFL(_T("3")) << _T(" = ") << DEFL(_T("2")) << _T(" + ") << DEFL(_T("diaphragm")) << _T(" + ") << DEFL(_T("tpsr")) << rptNewLine;
       *pPara << DEFL(_T("4")) << _T(" = ") << DEFL(_T("3")) << _T(" + ") << DEFL(_T("creep2")) << rptNewLine;
@@ -263,7 +263,7 @@ void CBasicCamberChapterBuilder::Build_CIP(rptChapter* pChapter,CReportSpecifica
 
       pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
       *pChapter << pPara;
-      *pPara << DEFL(_T("1")) << _T(" = ") << DEFL(_T("girder Storage")) << _T(" + ") << DEFL(_T("ps Storage")) << rptNewLine;
+      *pPara << DEFL(_T("1")) << _T(" = ") << DEFL(_T("girder Erected")) << _T(" + ") << DEFL(_T("ps Erected")) << rptNewLine;
       *pPara << DEFL(_T("2")) << _T(" = ") << DEFL(_T("1")) << _T(" + ") << DEFL(_T("creep")) << rptNewLine;
       *pPara << DEFL(_T("3")) << _T(" = ") << DEFL(_T("2")) << _T(" + ") << DEFL(_T("diaphragm"))<< _T(" + ") << DEFL(_T("deck")) << _T(" + ") << DEFL(_T("user1")) << rptNewLine;
       *pPara << DEFL(_T("4")) << _T(" = ") << DEFL(_T("3"));

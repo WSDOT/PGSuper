@@ -815,7 +815,7 @@ Float64 pgsPsForceEng::GetHoldDownForce(const CSegmentKey& segmentKey,const GDRC
 
       // Adjust for slope
       GET_IFACE(IStrandGeometry,pStrandGeom);
-      Float64 slope = pStrandGeom->GetAvgStrandSlope( poi,config.PrestressConfig.GetStrandCount(pgsTypes::Harped),config.PrestressConfig.EndOffset,config.PrestressConfig.HpOffset );
+      Float64 slope = pStrandGeom->GetAvgStrandSlope( poi,config.PrestressConfig);
 
       Float64 F;
       F = harped / sqrt( 1*1 + slope*slope );
@@ -1338,7 +1338,7 @@ Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsT
             }
          }
       }
-      else if ( railingSystemIntervalIdx == intervalIdx  )
+      else if ( railingSystemIntervalIdx == intervalIdx  && intervalTime != pgsTypes::End )
       {
          if ( strandType == pgsTypes::Temporary )
          {

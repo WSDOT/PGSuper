@@ -274,7 +274,7 @@ static void MakeRectangle(Float64 width, Float64 depth, Float64 xOffset, IShape*
    harp_rect->get_Shape(shape);
 }
 
-void CVoidedSlabFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
+void CVoidedSlabFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
@@ -295,7 +295,7 @@ void CVoidedSlabFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimen
    GetDimensions(dimensions,H,W,D,S,N,J);
 
    Float64 width = W;
-   Float64 depth = H;
+   Float64 depth = (Hg < 0 ? H : Hg);
 
    if (N==0)
    {
@@ -347,7 +347,7 @@ void CVoidedSlabFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimen
    Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
    Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
 
-   hr = configurer->SetHarpedStrandOffsetBounds(0, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
+   hr = configurer->SetHarpedStrandOffsetBounds(0, depth, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
 
    hr = sm.CopyTo(strandMover);
@@ -547,6 +547,11 @@ IBeamFactory::Dimensions CVoidedSlabFactory::LoadSectionDimensions(sysIStructure
 }
 
 bool CVoidedSlabFactory::IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey)
+{
+   return true;
+}
+
+bool CVoidedSlabFactory::IsSymmetric(IBroker* pBroker,const CSegmentKey& segmentKey)
 {
    return true;
 }

@@ -279,7 +279,7 @@ static void MakeRectangle(Float64 width, Float64 depth, Float64 xOffset, IShape*
    harp_rect->get_Shape(shape);
 }
 
-void CDeckedSlabBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
+void CDeckedSlabBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
@@ -296,7 +296,7 @@ void CDeckedSlabBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& d
    GetDimensions(dimensions,A,B,C,F,W,Tt,Tb,J,EndBlockLength);
 
    Float64 width = W;
-   Float64 depth = C + Tt;
+   Float64 depth = (Hg < 0 ? C + Tt : Hg);
    Float64 bf_wid = A - 2*B;
 
    CComPtr<IRectangle> lft_harp_rect, rgt_harp_rect;
@@ -338,7 +338,7 @@ void CDeckedSlabBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& d
    Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
    Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
 
-   hr = configurer->SetHarpedStrandOffsetBounds(0, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
+   hr = configurer->SetHarpedStrandOffsetBounds(0, depth, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
 
    hr = sm.CopyTo(strandMover);
@@ -491,6 +491,11 @@ bool CDeckedSlabBeamFactory::IsPrismatic(IBroker* pBroker,const CSegmentKey& seg
    Float64 endBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
 
    return IsZero(endBlockLength) ? true : false;
+}
+
+bool CDeckedSlabBeamFactory::IsSymmetric(IBroker* pBroker,const CSegmentKey& segmentKey)
+{
+   return true;
 }
 
 Float64 CDeckedSlabBeamFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey)
