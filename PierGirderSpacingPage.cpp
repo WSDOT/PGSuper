@@ -243,8 +243,9 @@ void CPierGirderSpacingPage::Init(const CPierData2* pPier)
 
    const CBridgeDescription2* pBridgeDesc = m_pPier->GetBridgeDescription();
 
-   m_bUseSameNumGirders = pBridgeDesc->UseSameNumberOfGirdersInAllGroups();
-
+   m_SpacingType                      = pBridgeDesc->GetGirderSpacingType();
+   m_GirderSpacingMeasurementLocation = pBridgeDesc->GetMeasurementLocation();
+   m_bUseSameNumGirders               = pBridgeDesc->UseSameNumberOfGirdersInAllGroups();
 
    // slab offset
    m_SlabOffsetType = pBridgeDesc->GetSlabOffsetType();
@@ -278,13 +279,13 @@ void CPierGirderSpacingPage::Init(const CPierData2* pPier)
       if ( IsContinuousSegment() )
       {
          // Segments are continuous over this pier, so spacing is not defined here
-         m_SpacingType = None;
+         m_SpacingTypeMode = None;
       }
       else
       {
          // spacing is defined here, however the spacing is the same on both
          // sides of the pier
-         m_SpacingType = Single;
+         m_SpacingTypeMode = Single;
       }
    }
    else
@@ -292,36 +293,36 @@ void CPierGirderSpacingPage::Init(const CPierData2* pPier)
       // Pier is at the start or end of a group
       // Spacing is defined on both sides of the pier (unless it is the first or last pier in the bridge)
       if ( m_pPrevSpan && m_pNextSpan )
-         m_SpacingType = Both;
+         m_SpacingTypeMode = Both;
       else if ( m_pPrevSpan && !m_pNextSpan )
-         m_SpacingType = Back;
+         m_SpacingTypeMode = Back;
       else if ( !m_pPrevSpan && m_pNextSpan )
-         m_SpacingType = Ahead;
+         m_SpacingTypeMode = Ahead;
    }
 
-   if ( m_SpacingType == None )
+   if ( m_SpacingTypeMode == None )
    {
       InitSpacingBack(false);
       InitSpacingAhead(false);
    }
-   else if ( m_SpacingType == Single )
+   else if ( m_SpacingTypeMode == Single )
    {
       InitSpacingBack(true);
       InitSpacingAhead(false);
    }
-   else if ( m_SpacingType == Ahead )
+   else if ( m_SpacingTypeMode == Ahead )
    {
       InitSpacingBack(false);
       InitSpacingAhead(true);
    }
-   else if ( m_SpacingType == Back )
+   else if ( m_SpacingTypeMode == Back )
    {
       InitSpacingBack(true);
       InitSpacingAhead(false);
    }
    else
    {
-      ATLASSERT(m_SpacingType == Both);
+      ATLASSERT(m_SpacingTypeMode == Both);
       InitSpacingBack(true);
       InitSpacingAhead(true);
    }
@@ -347,7 +348,7 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
    m_GirderSpacingGrid[pgsTypes::Back].SubclassDlgItem(IDC_PREV_SPAN_SPACING_GRID,this);
    m_GirderSpacingGrid[pgsTypes::Ahead].SubclassDlgItem(IDC_NEXT_SPAN_SPACING_GRID,this);
 
-   if ( m_SpacingType == None )
+   if ( m_SpacingTypeMode == None )
    {
       // Hide all controls
       HideBackGroup();
@@ -375,7 +376,7 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
 
       m_NoSpacingNote.SetFont(pWnd->GetFont());
    }
-   else if ( m_SpacingType == Single )
+   else if ( m_SpacingTypeMode == Single )
    {
       HideAheadGroup();
 
@@ -393,7 +394,7 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
       m_GirderSpacingGrid[pgsTypes::Ahead].Initialize();
       m_GirderSpacingMeasure[pgsTypes::Ahead] = 0;
    }
-   else if ( m_SpacingType == Ahead )
+   else if ( m_SpacingTypeMode == Ahead )
    {
       HideBackGroup();
       MoveAheadGroup();
@@ -406,7 +407,7 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
       CWnd* pCopy = GetDlgItem(IDC_AHEAD_COPY);
       pCopy->ShowWindow(SW_HIDE);
    }
-   else if ( m_SpacingType == Back )
+   else if ( m_SpacingTypeMode == Back )
    {
       HideAheadGroup();
 
@@ -424,7 +425,7 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
    }
    else
    {
-      ATLASSERT(m_SpacingType == Both);
+      ATLASSERT(m_SpacingTypeMode == Both);
 
       CString strTxt;
       strTxt.Format(_T("Back side of %s %d = End of Span %d"),IsAbutment() ? _T("Abutment") : _T("Pier"), LABEL_PIER(m_pPier->GetIndex()),LABEL_SPAN(m_pPrevSpan->GetIndex()));
@@ -436,18 +437,18 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
 
    // Initialize grids... use Initialize() if grid is not is use
    // otherwise use CustomInit()
-   if ( m_SpacingType == None )
+   if ( m_SpacingTypeMode == None )
    {
       m_GirderSpacingGrid[pgsTypes::Back].Initialize();
       m_GirderSpacingGrid[pgsTypes::Ahead].Initialize();
    }
-   else if ( m_SpacingType == Single || m_SpacingType == Back )
+   else if ( m_SpacingTypeMode == Single || m_SpacingTypeMode == Back )
    {
       m_GirderSpacingGrid[pgsTypes::Back].CustomInit();
       m_GirderSpacingGrid[pgsTypes::Back].SetPierSkewAngle(skew_angle);
       m_GirderSpacingGrid[pgsTypes::Ahead].Initialize();
    }
-   else if ( m_SpacingType == Ahead )
+   else if ( m_SpacingTypeMode == Ahead )
    {
       m_GirderSpacingGrid[pgsTypes::Back].Initialize();
       m_GirderSpacingGrid[pgsTypes::Ahead].CustomInit();
@@ -455,7 +456,7 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
    }
    else
    {
-      ATLASSERT(m_SpacingType == Both);
+      ATLASSERT(m_SpacingTypeMode == Both);
       m_GirderSpacingGrid[pgsTypes::Back].CustomInit();
       m_GirderSpacingGrid[pgsTypes::Back].SetPierSkewAngle(skew_angle);
 
@@ -487,7 +488,7 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
    m_NumGdrSpinner[pgsTypes::Back].SetAccel(0,&accel);
    m_NumGdrSpinner[pgsTypes::Ahead].SetAccel(0,&accel);
 	
-   if ( IsGirderSpacing(pParent->m_SpacingType) )
+   if ( IsGirderSpacing(m_SpacingType) )
    {
       GetDlgItem(IDC_PREV_SPAN_SPACING_LABEL)->SetWindowText(_T("Girder Spacing"));
       GetDlgItem(IDC_NEXT_SPAN_SPACING_LABEL)->SetWindowText(_T("Girder Spacing"));
@@ -782,7 +783,7 @@ void CPierGirderSpacingPage::UpdateGirderSpacingState(pgsTypes::PierFaceType pie
 
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
 
-   if ( m_nGirders[pierFace] == 1 || IsBridgeSpacing(pParent->m_SpacingType) )
+   if ( m_nGirders[pierFace] == 1 || IsBridgeSpacing(m_SpacingType) )
    {
       // if there is only 1 girder or we are input the spacing for the whole bridge
       // (not span by span) then disable the input controls
@@ -818,7 +819,7 @@ void CPierGirderSpacingPage::UpdateCopyButtonState(BOOL bEnable)
 {
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
 
-   if ( IsBridgeSpacing(pParent->m_SpacingType) )
+   if ( IsBridgeSpacing(m_SpacingType) )
    {
       bEnable = FALSE; // nothing to copy if same girder spacing for entire bridge
    }
@@ -877,14 +878,14 @@ void CPierGirderSpacingPage::ToggleGirderSpacingType()
 {
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
 
-   if ( pParent->m_SpacingType == pgsTypes::sbsUniform )      // uniform to general
-      pParent->m_SpacingType = pgsTypes::sbsGeneral; 
-   else if ( pParent->m_SpacingType == pgsTypes::sbsGeneral ) // general to uniform
-      pParent->m_SpacingType = pgsTypes::sbsUniform;
-   else if ( pParent->m_SpacingType == pgsTypes::sbsUniformAdjacent ) // uniform adjacent to general adjacent
-      pParent->m_SpacingType = pgsTypes::sbsGeneralAdjacent;
-   else if ( pParent->m_SpacingType == pgsTypes::sbsGeneralAdjacent ) // general adjacent to uniform adjacent
-      pParent->m_SpacingType = pgsTypes::sbsUniformAdjacent;
+   if ( m_SpacingType == pgsTypes::sbsUniform )      // uniform to general
+      m_SpacingType = pgsTypes::sbsGeneral; 
+   else if ( m_SpacingType == pgsTypes::sbsGeneral ) // general to uniform
+      m_SpacingType = pgsTypes::sbsUniform;
+   else if ( m_SpacingType == pgsTypes::sbsUniformAdjacent ) // uniform adjacent to general adjacent
+      m_SpacingType = pgsTypes::sbsGeneralAdjacent;
+   else if ( m_SpacingType == pgsTypes::sbsGeneralAdjacent ) // general adjacent to uniform adjacent
+      m_SpacingType = pgsTypes::sbsUniformAdjacent;
    else
       ATLASSERT(false); // is there a new spacing type???
 }
@@ -896,7 +897,7 @@ LRESULT CPierGirderSpacingPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM l
    // changing from uniform to general, or general to uniform spacing
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
 
-   pgsTypes::SupportedBeamSpacing oldGirderSpacingType = pParent->m_SpacingType;
+   pgsTypes::SupportedBeamSpacing oldGirderSpacingType = m_SpacingType;
 
    ToggleGirderSpacingType();
 
@@ -904,7 +905,7 @@ LRESULT CPierGirderSpacingPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM l
 
 
    pgsTypes::PierFaceType pierFace = (pgsTypes::PierFaceType)(wParam);
-   if ( pParent->m_SpacingType == pgsTypes::sbsUniform || pParent->m_SpacingType == pgsTypes::sbsUniformAdjacent )
+   if ( m_SpacingType == pgsTypes::sbsUniform || m_SpacingType == pgsTypes::sbsUniformAdjacent )
    {
       // we are going from general to uniform spacing
       // if the grid has more than one spacing, we need to ask the user which one is to be
@@ -1036,7 +1037,7 @@ LRESULT CPierGirderSpacingPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM l
 
    if ( m_pPrevSpan )
    {
-      m_GirderSpacingGrid[pgsTypes::Back].SetGirderSpacingType(pParent->m_SpacingType);
+      m_GirderSpacingGrid[pgsTypes::Back].SetGirderSpacingType(m_SpacingType);
 
       CDataExchange dx(this,FALSE);
       DDX_CBItemData(&dx, IDC_PREV_SPAN_SPACING_MEASUREMENT, backGirderSpacingDatum);
@@ -1044,7 +1045,7 @@ LRESULT CPierGirderSpacingPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM l
 
    if ( m_pNextSpan )
    {
-      m_GirderSpacingGrid[pgsTypes::Ahead].SetGirderSpacingType(pParent->m_SpacingType);
+      m_GirderSpacingGrid[pgsTypes::Ahead].SetGirderSpacingType(m_SpacingType);
 
       CDataExchange dx(this,FALSE);
       DDX_CBItemData(&dx, IDC_NEXT_SPAN_SPACING_MEASUREMENT, aheadGirderSpacingDatum);
@@ -1168,7 +1169,7 @@ void CPierGirderSpacingPage::UpdateGirderSpacingHyperLinkText()
    BOOL bEnable = TRUE;
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
 
-   if ( pParent->m_SpacingType == pgsTypes::sbsUniform )
+   if ( m_SpacingType == pgsTypes::sbsUniform )
    {
       strBackSpacingNote = _T("The same girder spacing is used for the entire bridge");
       strAheadSpacingNote = strBackSpacingNote;
@@ -1176,7 +1177,7 @@ void CPierGirderSpacingPage::UpdateGirderSpacingHyperLinkText()
 
       strGirderSpacingURL = _T("Click to define girder spacing span by span");
    }
-   else if ( pParent->m_SpacingType == pgsTypes::sbsUniformAdjacent )
+   else if ( m_SpacingType == pgsTypes::sbsUniformAdjacent )
    {
       strBackSpacingNote = _T("The same joint spacing is used for the entire bridge");
       strAheadSpacingNote = strBackSpacingNote;
@@ -1184,7 +1185,7 @@ void CPierGirderSpacingPage::UpdateGirderSpacingHyperLinkText()
 
       strGirderSpacingURL = _T("Click to define joint spacing span by span");
    }
-   else if ( pParent->m_SpacingType == pgsTypes::sbsConstantAdjacent )
+   else if ( m_SpacingType == pgsTypes::sbsConstantAdjacent )
    {
       strBackSpacingNote.Format(_T("The same girder spacing must be used for the entire bridge for %s girders"),
                             m_pPier->GetBridgeDescription()->GetGirderFamilyName());
@@ -1194,7 +1195,7 @@ void CPierGirderSpacingPage::UpdateGirderSpacingHyperLinkText()
 
       strGirderSpacingURL = _T("Click to define girder spacing span by span");
    }
-   else if ( pParent->m_SpacingType == pgsTypes::sbsGeneral )
+   else if ( m_SpacingType == pgsTypes::sbsGeneral )
    {
       strBackSpacingNote  = _T("Girder spacing is defined span by span");
       strAheadSpacingNote = _T("Girder spacing is defined span by span");
@@ -1203,7 +1204,7 @@ void CPierGirderSpacingPage::UpdateGirderSpacingHyperLinkText()
 
       strGirderSpacingURL = _T("Click to make girder spacing the same for all spans");
    }
-   else if ( pParent->m_SpacingType == pgsTypes::sbsGeneralAdjacent )
+   else if ( m_SpacingType == pgsTypes::sbsGeneralAdjacent )
    {
       strBackSpacingNote  = _T("Joint spacing is defined span by span");
       strAheadSpacingNote = _T("Joint spacing is defined span by span");
@@ -1318,7 +1319,7 @@ bool CPierGirderSpacingPage::AllowConnectionChange(pgsTypes::PierFaceType side, 
    // Bearing location is measured is along girder, see if we need to change spacing type for this
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
 
-   if (IsBridgeSpacing(pParent->m_SpacingType))
+   if (IsBridgeSpacing(m_SpacingType))
    {
       // same spacing for entire bridge - we cannot change from this dialog
       pgsTypes::MeasurementLocation ml;
@@ -1331,7 +1332,7 @@ bool CPierGirderSpacingPage::AllowConnectionChange(pgsTypes::PierFaceType side, 
          int result = ::AfxMessageBox(msg, MB_ICONEXCLAMATION|MB_YESNOCANCEL);
          if ( result == IDYES )
          {
-            pParent->m_GirderSpacingMeasurementLocation = pgsTypes::AtPierLine;
+            m_GirderSpacingMeasurementLocation = pgsTypes::AtPierLine;
 
             // girder spacing is still measured at the bridge level. need to update
             // the span by span girder measure to reflect the current bridge level measurement location
@@ -1340,8 +1341,8 @@ bool CPierGirderSpacingPage::AllowConnectionChange(pgsTypes::PierFaceType side, 
                pgsTypes::MeasurementLocation ml;
                pgsTypes::MeasurementType     mt;
                UnhashGirderSpacing(m_GirderSpacingMeasure[pgsTypes::Back],&ml,&mt);
-               m_GirderSpacingMeasure[pgsTypes::Back] = HashGirderSpacing(pParent->m_GirderSpacingMeasurementLocation,mt);
-               m_GirderSpacingGrid[pgsTypes::Back].SetMeasurementLocation(pParent->m_GirderSpacingMeasurementLocation); // also update grid data
+               m_GirderSpacingMeasure[pgsTypes::Back] = HashGirderSpacing(m_GirderSpacingMeasurementLocation,mt);
+               m_GirderSpacingGrid[pgsTypes::Back].SetMeasurementLocation(m_GirderSpacingMeasurementLocation); // also update grid data
             }
 
             if ( m_pNextSpan )
@@ -1349,8 +1350,8 @@ bool CPierGirderSpacingPage::AllowConnectionChange(pgsTypes::PierFaceType side, 
                pgsTypes::MeasurementLocation ml;
                pgsTypes::MeasurementType     mt;
                UnhashGirderSpacing(m_GirderSpacingMeasure[pgsTypes::Ahead],&ml,&mt);
-               m_GirderSpacingMeasure[pgsTypes::Ahead] = HashGirderSpacing(pParent->m_GirderSpacingMeasurementLocation,mt);
-               m_GirderSpacingGrid[pgsTypes::Ahead].SetMeasurementLocation(pParent->m_GirderSpacingMeasurementLocation); // also update grid data
+               m_GirderSpacingMeasure[pgsTypes::Ahead] = HashGirderSpacing(m_GirderSpacingMeasurementLocation,mt);
+               m_GirderSpacingGrid[pgsTypes::Ahead].SetMeasurementLocation(m_GirderSpacingMeasurementLocation); // also update grid data
             }
 
             return true;
@@ -1365,10 +1366,10 @@ bool CPierGirderSpacingPage::AllowConnectionChange(pgsTypes::PierFaceType side, 
             m_GirderSpacingMeasure[side] = HashGirderSpacing(pgsTypes::AtPierLine,mt);
             m_GirderSpacingGrid[side].SetMeasurementLocation(pgsTypes::AtPierLine); // also update grid data
 
-            m_GirderSpacingGrid[pgsTypes::Ahead].SetGirderSpacingType(pParent->m_SpacingType);
-            m_GirderSpacingGrid[pgsTypes::Back].SetGirderSpacingType(pParent->m_SpacingType);
+            m_GirderSpacingGrid[pgsTypes::Ahead].SetGirderSpacingType(m_SpacingType);
+            m_GirderSpacingGrid[pgsTypes::Back].SetGirderSpacingType(m_SpacingType);
 
-            ATLASSERT(IsSpanSpacing(pParent->m_SpacingType));
+            ATLASSERT(IsSpanSpacing(m_SpacingType));
 
             return true;
          }
@@ -1420,7 +1421,10 @@ bool CPierGirderSpacingPage::IsAbutment()
 
 bool CPierGirderSpacingPage::IsContinuousSegment()
 {
-   return m_pPier->GetConnectionType() == pgsTypes::ContinuousSegment ? true : false;
+   if ( m_pPier->IsInteriorPier() )
+      return false; // segments are not continuous (as far as spacing is concerned)
+   else
+      return m_pPier->IsContinuousConnection() ? true : false;
 }
 
 void CPierGirderSpacingPage::HideBackGroup(bool bHide)

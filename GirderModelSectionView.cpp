@@ -818,20 +818,32 @@ void CGirderModelSectionView::OnEditGirder()
    {
 
       CGirderKey girderKey = GetGirderKey();
-      ((CPGSpliceDoc*)GetDocument())->EditGirderDescription(girderKey,EGD_GENERAL);
+      ((CPGSpliceDoc*)GetDocument())->EditGirderDescription(girderKey,EGS_GENERAL);
    }
 }
 
 void CGirderModelSectionView::OnEditPrestressing() 
 {
+   int page = EGS_PRESTRESSING;
+   if ( GetDocument()->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
+   {
+      page = EGD_PRESTRESSING;
+   }
+
    pgsPointOfInterest poi(m_pFrame->GetCutLocation());
-   ((CPGSuperDocBase*)GetDocument())->EditGirderSegmentDescription(poi.GetSegmentKey(),EGD_PRESTRESSING);
+   ((CPGSuperDocBase*)GetDocument())->EditGirderSegmentDescription(poi.GetSegmentKey(),page);
 }
 
 void CGirderModelSectionView::OnEditStirrups() 
 {
+   int page = EGS_STIRRUPS;
+   if ( GetDocument()->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
+   {
+      page = EGD_STIRRUPS;
+   }
+
    pgsPointOfInterest poi(m_pFrame->GetCutLocation());
-   ((CPGSuperDocBase*)GetDocument())->EditGirderSegmentDescription(poi.GetSegmentKey(),EGD_STIRRUPS);
+   ((CPGSuperDocBase*)GetDocument())->EditGirderSegmentDescription(poi.GetSegmentKey(),page);
 }
 
 void CGirderModelSectionView::OnViewSettings() 

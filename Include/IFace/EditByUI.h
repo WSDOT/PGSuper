@@ -37,6 +37,7 @@
 #define EBD_DECKREBAR      4
 #define EBD_ENVIRONMENT    5
 
+// PGSuper Edit Girder Details Pages
 #define EGD_GENERAL        0
 #define EGD_CONCRETE       EGD_GENERAL
 #define EGD_PRESTRESSING   1
@@ -45,6 +46,13 @@
 #define EGD_STIRRUPS       4
 #define EGD_TRANSPORTATION 5
 #define EGD_CONDITION      6
+
+// PGSplice Edit Girder Segment Pages
+#define EGS_GENERAL        0
+#define EGS_PRESTRESSING   1
+#define EGS_LONG_REINF     2
+#define EGS_STIRRUPS       3
+#define EGS_TRANSPORTATION 4
 
 /*****************************************************************************
 INTERFACE

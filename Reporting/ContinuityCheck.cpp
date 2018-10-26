@@ -111,7 +111,7 @@ void CContinuityCheck::Build(rptChapter* pChapter,
       else
          (*pTable)(row,0) << _T("Pier ") << LABEL_PIER(pierIdx);
 
-      if ( pBridge->GetPierConnectionType(pierIdx) == pgsTypes::ContinuousSegment )
+      if ( pBridge->IsInteriorPier(pierIdx) )
       {
          (*pTable)(row,1) << _T("");
          (*pTable)(row,2) << _T("");

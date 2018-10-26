@@ -11,46 +11,65 @@
 
 IMPLEMENT_DYNAMIC(CTemporarySupportDlg, CPropertySheet)
 
-CTemporarySupportDlg::CTemporarySupportDlg(const CBridgeDescription2* pBridgeDesc,UINT nIDCaption, CWnd* pParentWnd, UINT iSelectPage)
-	:CPropertySheet(nIDCaption, pParentWnd, iSelectPage)
+CTemporarySupportDlg::CTemporarySupportDlg(const CBridgeDescription2* pBridgeDesc,SupportIndexType tsIdx, CWnd* pParentWnd, UINT iSelectPage)
+:CPropertySheet(tsIdx == INVALID_INDEX ? _T("Add Temporary Support") : _T("Edit Temporary Support"), pParentWnd, iSelectPage)
 {
-   Init(pBridgeDesc);
-}
-
-CTemporarySupportDlg::CTemporarySupportDlg(const CBridgeDescription2* pBridgeDesc,LPCTSTR pszCaption, CWnd* pParentWnd, UINT iSelectPage)
-	:CPropertySheet(pszCaption, pParentWnd, iSelectPage)
-{
-   Init(pBridgeDesc);
+   Init(pBridgeDesc,tsIdx);
 }
 
 CTemporarySupportDlg::~CTemporarySupportDlg()
 {
 }
 
-void CTemporarySupportDlg::Init(const CTemporarySupportData& ts,EventIndexType erectionEventIdx,EventIndexType removalEventIdx,pgsTypes::SupportedBeamSpacing girderSpacingType,pgsTypes::MeasurementLocation spacingMeasureLocation,IndexType closureEventIdx)
-{
-   m_TemporarySupport = ts;
-   m_ErectionEventIndex = erectionEventIdx;
-   m_RemovalEventIndex = removalEventIdx;
-   m_GirderSpacingType = girderSpacingType;
-   m_GirderSpacingMeasurementLocation = spacingMeasureLocation;
-   m_ClosurePourEventIndex = closureEventIdx;
-
-   m_Spacing.m_SpacingGrid.SetSpacingData(*m_TemporarySupport.GetSegmentSpacing());
-   m_Spacing.m_RefGirderIdx = m_TemporarySupport.GetSegmentSpacing()->GetRefGirder();
-   m_Spacing.m_RefGirderOffset = m_TemporarySupport.GetSegmentSpacing()->GetRefGirderOffset();
-   m_Spacing.m_RefGirderOffsetType = m_TemporarySupport.GetSegmentSpacing()->GetRefGirderOffsetType();
-}
+//void CTemporarySupportDlg::Init(const CTemporarySupportData& ts,EventIndexType erectionEventIdx,EventIndexType removalEventIdx,pgsTypes::SupportedBeamSpacing girderSpacingType,pgsTypes::MeasurementLocation spacingMeasureLocation,IndexType closureEventIdx)
+//{
+//#pragma Reminder("UPDATE: it seems that the only parameter needes is ts")
+//   m_TemporarySupport = ts;
+//
+//   m_General.Init(ts);
+//   ATLASSERT(m_General.m_ErectionEventIndex == erectionEventIdx);
+//   ATLASSERT(m_General.m_RemovalEventIndex == removalEventIdx);
+//
+//#pragma Reminder("UPDATE: don't need to pass events into this method... they can be retreived by other means")
+//   m_Geometry.Init(ts);
+//   ATLASSERT(m_Geometry.m_ClosurePourEventIndex == closureEventIdx);
+//
+//   m_Spacing.Init(ts);
+//   ATLASSERT(m_Spacing.m_GirderSpacingType == girderSpacingType);
+//   ATLASSERT(m_Spacing.m_GirderSpacingMeasurementLocation == spacingMeasureLocation);
+//}
 
 void CTemporarySupportDlg::SetEvents(IndexType erectionEventIdx,EventIndexType removalEventIdx,EventIndexType closureEventIdx)
 {
-   m_ErectionEventIndex = erectionEventIdx;
-   m_RemovalEventIndex = removalEventIdx;
-   m_ClosurePourEventIndex = closureEventIdx;
+   m_General.m_ErectionEventIndex = erectionEventIdx;
+   m_General.m_RemovalEventIndex = removalEventIdx;
+   m_Geometry.m_ClosurePourEventIndex = closureEventIdx;
+}
+
+const CBridgeDescription2* CTemporarySupportDlg::GetBridgeDescription()
+{
+   return m_pBridgeDesc;
+}
+
+SupportIndexType CTemporarySupportDlg::GetTemporarySupportIndex()
+{
+   return m_TemporarySupport.GetIndex();
 }
 
 const CTemporarySupportData& CTemporarySupportDlg::GetTemporarySupport()
 {
+   // Data from General Page
+   m_TemporarySupport.SetStation(GetStation());
+   m_TemporarySupport.SetOrientation(GetOrientation());
+   m_TemporarySupport.SetSupportType(GetTemporarySupportType());
+
+   // Data from Geometry Page
+   m_TemporarySupport.SetConnectionType(GetConnectionType());
+   m_TemporarySupport.SetBearingOffset(GetBearingOffset(),GetBearingOffsetMeasurementType());
+   m_TemporarySupport.SetGirderEndDistance(GetEndDistance(),GetEndDistanceMeasurementType());
+   m_TemporarySupport.SetSupportWidth(GetSupportWidth());
+
+   // Data from Spacing Page
    if (m_TemporarySupport.GetConnectionType() != pgsTypes::sctContinuousSegment )
    {
       CGirderSpacingData2& spacing = m_Spacing.m_SpacingGrid.GetSpacingData();
@@ -65,65 +84,108 @@ const CTemporarySupportData& CTemporarySupportDlg::GetTemporarySupport()
    return m_TemporarySupport;
 }
 
+Float64 CTemporarySupportDlg::GetStation()
+{
+   return m_General.m_Station;
+}
+
+LPCTSTR CTemporarySupportDlg::GetOrientation()
+{
+   return m_General.m_strOrientation.c_str();
+}
+
+pgsTypes::TemporarySupportType CTemporarySupportDlg::GetTemporarySupportType()
+{
+   return m_General.m_Type;
+}
+
 EventIndexType CTemporarySupportDlg::GetErectionEventIndex()
 {
-   return m_ErectionEventIndex;
+   return m_General.m_ErectionEventIndex;
 }
 
 EventIndexType CTemporarySupportDlg::GetRemovalEventIndex()
 {
-   return m_RemovalEventIndex;
-}
-
-pgsTypes::SupportedBeamSpacing CTemporarySupportDlg::GetGirderSpacingType()
-{
-   return m_GirderSpacingType;
-}
-
-pgsTypes::MeasurementLocation CTemporarySupportDlg::GetSpacingMeasurementLocation()
-{
-   return m_GirderSpacingMeasurementLocation;
+   return m_General.m_RemovalEventIndex;
 }
 
 EventIndexType CTemporarySupportDlg::GetClosurePourEventIndex()
 {
-   return m_ClosurePourEventIndex;
+   return m_Geometry.m_ClosurePourEventIndex;
+}
+
+pgsTypes::SegmentConnectionType CTemporarySupportDlg::GetConnectionType()
+{
+   return m_Geometry.m_TSConnectionType;
+}
+
+void CTemporarySupportDlg::SetConnectionType(pgsTypes::SegmentConnectionType type)
+{
+   m_Geometry.m_TSConnectionType = type;
+}
+
+Float64 CTemporarySupportDlg::GetBearingOffset()
+{
+   return m_Geometry.m_BearingOffset;
+}
+
+ConnectionLibraryEntry::BearingOffsetMeasurementType CTemporarySupportDlg::GetBearingOffsetMeasurementType()
+{
+   return m_Geometry.m_BearingOffsetMeasurementType;
+}
+
+Float64 CTemporarySupportDlg::GetEndDistance()
+{
+   return m_Geometry.m_EndDistance;
+}
+
+ConnectionLibraryEntry::EndDistanceMeasurementType CTemporarySupportDlg::GetEndDistanceMeasurementType()
+{
+   return m_Geometry.m_EndDistanceMeasurementType;
+}
+
+Float64 CTemporarySupportDlg::GetSupportWidth()
+{
+   return m_Geometry.m_SupportWidth;
+}
+
+pgsTypes::SupportedBeamSpacing CTemporarySupportDlg::GetGirderSpacingType()
+{
+   return m_Spacing.m_GirderSpacingType;
+}
+
+pgsTypes::MeasurementLocation CTemporarySupportDlg::GetSpacingMeasurementLocation()
+{
+   return m_Spacing.m_GirderSpacingMeasurementLocation;
 }
 
 BEGIN_MESSAGE_MAP(CTemporarySupportDlg, CPropertySheet)
 END_MESSAGE_MAP()
 
-void CTemporarySupportDlg::Init(const CBridgeDescription2* pBridgeDesc)
+void CTemporarySupportDlg::Init(const CBridgeDescription2* pBridgeDesc,SupportIndexType tsIdx)
 {
    m_pBridgeDesc = pBridgeDesc;
 
-   m_ErectionEventIndex = INVALID_INDEX;
-   m_RemovalEventIndex  = INVALID_INDEX;
-
-   const CTimelineManager* pTimelineMgr = m_pBridgeDesc->GetTimelineManager();
-   EventIndexType nEvents = pTimelineMgr->GetEventCount();
-   for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
+   SupportIndexType nTS = m_pBridgeDesc->GetTemporarySupportCount();
+   if ( 0 < nTS )
    {
-      const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
-      if ( m_ErectionEventIndex == INVALID_INDEX && pTimelineEvent->GetErectPiersActivity().IsEnabled() )
-      {
-         m_ErectionEventIndex = eventIdx;
-      }
+      // If a temporary support exists, use the first one to initialize the data in the dialog
+      const CTemporarySupportData* pTS = m_pBridgeDesc->GetTemporarySupport(tsIdx == INVALID_INDEX ? 0 : tsIdx);
+      m_General.Init(*pTS);
+      m_Geometry.Init(*pTS);
+      m_Spacing.Init(*pTS);
 
-      if ( m_RemovalEventIndex == INVALID_INDEX && pTimelineEvent->GetRemoveTempSupportsActivity().IsEnabled() )
+      if ( tsIdx == INVALID_INDEX )
       {
-         m_RemovalEventIndex = eventIdx;
+         // we don't know where the new temporary support is going, sot put it at station 0+00
+         // if this is not a valid location, DoDataExchange will catch it
+         m_General.m_Station = 0.0;
       }
-
-      if ( m_ErectionEventIndex != INVALID_INDEX && m_RemovalEventIndex != INVALID_INDEX )
-         break;
+      else
+      {
+         m_TemporarySupport = *pTS;
+      }
    }
-
-   if ( m_ErectionEventIndex == INVALID_INDEX )
-      m_ErectionEventIndex = 0;
-   
-   if ( m_RemovalEventIndex == INVALID_INDEX )
-      m_RemovalEventIndex = 0;
 
 
    m_psh.dwFlags |= PSH_HASHELP | PSH_NOAPPLYNOW;

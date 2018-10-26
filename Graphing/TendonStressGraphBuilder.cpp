@@ -92,7 +92,7 @@ CGirderGraphControllerBase* CTendonStressGraphBuilder::CreateGraphController()
    return new CTendonStressGraphController;
 }
 
-int CTendonStressGraphBuilder::InitGraphController(CWnd* pParent,UINT nID)
+BOOL CTendonStressGraphBuilder::InitGraphController(CWnd* pParent,UINT nID)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    ATLASSERT(m_pGraphController != NULL);

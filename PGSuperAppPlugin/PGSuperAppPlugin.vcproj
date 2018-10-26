@@ -656,6 +656,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ACIParametersDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ActivityGrid.cpp"
 				>
 			</File>
@@ -789,6 +793,10 @@
 			</File>
 			<File
 				RelativePath=".\ClosurePourGeneralPage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ClosurePourGeometryPage.cpp"
 				>
 			</File>
 			<File
@@ -1640,10 +1648,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\TemporarySupportGeometryPage.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\TemporarySupportLayoutPage.cpp"
 				>
 			</File>
@@ -1675,6 +1679,10 @@
 			</File>
 			<File
 				RelativePath="..\ACIConcretePage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ACIParametersDlg.h"
 				>
 			</File>
 			<File
@@ -1811,6 +1819,10 @@
 			</File>
 			<File
 				RelativePath=".\ClosurePourGeneralPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ClosurePourGeometryPage.h"
 				>
 			</File>
 			<File
@@ -2538,10 +2550,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\TemporarySupportGeometryPage.h"
-				>
-			</File>
-			<File
 				RelativePath=".\TemporarySupportLayoutPage.h"
 				>
 			</File>
@@ -2580,11 +2588,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\bss.ico"
+				RelativePath="..\res\bss.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\res\bss.ico"
+				RelativePath=".\res\bss.ico"
 				>
 			</File>
 			<File
@@ -2760,11 +2768,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\GirderDesigner.bmp"
+				RelativePath="..\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
-				RelativePath="..\res\GirderDesigner.bmp"
+				RelativePath=".\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
@@ -2860,11 +2868,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\PGSuper.ico"
+				RelativePath="..\res\PGSuper.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\res\PGSuper.ico"
+				RelativePath=".\res\PGSuper.ico"
 				>
 			</File>
 			<File
@@ -2964,11 +2972,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\txdot.ico"
+				RelativePath=".\res\txdot.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\txdot.ico"
+				RelativePath="..\res\txdot.ico"
 				>
 			</File>
 			<File
@@ -2976,11 +2984,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\Wsdot.ico"
+				RelativePath=".\res\Wsdot.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\Wsdot.ico"
+				RelativePath="..\res\Wsdot.ico"
 				>
 			</File>
 		</Filter>

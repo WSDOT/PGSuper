@@ -191,7 +191,6 @@ CGirderModelElevationView::~CGirderModelElevationView()
 BEGIN_MESSAGE_MAP(CGirderModelElevationView, CDisplayView)
 	//{{AFX_MSG_MAP(CGirderModelElevationView)
 	ON_WM_CREATE()
-	ON_WM_LBUTTONDOWN()
 	ON_COMMAND(ID_LEFTEND, OnLeftEnd)
 	ON_COMMAND(ID_LEFT_HP, OnLeftHp)
 	ON_COMMAND(ID_CENTER, OnCenter)
@@ -199,7 +198,7 @@ BEGIN_MESSAGE_MAP(CGirderModelElevationView, CDisplayView)
 	ON_COMMAND(ID_RIGHTEND, OnRightEnd)
 	ON_COMMAND(ID_USER_CUT, OnUserCut)
 	ON_WM_SIZE()
-	ON_WM_LBUTTONUP()
+	ON_COMMAND(ID_EDIT_GIRDER, OnEditGirder)
 	ON_COMMAND(ID_EDIT_PRESTRESSING, OnEditPrestressing)
 	ON_COMMAND(ID_VIEWSETTINGS, OnViewSettings)
 	ON_COMMAND(ID_EDIT_STIRRUPS, OnEditStirrups)
@@ -207,7 +206,6 @@ BEGIN_MESSAGE_MAP(CGirderModelElevationView, CDisplayView)
 	ON_COMMAND(ID_DELETE_LOAD, OnGevCtxDeleteLoad)
 //	ON_WM_CONTEXTMENU()
 	ON_WM_MOUSEMOVE()
-	ON_WM_LBUTTONDBLCLK()
 	ON_WM_TIMER()
 	ON_WM_DESTROY()
    ON_WM_MOUSEWHEEL()
@@ -660,16 +658,42 @@ void CGirderModelElevationView::OnSize(UINT nType, int cx, int cy)
    }
 }
 
+void CGirderModelElevationView::OnEditGirder() 
+{
+   if ( GetDocument()->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
+   {
+      pgsPointOfInterest poi(m_pFrame->GetCutLocation());
+      ((CPGSuperDoc*)GetDocument())->EditGirderSegmentDescription(poi.GetSegmentKey(),EGD_GENERAL);
+   }
+   else
+   {
+      pgsPointOfInterest poi(m_pFrame->GetCutLocation());
+      ((CPGSpliceDoc*)GetDocument())->EditGirderDescription(poi.GetSegmentKey(),EGS_GENERAL);
+   }
+}
+
 void CGirderModelElevationView::OnEditPrestressing() 
 {
+   int page = EGS_PRESTRESSING;
+   if ( GetDocument()->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
+   {
+      page = EGD_PRESTRESSING;
+   }
+
    pgsPointOfInterest poi = GetCutLocation();
-   ((CPGSuperDocBase*)GetDocument())->EditGirderSegmentDescription(poi.GetSegmentKey(),EGD_PRESTRESSING);
+   ((CPGSuperDocBase*)GetDocument())->EditGirderSegmentDescription(poi.GetSegmentKey(),page);
 }
 
 void CGirderModelElevationView::OnEditStirrups() 
 {
+   int page = EGS_STIRRUPS;
+   if ( GetDocument()->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
+   {
+      page = EGD_STIRRUPS;
+   }
+
    pgsPointOfInterest poi = GetCutLocation();
-   ((CPGSuperDocBase*)GetDocument())->EditGirderSegmentDescription(poi.GetSegmentKey(),EGD_STIRRUPS);
+   ((CPGSuperDocBase*)GetDocument())->EditGirderSegmentDescription(poi.GetSegmentKey(),page);
 }
 
 void CGirderModelElevationView::OnViewSettings() 

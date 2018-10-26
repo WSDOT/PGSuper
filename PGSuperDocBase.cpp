@@ -2653,15 +2653,15 @@ void CPGSuperDocBase::OnEditPier()
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
    {
       CString strItem;
-      strItem.Format(_T("Pier %d\n"),LABEL_PIER(pierIdx));
+      strItem.Format(_T("%s %d\n"),(pierIdx == 0 || pierIdx == nPiers-1 ? _T("Abutment") : _T("Pier")),LABEL_PIER(pierIdx));
 
       strItems += strItem;
    }
 
    CSelectItemDlg dlg;
-   dlg.m_strTitle = _T("Select pier to edit");
+   dlg.m_strTitle = _T("Select Abutment/Pier");
    dlg.m_strItems = strItems;
-   dlg.m_strLabel = _T("Select pier to edit");
+   dlg.m_strLabel = _T("Select an abutment or pier to edit");
    dlg.m_ItemIdx = m_Selection.PierIdx;
 
    if ( dlg.DoModal() == IDOK )

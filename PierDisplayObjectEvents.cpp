@@ -223,9 +223,11 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObj
       pDoc->GetBroker(&pBroker);
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+      const CPierData2* pPier = pBridgeDesc->GetPier(pThis->m_PierIdx);
+      ATLASSERT(pPier->IsBoundaryPier());
 
       // get all valid connect types for the pier represented by this display object
-      std::vector<pgsTypes::PierConnectionType> validConnectionTypes( pBridgeDesc->GetConnectionTypes(pThis->m_PierIdx) );
+      std::vector<pgsTypes::PierConnectionType> validConnectionTypes( pBridgeDesc->GetPierConnectionTypes(pThis->m_PierIdx) );
 
       // Mapping between connection type and menu id
       std::map<pgsTypes::PierConnectionType,UINT> menuIDs;
@@ -233,7 +235,6 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObj
       menuIDs.insert(std::make_pair(pgsTypes::Roller,IDM_ROLLER));
       menuIDs.insert(std::make_pair(pgsTypes::ContinuousAfterDeck,IDM_CONTINUOUS_AFTERDECK));
       menuIDs.insert(std::make_pair(pgsTypes::ContinuousBeforeDeck,IDM_CONTINUOUS_BEFOREDECK));
-      menuIDs.insert(std::make_pair(pgsTypes::ContinuousSegment,IDM_CONTINUOUS_SEGMENT));
       menuIDs.insert(std::make_pair(pgsTypes::IntegralAfterDeck,IDM_INTEGRAL_AFTERDECK));
       menuIDs.insert(std::make_pair(pgsTypes::IntegralBeforeDeck,IDM_INTEGRAL_BEFOREDECK));
       menuIDs.insert(std::make_pair(pgsTypes::IntegralAfterDeckHingeBack,IDM_INTEGRAL_AFTERDECK_HINGEBACK));

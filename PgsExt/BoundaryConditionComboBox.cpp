@@ -193,11 +193,11 @@ void CBoundaryConditionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
          ASSERT(m_PierType == PIERTYPE_INTERMEDIATE);
          xSrc = 4*bmWidth;
       }
-      else if ( connectionType == pgsTypes::ContinuousSegment )
-      {
-         ASSERT(m_PierType == PIERTYPE_INTERMEDIATE);
-         xSrc = 6*bmWidth;
-      }
+      //else if ( connectionType == pgsTypes::ContinuousSegment )
+      //{
+      //   ASSERT(m_PierType == PIERTYPE_INTERMEDIATE);
+      //   xSrc = 6*bmWidth;
+      //}
       else
       {
          ASSERT(0); // ??? should never get here
@@ -208,7 +208,7 @@ void CBoundaryConditionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
    int xDest = rcItem.left + 2;
    int yDest = rcItem.top  + 2;
 
-   if ( connectionType != pgsTypes::ContinuousSegment )
+//   if ( connectionType != pgsTypes::ContinuousSegment )
    {
       dc.BitBlt(xDest,yDest,bmpInfo.bmHeight,bmpInfo.bmHeight,&dcMemory,xSrc,ySrc,dwRop);
    }

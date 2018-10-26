@@ -139,12 +139,24 @@ STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr*
 
    CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
    pMenu->LoadMenu(IDR_GIRDER_CTX,NULL);
+#pragma Reminder("BUG: context menu items incorrect")
+   // The context menu IDR_GIRDER_CTX has the section cut stuff as a sub-menu but
+   // the end up within the main context menu.
 
    // PGSplice does not use moment loads
    if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
    {
+      // In the context of the whole view, harp points don't make sense for spliced girder bridges
+      // Each segment can have harp points... which segment are we refering to? The segments
+      // can have a different number of harp points as well.
+      pMenu->RemoveMenu(ID_LEFT_HP,MF_BYCOMMAND,NULL);
+      pMenu->RemoveMenu(ID_RIGHT_HP,MF_BYCOMMAND,NULL);
       pMenu->RemoveMenu(ID_ADD_MOMENT_LOAD,MF_BYCOMMAND,NULL);
    }
+
+#pragma Reminder("BUG: context menu items incorrect")
+   // If a PGSuper girder/segment has less than two harp points, the context menu will not be correct
+   // There isn't a left/right harp points.
 
    pDoc->BuildReportMenu(pMenu,true);
 

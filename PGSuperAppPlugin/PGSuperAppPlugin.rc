@@ -286,9 +286,9 @@ BEGIN
         MENUITEM "&Timeline...",                ID_EDIT_TIMELINE
         MENUITEM "&Alignment...",               ID_PROJECT_ALIGNMENT
         MENUITEM "&Bridge...",                  ID_PROJECT_BRIDGEDESC
-        MENUITEM "&Pier...",                    ID_PROJECT_PIERDESC
+        MENUITEM "&Abutment\\Pier...",          ID_PROJECT_PIERDESC
         MENUITEM "&Temporary Support...",       ID_EDIT_TEMPORARY_SUPPORT
-        MENUITEM "&Closure Pour...",            33294
+        MENUITEM "&Closure Pour...",            ID_EDIT_CLOSURE
         MENUITEM "&Girder Segment...",          ID_EDIT_GIRDER
         MENUITEM "&Spliced Girder...",          ID_EDIT_GIRDERLINE
         MENUITEM SEPARATOR
@@ -433,7 +433,7 @@ BEGIN
         MENUITEM MFT_SEPARATOR
         MENUITEM "&Alignment...",               ID_PROJECT_ALIGNMENT,MFT_STRING,MFS_ENABLED
         MENUITEM "&Bridge...",                  ID_PROJECT_BRIDGEDESC,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Pier...",                    ID_PROJECT_PIERDESC,MFT_STRING,MFS_ENABLED
+        MENUITEM "&Abutment\\Pier...",          ID_PROJECT_PIERDESC,MFT_STRING,MFS_ENABLED
         MENUITEM "&Span...",                    ID_PROJECT_SPANDESC,MFT_STRING,MFS_ENABLED
         MENUITEM "&Girder...",                  ID_EDIT_GIRDER,MFT_STRING,MFS_ENABLED
         MENUITEM MFT_SEPARATOR
@@ -538,20 +538,6 @@ BEGIN
         MENUITEM "&Legal Notices...",           EAFID_APP_LEGAL,MFT_STRING,MFS_ENABLED
         MENUITEM "&About BridgeLink...",        ID_APP_ABOUT,MFT_STRING,MFS_ENABLED
         MENUITEM "About &PGSuper...",           ID_HELP_ABOUT,MFT_STRING,MFS_ENABLED
-    END
-END
-
-IDR_GIRDER_SECTION MENU 
-BEGIN
-    POPUP "Girder Section"
-    BEGIN
-        MENUITEM "&Left End",                   ID_LEFTEND
-        MENUITEM "Left &Harping Point",         ID_LEFT_HP
-        MENUITEM "&Center",                     ID_CENTER
-        MENUITEM "Right Harping &Point",        ID_RIGHT_HP
-        MENUITEM "&Right End",                  ID_RIGHTEND
-        MENUITEM SEPARATOR
-        MENUITEM "Cut &Location...",            ID_USER_CUT
     END
 END
 
@@ -1571,7 +1557,7 @@ BEGIN
     ICON            IDI_EARTH,IDC_STATIC_EARTH,27,214,20,20
 END
 
-IDD_BRIDGEDESC_DECKDETAILS DIALOGEX 0, 0, 415, 305
+IDD_BRIDGEDESC_DECKDETAILS DIALOGEX 0, 0, 433, 305
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Deck Geometry and Materials"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -1623,16 +1609,16 @@ BEGIN
     EDITTEXT        IDC_OLAY_DENSITY,333,226,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_OLAY_DENSITY_UNIT,375,228,28,8
     GROUPBOX        "Cross Section",IDC_STATIC,7,24,171,163
-    GROUPBOX        "Plan (Edge of Deck)",IDC_STATIC,181,24,227,112
-    GROUPBOX        "Material",IDC_STATIC,181,137,227,50
-    GROUPBOX        "Wearing Surface",IDC_STATIC,7,189,401,59
-    CTEXT           "Concrete Type Label",IDC_CONCRETE_TYPE_LABEL,297,152,104,8
-    GROUPBOX        "Condition and Load Rating",IDC_STATIC,7,254,401,44
+    GROUPBOX        "Plan (Edge of Deck)",IDC_STATIC,184,25,242,111
+    GROUPBOX        "Material",IDC_STATIC,184,137,242,50
+    GROUPBOX        "Wearing Surface",IDC_STATIC,7,189,419,59
+    LTEXT           "Concrete Type Label",IDC_CONCRETE_TYPE_LABEL,288,148,131,16
+    GROUPBOX        "Condition and Load Rating",IDC_STATIC,7,254,419,44
     LTEXT           "Condition Factor (MBE 6A.4.2.3)",IDC_STATIC,19,267,105,8
     COMBOBOX        IDC_CONDITION_FACTOR_TYPE,19,279,243,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_CONDITION_FACTOR,267,279,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Deck Casting Event",IDC_DECK_EVENT_LABEL,186,7,64,8
-    COMBOBOX        IDC_DECK_EVENT,256,7,152,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_DECK_EVENT,274,7,152,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_OVERLAY_EVENT,137,203,128,73,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
@@ -2577,7 +2563,7 @@ BEGIN
     COMBOBOX        IDC_REMOVAL_EVENT,58,107,174,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_TS_GEOMETRY DIALOGEX 0, 0, 402, 265
+IDD_CP_GEOMETRY DIALOGEX 0, 0, 402, 265
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Connection"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
@@ -2602,6 +2588,31 @@ BEGIN
     LTEXT           "Installation Event",IDC_EVENT_LABEL,167,7,57,8
 END
 
+IDD_PIERCONNECTIONS2 DIALOGEX 0, 0, 402, 265
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Connection"
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    COMBOBOX        IDC_CONNECTION_TYPE,7,19,150,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_EVENT,167,19,141,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Support Geometry",IDC_STATIC,7,54,183,112,0,WS_EX_TRANSPARENT
+    LTEXT           "Bearing Offset",IDC_BEARING_OFFSET_LABEL,14,69,71,8
+    EDITTEXT        IDC_BEARING_OFFSET,87,66,34,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_BEARING_OFFSET_T,126,68,27,8
+    COMBOBOX        IDC_BEARING_OFFSET_MEASURE,13,83,167,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "End Distance",IDC_END_DISTANCE_LABEL,14,103,69,8
+    EDITTEXT        IDC_END_DISTANCE,87,100,34,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "Static",IDC_END_DISTANCE_T,126,102,27,8
+    COMBOBOX        IDC_END_DISTANCE_MEASURE,13,118,167,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Support Width",IDC_STATIC,13,145,46,8
+    EDITTEXT        IDC_SUPPORT_WIDTH,87,142,34,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_SUPPORT_WIDTH_T,126,144,27,8
+    CONTROL         "",IDC_CONNECTION_MF,"Static",SS_ENHMETAFILE | WS_BORDER,198,57,197,109
+    LTEXT           "NOTE: Changes to the Installation Event apply to all closure pours at this pier.",IDC_STATIC,7,37,251,8
+    LTEXT           "Connection Type",IDC_STATIC,7,7,55,8
+    LTEXT           "Installation Event",IDC_EVENT_LABEL,167,7,57,8
+END
+
 IDD_CLOSURE_GENERAL DIALOGEX 0, 0, 235, 171
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "General"
@@ -2612,7 +2623,7 @@ BEGIN
     LTEXT           "Installation Event",IDC_STATIC,7,42,38,17
     COMBOBOX        IDC_EVENT,47,44,181,98,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "NOTE: Changes to the Installation Event apply to all closure pours at this temporary support.",IDC_STATIC,7,65,221,20
-    LTEXT           "concrete type",IDC_CONCRETE_TYPE_LABEL,7,94,178,8
+    LTEXT           "concrete type",IDC_CONCRETE_TYPE_LABEL,7,94,221,8
     CONTROL         "f'ci",IDC_FC1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,7,110,25,10
     CONTROL         "f'c",IDC_FC2,"Button",BS_AUTORADIOBUTTON,7,128,23,10
     EDITTEXT        IDC_FCI,35,108,40,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -2825,7 +2836,7 @@ BEGIN
     CONTROL         "Custom1",IDC_DEBOND_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,63,157,247
     LTEXT           "",IDC_PICTURE,171,64,249,237,WS_BORDER
     CONTROL         "Symmetrical Debonding",IDC_SYMMETRIC_DEBOND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,314,90,10
-    LTEXT           "Note: Straight strands shown in light grey cannot be debonded",IDC_STATIC,171,314,202,8
+    LTEXT           "Note: Straight strands shown in light grey cannot be debonded",IDC_NOTE,171,314,202,8
     LTEXT           "Number of straight strands = %%",IDC_NUMSTRAIGHT,171,304,120,8
     LTEXT           "Number of deboned strands = %%",IDC_NUM_DEBONDED,301,304,119,8
 END
@@ -3048,7 +3059,7 @@ BEGIN
     LTEXT           "Modulus of Elasticity",IDC_STATIC,7,4,66,8
 END
 
-IDD_ACI_CONCRETE DIALOGEX 0, 0, 188, 98
+IDD_ACI_CONCRETE DIALOGEX 0, 0, 188, 121
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "ACI 209R-92"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -3060,10 +3071,11 @@ BEGIN
     LTEXT           "Cement Type",IDC_CEMENT_TYPE_LABEL,93,40,44,8
     COMBOBOX        IDC_CEMENT_TYPE,88,55,65,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "A",IDC_ALPHA_LABEL,7,80,8,8
-    EDITTEXT        IDC_ALPHA,21,77,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_ALPHA,20,78,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "B",IDC_BETA_LABEL,91,81,8,8
-    EDITTEXT        IDC_BETA,103,77,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_BETA,102,78,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_ALPHA_UNIT,63,80,19,8
+    PUSHBUTTON      "Compute Time Parameters...",IDC_COMPUTE,7,100,174,14
 END
 
 IDD_CAST_DECK DIALOGEX 0, 0, 247, 60
@@ -3132,6 +3144,24 @@ BEGIN
     CONTROL         "Use Lump Sum Losses",IDC_USE_LUMPSUM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,28,85,10
 END
 
+IDD_ACI_PARAMETERS DIALOGEX 0, 0, 316, 183
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Compute ACI 209R-92 Time Parameters"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,205,162,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,259,162,50,14
+    LTEXT           "Concrete Strength at Time of Initial Loading",IDC_T1,7,7,255,8
+    LTEXT           "f'ci",IDC_STATIC,7,29,10,8
+    EDITTEXT        IDC_FCI,21,25,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_FCI_UNIT,66,28,19,8
+    LTEXT           "Concrete Strength at t = 28 days",IDC_STATIC,7,49,108,8
+    LTEXT           "f'c",IDC_STATIC,7,65,8,8
+    EDITTEXT        IDC_FC,22,62,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_FC_UNIT,66,66,19,8
+    LTEXT           "Static",IDC_RESULT,7,106,220,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -3139,8 +3169,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,2
- PRODUCTVERSION 3,0,0,2
+ FILEVERSION 3,0,0,3
+ PRODUCTVERSION 3,0,0,3
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3157,12 +3187,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.2"
+            VALUE "FileVersion", "3.0.0.3"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2013, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.2"
+            VALUE "ProductVersion", "3.0.0.3"
         END
     END
     BLOCK "VarFileInfo"
@@ -3463,7 +3493,7 @@ BEGIN
     IDD_BRIDGEDESC_DECKDETAILS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 408
+        RIGHTMARGIN, 426
         TOPMARGIN, 7
         BOTTOMMARGIN, 298
     END
@@ -3744,7 +3774,7 @@ BEGIN
         BOTTOMMARGIN, 175
     END
 
-    IDD_TS_GEOMETRY, DIALOG
+    IDD_CP_GEOMETRY, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 395
@@ -3925,7 +3955,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 181
         TOPMARGIN, 7
-        BOTTOMMARGIN, 91
+        BOTTOMMARGIN, 114
     END
 
     IDD_CAST_DECK, DIALOG
@@ -3950,6 +3980,14 @@ BEGIN
         RIGHTMARGIN, 273
         TOPMARGIN, 7
         BOTTOMMARGIN, 209
+    END
+
+    IDD_ACI_PARAMETERS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 309
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 176
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -4325,9 +4363,9 @@ BEGIN
     ID_PROJECT_ALIGNMENT    "Edit Roadway Alignment and Profile\nEdit Roadway Alignment and Profile"
     ID_LIVE_LOADS           "Change which live loads are used for the analysis...\nSpecify Live Loads for Analysis"
     ID_ADD_MOMENT_LOAD      "Add a moment load to the model"
-    ID_EDIT_PIER            "Edit Pier\nEdit Pier"
+    ID_EDIT_PIER            "Edit this Pier\nEdit this Pier"
     ID_PROJECT_SPANDESC     "Edit the selected Span\nEdit the selected Span"
-    ID_PROJECT_PIERDESC     "Edit the selected Pier\nEdit the selected Pier"
+    ID_PROJECT_PIERDESC     "Edit an abutment\\pier\nEdit an abutment\\pier"
 END
 
 STRINGTABLE 

@@ -1848,24 +1848,24 @@ HRESULT CProjectAgentImp::PierDataProc2(IStructuredSave* pSave,IStructuredLoad* 
       // continuous is not a valid input for the first and last pier, but bugs in the preview releases
       // made it possible to have this input
       CPierData2* pFirstPier = pObj->m_BridgeDescription.GetPier(0);
-      if ( pFirstPier->GetConnectionType() == pgsTypes::ContinuousAfterDeck )
+      if ( pFirstPier->GetPierConnectionType() == pgsTypes::ContinuousAfterDeck )
       {
-         pFirstPier->SetConnectionType(pgsTypes::IntegralAfterDeck );
+         pFirstPier->SetPierConnectionType(pgsTypes::IntegralAfterDeck );
       }
-      else if ( pFirstPier->GetConnectionType() == pgsTypes::ContinuousBeforeDeck )
+      else if ( pFirstPier->GetPierConnectionType() == pgsTypes::ContinuousBeforeDeck )
       {
-         pFirstPier->SetConnectionType( pgsTypes::IntegralBeforeDeck );
+         pFirstPier->SetPierConnectionType( pgsTypes::IntegralBeforeDeck );
       }
 
 
       CPierData2* pLastPier = pObj->m_BridgeDescription.GetPier( pObj->m_BridgeDescription.GetPierCount()-1 );
-      if ( pLastPier->GetConnectionType() == pgsTypes::ContinuousAfterDeck )
+      if ( pLastPier->GetPierConnectionType() == pgsTypes::ContinuousAfterDeck )
       {
-         pLastPier->SetConnectionType( pgsTypes::IntegralAfterDeck );
+         pLastPier->SetPierConnectionType( pgsTypes::IntegralAfterDeck );
       }
-      else if ( pLastPier->GetConnectionType() == pgsTypes::ContinuousBeforeDeck )
+      else if ( pLastPier->GetPierConnectionType() == pgsTypes::ContinuousBeforeDeck )
       {
-         pLastPier->SetConnectionType( pgsTypes::IntegralBeforeDeck );
+         pLastPier->SetPierConnectionType( pgsTypes::IntegralBeforeDeck );
       }
    }
 
@@ -2045,8 +2045,8 @@ HRESULT CProjectAgentImp::BridgeDescriptionProc(IStructuredSave* pSave,IStructur
 
                   Float64 HgStart = pGdrLibEntry->GetBeamHeight(pgsTypes::metStart);
                   Float64 HgEnd   = pGdrLibEntry->GetBeamHeight(pgsTypes::metEnd);
-                  pSegment->SetVariationParameters(pgsTypes::LeftPrismatic, 0.0,HgStart,0.0);
-                  pSegment->SetVariationParameters(pgsTypes::RightPrismatic,0.0,HgEnd,  0.0);
+                  pSegment->SetVariationParameters(pgsTypes::sztLeftPrismatic, 0.0,HgStart,0.0);
+                  pSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,0.0,HgEnd,  0.0);
                }
                pGdrLibEntry->Release();
             }
@@ -4972,9 +4972,14 @@ void CProjectAgentImp::GetSlabOffset( const CSegmentKey& segmentKey, Float64* pS
    *pEnd   = pSegment->GetSlabOffset(pgsTypes::metEnd);
 }
 
-std::vector<pgsTypes::PierConnectionType> CProjectAgentImp::GetConnectionTypes(PierIndexType pierIdx)
+std::vector<pgsTypes::PierConnectionType> CProjectAgentImp::GetPierConnectionTypes(PierIndexType pierIdx)
 {
-   return m_BridgeDescription.GetConnectionTypes(pierIdx);
+   return m_BridgeDescription.GetPierConnectionTypes(pierIdx);
+}
+
+std::vector<pgsTypes::PierSegmentConnectionType> CProjectAgentImp::GetPierSegmentConnectionTypes(PierIndexType pierIdx)
+{
+   return m_BridgeDescription.GetPierSegmentConnectionTypes(pierIdx);
 }
 
 const CTimelineManager* CProjectAgentImp::GetTimelineManager()
@@ -5447,9 +5452,10 @@ void CProjectAgentImp::SetGirderCount(GroupIndexType grpIdx,GirderIndexType nGir
 void CProjectAgentImp::SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierConnectionType connectionType)
 {
    CPierData2* pPier = m_BridgeDescription.GetPier(pierIdx);
-   if ( pPier->GetConnectionType() != connectionType )
+   ATLASSERT(pPier->IsBoundaryPier());// this should be a boundary pier
+   if ( pPier->GetPierConnectionType() != connectionType )
    {
-      pPier->SetConnectionType(connectionType);
+      pPier->SetPierConnectionType(connectionType);
       Fire_BridgeChanged();
    }
 }

@@ -136,6 +136,18 @@ pgsHaulingAnalysisArtifact*  pgsKdotGirderHaulingChecker::AnalyzeHauling(const C
    return pArtifact.release();
 }
 
+pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang)
+{
+   std::auto_ptr<pgsKdotHaulingAnalysisArtifact> pArtifact(new pgsKdotHaulingAnalysisArtifact());
+   GET_IFACE(IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest); // poi's from global pool
+   HANDLINGCONFIG dummy_config;
+   dummy_config.bIgnoreGirderConfig = true;
+   dummy_config.LeftOverhang = leftOverhang;
+   dummy_config.RightOverhang = rightOverhang;
+   AnalyzeHauling(segmentKey,true,dummy_config,pGirderHaulingPointsOfInterest,pArtifact.get());
+   return pArtifact.release();
+}
+
 pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& haulConfig,IGirderHaulingDesignPointsOfInterest* pPOId)
 {
    std::auto_ptr<pgsKdotHaulingAnalysisArtifact> pArtifact(new pgsKdotHaulingAnalysisArtifact());
@@ -162,6 +174,31 @@ void pgsKdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,b
       Loh = haulConfig.LeftOverhang;
       Roh = haulConfig.RightOverhang;
 
+      poi_vec = pPOId->GetHaulingDesignPointsOfInterest(segmentKey,Loh,Roh);
+   }
+   else
+   {
+      GET_IFACE(IGirderHauling,pGirderHauling);
+      Loh = pGirderHauling->GetTrailingOverhang(segmentKey);
+      Roh = pGirderHauling->GetLeadingOverhang(segmentKey);
+
+      GET_IFACE(IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
+      poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,0,POIFIND_OR);
+   }
+
+   if ( !bUseConfig || haulConfig.bIgnoreGirderConfig )
+   {
+      // Not using the configuration, or the configuration applies only for the overhang
+
+      Fc = pMaterial->GetSegmentFc(segmentKey,haulSegmentIntervalIdx);
+      Ec = pMaterial->GetSegmentEc(segmentKey,haulSegmentIntervalIdx);
+      concType = pMaterial->GetSegmentConcreteType(segmentKey);
+   }
+   else
+   {
+      // Using the config
+      ATLASSERT(haulConfig.bIgnoreGirderConfig == false);
+
       if ( haulConfig.GdrConfig.bUserEc )
          Ec = haulConfig.GdrConfig.Ec;
       else
@@ -171,21 +208,6 @@ void pgsKdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,b
 
       Fc = haulConfig.GdrConfig.Fc;
       concType = haulConfig.GdrConfig.ConcType;
-
-      poi_vec = pPOId->GetHaulingDesignPointsOfInterest(segmentKey,Loh,Roh);
-   }
-   else
-   {
-      GET_IFACE(IGirderHauling,pGirderHauling);
-      Loh = pGirderHauling->GetTrailingOverhang(segmentKey);
-      Roh = pGirderHauling->GetLeadingOverhang(segmentKey);
-
-      Fc = pMaterial->GetSegmentFc(segmentKey,haulSegmentIntervalIdx);
-      Ec = pMaterial->GetSegmentEc(segmentKey,haulSegmentIntervalIdx);
-      concType = pMaterial->GetSegmentConcreteType(segmentKey);
-
-      GET_IFACE(IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
-      poi_vec = pGirderHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,0,POIFIND_OR);
    }
 
    PrepareHaulingAnalysisArtifact(segmentKey,Loh,Roh,Fc,Ec,concType,pArtifact);
@@ -515,7 +537,7 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
       const pgsPointOfInterest poi = rpoiVec[i];
 
       Float64 ag,iy,stg,sbg;
-      if ( bUseConfig )
+      if ( bUseConfig && !haulConfig.bIgnoreGirderConfig )
       {
          ag     = pSectProps->GetAg(haulSegmentIntervalIdx,poi,haulConfig.GdrConfig.Fc);
          iy     = pSectProps->GetIy(haulSegmentIntervalIdx,poi,haulConfig.GdrConfig.Fc);
@@ -538,7 +560,7 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
       Float64 sps_force, se;
       Float64 tps_force, te;
 
-      if ( bUseConfig )
+      if ( bUseConfig && !haulConfig.bIgnoreGirderConfig )
       {
          hps_force = pPrestressForce->GetPrestressForce(poi,haulConfig.GdrConfig,pgsTypes::Harped,haulSegmentIntervalIdx,pgsTypes::Middle);
          he = pStrandGeometry->GetHsEccentricity(haulSegmentIntervalIdx,poi,haulConfig.GdrConfig, &nfh);
@@ -604,7 +626,7 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
       Float64 Yna, At, T, AsReqd, AsProvd;
       bool isAdequateBar;
  
-      const GDRCONFIG* pConfig = bUseConfig ? &(haulConfig.GdrConfig) : NULL;
+      const GDRCONFIG* pConfig = (bUseConfig && !haulConfig.bIgnoreGirderConfig ) ? &(haulConfig.GdrConfig) : NULL;
 
       Float64 fAllow = altCalc.ComputeAlternativeStressRequirements(poi, pConfig, ft_mo, fb_mo, fLowTensAllowable, fHighTensAllowable,
                                                                       &Yna, &At, &T, &AsProvd, &AsReqd, &isAdequateBar);

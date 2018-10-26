@@ -54,7 +54,7 @@ protected:
    // implement this method to create the graph controller object (the C++ object, not the Windows object)
    virtual CGirderGraphControllerBase* CreateGraphController() = 0;
    // implement this method to create the Windows object
-   virtual int InitGraphController(CWnd* pParent,UINT nID) = 0;
+   virtual BOOL InitGraphController(CWnd* pParent,UINT nID) = 0;
 
    DECLARE_MESSAGE_MAP()
 

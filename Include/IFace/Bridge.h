@@ -381,7 +381,18 @@ interface IBridge : IUnknown
    virtual void IsContinuousAtPier(PierIndexType pierIdx,bool* pbLeft,bool* pbRight) = 0;
    virtual void IsIntegralAtPier(PierIndexType pierIdx,bool* pbLeft,bool* pbRight) = 0;
    virtual void GetContinuityEventIndex(PierIndexType pierIdx,EventIndexType* pLeft,EventIndexType* pRight) = 0;
+
+   // Returns the connection boundary condition at a pier (only valid if IsBoundaryPier returns true)
    virtual pgsTypes::PierConnectionType GetPierConnectionType(PierIndexType pierIdx) = 0;
+
+   // Returns the segment connection type at a pier (only valid if IsInteriorPier returns true)
+   virtual pgsTypes::PierSegmentConnectionType GetSegmentConnectionType(PierIndexType pierIdx) = 0;
+
+   virtual bool IsAbutment(PierIndexType pierIdx) = 0; // returns true if pier is an end abutment
+   virtual bool IsPier(PierIndexType pierIdx) = 0; // returns true if pier is an intermediate pier
+
+   virtual bool IsInteriorPier(PierIndexType pierIdx) = 0; // returns true if the pier is interior to a girder group
+   virtual bool IsBoundaryPier(PierIndexType pierIdx) = 0; // returns true if the pier is at a boundary of a girder group
 
    // Computes the location of the pier in the segment coordinate system. Returns false if the pier is not located on the segment
    virtual bool GetPierLocation(PierIndexType pierIdx,const CSegmentKey& segmentKey,Float64* pDistFromStartOfSegment) = 0;

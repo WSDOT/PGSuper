@@ -1398,8 +1398,23 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    const pgsStirrupDetailArtifact* pSDArtifact     = 0;
    const pgsHorizontalShearArtifact* pAHsrtifact   = 0;
 
+   // This complex method of getting POIs is to match the POIs used in the regression test
+   // from previous version of PGSuper (Versions 2.x). By making the vector of POI match
+   // the older versions the same regression test results are reported making it easier to
+   // compare results.
    std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
    pIPoi->RemovePointsOfInterest(vPoi,POI_CRITSECTSHEAR1 | POI_CRITSECTSHEAR2);
+   pIPoi->RemovePointsOfInterest(vPoi,POI_15H);
+   std::vector<pgsPointOfInterest> vPoi2( pIPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT) );
+   pIPoi->RemovePointsOfInterest(vPoi2,POI_0L);
+   pIPoi->RemovePointsOfInterest(vPoi2,POI_10L);
+   std::vector<pgsPointOfInterest> vPoi3( pIPoi->GetPointsOfInterest(segmentKey,POI_PSXFER | POI_HARPINGPOINT, POIFIND_OR) );
+   vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
+   vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
+   std::sort(vPoi.begin(),vPoi.end());
+   std::vector<pgsPointOfInterest>::iterator newEnd( std::unique(vPoi.begin(),vPoi.end()));
+   vPoi.erase(newEnd,vPoi.end());
+
    std::vector<pgsPointOfInterest>::iterator it(vPoi.begin());
    std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
    for ( ; it != end; it++)
@@ -1528,7 +1543,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
 
 #pragma Reminder("BUG: added if block to make it through the regression tests... there is probably a bug")
       const pgsFlexuralCapacityArtifact* pCompositeCap;
-      pCompositeCap = pGdrArtifact->GetPositiveMomentFlexuralCapacityArtifact(liveLoadIntervalIdx,pgsTypes::StrengthI,it-vPoi.begin());
+      pCompositeCap = pGdrArtifact->FindPositiveMomentFlexuralCapacityArtifact(liveLoadIntervalIdx,pgsTypes::StrengthI,poi);
       if ( pCompositeCap )
       {
          ATLASSERT(pCompositeCap->GetPointOfInterest() == poi);
@@ -1555,9 +1570,10 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<", "<<pid<<", 50141, "<<loc<<", "<<QUITE(IsZero(mmcd.Mu) ? 0 : mmcd.Mr/mmcd.Mu)<< ",15, "<<gdrIdx<<std::endl;
 
 #pragma Reminder("BUG: added if block to make it through the regression tests... there is probably a bug")
-      pCompositeCap = pGdrArtifact->GetNegativeMomentFlexuralCapacityArtifact(liveLoadIntervalIdx,pgsTypes::StrengthI,it-vPoi.begin());
+      pCompositeCap = pGdrArtifact->FindNegativeMomentFlexuralCapacityArtifact(liveLoadIntervalIdx,pgsTypes::StrengthI,poi);
       if ( pCompositeCap )
       {
+         ATLASSERT(pCompositeCap->GetPointOfInterest() == poi);
 #pragma Reminder("BUG: added if block to make it through the regression tests... there is probably a bug")
          // the bug is probably with the POIs
          resultsFile<<bridgeId<<", "<<pid<<", 122116, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pCompositeCap->GetDemand() , unitMeasure::NewtonMillimeter)) <<",15, "<<gdrIdx<<std::endl;

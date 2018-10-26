@@ -26,6 +26,8 @@
 #include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin.h"
 #include "ACIConcretePage.h"
+#include "ConcreteDetailsDlg.h"
+#include "PGSuperAppPlugin\ACIParametersDlg.h"
 #include "HtmlHelp\HelpTopics.hh"
 
 #include <Material\ACI209Concrete.h>
@@ -71,6 +73,7 @@ BEGIN_MESSAGE_MAP(CACIConcretePage, CPropertyPage)
    ON_BN_CLICKED(IDC_USER, &CACIConcretePage::OnUserParameters)
    ON_CBN_SELCHANGE(IDC_CURE_METHOD, &CACIConcretePage::OnCureMethod)
    ON_CBN_SELCHANGE(IDC_CEMENT_TYPE, &CACIConcretePage::OnCementType)
+   ON_BN_CLICKED(IDC_COMPUTE, &CACIConcretePage::OnCompute)
 END_MESSAGE_MAP()
 
 
@@ -114,6 +117,7 @@ void CACIConcretePage::OnUserParameters()
    GetDlgItem(IDC_ALPHA_UNIT)->EnableWindow(!bEnable);
    GetDlgItem(IDC_BETA_LABEL)->EnableWindow(!bEnable);
    GetDlgItem(IDC_BETA)->EnableWindow(!bEnable);
+   GetDlgItem(IDC_COMPUTE)->EnableWindow(!bEnable);
 
    if ( bEnable )
    {
@@ -133,6 +137,29 @@ void CACIConcretePage::OnCementType()
    BOOL bUseACI = IsDlgButtonChecked(IDC_USER);
    if ( bUseACI )
       UpdateParameters();
+}
+
+void CACIConcretePage::OnCompute()
+{
+   UpdateData(TRUE);
+
+   CACIParametersDlg dlg;
+   dlg.m_t1 = m_TimeAtInitialStrength;
+   dlg.m_t2 = ::ConvertToSysUnits(28.0,unitMeasure::Day);
+   dlg.m_fc1 = m_fci;
+   dlg.m_fc2 = m_fc28;
+   if ( dlg.DoModal() )
+   {
+      m_A = dlg.m_A;
+      m_B = dlg.m_B;
+      m_fci = dlg.m_fc1;
+      m_fc28 = dlg.m_fc2;
+
+      UpdateData(FALSE);
+
+      CConcreteDetailsDlg* pParent = (CConcreteDetailsDlg*)GetParent();
+      pParent->m_General.SetFc(m_fc28);
+   }
 }
 
 void CACIConcretePage::UpdateParameters()

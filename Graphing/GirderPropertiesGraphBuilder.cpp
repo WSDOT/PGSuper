@@ -94,7 +94,7 @@ CGirderGraphControllerBase* CGirderPropertiesGraphBuilder::CreateGraphController
    return new CGirderPropertiesGraphController;
 }
 
-int CGirderPropertiesGraphBuilder::InitGraphController(CWnd* pParent,UINT nID)
+BOOL CGirderPropertiesGraphBuilder::InitGraphController(CWnd* pParent,UINT nID)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    ATLASSERT(m_pGraphController != NULL);

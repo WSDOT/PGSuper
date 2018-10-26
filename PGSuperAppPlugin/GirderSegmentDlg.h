@@ -37,8 +37,7 @@ class CGirderSegmentDlg : public CPropertySheet
 	DECLARE_DYNAMIC(CGirderSegmentDlg)
 
 public:
-	CGirderSegmentDlg(UINT nIDCaption, bool bEditingInGirder,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
-	CGirderSegmentDlg(LPCTSTR pszCaption, bool bEditingInGirder,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
+	CGirderSegmentDlg(bool bEditingInGirder,CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
 	virtual ~CGirderSegmentDlg();
 
    CSplicedGirderData m_Girder; // copy of the girder we are editing (contains the segment we are editing)

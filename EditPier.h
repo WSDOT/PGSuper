@@ -38,7 +38,8 @@ struct txnEditPierData
    std::_tstring Orientation;
    EventIndexType ErectionEventIndex;
 
-   pgsTypes::PierConnectionType ConnectionType;
+   pgsTypes::PierConnectionType PierConnectionType;
+   pgsTypes::PierSegmentConnectionType SegmentConnectionType;
    Float64 BearingOffset[2];
    Float64 EndDistance[2];
    Float64 SupportWidth[2];

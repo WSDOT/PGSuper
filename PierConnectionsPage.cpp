@@ -27,6 +27,7 @@
 #include "PGSuperDoc.h"
 #include "PierConnectionsPage.h"
 #include "PierDetailsDlg.h"
+#include "PGSuperColors.h"
 
 #include "HtmlHelp\HelpTopics.hh"
 
@@ -50,7 +51,7 @@ CPierConnectionsPage::CPierConnectionsPage() : CPropertyPage(CPierConnectionsPag
 	//{{AFX_DATA_INIT(CPierConnectionsPage)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
-   m_WhiteBrush.CreateSolidBrush(RGB(255,255,255));
+   m_WhiteBrush.CreateSolidBrush(METAFILE_BACKGROUND_COLOR);
 }
 
 CPierConnectionsPage::~CPierConnectionsPage()
@@ -60,6 +61,8 @@ CPierConnectionsPage::~CPierConnectionsPage()
 void CPierConnectionsPage::Init(const CPierData2* pPier)
 {
    m_PierIdx = pPier->GetIndex();
+
+   m_PierConnectionType = pPier->GetPierConnectionType();
 
    for ( int i = 0; i < 2; i++ )
    {
@@ -107,17 +110,11 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX,IDC_AHEAD_DIAPHRAGM_WIDTH,m_DiaphragmWidthEdit[pgsTypes::Ahead]);
 
    // Set the schematic connection image
-   pgsTypes::PierConnectionType connectionType = pParent->GetConnectionType(m_PierIdx);
-   CString image_name = GetImageName(connectionType,m_BearingOffsetMeasurementType,m_EndDistanceMeasurementType);
+   CString image_name = GetImageName(m_PierConnectionType,m_BearingOffsetMeasurementType,m_EndDistanceMeasurementType);
 	DDX_MetaFileStatic(pDX, IDC_CONNECTION_MF, m_ConnectionPicture,image_name, _T("Metafile") );
 
-
    // Boundary Conditions
-   DDX_CBItemData(pDX,IDC_BOUNDARY_CONDITIONS,connectionType);
-   if ( pDX->m_bSaveAndValidate )
-   {
-      pParent->SetConnectionType(m_PierIdx,connectionType);
-   }
+   DDX_CBItemData(pDX,IDC_BOUNDARY_CONDITIONS,m_PierConnectionType);
 
    // Connection Dimensions
    if ( pPrevSpan )
@@ -272,7 +269,7 @@ void CPierConnectionsPage::FillBoundaryConditionComboBox()
    IPierConnectionsParent* pParent = dynamic_cast<IPierConnectionsParent*>(GetParent());
    const CBridgeDescription2* pBridgeDesc = pParent->GetBridgeDescription();
 
-   std::vector<pgsTypes::PierConnectionType> connections( pBridgeDesc->GetConnectionTypes(m_PierIdx) );
+   std::vector<pgsTypes::PierConnectionType> connections( pBridgeDesc->GetPierConnectionTypes(m_PierIdx) );
 
    pcbBoundaryConditions->Initialize(connections);
 }
@@ -316,7 +313,9 @@ void CPierConnectionsPage::OnBoundaryConditionChanged()
    const CSpanData2* pPrevSpan = pParent->GetPrevSpan(m_PierIdx);
    const CSpanData2* pNextSpan = pParent->GetNextSpan(m_PierIdx);
 
-   BOOL bEnable = (connectionType == pgsTypes::ContinuousSegment ? FALSE : TRUE);
+#pragma Reminder("UPDATE: clean up this code...")
+   //BOOL bEnable = (connectionType == pgsTypes::ContinuousSegment ? FALSE : TRUE);
+   BOOL bEnable = TRUE;
    if ( pPrevSpan )
    {
       GetDlgItem(IDC_LEFT_LABEL)->EnableWindow(bEnable);
@@ -351,17 +350,17 @@ void CPierConnectionsPage::OnBoundaryConditionChanged()
 
    GetDlgItem(IDC_COPY)->EnableWindow(bEnable);
 
-   if ( connectionType == pgsTypes::ContinuousSegment )
-   {
-      m_SupportWidthEdit[pgsTypes::Back].EnableWindow(TRUE);
-      GetDlgItem(IDC_LEFT_SUPPORT_WIDTH_T)->EnableWindow(TRUE);
+   //if ( connectionType == pgsTypes::ContinuousSegment )
+   //{
+   //   m_SupportWidthEdit[pgsTypes::Back].EnableWindow(TRUE);
+   //   GetDlgItem(IDC_LEFT_SUPPORT_WIDTH_T)->EnableWindow(TRUE);
 
-      m_DiaphragmHeightEdit[pgsTypes::Ahead].EnableWindow(FALSE);
-      GetDlgItem(IDC_AHEAD_DIAPHRAGM_HEIGHT_T)->EnableWindow(FALSE);
-      m_DiaphragmWidthEdit[pgsTypes::Ahead].EnableWindow(FALSE);
-      GetDlgItem(IDC_AHEAD_DIAPHRAGM_WIDTH_T)->EnableWindow(FALSE);
-   }
-   else
+   //   m_DiaphragmHeightEdit[pgsTypes::Ahead].EnableWindow(FALSE);
+   //   GetDlgItem(IDC_AHEAD_DIAPHRAGM_HEIGHT_T)->EnableWindow(FALSE);
+   //   m_DiaphragmWidthEdit[pgsTypes::Ahead].EnableWindow(FALSE);
+   //   GetDlgItem(IDC_AHEAD_DIAPHRAGM_WIDTH_T)->EnableWindow(FALSE);
+   //}
+   //else
    {
       if ( pPrevSpan )
       {
@@ -467,94 +466,87 @@ CString CPierConnectionsPage::GetImageName(pgsTypes::PierConnectionType connecti
    int pierType = (pPrevSpan != NULL && pNextSpan != NULL ? IntPier : (pPrevSpan == NULL ? StartPier : EndPier));
 
    CString strName;
-   if ( connectionType != pgsTypes::ContinuousSegment )
+   if ( brgOffsetType == ConnectionLibraryEntry::AlongGirder )
    {
-      if ( brgOffsetType == ConnectionLibraryEntry::AlongGirder )
+      switch( endType )
       {
-         switch( endType )
-         {
-         case ConnectionLibraryEntry::FromBearingAlongGirder:
-            if ( pierType == StartPier )
-               strName = _T("SA_BRGALONGGDR_ENDALONGGDRFROMBRG");
-            else if ( pierType == EndPier )
-               strName = _T("EA_BRGALONGGDR_ENDALONGGDRFROMBRG");
-            else
-               strName = _T("CLPIER_BRGALONGGDR_ENDALONGGDRFROMBRG");
-            break;
+      case ConnectionLibraryEntry::FromBearingAlongGirder:
+         if ( pierType == StartPier )
+            strName = _T("SA_BRGALONGGDR_ENDALONGGDRFROMBRG");
+         else if ( pierType == EndPier )
+            strName = _T("EA_BRGALONGGDR_ENDALONGGDRFROMBRG");
+         else
+            strName = _T("CLPIER_BRGALONGGDR_ENDALONGGDRFROMBRG");
+         break;
 
-         case ConnectionLibraryEntry::FromBearingNormalToPier:
-            if ( pierType == StartPier )
-               strName = _T("SA_BRGALONGGDR_ENDALONGNORMALFROMBRG");
-            else if ( pierType == EndPier )
-               strName = _T("EA_BRGALONGGDR_ENDALONGNORMALFROMBRG");
-            else
-               strName = _T("CLPIER_BRGALONGGDR_ENDALONGNORMALFROMBRG");
-            break;
+      case ConnectionLibraryEntry::FromBearingNormalToPier:
+         if ( pierType == StartPier )
+            strName = _T("SA_BRGALONGGDR_ENDALONGNORMALFROMBRG");
+         else if ( pierType == EndPier )
+            strName = _T("EA_BRGALONGGDR_ENDALONGNORMALFROMBRG");
+         else
+            strName = _T("CLPIER_BRGALONGGDR_ENDALONGNORMALFROMBRG");
+         break;
 
-         case ConnectionLibraryEntry::FromPierAlongGirder:
-            if ( pierType == StartPier )
-               strName = _T("SA_BRGALONGGDR_ENDALONGGDRFROMPIER");
-            else if ( pierType == EndPier )
-               strName = _T("EA_BRGALONGGDR_ENDALONGGDRFROMPIER");
-            else
-               strName = _T("CLPIER_BRGALONGGDR_ENDALONGGDRFROMPIER");
-            break;
+      case ConnectionLibraryEntry::FromPierAlongGirder:
+         if ( pierType == StartPier )
+            strName = _T("SA_BRGALONGGDR_ENDALONGGDRFROMPIER");
+         else if ( pierType == EndPier )
+            strName = _T("EA_BRGALONGGDR_ENDALONGGDRFROMPIER");
+         else
+            strName = _T("CLPIER_BRGALONGGDR_ENDALONGGDRFROMPIER");
+         break;
 
-         case ConnectionLibraryEntry::FromPierNormalToPier:
-            if ( pierType == StartPier )
-               strName = _T("SA_BRGALONGGDR_ENDALONGNORMALFROMPIER");
-            else if ( pierType == EndPier )
-               strName = _T("EA_BRGALONGGDR_ENDALONGNORMALFROMPIER");
-            else
-               strName = _T("CLPIER_BRGALONGGDR_ENDALONGNORMALFROMPIER");
-            break;
-         }
-      }
-      else if ( brgOffsetType == ConnectionLibraryEntry::NormalToPier )
-      {
-         switch( endType )
-         {
-         case ConnectionLibraryEntry::FromBearingAlongGirder:
-            if ( pierType == StartPier )
-               strName = _T("SA_BRGALONGNORMAL_ENDALONGGDRFROMBRG");
-            else if ( pierType == EndPier )
-               strName = _T("EA_BRGALONGNORMAL_ENDALONGGDRFROMBRG");
-            else
-               strName = _T("CLPIER_BRGALONGNORMAL_ENDALONGGDRFROMBRG");
-            break;
-
-         case ConnectionLibraryEntry::FromBearingNormalToPier:
-            if ( pierType == StartPier )
-               strName = _T("SA_BRGALONGNORMAL_ENDALONGNORMALFROMBRG");
-            else if ( pierType == EndPier )
-               strName = _T("EA_BRGALONGNORMAL_ENDALONGNORMALFROMBRG");
-            else
-               strName = _T("CLPIER_BRGALONGNORMAL_ENDALONGNORMALFROMBRG");
-            break;
-
-         case ConnectionLibraryEntry::FromPierAlongGirder:
-            if ( pierType == StartPier )
-               strName = _T("SA_BRGALONGNORMAL_ENDALONGGDRFROMPIER");
-            else if ( pierType == EndPier )
-               strName = _T("EA_BRGALONGNORMAL_ENDALONGGDRFROMPIER");
-            else
-               strName = _T("CLPIER_BRGALONGNORMAL_ENDALONGGDRFROMPIER");
-            break;
-
-         case ConnectionLibraryEntry::FromPierNormalToPier:
-            if ( pierType == StartPier )
-               strName = _T("SA_BRGALONGNORMAL_ENDALONGNORMALFROMPIER");
-            else if ( pierType == EndPier )
-               strName = _T("EA_BRGALONGNORMAL_ENDALONGNORMALFROMPIER");
-            else
-               strName = _T("CLPIER_BRGALONGNORMAL_ENDALONGNORMALFROMPIER");
-            break;
-         }
+      case ConnectionLibraryEntry::FromPierNormalToPier:
+         if ( pierType == StartPier )
+            strName = _T("SA_BRGALONGGDR_ENDALONGNORMALFROMPIER");
+         else if ( pierType == EndPier )
+            strName = _T("EA_BRGALONGGDR_ENDALONGNORMALFROMPIER");
+         else
+            strName = _T("CLPIER_BRGALONGGDR_ENDALONGNORMALFROMPIER");
+         break;
       }
    }
-   else
+   else if ( brgOffsetType == ConnectionLibraryEntry::NormalToPier )
    {
-      strName = _T("PIER_CONTINUOUS_SEGMENT");
+      switch( endType )
+      {
+      case ConnectionLibraryEntry::FromBearingAlongGirder:
+         if ( pierType == StartPier )
+            strName = _T("SA_BRGALONGNORMAL_ENDALONGGDRFROMBRG");
+         else if ( pierType == EndPier )
+            strName = _T("EA_BRGALONGNORMAL_ENDALONGGDRFROMBRG");
+         else
+            strName = _T("CLPIER_BRGALONGNORMAL_ENDALONGGDRFROMBRG");
+         break;
+
+      case ConnectionLibraryEntry::FromBearingNormalToPier:
+         if ( pierType == StartPier )
+            strName = _T("SA_BRGALONGNORMAL_ENDALONGNORMALFROMBRG");
+         else if ( pierType == EndPier )
+            strName = _T("EA_BRGALONGNORMAL_ENDALONGNORMALFROMBRG");
+         else
+            strName = _T("CLPIER_BRGALONGNORMAL_ENDALONGNORMALFROMBRG");
+         break;
+
+      case ConnectionLibraryEntry::FromPierAlongGirder:
+         if ( pierType == StartPier )
+            strName = _T("SA_BRGALONGNORMAL_ENDALONGGDRFROMPIER");
+         else if ( pierType == EndPier )
+            strName = _T("EA_BRGALONGNORMAL_ENDALONGGDRFROMPIER");
+         else
+            strName = _T("CLPIER_BRGALONGNORMAL_ENDALONGGDRFROMPIER");
+         break;
+
+      case ConnectionLibraryEntry::FromPierNormalToPier:
+         if ( pierType == StartPier )
+            strName = _T("SA_BRGALONGNORMAL_ENDALONGNORMALFROMPIER");
+         else if ( pierType == EndPier )
+            strName = _T("EA_BRGALONGNORMAL_ENDALONGNORMALFROMPIER");
+         else
+            strName = _T("CLPIER_BRGALONGNORMAL_ENDALONGNORMALFROMPIER");
+         break;
+      }
    }
 
    return strName;
@@ -620,24 +612,6 @@ void CPierConnectionsPage::OnCopyFromLibrary()
 	      strNames += strName;
 	   }
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	   CString strMsg(_T("Select a pre-defined connection from the list. Connection dimensions will be copied to both sides of intermediate piers."));
 	   int result = AfxChoose(_T("Copy Connection Data from Library"),strMsg,strNames,TRUE);
 	   if ( 0 <= result )
@@ -646,21 +620,9 @@ void CPierConnectionsPage::OnCopyFromLibrary()
 	      DoDataExchange(&dx);
 	
 	      std::_tstring name = names[result];
-	
-	
+		
 	      GET_IFACE2(pBroker,ILibrary,pLib);
 	      const ConnectionLibraryEntry* pEntry = pLib->GetConnectionEntry(name.c_str());
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	      for ( int i = 0; i < 2; i++ )
 	      {

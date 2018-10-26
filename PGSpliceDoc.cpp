@@ -220,7 +220,7 @@ void CPGSpliceDoc::OnEditSegment(UINT nID)
 
    CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
 
-   EditGirderSegmentDescription(segmentKey,EGD_GENERAL);
+   EditGirderSegmentDescription(segmentKey,EGS_GENERAL);
 }
 
 void CPGSpliceDoc::OnEditGirder()
@@ -248,7 +248,7 @@ void CPGSpliceDoc::OnEditGirder()
    CSegmentKey segmentKey(selection.GroupIdx,selection.GirderIdx,selection.SegmentIdx);
 
    if ( bEdit )
-      EditGirderSegmentDescription(segmentKey,EGD_GENERAL);
+      EditGirderSegmentDescription(segmentKey,EGS_GENERAL);
 }
 
 void CPGSpliceDoc::OnEditClosurePour()
@@ -334,7 +334,7 @@ void CPGSpliceDoc::OnEditClosurePour()
 
    const CClosurePourData* pClosure = pBridgeDesc->GetClosurePour(closureKey);
    ATLASSERT(pClosure != NULL);
-   EditClosurePourDescription(pClosure,EGD_GENERAL);
+   EditClosurePourDescription(pClosure,EGS_GENERAL);
 }
 
 void CPGSpliceDoc::OnEditGirderline()
@@ -373,7 +373,7 @@ void CPGSpliceDoc::OnEditGirderline()
 
    if ( bEdit )
    {
-      EditGirderDescription(CGirderKey(selection.GroupIdx,selection.GirderIdx),EGD_GENERAL);
+      EditGirderDescription(CGirderKey(selection.GroupIdx,selection.GirderIdx),EGS_GENERAL);
    }
 }
 
@@ -440,39 +440,39 @@ void CPGSpliceDoc::OnInsertTemporarySupport()
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    SupportIndexType nTS = pBridgeDesc->GetTemporarySupportCount();
 
-   CTemporarySupportDlg dlg(pBridgeDesc,_T("Insert Temporary Support"),EAFGetMainFrame());
-   if ( nTS != 0 )
-   {
-      // If there are temporary supports, initialize the dialog with the data
-      // of the first TS. Use the center of the bridge for the default location
-      const CTemporarySupportData* pRefTS = pBridgeDesc->GetTemporarySupport(0);
-      SupportIDType refTempSupportID = pRefTS->GetID();
-      CTemporarySupportData ts = *pRefTS;
-      ts.SetStation(pBridgeDesc->GetPier(0)->GetStation() + pBridgeDesc->GetLength()/2);
+   CTemporarySupportDlg dlg(pBridgeDesc,INVALID_INDEX,EAFGetMainFrame());
+   //if ( nTS != 0 )
+   //{
+   //   // If there are temporary supports, initialize the dialog with the data
+   //   // of the first TS. Use the center of the bridge for the default location
+   //   const CTemporarySupportData* pRefTS = pBridgeDesc->GetTemporarySupport(0);
+   //   SupportIDType refTempSupportID = pRefTS->GetID();
+   //   CTemporarySupportData ts = *pRefTS;
+   //   ts.SetStation(pBridgeDesc->GetPier(0)->GetStation() + pBridgeDesc->GetLength()/2);
 
-      const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
-      EventIndexType erectionEvent,removalEvent;
-      pTimelineMgr->GetTempSupportEvents(refTempSupportID,&erectionEvent,&removalEvent);
+   //   const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
+   //   EventIndexType erectionEvent,removalEvent;
+   //   pTimelineMgr->GetTempSupportEvents(refTempSupportID,&erectionEvent,&removalEvent);
 
-      EventIndexType closureEvent = erectionEvent;
-      if ( ts.GetConnectionType() == pgsTypes::sctClosurePour )
-      {
-         EventIndexType nEvents = pTimelineMgr->GetEventCount();
-         for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
-         {
-            const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
-            if ( pTimelineEvent->GetCastClosurePourActivity().IsEnabled() )
-            {
-               closureEvent = eventIdx;
-               break;
-            }
-         }
-      }
+   //   EventIndexType closureEvent = erectionEvent;
+   //   if ( ts.GetConnectionType() == pgsTypes::sctClosurePour )
+   //   {
+   //      EventIndexType nEvents = pTimelineMgr->GetEventCount();
+   //      for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
+   //      {
+   //         const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
+   //         if ( pTimelineEvent->GetCastClosurePourActivity().IsEnabled() )
+   //         {
+   //            closureEvent = eventIdx;
+   //            break;
+   //         }
+   //      }
+   //   }
 
-      pgsTypes::SupportedBeamSpacing girderSpacingType = pBridgeDesc->GetGirderSpacingType();
-      pgsTypes::MeasurementLocation spacingMeasureLocation = pBridgeDesc->GetMeasurementLocation();
-      dlg.Init(ts,erectionEvent,removalEvent,girderSpacingType,spacingMeasureLocation,closureEvent);
-   }
+   //   pgsTypes::SupportedBeamSpacing girderSpacingType = pBridgeDesc->GetGirderSpacingType();
+   //   pgsTypes::MeasurementLocation spacingMeasureLocation = pBridgeDesc->GetMeasurementLocation();
+   //   dlg.Init(ts,erectionEvent,removalEvent,girderSpacingType,spacingMeasureLocation,closureEvent);
+   //}
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -519,10 +519,7 @@ bool CPGSpliceDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,in
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CString strTitle;
-   strTitle.Format(_T("Group %d Girder %s Segment %d"),LABEL_GROUP(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex),LABEL_SEGMENT(segmentKey.segmentIndex));
-
-   CGirderSegmentDlg dlg(strTitle,false,EAFGetMainFrame(),nPage);
+   CGirderSegmentDlg dlg(false,EAFGetMainFrame(),nPage);
 
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
@@ -649,9 +646,7 @@ bool CPGSpliceDoc::EditTemporarySupportDescription(SupportIDType tsID,int nPage)
    const CTemporarySupportData* pTS = pBridgeDesc->FindTemporarySupport(tsID);
    SupportIndexType tsIdx = pTS->GetIndex();
 
-   CString strTitle;
-   strTitle.Format(_T("Edit Temporary Support %d"),LABEL_TEMPORARY_SUPPORT(tsIdx));
-   CTemporarySupportDlg dlg(pBridgeDesc,strTitle,EAFGetMainFrame());
+   CTemporarySupportDlg dlg(pBridgeDesc,tsIdx,EAFGetMainFrame());
 
    EventIndexType oldErectEvent, oldRemoveEvent;
    pBridgeDesc->GetTimelineManager()->GetTempSupportEvents(tsID,&oldErectEvent, &oldRemoveEvent);
@@ -672,7 +667,7 @@ bool CPGSpliceDoc::EditTemporarySupportDescription(SupportIDType tsID,int nPage)
       }
    }
 
-   dlg.Init(*pTS,oldErectEvent,oldRemoveEvent,oldGirderSpacingType,oldGirderMeasurementLocation,oldClosureEvent);
+//   dlg.Init(*pTS,oldErectEvent,oldRemoveEvent,oldGirderSpacingType,oldGirderMeasurementLocation,oldClosureEvent);
 
    txnEditTemporarySupportData oldData;
    oldData.m_TS = *pTS;

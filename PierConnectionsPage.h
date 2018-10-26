@@ -37,8 +37,10 @@
 // CPierConnectionsPage dialog
 interface IPierConnectionsParent
 {
-   virtual pgsTypes::PierConnectionType GetConnectionType(PierIndexType pierIdx) = 0;
-   virtual void SetConnectionType(PierIndexType pierIdx,pgsTypes::PierConnectionType type) = 0;
+   virtual pgsTypes::PierConnectionType GetPierConnectionType(PierIndexType pierIdx) = 0;
+   virtual void SetPierConnectionType(PierIndexType pierIdx,pgsTypes::PierConnectionType type) = 0;
+   virtual pgsTypes::PierSegmentConnectionType GetSegmentConnectionType(PierIndexType pierIdx) = 0;
+   virtual void SetSegmentConnectionType(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType type) = 0;
    virtual const CSpanData2* GetPrevSpan(PierIndexType pierIdx) = 0;
    virtual const CSpanData2* GetNextSpan(PierIndexType pierIdx) = 0;
    virtual const CBridgeDescription2* GetBridgeDescription() = 0;
@@ -107,6 +109,8 @@ protected:
    CCacheEdit m_DiaphragmLoadLocationEdit[2];
 
    CBrush m_WhiteBrush;
+
+   pgsTypes::PierConnectionType m_PierConnectionType;
 
    Float64 m_DiaphragmHeight[2];
    Float64 m_DiaphragmWidth[2];

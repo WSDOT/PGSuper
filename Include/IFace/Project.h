@@ -933,7 +933,8 @@ interface IBridgeDescription : IUnknown
    virtual void GetSlabOffset( const CSegmentKey& segmentKey, Float64* pStart, Float64* pEnd) = 0;
 
    // Returns a vector of valid connection types
-   virtual std::vector<pgsTypes::PierConnectionType> GetConnectionTypes(PierIndexType pierIdx) = 0;
+   virtual std::vector<pgsTypes::PierConnectionType> GetPierConnectionTypes(PierIndexType pierIdx) = 0;
+   virtual std::vector<pgsTypes::PierSegmentConnectionType> GetPierSegmentConnectionTypes(PierIndexType pierIdx) = 0;
 
    // timeline management
    virtual const CTimelineManager* GetTimelineManager() = 0;

@@ -79,6 +79,7 @@ public:
    // GROUP: OPERATIONS
    virtual pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE);
    virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey);
+   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang);
    virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,IGirderHaulingDesignPointsOfInterest* pPOId);
    virtual pgsHaulingAnalysisArtifact* DesignHauling(const CSegmentKey& segmentKey,const GDRCONFIG& config,bool bDesignForEqualOverhangs,bool bIgnoreConfigurationLimits,IGirderHaulingDesignPointsOfInterest* pPOId,bool* bSuccess, SHARED_LOGFILE LOGFILE);
 

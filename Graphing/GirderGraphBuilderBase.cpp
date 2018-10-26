@@ -118,13 +118,6 @@ int CGirderGraphBuilderBase::CreateControls(CWnd* pParent,UINT nID)
 
    EAFGetBroker(&m_pBroker);
 
-   // create our controls
-   if ( !InitGraphController(pParent,nID) )
-   {
-      TRACE0("Failed to create control bar\n");
-      return -1; // failed to create
-   }
-
    // setup the graph
    m_Graph.SetClientAreaColor(GRAPH_BACKGROUND);
 
@@ -146,13 +139,22 @@ int CGirderGraphBuilderBase::CreateControls(CWnd* pParent,UINT nID)
    m_Graph.SetYAxisNumberOfMajorTics(21);
 
    // Show the grid by default... set the control to checked
-   m_pGraphController->CheckDlgButton(IDC_GRID,BST_CHECKED);
    m_Graph.SetDoDrawGrid(); // show grid by default
    m_Graph.SetGridPenStyle(PS_DOT, 1, GRID_COLOR);
 
    // show the beam by default
-   m_pGraphController->CheckDlgButton(IDC_BEAM,BST_CHECKED);
    m_bShowBeam = true;
+
+   // create our controls
+   if ( !InitGraphController(pParent,nID) )
+   {
+      TRACE0("Failed to create control bar\n");
+      return -1; // failed to create
+   }
+
+   // Default settings for graph controller
+   m_pGraphController->CheckDlgButton(IDC_GRID,BST_CHECKED);
+   m_pGraphController->CheckDlgButton(IDC_BEAM,BST_CHECKED);
 
    return 0;
 }

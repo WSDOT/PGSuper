@@ -211,7 +211,7 @@ void CGirderGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
 void CGirderGrid::EditSegment(SegmentIndexType segIdx)
 {
    CEditGirderlineDlg* pParent = (CEditGirderlineDlg*)GetParent();
-   CGirderSegmentDlg dlg(_T("Edit Girder Segment"),true,this);
+   CGirderSegmentDlg dlg(true,this);
 
    CGirderKey girderKey = pParent->m_GirderKey;
    CSegmentKey segmentKey(girderKey,segIdx);

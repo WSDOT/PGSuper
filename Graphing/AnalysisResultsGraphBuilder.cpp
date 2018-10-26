@@ -659,17 +659,18 @@ CGirderGraphControllerBase* CAnalysisResultsGraphBuilder::CreateGraphController(
    return new CAnalysisResultsGraphController;
 }
 
-int CAnalysisResultsGraphBuilder::InitGraphController(CWnd* pParent,UINT nID)
+BOOL CAnalysisResultsGraphBuilder::InitGraphController(CWnd* pParent,UINT nID)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    ATLASSERT(m_pGraphController != NULL);
 
-   // create the graph definitions before creating the graph controller.
-   // our graph controller will call GetLoadCaseNames to populate the 
-   // list of load cases
-   UpdateGraphDefinitions();
+   if ( !m_pGraphController->Create(pParent,IDD_ANALYSISRESULTS_GRAPH_CONTROLLER, CBRS_LEFT, nID) )
+      return FALSE;
 
-   return m_pGraphController->Create(pParent,IDD_ANALYSISRESULTS_GRAPH_CONTROLLER, CBRS_LEFT, nID);
+   UpdateGraphDefinitions();
+   ((CAnalysisResultsGraphController*)m_pGraphController)->FillLoadCaseList();
+
+   return TRUE;
 }
 
 bool CAnalysisResultsGraphBuilder::UpdateNow()

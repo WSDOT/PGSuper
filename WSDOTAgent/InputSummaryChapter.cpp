@@ -403,7 +403,7 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    row++;
 
    (*pTable)(row,0) << _T("Connection Boundary Condition at ") << strPierLabel.c_str() << _T(" ") << LABEL_PIER(pPrevPier->GetIndex());
-   (*pTable)(row++,1) << CPierData2::AsString(pPrevPier->GetConnectionType());
+   (*pTable)(row++,1) << CPierData2::AsString(pPrevPier->GetPierConnectionType());
 
    strPierLabel = (pNextPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
    pNextPier->GetBearingOffset(pgsTypes::Back,&brgOffset,&brgOffsetMeasure);
@@ -414,7 +414,7 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    row++;
 
    (*pTable)(row,0) << _T("Connection Boundary Condition at ") << strPierLabel.c_str() << _T(" ") << LABEL_PIER(pNextPier->GetIndex());
-   (*pTable)(row++,1) << CPierData2::AsString(pNextPier->GetConnectionType());
+   (*pTable)(row++,1) << CPierData2::AsString(pNextPier->GetPierConnectionType());
 
    GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
    if (pGirderLiftingSpecCriteria->IsLiftingAnalysisEnabled())

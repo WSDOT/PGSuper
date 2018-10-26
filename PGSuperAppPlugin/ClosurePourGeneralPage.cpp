@@ -194,11 +194,6 @@ void CClosurePourGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
    DDX_Check_Bool(pDX, IDC_USER_EC,  pParent->m_ClosurePour.GetConcrete().bUserEc);
    DDX_UnitValueAndTag( pDX, IDC_EC,  IDC_EC_UNIT, pParent->m_ClosurePour.GetConcrete().Ec , pDisplayUnits->GetModEUnit() );
    DDV_UnitValueGreaterThanZero( pDX, IDC_EC, pParent->m_ClosurePour.GetConcrete().Ec, pDisplayUnits->GetModEUnit() );
-
-   if ( !pDX->m_bSaveAndValidate )
-   {
-      GetDlgItem(IDC_CONCRETE_TYPE_LABEL)->SetWindowText( matConcrete::GetTypeName((matConcrete::Type)pParent->m_ClosurePour.GetConcrete().Type,true).c_str() );
-   }
 }
 
 void CClosurePourGeneralPage::OnMoreConcreteProperties() 
@@ -234,6 +229,9 @@ void CClosurePourGeneralPage::OnMoreConcreteProperties()
    dlg.m_ACI.m_B               = pParent->m_ClosurePour.GetConcrete().B;
    dlg.m_ACI.m_CureMethod      = pParent->m_ClosurePour.GetConcrete().CureMethod;
    dlg.m_ACI.m_CementType      = pParent->m_ClosurePour.GetConcrete().CementType;
+   dlg.m_ACI.m_TimeAtInitialStrength = ::ConvertToSysUnits(m_AgeAtContinuity,unitMeasure::Day);
+   dlg.m_ACI.m_fci             = pParent->m_ClosurePour.GetConcrete().Fci;
+   dlg.m_ACI.m_fc28            = pParent->m_ClosurePour.GetConcrete().Fc;
 
 #pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
 
@@ -263,6 +261,7 @@ void CClosurePourGeneralPage::OnMoreConcreteProperties()
       pParent->m_ClosurePour.GetConcrete().B                  = dlg.m_ACI.m_B;
       pParent->m_ClosurePour.GetConcrete().CureMethod         = dlg.m_ACI.m_CureMethod;
       pParent->m_ClosurePour.GetConcrete().CementType         = dlg.m_ACI.m_CementType;
+      pParent->m_ClosurePour.GetConcrete().Fci                = dlg.m_ACI.m_fci;
 
 #pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
 
@@ -599,6 +598,10 @@ void CClosurePourGeneralPage::UpdateConcreteControls()
    bEnable = m_ctrlEciCheck.GetCheck();
    GetDlgItem(IDC_ECI)->EnableWindow(bEnable);
    GetDlgItem(IDC_ECI_UNIT)->EnableWindow(bEnable);
+
+   CClosurePourDlg* pParent = (CClosurePourDlg*)GetParent();
+   CString strLabel(ConcreteDescription(pParent->m_ClosurePour.GetConcrete()));
+   GetDlgItem(IDC_CONCRETE_TYPE_LABEL)->SetWindowText( strLabel );
 }
 
 

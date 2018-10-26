@@ -305,7 +305,7 @@ void CDrawBeamTool::DrawSegmentEndSupport(Float64 segToGraphCoordinateAdjustment
          pPier->GetNextGirderGroup() != NULL)      // not the last group
          &&                                     // AND
          (compositeDeckIntervalIdx <= intervalIdx &&
-         pPier && ::IsContinuousConnection(pPier->GetConnectionType()))
+         pPier && pPier->IsContinuous())
 
          || // - OR -
 
@@ -314,7 +314,14 @@ void CDrawBeamTool::DrawSegmentEndSupport(Float64 segToGraphCoordinateAdjustment
          pPier->GetPrevGirderGroup() != NULL) // not the first group
          && // AND
          (compositeDeckIntervalIdx <= intervalIdx &&
-         pPier && ::IsContinuousConnection(pPier->GetConnectionType()))
+         pPier && pPier->IsContinuous())
+
+         || // - OR -
+
+         (
+         compositeDeckIntervalIdx <= intervalIdx &&
+         pPier && pPier->IsInteriorPier()
+         )
       )
    {
       // It does!... draw a single pier at the CL Pier
@@ -556,96 +563,126 @@ void CDrawBeamTool::DrawPier(IntervalIndexType intervalIdx,const CPierData2* pPi
    CBrush* pOldBrush = pDC->SelectObject(&pier_brush);
    CPen*   pOldPen = pDC->SelectObject(&pier_pen);
 
-   pgsTypes::PierConnectionType connectionType = pPier->GetConnectionType();
-   PierIndexType pierIdx = pPier->GetIndex();
-
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-   IntervalIndexType erectFirstSegmentIntervalIdx = pIntervals->GetFirstErectedSegmentInterval();
+   if ( pPier->IsBoundaryPier() )
+   {
+      pgsTypes::PierConnectionType connectionType = pPier->GetPierConnectionType();
+      PierIndexType pierIdx = pPier->GetIndex();
 
-   GET_IFACE(IBridge,pBridge);
-   EventIndexType leftContinuityEventIdx, rightContinuityEventIdx;
-   pBridge->GetContinuityEventIndex(pierIdx,&leftContinuityEventIdx,&rightContinuityEventIdx);
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+      IntervalIndexType erectFirstSegmentIntervalIdx = pIntervals->GetFirstErectedSegmentInterval();
 
-   IntervalIndexType leftContinuityIntervalIdx  = pIntervals->GetInterval(leftContinuityEventIdx);
-   IntervalIndexType rightContinuityIntervalIdx = pIntervals->GetInterval(rightContinuityEventIdx);
+      GET_IFACE(IBridge,pBridge);
+      EventIndexType leftContinuityEventIdx, rightContinuityEventIdx;
+      pBridge->GetContinuityEventIndex(pierIdx,&leftContinuityEventIdx,&rightContinuityEventIdx);
 
-   if ( intervalIdx == erectFirstSegmentIntervalIdx )
-   {
-      connectionType = pgsTypes::Hinge;
-   }
+      IntervalIndexType leftContinuityIntervalIdx  = pIntervals->GetInterval(leftContinuityEventIdx);
+      IntervalIndexType rightContinuityIntervalIdx = pIntervals->GetInterval(rightContinuityEventIdx);
 
-   if ( connectionType == pgsTypes::Roller )
-   {
-      DrawRoller(p,pDC);
-   }
-   else if ( connectionType == pgsTypes::Hinge )
-   {
-      DrawHinge(p,pDC);
-   }
-   else if ( connectionType == pgsTypes::ContinuousBeforeDeck )
-   {
-      if ( leftContinuityIntervalIdx <= intervalIdx )
-         DrawContinuous(p,pDC);
-      else
+      if ( intervalIdx == erectFirstSegmentIntervalIdx )
+      {
+         connectionType = pgsTypes::Hinge;
+      }
+
+      if ( connectionType == pgsTypes::Roller )
+      {
+         DrawRoller(p,pDC);
+      }
+      else if ( connectionType == pgsTypes::Hinge )
+      {
          DrawHinge(p,pDC);
-   }
-   else if ( connectionType == pgsTypes::ContinuousAfterDeck )
-   {
-      if ( castDeckIntervalIdx < intervalIdx )
-         DrawContinuous(p,pDC);
+      }
+      else if ( connectionType == pgsTypes::ContinuousBeforeDeck )
+      {
+         if ( leftContinuityIntervalIdx <= intervalIdx )
+            DrawContinuous(p,pDC);
+         else
+            DrawHinge(p,pDC);
+      }
+      else if ( connectionType == pgsTypes::ContinuousAfterDeck )
+      {
+         if ( castDeckIntervalIdx < intervalIdx )
+            DrawContinuous(p,pDC);
+         else
+            DrawHinge(p,pDC);
+      }
+      else if ( connectionType == pgsTypes::IntegralBeforeDeck )
+      {
+         if ( leftContinuityIntervalIdx <= intervalIdx )
+            DrawIntegral(p,pDC);
+         else
+            DrawHinge(p,pDC);
+      }
+      else if ( connectionType == pgsTypes::IntegralAfterDeck )
+      {
+         if ( castDeckIntervalIdx < intervalIdx )
+            DrawIntegral(p,pDC);
+         else
+            DrawHinge(p,pDC);
+      }
+      else if ( connectionType == pgsTypes::IntegralBeforeDeckHingeBack )
+      {
+         if ( rightContinuityIntervalIdx <= intervalIdx )
+            DrawIntegralHingeBack(p,pDC);
+         else
+            DrawHinge(p,pDC);
+      }
+      else if ( connectionType == pgsTypes::IntegralAfterDeckHingeBack )
+      {
+         if ( castDeckIntervalIdx < intervalIdx)
+            DrawIntegralHingeBack(p,pDC);
+         else
+            DrawHinge(p,pDC);
+      }
+      else if ( connectionType == pgsTypes::IntegralBeforeDeckHingeAhead )
+      {
+         if ( leftContinuityIntervalIdx <= intervalIdx )
+            DrawIntegralHingeAhead(p,pDC);
+         else
+            DrawHinge(p,pDC);
+      }
+      else if ( connectionType == pgsTypes::IntegralAfterDeckHingeAhead )
+      {
+         if ( castDeckIntervalIdx < intervalIdx )
+            DrawIntegralHingeAhead(p,pDC);
+         else
+            DrawHinge(p,pDC);
+      }
       else
-         DrawHinge(p,pDC);
-   }
-   else if ( connectionType == pgsTypes::IntegralBeforeDeck )
-   {
-      if ( leftContinuityIntervalIdx <= intervalIdx )
-         DrawIntegral(p,pDC);
-      else
-         DrawHinge(p,pDC);
-   }
-   else if ( connectionType == pgsTypes::IntegralAfterDeck )
-   {
-      if ( castDeckIntervalIdx < intervalIdx )
-         DrawIntegral(p,pDC);
-      else
-         DrawHinge(p,pDC);
-   }
-   else if ( connectionType == pgsTypes::IntegralBeforeDeckHingeBack )
-   {
-      if ( rightContinuityIntervalIdx <= intervalIdx )
-         DrawIntegralHingeBack(p,pDC);
-      else
-         DrawHinge(p,pDC);
-   }
-   else if ( connectionType == pgsTypes::IntegralAfterDeckHingeBack )
-   {
-      if ( castDeckIntervalIdx < intervalIdx)
-         DrawIntegralHingeBack(p,pDC);
-      else
-         DrawHinge(p,pDC);
-   }
-   else if ( connectionType == pgsTypes::IntegralBeforeDeckHingeAhead )
-   {
-      if ( leftContinuityIntervalIdx <= intervalIdx )
-         DrawIntegralHingeAhead(p,pDC);
-      else
-         DrawHinge(p,pDC);
-   }
-   else if ( connectionType == pgsTypes::IntegralAfterDeckHingeAhead )
-   {
-      if ( castDeckIntervalIdx < intervalIdx )
-         DrawIntegralHingeAhead(p,pDC);
-      else
-         DrawHinge(p,pDC);
-   }
-   else if ( connectionType == pgsTypes::ContinuousSegment )
-   {
-      DrawHinge(p,pDC);
+      {
+         ATLASSERT(false); // is there a new connection type?
+      }
    }
    else
    {
-      ATLASSERT(false); // is there a new connection type?
+      const CClosurePourData* pClosurePour = pPier->GetClosurePour(0);
+      ATLASSERT(pClosurePour);
+      CClosureKey closureKey(pClosurePour->GetClosureKey());
+      IntervalIndexType closurePourIntervalIdx = pIntervals->GetCastClosurePourInterval(closureKey);
+
+      pgsTypes::PierSegmentConnectionType connectionType = pPier->GetSegmentConnectionType();
+      if ( connectionType == pgsTypes::psctContinousClosurePour )
+      {
+         if ( closurePourIntervalIdx < intervalIdx )
+            DrawContinuous(p,pDC);
+         else
+            DrawHinge(p,pDC);
+      }
+      else if ( connectionType == pgsTypes::psctIntegralClosurePour )
+      {
+         if ( closurePourIntervalIdx < intervalIdx )
+            DrawIntegral(p,pDC);
+         else
+            DrawHinge(p,pDC);
+      }
+      else if ( connectionType == pgsTypes::psctContinuousSegment )
+      {
+         DrawContinuous(p,pDC);
+      }
+      else if ( connectionType == pgsTypes::psctIntegralSegment )
+      {
+         DrawIntegral(p,pDC);
+      }
    }
 
    pDC->SelectObject(pOldBrush);

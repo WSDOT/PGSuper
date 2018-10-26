@@ -98,6 +98,16 @@ void pgsGirderLiftingChecker::CheckLifting(const CSegmentKey& segmentKey,pgsLift
    }
 }
 
+void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,Float64 supportLoc,pgsLiftingAnalysisArtifact* pArtifact)
+{
+   GET_IFACE(IGirderLiftingPointsOfInterest,pGirderLiftingPointsOfInterest);
+   HANDLINGCONFIG dummy_config;
+   dummy_config.bIgnoreGirderConfig = true;
+   dummy_config.LeftOverhang = supportLoc;
+   dummy_config.RightOverhang = supportLoc;
+   AnalyzeLifting(segmentKey,true,dummy_config,pGirderLiftingPointsOfInterest,pArtifact);
+}
+
 void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,const HANDLINGCONFIG& liftConfig,IGirderLiftingDesignPointsOfInterest* pPoiD, pgsLiftingAnalysisArtifact* pArtifact)
 {
    AnalyzeLifting(segmentKey,true,liftConfig,pPoiD,pArtifact);
@@ -120,6 +130,31 @@ void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,bool 
       Loh = liftConfig.LeftOverhang;
       Roh = liftConfig.RightOverhang;
 
+      poi_vec = pPoiD->GetLiftingDesignPointsOfInterest(segmentKey,Loh);
+   }
+   else
+   {
+      GET_IFACE(IGirderLifting,pGirderLifting);
+      Loh = pGirderLifting->GetLeftLiftingLoopLocation(segmentKey);
+      Roh = pGirderLifting->GetRightLiftingLoopLocation(segmentKey);
+
+      GET_IFACE(IGirderLiftingPointsOfInterest,pGirderLiftingPointsOfInterest);
+      poi_vec = pGirderLiftingPointsOfInterest->GetLiftingPointsOfInterest(segmentKey,0,POIFIND_OR);
+   }
+
+   if ( !bUseConfig || liftConfig.bIgnoreGirderConfig )
+   {
+      // Not using the configuration, or the configuration applies only for the overhang
+
+      Eci = pMaterial->GetSegmentEc(segmentKey,liftSegmentIntervalIdx);
+      Fci = pMaterial->GetSegmentFc(segmentKey,liftSegmentIntervalIdx);
+      concType = pMaterial->GetSegmentConcreteType(segmentKey);
+   }
+   else
+   {
+      // Using the config
+      ATLASSERT(liftConfig.bIgnoreGirderConfig == false);
+
       if ( liftConfig.GdrConfig.bUserEci )
          Eci = liftConfig.GdrConfig.Eci;
       else
@@ -129,23 +164,8 @@ void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,bool 
 
       Fci = liftConfig.GdrConfig.Fci;
       concType = liftConfig.GdrConfig.ConcType;
-
-      poi_vec = pPoiD->GetLiftingDesignPointsOfInterest(segmentKey,Loh);
    }
-   else
-   {
-      GET_IFACE(IGirderLifting,pGirderLifting);
-      Loh = pGirderLifting->GetLeftLiftingLoopLocation(segmentKey);
-      Roh = pGirderLifting->GetRightLiftingLoopLocation(segmentKey);
 
-      GET_IFACE(IMaterials,pMaterial);
-      Eci = pMaterial->GetSegmentEc(segmentKey,liftSegmentIntervalIdx);
-      Fci = pMaterial->GetSegmentFc(segmentKey,liftSegmentIntervalIdx);
-      concType = pMaterial->GetSegmentConcreteType(segmentKey);
-
-      GET_IFACE(IGirderLiftingPointsOfInterest,pGirderLiftingPointsOfInterest);
-      poi_vec = pGirderLiftingPointsOfInterest->GetLiftingPointsOfInterest(segmentKey,0,POIFIND_OR);
-   }
    
    PrepareLiftingAnalysisArtifact(segmentKey,Loh,Roh,Fci,Eci,concType,pArtifact);
 
@@ -520,7 +540,7 @@ void pgsGirderLiftingChecker::ComputeLiftingStresses(const CSegmentKey& segmentK
       const pgsPointOfInterest& poi = rpoiVec[i];
 
       Float64 ag,stg,sbg;
-      if ( bUseConfig )
+      if ( bUseConfig && !liftConfig.bIgnoreGirderConfig )
       {
          ag  = pSectProps->GetAg(liftSegmentIntervalIdx,poi,liftConfig.GdrConfig.Fci);
          stg = pSectProps->GetSt(liftSegmentIntervalIdx,poi,liftConfig.GdrConfig.Fci);
@@ -552,7 +572,7 @@ void pgsGirderLiftingChecker::ComputeLiftingStresses(const CSegmentKey& segmentK
       Float64 sps_force, se;
       Float64 tps_force, te;       
 
-      if ( bUseConfig )
+      if ( bUseConfig && !liftConfig.bIgnoreGirderConfig )
       {
          hps_force = pPrestressForce->GetPrestressForce(poi,liftConfig.GdrConfig,pgsTypes::Harped,liftSegmentIntervalIdx,pgsTypes::Middle);
          he        = pStrandGeometry->GetHsEccentricity(liftSegmentIntervalIdx,poi,liftConfig.GdrConfig, &nfh);
@@ -612,7 +632,7 @@ void pgsGirderLiftingChecker::ComputeLiftingStresses(const CSegmentKey& segmentK
       Float64 YnaDown, AtDown, TDown, AsReqdDown, AsProvdDown;
       bool isAdequateBarUp, isAdequateBarNone, isAdequateBarDown;
 
-      const GDRCONFIG* pConfig = bUseConfig ? &(liftConfig.GdrConfig) : NULL;
+      const GDRCONFIG* pConfig = (bUseConfig && !liftConfig.bIgnoreGirderConfig ) ? &(liftConfig.GdrConfig) : NULL;
 
       Float64 fAllowUp = altCalc.ComputeAlternativeStressRequirements(poi, pConfig, ft_up, fb_up, fLowTensAllowable, fHighTensAllowable,
                                                                       &YnaUp, &AtUp, &TUp, &AsProvdUp, &AsReqdUp, &isAdequateBarUp);
@@ -694,7 +714,7 @@ bool pgsGirderLiftingChecker::ComputeLiftingFsAgainstCracking(const CSegmentKey&
    Float64 temp_ps_camber = 0.0;
 
    GET_IFACE(ICamber,pCamber);
-   if ( bUseConfig )
+   if ( bUseConfig && !liftConfig.bIgnoreGirderConfig )
    {
       ps_camber = pCamber->GetPrestressDeflection(poi_ms,liftConfig.GdrConfig,false);
       temp_ps_camber = pCamber->GetInitialTempPrestressDeflection(poi_ms,liftConfig.GdrConfig,false);

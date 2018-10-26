@@ -62,8 +62,12 @@ public:
    GirderIndexType m_RefGirderIdx;
    Float64 m_RefGirderOffset;
    pgsTypes::OffsetMeasurementType m_RefGirderOffsetType;
+   pgsTypes::SupportedBeamSpacing m_GirderSpacingType;
+   pgsTypes::MeasurementLocation m_GirderSpacingMeasurementLocation;
 
-   void Init();
+   void Init(const CPierData2* pPierData);
+   void Init(const CTemporarySupportData& tsData);
+
    bool AllowConnectionChange(pgsTypes::PierFaceType side, const CString& conectionName);
 
 // Overrides
@@ -77,6 +81,8 @@ public:
 
 // Implementation
 protected:
+   void CommonInit(const CGirderSpacing2* pSpacing,const CBridgeDescription2* pBridge);
+
 	// Generated message map functions
 	//{{AFX_MSG(CGirderSegmentSpacingPage)
 	virtual BOOL OnInitDialog();
@@ -88,6 +94,9 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
    void ToggleGirderSpacingType();
+
+   bool m_bIsPier;
+   CString m_strSupportLabel;
 
    CGirderSpacingData2 m_SpacingCache;
    long m_GirderSpacingMeasureCache;
@@ -106,14 +115,8 @@ protected:
    void UpdateChildWindowState();
    void UpdateGirderSpacingState();
 
-   pgsTypes::SupportedBeamSpacing GetGirderSpacingType();
-   void SetGirderSpacingType(pgsTypes::SupportedBeamSpacing spacingType);
-   pgsTypes::MeasurementLocation GetGirderSpacingMeasurementLocation();
-   void SetGirderSpacingMeasurementLocation(pgsTypes::MeasurementLocation location);
-
 public:
-   const CGirderSpacing2& GetGirderSpacing();
-   const CBridgeDescription2& GetBridgeDescription();
+   const CBridgeDescription2* GetBridgeDescription();
    bool IsContinuousSegment();
    Float64 GetStation();
    LPCTSTR GetOrientation();

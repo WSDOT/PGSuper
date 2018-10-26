@@ -48,8 +48,10 @@ public:
    void SetSpanData(const CSpanData2* pSpan);
 
    //interface IPierConnectionsParent
-   virtual pgsTypes::PierConnectionType GetConnectionType(PierIndexType pierIdx);
-   virtual void SetConnectionType(PierIndexType pierIdx,pgsTypes::PierConnectionType type);
+   virtual pgsTypes::PierConnectionType GetPierConnectionType(PierIndexType pierIdx);
+   virtual void SetPierConnectionType(PierIndexType pierIdx,pgsTypes::PierConnectionType type);
+   virtual pgsTypes::PierSegmentConnectionType GetSegmentConnectionType(PierIndexType pierIdx);
+   virtual void SetSegmentConnectionType(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType type);
    virtual const CSpanData2* GetPrevSpan(PierIndexType pierIdx);
    virtual const CSpanData2* GetNextSpan(PierIndexType pierIdx);
    virtual const CBridgeDescription2* GetBridgeDescription();
@@ -121,7 +123,8 @@ protected:
    const CPierData2* m_pNextPier;
    const CGirderGroupData* m_pGirderGroup;
 
-   pgsTypes::PierConnectionType m_ConnectionType[2];
+   pgsTypes::PierConnectionType m_PierConnectionType[2];
+   pgsTypes::PierSegmentConnectionType m_SegmentConnectionType[2];
 
    void FillRefGirderOffsetTypeComboBox(pgsTypes::MemberEndType end);
    void FillRefGirderComboBox(pgsTypes::MemberEndType end);

@@ -155,7 +155,7 @@ class PGSEXTCLASS pgsBridgeDescriptionStatusItem : public CEAFStatusItem
 {
 public:
    typedef enum IssueType { General, Framing, Railing, Deck, BoundaryConditions };
-
+#pragma Reminder("REVIEW: BoundaryCondition status type is not set anywhere... it isn't used")
    pgsBridgeDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,IssueType issueType,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 

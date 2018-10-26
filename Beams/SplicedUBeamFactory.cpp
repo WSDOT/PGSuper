@@ -980,7 +980,7 @@ void CSplicedUBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dime
 std::vector<pgsTypes::SegmentVariationType> CSplicedUBeamFactory::GetSupportedSegmentVariations()
 {
    std::vector<pgsTypes::SegmentVariationType> variations;
-   variations.push_back(pgsTypes::None);
+   variations.push_back(pgsTypes::svtNone);
    return variations;
 }
 

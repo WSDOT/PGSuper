@@ -191,11 +191,6 @@ void CGirderDescGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
    {
       m_ctrlEci.GetWindowText(m_strUserEci);
    }
-
-   if ( !pDX->m_bSaveAndValidate )
-   {
-      GetDlgItem(IDC_CONCRETE_TYPE_LABEL)->SetWindowText( matConcrete::GetTypeName((matConcrete::Type)pParent->m_Segment.Material.Concrete.Type,true).c_str() );
-   }
 }
 
 void CGirderDescGeneralPage::OnCopyMaterial() 
@@ -798,6 +793,11 @@ void CGirderDescGeneralPage::UpdateConcreteControls()
    bEnable = m_ctrlEciCheck.GetCheck();
    GetDlgItem(IDC_ECI)->EnableWindow(bEnable);
    GetDlgItem(IDC_ECI_UNIT)->EnableWindow(bEnable);
+
+
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+   CString strLabel( ConcreteDescription(pParent->m_Segment.Material.Concrete));
+   GetDlgItem(IDC_CONCRETE_TYPE_LABEL)->SetWindowText( strLabel );
 }
 
 

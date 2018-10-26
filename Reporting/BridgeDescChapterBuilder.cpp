@@ -1211,7 +1211,10 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
       (*pLayoutTable)(row1,2) << RPT_BEARING(OLE2T(bstrBearing));
       (*pLayoutTable)(row1,3) << RPT_ANGLE(OLE2T(bstrAngle));
 
-      (*pLayoutTable)(row1,4) << CPierData2::AsString(pPier->GetConnectionType());
+      if ( pPier->IsInteriorPier() )
+         (*pLayoutTable)(row1,4) << CPierData2::AsString(pPier->GetSegmentConnectionType());
+      else
+         (*pLayoutTable)(row1,4) << CPierData2::AsString(pPier->GetPierConnectionType());
 
       if ( pPier->GetPrevSpan() )
       {
@@ -2160,85 +2163,85 @@ void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
 
          switch ( pSegment->GetVariationType() )
          {
-            case pgsTypes::None:
+            case pgsTypes::svtNone:
 #pragma Reminder("UPDATE: need to report the None case")
                break;
 
-            case pgsTypes::Linear:
-            case pgsTypes::Parabolic:
+            case pgsTypes::svtLinear:
+            case pgsTypes::svtParabolic:
                (*pTable)(row,0) << _T("Left Prismatic Length");
-               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationLength(pgsTypes::LeftPrismatic) );
+               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationLength(pgsTypes::sztLeftPrismatic) );
                row++;
 
                (*pTable)(row,0) << _T("Left Prismatic Height");
-               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationHeight(pgsTypes::LeftPrismatic) );
+               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationHeight(pgsTypes::sztLeftPrismatic) );
                row++;
 
                (*pTable)(row,0) << _T("Left Prismatic Bottom Flange Depth");
-               (*pTable)(row,1) << cmpdim.SetValue( pSegment->GetVariationBottomFlangeDepth(pgsTypes::LeftPrismatic) );
+               (*pTable)(row,1) << cmpdim.SetValue( pSegment->GetVariationBottomFlangeDepth(pgsTypes::sztLeftPrismatic) );
                row++;
 
                (*pTable)(row,0) << _T("Right Prismatic Length");
-               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationLength(pgsTypes::RightPrismatic) );
+               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationLength(pgsTypes::sztRightPrismatic) );
                row++;
 
                (*pTable)(row,0) << _T("Right Prismatic Height");
-               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationHeight(pgsTypes::RightPrismatic) );
+               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationHeight(pgsTypes::sztRightPrismatic) );
                row++;
 
                (*pTable)(row,0) << _T("Right Prismatic Bottom Flange Depth");
-               (*pTable)(row,1) << cmpdim.SetValue( pSegment->GetVariationBottomFlangeDepth(pgsTypes::RightPrismatic) );
+               (*pTable)(row,1) << cmpdim.SetValue( pSegment->GetVariationBottomFlangeDepth(pgsTypes::sztRightPrismatic) );
                row++;
                break;
 
-            case pgsTypes::DoubleLinear:
-            case pgsTypes::DoubleParabolic:
+            case pgsTypes::svtDoubleLinear:
+            case pgsTypes::svtDoubleParabolic:
                (*pTable)(row,0) << _T("Left Prismatic Length");
-               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationLength(pgsTypes::LeftPrismatic) );
+               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationLength(pgsTypes::sztLeftPrismatic) );
                row++;
 
                (*pTable)(row,0) << _T("Left Prismatic Height");
-               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationHeight(pgsTypes::LeftPrismatic) );
+               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationHeight(pgsTypes::sztLeftPrismatic) );
                row++;
 
                (*pTable)(row,0) << _T("Left Prismatic Bottom Flange Depth");
-               (*pTable)(row,1) << cmpdim.SetValue( pSegment->GetVariationBottomFlangeDepth(pgsTypes::LeftPrismatic) );
+               (*pTable)(row,1) << cmpdim.SetValue( pSegment->GetVariationBottomFlangeDepth(pgsTypes::sztLeftPrismatic) );
                row++;
 
                (*pTable)(row,0) << _T("Left Tapered Length");
-               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationLength(pgsTypes::LeftTapered));
+               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationLength(pgsTypes::sztLeftTapered));
                row++;
 
                (*pTable)(row,0) << _T("Left Tapered Height");
-               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationHeight(pgsTypes::LeftTapered));
+               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationHeight(pgsTypes::sztLeftTapered));
                row++;
 
                (*pTable)(row,0) << _T("Left Tapered Bottom Flange Depth");
-               (*pTable)(row,1) << cmpdim.SetValue( pSegment->GetVariationBottomFlangeDepth(pgsTypes::LeftTapered));
+               (*pTable)(row,1) << cmpdim.SetValue( pSegment->GetVariationBottomFlangeDepth(pgsTypes::sztLeftTapered));
                row++;
 
                (*pTable)(row,0) << _T("Right Tapered Length");
-               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationLength(pgsTypes::RightTapered));
+               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationLength(pgsTypes::sztRightTapered));
                row++;
 
                (*pTable)(row,0) << _T("Right Tapered Height");
-               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationHeight(pgsTypes::RightTapered));
+               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationHeight(pgsTypes::sztRightTapered));
                row++;
 
                (*pTable)(row,0) << _T("Right Tapered Bottom Flange Depth");
-               (*pTable)(row,1) << cmpdim.SetValue( pSegment->GetVariationBottomFlangeDepth(pgsTypes::RightTapered));
+               (*pTable)(row,1) << cmpdim.SetValue( pSegment->GetVariationBottomFlangeDepth(pgsTypes::sztRightTapered));
                row++;
 
                (*pTable)(row,0) << _T("Right Prismatic Length");
-               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationLength(pgsTypes::RightPrismatic) );
+               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationLength(pgsTypes::sztRightPrismatic) );
                row++;
 
                (*pTable)(row,0) << _T("Right Prismatic Height");
-               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationHeight(pgsTypes::RightPrismatic) );
+               (*pTable)(row,1) << xdim.SetValue( pSegment->GetVariationHeight(pgsTypes::sztRightPrismatic) );
                row++;
 
                (*pTable)(row,0) << _T("Right Prismatic Bottom Flange Depth");
-               (*pTable)(row,1) << cmpdim.SetValue( pSegment->GetVariationBottomFlangeDepth(pgsTypes::RightPrismatic) );
+               (*pTable)(row,1) << cmpdim.SetValue( pSegment->GetVariationBottomFlangeDepth(pgsTypes::sztRightPrismatic) );
                row++;
                break;
 

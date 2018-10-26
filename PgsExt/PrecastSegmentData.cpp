@@ -71,7 +71,7 @@ void CPrecastSegmentData::Init()
    m_SegmentIndex = INVALID_INDEX;
    m_SegmentID    = INVALID_ID;
 
-   m_VariationType = pgsTypes::Linear;
+   m_VariationType = pgsTypes::svtLinear;
    for ( int i = 0; i < 4; i++ )
    {
       m_VariationLength[i] = 0;
@@ -337,9 +337,9 @@ void CPrecastSegmentData::GetVariationParameters(pgsTypes::SegmentZoneType zone,
 
 Float64 CPrecastSegmentData::GetVariationLength(pgsTypes::SegmentZoneType zone) const
 {
-   if ( m_VariationType == pgsTypes::None )
+   if ( m_VariationType == pgsTypes::svtNone )
    {
-      if ( zone == pgsTypes::LeftPrismatic || zone == pgsTypes::RightPrismatic )
+      if ( zone == pgsTypes::sztLeftPrismatic || zone == pgsTypes::sztRightPrismatic )
          return -0.5; // 50% of segment length
       else
          return 0.0;
@@ -352,7 +352,7 @@ Float64 CPrecastSegmentData::GetVariationLength(pgsTypes::SegmentZoneType zone) 
 
 Float64 CPrecastSegmentData::GetVariationHeight(pgsTypes::SegmentZoneType zone) const
 {
-   if ( m_VariationType == pgsTypes::None )
+   if ( m_VariationType == pgsTypes::svtNone )
       return GetSegmentHeight(true);
    else
       return m_VariationHeight[zone];
@@ -360,7 +360,7 @@ Float64 CPrecastSegmentData::GetVariationHeight(pgsTypes::SegmentZoneType zone) 
 
 Float64 CPrecastSegmentData::GetVariationBottomFlangeDepth(pgsTypes::SegmentZoneType zone) const
 {
-   if ( m_VariationType == pgsTypes::None || !m_bVariableBottomFlangeDepthEnabled )
+   if ( m_VariationType == pgsTypes::svtNone || !m_bVariableBottomFlangeDepthEnabled )
       return GetSegmentHeight(false);
    else
       return m_VariationBottomFlangeDepth[zone];
@@ -614,29 +614,29 @@ HRESULT CPrecastSegmentData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
    CString strVariationType(OLE2T(var.bstrVal));
    if ( strVariationType == _T("None") )
    {
-      m_VariationType = pgsTypes::None;
+      m_VariationType = pgsTypes::svtNone;
    }
    else if (strVariationType == _T("Linear") || strVariationType == _T("Parabolic") ) 
    {
-      m_VariationType = (strVariationType == _T("Linear") ? pgsTypes::Linear : pgsTypes::Parabolic);
+      m_VariationType = (strVariationType == _T("Linear") ? pgsTypes::svtLinear : pgsTypes::svtParabolic);
       var.vt = VT_R8;
       pStrLoad->get_Property(_T("LeftPrismaticLength"),&var);
-      m_VariationLength[pgsTypes::LeftPrismatic] = var.dblVal;
+      m_VariationLength[pgsTypes::sztLeftPrismatic] = var.dblVal;
 
       pStrLoad->get_Property(_T("LeftPrismaticHeight"),&var);
-      m_VariationHeight[pgsTypes::LeftPrismatic] = var.dblVal;
+      m_VariationHeight[pgsTypes::sztLeftPrismatic] = var.dblVal;
 
       pStrLoad->get_Property(_T("LeftPrismaticBottomFlangeDepth"),&var);
-      m_VariationBottomFlangeDepth[pgsTypes::LeftPrismatic] = var.dblVal;
+      m_VariationBottomFlangeDepth[pgsTypes::sztLeftPrismatic] = var.dblVal;
 
       pStrLoad->get_Property(_T("RightPrismaticLength"),&var);
-      m_VariationLength[pgsTypes::RightPrismatic] = var.dblVal;
+      m_VariationLength[pgsTypes::sztRightPrismatic] = var.dblVal;
 
       pStrLoad->get_Property(_T("RightPrismaticHeight"),&var);
-      m_VariationHeight[pgsTypes::RightPrismatic] = var.dblVal;
+      m_VariationHeight[pgsTypes::sztRightPrismatic] = var.dblVal;
 
       pStrLoad->get_Property(_T("RightPrismaticBottomFlangeDepth"),&var);
-      m_VariationBottomFlangeDepth[pgsTypes::RightPrismatic] = var.dblVal;
+      m_VariationBottomFlangeDepth[pgsTypes::sztRightPrismatic] = var.dblVal;
 
       var.vt = VT_BOOL;
       pStrLoad->get_Property(_T("VariableBottomFlangeDepthEnabled"),&var);
@@ -644,43 +644,43 @@ HRESULT CPrecastSegmentData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
    }
    else if (strVariationType == _T("DoubleLinear") || strVariationType == _T("DoubleParabolic")) 
    {
-      m_VariationType = (strVariationType == _T("DoubleLinear") ? pgsTypes::DoubleLinear : pgsTypes::DoubleParabolic);
+      m_VariationType = (strVariationType == _T("DoubleLinear") ? pgsTypes::svtDoubleLinear : pgsTypes::svtDoubleParabolic);
       var.vt = VT_R8;
       pStrLoad->get_Property(_T("LeftPrismaticLength"),&var);
-      m_VariationLength[pgsTypes::LeftPrismatic] = var.dblVal;
+      m_VariationLength[pgsTypes::sztLeftPrismatic] = var.dblVal;
 
       pStrLoad->get_Property(_T("LeftPrismaticHeight"),&var);
-      m_VariationHeight[pgsTypes::LeftPrismatic] = var.dblVal;
+      m_VariationHeight[pgsTypes::sztLeftPrismatic] = var.dblVal;
 
       pStrLoad->get_Property(_T("LeftPrismaticBottomFlangeDepth"),&var);
-      m_VariationBottomFlangeDepth[pgsTypes::LeftPrismatic] = var.dblVal;
+      m_VariationBottomFlangeDepth[pgsTypes::sztLeftPrismatic] = var.dblVal;
 
       pStrLoad->get_Property(_T("LeftTaperedLength"),&var);
-      m_VariationLength[pgsTypes::LeftTapered] = var.dblVal;
+      m_VariationLength[pgsTypes::sztLeftTapered] = var.dblVal;
 
       pStrLoad->get_Property(_T("LeftTaperedHeight"),&var);
-      m_VariationHeight[pgsTypes::LeftTapered] = var.dblVal;
+      m_VariationHeight[pgsTypes::sztLeftTapered] = var.dblVal;
 
       pStrLoad->get_Property(_T("LeftTaperedBottomFlangeDepth"),&var);
-      m_VariationBottomFlangeDepth[pgsTypes::LeftTapered] = var.dblVal;
+      m_VariationBottomFlangeDepth[pgsTypes::sztLeftTapered] = var.dblVal;
 
       pStrLoad->get_Property(_T("RightTaperedLength"),&var);
-      m_VariationLength[pgsTypes::RightTapered] = var.dblVal;
+      m_VariationLength[pgsTypes::sztRightTapered] = var.dblVal;
 
       pStrLoad->get_Property(_T("RightTaperedHeight"),&var);
-      m_VariationHeight[pgsTypes::RightTapered] = var.dblVal;
+      m_VariationHeight[pgsTypes::sztRightTapered] = var.dblVal;
 
       pStrLoad->get_Property(_T("RightTaperedBottomFlangeDepth"),&var);
-      m_VariationBottomFlangeDepth[pgsTypes::RightTapered] = var.dblVal;
+      m_VariationBottomFlangeDepth[pgsTypes::sztRightTapered] = var.dblVal;
 
       pStrLoad->get_Property(_T("RightPrismaticLength"),&var);
-      m_VariationLength[pgsTypes::RightPrismatic] = var.dblVal;
+      m_VariationLength[pgsTypes::sztRightPrismatic] = var.dblVal;
 
       pStrLoad->get_Property(_T("RightPrismaticHeight"),&var);
-      m_VariationHeight[pgsTypes::RightPrismatic] = var.dblVal;
+      m_VariationHeight[pgsTypes::sztRightPrismatic] = var.dblVal;
 
       pStrLoad->get_Property(_T("RightPrismaticBottomFlangeDepth"),&var);
-      m_VariationBottomFlangeDepth[pgsTypes::RightPrismatic] = var.dblVal;
+      m_VariationBottomFlangeDepth[pgsTypes::sztRightPrismatic] = var.dblVal;
 
       var.vt = VT_BOOL;
       pStrLoad->get_Property(_T("VariableBottomFlangeDepthEnabled"),&var);
@@ -743,70 +743,70 @@ HRESULT CPrecastSegmentData::Save(IStructuredSave* pStrSave,IProgress* pProgress
 
    switch(m_VariationType)
    {
-   case pgsTypes::None:
+   case pgsTypes::svtNone:
       pStrSave->put_Property(_T("SegmentVariation"),CComVariant(_T("None")));
       break;
 
-   case pgsTypes::Linear:
+   case pgsTypes::svtLinear:
       pStrSave->put_Property(_T("SegmentVariation"),CComVariant(_T("Linear")));
-      pStrSave->put_Property(_T("LeftPrismaticLength"),CComVariant(m_VariationLength[pgsTypes::LeftPrismatic]));
-      pStrSave->put_Property(_T("LeftPrismaticHeight"),CComVariant(m_VariationHeight[pgsTypes::LeftPrismatic]));
-      pStrSave->put_Property(_T("LeftPrismaticBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::LeftPrismatic]));
-      pStrSave->put_Property(_T("RightPrismaticLength"),CComVariant(m_VariationLength[pgsTypes::RightPrismatic]));
-      pStrSave->put_Property(_T("RightPrismaticHeight"),CComVariant(m_VariationHeight[pgsTypes::RightPrismatic]));
-      pStrSave->put_Property(_T("RightPrismaticBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::RightPrismatic]));
+      pStrSave->put_Property(_T("LeftPrismaticLength"),CComVariant(m_VariationLength[pgsTypes::sztLeftPrismatic]));
+      pStrSave->put_Property(_T("LeftPrismaticHeight"),CComVariant(m_VariationHeight[pgsTypes::sztLeftPrismatic]));
+      pStrSave->put_Property(_T("LeftPrismaticBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::sztLeftPrismatic]));
+      pStrSave->put_Property(_T("RightPrismaticLength"),CComVariant(m_VariationLength[pgsTypes::sztRightPrismatic]));
+      pStrSave->put_Property(_T("RightPrismaticHeight"),CComVariant(m_VariationHeight[pgsTypes::sztRightPrismatic]));
+      pStrSave->put_Property(_T("RightPrismaticBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::sztRightPrismatic]));
       pStrSave->put_Property(_T("VariableBottomFlangeDepthEnabled"),CComVariant(m_bVariableBottomFlangeDepthEnabled));
       break;
 
-   case pgsTypes::Parabolic:
+   case pgsTypes::svtParabolic:
       pStrSave->put_Property(_T("SegmentVariation"),CComVariant(_T("Parabolic")));
-      pStrSave->put_Property(_T("LeftPrismaticLength"),CComVariant(m_VariationLength[pgsTypes::LeftPrismatic]));
-      pStrSave->put_Property(_T("LeftPrismaticHeight"),CComVariant(m_VariationHeight[pgsTypes::LeftPrismatic]));
-      pStrSave->put_Property(_T("LeftPrismaticBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::LeftPrismatic]));
-      pStrSave->put_Property(_T("RightPrismaticLength"),CComVariant(m_VariationLength[pgsTypes::RightPrismatic]));
-      pStrSave->put_Property(_T("RightPrismaticHeight"),CComVariant(m_VariationHeight[pgsTypes::RightPrismatic]));
-      pStrSave->put_Property(_T("RightPrismaticBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::RightPrismatic]));
+      pStrSave->put_Property(_T("LeftPrismaticLength"),CComVariant(m_VariationLength[pgsTypes::sztLeftPrismatic]));
+      pStrSave->put_Property(_T("LeftPrismaticHeight"),CComVariant(m_VariationHeight[pgsTypes::sztLeftPrismatic]));
+      pStrSave->put_Property(_T("LeftPrismaticBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::sztLeftPrismatic]));
+      pStrSave->put_Property(_T("RightPrismaticLength"),CComVariant(m_VariationLength[pgsTypes::sztRightPrismatic]));
+      pStrSave->put_Property(_T("RightPrismaticHeight"),CComVariant(m_VariationHeight[pgsTypes::sztRightPrismatic]));
+      pStrSave->put_Property(_T("RightPrismaticBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::sztRightPrismatic]));
       pStrSave->put_Property(_T("VariableBottomFlangeDepthEnabled"),CComVariant(m_bVariableBottomFlangeDepthEnabled));
       break;
 
-   case pgsTypes::DoubleLinear:
+   case pgsTypes::svtDoubleLinear:
       pStrSave->put_Property(_T("SegmentVariation"),CComVariant(_T("DoubleLinear")));
-      pStrSave->put_Property(_T("LeftPrismaticLength"),CComVariant(m_VariationLength[pgsTypes::LeftPrismatic]));
-      pStrSave->put_Property(_T("LeftPrismaticHeight"),CComVariant(m_VariationHeight[pgsTypes::LeftPrismatic]));
-      pStrSave->put_Property(_T("LeftPrismaticBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::LeftPrismatic]));
+      pStrSave->put_Property(_T("LeftPrismaticLength"),CComVariant(m_VariationLength[pgsTypes::sztLeftPrismatic]));
+      pStrSave->put_Property(_T("LeftPrismaticHeight"),CComVariant(m_VariationHeight[pgsTypes::sztLeftPrismatic]));
+      pStrSave->put_Property(_T("LeftPrismaticBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::sztLeftPrismatic]));
 
-      pStrSave->put_Property(_T("LeftTaperedLength"),CComVariant(m_VariationLength[pgsTypes::LeftTapered]));
-      pStrSave->put_Property(_T("LeftTaperedHeight"),CComVariant(m_VariationHeight[pgsTypes::LeftTapered]));
-      pStrSave->put_Property(_T("LeftTaperedBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::LeftTapered]));
+      pStrSave->put_Property(_T("LeftTaperedLength"),CComVariant(m_VariationLength[pgsTypes::sztLeftTapered]));
+      pStrSave->put_Property(_T("LeftTaperedHeight"),CComVariant(m_VariationHeight[pgsTypes::sztLeftTapered]));
+      pStrSave->put_Property(_T("LeftTaperedBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::sztLeftTapered]));
 
-      pStrSave->put_Property(_T("RightTaperedLength"),CComVariant(m_VariationLength[pgsTypes::RightTapered]));
-      pStrSave->put_Property(_T("RightTaperedHeight"),CComVariant(m_VariationHeight[pgsTypes::RightTapered]));
-      pStrSave->put_Property(_T("RightTaperedBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::RightTapered]));
+      pStrSave->put_Property(_T("RightTaperedLength"),CComVariant(m_VariationLength[pgsTypes::sztRightTapered]));
+      pStrSave->put_Property(_T("RightTaperedHeight"),CComVariant(m_VariationHeight[pgsTypes::sztRightTapered]));
+      pStrSave->put_Property(_T("RightTaperedBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::sztRightTapered]));
 
-      pStrSave->put_Property(_T("RightPrismaticLength"),CComVariant(m_VariationLength[pgsTypes::RightPrismatic]));
-      pStrSave->put_Property(_T("RightPrismaticHeight"),CComVariant(m_VariationHeight[pgsTypes::RightPrismatic]));
-      pStrSave->put_Property(_T("RightPrismaticBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::RightPrismatic]));
+      pStrSave->put_Property(_T("RightPrismaticLength"),CComVariant(m_VariationLength[pgsTypes::sztRightPrismatic]));
+      pStrSave->put_Property(_T("RightPrismaticHeight"),CComVariant(m_VariationHeight[pgsTypes::sztRightPrismatic]));
+      pStrSave->put_Property(_T("RightPrismaticBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::sztRightPrismatic]));
 
       pStrSave->put_Property(_T("VariableBottomFlangeDepthEnabled"),CComVariant(m_bVariableBottomFlangeDepthEnabled));
       break;
 
-   case pgsTypes::DoubleParabolic:
+   case pgsTypes::svtDoubleParabolic:
       pStrSave->put_Property(_T("SegmentVariation"),CComVariant(_T("DoubleParabolic")));
-      pStrSave->put_Property(_T("LeftPrismaticLength"),CComVariant(m_VariationLength[pgsTypes::LeftPrismatic]));
-      pStrSave->put_Property(_T("LeftPrismaticHeight"),CComVariant(m_VariationHeight[pgsTypes::LeftPrismatic]));
-      pStrSave->put_Property(_T("LeftPrismaticBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::LeftPrismatic]));
+      pStrSave->put_Property(_T("LeftPrismaticLength"),CComVariant(m_VariationLength[pgsTypes::sztLeftPrismatic]));
+      pStrSave->put_Property(_T("LeftPrismaticHeight"),CComVariant(m_VariationHeight[pgsTypes::sztLeftPrismatic]));
+      pStrSave->put_Property(_T("LeftPrismaticBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::sztLeftPrismatic]));
 
-      pStrSave->put_Property(_T("LeftTaperedLength"),CComVariant(m_VariationLength[pgsTypes::LeftTapered]));
-      pStrSave->put_Property(_T("LeftTaperedHeight"),CComVariant(m_VariationHeight[pgsTypes::LeftTapered]));
-      pStrSave->put_Property(_T("LeftTaperedBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::LeftTapered]));
+      pStrSave->put_Property(_T("LeftTaperedLength"),CComVariant(m_VariationLength[pgsTypes::sztLeftTapered]));
+      pStrSave->put_Property(_T("LeftTaperedHeight"),CComVariant(m_VariationHeight[pgsTypes::sztLeftTapered]));
+      pStrSave->put_Property(_T("LeftTaperedBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::sztLeftTapered]));
 
-      pStrSave->put_Property(_T("RightTaperedLength"),CComVariant(m_VariationLength[pgsTypes::RightTapered]));
-      pStrSave->put_Property(_T("RightTaperedHeight"),CComVariant(m_VariationHeight[pgsTypes::RightTapered]));
-      pStrSave->put_Property(_T("RightTaperedBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::RightTapered]));
+      pStrSave->put_Property(_T("RightTaperedLength"),CComVariant(m_VariationLength[pgsTypes::sztRightTapered]));
+      pStrSave->put_Property(_T("RightTaperedHeight"),CComVariant(m_VariationHeight[pgsTypes::sztRightTapered]));
+      pStrSave->put_Property(_T("RightTaperedBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::sztRightTapered]));
 
-      pStrSave->put_Property(_T("RightPrismaticLength"),CComVariant(m_VariationLength[pgsTypes::RightPrismatic]));
-      pStrSave->put_Property(_T("RightPrismaticHeight"),CComVariant(m_VariationHeight[pgsTypes::RightPrismatic]));
-      pStrSave->put_Property(_T("RightPrismaticBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::RightPrismatic]));
+      pStrSave->put_Property(_T("RightPrismaticLength"),CComVariant(m_VariationLength[pgsTypes::sztRightPrismatic]));
+      pStrSave->put_Property(_T("RightPrismaticHeight"),CComVariant(m_VariationHeight[pgsTypes::sztRightPrismatic]));
+      pStrSave->put_Property(_T("RightPrismaticBottomFlangeDepth"),CComVariant(m_VariationBottomFlangeDepth[pgsTypes::sztRightPrismatic]));
 
       pStrSave->put_Property(_T("VariableBottomFlangeDepthEnabled"),CComVariant(m_bVariableBottomFlangeDepthEnabled));
       break;
@@ -921,16 +921,16 @@ void CPrecastSegmentData::AdjustAdjacentSegment()
    if ( pPrevSegment )
    {
       // the right end of the previous segment must match the left end of this segment
-      pPrevSegment->m_VariationHeight[pgsTypes::RightPrismatic]            = GetVariationHeight(pgsTypes::LeftPrismatic);
-      pPrevSegment->m_VariationBottomFlangeDepth[pgsTypes::RightPrismatic] = GetVariationBottomFlangeDepth(pgsTypes::LeftPrismatic);
+      pPrevSegment->m_VariationHeight[pgsTypes::sztRightPrismatic]            = GetVariationHeight(pgsTypes::sztLeftPrismatic);
+      pPrevSegment->m_VariationBottomFlangeDepth[pgsTypes::sztRightPrismatic] = GetVariationBottomFlangeDepth(pgsTypes::sztLeftPrismatic);
    }
 
 
    if ( pNextSegment )
    {
       // the left end of the next segment must match the right end of this segment
-      pNextSegment->m_VariationHeight[pgsTypes::LeftPrismatic]            = GetVariationHeight(pgsTypes::RightPrismatic);
-      pNextSegment->m_VariationBottomFlangeDepth[pgsTypes::LeftPrismatic] = GetVariationBottomFlangeDepth(pgsTypes::RightPrismatic);
+      pNextSegment->m_VariationHeight[pgsTypes::sztLeftPrismatic]            = GetVariationHeight(pgsTypes::sztRightPrismatic);
+      pNextSegment->m_VariationBottomFlangeDepth[pgsTypes::sztLeftPrismatic] = GetVariationBottomFlangeDepth(pgsTypes::sztRightPrismatic);
    }
 
 }
@@ -969,19 +969,19 @@ LPCTSTR CPrecastSegmentData::GetSegmentVariation(pgsTypes::SegmentVariationType 
 {
    switch(type)
    {
-   case pgsTypes::Linear:
+   case pgsTypes::svtLinear:
       return _T("Linear");
       
-   case pgsTypes::Parabolic:
+   case pgsTypes::svtParabolic:
       return _T("Parabolic");
 
-   case pgsTypes::DoubleLinear:
+   case pgsTypes::svtDoubleLinear:
       return _T("Double Linear");
 
-   case pgsTypes::DoubleParabolic:
+   case pgsTypes::svtDoubleParabolic:
       return _T("Double Parabolic");
 
-   case pgsTypes::None:
+   case pgsTypes::svtNone:
       return _T("None");
 
    //case General:

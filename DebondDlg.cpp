@@ -44,8 +44,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define NO_DEBOND_FILL_COLOR GREY90
-
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescDebondPage dialog
 
@@ -148,7 +146,9 @@ BOOL CGirderDescDebondPage::OnSetActive()
    CString note(_T("- Only filled straight strands are shown in this view"));
    if (bCanDebond)
    {
-      note += _T("\n- Strands shown in light grey cannot be debonded");
+      CString n;
+      n.Format(_T("\n- Strands shown in %s cannot be debonded"),NO_DEBOND_FILL_COLOR_NAME);
+      note += n;
    }
    GetDlgItem(IDC_NOTE2)->SetWindowText(note);
    GetDlgItem(IDC_NOTE)->ShowWindow(bCanDebond ? SW_SHOW : SW_HIDE);

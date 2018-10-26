@@ -7,6 +7,8 @@
 #include <EAF\EAFUtilities.h>
 #include <IFace\Project.h>
 
+#include <PgsExt\PierData2.h>
+
 // CBoundaryConditionDlg dialog
 
 IMPLEMENT_DYNAMIC(CBoundaryConditionDlg, CDialog)
@@ -43,7 +45,9 @@ BOOL CBoundaryConditionDlg::OnInitDialog()
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
-   std::vector<pgsTypes::PierConnectionType> connections = pIBridgeDesc->GetConnectionTypes(m_PierIdx);
+   ATLASSERT(pIBridgeDesc->GetPier(m_PierIdx)->IsBoundaryPier());
+
+   std::vector<pgsTypes::PierConnectionType> connections = pIBridgeDesc->GetPierConnectionTypes(m_PierIdx);
 
    m_cbBoundaryCondition.SetPierType(PIERTYPE_INTERMEDIATE);
    m_cbBoundaryCondition.Initialize(connections);

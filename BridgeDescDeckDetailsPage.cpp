@@ -391,6 +391,12 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+   EventIndexType eventIdx = pTimelineMgr->GetCastDeckEventIndex();
+   m_AgeAtContinuity = pTimelineMgr->GetEventByIndex(eventIdx)->GetCastDeckActivity().GetConcreteAgeAtContinuity();
+
+
    // set density/weight labels
    CStatic* pStatic = (CStatic*)GetDlgItem( IDC_OLAY_DENSITY_LABEL );
    if ( IS_SI_UNITS(pDisplayUnits) )
@@ -649,6 +655,11 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
    pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->DeckType;
 
+   CEAFDocument* pDoc = EAFGetDocument();
+   bool bPGSuperDoc = false;
+   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
+      bPGSuperDoc = true;
+
    pgsTypes::WearingSurfaceType ws = (pgsTypes::WearingSurfaceType)(pCB->GetItemData(idx));
    if ( ws == pgsTypes::wstSacrificialDepth )
    {
@@ -659,6 +670,7 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
    }
    else if ( ws == pgsTypes::wstFutureOverlay )
    {
+      ATLASSERT(bPGSuperDoc == true); // future overlay only used for PGSuper... should not get here if PGSplice
       bSacDepth               = deckType == pgsTypes::sdtNone ? FALSE : TRUE;
       bOverlayLabel           = TRUE;
       bOverlayWeight          = (iOption == IDC_OLAY_WEIGHT_LABEL ? TRUE : FALSE);
@@ -666,7 +678,7 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
    }
    else
    {
-      bSacDepth               = FALSE;
+      bSacDepth               = (bPGSuperDoc ? FALSE : TRUE); // If regular overlay in PGSuper, no sacrifical depth. In PGSplice, sacrifical depth applies until overlay is applied
       bOverlayLabel           = TRUE;
       bOverlayWeight          = (iOption == IDC_OLAY_WEIGHT_LABEL ? TRUE : FALSE);
       bOverlayDepthAndDensity = (iOption == IDC_OLAY_DEPTH_LABEL  ? TRUE : FALSE);
@@ -729,6 +741,16 @@ void CBridgeDescDeckDetailsPage::OnMoreConcreteProperties()
    dlg.m_ACI.m_CureMethod      = pDeck->Concrete.CureMethod;
    dlg.m_ACI.m_CementType      = pDeck->Concrete.CementType;
 
+   matACI209Concrete concrete;
+   concrete.SetTimeAtCasting(0);
+   concrete.SetFc28(pDeck->Concrete.Fc);
+   concrete.SetA(pDeck->Concrete.A);
+   concrete.SetBeta(pDeck->Concrete.B);
+   Float64 fci = concrete.GetFc(m_AgeAtContinuity);
+   dlg.m_ACI.m_TimeAtInitialStrength = ::ConvertToSysUnits(m_AgeAtContinuity,unitMeasure::Day);
+   dlg.m_ACI.m_fci = fci;
+   dlg.m_ACI.m_fc28 = pDeck->Concrete.Fc;
+
 #pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
 
    if ( dlg.DoModal() == IDOK )
@@ -776,12 +798,12 @@ void CBridgeDescDeckDetailsPage::UpdateConcreteControls()
    GetDlgItem(IDC_EC)->EnableWindow(bEnable);
    GetDlgItem(IDC_EC_UNIT)->EnableWindow(bEnable);
 
-   CWnd* pWnd = GetDlgItem(IDC_CONCRETE_TYPE_LABEL);
-
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
    const CDeckDescription2* pDeck = pParent->m_BridgeDesc.GetDeckDescription();
-   pWnd->SetWindowText( matConcrete::GetTypeName((matConcrete::Type)pDeck->Concrete.Type,true).c_str() );
+
+   CString strLabel(ConcreteDescription(pDeck->Concrete));
+   GetDlgItem(IDC_CONCRETE_TYPE_LABEL)->SetWindowText( strLabel );
 }
 
 BOOL CBridgeDescDeckDetailsPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)

@@ -159,8 +159,9 @@ void CUBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
       (*pChapter) << pPara;
 
       Float64 station,offset;
-      pBridge->GetStationAndOffset(pgsPointOfInterest(CSegmentKey(spanIdx,gdrIdx,0),span_lldf.ControllingLocation),&station, &offset);
-      Float64 supp_dist = span_lldf.ControllingLocation - pBridge->GetSegmentStartEndDistance(CSegmentKey(spanIdx,gdrIdx,0));
+      CSegmentKey segmentKey(girderKey,0);
+      pBridge->GetStationAndOffset(pgsPointOfInterest(segmentKey,span_lldf.ControllingLocation),&station, &offset);
+      Float64 supp_dist = span_lldf.ControllingLocation - pBridge->GetSegmentStartEndDistance(segmentKey);
       (*pPara) << _T("Deck Width, Girder Spacing and Slab Overhang are measured along a line that is normal to the alignment and passing through a point ") << location.SetValue(supp_dist) << _T(" from the left support along the centerline of girder. ");
       (*pPara) << _T("The measurement line passes through Station ") << rptRcStation(station, &pDisplayUnits->GetStationFormat() ) << _T(" (") << RPT_OFFSET(offset,offsetFormatter) << _T(")") << rptNewLine;
       (*pPara) << _T("Girder Spacing: ") << Sub2(_T("S"),_T("avg")) << _T(" = ") << xdim.SetValue(span_lldf.Savg) << rptNewLine;
@@ -437,6 +438,7 @@ lrfdLiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFParameters(
       gdrIdx = nGirders-1;
    }
 
+#pragma Reminder("BUG: need to figure out which segment the LLDF cut line intersects")
    CSegmentKey segmentKey(pGroup->GetIndex(),gdrIdx,0);
 
    ///////////////////////////////////////////////////////////////////////////
@@ -560,7 +562,7 @@ void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagrap
          GET_IFACE(IBridge,pBridge);
 
          // if roadway width is > 20ft and TxDOT, and nb>=3, use multiple lane method
-         GirderIndexType nb = pBridge->GetGirderCount(spanOrPierIdx);
+         GirderIndexType nb = pBridge->GetGirderCountBySpan(spanOrPierIdx);
          Float64 w20 = ::ConvertToSysUnits(20.0, unitMeasure::Feet);
          if (pSpecEntry->GetLiveLoadDistributionMethod()==LLDF_TXDOT && lldf.wCurbToCurb>=w20 && nb>=3)
          {
@@ -807,7 +809,7 @@ void CUBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx,rptParagraph*
          GET_IFACE(IBridge,pBridge);
 
          // if roadway width is > 20ft and TxDOT, and nb>=3, use multiple lane method
-         GirderIndexType nb = pBridge->GetGirderCount(spanOrPierIdx);
+         GirderIndexType nb = pBridge->GetGirderCountBySpan(spanOrPierIdx);
          Float64 roadwayWidth = pBridge->GetCurbToCurbWidth(0.00);
          Float64 w20 = ::ConvertToSysUnits(20.0, unitMeasure::Feet);
          if (pSpecEntry->GetLiveLoadDistributionMethod()==LLDF_TXDOT && roadwayWidth>=w20 && nb>=3)
@@ -1037,7 +1039,7 @@ std::_tstring CUBeamDistFactorEngineer::GetComputationDescription(const CGirderK
 
    if ( lldfMethod == LLDF_WSDOT )
    {
-      descr += std::_tstring(_T("WSDOT Method per Design Memorandum 2-1999 Dated February 22, 1999"));
+      descr += std::_tstring(_T("WSDOT Method per Bridge Design Manual Section 3.9.4"));
    }
    else if ( lldfMethod == LLDF_TXDOT )
    {

@@ -642,6 +642,7 @@ void CBridgeModelViewChildFrame::OnInsertPier()
 
 void CBridgeModelViewChildFrame::OnBoundaryCondition(UINT nIDC)
 {
+#pragma Reminder("UPDATE: need to deal with InteriorPier... this is for BoundaryPier")
    PierIndexType pierIdx;
    CBridgePlanView* pView = GetBridgePlanView();
 	if ( pView->GetSelectedPier(&pierIdx) )
@@ -649,11 +650,10 @@ void CBridgeModelViewChildFrame::OnBoundaryCondition(UINT nIDC)
       pgsTypes::PierConnectionType newConnectionType;
       switch( nIDC )
       {
-         case IDM_HINGE:                         newConnectionType = pgsTypes::Hinge;                       break;
+         case IDM_HINGE:                          newConnectionType = pgsTypes::Hinge;                        break;
          case IDM_ROLLER:                         newConnectionType = pgsTypes::Roller;                       break;
          case IDM_CONTINUOUS_AFTERDECK:           newConnectionType = pgsTypes::ContinuousAfterDeck;          break;
          case IDM_CONTINUOUS_BEFOREDECK:          newConnectionType = pgsTypes::ContinuousBeforeDeck;         break;
-         case IDM_CONTINUOUS_SEGMENT:             newConnectionType = pgsTypes::ContinuousSegment;            break;
          case IDM_INTEGRAL_AFTERDECK:             newConnectionType = pgsTypes::IntegralAfterDeck;            break;
          case IDM_INTEGRAL_BEFOREDECK:            newConnectionType = pgsTypes::IntegralBeforeDeck;           break;
          case IDM_INTEGRAL_AFTERDECK_HINGEBACK:   newConnectionType = pgsTypes::IntegralAfterDeckHingeBack;   break;
@@ -667,7 +667,7 @@ void CBridgeModelViewChildFrame::OnBoundaryCondition(UINT nIDC)
       EAFGetBroker(&pBroker);
 
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-      pgsTypes::PierConnectionType oldConnectionType = pIBridgeDesc->GetPier(pierIdx)->GetConnectionType();
+      pgsTypes::PierConnectionType oldConnectionType = pIBridgeDesc->GetPier(pierIdx)->GetPierConnectionType();
 
       txnEditBoundaryConditions* pTxn = new txnEditBoundaryConditions(pierIdx,oldConnectionType,newConnectionType);
       txnTxnManager::GetInstance()->Execute(pTxn);
@@ -682,17 +682,16 @@ void CBridgeModelViewChildFrame::OnUpdateBoundaryCondition(CCmdUI* pCmdUI)
    {
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
-
+#pragma Reminder("UPDATE: need to deal with InteriorPier, this is for BoundaryPier")
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-      pgsTypes::PierConnectionType connectionType = pIBridgeDesc->GetPier(pierIdx)->GetConnectionType();
+      pgsTypes::PierConnectionType connectionType = pIBridgeDesc->GetPier(pierIdx)->GetPierConnectionType();
 
       switch( pCmdUI->m_nID )
       {
-         case IDM_HINGE:                         pCmdUI->SetCheck(connectionType == pgsTypes::Hinge);                       break;
+         case IDM_HINGE:                          pCmdUI->SetCheck(connectionType == pgsTypes::Hinge);                        break;
          case IDM_ROLLER:                         pCmdUI->SetCheck(connectionType == pgsTypes::Roller);                       break;
          case IDM_CONTINUOUS_AFTERDECK:           pCmdUI->SetCheck(connectionType == pgsTypes::ContinuousAfterDeck);          break;
          case IDM_CONTINUOUS_BEFOREDECK:          pCmdUI->SetCheck(connectionType == pgsTypes::ContinuousBeforeDeck);         break;
-         case IDM_CONTINUOUS_SEGMENT:             pCmdUI->SetCheck(connectionType == pgsTypes::ContinuousSegment);            break;
          case IDM_INTEGRAL_AFTERDECK:             pCmdUI->SetCheck(connectionType == pgsTypes::IntegralAfterDeck);            break;
          case IDM_INTEGRAL_BEFOREDECK:            pCmdUI->SetCheck(connectionType == pgsTypes::IntegralBeforeDeck);           break;
          case IDM_INTEGRAL_AFTERDECK_HINGEBACK:   pCmdUI->SetCheck(connectionType == pgsTypes::IntegralAfterDeckHingeBack);   break;

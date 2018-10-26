@@ -73,7 +73,7 @@ public:
 
 protected:
    virtual CGirderGraphControllerBase* CreateGraphController();
-   virtual int InitGraphController(CWnd* pParent,UINT nID);
+   virtual BOOL InitGraphController(CWnd* pParent,UINT nID);
    virtual bool UpdateNow();
 
    CAnalysisResultsGraphDefinitions* m_pGraphDefinitions;

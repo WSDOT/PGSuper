@@ -626,7 +626,7 @@ std::vector<pgsTypes::SegmentVariationType> CSplicedGirderData::GetSupportedSegm
    }
    else
    {
-      variations.push_back(pgsTypes::None);
+      variations.push_back(pgsTypes::svtNone);
    }
    return variations;
 }
@@ -994,7 +994,10 @@ void CSplicedGirderData::JoinSegmentsAtPier(PierIndexType pierIdx)
       {
          // we found the closure that is going away
          // take the right hand segment with it
-         ATLASSERT(pPier->GetConnectionType() == pgsTypes::ContinuousSegment); // should be closure pour.. it is changing to ContinuousSegment
+
+         // this should be an interior pier and its connection should be one of the continuous segment types
+         ATLASSERT(pPier->IsInteriorPier());
+         ATLASSERT(pPier->GetSegmentConnectionType() == pgsTypes::psctContinuousSegment || pPier->GetSegmentConnectionType() == pgsTypes::psctIntegralSegment);
 
          CPrecastSegmentData* pLeftSegment  = pClosure->GetLeftSegment();
          CPrecastSegmentData* pRightSegment = pClosure->GetRightSegment();
@@ -1160,9 +1163,9 @@ void CSplicedGirderData::MergeSegmentsLeft(CPrecastSegmentData* pLeftSegment,con
       pRightSegment->GetVariationParameters(zone,true,&rightZoneLength[i],&rightZoneHeight[i],&rightZoneBottomFlangeDepth[i]);
    }
 
-   if ( leftVariation == pgsTypes::Linear || leftVariation == pgsTypes::Parabolic )
+   if ( leftVariation == pgsTypes::svtLinear || leftVariation == pgsTypes::svtParabolic )
    {
-      if ( rightVariation == pgsTypes::Linear || rightVariation == pgsTypes::Parabolic )
+      if ( rightVariation == pgsTypes::svtLinear || rightVariation == pgsTypes::svtParabolic )
       {
          if ( leftVariation != rightVariation )
          {
@@ -1170,24 +1173,24 @@ void CSplicedGirderData::MergeSegmentsLeft(CPrecastSegmentData* pLeftSegment,con
          }
          else
          {
-            if ( (leftZoneHeight[pgsTypes::LeftPrismatic] < leftZoneHeight[pgsTypes::RightPrismatic]) &&
-                 (rightZoneHeight[pgsTypes::LeftPrismatic] > rightZoneHeight[pgsTypes::RightPrismatic]) )
+            if ( (leftZoneHeight[pgsTypes::sztLeftPrismatic] < leftZoneHeight[pgsTypes::sztRightPrismatic]) &&
+                 (rightZoneHeight[pgsTypes::sztLeftPrismatic] > rightZoneHeight[pgsTypes::sztRightPrismatic]) )
             {
                // variation will be a Float64-type
-               pLeftSegment->SetVariationType( leftVariation == pgsTypes::Linear ? pgsTypes::DoubleLinear : pgsTypes::DoubleParabolic );
+               pLeftSegment->SetVariationType( leftVariation == pgsTypes::svtLinear ? pgsTypes::svtDoubleLinear : pgsTypes::svtDoubleParabolic );
 
-               Float64 leftTaperLength = leftSegmentLength-leftZoneLength[pgsTypes::LeftPrismatic]-leftZoneLength[pgsTypes::RightPrismatic];
-               pLeftSegment->SetVariationParameters(pgsTypes::LeftTapered,leftTaperLength,leftZoneHeight[pgsTypes::RightPrismatic],leftZoneBottomFlangeDepth[pgsTypes::RightPrismatic]);
+               Float64 leftTaperLength = leftSegmentLength-leftZoneLength[pgsTypes::sztLeftPrismatic]-leftZoneLength[pgsTypes::sztRightPrismatic];
+               pLeftSegment->SetVariationParameters(pgsTypes::sztLeftTapered,leftTaperLength,leftZoneHeight[pgsTypes::sztRightPrismatic],leftZoneBottomFlangeDepth[pgsTypes::sztRightPrismatic]);
 
-               Float64 rightTaperLength = rightSegmentLength - rightZoneLength[pgsTypes::LeftPrismatic] - rightZoneLength[pgsTypes::RightPrismatic];
-               pLeftSegment->SetVariationParameters(pgsTypes::RightTapered,rightTaperLength,rightZoneHeight[pgsTypes::LeftPrismatic],rightZoneBottomFlangeDepth[pgsTypes::LeftPrismatic]);
-               pLeftSegment->SetVariationParameters(pgsTypes::RightPrismatic,rightZoneLength[pgsTypes::RightPrismatic],rightZoneHeight[pgsTypes::RightPrismatic],rightZoneBottomFlangeDepth[pgsTypes::RightPrismatic]);
+               Float64 rightTaperLength = rightSegmentLength - rightZoneLength[pgsTypes::sztLeftPrismatic] - rightZoneLength[pgsTypes::sztRightPrismatic];
+               pLeftSegment->SetVariationParameters(pgsTypes::sztRightTapered,rightTaperLength,rightZoneHeight[pgsTypes::sztLeftPrismatic],rightZoneBottomFlangeDepth[pgsTypes::sztLeftPrismatic]);
+               pLeftSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,rightZoneLength[pgsTypes::sztRightPrismatic],rightZoneHeight[pgsTypes::sztRightPrismatic],rightZoneBottomFlangeDepth[pgsTypes::sztRightPrismatic]);
             }
-            else if ( IsZero(leftZoneLength[pgsTypes::RightPrismatic]) && IsZero(rightZoneLength[pgsTypes::LeftPrismatic]) )
+            else if ( IsZero(leftZoneLength[pgsTypes::sztRightPrismatic]) && IsZero(rightZoneLength[pgsTypes::sztLeftPrismatic]) )
             {
                // prismatic zone at the common boundary between the left and right segment has zero length... 
                // variation will be single type
-               pLeftSegment->SetVariationParameters(pgsTypes::RightPrismatic,rightZoneLength[pgsTypes::RightPrismatic],rightZoneHeight[pgsTypes::RightPrismatic],rightZoneBottomFlangeDepth[pgsTypes::RightPrismatic]);
+               pLeftSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,rightZoneLength[pgsTypes::sztRightPrismatic],rightZoneHeight[pgsTypes::sztRightPrismatic],rightZoneBottomFlangeDepth[pgsTypes::sztRightPrismatic]);
             }
             else
             {
@@ -1195,10 +1198,10 @@ void CSplicedGirderData::MergeSegmentsLeft(CPrecastSegmentData* pLeftSegment,con
             }
          }
       }
-      else if ( rightVariation == pgsTypes::DoubleLinear || rightVariation == pgsTypes::DoubleParabolic )
+      else if ( rightVariation == pgsTypes::svtDoubleLinear || rightVariation == pgsTypes::svtDoubleParabolic )
       {
-         if ( (leftVariation == pgsTypes::Linear    && rightVariation != pgsTypes::DoubleLinear) ||
-              (leftVariation == pgsTypes::Parabolic && rightVariation != pgsTypes::DoubleParabolic)
+         if ( (leftVariation == pgsTypes::svtLinear    && rightVariation != pgsTypes::svtDoubleLinear) ||
+              (leftVariation == pgsTypes::svtParabolic && rightVariation != pgsTypes::svtDoubleParabolic)
             )
          {
             ATLASSERT(false); // not supported... need to merge into a general variation
@@ -1207,11 +1210,11 @@ void CSplicedGirderData::MergeSegmentsLeft(CPrecastSegmentData* pLeftSegment,con
          {
             pLeftSegment->SetVariationType(rightVariation);
 
-            Float64 taperLength = leftSegmentLength + rightZoneLength[pgsTypes::LeftTapered] - leftZoneLength[pgsTypes::LeftPrismatic];
+            Float64 taperLength = leftSegmentLength + rightZoneLength[pgsTypes::sztLeftTapered] - leftZoneLength[pgsTypes::sztLeftPrismatic];
             // need to do the opposite of commonHeight and commonBottomFlangeDepth
-            pLeftSegment->SetVariationParameters(pgsTypes::LeftTapered,taperLength,rightZoneHeight[pgsTypes::LeftTapered],rightZoneBottomFlangeDepth[pgsTypes::LeftTapered]);
-            pLeftSegment->SetVariationParameters(pgsTypes::RightTapered,rightZoneLength[pgsTypes::RightTapered],rightZoneHeight[pgsTypes::RightTapered],rightZoneBottomFlangeDepth[pgsTypes::RightTapered]);
-            pLeftSegment->SetVariationParameters(pgsTypes::RightPrismatic,rightZoneLength[pgsTypes::RightPrismatic],rightZoneHeight[pgsTypes::RightPrismatic],rightZoneBottomFlangeDepth[pgsTypes::RightPrismatic]);
+            pLeftSegment->SetVariationParameters(pgsTypes::sztLeftTapered,taperLength,rightZoneHeight[pgsTypes::sztLeftTapered],rightZoneBottomFlangeDepth[pgsTypes::sztLeftTapered]);
+            pLeftSegment->SetVariationParameters(pgsTypes::sztRightTapered,rightZoneLength[pgsTypes::sztRightTapered],rightZoneHeight[pgsTypes::sztRightTapered],rightZoneBottomFlangeDepth[pgsTypes::sztRightTapered]);
+            pLeftSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,rightZoneLength[pgsTypes::sztRightPrismatic],rightZoneHeight[pgsTypes::sztRightPrismatic],rightZoneBottomFlangeDepth[pgsTypes::sztRightPrismatic]);
          }
       }
       else
@@ -1219,21 +1222,21 @@ void CSplicedGirderData::MergeSegmentsLeft(CPrecastSegmentData* pLeftSegment,con
          ATLASSERT(false); // not supported... need to merge into a general variation
       }
    }
-   else if ( leftVariation == pgsTypes::DoubleLinear || leftVariation == pgsTypes::DoubleParabolic )
+   else if ( leftVariation == pgsTypes::svtDoubleLinear || leftVariation == pgsTypes::svtDoubleParabolic )
    {
-      if ( rightVariation == pgsTypes::Linear || rightVariation == pgsTypes::Parabolic )
+      if ( rightVariation == pgsTypes::svtLinear || rightVariation == pgsTypes::svtParabolic )
       {
-         if ( (leftVariation == pgsTypes::DoubleLinear    && rightVariation != pgsTypes::Linear) ||
-              (leftVariation == pgsTypes::DoubleParabolic && rightVariation != pgsTypes::Parabolic)
+         if ( (leftVariation == pgsTypes::svtDoubleLinear    && rightVariation != pgsTypes::svtLinear) ||
+              (leftVariation == pgsTypes::svtDoubleParabolic && rightVariation != pgsTypes::svtParabolic)
             )
          {
             ATLASSERT(false); // not supported... need to merge into a general variation
          }
          else
          {
-            Float64 taperedLength = leftZoneLength[pgsTypes::RightTapered] + rightSegmentLength - rightZoneLength[pgsTypes::LeftPrismatic];
-            pLeftSegment->SetVariationParameters(pgsTypes::RightTapered,taperedLength,leftZoneHeight[pgsTypes::RightTapered],leftZoneBottomFlangeDepth[pgsTypes::RightTapered]);
-            pLeftSegment->SetVariationParameters(pgsTypes::RightPrismatic,rightZoneLength[pgsTypes::RightPrismatic],rightZoneHeight[pgsTypes::RightPrismatic],rightZoneBottomFlangeDepth[pgsTypes::RightPrismatic]);
+            Float64 taperedLength = leftZoneLength[pgsTypes::sztRightTapered] + rightSegmentLength - rightZoneLength[pgsTypes::sztLeftPrismatic];
+            pLeftSegment->SetVariationParameters(pgsTypes::sztRightTapered,taperedLength,leftZoneHeight[pgsTypes::sztRightTapered],leftZoneBottomFlangeDepth[pgsTypes::sztRightTapered]);
+            pLeftSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,rightZoneLength[pgsTypes::sztRightPrismatic],rightZoneHeight[pgsTypes::sztRightPrismatic],rightZoneBottomFlangeDepth[pgsTypes::sztRightPrismatic]);
          }
       }
       else
@@ -1259,12 +1262,6 @@ void CSplicedGirderData::SplitSegmentRight(CPrecastSegmentData* pLeftSegment,CPr
    const CSplicedGirderData* pGirder = pLeftSegment->GetGirder();
    const CGirderGroupData* pGroup = pGirder->GetGirderGroup();
 
-   //GroupIndexType grpIdx   = pGroup->GetGroupIndex();
-   //GirderIndexType gdrIdx  = pGirder->GetGirderIndex();
-   //SegmentIndexType segIdx = pLeftSegment->GetIndex();
-   //CSegmentKey leftSegmentKey(grpIdx,gdrIdx,segIdx);
-   //Float64 leftSegmentLength = pISegment->GetSegmentLayoutLength(leftSegmentKey);
-
    Float64 startStation,endStation;
    pLeftSegment->GetStations(startStation,endStation);
    Float64 leftSegmentLength = endStation - startStation;
@@ -1272,13 +1269,13 @@ void CSplicedGirderData::SplitSegmentRight(CPrecastSegmentData* pLeftSegment,CPr
    Float64 newLeftSegmentLength = (splitStation-startStation);
 
    pgsTypes::SegmentVariationType leftVariation  = pLeftSegment->GetVariationType();
-   if ( leftVariation == pgsTypes::Linear || leftVariation == pgsTypes::Parabolic )
+   if ( leftVariation == pgsTypes::svtLinear || leftVariation == pgsTypes::svtParabolic )
    {
       Float64 leftPrismaticLength, rightPrismaticLength;
       Float64 leftHeight,rightHeight;
       Float64 leftBottomFlangeDepth,rightBottomFlangeDepth;
-      pLeftSegment->GetVariationParameters(pgsTypes::LeftPrismatic, true,&leftPrismaticLength, &leftHeight,&leftBottomFlangeDepth);
-      pLeftSegment->GetVariationParameters(pgsTypes::RightPrismatic,true,&rightPrismaticLength,&rightHeight,&rightBottomFlangeDepth);
+      pLeftSegment->GetVariationParameters(pgsTypes::sztLeftPrismatic, true,&leftPrismaticLength, &leftHeight,&leftBottomFlangeDepth);
+      pLeftSegment->GetVariationParameters(pgsTypes::sztRightPrismatic,true,&rightPrismaticLength,&rightHeight,&rightBottomFlangeDepth);
 
       Float64 splitFraction = (splitStation - startStation)/leftSegmentLength;
       Float64 leftPrismaticFraction  = leftPrismaticLength/leftSegmentLength;
@@ -1321,13 +1318,13 @@ void CSplicedGirderData::SplitSegmentRight(CPrecastSegmentData* pLeftSegment,CPr
          // shorten the length of the right prismatic zone of the left segment and make the right segment
          // have the sortened length
          Float64 length,height,bottomFlangeDepth;
-         pLeftSegment->GetVariationParameters(pgsTypes::RightPrismatic,true,&length,&height,&bottomFlangeDepth);
+         pLeftSegment->GetVariationParameters(pgsTypes::sztRightPrismatic,true,&length,&height,&bottomFlangeDepth);
          Float64 delta_length = leftSegmentLength - newLeftSegmentLength;
-         pLeftSegment->SetVariationParameters(pgsTypes::RightPrismatic,length - delta_length,height,bottomFlangeDepth);
-         pRightSegment->SetVariationParameters(pgsTypes::LeftPrismatic,delta_length,height,bottomFlangeDepth);
-         pRightSegment->SetVariationParameters(pgsTypes::LeftTapered,0,height,bottomFlangeDepth);
-         pRightSegment->SetVariationParameters(pgsTypes::RightTapered,0,height,bottomFlangeDepth);
-         pRightSegment->SetVariationParameters(pgsTypes::RightPrismatic,0,height,bottomFlangeDepth);
+         pLeftSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,length - delta_length,height,bottomFlangeDepth);
+         pRightSegment->SetVariationParameters(pgsTypes::sztLeftPrismatic,delta_length,height,bottomFlangeDepth);
+         pRightSegment->SetVariationParameters(pgsTypes::sztLeftTapered,0,height,bottomFlangeDepth);
+         pRightSegment->SetVariationParameters(pgsTypes::sztRightTapered,0,height,bottomFlangeDepth);
+         pRightSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,0,height,bottomFlangeDepth);
       }
       else
       {
@@ -1338,25 +1335,25 @@ void CSplicedGirderData::SplitSegmentRight(CPrecastSegmentData* pLeftSegment,CPr
          Float64 commonBottomFlangeDepth = ::LinInterp(newLeftSegmentLength,leftBottomFlangeDepth,rightBottomFlangeDepth,leftSegmentLength - leftPrismaticLength - rightPrismaticLength);
 
          // left segment right prismatic section has no length and uses the common values
-         pLeftSegment->SetVariationParameters(pgsTypes::RightPrismatic,0,commonHeight,commonBottomFlangeDepth);
+         pLeftSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,0,commonHeight,commonBottomFlangeDepth);
 
          // right segment left prismatic has not length and uses common values
          pRightSegment->SetVariationType(leftVariation);
-         pRightSegment->SetVariationParameters(pgsTypes::LeftPrismatic,0,commonHeight,commonBottomFlangeDepth);
+         pRightSegment->SetVariationParameters(pgsTypes::sztLeftPrismatic,0,commonHeight,commonBottomFlangeDepth);
 
          // right segment right prismatic takes on the values of the old left segment right prismitic zone
-         pRightSegment->SetVariationParameters(pgsTypes::RightPrismatic,rightPrismaticLength,rightHeight,rightBottomFlangeDepth);
+         pRightSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,rightPrismaticLength,rightHeight,rightBottomFlangeDepth);
       }
    }
-   else if ( leftVariation == pgsTypes::DoubleLinear || leftVariation == pgsTypes::DoubleParabolic )
+   else if ( leftVariation == pgsTypes::svtDoubleLinear || leftVariation == pgsTypes::svtDoubleParabolic )
    {
       Float64 leftPrismaticLength,leftTaperedLength,rightTaperedLength,rightPrismaticLength;
       Float64 leftPrismaticHeight,leftTaperedHeight,rightTaperedHeight,rightPrismaticHeight;
       Float64 leftPrismaticBottomFlangeDepth,leftTaperedBottomFlangeDepth,rightTaperedBottomFlangeDepth,rightPrismaticBottomFlangeDepth;
-      pLeftSegment->GetVariationParameters(pgsTypes::LeftPrismatic, true,&leftPrismaticLength, &leftPrismaticHeight, &leftPrismaticBottomFlangeDepth);
-      pLeftSegment->GetVariationParameters(pgsTypes::LeftTapered,   true,&leftTaperedLength,   &leftTaperedHeight,   &leftTaperedBottomFlangeDepth);
-      pLeftSegment->GetVariationParameters(pgsTypes::RightTapered,  true,&rightTaperedLength,  &rightTaperedHeight,  &rightTaperedBottomFlangeDepth);
-      pLeftSegment->GetVariationParameters(pgsTypes::RightPrismatic,true,&rightPrismaticLength,&rightPrismaticHeight,&rightPrismaticBottomFlangeDepth);
+      pLeftSegment->GetVariationParameters(pgsTypes::sztLeftPrismatic, true,&leftPrismaticLength, &leftPrismaticHeight, &leftPrismaticBottomFlangeDepth);
+      pLeftSegment->GetVariationParameters(pgsTypes::sztLeftTapered,   true,&leftTaperedLength,   &leftTaperedHeight,   &leftTaperedBottomFlangeDepth);
+      pLeftSegment->GetVariationParameters(pgsTypes::sztRightTapered,  true,&rightTaperedLength,  &rightTaperedHeight,  &rightTaperedBottomFlangeDepth);
+      pLeftSegment->GetVariationParameters(pgsTypes::sztRightPrismatic,true,&rightPrismaticLength,&rightPrismaticHeight,&rightPrismaticBottomFlangeDepth);
 
       Float64 splitFraction = (splitStation - startStation)/leftSegmentLength;
       Float64 leftPrismaticFraction  = leftPrismaticLength/leftSegmentLength;
@@ -1368,16 +1365,16 @@ void CSplicedGirderData::SplitSegmentRight(CPrecastSegmentData* pLeftSegment,CPr
          // split in left prismatic zone
 
          // left segment is constant depth linear segment
-         pLeftSegment->SetVariationType(pgsTypes::Linear);
-         pLeftSegment->SetVariationParameters(pgsTypes::LeftPrismatic,newLeftSegmentLength,leftPrismaticHeight,leftPrismaticBottomFlangeDepth);
-         pLeftSegment->SetVariationParameters(pgsTypes::RightPrismatic,0,leftPrismaticHeight,leftPrismaticBottomFlangeDepth);
+         pLeftSegment->SetVariationType(pgsTypes::svtLinear);
+         pLeftSegment->SetVariationParameters(pgsTypes::sztLeftPrismatic,newLeftSegmentLength,leftPrismaticHeight,leftPrismaticBottomFlangeDepth);
+         pLeftSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,0,leftPrismaticHeight,leftPrismaticBottomFlangeDepth);
 
          // right is Float64 linear/parabolic
          pRightSegment->SetVariationType(leftVariation);
-         pRightSegment->SetVariationParameters(pgsTypes::LeftPrismatic,leftPrismaticLength-newLeftSegmentLength,leftPrismaticHeight,leftPrismaticBottomFlangeDepth);
-         pRightSegment->SetVariationParameters(pgsTypes::LeftTapered,leftTaperedLength,leftTaperedHeight,leftTaperedBottomFlangeDepth);
-         pRightSegment->SetVariationParameters(pgsTypes::RightTapered,rightTaperedLength,rightTaperedHeight,rightTaperedBottomFlangeDepth);
-         pRightSegment->SetVariationParameters(pgsTypes::RightPrismatic,rightPrismaticLength,rightPrismaticHeight,rightPrismaticBottomFlangeDepth);
+         pRightSegment->SetVariationParameters(pgsTypes::sztLeftPrismatic,leftPrismaticLength-newLeftSegmentLength,leftPrismaticHeight,leftPrismaticBottomFlangeDepth);
+         pRightSegment->SetVariationParameters(pgsTypes::sztLeftTapered,leftTaperedLength,leftTaperedHeight,leftTaperedBottomFlangeDepth);
+         pRightSegment->SetVariationParameters(pgsTypes::sztRightTapered,rightTaperedLength,rightTaperedHeight,rightTaperedBottomFlangeDepth);
+         pRightSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,rightPrismaticLength,rightPrismaticHeight,rightPrismaticBottomFlangeDepth);
       }
       else if ( ::InRange(leftPrismaticFraction,splitFraction,leftTaperedFraction) )
       {
@@ -1388,15 +1385,15 @@ void CSplicedGirderData::SplitSegmentRight(CPrecastSegmentData* pLeftSegment,CPr
          Float64 commonBottomFlangeDepth = ::LinInterp(newLeftSegmentLength-leftPrismaticLength,leftPrismaticBottomFlangeDepth,leftTaperedBottomFlangeDepth,leftTaperedLength);
 
          // left segment becomes single linear/parabolic
-         pLeftSegment->SetVariationType(leftVariation == pgsTypes::DoubleLinear ? pgsTypes::Linear : pgsTypes::Parabolic);
-         pLeftSegment->SetVariationParameters(pgsTypes::RightPrismatic,0.0,commonHeight,commonBottomFlangeDepth);
+         pLeftSegment->SetVariationType(leftVariation == pgsTypes::svtDoubleLinear ? pgsTypes::svtLinear : pgsTypes::svtParabolic);
+         pLeftSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,0.0,commonHeight,commonBottomFlangeDepth);
 
          // right segment becomes Float64 linear/parabolic
          pRightSegment->SetVariationType(leftVariation);
-         pRightSegment->SetVariationParameters(pgsTypes::LeftPrismatic,0.0,commonHeight,commonBottomFlangeDepth);
-         pRightSegment->SetVariationParameters(pgsTypes::LeftTapered,leftPrismaticLength + leftTaperedLength - newLeftSegmentLength,leftTaperedHeight,leftTaperedBottomFlangeDepth);
-         pRightSegment->SetVariationParameters(pgsTypes::RightTapered,rightTaperedLength,rightTaperedHeight,rightTaperedBottomFlangeDepth);
-         pRightSegment->SetVariationParameters(pgsTypes::RightPrismatic,rightPrismaticLength,rightPrismaticHeight,rightPrismaticBottomFlangeDepth);
+         pRightSegment->SetVariationParameters(pgsTypes::sztLeftPrismatic,0.0,commonHeight,commonBottomFlangeDepth);
+         pRightSegment->SetVariationParameters(pgsTypes::sztLeftTapered,leftPrismaticLength + leftTaperedLength - newLeftSegmentLength,leftTaperedHeight,leftTaperedBottomFlangeDepth);
+         pRightSegment->SetVariationParameters(pgsTypes::sztRightTapered,rightTaperedLength,rightTaperedHeight,rightTaperedBottomFlangeDepth);
+         pRightSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,rightPrismaticLength,rightPrismaticHeight,rightPrismaticBottomFlangeDepth);
       }
       else if ( ::InRange(rightTaperedFraction,splitFraction,rightPrismaticFraction) )
       {
@@ -1407,24 +1404,24 @@ void CSplicedGirderData::SplitSegmentRight(CPrecastSegmentData* pLeftSegment,CPr
          Float64 commonHeight = ::LinInterp(newLeftSegmentLength-leftPrismaticLength-leftTaperedLength-centralLength,rightTaperedHeight,rightPrismaticHeight,rightTaperedLength);
          Float64 commonBottomFlangeDepth = ::LinInterp(newLeftSegmentLength-leftPrismaticLength-leftTaperedLength-centralLength,rightTaperedBottomFlangeDepth,rightPrismaticBottomFlangeDepth,rightTaperedLength);
 
-         pLeftSegment->SetVariationParameters(pgsTypes::RightTapered,newLeftSegmentLength-leftPrismaticLength-leftTaperedLength-centralLength,rightTaperedHeight,rightTaperedBottomFlangeDepth);
-         pLeftSegment->SetVariationParameters(pgsTypes::RightPrismatic,0.0,commonHeight,commonBottomFlangeDepth);
+         pLeftSegment->SetVariationParameters(pgsTypes::sztRightTapered,newLeftSegmentLength-leftPrismaticLength-leftTaperedLength-centralLength,rightTaperedHeight,rightTaperedBottomFlangeDepth);
+         pLeftSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,0.0,commonHeight,commonBottomFlangeDepth);
 
-         pRightSegment->SetVariationType(leftVariation == pgsTypes::DoubleLinear ? pgsTypes::Linear : pgsTypes::Parabolic);
-         pRightSegment->SetVariationParameters(pgsTypes::LeftPrismatic,0.0,commonHeight,commonBottomFlangeDepth);
-         pRightSegment->SetVariationParameters(pgsTypes::RightPrismatic,rightPrismaticLength,rightPrismaticHeight,rightPrismaticBottomFlangeDepth);
+         pRightSegment->SetVariationType(leftVariation == pgsTypes::svtDoubleLinear ? pgsTypes::svtLinear : pgsTypes::svtParabolic);
+         pRightSegment->SetVariationParameters(pgsTypes::sztLeftPrismatic,0.0,commonHeight,commonBottomFlangeDepth);
+         pRightSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,rightPrismaticLength,rightPrismaticHeight,rightPrismaticBottomFlangeDepth);
       }
       else if ( ::InRange(rightPrismaticFraction,splitFraction,1.0) )
       {
          // split in right prismatic zone
 
          // left segment remains the same except the right prismatic length is shortened
-         pLeftSegment->SetVariationParameters(pgsTypes::RightPrismatic,rightPrismaticLength - (leftSegmentLength-newLeftSegmentLength),rightPrismaticHeight,rightPrismaticBottomFlangeDepth);
+         pLeftSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,rightPrismaticLength - (leftSegmentLength-newLeftSegmentLength),rightPrismaticHeight,rightPrismaticBottomFlangeDepth);
          
          // right segment is constant depth linear segment
-         pRightSegment->SetVariationType(pgsTypes::Linear);
-         pRightSegment->SetVariationParameters(pgsTypes::LeftPrismatic,leftSegmentLength-newLeftSegmentLength,rightPrismaticHeight,rightPrismaticBottomFlangeDepth);
-         pRightSegment->SetVariationParameters(pgsTypes::RightPrismatic,0,rightPrismaticHeight,rightPrismaticBottomFlangeDepth);
+         pRightSegment->SetVariationType(pgsTypes::svtLinear);
+         pRightSegment->SetVariationParameters(pgsTypes::sztLeftPrismatic,leftSegmentLength-newLeftSegmentLength,rightPrismaticHeight,rightPrismaticBottomFlangeDepth);
+         pRightSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,0,rightPrismaticHeight,rightPrismaticBottomFlangeDepth);
       }
       else
       {
@@ -1434,13 +1431,18 @@ void CSplicedGirderData::SplitSegmentRight(CPrecastSegmentData* pLeftSegment,CPr
          Float64 commonHeight = ::LinInterp(newLeftSegmentLength,leftTaperedHeight,rightTaperedHeight,leftSegmentLength - leftPrismaticLength - leftTaperedLength - rightTaperedLength - rightPrismaticLength);
          Float64 commonBottomFlangeDepth = ::LinInterp(newLeftSegmentLength,leftTaperedBottomFlangeDepth,rightTaperedBottomFlangeDepth,leftSegmentLength - leftPrismaticLength - leftTaperedLength - rightTaperedLength - rightPrismaticLength);
 
-         pLeftSegment->SetVariationType(leftVariation == pgsTypes::DoubleLinear ? pgsTypes::Linear : pgsTypes::Parabolic);
-         pLeftSegment->SetVariationParameters(pgsTypes::RightPrismatic,newLeftSegmentLength-leftPrismaticLength-leftTaperedLength,commonHeight,commonBottomFlangeDepth);
+         pLeftSegment->SetVariationType(leftVariation == pgsTypes::svtDoubleLinear ? pgsTypes::svtLinear : pgsTypes::svtParabolic);
+         pLeftSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,newLeftSegmentLength-leftPrismaticLength-leftTaperedLength,commonHeight,commonBottomFlangeDepth);
 
-         pRightSegment->SetVariationType(leftVariation == pgsTypes::DoubleLinear ? pgsTypes::Linear : pgsTypes::Parabolic);
-         pRightSegment->SetVariationParameters(pgsTypes::LeftPrismatic,leftSegmentLength - newLeftSegmentLength-rightPrismaticLength-rightTaperedLength,commonHeight,commonBottomFlangeDepth);
-         pRightSegment->SetVariationParameters(pgsTypes::RightPrismatic,rightPrismaticLength,rightPrismaticHeight,rightPrismaticBottomFlangeDepth);
+         pRightSegment->SetVariationType(leftVariation == pgsTypes::svtDoubleLinear ? pgsTypes::svtLinear : pgsTypes::svtParabolic);
+         pRightSegment->SetVariationParameters(pgsTypes::sztLeftPrismatic,leftSegmentLength - newLeftSegmentLength-rightPrismaticLength-rightTaperedLength,commonHeight,commonBottomFlangeDepth);
+         pRightSegment->SetVariationParameters(pgsTypes::sztRightPrismatic,rightPrismaticLength,rightPrismaticHeight,rightPrismaticBottomFlangeDepth);
       }
+   }
+   else if ( leftVariation == pgsTypes::svtNone )
+   {
+      // No variation so nothing to do
+      pRightSegment->SetVariationType(pgsTypes::svtNone);
    }
    else
    {

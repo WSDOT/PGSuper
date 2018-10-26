@@ -133,8 +133,7 @@ void CSegmentSpacingGrid::CustomInit()
    GET_IFACE2(broker,IBridge,pBridge);
 
    pBridge->GetSkewAngle(pParent->GetStation(),pParent->GetOrientation(),&m_SkewAngle);
-   m_GirderSpacingType = pParent->GetBridgeDescription().GetGirderSpacingType();
-   m_SpacingData = pParent->GetGirderSpacing();
+   m_GirderSpacingType = pParent->m_GirderSpacingType;
 
 	Initialize( );
 
@@ -220,8 +219,8 @@ void CSegmentSpacingGrid::FillGrid()
 
    CGirderSegmentSpacingPage* pParent = (CGirderSegmentSpacingPage*)GetParent();
 
-   const CBridgeDescription2& bridgeDesc = pParent->GetBridgeDescription();
-   pgsTypes::SupportedDeckType deckType  = bridgeDesc.GetDeckDescription()->DeckType;
+   const CBridgeDescription2* pBridgeDesc = pParent->GetBridgeDescription();
+   pgsTypes::SupportedDeckType deckType  = pBridgeDesc->GetDeckDescription()->DeckType;
 
    m_MinGirderSpacing.clear();
    m_MaxGirderSpacing.clear();
@@ -262,7 +261,7 @@ void CSegmentSpacingGrid::FillGrid()
       Float64 maxGirderSpacing =  MAX_GIRDER_SPACING;
       for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx <= lastGdrIdx; gdrIdx++ )
       {
-         const GirderLibraryEntry* pGdrEntry = bridgeDesc.GetGirderLibraryEntry();
+         const GirderLibraryEntry* pGdrEntry = pBridgeDesc->GetGirderLibraryEntry();
          const IBeamFactory::Dimensions& dimensions = pGdrEntry->GetDimensions();
          CComPtr<IBeamFactory> factory;
          pGdrEntry->GetBeamFactory(&factory);

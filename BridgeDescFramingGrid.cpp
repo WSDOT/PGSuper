@@ -279,7 +279,7 @@ void CBridgeDescFramingGrid::OnAddTemporarySupport()
    EventIndexType erectionEventIdx = 0;
    EventIndexType removalEventIdx = 0;
    EventIndexType closureEventIdx = 0;
-   CTemporarySupportDlg dlg(&pDlg->m_BridgeDesc,_T("Add Temporary Support"),this);
+   CTemporarySupportDlg dlg(&pDlg->m_BridgeDesc,INVALID_INDEX,this);
    const CTimelineManager* pTimelineMgr = pDlg->m_BridgeDesc.GetTimelineManager();
    EventIndexType nEvents = pTimelineMgr->GetEventCount();
    for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
@@ -1298,7 +1298,6 @@ void CBridgeDescFramingGrid::EditPier(PierIndexType pierIdx)
       pPierData->SetOrientation( dlg.GetOrientation() );
 
       pDlg->m_BridgeDesc.GetTimelineManager()->SetPierErectionEventByIndex(pierIdx,dlg.GetErectionEventIndex());
-      pPierData->SetConnectionType( dlg.GetConnectionType()  );
 
       // Connection geometry
       pPierData->SetBearingOffset(pgsTypes::Back, dlg.GetBearingOffset(pgsTypes::Back), dlg.GetBearingOffsetMeasurementType(pgsTypes::Back));
@@ -1310,45 +1309,65 @@ void CBridgeDescFramingGrid::EditPier(PierIndexType pierIdx)
       pPierData->SetSupportWidth(pgsTypes::Back, dlg.GetSupportWidth(pgsTypes::Back));
       pPierData->SetSupportWidth(pgsTypes::Ahead,dlg.GetSupportWidth(pgsTypes::Ahead));
 
+
       CGirderGroupData* pPrevGroup = pDlg->m_BridgeDesc.GetGirderGroup( pPierData->GetPrevSpan() );
       CGirderGroupData* pNextGroup = pDlg->m_BridgeDesc.GetGirderGroup( pPierData->GetNextSpan() );
 
-      pDlg->m_BridgeDesc.UseSameNumberOfGirdersInAllGroups(dlg.UseSameNumberOfGirdersInAllGroups());
-      if ( pPrevGroup != pNextGroup )
+      if ( dlg.IsBoundaryPier() )
       {
-         GirderIndexType nGirders = 999; // initialize with dummy value
+         pPierData->SetPierConnectionType( dlg.GetPierConnectionType() );
 
-         if (dlg.UseSameNumberOfGirdersInAllGroups() )
-         {
-            // if there is a group on the back side of the pier
-            // use the number of girders on the back side of the pier, otherwise on the ahead side
-            if ( pPrevGroup )
-               nGirders = dlg.GetGirderCount(pgsTypes::Back);
-            else
-               nGirders = dlg.GetGirderCount(pgsTypes::Ahead);
+         pPierData->SetDiaphragmHeight(pgsTypes::Back,dlg.GetDiaphragmHeight(pgsTypes::Back));
+         pPierData->SetDiaphragmWidth(pgsTypes::Back,dlg.GetDiaphragmWidth(pgsTypes::Back));
+         pPierData->SetDiaphragmLoadType(pgsTypes::Back,dlg.GetDiaphragmLoadType(pgsTypes::Back));
+         pPierData->SetDiaphragmLoadLocation(pgsTypes::Back,dlg.GetDiaphragmLoadLocation(pgsTypes::Back));
 
-            // Set the number of girders for the entire bridge
-            pDlg->m_BridgeDesc.SetGirderCount( nGirders );
-         }
-         else
+         pPierData->SetDiaphragmHeight(pgsTypes::Ahead,dlg.GetDiaphragmHeight(pgsTypes::Ahead));
+         pPierData->SetDiaphragmWidth(pgsTypes::Ahead,dlg.GetDiaphragmWidth(pgsTypes::Ahead));
+         pPierData->SetDiaphragmLoadType(pgsTypes::Ahead,dlg.GetDiaphragmLoadType(pgsTypes::Ahead));
+         pPierData->SetDiaphragmLoadLocation(pgsTypes::Ahead,dlg.GetDiaphragmLoadLocation(pgsTypes::Ahead));
+
+         pDlg->m_BridgeDesc.UseSameNumberOfGirdersInAllGroups(dlg.UseSameNumberOfGirdersInAllGroups());
+         if ( pPrevGroup != pNextGroup )
          {
-            // A unique number of girders is used in each group
-            if ( pPrevGroup )
+            GirderIndexType nGirders = 999; // initialize with dummy value
+
+            if (dlg.UseSameNumberOfGirdersInAllGroups() )
             {
-               nGirders = _cpp_min(nGirders,dlg.GetGirderCount(pgsTypes::Back));
-               pPrevGroup->SetGirderCount(nGirders);
+               // if there is a group on the back side of the pier
+               // use the number of girders on the back side of the pier, otherwise on the ahead side
+               if ( pPrevGroup )
+                  nGirders = dlg.GetGirderCount(pgsTypes::Back);
+               else
+                  nGirders = dlg.GetGirderCount(pgsTypes::Ahead);
+
+               // Set the number of girders for the entire bridge
+               pDlg->m_BridgeDesc.SetGirderCount( nGirders );
             }
-
-            if ( pNextGroup )
+            else
             {
-               nGirders = _cpp_min(nGirders,dlg.GetGirderCount(pgsTypes::Ahead));
-               pNextGroup->SetGirderCount(nGirders);
+               // A unique number of girders is used in each group
+               if ( pPrevGroup )
+               {
+                  nGirders = _cpp_min(nGirders,dlg.GetGirderCount(pgsTypes::Back));
+                  pPrevGroup->SetGirderCount(nGirders);
+               }
+
+               if ( pNextGroup )
+               {
+                  nGirders = _cpp_min(nGirders,dlg.GetGirderCount(pgsTypes::Ahead));
+                  pNextGroup->SetGirderCount(nGirders);
+               }
             }
          }
       }
+      else
+      {
+         pPierData->SetSegmentConnectionType( dlg.GetSegmentConnectionType() );
+      }
 
-
-      if (dlg.GetConnectionType() != pgsTypes::ContinuousSegment )
+      // If spacing is permitted at the pier
+      if ( dlg.HasSpacing() )
       {
          pDlg->m_BridgeDesc.SetGirderSpacingType(dlg.GetSpacingType());
          pDlg->m_BridgeDesc.SetMeasurementLocation(dlg.GetMeasurementLocation());
@@ -1507,7 +1526,8 @@ void CBridgeDescFramingGrid::EditSpan(SpanIndexType spanIdx)
             pgsTypes::MemberEndType end = (j == 0 ? pgsTypes::metStart : pgsTypes::metEnd);
             PierIndexType pierIdx = (j == 0 ? prevPierIdx : nextPierIdx);
             CPierData2 pier = *pDlg->m_BridgeDesc.GetPier( pierIdx );
-            pier.SetConnectionType( dlg.GetConnectionType(end) );
+            ATLASSERT(pDlg->m_BridgeDesc.GetPier(pierIdx)->IsBoundaryPier());
+            pier.SetPierConnectionType( dlg.GetConnectionType(end) );
 
             // Diaphragm
             pgsTypes::PierFaceType pierFace = (end == pgsTypes::metStart ? pgsTypes::Ahead : pgsTypes::Back);
@@ -1562,29 +1582,29 @@ void CBridgeDescFramingGrid::EditTemporarySupport(SupportIndexType tsIdx)
    ASSERT( pDlg->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg) ) );
 
 
-   CTemporarySupportDlg dlg(&pDlg->m_BridgeDesc,_T("Edit Temporary Support"),this);
+   CTemporarySupportDlg dlg(&pDlg->m_BridgeDesc,tsIdx,this);
 
    const CTemporarySupportData* pTS = pDlg->m_BridgeDesc.GetTemporarySupport(tsIdx);
    SupportIDType tsID = pTS->GetID();
-
-   EventIndexType erectEventIdx,removeEventIdx;
-   pDlg->m_BridgeDesc.GetTimelineManager()->GetTempSupportEvents(tsID,&erectEventIdx,&removeEventIdx);
-
-   pgsTypes::SupportedBeamSpacing oldGirderSpacingType = pDlg->m_BridgeDesc.GetGirderSpacingType();
-   pgsTypes::MeasurementLocation oldGirderMeasurementLocation = pDlg->m_BridgeDesc.GetMeasurementLocation();
-
+//
+//   EventIndexType erectEventIdx,removeEventIdx;
+//   pDlg->m_BridgeDesc.GetTimelineManager()->GetTempSupportEvents(tsID,&erectEventIdx,&removeEventIdx);
+//
+//   pgsTypes::SupportedBeamSpacing oldGirderSpacingType = pDlg->m_BridgeDesc.GetGirderSpacingType();
+//   pgsTypes::MeasurementLocation oldGirderMeasurementLocation = pDlg->m_BridgeDesc.GetMeasurementLocation();
+//
 #pragma Reminder("REVIEW: possible bug")
       // using girder index 0 to get the closure pour. I think this is ok because all closures
       // at a TS or Pier are cast at the same time.
    const CClosurePourData* pClosure = pTS->GetClosurePour(0);
-   EventIndexType closureEventIdx = INVALID_INDEX;
-   if ( pClosure )
-   {
-      SegmentIDType segID = pClosure->GetLeftSegment()->GetID();
-      closureEventIdx = pDlg->m_BridgeDesc.GetTimelineManager()->GetCastClosurePourEventIndex(segID);
-   }
-
-   dlg.Init(*pDlg->m_BridgeDesc.GetTemporarySupport(tsIdx),erectEventIdx,removeEventIdx,oldGirderSpacingType,oldGirderMeasurementLocation,closureEventIdx);
+//   EventIndexType closureEventIdx = INVALID_INDEX;
+//   if ( pClosure )
+//   {
+//      SegmentIDType segID = pClosure->GetLeftSegment()->GetID();
+//      closureEventIdx = pDlg->m_BridgeDesc.GetTimelineManager()->GetCastClosurePourEventIndex(segID);
+//   }
+//
+//   dlg.Init(*pDlg->m_BridgeDesc.GetTemporarySupport(tsIdx),erectEventIdx,removeEventIdx,oldGirderSpacingType,oldGirderMeasurementLocation,closureEventIdx);
 
    if ( dlg.DoModal() == IDOK )
    {

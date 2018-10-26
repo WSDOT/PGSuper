@@ -371,3 +371,10 @@ bool CConcreteGeneralPage::IsDensityInRange(Float64 density,pgsTypes::ConcreteTy
       return ( IsLE(density,m_MaxLWCDensity) );
    }
 }
+
+void CConcreteGeneralPage::SetFc(Float64 fc)
+{
+   UpdateData(TRUE);
+   m_Fc = fc;
+   UpdateData(FALSE);
+}

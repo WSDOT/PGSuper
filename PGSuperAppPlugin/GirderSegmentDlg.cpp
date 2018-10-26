@@ -39,14 +39,8 @@
 
 IMPLEMENT_DYNAMIC(CGirderSegmentDlg, CPropertySheet)
 
-CGirderSegmentDlg::CGirderSegmentDlg(UINT nIDCaption, bool bEditingInGirder,CWnd* pParentWnd, UINT iSelectPage)
-	:CPropertySheet(nIDCaption, pParentWnd, iSelectPage),m_bEditingInGirder(bEditingInGirder)
-{
-   Init();
-}
-
-CGirderSegmentDlg::CGirderSegmentDlg(LPCTSTR pszCaption, bool bEditingInGirder,CWnd* pParentWnd, UINT iSelectPage)
-	:CPropertySheet(pszCaption, pParentWnd, iSelectPage),m_bEditingInGirder(bEditingInGirder)
+CGirderSegmentDlg::CGirderSegmentDlg(bool bEditingInGirder,CWnd* pParentWnd, UINT iSelectPage)
+	:CPropertySheet(_T(""), pParentWnd, iSelectPage),m_bEditingInGirder(bEditingInGirder)
 {
    Init();
 }
@@ -157,6 +151,9 @@ BOOL CGirderSegmentDlg::OnInitDialog()
 {
    BOOL bResult = CPropertySheet::OnInitDialog();
 
+   CString strTitle;
+   strTitle.Format(_T("Group %d Girder %s Segment %d"),LABEL_GROUP(m_SegmentKey.groupIndex),LABEL_GIRDER(m_SegmentKey.girderIndex),LABEL_SEGMENT(m_SegmentKey.segmentIndex));
+   SetWindowText(strTitle);
 
    // Build the OK button
    CWnd* pOK = GetDlgItem(IDOK);

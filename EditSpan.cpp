@@ -78,8 +78,10 @@ txnEditSpanData::txnEditSpanData(const CSpanData2* pSpan)
 {
    m_SpanLength = pSpan->GetSpanLength();
 
-   m_ConnectionType[pgsTypes::metStart] = pSpan->GetPrevPier()->GetConnectionType();
-   m_ConnectionType[pgsTypes::metEnd]   = pSpan->GetNextPier()->GetConnectionType();
+   ATLASSERT(pSpan->GetPrevPier()->IsBoundaryPier());
+   ATLASSERT(pSpan->GetNextPier()->IsBoundaryPier());
+   m_ConnectionType[pgsTypes::metStart] = pSpan->GetPrevPier()->GetPierConnectionType();
+   m_ConnectionType[pgsTypes::metEnd]   = pSpan->GetNextPier()->GetPierConnectionType();
 
    pSpan->GetPrevPier()->GetGirderEndDistance(pgsTypes::Back, &m_EndDistance[pgsTypes::metStart][pgsTypes::Back ],&m_EndDistanceMeasurementType[pgsTypes::metStart][pgsTypes::Back]);
    pSpan->GetPrevPier()->GetGirderEndDistance(pgsTypes::Ahead,&m_EndDistance[pgsTypes::metStart][pgsTypes::Ahead],&m_EndDistanceMeasurementType[pgsTypes::metStart][pgsTypes::Ahead]);
@@ -237,7 +239,8 @@ void txnEditSpan::DoExecute(int i)
          pgsTypes::MemberEndType end = (j == 0 ? pgsTypes::metStart : pgsTypes::metEnd);
          PierIndexType pierIdx = (j == 0 ? prevPierIdx : nextPierIdx);
          CPierData2 pier = *pBridgeDesc->GetPier( pierIdx );
-         pier.SetConnectionType( m_SpanData[i].m_ConnectionType[end] );
+         ATLASSERT(pBridgeDesc->GetPier(pierIdx)->IsBoundaryPier());// this is setup for Boundary Piers
+         pier.SetPierConnectionType( m_SpanData[i].m_ConnectionType[end] );
 
          // Diaphragm
          pier.SetDiaphragmHeight(       (pgsTypes::PierFaceType)end, m_SpanData[i].m_DiaphragmHeight[end]);

@@ -146,7 +146,7 @@ std::_tstring CBulbTeeDistFactorEngineer::GetComputationDescription(const CGirde
    {
       if (decktype == pgsTypes::sdtCompositeOverlay && connect == pgsTypes::atcConnectedAsUnit)
       {
-         descr = _T("WSDOT Method per Design Memorandum 2-1999 Dated February 22, 1999 using type (k) cross section.");
+         descr = _T("WSDOT Method per Bridge Design Manual Section 3.9.4. Using type (k) cross section.");
       }
       else if (connect == pgsTypes::atcConnectedAsUnit)
       {

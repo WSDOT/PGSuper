@@ -61,6 +61,8 @@ public:
    CString m_strFct;
 
 public:
+   void SetFc(Float64 fc);
+
    Float64 m_Fc;
    CString m_strUserEc;
    bool m_bUserEc;

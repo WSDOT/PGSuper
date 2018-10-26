@@ -370,14 +370,14 @@ void CSplicedIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
 
    // POI for transition points
    pgsTypes::SegmentVariationType variationType = pSegment->GetVariationType();
-   if ( variationType == pgsTypes::None )
+   if ( variationType == pgsTypes::svtNone )
    {
       // do nothing.... no extra POI required
    }
-   else if ( variationType == pgsTypes::Linear || variationType == pgsTypes::Parabolic )
+   else if ( variationType == pgsTypes::svtLinear || variationType == pgsTypes::svtParabolic )
    {
-      Float64 xLeft  = pSegment->GetVariationLength(pgsTypes::LeftPrismatic);
-      Float64 xRight = pSegment->GetVariationLength(pgsTypes::RightPrismatic);
+      Float64 xLeft  = pSegment->GetVariationLength(pgsTypes::sztLeftPrismatic);
+      Float64 xRight = pSegment->GetVariationLength(pgsTypes::sztRightPrismatic);
 
       pgsPointOfInterest poiStart( segmentKey, xLeft, POI_SECTCHANGE_TRANSITION);
       pPoiMgr->AddPointOfInterest( poiStart );
@@ -385,22 +385,22 @@ void CSplicedIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
       pgsPointOfInterest poiEnd( segmentKey, segment_length-xRight, POI_SECTCHANGE_TRANSITION);
       pPoiMgr->AddPointOfInterest( poiEnd );
    }
-   else if ( variationType == pgsTypes::DoubleLinear || variationType == pgsTypes::DoubleParabolic )
+   else if ( variationType == pgsTypes::svtDoubleLinear || variationType == pgsTypes::svtDoubleParabolic )
    {
-      Float64 xLeft  = pSegment->GetVariationLength(pgsTypes::LeftPrismatic);
-      Float64 xRight = pSegment->GetVariationLength(pgsTypes::RightPrismatic);
+      Float64 xLeft  = pSegment->GetVariationLength(pgsTypes::sztLeftPrismatic);
+      Float64 xRight = pSegment->GetVariationLength(pgsTypes::sztRightPrismatic);
 
       pgsPointOfInterest poiStart( segmentKey, xLeft, POI_SECTCHANGE_TRANSITION);
       pPoiMgr->AddPointOfInterest( poiStart );
 
-      xLeft += pSegment->GetVariationLength(pgsTypes::LeftTapered);
+      xLeft += pSegment->GetVariationLength(pgsTypes::sztLeftTapered);
       poiStart.SetDistFromStart(xLeft);
       pPoiMgr->AddPointOfInterest( poiStart );
 
       pgsPointOfInterest poiEnd( segmentKey, segment_length-xRight, POI_SECTCHANGE_TRANSITION );
       pPoiMgr->AddPointOfInterest( poiEnd );
 
-      xRight += pSegment->GetVariationLength(pgsTypes::RightTapered);
+      xRight += pSegment->GetVariationLength(pgsTypes::sztRightTapered);
       poiEnd.SetDistFromStart(segment_length-xRight);
       pPoiMgr->AddPointOfInterest( poiEnd );
    }
@@ -1107,11 +1107,11 @@ void CSplicedIBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dime
 std::vector<pgsTypes::SegmentVariationType> CSplicedIBeamFactory::GetSupportedSegmentVariations()
 {
    std::vector<pgsTypes::SegmentVariationType> variations;
-   variations.push_back(pgsTypes::None);
-   variations.push_back(pgsTypes::Linear);
-   variations.push_back(pgsTypes::Parabolic);
-   variations.push_back(pgsTypes::DoubleLinear);
-   variations.push_back(pgsTypes::DoubleParabolic);
+   variations.push_back(pgsTypes::svtNone);
+   variations.push_back(pgsTypes::svtLinear);
+   variations.push_back(pgsTypes::svtParabolic);
+   variations.push_back(pgsTypes::svtDoubleLinear);
+   variations.push_back(pgsTypes::svtDoubleParabolic);
    return variations;
 }
 

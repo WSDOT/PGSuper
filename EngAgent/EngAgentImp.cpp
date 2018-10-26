@@ -858,7 +858,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
       // only use POI's within 2.5H from the face of the supports (2.5H on either side)
       Float64 left  = 2.5*Hg;
       Float64 right = 2.5*Hg;
-      if ( pPier->GetConnectionType() == pgsTypes::ContinuousSegment )
+      if ( pPier->IsInteriorPier() )
       {
          if ( face == pgsTypes::Ahead )
             left = 0;
@@ -2516,14 +2516,19 @@ std::vector<Float64> CEngAgentImp::GetMomentCapacity(IntervalIndexType intervalI
 
 void CEngAgentImp::GetMomentCapacityDetails(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,MOMENTCAPACITYDETAILS* pmcd)
 {
-   ATLASSERT(poi.GetID() != INVALID_ID); // shouldn't be asking for temporary pois for no design case
-
 #if defined _DEBUG
    // Mu is only considered once live load is applied to the structure
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    EventIndexType llEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
    ATLASSERT( llEventIdx <= intervalIdx );
 #endif
+
+   if ( poi.GetID() == INVALID_ID )
+   {
+      // compute but don't cache since poiID is the key
+      *pmcd = ComputeMomentCapacity(intervalIdx,poi,bPositiveMoment);
+      return;
+   }
 
    const MOMENTCAPACITYDETAILS* pMCD = GetCachedMomentCapacity(intervalIdx,poi,bPositiveMoment);
    if ( pMCD == NULL )
@@ -2612,14 +2617,18 @@ Float64 CEngAgentImp::GetCrackingMoment(IntervalIndexType intervalIdx,const pgsP
 
 void CEngAgentImp::GetCrackingMomentDetails(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd)
 {
-   ATLASSERT( poi.GetID() != INVALID_ID );
-
 #if defined _DEBUG
    // Mu is only considered once live load is applied to the structure
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    EventIndexType llEventIdx = pIBridgeDesc->GetLiveLoadEventIndex();
    ATLASSERT( llEventIdx <= intervalIdx );
 #endif
+
+   if ( poi.GetID() == INVALID_ID )
+   {
+      m_MomentCapEngineer.ComputeCrackingMoment(intervalIdx,poi,bPositiveMoment,pcmd);
+      return;
+   }
 
    *pcmd = *ValidateCrackingMoments(intervalIdx,poi,bPositiveMoment);
 }
@@ -3448,15 +3457,10 @@ void CEngAgentImp::CreateLiftingAnalysisArtifact(const CSegmentKey& segmentKey,F
    if ( bCreate )
    {
       HANDLINGCONFIG config;
-      GET_IFACE(IPointOfInterest,pPOI);
-      std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_MIDSPAN) );
-      pgsPointOfInterest poi( vPOI[0] );
 
-      GET_IFACE(IBridge,pBridge);
-      config.GdrConfig = pBridge->GetSegmentConfiguration(segmentKey);
+      config.bIgnoreGirderConfig = true;
       config.LeftOverhang  = supportLoc;
       config.RightOverhang = supportLoc;
-      Float64 slabOffset = pBridge->GetSlabOffset(poi);
 
       pgsGirderLiftingChecker checker(m_pBroker,m_StatusGroupID);
       GET_IFACE(IGirderLiftingPointsOfInterest,pGirderLiftingPointsOfInterest);

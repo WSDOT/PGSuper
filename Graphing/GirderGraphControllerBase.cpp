@@ -42,7 +42,7 @@ CGirderGraphControllerBase::CGirderGraphControllerBase(bool bAllGroups):
 m_bAllGroups(bAllGroups),
 m_GroupIdx(0),
 m_GirderIdx(0),
-m_IntervalIdx(INVALID_INDEX)
+m_IntervalIdx(0)
 {
 }
 

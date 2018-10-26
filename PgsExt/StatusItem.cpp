@@ -438,10 +438,14 @@ void pgsBridgeDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
             GET_IFACE(IBridgeDescription,pBridgeDesc);
             CBridgeDescription2 bridge = *pBridgeDesc->GetBridgeDescription();
             CPierData2* pPier = bridge.GetPier(dlg.m_PierIdx);
+#pragma Reminder("REVIEW: is this only for boundary piers?") // should InteriorPiers be included too?
+            // When the concept of Boundary and Interior Piers was added, this wasn't given any thought...
+            // it was just made to compile
+            ATLASSERT(pPier->IsBoundaryPier()); // this assumes we have a boundary pier
             CSpanData2* pNextSpan = pPier->GetNextSpan();
             while ( pNextSpan )
             {
-               pPier->SetConnectionType(dlg.m_BoundaryCondition);
+               pPier->SetPierConnectionType(dlg.m_BoundaryCondition);
                pPier = pNextSpan->GetNextPier();
                pNextSpan = pPier->GetNextSpan();
             }

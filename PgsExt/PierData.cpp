@@ -189,9 +189,6 @@ LPCTSTR CPierData::AsString(pgsTypes::PierConnectionType type)
 
    case pgsTypes::IntegralBeforeDeckHingeAhead:
       return _T("Integral on back side before deck placement; Hinged on ahead side");
-
-   case pgsTypes::ContinuousSegment:
-      return _T("Continuous girder segment");
    
    default:
       ATLASSERT(0);

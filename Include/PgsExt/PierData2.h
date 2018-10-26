@@ -93,12 +93,18 @@ public:
    // Returns a consistent string name for a pier connection type.
    static LPCTSTR AsString(pgsTypes::PierConnectionType type);
 
-   bool IsContinuous() const;
-   void IsIntegral(bool* pbLeft,bool* pbRight) const;
+   // Returns a consistent string name for a pier segment connection type.
+   static LPCTSTR AsString(pgsTypes::PierSegmentConnectionType type);
+
+   bool IsContinuousConnection() const; // returns true if the pier connection is modeled as continuous
+   bool IsContinuous() const; // returns true if the girder is continuous over this pier
+   void IsIntegral(bool* pbLeft,bool* pbRight) const; // if the boolean values are true, the girder on the left/right side are integral with this pier
 
    bool IsAbutment() const; // returns true if pier is an end abutment
    bool IsPier() const; // returns true if pier is an intermediate pier
 
+   bool IsInteriorPier() const; // returns true if the pier is interior to a girder group
+   bool IsBoundaryPier() const; // returns true if the pier is at a boundary of a girder group
 
    // =================================================================================
    // Configuration information
@@ -141,8 +147,13 @@ public:
    void SetOrientation(LPCTSTR strOrientation);
 
    // Set/Get the connection type at the pier (boundary condition)
-   pgsTypes::PierConnectionType GetConnectionType() const;
-   void SetConnectionType(pgsTypes::PierConnectionType type);
+   // (this parameter is not used if the pier is located within a girder group)
+   pgsTypes::PierConnectionType GetPierConnectionType() const;
+   void SetPierConnectionType(pgsTypes::PierConnectionType type);
+
+   // Set/Get the segment connection type (not used if pier is located between girder groups)
+   pgsTypes::PierSegmentConnectionType GetSegmentConnectionType() const;
+   void SetSegmentConnectionType(pgsTypes::PierSegmentConnectionType type);
 
    // Set/Get the distance from the CL bearing to the end of the girders at this pier
    // These parameters are meaningless if the connection type is pgsTypes::ContinuousSegment
@@ -163,7 +174,7 @@ public:
    CGirderSpacing2* GetGirderSpacing(pgsTypes::PierFaceType pierFace);
    const CGirderSpacing2* GetGirderSpacing(pgsTypes::PierFaceType pierFace) const;
 
-   // Get a closure pour associated with this pier
+   // Get a closure pour associated with this pier. Returns NULL if there isn't a closure pour.
    const CClosurePourData* GetClosurePour(GirderIndexType gdrIdx) const;
 
    // =================================================================================
@@ -212,7 +223,8 @@ private:
 
    Float64 m_Station;
    std::_tstring m_strOrientation;
-   pgsTypes::PierConnectionType m_ConnectionType;
+   pgsTypes::PierConnectionType m_PierConnectionType; // defines connection when pier is at a boundary between girder groups
+   pgsTypes::PierSegmentConnectionType m_SegmentConnectionType; // defines segment connection when pier is in the middle of a girder group
 
    Float64 m_GirderEndDistance[2];
    ConnectionLibraryEntry::EndDistanceMeasurementType m_EndDistanceMeasurementType[2];
@@ -262,30 +274,5 @@ private:
 
    HRESULT LoadOldPierData(Float64 version,IStructuredLoad* pStrLoad,IProgress* pProgress,const std::_tstring& strUnitName);
 
-   void ChangeConnectionType(pgsTypes::PierConnectionType connectionType);
-
    friend CBridgeDescription2;
-};
-
-//////////////////////////////////////////////////////////////////////////
-// STL Predicate Objects
-class PGSEXTCLASS PierLess2
-{
-public:
-   bool operator()(const CPierData2& a, const CPierData2& b)
-   {
-      return a.GetStation() < b.GetStation();
-   }
-};
-
-class PGSEXTCLASS FindPier2
-{
-public:
-   FindPier2(const CPierData2& pd) : PierData( pd ) {}
-   bool operator()(const CPierData2& b)
-   {
-      return IsEqual( PierData.GetStation(), b.GetStation() );
-   }
-private:
-   CPierData2 PierData;
 };

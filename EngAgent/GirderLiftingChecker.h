@@ -78,6 +78,7 @@ public:
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
    void CheckLifting(const CSegmentKey& segmentKey,pgsLiftingAnalysisArtifact* pArtifact);
+   void AnalyzeLifting(const CSegmentKey& segmentKey,Float64 supportLoc,pgsLiftingAnalysisArtifact* pArtifact);
    void AnalyzeLifting(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,IGirderLiftingDesignPointsOfInterest* pPOId, pgsLiftingAnalysisArtifact* pArtifact);
    pgsDesignCodes::OutcomeType DesignLifting(const CSegmentKey& segmentKey,const GDRCONFIG& config,IGirderLiftingDesignPointsOfInterest* pPOId,pgsLiftingAnalysisArtifact* pArtifact,SHARED_LOGFILE LOGFILE);
 

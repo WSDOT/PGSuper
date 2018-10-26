@@ -52,20 +52,20 @@ void CGirderSegmentGeneralPage::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX, IDC_GIRDER_FC, m_ctrlFc);
 	DDX_Control(pDX, IDC_FCI, m_ctrlFci);
 
-   DDX_Control(pDX, IDC_LEFT_PRISMATIC_LENGTH,  m_ctrlSectionLength[pgsTypes::LeftPrismatic]);
-   DDX_Control(pDX, IDC_LEFT_TAPERED_LENGTH,    m_ctrlSectionLength[pgsTypes::LeftTapered]);
-   DDX_Control(pDX, IDC_RIGHT_TAPERED_LENGTH,   m_ctrlSectionLength[pgsTypes::RightTapered]);
-   DDX_Control(pDX, IDC_RIGHT_PRISMATIC_LENGTH, m_ctrlSectionLength[pgsTypes::RightPrismatic]);
+   DDX_Control(pDX, IDC_LEFT_PRISMATIC_LENGTH,  m_ctrlSectionLength[pgsTypes::sztLeftPrismatic]);
+   DDX_Control(pDX, IDC_LEFT_TAPERED_LENGTH,    m_ctrlSectionLength[pgsTypes::sztLeftTapered]);
+   DDX_Control(pDX, IDC_RIGHT_TAPERED_LENGTH,   m_ctrlSectionLength[pgsTypes::sztRightTapered]);
+   DDX_Control(pDX, IDC_RIGHT_PRISMATIC_LENGTH, m_ctrlSectionLength[pgsTypes::sztRightPrismatic]);
 
-   DDX_Control(pDX, IDC_LEFT_PRISMATIC_HEIGHT,  m_ctrlSectionHeight[pgsTypes::LeftPrismatic]);
-   DDX_Control(pDX, IDC_LEFT_TAPERED_HEIGHT,    m_ctrlSectionHeight[pgsTypes::LeftTapered]);
-   DDX_Control(pDX, IDC_RIGHT_TAPERED_HEIGHT,   m_ctrlSectionHeight[pgsTypes::RightTapered]);
-   DDX_Control(pDX, IDC_RIGHT_PRISMATIC_HEIGHT, m_ctrlSectionHeight[pgsTypes::RightPrismatic]);
+   DDX_Control(pDX, IDC_LEFT_PRISMATIC_HEIGHT,  m_ctrlSectionHeight[pgsTypes::sztLeftPrismatic]);
+   DDX_Control(pDX, IDC_LEFT_TAPERED_HEIGHT,    m_ctrlSectionHeight[pgsTypes::sztLeftTapered]);
+   DDX_Control(pDX, IDC_RIGHT_TAPERED_HEIGHT,   m_ctrlSectionHeight[pgsTypes::sztRightTapered]);
+   DDX_Control(pDX, IDC_RIGHT_PRISMATIC_HEIGHT, m_ctrlSectionHeight[pgsTypes::sztRightPrismatic]);
 
-   DDX_Control(pDX, IDC_LEFT_PRISMATIC_FLANGE_DEPTH,  m_ctrlBottomFlangeDepth[pgsTypes::LeftPrismatic]);
-   DDX_Control(pDX, IDC_LEFT_TAPERED_FLANGE_DEPTH,    m_ctrlBottomFlangeDepth[pgsTypes::LeftTapered]);
-   DDX_Control(pDX, IDC_RIGHT_TAPERED_FLANGE_DEPTH,   m_ctrlBottomFlangeDepth[pgsTypes::RightTapered]);
-   DDX_Control(pDX, IDC_RIGHT_PRISMATIC_FLANGE_DEPTH, m_ctrlBottomFlangeDepth[pgsTypes::RightPrismatic]);
+   DDX_Control(pDX, IDC_LEFT_PRISMATIC_FLANGE_DEPTH,  m_ctrlBottomFlangeDepth[pgsTypes::sztLeftPrismatic]);
+   DDX_Control(pDX, IDC_LEFT_TAPERED_FLANGE_DEPTH,    m_ctrlBottomFlangeDepth[pgsTypes::sztLeftTapered]);
+   DDX_Control(pDX, IDC_RIGHT_TAPERED_FLANGE_DEPTH,   m_ctrlBottomFlangeDepth[pgsTypes::sztRightTapered]);
+   DDX_Control(pDX, IDC_RIGHT_PRISMATIC_FLANGE_DEPTH, m_ctrlBottomFlangeDepth[pgsTypes::sztRightPrismatic]);
 
 
    CComPtr<IBroker> pBroker;
@@ -99,20 +99,20 @@ void CGirderSegmentGeneralPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_CBItemData(pDX,IDC_VARIATION_TYPE,variationType);
 
-   DDX_UnitValueAndTag(pDX, IDC_LEFT_PRISMATIC_LENGTH,  IDC_LEFT_PRISMATIC_LENGTH_UNIT,  VariationLength[pgsTypes::LeftPrismatic],  pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag(pDX, IDC_LEFT_TAPERED_LENGTH,    IDC_LEFT_TAPERED_LENGTH_UNIT,    VariationLength[pgsTypes::LeftTapered],    pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag(pDX, IDC_RIGHT_TAPERED_LENGTH,   IDC_RIGHT_TAPERED_LENGTH_UNIT,   VariationLength[pgsTypes::RightTapered],   pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag(pDX, IDC_RIGHT_PRISMATIC_LENGTH, IDC_RIGHT_PRISMATIC_LENGTH_UNIT, VariationLength[pgsTypes::RightPrismatic], pDisplayUnits->GetSpanLengthUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_LEFT_PRISMATIC_LENGTH,  IDC_LEFT_PRISMATIC_LENGTH_UNIT,  VariationLength[pgsTypes::sztLeftPrismatic],  pDisplayUnits->GetSpanLengthUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_LEFT_TAPERED_LENGTH,    IDC_LEFT_TAPERED_LENGTH_UNIT,    VariationLength[pgsTypes::sztLeftTapered],    pDisplayUnits->GetSpanLengthUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_RIGHT_TAPERED_LENGTH,   IDC_RIGHT_TAPERED_LENGTH_UNIT,   VariationLength[pgsTypes::sztRightTapered],   pDisplayUnits->GetSpanLengthUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_RIGHT_PRISMATIC_LENGTH, IDC_RIGHT_PRISMATIC_LENGTH_UNIT, VariationLength[pgsTypes::sztRightPrismatic], pDisplayUnits->GetSpanLengthUnit() );
 
-   DDX_UnitValueAndTag(pDX, IDC_LEFT_PRISMATIC_HEIGHT,  IDC_LEFT_PRISMATIC_HEIGHT_UNIT,  VariationHeight[pgsTypes::LeftPrismatic],  pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag(pDX, IDC_LEFT_TAPERED_HEIGHT,    IDC_LEFT_TAPERED_HEIGHT_UNIT,    VariationHeight[pgsTypes::LeftTapered],    pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag(pDX, IDC_RIGHT_TAPERED_HEIGHT,   IDC_RIGHT_TAPERED_HEIGHT_UNIT,   VariationHeight[pgsTypes::RightTapered],   pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag(pDX, IDC_RIGHT_PRISMATIC_HEIGHT, IDC_RIGHT_PRISMATIC_HEIGHT_UNIT, VariationHeight[pgsTypes::RightPrismatic], pDisplayUnits->GetSpanLengthUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_LEFT_PRISMATIC_HEIGHT,  IDC_LEFT_PRISMATIC_HEIGHT_UNIT,  VariationHeight[pgsTypes::sztLeftPrismatic],  pDisplayUnits->GetSpanLengthUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_LEFT_TAPERED_HEIGHT,    IDC_LEFT_TAPERED_HEIGHT_UNIT,    VariationHeight[pgsTypes::sztLeftTapered],    pDisplayUnits->GetSpanLengthUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_RIGHT_TAPERED_HEIGHT,   IDC_RIGHT_TAPERED_HEIGHT_UNIT,   VariationHeight[pgsTypes::sztRightTapered],   pDisplayUnits->GetSpanLengthUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_RIGHT_PRISMATIC_HEIGHT, IDC_RIGHT_PRISMATIC_HEIGHT_UNIT, VariationHeight[pgsTypes::sztRightPrismatic], pDisplayUnits->GetSpanLengthUnit() );
 
-   DDX_UnitValueAndTag(pDX, IDC_LEFT_PRISMATIC_FLANGE_DEPTH,  IDC_LEFT_PRISMATIC_FLANGE_DEPTH_UNIT,  VariationBottomFlangeDepth[pgsTypes::LeftPrismatic],  pDisplayUnits->GetComponentDimUnit() );
-   DDX_UnitValueAndTag(pDX, IDC_LEFT_TAPERED_FLANGE_DEPTH,    IDC_LEFT_TAPERED_FLANGE_DEPTH_UNIT,    VariationBottomFlangeDepth[pgsTypes::LeftTapered],    pDisplayUnits->GetComponentDimUnit() );
-   DDX_UnitValueAndTag(pDX, IDC_RIGHT_TAPERED_FLANGE_DEPTH,   IDC_RIGHT_TAPERED_FLANGE_DEPTH_UNIT,   VariationBottomFlangeDepth[pgsTypes::RightTapered],   pDisplayUnits->GetComponentDimUnit() );
-   DDX_UnitValueAndTag(pDX, IDC_RIGHT_PRISMATIC_FLANGE_DEPTH, IDC_RIGHT_PRISMATIC_FLANGE_DEPTH_UNIT, VariationBottomFlangeDepth[pgsTypes::RightPrismatic], pDisplayUnits->GetComponentDimUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_LEFT_PRISMATIC_FLANGE_DEPTH,  IDC_LEFT_PRISMATIC_FLANGE_DEPTH_UNIT,  VariationBottomFlangeDepth[pgsTypes::sztLeftPrismatic],  pDisplayUnits->GetComponentDimUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_LEFT_TAPERED_FLANGE_DEPTH,    IDC_LEFT_TAPERED_FLANGE_DEPTH_UNIT,    VariationBottomFlangeDepth[pgsTypes::sztLeftTapered],    pDisplayUnits->GetComponentDimUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_RIGHT_TAPERED_FLANGE_DEPTH,   IDC_RIGHT_TAPERED_FLANGE_DEPTH_UNIT,   VariationBottomFlangeDepth[pgsTypes::sztRightTapered],   pDisplayUnits->GetComponentDimUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_RIGHT_PRISMATIC_FLANGE_DEPTH, IDC_RIGHT_PRISMATIC_FLANGE_DEPTH_UNIT, VariationBottomFlangeDepth[pgsTypes::sztRightPrismatic], pDisplayUnits->GetComponentDimUnit() );
 
    DDX_UnitValueAndTag(pDX, IDC_LEFT_END_BLOCK_LENGTH,     IDC_LEFT_END_BLOCK_LENGTH_UNIT,     pSegment->EndBlockLength[pgsTypes::metStart],           pDisplayUnits->GetSpanLengthUnit() );
    DDX_UnitValueAndTag(pDX, IDC_LEFT_END_BLOCK_TRANSITION, IDC_LEFT_END_BLOCK_TRANSITION_UNIT, pSegment->EndBlockTransitionLength[pgsTypes::metStart], pDisplayUnits->GetSpanLengthUnit() );
@@ -235,6 +235,9 @@ void CGirderSegmentGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
    if ( pDX->m_bSaveAndValidate )
       pSegment->Material.Concrete.bBasePropertiesOnInitialValues = (value == 0 ? true : false);
 
+   DDX_UnitValueAndTag( pDX, IDC_FCI,  IDC_FCI_UNIT,   pSegment->Material.Concrete.Fci , pDisplayUnits->GetStressUnit() );
+   DDV_UnitValueGreaterThanZero( pDX, IDC_FCI,pSegment->Material.Concrete.Fci, pDisplayUnits->GetStressUnit() );
+
    DDX_UnitValueAndTag( pDX, IDC_GIRDER_FC,  IDC_GIRDER_FC_UNIT,   pSegment->Material.Concrete.Fc , pDisplayUnits->GetStressUnit() );
    DDV_UnitValueGreaterThanZero( pDX, IDC_GIRDER_FC,pSegment->Material.Concrete.Fc, pDisplayUnits->GetStressUnit() );
 
@@ -255,11 +258,6 @@ void CGirderSegmentGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
    {
       m_ctrlEci.GetWindowText(m_strUserEci);
    }
-
-   if ( !pDX->m_bSaveAndValidate )
-   {
-      GetDlgItem(IDC_CONCRETE_TYPE_LABEL)->SetWindowText( matConcrete::GetTypeName((matConcrete::Type)pSegment->Material.Concrete.Type,true).c_str() );
-   }
 }
 
 void CGirderSegmentGeneralPage::FillVariationTypeComboBox()
@@ -278,23 +276,23 @@ void CGirderSegmentGeneralPage::FillVariationTypeComboBox()
       int idx;
       switch(variationType)
       {
-      case pgsTypes::None:
+      case pgsTypes::svtNone:
          idx = pCB->AddString(_T("None"));
          break;
 
-      case pgsTypes::Linear:
+      case pgsTypes::svtLinear:
          idx = pCB->AddString(_T("Linear"));
          break;
 
-      case pgsTypes::Parabolic:
+      case pgsTypes::svtParabolic:
          idx = pCB->AddString(_T("Parabolic"));
          break;
 
-      case pgsTypes::DoubleLinear:
+      case pgsTypes::svtDoubleLinear:
          idx = pCB->AddString(_T("Double Linear"));
          break;
 
-      case pgsTypes::DoubleParabolic:
+      case pgsTypes::svtDoubleParabolic:
          idx = pCB->AddString(_T("Double Parabolic"));
          break;
 
@@ -630,6 +628,9 @@ void CGirderSegmentGeneralPage::OnMoreConcreteProperties()
    dlg.m_ACI.m_B               = pSegment->Material.Concrete.B;
    dlg.m_ACI.m_CureMethod      = pSegment->Material.Concrete.CureMethod;
    dlg.m_ACI.m_CementType      = pSegment->Material.Concrete.CementType;
+   dlg.m_ACI.m_TimeAtInitialStrength = ::ConvertToSysUnits(m_AgeAtRelease,unitMeasure::Day);
+   dlg.m_ACI.m_fci             = pSegment->Material.Concrete.Fci;
+   dlg.m_ACI.m_fc28            = pSegment->Material.Concrete.Fc;
 
 #pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
 
@@ -659,6 +660,7 @@ void CGirderSegmentGeneralPage::OnMoreConcreteProperties()
       pSegment->Material.Concrete.B                  = dlg.m_ACI.m_B;
       pSegment->Material.Concrete.CureMethod         = dlg.m_ACI.m_CureMethod;
       pSegment->Material.Concrete.CementType         = dlg.m_ACI.m_CementType;
+      pSegment->Material.Concrete.Fci                = dlg.m_ACI.m_fci;
 
 #pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
 
@@ -711,6 +713,12 @@ void CGirderSegmentGeneralPage::UpdateConcreteControls()
    bEnable = m_ctrlEciCheck.GetCheck();
    GetDlgItem(IDC_ECI)->EnableWindow(bEnable);
    GetDlgItem(IDC_ECI_UNIT)->EnableWindow(bEnable);
+
+
+   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
+   CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
+   CString strLabel( ConcreteDescription(pSegment->Material.Concrete));
+   GetDlgItem(IDC_CONCRETE_TYPE_LABEL)->SetWindowText( strLabel );
 }
 
 
@@ -803,15 +811,15 @@ void CGirderSegmentGeneralPage::OnVariationTypeChanged()
 
    // if the variation type is changing to None, make sure the "default value" for the edit
    // control is the basic height of the segment in display units
-   if ( variationType == pgsTypes::None )
+   if ( variationType == pgsTypes::svtNone )
    {
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       Float64 height = pSegment->GetBasicSegmentHeight();
       height = ::ConvertFromSysUnits(height,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-      m_ctrlSectionHeight[pgsTypes::LeftPrismatic].SetDefaultValue(height);
-      m_ctrlSectionHeight[pgsTypes::RightPrismatic].SetDefaultValue(height);
+      m_ctrlSectionHeight[pgsTypes::sztLeftPrismatic].SetDefaultValue(height);
+      m_ctrlSectionHeight[pgsTypes::sztRightPrismatic].SetDefaultValue(height);
    }
 
    UpdateSegmentVariationParameters(variationType);
@@ -833,42 +841,42 @@ void CGirderSegmentGeneralPage::GetSectionVariationControlState(BOOL* pbEnable)
 void CGirderSegmentGeneralPage::GetSectionVariationControlState(pgsTypes::SegmentVariationType variationType,BOOL* pbEnable)
 {
    BOOL bEnable[4];
-   if ( variationType == pgsTypes::None )
+   if ( variationType == pgsTypes::svtNone )
    {
-      bEnable[pgsTypes::LeftPrismatic]  = FALSE;
-      bEnable[pgsTypes::LeftTapered]    = FALSE;
-      bEnable[pgsTypes::RightTapered]   = FALSE;
-      bEnable[pgsTypes::RightPrismatic] = FALSE;
+      bEnable[pgsTypes::sztLeftPrismatic]  = FALSE;
+      bEnable[pgsTypes::sztLeftTapered]    = FALSE;
+      bEnable[pgsTypes::sztRightTapered]   = FALSE;
+      bEnable[pgsTypes::sztRightPrismatic] = FALSE;
    }
-   else if (variationType == pgsTypes::Linear || variationType == pgsTypes::Parabolic )
+   else if (variationType == pgsTypes::svtLinear || variationType == pgsTypes::svtParabolic )
    {
-      bEnable[pgsTypes::LeftPrismatic]  = TRUE;
-      bEnable[pgsTypes::LeftTapered]    = FALSE;
-      bEnable[pgsTypes::RightTapered]   = FALSE;
-      bEnable[pgsTypes::RightPrismatic] = TRUE;
+      bEnable[pgsTypes::sztLeftPrismatic]  = TRUE;
+      bEnable[pgsTypes::sztLeftTapered]    = FALSE;
+      bEnable[pgsTypes::sztRightTapered]   = FALSE;
+      bEnable[pgsTypes::sztRightPrismatic] = TRUE;
    }
-   else if (variationType == pgsTypes::DoubleLinear || variationType == pgsTypes::DoubleParabolic )
+   else if (variationType == pgsTypes::svtDoubleLinear || variationType == pgsTypes::svtDoubleParabolic )
    {
-      bEnable[pgsTypes::LeftPrismatic]  = TRUE;
-      bEnable[pgsTypes::LeftTapered]    = TRUE;
-      bEnable[pgsTypes::RightTapered]   = TRUE;
-      bEnable[pgsTypes::RightPrismatic] = TRUE;
+      bEnable[pgsTypes::sztLeftPrismatic]  = TRUE;
+      bEnable[pgsTypes::sztLeftTapered]    = TRUE;
+      bEnable[pgsTypes::sztRightTapered]   = TRUE;
+      bEnable[pgsTypes::sztRightPrismatic] = TRUE;
    }
    //else if ( variationType == CPrecastSegmentData::General )
    //{
    //   ATLASSERT(false); // not implemented yet
-   //   bEnable[pgsTypes::LeftPrismatic]  = FALSE;
-   //   bEnable[pgsTypes::LeftTapered]    = FALSE;
-   //   bEnable[pgsTypes::RightTapered]   = FALSE;
-   //   bEnable[pgsTypes::RightPrismatic] = FALSE;
+   //   bEnable[pgsTypes::sztLeftPrismatic]  = FALSE;
+   //   bEnable[pgsTypes::sztLeftTapered]    = FALSE;
+   //   bEnable[pgsTypes::sztRightTapered]   = FALSE;
+   //   bEnable[pgsTypes::sztRightPrismatic] = FALSE;
    //}
    else
    {
       ATLASSERT(false); // is there a new type
-      bEnable[pgsTypes::LeftPrismatic]  = FALSE;
-      bEnable[pgsTypes::LeftTapered]    = FALSE;
-      bEnable[pgsTypes::RightTapered]   = FALSE;
-      bEnable[pgsTypes::RightPrismatic] = FALSE;
+      bEnable[pgsTypes::sztLeftPrismatic]  = FALSE;
+      bEnable[pgsTypes::sztLeftTapered]    = FALSE;
+      bEnable[pgsTypes::sztRightTapered]   = FALSE;
+      bEnable[pgsTypes::sztRightPrismatic] = FALSE;
    }
 
    pbEnable[0] = bEnable[0];
@@ -893,13 +901,13 @@ void CGirderSegmentGeneralPage::UpdateSegmentVariationParameters(pgsTypes::Segme
    }
 
    // if the variation type is None, then only the prismatic input elements should show the default value
-   if ( variationType == pgsTypes::None )
+   if ( variationType == pgsTypes::svtNone )
    {
-      m_ctrlSectionHeight[pgsTypes::LeftPrismatic].ShowDefaultWhenDisabled(TRUE);
-      m_ctrlBottomFlangeDepth[pgsTypes::LeftPrismatic].ShowDefaultWhenDisabled(TRUE);
+      m_ctrlSectionHeight[pgsTypes::sztLeftPrismatic].ShowDefaultWhenDisabled(TRUE);
+      m_ctrlBottomFlangeDepth[pgsTypes::sztLeftPrismatic].ShowDefaultWhenDisabled(TRUE);
 
-      m_ctrlSectionHeight[pgsTypes::RightPrismatic].ShowDefaultWhenDisabled(TRUE);
-      m_ctrlBottomFlangeDepth[pgsTypes::RightPrismatic].ShowDefaultWhenDisabled(TRUE);
+      m_ctrlSectionHeight[pgsTypes::sztRightPrismatic].ShowDefaultWhenDisabled(TRUE);
+      m_ctrlBottomFlangeDepth[pgsTypes::sztRightPrismatic].ShowDefaultWhenDisabled(TRUE);
    }
 
    BOOL bBottomFlange = IsDlgButtonChecked(IDC_BOTTOM_FLANGE_DEPTH);
@@ -907,46 +915,46 @@ void CGirderSegmentGeneralPage::UpdateSegmentVariationParameters(pgsTypes::Segme
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
    BOOL bStartDepthFixed = FALSE;
-   if ( pSegment->GetPrevSegment() && pSegment->GetPrevSegment()->GetVariationType() == pgsTypes::None )
+   if ( pSegment->GetPrevSegment() && pSegment->GetPrevSegment()->GetVariationType() == pgsTypes::svtNone )
       bStartDepthFixed = TRUE;
 
    BOOL bEndDepthFixed = FALSE;
-   if ( pSegment->GetNextSegment() && pSegment->GetNextSegment()->GetVariationType() == pgsTypes::None )
+   if ( pSegment->GetNextSegment() && pSegment->GetNextSegment()->GetVariationType() == pgsTypes::svtNone )
       bEndDepthFixed = TRUE;
 
-   GetDlgItem(IDC_BOTTOM_FLANGE_DEPTH)->EnableWindow(variationType == pgsTypes::None ? FALSE : TRUE);
+   GetDlgItem(IDC_BOTTOM_FLANGE_DEPTH)->EnableWindow(variationType == pgsTypes::svtNone ? FALSE : TRUE);
 
-   GetDlgItem(IDC_LEFT_PRISMATIC_LABEL)->EnableWindow(bEnable[pgsTypes::LeftPrismatic]);
-   m_ctrlSectionLength[pgsTypes::LeftPrismatic].EnableWindow(bEnable[pgsTypes::LeftPrismatic]);
-   GetDlgItem(IDC_LEFT_PRISMATIC_LENGTH_UNIT)->EnableWindow(bEnable[pgsTypes::LeftPrismatic]);
-   m_ctrlSectionHeight[pgsTypes::LeftPrismatic].EnableWindow(bStartDepthFixed ? FALSE : bEnable[pgsTypes::LeftPrismatic]);
-   GetDlgItem(IDC_LEFT_PRISMATIC_HEIGHT_UNIT)->EnableWindow(bStartDepthFixed ? FALSE : bEnable[pgsTypes::LeftPrismatic]);
-   m_ctrlBottomFlangeDepth[pgsTypes::LeftPrismatic].EnableWindow(bBottomFlange ? bEnable[pgsTypes::LeftPrismatic] : FALSE);
-   GetDlgItem(IDC_LEFT_PRISMATIC_FLANGE_DEPTH_UNIT)->EnableWindow(bBottomFlange ? bEnable[pgsTypes::LeftPrismatic] : FALSE);
+   GetDlgItem(IDC_LEFT_PRISMATIC_LABEL)->EnableWindow(bEnable[pgsTypes::sztLeftPrismatic]);
+   m_ctrlSectionLength[pgsTypes::sztLeftPrismatic].EnableWindow(bEnable[pgsTypes::sztLeftPrismatic]);
+   GetDlgItem(IDC_LEFT_PRISMATIC_LENGTH_UNIT)->EnableWindow(bEnable[pgsTypes::sztLeftPrismatic]);
+   m_ctrlSectionHeight[pgsTypes::sztLeftPrismatic].EnableWindow(bStartDepthFixed ? FALSE : bEnable[pgsTypes::sztLeftPrismatic]);
+   GetDlgItem(IDC_LEFT_PRISMATIC_HEIGHT_UNIT)->EnableWindow(bStartDepthFixed ? FALSE : bEnable[pgsTypes::sztLeftPrismatic]);
+   m_ctrlBottomFlangeDepth[pgsTypes::sztLeftPrismatic].EnableWindow(bBottomFlange ? bEnable[pgsTypes::sztLeftPrismatic] : FALSE);
+   GetDlgItem(IDC_LEFT_PRISMATIC_FLANGE_DEPTH_UNIT)->EnableWindow(bBottomFlange ? bEnable[pgsTypes::sztLeftPrismatic] : FALSE);
 
-   GetDlgItem(IDC_LEFT_TAPERED_LABEL)->EnableWindow(bEnable[pgsTypes::LeftTapered]);
-   m_ctrlSectionLength[pgsTypes::LeftTapered].EnableWindow(bEnable[pgsTypes::LeftTapered]);
-   GetDlgItem(IDC_LEFT_TAPERED_LENGTH_UNIT)->EnableWindow(bEnable[pgsTypes::LeftTapered]);
-   m_ctrlSectionHeight[pgsTypes::LeftTapered].EnableWindow(bEnable[pgsTypes::LeftTapered]);
-   GetDlgItem(IDC_LEFT_TAPERED_HEIGHT_UNIT)->EnableWindow(bEnable[pgsTypes::LeftTapered]);
-   m_ctrlBottomFlangeDepth[pgsTypes::LeftTapered].EnableWindow(bBottomFlange ? bEnable[pgsTypes::LeftTapered] : FALSE);
-   GetDlgItem(IDC_LEFT_TAPERED_FLANGE_DEPTH_UNIT)->EnableWindow(bBottomFlange ? bEnable[pgsTypes::LeftTapered] : FALSE);
+   GetDlgItem(IDC_LEFT_TAPERED_LABEL)->EnableWindow(bEnable[pgsTypes::sztLeftTapered]);
+   m_ctrlSectionLength[pgsTypes::sztLeftTapered].EnableWindow(bEnable[pgsTypes::sztLeftTapered]);
+   GetDlgItem(IDC_LEFT_TAPERED_LENGTH_UNIT)->EnableWindow(bEnable[pgsTypes::sztLeftTapered]);
+   m_ctrlSectionHeight[pgsTypes::sztLeftTapered].EnableWindow(bEnable[pgsTypes::sztLeftTapered]);
+   GetDlgItem(IDC_LEFT_TAPERED_HEIGHT_UNIT)->EnableWindow(bEnable[pgsTypes::sztLeftTapered]);
+   m_ctrlBottomFlangeDepth[pgsTypes::sztLeftTapered].EnableWindow(bBottomFlange ? bEnable[pgsTypes::sztLeftTapered] : FALSE);
+   GetDlgItem(IDC_LEFT_TAPERED_FLANGE_DEPTH_UNIT)->EnableWindow(bBottomFlange ? bEnable[pgsTypes::sztLeftTapered] : FALSE);
 
-   GetDlgItem(IDC_RIGHT_TAPERED_LABEL)->EnableWindow(bEnable[pgsTypes::RightTapered]);
-   m_ctrlSectionLength[pgsTypes::RightTapered].EnableWindow(bEnable[pgsTypes::RightTapered]);
-   GetDlgItem(IDC_RIGHT_TAPERED_LENGTH_UNIT)->EnableWindow(bEnable[pgsTypes::RightTapered]);
-   m_ctrlSectionHeight[pgsTypes::RightTapered].EnableWindow(bEnable[pgsTypes::RightTapered]);
-   GetDlgItem(IDC_RIGHT_TAPERED_HEIGHT_UNIT)->EnableWindow(bEnable[pgsTypes::RightTapered]);
-   m_ctrlBottomFlangeDepth[pgsTypes::RightTapered].EnableWindow(bBottomFlange ? bEnable[pgsTypes::RightTapered] : FALSE);
-   GetDlgItem(IDC_RIGHT_TAPERED_FLANGE_DEPTH_UNIT)->EnableWindow(bBottomFlange ? bEnable[pgsTypes::RightTapered] : FALSE);
+   GetDlgItem(IDC_RIGHT_TAPERED_LABEL)->EnableWindow(bEnable[pgsTypes::sztRightTapered]);
+   m_ctrlSectionLength[pgsTypes::sztRightTapered].EnableWindow(bEnable[pgsTypes::sztRightTapered]);
+   GetDlgItem(IDC_RIGHT_TAPERED_LENGTH_UNIT)->EnableWindow(bEnable[pgsTypes::sztRightTapered]);
+   m_ctrlSectionHeight[pgsTypes::sztRightTapered].EnableWindow(bEnable[pgsTypes::sztRightTapered]);
+   GetDlgItem(IDC_RIGHT_TAPERED_HEIGHT_UNIT)->EnableWindow(bEnable[pgsTypes::sztRightTapered]);
+   m_ctrlBottomFlangeDepth[pgsTypes::sztRightTapered].EnableWindow(bBottomFlange ? bEnable[pgsTypes::sztRightTapered] : FALSE);
+   GetDlgItem(IDC_RIGHT_TAPERED_FLANGE_DEPTH_UNIT)->EnableWindow(bBottomFlange ? bEnable[pgsTypes::sztRightTapered] : FALSE);
 
-   GetDlgItem(IDC_RIGHT_PRISMATIC_LABEL)->EnableWindow(bEnable[pgsTypes::RightPrismatic]);
-   m_ctrlSectionLength[pgsTypes::RightPrismatic].EnableWindow(bEnable[pgsTypes::RightPrismatic]);
-   GetDlgItem(IDC_RIGHT_PRISMATIC_LENGTH_UNIT)->EnableWindow(bEnable[pgsTypes::RightPrismatic]);
-   m_ctrlSectionHeight[pgsTypes::RightPrismatic].EnableWindow(bEndDepthFixed ? FALSE : bEnable[pgsTypes::RightPrismatic]);
-   GetDlgItem(IDC_RIGHT_PRISMATIC_HEIGHT_UNIT)->EnableWindow(bEndDepthFixed ? FALSE : bEnable[pgsTypes::RightPrismatic]);
-   m_ctrlBottomFlangeDepth[pgsTypes::RightPrismatic].EnableWindow(bBottomFlange ? bEnable[pgsTypes::RightPrismatic] : FALSE);
-   GetDlgItem(IDC_RIGHT_PRISMATIC_FLANGE_DEPTH_UNIT)->EnableWindow(bBottomFlange ? bEnable[pgsTypes::RightPrismatic] : FALSE);
+   GetDlgItem(IDC_RIGHT_PRISMATIC_LABEL)->EnableWindow(bEnable[pgsTypes::sztRightPrismatic]);
+   m_ctrlSectionLength[pgsTypes::sztRightPrismatic].EnableWindow(bEnable[pgsTypes::sztRightPrismatic]);
+   GetDlgItem(IDC_RIGHT_PRISMATIC_LENGTH_UNIT)->EnableWindow(bEnable[pgsTypes::sztRightPrismatic]);
+   m_ctrlSectionHeight[pgsTypes::sztRightPrismatic].EnableWindow(bEndDepthFixed ? FALSE : bEnable[pgsTypes::sztRightPrismatic]);
+   GetDlgItem(IDC_RIGHT_PRISMATIC_HEIGHT_UNIT)->EnableWindow(bEndDepthFixed ? FALSE : bEnable[pgsTypes::sztRightPrismatic]);
+   m_ctrlBottomFlangeDepth[pgsTypes::sztRightPrismatic].EnableWindow(bBottomFlange ? bEnable[pgsTypes::sztRightPrismatic] : FALSE);
+   GetDlgItem(IDC_RIGHT_PRISMATIC_FLANGE_DEPTH_UNIT)->EnableWindow(bBottomFlange ? bEnable[pgsTypes::sztRightPrismatic] : FALSE);
 }
 
 Float64 CGirderSegmentGeneralPage::GetBottomFlangeDepth(pgsTypes::SegmentZoneType segZone)
@@ -960,19 +968,19 @@ Float64 CGirderSegmentGeneralPage::GetBottomFlangeDepth(pgsTypes::SegmentZoneTyp
    Float64 depth = 0;
    switch( segZone )
    {
-   case pgsTypes::LeftPrismatic:
+   case pgsTypes::sztLeftPrismatic:
       depth = GetValue(IDC_LEFT_PRISMATIC_FLANGE_DEPTH,  pDisplayUnits->GetComponentDimUnit() );
       break;
 
-   case pgsTypes::LeftTapered:
+   case pgsTypes::sztLeftTapered:
       depth = GetValue(IDC_LEFT_TAPERED_FLANGE_DEPTH, pDisplayUnits->GetComponentDimUnit() );
       break;
 
-   case pgsTypes::RightTapered:
+   case pgsTypes::sztRightTapered:
       depth = GetValue(IDC_RIGHT_TAPERED_FLANGE_DEPTH,  pDisplayUnits->GetComponentDimUnit() );
       break;
 
-   case pgsTypes::RightPrismatic:
+   case pgsTypes::sztRightPrismatic:
       depth = GetValue(IDC_RIGHT_PRISMATIC_FLANGE_DEPTH,  pDisplayUnits->GetComponentDimUnit() );
       break;
 
@@ -994,19 +1002,19 @@ Float64 CGirderSegmentGeneralPage::GetHeight(pgsTypes::SegmentZoneType segZone)
    Float64 height = 0;
    switch( segZone )
    {
-   case pgsTypes::LeftPrismatic:
+   case pgsTypes::sztLeftPrismatic:
       height = GetValue(IDC_LEFT_PRISMATIC_HEIGHT,  pDisplayUnits->GetSpanLengthUnit() );
       break;
 
-   case pgsTypes::LeftTapered:
+   case pgsTypes::sztLeftTapered:
       height = GetValue(IDC_LEFT_TAPERED_HEIGHT, pDisplayUnits->GetSpanLengthUnit() );
       break;
 
-   case pgsTypes::RightTapered:
+   case pgsTypes::sztRightTapered:
       height = GetValue(IDC_RIGHT_TAPERED_HEIGHT,  pDisplayUnits->GetSpanLengthUnit() );
       break;
 
-   case pgsTypes::RightPrismatic:
+   case pgsTypes::sztRightPrismatic:
       height = GetValue(IDC_RIGHT_PRISMATIC_HEIGHT,  pDisplayUnits->GetSpanLengthUnit() );
       break;
 
@@ -1027,19 +1035,19 @@ Float64 CGirderSegmentGeneralPage::GetLength(pgsTypes::SegmentZoneType segZone)
    Float64 length = 0;
    switch( segZone )
    {
-   case pgsTypes::LeftPrismatic:
+   case pgsTypes::sztLeftPrismatic:
       length = GetValue(IDC_LEFT_PRISMATIC_LENGTH,  pDisplayUnits->GetSpanLengthUnit() );
       break;
 
-   case pgsTypes::LeftTapered:
+   case pgsTypes::sztLeftTapered:
       length = GetValue(IDC_LEFT_TAPERED_LENGTH, pDisplayUnits->GetSpanLengthUnit() );
       break;
 
-   case pgsTypes::RightTapered:
+   case pgsTypes::sztRightTapered:
       length = GetValue(IDC_RIGHT_TAPERED_LENGTH,  pDisplayUnits->GetSpanLengthUnit() );
       break;
 
-   case pgsTypes::RightPrismatic:
+   case pgsTypes::sztRightPrismatic:
       length = GetValue(IDC_RIGHT_PRISMATIC_LENGTH,  pDisplayUnits->GetSpanLengthUnit() );
       break;
 
@@ -1368,24 +1376,24 @@ void CGirderSegmentGeneralPage::OnBnClickedBottomFlangeDepth()
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
    BOOL bStartDepthFixed = FALSE;
-   if ( pSegment->GetPrevSegment() && pSegment->GetPrevSegment()->GetVariationType() == pgsTypes::None )
+   if ( pSegment->GetPrevSegment() && pSegment->GetPrevSegment()->GetVariationType() == pgsTypes::svtNone )
       bStartDepthFixed = TRUE;
 
    BOOL bEndDepthFixed = FALSE;
-   if ( pSegment->GetNextSegment() && pSegment->GetNextSegment()->GetVariationType() == pgsTypes::None )
+   if ( pSegment->GetNextSegment() && pSegment->GetNextSegment()->GetVariationType() == pgsTypes::svtNone )
       bEndDepthFixed = TRUE;
 
-   m_ctrlBottomFlangeDepth[pgsTypes::LeftPrismatic].EnableWindow(bStartDepthFixed ? FALSE : bEnable[pgsTypes::LeftPrismatic]);
-   GetDlgItem( IDC_LEFT_PRISMATIC_FLANGE_DEPTH_UNIT  )->EnableWindow(bEndDepthFixed ? FALSE : bEnable[pgsTypes::LeftPrismatic]);
+   m_ctrlBottomFlangeDepth[pgsTypes::sztLeftPrismatic].EnableWindow(bStartDepthFixed ? FALSE : bEnable[pgsTypes::sztLeftPrismatic]);
+   GetDlgItem( IDC_LEFT_PRISMATIC_FLANGE_DEPTH_UNIT  )->EnableWindow(bEndDepthFixed ? FALSE : bEnable[pgsTypes::sztLeftPrismatic]);
    
-   m_ctrlBottomFlangeDepth[pgsTypes::LeftTapered].EnableWindow(bEnable[pgsTypes::LeftTapered]);
-   GetDlgItem( IDC_LEFT_TAPERED_FLANGE_DEPTH_UNIT    )->EnableWindow(bEnable[pgsTypes::LeftTapered]);
+   m_ctrlBottomFlangeDepth[pgsTypes::sztLeftTapered].EnableWindow(bEnable[pgsTypes::sztLeftTapered]);
+   GetDlgItem( IDC_LEFT_TAPERED_FLANGE_DEPTH_UNIT    )->EnableWindow(bEnable[pgsTypes::sztLeftTapered]);
    
-   m_ctrlBottomFlangeDepth[pgsTypes::RightTapered].EnableWindow(bEnable[pgsTypes::RightTapered]);
-   GetDlgItem( IDC_RIGHT_TAPERED_FLANGE_DEPTH_UNIT   )->EnableWindow(bEnable[pgsTypes::RightTapered]);
+   m_ctrlBottomFlangeDepth[pgsTypes::sztRightTapered].EnableWindow(bEnable[pgsTypes::sztRightTapered]);
+   GetDlgItem( IDC_RIGHT_TAPERED_FLANGE_DEPTH_UNIT   )->EnableWindow(bEnable[pgsTypes::sztRightTapered]);
    
-   m_ctrlBottomFlangeDepth[pgsTypes::RightPrismatic].EnableWindow(bEndDepthFixed ? FALSE : bEnable[pgsTypes::RightPrismatic]);
-   GetDlgItem( IDC_RIGHT_PRISMATIC_FLANGE_DEPTH_UNIT )->EnableWindow(bEndDepthFixed ? FALSE : bEnable[pgsTypes::RightPrismatic]);
+   m_ctrlBottomFlangeDepth[pgsTypes::sztRightPrismatic].EnableWindow(bEndDepthFixed ? FALSE : bEnable[pgsTypes::sztRightPrismatic]);
+   GetDlgItem( IDC_RIGHT_PRISMATIC_FLANGE_DEPTH_UNIT )->EnableWindow(bEndDepthFixed ? FALSE : bEnable[pgsTypes::sztRightPrismatic]);
 
    pSegment->EnableVariableBottomFlangeDepth(bChecked == TRUE ? true : false);
 }

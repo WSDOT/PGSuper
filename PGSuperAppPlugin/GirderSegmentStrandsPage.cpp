@@ -23,8 +23,6 @@
 
 #include "GirderDescDlg.h" // for ReconcileDebonding
 
-#define NO_DEBOND_FILL_COLOR BLUE //GREY90
-
 // CGirderSegmentStrandsPage dialog
 
 IMPLEMENT_DYNAMIC(CGirderSegmentStrandsPage, CPropertyPage)
@@ -983,6 +981,10 @@ BOOL CGirderSegmentStrandsPage::OnSetActive()
 
    OnChange();
    UpdateGrid();
+
+   CString note;
+   note.Format(_T("Note: Straight strands shown in %s cannot be debonded"),NO_DEBOND_FILL_COLOR_NAME);
+   GetDlgItem(IDC_NOTE)->SetWindowText(note);
 
    return CPropertyPage::OnSetActive();
 	

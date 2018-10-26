@@ -565,6 +565,13 @@ void CGirderModelChildFrame::ShowCutDlg()
 #pragma Reminder("UPDATE: assuming segment index")
    CSegmentKey segmentKey(m_GirderKey,0);
 
+#pragma Reminder("UPDATE: this doesn't work for spliced girders")
+   // The whole section cut thing needs to be re-worked for spliced girders.
+   // The dialog needs to offer cut options for all segments in the view.
+   // Each segment can have a different number of harp points.
+   if ( segmentKey.groupIndex == ALL_GROUPS )
+      segmentKey.groupIndex = 0;
+
    ATLASSERT( segmentKey.groupIndex != ALL_GROUPS && segmentKey.girderIndex != ALL_GIRDERS  );
    IndexType nHarpPoints = pStrandGeom->GetNumHarpPoints(segmentKey);
 

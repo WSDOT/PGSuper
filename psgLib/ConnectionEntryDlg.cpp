@@ -30,6 +30,8 @@
 #include "..\htmlhelp\HelpTopics.hh"
 #include <EAF\EAFApp.h>
 
+#include "PGSuperColors.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -49,7 +51,7 @@ CConnectionEntryDlg::CConnectionEntryDlg(bool allowEditing,
 	m_Name = _T("");
 	//}}AFX_DATA_INIT
 
-   m_WhiteBrush.CreateSolidBrush(RGB(255,255,255));
+   m_WhiteBrush.CreateSolidBrush(METAFILE_BACKGROUND_COLOR);
 }
 
 

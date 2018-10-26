@@ -33,12 +33,16 @@ public:
 	CTemporarySupportLayoutPage();
 	virtual ~CTemporarySupportLayoutPage();
 
+   void Init(const CTemporarySupportData& tsData);
+
 // Dialog Data
 	enum { IDD = IDD_TS_GENERAL };
 
    Float64 m_Station;
    std::_tstring m_strOrientation;
    pgsTypes::TemporarySupportType m_Type;
+   EventIndexType m_ErectionEventIndex;
+   EventIndexType m_RemovalEventIndex;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

@@ -312,6 +312,14 @@ public:
    // Returns true if a station is between the stations of the first and last piers
    bool IsOnBridge(Float64 station) const;
 
+   // If the specified station is at the location of a pier, the pier index is returned
+   // otherwise INVALID_INDEX is returned
+   PierIndexType IsPierLocation(Float64 station,Float64 tolerance = 0.001) const;
+
+   // If the specified station is at the location of a temporary support, the support index is returned
+   // otherwise INVALID_INDEX is returned
+   SupportIndexType IsTemporarySupportLocation(Float64 station,Float64 tolerance = 0.001) const;
+
    // sets/gets how distribution factors are defined. if DirectlyInput, then
    // this bridge model has the distribution factor values (see CSpanData2)
    void SetDistributionFactorMethod(pgsTypes::DistributionFactorMethod method);
@@ -333,7 +341,8 @@ public:
    void ReconcileEdits(IBroker* pBroker, const CBridgeDescription2* pOriginalDesc);
 
    // Returns a vector of the valid connection types for a pier. 
-   std::vector<pgsTypes::PierConnectionType> GetConnectionTypes(PierIndexType pierIdx) const;
+   std::vector<pgsTypes::PierConnectionType> GetPierConnectionTypes(PierIndexType pierIdx) const;
+   std::vector<pgsTypes::PierSegmentConnectionType> GetPierSegmentConnectionTypes(PierIndexType pierIdx) const;
 
    // Returns the number of closure pours on a girder line. The number of closures
    // in each girder within a group are equal. 

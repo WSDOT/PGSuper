@@ -262,7 +262,8 @@ public:
    virtual void SetSlabOffset( const CSegmentKey& segmentKey, Float64 start, Float64 end);
    virtual pgsTypes::SlabOffsetType GetSlabOffsetType();
    virtual void GetSlabOffset( const CSegmentKey& segmentKey, Float64* pStart, Float64* pEnd);
-   virtual std::vector<pgsTypes::PierConnectionType> GetConnectionTypes(PierIndexType pierIdx);
+   virtual std::vector<pgsTypes::PierConnectionType> GetPierConnectionTypes(PierIndexType pierIdx);
+   virtual std::vector<pgsTypes::PierSegmentConnectionType> GetPierSegmentConnectionTypes(PierIndexType pierIdx);
    virtual const CTimelineManager* GetTimelineManager();
    virtual void SetTimelineManager(CTimelineManager& timelineMbr);
    virtual EventIndexType AddTimelineEvent(const CTimelineEvent& timelineEvent);

@@ -32,6 +32,8 @@
 #include "PierLayoutPage.h"
 #include "PierConnectionsPage.h"
 #include "PierGirderSpacingPage.h"
+#include "PGSuperAppPlugin\ClosurePourGeometryPage.h"
+#include "PGSuperAppPlugin\GirderSegmentSpacingPage.h"
 #include <PgsExt\BridgeDescription2.h>
 #include "EditPier.h"
 
@@ -50,8 +52,10 @@ public:
    txnEditPierData GetEditPierData();
 
 //interface IPierConnectionsParent
-   virtual pgsTypes::PierConnectionType GetConnectionType(PierIndexType pierIdx);
-   virtual void SetConnectionType(PierIndexType pierIdx,pgsTypes::PierConnectionType type);
+   virtual pgsTypes::PierConnectionType GetPierConnectionType(PierIndexType pierIdx);
+   virtual void SetPierConnectionType(PierIndexType pierIdx,pgsTypes::PierConnectionType type);
+   virtual pgsTypes::PierSegmentConnectionType GetSegmentConnectionType(PierIndexType pierIdx);
+   virtual void SetSegmentConnectionType(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType type);
    virtual const CSpanData2* GetPrevSpan(PierIndexType pierIdx);
    virtual const CSpanData2* GetNextSpan(PierIndexType pierIdx);
    virtual const CBridgeDescription2* GetBridgeDescription();
@@ -61,7 +65,12 @@ public:
    LPCTSTR GetOrientation();
    EventIndexType GetErectionEventIndex();
 
-   pgsTypes::PierConnectionType GetConnectionType();
+   bool IsInteriorPier();
+   bool IsBoundaryPier();
+   bool HasSpacing();
+
+   pgsTypes::PierConnectionType GetPierConnectionType();
+   pgsTypes::PierSegmentConnectionType GetSegmentConnectionType();
    Float64 GetBearingOffset(pgsTypes::PierFaceType face);
    ConnectionLibraryEntry::BearingOffsetMeasurementType GetBearingOffsetMeasurementType(pgsTypes::PierFaceType face);
    Float64 GetEndDistance(pgsTypes::PierFaceType face);
@@ -117,17 +126,20 @@ protected:
    const CPierData2* m_pPierData;
    const CSpanData2* m_pNextSpan;
 
-   pgsTypes::PierConnectionType m_ConnectionType;
-   pgsTypes::SupportedBeamSpacing m_SpacingType;
-   pgsTypes::MeasurementLocation m_GirderSpacingMeasurementLocation;
-
 private:
    friend CPierLayoutPage;
    friend CPierGirderSpacingPage;
 
+   // General layout page
    CPierLayoutPage            m_PierLayoutPage;
+
+   // These two pages are used when the pier is at a boundary between girder groups
    CPierConnectionsPage       m_PierConnectionsPage;
    CPierGirderSpacingPage     m_PierGirderSpacingPage;
+
+   // These two pages are used when the pier is interior to a girder group
+   CClosurePourGeometryPage   m_ClosurePourGeometryPage;
+   CGirderSegmentSpacingPage  m_GirderSegmentSpacingPage;
 };
 
 /////////////////////////////////////////////////////////////////////////////

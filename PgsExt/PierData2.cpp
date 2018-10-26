@@ -61,7 +61,9 @@ CPierData2::CPierData2()
    Orientation = Normal;
    Angle       = 0.0;
 
-   m_ConnectionType                    = pgsTypes::Hinge;
+   m_PierConnectionType = pgsTypes::Hinge;
+   m_SegmentConnectionType = pgsTypes::psctContinuousSegment;
+
    m_strOrientation = _T("Normal");
 
    for ( int i = 0; i < 2; i++ )
@@ -138,8 +140,16 @@ bool CPierData2::operator==(const CPierData2& rOther) const
    if ( m_strOrientation != rOther.m_strOrientation )
       return false;
 
-   if ( m_ConnectionType != rOther.m_ConnectionType )
-      return false;
+   if ( IsInteriorPier() )
+   {
+      if ( m_SegmentConnectionType != rOther.m_SegmentConnectionType )
+         return false;
+   }
+   else
+   {
+      if ( m_PierConnectionType != rOther.m_PierConnectionType )
+         return false;
+   }
 
    for ( int i = 0; i < 2; i++ )
    {
@@ -219,9 +229,30 @@ LPCTSTR CPierData2::AsString(pgsTypes::PierConnectionType type)
 
    case pgsTypes::IntegralBeforeDeckHingeAhead:
       return _T("Integral on back side before deck placement; Hinged on ahead side");
+   
+   default:
+      ATLASSERT(0);
 
-   case pgsTypes::ContinuousSegment:
-      return _T("Continuous girder segment");
+   };
+
+   return _T("");
+}
+
+LPCTSTR CPierData2::AsString(pgsTypes::PierSegmentConnectionType type)
+{
+   switch(type)
+   { 
+   case pgsTypes::psctContinousClosurePour:
+      return _T("Continuous Segments w/ Closure Pour");
+
+   case pgsTypes::psctIntegralClosurePour:
+      return _T("Integral Segment w/ Closure Pour");
+
+   case pgsTypes::psctContinuousSegment:
+      return _T("Continuous Segment");
+
+   case pgsTypes::psctIntegralSegment:
+      return _T("Integral Segment");
    
    default:
       ATLASSERT(0);
@@ -274,8 +305,12 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       m_strOrientation = OLE2T(var.bstrVal);
 
       var.vt = VT_I4;
-      hr = pStrLoad->get_Property(_T("ConnectionType"),&var);
-      m_ConnectionType = (pgsTypes::PierConnectionType)var.lVal;
+      hr = pStrLoad->get_Property(_T("PierConnectionType"),&var);
+      m_PierConnectionType = (pgsTypes::PierConnectionType)var.lVal;
+
+      var.vt = VT_I4;
+      hr = pStrLoad->get_Property(_T("SegmentConnectionType"),&var);
+      m_SegmentConnectionType = (pgsTypes::PierSegmentConnectionType)var.lVal;
       
       hr = pStrLoad->BeginUnit(_T("Back"));
 
@@ -580,7 +615,8 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    pStrSave->put_Property(_T("Station"),         CComVariant(m_Station) );
    pStrSave->put_Property(_T("Orientation"),     CComVariant( CComBSTR(m_strOrientation.c_str()) ) );
-   pStrSave->put_Property(_T("ConnectionType"),  CComVariant( m_ConnectionType ) ); // changed from left and right to a single value in version 7
+   pStrSave->put_Property(_T("PierConnectionType"),  CComVariant( m_PierConnectionType ) ); // changed from left and right to a single value in version 7
+   pStrSave->put_Property(_T("SegmentConnectionType"),  CComVariant( m_SegmentConnectionType ) );
 
    pStrSave->BeginUnit(_T("Back"),1.0);
    pStrSave->put_Property(_T("GirderEndDistance"),CComVariant( m_GirderEndDistance[pgsTypes::Back] ) );
@@ -693,12 +729,9 @@ void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
    }
 
    m_Station               = rOther.m_Station;
+   m_strOrientation        = rOther.m_strOrientation;
    Orientation             = rOther.Orientation;
    Angle                   = rOther.Angle;
-   
-   m_ConnectionType        = rOther.m_ConnectionType;
-
-   m_strOrientation        = rOther.m_strOrientation;
 
    for ( int i = 0; i < 2; i++ )
    {
@@ -718,6 +751,22 @@ void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
 
    m_LLDFs = rOther.m_LLDFs;
    m_bDistributionFactorsFromOlderVersion = rOther.m_bDistributionFactorsFromOlderVersion;
+   
+   if ( m_pBridgeDesc )
+   {
+      // If this pier is part of a bridge, use the SetXXXConnectionType method so
+      // girder segments are split/joined as necessary for the new connection types
+      if ( IsBoundaryPier() )
+         SetPierConnectionType(rOther.m_PierConnectionType);
+      else
+         SetSegmentConnectionType(rOther.m_SegmentConnectionType);
+   }
+   else
+   {
+      // If this pier is not part of a bridge, just capture the data
+      m_PierConnectionType    = rOther.m_PierConnectionType;
+      m_SegmentConnectionType = rOther.m_SegmentConnectionType;
+   }
 
    ASSERT_VALID;
 }
@@ -848,20 +897,33 @@ void CPierData2::SetOrientation(LPCTSTR strOrientation)
    m_strOrientation = strOrientation;
 }
 
-pgsTypes::PierConnectionType CPierData2::GetConnectionType() const
+pgsTypes::PierConnectionType CPierData2::GetPierConnectionType() const
 {
-   return m_ConnectionType;
+   return m_PierConnectionType;
 }
 
-void CPierData2::SetConnectionType(pgsTypes::PierConnectionType type)
+void CPierData2::SetPierConnectionType(pgsTypes::PierConnectionType type)
 {
-   pgsTypes::PierConnectionType oldType = m_ConnectionType;
-   m_ConnectionType = type;
+   m_PierConnectionType = type;
+}
+
+pgsTypes::PierSegmentConnectionType CPierData2::GetSegmentConnectionType() const
+{
+   return m_SegmentConnectionType;
+}
+
+void CPierData2::SetSegmentConnectionType(pgsTypes::PierSegmentConnectionType newType)
+{
+   pgsTypes::PierSegmentConnectionType oldType = m_SegmentConnectionType;
+   m_SegmentConnectionType = newType;
+
+   if ( oldType == newType )
+      return; // nothing is changing
 
    if ( !m_pBridgeDesc )
       return; // can't do anything else if this pier isn't attached to a bridge
 
-   if ( type == pgsTypes::ContinuousSegment )
+   if ( newType == pgsTypes::psctContinuousSegment || newType == pgsTypes::psctIntegralSegment )
    {
       // connection has changed to continuous segments... join segments at this pier
       CGirderGroupData* pGroup = this->GetGirderGroup(pgsTypes::Ahead);
@@ -874,7 +936,7 @@ void CPierData2::SetConnectionType(pgsTypes::PierConnectionType type)
          pGirder->JoinSegmentsAtPier(m_PierIdx);
       }
    }
-   else if ( oldType == pgsTypes::ContinuousSegment )
+   else if ( oldType == pgsTypes::psctContinuousSegment || oldType == pgsTypes::psctIntegralSegment )
    {
       // connection has changed from continuous segments... split segments at this pier
 
@@ -941,7 +1003,13 @@ const CGirderSpacing2* CPierData2::GetGirderSpacing(pgsTypes::PierFaceType pierF
 
 const CClosurePourData* CPierData2::GetClosurePour(GirderIndexType gdrIdx) const
 {
-   if ( m_ConnectionType == pgsTypes::ContinuousSegment )
+   if ( IsBoundaryPier() )
+   {
+      ATLASSERT(false); // why are you asking for a closure pour at a boundary pier? it doesn't have one
+      return NULL;
+   }
+
+   if ( m_SegmentConnectionType == pgsTypes::psctContinuousSegment || m_SegmentConnectionType == pgsTypes::psctIntegralSegment )
       return NULL;
 
    // If there is a closure at this pier, then this pier is in the middle of a group
@@ -1009,7 +1077,6 @@ void CPierData2::SetDiaphragmLoadLocation(pgsTypes::PierFaceType pierFace,Float6
    m_DiaphragmLoadLocation[pierFace] = loc;
 }
 
-
 Float64 CPierData2::GetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
 {
    LLDF& rlldf = GetLLDF(gdrIdx);
@@ -1072,23 +1139,68 @@ void CPierData2::SetLLDFReaction(pgsTypes::GirderLocation gdrloc, pgsTypes::Limi
    }
 }
 
+bool CPierData2::IsContinuousConnection() const
+{
+   if ( IsInteriorPier() )
+   {
+      return true; // connection is always continuous/integral at interior piers
+   }
+   else
+   {
+      ATLASSERT(IsBoundaryPier());
+      if ( m_PierConnectionType == pgsTypes::ContinuousAfterDeck ||
+           m_PierConnectionType == pgsTypes::ContinuousBeforeDeck ||
+           m_PierConnectionType == pgsTypes::IntegralAfterDeck ||
+           m_PierConnectionType == pgsTypes::IntegralBeforeDeck )
+      {
+         return true;
+      }
+      else
+      {
+         return false;
+      }
+   }
+}
+
 bool CPierData2::IsContinuous() const
 {
-   return m_ConnectionType == pgsTypes::ContinuousBeforeDeck || m_ConnectionType == pgsTypes::ContinuousAfterDeck || m_ConnectionType == pgsTypes::ContinuousSegment;
+   if ( IsInteriorPier() )
+   {
+      return (m_SegmentConnectionType == pgsTypes::psctContinousClosurePour || m_SegmentConnectionType == pgsTypes::psctContinuousSegment);
+   }
+   else
+   {
+      return (m_PierConnectionType == pgsTypes::ContinuousBeforeDeck || m_PierConnectionType == pgsTypes::ContinuousAfterDeck);
+   }
 }
 
 void CPierData2::IsIntegral(bool* pbLeft,bool* pbRight) const
 {
-   if (m_ConnectionType == pgsTypes::IntegralBeforeDeck || m_ConnectionType == pgsTypes::IntegralAfterDeck)
+   if ( IsInteriorPier() )
    {
-      *pbLeft  = true;
-      *pbRight = true;
+      if (m_SegmentConnectionType == pgsTypes::psctIntegralClosurePour || m_SegmentConnectionType == pgsTypes::psctIntegralSegment)
+      {
+         *pbLeft  = true;
+         *pbRight = true;
+      }
+      else
+      {
+         *pbLeft  = false;
+         *pbRight = false;
+      }
    }
    else
    {
-      *pbLeft  = m_ConnectionType == pgsTypes::IntegralAfterDeckHingeAhead || m_ConnectionType == pgsTypes::IntegralBeforeDeckHingeAhead;
-
-      *pbRight = m_ConnectionType == pgsTypes::IntegralAfterDeckHingeBack  || m_ConnectionType == pgsTypes::IntegralBeforeDeckHingeBack;
+      if (m_PierConnectionType == pgsTypes::IntegralBeforeDeck || m_PierConnectionType == pgsTypes::IntegralAfterDeck)
+      {
+         *pbLeft  = true;
+         *pbRight = true;
+      }
+      else
+      {
+         *pbLeft  = m_PierConnectionType == pgsTypes::IntegralAfterDeckHingeAhead || m_PierConnectionType == pgsTypes::IntegralBeforeDeckHingeAhead;
+         *pbRight = m_PierConnectionType == pgsTypes::IntegralAfterDeckHingeBack  || m_PierConnectionType == pgsTypes::IntegralBeforeDeckHingeBack;
+      }
    }
 }
 
@@ -1099,7 +1211,21 @@ bool CPierData2::IsAbutment() const
 
 bool CPierData2::IsPier() const
 {
-   return (m_pPrevSpan != NULL && m_pNextSpan != NULL) ? true : false;
+   return !IsAbutment();
+}
+
+bool CPierData2::IsInteriorPier() const
+{
+   // If the girder group on both sides of the pier is the same, then this pier
+   // is interior to the group.
+   ATLASSERT(m_pBridgeDesc != NULL); // pier data must be part of a bridge model
+   return (GetPrevGirderGroup() == GetNextGirderGroup() ? true : false);
+
+}
+
+bool CPierData2::IsBoundaryPier() const
+{
+   return !IsInteriorPier();
 }
 
 CPierData2::LLDF& CPierData2::GetLLDF(GirderIndexType igs) const
@@ -1221,11 +1347,6 @@ GirderIndexType CPierData2::GetLldfGirderCount() const
    }
 }
 
-void CPierData2::ChangeConnectionType(pgsTypes::PierConnectionType connectionType)
-{
-   m_ConnectionType = connectionType;
-}
-
 HRESULT CPierData2::LoadOldPierData(Float64 version,IStructuredLoad* pStrLoad,IProgress* pProgress,const std::_tstring& strUnitName)
 {
    // Input is in an old format (the format is PGSuper before version 3.0 when we added PGSplice)
@@ -1253,7 +1374,8 @@ void CPierData2::SetPierData(CPierData* pPier)
 
    SetOrientation(pPier->m_strOrientation.c_str());
    SetStation(pPier->m_Station);
-   SetConnectionType(pPier->m_ConnectionType);
+   SetPierConnectionType(pPier->m_ConnectionType);
+   //SetSegmentConnectionType(pPier->m_SegmentConnectionType);
 
    SetGirderEndDistance(pgsTypes::Back, pPier->m_GirderEndDistance[pgsTypes::Back], pPier->m_EndDistanceMeasurementType[pgsTypes::Back]);
    SetGirderEndDistance(pgsTypes::Ahead,pPier->m_GirderEndDistance[pgsTypes::Ahead],pPier->m_EndDistanceMeasurementType[pgsTypes::Ahead]);

@@ -1016,7 +1016,6 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       ATLASSERT(0);
    }
 
-   ASSERT_VALID;
    return S_OK;
 }
 
@@ -1132,8 +1131,6 @@ void CGirderGroupData::MakeCopy(const CGirderGroupData& rOther,bool bCopyDataOnl
       const GirderTypeGroup& grp = *grpIter;
       m_GirderTypeGroups.push_back(grp);
    }
-
-   ASSERT_VALID;
 }
 
 void CGirderGroupData::MakeAssignment(const CGirderGroupData& rOther)
@@ -1213,11 +1210,13 @@ void CGirderGroupData::AssertValid()
    if ( m_pBridge && m_pPier[pgsTypes::metStart] )
    {
       ATLASSERT( m_pBridge == m_pPier[pgsTypes::metStart]->GetBridgeDescription() );
+      ATLASSERT( m_pPier[pgsTypes::metStart]->IsBoundaryPier() );
    }
 
    if ( m_pBridge && m_pPier[pgsTypes::metEnd] )
    {
       ATLASSERT( m_pBridge == m_pPier[pgsTypes::metEnd]->GetBridgeDescription() );
+      ATLASSERT( m_pPier[pgsTypes::metEnd]->IsBoundaryPier() );
    }
 }
 #endif // _DEBUG

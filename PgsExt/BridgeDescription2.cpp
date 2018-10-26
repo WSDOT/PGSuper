@@ -1000,7 +1000,7 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
          pGroup->SetPier(pgsTypes::metStart,pNewPier);
 
          CPierData2* pRefPier = m_Piers[refPierIdx+1]; // +1 because we added the new pier to index 0 of the array
-         pRefPier->SetConnectionType(pgsTypes::ContinuousSegment);
+         pRefPier->SetSegmentConnectionType(pgsTypes::psctContinuousSegment);
       }
       else if ( refPierIdx == m_Piers.size()-2 && pierFace == pgsTypes::Ahead ) // -2 because we added a pier (otherwise it would be -1)
       {
@@ -1010,13 +1010,13 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
          pGroup->SetPier(pgsTypes::metEnd,pNewPier);
 
          CPierData2* pRefPier = m_Piers[refPierIdx];
-         pRefPier->SetConnectionType(pgsTypes::ContinuousSegment);
+         pRefPier->SetSegmentConnectionType(pgsTypes::psctContinuousSegment);
       }
       else
       {
          // new span/pier are inside of a group. the end piers of the group don't change
          // ie. do nothing
-         pNewPier->SetConnectionType(pgsTypes::ContinuousSegment);
+         pNewPier->SetSegmentConnectionType(pgsTypes::psctContinuousSegment);
       }
 
       // A new group was not created... therefore the new span was insert into an existing
@@ -1114,7 +1114,7 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
 
    // If the pier that is being removed is at the boundary of a group, updated the group boundary piers
    CPierData2* pRemovePier = m_Piers[removePierIdx];
-   if ( pRemovePier->GetPrevGirderGroup() != pRemovePier->GetNextGirderGroup() )
+   if ( pRemovePier->IsBoundaryPier() )
    {
       CPierData2* pCommonPier = (rmPierType == pgsTypes::PrevPier ? m_Piers[removePierIdx+1] : m_Piers[removePierIdx-1]);
       if ( pRemovePier->GetPrevGirderGroup() )
@@ -1125,14 +1125,6 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
       if ( pRemovePier->GetNextGirderGroup() )
       {
          pRemovePier->GetNextGirderGroup()->SetPier(pgsTypes::metStart,pCommonPier);
-      }
-
-      if ( pCommonPier->GetConnectionType() == pgsTypes::ContinuousSegment )
-      {
-         // can't have a continuous segment going between groups
-         pCommonPier->ChangeConnectionType(pgsTypes::Hinge); // back door change of connection type
-                                                             // SetConnectionType alters the girder segments... we don't want to 
-                                                             // do this because pGirder->RemoveSpan() above does this
       }
    }
 
@@ -1884,6 +1876,34 @@ bool CBridgeDescription2::IsOnBridge(Float64 station) const
    return ::InRange(startStation,station,endStation);
 }
 
+PierIndexType CBridgeDescription2::IsPierLocation(Float64 station,Float64 tolerance) const
+{
+   std::vector<CPierData2*>::const_iterator iter(m_Piers.begin());
+   std::vector<CPierData2*>::const_iterator end(m_Piers.end());
+   for ( ; iter != end; iter++ )
+   {
+      const CPierData2* pPier = *iter;
+      if ( IsEqual(station,pPier->GetStation(),tolerance) )
+         return pPier->GetIndex();
+   }
+
+   return INVALID_INDEX;
+}
+
+SupportIndexType CBridgeDescription2::IsTemporarySupportLocation(Float64 station,Float64 tolerance) const
+{
+   std::vector<CTemporarySupportData*>::const_iterator iter(m_TemporarySupports.begin());
+   std::vector<CTemporarySupportData*>::const_iterator end(m_TemporarySupports.end());
+   for ( ; iter != end; iter++ )
+   {
+      const CTemporarySupportData* pTS = *iter;
+      if ( IsEqual(station,pTS->GetStation(),tolerance) )
+         return pTS->GetIndex();
+   }
+
+   return INVALID_INDEX;
+}
+
 void CBridgeDescription2::UseSameNumberOfGirdersInAllGroups(bool bSame) 
 {
    m_bSameNumberOfGirders = bSame;
@@ -2534,45 +2554,46 @@ void CBridgeDescription2::ReconcileEdits(IBroker* pBroker, const CBridgeDescript
    //}
 }
 
-std::vector<pgsTypes::PierConnectionType> CBridgeDescription2::GetConnectionTypes(PierIndexType pierIdx) const
+std::vector<pgsTypes::PierConnectionType> CBridgeDescription2::GetPierConnectionTypes(PierIndexType pierIdx) const
 {
    std::vector<pgsTypes::PierConnectionType> connectionTypes;
 
    const CPierData2* pPier = GetPier(pierIdx);
+   ATLASSERT(pPier->IsBoundaryPier()); // this must be a boundary pier
 
-   const CGirderGroupData* pPrevGroup = pPier->GetPrevGirderGroup();
-   const CGirderGroupData* pNextGroup = pPier->GetNextGirderGroup();
+   // This pier is on a group boundary (two groups frame into this pier).
+   // All connection types are valid except for continuous segment.
+   connectionTypes.push_back(pgsTypes::Hinge);
+   connectionTypes.push_back(pgsTypes::Roller);
+   connectionTypes.push_back(pgsTypes::IntegralAfterDeck);
+   connectionTypes.push_back(pgsTypes::IntegralBeforeDeck);
 
-   if ( pPrevGroup == pNextGroup )
+   if ( pPier->GetPrevSpan() && pPier->GetNextSpan() )
    {
-      // This pier in the middle of a group
+      // all these connection types require that there is a span on 
+      // both sides of this pier
       connectionTypes.push_back(pgsTypes::ContinuousAfterDeck);
       connectionTypes.push_back(pgsTypes::ContinuousBeforeDeck);
-      connectionTypes.push_back(pgsTypes::IntegralAfterDeck);
-      connectionTypes.push_back(pgsTypes::IntegralBeforeDeck);
-      connectionTypes.push_back(pgsTypes::ContinuousSegment);
+      connectionTypes.push_back(pgsTypes::IntegralAfterDeckHingeBack);
+      connectionTypes.push_back(pgsTypes::IntegralBeforeDeckHingeBack);
+      connectionTypes.push_back(pgsTypes::IntegralAfterDeckHingeAhead);
+      connectionTypes.push_back(pgsTypes::IntegralBeforeDeckHingeAhead);
    }
-   else
-   {
-      // This pier is on a group boundary (two groups frame into this pier).
-      // All connection types are valid except for continuous segment.
-      connectionTypes.push_back(pgsTypes::Hinge);
-      connectionTypes.push_back(pgsTypes::Roller);
-      connectionTypes.push_back(pgsTypes::IntegralAfterDeck);
-      connectionTypes.push_back(pgsTypes::IntegralBeforeDeck);
 
-      if ( pPier->GetPrevSpan() && pPier->GetNextSpan() )
-      {
-         // all these connection types require that there is a span on 
-         // both sides of this pier
-         connectionTypes.push_back(pgsTypes::ContinuousAfterDeck);
-         connectionTypes.push_back(pgsTypes::ContinuousBeforeDeck);
-         connectionTypes.push_back(pgsTypes::IntegralAfterDeckHingeBack);
-         connectionTypes.push_back(pgsTypes::IntegralBeforeDeckHingeBack);
-         connectionTypes.push_back(pgsTypes::IntegralAfterDeckHingeAhead);
-         connectionTypes.push_back(pgsTypes::IntegralBeforeDeckHingeAhead);
-      }
-   }
+   return connectionTypes;
+}
+
+std::vector<pgsTypes::PierSegmentConnectionType> CBridgeDescription2::GetPierSegmentConnectionTypes(PierIndexType pierIdx) const
+{
+   std::vector<pgsTypes::PierSegmentConnectionType> connectionTypes;
+
+   const CPierData2* pPier = GetPier(pierIdx);
+   ATLASSERT(pPier->IsInteriorPier()); // this must be an interior pier
+
+   connectionTypes.push_back(pgsTypes::psctContinousClosurePour);
+   connectionTypes.push_back(pgsTypes::psctIntegralClosurePour);
+   connectionTypes.push_back(pgsTypes::psctContinuousSegment);
+   connectionTypes.push_back(pgsTypes::psctIntegralSegment);
 
    return connectionTypes;
 }
@@ -3083,28 +3104,6 @@ void CBridgeDescription2::AssertValid()
          if ( pNextGroup->GetGirderCount() != 0 )
             _ASSERT( pNextGroup->GetGirderCount() == pThisGroup->GetPier(pgsTypes::metEnd)->GetGirderSpacing(pgsTypes::Ahead)->GetSpacingCount()+1);
       }
-   }
-
-
-   // Check pier boundary conditions. If a segment is continuous over a pier
-   // then the boundary condition must be pgsTypes::ContinuousSegment
-   for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
-   {
-      bool bIsValid = false;
-      CPierData2* pPier = GetPier(pierIdx);
-      pgsTypes::PierConnectionType connectionType = pPier->GetConnectionType();
-      std::vector<pgsTypes::PierConnectionType> connectionTypes( GetConnectionTypes(pierIdx) );
-      std::vector<pgsTypes::PierConnectionType>::iterator connIter(connectionTypes.begin());
-      std::vector<pgsTypes::PierConnectionType>::iterator connIterEnd(connectionTypes.end());
-      for ( ; connIter != connIterEnd; connIter++ )
-      {
-         if ( connectionType == *connIter )
-         {
-            bIsValid = true;
-            break;
-         }
-      }
-      ATLASSERT(bIsValid);
    }
 }
 #endif

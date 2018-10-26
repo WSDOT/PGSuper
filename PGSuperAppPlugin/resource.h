@@ -24,7 +24,7 @@
 #define IDR_PGSPLICEAPPPLUGINIMPL       104
 #define IDR_PGSUPERPROJECTIMPORTERAPPPLUGIN 105
 #define IDD_CLOSURE_STIRRUPS            106
-#define IDD_TS_GEOMETRY                 107
+#define IDD_CP_GEOMETRY                 107
 #define IDR_PGSPLICECOMPONENTINFO       110
 #define IDR_HTML_GIRDERSEGMENTSTRANDPAGE 112
 #define IDR_PGSUPER                     130
@@ -57,7 +57,6 @@
 #define IDD_BRIDGE_EDITOR_SECTION_PAGE  158
 #define IDD_GIRDER_EDITOR_SECTION_PAGE  160
 #define IDD_GIRDER_EDITOR_ELEVATION_PAGE 161
-#define IDR_GIRDER_SECTION              162
 #define IDR_BRIDGE_PLAN_CTX             163
 #define IDB_IN_USE                      164
 #define IDB_IN_USE_AND_READ_ONLY        165
@@ -210,7 +209,9 @@
 #define IDD_CAST_DECK                   357
 #define IDD_POSTTENSION_PARAMETERS      358
 #define IDD_PRETENSION_PARAMETERS       359
+#define IDD_ACI_PARAMETERS              362
 #define IDD_GIRDER_SELECT_STRANDS       390
+#define IDD_PIERCONNECTIONS2            391
 #define IDR_PGSUPER_TEMPLATE_ICON       500
 #define IDR_PGSPLICE_TEMPLATE_ICON      501
 #define IDD_ABOUTBOX                    999
@@ -445,6 +446,7 @@
 #define IDC_COPY                        1163
 #define IDC_MOVE_RIGHT                  1163
 #define IDC_COPY_TO_END                 1163
+#define IDC_COMPUTE                     1163
 #define IDC_PRINT                       1164
 #define IDC_SELECT_ALL2                 1164
 #define IDC_CLEAR_ALL                   1164
@@ -1349,7 +1351,9 @@
 #define IDC_END_BLOCK_TRANSITION_LABEL  1756
 #define IDC_END_BLOCK_WIDTH_LABEL       1757
 #define IDC_RIGHT_FC_LABEL              1758
+#define IDC_T1                          1758
 #define IDC_RIGHT_FC                    1759
+#define IDC_RESULT                      1759
 #define IDC_RIGHT_FC_UNIT               1760
 #define IDC_RIGHT_MOD_E                 1761
 #define IDC_RIGHT_EC                    1762
@@ -1534,15 +1538,15 @@
 #define ID_PROJECT_LOSSES               36987
 #define ID_VIEW_GRAPHS                  36988
 #define ID_GRAPHS_                      36989
-#define ID_HELP_ABOUT            36990
+#define ID_HELP_ABOUT                   36990
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        362
+#define _APS_NEXT_RESOURCE_VALUE        363
 #define _APS_NEXT_COMMAND_VALUE         36991
-#define _APS_NEXT_CONTROL_VALUE         1758
+#define _APS_NEXT_CONTROL_VALUE         1760
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

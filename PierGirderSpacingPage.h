@@ -85,6 +85,9 @@ public:
    Float64 m_SlabOffset[2];
    CString m_strSlabOffsetCache[2];
 
+   pgsTypes::SupportedBeamSpacing m_SpacingType;
+   pgsTypes::MeasurementLocation m_GirderSpacingMeasurementLocation;
+
 
    void Init(const CPierData2* pPier);
    bool AllowConnectionChange(pgsTypes::PierFaceType side, const CString& conectionName);
@@ -172,7 +175,7 @@ protected:
                      Back, // last pier, spacing on back side only
                      Ahead, // first pier, spacing on ahead side only
                      Both}; // spacing on both sides
-   SpacingType m_SpacingType;
+   SpacingType m_SpacingTypeMode;
 };
 
 //{{AFX_INSERT_LOCATION}}

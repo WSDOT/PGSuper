@@ -71,7 +71,8 @@ bool txnInsertSpan::Execute()
 
    // save the connection type, sometimes it doesn't get automatically reverted during an UNDO
    const CPierData2* pPier = pIBridgeDesc->GetPier(m_RefPierIdx);
-   m_RefPierConnectionType = pPier->GetConnectionType();
+   ATLASSERT(pPier->IsBoundaryPier());
+   m_RefPierConnectionType = pPier->GetPierConnectionType();
 
    // Default length for new spans
    pIBridgeDesc->InsertSpan(m_RefPierIdx,m_PierFace,m_SpanLength,NULL,NULL,m_bCreateNewGroup,m_EventIdx);
@@ -96,7 +97,7 @@ void txnInsertSpan::Undo()
    pIBridgeDesc->DeletePier(newPierIdx,newPierFace);
 
    CPierData2 pier = *pIBridgeDesc->GetPier(m_RefPierIdx);
-   pier.SetConnectionType(m_RefPierConnectionType);
+   pier.SetPierConnectionType(m_RefPierConnectionType);
    pIBridgeDesc->SetPierByIndex(m_RefPierIdx,pier);
 
 
@@ -186,7 +187,8 @@ bool txnDeleteSpan::Execute()
 
    // save the connection type, sometimes it doesn't get automatically reverted during an UNDO
    const CPierData2* pPier = pIBridgeDesc->GetPier(m_RefPierIdx);
-   m_RefPierConnectionType = pPier->GetConnectionType();
+   ATLASSERT(pPier->IsBoundaryPier());
+   m_RefPierConnectionType = pPier->GetPierConnectionType();
 
    // Delete the pier, span is deleted along with it
    pIBridgeDesc->DeletePier(m_RefPierIdx,m_PierFace);
@@ -235,7 +237,7 @@ void txnDeleteSpan::Undo()
 
 
    CPierData2 pier = *pIBridgeDesc->GetPier(m_RefPierIdx);
-   pier.SetConnectionType(m_RefPierConnectionType);
+   pier.SetPierConnectionType(m_RefPierConnectionType);
    pIBridgeDesc->SetPierByIndex(m_RefPierIdx,pier);
 
    delete m_pDeletedSpan;

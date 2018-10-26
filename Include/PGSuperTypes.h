@@ -103,21 +103,21 @@ struct pgsTypes
    // describes how a precast segment varies along its length
    typedef enum SegmentVariationType
    {
-      Linear,        // linear variation from one end to the other
-      Parabolic,     // similar to linear, except with a parabolic transition
-      DoubleLinear,    // linear segments on each side of pier
-      DoubleParabolic, // parabolic segments on each side of pier
-      None           // segment is constant depth and has dimensions as specified in the girder library
+      svtLinear,        // linear variation from one end to the other
+      svtParabolic,     // similar to linear, except with a parabolic transition
+      svtDoubleLinear,    // linear segments on each side of pier
+      svtDoubleParabolic, // parabolic segments on each side of pier
+      svtNone           // segment is constant depth and has dimensions as specified in the girder library
    } SegmentVariationType;
 
    // enum for the zones in a girder segment
    // applicability depends on section variation type
    typedef enum SegmentZoneType
    {
-      LeftPrismatic,
-      LeftTapered,
-      RightTapered,
-      RightPrismatic
+      sztLeftPrismatic,
+      sztLeftTapered,
+      sztRightTapered,
+      sztRightPrismatic
    } SegmentZoneType;
 
    enum DiaphragmType
@@ -146,10 +146,22 @@ struct pgsTypes
       StrongBack
    };
 
+   // Defines segment to segment connection types
+   // at a temporary support.
    enum SegmentConnectionType
    {
       sctClosurePour,
       sctContinuousSegment
+   };
+
+   // Defines segment to segment connection types
+   // at an intermediate/permanent pier.
+   enum PierSegmentConnectionType
+   {
+      psctContinousClosurePour, // CIP closure pour that makes the adjacent segments continuous but there is no moment connection with the pier
+      psctIntegralClosurePour,  // CIP closure pour that makes the adjacent segments and pier integral
+      psctContinuousSegment,    // Precast segment spans over pier with no moment connection to the pier
+      psctIntegralSegment       // Precast segment spans over pier and has a moment connection with the pier
    };
 
    enum StressType { Tension, Compression };
@@ -354,8 +366,7 @@ struct pgsTypes
                              IntegralAfterDeckHingeBack  = 7, // interior piers only, left or right hinge
                              IntegralBeforeDeckHingeBack = 8,
                              IntegralAfterDeckHingeAhead = 9,
-                             IntegralBeforeDeckHingeAhead = 10,
-                             ContinuousSegment = 11 // for spliced girder segments that are continuous over a support
+                             IntegralBeforeDeckHingeAhead = 10
    };
 
    // Method for computing prestress transfer length
@@ -990,6 +1001,8 @@ virtual void MakeAssignment( const GDRCONFIG& rOther )
 
 struct HANDLINGCONFIG
 {
+   bool bIgnoreGirderConfig; // set true, the GdrConfig is ignored and the current parameters are used
+                             // only the overhang parameters are used from this config.
    GDRCONFIG GdrConfig;
    Float64 LeftOverhang;
    Float64 RightOverhang;  // overhang closest to cab of truck when used from hauling
@@ -1382,22 +1395,6 @@ inline CComBSTR GetLiveLoadTypeName(pgsTypes::LoadRatingType ratingType)
       bstrName += CComBSTR(" - Operating");
 
    return bstrName;
-}
-
-inline bool IsContinuousConnection(pgsTypes::PierConnectionType type)
-{
-   if ( type == pgsTypes::ContinuousAfterDeck ||
-        type == pgsTypes::ContinuousBeforeDeck ||
-        type == pgsTypes::ContinuousSegment ||
-        type == pgsTypes::IntegralAfterDeck ||
-        type == pgsTypes::IntegralBeforeDeck )
-   {
-      return true;
-   }
-   else
-   {
-      return false;
-   }
 }
 
 #endif // INCLUDED_PGSUPERTYPES_H_

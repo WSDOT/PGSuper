@@ -66,4 +66,6 @@ public:
    void AssertValid() const;
    void Dump(CDumpContext& dc) const;
 #endif //_DEBUG
+
+   friend CAnalysisResultsGraphBuilder;
 };

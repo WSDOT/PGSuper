@@ -30,6 +30,7 @@ class CTemporarySupportData;
 interface IEAFDisplayUnits;
 
 #include <PsgLib\ConnectionLibraryEntry.h>
+#include <PgsExt\ConcreteMaterial.h>
 
 #define LABEL_GIRDER(_g_) pgsGirderLabel::GetGirderLabel(_g_).c_str()
 #define LABEL_GROUP(_g_) (GroupIndexType)(_g_ + 1)
@@ -73,3 +74,5 @@ std::_tstring PGSEXTFUNC GetBearingOffsetMeasureString(ConnectionLibraryEntry::B
 
 CString PGSEXTFUNC GetLabel(const CPierData2* pPier,IEAFDisplayUnits* pDisplayUnits);
 CString PGSEXTFUNC GetLabel(const CTemporarySupportData* pTS,IEAFDisplayUnits* pDisplayUnits);
+
+CString PGSEXTFUNC ConcreteDescription(const CConcreteMaterial& concrete);

@@ -130,7 +130,8 @@ void CBridgeDescDlg::DoDataExchange(CDataExchange* pDX)
       {
          CDeckRebarData::NegMomentRebarData& nmRebarData = *iter;
          CPierData2* pPier = m_BridgeDesc.GetPier(nmRebarData.PierIdx);
-         pgsTypes::PierConnectionType connectionType = pPier->GetConnectionType();
+         ATLASSERT(pPier->IsBoundaryPier());
+         pgsTypes::PierConnectionType connectionType = pPier->GetPierConnectionType();
          if ( connectionType == pgsTypes::Hinge || connectionType == pgsTypes::Roller )
          {
             CString strMsg;

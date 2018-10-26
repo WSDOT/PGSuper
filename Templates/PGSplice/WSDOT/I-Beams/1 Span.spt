@@ -1698,7 +1698,8 @@
               <ID>0</ID>
               <Station>0</Station>
               <Orientation>NORMAL</Orientation>
-              <ConnectionType>6</ConnectionType>
+              <PierConnectionType>6</PierConnectionType>
+              <SegmentConnectionType>0</SegmentConnectionType>
               <Back version="1">
                 <GirderEndDistance>0.52069999999999994</GirderEndDistance>
                 <EndDistanceMeasurementType>FromBearingNormalToPier</EndDistanceMeasurementType>
@@ -1728,7 +1729,8 @@
               <ID>1</ID>
               <Station>68.579999999999998</Station>
               <Orientation>NORMAL</Orientation>
-              <ConnectionType>1</ConnectionType>
+              <PierConnectionType>1</PierConnectionType>
+              <SegmentConnectionType>0</SegmentConnectionType>
               <Back version="1">
                 <GirderEndDistance>0.30479999999999996</GirderEndDistance>
                 <EndDistanceMeasurementType>FromBearingNormalToPier</EndDistanceMeasurementType>

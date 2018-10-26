@@ -114,6 +114,8 @@ protected:
    void FillEventList();
    EventIndexType CreateEvent();
 
+   Float64 m_AgeAtContinuity; // Age when deck becomes composite with girders (days)
+
 public:
    afx_msg void OnStnClickedOlayDensityUnit();
    afx_msg void OnBnClickedOlayWeightLabel();

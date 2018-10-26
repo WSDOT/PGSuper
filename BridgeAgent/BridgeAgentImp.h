@@ -312,6 +312,11 @@ public:
    virtual bool GetSkewAngle(Float64 station,LPCTSTR strOrientation,Float64* pSkew);
    virtual bool ProcessNegativeMoments(SpanIndexType spanIdx);
    virtual pgsTypes::PierConnectionType GetPierConnectionType(PierIndexType pierIdx);
+   virtual pgsTypes::PierSegmentConnectionType GetSegmentConnectionType(PierIndexType pierIdx);
+   virtual bool IsAbutment(PierIndexType pierIdx);
+   virtual bool IsPier(PierIndexType pierIdx);
+   virtual bool IsInteriorPier(PierIndexType pierIdx);
+   virtual bool IsBoundaryPier(PierIndexType pierIdx);
    virtual void GetTemporarySupportLocation(SupportIndexType tsIdx,GirderIndexType gdrIdx,SpanIndexType* pSpanIdx,Float64* pDistFromStartOfSpan);
    virtual bool GetTemporarySupportLocation(SupportIndexType tsIdx,const CSegmentKey& segmentKey,Float64* pDistFromStartOfSegment);
    virtual Float64 GetTemporarySupportLocation(SupportIndexType tsIdx,GirderIndexType gdrIdx);

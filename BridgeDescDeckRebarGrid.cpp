@@ -115,10 +115,10 @@ void CBridgeDescDeckRebarGrid::AddRow()
    CDeckRebarData::NegMomentRebarData rebarData;
 
    // find the first continuous pier
-   for ( PierIndexType pierIdx = 0; pierIdx < pGrandParent->m_BridgeDesc.GetPierCount(); pierIdx++ )
+   PierIndexType nPiers = pGrandParent->m_BridgeDesc.GetPierCount();
+   for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
    {
-      pgsTypes::PierConnectionType connectionType = pGrandParent->m_BridgeDesc.GetPier(pierIdx)->GetConnectionType();
-      if ( connectionType != pgsTypes::Hinge && connectionType != pgsTypes::Roller )
+      if ( pGrandParent->m_BridgeDesc.GetPier(pierIdx)->IsContinuousConnection() )
       {
          rebarData.PierIdx = pierIdx;
          break;
@@ -278,7 +278,7 @@ void CBridgeDescDeckRebarGrid::UpdatePierList()
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
    {
       const CPierData2* pPier = pGrandParent->m_BridgeDesc.GetPier(pierIdx);
-      if ( pPier->GetConnectionType() != pgsTypes::Hinge && pPier->GetConnectionType() != pgsTypes::Roller )
+      if ( pPier->IsContinuousConnection() )
       {
          // only include the pier in the drop down list if it is continuous
          if ( idx == 0 )
@@ -490,10 +490,10 @@ void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::Neg
    Float64 cutoff = rebarData.LeftCutoff;
    cutoff = ::ConvertFromSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,6),cutoff);
-   if ( pPier->GetConnectionType() == pgsTypes::Hinge || 
-        pPier->GetConnectionType() == pgsTypes::Roller ||
-        pPier->GetConnectionType() == pgsTypes::IntegralAfterDeckHingeBack || 
-        pPier->GetConnectionType() == pgsTypes::IntegralBeforeDeckHingeBack 
+   if ( pPier->GetPierConnectionType() == pgsTypes::Hinge || 
+        pPier->GetPierConnectionType() == pgsTypes::Roller ||
+        pPier->GetPierConnectionType() == pgsTypes::IntegralAfterDeckHingeBack || 
+        pPier->GetPierConnectionType() == pgsTypes::IntegralBeforeDeckHingeBack 
       )
    {
       SetStyleRange(CGXRange(nRow,6), CGXStyle()
@@ -516,10 +516,10 @@ void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::Neg
    cutoff = rebarData.RightCutoff;
    cutoff = ::ConvertFromSysUnits(cutoff,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,7),cutoff);
-   if ( pPier->GetConnectionType() == pgsTypes::Hinge || 
-        pPier->GetConnectionType() == pgsTypes::Roller ||
-        pPier->GetConnectionType() == pgsTypes::IntegralAfterDeckHingeAhead || 
-        pPier->GetConnectionType() == pgsTypes::IntegralBeforeDeckHingeAhead 
+   if ( pPier->GetPierConnectionType() == pgsTypes::Hinge || 
+        pPier->GetPierConnectionType() == pgsTypes::Roller ||
+        pPier->GetPierConnectionType() == pgsTypes::IntegralAfterDeckHingeAhead || 
+        pPier->GetPierConnectionType() == pgsTypes::IntegralBeforeDeckHingeAhead 
       )
    {
       SetStyleRange(CGXRange(nRow,7), CGXStyle()
@@ -626,8 +626,9 @@ BOOL CBridgeDescDeckRebarGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       CBridgeDescDlg* pGrandParent = (CBridgeDescDlg*)(pParent->GetParent());
       ASSERT( pGrandParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
       const CPierData2* pPier = pGrandParent->m_BridgeDesc.GetPier(pierIdx);
+      ATLASSERT( pPier->IsBoundaryPier() );
 
-      if ( pPier->GetConnectionType() == pgsTypes::Hinge || pPier->GetConnectionType() == pgsTypes::Roller )
+      if ( pPier->GetPierConnectionType() == pgsTypes::Hinge || pPier->GetPierConnectionType() == pgsTypes::Roller )
       {
          CString strMsg;
          strMsg.Format(_T("Pier %d has a hinge/roller type connection. It cannot have supplimental reinforcement. Remove this row from the Supplemental Reinforcement Grid"),LABEL_PIER(pierIdx));

@@ -1509,7 +1509,7 @@ void CAnalysisAgentImp::BuildBridgeSiteModel(GirderIndexType gdr,bool bContinuou
                const CPierData2* pPier;
                const CTemporarySupportData* pTS;
                pSegment->GetStartSupport(&pPier,&pTS);
-               if ( (!bContinuousModel || pPier && !::IsContinuousConnection(pPier->GetConnectionType())) && !bModelLeftCantilever )
+               if ( (!bContinuousModel || pPier && !pPier->IsContinuousConnection()) && !bModelLeftCantilever )
                {
                   ssmbr->put_LinkMember(VARIANT_TRUE);
                }
@@ -1520,6 +1520,7 @@ void CAnalysisAgentImp::BuildBridgeSiteModel(GirderIndexType gdr,bool bContinuou
             ssms->Add(ssmbr);
             if ( IsZero(L1) )
                SetBoundaryConditions(bContinuousModel,pTimelineMgr,grpIdx,pSegment,pgsTypes::metStart,ssmbr);
+
             if ( IsZero(L3) )
                SetBoundaryConditions(bContinuousModel,pTimelineMgr,grpIdx,pSegment,pgsTypes::metEnd,  ssmbr);
 
@@ -1537,14 +1538,18 @@ void CAnalysisAgentImp::BuildBridgeSiteModel(GirderIndexType gdr,bool bContinuou
                const CPierData2* pPier;
                const CTemporarySupportData* pTS;
                pSegment->GetEndSupport(&pPier,&pTS);
-               if ( (!bContinuousModel || pPier && !::IsContinuousConnection(pPier->GetConnectionType())) && !bModelRightCantilever )
+               if ( (!bContinuousModel || pPier && !pPier->IsContinuousConnection()) && !bModelRightCantilever )
                {
                   ssmbr->put_LinkMember(VARIANT_TRUE);
                }
             }
 
+            const CPierData2* pPier;
+            const CTemporarySupportData* pTS;
+            pSegment->GetEndSupport(&pPier,&pTS);
+
 #pragma Reminder("UPDATE: this doesn't work for match casting")
-            if ( segIdx != nSegments-1 )
+            if ( segIdx != nSegments-1 && pTS )
             {
                // end to end length of the closure (distance between ends of the adjacent segments)
                Float64 closure_length = pClosurePour->GetClosurePourLength(segmentKey);
@@ -1569,7 +1574,10 @@ void CAnalysisAgentImp::BuildBridgeSiteModel(GirderIndexType gdr,bool bContinuou
 
             // the width of the intermediate piers need to be modeled so the correct overall
             // span length is used when the structure becomes continuous
-            if ( segIdx == nSegments-1 && grpIdx != nGroups-1 ) // last segment in all but the last group
+            if ( ( segIdx == nSegments-1 && grpIdx != nGroups-1 ) // last segment in all but the last group
+                  || // -OR-
+                 ( pPier && pPier->IsInteriorPier() ) // this is an interior pier
+               )
             {
                //                                     CL Pier
                //                           | CL Brg  |         | CL Brg
@@ -1597,7 +1605,18 @@ void CAnalysisAgentImp::BuildBridgeSiteModel(GirderIndexType gdr,bool bContinuou
                // objects would not be needed if a Support could change boundary conditions at a stage. That is, the Support
                // for the real pier would be completely fixed until continuity is made, and then it would be a pin/roller.
 
-               CSegmentKey nextSegmentKey(segmentKey.groupIndex+1,segmentKey.girderIndex,0);
+               CSegmentKey nextSegmentKey;
+               if ( pPier->IsInteriorPier() )
+               {
+                  nextSegmentKey = segmentKey;
+                  nextSegmentKey.segmentIndex++;
+               }
+               else
+               {
+                  nextSegmentKey.groupIndex = segmentKey.groupIndex + 1;
+                  nextSegmentKey.girderIndex = segmentKey.girderIndex;
+                  nextSegmentKey.segmentIndex = 0;
+               }
 
                Float64 left_brg_offset  = pBridge->GetSegmentEndBearingOffset(segmentKey);
                Float64 right_brg_offset = pBridge->GetSegmentStartBearingOffset( nextSegmentKey );
@@ -1618,11 +1637,12 @@ void CAnalysisAgentImp::BuildBridgeSiteModel(GirderIndexType gdr,bool bContinuou
                IntervalIndexType rightContinuityIntervalIdx = pIntervals->GetInterval(rightContinuityEventIdx);
 
                // use the girder data for the pier superstructure members
+               bool bContinuousConnection = pPier->IsContinuousConnection();
                
                // create superstructure member for pier, left of CL Pier
                CComPtr<ISuperstructureMember> left_pier_diaphragm_ssm;
                CreateSuperstructureMember(left_end_offset,vData,&left_pier_diaphragm_ssm);
-               if ( bContinuousModel && ::IsContinuousConnection(pBridge->GetPierConnectionType(pierIdx)) )
+               if ( bContinuousModel && bContinuousConnection )
                {
                   left_pier_diaphragm_ssm->SetEndRelease(ssRight,GetLBAMStageName(leftContinuityIntervalIdx),mrtPinned);
                }
@@ -1637,7 +1657,7 @@ void CAnalysisAgentImp::BuildBridgeSiteModel(GirderIndexType gdr,bool bContinuou
                // create superstructure member for pier, right of CL Pier
                CComPtr<ISuperstructureMember> right_pier_diaphragm_ssm;
                CreateSuperstructureMember(right_end_offset,vData,&right_pier_diaphragm_ssm);
-               if ( bContinuousModel && ::IsContinuousConnection(pBridge->GetPierConnectionType(pierIdx)) )
+               if ( bContinuousModel && bContinuousConnection )
                {
                }
                else
@@ -1676,7 +1696,7 @@ void CAnalysisAgentImp::BuildBridgeSiteModel(GirderIndexType gdr,bool bContinuou
 
                // If there is a continuous connection at the pier, remove the temporary support when the 
                // connection becomes continuous, otherwise keep it to preserve the stability of the LBAM
-               if ( bContinuousModel && ::IsContinuousConnection(pBridge->GetPierConnectionType(pierIdx)) )
+               if ( bContinuousModel && bContinuousConnection )
                   objLeftTS->put_StageRemoved( GetLBAMStageName(leftContinuityIntervalIdx) );
                else
                   objLeftTS->put_StageRemoved(CComBSTR(""));
@@ -1703,7 +1723,7 @@ void CAnalysisAgentImp::BuildBridgeSiteModel(GirderIndexType gdr,bool bContinuou
 
                // If there is a continuous connection at the pier, remove the temporary support when the 
                // connection becomes continuous, otherwise keep it to preserve the stability of the LBAM
-               if ( bContinuousModel && ::IsContinuousConnection(pBridge->GetPierConnectionType(pierIdx)) )
+               if ( bContinuousModel && bContinuousConnection )
                   objRightTS->put_StageRemoved( GetLBAMStageName(rightContinuityIntervalIdx) );
                else
                   objRightTS->put_StageRemoved(CComBSTR(""));
@@ -2810,7 +2830,17 @@ void CAnalysisAgentImp::ApplySelfWeightLoad(ILBAMModel* pModel,pgsTypes::Analysi
 
          mbrID = ApplyDistributedLoads(erectSegmentIntervalIdx,pModel,analysisType,mbrID,segmentKey,vGirderLoads,bstrStage,bstrLoadGroup);
 
-         mbrID++; // +1 to jump over the closure pour SSMBR
+         const CPierData2* pPier;
+         const CTemporarySupportData* pTS;
+         pSplicedGirder->GetSegment(segIdx)->GetEndSupport(&pPier,&pTS);
+         if ( pPier && pPier->IsInteriorPier() )
+         {
+            mbrID += 2; // +2 to jump over left/right side intermediate diaphragm/closure SSMBR
+         }
+         else
+         {
+            mbrID++; // +1 to jump over the closure pour SSMBR
+         }
       } // next segment
       mbrID++; // +1 more (in addition to the one above) to get over the 2 SSMBRs at intermediate piers
    } // next group
@@ -2889,8 +2919,18 @@ void CAnalysisAgentImp::ApplySlabLoad(ILBAMModel* pModel,pgsTypes::AnalysisType 
          ApplyDistributedLoads(castSlabInterval,pModel,analysisType,mbrID,segmentKey,vHaunchLoads,bstrStage,bstrSlabPadLoadGroup);
          mbrID = ApplyDistributedLoads(castSlabInterval,pModel,analysisType,mbrID,segmentKey,vPanelLoads,bstrStage,bstrPanelLoadGroup);
 
-         mbrID++;
-      } // segment loop
+         const CPierData2* pPier;
+         const CTemporarySupportData* pTS;
+         pGirder->GetSegment(segIdx)->GetEndSupport(&pPier,&pTS);
+         if ( pPier && pPier->IsInteriorPier() )
+         {
+            mbrID += 2; // +2 to jump over left/right side intermediate diaphragm/closure SSMBR
+         }
+         else
+         {
+            mbrID++; // +1 to jump over the closure pour SSMBR
+         }
+      } // next segment
 
       mbrID++;
    } // group loop
@@ -3038,7 +3078,7 @@ void CAnalysisAgentImp::ApplyOverlayLoad(ILBAMModel* pModel,pgsTypes::AnalysisTy
          if ( bContinuousModel && // continuous model (don't load across piers for simple span models)
               segIdx == nSegments-1 && // last segment in the girder
               grpIdx != nGroups-1 && // not the last group/span in the bridge
-              ::IsContinuousConnection(pGroup->GetPier(pgsTypes::metEnd)->GetConnectionType()) // continuous boundary condition
+              pGroup->GetPier(pgsTypes::metEnd)->IsContinuousConnection() // continuous boundary condition
             )
          {
             // Determine load on left side of CL Pier
@@ -3107,7 +3147,17 @@ void CAnalysisAgentImp::ApplyOverlayLoad(ILBAMModel* pModel,pgsTypes::AnalysisTy
             }
          }
 
-         mbrID = newMbrID + 1;
+         const CPierData2* pPier;
+         const CTemporarySupportData* pTS;
+         pGirder->GetSegment(segIdx)->GetEndSupport(&pPier,&pTS);
+         if ( pPier && pPier->IsInteriorPier() )
+         {
+            mbrID = newMbrID + 2; // +2 to jump over left/right side intermediate diaphragm/closure SSMBR
+         }
+         else
+         {
+            mbrID = newMbrID + 1; // +1 to jump over the closure pour SSMBR
+         }
       } // next segment
 
       mbrID++;
@@ -3198,7 +3248,7 @@ void CAnalysisAgentImp::ApplyConstructionLoad(ILBAMModel* pModel,pgsTypes::Analy
          if ( analysisType == pgsTypes::Continuous && // continuous model (don't load across piers for simple span models)
               segIdx == nSegments-1 && // last segment in the girder
               grpIdx != nGroups-1 && // not the last group/span in the bridge
-              ::IsContinuousConnection(pGroup->GetPier(pgsTypes::metEnd)->GetConnectionType()) // continuous boundary condition
+              pGroup->GetPier(pgsTypes::metEnd)->IsContinuousConnection() // continuous boundary condition
             )
          {
             // Determine load on left side of CL Pier
@@ -3254,7 +3304,17 @@ void CAnalysisAgentImp::ApplyConstructionLoad(ILBAMModel* pModel,pgsTypes::Analy
             distLoads->Add(bstrStage,bstrLoadGroup,load2,&distLoadItem);
          }
 
-         mbrID = newMbrID + 1;
+         const CPierData2* pPier;
+         const CTemporarySupportData* pTS;
+         pGirder->GetSegment(segIdx)->GetEndSupport(&pPier,&pTS);
+         if ( pPier && pPier->IsInteriorPier() )
+         {
+            mbrID = newMbrID + 2; // +2 to jump over left/right side intermediate diaphragm/closure SSMBR
+         }
+         else
+         {
+            mbrID = newMbrID + 1; // +1 to jump over the closure pour SSMBR
+         }
       } // next segment
       mbrID++;
    } // next group
@@ -3320,7 +3380,17 @@ void CAnalysisAgentImp::ApplyShearKeyLoad(ILBAMModel* pModel,pgsTypes::AnalysisT
          // Shear key and joint loads do not get applied to
          // closure pours or piers
 
-         mbrID++;
+         const CPierData2* pPier;
+         const CTemporarySupportData* pTS;
+         pGirder->GetSegment(segIdx)->GetEndSupport(&pPier,&pTS);
+         if ( pPier && pPier->IsInteriorPier() )
+         {
+            mbrID += 2; // +2 to jump over left/right side intermediate diaphragm/closure SSMBR
+         }
+         else
+         {
+            mbrID++; // +1 to jump over the closure pour SSMBR
+         }
       } // next segment
       mbrID++;
    } // next group
@@ -3480,7 +3550,7 @@ void CAnalysisAgentImp::ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel,pg
          if ( bContinuousModel && // continuous model (don't load across piers for simple span models)
               segIdx == nSegments-1 && // last segment in the girder
               grpIdx != nGroups-1 && // not the last group/span in the bridge
-              ::IsContinuousConnection(pGroup->GetPier(pgsTypes::metEnd)->GetConnectionType()) // continuous boundary condition
+              pGroup->GetPier(pgsTypes::metEnd)->IsContinuousConnection() // continuous boundary condition
             )
          {
             CComPtr<IDistributedLoad> tbLoad1;
@@ -3536,7 +3606,17 @@ void CAnalysisAgentImp::ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel,pg
             distLoads->Add(bstrStage,bstrSidewalkLoadGroup,swLoad2,&distLoadItem);
          }
 
-         mbrID = newMbrID + 1;
+         const CPierData2* pPier;
+         const CTemporarySupportData* pTS;
+         pGirder->GetSegment(segIdx)->GetEndSupport(&pPier,&pTS);
+         if ( pPier && pPier->IsInteriorPier() )
+         {
+            mbrID = newMbrID + 2; // +2 to jump over left/right side intermediate diaphragm/closure SSMBR
+         }
+         else
+         {
+            mbrID = newMbrID + 1; // +1 to jump over the closure pour SSMBR
+         }
       } // next segment
 
       mbrID++;
@@ -5157,26 +5237,35 @@ void CAnalysisAgentImp::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsTypes:
          }
          else
          {
-            // This pier is intermediate to the group... this only happens with spliced girder bridges
+            // This pier is interior to the group... this only happens with spliced girder bridges
+            ATLASSERT(pPier->IsInteriorPier());
+
             CSegmentKey segmentKey = pBridge->GetSegmentAtPier(pPier->GetIndex(),girderKey);
             Float64 start_end_dist = pBridge->GetSegmentStartEndDistance(segmentKey);
 
+            // get superstructure member ID where the segment starts
             MemberIDType mbrID = GetSuperstructureMemberID(segmentKey);
+
+            // if there is an overhang at the start, the mbrID for the main portion
+            // of the segment is one more... increment mbrID
             if ( !IsZero(start_end_dist) )
                mbrID++;
 
+            // get location where CL-Segment intersects CL-Pier (could be betweens ends of segment or after end of segment)
             CComPtr<IPoint2d> pntSegPierIntersection;
             bool bIntersect = pBridge->GetSegmentPierIntersection(segmentKey,pPier->GetIndex(),&pntSegPierIntersection);
             ATLASSERT(bIntersect == true);
 
+            // get the distance from the the start face of the segment to the intersection point
+            // with the CL pier.
             CComPtr<IPoint2d> pntSupport[2],pntEnd[2],pntBrg[2];
             pGdr->GetSegmentEndPoints(segmentKey,
                                       &pntSupport[pgsTypes::metStart],&pntEnd[pgsTypes::metStart],&pntBrg[pgsTypes::Start],
-                                      &pntSupport[pgsTypes::metEnd],  &pntEnd[pgsTypes::metEnd],  &pntBrg[pgsTypes::metEnd]);
+                                      &pntBrg[pgsTypes::metEnd],      &pntEnd[pgsTypes::metEnd],  &pntSupport[pgsTypes::metEnd]);
 
 
             Float64 dist_along_segment;
-            pntSegPierIntersection->DistanceEx(pntEnd[pgsTypes::metStart],&dist_along_segment);
+            pntEnd[pgsTypes::metStart]->DistanceEx(pntSegPierIntersection,&dist_along_segment);
 
             pgsPointOfInterest poi = pPoi->GetPointOfInterest(girderKey,pPier->GetIndex());
 
@@ -5184,11 +5273,21 @@ void CAnalysisAgentImp::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsTypes:
             Float64 Pahead, Mahead; // load on ahead side of pier
             GetPierDiaphragmLoads( poi, pPier->GetIndex(), &Pback, &Mback, &Pahead, &Mahead);
 
-            if ( pPier->GetConnectionType() == pgsTypes::ContinuousSegment )
+            if ( pPier->GetSegmentConnectionType() == pgsTypes::psctContinuousSegment ||
+                 pPier->GetSegmentConnectionType() == pgsTypes::psctIntegralSegment) 
             {
                // there should not be any moment at intermediate piers with continuous segments
                ATLASSERT(IsZero(Mback));
                ATLASSERT(IsZero(Mahead));
+
+               // Segment is continuous over the pier... apply the total load at the CL Pier
+               //
+               //                        +-- apply load here
+               //                        |
+               //                        V
+               //  =================================================
+               //                        ^
+               //                        CL Pier
 
                // Apply total load at CL Pier
                CComPtr<IPointLoad> load;
@@ -5203,7 +5302,15 @@ void CAnalysisAgentImp::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsTypes:
             }
             else
             {
+               // Two segments are supported at this pier
                // Apply load on each side of the pier at CL Bearings
+               //
+               //    Apply left load here -+   +- Apply right load here
+               //                          |   |
+               //        Seg i             V   V    Seg i+1
+               //       ====================   =====================
+               //                          o ^ o  <- temporary support
+               //                            CL Pier
 
                CSegmentKey nextSegmentKey(segmentKey);
                nextSegmentKey.segmentIndex++;
@@ -5456,10 +5563,10 @@ void CAnalysisAgentImp::SetBoundaryConditions(bool bContinuous,const CTimelineMa
    }
    else
    {
-      pgsTypes::PierConnectionType connectionType = pPier->GetConnectionType();
-      if ( bContinuous && ::IsContinuousConnection(connectionType) )
+      if ( pPier->IsInteriorPier() )
       {
-         // continuous at pier
+         ATLASSERT(bContinuous == true); // always a continuous model in this case
+
          EventIndexType leftContinunityEventIdx, rightContinunityEventIdx;
          pBridge->GetContinuityEventIndex(pPier->GetIndex(), &leftContinunityEventIdx, &rightContinunityEventIdx);
 
@@ -5470,19 +5577,34 @@ void CAnalysisAgentImp::SetBoundaryConditions(bool bContinuous,const CTimelineMa
       }
       else
       {
-         // not continuous at pier
-         if ( 
-              (pPier->GetNextSpan() != NULL && endType == pgsTypes::metEnd)   // not the last segment and setting boundary condition at end
-              ||                                                              // -OR-
-              (pPier->GetPrevSpan() != NULL && endType == pgsTypes::metStart) // not the first segment and setting boundary condition at start
-            )
+         ATLASSERT(pPier->IsBoundaryPier());
+         if ( bContinuous && pPier->IsContinuousConnection() )
          {
-            pSSMbr->SetEndRelease(endType == pgsTypes::metStart ? ssLeft : ssRight, CComBSTR(""), mrtPinned);
+            // continuous at pier
+            EventIndexType leftContinunityEventIdx, rightContinunityEventIdx;
+            pBridge->GetContinuityEventIndex(pPier->GetIndex(), &leftContinunityEventIdx, &rightContinunityEventIdx);
+
+            IntervalIndexType continuityIntervalIdx = pIntervals->GetInterval(endType == pgsTypes::metStart ? rightContinunityEventIdx : leftContinunityEventIdx);
+
+            CComBSTR bstrContinuity( GetLBAMStageName(continuityIntervalIdx) );
+            pSSMbr->SetEndRelease(endType == pgsTypes::metStart ? ssLeft : ssRight, bstrContinuity, mrtPinned);
          }
-         // else
-         // {
-         //   don't add an end release if this is the start of the first segment or the end of the last segment
-         // }
+         else
+         {
+            // not continuous at pier
+            if ( 
+                 (pPier->GetNextSpan() != NULL && endType == pgsTypes::metEnd)   // not the last segment and setting boundary condition at end
+                 ||                                                              // -OR-
+                 (pPier->GetPrevSpan() != NULL && endType == pgsTypes::metStart) // not the first segment and setting boundary condition at start
+               )
+            {
+               pSSMbr->SetEndRelease(endType == pgsTypes::metStart ? ssLeft : ssRight, CComBSTR(""), mrtPinned);
+            }
+            // else
+            // {
+            //   don't add an end release if this is the start of the first segment or the end of the last segment
+            // }
+         }
       }
    }
 }
@@ -7065,7 +7187,7 @@ void CAnalysisAgentImp::GetPierDiaphragmLoads( const pgsPointOfInterest& poi, Pi
 
       *pPback = -H*W*Density*g*trib_slab_width/cos(skew);
 
-      if ( pBridge->GetPierConnectionType(pierIdx) != pgsTypes::ContinuousSegment )
+      if ( pBridge->IsBoundaryPier(pierIdx) )
       {
          SegmentIndexType nSegments = pBridge->GetSegmentCount(poi.GetSegmentKey());
          CSegmentKey endSegmentKey(poi.GetSegmentKey());
@@ -7084,7 +7206,7 @@ void CAnalysisAgentImp::GetPierDiaphragmLoads( const pgsPointOfInterest& poi, Pi
 
       *pPahead = -H*W*Density*g*trib_slab_width/cos(skew);
 
-      if ( pBridge->GetPierConnectionType(pierIdx) != pgsTypes::ContinuousSegment )
+      if ( pBridge->IsBoundaryPier(pierIdx) )
       {
          CSegmentKey startSegmentKey(poi.GetSegmentKey());
          startSegmentKey.segmentIndex = 0;
@@ -17200,8 +17322,13 @@ MemberIDType CAnalysisAgentImp::ApplyDistributedLoads(IntervalIndexType interval
    Float64 L[3] = {start_offset, segment_length - start_offset - end_offset, end_offset};
 
    GET_IFACE(IPointOfInterest,pPOI);
-   pgsPointOfInterest startPoi = pPOI->GetPointOfInterest(segmentKey,POI_0L);
-   pgsPointOfInterest endPoi   = pPOI->GetPointOfInterest(segmentKey,POI_10L);
+   std::vector<pgsPointOfInterest> vPoi = pPOI->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT | POI_0L);
+   ATLASSERT(vPoi.size() == 1);
+   pgsPointOfInterest startPoi(vPoi.front());
+
+   vPoi = pPOI->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT | POI_10L);
+   ATLASSERT(vPoi.size() == 1);
+   pgsPointOfInterest endPoi(vPoi.front());
 
    GET_IFACE(IGirder,pGdr);
    Float64 HgStart = pGdr->GetHeight(startPoi);
@@ -17228,20 +17355,13 @@ MemberIDType CAnalysisAgentImp::ApplyDistributedLoads(IntervalIndexType interval
       Float64 wStart[3], wEnd[3]; // the start/end loads
 
       // default loads (assuming load is not on the SSMBR)
-      start[0]  = 0;
-      end[0]    = start_offset;
-      wStart[0] = 0;
-      wEnd[0]   = 0;
-
-      start[1]  = 0;
-      end[1]    = segment_length - start_offset - end_offset;
-      wStart[1] = 0;
-      wEnd[1]   = 0;
-
-      start[2]  = 0;
-      end[2]    = end_offset;
-      wStart[2] = 0;
-      wEnd[2]   = 0;
+      for ( int i = 0; i < 3; i++ )
+      {
+         start[i]  = 0;
+         end[i]    = L[i];
+         wStart[i] = 0;
+         wEnd[i]   = 0;
+      }
 
       // Load on first superstructure member
       if ( load.StartLoc < start_offset )
@@ -17261,7 +17381,7 @@ MemberIDType CAnalysisAgentImp::ApplyDistributedLoads(IntervalIndexType interval
             && // AND
             ( (pStartTS) // the segment is supported by a temporary support
                || // OR
-               (pStartPier && ::IsContinuousConnection(pStartPier->GetConnectionType()))) // the segment is suppoted by a pier that has continuous boundary conditions
+               (pStartPier && pStartPier->IsContinuousConnection())) // the segment is suppoted by a pier that has continuous boundary conditions
             )
             )
          {
@@ -17305,7 +17425,7 @@ MemberIDType CAnalysisAgentImp::ApplyDistributedLoads(IntervalIndexType interval
             && // AND
             ( (pEndTS) // the segment is supported by a temporary support
                || // OR
-               (pEndPier && ::IsContinuousConnection(pEndPier->GetConnectionType())))  // the segment is supported by a pier with continuous boundary conditions
+               (pEndPier && pEndPier->IsContinuousConnection()))  // the segment is supported by a pier with continuous boundary conditions
             ) 
             )
          {
@@ -17427,6 +17547,7 @@ MemberIDType CAnalysisAgentImp::GetSuperstructureMemberID(const CSegmentKey& seg
    ATLASSERT(grpIdx != ALL_GROUPS && gdrIdx != ALL_GIRDERS && segIdx != ALL_SEGMENTS);
 
    GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    SegmentIndexType nSegments = pBridge->GetSegmentCount(segmentKey);
@@ -17452,7 +17573,18 @@ MemberIDType CAnalysisAgentImp::GetSuperstructureMemberID(const CSegmentKey& seg
          if ( !IsZero(end_offset) )
             mbrID++; // end overhang
 
-         mbrID++; // add one for the closure pour
+         const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(thisSegmentKey);
+         const CPierData2* pPier;
+         const CTemporarySupportData* pTS;
+         pSegment->GetEndSupport(&pPier,&pTS);
+         if ( pPier && pPier->IsInteriorPier() )
+         {
+            mbrID += 2;
+         }
+         else
+         {
+            mbrID++; // add one for the closure pour
+         }
       }
 
       mbrID++; // add one for the intermediate pier
@@ -17473,7 +17605,18 @@ MemberIDType CAnalysisAgentImp::GetSuperstructureMemberID(const CSegmentKey& seg
       if ( !IsZero(end_offset) )
          mbrID++; // end overhang
 
-      mbrID++; // add one for the closure pour
+      const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(thisSegmentKey);
+      const CPierData2* pPier;
+      const CTemporarySupportData* pTS;
+      pSegment->GetEndSupport(&pPier,&pTS);
+      if ( pPier && pPier->IsInteriorPier() )
+      {
+         mbrID += 2;
+      }
+      else
+      {
+         mbrID++; // add one for the closure pour
+      }
    }
 
    return mbrID; // superstructure member ID for the SSMBR at the start of the segment

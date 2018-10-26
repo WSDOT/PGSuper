@@ -41,7 +41,8 @@ txnEditPierData::txnEditPierData(const CPierData2* pPier)
    Orientation    = pPier->GetOrientation();
    ErectionEventIndex = pBridgeDesc->GetTimelineManager()->GetPierErectionEventIndex(pPier->GetIndex());
 
-   ConnectionType = pPier->GetConnectionType();
+   PierConnectionType = pPier->GetPierConnectionType();
+   SegmentConnectionType = pPier->GetSegmentConnectionType();
    for ( int i = 0; i < 2; i++ )
    {
       pPier->GetBearingOffset((pgsTypes::PierFaceType)i,&BearingOffset[i],&BearingOffsetMeasurementType[i]);
@@ -164,11 +165,12 @@ void txnEditPier::DoExecute(int i)
    // Move pier based on new station
    pIBridgeDesc->MovePier(m_PierIdx, m_PierData[i].Station, m_MoveOption);
 
-   // Get a copy of the pier that is getting edited
+   // Make a copy of the original pier that is getting edited
    CPierData2 pierData( *pIBridgeDesc->GetPier(m_PierIdx) );
 
-   // Set the pier data
-   pierData.SetConnectionType( m_PierData[i].ConnectionType );
+   // Tweak its data
+   pierData.SetPierConnectionType( m_PierData[i].PierConnectionType );
+   pierData.SetSegmentConnectionType( m_PierData[i].SegmentConnectionType );
    pierData.SetOrientation(m_PierData[i].Orientation.c_str());
    pierData.SetBearingOffset(pgsTypes::Back, m_PierData[i].BearingOffset[pgsTypes::Back],  m_PierData[i].BearingOffsetMeasurementType[pgsTypes::Back]);
    pierData.SetBearingOffset(pgsTypes::Ahead,m_PierData[i].BearingOffset[pgsTypes::Ahead], m_PierData[i].BearingOffsetMeasurementType[pgsTypes::Ahead]);
@@ -187,7 +189,6 @@ void txnEditPier::DoExecute(int i)
    pierData.SetDiaphragmLoadType(pgsTypes::Ahead,m_PierData[i].DiaphragmLoadType[pgsTypes::Ahead]);
    pierData.SetDiaphragmLoadLocation(pgsTypes::Ahead,m_PierData[i].DiaphragmLoadLocation[pgsTypes::Ahead]);
 
-
    // Replace the pier with the new data
    pIBridgeDesc->SetPierByIndex(m_PierIdx,pierData);
 
@@ -200,7 +201,7 @@ void txnEditPier::DoExecute(int i)
    const CGirderGroupData* pPrevGroup = pBridgeDesc->GetGirderGroup( pPier->GetPrevSpan() );
    const CGirderGroupData* pNextGroup = pBridgeDesc->GetGirderGroup( pPier->GetNextSpan() );
 
-   if ( pPrevGroup != pNextGroup )
+   if ( pPier->IsBoundaryPier() )
    {
       // Pier is at the boundary of a group, so the number of girders in the group can be changed
       
@@ -236,8 +237,9 @@ void txnEditPier::DoExecute(int i)
       }
    }
 
-   // Girder Spacing (spacing is not defined at this pier if the connection is continuous segment)
-   if (m_PierData[i].ConnectionType != pgsTypes::ContinuousSegment )
+  // Girder Spacing (spacing is only defined at the ends of segments)
+   if ( pPier->IsBoundaryPier() ||
+        pPier->IsInteriorPier() && (pPier->GetSegmentConnectionType() == pgsTypes::psctContinousClosurePour || pPier->GetSegmentConnectionType() == pgsTypes::psctIntegralClosurePour) )
    {
       pIBridgeDesc->SetGirderSpacingType(  m_PierData[i].GirderSpacingType);
       pIBridgeDesc->SetMeasurementLocation(m_PierData[i].GirderMeasurementLocation);
@@ -297,7 +299,7 @@ void txnEditPier::DoExecute(int i)
    }
    else if ( m_PierData[i].SlabOffsetType == pgsTypes::sotSegment )
    {
-      ATLASSERT(false); // need to fix this
+      ATLASSERT(false); // need to finish this
 #pragma Reminder("IMPLEMENT: Slab Offset")
    }
 

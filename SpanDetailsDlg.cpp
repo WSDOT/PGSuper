@@ -63,8 +63,11 @@ void CSpanDetailsDlg::SetSpanData(const CSpanData2* pSpan)
    m_pSpanData = pSpan;
    m_pNextPier = pSpan->GetNextPier();
 
-   m_ConnectionType[pgsTypes::metStart] = m_pPrevPier->GetConnectionType();
-   m_ConnectionType[pgsTypes::metEnd  ] = m_pNextPier->GetConnectionType();
+   ATLASSERT(m_pPrevPier->IsBoundaryPier());
+   ATLASSERT(m_pNextPier->IsBoundaryPier());
+
+   m_PierConnectionType[pgsTypes::metStart] = m_pPrevPier->GetPierConnectionType();
+   m_PierConnectionType[pgsTypes::metEnd  ] = m_pNextPier->GetPierConnectionType();
 
    m_pGirderGroup = m_pBridgeDesc->GetGirderGroup(m_pSpanData);
 
@@ -95,20 +98,36 @@ void CSpanDetailsDlg::SetSpanData(const CSpanData2* pSpan)
    m_EndPierPage.m_psp.pszTitle = m_strEndPierTitle.GetBuffer();
 }
 
-pgsTypes::PierConnectionType CSpanDetailsDlg::GetConnectionType(PierIndexType pierIdx)
+pgsTypes::PierConnectionType CSpanDetailsDlg::GetPierConnectionType(PierIndexType pierIdx)
 {
    if ( m_pPrevPier->GetIndex() == pierIdx )
-      return m_ConnectionType[pgsTypes::metStart];
+      return m_PierConnectionType[pgsTypes::metStart];
    else
-      return m_ConnectionType[pgsTypes::metEnd];
+      return m_PierConnectionType[pgsTypes::metEnd];
 }
 
-void CSpanDetailsDlg::SetConnectionType(PierIndexType pierIdx,pgsTypes::PierConnectionType type)
+void CSpanDetailsDlg::SetPierConnectionType(PierIndexType pierIdx,pgsTypes::PierConnectionType type)
 {
    if ( m_pPrevPier->GetIndex() == pierIdx )
-      m_ConnectionType[pgsTypes::metStart] = type;
+      m_PierConnectionType[pgsTypes::metStart] = type;
    else
-      m_ConnectionType[pgsTypes::metEnd] = type;
+      m_PierConnectionType[pgsTypes::metEnd] = type;
+}
+
+pgsTypes::PierSegmentConnectionType CSpanDetailsDlg::GetSegmentConnectionType(PierIndexType pierIdx)
+{
+   if ( m_pPrevPier->GetIndex() == pierIdx )
+      return m_SegmentConnectionType[pgsTypes::metStart];
+   else
+      return m_SegmentConnectionType[pgsTypes::metEnd];
+}
+
+void CSpanDetailsDlg::SetSegmentConnectionType(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType type)
+{
+   if ( m_pPrevPier->GetIndex() == pierIdx )
+      m_SegmentConnectionType[pgsTypes::metStart] = type;
+   else
+      m_SegmentConnectionType[pgsTypes::metEnd] = type;
 }
 
 const CSpanData2* CSpanDetailsDlg::GetPrevSpan(PierIndexType pierIdx)
@@ -189,7 +208,7 @@ txnEditSpanData CSpanDetailsDlg::GetEditSpanData()
          pgsTypes::MemberEndType end = (i == 0 ? pgsTypes::metStart : pgsTypes::metEnd);
 
          // Connection
-         editSpanData.m_ConnectionType[end]        = GetConnectionType(end);
+         editSpanData.m_ConnectionType[end]        = GetPierConnectionType(end);
          editSpanData.m_DiaphragmHeight[end]       = GetDiaphragmHeight(end);
          editSpanData.m_DiaphragmWidth[end]        = GetDiaphragmWidth(end);
          editSpanData.m_DiaphragmLoadType[end]     = GetDiaphragmLoadType(end);
@@ -226,7 +245,7 @@ Float64 CSpanDetailsDlg::GetSpanLength()
 
 pgsTypes::PierConnectionType CSpanDetailsDlg::GetConnectionType(pgsTypes::MemberEndType end)
 {
-   return m_ConnectionType[end];
+   return m_PierConnectionType[end];
 }
 
 Float64 CSpanDetailsDlg::GetDiaphragmHeight(pgsTypes::MemberEndType end)

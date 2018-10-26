@@ -21,11 +21,15 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include <PgsExt\PgsExtLib.h>
-#include <PgsExt\GirderLabel.h>
 
 #include <PgsExt\PierData2.h>
 #include <PgsExt\TemporarySupportData.h>
 #include <EAF\EAFDisplayUnits.h>
+
+// Includes for ConcreteDescription
+#include <PgsExt\GirderLabel.h>
+#include <EAF\EAFUtilities.h>
+#include <IFace\Project.h>
 
 bool pgsGirderLabel::ms_bUseAlpha = true;
 
@@ -127,6 +131,56 @@ CString GetLabel(const CTemporarySupportData* pTS,IEAFDisplayUnits* pDisplayUnit
    strLabel.Format(_T("TS %d, %s, %s"),LABEL_TEMPORARY_SUPPORT(pTS->GetIndex()),
                                        pTS->GetSupportType() == pgsTypes::ErectionTower ? _T("Erection Tower") : _T("Strong Back"),
                                        FormatStation(pDisplayUnits->GetStationFormat(),pTS->GetStation()));
+
+   return strLabel;
+}
+
+CString ConcreteDescription(const CConcreteMaterial& concrete)
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+
+   GET_IFACE2(pBroker,ILossParameters,pLossParameters);
+   pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
+
+   bool bTimeDependentConcrete = (loss_method == pgsTypes::TIME_STEP ? true : false);
+   bool bIsACI209 = (pSpecEntry->GetTimeDependentModel() == TDM_ACI209 ? true : false);
+
+   CString strLabel;
+   if ( !bTimeDependentConcrete )
+   {
+      strLabel.Format(_T("%s"),matConcrete::GetTypeName((matConcrete::Type)concrete.Type,true).c_str());
+   }
+   else if ( bIsACI209 )
+   {
+      if ( concrete.bACIUserParameters )
+      {
+         strLabel.Format(_T("%s, ACI 209R-92, A=%s, B=%4.2f"),
+            matConcrete::GetTypeName((matConcrete::Type)concrete.Type,true).c_str(),
+            ::FormatDimension(concrete.A,pDisplayUnits->GetLongTimeUnit()),
+            concrete.B);
+      }
+      else
+      {
+         strLabel.Format(_T("%s, ACI 209R-92, %s cured, %s cement"),
+            matConcrete::GetTypeName((matConcrete::Type)concrete.Type,true).c_str(),
+            concrete.CureMethod == pgsTypes::Steam ? _T("Steam") : _T("Moist"),
+            concrete.CementType == pgsTypes::TypeI ? _T("Type I") : _T("Type III"));
+      }
+   }
+#pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
+   //else if ( concreteModel == FIB )
+   //{
+   //}
+   else
+   {
+      ATLASSERT(false); // should never get here
+   }
 
    return strLabel;
 }

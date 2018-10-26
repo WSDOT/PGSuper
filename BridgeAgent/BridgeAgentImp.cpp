@@ -5584,7 +5584,7 @@ void CBridgeAgentImp::GetAheadSideEndDiaphragmSize(PierIndexType pierIdx,Float64
    const CPierData2* pPierData = pBridgeDesc->GetPier(pierIdx);
    ATLASSERT( pPierData );
 
-   if ( pPierData->GetConnectionType() == pgsTypes::ContinuousSegment )
+   if ( pPierData->IsInteriorPier() )
    {
       // if this pier has a continuous segment connection type, there is only
       // on diaphragm at the pier... the data for that diaphragm is on the back side
@@ -7428,7 +7428,7 @@ void CBridgeAgentImp::GetContinuityEventIndex(PierIndexType pierIdx,EventIndexTy
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
    EventIndexType castDeckEventIdx = pTimelineMgr->GetCastDeckEventIndex();
 
-   *pLeft  = (pPierData->GetConnectionType() == pgsTypes::ContinuousBeforeDeck || pPierData->GetConnectionType() == pgsTypes::IntegralBeforeDeck)  ? castDeckEventIdx : castDeckEventIdx+1;
+   *pLeft  = (pPierData->GetPierConnectionType() == pgsTypes::ContinuousBeforeDeck || pPierData->GetPierConnectionType() == pgsTypes::IntegralBeforeDeck)  ? castDeckEventIdx : castDeckEventIdx+1;
    *pRight = *pLeft;
 }
 
@@ -7449,16 +7449,19 @@ bool CBridgeAgentImp::GetPierLocation(PierIndexType pierIdx,const CSegmentKey& s
    // Measure offset from pntSupport1 so that offset is in the segment coordinate system
    Float64 offset;
    measure->Distance(pntSupport1,pntPier,&offset);
-   *pDistFromStartOfSegment = offset;
+   *pDistFromStartOfSegment = IsZero(offset) ? 0 : offset;
 
 #if defined _DEBUG
    // Get the direction of a line from the end of the girder to the pier point
    // and the direction of the girder. These should be in the same direction.
    CComPtr<IDirection> dirPierPoint;
-   measure->Direction(pntSupport1,pntPier,&dirPierPoint);
+   if ( IsZero(offset) )
+      measure->Direction(pntPier,pntSupport2,&dirPierPoint); // pntSupport1 and pntPier are the same location... need a different line
+   else
+      measure->Direction(pntSupport1,pntPier,&dirPierPoint);
 
    CComPtr<IDirection> dirSegment;
-   measure->Direction(pntEnd1,pntEnd2,&dirSegment);
+   measure->Direction(pntSupport1,pntSupport2,&dirSegment);
 
    Float64 dirSegmentValue, dirPierPointValue;
    dirSegment->get_Value(&dirSegmentValue);
@@ -7560,7 +7563,44 @@ pgsTypes::PierConnectionType CBridgeAgentImp::GetPierConnectionType(PierIndexTyp
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
-   return pPier->GetConnectionType();
+   ATLASSERT(pPier->IsBoundaryPier());
+   return pPier->GetPierConnectionType();
+}
+
+pgsTypes::PierSegmentConnectionType CBridgeAgentImp::GetSegmentConnectionType(PierIndexType pierIdx)
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
+   ATLASSERT(pPier->IsInteriorPier());
+   return pPier->GetSegmentConnectionType();
+}
+
+bool CBridgeAgentImp::IsAbutment(PierIndexType pierIdx)
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
+   return pPier->IsAbutment();
+}
+
+bool CBridgeAgentImp::IsPier(PierIndexType pierIdx)
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
+   return pPier->IsPier();
+}
+
+bool CBridgeAgentImp::IsInteriorPier(PierIndexType pierIdx)
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
+   return pPier->IsInteriorPier();
+}
+
+bool CBridgeAgentImp::IsBoundaryPier(PierIndexType pierIdx)
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
+   return pPier->IsBoundaryPier();
 }
 
 bool CBridgeAgentImp::ProcessNegativeMoments(SpanIndexType spanIdx)
@@ -16889,15 +16929,15 @@ void CBridgeAgentImp::GetSegmentProfile(const CSegmentKey& segmentKey,const CSpl
 
    // capture key values in segment
    pgsTypes::SegmentVariationType variationType = pSegment->GetVariationType();
-   if ( variationType == pgsTypes::Linear )
+   if ( variationType == pgsTypes::svtLinear )
    {
-      xValues.push_back(xStart + variationLength[pgsTypes::LeftPrismatic] );
-      xValues.push_back(xEnd   - variationLength[pgsTypes::RightPrismatic] );
+      xValues.push_back(xStart + variationLength[pgsTypes::sztLeftPrismatic] );
+      xValues.push_back(xEnd   - variationLength[pgsTypes::sztRightPrismatic] );
    }
-   else if ( variationType == pgsTypes::Parabolic )
+   else if ( variationType == pgsTypes::svtParabolic )
    {
-      Float64 xStartParabola = xStart + variationLength[pgsTypes::LeftPrismatic];
-      Float64 xEndParabola   = xEnd   - variationLength[pgsTypes::RightPrismatic];
+      Float64 xStartParabola = xStart + variationLength[pgsTypes::sztLeftPrismatic];
+      Float64 xEndParabola   = xEnd   - variationLength[pgsTypes::sztRightPrismatic];
       xValues.push_back(xStartParabola);
       for ( int i = 0; i < 5; i++ )
       {
@@ -16906,18 +16946,18 @@ void CBridgeAgentImp::GetSegmentProfile(const CSegmentKey& segmentKey,const CSpl
       }
       xValues.push_back(xEndParabola);
    }
-   else if ( variationType == pgsTypes::DoubleLinear )
+   else if ( variationType == pgsTypes::svtDoubleLinear )
    {
-      xValues.push_back(xStart + variationLength[pgsTypes::LeftPrismatic] );
-      xValues.push_back(xStart + variationLength[pgsTypes::LeftPrismatic]  + variationLength[pgsTypes::LeftTapered] );
-      xValues.push_back(xEnd   - variationLength[pgsTypes::RightPrismatic] - variationLength[pgsTypes::RightTapered] );
-      xValues.push_back(xEnd   - variationLength[pgsTypes::RightPrismatic] );
+      xValues.push_back(xStart + variationLength[pgsTypes::sztLeftPrismatic] );
+      xValues.push_back(xStart + variationLength[pgsTypes::sztLeftPrismatic]  + variationLength[pgsTypes::sztLeftTapered] );
+      xValues.push_back(xEnd   - variationLength[pgsTypes::sztRightPrismatic] - variationLength[pgsTypes::sztRightTapered] );
+      xValues.push_back(xEnd   - variationLength[pgsTypes::sztRightPrismatic] );
    }
-   else if ( variationType == pgsTypes::DoubleParabolic )
+   else if ( variationType == pgsTypes::svtDoubleParabolic )
    {
       // left parabola
-      Float64 xStartParabola = xStart + variationLength[pgsTypes::LeftPrismatic];
-      Float64 xEndParabola   = xStart + variationLength[pgsTypes::LeftPrismatic]  + variationLength[pgsTypes::LeftTapered];
+      Float64 xStartParabola = xStart + variationLength[pgsTypes::sztLeftPrismatic];
+      Float64 xEndParabola   = xStart + variationLength[pgsTypes::sztLeftPrismatic]  + variationLength[pgsTypes::sztLeftTapered];
 
       xValues.push_back(xStartParabola);
       for ( int i = 0; i < 5; i++ )
@@ -16928,8 +16968,8 @@ void CBridgeAgentImp::GetSegmentProfile(const CSegmentKey& segmentKey,const CSpl
       xValues.push_back(xEndParabola);
 
       // right parabola
-      xStartParabola = xEnd   - variationLength[pgsTypes::RightPrismatic] - variationLength[pgsTypes::RightTapered];
-      xEndParabola   = xEnd   - variationLength[pgsTypes::RightPrismatic];
+      xStartParabola = xEnd   - variationLength[pgsTypes::sztRightPrismatic] - variationLength[pgsTypes::sztRightTapered];
+      xEndParabola   = xEnd   - variationLength[pgsTypes::sztRightPrismatic];
       xValues.push_back(xStartParabola);
       for ( int i = 0; i < 5; i++ )
       {
@@ -17165,15 +17205,15 @@ void CBridgeAgentImp::GetSegmentBottomFlangeProfile(const CSegmentKey& segmentKe
    }
 
    pgsTypes::SegmentVariationType variationType = pSegment->GetVariationType();
-   if ( variationType == pgsTypes::Linear )
+   if ( variationType == pgsTypes::svtLinear )
    {
-      xValues.push_back(xStart + variationLength[pgsTypes::LeftPrismatic] );
-      xValues.push_back(xEnd   - variationLength[pgsTypes::RightPrismatic] );
+      xValues.push_back(xStart + variationLength[pgsTypes::sztLeftPrismatic] );
+      xValues.push_back(xEnd   - variationLength[pgsTypes::sztRightPrismatic] );
    }
-   else if ( variationType == pgsTypes::Parabolic )
+   else if ( variationType == pgsTypes::svtParabolic )
    {
-      Float64 xStartParabola = xStart + variationLength[pgsTypes::LeftPrismatic];
-      Float64 xEndParabola   = xEnd   - variationLength[pgsTypes::RightPrismatic];
+      Float64 xStartParabola = xStart + variationLength[pgsTypes::sztLeftPrismatic];
+      Float64 xEndParabola   = xEnd   - variationLength[pgsTypes::sztRightPrismatic];
       xValues.push_back(xStartParabola);
       for ( int i = 0; i < 5; i++ )
       {
@@ -17182,18 +17222,18 @@ void CBridgeAgentImp::GetSegmentBottomFlangeProfile(const CSegmentKey& segmentKe
       }
       xValues.push_back(xEndParabola);
    }
-   else if ( variationType == pgsTypes::DoubleLinear )
+   else if ( variationType == pgsTypes::svtDoubleLinear )
    {
-      xValues.push_back(xStart + variationLength[pgsTypes::LeftPrismatic] );
-      xValues.push_back(xStart + variationLength[pgsTypes::LeftPrismatic]  + variationLength[pgsTypes::LeftTapered] );
-      xValues.push_back(xEnd   - variationLength[pgsTypes::RightPrismatic] - variationLength[pgsTypes::RightTapered] );
-      xValues.push_back(xEnd   - variationLength[pgsTypes::RightPrismatic] );
+      xValues.push_back(xStart + variationLength[pgsTypes::sztLeftPrismatic] );
+      xValues.push_back(xStart + variationLength[pgsTypes::sztLeftPrismatic]  + variationLength[pgsTypes::sztLeftTapered] );
+      xValues.push_back(xEnd   - variationLength[pgsTypes::sztRightPrismatic] - variationLength[pgsTypes::sztRightTapered] );
+      xValues.push_back(xEnd   - variationLength[pgsTypes::sztRightPrismatic] );
    }
-   else if ( variationType == pgsTypes::DoubleParabolic )
+   else if ( variationType == pgsTypes::svtDoubleParabolic )
    {
       // left parabola
-      Float64 xStartParabola = xStart + variationLength[pgsTypes::LeftPrismatic];
-      Float64 xEndParabola   = xStart + variationLength[pgsTypes::LeftPrismatic]  + variationLength[pgsTypes::LeftTapered];
+      Float64 xStartParabola = xStart + variationLength[pgsTypes::sztLeftPrismatic];
+      Float64 xEndParabola   = xStart + variationLength[pgsTypes::sztLeftPrismatic]  + variationLength[pgsTypes::sztLeftTapered];
 
       xValues.push_back(xStartParabola);
       for ( int i = 0; i < 5; i++ )
@@ -17204,8 +17244,8 @@ void CBridgeAgentImp::GetSegmentBottomFlangeProfile(const CSegmentKey& segmentKe
       xValues.push_back(xEndParabola);
 
       // right parabola
-      xStartParabola = xEnd   - variationLength[pgsTypes::RightPrismatic] - variationLength[pgsTypes::RightTapered];
-      xEndParabola   = xEnd   - variationLength[pgsTypes::RightPrismatic];
+      xStartParabola = xEnd   - variationLength[pgsTypes::sztRightPrismatic] - variationLength[pgsTypes::sztRightTapered];
+      xEndParabola   = xEnd   - variationLength[pgsTypes::sztRightPrismatic];
       xValues.push_back(xStartParabola);
       for ( int i = 0; i < 5; i++ )
       {
@@ -17290,24 +17330,24 @@ boost::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSp
       if ( bGirderProfile )
       {
          // we are creating a girder profile
-         h1 = pSegment->GetVariationHeight(pgsTypes::LeftPrismatic);
-         h2 = pSegment->GetVariationHeight(pgsTypes::RightPrismatic);
-         h3 = pSegment->GetVariationHeight(pgsTypes::LeftTapered);
-         h4 = pSegment->GetVariationHeight(pgsTypes::RightTapered);
+         h1 = pSegment->GetVariationHeight(pgsTypes::sztLeftPrismatic);
+         h2 = pSegment->GetVariationHeight(pgsTypes::sztRightPrismatic);
+         h3 = pSegment->GetVariationHeight(pgsTypes::sztLeftTapered);
+         h4 = pSegment->GetVariationHeight(pgsTypes::sztRightTapered);
       }
       else
       {
          // we are creating a bottom flange profile
-         h1 = pSegment->GetVariationBottomFlangeDepth(pgsTypes::LeftPrismatic);
-         h2 = pSegment->GetVariationBottomFlangeDepth(pgsTypes::RightPrismatic);
-         h3 = pSegment->GetVariationBottomFlangeDepth(pgsTypes::LeftTapered);
-         h4 = pSegment->GetVariationBottomFlangeDepth(pgsTypes::RightTapered);
+         h1 = pSegment->GetVariationBottomFlangeDepth(pgsTypes::sztLeftPrismatic);
+         h2 = pSegment->GetVariationBottomFlangeDepth(pgsTypes::sztRightPrismatic);
+         h3 = pSegment->GetVariationBottomFlangeDepth(pgsTypes::sztLeftTapered);
+         h4 = pSegment->GetVariationBottomFlangeDepth(pgsTypes::sztRightTapered);
       }
 
-      Float64 left_prismatic_length  = pSegment->GetVariationLength(pgsTypes::LeftPrismatic);
-      Float64 left_taper_length      = pSegment->GetVariationLength(pgsTypes::LeftTapered);
-      Float64 right_taper_length     = pSegment->GetVariationLength(pgsTypes::RightTapered);
-      Float64 right_prismatic_length = pSegment->GetVariationLength(pgsTypes::RightPrismatic);
+      Float64 left_prismatic_length  = pSegment->GetVariationLength(pgsTypes::sztLeftPrismatic);
+      Float64 left_taper_length      = pSegment->GetVariationLength(pgsTypes::sztLeftTapered);
+      Float64 right_taper_length     = pSegment->GetVariationLength(pgsTypes::sztRightTapered);
+      Float64 right_prismatic_length = pSegment->GetVariationLength(pgsTypes::sztRightPrismatic);
 
       // deal with fractional measure (fraction measures are < 0)
       if ( left_prismatic_length < 0 )
@@ -17347,7 +17387,7 @@ boost::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSp
          xStart = xEnd;
       }
 
-      if ( variation_type == pgsTypes::Linear )
+      if ( variation_type == pgsTypes::svtLinear )
       {
          // create a linear taper segment
          Float64 taper_length = segment_length - left_prismatic_length - right_prismatic_length;
@@ -17360,7 +17400,7 @@ boost::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSp
          xStart = xEnd;
          slopeParabola = slope;
       }
-      else if ( variation_type == pgsTypes::DoubleLinear )
+      else if ( variation_type == pgsTypes::svtDoubleLinear )
       {
          // create a linear taper for left side of segment
          Float64 slope = (h3 - h1)/left_taper_length;
@@ -17391,7 +17431,7 @@ boost::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSp
          xStart = xEnd;
          slopeParabola = slope;
       }
-      else if ( variation_type == pgsTypes::Parabolic )
+      else if ( variation_type == pgsTypes::svtParabolic )
       {
          if ( !bParabola )
          {
@@ -17409,7 +17449,7 @@ boost::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSp
 
          const CPrecastSegmentData* pNextSegment = (segIdx == nSegments-1 ? NULL : pGirder->GetSegment(segIdx+1));
 
-         Float64 next_segment_left_prismatic_length = pNextSegment->GetVariationLength(pgsTypes::LeftPrismatic);
+         Float64 next_segment_left_prismatic_length = pNextSegment->GetVariationLength(pgsTypes::sztLeftPrismatic);
          if ( next_segment_left_prismatic_length < 0 )
          {
             ATLASSERT(-1.0 <= next_segment_left_prismatic_length && next_segment_left_prismatic_length < 0.0);
@@ -17420,7 +17460,7 @@ boost::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSp
               0 < right_prismatic_length || // parabola ends in this segment -OR-
               segIdx == nSegments-1      || // this is the last segment (parabola ends here) -OR-
               0 < next_segment_left_prismatic_length || // next segment starts with prismatic section -OR-
-              (pNextSegment->GetVariationType() == pgsTypes::None || pNextSegment->GetVariationType() == pgsTypes::Linear || pNextSegment->GetVariationType() == pgsTypes::DoubleLinear) // next segment is linear 
+              (pNextSegment->GetVariationType() == pgsTypes::svtNone || pNextSegment->GetVariationType() == pgsTypes::svtLinear || pNextSegment->GetVariationType() == pgsTypes::svtDoubleLinear) // next segment is linear 
             )
          {
             // parabola ends in this segment
@@ -17449,7 +17489,7 @@ boost::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSp
             // do nothing???
          }
       }
-      else if ( variation_type == pgsTypes::DoubleParabolic )
+      else if ( variation_type == pgsTypes::svtDoubleParabolic )
       {
          // left parabola ends in this segment
          if ( !bParabola )
@@ -17494,7 +17534,7 @@ boost::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSp
          const CPrecastSegmentData* pNextSegment = (segIdx == nSegments-1 ? 0 : pGirder->GetSegment(segIdx+1));
          if ( 0 < right_prismatic_length || 
               segIdx == nSegments-1      || 
-              (pNextSegment->GetVariationType() == pgsTypes::None || pNextSegment->GetVariationType() == pgsTypes::Linear || pNextSegment->GetVariationType() == pgsTypes::DoubleLinear) // next segment is linear 
+              (pNextSegment->GetVariationType() == pgsTypes::svtNone || pNextSegment->GetVariationType() == pgsTypes::svtLinear || pNextSegment->GetVariationType() == pgsTypes::svtDoubleLinear) // next segment is linear 
             )
          {
             bParabola = false;
@@ -17512,42 +17552,42 @@ boost::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSp
                   nextSegmentKey.segmentIndex++;
 
                   Float64 next_segment_length = GetSegmentLayoutLength(nextSegmentKey);
-                  Float64 next_segment_left_prismatic_length = pNextSegment->GetVariationLength(pgsTypes::LeftPrismatic);
+                  Float64 next_segment_left_prismatic_length = pNextSegment->GetVariationLength(pgsTypes::sztLeftPrismatic);
                   if ( next_segment_left_prismatic_length < 0 )
                   {
                      ATLASSERT(-1.0 <= next_segment_left_prismatic_length && next_segment_left_prismatic_length < 0.0);
                      next_segment_left_prismatic_length *= -next_segment_length;
                   }
 
-                  Float64 next_segment_right_prismatic_length = pNextSegment->GetVariationLength(pgsTypes::RightPrismatic);
+                  Float64 next_segment_right_prismatic_length = pNextSegment->GetVariationLength(pgsTypes::sztRightPrismatic);
                   if ( next_segment_right_prismatic_length < 0 )
                   {
                      ATLASSERT(-1.0 <= next_segment_right_prismatic_length && next_segment_right_prismatic_length < 0.0);
                      next_segment_right_prismatic_length *= -next_segment_length;
                   }
 
-                  Float64 next_segment_left_tapered_length = pNextSegment->GetVariationLength(pgsTypes::LeftTapered);
+                  Float64 next_segment_left_tapered_length = pNextSegment->GetVariationLength(pgsTypes::sztLeftTapered);
                   if ( next_segment_left_tapered_length < 0 )
                   {
                      ATLASSERT(-1.0 <= next_segment_left_tapered_length && next_segment_left_tapered_length < 0.0);
                      next_segment_left_tapered_length *= -next_segment_length;
                   }
 
-                  if ( pNextSegment->GetVariationType() == pgsTypes::Linear )
+                  if ( pNextSegment->GetVariationType() == pgsTypes::svtLinear )
                   {
                      // next segment is linear
                      if ( IsZero(next_segment_left_prismatic_length) )
                      {
                         Float64 dist = next_segment_length - next_segment_left_prismatic_length - next_segment_right_prismatic_length;
-                        slopeParabola = -(pNextSegment->GetVariationHeight(pgsTypes::RightPrismatic) - pNextSegment->GetVariationHeight(pgsTypes::LeftPrismatic))/dist;
+                        slopeParabola = -(pNextSegment->GetVariationHeight(pgsTypes::sztRightPrismatic) - pNextSegment->GetVariationHeight(pgsTypes::sztLeftPrismatic))/dist;
                      }
                   }
-                  else if ( pNextSegment->GetVariationType() == pgsTypes::DoubleLinear )
+                  else if ( pNextSegment->GetVariationType() == pgsTypes::svtDoubleLinear )
                   {
                      if ( IsZero(next_segment_left_prismatic_length) )
                      {
                         Float64 dist = next_segment_left_tapered_length;
-                        slopeParabola = -(pNextSegment->GetVariationHeight(pgsTypes::LeftTapered) - pNextSegment->GetVariationHeight(pgsTypes::LeftPrismatic))/dist;
+                        slopeParabola = -(pNextSegment->GetVariationHeight(pgsTypes::sztLeftTapered) - pNextSegment->GetVariationHeight(pgsTypes::sztLeftPrismatic))/dist;
                      }
                   }
                }
@@ -21388,7 +21428,7 @@ void CBridgeAgentImp::CreateTendons(const CBridgeDescription2* pBridgeDesc,const
    tendons.CoCreateInstance(CLSID_TendonCollection);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
-      const CDuctData* pDuctData = pPTData->GetDuct(ductIdx/nWebs);
+      const CDuctData* pDuctData = pPTData->GetDuct(ductIdx);
       CComPtr<ITendonCollection> webTendons;
 
       switch (pDuctData->DuctGeometryType)
